@@ -9,18 +9,19 @@ React web client (`client/`). The repo is an **npm workspaces monorepo** (`works
 ["engine", "client"]` in the root `package.json`, in that order so `engine` builds first).
 
 - `engine/` — a TypeScript library package, ESM (`"type": "module"`), NodeNext resolution. Emits to `dist/` with declarations; `package.json` `exports`/`main`/`types` point there.
-- `client/` — a working Vite + React 19 + TypeScript app (still the starter template UI in `src/App.tsx`). Declares `engine` as a dependency (`"engine": "*"`, resolved via the workspace symlink) but does not import it yet.
+- `client/` — a Vite + React 19 + TypeScript app: a **two-player hot-seat UI** driving the engine (M6b). Imports `engine` (`"engine": "*"`, the workspace symlink) and consumes only its public seam — `Game`, `viewFor`, `legalActions`, `dispatch`, the `Action`/`LegalAction` types. Needs `engine/dist/` built (`npm run build` does engine first).
 
 ## Engine architecture (`engine/src/`)
 
-The engine is at **milestone 6a**: the UI seam. Implemented — turn/step loop,
-casting + targeting + fizzle, LIFO stack, SBAs, full combat, activated abilities,
-triggered abilities, the layers 6+7 continuous-effects pipeline, and now
+The engine is at **milestone 6b**: the UI seam (M6a) plus a working React
+hot-seat client on top of it (M6b — engine unchanged). Implemented — turn/step
+loop, casting + targeting + fizzle, LIFO stack, SBAs, full combat, activated
+abilities, triggered abilities, the layers 6+7 continuous-effects pipeline,
 **every decision as a dispatched action** (`declare-attackers` / `declare-blockers`
 / `discard` alongside the priority actions), **`legalActions(player)`** enumerating
 what is playable right now with per-slot target options, and **`viewFor(player)`**
 producing a redacted, self-contained snapshot for one seat.
-**Not yet** — the React client (M6b), auras/equipment (M5b), layers 1–5
+**Not yet** — auras/equipment (M5b), layers 1–5
 (copy, control-change, text, **type-change**, colour), layer 7b (set base P/T),
 dependency ordering, first strike / trample / deathtouch, planeswalkers, tokens,
 sacrifice-as-cost, >2 players.
@@ -44,6 +45,20 @@ decision still taken as a synchronous controller callback rather than an action.
 - **`primitives.ts`** — branded `PlayerId`/`ObjectId`, seeded `Rng` (mulberry32; `rng.seed` = stream position), `shuffle`.
 
 Snapshot/restore: `game.snapshot()` → `structuredClone(state)`; `Game.fromSnapshot(snap, env)` rebuilds (re-supply `registry`/`controllers` via `env`). Determinism: same seed + same controllers ⇒ identical replay.
+
+## Client architecture (`client/src/`)
+
+A minimal hot-seat client: both seats on one screen, the view swapping to
+whoever must act. It **never runs the controller loop** — both players get the
+default `AutomaticController` and are never consulted. Instead the human's
+choice is `game.dispatch`ed directly, then the engine is settled.
+
+- **`game/useGame.ts`** — owns the one `Game` (in `useState`, lazy-init; `revision` counter forces re-render). `dispatch(action)` → `game.dispatch` then `settleAndAutoPass`: `advanceUntil` a human decision (game over / `awaiting` / a priority holder), then auto-pass any "dead window" (holder's only legal action is `pass-priority`) so the player isn't clicking Pass through every empty combat step — **except** the active player's own main phases, kept interactive when idle. `seat` = `awaiting.player ?? priority.holder ?? activePlayer`. Exports `view` (`game.viewFor(seat, {revealAll})`), `actions` (`legalActions(seat)`), `nameOf`, `reset`.
+- **`game/decks.ts`** — two mana-honest starter decks (the same lists the engine fuzzer uses).
+- **`format.ts`** — `describeEvent(event, nameOf)` / `describeTarget`, the TS sibling of `scripts/format.mjs`, for the event log.
+- **`App.tsx`** — `App` (topbar, `PhaseTrack`, seat banner, "pass the device" curtain re-armed on seat change) wraps `<Table key={game.revision}>` — keying on revision resets all in-progress selection when the game moves on (no reset effect needed). `Table` classifies `actions` into maps (land/cast by card, abilities by source) and a `mode` (`discard` → `attackers` → `blockers` → `targeting` → `priority`); click handlers build the matching `Action`. Targeting: click highlighted `targetOptions[slot]` (a `CardTile` or a `PlayerPanel`); multi-slot picks accumulate then dispatch. Attackers/blockers/discard: select-then-confirm.
+- **`ui/`** — `CardTile` (`highlight` = must-pick, `selected`, `activatable` = subtle marker, `badge` = ⚔/🛡), `PhaseTrack`, `PlayerPanel` (life/mana/zone counts; `targetable` for player targets), `Stack`, `EventLog` (auto-scroll).
+- Styling is one `App.css` — legible dark table, no UI library. Out of scope: animation, card art, networking, undo.
 
 ## Commands
 
@@ -73,10 +88,11 @@ Run from the repo root unless noted. Workspace scripts: `npm run <script> -w eng
 A git-ignored `scratch.mjs` at the repo root is a scratch pad for ad-hoc exploration (`node scratch.mjs` after `npm run build -w engine`).
 
 **Client** (`client/`):
-- `npm run dev -w client` — Vite dev server with HMR
+- `npm run dev -w client` — Vite dev server with HMR (build `engine` first, or run `npm run build` from the root once)
 - `npm run build -w client` — type-check (`tsc -b`) then `vite build`
-- `npm run lint -w client` — oxlint
+- `npm run lint -w client` — oxlint (currently clean, warnings included)
 - `npm run preview -w client` — serve the production build
+- No client tests yet. To watch it run: `npm run dev -w client` and play a hot-seat game (or toggle "reveal both hands" and drive both seats).
 
 ## Toolchain notes
 
@@ -86,4 +102,5 @@ A git-ignored `scratch.mjs` at the repo root is a scratch pad for ad-hoc explora
 - **Engine tsconfig** excludes `src/**/*.test.ts` from the build (tests are not emitted to `dist/`); vitest type-checks tests itself.
 - **Shared dev deps are hoisted to the root** `package.json` (`typescript`, `@types/node`). Don't re-add them to a workspace unless a version needs to diverge.
 - **Lint** is oxlint, not ESLint. Config in `client/.oxlintrc.json` (`react`, `typescript`, `oxc` plugins; `react/rules-of-hooks` errors).
-- Assets in `client/public/` are referenced by absolute path (e.g. `/icons.svg#github-icon`); assets imported in `src/` (e.g. `./assets/hero.png`) go through Vite.
+- Assets in `client/public/` are referenced by absolute path (e.g. `/favicon.svg`); assets imported from `src/` go through Vite (the app currently imports none — `src/assets/` was removed with the starter template).
+- **The client drives the engine synchronously.** `game.dispatch()` fully settles (resolves the stack, runs no-priority turn-based actions) before returning; there is no async and no controller callback in the human path. The one engine decision still taken as a synchronous controller callback — `orderBlockers` — falls through to `AutomaticController` (declaration order), so multi-blocker damage order isn't yet a UI choice.

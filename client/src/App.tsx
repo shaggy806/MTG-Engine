@@ -1,122 +1,614 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import type { ReactNode } from 'react'
+import type {
+  LegalAction,
+  ObjectId,
+  PlayerId,
+  TargetRef,
+  TargetSpec,
+  VisibleObject,
+} from 'engine'
+import { useGame } from './game/useGame.ts'
+import type { UseGame } from './game/useGame.ts'
+import { playerLabel } from './format.ts'
+import { PhaseTrack } from './ui/PhaseTrack.tsx'
+import { PlayerPanel } from './ui/PlayerPanel.tsx'
+import { CardTile } from './ui/CardTile.tsx'
+import { Stack } from './ui/Stack.tsx'
+import { EventLog } from './ui/EventLog.tsx'
 import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+type CastAction = Extract<LegalAction, { kind: 'cast-spell' }>
+type AbilityAction = Extract<LegalAction, { kind: 'activate-ability' }>
+type AttackAction = Extract<LegalAction, { kind: 'declare-attackers' }>
+type BlockAction = Extract<LegalAction, { kind: 'declare-blockers' }>
+type DiscardAction = Extract<LegalAction, { kind: 'discard' }>
+
+interface Targeting {
+  readonly kind: 'cast' | 'activate'
+  readonly source: ObjectId
+  readonly abilityIndex: number
+  readonly label: string
+  readonly specs: readonly TargetSpec[]
+  readonly options: readonly (readonly TargetRef[])[]
+  readonly picked: readonly TargetRef[]
+}
+
+export default function App() {
+  const game = useGame(1)
+  const { view, seat } = game
+
+  // "Pass the device" curtain: re-arm it whenever the acting seat changes.
+  // (react.dev's recommended "adjust state when a prop changes" pattern.)
+  const [ready, setReady] = useState(true)
+  const [ackSeat, setAckSeat] = useState(seat)
+  if (seat !== ackSeat) {
+    setAckSeat(seat)
+    setReady(false)
+  }
+
+  const over = view.result.over
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="app">
+      <header className="topbar">
+        <h1>MTG Engine — hot seat</h1>
+        <div className="topbar-right">
+          <label>
+            <input
+              type="checkbox"
+              checked={game.revealAll}
+              onChange={(e) => game.setRevealAll(e.target.checked)}
+            />
+            reveal both hands
+          </label>
+          <span className="muted">seed {game.seed}</span>
+          <button type="button" onClick={() => game.reset()}>
+            New game
+          </button>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+      </header>
 
-      <div className="ticks"></div>
+      <PhaseTrack view={view} />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      <div className="seat-banner">
+        {over ? 'Game over' : `${playerLabel(seat)} to act`}
+      </div>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      <Table key={game.revision} game={game} />
+
+      {!ready && !over && !game.revealAll ? (
+        <div className="curtain">
+          <div className="curtain-box">
+            <p>Pass the device to</p>
+            <h2>{playerLabel(seat)}</h2>
+            <button type="button" onClick={() => setReady(true)}>
+              I'm {playerLabel(seat)} — show my hand
+            </button>
+          </div>
+        </div>
+      ) : null}
+    </div>
   )
 }
 
-export default App
+/**
+ * Everything interactive. Keyed on `game.revision` in the parent, so every
+ * in-progress selection resets whenever the game state moves on.
+ */
+function Table({ game }: { readonly game: UseGame }) {
+  const { view, actions, seat, opponent } = game
+
+  const [targeting, setTargeting] = useState<Targeting | null>(null)
+  const [selectedSource, setSelectedSource] = useState<ObjectId | null>(null)
+  const [attackPicks, setAttackPicks] = useState<readonly ObjectId[]>([])
+  const [blockAssign, setBlockAssign] = useState<Record<string, ObjectId>>({})
+  const [blockFocus, setBlockFocus] = useState<ObjectId | null>(null)
+  const [discardPicks, setDiscardPicks] = useState<readonly ObjectId[]>([])
+
+  // --- classify the legal actions ------------------------------------
+  const landByCard = useMemo(() => {
+    const m = new Map<ObjectId, LegalAction>()
+    for (const a of actions) if (a.kind === 'play-land') m.set(a.card, a)
+    return m
+  }, [actions])
+  const castByCard = useMemo(() => {
+    const m = new Map<ObjectId, CastAction>()
+    for (const a of actions) if (a.kind === 'cast-spell') m.set(a.card, a)
+    return m
+  }, [actions])
+  const abilitiesBySource = useMemo(() => {
+    const m = new Map<ObjectId, AbilityAction[]>()
+    for (const a of actions) {
+      if (a.kind !== 'activate-ability') continue
+      const list = m.get(a.source) ?? []
+      list.push(a)
+      m.set(a.source, list)
+    }
+    return m
+  }, [actions])
+
+  const attackAction = actions.find(
+    (a): a is AttackAction => a.kind === 'declare-attackers',
+  )
+  const blockAction = actions.find(
+    (a): a is BlockAction => a.kind === 'declare-blockers',
+  )
+  const discardAction = actions.find(
+    (a): a is DiscardAction => a.kind === 'discard',
+  )
+  const canPass = actions.some((a) => a.kind === 'pass-priority')
+
+  const mode: 'discard' | 'attackers' | 'blockers' | 'targeting' | 'priority' =
+    discardAction
+      ? 'discard'
+      : attackAction
+        ? 'attackers'
+        : blockAction
+          ? 'blockers'
+          : targeting
+            ? 'targeting'
+            : 'priority'
+
+  // --- dispatch helpers --------------------------------------------
+  const pass = useCallback(() => {
+    if (canPass) game.dispatch({ type: 'pass-priority', player: seat })
+  }, [canPass, game, seat])
+
+  const finishTargets = useCallback(
+    (t: Pick<Targeting, 'kind' | 'source' | 'abilityIndex'>, targets: readonly TargetRef[]) => {
+      game.dispatch(
+        t.kind === 'cast'
+          ? { type: 'cast-spell', player: seat, card: t.source, targets: [...targets] }
+          : {
+              type: 'activate-ability',
+              player: seat,
+              source: t.source,
+              abilityIndex: t.abilityIndex,
+              targets: [...targets],
+            },
+      )
+    },
+    [game, seat],
+  )
+
+  const beginTargeting = useCallback(
+    (t: Omit<Targeting, 'picked'>) => {
+      if (t.specs.length === 0) {
+        finishTargets(t, [])
+        return
+      }
+      setTargeting({ ...t, picked: [] })
+    },
+    [finishTargets],
+  )
+
+  const pickTarget = useCallback(
+    (ref: TargetRef) => {
+      setTargeting((cur) => {
+        if (!cur) return cur
+        const picked = [...cur.picked, ref]
+        if (picked.length < cur.specs.length) return { ...cur, picked }
+        finishTargets(cur, picked)
+        return null
+      })
+    },
+    [finishTargets],
+  )
+
+  const clickHandCard = useCallback(
+    (id: ObjectId) => {
+      if (mode === 'discard') {
+        if (!discardAction) return
+        setDiscardPicks((cur) => {
+          if (cur.includes(id)) return cur.filter((x) => x !== id)
+          if (cur.length >= discardAction.count) return cur
+          return [...cur, id]
+        })
+        return
+      }
+      if (mode !== 'priority') return
+      const land = landByCard.get(id)
+      if (land?.kind === 'play-land') {
+        game.dispatch({ type: 'play-land', player: seat, card: id })
+        return
+      }
+      const cast = castByCard.get(id)
+      if (cast) {
+        beginTargeting({
+          kind: 'cast',
+          source: id,
+          abilityIndex: 0,
+          label: `Cast ${cast.cardName}`,
+          specs: cast.targetSpecs,
+          options: cast.targetOptions,
+        })
+      }
+    },
+    [beginTargeting, castByCard, discardAction, game, landByCard, mode, seat],
+  )
+
+  const clickPermanent = useCallback(
+    (id: ObjectId) => {
+      if (mode === 'targeting' && targeting) {
+        const slot = targeting.options[targeting.picked.length] ?? []
+        if (slot.some((o) => o.kind === 'object' && o.object === id)) {
+          pickTarget({ kind: 'object', object: id })
+        }
+        return
+      }
+      if (mode === 'attackers' && attackAction) {
+        if (!attackAction.eligible.includes(id)) return
+        setAttackPicks((cur) =>
+          cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id],
+        )
+        return
+      }
+      if (mode === 'blockers' && blockAction) {
+        const entry = blockAction.eligible.find((e) => e.blocker === id)
+        if (entry) {
+          if (blockAssign[id]) {
+            setBlockAssign((cur) => {
+              const next = { ...cur }
+              delete next[id]
+              return next
+            })
+            setBlockFocus(null)
+          } else if (entry.canBlock.length === 1) {
+            setBlockAssign((cur) => ({ ...cur, [id]: entry.canBlock[0] }))
+          } else {
+            setBlockFocus((cur) => (cur === id ? null : id))
+          }
+          return
+        }
+        if (blockFocus) {
+          const f = blockAction.eligible.find((e) => e.blocker === blockFocus)
+          if (f?.canBlock.includes(id)) {
+            setBlockAssign((cur) => ({ ...cur, [blockFocus]: id }))
+            setBlockFocus(null)
+          }
+        }
+        return
+      }
+      if (mode === 'priority' && abilitiesBySource.has(id)) {
+        setSelectedSource((cur) => (cur === id ? null : id))
+      }
+    },
+    [
+      abilitiesBySource,
+      attackAction,
+      blockAction,
+      blockAssign,
+      blockFocus,
+      mode,
+      pickTarget,
+      targeting,
+    ],
+  )
+
+  const clickPlayerTarget = useCallback(
+    (pid: PlayerId) => {
+      if (mode !== 'targeting' || !targeting) return
+      const slot = targeting.options[targeting.picked.length] ?? []
+      if (slot.some((o) => o.kind === 'player' && o.player === pid)) {
+        pickTarget({ kind: 'player', player: pid })
+      }
+    },
+    [mode, pickTarget, targeting],
+  )
+
+  const confirmAttackers = useCallback(() => {
+    if (!attackAction) return
+    game.dispatch({
+      type: 'declare-attackers',
+      player: seat,
+      attackers: attackPicks.map((attacker) => ({
+        attacker,
+        defender: attackAction.defender,
+      })),
+    })
+  }, [attackAction, attackPicks, game, seat])
+
+  const confirmBlockers = useCallback(() => {
+    game.dispatch({
+      type: 'declare-blockers',
+      player: seat,
+      blocks: Object.entries(blockAssign).map(([blocker, attacker]) => ({
+        blocker: blocker as ObjectId,
+        attacker,
+      })),
+    })
+  }, [blockAssign, game, seat])
+
+  const confirmDiscard = useCallback(() => {
+    game.dispatch({ type: 'discard', player: seat, cards: [...discardPicks] })
+  }, [discardPicks, game, seat])
+
+  // --- keyboard ----------------------------------------------------
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === ' ' && mode === 'priority') {
+        e.preventDefault()
+        pass()
+      } else if (e.key === 'Escape') {
+        setTargeting(null)
+        setSelectedSource(null)
+        setBlockFocus(null)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [mode, pass])
+
+  // --- render ----------------------------------------------------
+  const targetSlot = targeting
+    ? (targeting.options[targeting.picked.length] ?? [])
+    : []
+  const pickedObjKeys = new Set(
+    (targeting?.picked ?? [])
+      .filter((r) => r.kind === 'object')
+      .map((r) => (r.kind === 'object' ? r.object : '')),
+  )
+  const playerIsTargetable = (pid: PlayerId): boolean =>
+    mode === 'targeting' &&
+    targetSlot.some((o) => o.kind === 'player' && o.player === pid)
+
+  const tileFor = (obj: VisibleObject, ownerSeat: PlayerId) => {
+    const id = obj.id
+    let highlight = false
+    let selected = false
+    let activatable = false
+    let badge: string | null = null
+
+    if (obj.attacking) badge = `⚔ ${playerLabel(obj.attacking)}`
+    else if (obj.blocking) badge = `\u{1F6E1} ${game.nameOf(obj.blocking)}`
+
+    if (mode === 'targeting') {
+      highlight = targetSlot.some((o) => o.kind === 'object' && o.object === id)
+      selected = pickedObjKeys.has(id)
+    } else if (mode === 'attackers' && attackAction) {
+      highlight = attackAction.eligible.includes(id)
+      selected = attackPicks.includes(id)
+      if (selected) badge = `⚔ ${playerLabel(attackAction.defender)}`
+    } else if (mode === 'blockers' && blockAction) {
+      const isBlocker = blockAction.eligible.some((e) => e.blocker === id)
+      const assignedTo = blockAssign[id]
+      const focusedCanHit =
+        blockFocus !== null &&
+        (blockAction.eligible
+          .find((e) => e.blocker === blockFocus)
+          ?.canBlock.includes(id) ??
+          false)
+      highlight = isBlocker || focusedCanHit
+      selected = Boolean(assignedTo) || blockFocus === id
+      if (assignedTo) badge = `\u{1F6E1} ${game.nameOf(assignedTo)}`
+    } else if (mode === 'priority' && ownerSeat === seat) {
+      activatable = abilitiesBySource.has(id)
+      selected = selectedSource === id
+    }
+
+    return (
+      <CardTile
+        key={id}
+        obj={obj}
+        highlight={highlight}
+        selected={selected}
+        activatable={activatable}
+        badge={badge}
+        onClick={() => clickPermanent(id)}
+      />
+    )
+  }
+
+  const battlefieldOf = (pid: PlayerId): VisibleObject[] =>
+    view.zones.battlefield
+      .map((id) => view.objects[id])
+      .filter((o): o is VisibleObject => Boolean(o) && o.controller === pid)
+      .sort(
+        (a, b) =>
+          (a.types.includes('land') ? 0 : 1) - (b.types.includes('land') ? 0 : 1),
+      )
+
+  const handIds = view.zones.hands[seat] ?? []
+  const seatInfo = view.players[seat]
+  const oppInfo = view.players[opponent]
+
+  let controls: ReactNode
+  if (view.result.over) {
+    controls = (
+      <div className="controls">
+        <strong>
+          {view.result.winner ? `${playerLabel(view.result.winner)} wins` : 'Draw'}
+        </strong>
+        <span className="muted">{view.result.reason}</span>
+      </div>
+    )
+  } else if (mode === 'targeting' && targeting) {
+    controls = (
+      <div className="controls">
+        <span>
+          {targeting.label}: choose {targeting.specs[targeting.picked.length]} (
+          {targeting.picked.length + 1}/{targeting.specs.length})
+        </span>
+        <button type="button" onClick={() => setTargeting(null)}>
+          Cancel
+        </button>
+      </div>
+    )
+  } else if (mode === 'attackers') {
+    controls = (
+      <div className="controls">
+        <span>Declare attackers — {attackPicks.length} selected</span>
+        <button type="button" onClick={confirmAttackers}>
+          {attackPicks.length === 0
+            ? 'No attacks'
+            : `Attack with ${attackPicks.length}`}
+        </button>
+      </div>
+    )
+  } else if (mode === 'blockers') {
+    const n = Object.keys(blockAssign).length
+    controls = (
+      <div className="controls">
+        <span>
+          Declare blockers — {n} assigned
+          {blockFocus
+            ? ` · pick an attacker for ${game.nameOf(blockFocus)}`
+            : ''}
+        </span>
+        <button
+          type="button"
+          onClick={() => {
+            setBlockAssign({})
+            setBlockFocus(null)
+          }}
+        >
+          Clear
+        </button>
+        <button type="button" onClick={confirmBlockers}>
+          {n === 0 ? 'No blocks' : `Block (${n})`}
+        </button>
+      </div>
+    )
+  } else if (mode === 'discard' && discardAction) {
+    controls = (
+      <div className="controls">
+        <span>
+          Discard to hand size — {discardPicks.length}/{discardAction.count}
+        </span>
+        <button
+          type="button"
+          disabled={discardPicks.length !== discardAction.count}
+          onClick={confirmDiscard}
+        >
+          Discard
+        </button>
+      </div>
+    )
+  } else {
+    controls = (
+      <div className="controls">
+        <span className="muted">
+          {playerLabel(seat)} has priority · {view.turn.step}
+        </span>
+        <button type="button" onClick={pass} disabled={!canPass}>
+          Pass (space)
+        </button>
+      </div>
+    )
+  }
+
+  const selectedAbilities = selectedSource
+    ? (abilitiesBySource.get(selectedSource) ?? [])
+    : []
+
+  return (
+    <>
+      <main className="table">
+        <PlayerPanel
+          info={oppInfo}
+          isActive={view.activePlayer === opponent}
+          hasPriority={view.priority.holder === opponent}
+          targetable={playerIsTargetable(opponent)}
+          onTargetClick={() => clickPlayerTarget(opponent)}
+        />
+        <div className="battlefield opp">
+          {battlefieldOf(opponent).map((o) => tileFor(o, opponent))}
+          {battlefieldOf(opponent).length === 0 ? (
+            <span className="muted">no permanents</span>
+          ) : null}
+        </div>
+
+        {game.revealAll ? (
+          <div className="hand opp-hand">
+            <h3>
+              {playerLabel(opponent)}'s hand (
+              {(view.zones.hands[opponent] ?? []).length})
+            </h3>
+            <div className="hand-cards">
+              {(view.zones.hands[opponent] ?? []).map((id) => {
+                const obj = view.objects[id]
+                return obj ? <CardTile key={id} obj={obj} /> : null
+              })}
+            </div>
+          </div>
+        ) : null}
+
+        <div className="midrow">
+          <Stack view={view} />
+          <EventLog events={view.events} nameOf={game.nameOf} />
+        </div>
+
+        <div className="battlefield you">
+          {battlefieldOf(seat).map((o) => tileFor(o, seat))}
+          {battlefieldOf(seat).length === 0 ? (
+            <span className="muted">no permanents</span>
+          ) : null}
+        </div>
+        <PlayerPanel
+          info={seatInfo}
+          isActive={view.activePlayer === seat}
+          hasPriority={view.priority.holder === seat}
+          targetable={playerIsTargetable(seat)}
+          onTargetClick={() => clickPlayerTarget(seat)}
+        />
+      </main>
+
+      {selectedAbilities.length > 0 ? (
+        <div className="ability-menu">
+          <span>{game.nameOf(selectedSource as ObjectId)}:</span>
+          {selectedAbilities.map((ab) => (
+            <button
+              key={ab.abilityIndex}
+              type="button"
+              onClick={() =>
+                beginTargeting({
+                  kind: 'activate',
+                  source: ab.source,
+                  abilityIndex: ab.abilityIndex,
+                  label: ab.text || `${ab.cardName} ability`,
+                  specs: ab.targetSpecs,
+                  options: ab.targetOptions,
+                })
+              }
+            >
+              {ab.text || `ability ${ab.abilityIndex}`}
+            </button>
+          ))}
+        </div>
+      ) : null}
+
+      {controls}
+
+      <div className="hand">
+        <h3>
+          {playerLabel(seat)}'s hand ({handIds.length})
+        </h3>
+        <div className="hand-cards">
+          {handIds.map((id) => {
+            const obj = view.objects[id]
+            if (!obj) return null
+            let highlight = false
+            let selected = false
+            if (mode === 'discard') {
+              highlight = discardAction?.from.includes(id) ?? false
+              selected = discardPicks.includes(id)
+            } else if (mode === 'priority') {
+              highlight = landByCard.has(id) || castByCard.has(id)
+            }
+            return (
+              <CardTile
+                key={id}
+                obj={obj}
+                highlight={highlight}
+                selected={selected}
+                onClick={() => clickHandCard(id)}
+              />
+            )
+          })}
+          {handIds.length === 0 ? <span className="muted">empty</span> : null}
+        </div>
+      </div>
+    </>
+  )
+}
