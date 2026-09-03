@@ -11,6 +11,13 @@ export type Action =
       readonly player: PlayerId;
       readonly card: ObjectId;
       readonly targets?: readonly TargetRef[];
+    }
+  | {
+      readonly type: "activate-ability";
+      readonly player: PlayerId;
+      readonly source: ObjectId;
+      readonly abilityIndex: number;
+      readonly targets?: readonly TargetRef[];
     };
 
 export type ActionType = Action["type"];

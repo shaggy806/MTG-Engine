@@ -40,6 +40,12 @@ export interface GameObject {
   blockedBy: ObjectId[];
   /** True once this attacker has been blocked (even if the blockers later die). */
   blocked: boolean;
+  /** `"card"` for a real card/token; `"ability"` for an ability on the stack. */
+  kind: "card" | "ability";
+  /** For an ability object: the permanent whose ability this is. */
+  sourceObjectId: ObjectId | null;
+  /** For an ability object: index into the source's `activated` list. */
+  abilityIndex: number | null;
 }
 
 export interface PlayerState {

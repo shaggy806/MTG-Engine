@@ -7,6 +7,7 @@
  * escape hatch). Vanilla permanents need neither.
  */
 
+import type { ActivatedAbility } from "./abilities.js";
 import type { EffectSpec, SpellResolver } from "./effects.js";
 import type { Color } from "./mana.js";
 import type { TargetSpec } from "./target.js";
@@ -54,6 +55,8 @@ export interface CardDefinition {
   readonly effect: EffectSpec | null;
   /** Imperative resolution script (takes precedence over `effect`), or `null`. */
   readonly resolve: SpellResolver | null;
+  /** Activated abilities, in the order they appear on the card. */
+  readonly activated: readonly ActivatedAbility[];
 }
 
 interface CardDraft {
@@ -70,6 +73,7 @@ interface CardDraft {
   targets?: readonly TargetSpec[];
   effect?: EffectSpec;
   resolve?: SpellResolver;
+  activated?: readonly ActivatedAbility[];
 }
 
 function define(draft: CardDraft): CardDefinition {
@@ -87,12 +91,22 @@ function define(draft: CardDraft): CardDefinition {
     targets: draft.targets ?? [],
     effect: draft.effect ?? null,
     resolve: draft.resolve ?? null,
+    activated: draft.activated ?? [],
   };
 }
 
 export function hasKeyword(def: CardDefinition, keyword: Keyword): boolean {
   return def.keywords.includes(keyword);
 }
+
+/** The `{T}: Add {C}` ability every mana-producing basic land has. */
+const manaTapAbility = (mana: Color): ActivatedAbility => ({
+  cost: { mana: null, tap: true },
+  targets: [],
+  effect: { kind: "add-mana", mana, amount: 1 },
+  resolve: null,
+  text: `{T}: Add {${mana}}.`,
+});
 
 const BASIC_LAND_MANA: Readonly<Record<string, Color>> = {
   Plains: "W",
@@ -126,6 +140,7 @@ const basicLand = (
     types: ["land"],
     subtypes: [subtype],
     text: `({T}: Add {${produces}}.)`,
+    activated: [manaTapAbility(produces)],
   });
 
 /** The built-in card pool. */
@@ -201,6 +216,36 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
     power: 0,
     toughness: 3,
     keywords: ["defender"],
+  }),
+  define({
+    name: "Llanowar Elves",
+    manaCost: "{G}",
+    colors: ["G"],
+    types: ["creature"],
+    subtypes: ["Elf", "Druid"],
+    power: 1,
+    toughness: 1,
+    text: "{T}: Add {G}.",
+    activated: [manaTapAbility("G")],
+  }),
+  define({
+    name: "Prodigal Sorcerer",
+    manaCost: "{2}{U}",
+    colors: ["U"],
+    types: ["creature"],
+    subtypes: ["Human", "Wizard"],
+    power: 1,
+    toughness: 1,
+    text: "{T}: Prodigal Sorcerer deals 1 damage to any target.",
+    activated: [
+      {
+        cost: { mana: null, tap: true },
+        targets: ["any-target"],
+        effect: { kind: "damage", amount: 1, target: 0 },
+        resolve: null,
+        text: "{T}: Prodigal Sorcerer deals 1 damage to any target.",
+      },
+    ],
   }),
   define({
     name: "Lightning Bolt",

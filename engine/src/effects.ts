@@ -4,19 +4,23 @@
  * `resolve` scripts (the escape hatch) call into.
  *
  * The engine ({@link Game}) supplies the concrete {@link EffectApi} implementation
- * — these functions just describe *what* to do.
+ * — these functions just describe *what* to do. A `target` field is an index
+ * into the spell's or ability's chosen targets.
  */
 
+import type { ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { TargetRef } from "./target.js";
 
 /** A declarative effect. Grows as milestones add vocabulary. */
-export type EffectSpec = {
-  readonly kind: "damage";
-  readonly amount: number;
-  /** Index into the spell's chosen targets. */
-  readonly target: number;
-};
+export type EffectSpec =
+  | { readonly kind: "damage"; readonly amount: number; readonly target: number }
+  | { readonly kind: "add-mana"; readonly mana: ManaType; readonly amount: number }
+  | { readonly kind: "draw"; readonly amount: number }
+  | { readonly kind: "gain-life"; readonly amount: number }
+  | { readonly kind: "tap"; readonly target: number }
+  | { readonly kind: "untap"; readonly target: number }
+  | { readonly kind: "destroy"; readonly target: number };
 
 /** Primitive mutations an effect can perform. Implemented by the engine. */
 export interface EffectApi {
@@ -24,6 +28,10 @@ export interface EffectApi {
   draw(player: PlayerId, count: number): void;
   gainLife(player: PlayerId, amount: number): void;
   loseLife(player: PlayerId, amount: number): void;
+  addMana(player: PlayerId, mana: ManaType, amount: number): void;
+  tapPermanent(target: TargetRef): void;
+  untapPermanent(target: TargetRef): void;
+  destroyPermanent(target: TargetRef): void;
 }
 
 export interface ResolutionContext extends EffectApi {
@@ -32,7 +40,7 @@ export interface ResolutionContext extends EffectApi {
   readonly targets: readonly TargetRef[];
 }
 
-/** Imperative escape hatch for a card whose behavior the vocab can't express. */
+/** Imperative escape hatch for a spell or ability the vocab can't express. */
 export type SpellResolver = (ctx: ResolutionContext) => void;
 
 export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void {
@@ -40,6 +48,30 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     case "damage": {
       const target = ctx.targets[spec.target];
       if (target !== undefined) ctx.dealDamage(target, spec.amount);
+      return;
+    }
+    case "add-mana":
+      ctx.addMana(ctx.controller, spec.mana, spec.amount);
+      return;
+    case "draw":
+      ctx.draw(ctx.controller, spec.amount);
+      return;
+    case "gain-life":
+      ctx.gainLife(ctx.controller, spec.amount);
+      return;
+    case "tap": {
+      const target = ctx.targets[spec.target];
+      if (target !== undefined) ctx.tapPermanent(target);
+      return;
+    }
+    case "untap": {
+      const target = ctx.targets[spec.target];
+      if (target !== undefined) ctx.untapPermanent(target);
+      return;
+    }
+    case "destroy": {
+      const target = ctx.targets[spec.target];
+      if (target !== undefined) ctx.destroyPermanent(target);
       return;
     }
     default:

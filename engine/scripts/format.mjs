@@ -39,6 +39,12 @@ export const makeFormatter = (game) => {
         }`;
       case "spell-resolved":
         return `${name(e.object)} resolves`;
+      case "ability-activated":
+        return `${e.player} activates ${name(e.source)}'s ability${
+          e.onStack ? "" : " (mana)"
+        }`;
+      case "ability-resolved":
+        return `${name(e.source)}'s ability resolves`;
       case "attacker-declared":
         return `${name(e.attacker)} attacks ${e.defender}`;
       case "blocker-declared":

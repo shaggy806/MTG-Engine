@@ -10,6 +10,7 @@ export * from "./primitives.js";
 export * from "./mana.js";
 export * from "./target.js";
 export * from "./effects.js";
+export * from "./abilities.js";
 export * from "./cards.js";
 export * from "./turn.js";
 export * from "./events.js";

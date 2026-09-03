@@ -21,7 +21,8 @@
     "typecheck": "tsc --noEmit",
     "play": "tsc && node scripts/play.mjs",
     "play:cast": "tsc && node scripts/cast-demo.mjs",
-    "play:combat": "tsc && node scripts/combat-demo.mjs"
+    "play:combat": "tsc && node scripts/combat-demo.mjs",
+    "play:abilities": "tsc && node scripts/abilities-demo.mjs"
   },
   "keywords": [],
   "author": "",

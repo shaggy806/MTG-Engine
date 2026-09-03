@@ -59,6 +59,9 @@ const spawn = (game: Game, cardName: string, controller: PlayerId): ObjectId => 
     blocking: null,
     blockedBy: [],
     blocked: false,
+    kind: "card",
+    sourceObjectId: null,
+    abilityIndex: null,
   };
   game.state.zones.shared.battlefield.push(id);
   return id;

@@ -72,6 +72,13 @@ export type GameEvent =
     })
   | (Base & { readonly type: "spell-resolved"; readonly object: ObjectId })
   | (Base & {
+      readonly type: "ability-activated";
+      readonly source: ObjectId;
+      readonly player: PlayerId;
+      readonly onStack: boolean;
+    })
+  | (Base & { readonly type: "ability-resolved"; readonly source: ObjectId })
+  | (Base & {
       readonly type: "attacker-declared";
       readonly attacker: ObjectId;
       readonly defender: PlayerId;

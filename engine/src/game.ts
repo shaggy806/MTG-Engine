@@ -8,14 +8,10 @@
  * and destroy creatures with lethal damage or non-positive toughness. No combat.
  */
 
+import { isManaAbility } from "./abilities.js";
 import { actionPlayer } from "./actions.js";
 import type { Action } from "./actions.js";
-import {
-  CardRegistry,
-  createDefaultRegistry,
-  hasKeyword,
-  landProduces,
-} from "./cards.js";
+import { CardRegistry, createDefaultRegistry, hasKeyword } from "./cards.js";
 import type { CardDefinition } from "./cards.js";
 import { AutomaticController } from "./controller.js";
 import type { ControllerView, PlayerController } from "./controller.js";
@@ -28,12 +24,12 @@ import type {
   GameEventType,
 } from "./events.js";
 import { COLORS, MANA_TYPES, emptyPool, parseManaCost } from "./mana.js";
-import type { ManaCost } from "./mana.js";
+import type { ManaCost, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId, Rng } from "./primitives.js";
 import { asObjectId, createRng, shuffle } from "./primitives.js";
 import { DEFAULT_RULES, activePlayerOf, createPlayerState } from "./state.js";
 import type { GameObject, GameRules, GameState, ZoneType } from "./state.js";
-import type { TargetRef } from "./target.js";
+import type { TargetRef, TargetSpec } from "./target.js";
 import { isLegalTarget } from "./targeting.js";
 import { PHASE_OF_STEP, isMainPhase, nextStep, stepUsesPriority } from "./turn.js";
 import type { Step } from "./turn.js";
@@ -208,6 +204,14 @@ export class Game {
       case "cast-spell":
         this.castSpell(action.player, action.card, action.targets ?? []);
         break;
+      case "activate-ability":
+        this.activateAbility(
+          action.player,
+          action.source,
+          action.abilityIndex,
+          action.targets ?? [],
+        );
+        break;
       default:
         throw new Error(
           `unhandled action: ${(action as { type: string }).type}`,
@@ -288,6 +292,9 @@ export class Game {
           blocking: null,
           blockedBy: [],
           blocked: false,
+          kind: "card",
+          sourceObjectId: null,
+          abilityIndex: null,
         };
         ids.push(id);
       }
@@ -749,7 +756,7 @@ export class Game {
     // Commit: move to the stack, pay, announce.
     this.moveObject(cardId, "stack");
     object.targets = targets.length > 0 ? [...targets] : null;
-    for (const landId of plan) this.tapForMana(landId);
+    for (const sourceId of plan) this.tapManaSource(sourceId);
     this.spendFromPool(player, cost);
 
     this.emit({
@@ -757,6 +764,102 @@ export class Game {
       player,
       object: cardId,
       targets: [...targets],
+    });
+    this.afterPlayerAction(player);
+  }
+
+  private activateAbility(
+    player: PlayerId,
+    sourceId: ObjectId,
+    abilityIndex: number,
+    targets: readonly TargetRef[],
+  ): void {
+    this.assertHasPriority(player);
+    const source = this.state.objects[sourceId];
+    if (source === undefined || source.zone !== "battlefield") {
+      throw new Error("that permanent is not on the battlefield");
+    }
+    if (source.controller !== player) {
+      throw new Error(`${player} does not control that permanent`);
+    }
+    const def = this.registry.get(source.cardName);
+    const ability = def.activated[abilityIndex];
+    if (ability === undefined) {
+      throw new Error(`${def.name} has no ability #${abilityIndex}`);
+    }
+
+    if (targets.length !== ability.targets.length) {
+      throw new Error(
+        `that ability of ${def.name} takes ${ability.targets.length} target(s), got ${targets.length}`,
+      );
+    }
+    ability.targets.forEach((spec, i) => {
+      if (!isLegalTarget(this.state, this.registry, spec, targets[i])) {
+        throw new Error(`illegal target for ${def.name}'s ability`);
+      }
+    });
+
+    if (ability.cost.tap) {
+      if (source.tapped) {
+        throw new Error(`${def.name} is already tapped`);
+      }
+      if (this.tapAbilityBlockedBySickness(source)) {
+        throw new Error(`${def.name} has summoning sickness`);
+      }
+    }
+
+    const manaCost = parseManaCost(ability.cost.mana);
+    const plan = this.planManaPayment(player, manaCost);
+    if (plan === null) {
+      throw new Error(`${player} cannot pay for ${def.name}'s ability`);
+    }
+
+    // Pay the cost.
+    if (ability.cost.tap) {
+      source.tapped = true;
+      this.emit({ type: "permanent-tapped", object: sourceId });
+    }
+    for (const manaSourceId of plan) this.tapManaSource(manaSourceId);
+    this.spendFromPool(player, manaCost);
+
+    if (isManaAbility(ability)) {
+      // Mana abilities resolve immediately and never use the stack.
+      const context = this.makeResolutionContext(sourceId, player, []);
+      if (ability.effect !== null) applyEffectSpec(ability.effect, context);
+      this.emit({
+        type: "ability-activated",
+        source: sourceId,
+        player,
+        onStack: false,
+      });
+      return;
+    }
+
+    const abilityId = this.mintObjectId();
+    this.state.objects[abilityId] = {
+      id: abilityId,
+      cardName: source.cardName,
+      owner: player,
+      controller: player,
+      zone: "stack",
+      tapped: false,
+      damageMarked: 0,
+      enteredBattlefieldOnTurn: null,
+      targets: targets.length > 0 ? [...targets] : null,
+      attacking: null,
+      blocking: null,
+      blockedBy: [],
+      blocked: false,
+      kind: "ability",
+      sourceObjectId: sourceId,
+      abilityIndex,
+    };
+    this.state.zones.shared.stack.push(abilityId);
+    this.emit({
+      type: "ability-activated",
+      source: sourceId,
+      player,
+      onStack: true,
     });
     this.afterPlayerAction(player);
   }
@@ -788,7 +891,46 @@ export class Game {
   // --- mana ------------------------------------------------------
 
   /**
-   * Which of `player`'s untapped lands to tap to cover `cost`, or `null` if it
+   * `player`'s untapped permanents with a `{T}: Add ...` mana ability, and the
+   * mana each can make. A `{T}` mana ability of a creature is unavailable while
+   * that creature is summoning-sick (rule 302.6).
+   */
+  private manaSources(player: PlayerId): { id: ObjectId; produces: ManaType[] }[] {
+    const out: { id: ObjectId; produces: ManaType[] }[] = [];
+    for (const id of this.state.zones.shared.battlefield) {
+      const object = this.state.objects[id];
+      if (object.controller !== player || object.tapped) continue;
+      if (this.tapAbilityBlockedBySickness(object)) continue;
+
+      const produces: ManaType[] = [];
+      for (const ability of this.registry.get(object.cardName).activated) {
+        if (
+          isManaAbility(ability) &&
+          ability.cost.tap &&
+          ability.cost.mana === null &&
+          ability.effect !== null &&
+          ability.effect.kind === "add-mana"
+        ) {
+          for (let k = 0; k < ability.effect.amount; k += 1) {
+            produces.push(ability.effect.mana);
+          }
+        }
+      }
+      if (produces.length > 0) out.push({ id, produces });
+    }
+    return out;
+  }
+
+  /** True if `object` is a summoning-sick creature (so its `{T}` costs can't be paid). */
+  private tapAbilityBlockedBySickness(object: GameObject): boolean {
+    return (
+      this.registry.get(object.cardName).types.includes("creature") &&
+      this.hasSummoningSickness(object)
+    );
+  }
+
+  /**
+   * Which of `player`'s mana sources to tap to cover `cost`, or `null` if it
    * can't be covered. Existing floating mana is spent first.
    */
   private planManaPayment(player: PlayerId, cost: ManaCost): ObjectId[] | null {
@@ -805,52 +947,54 @@ export class Game {
       MANA_TYPES.reduce((sum, type) => sum + pool[type], 0) - poolSpentOnColors;
     let genericNeed = Math.max(0, cost.generic - poolLeftForGeneric);
 
-    const lands = this.untappedManaLands(player).map((id) => ({
-      id,
-      color: landProduces(this.registry.get(this.state.objects[id].cardName)),
-    }));
+    const sources = this.manaSources(player);
     const used = new Set<ObjectId>();
     const plan: ObjectId[] = [];
 
     for (const color of COLORS) {
       for (let i = 0; i < coloredNeed[color]; i += 1) {
-        const land = lands.find((l) => !used.has(l.id) && l.color === color);
-        if (land === undefined) return null;
-        used.add(land.id);
-        plan.push(land.id);
+        const source = sources.find(
+          (s) => !used.has(s.id) && s.produces.includes(color),
+        );
+        if (source === undefined) return null;
+        used.add(source.id);
+        plan.push(source.id);
       }
     }
     while (genericNeed > 0) {
-      const land = lands.find((l) => !used.has(l.id));
-      if (land === undefined) return null;
-      used.add(land.id);
-      plan.push(land.id);
+      const source = sources.find((s) => !used.has(s.id));
+      if (source === undefined) return null;
+      used.add(source.id);
+      plan.push(source.id);
       genericNeed -= 1;
     }
     return plan;
   }
 
-  private untappedManaLands(player: PlayerId): ObjectId[] {
-    return this.state.zones.shared.battlefield.filter((id) => {
-      const object = this.state.objects[id];
-      if (object.controller !== player || object.tapped) return false;
-      return landProduces(this.registry.get(object.cardName)) !== null;
-    });
+  /** Activate `id`'s simple `{T}: Add` mana ability: tap it and fill the pool. */
+  private tapManaSource(id: ObjectId): void {
+    const object = this.state.objects[id];
+    const ability = this.registry
+      .get(object.cardName)
+      .activated.find(
+        (a) =>
+          isManaAbility(a) &&
+          a.cost.tap &&
+          a.cost.mana === null &&
+          a.effect !== null &&
+          a.effect.kind === "add-mana",
+      );
+    if (ability === undefined || ability.effect?.kind !== "add-mana") {
+      throw new Error("that permanent has no simple mana ability");
+    }
+    object.tapped = true;
+    this.emit({ type: "permanent-tapped", object: id });
+    this.addMana(object.controller, ability.effect.mana, ability.effect.amount);
   }
 
-  private tapForMana(landId: ObjectId): void {
-    const object = this.state.objects[landId];
-    const color = landProduces(this.registry.get(object.cardName));
-    if (color === null) throw new Error("that land cannot produce mana");
-    object.tapped = true;
-    this.state.players[object.controller].manaPool[color] += 1;
-    this.emit({ type: "permanent-tapped", object: landId });
-    this.emit({
-      type: "mana-added",
-      player: object.controller,
-      mana: color,
-      amount: 1,
-    });
+  private addMana(player: PlayerId, mana: ManaType, amount: number): void {
+    this.state.players[player].manaPool[mana] += amount;
+    this.emit({ type: "mana-added", player, mana, amount });
   }
 
   private spendFromPool(player: PlayerId, cost: ManaCost): void {
@@ -937,10 +1081,19 @@ export class Game {
     const stack = this.state.zones.shared.stack;
     const id = stack[stack.length - 1];
     const object = this.state.objects[id];
+
+    if (object.kind === "ability") {
+      this.resolveAbility(object);
+      return;
+    }
+
     const def = this.registry.get(object.cardName);
     const targets = object.targets ?? [];
 
-    if (def.targets.length > 0 && !this.anyTargetLegal(def, targets)) {
+    if (
+      def.targets.length > 0 &&
+      !this.anyTargetLegal(def.targets, targets)
+    ) {
       this.moveObject(id, "graveyard");
       object.targets = null;
       this.emit({
@@ -951,7 +1104,7 @@ export class Game {
       return;
     }
 
-    const context = this.makeResolutionContext(object);
+    const context = this.makeResolutionContext(id, object.controller, targets);
     if (def.resolve !== null) {
       def.resolve(context);
     } else if (def.effect !== null) {
@@ -969,11 +1122,48 @@ export class Game {
     }
   }
 
+  private resolveAbility(object: GameObject): void {
+    const id = object.id;
+    const def = this.registry.get(object.cardName);
+    const ability = def.activated[object.abilityIndex ?? 0];
+    const targets = object.targets ?? [];
+    const source = object.sourceObjectId ?? id;
+
+    if (
+      ability.targets.length > 0 &&
+      !this.anyTargetLegal(ability.targets, targets)
+    ) {
+      this.removeAbilityFromStack(id);
+      this.emit({
+        type: "spell-fizzled",
+        object: id,
+        reason: "all targets are illegal",
+      });
+      return;
+    }
+
+    const context = this.makeResolutionContext(source, object.controller, targets);
+    if (ability.resolve !== null) {
+      ability.resolve(context);
+    } else if (ability.effect !== null) {
+      applyEffectSpec(ability.effect, context);
+    }
+    this.emit({ type: "ability-resolved", source });
+    this.removeAbilityFromStack(id);
+  }
+
+  private removeAbilityFromStack(id: ObjectId): void {
+    const stack = this.state.zones.shared.stack;
+    const index = stack.indexOf(id);
+    if (index >= 0) stack.splice(index, 1);
+    delete this.state.objects[id];
+  }
+
   private anyTargetLegal(
-    def: CardDefinition,
+    specs: readonly TargetSpec[],
     targets: readonly TargetRef[],
   ): boolean {
-    return def.targets.some(
+    return specs.some(
       (spec, i) =>
         targets[i] !== undefined &&
         isLegalTarget(this.state, this.registry, spec, targets[i]),
@@ -991,19 +1181,51 @@ export class Game {
     );
   }
 
-  private makeResolutionContext(object: GameObject): ResolutionContext {
-    const source = object.id;
+  private makeResolutionContext(
+    source: ObjectId,
+    controller: PlayerId,
+    targets: readonly TargetRef[],
+  ): ResolutionContext {
     return {
-      controller: object.controller,
+      controller,
       source,
-      targets: object.targets ?? [],
+      targets,
       dealDamage: (target, amount) => this.dealDamage(source, target, amount),
       draw: (player, count) => {
         for (let i = 0; i < count; i += 1) this.drawCard(player);
       },
       gainLife: (player, amount) => this.changeLife(player, amount),
       loseLife: (player, amount) => this.changeLife(player, -amount),
+      addMana: (player, mana, amount) => this.addMana(player, mana, amount),
+      tapPermanent: (target) => this.setTapped(target, true),
+      untapPermanent: (target) => this.setTapped(target, false),
+      destroyPermanent: (target) => this.destroyByEffect(target),
     };
+  }
+
+  private setTapped(target: TargetRef, tapped: boolean): void {
+    if (target.kind !== "object") return;
+    const object = this.state.objects[target.object];
+    if (object === undefined || object.zone !== "battlefield") return;
+    if (object.tapped === tapped) return;
+    object.tapped = tapped;
+    this.emit(
+      tapped
+        ? { type: "permanent-tapped", object: target.object }
+        : { type: "permanent-untapped", object: target.object },
+    );
+  }
+
+  private destroyByEffect(target: TargetRef): void {
+    if (target.kind !== "object") return;
+    const object = this.state.objects[target.object];
+    if (object === undefined || object.zone !== "battlefield") return;
+    this.moveObject(target.object, "graveyard");
+    this.emit({
+      type: "permanent-destroyed",
+      object: target.object,
+      reason: "destroyed",
+    });
   }
 
   private dealDamage(
