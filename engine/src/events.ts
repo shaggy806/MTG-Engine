@@ -4,7 +4,9 @@
  * networking.
  */
 
+import type { ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
+import type { TargetRef } from "./target.js";
 import type { Phase, Step } from "./turn.js";
 
 interface Base {
@@ -49,6 +51,51 @@ export type GameEvent =
   | (Base & {
       readonly type: "damage-cleared";
       readonly objects: readonly ObjectId[];
+    })
+  | (Base & {
+      readonly type: "land-played";
+      readonly player: PlayerId;
+      readonly object: ObjectId;
+    })
+  | (Base & { readonly type: "permanent-tapped"; readonly object: ObjectId })
+  | (Base & {
+      readonly type: "mana-added";
+      readonly player: PlayerId;
+      readonly mana: ManaType;
+      readonly amount: number;
+    })
+  | (Base & {
+      readonly type: "spell-cast";
+      readonly player: PlayerId;
+      readonly object: ObjectId;
+      readonly targets: readonly TargetRef[];
+    })
+  | (Base & { readonly type: "spell-resolved"; readonly object: ObjectId })
+  | (Base & {
+      readonly type: "spell-fizzled";
+      readonly object: ObjectId;
+      readonly reason: string;
+    })
+  | (Base & {
+      readonly type: "permanent-entered-battlefield";
+      readonly object: ObjectId;
+    })
+  | (Base & {
+      readonly type: "damage-dealt";
+      readonly source: ObjectId;
+      readonly target: TargetRef;
+      readonly amount: number;
+    })
+  | (Base & {
+      readonly type: "life-changed";
+      readonly player: PlayerId;
+      readonly delta: number;
+      readonly life: number;
+    })
+  | (Base & {
+      readonly type: "permanent-destroyed";
+      readonly object: ObjectId;
+      readonly reason: string;
     })
   | (Base & {
       readonly type: "player-lost";

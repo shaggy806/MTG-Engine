@@ -76,3 +76,7 @@ export function nextStep(step: Step): Step | null {
 export function stepUsesPriority(step: Step): boolean {
   return step !== "untap" && step !== "cleanup";
 }
+
+export function isMainPhase(step: Step): boolean {
+  return step === "precombat-main" || step === "postcombat-main";
+}

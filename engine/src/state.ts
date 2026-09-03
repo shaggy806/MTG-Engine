@@ -10,6 +10,7 @@ import type { ManaPool } from "./mana.js";
 import { emptyPool } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameEvent } from "./events.js";
+import type { TargetRef } from "./target.js";
 import type { Phase, Step } from "./turn.js";
 import { phaseOfStep } from "./turn.js";
 
@@ -29,6 +30,8 @@ export interface GameObject {
   damageMarked: number;
   /** Turn number this object last entered the battlefield; `null` otherwise. */
   enteredBattlefieldOnTurn: number | null;
+  /** Chosen targets while this is a spell/ability on the stack; `null` otherwise. */
+  targets: TargetRef[] | null;
 }
 
 export interface PlayerState {
@@ -50,6 +53,7 @@ export interface GameRules {
   startingLife: number;
   openingHandSize: number;
   maxHandSize: number;
+  maxLandsPerTurn: number;
   /** In a two-player game the player who goes first skips their first draw. */
   skipFirstDraw: boolean;
 }
@@ -58,6 +62,7 @@ export const DEFAULT_RULES: GameRules = {
   startingLife: 20,
   openingHandSize: 7,
   maxHandSize: 7,
+  maxLandsPerTurn: 1,
   skipFirstDraw: true,
 };
 

@@ -2,12 +2,14 @@
  * Card definitions and the registry that resolves a card name to its printed
  * characteristics.
  *
- * Behavior is authored declaratively (the fields below). Cards whose rules text
- * the declarative model can't yet express carry an imperative {@link CardScript}
- * escape hatch. Milestone 1 ships only vanilla cards, so no script is used yet.
+ * Behavior is authored declaratively (`effect`). Cards whose rules text the
+ * declarative vocab can't express carry an imperative `resolve` script (the
+ * escape hatch). Vanilla permanents need neither.
  */
 
+import type { EffectSpec, SpellResolver } from "./effects.js";
 import type { Color } from "./mana.js";
+import type { TargetSpec } from "./target.js";
 
 export type CardType =
   | "land"
@@ -21,11 +23,6 @@ export type CardType =
 
 export type Supertype = "basic" | "legendary" | "snow" | "world";
 
-/** Imperative escape hatch for behavior the declarative model can't express. */
-export interface CardScript {
-  readonly [hook: string]: unknown;
-}
-
 /** Printed characteristics of a card. Immutable reference data. */
 export interface CardDefinition {
   readonly name: string;
@@ -37,7 +34,12 @@ export interface CardDefinition {
   readonly power: number | null;
   readonly toughness: number | null;
   readonly text: string;
-  readonly script: CardScript | null;
+  /** Target slots, in order. Chosen when the spell is cast. */
+  readonly targets: readonly TargetSpec[];
+  /** Declarative resolution effect, or `null`. */
+  readonly effect: EffectSpec | null;
+  /** Imperative resolution script (takes precedence over `effect`), or `null`. */
+  readonly resolve: SpellResolver | null;
 }
 
 interface CardDraft {
@@ -50,7 +52,9 @@ interface CardDraft {
   power?: number;
   toughness?: number;
   text?: string;
-  script?: CardScript;
+  targets?: readonly TargetSpec[];
+  effect?: EffectSpec;
+  resolve?: SpellResolver;
 }
 
 function define(draft: CardDraft): CardDefinition {
@@ -64,8 +68,31 @@ function define(draft: CardDraft): CardDefinition {
     power: draft.power ?? null,
     toughness: draft.toughness ?? null,
     text: draft.text ?? "",
-    script: draft.script ?? null,
+    targets: draft.targets ?? [],
+    effect: draft.effect ?? null,
+    resolve: draft.resolve ?? null,
   };
+}
+
+const BASIC_LAND_MANA: Readonly<Record<string, Color>> = {
+  Plains: "W",
+  Island: "U",
+  Swamp: "B",
+  Mountain: "R",
+  Forest: "G",
+};
+
+/**
+ * The single color of mana a land taps for, or `null` if it is not a
+ * mana-producing basic land. (Non-basic mana lands come later.)
+ */
+export function landProduces(def: CardDefinition): Color | null {
+  if (!def.types.includes("land")) return null;
+  for (const subtype of def.subtypes) {
+    const color = BASIC_LAND_MANA[subtype];
+    if (color !== undefined) return color;
+  }
+  return null;
 }
 
 const basicLand = (
@@ -81,7 +108,7 @@ const basicLand = (
     text: `({T}: Add {${produces}}.)`,
   });
 
-/** The small built-in card pool used by milestone 1. */
+/** The built-in card pool. */
 export const BUILTIN_CARDS: readonly CardDefinition[] = [
   basicLand("Plains", "Plains", "W"),
   basicLand("Island", "Island", "U"),
@@ -96,6 +123,33 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
     subtypes: ["Bear"],
     power: 2,
     toughness: 2,
+  }),
+  define({
+    name: "Hill Giant",
+    manaCost: "{3}{R}",
+    colors: ["R"],
+    types: ["creature"],
+    subtypes: ["Giant"],
+    power: 3,
+    toughness: 3,
+  }),
+  define({
+    name: "Rumbling Baloth",
+    manaCost: "{3}{G}",
+    colors: ["G"],
+    types: ["creature"],
+    subtypes: ["Beast"],
+    power: 4,
+    toughness: 4,
+  }),
+  define({
+    name: "Lightning Bolt",
+    manaCost: "{R}",
+    colors: ["R"],
+    types: ["instant"],
+    text: "Lightning Bolt deals 3 damage to any target.",
+    targets: ["any-target"],
+    effect: { kind: "damage", amount: 3, target: 0 },
   }),
 ];
 

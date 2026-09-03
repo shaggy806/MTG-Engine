@@ -2,30 +2,35 @@
  * The game driver. Owns the single mutable {@link GameState}, advances the turn
  * structure, runs state-based actions, and appends to the event log.
  *
- * Milestone 1 scope: two players, a turn/step loop with priority passing,
- * turn-based actions (untap, draw, cleanup discard), decking-out and life-loss
- * as loss conditions, and snapshot/restore. Nothing is castable yet — there is
- * no stack and the only external action is passing priority.
+ * Milestone 2 scope: the stack and casting. Play lands (a special action),
+ * cast creature/instant spells with auto-paid mana costs, choose targets,
+ * resolve the stack LIFO, fizzle spells whose targets have all become illegal,
+ * and destroy creatures with lethal damage or non-positive toughness. No combat.
  */
 
-import { CardRegistry, createDefaultRegistry } from "./cards.js";
+import { actionPlayer } from "./actions.js";
+import type { Action } from "./actions.js";
+import { CardRegistry, createDefaultRegistry, landProduces } from "./cards.js";
+import type { CardDefinition } from "./cards.js";
 import { AutomaticController } from "./controller.js";
-import type { PlayerController } from "./controller.js";
+import type { PlayerController, PriorityView } from "./controller.js";
+import { applyEffectSpec } from "./effects.js";
+import type { ResolutionContext } from "./effects.js";
 import type {
   EventOfType,
   GameEvent,
   GameEventInput,
   GameEventType,
 } from "./events.js";
+import { COLORS, MANA_TYPES, emptyPool, parseManaCost } from "./mana.js";
+import type { ManaCost } from "./mana.js";
 import type { ObjectId, PlayerId, Rng } from "./primitives.js";
 import { asObjectId, createRng, shuffle } from "./primitives.js";
-import {
-  DEFAULT_RULES,
-  activePlayerOf,
-  createPlayerState,
-} from "./state.js";
-import type { GameRules, GameState, ZoneType } from "./state.js";
-import { PHASE_OF_STEP, nextStep, stepUsesPriority } from "./turn.js";
+import { DEFAULT_RULES, activePlayerOf, createPlayerState } from "./state.js";
+import type { GameObject, GameRules, GameState, ZoneType } from "./state.js";
+import type { TargetRef } from "./target.js";
+import { isLegalTarget } from "./targeting.js";
+import { PHASE_OF_STEP, isMainPhase, nextStep, stepUsesPriority } from "./turn.js";
 import type { Step } from "./turn.js";
 
 export interface DeckList {
@@ -39,13 +44,12 @@ export interface GameConfig {
   readonly seed?: number;
   /** Defaults to the first player in `decks`. */
   readonly startingPlayer?: PlayerId;
+  /** Shuffle libraries at setup (default true). Set false for scripted setups. */
+  readonly shuffle?: boolean;
   readonly registry?: CardRegistry;
   readonly controllers?: Partial<Record<PlayerId, PlayerController>>;
   readonly rules?: Partial<GameRules>;
 }
-
-/** An action a player (or agent) submits to the engine. Grows over time. */
-export type Action = { readonly type: "pass-priority"; readonly player: PlayerId };
 
 export interface SnapshotEnv {
   readonly registry?: CardRegistry;
@@ -53,6 +57,7 @@ export interface SnapshotEnv {
 }
 
 const ADVANCE_BUDGET = 200_000;
+const GENERIC_SPEND_ORDER = ["C", "W", "U", "B", "R", "G"] as const;
 
 export class Game {
   readonly state: GameState;
@@ -120,7 +125,7 @@ export class Game {
     };
 
     const game = new Game(state, registry, controllers, rng);
-    game.setup(config.decks);
+    game.setup(config.decks, config.shuffle ?? true);
     return game;
   }
 
@@ -171,6 +176,14 @@ export class Game {
     return this.state.zones.perPlayer[player].graveyard;
   }
 
+  get stack(): readonly ObjectId[] {
+    return this.state.zones.shared.stack;
+  }
+
+  get battlefield(): readonly ObjectId[] {
+    return this.state.zones.shared.battlefield;
+  }
+
   /** Deep copy of the current state, suitable for {@link Game.fromSnapshot}. */
   snapshot(): GameState {
     return structuredClone(this.state);
@@ -180,12 +193,20 @@ export class Game {
 
   dispatch(action: Action): readonly GameEvent[] {
     const from = this.state.eventLog.length;
-    if (action.type === "pass-priority") {
-      this.passPriority(action.player);
-    } else {
-      throw new Error(
-        `unhandled action: ${(action as { type: string }).type}`,
-      );
+    switch (action.type) {
+      case "pass-priority":
+        this.passPriority(action.player);
+        break;
+      case "play-land":
+        this.playLand(action.player, action.card);
+        break;
+      case "cast-spell":
+        this.castSpell(action.player, action.card, action.targets ?? []);
+        break;
+      default:
+        throw new Error(
+          `unhandled action: ${(action as { type: string }).type}`,
+        );
     }
     return this.state.eventLog.slice(from);
   }
@@ -216,11 +237,15 @@ export class Game {
     if (this.state.result.over) return;
 
     if (this.state.priority.active && this.state.priority.holder !== null) {
-      // Nothing is castable yet, so whoever holds priority simply passes.
-      this.dispatch({
-        type: "pass-priority",
-        player: this.state.priority.holder,
-      });
+      const holder = this.state.priority.holder;
+      const view: PriorityView = { state: this.state, player: holder };
+      const action = this.controllers[holder].act(view);
+      if (actionPlayer(action) !== holder) {
+        throw new Error(
+          `controller for ${holder} returned an action for ${actionPlayer(action)}`,
+        );
+      }
+      this.dispatch(action);
       return;
     }
 
@@ -231,7 +256,7 @@ export class Game {
 
   // --- setup ----------------------------------------------------------
 
-  private setup(decks: readonly DeckList[]): void {
+  private setup(decks: readonly DeckList[], shuffleLibrary: boolean): void {
     for (const { player, cards } of decks) {
       this.state.players[player] = createPlayerState(player, this.state.rules);
       this.state.zones.perPlayer[player] = {
@@ -253,10 +278,13 @@ export class Game {
           tapped: false,
           damageMarked: 0,
           enteredBattlefieldOnTurn: null,
+          targets: null,
         };
         ids.push(id);
       }
-      this.state.zones.perPlayer[player].library = shuffle(ids, this.rng);
+      this.state.zones.perPlayer[player].library = shuffleLibrary
+        ? shuffle(ids, this.rng)
+        : ids;
     }
     this.state.rngState = this.rng.seed;
 
@@ -303,6 +331,9 @@ export class Game {
 
   private enterStep(step: Step): void {
     this.state.turn.step = step;
+    for (const player of this.state.turnOrder) {
+      this.state.players[player].manaPool = emptyPool();
+    }
     this.state.priority.active = false;
     this.state.priority.holder = null;
     this.state.priority.passed = [];
@@ -406,7 +437,192 @@ export class Game {
     }
   }
 
-  // --- priority -----------------------------------------------------
+  // --- player actions ----------------------------------------------
+
+  private playLand(player: PlayerId, cardId: ObjectId): void {
+    this.assertHasPriority(player);
+    this.assertSorcerySpeed(player, "play a land");
+    const playerState = this.state.players[player];
+    if (playerState.landsPlayedThisTurn >= this.state.rules.maxLandsPerTurn) {
+      throw new Error(`${player} has already played a land this turn`);
+    }
+    if (!this.state.zones.perPlayer[player].hand.includes(cardId)) {
+      throw new Error(`${player} does not have that card in hand`);
+    }
+    const def = this.registry.get(this.state.objects[cardId].cardName);
+    if (!def.types.includes("land")) {
+      throw new Error(`${def.name} is not a land`);
+    }
+
+    this.moveObject(cardId, "battlefield");
+    playerState.landsPlayedThisTurn += 1;
+    this.emit({ type: "land-played", player, object: cardId });
+    this.emit({ type: "permanent-entered-battlefield", object: cardId });
+    this.afterPlayerAction(player);
+  }
+
+  private castSpell(
+    player: PlayerId,
+    cardId: ObjectId,
+    targets: readonly TargetRef[],
+  ): void {
+    this.assertHasPriority(player);
+    if (!this.state.zones.perPlayer[player].hand.includes(cardId)) {
+      throw new Error(`${player} does not have that card in hand`);
+    }
+    const object = this.state.objects[cardId];
+    const def = this.registry.get(object.cardName);
+    if (def.types.includes("land")) {
+      throw new Error("lands are played, not cast");
+    }
+    if (!def.types.includes("instant")) {
+      this.assertSorcerySpeed(player, `cast ${def.name}`);
+    }
+
+    if (targets.length !== def.targets.length) {
+      throw new Error(
+        `${def.name} takes ${def.targets.length} target(s), got ${targets.length}`,
+      );
+    }
+    def.targets.forEach((spec, i) => {
+      if (!isLegalTarget(this.state, this.registry, spec, targets[i])) {
+        throw new Error(`illegal target for ${def.name}`);
+      }
+    });
+
+    const cost = parseManaCost(def.manaCost);
+    const plan = this.planManaPayment(player, cost);
+    if (plan === null) {
+      throw new Error(`${player} cannot pay the cost of ${def.name}`);
+    }
+
+    // Commit: move to the stack, pay, announce.
+    this.moveObject(cardId, "stack");
+    object.targets = targets.length > 0 ? [...targets] : null;
+    for (const landId of plan) this.tapForMana(landId);
+    this.spendFromPool(player, cost);
+
+    this.emit({
+      type: "spell-cast",
+      player,
+      object: cardId,
+      targets: [...targets],
+    });
+    this.afterPlayerAction(player);
+  }
+
+  private assertHasPriority(player: PlayerId): void {
+    if (this.state.priority.holder !== player) {
+      throw new Error(`${player} does not have priority`);
+    }
+  }
+
+  private assertSorcerySpeed(player: PlayerId, what: string): void {
+    if (this.activePlayer !== player) {
+      throw new Error(`can only ${what} on your own turn`);
+    }
+    if (!isMainPhase(this.state.turn.step)) {
+      throw new Error(`can only ${what} during a main phase`);
+    }
+    if (this.state.zones.shared.stack.length > 0) {
+      throw new Error(`can only ${what} while the stack is empty`);
+    }
+  }
+
+  private afterPlayerAction(player: PlayerId): void {
+    this.runStateBasedActions();
+    if (this.state.result.over) return;
+    this.grantPriority(player);
+  }
+
+  // --- mana ------------------------------------------------------
+
+  /**
+   * Which of `player`'s untapped lands to tap to cover `cost`, or `null` if it
+   * can't be covered. Existing floating mana is spent first.
+   */
+  private planManaPayment(player: PlayerId, cost: ManaCost): ObjectId[] | null {
+    const pool = this.state.players[player].manaPool;
+    const coloredNeed: Record<string, number> = {};
+    for (const color of COLORS) {
+      coloredNeed[color] = Math.max(0, cost.colored[color] - pool[color]);
+    }
+    const poolSpentOnColors = COLORS.reduce(
+      (sum, color) => sum + Math.min(cost.colored[color], pool[color]),
+      0,
+    );
+    const poolLeftForGeneric =
+      MANA_TYPES.reduce((sum, type) => sum + pool[type], 0) - poolSpentOnColors;
+    let genericNeed = Math.max(0, cost.generic - poolLeftForGeneric);
+
+    const lands = this.untappedManaLands(player).map((id) => ({
+      id,
+      color: landProduces(this.registry.get(this.state.objects[id].cardName)),
+    }));
+    const used = new Set<ObjectId>();
+    const plan: ObjectId[] = [];
+
+    for (const color of COLORS) {
+      for (let i = 0; i < coloredNeed[color]; i += 1) {
+        const land = lands.find((l) => !used.has(l.id) && l.color === color);
+        if (land === undefined) return null;
+        used.add(land.id);
+        plan.push(land.id);
+      }
+    }
+    while (genericNeed > 0) {
+      const land = lands.find((l) => !used.has(l.id));
+      if (land === undefined) return null;
+      used.add(land.id);
+      plan.push(land.id);
+      genericNeed -= 1;
+    }
+    return plan;
+  }
+
+  private untappedManaLands(player: PlayerId): ObjectId[] {
+    return this.state.zones.shared.battlefield.filter((id) => {
+      const object = this.state.objects[id];
+      if (object.controller !== player || object.tapped) return false;
+      return landProduces(this.registry.get(object.cardName)) !== null;
+    });
+  }
+
+  private tapForMana(landId: ObjectId): void {
+    const object = this.state.objects[landId];
+    const color = landProduces(this.registry.get(object.cardName));
+    if (color === null) throw new Error("that land cannot produce mana");
+    object.tapped = true;
+    this.state.players[object.controller].manaPool[color] += 1;
+    this.emit({ type: "permanent-tapped", object: landId });
+    this.emit({
+      type: "mana-added",
+      player: object.controller,
+      mana: color,
+      amount: 1,
+    });
+  }
+
+  private spendFromPool(player: PlayerId, cost: ManaCost): void {
+    const pool = this.state.players[player].manaPool;
+    for (const color of COLORS) {
+      pool[color] -= cost.colored[color];
+      if (pool[color] < 0) {
+        throw new Error("mana pool underflow paying a colored cost");
+      }
+    }
+    let generic = cost.generic;
+    for (const type of GENERIC_SPEND_ORDER) {
+      const spend = Math.min(generic, pool[type]);
+      pool[type] -= spend;
+      generic -= spend;
+    }
+    if (generic > 0) {
+      throw new Error("mana pool underflow paying a generic cost");
+    }
+  }
+
+  // --- priority -------------------------------------------------
 
   private grantPriority(player: PlayerId): void {
     this.state.priority.active = true;
@@ -432,17 +648,27 @@ export class Game {
     const everyonePassed = eligible.every((candidate) =>
       priority.passed.includes(candidate),
     );
-    if (everyonePassed) {
-      priority.active = false;
-      priority.holder = null;
-      priority.passed = [];
-      // The stack is always empty in this milestone, so the step ends.
-      this.endStep();
+    if (!everyonePassed) {
+      priority.holder = this.nextEligibleAfter(player);
+      this.emit({ type: "priority-received", player: priority.holder });
       return;
     }
 
-    priority.holder = this.nextEligibleAfter(player);
-    this.emit({ type: "priority-received", player: priority.holder });
+    priority.passed = [];
+    if (this.state.zones.shared.stack.length > 0) {
+      this.resolveTopOfStack();
+      this.runStateBasedActions();
+      if (this.state.result.over) {
+        priority.active = false;
+        priority.holder = null;
+        return;
+      }
+      this.grantPriority(this.activePlayer);
+    } else {
+      priority.active = false;
+      priority.holder = null;
+      this.endStep();
+    }
   }
 
   private nextEligibleAfter(player: PlayerId): PlayerId {
@@ -455,16 +681,120 @@ export class Game {
     return player;
   }
 
-  // --- state-based actions ----------------------------------------
+  // --- the stack -----------------------------------------------
+
+  private resolveTopOfStack(): void {
+    const stack = this.state.zones.shared.stack;
+    const id = stack[stack.length - 1];
+    const object = this.state.objects[id];
+    const def = this.registry.get(object.cardName);
+    const targets = object.targets ?? [];
+
+    if (def.targets.length > 0 && !this.anyTargetLegal(def, targets)) {
+      this.moveObject(id, "graveyard");
+      object.targets = null;
+      this.emit({
+        type: "spell-fizzled",
+        object: id,
+        reason: "all targets are illegal",
+      });
+      return;
+    }
+
+    const context = this.makeResolutionContext(object);
+    if (def.resolve !== null) {
+      def.resolve(context);
+    } else if (def.effect !== null) {
+      applyEffectSpec(def.effect, context);
+    }
+    this.emit({ type: "spell-resolved", object: id });
+
+    if (this.isPermanentSpell(def)) {
+      this.moveObject(id, "battlefield");
+      object.targets = null;
+      this.emit({ type: "permanent-entered-battlefield", object: id });
+    } else {
+      this.moveObject(id, "graveyard");
+      object.targets = null;
+    }
+  }
+
+  private anyTargetLegal(
+    def: CardDefinition,
+    targets: readonly TargetRef[],
+  ): boolean {
+    return def.targets.some(
+      (spec, i) =>
+        targets[i] !== undefined &&
+        isLegalTarget(this.state, this.registry, spec, targets[i]),
+    );
+  }
+
+  private isPermanentSpell(def: CardDefinition): boolean {
+    return def.types.some(
+      (type) =>
+        type === "creature" ||
+        type === "artifact" ||
+        type === "enchantment" ||
+        type === "planeswalker" ||
+        type === "battle",
+    );
+  }
+
+  private makeResolutionContext(object: GameObject): ResolutionContext {
+    const source = object.id;
+    return {
+      controller: object.controller,
+      source,
+      targets: object.targets ?? [],
+      dealDamage: (target, amount) => this.dealDamage(source, target, amount),
+      draw: (player, count) => {
+        for (let i = 0; i < count; i += 1) this.drawCard(player);
+      },
+      gainLife: (player, amount) => this.changeLife(player, amount),
+      loseLife: (player, amount) => this.changeLife(player, -amount),
+    };
+  }
+
+  private dealDamage(
+    source: ObjectId,
+    target: TargetRef,
+    amount: number,
+  ): void {
+    if (amount <= 0) return;
+    if (target.kind === "player") {
+      if (this.state.players[target.player] === undefined) return;
+      this.emit({ type: "damage-dealt", source, target, amount });
+      this.changeLife(target.player, -amount);
+      return;
+    }
+    const object = this.state.objects[target.object];
+    if (object === undefined || object.zone !== "battlefield") return;
+    object.damageMarked += amount;
+    this.emit({ type: "damage-dealt", source, target, amount });
+  }
+
+  private changeLife(player: PlayerId, delta: number): void {
+    const playerState = this.state.players[player];
+    playerState.life += delta;
+    this.emit({
+      type: "life-changed",
+      player,
+      delta,
+      life: playerState.life,
+    });
+  }
+
+  // --- state-based actions -----------------------------------
 
   private runStateBasedActions(): void {
     let changed = true;
     while (changed) {
       changed = false;
+
       for (const player of this.state.turnOrder) {
         const playerState = this.state.players[player];
         if (playerState.hasLost) continue;
-
         let reason: string | null = null;
         if (playerState.life <= 0) {
           reason = "life total is 0 or less";
@@ -475,6 +805,24 @@ export class Game {
           playerState.hasLost = true;
           playerState.lossReason = reason;
           this.emit({ type: "player-lost", player, reason });
+          changed = true;
+        }
+      }
+
+      for (const id of [...this.state.zones.shared.battlefield]) {
+        const object = this.state.objects[id];
+        const def = this.registry.get(object.cardName);
+        if (!def.types.includes("creature")) continue;
+        const toughness = def.toughness ?? 0;
+        let reason: string | null = null;
+        if (toughness <= 0) {
+          reason = "toughness is 0 or less";
+        } else if (object.damageMarked >= toughness) {
+          reason = "lethal damage";
+        }
+        if (reason !== null) {
+          this.moveObject(id, "graveyard");
+          this.emit({ type: "permanent-destroyed", object: id, reason });
           changed = true;
         }
       }
@@ -498,7 +846,7 @@ export class Game {
     }
   }
 
-  // --- zones ------------------------------------------------------
+  // --- zones -------------------------------------------------
 
   private drawCard(player: PlayerId): void {
     const library = this.state.zones.perPlayer[player].library;
