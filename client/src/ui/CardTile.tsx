@@ -15,17 +15,17 @@ export interface CardTileProps {
 }
 
 const KEYWORD_ABBR: Record<string, string> = {
-  flying: 'FLY',
-  vigilance: 'VIG',
-  haste: 'HST',
-  reach: 'RCH',
-  defender: 'DEF',
-  trample: 'TRM',
-  'first-strike': 'FS',
-  'double-strike': 'DS',
-  deathtouch: 'DT',
-  lifelink: 'LL',
-  menace: 'MEN',
+  flying: 'Flying',
+  vigilance: 'Vigilance',
+  haste: 'Haste',
+  reach: 'Reach',
+  defender: 'Defender',
+  trample: 'Trample',
+  'first-strike': 'First strike',
+  'double-strike': 'Double strike',
+  deathtouch: 'Deathtouch',
+  lifelink: 'Lifelink',
+  menace: 'Menace',
 }
 
 /** Scryfall serves art crops for real card names straight from this URL. */
@@ -36,6 +36,36 @@ const artUrl = (name: string): string =>
 
 /** Card names whose art 404'd this session — don't re-request on every remount. */
 const artMisses = new Set<string>()
+
+/** `{1}{G}` -> [{sym:'1',color:'generic'}, {sym:'G',color:'G'}] */
+function manaPips(cost: string | null): { sym: string; color: string }[] {
+  if (!cost) return []
+  const out: { sym: string; color: string }[] = []
+  for (const m of cost.matchAll(/\{([^}]+)\}/g)) {
+    const s = m[1]
+    out.push({ sym: s, color: /^[WUBRGC]$/.test(s) ? s : 'generic' })
+  }
+  return out
+}
+
+const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1)
+
+function typeLine(obj: VisibleObject): string {
+  const types = obj.types.map(cap).join(' ')
+  return obj.subtypes.length > 0
+    ? `${types} — ${obj.subtypes.join(' ')}`
+    : types
+}
+
+/** True when `text` only restates the card's keywords (e.g. "First strike"). */
+function textIsJustKeywords(obj: VisibleObject): boolean {
+  if (obj.text.length === 0) return false
+  const kw = new Set(
+    obj.keywords.flatMap((k) => k.replace(/-/g, ' ').toLowerCase().split(' ')),
+  )
+  const words = obj.text.toLowerCase().split(/[\s,.]+/).filter(Boolean)
+  return words.length > 0 && words.every((w) => kw.has(w))
+}
 
 export function CardTile({
   obj,
@@ -51,6 +81,12 @@ export function CardTile({
   const isCreature = obj.power !== null && obj.toughness !== null
   const counters = Object.entries(obj.counters).filter(([, n]) => n !== 0)
   const clickable = Boolean(onClick) && (highlight || selected || activatable)
+  const pips = manaPips(obj.manaCost)
+  const showText = obj.text.length > 0 && !textIsJustKeywords(obj)
+  const keywordLine = obj.keywords
+    .map((k) => KEYWORD_ABBR[k] ?? cap(k))
+    .join(', ')
+  const tint = pips.find((p) => p.color !== 'generic')?.color ?? 'C'
 
   const classes = [
     'card-tile',
@@ -60,7 +96,6 @@ export function CardTile({
     activatable ? 'activatable' : '',
     dimmed ? 'dimmed' : '',
     clickable ? 'clickable' : '',
-    artFailed ? 'no-art' : '',
   ]
     .filter(Boolean)
     .join(' ')
@@ -73,54 +108,57 @@ export function CardTile({
       disabled={!clickable}
       title={obj.text || obj.cardName}
     >
-      {!artFailed ? (
-        <img
-          className="card-art"
-          src={artUrl(obj.cardName)}
-          alt=""
-          loading="lazy"
-          onError={() => {
-            artMisses.add(obj.cardName)
-            setArtFailed(true)
-          }}
-        />
-      ) : null}
-      <span className="card-body">
-        <span className="card-name">{obj.cardName}</span>
-        <span className="card-foot">
-          {counters.length > 0 ? (
-            <span className="card-counters">
-              {counters.map(([k, n]) => (
-                <span key={k}>
-                  {n}× {k}
-                </span>
-              ))}
-            </span>
-          ) : null}
-          {obj.keywords.length > 0 ? (
-            <span className="card-kw">
-              {obj.keywords.map((kw) => (
-                <span key={kw}>
-                  {KEYWORD_ABBR[kw] ?? kw.slice(0, 3).toUpperCase()}
-                </span>
-              ))}
-            </span>
-          ) : null}
-          <span className="card-meta">
-            {obj.manaCost && !isCreature ? (
-              <span className="card-cost">{obj.manaCost}</span>
-            ) : null}
-            {isCreature ? (
-              <span className="card-pt">
-                {obj.power}/{obj.toughness}
-                {obj.damageMarked > 0 ? (
-                  <span className="card-dmg"> −{obj.damageMarked}</span>
-                ) : null}
+      <span className="ct-title">
+        <span className="ct-name">{obj.cardName}</span>
+        {pips.length > 0 ? (
+          <span className="ct-cost">
+            {pips.map((p, i) => (
+              <span key={i} className={`pip pip-${p.color}`}>
+                {p.sym}
               </span>
+            ))}
+          </span>
+        ) : null}
+      </span>
+
+      <span className={`ct-art tint-${tint}`}>
+        {!artFailed ? (
+          <img
+            src={artUrl(obj.cardName)}
+            alt=""
+            loading="lazy"
+            onError={() => {
+              artMisses.add(obj.cardName)
+              setArtFailed(true)
+            }}
+          />
+        ) : null}
+        {isCreature ? (
+          <span className="ct-pt">
+            {obj.power}/{obj.toughness}
+            {obj.damageMarked > 0 ? (
+              <span className="ct-dmg"> −{obj.damageMarked}</span>
             ) : null}
           </span>
-        </span>
+        ) : null}
       </span>
+
+      <span className="ct-type">{typeLine(obj)}</span>
+
+      <span className="ct-text">
+        {keywordLine ? <b className="ct-kw">{keywordLine}</b> : null}
+        {showText ? <span className="ct-rules">{obj.text}</span> : null}
+        {counters.length > 0 ? (
+          <span className="ct-counters">
+            {counters.map(([k, n]) => (
+              <span key={k}>
+                {n}× {k}
+              </span>
+            ))}
+          </span>
+        ) : null}
+      </span>
+
       {order !== null ? <span className="card-order">{order}</span> : null}
       {obj.summoningSick && isCreature ? (
         <span className="card-flag sick">sick</span>
