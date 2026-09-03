@@ -53,6 +53,7 @@ const spawn = (game: Game, cardName: string, controller: PlayerId): ObjectId => 
     zone: "battlefield",
     tapped: false,
     damageMarked: 0,
+    markedByDeathtouch: false,
     enteredBattlefieldOnTurn: game.state.turn.number,
     targets: null,
     attacking: null,

@@ -76,6 +76,18 @@
   border-radius: 8px;
 }
 
+.error-banner {
+  margin: 6px 0;
+  padding: 6px 10px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--bad);
+  background: rgba(239, 111, 111, 0.12);
+  border: 1px solid var(--bad);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
 /* table */
 .table {
   display: flex;

@@ -100,6 +100,8 @@ export type LegalAction =
         readonly blocker: ObjectId;
         readonly canBlock: readonly ObjectId[];
       }[];
+      /** Attackers with menace: block them with 0 or 2+ creatures, never 1. */
+      readonly menaceAttackers: readonly ObjectId[];
     }
   | {
       readonly kind: "order-blockers";

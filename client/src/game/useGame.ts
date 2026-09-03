@@ -77,9 +77,12 @@ export interface UseGame {
   readonly revealAll: boolean
   /** Changes whenever the game mutates — a stable signature for `key`ing UI. */
   readonly revision: number
+  /** The message from the most recent rejected dispatch, or `null`. */
+  readonly lastError: string | null
   dispatch: (action: Action) => void
   reset: (seed?: number) => void
   setRevealAll: (value: boolean) => void
+  clearError: () => void
   /** Card name for any object that has ever existed (for the event log). */
   nameOf: (id: ObjectId) => string
 }
@@ -104,6 +107,7 @@ export function useGame(initialSeed = 1): UseGame {
   })
   const [revealAll, setRevealAll] = useState(false)
   const [revision, setRevision] = useState(0)
+  const [lastError, setLastError] = useState<string | null>(null)
 
   const { game, seed } = instance
   const s = game.state
@@ -120,14 +124,19 @@ export function useGame(initialSeed = 1): UseGame {
     (action: Action) => {
       try {
         game.dispatch(action)
+        setLastError(null)
       } catch (err) {
         console.error('dispatch rejected', action, err)
+        setLastError(err instanceof Error ? err.message : String(err))
+        return
       }
       settleAndAutoPass(game)
       setRevision((n) => n + 1)
     },
     [game],
   )
+
+  const clearError = useCallback(() => setLastError(null), [])
 
   const nameOf = useCallback(
     (id: ObjectId): string => game.state.objects[id]?.cardName ?? id,
@@ -138,6 +147,7 @@ export function useGame(initialSeed = 1): UseGame {
     const use = next ?? Math.floor(Math.random() * 1_000_000_000)
     setInstance({ game: build(use), seed: use })
     setRevision((n) => n + 1)
+    setLastError(null)
   }, [])
 
   return {
@@ -148,9 +158,11 @@ export function useGame(initialSeed = 1): UseGame {
     seed,
     revealAll,
     revision,
+    lastError,
     dispatch,
     reset,
     setRevealAll,
+    clearError,
     nameOf,
   }
 }

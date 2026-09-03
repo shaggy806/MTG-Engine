@@ -29,6 +29,8 @@ export interface GameObject {
   zone: ZoneType;
   tapped: boolean;
   damageMarked: number;
+  /** True once dealt damage by a deathtouch source this turn (rule 704.5h). Cleared with `damageMarked`. */
+  markedByDeathtouch: boolean;
   /** Turn number this object last entered the battlefield; `null` otherwise. */
   enteredBattlefieldOnTurn: number | null;
   /** Chosen targets while this is a spell/ability on the stack; `null` otherwise. */

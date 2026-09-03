@@ -52,6 +52,7 @@ const spawn = (
     zone: "battlefield",
     tapped: opts.tapped ?? false,
     damageMarked: 0,
+    markedByDeathtouch: false,
     enteredBattlefieldOnTurn: opts.sick ? game.state.turn.number : 0,
     targets: null,
     attacking: null,
@@ -263,5 +264,182 @@ describe("combat outcomes", () => {
     expect(restored.state.objects[giant].zone).toBe(
       game.state.objects[giant].zone,
     );
+  });
+});
+
+describe("combat keywords", () => {
+  const zone = (game: Game, id: ObjectId): string =>
+    game.state.objects[id].zone;
+
+  it("first strike kills the blocker before it deals damage back", () => {
+    const { game, a, b } = makeGame();
+    const knight = spawn(game, "White Knight", A); // 2/2 first strike
+    const bear = spawn(game, "Grizzly Bears", B); // 2/2
+    a.declareAttackersFn = () => [{ attacker: knight, defender: B }];
+    b.declareBlockersFn = () => [{ blocker: bear, attacker: knight }];
+
+    game.advanceUntil(toPostcombat);
+    expect(zone(game, bear)).toBe("graveyard");
+    expect(zone(game, knight)).toBe("battlefield");
+    expect(game.state.objects[knight].damageMarked).toBe(0);
+  });
+
+  it("first strike vs first strike is simultaneous", () => {
+    const { game, a, b } = makeGame();
+    const attacker = spawn(game, "White Knight", A);
+    const blocker = spawn(game, "White Knight", B);
+    a.declareAttackersFn = () => [{ attacker, defender: B }];
+    b.declareBlockersFn = () => [{ blocker, attacker }];
+
+    game.advanceUntil(toPostcombat);
+    expect(zone(game, attacker)).toBe("graveyard");
+    expect(zone(game, blocker)).toBe("graveyard");
+  });
+
+  it("double strike deals damage unblocked twice", () => {
+    const { game, a } = makeGame();
+    const ace = spawn(game, "Fencing Ace", A); // 1/1 double strike
+    a.declareAttackersFn = () => [{ attacker: ace, defender: B }];
+
+    game.advanceUntil(toPostcombat);
+    expect(game.state.players[B].life).toBe(18);
+  });
+
+  it("double strike deals damage to a blocker in both passes", () => {
+    const { game, a, b } = makeGame();
+    const ace = spawn(game, "Fencing Ace", A); // 1/1 double strike
+    const baloth = spawn(game, "Rumbling Baloth", B); // 4/4
+    a.declareAttackersFn = () => [{ attacker: ace, defender: B }];
+    b.declareBlockersFn = () => [{ blocker: baloth, attacker: ace }];
+
+    game.advanceUntil(toPostcombat);
+    expect(game.state.objects[baloth].damageMarked).toBe(2); // 1 + 1
+    expect(zone(game, ace)).toBe("graveyard");
+  });
+
+  it("trample carries excess damage to the defending player", () => {
+    const { game, a, b } = makeGame();
+    const wurm = spawn(game, "Craw Wurm", A); // 6/4 trample
+    const bear = spawn(game, "Grizzly Bears", B); // 2/2
+    a.declareAttackersFn = () => [{ attacker: wurm, defender: B }];
+    b.declareBlockersFn = () => [{ blocker: bear, attacker: wurm }];
+
+    game.advanceUntil(toPostcombat);
+    expect(zone(game, bear)).toBe("graveyard");
+    expect(game.state.players[B].life).toBe(16); // 20 - (6 - 2)
+  });
+
+  it("trample assigns lethal to each blocker before the player", () => {
+    const { game, a, b } = makeGame();
+    const wurm = spawn(game, "Craw Wurm", A); // 6/4 trample
+    const bear = spawn(game, "Grizzly Bears", B); // 2/2
+    const giant = spawn(game, "Hill Giant", B); // 3/3
+    a.declareAttackersFn = () => [{ attacker: wurm, defender: B }];
+    b.declareBlockersFn = () => [
+      { blocker: bear, attacker: wurm },
+      { blocker: giant, attacker: wurm },
+    ];
+    a.orderBlockersFn = () => [bear, giant];
+
+    game.advanceUntil(toPostcombat);
+    expect(zone(game, bear)).toBe("graveyard");
+    expect(zone(game, giant)).toBe("graveyard");
+    expect(game.state.players[B].life).toBe(19); // 20 - (6 - 2 - 3)
+  });
+
+  it("deathtouch lets a trampler assign just 1 to each blocker", () => {
+    const { game, a, b } = makeGame();
+    const rats = spawn(game, "Typhoid Rats", A); // 1/1 deathtouch
+    // Grant it +5/+5 and trample for a 6/6 deathtouch trampler.
+    game.state.objects[rats].modifiers.push({
+      power: 5,
+      toughness: 5,
+      keywords: ["trample"],
+      untilEndOfTurn: false,
+    });
+    const bear = spawn(game, "Grizzly Bears", B); // 2/2
+    const giant = spawn(game, "Hill Giant", B); // 3/3
+    a.declareAttackersFn = () => [{ attacker: rats, defender: B }];
+    b.declareBlockersFn = () => [
+      { blocker: bear, attacker: rats },
+      { blocker: giant, attacker: rats },
+    ];
+    a.orderBlockersFn = () => [bear, giant];
+
+    game.advanceUntil(toPostcombat);
+    expect(zone(game, bear)).toBe("graveyard");
+    expect(zone(game, giant)).toBe("graveyard");
+    expect(game.state.players[B].life).toBe(16); // 20 - (6 - 1 - 1)
+  });
+
+  it("deathtouch makes any amount of damage lethal", () => {
+    const { game, a, b } = makeGame();
+    const baloth = spawn(game, "Rumbling Baloth", A); // 4/4
+    const rats = spawn(game, "Typhoid Rats", B); // 1/1 deathtouch
+    a.declareAttackersFn = () => [{ attacker: baloth, defender: B }];
+    b.declareBlockersFn = () => [{ blocker: rats, attacker: baloth }];
+
+    game.advanceUntil(toPostcombat);
+    expect(zone(game, rats)).toBe("graveyard");
+    expect(zone(game, baloth)).toBe("graveyard"); // 1 deathtouch damage
+  });
+
+  it("lifelink gains the controller life on combat damage", () => {
+    const { game, a } = makeGame();
+    const hawk = spawn(game, "Vampire Nighthawk", A); // 2/3 flying deathtouch lifelink
+    a.declareAttackersFn = () => [{ attacker: hawk, defender: B }];
+
+    game.advanceUntil(toPostcombat);
+    expect(game.state.players[B].life).toBe(18);
+    expect(game.state.players[A].life).toBe(22);
+  });
+
+  it("lifelink triggers on damage to a blocker too", () => {
+    const { game, a, b } = makeGame();
+    const hawk = spawn(game, "Vampire Nighthawk", A); // 2/3 flying deathtouch lifelink
+    const spider = spawn(game, "Giant Spider", B); // 2/4 reach
+    a.declareAttackersFn = () => [{ attacker: hawk, defender: B }];
+    b.declareBlockersFn = () => [{ blocker: spider, attacker: hawk }];
+
+    game.advanceUntil(toPostcombat);
+    expect(zone(game, spider)).toBe("graveyard"); // 2 deathtouch damage
+    expect(zone(game, hawk)).toBe("battlefield");
+    expect(game.state.players[A].life).toBe(22); // +2 from lifelink
+  });
+
+  it("menace rejects a lone blocker", () => {
+    const { game, a, b } = makeGame();
+    const brute = spawn(game, "Boggart Brute", A); // 3/2 menace
+    const bear = spawn(game, "Grizzly Bears", B);
+    a.declareAttackersFn = () => [{ attacker: brute, defender: B }];
+    b.declareBlockersFn = () => [{ blocker: bear, attacker: brute }];
+
+    expect(() => game.advanceUntil(toPostcombat)).toThrow(/menace/);
+  });
+
+  it("menace accepts two blockers", () => {
+    const { game, a, b } = makeGame();
+    const brute = spawn(game, "Boggart Brute", A); // 3/2 menace
+    const bear1 = spawn(game, "Grizzly Bears", B);
+    const bear2 = spawn(game, "Grizzly Bears", B);
+    a.declareAttackersFn = () => [{ attacker: brute, defender: B }];
+    b.declareBlockersFn = () => [
+      { blocker: bear1, attacker: brute },
+      { blocker: bear2, attacker: brute },
+    ];
+    a.orderBlockersFn = () => [bear1, bear2];
+
+    game.advanceUntil(toPostcombat);
+    expect(zone(game, brute)).toBe("graveyard"); // 4 damage from two bears
+    expect(game.state.players[B].life).toBe(20);
+  });
+
+  it("menace lets the attacker through unblocked", () => {
+    const { game, a } = makeGame();
+    const brute = spawn(game, "Boggart Brute", A); // 3/2 menace
+    a.declareAttackersFn = () => [{ attacker: brute, defender: B }];
+
+    game.advanceUntil(toPostcombat);
+    expect(game.state.players[B].life).toBe(17);
   });
 });

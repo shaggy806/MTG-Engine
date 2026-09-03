@@ -49,6 +49,7 @@ const spawn = (
     zone: "battlefield",
     tapped: opts.tapped ?? false,
     damageMarked: 0,
+    markedByDeathtouch: false,
     enteredBattlefieldOnTurn: opts.sick ? game.state.turn.number : 0,
     targets: null,
     attacking: null,
@@ -78,18 +79,23 @@ const fuzzDeckA = deck([
   ["Llanowar Elves", 4],
   ["Grizzly Bears", 4],
   ["Elvish Visionary", 4],
-  ["Wildwood Sentinel", 3],
-  ["Rumbling Baloth", 4],
-  ["Giant Growth", 4],
+  ["Wildwood Sentinel", 2],
+  ["Rumbling Baloth", 3],
+  ["Craw Wurm", 3],
+  ["Giant Growth", 3],
 ]);
 const fuzzDeckB = deck([
-  ["Mountain", 12],
-  ["Plains", 5],
-  ["Raging Goblin", 4],
-  ["Goblin Raider", 4],
-  ["Goblin Chieftain", 3],
-  ["Hill Giant", 4],
+  ["Mountain", 8],
+  ["Plains", 6],
+  ["Swamp", 4],
+  ["Raging Goblin", 3],
+  ["Goblin Raider", 3],
+  ["White Knight", 3],
+  ["Boggart Brute", 3],
+  ["Typhoid Rats", 3],
+  ["Hill Giant", 2],
   ["Lightning Bolt", 4],
+  ["Vampire Nighthawk", 2],
   ["Serra Angel", 2],
   ["Disenchant", 2],
 ]);
@@ -293,6 +299,25 @@ describe("declarations as actions", () => {
 
     const legal = game.legalActions(B);
     expect(kinds(legal)).toEqual(["declare-blockers"]);
+  });
+
+  it("flags menace attackers in the declare-blockers legal action", () => {
+    const game = combatGame();
+    const brute = spawn(game, "Boggart Brute", A); // 3/2 menace
+    spawn(game, "Grizzly Bears", A); // vanilla, for contrast
+    game.advanceUntil((s) => s.awaiting?.kind === "attackers");
+    game.dispatch({
+      type: "declare-attackers",
+      player: A,
+      attackers: [{ attacker: brute, defender: B }],
+    });
+    game.advanceUntil((s) => s.awaiting?.kind === "blockers");
+
+    const legal = game.legalActions(B);
+    expect(legal).toHaveLength(1);
+    expect(
+      legal[0].kind === "declare-blockers" && legal[0].menaceAttackers,
+    ).toEqual([brute]);
   });
 
   it("skips the blocker declaration when nobody attacks", () => {

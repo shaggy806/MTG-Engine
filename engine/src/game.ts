@@ -327,7 +327,10 @@ export class Game {
             ),
           }))
           .filter((entry) => entry.canBlock.length > 0);
-        return [{ kind: "declare-blockers", eligible }];
+        const menaceAttackers = attackers.filter((id) =>
+          this.objHasKeyword(id, "menace"),
+        );
+        return [{ kind: "declare-blockers", eligible, menaceAttackers }];
       }
       if (awaiting.kind === "order-blockers") {
         return [
@@ -468,6 +471,7 @@ export class Game {
           zone: "library",
           tapped: false,
           damageMarked: 0,
+          markedByDeathtouch: false,
           enteredBattlefieldOnTurn: null,
           targets: null,
           attacking: null,
@@ -691,8 +695,9 @@ export class Game {
     const cleared: ObjectId[] = [];
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
-      if (object.damageMarked !== 0) {
+      if (object.damageMarked !== 0 || object.markedByDeathtouch) {
         object.damageMarked = 0;
+        object.markedByDeathtouch = false;
         cleared.push(id);
       }
     }
@@ -841,6 +846,7 @@ export class Game {
       return `${player} is not being asked to declare blockers`;
     }
     const seen = new Set<ObjectId>();
+    const blockerCount = new Map<ObjectId, number>();
     for (const { blocker, attacker } of blocks) {
       if (seen.has(blocker)) {
         const def = this.creatureDef(blocker);
@@ -849,6 +855,13 @@ export class Game {
       seen.add(blocker);
       const why = this.whyCannotBlock(player, blocker, attacker);
       if (why !== null) return why;
+      blockerCount.set(attacker, (blockerCount.get(attacker) ?? 0) + 1);
+    }
+    for (const [attacker, count] of blockerCount) {
+      if (count === 1 && this.objHasKeyword(attacker, "menace")) {
+        const def = this.creatureDef(attacker);
+        return `${def?.name ?? attacker} has menace and must be blocked by two or more creatures`;
+      }
     }
     return null;
   }
@@ -965,57 +978,112 @@ export class Game {
   }
 
   private combatDamageStep(): void {
+    // Rule 510: if any combatant has first or double strike there are two
+    // damage passes. We fold both into this one step (no priority window
+    // between them), running SBAs after the first so dead combatants drop out.
+    if (this.combatFirstStrikeInPlay()) {
+      this.dealCombatDamage("first");
+      this.runStateBasedActions();
+      if (this.state.result.over) return;
+      this.dealCombatDamage("regular");
+    } else {
+      this.dealCombatDamage("all");
+    }
+  }
+
+  /** Any attacker or blocker in the current combat with first or double strike. */
+  private combatFirstStrikeInPlay(): boolean {
+    for (const attackerId of this.currentAttackers()) {
+      if (this.striker(attackerId)) return true;
+      for (const blockerId of this.state.objects[attackerId].blockedBy) {
+        if (this.striker(blockerId)) return true;
+      }
+    }
+    return false;
+  }
+
+  private striker(id: ObjectId): boolean {
+    return (
+      this.objHasKeyword(id, "first-strike") ||
+      this.objHasKeyword(id, "double-strike")
+    );
+  }
+
+  /** Does `id` deal combat damage in this pass? */
+  private dealsInPass(id: ObjectId, pass: "first" | "regular" | "all"): boolean {
+    if (pass === "all") return true;
+    const ds = this.objHasKeyword(id, "double-strike");
+    if (pass === "first") return ds || this.objHasKeyword(id, "first-strike");
+    // Regular pass: everyone except first-strike-only creatures (double
+    // strikers deal again).
+    return ds || !this.objHasKeyword(id, "first-strike");
+  }
+
+  private dealCombatDamage(pass: "first" | "regular" | "all"): void {
     const assignments: {
       source: ObjectId;
       target: TargetRef;
       amount: number;
     }[] = [];
+    const powerOf = (id: ObjectId): number =>
+      computeCharacteristics(this.state, this.registry, id).power;
+    const toughnessOf = (id: ObjectId): number =>
+      computeCharacteristics(this.state, this.registry, id).toughness;
 
     for (const attackerId of this.currentAttackers()) {
       const attacker = this.state.objects[attackerId];
-      const power = computeCharacteristics(this.state, this.registry, attackerId).power;
       const liveBlockers = attacker.blockedBy.filter(
         (id) => this.state.objects[id]?.zone === "battlefield",
       );
 
-      if (!attacker.blocked) {
-        if (attacker.attacking !== null && power > 0) {
-          assignments.push({
-            source: attackerId,
-            target: { kind: "player", player: attacker.attacking },
-            amount: power,
-          });
-        }
-      } else if (power > 0 && liveBlockers.length > 0) {
-        // Auto-assign: minimum lethal down the order, remainder to the last.
-        let remaining = power;
-        liveBlockers.forEach((blockerId, index) => {
-          const blocker = this.state.objects[blockerId];
-          const toughness = computeCharacteristics(
-            this.state,
-            this.registry,
-            blockerId,
-          ).toughness;
-          const lethal = Math.max(0, toughness - blocker.damageMarked);
-          const isLast = index === liveBlockers.length - 1;
-          const amount = isLast ? remaining : Math.min(remaining, lethal);
-          remaining -= amount;
-          if (amount > 0) {
-            assignments.push({
-              source: attackerId,
-              target: { kind: "object", object: blockerId },
-              amount,
+      if (this.dealsInPass(attackerId, pass)) {
+        const power = powerOf(attackerId);
+        if (power > 0) {
+          if (!attacker.blocked) {
+            if (attacker.attacking !== null) {
+              assignments.push({
+                source: attackerId,
+                target: { kind: "player", player: attacker.attacking },
+                amount: power,
+              });
+            }
+          } else {
+            const deathtouch = this.objHasKeyword(attackerId, "deathtouch");
+            const trample = this.objHasKeyword(attackerId, "trample");
+            let remaining = power;
+            liveBlockers.forEach((blockerId, index) => {
+              const marked = this.state.objects[blockerId].damageMarked;
+              const lethal = deathtouch
+                ? 1
+                : Math.max(0, toughnessOf(blockerId) - marked);
+              const isLastAndNoTrample =
+                !trample && index === liveBlockers.length - 1;
+              const amount = isLastAndNoTrample
+                ? remaining
+                : Math.min(remaining, lethal);
+              remaining -= amount;
+              if (amount > 0) {
+                assignments.push({
+                  source: attackerId,
+                  target: { kind: "object", object: blockerId },
+                  amount,
+                });
+              }
             });
+            if (trample && remaining > 0 && attacker.attacking !== null) {
+              assignments.push({
+                source: attackerId,
+                target: { kind: "player", player: attacker.attacking },
+                amount: remaining,
+              });
+            }
           }
-        });
+        }
       }
 
       for (const blockerId of liveBlockers) {
-        const blockerPower = computeCharacteristics(
-          this.state,
-          this.registry,
-          blockerId,
-        ).power;
+        if (!this.dealsInPass(blockerId, pass)) continue;
+        const blockerPower = powerOf(blockerId);
         if (blockerPower > 0) {
           assignments.push({
             source: blockerId,
@@ -1026,7 +1094,7 @@ export class Game {
       }
     }
 
-    // All combat damage is dealt simultaneously.
+    // All combat damage in a pass is dealt simultaneously.
     for (const { source, target, amount } of assignments) {
       this.dealDamage(source, target, amount);
     }
@@ -1293,6 +1361,7 @@ export class Game {
       zone: "stack",
       tapped: false,
       damageMarked: 0,
+      markedByDeathtouch: false,
       enteredBattlefieldOnTurn: null,
       targets: targets.length > 0 ? [...targets] : null,
       attacking: null,
@@ -1877,16 +1946,37 @@ export class Game {
     amount: number,
   ): void {
     if (amount <= 0) return;
+
     if (target.kind === "player") {
       if (this.state.players[target.player] === undefined) return;
       this.emit({ type: "damage-dealt", source, target, amount });
       this.changeLife(target.player, -amount);
+      this.applyLifelink(source, amount);
       return;
     }
     const object = this.state.objects[target.object];
     if (object === undefined || object.zone !== "battlefield") return;
     object.damageMarked += amount;
+    if (this.sourceHasKeyword(source, "deathtouch")) {
+      object.markedByDeathtouch = true;
+    }
     this.emit({ type: "damage-dealt", source, target, amount });
+    this.applyLifelink(source, amount);
+  }
+
+  /** True if `source` is a battlefield creature whose current keywords include `keyword`. */
+  private sourceHasKeyword(source: ObjectId, keyword: Keyword): boolean {
+    const object = this.state.objects[source];
+    if (object === undefined || object.zone !== "battlefield") return false;
+    if (!this.registry.get(object.cardName).types.includes("creature")) {
+      return false;
+    }
+    return this.objHasKeyword(source, keyword);
+  }
+
+  private applyLifelink(source: ObjectId, amount: number): void {
+    if (amount <= 0 || !this.sourceHasKeyword(source, "lifelink")) return;
+    this.changeLife(this.state.objects[source].controller, amount);
   }
 
   private changeLife(player: PlayerId, delta: number): void {
@@ -1934,6 +2024,8 @@ export class Game {
           reason = "toughness is 0 or less";
         } else if (object.damageMarked >= toughness) {
           reason = "lethal damage";
+        } else if (object.markedByDeathtouch && object.damageMarked > 0) {
+          reason = "deathtouch";
         }
         if (reason !== null) {
           this.moveObject(id, "graveyard");
@@ -1989,6 +2081,7 @@ export class Game {
     object.blocking = null;
     object.blockedBy = [];
     object.blocked = false;
+    object.markedByDeathtouch = false;
     object.counters = {};
     object.modifiers = [];
 

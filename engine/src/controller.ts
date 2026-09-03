@@ -318,7 +318,13 @@ export class RandomController extends AutomaticController {
             attacker: entry.canBlock[this.pickIndex(entry.canBlock.length)],
           });
         }
-        return { type: "declare-blockers", player, blocks };
+        // A menace attacker must be blocked by 0 or 2+ creatures; drop lone blocks.
+        const filtered = blocks.filter(
+          (b) =>
+            !legal.menaceAttackers.includes(b.attacker) ||
+            blocks.filter((x) => x.attacker === b.attacker).length >= 2,
+        );
+        return { type: "declare-blockers", player, blocks: filtered };
       }
       case "order-blockers": {
         const order = [...legal.blockers];

@@ -76,6 +76,12 @@ export default function App() {
         {over ? 'Game over' : `${playerLabel(seat)} to act`}
       </div>
 
+      {game.lastError ? (
+        <div className="error-banner" onClick={game.clearError} role="alert">
+          ⚠ {game.lastError}
+        </div>
+      ) : null}
+
       <Table key={game.revision} game={game} />
 
       {!ready && !over && !game.revealAll ? (
@@ -519,14 +525,26 @@ function Table({ game }: { readonly game: UseGame }) {
         ) : null}
       </div>
     )
-  } else if (mode === 'blockers') {
+  } else if (mode === 'blockers' && blockAction) {
     const n = Object.keys(blockAssign).length
+    const counts = new Map<ObjectId, number>()
+    for (const attacker of Object.values(blockAssign)) {
+      counts.set(attacker, (counts.get(attacker) ?? 0) + 1)
+    }
+    const loneMenace = blockAction.menaceAttackers.filter(
+      (id) => counts.get(id) === 1,
+    )
     controls = (
       <div className="controls">
         <span>
           Declare blockers — {n} assigned
           {blockFocus
             ? ` · pick an attacker for ${game.nameOf(blockFocus)}`
+            : ''}
+          {loneMenace.length > 0
+            ? ` · ${loneMenace
+                .map((id) => game.nameOf(id))
+                .join(', ')} has menace (needs 2+ blockers)`
             : ''}
         </span>
         <button
@@ -538,7 +556,11 @@ function Table({ game }: { readonly game: UseGame }) {
         >
           Clear
         </button>
-        <button type="button" onClick={confirmBlockers}>
+        <button
+          type="button"
+          disabled={loneMenace.length > 0}
+          onClick={confirmBlockers}
+        >
           {n === 0 ? 'No blocks' : `Block (${n})`}
         </button>
       </div>

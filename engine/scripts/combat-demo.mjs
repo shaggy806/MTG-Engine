@@ -4,8 +4,9 @@
 //
 //   npm run play:combat -w engine
 
-import { Game, ScriptedController, asObjectId, asPlayerId } from "../dist/index.js";
+import { Game, ScriptedController, asPlayerId } from "../dist/index.js";
 import { printLog, printSummary } from "./format.mjs";
+import { makeSpawn } from "./spawn.mjs";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
@@ -29,27 +30,7 @@ const game = Game.create({
   ],
 });
 
-const spawn = (cardName, controller) => {
-  const id = asObjectId(`demo-${game.state.nextObjectSeq}`);
-  game.state.nextObjectSeq += 1;
-  game.state.objects[id] = {
-    id,
-    cardName,
-    owner: controller,
-    controller,
-    zone: "battlefield",
-    tapped: false,
-    damageMarked: 0,
-    enteredBattlefieldOnTurn: 0,
-    targets: null,
-    attacking: null,
-    blocking: null,
-    blockedBy: [],
-    blocked: false,
-  };
-  game.state.zones.shared.battlefield.push(id);
-  return id;
-};
+const spawn = makeSpawn(game);
 
 const giant = spawn("Hill Giant", A);
 const angel = spawn("Serra Angel", A);

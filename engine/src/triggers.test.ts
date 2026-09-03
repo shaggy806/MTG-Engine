@@ -46,6 +46,7 @@ const spawn = (
     zone: "battlefield",
     tapped: opts.tapped ?? false,
     damageMarked: 0,
+    markedByDeathtouch: false,
     enteredBattlefieldOnTurn: opts.sick ? game.state.turn.number : 0,
     targets: null,
     attacking: null,
