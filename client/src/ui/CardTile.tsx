@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import type { VisibleObject } from 'engine'
+import { Symbols } from './Symbols.tsx'
+import { costColor } from './symbols.ts'
 
 export interface CardTileProps {
   readonly obj: VisibleObject
@@ -14,7 +16,7 @@ export interface CardTileProps {
   readonly onClick?: () => void
 }
 
-const KEYWORD_ABBR: Record<string, string> = {
+const KEYWORD_LABEL: Record<string, string> = {
   flying: 'Flying',
   vigilance: 'Vigilance',
   haste: 'Haste',
@@ -36,17 +38,6 @@ const artUrl = (name: string): string =>
 
 /** Card names whose art 404'd this session — don't re-request on every remount. */
 const artMisses = new Set<string>()
-
-/** `{1}{G}` -> [{sym:'1',color:'generic'}, {sym:'G',color:'G'}] */
-function manaPips(cost: string | null): { sym: string; color: string }[] {
-  if (!cost) return []
-  const out: { sym: string; color: string }[] = []
-  for (const m of cost.matchAll(/\{([^}]+)\}/g)) {
-    const s = m[1]
-    out.push({ sym: s, color: /^[WUBRGC]$/.test(s) ? s : 'generic' })
-  }
-  return out
-}
 
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1)
 
@@ -81,12 +72,11 @@ export function CardTile({
   const isCreature = obj.power !== null && obj.toughness !== null
   const counters = Object.entries(obj.counters).filter(([, n]) => n !== 0)
   const clickable = Boolean(onClick) && (highlight || selected || activatable)
-  const pips = manaPips(obj.manaCost)
   const showText = obj.text.length > 0 && !textIsJustKeywords(obj)
   const keywordLine = obj.keywords
-    .map((k) => KEYWORD_ABBR[k] ?? cap(k))
+    .map((k) => KEYWORD_LABEL[k] ?? cap(k))
     .join(', ')
-  const tint = pips.find((p) => p.color !== 'generic')?.color ?? 'C'
+  const tint = costColor(obj.manaCost) ?? 'C'
 
   const classes = [
     'card-tile',
@@ -110,13 +100,9 @@ export function CardTile({
     >
       <span className="ct-title">
         <span className="ct-name">{obj.cardName}</span>
-        {pips.length > 0 ? (
+        {obj.manaCost ? (
           <span className="ct-cost">
-            {pips.map((p, i) => (
-              <span key={i} className={`pip pip-${p.color}`}>
-                {p.sym}
-              </span>
-            ))}
+            <Symbols text={obj.manaCost} />
           </span>
         ) : null}
       </span>
@@ -133,21 +119,17 @@ export function CardTile({
             }}
           />
         ) : null}
-        {isCreature ? (
-          <span className="ct-pt">
-            {obj.power}/{obj.toughness}
-            {obj.damageMarked > 0 ? (
-              <span className="ct-dmg"> −{obj.damageMarked}</span>
-            ) : null}
-          </span>
-        ) : null}
       </span>
 
       <span className="ct-type">{typeLine(obj)}</span>
 
       <span className="ct-text">
         {keywordLine ? <b className="ct-kw">{keywordLine}</b> : null}
-        {showText ? <span className="ct-rules">{obj.text}</span> : null}
+        {showText ? (
+          <span className="ct-rules">
+            <Symbols text={obj.text} />
+          </span>
+        ) : null}
         {counters.length > 0 ? (
           <span className="ct-counters">
             {counters.map(([k, n]) => (
@@ -158,6 +140,15 @@ export function CardTile({
           </span>
         ) : null}
       </span>
+
+      {isCreature ? (
+        <span className="ct-pt">
+          {obj.power}/{obj.toughness}
+          {obj.damageMarked > 0 ? (
+            <span className="ct-dmg"> −{obj.damageMarked}</span>
+          ) : null}
+        </span>
+      ) : null}
 
       {order !== null ? <span className="card-order">{order}</span> : null}
       {obj.summoningSick && isCreature ? (

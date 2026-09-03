@@ -33,6 +33,12 @@ export interface GameObject {
   markedByDeathtouch: boolean;
   /** Turn number this object last entered the battlefield; `null` otherwise. */
   enteredBattlefieldOnTurn: number | null;
+  /**
+   * True while the creature has not been under its controller's control since
+   * the start of that player's most recent turn (rule 302.6). Set on entering
+   * the battlefield, cleared in the controller's untap step.
+   */
+  summoningSick: boolean;
   /** Chosen targets while this is a spell/ability on the stack; `null` otherwise. */
   targets: TargetRef[] | null;
   /** The player this creature is attacking, or `null` if not attacking. */

@@ -473,6 +473,7 @@ export class Game {
           damageMarked: 0,
           markedByDeathtouch: false,
           enteredBattlefieldOnTurn: null,
+          summoningSick: false,
           targets: null,
           attacking: null,
           blocking: null,
@@ -609,7 +610,10 @@ export class Game {
     const active = this.activePlayer;
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
-      if (object.controller === active && object.tapped) {
+      if (object.controller !== active) continue;
+      // Summoning sickness wears off as the controller's turn begins.
+      object.summoningSick = false;
+      if (object.tapped) {
         object.tapped = false;
         this.emit({ type: "permanent-untapped", object: id });
       }
@@ -730,10 +734,7 @@ export class Game {
   }
 
   private hasSummoningSickness(object: GameObject): boolean {
-    return (
-      object.enteredBattlefieldOnTurn !== null &&
-      object.enteredBattlefieldOnTurn >= this.state.turn.number
-    );
+    return object.summoningSick;
   }
 
   /** Ask the active player to declare attackers (rule 508.1). */
@@ -1363,6 +1364,7 @@ export class Game {
       damageMarked: 0,
       markedByDeathtouch: false,
       enteredBattlefieldOnTurn: null,
+      summoningSick: false,
       targets: targets.length > 0 ? [...targets] : null,
       attacking: null,
       blocking: null,
@@ -2087,12 +2089,14 @@ export class Game {
 
     if (to === "battlefield") {
       object.enteredBattlefieldOnTurn = this.state.turn.number;
+      object.summoningSick = true;
       this.state.timestampSeq += 1;
       object.timestamp = this.state.timestampSeq;
     } else {
       object.tapped = false;
       object.damageMarked = 0;
       object.enteredBattlefieldOnTurn = null;
+      object.summoningSick = false;
       object.timestamp = 0;
     }
   }

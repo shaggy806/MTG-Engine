@@ -115,9 +115,7 @@ function visible(
     tapped: object.tapped,
     damageMarked: object.damageMarked,
     counters: { ...object.counters },
-    summoningSick:
-      object.enteredBattlefieldOnTurn !== null &&
-      object.enteredBattlefieldOnTurn >= state.turn.number,
+    summoningSick: object.summoningSick,
     attacking: object.attacking,
     blocking: object.blocking,
     blockedBy: [...object.blockedBy],

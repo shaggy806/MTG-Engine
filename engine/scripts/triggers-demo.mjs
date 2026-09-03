@@ -4,8 +4,9 @@
 //
 //   npm run play:triggers -w engine
 
-import { Game, asObjectId, asPlayerId } from "../dist/index.js";
+import { Game, asPlayerId } from "../dist/index.js";
 import { printLog, printSummary } from "./format.mjs";
+import { makeSpawn } from "./spawn.mjs";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
@@ -43,33 +44,7 @@ const atMain = (t) => (s) =>
   s.turn.number === t && s.turn.step === "precombat-main";
 const stackEmpty = (s) => s.zones.shared.stack.length === 0;
 
-const spawn = (cardName, controller) => {
-  const id = asObjectId(`demo-${game.state.nextObjectSeq}`);
-  game.state.nextObjectSeq += 1;
-  game.state.objects[id] = {
-    id,
-    cardName,
-    owner: controller,
-    controller,
-    zone: "battlefield",
-    tapped: false,
-    damageMarked: 0,
-    enteredBattlefieldOnTurn: 0,
-    targets: null,
-    attacking: null,
-    blocking: null,
-    blockedBy: [],
-    blocked: false,
-    kind: "card",
-    abilityKind: null,
-    sourceObjectId: null,
-    abilityIndex: null,
-    counters: {},
-    modifiers: [],
-  };
-  game.state.zones.shared.battlefield.push(id);
-  return id;
-};
+const spawn = makeSpawn(game);
 
 // Turn 1: two lands + Elvish Visionary (ETB draws a card).
 game.advanceUntil(atMain(1));

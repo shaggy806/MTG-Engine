@@ -54,6 +54,7 @@ const spawn = (
     damageMarked: 0,
     markedByDeathtouch: false,
     enteredBattlefieldOnTurn: opts.sick ? game.state.turn.number : 0,
+    summoningSick: opts.sick ?? false,
     targets: null,
     attacking: null,
     blocking: null,

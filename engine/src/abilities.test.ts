@@ -50,6 +50,7 @@ const spawn = (
     damageMarked: 0,
     markedByDeathtouch: false,
     enteredBattlefieldOnTurn: opts.sick ? game.state.turn.number : 0,
+    summoningSick: opts.sick ?? false,
     targets: null,
     attacking: null,
     blocking: null,
@@ -117,6 +118,35 @@ describe("mana abilities", () => {
     expect(() =>
       game.dispatch({ type: "cast-spell", player: A, card: bears }),
     ).toThrow(/cannot pay/);
+  });
+
+  it("a cast dork stays summoning-sick through the opponent's turn", () => {
+    const game = mkGame(["Forest", "Llanowar Elves"]);
+    game.advanceUntil(atFirstMain);
+    game.dispatch({
+      type: "play-land",
+      player: A,
+      card: named(game, game.handOf(A), "Forest"),
+    });
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Llanowar Elves"),
+    });
+    game.advanceUntil(stackEmpty);
+    const elves = named(game, game.battlefield, "Llanowar Elves");
+
+    // Just resolved, on Alice's own turn — sick.
+    expect(game.state.objects[elves].summoningSick).toBe(true);
+
+    // Bob's turn — Alice has not begun a turn since it entered, still sick.
+    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "upkeep");
+    expect(game.state.objects[elves].summoningSick).toBe(true);
+    expect(game.viewFor(A).objects[elves].summoningSick).toBe(true);
+
+    // Alice's next turn — sickness has worn off in her untap step.
+    game.advanceUntil((s) => s.turn.number === 3 && s.turn.step === "upkeep");
+    expect(game.state.objects[elves].summoningSick).toBe(false);
   });
 
   it("a tapped dork untaps on its controller's next turn", () => {

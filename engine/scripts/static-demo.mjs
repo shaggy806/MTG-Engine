@@ -4,8 +4,9 @@
 //
 //   npm run play:static -w engine
 
-import { Game, ScriptedController, asObjectId, asPlayerId } from "../dist/index.js";
+import { Game, ScriptedController, asPlayerId } from "../dist/index.js";
 import { printLog, printSummary } from "./format.mjs";
+import { makeSpawn } from "./spawn.mjs";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
@@ -28,39 +29,11 @@ const game = Game.create({
   ],
 });
 
-const spawn = (cardName, controller, sick = false) => {
-  game.state.timestampSeq += 1;
-  const id = asObjectId(`demo-${game.state.nextObjectSeq}`);
-  game.state.nextObjectSeq += 1;
-  game.state.objects[id] = {
-    id,
-    cardName,
-    owner: controller,
-    controller,
-    zone: "battlefield",
-    tapped: false,
-    damageMarked: 0,
-    enteredBattlefieldOnTurn: sick ? game.state.turn.number : 0,
-    targets: null,
-    attacking: null,
-    blocking: null,
-    blockedBy: [],
-    blocked: false,
-    kind: "card",
-    abilityKind: null,
-    sourceObjectId: null,
-    abilityIndex: null,
-    counters: {},
-    modifiers: [],
-    timestamp: game.state.timestampSeq,
-  };
-  game.state.zones.shared.battlefield.push(id);
-  return id;
-};
+const spawn = makeSpawn(game);
 
 const chieftain = spawn("Goblin Chieftain", A);
 const anthem = spawn("Glorious Anthem", A);
-const goblin = spawn("Goblin Raider", A, /* sick */ true);
+const goblin = spawn("Goblin Raider", A, { sick: true });
 
 const c = game.characteristics(goblin);
 console.log(
