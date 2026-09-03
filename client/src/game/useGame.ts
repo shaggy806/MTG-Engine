@@ -89,11 +89,19 @@ interface Instance {
   readonly seed: number
 }
 
+/** `?seed=N` in the URL overrides the default starting seed (handy for repros). */
+function firstSeed(fallback: number): number {
+  if (typeof window === 'undefined') return fallback
+  const raw = new URLSearchParams(window.location.search).get('seed')
+  const n = raw === null ? NaN : Number(raw)
+  return Number.isFinite(n) ? n : fallback
+}
+
 export function useGame(initialSeed = 1): UseGame {
-  const [instance, setInstance] = useState<Instance>(() => ({
-    game: build(initialSeed),
-    seed: initialSeed,
-  }))
+  const [instance, setInstance] = useState<Instance>(() => {
+    const seed = firstSeed(initialSeed)
+    return { game: build(seed), seed }
+  })
   const [revealAll, setRevealAll] = useState(false)
   const [revision, setRevision] = useState(0)
 

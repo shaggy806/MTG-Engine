@@ -36,7 +36,11 @@ export interface PlayerController {
   declareAttackers(view: ControllerView): readonly AttackerDeclaration[];
   /** Declare this player's blockers. */
   declareBlockers(view: ControllerView): readonly BlockerDeclaration[];
-  /** Order the blockers assigned to one attacker (attacking player's choice). */
+  /**
+   * Order the blockers assigned to one attacker for damage assignment
+   * (attacking player's choice). Reached via `act` as an `order-blockers`
+   * action when `awaiting.kind === "order-blockers"`.
+   */
   orderBlockers(
     view: ControllerView,
     attacker: ObjectId,
@@ -85,6 +89,15 @@ function answerAwaited(
   }
   if (awaiting.kind === "blockers") {
     return { type: "declare-blockers", player, blocks: controller.declareBlockers(view) };
+  }
+  if (awaiting.kind === "order-blockers") {
+    const blockers = view.state.objects[awaiting.attacker].blockedBy;
+    return {
+      type: "order-blockers",
+      player,
+      attacker: awaiting.attacker,
+      order: controller.orderBlockers(view, awaiting.attacker, [...blockers]),
+    };
   }
   const hand = view.state.zones.perPlayer[player].hand.map(
     (id) => view.state.objects[id],
@@ -306,6 +319,16 @@ export class RandomController extends AutomaticController {
           });
         }
         return { type: "declare-blockers", player, blocks };
+      }
+      case "order-blockers": {
+        const order = [...legal.blockers];
+        for (let i = order.length - 1; i > 0; i -= 1) {
+          const j = this.pickIndex(i + 1);
+          const tmp = order[i];
+          order[i] = order[j];
+          order[j] = tmp;
+        }
+        return { type: "order-blockers", player, attacker: legal.attacker, order };
       }
       case "discard": {
         const pool = [...legal.from];

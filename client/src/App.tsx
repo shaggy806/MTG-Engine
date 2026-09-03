@@ -22,6 +22,7 @@ type CastAction = Extract<LegalAction, { kind: 'cast-spell' }>
 type AbilityAction = Extract<LegalAction, { kind: 'activate-ability' }>
 type AttackAction = Extract<LegalAction, { kind: 'declare-attackers' }>
 type BlockAction = Extract<LegalAction, { kind: 'declare-blockers' }>
+type OrderAction = Extract<LegalAction, { kind: 'order-blockers' }>
 type DiscardAction = Extract<LegalAction, { kind: 'discard' }>
 
 interface Targeting {
@@ -104,6 +105,7 @@ function Table({ game }: { readonly game: UseGame }) {
   const [attackPicks, setAttackPicks] = useState<readonly ObjectId[]>([])
   const [blockAssign, setBlockAssign] = useState<Record<string, ObjectId>>({})
   const [blockFocus, setBlockFocus] = useState<ObjectId | null>(null)
+  const [orderPicks, setOrderPicks] = useState<readonly ObjectId[]>([])
   const [discardPicks, setDiscardPicks] = useState<readonly ObjectId[]>([])
 
   // --- classify the legal actions ------------------------------------
@@ -134,14 +136,24 @@ function Table({ game }: { readonly game: UseGame }) {
   const blockAction = actions.find(
     (a): a is BlockAction => a.kind === 'declare-blockers',
   )
+  const orderAction = actions.find(
+    (a): a is OrderAction => a.kind === 'order-blockers',
+  )
   const discardAction = actions.find(
     (a): a is DiscardAction => a.kind === 'discard',
   )
   const canPass = actions.some((a) => a.kind === 'pass-priority')
 
-  const mode: 'discard' | 'attackers' | 'blockers' | 'targeting' | 'priority' =
-    discardAction
-      ? 'discard'
+  const mode:
+    | 'discard'
+    | 'order-blockers'
+    | 'attackers'
+    | 'blockers'
+    | 'targeting'
+    | 'priority' = discardAction
+    ? 'discard'
+    : orderAction
+      ? 'order-blockers'
       : attackAction
         ? 'attackers'
         : blockAction
@@ -244,6 +256,13 @@ function Table({ game }: { readonly game: UseGame }) {
         )
         return
       }
+      if (mode === 'order-blockers' && orderAction) {
+        if (!orderAction.blockers.includes(id)) return
+        setOrderPicks((cur) =>
+          cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id],
+        )
+        return
+      }
       if (mode === 'blockers' && blockAction) {
         const entry = blockAction.eligible.find((e) => e.blocker === id)
         if (entry) {
@@ -281,6 +300,7 @@ function Table({ game }: { readonly game: UseGame }) {
       blockAssign,
       blockFocus,
       mode,
+      orderAction,
       pickTarget,
       targeting,
     ],
@@ -320,6 +340,19 @@ function Table({ game }: { readonly game: UseGame }) {
     })
   }, [blockAssign, game, seat])
 
+  const confirmOrder = useCallback(
+    (order: readonly ObjectId[]) => {
+      if (!orderAction) return
+      game.dispatch({
+        type: 'order-blockers',
+        player: seat,
+        attacker: orderAction.attacker,
+        order: [...order],
+      })
+    },
+    [game, orderAction, seat],
+  )
+
   const confirmDiscard = useCallback(() => {
     game.dispatch({ type: 'discard', player: seat, cards: [...discardPicks] })
   }, [discardPicks, game, seat])
@@ -334,6 +367,7 @@ function Table({ game }: { readonly game: UseGame }) {
         setTargeting(null)
         setSelectedSource(null)
         setBlockFocus(null)
+        setOrderPicks([])
       }
     }
     window.addEventListener('keydown', onKey)
@@ -359,11 +393,21 @@ function Table({ game }: { readonly game: UseGame }) {
     let selected = false
     let activatable = false
     let badge: string | null = null
+    let order: number | null = null
 
     if (obj.attacking) badge = `⚔ ${playerLabel(obj.attacking)}`
     else if (obj.blocking) badge = `\u{1F6E1} ${game.nameOf(obj.blocking)}`
 
-    if (mode === 'targeting') {
+    if (mode === 'order-blockers' && orderAction) {
+      if (id === orderAction.attacker) {
+        badge = `${orderPicks.length}/${orderAction.blockers.length} ordered`
+      } else if (orderAction.blockers.includes(id)) {
+        const at = orderPicks.indexOf(id)
+        highlight = at === -1
+        selected = at !== -1
+        order = at === -1 ? null : at + 1
+      }
+    } else if (mode === 'targeting') {
       highlight = targetSlot.some((o) => o.kind === 'object' && o.object === id)
       selected = pickedObjKeys.has(id)
     } else if (mode === 'attackers' && attackAction) {
@@ -395,6 +439,7 @@ function Table({ game }: { readonly game: UseGame }) {
         selected={selected}
         activatable={activatable}
         badge={badge}
+        order={order}
         onClick={() => clickPermanent(id)}
       />
     )
@@ -444,6 +489,34 @@ function Table({ game }: { readonly game: UseGame }) {
             ? 'No attacks'
             : `Attack with ${attackPicks.length}`}
         </button>
+      </div>
+    )
+  } else if (mode === 'order-blockers' && orderAction) {
+    const total = orderAction.blockers.length
+    controls = (
+      <div className="controls">
+        <span>
+          Order {game.nameOf(orderAction.attacker)}'s blockers — click them in
+          the order they take damage ({orderPicks.length}/{total})
+        </span>
+        <button
+          type="button"
+          onClick={() => confirmOrder(orderAction.blockers)}
+        >
+          Keep default order
+        </button>
+        <button
+          type="button"
+          disabled={orderPicks.length !== total}
+          onClick={() => confirmOrder(orderPicks)}
+        >
+          Confirm order
+        </button>
+        {orderPicks.length > 0 ? (
+          <button type="button" onClick={() => setOrderPicks([])}>
+            Reset
+          </button>
+        ) : null}
       </div>
     )
   } else if (mode === 'blockers') {

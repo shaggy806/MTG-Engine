@@ -1,5 +1,5 @@
 .app {
-  max-width: 1180px;
+  max-width: 1240px;
   margin: 0 auto;
   padding: 12px 16px 40px;
   position: relative;
@@ -68,8 +68,8 @@
 }
 
 .seat-banner {
-  margin: 8px 0;
-  padding: 6px 10px;
+  margin: 6px 0;
+  padding: 5px 10px;
   text-align: center;
   font-weight: 600;
   background: var(--accent-bg);
@@ -137,9 +137,9 @@
 .battlefield {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  min-height: 92px;
-  padding: 6px;
+  gap: 8px 6px;
+  min-height: 104px;
+  padding: 8px 6px;
   background: var(--panel);
   border: 1px dashed var(--border);
   border-radius: 8px;
@@ -217,21 +217,21 @@
 
 /* card tiles */
 .card-tile {
-  width: 108px;
-  min-height: 84px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 6px;
+  position: relative;
+  width: 104px;
+  height: 88px;
+  display: block;
+  padding: 0;
+  overflow: hidden;
   text-align: left;
   background: var(--panel-2);
   border: 1px solid var(--border);
   border-radius: 7px;
   cursor: default;
+  transition: transform 0.1s ease;
 }
 .card-tile.tapped {
-  transform: rotate(8deg);
-  opacity: 0.85;
+  transform: rotate(90deg) scale(0.82);
 }
 .card-tile.highlight {
   border-color: var(--accent);
@@ -239,69 +239,138 @@
 }
 .card-tile.selected {
   border-color: var(--warn);
-  box-shadow: 0 0 0 2px rgba(231, 192, 91, 0.25);
+  box-shadow: 0 0 0 2px rgba(231, 192, 91, 0.35);
 }
 .card-tile.activatable:not(.highlight):not(.selected) {
-  border-bottom-color: var(--accent);
-  border-bottom-width: 2px;
+  border-color: var(--accent);
+  border-style: dashed;
 }
 .card-tile.clickable {
   cursor: pointer;
 }
+.card-tile.clickable:hover {
+  transform: translateY(-2px);
+}
+.card-tile.clickable.tapped:hover {
+  transform: rotate(90deg) scale(0.82) translateY(-2px);
+}
 .card-tile.dimmed {
-  opacity: 0.45;
+  opacity: 0.4;
 }
 .card-tile:disabled {
   cursor: default;
 }
+
+.card-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 22%;
+}
+.card-body {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 4px 5px;
+  background: linear-gradient(
+    to bottom,
+    rgba(8, 9, 12, 0.82) 0%,
+    rgba(8, 9, 12, 0.28) 42%,
+    rgba(8, 9, 12, 0.5) 72%,
+    rgba(8, 9, 12, 0.9) 100%
+  );
+}
+.card-tile.no-art .card-body {
+  background: none;
+}
 .card-name {
   font-weight: 600;
-  font-size: 12px;
-  line-height: 1.15;
+  font-size: 11px;
+  line-height: 1.12;
+  color: #fff;
+  text-shadow: 0 1px 2px #000;
+}
+.card-foot {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 }
 .card-meta {
   display: flex;
   justify-content: space-between;
   font-size: 12px;
+  text-shadow: 0 1px 2px #000;
 }
 .card-cost {
   font-family: ui-monospace, Consolas, monospace;
-  color: var(--warn);
+  color: #ffd873;
 }
 .card-pt {
   font-weight: 700;
+  color: #fff;
   font-variant-numeric: tabular-nums;
 }
 .card-dmg {
-  color: var(--bad);
+  color: #ff8f8f;
 }
 .card-kw {
   display: flex;
   flex-wrap: wrap;
-  gap: 3px;
+  gap: 2px;
 }
 .card-kw span {
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 700;
   letter-spacing: 0.03em;
-  padding: 1px 3px;
+  padding: 0 3px;
   border-radius: 3px;
-  background: var(--border);
-  color: var(--text);
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
 }
 .card-counters {
-  font-size: 10px;
-  color: var(--good);
+  font-size: 9px;
+  font-weight: 700;
+  color: #8be0a8;
+  text-shadow: 0 1px 2px #000;
 }
 .card-flag.sick {
-  font-size: 10px;
-  color: var(--muted);
+  position: absolute;
+  bottom: 3px;
+  left: 5px;
+  font-size: 9px;
+  color: #cfcfcf;
+  text-shadow: 0 1px 2px #000;
 }
 .card-badge {
-  margin-top: auto;
-  font-size: 10px;
+  position: absolute;
+  top: 3px;
+  right: 4px;
+  max-width: 92%;
+  font-size: 9px;
   font-weight: 700;
-  color: var(--warn);
+  color: #0b0e14;
+  background: var(--warn);
+  border-radius: 3px;
+  padding: 0 3px;
+}
+.card-order {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: #0b0e14;
+  background: var(--accent);
+  border-radius: 50%;
 }
 
 /* ability menu + controls */

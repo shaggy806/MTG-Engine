@@ -21,4 +21,5 @@ npm-debug.log*
 
 # local scratch pads
 scratch.*
+scratch-*
 *.scratch.*

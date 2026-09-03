@@ -46,6 +46,13 @@ export type Action =
       readonly blocks: readonly BlockerDeclaration[];
     }
   | {
+      readonly type: "order-blockers";
+      readonly player: PlayerId;
+      readonly attacker: ObjectId;
+      /** The blockers of `attacker`, in damage-assignment order. */
+      readonly order: readonly ObjectId[];
+    }
+  | {
       readonly type: "discard";
       readonly player: PlayerId;
       readonly cards: readonly ObjectId[];
@@ -93,6 +100,12 @@ export type LegalAction =
         readonly blocker: ObjectId;
         readonly canBlock: readonly ObjectId[];
       }[];
+    }
+  | {
+      readonly kind: "order-blockers";
+      readonly attacker: ObjectId;
+      /** The blockers to order; the current order is the default. */
+      readonly blockers: readonly ObjectId[];
     }
   | {
       readonly kind: "discard";

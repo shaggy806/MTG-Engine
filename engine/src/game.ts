@@ -131,6 +131,7 @@ export class Game {
       priority: { active: false, holder: null, passed: [] },
       result: { over: false, winner: null, reason: null },
       awaiting: null,
+      pendingBlockerOrders: [],
       pendingTriggers: [],
       timestampSeq: 0,
       eventLog: [],
@@ -247,6 +248,9 @@ export class Game {
       case "declare-blockers":
         this.applyBlockerDeclarations(action.player, action.blocks);
         break;
+      case "order-blockers":
+        this.applyBlockerOrder(action.player, action.attacker, action.order);
+        break;
       case "discard":
         this.applyDiscard(action.player, action.cards);
         break;
@@ -280,6 +284,12 @@ export class Game {
         return this.whyCannotDeclareAttackers(action.player, action.attackers);
       case "declare-blockers":
         return this.whyCannotDeclareBlockers(action.player, action.blocks);
+      case "order-blockers":
+        return this.whyCannotOrderBlockers(
+          action.player,
+          action.attacker,
+          action.order,
+        );
       case "discard":
         return this.whyCannotDiscard(action.player, action.cards);
       default:
@@ -318,6 +328,15 @@ export class Game {
           }))
           .filter((entry) => entry.canBlock.length > 0);
         return [{ kind: "declare-blockers", eligible }];
+      }
+      if (awaiting.kind === "order-blockers") {
+        return [
+          {
+            kind: "order-blockers",
+            attacker: awaiting.attacker,
+            blockers: [...this.state.objects[awaiting.attacker].blockedBy],
+          },
+        ];
       }
       return [
         {
@@ -714,11 +733,7 @@ export class Game {
 
   /** Ask the active player to declare attackers (rule 508.1). */
   private declareAttackersStep(): void {
-    this.state.awaiting = {
-      kind: "attackers",
-      player: this.activePlayer,
-      count: 0,
-    };
+    this.state.awaiting = { kind: "attackers", player: this.activePlayer };
   }
 
   /** Ask the defending player to declare blockers, if anyone is attacking. */
@@ -727,7 +742,6 @@ export class Game {
     this.state.awaiting = {
       kind: "blockers",
       player: this.defendingPlayer(),
-      count: 0,
     };
   }
 
@@ -881,25 +895,73 @@ export class Game {
       });
     }
 
-    // The attacking player orders each attacker's blockers for damage
-    // assignment. This is still a synchronous controller callback rather than
-    // a dispatched action; the default order is the declaration order.
-    const attackingPlayer = this.activePlayer;
-    for (const attackerId of this.currentAttackers()) {
-      const attacker = this.state.objects[attackerId];
-      if (attacker.blockedBy.length > 1) {
-        const ordered = this.controllers[attackingPlayer].orderBlockers(
-          this.controllerView(attackingPlayer),
-          attackerId,
-          [...attacker.blockedBy],
-        );
-        this.assertPermutation(attacker.blockedBy, ordered, "blocker order");
-        attacker.blockedBy = [...ordered];
-      }
-    }
-
+    // The attacking player orders the blockers of each multi-blocked attacker
+    // for damage assignment (rule 509.2), one `order-blockers` action each.
+    // The declaration order is the default the UI can just confirm.
     this.state.awaiting = null;
-    this.prepareForPriority(this.activePlayer);
+    this.state.pendingBlockerOrders = this.currentAttackers().filter(
+      (id) => this.state.objects[id].blockedBy.length > 1,
+    );
+    this.promptNextBlockerOrder();
+  }
+
+  /**
+   * Ask the attacking player to order the next multi-blocked attacker's
+   * blockers, or resume the step once every one has been ordered.
+   */
+  private promptNextBlockerOrder(): void {
+    const next = this.state.pendingBlockerOrders[0];
+    if (next === undefined) {
+      this.state.awaiting = null;
+      this.prepareForPriority(this.activePlayer);
+      return;
+    }
+    this.state.awaiting = {
+      kind: "order-blockers",
+      player: this.activePlayer,
+      attacker: next,
+    };
+    this.grantPriority(this.activePlayer);
+  }
+
+  private whyCannotOrderBlockers(
+    player: PlayerId,
+    attacker: ObjectId,
+    order: readonly ObjectId[],
+  ): string | null {
+    const awaiting = this.state.awaiting;
+    if (
+      awaiting === null ||
+      awaiting.kind !== "order-blockers" ||
+      awaiting.player !== player
+    ) {
+      return `${player} is not being asked to order blockers`;
+    }
+    if (awaiting.attacker !== attacker) {
+      return `expected an order for ${awaiting.attacker}, got ${attacker}`;
+    }
+    const current = this.state.objects[attacker]?.blockedBy ?? [];
+    const valid =
+      order.length === current.length &&
+      new Set(order).size === order.length &&
+      order.every((id) => current.includes(id));
+    if (!valid) return "blocker order must be a permutation of the blockers";
+    return null;
+  }
+
+  private applyBlockerOrder(
+    player: PlayerId,
+    attacker: ObjectId,
+    order: readonly ObjectId[],
+  ): void {
+    const why = this.whyCannotOrderBlockers(player, attacker, order);
+    if (why !== null) throw new Error(why);
+
+    this.state.objects[attacker].blockedBy = [...order];
+    this.state.pendingBlockerOrders = this.state.pendingBlockerOrders.filter(
+      (id) => id !== attacker,
+    );
+    this.promptNextBlockerOrder();
   }
 
   private combatDamageStep(): void {
@@ -971,6 +1033,7 @@ export class Game {
   }
 
   private endCombatStep(): void {
+    this.state.pendingBlockerOrders = [];
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
       object.attacking = null;
@@ -978,18 +1041,6 @@ export class Game {
       object.blockedBy = [];
       object.blocked = false;
     }
-  }
-
-  private assertPermutation(
-    original: readonly ObjectId[],
-    given: readonly ObjectId[],
-    label: string,
-  ): void {
-    const valid =
-      given.length === original.length &&
-      new Set(given).size === given.length &&
-      given.every((id) => original.includes(id));
-    if (!valid) throw new Error(`invalid ${label}`);
   }
 
   // --- player actions ----------------------------------------------

@@ -127,12 +127,21 @@ export interface GameResult {
  * A decision the rules are waiting on. While this is set, the named player's
  * only legal action is the matching declaration.
  */
-export interface AwaitingDecision {
-  readonly kind: "attackers" | "blockers" | "discard";
-  readonly player: PlayerId;
-  /** For `"discard"`: how many cards must be discarded. */
-  readonly count: number;
-}
+export type AwaitingDecision =
+  | { readonly kind: "attackers"; readonly player: PlayerId }
+  | { readonly kind: "blockers"; readonly player: PlayerId }
+  | {
+      readonly kind: "discard";
+      readonly player: PlayerId;
+      /** How many cards must be discarded. */
+      readonly count: number;
+    }
+  | {
+      readonly kind: "order-blockers";
+      readonly player: PlayerId;
+      /** The attacker whose blockers are being ordered for damage assignment. */
+      readonly attacker: ObjectId;
+    };
 
 export interface GameState {
   seed: number;
@@ -153,6 +162,11 @@ export interface GameState {
   result: GameResult;
   /** A declaration the engine is waiting for, or `null`. */
   awaiting: AwaitingDecision | null;
+  /**
+   * Attackers with multiple blockers still awaiting a damage-assignment order
+   * from the attacking player. Drained one `order-blockers` action at a time.
+   */
+  pendingBlockerOrders: ObjectId[];
   /** Triggered abilities that have fired but not yet been put on the stack. */
   pendingTriggers: PendingTrigger[];
   /** Monotonic source for battlefield-entry timestamps. */
