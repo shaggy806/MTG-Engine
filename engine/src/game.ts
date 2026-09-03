@@ -10,10 +10,15 @@
 
 import { actionPlayer } from "./actions.js";
 import type { Action } from "./actions.js";
-import { CardRegistry, createDefaultRegistry, landProduces } from "./cards.js";
+import {
+  CardRegistry,
+  createDefaultRegistry,
+  hasKeyword,
+  landProduces,
+} from "./cards.js";
 import type { CardDefinition } from "./cards.js";
 import { AutomaticController } from "./controller.js";
-import type { PlayerController, PriorityView } from "./controller.js";
+import type { ControllerView, PlayerController } from "./controller.js";
 import { applyEffectSpec } from "./effects.js";
 import type { ResolutionContext } from "./effects.js";
 import type {
@@ -238,7 +243,7 @@ export class Game {
 
     if (this.state.priority.active && this.state.priority.holder !== null) {
       const holder = this.state.priority.holder;
-      const view: PriorityView = { state: this.state, player: holder };
+      const view: ControllerView = { state: this.state, player: holder };
       const action = this.controllers[holder].act(view);
       if (actionPlayer(action) !== holder) {
         throw new Error(
@@ -279,6 +284,10 @@ export class Game {
           damageMarked: 0,
           enteredBattlefieldOnTurn: null,
           targets: null,
+          attacking: null,
+          blocking: null,
+          blockedBy: [],
+          blocked: false,
         };
         ids.push(id);
       }
@@ -340,6 +349,7 @@ export class Game {
     this.emit({ type: "step-began", step, phase: PHASE_OF_STEP[step] });
 
     this.performTurnBasedActions(step);
+    this.runStateBasedActions();
     if (this.state.result.over) return;
 
     if (stepUsesPriority(step)) {
@@ -361,6 +371,14 @@ export class Game {
       this.untapStep();
     } else if (step === "draw") {
       this.drawStep();
+    } else if (step === "declare-attackers") {
+      this.declareAttackersStep();
+    } else if (step === "declare-blockers") {
+      this.declareBlockersStep();
+    } else if (step === "combat-damage") {
+      this.combatDamageStep();
+    } else if (step === "end-combat") {
+      this.endCombatStep();
     } else if (step === "cleanup") {
       this.cleanupStep();
     }
@@ -435,6 +453,238 @@ export class Game {
         throw new Error(`${player} tried to discard ${id}, not in hand`);
       }
     }
+  }
+
+  // --- combat -----------------------------------------------------
+
+  private defendingPlayer(): PlayerId {
+    return (
+      this.state.turnOrder.find((player) => player !== this.activePlayer) ??
+      this.activePlayer
+    );
+  }
+
+  /** Battlefield creatures currently declared as attackers. */
+  private currentAttackers(): ObjectId[] {
+    return this.state.zones.shared.battlefield.filter(
+      (id) => this.state.objects[id].attacking != null,
+    );
+  }
+
+  private creatureDef(id: ObjectId): CardDefinition | null {
+    const object = this.state.objects[id];
+    if (object === undefined || object.zone !== "battlefield") return null;
+    const def = this.registry.get(object.cardName);
+    return def.types.includes("creature") ? def : null;
+  }
+
+  private hasSummoningSickness(object: GameObject): boolean {
+    return (
+      object.enteredBattlefieldOnTurn !== null &&
+      object.enteredBattlefieldOnTurn >= this.state.turn.number
+    );
+  }
+
+  private declareAttackersStep(): void {
+    const attackingPlayer = this.activePlayer;
+    const defender = this.defendingPlayer();
+    const declarations =
+      this.controllers[attackingPlayer].declareAttackers({
+        state: this.state,
+        player: attackingPlayer,
+      });
+
+    const seen = new Set<ObjectId>();
+    for (const { attacker: creatureId, defender: target } of declarations) {
+      if (seen.has(creatureId)) {
+        throw new Error(`${creatureId} was declared as an attacker twice`);
+      }
+      seen.add(creatureId);
+
+      const object = this.state.objects[creatureId];
+      const def = this.creatureDef(creatureId);
+      if (object === undefined || def === null) {
+        throw new Error(`${creatureId} is not a creature on the battlefield`);
+      }
+      if (object.controller !== attackingPlayer) {
+        throw new Error(`${def.name} is not controlled by the active player`);
+      }
+      if (object.tapped) {
+        throw new Error(`${def.name} is tapped and cannot attack`);
+      }
+      if (hasKeyword(def, "defender")) {
+        throw new Error(`${def.name} has defender and cannot attack`);
+      }
+      if (this.hasSummoningSickness(object) && !hasKeyword(def, "haste")) {
+        throw new Error(`${def.name} has summoning sickness`);
+      }
+      if (target !== defender) {
+        throw new Error("attackers can only attack the defending player");
+      }
+
+      object.attacking = target;
+      object.blockedBy = [];
+      object.blocked = false;
+      if (!hasKeyword(def, "vigilance")) {
+        object.tapped = true;
+      }
+      this.emit({
+        type: "attacker-declared",
+        attacker: creatureId,
+        defender: target,
+      });
+    }
+  }
+
+  private declareBlockersStep(): void {
+    const attackers = this.currentAttackers();
+    if (attackers.length === 0) return;
+
+    const defender = this.defendingPlayer();
+    const declarations = this.controllers[defender].declareBlockers({
+      state: this.state,
+      player: defender,
+    });
+
+    for (const { blocker: blockerId, attacker: attackerId } of declarations) {
+      const blocker = this.state.objects[blockerId];
+      const blockerDef = this.creatureDef(blockerId);
+      if (blocker === undefined || blockerDef === null) {
+        throw new Error(`${blockerId} is not a creature on the battlefield`);
+      }
+      if (blocker.controller !== defender) {
+        throw new Error(`${blockerDef.name} is not controlled by the defender`);
+      }
+      if (blocker.tapped) {
+        throw new Error(`${blockerDef.name} is tapped and cannot block`);
+      }
+      if (blocker.blocking !== null) {
+        throw new Error(`${blockerDef.name} is already blocking`);
+      }
+
+      const attacker = this.state.objects[attackerId];
+      if (attacker === undefined || attacker.attacking === null) {
+        throw new Error(`${attackerId} is not attacking`);
+      }
+      const attackerDef = this.registry.get(attacker.cardName);
+      if (
+        hasKeyword(attackerDef, "flying") &&
+        !hasKeyword(blockerDef, "flying") &&
+        !hasKeyword(blockerDef, "reach")
+      ) {
+        throw new Error(
+          `${blockerDef.name} can't block ${attackerDef.name} (flying)`,
+        );
+      }
+
+      blocker.blocking = attackerId;
+      attacker.blockedBy.push(blockerId);
+      attacker.blocked = true;
+      this.emit({
+        type: "blocker-declared",
+        blocker: blockerId,
+        attacker: attackerId,
+      });
+    }
+
+    // The attacking player orders each attacker's blockers for damage assignment.
+    const attackingPlayer = this.activePlayer;
+    for (const attackerId of attackers) {
+      const attacker = this.state.objects[attackerId];
+      if (attacker.blockedBy.length > 1) {
+        const ordered = this.controllers[attackingPlayer].orderBlockers(
+          { state: this.state, player: attackingPlayer },
+          attackerId,
+          [...attacker.blockedBy],
+        );
+        this.assertPermutation(attacker.blockedBy, ordered, "blocker order");
+        attacker.blockedBy = [...ordered];
+      }
+    }
+  }
+
+  private combatDamageStep(): void {
+    const assignments: {
+      source: ObjectId;
+      target: TargetRef;
+      amount: number;
+    }[] = [];
+
+    for (const attackerId of this.currentAttackers()) {
+      const attacker = this.state.objects[attackerId];
+      const power = this.registry.get(attacker.cardName).power ?? 0;
+      const liveBlockers = attacker.blockedBy.filter(
+        (id) => this.state.objects[id]?.zone === "battlefield",
+      );
+
+      if (!attacker.blocked) {
+        if (attacker.attacking !== null && power > 0) {
+          assignments.push({
+            source: attackerId,
+            target: { kind: "player", player: attacker.attacking },
+            amount: power,
+          });
+        }
+      } else if (power > 0 && liveBlockers.length > 0) {
+        // Auto-assign: minimum lethal down the order, remainder to the last.
+        let remaining = power;
+        liveBlockers.forEach((blockerId, index) => {
+          const blocker = this.state.objects[blockerId];
+          const toughness =
+            this.registry.get(blocker.cardName).toughness ?? 0;
+          const lethal = Math.max(0, toughness - blocker.damageMarked);
+          const isLast = index === liveBlockers.length - 1;
+          const amount = isLast ? remaining : Math.min(remaining, lethal);
+          remaining -= amount;
+          if (amount > 0) {
+            assignments.push({
+              source: attackerId,
+              target: { kind: "object", object: blockerId },
+              amount,
+            });
+          }
+        });
+      }
+
+      for (const blockerId of liveBlockers) {
+        const blockerPower =
+          this.registry.get(this.state.objects[blockerId].cardName).power ?? 0;
+        if (blockerPower > 0) {
+          assignments.push({
+            source: blockerId,
+            target: { kind: "object", object: attackerId },
+            amount: blockerPower,
+          });
+        }
+      }
+    }
+
+    // All combat damage is dealt simultaneously.
+    for (const { source, target, amount } of assignments) {
+      this.dealDamage(source, target, amount);
+    }
+  }
+
+  private endCombatStep(): void {
+    for (const id of this.state.zones.shared.battlefield) {
+      const object = this.state.objects[id];
+      object.attacking = null;
+      object.blocking = null;
+      object.blockedBy = [];
+      object.blocked = false;
+    }
+  }
+
+  private assertPermutation(
+    original: readonly ObjectId[],
+    given: readonly ObjectId[],
+    label: string,
+  ): void {
+    const valid =
+      given.length === original.length &&
+      new Set(given).size === given.length &&
+      given.every((id) => original.includes(id));
+    if (!valid) throw new Error(`invalid ${label}`);
   }
 
   // --- player actions ----------------------------------------------
@@ -868,6 +1118,12 @@ export class Game {
 
     object.zone = to;
     this.zoneList(to, object.owner).push(id);
+
+    // A change of zone always leaves combat and drops stack targets.
+    object.attacking = null;
+    object.blocking = null;
+    object.blockedBy = [];
+    object.blocked = false;
 
     if (to === "battlefield") {
       object.enteredBattlefieldOnTurn = this.state.turn.number;

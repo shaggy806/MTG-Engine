@@ -32,6 +32,14 @@ export interface GameObject {
   enteredBattlefieldOnTurn: number | null;
   /** Chosen targets while this is a spell/ability on the stack; `null` otherwise. */
   targets: TargetRef[] | null;
+  /** The player this creature is attacking, or `null` if not attacking. */
+  attacking: PlayerId | null;
+  /** The attacker this creature is blocking, or `null` if not blocking. */
+  blocking: ObjectId | null;
+  /** Blockers assigned to this attacker, in damage-assignment order. */
+  blockedBy: ObjectId[];
+  /** True once this attacker has been blocked (even if the blockers later die). */
+  blocked: boolean;
 }
 
 export interface PlayerState {

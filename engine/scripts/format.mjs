@@ -39,6 +39,10 @@ export const makeFormatter = (game) => {
         }`;
       case "spell-resolved":
         return `${name(e.object)} resolves`;
+      case "attacker-declared":
+        return `${name(e.attacker)} attacks ${e.defender}`;
+      case "blocker-declared":
+        return `${name(e.blocker)} blocks ${name(e.attacker)}`;
       case "spell-fizzled":
         return `${name(e.object)} fizzles — ${e.reason}`;
       case "permanent-entered-battlefield":

@@ -55,6 +55,10 @@ const spawn = (game: Game, cardName: string, controller: PlayerId): ObjectId => 
     damageMarked: 0,
     enteredBattlefieldOnTurn: game.state.turn.number,
     targets: null,
+    attacking: null,
+    blocking: null,
+    blockedBy: [],
+    blocked: false,
   };
   game.state.zones.shared.battlefield.push(id);
   return id;

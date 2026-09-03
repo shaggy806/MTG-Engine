@@ -13,22 +13,25 @@ React web client (`client/`). The repo is an **npm workspaces monorepo** (`works
 
 ## Engine architecture (`engine/src/`)
 
-The engine is at **milestone 2**: the stack and casting. Implemented — turn/step
-loop with priority, playing lands, casting creature/instant spells with auto-paid
-mana, targeting with resolution-time fizzle, LIFO stack resolution, and
-creature-death state-based actions. **Not yet** — combat, activated/triggered
-abilities, continuous effects/layers, more than two players.
+The engine is at **milestone 3**: combat. Implemented — turn/step loop with
+priority, playing lands, casting creature/instant spells with auto-paid mana,
+targeting with resolution-time fizzle, LIFO stack resolution, creature-death
+state-based actions, and a full combat phase (declare attackers → declare
+blockers → one simultaneous combat-damage step → end of combat). Keywords: haste,
+vigilance, defender, flying, reach. **Not yet** — first strike / double strike /
+trample / deathtouch, activated & triggered abilities, continuous effects/layers,
+planeswalkers, more than two players.
 
-- **`state.ts`** — `GameState` is one plain, `structuredClone`-able tree (no class instances, `Map`/`Set`, or functions inside it). Holds `rules`, players (life, `manaPool`, `landsPlayedThisTurn`), `objects` (card instances; `GameObject.targets` is set while on the stack), `zones` (`perPlayer` library/hand/graveyard + `shared` battlefield/stack/exile/command as ordered `ObjectId[]`; stack top = last element), `turn`, `priority`, `result`, `eventLog`. Also exports pure selectors.
-- **`game.ts`** — `Game` owns the single mutable `GameState` and is the **only** writer. `Game.create(config)` sets up a 2-player game (`config.shuffle: false` for scripted setups). `dispatch(action)` applies an external action (`pass-priority` / `play-land` / `cast-spell`); `advance()` / `advanceUntil(pred)` run the loop (`tick()`): SBAs → if priority held, ask that player's controller for an action → else `endStep()`. When all players pass: resolve the stack top if non-empty (then active player gets priority), else the step ends. Mana is **auto-paid** (`planManaPayment` picks which lands to tap). Every mutation goes through `emit()`.
+- **`state.ts`** — `GameState` is one plain, `structuredClone`-able tree (no class instances, `Map`/`Set`, or functions inside it). Holds `rules`, players (life, `manaPool`, `landsPlayedThisTurn`), `objects` (card instances; `GameObject.targets` set while on the stack; `attacking`/`blocking`/`blockedBy`/`blocked` set during combat, cleared by `moveObject` on any zone change and by the end-of-combat step), `zones` (`perPlayer` library/hand/graveyard + `shared` battlefield/stack/exile/command as ordered `ObjectId[]`; stack top = last element), `turn`, `priority`, `result`, `eventLog`. Also exports pure selectors.
+- **`game.ts`** — `Game` owns the single mutable `GameState` and is the **only** writer. `Game.create(config)` sets up a 2-player game (`config.shuffle: false` for scripted setups). `dispatch(action)` applies an external action (`pass-priority` / `play-land` / `cast-spell`); `advance()` / `advanceUntil(pred)` run the loop (`tick()`): SBAs → if priority held, ask that player's controller for an action → else `endStep()`. When all players pass: resolve the stack top if non-empty (then active player gets priority), else the step ends. `enterStep` runs turn-based actions (untap / draw / **declare-attackers / declare-blockers / combat-damage / end-combat** / cleanup) then SBAs then grants priority. Combat damage is auto-assigned (minimum lethal down the block order). Mana is **auto-paid** (`planManaPayment`). Every mutation goes through `emit()`.
 - **`actions.ts`** — the `Action` union (kept out of `game.ts` to avoid a cycle with `controller.ts`).
 - **`turn.ts`** — `Phase`/`Step` string-literal unions (no `enum`), `TURN_SEQUENCE`, `nextStep`, `stepUsesPriority` (false only for untap/cleanup), `isMainPhase`.
 - **`events.ts`** — discriminated `GameEvent` union (the audit log). `emit()` takes `GameEventInput` (no `seq`).
-- **`cards.ts`** — `CardDefinition` is **declarative** (`effect: EffectSpec`) with an imperative `resolve(ctx)` escape hatch (takes precedence). `CardRegistry` resolves a name → definition; the registry is environment, not serialized state (`GameObject.cardName` is the key). `landProduces(def)` → the color a basic land taps for.
+- **`cards.ts`** — `CardDefinition` is **declarative** (`effect: EffectSpec`, `keywords: Keyword[]`) with an imperative `resolve(ctx)` escape hatch (takes precedence). `CardRegistry` resolves a name → definition; the registry is environment, not serialized state (`GameObject.cardName` is the key). `landProduces(def)` → the color a basic land taps for; `hasKeyword(def, kw)`.
 - **`effects.ts`** — `EffectSpec` vocab (only `damage` so far), the `EffectApi` / `ResolutionContext` that both declarative effects and `resolve` scripts call, and `applyEffectSpec`. `Game` supplies the concrete API.
 - **`target.ts`** / **`targeting.ts`** — `TargetRef` (player or object) and `TargetSpec` types; `isLegalTarget` / `legalTargets` (need the registry to know what's a creature). Checked on cast and again at resolution (all-illegal ⇒ fizzle).
 - **`mana.ts`** — `Color`/`ManaType`/`ManaPool`, `parseManaCost` (`{2}{G}` → `{generic, colored}`; no X/hybrid/`{C}` yet), `manaValue`.
-- **`controller.ts`** — `PlayerController.act(view)` returns an `Action` when the player holds priority; `chooseDiscards` for cleanup. `AutomaticController` always passes (so `advance()` with defaults just runs the turn structure). `ScriptedController` plays a queue of `{action, when?}` entries.
+- **`controller.ts`** — `PlayerController`: `act(view)` (priority), `chooseDiscards` (cleanup), `declareAttackers` / `declareBlockers` / `orderBlockers` (combat). `AutomaticController` always passes and never attacks/blocks (so `advance()` with defaults just runs the turn structure). `ScriptedController` plays a queue of `{action, when?}` priority entries plus assignable `declareAttackersFn` / `declareBlockersFn` / `orderBlockersFn` callbacks — this is what the tests use.
 - **`primitives.ts`** — branded `PlayerId`/`ObjectId`, seeded `Rng` (mulberry32; `rng.seed` = stream position), `shuffle`.
 
 Snapshot/restore: `game.snapshot()` → `structuredClone(state)`; `Game.fromSnapshot(snap, env)` rebuilds (re-supply `registry`/`controllers` via `env`). Determinism: same seed + same controllers ⇒ identical replay.
@@ -51,7 +54,8 @@ Run from the repo root unless noted. Workspace scripts: `npm run <script> -w eng
 - `npm run build -w engine` — `tsc` → `engine/dist/`
 - `npm run typecheck -w engine` — `tsc --noEmit`
 - `npm run play -w engine` — builds, then runs `engine/scripts/play.mjs`: plays a two-player game (default controllers, so it runs to a deck-out) and prints its event log. Flags: `-- --seed 7`, `-- --turns 3` (stop before that turn). The engine has no UI, so this and the tests are how you watch it run.
-- `npm run play:cast -w engine` — `engine/scripts/cast-demo.mjs`: a scripted game showing land drops, mana, the stack, targeting, and creature death. Shared log formatter in `scripts/format.mjs`.
+- `npm run play:cast -w engine` — `engine/scripts/cast-demo.mjs`: land drops, mana, the stack, targeting, creature death.
+- `npm run play:combat -w engine` — `engine/scripts/combat-demo.mjs`: a multi-creature attack with a double-block and flying. Shared log formatter in `scripts/format.mjs`.
 
 A git-ignored `scratch.mjs` at the repo root is a scratch pad for ad-hoc exploration (`node scratch.mjs` after `npm run build -w engine`).
 

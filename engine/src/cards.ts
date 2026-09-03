@@ -23,6 +23,19 @@ export type CardType =
 
 export type Supertype = "basic" | "legendary" | "snow" | "world";
 
+export type Keyword =
+  | "flying"
+  | "reach"
+  | "haste"
+  | "vigilance"
+  | "defender"
+  | "first-strike"
+  | "double-strike"
+  | "trample"
+  | "deathtouch"
+  | "lifelink"
+  | "menace";
+
 /** Printed characteristics of a card. Immutable reference data. */
 export interface CardDefinition {
   readonly name: string;
@@ -33,6 +46,7 @@ export interface CardDefinition {
   readonly subtypes: readonly string[];
   readonly power: number | null;
   readonly toughness: number | null;
+  readonly keywords: readonly Keyword[];
   readonly text: string;
   /** Target slots, in order. Chosen when the spell is cast. */
   readonly targets: readonly TargetSpec[];
@@ -51,6 +65,7 @@ interface CardDraft {
   subtypes?: readonly string[];
   power?: number;
   toughness?: number;
+  keywords?: readonly Keyword[];
   text?: string;
   targets?: readonly TargetSpec[];
   effect?: EffectSpec;
@@ -67,11 +82,16 @@ function define(draft: CardDraft): CardDefinition {
     subtypes: draft.subtypes ?? [],
     power: draft.power ?? null,
     toughness: draft.toughness ?? null,
+    keywords: draft.keywords ?? [],
     text: draft.text ?? "",
     targets: draft.targets ?? [],
     effect: draft.effect ?? null,
     resolve: draft.resolve ?? null,
   };
+}
+
+export function hasKeyword(def: CardDefinition, keyword: Keyword): boolean {
+  return def.keywords.includes(keyword);
 }
 
 const BASIC_LAND_MANA: Readonly<Record<string, Color>> = {
@@ -141,6 +161,46 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
     subtypes: ["Beast"],
     power: 4,
     toughness: 4,
+  }),
+  define({
+    name: "Raging Goblin",
+    manaCost: "{R}",
+    colors: ["R"],
+    types: ["creature"],
+    subtypes: ["Goblin", "Berserker"],
+    power: 1,
+    toughness: 1,
+    keywords: ["haste"],
+  }),
+  define({
+    name: "Serra Angel",
+    manaCost: "{3}{W}{W}",
+    colors: ["W"],
+    types: ["creature"],
+    subtypes: ["Angel"],
+    power: 4,
+    toughness: 4,
+    keywords: ["flying", "vigilance"],
+  }),
+  define({
+    name: "Giant Spider",
+    manaCost: "{3}{G}",
+    colors: ["G"],
+    types: ["creature"],
+    subtypes: ["Spider"],
+    power: 2,
+    toughness: 4,
+    keywords: ["reach"],
+  }),
+  define({
+    name: "Wall of Wood",
+    manaCost: "{G}",
+    colors: ["G"],
+    types: ["creature"],
+    subtypes: ["Wall"],
+    power: 0,
+    toughness: 3,
+    keywords: ["defender"],
   }),
   define({
     name: "Lightning Bolt",
