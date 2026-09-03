@@ -18,7 +18,8 @@
     "build": "tsc",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "play": "tsc && node scripts/play.mjs"
   },
   "keywords": [],
   "author": "",

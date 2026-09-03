@@ -43,6 +43,9 @@ Run from the repo root unless noted. Workspace scripts: `npm run <script> -w eng
 - `npm run test -w engine -- -t "name"` — run tests matching a name
 - `npm run build -w engine` — `tsc` → `engine/dist/`
 - `npm run typecheck -w engine` — `tsc --noEmit`
+- `npm run play -w engine` — builds, then runs `engine/scripts/play.mjs`: plays a two-player game and prints its event log. Flags: `-- --seed 7`, `-- --turns 3` (stop before that turn). The engine has no UI, so this and the tests are how you watch it run.
+
+A git-ignored `scratch.mjs` at the repo root is a scratch pad for ad-hoc exploration (`node scratch.mjs` after `npm run build -w engine`).
 
 **Client** (`client/`):
 - `npm run dev -w client` — Vite dev server with HMR
