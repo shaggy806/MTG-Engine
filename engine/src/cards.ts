@@ -7,7 +7,7 @@
  * escape hatch). Vanilla permanents need neither.
  */
 
-import type { ActivatedAbility } from "./abilities.js";
+import type { ActivatedAbility, TriggeredAbility } from "./abilities.js";
 import type { EffectSpec, SpellResolver } from "./effects.js";
 import type { Color } from "./mana.js";
 import type { TargetSpec } from "./target.js";
@@ -57,6 +57,8 @@ export interface CardDefinition {
   readonly resolve: SpellResolver | null;
   /** Activated abilities, in the order they appear on the card. */
   readonly activated: readonly ActivatedAbility[];
+  /** Triggered abilities, in the order they appear on the card. */
+  readonly triggered: readonly TriggeredAbility[];
 }
 
 interface CardDraft {
@@ -74,9 +76,11 @@ interface CardDraft {
   effect?: EffectSpec;
   resolve?: SpellResolver;
   activated?: readonly ActivatedAbility[];
+  triggered?: readonly TriggeredAbility[];
 }
 
-function define(draft: CardDraft): CardDefinition {
+/** Build a {@link CardDefinition} from a partial draft, filling in defaults. */
+export function defineCard(draft: CardDraft): CardDefinition {
   return {
     name: draft.name,
     manaCost: draft.manaCost ?? null,
@@ -92,8 +96,11 @@ function define(draft: CardDraft): CardDefinition {
     effect: draft.effect ?? null,
     resolve: draft.resolve ?? null,
     activated: draft.activated ?? [],
+    triggered: draft.triggered ?? [],
   };
 }
+
+const define = defineCard;
 
 export function hasKeyword(def: CardDefinition, keyword: Keyword): boolean {
   return def.keywords.includes(keyword);
@@ -255,6 +262,102 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
     text: "Lightning Bolt deals 3 damage to any target.",
     targets: ["any-target"],
     effect: { kind: "damage", amount: 3, target: 0 },
+  }),
+  define({
+    name: "Giant Growth",
+    manaCost: "{G}",
+    colors: ["G"],
+    types: ["instant"],
+    text: "Target creature gets +3/+3 until end of turn.",
+    targets: ["creature"],
+    effect: {
+      kind: "modify-pt",
+      target: 0,
+      power: 3,
+      toughness: 3,
+      duration: "end-of-turn",
+    },
+  }),
+  define({
+    name: "Elvish Visionary",
+    manaCost: "{1}{G}",
+    colors: ["G"],
+    types: ["creature"],
+    subtypes: ["Elf", "Shaman"],
+    power: 1,
+    toughness: 1,
+    text: "When Elvish Visionary enters the battlefield, draw a card.",
+    triggered: [
+      {
+        trigger: { on: "enters-battlefield", who: "self" },
+        targets: [],
+        effect: { kind: "draw", amount: 1 },
+        resolve: null,
+        text: "When Elvish Visionary enters the battlefield, draw a card.",
+      },
+    ],
+  }),
+  define({
+    name: "Vengeful Ghoul",
+    manaCost: "{2}{B}",
+    colors: ["B"],
+    types: ["creature"],
+    subtypes: ["Zombie"],
+    power: 2,
+    toughness: 2,
+    text: "When Vengeful Ghoul dies, it deals 2 damage to any target.",
+    triggered: [
+      {
+        trigger: { on: "dies", who: "self" },
+        targets: ["any-target"],
+        effect: { kind: "damage", amount: 2, target: 0 },
+        resolve: null,
+        text: "When Vengeful Ghoul dies, it deals 2 damage to any target.",
+      },
+    ],
+  }),
+  define({
+    name: "Phyrexian Arena",
+    manaCost: "{1}{B}{B}",
+    colors: ["B"],
+    types: ["enchantment"],
+    text: "At the beginning of your upkeep, you draw a card and you lose 1 life.",
+    triggered: [
+      {
+        trigger: { on: "step-begins", step: "upkeep", who: "you" },
+        targets: [],
+        effect: null,
+        resolve: (ctx) => {
+          ctx.draw(ctx.controller, 1);
+          ctx.loseLife(ctx.controller, 1);
+        },
+        text: "At the beginning of your upkeep, draw a card and lose 1 life.",
+      },
+    ],
+  }),
+  define({
+    name: "Wildwood Sentinel",
+    manaCost: "{2}{G}",
+    colors: ["G"],
+    types: ["creature"],
+    subtypes: ["Treefolk"],
+    power: 2,
+    toughness: 2,
+    text: "{2}: Put a +1/+1 counter on Wildwood Sentinel.",
+    activated: [
+      {
+        cost: { mana: "{2}", tap: false },
+        targets: [],
+        effect: {
+          kind: "add-counter",
+          target: "source",
+          counter: "+1/+1",
+          amount: 1,
+        },
+        resolve: null,
+        text: "{2}: Put a +1/+1 counter on Wildwood Sentinel.",
+      },
+    ],
   }),
 ];
 

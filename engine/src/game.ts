@@ -9,14 +9,16 @@
  */
 
 import { isManaAbility } from "./abilities.js";
+import type { StackAbility, TriggerSpec, TriggerWho } from "./abilities.js";
 import { actionPlayer } from "./actions.js";
 import type { Action } from "./actions.js";
 import { CardRegistry, createDefaultRegistry, hasKeyword } from "./cards.js";
 import type { CardDefinition } from "./cards.js";
+import { characteristicsOf } from "./characteristics.js";
 import { AutomaticController } from "./controller.js";
 import type { ControllerView, PlayerController } from "./controller.js";
 import { applyEffectSpec } from "./effects.js";
-import type { ResolutionContext } from "./effects.js";
+import type { PtDuration, ResolutionContext } from "./effects.js";
 import type {
   EventOfType,
   GameEvent,
@@ -30,7 +32,7 @@ import { asObjectId, createRng, shuffle } from "./primitives.js";
 import { DEFAULT_RULES, activePlayerOf, createPlayerState } from "./state.js";
 import type { GameObject, GameRules, GameState, ZoneType } from "./state.js";
 import type { TargetRef, TargetSpec } from "./target.js";
-import { isLegalTarget } from "./targeting.js";
+import { isLegalTarget, legalTargets } from "./targeting.js";
 import { PHASE_OF_STEP, isMainPhase, nextStep, stepUsesPriority } from "./turn.js";
 import type { Step } from "./turn.js";
 
@@ -120,6 +122,7 @@ export class Game {
       },
       priority: { active: false, holder: null, passed: [] },
       result: { over: false, winner: null, reason: null },
+      pendingTriggers: [],
       eventLog: [],
       eventSeq: 0,
       nextObjectSeq: 0,
@@ -183,6 +186,11 @@ export class Game {
 
   get battlefield(): readonly ObjectId[] {
     return this.state.zones.shared.battlefield;
+  }
+
+  /** Current power/toughness of an object (printed + counters + modifiers). */
+  characteristics(id: ObjectId): { power: number; toughness: number } {
+    return characteristicsOf(this.state, this.registry, id);
   }
 
   /** Deep copy of the current state, suitable for {@link Game.fromSnapshot}. */
@@ -293,8 +301,11 @@ export class Game {
           blockedBy: [],
           blocked: false,
           kind: "card",
+          abilityKind: null,
           sourceObjectId: null,
           abilityIndex: null,
+          counters: {},
+          modifiers: [],
         };
         ids.push(id);
       }
@@ -356,12 +367,29 @@ export class Game {
     this.emit({ type: "step-began", step, phase: PHASE_OF_STEP[step] });
 
     this.performTurnBasedActions(step);
-    this.runStateBasedActions();
-    if (this.state.result.over) return;
-
     if (stepUsesPriority(step)) {
-      this.grantPriority(this.activePlayer);
+      this.prepareForPriority(this.activePlayer);
+    } else {
+      this.runStateBasedActions();
     }
+  }
+
+  /**
+   * Repeatedly: perform state-based actions, then put any waiting triggered
+   * abilities on the stack — until neither happens. Then grant priority.
+   */
+  private prepareForPriority(player: PlayerId): void {
+    let guard = 0;
+    for (;;) {
+      guard += 1;
+      if (guard > 1000) {
+        throw new Error("prepareForPriority did not settle; likely an engine bug");
+      }
+      this.runStateBasedActions();
+      if (this.state.result.over) return;
+      if (!this.placePendingTriggers()) break;
+    }
+    this.grantPriority(player);
   }
 
   private endStep(): void {
@@ -426,6 +454,18 @@ export class Game {
         player: active,
         objects: [...chosen],
       });
+    }
+
+    const expired: ObjectId[] = [];
+    for (const id of this.state.zones.shared.battlefield) {
+      const object = this.state.objects[id];
+      if (object.modifiers.some((m) => m.untilEndOfTurn)) {
+        object.modifiers = object.modifiers.filter((m) => !m.untilEndOfTurn);
+        expired.push(id);
+      }
+    }
+    if (expired.length > 0) {
+      this.emit({ type: "pt-modifier-expired", objects: expired });
     }
 
     const cleared: ObjectId[] = [];
@@ -619,7 +659,7 @@ export class Game {
 
     for (const attackerId of this.currentAttackers()) {
       const attacker = this.state.objects[attackerId];
-      const power = this.registry.get(attacker.cardName).power ?? 0;
+      const power = characteristicsOf(this.state, this.registry, attackerId).power;
       const liveBlockers = attacker.blockedBy.filter(
         (id) => this.state.objects[id]?.zone === "battlefield",
       );
@@ -637,8 +677,11 @@ export class Game {
         let remaining = power;
         liveBlockers.forEach((blockerId, index) => {
           const blocker = this.state.objects[blockerId];
-          const toughness =
-            this.registry.get(blocker.cardName).toughness ?? 0;
+          const toughness = characteristicsOf(
+            this.state,
+            this.registry,
+            blockerId,
+          ).toughness;
           const lethal = Math.max(0, toughness - blocker.damageMarked);
           const isLast = index === liveBlockers.length - 1;
           const amount = isLast ? remaining : Math.min(remaining, lethal);
@@ -654,8 +697,11 @@ export class Game {
       }
 
       for (const blockerId of liveBlockers) {
-        const blockerPower =
-          this.registry.get(this.state.objects[blockerId].cardName).power ?? 0;
+        const blockerPower = characteristicsOf(
+          this.state,
+          this.registry,
+          blockerId,
+        ).power;
         if (blockerPower > 0) {
           assignments.push({
             source: blockerId,
@@ -835,12 +881,37 @@ export class Game {
       return;
     }
 
+    this.mintAbilityObject(
+      sourceId,
+      source.cardName,
+      player,
+      "activated",
+      abilityIndex,
+      targets,
+    );
+    this.emit({
+      type: "ability-activated",
+      source: sourceId,
+      player,
+      onStack: true,
+    });
+    this.afterPlayerAction(player);
+  }
+
+  private mintAbilityObject(
+    sourceId: ObjectId,
+    cardName: string,
+    controller: PlayerId,
+    abilityKind: "activated" | "triggered",
+    abilityIndex: number,
+    targets: readonly TargetRef[],
+  ): ObjectId {
     const abilityId = this.mintObjectId();
     this.state.objects[abilityId] = {
       id: abilityId,
-      cardName: source.cardName,
-      owner: player,
-      controller: player,
+      cardName,
+      owner: controller,
+      controller,
       zone: "stack",
       tapped: false,
       damageMarked: 0,
@@ -851,17 +922,14 @@ export class Game {
       blockedBy: [],
       blocked: false,
       kind: "ability",
+      abilityKind,
       sourceObjectId: sourceId,
       abilityIndex,
+      counters: {},
+      modifiers: [],
     };
     this.state.zones.shared.stack.push(abilityId);
-    this.emit({
-      type: "ability-activated",
-      source: sourceId,
-      player,
-      onStack: true,
-    });
-    this.afterPlayerAction(player);
+    return abilityId;
   }
 
   private assertHasPriority(player: PlayerId): void {
@@ -883,9 +951,7 @@ export class Game {
   }
 
   private afterPlayerAction(player: PlayerId): void {
-    this.runStateBasedActions();
-    if (this.state.result.over) return;
-    this.grantPriority(player);
+    this.prepareForPriority(player);
   }
 
   // --- mana ------------------------------------------------------
@@ -1057,7 +1123,7 @@ export class Game {
         priority.holder = null;
         return;
       }
-      this.grantPriority(this.activePlayer);
+      this.prepareForPriority(this.activePlayer);
     } else {
       priority.active = false;
       priority.holder = null;
@@ -1122,10 +1188,17 @@ export class Game {
     }
   }
 
+  private stackAbilityOf(object: GameObject): StackAbility {
+    const def = this.registry.get(object.cardName);
+    const index = object.abilityIndex ?? 0;
+    return object.abilityKind === "triggered"
+      ? def.triggered[index]
+      : def.activated[index];
+  }
+
   private resolveAbility(object: GameObject): void {
     const id = object.id;
-    const def = this.registry.get(object.cardName);
-    const ability = def.activated[object.abilityIndex ?? 0];
+    const ability = this.stackAbilityOf(object);
     const targets = object.targets ?? [];
     const source = object.sourceObjectId ?? id;
 
@@ -1157,6 +1230,152 @@ export class Game {
     const index = stack.indexOf(id);
     if (index >= 0) stack.splice(index, 1);
     delete this.state.objects[id];
+  }
+
+  // --- triggered abilities ------------------------------------
+
+  /** Scan for triggered abilities that just fired and queue them. */
+  private detectTriggers(event: GameEvent): void {
+    const candidates = new Set<ObjectId>(this.state.zones.shared.battlefield);
+    if (event.type === "permanent-destroyed") candidates.add(event.object);
+    for (const id of candidates) {
+      const object = this.state.objects[id];
+      if (object === undefined) continue;
+      const abilities = this.registry.get(object.cardName).triggered;
+      abilities.forEach((ability, index) => {
+        if (this.triggerMatches(ability.trigger, event, object)) {
+          this.state.pendingTriggers.push({
+            sourceObjectId: id,
+            cardName: object.cardName,
+            abilityIndex: index,
+            controller: object.controller,
+          });
+        }
+      });
+    }
+  }
+
+  private triggerMatches(
+    spec: TriggerSpec,
+    event: GameEvent,
+    self: GameObject,
+  ): boolean {
+    switch (spec.on) {
+      case "predicate":
+        return spec.match(event);
+      case "enters-battlefield":
+        return (
+          event.type === "permanent-entered-battlefield" &&
+          this.matchesWho(spec.who, event.object, self)
+        );
+      case "dies":
+        return (
+          event.type === "permanent-destroyed" &&
+          this.matchesWho(spec.who, event.object, self)
+        );
+      case "attacks":
+        return (
+          event.type === "attacker-declared" &&
+          this.matchesWho(spec.who, event.attacker, self)
+        );
+      case "step-begins":
+        return (
+          event.type === "step-began" &&
+          event.step === spec.step &&
+          (spec.who !== "you" || this.activePlayer === self.controller)
+        );
+      default:
+        return false;
+    }
+  }
+
+  private matchesWho(
+    who: TriggerWho,
+    subject: ObjectId,
+    self: GameObject,
+  ): boolean {
+    switch (who) {
+      case "any":
+        return true;
+      case "self":
+        return subject === self.id;
+      case "you":
+        return this.activePlayer === self.controller;
+      case "you-control": {
+        const object = this.state.objects[subject];
+        return object !== undefined && object.controller === self.controller;
+      }
+      default:
+        return false;
+    }
+  }
+
+  /** Put every waiting trigger on the stack (APNAP). Returns whether any were. */
+  private placePendingTriggers(): boolean {
+    if (this.state.pendingTriggers.length === 0) return false;
+    const pending = this.state.pendingTriggers;
+    this.state.pendingTriggers = [];
+
+    const ordered = [
+      ...pending.filter((t) => t.controller === this.activePlayer),
+      ...pending.filter((t) => t.controller !== this.activePlayer),
+    ];
+    for (const trigger of ordered) this.placeTriggerOnStack(trigger);
+    return true;
+  }
+
+  private placeTriggerOnStack(trigger: {
+    readonly sourceObjectId: ObjectId;
+    readonly cardName: string;
+    readonly abilityIndex: number;
+    readonly controller: PlayerId;
+  }): void {
+    const ability =
+      this.registry.get(trigger.cardName).triggered[trigger.abilityIndex];
+
+    let targets: readonly TargetRef[] = [];
+    if (ability.targets.length > 0) {
+      const legalOptions = ability.targets.map((spec) =>
+        legalTargets(this.state, this.registry, spec),
+      );
+      if (legalOptions.some((options) => options.length === 0)) {
+        this.emit({
+          type: "trigger-removed",
+          source: trigger.sourceObjectId,
+          reason: "no legal targets",
+        });
+        return;
+      }
+      const chosen = this.controllers[trigger.controller].chooseTargets(
+        { state: this.state, player: trigger.controller },
+        trigger.cardName,
+        ability.targets,
+        legalOptions,
+      );
+      if (chosen.length !== ability.targets.length) {
+        throw new Error(`bad target count for ${trigger.cardName}'s trigger`);
+      }
+      ability.targets.forEach((spec, i) => {
+        if (!isLegalTarget(this.state, this.registry, spec, chosen[i])) {
+          throw new Error(`illegal target chosen for ${trigger.cardName}'s trigger`);
+        }
+      });
+      targets = [...chosen];
+    }
+
+    this.mintAbilityObject(
+      trigger.sourceObjectId,
+      trigger.cardName,
+      trigger.controller,
+      "triggered",
+      trigger.abilityIndex,
+      targets,
+    );
+    this.emit({
+      type: "ability-triggered",
+      source: trigger.sourceObjectId,
+      controller: trigger.controller,
+    });
   }
 
   private anyTargetLegal(
@@ -1200,7 +1419,42 @@ export class Game {
       tapPermanent: (target) => this.setTapped(target, true),
       untapPermanent: (target) => this.setTapped(target, false),
       destroyPermanent: (target) => this.destroyByEffect(target),
+      modifyPt: (target, power, toughness, duration) =>
+        this.modifyPt(target, power, toughness, duration),
+      addCounter: (target, counter, amount) =>
+        this.addCounter(target, counter, amount),
     };
+  }
+
+  private modifyPt(
+    target: TargetRef,
+    power: number,
+    toughness: number,
+    duration: PtDuration,
+  ): void {
+    if (target.kind !== "object") return;
+    const object = this.state.objects[target.object];
+    if (object === undefined || object.zone !== "battlefield") return;
+    object.modifiers.push({
+      power,
+      toughness,
+      untilEndOfTurn: duration === "end-of-turn",
+    });
+    this.emit({
+      type: "pt-modified",
+      object: target.object,
+      power,
+      toughness,
+      duration,
+    });
+  }
+
+  private addCounter(target: TargetRef, counter: string, amount: number): void {
+    if (target.kind !== "object") return;
+    const object = this.state.objects[target.object];
+    if (object === undefined || object.zone !== "battlefield") return;
+    object.counters[counter] = (object.counters[counter] ?? 0) + amount;
+    this.emit({ type: "counter-added", object: target.object, counter, amount });
   }
 
   private setTapped(target: TargetRef, tapped: boolean): void {
@@ -1285,7 +1539,7 @@ export class Game {
         const object = this.state.objects[id];
         const def = this.registry.get(object.cardName);
         if (!def.types.includes("creature")) continue;
-        const toughness = def.toughness ?? 0;
+        const toughness = characteristicsOf(this.state, this.registry, id).toughness;
         let reason: string | null = null;
         if (toughness <= 0) {
           reason = "toughness is 0 or less";
@@ -1341,11 +1595,13 @@ export class Game {
     object.zone = to;
     this.zoneList(to, object.owner).push(id);
 
-    // A change of zone always leaves combat and drops stack targets.
+    // A change of zone resets everything that only applies in one zone.
     object.attacking = null;
     object.blocking = null;
     object.blockedBy = [];
     object.blocked = false;
+    object.counters = {};
+    object.modifiers = [];
 
     if (to === "battlefield") {
       object.enteredBattlefieldOnTurn = this.state.turn.number;
@@ -1366,6 +1622,8 @@ export class Game {
   private emit(event: GameEventInput): void {
     const seq = this.state.eventSeq;
     this.state.eventSeq += 1;
-    this.state.eventLog.push({ ...event, seq } as GameEvent);
+    const full = { ...event, seq } as GameEvent;
+    this.state.eventLog.push(full);
+    this.detectTriggers(full);
   }
 }

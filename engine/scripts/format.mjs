@@ -45,6 +45,18 @@ export const makeFormatter = (game) => {
         }`;
       case "ability-resolved":
         return `${name(e.source)}'s ability resolves`;
+      case "ability-triggered":
+        return `${name(e.source)}'s trigger goes on the stack (${e.controller})`;
+      case "trigger-removed":
+        return `${name(e.source)}'s trigger removed — ${e.reason}`;
+      case "pt-modified":
+        return `${name(e.object)} ${e.power >= 0 ? "+" : ""}${e.power}/${
+          e.toughness >= 0 ? "+" : ""
+        }${e.toughness}${e.duration === "end-of-turn" ? " until EOT" : ""}`;
+      case "counter-added":
+        return `${name(e.object)} gets ${e.amount} ${e.counter} counter(s)`;
+      case "pt-modifier-expired":
+        return `${e.objects.map(name).join(", ")} — modifiers wear off`;
       case "attacker-declared":
         return `${name(e.attacker)} attacks ${e.defender}`;
       case "blocker-declared":

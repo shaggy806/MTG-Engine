@@ -42,10 +42,30 @@ export interface GameObject {
   blocked: boolean;
   /** `"card"` for a real card/token; `"ability"` for an ability on the stack. */
   kind: "card" | "ability";
+  /** For an ability object: `"activated"` or `"triggered"`. */
+  abilityKind: "activated" | "triggered" | null;
   /** For an ability object: the permanent whose ability this is. */
   sourceObjectId: ObjectId | null;
-  /** For an ability object: index into the source's `activated` list. */
+  /** For an ability object: index into the source's `activated`/`triggered` list. */
   abilityIndex: number | null;
+  /** Counters on this object, e.g. `{ "+1/+1": 2 }`. Cleared on any zone change. */
+  counters: Record<string, number>;
+  /** Temporary power/toughness modifiers. `untilEndOfTurn` ones expire in cleanup. */
+  modifiers: PtModifier[];
+}
+
+export interface PtModifier {
+  power: number;
+  toughness: number;
+  untilEndOfTurn: boolean;
+}
+
+/** A triggered ability waiting to be put on the stack (rule 603.3). */
+export interface PendingTrigger {
+  readonly sourceObjectId: ObjectId;
+  readonly cardName: string;
+  readonly abilityIndex: number;
+  readonly controller: PlayerId;
 }
 
 export interface PlayerState {
@@ -116,6 +136,8 @@ export interface GameState {
   turn: TurnState;
   priority: PriorityState;
   result: GameResult;
+  /** Triggered abilities that have fired but not yet been put on the stack. */
+  pendingTriggers: PendingTrigger[];
   eventLog: GameEvent[];
   eventSeq: number;
   nextObjectSeq: number;

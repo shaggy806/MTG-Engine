@@ -5,12 +5,15 @@
  *
  * The engine ({@link Game}) supplies the concrete {@link EffectApi} implementation
  * — these functions just describe *what* to do. A `target` field is an index
- * into the spell's or ability's chosen targets.
+ * into the spell's or ability's chosen targets, or the literal `"source"`.
  */
 
 import type { ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { TargetRef } from "./target.js";
+
+export type EffectTargetRef = number | "source";
+export type PtDuration = "end-of-turn" | "permanent";
 
 /** A declarative effect. Grows as milestones add vocabulary. */
 export type EffectSpec =
@@ -20,7 +23,20 @@ export type EffectSpec =
   | { readonly kind: "gain-life"; readonly amount: number }
   | { readonly kind: "tap"; readonly target: number }
   | { readonly kind: "untap"; readonly target: number }
-  | { readonly kind: "destroy"; readonly target: number };
+  | { readonly kind: "destroy"; readonly target: number }
+  | {
+      readonly kind: "modify-pt";
+      readonly target: EffectTargetRef;
+      readonly power: number;
+      readonly toughness: number;
+      readonly duration: PtDuration;
+    }
+  | {
+      readonly kind: "add-counter";
+      readonly target: EffectTargetRef;
+      readonly counter: string;
+      readonly amount: number;
+    };
 
 /** Primitive mutations an effect can perform. Implemented by the engine. */
 export interface EffectApi {
@@ -32,6 +48,13 @@ export interface EffectApi {
   tapPermanent(target: TargetRef): void;
   untapPermanent(target: TargetRef): void;
   destroyPermanent(target: TargetRef): void;
+  modifyPt(
+    target: TargetRef,
+    power: number,
+    toughness: number,
+    duration: PtDuration,
+  ): void;
+  addCounter(target: TargetRef, counter: string, amount: number): void;
 }
 
 export interface ResolutionContext extends EffectApi {
@@ -42,6 +65,14 @@ export interface ResolutionContext extends EffectApi {
 
 /** Imperative escape hatch for a spell or ability the vocab can't express. */
 export type SpellResolver = (ctx: ResolutionContext) => void;
+
+function resolveEffectTarget(
+  ref: EffectTargetRef,
+  ctx: ResolutionContext,
+): TargetRef | undefined {
+  if (ref === "source") return { kind: "object", object: ctx.source };
+  return ctx.targets[ref];
+}
 
 export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void {
   switch (spec.kind) {
@@ -72,6 +103,20 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     case "destroy": {
       const target = ctx.targets[spec.target];
       if (target !== undefined) ctx.destroyPermanent(target);
+      return;
+    }
+    case "modify-pt": {
+      const target = resolveEffectTarget(spec.target, ctx);
+      if (target !== undefined) {
+        ctx.modifyPt(target, spec.power, spec.toughness, spec.duration);
+      }
+      return;
+    }
+    case "add-counter": {
+      const target = resolveEffectTarget(spec.target, ctx);
+      if (target !== undefined) {
+        ctx.addCounter(target, spec.counter, spec.amount);
+      }
       return;
     }
     default:

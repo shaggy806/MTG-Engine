@@ -59,8 +59,11 @@ const spawn = (
     blockedBy: [],
     blocked: false,
     kind: "card",
+    abilityKind: null,
     sourceObjectId: null,
     abilityIndex: null,
+    counters: {},
+    modifiers: [],
   };
   game.state.zones.shared.battlefield.push(id);
   return id;

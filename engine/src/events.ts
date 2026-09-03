@@ -79,6 +79,33 @@ export type GameEvent =
     })
   | (Base & { readonly type: "ability-resolved"; readonly source: ObjectId })
   | (Base & {
+      readonly type: "ability-triggered";
+      readonly source: ObjectId;
+      readonly controller: PlayerId;
+    })
+  | (Base & {
+      readonly type: "trigger-removed";
+      readonly source: ObjectId;
+      readonly reason: string;
+    })
+  | (Base & {
+      readonly type: "pt-modified";
+      readonly object: ObjectId;
+      readonly power: number;
+      readonly toughness: number;
+      readonly duration: "end-of-turn" | "permanent";
+    })
+  | (Base & {
+      readonly type: "counter-added";
+      readonly object: ObjectId;
+      readonly counter: string;
+      readonly amount: number;
+    })
+  | (Base & {
+      readonly type: "pt-modifier-expired";
+      readonly objects: readonly ObjectId[];
+    })
+  | (Base & {
       readonly type: "attacker-declared";
       readonly attacker: ObjectId;
       readonly defender: PlayerId;

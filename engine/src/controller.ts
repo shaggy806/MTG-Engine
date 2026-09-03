@@ -7,6 +7,7 @@
 import type { Action } from "./actions.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameObject, GameState } from "./state.js";
+import type { TargetRef, TargetSpec } from "./target.js";
 
 export interface ControllerView {
   readonly state: GameState;
@@ -39,7 +40,21 @@ export interface PlayerController {
     attacker: ObjectId,
     blockers: readonly ObjectId[],
   ): readonly ObjectId[];
+  /**
+   * Choose one target per spec for a triggered ability being put on the stack.
+   * `legalOptions[i]` is the non-empty list of legal targets for `specs[i]`.
+   */
+  chooseTargets(
+    view: ControllerView,
+    sourceName: string,
+    specs: readonly TargetSpec[],
+    legalOptions: readonly (readonly TargetRef[])[],
+  ): readonly TargetRef[];
 }
+
+const firstOfEach = (
+  legalOptions: readonly (readonly TargetRef[])[],
+): readonly TargetRef[] => legalOptions.map((options) => options[0]);
 
 const passFor = (player: PlayerId): Action => ({
   type: "pass-priority",
@@ -85,6 +100,15 @@ export class AutomaticController implements PlayerController {
   ): readonly ObjectId[] {
     return blockers;
   }
+
+  chooseTargets(
+    _view: ControllerView,
+    _sourceName: string,
+    _specs: readonly TargetSpec[],
+    legalOptions: readonly (readonly TargetRef[])[],
+  ): readonly TargetRef[] {
+    return firstOfEach(legalOptions);
+  }
 }
 
 /** A queued action, optionally gated on a condition being true. */
@@ -105,6 +129,12 @@ type OrderChooser = (
   attacker: ObjectId,
   blockers: readonly ObjectId[],
 ) => readonly ObjectId[];
+type TargetChooser = (
+  view: ControllerView,
+  sourceName: string,
+  specs: readonly TargetSpec[],
+  legalOptions: readonly (readonly TargetRef[])[],
+) => readonly TargetRef[];
 
 /**
  * Plays a fixed queue of priority actions (each firing when its `when` guard is
@@ -118,6 +148,8 @@ export class ScriptedController implements PlayerController {
   declareAttackersFn: AttackChooser = () => [];
   declareBlockersFn: BlockChooser = () => [];
   orderBlockersFn: OrderChooser = (_view, _attacker, blockers) => blockers;
+  chooseTargetsFn: TargetChooser = (_view, _source, _specs, legalOptions) =>
+    firstOfEach(legalOptions);
 
   constructor(playerId: PlayerId, script: readonly ScriptEntry[] = []) {
     this.playerId = playerId;
@@ -162,5 +194,14 @@ export class ScriptedController implements PlayerController {
     blockers: readonly ObjectId[],
   ): readonly ObjectId[] {
     return this.orderBlockersFn(view, attacker, blockers);
+  }
+
+  chooseTargets(
+    view: ControllerView,
+    sourceName: string,
+    specs: readonly TargetSpec[],
+    legalOptions: readonly (readonly TargetRef[])[],
+  ): readonly TargetRef[] {
+    return this.chooseTargetsFn(view, sourceName, specs, legalOptions);
   }
 }
