@@ -1,27 +1,29 @@
 /**
- * A `PlayerController` supplies the decisions the rules require of a player:
- * what to do when holding priority, which cards to discard in cleanup, and the
- * combat declarations.
+ * A `PlayerController` supplies the decisions the rules require of a player.
+ *
+ * `act(view)` is the single entry point: when `view.state.awaiting` is set the
+ * controller must return the matching declaration, otherwise it returns any
+ * legal priority action. The base classes implement `act` by delegating to the
+ * per-decision methods below, so subclasses only override what they care about.
  */
 
-import type { Action } from "./actions.js";
+import type {
+  Action,
+  AttackerDeclaration,
+  BlockerDeclaration,
+  LegalAction,
+} from "./actions.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameObject, GameState } from "./state.js";
 import type { TargetRef, TargetSpec } from "./target.js";
 
+export type { AttackerDeclaration, BlockerDeclaration };
+
 export interface ControllerView {
   readonly state: GameState;
   readonly player: PlayerId;
-}
-
-export interface AttackerDeclaration {
-  readonly attacker: ObjectId;
-  readonly defender: PlayerId;
-}
-
-export interface BlockerDeclaration {
-  readonly blocker: ObjectId;
-  readonly attacker: ObjectId;
+  /** Everything this player may legally do right now. */
+  legalActions(): readonly LegalAction[];
 }
 
 export interface PlayerController {
@@ -30,9 +32,9 @@ export interface PlayerController {
   act(view: ControllerView): Action;
   /** Choose exactly `count` cards from `hand` to discard. */
   chooseDiscards(hand: readonly GameObject[], count: number): readonly ObjectId[];
-  /** Declare this player's attackers (called on their turn's declare-attackers step). */
+  /** Declare this player's attackers. */
   declareAttackers(view: ControllerView): readonly AttackerDeclaration[];
-  /** Declare this player's blockers (called on the declare-blockers step). */
+  /** Declare this player's blockers. */
   declareBlockers(view: ControllerView): readonly BlockerDeclaration[];
   /** Order the blockers assigned to one attacker (attacking player's choice). */
   orderBlockers(
@@ -52,10 +54,6 @@ export interface PlayerController {
   ): readonly TargetRef[];
 }
 
-const firstOfEach = (
-  legalOptions: readonly (readonly TargetRef[])[],
-): readonly TargetRef[] => legalOptions.map((options) => options[0]);
-
 const passFor = (player: PlayerId): Action => ({
   type: "pass-priority",
   player,
@@ -66,6 +64,38 @@ const discardFromFront = (
   count: number,
 ): readonly ObjectId[] => hand.slice(0, count).map((object) => object.id);
 
+const firstOfEach = (
+  legalOptions: readonly (readonly TargetRef[])[],
+): readonly TargetRef[] => legalOptions.map((options) => options[0]);
+
+/**
+ * Answer whatever the engine is waiting on, or `null` if it isn't waiting.
+ * Shared by every controller so `act` only has to handle priority choices.
+ */
+function answerAwaited(
+  controller: PlayerController,
+  view: ControllerView,
+): Action | null {
+  const awaiting = view.state.awaiting;
+  if (awaiting === null || awaiting.player !== controller.playerId) return null;
+  const player = controller.playerId;
+
+  if (awaiting.kind === "attackers") {
+    return { type: "declare-attackers", player, attackers: controller.declareAttackers(view) };
+  }
+  if (awaiting.kind === "blockers") {
+    return { type: "declare-blockers", player, blocks: controller.declareBlockers(view) };
+  }
+  const hand = view.state.zones.perPlayer[player].hand.map(
+    (id) => view.state.objects[id],
+  );
+  return {
+    type: "discard",
+    player,
+    cards: controller.chooseDiscards(hand, awaiting.count),
+  };
+}
+
 /** Always passes priority, never attacks or blocks; discards from the front. */
 export class AutomaticController implements PlayerController {
   readonly playerId: PlayerId;
@@ -74,8 +104,8 @@ export class AutomaticController implements PlayerController {
     this.playerId = playerId;
   }
 
-  act(_view: ControllerView): Action {
-    return passFor(this.playerId);
+  act(view: ControllerView): Action {
+    return answerAwaited(this, view) ?? passFor(this.playerId);
   }
 
   chooseDiscards(
@@ -138,7 +168,7 @@ type TargetChooser = (
 
 /**
  * Plays a fixed queue of priority actions (each firing when its `when` guard is
- * true), and delegates combat declarations to assignable callbacks. Useful for
+ * true), and delegates the other decisions to assignable callbacks. Useful for
  * tests and scripted demos.
  */
 export class ScriptedController implements PlayerController {
@@ -161,6 +191,9 @@ export class ScriptedController implements PlayerController {
   }
 
   act(view: ControllerView): Action {
+    const awaited = answerAwaited(this, view);
+    if (awaited !== null) return awaited;
+
     const next = this.queue[0];
     if (
       next !== undefined &&
@@ -203,5 +236,87 @@ export class ScriptedController implements PlayerController {
     legalOptions: readonly (readonly TargetRef[])[],
   ): readonly TargetRef[] {
     return this.chooseTargetsFn(view, sourceName, specs, legalOptions);
+  }
+}
+
+/**
+ * Picks uniformly at random from `legalActions()`. Useful as a filler opponent
+ * and as a fuzz test: a random-vs-random game that runs to completion exercises
+ * every action path the engine claims is legal.
+ */
+export class RandomController extends AutomaticController {
+  private readonly random: () => number;
+
+  constructor(playerId: PlayerId, random: () => number = Math.random) {
+    super(playerId);
+    this.random = random;
+  }
+
+  act(view: ControllerView): Action {
+    const options = view.legalActions();
+    if (options.length === 0) return passFor(this.playerId);
+    return this.toAction(options[this.pickIndex(options.length)]);
+  }
+
+  private pickIndex(length: number): number {
+    return Math.min(length - 1, Math.floor(this.random() * length));
+  }
+
+  private pickTargets(
+    options: readonly (readonly TargetRef[])[],
+  ): readonly TargetRef[] {
+    return options.map((choices) => choices[this.pickIndex(choices.length)]);
+  }
+
+  private toAction(legal: LegalAction): Action {
+    const player = this.playerId;
+    switch (legal.kind) {
+      case "play-land":
+        return { type: "play-land", player, card: legal.card };
+      case "cast-spell":
+        return {
+          type: "cast-spell",
+          player,
+          card: legal.card,
+          targets: this.pickTargets(legal.targetOptions),
+        };
+      case "activate-ability":
+        return {
+          type: "activate-ability",
+          player,
+          source: legal.source,
+          abilityIndex: legal.abilityIndex,
+          targets: this.pickTargets(legal.targetOptions),
+        };
+      case "declare-attackers":
+        return {
+          type: "declare-attackers",
+          player,
+          attackers: legal.eligible
+            .filter(() => this.random() < 0.6)
+            .map((attacker) => ({ attacker, defender: legal.defender })),
+        };
+      case "declare-blockers": {
+        const blocks: BlockerDeclaration[] = [];
+        for (const entry of legal.eligible) {
+          if (this.random() < 0.5) continue;
+          blocks.push({
+            blocker: entry.blocker,
+            attacker: entry.canBlock[this.pickIndex(entry.canBlock.length)],
+          });
+        }
+        return { type: "declare-blockers", player, blocks };
+      }
+      case "discard": {
+        const pool = [...legal.from];
+        const cards: ObjectId[] = [];
+        for (let i = 0; i < legal.count && pool.length > 0; i += 1) {
+          cards.push(pool.splice(this.pickIndex(pool.length), 1)[0]);
+        }
+        return { type: "discard", player, cards };
+      }
+      default:
+        return passFor(player);
+    }
   }
 }

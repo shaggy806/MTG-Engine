@@ -19,4 +19,5 @@ export * from "./state.js";
 export * from "./targeting.js";
 export * from "./actions.js";
 export * from "./controller.js";
+export * from "./view.js";
 export * from "./game.js";

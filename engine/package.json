@@ -24,7 +24,8 @@
     "play:combat": "tsc && node scripts/combat-demo.mjs",
     "play:abilities": "tsc && node scripts/abilities-demo.mjs",
     "play:triggers": "tsc && node scripts/triggers-demo.mjs",
-    "play:static": "tsc && node scripts/static-demo.mjs"
+    "play:static": "tsc && node scripts/static-demo.mjs",
+    "play:random": "tsc && node scripts/random-demo.mjs"
   },
   "keywords": [],
   "author": "",

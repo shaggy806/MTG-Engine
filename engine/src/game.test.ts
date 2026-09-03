@@ -147,8 +147,9 @@ describe("turn-based actions", () => {
 
   it("discards down to maximum hand size in the cleanup step", () => {
     const game = newGame();
-    // Turn 2 is Bob's: he draws to 8, then discards 1 in his cleanup.
-    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "cleanup");
+    // Turn 2 is Bob's: he draws to 8, then discards 1 in his cleanup. The
+    // discard is a dispatched action, so run on into turn 3 to observe it.
+    game.advanceUntil((s) => s.turn.number === 3);
     expect(game.handOf(B)).toHaveLength(7);
     const discards = game.eventsOfType("cards-discarded");
     expect(discards).toHaveLength(1);

@@ -13,21 +13,25 @@ React web client (`client/`). The repo is an **npm workspaces monorepo** (`works
 
 ## Engine architecture (`engine/src/`)
 
-The engine is at **milestone 5a**: static abilities + the layer system (layers 6
-and 7). Implemented — turn/step loop, casting + targeting + fizzle, LIFO stack,
-SBAs, full combat, activated abilities (auto-pay via real `{T}: Add` abilities),
-triggered abilities (ETB / dies / attacks / step-begins + predicate hatch), and a
-**continuous-effects pipeline** (`computeCharacteristics`) that folds printed
-characteristics + static abilities of battlefield permanents (anthems, lords,
-keyword grants) + counters + until-EOT modifiers in **layer/timestamp order**.
-Every P/T and keyword read (combat, evasion, SBAs) goes through it.
-**Not yet** — layers 1–5 (copy, control-change, text, **type-change**, colour),
-layer 7b (set base P/T), dependency ordering, auras/equipment (M5b), first strike
-/ trample / deathtouch, planeswalkers, tokens, sacrifice-as-cost, >2 players.
+The engine is at **milestone 6a**: the UI seam. Implemented — turn/step loop,
+casting + targeting + fizzle, LIFO stack, SBAs, full combat, activated abilities,
+triggered abilities, the layers 6+7 continuous-effects pipeline, and now
+**every decision as a dispatched action** (`declare-attackers` / `declare-blockers`
+/ `discard` alongside the priority actions), **`legalActions(player)`** enumerating
+what is playable right now with per-slot target options, and **`viewFor(player)`**
+producing a redacted, self-contained snapshot for one seat.
+**Not yet** — the React client (M6b), auras/equipment (M5b), layers 1–5
+(copy, control-change, text, **type-change**, colour), layer 7b (set base P/T),
+dependency ordering, first strike / trample / deathtouch, planeswalkers, tokens,
+sacrifice-as-cost, >2 players.
+
+`orderBlockers` (the attacking player ordering multiple blockers) is the one
+decision still taken as a synchronous controller callback rather than an action.
 
 - **`state.ts`** — `GameState` is one plain, `structuredClone`-able tree (no class instances, `Map`/`Set`, or functions inside it). Holds `rules`, players, `objects` (card instances; `GameObject.kind` `"card"`|`"ability"`, `abilityKind`, `sourceObjectId`/`abilityIndex`, `counters`, `modifiers`; combat & counter/modifier fields cleared by `moveObject` on any zone change), `zones` (`perPlayer` library/hand/graveyard + `shared` battlefield/stack/exile/command as ordered `ObjectId[]`; stack top = last), `turn`, `priority`, `result`, `pendingTriggers` (fired triggers not yet on the stack), `eventLog`. Also exports pure selectors.
 - **`game.ts`** — `Game` owns the single mutable `GameState` and is the **only** writer. `dispatch(action)`: `pass-priority` / `play-land` / `cast-spell` / `activate-ability`. `advance()` / `advanceUntil(pred)` run `tick()`. `emit()` appends the event **and** runs `detectTriggers` (scans battlefield permanents' `triggered` list against the event, queues matches to `pendingTriggers`). `prepareForPriority(player)` — the pre-priority routine used by `enterStep`, `afterPlayerAction`, and post-resolution: loop { SBAs; `placePendingTriggers` (APNAP: active player's first) } until stable, then grant priority. Mana **auto-paid** via `manaSources`/`tapManaSource`. Ability objects (activated or triggered) are minted onto the stack by `mintAbilityObject` and `delete`d from `state.objects` when they resolve. All P/T reads (combat, SBAs) go through `characteristicsOf`.
-- **`actions.ts`** — the `Action` union (kept out of `game.ts` to avoid a cycle with `controller.ts`).
+- **`actions.ts`** — the `Action` union (priority actions plus `declare-attackers` / `declare-blockers` / `discard`), the `AttackerDeclaration` / `BlockerDeclaration` payloads, and `LegalAction` (what `legalActions` returns). Kept out of `game.ts` to avoid a cycle with `controller.ts`.
+- **`view.ts`** — `viewFor(state, registry, viewer, opts)` / `game.viewFor(player)` → a `PlayerView`: your hand in full, the opponent's as a count, libraries as counts only, battlefield/stack/graveyards public with **computed** power/toughness/keywords baked in, so a client needs neither the registry nor the layer system. `{ revealAll: true }` for a hot-seat spectator.
 - **`turn.ts`** — `Phase`/`Step` string-literal unions (no `enum`), `TURN_SEQUENCE`, `nextStep`, `stepUsesPriority` (false only for untap/cleanup), `isMainPhase`.
 - **`events.ts`** — discriminated `GameEvent` union (the audit log). `emit()` takes `GameEventInput` (no `seq`).
 - **`cards.ts`** — `CardDefinition` is **declarative** (`effect`, `keywords`, `activated`, `triggered`, `static: StaticAbility[]`) with an imperative `resolve(ctx)` hatch. `StaticAbility` = `{ affects: AffectSpec, grantPt?, grantKeywords? }`; `AffectSpec` = `"self"` / `"creatures-you-control"` (`+ excludeSelf? / subtype?` for lords). Basic lands carry a synthesized `{T}: Add {C}`. `CardRegistry` resolves name → definition (environment, not serialized). `landProduces(def)`, `hasKeyword(def, kw)`, `defineCard(draft)`.
@@ -36,7 +40,7 @@ layer 7b (set base P/T), dependency ordering, auras/equipment (M5b), first strik
 - **`characteristics.ts`** — `computeCharacteristics(state, registry, id)` / `game.characteristics(id)` → `{ power, toughness, keywords: Set, types, subtypes, controller }`. Folds printed → layer 6 (keyword grants from `static` abilities + modifiers) → layer 7c (counters) → layer 7d (P/T grants + modifiers), timestamp-ordered (`GameObject.timestamp`, from `state.timestampSeq`, set in `moveObject` on entering the battlefield). **Layers 1–5 and dependency ordering are not implemented.**
 - **`target.ts`** / **`targeting.ts`** — `TargetRef` (player or object) and `TargetSpec` types; `isLegalTarget` / `legalTargets` (need the registry to know what's a creature). Checked on cast and again at resolution (all-illegal ⇒ fizzle).
 - **`mana.ts`** — `Color`/`ManaType`/`ManaPool`, `parseManaCost` (`{2}{G}` → `{generic, colored}`; no X/hybrid/`{C}` yet), `manaValue`.
-- **`controller.ts`** — `PlayerController`: `act(view)` (priority), `chooseDiscards`, `declareAttackers` / `declareBlockers` / `orderBlockers` (combat), `chooseTargets(view, sourceName, specs, legalOptions)` (triggered-ability targets; engine passes precomputed legal options). `AutomaticController` passes, never attacks/blocks, picks the first legal target. `ScriptedController` plays a `{action, when?}` queue plus assignable `*Fn` callbacks — this is what the tests use.
+- **`controller.ts`** — `PlayerController.act(view)` is the **single entry point**: when `view.state.awaiting` is set it must return that declaration, otherwise any legal priority action. `ControllerView` carries `state`, `player`, and `legalActions()`. The base classes implement `act` by delegating to `chooseDiscards` / `declareAttackers` / `declareBlockers`; `orderBlockers` and `chooseTargets` are still called directly by the engine. `AutomaticController` passes and never attacks/blocks; `ScriptedController` plays a `{action, when?}` queue plus assignable `*Fn` callbacks (what the tests use); `RandomController` picks uniformly from `legalActions()`.
 - **`primitives.ts`** — branded `PlayerId`/`ObjectId`, seeded `Rng` (mulberry32; `rng.seed` = stream position), `shuffle`.
 
 Snapshot/restore: `game.snapshot()` → `structuredClone(state)`; `Game.fromSnapshot(snap, env)` rebuilds (re-supply `registry`/`controllers` via `env`). Determinism: same seed + same controllers ⇒ identical replay.
@@ -63,7 +67,8 @@ Run from the repo root unless noted. Workspace scripts: `npm run <script> -w eng
 - `npm run play:combat -w engine` — `engine/scripts/combat-demo.mjs`: a multi-creature attack with a double-block and flying.
 - `npm run play:abilities -w engine` — `engine/scripts/abilities-demo.mjs`: a mana dork, an ability on the stack.
 - `npm run play:triggers -w engine` — `engine/scripts/triggers-demo.mjs`: ETB, dies, and upkeep triggers.
-- `npm run play:static -w engine` — `engine/scripts/static-demo.mjs`: a lord + an anthem buffing a hasty Goblin. Shared log formatter in `scripts/format.mjs`.
+- `npm run play:static -w engine` — `engine/scripts/static-demo.mjs`: a lord + an anthem buffing a hasty Goblin.
+- `npm run play:random -w engine` — `engine/scripts/random-demo.mjs`: N random-vs-random games (`-- --games 300`, `-- --log`). Doubles as the engine fuzzer: if `legalActions` ever offers something `dispatch` refuses, this crashes. Shared log formatter in `scripts/format.mjs`.
 
 A git-ignored `scratch.mjs` at the repo root is a scratch pad for ad-hoc exploration (`node scratch.mjs` after `npm run build -w engine`).
 

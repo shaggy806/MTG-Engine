@@ -249,7 +249,10 @@ describe("combat outcomes", () => {
     a.declareAttackersFn = () => [{ attacker: giant, defender: B }];
     b.declareBlockersFn = () => [{ blocker: bear, attacker: giant }];
 
-    game.advanceUntil((s) => s.turn.step === "declare-blockers");
+    // Wait until the blockers have actually been declared (it is an action now).
+    game.advanceUntil(
+      (s) => s.turn.step === "declare-blockers" && s.awaiting === null,
+    );
     const snap = game.snapshot();
     const restored = Game.fromSnapshot(snap);
     expect(restored.state).toEqual(snap);

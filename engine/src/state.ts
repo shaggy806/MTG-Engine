@@ -123,6 +123,17 @@ export interface GameResult {
   reason: string | null;
 }
 
+/**
+ * A decision the rules are waiting on. While this is set, the named player's
+ * only legal action is the matching declaration.
+ */
+export interface AwaitingDecision {
+  readonly kind: "attackers" | "blockers" | "discard";
+  readonly player: PlayerId;
+  /** For `"discard"`: how many cards must be discarded. */
+  readonly count: number;
+}
+
 export interface GameState {
   seed: number;
   /** Current PRNG position; rebuild the stream with `createRng(rngState)`. */
@@ -140,6 +151,8 @@ export interface GameState {
   turn: TurnState;
   priority: PriorityState;
   result: GameResult;
+  /** A declaration the engine is waiting for, or `null`. */
+  awaiting: AwaitingDecision | null;
   /** Triggered abilities that have fired but not yet been put on the stack. */
   pendingTriggers: PendingTrigger[];
   /** Monotonic source for battlefield-entry timestamps. */

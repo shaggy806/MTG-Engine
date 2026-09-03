@@ -11,7 +11,12 @@
 import { isManaAbility } from "./abilities.js";
 import type { StackAbility, TriggerSpec, TriggerWho } from "./abilities.js";
 import { actionPlayer } from "./actions.js";
-import type { Action } from "./actions.js";
+import type {
+  Action,
+  AttackerDeclaration,
+  BlockerDeclaration,
+  LegalAction,
+} from "./actions.js";
 import { CardRegistry, createDefaultRegistry } from "./cards.js";
 import type { CardDefinition, Keyword } from "./cards.js";
 import { computeCharacteristics } from "./characteristics.js";
@@ -36,6 +41,8 @@ import type { TargetRef, TargetSpec } from "./target.js";
 import { isLegalTarget, legalTargets } from "./targeting.js";
 import { PHASE_OF_STEP, isMainPhase, nextStep, stepUsesPriority } from "./turn.js";
 import type { Step } from "./turn.js";
+import { viewFor } from "./view.js";
+import type { PlayerView, ViewOptions } from "./view.js";
 
 export interface DeckList {
   readonly player: PlayerId;
@@ -123,6 +130,7 @@ export class Game {
       },
       priority: { active: false, holder: null, passed: [] },
       result: { over: false, winner: null, reason: null },
+      awaiting: null,
       pendingTriggers: [],
       timestampSeq: 0,
       eventLog: [],
@@ -206,6 +214,11 @@ export class Game {
     return structuredClone(this.state);
   }
 
+  /** A redacted, self-contained snapshot from one player's seat. */
+  viewFor(player: PlayerId, options: ViewOptions = {}): PlayerView {
+    return viewFor(this.state, this.registry, player, options);
+  }
+
   // --- driving the game ------------------------------------------------
 
   dispatch(action: Action): readonly GameEvent[] {
@@ -228,12 +241,146 @@ export class Game {
           action.targets ?? [],
         );
         break;
+      case "declare-attackers":
+        this.applyAttackerDeclarations(action.player, action.attackers);
+        break;
+      case "declare-blockers":
+        this.applyBlockerDeclarations(action.player, action.blocks);
+        break;
+      case "discard":
+        this.applyDiscard(action.player, action.cards);
+        break;
       default:
         throw new Error(
           `unhandled action: ${(action as { type: string }).type}`,
         );
     }
     return this.state.eventLog.slice(from);
+  }
+
+  /** Why `action` cannot be dispatched right now, or `null` if it can. */
+  canDispatch(action: Action): string | null {
+    switch (action.type) {
+      case "pass-priority":
+        if (this.state.awaiting !== null) return "a declaration is pending";
+        return this.state.priority.holder === action.player
+          ? null
+          : `${action.player} does not have priority`;
+      case "play-land":
+        return this.whyCannotPlayLand(action.player, action.card);
+      case "cast-spell":
+        return this.whyCannotCastSpell(action.player, action.card);
+      case "activate-ability":
+        return this.whyCannotActivateAbility(
+          action.player,
+          action.source,
+          action.abilityIndex,
+        );
+      case "declare-attackers":
+        return this.whyCannotDeclareAttackers(action.player, action.attackers);
+      case "declare-blockers":
+        return this.whyCannotDeclareBlockers(action.player, action.blocks);
+      case "discard":
+        return this.whyCannotDiscard(action.player, action.cards);
+      default:
+        return `unknown action: ${(action as { type: string }).type}`;
+    }
+  }
+
+  /** Everything `player` may legally do right now. */
+  legalActions(player: PlayerId): LegalAction[] {
+    if (this.state.result.over) return [];
+
+    const awaiting = this.state.awaiting;
+    if (awaiting !== null) {
+      if (awaiting.player !== player) return [];
+      if (awaiting.kind === "attackers") {
+        const defender = this.defendingPlayer();
+        return [
+          {
+            kind: "declare-attackers",
+            defender,
+            eligible: this.state.zones.shared.battlefield.filter(
+              (id) => this.whyCannotAttack(player, id, defender) === null,
+            ),
+          },
+        ];
+      }
+      if (awaiting.kind === "blockers") {
+        const attackers = this.currentAttackers();
+        const eligible = this.state.zones.shared.battlefield
+          .filter((id) => this.state.objects[id].controller === player)
+          .map((blocker) => ({
+            blocker,
+            canBlock: attackers.filter(
+              (attacker) => this.whyCannotBlock(player, blocker, attacker) === null,
+            ),
+          }))
+          .filter((entry) => entry.canBlock.length > 0);
+        return [{ kind: "declare-blockers", eligible }];
+      }
+      return [
+        {
+          kind: "discard",
+          count: awaiting.count,
+          from: [...this.state.zones.perPlayer[player].hand],
+        },
+      ];
+    }
+
+    if (this.state.priority.holder !== player) return [];
+    const out: LegalAction[] = [{ kind: "pass-priority" }];
+
+    for (const card of this.state.zones.perPlayer[player].hand) {
+      const cardName = this.state.objects[card].cardName;
+      const def = this.registry.get(cardName);
+      if (def.types.includes("land")) {
+        if (this.whyCannotPlayLand(player, card) === null) {
+          out.push({ kind: "play-land", card, cardName });
+        }
+      } else if (this.whyCannotCastSpell(player, card) === null) {
+        out.push({
+          kind: "cast-spell",
+          card,
+          cardName,
+          targetSpecs: def.targets,
+          targetOptions: this.targetOptionsFor(def.targets),
+        });
+      }
+    }
+
+    for (const source of this.state.zones.shared.battlefield) {
+      const object = this.state.objects[source];
+      if (object.controller !== player) continue;
+      this.registry.get(object.cardName).activated.forEach((ability, index) => {
+        if (this.whyCannotActivateAbility(player, source, index) !== null) return;
+        out.push({
+          kind: "activate-ability",
+          source,
+          abilityIndex: index,
+          cardName: object.cardName,
+          text: ability.text,
+          targetSpecs: ability.targets,
+          targetOptions: this.targetOptionsFor(ability.targets),
+        });
+      });
+    }
+
+    return out;
+  }
+
+  private controllerView(player: PlayerId): ControllerView {
+    return {
+      state: this.state,
+      player,
+      legalActions: () => this.legalActions(player),
+    };
+  }
+
+  private targetOptionsFor(
+    specs: readonly TargetSpec[],
+  ): readonly (readonly TargetRef[])[] {
+    return specs.map((spec) => legalTargets(this.state, this.registry, spec));
   }
 
   /** Run automatic game actions until the game ends. */
@@ -263,7 +410,7 @@ export class Game {
 
     if (this.state.priority.active && this.state.priority.holder !== null) {
       const holder = this.state.priority.holder;
-      const view: ControllerView = { state: this.state, player: holder };
+      const view = this.controllerView(holder);
       const action = this.controllers[holder].act(view);
       if (actionPlayer(action) !== holder) {
         throw new Error(
@@ -376,6 +523,13 @@ export class Game {
     this.emit({ type: "step-began", step, phase: PHASE_OF_STEP[step] });
 
     this.performTurnBasedActions(step);
+
+    // A turn-based action may have asked a player for a declaration; that
+    // player gets priority so they can dispatch it.
+    if (this.state.awaiting !== null) {
+      this.prepareForPriority(this.state.awaiting.player);
+      return;
+    }
     if (stepUsesPriority(step)) {
       this.prepareForPriority(this.activePlayer);
     } else {
@@ -452,19 +606,57 @@ export class Game {
     const hand = this.state.zones.perPlayer[active].hand;
     const excess = hand.length - this.state.players[active].maxHandSize;
     if (excess > 0) {
-      const chosen = this.controllers[active].chooseDiscards(
-        hand.map((id) => this.state.objects[id]),
-        excess,
-      );
-      this.assertValidDiscards(active, chosen, excess);
-      for (const id of chosen) this.moveObject(id, "graveyard");
-      this.emit({
-        type: "cards-discarded",
-        player: active,
-        objects: [...chosen],
-      });
+      // Ask for the discard; finishCleanup runs once it is dispatched.
+      this.state.awaiting = { kind: "discard", player: active, count: excess };
+      return;
     }
+    this.finishCleanup();
+  }
 
+  private applyDiscard(player: PlayerId, cards: readonly ObjectId[]): void {
+    const why = this.whyCannotDiscard(player, cards);
+    if (why !== null) throw new Error(why);
+
+    for (const id of cards) this.moveObject(id, "graveyard");
+    this.emit({ type: "cards-discarded", player, objects: [...cards] });
+    this.state.awaiting = null;
+
+    this.finishCleanup();
+    // The cleanup step normally grants no priority; move straight on.
+    this.state.priority.active = false;
+    this.state.priority.holder = null;
+    this.state.priority.passed = [];
+    this.runStateBasedActions();
+    if (this.state.result.over) return;
+    this.endStep();
+  }
+
+  private whyCannotDiscard(
+    player: PlayerId,
+    cards: readonly ObjectId[],
+  ): string | null {
+    const awaiting = this.state.awaiting;
+    if (
+      awaiting === null ||
+      awaiting.kind !== "discard" ||
+      awaiting.player !== player
+    ) {
+      return `${player} is not being asked to discard`;
+    }
+    if (cards.length !== awaiting.count) {
+      return `${player} must discard exactly ${awaiting.count} card(s), chose ${cards.length}`;
+    }
+    if (new Set(cards).size !== cards.length) {
+      return `${player} chose the same card twice to discard`;
+    }
+    const hand = new Set(this.state.zones.perPlayer[player].hand);
+    for (const id of cards) {
+      if (!hand.has(id)) return `${player} tried to discard ${id}, not in hand`;
+    }
+    return null;
+  }
+
+  private finishCleanup(): void {
     const expired: ObjectId[] = [];
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
@@ -487,27 +679,6 @@ export class Game {
     }
     if (cleared.length > 0) {
       this.emit({ type: "damage-cleared", objects: cleared });
-    }
-  }
-
-  private assertValidDiscards(
-    player: PlayerId,
-    chosen: readonly ObjectId[],
-    expected: number,
-  ): void {
-    if (chosen.length !== expected) {
-      throw new Error(
-        `${player} must discard exactly ${expected} card(s), chose ${chosen.length}`,
-      );
-    }
-    if (new Set(chosen).size !== chosen.length) {
-      throw new Error(`${player} chose the same card twice to discard`);
-    }
-    const hand = new Set(this.state.zones.perPlayer[player].hand);
-    for (const id of chosen) {
-      if (!hand.has(id)) {
-        throw new Error(`${player} tried to discard ${id}, not in hand`);
-      }
     }
   }
 
@@ -541,101 +712,165 @@ export class Game {
     );
   }
 
+  /** Ask the active player to declare attackers (rule 508.1). */
   private declareAttackersStep(): void {
-    const attackingPlayer = this.activePlayer;
-    const defender = this.defendingPlayer();
-    const declarations =
-      this.controllers[attackingPlayer].declareAttackers({
-        state: this.state,
-        player: attackingPlayer,
-      });
-
-    const seen = new Set<ObjectId>();
-    for (const { attacker: creatureId, defender: target } of declarations) {
-      if (seen.has(creatureId)) {
-        throw new Error(`${creatureId} was declared as an attacker twice`);
-      }
-      seen.add(creatureId);
-
-      const object = this.state.objects[creatureId];
-      const def = this.creatureDef(creatureId);
-      if (object === undefined || def === null) {
-        throw new Error(`${creatureId} is not a creature on the battlefield`);
-      }
-      if (object.controller !== attackingPlayer) {
-        throw new Error(`${def.name} is not controlled by the active player`);
-      }
-      if (object.tapped) {
-        throw new Error(`${def.name} is tapped and cannot attack`);
-      }
-      if (this.objHasKeyword(creatureId, "defender")) {
-        throw new Error(`${def.name} has defender and cannot attack`);
-      }
-      if (
-        this.hasSummoningSickness(object) &&
-        !this.objHasKeyword(creatureId, "haste")
-      ) {
-        throw new Error(`${def.name} has summoning sickness`);
-      }
-      if (target !== defender) {
-        throw new Error("attackers can only attack the defending player");
-      }
-
-      object.attacking = target;
-      object.blockedBy = [];
-      object.blocked = false;
-      if (!this.objHasKeyword(creatureId, "vigilance")) {
-        object.tapped = true;
-      }
-      this.emit({
-        type: "attacker-declared",
-        attacker: creatureId,
-        defender: target,
-      });
-    }
+    this.state.awaiting = {
+      kind: "attackers",
+      player: this.activePlayer,
+      count: 0,
+    };
   }
 
+  /** Ask the defending player to declare blockers, if anyone is attacking. */
   private declareBlockersStep(): void {
-    const attackers = this.currentAttackers();
-    if (attackers.length === 0) return;
+    if (this.currentAttackers().length === 0) return;
+    this.state.awaiting = {
+      kind: "blockers",
+      player: this.defendingPlayer(),
+      count: 0,
+    };
+  }
 
-    const defender = this.defendingPlayer();
-    const declarations = this.controllers[defender].declareBlockers({
-      state: this.state,
-      player: defender,
-    });
+  private whyCannotAttack(
+    player: PlayerId,
+    creatureId: ObjectId,
+    target: PlayerId,
+  ): string | null {
+    const object = this.state.objects[creatureId];
+    const def = this.creatureDef(creatureId);
+    if (object === undefined || def === null) {
+      return `${creatureId} is not a creature on the battlefield`;
+    }
+    if (object.controller !== player) {
+      return `${def.name} is not controlled by the active player`;
+    }
+    if (object.tapped) return `${def.name} is tapped and cannot attack`;
+    if (this.objHasKeyword(creatureId, "defender")) {
+      return `${def.name} has defender and cannot attack`;
+    }
+    if (
+      this.hasSummoningSickness(object) &&
+      !this.objHasKeyword(creatureId, "haste")
+    ) {
+      return `${def.name} has summoning sickness`;
+    }
+    if (target !== this.defendingPlayer()) {
+      return "attackers can only attack the defending player";
+    }
+    return null;
+  }
 
-    for (const { blocker: blockerId, attacker: attackerId } of declarations) {
-      const blocker = this.state.objects[blockerId];
-      const blockerDef = this.creatureDef(blockerId);
-      if (blocker === undefined || blockerDef === null) {
-        throw new Error(`${blockerId} is not a creature on the battlefield`);
-      }
-      if (blocker.controller !== defender) {
-        throw new Error(`${blockerDef.name} is not controlled by the defender`);
-      }
-      if (blocker.tapped) {
-        throw new Error(`${blockerDef.name} is tapped and cannot block`);
-      }
-      if (blocker.blocking !== null) {
-        throw new Error(`${blockerDef.name} is already blocking`);
-      }
+  private whyCannotBlock(
+    player: PlayerId,
+    blockerId: ObjectId,
+    attackerId: ObjectId,
+  ): string | null {
+    const blocker = this.state.objects[blockerId];
+    const blockerDef = this.creatureDef(blockerId);
+    if (blocker === undefined || blockerDef === null) {
+      return `${blockerId} is not a creature on the battlefield`;
+    }
+    if (blocker.controller !== player) {
+      return `${blockerDef.name} is not controlled by the defender`;
+    }
+    if (blocker.tapped) return `${blockerDef.name} is tapped and cannot block`;
 
-      const attacker = this.state.objects[attackerId];
-      if (attacker === undefined || attacker.attacking === null) {
-        throw new Error(`${attackerId} is not attacking`);
-      }
+    const attacker = this.state.objects[attackerId];
+    if (attacker === undefined || attacker.attacking === null) {
+      return `${attackerId} is not attacking`;
+    }
+    if (
+      this.objHasKeyword(attackerId, "flying") &&
+      !this.objHasKeyword(blockerId, "flying") &&
+      !this.objHasKeyword(blockerId, "reach")
+    ) {
       const attackerDef = this.registry.get(attacker.cardName);
-      if (
-        this.objHasKeyword(attackerId, "flying") &&
-        !this.objHasKeyword(blockerId, "flying") &&
-        !this.objHasKeyword(blockerId, "reach")
-      ) {
-        throw new Error(
-          `${blockerDef.name} can't block ${attackerDef.name} (flying)`,
-        );
-      }
+      return `${blockerDef.name} can't block ${attackerDef.name} (flying)`;
+    }
+    return null;
+  }
 
+  private whyCannotDeclareAttackers(
+    player: PlayerId,
+    declarations: readonly AttackerDeclaration[],
+  ): string | null {
+    const awaiting = this.state.awaiting;
+    if (
+      awaiting === null ||
+      awaiting.kind !== "attackers" ||
+      awaiting.player !== player
+    ) {
+      return `${player} is not being asked to declare attackers`;
+    }
+    const seen = new Set<ObjectId>();
+    for (const { attacker, defender } of declarations) {
+      if (seen.has(attacker)) {
+        return `${attacker} was declared as an attacker twice`;
+      }
+      seen.add(attacker);
+      const why = this.whyCannotAttack(player, attacker, defender);
+      if (why !== null) return why;
+    }
+    return null;
+  }
+
+  private whyCannotDeclareBlockers(
+    player: PlayerId,
+    blocks: readonly BlockerDeclaration[],
+  ): string | null {
+    const awaiting = this.state.awaiting;
+    if (
+      awaiting === null ||
+      awaiting.kind !== "blockers" ||
+      awaiting.player !== player
+    ) {
+      return `${player} is not being asked to declare blockers`;
+    }
+    const seen = new Set<ObjectId>();
+    for (const { blocker, attacker } of blocks) {
+      if (seen.has(blocker)) {
+        const def = this.creatureDef(blocker);
+        return `${def?.name ?? blocker} is already blocking`;
+      }
+      seen.add(blocker);
+      const why = this.whyCannotBlock(player, blocker, attacker);
+      if (why !== null) return why;
+    }
+    return null;
+  }
+
+  private applyAttackerDeclarations(
+    player: PlayerId,
+    declarations: readonly AttackerDeclaration[],
+  ): void {
+    const why = this.whyCannotDeclareAttackers(player, declarations);
+    if (why !== null) throw new Error(why);
+
+    for (const { attacker, defender } of declarations) {
+      const object = this.state.objects[attacker];
+      object.attacking = defender;
+      object.blockedBy = [];
+      object.blocked = false;
+      if (!this.objHasKeyword(attacker, "vigilance")) {
+        object.tapped = true;
+      }
+      this.emit({ type: "attacker-declared", attacker, defender });
+    }
+
+    this.state.awaiting = null;
+    this.prepareForPriority(this.activePlayer);
+  }
+
+  private applyBlockerDeclarations(
+    player: PlayerId,
+    blocks: readonly BlockerDeclaration[],
+  ): void {
+    const why = this.whyCannotDeclareBlockers(player, blocks);
+    if (why !== null) throw new Error(why);
+
+    for (const { blocker: blockerId, attacker: attackerId } of blocks) {
+      const blocker = this.state.objects[blockerId];
+      const attacker = this.state.objects[attackerId];
       blocker.blocking = attackerId;
       attacker.blockedBy.push(blockerId);
       attacker.blocked = true;
@@ -646,13 +881,15 @@ export class Game {
       });
     }
 
-    // The attacking player orders each attacker's blockers for damage assignment.
+    // The attacking player orders each attacker's blockers for damage
+    // assignment. This is still a synchronous controller callback rather than
+    // a dispatched action; the default order is the declaration order.
     const attackingPlayer = this.activePlayer;
-    for (const attackerId of attackers) {
+    for (const attackerId of this.currentAttackers()) {
       const attacker = this.state.objects[attackerId];
       if (attacker.blockedBy.length > 1) {
         const ordered = this.controllers[attackingPlayer].orderBlockers(
-          { state: this.state, player: attackingPlayer },
+          this.controllerView(attackingPlayer),
           attackerId,
           [...attacker.blockedBy],
         );
@@ -660,6 +897,9 @@ export class Game {
         attacker.blockedBy = [...ordered];
       }
     }
+
+    this.state.awaiting = null;
+    this.prepareForPriority(this.activePlayer);
   }
 
   private combatDamageStep(): void {
@@ -754,20 +994,55 @@ export class Game {
 
   // --- player actions ----------------------------------------------
 
-  private playLand(player: PlayerId, cardId: ObjectId): void {
-    this.assertHasPriority(player);
-    this.assertSorcerySpeed(player, "play a land");
-    const playerState = this.state.players[player];
-    if (playerState.landsPlayedThisTurn >= this.state.rules.maxLandsPerTurn) {
-      throw new Error(`${player} has already played a land this turn`);
+  private whyCannotAct(player: PlayerId): string | null {
+    if (this.state.awaiting !== null) return "a declaration is pending";
+    if (this.state.priority.holder !== player) {
+      return `${player} does not have priority`;
     }
+    return null;
+  }
+
+  private whyNotSorcerySpeed(player: PlayerId, what: string): string | null {
+    if (this.activePlayer !== player) {
+      return `can only ${what} on your own turn`;
+    }
+    if (!isMainPhase(this.state.turn.step)) {
+      return `can only ${what} during a main phase`;
+    }
+    if (this.state.zones.shared.stack.length > 0) {
+      return `can only ${what} while the stack is empty`;
+    }
+    return null;
+  }
+
+  private whyCannotPlayLand(player: PlayerId, cardId: ObjectId): string | null {
+    return (
+      this.whyCannotAct(player) ??
+      this.whyNotSorcerySpeed(player, "play a land") ??
+      this.landDropReason(player) ??
+      this.landInHandReason(player, cardId)
+    );
+  }
+
+  private landDropReason(player: PlayerId): string | null {
+    const playerState = this.state.players[player];
+    return playerState.landsPlayedThisTurn >= this.state.rules.maxLandsPerTurn
+      ? `${player} has already played a land this turn`
+      : null;
+  }
+
+  private landInHandReason(player: PlayerId, cardId: ObjectId): string | null {
     if (!this.state.zones.perPlayer[player].hand.includes(cardId)) {
-      throw new Error(`${player} does not have that card in hand`);
+      return `${player} does not have that card in hand`;
     }
     const def = this.registry.get(this.state.objects[cardId].cardName);
-    if (!def.types.includes("land")) {
-      throw new Error(`${def.name} is not a land`);
-    }
+    return def.types.includes("land") ? null : `${def.name} is not a land`;
+  }
+
+  private playLand(player: PlayerId, cardId: ObjectId): void {
+    const why = this.whyCannotPlayLand(player, cardId);
+    if (why !== null) throw new Error(why);
+    const playerState = this.state.players[player];
 
     this.moveObject(cardId, "battlefield");
     playerState.landsPlayedThisTurn += 1;
@@ -776,23 +1051,43 @@ export class Game {
     this.afterPlayerAction(player);
   }
 
+  /**
+   * Why `player` cannot cast `cardId` at all right now — ignoring which targets
+   * they would pick, but requiring that every target slot has a legal option.
+   */
+  private whyCannotCastSpell(player: PlayerId, cardId: ObjectId): string | null {
+    const blocked = this.whyCannotAct(player);
+    if (blocked !== null) return blocked;
+    if (!this.state.zones.perPlayer[player].hand.includes(cardId)) {
+      return `${player} does not have that card in hand`;
+    }
+    const def = this.registry.get(this.state.objects[cardId].cardName);
+    if (def.types.includes("land")) return "lands are played, not cast";
+    if (!def.types.includes("instant")) {
+      const timing = this.whyNotSorcerySpeed(player, `cast ${def.name}`);
+      if (timing !== null) return timing;
+    }
+    for (const spec of def.targets) {
+      if (legalTargets(this.state, this.registry, spec).length === 0) {
+        return `${def.name} has no legal ${spec} target`;
+      }
+    }
+    if (this.planManaPayment(player, parseManaCost(def.manaCost)) === null) {
+      return `${player} cannot pay the cost of ${def.name}`;
+    }
+    return null;
+  }
+
   private castSpell(
     player: PlayerId,
     cardId: ObjectId,
     targets: readonly TargetRef[],
   ): void {
-    this.assertHasPriority(player);
-    if (!this.state.zones.perPlayer[player].hand.includes(cardId)) {
-      throw new Error(`${player} does not have that card in hand`);
-    }
+    const why = this.whyCannotCastSpell(player, cardId);
+    if (why !== null) throw new Error(why);
+
     const object = this.state.objects[cardId];
     const def = this.registry.get(object.cardName);
-    if (def.types.includes("land")) {
-      throw new Error("lands are played, not cast");
-    }
-    if (!def.types.includes("instant")) {
-      this.assertSorcerySpeed(player, `cast ${def.name}`);
-    }
 
     if (targets.length !== def.targets.length) {
       throw new Error(
@@ -826,25 +1121,54 @@ export class Game {
     this.afterPlayerAction(player);
   }
 
+  private whyCannotActivateAbility(
+    player: PlayerId,
+    sourceId: ObjectId,
+    abilityIndex: number,
+  ): string | null {
+    const blocked = this.whyCannotAct(player);
+    if (blocked !== null) return blocked;
+    const source = this.state.objects[sourceId];
+    if (source === undefined || source.zone !== "battlefield") {
+      return "that permanent is not on the battlefield";
+    }
+    if (source.controller !== player) {
+      return `${player} does not control that permanent`;
+    }
+    const def = this.registry.get(source.cardName);
+    const ability = def.activated[abilityIndex];
+    if (ability === undefined) {
+      return `${def.name} has no ability #${abilityIndex}`;
+    }
+    if (ability.cost.tap) {
+      if (source.tapped) return `${def.name} is already tapped`;
+      if (this.tapAbilityBlockedBySickness(source)) {
+        return `${def.name} has summoning sickness`;
+      }
+    }
+    for (const spec of ability.targets) {
+      if (legalTargets(this.state, this.registry, spec).length === 0) {
+        return `${def.name}'s ability has no legal ${spec} target`;
+      }
+    }
+    if (this.planManaPayment(player, parseManaCost(ability.cost.mana)) === null) {
+      return `${player} cannot pay for ${def.name}'s ability`;
+    }
+    return null;
+  }
+
   private activateAbility(
     player: PlayerId,
     sourceId: ObjectId,
     abilityIndex: number,
     targets: readonly TargetRef[],
   ): void {
-    this.assertHasPriority(player);
+    const why = this.whyCannotActivateAbility(player, sourceId, abilityIndex);
+    if (why !== null) throw new Error(why);
+
     const source = this.state.objects[sourceId];
-    if (source === undefined || source.zone !== "battlefield") {
-      throw new Error("that permanent is not on the battlefield");
-    }
-    if (source.controller !== player) {
-      throw new Error(`${player} does not control that permanent`);
-    }
     const def = this.registry.get(source.cardName);
     const ability = def.activated[abilityIndex];
-    if (ability === undefined) {
-      throw new Error(`${def.name} has no ability #${abilityIndex}`);
-    }
 
     if (targets.length !== ability.targets.length) {
       throw new Error(
@@ -856,15 +1180,6 @@ export class Game {
         throw new Error(`illegal target for ${def.name}'s ability`);
       }
     });
-
-    if (ability.cost.tap) {
-      if (source.tapped) {
-        throw new Error(`${def.name} is already tapped`);
-      }
-      if (this.tapAbilityBlockedBySickness(source)) {
-        throw new Error(`${def.name} has summoning sickness`);
-      }
-    }
 
     const manaCost = parseManaCost(ability.cost.mana);
     const plan = this.planManaPayment(player, manaCost);
@@ -943,24 +1258,6 @@ export class Game {
     };
     this.state.zones.shared.stack.push(abilityId);
     return abilityId;
-  }
-
-  private assertHasPriority(player: PlayerId): void {
-    if (this.state.priority.holder !== player) {
-      throw new Error(`${player} does not have priority`);
-    }
-  }
-
-  private assertSorcerySpeed(player: PlayerId, what: string): void {
-    if (this.activePlayer !== player) {
-      throw new Error(`can only ${what} on your own turn`);
-    }
-    if (!isMainPhase(this.state.turn.step)) {
-      throw new Error(`can only ${what} during a main phase`);
-    }
-    if (this.state.zones.shared.stack.length > 0) {
-      throw new Error(`can only ${what} while the stack is empty`);
-    }
   }
 
   private afterPlayerAction(player: PlayerId): void {
@@ -1106,6 +1403,9 @@ export class Game {
 
   private passPriority(player: PlayerId): void {
     const priority = this.state.priority;
+    if (this.state.awaiting !== null) {
+      throw new Error("a declaration is pending");
+    }
     if (!priority.active || priority.holder === null) {
       throw new Error("no player currently has priority");
     }
@@ -1360,7 +1660,7 @@ export class Game {
         return;
       }
       const chosen = this.controllers[trigger.controller].chooseTargets(
-        { state: this.state, player: trigger.controller },
+        this.controllerView(trigger.controller),
         trigger.cardName,
         ability.targets,
         legalOptions,
