@@ -102,6 +102,12 @@ export type GameEvent =
       readonly amount: number;
     })
   | (Base & {
+      readonly type: "keyword-granted";
+      readonly object: ObjectId;
+      readonly keyword: string;
+      readonly duration: "end-of-turn" | "permanent";
+    })
+  | (Base & {
       readonly type: "pt-modifier-expired";
       readonly objects: readonly ObjectId[];
     })

@@ -23,7 +23,8 @@
     "play:cast": "tsc && node scripts/cast-demo.mjs",
     "play:combat": "tsc && node scripts/combat-demo.mjs",
     "play:abilities": "tsc && node scripts/abilities-demo.mjs",
-    "play:triggers": "tsc && node scripts/triggers-demo.mjs"
+    "play:triggers": "tsc && node scripts/triggers-demo.mjs",
+    "play:static": "tsc && node scripts/static-demo.mjs"
   },
   "keywords": [],
   "author": "",

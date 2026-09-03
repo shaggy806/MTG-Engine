@@ -62,6 +62,7 @@ const spawn = (
     abilityKind: null,
     sourceObjectId: null,
     abilityIndex: null,
+    timestamp: 0,
     counters: {},
     modifiers: [],
   };

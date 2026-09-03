@@ -34,6 +34,11 @@ export function isLegalTarget(
       return isLivingPlayer(state, ref);
     case "creature":
       return ref.kind === "object" && isLivingCreature(state, registry, ref.object);
+    case "permanent":
+      return (
+        ref.kind === "object" &&
+        state.objects[ref.object]?.zone === "battlefield"
+      );
     case "any-target":
     case "creature-or-player":
       return (

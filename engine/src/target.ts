@@ -11,7 +11,8 @@ export type TargetSpec =
   | "any-target"
   | "creature"
   | "player"
-  | "creature-or-player";
+  | "creature-or-player"
+  | "permanent";
 
 export const targetsPlayer = (ref: TargetRef, player: PlayerId): boolean =>
   ref.kind === "player" && ref.player === player;

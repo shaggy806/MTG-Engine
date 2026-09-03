@@ -13,26 +13,27 @@ React web client (`client/`). The repo is an **npm workspaces monorepo** (`works
 
 ## Engine architecture (`engine/src/`)
 
-The engine is at **milestone 4b**: triggered abilities + a P/T layer. Implemented
-— turn/step loop with priority, lands, casting + targeting + fizzle, LIFO stack,
-SBAs, full combat (keywords: haste, vigilance, defender, flying, reach),
-**activated abilities** (auto-pay routed through real `{T}: Add` abilities so mana
-dorks work), **triggered abilities** (ETB / dies / attacks / step-begins + a
-predicate escape hatch; detected after every event, placed on the stack APNAP
-before the next priority), and a **P/T-only characteristics layer** (`+1/+1`
-counters, until-end-of-turn modifiers via `characteristicsOf` / `game.characteristics(id)`).
-**Not yet** — the full layer system (type/colour/ability changing), first strike /
-trample / deathtouch, planeswalkers, tokens, sacrifice-as-cost, more than two players.
+The engine is at **milestone 5a**: static abilities + the layer system (layers 6
+and 7). Implemented — turn/step loop, casting + targeting + fizzle, LIFO stack,
+SBAs, full combat, activated abilities (auto-pay via real `{T}: Add` abilities),
+triggered abilities (ETB / dies / attacks / step-begins + predicate hatch), and a
+**continuous-effects pipeline** (`computeCharacteristics`) that folds printed
+characteristics + static abilities of battlefield permanents (anthems, lords,
+keyword grants) + counters + until-EOT modifiers in **layer/timestamp order**.
+Every P/T and keyword read (combat, evasion, SBAs) goes through it.
+**Not yet** — layers 1–5 (copy, control-change, text, **type-change**, colour),
+layer 7b (set base P/T), dependency ordering, auras/equipment (M5b), first strike
+/ trample / deathtouch, planeswalkers, tokens, sacrifice-as-cost, >2 players.
 
 - **`state.ts`** — `GameState` is one plain, `structuredClone`-able tree (no class instances, `Map`/`Set`, or functions inside it). Holds `rules`, players, `objects` (card instances; `GameObject.kind` `"card"`|`"ability"`, `abilityKind`, `sourceObjectId`/`abilityIndex`, `counters`, `modifiers`; combat & counter/modifier fields cleared by `moveObject` on any zone change), `zones` (`perPlayer` library/hand/graveyard + `shared` battlefield/stack/exile/command as ordered `ObjectId[]`; stack top = last), `turn`, `priority`, `result`, `pendingTriggers` (fired triggers not yet on the stack), `eventLog`. Also exports pure selectors.
 - **`game.ts`** — `Game` owns the single mutable `GameState` and is the **only** writer. `dispatch(action)`: `pass-priority` / `play-land` / `cast-spell` / `activate-ability`. `advance()` / `advanceUntil(pred)` run `tick()`. `emit()` appends the event **and** runs `detectTriggers` (scans battlefield permanents' `triggered` list against the event, queues matches to `pendingTriggers`). `prepareForPriority(player)` — the pre-priority routine used by `enterStep`, `afterPlayerAction`, and post-resolution: loop { SBAs; `placePendingTriggers` (APNAP: active player's first) } until stable, then grant priority. Mana **auto-paid** via `manaSources`/`tapManaSource`. Ability objects (activated or triggered) are minted onto the stack by `mintAbilityObject` and `delete`d from `state.objects` when they resolve. All P/T reads (combat, SBAs) go through `characteristicsOf`.
 - **`actions.ts`** — the `Action` union (kept out of `game.ts` to avoid a cycle with `controller.ts`).
 - **`turn.ts`** — `Phase`/`Step` string-literal unions (no `enum`), `TURN_SEQUENCE`, `nextStep`, `stepUsesPriority` (false only for untap/cleanup), `isMainPhase`.
 - **`events.ts`** — discriminated `GameEvent` union (the audit log). `emit()` takes `GameEventInput` (no `seq`).
-- **`cards.ts`** — `CardDefinition` is **declarative** (`effect: EffectSpec`, `keywords: Keyword[]`, `activated: ActivatedAbility[]`) with an imperative `resolve(ctx)` escape hatch (takes precedence). Basic lands carry a synthesized `{T}: Add {C}` ability. `CardRegistry` resolves a name → definition; the registry is environment, not serialized state (`GameObject.cardName` is the key). `landProduces(def)`, `hasKeyword(def, kw)`.
-- **`abilities.ts`** — `ActivatedAbility` (`cost: {mana, tap}`), `TriggeredAbility` (`trigger: TriggerSpec` — `enters-battlefield` / `dies` / `attacks` / `step-begins` / `predicate`), `isManaAbility`.
-- **`effects.ts`** — `EffectSpec` vocab (`damage`, `add-mana`, `draw`, `gain-life`, `tap`, `untap`, `destroy`, `modify-pt`, `add-counter`; `target` is a target index or `"source"`), the `EffectApi` / `ResolutionContext` that declarative effects and `resolve` scripts both call, and `applyEffectSpec`. `Game` supplies the concrete API.
-- **`characteristics.ts`** — `characteristicsOf(state, registry, id)` → current `{power, toughness}` = printed + counters + modifiers. P/T-only; **not** the full layer system.
+- **`cards.ts`** — `CardDefinition` is **declarative** (`effect`, `keywords`, `activated`, `triggered`, `static: StaticAbility[]`) with an imperative `resolve(ctx)` hatch. `StaticAbility` = `{ affects: AffectSpec, grantPt?, grantKeywords? }`; `AffectSpec` = `"self"` / `"creatures-you-control"` (`+ excludeSelf? / subtype?` for lords). Basic lands carry a synthesized `{T}: Add {C}`. `CardRegistry` resolves name → definition (environment, not serialized). `landProduces(def)`, `hasKeyword(def, kw)`, `defineCard(draft)`.
+- **`abilities.ts`** — `ActivatedAbility` (`cost: {mana, tap}`), `TriggeredAbility` (`trigger: TriggerSpec`), `isManaAbility`.
+- **`effects.ts`** — `EffectSpec` vocab (`damage`, `add-mana`, `draw`, `gain-life`, `tap`, `untap`, `destroy`, `modify-pt`, `add-counter`, `grant-keyword`; `target` is an index or `"source"`), `EffectApi` / `ResolutionContext`, `applyEffectSpec`.
+- **`characteristics.ts`** — `computeCharacteristics(state, registry, id)` / `game.characteristics(id)` → `{ power, toughness, keywords: Set, types, subtypes, controller }`. Folds printed → layer 6 (keyword grants from `static` abilities + modifiers) → layer 7c (counters) → layer 7d (P/T grants + modifiers), timestamp-ordered (`GameObject.timestamp`, from `state.timestampSeq`, set in `moveObject` on entering the battlefield). **Layers 1–5 and dependency ordering are not implemented.**
 - **`target.ts`** / **`targeting.ts`** — `TargetRef` (player or object) and `TargetSpec` types; `isLegalTarget` / `legalTargets` (need the registry to know what's a creature). Checked on cast and again at resolution (all-illegal ⇒ fizzle).
 - **`mana.ts`** — `Color`/`ManaType`/`ManaPool`, `parseManaCost` (`{2}{G}` → `{generic, colored}`; no X/hybrid/`{C}` yet), `manaValue`.
 - **`controller.ts`** — `PlayerController`: `act(view)` (priority), `chooseDiscards`, `declareAttackers` / `declareBlockers` / `orderBlockers` (combat), `chooseTargets(view, sourceName, specs, legalOptions)` (triggered-ability targets; engine passes precomputed legal options). `AutomaticController` passes, never attacks/blocks, picks the first legal target. `ScriptedController` plays a `{action, when?}` queue plus assignable `*Fn` callbacks — this is what the tests use.
@@ -61,7 +62,8 @@ Run from the repo root unless noted. Workspace scripts: `npm run <script> -w eng
 - `npm run play:cast -w engine` — `engine/scripts/cast-demo.mjs`: land drops, mana, the stack, targeting, creature death.
 - `npm run play:combat -w engine` — `engine/scripts/combat-demo.mjs`: a multi-creature attack with a double-block and flying.
 - `npm run play:abilities -w engine` — `engine/scripts/abilities-demo.mjs`: a mana dork, an ability on the stack.
-- `npm run play:triggers -w engine` — `engine/scripts/triggers-demo.mjs`: ETB, dies, and upkeep triggers. Shared log formatter in `scripts/format.mjs`.
+- `npm run play:triggers -w engine` — `engine/scripts/triggers-demo.mjs`: ETB, dies, and upkeep triggers.
+- `npm run play:static -w engine` — `engine/scripts/static-demo.mjs`: a lord + an anthem buffing a hasty Goblin. Shared log formatter in `scripts/format.mjs`.
 
 A git-ignored `scratch.mjs` at the repo root is a scratch pad for ad-hoc exploration (`node scratch.mjs` after `npm run build -w engine`).
 

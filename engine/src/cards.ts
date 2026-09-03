@@ -37,6 +37,28 @@ export type Keyword =
   | "lifelink"
   | "menace";
 
+/** Which objects a static ability applies its continuous effect to. */
+export type AffectSpec =
+  | { readonly scope: "self" }
+  | {
+      readonly scope: "creatures-you-control";
+      readonly excludeSelf?: boolean;
+      readonly subtype?: string;
+    };
+
+/**
+ * A static ability that continuously modifies characteristics. Milestone 5a
+ * covers rule 613 layers 6 (keyword grants) and 7d (P/T bonuses) only.
+ */
+export interface StaticAbility {
+  readonly affects: AffectSpec;
+  /** `[power, toughness]` bonus applied in layer 7d. */
+  readonly grantPt?: readonly [number, number];
+  /** Keywords granted in layer 6. */
+  readonly grantKeywords?: readonly Keyword[];
+  readonly text: string;
+}
+
 /** Printed characteristics of a card. Immutable reference data. */
 export interface CardDefinition {
   readonly name: string;
@@ -59,6 +81,8 @@ export interface CardDefinition {
   readonly activated: readonly ActivatedAbility[];
   /** Triggered abilities, in the order they appear on the card. */
   readonly triggered: readonly TriggeredAbility[];
+  /** Static abilities (continuous effects). */
+  readonly static: readonly StaticAbility[];
 }
 
 interface CardDraft {
@@ -77,6 +101,7 @@ interface CardDraft {
   resolve?: SpellResolver;
   activated?: readonly ActivatedAbility[];
   triggered?: readonly TriggeredAbility[];
+  static?: readonly StaticAbility[];
 }
 
 /** Build a {@link CardDefinition} from a partial draft, filling in defaults. */
@@ -97,6 +122,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     resolve: draft.resolve ?? null,
     activated: draft.activated ?? [],
     triggered: draft.triggered ?? [],
+    static: draft.static ?? [],
   };
 }
 
@@ -195,6 +221,15 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
     keywords: ["haste"],
   }),
   define({
+    name: "Goblin Raider",
+    manaCost: "{1}{R}",
+    colors: ["R"],
+    types: ["creature"],
+    subtypes: ["Goblin"],
+    power: 2,
+    toughness: 2,
+  }),
+  define({
     name: "Serra Angel",
     manaCost: "{3}{W}{W}",
     colors: ["W"],
@@ -277,6 +312,80 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
       toughness: 3,
       duration: "end-of-turn",
     },
+  }),
+  define({
+    name: "Jump",
+    manaCost: "{U}",
+    colors: ["U"],
+    types: ["instant"],
+    text: "Target creature gains flying until end of turn.",
+    targets: ["creature"],
+    effect: {
+      kind: "grant-keyword",
+      target: 0,
+      keyword: "flying",
+      duration: "end-of-turn",
+    },
+  }),
+  define({
+    name: "Disenchant",
+    manaCost: "{1}{W}",
+    colors: ["W"],
+    types: ["instant"],
+    text: "Destroy target permanent.",
+    targets: ["permanent"],
+    effect: { kind: "destroy", target: 0 },
+  }),
+  define({
+    name: "Glorious Anthem",
+    manaCost: "{1}{W}{W}",
+    colors: ["W"],
+    types: ["enchantment"],
+    text: "Creatures you control get +1/+1.",
+    static: [
+      {
+        affects: { scope: "creatures-you-control" },
+        grantPt: [1, 1],
+        text: "Creatures you control get +1/+1.",
+      },
+    ],
+  }),
+  define({
+    name: "Levitation",
+    manaCost: "{2}{U}",
+    colors: ["U"],
+    types: ["enchantment"],
+    text: "Creatures you control have flying.",
+    static: [
+      {
+        affects: { scope: "creatures-you-control" },
+        grantKeywords: ["flying"],
+        text: "Creatures you control have flying.",
+      },
+    ],
+  }),
+  define({
+    name: "Goblin Chieftain",
+    manaCost: "{1}{R}{R}",
+    colors: ["R"],
+    types: ["creature"],
+    subtypes: ["Goblin"],
+    power: 2,
+    toughness: 2,
+    keywords: ["haste"],
+    text: "Other Goblin creatures you control get +1/+1 and have haste.",
+    static: [
+      {
+        affects: {
+          scope: "creatures-you-control",
+          subtype: "Goblin",
+          excludeSelf: true,
+        },
+        grantPt: [1, 1],
+        grantKeywords: ["haste"],
+        text: "Other Goblin creatures you control get +1/+1 and have haste.",
+      },
+    ],
   }),
   define({
     name: "Elvish Visionary",

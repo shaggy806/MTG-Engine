@@ -56,6 +56,7 @@ const spawn = (
     abilityKind: null,
     sourceObjectId: null,
     abilityIndex: null,
+    timestamp: 0,
     counters: {},
     modifiers: [],
   };
@@ -153,7 +154,10 @@ describe("P/T layer", () => {
     game.advanceUntil(stackEmpty);
 
     expect(game.state.objects[sentinel].counters["+1/+1"]).toBe(1);
-    expect(game.characteristics(sentinel)).toEqual({ power: 3, toughness: 3 });
+    expect(game.characteristics(sentinel)).toMatchObject({
+      power: 3,
+      toughness: 3,
+    });
   });
 
   it("Giant Growth is +3/+3 until end of turn", () => {
@@ -169,10 +173,10 @@ describe("P/T layer", () => {
       targets: [{ kind: "object", object: bear }],
     });
     game.advanceUntil(stackEmpty);
-    expect(game.characteristics(bear)).toEqual({ power: 5, toughness: 5 });
+    expect(game.characteristics(bear)).toMatchObject({ power: 5, toughness: 5 });
 
     game.advanceUntil((s) => s.turn.number === 2);
-    expect(game.characteristics(bear)).toEqual({ power: 2, toughness: 2 });
+    expect(game.characteristics(bear)).toMatchObject({ power: 2, toughness: 2 });
     expect(game.eventsOfType("pt-modifier-expired").length).toBeGreaterThan(0);
   });
 

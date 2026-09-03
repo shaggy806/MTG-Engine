@@ -12,9 +12,10 @@ import { isManaAbility } from "./abilities.js";
 import type { StackAbility, TriggerSpec, TriggerWho } from "./abilities.js";
 import { actionPlayer } from "./actions.js";
 import type { Action } from "./actions.js";
-import { CardRegistry, createDefaultRegistry, hasKeyword } from "./cards.js";
-import type { CardDefinition } from "./cards.js";
-import { characteristicsOf } from "./characteristics.js";
+import { CardRegistry, createDefaultRegistry } from "./cards.js";
+import type { CardDefinition, Keyword } from "./cards.js";
+import { computeCharacteristics } from "./characteristics.js";
+import type { Characteristics } from "./characteristics.js";
 import { AutomaticController } from "./controller.js";
 import type { ControllerView, PlayerController } from "./controller.js";
 import { applyEffectSpec } from "./effects.js";
@@ -123,6 +124,7 @@ export class Game {
       priority: { active: false, holder: null, passed: [] },
       result: { over: false, winner: null, reason: null },
       pendingTriggers: [],
+      timestampSeq: 0,
       eventLog: [],
       eventSeq: 0,
       nextObjectSeq: 0,
@@ -188,9 +190,15 @@ export class Game {
     return this.state.zones.shared.battlefield;
   }
 
-  /** Current power/toughness of an object (printed + counters + modifiers). */
-  characteristics(id: ObjectId): { power: number; toughness: number } {
-    return characteristicsOf(this.state, this.registry, id);
+  /** Current characteristics of an object after all continuous effects. */
+  characteristics(id: ObjectId): Characteristics {
+    return computeCharacteristics(this.state, this.registry, id);
+  }
+
+  private objHasKeyword(id: ObjectId, keyword: Keyword): boolean {
+    return computeCharacteristics(this.state, this.registry, id).keywords.has(
+      keyword,
+    );
   }
 
   /** Deep copy of the current state, suitable for {@link Game.fromSnapshot}. */
@@ -306,6 +314,7 @@ export class Game {
           abilityIndex: null,
           counters: {},
           modifiers: [],
+          timestamp: 0,
         };
         ids.push(id);
       }
@@ -559,10 +568,13 @@ export class Game {
       if (object.tapped) {
         throw new Error(`${def.name} is tapped and cannot attack`);
       }
-      if (hasKeyword(def, "defender")) {
+      if (this.objHasKeyword(creatureId, "defender")) {
         throw new Error(`${def.name} has defender and cannot attack`);
       }
-      if (this.hasSummoningSickness(object) && !hasKeyword(def, "haste")) {
+      if (
+        this.hasSummoningSickness(object) &&
+        !this.objHasKeyword(creatureId, "haste")
+      ) {
         throw new Error(`${def.name} has summoning sickness`);
       }
       if (target !== defender) {
@@ -572,7 +584,7 @@ export class Game {
       object.attacking = target;
       object.blockedBy = [];
       object.blocked = false;
-      if (!hasKeyword(def, "vigilance")) {
+      if (!this.objHasKeyword(creatureId, "vigilance")) {
         object.tapped = true;
       }
       this.emit({
@@ -615,9 +627,9 @@ export class Game {
       }
       const attackerDef = this.registry.get(attacker.cardName);
       if (
-        hasKeyword(attackerDef, "flying") &&
-        !hasKeyword(blockerDef, "flying") &&
-        !hasKeyword(blockerDef, "reach")
+        this.objHasKeyword(attackerId, "flying") &&
+        !this.objHasKeyword(blockerId, "flying") &&
+        !this.objHasKeyword(blockerId, "reach")
       ) {
         throw new Error(
           `${blockerDef.name} can't block ${attackerDef.name} (flying)`,
@@ -659,7 +671,7 @@ export class Game {
 
     for (const attackerId of this.currentAttackers()) {
       const attacker = this.state.objects[attackerId];
-      const power = characteristicsOf(this.state, this.registry, attackerId).power;
+      const power = computeCharacteristics(this.state, this.registry, attackerId).power;
       const liveBlockers = attacker.blockedBy.filter(
         (id) => this.state.objects[id]?.zone === "battlefield",
       );
@@ -677,7 +689,7 @@ export class Game {
         let remaining = power;
         liveBlockers.forEach((blockerId, index) => {
           const blocker = this.state.objects[blockerId];
-          const toughness = characteristicsOf(
+          const toughness = computeCharacteristics(
             this.state,
             this.registry,
             blockerId,
@@ -697,7 +709,7 @@ export class Game {
       }
 
       for (const blockerId of liveBlockers) {
-        const blockerPower = characteristicsOf(
+        const blockerPower = computeCharacteristics(
           this.state,
           this.registry,
           blockerId,
@@ -927,6 +939,7 @@ export class Game {
       abilityIndex,
       counters: {},
       modifiers: [],
+      timestamp: 0,
     };
     this.state.zones.shared.stack.push(abilityId);
     return abilityId;
@@ -1423,6 +1436,8 @@ export class Game {
         this.modifyPt(target, power, toughness, duration),
       addCounter: (target, counter, amount) =>
         this.addCounter(target, counter, amount),
+      grantKeyword: (target, keyword, duration) =>
+        this.grantKeyword(target, keyword, duration),
     };
   }
 
@@ -1438,6 +1453,7 @@ export class Game {
     object.modifiers.push({
       power,
       toughness,
+      keywords: [],
       untilEndOfTurn: duration === "end-of-turn",
     });
     this.emit({
@@ -1445,6 +1461,28 @@ export class Game {
       object: target.object,
       power,
       toughness,
+      duration,
+    });
+  }
+
+  private grantKeyword(
+    target: TargetRef,
+    keyword: Keyword,
+    duration: PtDuration,
+  ): void {
+    if (target.kind !== "object") return;
+    const object = this.state.objects[target.object];
+    if (object === undefined || object.zone !== "battlefield") return;
+    object.modifiers.push({
+      power: 0,
+      toughness: 0,
+      keywords: [keyword],
+      untilEndOfTurn: duration === "end-of-turn",
+    });
+    this.emit({
+      type: "keyword-granted",
+      object: target.object,
+      keyword,
       duration,
     });
   }
@@ -1539,7 +1577,7 @@ export class Game {
         const object = this.state.objects[id];
         const def = this.registry.get(object.cardName);
         if (!def.types.includes("creature")) continue;
-        const toughness = characteristicsOf(this.state, this.registry, id).toughness;
+        const toughness = computeCharacteristics(this.state, this.registry, id).toughness;
         let reason: string | null = null;
         if (toughness <= 0) {
           reason = "toughness is 0 or less";
@@ -1605,10 +1643,13 @@ export class Game {
 
     if (to === "battlefield") {
       object.enteredBattlefieldOnTurn = this.state.turn.number;
+      this.state.timestampSeq += 1;
+      object.timestamp = this.state.timestampSeq;
     } else {
       object.tapped = false;
       object.damageMarked = 0;
       object.enteredBattlefieldOnTurn = null;
+      object.timestamp = 0;
     }
   }
 

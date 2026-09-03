@@ -6,6 +6,7 @@
  * instance and is the only thing that writes to it; everything else reads.
  */
 
+import type { Keyword } from "./cards.js";
 import type { ManaPool } from "./mana.js";
 import { emptyPool } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
@@ -50,13 +51,16 @@ export interface GameObject {
   abilityIndex: number | null;
   /** Counters on this object, e.g. `{ "+1/+1": 2 }`. Cleared on any zone change. */
   counters: Record<string, number>;
-  /** Temporary power/toughness modifiers. `untilEndOfTurn` ones expire in cleanup. */
+  /** Temporary modifiers (P/T and/or granted keywords). `untilEndOfTurn` ones expire in cleanup. */
   modifiers: PtModifier[];
+  /** Order this object entered the battlefield (rule 613.7 timestamp); 0 if never. */
+  timestamp: number;
 }
 
 export interface PtModifier {
   power: number;
   toughness: number;
+  keywords: Keyword[];
   untilEndOfTurn: boolean;
 }
 
@@ -138,6 +142,8 @@ export interface GameState {
   result: GameResult;
   /** Triggered abilities that have fired but not yet been put on the stack. */
   pendingTriggers: PendingTrigger[];
+  /** Monotonic source for battlefield-entry timestamps. */
+  timestampSeq: number;
   eventLog: GameEvent[];
   eventSeq: number;
   nextObjectSeq: number;

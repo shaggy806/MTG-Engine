@@ -8,6 +8,7 @@
  * into the spell's or ability's chosen targets, or the literal `"source"`.
  */
 
+import type { Keyword } from "./cards.js";
 import type { ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { TargetRef } from "./target.js";
@@ -36,6 +37,12 @@ export type EffectSpec =
       readonly target: EffectTargetRef;
       readonly counter: string;
       readonly amount: number;
+    }
+  | {
+      readonly kind: "grant-keyword";
+      readonly target: EffectTargetRef;
+      readonly keyword: Keyword;
+      readonly duration: PtDuration;
     };
 
 /** Primitive mutations an effect can perform. Implemented by the engine. */
@@ -55,6 +62,7 @@ export interface EffectApi {
     duration: PtDuration,
   ): void;
   addCounter(target: TargetRef, counter: string, amount: number): void;
+  grantKeyword(target: TargetRef, keyword: Keyword, duration: PtDuration): void;
 }
 
 export interface ResolutionContext extends EffectApi {
@@ -116,6 +124,13 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) {
         ctx.addCounter(target, spec.counter, spec.amount);
+      }
+      return;
+    }
+    case "grant-keyword": {
+      const target = resolveEffectTarget(spec.target, ctx);
+      if (target !== undefined) {
+        ctx.grantKeyword(target, spec.keyword, spec.duration);
       }
       return;
     }
