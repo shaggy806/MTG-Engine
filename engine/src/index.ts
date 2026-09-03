@@ -1,8 +1,16 @@
 /**
  * MTG-Engine — Magic: The Gathering rules engine.
  *
- * Public API surface. Nothing is implemented yet; this file exists so the
- * package has a build input and a stable entry point for the client to import.
+ * Public API surface. See `game.ts` for the entry point ({@link Game}).
  */
 
 export const VERSION = "1.0.0";
+
+export * from "./primitives.js";
+export * from "./mana.js";
+export * from "./cards.js";
+export * from "./turn.js";
+export * from "./events.js";
+export * from "./state.js";
+export * from "./controller.js";
+export * from "./game.js";
