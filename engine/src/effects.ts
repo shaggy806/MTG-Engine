@@ -43,6 +43,17 @@ export type EffectSpec =
       readonly target: EffectTargetRef;
       readonly keyword: Keyword;
       readonly duration: PtDuration;
+    }
+  | {
+      readonly kind: "create-token";
+      /** Name of a token definition in the {@link CardRegistry}. */
+      readonly token: string;
+      readonly count: number;
+    }
+  | {
+      /** Attach the source (an Aura/Equipment) to a target permanent. */
+      readonly kind: "attach";
+      readonly target: number;
     };
 
 /** Primitive mutations an effect can perform. Implemented by the engine. */
@@ -63,6 +74,10 @@ export interface EffectApi {
   ): void;
   addCounter(target: TargetRef, counter: string, amount: number): void;
   grantKeyword(target: TargetRef, keyword: Keyword, duration: PtDuration): void;
+  /** Create `count` copies of the named token, controlled by `ctx.controller`. */
+  createToken(token: string, count: number): void;
+  /** Attach `ctx.source` (an Aura/Equipment) to `target`. */
+  attach(target: TargetRef): void;
 }
 
 export interface ResolutionContext extends EffectApi {
@@ -132,6 +147,14 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       if (target !== undefined) {
         ctx.grantKeyword(target, spec.keyword, spec.duration);
       }
+      return;
+    }
+    case "create-token":
+      ctx.createToken(spec.token, spec.count);
+      return;
+    case "attach": {
+      const target = ctx.targets[spec.target];
+      if (target !== undefined) ctx.attach(target);
       return;
     }
     default:

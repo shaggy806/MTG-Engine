@@ -65,6 +65,8 @@ const spawn = (
     sourceObjectId: null,
     abilityIndex: null,
     timestamp: 0,
+    isToken: false,
+    attachedTo: null,
     counters: {},
     modifiers: [],
   };

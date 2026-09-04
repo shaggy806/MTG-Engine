@@ -131,6 +131,11 @@ export type GameEvent =
       readonly object: ObjectId;
     })
   | (Base & {
+      readonly type: "permanent-attached";
+      readonly source: ObjectId;
+      readonly target: ObjectId;
+    })
+  | (Base & {
       readonly type: "damage-dealt";
       readonly source: ObjectId;
       readonly target: TargetRef;

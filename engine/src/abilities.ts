@@ -27,6 +27,8 @@ export interface ActivatedAbility {
   readonly effect: EffectSpec | null;
   readonly resolve: SpellResolver | null;
   readonly text: string;
+  /** True for abilities like Equip that function only as a sorcery (rule 602.3). */
+  readonly sorcerySpeed?: boolean;
 }
 
 /** Who the triggering object must be relative to the ability's source. */

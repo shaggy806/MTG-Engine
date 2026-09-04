@@ -69,6 +69,8 @@ export const makeFormatter = (game) => {
         return `${name(e.object)} fizzles — ${e.reason}`;
       case "permanent-entered-battlefield":
         return `${name(e.object)} enters the battlefield`;
+      case "permanent-attached":
+        return `${name(e.source)} attaches to ${name(e.target)}`;
       case "damage-dealt":
         return `${name(e.source)} deals ${e.amount} to ${target(e.target)}`;
       case "life-changed":

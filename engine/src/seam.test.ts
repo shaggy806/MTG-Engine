@@ -64,6 +64,8 @@ const spawn = (
     counters: {},
     modifiers: [],
     timestamp: game.state.timestampSeq,
+    isToken: false,
+    attachedTo: null,
   };
   game.state.zones.shared.battlefield.push(id);
   return id;
@@ -86,7 +88,7 @@ const fuzzDeckA = deck([
   ["Giant Growth", 3],
 ]);
 const fuzzDeckB = deck([
-  ["Mountain", 8],
+  ["Mountain", 6],
   ["Plains", 6],
   ["Swamp", 4],
   ["Raging Goblin", 3],
@@ -94,11 +96,15 @@ const fuzzDeckB = deck([
   ["White Knight", 3],
   ["Boggart Brute", 3],
   ["Typhoid Rats", 3],
-  ["Hill Giant", 2],
+  ["Hill Giant", 1],
   ["Lightning Bolt", 4],
   ["Vampire Nighthawk", 2],
-  ["Serra Angel", 2],
+  ["Serra Angel", 1],
   ["Disenchant", 2],
+  ["Raise the Alarm", 2],
+  ["Holy Strength", 2],
+  ["Bonesplitter", 2],
+  ["Wurmcoil Engine", 1],
 ]);
 
 const atFirstMain = (s: GameState): boolean => s.turn.step === "precombat-main";

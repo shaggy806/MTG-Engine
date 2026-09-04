@@ -44,7 +44,8 @@ export type AffectSpec =
       readonly scope: "creatures-you-control";
       readonly excludeSelf?: boolean;
       readonly subtype?: string;
-    };
+    }
+  | { readonly scope: "attached" };
 
 /**
  * A static ability that continuously modifies characteristics. Milestone 5a
@@ -533,6 +534,111 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
     toughness: 2,
     keywords: ["menace"],
     text: "Menace",
+  }),
+
+  // --- tokens ---------------------------------------------------------
+  define({
+    name: "Phyrexian Wurm Token (Deathtouch)",
+    types: ["artifact", "creature"],
+    subtypes: ["Phyrexian", "Wurm"],
+    power: 3,
+    toughness: 3,
+    keywords: ["deathtouch"],
+    text: "Deathtouch",
+  }),
+  define({
+    name: "Phyrexian Wurm Token (Lifelink)",
+    types: ["artifact", "creature"],
+    subtypes: ["Phyrexian", "Wurm"],
+    power: 3,
+    toughness: 3,
+    keywords: ["lifelink"],
+    text: "Lifelink",
+  }),
+  define({
+    name: "Soldier Token",
+    colors: ["W"],
+    types: ["creature"],
+    subtypes: ["Soldier"],
+    power: 1,
+    toughness: 1,
+  }),
+  define({
+    name: "Raise the Alarm",
+    manaCost: "{1}{W}",
+    colors: ["W"],
+    types: ["instant"],
+    text: "Create two 1/1 white Soldier creature tokens.",
+    effect: { kind: "create-token", token: "Soldier Token", count: 2 },
+  }),
+  define({
+    name: "Wurmcoil Engine",
+    manaCost: "{6}",
+    types: ["artifact", "creature"],
+    subtypes: ["Wurm"],
+    power: 6,
+    toughness: 6,
+    keywords: ["deathtouch", "lifelink"],
+    text:
+      "Deathtouch, lifelink. When Wurmcoil Engine dies, create a 3/3 colorless " +
+      "Phyrexian Wurm artifact creature token with deathtouch and a 3/3 " +
+      "colorless Phyrexian Wurm artifact creature token with lifelink.",
+    triggered: [
+      {
+        trigger: { on: "dies", who: "self" },
+        targets: [],
+        effect: null,
+        resolve: (ctx) => {
+          ctx.createToken("Phyrexian Wurm Token (Deathtouch)", 1);
+          ctx.createToken("Phyrexian Wurm Token (Lifelink)", 1);
+        },
+        text:
+          "When Wurmcoil Engine dies, create a 3/3 deathtouch Wurm and a 3/3 " +
+          "lifelink Wurm.",
+      },
+    ],
+  }),
+
+  // --- auras & equipment -----------------------------------------------
+  define({
+    name: "Holy Strength",
+    manaCost: "{W}",
+    colors: ["W"],
+    types: ["enchantment"],
+    subtypes: ["Aura"],
+    text: "Enchant creature. Enchanted creature gets +1/+2.",
+    targets: ["creature"],
+    static: [
+      {
+        affects: { scope: "attached" },
+        grantPt: [1, 2],
+        text: "Enchanted creature gets +1/+2.",
+      },
+    ],
+  }),
+  define({
+    name: "Bonesplitter",
+    manaCost: "{1}",
+    types: ["artifact"],
+    subtypes: ["Equipment"],
+    text: "Equipped creature gets +2/+0. Equip {1}",
+    static: [
+      {
+        affects: { scope: "attached" },
+        grantPt: [2, 0],
+        text: "Equipped creature gets +2/+0.",
+      },
+    ],
+    activated: [
+      {
+        cost: { mana: "{1}", tap: false },
+        targets: ["creature-you-control"],
+        effect: { kind: "attach", target: 0 },
+        resolve: null,
+        text: "Equip {1}",
+        sorcerySpeed: true,
+      },
+    ],
   }),
 ];
 

@@ -366,7 +366,7 @@ export class Game {
           card,
           cardName,
           targetSpecs: def.targets,
-          targetOptions: this.targetOptionsFor(def.targets),
+          targetOptions: this.targetOptionsFor(def.targets, player),
         });
       }
     }
@@ -383,7 +383,7 @@ export class Game {
           cardName: object.cardName,
           text: ability.text,
           targetSpecs: ability.targets,
-          targetOptions: this.targetOptionsFor(ability.targets),
+          targetOptions: this.targetOptionsFor(ability.targets, player),
         });
       });
     }
@@ -401,8 +401,11 @@ export class Game {
 
   private targetOptionsFor(
     specs: readonly TargetSpec[],
+    forPlayer: PlayerId,
   ): readonly (readonly TargetRef[])[] {
-    return specs.map((spec) => legalTargets(this.state, this.registry, spec));
+    return specs.map((spec) =>
+      legalTargets(this.state, this.registry, spec, forPlayer),
+    );
   }
 
   /** Run automatic game actions until the game ends. */
@@ -486,6 +489,8 @@ export class Game {
           counters: {},
           modifiers: [],
           timestamp: 0,
+          isToken: false,
+          attachedTo: null,
         };
         ids.push(id);
       }
@@ -1188,7 +1193,7 @@ export class Game {
       if (timing !== null) return timing;
     }
     for (const spec of def.targets) {
-      if (legalTargets(this.state, this.registry, spec).length === 0) {
+      if (legalTargets(this.state, this.registry, spec, player).length === 0) {
         return `${def.name} has no legal ${spec} target`;
       }
     }
@@ -1215,7 +1220,7 @@ export class Game {
       );
     }
     def.targets.forEach((spec, i) => {
-      if (!isLegalTarget(this.state, this.registry, spec, targets[i])) {
+      if (!isLegalTarget(this.state, this.registry, spec, targets[i], player)) {
         throw new Error(`illegal target for ${def.name}`);
       }
     });
@@ -1266,8 +1271,12 @@ export class Game {
         return `${def.name} has summoning sickness`;
       }
     }
+    if (ability.sorcerySpeed) {
+      const timing = this.whyNotSorcerySpeed(player, `activate ${def.name}'s ability`);
+      if (timing !== null) return timing;
+    }
     for (const spec of ability.targets) {
-      if (legalTargets(this.state, this.registry, spec).length === 0) {
+      if (legalTargets(this.state, this.registry, spec, player).length === 0) {
         return `${def.name}'s ability has no legal ${spec} target`;
       }
     }
@@ -1296,7 +1305,7 @@ export class Game {
       );
     }
     ability.targets.forEach((spec, i) => {
-      if (!isLegalTarget(this.state, this.registry, spec, targets[i])) {
+      if (!isLegalTarget(this.state, this.registry, spec, targets[i], player)) {
         throw new Error(`illegal target for ${def.name}'s ability`);
       }
     });
@@ -1377,6 +1386,8 @@ export class Game {
       counters: {},
       modifiers: [],
       timestamp: 0,
+      isToken: false,
+      attachedTo: null,
     };
     this.state.zones.shared.stack.push(abilityId);
     return abilityId;
@@ -1593,7 +1604,7 @@ export class Game {
 
     if (
       def.targets.length > 0 &&
-      !this.anyTargetLegal(def.targets, targets)
+      !this.anyTargetLegal(def.targets, targets, object.controller)
     ) {
       this.moveObject(id, "graveyard");
       object.targets = null;
@@ -1617,6 +1628,17 @@ export class Game {
       this.moveObject(id, "battlefield");
       object.targets = null;
       this.emit({ type: "permanent-entered-battlefield", object: id });
+      if (def.subtypes.includes("Aura")) {
+        const enchantTarget = targets[0];
+        if (enchantTarget?.kind === "object") {
+          object.attachedTo = enchantTarget.object;
+          this.emit({
+            type: "permanent-attached",
+            source: id,
+            target: enchantTarget.object,
+          });
+        }
+      }
     } else {
       this.moveObject(id, "graveyard");
       object.targets = null;
@@ -1639,7 +1661,7 @@ export class Game {
 
     if (
       ability.targets.length > 0 &&
-      !this.anyTargetLegal(ability.targets, targets)
+      !this.anyTargetLegal(ability.targets, targets, object.controller)
     ) {
       this.removeAbilityFromStack(id);
       this.emit({
@@ -1771,7 +1793,7 @@ export class Game {
     let targets: readonly TargetRef[] = [];
     if (ability.targets.length > 0) {
       const legalOptions = ability.targets.map((spec) =>
-        legalTargets(this.state, this.registry, spec),
+        legalTargets(this.state, this.registry, spec, trigger.controller),
       );
       if (legalOptions.some((options) => options.length === 0)) {
         this.emit({
@@ -1791,7 +1813,9 @@ export class Game {
         throw new Error(`bad target count for ${trigger.cardName}'s trigger`);
       }
       ability.targets.forEach((spec, i) => {
-        if (!isLegalTarget(this.state, this.registry, spec, chosen[i])) {
+        if (
+          !isLegalTarget(this.state, this.registry, spec, chosen[i], trigger.controller)
+        ) {
           throw new Error(`illegal target chosen for ${trigger.cardName}'s trigger`);
         }
       });
@@ -1816,11 +1840,12 @@ export class Game {
   private anyTargetLegal(
     specs: readonly TargetSpec[],
     targets: readonly TargetRef[],
+    forPlayer: PlayerId,
   ): boolean {
     return specs.some(
       (spec, i) =>
         targets[i] !== undefined &&
-        isLegalTarget(this.state, this.registry, spec, targets[i]),
+        isLegalTarget(this.state, this.registry, spec, targets[i], forPlayer),
     );
   }
 
@@ -1860,7 +1885,57 @@ export class Game {
         this.addCounter(target, counter, amount),
       grantKeyword: (target, keyword, duration) =>
         this.grantKeyword(target, keyword, duration),
+      createToken: (token, count) => this.createTokens(controller, token, count),
+      attach: (target) => this.attachPermanent(source, target),
     };
+  }
+
+  /** Create `count` copies of the named token, controlled by `controller` (rule 111). */
+  private createTokens(controller: PlayerId, tokenName: string, count: number): void {
+    this.registry.get(tokenName); // validate the token is a known definition
+    for (let i = 0; i < count; i += 1) {
+      const id = this.mintObjectId();
+      this.state.timestampSeq += 1;
+      this.state.objects[id] = {
+        id,
+        cardName: tokenName,
+        owner: controller,
+        controller,
+        zone: "battlefield",
+        tapped: false,
+        damageMarked: 0,
+        markedByDeathtouch: false,
+        enteredBattlefieldOnTurn: this.state.turn.number,
+        summoningSick: true,
+        targets: null,
+        attacking: null,
+        blocking: null,
+        blockedBy: [],
+        blocked: false,
+        kind: "card",
+        abilityKind: null,
+        sourceObjectId: null,
+        abilityIndex: null,
+        counters: {},
+        modifiers: [],
+        timestamp: this.state.timestampSeq,
+        isToken: true,
+        attachedTo: null,
+      };
+      this.state.zones.shared.battlefield.push(id);
+      this.emit({ type: "permanent-entered-battlefield", object: id });
+    }
+  }
+
+  /** Attach an Aura/Equipment (`source`) to `target` (used by Equip-like effects). */
+  private attachPermanent(source: ObjectId, target: TargetRef): void {
+    if (target.kind !== "object") return;
+    const sourceObject = this.state.objects[source];
+    const targetObject = this.state.objects[target.object];
+    if (sourceObject === undefined || sourceObject.zone !== "battlefield") return;
+    if (targetObject === undefined || targetObject.zone !== "battlefield") return;
+    sourceObject.attachedTo = target.object;
+    this.emit({ type: "permanent-attached", source, target: target.object });
   }
 
   private modifyPt(
@@ -2035,6 +2110,38 @@ export class Game {
           changed = true;
         }
       }
+
+      // Auras with no legal permanent to enchant go to the graveyard (704.5n);
+      // Equipment just becomes unattached and stays on the battlefield.
+      for (const id of [...this.state.zones.shared.battlefield]) {
+        const object = this.state.objects[id];
+        if (object.attachedTo === null) continue;
+        const host = this.state.objects[object.attachedTo];
+        if (host !== undefined && host.zone === "battlefield") continue;
+
+        if (this.registry.get(object.cardName).subtypes.includes("Aura")) {
+          this.moveObject(id, "graveyard");
+          this.emit({
+            type: "permanent-destroyed",
+            object: id,
+            reason: "no longer attached to a legal permanent",
+          });
+        } else {
+          object.attachedTo = null;
+        }
+        changed = true;
+      }
+
+      // A token that isn't on the battlefield ceases to exist (rule 111.7/704.5d).
+      for (const id of Object.keys(this.state.objects) as ObjectId[]) {
+        const object = this.state.objects[id];
+        if (!object.isToken || object.zone === "battlefield") continue;
+        const zone = this.zoneList(object.zone, object.owner);
+        const index = zone.indexOf(id);
+        if (index >= 0) zone.splice(index, 1);
+        delete this.state.objects[id];
+        changed = true;
+      }
     }
 
     // The "tried to draw" flag is only relevant until the next SBA check.
@@ -2086,6 +2193,7 @@ export class Game {
     object.markedByDeathtouch = false;
     object.counters = {};
     object.modifiers = [];
+    object.attachedTo = null;
 
     if (to === "battlefield") {
       object.enteredBattlefieldOnTurn = this.state.turn.number;

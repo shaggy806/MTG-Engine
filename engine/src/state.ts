@@ -63,6 +63,10 @@ export interface GameObject {
   modifiers: PtModifier[];
   /** Order this object entered the battlefield (rule 613.7 timestamp); 0 if never. */
   timestamp: number;
+  /** True for a token (rule 111): ceases to exist as an SBA once it leaves the battlefield. */
+  isToken: boolean;
+  /** The permanent this Aura/Equipment is attached to, or `null`. */
+  attachedTo: ObjectId | null;
 }
 
 export interface PtModifier {

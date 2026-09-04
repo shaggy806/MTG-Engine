@@ -1,7 +1,7 @@
 /** Legality checks for spell / ability targets. */
 
 import type { CardRegistry } from "./cards.js";
-import type { ObjectId } from "./primitives.js";
+import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameState } from "./state.js";
 import type { TargetRef, TargetSpec } from "./target.js";
 
@@ -28,12 +28,19 @@ export function isLegalTarget(
   registry: CardRegistry,
   spec: TargetSpec,
   ref: TargetRef,
+  forPlayer: PlayerId,
 ): boolean {
   switch (spec) {
     case "player":
       return isLivingPlayer(state, ref);
     case "creature":
       return ref.kind === "object" && isLivingCreature(state, registry, ref.object);
+    case "creature-you-control":
+      return (
+        ref.kind === "object" &&
+        isLivingCreature(state, registry, ref.object) &&
+        state.objects[ref.object].controller === forPlayer
+      );
     case "permanent":
       return (
         ref.kind === "object" &&
@@ -55,15 +62,16 @@ export function legalTargets(
   state: GameState,
   registry: CardRegistry,
   spec: TargetSpec,
+  forPlayer: PlayerId,
 ): TargetRef[] {
   const out: TargetRef[] = [];
   for (const player of state.turnOrder) {
     const ref: TargetRef = { kind: "player", player };
-    if (isLegalTarget(state, registry, spec, ref)) out.push(ref);
+    if (isLegalTarget(state, registry, spec, ref, forPlayer)) out.push(ref);
   }
   for (const id of state.zones.shared.battlefield) {
     const ref: TargetRef = { kind: "object", object: id };
-    if (isLegalTarget(state, registry, spec, ref)) out.push(ref);
+    if (isLegalTarget(state, registry, spec, ref, forPlayer)) out.push(ref);
   }
   return out;
 }

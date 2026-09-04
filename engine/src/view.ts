@@ -63,6 +63,9 @@ export interface VisibleObject {
   readonly sourceObjectId: ObjectId | null;
   readonly abilityIndex: number | null;
   readonly targets: readonly TargetRef[] | null;
+  readonly isToken: boolean;
+  /** The permanent this Aura/Equipment is attached to, or `null`. */
+  readonly attachedTo: ObjectId | null;
 }
 
 export interface PlayerView {
@@ -125,6 +128,8 @@ function visible(
     sourceObjectId: object.sourceObjectId,
     abilityIndex: object.abilityIndex,
     targets: object.targets === null ? null : [...object.targets],
+    isToken: object.isToken,
+    attachedTo: object.attachedTo,
   };
 }
 

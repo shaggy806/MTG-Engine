@@ -10,6 +10,7 @@ export type TargetRef =
 export type TargetSpec =
   | "any-target"
   | "creature"
+  | "creature-you-control"
   | "player"
   | "creature-or-player"
   | "permanent";
