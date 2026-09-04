@@ -659,6 +659,9 @@ function Table({ game }: { readonly game: UseGame }) {
         <button type="button" onClick={pass} disabled={!canPass}>
           Pass (space)
         </button>
+        <button type="button" onClick={game.passTurn} disabled={!canPass}>
+          Pass Turn
+        </button>
       </div>
     )
   }

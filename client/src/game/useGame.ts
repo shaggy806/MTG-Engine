@@ -51,6 +51,24 @@ function settleAndAutoPass(game: Game): void {
   }
 }
 
+/**
+ * Passes priority — on behalf of whoever currently holds it, since it's the
+ * same person operating both seats — through the rest of the current turn,
+ * stopping at that turn's end step so there's still a chance to act there.
+ * Also stops early on a real decision (an `awaiting`) or game over.
+ */
+function passRestOfTurn(game: Game): void {
+  const startTurn = game.state.turn.number
+  for (let i = 0; i < 1000; i += 1) {
+    const s = game.state
+    if (s.result.over || s.awaiting !== null) return
+    if (!s.priority.active || s.priority.holder === null) return
+    if (s.turn.number !== startTurn || s.turn.step === 'end') return
+    game.dispatch({ type: 'pass-priority', player: s.priority.holder })
+    game.advanceUntil(settled)
+  }
+}
+
 function build(seed: number): Game {
   const game = Game.create({
     seed,
@@ -75,6 +93,8 @@ export interface UseGame {
   /** The message from the most recent rejected dispatch, or `null`. */
   readonly lastError: string | null
   dispatch: (action: Action) => void
+  /** Passes priority through the rest of the current turn, up to its end step. */
+  passTurn: () => void
   reset: (seed?: number) => void
   setRevealAll: (value: boolean) => void
   clearError: () => void
@@ -131,6 +151,18 @@ export function useGame(initialSeed = 1): UseGame {
     [game],
   )
 
+  const passTurn = useCallback(() => {
+    try {
+      passRestOfTurn(game)
+      setLastError(null)
+    } catch (err) {
+      console.error('pass-turn rejected', err)
+      setLastError(err instanceof Error ? err.message : String(err))
+      return
+    }
+    setRevision((n) => n + 1)
+  }, [game])
+
   const clearError = useCallback(() => setLastError(null), [])
 
   const nameOf = useCallback(
@@ -155,6 +187,7 @@ export function useGame(initialSeed = 1): UseGame {
     revision,
     lastError,
     dispatch,
+    passTurn,
     reset,
     setRevealAll,
     clearError,
