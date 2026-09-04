@@ -13,6 +13,10 @@ export interface CardTileProps {
   readonly badge?: string | null
   /** A small ordinal shown top-left (blocker damage order). */
   readonly order?: number | null
+  /** How many identical permanents this tile stands in for (a land stack). */
+  readonly stackCount?: number | null
+  /** Shrinks the tile (an Aura/Equipment nested under its host). */
+  readonly compact?: boolean
   readonly onClick?: () => void
 }
 
@@ -66,6 +70,8 @@ export function CardTile({
   activatable = false,
   badge = null,
   order = null,
+  stackCount = null,
+  compact = false,
   onClick,
 }: CardTileProps) {
   const [artFailed, setArtFailed] = useState(() => artMisses.has(obj.cardName))
@@ -86,6 +92,7 @@ export function CardTile({
     activatable ? 'activatable' : '',
     dimmed ? 'dimmed' : '',
     clickable ? 'clickable' : '',
+    compact ? 'compact' : '',
   ]
     .filter(Boolean)
     .join(' ')
@@ -151,6 +158,9 @@ export function CardTile({
       ) : null}
 
       {order !== null ? <span className="card-order">{order}</span> : null}
+      {stackCount !== null && stackCount > 1 ? (
+        <span className="card-stack">×{stackCount}</span>
+      ) : null}
       {obj.summoningSick && isCreature ? (
         <span className="card-flag sick">sick</span>
       ) : null}

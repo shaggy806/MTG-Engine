@@ -195,19 +195,53 @@
   font-size: 12px;
 }
 
-.battlefield {
+/* board: permanents split into labeled type rows (lands/creatures/artifacts/
+   enchantments); Auras/Equipment nest under their host instead of getting
+   their own row */
+.board {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.board-row-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.board-row-cards {
   display: flex;
   flex-wrap: wrap;
+  align-items: flex-start;
   gap: 10px 8px;
-  min-height: 208px;
-  padding: 10px 8px;
+  min-height: 50px;
+  padding: 8px;
   background: var(--panel);
   border: 1px dashed var(--border);
   border-radius: 8px;
   align-content: flex-start;
 }
-.battlefield.opp {
+.board.opp .board-row-cards {
   background: #1b1a20;
+}
+.board-empty {
+  padding: 10px 8px;
+  color: var(--muted);
+  background: var(--panel);
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+}
+.board-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.board-entry .attachments {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
 }
 
 .stack,
@@ -512,6 +546,27 @@
   background: var(--accent);
   border-radius: 50%;
   z-index: 1;
+}
+/* how many identical lands a stacked tile stands in for */
+.card-stack {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 800;
+  color: #0b0e14;
+  background: var(--accent);
+  border-radius: 9px;
+  z-index: 1;
+}
+/* an Aura/Equipment nested under its host */
+.card-tile.compact {
+  zoom: 0.6;
 }
 
 /* ability menu + controls */

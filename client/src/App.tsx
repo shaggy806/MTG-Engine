@@ -10,6 +10,8 @@ import type {
 } from 'engine'
 import { useGame } from './game/useGame.ts'
 import type { UseGame } from './game/useGame.ts'
+import { BUCKET_LABEL, BUCKET_ORDER, computeBoardEntries } from './game/board.ts'
+import type { Bucket, BoardEntry } from './game/board.ts'
 import { playerLabel } from './format.ts'
 import { PhaseTrack } from './ui/PhaseTrack.tsx'
 import { PlayerPanel } from './ui/PlayerPanel.tsx'
@@ -255,8 +257,24 @@ function Table({ game }: { readonly game: UseGame }) {
     [beginTargeting, castByCard, discardAction, game, landByCard, mode, seat],
   )
 
+  /** Which id a click on a (possibly stacked) tile should act on. */
+  const pickIdForClick = useCallback(
+    (ids: readonly ObjectId[]): ObjectId => {
+      if (mode === 'targeting' && targeting) {
+        const slot = targeting.options[targeting.picked.length] ?? []
+        const found = ids.find((i) =>
+          slot.some((o) => o.kind === 'object' && o.object === i),
+        )
+        if (found) return found
+      }
+      return ids[0]
+    },
+    [mode, targeting],
+  )
+
   const clickPermanent = useCallback(
-    (id: ObjectId) => {
+    (ids: readonly ObjectId[]) => {
+      const id = pickIdForClick(ids)
       if (mode === 'targeting' && targeting) {
         const slot = targeting.options[targeting.picked.length] ?? []
         if (slot.some((o) => o.kind === 'object' && o.object === id)) {
@@ -316,6 +334,7 @@ function Table({ game }: { readonly game: UseGame }) {
       blockFocus,
       mode,
       orderAction,
+      pickIdForClick,
       pickTarget,
       targeting,
     ],
@@ -402,7 +421,12 @@ function Table({ game }: { readonly game: UseGame }) {
     mode === 'targeting' &&
     targetSlot.some((o) => o.kind === 'player' && o.player === pid)
 
-  const tileFor = (obj: VisibleObject, ownerSeat: PlayerId) => {
+  const tileFor = (
+    obj: VisibleObject,
+    ownerSeat: PlayerId,
+    ids: readonly ObjectId[] = [obj.id],
+    opts: { stackCount?: number; compact?: boolean } = {},
+  ) => {
     const id = obj.id
     let highlight = false
     let selected = false
@@ -423,8 +447,10 @@ function Table({ game }: { readonly game: UseGame }) {
         order = at === -1 ? null : at + 1
       }
     } else if (mode === 'targeting') {
-      highlight = targetSlot.some((o) => o.kind === 'object' && o.object === id)
-      selected = pickedObjKeys.has(id)
+      highlight = ids.some((i) =>
+        targetSlot.some((o) => o.kind === 'object' && o.object === i),
+      )
+      selected = ids.some((i) => pickedObjKeys.has(i))
     } else if (mode === 'attackers' && attackAction) {
       highlight = attackAction.eligible.includes(id)
       selected = attackPicks.includes(id)
@@ -442,8 +468,8 @@ function Table({ game }: { readonly game: UseGame }) {
       selected = Boolean(assignedTo) || blockFocus === id
       if (assignedTo) badge = `\u{1F6E1} ${game.nameOf(assignedTo)}`
     } else if (mode === 'priority' && ownerSeat === seat) {
-      activatable = abilitiesBySource.has(id)
-      selected = selectedSource === id
+      activatable = ids.some((i) => abilitiesBySource.has(i))
+      selected = selectedSource !== null && ids.includes(selectedSource)
     }
 
     return (
@@ -455,19 +481,54 @@ function Table({ game }: { readonly game: UseGame }) {
         activatable={activatable}
         badge={badge}
         order={order}
-        onClick={() => clickPermanent(id)}
+        stackCount={opts.stackCount ?? null}
+        compact={opts.compact ?? false}
+        onClick={() => clickPermanent(ids)}
       />
     )
   }
 
-  const battlefieldOf = (pid: PlayerId): VisibleObject[] =>
-    view.zones.battlefield
-      .map((id) => view.objects[id])
-      .filter((o): o is VisibleObject => Boolean(o) && o.controller === pid)
-      .sort(
-        (a, b) =>
-          (a.types.includes('land') ? 0 : 1) - (b.types.includes('land') ? 0 : 1),
-      )
+  const renderBoard = (pid: PlayerId, isOpp: boolean) => {
+    const entries = computeBoardEntries(view, pid)
+    const byBucket = new Map<Bucket, BoardEntry[]>()
+    for (const e of entries) {
+      const list = byBucket.get(e.bucket) ?? []
+      list.push(e)
+      byBucket.set(e.bucket, list)
+    }
+    const nonEmpty = BUCKET_ORDER.filter((b) => (byBucket.get(b)?.length ?? 0) > 0)
+    return (
+      <div className={`board ${isOpp ? 'opp' : 'you'}`}>
+        {nonEmpty.length === 0 ? (
+          <div className="board-empty">no permanents</div>
+        ) : (
+          nonEmpty.map((bucket) => (
+            <div className="board-row" key={bucket}>
+              <div className="board-row-label">{BUCKET_LABEL[bucket]}</div>
+              <div className="board-row-cards">
+                {(byBucket.get(bucket) ?? []).map((entry) => (
+                  <div className="board-entry" key={entry.ids[0]}>
+                    {tileFor(entry.sample, pid, entry.ids, {
+                      stackCount: entry.ids.length,
+                    })}
+                    {entry.attachments.length > 0 ? (
+                      <div className="attachments">
+                        {entry.attachments.map((a) => (
+                          <div key={a.id}>
+                            {tileFor(a, pid, [a.id], { compact: true })}
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    )
+  }
 
   const handIds = view.zones.hands[seat] ?? []
   const seatInfo = view.players[seat]
@@ -616,12 +677,7 @@ function Table({ game }: { readonly game: UseGame }) {
           targetable={playerIsTargetable(opponent)}
           onTargetClick={() => clickPlayerTarget(opponent)}
         />
-        <div className="battlefield opp">
-          {battlefieldOf(opponent).map((o) => tileFor(o, opponent))}
-          {battlefieldOf(opponent).length === 0 ? (
-            <span className="muted">no permanents</span>
-          ) : null}
-        </div>
+        {renderBoard(opponent, true)}
 
         {game.revealAll ? (
           <div className="hand opp-hand">
@@ -638,12 +694,7 @@ function Table({ game }: { readonly game: UseGame }) {
           </div>
         ) : null}
 
-        <div className="battlefield you">
-          {battlefieldOf(seat).map((o) => tileFor(o, seat))}
-          {battlefieldOf(seat).length === 0 ? (
-            <span className="muted">no permanents</span>
-          ) : null}
-        </div>
+        {renderBoard(seat, false)}
         <PlayerPanel
           info={seatInfo}
           isActive={view.activePlayer === seat}
