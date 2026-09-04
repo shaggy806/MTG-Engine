@@ -82,7 +82,13 @@ export default function App() {
         </div>
       ) : null}
 
-      <Table key={game.revision} game={game} />
+      <div className="layout">
+        <Table key={game.revision} game={game} />
+        <aside className="sidebar">
+          <Stack view={view} />
+          <EventLog events={view.events} nameOf={game.nameOf} />
+        </aside>
+      </div>
 
       {!ready && !over && !game.revealAll ? (
         <div className="curtain">
@@ -203,15 +209,18 @@ function Table({ game }: { readonly game: UseGame }) {
 
   const pickTarget = useCallback(
     (ref: TargetRef) => {
-      setTargeting((cur) => {
-        if (!cur) return cur
-        const picked = [...cur.picked, ref]
-        if (picked.length < cur.specs.length) return { ...cur, picked }
-        finishTargets(cur, picked)
-        return null
-      })
+      if (!targeting) return
+      const picked = [...targeting.picked, ref]
+      if (picked.length < targeting.specs.length) {
+        setTargeting({ ...targeting, picked })
+        return
+      }
+      // All slots filled — dispatch outside any state updater (updaters must
+      // be pure; React double-invokes them in dev).
+      setTargeting(null)
+      finishTargets(targeting, picked)
     },
-    [finishTargets],
+    [finishTargets, targeting],
   )
 
   const clickHandCard = useCallback(
@@ -598,7 +607,7 @@ function Table({ game }: { readonly game: UseGame }) {
     : []
 
   return (
-    <>
+    <div className="player-col">
       <main className="table">
         <PlayerPanel
           info={oppInfo}
@@ -628,11 +637,6 @@ function Table({ game }: { readonly game: UseGame }) {
             </div>
           </div>
         ) : null}
-
-        <div className="midrow">
-          <Stack view={view} />
-          <EventLog events={view.events} nameOf={game.nameOf} />
-        </div>
 
         <div className="battlefield you">
           {battlefieldOf(seat).map((o) => tileFor(o, seat))}
@@ -704,6 +708,6 @@ function Table({ game }: { readonly game: UseGame }) {
           {handIds.length === 0 ? <span className="muted">empty</span> : null}
         </div>
       </div>
-    </>
+    </div>
   )
 }

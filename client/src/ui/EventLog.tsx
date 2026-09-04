@@ -22,7 +22,6 @@ export function EventLog({ events, nameOf }: EventLogProps) {
         {events.map((event) => (
           <li key={event.seq} className={`ev ev-${event.type}`}>
             <span className="ev-seq">{event.seq}</span>
-            <span className="ev-type">{event.type}</span>
             <span className="ev-text">{describeEvent(event, nameOf)}</span>
           </li>
         ))}
