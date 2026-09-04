@@ -157,6 +157,9 @@ function Table({ game }: { readonly game: UseGame }) {
     (a): a is DiscardAction => a.kind === 'discard',
   )
   const canPass = actions.some((a) => a.kind === 'pass-priority')
+  // Only the active player may skip the rest of their own turn — a defender
+  // holding priority to respond during it shouldn't get this button.
+  const canPassTurn = canPass && seat === view.activePlayer
 
   const mode:
     | 'discard'
@@ -659,7 +662,7 @@ function Table({ game }: { readonly game: UseGame }) {
         <button type="button" onClick={pass} disabled={!canPass}>
           Pass (space)
         </button>
-        <button type="button" onClick={game.passTurn} disabled={!canPass}>
+        <button type="button" onClick={game.passTurn} disabled={!canPassTurn}>
           Pass Turn
         </button>
       </div>

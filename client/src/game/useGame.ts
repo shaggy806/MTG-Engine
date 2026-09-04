@@ -55,13 +55,28 @@ function settleAndAutoPass(game: Game): void {
  * Passes priority — on behalf of whoever currently holds it, since it's the
  * same person operating both seats — through the rest of the current turn,
  * stopping at that turn's end step so there's still a chance to act there.
- * Also stops early on a real decision (an `awaiting`) or game over.
+ * A declare-attackers decision is auto-answered with no attackers (this is
+ * only ever invoked by the active player, so it's their decision to skip);
+ * with no attackers, the engine's own declare-blockers step asks nothing and
+ * is passed through like any other window. Any other real decision (blockers
+ * from a defender who *was* attacked, discard, order-blockers) still stops
+ * the loop, as does game over.
  */
 function passRestOfTurn(game: Game): void {
   const startTurn = game.state.turn.number
   for (let i = 0; i < 1000; i += 1) {
     const s = game.state
-    if (s.result.over || s.awaiting !== null) return
+    if (s.result.over) return
+    if (s.awaiting !== null) {
+      if (s.awaiting.kind !== 'attackers' || s.turn.number !== startTurn) return
+      game.dispatch({
+        type: 'declare-attackers',
+        player: s.awaiting.player,
+        attackers: [],
+      })
+      game.advanceUntil(settled)
+      continue
+    }
     if (!s.priority.active || s.priority.holder === null) return
     if (s.turn.number !== startTurn || s.turn.step === 'end') return
     game.dispatch({ type: 'pass-priority', player: s.priority.holder })
@@ -152,6 +167,10 @@ export function useGame(initialSeed = 1): UseGame {
   )
 
   const passTurn = useCallback(() => {
+    // Only the active player may skip through the rest of their own turn —
+    // a defender who merely holds priority to respond during it should not
+    // be able to wave away the active player's remaining decisions.
+    if (game.state.priority.holder !== activePlayerOf(game.state)) return
     try {
       passRestOfTurn(game)
       setLastError(null)
