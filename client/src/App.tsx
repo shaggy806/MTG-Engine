@@ -503,9 +503,9 @@ function Table({ game }: { readonly game: UseGame }) {
           <div className="board-empty">no permanents</div>
         ) : (
           nonEmpty.map((bucket) => (
-            <div className="board-row" key={bucket}>
-              <div className="board-row-label">{BUCKET_LABEL[bucket]}</div>
-              <div className="board-row-cards">
+            <div className="board-section" key={bucket}>
+              <div className="board-section-label">{BUCKET_LABEL[bucket]}</div>
+              <div className="board-section-cards">
                 {(byBucket.get(bucket) ?? []).map((entry) => (
                   <div className="board-entry" key={entry.ids[0]}>
                     {tileFor(entry.sample, pid, entry.ids, {

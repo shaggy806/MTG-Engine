@@ -30,18 +30,13 @@ const settled = (s: GameState): boolean =>
   (s.priority.active && s.priority.holder !== null)
 
 /**
- * A priority window the holder can do nothing with but pass. We skip these so
- * the player isn't asked to click "Pass" through every empty combat step — but
- * we keep the active player's own main phases interactive even when idle.
+ * A priority window the holder can do nothing with but pass — including
+ * their own main phase, if they truly have no other legal action. We skip
+ * these so the player isn't asked to click "Pass" when there's nothing to do.
  */
 function isDeadWindow(game: Game, holder: PlayerId): boolean {
   const acts = game.legalActions(holder)
-  if (acts.length !== 1 || acts[0].kind !== 'pass-priority') return false
-  const s = game.state
-  const ownMain =
-    holder === activePlayerOf(s) &&
-    (s.turn.step === 'precombat-main' || s.turn.step === 'postcombat-main')
-  return !ownMain
+  return acts.length === 1 && acts[0].kind === 'pass-priority'
 }
 
 function settleAndAutoPass(game: Game): void {

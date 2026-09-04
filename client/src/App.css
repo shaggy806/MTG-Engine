@@ -195,25 +195,14 @@
   font-size: 12px;
 }
 
-/* board: permanents split into labeled type rows (lands/creatures/artifacts/
-   enchantments); Auras/Equipment nest under their host instead of getting
-   their own row */
+/* board: one bordered area per seat, permanents split into labeled type
+   areas side by side within it (lands/creatures/artifacts/enchantments);
+   Auras/Equipment nest under their host instead of getting their own area */
 .board {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.board-row-label {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-}
-.board-row-cards {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
-  gap: 10px 8px;
+  gap: 8px 18px;
   min-height: 50px;
   padding: 8px;
   background: var(--panel);
@@ -221,15 +210,32 @@
   border-radius: 8px;
   align-content: flex-start;
 }
-.board.opp .board-row-cards {
+.board.opp {
   background: #1b1a20;
 }
-.board-empty {
-  padding: 10px 8px;
+.board-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.board-section:not(:first-child) {
+  padding-left: 18px;
+  border-left: 1px solid var(--border);
+}
+.board-section-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   color: var(--muted);
-  background: var(--panel);
-  border: 1px dashed var(--border);
-  border-radius: 8px;
+}
+.board-section-cards {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 10px 8px;
+}
+.board-empty {
+  color: var(--muted);
 }
 .board-entry {
   display: flex;
