@@ -15,7 +15,10 @@
     "dist"
   ],
   "scripts": {
+    "gen:cards": "node scripts/gen-cards.mjs",
+    "prebuild": "node scripts/gen-cards.mjs",
     "build": "tsc",
+    "pretypecheck": "node scripts/gen-cards.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
