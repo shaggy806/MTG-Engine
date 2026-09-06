@@ -21,3 +21,4 @@ export * from "./actions.js";
 export * from "./controller.js";
 export * from "./view.js";
 export * from "./game.js";
+export * from "./auto-settle.js";
