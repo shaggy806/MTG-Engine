@@ -2,6 +2,15 @@
   width: 100%;
   padding: 12px 20px 40px;
   position: relative;
+  background: var(--bg);
+  transition: background-color 0.6s ease;
+}
+/* whose turn it is, as a faint wash over the whole page */
+.app.active-seat-a {
+  background-color: var(--seat-a-bg);
+}
+.app.active-seat-b {
+  background-color: var(--seat-b-bg);
 }
 
 .topbar {
@@ -76,6 +85,28 @@
   border-radius: 8px;
 }
 
+/* whose turn + full phase name, spelled out — bigger and more central than
+   the compact phase-track pips above it */
+.turn-banner {
+  margin: 4px 0 2px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+}
+.turn-banner-sep {
+  margin: 0 8px;
+  color: var(--muted);
+}
+.turn-banner-phase {
+  color: var(--text);
+}
+.turn-banner.seat-a .turn-banner-player {
+  color: var(--seat-a);
+}
+.turn-banner.seat-b .turn-banner-player {
+  color: var(--seat-b);
+}
+
 .error-banner {
   margin: 6px 0;
   padding: 6px 10px;
@@ -119,7 +150,7 @@
   gap: 8px;
 }
 .sidebar .stack {
-  flex: 0 0 25%;
+  flex: 0 0 38%;
   overflow-y: auto;
 }
 .sidebar .event-log {
@@ -151,6 +182,7 @@
   gap: 3px;
   background: var(--panel);
   border: 1px solid var(--border);
+  border-left-width: 4px;
   border-radius: 8px;
   padding: 8px 12px;
 }
@@ -167,10 +199,37 @@
 .player-panel.lost {
   opacity: 0.6;
 }
+/* per-player identity — the left edge stays this color even while active,
+   so "whose panel is this" and "who's active right now" read separately */
+.player-panel.seat-a {
+  border-left-color: var(--seat-a);
+}
+.player-panel.seat-b {
+  border-left-color: var(--seat-b);
+}
+.player-panel.seat-a .pp-name {
+  color: var(--seat-a);
+}
+.player-panel.seat-b .pp-name {
+  color: var(--seat-b);
+}
 .pp-head {
   display: flex;
   align-items: baseline;
   gap: 10px;
+}
+.pp-online-dot {
+  display: inline-block;
+  align-self: center;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.pp-online-dot.online {
+  background: var(--good);
+}
+.pp-online-dot.offline {
+  background: var(--bad);
 }
 .pp-name {
   font-weight: 600;
@@ -200,18 +259,35 @@
    Auras/Equipment nest under their host instead of getting their own area */
 .board {
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 8px 18px;
+  flex-direction: column;
+  gap: 6px;
   min-height: 50px;
   padding: 8px;
   background: var(--panel);
   border: 1px dashed var(--border);
   border-radius: 8px;
-  align-content: flex-start;
 }
 .board.opp {
   background: #1b1a20;
+}
+.board.seat-a {
+  border-color: var(--seat-a);
+}
+.board.seat-b {
+  border-color: var(--seat-b);
+}
+/* one row for creatures/artifacts/enchantments, one for lands — like a
+   physical Commander table, lands stay in their own strip */
+.board-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px 18px;
+  align-content: flex-start;
+}
+.board-row + .board-row {
+  padding-top: 6px;
+  border-top: 1px dashed var(--border);
 }
 .board-section {
   display: flex;
@@ -265,15 +341,30 @@
   color: var(--muted);
   margin-bottom: 4px;
 }
-.stack ol {
-  margin: 0;
-  padding-left: 18px;
+.stack-cards {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
 }
-.stack-name {
-  font-weight: 600;
+.stack-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.stack-entry-label {
+  font-size: 11px;
+  color: var(--muted);
 }
 .stack-targets {
   color: var(--warn);
+  font-size: 11px;
+}
+/* the stack is a read-only display, not an interactive board — full
+   visibility regardless of the tile's own disabled/clickable state */
+.stack-entry .card-tile:disabled {
+  opacity: 1;
 }
 
 .event-log {
@@ -615,13 +706,9 @@
   flex-wrap: wrap;
   gap: 8px;
 }
-.opp-hand {
-  margin-top: 0;
-  background: #1b1a20;
-}
 
-/* curtain */
-.curtain {
+/* full-screen centered panel: connecting/disconnected/lobby/seat-picker */
+.overlay {
   position: fixed;
   inset: 0;
   background: rgba(10, 12, 16, 0.92);
@@ -630,17 +717,33 @@
   justify-content: center;
   z-index: 10;
 }
-.curtain-box {
+.overlay-box {
   text-align: center;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 10px;
   padding: 32px 44px;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 12px;
+  min-width: 280px;
 }
-.curtain-box h2 {
-  font-size: 32px;
+.overlay-box h2 {
+  font-size: 24px;
   color: var(--accent);
+}
+.overlay-box form {
+  display: flex;
+  gap: 8px;
+}
+.overlay-box input {
+  width: 110px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.seat-picker {
+  display: flex;
+  gap: 10px;
 }

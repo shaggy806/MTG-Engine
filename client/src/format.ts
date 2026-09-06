@@ -3,7 +3,7 @@
  * playground scripts' `format.mjs`, used by the event log.
  */
 
-import type { GameEvent, ObjectId, PlayerId, TargetRef } from 'engine'
+import type { GameEvent, ObjectId, PlayerId, Step, TargetRef } from 'engine'
 
 export type NameOf = (id: ObjectId) => string
 
@@ -100,3 +100,30 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
 
 export const playerLabel = (id: PlayerId): string =>
   id.charAt(0).toUpperCase() + id.slice(1)
+
+export type SeatClass = 'seat-a' | 'seat-b'
+
+/**
+ * A stable per-player identity class, by seating order rather than table
+ * position — so a given player reads as the same color on every device
+ * regardless of which side of the screen they're rendered on.
+ */
+export function seatClassOf(turnOrder: readonly PlayerId[], id: PlayerId): SeatClass {
+  return turnOrder.indexOf(id) % 2 === 0 ? 'seat-a' : 'seat-b'
+}
+
+/** Full step names, spelled out — the phase track's pips use abbreviations. */
+export const STEP_LABEL: Record<Step, string> = {
+  untap: 'Untap',
+  upkeep: 'Upkeep',
+  draw: 'Draw',
+  'precombat-main': 'Precombat Main Phase',
+  'begin-combat': 'Beginning of Combat',
+  'declare-attackers': 'Declare Attackers',
+  'declare-blockers': 'Declare Blockers',
+  'combat-damage': 'Combat Damage',
+  'end-combat': 'End of Combat',
+  'postcombat-main': 'Postcombat Main Phase',
+  end: 'End Step',
+  cleanup: 'Cleanup',
+}

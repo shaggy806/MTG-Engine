@@ -4,16 +4,18 @@ import type {
   LegalAction,
   ObjectId,
   PlayerId,
+  PlayerView,
   TargetRef,
   TargetSpec,
   VisibleObject,
 } from 'engine'
-import { useGame } from './game/useGame.ts'
-import type { UseGame } from './game/useGame.ts'
+import { useNetworkGame } from './net/useNetworkGame.ts'
+import type { NetworkGame } from './net/useNetworkGame.ts'
 import { BUCKET_LABEL, BUCKET_ORDER, computeBoardEntries } from './game/board.ts'
 import type { Bucket, BoardEntry } from './game/board.ts'
-import { playerLabel } from './format.ts'
+import { playerLabel, seatClassOf } from './format.ts'
 import { PhaseTrack } from './ui/PhaseTrack.tsx'
+import { TurnBanner } from './ui/TurnBanner.tsx'
 import { PlayerPanel } from './ui/PlayerPanel.tsx'
 import { CardTile } from './ui/CardTile.tsx'
 import { Stack } from './ui/Stack.tsx'
@@ -37,82 +39,198 @@ interface Targeting {
   readonly picked: readonly TargetRef[]
 }
 
+/**
+ * Whoever the engine is actually waiting on right now — a pending
+ * declaration (attackers/blockers/discard/order-blockers) if there is one,
+ * else the current priority holder. NOT the same as "my seat": each device
+ * only ever represents one seat, so unlike the old hot-seat client, "my
+ * seat" and "whoever must act" are frequently different players.
+ */
+function actingPlayer(view: PlayerView): PlayerId | null {
+  if (view.awaiting !== null) return view.awaiting.player
+  return view.priority.active ? view.priority.holder : null
+}
+
+const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string> = {
+  attackers: 'declare attackers',
+  blockers: 'declare blockers',
+  discard: 'discard',
+  'order-blockers': 'order blockers',
+}
+
 export default function App() {
-  const game = useGame(1)
-  const { view, seat } = game
+  const game = useNetworkGame()
 
-  // "Pass the device" curtain: re-arm it whenever the acting seat changes.
-  // (react.dev's recommended "adjust state when a prop changes" pattern.)
-  const [ready, setReady] = useState(true)
-  const [ackSeat, setAckSeat] = useState(seat)
-  if (seat !== ackSeat) {
-    setAckSeat(seat)
-    setReady(false)
+  if (game.status === 'connecting') {
+    return <CenteredScreen title="Connecting…" />
   }
+  if (game.status === 'disconnected') {
+    return (
+      <CenteredScreen title="Reconnecting…">
+        <p className="muted">
+          Lost the connection to the room server — retrying automatically.
+        </p>
+        <button type="button" onClick={game.reconnect}>
+          Retry now
+        </button>
+      </CenteredScreen>
+    )
+  }
+  if (game.status === 'room-not-found') {
+    return <LobbyScreen game={game} notFound />
+  }
+  if (game.status === 'no-room') {
+    return <LobbyScreen game={game} />
+  }
+  if (game.status === 'choosing-seat') {
+    return <SeatPickerScreen game={game} />
+  }
+  return <GameScreen game={game} />
+}
 
+function CenteredScreen({
+  title,
+  children,
+}: {
+  readonly title: string
+  readonly children?: ReactNode
+}) {
+  return (
+    <div className="overlay">
+      <div className="overlay-box">
+        <h2>{title}</h2>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+function ErrorLine({ game }: { readonly game: NetworkGame }) {
+  if (!game.error) return null
+  return (
+    <div className="error-banner" onClick={game.clearError} role="alert">
+      ⚠ {game.error}
+    </div>
+  )
+}
+
+function LobbyScreen({
+  game,
+  notFound = false,
+}: {
+  readonly game: NetworkGame
+  readonly notFound?: boolean
+}) {
+  const [joinCode, setJoinCode] = useState('')
+  return (
+    <CenteredScreen title="MTG Engine">
+      {notFound ? (
+        <p className="muted">
+          That room wasn't found — it may have closed. Start a new one or try
+          another code.
+        </p>
+      ) : null}
+      <ErrorLine game={game} />
+      <button type="button" onClick={() => game.createRoom()}>
+        Create a game
+      </button>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          const code = joinCode.trim().toUpperCase()
+          if (code) game.joinRoom(code)
+        }}
+      >
+        <input
+          value={joinCode}
+          onChange={(e) => setJoinCode(e.target.value)}
+          placeholder="Room code"
+          maxLength={5}
+        />
+        <button type="submit" disabled={!joinCode.trim()}>
+          Join
+        </button>
+      </form>
+    </CenteredScreen>
+  )
+}
+
+function SeatPickerScreen({ game }: { readonly game: NetworkGame }) {
+  return (
+    <CenteredScreen title={`Room ${game.roomId ?? ''}`}>
+      <p className="muted">Share this room code, then everyone picks a seat.</p>
+      <ErrorLine game={game} />
+      <div className="seat-picker">
+        {game.seats.map((s) => (
+          <button
+            key={s.player}
+            type="button"
+            disabled={s.claimed}
+            onClick={() => game.claimSeat(s.player)}
+          >
+            {playerLabel(s.player)}
+            {s.claimed ? (s.online ? ' (taken)' : ' (taken · offline)') : ''}
+          </button>
+        ))}
+      </div>
+    </CenteredScreen>
+  )
+}
+
+/** Renders once `useNetworkGame` has a claimed seat and a pushed view. */
+function GameScreen({ game }: { readonly game: NetworkGame }) {
+  const { view, seat, opponent } = game
+  if (view === null || seat === null || opponent === null) {
+    return <CenteredScreen title="Loading…" />
+  }
   const over = view.result.over
+  const activeSeatClass = seatClassOf(view.turnOrder, view.activePlayer)
 
   return (
-    <div className="app">
+    <div className={`app active-${activeSeatClass}`}>
       <header className="topbar">
-        <h1>MTG Engine — hot seat</h1>
+        <h1>MTG Engine</h1>
         <div className="topbar-right">
-          <label>
-            <input
-              type="checkbox"
-              checked={game.revealAll}
-              onChange={(e) => game.setRevealAll(e.target.checked)}
-            />
-            reveal both hands
-          </label>
-          <span className="muted">seed {game.seed}</span>
-          <button type="button" onClick={() => game.reset()}>
-            New game
+          <span className="muted">room {game.roomId}</span>
+          <button type="button" onClick={() => window.location.assign('/')}>
+            Leave
           </button>
         </div>
       </header>
 
       <PhaseTrack view={view} />
+      <TurnBanner view={view} />
 
       <div className="seat-banner">
-        {over ? 'Game over' : `${playerLabel(seat)} to act`}
+        {over ? 'Game over' : `${playerLabel(actingPlayer(view) ?? seat)} to act`}
       </div>
 
-      {game.lastError ? (
-        <div className="error-banner" onClick={game.clearError} role="alert">
-          ⚠ {game.lastError}
-        </div>
-      ) : null}
+      <ErrorLine game={game} />
 
       <div className="layout">
-        <Table key={game.revision} game={game} />
+        <Table key={game.revision} view={view} seat={seat} opponent={opponent} game={game} />
         <aside className="sidebar">
           <Stack view={view} />
           <EventLog events={view.events} nameOf={game.nameOf} />
         </aside>
       </div>
-
-      {!ready && !over && !game.revealAll ? (
-        <div className="curtain">
-          <div className="curtain-box">
-            <p>Pass the device to</p>
-            <h2>{playerLabel(seat)}</h2>
-            <button type="button" onClick={() => setReady(true)}>
-              I'm {playerLabel(seat)} — show my hand
-            </button>
-          </div>
-        </div>
-      ) : null}
     </div>
   )
+}
+
+interface TableProps {
+  readonly view: PlayerView
+  readonly seat: PlayerId
+  readonly opponent: PlayerId
+  readonly game: NetworkGame
 }
 
 /**
  * Everything interactive. Keyed on `game.revision` in the parent, so every
  * in-progress selection resets whenever the game state moves on.
  */
-function Table({ game }: { readonly game: UseGame }) {
-  const { view, actions, seat, opponent } = game
+function Table({ view, seat, opponent, game }: TableProps) {
+  const actions = game.actions
 
   const [targeting, setTargeting] = useState<Targeting | null>(null)
   const [selectedSource, setSelectedSource] = useState<ObjectId | null>(null)
@@ -500,35 +618,49 @@ function Table({ game }: { readonly game: UseGame }) {
       byBucket.set(e.bucket, list)
     }
     const nonEmpty = BUCKET_ORDER.filter((b) => (byBucket.get(b)?.length ?? 0) > 0)
-    return (
-      <div className={`board ${isOpp ? 'opp' : 'you'}`}>
-        {nonEmpty.length === 0 ? (
-          <div className="board-empty">no permanents</div>
-        ) : (
-          nonEmpty.map((bucket) => (
-            <div className="board-section" key={bucket}>
-              <div className="board-section-label">{BUCKET_LABEL[bucket]}</div>
-              <div className="board-section-cards">
-                {(byBucket.get(bucket) ?? []).map((entry) => (
-                  <div className="board-entry" key={entry.ids[0]}>
-                    {tileFor(entry.sample, pid, entry.ids, {
-                      stackCount: entry.ids.length,
-                    })}
-                    {entry.attachments.length > 0 ? (
-                      <div className="attachments">
-                        {entry.attachments.map((a) => (
-                          <div key={a.id}>
-                            {tileFor(a, pid, [a.id], { compact: true })}
-                          </div>
-                        ))}
-                      </div>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
+
+    const renderSection = (bucket: Bucket) => (
+      <div className="board-section" key={bucket}>
+        <div className="board-section-label">{BUCKET_LABEL[bucket]}</div>
+        <div className="board-section-cards">
+          {(byBucket.get(bucket) ?? []).map((entry) => (
+            <div className="board-entry" key={entry.ids[0]}>
+              {tileFor(entry.sample, pid, entry.ids, {
+                stackCount: entry.ids.length,
+              })}
+              {entry.attachments.length > 0 ? (
+                <div className="attachments">
+                  {entry.attachments.map((a) => (
+                    <div key={a.id}>{tileFor(a, pid, [a.id], { compact: true })}</div>
+                  ))}
+                </div>
+              ) : null}
             </div>
-          ))
-        )}
+          ))}
+        </div>
+      </div>
+    )
+
+    // Lands get their own row, like a physical Commander table's mana base —
+    // kept nearest this player's own edge (below their permanents when it's
+    // your own board, above when it's the opponent's, so creatures from both
+    // sides meet toward the middle of the screen).
+    const permanentBuckets = nonEmpty.filter((b) => b !== 'land')
+    const landRow = nonEmpty.includes('land') ? (
+      <div className="board-row" key="lands">
+        {renderSection('land')}
+      </div>
+    ) : null
+    const permanentRow = permanentBuckets.length > 0 ? (
+      <div className="board-row" key="permanents">
+        {permanentBuckets.map(renderSection)}
+      </div>
+    ) : null
+    const rows = isOpp ? [landRow, permanentRow] : [permanentRow, landRow]
+
+    return (
+      <div className={`board ${isOpp ? 'opp' : 'you'} ${seatClassOf(view.turnOrder, pid)}`}>
+        {nonEmpty.length === 0 ? <div className="board-empty">no permanents</div> : rows}
       </div>
     )
   }
@@ -536,6 +668,8 @@ function Table({ game }: { readonly game: UseGame }) {
   const handIds = view.zones.hands[seat] ?? []
   const seatInfo = view.players[seat]
   const oppInfo = view.players[opponent]
+  const onlineOf = (pid: PlayerId): boolean | null =>
+    game.seats.find((s) => s.player === pid)?.online ?? null
 
   let controls: ReactNode
   if (view.result.over) {
@@ -559,10 +693,18 @@ function Table({ game }: { readonly game: UseGame }) {
         </button>
       </div>
     )
-  } else if (mode === 'attackers') {
+  } else if (mode === 'attackers' && attackAction) {
+    const allSelected = attackPicks.length === attackAction.eligible.length
     controls = (
       <div className="controls">
         <span>Declare attackers — {attackPicks.length} selected</span>
+        <button
+          type="button"
+          disabled={attackAction.eligible.length === 0 || allSelected}
+          onClick={() => setAttackPicks(attackAction.eligible)}
+        >
+          Attack with all
+        </button>
         <button type="button" onClick={confirmAttackers}>
           {attackPicks.length === 0
             ? 'No attacks'
@@ -654,16 +796,30 @@ function Table({ game }: { readonly game: UseGame }) {
       </div>
     )
   } else {
+    // Reaching this fallback with `awaiting` set always means it's someone
+    // else's declaration pending (a decision of ours would have matched one
+    // of the branches above) — that's a "waiting on them", not a priority
+    // window of our own.
+    const who = actingPlayer(view) ?? seat
+    const awaiting = view.awaiting
     controls = (
       <div className="controls">
         <span className="muted">
-          {playerLabel(seat)} has priority · {view.turn.step}
+          {awaiting !== null
+            ? `Waiting for ${playerLabel(who)} to ${AWAITING_LABEL[awaiting.kind]}…`
+            : `${playerLabel(who)} has priority · ${view.turn.step}`}
         </span>
         <button type="button" onClick={pass} disabled={!canPass}>
           Pass (space)
         </button>
         <button type="button" onClick={game.passTurn} disabled={!canPassTurn}>
           Pass Turn
+        </button>
+        <button type="button" onClick={game.autoPass}>
+          {game.autoPassing ? 'Stop auto-pass' : 'Auto-pass until my turn'}
+        </button>
+        <button type="button" onClick={game.toggleManaSkip}>
+          {game.skipManaOnly ? 'Show mana-only priority' : 'Skip mana-only priority'}
         </button>
       </div>
     )
@@ -678,33 +834,21 @@ function Table({ game }: { readonly game: UseGame }) {
       <main className="table">
         <PlayerPanel
           info={oppInfo}
+          seatClass={seatClassOf(view.turnOrder, opponent)}
           isActive={view.activePlayer === opponent}
           hasPriority={view.priority.holder === opponent}
+          online={onlineOf(opponent)}
           targetable={playerIsTargetable(opponent)}
           onTargetClick={() => clickPlayerTarget(opponent)}
         />
         {renderBoard(opponent, true)}
-
-        {game.revealAll ? (
-          <div className="hand opp-hand">
-            <h3>
-              {playerLabel(opponent)}'s hand (
-              {(view.zones.hands[opponent] ?? []).length})
-            </h3>
-            <div className="hand-cards">
-              {(view.zones.hands[opponent] ?? []).map((id) => {
-                const obj = view.objects[id]
-                return obj ? <CardTile key={id} obj={obj} /> : null
-              })}
-            </div>
-          </div>
-        ) : null}
-
         {renderBoard(seat, false)}
         <PlayerPanel
           info={seatInfo}
+          seatClass={seatClassOf(view.turnOrder, seat)}
           isActive={view.activePlayer === seat}
           hasPriority={view.priority.holder === seat}
+          online={onlineOf(seat)}
           targetable={playerIsTargetable(seat)}
           onTargetClick={() => clickPlayerTarget(seat)}
         />

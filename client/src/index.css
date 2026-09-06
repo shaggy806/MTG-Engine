@@ -12,6 +12,12 @@
   --bad: #ef6f6f;
   --warn: #e7c05b;
 
+  /* per-player identity colors, by seating order (not table position) */
+  --seat-a: #b98cf0;
+  --seat-a-bg: rgba(185, 140, 240, 0.08);
+  --seat-b: #f0954a;
+  --seat-b-bg: rgba(240, 149, 74, 0.08);
+
   font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
   font-size: 14px;
   color: var(--text);
