@@ -5,6 +5,7 @@
 //   npm run play:random -w engine
 //   npm run play:random -w engine -- --games 50
 //   npm run play:random -w engine -- --log        # print the last game's log
+//   npm run play:random -w engine -- --players 3  # or 4 — exercises multi-opponent combat
 
 import { Game, RandomController, asPlayerId, createRng } from "../dist/index.js";
 import { printLog, printSummary } from "./format.mjs";
@@ -16,9 +17,12 @@ const flag = (name, fallback) => {
 };
 const games = Number(flag("games", "10"));
 const showLog = args.includes("--log");
+const numPlayers = Number(flag("players", "2"));
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
+const C = asPlayerId("carol");
+const D = asPlayerId("dave");
 
 /** `[["Forest", 17], ["Grizzly Bears", 4], ...]` -> a flat 40-card list. */
 const deck = (entries) =>
@@ -60,6 +64,19 @@ const deckB = deck([
   ["Wurmcoil Engine", 1],
 ]);
 
+// All four seats' decks/commanders, in seating order — sliced down to
+// `numPlayers` for a 2-4 player game. Carol/Dave reuse deckA/deckB (no
+// commander needed; this is fuzz coverage for multi-defender combat, not a
+// Commander-specific scenario) so the extra seats still have decks that can
+// actually cast their own spells.
+const allSeats = [
+  { player: A, cards: deckA, commander: "Ureni of the Unwritten" },
+  { player: B, cards: deckB, commander: "Ashmark, Mardu Vanguard" },
+  { player: C, cards: deckA },
+  { player: D, cards: deckB },
+];
+const seats = allSeats.slice(0, numPlayers);
+
 let last = null;
 const results = [];
 
@@ -69,14 +86,10 @@ for (let seed = 1; seed <= games; seed += 1) {
   const game = Game.create({
     seed,
     mulligans: true,
-    controllers: {
-      [A]: new RandomController(A, pick),
-      [B]: new RandomController(B, pick),
-    },
-    decks: [
-      { player: A, cards: deckA, commander: "Ureni of the Unwritten" },
-      { player: B, cards: deckB, commander: "Ashmark, Mardu Vanguard" },
-    ],
+    controllers: Object.fromEntries(
+      seats.map(({ player }) => [player, new RandomController(player, pick)]),
+    ),
+    decks: seats,
   });
 
   game.advance();
@@ -107,9 +120,11 @@ for (const r of results) {
 
 const wins = (who) => results.filter((r) => r.winner === who).length;
 console.log("");
-console.log(
-  `${games} games — alice ${wins("alice")}, bob ${wins("bob")}, draws ${wins("draw")}`,
-);
+const tally = seats
+  .map(({ player }) => `${player} ${wins(player)}`)
+  .concat(`draws ${wins("draw")}`)
+  .join(", ");
+console.log(`${games} games — ${tally}`);
 console.log(
   `avg turns ${(results.reduce((s, r) => s + r.turns, 0) / games).toFixed(1)}`,
 );

@@ -513,9 +513,12 @@ function Table({ view, seat, opponent, game }: TableProps) {
     game.dispatch({
       type: 'declare-attackers',
       player: seat,
+      // This client only ever renders a 2-seat table today, so there's
+      // exactly one legal defender — a real defender-picker UI is follow-up
+      // work for when rooms can seat 3-4 players.
       attackers: attackPicks.map((attacker) => ({
         attacker,
-        defender: attackAction.defender,
+        defender: attackAction.defenders[0],
       })),
     })
   }, [attackAction, attackPicks, game, seat])
@@ -630,7 +633,7 @@ function Table({ view, seat, opponent, game }: TableProps) {
     } else if (mode === 'attackers' && attackAction) {
       highlight = attackAction.eligible.includes(id)
       selected = attackPicks.includes(id)
-      if (selected) badge = `⚔ ${playerLabel(attackAction.defender)}`
+      if (selected) badge = `⚔ ${playerLabel(attackAction.defenders[0])}`
     } else if (mode === 'blockers' && blockAction) {
       const isBlocker = blockAction.eligible.some((e) => e.blocker === id)
       const assignedTo = blockAssign[id]

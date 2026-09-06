@@ -407,7 +407,10 @@ export class RandomController extends AutomaticController {
           player,
           attackers: legal.eligible
             .filter(() => this.random() < 0.6)
-            .map((attacker) => ({ attacker, defender: legal.defender })),
+            .map((attacker) => ({
+              attacker,
+              defender: legal.defenders[this.pickIndex(legal.defenders.length)],
+            })),
         };
       case "declare-blockers": {
         const blocks: BlockerDeclaration[] = [];

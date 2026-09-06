@@ -36,7 +36,7 @@ import type { ManaCost, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId, Rng } from "./primitives.js";
 import { asObjectId, createRng, shuffle } from "./primitives.js";
 import { DEFAULT_RULES, activePlayerOf, createPlayerState } from "./state.js";
-import type { GameObject, GameRules, GameState, ZoneType } from "./state.js";
+import type { AwaitingDecision, GameObject, GameRules, GameState, ZoneType } from "./state.js";
 import type { TargetRef, TargetSpec } from "./target.js";
 import { isLegalTarget, legalTargets } from "./targeting.js";
 import { PHASE_OF_STEP, isMainPhase, nextStep, stepUsesPriority } from "./turn.js";
@@ -105,8 +105,8 @@ export class Game {
   }
 
   static create(config: GameConfig): Game {
-    if (config.decks.length !== 2) {
-      throw new Error("Game.create currently supports exactly two players");
+    if (config.decks.length < 2 || config.decks.length > 4) {
+      throw new Error("Game.create currently supports two to four players");
     }
     const turnOrder = config.decks.map((deck) => deck.player);
     if (new Set(turnOrder).size !== turnOrder.length) {
@@ -148,6 +148,7 @@ export class Game {
       result: { over: false, winner: null, reason: null },
       awaiting: null,
       pendingBlockerOrders: [],
+      pendingBlockerDeclarations: [],
       pendingTriggers: [],
       timestampSeq: 0,
       eventLog: [],
@@ -336,19 +337,21 @@ export class Game {
     if (awaiting !== null) {
       if (awaiting.player !== player) return [];
       if (awaiting.kind === "attackers") {
-        const defender = this.defendingPlayer();
+        const defenders = this.legalDefenders(player);
         return [
           {
             kind: "declare-attackers",
-            defender,
-            eligible: this.state.zones.shared.battlefield.filter(
-              (id) => this.whyCannotAttack(player, id, defender) === null,
+            defenders,
+            eligible: this.state.zones.shared.battlefield.filter((id) =>
+              defenders.some((defender) => this.whyCannotAttack(player, id, defender) === null),
             ),
           },
         ];
       }
       if (awaiting.kind === "blockers") {
-        const attackers = this.currentAttackers();
+        const attackers = this.currentAttackers().filter(
+          (id) => this.state.objects[id].attacking === player,
+        );
         const eligible = this.state.zones.shared.battlefield
           .filter((id) => this.state.objects[id].controller === player)
           .map((blocker) => ({
@@ -997,10 +1000,10 @@ export class Game {
 
   // --- combat -----------------------------------------------------
 
-  private defendingPlayer(): PlayerId {
-    return (
-      this.state.turnOrder.find((player) => player !== this.activePlayer) ??
-      this.activePlayer
+  /** Every player `attacker` could legally declare an attack against. */
+  private legalDefenders(attacker: PlayerId): PlayerId[] {
+    return this.state.turnOrder.filter(
+      (player) => player !== attacker && !this.state.players[player].hasLost,
     );
   }
 
@@ -1030,35 +1033,63 @@ export class Game {
    * exactly as an explicit empty declaration would.
    */
   private declareAttackersStep(): void {
-    const defender = this.defendingPlayer();
-    const hasEligibleAttacker = this.state.zones.shared.battlefield.some(
-      (id) => this.whyCannotAttack(this.activePlayer, id, defender) === null,
+    const defenders = this.legalDefenders(this.activePlayer);
+    const hasEligibleAttacker = this.state.zones.shared.battlefield.some((id) =>
+      defenders.some((defender) => this.whyCannotAttack(this.activePlayer, id, defender) === null),
     );
     if (!hasEligibleAttacker) return;
     this.state.awaiting = { kind: "attackers", player: this.activePlayer };
   }
 
   /**
-   * Ask the defending player to declare blockers — but only if someone is
-   * attacking *and* they have at least one creature that could legally block
-   * one of them. Same reasoning as `declareAttackersStep`: no eligible
-   * blocker means there's no real decision, so this is skipped rather than
-   * asking for a declaration that can only ever be empty.
+   * Kick off the defending-player queue for this combat (3+ player games can
+   * have more than one defender to ask). Each attacked defender gets their
+   * own sequential "declare-blockers" turn, drained by
+   * `promptNextBlockerDeclaration` the same way `pendingBlockerOrders` drains
+   * one `order-blockers` action at a time.
    */
   private declareBlockersStep(): void {
     const attackers = this.currentAttackers();
     if (attackers.length === 0) return;
-    const defender = this.defendingPlayer();
-    const hasEligibleBlocker = this.state.zones.shared.battlefield.some(
-      (id) =>
-        this.state.objects[id].controller === defender &&
-        attackers.some((attacker) => this.whyCannotBlock(defender, id, attacker) === null),
+    const attackedBy = new Set(
+      attackers.map((id) => this.state.objects[id].attacking).filter((p) => p !== null),
     );
-    if (!hasEligibleBlocker) return;
-    this.state.awaiting = {
-      kind: "blockers",
-      player: defender,
-    };
+    // Ask in turn order starting after the active player — an arbitrary but
+    // consistent choice for this engine's one-decision-at-a-time model; real
+    // tournament rules poll every defender simultaneously.
+    const activeIndex = this.state.turnOrder.indexOf(this.activePlayer);
+    const rotated = [
+      ...this.state.turnOrder.slice(activeIndex + 1),
+      ...this.state.turnOrder.slice(0, activeIndex + 1),
+    ];
+    this.state.pendingBlockerDeclarations = rotated.filter((p) => attackedBy.has(p));
+    this.promptNextBlockerDeclaration();
+  }
+
+  /**
+   * Set `awaiting` for the next queued defender who actually has an eligible
+   * blocker, skipping any who don't (same "no real decision" reasoning
+   * `declareAttackersStep` documents). Leaves `awaiting` untouched (still
+   * whatever the caller set it to before) if the queue drains with nobody
+   * left to ask — mirrors `pendingBlockerOrders`: the current head stays in
+   * the queue until `applyBlockerDeclarations` actually answers it and pops
+   * it off, this only peeks/skips ahead of that.
+   */
+  private promptNextBlockerDeclaration(): void {
+    const attackers = this.currentAttackers();
+    while (this.state.pendingBlockerDeclarations.length > 0) {
+      const defender = this.state.pendingBlockerDeclarations[0];
+      const hasEligibleBlocker = this.state.zones.shared.battlefield.some(
+        (id) =>
+          this.state.objects[id].controller === defender &&
+          attackers.some((attacker) => this.whyCannotBlock(defender, id, attacker) === null),
+      );
+      if (hasEligibleBlocker) {
+        this.state.awaiting = { kind: "blockers", player: defender };
+        return;
+      }
+      this.state.pendingBlockerDeclarations = this.state.pendingBlockerDeclarations.slice(1);
+    }
   }
 
   private whyCannotAttack(
@@ -1084,8 +1115,8 @@ export class Game {
     ) {
       return `${def.name} has summoning sickness`;
     }
-    if (target !== this.defendingPlayer()) {
-      return "attackers can only attack the defending player";
+    if (!this.legalDefenders(player).includes(target)) {
+      return "attackers can only attack an opponent who hasn't already lost";
     }
     return null;
   }
@@ -1108,6 +1139,10 @@ export class Game {
     const attacker = this.state.objects[attackerId];
     if (attacker === undefined || attacker.attacking === null) {
       return `${attackerId} is not attacking`;
+    }
+    if (attacker.attacking !== player) {
+      const attackerDef = this.registry.get(attacker.cardName);
+      return `${blockerDef.name} can't block ${attackerDef.name} — it isn't attacking ${player}`;
     }
     if (
       this.objHasKeyword(attackerId, "flying") &&
@@ -1219,10 +1254,24 @@ export class Game {
       });
     }
 
-    // The attacking player orders the blockers of each multi-blocked attacker
-    // for damage assignment (rule 509.2), one `order-blockers` action each.
-    // The declaration order is the default the UI can just confirm.
+    // This defender is done; move to the next queued one if there is one
+    // (3+ player games can have several defenders to ask this combat).
     this.state.awaiting = null;
+    this.state.pendingBlockerDeclarations = this.state.pendingBlockerDeclarations.slice(1);
+    this.promptNextBlockerDeclaration();
+    // TS's narrowing of `this.state.awaiting` from the `= null` assignment
+    // above incorrectly persists across the call that may have just
+    // reassigned it; the cast reflects its real declared type.
+    const nextAwaiting = this.state.awaiting as AwaitingDecision | null;
+    if (nextAwaiting !== null) {
+      this.grantPriority(nextAwaiting.player);
+      return;
+    }
+
+    // Every defender has declared (or been skipped) — the attacking player
+    // orders the blockers of each multi-blocked attacker for damage
+    // assignment (rule 509.2), one `order-blockers` action each. The
+    // declaration order is the default the UI can just confirm.
     this.state.pendingBlockerOrders = this.currentAttackers().filter(
       (id) => this.state.objects[id].blockedBy.length > 1,
     );
@@ -1418,6 +1467,7 @@ export class Game {
 
   private endCombatStep(): void {
     this.state.pendingBlockerOrders = [];
+    this.state.pendingBlockerDeclarations = [];
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
       object.attacking = null;
@@ -2131,10 +2181,17 @@ export class Game {
     const pending = this.state.pendingTriggers;
     this.state.pendingTriggers = [];
 
-    const ordered = [
-      ...pending.filter((t) => t.controller === this.activePlayer),
-      ...pending.filter((t) => t.controller !== this.activePlayer),
+    // APNAP (rule 603.3b): active player's triggers first, then each other
+    // player's in turn order — not just "everyone else" in arrival order,
+    // which only happened to be correct with exactly one other player.
+    const activeIndex = this.state.turnOrder.indexOf(this.activePlayer);
+    const rotated = [
+      ...this.state.turnOrder.slice(activeIndex),
+      ...this.state.turnOrder.slice(0, activeIndex),
     ];
+    const ordered = rotated.flatMap((player) =>
+      pending.filter((t) => t.controller === player),
+    );
     for (const trigger of ordered) this.placeTriggerOnStack(trigger);
     return true;
   }

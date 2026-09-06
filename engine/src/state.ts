@@ -225,6 +225,12 @@ export interface GameState {
    * from the attacking player. Drained one `order-blockers` action at a time.
    */
   pendingBlockerOrders: ObjectId[];
+  /**
+   * Defending players (3+ player games can have more than one) still owed a
+   * "declare-blockers" turn this combat, in the order they'll be asked.
+   * Drained one `declare-blockers` action at a time.
+   */
+  pendingBlockerDeclarations: PlayerId[];
   /** Triggered abilities that have fired but not yet been put on the stack. */
   pendingTriggers: PendingTrigger[];
   /** Monotonic source for battlefield-entry timestamps. */

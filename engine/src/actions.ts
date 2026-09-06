@@ -113,7 +113,8 @@ export type LegalAction =
   | {
       readonly kind: "declare-attackers";
       readonly eligible: readonly ObjectId[];
-      readonly defender: PlayerId;
+      /** Every legal opponent an attacker can be declared against. */
+      readonly defenders: readonly PlayerId[];
     }
   | {
       readonly kind: "declare-blockers";
