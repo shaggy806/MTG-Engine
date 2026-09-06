@@ -49,6 +49,11 @@ export type GameEvent =
       readonly objects: readonly ObjectId[];
     })
   | (Base & {
+      readonly type: "cards-chosen-from-zone";
+      readonly player: PlayerId;
+      readonly objects: readonly ObjectId[];
+    })
+  | (Base & {
       readonly type: "damage-cleared";
       readonly objects: readonly ObjectId[];
     })

@@ -56,6 +56,13 @@ export type Action =
       readonly type: "discard";
       readonly player: PlayerId;
       readonly cards: readonly ObjectId[];
+    }
+  | {
+      /** Answers a pending "look at N cards, choose some" decision (e.g. look
+       * at the top of your library, or search your graveyard). */
+      readonly type: "choose-from-zone";
+      readonly player: PlayerId;
+      readonly chosen: readonly ObjectId[];
     };
 
 export type ActionType = Action["type"];
@@ -113,4 +120,11 @@ export type LegalAction =
       readonly kind: "discard";
       readonly count: number;
       readonly from: readonly ObjectId[];
+    }
+  | {
+      readonly kind: "choose-from-zone";
+      /** Candidates, already revealed to this player. */
+      readonly ids: readonly ObjectId[];
+      readonly min: number;
+      readonly max: number;
     };

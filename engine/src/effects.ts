@@ -54,6 +54,22 @@ export type EffectSpec =
       /** Attach the source (an Aura/Equipment) to a target permanent. */
       readonly kind: "attach";
       readonly target: number;
+    }
+  | {
+      /** Reveal `count` cards from the top of the controller's library (or
+       * their whole graveyard — already public, so `count` is ignored) and
+       * await a bounded choice of which to move to `destination`. The spell
+       * or ability itself still resolves and leaves the stack immediately,
+       * same as any other effect — this just leaves the game waiting on the
+       * controller's own `choose-from-zone` action before granting anyone
+       * priority again. */
+      readonly kind: "look-and-choose";
+      readonly zone: "library" | "graveyard";
+      readonly count?: number;
+      readonly min: number;
+      readonly max: number;
+      readonly destination: "battlefield" | "hand";
+      readonly leftover: "bottom-random" | "stay";
     };
 
 /** Primitive mutations an effect can perform. Implemented by the engine. */
@@ -78,6 +94,15 @@ export interface EffectApi {
   createToken(token: string, count: number): void;
   /** Attach `ctx.source` (an Aura/Equipment) to `target`. */
   attach(target: TargetRef): void;
+  /** See the `"look-and-choose"` {@link EffectSpec}. */
+  lookAndChoose(
+    zone: "library" | "graveyard",
+    count: number | undefined,
+    min: number,
+    max: number,
+    destination: "battlefield" | "hand",
+    leftover: "bottom-random" | "stay",
+  ): void;
 }
 
 export interface ResolutionContext extends EffectApi {
@@ -157,6 +182,16 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       if (target !== undefined) ctx.attach(target);
       return;
     }
+    case "look-and-choose":
+      ctx.lookAndChoose(
+        spec.zone,
+        spec.count,
+        spec.min,
+        spec.max,
+        spec.destination,
+        spec.leftover,
+      );
+      return;
     default:
       throw new Error(
         `unhandled effect kind: ${(spec as { kind: string }).kind}`,

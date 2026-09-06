@@ -18,14 +18,17 @@ export const DECKS: {
   readonly bob: readonly string[];
 } = {
   alice: list([
-    ["Forest", 17],
+    ["Forest", 16],
     ["Llanowar Elves", 4],
     ["Grizzly Bears", 4],
     ["Elvish Visionary", 4],
     ["Wildwood Sentinel", 2],
-    ["Rumbling Baloth", 3],
-    ["Craw Wurm", 3],
+    ["Rumbling Baloth", 2],
+    ["Craw Wurm", 2],
     ["Giant Growth", 3],
+    ["Explorer's Insight", 1],
+    ["Grave Recall", 1],
+    ["Oracle of Mul Daya", 1],
   ]),
   bob: list([
     ["Mountain", 8],

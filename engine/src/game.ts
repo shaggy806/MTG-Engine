@@ -254,6 +254,9 @@ export class Game {
       case "discard":
         this.applyDiscard(action.player, action.cards);
         break;
+      case "choose-from-zone":
+        this.applyChooseFromZone(action.player, action.chosen);
+        break;
       default:
         throw new Error(
           `unhandled action: ${(action as { type: string }).type}`,
@@ -292,6 +295,8 @@ export class Game {
         );
       case "discard":
         return this.whyCannotDiscard(action.player, action.cards);
+      case "choose-from-zone":
+        return this.whyCannotChooseFromZone(action.player, action.chosen);
       default:
         return `unknown action: ${(action as { type: string }).type}`;
     }
@@ -338,6 +343,16 @@ export class Game {
             kind: "order-blockers",
             attacker: awaiting.attacker,
             blockers: [...this.state.objects[awaiting.attacker].blockedBy],
+          },
+        ];
+      }
+      if (awaiting.kind === "choose-from-zone") {
+        return [
+          {
+            kind: "choose-from-zone",
+            ids: [...awaiting.ids],
+            min: awaiting.min,
+            max: awaiting.max,
           },
         ];
       }
@@ -701,6 +716,61 @@ export class Game {
     const hand = new Set(this.state.zones.perPlayer[player].hand);
     for (const id of cards) {
       if (!hand.has(id)) return `${player} tried to discard ${id}, not in hand`;
+    }
+    return null;
+  }
+
+  /** Answers a pending `"choose-from-zone"` decision (see `beginZoneChoice`). */
+  private applyChooseFromZone(player: PlayerId, chosen: readonly ObjectId[]): void {
+    const why = this.whyCannotChooseFromZone(player, chosen);
+    if (why !== null) throw new Error(why);
+
+    const awaiting = this.state.awaiting;
+    if (awaiting === null || awaiting.kind !== "choose-from-zone") {
+      throw new Error("unreachable: whyCannotChooseFromZone should have caught this");
+    }
+
+    const chosenSet = new Set(chosen);
+    const leftover = awaiting.ids.filter((id) => !chosenSet.has(id));
+
+    for (const id of chosen) this.moveObject(id, awaiting.destination);
+
+    if (awaiting.leftover === "bottom-random") {
+      // `moveObject` always appends to a zone's array, and the library's
+      // array is drawn from index 0 (the top) — so pushing here lands each
+      // card on the bottom, in shuffle order.
+      for (const id of shuffle(leftover, this.rng)) this.moveObject(id, "library");
+      this.state.rngState = this.rng.seed;
+    }
+    // leftover === "stay": nothing to do — those cards were only ever looked
+    // at, never removed from wherever they already were.
+
+    this.emit({ type: "cards-chosen-from-zone", player, objects: [...chosen] });
+    this.state.awaiting = null;
+    this.prepareForPriority(this.activePlayer);
+  }
+
+  private whyCannotChooseFromZone(
+    player: PlayerId,
+    chosen: readonly ObjectId[],
+  ): string | null {
+    const awaiting = this.state.awaiting;
+    if (
+      awaiting === null ||
+      awaiting.kind !== "choose-from-zone" ||
+      awaiting.player !== player
+    ) {
+      return `${player} is not being asked to choose from a zone`;
+    }
+    if (new Set(chosen).size !== chosen.length) {
+      return `${player} chose the same card twice`;
+    }
+    if (chosen.length < awaiting.min || chosen.length > awaiting.max) {
+      return `${player} must choose between ${awaiting.min} and ${awaiting.max} card(s), chose ${chosen.length}`;
+    }
+    const candidates = new Set(awaiting.ids);
+    for (const id of chosen) {
+      if (!candidates.has(id)) return `${player} chose ${id}, not a candidate`;
     }
     return null;
   }
@@ -1946,6 +2016,31 @@ export class Game {
         this.grantKeyword(target, keyword, duration),
       createToken: (token, count) => this.createTokens(controller, token, count),
       attach: (target) => this.attachPermanent(source, target),
+      lookAndChoose: (zone, count, min, max, destination, leftover) =>
+        this.beginZoneChoice(controller, zone, count, min, max, destination, leftover),
+    };
+  }
+
+  /** See the `"look-and-choose"` {@link EffectSpec}. */
+  private beginZoneChoice(
+    player: PlayerId,
+    zone: "library" | "graveyard",
+    count: number | undefined,
+    min: number,
+    max: number,
+    destination: "battlefield" | "hand",
+    leftover: "bottom-random" | "stay",
+  ): void {
+    const zoneCards = this.state.zones.perPlayer[player][zone];
+    const ids = zone === "library" ? zoneCards.slice(0, count ?? 0) : [...zoneCards];
+    this.state.awaiting = {
+      kind: "choose-from-zone",
+      player,
+      ids,
+      min: Math.min(min, ids.length),
+      max: Math.min(max, ids.length),
+      destination,
+      leftover,
     };
   }
 

@@ -243,6 +243,44 @@ describe("keyword-granting statics and one-shots", () => {
   });
 });
 
+describe("Oracle of Mul Daya (reveals the top of your library)", () => {
+  it("exposes the top card to every viewer once it's on the battlefield", () => {
+    const game = mkGame(["Grizzly Bears"]);
+    game.advanceUntil(atFirstMain);
+    const topId = game.state.zones.perPlayer[A].library[0];
+
+    expect(game.viewFor(A).revealedLibraryTop[A]).toBeNull();
+    expect(game.viewFor(B).revealedLibraryTop[A]).toBeNull();
+
+    spawn(game, "Oracle of Mul Daya", A);
+
+    const aliceSees = game.viewFor(A);
+    const bobSees = game.viewFor(B);
+    expect(aliceSees.revealedLibraryTop[A]).toBe(topId);
+    expect(bobSees.revealedLibraryTop[A]).toBe(topId);
+    // Public to everyone, not just the controller — unlike a private look.
+    expect(bobSees.objects[topId]?.cardName).toBe(
+      game.state.objects[topId].cardName,
+    );
+    // Bob's own library stays hidden; nobody controls an Oracle for him.
+    expect(aliceSees.revealedLibraryTop[B]).toBeNull();
+  });
+
+  it("stops revealing once the Oracle leaves the battlefield", () => {
+    const game = mkGame(["Disenchant"]);
+    game.advanceUntil(atFirstMain);
+    const oracle = spawn(game, "Oracle of Mul Daya", A);
+    expect(game.viewFor(A).revealedLibraryTop[A]).not.toBeNull();
+
+    game.state.objects[oracle].zone = "graveyard";
+    const bfIndex = game.state.zones.shared.battlefield.indexOf(oracle);
+    game.state.zones.shared.battlefield.splice(bfIndex, 1);
+    game.state.zones.perPlayer[A].graveyard.push(oracle);
+
+    expect(game.viewFor(A).revealedLibraryTop[A]).toBeNull();
+  });
+});
+
 describe("snapshot / regression", () => {
   it("snapshots and restores with an Anthem and a pumped creature", () => {
     const game = mkGame(["Forest", "Giant Growth"]);

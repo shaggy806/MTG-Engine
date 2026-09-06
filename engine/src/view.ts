@@ -81,10 +81,16 @@ export interface PlayerView {
   readonly zones: {
     readonly battlefield: readonly ObjectId[];
     readonly stack: readonly ObjectId[];
+    /** Single shared zones — each object's `owner` says whose card it is. */
+    readonly exile: readonly ObjectId[];
+    readonly command: readonly ObjectId[];
     /** Only the viewer's hand is populated unless `revealAll` was set. */
     readonly hands: Readonly<Record<PlayerId, readonly ObjectId[]>>;
     readonly graveyards: Readonly<Record<PlayerId, readonly ObjectId[]>>;
   };
+  /** Each player's top library card, if some permanent they control makes it
+   * public knowledge (e.g. Oracle of Mul Daya) — `null` otherwise. */
+  readonly revealedLibraryTop: Readonly<Record<PlayerId, ObjectId | null>>;
   readonly events: readonly GameEvent[];
 }
 
@@ -144,11 +150,20 @@ export function viewFor(
   const players: Record<PlayerId, PublicPlayerInfo> = {};
   const hands: Record<PlayerId, readonly ObjectId[]> = {};
   const graveyards: Record<PlayerId, readonly ObjectId[]> = {};
+  const revealedLibraryTop: Record<PlayerId, ObjectId | null> = {};
   const visibleIds: ObjectId[] = [
     ...state.zones.shared.battlefield,
     ...state.zones.shared.stack,
     ...state.zones.shared.exile,
+    ...state.zones.shared.command,
   ];
+  // A pending "look at N cards, choose some" decision reveals its candidates
+  // to the choosing player only — this is the only place library cards ever
+  // become visible (graveyard candidates are already public via `graveyards`
+  // below, but pushing them again here is harmless).
+  if (state.awaiting?.kind === "choose-from-zone" && state.awaiting.player === viewer) {
+    visibleIds.push(...state.awaiting.ids);
+  }
 
   for (const player of state.turnOrder) {
     const zones = state.zones.perPlayer[player];
@@ -167,6 +182,14 @@ export function viewFor(
     };
     graveyards[player] = [...zones.graveyard];
     visibleIds.push(...zones.graveyard);
+
+    const revealsTop = state.zones.shared.battlefield.some((id) => {
+      const object = state.objects[id];
+      return object.controller === player && registry.get(object.cardName).revealsOwnLibraryTop;
+    });
+    const topCard = revealsTop ? (zones.library[0] ?? null) : null;
+    revealedLibraryTop[player] = topCard;
+    if (topCard !== null) visibleIds.push(topCard);
 
     if (revealAll || player === viewer) {
       hands[player] = [...zones.hand];
@@ -196,9 +219,12 @@ export function viewFor(
     zones: {
       battlefield: [...state.zones.shared.battlefield],
       stack: [...state.zones.shared.stack],
+      exile: [...state.zones.shared.exile],
+      command: [...state.zones.shared.command],
       hands,
       graveyards,
     },
+    revealedLibraryTop,
     events: state.eventLog,
   };
 }

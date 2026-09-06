@@ -29,6 +29,10 @@ export const makeFormatter = (game) => {
         return `${e.player} draws from an empty library!`;
       case "cards-discarded":
         return `${e.player} discards ${e.objects.map(name).join(", ")}`;
+      case "cards-chosen-from-zone":
+        return e.objects.length > 0
+          ? `${e.player} takes ${e.objects.map(name).join(", ")}`
+          : `${e.player} takes nothing`;
       case "damage-cleared":
         return `${e.objects.length} permanent(s)`;
       case "land-played":

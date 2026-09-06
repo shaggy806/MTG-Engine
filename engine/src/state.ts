@@ -153,6 +153,19 @@ export type AwaitingDecision =
       readonly player: PlayerId;
       /** The attacker whose blockers are being ordered for damage assignment. */
       readonly attacker: ObjectId;
+    }
+  | {
+      readonly kind: "choose-from-zone";
+      readonly player: PlayerId;
+      /** Candidates already revealed to `player`, in their original zone order. */
+      readonly ids: readonly ObjectId[];
+      readonly min: number;
+      readonly max: number;
+      readonly destination: "battlefield" | "hand";
+      /** What happens to any candidate not chosen: shuffled to the bottom of
+       * the library, or left exactly where it already was (nothing was ever
+       * moved just to look at it — the graveyard-search case). */
+      readonly leftover: "bottom-random" | "stay";
     };
 
 export interface GameState {

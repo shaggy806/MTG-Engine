@@ -84,6 +84,11 @@ export interface CardDefinition {
   readonly triggered: readonly TriggeredAbility[];
   /** Static abilities (continuous effects). */
   readonly static: readonly StaticAbility[];
+  /** While this permanent is on the battlefield, its controller's top library
+   * card is public knowledge (rule-text like Oracle of Mul Daya's "play with
+   * the top card of your library revealed") — a zone-visibility effect, not
+   * a characteristic, so it lives outside the `static` (layers 6/7) vocab. */
+  readonly revealsOwnLibraryTop: boolean;
 }
 
 interface CardDraft {
@@ -103,6 +108,7 @@ interface CardDraft {
   activated?: readonly ActivatedAbility[];
   triggered?: readonly TriggeredAbility[];
   static?: readonly StaticAbility[];
+  revealsOwnLibraryTop?: boolean;
 }
 
 /** Build a {@link CardDefinition} from a partial draft, filling in defaults. */
@@ -124,6 +130,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     activated: draft.activated ?? [],
     triggered: draft.triggered ?? [],
     static: draft.static ?? [],
+    revealsOwnLibraryTop: draft.revealsOwnLibraryTop ?? false,
   };
 }
 
@@ -312,6 +319,49 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
       power: 3,
       toughness: 3,
       duration: "end-of-turn",
+    },
+  }),
+  define({
+    name: "Explorer's Insight",
+    manaCost: "{2}{G}",
+    colors: ["G"],
+    types: ["sorcery"],
+    text:
+      "Look at the top 4 cards of your library. You may put one of them onto the battlefield. Put the rest on the bottom of your library in a random order.",
+    effect: {
+      kind: "look-and-choose",
+      zone: "library",
+      count: 4,
+      min: 0,
+      max: 1,
+      destination: "battlefield",
+      leftover: "bottom-random",
+    },
+  }),
+  define({
+    name: "Oracle of Mul Daya",
+    manaCost: "{3}{G}",
+    colors: ["G"],
+    types: ["creature"],
+    subtypes: ["Human", "Shaman"],
+    power: 2,
+    toughness: 2,
+    text: "Play with the top card of your library revealed.",
+    revealsOwnLibraryTop: true,
+  }),
+  define({
+    name: "Grave Recall",
+    manaCost: "{2}{G}",
+    colors: ["G"],
+    types: ["sorcery"],
+    text: "Look at your graveyard. You may put a card from it into your hand.",
+    effect: {
+      kind: "look-and-choose",
+      zone: "graveyard",
+      min: 0,
+      max: 1,
+      destination: "hand",
+      leftover: "stay",
     },
   }),
   define({
