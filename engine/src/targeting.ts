@@ -16,6 +16,12 @@ function isLivingCreature(
   return registry.get(object.cardName).types.includes("creature");
 }
 
+/** A spell (a card, not an ability) currently on the stack. */
+function isSpellOnStack(state: GameState, id: ObjectId): boolean {
+  const object = state.objects[id];
+  return object !== undefined && object.zone === "stack" && object.kind === "card";
+}
+
 /** A permanent on the battlefield whose printed types include any of `types`. */
 function isPermanentOfType(
   state: GameState,
@@ -108,6 +114,20 @@ export function isLegalTarget(
           (t) => t.includes("creature") || t.includes("enchantment"),
         )
       );
+    case "spell":
+      return ref.kind === "object" && isSpellOnStack(state, ref.object);
+    case "creature-spell":
+      return (
+        ref.kind === "object" &&
+        isSpellOnStack(state, ref.object) &&
+        registry.get(state.objects[ref.object].cardName).types.includes("creature")
+      );
+    case "noncreature-spell":
+      return (
+        ref.kind === "object" &&
+        isSpellOnStack(state, ref.object) &&
+        !registry.get(state.objects[ref.object].cardName).types.includes("creature")
+      );
     case "any-target":
     case "creature-or-player":
       return (
@@ -132,6 +152,10 @@ export function legalTargets(
     if (isLegalTarget(state, registry, spec, ref, forPlayer)) out.push(ref);
   }
   for (const id of state.zones.shared.battlefield) {
+    const ref: TargetRef = { kind: "object", object: id };
+    if (isLegalTarget(state, registry, spec, ref, forPlayer)) out.push(ref);
+  }
+  for (const id of state.zones.shared.stack) {
     const ref: TargetRef = { kind: "object", object: id };
     if (isLegalTarget(state, registry, spec, ref, forPlayer)) out.push(ref);
   }

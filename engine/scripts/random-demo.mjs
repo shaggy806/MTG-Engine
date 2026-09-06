@@ -51,8 +51,9 @@ const deckA = deck([
 ]);
 const deckB = deck([
   ["Mountain", 6],
-  ["Plains", 6],
+  ["Plains", 4],
   ["Swamp", 4],
+  ["Island", 5],
   ["Raging Goblin", 3],
   ["Goblin Raider", 3],
   ["White Knight", 3],
@@ -78,6 +79,9 @@ const deckB = deck([
   ["Bloodthrone Vampire", 2],
   ["Mind Rot", 2],
   ["Blightning", 2],
+  ["Counterspell", 2],
+  ["Negate", 1],
+  ["Essence Scatter", 1],
 ]);
 
 // All four seats' decks/commanders, in seating order — sliced down to

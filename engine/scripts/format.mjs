@@ -71,6 +71,8 @@ export const makeFormatter = (game) => {
         return `${name(e.blocker)} blocks ${name(e.attacker)}`;
       case "spell-fizzled":
         return `${name(e.object)} fizzles — ${e.reason}`;
+      case "spell-countered":
+        return `${name(e.object)} is countered`;
       case "permanent-entered-battlefield":
         return `${name(e.object)} enters the battlefield`;
       case "permanent-attached":

@@ -134,6 +134,10 @@ export type GameEvent =
       readonly reason: string;
     })
   | (Base & {
+      readonly type: "spell-countered";
+      readonly object: ObjectId;
+    })
+  | (Base & {
       readonly type: "permanent-entered-battlefield";
       readonly object: ObjectId;
     })

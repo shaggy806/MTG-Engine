@@ -64,6 +64,12 @@ export type EffectSpec =
       readonly target: number;
     }
   | {
+      /** Counter a target spell on the stack — it moves to its owner's
+       * graveyard without resolving (rule 701.5). */
+      readonly kind: "counter";
+      readonly target: number;
+    }
+  | {
       /** Target player puts the top `amount` cards of their library into
        * their graveyard. */
       readonly kind: "mill";
@@ -142,6 +148,8 @@ export interface EffectApi {
   exileObject(target: TargetRef): void;
   /** `a` and `b` (both creatures) fight; with `oneSided` only `a` deals. */
   fight(a: TargetRef, b: TargetRef, oneSided: boolean): void;
+  /** Counter a target spell on the stack. */
+  counterSpell(target: TargetRef): void;
   /** `target` (a player) mills `amount` cards. */
   mill(target: TargetRef, amount: number): void;
   /** `target` (a player) discards `amount` cards. */
@@ -234,6 +242,11 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       const a = ctx.targets[spec.a];
       const b = ctx.targets[spec.b];
       if (a !== undefined && b !== undefined) ctx.fight(a, b, spec.oneSided === true);
+      return;
+    }
+    case "counter": {
+      const target = ctx.targets[spec.target];
+      if (target !== undefined) ctx.counterSpell(target);
       return;
     }
     case "return-to-hand": {

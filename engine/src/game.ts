@@ -2421,6 +2421,7 @@ export class Game {
       returnToHand: (target) => this.returnToHandByEffect(target),
       exileObject: (target) => this.exileByEffect(target),
       fight: (a, b, oneSided) => this.fightCreatures(a, b, oneSided),
+      counterSpell: (target) => this.counterSpellByEffect(target),
       mill: (target, amount) => this.millByEffect(target, amount),
       discardCards: (target, amount) => this.discardByEffect(target, amount),
       modifyPt: (target, power, toughness, duration) =>
@@ -2631,6 +2632,20 @@ export class Game {
     if (object === undefined || object.zone !== "battlefield") return;
     this.moveObject(target.object, "exile");
     this.emit({ type: "permanent-exiled", object: target.object });
+  }
+
+  /** Counter a spell on the stack (rule 701.5): it's removed from the stack and
+   * put into its owner's graveyard without resolving. A countered permanent
+   * spell never enters the battlefield; a countered commander is redirected to
+   * the command zone by `moveObject` like any other. */
+  private counterSpellByEffect(target: TargetRef): void {
+    if (target.kind !== "object") return;
+    const object = this.state.objects[target.object];
+    if (object === undefined || object.zone !== "stack" || object.kind !== "card") return;
+    object.targets = null;
+    object.xValue = null;
+    this.moveObject(target.object, "graveyard");
+    this.emit({ type: "spell-countered", object: target.object });
   }
 
   /** Two creatures fight (rule 701.12): each deals damage equal to its power to

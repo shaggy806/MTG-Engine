@@ -18,7 +18,11 @@ export type TargetSpec =
   | "nonland-permanent"
   | "land"
   | "artifact-or-enchantment"
-  | "creature-or-enchantment";
+  | "creature-or-enchantment"
+  /** A spell on the stack (a card, not an ability). */
+  | "spell"
+  | "creature-spell"
+  | "noncreature-spell";
 
 export const targetsPlayer = (ref: TargetRef, player: PlayerId): boolean =>
   ref.kind === "player" && ref.player === player;

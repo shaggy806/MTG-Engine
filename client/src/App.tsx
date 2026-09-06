@@ -1114,12 +1114,28 @@ function Table({ view, seat, opponents, game }: TableProps) {
       </div>
     )
   } else if (mode === 'targeting' && targeting) {
+    // Stack objects (a spell being countered) aren't clickable on the board —
+    // offer them as buttons in the controls bar instead.
+    const stackTargets = targetSlot.filter(
+      (o) => o.kind === 'object' && view.zones.stack.includes(o.object),
+    )
     controls = (
       <div className="controls">
         <span>
           {targeting.label}: choose {targeting.specs[targeting.picked.length]} (
           {targeting.picked.length + 1}/{targeting.specs.length})
         </span>
+        {stackTargets.map((o) =>
+          o.kind === 'object' ? (
+            <button
+              key={o.object}
+              type="button"
+              onClick={() => pickTarget(o)}
+            >
+              {game.nameOf(o.object)} (on the stack)
+            </button>
+          ) : null,
+        )}
         <button type="button" onClick={() => setTargeting(null)}>
           Cancel
         </button>

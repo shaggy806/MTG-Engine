@@ -11,10 +11,12 @@ import _poolBloodthroneVampire from "./pool/bloodthrone-vampire.js";
 import _poolBoggartBrute from "./pool/boggart-brute.js";
 import _poolBonesplitter from "./pool/bonesplitter.js";
 import _poolBoomerang from "./pool/boomerang.js";
+import _poolCounterspell from "./pool/counterspell.js";
 import _poolCrawWurm from "./pool/craw-wurm.js";
 import _poolDarksteelMyr from "./pool/darksteel-myr.js";
 import _poolDisenchant from "./pool/disenchant.js";
 import _poolElvishVisionary from "./pool/elvish-visionary.js";
+import _poolEssenceScatter from "./pool/essence-scatter.js";
 import _poolExplorersInsight from "./pool/explorers-insight.js";
 import _poolFencingAce from "./pool/fencing-ace.js";
 import _poolFireball from "./pool/fireball.js";
@@ -40,6 +42,7 @@ import _poolMindRot from "./pool/mind-rot.js";
 import _poolMossbackDragon from "./pool/mossback-dragon.js";
 import _poolMountain from "./pool/mountain.js";
 import _poolNaturalize from "./pool/naturalize.js";
+import _poolNegate from "./pool/negate.js";
 import _poolOracleOfMulDaya from "./pool/oracle-of-mul-daya.js";
 import _poolPhyrexianArena from "./pool/phyrexian-arena.js";
 import _poolPlains from "./pool/plains.js";
@@ -75,10 +78,12 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolBoggartBrute,
   _poolBonesplitter,
   _poolBoomerang,
+  _poolCounterspell,
   _poolCrawWurm,
   _poolDarksteelMyr,
   _poolDisenchant,
   _poolElvishVisionary,
+  _poolEssenceScatter,
   _poolExplorersInsight,
   _poolFencingAce,
   _poolFireball,
@@ -104,6 +109,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolMossbackDragon,
   _poolMountain,
   _poolNaturalize,
+  _poolNegate,
   _poolOracleOfMulDaya,
   _poolPhyrexianArena,
   _poolPlains,
