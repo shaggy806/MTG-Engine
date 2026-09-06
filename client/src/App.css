@@ -372,9 +372,9 @@
   flex-wrap: wrap;
   align-items: flex-start;
   gap: 10px 8px;
-}
-.board-row-empty {
-  font-size: 12px;
+  /* Matches a card tile's height, so the row holds its size whether it's
+     empty or full instead of collapsing down to nothing. */
+  min-height: 190px;
 }
 .board-entry {
   display: flex;

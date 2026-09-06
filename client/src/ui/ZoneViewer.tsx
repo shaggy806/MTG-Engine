@@ -13,6 +13,11 @@ export interface ZoneViewerProps {
   readonly selection?: {
     readonly min: number
     readonly max: number
+    /** The subset of `cards` that can actually be picked — narrower than
+     * `cards` when the effect restricts the choice (e.g. only a Dragon
+     * card). Everything in `cards` still renders at full size either way;
+     * this only decides which tiles respond to a click. */
+    readonly eligible: readonly ObjectId[]
     readonly onConfirm: (chosen: readonly ObjectId[]) => void
   }
 }
@@ -26,7 +31,7 @@ export function ZoneViewer({ title, cards, onClose, selection }: ZoneViewerProps
   const [picked, setPicked] = useState<readonly ObjectId[]>([])
 
   const toggle = (id: ObjectId) => {
-    if (!selection) return
+    if (!selection || !selection.eligible.includes(id)) return
     setPicked((cur) => {
       if (cur.includes(id)) return cur.filter((x) => x !== id)
       if (cur.length >= selection.max) return cur
@@ -64,15 +69,20 @@ export function ZoneViewer({ title, cards, onClose, selection }: ZoneViewerProps
           )}
         </div>
         <div className="zone-viewer-cards">
-          {cards.map((obj) => (
-            <CardTile
-              key={obj.id}
-              obj={obj}
-              selected={picked.includes(obj.id)}
-              highlight={Boolean(selection) && !picked.includes(obj.id)}
-              onClick={selection ? () => toggle(obj.id) : undefined}
-            />
-          ))}
+          {cards.map((obj) => {
+            const isEligible = !selection || selection.eligible.includes(obj.id)
+            const isPicked = picked.includes(obj.id)
+            return (
+              <CardTile
+                key={obj.id}
+                obj={obj}
+                selected={isPicked}
+                highlight={Boolean(selection) && isEligible && !isPicked}
+                dimmed={Boolean(selection) && !isEligible}
+                onClick={isEligible ? () => toggle(obj.id) : undefined}
+              />
+            )
+          })}
           {cards.length === 0 ? <span className="muted">empty</span> : null}
         </div>
         {selection ? (

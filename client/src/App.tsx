@@ -650,7 +650,6 @@ function Table({ view, seat, opponent, game }: TableProps) {
             ) : null}
           </div>
         ))}
-        {list.length === 0 ? <span className="board-row-empty muted">empty</span> : null}
       </div>
     )
 
@@ -1078,6 +1077,7 @@ function Table({ view, seat, opponent, game }: TableProps) {
           selection={{
             min: zoneChoiceAction.min,
             max: zoneChoiceAction.max,
+            eligible: zoneChoiceAction.eligible,
             onConfirm: confirmZoneChoice,
           }}
         />
