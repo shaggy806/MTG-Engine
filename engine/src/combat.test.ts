@@ -112,6 +112,10 @@ describe("declaring attackers", () => {
 
   it("a creature without haste can't attack the turn it appears", () => {
     const { game, a } = makeGame();
+    // A legal companion so declare-attackers is still asked at all — with
+    // only the sick bear on board there'd be nothing eligible to declare,
+    // so this illegal declaration would never get a chance to be attempted.
+    spawn(game, "Grizzly Bears", A);
     const bear = spawn(game, "Grizzly Bears", A, { sick: true });
     a.declareAttackersFn = () => [{ attacker: bear, defender: B }];
     expect(() => game.advanceUntil(toPostcombat)).toThrow(/summoning sickness/);
@@ -119,6 +123,7 @@ describe("declaring attackers", () => {
 
   it("a creature with defender can't attack", () => {
     const { game, a } = makeGame();
+    spawn(game, "Grizzly Bears", A);
     const wall = spawn(game, "Wall of Wood", A);
     a.declareAttackersFn = () => [{ attacker: wall, defender: B }];
     expect(() => game.advanceUntil(toPostcombat)).toThrow(/defender/);
@@ -126,6 +131,7 @@ describe("declaring attackers", () => {
 
   it("a tapped creature can't attack", () => {
     const { game, a } = makeGame();
+    spawn(game, "Grizzly Bears", A);
     const bear = spawn(game, "Grizzly Bears", A, { tapped: true });
     a.declareAttackersFn = () => [{ attacker: bear, defender: B }];
     expect(() => game.advanceUntil(toPostcombat)).toThrow(/tapped/);
@@ -189,6 +195,10 @@ describe("blocking", () => {
     const { game, a, b } = makeGame();
     const angel = spawn(game, "Serra Angel", A);
     const bear = spawn(game, "Grizzly Bears", B);
+    // A legal companion (reach) so declare-blockers is still asked at all —
+    // with only the non-flyer on board, nothing could legally block the
+    // angel, so this illegal block would never get a chance to be attempted.
+    spawn(game, "Giant Spider", B);
     a.declareAttackersFn = () => [{ attacker: angel, defender: B }];
     b.declareBlockersFn = () => [{ blocker: bear, attacker: angel }];
     expect(() => game.advanceUntil(toPostcombat)).toThrow(/flying/);

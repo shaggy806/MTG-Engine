@@ -196,6 +196,7 @@ describe("legalActions", () => {
 
   it("narrows to the single awaited declaration", () => {
     const game = mkGame();
+    spawn(game, "Grizzly Bears", A);
     game.advanceUntil((s) => s.awaiting !== null);
     expect(game.state.awaiting?.kind).toBe("attackers");
     const actions = game.legalActions(A);
@@ -286,6 +287,7 @@ describe("declarations as actions", () => {
 
   it("refuses to pass priority while a declaration is pending", () => {
     const game = combatGame();
+    spawn(game, "Grizzly Bears", A);
     game.advanceUntil((s) => s.awaiting?.kind === "attackers");
     expect(() =>
       game.dispatch({ type: "pass-priority", player: A }),
@@ -295,6 +297,7 @@ describe("declarations as actions", () => {
   it("asks the defender for blockers only when someone attacks", () => {
     const game = combatGame();
     const bear = spawn(game, "Grizzly Bears", A);
+    spawn(game, "Grizzly Bears", B); // gives the defender something to block with
     game.advanceUntil((s) => s.awaiting?.kind === "attackers");
     game.dispatch({
       type: "declare-attackers",
@@ -312,6 +315,7 @@ describe("declarations as actions", () => {
     const game = combatGame();
     const brute = spawn(game, "Boggart Brute", A); // 3/2 menace
     spawn(game, "Grizzly Bears", A); // vanilla, for contrast
+    spawn(game, "Grizzly Bears", B); // gives the defender something to block with
     game.advanceUntil((s) => s.awaiting?.kind === "attackers");
     game.dispatch({
       type: "declare-attackers",
@@ -329,6 +333,33 @@ describe("declarations as actions", () => {
 
   it("skips the blocker declaration when nobody attacks", () => {
     const game = combatGame();
+    game.advanceUntil((s) => s.turn.step === "declare-blockers");
+    expect(game.state.awaiting).toBeNull();
+  });
+
+  it("skips the attacker declaration entirely when nothing on board could attack", () => {
+    const game = combatGame();
+    // Summoning-sick and defender creatures are on the battlefield, but
+    // neither could legally attack — there's no real declaration to make.
+    spawn(game, "Grizzly Bears", A, { sick: true });
+    spawn(game, "Wall of Wood", A);
+    game.advanceUntil((s) => s.turn.step === "declare-attackers");
+    expect(game.state.awaiting).toBeNull();
+    expect(game.state.priority.holder).toBe(A);
+  });
+
+  it("skips the blocker declaration when the defender has nothing that could block", () => {
+    const game = combatGame();
+    const bear = spawn(game, "Grizzly Bears", A);
+    // Bob's only creature is tapped — attacking is real, but there's no
+    // legal blocker to declare.
+    spawn(game, "Grizzly Bears", B, { tapped: true });
+    game.advanceUntil((s) => s.awaiting?.kind === "attackers");
+    game.dispatch({
+      type: "declare-attackers",
+      player: A,
+      attackers: [{ attacker: bear, defender: B }],
+    });
     game.advanceUntil((s) => s.turn.step === "declare-blockers");
     expect(game.state.awaiting).toBeNull();
   });

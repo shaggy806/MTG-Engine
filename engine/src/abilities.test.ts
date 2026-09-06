@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { isManaAbility } from "./abilities.js";
-import { createDefaultRegistry } from "./cards.js";
+import { createDefaultRegistry, defineCard } from "./cards.js";
 import { Game } from "./game.js";
 import type { GameConfig } from "./game.js";
 import { asObjectId, asPlayerId } from "./primitives.js";
@@ -182,6 +182,119 @@ describe("mana abilities", () => {
     expect(
       game.eventsOfType("ability-activated").some((e) => !e.onStack),
     ).toBe(true);
+  });
+
+  it("prefers tapping a land over a mana dork when either could pay", () => {
+    const game = mkGame(["Forest", "Bonesplitter"]);
+    game.advanceUntil(atFirstMain);
+    const elves = spawn(game, "Llanowar Elves", A);
+    game.dispatch({
+      type: "play-land",
+      player: A,
+      card: named(game, game.handOf(A), "Forest"),
+    });
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Bonesplitter"),
+    });
+    const forest = named(game, game.battlefield, "Forest");
+    expect(game.state.objects[forest].tapped).toBe(true);
+    expect(game.state.objects[elves].tapped).toBe(false);
+  });
+
+  it("prefers a narrower land over a more flexible one when either could pay", () => {
+    const dualLand = defineCard({
+      name: "Test Dual Land",
+      types: ["land"],
+      text: "{T}: Add {W} or {U}.",
+      activated: [
+        {
+          cost: { mana: null, tap: true },
+          targets: [],
+          effect: { kind: "add-mana", mana: "W", amount: 1 },
+          resolve: null,
+          text: "{T}: Add {W}.",
+        },
+        {
+          cost: { mana: null, tap: true },
+          targets: [],
+          effect: { kind: "add-mana", mana: "U", amount: 1 },
+          resolve: null,
+          text: "{T}: Add {U}.",
+        },
+      ],
+    });
+    const registry = createDefaultRegistry().register(dualLand);
+    const game = mkGame(["Forest", "Test Dual Land", "Bonesplitter"], [], { registry });
+    game.advanceUntil(atFirstMain);
+    game.dispatch({
+      type: "play-land",
+      player: A,
+      card: named(game, game.handOf(A), "Forest"),
+    });
+    game.dispatch({
+      type: "play-land",
+      player: A,
+      card: named(game, game.handOf(A), "Test Dual Land"),
+    });
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Bonesplitter"),
+    });
+    const forest = named(game, game.battlefield, "Forest");
+    const dual = named(game, game.battlefield, "Test Dual Land");
+    expect(game.state.objects[forest].tapped).toBe(true);
+    expect(game.state.objects[dual].tapped).toBe(false);
+  });
+});
+
+describe("isDeadForMana", () => {
+  it("is true when the only options are passing and tapping a land", () => {
+    const game = mkGame(["Forest"], [], { rules: { maxLandsPerTurn: 1 } });
+    game.advanceUntil(atFirstMain);
+    game.dispatch({
+      type: "play-land",
+      player: A,
+      card: named(game, game.handOf(A), "Forest"),
+    });
+    expect(game.isDeadForMana(A)).toBe(true);
+  });
+
+  it("is still true when a card in hand can't actually be afforded yet", () => {
+    const game = mkGame(["Forest", "Forest", "Grizzly Bears"], [], {
+      rules: { maxLandsPerTurn: 1 },
+    });
+    game.advanceUntil(atFirstMain);
+    game.dispatch({
+      type: "play-land",
+      player: A,
+      card: named(game, game.handOf(A), "Forest"),
+    });
+    // Only one land in play — can't afford Grizzly Bears ({1}{G}) yet, so
+    // this is still a mana-only window despite the card sitting in hand.
+    expect(game.isDeadForMana(A)).toBe(true);
+  });
+
+  it("is false once an untapped land's worth of mana can actually cast something", () => {
+    const game = mkGame(["Forest", "Forest", "Llanowar Elves"], [], {
+      rules: { maxLandsPerTurn: 1 },
+    });
+    game.advanceUntil(atFirstMain);
+    game.dispatch({
+      type: "play-land",
+      player: A,
+      card: named(game, game.handOf(A), "Forest"),
+    });
+    expect(game.isDeadForMana(A)).toBe(false);
+  });
+
+  it("is false for a player who doesn't currently hold priority", () => {
+    const game = mkGame(["Forest"], ["Forest"], { rules: { maxLandsPerTurn: 1 } });
+    game.advanceUntil(atFirstMain);
+    expect(game.state.priority.holder).toBe(A);
+    expect(game.isDeadForMana(B)).toBe(false);
   });
 });
 

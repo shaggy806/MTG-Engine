@@ -212,6 +212,11 @@ describe("keyword-granting statics and one-shots", () => {
     spawn(game, "Levitation", A);
     const flier = spawn(game, "Grizzly Bears", A);
     const ground = spawn(game, "Grizzly Bears", B);
+    // A legal companion (reach) so declare-blockers is still asked at all —
+    // with only the ground creature on board, nothing could legally block
+    // the (now-flying) attacker, so this illegal block would never get a
+    // chance to be attempted.
+    spawn(game, "Giant Spider", B);
     attacker.declareAttackersFn = () => [{ attacker: flier, defender: B }];
     blocker.declareBlockersFn = () => [{ blocker: ground, attacker: flier }];
 

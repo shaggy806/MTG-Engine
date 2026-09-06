@@ -391,6 +391,23 @@ export class Game {
     return out;
   }
 
+  /**
+   * True if `player`'s only legal actions right now are passing priority
+   * and/or activating a mana ability — i.e. nothing a driver could treat as
+   * a real decision. Used to let a player opt in to auto-passing these
+   * windows without losing the ability to *manually* hold priority with
+   * mana up (e.g. to bluff having an instant) when they haven't opted in.
+   */
+  isDeadForMana(player: PlayerId): boolean {
+    if (this.state.priority.holder !== player) return false;
+    return this.legalActions(player).every((action) => {
+      if (action.kind === "pass-priority") return true;
+      if (action.kind !== "activate-ability") return false;
+      const ability = this.registry.get(action.cardName).activated[action.abilityIndex];
+      return isManaAbility(ability);
+    });
+  }
+
   private controllerView(player: PlayerId): ControllerView {
     return {
       state: this.state,
@@ -742,17 +759,42 @@ export class Game {
     return object.summoningSick;
   }
 
-  /** Ask the active player to declare attackers (rule 508.1). */
+  /**
+   * Ask the active player to declare attackers (rule 508.1) — but only if
+   * they have at least one creature that legally could. With nothing
+   * eligible there's no real decision to make (declaring zero attackers is
+   * the only possible answer anyway), so this falls through to priority
+   * exactly as an explicit empty declaration would.
+   */
   private declareAttackersStep(): void {
+    const defender = this.defendingPlayer();
+    const hasEligibleAttacker = this.state.zones.shared.battlefield.some(
+      (id) => this.whyCannotAttack(this.activePlayer, id, defender) === null,
+    );
+    if (!hasEligibleAttacker) return;
     this.state.awaiting = { kind: "attackers", player: this.activePlayer };
   }
 
-  /** Ask the defending player to declare blockers, if anyone is attacking. */
+  /**
+   * Ask the defending player to declare blockers — but only if someone is
+   * attacking *and* they have at least one creature that could legally block
+   * one of them. Same reasoning as `declareAttackersStep`: no eligible
+   * blocker means there's no real decision, so this is skipped rather than
+   * asking for a declaration that can only ever be empty.
+   */
   private declareBlockersStep(): void {
-    if (this.currentAttackers().length === 0) return;
+    const attackers = this.currentAttackers();
+    if (attackers.length === 0) return;
+    const defender = this.defendingPlayer();
+    const hasEligibleBlocker = this.state.zones.shared.battlefield.some(
+      (id) =>
+        this.state.objects[id].controller === defender &&
+        attackers.some((attacker) => this.whyCannotBlock(defender, id, attacker) === null),
+    );
+    if (!hasEligibleBlocker) return;
     this.state.awaiting = {
       kind: "blockers",
-      player: this.defendingPlayer(),
+      player: defender,
     };
   }
 
@@ -1403,16 +1445,27 @@ export class Game {
    * `player`'s untapped permanents with a `{T}: Add ...` mana ability, and the
    * mana each can make. A `{T}` mana ability of a creature is unavailable while
    * that creature is summoning-sick (rule 302.6).
+   *
+   * Ordered by which source `planManaPayment` should reach for first: lands
+   * before non-lands (so paying a cost doesn't tap down a creature that could
+   * otherwise attack or block), and within that, sources that make fewer
+   * distinct colors before more flexible ones (so a narrow source gets used
+   * while a source that could cover more needs stays open longer). Ties keep
+   * battlefield order (`Array.prototype.sort` is stable), so the choice is
+   * deterministic rather than arbitrary.
    */
-  private manaSources(player: PlayerId): { id: ObjectId; produces: ManaType[] }[] {
-    const out: { id: ObjectId; produces: ManaType[] }[] = [];
+  private manaSources(
+    player: PlayerId,
+  ): { id: ObjectId; produces: ManaType[]; isLand: boolean }[] {
+    const out: { id: ObjectId; produces: ManaType[]; isLand: boolean }[] = [];
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
       if (object.controller !== player || object.tapped) continue;
       if (this.tapAbilityBlockedBySickness(object)) continue;
 
+      const def = this.registry.get(object.cardName);
       const produces: ManaType[] = [];
-      for (const ability of this.registry.get(object.cardName).activated) {
+      for (const ability of def.activated) {
         if (
           isManaAbility(ability) &&
           ability.cost.tap &&
@@ -1425,8 +1478,14 @@ export class Game {
           }
         }
       }
-      if (produces.length > 0) out.push({ id, produces });
+      if (produces.length > 0) {
+        out.push({ id, produces, isLand: def.types.includes("land") });
+      }
     }
+    out.sort((a, b) => {
+      if (a.isLand !== b.isLand) return a.isLand ? -1 : 1;
+      return new Set(a.produces).size - new Set(b.produces).size;
+    });
     return out;
   }
 
