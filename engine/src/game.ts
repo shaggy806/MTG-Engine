@@ -249,7 +249,12 @@ export class Game {
         this.playLand(action.player, action.card);
         break;
       case "cast-spell":
-        this.castSpell(action.player, action.card, action.targets ?? []);
+        this.castSpell(
+          action.player,
+          action.card,
+          action.targets ?? [],
+          action.xValue ?? 0,
+        );
         break;
       case "activate-ability":
         this.activateAbility(
@@ -421,12 +426,16 @@ export class Game {
           out.push({ kind: "play-land", card, cardName });
         }
       } else if (this.whyCannotCastSpell(player, card) === null) {
+        const parsed = parseManaCost(def.manaCost);
         out.push({
           kind: "cast-spell",
           card,
           cardName,
           targetSpecs: def.targets,
           targetOptions: this.targetOptionsFor(def.targets, player),
+          ...(parsed.x > 0
+            ? { xCost: { maxX: this.maxAffordableX(player, card, def) } }
+            : {}),
         });
       }
     }
@@ -573,6 +582,7 @@ export class Game {
           isToken: false,
           attachedTo: null,
           isCommander: false,
+          xValue: null,
         };
         ids.push(id);
       }
@@ -609,6 +619,7 @@ export class Game {
           isToken: false,
           attachedTo: null,
           isCommander: true,
+          xValue: null,
         };
         this.state.zones.shared.command.push(id);
       }
@@ -1558,11 +1569,41 @@ export class Game {
   }
 
   /** `def.manaCost`, plus the commander tax if `cardId` is being cast from
-   * the command zone. */
-  private castingCostOf(player: PlayerId, cardId: ObjectId, def: CardDefinition): ManaCost {
+   * the command zone, with `{X}` resolved to `xValue` (folded into generic). */
+  private castingCostOf(
+    player: PlayerId,
+    cardId: ObjectId,
+    def: CardDefinition,
+    xValue = 0,
+  ): ManaCost {
     const base = parseManaCost(def.manaCost);
-    if (!this.isCastableCommander(player, cardId)) return base;
-    return { ...base, generic: base.generic + this.commanderTax(player) };
+    const tax = this.isCastableCommander(player, cardId) ? this.commanderTax(player) : 0;
+    return {
+      colored: base.colored,
+      generic: base.generic + tax + base.x * Math.max(0, xValue),
+      x: 0,
+    };
+  }
+
+  /** Largest value of `{X}` this player could currently pay for when casting
+   * `cardId` (0 if only X=0 is affordable). */
+  private maxAffordableX(player: PlayerId, cardId: ObjectId, def: CardDefinition): number {
+    const parsed = parseManaCost(def.manaCost);
+    if (parsed.x === 0) return 0;
+    // Upper bound: every mana source plus everything already floating — X can't
+    // exceed that no matter what.
+    const pool = this.state.players[player].manaPool;
+    const cap =
+      this.manaSources(player).reduce((n, s) => n + s.produces.length, 0) +
+      MANA_TYPES.reduce((n, t) => n + pool[t], 0);
+    let best = 0;
+    for (let k = 1; k <= cap; k += 1) {
+      if (this.planManaPayment(player, this.castingCostOf(player, cardId, def, k)) === null) {
+        break;
+      }
+      best = k;
+    }
+    return best;
   }
 
   private whyCannotCastSpell(player: PlayerId, cardId: ObjectId): string | null {
@@ -1595,12 +1636,15 @@ export class Game {
     player: PlayerId,
     cardId: ObjectId,
     targets: readonly TargetRef[],
+    xValue = 0,
   ): void {
     const why = this.whyCannotCastSpell(player, cardId);
     if (why !== null) throw new Error(why);
 
     const object = this.state.objects[cardId];
     const def = this.registry.get(object.cardName);
+    const hasX = parseManaCost(def.manaCost).x > 0;
+    const chosenX = hasX ? Math.max(0, Math.floor(xValue)) : 0;
 
     if (targets.length !== def.targets.length) {
       throw new Error(
@@ -1614,7 +1658,7 @@ export class Game {
     });
 
     const castingFromCommand = this.isCastableCommander(player, cardId);
-    const cost = this.castingCostOf(player, cardId, def);
+    const cost = this.castingCostOf(player, cardId, def, chosenX);
     const plan = this.planManaPayment(player, cost);
     if (plan === null) {
       throw new Error(`${player} cannot pay the cost of ${def.name}`);
@@ -1623,6 +1667,7 @@ export class Game {
     // Commit: move to the stack, pay, announce.
     this.moveObject(cardId, "stack");
     object.targets = targets.length > 0 ? [...targets] : null;
+    object.xValue = hasX ? chosenX : null;
     for (const sourceId of plan) this.tapManaSource(sourceId);
     this.spendFromPool(player, cost);
     if (castingFromCommand) this.state.players[player].commanderCastCount += 1;
@@ -1632,6 +1677,7 @@ export class Game {
       player,
       object: cardId,
       targets: [...targets],
+      x: hasX ? chosenX : null,
     });
     this.afterPlayerAction(player);
   }
@@ -1779,6 +1825,7 @@ export class Game {
       isToken: false,
       attachedTo: null,
       isCommander: false,
+      xValue: null,
     };
     this.state.zones.shared.stack.push(abilityId);
     return abilityId;
@@ -2024,7 +2071,12 @@ export class Game {
       return;
     }
 
-    const context = this.makeResolutionContext(id, object.controller, targets);
+    const context = this.makeResolutionContext(
+      id,
+      object.controller,
+      targets,
+      object.xValue ?? 0,
+    );
     if (def.resolve !== null) {
       def.resolve(context);
     } else if (def.effect !== null) {
@@ -2080,7 +2132,12 @@ export class Game {
       return;
     }
 
-    const context = this.makeResolutionContext(source, object.controller, targets);
+    const context = this.makeResolutionContext(
+      source,
+      object.controller,
+      targets,
+      object.xValue ?? 0,
+    );
     if (ability.resolve !== null) {
       ability.resolve(context);
     } else if (ability.effect !== null) {
@@ -2279,11 +2336,13 @@ export class Game {
     source: ObjectId,
     controller: PlayerId,
     targets: readonly TargetRef[],
+    x = 0,
   ): ResolutionContext {
     return {
       controller,
       source,
       targets,
+      x,
       dealDamage: (target, amount) => this.dealDamage(source, target, amount),
       draw: (player, count) => {
         for (let i = 0; i < count; i += 1) this.drawCard(player);
@@ -2382,6 +2441,7 @@ export class Game {
         isToken: true,
         attachedTo: null,
         isCommander: false,
+        xValue: null,
       };
       this.state.zones.shared.battlefield.push(id);
       this.emit({ type: "permanent-entered-battlefield", object: id });

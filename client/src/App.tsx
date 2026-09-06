@@ -50,6 +50,8 @@ interface Targeting {
   readonly specs: readonly TargetSpec[]
   readonly options: readonly (readonly TargetRef[])[]
   readonly picked: readonly TargetRef[]
+  /** Chosen value for `{X}`, when casting an X spell. */
+  readonly xValue?: number
 }
 
 /**
@@ -403,6 +405,11 @@ function Table({ view, seat, opponents, game }: TableProps) {
   const actions = game.actions
 
   const [targeting, setTargeting] = useState<Targeting | null>(null)
+  // Set while an X spell's cost is being chosen, before target selection.
+  const [pendingX, setPendingX] = useState<{
+    readonly cast: CastAction
+    readonly value: number
+  } | null>(null)
   const [selectedSource, setSelectedSource] = useState<ObjectId | null>(null)
   // Attacker -> chosen defender. With more than one legal opponent, clicking
   // an attacker assigns it to the first opponent by default and focuses it;
@@ -475,6 +482,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
     | 'choose-from-zone'
     | 'mulligan'
     | 'put-on-bottom'
+    | 'choose-x'
     | 'targeting'
     | 'priority' = mulliganAction
     ? 'mulligan'
@@ -490,9 +498,11 @@ function Table({ view, seat, opponents, game }: TableProps) {
               ? 'blockers'
               : zoneChoiceAction
                 ? 'choose-from-zone'
-                : targeting
-                  ? 'targeting'
-                  : 'priority'
+                : pendingX
+                  ? 'choose-x'
+                  : targeting
+                    ? 'targeting'
+                    : 'priority'
 
   // --- dispatch helpers --------------------------------------------
   const pass = useCallback(() => {
@@ -500,10 +510,19 @@ function Table({ view, seat, opponents, game }: TableProps) {
   }, [canPass, game, seat])
 
   const finishTargets = useCallback(
-    (t: Pick<Targeting, 'kind' | 'source' | 'abilityIndex'>, targets: readonly TargetRef[]) => {
+    (
+      t: Pick<Targeting, 'kind' | 'source' | 'abilityIndex' | 'xValue'>,
+      targets: readonly TargetRef[],
+    ) => {
       game.dispatch(
         t.kind === 'cast'
-          ? { type: 'cast-spell', player: seat, card: t.source, targets: [...targets] }
+          ? {
+              type: 'cast-spell',
+              player: seat,
+              card: t.source,
+              targets: [...targets],
+              ...(t.xValue !== undefined ? { xValue: t.xValue } : {}),
+            }
           : {
               type: 'activate-ability',
               player: seat,
@@ -526,6 +545,21 @@ function Table({ view, seat, opponents, game }: TableProps) {
     },
     [finishTargets],
   )
+
+  const confirmX = useCallback(() => {
+    if (!pendingX) return
+    const { cast, value } = pendingX
+    setPendingX(null)
+    beginTargeting({
+      kind: 'cast',
+      source: cast.card,
+      abilityIndex: 0,
+      label: `Cast ${cast.cardName}`,
+      specs: cast.targetSpecs,
+      options: cast.targetOptions,
+      xValue: value,
+    })
+  }, [beginTargeting, pendingX])
 
   const pickTarget = useCallback(
     (ref: TargetRef) => {
@@ -571,6 +605,10 @@ function Table({ view, seat, opponents, game }: TableProps) {
       }
       const cast = castByCard.get(id)
       if (cast) {
+        if (cast.xCost) {
+          setPendingX({ cast, value: cast.xCost.maxX })
+          return
+        }
         beginTargeting({
           kind: 'cast',
           source: id,
@@ -1044,6 +1082,31 @@ function Table({ view, seat, opponents, game }: TableProps) {
           {targeting.picked.length + 1}/{targeting.specs.length})
         </span>
         <button type="button" onClick={() => setTargeting(null)}>
+          Cancel
+        </button>
+      </div>
+    )
+  } else if (mode === 'choose-x' && pendingX) {
+    controls = (
+      <div className="controls">
+        <span>Cast {pendingX.cast.cardName} — choose X</span>
+        <input
+          type="number"
+          min={0}
+          max={pendingX.cast.xCost?.maxX ?? 0}
+          value={pendingX.value}
+          onChange={(e) => {
+            const max = pendingX.cast.xCost?.maxX ?? 0
+            const n = Math.max(0, Math.min(max, Math.floor(Number(e.target.value) || 0)))
+            setPendingX({ cast: pendingX.cast, value: n })
+          }}
+          style={{ width: '4rem' }}
+        />
+        <span>(max {pendingX.cast.xCost?.maxX ?? 0})</span>
+        <button type="button" onClick={confirmX}>
+          Confirm
+        </button>
+        <button type="button" onClick={() => setPendingX(null)}>
           Cancel
         </button>
       </div>

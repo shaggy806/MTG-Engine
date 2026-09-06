@@ -39,8 +39,8 @@ export const makeFormatter = (game) => {
         return `${e.player} plays ${name(e.object)}`;
       case "spell-cast":
         return `${e.player} casts ${name(e.object)}${
-          e.targets.length ? ` at ${e.targets.map(target).join(", ")}` : ""
-        }`;
+          e.x != null ? ` (X=${e.x})` : ""
+        }${e.targets.length ? ` at ${e.targets.map(target).join(", ")}` : ""}`;
       case "spell-resolved":
         return `${name(e.object)} resolves`;
       case "ability-activated":

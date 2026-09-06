@@ -18,12 +18,20 @@ describe("parseManaCost", () => {
     expect(parseManaCost(null)).toEqual({
       generic: 0,
       colored: { W: 0, U: 0, B: 0, R: 0, G: 0 },
+      x: 0,
     });
     expect(manaValue(parseManaCost(""))).toBe(0);
   });
 
+  it("parses {X} into its own count and as mana value 0", () => {
+    const cost = parseManaCost("{X}{R}");
+    expect(cost.x).toBe(1);
+    expect(cost.colored.R).toBe(1);
+    expect(manaValue(cost)).toBe(1);
+  });
+
   it("rejects unsupported symbols", () => {
-    expect(() => parseManaCost("{X}{R}")).toThrow(/unsupported/);
+    expect(() => parseManaCost("{C}")).toThrow(/unsupported/);
     expect(() => parseManaCost("{G/U}")).toThrow();
   });
 

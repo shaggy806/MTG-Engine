@@ -392,6 +392,9 @@ export class RandomController extends AutomaticController {
           player,
           card: legal.card,
           targets: this.pickTargets(legal.targetOptions),
+          ...(legal.xCost !== undefined
+            ? { xValue: this.pickIndex(legal.xCost.maxX + 1) }
+            : {}),
         };
       case "activate-ability":
         return {

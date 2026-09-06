@@ -68,6 +68,8 @@ const deckB = deck([
   ["Man-o'-War", 2],
   ["Tome Scour", 1],
   ["Angelic Edict", 1],
+  ["Fireball", 2],
+  ["Blaze", 1],
 ]);
 
 // All four seats' decks/commanders, in seating order — sliced down to

@@ -50,8 +50,8 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${event.player} plays ${name(event.object)}`
     case 'spell-cast':
       return `${event.player} casts ${name(event.object)}${
-        event.targets.length ? ` at ${event.targets.map(tgt).join(', ')}` : ''
-      }`
+        event.x != null ? ` (X=${event.x})` : ''
+      }${event.targets.length ? ` at ${event.targets.map(tgt).join(', ')}` : ''}`
     case 'spell-resolved':
       return `${name(event.object)} resolves`
     case 'spell-fizzled':

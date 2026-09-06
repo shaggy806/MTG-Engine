@@ -62,6 +62,7 @@ const spawn = (
     isToken: false,
     attachedTo: null,
     isCommander: false,
+    xValue: null,
     counters: {},
     modifiers: [],
   };

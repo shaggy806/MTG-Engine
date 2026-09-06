@@ -27,6 +27,10 @@ export type Action =
       readonly player: PlayerId;
       readonly card: ObjectId;
       readonly targets?: readonly TargetRef[];
+      /** The chosen value for `{X}` in the spell's mana cost. Required (and
+       * only meaningful) when the card's cost contains `{X}`; ignored
+       * otherwise. */
+      readonly xValue?: number;
     }
   | {
       readonly type: "activate-ability";
@@ -100,6 +104,11 @@ export type LegalAction =
       readonly cardName: string;
       readonly targetSpecs: readonly TargetSpec[];
       readonly targetOptions: readonly (readonly TargetRef[])[];
+      /** Set when the spell's cost contains `{X}`. `maxX` is the largest value
+       * of X this player could currently pay for (0 when only X=0 is
+       * affordable). A driver must include `xValue` in the `cast-spell`
+       * action; anything from 0 to `maxX` is legal. */
+      readonly xCost?: { readonly maxX: number };
     }
   | {
       readonly kind: "activate-ability";

@@ -41,6 +41,11 @@ export interface GameObject {
   summoningSick: boolean;
   /** Chosen targets while this is a spell/ability on the stack; `null` otherwise. */
   targets: TargetRef[] | null;
+  /** The value chosen for `{X}` when this spell was cast (rule 601.2b). Set on
+   * the stack object and preserved onto the permanent it becomes, so an
+   * "enters with X counters"-style effect can still read it. `null` when the
+   * cost had no `{X}`. Cleared by `moveObject` on any later zone change. */
+  xValue: number | null;
   /** The player this creature is attacking, or `null` if not attacking. */
   attacking: PlayerId | null;
   /** The attacker this creature is blocking, or `null` if not blocking. */

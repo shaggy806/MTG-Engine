@@ -74,6 +74,8 @@ export type GameEvent =
       readonly player: PlayerId;
       readonly object: ObjectId;
       readonly targets: readonly TargetRef[];
+      /** The value chosen for `{X}`, or `null` when the cost had no `{X}`. */
+      readonly x: number | null;
     })
   | (Base & { readonly type: "spell-resolved"; readonly object: ObjectId })
   | (Base & {

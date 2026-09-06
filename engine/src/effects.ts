@@ -15,6 +15,9 @@ import type { TargetRef } from "./target.js";
 
 export type EffectTargetRef = number | "source";
 export type PtDuration = "end-of-turn" | "permanent";
+/** A numeric amount in an effect: a literal, or `"x"` for the value chosen for
+ * `{X}` when the spell/ability was put on the stack (`ResolutionContext.x`). */
+export type EffectAmount = number | "x";
 
 /** Restricts which of a "look-and-choose" effect's revealed candidates can
  * actually be chosen (e.g. "a Dragon card", "a land card") — both revealed
@@ -27,7 +30,7 @@ export interface ZoneChoiceFilter {
 
 /** A declarative effect. Grows as milestones add vocabulary. */
 export type EffectSpec =
-  | { readonly kind: "damage"; readonly amount: number; readonly target: number }
+  | { readonly kind: "damage"; readonly amount: EffectAmount; readonly target: number }
   | { readonly kind: "add-mana"; readonly mana: ManaType; readonly amount: number }
   | { readonly kind: "draw"; readonly amount: number }
   | { readonly kind: "gain-life"; readonly amount: number }
@@ -49,7 +52,7 @@ export type EffectSpec =
        * their graveyard. */
       readonly kind: "mill";
       readonly target: number;
-      readonly amount: number;
+      readonly amount: EffectAmount;
     }
   | {
       readonly kind: "modify-pt";
@@ -144,6 +147,14 @@ export interface ResolutionContext extends EffectApi {
   readonly controller: PlayerId;
   readonly source: ObjectId;
   readonly targets: readonly TargetRef[];
+  /** The value chosen for `{X}` when this spell/ability was put on the stack,
+   * or 0 if its cost had no `{X}`. */
+  readonly x: number;
+}
+
+/** Resolve an {@link EffectAmount} against a context's chosen X. */
+export function amountValue(amount: EffectAmount, ctx: ResolutionContext): number {
+  return amount === "x" ? ctx.x : amount;
 }
 
 /** Imperative escape hatch for a spell or ability the vocab can't express. */
@@ -161,7 +172,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
   switch (spec.kind) {
     case "damage": {
       const target = ctx.targets[spec.target];
-      if (target !== undefined) ctx.dealDamage(target, spec.amount);
+      if (target !== undefined) ctx.dealDamage(target, amountValue(spec.amount, ctx));
       return;
     }
     case "add-mana":
@@ -200,7 +211,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     }
     case "mill": {
       const target = ctx.targets[spec.target];
-      if (target !== undefined) ctx.mill(target, spec.amount);
+      if (target !== undefined) ctx.mill(target, amountValue(spec.amount, ctx));
       return;
     }
     case "modify-pt": {

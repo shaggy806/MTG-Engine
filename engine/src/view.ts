@@ -71,6 +71,8 @@ export interface VisibleObject {
   readonly sourceObjectId: ObjectId | null;
   readonly abilityIndex: number | null;
   readonly targets: readonly TargetRef[] | null;
+  /** The value chosen for `{X}` if this is an X spell/permanent, else `null`. */
+  readonly xValue: number | null;
   readonly isToken: boolean;
   /** The permanent this Aura/Equipment is attached to, or `null`. */
   readonly attachedTo: ObjectId | null;
@@ -149,6 +151,7 @@ function visible(
     sourceObjectId: object.sourceObjectId,
     abilityIndex: object.abilityIndex,
     targets: object.targets === null ? null : [...object.targets],
+    xValue: object.xValue,
     isToken: object.isToken,
     attachedTo: object.attachedTo,
     isCommander: object.isCommander,
