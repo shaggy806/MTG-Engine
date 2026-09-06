@@ -6,6 +6,7 @@
   "private": true,
   "workspaces": [
     "engine",
+    "server",
     "client"
   ],
   "scripts": {
