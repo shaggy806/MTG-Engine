@@ -2446,6 +2446,7 @@ export class Game {
         this.modifyPt(target, power, toughness, duration),
       addCounter: (target, counter, amount) =>
         this.addCounter(target, counter, amount),
+      proliferate: () => this.proliferateAll(),
       grantKeyword: (target, keyword, duration) =>
         this.grantKeyword(target, keyword, duration),
       createToken: (token, count) => this.createTokens(controller, token, count),
@@ -2597,6 +2598,21 @@ export class Game {
     if (object === undefined || object.zone !== "battlefield") return;
     object.counters[counter] = (object.counters[counter] ?? 0) + amount;
     this.emit({ type: "counter-added", object: target.object, counter, amount });
+  }
+
+  /** Proliferate (rule 701.27), simplified: every battlefield permanent that
+   * already has a counter gets one more of each kind it has. The "choose any
+   * number" clause isn't modeled — it proliferates everything. */
+  private proliferateAll(): void {
+    for (const id of [...this.state.zones.shared.battlefield]) {
+      const object = this.state.objects[id];
+      for (const kind of Object.keys(object.counters)) {
+        if (object.counters[kind] > 0) {
+          object.counters[kind] += 1;
+          this.emit({ type: "counter-added", object: id, counter: kind, amount: 1 });
+        }
+      }
+    }
   }
 
   private setTapped(target: TargetRef, tapped: boolean): void {

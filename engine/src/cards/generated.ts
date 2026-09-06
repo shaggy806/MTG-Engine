@@ -12,6 +12,7 @@ import _poolBloodthroneVampire from "./pool/bloodthrone-vampire.js";
 import _poolBoggartBrute from "./pool/boggart-brute.js";
 import _poolBonesplitter from "./pool/bonesplitter.js";
 import _poolBoomerang from "./pool/boomerang.js";
+import _poolContentiousPlan from "./pool/contentious-plan.js";
 import _poolCounterspell from "./pool/counterspell.js";
 import _poolCrawWurm from "./pool/craw-wurm.js";
 import _poolDarksteelMyr from "./pool/darksteel-myr.js";
@@ -62,6 +63,7 @@ import _poolUnsummon from "./pool/unsummon.js";
 import _poolUreniOfTheUnwritten from "./pool/ureni-of-the-unwritten.js";
 import _poolVampireNighthawk from "./pool/vampire-nighthawk.js";
 import _poolVengefulGhoul from "./pool/vengeful-ghoul.js";
+import _poolVoltCharge from "./pool/volt-charge.js";
 import _poolWallOfWood from "./pool/wall-of-wood.js";
 import _poolWhiteKnight from "./pool/white-knight.js";
 import _poolWildwoodSentinel from "./pool/wildwood-sentinel.js";
@@ -81,6 +83,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolBoggartBrute,
   _poolBonesplitter,
   _poolBoomerang,
+  _poolContentiousPlan,
   _poolCounterspell,
   _poolCrawWurm,
   _poolDarksteelMyr,
@@ -131,6 +134,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolUreniOfTheUnwritten,
   _poolVampireNighthawk,
   _poolVengefulGhoul,
+  _poolVoltCharge,
   _poolWallOfWood,
   _poolWhiteKnight,
   _poolWildwoodSentinel,

@@ -97,6 +97,13 @@ export type EffectSpec =
       readonly amount: number;
     }
   | {
+      /** Proliferate (rule 701.27): every permanent that already has any
+       * counter gets one more of each kind it has. This engine always
+       * proliferates *everything* eligible rather than modeling the
+       * "choose any number" clause. */
+      readonly kind: "proliferate";
+    }
+  | {
       readonly kind: "grant-keyword";
       readonly target: EffectTargetRef;
       readonly keyword: Keyword;
@@ -161,6 +168,8 @@ export interface EffectApi {
     duration: PtDuration,
   ): void;
   addCounter(target: TargetRef, counter: string, amount: number): void;
+  /** Proliferate — see the `"proliferate"` {@link EffectSpec}. */
+  proliferate(): void;
   grantKeyword(target: TargetRef, keyword: Keyword, duration: PtDuration): void;
   /** Create `count` copies of the named token, controlled by `ctx.controller`. */
   createToken(token: string, count: number): void;
@@ -283,6 +292,9 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       }
       return;
     }
+    case "proliferate":
+      ctx.proliferate();
+      return;
     case "grant-keyword": {
       const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) {
