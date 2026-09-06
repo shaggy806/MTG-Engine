@@ -41,6 +41,22 @@ export type ClientMessage =
   | { readonly type: 'auto-pass'; readonly roomId: string }
   | { readonly type: 'toggle-mana-skip'; readonly roomId: string }
 
+/** Mirrors `server/src/import-deck.ts`'s `CardReportEntry` — the response
+ * shape of the plain HTTP `POST /import-deck` endpoint (not part of the
+ * room-based WebSocket protocol above, since it's a stateless, non-room
+ * operation). Duplicated by hand like the rest of this file. */
+export interface ImportedCardReport {
+  readonly name: string
+  readonly count: number
+  /** Already has a matching `CardDefinition` in the engine's registry. */
+  readonly implemented: boolean
+  /** Whether any characteristics data (local or Scryfall) was found to show. */
+  readonly found: boolean
+  readonly manaCost: string | null
+  readonly typeLine: string
+  readonly oracleText: string
+}
+
 export type ServerMessage =
   | { readonly type: 'room-created'; readonly roomId: string }
   | {

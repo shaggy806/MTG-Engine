@@ -1016,3 +1016,82 @@
 .zone-viewer-cards .card-tile:disabled {
   opacity: 1;
 }
+
+/* lobby entry point for the decklist-import feasibility report */
+.link-button {
+  background: none;
+  border: none;
+  color: var(--accent);
+  text-decoration: underline;
+  padding: 2px;
+}
+
+.import-deck-box {
+  width: min(640px, 100%);
+}
+.import-deck-box form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
+.import-deck-textarea {
+  font: inherit;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+.import-deck-report {
+  overflow-y: auto;
+}
+.import-deck-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.import-deck-list li {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel-2);
+}
+.import-deck-list li.implemented {
+  border-color: var(--good);
+}
+.import-deck-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.import-deck-name {
+  flex: 1;
+  font-weight: 600;
+}
+.import-deck-badge {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+}
+.import-deck-list li.implemented .import-deck-badge {
+  color: var(--good);
+  border-color: var(--good);
+}
+.import-deck-list li.not-implemented .import-deck-badge {
+  color: var(--warn);
+  border-color: var(--warn);
+}
+.import-deck-detail {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  white-space: pre-wrap;
+}

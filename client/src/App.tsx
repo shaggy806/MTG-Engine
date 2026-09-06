@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import type { ReactNode } from 'react'
+import type { FormEvent, ReactNode } from 'react'
 import type {
   LegalAction,
   ObjectId,
@@ -11,6 +11,7 @@ import type {
 } from 'engine'
 import { useNetworkGame } from './net/useNetworkGame.ts'
 import type { NetworkGame } from './net/useNetworkGame.ts'
+import type { ImportedCardReport } from './net/protocol.ts'
 import { computeBoardEntries } from './game/board.ts'
 import type { BoardEntry } from './game/board.ts'
 import { playerLabel, seatClassOf } from './format.ts'
@@ -21,7 +22,15 @@ import { CardTile } from './ui/CardTile.tsx'
 import { Stack } from './ui/Stack.tsx'
 import { EventLog } from './ui/EventLog.tsx'
 import { ZoneViewer } from './ui/ZoneViewer.tsx'
+import { Symbols } from './ui/Symbols.tsx'
 import './App.css'
+
+// Same host/port convention as useNetworkGame's SERVER_URL, but http(s) for
+// this one-off request/response endpoint rather than the room's WebSocket.
+const IMPORT_DECK_URL = `${
+  ((import.meta.env.VITE_SERVER_URL as string | undefined) ?? `ws://${window.location.hostname}:4000`)
+    .replace(/^ws/, 'http')
+}/import-deck`
 
 type CastAction = Extract<LegalAction, { kind: 'cast-spell' }>
 type AbilityAction = Extract<LegalAction, { kind: 'activate-ability' }>
@@ -67,7 +76,11 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
 
 export default function App() {
   const game = useNetworkGame()
+  const [showImport, setShowImport] = useState(false)
 
+  if (showImport) {
+    return <ImportDeckScreen onBack={() => setShowImport(false)} />
+  }
   if (game.status === 'connecting') {
     return <CenteredScreen title="Connecting…" />
   }
@@ -84,10 +97,10 @@ export default function App() {
     )
   }
   if (game.status === 'room-not-found') {
-    return <LobbyScreen game={game} notFound />
+    return <LobbyScreen game={game} notFound onImport={() => setShowImport(true)} />
   }
   if (game.status === 'no-room') {
-    return <LobbyScreen game={game} />
+    return <LobbyScreen game={game} onImport={() => setShowImport(true)} />
   }
   if (game.status === 'choosing-seat') {
     return <SeatPickerScreen game={game} />
@@ -124,9 +137,11 @@ function ErrorLine({ game }: { readonly game: NetworkGame }) {
 function LobbyScreen({
   game,
   notFound = false,
+  onImport,
 }: {
   readonly game: NetworkGame
   readonly notFound?: boolean
+  readonly onImport: () => void
 }) {
   const [joinCode, setJoinCode] = useState('')
   const [players, setPlayers] = useState(2)
@@ -171,7 +186,100 @@ function LobbyScreen({
           Join
         </button>
       </form>
+      <button type="button" className="link-button" onClick={onImport}>
+        Import a decklist
+      </button>
     </CenteredScreen>
+  )
+}
+
+function ImportDeckScreen({ onBack }: { readonly onBack: () => void }) {
+  const [text, setText] = useState('')
+  const [cards, setCards] = useState<readonly ImportedCardReport[] | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  const submit = (e: FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+    setCards(null)
+    fetch(IMPORT_DECK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    })
+      .then(async (res) => {
+        const data = (await res.json()) as { cards?: ImportedCardReport[]; error?: string }
+        if (!res.ok) throw new Error(data.error ?? 'import failed')
+        setCards(data.cards ?? [])
+      })
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
+      .finally(() => setLoading(false))
+  }
+
+  const implementedCount = cards?.filter((c) => c.implemented).length ?? 0
+
+  return (
+    <div className="zone-viewer-overlay">
+      <div className="zone-viewer-box import-deck-box">
+        <div className="zone-viewer-head">
+          <h2>Import a decklist</h2>
+          <button type="button" onClick={onBack}>
+            Back
+          </button>
+        </div>
+        <p className="muted">
+          Paste a plain-text decklist export (Moxfield's "Export" feature, either with or
+          without the "(SET) collector-number" printing suffix) to see which cards the engine
+          already implements. This doesn't start a game — it's a feasibility report only.
+        </p>
+        <form onSubmit={submit}>
+          <textarea
+            className="import-deck-textarea"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            rows={10}
+            placeholder={'1 Sol Ring\n1 Ureni of the Unwritten\n...'}
+          />
+          <button type="submit" disabled={!text.trim() || loading}>
+            {loading ? 'Importing…' : 'Import'}
+          </button>
+        </form>
+        {error ? <div className="error-banner">⚠ {error}</div> : null}
+        {cards ? (
+          <div className="import-deck-report">
+            <p className="muted">
+              {implementedCount} / {cards.length} cards already implemented
+            </p>
+            <ul className="import-deck-list">
+              {cards.map((c) => (
+                <li key={c.name} className={c.implemented ? 'implemented' : 'not-implemented'}>
+                  <div className="import-deck-row">
+                    <span className="import-deck-name">
+                      {c.count > 1 ? `${c.count}x ` : ''}
+                      {c.name}
+                    </span>
+                    {c.manaCost ? <Symbols text={c.manaCost} /> : null}
+                    <span className="import-deck-badge">
+                      {c.implemented ? 'implemented' : c.found ? 'not yet' : 'not found'}
+                    </span>
+                  </div>
+                  {!c.implemented && c.typeLine ? (
+                    <div className="import-deck-detail">
+                      <div className="muted">{c.typeLine}</div>
+                      <div>
+                        <Symbols text={c.oracleText} />
+                      </div>
+                    </div>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </div>
+    </div>
   )
 }
 
