@@ -39,6 +39,10 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${event.player} draws from an empty library!`
     case 'cards-discarded':
       return `${event.player} discards ${event.objects.map(name).join(', ')}`
+    case 'cards-chosen-from-zone':
+      return event.objects.length > 0
+        ? `${event.player} takes ${event.objects.map(name).join(', ')}`
+        : `${event.player} takes nothing`
     case 'damage-cleared':
       return `damage cleared from ${event.objects.length} permanent(s)`
     case 'land-played':

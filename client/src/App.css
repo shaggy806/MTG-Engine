@@ -1,6 +1,10 @@
 .app {
+  /* Reserve space for the pinned top/bottom banners (below) so normal-flow
+     content never starts out hidden underneath them. */
+  --top-banner-h: 164px;
+  --bottom-banner-h: 84px;
   width: 100%;
-  padding: 12px 20px 40px;
+  padding: calc(var(--top-banner-h) + 12px) 20px calc(var(--bottom-banner-h) + 40px);
   position: relative;
   background: var(--bg);
   transition: background-color 0.6s ease;
@@ -75,6 +79,34 @@
   font-weight: 700;
 }
 
+/* Whoever's not driving this device — turn/phase plus their life, mana and
+   zone counts — pinned to the very top of the viewport so it's visible
+   regardless of how far the board has scrolled. Mirrored at the bottom for
+   your own seat (see .pinned-bottom). */
+.pinned-top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 20px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.pinned-bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  padding: 8px 20px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+}
+
 .seat-banner {
   margin: 6px 0;
   padding: 5px 10px;
@@ -143,8 +175,8 @@
   flex: 1;
   min-width: 230px;
   position: sticky;
-  top: 8px;
-  height: calc(100vh - 16px);
+  top: calc(var(--top-banner-h) + 8px);
+  height: calc(100vh - var(--top-banner-h) - var(--bottom-banner-h) - 16px);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -245,6 +277,24 @@
   color: var(--muted);
   font-size: 12px;
 }
+.pp-zone-link {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.pp-zone-link:hover:not(:disabled) {
+  text-decoration: underline;
+}
+.pp-zone-link:disabled {
+  cursor: default;
+  /* Looks identical to the plain (non-clickable) pp-zones spans next to it —
+     only override the generic dimmed-disabled-button look. */
+  opacity: 1;
+}
 .pp-mana {
   font-family: ui-monospace, Consolas, monospace;
   color: var(--warn);
@@ -257,7 +307,14 @@
 /* board: one bordered area per seat, permanents split into labeled type
    areas side by side within it (lands/creatures/artifacts/enchantments);
    Auras/Equipment nest under their host instead of getting their own area */
+.board-with-sidezone {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
 .board {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -324,6 +381,68 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 4px;
+}
+
+/* command zone (above) + library (below), to the right of a player's board */
+.side-zone {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  background: var(--panel);
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+}
+.side-zone.seat-a {
+  border-color: var(--seat-a);
+}
+.side-zone.seat-b {
+  border-color: var(--seat-b);
+}
+.side-zone-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.side-zone-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.side-zone-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.side-zone-empty {
+  color: var(--muted);
+  font-size: 12px;
+}
+/* face-down library placeholder — CSS-only, no image, so it can never 404 */
+.card-back {
+  width: var(--card-w, 138px);
+  min-height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background:
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.06) 0%, transparent 45%),
+    linear-gradient(160deg, #2a2450, #171432);
+}
+.card-back-count {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  font-size: 16px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .stack,
@@ -746,4 +865,53 @@
 .seat-picker {
   display: flex;
   gap: 10px;
+}
+
+/* read-only zone browser (graveyard/exile today) */
+.zone-viewer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 12, 16, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+  padding: 40px;
+}
+.zone-viewer-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: min(900px, 100%);
+  max-height: 100%;
+  padding: 16px 20px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.zone-viewer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.zone-viewer-head h2 {
+  font-size: 16px;
+}
+.zone-viewer-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+.zone-viewer-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  overflow-y: auto;
+  padding-bottom: 4px;
+}
+/* a read-only display, not an interactive board — full visibility regardless
+   of the tile's own disabled/clickable state (same trick the stack uses) */
+.zone-viewer-cards .card-tile:disabled {
+  opacity: 1;
 }

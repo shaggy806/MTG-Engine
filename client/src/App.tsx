@@ -20,6 +20,7 @@ import { PlayerPanel } from './ui/PlayerPanel.tsx'
 import { CardTile } from './ui/CardTile.tsx'
 import { Stack } from './ui/Stack.tsx'
 import { EventLog } from './ui/EventLog.tsx'
+import { ZoneViewer } from './ui/ZoneViewer.tsx'
 import './App.css'
 
 type CastAction = Extract<LegalAction, { kind: 'cast-spell' }>
@@ -28,6 +29,7 @@ type AttackAction = Extract<LegalAction, { kind: 'declare-attackers' }>
 type BlockAction = Extract<LegalAction, { kind: 'declare-blockers' }>
 type OrderAction = Extract<LegalAction, { kind: 'order-blockers' }>
 type DiscardAction = Extract<LegalAction, { kind: 'discard' }>
+type ZoneChoiceAction = Extract<LegalAction, { kind: 'choose-from-zone' }>
 
 interface Targeting {
   readonly kind: 'cast' | 'activate'
@@ -56,6 +58,7 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
   blockers: 'declare blockers',
   discard: 'discard',
   'order-blockers': 'order blockers',
+  'choose-from-zone': 'look at cards',
 }
 
 export default function App() {
@@ -198,9 +201,6 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
         </div>
       </header>
 
-      <PhaseTrack view={view} />
-      <TurnBanner view={view} />
-
       <div className="seat-banner">
         {over ? 'Game over' : `${playerLabel(actingPlayer(view) ?? seat)} to act`}
       </div>
@@ -239,6 +239,10 @@ function Table({ view, seat, opponent, game }: TableProps) {
   const [blockFocus, setBlockFocus] = useState<ObjectId | null>(null)
   const [orderPicks, setOrderPicks] = useState<readonly ObjectId[]>([])
   const [discardPicks, setDiscardPicks] = useState<readonly ObjectId[]>([])
+  const [zoneView, setZoneView] = useState<{
+    readonly title: string
+    readonly ids: readonly ObjectId[]
+  } | null>(null)
 
   // --- classify the legal actions ------------------------------------
   const landByCard = useMemo(() => {
@@ -274,6 +278,9 @@ function Table({ view, seat, opponent, game }: TableProps) {
   const discardAction = actions.find(
     (a): a is DiscardAction => a.kind === 'discard',
   )
+  const zoneChoiceAction = actions.find(
+    (a): a is ZoneChoiceAction => a.kind === 'choose-from-zone',
+  )
   const canPass = actions.some((a) => a.kind === 'pass-priority')
   // Only the active player may skip the rest of their own turn — a defender
   // holding priority to respond during it shouldn't get this button.
@@ -284,6 +291,7 @@ function Table({ view, seat, opponent, game }: TableProps) {
     | 'order-blockers'
     | 'attackers'
     | 'blockers'
+    | 'choose-from-zone'
     | 'targeting'
     | 'priority' = discardAction
     ? 'discard'
@@ -293,9 +301,11 @@ function Table({ view, seat, opponent, game }: TableProps) {
         ? 'attackers'
         : blockAction
           ? 'blockers'
-          : targeting
-            ? 'targeting'
-            : 'priority'
+          : zoneChoiceAction
+            ? 'choose-from-zone'
+            : targeting
+              ? 'targeting'
+              : 'priority'
 
   // --- dispatch helpers --------------------------------------------
   const pass = useCallback(() => {
@@ -512,6 +522,13 @@ function Table({ view, seat, opponent, game }: TableProps) {
     game.dispatch({ type: 'discard', player: seat, cards: [...discardPicks] })
   }, [discardPicks, game, seat])
 
+  const confirmZoneChoice = useCallback(
+    (chosen: readonly ObjectId[]) => {
+      game.dispatch({ type: 'choose-from-zone', player: seat, chosen: [...chosen] })
+    },
+    [game, seat],
+  )
+
   // --- keyboard ----------------------------------------------------
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -665,11 +682,64 @@ function Table({ view, seat, opponent, game }: TableProps) {
     )
   }
 
+  /** Command zone (above) + library (below), to the right of a player's
+   * board. The library shows a face-down back by default — the count is
+   * still public — unless something that player controls (e.g. Oracle of
+   * Mul Daya) makes its top card public knowledge, in which case that card
+   * renders face-up in its place. */
+  const renderSideZone = (pid: PlayerId) => {
+    const commandIds = view.zones.command.filter((id) => view.objects[id]?.owner === pid)
+    const topId = view.revealedLibraryTop[pid] ?? null
+    const topObj = topId !== null ? view.objects[topId] : undefined
+    const librarySize = view.players[pid].librarySize
+
+    return (
+      <div className={`side-zone ${seatClassOf(view.turnOrder, pid)}`}>
+        <div className="side-zone-section">
+          <div className="side-zone-label">Command</div>
+          <div className="side-zone-cards">
+            {commandIds.length > 0 ? (
+              commandIds.map((id) => {
+                const obj = view.objects[id]
+                return obj ? tileFor(obj, pid, [id]) : null
+              })
+            ) : (
+              <div className="side-zone-empty">empty</div>
+            )}
+          </div>
+        </div>
+        <div className="side-zone-section">
+          <div className="side-zone-label">Library ({librarySize})</div>
+          <div className="side-zone-cards">
+            {topObj ? (
+              tileFor(topObj, pid, [topObj.id])
+            ) : librarySize > 0 ? (
+              <div
+                className="card-back"
+                title={`${librarySize} card${librarySize === 1 ? '' : 's'} face down`}
+              >
+                <span className="card-back-count">{librarySize}</span>
+              </div>
+            ) : (
+              <div className="side-zone-empty">empty</div>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const handIds = view.zones.hands[seat] ?? []
   const seatInfo = view.players[seat]
   const oppInfo = view.players[opponent]
   const onlineOf = (pid: PlayerId): boolean | null =>
     game.seats.find((s) => s.player === pid)?.online ?? null
+  // Exile is one shared zone (not per-player) — split it by each object's
+  // owner so it can be shown/browsed per player-panel like the graveyard is.
+  const exileOf = (pid: PlayerId): readonly ObjectId[] =>
+    view.zones.exile.filter((id) => view.objects[id]?.owner === pid)
+  const openZone = (title: string, ids: readonly ObjectId[]) =>
+    setZoneView({ title, ids })
 
   let controls: ReactNode
   if (view.result.over) {
@@ -795,6 +865,12 @@ function Table({ view, seat, opponent, game }: TableProps) {
         </button>
       </div>
     )
+  } else if (mode === 'choose-from-zone' && zoneChoiceAction) {
+    controls = (
+      <div className="controls">
+        <span className="muted">Look at the popup to choose</span>
+      </div>
+    )
   } else {
     // Reaching this fallback with `awaiting` set always means it's someone
     // else's declaration pending (a decision of ours would have matched one
@@ -831,27 +907,34 @@ function Table({ view, seat, opponent, game }: TableProps) {
 
   return (
     <div className="player-col">
-      <main className="table">
+      <div className="pinned-top">
+        <PhaseTrack view={view} />
+        <TurnBanner view={view} />
         <PlayerPanel
           info={oppInfo}
           seatClass={seatClassOf(view.turnOrder, opponent)}
           isActive={view.activePlayer === opponent}
           hasPriority={view.priority.holder === opponent}
           online={onlineOf(opponent)}
+          exileSize={exileOf(opponent).length}
+          onOpenGraveyard={() =>
+            openZone(`${playerLabel(opponent)}'s graveyard`, view.zones.graveyards[opponent] ?? [])
+          }
+          onOpenExile={() => openZone(`${playerLabel(opponent)}'s exile`, exileOf(opponent))}
           targetable={playerIsTargetable(opponent)}
           onTargetClick={() => clickPlayerTarget(opponent)}
         />
-        {renderBoard(opponent, true)}
-        {renderBoard(seat, false)}
-        <PlayerPanel
-          info={seatInfo}
-          seatClass={seatClassOf(view.turnOrder, seat)}
-          isActive={view.activePlayer === seat}
-          hasPriority={view.priority.holder === seat}
-          online={onlineOf(seat)}
-          targetable={playerIsTargetable(seat)}
-          onTargetClick={() => clickPlayerTarget(seat)}
-        />
+      </div>
+
+      <main className="table">
+        <div className="board-with-sidezone">
+          {renderBoard(opponent, true)}
+          {renderSideZone(opponent)}
+        </div>
+        <div className="board-with-sidezone">
+          {renderBoard(seat, false)}
+          {renderSideZone(seat)}
+        </div>
       </main>
 
       {selectedAbilities.length > 0 ? (
@@ -909,6 +992,47 @@ function Table({ view, seat, opponent, game }: TableProps) {
           {handIds.length === 0 ? <span className="muted">empty</span> : null}
         </div>
       </div>
+
+      <div className="pinned-bottom">
+        <PlayerPanel
+          info={seatInfo}
+          seatClass={seatClassOf(view.turnOrder, seat)}
+          isActive={view.activePlayer === seat}
+          hasPriority={view.priority.holder === seat}
+          online={onlineOf(seat)}
+          exileSize={exileOf(seat).length}
+          onOpenGraveyard={() =>
+            openZone(`${playerLabel(seat)}'s graveyard`, view.zones.graveyards[seat] ?? [])
+          }
+          onOpenExile={() => openZone(`${playerLabel(seat)}'s exile`, exileOf(seat))}
+          targetable={playerIsTargetable(seat)}
+          onTargetClick={() => clickPlayerTarget(seat)}
+        />
+      </div>
+
+      {zoneView ? (
+        <ZoneViewer
+          title={zoneView.title}
+          cards={zoneView.ids
+            .map((id) => view.objects[id])
+            .filter((o): o is VisibleObject => o !== undefined)}
+          onClose={() => setZoneView(null)}
+        />
+      ) : null}
+
+      {mode === 'choose-from-zone' && zoneChoiceAction ? (
+        <ZoneViewer
+          title="Choose from these cards"
+          cards={zoneChoiceAction.ids
+            .map((id) => view.objects[id])
+            .filter((o): o is VisibleObject => o !== undefined)}
+          selection={{
+            min: zoneChoiceAction.min,
+            max: zoneChoiceAction.max,
+            onConfirm: confirmZoneChoice,
+          }}
+        />
+      ) : null}
     </div>
   )
 }

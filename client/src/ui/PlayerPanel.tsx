@@ -10,6 +10,11 @@ export interface PlayerPanelProps {
   /** Whether this seat's connection is currently live. `null` when unknown
    * (e.g. no room-level seat data yet). */
   readonly online?: boolean | null
+  /** This player's own cards currently in the (shared) exile zone. */
+  readonly exileSize?: number
+  /** Opens a read-only viewer of this player's graveyard/exile, if provided. */
+  readonly onOpenGraveyard?: () => void
+  readonly onOpenExile?: () => void
   readonly targetable?: boolean
   readonly onTargetClick?: () => void
 }
@@ -28,6 +33,9 @@ export function PlayerPanel({
   isActive,
   hasPriority,
   online = null,
+  exileSize = 0,
+  onOpenGraveyard,
+  onOpenExile,
   targetable = false,
   onTargetClick,
 }: PlayerPanelProps) {
@@ -62,7 +70,28 @@ export function PlayerPanel({
       <div className="pp-zones">
         <span>hand {info.handSize}</span>
         <span>library {info.librarySize}</span>
-        <span>graveyard {info.graveyardSize}</span>
+        <button
+          type="button"
+          className="pp-zone-link"
+          disabled={!onOpenGraveyard}
+          onClick={(e) => {
+            e.stopPropagation()
+            onOpenGraveyard?.()
+          }}
+        >
+          graveyard {info.graveyardSize}
+        </button>
+        <button
+          type="button"
+          className="pp-zone-link"
+          disabled={!onOpenExile}
+          onClick={(e) => {
+            e.stopPropagation()
+            onOpenExile?.()
+          }}
+        >
+          exile {exileSize}
+        </button>
         <span>
           lands {info.landsPlayedThisTurn}/{1}
         </span>
