@@ -262,6 +262,7 @@ export class Game {
           action.source,
           action.abilityIndex,
           action.targets ?? [],
+          action.sacrifice,
         );
         break;
       case "declare-attackers":
@@ -453,6 +454,9 @@ export class Game {
           text: ability.text,
           targetSpecs: ability.targets,
           targetOptions: this.targetOptionsFor(ability.targets, player),
+          ...(ability.cost.sacrifice === "creature-you-control"
+            ? { sacrifice: { choices: this.sacrificeCandidates(player, source, ability) } }
+            : {}),
         });
       });
     }
@@ -1682,6 +1686,26 @@ export class Game {
     this.afterPlayerAction(player);
   }
 
+  /** Permanents `player` could sacrifice to pay `ability`'s sacrifice cost.
+   * `[]` when the ability has no sacrifice cost. For a `"self"` cost it's just
+   * the source (so a caller can still show/confirm it). */
+  private sacrificeCandidates(
+    player: PlayerId,
+    sourceId: ObjectId,
+    ability: { readonly cost: { readonly sacrifice?: string } },
+  ): ObjectId[] {
+    if (ability.cost.sacrifice === undefined) return [];
+    if (ability.cost.sacrifice === "self") return [sourceId];
+    // "creature-you-control"
+    return this.state.zones.shared.battlefield.filter((id) => {
+      const object = this.state.objects[id];
+      return (
+        object.controller === player &&
+        this.registry.get(object.cardName).types.includes("creature")
+      );
+    });
+  }
+
   private whyCannotActivateAbility(
     player: PlayerId,
     sourceId: ObjectId,
@@ -1719,6 +1743,12 @@ export class Game {
     if (this.planManaPayment(player, parseManaCost(ability.cost.mana)) === null) {
       return `${player} cannot pay for ${def.name}'s ability`;
     }
+    if (
+      ability.cost.sacrifice !== undefined &&
+      this.sacrificeCandidates(player, sourceId, ability).length === 0
+    ) {
+      return `${player} has nothing to sacrifice for ${def.name}'s ability`;
+    }
     return null;
   }
 
@@ -1727,6 +1757,7 @@ export class Game {
     sourceId: ObjectId,
     abilityIndex: number,
     targets: readonly TargetRef[],
+    sacrifice?: ObjectId,
   ): void {
     const why = this.whyCannotActivateAbility(player, sourceId, abilityIndex);
     if (why !== null) throw new Error(why);
@@ -1746,6 +1777,22 @@ export class Game {
       }
     });
 
+    // Resolve which permanent the sacrifice cost (if any) will consume.
+    let sacrificeVictim: ObjectId | null = null;
+    if (ability.cost.sacrifice !== undefined) {
+      const candidates = this.sacrificeCandidates(player, sourceId, ability);
+      if (ability.cost.sacrifice === "self") {
+        sacrificeVictim = sourceId;
+      } else {
+        if (sacrifice === undefined || !candidates.includes(sacrifice)) {
+          throw new Error(
+            `${def.name}'s ability requires sacrificing a creature you control`,
+          );
+        }
+        sacrificeVictim = sacrifice;
+      }
+    }
+
     const manaCost = parseManaCost(ability.cost.mana);
     const plan = this.planManaPayment(player, manaCost);
     if (plan === null) {
@@ -1759,6 +1806,10 @@ export class Game {
     }
     for (const manaSourceId of plan) this.tapManaSource(manaSourceId);
     this.spendFromPool(player, manaCost);
+    if (sacrificeVictim !== null) {
+      this.moveObject(sacrificeVictim, "graveyard");
+      this.emit({ type: "permanent-sacrificed", object: sacrificeVictim, player });
+    }
 
     if (isManaAbility(ability)) {
       // Mana abilities resolve immediately and never use the stack.

@@ -14,11 +14,21 @@ import type { GameEvent } from "./events.js";
 import type { TargetSpec } from "./target.js";
 import type { Step } from "./turn.js";
 
+/** A non-mana, non-tap component of an ability cost that sacrifices a permanent. */
+export type SacrificeCost =
+  /** Sacrifice the permanent whose ability this is. */
+  | "self"
+  /** Sacrifice a creature the activating player controls (their choice; may be
+   * the source itself). */
+  | "creature-you-control";
+
 export interface AbilityCost {
   /** Mana portion of the cost, e.g. `"{2}"`; `null` for no mana. */
   readonly mana: string | null;
   /** Whether `{T}` (tap this permanent) is part of the cost. */
   readonly tap: boolean;
+  /** A sacrifice that is part of the cost, or `undefined` for none. */
+  readonly sacrifice?: SacrificeCost;
 }
 
 export interface ActivatedAbility {
@@ -57,10 +67,13 @@ export interface StackAbility {
   readonly resolve: SpellResolver | null;
 }
 
-/** A mana ability adds mana, has no targets, and never uses the stack. */
+/** A mana ability adds mana, has no targets, and never uses the stack. A cost
+ * that includes a sacrifice disqualifies it (the engine's mana-source machinery
+ * only knows how to pay a bare `{T}`). */
 export function isManaAbility(ability: ActivatedAbility): boolean {
   return (
     ability.targets.length === 0 &&
+    ability.cost.sacrifice === undefined &&
     ability.resolve === null &&
     ability.effect !== null &&
     ability.effect.kind === "add-mana"

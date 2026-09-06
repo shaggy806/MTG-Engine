@@ -85,6 +85,8 @@ export const makeFormatter = (game) => {
         return `${name(e.object)} returns to ${e.owner}'s hand`;
       case "permanent-exiled":
         return `${name(e.object)} is exiled`;
+      case "permanent-sacrificed":
+        return `${e.player} sacrifices ${name(e.object)}`;
       case "cards-milled":
         return `${e.player} mills ${e.objects.map(name).join(", ")}`;
       case "player-lost":

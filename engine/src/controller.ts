@@ -396,14 +396,19 @@ export class RandomController extends AutomaticController {
             ? { xValue: this.pickIndex(legal.xCost.maxX + 1) }
             : {}),
         };
-      case "activate-ability":
+      case "activate-ability": {
+        const sac = legal.sacrifice;
         return {
           type: "activate-ability",
           player,
           source: legal.source,
           abilityIndex: legal.abilityIndex,
           targets: this.pickTargets(legal.targetOptions),
+          ...(sac !== undefined && sac.choices.length > 0
+            ? { sacrifice: sac.choices[this.pickIndex(sac.choices.length)] }
+            : {}),
         };
+      }
       case "declare-attackers":
         return {
           type: "declare-attackers",

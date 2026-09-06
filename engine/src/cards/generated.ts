@@ -6,6 +6,7 @@ import type { CardDefinition } from "./define.js";
 import _poolAngelicEdict from "./pool/angelic-edict.js";
 import _poolAshmarkMarduVanguard from "./pool/ashmark-mardu-vanguard.js";
 import _poolBlaze from "./pool/blaze.js";
+import _poolBloodthroneVampire from "./pool/bloodthrone-vampire.js";
 import _poolBoggartBrute from "./pool/boggart-brute.js";
 import _poolBonesplitter from "./pool/bonesplitter.js";
 import _poolBoomerang from "./pool/boomerang.js";
@@ -16,6 +17,7 @@ import _poolExplorersInsight from "./pool/explorers-insight.js";
 import _poolFencingAce from "./pool/fencing-ace.js";
 import _poolFireball from "./pool/fireball.js";
 import _poolForest from "./pool/forest.js";
+import _poolFumeSpitter from "./pool/fume-spitter.js";
 import _poolGiantGrowth from "./pool/giant-growth.js";
 import _poolGiantSpider from "./pool/giant-spider.js";
 import _poolGloriousAnthem from "./pool/glorious-anthem.js";
@@ -62,6 +64,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolAngelicEdict,
   _poolAshmarkMarduVanguard,
   _poolBlaze,
+  _poolBloodthroneVampire,
   _poolBoggartBrute,
   _poolBonesplitter,
   _poolBoomerang,
@@ -72,6 +75,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolFencingAce,
   _poolFireball,
   _poolForest,
+  _poolFumeSpitter,
   _poolGiantGrowth,
   _poolGiantSpider,
   _poolGloriousAnthem,

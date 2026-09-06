@@ -38,6 +38,10 @@ export type Action =
       readonly source: ObjectId;
       readonly abilityIndex: number;
       readonly targets?: readonly TargetRef[];
+      /** The permanent to sacrifice, when the ability's cost is a
+       * `"creature-you-control"` sacrifice. Ignored for a `"self"` sacrifice
+       * (the source is always what's sacrificed) or no sacrifice. */
+      readonly sacrifice?: ObjectId;
     }
   | {
       readonly type: "declare-attackers";
@@ -118,6 +122,10 @@ export type LegalAction =
       readonly text: string;
       readonly targetSpecs: readonly TargetSpec[];
       readonly targetOptions: readonly (readonly TargetRef[])[];
+      /** Present when the cost includes sacrificing a creature you control:
+       * `choices` is every permanent that could be sacrificed to pay it. A
+       * `"self"` sacrifice is implicit (no field) — the source is always used. */
+      readonly sacrifice?: { readonly choices: readonly ObjectId[] };
     }
   | {
       readonly kind: "declare-attackers";

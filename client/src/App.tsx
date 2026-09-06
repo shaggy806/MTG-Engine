@@ -52,6 +52,8 @@ interface Targeting {
   readonly picked: readonly TargetRef[]
   /** Chosen value for `{X}`, when casting an X spell. */
   readonly xValue?: number
+  /** Permanent chosen to pay a "sacrifice a creature you control" ability cost. */
+  readonly sacrifice?: ObjectId
 }
 
 /**
@@ -410,6 +412,8 @@ function Table({ view, seat, opponents, game }: TableProps) {
     readonly cast: CastAction
     readonly value: number
   } | null>(null)
+  // Set while choosing which creature to sacrifice for an ability's cost.
+  const [pendingSac, setPendingSac] = useState<AbilityAction | null>(null)
   const [selectedSource, setSelectedSource] = useState<ObjectId | null>(null)
   // Attacker -> chosen defender. With more than one legal opponent, clicking
   // an attacker assigns it to the first opponent by default and focuses it;
@@ -483,6 +487,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
     | 'mulligan'
     | 'put-on-bottom'
     | 'choose-x'
+    | 'choose-sacrifice'
     | 'targeting'
     | 'priority' = mulliganAction
     ? 'mulligan'
@@ -500,9 +505,11 @@ function Table({ view, seat, opponents, game }: TableProps) {
                 ? 'choose-from-zone'
                 : pendingX
                   ? 'choose-x'
-                  : targeting
-                    ? 'targeting'
-                    : 'priority'
+                  : pendingSac
+                    ? 'choose-sacrifice'
+                    : targeting
+                      ? 'targeting'
+                      : 'priority'
 
   // --- dispatch helpers --------------------------------------------
   const pass = useCallback(() => {
@@ -511,7 +518,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
 
   const finishTargets = useCallback(
     (
-      t: Pick<Targeting, 'kind' | 'source' | 'abilityIndex' | 'xValue'>,
+      t: Pick<Targeting, 'kind' | 'source' | 'abilityIndex' | 'xValue' | 'sacrifice'>,
       targets: readonly TargetRef[],
     ) => {
       game.dispatch(
@@ -529,6 +536,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
               source: t.source,
               abilityIndex: t.abilityIndex,
               targets: [...targets],
+              ...(t.sacrifice !== undefined ? { sacrifice: t.sacrifice } : {}),
             },
       )
     },
@@ -560,6 +568,37 @@ function Table({ view, seat, opponents, game }: TableProps) {
       xValue: value,
     })
   }, [beginTargeting, pendingX])
+
+  const startAbility = useCallback(
+    (ab: AbilityAction, sacrifice?: ObjectId) => {
+      beginTargeting({
+        kind: 'activate',
+        source: ab.source,
+        abilityIndex: ab.abilityIndex,
+        label: ab.text || `${ab.cardName} ability`,
+        specs: ab.targetSpecs,
+        options: ab.targetOptions,
+        ...(sacrifice !== undefined ? { sacrifice } : {}),
+      })
+    },
+    [beginTargeting],
+  )
+
+  const clickAbility = useCallback(
+    (ab: AbilityAction) => {
+      if (ab.sacrifice) {
+        if (ab.sacrifice.choices.length === 0) return
+        if (ab.sacrifice.choices.length === 1) {
+          startAbility(ab, ab.sacrifice.choices[0])
+        } else {
+          setPendingSac(ab)
+        }
+        return
+      }
+      startAbility(ab)
+    },
+    [startAbility],
+  )
 
   const pickTarget = useCallback(
     (ref: TargetRef) => {
@@ -1086,6 +1125,28 @@ function Table({ view, seat, opponents, game }: TableProps) {
         </button>
       </div>
     )
+  } else if (mode === 'choose-sacrifice' && pendingSac?.sacrifice) {
+    controls = (
+      <div className="controls">
+        <span>{pendingSac.cardName} — sacrifice which creature?</span>
+        {pendingSac.sacrifice.choices.map((id) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => {
+              const ab = pendingSac
+              setPendingSac(null)
+              startAbility(ab, id)
+            }}
+          >
+            {game.nameOf(id)}
+          </button>
+        ))}
+        <button type="button" onClick={() => setPendingSac(null)}>
+          Cancel
+        </button>
+      </div>
+    )
   } else if (mode === 'choose-x' && pendingX) {
     controls = (
       <div className="controls">
@@ -1305,16 +1366,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
             <button
               key={ab.abilityIndex}
               type="button"
-              onClick={() =>
-                beginTargeting({
-                  kind: 'activate',
-                  source: ab.source,
-                  abilityIndex: ab.abilityIndex,
-                  label: ab.text || `${ab.cardName} ability`,
-                  specs: ab.targetSpecs,
-                  options: ab.targetOptions,
-                })
-              }
+              onClick={() => clickAbility(ab)}
             >
               {ab.text || `ability ${ab.abilityIndex}`}
             </button>
