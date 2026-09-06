@@ -312,6 +312,21 @@
   align-items: flex-start;
   gap: 8px;
 }
+/* your side: the command/library column spans your board AND your hand (and
+   whatever controls sit between them), not just the board — so it stretches
+   to match its sibling's full height instead of stopping at the board. */
+.own-area-with-sidezone {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+.own-area {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 .board {
   flex: 1;
   min-width: 0;
@@ -419,6 +434,14 @@
 .side-zone-empty {
   color: var(--muted);
   font-size: 12px;
+}
+/* an empty command zone slot — an outline, not a face-down card, since
+   there's nothing there at all (unlike the library, which always has one) */
+.card-slot-empty {
+  width: var(--card-w, 138px);
+  min-height: 190px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
 }
 /* face-down library placeholder — CSS-only, no image, so it can never 404 */
 .card-back {

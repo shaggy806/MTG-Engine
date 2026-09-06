@@ -704,7 +704,7 @@ function Table({ view, seat, opponent, game }: TableProps) {
                 return obj ? tileFor(obj, pid, [id]) : null
               })
             ) : (
-              <div className="side-zone-empty">empty</div>
+              <div className="card-slot-empty" title="empty command zone" />
             )}
           </div>
         </div>
@@ -931,67 +931,70 @@ function Table({ view, seat, opponent, game }: TableProps) {
           {renderBoard(opponent, true)}
           {renderSideZone(opponent)}
         </div>
-        <div className="board-with-sidezone">
-          {renderBoard(seat, false)}
+
+        <div className="own-area-with-sidezone">
+          <div className="own-area">
+            {renderBoard(seat, false)}
+
+            {selectedAbilities.length > 0 ? (
+              <div className="ability-menu">
+                <span>{game.nameOf(selectedSource as ObjectId)}:</span>
+                {selectedAbilities.map((ab) => (
+                  <button
+                    key={ab.abilityIndex}
+                    type="button"
+                    onClick={() =>
+                      beginTargeting({
+                        kind: 'activate',
+                        source: ab.source,
+                        abilityIndex: ab.abilityIndex,
+                        label: ab.text || `${ab.cardName} ability`,
+                        specs: ab.targetSpecs,
+                        options: ab.targetOptions,
+                      })
+                    }
+                  >
+                    {ab.text || `ability ${ab.abilityIndex}`}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+
+            {controls}
+
+            <div className="hand">
+              <h3>
+                {playerLabel(seat)}'s hand ({handIds.length})
+              </h3>
+              <div className="hand-cards">
+                {handIds.map((id) => {
+                  const obj = view.objects[id]
+                  if (!obj) return null
+                  let highlight = false
+                  let selected = false
+                  if (mode === 'discard') {
+                    highlight = discardAction?.from.includes(id) ?? false
+                    selected = discardPicks.includes(id)
+                  } else if (mode === 'priority') {
+                    highlight = landByCard.has(id) || castByCard.has(id)
+                  }
+                  return (
+                    <CardTile
+                      key={id}
+                      obj={obj}
+                      highlight={highlight}
+                      selected={selected}
+                      onClick={() => clickHandCard(id)}
+                    />
+                  )
+                })}
+                {handIds.length === 0 ? <span className="muted">empty</span> : null}
+              </div>
+            </div>
+          </div>
           {renderSideZone(seat)}
         </div>
       </main>
-
-      {selectedAbilities.length > 0 ? (
-        <div className="ability-menu">
-          <span>{game.nameOf(selectedSource as ObjectId)}:</span>
-          {selectedAbilities.map((ab) => (
-            <button
-              key={ab.abilityIndex}
-              type="button"
-              onClick={() =>
-                beginTargeting({
-                  kind: 'activate',
-                  source: ab.source,
-                  abilityIndex: ab.abilityIndex,
-                  label: ab.text || `${ab.cardName} ability`,
-                  specs: ab.targetSpecs,
-                  options: ab.targetOptions,
-                })
-              }
-            >
-              {ab.text || `ability ${ab.abilityIndex}`}
-            </button>
-          ))}
-        </div>
-      ) : null}
-
-      {controls}
-
-      <div className="hand">
-        <h3>
-          {playerLabel(seat)}'s hand ({handIds.length})
-        </h3>
-        <div className="hand-cards">
-          {handIds.map((id) => {
-            const obj = view.objects[id]
-            if (!obj) return null
-            let highlight = false
-            let selected = false
-            if (mode === 'discard') {
-              highlight = discardAction?.from.includes(id) ?? false
-              selected = discardPicks.includes(id)
-            } else if (mode === 'priority') {
-              highlight = landByCard.has(id) || castByCard.has(id)
-            }
-            return (
-              <CardTile
-                key={id}
-                obj={obj}
-                highlight={highlight}
-                selected={selected}
-                onClick={() => clickHandCard(id)}
-              />
-            )
-          })}
-          {handIds.length === 0 ? <span className="muted">empty</span> : null}
-        </div>
-      </div>
 
       <div className="pinned-bottom">
         <PlayerPanel
