@@ -45,6 +45,15 @@ export type EffectSpec =
   | { readonly kind: "untap"; readonly target: number }
   | { readonly kind: "destroy"; readonly target: number }
   | {
+      /** `targets[a]` and `targets[b]` each deal damage equal to their power
+       * to the other (rule 701.12). With `oneSided`, only `a` deals to `b`
+       * (Rabid Bite). */
+      readonly kind: "fight";
+      readonly a: number;
+      readonly b: number;
+      readonly oneSided?: boolean;
+    }
+  | {
       /** Return a target permanent to its owner's hand (rule 614-style bounce). */
       readonly kind: "return-to-hand";
       readonly target: number;
@@ -131,6 +140,8 @@ export interface EffectApi {
   destroyPermanent(target: TargetRef): void;
   returnToHand(target: TargetRef): void;
   exileObject(target: TargetRef): void;
+  /** `a` and `b` (both creatures) fight; with `oneSided` only `a` deals. */
+  fight(a: TargetRef, b: TargetRef, oneSided: boolean): void;
   /** `target` (a player) mills `amount` cards. */
   mill(target: TargetRef, amount: number): void;
   /** `target` (a player) discards `amount` cards. */
@@ -217,6 +228,12 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     case "destroy": {
       const target = ctx.targets[spec.target];
       if (target !== undefined) ctx.destroyPermanent(target);
+      return;
+    }
+    case "fight": {
+      const a = ctx.targets[spec.a];
+      const b = ctx.targets[spec.b];
+      if (a !== undefined && b !== undefined) ctx.fight(a, b, spec.oneSided === true);
       return;
     }
     case "return-to-hand": {

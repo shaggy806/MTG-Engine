@@ -92,6 +92,8 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${event.player} ${signed(event.delta)} life (now ${event.life})`
     case 'permanent-destroyed':
       return `${name(event.object)} destroyed — ${event.reason}`
+    case 'permanent-destroy-prevented':
+      return `${name(event.object)} not destroyed — ${event.reason}`
     case 'permanent-returned-to-hand':
       return `${name(event.object)} returns to ${event.owner}'s hand`
     case 'permanent-exiled':

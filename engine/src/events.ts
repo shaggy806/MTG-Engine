@@ -174,6 +174,11 @@ export type GameEvent =
       readonly player: PlayerId;
     })
   | (Base & {
+      readonly type: "permanent-destroy-prevented";
+      readonly object: ObjectId;
+      readonly reason: string;
+    })
+  | (Base & {
       readonly type: "cards-milled";
       readonly player: PlayerId;
       readonly objects: readonly ObjectId[];

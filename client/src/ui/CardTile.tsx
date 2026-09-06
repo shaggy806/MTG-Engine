@@ -36,6 +36,8 @@ const KEYWORD_LABEL: Record<string, string> = {
   deathtouch: 'Deathtouch',
   lifelink: 'Lifelink',
   menace: 'Menace',
+  indestructible: 'Indestructible',
+  hexproof: 'Hexproof',
 }
 
 /** Scryfall serves art crops for real card names straight from this URL. */

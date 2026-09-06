@@ -1,6 +1,7 @@
 /** Legality checks for spell / ability targets. */
 
 import type { CardRegistry } from "./cards.js";
+import { computeCharacteristics } from "./characteristics.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameState } from "./state.js";
 import type { TargetRef, TargetSpec } from "./target.js";
@@ -42,6 +43,19 @@ export function isLegalTarget(
   ref: TargetRef,
   forPlayer: PlayerId,
 ): boolean {
+  // Hexproof (rule 702.11): a permanent with hexproof can't be the target of
+  // spells or abilities an opponent of its controller controls.
+  if (ref.kind === "object") {
+    const object = state.objects[ref.object];
+    if (
+      object !== undefined &&
+      object.zone === "battlefield" &&
+      object.controller !== forPlayer &&
+      computeCharacteristics(state, registry, ref.object).keywords.has("hexproof")
+    ) {
+      return false;
+    }
+  }
   switch (spec) {
     case "player":
       return isLivingPlayer(state, ref);

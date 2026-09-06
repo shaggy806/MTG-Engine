@@ -44,6 +44,10 @@ const deckA = deck([
   ["Oracle of Mul Daya", 1],
   ["Mossback Dragon", 1],
   ["Naturalize", 2],
+  ["Prey Upon", 2],
+  ["Rabid Bite", 1],
+  ["Gladecover Scout", 2],
+  ["Darksteel Myr", 1],
 ]);
 const deckB = deck([
   ["Mountain", 6],

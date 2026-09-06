@@ -40,7 +40,9 @@ export type Keyword =
   | "trample"
   | "deathtouch"
   | "lifelink"
-  | "menace";
+  | "menace"
+  | "indestructible"
+  | "hexproof";
 
 /** Which objects a static ability applies its continuous effect to. */
 export type AffectSpec =

@@ -12,6 +12,7 @@ import _poolBoggartBrute from "./pool/boggart-brute.js";
 import _poolBonesplitter from "./pool/bonesplitter.js";
 import _poolBoomerang from "./pool/boomerang.js";
 import _poolCrawWurm from "./pool/craw-wurm.js";
+import _poolDarksteelMyr from "./pool/darksteel-myr.js";
 import _poolDisenchant from "./pool/disenchant.js";
 import _poolElvishVisionary from "./pool/elvish-visionary.js";
 import _poolExplorersInsight from "./pool/explorers-insight.js";
@@ -21,6 +22,7 @@ import _poolForest from "./pool/forest.js";
 import _poolFumeSpitter from "./pool/fume-spitter.js";
 import _poolGiantGrowth from "./pool/giant-growth.js";
 import _poolGiantSpider from "./pool/giant-spider.js";
+import _poolGladecoverScout from "./pool/gladecover-scout.js";
 import _poolGloriousAnthem from "./pool/glorious-anthem.js";
 import _poolGoblinChieftain from "./pool/goblin-chieftain.js";
 import _poolGoblinRaider from "./pool/goblin-raider.js";
@@ -41,7 +43,9 @@ import _poolNaturalize from "./pool/naturalize.js";
 import _poolOracleOfMulDaya from "./pool/oracle-of-mul-daya.js";
 import _poolPhyrexianArena from "./pool/phyrexian-arena.js";
 import _poolPlains from "./pool/plains.js";
+import _poolPreyUpon from "./pool/prey-upon.js";
 import _poolProdigalSorcerer from "./pool/prodigal-sorcerer.js";
+import _poolRabidBite from "./pool/rabid-bite.js";
 import _poolRagingGoblin from "./pool/raging-goblin.js";
 import _poolRaiseTheAlarm from "./pool/raise-the-alarm.js";
 import _poolRumblingBaloth from "./pool/rumbling-baloth.js";
@@ -72,6 +76,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolBonesplitter,
   _poolBoomerang,
   _poolCrawWurm,
+  _poolDarksteelMyr,
   _poolDisenchant,
   _poolElvishVisionary,
   _poolExplorersInsight,
@@ -81,6 +86,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolFumeSpitter,
   _poolGiantGrowth,
   _poolGiantSpider,
+  _poolGladecoverScout,
   _poolGloriousAnthem,
   _poolGoblinChieftain,
   _poolGoblinRaider,
@@ -101,7 +107,9 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolOracleOfMulDaya,
   _poolPhyrexianArena,
   _poolPlains,
+  _poolPreyUpon,
   _poolProdigalSorcerer,
+  _poolRabidBite,
   _poolRagingGoblin,
   _poolRaiseTheAlarm,
   _poolRumblingBaloth,

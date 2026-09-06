@@ -2420,6 +2420,7 @@ export class Game {
       destroyPermanent: (target) => this.destroyByEffect(target),
       returnToHand: (target) => this.returnToHandByEffect(target),
       exileObject: (target) => this.exileByEffect(target),
+      fight: (a, b, oneSided) => this.fightCreatures(a, b, oneSided),
       mill: (target, amount) => this.millByEffect(target, amount),
       discardCards: (target, amount) => this.discardByEffect(target, amount),
       modifyPt: (target, power, toughness, duration) =>
@@ -2596,6 +2597,14 @@ export class Game {
     if (target.kind !== "object") return;
     const object = this.state.objects[target.object];
     if (object === undefined || object.zone !== "battlefield") return;
+    if (this.objHasKeyword(target.object, "indestructible")) {
+      this.emit({
+        type: "permanent-destroy-prevented",
+        object: target.object,
+        reason: "indestructible",
+      });
+      return;
+    }
     this.moveObject(target.object, "graveyard");
     this.emit({
       type: "permanent-destroyed",
@@ -2622,6 +2631,24 @@ export class Game {
     if (object === undefined || object.zone !== "battlefield") return;
     this.moveObject(target.object, "exile");
     this.emit({ type: "permanent-exiled", object: target.object });
+  }
+
+  /** Two creatures fight (rule 701.12): each deals damage equal to its power to
+   * the other, unless `oneSided` (Rabid Bite — only `a` deals). Whichever is
+   * already gone deals/takes nothing. */
+  private fightCreatures(a: TargetRef, b: TargetRef, oneSided: boolean): void {
+    if (a.kind !== "object" || b.kind !== "object") return;
+    const liveCreature = (id: ObjectId): boolean => this.creatureDef(id) !== null;
+    const powerOf = (id: ObjectId): number =>
+      computeCharacteristics(this.state, this.registry, id).power;
+
+    const aLive = liveCreature(a.object);
+    const bLive = liveCreature(b.object);
+    const aPower = aLive ? powerOf(a.object) : 0;
+    const bPower = bLive ? powerOf(b.object) : 0;
+
+    if (aLive && bLive && aPower > 0) this.dealDamage(a.object, b, aPower);
+    if (!oneSided && aLive && bLive && bPower > 0) this.dealDamage(b.object, a, bPower);
   }
 
   private millByEffect(target: TargetRef, amount: number): void {
@@ -2746,13 +2773,17 @@ export class Game {
         const object = this.state.objects[id];
         const def = this.registry.get(object.cardName);
         if (!def.types.includes("creature")) continue;
-        const toughness = computeCharacteristics(this.state, this.registry, id).toughness;
+        const computed = computeCharacteristics(this.state, this.registry, id);
+        const toughness = computed.toughness;
+        const indestructible = computed.keywords.has("indestructible");
         let reason: string | null = null;
         if (toughness <= 0) {
+          // 0 toughness is a state-based *loss*, not destruction — indestructible
+          // does not save it (rule 704.5f vs 704.5g).
           reason = "toughness is 0 or less";
-        } else if (object.damageMarked >= toughness) {
+        } else if (!indestructible && object.damageMarked >= toughness) {
           reason = "lethal damage";
-        } else if (object.markedByDeathtouch && object.damageMarked > 0) {
+        } else if (!indestructible && object.markedByDeathtouch && object.damageMarked > 0) {
           reason = "deathtouch";
         }
         if (reason !== null) {
