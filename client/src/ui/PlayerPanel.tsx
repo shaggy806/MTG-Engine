@@ -12,9 +12,10 @@ export interface PlayerPanelProps {
   readonly online?: boolean | null
   /** This player's own cards currently in the (shared) exile zone. */
   readonly exileSize?: number
-  /** Opens a read-only viewer of this player's graveyard/exile, if provided. */
+  /** Opens a read-only viewer of this player's graveyard/exile/hand, if provided. */
   readonly onOpenGraveyard?: () => void
   readonly onOpenExile?: () => void
+  readonly onOpenHand?: () => void
   readonly targetable?: boolean
   readonly onTargetClick?: () => void
 }
@@ -36,6 +37,7 @@ export function PlayerPanel({
   exileSize = 0,
   onOpenGraveyard,
   onOpenExile,
+  onOpenHand,
   targetable = false,
   onTargetClick,
 }: PlayerPanelProps) {
@@ -71,7 +73,17 @@ export function PlayerPanel({
         <span className="pp-life">{info.life}</span>
       </div>
       <div className="pp-zones">
-        <span>hand {info.handSize}</span>
+        <button
+          type="button"
+          className="pp-zone-link"
+          disabled={!onOpenHand}
+          onClick={(e) => {
+            e.stopPropagation()
+            onOpenHand?.()
+          }}
+        >
+          hand {info.handSize}
+        </button>
         <span>library {info.librarySize}</span>
         <button
           type="button"

@@ -164,60 +164,20 @@
 }
 
 /* table */
-/* 5-column split: player areas fill 4/5 on the left, stack + history the last 1/5 */
-.layout {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  margin-top: 8px;
-}
+/* the stack and event log are popups/overlays now (see .stack-overlay and
+   the History modal, which reuses .zone-viewer-*), so the player column
+   spans the full width instead of sharing it with a permanent sidebar */
 .player-col {
-  flex: 4;
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin-top: 8px;
 }
 .table {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-.sidebar {
-  flex: 1;
-  min-width: 230px;
-  position: sticky;
-  top: calc(var(--top-banner-h) + 8px);
-  height: calc(100vh - var(--top-banner-h) - var(--bottom-banner-h) - 16px);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.sidebar .stack {
-  flex: 0 0 38%;
-  overflow-y: auto;
-}
-.sidebar .event-log {
-  flex: 1;
-  min-height: 0;
-  max-height: none;
-}
-
-@media (max-width: 900px) {
-  .layout {
-    flex-direction: column;
-  }
-  .sidebar {
-    position: static;
-    width: 100%;
-    height: auto;
-  }
-  .sidebar .stack {
-    flex: 0 0 auto;
-  }
-  .sidebar .event-log {
-    max-height: 260px;
-  }
 }
 
 .player-panel {
@@ -357,6 +317,40 @@
   flex-direction: column;
   gap: 8px;
 }
+
+/* 3-4 players: each seat (including your own) gets a quadrant instead of
+   opponents stacking vertically above your own row. A 3-player game just
+   leaves the 4th cell blank (see the fixed [oppA, oppB, you, oppC] cell
+   order in App.tsx) rather than switching to a different grid shape. */
+.quadrant-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 10px;
+}
+.quadrant-cell {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.quadrant-cell.self {
+  background: var(--accent-bg);
+  border-radius: 8px;
+  padding: 6px;
+}
+.quadrant-blank {
+  min-height: 50px;
+}
+/* your hand + ability menu + priority/attack/block controls, in their own
+   full-width strip below the quadrant grid (closer to how Arena keeps your
+   hand as a fixed row) rather than squeezed into your quadrant cell. */
+.hand-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .board {
   flex: 1;
   min-width: 0;
@@ -495,14 +489,12 @@
   color: rgba(255, 255, 255, 0.85);
 }
 
-.stack,
 .event-log {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 8px 10px;
 }
-.stack h3,
 .event-log h3 {
   font-size: 12px;
   text-transform: uppercase;
@@ -510,11 +502,32 @@
   color: var(--muted);
   margin-bottom: 4px;
 }
+/* a floating overlay (Arena-style: it only exists while something's on the
+   stack, not a permanent panel) pinned to the right-middle of the screen,
+   above board content but below modal overlays (zone viewers, history). */
+.stack-overlay {
+  position: fixed;
+  top: 50%;
+  right: 16px;
+  transform: translateY(-50%);
+  z-index: 20;
+  pointer-events: none;
+  /* a solid backdrop plate, not bare floating cards — reads as clearly
+     foreground no matter how wide the screen or how much board content is
+     behind it (quadrant boards can reach nearly edge-to-edge on a wide
+     display, unlike the 2-player layout this design was first tried on). */
+  padding: 16px 20px;
+  background: rgba(8, 9, 12, 0.82);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+}
 .stack-cards {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
 }
 .stack-entry {
   display: flex;
@@ -522,13 +535,23 @@
   align-items: center;
   gap: 2px;
 }
+/* the top of the stack — what a player facing a decision is responding to
+   — renders noticeably larger than a normal tile; everything beneath it
+   stays compact-sized (see Stack.tsx). */
+.stack-entry:first-child .card-tile {
+  transform: scale(1.45);
+  transform-origin: center;
+  margin: 14px 0;
+}
 .stack-entry-label {
   font-size: 11px;
   color: var(--muted);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 .stack-targets {
   color: var(--warn);
   font-size: 11px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 /* the stack is a read-only display, not an interactive board — full
    visibility regardless of the tile's own disabled/clickable state */

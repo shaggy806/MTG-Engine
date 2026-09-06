@@ -4,7 +4,11 @@ import { CardTile } from './CardTile.tsx'
 
 export interface ZoneViewerProps {
   readonly title: string
-  readonly cards: readonly VisibleObject[]
+  readonly ids: readonly ObjectId[]
+  /** Looks up each id's full face — `undefined` for one that's hidden from
+   * this viewer (e.g. an opponent's unrevealed hand card), which renders as
+   * a face-down placeholder instead of being silently dropped. */
+  readonly resolve: (id: ObjectId) => VisibleObject | undefined
   /** Read-only mode (graveyard/exile browsing): omit `selection` and pass this. */
   readonly onClose?: () => void
   /** Turns this into a forced "choose between min and max of these" decision
@@ -27,7 +31,7 @@ export interface ZoneViewerProps {
  * exile today), or selectable for a bounded "choose from these" decision
  * (library-look/graveyard-search effects), so both share one component.
  */
-export function ZoneViewer({ title, cards, onClose, selection }: ZoneViewerProps) {
+export function ZoneViewer({ title, ids, resolve, onClose, selection }: ZoneViewerProps) {
   const [picked, setPicked] = useState<readonly ObjectId[]>([])
 
   const toggle = (id: ObjectId) => {
@@ -52,7 +56,7 @@ export function ZoneViewer({ title, cards, onClose, selection }: ZoneViewerProps
       >
         <div className="zone-viewer-head">
           <h2>
-            {title} ({cards.length})
+            {title} ({ids.length})
           </h2>
           {selection ? (
             <span className="muted">
@@ -69,7 +73,11 @@ export function ZoneViewer({ title, cards, onClose, selection }: ZoneViewerProps
           )}
         </div>
         <div className="zone-viewer-cards">
-          {cards.map((obj) => {
+          {ids.map((id) => {
+            const obj = resolve(id)
+            if (!obj) {
+              return <div key={id} className="card-back" title="face-down card" />
+            }
             const isEligible = !selection || selection.eligible.includes(obj.id)
             const isPicked = picked.includes(obj.id)
             return (
@@ -83,7 +91,7 @@ export function ZoneViewer({ title, cards, onClose, selection }: ZoneViewerProps
               />
             )
           })}
-          {cards.length === 0 ? <span className="muted">empty</span> : null}
+          {ids.length === 0 ? <span className="muted">empty</span> : null}
         </div>
         {selection ? (
           <div className="zone-viewer-footer">

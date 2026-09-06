@@ -200,6 +200,7 @@ function SeatPickerScreen({ game }: { readonly game: NetworkGame }) {
 /** Renders once `useNetworkGame` has a claimed seat and a pushed view. */
 function GameScreen({ game }: { readonly game: NetworkGame }) {
   const { view, seat, opponents } = game
+  const [showHistory, setShowHistory] = useState(false)
   if (view === null || seat === null || opponents.length === 0) {
     return <CenteredScreen title="Loading…" />
   }
@@ -211,6 +212,9 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
       <header className="topbar">
         <h1>MTG Engine</h1>
         <div className="topbar-right">
+          <button type="button" onClick={() => setShowHistory(true)}>
+            History
+          </button>
           <span className="muted">room {game.roomId}</span>
           <button type="button" onClick={() => window.location.assign('/')}>
             Leave
@@ -224,13 +228,28 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
 
       <ErrorLine game={game} />
 
-      <div className="layout">
-        <Table key={game.revision} view={view} seat={seat} opponents={opponents} game={game} />
-        <aside className="sidebar">
-          <Stack view={view} />
-          <EventLog events={view.events} nameOf={game.nameOf} />
-        </aside>
-      </div>
+      <Table key={game.revision} view={view} seat={seat} opponents={opponents} game={game} />
+
+      {view.zones.stack.length > 0 ? <Stack view={view} /> : null}
+
+      {showHistory ? (
+        <div className="zone-viewer-overlay" onClick={() => setShowHistory(false)}>
+          <div
+            className="zone-viewer-box"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-label="History"
+          >
+            <div className="zone-viewer-head">
+              <h2>History</h2>
+              <button type="button" onClick={() => setShowHistory(false)}>
+                Close
+              </button>
+            </div>
+            <EventLog events={view.events} nameOf={game.nameOf} />
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -827,37 +846,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
     )
   }
 
-  /** The opponent's hand, face down — accurate in count and per-card
-   * identity (a stable id per slot), just not in what each one actually is.
-   * That per-card addressability is what a future single-card reveal effect
-   * (Gitaxian Probe-style) would flip to a real face, the same way the
-   * library's top card already can. */
-  const renderOpponentHand = (pid: PlayerId) => {
-    const ids = view.zones.hands[pid] ?? []
-    return (
-      <div className="hand opp-hand">
-        <h3>
-          {playerLabel(pid)}'s hand ({ids.length})
-        </h3>
-        <div className="hand-cards">
-          {ids.map((id) => {
-            const obj = view.objects[id]
-            // Normally undefined (hidden) — but render the real face if
-            // something has revealed this specific card.
-            return obj ? (
-              <CardTile key={id} obj={obj} />
-            ) : (
-              <div key={id} className="card-back" title="face-down card" />
-            )
-          })}
-          {ids.length === 0 ? <span className="muted">empty</span> : null}
-        </div>
-      </div>
-    )
-  }
-
   const handIds = view.zones.hands[seat] ?? []
-  const seatInfo = view.players[seat]
   const onlineOf = (pid: PlayerId): boolean | null =>
     game.seats.find((s) => s.player === pid)?.online ?? null
   // Exile is one shared zone (not per-player) — split it by each object's
@@ -1076,7 +1065,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
     ? (abilitiesBySource.get(selectedSource) ?? [])
     : []
 
-  const renderOpponentPanel = (pid: PlayerId) => (
+  const renderPlayerPanel = (pid: PlayerId) => (
     <PlayerPanel
       key={pid}
       info={view.players[pid]}
@@ -1089,120 +1078,160 @@ function Table({ view, seat, opponents, game }: TableProps) {
         openZone(`${playerLabel(pid)}'s graveyard`, view.zones.graveyards[pid] ?? [])
       }
       onOpenExile={() => openZone(`${playerLabel(pid)}'s exile`, exileOf(pid))}
+      onOpenHand={
+        pid === seat
+          ? undefined
+          : () => openZone(`${playerLabel(pid)}'s hand`, view.zones.hands[pid] ?? [])
+      }
       targetable={playerIsTargetable(pid)}
       onTargetClick={() => clickPlayerTarget(pid)}
     />
   )
 
+  /** The ability menu (for a selected permanent with 2+ activated
+   * abilities), the priority/attack/block/etc. controls, and your own hand
+   * — the interactive strip below your board, shared by both the classic
+   * 2-player layout (inline in `.player-area`) and the 3-4 player quadrant
+   * layout (its own full-width strip below the grid). */
+  const renderHandAndControls = () => (
+    <>
+      {selectedAbilities.length > 0 ? (
+        <div className="ability-menu">
+          <span>{game.nameOf(selectedSource as ObjectId)}:</span>
+          {selectedAbilities.map((ab) => (
+            <button
+              key={ab.abilityIndex}
+              type="button"
+              onClick={() =>
+                beginTargeting({
+                  kind: 'activate',
+                  source: ab.source,
+                  abilityIndex: ab.abilityIndex,
+                  label: ab.text || `${ab.cardName} ability`,
+                  specs: ab.targetSpecs,
+                  options: ab.targetOptions,
+                })
+              }
+            >
+              {ab.text || `ability ${ab.abilityIndex}`}
+            </button>
+          ))}
+        </div>
+      ) : null}
+
+      {controls}
+
+      <div className="hand">
+        <h3>
+          {playerLabel(seat)}'s hand ({handIds.length})
+        </h3>
+        <div className="hand-cards">
+          {handIds.map((id) => {
+            const obj = view.objects[id]
+            if (!obj) return null
+            let highlight = false
+            let selected = false
+            if (mode === 'discard') {
+              highlight = discardAction?.from.includes(id) ?? false
+              selected = discardPicks.includes(id)
+            } else if (mode === 'put-on-bottom') {
+              highlight = bottomAction?.from.includes(id) ?? false
+              selected = bottomPicks.includes(id)
+            } else if (mode === 'priority') {
+              highlight = landByCard.has(id) || castByCard.has(id)
+            }
+            return (
+              <CardTile
+                key={id}
+                obj={obj}
+                highlight={highlight}
+                selected={selected}
+                onClick={() => clickHandCard(id)}
+              />
+            )
+          })}
+          {handIds.length === 0 ? <span className="muted">empty</span> : null}
+        </div>
+      </div>
+    </>
+  )
+
+  // 1 opponent (a 2-player game): the classic vertical layout, unchanged.
+  // 2-3 opponents (3-4 players): a 2x2 quadrant grid instead, per-cell order
+  // [opponents[0], opponents[1], you, opponents[2]] — top-left, top-right,
+  // bottom-left (always you), bottom-right, with a 3-player game simply
+  // leaving the 4th cell blank.
+  const isQuadrant = opponents.length >= 2
+
   return (
     <div className="player-col">
-      <div className="pinned-top">
-        <PhaseTrack view={view} />
-        <TurnBanner view={view} />
-        {opponents.map(renderOpponentPanel)}
-      </div>
-
-      <main className="table">
-        {opponents.map((pid) => (
-          <div className="opponent-block" key={pid}>
-            {renderOpponentHand(pid)}
-            <div className="board-with-sidezone">
-              {renderBoard(pid, true)}
-              {renderSideZone(pid)}
-            </div>
+      {isQuadrant ? (
+        <>
+          <div className="pinned-top">
+            <PhaseTrack view={view} />
+            <TurnBanner view={view} />
           </div>
-        ))}
 
-        <div className="player-area-with-sidezone">
-          <div className="player-area">
-            {renderBoard(seat, false)}
-
-            {selectedAbilities.length > 0 ? (
-              <div className="ability-menu">
-                <span>{game.nameOf(selectedSource as ObjectId)}:</span>
-                {selectedAbilities.map((ab) => (
-                  <button
-                    key={ab.abilityIndex}
-                    type="button"
-                    onClick={() =>
-                      beginTargeting({
-                        kind: 'activate',
-                        source: ab.source,
-                        abilityIndex: ab.abilityIndex,
-                        label: ab.text || `${ab.cardName} ability`,
-                        specs: ab.targetSpecs,
-                        options: ab.targetOptions,
-                      })
-                    }
+          <main className="table quadrant-table">
+            <div className="quadrant-grid">
+              {[opponents[0], opponents[1], seat, opponents[2]].map((pid, index) => {
+                if (pid === undefined) {
+                  return <div className="quadrant-blank" key={`blank-${index}`} />
+                }
+                return (
+                  <div
+                    className={`quadrant-cell ${pid === seat ? 'self' : ''}`}
+                    key={pid}
                   >
-                    {ab.text || `ability ${ab.abilityIndex}`}
-                  </button>
-                ))}
-              </div>
-            ) : null}
-
-            {controls}
-
-            <div className="hand">
-              <h3>
-                {playerLabel(seat)}'s hand ({handIds.length})
-              </h3>
-              <div className="hand-cards">
-                {handIds.map((id) => {
-                  const obj = view.objects[id]
-                  if (!obj) return null
-                  let highlight = false
-                  let selected = false
-                  if (mode === 'discard') {
-                    highlight = discardAction?.from.includes(id) ?? false
-                    selected = discardPicks.includes(id)
-                  } else if (mode === 'put-on-bottom') {
-                    highlight = bottomAction?.from.includes(id) ?? false
-                    selected = bottomPicks.includes(id)
-                  } else if (mode === 'priority') {
-                    highlight = landByCard.has(id) || castByCard.has(id)
-                  }
-                  return (
-                    <CardTile
-                      key={id}
-                      obj={obj}
-                      highlight={highlight}
-                      selected={selected}
-                      onClick={() => clickHandCard(id)}
-                    />
-                  )
-                })}
-                {handIds.length === 0 ? <span className="muted">empty</span> : null}
-              </div>
+                    {renderPlayerPanel(pid)}
+                    <div className="board-with-sidezone">
+                      {renderBoard(pid, pid !== seat)}
+                      {renderSideZone(pid)}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
-          </div>
-          {renderSideZone(seat)}
-        </div>
-      </main>
+          </main>
 
-      <div className="pinned-bottom">
-        <PlayerPanel
-          info={seatInfo}
-          seatClass={seatClassOf(view.turnOrder, seat)}
-          isActive={view.activePlayer === seat}
-          hasPriority={view.priority.holder === seat}
-          online={onlineOf(seat)}
-          exileSize={exileOf(seat).length}
-          onOpenGraveyard={() =>
-            openZone(`${playerLabel(seat)}'s graveyard`, view.zones.graveyards[seat] ?? [])
-          }
-          onOpenExile={() => openZone(`${playerLabel(seat)}'s exile`, exileOf(seat))}
-          targetable={playerIsTargetable(seat)}
-          onTargetClick={() => clickPlayerTarget(seat)}
-        />
-      </div>
+          <div className="hand-strip">{renderHandAndControls()}</div>
+        </>
+      ) : (
+        <>
+          <div className="pinned-top">
+            <PhaseTrack view={view} />
+            <TurnBanner view={view} />
+            {opponents.map(renderPlayerPanel)}
+          </div>
+
+          <main className="table">
+            {opponents.map((pid) => (
+              <div className="opponent-block" key={pid}>
+                <div className="board-with-sidezone">
+                  {renderBoard(pid, true)}
+                  {renderSideZone(pid)}
+                </div>
+              </div>
+            ))}
+
+            <div className="player-area-with-sidezone">
+              <div className="player-area">
+                {renderBoard(seat, false)}
+                {renderHandAndControls()}
+              </div>
+              {renderSideZone(seat)}
+            </div>
+          </main>
+
+          <div className="pinned-bottom">{renderPlayerPanel(seat)}</div>
+        </>
+      )}
 
       {zoneView ? (
         <ZoneViewer
           title={zoneView.title}
-          cards={zoneView.ids
-            .map((id) => view.objects[id])
-            .filter((o): o is VisibleObject => o !== undefined)}
+          ids={zoneView.ids}
+          resolve={(id) => view.objects[id]}
           onClose={() => setZoneView(null)}
         />
       ) : null}
@@ -1210,9 +1239,8 @@ function Table({ view, seat, opponents, game }: TableProps) {
       {mode === 'choose-from-zone' && zoneChoiceAction ? (
         <ZoneViewer
           title="Choose from these cards"
-          cards={zoneChoiceAction.ids
-            .map((id) => view.objects[id])
-            .filter((o): o is VisibleObject => o !== undefined)}
+          ids={zoneChoiceAction.ids}
+          resolve={(id) => view.objects[id]}
           selection={{
             min: zoneChoiceAction.min,
             max: zoneChoiceAction.max,
