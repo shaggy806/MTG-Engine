@@ -67,6 +67,14 @@ export interface GameObject {
   isToken: boolean;
   /** The permanent this Aura/Equipment is attached to, or `null`. */
   attachedTo: ObjectId | null;
+  /**
+   * True for a player's designated commander (intrinsic, like `isToken` —
+   * never reset by `moveObject`). Lets it be cast from the command zone
+   * (rule 903.4, with tax) and redirects it back to the command zone
+   * instead of hand/library/graveyard/exile (rule 903.9a, "commander
+   * replacement" — applied automatically here, with no opt-out).
+   */
+  isCommander: boolean;
 }
 
 export interface PtModifier {
@@ -97,6 +105,13 @@ export interface PlayerState {
    * cleared by state-based actions (rule 704.5c).
    */
   attemptedDrawFromEmptyLibrary: boolean;
+  /** Times this player has cast their commander from the command zone —
+   * each one adds {2} generic to its cost the next time (rule 903.4). */
+  commanderCastCount: number;
+  /** Cumulative combat damage taken from each opponent's commander since the
+   * game began, keyed by that commander's controller. 21+ from the same
+   * commander is a loss (rule 903.10a / SBA 704.5m). */
+  commanderDamageTaken: Record<PlayerId, number>;
 }
 
 export interface GameRules {
@@ -211,6 +226,8 @@ export function createPlayerState(id: PlayerId, rules: GameRules): PlayerState {
     hasLost: false,
     lossReason: null,
     attemptedDrawFromEmptyLibrary: false,
+    commanderCastCount: 0,
+    commanderDamageTaken: {},
   };
 }
 

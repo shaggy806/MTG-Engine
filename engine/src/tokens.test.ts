@@ -58,6 +58,7 @@ const spawn = (
     timestamp: 0,
     isToken: false,
     attachedTo: null,
+    isCommander: false,
     counters: {},
     modifiers: [],
   };

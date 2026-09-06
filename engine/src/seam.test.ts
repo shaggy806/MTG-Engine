@@ -66,6 +66,7 @@ const spawn = (
     timestamp: game.state.timestampSeq,
     isToken: false,
     attachedTo: null,
+    isCommander: false,
   };
   game.state.zones.shared.battlefield.push(id);
   return id;
@@ -469,13 +470,16 @@ describe("declarations as actions", () => {
 });
 
 describe("viewFor", () => {
-  it("shows your own hand and only a count of the opponent's", () => {
+  it("shows your own hand's identity, and only the opponent's card ids (for face-down backs)", () => {
     const game = mkGame();
     game.advanceUntil(atFirstMain);
     const view = game.viewFor(A);
 
     expect(view.zones.hands[A]).toHaveLength(game.handOf(A).length);
-    expect(view.zones.hands[B]).toHaveLength(0);
+    // The ids ARE exposed (so a client can render one face-down back per
+    // card, ready for a future single-card reveal effect) — just not the
+    // identity behind them.
+    expect(view.zones.hands[B]).toEqual(game.handOf(B));
     expect(view.players[B].handSize).toBe(game.handOf(B).length);
     for (const id of game.handOf(B)) {
       expect(view.objects[id]).toBeUndefined();

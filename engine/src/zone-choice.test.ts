@@ -65,6 +65,7 @@ const spawnInto = (
     timestamp: game.state.timestampSeq,
     isToken: false,
     attachedTo: null,
+    isCommander: false,
   };
   if (zone === "battlefield") game.state.zones.shared.battlefield.push(id);
   else game.state.zones.perPlayer[owner].graveyard.push(id);

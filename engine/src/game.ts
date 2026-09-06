@@ -47,6 +47,9 @@ import type { PlayerView, ViewOptions } from "./view.js";
 export interface DeckList {
   readonly player: PlayerId;
   readonly cards: readonly string[];
+  /** Name of a card to start in the command zone instead of the library
+   * (rule 903.4). Not one of `cards` — an extra card on top of the deck. */
+  readonly commander?: string;
 }
 
 export interface GameConfig {
@@ -69,6 +72,8 @@ export interface SnapshotEnv {
 
 const ADVANCE_BUDGET = 200_000;
 const GENERIC_SPEND_ORDER = ["C", "W", "U", "B", "R", "G"] as const;
+/** Combat damage from the same commander at or above this total is a loss (rule 903.10a). */
+const COMMANDER_DAMAGE_THRESHOLD = 21;
 
 export class Game {
   readonly state: GameState;
@@ -368,7 +373,10 @@ export class Game {
     if (this.state.priority.holder !== player) return [];
     const out: LegalAction[] = [{ kind: "pass-priority" }];
 
-    for (const card of this.state.zones.perPlayer[player].hand) {
+    const ownCommanders = this.state.zones.shared.command.filter((id) =>
+      this.isCastableCommander(player, id),
+    );
+    for (const card of [...this.state.zones.perPlayer[player].hand, ...ownCommanders]) {
       const cardName = this.state.objects[card].cardName;
       const def = this.registry.get(cardName);
       if (def.types.includes("land")) {
@@ -486,7 +494,7 @@ export class Game {
   // --- setup ----------------------------------------------------------
 
   private setup(decks: readonly DeckList[], shuffleLibrary: boolean): void {
-    for (const { player, cards } of decks) {
+    for (const { player, cards, commander } of decks) {
       this.state.players[player] = createPlayerState(player, this.state.rules);
       this.state.zones.perPlayer[player] = {
         library: [],
@@ -523,12 +531,46 @@ export class Game {
           timestamp: 0,
           isToken: false,
           attachedTo: null,
+          isCommander: false,
         };
         ids.push(id);
       }
       this.state.zones.perPlayer[player].library = shuffleLibrary
         ? shuffle(ids, this.rng)
         : ids;
+
+      if (commander !== undefined) {
+        this.registry.get(commander); // validate up front
+        const id = this.mintObjectId();
+        this.state.objects[id] = {
+          id,
+          cardName: commander,
+          owner: player,
+          controller: player,
+          zone: "command",
+          tapped: false,
+          damageMarked: 0,
+          markedByDeathtouch: false,
+          enteredBattlefieldOnTurn: null,
+          summoningSick: false,
+          targets: null,
+          attacking: null,
+          blocking: null,
+          blockedBy: [],
+          blocked: false,
+          kind: "card",
+          abilityKind: null,
+          sourceObjectId: null,
+          abilityIndex: null,
+          counters: {},
+          modifiers: [],
+          timestamp: 0,
+          isToken: false,
+          attachedTo: null,
+          isCommander: true,
+        };
+        this.state.zones.shared.command.push(id);
+      }
     }
     this.state.rngState = this.rng.seed;
 
@@ -1215,6 +1257,11 @@ export class Game {
     // All combat damage in a pass is dealt simultaneously.
     for (const { source, target, amount } of assignments) {
       this.dealDamage(source, target, amount);
+      if (target.kind === "player" && this.state.objects[source].isCommander) {
+        const controller = this.state.objects[source].controller;
+        const taken = this.state.players[target.player].commanderDamageTaken;
+        taken[controller] = (taken[controller] ?? 0) + amount;
+      }
     }
   }
 
@@ -1292,10 +1339,38 @@ export class Game {
    * Why `player` cannot cast `cardId` at all right now — ignoring which targets
    * they would pick, but requiring that every target slot has a legal option.
    */
+  /** Is `cardId` `player`'s own commander, currently sitting in the command
+   * zone (and so castable from there, rule 903.4)? */
+  private isCastableCommander(player: PlayerId, cardId: ObjectId): boolean {
+    const object = this.state.objects[cardId];
+    return (
+      object.isCommander &&
+      object.owner === player &&
+      this.state.zones.shared.command.includes(cardId)
+    );
+  }
+
+  /** {2} more each previous time this player's commander was cast from the
+   * command zone this game (rule 903.4, "commander tax"). */
+  private commanderTax(player: PlayerId): number {
+    return 2 * this.state.players[player].commanderCastCount;
+  }
+
+  /** `def.manaCost`, plus the commander tax if `cardId` is being cast from
+   * the command zone. */
+  private castingCostOf(player: PlayerId, cardId: ObjectId, def: CardDefinition): ManaCost {
+    const base = parseManaCost(def.manaCost);
+    if (!this.isCastableCommander(player, cardId)) return base;
+    return { ...base, generic: base.generic + this.commanderTax(player) };
+  }
+
   private whyCannotCastSpell(player: PlayerId, cardId: ObjectId): string | null {
     const blocked = this.whyCannotAct(player);
     if (blocked !== null) return blocked;
-    if (!this.state.zones.perPlayer[player].hand.includes(cardId)) {
+    if (
+      !this.state.zones.perPlayer[player].hand.includes(cardId) &&
+      !this.isCastableCommander(player, cardId)
+    ) {
       return `${player} does not have that card in hand`;
     }
     const def = this.registry.get(this.state.objects[cardId].cardName);
@@ -1309,7 +1384,7 @@ export class Game {
         return `${def.name} has no legal ${spec} target`;
       }
     }
-    if (this.planManaPayment(player, parseManaCost(def.manaCost)) === null) {
+    if (this.planManaPayment(player, this.castingCostOf(player, cardId, def)) === null) {
       return `${player} cannot pay the cost of ${def.name}`;
     }
     return null;
@@ -1337,7 +1412,8 @@ export class Game {
       }
     });
 
-    const cost = parseManaCost(def.manaCost);
+    const castingFromCommand = this.isCastableCommander(player, cardId);
+    const cost = this.castingCostOf(player, cardId, def);
     const plan = this.planManaPayment(player, cost);
     if (plan === null) {
       throw new Error(`${player} cannot pay the cost of ${def.name}`);
@@ -1348,6 +1424,7 @@ export class Game {
     object.targets = targets.length > 0 ? [...targets] : null;
     for (const sourceId of plan) this.tapManaSource(sourceId);
     this.spendFromPool(player, cost);
+    if (castingFromCommand) this.state.players[player].commanderCastCount += 1;
 
     this.emit({
       type: "spell-cast",
@@ -1500,6 +1577,7 @@ export class Game {
       timestamp: 0,
       isToken: false,
       attachedTo: null,
+      isCommander: false,
     };
     this.state.zones.shared.stack.push(abilityId);
     return abilityId;
@@ -2075,6 +2153,7 @@ export class Game {
         timestamp: this.state.timestampSeq,
         isToken: true,
         attachedTo: null,
+        isCommander: false,
       };
       this.state.zones.shared.battlefield.push(id);
       this.emit({ type: "permanent-entered-battlefield", object: id });
@@ -2236,6 +2315,13 @@ export class Game {
           reason = "life total is 0 or less";
         } else if (playerState.attemptedDrawFromEmptyLibrary) {
           reason = "attempted to draw from an empty library";
+        } else {
+          const lethal = Object.entries(playerState.commanderDamageTaken).find(
+            ([, amount]) => amount >= COMMANDER_DAMAGE_THRESHOLD,
+          );
+          if (lethal !== undefined) {
+            reason = `took ${COMMANDER_DAMAGE_THRESHOLD}+ combat damage from ${lethal[0]}'s commander`;
+          }
         }
         if (reason !== null) {
           playerState.hasLost = true;
@@ -2332,6 +2418,15 @@ export class Game {
 
   private moveObject(id: ObjectId, to: ZoneType): void {
     const object = this.state.objects[id];
+    // Commander replacement (rule 903.9a): a commander headed anywhere
+    // hidden/graveyard-ish goes to the command zone instead — applied
+    // automatically here, with no owner opt-out modeled.
+    if (
+      object.isCommander &&
+      (to === "graveyard" || to === "exile" || to === "hand" || to === "library")
+    ) {
+      to = "command";
+    }
     const from = this.zoneList(object.zone, object.owner);
     const index = from.indexOf(id);
     if (index >= 0) from.splice(index, 1);

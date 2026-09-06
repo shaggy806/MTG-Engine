@@ -690,6 +690,48 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
       },
     ],
   }),
+  define({
+    name: "Ureni of the Unwritten",
+    manaCost: "{4}{G}{G}",
+    colors: ["G"],
+    supertypes: ["legendary"],
+    types: ["creature"],
+    subtypes: ["Elf", "Shaman"],
+    power: 5,
+    toughness: 5,
+    text:
+      "When Ureni of the Unwritten enters the battlefield, look at the top 8 cards of your library. You may put one of them onto the battlefield. Put the rest on the bottom of your library in a random order.",
+    triggered: [
+      {
+        trigger: { on: "enters-battlefield", who: "self" },
+        targets: [],
+        effect: {
+          kind: "look-and-choose",
+          zone: "library",
+          count: 8,
+          min: 0,
+          max: 1,
+          destination: "battlefield",
+          leftover: "bottom-random",
+        },
+        resolve: null,
+        text:
+          "When Ureni of the Unwritten enters the battlefield, look at the top 8 cards of your library. You may put one of them onto the battlefield. Put the rest on the bottom of your library in a random order.",
+      },
+    ],
+  }),
+  define({
+    name: "Ashmark, Mardu Vanguard",
+    manaCost: "{2}{R}{W}{B}",
+    colors: ["R", "W", "B"],
+    supertypes: ["legendary"],
+    types: ["creature"],
+    subtypes: ["Human", "Warrior"],
+    power: 4,
+    toughness: 4,
+    keywords: ["haste", "menace"],
+    text: "Haste, menace",
+  }),
 ];
 
 export class CardRegistry {

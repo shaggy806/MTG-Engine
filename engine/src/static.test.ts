@@ -66,6 +66,7 @@ const spawn = (
     timestamp: game.state.timestampSeq,
     isToken: false,
     attachedTo: null,
+    isCommander: false,
   };
   game.state.zones.shared.battlefield.push(id);
   return id;

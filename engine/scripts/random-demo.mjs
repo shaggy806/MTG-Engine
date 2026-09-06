@@ -72,8 +72,8 @@ for (let seed = 1; seed <= games; seed += 1) {
       [B]: new RandomController(B, pick),
     },
     decks: [
-      { player: A, cards: deckA },
-      { player: B, cards: deckB },
+      { player: A, cards: deckA, commander: "Ureni of the Unwritten" },
+      { player: B, cards: deckB, commander: "Ashmark, Mardu Vanguard" },
     ],
   });
 

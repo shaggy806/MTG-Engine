@@ -13,6 +13,11 @@ export const BOB: PlayerId = asPlayerId("bob");
 const list = (entries: readonly (readonly [string, number])[]): string[] =>
   entries.flatMap(([name, count]) => Array<string>(count).fill(name));
 
+export const COMMANDERS: { readonly alice: string; readonly bob: string } = {
+  alice: "Ureni of the Unwritten",
+  bob: "Ashmark, Mardu Vanguard",
+};
+
 export const DECKS: {
   readonly alice: readonly string[];
   readonly bob: readonly string[];

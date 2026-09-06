@@ -1,10 +1,13 @@
 /**
  * A redacted, self-contained snapshot of the game from one player's seat.
  *
- * Hidden information stays hidden: you see your own hand, but only a count of
- * the opponent's, and library contents are never exposed. Battlefield and stack
- * objects carry their **computed** characteristics, so a client never needs the
- * card registry or the layer system to render a board.
+ * Hidden information stays hidden: you see your own hand in full, an
+ * opponent's hand only as ids (so a client can render face-down cards —
+ * accurate in count and slot, but not identity), and library contents are
+ * never exposed except where something specific reveals them (the top card,
+ * or a look-and-choose effect's candidates). Battlefield and stack objects
+ * carry their **computed** characteristics, so a client never needs the card
+ * registry or the layer system to render a board.
  */
 
 import type { CardRegistry, CardType, Keyword } from "./cards.js";
@@ -34,6 +37,8 @@ export interface PublicPlayerInfo {
   readonly maxHandSize: number;
   readonly hasLost: boolean;
   readonly lossReason: string | null;
+  /** Combat damage taken from each opponent's commander so far this game. */
+  readonly commanderDamageTaken: Readonly<Record<PlayerId, number>>;
 }
 
 export interface VisibleObject {
@@ -66,6 +71,8 @@ export interface VisibleObject {
   readonly isToken: boolean;
   /** The permanent this Aura/Equipment is attached to, or `null`. */
   readonly attachedTo: ObjectId | null;
+  /** Is this its owner's designated commander (rule 903)? */
+  readonly isCommander: boolean;
 }
 
 export interface PlayerView {
@@ -84,7 +91,9 @@ export interface PlayerView {
     /** Single shared zones — each object's `owner` says whose card it is. */
     readonly exile: readonly ObjectId[];
     readonly command: readonly ObjectId[];
-    /** Only the viewer's hand is populated unless `revealAll` was set. */
+    /** Every hand's ids are here regardless of whose it is (so an opponent's
+     * hand can render as N face-down cards) — but `objects` below only
+     * carries the identity of your own hand's cards, unless `revealAll`. */
     readonly hands: Readonly<Record<PlayerId, readonly ObjectId[]>>;
     readonly graveyards: Readonly<Record<PlayerId, readonly ObjectId[]>>;
   };
@@ -136,6 +145,7 @@ function visible(
     targets: object.targets === null ? null : [...object.targets],
     isToken: object.isToken,
     attachedTo: object.attachedTo,
+    isCommander: object.isCommander,
   };
 }
 
@@ -179,6 +189,7 @@ export function viewFor(
       maxHandSize: playerState.maxHandSize,
       hasLost: playerState.hasLost,
       lossReason: playerState.lossReason,
+      commanderDamageTaken: { ...playerState.commanderDamageTaken },
     };
     graveyards[player] = [...zones.graveyard];
     visibleIds.push(...zones.graveyard);
@@ -191,11 +202,14 @@ export function viewFor(
     revealedLibraryTop[player] = topCard;
     if (topCard !== null) visibleIds.push(topCard);
 
+    // The *ids* are public — how many cards, and which slot is which — so a
+    // client can render a face-down back per card (and later swap one to its
+    // real face if something reveals it, e.g. Gitaxian Probe). Only the
+    // *identity* (the object's entry in `objects` below) stays hidden unless
+    // it's your own hand, `revealAll`, or the card was actually revealed.
+    hands[player] = [...zones.hand];
     if (revealAll || player === viewer) {
-      hands[player] = [...zones.hand];
       visibleIds.push(...zones.hand);
-    } else {
-      hands[player] = [];
     }
   }
 
