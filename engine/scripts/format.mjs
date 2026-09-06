@@ -85,6 +85,14 @@ export const makeFormatter = (game) => {
         return `${e.player}: ${e.reason}`;
       case "game-ended":
         return e.winner ? `${e.winner} wins — ${e.reason}` : `draw — ${e.reason}`;
+      case "mulligan-taken":
+        return `${e.player} mulligans (#${e.count})`;
+      case "hand-kept":
+        return e.mulligans > 0
+          ? `${e.player} keeps, after ${e.mulligans} mulligan(s)`
+          : `${e.player} keeps their opening hand`;
+      case "cards-put-on-bottom":
+        return `${e.player} puts ${e.objects.map(name).join(", ")} on the bottom of their library`;
       default:
         return JSON.stringify(e);
     }

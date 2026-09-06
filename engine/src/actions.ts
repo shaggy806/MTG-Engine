@@ -63,6 +63,20 @@ export type Action =
       readonly type: "choose-from-zone";
       readonly player: PlayerId;
       readonly chosen: readonly ObjectId[];
+    }
+  | {
+      /** Answers a pending mulligan decision: keep the current hand, or
+       * shuffle it back and draw a fresh one (the London mulligan). */
+      readonly type: "mulligan";
+      readonly player: PlayerId;
+      readonly keep: boolean;
+    }
+  | {
+      /** Answers a pending "put N cards on the bottom of your library"
+       * decision after keeping a mulliganed hand. */
+      readonly type: "put-on-bottom";
+      readonly player: PlayerId;
+      readonly cards: readonly ObjectId[];
     };
 
 export type ActionType = Action["type"];
@@ -130,4 +144,14 @@ export type LegalAction =
       readonly eligible: readonly ObjectId[];
       readonly min: number;
       readonly max: number;
+    }
+  | {
+      readonly kind: "mulligan";
+      /** Mulligans already taken; this decision would be number `count + 1`. */
+      readonly count: number;
+    }
+  | {
+      readonly kind: "put-on-bottom";
+      readonly count: number;
+      readonly from: readonly ObjectId[];
     };

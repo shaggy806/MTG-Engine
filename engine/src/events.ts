@@ -166,6 +166,23 @@ export type GameEvent =
       readonly type: "game-ended";
       readonly winner: PlayerId | null;
       readonly reason: string;
+    })
+  | (Base & {
+      readonly type: "mulligan-taken";
+      readonly player: PlayerId;
+      /** Total mulligans this player has now taken. */
+      readonly count: number;
+    })
+  | (Base & {
+      readonly type: "hand-kept";
+      readonly player: PlayerId;
+      /** Mulligans taken before keeping this hand (0 for the opening hand). */
+      readonly mulligans: number;
+    })
+  | (Base & {
+      readonly type: "cards-put-on-bottom";
+      readonly player: PlayerId;
+      readonly objects: readonly ObjectId[];
     });
 
 export type GameEventType = GameEvent["type"];

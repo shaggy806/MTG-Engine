@@ -92,8 +92,30 @@ describe("room server (end to end over WebSocket)", () => {
     }
     expect(aliceRebroadcast.seats.every((s) => s.claimed)).toBe(true);
     expect(bobState.seat).toBe(BOB);
+    // Real rooms turn on mulligans — both players keep their opening hand
+    // before turn 1's priority even exists.
+    expect(bobState.view.awaiting).toEqual({ kind: "mulligan", player: ALICE, count: 0 });
 
-    const holder = bobState.view.priority.holder;
+    aliceWs.send(
+      JSON.stringify({
+        type: "dispatch",
+        roomId,
+        action: { type: "mulligan", player: ALICE, keep: true },
+      }),
+    );
+    await Promise.all([nextMessage(aliceWs), nextMessage(bobWs)]);
+
+    bobWs.send(
+      JSON.stringify({
+        type: "dispatch",
+        roomId,
+        action: { type: "mulligan", player: BOB, keep: true },
+      }),
+    );
+    const [, bobAfterKeep] = await Promise.all([nextMessage(aliceWs), nextMessage(bobWs)]);
+    if (bobAfterKeep.type !== "state") throw new Error("unreachable");
+
+    const holder = bobAfterKeep.view.priority.holder;
     expect(holder).not.toBeNull();
     const holderWs = holder === ALICE ? aliceWs : bobWs;
     const otherWs = holder === ALICE ? bobWs : aliceWs;

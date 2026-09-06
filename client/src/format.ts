@@ -97,6 +97,14 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return event.winner
         ? `${event.winner} wins — ${event.reason}`
         : `draw — ${event.reason}`
+    case 'mulligan-taken':
+      return `${event.player} mulligans (#${event.count})`
+    case 'hand-kept':
+      return event.mulligans > 0
+        ? `${event.player} keeps, after ${event.mulligans} mulligan(s)`
+        : `${event.player} keeps their opening hand`
+    case 'cards-put-on-bottom':
+      return `${event.player} puts ${event.objects.map(name).join(', ')} on the bottom of their library`
     default:
       return JSON.stringify(event)
   }

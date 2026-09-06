@@ -186,6 +186,19 @@ export type AwaitingDecision =
        * the library, or left exactly where it already was (nothing was ever
        * moved just to look at it — the graveyard-search case). */
       readonly leftover: "bottom-random" | "stay";
+    }
+  | {
+      readonly kind: "mulligan";
+      readonly player: PlayerId;
+      /** Mulligans this player has already taken (0 for their first hand). */
+      readonly count: number;
+    }
+  | {
+      readonly kind: "mulligan-bottom";
+      readonly player: PlayerId;
+      /** Cards this player must put on the bottom of their library, equal
+       * to the number of mulligans they took (the London mulligan). */
+      readonly count: number;
     };
 
 export interface GameState {

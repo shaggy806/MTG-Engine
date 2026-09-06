@@ -68,6 +68,19 @@ export interface PlayerController {
     min: number,
     max: number,
   ): readonly ObjectId[];
+  /**
+   * Whether to take another mulligan (shuffle the current hand back into the
+   * library and draw a fresh one) given `count` already taken this game.
+   */
+  mulligan(view: ControllerView, count: number): boolean;
+  /**
+   * Choose which `count` cards from `hand` go to the bottom of the library
+   * after keeping a mulliganed hand (the London mulligan).
+   */
+  chooseBottomOfLibrary(
+    hand: readonly GameObject[],
+    count: number,
+  ): readonly ObjectId[];
 }
 
 const passFor = (player: PlayerId): Action => ({
@@ -118,9 +131,23 @@ function answerAwaited(
       chosen: controller.chooseFromZone(view, awaiting.eligible, awaiting.min, awaiting.max),
     };
   }
+  if (awaiting.kind === "mulligan") {
+    return {
+      type: "mulligan",
+      player,
+      keep: !controller.mulligan(view, awaiting.count),
+    };
+  }
   const hand = view.state.zones.perPlayer[player].hand.map(
     (id) => view.state.objects[id],
   );
+  if (awaiting.kind === "mulligan-bottom") {
+    return {
+      type: "put-on-bottom",
+      player,
+      cards: controller.chooseBottomOfLibrary(hand, awaiting.count),
+    };
+  }
   return {
     type: "discard",
     player,
@@ -180,6 +207,17 @@ export class AutomaticController implements PlayerController {
   ): readonly ObjectId[] {
     return eligible.slice(0, min);
   }
+
+  mulligan(_view: ControllerView, _count: number): boolean {
+    return false;
+  }
+
+  chooseBottomOfLibrary(
+    hand: readonly GameObject[],
+    count: number,
+  ): readonly ObjectId[] {
+    return discardFromFront(hand, count);
+  }
 }
 
 /** A queued action, optionally gated on a condition being true. */
@@ -212,6 +250,11 @@ type ZoneChooser = (
   min: number,
   max: number,
 ) => readonly ObjectId[];
+type MulliganChooser = (view: ControllerView, count: number) => boolean;
+type BottomChooser = (
+  hand: readonly GameObject[],
+  count: number,
+) => readonly ObjectId[];
 
 /**
  * Plays a fixed queue of priority actions (each firing when its `when` guard is
@@ -228,6 +271,8 @@ export class ScriptedController implements PlayerController {
   chooseTargetsFn: TargetChooser = (_view, _source, _specs, legalOptions) =>
     firstOfEach(legalOptions);
   chooseFromZoneFn: ZoneChooser = (_view, eligible, min, _max) => eligible.slice(0, min);
+  mulliganFn: MulliganChooser = () => false;
+  chooseBottomOfLibraryFn: BottomChooser = (hand, count) => discardFromFront(hand, count);
 
   constructor(playerId: PlayerId, script: readonly ScriptEntry[] = []) {
     this.playerId = playerId;
@@ -293,6 +338,17 @@ export class ScriptedController implements PlayerController {
     max: number,
   ): readonly ObjectId[] {
     return this.chooseFromZoneFn(view, eligible, min, max);
+  }
+
+  mulligan(view: ControllerView, count: number): boolean {
+    return this.mulliganFn(view, count);
+  }
+
+  chooseBottomOfLibrary(
+    hand: readonly GameObject[],
+    count: number,
+  ): readonly ObjectId[] {
+    return this.chooseBottomOfLibraryFn(hand, count);
   }
 }
 
@@ -396,6 +452,19 @@ export class RandomController extends AutomaticController {
           chosen.push(pool.splice(this.pickIndex(pool.length), 1)[0]);
         }
         return { type: "choose-from-zone", player, chosen };
+      }
+      case "mulligan": {
+        // Capped so a fuzz game can't mulligan forever.
+        const takeMulligan = legal.count < 4 && this.random() < 0.2;
+        return { type: "mulligan", player, keep: !takeMulligan };
+      }
+      case "put-on-bottom": {
+        const pool = [...legal.from];
+        const cards: ObjectId[] = [];
+        for (let i = 0; i < legal.count && pool.length > 0; i += 1) {
+          cards.push(pool.splice(this.pickIndex(pool.length), 1)[0]);
+        }
+        return { type: "put-on-bottom", player, cards };
       }
       default:
         return passFor(player);

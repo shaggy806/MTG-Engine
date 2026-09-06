@@ -47,6 +47,8 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
         case "create-room": {
           const room = manager.create({
             seed: message.seed,
+            mulligans: true,
+            rules: { startingLife: 40 },
             decks: [
               { player: ALICE, cards: [...DECKS.alice], commander: COMMANDERS.alice },
               { player: BOB, cards: [...DECKS.bob], commander: COMMANDERS.bob },

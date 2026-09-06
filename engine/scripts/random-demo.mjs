@@ -68,6 +68,7 @@ for (let seed = 1; seed <= games; seed += 1) {
   const pick = () => rng.next();
   const game = Game.create({
     seed,
+    mulligans: true,
     controllers: {
       [A]: new RandomController(A, pick),
       [B]: new RandomController(B, pick),

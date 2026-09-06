@@ -30,6 +30,8 @@ type BlockAction = Extract<LegalAction, { kind: 'declare-blockers' }>
 type OrderAction = Extract<LegalAction, { kind: 'order-blockers' }>
 type DiscardAction = Extract<LegalAction, { kind: 'discard' }>
 type ZoneChoiceAction = Extract<LegalAction, { kind: 'choose-from-zone' }>
+type MulliganAction = Extract<LegalAction, { kind: 'mulligan' }>
+type BottomAction = Extract<LegalAction, { kind: 'put-on-bottom' }>
 
 interface Targeting {
   readonly kind: 'cast' | 'activate'
@@ -59,6 +61,8 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
   discard: 'discard',
   'order-blockers': 'order blockers',
   'choose-from-zone': 'look at cards',
+  mulligan: 'decide on a mulligan',
+  'mulligan-bottom': 'put cards on the bottom of their library',
 }
 
 export default function App() {
@@ -239,6 +243,7 @@ function Table({ view, seat, opponent, game }: TableProps) {
   const [blockFocus, setBlockFocus] = useState<ObjectId | null>(null)
   const [orderPicks, setOrderPicks] = useState<readonly ObjectId[]>([])
   const [discardPicks, setDiscardPicks] = useState<readonly ObjectId[]>([])
+  const [bottomPicks, setBottomPicks] = useState<readonly ObjectId[]>([])
   const [zoneView, setZoneView] = useState<{
     readonly title: string
     readonly ids: readonly ObjectId[]
@@ -281,6 +286,12 @@ function Table({ view, seat, opponent, game }: TableProps) {
   const zoneChoiceAction = actions.find(
     (a): a is ZoneChoiceAction => a.kind === 'choose-from-zone',
   )
+  const mulliganAction = actions.find(
+    (a): a is MulliganAction => a.kind === 'mulligan',
+  )
+  const bottomAction = actions.find(
+    (a): a is BottomAction => a.kind === 'put-on-bottom',
+  )
   const canPass = actions.some((a) => a.kind === 'pass-priority')
   // Only the active player may skip the rest of their own turn — a defender
   // holding priority to respond during it shouldn't get this button.
@@ -292,20 +303,26 @@ function Table({ view, seat, opponent, game }: TableProps) {
     | 'attackers'
     | 'blockers'
     | 'choose-from-zone'
+    | 'mulligan'
+    | 'put-on-bottom'
     | 'targeting'
-    | 'priority' = discardAction
-    ? 'discard'
-    : orderAction
-      ? 'order-blockers'
-      : attackAction
-        ? 'attackers'
-        : blockAction
-          ? 'blockers'
-          : zoneChoiceAction
-            ? 'choose-from-zone'
-            : targeting
-              ? 'targeting'
-              : 'priority'
+    | 'priority' = mulliganAction
+    ? 'mulligan'
+    : bottomAction
+      ? 'put-on-bottom'
+      : discardAction
+        ? 'discard'
+        : orderAction
+          ? 'order-blockers'
+          : attackAction
+            ? 'attackers'
+            : blockAction
+              ? 'blockers'
+              : zoneChoiceAction
+                ? 'choose-from-zone'
+                : targeting
+                  ? 'targeting'
+                  : 'priority'
 
   // --- dispatch helpers --------------------------------------------
   const pass = useCallback(() => {
@@ -367,6 +384,15 @@ function Table({ view, seat, opponent, game }: TableProps) {
         })
         return
       }
+      if (mode === 'put-on-bottom') {
+        if (!bottomAction) return
+        setBottomPicks((cur) => {
+          if (cur.includes(id)) return cur.filter((x) => x !== id)
+          if (cur.length >= bottomAction.count) return cur
+          return [...cur, id]
+        })
+        return
+      }
       if (mode !== 'priority') return
       const land = landByCard.get(id)
       if (land?.kind === 'play-land') {
@@ -385,7 +411,7 @@ function Table({ view, seat, opponent, game }: TableProps) {
         })
       }
     },
-    [beginTargeting, castByCard, discardAction, game, landByCard, mode, seat],
+    [beginTargeting, bottomAction, castByCard, discardAction, game, landByCard, mode, seat],
   )
 
   /** Which id a click on a (possibly stacked) tile should act on. */
@@ -528,6 +554,17 @@ function Table({ view, seat, opponent, game }: TableProps) {
     },
     [game, seat],
   )
+
+  const confirmMulligan = useCallback(
+    (keep: boolean) => {
+      game.dispatch({ type: 'mulligan', player: seat, keep })
+    },
+    [game, seat],
+  )
+
+  const confirmBottom = useCallback(() => {
+    game.dispatch({ type: 'put-on-bottom', player: seat, cards: [...bottomPicks] })
+  }, [bottomPicks, game, seat])
 
   // --- keyboard ----------------------------------------------------
   useEffect(() => {
@@ -794,6 +831,38 @@ function Table({ view, seat, opponent, game }: TableProps) {
         <span className="muted">{view.result.reason}</span>
       </div>
     )
+  } else if (mode === 'mulligan' && mulliganAction) {
+    controls = (
+      <div className="controls">
+        <span>
+          {mulliganAction.count === 0
+            ? 'Keep your opening hand?'
+            : `Mulligan #${mulliganAction.count} taken — keep this hand?`}
+        </span>
+        <button type="button" onClick={() => confirmMulligan(true)}>
+          Keep
+        </button>
+        <button type="button" onClick={() => confirmMulligan(false)}>
+          Mulligan
+        </button>
+      </div>
+    )
+  } else if (mode === 'put-on-bottom' && bottomAction) {
+    controls = (
+      <div className="controls">
+        <span>
+          Put {bottomAction.count} card(s) on the bottom of your library —{' '}
+          {bottomPicks.length}/{bottomAction.count}
+        </span>
+        <button
+          type="button"
+          disabled={bottomPicks.length !== bottomAction.count}
+          onClick={confirmBottom}
+        >
+          Confirm
+        </button>
+      </div>
+    )
   } else if (mode === 'targeting' && targeting) {
     controls = (
       <div className="controls">
@@ -1020,6 +1089,9 @@ function Table({ view, seat, opponent, game }: TableProps) {
                   if (mode === 'discard') {
                     highlight = discardAction?.from.includes(id) ?? false
                     selected = discardPicks.includes(id)
+                  } else if (mode === 'put-on-bottom') {
+                    highlight = bottomAction?.from.includes(id) ?? false
+                    selected = bottomPicks.includes(id)
                   } else if (mode === 'priority') {
                     highlight = landByCard.has(id) || castByCard.has(id)
                   }

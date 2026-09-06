@@ -60,6 +60,17 @@ export interface GameConfig {
   readonly startingPlayer?: PlayerId;
   /** Shuffle libraries at setup (default true). Set false for scripted setups. */
   readonly shuffle?: boolean;
+  /**
+   * Ask each player (in turn order) whether to mulligan before turn 1
+   * begins (default false — every existing caller keeps today's behavior
+   * of `Game.create` landing straight on turn 1's untap step). When true,
+   * `setup` stops with `state.awaiting: {kind: "mulligan", ...}` instead of
+   * calling `beginTurn` directly, exactly like any other mid-game awaiting
+   * decision — so a live driver (the client) can offer a real choice
+   * instead of it being silently auto-resolved by whatever controller
+   * happens to be attached.
+   */
+  readonly mulligans?: boolean;
   readonly registry?: CardRegistry;
   readonly controllers?: Partial<Record<PlayerId, PlayerController>>;
   readonly rules?: Partial<GameRules>;
@@ -145,7 +156,7 @@ export class Game {
     };
 
     const game = new Game(state, registry, controllers, rng);
-    game.setup(config.decks, config.shuffle ?? true);
+    game.setup(config.decks, config.shuffle ?? true, config.mulligans ?? false);
     return game;
   }
 
@@ -262,6 +273,12 @@ export class Game {
       case "choose-from-zone":
         this.applyChooseFromZone(action.player, action.chosen);
         break;
+      case "mulligan":
+        this.applyMulligan(action.player, action.keep);
+        break;
+      case "put-on-bottom":
+        this.applyPutOnBottom(action.player, action.cards);
+        break;
       default:
         throw new Error(
           `unhandled action: ${(action as { type: string }).type}`,
@@ -302,6 +319,10 @@ export class Game {
         return this.whyCannotDiscard(action.player, action.cards);
       case "choose-from-zone":
         return this.whyCannotChooseFromZone(action.player, action.chosen);
+      case "mulligan":
+        return this.whyCannotMulligan(action.player);
+      case "put-on-bottom":
+        return this.whyCannotPutOnBottom(action.player, action.cards);
       default:
         return `unknown action: ${(action as { type: string }).type}`;
     }
@@ -359,6 +380,18 @@ export class Game {
             eligible: [...awaiting.eligible],
             min: awaiting.min,
             max: awaiting.max,
+          },
+        ];
+      }
+      if (awaiting.kind === "mulligan") {
+        return [{ kind: "mulligan", count: awaiting.count }];
+      }
+      if (awaiting.kind === "mulligan-bottom") {
+        return [
+          {
+            kind: "put-on-bottom",
+            count: awaiting.count,
+            from: [...this.state.zones.perPlayer[player].hand],
           },
         ];
       }
@@ -494,7 +527,11 @@ export class Game {
 
   // --- setup ----------------------------------------------------------
 
-  private setup(decks: readonly DeckList[], shuffleLibrary: boolean): void {
+  private setup(
+    decks: readonly DeckList[],
+    shuffleLibrary: boolean,
+    mulligans: boolean,
+  ): void {
     for (const { player, cards, commander } of decks) {
       this.state.players[player] = createPlayerState(player, this.state.rules);
       this.state.zones.perPlayer[player] = {
@@ -582,6 +619,10 @@ export class Game {
       seed: this.state.seed,
     });
 
+    if (mulligans) {
+      this.beginMulligans();
+      return;
+    }
     for (const player of this.state.turnOrder) {
       for (let i = 0; i < this.state.rules.openingHandSize; i += 1) {
         this.drawCard(player);
@@ -589,6 +630,115 @@ export class Game {
     }
 
     this.beginTurn();
+  }
+
+  /**
+   * Deals opening hands, then asks each player in turn order whether to
+   * mulligan (London style — shuffle hand into library, draw a fresh 7, no
+   * cap), and once they keep, how many cards (equal to mulligans taken) to
+   * put on the bottom. Fully resolves one player before moving to the next;
+   * real tournament rules poll every player simultaneously each round, but
+   * this engine answers one awaiting decision at a time, so this reaches
+   * the same end state sequentially instead — a documented simplification,
+   * like the automatic commander-replacement redirect.
+   */
+  private beginMulligans(): void {
+    for (const player of this.state.turnOrder) {
+      for (let i = 0; i < this.state.rules.openingHandSize; i += 1) {
+        this.drawCard(player);
+      }
+    }
+    this.advanceMulligans(0);
+  }
+
+  private advanceMulligans(index: number): void {
+    if (index >= this.state.turnOrder.length) {
+      this.beginTurn();
+      return;
+    }
+    const player = this.state.turnOrder[index];
+    this.state.awaiting = { kind: "mulligan", player, count: 0 };
+    this.prepareForPriority(player);
+  }
+
+  private applyMulligan(player: PlayerId, keep: boolean): void {
+    const why = this.whyCannotMulligan(player);
+    if (why !== null) throw new Error(why);
+
+    const awaiting = this.state.awaiting;
+    if (awaiting === null || awaiting.kind !== "mulligan") {
+      throw new Error("unreachable: whyCannotMulligan should have caught this");
+    }
+
+    if (!keep) {
+      const hand = [...this.state.zones.perPlayer[player].hand];
+      for (const id of hand) this.moveObject(id, "library");
+      this.state.zones.perPlayer[player].library = shuffle(
+        this.state.zones.perPlayer[player].library,
+        this.rng,
+      );
+      this.state.rngState = this.rng.seed;
+      for (let i = 0; i < this.state.rules.openingHandSize; i += 1) {
+        this.drawCard(player);
+      }
+      const count = awaiting.count + 1;
+      this.emit({ type: "mulligan-taken", player, count });
+      this.state.awaiting = { kind: "mulligan", player, count };
+      this.prepareForPriority(player);
+      return;
+    }
+
+    this.emit({ type: "hand-kept", player, mulligans: awaiting.count });
+    if (awaiting.count > 0) {
+      this.state.awaiting = { kind: "mulligan-bottom", player, count: awaiting.count };
+      this.prepareForPriority(player);
+      return;
+    }
+    this.state.awaiting = null;
+    this.advanceMulligans(this.state.turnOrder.indexOf(player) + 1);
+  }
+
+  private whyCannotMulligan(player: PlayerId): string | null {
+    const awaiting = this.state.awaiting;
+    if (awaiting === null || awaiting.kind !== "mulligan" || awaiting.player !== player) {
+      return `${player} is not being asked about a mulligan`;
+    }
+    return null;
+  }
+
+  private applyPutOnBottom(player: PlayerId, cards: readonly ObjectId[]): void {
+    const why = this.whyCannotPutOnBottom(player, cards);
+    if (why !== null) throw new Error(why);
+
+    for (const id of cards) this.moveObject(id, "library");
+    this.emit({ type: "cards-put-on-bottom", player, objects: [...cards] });
+    this.state.awaiting = null;
+    this.advanceMulligans(this.state.turnOrder.indexOf(player) + 1);
+  }
+
+  private whyCannotPutOnBottom(
+    player: PlayerId,
+    cards: readonly ObjectId[],
+  ): string | null {
+    const awaiting = this.state.awaiting;
+    if (
+      awaiting === null ||
+      awaiting.kind !== "mulligan-bottom" ||
+      awaiting.player !== player
+    ) {
+      return `${player} is not being asked to put cards on the bottom of their library`;
+    }
+    if (cards.length !== awaiting.count) {
+      return `${player} must put exactly ${awaiting.count} card(s) on the bottom, chose ${cards.length}`;
+    }
+    if (new Set(cards).size !== cards.length) {
+      return `${player} chose the same card twice`;
+    }
+    const hand = new Set(this.state.zones.perPlayer[player].hand);
+    for (const id of cards) {
+      if (!hand.has(id)) return `${player} tried to put ${id} on the bottom, not in hand`;
+    }
+    return null;
   }
 
   private mintObjectId(): ObjectId {
@@ -2386,6 +2536,34 @@ export class Game {
           });
         } else {
           object.attachedTo = null;
+        }
+        changed = true;
+      }
+
+      // The legend rule (704.5j): a player controlling 2+ legendary
+      // permanents with the same name keeps only one. No player choice is
+      // modeled — the copy they've controlled longest (lowest timestamp)
+      // survives and the rest go to the graveyard.
+      const legendaryGroups = new Map<string, ObjectId[]>();
+      for (const id of this.state.zones.shared.battlefield) {
+        const object = this.state.objects[id];
+        if (!this.registry.get(object.cardName).supertypes.includes("legendary")) continue;
+        const key = `${object.controller} ${object.cardName}`;
+        const group = legendaryGroups.get(key);
+        if (group) group.push(id);
+        else legendaryGroups.set(key, [id]);
+      }
+      for (const group of legendaryGroups.values()) {
+        if (group.length <= 1) continue;
+        const survivor = group.reduce((oldest, id) =>
+          this.state.objects[id].timestamp < this.state.objects[oldest].timestamp
+            ? id
+            : oldest,
+        );
+        for (const id of group) {
+          if (id === survivor) continue;
+          this.moveObject(id, "graveyard");
+          this.emit({ type: "permanent-destroyed", object: id, reason: "legend rule" });
         }
         changed = true;
       }
