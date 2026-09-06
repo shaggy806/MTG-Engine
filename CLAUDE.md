@@ -104,6 +104,10 @@ A git-ignored `scratch.mjs` at the repo root is a scratch pad for ad-hoc explora
 - `npm run preview -w client` — serve the production build
 - No client tests yet. To watch it run: `npm run dev -w client` and play a hot-seat game (or toggle "reveal both hands" and drive both seats).
 
+## Git workflow
+
+- **Standing authorization to commit and push**: once a feature is working (build/lint/typecheck/tests clean, and — for anything UI-visible — checked live in the browser), commit it and push to `origin/main` without asking first each time. Split unrelated work into separate, logically-scoped commits the way the existing history does (see `git log`), rather than one giant commit. This still doesn't cover force-push, history rewrites, or pushing something you haven't actually verified — those still warrant asking.
+
 ## Toolchain notes
 
 - **Module systems differ**: `engine` is ESM + NodeNext, so its own relative imports need explicit `.js` extensions (e.g. `import { x } from "./foo.js"` even though the file is `foo.ts`). `client` is ESM + bundler mode.
