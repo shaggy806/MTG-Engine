@@ -1273,10 +1273,15 @@ function Table({ view, seat, opponents, game }: TableProps) {
       </div>
     )
   } else if (mode === 'discard' && discardAction) {
+    const fromEffect =
+      view.awaiting?.kind === 'discard' && view.awaiting.fromEffect === true
     controls = (
       <div className="controls">
         <span>
-          Discard to hand size — {discardPicks.length}/{discardAction.count}
+          {fromEffect
+            ? `Discard ${discardAction.count} card${discardAction.count === 1 ? '' : 's'}`
+            : 'Discard to hand size'}{' '}
+          — {discardPicks.length}/{discardAction.count}
         </span>
         <button
           type="button"

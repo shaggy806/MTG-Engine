@@ -6,6 +6,7 @@ import type { CardDefinition } from "./define.js";
 import _poolAngelicEdict from "./pool/angelic-edict.js";
 import _poolAshmarkMarduVanguard from "./pool/ashmark-mardu-vanguard.js";
 import _poolBlaze from "./pool/blaze.js";
+import _poolBlightning from "./pool/blightning.js";
 import _poolBloodthroneVampire from "./pool/bloodthrone-vampire.js";
 import _poolBoggartBrute from "./pool/boggart-brute.js";
 import _poolBonesplitter from "./pool/bonesplitter.js";
@@ -33,6 +34,7 @@ import _poolLevitation from "./pool/levitation.js";
 import _poolLightningBolt from "./pool/lightning-bolt.js";
 import _poolLlanowarElves from "./pool/llanowar-elves.js";
 import _poolManOWar from "./pool/man-o-war.js";
+import _poolMindRot from "./pool/mind-rot.js";
 import _poolMossbackDragon from "./pool/mossback-dragon.js";
 import _poolMountain from "./pool/mountain.js";
 import _poolNaturalize from "./pool/naturalize.js";
@@ -64,6 +66,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolAngelicEdict,
   _poolAshmarkMarduVanguard,
   _poolBlaze,
+  _poolBlightning,
   _poolBloodthroneVampire,
   _poolBoggartBrute,
   _poolBonesplitter,
@@ -91,6 +94,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolLightningBolt,
   _poolLlanowarElves,
   _poolManOWar,
+  _poolMindRot,
   _poolMossbackDragon,
   _poolMountain,
   _poolNaturalize,

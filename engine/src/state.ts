@@ -167,6 +167,11 @@ export type AwaitingDecision =
       readonly player: PlayerId;
       /** How many cards must be discarded. */
       readonly count: number;
+      /** True when a spell/ability caused this discard (Mind Rot), as opposed
+       * to the cleanup step's max-hand-size discard. Changes what happens
+       * after: an effect-discard just resumes the game, cleanup runs the rest
+       * of the cleanup step. */
+      readonly fromEffect?: boolean;
     }
   | {
       readonly kind: "order-blockers";

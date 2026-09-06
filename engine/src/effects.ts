@@ -30,6 +30,13 @@ export interface ZoneChoiceFilter {
 
 /** A declarative effect. Grows as milestones add vocabulary. */
 export type EffectSpec =
+  | {
+      /** Apply several effects in order, sharing the same targets and X.
+       * (e.g. Blightning: 3 damage to target player *and* that player
+       * discards two cards.) */
+      readonly kind: "sequence";
+      readonly effects: readonly EffectSpec[];
+    }
   | { readonly kind: "damage"; readonly amount: EffectAmount; readonly target: number }
   | { readonly kind: "add-mana"; readonly mana: ManaType; readonly amount: number }
   | { readonly kind: "draw"; readonly amount: number }
@@ -51,6 +58,13 @@ export type EffectSpec =
       /** Target player puts the top `amount` cards of their library into
        * their graveyard. */
       readonly kind: "mill";
+      readonly target: number;
+      readonly amount: EffectAmount;
+    }
+  | {
+      /** Target player discards `amount` cards (their choice, unless it's the
+       * effect's own controller). Discards their whole hand if it's smaller. */
+      readonly kind: "discard";
       readonly target: number;
       readonly amount: EffectAmount;
     }
@@ -119,6 +133,8 @@ export interface EffectApi {
   exileObject(target: TargetRef): void;
   /** `target` (a player) mills `amount` cards. */
   mill(target: TargetRef, amount: number): void;
+  /** `target` (a player) discards `amount` cards. */
+  discardCards(target: TargetRef, amount: number): void;
   modifyPt(
     target: TargetRef,
     power: number,
@@ -170,6 +186,10 @@ function resolveEffectTarget(
 
 export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void {
   switch (spec.kind) {
+    case "sequence": {
+      for (const step of spec.effects) applyEffectSpec(step, ctx);
+      return;
+    }
     case "damage": {
       const target = ctx.targets[spec.target];
       if (target !== undefined) ctx.dealDamage(target, amountValue(spec.amount, ctx));
@@ -212,6 +232,11 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     case "mill": {
       const target = ctx.targets[spec.target];
       if (target !== undefined) ctx.mill(target, amountValue(spec.amount, ctx));
+      return;
+    }
+    case "discard": {
+      const target = ctx.targets[spec.target];
+      if (target !== undefined) ctx.discardCards(target, amountValue(spec.amount, ctx));
       return;
     }
     case "modify-pt": {

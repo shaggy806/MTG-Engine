@@ -72,6 +72,8 @@ const deckB = deck([
   ["Blaze", 1],
   ["Fume Spitter", 2],
   ["Bloodthrone Vampire", 2],
+  ["Mind Rot", 2],
+  ["Blightning", 2],
 ]);
 
 // All four seats' decks/commanders, in seating order — sliced down to

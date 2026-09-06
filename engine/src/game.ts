@@ -892,9 +892,17 @@ export class Game {
     const why = this.whyCannotDiscard(player, cards);
     if (why !== null) throw new Error(why);
 
+    const fromEffect = this.state.awaiting?.kind === "discard" && this.state.awaiting.fromEffect === true;
+
     for (const id of cards) this.moveObject(id, "graveyard");
     this.emit({ type: "cards-discarded", player, objects: [...cards] });
     this.state.awaiting = null;
+
+    if (fromEffect) {
+      // A spell/ability caused this (Mind Rot) — just resume the game.
+      this.prepareForPriority(this.activePlayer);
+      return;
+    }
 
     this.finishCleanup();
     // The cleanup step normally grants no priority; move straight on.
@@ -2075,7 +2083,13 @@ export class Game {
         priority.holder = null;
         return;
       }
-      this.prepareForPriority(this.activePlayer);
+      // A resolution may have paused the game on a decision owed by a player
+      // other than the active one (Mind Rot targeting an opponent) — that
+      // player gets priority to answer it. (The cast reflects that
+      // `resolveTopOfStack` above may have set `awaiting`, which TS's
+      // narrowing from the `!== null` guard at the top doesn't see.)
+      const pendingAfterResolve = this.state.awaiting as AwaitingDecision | null;
+      this.prepareForPriority(pendingAfterResolve?.player ?? this.activePlayer);
     } else {
       priority.active = false;
       priority.holder = null;
@@ -2407,6 +2421,7 @@ export class Game {
       returnToHand: (target) => this.returnToHandByEffect(target),
       exileObject: (target) => this.exileByEffect(target),
       mill: (target, amount) => this.millByEffect(target, amount),
+      discardCards: (target, amount) => this.discardByEffect(target, amount),
       modifyPt: (target, power, toughness, duration) =>
         this.modifyPt(target, power, toughness, duration),
       addCounter: (target, counter, amount) =>
@@ -2624,6 +2639,26 @@ export class Game {
     if (milled.length > 0) {
       this.emit({ type: "cards-milled", player, objects: milled });
     }
+  }
+
+  /** Target player discards `amount` cards. If their hand is that small or
+   * smaller they just discard all of it; otherwise the game waits on their
+   * `discard` action (they choose which — same decision shape as the
+   * cleanup-step discard, distinguished by `fromEffect`). */
+  private discardByEffect(target: TargetRef, amount: number): void {
+    if (target.kind !== "player") return;
+    const player = target.player;
+    if (this.state.players[player] === undefined || amount <= 0) return;
+    const hand = this.state.zones.perPlayer[player].hand;
+    if (hand.length <= amount) {
+      const all = [...hand];
+      for (const id of all) this.moveObject(id, "graveyard");
+      if (all.length > 0) {
+        this.emit({ type: "cards-discarded", player, objects: all });
+      }
+      return;
+    }
+    this.state.awaiting = { kind: "discard", player, count: amount, fromEffect: true };
   }
 
   private dealDamage(
