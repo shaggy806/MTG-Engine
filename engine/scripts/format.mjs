@@ -81,6 +81,12 @@ export const makeFormatter = (game) => {
         return `${e.player} ${e.delta >= 0 ? "+" : ""}${e.delta} life (now ${e.life})`;
       case "permanent-destroyed":
         return `${name(e.object)} destroyed — ${e.reason}`;
+      case "permanent-returned-to-hand":
+        return `${name(e.object)} returns to ${e.owner}'s hand`;
+      case "permanent-exiled":
+        return `${name(e.object)} is exiled`;
+      case "cards-milled":
+        return `${e.player} mills ${e.objects.map(name).join(", ")}`;
       case "player-lost":
         return `${e.player}: ${e.reason}`;
       case "game-ended":

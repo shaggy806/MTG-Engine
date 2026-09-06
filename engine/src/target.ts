@@ -11,9 +11,14 @@ export type TargetSpec =
   | "any-target"
   | "creature"
   | "creature-you-control"
+  | "creature-an-opponent-controls"
   | "player"
   | "creature-or-player"
-  | "permanent";
+  | "permanent"
+  | "nonland-permanent"
+  | "land"
+  | "artifact-or-enchantment"
+  | "creature-or-enchantment";
 
 export const targetsPlayer = (ref: TargetRef, player: PlayerId): boolean =>
   ref.kind === "player" && ref.player === player;

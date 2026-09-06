@@ -15,6 +15,18 @@ function isLivingCreature(
   return registry.get(object.cardName).types.includes("creature");
 }
 
+/** A permanent on the battlefield whose printed types include any of `types`. */
+function isPermanentOfType(
+  state: GameState,
+  registry: CardRegistry,
+  id: ObjectId,
+  predicate: (types: readonly string[]) => boolean,
+): boolean {
+  const object = state.objects[id];
+  if (object === undefined || object.zone !== "battlefield") return false;
+  return predicate(registry.get(object.cardName).types);
+}
+
 function isLivingPlayer(state: GameState, ref: TargetRef): boolean {
   return (
     ref.kind === "player" &&
@@ -41,10 +53,46 @@ export function isLegalTarget(
         isLivingCreature(state, registry, ref.object) &&
         state.objects[ref.object].controller === forPlayer
       );
+    case "creature-an-opponent-controls":
+      return (
+        ref.kind === "object" &&
+        isLivingCreature(state, registry, ref.object) &&
+        state.objects[ref.object].controller !== forPlayer
+      );
     case "permanent":
       return (
         ref.kind === "object" &&
         state.objects[ref.object]?.zone === "battlefield"
+      );
+    case "nonland-permanent":
+      return (
+        ref.kind === "object" &&
+        isPermanentOfType(state, registry, ref.object, (t) => !t.includes("land"))
+      );
+    case "land":
+      return (
+        ref.kind === "object" &&
+        isPermanentOfType(state, registry, ref.object, (t) => t.includes("land"))
+      );
+    case "artifact-or-enchantment":
+      return (
+        ref.kind === "object" &&
+        isPermanentOfType(
+          state,
+          registry,
+          ref.object,
+          (t) => t.includes("artifact") || t.includes("enchantment"),
+        )
+      );
+    case "creature-or-enchantment":
+      return (
+        ref.kind === "object" &&
+        isPermanentOfType(
+          state,
+          registry,
+          ref.object,
+          (t) => t.includes("creature") || t.includes("enchantment"),
+        )
       );
     case "any-target":
     case "creature-or-player":

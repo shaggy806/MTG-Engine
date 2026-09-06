@@ -158,6 +158,20 @@ export type GameEvent =
       readonly reason: string;
     })
   | (Base & {
+      readonly type: "permanent-returned-to-hand";
+      readonly object: ObjectId;
+      readonly owner: PlayerId;
+    })
+  | (Base & {
+      readonly type: "permanent-exiled";
+      readonly object: ObjectId;
+    })
+  | (Base & {
+      readonly type: "cards-milled";
+      readonly player: PlayerId;
+      readonly objects: readonly ObjectId[];
+    })
+  | (Base & {
       readonly type: "player-lost";
       readonly player: PlayerId;
       readonly reason: string;

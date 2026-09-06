@@ -2294,6 +2294,9 @@ export class Game {
       tapPermanent: (target) => this.setTapped(target, true),
       untapPermanent: (target) => this.setTapped(target, false),
       destroyPermanent: (target) => this.destroyByEffect(target),
+      returnToHand: (target) => this.returnToHandByEffect(target),
+      exileObject: (target) => this.exileByEffect(target),
+      mill: (target, amount) => this.millByEffect(target, amount),
       modifyPt: (target, power, toughness, duration) =>
         this.modifyPt(target, power, toughness, duration),
       addCounter: (target, counter, amount) =>
@@ -2473,6 +2476,43 @@ export class Game {
       object: target.object,
       reason: "destroyed",
     });
+  }
+
+  private returnToHandByEffect(target: TargetRef): void {
+    if (target.kind !== "object") return;
+    const object = this.state.objects[target.object];
+    if (object === undefined || object.zone !== "battlefield") return;
+    // A token would just be swept by SBAs; a commander is redirected to the
+    // command zone by `moveObject` — both handled downstream, this just asks
+    // for the hand.
+    const owner = object.owner;
+    this.moveObject(target.object, "hand");
+    this.emit({ type: "permanent-returned-to-hand", object: target.object, owner });
+  }
+
+  private exileByEffect(target: TargetRef): void {
+    if (target.kind !== "object") return;
+    const object = this.state.objects[target.object];
+    if (object === undefined || object.zone !== "battlefield") return;
+    this.moveObject(target.object, "exile");
+    this.emit({ type: "permanent-exiled", object: target.object });
+  }
+
+  private millByEffect(target: TargetRef, amount: number): void {
+    if (target.kind !== "player") return;
+    const player = target.player;
+    if (this.state.players[player] === undefined) return;
+    const milled: ObjectId[] = [];
+    for (let i = 0; i < amount; i += 1) {
+      const library = this.state.zones.perPlayer[player].library;
+      const id = library[0];
+      if (id === undefined) break;
+      this.moveObject(id, "graveyard");
+      milled.push(id);
+    }
+    if (milled.length > 0) {
+      this.emit({ type: "cards-milled", player, objects: milled });
+    }
   }
 
   private dealDamage(

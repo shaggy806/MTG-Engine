@@ -3,9 +3,11 @@
 
 import type { CardDefinition } from "./define.js";
 
+import _poolAngelicEdict from "./pool/angelic-edict.js";
 import _poolAshmarkMarduVanguard from "./pool/ashmark-mardu-vanguard.js";
 import _poolBoggartBrute from "./pool/boggart-brute.js";
 import _poolBonesplitter from "./pool/bonesplitter.js";
+import _poolBoomerang from "./pool/boomerang.js";
 import _poolCrawWurm from "./pool/craw-wurm.js";
 import _poolDisenchant from "./pool/disenchant.js";
 import _poolElvishVisionary from "./pool/elvish-visionary.js";
@@ -26,8 +28,10 @@ import _poolJump from "./pool/jump.js";
 import _poolLevitation from "./pool/levitation.js";
 import _poolLightningBolt from "./pool/lightning-bolt.js";
 import _poolLlanowarElves from "./pool/llanowar-elves.js";
+import _poolManOWar from "./pool/man-o-war.js";
 import _poolMossbackDragon from "./pool/mossback-dragon.js";
 import _poolMountain from "./pool/mountain.js";
+import _poolNaturalize from "./pool/naturalize.js";
 import _poolOracleOfMulDaya from "./pool/oracle-of-mul-daya.js";
 import _poolPhyrexianArena from "./pool/phyrexian-arena.js";
 import _poolPlains from "./pool/plains.js";
@@ -37,7 +41,9 @@ import _poolRaiseTheAlarm from "./pool/raise-the-alarm.js";
 import _poolRumblingBaloth from "./pool/rumbling-baloth.js";
 import _poolSerraAngel from "./pool/serra-angel.js";
 import _poolSwamp from "./pool/swamp.js";
+import _poolTomeScour from "./pool/tome-scour.js";
 import _poolTyphoidRats from "./pool/typhoid-rats.js";
+import _poolUnsummon from "./pool/unsummon.js";
 import _poolUreniOfTheUnwritten from "./pool/ureni-of-the-unwritten.js";
 import _poolVampireNighthawk from "./pool/vampire-nighthawk.js";
 import _poolVengefulGhoul from "./pool/vengeful-ghoul.js";
@@ -51,9 +57,11 @@ import _tokensSoldierToken from "./tokens/soldier-token.js";
 
 /** The built-in card pool — every file under `pool/` and `tokens/`. */
 export const BUILTIN_CARDS: readonly CardDefinition[] = [
+  _poolAngelicEdict,
   _poolAshmarkMarduVanguard,
   _poolBoggartBrute,
   _poolBonesplitter,
+  _poolBoomerang,
   _poolCrawWurm,
   _poolDisenchant,
   _poolElvishVisionary,
@@ -74,8 +82,10 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolLevitation,
   _poolLightningBolt,
   _poolLlanowarElves,
+  _poolManOWar,
   _poolMossbackDragon,
   _poolMountain,
+  _poolNaturalize,
   _poolOracleOfMulDaya,
   _poolPhyrexianArena,
   _poolPlains,
@@ -85,7 +95,9 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolRumblingBaloth,
   _poolSerraAngel,
   _poolSwamp,
+  _poolTomeScour,
   _poolTyphoidRats,
+  _poolUnsummon,
   _poolUreniOfTheUnwritten,
   _poolVampireNighthawk,
   _poolVengefulGhoul,

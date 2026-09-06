@@ -35,6 +35,23 @@ export type EffectSpec =
   | { readonly kind: "untap"; readonly target: number }
   | { readonly kind: "destroy"; readonly target: number }
   | {
+      /** Return a target permanent to its owner's hand (rule 614-style bounce). */
+      readonly kind: "return-to-hand";
+      readonly target: number;
+    }
+  | {
+      /** Put a target permanent into exile. */
+      readonly kind: "exile";
+      readonly target: number;
+    }
+  | {
+      /** Target player puts the top `amount` cards of their library into
+       * their graveyard. */
+      readonly kind: "mill";
+      readonly target: number;
+      readonly amount: number;
+    }
+  | {
       readonly kind: "modify-pt";
       readonly target: EffectTargetRef;
       readonly power: number;
@@ -95,6 +112,10 @@ export interface EffectApi {
   tapPermanent(target: TargetRef): void;
   untapPermanent(target: TargetRef): void;
   destroyPermanent(target: TargetRef): void;
+  returnToHand(target: TargetRef): void;
+  exileObject(target: TargetRef): void;
+  /** `target` (a player) mills `amount` cards. */
+  mill(target: TargetRef, amount: number): void;
   modifyPt(
     target: TargetRef,
     power: number,
@@ -165,6 +186,21 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     case "destroy": {
       const target = ctx.targets[spec.target];
       if (target !== undefined) ctx.destroyPermanent(target);
+      return;
+    }
+    case "return-to-hand": {
+      const target = ctx.targets[spec.target];
+      if (target !== undefined) ctx.returnToHand(target);
+      return;
+    }
+    case "exile": {
+      const target = ctx.targets[spec.target];
+      if (target !== undefined) ctx.exileObject(target);
+      return;
+    }
+    case "mill": {
+      const target = ctx.targets[spec.target];
+      if (target !== undefined) ctx.mill(target, spec.amount);
       return;
     }
     case "modify-pt": {

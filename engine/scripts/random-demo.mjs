@@ -43,6 +43,7 @@ const deckA = deck([
   ["Grave Recall", 1],
   ["Oracle of Mul Daya", 1],
   ["Mossback Dragon", 1],
+  ["Naturalize", 2],
 ]);
 const deckB = deck([
   ["Mountain", 6],
@@ -62,6 +63,11 @@ const deckB = deck([
   ["Holy Strength", 2],
   ["Bonesplitter", 2],
   ["Wurmcoil Engine", 1],
+  ["Unsummon", 2],
+  ["Boomerang", 1],
+  ["Man-o'-War", 2],
+  ["Tome Scour", 1],
+  ["Angelic Edict", 1],
 ]);
 
 // All four seats' decks/commanders, in seating order — sliced down to
