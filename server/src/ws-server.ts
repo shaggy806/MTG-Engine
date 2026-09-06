@@ -9,7 +9,7 @@ import type { WebSocket, WebSocketServer } from "ws";
 import type { RoomManager } from "./room-manager.js";
 import type { Room, Connection } from "./room.js";
 import type { ClientMessage, ServerMessage } from "./protocol.js";
-import { ALICE, BOB, COMMANDERS, DECKS } from "./decks.js";
+import { SEATS } from "./decks.js";
 
 function send(ws: WebSocket, message: ServerMessage): void {
   ws.send(JSON.stringify(message));
@@ -45,14 +45,16 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
     const handle = (message: ClientMessage): void => {
       switch (message.type) {
         case "create-room": {
+          const numPlayers = Math.min(4, Math.max(2, message.players ?? 2));
           const room = manager.create({
             seed: message.seed,
             mulligans: true,
             rules: { startingLife: 40 },
-            decks: [
-              { player: ALICE, cards: [...DECKS.alice], commander: COMMANDERS.alice },
-              { player: BOB, cards: [...DECKS.bob], commander: COMMANDERS.bob },
-            ],
+            decks: SEATS.slice(0, numPlayers).map((seat) => ({
+              player: seat.id,
+              cards: [...seat.cards],
+              commander: seat.commander,
+            })),
           });
           send(ws, { type: "room-created", roomId: room.id });
           return;

@@ -16,6 +16,12 @@
 .app.active-seat-b {
   background-color: var(--seat-b-bg);
 }
+.app.active-seat-c {
+  background-color: var(--seat-c-bg);
+}
+.app.active-seat-d {
+  background-color: var(--seat-d-bg);
+}
 
 .topbar {
   display: flex;
@@ -138,6 +144,12 @@
 .turn-banner.seat-b .turn-banner-player {
   color: var(--seat-b);
 }
+.turn-banner.seat-c .turn-banner-player {
+  color: var(--seat-c);
+}
+.turn-banner.seat-d .turn-banner-player {
+  color: var(--seat-d);
+}
 
 .error-banner {
   margin: 6px 0;
@@ -239,11 +251,23 @@
 .player-panel.seat-b {
   border-left-color: var(--seat-b);
 }
+.player-panel.seat-c {
+  border-left-color: var(--seat-c);
+}
+.player-panel.seat-d {
+  border-left-color: var(--seat-d);
+}
 .player-panel.seat-a .pp-name {
   color: var(--seat-a);
 }
 .player-panel.seat-b .pp-name {
   color: var(--seat-b);
+}
+.player-panel.seat-c .pp-name {
+  color: var(--seat-c);
+}
+.player-panel.seat-d .pp-name {
+  color: var(--seat-d);
 }
 .pp-head {
   display: flex;
@@ -354,6 +378,12 @@
 .board.seat-b {
   border-color: var(--seat-b);
 }
+.board.seat-c {
+  border-color: var(--seat-c);
+}
+.board.seat-d {
+  border-color: var(--seat-d);
+}
 /* one row for creatures/artifacts/enchantments, one for lands — like a
    physical Commander table, lands stay in their own strip */
 .board-row {
@@ -405,6 +435,12 @@
 }
 .side-zone.seat-b {
   border-color: var(--seat-b);
+}
+.side-zone.seat-c {
+  border-color: var(--seat-c);
+}
+.side-zone.seat-d {
+  border-color: var(--seat-d);
 }
 .side-zone-section {
   display: flex;

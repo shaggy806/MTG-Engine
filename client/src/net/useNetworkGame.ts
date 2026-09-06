@@ -86,7 +86,7 @@ export interface NetworkGame {
   readonly roomId: string | null
   readonly seats: readonly SeatStatus[]
   readonly seat: PlayerId | null
-  readonly opponent: PlayerId | null
+  readonly opponents: readonly PlayerId[]
   readonly view: PlayerView | null
   readonly actions: readonly LegalAction[]
   /** Whether *my* seat currently has an auto-pass in effect. */
@@ -95,7 +95,7 @@ export interface NetworkGame {
   readonly skipManaOnly: boolean
   /** Changes whenever a new state arrives — a stable signature for `key`ing UI. */
   readonly revision: number
-  createRoom: (seed?: number) => void
+  createRoom: (seed?: number, players?: number) => void
   joinRoom: (roomId: string) => void
   claimSeat: (seat: PlayerId) => void
   dispatch: (action: Action) => void
@@ -257,7 +257,7 @@ export function useNetworkGame(): NetworkGame {
   }, [openSocket])
 
   const createRoom = useCallback(
-    (seed?: number) => send({ type: 'create-room', seed }),
+    (seed?: number, players?: number) => send({ type: 'create-room', seed, players }),
     [send],
   )
 
@@ -326,7 +326,7 @@ export function useNetworkGame(): NetworkGame {
     openSocket()
   }, [openSocket])
 
-  const opponent = view ? (view.turnOrder.find((p) => p !== seat) ?? null) : null
+  const opponents = view ? view.turnOrder.filter((p) => p !== seat) : []
 
   return {
     status,
@@ -334,7 +334,7 @@ export function useNetworkGame(): NetworkGame {
     roomId,
     seats,
     seat,
-    opponent,
+    opponents,
     view,
     actions,
     autoPassing,

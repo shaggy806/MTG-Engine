@@ -17,6 +17,10 @@
   --seat-a-bg: rgba(185, 140, 240, 0.08);
   --seat-b: #f0954a;
   --seat-b-bg: rgba(240, 149, 74, 0.08);
+  --seat-c: #4ecdc4;
+  --seat-c-bg: rgba(78, 205, 196, 0.08);
+  --seat-d: #e85d8a;
+  --seat-d-bg: rgba(232, 93, 138, 0.08);
 
   font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
   font-size: 14px;

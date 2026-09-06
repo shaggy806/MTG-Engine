@@ -18,7 +18,7 @@ export interface SeatStatus {
 }
 
 export type ClientMessage =
-  | { readonly type: 'create-room'; readonly seed?: number }
+  | { readonly type: 'create-room'; readonly seed?: number; readonly players?: number }
   | { readonly type: 'join-room'; readonly roomId: string }
   | {
       readonly type: 'claim-seat'

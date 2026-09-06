@@ -9,7 +9,7 @@ import { WebSocket, WebSocketServer } from "ws";
 import { RoomManager } from "./room-manager.js";
 import { attachRoomServer } from "./ws-server.js";
 import type { ServerMessage } from "./protocol.js";
-import { ALICE, BOB } from "./decks.js";
+import { ALICE, BOB, CAROL, DAVE } from "./decks.js";
 
 function nextMessage(ws: WebSocket): Promise<ServerMessage> {
   return new Promise((resolve, reject) => {
@@ -154,5 +154,54 @@ describe("room server (end to end over WebSocket)", () => {
     ws.send(JSON.stringify({ type: "join-room", roomId: "NOPE1" }));
     const reply = await nextMessage(ws);
     expect(reply).toEqual({ type: "error", message: "no such room: NOPE1" });
+  });
+
+  it("omitting players still creates a 2-seat room", async () => {
+    const ws = await openSocket();
+    ws.send(JSON.stringify({ type: "create-room" }));
+    const created = await nextMessage(ws);
+    if (created.type !== "room-created") throw new Error("unreachable");
+
+    ws.send(JSON.stringify({ type: "join-room", roomId: created.roomId }));
+    const joined = await nextMessage(ws);
+    if (joined.type !== "room-joined") throw new Error("unreachable");
+    expect(joined.seats.map((s) => s.player)).toEqual([ALICE, BOB]);
+  });
+
+  it("players: 3 creates a room with a third seat", async () => {
+    const ws = await openSocket();
+    ws.send(JSON.stringify({ type: "create-room", players: 3 }));
+    const created = await nextMessage(ws);
+    if (created.type !== "room-created") throw new Error("unreachable");
+
+    ws.send(JSON.stringify({ type: "join-room", roomId: created.roomId }));
+    const joined = await nextMessage(ws);
+    if (joined.type !== "room-joined") throw new Error("unreachable");
+    expect(joined.seats).toHaveLength(3);
+    expect(joined.seats.map((s) => s.player)).toEqual([ALICE, BOB, CAROL]);
+  });
+
+  it("players: 4 creates a room with all four seats", async () => {
+    const ws = await openSocket();
+    ws.send(JSON.stringify({ type: "create-room", players: 4 }));
+    const created = await nextMessage(ws);
+    if (created.type !== "room-created") throw new Error("unreachable");
+
+    ws.send(JSON.stringify({ type: "join-room", roomId: created.roomId }));
+    const joined = await nextMessage(ws);
+    if (joined.type !== "room-joined") throw new Error("unreachable");
+    expect(joined.seats.map((s) => s.player)).toEqual([ALICE, BOB, CAROL, DAVE]);
+  });
+
+  it("clamps an out-of-range players count into 2-4", async () => {
+    const ws = await openSocket();
+    ws.send(JSON.stringify({ type: "create-room", players: 99 }));
+    const created = await nextMessage(ws);
+    if (created.type !== "room-created") throw new Error("unreachable");
+
+    ws.send(JSON.stringify({ type: "join-room", roomId: created.roomId }));
+    const joined = await nextMessage(ws);
+    if (joined.type !== "room-joined") throw new Error("unreachable");
+    expect(joined.seats).toHaveLength(4);
   });
 });

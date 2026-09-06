@@ -129,6 +129,7 @@ function LobbyScreen({
   readonly notFound?: boolean
 }) {
   const [joinCode, setJoinCode] = useState('')
+  const [players, setPlayers] = useState(2)
   return (
     <CenteredScreen title="MTG Engine">
       {notFound ? (
@@ -138,7 +139,19 @@ function LobbyScreen({
         </p>
       ) : null}
       <ErrorLine game={game} />
-      <button type="button" onClick={() => game.createRoom()}>
+      <div className="player-count-picker">
+        {[2, 3, 4].map((n) => (
+          <button
+            key={n}
+            type="button"
+            className={n === players ? 'selected' : ''}
+            onClick={() => setPlayers(n)}
+          >
+            {n} players
+          </button>
+        ))}
+      </div>
+      <button type="button" onClick={() => game.createRoom(undefined, players)}>
         Create a game
       </button>
       <form
@@ -186,8 +199,8 @@ function SeatPickerScreen({ game }: { readonly game: NetworkGame }) {
 
 /** Renders once `useNetworkGame` has a claimed seat and a pushed view. */
 function GameScreen({ game }: { readonly game: NetworkGame }) {
-  const { view, seat, opponent } = game
-  if (view === null || seat === null || opponent === null) {
+  const { view, seat, opponents } = game
+  if (view === null || seat === null || opponents.length === 0) {
     return <CenteredScreen title="Loading…" />
   }
   const over = view.result.over
@@ -212,7 +225,7 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
       <ErrorLine game={game} />
 
       <div className="layout">
-        <Table key={game.revision} view={view} seat={seat} opponent={opponent} game={game} />
+        <Table key={game.revision} view={view} seat={seat} opponents={opponents} game={game} />
         <aside className="sidebar">
           <Stack view={view} />
           <EventLog events={view.events} nameOf={game.nameOf} />
@@ -225,7 +238,7 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
 interface TableProps {
   readonly view: PlayerView
   readonly seat: PlayerId
-  readonly opponent: PlayerId
+  readonly opponents: readonly PlayerId[]
   readonly game: NetworkGame
 }
 
@@ -233,12 +246,16 @@ interface TableProps {
  * Everything interactive. Keyed on `game.revision` in the parent, so every
  * in-progress selection resets whenever the game state moves on.
  */
-function Table({ view, seat, opponent, game }: TableProps) {
+function Table({ view, seat, opponents, game }: TableProps) {
   const actions = game.actions
 
   const [targeting, setTargeting] = useState<Targeting | null>(null)
   const [selectedSource, setSelectedSource] = useState<ObjectId | null>(null)
-  const [attackPicks, setAttackPicks] = useState<readonly ObjectId[]>([])
+  // Attacker -> chosen defender. With more than one legal opponent, clicking
+  // an attacker assigns it to the first opponent by default and focuses it;
+  // clicking a different opponent's panel while focused redirects it.
+  const [attackAssignments, setAttackAssignments] = useState<Record<string, PlayerId>>({})
+  const [attackFocus, setAttackFocus] = useState<ObjectId | null>(null)
   const [blockAssign, setBlockAssign] = useState<Record<string, ObjectId>>({})
   const [blockFocus, setBlockFocus] = useState<ObjectId | null>(null)
   const [orderPicks, setOrderPicks] = useState<readonly ObjectId[]>([])
@@ -441,9 +458,24 @@ function Table({ view, seat, opponent, game }: TableProps) {
       }
       if (mode === 'attackers' && attackAction) {
         if (!attackAction.eligible.includes(id)) return
-        setAttackPicks((cur) =>
-          cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id],
-        )
+        const hasMultipleDefenders = attackAction.defenders.length > 1
+        if (attackAssignments[id] !== undefined) {
+          if (!hasMultipleDefenders || attackFocus === id) {
+            setAttackAssignments((cur) => {
+              const next = { ...cur }
+              delete next[id]
+              return next
+            })
+            setAttackFocus(null)
+          } else {
+            // Assigned but not the focused one — refocus it so the next
+            // opponent-panel click can redirect it.
+            setAttackFocus(id)
+          }
+          return
+        }
+        setAttackAssignments((cur) => ({ ...cur, [id]: attackAction.defenders[0] }))
+        setAttackFocus(hasMultipleDefenders ? id : null)
         return
       }
       if (mode === 'order-blockers' && orderAction) {
@@ -486,6 +518,8 @@ function Table({ view, seat, opponent, game }: TableProps) {
     [
       abilitiesBySource,
       attackAction,
+      attackAssignments,
+      attackFocus,
       blockAction,
       blockAssign,
       blockFocus,
@@ -499,29 +533,32 @@ function Table({ view, seat, opponent, game }: TableProps) {
 
   const clickPlayerTarget = useCallback(
     (pid: PlayerId) => {
+      if (mode === 'attackers' && attackFocus && attackAction) {
+        if (attackAction.defenders.includes(pid)) {
+          setAttackAssignments((cur) => ({ ...cur, [attackFocus]: pid }))
+          setAttackFocus(null)
+        }
+        return
+      }
       if (mode !== 'targeting' || !targeting) return
       const slot = targeting.options[targeting.picked.length] ?? []
       if (slot.some((o) => o.kind === 'player' && o.player === pid)) {
         pickTarget({ kind: 'player', player: pid })
       }
     },
-    [mode, pickTarget, targeting],
+    [attackAction, attackFocus, mode, pickTarget, targeting],
   )
 
   const confirmAttackers = useCallback(() => {
-    if (!attackAction) return
     game.dispatch({
       type: 'declare-attackers',
       player: seat,
-      // This client only ever renders a 2-seat table today, so there's
-      // exactly one legal defender — a real defender-picker UI is follow-up
-      // work for when rooms can seat 3-4 players.
-      attackers: attackPicks.map((attacker) => ({
-        attacker,
-        defender: attackAction.defenders[0],
+      attackers: Object.entries(attackAssignments).map(([attacker, defender]) => ({
+        attacker: attacker as ObjectId,
+        defender,
       })),
     })
-  }, [attackAction, attackPicks, game, seat])
+  }, [attackAssignments, game, seat])
 
   const confirmBlockers = useCallback(() => {
     game.dispatch({
@@ -595,9 +632,15 @@ function Table({ view, seat, opponent, game }: TableProps) {
       .filter((r) => r.kind === 'object')
       .map((r) => (r.kind === 'object' ? r.object : '')),
   )
-  const playerIsTargetable = (pid: PlayerId): boolean =>
-    mode === 'targeting' &&
-    targetSlot.some((o) => o.kind === 'player' && o.player === pid)
+  const playerIsTargetable = (pid: PlayerId): boolean => {
+    if (mode === 'attackers' && attackFocus && attackAction) {
+      return attackAction.defenders.includes(pid)
+    }
+    return (
+      mode === 'targeting' &&
+      targetSlot.some((o) => o.kind === 'player' && o.player === pid)
+    )
+  }
 
   const tileFor = (
     obj: VisibleObject,
@@ -632,8 +675,9 @@ function Table({ view, seat, opponent, game }: TableProps) {
       selected = ids.some((i) => pickedObjKeys.has(i))
     } else if (mode === 'attackers' && attackAction) {
       highlight = attackAction.eligible.includes(id)
-      selected = attackPicks.includes(id)
-      if (selected) badge = `⚔ ${playerLabel(attackAction.defenders[0])}`
+      const assignedTo = attackAssignments[id]
+      selected = assignedTo !== undefined
+      if (assignedTo) badge = `⚔ ${playerLabel(assignedTo)}${attackFocus === id ? ' ?' : ''}`
     } else if (mode === 'blockers' && blockAction) {
       const isBlocker = blockAction.eligible.some((e) => e.blocker === id)
       const assignedTo = blockAssign[id]
@@ -814,7 +858,6 @@ function Table({ view, seat, opponent, game }: TableProps) {
 
   const handIds = view.zones.hands[seat] ?? []
   const seatInfo = view.players[seat]
-  const oppInfo = view.players[opponent]
   const onlineOf = (pid: PlayerId): boolean | null =>
     game.seats.find((s) => s.player === pid)?.online ?? null
   // Exile is one shared zone (not per-player) — split it by each object's
@@ -879,21 +922,34 @@ function Table({ view, seat, opponent, game }: TableProps) {
       </div>
     )
   } else if (mode === 'attackers' && attackAction) {
-    const allSelected = attackPicks.length === attackAction.eligible.length
+    const assignedCount = Object.keys(attackAssignments).length
+    const allSelected = assignedCount === attackAction.eligible.length
     controls = (
       <div className="controls">
-        <span>Declare attackers — {attackPicks.length} selected</span>
+        <span>
+          Declare attackers — {assignedCount} selected
+          {attackFocus
+            ? ` · pick an opponent for ${game.nameOf(attackFocus)}`
+            : ''}
+        </span>
         <button
           type="button"
           disabled={attackAction.eligible.length === 0 || allSelected}
-          onClick={() => setAttackPicks(attackAction.eligible)}
+          onClick={() => {
+            setAttackAssignments(
+              Object.fromEntries(
+                attackAction.eligible.map((id) => [id, attackAction.defenders[0]]),
+              ),
+            )
+            setAttackFocus(null)
+          }}
         >
           Attack with all
         </button>
         <button type="button" onClick={confirmAttackers}>
-          {attackPicks.length === 0
+          {assignedCount === 0
             ? 'No attacks'
-            : `Attack with ${attackPicks.length}`}
+            : `Attack with ${assignedCount}`}
         </button>
       </div>
     )
@@ -1020,34 +1076,42 @@ function Table({ view, seat, opponent, game }: TableProps) {
     ? (abilitiesBySource.get(selectedSource) ?? [])
     : []
 
+  const renderOpponentPanel = (pid: PlayerId) => (
+    <PlayerPanel
+      key={pid}
+      info={view.players[pid]}
+      seatClass={seatClassOf(view.turnOrder, pid)}
+      isActive={view.activePlayer === pid}
+      hasPriority={view.priority.holder === pid}
+      online={onlineOf(pid)}
+      exileSize={exileOf(pid).length}
+      onOpenGraveyard={() =>
+        openZone(`${playerLabel(pid)}'s graveyard`, view.zones.graveyards[pid] ?? [])
+      }
+      onOpenExile={() => openZone(`${playerLabel(pid)}'s exile`, exileOf(pid))}
+      targetable={playerIsTargetable(pid)}
+      onTargetClick={() => clickPlayerTarget(pid)}
+    />
+  )
+
   return (
     <div className="player-col">
       <div className="pinned-top">
         <PhaseTrack view={view} />
         <TurnBanner view={view} />
-        <PlayerPanel
-          info={oppInfo}
-          seatClass={seatClassOf(view.turnOrder, opponent)}
-          isActive={view.activePlayer === opponent}
-          hasPriority={view.priority.holder === opponent}
-          online={onlineOf(opponent)}
-          exileSize={exileOf(opponent).length}
-          onOpenGraveyard={() =>
-            openZone(`${playerLabel(opponent)}'s graveyard`, view.zones.graveyards[opponent] ?? [])
-          }
-          onOpenExile={() => openZone(`${playerLabel(opponent)}'s exile`, exileOf(opponent))}
-          targetable={playerIsTargetable(opponent)}
-          onTargetClick={() => clickPlayerTarget(opponent)}
-        />
+        {opponents.map(renderOpponentPanel)}
       </div>
 
       <main className="table">
-        {renderOpponentHand(opponent)}
-
-        <div className="board-with-sidezone">
-          {renderBoard(opponent, true)}
-          {renderSideZone(opponent)}
-        </div>
+        {opponents.map((pid) => (
+          <div className="opponent-block" key={pid}>
+            {renderOpponentHand(pid)}
+            <div className="board-with-sidezone">
+              {renderBoard(pid, true)}
+              {renderSideZone(pid)}
+            </div>
+          </div>
+        ))}
 
         <div className="player-area-with-sidezone">
           <div className="player-area">

@@ -16,7 +16,12 @@ export interface SeatStatus {
 }
 
 export type ClientMessage =
-  | { readonly type: "create-room"; readonly seed?: number }
+  | {
+      readonly type: "create-room";
+      readonly seed?: number;
+      /** How many seats the room should have (2-4). Defaults to 2. */
+      readonly players?: number;
+    }
   | { readonly type: "join-room"; readonly roomId: string }
   | {
       readonly type: "claim-seat";

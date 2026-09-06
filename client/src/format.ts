@@ -113,7 +113,9 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
 export const playerLabel = (id: PlayerId): string =>
   id.charAt(0).toUpperCase() + id.slice(1)
 
-export type SeatClass = 'seat-a' | 'seat-b'
+export type SeatClass = 'seat-a' | 'seat-b' | 'seat-c' | 'seat-d'
+
+const SEAT_CLASSES: readonly SeatClass[] = ['seat-a', 'seat-b', 'seat-c', 'seat-d']
 
 /**
  * A stable per-player identity class, by seating order rather than table
@@ -121,7 +123,7 @@ export type SeatClass = 'seat-a' | 'seat-b'
  * regardless of which side of the screen they're rendered on.
  */
 export function seatClassOf(turnOrder: readonly PlayerId[], id: PlayerId): SeatClass {
-  return turnOrder.indexOf(id) % 2 === 0 ? 'seat-a' : 'seat-b'
+  return SEAT_CLASSES[turnOrder.indexOf(id) % SEAT_CLASSES.length]
 }
 
 /** Full step names, spelled out — the phase track's pips use abbreviations. */
