@@ -49,8 +49,8 @@ describe("Room", () => {
   it("starts with both seats unclaimed and offline", () => {
     const room = makeRoom();
     expect(room.seatStatuses()).toEqual([
-      { player: ALICE, claimed: false, online: false },
-      { player: BOB, claimed: false, online: false },
+      { player: ALICE, claimed: false, online: false, displayName: null },
+      { player: BOB, claimed: false, online: false, displayName: null },
     ]);
   });
 
@@ -59,10 +59,60 @@ describe("Room", () => {
     const { connection } = fakeConnection();
     room.claimSeat(ALICE, "token-a", connection);
     expect(room.seatStatuses()).toEqual([
-      { player: ALICE, claimed: true, online: true },
-      { player: BOB, claimed: false, online: false },
+      { player: ALICE, claimed: true, online: true, displayName: null },
+      { player: BOB, claimed: false, online: false, displayName: null },
     ]);
     expect(room.seatOf(connection)).toBe(ALICE);
+  });
+
+  it("claims a seat with a chosen display name", () => {
+    const room = makeRoom();
+    const { connection } = fakeConnection();
+    room.claimSeat(ALICE, "token-a", connection, "Toby");
+    expect(room.seatStatuses()[0]).toEqual({
+      player: ALICE,
+      claimed: true,
+      online: true,
+      displayName: "Toby",
+    });
+  });
+
+  it("trims whitespace and drops an empty name, keeping the seat unnamed", () => {
+    const room = makeRoom();
+    const { connection } = fakeConnection();
+    room.claimSeat(ALICE, "token-a", connection, "   ");
+    expect(room.seatStatuses()[0].displayName).toBeNull();
+  });
+
+  it("truncates an overly long display name", () => {
+    const room = makeRoom();
+    const { connection } = fakeConnection();
+    room.claimSeat(ALICE, "token-a", connection, "a".repeat(50));
+    expect(room.seatStatuses()[0].displayName).toHaveLength(20);
+  });
+
+  it("keeps an existing name across a reconnect that doesn't specify one", () => {
+    const room = makeRoom();
+    const { connection: first } = fakeConnection();
+    room.claimSeat(ALICE, "token-a", first, "Toby");
+    room.disconnect(first);
+
+    const { connection: second } = fakeConnection();
+    room.claimSeat(ALICE, "token-a", second);
+
+    expect(room.seatStatuses()[0].displayName).toBe("Toby");
+  });
+
+  it("lets a reconnect change the name to a new one", () => {
+    const room = makeRoom();
+    const { connection: first } = fakeConnection();
+    room.claimSeat(ALICE, "token-a", first, "Toby");
+    room.disconnect(first);
+
+    const { connection: second } = fakeConnection();
+    room.claimSeat(ALICE, "token-a", second, "Robert");
+
+    expect(room.seatStatuses()[0].displayName).toBe("Robert");
   });
 
   it("rejects claiming a seat already held by a different token", () => {
@@ -257,8 +307,8 @@ describe("Room", () => {
     room.disconnect(connection);
     expect(room.seatOf(connection)).toBeNull();
     expect(room.seatStatuses()).toEqual([
-      { player: ALICE, claimed: true, online: false },
-      { player: BOB, claimed: false, online: false },
+      { player: ALICE, claimed: true, online: false, displayName: null },
+      { player: BOB, claimed: false, online: false, displayName: null },
     ]);
   });
 
@@ -273,8 +323,8 @@ describe("Room", () => {
 
     expect(room.seatOf(second)).toBe(ALICE);
     expect(room.seatStatuses()).toEqual([
-      { player: ALICE, claimed: true, online: true },
-      { player: BOB, claimed: false, online: false },
+      { player: ALICE, claimed: true, online: true, displayName: null },
+      { player: BOB, claimed: false, online: false, displayName: null },
     ]);
   });
 

@@ -67,7 +67,7 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
         }
         case "claim-seat": {
           const room = requireRoom(manager, message.roomId);
-          room.claimSeat(message.seat, message.clientToken, connection);
+          room.claimSeat(message.seat, message.clientToken, connection, message.displayName);
           boundRoom = room;
           broadcast(room);
           return;

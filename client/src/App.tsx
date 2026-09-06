@@ -176,19 +176,26 @@ function LobbyScreen({
 }
 
 function SeatPickerScreen({ game }: { readonly game: NetworkGame }) {
+  const [name, setName] = useState('')
   return (
     <CenteredScreen title={`Room ${game.roomId ?? ''}`}>
       <p className="muted">Share this room code, then everyone picks a seat.</p>
       <ErrorLine game={game} />
+      <input
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Your name (optional)"
+        maxLength={20}
+      />
       <div className="seat-picker">
         {game.seats.map((s) => (
           <button
             key={s.player}
             type="button"
             disabled={s.claimed}
-            onClick={() => game.claimSeat(s.player)}
+            onClick={() => game.claimSeat(s.player, name.trim() || undefined)}
           >
-            {playerLabel(s.player)}
+            {playerLabel(s.player, game.seats)}
             {s.claimed ? (s.online ? ' (taken)' : ' (taken · offline)') : ''}
           </button>
         ))}
@@ -206,10 +213,9 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
   }
   const over = view.result.over
   const activeSeatClass = seatClassOf(view.turnOrder, view.activePlayer)
-  const isQuadrant = opponents.length >= 2
 
   return (
-    <div className={`app active-${activeSeatClass} ${isQuadrant ? 'quadrant' : ''}`}>
+    <div className={`app active-${activeSeatClass}`}>
       <header className="topbar">
         <h1>MTG Engine</h1>
         <div className="topbar-right">
@@ -224,7 +230,7 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
       </header>
 
       <div className="seat-banner">
-        {over ? 'Game over' : `${playerLabel(actingPlayer(view) ?? seat)} to act`}
+        {over ? 'Game over' : `${playerLabel(actingPlayer(view) ?? seat, game.seats)} to act`}
       </div>
 
       <ErrorLine game={game} />
@@ -675,7 +681,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
     let badge: string | null = null
     let order: number | null = null
 
-    if (obj.attacking) badge = `⚔ ${playerLabel(obj.attacking)}`
+    if (obj.attacking) badge = `⚔ ${playerLabel(obj.attacking, game.seats)}`
     else if (obj.blocking) badge = `\u{1F6E1} ${game.nameOf(obj.blocking)}`
     else if (obj.isCommander) badge = 'Commander'
 
@@ -697,7 +703,9 @@ function Table({ view, seat, opponents, game }: TableProps) {
       highlight = attackAction.eligible.includes(id)
       const assignedTo = attackAssignments[id]
       selected = assignedTo !== undefined
-      if (assignedTo) badge = `⚔ ${playerLabel(assignedTo)}${attackFocus === id ? ' ?' : ''}`
+      if (assignedTo) {
+        badge = `⚔ ${playerLabel(assignedTo, game.seats)}${attackFocus === id ? ' ?' : ''}`
+      }
     } else if (mode === 'blockers' && blockAction) {
       const isBlocker = blockAction.eligible.some((e) => e.blocker === id)
       const assignedTo = blockAssign[id]
@@ -794,12 +802,14 @@ function Table({ view, seat, opponents, game }: TableProps) {
    * not which zone the card is actually sitting in). */
   const commandZoneTile = (obj: VisibleObject) => {
     const castable = mode === 'priority' && castByCard.has(obj.id)
+    const commanderTax = 2 * (view.players[obj.owner]?.commanderCastCount ?? 0)
     return (
       <CardTile
         key={obj.id}
         obj={obj}
         highlight={castable}
         badge="Commander"
+        extraGenericCost={commanderTax}
         onClick={castable ? () => clickHandCard(obj.id) : undefined}
       />
     )
@@ -862,7 +872,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
     controls = (
       <div className="controls">
         <strong>
-          {view.result.winner ? `${playerLabel(view.result.winner)} wins` : 'Draw'}
+          {view.result.winner ? `${playerLabel(view.result.winner, game.seats)} wins` : 'Draw'}
         </strong>
         <span className="muted">{view.result.reason}</span>
       </div>
@@ -1043,8 +1053,8 @@ function Table({ view, seat, opponents, game }: TableProps) {
       <div className="controls">
         <span className="muted">
           {awaiting !== null
-            ? `Waiting for ${playerLabel(who)} to ${AWAITING_LABEL[awaiting.kind]}…`
-            : `${playerLabel(who)} has priority · ${view.turn.step}`}
+            ? `Waiting for ${playerLabel(who, game.seats)} to ${AWAITING_LABEL[awaiting.kind]}…`
+            : `${playerLabel(who, game.seats)} has priority · ${view.turn.step}`}
         </span>
         <button type="button" onClick={pass} disabled={!canPass}>
           Pass (space)
@@ -1074,15 +1084,16 @@ function Table({ view, seat, opponents, game }: TableProps) {
       isActive={view.activePlayer === pid}
       hasPriority={view.priority.holder === pid}
       online={onlineOf(pid)}
+      seats={game.seats}
       exileSize={exileOf(pid).length}
       onOpenGraveyard={() =>
-        openZone(`${playerLabel(pid)}'s graveyard`, view.zones.graveyards[pid] ?? [])
+        openZone(`${playerLabel(pid, game.seats)}'s graveyard`, view.zones.graveyards[pid] ?? [])
       }
-      onOpenExile={() => openZone(`${playerLabel(pid)}'s exile`, exileOf(pid))}
+      onOpenExile={() => openZone(`${playerLabel(pid, game.seats)}'s exile`, exileOf(pid))}
       onOpenHand={
         pid === seat
           ? undefined
-          : () => openZone(`${playerLabel(pid)}'s hand`, view.zones.hands[pid] ?? [])
+          : () => openZone(`${playerLabel(pid, game.seats)}'s hand`, view.zones.hands[pid] ?? [])
       }
       targetable={playerIsTargetable(pid)}
       onTargetClick={() => clickPlayerTarget(pid)}
@@ -1124,7 +1135,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
 
       <div className="hand">
         <h3>
-          {playerLabel(seat)}'s hand ({handIds.length})
+          {playerLabel(seat, game.seats)}'s hand ({handIds.length})
         </h3>
         <div className="hand-cards">
           {handIds.map((id) => {
@@ -1169,11 +1180,11 @@ function Table({ view, seat, opponents, game }: TableProps) {
       {isQuadrant ? (
         <>
           <div className="pinned-top">
-            <PhaseTrack view={view} />
-            <TurnBanner view={view} />
+            <PhaseTrack view={view} seats={game.seats} />
+            <TurnBanner view={view} seats={game.seats} />
           </div>
 
-          <main className="table quadrant-table">
+          <main className="table">
             <div className="quadrant-grid">
               {[opponents[0], opponents[1], seat, opponents[2]].map((pid, index) => {
                 if (pid === undefined) {
@@ -1200,8 +1211,8 @@ function Table({ view, seat, opponents, game }: TableProps) {
       ) : (
         <>
           <div className="pinned-top">
-            <PhaseTrack view={view} />
-            <TurnBanner view={view} />
+            <PhaseTrack view={view} seats={game.seats} />
+            <TurnBanner view={view} seats={game.seats} />
             {opponents.map(renderPlayerPanel)}
           </div>
 
@@ -1216,13 +1227,12 @@ function Table({ view, seat, opponents, game }: TableProps) {
             ))}
 
             <div className="player-area-with-sidezone">
-              <div className="player-area">
-                {renderBoard(seat, false)}
-                {renderHandAndControls()}
-              </div>
+              <div className="player-area">{renderBoard(seat, false)}</div>
               {renderSideZone(seat)}
             </div>
           </main>
+
+          <div className="hand-strip">{renderHandAndControls()}</div>
 
           <div className="pinned-bottom">{renderPlayerPanel(seat)}</div>
         </>

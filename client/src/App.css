@@ -1,23 +1,28 @@
+/* A full-viewport-height flex column, not a scrolling page: your hand and
+   the controls that act on it (including the keep/mulligan decision) are
+   sized to their own natural content and always fully visible, and only
+   the board area between the top and bottom banners (.table) scrolls
+   internally if there isn't room for everything. A fixed pixel reservation
+   for the banners (the old approach) can't work reliably — a card tile's
+   height varies with its rules text (Ureni's paragraph is much taller than
+   a plain Forest), so any fixed guess either wastes space or clips a real
+   hand. */
 .app {
-  /* Reserve space for the pinned top/bottom banners (below) so normal-flow
-     content never starts out hidden underneath them. */
-  --top-banner-h: 164px;
-  --bottom-banner-h: 84px;
-  width: 100%;
-  padding: calc(var(--top-banner-h) + 12px) 20px calc(var(--bottom-banner-h) + 40px);
+  display: flex;
+  flex-direction: column;
+  /* a hard ceiling, not just a floor — min-height would let .app grow past
+     the viewport to fit its content, which defeats .table's own internal
+     scroll below (the flex chain never gets squeezed enough to engage it,
+     and the whole page scrolls instead). overflow-y is just a safety net
+     for the pathological case where even the always-visible pieces (top
+     banner, hand-strip, bottom banner) alone exceed one viewport — normal
+     use never reaches it, since .table absorbs the overflow first. */
+  height: 100vh;
+  overflow-y: auto;
+  padding: 12px 20px;
   position: relative;
   background: var(--bg);
   transition: background-color 0.6s ease;
-}
-/* the quadrant layout's .pinned-top holds only the phase track + turn
-   banner (no opponent panel — those moved into the grid), so it's shorter;
-   its hand/controls banner (.hand-strip) is pinned to the bottom instead of
-   the single-line pinned-bottom PlayerPanel the classic layout reserves
-   space for, so it needs more room. Reserving the classic layout's heights
-   here would either leave a gap (top) or clip content (bottom). */
-.app.quadrant {
-  --top-banner-h: 90px;
-  --bottom-banner-h: 340px;
 }
 /* whose turn it is, as a faint wash over the whole page */
 .app.active-seat-a {
@@ -100,26 +105,16 @@
    regardless of how far the board has scrolled. Mirrored at the bottom for
    your own seat (see .pinned-bottom). */
 .pinned-top {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 20;
+  flex: none;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 8px 20px;
-  background: var(--bg);
+  padding: 8px 0;
   border-bottom: 1px solid var(--border);
 }
 .pinned-bottom {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 20;
-  padding: 8px 20px;
-  background: var(--bg);
+  flex: none;
+  padding: 8px 0;
   border-top: 1px solid var(--border);
 }
 
@@ -178,13 +173,20 @@
    the History modal, which reuses .zone-viewer-*), so the player column
    spans the full width instead of sharing it with a permanent sidebar */
 .player-col {
+  flex: 1;
   min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 8px;
 }
+/* the board area — everything except the top/bottom banners and your own
+   hand-strip — is the one part that scrolls, if there isn't room for it
+   and the always-visible content above/below it. */
 .table {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -358,19 +360,16 @@
 /* pinned to the bottom of the screen, like .pinned-bottom, but taller (it
    holds full-size hand cards + controls, not a single PlayerPanel line) and
    internally scrollable so a big hand never grows past its reserved space. */
+/* your hand + ability menu + priority/attack/block controls (including the
+   keep/mulligan decision) — always sized to its own natural content, never
+   clipped or scrolled, so it's never necessary to scroll to see your full
+   hand and whatever decision is pending on it. */
 .hand-strip {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 20;
-  max-height: var(--bottom-banner-h);
-  overflow-y: auto;
+  flex: none;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 8px 20px;
-  background: var(--bg);
+  padding: 8px 0 0;
   border-top: 1px solid var(--border);
 }
 
@@ -687,8 +686,14 @@
 }
 .ct-cost {
   display: flex;
+  align-items: center;
   gap: 2px;
   flex-shrink: 0;
+}
+.ct-tax {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--warn);
 }
 .pip {
   width: 13px;

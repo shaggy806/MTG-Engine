@@ -1,5 +1,6 @@
 import type { PlayerView } from 'engine'
 import { playerLabel } from '../format.ts'
+import type { SeatStatus } from '../net/protocol.ts'
 
 const STEPS = [
   ['untap', 'UT'],
@@ -16,12 +17,18 @@ const STEPS = [
   ['cleanup', 'CU'],
 ] as const
 
-export function PhaseTrack({ view }: { readonly view: PlayerView }) {
+export function PhaseTrack({
+  view,
+  seats,
+}: {
+  readonly view: PlayerView
+  readonly seats?: readonly SeatStatus[]
+}) {
   return (
     <div className="phase-track">
       <div className="phase-turn">
         Turn {view.turn.number}
-        <span className="phase-active">{playerLabel(view.activePlayer)}</span>
+        <span className="phase-active">{playerLabel(view.activePlayer, seats)}</span>
       </div>
       <ol className="phase-steps">
         {STEPS.map(([step, abbr]) => (

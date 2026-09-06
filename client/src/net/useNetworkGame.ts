@@ -97,7 +97,7 @@ export interface NetworkGame {
   readonly revision: number
   createRoom: (seed?: number, players?: number) => void
   joinRoom: (roomId: string) => void
-  claimSeat: (seat: PlayerId) => void
+  claimSeat: (seat: PlayerId, displayName?: string) => void
   dispatch: (action: Action) => void
   passTurn: () => void
   /** Toggles auto-passing my priority windows clean through an opponent's
@@ -272,12 +272,12 @@ export function useNetworkGame(): NetworkGame {
   )
 
   const claimSeat = useCallback(
-    (chosen: PlayerId) => {
+    (chosen: PlayerId, displayName?: string) => {
       const id = roomIdRef.current
       if (id === null) return
       const token = newClientToken()
       storeSeat(id, chosen, token)
-      send({ type: 'claim-seat', roomId: id, seat: chosen, clientToken: token })
+      send({ type: 'claim-seat', roomId: id, seat: chosen, clientToken: token, displayName })
     },
     [send],
   )

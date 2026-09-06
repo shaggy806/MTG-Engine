@@ -13,6 +13,9 @@ export interface SeatStatus {
   /** Whether the claiming connection is live right now. Only meaningful
    * when `claimed` — an unclaimed seat is never `online`. */
   readonly online: boolean;
+  /** The claimer's chosen name, or `null` to fall back to the seat's own
+   * label ("Alice", "Bob", ...). */
+  readonly displayName: string | null;
 }
 
 export type ClientMessage =
@@ -29,6 +32,9 @@ export type ClientMessage =
       readonly seat: PlayerId;
       /** Persisted client-side (e.g. localStorage) so a refresh reclaims the same seat. */
       readonly clientToken: string;
+      /** Omit to keep whatever name (if any) this seat already had — e.g. a
+       * silent reconnect shouldn't blank out a name chosen earlier. */
+      readonly displayName?: string;
     }
   | {
       readonly type: "dispatch";

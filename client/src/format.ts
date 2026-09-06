@@ -4,6 +4,7 @@
  */
 
 import type { GameEvent, ObjectId, PlayerId, Step, TargetRef } from 'engine'
+import type { SeatStatus } from './net/protocol.ts'
 
 export type NameOf = (id: ObjectId) => string
 
@@ -110,8 +111,12 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
   }
 }
 
-export const playerLabel = (id: PlayerId): string =>
-  id.charAt(0).toUpperCase() + id.slice(1)
+/** A player's chosen display name if they've set one (via `seats`, when
+ * available), otherwise their seat id capitalized ("alice" -> "Alice"). */
+export const playerLabel = (id: PlayerId, seats?: readonly SeatStatus[]): string => {
+  const custom = seats?.find((s) => s.player === id)?.displayName
+  return custom || id.charAt(0).toUpperCase() + id.slice(1)
+}
 
 export type SeatClass = 'seat-a' | 'seat-b' | 'seat-c' | 'seat-d'
 

@@ -36,9 +36,13 @@ interface Seat {
    * an instant — this is opt-in for players who don't care about that.
    */
   skipManaOnly: boolean;
+  /** The claimer's chosen name, or `null` to fall back to the seat's own
+   * label ("Alice", "Bob", ...). */
+  displayName: string | null;
 }
 
 const SETTLE_BUDGET = 10_000;
+const MAX_DISPLAY_NAME_LENGTH = 20;
 
 export class Room {
   readonly id: string;
@@ -54,6 +58,7 @@ export class Room {
       connection: null,
       autoPassUntil: null,
       skipManaOnly: false,
+      displayName: null,
     }));
   }
 
@@ -62,6 +67,7 @@ export class Room {
       player: s.player,
       claimed: s.clientToken !== null,
       online: s.connection !== null,
+      displayName: s.displayName,
     }));
   }
 
@@ -76,15 +82,26 @@ export class Room {
    * token is rejected — even while that token's connection is currently
    * offline, so a dropped Wi-Fi connection can't hand the seat to a stranger
    * mid-reconnect. The same token reclaims it (e.g. a page refresh, or
-   * genuinely coming back online).
+   * genuinely coming back online). `displayName` is optional and, when
+   * omitted, leaves whatever name (if any) this seat already had alone —
+   * a silent reconnect shouldn't blank out a name chosen earlier.
    */
-  claimSeat(player: PlayerId, clientToken: string, connection: Connection): void {
+  claimSeat(
+    player: PlayerId,
+    clientToken: string,
+    connection: Connection,
+    displayName?: string,
+  ): void {
     const seat = this.seatFor(player);
     if (seat.clientToken !== null && seat.clientToken !== clientToken) {
       throw new Error(`seat ${player} is already claimed`);
     }
     seat.connection = connection;
     seat.clientToken = clientToken;
+    const trimmed = displayName?.trim();
+    if (trimmed) {
+      seat.displayName = trimmed.slice(0, MAX_DISPLAY_NAME_LENGTH);
+    }
   }
 
   seatOf(connection: Connection): PlayerId | null {

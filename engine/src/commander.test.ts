@@ -117,6 +117,10 @@ describe("casting from the command zone", () => {
     game.advanceUntil(stackEmpty);
     expect(game.state.objects[commanderId].zone).toBe("battlefield");
     expect(game.state.players[A].commanderCastCount).toBe(1);
+    // Exposed in the public view too — the client displays the tax from
+    // this, since it has no other way to know how many times a commander
+    // has been recast.
+    expect(game.viewFor(A).players[A].commanderCastCount).toBe(1);
 
     // Kill it with a Bolt — commander replacement (903.9a) sends it to the
     // command zone instead of the graveyard, applied automatically by

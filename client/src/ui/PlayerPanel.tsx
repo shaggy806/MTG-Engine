@@ -1,6 +1,7 @@
 import type { ManaPool, PlayerId, PublicPlayerInfo } from 'engine'
 import { playerLabel } from '../format.ts'
 import type { SeatClass } from '../format.ts'
+import type { SeatStatus } from '../net/protocol.ts'
 
 export interface PlayerPanelProps {
   readonly info: PublicPlayerInfo
@@ -10,6 +11,8 @@ export interface PlayerPanelProps {
   /** Whether this seat's connection is currently live. `null` when unknown
    * (e.g. no room-level seat data yet). */
   readonly online?: boolean | null
+  /** For resolving this player's chosen display name, if any. */
+  readonly seats?: readonly SeatStatus[]
   /** This player's own cards currently in the (shared) exile zone. */
   readonly exileSize?: number
   /** Opens a read-only viewer of this player's graveyard/exile/hand, if provided. */
@@ -34,6 +37,7 @@ export function PlayerPanel({
   isActive,
   hasPriority,
   online = null,
+  seats,
   exileSize = 0,
   onOpenGraveyard,
   onOpenExile,
@@ -69,7 +73,7 @@ export function PlayerPanel({
             title={online ? 'connected' : 'disconnected'}
           />
         )}
-        <span className="pp-name">{playerLabel(info.id)}</span>
+        <span className="pp-name">{playerLabel(info.id, seats)}</span>
         <span className="pp-life">{info.life}</span>
       </div>
       <div className="pp-zones">
@@ -116,7 +120,7 @@ export function PlayerPanel({
         <div className="pp-commander-damage">
           {commanderDamage.map(([from, amount]) => (
             <span key={from}>
-              {amount} cmdr dmg from {playerLabel(from as PlayerId)}
+              {amount} cmdr dmg from {playerLabel(from as PlayerId, seats)}
             </span>
           ))}
         </div>

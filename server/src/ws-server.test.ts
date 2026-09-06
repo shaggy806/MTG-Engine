@@ -73,8 +73,8 @@ describe("room server (end to end over WebSocket)", () => {
     if (aliceState.type !== "state") throw new Error("unreachable");
     expect(aliceState.seat).toBe(ALICE);
     expect(aliceState.seats).toEqual([
-      { player: ALICE, claimed: true, online: true },
-      { player: BOB, claimed: false, online: false },
+      { player: ALICE, claimed: true, online: true, displayName: null },
+      { player: BOB, claimed: false, online: false, displayName: null },
     ]);
 
     bobWs.send(JSON.stringify({ type: "join-room", roomId }));

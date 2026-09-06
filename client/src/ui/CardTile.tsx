@@ -11,6 +11,10 @@ export interface CardTileProps {
   /** Subtle marker: this permanent has an ability you could activate. */
   readonly activatable?: boolean
   readonly badge?: string | null
+  /** Extra generic mana this specific card currently costs beyond its
+   * printed cost (the commander tax, rule 903.4) — shown next to the cost
+   * pips rather than folded into them, so the printed cost stays legible. */
+  readonly extraGenericCost?: number
   /** A small ordinal shown top-left (blocker damage order). */
   readonly order?: number | null
   /** How many identical permanents this tile stands in for (a land stack). */
@@ -69,6 +73,7 @@ export function CardTile({
   dimmed = false,
   activatable = false,
   badge = null,
+  extraGenericCost = 0,
   order = null,
   stackCount = null,
   compact = false,
@@ -110,6 +115,11 @@ export function CardTile({
         {obj.manaCost ? (
           <span className="ct-cost">
             <Symbols text={obj.manaCost} />
+            {extraGenericCost > 0 ? (
+              <span className="ct-tax" title="Commander tax">
+                +{extraGenericCost}
+              </span>
+            ) : null}
           </span>
         ) : null}
       </span>
