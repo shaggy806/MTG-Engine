@@ -23,21 +23,10 @@ export interface BoardEntry {
   readonly attachments: readonly VisibleObject[]
 }
 
-export const BUCKET_LABEL: Record<Bucket, string> = {
-  land: 'Lands',
-  creature: 'Creatures',
-  artifact: 'Artifacts',
-  enchantment: 'Enchantments',
-}
-
-export const BUCKET_ORDER: readonly Bucket[] = [
-  'land',
-  'creature',
-  'artifact',
-  'enchantment',
-]
-
-/** The single bucket a permanent belongs in, most-expansive type wins. */
+/** The single bucket a permanent belongs in, most-expansive type wins. Only
+ * `land` vs. everything else actually splits the board into rows — the
+ * finer-grained bucket exists for `bucketOf`'s stacking rule (only lands
+ * stack) and stays around for whatever wants it later. */
 export function bucketOf(obj: VisibleObject): Bucket {
   if (obj.types.includes('land')) return 'land'
   if (obj.types.includes('creature')) return 'creature'

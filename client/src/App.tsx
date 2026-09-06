@@ -11,8 +11,8 @@ import type {
 } from 'engine'
 import { useNetworkGame } from './net/useNetworkGame.ts'
 import type { NetworkGame } from './net/useNetworkGame.ts'
-import { BUCKET_LABEL, BUCKET_ORDER, computeBoardEntries } from './game/board.ts'
-import type { Bucket, BoardEntry } from './game/board.ts'
+import { computeBoardEntries } from './game/board.ts'
+import type { BoardEntry } from './game/board.ts'
 import { playerLabel, seatClassOf } from './format.ts'
 import { PhaseTrack } from './ui/PhaseTrack.tsx'
 import { TurnBanner } from './ui/TurnBanner.tsx'
@@ -629,56 +629,52 @@ function Table({ view, seat, opponent, game }: TableProps) {
 
   const renderBoard = (pid: PlayerId, isOpp: boolean) => {
     const entries = computeBoardEntries(view, pid)
-    const byBucket = new Map<Bucket, BoardEntry[]>()
-    for (const e of entries) {
-      const list = byBucket.get(e.bucket) ?? []
-      list.push(e)
-      byBucket.set(e.bucket, list)
-    }
-    const nonEmpty = BUCKET_ORDER.filter((b) => (byBucket.get(b)?.length ?? 0) > 0)
+    const lands = entries.filter((e) => e.bucket === 'land')
+    // Creatures, artifacts, and enchantments all share one area — no
+    // per-type labels or sub-columns, just "everything that isn't a land".
+    const permanents = entries.filter((e) => e.bucket !== 'land')
 
-    const renderSection = (bucket: Bucket) => (
-      <div className="board-section" key={bucket}>
-        <div className="board-section-label">{BUCKET_LABEL[bucket]}</div>
-        <div className="board-section-cards">
-          {(byBucket.get(bucket) ?? []).map((entry) => (
-            <div className="board-entry" key={entry.ids[0]}>
-              {tileFor(entry.sample, pid, entry.ids, {
-                stackCount: entry.ids.length,
-              })}
-              {entry.attachments.length > 0 ? (
-                <div className="attachments">
-                  {entry.attachments.map((a) => (
-                    <div key={a.id}>{tileFor(a, pid, [a.id], { compact: true })}</div>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          ))}
-        </div>
+    const renderEntries = (list: readonly BoardEntry[]) => (
+      <div className="board-row-cards">
+        {list.map((entry) => (
+          <div className="board-entry" key={entry.ids[0]}>
+            {tileFor(entry.sample, pid, entry.ids, {
+              stackCount: entry.ids.length,
+            })}
+            {entry.attachments.length > 0 ? (
+              <div className="attachments">
+                {entry.attachments.map((a) => (
+                  <div key={a.id}>{tileFor(a, pid, [a.id], { compact: true })}</div>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        ))}
+        {list.length === 0 ? <span className="board-row-empty muted">empty</span> : null}
       </div>
     )
 
-    // Lands get their own row, like a physical Commander table's mana base —
-    // kept nearest this player's own edge (below their permanents when it's
-    // your own board, above when it's the opponent's, so creatures from both
+    // Lands and permanents each always reserve their row, even empty, so the
+    // board doesn't resize/jump around as things come and go. Lands get
+    // their own row, like a physical Commander table's mana base — kept
+    // nearest this player's own edge (below their permanents when it's your
+    // own board, above when it's the opponent's, so creatures from both
     // sides meet toward the middle of the screen).
-    const permanentBuckets = nonEmpty.filter((b) => b !== 'land')
-    const landRow = nonEmpty.includes('land') ? (
+    const landRow = (
       <div className="board-row" key="lands">
-        {renderSection('land')}
+        {renderEntries(lands)}
       </div>
-    ) : null
-    const permanentRow = permanentBuckets.length > 0 ? (
+    )
+    const permanentRow = (
       <div className="board-row" key="permanents">
-        {permanentBuckets.map(renderSection)}
+        {renderEntries(permanents)}
       </div>
-    ) : null
+    )
     const rows = isOpp ? [landRow, permanentRow] : [permanentRow, landRow]
 
     return (
       <div className={`board ${isOpp ? 'opp' : 'you'} ${seatClassOf(view.turnOrder, pid)}`}>
-        {nonEmpty.length === 0 ? <div className="board-empty">no permanents</div> : rows}
+        {rows}
       </div>
     )
   }
@@ -975,11 +971,10 @@ function Table({ view, seat, opponent, game }: TableProps) {
       </div>
 
       <main className="table">
-        <div className="player-area-with-sidezone">
-          <div className="player-area">
-            {renderOpponentHand(opponent)}
-            {renderBoard(opponent, true)}
-          </div>
+        {renderOpponentHand(opponent)}
+
+        <div className="board-with-sidezone">
+          {renderBoard(opponent, true)}
           {renderSideZone(opponent)}
         </div>
 

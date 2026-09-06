@@ -313,9 +313,14 @@
 /* board: one bordered area per seat, permanents split into labeled type
    areas side by side within it (lands/creatures/artifacts/enchantments);
    Auras/Equipment nest under their host instead of getting their own area */
-/* Each side's command/library column spans that whole side — the opponent's
-   hand-backs row plus their board, or your board plus controls and hand —
-   not just the board, so it stretches to match its sibling's full height. */
+.board-with-sidezone {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+/* your side: the command/library column spans your board AND your hand (and
+   whatever controls sit between them), not just the board — so it stretches
+   to match its sibling's full height instead of stopping at the board. */
 .player-area-with-sidezone {
   display: flex;
   align-items: stretch;
@@ -362,29 +367,14 @@
   padding-top: 6px;
   border-top: 1px dashed var(--border);
 }
-.board-section {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.board-section:not(:first-child) {
-  padding-left: 18px;
-  border-left: 1px solid var(--border);
-}
-.board-section-label {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-}
-.board-section-cards {
+.board-row-cards {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
   gap: 10px 8px;
 }
-.board-empty {
-  color: var(--muted);
+.board-row-empty {
+  font-size: 12px;
 }
 .board-entry {
   display: flex;
