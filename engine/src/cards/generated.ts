@@ -3,6 +3,7 @@
 
 import type { CardDefinition } from "./define.js";
 
+import _poolAmbushViper from "./pool/ambush-viper.js";
 import _poolAngelicEdict from "./pool/angelic-edict.js";
 import _poolAshmarkMarduVanguard from "./pool/ashmark-mardu-vanguard.js";
 import _poolBlaze from "./pool/blaze.js";
@@ -39,6 +40,7 @@ import _poolLightningBolt from "./pool/lightning-bolt.js";
 import _poolLlanowarElves from "./pool/llanowar-elves.js";
 import _poolManOWar from "./pool/man-o-war.js";
 import _poolMindRot from "./pool/mind-rot.js";
+import _poolMonasterySwiftspear from "./pool/monastery-swiftspear.js";
 import _poolMossbackDragon from "./pool/mossback-dragon.js";
 import _poolMountain from "./pool/mountain.js";
 import _poolNaturalize from "./pool/naturalize.js";
@@ -70,6 +72,7 @@ import _tokensSoldierToken from "./tokens/soldier-token.js";
 
 /** The built-in card pool — every file under `pool/` and `tokens/`. */
 export const BUILTIN_CARDS: readonly CardDefinition[] = [
+  _poolAmbushViper,
   _poolAngelicEdict,
   _poolAshmarkMarduVanguard,
   _poolBlaze,
@@ -106,6 +109,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolLlanowarElves,
   _poolManOWar,
   _poolMindRot,
+  _poolMonasterySwiftspear,
   _poolMossbackDragon,
   _poolMountain,
   _poolNaturalize,

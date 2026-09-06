@@ -38,6 +38,7 @@ const KEYWORD_LABEL: Record<string, string> = {
   menace: 'Menace',
   indestructible: 'Indestructible',
   hexproof: 'Hexproof',
+  flash: 'Flash',
 }
 
 /** Scryfall serves art crops for real card names straight from this URL. */

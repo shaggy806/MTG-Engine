@@ -48,6 +48,7 @@ const deckA = deck([
   ["Rabid Bite", 1],
   ["Gladecover Scout", 2],
   ["Darksteel Myr", 1],
+  ["Ambush Viper", 2],
 ]);
 const deckB = deck([
   ["Mountain", 6],
@@ -82,6 +83,7 @@ const deckB = deck([
   ["Counterspell", 2],
   ["Negate", 1],
   ["Essence Scatter", 1],
+  ["Monastery Swiftspear", 3],
 ]);
 
 // All four seats' decks/commanders, in seating order — sliced down to

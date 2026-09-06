@@ -49,6 +49,14 @@ export type TriggerSpec =
   | { readonly on: "dies"; readonly who: TriggerWho }
   | { readonly on: "attacks"; readonly who: TriggerWho }
   | { readonly on: "step-begins"; readonly step: Step; readonly who: TriggerWho }
+  | {
+      /** A spell was cast. `who` is relative to the caster: `"you"` = this
+       * permanent's controller cast it. `noncreatureOnly` narrows to a
+       * noncreature spell (prowess, rule 702.108). */
+      readonly on: "cast-spell";
+      readonly who: TriggerWho;
+      readonly noncreatureOnly?: boolean;
+    }
   /** Escape hatch: match the raw event yourself. */
   | { readonly on: "predicate"; readonly match: (event: GameEvent) => boolean };
 

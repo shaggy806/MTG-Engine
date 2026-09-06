@@ -1629,7 +1629,9 @@ export class Game {
     }
     const def = this.registry.get(this.state.objects[cardId].cardName);
     if (def.types.includes("land")) return "lands are played, not cast";
-    if (!def.types.includes("instant")) {
+    // Instant-speed if it's an instant or has flash (rule 702.8); otherwise
+    // sorcery timing applies.
+    if (!def.types.includes("instant") && !def.keywords.includes("flash")) {
       const timing = this.whyNotSorcerySpeed(player, `cast ${def.name}`);
       if (timing !== null) return timing;
     }
@@ -2271,6 +2273,22 @@ export class Game {
           event.step === spec.step &&
           (spec.who !== "you" || this.activePlayer === self.controller)
         );
+      case "cast-spell": {
+        if (event.type !== "spell-cast") return false;
+        const casterMatches =
+          spec.who === "any" || (spec.who === "you" && event.player === self.controller);
+        if (!casterMatches) return false;
+        if (spec.noncreatureOnly) {
+          const castObject = this.state.objects[event.object];
+          if (
+            castObject !== undefined &&
+            this.registry.get(castObject.cardName).types.includes("creature")
+          ) {
+            return false;
+          }
+        }
+        return true;
+      }
       default:
         return false;
     }
