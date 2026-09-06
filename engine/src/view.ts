@@ -81,6 +81,9 @@ export interface VisibleObject {
 export interface PlayerView {
   readonly viewer: PlayerId;
   readonly turnOrder: readonly PlayerId[];
+  /** Who the "highroll" (or a configured `startingPlayer`) chose to go
+   * first — fixed for the life of the game, unlike `activePlayer`. */
+  readonly startingPlayer: PlayerId;
   readonly activePlayer: PlayerId;
   readonly turn: TurnState;
   readonly priority: PriorityState;
@@ -227,6 +230,7 @@ export function viewFor(
   return {
     viewer,
     turnOrder: [...state.turnOrder],
+    startingPlayer: state.startingPlayer,
     activePlayer: activePlayerOf(state),
     turn: { ...state.turn },
     priority: { ...state.priority, passed: [...state.priority.passed] },

@@ -46,11 +46,18 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
       switch (message.type) {
         case "create-room": {
           const numPlayers = Math.min(4, Math.max(2, message.players ?? 2));
+          const seats = SEATS.slice(0, numPlayers);
+          // The "highroll" — who goes first is randomized per room, not
+          // always the first-listed seat. Independent of `seed` (which only
+          // governs deck shuffling) so it doesn't shift the deterministic
+          // draw order tests and replays rely on.
+          const startingPlayer = seats[Math.floor(Math.random() * seats.length)].id;
           const room = manager.create({
             seed: message.seed,
             mulligans: true,
             rules: { startingLife: 40 },
-            decks: SEATS.slice(0, numPlayers).map((seat) => ({
+            startingPlayer,
+            decks: seats.map((seat) => ({
               player: seat.id,
               cards: [...seat.cards],
               commander: seat.commander,
