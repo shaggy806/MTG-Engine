@@ -303,24 +303,25 @@
   color: var(--bad);
   font-size: 12px;
 }
+.pp-commander-damage {
+  display: flex;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--bad);
+}
 
 /* board: one bordered area per seat, permanents split into labeled type
    areas side by side within it (lands/creatures/artifacts/enchantments);
    Auras/Equipment nest under their host instead of getting their own area */
-.board-with-sidezone {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-}
-/* your side: the command/library column spans your board AND your hand (and
-   whatever controls sit between them), not just the board — so it stretches
-   to match its sibling's full height instead of stopping at the board. */
-.own-area-with-sidezone {
+/* Each side's command/library column spans that whole side — the opponent's
+   hand-backs row plus their board, or your board plus controls and hand —
+   not just the board, so it stretches to match its sibling's full height. */
+.player-area-with-sidezone {
   display: flex;
   align-items: stretch;
   gap: 8px;
 }
-.own-area {
+.player-area {
   flex: 1;
   min-width: 0;
   display: flex;

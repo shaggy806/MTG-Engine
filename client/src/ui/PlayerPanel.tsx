@@ -1,4 +1,4 @@
-import type { ManaPool, PublicPlayerInfo } from 'engine'
+import type { ManaPool, PlayerId, PublicPlayerInfo } from 'engine'
 import { playerLabel } from '../format.ts'
 import type { SeatClass } from '../format.ts'
 
@@ -40,6 +40,9 @@ export function PlayerPanel({
   onTargetClick,
 }: PlayerPanelProps) {
   const mana = manaString(info.manaPool)
+  const commanderDamage = Object.entries(info.commanderDamageTaken).filter(
+    ([, amount]) => amount > 0,
+  )
   const classes = [
     'player-panel',
     seatClass,
@@ -97,6 +100,15 @@ export function PlayerPanel({
         </span>
       </div>
       {mana ? <div className="pp-mana">{mana}</div> : null}
+      {commanderDamage.length > 0 ? (
+        <div className="pp-commander-damage">
+          {commanderDamage.map(([from, amount]) => (
+            <span key={from}>
+              {amount} cmdr dmg from {playerLabel(from as PlayerId)}
+            </span>
+          ))}
+        </div>
+      ) : null}
       {info.hasLost ? <div className="pp-lost">{info.lossReason}</div> : null}
     </div>
   )

@@ -574,6 +574,7 @@ function Table({ view, seat, opponent, game }: TableProps) {
 
     if (obj.attacking) badge = `⚔ ${playerLabel(obj.attacking)}`
     else if (obj.blocking) badge = `\u{1F6E1} ${game.nameOf(obj.blocking)}`
+    else if (obj.isCommander) badge = 'Commander'
 
     if (mode === 'order-blockers' && orderAction) {
       if (id === orderAction.attacker) {
@@ -687,6 +688,24 @@ function Table({ view, seat, opponent, game }: TableProps) {
    * still public — unless something that player controls (e.g. Oracle of
    * Mul Daya) makes its top card public knowledge, in which case that card
    * renders face-up in its place. */
+  /** A commander in the command zone isn't a battlefield permanent, so it
+   * doesn't go through `tileFor` (targeting/attacking/blocking don't apply)
+   * — it's castable like a hand card instead, via the same `castByCard`
+   * map and `clickHandCard` dispatch (which only ever consults that map,
+   * not which zone the card is actually sitting in). */
+  const commandZoneTile = (obj: VisibleObject) => {
+    const castable = mode === 'priority' && castByCard.has(obj.id)
+    return (
+      <CardTile
+        key={obj.id}
+        obj={obj}
+        highlight={castable}
+        badge="Commander"
+        onClick={castable ? () => clickHandCard(obj.id) : undefined}
+      />
+    )
+  }
+
   const renderSideZone = (pid: PlayerId) => {
     const commandIds = view.zones.command.filter((id) => view.objects[id]?.owner === pid)
     const topId = view.revealedLibraryTop[pid] ?? null
@@ -701,7 +720,7 @@ function Table({ view, seat, opponent, game }: TableProps) {
             {commandIds.length > 0 ? (
               commandIds.map((id) => {
                 const obj = view.objects[id]
-                return obj ? tileFor(obj, pid, [id]) : null
+                return obj ? commandZoneTile(obj) : null
               })
             ) : (
               <div className="card-slot-empty" title="empty command zone" />
@@ -724,6 +743,35 @@ function Table({ view, seat, opponent, game }: TableProps) {
               <div className="side-zone-empty">empty</div>
             )}
           </div>
+        </div>
+      </div>
+    )
+  }
+
+  /** The opponent's hand, face down — accurate in count and per-card
+   * identity (a stable id per slot), just not in what each one actually is.
+   * That per-card addressability is what a future single-card reveal effect
+   * (Gitaxian Probe-style) would flip to a real face, the same way the
+   * library's top card already can. */
+  const renderOpponentHand = (pid: PlayerId) => {
+    const ids = view.zones.hands[pid] ?? []
+    return (
+      <div className="hand opp-hand">
+        <h3>
+          {playerLabel(pid)}'s hand ({ids.length})
+        </h3>
+        <div className="hand-cards">
+          {ids.map((id) => {
+            const obj = view.objects[id]
+            // Normally undefined (hidden) — but render the real face if
+            // something has revealed this specific card.
+            return obj ? (
+              <CardTile key={id} obj={obj} />
+            ) : (
+              <div key={id} className="card-back" title="face-down card" />
+            )
+          })}
+          {ids.length === 0 ? <span className="muted">empty</span> : null}
         </div>
       </div>
     )
@@ -927,13 +975,16 @@ function Table({ view, seat, opponent, game }: TableProps) {
       </div>
 
       <main className="table">
-        <div className="board-with-sidezone">
-          {renderBoard(opponent, true)}
+        <div className="player-area-with-sidezone">
+          <div className="player-area">
+            {renderOpponentHand(opponent)}
+            {renderBoard(opponent, true)}
+          </div>
           {renderSideZone(opponent)}
         </div>
 
-        <div className="own-area-with-sidezone">
-          <div className="own-area">
+        <div className="player-area-with-sidezone">
+          <div className="player-area">
             {renderBoard(seat, false)}
 
             {selectedAbilities.length > 0 ? (
