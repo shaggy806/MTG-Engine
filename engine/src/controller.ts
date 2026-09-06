@@ -57,13 +57,14 @@ export interface PlayerController {
     legalOptions: readonly (readonly TargetRef[])[],
   ): readonly TargetRef[];
   /**
-   * Choose between `min` and `max` cards from `ids` (already revealed
-   * candidates from a `"look-and-choose"` effect) to move to the effect's
-   * destination.
+   * Choose between `min` and `max` cards from `eligible` (the choosable
+   * subset of a `"look-and-choose"` effect's revealed candidates — narrower
+   * than everything revealed when the effect restricts the choice, e.g. to
+   * a Dragon card) to move to the effect's destination.
    */
   chooseFromZone(
     view: ControllerView,
-    ids: readonly ObjectId[],
+    eligible: readonly ObjectId[],
     min: number,
     max: number,
   ): readonly ObjectId[];
@@ -114,7 +115,7 @@ function answerAwaited(
     return {
       type: "choose-from-zone",
       player,
-      chosen: controller.chooseFromZone(view, awaiting.ids, awaiting.min, awaiting.max),
+      chosen: controller.chooseFromZone(view, awaiting.eligible, awaiting.min, awaiting.max),
     };
   }
   const hand = view.state.zones.perPlayer[player].hand.map(
@@ -173,11 +174,11 @@ export class AutomaticController implements PlayerController {
 
   chooseFromZone(
     _view: ControllerView,
-    ids: readonly ObjectId[],
+    eligible: readonly ObjectId[],
     min: number,
     _max: number,
   ): readonly ObjectId[] {
-    return ids.slice(0, min);
+    return eligible.slice(0, min);
   }
 }
 
@@ -207,7 +208,7 @@ type TargetChooser = (
 ) => readonly TargetRef[];
 type ZoneChooser = (
   view: ControllerView,
-  ids: readonly ObjectId[],
+  eligible: readonly ObjectId[],
   min: number,
   max: number,
 ) => readonly ObjectId[];
@@ -226,7 +227,7 @@ export class ScriptedController implements PlayerController {
   orderBlockersFn: OrderChooser = (_view, _attacker, blockers) => blockers;
   chooseTargetsFn: TargetChooser = (_view, _source, _specs, legalOptions) =>
     firstOfEach(legalOptions);
-  chooseFromZoneFn: ZoneChooser = (_view, ids, min, _max) => ids.slice(0, min);
+  chooseFromZoneFn: ZoneChooser = (_view, eligible, min, _max) => eligible.slice(0, min);
 
   constructor(playerId: PlayerId, script: readonly ScriptEntry[] = []) {
     this.playerId = playerId;
@@ -287,11 +288,11 @@ export class ScriptedController implements PlayerController {
 
   chooseFromZone(
     view: ControllerView,
-    ids: readonly ObjectId[],
+    eligible: readonly ObjectId[],
     min: number,
     max: number,
   ): readonly ObjectId[] {
-    return this.chooseFromZoneFn(view, ids, min, max);
+    return this.chooseFromZoneFn(view, eligible, min, max);
   }
 }
 
@@ -388,7 +389,7 @@ export class RandomController extends AutomaticController {
         return { type: "discard", player, cards };
       }
       case "choose-from-zone": {
-        const pool = [...legal.ids];
+        const pool = [...legal.eligible];
         const n = legal.min + Math.floor(this.random() * (legal.max - legal.min + 1));
         const chosen: ObjectId[] = [];
         for (let i = 0; i < n && pool.length > 0; i += 1) {

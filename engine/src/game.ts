@@ -24,7 +24,7 @@ import type { Characteristics } from "./characteristics.js";
 import { AutomaticController } from "./controller.js";
 import type { ControllerView, PlayerController } from "./controller.js";
 import { applyEffectSpec } from "./effects.js";
-import type { PtDuration, ResolutionContext } from "./effects.js";
+import type { PtDuration, ResolutionContext, ZoneChoiceFilter } from "./effects.js";
 import type {
   EventOfType,
   GameEvent,
@@ -356,6 +356,7 @@ export class Game {
           {
             kind: "choose-from-zone",
             ids: [...awaiting.ids],
+            eligible: [...awaiting.eligible],
             min: awaiting.min,
             max: awaiting.max,
           },
@@ -810,9 +811,9 @@ export class Game {
     if (chosen.length < awaiting.min || chosen.length > awaiting.max) {
       return `${player} must choose between ${awaiting.min} and ${awaiting.max} card(s), chose ${chosen.length}`;
     }
-    const candidates = new Set(awaiting.ids);
+    const eligible = new Set(awaiting.eligible);
     for (const id of chosen) {
-      if (!candidates.has(id)) return `${player} chose ${id}, not a candidate`;
+      if (!eligible.has(id)) return `${player} chose ${id}, not an eligible candidate`;
     }
     return null;
   }
@@ -2094,9 +2095,19 @@ export class Game {
         this.grantKeyword(target, keyword, duration),
       createToken: (token, count) => this.createTokens(controller, token, count),
       attach: (target) => this.attachPermanent(source, target),
-      lookAndChoose: (zone, count, min, max, destination, leftover) =>
-        this.beginZoneChoice(controller, zone, count, min, max, destination, leftover),
+      lookAndChoose: (zone, count, min, max, destination, leftover, filter) =>
+        this.beginZoneChoice(controller, zone, count, min, max, destination, leftover, filter),
     };
+  }
+
+  /** Does `id` satisfy a `"look-and-choose"` effect's optional filter? Always
+   * true when there's no filter — the effect just doesn't restrict the choice. */
+  private matchesZoneChoiceFilter(id: ObjectId, filter: ZoneChoiceFilter | undefined): boolean {
+    if (filter === undefined) return true;
+    const def = this.registry.get(this.state.objects[id].cardName);
+    if (filter.type !== undefined && !def.types.includes(filter.type)) return false;
+    if (filter.subtype !== undefined && !def.subtypes.includes(filter.subtype)) return false;
+    return true;
   }
 
   /** See the `"look-and-choose"` {@link EffectSpec}. */
@@ -2108,15 +2119,22 @@ export class Game {
     max: number,
     destination: "battlefield" | "hand",
     leftover: "bottom-random" | "stay",
+    filter: ZoneChoiceFilter | undefined,
   ): void {
     const zoneCards = this.state.zones.perPlayer[player][zone];
     const ids = zone === "library" ? zoneCards.slice(0, count ?? 0) : [...zoneCards];
+    // A filter (e.g. "only a Dragon card") narrows what's *choosable*, never
+    // what's *revealed* — the player still looks at everything either way,
+    // and naturally ends up unable to choose anything if nothing matches
+    // (min/max clamp to 0 along with it), same as the real card whiffing.
+    const eligible = ids.filter((id) => this.matchesZoneChoiceFilter(id, filter));
     this.state.awaiting = {
       kind: "choose-from-zone",
       player,
       ids,
-      min: Math.min(min, ids.length),
-      max: Math.min(max, ids.length),
+      eligible,
+      min: Math.min(min, eligible.length),
+      max: Math.min(max, eligible.length),
       destination,
       leftover,
     };

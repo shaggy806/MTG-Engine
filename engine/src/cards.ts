@@ -700,7 +700,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
     power: 5,
     toughness: 5,
     text:
-      "When Ureni of the Unwritten enters the battlefield, look at the top 8 cards of your library. You may put one of them onto the battlefield. Put the rest on the bottom of your library in a random order.",
+      "When Ureni of the Unwritten enters the battlefield, look at the top 8 cards of your library. You may put a Dragon card from among them onto the battlefield. Put the rest on the bottom of your library in a random order.",
     triggered: [
       {
         trigger: { on: "enters-battlefield", who: "self" },
@@ -713,12 +713,24 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
           max: 1,
           destination: "battlefield",
           leftover: "bottom-random",
+          filter: { subtype: "Dragon" },
         },
         resolve: null,
         text:
-          "When Ureni of the Unwritten enters the battlefield, look at the top 8 cards of your library. You may put one of them onto the battlefield. Put the rest on the bottom of your library in a random order.",
+          "When Ureni of the Unwritten enters the battlefield, look at the top 8 cards of your library. You may put a Dragon card from among them onto the battlefield. Put the rest on the bottom of your library in a random order.",
       },
     ],
+  }),
+  define({
+    name: "Mossback Dragon",
+    manaCost: "{4}{G}{G}",
+    colors: ["G"],
+    types: ["creature"],
+    subtypes: ["Dragon"],
+    power: 6,
+    toughness: 6,
+    keywords: ["flying"],
+    text: "Flying",
   }),
   define({
     name: "Ashmark, Mardu Vanguard",

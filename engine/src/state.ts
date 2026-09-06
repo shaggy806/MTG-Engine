@@ -174,6 +174,11 @@ export type AwaitingDecision =
       readonly player: PlayerId;
       /** Candidates already revealed to `player`, in their original zone order. */
       readonly ids: readonly ObjectId[];
+      /** The subset of `ids` that may actually be chosen — narrower than
+       * `ids` when the effect restricts the choice (e.g. only a Dragon card),
+       * equal to `ids` when it doesn't. Everything in `ids` is revealed
+       * either way; this only bounds the choice itself. */
+      readonly eligible: readonly ObjectId[];
       readonly min: number;
       readonly max: number;
       readonly destination: "battlefield" | "hand";

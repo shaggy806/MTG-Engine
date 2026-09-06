@@ -125,6 +125,9 @@ export type LegalAction =
       readonly kind: "choose-from-zone";
       /** Candidates, already revealed to this player. */
       readonly ids: readonly ObjectId[];
+      /** The subset of `ids` that may actually be chosen (equal to `ids`
+       * when the effect doesn't restrict the choice). */
+      readonly eligible: readonly ObjectId[];
       readonly min: number;
       readonly max: number;
     };

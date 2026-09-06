@@ -8,13 +8,22 @@
  * into the spell's or ability's chosen targets, or the literal `"source"`.
  */
 
-import type { Keyword } from "./cards.js";
+import type { CardType, Keyword } from "./cards.js";
 import type { ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { TargetRef } from "./target.js";
 
 export type EffectTargetRef = number | "source";
 export type PtDuration = "end-of-turn" | "permanent";
+
+/** Restricts which of a "look-and-choose" effect's revealed candidates can
+ * actually be chosen (e.g. "a Dragon card", "a land card") — both revealed
+ * either way, only the choice itself is narrowed. Both clauses must match
+ * when both are given. */
+export interface ZoneChoiceFilter {
+  readonly type?: CardType;
+  readonly subtype?: string;
+}
 
 /** A declarative effect. Grows as milestones add vocabulary. */
 export type EffectSpec =
@@ -70,6 +79,10 @@ export type EffectSpec =
       readonly max: number;
       readonly destination: "battlefield" | "hand";
       readonly leftover: "bottom-random" | "stay";
+      /** Narrows which revealed candidates can be chosen (e.g. Ureni of the
+       * Unwritten: only a Dragon card). Everything is still revealed either
+       * way — omit for "any of them". */
+      readonly filter?: ZoneChoiceFilter;
     };
 
 /** Primitive mutations an effect can perform. Implemented by the engine. */
@@ -102,6 +115,7 @@ export interface EffectApi {
     max: number,
     destination: "battlefield" | "hand",
     leftover: "bottom-random" | "stay",
+    filter: ZoneChoiceFilter | undefined,
   ): void;
 }
 
@@ -190,6 +204,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
         spec.max,
         spec.destination,
         spec.leftover,
+        spec.filter,
       );
       return;
     default:

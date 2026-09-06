@@ -126,9 +126,11 @@ describe("look-and-choose: library (Explorer's Insight)", () => {
     expect(awaiting.min).toBe(0);
     expect(awaiting.max).toBe(1);
     expect(awaiting.ids.map((id) => game.state.objects[id].cardName)).toEqual(TOP_FOUR);
+    // No filter on Explorer's Insight — every revealed card is choosable.
+    expect(awaiting.eligible).toEqual(awaiting.ids);
 
     expect(game.legalActions(A)).toEqual([
-      { kind: "choose-from-zone", ids: awaiting.ids, min: 0, max: 1 },
+      { kind: "choose-from-zone", ids: awaiting.ids, eligible: awaiting.ids, min: 0, max: 1 },
     ]);
     expect(game.legalActions(B)).toEqual([]);
   });
@@ -189,7 +191,7 @@ describe("look-and-choose: library (Explorer's Insight)", () => {
     ).toThrow(/same card twice/);
     expect(() =>
       game.dispatch({ type: "choose-from-zone", player: A, chosen: [asObjectId("not-a-candidate")] }),
-    ).toThrow(/not a candidate/);
+    ).toThrow(/not an eligible candidate/);
     expect(() =>
       game.dispatch({ type: "choose-from-zone", player: B, chosen: [] }),
     ).toThrow(/not being asked/);
@@ -228,5 +230,139 @@ describe("look-and-choose: graveyard (Grave Recall)", () => {
     expect(game.handOf(A)).toContain(bear);
     expect(game.state.objects[wurm].zone).toBe("graveyard");
     expect(game.state.zones.perPlayer[A].graveyard).toContain(wurm);
+  });
+});
+
+/** Alice's opening hand: 6 Forests (for Ureni's {4}{G}{G}) + Ureni itself —
+ * cast directly from hand here (not via the command zone) since the filter
+ * is a property of the effect, independent of commander mechanics, which
+ * this file doesn't otherwise touch. */
+const URENI_HAND = [
+  "Forest",
+  "Forest",
+  "Forest",
+  "Forest",
+  "Forest",
+  "Forest",
+  "Ureni of the Unwritten",
+];
+
+function castUreni(game: Game): void {
+  for (let i = 0; i < 6; i += 1) {
+    game.dispatch({
+      type: "play-land",
+      player: A,
+      card: named(game, game.handOf(A), "Forest"),
+    });
+  }
+  const card = named(game, game.handOf(A), "Ureni of the Unwritten");
+  game.dispatch({ type: "cast-spell", player: A, card, targets: [] });
+  game.advanceUntil(stackEmpty);
+}
+
+describe("look-and-choose filter: only a Dragon card (Ureni of the Unwritten)", () => {
+  it("still reveals all 8 — the filter only narrows what's eligible to choose", () => {
+    const topEight = [
+      "Mossback Dragon",
+      "Grizzly Bears",
+      "Mossback Dragon",
+      "Craw Wurm",
+      "Elvish Visionary",
+      "Giant Growth",
+      "Llanowar Elves",
+      "Wildwood Sentinel",
+    ];
+    const game = mkGame([...URENI_HAND, ...topEight]);
+    game.advanceUntil(atFirstMain);
+    castUreni(game);
+
+    const awaiting = game.state.awaiting;
+    if (awaiting?.kind !== "choose-from-zone") throw new Error("unreachable");
+    expect(awaiting.ids.map((id) => game.state.objects[id].cardName)).toEqual(topEight);
+    const dragons = awaiting.ids.filter(
+      (id) => game.state.objects[id].cardName === "Mossback Dragon",
+    );
+    expect(awaiting.eligible).toEqual(dragons);
+    expect(awaiting.eligible.length).toBe(2);
+    expect(awaiting.min).toBe(0);
+    expect(awaiting.max).toBe(1);
+  });
+
+  it("rejects choosing a revealed but non-Dragon card", () => {
+    const topEight = ["Grizzly Bears", "Craw Wurm", "Mossback Dragon", "Giant Growth"];
+    const game = mkGame([...URENI_HAND, ...topEight]);
+    game.advanceUntil(atFirstMain);
+    castUreni(game);
+
+    const awaiting = game.state.awaiting;
+    if (awaiting?.kind !== "choose-from-zone") throw new Error("unreachable");
+    const bear = named(game, awaiting.ids, "Grizzly Bears");
+    expect(() =>
+      game.dispatch({ type: "choose-from-zone", player: A, chosen: [bear] }),
+    ).toThrow(/not an eligible candidate/);
+  });
+
+  it("puts the chosen Dragon onto the battlefield; every other revealed card (Dragon or not) goes to the bottom", () => {
+    const topEight = [
+      "Grizzly Bears",
+      "Craw Wurm",
+      "Mossback Dragon",
+      "Giant Growth",
+      "Elvish Visionary",
+      "Llanowar Elves",
+      "Wildwood Sentinel",
+      "Rumbling Baloth",
+    ];
+    const game = mkGame([...URENI_HAND, ...topEight]);
+    game.advanceUntil(atFirstMain);
+    castUreni(game);
+
+    const awaiting = game.state.awaiting;
+    if (awaiting?.kind !== "choose-from-zone") throw new Error("unreachable");
+    const dragon = named(game, awaiting.ids, "Mossback Dragon");
+
+    game.dispatch({ type: "choose-from-zone", player: A, chosen: [dragon] });
+
+    expect(game.state.objects[dragon].zone).toBe("battlefield");
+    const library = game.state.zones.perPlayer[A].library;
+    const leftoverNames = topEight.filter((name) => name !== "Mossback Dragon");
+    const bottomSeven = library.slice(-7).map((id) => game.state.objects[id].cardName);
+    expect(new Set(bottomSeven)).toEqual(new Set(leftoverNames));
+  });
+
+  it("falls back to putting nothing onto the battlefield when no Dragon is among the 8", () => {
+    const topEight = [
+      "Grizzly Bears",
+      "Craw Wurm",
+      "Elvish Visionary",
+      "Giant Growth",
+      "Llanowar Elves",
+      "Wildwood Sentinel",
+      "Rumbling Baloth",
+      "Forest",
+    ];
+    const game = mkGame([...URENI_HAND, ...topEight]);
+    game.advanceUntil(atFirstMain);
+    castUreni(game);
+
+    const awaiting = game.state.awaiting;
+    if (awaiting?.kind !== "choose-from-zone") throw new Error("unreachable");
+    expect(awaiting.eligible).toEqual([]);
+    expect(awaiting.min).toBe(0);
+    expect(awaiting.max).toBe(0);
+
+    const librarySizeBefore = game.state.zones.perPlayer[A].library.length;
+    // "Put none" is the only legal answer — max was clamped to 0 since
+    // nothing here was ever eligible.
+    expect(() =>
+      game.dispatch({ type: "choose-from-zone", player: A, chosen: [awaiting.ids[0]] }),
+    ).toThrow(/must choose between 0 and 0/);
+    game.dispatch({ type: "choose-from-zone", player: A, chosen: [] });
+
+    expect(game.state.zones.perPlayer[A].library.length).toBe(librarySizeBefore);
+    const bottomEight = game.state.zones.perPlayer[A].library
+      .slice(-8)
+      .map((id) => game.state.objects[id].cardName);
+    expect(new Set(bottomEight)).toEqual(new Set(topEight));
   });
 });
