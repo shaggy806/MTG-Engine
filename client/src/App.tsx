@@ -285,27 +285,38 @@ function ImportDeckScreen({ onBack }: { readonly onBack: () => void }) {
 
 function SeatPickerScreen({ game }: { readonly game: NetworkGame }) {
   const [name, setName] = useState('')
+  const nextSeatIndex = game.seats.findIndex((s) => !s.claimed)
+  const nextSeat = nextSeatIndex === -1 ? null : game.seats[nextSeatIndex]
+
+  const join = (e: FormEvent) => {
+    e.preventDefault()
+    if (!nextSeat) return
+    game.claimSeat(nextSeat.player, name.trim() || `Player ${nextSeatIndex + 1}`)
+  }
+
   return (
     <CenteredScreen title={`Room ${game.roomId ?? ''}`}>
-      <p className="muted">Share this room code, then everyone picks a seat.</p>
+      <p className="muted">Share this room code, then everyone joins.</p>
       <ErrorLine game={game} />
-      <input
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="Your name (optional)"
-        maxLength={20}
-      />
-      <div className="seat-picker">
+      {nextSeat ? (
+        <form onSubmit={join}>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Your name (optional)"
+            maxLength={20}
+          />
+          <button type="submit">Join</button>
+        </form>
+      ) : (
+        <p className="muted">Room is full.</p>
+      )}
+      <div className="seat-picker-status">
         {game.seats.map((s) => (
-          <button
-            key={s.player}
-            type="button"
-            disabled={s.claimed}
-            onClick={() => game.claimSeat(s.player, name.trim() || undefined)}
-          >
+          <span key={s.player} className={s.claimed ? 'seat-status claimed' : 'seat-status'}>
             {playerLabel(s.player, game.seats)}
-            {s.claimed ? (s.online ? ' (taken)' : ' (taken · offline)') : ''}
-          </button>
+            {s.claimed ? (s.online ? ' (taken)' : ' (taken · offline)') : ' (open)'}
+          </span>
         ))}
       </div>
     </CenteredScreen>
@@ -316,11 +327,13 @@ function SeatPickerScreen({ game }: { readonly game: NetworkGame }) {
 function GameScreen({ game }: { readonly game: NetworkGame }) {
   const { view, seat, opponents } = game
   const [showHistory, setShowHistory] = useState(false)
+  const [dismissedHighroll, setDismissedHighroll] = useState(false)
   if (view === null || seat === null || opponents.length === 0) {
     return <CenteredScreen title="Loading…" />
   }
   const over = view.result.over
   const activeSeatClass = seatClassOf(view.turnOrder, view.activePlayer)
+  const showHighroll = view.turn.number === 0 && !dismissedHighroll
 
   return (
     <div className={`app active-${activeSeatClass}`}>
@@ -342,6 +355,12 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
       </div>
 
       <ErrorLine game={game} />
+
+      {showHighroll ? (
+        <div className="highroll-banner" onClick={() => setDismissedHighroll(true)} role="alert">
+          🎲 {playerLabel(view.startingPlayer, game.seats)} won the highroll and goes first
+        </div>
+      ) : null}
 
       <Table key={game.revision} view={view} seat={seat} opponents={opponents} game={game} />
 
@@ -1194,6 +1213,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
       online={onlineOf(pid)}
       seats={game.seats}
       exileSize={exileOf(pid).length}
+      wentFirst={pid === view.startingPlayer}
       onOpenGraveyard={() =>
         openZone(`${playerLabel(pid, game.seats)}'s graveyard`, view.zones.graveyards[pid] ?? [])
       }

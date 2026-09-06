@@ -168,6 +168,18 @@
   cursor: pointer;
 }
 
+.highroll-banner {
+  margin: 6px 0;
+  padding: 6px 10px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-bg);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
 /* table */
 /* the stack and event log are popups/overlays now (see .stack-overlay and
    the History modal, which reuses .zone-viewer-*), so the player column
@@ -261,6 +273,9 @@
 }
 .pp-name {
   font-weight: 600;
+}
+.pp-went-first {
+  font-size: 13px;
 }
 .pp-life {
   font-size: 22px;
@@ -963,9 +978,16 @@
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
-.seat-picker {
+.seat-picker-status {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.seat-status.claimed {
+  color: var(--text);
 }
 
 /* read-only zone browser (graveyard/exile today) */

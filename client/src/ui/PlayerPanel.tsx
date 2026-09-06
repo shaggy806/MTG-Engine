@@ -15,6 +15,8 @@ export interface PlayerPanelProps {
   readonly seats?: readonly SeatStatus[]
   /** This player's own cards currently in the (shared) exile zone. */
   readonly exileSize?: number
+  /** Won the highroll and went first this game. */
+  readonly wentFirst?: boolean
   /** Opens a read-only viewer of this player's graveyard/exile/hand, if provided. */
   readonly onOpenGraveyard?: () => void
   readonly onOpenExile?: () => void
@@ -39,6 +41,7 @@ export function PlayerPanel({
   online = null,
   seats,
   exileSize = 0,
+  wentFirst = false,
   onOpenGraveyard,
   onOpenExile,
   onOpenHand,
@@ -74,6 +77,7 @@ export function PlayerPanel({
           />
         )}
         <span className="pp-name">{playerLabel(info.id, seats)}</span>
+        {wentFirst ? <span className="pp-went-first" title="Won the highroll, goes first">🎲</span> : null}
         <span className="pp-life">{info.life}</span>
       </div>
       <div className="pp-zones">
