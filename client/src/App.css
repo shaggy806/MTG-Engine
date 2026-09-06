@@ -9,6 +9,16 @@
   background: var(--bg);
   transition: background-color 0.6s ease;
 }
+/* the quadrant layout's .pinned-top holds only the phase track + turn
+   banner (no opponent panel — those moved into the grid), so it's shorter;
+   its hand/controls banner (.hand-strip) is pinned to the bottom instead of
+   the single-line pinned-bottom PlayerPanel the classic layout reserves
+   space for, so it needs more room. Reserving the classic layout's heights
+   here would either leave a gap (top) or clip content (bottom). */
+.app.quadrant {
+  --top-banner-h: 90px;
+  --bottom-banner-h: 340px;
+}
 /* whose turn it is, as a faint wash over the whole page */
 .app.active-seat-a {
   background-color: var(--seat-a-bg);
@@ -345,10 +355,23 @@
 /* your hand + ability menu + priority/attack/block controls, in their own
    full-width strip below the quadrant grid (closer to how Arena keeps your
    hand as a fixed row) rather than squeezed into your quadrant cell. */
+/* pinned to the bottom of the screen, like .pinned-bottom, but taller (it
+   holds full-size hand cards + controls, not a single PlayerPanel line) and
+   internally scrollable so a big hand never grows past its reserved space. */
 .hand-strip {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  max-height: var(--bottom-banner-h);
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding: 8px 20px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
 }
 
 .board {

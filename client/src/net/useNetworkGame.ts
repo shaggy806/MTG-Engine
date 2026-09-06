@@ -326,7 +326,15 @@ export function useNetworkGame(): NetworkGame {
     openSocket()
   }, [openSocket])
 
-  const opponents = view ? view.turnOrder.filter((p) => p !== seat) : []
+  // In turn order *starting right after this seat* (wrapping around), not
+  // just "everyone else in the array" — so a seating layout (the quadrant
+  // grid) can place the next player after you, then the next, etc. in a
+  // consistent rotation regardless of where you sit in the raw turn order.
+  const opponents = (() => {
+    if (!view || seat === null) return []
+    const i = view.turnOrder.indexOf(seat)
+    return [...view.turnOrder.slice(i + 1), ...view.turnOrder.slice(0, i)]
+  })()
 
   return {
     status,

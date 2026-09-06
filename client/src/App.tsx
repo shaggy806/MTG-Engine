@@ -206,9 +206,10 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
   }
   const over = view.result.over
   const activeSeatClass = seatClassOf(view.turnOrder, view.activePlayer)
+  const isQuadrant = opponents.length >= 2
 
   return (
-    <div className={`app active-${activeSeatClass}`}>
+    <div className={`app active-${activeSeatClass} ${isQuadrant ? 'quadrant' : ''}`}>
       <header className="topbar">
         <h1>MTG Engine</h1>
         <div className="topbar-right">
