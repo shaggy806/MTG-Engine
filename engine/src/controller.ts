@@ -130,6 +130,16 @@ export interface PlayerController {
     eligible: readonly ObjectId[],
     count: number,
   ): readonly ObjectId[];
+  /**
+   * A scry / surveil: `cards` are the top of the library (in order). Return
+   * which to move away — to the bottom (scry) or the graveyard (surveil). The
+   * rest stay on top in their current order.
+   */
+  chooseScry(
+    view: ControllerView,
+    cards: readonly ObjectId[],
+    mode: "scry" | "surveil",
+  ): readonly ObjectId[];
 }
 
 const passFor = (player: PlayerId): Action => ({
@@ -230,6 +240,13 @@ function answerAwaited(
       type: "sacrifice",
       player,
       permanents: controller.chooseSacrifices(view, awaiting.eligible, awaiting.count),
+    };
+  }
+  if (awaiting.kind === "scry") {
+    return {
+      type: "scry",
+      player,
+      away: controller.chooseScry(view, awaiting.cards, awaiting.mode),
     };
   }
   const hand = view.state.zones.perPlayer[player].hand.map(
@@ -353,6 +370,15 @@ export class AutomaticController implements PlayerController {
   ): readonly ObjectId[] {
     return eligible.slice(0, count);
   }
+
+  chooseScry(
+    _view: ControllerView,
+    _cards: readonly ObjectId[],
+    _mode: "scry" | "surveil",
+  ): readonly ObjectId[] {
+    // Keep everything on top — the conservative do-nothing choice.
+    return [];
+  }
 }
 
 /** A queued action, optionally gated on a condition being true. */
@@ -416,6 +442,11 @@ type SacrificeChooser = (
   eligible: readonly ObjectId[],
   count: number,
 ) => readonly ObjectId[];
+type ScryChooser = (
+  view: ControllerView,
+  cards: readonly ObjectId[],
+  mode: "scry" | "surveil",
+) => readonly ObjectId[];
 
 /**
  * Plays a fixed queue of priority actions (each firing when its `when` guard is
@@ -443,6 +474,7 @@ export class ScriptedController implements PlayerController {
   chooseModesFn: ModesChooser = (_view, minModes) =>
     Array.from({ length: minModes }, (_unused, i) => i);
   chooseSacrificesFn: SacrificeChooser = (_view, eligible, count) => eligible.slice(0, count);
+  chooseScryFn: ScryChooser = () => [];
 
   constructor(playerId: PlayerId, script: readonly ScriptEntry[] = []) {
     this.playerId = playerId;
@@ -560,6 +592,14 @@ export class ScriptedController implements PlayerController {
     count: number,
   ): readonly ObjectId[] {
     return this.chooseSacrificesFn(view, eligible, count);
+  }
+
+  chooseScry(
+    view: ControllerView,
+    cards: readonly ObjectId[],
+    mode: "scry" | "surveil",
+  ): readonly ObjectId[] {
+    return this.chooseScryFn(view, cards, mode);
   }
 }
 
@@ -721,6 +761,10 @@ export class RandomController extends AutomaticController {
           permanents.push(pool.splice(this.pickIndex(pool.length), 1)[0]);
         }
         return { type: "sacrifice", player, permanents };
+      }
+      case "scry": {
+        const away = legal.cards.filter(() => this.random() < 0.5);
+        return { type: "scry", player, away };
       }
       default:
         return passFor(player);

@@ -16,12 +16,14 @@ import _poolBoggartBrute from "./pool/boggart-brute.js";
 import _poolBonesplitter from "./pool/bonesplitter.js";
 import _poolBoomerang from "./pool/boomerang.js";
 import _poolClone from "./pool/clone.js";
+import _poolConsider from "./pool/consider.js";
 import _poolContentiousPlan from "./pool/contentious-plan.js";
 import _poolCounterspell from "./pool/counterspell.js";
 import _poolCrawWurm from "./pool/craw-wurm.js";
 import _poolDamnation from "./pool/damnation.js";
 import _poolDarksteelMyr from "./pool/darksteel-myr.js";
 import _poolDeliberateCourse from "./pool/deliberate-course.js";
+import _poolDemonicTutor from "./pool/demonic-tutor.js";
 import _poolDiabolicEdict from "./pool/diabolic-edict.js";
 import _poolDisenchant from "./pool/disenchant.js";
 import _poolDoomBlade from "./pool/doom-blade.js";
@@ -62,15 +64,18 @@ import _poolMossbackDragon from "./pool/mossback-dragon.js";
 import _poolMountain from "./pool/mountain.js";
 import _poolNaturalize from "./pool/naturalize.js";
 import _poolNegate from "./pool/negate.js";
+import _poolOpt from "./pool/opt.js";
 import _poolOracleOfMulDaya from "./pool/oracle-of-mul-daya.js";
 import _poolPhyrexianArena from "./pool/phyrexian-arena.js";
 import _poolPlains from "./pool/plains.js";
+import _poolPreordain from "./pool/preordain.js";
 import _poolPreyUpon from "./pool/prey-upon.js";
 import _poolProdigalSorcerer from "./pool/prodigal-sorcerer.js";
 import _poolPyroclasm from "./pool/pyroclasm.js";
 import _poolRabidBite from "./pool/rabid-bite.js";
 import _poolRagingGoblin from "./pool/raging-goblin.js";
 import _poolRaiseTheAlarm from "./pool/raise-the-alarm.js";
+import _poolRampantGrowth from "./pool/rampant-growth.js";
 import _poolRestInPeace from "./pool/rest-in-peace.js";
 import _poolRumblingBaloth from "./pool/rumbling-baloth.js";
 import _poolSarovaTheUndyingCurrent from "./pool/sarova-the-undying-current.js";
@@ -112,12 +117,14 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolBonesplitter,
   _poolBoomerang,
   _poolClone,
+  _poolConsider,
   _poolContentiousPlan,
   _poolCounterspell,
   _poolCrawWurm,
   _poolDamnation,
   _poolDarksteelMyr,
   _poolDeliberateCourse,
+  _poolDemonicTutor,
   _poolDiabolicEdict,
   _poolDisenchant,
   _poolDoomBlade,
@@ -158,15 +165,18 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolMountain,
   _poolNaturalize,
   _poolNegate,
+  _poolOpt,
   _poolOracleOfMulDaya,
   _poolPhyrexianArena,
   _poolPlains,
+  _poolPreordain,
   _poolPreyUpon,
   _poolProdigalSorcerer,
   _poolPyroclasm,
   _poolRabidBite,
   _poolRagingGoblin,
   _poolRaiseTheAlarm,
+  _poolRampantGrowth,
   _poolRestInPeace,
   _poolRumblingBaloth,
   _poolSarovaTheUndyingCurrent,

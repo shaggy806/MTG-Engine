@@ -55,6 +55,7 @@ const deckA = deck([
   ["Contentious Plan", 1],
   ["Fog", 2],
   ["Doubling Season", 1],
+  ["Rampant Growth", 2],
 ]);
 // Kept deliberately lean (~50 cards) so the RandomController actually draws
 // and plays its threats — a bloated deck just stalls out and the fuzz only
@@ -107,6 +108,8 @@ const deckB = deck([
   ["Wrath of God", 1],
   ["Diabolic Edict", 2],
   ["Fleshbag Marauder", 2],
+  ["Demonic Tutor", 1],
+  ["Preordain", 2],
 ]);
 
 // A lean Dimir deck for Carol — carries the `Sarova, the Undying Current`
@@ -127,6 +130,10 @@ const deckC = deck([
   ["Mind Rot", 1],
   ["Damnation", 1],
   ["Diabolic Edict", 2],
+  ["Demonic Tutor", 1],
+  ["Preordain", 2],
+  ["Opt", 1],
+  ["Consider", 2],
 ]);
 
 // All four seats' decks/commanders, in seating order — sliced down to

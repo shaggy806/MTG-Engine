@@ -124,6 +124,14 @@ export type Action =
       readonly type: "sacrifice";
       readonly player: PlayerId;
       readonly permanents: readonly ObjectId[];
+    }
+  | {
+      /** Answers a pending `scry` / `surveil` decision: the looked-at cards to
+       * move away from the top — to the bottom of the library (scry) or the
+       * graveyard (surveil). The rest stay on top in their current order. */
+      readonly type: "scry";
+      readonly player: PlayerId;
+      readonly away: readonly ObjectId[];
     };
 
 export type ActionType = Action["type"];
@@ -248,4 +256,10 @@ export type LegalAction =
       readonly count: number;
       /** Permanents this player controls that could be sacrificed. */
       readonly eligible: readonly ObjectId[];
+    }
+  | {
+      readonly kind: "scry";
+      readonly mode: "scry" | "surveil";
+      /** The top cards of the library, in order — revealed to this player. */
+      readonly cards: readonly ObjectId[];
     };

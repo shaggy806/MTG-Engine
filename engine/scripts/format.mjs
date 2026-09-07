@@ -33,6 +33,12 @@ export const makeFormatter = (game) => {
         return e.objects.length > 0
           ? `${e.player} takes ${e.objects.map(name).join(", ")}`
           : `${e.player} takes nothing`;
+      case "library-shuffled":
+        return `${e.player} shuffles their library`;
+      case "scried":
+        return `${e.player} ${e.mode}s ${e.looked} (${e.movedAway} ${
+          e.mode === "surveil" ? "to graveyard" : "to bottom"
+        })`;
       case "damage-cleared":
         return `${e.objects.length} permanent(s)`;
       case "land-played":

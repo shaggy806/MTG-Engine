@@ -46,6 +46,7 @@ type CopyChoiceAction = Extract<LegalAction, { kind: 'choose-copy' }>
 type TextChoiceAction = Extract<LegalAction, { kind: 'choose-text' }>
 type ModesChoiceAction = Extract<LegalAction, { kind: 'choose-modes' }>
 type SacrificeAction = Extract<LegalAction, { kind: 'sacrifice' }>
+type ScryAction = Extract<LegalAction, { kind: 'scry' }>
 
 interface Targeting {
   readonly kind: 'cast' | 'activate'
@@ -86,6 +87,7 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
   'choose-text': 'choose a text change',
   'choose-modes': 'choose a mode',
   sacrifice: 'choose what to sacrifice',
+  scry: 'scry',
 }
 
 export default function App() {
@@ -502,6 +504,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
   const sacrificeAction = actions.find(
     (a): a is SacrificeAction => a.kind === 'sacrifice',
   )
+  const scryAction = actions.find((a): a is ScryAction => a.kind === 'scry')
   const canPass = actions.some((a) => a.kind === 'pass-priority')
   // Only the active player may skip the rest of their own turn — a defender
   // holding priority to respond during it shouldn't get this button.
@@ -520,6 +523,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
     | 'choose-text'
     | 'choose-modes'
     | 'sacrifice'
+    | 'scry'
     | 'choose-x'
     | 'choose-sacrifice'
     | 'targeting'
@@ -535,6 +539,8 @@ function Table({ view, seat, opponents, game }: TableProps) {
           ? 'choose-modes'
         : sacrificeAction
           ? 'sacrifice'
+        : scryAction
+          ? 'scry'
         : bottomAction
           ? 'put-on-bottom'
       : discardAction
@@ -877,6 +883,13 @@ function Table({ view, seat, opponents, game }: TableProps) {
   const confirmZoneChoice = useCallback(
     (chosen: readonly ObjectId[]) => {
       game.dispatch({ type: 'choose-from-zone', player: seat, chosen: [...chosen] })
+    },
+    [game, seat],
+  )
+
+  const confirmScry = useCallback(
+    (away: readonly ObjectId[]) => {
+      game.dispatch({ type: 'scry', player: seat, away: [...away] })
     },
     [game, seat],
   )
@@ -1544,6 +1557,15 @@ function Table({ view, seat, opponents, game }: TableProps) {
         <span className="muted">Look at the popup to choose</span>
       </div>
     )
+  } else if (mode === 'scry' && scryAction) {
+    controls = (
+      <div className="controls">
+        <span className="muted">
+          {scryAction.mode === 'surveil' ? 'Surveil' : 'Scry'} — pick cards in the popup to
+          move {scryAction.mode === 'surveil' ? 'to your graveyard' : 'to the bottom'}
+        </span>
+      </div>
+    )
   } else {
     // Reaching this fallback with `awaiting` set always means it's someone
     // else's declaration pending (a decision of ours would have matched one
@@ -1751,6 +1773,24 @@ function Table({ view, seat, opponents, game }: TableProps) {
             max: zoneChoiceAction.max,
             eligible: zoneChoiceAction.eligible,
             onConfirm: confirmZoneChoice,
+          }}
+        />
+      ) : null}
+
+      {mode === 'scry' && scryAction ? (
+        <ZoneViewer
+          title={
+            scryAction.mode === 'surveil'
+              ? 'Surveil — pick cards to put in your graveyard'
+              : 'Scry — pick cards to put on the bottom'
+          }
+          ids={scryAction.cards}
+          resolve={(id) => view.objects[id]}
+          selection={{
+            min: 0,
+            max: scryAction.cards.length,
+            eligible: scryAction.cards,
+            onConfirm: confirmScry,
           }}
         />
       ) : null}

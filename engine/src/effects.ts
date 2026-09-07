@@ -209,6 +209,34 @@ export type EffectSpec =
       readonly prompt: string;
     }
   | {
+      /** Scry `amount` (rule 701.18) — look at the top N, put any number on
+       * the bottom, keep the rest on top. `then` (Preordain: draw a card) is
+       * applied after. */
+      readonly kind: "scry";
+      readonly amount: number;
+      readonly then?: EffectSpec;
+    }
+  | {
+      /** Surveil `amount` (rule 701.43) — look at the top N, put any number
+       * into the graveyard, keep the rest on top. `then` applied after. */
+      readonly kind: "surveil";
+      readonly amount: number;
+      readonly then?: EffectSpec;
+    }
+  | {
+      /** Search the controller's library for up to `max` (at least `min`,
+       * usually 0 — you may fail to find) cards matching `filter`, move them
+       * to `destination`, then shuffle. Raised as a `choose-from-zone`
+       * decision listing only the matching cards. */
+      readonly kind: "search-library";
+      readonly filter: CardFilter;
+      readonly destination: "hand" | "battlefield";
+      readonly min: number;
+      readonly max: number;
+      /** Put battlefield-bound cards in tapped (Rampant Growth). */
+      readonly enterTapped?: boolean;
+    }
+  | {
       /** Reveal `count` cards from the top of the controller's library (or
        * their whole graveyard — already public, so `count` is ignored) and
        * await a bounded choice of which to move to `destination`. The spell
@@ -308,6 +336,17 @@ export interface EffectApi {
     minModes: number,
     maxModes: number,
     modes: readonly ModeOption[],
+  ): void;
+  /** Scry (`surveil: false`) or surveil (`surveil: true`) `amount` cards;
+   * apply `then` afterwards. See the `"scry"` / `"surveil"` {@link EffectSpec}. */
+  scry(amount: number, surveil: boolean, then: EffectSpec | undefined): void;
+  /** See the `"search-library"` {@link EffectSpec}. */
+  searchLibrary(
+    filter: CardFilter,
+    destination: "hand" | "battlefield",
+    min: number,
+    max: number,
+    enterTapped: boolean,
   ): void;
   /** See the `"look-and-choose"` {@link EffectSpec}. */
   lookAndChoose(
@@ -496,6 +535,21 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       return;
     case "may":
       ctx.chooseModes(0, 1, [{ text: spec.prompt, effect: spec.effect }]);
+      return;
+    case "scry":
+      ctx.scry(spec.amount, false, spec.then);
+      return;
+    case "surveil":
+      ctx.scry(spec.amount, true, spec.then);
+      return;
+    case "search-library":
+      ctx.searchLibrary(
+        spec.filter,
+        spec.destination,
+        spec.min,
+        spec.max,
+        spec.enterTapped === true,
+      );
       return;
     case "look-and-choose":
       ctx.lookAndChoose(

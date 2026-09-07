@@ -25,6 +25,7 @@ import { AutomaticController } from "./controller.js";
 import type { ControllerView, PlayerController } from "./controller.js";
 import { applyEffectSpec } from "./effects.js";
 import type {
+  EffectSpec,
   ModeOption,
   PlayerScope,
   PtDuration,
@@ -323,6 +324,9 @@ export class Game {
       case "sacrifice":
         this.applySacrifice(action.player, action.permanents);
         break;
+      case "scry":
+        this.applyScry(action.player, action.away);
+        break;
       default:
         throw new Error(
           `unhandled action: ${(action as { type: string }).type}`,
@@ -377,6 +381,8 @@ export class Game {
         return this.whyCannotChooseModes(action.player, action.modes);
       case "sacrifice":
         return this.whyCannotSacrifice(action.player, action.permanents);
+      case "scry":
+        return this.whyCannotScry(action.player, action.away);
       default:
         return `unknown action: ${(action as { type: string }).type}`;
     }
@@ -495,6 +501,9 @@ export class Game {
             eligible: [...awaiting.eligible],
           },
         ];
+      }
+      if (awaiting.kind === "scry") {
+        return [{ kind: "scry", mode: awaiting.mode, cards: [...awaiting.cards] }];
       }
       return [
         {
@@ -1242,7 +1251,12 @@ export class Game {
     const chosenSet = new Set(chosen);
     const leftover = awaiting.ids.filter((id) => !chosenSet.has(id));
 
-    for (const id of chosen) this.moveObject(id, awaiting.destination);
+    for (const id of chosen) {
+      this.moveObject(id, awaiting.destination);
+      if (awaiting.enterTapped && awaiting.destination === "battlefield") {
+        this.state.objects[id].tapped = true;
+      }
+    }
 
     if (awaiting.leftover === "bottom-random") {
       // `moveObject` always appends to a zone's array, and the library's
@@ -1250,6 +1264,14 @@ export class Game {
       // card on the bottom, in shuffle order.
       for (const id of shuffle(leftover, this.rng)) this.moveObject(id, "library");
       this.state.rngState = this.rng.seed;
+    } else if (awaiting.leftover === "shuffle") {
+      // A library search — shuffle the whole library afterwards (rule 701.19j).
+      const library = this.state.zones.perPlayer[player].library;
+      const order = shuffle([...library], this.rng);
+      library.length = 0;
+      library.push(...order);
+      this.state.rngState = this.rng.seed;
+      this.emit({ type: "library-shuffled", player });
     }
     // leftover === "stay": nothing to do — those cards were only ever looked
     // at, never removed from wherever they already were.
@@ -2849,6 +2871,10 @@ export class Game {
       },
       chooseModes: (minModes, maxModes, modes) =>
         this.beginModesChoice(source, controller, x, minModes, maxModes, modes),
+      searchLibrary: (filter, destination, min, max, enterTapped) =>
+        this.beginLibrarySearch(controller, filter, destination, min, max, enterTapped),
+      scry: (amount, surveil, then) =>
+        this.beginScry(source, controller, x, amount, surveil ? "surveil" : "scry", then ?? null),
       lookAndChoose: (zone, count, min, max, destination, leftover, filter) =>
         this.beginZoneChoice(controller, zone, count, min, max, destination, leftover, filter),
     };
@@ -2894,6 +2920,108 @@ export class Game {
       destination,
       leftover,
     };
+  }
+
+  /** See the `"search-library"` {@link EffectSpec}. Lists only the matching
+   * cards (a real search reveals the whole library, but the only decision is
+   * which matching card to take); `leftover: "shuffle"` shuffles the whole
+   * library afterwards, whiff or not (rule 701.19). */
+  private beginLibrarySearch(
+    player: PlayerId,
+    filter: CardFilter,
+    destination: "hand" | "battlefield",
+    min: number,
+    max: number,
+    enterTapped: boolean,
+  ): void {
+    const eligible = this.state.zones.perPlayer[player].library.filter((id) =>
+      matchesFilter(this.state, this.registry, id, filter, { you: player }),
+    );
+    this.state.awaiting = {
+      kind: "choose-from-zone",
+      player,
+      ids: eligible,
+      eligible,
+      min: Math.min(min, eligible.length),
+      max: Math.min(max, eligible.length),
+      destination,
+      leftover: "shuffle",
+      ...(enterTapped && destination === "battlefield" ? { enterTapped: true } : {}),
+    };
+  }
+
+  /** See the `"scry"` / `"surveil"` {@link EffectSpec}. Looks at the top N of
+   * the library and raises a `scry` decision. */
+  private beginScry(
+    source: ObjectId,
+    player: PlayerId,
+    x: number,
+    amount: number,
+    mode: "scry" | "surveil",
+    then: EffectSpec | null,
+  ): void {
+    const cards = this.state.zones.perPlayer[player].library.slice(0, amount);
+    if (cards.length === 0) {
+      // Nothing to look at — skip straight to the follow-up effect.
+      if (then !== null) {
+        applyEffectSpec(then, this.makeResolutionContext(source, player, [], x));
+      }
+      return;
+    }
+    this.state.awaiting = { kind: "scry", player, cards, mode, then, source, x };
+  }
+
+  /** Answers a pending `scry` / `surveil` decision. */
+  private applyScry(player: PlayerId, away: readonly ObjectId[]): void {
+    const why = this.whyCannotScry(player, away);
+    if (why !== null) throw new Error(why);
+    const awaiting = this.state.awaiting;
+    if (awaiting === null || awaiting.kind !== "scry") {
+      throw new Error("unreachable: whyCannotScry should have caught this");
+    }
+    const { cards, mode, then, source, x } = awaiting;
+    const awaySet = new Set(away);
+    const stay = cards.filter((id) => !awaySet.has(id));
+    const awayOrdered = cards.filter((id) => awaySet.has(id));
+
+    const library = this.state.zones.perPlayer[player].library;
+    const rest = library.slice(cards.length);
+    // Rebuild: kept cards on top (original order), then the untouched rest,
+    // then the moved-away cards at the bottom.
+    library.length = 0;
+    library.push(...stay, ...rest, ...awayOrdered);
+    this.state.awaiting = null;
+
+    if (mode === "surveil") {
+      for (const id of awayOrdered) this.moveObject(id, "graveyard");
+    }
+    this.emit({
+      type: "scried",
+      player,
+      mode,
+      looked: cards.length,
+      movedAway: awayOrdered.length,
+    });
+
+    if (then !== null) {
+      applyEffectSpec(then, this.makeResolutionContext(source, player, [], x));
+    }
+    if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
+  }
+
+  private whyCannotScry(player: PlayerId, away: readonly ObjectId[]): string | null {
+    const awaiting = this.state.awaiting;
+    if (awaiting === null || awaiting.kind !== "scry" || awaiting.player !== player) {
+      return `${player} is not being asked to scry`;
+    }
+    if (new Set(away).size !== away.length) {
+      return `${player} chose the same card twice`;
+    }
+    const looked = new Set(awaiting.cards);
+    for (const id of away) {
+      if (!looked.has(id)) return `${id} was not among the cards looked at`;
+    }
+    return null;
   }
 
   /** Create `count` copies of the named token, controlled by `controller` (rule 111). */

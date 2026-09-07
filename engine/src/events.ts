@@ -54,6 +54,20 @@ export type GameEvent =
       readonly objects: readonly ObjectId[];
     })
   | (Base & {
+      /** A player shuffled their library (after a search / tutor). */
+      readonly type: "library-shuffled";
+      readonly player: PlayerId;
+    })
+  | (Base & {
+      /** A scry / surveil resolved: `looked` cards seen, `movedAway` put on
+       * the bottom (scry) or into the graveyard (surveil). */
+      readonly type: "scried";
+      readonly player: PlayerId;
+      readonly mode: "scry" | "surveil";
+      readonly looked: number;
+      readonly movedAway: number;
+    })
+  | (Base & {
       readonly type: "damage-cleared";
       readonly objects: readonly ObjectId[];
     })

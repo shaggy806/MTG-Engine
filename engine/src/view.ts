@@ -212,6 +212,10 @@ export function viewFor(
   if (state.awaiting?.kind === "choose-from-zone" && state.awaiting.player === viewer) {
     visibleIds.push(...state.awaiting.ids);
   }
+  // A scry / surveil reveals the looked-at top cards to that player only.
+  if (state.awaiting?.kind === "scry" && state.awaiting.player === viewer) {
+    visibleIds.push(...state.awaiting.cards);
+  }
 
   for (const player of state.turnOrder) {
     const zones = state.zones.perPlayer[player];

@@ -235,9 +235,13 @@ export type AwaitingDecision =
       readonly max: number;
       readonly destination: "battlefield" | "hand";
       /** What happens to any candidate not chosen: shuffled to the bottom of
-       * the library, or left exactly where it already was (nothing was ever
-       * moved just to look at it — the graveyard-search case). */
-      readonly leftover: "bottom-random" | "stay";
+       * the library; left exactly where it already was (nothing was ever
+       * moved just to look at it — the graveyard-search case); or the whole
+       * library is shuffled (a library *search* / tutor — rule 701.19). */
+      readonly leftover: "bottom-random" | "stay" | "shuffle";
+      /** A library-search result that enters the battlefield does so tapped
+       * (Rampant Growth). Only meaningful with `destination: "battlefield"`. */
+      readonly enterTapped?: boolean;
     }
   | {
       readonly kind: "mulligan";
@@ -282,6 +286,20 @@ export type AwaitingDecision =
       readonly fromOptions: readonly string[];
       /** The creature types the new word may be. */
       readonly toOptions: readonly string[];
+    }
+  | {
+      /** A scry / surveil (rule 701.18 / 701.43): `player` has looked at the
+       * top `cards` of their library and chooses which to move away — to the
+       * bottom (scry) or the graveyard (surveil); the rest stay on top in
+       * their current order (the "reorder the ones you keep" clause isn't
+       * modeled). `then`, if set, is applied afterwards (Preordain's draw). */
+      readonly kind: "scry";
+      readonly player: PlayerId;
+      readonly cards: readonly ObjectId[];
+      readonly mode: "scry" | "surveil";
+      readonly then: EffectSpec | null;
+      readonly source: ObjectId;
+      readonly x: number;
     }
   | {
       /** A sacrifice *effect* (Diabolic Edict, Fleshbag Marauder) — `player`

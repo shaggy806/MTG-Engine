@@ -44,6 +44,12 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return event.objects.length > 0
         ? `${event.player} takes ${event.objects.map(name).join(', ')}`
         : `${event.player} takes nothing`
+    case 'library-shuffled':
+      return `${event.player} shuffles their library`
+    case 'scried':
+      return `${event.player} ${event.mode}s ${event.looked} (${event.movedAway} ${
+        event.mode === 'surveil' ? 'to graveyard' : 'to bottom'
+      })`
     case 'damage-cleared':
       return `damage cleared from ${event.objects.length} permanent(s)`
     case 'land-played':
