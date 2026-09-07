@@ -16,7 +16,7 @@ the diagram) are in.
 
 ## Status
 
-- [ ] **Phase 1** — Replacement-effects engine (+ modal / "you may" primitives)
+- [x] **Phase 1** — Replacement-effects engine (+ modal / "you may" primitives)
 - [ ] **Phase 2** — Effect vocabulary: `CardFilter`, effect scopes, mass effects, tutors, scry/surveil
 - [ ] **Phase 3** — Ability grammar breadth (triggers, statics, activated-ability costs)
 - [ ] **Phase 4** — Mana system depth (hybrid / Phyrexian / `{C}` / any-colour / cost modification / Treasure)
@@ -123,16 +123,23 @@ and `{X}` creatures.
   `replacement.test.ts` cases; fuzzer clean at 2p/3p/4p. **Deferred to 1c's
   consolidated browser check:** no UI changes here (no new `AwaitingDecision`
   / `Table` mode), only the two log formatters gained the new events.
-- [ ] **1c — modal / "you may" + 903.9a.** `EffectSpec` `modal { choose,
-  modes }` + `may { effect }`; `choose-modes` decision (state.ts variant,
-  actions.ts Action + LegalAction, game.ts dispatch/legalActions,
-  controller.ts `chooseModes` + the 3 impls, App.tsx mode + controls +
-  `AWAITING_LABEL`). Then rework 903.9a: make `commander-replacement` fire
-  from the `would-leave-battlefield` replacement path *before* the move,
-  and delete `pendingCommanderChoices` / `promptCommanderChoice` /
-  `beginCopyChoice`'s sibling machinery. Card: a modal instant. Browser-
-  check the enters-tapped land + token doubler + modal spell. Then update
-  CLAUDE.md + tick this phase's box.
+- [x] **1c — modal / "you may" + 903.9a.** `EffectSpec` `modal { minModes,
+  maxModes, modes }` + `may { effect, prompt }` (sugar for a 0-or-1 modal);
+  `choose-modes` decision, fully wired (state / actions / game / controller
+  ×3 / App.tsx mode + controls + `AWAITING_LABEL`). **Modes are
+  non-targeted only** — targeted modal spells (most real charms) need
+  cast-time mode selection, deferred to a later cast-pipeline phase (~6).
+  903.9a reworked: `moveObject` raises `commander-replacement` *before* the
+  move (rule 614 replacement), `applyCommanderChoice` completes it;
+  `pendingCommanderChoices` / `promptCommanderChoice` deleted for a single
+  `deferredCommanderMove` slot. New `permanent-left-battlefield` event +
+  `leaves-battlefield` `TriggerSpec` (pulled forward from Phase 3 — needed
+  to test the rework). Cards: Deliberate Course (modal instant), Sarova,
+  the Undying Current (Carol's commander — a leaves-battlefield + a dies
+  trigger, so the → command zone vs → graveyard trigger matrix is
+  covered). `modal.test.ts` + 2 `commander.test.ts` cases; fuzzer clean
+  at 2p/3p/4p; browser-checked (modal picker, reworked commander prompt,
+  leaves-battlefield draw with no dies gain).
 
 **Engine:**
 
@@ -219,7 +226,8 @@ counter replacements + cards; modal primitives + 903.9a rework).
 
 Retire most `predicate` / `resolve` hatches now that Phases 1–2 exist.
 
-- **TriggerSpec** += `leaves-battlefield {who}`, `permanent-enters {who, filter}`
+- **TriggerSpec** += ~~`leaves-battlefield {who}`~~ (done in Phase 1c),
+  `permanent-enters {who, filter}`
   (broad ETB — "whenever another creature enters"), `upkeep` / `end-step` /
   `begin-combat {who}`, `landfall`, `gains-life` / `loses-life {who}`,
   `creature-dies {filter}` (broad), `becomes-tapped {who}`,
