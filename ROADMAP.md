@@ -19,7 +19,7 @@ the diagram) are in.
 - [x] **Phase 1** — Replacement-effects engine (+ modal / "you may" primitives)
 - [x] **Phase 2** — Effect vocabulary: `CardFilter`, effect scopes, mass effects, tutors, scry/surveil
 - [x] **Phase 3** — Ability grammar breadth (triggers, statics, activated-ability costs)
-- [~] **Phase 4** — Mana system depth (4a + 4b done: `{C}` / any-colour / multi-mana / Treasure / hybrid / twobrid / Phyrexian / snow; 4c ability-granting + fetchlands pending)
+- [x] **Phase 4** — Mana system depth (`{C}` / any-colour / multi-mana / Treasure / hybrid / twobrid / Phyrexian / snow / ability-granting to a group / fetchlands)
 - [ ] **Phase 5** — Planeswalkers
 - [ ] **Phase 6** — Alternate casting zones + the cast pipeline
 - [ ] **Phase 7** — Combat depth + turn-structure control
@@ -311,12 +311,21 @@ today) / protection-from-everything / "hexproof from", land/artifact/planeswalke
   Flame Javelin (`{2/R}{2/R}{2/R}`), Wilt-Leaf Cavaliers (`{2}{G/W}{G/W}`).
   Tests: `hybrid-mana.test.ts`; fuzzer clean at 2p/3p/4p; browser-checked
   (hybrid pip pills in cost line + rules text; Phyrexian auto-paid with `{R}`).
-- [ ] **4c — granting an activated ability to a group** (Chromatic Lantern's
-  "lands you control have '{T}: Add one mana of any color'", Cryptolith Rite).
-  Needs `manaSources` / `legalActions` / `activateAbility` to consult granted
-  abilities. Arguably a Phase-3 ability-grammar item.
-- [ ] **Fetchlands** become expressible (search + shuffle + pay-life + sac-cost
-  all now exist).
+- [x] **4c — granting an activated ability to a group.**
+  `StaticAbility.grantsActivated: ActivatedAbility[]` grants the listed
+  abilities to every object its `affects` selects (new `lands-you-control`
+  `AffectSpec` scope). `Game.grantedActivated(id)` / `effectiveActivated(id)`
+  (printed abilities + granted, granted appended so printed indices are
+  stable) are consulted by `legalActions` / `whyCannotActivateAbility` /
+  `activateAbility` / `manaSources` / `stackAbilityOf`. `manaSources` now
+  treats a permanent's multiple `{T}: Add` abilities as **alternatives** (one
+  tap, one of them — the richest single option, an "any colour" one winning a
+  tie) rather than additive. `staticAffects` is exported from
+  `characteristics.ts`. Cards: Chromatic Lantern, Cryptolith Rite.
+- [x] **Fetchlands** — Evolving Wilds (`{T}, Sacrifice: search-library
+  { filter: basic land, destination: battlefield, enterTapped }`) — the
+  `sacrifice: "self"` activated-ability cost + `search-library` effect already
+  existed; nothing new engine-side. Tests: `granted-abilities.test.ts`.
 
 ---
 
