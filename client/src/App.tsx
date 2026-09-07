@@ -311,6 +311,7 @@ function SeatPickerScreen({ game }: { readonly game: NetworkGame }) {
       {nextSeat ? (
         <form onSubmit={join}>
           <input
+            className="name-input"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Your name (optional)"

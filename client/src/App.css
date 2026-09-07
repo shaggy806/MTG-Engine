@@ -982,6 +982,25 @@
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
+/* the "Your name" field holds up to 20 chars of ordinary text — wide,
+   left-aligned, no room-code styling */
+.overlay-box input.name-input {
+  width: 240px;
+  text-align: left;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.player-count-picker {
+  display: flex;
+  gap: 8px;
+}
+.player-count-picker button.selected {
+  color: var(--accent);
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  font-weight: 600;
+}
 .seat-picker-status {
   display: flex;
   flex-wrap: wrap;
