@@ -26,6 +26,12 @@ export function pipClass(sym: string): string {
   if (sym === 'T') return 'pip-tap'
   if (sym === 'Q') return 'pip-untap'
   if (/^[WUBRGC]$/.test(sym)) return `pip-${sym}`
+  if (sym.includes('/')) {
+    // Hybrid / twobrid / Phyrexian pip ({W/U}, {2/W}, {R/P}) — tint by the
+    // first colour half if there is one, and render as a wider pill.
+    const color = sym.split('/').find((p) => /^[WUBRG]$/.test(p))
+    return color ? `pip-hybrid pip-${color}` : 'pip-hybrid pip-generic'
+  }
   return 'pip-generic'
 }
 

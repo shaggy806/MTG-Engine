@@ -753,6 +753,17 @@
 .pip-G {
   background: #a9cfa6;
 }
+.pip-hybrid {
+  width: auto;
+  min-width: 13px;
+  padding: 0 3px;
+  border-radius: 7px;
+  font-size: 8px;
+  letter-spacing: -0.5px;
+}
+.ct-text .pip-hybrid {
+  min-width: 11px;
+}
 .pip-tap,
 .pip-untap {
   background: #d7d3c8;
