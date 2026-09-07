@@ -96,6 +96,38 @@ counters, "if it would die/be exiled, instead …", damage prevention &
 redirection, token/counter/damage **doublers**, "if you would draw, instead …",
 and `{X}` creatures.
 
+**Progress (pick up here):**
+
+- [x] **1a — `enters-battlefield` self-replacements.** `replacements.ts`
+  (`ReplacementSpec`, a `StaticAbility.replacement` field);
+  `Game.entersBattlefieldReplacement(id)` applies `tapped` / `counters`
+  (`amount: "x"` = the cast `{X}`) inside `moveObject`'s battlefield branch,
+  and `createTokens`. `moveObject`'s leave-branch now nulls `xValue`. Cards:
+  Tranquil Thicket, Walking Ballista. `replacement.test.ts`. Also fixed a
+  pre-existing Clone + "Sacrifice this" cost crash (mint the ability object
+  with `def.name`, not `printedCardName(source)`).
+- [ ] **1b — damage / token / counter / graveyard replacements.** Extend the
+  pipeline: add an `applyReplacements(event)` interception routine and route
+  `dealDamage` / `dealCombatDamage`, `createTokens` (token *multiplier*),
+  `addCounter`, and the battlefield→graveyard `moveObject` path through it.
+  New `ReplacementSpec` variants: `would-be-dealt-damage` (prevention;
+  `Fog` is a per-player/turn shield — a plain `PlayerState` field, not a
+  static), `would-create-token { multiplier }`, `would-add-counter`,
+  `would-die { instead: "exile" }`. Rule 616 ordering: self-replacement
+  first, then the affected player picks; each replacement fires ≤1× per
+  event (carry a seen-set on the in-flight event). Cards: Fog, a token
+  doubler, Rest in Peace-lite. Add to fuzz decks + `replacement.test.ts`.
+- [ ] **1c — modal / "you may" + 903.9a.** `EffectSpec` `modal { choose,
+  modes }` + `may { effect }`; `choose-modes` decision (state.ts variant,
+  actions.ts Action + LegalAction, game.ts dispatch/legalActions,
+  controller.ts `chooseModes` + the 3 impls, App.tsx mode + controls +
+  `AWAITING_LABEL`). Then rework 903.9a: make `commander-replacement` fire
+  from the `would-leave-battlefield` replacement path *before* the move,
+  and delete `pendingCommanderChoices` / `promptCommanderChoice` /
+  `beginCopyChoice`'s sibling machinery. Card: a modal instant. Browser-
+  check the enters-tapped land + token doubler + modal spell. Then update
+  CLAUDE.md + tick this phase's box.
+
 **Engine:**
 
 - A `ReplacementEffect` shape. Model it as a `StaticAbility` variant
