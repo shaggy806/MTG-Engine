@@ -22,7 +22,7 @@ the diagram) are in.
 - [x] **Phase 4** — Mana system depth (`{C}` / any-colour / multi-mana / Treasure / hybrid / twobrid / Phyrexian / snow / ability-granting to a group / fetchlands)
 - [x] **Phase 5** — Planeswalkers
 - [x] **Phase 6** — Alternate casting zones + the cast pipeline *(6a/6b done — flashback, Snapcaster, suspend, foretell, escape; 6c long tail deferred)*
-- [ ] **Phase 7** — Combat depth + turn-structure control
+- [x] **Phase 7** — Combat depth + turn-structure control *(core done — extra turns, additional combat, can't-be-blocked; first-strike window / trample-as-choice / must-be-blocked deferred)*
 - [ ] **Phase 8** — Cascade, storm, "cast" triggers, copy-a-spell
 - [ ] **Phase 9** — Commander-format completeness + deck validation
 - [ ] **Phase 10** — Tier 3 long tail (demand-driven; sagas, multi-face cards **10a modal/split + 10b transform**, day/night, battles, emblems, …)
@@ -434,22 +434,36 @@ today) / protection-from-everything / "hexproof from", land/artifact/planeswalke
 
 ---
 
-## Phase 7 — Combat depth + turn-structure control
+## Phase 7 — Combat depth + turn-structure control  *(core done — long tail deferred)*
 
+- [x] **Turn-structure control.** `GameState.extraTurns: PlayerId[]` (rule
+  500.7) — `beginTurn` shifts the front instead of advancing the rotation and
+  sets `TurnState.isExtra`; `take-extra-turn` effect pushes the caster (Time
+  Warp). `GameState.extraCombats` (rule 500.8) — `additional-combat` effect
+  bumps it; when the post-combat main phase ends with it > 0, `endStep` loops
+  back to `begin-combat` (Aggravated Assault; its ability also `untap-all`s
+  your creatures — a new mass effect). New events `extra-turn-queued` /
+  `additional-combat-queued` / `additional-combat-phase`; `turn-began` gains
+  `extra?`. Client: "(extra)" on the turn banner + the log lines.
+- [x] **`can't-be-blocked` evasion.** Rogue's Passage — a `{5}, {T}: target
+  creature` ability that `grant-keyword`s the existing `unblockable` keyword
+  until end of turn. No new engine vocab.
+- **Cards:** `Time Warp` (lite — goes to graveyard, doesn't self-exile),
+  `Aggravated Assault`, `Rogue's Passage`. `extra-turns.test.ts` (3 cases);
+  fuzz deck B gains all three; fuzzer clean at 2p/3p/4p.
+
+**Deferred long tail (Phase-10 style — combat *works*, these refine it):**
 - Split the first-strike and regular combat-damage steps so players get a
   priority window between them (currently folded into one step).
 - Trample damage assignment as a **player choice** (`assign-trample` decision) —
-  it's auto-assigned today.
-- Enforce `must-attack` / `attacks each combat if able` / `must-be-blocked` in
-  declare validation; `can't-be-blocked` evasion; "assign combat damage as
-  though it weren't blocked".
-- Combat-damage prevention shields (Phase 1 pipeline).
-- Turn control: `take-extra-turn` (a `GameState.extraTurns` queue),
-  `additional-combat` (phase re-insertion after combat), `end-the-turn`
-  (`Time Stop` — empty the stack, jump to cleanup), skip-a-step effects.
-- **Cards:** `Rogue's Passage`, `Time Warp`-lite, `Aggravated Assault`.
+  it's auto-assigned today (lethal to each blocker, rest to the defender).
+- `must-be-blocked` (Lure); "assign combat damage as though it weren't
+  blocked"; `attacks each combat if able` (`must-attack` is enforced today).
+- Granular "prevent the next N combat damage" shields (Fog's turn-scoped
+  "prevent all" flag exists).
+- `end-the-turn` (`Time Stop`), skip-a-step effects.
 
-**Tests:** `combat-wave2.test.ts`, `extra-turns.test.ts`.
+**Tests:** `extra-turns.test.ts`.
 
 ---
 
