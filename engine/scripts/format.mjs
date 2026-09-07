@@ -105,6 +105,10 @@ export const makeFormatter = (game) => {
           : `${e.player} keeps their opening hand`;
       case "cards-put-on-bottom":
         return `${e.player} puts ${e.objects.map(name).join(", ")} on the bottom of their library`;
+      case "commander-zone-decision":
+        return e.toCommandZone
+          ? `${name(e.object)} goes to the command zone (from ${e.from})`
+          : `${name(e.object)} stays in the ${e.from}`;
       default:
         return JSON.stringify(e);
     }

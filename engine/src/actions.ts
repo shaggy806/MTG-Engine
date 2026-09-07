@@ -85,6 +85,13 @@ export type Action =
       readonly type: "put-on-bottom";
       readonly player: PlayerId;
       readonly cards: readonly ObjectId[];
+    }
+  | {
+      /** Answers a pending commander-replacement decision (rule 903.9a):
+       * move the commander to the command zone, or leave it where it went. */
+      readonly type: "commander-replacement";
+      readonly player: PlayerId;
+      readonly toCommandZone: boolean;
     };
 
 export type ActionType = Action["type"];
@@ -172,4 +179,9 @@ export type LegalAction =
       readonly kind: "put-on-bottom";
       readonly count: number;
       readonly from: readonly ObjectId[];
+    }
+  | {
+      readonly kind: "commander-replacement";
+      readonly commander: ObjectId;
+      readonly movedTo: "graveyard" | "exile" | "hand" | "library";
     };

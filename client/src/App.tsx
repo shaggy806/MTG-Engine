@@ -41,6 +41,7 @@ type DiscardAction = Extract<LegalAction, { kind: 'discard' }>
 type ZoneChoiceAction = Extract<LegalAction, { kind: 'choose-from-zone' }>
 type MulliganAction = Extract<LegalAction, { kind: 'mulligan' }>
 type BottomAction = Extract<LegalAction, { kind: 'put-on-bottom' }>
+type CommanderChoiceAction = Extract<LegalAction, { kind: 'commander-replacement' }>
 
 interface Targeting {
   readonly kind: 'cast' | 'activate'
@@ -76,6 +77,7 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
   'choose-from-zone': 'look at cards',
   mulligan: 'decide on a mulligan',
   'mulligan-bottom': 'put cards on the bottom of their library',
+  'commander-replacement': 'decide where their commander goes',
 }
 
 export default function App() {
@@ -473,6 +475,9 @@ function Table({ view, seat, opponents, game }: TableProps) {
   const bottomAction = actions.find(
     (a): a is BottomAction => a.kind === 'put-on-bottom',
   )
+  const commanderChoiceAction = actions.find(
+    (a): a is CommanderChoiceAction => a.kind === 'commander-replacement',
+  )
   const canPass = actions.some((a) => a.kind === 'pass-priority')
   // Only the active player may skip the rest of their own turn — a defender
   // holding priority to respond during it shouldn't get this button.
@@ -486,13 +491,16 @@ function Table({ view, seat, opponents, game }: TableProps) {
     | 'choose-from-zone'
     | 'mulligan'
     | 'put-on-bottom'
+    | 'commander-replacement'
     | 'choose-x'
     | 'choose-sacrifice'
     | 'targeting'
     | 'priority' = mulliganAction
     ? 'mulligan'
-    : bottomAction
-      ? 'put-on-bottom'
+    : commanderChoiceAction
+      ? 'commander-replacement'
+      : bottomAction
+        ? 'put-on-bottom'
       : discardAction
         ? 'discard'
         : orderAction
@@ -1094,6 +1102,31 @@ function Table({ view, seat, opponents, game }: TableProps) {
         </button>
         <button type="button" onClick={() => confirmMulligan(false)}>
           Mulligan
+        </button>
+      </div>
+    )
+  } else if (mode === 'commander-replacement' && commanderChoiceAction) {
+    controls = (
+      <div className="controls">
+        <span>
+          {game.nameOf(commanderChoiceAction.commander)} was put into your{' '}
+          {commanderChoiceAction.movedTo} — move it to the command zone instead?
+        </span>
+        <button
+          type="button"
+          onClick={() =>
+            game.dispatch({ type: 'commander-replacement', player: seat, toCommandZone: true })
+          }
+        >
+          Command zone
+        </button>
+        <button
+          type="button"
+          onClick={() =>
+            game.dispatch({ type: 'commander-replacement', player: seat, toCommandZone: false })
+          }
+        >
+          Leave in {commanderChoiceAction.movedTo}
         </button>
       </div>
     )

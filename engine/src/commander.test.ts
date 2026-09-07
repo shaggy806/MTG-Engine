@@ -44,6 +44,8 @@ const registry = createDefaultRegistry().register(TEST_COMMANDER).register(TEST_
 
 const atFirstMain = (s: GameState): boolean => s.turn.step === "precombat-main";
 const stackEmpty = (s: GameState): boolean => s.zones.shared.stack.length === 0;
+const settled = (s: GameState): boolean =>
+  s.zones.shared.stack.length === 0 && s.awaiting === null;
 const named = (game: Game, ids: readonly ObjectId[], name: string): ObjectId => {
   const id = ids.find((each) => game.state.objects[each].cardName === name);
   if (id === undefined) throw new Error(`no ${name}`);
@@ -122,18 +124,17 @@ describe("casting from the command zone", () => {
     // has been recast.
     expect(game.viewFor(A).players[A].commanderCastCount).toBe(1);
 
-    // Kill it with a Bolt — commander replacement (903.9a) sends it to the
-    // command zone instead of the graveyard, applied automatically by
-    // moveObject. Resolving through the normal stack (rather than mutating
-    // damageMarked directly) keeps priority deterministically with Alice
-    // afterward, same as any other spell resolution.
+    // Kill it with a Bolt — commander replacement (903.9a) lets Alice move it
+    // to the command zone instead of the graveyard. Her AutomaticController
+    // answers "yes" during `advanceUntil`, so this settles the same way the
+    // old automatic redirect did.
     game.dispatch({
       type: "cast-spell",
       player: A,
       card: named(game, game.handOf(A), "Lightning Bolt"),
       targets: [{ kind: "object", object: commanderId }],
     });
-    game.advanceUntil(stackEmpty);
+    game.advanceUntil(settled);
     expect(game.state.objects[commanderId].zone).toBe("command");
     expect(game.state.zones.shared.command).toContain(commanderId);
 
@@ -151,6 +152,91 @@ describe("casting from the command zone", () => {
     game.dispatch({ type: "cast-spell", player: A, card: commanderId, targets: [] });
     expect(game.state.players[A].commanderCastCount).toBe(2);
     expect(before - untappedForests()).toBe(4);
+  });
+});
+
+describe("commander replacement choice (903.9a)", () => {
+  const bolt = (game: Game, target: ObjectId): void => {
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Lightning Bolt"),
+      targets: [{ kind: "object", object: target }],
+    });
+  };
+
+  const setup = (mkController: () => ScriptedController) => {
+    const controller = mkController();
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      registry,
+      rules: { maxLandsPerTurn: 99 },
+      controllers: { [A]: controller },
+      decks: [
+        { player: A, cards: pad(["Lightning Bolt", "Mountain"]), commander: "Test Commander" },
+        { player: B, cards: pad([]) },
+      ],
+    });
+    game.advanceUntil(atFirstMain);
+    const commanderId = game.state.zones.shared.command.find(
+      (id) => game.state.objects[id].owner === A,
+    )!;
+    for (let i = 0; i < 5; i += 1) {
+      game.dispatch({ type: "play-land", player: A, card: named(game, game.handOf(A), "Forest") });
+    }
+    game.dispatch({ type: "play-land", player: A, card: named(game, game.handOf(A), "Mountain") });
+    game.dispatch({ type: "cast-spell", player: A, card: commanderId, targets: [] });
+    game.advanceUntil(settled);
+    return { game, commanderId, controller };
+  };
+
+  it("pauses on a `commander-replacement` decision when the commander dies", () => {
+    const { game, commanderId } = setup(() => {
+      const c = new ScriptedController(A);
+      c.commanderReplacementFn = () => true;
+      return c;
+    });
+    bolt(game, commanderId);
+    // The Bolt resolves and the game stops, waiting on Alice's choice.
+    game.advanceUntil((s) => s.awaiting?.kind === "commander-replacement");
+    expect(game.state.awaiting).toMatchObject({
+      kind: "commander-replacement",
+      player: A,
+      commander: commanderId,
+      movedTo: "graveyard",
+    });
+    expect(game.state.objects[commanderId].zone).toBe("graveyard");
+  });
+
+  it("moves it to the command zone when the owner says yes", () => {
+    const { game, commanderId } = setup(() => {
+      const c = new ScriptedController(A);
+      c.commanderReplacementFn = () => true;
+      return c;
+    });
+    bolt(game, commanderId);
+    game.advanceUntil(settled);
+    expect(game.state.objects[commanderId].zone).toBe("command");
+    expect(
+      game.eventsOfType("commander-zone-decision").at(-1),
+    ).toMatchObject({ object: commanderId, toCommandZone: true, from: "graveyard" });
+  });
+
+  it("leaves it in the graveyard when the owner says no", () => {
+    const { game, commanderId } = setup(() => {
+      const c = new ScriptedController(A);
+      c.commanderReplacementFn = () => false;
+      return c;
+    });
+    bolt(game, commanderId);
+    game.advanceUntil(settled);
+    expect(game.state.objects[commanderId].zone).toBe("graveyard");
+    expect(game.graveyardOf(A)).toContain(commanderId);
+    expect(game.state.zones.shared.command).not.toContain(commanderId);
+    expect(
+      game.eventsOfType("commander-zone-decision").at(-1),
+    ).toMatchObject({ toCommandZone: false });
   });
 });
 

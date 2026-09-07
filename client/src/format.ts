@@ -118,6 +118,10 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
         : `${event.player} keeps their opening hand`
     case 'cards-put-on-bottom':
       return `${event.player} puts ${event.objects.map(name).join(', ')} on the bottom of their library`
+    case 'commander-zone-decision':
+      return event.toCommandZone
+        ? `${name(event.object)} goes to the command zone (from ${event.from})`
+        : `${name(event.object)} stays in the ${event.from}`
     default:
       return JSON.stringify(event)
   }

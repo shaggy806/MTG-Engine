@@ -213,6 +213,14 @@ export type GameEvent =
       readonly type: "cards-put-on-bottom";
       readonly player: PlayerId;
       readonly objects: readonly ObjectId[];
+    })
+  | (Base & {
+      /** The owner of a commander in a hidden zone chose whether to move it to
+       * the command zone instead (rule 903.9a). `from` is where it had gone. */
+      readonly type: "commander-zone-decision";
+      readonly object: ObjectId;
+      readonly toCommandZone: boolean;
+      readonly from: "graveyard" | "exile" | "hand" | "library";
     });
 
 export type GameEventType = GameEvent["type"];

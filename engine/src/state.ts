@@ -209,7 +209,18 @@ export type AwaitingDecision =
       /** Cards this player must put on the bottom of their library, equal
        * to the number of mulligans they took (the London mulligan). */
       readonly count: number;
+    }
+  | {
+      /** A commander was just put into a hidden/graveyard zone; its owner
+       * may move it to the command zone instead (rule 903.9a). */
+      readonly kind: "commander-replacement";
+      readonly player: PlayerId;
+      readonly commander: ObjectId;
+      readonly movedTo: CommanderReplacementZone;
     };
+
+/** The zones a commander can be moved to that offer the 903.9a choice. */
+export type CommanderReplacementZone = "graveyard" | "exile" | "hand" | "library";
 
 export interface GameState {
   seed: number;
@@ -243,6 +254,15 @@ export interface GameState {
   pendingBlockerDeclarations: PlayerId[];
   /** Triggered abilities that have fired but not yet been put on the stack. */
   pendingTriggers: PendingTrigger[];
+  /**
+   * Commanders just moved to a hidden zone whose owner hasn't yet decided
+   * whether to move them to the command zone (rule 903.9a). Drained one
+   * `commander-replacement` action at a time, like `pendingBlockerOrders`.
+   */
+  pendingCommanderChoices: {
+    commander: ObjectId;
+    movedTo: CommanderReplacementZone;
+  }[];
   /** Monotonic source for battlefield-entry timestamps. */
   timestampSeq: number;
   eventLog: GameEvent[];

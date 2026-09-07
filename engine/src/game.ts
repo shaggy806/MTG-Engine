@@ -150,6 +150,7 @@ export class Game {
       pendingBlockerOrders: [],
       pendingBlockerDeclarations: [],
       pendingTriggers: [],
+      pendingCommanderChoices: [],
       timestampSeq: 0,
       eventLog: [],
       eventSeq: 0,
@@ -286,6 +287,9 @@ export class Game {
       case "put-on-bottom":
         this.applyPutOnBottom(action.player, action.cards);
         break;
+      case "commander-replacement":
+        this.applyCommanderChoice(action.player, action.toCommandZone);
+        break;
       default:
         throw new Error(
           `unhandled action: ${(action as { type: string }).type}`,
@@ -330,6 +334,8 @@ export class Game {
         return this.whyCannotMulligan(action.player);
       case "put-on-bottom":
         return this.whyCannotPutOnBottom(action.player, action.cards);
+      case "commander-replacement":
+        return this.whyCannotCommanderChoice(action.player);
       default:
         return `unknown action: ${(action as { type: string }).type}`;
     }
@@ -401,6 +407,15 @@ export class Game {
             kind: "put-on-bottom",
             count: awaiting.count,
             from: [...this.state.zones.perPlayer[player].hand],
+          },
+        ];
+      }
+      if (awaiting.kind === "commander-replacement") {
+        return [
+          {
+            kind: "commander-replacement",
+            commander: awaiting.commander,
+            movedTo: awaiting.movedTo,
           },
         ];
       }
@@ -759,6 +774,45 @@ export class Game {
     return null;
   }
 
+  /** Answers a pending `commander-replacement` decision (rule 903.9a). */
+  private applyCommanderChoice(player: PlayerId, toCommandZone: boolean): void {
+    const why = this.whyCannotCommanderChoice(player);
+    if (why !== null) throw new Error(why);
+    const awaiting = this.state.awaiting;
+    if (awaiting === null || awaiting.kind !== "commander-replacement") {
+      throw new Error("unreachable: whyCannotCommanderChoice should have caught this");
+    }
+
+    const commander = awaiting.commander;
+    if (toCommandZone) {
+      this.moveObject(commander, "command");
+    }
+    this.emit({
+      type: "commander-zone-decision",
+      object: commander,
+      toCommandZone,
+      from: awaiting.movedTo,
+    });
+
+    this.state.pendingCommanderChoices = this.state.pendingCommanderChoices.filter(
+      (c) => c.commander !== commander,
+    );
+    this.state.awaiting = null;
+    this.prepareForPriority(this.activePlayer);
+  }
+
+  private whyCannotCommanderChoice(player: PlayerId): string | null {
+    const awaiting = this.state.awaiting;
+    if (
+      awaiting === null ||
+      awaiting.kind !== "commander-replacement" ||
+      awaiting.player !== player
+    ) {
+      return `${player} is not being asked about a commander replacement`;
+    }
+    return null;
+  }
+
   private mintObjectId(): ObjectId {
     const n = this.state.nextObjectSeq;
     this.state.nextObjectSeq += 1;
@@ -810,8 +864,9 @@ export class Game {
   }
 
   /**
-   * Repeatedly: perform state-based actions, then put any waiting triggered
-   * abilities on the stack — until neither happens. Then grant priority.
+   * Repeatedly: perform state-based actions, then resolve any pending commander
+   * replacement choice (rule 903.9a), then put any waiting triggered abilities
+   * on the stack — until nothing more happens. Then grant priority.
    */
   private prepareForPriority(player: PlayerId): void {
     let guard = 0;
@@ -822,9 +877,36 @@ export class Game {
       }
       this.runStateBasedActions();
       if (this.state.result.over) return;
+      // A commander that just changed zones owes its owner a choice; hand them
+      // priority to make it. `applyCommanderChoice` calls back into here.
+      if (this.promptCommanderChoice()) return;
       if (!this.placePendingTriggers()) break;
     }
     this.grantPriority(player);
+  }
+
+  /**
+   * If a commander is sitting in a hidden zone awaiting its owner's 903.9a
+   * choice, set `awaiting` and give that player priority. Returns whether it
+   * did. Drops stale entries (the commander has since moved on its own).
+   */
+  private promptCommanderChoice(): boolean {
+    while (this.state.pendingCommanderChoices.length > 0) {
+      const next = this.state.pendingCommanderChoices[0];
+      const object = this.state.objects[next.commander];
+      if (object !== undefined && object.zone === next.movedTo) {
+        this.state.awaiting = {
+          kind: "commander-replacement",
+          player: object.owner,
+          commander: next.commander,
+          movedTo: next.movedTo,
+        };
+        this.grantPriority(object.owner);
+        return true;
+      }
+      this.state.pendingCommanderChoices.shift();
+    }
+    return false;
   }
 
   private endStep(): void {
@@ -2937,14 +3019,16 @@ export class Game {
 
   private moveObject(id: ObjectId, to: ZoneType): void {
     const object = this.state.objects[id];
-    // Commander replacement (rule 903.9a): a commander headed anywhere
-    // hidden/graveyard-ish goes to the command zone instead — applied
-    // automatically here, with no owner opt-out modeled.
+    // Commander replacement (rule 903.9a): a commander put into a hidden zone
+    // *may* go to the command zone instead — that's the owner's choice. The
+    // move to `to` happens now; `promptCommanderChoice` (run before priority)
+    // asks, and moves it to the command zone if they say yes.
     if (
       object.isCommander &&
-      (to === "graveyard" || to === "exile" || to === "hand" || to === "library")
+      (to === "graveyard" || to === "exile" || to === "hand" || to === "library") &&
+      !this.state.pendingCommanderChoices.some((c) => c.commander === id)
     ) {
-      to = "command";
+      this.state.pendingCommanderChoices.push({ commander: id, movedTo: to });
     }
     const from = this.zoneList(object.zone, object.owner);
     const index = from.indexOf(id);

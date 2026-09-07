@@ -81,6 +81,15 @@ export interface PlayerController {
     hand: readonly GameObject[],
     count: number,
   ): readonly ObjectId[];
+  /**
+   * A commander was put into `movedTo` (a hidden zone). Return `true` to move
+   * it to the command zone instead, `false` to leave it (rule 903.9a).
+   */
+  commanderReplacement(
+    view: ControllerView,
+    commander: ObjectId,
+    movedTo: "graveyard" | "exile" | "hand" | "library",
+  ): boolean;
 }
 
 const passFor = (player: PlayerId): Action => ({
@@ -136,6 +145,17 @@ function answerAwaited(
       type: "mulligan",
       player,
       keep: !controller.mulligan(view, awaiting.count),
+    };
+  }
+  if (awaiting.kind === "commander-replacement") {
+    return {
+      type: "commander-replacement",
+      player,
+      toCommandZone: controller.commanderReplacement(
+        view,
+        awaiting.commander,
+        awaiting.movedTo,
+      ),
     };
   }
   const hand = view.state.zones.perPlayer[player].hand.map(
@@ -218,6 +238,12 @@ export class AutomaticController implements PlayerController {
   ): readonly ObjectId[] {
     return discardFromFront(hand, count);
   }
+
+  commanderReplacement(): boolean {
+    // Default to the command zone — matches the pre-choice behavior, so
+    // tests that don't care about the decision are unaffected.
+    return true;
+  }
 }
 
 /** A queued action, optionally gated on a condition being true. */
@@ -255,6 +281,11 @@ type BottomChooser = (
   hand: readonly GameObject[],
   count: number,
 ) => readonly ObjectId[];
+type CommanderReplacementChooser = (
+  view: ControllerView,
+  commander: ObjectId,
+  movedTo: "graveyard" | "exile" | "hand" | "library",
+) => boolean;
 
 /**
  * Plays a fixed queue of priority actions (each firing when its `when` guard is
@@ -273,6 +304,7 @@ export class ScriptedController implements PlayerController {
   chooseFromZoneFn: ZoneChooser = (_view, eligible, min, _max) => eligible.slice(0, min);
   mulliganFn: MulliganChooser = () => false;
   chooseBottomOfLibraryFn: BottomChooser = (hand, count) => discardFromFront(hand, count);
+  commanderReplacementFn: CommanderReplacementChooser = () => true;
 
   constructor(playerId: PlayerId, script: readonly ScriptEntry[] = []) {
     this.playerId = playerId;
@@ -349,6 +381,14 @@ export class ScriptedController implements PlayerController {
     count: number,
   ): readonly ObjectId[] {
     return this.chooseBottomOfLibraryFn(hand, count);
+  }
+
+  commanderReplacement(
+    view: ControllerView,
+    commander: ObjectId,
+    movedTo: "graveyard" | "exile" | "hand" | "library",
+  ): boolean {
+    return this.commanderReplacementFn(view, commander, movedTo);
   }
 }
 
@@ -477,6 +517,8 @@ export class RandomController extends AutomaticController {
         }
         return { type: "put-on-bottom", player, cards };
       }
+      case "commander-replacement":
+        return { type: "commander-replacement", player, toCommandZone: this.random() < 0.85 };
       default:
         return passFor(player);
     }
