@@ -37,6 +37,7 @@ import _poolEssenceScatter from "./pool/essence-scatter.js";
 import _poolExplorersInsight from "./pool/explorers-insight.js";
 import _poolFencingAce from "./pool/fencing-ace.js";
 import _poolFireball from "./pool/fireball.js";
+import _poolFlameJavelin from "./pool/flame-javelin.js";
 import _poolFleshbagMarauder from "./pool/fleshbag-marauder.js";
 import _poolFog from "./pool/fog.js";
 import _poolForest from "./pool/forest.js";
@@ -52,6 +53,7 @@ import _poolGravePact from "./pool/grave-pact.js";
 import _poolGraveRecall from "./pool/grave-recall.js";
 import _poolGreed from "./pool/greed.js";
 import _poolGrizzlyBears from "./pool/grizzly-bears.js";
+import _poolGutShot from "./pool/gut-shot.js";
 import _poolHillGiant from "./pool/hill-giant.js";
 import _poolHolyStrength from "./pool/holy-strength.js";
 import _poolHypnoticSpecter from "./pool/hypnotic-specter.js";
@@ -111,6 +113,7 @@ import _poolWalkingBallista from "./pool/walking-ballista.js";
 import _poolWallOfWood from "./pool/wall-of-wood.js";
 import _poolWhiteKnight from "./pool/white-knight.js";
 import _poolWildwoodSentinel from "./pool/wildwood-sentinel.js";
+import _poolWiltLeafCavaliers from "./pool/wilt-leaf-cavaliers.js";
 import _poolWrathOfGod from "./pool/wrath-of-god.js";
 import _poolWurmcoilEngine from "./pool/wurmcoil-engine.js";
 import _poolZulaportCutthroat from "./pool/zulaport-cutthroat.js";
@@ -156,6 +159,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolExplorersInsight,
   _poolFencingAce,
   _poolFireball,
+  _poolFlameJavelin,
   _poolFleshbagMarauder,
   _poolFog,
   _poolForest,
@@ -171,6 +175,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolGraveRecall,
   _poolGreed,
   _poolGrizzlyBears,
+  _poolGutShot,
   _poolHillGiant,
   _poolHolyStrength,
   _poolHypnoticSpecter,
@@ -230,6 +235,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolWallOfWood,
   _poolWhiteKnight,
   _poolWildwoodSentinel,
+  _poolWiltLeafCavaliers,
   _poolWrathOfGod,
   _poolWurmcoilEngine,
   _poolZulaportCutthroat,
