@@ -17,6 +17,7 @@ import _poolBloodthroneVampire from "./pool/bloodthrone-vampire.js";
 import _poolBoggartBrute from "./pool/boggart-brute.js";
 import _poolBonesplitter from "./pool/bonesplitter.js";
 import _poolBoomerang from "./pool/boomerang.js";
+import _poolChandraAcolyteOfFlame from "./pool/chandra-acolyte-of-flame.js";
 import _poolChromaticLantern from "./pool/chromatic-lantern.js";
 import _poolClone from "./pool/clone.js";
 import _poolCombatThresher from "./pool/combat-thresher.js";
@@ -46,6 +47,7 @@ import _poolFog from "./pool/fog.js";
 import _poolForest from "./pool/forest.js";
 import _poolFoundryInspector from "./pool/foundry-inspector.js";
 import _poolFumeSpitter from "./pool/fume-spitter.js";
+import _poolGarrukWildspeaker from "./pool/garruk-wildspeaker.js";
 import _poolGiantGrowth from "./pool/giant-growth.js";
 import _poolGiantSpider from "./pool/giant-spider.js";
 import _poolGladecoverScout from "./pool/gladecover-scout.js";
@@ -120,7 +122,9 @@ import _poolWiltLeafCavaliers from "./pool/wilt-leaf-cavaliers.js";
 import _poolWrathOfGod from "./pool/wrath-of-god.js";
 import _poolWurmcoilEngine from "./pool/wurmcoil-engine.js";
 import _poolZulaportCutthroat from "./pool/zulaport-cutthroat.js";
+import _tokensBeastToken33 from "./tokens/beast-token-3-3.js";
 import _tokensBeastToken from "./tokens/beast-token.js";
+import _tokensElementalToken from "./tokens/elemental-token.js";
 import _tokensPhyrexianWurmDeathtouch from "./tokens/phyrexian-wurm-deathtouch.js";
 import _tokensPhyrexianWurmLifelink from "./tokens/phyrexian-wurm-lifelink.js";
 import _tokensSoldierToken from "./tokens/soldier-token.js";
@@ -142,6 +146,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolBoggartBrute,
   _poolBonesplitter,
   _poolBoomerang,
+  _poolChandraAcolyteOfFlame,
   _poolChromaticLantern,
   _poolClone,
   _poolCombatThresher,
@@ -171,6 +176,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolForest,
   _poolFoundryInspector,
   _poolFumeSpitter,
+  _poolGarrukWildspeaker,
   _poolGiantGrowth,
   _poolGiantSpider,
   _poolGladecoverScout,
@@ -245,7 +251,9 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolWrathOfGod,
   _poolWurmcoilEngine,
   _poolZulaportCutthroat,
+  _tokensBeastToken33,
   _tokensBeastToken,
+  _tokensElementalToken,
   _tokensPhyrexianWurmDeathtouch,
   _tokensPhyrexianWurmLifelink,
   _tokensSoldierToken,
