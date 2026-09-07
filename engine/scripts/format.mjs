@@ -10,7 +10,13 @@ export const makeFormatter = (game) => {
       case "game-started":
         return `players=${e.players.join(", ")}  starting=${e.startingPlayer}  seed=${e.seed}`;
       case "turn-began":
-        return `turn ${e.turn} — ${e.activePlayer}`;
+        return `turn ${e.turn} — ${e.activePlayer}${e.extra ? " (extra turn)" : ""}`;
+      case "extra-turn-queued":
+        return `${e.player} takes an extra turn after this one`;
+      case "additional-combat-queued":
+        return `${e.player} gets an additional combat phase`;
+      case "additional-combat-phase":
+        return `additional combat phase`;
       case "step-began":
         return `[${e.phase}] ${e.step}`;
       case "priority-received":

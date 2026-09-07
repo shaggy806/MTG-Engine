@@ -194,6 +194,7 @@ export class Game {
         number: 0,
         activePlayerIndex: turnOrder.indexOf(startingPlayer),
         step: "untap",
+        isExtra: false,
       },
       priority: { active: false, holder: null, passed: [] },
       result: { over: false, winner: null, reason: null },
@@ -206,6 +207,8 @@ export class Game {
       pendingSacrifices: [],
       pendingSacrificeVictims: [],
       preventAllCombatDamage: false,
+      extraTurns: [],
+      extraCombats: 0,
       timestampSeq: 0,
       eventLog: [],
       eventSeq: 0,
@@ -1183,11 +1186,22 @@ export class Game {
 
   private beginTurn(): void {
     this.state.turn.number += 1;
-    // Fog's "prevent all combat damage this turn" shield lapses.
+    // Fog's "prevent all combat damage this turn" shield lapses; a fresh turn
+    // owes no extra combats yet.
     this.state.preventAllCombatDamage = false;
-    if (this.state.turn.number > 1) {
-      this.state.turn.activePlayerIndex =
-        (this.state.turn.activePlayerIndex + 1) % this.state.turnOrder.length;
+    this.state.extraCombats = 0;
+    // An extra turn (Time Warp — rule 500.7) is taken by the player at the
+    // front of the queue instead of advancing the normal rotation.
+    const extraFor = this.state.extraTurns.length > 0 ? this.state.extraTurns.shift() ?? null : null;
+    if (extraFor !== null && this.state.turnOrder.includes(extraFor)) {
+      this.state.turn.activePlayerIndex = this.state.turnOrder.indexOf(extraFor);
+      this.state.turn.isExtra = true;
+    } else {
+      this.state.turn.isExtra = false;
+      if (this.state.turn.number > 1) {
+        this.state.turn.activePlayerIndex =
+          (this.state.turn.activePlayerIndex + 1) % this.state.turnOrder.length;
+      }
     }
     for (const player of this.state.turnOrder) {
       this.state.players[player].landsPlayedThisTurn = 0;
@@ -1196,6 +1210,7 @@ export class Game {
       type: "turn-began",
       turn: this.state.turn.number,
       activePlayer: this.activePlayer,
+      ...(this.state.turn.isExtra ? { extra: true } : {}),
     });
     this.enterStep("untap");
   }
@@ -1268,6 +1283,15 @@ export class Game {
   }
 
   private endStep(): void {
+    // Additional combat (Aggravated Assault — rule 500.8): when the postcombat
+    // main phase ends with combats still owed, loop back to begin-combat (a
+    // combat phase then another main phase) instead of moving to the end step.
+    if (this.state.turn.step === "postcombat-main" && this.state.extraCombats > 0) {
+      this.state.extraCombats -= 1;
+      this.emit({ type: "additional-combat-phase" });
+      this.enterStep("begin-combat");
+      return;
+    }
     const next = nextStep(this.state.turn.step);
     if (next === null) {
       this.beginTurn();
@@ -3699,6 +3723,23 @@ export class Game {
       proliferate: () => this.proliferateAll(),
       grantKeyword: (target, keyword, duration) =>
         this.grantKeyword(target, keyword, duration),
+      takeExtraTurn: () => {
+        this.state.extraTurns.push(controller);
+        this.emit({ type: "extra-turn-queued", player: controller });
+      },
+      additionalCombat: () => {
+        this.state.extraCombats += 1;
+        this.emit({ type: "additional-combat-queued", player: controller });
+      },
+      untapAll: (filter) => {
+        for (const id of this.battlefieldMatching(controller, filter)) {
+          const object = this.state.objects[id];
+          if (object.tapped) {
+            object.tapped = false;
+            this.emit({ type: "permanent-untapped", object: id });
+          }
+        }
+      },
       animate: (target, opts) => this.animate(target, opts),
       changeText: (target) => this.beginTextChoice(controller, source, target),
       createToken: (token, count) => this.createTokens(controller, token, count),

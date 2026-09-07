@@ -17,7 +17,9 @@ export function TurnBanner({
   const seatClass = seatClassOf(view.turnOrder, view.activePlayer)
   return (
     <div className={`turn-banner ${seatClass}`}>
-      <span className="turn-banner-player">{playerLabel(view.activePlayer, seats)}'s Turn</span>
+      <span className="turn-banner-player">
+        {playerLabel(view.activePlayer, seats)}'s Turn{view.turn.isExtra ? ' (extra)' : ''}
+      </span>
       <span className="turn-banner-sep">·</span>
       <span className="turn-banner-phase">{STEP_LABEL[view.turn.step]}</span>
     </div>

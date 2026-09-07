@@ -4,6 +4,7 @@
 import type { CardDefinition } from "./define.js";
 
 import _poolActOfTreason from "./pool/act-of-treason.js";
+import _poolAggravatedAssault from "./pool/aggravated-assault.js";
 import _poolAjanisPridemate from "./pool/ajanis-pridemate.js";
 import _poolAmbushViper from "./pool/ambush-viper.js";
 import _poolAngelicEdict from "./pool/angelic-edict.js";
@@ -99,6 +100,7 @@ import _poolRampagingBaloths from "./pool/rampaging-baloths.js";
 import _poolRampantGrowth from "./pool/rampant-growth.js";
 import _poolRestInPeace from "./pool/rest-in-peace.js";
 import _poolRiftBolt from "./pool/rift-bolt.js";
+import _poolRoguesPassage from "./pool/rogues-passage.js";
 import _poolRumblingBaloth from "./pool/rumbling-baloth.js";
 import _poolSarovaTheUndyingCurrent from "./pool/sarova-the-undying-current.js";
 import _poolSerraAngel from "./pool/serra-angel.js";
@@ -109,6 +111,7 @@ import _poolSwamp from "./pool/swamp.js";
 import _poolThaliaGuardianOfThraben from "./pool/thalia-guardian-of-thraben.js";
 import _poolThievingMagpie from "./pool/thieving-magpie.js";
 import _poolThreaten from "./pool/threaten.js";
+import _poolTimeWarp from "./pool/time-warp.js";
 import _poolTomeScour from "./pool/tome-scour.js";
 import _poolTranquilThicket from "./pool/tranquil-thicket.js";
 import _poolTurnToFrog from "./pool/turn-to-frog.js";
@@ -138,6 +141,7 @@ import _tokensTreasureToken from "./tokens/treasure-token.js";
 /** The built-in card pool — every file under `pool/` and `tokens/`. */
 export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolActOfTreason,
+  _poolAggravatedAssault,
   _poolAjanisPridemate,
   _poolAmbushViper,
   _poolAngelicEdict,
@@ -233,6 +237,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolRampantGrowth,
   _poolRestInPeace,
   _poolRiftBolt,
+  _poolRoguesPassage,
   _poolRumblingBaloth,
   _poolSarovaTheUndyingCurrent,
   _poolSerraAngel,
@@ -243,6 +248,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolThaliaGuardianOfThraben,
   _poolThievingMagpie,
   _poolThreaten,
+  _poolTimeWarp,
   _poolTomeScour,
   _poolTranquilThicket,
   _poolTurnToFrog,

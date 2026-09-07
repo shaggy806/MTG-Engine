@@ -190,6 +190,23 @@ export type EffectSpec =
       readonly target: number;
     }
   | {
+      /** The effect's controller takes an extra turn after this one (Time
+       * Warp — rule 500.7 / ROADMAP Phase 7). */
+      readonly kind: "take-extra-turn";
+    }
+  | {
+      /** After this (post-combat) main phase there is an additional combat
+       * phase then an additional main phase (Aggravated Assault — rule 500.8 /
+       * ROADMAP Phase 7). */
+      readonly kind: "additional-combat";
+    }
+  | {
+      /** Untap every battlefield permanent matching `filter` (Aggravated
+       * Assault: `{ type: "creature", controlledBy: "you" }`). */
+      readonly kind: "untap-all";
+      readonly filter: CardFilter;
+    }
+  | {
       /** `target` becomes a creature (rule 613 layer 4 for the added/set
        * types + subtypes, layer 5 for `setColors`, layer 6 for `keywords` /
        * `loseAbilities`, layer 7b for the set P/T). Printed types are kept —
@@ -369,6 +386,13 @@ export interface EffectApi {
   /** Proliferate — see the `"proliferate"` {@link EffectSpec}. */
   proliferate(): void;
   grantKeyword(target: TargetRef, keyword: Keyword, duration: PtDuration): void;
+  /** The effect's controller takes an extra turn after this one (Time Warp). */
+  takeExtraTurn(): void;
+  /** Queue an additional combat + main phase after this main phase (Aggravated
+   * Assault). */
+  additionalCombat(): void;
+  /** Untap every battlefield permanent matching `filter`. */
+  untapAll(filter: CardFilter): void;
   /** `target` becomes a creature — see the `"animate"` {@link EffectSpec}. */
   animate(
     target: TargetRef,
@@ -578,6 +602,15 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       }
       return;
     }
+    case "take-extra-turn":
+      ctx.takeExtraTurn();
+      return;
+    case "additional-combat":
+      ctx.additionalCombat();
+      return;
+    case "untap-all":
+      ctx.untapAll(spec.filter);
+      return;
     case "animate": {
       const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) {

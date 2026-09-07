@@ -214,6 +214,9 @@ export interface TurnState {
   number: number;
   activePlayerIndex: number;
   step: Step;
+  /** True when this turn was taken via an extra-turn effect (Time Warp) rather
+   * than the normal rotation — ROADMAP Phase 7. */
+  isExtra: boolean;
 }
 
 export interface PriorityState {
@@ -439,6 +442,15 @@ export interface GameState {
    * Set by the `prevent-all-combat-damage` effect, cleared at the start of the
    * next turn. */
   preventAllCombatDamage: boolean;
+  /** Extra turns still owed, in the order they'll be taken (rule 500.7 —
+   * ROADMAP Phase 7). `beginTurn` shifts the front instead of advancing the
+   * active-player rotation. Time Warp pushes the caster. */
+  extraTurns: PlayerId[];
+  /** Additional combat phases still owed *this turn* (Aggravated Assault —
+   * ROADMAP Phase 7). When the postcombat main phase ends with this > 0,
+   * `endStep` decrements it and re-enters `begin-combat` (a combat phase then
+   * another main phase) instead of moving to the end step. */
+  extraCombats: number;
   /** Monotonic source for battlefield-entry timestamps. */
   timestampSeq: number;
   eventLog: GameEvent[];

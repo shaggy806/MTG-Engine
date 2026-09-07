@@ -142,6 +142,9 @@ const deckB = deck([
   ["Flame Javelin", 1],
   ["Chandra, Acolyte of Flame", 1],
   ["Evolving Wilds", 2],
+  ["Time Warp", 1],
+  ["Aggravated Assault", 1],
+  ["Rogue's Passage", 1],
 ]);
 
 // A lean Dimir deck for Carol — carries the `Sarova, the Undying Current`

@@ -26,6 +26,22 @@ export type GameEvent =
       readonly type: "turn-began";
       readonly turn: number;
       readonly activePlayer: PlayerId;
+      /** True when this is an extra turn (Time Warp — ROADMAP Phase 7). */
+      readonly extra?: boolean;
+    })
+  | (Base & {
+      /** An extra-turn effect (Time Warp) queued a turn for `player`. */
+      readonly type: "extra-turn-queued";
+      readonly player: PlayerId;
+    })
+  | (Base & {
+      /** Aggravated Assault queued an extra combat phase this turn. */
+      readonly type: "additional-combat-queued";
+      readonly player: PlayerId;
+    })
+  | (Base & {
+      /** The turn looped back to begin-combat for an additional combat phase. */
+      readonly type: "additional-combat-phase";
     })
   | (Base & {
       readonly type: "step-began";

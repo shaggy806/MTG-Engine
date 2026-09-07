@@ -21,7 +21,13 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
     case 'game-started':
       return `${event.players.join(' vs ')} · ${event.startingPlayer} first · seed ${event.seed}`
     case 'turn-began':
-      return `Turn ${event.turn} — ${event.activePlayer}`
+      return `Turn ${event.turn} — ${event.activePlayer}${event.extra ? ' (extra turn)' : ''}`
+    case 'extra-turn-queued':
+      return `${event.player} takes an extra turn after this one`
+    case 'additional-combat-queued':
+      return `${event.player} gets an additional combat phase`
+    case 'additional-combat-phase':
+      return `additional combat phase`
     case 'step-began':
       return `[${event.phase}] ${event.step}`
     case 'priority-received':
