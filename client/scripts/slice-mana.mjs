@@ -8,6 +8,8 @@
 // with a translate so the pip sits in a clean `viewBox="0 0 100 100"`.
 // Re-run this if mana-spritesheet.svg is ever replaced. The token -> filename
 // map (NAMES) below is the source of truth the client's mana.ts mirrors.
+// `C.svg` (colorless) is hand-authored — the sheet has none — and KEEP-listed
+// so a regen doesn't delete it.
 
 import { readFileSync, writeFileSync, readdirSync, unlinkSync, mkdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -152,9 +154,12 @@ for (const m of src.matchAll(/<(circle|path|polygon|line|ellipse)\b[^>]*?\/?>/gs
   frags.push(frag.trim().replace(/\s+/g, ' '))
 }
 
+// Hand-authored pips the spritesheet doesn't provide — never regenerated here.
+const KEEP = new Set(['C.svg'])
+
 mkdirSync(OUT, { recursive: true })
 for (const f of readdirSync(OUT)) {
-  if (f.endsWith('.svg')) unlinkSync(join(OUT, f))
+  if (f.endsWith('.svg') && !KEEP.has(f)) unlinkSync(join(OUT, f))
 }
 for (const [name, { col, row, frags }] of cells) {
   const dx = -(COLS[col] - 50)

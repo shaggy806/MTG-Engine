@@ -6,15 +6,15 @@
  * `scripts/slice-mana.mjs`. This module just maps a `{…}` token to that URL;
  * `KEYS` mirrors the script's filename map.
  *
- * There is deliberately no `{C}` (colorless) — the spritesheet has none, so
- * `manaSymbolUrl` returns null for it and `<Symbols>` falls back to a CSS pip.
+ * `C.svg` (colorless) is hand-authored — the spritesheet has no `{C}` — so the
+ * slicer leaves it alone on regen.
  */
 
 const KEYS = new Set<string>([
   // generic 0..20
   ...Array.from({ length: 21 }, (_, i) => String(i)),
   'X', 'Y', 'Z',
-  'W', 'U', 'B', 'R', 'G', 'S',
+  'W', 'U', 'B', 'R', 'G', 'C', 'S',
   // hybrid (guild order), twobrid, Phyrexian
   'WU', 'WB', 'UB', 'UR', 'BR', 'BG', 'RW', 'RG', 'GW', 'GU',
   '2W', '2U', '2B', '2R', '2G',
