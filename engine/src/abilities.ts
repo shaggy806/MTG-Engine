@@ -124,7 +124,10 @@ export interface StackAbility {
 export function isManaAbility(ability: ActivatedAbility): boolean {
   return (
     ability.targets.length === 0 &&
-    ability.cost.sacrifice === undefined &&
+    // A "Sacrifice this: Add …" mana ability (Treasure) is fine — the payment
+    // machinery handles a self-sacrifice. A "sacrifice a creature you
+    // control" cost isn't (it needs a choice).
+    (ability.cost.sacrifice === undefined || ability.cost.sacrifice === "self") &&
     ability.cost.payLife === undefined &&
     ability.cost.removeCounter === undefined &&
     ability.resolve === null &&

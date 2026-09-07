@@ -18,9 +18,17 @@ describe("parseManaCost", () => {
     expect(parseManaCost(null)).toEqual({
       generic: 0,
       colored: { W: 0, U: 0, B: 0, R: 0, G: 0 },
+      colorless: 0,
       x: 0,
     });
     expect(manaValue(parseManaCost(""))).toBe(0);
+  });
+
+  it("parses {C} as a colorless pip, counted in mana value", () => {
+    const cost = parseManaCost("{4}{C}{C}");
+    expect(cost.colorless).toBe(2);
+    expect(cost.generic).toBe(4);
+    expect(manaValue(cost)).toBe(6);
   });
 
   it("parses {X} into its own count and as mana value 0", () => {
@@ -31,8 +39,8 @@ describe("parseManaCost", () => {
   });
 
   it("rejects unsupported symbols", () => {
-    expect(() => parseManaCost("{C}")).toThrow(/unsupported/);
-    expect(() => parseManaCost("{G/U}")).toThrow();
+    expect(() => parseManaCost("{G/U}")).toThrow(/unsupported/);
+    expect(() => parseManaCost("{W/P}")).toThrow();
   });
 
   it("manaValue counts every pip", () => {

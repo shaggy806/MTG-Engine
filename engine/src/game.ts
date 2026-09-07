@@ -40,7 +40,7 @@ import type {
   GameEventInput,
   GameEventType,
 } from "./events.js";
-import { COLORS, MANA_TYPES, emptyPool, parseManaCost } from "./mana.js";
+import { COLORS, MANA_TYPES, emptyPool, parseManaCost, poolTotal } from "./mana.js";
 import type { Color, ManaCost, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId, Rng } from "./primitives.js";
 import { asObjectId, createRng, shuffle } from "./primitives.js";
@@ -93,6 +93,27 @@ export interface SnapshotEnv {
 
 const ADVANCE_BUDGET = 200_000;
 const GENERIC_SPEND_ORDER = ["C", "W", "U", "B", "R", "G"] as const;
+
+/** One of `player`'s permanents that can produce mana right now, with the
+ * output of a single activation flattened: `fixed` is the concrete mana it
+ * always makes, `anyColor` is how many "one mana of any colour" units it adds
+ * on top (Arcane Signet, Command Tower, Treasure). `sacrificeSelf` = using it
+ * sacrifices the source (Treasure) rather than tapping it. */
+interface ManaSource {
+  readonly id: ObjectId;
+  readonly isLand: boolean;
+  readonly fixed: readonly ManaType[];
+  readonly anyColor: number;
+  readonly sacrificeSelf: boolean;
+}
+
+/** One entry of a mana-payment plan: activate `source`, adding the concrete
+ * `mana` list to the pool; `sacrifice` if it's a Treasure-style ability. */
+interface ManaPlanStep {
+  readonly source: ObjectId;
+  readonly mana: readonly ManaType[];
+  readonly sacrifice: boolean;
+}
 /** Combat damage from the same commander at or above this total is a loss (rule 903.10a). */
 const COMMANDER_DAMAGE_THRESHOLD = 21;
 
@@ -1981,7 +2002,12 @@ export class Game {
     const tax = this.isCastableCommander(player, cardId) ? this.commanderTax(player) : 0;
     let generic = base.generic + tax + base.x * Math.max(0, xValue);
     generic += this.costModificationFor(player, cardId);
-    return { colored: base.colored, generic: Math.max(0, generic), x: 0 };
+    return {
+      colored: base.colored,
+      colorless: base.colorless,
+      generic: Math.max(0, generic),
+      x: 0,
+    };
   }
 
   /** Net generic-mana adjustment to `cardId`'s cost from `costModification`
@@ -2016,8 +2042,10 @@ export class Game {
     // exceed that no matter what.
     const pool = this.state.players[player].manaPool;
     const cap =
-      this.manaSources(player).reduce((n, s) => n + s.produces.length, 0) +
-      MANA_TYPES.reduce((n, t) => n + pool[t], 0);
+      this.manaSources(player).reduce(
+        (n, s) => n + s.fixed.length + s.anyColor,
+        0,
+      ) + MANA_TYPES.reduce((n, t) => n + pool[t], 0);
     let best = 0;
     for (let k = 1; k <= cap; k += 1) {
       if (this.planManaPayment(player, this.castingCostOf(player, cardId, def, k)) === null) {
@@ -2094,7 +2122,7 @@ export class Game {
     this.moveObject(cardId, "stack");
     object.targets = targets.length > 0 ? [...targets] : null;
     object.xValue = hasX ? chosenX : null;
-    for (const sourceId of plan) this.tapManaSource(sourceId);
+    for (const step of plan) this.useManaSource(step);
     this.spendFromPool(player, cost);
     if (castingFromCommand) this.state.players[player].commanderCastCount += 1;
 
@@ -2258,7 +2286,7 @@ export class Game {
       source.tapped = true;
       this.emit({ type: "permanent-tapped", object: sourceId });
     }
-    for (const manaSourceId of plan) this.tapManaSource(manaSourceId);
+    for (const step of plan) this.useManaSource(step);
     this.spendFromPool(player, manaCost);
     if (ability.cost.payLife !== undefined) {
       this.changeLife(player, -ability.cost.payLife);
@@ -2359,21 +2387,23 @@ export class Game {
 
   /**
    * `player`'s untapped permanents with a `{T}: Add ...` mana ability, and the
-   * mana each can make. A `{T}` mana ability of a creature is unavailable while
-   * that creature is summoning-sick (rule 302.6).
+   * mana each can make (see {@link ManaSource}). A `{T}` mana ability of a
+   * creature is unavailable while that creature is summoning-sick (rule 302.6).
    *
    * Ordered by which source `planManaPayment` should reach for first: lands
    * before non-lands (so paying a cost doesn't tap down a creature that could
-   * otherwise attack or block), and within that, sources that make fewer
-   * distinct colors before more flexible ones (so a narrow source gets used
-   * while a source that could cover more needs stays open longer). Ties keep
-   * battlefield order (`Array.prototype.sort` is stable), so the choice is
-   * deterministic rather than arbitrary.
+   * otherwise attack or block); a Treasure-style one-shot source last of all;
+   * and within that, sources that make fewer distinct colors before more
+   * flexible ("any colour") ones, so a narrow source gets used while a source
+   * that could cover more needs stays open longer. Ties keep battlefield order
+   * (`Array.prototype.sort` is stable), so the choice is deterministic.
+   *
+   * If a permanent somehow has more than one `{T}: Add` ability, their outputs
+   * are merged into a single activation here — no card in the pool does, and
+   * modelling "pick one" would need a real choice.
    */
-  private manaSources(
-    player: PlayerId,
-  ): { id: ObjectId; produces: ManaType[]; isLand: boolean }[] {
-    const out: { id: ObjectId; produces: ManaType[]; isLand: boolean }[] = [];
+  private manaSources(player: PlayerId): ManaSource[] {
+    const out: ManaSource[] = [];
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
       if (object.controller !== player || object.tapped) continue;
@@ -2381,27 +2411,39 @@ export class Game {
       if (hasLostAbilities(object)) continue; // layer 6 — no mana ability
 
       const def = this.registry.get(printedCardName(object));
-      const produces: ManaType[] = [];
+      const fixed: ManaType[] = [];
+      let anyColor = 0;
+      let sacrificeSelf = false;
+      let found = false;
       for (const ability of def.activated) {
         if (
-          isManaAbility(ability) &&
-          ability.cost.tap &&
-          ability.cost.mana === null &&
-          ability.effect !== null &&
-          ability.effect.kind === "add-mana"
+          !isManaAbility(ability) ||
+          !ability.cost.tap ||
+          ability.cost.mana !== null ||
+          ability.effect === null ||
+          ability.effect.kind !== "add-mana"
         ) {
+          continue;
+        }
+        found = true;
+        if (ability.cost.sacrifice === "self") sacrificeSelf = true;
+        if (ability.effect.mana === "any-color") anyColor += ability.effect.amount;
+        else {
           for (let k = 0; k < ability.effect.amount; k += 1) {
-            produces.push(ability.effect.mana);
+            fixed.push(ability.effect.mana);
           }
         }
       }
-      if (produces.length > 0) {
-        out.push({ id, produces, isLand: def.types.includes("land") });
+      if (found) {
+        out.push({ id, isLand: def.types.includes("land"), fixed, anyColor, sacrificeSelf });
       }
     }
+    const flexibility = (s: ManaSource): number =>
+      new Set(s.fixed).size + (s.anyColor > 0 ? 5 : 0);
     out.sort((a, b) => {
       if (a.isLand !== b.isLand) return a.isLand ? -1 : 1;
-      return new Set(a.produces).size - new Set(b.produces).size;
+      if (a.sacrificeSelf !== b.sacrificeSelf) return a.sacrificeSelf ? 1 : -1;
+      return flexibility(a) - flexibility(b);
     });
     return out;
   }
@@ -2415,90 +2457,147 @@ export class Game {
   }
 
   /**
-   * Which of `player`'s mana sources to tap to cover `cost`, or `null` if it
-   * can't be covered. Existing floating mana is spent first.
+   * How `player` would pay `cost` from mana sources, or `null` if they can't.
+   * Existing floating mana is spent first; then colored pips, then `{C}` pips,
+   * then generic are covered in turn, tapping a fresh source only when the
+   * already-tapped ones can't. A source that makes more than one mana (Sol
+   * Ring) or "any colour" (Signet, Treasure) has its surplus applied to later
+   * needs before another source is touched.
    */
   private planManaPayment(
     player: PlayerId,
     cost: ManaCost,
     avoid?: ObjectId,
-  ): ObjectId[] | null {
+  ): ManaPlanStep[] | null {
     const pool = this.state.players[player].manaPool;
-    const coloredNeed: Record<string, number> = {};
+
+    const need: Record<ManaType, number> = { W: 0, U: 0, B: 0, R: 0, G: 0, C: 0 };
     for (const color of COLORS) {
-      coloredNeed[color] = Math.max(0, cost.colored[color] - pool[color]);
+      need[color] = Math.max(0, cost.colored[color] - pool[color]);
     }
-    const poolSpentOnColors = COLORS.reduce(
-      (sum, color) => sum + Math.min(cost.colored[color], pool[color]),
-      0,
-    );
-    const poolLeftForGeneric =
-      MANA_TYPES.reduce((sum, type) => sum + pool[type], 0) - poolSpentOnColors;
-    let genericNeed = Math.max(0, cost.generic - poolLeftForGeneric);
+    need.C = Math.max(0, cost.colorless - pool.C);
+    const poolUsedForSpecific =
+      COLORS.reduce((sum, c) => sum + Math.min(cost.colored[c], pool[c]), 0) +
+      Math.min(cost.colorless, pool.C);
+    let genericNeed = Math.max(0, cost.generic - (poolTotal(pool) - poolUsedForSpecific));
 
     // `avoid` (the permanent whose ability is being activated) goes last, so a
     // man-land paying its own `{1}: becomes a creature` cost taps something
     // else and stays free to attack — but still taps itself if nothing else
     // can cover the cost.
-    const allSources = this.manaSources(player);
+    const all = this.manaSources(player);
     const sources =
       avoid === undefined
-        ? allSources
-        : [
-            ...allSources.filter((s) => s.id !== avoid),
-            ...allSources.filter((s) => s.id === avoid),
-          ];
-    const used = new Set<ObjectId>();
-    const plan: ObjectId[] = [];
+        ? all
+        : [...all.filter((s) => s.id !== avoid), ...all.filter((s) => s.id === avoid)];
+
+    interface Tapped {
+      readonly src: ManaSource;
+      readonly produced: ManaType[];
+      readonly freeFixed: ManaType[];
+      freeAny: number;
+    }
+    const tapped: Tapped[] = [];
+    const isTapped = (id: ObjectId): boolean => tapped.some((t) => t.src.id === id);
+    const open = (src: ManaSource): Tapped => {
+      const t: Tapped = {
+        src,
+        produced: [],
+        freeFixed: [...src.fixed],
+        freeAny: src.anyColor,
+      };
+      tapped.push(t);
+      return t;
+    };
+    const takeSpecific = (t: Tapped, m: ManaType): boolean => {
+      const i = t.freeFixed.indexOf(m);
+      if (i >= 0) {
+        t.freeFixed.splice(i, 1);
+        t.produced.push(m);
+        return true;
+      }
+      if (m !== "C" && t.freeAny > 0) {
+        t.freeAny -= 1;
+        t.produced.push(m);
+        return true;
+      }
+      return false;
+    };
+    const takeGeneric = (t: Tapped): boolean => {
+      if (t.freeFixed.length > 0) {
+        t.produced.push(t.freeFixed.shift() as ManaType);
+        return true;
+      }
+      if (t.freeAny > 0) {
+        t.freeAny -= 1;
+        t.produced.push("C");
+        return true;
+      }
+      return false;
+    };
+    const coverSpecific = (m: ManaType): boolean => {
+      for (const t of tapped) if (takeSpecific(t, m)) return true;
+      const canMake = (s: ManaSource): boolean =>
+        s.fixed.includes(m) || (m !== "C" && s.anyColor > 0);
+      const next = sources.find((s) => !isTapped(s.id) && canMake(s));
+      return next !== undefined && takeSpecific(open(next), m);
+    };
+    const coverGeneric = (): boolean => {
+      for (const t of tapped) if (takeGeneric(t)) return true;
+      const next = sources.find((s) => !isTapped(s.id));
+      return next !== undefined && takeGeneric(open(next));
+    };
 
     for (const color of COLORS) {
-      for (let i = 0; i < coloredNeed[color]; i += 1) {
-        const source = sources.find(
-          (s) => !used.has(s.id) && s.produces.includes(color),
-        );
-        if (source === undefined) return null;
-        used.add(source.id);
-        plan.push(source.id);
-      }
+      for (let i = 0; i < need[color]; i += 1) if (!coverSpecific(color)) return null;
     }
-    while (genericNeed > 0) {
-      const source = sources.find((s) => !used.has(s.id));
-      if (source === undefined) return null;
-      used.add(source.id);
-      plan.push(source.id);
-      genericNeed -= 1;
-    }
-    return plan;
+    for (let i = 0; i < need.C; i += 1) if (!coverSpecific("C")) return null;
+    for (let i = 0; i < genericNeed; i += 1) if (!coverGeneric()) return null;
+
+    return tapped.map((t) => ({
+      source: t.src.id,
+      sacrifice: t.src.sacrificeSelf,
+      mana: [
+        ...t.produced,
+        ...t.freeFixed,
+        ...Array.from<ManaType>({ length: t.freeAny }).fill("C"),
+      ],
+    }));
   }
 
-  /** Activate `id`'s simple `{T}: Add` mana ability: tap it and fill the pool. */
-  private tapManaSource(id: ObjectId): void {
-    const object = this.state.objects[id];
-    const ability = this.registry
-      .get(printedCardName(object))
-      .activated.find(
-        (a) =>
-          isManaAbility(a) &&
-          a.cost.tap &&
-          a.cost.mana === null &&
-          a.effect !== null &&
-          a.effect.kind === "add-mana",
-      );
-    if (ability === undefined || ability.effect?.kind !== "add-mana") {
-      throw new Error("that permanent has no simple mana ability");
+  /** Carry out one {@link ManaPlanStep}: tap (or sacrifice) the source and add
+   * its mana to the controller's pool. */
+  private useManaSource(step: ManaPlanStep): void {
+    const object = this.state.objects[step.source];
+    const player = object.controller;
+    for (const m of step.mana) this.addMana(player, m, 1);
+    if (step.sacrifice) {
+      this.moveObject(step.source, "graveyard");
+      this.emit({ type: "permanent-sacrificed", object: step.source, player: object.owner });
+    } else {
+      object.tapped = true;
+      this.emit({ type: "permanent-tapped", object: step.source });
     }
-    object.tapped = true;
-    this.emit({ type: "permanent-tapped", object: id });
-    this.addMana(object.controller, ability.effect.mana, ability.effect.amount);
   }
 
-  private addMana(player: PlayerId, mana: ManaType, amount: number): void {
-    this.state.players[player].manaPool[mana] += amount;
-    this.emit({ type: "mana-added", player, mana, amount });
+  private addMana(
+    player: PlayerId,
+    mana: ManaType | "any-color",
+    amount: number,
+  ): void {
+    // A standalone "add one mana of any colour" (not paying a cost) just makes
+    // white — the planner resolves the colour itself when it's a payment.
+    const concrete: ManaType = mana === "any-color" ? "W" : mana;
+    this.state.players[player].manaPool[concrete] += amount;
+    this.emit({ type: "mana-added", player, mana: concrete, amount });
   }
 
   private spendFromPool(player: PlayerId, cost: ManaCost): void {
     const pool = this.state.players[player].manaPool;
+    pool.C -= cost.colorless;
+    if (pool.C < 0) {
+      throw new Error("mana pool underflow paying a {C} cost");
+    }
     for (const color of COLORS) {
       pool[color] -= cost.colored[color];
       if (pool[color] < 0) {
@@ -3822,7 +3921,7 @@ export class Game {
         onCountered();
         return false;
       }
-      for (const manaSourceId of plan) this.tapManaSource(manaSourceId);
+      for (const step of plan) this.useManaSource(step);
       this.spendFromPool(caster, manaCost);
       if (ward.payLife !== undefined) this.changeLife(caster, -ward.payLife);
       this.emit({ type: "ward-paid", object: target.object, player: caster });

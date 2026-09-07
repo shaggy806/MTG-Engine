@@ -37,7 +37,15 @@ export type EffectSpec =
       readonly effects: readonly EffectSpec[];
     }
   | { readonly kind: "damage"; readonly amount: EffectAmount; readonly target: number }
-  | { readonly kind: "add-mana"; readonly mana: ManaType; readonly amount: number }
+  | {
+      /** `mana: "any-color"` — one mana of any of the five colours, the
+       * player's choice (Arcane Signet, Command Tower, Treasure). During
+       * cost payment the planner picks the colour it needs; a standalone
+       * activation (holding priority, not paying anything) just adds white. */
+      readonly kind: "add-mana";
+      readonly mana: ManaType | "any-color";
+      readonly amount: number;
+    }
   | { readonly kind: "draw"; readonly amount: number }
   | {
       readonly kind: "gain-life";
@@ -283,7 +291,7 @@ export interface EffectApi {
   loseLife(player: PlayerId, amount: number): void;
   /** Change life for a whole scope (`gain-life` / `lose-life` with `who`). */
   changeLifeScoped(who: PlayerScope, delta: number): void;
-  addMana(player: PlayerId, mana: ManaType, amount: number): void;
+  addMana(player: PlayerId, mana: ManaType | "any-color", amount: number): void;
   tapPermanent(target: TargetRef): void;
   untapPermanent(target: TargetRef): void;
   destroyPermanent(target: TargetRef): void;

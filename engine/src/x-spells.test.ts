@@ -91,6 +91,7 @@ describe("parseManaCost with {X}", () => {
     expect(parseManaCost("{X}{R}")).toEqual({
       generic: 0,
       colored: { W: 0, U: 0, B: 0, R: 1, G: 0 },
+      colorless: 0,
       x: 1,
     });
     expect(parseManaCost("{X}{X}{2}").x).toBe(2);
