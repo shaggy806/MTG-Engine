@@ -23,7 +23,7 @@ the diagram) are in.
 - [x] **Phase 5** — Planeswalkers
 - [x] **Phase 6** — Alternate casting zones + the cast pipeline *(6a/6b done — flashback, Snapcaster, suspend, foretell, escape; 6c long tail deferred)*
 - [x] **Phase 7** — Combat depth + turn-structure control *(core done — extra turns, additional combat, can't-be-blocked; first-strike window / trample-as-choice / must-be-blocked deferred)*
-- [ ] **Phase 8** — Cascade, storm, "cast" triggers, copy-a-spell
+- [x] **Phase 8** — Cascade, storm, "cast" triggers, copy-a-spell
 - [ ] **Phase 9** — Commander-format completeness + deck validation
 - [ ] **Phase 10** — Tier 3 long tail (demand-driven; sagas, multi-face cards **10a modal/split + 10b transform**, day/night, battles, emblems, …)
 
@@ -467,16 +467,39 @@ today) / protection-from-everything / "hexproof from", land/artifact/planeswalke
 
 ---
 
-## Phase 8 — Cascade, storm, "cast" triggers, copy-a-spell
+## Phase 8 — Cascade, storm, "cast" triggers, copy-a-spell  *(done)*
 
-- `PlayerState.spellsCastThisTurn` (storm count); `storm` keyword → copy the
-  spell that many times (no target re-choice for a copy unless it targets).
-- Cascade → on cast, exile from top of library until a nonland card with lesser
-  mana value, may cast it without paying (uses Phase 6 cast-from-exile).
-- Generalize the `cast-spell` TriggerSpec ("when you cast your first spell each
-  turn", "whenever you cast an instant or sorcery").
-- `copy-spell` EffectSpec — clone a stack object, offer a re-target decision.
-- **Cards:** `Bloodbraid Elf` (cascade), `Grapeshot`-lite (storm), `Twincast`.
+- [x] **Spell counts.** `GameState.spellsCastThisTurn` (every player's spells —
+  the Storm count, rule 702.40a) and `PlayerState.spellsCastThisTurn`
+  (per-player — "your first spell each turn"). Both bumped in `castSpell` /
+  `castCardWithoutPaying`, reset in `beginTurn`. `spell-cast` event gains
+  `spellsThisTurn` (the caster's count). `GameObject.stormCount` captures the
+  global count *before* the spell, read by `storm`.
+- [x] **`cast-spell` TriggerSpec breadth.** `firstEachTurn?` narrows to the
+  caster's first spell of the turn. New `on: "this-cast"` — a triggered ability
+  that lives on the card *on the stack* (cascade / storm); `detectTriggers`
+  adds `event.object` to the candidate set for a `spell-cast`.
+- [x] **Spell copies (rule 707.10).** `GameObject.isCopy` — `copyStackSpell`
+  mints a copy of an instant/sorcery on the stack (keeps targets + `{X}`);
+  `resolveTopOfStack` deletes it instead of moving it off the stack (resolve
+  *or* fizzle). Permanent-spell copies (token permanents) deferred to Phase 10.
+- [x] **`storm` effect** — copies the spell `stormCount` times.
+- [x] **`cascade` effect** — exile off the top of the library until a nonland
+  card with lesser mana value, cast it free via `castCardWithoutPaying`
+  (`via: "cascade"`), the rest to the bottom in random order. New
+  `cascade-revealed` event.
+- [x] **`copy-spell` effect** (Twincast) + `"instant-or-sorcery-spell"`
+  TargetSpec. New `spell-copied` event.
+- **Cards:** `Grapeshot` (storm), `Bloodbraid Elf` (cascade), `Twincast`.
+  `cascade-storm.test.ts` (3 cases, incl. a cross-player Storm count); fuzz deck
+  B gains all three; fuzzer clean at 2p/3p/4p. Client: "copy" badge + label on
+  a stack copy; new log lines.
+
+**Deferred:** the "you may choose new targets for the copies" clause (rule
+702.40b — declining is always legal, so keeping the same targets is a valid
+default; the engine just doesn't *offer* the re-target — same class as
+targeted-modal / triggered-ability target choices). Cascade's free-cast targets
+are auto-picked (the `chooseTargets` gap).
 
 **Tests:** `cascade-storm.test.ts`.
 
