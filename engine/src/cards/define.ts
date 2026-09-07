@@ -15,6 +15,7 @@
 import type { ActivatedAbility, TriggeredAbility } from "../abilities.js";
 import type { EffectSpec, SpellResolver } from "../effects.js";
 import type { Color } from "../mana.js";
+import type { ReplacementSpec } from "../replacements.js";
 import type { TargetSpec } from "../target.js";
 
 export type CardType =
@@ -62,11 +63,15 @@ export type CountSpec =
   | "lands-you-control";
 
 /**
- * A static ability that continuously modifies characteristics. Covers rule 613
- * layers 6 (keyword grants), 7b (base P/T set by a CDA), and 7d (P/T bonuses).
+ * A static ability: continuously modifies characteristics (rule 613 layers 6 /
+ * 7b / 7d), and/or carries a `replacement` clause (rule 614 — applied by
+ * `game.ts`, not by the layer fold).
  */
 export interface StaticAbility {
   readonly affects: AffectSpec;
+  /** A replacement effect (rule 614) — see `replacements.ts`. Phase 1a: only
+   * `enters-battlefield` self-replacements. */
+  readonly replacement?: ReplacementSpec;
   /** `[power, toughness]` bonus applied in layer 7d. */
   readonly grantPt?: readonly [number, number];
   /** Keywords granted in layer 6. */

@@ -31,8 +31,10 @@ const deck = (entries) =>
 // Both decks get a mana base that can actually cast their own spells —
 // otherwise one side just sits there and the fuzz only exercises one player.
 const deckA = deck([
-  ["Forest", 13],
+  ["Forest", 11],
+  ["Tranquil Thicket", 2],
   ["Mishra's Factory", 2],
+  ["Walking Ballista", 2],
   ["Llanowar Elves", 4],
   ["Grizzly Bears", 4],
   ["Elvish Visionary", 4],

@@ -70,6 +70,7 @@ import _poolSwamp from "./pool/swamp.js";
 import _poolThievingMagpie from "./pool/thieving-magpie.js";
 import _poolThreaten from "./pool/threaten.js";
 import _poolTomeScour from "./pool/tome-scour.js";
+import _poolTranquilThicket from "./pool/tranquil-thicket.js";
 import _poolTurnToFrog from "./pool/turn-to-frog.js";
 import _poolTyphoidRats from "./pool/typhoid-rats.js";
 import _poolUnsummon from "./pool/unsummon.js";
@@ -77,6 +78,7 @@ import _poolUreniOfTheUnwritten from "./pool/ureni-of-the-unwritten.js";
 import _poolVampireNighthawk from "./pool/vampire-nighthawk.js";
 import _poolVengefulGhoul from "./pool/vengeful-ghoul.js";
 import _poolVoltCharge from "./pool/volt-charge.js";
+import _poolWalkingBallista from "./pool/walking-ballista.js";
 import _poolWallOfWood from "./pool/wall-of-wood.js";
 import _poolWhiteKnight from "./pool/white-knight.js";
 import _poolWildwoodSentinel from "./pool/wildwood-sentinel.js";
@@ -154,6 +156,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolThievingMagpie,
   _poolThreaten,
   _poolTomeScour,
+  _poolTranquilThicket,
   _poolTurnToFrog,
   _poolTyphoidRats,
   _poolUnsummon,
@@ -161,6 +164,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolVampireNighthawk,
   _poolVengefulGhoul,
   _poolVoltCharge,
+  _poolWalkingBallista,
   _poolWallOfWood,
   _poolWhiteKnight,
   _poolWildwoodSentinel,

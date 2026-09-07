@@ -172,6 +172,12 @@ function collectStaticEffects(
     const source = state.objects[sourceId];
     if (hasLostAbilities(source)) continue; // layer 6 — its statics don't function
     for (const ability of registry.get(printedCardName(source)).static) {
+      // Only P/T-bonus / keyword-grant statics contribute here. A static that
+      // is purely a replacement (rule 614 — "enters tapped") or a CDA
+      // (`setBasePtFromCount`, handled in its own pass) modifies nothing here.
+      if (ability.grantPt === undefined && ability.grantKeywords === undefined) {
+        continue;
+      }
       if (staticAffects(registry, ability.affects, source, target)) {
         out.push({
           timestamp: source.timestamp,

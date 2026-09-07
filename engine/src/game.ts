@@ -2037,7 +2037,11 @@ export class Game {
 
     this.mintAbilityObject(
       sourceId,
-      printedCardName(source),
+      // `def.name`, captured above — not `printedCardName(source)` now, since a
+      // "Sacrifice this" cost may have moved the source (clearing a Clone's
+      // `copyOf`) between then and here (rule 608.2g — the ability resolves
+      // using its source's last-known information).
+      def.name,
       player,
       "activated",
       abilityIndex,
@@ -2786,6 +2790,13 @@ export class Game {
         copyOf: null,
       };
       this.state.zones.shared.battlefield.push(id);
+      // A token can carry the same enters-battlefield replacements as any card.
+      const entering = this.entersBattlefieldReplacement(id);
+      this.state.objects[id].tapped = entering.tapped;
+      for (const c of entering.counters) {
+        this.state.objects[id].counters[c.kind] =
+          (this.state.objects[id].counters[c.kind] ?? 0) + c.amount;
+      }
       this.emit({ type: "permanent-entered-battlefield", object: id });
     }
   }
@@ -3390,6 +3401,33 @@ export class Game {
     this.emit({ type: "card-drawn", player, object: id });
   }
 
+  /**
+   * The `enters-battlefield` replacements (rule 614.1c) that apply to `id` as
+   * it enters — Phase 1a: only the entering card's own self-replacements
+   * ("~ enters tapped", "~ enters with N +1/+1 counters"). `amount: "x"` reads
+   * the `{X}` chosen when it was cast.
+   */
+  private entersBattlefieldReplacement(id: ObjectId): {
+    tapped: boolean;
+    counters: { kind: string; amount: number }[];
+  } {
+    const object = this.state.objects[id];
+    const def = this.registry.get(printedCardName(object));
+    let tapped = false;
+    const counters: { kind: string; amount: number }[] = [];
+    for (const ability of def.static) {
+      const r = ability.replacement;
+      if (r === undefined || r.event !== "enters-battlefield") continue;
+      if (r.tapped) tapped = true;
+      if (r.counters) {
+        const amount =
+          r.counters.amount === "x" ? (object.xValue ?? 0) : r.counters.amount;
+        if (amount > 0) counters.push({ kind: r.counters.kind, amount });
+      }
+    }
+    return { tapped, counters };
+  }
+
   private moveObject(id: ObjectId, to: ZoneType): void {
     const object = this.state.objects[id];
     // Commander replacement (rule 903.9a): a commander put into a hidden zone
@@ -3433,12 +3471,23 @@ export class Game {
       object.summoningSick = true;
       this.state.timestampSeq += 1;
       object.timestamp = this.state.timestampSeq;
+      // Replacement effects that apply as it enters (rule 614.1c) — tapped /
+      // enters-with-counters. `object.counters` was just reset above.
+      const entering = this.entersBattlefieldReplacement(id);
+      object.tapped = entering.tapped;
+      for (const c of entering.counters) {
+        object.counters[c.kind] = (object.counters[c.kind] ?? 0) + c.amount;
+      }
     } else {
       object.tapped = false;
       object.damageMarked = 0;
       object.enteredBattlefieldOnTurn = null;
       object.summoningSick = false;
       object.timestamp = 0;
+      // The `{X}` a spell was cast for ends when it changes zones (rule 112.7 /
+      // 608.2h) — so a Walking Ballista that dies and returns re-enters as a
+      // fresh 0/0 with X=0, not its old size.
+      object.xValue = null;
     }
   }
 
