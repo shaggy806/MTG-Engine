@@ -431,7 +431,9 @@ function Table({ view, seat, opponents, game }: TableProps) {
   // Attacker -> chosen defender. With more than one legal opponent, clicking
   // an attacker assigns it to the first opponent by default and focuses it;
   // clicking a different opponent's panel while focused redirects it.
-  const [attackAssignments, setAttackAssignments] = useState<Record<string, PlayerId>>({})
+  const [attackAssignments, setAttackAssignments] = useState<
+    Record<string, PlayerId | ObjectId>
+  >({})
   const [attackFocus, setAttackFocus] = useState<ObjectId | null>(null)
   const [blockAssign, setBlockAssign] = useState<Record<string, ObjectId>>({})
   const [blockFocus, setBlockFocus] = useState<ObjectId | null>(null)
@@ -737,6 +739,16 @@ function Table({ view, seat, opponents, game }: TableProps) {
         return
       }
       if (mode === 'attackers' && attackAction) {
+        // Clicking an opponent's planeswalker while an attacker is focused
+        // redirects that attacker at it (mirrors the click-a-panel flow).
+        if (
+          attackFocus &&
+          id !== attackFocus &&
+          attackAction.defenders.includes(id)
+        ) {
+          setAttackAssignments((cur) => ({ ...cur, [attackFocus]: id }))
+          return
+        }
         if (!attackAction.eligible.includes(id)) return
         const hasMultipleDefenders = attackAction.defenders.length > 1
         if (attackAssignments[id] !== undefined) {
@@ -931,6 +943,12 @@ function Table({ view, seat, opponents, game }: TableProps) {
       .filter((r) => r.kind === 'object')
       .map((r) => (r.kind === 'object' ? r.object : '')),
   )
+  /** Label for an attack target — a player, or an opponent's planeswalker. */
+  const attackTargetLabel = (t: PlayerId | ObjectId): string =>
+    view.objects[t as ObjectId]
+      ? game.nameOf(t as ObjectId)
+      : playerLabel(t as PlayerId, game.seats)
+
   const playerIsTargetable = (pid: PlayerId): boolean => {
     if (mode === 'attackers' && attackFocus && attackAction) {
       return attackAction.defenders.includes(pid)
@@ -954,7 +972,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
     let badge: string | null = null
     let order: number | null = null
 
-    if (obj.attacking) badge = `⚔ ${playerLabel(obj.attacking, game.seats)}`
+    if (obj.attacking) badge = `⚔ ${attackTargetLabel(obj.attacking)}`
     else if (obj.blocking) badge = `\u{1F6E1} ${game.nameOf(obj.blocking)}`
     else if (obj.isCommander) badge = 'Commander'
 
@@ -973,11 +991,17 @@ function Table({ view, seat, opponents, game }: TableProps) {
       )
       selected = ids.some((i) => pickedObjKeys.has(i))
     } else if (mode === 'attackers' && attackAction) {
-      highlight = attackAction.eligible.includes(id)
+      // An opponent's planeswalker is a legal defender: highlight it while an
+      // attacker is focused so it can be clicked as the attack target.
+      const isDefenderPw =
+        attackAction.defenders.includes(id) && Boolean(view.objects[id])
+      highlight =
+        attackAction.eligible.includes(id) ||
+        (attackFocus !== null && isDefenderPw)
       const assignedTo = attackAssignments[id]
       selected = assignedTo !== undefined
       if (assignedTo) {
-        badge = `⚔ ${playerLabel(assignedTo, game.seats)}${attackFocus === id ? ' ?' : ''}`
+        badge = `⚔ ${attackTargetLabel(assignedTo)}${attackFocus === id ? ' ?' : ''}`
       }
     } else if (mode === 'blockers' && blockAction) {
       const isBlocker = blockAction.eligible.some((e) => e.blocker === id)
@@ -1439,7 +1463,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
         <span>
           Declare attackers — {assignedCount} selected
           {attackFocus
-            ? ` · pick an opponent for ${game.nameOf(attackFocus)}`
+            ? ` · pick a player or planeswalker for ${game.nameOf(attackFocus)}`
             : ''}
         </span>
         <button

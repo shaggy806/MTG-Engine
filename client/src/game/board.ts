@@ -11,7 +11,7 @@
 
 import type { ObjectId, PlayerId, PlayerView, VisibleObject } from 'engine'
 
-export type Bucket = 'land' | 'creature' | 'artifact' | 'enchantment'
+export type Bucket = 'land' | 'creature' | 'planeswalker' | 'artifact' | 'enchantment'
 
 export interface BoardEntry {
   /** All object ids this tile represents — length > 1 only for a land stack. */
@@ -30,6 +30,7 @@ export interface BoardEntry {
 export function bucketOf(obj: VisibleObject): Bucket {
   if (obj.types.includes('land')) return 'land'
   if (obj.types.includes('creature')) return 'creature'
+  if (obj.types.includes('planeswalker')) return 'planeswalker'
   if (obj.types.includes('artifact')) return 'artifact'
   return 'enchantment'
 }

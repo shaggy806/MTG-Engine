@@ -105,7 +105,9 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
     case 'text-changed':
       return `${name(event.object)}: text "${event.from}" → "${event.to}"`
     case 'attacker-declared':
-      return `${name(event.attacker)} attacks ${event.defender}`
+      return `${name(event.attacker)} attacks ${name(event.defender as ObjectId)}`
+    case 'loyalty-changed':
+      return `${name(event.object)} ${signed(event.delta)} loyalty (now ${event.loyalty})`
     case 'blocker-declared':
       return `${name(event.blocker)} blocks ${name(event.attacker)}`
     case 'permanent-entered-battlefield':

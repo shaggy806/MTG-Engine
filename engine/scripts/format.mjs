@@ -80,7 +80,9 @@ export const makeFormatter = (game) => {
       case "text-changed":
         return `${name(e.object)}: text "${e.from}" → "${e.to}"`;
       case "attacker-declared":
-        return `${name(e.attacker)} attacks ${e.defender}`;
+        return `${name(e.attacker)} attacks ${name(e.defender)}`;
+      case "loyalty-changed":
+        return `${name(e.object)} ${e.delta >= 0 ? "+" : ""}${e.delta} loyalty (now ${e.loyalty})`;
       case "blocker-declared":
         return `${name(e.blocker)} blocks ${name(e.attacker)}`;
       case "spell-fizzled":

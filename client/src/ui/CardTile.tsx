@@ -87,7 +87,10 @@ export function CardTile({
   const face = obj.copyOf ?? obj.cardName
   const [artFailed, setArtFailed] = useState(() => artMisses.has(face))
   const isCreature = obj.power !== null && obj.toughness !== null
-  const counters = Object.entries(obj.counters).filter(([, n]) => n !== 0)
+  const isPlaneswalker = obj.loyalty !== null
+  const counters = Object.entries(obj.counters).filter(
+    ([k, n]) => n !== 0 && k !== 'loyalty',
+  )
   const clickable = Boolean(onClick) && (highlight || selected || activatable)
   const showText = obj.text.length > 0 && !textIsJustKeywords(obj)
   const keywordLine = obj.keywords
@@ -173,6 +176,12 @@ export function CardTile({
           {obj.damageMarked > 0 ? (
             <span className="ct-dmg"> −{obj.damageMarked}</span>
           ) : null}
+        </span>
+      ) : null}
+
+      {isPlaneswalker ? (
+        <span className="ct-loyalty" title="Loyalty">
+          {obj.loyalty}
         </span>
       ) : null}
 
