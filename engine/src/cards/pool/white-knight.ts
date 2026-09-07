@@ -9,5 +9,12 @@ export default defineCard({
   power: 2,
   toughness: 2,
   keywords: ["first-strike"],
-  text: "First strike",
+  text: "First strike, protection from black",
+  static: [
+    {
+      affects: { scope: "self" },
+      protection: { colors: ["B"] },
+      text: "Protection from black",
+    },
+  ],
 });

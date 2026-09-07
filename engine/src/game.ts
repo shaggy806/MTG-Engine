@@ -47,7 +47,8 @@ import { asObjectId, createRng, shuffle } from "./primitives.js";
 import { DEFAULT_RULES, activePlayerOf, createPlayerState, printedCardName } from "./state.js";
 import type { AwaitingDecision, GameObject, GameRules, GameState, ZoneType } from "./state.js";
 import type { TargetRef, TargetSpec } from "./target.js";
-import { isLegalTarget, legalTargets } from "./targeting.js";
+import { isLegalTarget, legalTargets, protectionBlocks } from "./targeting.js";
+import type { TargetSource } from "./targeting.js";
 import { PHASE_OF_STEP, isMainPhase, nextStep, stepUsesPriority } from "./turn.js";
 import type { Step } from "./turn.js";
 import { viewFor } from "./view.js";
@@ -539,7 +540,7 @@ export class Game {
           card,
           cardName,
           targetSpecs: def.targets,
-          targetOptions: this.targetOptionsFor(def.targets, player),
+          targetOptions: this.targetOptionsFor(def.targets, player, this.cardSource(def)),
           ...(parsed.x > 0
             ? { xCost: { maxX: this.maxAffordableX(player, card, def) } }
             : {}),
@@ -559,7 +560,7 @@ export class Game {
           cardName: printedCardName(object),
           text: ability.text,
           targetSpecs: ability.targets,
-          targetOptions: this.targetOptionsFor(ability.targets, player),
+          targetOptions: this.targetOptionsFor(ability.targets, player, this.permanentSource(source)),
           ...(ability.cost.sacrifice === "creature-you-control"
             ? { sacrifice: { choices: this.sacrificeCandidates(player, source, ability) } }
             : {}),
@@ -598,10 +599,22 @@ export class Game {
   private targetOptionsFor(
     specs: readonly TargetSpec[],
     forPlayer: PlayerId,
+    source?: TargetSource,
   ): readonly (readonly TargetRef[])[] {
     return specs.map((spec) =>
-      legalTargets(this.state, this.registry, spec, forPlayer),
+      legalTargets(this.state, this.registry, spec, forPlayer, source),
     );
+  }
+
+  /** The colour/type identity of a card (its printed values). */
+  private cardSource(def: CardDefinition): TargetSource {
+    return { colors: def.colors, types: def.types };
+  }
+
+  /** The colour/type identity of a permanent (its computed values). */
+  private permanentSource(id: ObjectId): TargetSource {
+    const c = computeCharacteristics(this.state, this.registry, id);
+    return { colors: c.colors, types: c.types };
   }
 
   /** Run automatic game actions until the game ends. */
@@ -1517,6 +1530,11 @@ export class Game {
       const attackerDef = this.registry.get(printedCardName(attacker));
       return `${blockerDef.name} can't block ${attackerDef.name} (can't be blocked)`;
     }
+    // Protection (rule 702.16) — can't be blocked by a matching creature.
+    if (protectionBlocks(this.state, this.registry, attackerId, this.permanentSource(blockerId))) {
+      const attackerDef = this.registry.get(printedCardName(attacker));
+      return `${blockerDef.name} can't block ${attackerDef.name} (protection)`;
+    }
     if (attacker.attacking !== player) {
       const attackerDef = this.registry.get(printedCardName(attacker));
       return `${blockerDef.name} can't block ${attackerDef.name} — it isn't attacking ${player}`;
@@ -2028,7 +2046,9 @@ export class Game {
       if (timing !== null) return timing;
     }
     for (const spec of def.targets) {
-      if (legalTargets(this.state, this.registry, spec, player).length === 0) {
+      if (
+        legalTargets(this.state, this.registry, spec, player, this.cardSource(def)).length === 0
+      ) {
         return `${def.name} has no legal ${spec} target`;
       }
     }
@@ -2058,7 +2078,7 @@ export class Game {
       );
     }
     def.targets.forEach((spec, i) => {
-      if (!isLegalTarget(this.state, this.registry, spec, targets[i], player)) {
+      if (!isLegalTarget(this.state, this.registry, spec, targets[i], player, this.cardSource(def))) {
         throw new Error(`illegal target for ${def.name}`);
       }
     });
@@ -2141,7 +2161,9 @@ export class Game {
       if (timing !== null) return timing;
     }
     for (const spec of ability.targets) {
-      if (legalTargets(this.state, this.registry, spec, player).length === 0) {
+      if (
+        legalTargets(this.state, this.registry, spec, player, this.permanentSource(sourceId)).length === 0
+      ) {
         return `${def.name}'s ability has no legal ${spec} target`;
       }
     }
@@ -2189,7 +2211,16 @@ export class Game {
       );
     }
     ability.targets.forEach((spec, i) => {
-      if (!isLegalTarget(this.state, this.registry, spec, targets[i], player)) {
+      if (
+        !isLegalTarget(
+          this.state,
+          this.registry,
+          spec,
+          targets[i],
+          player,
+          this.permanentSource(sourceId),
+        )
+      ) {
         throw new Error(`illegal target for ${def.name}'s ability`);
       }
     });
@@ -2570,7 +2601,7 @@ export class Game {
 
     if (
       def.targets.length > 0 &&
-      !this.anyTargetLegal(def.targets, targets, object.controller)
+      !this.anyTargetLegal(def.targets, targets, object.controller, this.cardSource(def))
     ) {
       this.moveObject(id, "graveyard");
       object.targets = null;
@@ -2647,7 +2678,12 @@ export class Game {
 
     if (
       ability.targets.length > 0 &&
-      !this.anyTargetLegal(ability.targets, targets, object.controller)
+      !this.anyTargetLegal(
+        ability.targets,
+        targets,
+        object.controller,
+        this.permanentSource(source),
+      )
     ) {
       this.removeAbilityFromStack(id);
       this.emit({
@@ -2878,6 +2914,9 @@ export class Game {
     const ability =
       this.registry.get(trigger.cardName).triggered[trigger.abilityIndex];
 
+    const triggerSource = this.state.objects[trigger.sourceObjectId] !== undefined
+      ? this.permanentSource(trigger.sourceObjectId)
+      : undefined;
     let targets: readonly TargetRef[] = [];
     if (ability.targets.length > 0) {
       const auto = trigger.autoTargets ?? [];
@@ -2886,7 +2925,16 @@ export class Game {
         const spec = ability.targets[i];
         if (auto[i] !== undefined) {
           // The triggering event determined this target (a saboteur's victim).
-          if (!isLegalTarget(this.state, this.registry, spec, auto[i], trigger.controller)) {
+          if (
+            !isLegalTarget(
+              this.state,
+              this.registry,
+              spec,
+              auto[i],
+              trigger.controller,
+              triggerSource,
+            )
+          ) {
             this.emit({
               type: "trigger-removed",
               source: trigger.sourceObjectId,
@@ -2897,7 +2945,13 @@ export class Game {
           chosen.push(auto[i]);
           continue;
         }
-        const options = legalTargets(this.state, this.registry, spec, trigger.controller);
+        const options = legalTargets(
+          this.state,
+          this.registry,
+          spec,
+          trigger.controller,
+          triggerSource,
+        );
         if (options.length === 0) {
           this.emit({
             type: "trigger-removed",
@@ -2914,7 +2968,14 @@ export class Game {
         );
         if (
           picked.length !== 1 ||
-          !isLegalTarget(this.state, this.registry, spec, picked[0], trigger.controller)
+          !isLegalTarget(
+            this.state,
+            this.registry,
+            spec,
+            picked[0],
+            trigger.controller,
+            triggerSource,
+          )
         ) {
           throw new Error(`illegal target chosen for ${trigger.cardName}'s trigger`);
         }
@@ -2942,11 +3003,12 @@ export class Game {
     specs: readonly TargetSpec[],
     targets: readonly TargetRef[],
     forPlayer: PlayerId,
+    source?: TargetSource,
   ): boolean {
     return specs.some(
       (spec, i) =>
         targets[i] !== undefined &&
-        isLegalTarget(this.state, this.registry, spec, targets[i], forPlayer),
+        isLegalTarget(this.state, this.registry, spec, targets[i], forPlayer, source),
     );
   }
 
@@ -3222,6 +3284,11 @@ export class Game {
     const targetObject = this.state.objects[target.object];
     if (sourceObject === undefined || sourceObject.zone !== "battlefield") return;
     if (targetObject === undefined || targetObject.zone !== "battlefield") return;
+    // Protection (rule 702.16) — can't be enchanted / equipped by a matching
+    // Aura / Equipment.
+    if (protectionBlocks(this.state, this.registry, target.object, this.permanentSource(source))) {
+      return;
+    }
     sourceObject.attachedTo = target.object;
     this.emit({ type: "permanent-attached", source, target: target.object });
   }
@@ -3854,6 +3921,14 @@ export class Game {
     }
     const object = this.state.objects[target.object];
     if (object === undefined || object.zone !== "battlefield") return 0;
+    // Protection (rule 702.16) — prevent damage from a matching source.
+    if (
+      this.state.objects[source] !== undefined &&
+      protectionBlocks(this.state, this.registry, target.object, this.permanentSource(source))
+    ) {
+      this.emit({ type: "damage-prevented", source, target, amount });
+      return 0;
+    }
     object.damageMarked += amount;
     if (this.sourceHasKeyword(source, "deathtouch")) {
       object.markedByDeathtouch = true;

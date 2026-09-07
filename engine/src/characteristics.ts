@@ -41,6 +41,13 @@ export interface Characteristics {
   readonly controller: PlayerId;
   /** Combat restrictions from static abilities (Pacifism, Juggernaut). */
   readonly restrictions: ReadonlySet<CombatRestriction>;
+  /** Protection (rule 702.16): the union of every "protection from …" clause
+   * — a source with any of these colours or types can't target / block /
+   * enchant / damage this object. */
+  readonly protectionFrom: {
+    readonly colors: ReadonlySet<Color>;
+    readonly types: ReadonlySet<CardType>;
+  };
 }
 
 /** True if this permanent has lost its own abilities (layer 6 — Turn to Frog). */
@@ -169,6 +176,7 @@ interface AppliedEffect {
   readonly toughness: number;
   readonly keywords: readonly Keyword[];
   readonly restrictions: readonly CombatRestriction[];
+  readonly protection: { colors?: readonly Color[]; types?: readonly CardType[] } | null;
 }
 
 /** Continuous effects from battlefield permanents that apply to `target`. */
@@ -188,7 +196,8 @@ function collectStaticEffects(
       if (
         ability.grantPt === undefined &&
         ability.grantKeywords === undefined &&
-        ability.restrictions === undefined
+        ability.restrictions === undefined &&
+        ability.protection === undefined
       ) {
         continue;
       }
@@ -199,6 +208,7 @@ function collectStaticEffects(
           toughness: ability.grantPt?.[1] ?? 0,
           keywords: ability.grantKeywords ?? [],
           restrictions: ability.restrictions ?? [],
+          protection: ability.protection ?? null,
         });
       }
     }
@@ -251,9 +261,15 @@ export function computeCharacteristics(
   // `collectStaticEffects` already includes a permanent's own `"self"`
   // restriction static (Juggernaut) as well as external ones (Pacifism).
   const restrictions = new Set<CombatRestriction>();
+  const protColors = new Set<Color>();
+  const protTypes = new Set<CardType>();
   for (const effect of staticEffects) {
     for (const keyword of effect.keywords) keywords.add(keyword);
     for (const r of effect.restrictions) restrictions.add(r);
+    if (effect.protection) {
+      for (const c of effect.protection.colors ?? []) protColors.add(c);
+      for (const t of effect.protection.types ?? []) protTypes.add(t);
+    }
   }
   for (const modifier of object.modifiers) {
     for (const keyword of modifier.keywords) keywords.add(keyword);
@@ -314,6 +330,7 @@ export function computeCharacteristics(
     colors,
     controller: object.controller,
     restrictions,
+    protectionFrom: { colors: protColors, types: protTypes },
   };
 }
 

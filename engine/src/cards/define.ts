@@ -85,6 +85,13 @@ export interface StaticAbility {
   readonly grantKeywords?: readonly Keyword[];
   /** Combat restrictions imposed on the affected objects (Pacifism, Juggernaut). */
   readonly restrictions?: readonly CombatRestriction[];
+  /** Protection (rule 702.16) — the affected object can't be targeted,
+   * blocked, enchanted/equipped, or damaged by a source whose colour or type
+   * matches (White Knight: `{ colors: ["B"] }`). */
+  readonly protection?: {
+    readonly colors?: readonly Color[];
+    readonly types?: readonly CardType[];
+  };
   /** Ward (rule 702.21) — an opponent targeting this permanent (`affects:
    * "self"`) must pay this or their spell/ability is countered. Applied at the
    * target's resolution, auto-paid if the opponent can afford it. */
