@@ -229,25 +229,33 @@ counter replacements + cards; modal primitives + 903.9a rework).
 
 ---
 
-## Phase 3 — Ability grammar breadth
+## Phase 3 — Ability grammar breadth  *(in progress)*
 
 Retire most `predicate` / `resolve` hatches now that Phases 1–2 exist.
 
-- **TriggerSpec** += ~~`leaves-battlefield {who}`~~ (done in Phase 1c),
-  `permanent-enters {who, filter}`
-  (broad ETB — "whenever another creature enters"), `upkeep` / `end-step` /
-  `begin-combat {who}`, `landfall`, `gains-life` / `loses-life {who}`,
-  `creature-dies {filter}` (broad), `becomes-tapped {who}`,
-  `first-spell-each-turn {who}`, non-combat `deals-damage`, `blocks {who}`,
-  `attacks {who, alone?}`.
-- **StaticAbility** += `costModification { applies: CardFilter | "self";
-  reduce?: ManaCost; increase?: ManaCost }`, `restriction` (`can't-attack` /
-  `can't-block` / `must-attack` / `can't-be-blocked` / `must-be-blocked`),
-  `ward { cost }`, `protection { from: CardFilter }`, land/artifact/planeswalker
-  `affects` scopes, conditional anthems (`when: <predicate over state>`).
-- **AbilityCost** += `payLife: number`, `discard { n, filter? }`,
-  `exileFromGraveyard { n, filter? }`, `removeCounter { kind, n }`,
-  `xInCost: true` (`{X}` in an activated cost), spell `additionalCost`.
+- [x] **TriggerSpec breadth (3a).** `leaves-battlefield` (Phase 1c);
+  `enters-battlefield` / `dies` gain `filter: CardFilter` + `otherOnly`, so
+  one spec covers "another creature enters" (Soul Warden), landfall (`filter:
+  { type: "land" }`, Rampaging Baloths), and "a creature you control dies"
+  (Grave Pact, Zulaport). New `gains-life` / `loses-life { who }` (a *player*
+  subject — `matchesWhoPlayer`; Ajani's Pridemate). Also generalized
+  `gain-life` (`who?: PlayerScope`) + a new `lose-life` effect, retiring the
+  last two imperative `resolve` cards. **Still to do:** `end-step` /
+  `begin-combat`, `becomes-tapped`, `first-spell-each-turn`, non-combat
+  `deals-damage`, `blocks`, `attacks {alone?}`.
+- [x] **Static combat restrictions (3b).** `StaticAbility.restrictions:
+  CombatRestriction[]` (`cant-attack` / `cant-block` / `must-attack`) folded
+  into `Characteristics.restrictions`; wired into declare-attackers /
+  declare-blockers validation (`must-attack` auto-appends). New `unblockable`
+  keyword. Cards: Pacifism, Juggernaut, Invisible Stalker. **Still to do:**
+  `must-be-blocked` (Lure), `ward { cost }`, `protection { from }`,
+  cost-modification statics, conditional anthems, land/artifact `affects`
+  scopes.
+- [x] **AbilityCost variety (3d).** `payLife: number`, `removeCounter
+  { kind, count }` — both automatic. Cards: Greed, Walking Ballista's real
+  ping ability. **Still to do:** `discard { n, filter? }` (needs a
+  card-choice decision), `exileFromGraveyard`, `{X}` in an activated cost,
+  spell `additionalCost`.
 - Protection uses Phase 1's damage-prevention hook for its "prevent damage from"
   clause and Phase 3's targeting/combat hooks for the rest.
 - Ward is a triggered-on-being-targeted check in `castSpell` / `activateAbility`.
