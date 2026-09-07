@@ -368,6 +368,28 @@ today) / protection-from-everything / "hexproof from", land/artifact/planeswalke
 
 ## Phase 6 — Alternate casting zones + the cast pipeline
 
+**Progress (pick up here):**
+
+- [x] **6a — flashback + the alt-cast plumbing.** `cast-spell` Action / LegalAction
+  gain `via?: "flashback"`; `castSpell(player, card, targets, xValue, via?)` and
+  `whyCannotCastSpell(player, card, via?)` take it, `castCostString` picks the
+  flashback cost, `castingCostOf` / `maxAffordableX` take a `costString`
+  override. `legalActions` enumerates a `via: "flashback"` cast for each
+  instant/sorcery in the player's graveyard with `CardDefinition.flashback`.
+  `GameObject.castVia` rides on the stack object; `moveObject` redirects a
+  `castVia === "flashback"` spell's stack→graveyard move to exile (rule
+  702.34) and clears the field on any zone change. `spell-cast` event carries
+  `via`. New `discard { target: "you" }` (no target slot — Faithless Looting's
+  "then discard two cards"). Card: Faithless Looting. `alt-cast.test.ts` (3
+  cases); fuzz deck B gains 2x Faithless Looting; fuzzer clean at 2p/3p/4p;
+  browser-checked (cast from hand → graveyard, "Cast (flashback)" button in
+  the graveyard `ZoneViewer` → exile).
+- [ ] **6b** — escape / foretell / suspend / disturb; a `playableUntil` marker
+  for impulse draw; Snapcaster-lite (a static grant of flashback to a
+  graveyard spell). A clean `spell-cast` event carrying the spell's
+  characteristics (the Phase 8 prerequisite). Cast-time `face` selection is
+  still deferred (Phase 10a).
+
 - `castSpell(card, fromZone, permission)`: cast from graveyard / exile / anywhere
   via a static grant. A per-object `playableUntil` marker (turn number) for
   impulse draw ("you may play it this turn").
