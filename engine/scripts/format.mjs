@@ -65,6 +65,8 @@ export const makeFormatter = (game) => {
         }${e.toughness}${e.duration === "end-of-turn" ? " until EOT" : ""}`;
       case "counter-added":
         return `${name(e.object)} gets ${e.amount} ${e.counter} counter(s)`;
+      case "counter-removed":
+        return `${name(e.object)} loses ${e.amount} ${e.counter} counter(s)`;
       case "keyword-granted":
         return `${name(e.object)} gains ${e.keyword}${
           e.duration === "end-of-turn" ? " until EOT" : ""

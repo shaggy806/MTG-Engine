@@ -117,6 +117,7 @@ const deckB = deck([
   ["Grave Pact", 1],
   ["Zulaport Cutthroat", 1],
   ["Pacifism", 2],
+  ["Greed", 1],
 ]);
 
 // A lean Dimir deck for Carol — carries the `Sarova, the Undying Current`
@@ -143,6 +144,7 @@ const deckC = deck([
   ["Consider", 2],
   ["Zulaport Cutthroat", 2],
   ["Invisible Stalker", 2],
+  ["Greed", 1],
 ]);
 
 // All four seats' decks/commanders, in seating order — sliced down to

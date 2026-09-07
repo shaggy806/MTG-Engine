@@ -46,6 +46,7 @@ import _poolGoblinChieftain from "./pool/goblin-chieftain.js";
 import _poolGoblinRaider from "./pool/goblin-raider.js";
 import _poolGravePact from "./pool/grave-pact.js";
 import _poolGraveRecall from "./pool/grave-recall.js";
+import _poolGreed from "./pool/greed.js";
 import _poolGrizzlyBears from "./pool/grizzly-bears.js";
 import _poolHillGiant from "./pool/hill-giant.js";
 import _poolHolyStrength from "./pool/holy-strength.js";
@@ -156,6 +157,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolGoblinRaider,
   _poolGravePact,
   _poolGraveRecall,
+  _poolGreed,
   _poolGrizzlyBears,
   _poolHillGiant,
   _poolHolyStrength,

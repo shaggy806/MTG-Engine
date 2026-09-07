@@ -88,6 +88,8 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       }`
     case 'counter-added':
       return `${name(event.object)} gets ${event.amount} ${event.counter} counter(s)`
+    case 'counter-removed':
+      return `${name(event.object)} loses ${event.amount} ${event.counter} counter(s)`
     case 'keyword-granted':
       return `${name(event.object)} gains ${event.keyword}${
         event.duration === 'end-of-turn' ? ' until EOT' : ''

@@ -2131,6 +2131,18 @@ export class Game {
     ) {
       return `${player} has nothing to sacrifice for ${def.name}'s ability`;
     }
+    if (
+      ability.cost.payLife !== undefined &&
+      this.state.players[player].life < ability.cost.payLife
+    ) {
+      return `${player} does not have ${ability.cost.payLife} life to pay`;
+    }
+    if (ability.cost.removeCounter !== undefined) {
+      const { kind, count } = ability.cost.removeCounter;
+      if ((source.counters[kind] ?? 0) < count) {
+        return `${def.name} does not have ${count} ${kind} counter(s) to remove`;
+      }
+    }
     return null;
   }
 
@@ -2194,6 +2206,15 @@ export class Game {
     }
     for (const manaSourceId of plan) this.tapManaSource(manaSourceId);
     this.spendFromPool(player, manaCost);
+    if (ability.cost.payLife !== undefined) {
+      this.changeLife(player, -ability.cost.payLife);
+    }
+    if (ability.cost.removeCounter !== undefined) {
+      const { kind, count } = ability.cost.removeCounter;
+      source.counters[kind] = (source.counters[kind] ?? 0) - count;
+      if (source.counters[kind] <= 0) delete source.counters[kind];
+      this.emit({ type: "counter-removed", object: sourceId, counter: kind, amount: count });
+    }
     if (sacrificeVictim !== null) {
       this.moveObject(sacrificeVictim, "graveyard");
       this.emit({ type: "permanent-sacrificed", object: sacrificeVictim, player });

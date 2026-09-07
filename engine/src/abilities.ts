@@ -30,6 +30,12 @@ export interface AbilityCost {
   readonly tap: boolean;
   /** A sacrifice that is part of the cost, or `undefined` for none. */
   readonly sacrifice?: SacrificeCost;
+  /** Life to pay as part of the cost (Greed: "Pay 2 life"). Rule 118.4 — a
+   * player can't pay more life than they have. */
+  readonly payLife?: number;
+  /** Counters to remove from the source as part of the cost (Walking
+   * Ballista: "Remove a +1/+1 counter from ~"). */
+  readonly removeCounter?: { readonly kind: string; readonly count: number };
 }
 
 export interface ActivatedAbility {
@@ -119,6 +125,8 @@ export function isManaAbility(ability: ActivatedAbility): boolean {
   return (
     ability.targets.length === 0 &&
     ability.cost.sacrifice === undefined &&
+    ability.cost.payLife === undefined &&
+    ability.cost.removeCounter === undefined &&
     ability.resolve === null &&
     ability.effect !== null &&
     ability.effect.kind === "add-mana"

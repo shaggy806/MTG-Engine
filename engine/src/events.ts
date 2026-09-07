@@ -123,6 +123,14 @@ export type GameEvent =
       readonly amount: number;
     })
   | (Base & {
+      /** Counters removed (from a `removeCounter` ability cost — Walking
+       * Ballista). */
+      readonly type: "counter-removed";
+      readonly object: ObjectId;
+      readonly counter: string;
+      readonly amount: number;
+    })
+  | (Base & {
       readonly type: "keyword-granted";
       readonly object: ObjectId;
       readonly keyword: string;
