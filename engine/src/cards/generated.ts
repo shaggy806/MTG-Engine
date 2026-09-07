@@ -22,11 +22,13 @@ import _poolCrawWurm from "./pool/craw-wurm.js";
 import _poolDarksteelMyr from "./pool/darksteel-myr.js";
 import _poolDisenchant from "./pool/disenchant.js";
 import _poolDoomBlade from "./pool/doom-blade.js";
+import _poolDoublingSeason from "./pool/doubling-season.js";
 import _poolElvishVisionary from "./pool/elvish-visionary.js";
 import _poolEssenceScatter from "./pool/essence-scatter.js";
 import _poolExplorersInsight from "./pool/explorers-insight.js";
 import _poolFencingAce from "./pool/fencing-ace.js";
 import _poolFireball from "./pool/fireball.js";
+import _poolFog from "./pool/fog.js";
 import _poolForest from "./pool/forest.js";
 import _poolFumeSpitter from "./pool/fume-spitter.js";
 import _poolGiantGrowth from "./pool/giant-growth.js";
@@ -64,6 +66,7 @@ import _poolProdigalSorcerer from "./pool/prodigal-sorcerer.js";
 import _poolRabidBite from "./pool/rabid-bite.js";
 import _poolRagingGoblin from "./pool/raging-goblin.js";
 import _poolRaiseTheAlarm from "./pool/raise-the-alarm.js";
+import _poolRestInPeace from "./pool/rest-in-peace.js";
 import _poolRumblingBaloth from "./pool/rumbling-baloth.js";
 import _poolSerraAngel from "./pool/serra-angel.js";
 import _poolSwamp from "./pool/swamp.js";
@@ -108,11 +111,13 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolDarksteelMyr,
   _poolDisenchant,
   _poolDoomBlade,
+  _poolDoublingSeason,
   _poolElvishVisionary,
   _poolEssenceScatter,
   _poolExplorersInsight,
   _poolFencingAce,
   _poolFireball,
+  _poolFog,
   _poolForest,
   _poolFumeSpitter,
   _poolGiantGrowth,
@@ -150,6 +155,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolRabidBite,
   _poolRagingGoblin,
   _poolRaiseTheAlarm,
+  _poolRestInPeace,
   _poolRumblingBaloth,
   _poolSerraAngel,
   _poolSwamp,

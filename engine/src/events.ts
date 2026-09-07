@@ -215,6 +215,25 @@ export type GameEvent =
       readonly reason: string;
     })
   | (Base & {
+      /** A Fog-style effect resolved — all combat damage is prevented for the
+       * rest of the turn (rule 614 replacement, turn-scoped). */
+      readonly type: "combat-damage-prevention-set";
+    })
+  | (Base & {
+      /** Damage was prevented by a replacement effect (Fog) — the event fires
+       * in place of `damage-dealt`. */
+      readonly type: "damage-prevented";
+      readonly source: ObjectId;
+      readonly target: TargetRef;
+      readonly amount: number;
+    })
+  | (Base & {
+      /** A card that would have gone to a graveyard was exiled instead (Rest
+       * in Peace — rule 614). */
+      readonly type: "graveyard-replaced-with-exile";
+      readonly object: ObjectId;
+    })
+  | (Base & {
       readonly type: "cards-milled";
       readonly player: PlayerId;
       readonly objects: readonly ObjectId[];

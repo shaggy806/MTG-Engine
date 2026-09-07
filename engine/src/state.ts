@@ -324,6 +324,11 @@ export interface GameState {
     commander: ObjectId;
     movedTo: CommanderReplacementZone;
   }[];
+  /** True while a Fog-style effect has prevented all combat damage this turn
+   * (rule 614 replacement, but turn-scoped with no permanent to hang it on).
+   * Set by the `prevent-all-combat-damage` effect, cleared at the start of the
+   * next turn. */
+  preventAllCombatDamage: boolean;
   /** Monotonic source for battlefield-entry timestamps. */
   timestampSeq: number;
   eventLog: GameEvent[];

@@ -99,6 +99,12 @@ export const makeFormatter = (game) => {
         return `${name(e.object)} destroyed — ${e.reason}`;
       case "permanent-destroy-prevented":
         return `${name(e.object)} not destroyed — ${e.reason}`;
+      case "combat-damage-prevention-set":
+        return `all combat damage is prevented this turn`;
+      case "damage-prevented":
+        return `${name(e.source)}'s ${e.amount} damage to ${target(e.target)} is prevented`;
+      case "graveyard-replaced-with-exile":
+        return `${name(e.object)} is exiled instead of going to a graveyard`;
       case "permanent-returned-to-hand":
         return `${name(e.object)} returns to ${e.owner}'s hand`;
       case "permanent-exiled":

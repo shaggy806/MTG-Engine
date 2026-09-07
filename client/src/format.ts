@@ -110,6 +110,12 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${name(event.object)} destroyed — ${event.reason}`
     case 'permanent-destroy-prevented':
       return `${name(event.object)} not destroyed — ${event.reason}`
+    case 'combat-damage-prevention-set':
+      return `all combat damage is prevented this turn`
+    case 'damage-prevented':
+      return `${name(event.source)}'s ${event.amount} damage to ${tgt(event.target)} is prevented`
+    case 'graveyard-replaced-with-exile':
+      return `${name(event.object)} is exiled instead of going to a graveyard`
     case 'permanent-returned-to-hand':
       return `${name(event.object)} returns to ${event.owner}'s hand`
     case 'permanent-exiled':

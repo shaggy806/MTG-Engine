@@ -6,23 +6,68 @@
  * Modeled as an optional `replacement` field on a `StaticAbility` (rule 614.1 —
  * a replacement is a kind of static ability), applied by `game.ts`.
  *
- * **Phase 1a** covers only `enters-battlefield` *self*-replacements — a card's
- * own "~ enters the battlefield tapped" / "~ enters with N +1/+1 counters"
- * (rule 614.1c). Later phases add `would-create-token`, `would-die`,
- * `would-be-dealt-damage`, `would-draw`, and *external* (non-self) replacements
- * gated by a `CardFilter`. See ROADMAP.md Phase 1.
+ * **Phase 1a** covered only `enters-battlefield` *self*-replacements. **Phase 1b**
+ * adds the first *external* replacements — a permanent replacing an event that
+ * happens elsewhere:
+ *   - `would-create-token` — a token *multiplier* (Doubling Season, Parallel
+ *     Lives): "twice that many are created instead".
+ *   - `would-add-counter` — a counter *multiplier* (Doubling Season): "twice
+ *     that many counters are put on instead".
+ *   - `would-be-put-into-graveyard` — graveyard hate (Rest in Peace): "exile it
+ *     instead".
+ * Fog-style one-shot combat-damage prevention is a turn-scoped `GameState` flag,
+ * not a static (rule 614 calls it a replacement, but there's no permanent to
+ * hang it on). See ROADMAP.md Phase 1.
+ *
+ * Later phases add `would-be-dealt-damage` (prevention/redirection as a static),
+ * `would-die { instead }`, `would-draw`, and `CardFilter`-gated targeting.
  */
 
 import type { EffectAmount } from "./effects.js";
 
 /** A single replacement clause on a `StaticAbility`. Discriminated by `event`. */
-export type ReplacementSpec = {
-  /** As the source permanent enters the battlefield (rule 614.1c). A self-
-   * replacement — printed on the card, applies only to it. */
+export type ReplacementSpec =
+  | EntersBattlefieldReplacement
+  | TokenMultiplierReplacement
+  | CounterMultiplierReplacement
+  | GraveyardExileReplacement;
+
+/** As the source permanent enters the battlefield (rule 614.1c). A self-
+ * replacement — printed on the card, applies only to it. */
+export interface EntersBattlefieldReplacement {
   readonly event: "enters-battlefield";
   /** It enters tapped (every "enters the battlefield tapped" land / creature). */
   readonly tapped?: boolean;
   /** It enters with these counters already on it. `amount: "x"` reads the
    * `{X}` chosen when it was cast (Walking Ballista). */
   readonly counters?: { readonly kind: string; readonly amount: EffectAmount };
-};
+}
+
+/** "If one or more tokens would be created under your control, twice that many
+ * are created instead" (Doubling Season, Parallel Lives, Anointed Procession).
+ * Applies to tokens whose controller is this permanent's controller. Multiple
+ * such replacements multiply (order-independent). */
+export interface TokenMultiplierReplacement {
+  readonly event: "would-create-token";
+  readonly multiplier: number;
+}
+
+/** "If one or more counters would be put on a permanent you control, twice that
+ * many are put on instead" (Doubling Season). Applies to a permanent whose
+ * controller is this permanent's controller. `counterKind` narrows it to one
+ * kind (e.g. only `"+1/+1"`); omit for any kind. Multiple such replacements
+ * multiply. */
+export interface CounterMultiplierReplacement {
+  readonly event: "would-add-counter";
+  readonly multiplier: number;
+  readonly counterKind?: string;
+}
+
+/** "If a card would be put into a graveyard from anywhere, exile it instead"
+ * (Rest in Peace, Leyline of the Void). An external replacement affecting every
+ * player. Applies to real cards only, not tokens (a token would just cease to
+ * exist either way). */
+export interface GraveyardExileReplacement {
+  readonly event: "would-be-put-into-graveyard";
+  readonly instead: "exile";
+}

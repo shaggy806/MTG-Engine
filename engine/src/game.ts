@@ -160,6 +160,7 @@ export class Game {
       pendingBlockerDeclarations: [],
       pendingTriggers: [],
       pendingCommanderChoices: [],
+      preventAllCombatDamage: false,
       timestampSeq: 0,
       eventLog: [],
       eventSeq: 0,
@@ -906,6 +907,8 @@ export class Game {
 
   private beginTurn(): void {
     this.state.turn.number += 1;
+    // Fog's "prevent all combat damage this turn" shield lapses.
+    this.state.preventAllCombatDamage = false;
     if (this.state.turn.number > 1) {
       this.state.turn.activePlayerIndex =
         (this.state.turn.activePlayerIndex + 1) % this.state.turnOrder.length;
@@ -1671,11 +1674,11 @@ export class Game {
 
     // All combat damage in a pass is dealt simultaneously.
     for (const { source, target, amount } of assignments) {
-      this.dealDamage(source, target, amount, true);
-      if (target.kind === "player" && this.state.objects[source].isCommander) {
+      const dealt = this.dealDamage(source, target, amount, true);
+      if (dealt > 0 && target.kind === "player" && this.state.objects[source].isCommander) {
         const controller = this.state.objects[source].controller;
         const taken = this.state.players[target.player].commanderDamageTaken;
-        taken[controller] = (taken[controller] ?? 0) + amount;
+        taken[controller] = (taken[controller] ?? 0) + dealt;
       }
     }
   }
@@ -2708,6 +2711,10 @@ export class Game {
       changeText: (target) => this.beginTextChoice(controller, source, target),
       createToken: (token, count) => this.createTokens(controller, token, count),
       attach: (target) => this.attachPermanent(source, target),
+      preventAllCombatDamage: () => {
+        this.state.preventAllCombatDamage = true;
+        this.emit({ type: "combat-damage-prevention-set" });
+      },
       lookAndChoose: (zone, count, min, max, destination, leftover, filter) =>
         this.beginZoneChoice(controller, zone, count, min, max, destination, leftover, filter),
     };
@@ -2756,7 +2763,9 @@ export class Game {
   /** Create `count` copies of the named token, controlled by `controller` (rule 111). */
   private createTokens(controller: PlayerId, tokenName: string, count: number): void {
     this.registry.get(tokenName); // validate the token is a known definition
-    for (let i = 0; i < count; i += 1) {
+    // Doubling Season / Parallel Lives (rule 614): "twice that many instead".
+    const total = count * this.tokenCreationMultiplier(controller);
+    for (let i = 0; i < total; i += 1) {
       const id = this.mintObjectId();
       this.state.timestampSeq += 1;
       this.state.objects[id] = {
@@ -2973,8 +2982,12 @@ export class Game {
     if (target.kind !== "object") return;
     const object = this.state.objects[target.object];
     if (object === undefined || object.zone !== "battlefield") return;
-    object.counters[counter] = (object.counters[counter] ?? 0) + amount;
-    this.emit({ type: "counter-added", object: target.object, counter, amount });
+    // Doubling Season (rule 614): "twice that many counters instead" — only
+    // when counters are being *added*, never a removal.
+    const total =
+      amount > 0 ? amount * this.counterMultiplier(target.object, counter) : amount;
+    object.counters[counter] = (object.counters[counter] ?? 0) + total;
+    this.emit({ type: "counter-added", object: target.object, counter, amount: total });
   }
 
   /** Proliferate (rule 701.27), simplified: every battlefield permanent that
@@ -3188,29 +3201,39 @@ export class Game {
     this.state.awaiting = { kind: "discard", player, count: amount, fromEffect: true };
   }
 
+  /** Deal `amount` damage from `source` to `target`. Returns the amount
+   * actually dealt after replacement effects (0 when a Fog-style shield
+   * prevented it). */
   private dealDamage(
     source: ObjectId,
     target: TargetRef,
     amount: number,
     combat = false,
-  ): void {
-    if (amount <= 0) return;
+  ): number {
+    if (amount <= 0) return 0;
+
+    // Fog (rule 614): a turn-scoped shield prevents all combat damage.
+    if (combat && this.state.preventAllCombatDamage) {
+      this.emit({ type: "damage-prevented", source, target, amount });
+      return 0;
+    }
 
     if (target.kind === "player") {
-      if (this.state.players[target.player] === undefined) return;
+      if (this.state.players[target.player] === undefined) return 0;
       this.emit({ type: "damage-dealt", source, target, amount, combat });
       this.changeLife(target.player, -amount);
       this.applyLifelink(source, amount);
-      return;
+      return amount;
     }
     const object = this.state.objects[target.object];
-    if (object === undefined || object.zone !== "battlefield") return;
+    if (object === undefined || object.zone !== "battlefield") return 0;
     object.damageMarked += amount;
     if (this.sourceHasKeyword(source, "deathtouch")) {
       object.markedByDeathtouch = true;
     }
     this.emit({ type: "damage-dealt", source, target, amount, combat });
     this.applyLifelink(source, amount);
+    return amount;
   }
 
   /** True if `source` is a battlefield creature whose current keywords include `keyword`. */
@@ -3403,9 +3426,10 @@ export class Game {
 
   /**
    * The `enters-battlefield` replacements (rule 614.1c) that apply to `id` as
-   * it enters — Phase 1a: only the entering card's own self-replacements
-   * ("~ enters tapped", "~ enters with N +1/+1 counters"). `amount: "x"` reads
-   * the `{X}` chosen when it was cast.
+   * it enters — the entering card's own self-replacements ("~ enters tapped",
+   * "~ enters with N +1/+1 counters"; `amount: "x"` reads the `{X}` chosen when
+   * it was cast), with any `would-add-counter` multiplier (Doubling Season)
+   * folded into the counter amounts.
    */
   private entersBattlefieldReplacement(id: ObjectId): {
     tapped: boolean;
@@ -3420,16 +3444,86 @@ export class Game {
       if (r === undefined || r.event !== "enters-battlefield") continue;
       if (r.tapped) tapped = true;
       if (r.counters) {
-        const amount =
+        const base =
           r.counters.amount === "x" ? (object.xValue ?? 0) : r.counters.amount;
+        const amount = base * this.counterMultiplier(id, r.counters.kind);
         if (amount > 0) counters.push({ kind: r.counters.kind, amount });
       }
     }
     return { tapped, counters };
   }
 
+  /** Product of every `would-create-token` multiplier (rule 614) on a
+   * battlefield permanent controlled by `controller` — Doubling Season /
+   * Parallel Lives, which stack. `1` when there are none. */
+  private tokenCreationMultiplier(controller: PlayerId): number {
+    let mult = 1;
+    for (const id of this.state.zones.shared.battlefield) {
+      const object = this.state.objects[id];
+      if (object.controller !== controller || hasLostAbilities(object)) continue;
+      for (const ability of this.registry.get(printedCardName(object)).static) {
+        const r = ability.replacement;
+        if (r?.event === "would-create-token") mult *= r.multiplier;
+      }
+    }
+    return mult;
+  }
+
+  /** Product of every `would-add-counter` multiplier (rule 614) that applies
+   * to putting `kind` counters on `target` — a Doubling Season controlled by
+   * `target`'s controller. `1` when there are none. `target` itself is skipped
+   * so a hypothetical self-doubler can't compound. */
+  private counterMultiplier(target: ObjectId, kind: string): number {
+    const targetObject = this.state.objects[target];
+    if (targetObject === undefined) return 1;
+    let mult = 1;
+    for (const id of this.state.zones.shared.battlefield) {
+      if (id === target) continue;
+      const object = this.state.objects[id];
+      if (object.controller !== targetObject.controller || hasLostAbilities(object)) {
+        continue;
+      }
+      for (const ability of this.registry.get(printedCardName(object)).static) {
+        const r = ability.replacement;
+        if (
+          r?.event === "would-add-counter" &&
+          (r.counterKind === undefined || r.counterKind === kind)
+        ) {
+          mult *= r.multiplier;
+        }
+      }
+    }
+    return mult;
+  }
+
+  /** Whether a battlefield permanent replaces "put a card into a graveyard"
+   * with "exile it instead" (Rest in Peace — rule 614). */
+  private graveyardIsReplacedWithExile(): boolean {
+    for (const id of this.state.zones.shared.battlefield) {
+      const object = this.state.objects[id];
+      if (hasLostAbilities(object)) continue;
+      for (const ability of this.registry.get(printedCardName(object)).static) {
+        const r = ability.replacement;
+        if (r?.event === "would-be-put-into-graveyard" && r.instead === "exile") {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   private moveObject(id: ObjectId, to: ZoneType): void {
     const object = this.state.objects[id];
+    // Rest in Peace (rule 614): a *card* that would be put into a graveyard is
+    // exiled instead. Tokens are exempt — they'd cease to exist either way.
+    if (
+      to === "graveyard" &&
+      !object.isToken &&
+      this.graveyardIsReplacedWithExile()
+    ) {
+      to = "exile";
+      this.emit({ type: "graveyard-replaced-with-exile", object: id });
+    }
     // Commander replacement (rule 903.9a): a commander put into a hidden zone
     // *may* go to the command zone instead — that's the owner's choice. The
     // move to `to` happens now; `promptCommanderChoice` (run before priority)

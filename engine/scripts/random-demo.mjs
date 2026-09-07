@@ -53,6 +53,8 @@ const deckA = deck([
   ["Darksteel Myr", 1],
   ["Ambush Viper", 2],
   ["Contentious Plan", 1],
+  ["Fog", 2],
+  ["Doubling Season", 1],
 ]);
 // Kept deliberately lean (~50 cards) so the RandomController actually draws
 // and plays its threats — a bloated deck just stalls out and the fuzz only
@@ -98,6 +100,8 @@ const deckB = deck([
   ["Angelic Edict", 1],
   ["Tome Scour", 1],
   ["Raise the Alarm", 1],
+  ["Plains", 3],
+  ["Rest in Peace", 1],
 ]);
 
 // All four seats' decks/commanders, in seating order — sliced down to

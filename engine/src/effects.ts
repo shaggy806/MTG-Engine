@@ -158,6 +158,11 @@ export type EffectSpec =
       readonly target: number;
     }
   | {
+      /** Prevent all combat damage that would be dealt this turn (Fog). A
+       * rule-614 replacement, tracked as a turn-scoped `GameState` flag. */
+      readonly kind: "prevent-all-combat-damage";
+    }
+  | {
       /** Reveal `count` cards from the top of the controller's library (or
        * their whole graveyard — already public, so `count` is ignored) and
        * await a bounded choice of which to move to `destination`. The spell
@@ -231,6 +236,8 @@ export interface EffectApi {
   createToken(token: string, count: number): void;
   /** Attach `ctx.source` (an Aura/Equipment) to `target`. */
   attach(target: TargetRef): void;
+  /** Prevent all combat damage this turn (Fog). */
+  preventAllCombatDamage(): void;
   /** See the `"look-and-choose"` {@link EffectSpec}. */
   lookAndChoose(
     zone: "library" | "graveyard",
@@ -393,6 +400,9 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       if (target !== undefined) ctx.attach(target);
       return;
     }
+    case "prevent-all-combat-damage":
+      ctx.preventAllCombatDamage();
+      return;
     case "look-and-choose":
       ctx.lookAndChoose(
         spec.zone,
