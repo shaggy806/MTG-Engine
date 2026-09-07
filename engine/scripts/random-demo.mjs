@@ -55,9 +55,10 @@ const deckA = deck([
 // and plays its threats — a bloated deck just stalls out and the fuzz only
 // exercises one side. One or two copies of each mechanic is enough coverage.
 const deckB = deck([
-  ["Mountain", 7],
+  ["Mountain", 6],
   ["Swamp", 6],
   ["Island", 6],
+  ["Forest", 2],
   ["Raging Goblin", 2],
   ["White Knight", 2],
   ["Boggart Brute", 2],
@@ -67,6 +68,8 @@ const deckB = deck([
   ["Thieving Magpie", 2],
   ["Hypnotic Specter", 1],
   ["Mind Control", 2],
+  ["Mortivore", 1],
+  ["Lord of Extinction", 1],
   ["Wurmcoil Engine", 1],
   ["Lightning Bolt", 2],
   ["Fireball", 1],

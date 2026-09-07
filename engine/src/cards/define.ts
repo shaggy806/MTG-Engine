@@ -55,9 +55,15 @@ export type AffectSpec =
     }
   | { readonly scope: "attached" };
 
+/** A dynamic quantity a characteristic-defining ability can read (rule 604.3). */
+export type CountSpec =
+  | "cards-in-all-graveyards"
+  | "creature-cards-in-all-graveyards"
+  | "lands-you-control";
+
 /**
- * A static ability that continuously modifies characteristics. Milestone 5a
- * covers rule 613 layers 6 (keyword grants) and 7d (P/T bonuses) only.
+ * A static ability that continuously modifies characteristics. Covers rule 613
+ * layers 6 (keyword grants), 7b (base P/T set by a CDA), and 7d (P/T bonuses).
  */
 export interface StaticAbility {
   readonly affects: AffectSpec;
@@ -65,6 +71,13 @@ export interface StaticAbility {
   readonly grantPt?: readonly [number, number];
   /** Keywords granted in layer 6. */
   readonly grantKeywords?: readonly Keyword[];
+  /** Layer 7b: set base power and toughness to a dynamic count (+ the given
+   * offsets). Only meaningful with `affects.scope === "self"` (a CDA). */
+  readonly setBasePtFromCount?: {
+    readonly countOf: CountSpec;
+    readonly plusPower: number;
+    readonly plusToughness: number;
+  };
   readonly text: string;
 }
 

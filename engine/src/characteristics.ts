@@ -9,7 +9,7 @@
  * (setting base P/T), characteristic-defining abilities, or dependency ordering.
  */
 
-import type { AffectSpec, CardRegistry, CardType, Keyword } from "./cards.js";
+import type { AffectSpec, CardRegistry, CardType, CountSpec, Keyword } from "./cards.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameObject, GameState } from "./state.js";
 
@@ -20,6 +20,38 @@ export interface Characteristics {
   readonly types: readonly CardType[];
   readonly subtypes: readonly string[];
   readonly controller: PlayerId;
+}
+
+/** The current value of a CDA's dynamic count (rule 604.3). */
+function countValue(
+  spec: CountSpec,
+  state: GameState,
+  registry: CardRegistry,
+  controller: PlayerId,
+): number {
+  switch (spec) {
+    case "cards-in-all-graveyards":
+      return state.turnOrder.reduce(
+        (n, p) => n + state.zones.perPlayer[p].graveyard.length,
+        0,
+      );
+    case "creature-cards-in-all-graveyards":
+      return state.turnOrder.reduce(
+        (n, p) =>
+          n +
+          state.zones.perPlayer[p].graveyard.filter((id) =>
+            registry.get(state.objects[id].cardName).types.includes("creature"),
+          ).length,
+        0,
+      );
+    case "lands-you-control":
+      return state.zones.shared.battlefield.filter((id) => {
+        const o = state.objects[id];
+        return o.controller === controller && registry.get(o.cardName).types.includes("land");
+      }).length;
+    default:
+      return 0;
+  }
 }
 
 function counterPtBonus(counter: string): { power: number; toughness: number } {
@@ -110,6 +142,22 @@ export function computeCharacteristics(
   }
   for (const modifier of object.modifiers) {
     for (const keyword of modifier.keywords) keywords.add(keyword);
+  }
+
+  // Layer 7b — base P/T set by this permanent's own characteristic-defining
+  // ability (rule 604.3 / 613.4b). Only a `"self"` static applies.
+  if (object.zone === "battlefield") {
+    for (const ability of def.static) {
+      if (ability.setBasePtFromCount === undefined) continue;
+      const n = countValue(
+        ability.setBasePtFromCount.countOf,
+        state,
+        registry,
+        object.controller,
+      );
+      power = n + ability.setBasePtFromCount.plusPower;
+      toughness = n + ability.setBasePtFromCount.plusToughness;
+    }
   }
 
   // Layer 7c — P/T counters.

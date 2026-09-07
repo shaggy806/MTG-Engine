@@ -41,10 +41,12 @@ import _poolJump from "./pool/jump.js";
 import _poolLevitation from "./pool/levitation.js";
 import _poolLightningBolt from "./pool/lightning-bolt.js";
 import _poolLlanowarElves from "./pool/llanowar-elves.js";
+import _poolLordOfExtinction from "./pool/lord-of-extinction.js";
 import _poolManOWar from "./pool/man-o-war.js";
 import _poolMindControl from "./pool/mind-control.js";
 import _poolMindRot from "./pool/mind-rot.js";
 import _poolMonasterySwiftspear from "./pool/monastery-swiftspear.js";
+import _poolMortivore from "./pool/mortivore.js";
 import _poolMossbackDragon from "./pool/mossback-dragon.js";
 import _poolMountain from "./pool/mountain.js";
 import _poolNaturalize from "./pool/naturalize.js";
@@ -117,10 +119,12 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolLevitation,
   _poolLightningBolt,
   _poolLlanowarElves,
+  _poolLordOfExtinction,
   _poolManOWar,
   _poolMindControl,
   _poolMindRot,
   _poolMonasterySwiftspear,
+  _poolMortivore,
   _poolMossbackDragon,
   _poolMountain,
   _poolNaturalize,
