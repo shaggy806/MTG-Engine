@@ -73,19 +73,21 @@ describe("evaluateDecklist", () => {
       vi.fn().mockResolvedValue({
         ok: true,
         json: async () => ({
-          mana_cost: "{1}",
+          mana_cost: "{2}",
           type_line: "Artifact",
-          oracle_text: "{T}: Add {C}{C}.",
+          oracle_text: "{T}: Add one mana of any color that a land you control could produce.",
         }),
       }),
     );
 
-    const [result] = await evaluateDecklist([{ name: "Sol Ring", count: 1 }], registry);
+    const [result] = await evaluateDecklist([{ name: "Fellwar Stone", count: 1 }], registry);
 
     expect(result.implemented).toBe(false);
     expect(result.found).toBe(true);
-    expect(result.manaCost).toBe("{1}");
-    expect(result.oracleText).toBe("{T}: Add {C}{C}.");
+    expect(result.manaCost).toBe("{2}");
+    expect(result.oracleText).toBe(
+      "{T}: Add one mana of any color that a land you control could produce.",
+    );
   });
 
   it("reports found:false for a card Scryfall doesn't recognize either", async () => {
