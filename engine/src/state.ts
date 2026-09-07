@@ -7,6 +7,7 @@
  */
 
 import type { CardType, Keyword } from "./cards.js";
+import type { EffectSpec } from "./effects.js";
 import type { Color, ManaPool } from "./mana.js";
 import { emptyPool } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
@@ -278,6 +279,24 @@ export type AwaitingDecision =
       readonly fromOptions: readonly string[];
       /** The creature types the new word may be. */
       readonly toOptions: readonly string[];
+    }
+  | {
+      /** A modal spell/ability is resolving (rule 700.2), or a "you may"
+       * clause (rule 601.3e). The controller picks between `minModes` and
+       * `maxModes` distinct modes; their effects apply after. */
+      readonly kind: "choose-modes";
+      readonly player: PlayerId;
+      /** The permanent (for an ability) or spell object the effect belongs to
+       * — used to build the resolution context for the chosen modes. */
+      readonly source: ObjectId;
+      readonly minModes: number;
+      readonly maxModes: number;
+      /** The modes, in order — text for the chooser, effect to apply. Plain
+       * data (an `EffectSpec` carries no functions), captured here so the
+       * modes can be applied after the source has left the stack. */
+      readonly modes: readonly { readonly text: string; readonly effect: EffectSpec }[];
+      /** `{X}` from the resolving spell/ability, forwarded to the modes. */
+      readonly x: number;
     };
 
 /** The zones a commander can be moved to that offer the 903.9a choice. */

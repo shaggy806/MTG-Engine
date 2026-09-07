@@ -163,6 +163,28 @@ export type EffectSpec =
       readonly kind: "prevent-all-combat-damage";
     }
   | {
+      /** A modal spell/ability (rule 700.2): as it resolves, its controller
+       * chooses between `minModes` and `maxModes` of `modes` (usually 1 and 1
+       * — "choose one"; 1 and 2 for "choose one or both") and the chosen
+       * modes' effects apply in listed order. Raised as a `choose-modes`
+       * decision. **Modes must be non-targeted** for now (targeted modal
+       * spells need cast-time mode selection — see ROADMAP Phase 1c / 6).
+       * Must be the whole effect or the last step of a `sequence`. */
+      readonly kind: "modal";
+      readonly minModes: number;
+      readonly maxModes: number;
+      readonly modes: readonly ModeOption[];
+    }
+  | {
+      /** "You may [effect]" (rule 601.3e / 608.2). Resolves via the same
+       * `choose-modes` decision — one optional mode. Same non-targeted /
+       * terminal restriction as `modal`. */
+      readonly kind: "may";
+      readonly effect: EffectSpec;
+      /** The yes/no prompt, e.g. "Draw a card?". */
+      readonly prompt: string;
+    }
+  | {
       /** Reveal `count` cards from the top of the controller's library (or
        * their whole graveyard — already public, so `count` is ignored) and
        * await a bounded choice of which to move to `destination`. The spell
@@ -182,6 +204,13 @@ export type EffectSpec =
        * way — omit for "any of them". */
       readonly filter?: ZoneChoiceFilter;
     };
+
+/** One selectable mode of a `modal` effect (rule 700.2). */
+export interface ModeOption {
+  /** Rules text of this mode, shown in the chooser. */
+  readonly text: string;
+  readonly effect: EffectSpec;
+}
 
 /** Primitive mutations an effect can perform. Implemented by the engine. */
 export interface EffectApi {
@@ -238,6 +267,13 @@ export interface EffectApi {
   attach(target: TargetRef): void;
   /** Prevent all combat damage this turn (Fog). */
   preventAllCombatDamage(): void;
+  /** Raise a `choose-modes` decision — see the `modal` / `may` {@link EffectSpec}.
+   * The chosen modes' effects are applied after the controller answers. */
+  chooseModes(
+    minModes: number,
+    maxModes: number,
+    modes: readonly ModeOption[],
+  ): void;
   /** See the `"look-and-choose"` {@link EffectSpec}. */
   lookAndChoose(
     zone: "library" | "graveyard",
@@ -402,6 +438,12 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     }
     case "prevent-all-combat-damage":
       ctx.preventAllCombatDamage();
+      return;
+    case "modal":
+      ctx.chooseModes(spec.minModes, spec.maxModes, spec.modes);
+      return;
+    case "may":
+      ctx.chooseModes(0, 1, [{ text: spec.prompt, effect: spec.effect }]);
       return;
     case "look-and-choose":
       ctx.lookAndChoose(

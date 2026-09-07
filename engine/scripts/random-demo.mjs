@@ -102,6 +102,7 @@ const deckB = deck([
   ["Raise the Alarm", 1],
   ["Plains", 3],
   ["Rest in Peace", 1],
+  ["Deliberate Course", 2],
 ]);
 
 // All four seats' decks/commanders, in seating order — sliced down to

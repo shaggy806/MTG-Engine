@@ -108,6 +108,15 @@ export type Action =
       readonly player: PlayerId;
       readonly from: string;
       readonly to: string;
+    }
+  | {
+      /** Answers a pending `choose-modes` decision (a modal spell/ability, or
+       * a "you may" clause): the indices into the mode list to apply, distinct,
+       * between the decision's `minModes` and `maxModes`. An empty array
+       * declines an optional ("you may") mode. */
+      readonly type: "choose-modes";
+      readonly player: PlayerId;
+      readonly modes: readonly number[];
     };
 
 export type ActionType = Action["type"];
@@ -215,4 +224,13 @@ export type LegalAction =
       readonly fromOptions: readonly string[];
       /** Creature types the replacement may be. */
       readonly toOptions: readonly string[];
+    }
+  | {
+      readonly kind: "choose-modes";
+      readonly source: ObjectId;
+      readonly minModes: number;
+      readonly maxModes: number;
+      /** Rules text of each mode, in order — index into this is what the
+       * `choose-modes` action submits. */
+      readonly modeTexts: readonly string[];
     };

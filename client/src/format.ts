@@ -116,6 +116,10 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${name(event.source)}'s ${event.amount} damage to ${tgt(event.target)} is prevented`
     case 'graveyard-replaced-with-exile':
       return `${name(event.object)} is exiled instead of going to a graveyard`
+    case 'modes-chosen':
+      return event.modes.length > 0
+        ? `${name(event.source)} — mode(s) ${event.modes.map((m) => m + 1).join(', ')}`
+        : `${name(event.source)} — declined`
     case 'permanent-returned-to-hand':
       return `${name(event.object)} returns to ${event.owner}'s hand`
     case 'permanent-exiled':

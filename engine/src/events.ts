@@ -234,6 +234,14 @@ export type GameEvent =
       readonly object: ObjectId;
     })
   | (Base & {
+      /** A modal spell/ability's controller (or a "you may" clause) chose
+       * which modes to apply — `modes` are indices into the mode list, or
+       * empty for a declined "you may". */
+      readonly type: "modes-chosen";
+      readonly source: ObjectId;
+      readonly modes: readonly number[];
+    })
+  | (Base & {
       readonly type: "cards-milled";
       readonly player: PlayerId;
       readonly objects: readonly ObjectId[];

@@ -105,6 +105,10 @@ export const makeFormatter = (game) => {
         return `${name(e.source)}'s ${e.amount} damage to ${target(e.target)} is prevented`;
       case "graveyard-replaced-with-exile":
         return `${name(e.object)} is exiled instead of going to a graveyard`;
+      case "modes-chosen":
+        return e.modes.length > 0
+          ? `${name(e.source)} — mode(s) ${e.modes.map((m) => m + 1).join(", ")}`
+          : `${name(e.source)} — declined`;
       case "permanent-returned-to-hand":
         return `${name(e.object)} returns to ${e.owner}'s hand`;
       case "permanent-exiled":

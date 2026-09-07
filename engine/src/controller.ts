@@ -109,6 +109,18 @@ export interface PlayerController {
     fromOptions: readonly string[],
     toOptions: readonly string[],
   ): readonly [string, string];
+  /**
+   * A modal spell/ability is resolving (rule 700.2), or a "you may" clause
+   * (rule 601.3e). Return the indices of the modes to apply — distinct, and
+   * between `minModes` and `maxModes` in count. An empty array declines an
+   * optional ("you may") mode.
+   */
+  chooseModes(
+    view: ControllerView,
+    minModes: number,
+    maxModes: number,
+    modeTexts: readonly string[],
+  ): readonly number[];
 }
 
 const passFor = (player: PlayerId): Action => ({
@@ -191,6 +203,18 @@ function answerAwaited(
       awaiting.toOptions,
     );
     return { type: "choose-text", player, from, to };
+  }
+  if (awaiting.kind === "choose-modes") {
+    return {
+      type: "choose-modes",
+      player,
+      modes: controller.chooseModes(
+        view,
+        awaiting.minModes,
+        awaiting.maxModes,
+        awaiting.modes.map((m) => m.text),
+      ),
+    };
   }
   const hand = view.state.zones.perPlayer[player].hand.map(
     (id) => view.state.objects[id],
@@ -294,6 +318,17 @@ export class AutomaticController implements PlayerController {
   ): readonly [string, string] {
     return [fromOptions[0], toOptions[0]];
   }
+
+  chooseModes(
+    _view: ControllerView,
+    minModes: number,
+    _maxModes: number,
+    _modeTexts: readonly string[],
+  ): readonly number[] {
+    // The fewest modes allowed, from the front — for "you may" (min 0) that's
+    // declining, matching this controller's do-nothing stance.
+    return Array.from({ length: minModes }, (_unused, i) => i);
+  }
 }
 
 /** A queued action, optionally gated on a condition being true. */
@@ -346,6 +381,12 @@ type TextChooser = (
   fromOptions: readonly string[],
   toOptions: readonly string[],
 ) => readonly [string, string];
+type ModesChooser = (
+  view: ControllerView,
+  minModes: number,
+  maxModes: number,
+  modeTexts: readonly string[],
+) => readonly number[];
 
 /**
  * Plays a fixed queue of priority actions (each firing when its `when` guard is
@@ -370,6 +411,8 @@ export class ScriptedController implements PlayerController {
     fromOptions[0],
     toOptions[0],
   ];
+  chooseModesFn: ModesChooser = (_view, minModes) =>
+    Array.from({ length: minModes }, (_unused, i) => i);
 
   constructor(playerId: PlayerId, script: readonly ScriptEntry[] = []) {
     this.playerId = playerId;
@@ -470,6 +513,15 @@ export class ScriptedController implements PlayerController {
     toOptions: readonly string[],
   ): readonly [string, string] {
     return this.chooseTextFn(view, fromOptions, toOptions);
+  }
+
+  chooseModes(
+    view: ControllerView,
+    minModes: number,
+    maxModes: number,
+    modeTexts: readonly string[],
+  ): readonly number[] {
+    return this.chooseModesFn(view, minModes, maxModes, modeTexts);
   }
 }
 
@@ -612,6 +664,17 @@ export class RandomController extends AutomaticController {
         const from = legal.fromOptions[this.pickIndex(legal.fromOptions.length)];
         const to = legal.toOptions[this.pickIndex(legal.toOptions.length)];
         return { type: "choose-text", player, from, to };
+      }
+      case "choose-modes": {
+        const count =
+          legal.minModes +
+          Math.floor(this.random() * (legal.maxModes - legal.minModes + 1));
+        const pool = legal.modeTexts.map((_text, i) => i);
+        const modes: number[] = [];
+        for (let i = 0; i < count && pool.length > 0; i += 1) {
+          modes.push(pool.splice(this.pickIndex(pool.length), 1)[0]);
+        }
+        return { type: "choose-modes", player, modes };
       }
       default:
         return passFor(player);

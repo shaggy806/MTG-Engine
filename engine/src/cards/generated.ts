@@ -20,6 +20,7 @@ import _poolContentiousPlan from "./pool/contentious-plan.js";
 import _poolCounterspell from "./pool/counterspell.js";
 import _poolCrawWurm from "./pool/craw-wurm.js";
 import _poolDarksteelMyr from "./pool/darksteel-myr.js";
+import _poolDeliberateCourse from "./pool/deliberate-course.js";
 import _poolDisenchant from "./pool/disenchant.js";
 import _poolDoomBlade from "./pool/doom-blade.js";
 import _poolDoublingSeason from "./pool/doubling-season.js";
@@ -109,6 +110,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolCounterspell,
   _poolCrawWurm,
   _poolDarksteelMyr,
+  _poolDeliberateCourse,
   _poolDisenchant,
   _poolDoomBlade,
   _poolDoublingSeason,

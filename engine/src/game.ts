@@ -24,7 +24,7 @@ import type { Characteristics } from "./characteristics.js";
 import { AutomaticController } from "./controller.js";
 import type { ControllerView, PlayerController } from "./controller.js";
 import { applyEffectSpec } from "./effects.js";
-import type { PtDuration, ResolutionContext, ZoneChoiceFilter } from "./effects.js";
+import type { ModeOption, PtDuration, ResolutionContext, ZoneChoiceFilter } from "./effects.js";
 import type {
   EventOfType,
   GameEvent,
@@ -306,6 +306,9 @@ export class Game {
       case "choose-text":
         this.applyTextChoice(action.player, action.from, action.to);
         break;
+      case "choose-modes":
+        this.applyModesChoice(action.player, action.modes);
+        break;
       default:
         throw new Error(
           `unhandled action: ${(action as { type: string }).type}`,
@@ -356,6 +359,8 @@ export class Game {
         return this.whyCannotCopyChoice(action.player, action.copy);
       case "choose-text":
         return this.whyCannotTextChoice(action.player, action.from, action.to);
+      case "choose-modes":
+        return this.whyCannotChooseModes(action.player, action.modes);
       default:
         return `unknown action: ${(action as { type: string }).type}`;
     }
@@ -452,6 +457,17 @@ export class Game {
             target: awaiting.target,
             fromOptions: [...awaiting.fromOptions],
             toOptions: [...awaiting.toOptions],
+          },
+        ];
+      }
+      if (awaiting.kind === "choose-modes") {
+        return [
+          {
+            kind: "choose-modes",
+            source: awaiting.source,
+            minModes: awaiting.minModes,
+            maxModes: awaiting.maxModes,
+            modeTexts: awaiting.modes.map((m) => m.text),
           },
         ];
       }
@@ -893,6 +909,76 @@ export class Game {
     }
     if (copy !== null && !awaiting.options.includes(copy)) {
       return `${copy} is not one of the permanents that may be copied`;
+    }
+    return null;
+  }
+
+  /** Raise a `choose-modes` decision (a modal spell/ability, or a "you may"
+   * clause — rule 700.2 / 601.3e). The chosen modes' effects apply in
+   * `applyModesChoice` once the controller answers. */
+  private beginModesChoice(
+    source: ObjectId,
+    controller: PlayerId,
+    x: number,
+    minModes: number,
+    maxModes: number,
+    modes: readonly ModeOption[],
+  ): void {
+    this.state.awaiting = {
+      kind: "choose-modes",
+      player: controller,
+      source,
+      minModes,
+      maxModes: Math.min(maxModes, modes.length),
+      modes: modes.map((m) => ({ text: m.text, effect: m.effect })),
+      x,
+    };
+  }
+
+  /** Answers a pending `choose-modes` decision. Applies the chosen modes'
+   * effects, in listed order, against a fresh context for the source. */
+  private applyModesChoice(player: PlayerId, modeIndices: readonly number[]): void {
+    const why = this.whyCannotChooseModes(player, modeIndices);
+    if (why !== null) throw new Error(why);
+    const awaiting = this.state.awaiting;
+    if (awaiting === null || awaiting.kind !== "choose-modes") {
+      throw new Error("unreachable: whyCannotChooseModes should have caught this");
+    }
+
+    const { source, modes, x } = awaiting;
+    this.state.awaiting = null;
+    // Listed order, not the order the player named them (rule 700.2b).
+    const ordered = [...modeIndices].sort((a, b) => a - b);
+    this.emit({ type: "modes-chosen", source, modes: ordered });
+    const context = this.makeResolutionContext(source, player, [], x);
+    for (const i of ordered) applyEffectSpec(modes[i].effect, context);
+
+    // A mode's effect may itself raise a decision (rare); otherwise resume.
+    if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
+  }
+
+  private whyCannotChooseModes(
+    player: PlayerId,
+    modeIndices: readonly number[],
+  ): string | null {
+    const awaiting = this.state.awaiting;
+    if (
+      awaiting === null ||
+      awaiting.kind !== "choose-modes" ||
+      awaiting.player !== player
+    ) {
+      return `${player} is not being asked to choose modes`;
+    }
+    if (new Set(modeIndices).size !== modeIndices.length) {
+      return `${player} chose the same mode twice`;
+    }
+    if (modeIndices.length < awaiting.minModes || modeIndices.length > awaiting.maxModes) {
+      return `${player} must choose between ${awaiting.minModes} and ${awaiting.maxModes} mode(s), chose ${modeIndices.length}`;
+    }
+    for (const i of modeIndices) {
+      if (i < 0 || i >= awaiting.modes.length || !Number.isInteger(i)) {
+        return `${i} is not a valid mode index`;
+      }
     }
     return null;
   }
@@ -2715,6 +2801,8 @@ export class Game {
         this.state.preventAllCombatDamage = true;
         this.emit({ type: "combat-damage-prevention-set" });
       },
+      chooseModes: (minModes, maxModes, modes) =>
+        this.beginModesChoice(source, controller, x, minModes, maxModes, modes),
       lookAndChoose: (zone, count, min, max, destination, leftover, filter) =>
         this.beginZoneChoice(controller, zone, count, min, max, destination, leftover, filter),
     };

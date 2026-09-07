@@ -44,6 +44,7 @@ type BottomAction = Extract<LegalAction, { kind: 'put-on-bottom' }>
 type CommanderChoiceAction = Extract<LegalAction, { kind: 'commander-replacement' }>
 type CopyChoiceAction = Extract<LegalAction, { kind: 'choose-copy' }>
 type TextChoiceAction = Extract<LegalAction, { kind: 'choose-text' }>
+type ModesChoiceAction = Extract<LegalAction, { kind: 'choose-modes' }>
 
 interface Targeting {
   readonly kind: 'cast' | 'activate'
@@ -82,6 +83,7 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
   'commander-replacement': 'decide where their commander goes',
   'choose-copy': 'choose what to copy',
   'choose-text': 'choose a text change',
+  'choose-modes': 'choose a mode',
 }
 
 export default function App() {
@@ -433,6 +435,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
   const [discardPicks, setDiscardPicks] = useState<readonly ObjectId[]>([])
   const [bottomPicks, setBottomPicks] = useState<readonly ObjectId[]>([])
   const [textFrom, setTextFrom] = useState<string | null>(null)
+  const [modePicks, setModePicks] = useState<readonly number[]>([])
   const [zoneView, setZoneView] = useState<{
     readonly title: string
     readonly ids: readonly ObjectId[]
@@ -490,6 +493,9 @@ function Table({ view, seat, opponents, game }: TableProps) {
   const textChoiceAction = actions.find(
     (a): a is TextChoiceAction => a.kind === 'choose-text',
   )
+  const modesChoiceAction = actions.find(
+    (a): a is ModesChoiceAction => a.kind === 'choose-modes',
+  )
   const canPass = actions.some((a) => a.kind === 'pass-priority')
   // Only the active player may skip the rest of their own turn — a defender
   // holding priority to respond during it shouldn't get this button.
@@ -506,6 +512,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
     | 'commander-replacement'
     | 'choose-copy'
     | 'choose-text'
+    | 'choose-modes'
     | 'choose-x'
     | 'choose-sacrifice'
     | 'targeting'
@@ -517,6 +524,8 @@ function Table({ view, seat, opponents, game }: TableProps) {
         ? 'choose-copy'
         : textChoiceAction
           ? 'choose-text'
+        : modesChoiceAction
+          ? 'choose-modes'
         : bottomAction
           ? 'put-on-bottom'
       : discardAction
@@ -1177,6 +1186,78 @@ function Table({ view, seat, opponents, game }: TableProps) {
             {w}
           </button>
         ))}
+      </div>
+    )
+  } else if (mode === 'choose-modes' && modesChoiceAction) {
+    const { minModes, maxModes, modeTexts, source } = modesChoiceAction
+    const optional = minModes === 0 && maxModes === 1
+    const single = minModes === 1 && maxModes === 1
+    const toggle = (i: number) =>
+      setModePicks((prev) =>
+        prev.includes(i)
+          ? prev.filter((x) => x !== i)
+          : prev.length >= maxModes
+            ? [...prev.slice(1), i]
+            : [...prev, i],
+      )
+    controls = (
+      <div className="controls">
+        <span>
+          {game.nameOf(source)} —{' '}
+          {optional
+            ? modeTexts[0]
+            : single
+              ? 'choose one'
+              : `choose ${minModes === maxModes ? minModes : `${minModes}–${maxModes}`}`}
+        </span>
+        {optional ? (
+          <>
+            <button
+              type="button"
+              onClick={() => game.dispatch({ type: 'choose-modes', player: seat, modes: [0] })}
+            >
+              Yes
+            </button>
+            <button
+              type="button"
+              onClick={() => game.dispatch({ type: 'choose-modes', player: seat, modes: [] })}
+            >
+              No
+            </button>
+          </>
+        ) : single ? (
+          modeTexts.map((t, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => game.dispatch({ type: 'choose-modes', player: seat, modes: [i] })}
+            >
+              {t}
+            </button>
+          ))
+        ) : (
+          <>
+            {modeTexts.map((t, i) => (
+              <button
+                key={i}
+                type="button"
+                className={modePicks.includes(i) ? 'selected' : undefined}
+                onClick={() => toggle(i)}
+              >
+                {t}
+              </button>
+            ))}
+            <button
+              type="button"
+              disabled={modePicks.length < minModes || modePicks.length > maxModes}
+              onClick={() =>
+                game.dispatch({ type: 'choose-modes', player: seat, modes: [...modePicks] })
+              }
+            >
+              Confirm
+            </button>
+          </>
+        )}
       </div>
     )
   } else if (mode === 'commander-replacement' && commanderChoiceAction) {
