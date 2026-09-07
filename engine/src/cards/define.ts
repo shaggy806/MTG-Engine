@@ -97,6 +97,9 @@ export interface CardDefinition {
    * the top card of your library revealed") — a zone-visibility effect, not
    * a characteristic, so it lives outside the `static` (layers 6/7) vocab. */
   readonly revealsOwnLibraryTop: boolean;
+  /** An Aura whose controller controls the enchanted permanent for as long as
+   * it stays attached (Mind Control — rule 613.1b, layer 2). */
+  readonly controlEnchanted: boolean;
 }
 
 interface CardDraft {
@@ -117,6 +120,7 @@ interface CardDraft {
   triggered?: readonly TriggeredAbility[];
   static?: readonly StaticAbility[];
   revealsOwnLibraryTop?: boolean;
+  controlEnchanted?: boolean;
 }
 
 /** Build a {@link CardDefinition} from a partial draft, filling in defaults. */
@@ -139,6 +143,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     triggered: draft.triggered ?? [],
     static: draft.static ?? [],
     revealsOwnLibraryTop: draft.revealsOwnLibraryTop ?? false,
+    controlEnchanted: draft.controlEnchanted ?? false,
   };
 }
 

@@ -66,6 +66,7 @@ const deckB = deck([
   ["Vampire Nighthawk", 2],
   ["Thieving Magpie", 2],
   ["Hypnotic Specter", 1],
+  ["Mind Control", 2],
   ["Wurmcoil Engine", 1],
   ["Lightning Bolt", 2],
   ["Fireball", 1],

@@ -2804,6 +2804,54 @@ export class Game {
     this.emit({ type: "permanent-exiled", object: target.object });
   }
 
+  /** Recompute every battlefield permanent's controller from continuous
+   * effects (temporary steals + control-granting Auras). Returns whether any
+   * changed. A temporary steal (`controlEndsAtCleanup`) outranks an Aura
+   * until it wears off in cleanup. */
+  private recomputeControl(): boolean {
+    // Cheap early-out for the overwhelmingly common no-control-effects board.
+    const anyControlEffect = this.state.zones.shared.battlefield.some((id) => {
+      const o = this.state.objects[id];
+      return o.controller !== o.owner || this.registry.get(o.cardName).controlEnchanted;
+    });
+    if (!anyControlEffect) return false;
+
+    let changed = false;
+    for (const id of this.state.zones.shared.battlefield) {
+      const object = this.state.objects[id];
+      if (object.controlEndsAtCleanup) continue;
+
+      let controller = object.owner;
+      let bestTimestamp = -1;
+      for (const auraId of this.state.zones.shared.battlefield) {
+        const aura = this.state.objects[auraId];
+        if (
+          aura.attachedTo === id &&
+          this.registry.get(aura.cardName).controlEnchanted &&
+          aura.timestamp >= bestTimestamp
+        ) {
+          bestTimestamp = aura.timestamp;
+          controller = aura.controller;
+        }
+      }
+
+      if (object.controller !== controller) {
+        object.controller = controller;
+        object.summoningSick = true;
+        object.attacking = null;
+        object.blocking = null;
+        this.emit({
+          type: "control-changed",
+          object: id,
+          controller,
+          untilEndOfTurn: false,
+        });
+        changed = true;
+      }
+    }
+    return changed;
+  }
+
   /** `player` gains control of `target` (rule 613.1b, layer 2 — modeled by
    * reassigning `controller`). The creature is summoning-sick for its new
    * controller (rule 302.6; Act of Treason grants haste to compensate).
@@ -2956,6 +3004,12 @@ export class Game {
     let changed = true;
     while (changed) {
       changed = false;
+
+      // Continuous control effects (layer 2), recomputed each pass: a
+      // permanent is controlled by its owner unless a temporary steal
+      // (`controlEndsAtCleanup`) or an attached control-granting Aura
+      // (latest timestamp wins) says otherwise.
+      if (this.recomputeControl()) changed = true;
 
       for (const player of this.state.turnOrder) {
         const playerState = this.state.players[player];
