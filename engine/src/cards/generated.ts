@@ -17,6 +17,7 @@ import _poolBloodthroneVampire from "./pool/bloodthrone-vampire.js";
 import _poolBoggartBrute from "./pool/boggart-brute.js";
 import _poolBonesplitter from "./pool/bonesplitter.js";
 import _poolBoomerang from "./pool/boomerang.js";
+import _poolChromaticLantern from "./pool/chromatic-lantern.js";
 import _poolClone from "./pool/clone.js";
 import _poolCombatThresher from "./pool/combat-thresher.js";
 import _poolCommandTower from "./pool/command-tower.js";
@@ -24,6 +25,7 @@ import _poolConsider from "./pool/consider.js";
 import _poolContentiousPlan from "./pool/contentious-plan.js";
 import _poolCounterspell from "./pool/counterspell.js";
 import _poolCrawWurm from "./pool/craw-wurm.js";
+import _poolCryptolithRite from "./pool/cryptolith-rite.js";
 import _poolDamnation from "./pool/damnation.js";
 import _poolDarksteelMyr from "./pool/darksteel-myr.js";
 import _poolDeliberateCourse from "./pool/deliberate-course.js";
@@ -34,6 +36,7 @@ import _poolDoomBlade from "./pool/doom-blade.js";
 import _poolDoublingSeason from "./pool/doubling-season.js";
 import _poolElvishVisionary from "./pool/elvish-visionary.js";
 import _poolEssenceScatter from "./pool/essence-scatter.js";
+import _poolEvolvingWilds from "./pool/evolving-wilds.js";
 import _poolExplorersInsight from "./pool/explorers-insight.js";
 import _poolFencingAce from "./pool/fencing-ace.js";
 import _poolFireball from "./pool/fireball.js";
@@ -139,6 +142,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolBoggartBrute,
   _poolBonesplitter,
   _poolBoomerang,
+  _poolChromaticLantern,
   _poolClone,
   _poolCombatThresher,
   _poolCommandTower,
@@ -146,6 +150,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolContentiousPlan,
   _poolCounterspell,
   _poolCrawWurm,
+  _poolCryptolithRite,
   _poolDamnation,
   _poolDarksteelMyr,
   _poolDeliberateCourse,
@@ -156,6 +161,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolDoublingSeason,
   _poolElvishVisionary,
   _poolEssenceScatter,
+  _poolEvolvingWilds,
   _poolExplorersInsight,
   _poolFencingAce,
   _poolFireball,

@@ -64,6 +64,9 @@ const deckA = deck([
   ["Command Tower", 1],
   ["Prosperous Innkeeper", 1],
   ["Wilt-Leaf Cavaliers", 1],
+  ["Cryptolith Rite", 1],
+  ["Chromatic Lantern", 1],
+  ["Evolving Wilds", 2],
 ]);
 // Kept deliberately lean (~50 cards) so the RandomController actually draws
 // and plays its threats — a bloated deck just stalls out and the fuzz only
@@ -131,6 +134,7 @@ const deckB = deck([
   ["Arcane Signet", 1],
   ["Gut Shot", 2],
   ["Flame Javelin", 1],
+  ["Evolving Wilds", 2],
 ]);
 
 // A lean Dimir deck for Carol — carries the `Sarova, the Undying Current`
