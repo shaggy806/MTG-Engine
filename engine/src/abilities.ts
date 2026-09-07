@@ -11,6 +11,7 @@
 
 import type { EffectSpec, SpellResolver } from "./effects.js";
 import type { GameEvent } from "./events.js";
+import type { CardFilter } from "./filter.js";
 import type { TargetSpec } from "./target.js";
 import type { Step } from "./turn.js";
 
@@ -45,13 +46,36 @@ export interface ActivatedAbility {
 export type TriggerWho = "self" | "you-control" | "any" | "you";
 
 export type TriggerSpec =
-  | { readonly on: "enters-battlefield"; readonly who: TriggerWho }
-  | { readonly on: "dies"; readonly who: TriggerWho }
+  | {
+      readonly on: "enters-battlefield";
+      readonly who: TriggerWho;
+      /** Narrow which entering permanent counts (Soul Warden: a creature;
+       * landfall: a land). */
+      readonly filter?: CardFilter;
+      /** "another …" — the source permanent entering doesn't count. */
+      readonly otherOnly?: boolean;
+    }
+  | {
+      readonly on: "dies";
+      readonly who: TriggerWho;
+      readonly filter?: CardFilter;
+      readonly otherOnly?: boolean;
+    }
   | {
       /** A permanent left the battlefield — for any destination (graveyard,
        * exile, hand, library, command zone). Broader than `"dies"`, which
        * only fires for a move to a graveyard. Rule 603.6d / 700.4. */
       readonly on: "leaves-battlefield";
+      readonly who: TriggerWho;
+    }
+  | {
+      /** A player gained life (Ajani's Pridemate). `who` is whose life. */
+      readonly on: "gains-life";
+      readonly who: TriggerWho;
+    }
+  | {
+      /** A player lost life. `who` is whose life. */
+      readonly on: "loses-life";
       readonly who: TriggerWho;
     }
   | { readonly on: "attacks"; readonly who: TriggerWho }

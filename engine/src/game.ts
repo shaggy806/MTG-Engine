@@ -2635,12 +2635,28 @@ export class Game {
       case "enters-battlefield":
         return (
           event.type === "permanent-entered-battlefield" &&
-          this.matchesWho(spec.who, event.object, self)
+          !(spec.otherOnly === true && event.object === self.id) &&
+          this.matchesWho(spec.who, event.object, self) &&
+          this.triggerFilterOk(spec.filter, event.object, self)
         );
       case "dies":
         return (
           event.type === "permanent-destroyed" &&
-          this.matchesWho(spec.who, event.object, self)
+          !(spec.otherOnly === true && event.object === self.id) &&
+          this.matchesWho(spec.who, event.object, self) &&
+          this.triggerFilterOk(spec.filter, event.object, self)
+        );
+      case "gains-life":
+        return (
+          event.type === "life-changed" &&
+          event.delta > 0 &&
+          this.matchesWhoPlayer(spec.who, event.player, self)
+        );
+      case "loses-life":
+        return (
+          event.type === "life-changed" &&
+          event.delta < 0 &&
+          this.matchesWhoPlayer(spec.who, event.player, self)
         );
       case "leaves-battlefield":
         return (
@@ -2684,6 +2700,30 @@ export class Game {
       default:
         return false;
     }
+  }
+
+  /** A trigger's optional `CardFilter` on the object that fired it. Evaluated
+   * from the source's controller's perspective. */
+  private triggerFilterOk(
+    filter: CardFilter | undefined,
+    subject: ObjectId,
+    self: GameObject,
+  ): boolean {
+    return (
+      filter === undefined ||
+      matchesFilter(this.state, this.registry, subject, filter, { you: self.controller })
+    );
+  }
+
+  /** Like `matchesWho`, but the subject is a *player* (a life-change trigger).
+   * `"any"` matches anyone; `"you"` / `"you-control"` / `"self"` all mean the
+   * source's controller. */
+  private matchesWhoPlayer(
+    who: TriggerWho,
+    player: PlayerId,
+    self: GameObject,
+  ): boolean {
+    return who === "any" || self.controller === player;
   }
 
   private matchesWho(
@@ -2871,6 +2911,7 @@ export class Game {
       },
       chooseModes: (minModes, maxModes, modes) =>
         this.beginModesChoice(source, controller, x, minModes, maxModes, modes),
+      changeLifeScoped: (who, delta) => this.changeLifeScoped(controller, who, delta),
       searchLibrary: (filter, destination, min, max, enterTapped) =>
         this.beginLibrarySearch(controller, filter, destination, min, max, enterTapped),
       scry: (amount, surveil, then) =>
@@ -3690,6 +3731,26 @@ export class Game {
       delta,
       life: playerState.life,
     });
+  }
+
+  /** Change life for a whole `PlayerScope` (a `gain-life` / `lose-life` effect
+   * with `who`), APNAP-ordered so any resulting triggers stack in turn order. */
+  private changeLifeScoped(controller: PlayerId, who: PlayerScope, delta: number): void {
+    if (delta === 0) return;
+    const active = this.state.turnOrder.indexOf(this.activePlayer);
+    const rotated = [
+      ...this.state.turnOrder.slice(active),
+      ...this.state.turnOrder.slice(0, active),
+    ];
+    const players =
+      who === "you"
+        ? [controller]
+        : rotated.filter(
+            (p) =>
+              !this.state.players[p].hasLost &&
+              (who === "each-player" || p !== controller),
+          );
+    for (const p of players) this.changeLife(p, delta);
   }
 
   // --- state-based actions -----------------------------------

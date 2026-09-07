@@ -10,11 +10,14 @@ export default defineCard({
     {
       trigger: { on: "step-begins", step: "upkeep", who: "you" },
       targets: [],
-      effect: null,
-      resolve: (ctx) => {
-        ctx.draw(ctx.controller, 1);
-        ctx.loseLife(ctx.controller, 1);
+      effect: {
+        kind: "sequence",
+        effects: [
+          { kind: "draw", amount: 1 },
+          { kind: "lose-life", amount: 1 },
+        ],
       },
+      resolve: null,
       text: "At the beginning of your upkeep, draw a card and lose 1 life.",
     },
   ],

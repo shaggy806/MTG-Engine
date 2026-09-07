@@ -16,11 +16,14 @@ export default defineCard({
     {
       trigger: { on: "dies", who: "self" },
       targets: [],
-      effect: null,
-      resolve: (ctx) => {
-        ctx.createToken("Phyrexian Wurm Token (Deathtouch)", 1);
-        ctx.createToken("Phyrexian Wurm Token (Lifelink)", 1);
+      effect: {
+        kind: "sequence",
+        effects: [
+          { kind: "create-token", token: "Phyrexian Wurm Token (Deathtouch)", count: 1 },
+          { kind: "create-token", token: "Phyrexian Wurm Token (Lifelink)", count: 1 },
+        ],
       },
+      resolve: null,
       text:
         "When Wurmcoil Engine dies, create a 3/3 deathtouch Wurm and a 3/3 " +
         "lifelink Wurm.",

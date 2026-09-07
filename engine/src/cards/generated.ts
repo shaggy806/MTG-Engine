@@ -4,6 +4,7 @@
 import type { CardDefinition } from "./define.js";
 
 import _poolActOfTreason from "./pool/act-of-treason.js";
+import _poolAjanisPridemate from "./pool/ajanis-pridemate.js";
 import _poolAmbushViper from "./pool/ambush-viper.js";
 import _poolAngelicEdict from "./pool/angelic-edict.js";
 import _poolArtificialEvolution from "./pool/artificial-evolution.js";
@@ -43,6 +44,7 @@ import _poolGladecoverScout from "./pool/gladecover-scout.js";
 import _poolGloriousAnthem from "./pool/glorious-anthem.js";
 import _poolGoblinChieftain from "./pool/goblin-chieftain.js";
 import _poolGoblinRaider from "./pool/goblin-raider.js";
+import _poolGravePact from "./pool/grave-pact.js";
 import _poolGraveRecall from "./pool/grave-recall.js";
 import _poolGrizzlyBears from "./pool/grizzly-bears.js";
 import _poolHillGiant from "./pool/hill-giant.js";
@@ -75,11 +77,13 @@ import _poolPyroclasm from "./pool/pyroclasm.js";
 import _poolRabidBite from "./pool/rabid-bite.js";
 import _poolRagingGoblin from "./pool/raging-goblin.js";
 import _poolRaiseTheAlarm from "./pool/raise-the-alarm.js";
+import _poolRampagingBaloths from "./pool/rampaging-baloths.js";
 import _poolRampantGrowth from "./pool/rampant-growth.js";
 import _poolRestInPeace from "./pool/rest-in-peace.js";
 import _poolRumblingBaloth from "./pool/rumbling-baloth.js";
 import _poolSarovaTheUndyingCurrent from "./pool/sarova-the-undying-current.js";
 import _poolSerraAngel from "./pool/serra-angel.js";
+import _poolSoulWarden from "./pool/soul-warden.js";
 import _poolSwamp from "./pool/swamp.js";
 import _poolThievingMagpie from "./pool/thieving-magpie.js";
 import _poolThreaten from "./pool/threaten.js";
@@ -98,6 +102,8 @@ import _poolWhiteKnight from "./pool/white-knight.js";
 import _poolWildwoodSentinel from "./pool/wildwood-sentinel.js";
 import _poolWrathOfGod from "./pool/wrath-of-god.js";
 import _poolWurmcoilEngine from "./pool/wurmcoil-engine.js";
+import _poolZulaportCutthroat from "./pool/zulaport-cutthroat.js";
+import _tokensBeastToken from "./tokens/beast-token.js";
 import _tokensPhyrexianWurmDeathtouch from "./tokens/phyrexian-wurm-deathtouch.js";
 import _tokensPhyrexianWurmLifelink from "./tokens/phyrexian-wurm-lifelink.js";
 import _tokensSoldierToken from "./tokens/soldier-token.js";
@@ -105,6 +111,7 @@ import _tokensSoldierToken from "./tokens/soldier-token.js";
 /** The built-in card pool — every file under `pool/` and `tokens/`. */
 export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolActOfTreason,
+  _poolAjanisPridemate,
   _poolAmbushViper,
   _poolAngelicEdict,
   _poolArtificialEvolution,
@@ -144,6 +151,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolGloriousAnthem,
   _poolGoblinChieftain,
   _poolGoblinRaider,
+  _poolGravePact,
   _poolGraveRecall,
   _poolGrizzlyBears,
   _poolHillGiant,
@@ -176,11 +184,13 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolRabidBite,
   _poolRagingGoblin,
   _poolRaiseTheAlarm,
+  _poolRampagingBaloths,
   _poolRampantGrowth,
   _poolRestInPeace,
   _poolRumblingBaloth,
   _poolSarovaTheUndyingCurrent,
   _poolSerraAngel,
+  _poolSoulWarden,
   _poolSwamp,
   _poolThievingMagpie,
   _poolThreaten,
@@ -199,6 +209,8 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolWildwoodSentinel,
   _poolWrathOfGod,
   _poolWurmcoilEngine,
+  _poolZulaportCutthroat,
+  _tokensBeastToken,
   _tokensPhyrexianWurmDeathtouch,
   _tokensPhyrexianWurmLifelink,
   _tokensSoldierToken,

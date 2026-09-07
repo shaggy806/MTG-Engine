@@ -39,7 +39,18 @@ export type EffectSpec =
   | { readonly kind: "damage"; readonly amount: EffectAmount; readonly target: number }
   | { readonly kind: "add-mana"; readonly mana: ManaType; readonly amount: number }
   | { readonly kind: "draw"; readonly amount: number }
-  | { readonly kind: "gain-life"; readonly amount: number }
+  | {
+      readonly kind: "gain-life";
+      readonly amount: number;
+      /** Who gains — the effect's controller (default), or a scope. */
+      readonly who?: PlayerScope;
+    }
+  | {
+      /** Life loss (Zulaport Cutthroat: "each opponent loses 1 life"). */
+      readonly kind: "lose-life";
+      readonly amount: number;
+      readonly who?: PlayerScope;
+    }
   | { readonly kind: "tap"; readonly target: number }
   | { readonly kind: "untap"; readonly target: number }
   | { readonly kind: "destroy"; readonly target: number }
@@ -270,6 +281,8 @@ export interface EffectApi {
   draw(player: PlayerId, count: number): void;
   gainLife(player: PlayerId, amount: number): void;
   loseLife(player: PlayerId, amount: number): void;
+  /** Change life for a whole scope (`gain-life` / `lose-life` with `who`). */
+  changeLifeScoped(who: PlayerScope, delta: number): void;
   addMana(player: PlayerId, mana: ManaType, amount: number): void;
   tapPermanent(target: TargetRef): void;
   untapPermanent(target: TargetRef): void;
@@ -403,7 +416,12 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       ctx.draw(ctx.controller, spec.amount);
       return;
     case "gain-life":
-      ctx.gainLife(ctx.controller, spec.amount);
+      if (spec.who === undefined || spec.who === "you") ctx.gainLife(ctx.controller, spec.amount);
+      else ctx.changeLifeScoped(spec.who, spec.amount);
+      return;
+    case "lose-life":
+      if (spec.who === undefined || spec.who === "you") ctx.loseLife(ctx.controller, spec.amount);
+      else ctx.changeLifeScoped(spec.who, -spec.amount);
       return;
     case "tap": {
       const target = ctx.targets[spec.target];
