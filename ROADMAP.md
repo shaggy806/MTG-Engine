@@ -17,7 +17,7 @@ the diagram) are in.
 ## Status
 
 - [x] **Phase 1** — Replacement-effects engine (+ modal / "you may" primitives)
-- [ ] **Phase 2** — Effect vocabulary: `CardFilter`, effect scopes, mass effects, tutors, scry/surveil
+- [x] **Phase 2** — Effect vocabulary: `CardFilter`, effect scopes, mass effects, tutors, scry/surveil
 - [ ] **Phase 3** — Ability grammar breadth (triggers, statics, activated-ability costs)
 - [ ] **Phase 4** — Mana system depth (hybrid / Phyrexian / `{C}` / any-colour / cost modification / Treasure)
 - [ ] **Phase 5** — Planeswalkers
@@ -198,25 +198,32 @@ counter replacements + cards; modal primitives + 903.9a rework).
 
 ## Phase 2 — Effect vocabulary: filters, scopes, mass effects, selection
 
-- **`CardFilter`** — generalize `ZoneChoiceFilter`. Match by any of: `types` /
-  `subtypes` / `supertypes` / `name` / `colors` (with/without) / `manaValue`
-  (op + n) / `power` / `toughness` / `controlledBy` ("you" / "opponent" /
-  "each") / `keyword` / `tapped`. A pure predicate over a `GameObject` +
-  computed characteristics. **Reused by every later phase** (trigger `filter`,
-  static `affects`, target specs, library search).
-- **`EffectScope`** — `damage` / `destroy` / `modify-pt` / `draw` / `discard` /
-  `mill` / `tap` / `sacrifice` accept a scope (`"all" + CardFilter` /
-  `"each-opponent"` / `"each-player"`) instead of a numbered target.
-- **Board wipes & edicts:** `Wrath of God`, `Blasphemous Act`, `Damnation`,
-  `Diabolic Edict`, `Fleshbag Marauder`.
-- **`sacrifice` as an effect** (not just a cost — raises a per-affected-player
-  choose-a-permanent decision).
-- **`search-library { filter, destination, count, min, reveal? }`** + shuffle →
-  real tutors: `Demonic Tutor`, `Cultivate`, `Rampant Growth`, `Sakura-Tribe
-  Elder`, `Farseek`.
-- **`scry n`** (look at top n, reorder / bottom) and **`surveil n`** (top /
-  graveyard). Cards: `Preordain`, `Opt`, a surveil card.
-- Generalize `draw` to `{ player: EffectTargetRef | "each" , amount }`.
+- [x] **`CardFilter`** (`filter.ts`) — `matchesFilter` over a `GameObject` +
+  its *computed* characteristics: `type`/`types`/`notTypes` / `subtype` /
+  `supertype` / `name` / `colors` / `notColors` / `colorless` / `manaValue` /
+  `power` / `toughness` (via a `NumCompare` op) / `controlledBy` / `ownedBy` /
+  `keyword` / `tapped` / `token`. `ZoneChoiceFilter` is now an alias.
+  Degrades to printed values off the battlefield.
+- [x] **`EffectScope`** — delivered where cards needed it: `destroy-all
+  { filter }`, `damage-all { filter, amount }`, and `sacrifice { who:
+  "each-player"|"each-opponent"|"you"|"target", filter, count }`. The mass
+  destroy drains via `GameState.pendingDestruction`, the sacrifice via
+  `pendingSacrifices` / `pendingSacrificeVictims` (APNAP), so a commander's
+  903.9a choice mid-effect pauses and resumes. **Deferred (no card needs
+  them yet, Phase-10-style):** `modify-pt` / `draw` / `discard` / `mill` /
+  `tap` scopes, and generalizing `draw` to `{ player | "each", amount }`.
+- [x] **Board wipes & edicts:** Wrath of God, Damnation, Pyroclasm (`damage-
+  all`), Diabolic Edict, Fleshbag Marauder. (Blasphemous Act's identity is
+  its cost reduction — a Phase 3/4 static — so it's deferred.)
+- [x] **`sacrifice` as an effect** — a `sacrifice` `AwaitingDecision` per
+  affected player who has a real choice; auto-resolves otherwise.
+- [x] **`search-library { filter, destination, min, max, enterTapped? }`** →
+  Demonic Tutor, Rampant Growth. Reuses `choose-from-zone` +
+  `leftover: "shuffle"`. (Cultivate / Sakura-Tribe Elder want a two-
+  destination search or a sac-death trigger — later.)
+- [x] **`scry n` / `surveil n`** (with an optional `then` for the trailing
+  draw): a `scry` `AwaitingDecision`; Preordain, Opt, Consider. The
+  "reorder the ones you keep on top" clause isn't modeled.
 
 **Tests:** `filters-and-scopes.test.ts`, `tutors.test.ts`.
 
