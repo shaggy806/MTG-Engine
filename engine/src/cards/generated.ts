@@ -22,6 +22,7 @@ import _poolCrawWurm from "./pool/craw-wurm.js";
 import _poolDamnation from "./pool/damnation.js";
 import _poolDarksteelMyr from "./pool/darksteel-myr.js";
 import _poolDeliberateCourse from "./pool/deliberate-course.js";
+import _poolDiabolicEdict from "./pool/diabolic-edict.js";
 import _poolDisenchant from "./pool/disenchant.js";
 import _poolDoomBlade from "./pool/doom-blade.js";
 import _poolDoublingSeason from "./pool/doubling-season.js";
@@ -30,6 +31,7 @@ import _poolEssenceScatter from "./pool/essence-scatter.js";
 import _poolExplorersInsight from "./pool/explorers-insight.js";
 import _poolFencingAce from "./pool/fencing-ace.js";
 import _poolFireball from "./pool/fireball.js";
+import _poolFleshbagMarauder from "./pool/fleshbag-marauder.js";
 import _poolFog from "./pool/fog.js";
 import _poolForest from "./pool/forest.js";
 import _poolFumeSpitter from "./pool/fume-spitter.js";
@@ -116,6 +118,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolDamnation,
   _poolDarksteelMyr,
   _poolDeliberateCourse,
+  _poolDiabolicEdict,
   _poolDisenchant,
   _poolDoomBlade,
   _poolDoublingSeason,
@@ -124,6 +127,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolExplorersInsight,
   _poolFencingAce,
   _poolFireball,
+  _poolFleshbagMarauder,
   _poolFog,
   _poolForest,
   _poolFumeSpitter,

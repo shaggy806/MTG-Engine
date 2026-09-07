@@ -59,6 +59,16 @@ export type EffectSpec =
       readonly amount: EffectAmount;
     }
   | {
+      /** Each affected player sacrifices `count` permanents matching `filter`
+       * that they control (Diabolic Edict — `who: "target"`; Fleshbag
+       * Marauder — `who: "each-player"`). Raises a `sacrifice` decision per
+       * player who has a real choice; auto-resolves otherwise. */
+      readonly kind: "sacrifice";
+      readonly who: PlayerScope | "target";
+      readonly filter: CardFilter;
+      readonly count: number;
+    }
+  | {
       /** `targets[a]` and `targets[b]` each deal damage equal to their power
        * to the other (rule 701.12). With `oneSided`, only `a` deals to `b`
        * (Rabid Bite). */
@@ -240,6 +250,13 @@ export interface EffectApi {
   destroyAll(filter: CardFilter): void;
   /** Deal `amount` damage to every battlefield permanent matching `filter`. */
   damageAll(filter: CardFilter, amount: number): void;
+  /** Each of `who` (a scope, or `{ player }` for a targeted edict) sacrifices
+   * `count` permanents matching `filter`. */
+  sacrificePermanents(
+    who: PlayerScope | { readonly player: PlayerId },
+    filter: CardFilter,
+    count: number,
+  ): void;
   returnToHand(target: TargetRef): void;
   exileObject(target: TargetRef): void;
   /** `a` and `b` (both creatures) fight; with `oneSided` only `a` deals. */
@@ -370,6 +387,17 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     case "damage-all":
       ctx.damageAll(spec.filter, amountValue(spec.amount, ctx));
       return;
+    case "sacrifice": {
+      if (spec.who === "target") {
+        const target = ctx.targets[0];
+        if (target?.kind === "player") {
+          ctx.sacrificePermanents({ player: target.player }, spec.filter, spec.count);
+        }
+      } else {
+        ctx.sacrificePermanents(spec.who, spec.filter, spec.count);
+      }
+      return;
+    }
     case "fight": {
       const a = ctx.targets[spec.a];
       const b = ctx.targets[spec.b];

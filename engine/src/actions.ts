@@ -117,6 +117,13 @@ export type Action =
       readonly type: "choose-modes";
       readonly player: PlayerId;
       readonly modes: readonly number[];
+    }
+  | {
+      /** Answers a pending `sacrifice` decision (a sacrifice effect — Diabolic
+       * Edict): the permanents this player sacrifices. */
+      readonly type: "sacrifice";
+      readonly player: PlayerId;
+      readonly permanents: readonly ObjectId[];
     };
 
 export type ActionType = Action["type"];
@@ -235,4 +242,10 @@ export type LegalAction =
       /** Rules text of each mode, in order — index into this is what the
        * `choose-modes` action submits. */
       readonly modeTexts: readonly string[];
+    }
+  | {
+      readonly kind: "sacrifice";
+      readonly count: number;
+      /** Permanents this player controls that could be sacrificed. */
+      readonly eligible: readonly ObjectId[];
     };

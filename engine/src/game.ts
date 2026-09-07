@@ -24,7 +24,13 @@ import type { Characteristics } from "./characteristics.js";
 import { AutomaticController } from "./controller.js";
 import type { ControllerView, PlayerController } from "./controller.js";
 import { applyEffectSpec } from "./effects.js";
-import type { ModeOption, PtDuration, ResolutionContext, ZoneChoiceFilter } from "./effects.js";
+import type {
+  ModeOption,
+  PlayerScope,
+  PtDuration,
+  ResolutionContext,
+  ZoneChoiceFilter,
+} from "./effects.js";
 import { matchesFilter } from "./filter.js";
 import type { CardFilter } from "./filter.js";
 import type {
@@ -163,6 +169,8 @@ export class Game {
       pendingTriggers: [],
       deferredCommanderMove: null,
       pendingDestruction: [],
+      pendingSacrifices: [],
+      pendingSacrificeVictims: [],
       preventAllCombatDamage: false,
       timestampSeq: 0,
       eventLog: [],
@@ -312,6 +320,9 @@ export class Game {
       case "choose-modes":
         this.applyModesChoice(action.player, action.modes);
         break;
+      case "sacrifice":
+        this.applySacrifice(action.player, action.permanents);
+        break;
       default:
         throw new Error(
           `unhandled action: ${(action as { type: string }).type}`,
@@ -364,6 +375,8 @@ export class Game {
         return this.whyCannotTextChoice(action.player, action.from, action.to);
       case "choose-modes":
         return this.whyCannotChooseModes(action.player, action.modes);
+      case "sacrifice":
+        return this.whyCannotSacrifice(action.player, action.permanents);
       default:
         return `unknown action: ${(action as { type: string }).type}`;
     }
@@ -471,6 +484,15 @@ export class Game {
             minModes: awaiting.minModes,
             maxModes: awaiting.maxModes,
             modeTexts: awaiting.modes.map((m) => m.text),
+          },
+        ];
+      }
+      if (awaiting.kind === "sacrifice") {
+        return [
+          {
+            kind: "sacrifice",
+            count: awaiting.count,
+            eligible: [...awaiting.eligible],
           },
         ];
       }
@@ -1078,6 +1100,16 @@ export class Game {
       // Continue a mass-destroy (Wrath of God) that a 903.9a choice paused.
       if (this.state.pendingDestruction.length > 0) {
         this.drainPendingDestruction();
+        continue;
+      }
+      // Work through a sacrifice effect (Diabolic Edict / Fleshbag Marauder):
+      // move already-chosen victims, then ask the next player who has a choice.
+      if (this.state.pendingSacrificeVictims.length > 0) {
+        this.drainPendingSacrificeVictims();
+        continue;
+      }
+      if (this.state.pendingSacrifices.length > 0) {
+        this.promptNextSacrifice();
         continue;
       }
       if (!this.placePendingTriggers()) break;
@@ -2790,6 +2822,8 @@ export class Game {
       destroyPermanent: (target) => this.destroyByEffect(target),
       destroyAll: (filter) => this.destroyAllByEffect(controller, filter),
       damageAll: (filter, amount) => this.damageAllByEffect(source, controller, filter, amount),
+      sacrificePermanents: (who, filter, count) =>
+        this.sacrificeByEffect(controller, who, filter, count),
       returnToHand: (target) => this.returnToHandByEffect(target),
       exileObject: (target) => this.exileByEffect(target),
       fight: (a, b, oneSided) => this.fightCreatures(a, b, oneSided),
@@ -3181,6 +3215,130 @@ export class Game {
         this.dealDamage(source, { kind: "object", object: id }, amount);
       }
     }
+  }
+
+  // --- sacrifice as an effect (edicts) -----------------------------
+
+  /** Queue a sacrifice effect (Diabolic Edict / Fleshbag Marauder). Each
+   * affected player who controls a matching permanent is owed a decision;
+   * `promptNextSacrifice` (run in the `prepareForPriority` fixpoint) resolves
+   * them one at a time, APNAP-ordered, auto-resolving where there's no choice. */
+  private sacrificeByEffect(
+    controller: PlayerId,
+    who: PlayerScope | { readonly player: PlayerId },
+    filter: CardFilter,
+    count: number,
+  ): void {
+    if (count <= 0) return;
+    let players: PlayerId[];
+    if (typeof who === "object") {
+      players = [who.player];
+    } else {
+      // APNAP: active player first, then the rest in turn order.
+      const active = this.state.turnOrder.indexOf(this.activePlayer);
+      const rotated = [
+        ...this.state.turnOrder.slice(active),
+        ...this.state.turnOrder.slice(0, active),
+      ];
+      players =
+        who === "you"
+          ? [controller]
+          : rotated.filter(
+              (p) =>
+                !this.state.players[p].hasLost &&
+                (who === "each-player" || p !== controller),
+            );
+    }
+    for (const player of players) {
+      if (this.eligibleSacrifices(player, filter).length > 0) {
+        this.state.pendingSacrifices.push({ player, filter, count });
+      }
+    }
+  }
+
+  /** Permanents `player` controls that match `filter` (they can only ever
+   * sacrifice their own — rule 701.16a). */
+  private eligibleSacrifices(player: PlayerId, filter: CardFilter): ObjectId[] {
+    return this.state.zones.shared.battlefield.filter(
+      (id) =>
+        this.state.objects[id].controller === player &&
+        matchesFilter(this.state, this.registry, id, filter, { you: player }),
+    );
+  }
+
+  /** Drain `pendingSacrifices`: for each player, auto-sacrifice when there's
+   * no choice, otherwise raise a `sacrifice` decision and stop. */
+  private promptNextSacrifice(): void {
+    while (this.state.pendingSacrifices.length > 0) {
+      const next = this.state.pendingSacrifices[0];
+      const eligible = this.eligibleSacrifices(next.player, next.filter);
+      if (eligible.length === 0) {
+        this.state.pendingSacrifices = this.state.pendingSacrifices.slice(1);
+        continue;
+      }
+      if (eligible.length <= next.count) {
+        for (const id of eligible) {
+          this.state.pendingSacrificeVictims.push({ player: next.player, object: id });
+        }
+        this.state.pendingSacrifices = this.state.pendingSacrifices.slice(1);
+        continue;
+      }
+      this.state.awaiting = {
+        kind: "sacrifice",
+        player: next.player,
+        count: next.count,
+        eligible,
+      };
+      this.state.pendingSacrifices = this.state.pendingSacrifices.slice(1);
+      return;
+    }
+  }
+
+  /** Actually move queued sacrifice victims to the graveyard, one at a time
+   * (a commander among them can defer via 903.9a — the drain pauses). */
+  private drainPendingSacrificeVictims(): void {
+    while (this.state.pendingSacrificeVictims.length > 0) {
+      if (this.state.awaiting !== null) return;
+      const next = this.state.pendingSacrificeVictims[0];
+      this.state.pendingSacrificeVictims = this.state.pendingSacrificeVictims.slice(1);
+      const object = this.state.objects[next.object];
+      if (object === undefined || object.zone !== "battlefield") continue;
+      this.moveObject(next.object, "graveyard");
+      if (this.state.awaiting !== null) return; // commander 903.9a deferred
+      this.emit({ type: "permanent-sacrificed", object: next.object, player: next.player });
+    }
+  }
+
+  /** Answers a pending `sacrifice` decision. */
+  private applySacrifice(player: PlayerId, permanents: readonly ObjectId[]): void {
+    const why = this.whyCannotSacrifice(player, permanents);
+    if (why !== null) throw new Error(why);
+    this.state.awaiting = null;
+    for (const id of permanents) {
+      this.state.pendingSacrificeVictims.push({ player, object: id });
+    }
+    this.prepareForPriority(this.activePlayer);
+  }
+
+  private whyCannotSacrifice(
+    player: PlayerId,
+    permanents: readonly ObjectId[],
+  ): string | null {
+    const awaiting = this.state.awaiting;
+    if (awaiting === null || awaiting.kind !== "sacrifice" || awaiting.player !== player) {
+      return `${player} is not being asked to sacrifice`;
+    }
+    if (new Set(permanents).size !== permanents.length) {
+      return `${player} chose the same permanent twice`;
+    }
+    if (permanents.length !== awaiting.count) {
+      return `${player} must sacrifice exactly ${awaiting.count}, chose ${permanents.length}`;
+    }
+    const eligible = new Set(awaiting.eligible);
+    for (const id of permanents) {
+      if (!eligible.has(id)) return `${id} is not an eligible sacrifice`;
+    }
+    return null;
   }
 
   private returnToHandByEffect(target: TargetRef): void {

@@ -121,6 +121,15 @@ export interface PlayerController {
     maxModes: number,
     modeTexts: readonly string[],
   ): readonly number[];
+  /**
+   * A sacrifice effect (Diabolic Edict) is asking this player to sacrifice
+   * exactly `count` of the `eligible` permanents they control.
+   */
+  chooseSacrifices(
+    view: ControllerView,
+    eligible: readonly ObjectId[],
+    count: number,
+  ): readonly ObjectId[];
 }
 
 const passFor = (player: PlayerId): Action => ({
@@ -214,6 +223,13 @@ function answerAwaited(
         awaiting.maxModes,
         awaiting.modes.map((m) => m.text),
       ),
+    };
+  }
+  if (awaiting.kind === "sacrifice") {
+    return {
+      type: "sacrifice",
+      player,
+      permanents: controller.chooseSacrifices(view, awaiting.eligible, awaiting.count),
     };
   }
   const hand = view.state.zones.perPlayer[player].hand.map(
@@ -329,6 +345,14 @@ export class AutomaticController implements PlayerController {
     // declining, matching this controller's do-nothing stance.
     return Array.from({ length: minModes }, (_unused, i) => i);
   }
+
+  chooseSacrifices(
+    _view: ControllerView,
+    eligible: readonly ObjectId[],
+    count: number,
+  ): readonly ObjectId[] {
+    return eligible.slice(0, count);
+  }
 }
 
 /** A queued action, optionally gated on a condition being true. */
@@ -387,6 +411,11 @@ type ModesChooser = (
   maxModes: number,
   modeTexts: readonly string[],
 ) => readonly number[];
+type SacrificeChooser = (
+  view: ControllerView,
+  eligible: readonly ObjectId[],
+  count: number,
+) => readonly ObjectId[];
 
 /**
  * Plays a fixed queue of priority actions (each firing when its `when` guard is
@@ -413,6 +442,7 @@ export class ScriptedController implements PlayerController {
   ];
   chooseModesFn: ModesChooser = (_view, minModes) =>
     Array.from({ length: minModes }, (_unused, i) => i);
+  chooseSacrificesFn: SacrificeChooser = (_view, eligible, count) => eligible.slice(0, count);
 
   constructor(playerId: PlayerId, script: readonly ScriptEntry[] = []) {
     this.playerId = playerId;
@@ -522,6 +552,14 @@ export class ScriptedController implements PlayerController {
     modeTexts: readonly string[],
   ): readonly number[] {
     return this.chooseModesFn(view, minModes, maxModes, modeTexts);
+  }
+
+  chooseSacrifices(
+    view: ControllerView,
+    eligible: readonly ObjectId[],
+    count: number,
+  ): readonly ObjectId[] {
+    return this.chooseSacrificesFn(view, eligible, count);
   }
 }
 
@@ -675,6 +713,14 @@ export class RandomController extends AutomaticController {
           modes.push(pool.splice(this.pickIndex(pool.length), 1)[0]);
         }
         return { type: "choose-modes", player, modes };
+      }
+      case "sacrifice": {
+        const pool = [...legal.eligible];
+        const permanents: ObjectId[] = [];
+        for (let i = 0; i < legal.count && pool.length > 0; i += 1) {
+          permanents.push(pool.splice(this.pickIndex(pool.length), 1)[0]);
+        }
+        return { type: "sacrifice", player, permanents };
       }
       default:
         return passFor(player);

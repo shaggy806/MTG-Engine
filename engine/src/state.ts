@@ -8,6 +8,7 @@
 
 import type { CardType, Keyword } from "./cards.js";
 import type { EffectSpec } from "./effects.js";
+import type { CardFilter } from "./filter.js";
 import type { Color, ManaPool } from "./mana.js";
 import { emptyPool } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
@@ -283,6 +284,16 @@ export type AwaitingDecision =
       readonly toOptions: readonly string[];
     }
   | {
+      /** A sacrifice *effect* (Diabolic Edict, Fleshbag Marauder) — `player`
+       * chooses `count` of `eligible` permanents they control to sacrifice
+       * (rule 701.16). Only raised when there's an actual choice (they
+       * control more than `count` matches). */
+      readonly kind: "sacrifice";
+      readonly player: PlayerId;
+      readonly count: number;
+      readonly eligible: readonly ObjectId[];
+    }
+  | {
       /** A modal spell/ability is resolving (rule 700.2), or a "you may"
        * clause (rule 601.3e). The controller picks between `minModes` and
        * `maxModes` distinct modes; their effects apply after. */
@@ -343,6 +354,22 @@ export interface GameState {
    * inside the `prepareForPriority` fixpoint.
    */
   pendingDestruction: ObjectId[];
+  /**
+   * Players still owed a "choose N permanents to sacrifice" decision from a
+   * sacrifice *effect* (Diabolic Edict, Fleshbag Marauder). Drained one at a
+   * time by `promptNextSacrifice`, APNAP-ordered.
+   */
+  pendingSacrifices: {
+    readonly player: PlayerId;
+    readonly filter: CardFilter;
+    readonly count: number;
+  }[];
+  /**
+   * Specific permanents (chosen, or auto-selected when there was no choice)
+   * still to be moved to the graveyard as a sacrifice — drained one at a time
+   * so a commander's 903.9a choice can pause it.
+   */
+  pendingSacrificeVictims: { readonly player: PlayerId; readonly object: ObjectId }[];
   /**
    * A commander that is *about to* be put into a hidden zone from the
    * battlefield and whose owner is being asked whether to send it to the

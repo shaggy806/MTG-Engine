@@ -45,6 +45,7 @@ type CommanderChoiceAction = Extract<LegalAction, { kind: 'commander-replacement
 type CopyChoiceAction = Extract<LegalAction, { kind: 'choose-copy' }>
 type TextChoiceAction = Extract<LegalAction, { kind: 'choose-text' }>
 type ModesChoiceAction = Extract<LegalAction, { kind: 'choose-modes' }>
+type SacrificeAction = Extract<LegalAction, { kind: 'sacrifice' }>
 
 interface Targeting {
   readonly kind: 'cast' | 'activate'
@@ -84,6 +85,7 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
   'choose-copy': 'choose what to copy',
   'choose-text': 'choose a text change',
   'choose-modes': 'choose a mode',
+  sacrifice: 'choose what to sacrifice',
 }
 
 export default function App() {
@@ -436,6 +438,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
   const [bottomPicks, setBottomPicks] = useState<readonly ObjectId[]>([])
   const [textFrom, setTextFrom] = useState<string | null>(null)
   const [modePicks, setModePicks] = useState<readonly number[]>([])
+  const [sacrificePicks, setSacrificePicks] = useState<readonly ObjectId[]>([])
   const [zoneView, setZoneView] = useState<{
     readonly title: string
     readonly ids: readonly ObjectId[]
@@ -496,6 +499,9 @@ function Table({ view, seat, opponents, game }: TableProps) {
   const modesChoiceAction = actions.find(
     (a): a is ModesChoiceAction => a.kind === 'choose-modes',
   )
+  const sacrificeAction = actions.find(
+    (a): a is SacrificeAction => a.kind === 'sacrifice',
+  )
   const canPass = actions.some((a) => a.kind === 'pass-priority')
   // Only the active player may skip the rest of their own turn — a defender
   // holding priority to respond during it shouldn't get this button.
@@ -513,6 +519,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
     | 'choose-copy'
     | 'choose-text'
     | 'choose-modes'
+    | 'sacrifice'
     | 'choose-x'
     | 'choose-sacrifice'
     | 'targeting'
@@ -526,6 +533,8 @@ function Table({ view, seat, opponents, game }: TableProps) {
           ? 'choose-text'
         : modesChoiceAction
           ? 'choose-modes'
+        : sacrificeAction
+          ? 'sacrifice'
         : bottomAction
           ? 'put-on-bottom'
       : discardAction
@@ -750,6 +759,17 @@ function Table({ view, seat, opponents, game }: TableProps) {
         )
         return
       }
+      if (mode === 'sacrifice' && sacrificeAction) {
+        if (!sacrificeAction.eligible.includes(id)) return
+        setSacrificePicks((cur) =>
+          cur.includes(id)
+            ? cur.filter((x) => x !== id)
+            : cur.length >= sacrificeAction.count
+              ? [...cur.slice(1), id]
+              : [...cur, id],
+        )
+        return
+      }
       if (mode === 'blockers' && blockAction) {
         const entry = blockAction.eligible.find((e) => e.blocker === id)
         if (entry) {
@@ -792,6 +812,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
       orderAction,
       pickIdForClick,
       pickTarget,
+      sacrificeAction,
       targeting,
     ],
   )
@@ -957,6 +978,9 @@ function Table({ view, seat, opponents, game }: TableProps) {
       highlight = isBlocker || focusedCanHit
       selected = Boolean(assignedTo) || blockFocus === id
       if (assignedTo) badge = `\u{1F6E1} ${game.nameOf(assignedTo)}`
+    } else if (mode === 'sacrifice' && sacrificeAction) {
+      highlight = sacrificeAction.eligible.includes(id) && !sacrificePicks.includes(id)
+      selected = sacrificePicks.includes(id)
     } else if (mode === 'priority' && ownerSeat === seat) {
       activatable = ids.some((i) => abilitiesBySource.has(i))
       selected = selectedSource !== null && ids.includes(selectedSource)
@@ -1258,6 +1282,24 @@ function Table({ view, seat, opponents, game }: TableProps) {
             </button>
           </>
         )}
+      </div>
+    )
+  } else if (mode === 'sacrifice' && sacrificeAction) {
+    controls = (
+      <div className="controls">
+        <span>
+          Sacrifice {sacrificeAction.count} — {sacrificePicks.length}/
+          {sacrificeAction.count} chosen
+        </span>
+        <button
+          type="button"
+          disabled={sacrificePicks.length !== sacrificeAction.count}
+          onClick={() =>
+            game.dispatch({ type: 'sacrifice', player: seat, permanents: [...sacrificePicks] })
+          }
+        >
+          Confirm
+        </button>
       </div>
     )
   } else if (mode === 'commander-replacement' && commanderChoiceAction) {

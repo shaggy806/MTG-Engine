@@ -191,3 +191,92 @@ describe("damage-all — Pyroclasm", () => {
     expect(game.state.objects[spider].damageMarked).toBe(2);
   });
 });
+
+describe("sacrifice effect — edicts (rule 701.16)", () => {
+  it("Diabolic Edict: target with one creature auto-sacrifices it", () => {
+    const { game } = mkGame(["Diabolic Edict"]);
+    game.advanceUntil(toPrecombat);
+    const goblin = spawn(game, "Raging Goblin", B);
+    spawn(game, "Swamp", A);
+    spawn(game, "Swamp", A);
+
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Diabolic Edict"),
+      targets: [{ kind: "player", player: B }],
+    });
+    game.advanceUntil(settled);
+
+    expect(zoneOf(game, goblin)).toBe("graveyard");
+    expect(game.eventsOfType("permanent-sacrificed").some((e) => e.player === B)).toBe(true);
+  });
+
+  it("Diabolic Edict: target with two creatures is asked to choose one", () => {
+    const b = new ScriptedController(B);
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      registry,
+      rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
+      controllers: { [A]: new ScriptedController(A), [B]: b },
+      decks: [
+        { player: A, cards: pad(["Diabolic Edict"]) },
+        { player: B, cards: pad([]) },
+      ],
+    });
+    game.advanceUntil(toPrecombat);
+    const goblin = spawn(game, "Raging Goblin", B);
+    const bears = spawn(game, "Grizzly Bears", B);
+    spawn(game, "Swamp", A);
+    spawn(game, "Swamp", A);
+    b.chooseSacrificesFn = (_v, eligible) => [eligible.find((id) => id === bears) as ObjectId];
+
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Diabolic Edict"),
+      targets: [{ kind: "player", player: B }],
+    });
+    game.advanceUntil((s) => s.awaiting?.kind === "sacrifice");
+    expect(game.state.awaiting).toMatchObject({ kind: "sacrifice", player: B, count: 1 });
+
+    game.advanceUntil(settled);
+    expect(zoneOf(game, bears)).toBe("graveyard");
+    expect(zoneOf(game, goblin)).toBe("battlefield");
+  });
+
+  it("Diabolic Edict: target with no creatures does nothing", () => {
+    const { game } = mkGame(["Diabolic Edict"]);
+    game.advanceUntil(toPrecombat);
+    spawn(game, "Swamp", A);
+    spawn(game, "Swamp", A);
+
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Diabolic Edict"),
+      targets: [{ kind: "player", player: B }],
+    });
+    game.advanceUntil(settled);
+    expect(game.eventsOfType("permanent-sacrificed")).toHaveLength(0);
+  });
+
+  it("Fleshbag Marauder: each player sacrifices a creature on its ETB", () => {
+    const { game } = mkGame(["Fleshbag Marauder"]);
+    game.advanceUntil(toPrecombat);
+    const aBears = spawn(game, "Grizzly Bears", A);
+    const bGoblin = spawn(game, "Raging Goblin", B);
+    for (let i = 0; i < 3; i += 1) spawn(game, "Swamp", A);
+
+    cast(game, "Fleshbag Marauder");
+    game.advanceUntil(settled);
+    const fleshbag = named(game, game.battlefield, "Fleshbag Marauder");
+
+    // A controls Bears + Fleshbag; the ScriptedController sacrifices from the
+    // front (Bears, the older permanent). B has just the Goblin (auto).
+    expect(zoneOf(game, aBears)).toBe("graveyard");
+    expect(zoneOf(game, bGoblin)).toBe("graveyard");
+    expect(zoneOf(game, fleshbag)).toBe("battlefield");
+  });
+});
