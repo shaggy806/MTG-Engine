@@ -639,6 +639,8 @@ export class RandomController extends AutomaticController {
         return { type: "play-land", player, card: legal.card };
       case "suspend":
         return { type: "suspend", player, card: legal.card };
+      case "foretell":
+        return { type: "foretell", player, card: legal.card };
       case "cast-spell":
         return {
           type: "cast-spell",

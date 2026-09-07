@@ -90,6 +90,10 @@ export interface VisibleObject {
   readonly isToken: boolean;
   /** Suspended in exile with time counters (`counters.time`) — ROADMAP Phase 6b. */
   readonly suspended: boolean;
+  /** Foretold — face-down in exile, castable later for its foretell cost.
+   * Only ever `true` in the owner's own view (opponents don't see the id's
+   * entry in `objects` at all). */
+  readonly foretold: boolean;
   /** The permanent this Aura/Equipment is attached to, or `null`. */
   readonly attachedTo: ObjectId | null;
   /** Is this its owner's designated commander (rule 903)? */
@@ -195,6 +199,7 @@ function visible(
     xValue: object.xValue,
     isToken: object.isToken,
     suspended: object.suspended ?? false,
+    foretold: object.foretold ?? false,
     attachedTo: object.attachedTo,
     isCommander: object.isCommander,
   };
@@ -215,7 +220,13 @@ export function viewFor(
   const visibleIds: ObjectId[] = [
     ...state.zones.shared.battlefield,
     ...state.zones.shared.stack,
-    ...state.zones.shared.exile,
+    // A foretold card is face-down in exile — its identity is hidden from
+    // everyone but its owner (ROADMAP Phase 6b). The id still appears in the
+    // `exile` zone list, so a client renders a face-down back for it.
+    ...state.zones.shared.exile.filter((id) => {
+      const object = state.objects[id];
+      return revealAll || object?.foretold !== true || object.owner === viewer;
+    }),
     ...state.zones.shared.command,
   ];
   // A pending "look at N cards, choose some" decision reveals its candidates

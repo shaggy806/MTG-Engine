@@ -39,6 +39,14 @@ export type Action =
       readonly card: ObjectId;
     }
   | {
+      /** Foretell a card from hand (rule 702.144): a special action on your
+       * turn, pay `{2}`, exile it face-down to be cast later for its foretell
+       * cost. */
+      readonly type: "foretell";
+      readonly player: PlayerId;
+      readonly card: ObjectId;
+    }
+  | {
       readonly type: "cast-spell";
       readonly player: PlayerId;
       readonly card: ObjectId;
@@ -176,6 +184,11 @@ export type LegalAction =
       /** Time counters it enters exile with, and the suspend cost. */
       readonly n: number;
       readonly cost: string;
+    }
+  | {
+      readonly kind: "foretell";
+      readonly card: ObjectId;
+      readonly cardName: string;
     }
   | {
       readonly kind: "cast-spell";

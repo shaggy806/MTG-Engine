@@ -35,6 +35,7 @@ const IMPORT_DECK_URL = `${
 
 type CastAction = Extract<LegalAction, { kind: 'cast-spell' }>
 type SuspendAction = Extract<LegalAction, { kind: 'suspend' }>
+type ForetellAction = Extract<LegalAction, { kind: 'foretell' }>
 type AbilityAction = Extract<LegalAction, { kind: 'activate-ability' }>
 type AttackAction = Extract<LegalAction, { kind: 'declare-attackers' }>
 type BlockAction = Extract<LegalAction, { kind: 'declare-blockers' }>
@@ -466,6 +467,11 @@ function Table({ view, seat, opponents, game }: TableProps) {
   const suspendByCard = useMemo(() => {
     const m = new Map<ObjectId, SuspendAction>()
     for (const a of actions) if (a.kind === 'suspend') m.set(a.card, a)
+    return m
+  }, [actions])
+  const foretellByCard = useMemo(() => {
+    const m = new Map<ObjectId, ForetellAction>()
+    for (const a of actions) if (a.kind === 'foretell') m.set(a.card, a)
     return m
   }, [actions])
   const abilitiesBySource = useMemo(() => {
@@ -1710,11 +1716,12 @@ function Table({ view, seat, opponents, game }: TableProps) {
               highlight = landByCard.has(id) || castByCard.has(id)
             }
             const suspend = mode === 'priority' ? suspendByCard.get(id) : undefined
+            const foretell = mode === 'priority' ? foretellByCard.get(id) : undefined
             return (
               <div key={id} className="hand-card">
                 <CardTile
                   obj={obj}
-                  highlight={highlight || Boolean(suspend)}
+                  highlight={highlight || Boolean(suspend) || Boolean(foretell)}
                   selected={selected}
                   onClick={() => clickHandCard(id)}
                 />
@@ -1724,6 +1731,14 @@ function Table({ view, seat, opponents, game }: TableProps) {
                     onClick={() => game.dispatch({ type: 'suspend', player: seat, card: id })}
                   >
                     Suspend {suspend.cost}
+                  </button>
+                ) : null}
+                {foretell ? (
+                  <button
+                    type="button"
+                    onClick={() => game.dispatch({ type: 'foretell', player: seat, card: id })}
+                  >
+                    Foretell
                   </button>
                 ) : null}
               </div>
@@ -1812,10 +1827,10 @@ function Table({ view, seat, opponents, game }: TableProps) {
           resolve={(id) => view.objects[id]}
           onClose={() => setZoneView(null)}
           castable={{
-            ids: zoneView.ids.filter((id) => castByCard.get(id)?.via === 'flashback'),
+            ids: zoneView.ids.filter((id) => castByCard.get(id)?.via !== undefined),
             label: (id) => {
               const c = castByCard.get(id)
-              return c?.via === 'flashback' ? 'Cast (flashback)' : 'Cast'
+              return c?.via ? `Cast (${c.via})` : 'Cast'
             },
             onCast: (id) => {
               const c = castByCard.get(id)

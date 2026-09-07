@@ -174,6 +174,11 @@ export interface CardDefinition {
    * `{2}` to exile this card from your hand face-down; on a later turn you may
    * cast it from exile for `cost`. `null` for a card without foretell. */
   readonly foretell: { readonly cost: string } | null;
+  /** Escape (rule 702.139 — ROADMAP Phase 6b) — cast from your graveyard for
+   * `cost` plus exiling `exileCount` other cards from your graveyard as an
+   * additional cost. Unlike flashback the spell resolves normally (it can be
+   * escaped again). `null` for a card without escape. */
+  readonly escape: { readonly cost: string; readonly exileCount: number } | null;
   /** Suspend (rule 702.62 — ROADMAP Phase 6b) — instead of casting this from
    * your hand you may pay `cost` to exile it with `n` time counters; one comes
    * off at each of your upkeeps, and at zero it's cast for free (with haste if
@@ -205,6 +210,7 @@ interface CardDraft {
   flashback?: { readonly cost: string };
   foretell?: { readonly cost: string };
   suspend?: { readonly n: number; readonly cost: string };
+  escape?: { readonly cost: string; readonly exileCount: number };
 }
 
 /** Build a {@link CardDefinition} from a partial draft, filling in defaults. */
@@ -250,6 +256,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     flashback: draft.flashback ?? null,
     foretell: draft.foretell ?? null,
     suspend: draft.suspend ?? null,
+    escape: draft.escape ?? null,
   };
 }
 

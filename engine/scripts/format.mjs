@@ -61,6 +61,10 @@ export const makeFormatter = (game) => {
         })`;
       case "time-counter-removed":
         return `${name(e.object)} — time counter removed (${e.remaining} left)`;
+      case "card-foretold":
+        return `${e.player} foretells a card`;
+      case "escape-cost-paid":
+        return `${name(e.object)} escapes (exiling ${e.exiled.length} cards)`;
       case "ability-activated":
         return `${e.player} activates ${name(e.source)}'s ability${
           e.onStack ? "" : " (mana)"

@@ -72,6 +72,10 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       })`
     case 'time-counter-removed':
       return `${name(event.object)} — time counter removed (${event.remaining} left)`
+    case 'card-foretold':
+      return `${event.player} foretells a card`
+    case 'escape-cost-paid':
+      return `${name(event.object)} escapes (exiling ${event.exiled.length} cards)`
     case 'spell-fizzled':
       return `${name(event.object)} fizzles — ${event.reason}`
     case 'spell-countered':

@@ -312,6 +312,9 @@ export class Game {
       case "suspend":
         this.suspendCard(action.player, action.card);
         break;
+      case "foretell":
+        this.foretellCard(action.player, action.card);
+        break;
       case "cast-spell":
         this.castSpell(
           action.player,
@@ -389,6 +392,8 @@ export class Game {
         return this.whyCannotPlayLand(action.player, action.card);
       case "suspend":
         return this.whyCannotSuspend(action.player, action.card);
+      case "foretell":
+        return this.whyCannotForetell(action.player, action.card);
       case "cast-spell":
         return this.whyCannotCastSpell(action.player, action.card, action.via);
       case "activate-ability":
@@ -589,6 +594,34 @@ export class Game {
       if (def.suspend !== null && this.whyCannotSuspend(player, card) === null) {
         out.push({ kind: "suspend", card, cardName, n: def.suspend.n, cost: def.suspend.cost });
       }
+      // Foretell (rule 702.144) — a special action.
+      if (def.foretell !== null && this.whyCannotForetell(player, card) === null) {
+        out.push({ kind: "foretell", card, cardName });
+      }
+    }
+
+    // Foretell (rule 702.144) — a card foretold on an earlier turn may be cast
+    // from exile for its foretell cost.
+    for (const card of this.state.zones.shared.exile) {
+      const object = this.state.objects[card];
+      if (object === undefined || !object.foretold || object.owner !== player) continue;
+      if (this.whyCannotCastSpell(player, card, "foretell") !== null) continue;
+      const cardName = object.cardName;
+      const def = this.registry.get(cardName);
+      const cost = def.foretell?.cost ?? null;
+      if (cost === null) continue;
+      const parsed = parseManaCost(cost);
+      out.push({
+        kind: "cast-spell",
+        card,
+        cardName,
+        via: "foretell",
+        targetSpecs: def.targets,
+        targetOptions: this.targetOptionsFor(def.targets, player, this.cardSource(def)),
+        ...(parsed.x > 0
+          ? { xCost: { maxX: this.maxAffordableX(player, card, def, cost) } }
+          : {}),
+      });
     }
 
     // Flashback (rule 702.34) — an instant/sorcery in this player's graveyard
@@ -610,6 +643,27 @@ export class Game {
         targetOptions: this.targetOptionsFor(def.targets, player, this.cardSource(def)),
         ...(parsed.x > 0
           ? { xCost: { maxX: this.maxAffordableX(player, card, def, cost) } }
+          : {}),
+      });
+    }
+
+    // Escape (rule 702.139) — a card in this player's graveyard with escape,
+    // enough other cards there to pay the exile cost, and the mana.
+    for (const card of this.state.zones.perPlayer[player].graveyard) {
+      const cardName = this.state.objects[card].cardName;
+      const def = this.registry.get(cardName);
+      if (def.escape === null) continue;
+      if (this.whyCannotCastSpell(player, card, "escape") !== null) continue;
+      const parsed = parseManaCost(def.escape.cost);
+      out.push({
+        kind: "cast-spell",
+        card,
+        cardName,
+        via: "escape",
+        targetSpecs: def.targets,
+        targetOptions: this.targetOptionsFor(def.targets, player, this.cardSource(def)),
+        ...(parsed.x > 0
+          ? { xCost: { maxX: this.maxAffordableX(player, card, def, def.escape.cost) } }
           : {}),
       });
     }
@@ -2172,6 +2226,43 @@ export class Game {
     });
   }
 
+  /** The fixed cost to foretell any card (rule 702.144c). */
+  private static readonly FORETELL_COST = "{2}";
+
+  /** Why `player` cannot foretell `cardId` from hand right now (rule 702.144 —
+   * ROADMAP Phase 6b). A special action on your own turn whenever you have
+   * priority; pay `{2}`. */
+  private whyCannotForetell(player: PlayerId, cardId: ObjectId): string | null {
+    const blocked = this.whyCannotAct(player);
+    if (blocked !== null) return blocked;
+    if (this.activePlayer !== player) return "can only foretell on your own turn";
+    if (!this.state.zones.perPlayer[player].hand.includes(cardId)) {
+      return `${player} does not have that card in hand`;
+    }
+    const def = this.registry.get(this.state.objects[cardId].cardName);
+    if (def.foretell === null) return `${def.name} does not have foretell`;
+    if (this.payMana(player, parseManaCost(Game.FORETELL_COST)) === null) {
+      return `${player} cannot pay the foretell cost`;
+    }
+    return null;
+  }
+
+  private foretellCard(player: PlayerId, cardId: ObjectId): void {
+    const why = this.whyCannotForetell(player, cardId);
+    if (why !== null) throw new Error(why);
+    const object = this.state.objects[cardId];
+
+    const payment = this.payMana(player, parseManaCost(Game.FORETELL_COST));
+    if (payment === null) throw new Error(`${player} cannot pay the foretell cost`);
+
+    this.moveObject(cardId, "exile");
+    this.executePayment(player, payment);
+    object.foretold = true;
+    object.foretoldOnTurn = this.state.turn.number;
+    this.emit({ type: "card-foretold", player, object: cardId });
+    this.afterPlayerAction(player);
+  }
+
   /**
    * Why `player` cannot cast `cardId` at all right now — ignoring which targets
    * they would pick, but requiring that every target slot has a legal option.
@@ -2273,7 +2364,8 @@ export class Game {
    * the printed cost). */
   private castCostString(cardId: ObjectId, via: CastVia | undefined): string | null {
     const def = this.registry.get(this.state.objects[cardId].cardName);
-    if (via === "flashback" || via === "escape") return this.flashbackCostOf(cardId);
+    if (via === "flashback") return this.flashbackCostOf(cardId);
+    if (via === "escape") return def.escape?.cost ?? null;
     if (via === "foretell") return def.foretell?.cost ?? null;
     return def.manaCost;
   }
@@ -2290,6 +2382,24 @@ export class Game {
       if (this.flashbackCostOf(cardId) === null) return `${def.name} does not have flashback`;
       if (!this.state.zones.perPlayer[player].graveyard.includes(cardId)) {
         return `${def.name} is not in ${player}'s graveyard`;
+      }
+    } else if (via === "escape") {
+      if (def.escape === null) return `${def.name} does not have escape`;
+      if (!this.state.zones.perPlayer[player].graveyard.includes(cardId)) {
+        return `${def.name} is not in ${player}'s graveyard`;
+      }
+      const others = this.state.zones.perPlayer[player].graveyard.filter((id) => id !== cardId);
+      if (others.length < def.escape.exileCount) {
+        return `${def.name}'s escape needs ${def.escape.exileCount} other cards in the graveyard`;
+      }
+    } else if (via === "foretell") {
+      const object = this.state.objects[cardId];
+      if (def.foretell === null || !object.foretold) return `${def.name} is not foretold`;
+      if (object.owner !== player || object.zone !== "exile") {
+        return `${def.name} is not ${player}'s foretold card`;
+      }
+      if (object.foretoldOnTurn === this.state.turn.number) {
+        return `${def.name} was foretold this turn`;
       }
     } else if (
       !this.state.zones.perPlayer[player].hand.includes(cardId) &&
@@ -2352,6 +2462,15 @@ export class Game {
     const payment = this.payMana(player, cost);
     if (payment === null) {
       throw new Error(`${player} cannot pay the cost of ${def.name}`);
+    }
+
+    // Escape (rule 702.139): exile N other cards from the graveyard as an
+    // additional cost — auto-paid from the front (oldest) of the graveyard.
+    if (via === "escape" && def.escape !== null) {
+      const others = this.state.zones.perPlayer[player].graveyard.filter((id) => id !== cardId);
+      const exiled = others.slice(0, def.escape.exileCount);
+      for (const id of exiled) this.moveObject(id, "exile");
+      this.emit({ type: "escape-cost-paid", object: cardId, exiled: [...exiled] });
     }
 
     // Commit: move to the stack, pay, announce.

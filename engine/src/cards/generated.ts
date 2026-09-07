@@ -10,6 +10,7 @@ import _poolAngelicEdict from "./pool/angelic-edict.js";
 import _poolArcaneSignet from "./pool/arcane-signet.js";
 import _poolArtificialEvolution from "./pool/artificial-evolution.js";
 import _poolAshmarkMarduVanguard from "./pool/ashmark-mardu-vanguard.js";
+import _poolBeholdTheMultiverse from "./pool/behold-the-multiverse.js";
 import _poolBlaze from "./pool/blaze.js";
 import _poolBlightning from "./pool/blightning.js";
 import _poolBlinkmothNexus from "./pool/blinkmoth-nexus.js";
@@ -112,6 +113,7 @@ import _poolTomeScour from "./pool/tome-scour.js";
 import _poolTranquilThicket from "./pool/tranquil-thicket.js";
 import _poolTurnToFrog from "./pool/turn-to-frog.js";
 import _poolTyphoidRats from "./pool/typhoid-rats.js";
+import _poolUnderworldRageHound from "./pool/underworld-rage-hound.js";
 import _poolUnsummon from "./pool/unsummon.js";
 import _poolUreniOfTheUnwritten from "./pool/ureni-of-the-unwritten.js";
 import _poolVampireNighthawk from "./pool/vampire-nighthawk.js";
@@ -142,6 +144,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolArcaneSignet,
   _poolArtificialEvolution,
   _poolAshmarkMarduVanguard,
+  _poolBeholdTheMultiverse,
   _poolBlaze,
   _poolBlightning,
   _poolBlinkmothNexus,
@@ -244,6 +247,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolTranquilThicket,
   _poolTurnToFrog,
   _poolTyphoidRats,
+  _poolUnderworldRageHound,
   _poolUnsummon,
   _poolUreniOfTheUnwritten,
   _poolVampireNighthawk,

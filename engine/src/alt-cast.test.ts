@@ -200,3 +200,92 @@ describe("Suspend — Rift Bolt", () => {
     expect(game.state.players[A].life + game.state.players[B].life).toBe(totalLifeBefore - 3);
   });
 });
+
+describe("Foretell — Behold the Multiverse", () => {
+  const mkBlue = (aCards: readonly string[]): Game =>
+    Game.create({
+      seed: 1,
+      shuffle: false,
+      rules: { maxLandsPerTurn: 99, skipFirstDraw: false },
+      decks: [
+        { player: A, cards: [...aCards, ...Array(40 - aCards.length).fill("Island")] },
+        { player: B, cards: Array(40).fill("Forest") },
+      ],
+    });
+
+  it("exiles face-down for {2}, then casts from exile on a later turn for the foretell cost", () => {
+    const game = mkBlue(["Behold the Multiverse", "Island", "Island", "Island", "Island", "Island", "Island"]);
+    game.advanceUntil(atFirstMain);
+    // Play two Islands so {2} is payable.
+    for (const id of [...game.handOf(A)].filter((i) => game.state.objects[i].cardName === "Island").slice(0, 2)) {
+      game.dispatch({ type: "play-land", player: A, card: id });
+    }
+    const behold = cardNamed(game, game.handOf(A), "Behold the Multiverse");
+
+    expect(game.legalActions(A).some((x) => x.kind === "foretell" && x.card === behold)).toBe(true);
+    game.dispatch({ type: "foretell", player: A, card: behold });
+    expect(game.state.objects[behold].zone).toBe("exile");
+    expect(game.state.objects[behold].foretold).toBe(true);
+    expect(game.eventsOfType("card-foretold").some((e) => e.object === behold)).toBe(true);
+    // Can't cast it the turn it was foretold.
+    expect(game.legalActions(A).some((x) => x.kind === "cast-spell" && x.card === behold)).toBe(false);
+    // Opponent can't see what it is, but sees a card in exile.
+    expect(game.viewFor(B).objects[behold]).toBeUndefined();
+    expect(game.viewFor(B).zones.exile).toContain(behold);
+    expect(game.viewFor(A).objects[behold]?.cardName).toBe("Behold the Multiverse");
+
+    // Alice's next turn — cast it from exile for {1}{U}.
+    game.advanceUntil((s) => s.turn.number >= 3 && s.turn.step === "precombat-main");
+    for (const id of [...game.handOf(A)].filter((i) => game.state.objects[i].cardName === "Island").slice(0, 2)) {
+      game.dispatch({ type: "play-land", player: A, card: id });
+    }
+    const cast = game
+      .legalActions(A)
+      .find((x) => x.kind === "cast-spell" && x.card === behold && x.via === "foretell");
+    expect(cast).toBeDefined();
+
+    const handBefore = game.handOf(A).length;
+    game.dispatch({ type: "cast-spell", player: A, card: behold, targets: [], via: "foretell" });
+    game.advanceUntil(settled);
+    expect(game.eventsOfType("spell-cast").some((e) => e.object === behold && e.via === "foretell")).toBe(true);
+    expect(game.graveyardOf(A)).toContain(behold);
+    expect(game.handOf(A).length).toBe(handBefore + 2);
+  });
+});
+
+describe("Escape — Underworld Rage-Hound", () => {
+  const toGraveyard = (game: Game, id: import("./primitives.js").ObjectId): void => {
+    const o = game.state.objects[id];
+    const hand = game.state.zones.perPlayer[A].hand;
+    const i = hand.indexOf(id);
+    if (i >= 0) hand.splice(i, 1);
+    o.zone = "graveyard";
+    game.state.zones.perPlayer[A].graveyard.push(id);
+  };
+
+  it("casts from the graveyard for the escape cost, exiling two other cards", () => {
+    const game = mkGame(["Underworld Rage-Hound"]);
+    game.advanceUntil(atFirstMain);
+    playN(game, "Mountain", 3);
+    const rage = cardNamed(game, game.handOf(A), "Underworld Rage-Hound");
+    const fillers = [...game.handOf(A)]
+      .filter((i) => game.state.objects[i].cardName === "Mountain")
+      .slice(0, 2);
+
+    // No escape yet — nothing in the graveyard.
+    toGraveyard(game, rage);
+    expect(game.legalActions(A).some((x) => x.kind === "cast-spell" && x.card === rage)).toBe(false);
+
+    for (const id of fillers) toGraveyard(game, id);
+    const escape = game
+      .legalActions(A)
+      .find((x) => x.kind === "cast-spell" && x.card === rage && x.via === "escape");
+    expect(escape).toBeDefined();
+
+    game.dispatch({ type: "cast-spell", player: A, card: rage, targets: [], via: "escape" });
+    game.advanceUntil(settled);
+    expect(game.eventsOfType("escape-cost-paid").some((e) => e.object === rage)).toBe(true);
+    expect(game.state.objects[rage].zone).toBe("battlefield");
+    for (const id of fillers) expect(game.state.zones.shared.exile).toContain(id);
+  });
+});

@@ -123,6 +123,20 @@ export type GameEvent =
       readonly remaining: number;
     })
   | (Base & {
+      /** A card was foretold — exiled face-down from hand for `{2}` (ROADMAP
+       * Phase 6b). Its identity stays hidden from opponents in the view. */
+      readonly type: "card-foretold";
+      readonly player: PlayerId;
+      readonly object: ObjectId;
+    })
+  | (Base & {
+      /** `object` was cast via escape (rule 702.139) — `exiled` are the other
+       * graveyard cards exiled to pay the additional cost. */
+      readonly type: "escape-cost-paid";
+      readonly object: ObjectId;
+      readonly exiled: readonly ObjectId[];
+    })
+  | (Base & {
       readonly type: "ability-activated";
       readonly source: ObjectId;
       readonly player: PlayerId;
