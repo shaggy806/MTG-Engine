@@ -10,7 +10,7 @@
  * registry or the layer system to render a board.
  */
 
-import type { CardRegistry, CardType, Keyword } from "./cards.js";
+import type { CardRegistry, CardType, CombatRestriction, Keyword } from "./cards.js";
 import { computeCharacteristics } from "./characteristics.js";
 import type { GameEvent } from "./events.js";
 import type { Color, ManaPool } from "./mana.js";
@@ -63,6 +63,9 @@ export interface VisibleObject {
   readonly power: number | null;
   readonly toughness: number | null;
   readonly keywords: readonly Keyword[];
+  /** Combat restrictions from static abilities (`"cant-attack"` from a
+   * Pacifism, `"must-attack"` from Juggernaut). */
+  readonly restrictions: readonly CombatRestriction[];
   /** Computed colours (rule 105 / layer 5) — e.g. `["U"]` for a Turn-to-
    * Frogged permanent, `[]` for something colourless. */
   readonly colors: readonly Color[];
@@ -166,6 +169,7 @@ function visible(
     power: isCreature ? computed.power : null,
     toughness: isCreature ? computed.toughness : null,
     keywords: [...computed.keywords],
+    restrictions: [...computed.restrictions],
     colors: [...computed.colors],
     tapped: object.tapped,
     damageMarked: object.damageMarked,

@@ -18,7 +18,14 @@
  * `GameObject.controller`, not here.
  */
 
-import type { AffectSpec, CardRegistry, CardType, CountSpec, Keyword } from "./cards.js";
+import type {
+  AffectSpec,
+  CardRegistry,
+  CardType,
+  CombatRestriction,
+  CountSpec,
+  Keyword,
+} from "./cards.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { printedCardName } from "./state.js";
@@ -32,6 +39,8 @@ export interface Characteristics {
   readonly subtypes: readonly string[];
   readonly colors: ReadonlySet<Color>;
   readonly controller: PlayerId;
+  /** Combat restrictions from static abilities (Pacifism, Juggernaut). */
+  readonly restrictions: ReadonlySet<CombatRestriction>;
 }
 
 /** True if this permanent has lost its own abilities (layer 6 — Turn to Frog). */
@@ -159,6 +168,7 @@ interface AppliedEffect {
   readonly power: number;
   readonly toughness: number;
   readonly keywords: readonly Keyword[];
+  readonly restrictions: readonly CombatRestriction[];
 }
 
 /** Continuous effects from battlefield permanents that apply to `target`. */
@@ -172,10 +182,14 @@ function collectStaticEffects(
     const source = state.objects[sourceId];
     if (hasLostAbilities(source)) continue; // layer 6 — its statics don't function
     for (const ability of registry.get(printedCardName(source)).static) {
-      // Only P/T-bonus / keyword-grant statics contribute here. A static that
-      // is purely a replacement (rule 614 — "enters tapped") or a CDA
-      // (`setBasePtFromCount`, handled in its own pass) modifies nothing here.
-      if (ability.grantPt === undefined && ability.grantKeywords === undefined) {
+      // Only P/T-bonus / keyword-grant / restriction statics contribute here.
+      // A static that is purely a replacement (rule 614 — "enters tapped") or
+      // a CDA (`setBasePtFromCount`, handled in its own pass) modifies nothing.
+      if (
+        ability.grantPt === undefined &&
+        ability.grantKeywords === undefined &&
+        ability.restrictions === undefined
+      ) {
         continue;
       }
       if (staticAffects(registry, ability.affects, source, target)) {
@@ -184,6 +198,7 @@ function collectStaticEffects(
           power: ability.grantPt?.[0] ?? 0,
           toughness: ability.grantPt?.[1] ?? 0,
           keywords: ability.grantKeywords ?? [],
+          restrictions: ability.restrictions ?? [],
         });
       }
     }
@@ -233,8 +248,12 @@ export function computeCharacteristics(
 
   // Layer 6 — ability adds (external anthems + modifier grants still reach a
   // permanent that lost its *own* abilities).
+  // `collectStaticEffects` already includes a permanent's own `"self"`
+  // restriction static (Juggernaut) as well as external ones (Pacifism).
+  const restrictions = new Set<CombatRestriction>();
   for (const effect of staticEffects) {
     for (const keyword of effect.keywords) keywords.add(keyword);
+    for (const r of effect.restrictions) restrictions.add(r);
   }
   for (const modifier of object.modifiers) {
     for (const keyword of modifier.keywords) keywords.add(keyword);
@@ -294,6 +313,7 @@ export function computeCharacteristics(
     subtypes,
     colors,
     controller: object.controller,
+    restrictions,
   };
 }
 

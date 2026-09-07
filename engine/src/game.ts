@@ -18,7 +18,7 @@ import type {
   LegalAction,
 } from "./actions.js";
 import { CardRegistry, createDefaultRegistry } from "./cards.js";
-import type { CardDefinition, CardType, Keyword } from "./cards.js";
+import type { CardDefinition, CardType, CombatRestriction, Keyword } from "./cards.js";
 import { computeCharacteristics, effectiveSubtypes, hasLostAbilities } from "./characteristics.js";
 import type { Characteristics } from "./characteristics.js";
 import { AutomaticController } from "./controller.js";
@@ -242,6 +242,11 @@ export class Game {
   /** Current characteristics of an object after all continuous effects. */
   characteristics(id: ObjectId): Characteristics {
     return computeCharacteristics(this.state, this.registry, id);
+  }
+
+  /** Combat restrictions on `id` from static abilities (Pacifism, Juggernaut). */
+  private restrictionsOf(id: ObjectId): ReadonlySet<CombatRestriction> {
+    return computeCharacteristics(this.state, this.registry, id).restrictions;
   }
 
   private objHasKeyword(id: ObjectId, keyword: Keyword): boolean {
@@ -1471,6 +1476,9 @@ export class Game {
     if (this.objHasKeyword(creatureId, "defender")) {
       return `${def.name} has defender and cannot attack`;
     }
+    if (this.restrictionsOf(creatureId).has("cant-attack")) {
+      return `${def.name} can't attack`;
+    }
     if (
       this.hasSummoningSickness(object) &&
       !this.objHasKeyword(creatureId, "haste")
@@ -1497,10 +1505,17 @@ export class Game {
       return `${blockerDef.name} is not controlled by the defender`;
     }
     if (blocker.tapped) return `${blockerDef.name} is tapped and cannot block`;
+    if (this.restrictionsOf(blockerId).has("cant-block")) {
+      return `${blockerDef.name} can't block`;
+    }
 
     const attacker = this.state.objects[attackerId];
     if (attacker === undefined || attacker.attacking === null) {
       return `${attackerId} is not attacking`;
+    }
+    if (this.objHasKeyword(attackerId, "unblockable")) {
+      const attackerDef = this.registry.get(printedCardName(attacker));
+      return `${blockerDef.name} can't block ${attackerDef.name} (can't be blocked)`;
     }
     if (attacker.attacking !== player) {
       const attackerDef = this.registry.get(printedCardName(attacker));
@@ -1581,7 +1596,22 @@ export class Game {
     const why = this.whyCannotDeclareAttackers(player, declarations);
     if (why !== null) throw new Error(why);
 
-    for (const { attacker, defender } of declarations) {
+    // "Attacks each combat if able" (Juggernaut): auto-declare any must-attack
+    // creature the player left out but that could legally attack. It's sent at
+    // the first legal opponent (the player doesn't get to choose the target of
+    // a forced attacker here — a small simplification).
+    const declared = new Set(declarations.map((d) => d.attacker));
+    const forced: AttackerDeclaration[] = [];
+    for (const id of this.state.zones.shared.battlefield) {
+      if (declared.has(id) || this.state.objects[id].controller !== player) continue;
+      if (!this.restrictionsOf(id).has("must-attack")) continue;
+      const defender = this.legalDefenders(player).find(
+        (d) => this.whyCannotAttack(player, id, d) === null,
+      );
+      if (defender !== undefined) forced.push({ attacker: id, defender });
+    }
+
+    for (const { attacker, defender } of [...declarations, ...forced]) {
       const object = this.state.objects[attacker];
       object.attacking = defender;
       object.blockedBy = [];

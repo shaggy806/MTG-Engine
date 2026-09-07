@@ -57,6 +57,7 @@ const deckA = deck([
   ["Doubling Season", 1],
   ["Rampant Growth", 2],
   ["Rampaging Baloths", 1],
+  ["Juggernaut", 1],
 ]);
 // Kept deliberately lean (~50 cards) so the RandomController actually draws
 // and plays its threats — a bloated deck just stalls out and the fuzz only
@@ -115,6 +116,7 @@ const deckB = deck([
   ["Ajani's Pridemate", 1],
   ["Grave Pact", 1],
   ["Zulaport Cutthroat", 1],
+  ["Pacifism", 2],
 ]);
 
 // A lean Dimir deck for Carol — carries the `Sarova, the Undying Current`
@@ -140,6 +142,7 @@ const deckC = deck([
   ["Opt", 1],
   ["Consider", 2],
   ["Zulaport Cutthroat", 2],
+  ["Invisible Stalker", 2],
 ]);
 
 // All four seats' decks/commanders, in seating order — sliced down to

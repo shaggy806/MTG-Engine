@@ -50,7 +50,9 @@ import _poolGrizzlyBears from "./pool/grizzly-bears.js";
 import _poolHillGiant from "./pool/hill-giant.js";
 import _poolHolyStrength from "./pool/holy-strength.js";
 import _poolHypnoticSpecter from "./pool/hypnotic-specter.js";
+import _poolInvisibleStalker from "./pool/invisible-stalker.js";
 import _poolIsland from "./pool/island.js";
+import _poolJuggernaut from "./pool/juggernaut.js";
 import _poolJump from "./pool/jump.js";
 import _poolLevitation from "./pool/levitation.js";
 import _poolLightningBolt from "./pool/lightning-bolt.js";
@@ -68,6 +70,7 @@ import _poolNaturalize from "./pool/naturalize.js";
 import _poolNegate from "./pool/negate.js";
 import _poolOpt from "./pool/opt.js";
 import _poolOracleOfMulDaya from "./pool/oracle-of-mul-daya.js";
+import _poolPacifism from "./pool/pacifism.js";
 import _poolPhyrexianArena from "./pool/phyrexian-arena.js";
 import _poolPlains from "./pool/plains.js";
 import _poolPreordain from "./pool/preordain.js";
@@ -157,7 +160,9 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolHillGiant,
   _poolHolyStrength,
   _poolHypnoticSpecter,
+  _poolInvisibleStalker,
   _poolIsland,
+  _poolJuggernaut,
   _poolJump,
   _poolLevitation,
   _poolLightningBolt,
@@ -175,6 +180,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolNegate,
   _poolOpt,
   _poolOracleOfMulDaya,
+  _poolPacifism,
   _poolPhyrexianArena,
   _poolPlains,
   _poolPreordain,

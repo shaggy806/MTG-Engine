@@ -44,7 +44,9 @@ export type Keyword =
   | "menace"
   | "indestructible"
   | "hexproof"
-  | "flash";
+  | "flash"
+  /** Can't be blocked (Invisible Stalker). Evasion, checked in combat. */
+  | "unblockable";
 
 /** Which objects a static ability applies its continuous effect to. */
 export type AffectSpec =
@@ -55,6 +57,10 @@ export type AffectSpec =
       readonly subtype?: string;
     }
   | { readonly scope: "attached" };
+
+/** A combat restriction a static ability imposes on the objects it `affects`
+ * (Pacifism: can't attack / can't block; Juggernaut: must attack if able). */
+export type CombatRestriction = "cant-attack" | "cant-block" | "must-attack";
 
 /** A dynamic quantity a characteristic-defining ability can read (rule 604.3). */
 export type CountSpec =
@@ -76,6 +82,8 @@ export interface StaticAbility {
   readonly grantPt?: readonly [number, number];
   /** Keywords granted in layer 6. */
   readonly grantKeywords?: readonly Keyword[];
+  /** Combat restrictions imposed on the affected objects (Pacifism, Juggernaut). */
+  readonly restrictions?: readonly CombatRestriction[];
   /** Layer 7b: set base power and toughness to a dynamic count (+ the given
    * offsets). Only meaningful with `affects.scope === "self"` (a CDA). */
   readonly setBasePtFromCount?: {
