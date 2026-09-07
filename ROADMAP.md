@@ -18,7 +18,7 @@ the diagram) are in.
 
 - [x] **Phase 1** — Replacement-effects engine (+ modal / "you may" primitives)
 - [x] **Phase 2** — Effect vocabulary: `CardFilter`, effect scopes, mass effects, tutors, scry/surveil
-- [ ] **Phase 3** — Ability grammar breadth (triggers, statics, activated-ability costs)
+- [x] **Phase 3** — Ability grammar breadth (triggers, statics, activated-ability costs)
 - [ ] **Phase 4** — Mana system depth (hybrid / Phyrexian / `{C}` / any-colour / cost modification / Treasure)
 - [ ] **Phase 5** — Planeswalkers
 - [ ] **Phase 6** — Alternate casting zones + the cast pipeline
@@ -229,9 +229,20 @@ counter replacements + cards; modal primitives + 903.9a rework).
 
 ---
 
-## Phase 3 — Ability grammar breadth  *(in progress)*
+## Phase 3 — Ability grammar breadth  *(core done — long tail deferred)*
 
 Retire most `predicate` / `resolve` hatches now that Phases 1–2 exist.
+Both imperative `resolve` cards were converted in 3a; no card uses `predicate`.
+
+**Deferred long tail (add with the first card that needs it, Phase-10 style):**
+conditional anthems (`when: <predicate over state>`), `must-be-blocked` (Lure),
+`discard { n, filter? }` / `exileFromGraveyard` / `{X}` in an activated cost,
+spell `additionalCost`, protection from a full `CardFilter` (only colours/types
+today) / protection-from-everything / "hexproof from", land/artifact/planeswalker
+`affects` scopes, and the rest of the trigger list — `end-step` /
+`begin-combat` / `becomes-tapped` / `first-spell-each-turn` (needs a
+`spellsCastThisTurn` counter — also Phase 8) / non-combat `deals-damage` /
+`blocks` / `attacks {alone?}`.
 
 - [x] **TriggerSpec breadth (3a).** `leaves-battlefield` (Phase 1c);
   `enters-battlefield` / `dies` gain `filter: CardFilter` + `otherOnly`, so
@@ -247,21 +258,26 @@ Retire most `predicate` / `resolve` hatches now that Phases 1–2 exist.
   CombatRestriction[]` (`cant-attack` / `cant-block` / `must-attack`) folded
   into `Characteristics.restrictions`; wired into declare-attackers /
   declare-blockers validation (`must-attack` auto-appends). New `unblockable`
-  keyword. Cards: Pacifism, Juggernaut, Invisible Stalker. **Still to do:**
-  `must-be-blocked` (Lure), `ward { cost }`, `protection { from }`,
-  cost-modification statics, conditional anthems, land/artifact `affects`
-  scopes.
+  keyword. Cards: Pacifism, Juggernaut, Invisible Stalker.
 - [x] **AbilityCost variety (3d).** `payLife: number`, `removeCounter
   { kind, count }` — both automatic. Cards: Greed, Walking Ballista's real
-  ping ability. **Still to do:** `discard { n, filter? }` (needs a
-  card-choice decision), `exileFromGraveyard`, `{X}` in an activated cost,
-  spell `additionalCost`.
-- Protection uses Phase 1's damage-prevention hook for its "prevent damage from"
-  clause and Phase 3's targeting/combat hooks for the rest.
-- Ward is a triggered-on-being-targeted check in `castSpell` / `activateAbility`.
+  ping ability.
+- [x] **Ward (part 4).** `StaticAbility.ward { mana?, payLife? }` — checked
+  as a targeted spell/ability begins to resolve (`wardCheckPasses`),
+  auto-paid if affordable else the spell/ability is countered. Card: Combat
+  Thresher.
+- [x] **Cost-modification statics (part 5).** `StaticAbility.costModification
+  { applies: CardFilter, reduceGeneric?, increaseGeneric? }` folded into
+  `castingCostOf` (rule 601.2f). Cards: Foundry Inspector, Thalia, Guardian
+  of Thraben.
+- [x] **Protection (part 6).** `StaticAbility.protection { colors?, types? }`
+  → `Characteristics.protectionFrom`; all four DEBT clauses (targeting via a
+  `TargetSource` threaded through `isLegalTarget`/`legalTargets`, damage,
+  blocking, enchant/equip). Card: White Knight regains protection from black.
 
 **Tests:** `triggers-wave2.test.ts`, `static-restrictions.test.ts`,
-`ability-costs.test.ts`.
+`ability-costs.test.ts`, `ward.test.ts`, `cost-modification.test.ts`,
+`protection.test.ts`.
 
 ---
 
