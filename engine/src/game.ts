@@ -3337,7 +3337,7 @@ export class Game {
       for (const id of this.state.zones.shared.battlefield) {
         const object = this.state.objects[id];
         if (!this.registry.get(printedCardName(object)).supertypes.includes("legendary")) continue;
-        const key = `${object.controller} ${object.cardName}`;
+        const key = `${object.controller} ${object.cardName}`;
         const group = legendaryGroups.get(key);
         if (group) group.push(id);
         else legendaryGroups.set(key, [id]);
