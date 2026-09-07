@@ -19,7 +19,7 @@ the diagram) are in.
 - [x] **Phase 1** — Replacement-effects engine (+ modal / "you may" primitives)
 - [x] **Phase 2** — Effect vocabulary: `CardFilter`, effect scopes, mass effects, tutors, scry/surveil
 - [x] **Phase 3** — Ability grammar breadth (triggers, statics, activated-ability costs)
-- [~] **Phase 4** — Mana system depth (4a done: `{C}` / any-colour / multi-mana / Treasure; 4b hybrid/Phyrexian pending)
+- [~] **Phase 4** — Mana system depth (4a + 4b done: `{C}` / any-colour / multi-mana / Treasure / hybrid / twobrid / Phyrexian / snow; 4c ability-granting + fetchlands pending)
 - [ ] **Phase 5** — Planeswalkers
 - [ ] **Phase 6** — Alternate casting zones + the cast pipeline
 - [ ] **Phase 7** — Combat depth + turn-structure control
@@ -296,10 +296,21 @@ today) / protection-from-everything / "hexproof from", land/artifact/planeswalke
   Cards: Sol Ring, Arcane Signet, Command Tower (any colour — no
   colour-identity restriction), Treasure Token, Prosperous Innkeeper.
   Tests: `mana-depth.test.ts`.
-- [ ] **4b — hybrid / Phyrexian / snow symbols.** `parseManaCost`: hybrid
-  `{W/U}`, twobrid `{2/W}`, Phyrexian `{W/P}` (pay 2 life instead of the pip),
-  snow `{S}`; hybrid resolution in `planManaPayment`. Cards: a hybrid-cost
-  card, a Phyrexian-cost card.
+- [x] **4b — hybrid / Phyrexian / snow symbols.** `parseManaCost` →
+  `ManaCost.hybrid: HybridPip[]` (each pip a list of `HybridOption`s —
+  `{ kind: "color" }` / `{ kind: "generic" }` / `{ kind: "phyrexian" }`);
+  `{S}` folded into generic (no snow permanent exists to distinguish it).
+  `manaValue` counts a hybrid pip as its greatest half (rule 202.3f). A new
+  `Game.payMana` wraps `resolveHybridCost` (greedy: prefer an affordable
+  coloured half, then the twobrid `{2}`, then 2 life — never below 1 life;
+  each tentative choice re-checked with `planManaPayment`) → `planManaPayment`
+  on the concrete cost → `executePayment` (taps sources, spends the resolved
+  cost, pays Phyrexian life). Every caster / activator / ward check routes
+  through `payMana` now. Auto-paid — no "mana or life?" decision (consistent
+  with the rest of the engine's auto-payment). Cards: Gut Shot (`{R/P}`),
+  Flame Javelin (`{2/R}{2/R}{2/R}`), Wilt-Leaf Cavaliers (`{2}{G/W}{G/W}`).
+  Tests: `hybrid-mana.test.ts`; fuzzer clean at 2p/3p/4p; browser-checked
+  (hybrid pip pills in cost line + rules text; Phyrexian auto-paid with `{R}`).
 - [ ] **4c — granting an activated ability to a group** (Chromatic Lantern's
   "lands you control have '{T}: Add one mana of any color'", Cryptolith Rite).
   Needs `manaSources` / `legalActions` / `activateAbility` to consult granted
