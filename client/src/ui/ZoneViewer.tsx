@@ -11,6 +11,13 @@ export interface ZoneViewerProps {
   readonly resolve: (id: ObjectId) => VisibleObject | undefined
   /** Read-only mode (graveyard/exile browsing): omit `selection` and pass this. */
   readonly onClose?: () => void
+  /** Cards in this zone that can be cast from here (Phase 6 flashback) — each
+   * gets a "Cast" button. Ignored in `selection` mode. */
+  readonly castable?: {
+    readonly ids: readonly ObjectId[]
+    readonly label: (id: ObjectId) => string
+    readonly onCast: (id: ObjectId) => void
+  }
   /** Turns this into a forced "choose between min and max of these" decision
    * (a `choose-from-zone` effect, e.g. looking at the top of your library) —
    * no close button, just a pick-then-confirm footer. */
@@ -31,7 +38,7 @@ export interface ZoneViewerProps {
  * exile today), or selectable for a bounded "choose from these" decision
  * (library-look/graveyard-search effects), so both share one component.
  */
-export function ZoneViewer({ title, ids, resolve, onClose, selection }: ZoneViewerProps) {
+export function ZoneViewer({ title, ids, resolve, onClose, selection, castable }: ZoneViewerProps) {
   const [picked, setPicked] = useState<readonly ObjectId[]>([])
 
   const toggle = (id: ObjectId) => {
@@ -80,15 +87,29 @@ export function ZoneViewer({ title, ids, resolve, onClose, selection }: ZoneView
             }
             const isEligible = !selection || selection.eligible.includes(obj.id)
             const isPicked = picked.includes(obj.id)
+            const castHere =
+              !selection && castable && castable.ids.includes(obj.id) ? castable : null
             return (
-              <CardTile
-                key={obj.id}
-                obj={obj}
-                selected={isPicked}
-                highlight={Boolean(selection) && isEligible && !isPicked}
-                dimmed={Boolean(selection) && !isEligible}
-                onClick={isEligible ? () => toggle(obj.id) : undefined}
-              />
+              <div key={obj.id} className="zone-viewer-card">
+                <CardTile
+                  obj={obj}
+                  selected={isPicked}
+                  highlight={(Boolean(selection) && isEligible && !isPicked) || Boolean(castHere)}
+                  dimmed={Boolean(selection) && !isEligible}
+                  onClick={
+                    selection && isEligible
+                      ? () => toggle(obj.id)
+                      : castHere
+                        ? () => castHere.onCast(obj.id)
+                        : undefined
+                  }
+                />
+                {castHere ? (
+                  <button type="button" onClick={() => castHere.onCast(obj.id)}>
+                    {castHere.label(obj.id)}
+                  </button>
+                ) : null}
+              </div>
             )
           })}
           {ids.length === 0 ? <span className="muted">empty</span> : null}

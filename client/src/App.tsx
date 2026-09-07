@@ -60,6 +60,8 @@ interface Targeting {
   readonly xValue?: number
   /** Permanent chosen to pay a "sacrifice a creature you control" ability cost. */
   readonly sacrifice?: ObjectId
+  /** Alternative casting permission (Phase 6) — `'flashback'` casts from the graveyard. */
+  readonly via?: 'flashback'
 }
 
 /**
@@ -570,7 +572,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
 
   const finishTargets = useCallback(
     (
-      t: Pick<Targeting, 'kind' | 'source' | 'abilityIndex' | 'xValue' | 'sacrifice'>,
+      t: Pick<Targeting, 'kind' | 'source' | 'abilityIndex' | 'xValue' | 'sacrifice' | 'via'>,
       targets: readonly TargetRef[],
     ) => {
       game.dispatch(
@@ -581,6 +583,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
               card: t.source,
               targets: [...targets],
               ...(t.xValue !== undefined ? { xValue: t.xValue } : {}),
+              ...(t.via !== undefined ? { via: t.via } : {}),
             }
           : {
               type: 'activate-ability',
@@ -606,6 +609,25 @@ function Table({ view, seat, opponents, game }: TableProps) {
     [finishTargets],
   )
 
+  const beginCast = useCallback(
+    (cast: CastAction) => {
+      if (cast.xCost) {
+        setPendingX({ cast, value: cast.xCost.maxX })
+        return
+      }
+      beginTargeting({
+        kind: 'cast',
+        source: cast.card,
+        abilityIndex: 0,
+        label: `Cast ${cast.cardName}`,
+        specs: cast.targetSpecs,
+        options: cast.targetOptions,
+        ...(cast.via !== undefined ? { via: cast.via } : {}),
+      })
+    },
+    [beginTargeting],
+  )
+
   const confirmX = useCallback(() => {
     if (!pendingX) return
     const { cast, value } = pendingX
@@ -618,6 +640,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
       specs: cast.targetSpecs,
       options: cast.targetOptions,
       xValue: value,
+      ...(cast.via !== undefined ? { via: cast.via } : {}),
     })
   }, [beginTargeting, pendingX])
 
@@ -695,22 +718,9 @@ function Table({ view, seat, opponents, game }: TableProps) {
         return
       }
       const cast = castByCard.get(id)
-      if (cast) {
-        if (cast.xCost) {
-          setPendingX({ cast, value: cast.xCost.maxX })
-          return
-        }
-        beginTargeting({
-          kind: 'cast',
-          source: id,
-          abilityIndex: 0,
-          label: `Cast ${cast.cardName}`,
-          specs: cast.targetSpecs,
-          options: cast.targetOptions,
-        })
-      }
+      if (cast) beginCast(cast)
     },
-    [beginTargeting, bottomAction, castByCard, discardAction, game, landByCard, mode, seat],
+    [beginCast, bottomAction, castByCard, discardAction, game, landByCard, mode, seat],
   )
 
   /** Which id a click on a (possibly stacked) tile should act on. */
@@ -1784,6 +1794,19 @@ function Table({ view, seat, opponents, game }: TableProps) {
           ids={zoneView.ids}
           resolve={(id) => view.objects[id]}
           onClose={() => setZoneView(null)}
+          castable={{
+            ids: zoneView.ids.filter((id) => castByCard.get(id)?.via === 'flashback'),
+            label: (id) => {
+              const c = castByCard.get(id)
+              return c?.via === 'flashback' ? 'Cast (flashback)' : 'Cast'
+            },
+            onCast: (id) => {
+              const c = castByCard.get(id)
+              if (!c) return
+              setZoneView(null)
+              beginCast(c)
+            },
+          }}
         />
       ) : null}
 

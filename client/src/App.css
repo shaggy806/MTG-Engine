@@ -1097,6 +1097,16 @@
 .zone-viewer-cards .card-tile:disabled {
   opacity: 1;
 }
+.zone-viewer-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.zone-viewer-card > button {
+  font-size: 0.8rem;
+  padding: 2px 8px;
+}
 
 /* lobby entry point for the decklist-import feasibility report */
 .link-button {
