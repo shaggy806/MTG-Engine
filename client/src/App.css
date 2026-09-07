@@ -734,6 +734,15 @@
   font-size: 8px;
   vertical-align: -1px;
 }
+/* pips backed by real WotC artwork (an <img>) — the SVG carries its own
+   coloured disc, so drop the CSS circle / ring. */
+.pip-img {
+  display: inline-block;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  object-fit: contain;
+}
 .pip-generic,
 .pip-C {
   background: #c9c6bd;
