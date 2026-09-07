@@ -57,6 +57,8 @@ export type AffectSpec =
       readonly excludeSelf?: boolean;
       readonly subtype?: string;
     }
+  /** Every land the source's controller controls (Chromatic Lantern). */
+  | { readonly scope: "lands-you-control" }
   | { readonly scope: "attached" };
 
 /** A combat restriction a static ability imposes on the objects it `affects`
@@ -83,6 +85,13 @@ export interface StaticAbility {
   readonly grantPt?: readonly [number, number];
   /** Keywords granted in layer 6. */
   readonly grantKeywords?: readonly Keyword[];
+  /** Activated abilities this static grants to every object it `affects`
+   * (Chromatic Lantern: "Lands you control have '{T}: Add one mana of any
+   * color.'"; Cryptolith Rite does the same for creatures). Rule 613 layer 6 —
+   * ability enumeration (`legalActions` / `manaSources` / `activateAbility`)
+   * consults these on top of a permanent's printed `activated`, appended after
+   * them so printed-ability indices stay stable. */
+  readonly grantsActivated?: readonly ActivatedAbility[];
   /** Combat restrictions imposed on the affected objects (Pacifism, Juggernaut). */
   readonly restrictions?: readonly CombatRestriction[];
   /** Protection (rule 702.16) — the affected object can't be targeted,

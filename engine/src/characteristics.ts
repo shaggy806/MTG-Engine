@@ -148,7 +148,7 @@ function isPrintedCreature(
   return registry.get(printedCardName(object)).types.includes("creature");
 }
 
-function staticAffects(
+export function staticAffects(
   registry: CardRegistry,
   affects: AffectSpec,
   source: GameObject,
@@ -156,6 +156,12 @@ function staticAffects(
 ): boolean {
   if (affects.scope === "self") return source.id === target.id;
   if (affects.scope === "attached") return source.attachedTo === target.id;
+  if (affects.scope === "lands-you-control") {
+    return (
+      target.controller === source.controller &&
+      registry.get(printedCardName(target)).types.includes("land")
+    );
+  }
   // "creatures-you-control"
   if (affects.excludeSelf && source.id === target.id) return false;
   if (target.controller !== source.controller) return false;

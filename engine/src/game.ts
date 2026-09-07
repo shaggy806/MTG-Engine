@@ -9,7 +9,7 @@
  */
 
 import { isManaAbility } from "./abilities.js";
-import type { StackAbility, TriggerSpec, TriggerWho } from "./abilities.js";
+import type { ActivatedAbility, StackAbility, TriggerSpec, TriggerWho } from "./abilities.js";
 import { actionPlayer } from "./actions.js";
 import type {
   Action,
@@ -19,7 +19,7 @@ import type {
 } from "./actions.js";
 import { CardRegistry, createDefaultRegistry } from "./cards.js";
 import type { CardDefinition, CardType, CombatRestriction, Keyword } from "./cards.js";
-import { computeCharacteristics, effectiveSubtypes, hasLostAbilities } from "./characteristics.js";
+import { computeCharacteristics, effectiveSubtypes, hasLostAbilities, staticAffects } from "./characteristics.js";
 import type { Characteristics } from "./characteristics.js";
 import { AutomaticController } from "./controller.js";
 import type { ControllerView, PlayerController } from "./controller.js";
@@ -582,7 +582,7 @@ export class Game {
     for (const source of this.state.zones.shared.battlefield) {
       const object = this.state.objects[source];
       if (object.controller !== player) continue;
-      this.registry.get(printedCardName(object)).activated.forEach((ability, index) => {
+      this.effectiveActivated(source).forEach((ability, index) => {
         if (this.whyCannotActivateAbility(player, source, index) !== null) return;
         out.push({
           kind: "activate-ability",
@@ -614,8 +614,8 @@ export class Game {
     return this.legalActions(player).every((action) => {
       if (action.kind === "pass-priority") return true;
       if (action.kind !== "activate-ability") return false;
-      const ability = this.registry.get(action.cardName).activated[action.abilityIndex];
-      return isManaAbility(ability);
+      const ability = this.effectiveActivated(action.source)[action.abilityIndex];
+      return ability !== undefined && isManaAbility(ability);
     });
   }
 
@@ -2166,6 +2166,42 @@ export class Game {
     });
   }
 
+  /**
+   * Activated abilities `objectId` has right now on top of its printed ones —
+   * granted by `grantsActivated` statics on the battlefield (Chromatic
+   * Lantern, Cryptolith Rite). Ordered by the granting permanent's timestamp
+   * so the index is stable for a given game state.
+   */
+  private grantedActivated(objectId: ObjectId): readonly ActivatedAbility[] {
+    const target = this.state.objects[objectId];
+    if (target === undefined || target.zone !== "battlefield") return [];
+    if (hasLostAbilities(target)) return [];
+    const grants: { ts: number; abilities: readonly ActivatedAbility[] }[] = [];
+    for (const sourceId of this.state.zones.shared.battlefield) {
+      const source = this.state.objects[sourceId];
+      if (hasLostAbilities(source)) continue;
+      for (const ability of this.registry.get(printedCardName(source)).static) {
+        if (ability.grantsActivated === undefined) continue;
+        if (staticAffects(this.registry, ability.affects, source, target)) {
+          grants.push({ ts: source.timestamp, abilities: ability.grantsActivated });
+        }
+      }
+    }
+    grants.sort((a, b) => a.ts - b.ts);
+    return grants.flatMap((g) => g.abilities);
+  }
+
+  /** `objectId`'s printed `activated` abilities plus any currently granted to
+   * it — printed first, then granted, so an `abilityIndex` into a printed
+   * ability never shifts. */
+  private effectiveActivated(objectId: ObjectId): readonly ActivatedAbility[] {
+    const printed = this.registry.get(
+      printedCardName(this.state.objects[objectId]),
+    ).activated;
+    const granted = this.grantedActivated(objectId);
+    return granted.length === 0 ? printed : [...printed, ...granted];
+  }
+
   private whyCannotActivateAbility(
     player: PlayerId,
     sourceId: ObjectId,
@@ -2181,7 +2217,7 @@ export class Game {
       return `${player} does not control that permanent`;
     }
     const def = this.registry.get(printedCardName(source));
-    const ability = def.activated[abilityIndex];
+    const ability = this.effectiveActivated(sourceId)[abilityIndex];
     if (ability === undefined) {
       return `${def.name} has no ability #${abilityIndex}`;
     }
@@ -2241,7 +2277,7 @@ export class Game {
 
     const source = this.state.objects[sourceId];
     const def = this.registry.get(printedCardName(source));
-    const ability = def.activated[abilityIndex];
+    const ability = this.effectiveActivated(sourceId)[abilityIndex];
 
     if (targets.length !== ability.targets.length) {
       throw new Error(
@@ -2407,9 +2443,10 @@ export class Game {
    * that could cover more needs stays open longer. Ties keep battlefield order
    * (`Array.prototype.sort` is stable), so the choice is deterministic.
    *
-   * If a permanent somehow has more than one `{T}: Add` ability, their outputs
-   * are merged into a single activation here — no card in the pool does, and
-   * modelling "pick one" would need a real choice.
+   * A permanent with more than one `{T}: Add` ability (a basic land under
+   * Chromatic Lantern, a creature under Cryptolith Rite) offers them as
+   * alternatives — one tap, one of them — so this reports the richest single
+   * option (an "any colour" one wins a tie).
    */
   private manaSources(player: PlayerId): ManaSource[] {
     const out: ManaSource[] = [];
@@ -2420,11 +2457,15 @@ export class Game {
       if (hasLostAbilities(object)) continue; // layer 6 — no mana ability
 
       const def = this.registry.get(printedCardName(object));
-      const fixed: ManaType[] = [];
-      let anyColor = 0;
-      let sacrificeSelf = false;
-      let found = false;
-      for (const ability of def.activated) {
+      // A permanent's `{T}: Add …` abilities (printed + any granted by
+      // Chromatic Lantern / Cryptolith Rite) are *alternatives* — one tap
+      // activates one of them (rule 605.1a). Pick the richest single option,
+      // preferring an "any colour" one on a tie (Lantern over a basic land's
+      // own colour).
+      let best: { fixed: ManaType[]; anyColor: number; sacrificeSelf: boolean } | null = null;
+      const output = (o: { fixed: ManaType[]; anyColor: number }): number =>
+        o.fixed.length + o.anyColor;
+      for (const ability of this.effectiveActivated(id)) {
         if (
           !isManaAbility(ability) ||
           !ability.cost.tap ||
@@ -2434,17 +2475,30 @@ export class Game {
         ) {
           continue;
         }
-        found = true;
-        if (ability.cost.sacrifice === "self") sacrificeSelf = true;
-        if (ability.effect.mana === "any-color") anyColor += ability.effect.amount;
-        else {
-          for (let k = 0; k < ability.effect.amount; k += 1) {
-            fixed.push(ability.effect.mana);
-          }
+        const option =
+          ability.effect.mana === "any-color"
+            ? { fixed: [] as ManaType[], anyColor: ability.effect.amount }
+            : {
+                fixed: Array<ManaType>(ability.effect.amount).fill(ability.effect.mana),
+                anyColor: 0,
+              };
+        const sacrificeSelf = ability.cost.sacrifice === "self";
+        if (
+          best === null ||
+          output(option) > output(best) ||
+          (output(option) === output(best) && option.anyColor > best.anyColor)
+        ) {
+          best = { ...option, sacrificeSelf };
         }
       }
-      if (found) {
-        out.push({ id, isLand: def.types.includes("land"), fixed, anyColor, sacrificeSelf });
+      if (best !== null) {
+        out.push({
+          id,
+          isLand: def.types.includes("land"),
+          fixed: best.fixed,
+          anyColor: best.anyColor,
+          sacrificeSelf: best.sacrificeSelf,
+        });
       }
     }
     const flexibility = (s: ManaSource): number =>
@@ -2865,9 +2919,16 @@ export class Game {
   private stackAbilityOf(object: GameObject): StackAbility {
     const def = this.registry.get(printedCardName(object));
     const index = object.abilityIndex ?? 0;
-    return object.abilityKind === "triggered"
-      ? def.triggered[index]
-      : def.activated[index];
+    if (object.abilityKind === "triggered") return def.triggered[index];
+    // An activated ability's source may still be on the battlefield with a
+    // granted ability at this index (rule 608.2b — last-known info); fall back
+    // to the printed list if it's gone (a self-sacrifice cost, Evolving Wilds).
+    const src = object.sourceObjectId;
+    if (src !== null && this.state.objects[src] !== undefined) {
+      const eff = this.effectiveActivated(src)[index];
+      if (eff !== undefined) return eff;
+    }
+    return def.activated[index];
   }
 
   private resolveAbility(object: GameObject): void {
