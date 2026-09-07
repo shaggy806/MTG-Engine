@@ -21,7 +21,7 @@ the diagram) are in.
 - [x] **Phase 3** — Ability grammar breadth (triggers, statics, activated-ability costs)
 - [x] **Phase 4** — Mana system depth (`{C}` / any-colour / multi-mana / Treasure / hybrid / twobrid / Phyrexian / snow / ability-granting to a group / fetchlands)
 - [x] **Phase 5** — Planeswalkers
-- [ ] **Phase 6** — Alternate casting zones + the cast pipeline
+- [x] **Phase 6** — Alternate casting zones + the cast pipeline *(6a/6b done — flashback, Snapcaster, suspend, foretell, escape; 6c long tail deferred)*
 - [ ] **Phase 7** — Combat depth + turn-structure control
 - [ ] **Phase 8** — Cascade, storm, "cast" triggers, copy-a-spell
 - [ ] **Phase 9** — Commander-format completeness + deck validation
@@ -366,7 +366,7 @@ today) / protection-from-everything / "hexproof from", land/artifact/planeswalke
 
 ---
 
-## Phase 6 — Alternate casting zones + the cast pipeline
+## Phase 6 — Alternate casting zones + the cast pipeline  *(6a/6b done — 6c long tail deferred)*
 
 **Progress (pick up here):**
 
@@ -384,11 +384,34 @@ today) / protection-from-everything / "hexproof from", land/artifact/planeswalke
   cases); fuzz deck B gains 2x Faithless Looting; fuzzer clean at 2p/3p/4p;
   browser-checked (cast from hand → graveyard, "Cast (flashback)" button in
   the graveyard `ZoneViewer` → exile).
-- [ ] **6b** — escape / foretell / suspend / disturb; a `playableUntil` marker
-  for impulse draw; Snapcaster-lite (a static grant of flashback to a
-  graveyard spell). A clean `spell-cast` event carrying the spell's
-  characteristics (the Phase 8 prerequisite). Cast-time `face` selection is
-  still deferred (Phase 10a).
+- [x] **6b — Snapcaster-lite, suspend, foretell, escape.** `CastVia` widened to
+  `"flashback" | "escape" | "foretell" | "suspend"`. **Snapcaster:** a new
+  `"instant-or-sorcery-in-your-graveyard"` `TargetSpec` (`legalTargets` gains a
+  graveyard scan gated to it), a `grant-flashback` `EffectSpec` +
+  `GameObject.grantedFlashback { cost, untilEndOfTurn }`, `flashbackCostOf`
+  folding printed + granted; `finishCleanup` clears until-EOT grants (they ride
+  on graveyard cards). **Suspend:** `CardDefinition.suspend { n, cost }`, a
+  `suspend` Action/LegalAction (special action), `upkeepStep()` turn-based
+  action removing a `counters.time` per suspended card and casting it free at
+  zero (`castSuspendedCard`, `castVia "suspend"`, `hastyUntilItLeaves` →
+  `hasSummoningSickness` false). **Foretell:** `CardDefinition.foretell { cost }`,
+  a `foretell` Action (pay `{2}`, exile face-down; `foretold` / `foretoldOnTurn`),
+  `view.ts` hides a foretold card's identity from opponents, cast from exile via
+  `via: "foretell"` (not the turn it was foretold). **Escape:**
+  `CardDefinition.escape { cost, exileCount }`, cast from graveyard via
+  `via: "escape"` auto-exiling N other graveyard cards as an additional cost
+  (resolves normally, re-escapable). New events: `flashback-granted` /
+  `-grant-expired`, `card-suspended`, `time-counter-removed`, `card-foretold`,
+  `escape-cost-paid`. Client: "Suspend {cost}" / "Foretell" buttons on hand
+  cards, `Cast (via)` buttons in the graveyard/exile `ZoneViewer`, ⏳N /
+  Foretold badges. Cards: Snapcaster Mage, Rift Bolt, Behold the Multiverse,
+  Underworld Rage-Hound. `alt-cast.test.ts` 5→8 cases; fuzz deck B gains all
+  four; fuzzer clean at 2p/3p/4p.
+- [ ] **6c (deferred)** — `disturb` (needs a back face — Phase 10a); a
+  `playableUntil` impulse-draw marker; a *characteristics-carrying*
+  `spell-cast` event (the Phase 8 prerequisite); a real player choice for a
+  targeted suspended spell's targets and Snapcaster's target (the
+  `chooseTargets` gap); cast-time `face` selection (Phase 10a).
 
 - `castSpell(card, fromZone, permission)`: cast from graveyard / exile / anywhere
   via a static grant. A per-object `playableUntil` marker (turn number) for
