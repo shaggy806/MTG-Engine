@@ -30,6 +30,10 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `additional combat phase`
     case 'spell-copied':
       return `${event.controller} copies ${name(event.original)}`
+    case 'lore-counter-added':
+      return `${name(event.object)} — lore counter ${event.lore}`
+    case 'saga-completed':
+      return `${name(event.object)} is sacrificed (final chapter)`
     case 'cascade-revealed':
       return event.cast
         ? `${event.player} cascades into ${name(event.cast)} (${event.exiled.length} exiled)`

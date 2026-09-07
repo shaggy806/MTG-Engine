@@ -52,6 +52,18 @@ export type GameEvent =
       readonly controller: PlayerId;
     })
   | (Base & {
+      /** A lore counter was added to a Saga; `lore` is the new count (rule
+       * 714.2 — ROADMAP Phase 10). */
+      readonly type: "lore-counter-added";
+      readonly object: ObjectId;
+      readonly lore: number;
+    })
+  | (Base & {
+      /** A Saga was sacrificed after its final chapter (SBA 704.5s). */
+      readonly type: "saga-completed";
+      readonly object: ObjectId;
+    })
+  | (Base & {
       /** Cascade exiled cards off the top of the library; `cast` is the
        * nonland card with lesser mana value that will be cast free, or `null`
        * (ROADMAP Phase 8). */

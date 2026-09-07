@@ -67,6 +67,7 @@ import _poolGreed from "./pool/greed.js";
 import _poolGrizzlyBears from "./pool/grizzly-bears.js";
 import _poolGutShot from "./pool/gut-shot.js";
 import _poolHillGiant from "./pool/hill-giant.js";
+import _poolHistoryOfBenalia from "./pool/history-of-benalia.js";
 import _poolHolyStrength from "./pool/holy-strength.js";
 import _poolHypnoticSpecter from "./pool/hypnotic-specter.js";
 import _poolInvisibleStalker from "./pool/invisible-stalker.js";
@@ -139,6 +140,7 @@ import _poolZulaportCutthroat from "./pool/zulaport-cutthroat.js";
 import _tokensBeastToken33 from "./tokens/beast-token-3-3.js";
 import _tokensBeastToken from "./tokens/beast-token.js";
 import _tokensElementalToken from "./tokens/elemental-token.js";
+import _tokensKnightToken from "./tokens/knight-token.js";
 import _tokensPhyrexianWurmDeathtouch from "./tokens/phyrexian-wurm-deathtouch.js";
 import _tokensPhyrexianWurmLifelink from "./tokens/phyrexian-wurm-lifelink.js";
 import _tokensSoldierToken from "./tokens/soldier-token.js";
@@ -210,6 +212,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolGrizzlyBears,
   _poolGutShot,
   _poolHillGiant,
+  _poolHistoryOfBenalia,
   _poolHolyStrength,
   _poolHypnoticSpecter,
   _poolInvisibleStalker,
@@ -282,6 +285,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _tokensBeastToken33,
   _tokensBeastToken,
   _tokensElementalToken,
+  _tokensKnightToken,
   _tokensPhyrexianWurmDeathtouch,
   _tokensPhyrexianWurmLifelink,
   _tokensSoldierToken,

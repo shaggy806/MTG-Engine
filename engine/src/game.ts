@@ -1314,6 +1314,8 @@ export class Game {
       this.upkeepStep();
     } else if (step === "draw") {
       this.drawStep();
+    } else if (step === "precombat-main") {
+      this.sagaChapterStep();
     } else if (step === "declare-attackers") {
       this.declareAttackersStep();
     } else if (step === "declare-blockers") {
@@ -2216,6 +2218,44 @@ export class Game {
     for (const id of ready) this.castSuspendedCard(id);
   }
 
+  /** Beginning of the active player's precombat main phase (rule 714.4): add a
+   * lore counter to each Saga they control. */
+  private sagaChapterStep(): void {
+    const active = this.activePlayer;
+    for (const id of [...this.state.zones.shared.battlefield]) {
+      const object = this.state.objects[id];
+      if (
+        object.controller !== active ||
+        this.registry.get(printedCardName(object)).chapters === null
+      ) {
+        continue;
+      }
+      this.addLoreCounter(id);
+    }
+  }
+
+  /** Put one lore counter on the Saga `sagaId` and queue any chapter ability
+   * whose `at` includes the new count (rule 714.2c). */
+  private addLoreCounter(sagaId: ObjectId): void {
+    const object = this.state.objects[sagaId];
+    if (object === undefined) return;
+    const chapters = this.registry.get(printedCardName(object)).chapters;
+    if (chapters === null) return;
+    object.counters.lore = (object.counters.lore ?? 0) + 1;
+    const n = object.counters.lore;
+    this.emit({ type: "lore-counter-added", object: sagaId, lore: n });
+    chapters.forEach((chapter, index) => {
+      if (!chapter.at.includes(n)) return;
+      this.state.pendingTriggers.push({
+        sourceObjectId: sagaId,
+        cardName: printedCardName(object),
+        abilityIndex: index,
+        controller: object.controller,
+        chapter: true,
+      });
+    });
+  }
+
   /** Put `cardId` (from exile or library) onto the stack without paying its
    * mana cost — the shared core of suspend / cascade free casts (rules 702.62e
    * / 702.85e). Its controller chooses targets; returns `false` if any slot
@@ -2814,7 +2854,7 @@ export class Game {
     sourceId: ObjectId,
     cardName: string,
     controller: PlayerId,
-    abilityKind: "activated" | "triggered",
+    abilityKind: "activated" | "triggered" | "chapter",
     abilityIndex: number,
     targets: readonly TargetRef[],
   ): ObjectId {
@@ -3368,6 +3408,7 @@ export class Game {
     const def = this.registry.get(printedCardName(object));
     const index = object.abilityIndex ?? 0;
     if (object.abilityKind === "triggered") return def.triggered[index];
+    if (object.abilityKind === "chapter") return (def.chapters ?? [])[index];
     // An activated ability's source may still be on the battlefield with a
     // granted ability at this index (rule 608.2b — last-known info); fall back
     // to the printed list if it's gone (a self-sacrifice cost, Evolving Wilds).
@@ -3625,9 +3666,12 @@ export class Game {
     readonly abilityIndex: number;
     readonly controller: PlayerId;
     readonly autoTargets?: readonly TargetRef[];
+    readonly chapter?: boolean;
   }): void {
-    const ability =
-      this.registry.get(trigger.cardName).triggered[trigger.abilityIndex];
+    const def = this.registry.get(trigger.cardName);
+    const ability = trigger.chapter
+      ? (def.chapters ?? [])[trigger.abilityIndex]
+      : def.triggered[trigger.abilityIndex];
 
     const triggerSource = this.state.objects[trigger.sourceObjectId] !== undefined
       ? this.permanentSource(trigger.sourceObjectId)
@@ -3703,7 +3747,7 @@ export class Game {
       trigger.sourceObjectId,
       trigger.cardName,
       trigger.controller,
-      "triggered",
+      trigger.chapter ? "chapter" : "triggered",
       trigger.abilityIndex,
       targets,
     );
@@ -5040,6 +5084,25 @@ export class Game {
         changed = true;
       }
 
+      // Saga sacrifice (rule 714.4 / SBA 704.5s): a Saga with lore counters at
+      // or past its final chapter, and no chapter ability of its still on the
+      // stack or waiting to be placed, is sacrificed.
+      for (const id of this.state.zones.shared.battlefield) {
+        const object = this.state.objects[id];
+        const chapters = this.registry.get(printedCardName(object)).chapters;
+        if (chapters === null) continue;
+        const finalChapter = Math.max(...chapters.flatMap((c) => c.at));
+        if ((object.counters.lore ?? 0) < finalChapter) continue;
+        const busy =
+          this.state.zones.shared.stack.some((sid) => this.state.objects[sid]?.sourceObjectId === id) ||
+          this.state.pendingTriggers.some((t) => t.sourceObjectId === id);
+        if (busy) continue;
+        this.moveObject(id, "graveyard");
+        if (this.state.awaiting !== null) return;
+        this.emit({ type: "saga-completed", object: id });
+        changed = true;
+      }
+
       // A token that isn't on the battlefield ceases to exist (rule 111.7/704.5d).
       for (const id of Object.keys(this.state.objects) as ObjectId[]) {
         const object = this.state.objects[id];
@@ -5257,6 +5320,11 @@ export class Game {
       object.tapped = entering.tapped;
       for (const c of entering.counters) {
         object.counters[c.kind] = (object.counters[c.kind] ?? 0) + c.amount;
+      }
+      // A Saga enters with one lore counter, firing its chapter I ability
+      // (rule 714.2b).
+      if (this.registry.get(printedCardName(object)).chapters !== null) {
+        this.addLoreCounter(id);
       }
     } else {
       object.tapped = false;

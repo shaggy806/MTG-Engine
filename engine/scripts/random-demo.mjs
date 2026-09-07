@@ -119,6 +119,7 @@ const deckB = deck([
   ["Angelic Edict", 1],
   ["Tome Scour", 1],
   ["Raise the Alarm", 1],
+  ["History of Benalia", 1],
   ["Plains", 5],
   ["Rest in Peace", 1],
   ["Deliberate Course", 2],

@@ -19,6 +19,10 @@ export const makeFormatter = (game) => {
         return `additional combat phase`;
       case "spell-copied":
         return `${e.controller} copies ${name(e.original)}`;
+      case "lore-counter-added":
+        return `${name(e.object)} — lore counter ${e.lore}`;
+      case "saga-completed":
+        return `${name(e.object)} is sacrificed (final chapter)`;
       case "cascade-revealed":
         return e.cast
           ? `${e.player} cascades into ${name(e.cast)} (${e.exiled.length} exiled)`

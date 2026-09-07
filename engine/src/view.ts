@@ -82,7 +82,7 @@ export interface VisibleObject {
   readonly blockedBy: readonly ObjectId[];
   readonly blocked: boolean;
   readonly kind: "card" | "ability";
-  readonly abilityKind: "activated" | "triggered" | null;
+  readonly abilityKind: "activated" | "triggered" | "chapter" | null;
   readonly sourceObjectId: ObjectId | null;
   readonly abilityIndex: number | null;
   readonly targets: readonly TargetRef[] | null;

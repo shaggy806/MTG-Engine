@@ -101,7 +101,7 @@ export interface GameObject {
   /** `"card"` for a real card/token; `"ability"` for an ability on the stack. */
   kind: "card" | "ability";
   /** For an ability object: `"activated"` or `"triggered"`. */
-  abilityKind: "activated" | "triggered" | null;
+  abilityKind: "activated" | "triggered" | "chapter" | null;
   /** For an ability object: the permanent whose ability this is. */
   sourceObjectId: ObjectId | null;
   /** For an ability object: index into the source's `activated`/`triggered` list. */
@@ -176,6 +176,9 @@ export interface PendingTrigger {
    * player a saboteur just dealt combat damage to. Fills the ability's target
    * slots in order, ahead of any `chooseTargets` prompt. */
   readonly autoTargets?: readonly TargetRef[];
+  /** True for a Saga chapter ability (rule 714) — `abilityIndex` indexes
+   * `def.chapters` rather than `def.triggered`. ROADMAP Phase 10. */
+  readonly chapter?: boolean;
 }
 
 export interface PlayerState {

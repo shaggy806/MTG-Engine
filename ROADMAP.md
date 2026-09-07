@@ -25,7 +25,7 @@ the diagram) are in.
 - [x] **Phase 7** — Combat depth + turn-structure control *(core done — extra turns, additional combat, can't-be-blocked; first-strike window / trample-as-choice / must-be-blocked deferred)*
 - [x] **Phase 8** — Cascade, storm, "cast" triggers, copy-a-spell
 - [x] **Phase 9** — Commander-format completeness + deck validation *(core done — colour identity, deck validation, Partner, a 4th commander; Companion / legend-rule choice / simultaneous mulligans deferred)*
-- [ ] **Phase 10** — Tier 3 long tail (demand-driven; sagas, multi-face cards **10a modal/split + 10b transform**, day/night, battles, emblems, …)
+- [~] **Phase 10** — Tier 3 long tail (demand-driven) — **Sagas landed**; multi-face cards **10a modal/split + 10b transform**, day/night, battles, emblems, … still open
 
 ## Dependency spine
 
@@ -537,11 +537,23 @@ oldest survives — today), simultaneous mulligan rounds (sequential today).
 
 ---
 
-## Phase 10 — Tier 3 long tail (demand-driven)
+## Phase 10 — Tier 3 long tail (demand-driven)  *(begun — Sagas landed)*
 
 Each is small once Phases 1–3 exist. Pull them in as specific decks need them.
 
-- **Sagas** (chapter counters + `chapter` triggers + a saga-specific SBA).
+- [x] **Sagas** (rule 714). `CardDefinition.chapters: SagaChapter[] | null`
+  (`{ at: number[], targets, effect, resolve, text }` — `at` is the lore
+  counts that fire it, `[1,2]` for a shared "I, II"). `moveObject`'s
+  battlefield branch calls `addLoreCounter` when a Saga enters (chapter I);
+  a `sagaChapterStep` turn-based action at the active player's `precombat-main`
+  adds one more. `addLoreCounter` bumps `counters.lore` and queues the matching
+  chapter as a `PendingTrigger { chapter: true }` — `placeTriggerOnStack` /
+  `mintAbilityObject` / `stackAbilityOf` learn a `"chapter"` `abilityKind`
+  reading `def.chapters[index]`. SBA (704.5s): a Saga with `lore ≥ final
+  chapter` and no chapter ability of its still on the stack / pending is
+  sacrificed (`saga-completed` event). New `lore-counter-added` event; both log
+  formatters + a lore-counter badge (the client already renders `counters`).
+  Card: `History of Benalia` (+ a `Knight Token`). `saga.test.ts`.
 - **10a — modal / split faces (a *cast-time* face choice).** The card is one
   object with two (or more) castable faces; you pick one as it leaves the hand
   and it's that face for the rest of its existence. Covers **MDFC** (`//` modal

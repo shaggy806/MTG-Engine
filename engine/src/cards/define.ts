@@ -184,6 +184,23 @@ export interface CardDefinition {
    * off at each of your upkeeps, and at zero it's cast for free (with haste if
    * it's a creature). `null` for a card without suspend. */
   readonly suspend: { readonly n: number; readonly cost: string } | null;
+  /** Saga chapters (rule 714 — ROADMAP Phase 10). A Saga enters with one lore
+   * counter and gains one at the start of its controller's precombat main
+   * phase; each `SagaChapter` fires when the lore count reaches any number in
+   * its `at`. After the final chapter's ability leaves the stack the Saga is
+   * sacrificed (an SBA). `null` for a non-Saga. */
+  readonly chapters: readonly SagaChapter[] | null;
+}
+
+/** One chapter ability of a Saga (rule 714.2c). `at` lists the lore-counter
+ * counts that fire it — usually `[1]` / `[2]` / `[3]`, but a shared "I, II"
+ * ability uses `[1, 2]`. Shaped like a targeted triggered ability. */
+export interface SagaChapter {
+  readonly at: readonly number[];
+  readonly targets: readonly TargetSpec[];
+  readonly effect: EffectSpec | null;
+  readonly resolve: SpellResolver | null;
+  readonly text: string;
 }
 
 interface CardDraft {
@@ -211,6 +228,7 @@ interface CardDraft {
   foretell?: { readonly cost: string };
   suspend?: { readonly n: number; readonly cost: string };
   escape?: { readonly cost: string; readonly exileCount: number };
+  chapters?: readonly SagaChapter[];
 }
 
 /** Build a {@link CardDefinition} from a partial draft, filling in defaults. */
@@ -257,6 +275,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     foretell: draft.foretell ?? null,
     suspend: draft.suspend ?? null,
     escape: draft.escape ?? null,
+    chapters: draft.chapters ?? null,
   };
 }
 
