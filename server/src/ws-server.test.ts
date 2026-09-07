@@ -23,6 +23,25 @@ function nextMessage(ws: WebSocket): Promise<ServerMessage> {
   });
 }
 
+/** Buffers every message from `ws`, so back-to-back server sends aren't lost
+ * between `nextMessage` calls. */
+function messageQueue(ws: WebSocket): () => Promise<ServerMessage> {
+  const buffer: ServerMessage[] = [];
+  const waiters: ((m: ServerMessage) => void)[] = [];
+  ws.on("message", (raw) => {
+    const msg = JSON.parse(raw.toString()) as ServerMessage;
+    const waiter = waiters.shift();
+    if (waiter) waiter(msg);
+    else buffer.push(msg);
+  });
+  return () =>
+    new Promise((resolve) => {
+      const buffered = buffer.shift();
+      if (buffered) resolve(buffered);
+      else waiters.push(resolve);
+    });
+}
+
 function connect(port: number): Promise<WebSocket> {
   return new Promise((resolve, reject) => {
     const ws = new WebSocket(`ws://127.0.0.1:${port}`);
@@ -147,6 +166,43 @@ describe("room server (end to end over WebSocket)", () => {
     );
     const reply = await nextMessage(aliceWs);
     expect(reply.type).toBe("error");
+  });
+
+  it("a rejected seat claim sends an error and a fresh seat list", async () => {
+    const aliceWs = await openSocket();
+    aliceWs.send(JSON.stringify({ type: "create-room" }));
+    const created = await nextMessage(aliceWs);
+    if (created.type !== "room-created") throw new Error("unreachable");
+    aliceWs.send(
+      JSON.stringify({
+        type: "claim-seat",
+        roomId: created.roomId,
+        seat: ALICE,
+        clientToken: "alice-token",
+      }),
+    );
+    await nextMessage(aliceWs); // state — Alice is in
+
+    // Bob's device tries to grab Alice's seat with a different token.
+    const bobWs = await openSocket();
+    const bobMsg = messageQueue(bobWs);
+    bobWs.send(JSON.stringify({ type: "join-room", roomId: created.roomId }));
+    await bobMsg(); // room-joined
+    bobWs.send(
+      JSON.stringify({
+        type: "claim-seat",
+        roomId: created.roomId,
+        seat: ALICE,
+        clientToken: "bob-token",
+      }),
+    );
+    const err = await bobMsg();
+    expect(err.type).toBe("error");
+    const refreshed = await bobMsg();
+    if (refreshed.type !== "room-joined") throw new Error("expected room-joined");
+    const alice = refreshed.seats.find((s) => s.player === ALICE);
+    expect(alice?.claimed).toBe(true);
+    expect(refreshed.seats.find((s) => s.player === BOB)?.claimed).toBe(false);
   });
 
   it("reports an error for an unknown room id", async () => {

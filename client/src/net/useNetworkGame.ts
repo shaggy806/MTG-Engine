@@ -62,6 +62,14 @@ function storeSeat(roomId: string, seat: PlayerId, clientToken: string): void {
   }
 }
 
+function clearStoredSeat(roomId: string): void {
+  try {
+    window.sessionStorage.removeItem(storageKey(roomId))
+  } catch {
+    // ignore — see storeSeat
+  }
+}
+
 function newClientToken(): string {
   return typeof crypto !== 'undefined' && 'randomUUID' in crypto
     ? crypto.randomUUID()
@@ -120,6 +128,10 @@ export function useNetworkGame(): NetworkGame {
    * `error` in that window means the room itself is gone, not just a
    * rejected seat claim or dispatch. */
   const joiningRef = useRef(false)
+  /** A seat claim sent but not yet confirmed by a `state` message. The seat is
+   * only written to `sessionStorage` once confirmed, so a rejected claim never
+   * poisons the auto-reclaim on the next load. */
+  const pendingClaimRef = useRef<{ seat: PlayerId; clientToken: string } | null>(null)
   const unmountedRef = useRef(false)
   const reconnectAttemptRef = useRef(0)
   const reconnectTimeoutRef = useRef<number | null>(null)
@@ -184,6 +196,10 @@ export function useNetworkGame(): NetworkGame {
           setSeats(message.seats)
           const stored = loadStoredSeat(message.roomId)
           if (stored) {
+            pendingClaimRef.current = {
+              seat: stored.seat,
+              clientToken: stored.clientToken,
+            }
             send({
               type: 'claim-seat',
               roomId: message.roomId,
@@ -196,7 +212,16 @@ export function useNetworkGame(): NetworkGame {
           return
         }
         case 'state': {
+          const wasPlaying = isPlayingRef.current
           isPlayingRef.current = true
+          // A `state` for our pending seat confirms the claim — persist it now,
+          // and clear any "seat is taken" error from an earlier failed attempt.
+          const pending = pendingClaimRef.current
+          if (pending && message.seat === pending.seat) {
+            storeSeat(message.roomId, pending.seat, pending.clientToken)
+            pendingClaimRef.current = null
+          }
+          if (!wasPlaying) setError(null)
           setSeats(message.seats)
           setSeat(message.seat)
           setView(message.view)
@@ -219,7 +244,17 @@ export function useNetworkGame(): NetworkGame {
             return
           }
           setError(message.message)
-          if (!isPlayingRef.current) setStatus('choosing-seat')
+          if (!isPlayingRef.current) {
+            // A rejected seat claim — drop the unconfirmed claim and any stored
+            // token for it, so nothing (an auto-reclaim included) retries it in
+            // a loop. The server follows up with a fresh `room-joined`.
+            if (pendingClaimRef.current !== null) {
+              const id = roomIdRef.current
+              if (id !== null) clearStoredSeat(id)
+              pendingClaimRef.current = null
+            }
+            setStatus('choosing-seat')
+          }
           return
         }
       }
@@ -276,7 +311,9 @@ export function useNetworkGame(): NetworkGame {
       const id = roomIdRef.current
       if (id === null) return
       const token = newClientToken()
-      storeSeat(id, chosen, token)
+      // Not persisted yet — the `state` handler stores it once the server
+      // confirms the claim with a `state` message (see `pendingClaimRef`).
+      pendingClaimRef.current = { seat: chosen, clientToken: token }
       send({ type: 'claim-seat', roomId: id, seat: chosen, clientToken: token, displayName })
     },
     [send],

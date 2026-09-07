@@ -74,7 +74,28 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
         }
         case "claim-seat": {
           const room = requireRoom(manager, message.roomId);
-          room.claimSeat(message.seat, message.clientToken, connection, message.displayName);
+          try {
+            room.claimSeat(
+              message.seat,
+              message.clientToken,
+              connection,
+              message.displayName,
+            );
+          } catch (err) {
+            // Rejected claim (seat taken by someone else, etc.) — tell the
+            // client why *and* re-send the current seat list so its picker
+            // isn't stuck on a stale view.
+            send(ws, {
+              type: "error",
+              message: err instanceof Error ? err.message : String(err),
+            });
+            send(ws, {
+              type: "room-joined",
+              roomId: room.id,
+              seats: room.seatStatuses(),
+            });
+            return;
+          }
           boundRoom = room;
           broadcast(room);
           return;
