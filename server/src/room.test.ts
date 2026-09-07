@@ -188,7 +188,9 @@ describe("Room", () => {
   });
 
   it("Pass Turn carries a seat clean through its own end step into the opponent's turn", () => {
-    const room = makeRoom();
+    // Sparse (all-Forest) decks: no shuffle-dependent castable turns up, so the
+    // starting position is a plain "play a land or pass" window every time.
+    const room = makeSparseRoom();
     const { connection: aliceConn } = fakeConnection();
     const { connection: bobConn } = fakeConnection();
     room.claimSeat(ALICE, "alice-token", aliceConn);
@@ -224,7 +226,8 @@ describe("Room", () => {
   });
 
   it("auto-pass carries a seat through an opponent's entire turn, stopping at its own next turn", () => {
-    const room = makeRoom();
+    // Sparse decks — see the pass-turn test above.
+    const room = makeSparseRoom();
     const { connection: aliceConn } = fakeConnection();
     const { connection: bobConn } = fakeConnection();
     room.claimSeat(ALICE, "alice-token", aliceConn);
