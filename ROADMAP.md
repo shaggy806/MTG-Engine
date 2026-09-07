@@ -19,7 +19,7 @@ the diagram) are in.
 - [x] **Phase 1** — Replacement-effects engine (+ modal / "you may" primitives)
 - [x] **Phase 2** — Effect vocabulary: `CardFilter`, effect scopes, mass effects, tutors, scry/surveil
 - [x] **Phase 3** — Ability grammar breadth (triggers, statics, activated-ability costs)
-- [ ] **Phase 4** — Mana system depth (hybrid / Phyrexian / `{C}` / any-colour / cost modification / Treasure)
+- [~] **Phase 4** — Mana system depth (4a done: `{C}` / any-colour / multi-mana / Treasure; 4b hybrid/Phyrexian pending)
 - [ ] **Phase 5** — Planeswalkers
 - [ ] **Phase 6** — Alternate casting zones + the cast pipeline
 - [ ] **Phase 7** — Combat depth + turn-structure control
@@ -281,22 +281,31 @@ today) / protection-from-everything / "hexproof from", land/artifact/planeswalke
 
 ---
 
-## Phase 4 — Mana system depth
+## Phase 4 — Mana system depth  *(4a done — any-colour / `{C}` / multi-mana / Treasure)*
 
-- `parseManaCost`: hybrid `{W/U}`, twobrid `{2/W}`, Phyrexian `{W/P}`, `{C}` in
-  a cost, snow `{S}`.
-- `planManaPayment` / `castingCostOf`: hybrid resolution, Phyrexian (pay 2 life
-  instead of the pip), "mana of any colour" sources, `{C}` requirement; fold in
-  Phase 3's `costModification` statics; update `maxAffordableX`.
-- Treasure tokens (a token with `{T}, Sacrifice this: Add one mana of any
-  colour` — needs "any colour" + the sac-as-cost that already exists) and
-  any-colour rocks.
-- **Cards:** `Sol Ring`, `Arcane Signet`, `Chromatic Lantern`, a hybrid-cost
-  card, a Phyrexian-cost card, `Prosperous Innkeeper` / a Treasure maker.
-- **Fetchlands** become expressible here (search + shuffle + pay-life + sac-cost
+- [x] **4a — `{C}` costs, any-colour & multi-mana sources, Treasure.**
+  `parseManaCost` → `ManaCost.colorless` (`{C}` pips, colorless mana only);
+  `manaSources` reports each source's flattened single-tap output
+  (`{ fixed, anyColor, sacrificeSelf }`); `planManaPayment` rewritten as a
+  greedy solver returning `{ source, mana, sacrifice }[]` that handles `{C}`
+  needs, multi-mana sources (Sol Ring) and `"any-color"` sources;
+  `useManaSource` (was `tapManaSource`) taps or sacrifices; `spendFromPool`
+  pays `{C}` from colorless first; `maxAffordableX` updated; Phase 3's
+  `costModification` was already folded into `castingCostOf`. `add-mana`
+  effects take `mana: ManaType | "any-color"`; `addManaAbility` helper.
+  Cards: Sol Ring, Arcane Signet, Command Tower (any colour — no
+  colour-identity restriction), Treasure Token, Prosperous Innkeeper.
+  Tests: `mana-depth.test.ts`.
+- [ ] **4b — hybrid / Phyrexian / snow symbols.** `parseManaCost`: hybrid
+  `{W/U}`, twobrid `{2/W}`, Phyrexian `{W/P}` (pay 2 life instead of the pip),
+  snow `{S}`; hybrid resolution in `planManaPayment`. Cards: a hybrid-cost
+  card, a Phyrexian-cost card.
+- [ ] **4c — granting an activated ability to a group** (Chromatic Lantern's
+  "lands you control have '{T}: Add one mana of any color'", Cryptolith Rite).
+  Needs `manaSources` / `legalActions` / `activateAbility` to consult granted
+  abilities. Arguably a Phase-3 ability-grammar item.
+- [ ] **Fetchlands** become expressible (search + shuffle + pay-life + sac-cost
   all now exist).
-
-**Tests:** `mana-hybrid.test.ts`, `cost-modification.test.ts`.
 
 ---
 
