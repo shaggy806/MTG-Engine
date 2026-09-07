@@ -108,6 +108,21 @@ export type GameEvent =
       readonly object: ObjectId;
     })
   | (Base & {
+      /** A card was suspended — exiled from hand with `timeCounters` time
+       * counters (ROADMAP Phase 6b). */
+      readonly type: "card-suspended";
+      readonly player: PlayerId;
+      readonly object: ObjectId;
+      readonly timeCounters: number;
+    })
+  | (Base & {
+      /** A time counter came off a suspended card at its owner's upkeep;
+       * `remaining` left. At 0 the engine casts it for free. */
+      readonly type: "time-counter-removed";
+      readonly object: ObjectId;
+      readonly remaining: number;
+    })
+  | (Base & {
       readonly type: "ability-activated";
       readonly source: ObjectId;
       readonly player: PlayerId;

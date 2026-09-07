@@ -309,6 +309,9 @@ export class Game {
       case "play-land":
         this.playLand(action.player, action.card);
         break;
+      case "suspend":
+        this.suspendCard(action.player, action.card);
+        break;
       case "cast-spell":
         this.castSpell(
           action.player,
@@ -384,6 +387,8 @@ export class Game {
           : `${action.player} does not have priority`;
       case "play-land":
         return this.whyCannotPlayLand(action.player, action.card);
+      case "suspend":
+        return this.whyCannotSuspend(action.player, action.card);
       case "cast-spell":
         return this.whyCannotCastSpell(action.player, action.card, action.via);
       case "activate-ability":
@@ -579,6 +584,10 @@ export class Game {
             ? { xCost: { maxX: this.maxAffordableX(player, card, def) } }
             : {}),
         });
+      }
+      // Suspend (rule 702.62) — a special action, offered alongside the cast.
+      if (def.suspend !== null && this.whyCannotSuspend(player, card) === null) {
+        out.push({ kind: "suspend", card, cardName, n: def.suspend.n, cost: def.suspend.cost });
       }
     }
 
@@ -1216,6 +1225,8 @@ export class Game {
   private performTurnBasedActions(step: Step): void {
     if (step === "untap") {
       this.untapStep();
+    } else if (step === "upkeep") {
+      this.upkeepStep();
     } else if (step === "draw") {
       this.drawStep();
     } else if (step === "declare-attackers") {
@@ -1498,6 +1509,9 @@ export class Game {
   }
 
   private hasSummoningSickness(object: GameObject): boolean {
+    // A permanent cast from suspend "has haste" until it leaves the
+    // battlefield (rule 702.62e) — it's never summoning sick.
+    if (object.hastyUntilItLeaves) return false;
     return object.summoningSick;
   }
 
@@ -2053,6 +2067,109 @@ export class Game {
     this.emit({ type: "land-played", player, object: cardId });
     this.emit({ type: "permanent-entered-battlefield", object: cardId });
     this.afterPlayerAction(player);
+  }
+
+  /** Why `player` cannot suspend `cardId` from hand right now (rule 702.62 —
+   * ROADMAP Phase 6b). Suspend is a special action usable whenever the card
+   * could be cast — sorcery speed unless it's an instant / has flash. */
+  private whyCannotSuspend(player: PlayerId, cardId: ObjectId): string | null {
+    const blocked = this.whyCannotAct(player);
+    if (blocked !== null) return blocked;
+    if (!this.state.zones.perPlayer[player].hand.includes(cardId)) {
+      return `${player} does not have that card in hand`;
+    }
+    const def = this.registry.get(this.state.objects[cardId].cardName);
+    if (def.suspend === null) return `${def.name} does not have suspend`;
+    if (!def.types.includes("instant") && !def.keywords.includes("flash")) {
+      const timing = this.whyNotSorcerySpeed(player, `suspend ${def.name}`);
+      if (timing !== null) return timing;
+    }
+    if (this.payMana(player, parseManaCost(def.suspend.cost)) === null) {
+      return `${player} cannot pay the suspend cost of ${def.name}`;
+    }
+    return null;
+  }
+
+  private suspendCard(player: PlayerId, cardId: ObjectId): void {
+    const why = this.whyCannotSuspend(player, cardId);
+    if (why !== null) throw new Error(why);
+    const object = this.state.objects[cardId];
+    const def = this.registry.get(object.cardName);
+    const suspend = def.suspend;
+    if (suspend === null) throw new Error(`${def.name} does not have suspend`);
+
+    const payment = this.payMana(player, parseManaCost(suspend.cost));
+    if (payment === null) throw new Error(`${player} cannot pay the suspend cost of ${def.name}`);
+
+    this.moveObject(cardId, "exile");
+    this.executePayment(player, payment);
+    object.suspended = true;
+    object.counters.time = suspend.n;
+    this.emit({
+      type: "card-suspended",
+      player,
+      object: cardId,
+      timeCounters: suspend.n,
+    });
+    this.afterPlayerAction(player);
+  }
+
+  /** Beginning of the active player's upkeep (rule 702.62d/e): remove one time
+   * counter from each of their suspended cards; cast (for free) any that hit
+   * zero. */
+  private upkeepStep(): void {
+    const active = this.activePlayer;
+    const ready: ObjectId[] = [];
+    for (const id of [...this.state.zones.shared.exile]) {
+      const object = this.state.objects[id];
+      if (object === undefined || !object.suspended || object.owner !== active) continue;
+      const remaining = Math.max(0, (object.counters.time ?? 0) - 1);
+      object.counters.time = remaining;
+      this.emit({ type: "time-counter-removed", object: id, remaining });
+      if (remaining === 0) ready.push(id);
+    }
+    for (const id of ready) this.castSuspendedCard(id);
+  }
+
+  /** Cast a suspended card whose last time counter just came off, without
+   * paying its mana cost (rule 702.62e). Its controller chooses targets; if
+   * any slot has none it stays exiled. A permanent so cast has haste. */
+  private castSuspendedCard(cardId: ObjectId): void {
+    const object = this.state.objects[cardId];
+    if (object === undefined || object.zone !== "exile") return;
+    const owner = object.owner;
+    const def = this.registry.get(object.cardName);
+
+    const targets: TargetRef[] = [];
+    for (const spec of def.targets) {
+      const options = legalTargets(this.state, this.registry, spec, owner, this.cardSource(def));
+      if (options.length === 0) {
+        // Can't be cast now — it just remains in exile, no longer suspended.
+        object.suspended = false;
+        this.emit({ type: "spell-fizzled", object: cardId, reason: "no legal targets" });
+        return;
+      }
+      const picked = this.controllers[owner].chooseTargets(
+        this.controllerView(owner),
+        def.name,
+        [spec],
+        [options],
+      );
+      targets.push(picked[0]);
+    }
+
+    this.moveObject(cardId, "stack");
+    object.targets = targets.length > 0 ? [...targets] : null;
+    object.castVia = "suspend";
+    object.hastyUntilItLeaves = true;
+    this.emit({
+      type: "spell-cast",
+      player: owner,
+      object: cardId,
+      targets: [...targets],
+      x: null,
+      via: "suspend",
+    });
   }
 
   /**

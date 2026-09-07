@@ -1097,13 +1097,15 @@
 .zone-viewer-cards .card-tile:disabled {
   opacity: 1;
 }
-.zone-viewer-card {
+.zone-viewer-card,
+.hand-card {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
 }
-.zone-viewer-card > button {
+.zone-viewer-card > button,
+.hand-card > button {
   font-size: 0.8rem;
   padding: 2px 8px;
 }

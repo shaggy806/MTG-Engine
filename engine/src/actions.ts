@@ -12,8 +12,10 @@ import type { TargetRef, TargetSpec } from "./target.js";
 /** An alternative permission a spell can be cast under, from a zone other than
  * the hand and/or for a cost other than its mana cost (ROADMAP Phase 6):
  * `"flashback"` / `"escape"` cast an instant/sorcery from the graveyard,
- * `"foretell"` casts a card foretold (exiled face-down) on an earlier turn. */
-export type CastVia = "flashback" | "escape" | "foretell";
+ * `"foretell"` casts a card foretold (exiled face-down) on an earlier turn,
+ * `"suspend"` is the engine casting a card whose last time counter came off
+ * (never dispatched by a player). */
+export type CastVia = "flashback" | "escape" | "foretell" | "suspend";
 
 export interface AttackerDeclaration {
   readonly attacker: ObjectId;
@@ -29,6 +31,13 @@ export interface BlockerDeclaration {
 export type Action =
   | { readonly type: "pass-priority"; readonly player: PlayerId }
   | { readonly type: "play-land"; readonly player: PlayerId; readonly card: ObjectId }
+  | {
+      /** Suspend a card from hand (rule 702.62): a special action, pay the
+       * suspend cost, exile it with N time counters. */
+      readonly type: "suspend";
+      readonly player: PlayerId;
+      readonly card: ObjectId;
+    }
   | {
       readonly type: "cast-spell";
       readonly player: PlayerId;
@@ -159,6 +168,14 @@ export type LegalAction =
       readonly kind: "play-land";
       readonly card: ObjectId;
       readonly cardName: string;
+    }
+  | {
+      readonly kind: "suspend";
+      readonly card: ObjectId;
+      readonly cardName: string;
+      /** Time counters it enters exile with, and the suspend cost. */
+      readonly n: number;
+      readonly cost: string;
     }
   | {
       readonly kind: "cast-spell";

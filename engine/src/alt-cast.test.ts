@@ -171,3 +171,32 @@ describe("Snapcaster Mage — a granted flashback", () => {
     ).toBe(false);
   });
 });
+
+describe("Suspend — Rift Bolt", () => {
+  it("exiles with a time counter, then the engine casts it at the next upkeep", () => {
+    const game = mkGame(["Rift Bolt"]);
+    game.advanceUntil(atFirstMain);
+    playN(game, "Mountain", 1);
+    const rift = cardNamed(game, game.handOf(A), "Rift Bolt");
+
+    const suspend = game.legalActions(A).find((x) => x.kind === "suspend" && x.card === rift);
+    expect(suspend).toMatchObject({ kind: "suspend", n: 1, cost: "{R}" });
+
+    game.dispatch({ type: "suspend", player: A, card: rift });
+    expect(game.state.objects[rift].zone).toBe("exile");
+    expect(game.state.objects[rift].suspended).toBe(true);
+    expect(game.state.objects[rift].counters.time).toBe(1);
+    expect(game.eventsOfType("card-suspended").some((e) => e.object === rift)).toBe(true);
+
+    const totalLifeBefore = game.state.players[A].life + game.state.players[B].life;
+    // Advance past Alice's next upkeep — the time counter comes off and Rift
+    // Bolt is cast for free, then resolves before her main phase.
+    game.advanceUntil((s) => s.turn.number >= 3 && s.turn.step === "precombat-main");
+
+    expect(game.eventsOfType("time-counter-removed").some((e) => e.object === rift && e.remaining === 0)).toBe(true);
+    expect(game.eventsOfType("spell-cast").some((e) => e.object === rift && e.via === "suspend")).toBe(true);
+    expect(game.graveyardOf(A)).toContain(rift);
+    // 3 damage went somewhere.
+    expect(game.state.players[A].life + game.state.players[B].life).toBe(totalLifeBefore - 3);
+  });
+});

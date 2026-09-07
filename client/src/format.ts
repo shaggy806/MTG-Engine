@@ -66,6 +66,12 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${name(event.object)} gains flashback ${event.cost}`
     case 'flashback-grant-expired':
       return `${name(event.object)}'s flashback grant expires`
+    case 'card-suspended':
+      return `${event.player} suspends ${name(event.object)} (${event.timeCounters} time counter${
+        event.timeCounters === 1 ? '' : 's'
+      })`
+    case 'time-counter-removed':
+      return `${name(event.object)} — time counter removed (${event.remaining} left)`
     case 'spell-fizzled':
       return `${name(event.object)} fizzles — ${event.reason}`
     case 'spell-countered':

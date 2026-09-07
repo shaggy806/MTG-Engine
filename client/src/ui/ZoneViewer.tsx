@@ -96,6 +96,7 @@ export function ZoneViewer({ title, ids, resolve, onClose, selection, castable }
                   selected={isPicked}
                   highlight={(Boolean(selection) && isEligible && !isPicked) || Boolean(castHere)}
                   dimmed={Boolean(selection) && !isEligible}
+                  badge={obj.suspended ? `⏳${obj.counters.time ?? 0}` : undefined}
                   onClick={
                     selection && isEligible
                       ? () => toggle(obj.id)

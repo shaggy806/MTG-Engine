@@ -55,6 +55,12 @@ export const makeFormatter = (game) => {
         return `${name(e.object)} gains flashback ${e.cost}`;
       case "flashback-grant-expired":
         return `${name(e.object)}'s flashback grant expires`;
+      case "card-suspended":
+        return `${e.player} suspends ${name(e.object)} (${e.timeCounters} time counter${
+          e.timeCounters === 1 ? "" : "s"
+        })`;
+      case "time-counter-removed":
+        return `${name(e.object)} — time counter removed (${e.remaining} left)`;
       case "ability-activated":
         return `${e.player} activates ${name(e.source)}'s ability${
           e.onStack ? "" : " (mana)"

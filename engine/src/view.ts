@@ -88,6 +88,8 @@ export interface VisibleObject {
   /** The value chosen for `{X}` if this is an X spell/permanent, else `null`. */
   readonly xValue: number | null;
   readonly isToken: boolean;
+  /** Suspended in exile with time counters (`counters.time`) — ROADMAP Phase 6b. */
+  readonly suspended: boolean;
   /** The permanent this Aura/Equipment is attached to, or `null`. */
   readonly attachedTo: ObjectId | null;
   /** Is this its owner's designated commander (rule 903)? */
@@ -192,6 +194,7 @@ function visible(
     targets: object.targets === null ? null : [...object.targets],
     xValue: object.xValue,
     isToken: object.isToken,
+    suspended: object.suspended ?? false,
     attachedTo: object.attachedTo,
     isCommander: object.isCommander,
   };

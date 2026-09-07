@@ -34,6 +34,7 @@ const IMPORT_DECK_URL = `${
 }/import-deck`
 
 type CastAction = Extract<LegalAction, { kind: 'cast-spell' }>
+type SuspendAction = Extract<LegalAction, { kind: 'suspend' }>
 type AbilityAction = Extract<LegalAction, { kind: 'activate-ability' }>
 type AttackAction = Extract<LegalAction, { kind: 'declare-attackers' }>
 type BlockAction = Extract<LegalAction, { kind: 'declare-blockers' }>
@@ -460,6 +461,11 @@ function Table({ view, seat, opponents, game }: TableProps) {
   const castByCard = useMemo(() => {
     const m = new Map<ObjectId, CastAction>()
     for (const a of actions) if (a.kind === 'cast-spell') m.set(a.card, a)
+    return m
+  }, [actions])
+  const suspendByCard = useMemo(() => {
+    const m = new Map<ObjectId, SuspendAction>()
+    for (const a of actions) if (a.kind === 'suspend') m.set(a.card, a)
     return m
   }, [actions])
   const abilitiesBySource = useMemo(() => {
@@ -1703,14 +1709,24 @@ function Table({ view, seat, opponents, game }: TableProps) {
             } else if (mode === 'priority') {
               highlight = landByCard.has(id) || castByCard.has(id)
             }
+            const suspend = mode === 'priority' ? suspendByCard.get(id) : undefined
             return (
-              <CardTile
-                key={id}
-                obj={obj}
-                highlight={highlight}
-                selected={selected}
-                onClick={() => clickHandCard(id)}
-              />
+              <div key={id} className="hand-card">
+                <CardTile
+                  obj={obj}
+                  highlight={highlight || Boolean(suspend)}
+                  selected={selected}
+                  onClick={() => clickHandCard(id)}
+                />
+                {suspend ? (
+                  <button
+                    type="button"
+                    onClick={() => game.dispatch({ type: 'suspend', player: seat, card: id })}
+                  >
+                    Suspend {suspend.cost}
+                  </button>
+                ) : null}
+              </div>
             )
           })}
           {handIds.length === 0 ? <span className="muted">empty</span> : null}
