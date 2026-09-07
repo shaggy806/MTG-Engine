@@ -58,6 +58,7 @@ const mkObject = (
     isCommander: false,
     xValue: null,
     controlEndsAtCleanup: false,
+    copyOf: null,
     counters: {},
     modifiers: [],
   };

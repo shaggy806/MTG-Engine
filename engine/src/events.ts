@@ -144,6 +144,13 @@ export type GameEvent =
       readonly untilEndOfTurn: boolean;
     })
   | (Base & {
+      /** A Clone-style permanent chose what to copy (rule 707); `copyOf` is
+       * `null` when it copied nothing. */
+      readonly type: "permanent-copied";
+      readonly object: ObjectId;
+      readonly copyOf: string | null;
+    })
+  | (Base & {
       readonly type: "permanent-entered-battlefield";
       readonly object: ObjectId;
     })

@@ -42,6 +42,7 @@ type ZoneChoiceAction = Extract<LegalAction, { kind: 'choose-from-zone' }>
 type MulliganAction = Extract<LegalAction, { kind: 'mulligan' }>
 type BottomAction = Extract<LegalAction, { kind: 'put-on-bottom' }>
 type CommanderChoiceAction = Extract<LegalAction, { kind: 'commander-replacement' }>
+type CopyChoiceAction = Extract<LegalAction, { kind: 'choose-copy' }>
 
 interface Targeting {
   readonly kind: 'cast' | 'activate'
@@ -78,6 +79,7 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
   mulligan: 'decide on a mulligan',
   'mulligan-bottom': 'put cards on the bottom of their library',
   'commander-replacement': 'decide where their commander goes',
+  'choose-copy': 'choose what to copy',
 }
 
 export default function App() {
@@ -478,6 +480,9 @@ function Table({ view, seat, opponents, game }: TableProps) {
   const commanderChoiceAction = actions.find(
     (a): a is CommanderChoiceAction => a.kind === 'commander-replacement',
   )
+  const copyChoiceAction = actions.find(
+    (a): a is CopyChoiceAction => a.kind === 'choose-copy',
+  )
   const canPass = actions.some((a) => a.kind === 'pass-priority')
   // Only the active player may skip the rest of their own turn — a defender
   // holding priority to respond during it shouldn't get this button.
@@ -492,6 +497,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
     | 'mulligan'
     | 'put-on-bottom'
     | 'commander-replacement'
+    | 'choose-copy'
     | 'choose-x'
     | 'choose-sacrifice'
     | 'targeting'
@@ -499,8 +505,10 @@ function Table({ view, seat, opponents, game }: TableProps) {
     ? 'mulligan'
     : commanderChoiceAction
       ? 'commander-replacement'
-      : bottomAction
-        ? 'put-on-bottom'
+      : copyChoiceAction
+        ? 'choose-copy'
+        : bottomAction
+          ? 'put-on-bottom'
       : discardAction
         ? 'discard'
         : orderAction
@@ -1102,6 +1110,29 @@ function Table({ view, seat, opponents, game }: TableProps) {
         </button>
         <button type="button" onClick={() => confirmMulligan(false)}>
           Mulligan
+        </button>
+      </div>
+    )
+  } else if (mode === 'choose-copy' && copyChoiceAction) {
+    controls = (
+      <div className="controls">
+        <span>{game.nameOf(copyChoiceAction.source)} — copy which creature?</span>
+        {copyChoiceAction.options.map((id) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() =>
+              game.dispatch({ type: 'choose-copy', player: seat, copy: id })
+            }
+          >
+            {game.nameOf(id)}
+          </button>
+        ))}
+        <button
+          type="button"
+          onClick={() => game.dispatch({ type: 'choose-copy', player: seat, copy: null })}
+        >
+          Copy nothing
         </button>
       </div>
     )

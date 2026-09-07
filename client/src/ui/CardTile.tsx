@@ -82,7 +82,10 @@ export function CardTile({
   compact = false,
   onClick,
 }: CardTileProps) {
-  const [artFailed, setArtFailed] = useState(() => artMisses.has(obj.cardName))
+  // A Clone renders the *copied* card's face (art + name); `cardName` stays
+  // its true identity for the log.
+  const face = obj.copyOf ?? obj.cardName
+  const [artFailed, setArtFailed] = useState(() => artMisses.has(face))
   const isCreature = obj.power !== null && obj.toughness !== null
   const counters = Object.entries(obj.counters).filter(([, n]) => n !== 0)
   const clickable = Boolean(onClick) && (highlight || selected || activatable)
@@ -111,10 +114,13 @@ export function CardTile({
       className={classes}
       onClick={clickable ? onClick : undefined}
       disabled={!clickable}
-      title={obj.text || obj.cardName}
+      title={obj.text || face}
     >
       <span className="ct-title">
-        <span className="ct-name">{obj.cardName}</span>
+        <span className="ct-name">
+          {face}
+          {obj.copyOf ? <span className="ct-copy"> (copy)</span> : null}
+        </span>
         {obj.manaCost ? (
           <span className="ct-cost">
             <Symbols text={obj.manaCost} />
@@ -130,11 +136,11 @@ export function CardTile({
       <span className={`ct-art tint-${tint}`}>
         {!artFailed ? (
           <img
-            src={artUrl(obj.cardName)}
+            src={artUrl(face)}
             alt=""
             loading="lazy"
             onError={() => {
-              artMisses.add(obj.cardName)
+              artMisses.add(face)
               setArtFailed(true)
             }}
           />

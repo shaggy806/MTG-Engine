@@ -33,6 +33,7 @@ export const makeSpawn =
       isToken: false,
       attachedTo: null,
       controlEndsAtCleanup: false,
+      copyOf: null,
       xValue: null,
     };
     game.state.zones.shared.battlefield.push(id);

@@ -90,6 +90,15 @@ export interface PlayerController {
     commander: ObjectId,
     movedTo: "graveyard" | "exile" | "hand" | "library",
   ): boolean;
+  /**
+   * A Clone-style permanent just entered — return which of `options` it copies,
+   * or `null` to copy nothing (rule 707).
+   */
+  chooseCopy(
+    view: ControllerView,
+    source: ObjectId,
+    options: readonly ObjectId[],
+  ): ObjectId | null;
 }
 
 const passFor = (player: PlayerId): Action => ({
@@ -156,6 +165,13 @@ function answerAwaited(
         awaiting.commander,
         awaiting.movedTo,
       ),
+    };
+  }
+  if (awaiting.kind === "choose-copy") {
+    return {
+      type: "choose-copy",
+      player,
+      copy: controller.chooseCopy(view, awaiting.source, awaiting.options),
     };
   }
   const hand = view.state.zones.perPlayer[player].hand.map(
@@ -244,6 +260,14 @@ export class AutomaticController implements PlayerController {
     // tests that don't care about the decision are unaffected.
     return true;
   }
+
+  chooseCopy(
+    _view: ControllerView,
+    _source: ObjectId,
+    options: readonly ObjectId[],
+  ): ObjectId | null {
+    return options[0] ?? null;
+  }
 }
 
 /** A queued action, optionally gated on a condition being true. */
@@ -286,6 +310,11 @@ type CommanderReplacementChooser = (
   commander: ObjectId,
   movedTo: "graveyard" | "exile" | "hand" | "library",
 ) => boolean;
+type CopyChooser = (
+  view: ControllerView,
+  source: ObjectId,
+  options: readonly ObjectId[],
+) => ObjectId | null;
 
 /**
  * Plays a fixed queue of priority actions (each firing when its `when` guard is
@@ -305,6 +334,7 @@ export class ScriptedController implements PlayerController {
   mulliganFn: MulliganChooser = () => false;
   chooseBottomOfLibraryFn: BottomChooser = (hand, count) => discardFromFront(hand, count);
   commanderReplacementFn: CommanderReplacementChooser = () => true;
+  chooseCopyFn: CopyChooser = (_view, _source, options) => options[0] ?? null;
 
   constructor(playerId: PlayerId, script: readonly ScriptEntry[] = []) {
     this.playerId = playerId;
@@ -389,6 +419,14 @@ export class ScriptedController implements PlayerController {
     movedTo: "graveyard" | "exile" | "hand" | "library",
   ): boolean {
     return this.commanderReplacementFn(view, commander, movedTo);
+  }
+
+  chooseCopy(
+    view: ControllerView,
+    source: ObjectId,
+    options: readonly ObjectId[],
+  ): ObjectId | null {
+    return this.chooseCopyFn(view, source, options);
   }
 }
 
@@ -519,6 +557,14 @@ export class RandomController extends AutomaticController {
       }
       case "commander-replacement":
         return { type: "commander-replacement", player, toCommandZone: this.random() < 0.85 };
+      case "choose-copy": {
+        // Usually copy the biggest thing; sometimes copy nothing.
+        const copy =
+          legal.options.length > 0 && this.random() < 0.9
+            ? legal.options[this.pickIndex(legal.options.length)]
+            : null;
+        return { type: "choose-copy", player, copy };
+      }
       default:
         return passFor(player);
     }

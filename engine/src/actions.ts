@@ -92,6 +92,14 @@ export type Action =
       readonly type: "commander-replacement";
       readonly player: PlayerId;
       readonly toCommandZone: boolean;
+    }
+  | {
+      /** Answers a pending "choose what this Clone copies" decision (rule 707).
+       * `copy` is a permanent from the offered options, or `null` to copy
+       * nothing. */
+      readonly type: "choose-copy";
+      readonly player: PlayerId;
+      readonly copy: ObjectId | null;
     };
 
 export type ActionType = Action["type"];
@@ -184,4 +192,10 @@ export type LegalAction =
       readonly kind: "commander-replacement";
       readonly commander: ObjectId;
       readonly movedTo: "graveyard" | "exile" | "hand" | "library";
+    }
+  | {
+      readonly kind: "choose-copy";
+      readonly source: ObjectId;
+      /** Permanents this Clone may copy; `null` (copy nothing) is also legal. */
+      readonly options: readonly ObjectId[];
     };

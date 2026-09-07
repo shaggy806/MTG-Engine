@@ -23,7 +23,7 @@ import type {
   TurnState,
   ZoneType,
 } from "./state.js";
-import { activePlayerOf } from "./state.js";
+import { activePlayerOf, printedCardName } from "./state.js";
 import type { TargetRef } from "./target.js";
 
 export interface PublicPlayerInfo {
@@ -46,7 +46,12 @@ export interface PublicPlayerInfo {
 
 export interface VisibleObject {
   readonly id: ObjectId;
+  /** This permanent's true identity ("Clone"). Render the *face* from
+   * `copyOf ?? cardName`, but name it in the log by `cardName`. */
   readonly cardName: string;
+  /** The name this permanent is a copy of (rule 707), or `null`. Its
+   * mana cost / text / computed P/T already reflect the copy. */
+  readonly copyOf: string | null;
   readonly owner: PlayerId;
   readonly controller: PlayerId;
   readonly zone: ZoneType;
@@ -122,12 +127,15 @@ function visible(
   id: ObjectId,
 ): VisibleObject {
   const object = state.objects[id];
-  const def = registry.get(object.cardName);
+  const def = registry.get(printedCardName(object));
   const computed = computeCharacteristics(state, registry, id);
   const isCreature = def.types.includes("creature");
   return {
     id: object.id,
+    // The permanent's true identity ("Clone"); `copyOf` carries the copied
+    // card's name (rule 707) and the client renders that face.
     cardName: object.cardName,
+    copyOf: object.copyOf,
     owner: object.owner,
     controller: object.controller,
     zone: object.zone,
@@ -206,7 +214,7 @@ export function viewFor(
 
     const revealsTop = state.zones.shared.battlefield.some((id) => {
       const object = state.objects[id];
-      return object.controller === player && registry.get(object.cardName).revealsOwnLibraryTop;
+      return object.controller === player && registry.get(printedCardName(object)).revealsOwnLibraryTop;
     });
     const topCard = revealsTop ? (zones.library[0] ?? null) : null;
     revealedLibraryTop[player] = topCard;

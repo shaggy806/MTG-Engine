@@ -70,6 +70,7 @@ const deckB = deck([
   ["Mind Control", 2],
   ["Mortivore", 1],
   ["Lord of Extinction", 1],
+  ["Clone", 2],
   ["Wurmcoil Engine", 1],
   ["Lightning Bolt", 2],
   ["Fireball", 1],

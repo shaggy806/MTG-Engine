@@ -62,6 +62,10 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${event.controller} gains control of ${name(event.object)}${
         event.untilEndOfTurn ? ' until EOT' : ''
       }`
+    case 'permanent-copied':
+      return event.copyOf
+        ? `${name(event.object)} enters as a copy of ${event.copyOf}`
+        : `${name(event.object)} copies nothing`
     case 'ability-activated':
       return `${event.player} activates ${name(event.source)}${
         event.onStack ? '' : ' (mana)'

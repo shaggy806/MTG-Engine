@@ -69,6 +69,7 @@ const spawn = (
     isCommander: false,
     xValue: null,
     controlEndsAtCleanup: false,
+    copyOf: null,
   };
   game.state.zones.shared.battlefield.push(id);
   return id;

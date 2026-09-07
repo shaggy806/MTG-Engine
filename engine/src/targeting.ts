@@ -3,6 +3,7 @@
 import type { CardRegistry } from "./cards.js";
 import { computeCharacteristics } from "./characteristics.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
+import { printedCardName } from "./state.js";
 import type { GameState } from "./state.js";
 import type { TargetRef, TargetSpec } from "./target.js";
 
@@ -13,7 +14,7 @@ function isLivingCreature(
 ): boolean {
   const object = state.objects[id];
   if (object === undefined || object.zone !== "battlefield") return false;
-  return registry.get(object.cardName).types.includes("creature");
+  return registry.get(printedCardName(object)).types.includes("creature");
 }
 
 /** A spell (a card, not an ability) currently on the stack. */
@@ -31,7 +32,7 @@ function isPermanentOfType(
 ): boolean {
   const object = state.objects[id];
   if (object === undefined || object.zone !== "battlefield") return false;
-  return predicate(registry.get(object.cardName).types);
+  return predicate(registry.get(printedCardName(object)).types);
 }
 
 function isLivingPlayer(state: GameState, ref: TargetRef): boolean {

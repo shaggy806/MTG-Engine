@@ -77,6 +77,10 @@ export const makeFormatter = (game) => {
         return `${e.controller} gains control of ${name(e.object)}${
           e.untilEndOfTurn ? " until EOT" : ""
         }`;
+      case "permanent-copied":
+        return e.copyOf
+          ? `${name(e.object)} enters as a copy of ${e.copyOf}`
+          : `${name(e.object)} copies nothing`;
       case "permanent-entered-battlefield":
         return `${name(e.object)} enters the battlefield`;
       case "permanent-attached":

@@ -710,6 +710,10 @@
   font-weight: 700;
   color: var(--warn);
 }
+.ct-copy {
+  font-weight: 400;
+  color: var(--muted);
+}
 .pip {
   width: 13px;
   height: 13px;

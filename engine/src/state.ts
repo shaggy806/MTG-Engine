@@ -45,6 +45,12 @@ export interface GameObject {
    * permanent — cleanup reverts `controller` to `owner`. Cleared by
    * `moveObject` on any zone change. */
   controlEndsAtCleanup: boolean;
+  /** The name of the card this permanent is currently a *copy* of (rule 707 /
+   * layer 1), or `null` when it is just itself. Every characteristic read —
+   * P/T, types, abilities, the client's card face — resolves through
+   * `printedCardName`, which returns this when set. Cleared on any zone change
+   * (a Clone that dies and returns is a Clone again). */
+  copyOf: string | null;
   /** The value chosen for `{X}` when this spell was cast (rule 601.2b). Set on
    * the stack object and preserved onto the permanent it becomes, so an
    * "enters with X counters"-style effect can still read it. `null` when the
@@ -225,6 +231,14 @@ export type AwaitingDecision =
       readonly player: PlayerId;
       readonly commander: ObjectId;
       readonly movedTo: CommanderReplacementZone;
+    }
+  | {
+      /** A Clone-style permanent just entered; its controller chooses what
+       * (if anything) it copies (rule 707). */
+      readonly kind: "choose-copy";
+      readonly player: PlayerId;
+      readonly source: ObjectId;
+      readonly options: readonly ObjectId[];
     };
 
 /** The zones a commander can be moved to that offer the 903.9a choice. */
@@ -294,6 +308,12 @@ export function createPlayerState(id: PlayerId, rules: GameRules): PlayerState {
 }
 
 // --- selectors -------------------------------------------------------------
+
+/** The card name whose printed characteristics this object currently has — its
+ * own, or the one it's a copy of (rule 707 / layer 1). Every `registry.get`
+ * for an object's characteristics/abilities/face should go through this. */
+export const printedCardName = (object: GameObject): string =>
+  object.copyOf ?? object.cardName;
 
 export const activePlayerOf = (state: GameState): PlayerId =>
   state.turnOrder[state.turn.activePlayerIndex];

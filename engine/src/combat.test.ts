@@ -70,6 +70,7 @@ const spawn = (
     isCommander: false,
     xValue: null,
     controlEndsAtCleanup: false,
+    copyOf: null,
     counters: {},
     modifiers: [],
   };

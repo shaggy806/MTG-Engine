@@ -68,6 +68,7 @@ const spawn = (game: Game, cardName: string, controller: PlayerId): ObjectId => 
     isCommander: false,
     xValue: null,
     controlEndsAtCleanup: false,
+    copyOf: null,
     counters: {},
     modifiers: [],
   };

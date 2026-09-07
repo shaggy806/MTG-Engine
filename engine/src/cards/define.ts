@@ -113,6 +113,10 @@ export interface CardDefinition {
   /** An Aura whose controller controls the enchanted permanent for as long as
    * it stays attached (Mind Control — rule 613.1b, layer 2). */
   readonly controlEnchanted: boolean;
+  /** This permanent enters as a copy of another permanent its controller
+   * chooses (Clone — rule 707); `filter` narrows what may be copied. `null`
+   * for a normal card. */
+  readonly copyOnEnter: { readonly filter: "creature" } | null;
 }
 
 interface CardDraft {
@@ -134,6 +138,7 @@ interface CardDraft {
   static?: readonly StaticAbility[];
   revealsOwnLibraryTop?: boolean;
   controlEnchanted?: boolean;
+  copyOnEnter?: { readonly filter: "creature" };
 }
 
 /** Build a {@link CardDefinition} from a partial draft, filling in defaults. */
@@ -157,6 +162,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     static: draft.static ?? [],
     revealsOwnLibraryTop: draft.revealsOwnLibraryTop ?? false,
     controlEnchanted: draft.controlEnchanted ?? false,
+    copyOnEnter: draft.copyOnEnter ?? null,
   };
 }
 

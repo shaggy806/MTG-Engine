@@ -2,15 +2,18 @@
  * Current (as opposed to printed) characteristics of an object, computed from
  * the continuous-effects layer system (rule 613).
  *
- * Milestone 5a implements **layers 6 (keyword grants) and 7 (P/T)** only:
- * static abilities of battlefield permanents, `+1/+1` / `-1/-1` counters, and
- * temporary modifiers, applied in timestamp order within a layer. NOT yet:
- * layers 1-5 (copy, control-change, text, type-change, colour), layer 7b
- * (setting base P/T), characteristic-defining abilities, or dependency ordering.
+ * Implemented: **layer 1** (copy — every read resolves through
+ * `printedCardName`, so a Clone has the copied card's P/T / types / abilities),
+ * **layer 6** (keyword grants), **layer 7b** (a `"self"` CDA sets base P/T),
+ * **layer 7c** (counters), **layer 7d** (P/T bonuses + modifiers), timestamp-
+ * ordered within a layer. NOT yet: layers 3–5 (text, type-change, colour) and
+ * dependency ordering. Layer 2 (control-change) is modeled in `game.ts` by
+ * reassigning `GameObject.controller`, not here.
  */
 
 import type { AffectSpec, CardRegistry, CardType, CountSpec, Keyword } from "./cards.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
+import { printedCardName } from "./state.js";
 import type { GameObject, GameState } from "./state.js";
 
 export interface Characteristics {
@@ -64,7 +67,7 @@ function isPrintedCreature(
   registry: CardRegistry,
   object: GameObject,
 ): boolean {
-  return registry.get(object.cardName).types.includes("creature");
+  return registry.get(printedCardName(object)).types.includes("creature");
 }
 
 function staticAffects(
@@ -81,7 +84,7 @@ function staticAffects(
   if (!isPrintedCreature(registry, target)) return false;
   if (
     affects.subtype !== undefined &&
-    !registry.get(target.cardName).subtypes.includes(affects.subtype)
+    !registry.get(printedCardName(target)).subtypes.includes(affects.subtype)
   ) {
     return false;
   }
@@ -104,7 +107,7 @@ function collectStaticEffects(
   const out: AppliedEffect[] = [];
   for (const sourceId of state.zones.shared.battlefield) {
     const source = state.objects[sourceId];
-    for (const ability of registry.get(source.cardName).static) {
+    for (const ability of registry.get(printedCardName(source)).static) {
       if (staticAffects(registry, ability.affects, source, target)) {
         out.push({
           timestamp: source.timestamp,
@@ -125,7 +128,7 @@ export function computeCharacteristics(
   id: ObjectId,
 ): Characteristics {
   const object = state.objects[id];
-  const def = registry.get(object.cardName);
+  const def = registry.get(printedCardName(object));
 
   let power = def.power ?? 0;
   let toughness = def.toughness ?? 0;

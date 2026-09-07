@@ -13,6 +13,7 @@ import _poolBloodthroneVampire from "./pool/bloodthrone-vampire.js";
 import _poolBoggartBrute from "./pool/boggart-brute.js";
 import _poolBonesplitter from "./pool/bonesplitter.js";
 import _poolBoomerang from "./pool/boomerang.js";
+import _poolClone from "./pool/clone.js";
 import _poolContentiousPlan from "./pool/contentious-plan.js";
 import _poolCounterspell from "./pool/counterspell.js";
 import _poolCrawWurm from "./pool/craw-wurm.js";
@@ -91,6 +92,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolBoggartBrute,
   _poolBonesplitter,
   _poolBoomerang,
+  _poolClone,
   _poolContentiousPlan,
   _poolCounterspell,
   _poolCrawWurm,

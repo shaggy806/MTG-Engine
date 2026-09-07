@@ -35,7 +35,7 @@ import { COLORS, MANA_TYPES, emptyPool, parseManaCost } from "./mana.js";
 import type { ManaCost, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId, Rng } from "./primitives.js";
 import { asObjectId, createRng, shuffle } from "./primitives.js";
-import { DEFAULT_RULES, activePlayerOf, createPlayerState } from "./state.js";
+import { DEFAULT_RULES, activePlayerOf, createPlayerState, printedCardName } from "./state.js";
 import type { AwaitingDecision, GameObject, GameRules, GameState, ZoneType } from "./state.js";
 import type { TargetRef, TargetSpec } from "./target.js";
 import { isLegalTarget, legalTargets } from "./targeting.js";
@@ -290,6 +290,9 @@ export class Game {
       case "commander-replacement":
         this.applyCommanderChoice(action.player, action.toCommandZone);
         break;
+      case "choose-copy":
+        this.applyCopyChoice(action.player, action.copy);
+        break;
       default:
         throw new Error(
           `unhandled action: ${(action as { type: string }).type}`,
@@ -336,6 +339,8 @@ export class Game {
         return this.whyCannotPutOnBottom(action.player, action.cards);
       case "commander-replacement":
         return this.whyCannotCommanderChoice(action.player);
+      case "choose-copy":
+        return this.whyCannotCopyChoice(action.player, action.copy);
       default:
         return `unknown action: ${(action as { type: string }).type}`;
     }
@@ -419,6 +424,11 @@ export class Game {
           },
         ];
       }
+      if (awaiting.kind === "choose-copy") {
+        return [
+          { kind: "choose-copy", source: awaiting.source, options: [...awaiting.options] },
+        ];
+      }
       return [
         {
           kind: "discard",
@@ -459,13 +469,13 @@ export class Game {
     for (const source of this.state.zones.shared.battlefield) {
       const object = this.state.objects[source];
       if (object.controller !== player) continue;
-      this.registry.get(object.cardName).activated.forEach((ability, index) => {
+      this.registry.get(printedCardName(object)).activated.forEach((ability, index) => {
         if (this.whyCannotActivateAbility(player, source, index) !== null) return;
         out.push({
           kind: "activate-ability",
           source,
           abilityIndex: index,
-          cardName: object.cardName,
+          cardName: printedCardName(object),
           text: ability.text,
           targetSpecs: ability.targets,
           targetOptions: this.targetOptionsFor(ability.targets, player),
@@ -603,6 +613,7 @@ export class Game {
           isCommander: false,
           xValue: null,
           controlEndsAtCleanup: false,
+          copyOf: null,
         };
         ids.push(id);
       }
@@ -641,6 +652,7 @@ export class Game {
           isCommander: true,
           xValue: null,
           controlEndsAtCleanup: false,
+          copyOf: null,
         };
         this.state.zones.shared.command.push(id);
       }
@@ -811,6 +823,50 @@ export class Game {
       awaiting.player !== player
     ) {
       return `${player} is not being asked about a commander replacement`;
+    }
+    return null;
+  }
+
+  /** A Clone-style permanent just entered — ask its controller what to copy
+   * (rule 707). With nothing legal to copy this doesn't pause: the permanent
+   * stays itself (a 0/0 Clone, which then dies to an SBA). */
+  private beginCopyChoice(cloneId: ObjectId, controller: PlayerId): void {
+    const options = this.state.zones.shared.battlefield.filter((id) => {
+      if (id === cloneId) return false;
+      const object = this.state.objects[id];
+      return this.registry.get(printedCardName(object)).types.includes("creature");
+    });
+    if (options.length === 0) return;
+    this.state.awaiting = { kind: "choose-copy", player: controller, source: cloneId, options };
+  }
+
+  /** Answers a pending `choose-copy` decision (rule 707). */
+  private applyCopyChoice(player: PlayerId, copy: ObjectId | null): void {
+    const why = this.whyCannotCopyChoice(player, copy);
+    if (why !== null) throw new Error(why);
+    const awaiting = this.state.awaiting;
+    if (awaiting === null || awaiting.kind !== "choose-copy") {
+      throw new Error("unreachable: whyCannotCopyChoice should have caught this");
+    }
+
+    const clone = this.state.objects[awaiting.source];
+    if (copy !== null) {
+      // Copy the *copiable* values — for our model, the copied card's printed
+      // name, which every characteristic read resolves through.
+      clone.copyOf = printedCardName(this.state.objects[copy]);
+    }
+    this.emit({ type: "permanent-copied", object: awaiting.source, copyOf: clone.copyOf });
+    this.state.awaiting = null;
+    this.prepareForPriority(this.activePlayer);
+  }
+
+  private whyCannotCopyChoice(player: PlayerId, copy: ObjectId | null): string | null {
+    const awaiting = this.state.awaiting;
+    if (awaiting === null || awaiting.kind !== "choose-copy" || awaiting.player !== player) {
+      return `${player} is not being asked what to copy`;
+    }
+    if (copy !== null && !awaiting.options.includes(copy)) {
+      return `${copy} is not one of the permanents that may be copied`;
     }
     return null;
   }
@@ -1144,7 +1200,7 @@ export class Game {
   private creatureDef(id: ObjectId): CardDefinition | null {
     const object = this.state.objects[id];
     if (object === undefined || object.zone !== "battlefield") return null;
-    const def = this.registry.get(object.cardName);
+    const def = this.registry.get(printedCardName(object));
     return def.types.includes("creature") ? def : null;
   }
 
@@ -1268,7 +1324,7 @@ export class Game {
       return `${attackerId} is not attacking`;
     }
     if (attacker.attacking !== player) {
-      const attackerDef = this.registry.get(attacker.cardName);
+      const attackerDef = this.registry.get(printedCardName(attacker));
       return `${blockerDef.name} can't block ${attackerDef.name} — it isn't attacking ${player}`;
     }
     if (
@@ -1276,7 +1332,7 @@ export class Game {
       !this.objHasKeyword(blockerId, "flying") &&
       !this.objHasKeyword(blockerId, "reach")
     ) {
-      const attackerDef = this.registry.get(attacker.cardName);
+      const attackerDef = this.registry.get(printedCardName(attacker));
       return `${blockerDef.name} can't block ${attackerDef.name} (flying)`;
     }
     return null;
@@ -1760,7 +1816,7 @@ export class Game {
     if (why !== null) throw new Error(why);
 
     const object = this.state.objects[cardId];
-    const def = this.registry.get(object.cardName);
+    const def = this.registry.get(printedCardName(object));
     const hasX = parseManaCost(def.manaCost).x > 0;
     const chosenX = hasX ? Math.max(0, Math.floor(xValue)) : 0;
 
@@ -1815,7 +1871,7 @@ export class Game {
       const object = this.state.objects[id];
       return (
         object.controller === player &&
-        this.registry.get(object.cardName).types.includes("creature")
+        this.registry.get(printedCardName(object)).types.includes("creature")
       );
     });
   }
@@ -1834,7 +1890,7 @@ export class Game {
     if (source.controller !== player) {
       return `${player} does not control that permanent`;
     }
-    const def = this.registry.get(source.cardName);
+    const def = this.registry.get(printedCardName(source));
     const ability = def.activated[abilityIndex];
     if (ability === undefined) {
       return `${def.name} has no ability #${abilityIndex}`;
@@ -1877,7 +1933,7 @@ export class Game {
     if (why !== null) throw new Error(why);
 
     const source = this.state.objects[sourceId];
-    const def = this.registry.get(source.cardName);
+    const def = this.registry.get(printedCardName(source));
     const ability = def.activated[abilityIndex];
 
     if (targets.length !== ability.targets.length) {
@@ -1940,7 +1996,7 @@ export class Game {
 
     this.mintAbilityObject(
       sourceId,
-      source.cardName,
+      printedCardName(source),
       player,
       "activated",
       abilityIndex,
@@ -1992,6 +2048,7 @@ export class Game {
       isCommander: false,
       xValue: null,
       controlEndsAtCleanup: false,
+      copyOf: null,
     };
     this.state.zones.shared.stack.push(abilityId);
     return abilityId;
@@ -2025,7 +2082,7 @@ export class Game {
       if (object.controller !== player || object.tapped) continue;
       if (this.tapAbilityBlockedBySickness(object)) continue;
 
-      const def = this.registry.get(object.cardName);
+      const def = this.registry.get(printedCardName(object));
       const produces: ManaType[] = [];
       for (const ability of def.activated) {
         if (
@@ -2054,7 +2111,7 @@ export class Game {
   /** True if `object` is a summoning-sick creature (so its `{T}` costs can't be paid). */
   private tapAbilityBlockedBySickness(object: GameObject): boolean {
     return (
-      this.registry.get(object.cardName).types.includes("creature") &&
+      this.registry.get(printedCardName(object)).types.includes("creature") &&
       this.hasSummoningSickness(object)
     );
   }
@@ -2105,7 +2162,7 @@ export class Game {
   private tapManaSource(id: ObjectId): void {
     const object = this.state.objects[id];
     const ability = this.registry
-      .get(object.cardName)
+      .get(printedCardName(object))
       .activated.find(
         (a) =>
           isManaAbility(a) &&
@@ -2226,7 +2283,7 @@ export class Game {
       return;
     }
 
-    const def = this.registry.get(object.cardName);
+    const def = this.registry.get(printedCardName(object));
     const targets = object.targets ?? [];
 
     if (
@@ -2271,6 +2328,7 @@ export class Game {
           });
         }
       }
+      if (def.copyOnEnter !== null) this.beginCopyChoice(id, object.controller);
     } else {
       this.moveObject(id, "graveyard");
       object.targets = null;
@@ -2278,7 +2336,7 @@ export class Game {
   }
 
   private stackAbilityOf(object: GameObject): StackAbility {
-    const def = this.registry.get(object.cardName);
+    const def = this.registry.get(printedCardName(object));
     const index = object.abilityIndex ?? 0;
     return object.abilityKind === "triggered"
       ? def.triggered[index]
@@ -2335,7 +2393,7 @@ export class Game {
     for (const id of candidates) {
       const object = this.state.objects[id];
       if (object === undefined) continue;
-      const abilities = this.registry.get(object.cardName).triggered;
+      const abilities = this.registry.get(printedCardName(object)).triggered;
       abilities.forEach((ability, index) => {
         if (this.triggerMatches(ability.trigger, event, object)) {
           const autoTargets =
@@ -2346,7 +2404,7 @@ export class Game {
               : undefined;
           this.state.pendingTriggers.push({
             sourceObjectId: id,
-            cardName: object.cardName,
+            cardName: printedCardName(object),
             abilityIndex: index,
             controller: object.controller,
             ...(autoTargets ? { autoTargets } : {}),
@@ -2665,6 +2723,7 @@ export class Game {
         isCommander: false,
         xValue: null,
         controlEndsAtCleanup: false,
+        copyOf: null,
       };
       this.state.zones.shared.battlefield.push(id);
       this.emit({ type: "permanent-entered-battlefield", object: id });
@@ -2812,7 +2871,7 @@ export class Game {
     // Cheap early-out for the overwhelmingly common no-control-effects board.
     const anyControlEffect = this.state.zones.shared.battlefield.some((id) => {
       const o = this.state.objects[id];
-      return o.controller !== o.owner || this.registry.get(o.cardName).controlEnchanted;
+      return o.controller !== o.owner || this.registry.get(printedCardName(o)).controlEnchanted;
     });
     if (!anyControlEffect) return false;
 
@@ -2827,7 +2886,7 @@ export class Game {
         const aura = this.state.objects[auraId];
         if (
           aura.attachedTo === id &&
-          this.registry.get(aura.cardName).controlEnchanted &&
+          this.registry.get(printedCardName(aura)).controlEnchanted &&
           aura.timestamp >= bestTimestamp
         ) {
           bestTimestamp = aura.timestamp;
@@ -2976,7 +3035,7 @@ export class Game {
   private sourceHasKeyword(source: ObjectId, keyword: Keyword): boolean {
     const object = this.state.objects[source];
     if (object === undefined || object.zone !== "battlefield") return false;
-    if (!this.registry.get(object.cardName).types.includes("creature")) {
+    if (!this.registry.get(printedCardName(object)).types.includes("creature")) {
       return false;
     }
     return this.objHasKeyword(source, keyword);
@@ -3037,8 +3096,16 @@ export class Game {
 
       for (const id of [...this.state.zones.shared.battlefield]) {
         const object = this.state.objects[id];
-        const def = this.registry.get(object.cardName);
+        const def = this.registry.get(printedCardName(object));
         if (!def.types.includes("creature")) continue;
+        // A 0/0 Clone still choosing what to copy hasn't finished entering —
+        // don't kill it before its controller answers.
+        if (
+          this.state.awaiting?.kind === "choose-copy" &&
+          this.state.awaiting.source === id
+        ) {
+          continue;
+        }
         const computed = computeCharacteristics(this.state, this.registry, id);
         const toughness = computed.toughness;
         const indestructible = computed.keywords.has("indestructible");
@@ -3067,7 +3134,7 @@ export class Game {
         const host = this.state.objects[object.attachedTo];
         if (host !== undefined && host.zone === "battlefield") continue;
 
-        if (this.registry.get(object.cardName).subtypes.includes("Aura")) {
+        if (this.registry.get(printedCardName(object)).subtypes.includes("Aura")) {
           this.moveObject(id, "graveyard");
           this.emit({
             type: "permanent-destroyed",
@@ -3087,7 +3154,7 @@ export class Game {
       const legendaryGroups = new Map<string, ObjectId[]>();
       for (const id of this.state.zones.shared.battlefield) {
         const object = this.state.objects[id];
-        if (!this.registry.get(object.cardName).supertypes.includes("legendary")) continue;
+        if (!this.registry.get(printedCardName(object)).supertypes.includes("legendary")) continue;
         const key = `${object.controller} ${object.cardName}`;
         const group = legendaryGroups.get(key);
         if (group) group.push(id);
@@ -3186,6 +3253,9 @@ export class Game {
     // to its owner, not the thief.
     object.controlEndsAtCleanup = false;
     object.controller = object.owner;
+    // A copy effect ends when the object changes zones (rule 707.2) — a Clone
+    // that dies and returns is a Clone again.
+    object.copyOf = null;
 
     if (to === "battlefield") {
       object.enteredBattlefieldOnTurn = this.state.turn.number;

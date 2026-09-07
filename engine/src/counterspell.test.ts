@@ -71,6 +71,7 @@ const giveLands = (game: Game, player: PlayerId, name: string, n: number): void 
       isCommander: false,
       xValue: null,
       controlEndsAtCleanup: false,
+      copyOf: null,
       counters: {},
       modifiers: [],
     };
