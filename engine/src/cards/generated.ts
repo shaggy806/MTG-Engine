@@ -17,6 +17,7 @@ import _poolBoggartBrute from "./pool/boggart-brute.js";
 import _poolBonesplitter from "./pool/bonesplitter.js";
 import _poolBoomerang from "./pool/boomerang.js";
 import _poolClone from "./pool/clone.js";
+import _poolCombatThresher from "./pool/combat-thresher.js";
 import _poolConsider from "./pool/consider.js";
 import _poolContentiousPlan from "./pool/contentious-plan.js";
 import _poolCounterspell from "./pool/counterspell.js";
@@ -128,6 +129,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolBonesplitter,
   _poolBoomerang,
   _poolClone,
+  _poolCombatThresher,
   _poolConsider,
   _poolContentiousPlan,
   _poolCounterspell,

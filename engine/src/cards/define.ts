@@ -84,6 +84,10 @@ export interface StaticAbility {
   readonly grantKeywords?: readonly Keyword[];
   /** Combat restrictions imposed on the affected objects (Pacifism, Juggernaut). */
   readonly restrictions?: readonly CombatRestriction[];
+  /** Ward (rule 702.21) — an opponent targeting this permanent (`affects:
+   * "self"`) must pay this or their spell/ability is countered. Applied at the
+   * target's resolution, auto-paid if the opponent can afford it. */
+  readonly ward?: { readonly mana?: string; readonly payLife?: number };
   /** Layer 7b: set base power and toughness to a dynamic count (+ the given
    * offsets). Only meaningful with `affects.scope === "self"` (a CDA). */
   readonly setBasePtFromCount?: {

@@ -2559,6 +2559,20 @@ export class Game {
       return;
     }
 
+    // Ward (rule 702.21) — a warded target the caster doesn't control taxes
+    // the spell, or counters it if the caster can't pay.
+    if (
+      targets.length > 0 &&
+      !this.wardCheckPasses(object.controller, targets, () => {
+        object.targets = null;
+        object.xValue = null;
+        this.moveObject(id, "graveyard");
+        this.emit({ type: "spell-countered", object: id });
+      })
+    ) {
+      return;
+    }
+
     const context = this.makeResolutionContext(
       id,
       object.controller,
@@ -2618,6 +2632,18 @@ export class Game {
         object: id,
         reason: "all targets are illegal",
       });
+      return;
+    }
+
+    // Ward (rule 702.21) — same as for a spell, but a countered ability just
+    // ceases to exist.
+    if (
+      targets.length > 0 &&
+      !this.wardCheckPasses(object.controller, targets, () => {
+        this.removeAbilityFromStack(id);
+        this.emit({ type: "spell-countered", object: id });
+      })
+    ) {
       return;
     }
 
@@ -3660,6 +3686,60 @@ export class Game {
    * put into its owner's graveyard without resolving. A countered permanent
    * spell never enters the battlefield; a countered commander is redirected to
    * the command zone by `moveObject` like any other. */
+  /** The ward cost on `id` (rule 702.21) from a `"self"` static, or `null`. */
+  private wardOf(id: ObjectId): { mana?: string; payLife?: number } | null {
+    const object = this.state.objects[id];
+    if (object === undefined || hasLostAbilities(object)) return null;
+    for (const ability of this.registry.get(printedCardName(object)).static) {
+      if (ability.ward !== undefined && ability.affects.scope === "self") {
+        return ability.ward;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Ward (rule 702.21), checked as a targeted spell/ability begins to resolve:
+   * for every warded permanent it targets that `caster` doesn't control, the
+   * caster must pay the ward cost. Paid automatically when affordable (no
+   * "decline and be countered" choice is modeled); otherwise the target's
+   * spell/ability is countered — this returns `false` and the caller aborts
+   * the resolution. `sourceIsSpell` picks the log wording.
+   */
+  private wardCheckPasses(
+    caster: PlayerId,
+    targets: readonly TargetRef[],
+    onCountered: () => void,
+  ): boolean {
+    for (const target of targets) {
+      if (target.kind !== "object") continue;
+      const permanent = this.state.objects[target.object];
+      if (
+        permanent === undefined ||
+        permanent.zone !== "battlefield" ||
+        permanent.controller === caster
+      ) {
+        continue;
+      }
+      const ward = this.wardOf(target.object);
+      if (ward === null) continue;
+
+      const manaCost = parseManaCost(ward.mana ?? null);
+      const plan = this.planManaPayment(caster, manaCost);
+      const lifeOk =
+        ward.payLife === undefined || this.state.players[caster].life >= ward.payLife;
+      if (plan === null || !lifeOk) {
+        onCountered();
+        return false;
+      }
+      for (const manaSourceId of plan) this.tapManaSource(manaSourceId);
+      this.spendFromPool(caster, manaCost);
+      if (ward.payLife !== undefined) this.changeLife(caster, -ward.payLife);
+      this.emit({ type: "ward-paid", object: target.object, player: caster });
+    }
+    return true;
+  }
+
   private counterSpellByEffect(target: TargetRef): void {
     if (target.kind !== "object") return;
     const object = this.state.objects[target.object];

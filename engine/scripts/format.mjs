@@ -87,6 +87,8 @@ export const makeFormatter = (game) => {
         return `${name(e.object)} fizzles — ${e.reason}`;
       case "spell-countered":
         return `${name(e.object)} is countered`;
+      case "ward-paid":
+        return `${e.player} pays ward for ${name(e.object)}`;
       case "control-changed":
         return `${e.controller} gains control of ${name(e.object)}${
           e.untilEndOfTurn ? " until EOT" : ""
