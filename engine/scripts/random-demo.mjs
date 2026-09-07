@@ -64,6 +64,8 @@ const deckB = deck([
   ["Typhoid Rats", 2],
   ["Monastery Swiftspear", 2],
   ["Vampire Nighthawk", 2],
+  ["Thieving Magpie", 2],
+  ["Hypnotic Specter", 1],
   ["Wurmcoil Engine", 1],
   ["Lightning Bolt", 2],
   ["Fireball", 1],

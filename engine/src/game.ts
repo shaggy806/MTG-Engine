@@ -1561,7 +1561,7 @@ export class Game {
 
     // All combat damage in a pass is dealt simultaneously.
     for (const { source, target, amount } of assignments) {
-      this.dealDamage(source, target, amount);
+      this.dealDamage(source, target, amount, true);
       if (target.kind === "player" && this.state.objects[source].isCommander) {
         const controller = this.state.objects[source].controller;
         const taken = this.state.players[target.player].commanderDamageTaken;
@@ -2315,11 +2315,18 @@ export class Game {
       const abilities = this.registry.get(object.cardName).triggered;
       abilities.forEach((ability, index) => {
         if (this.triggerMatches(ability.trigger, event, object)) {
+          const autoTargets =
+            ability.trigger.on === "deals-combat-damage-to-player" &&
+            event.type === "damage-dealt" &&
+            event.target.kind === "player"
+              ? [event.target]
+              : undefined;
           this.state.pendingTriggers.push({
             sourceObjectId: id,
             cardName: object.cardName,
             abilityIndex: index,
             controller: object.controller,
+            ...(autoTargets ? { autoTargets } : {}),
           });
         }
       });
@@ -2348,6 +2355,13 @@ export class Game {
         return (
           event.type === "attacker-declared" &&
           this.matchesWho(spec.who, event.attacker, self)
+        );
+      case "deals-combat-damage-to-player":
+        return (
+          event.type === "damage-dealt" &&
+          event.combat &&
+          event.target.kind === "player" &&
+          this.matchesWho(spec.who, event.source, self)
         );
       case "step-begins":
         return (
@@ -2423,40 +2437,54 @@ export class Game {
     readonly cardName: string;
     readonly abilityIndex: number;
     readonly controller: PlayerId;
+    readonly autoTargets?: readonly TargetRef[];
   }): void {
     const ability =
       this.registry.get(trigger.cardName).triggered[trigger.abilityIndex];
 
     let targets: readonly TargetRef[] = [];
     if (ability.targets.length > 0) {
-      const legalOptions = ability.targets.map((spec) =>
-        legalTargets(this.state, this.registry, spec, trigger.controller),
-      );
-      if (legalOptions.some((options) => options.length === 0)) {
-        this.emit({
-          type: "trigger-removed",
-          source: trigger.sourceObjectId,
-          reason: "no legal targets",
-        });
-        return;
-      }
-      const chosen = this.controllers[trigger.controller].chooseTargets(
-        this.controllerView(trigger.controller),
-        trigger.cardName,
-        ability.targets,
-        legalOptions,
-      );
-      if (chosen.length !== ability.targets.length) {
-        throw new Error(`bad target count for ${trigger.cardName}'s trigger`);
-      }
-      ability.targets.forEach((spec, i) => {
+      const auto = trigger.autoTargets ?? [];
+      const chosen: TargetRef[] = [];
+      for (let i = 0; i < ability.targets.length; i += 1) {
+        const spec = ability.targets[i];
+        if (auto[i] !== undefined) {
+          // The triggering event determined this target (a saboteur's victim).
+          if (!isLegalTarget(this.state, this.registry, spec, auto[i], trigger.controller)) {
+            this.emit({
+              type: "trigger-removed",
+              source: trigger.sourceObjectId,
+              reason: "no legal targets",
+            });
+            return;
+          }
+          chosen.push(auto[i]);
+          continue;
+        }
+        const options = legalTargets(this.state, this.registry, spec, trigger.controller);
+        if (options.length === 0) {
+          this.emit({
+            type: "trigger-removed",
+            source: trigger.sourceObjectId,
+            reason: "no legal targets",
+          });
+          return;
+        }
+        const picked = this.controllers[trigger.controller].chooseTargets(
+          this.controllerView(trigger.controller),
+          trigger.cardName,
+          [spec],
+          [options],
+        );
         if (
-          !isLegalTarget(this.state, this.registry, spec, chosen[i], trigger.controller)
+          picked.length !== 1 ||
+          !isLegalTarget(this.state, this.registry, spec, picked[0], trigger.controller)
         ) {
           throw new Error(`illegal target chosen for ${trigger.cardName}'s trigger`);
         }
-      });
-      targets = [...chosen];
+        chosen.push(picked[0]);
+      }
+      targets = chosen;
     }
 
     this.mintAbilityObject(
@@ -2823,12 +2851,13 @@ export class Game {
     source: ObjectId,
     target: TargetRef,
     amount: number,
+    combat = false,
   ): void {
     if (amount <= 0) return;
 
     if (target.kind === "player") {
       if (this.state.players[target.player] === undefined) return;
-      this.emit({ type: "damage-dealt", source, target, amount });
+      this.emit({ type: "damage-dealt", source, target, amount, combat });
       this.changeLife(target.player, -amount);
       this.applyLifelink(source, amount);
       return;
@@ -2839,7 +2868,7 @@ export class Game {
     if (this.sourceHasKeyword(source, "deathtouch")) {
       object.markedByDeathtouch = true;
     }
-    this.emit({ type: "damage-dealt", source, target, amount });
+    this.emit({ type: "damage-dealt", source, target, amount, combat });
     this.applyLifelink(source, amount);
   }
 

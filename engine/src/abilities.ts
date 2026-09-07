@@ -48,6 +48,12 @@ export type TriggerSpec =
   | { readonly on: "enters-battlefield"; readonly who: TriggerWho }
   | { readonly on: "dies"; readonly who: TriggerWho }
   | { readonly on: "attacks"; readonly who: TriggerWho }
+  | {
+      /** This creature dealt combat damage to a player. The ability's first
+       * target slot (if any) is auto-filled with that player. */
+      readonly on: "deals-combat-damage-to-player";
+      readonly who: TriggerWho;
+    }
   | { readonly on: "step-begins"; readonly step: Step; readonly who: TriggerWho }
   | {
       /** A spell was cast. `who` is relative to the caster: `"you"` = this

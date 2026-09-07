@@ -151,6 +151,8 @@ export type GameEvent =
       readonly source: ObjectId;
       readonly target: TargetRef;
       readonly amount: number;
+      /** True for combat damage (rule 510) — as opposed to burn, abilities, etc. */
+      readonly combat: boolean;
     })
   | (Base & {
       readonly type: "life-changed";

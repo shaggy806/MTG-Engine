@@ -34,6 +34,7 @@ import _poolGraveRecall from "./pool/grave-recall.js";
 import _poolGrizzlyBears from "./pool/grizzly-bears.js";
 import _poolHillGiant from "./pool/hill-giant.js";
 import _poolHolyStrength from "./pool/holy-strength.js";
+import _poolHypnoticSpecter from "./pool/hypnotic-specter.js";
 import _poolIsland from "./pool/island.js";
 import _poolJump from "./pool/jump.js";
 import _poolLevitation from "./pool/levitation.js";
@@ -57,6 +58,7 @@ import _poolRaiseTheAlarm from "./pool/raise-the-alarm.js";
 import _poolRumblingBaloth from "./pool/rumbling-baloth.js";
 import _poolSerraAngel from "./pool/serra-angel.js";
 import _poolSwamp from "./pool/swamp.js";
+import _poolThievingMagpie from "./pool/thieving-magpie.js";
 import _poolTomeScour from "./pool/tome-scour.js";
 import _poolTyphoidRats from "./pool/typhoid-rats.js";
 import _poolUnsummon from "./pool/unsummon.js";
@@ -105,6 +107,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolGrizzlyBears,
   _poolHillGiant,
   _poolHolyStrength,
+  _poolHypnoticSpecter,
   _poolIsland,
   _poolJump,
   _poolLevitation,
@@ -128,6 +131,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolRumblingBaloth,
   _poolSerraAngel,
   _poolSwamp,
+  _poolThievingMagpie,
   _poolTomeScour,
   _poolTyphoidRats,
   _poolUnsummon,

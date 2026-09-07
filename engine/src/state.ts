@@ -95,6 +95,10 @@ export interface PendingTrigger {
   readonly cardName: string;
   readonly abilityIndex: number;
   readonly controller: PlayerId;
+  /** A target the triggering *event* determines (not chosen) — e.g. the
+   * player a saboteur just dealt combat damage to. Fills the ability's target
+   * slots in order, ahead of any `chooseTargets` prompt. */
+  readonly autoTargets?: readonly TargetRef[];
 }
 
 export interface PlayerState {
