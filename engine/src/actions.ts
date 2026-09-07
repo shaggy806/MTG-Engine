@@ -32,6 +32,10 @@ export type Action =
        * only meaningful) when the card's cost contains `{X}`; ignored
        * otherwise. */
       readonly xValue?: number;
+      /** Cast under an alternative permission rather than from the hand for the
+       * printed cost — `"flashback"` casts an instant/sorcery from the owner's
+       * graveyard for its flashback cost (rule 702.34). */
+      readonly via?: "flashback";
     }
   | {
       readonly type: "activate-ability";
@@ -161,6 +165,10 @@ export type LegalAction =
        * affordable). A driver must include `xValue` in the `cast-spell`
        * action; anything from 0 to `maxX` is legal. */
       readonly xCost?: { readonly maxX: number };
+      /** Present when this is an alternative-permission cast (not from the hand
+       * for the printed cost). `"flashback"` = the card is in the player's
+       * graveyard; the driver must echo `via` back in the `cast-spell` action. */
+      readonly via?: "flashback";
     }
   | {
       readonly kind: "activate-ability";

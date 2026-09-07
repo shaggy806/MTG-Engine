@@ -646,6 +646,7 @@ export class RandomController extends AutomaticController {
           ...(legal.xCost !== undefined
             ? { xValue: this.pickIndex(legal.xCost.maxX + 1) }
             : {}),
+          ...(legal.via !== undefined ? { via: legal.via } : {}),
         };
       case "activate-ability": {
         const sac = legal.sacrifice;

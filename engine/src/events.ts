@@ -90,6 +90,9 @@ export type GameEvent =
       readonly targets: readonly TargetRef[];
       /** The value chosen for `{X}`, or `null` when the cost had no `{X}`. */
       readonly x: number | null;
+      /** The alternative permission the spell was cast under, if any (Phase 6
+       * — `"flashback"` = cast from the graveyard). */
+      readonly via?: "flashback";
     })
   | (Base & { readonly type: "spell-resolved"; readonly object: ObjectId })
   | (Base & {

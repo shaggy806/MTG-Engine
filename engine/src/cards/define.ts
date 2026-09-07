@@ -165,6 +165,11 @@ export interface CardDefinition {
    * many loyalty counters). `null` for a non-planeswalker. `defineCard`
    * synthesizes the enters-with-counters replacement from this. */
   readonly loyalty: number | null;
+  /** Flashback (rule 702.34) — this instant/sorcery may be cast from its
+   * owner's graveyard for `cost` instead of its mana cost; a spell so cast is
+   * exiled instead of going anywhere else from the stack. `null` for a card
+   * without flashback. */
+  readonly flashback: { readonly cost: string } | null;
 }
 
 interface CardDraft {
@@ -188,6 +193,7 @@ interface CardDraft {
   controlEnchanted?: boolean;
   copyOnEnter?: { readonly filter: "creature" };
   loyalty?: number;
+  flashback?: { readonly cost: string };
 }
 
 /** Build a {@link CardDefinition} from a partial draft, filling in defaults. */
@@ -230,6 +236,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     controlEnchanted: draft.controlEnchanted ?? false,
     copyOnEnter: draft.copyOnEnter ?? null,
     loyalty,
+    flashback: draft.flashback ?? null,
   };
 }
 

@@ -314,6 +314,7 @@ export class Game {
           action.card,
           action.targets ?? [],
           action.xValue ?? 0,
+          action.via,
         );
         break;
       case "activate-ability":
@@ -383,7 +384,7 @@ export class Game {
       case "play-land":
         return this.whyCannotPlayLand(action.player, action.card);
       case "cast-spell":
-        return this.whyCannotCastSpell(action.player, action.card);
+        return this.whyCannotCastSpell(action.player, action.card, action.via);
       case "activate-ability":
         return this.whyCannotActivateAbility(
           action.player,
@@ -578,6 +579,27 @@ export class Game {
             : {}),
         });
       }
+    }
+
+    // Flashback (rule 702.34) — an instant/sorcery in this player's graveyard
+    // may be cast from there for its flashback cost.
+    for (const card of this.state.zones.perPlayer[player].graveyard) {
+      const cardName = this.state.objects[card].cardName;
+      const def = this.registry.get(cardName);
+      if (def.flashback === null) continue;
+      if (this.whyCannotCastSpell(player, card, "flashback") !== null) continue;
+      const parsed = parseManaCost(def.flashback.cost);
+      out.push({
+        kind: "cast-spell",
+        card,
+        cardName,
+        via: "flashback",
+        targetSpecs: def.targets,
+        targetOptions: this.targetOptionsFor(def.targets, player, this.cardSource(def)),
+        ...(parsed.x > 0
+          ? { xCost: { maxX: this.maxAffordableX(player, card, def, def.flashback.cost) } }
+          : {}),
+      });
     }
 
     for (const source of this.state.zones.shared.battlefield) {
@@ -2051,8 +2073,9 @@ export class Game {
     cardId: ObjectId,
     def: CardDefinition,
     xValue = 0,
+    costString: string | null = def.manaCost,
   ): ManaCost {
-    const base = parseManaCost(def.manaCost);
+    const base = parseManaCost(costString);
     const tax = this.isCastableCommander(player, cardId) ? this.commanderTax(player) : 0;
     let generic = base.generic + tax + base.x * Math.max(0, xValue);
     generic += this.costModificationFor(player, cardId);
@@ -2090,8 +2113,13 @@ export class Game {
 
   /** Largest value of `{X}` this player could currently pay for when casting
    * `cardId` (0 if only X=0 is affordable). */
-  private maxAffordableX(player: PlayerId, cardId: ObjectId, def: CardDefinition): number {
-    const parsed = parseManaCost(def.manaCost);
+  private maxAffordableX(
+    player: PlayerId,
+    cardId: ObjectId,
+    def: CardDefinition,
+    costString: string | null = def.manaCost,
+  ): number {
+    const parsed = parseManaCost(costString);
     if (parsed.x === 0) return 0;
     // Upper bound: every mana source plus everything already floating — X can't
     // exceed that no matter what.
@@ -2103,7 +2131,7 @@ export class Game {
       ) + MANA_TYPES.reduce((n, t) => n + pool[t], 0);
     let best = 0;
     for (let k = 1; k <= cap; k += 1) {
-      if (this.payMana(player, this.castingCostOf(player, cardId, def, k)) === null) {
+      if (this.payMana(player, this.castingCostOf(player, cardId, def, k, costString)) === null) {
         break;
       }
       best = k;
@@ -2111,16 +2139,34 @@ export class Game {
     return best;
   }
 
-  private whyCannotCastSpell(player: PlayerId, cardId: ObjectId): string | null {
+  /** The mana-cost string `player` would pay to cast `cardId` under `via`
+   * (the flashback cost from the graveyard, else the printed cost). */
+  private castCostString(cardId: ObjectId, via: "flashback" | undefined): string | null {
+    if (via === "flashback") {
+      return this.registry.get(this.state.objects[cardId].cardName).flashback?.cost ?? null;
+    }
+    return this.registry.get(this.state.objects[cardId].cardName).manaCost;
+  }
+
+  private whyCannotCastSpell(
+    player: PlayerId,
+    cardId: ObjectId,
+    via?: "flashback",
+  ): string | null {
     const blocked = this.whyCannotAct(player);
     if (blocked !== null) return blocked;
-    if (
+    const def = this.registry.get(this.state.objects[cardId].cardName);
+    if (via === "flashback") {
+      if (def.flashback === null) return `${def.name} does not have flashback`;
+      if (!this.state.zones.perPlayer[player].graveyard.includes(cardId)) {
+        return `${def.name} is not in ${player}'s graveyard`;
+      }
+    } else if (
       !this.state.zones.perPlayer[player].hand.includes(cardId) &&
       !this.isCastableCommander(player, cardId)
     ) {
       return `${player} does not have that card in hand`;
     }
-    const def = this.registry.get(this.state.objects[cardId].cardName);
     if (def.types.includes("land")) return "lands are played, not cast";
     // Instant-speed if it's an instant or has flash (rule 702.8); otherwise
     // sorcery timing applies.
@@ -2135,7 +2181,10 @@ export class Game {
         return `${def.name} has no legal ${spec} target`;
       }
     }
-    if (this.payMana(player, this.castingCostOf(player, cardId, def)) === null) {
+    if (
+      this.payMana(player, this.castingCostOf(player, cardId, def, 0, this.castCostString(cardId, via))) ===
+      null
+    ) {
       return `${player} cannot pay the cost of ${def.name}`;
     }
     return null;
@@ -2146,13 +2195,15 @@ export class Game {
     cardId: ObjectId,
     targets: readonly TargetRef[],
     xValue = 0,
+    via?: "flashback",
   ): void {
-    const why = this.whyCannotCastSpell(player, cardId);
+    const why = this.whyCannotCastSpell(player, cardId, via);
     if (why !== null) throw new Error(why);
 
     const object = this.state.objects[cardId];
     const def = this.registry.get(printedCardName(object));
-    const hasX = parseManaCost(def.manaCost).x > 0;
+    const costString = this.castCostString(cardId, via);
+    const hasX = parseManaCost(costString).x > 0;
     const chosenX = hasX ? Math.max(0, Math.floor(xValue)) : 0;
 
     if (targets.length !== def.targets.length) {
@@ -2167,7 +2218,7 @@ export class Game {
     });
 
     const castingFromCommand = this.isCastableCommander(player, cardId);
-    const cost = this.castingCostOf(player, cardId, def, chosenX);
+    const cost = this.castingCostOf(player, cardId, def, chosenX, costString);
     const payment = this.payMana(player, cost);
     if (payment === null) {
       throw new Error(`${player} cannot pay the cost of ${def.name}`);
@@ -2177,6 +2228,7 @@ export class Game {
     this.moveObject(cardId, "stack");
     object.targets = targets.length > 0 ? [...targets] : null;
     object.xValue = hasX ? chosenX : null;
+    object.castVia = via ?? null;
     this.executePayment(player, payment);
     if (castingFromCommand) this.state.players[player].commanderCastCount += 1;
 
@@ -2186,6 +2238,7 @@ export class Game {
       object: cardId,
       targets: [...targets],
       x: hasX ? chosenX : null,
+      ...(via !== undefined ? { via } : {}),
     });
     this.afterPlayerAction(player);
   }
@@ -4645,6 +4698,12 @@ export class Game {
       this.emit({ type: "graveyard-replaced-with-exile", object: id });
     }
 
+    // Flashback (rule 702.34): a spell cast from the graveyard via flashback
+    // is exiled instead of going anywhere else from the stack.
+    if (object.zone === "stack" && object.castVia === "flashback" && to === "graveyard") {
+      to = "exile";
+    }
+
     // Commander replacement (rule 903.9a): a commander that would leave the
     // battlefield for a hidden zone — its owner may send it to the command
     // zone instead. Ask *before* moving (this is a replacement effect, rule
@@ -4714,6 +4773,7 @@ export class Game {
       // 608.2h) — so a Walking Ballista that dies and returns re-enters as a
       // fresh 0/0 with X=0, not its old size.
       object.xValue = null;
+      object.castVia = null;
     }
 
     // The hook for `leaves-battlefield` triggers (rule 603.6d) — fired for

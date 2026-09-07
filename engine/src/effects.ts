@@ -130,9 +130,11 @@ export type EffectSpec =
     }
   | {
       /** Target player discards `amount` cards (their choice, unless it's the
-       * effect's own controller). Discards their whole hand if it's smaller. */
+       * effect's own controller). Discards their whole hand if it's smaller.
+       * `target: "you"` = the effect's controller, with no target slot
+       * (Faithless Looting's "then discard two cards"). */
       readonly kind: "discard";
-      readonly target: number;
+      readonly target: number | "you";
       readonly amount: EffectAmount;
     }
   | {
@@ -522,7 +524,10 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       return;
     }
     case "discard": {
-      const target = ctx.targets[spec.target];
+      const target =
+        spec.target === "you"
+          ? ({ kind: "player", player: ctx.controller } as const)
+          : ctx.targets[spec.target];
       if (target !== undefined) ctx.discardCards(target, amountValue(spec.amount, ctx));
       return;
     }

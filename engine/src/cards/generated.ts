@@ -39,6 +39,7 @@ import _poolElvishVisionary from "./pool/elvish-visionary.js";
 import _poolEssenceScatter from "./pool/essence-scatter.js";
 import _poolEvolvingWilds from "./pool/evolving-wilds.js";
 import _poolExplorersInsight from "./pool/explorers-insight.js";
+import _poolFaithlessLooting from "./pool/faithless-looting.js";
 import _poolFencingAce from "./pool/fencing-ace.js";
 import _poolFireball from "./pool/fireball.js";
 import _poolFlameJavelin from "./pool/flame-javelin.js";
@@ -168,6 +169,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolEssenceScatter,
   _poolEvolvingWilds,
   _poolExplorersInsight,
+  _poolFaithlessLooting,
   _poolFencingAce,
   _poolFireball,
   _poolFlameJavelin,

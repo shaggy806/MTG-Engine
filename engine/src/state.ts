@@ -63,6 +63,11 @@ export interface GameObject {
    * "enters with X counters"-style effect can still read it. `null` when the
    * cost had no `{X}`. Cleared by `moveObject` on any later zone change. */
   xValue: number | null;
+  /** The alternative permission this spell was cast under while it's on the
+   * stack — `"flashback"` (cast from the graveyard, rule 702.34) means it is
+   * exiled instead of going anywhere else from the stack. `null` / absent for
+   * a normally-cast spell. Cleared by `moveObject` on any zone change. */
+  castVia?: "flashback" | null;
   /** What this creature is attacking — a player, or an opponent's planeswalker
    * (rule 508.1) — or `null` if not attacking. */
   attacking: PlayerId | ObjectId | null;

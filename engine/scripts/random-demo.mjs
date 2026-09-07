@@ -104,6 +104,7 @@ const deckB = deck([
   ["Bloodthrone Vampire", 1],
   ["Mind Rot", 1],
   ["Blightning", 1],
+  ["Faithless Looting", 2],
   ["Counterspell", 1],
   ["Negate", 1],
   ["Essence Scatter", 1],
