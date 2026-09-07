@@ -337,6 +337,13 @@ export interface GameState {
   /** Triggered abilities that have fired but not yet been put on the stack. */
   pendingTriggers: PendingTrigger[];
   /**
+   * Battlefield permanents a mass-destroy effect (Wrath of God) still has to
+   * destroy, one at a time — so a commander's 903.9a choice mid-wipe can pause
+   * and resume without dropping the rest. Drained by `drainPendingDestruction`
+   * inside the `prepareForPriority` fixpoint.
+   */
+  pendingDestruction: ObjectId[];
+  /**
    * A commander that is *about to* be put into a hidden zone from the
    * battlefield and whose owner is being asked whether to send it to the
    * command zone instead (rule 903.9a — a replacement effect). While this is

@@ -100,9 +100,11 @@ const deckB = deck([
   ["Angelic Edict", 1],
   ["Tome Scour", 1],
   ["Raise the Alarm", 1],
-  ["Plains", 3],
+  ["Plains", 5],
   ["Rest in Peace", 1],
   ["Deliberate Course", 2],
+  ["Pyroclasm", 1],
+  ["Wrath of God", 1],
 ]);
 
 // A lean Dimir deck for Carol — carries the `Sarova, the Undying Current`
@@ -122,7 +124,7 @@ const deckC = deck([
   ["Counterspell", 2],
   ["Mind Rot", 1],
   ["Tome Scour", 1],
-  ["Levitation", 1],
+  ["Damnation", 1],
 ]);
 
 // All four seats' decks/commanders, in seating order — sliced down to

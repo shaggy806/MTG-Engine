@@ -1,0 +1,193 @@
+import { describe, expect, it } from "vitest";
+
+import { createDefaultRegistry, defineCard } from "./cards.js";
+import { ScriptedController } from "./controller.js";
+import { Game } from "./game.js";
+import { matchesFilter } from "./filter.js";
+import { asObjectId, asPlayerId } from "./primitives.js";
+import type { ObjectId, PlayerId } from "./primitives.js";
+import type { GameState } from "./state.js";
+
+const A = asPlayerId("alice");
+const B = asPlayerId("bob");
+
+const TEST_COMMANDER = defineCard({
+  name: "Edict Test Commander",
+  manaCost: "{1}{G}",
+  colors: ["G"],
+  supertypes: ["legendary"],
+  types: ["creature"],
+  subtypes: ["Spirit"],
+  power: 2,
+  toughness: 2,
+});
+const registry = createDefaultRegistry().register(TEST_COMMANDER);
+
+const pad = (cards: readonly string[]): string[] => [
+  ...cards,
+  ...Array(Math.max(0, 40 - cards.length)).fill("Mountain"),
+];
+
+const spawn = (
+  game: Game,
+  cardName: string,
+  controller: PlayerId,
+  isCommander = false,
+): ObjectId => {
+  const id = asObjectId(`spawn-${game.state.nextObjectSeq}`);
+  game.state.nextObjectSeq += 1;
+  game.state.timestampSeq += 1;
+  game.state.objects[id] = {
+    id, cardName, owner: controller, controller, zone: "battlefield",
+    tapped: false, damageMarked: 0, markedByDeathtouch: false,
+    enteredBattlefieldOnTurn: 0, summoningSick: false, targets: null,
+    attacking: null, blocking: null, blockedBy: [], blocked: false,
+    kind: "card", abilityKind: null, sourceObjectId: null, abilityIndex: null,
+    counters: {}, modifiers: [], timestamp: game.state.timestampSeq,
+    isToken: false, attachedTo: null, isCommander, xValue: null,
+    controlEndsAtCleanup: false, copyOf: null,
+  };
+  game.state.zones.shared.battlefield.push(id);
+  return id;
+};
+
+const mkGame = (aCards: readonly string[]) => {
+  const a = new ScriptedController(A);
+  const b = new ScriptedController(B);
+  const game = Game.create({
+    seed: 1,
+    shuffle: false,
+    registry,
+    rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
+    controllers: { [A]: a, [B]: b },
+    decks: [
+      { player: A, cards: pad(aCards) },
+      { player: B, cards: pad([]) },
+    ],
+  });
+  return { game, a, b };
+};
+
+const toPrecombat = (s: GameState): boolean =>
+  s.turn.number === 1 && s.turn.step === "precombat-main";
+const settled = (s: GameState): boolean =>
+  s.zones.shared.stack.length === 0 && s.awaiting === null;
+const named = (game: Game, ids: readonly ObjectId[], name: string): ObjectId => {
+  const id = ids.find((each) => game.state.objects[each].cardName === name);
+  if (id === undefined) throw new Error(`no ${name}`);
+  return id;
+};
+const cast = (game: Game, name: string): void => {
+  game.dispatch({ type: "cast-spell", player: A, card: named(game, game.handOf(A), name) });
+};
+const zoneOf = (game: Game, id: ObjectId): string => game.state.objects[id]?.zone ?? "gone";
+
+describe("CardFilter — matchesFilter", () => {
+  it("matches on computed type / colour / power / controller", () => {
+    const { game } = mkGame([]);
+    game.advanceUntil(toPrecombat);
+    const bears = spawn(game, "Grizzly Bears", A); // 2/2 green creature
+    const bolt = spawn(game, "Darksteel Myr", B); // 0/3 colourless artifact creature
+
+    const m = (id: ObjectId, f: Parameters<typeof matchesFilter>[3]) =>
+      matchesFilter(game.state, registry, id, f, { you: A });
+
+    expect(m(bears, { type: "creature" })).toBe(true);
+    expect(m(bears, { colors: ["G"] })).toBe(true);
+    expect(m(bears, { colors: ["R"] })).toBe(false);
+    expect(m(bears, { power: { op: "lte", n: 2 } })).toBe(true);
+    expect(m(bears, { power: { op: "gt", n: 2 } })).toBe(false);
+    expect(m(bears, { controlledBy: "you" })).toBe(true);
+    expect(m(bolt, { controlledBy: "you" })).toBe(false);
+    expect(m(bolt, { controlledBy: "opponent" })).toBe(true);
+    expect(m(bolt, { colorless: true, type: "artifact" })).toBe(true);
+    expect(m(bears, { colorless: true })).toBe(false);
+    expect(m(bolt, { notTypes: ["creature"] })).toBe(false);
+  });
+});
+
+describe("destroy-all — Wrath of God (rule 700-style mass destroy)", () => {
+  it("destroys every creature, both players', and leaves non-creatures", () => {
+    const { game } = mkGame(["Wrath of God"]);
+    game.advanceUntil(toPrecombat);
+    const bears = spawn(game, "Grizzly Bears", A);
+    const goblin = spawn(game, "Raging Goblin", B);
+    const land = spawn(game, "Forest", A);
+    const anthem = spawn(game, "Glorious Anthem", A);
+    for (let i = 0; i < 4; i += 1) spawn(game, "Plains", A);
+
+    cast(game, "Wrath of God");
+    game.advanceUntil(settled);
+
+    expect(zoneOf(game, bears)).toBe("graveyard");
+    expect(zoneOf(game, goblin)).toBe("graveyard");
+    expect(zoneOf(game, land)).toBe("battlefield");
+    expect(zoneOf(game, anthem)).toBe("battlefield");
+  });
+
+  it("spares an indestructible creature", () => {
+    const { game } = mkGame(["Wrath of God"]);
+    game.advanceUntil(toPrecombat);
+    const myr = spawn(game, "Darksteel Myr", A); // indestructible
+    const bears = spawn(game, "Grizzly Bears", B);
+    for (let i = 0; i < 4; i += 1) spawn(game, "Plains", A);
+
+    cast(game, "Wrath of God");
+    game.advanceUntil(settled);
+
+    expect(zoneOf(game, myr)).toBe("battlefield");
+    expect(zoneOf(game, bears)).toBe("graveyard");
+    expect(
+      game.eventsOfType("permanent-destroy-prevented").some((e) => e.object === myr),
+    ).toBe(true);
+  });
+
+  it("pauses on a commander's 903.9a choice mid-wipe, then finishes the rest", () => {
+    const a = new ScriptedController(A);
+    a.commanderReplacementFn = () => true;
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      registry,
+      rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
+      controllers: { [A]: a, [B]: new ScriptedController(B) },
+      decks: [
+        { player: A, cards: pad(["Wrath of God"]), commander: "Edict Test Commander" },
+        { player: B, cards: pad([]) },
+      ],
+    });
+    game.advanceUntil(toPrecombat);
+    const commander = spawn(game, "Edict Test Commander", A, true);
+    const bears1 = spawn(game, "Grizzly Bears", A);
+    const bears2 = spawn(game, "Grizzly Bears", B);
+    for (let i = 0; i < 4; i += 1) spawn(game, "Plains", A);
+
+    cast(game, "Wrath of God");
+    game.advanceUntil((s) => s.awaiting?.kind === "commander-replacement");
+    // the wipe is paused — the two vanilla bears are still queued / on board
+    expect(game.state.objects[commander].zone).toBe("battlefield");
+
+    game.advanceUntil(settled);
+    expect(game.state.objects[commander].zone).toBe("command");
+    expect(zoneOf(game, bears1)).toBe("graveyard");
+    expect(zoneOf(game, bears2)).toBe("graveyard");
+  });
+});
+
+describe("damage-all — Pyroclasm", () => {
+  it("kills 2-toughness creatures but not tougher ones", () => {
+    const { game } = mkGame(["Pyroclasm"]);
+    game.advanceUntil(toPrecombat);
+    const bears = spawn(game, "Grizzly Bears", A); // 2/2
+    const spider = spawn(game, "Giant Spider", B); // 2/4
+    spawn(game, "Mountain", A);
+    spawn(game, "Mountain", A);
+
+    cast(game, "Pyroclasm");
+    game.advanceUntil(settled);
+
+    expect(zoneOf(game, bears)).toBe("graveyard");
+    expect(zoneOf(game, spider)).toBe("battlefield");
+    expect(game.state.objects[spider].damageMarked).toBe(2);
+  });
+});

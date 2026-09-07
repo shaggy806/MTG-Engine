@@ -25,6 +25,8 @@ import { AutomaticController } from "./controller.js";
 import type { ControllerView, PlayerController } from "./controller.js";
 import { applyEffectSpec } from "./effects.js";
 import type { ModeOption, PtDuration, ResolutionContext, ZoneChoiceFilter } from "./effects.js";
+import { matchesFilter } from "./filter.js";
+import type { CardFilter } from "./filter.js";
 import type {
   EventOfType,
   GameEvent,
@@ -160,6 +162,7 @@ export class Game {
       pendingBlockerDeclarations: [],
       pendingTriggers: [],
       deferredCommanderMove: null,
+      pendingDestruction: [],
       preventAllCombatDamage: false,
       timestampSeq: 0,
       eventLog: [],
@@ -1071,6 +1074,11 @@ export class Game {
       if (this.state.awaiting !== null) {
         this.grantPriority(this.state.awaiting.player);
         return;
+      }
+      // Continue a mass-destroy (Wrath of God) that a 903.9a choice paused.
+      if (this.state.pendingDestruction.length > 0) {
+        this.drainPendingDestruction();
+        continue;
       }
       if (!this.placePendingTriggers()) break;
     }
@@ -2780,6 +2788,8 @@ export class Game {
       tapPermanent: (target) => this.setTapped(target, true),
       untapPermanent: (target) => this.setTapped(target, false),
       destroyPermanent: (target) => this.destroyByEffect(target),
+      destroyAll: (filter) => this.destroyAllByEffect(controller, filter),
+      damageAll: (filter, amount) => this.damageAllByEffect(source, controller, filter, amount),
       returnToHand: (target) => this.returnToHandByEffect(target),
       exileObject: (target) => this.exileByEffect(target),
       fight: (a, b, oneSided) => this.fightCreatures(a, b, oneSided),
@@ -2811,13 +2821,15 @@ export class Game {
   }
 
   /** Does `id` satisfy a `"look-and-choose"` effect's optional filter? Always
-   * true when there's no filter — the effect just doesn't restrict the choice. */
-  private matchesZoneChoiceFilter(id: ObjectId, filter: ZoneChoiceFilter | undefined): boolean {
+   * true when there's no filter — the effect just doesn't restrict the choice.
+   * `you` is the searching player, for the filter's `controlledBy`/`ownedBy`. */
+  private matchesZoneChoiceFilter(
+    id: ObjectId,
+    filter: ZoneChoiceFilter | undefined,
+    you: PlayerId,
+  ): boolean {
     if (filter === undefined) return true;
-    const def = this.registry.get(this.state.objects[id].cardName);
-    if (filter.type !== undefined && !def.types.includes(filter.type)) return false;
-    if (filter.subtype !== undefined && !def.subtypes.includes(filter.subtype)) return false;
-    return true;
+    return matchesFilter(this.state, this.registry, id, filter, { you });
   }
 
   /** See the `"look-and-choose"` {@link EffectSpec}. */
@@ -2837,7 +2849,7 @@ export class Game {
     // what's *revealed* — the player still looks at everything either way,
     // and naturally ends up unable to choose anything if nothing matches
     // (min/max clamp to 0 along with it), same as the real card whiffing.
-    const eligible = ids.filter((id) => this.matchesZoneChoiceFilter(id, filter));
+    const eligible = ids.filter((id) => this.matchesZoneChoiceFilter(id, filter, player));
     this.state.awaiting = {
       kind: "choose-from-zone",
       player,
@@ -3130,6 +3142,45 @@ export class Game {
       object: target.object,
       reason: "destroyed",
     });
+  }
+
+  /** Destroy every battlefield permanent matching `filter` (Wrath of God).
+   * The victims are queued so a commander's 903.9a choice can pause the wipe
+   * without dropping the rest — `drainPendingDestruction` (run inside the
+   * `prepareForPriority` fixpoint) works through the queue. */
+  private destroyAllByEffect(you: PlayerId, filter: CardFilter): void {
+    for (const id of [...this.state.zones.shared.battlefield]) {
+      if (matchesFilter(this.state, this.registry, id, filter, { you })) {
+        this.state.pendingDestruction.push(id);
+      }
+    }
+    this.drainPendingDestruction();
+  }
+
+  private drainPendingDestruction(): void {
+    while (this.state.pendingDestruction.length > 0) {
+      if (this.state.awaiting !== null) return; // e.g. a commander's 903.9a choice
+      const id = this.state.pendingDestruction.shift() as ObjectId;
+      const object = this.state.objects[id];
+      if (object === undefined || object.zone !== "battlefield") continue;
+      this.destroyByEffect({ kind: "object", object: id });
+    }
+  }
+
+  /** Deal `amount` damage to every battlefield permanent matching `filter`
+   * (Pyroclasm). SBAs sweep the dead afterwards. */
+  private damageAllByEffect(
+    source: ObjectId,
+    you: PlayerId,
+    filter: CardFilter,
+    amount: number,
+  ): void {
+    if (amount <= 0) return;
+    for (const id of [...this.state.zones.shared.battlefield]) {
+      if (matchesFilter(this.state, this.registry, id, filter, { you })) {
+        this.dealDamage(source, { kind: "object", object: id }, amount);
+      }
+    }
   }
 
   private returnToHandByEffect(target: TargetRef): void {

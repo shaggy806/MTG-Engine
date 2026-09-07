@@ -19,6 +19,7 @@ import _poolClone from "./pool/clone.js";
 import _poolContentiousPlan from "./pool/contentious-plan.js";
 import _poolCounterspell from "./pool/counterspell.js";
 import _poolCrawWurm from "./pool/craw-wurm.js";
+import _poolDamnation from "./pool/damnation.js";
 import _poolDarksteelMyr from "./pool/darksteel-myr.js";
 import _poolDeliberateCourse from "./pool/deliberate-course.js";
 import _poolDisenchant from "./pool/disenchant.js";
@@ -64,6 +65,7 @@ import _poolPhyrexianArena from "./pool/phyrexian-arena.js";
 import _poolPlains from "./pool/plains.js";
 import _poolPreyUpon from "./pool/prey-upon.js";
 import _poolProdigalSorcerer from "./pool/prodigal-sorcerer.js";
+import _poolPyroclasm from "./pool/pyroclasm.js";
 import _poolRabidBite from "./pool/rabid-bite.js";
 import _poolRagingGoblin from "./pool/raging-goblin.js";
 import _poolRaiseTheAlarm from "./pool/raise-the-alarm.js";
@@ -87,6 +89,7 @@ import _poolWalkingBallista from "./pool/walking-ballista.js";
 import _poolWallOfWood from "./pool/wall-of-wood.js";
 import _poolWhiteKnight from "./pool/white-knight.js";
 import _poolWildwoodSentinel from "./pool/wildwood-sentinel.js";
+import _poolWrathOfGod from "./pool/wrath-of-god.js";
 import _poolWurmcoilEngine from "./pool/wurmcoil-engine.js";
 import _tokensPhyrexianWurmDeathtouch from "./tokens/phyrexian-wurm-deathtouch.js";
 import _tokensPhyrexianWurmLifelink from "./tokens/phyrexian-wurm-lifelink.js";
@@ -110,6 +113,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolContentiousPlan,
   _poolCounterspell,
   _poolCrawWurm,
+  _poolDamnation,
   _poolDarksteelMyr,
   _poolDeliberateCourse,
   _poolDisenchant,
@@ -155,6 +159,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolPlains,
   _poolPreyUpon,
   _poolProdigalSorcerer,
+  _poolPyroclasm,
   _poolRabidBite,
   _poolRagingGoblin,
   _poolRaiseTheAlarm,
@@ -178,6 +183,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolWallOfWood,
   _poolWhiteKnight,
   _poolWildwoodSentinel,
+  _poolWrathOfGod,
   _poolWurmcoilEngine,
   _tokensPhyrexianWurmDeathtouch,
   _tokensPhyrexianWurmLifelink,

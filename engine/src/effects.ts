@@ -9,6 +9,7 @@
  */
 
 import type { CardType, Keyword } from "./cards.js";
+import type { CardFilter } from "./filter.js";
 import type { Color, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { TargetRef } from "./target.js";
@@ -19,14 +20,12 @@ export type PtDuration = "end-of-turn" | "permanent";
  * `{X}` when the spell/ability was put on the stack (`ResolutionContext.x`). */
 export type EffectAmount = number | "x";
 
-/** Restricts which of a "look-and-choose" effect's revealed candidates can
- * actually be chosen (e.g. "a Dragon card", "a land card") — both revealed
- * either way, only the choice itself is narrowed. Both clauses must match
- * when both are given. */
-export interface ZoneChoiceFilter {
-  readonly type?: CardType;
-  readonly subtype?: string;
-}
+/** @deprecated Use {@link CardFilter} directly — kept as an alias so existing
+ * `look-and-choose` / `matchesZoneChoiceFilter` call sites still type-check. */
+export type ZoneChoiceFilter = CardFilter;
+
+/** Which players an "each" / mass effect reaches. */
+export type PlayerScope = "each-player" | "each-opponent" | "you";
 
 /** A declarative effect. Grows as milestones add vocabulary. */
 export type EffectSpec =
@@ -44,6 +43,21 @@ export type EffectSpec =
   | { readonly kind: "tap"; readonly target: number }
   | { readonly kind: "untap"; readonly target: number }
   | { readonly kind: "destroy"; readonly target: number }
+  | {
+      /** Destroy every battlefield permanent matching `filter` (Wrath of God:
+       * `{ type: "creature" }`). Indestructible / 903.9a handled per-permanent
+       * downstream. */
+      readonly kind: "destroy-all";
+      readonly filter: CardFilter;
+    }
+  | {
+      /** Deal `amount` damage to every battlefield permanent matching `filter`
+       * (Pyroclasm: 2 to each creature). The source of the damage is the
+       * resolving spell/ability. */
+      readonly kind: "damage-all";
+      readonly filter: CardFilter;
+      readonly amount: EffectAmount;
+    }
   | {
       /** `targets[a]` and `targets[b]` each deal damage equal to their power
        * to the other (rule 701.12). With `oneSided`, only `a` deals to `b`
@@ -222,6 +236,10 @@ export interface EffectApi {
   tapPermanent(target: TargetRef): void;
   untapPermanent(target: TargetRef): void;
   destroyPermanent(target: TargetRef): void;
+  /** Destroy every battlefield permanent matching `filter`. */
+  destroyAll(filter: CardFilter): void;
+  /** Deal `amount` damage to every battlefield permanent matching `filter`. */
+  damageAll(filter: CardFilter, amount: number): void;
   returnToHand(target: TargetRef): void;
   exileObject(target: TargetRef): void;
   /** `a` and `b` (both creatures) fight; with `oneSided` only `a` deals. */
@@ -346,6 +364,12 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       if (target !== undefined) ctx.destroyPermanent(target);
       return;
     }
+    case "destroy-all":
+      ctx.destroyAll(spec.filter);
+      return;
+    case "damage-all":
+      ctx.damageAll(spec.filter, amountValue(spec.amount, ctx));
+      return;
     case "fight": {
       const a = ctx.targets[spec.a];
       const b = ctx.targets[spec.b];
