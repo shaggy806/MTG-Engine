@@ -12,7 +12,7 @@ import type {
 } from 'engine'
 import { useNetworkGame } from './net/useNetworkGame.ts'
 import type { NetworkGame } from './net/useNetworkGame.ts'
-import type { ImportedCardReport } from './net/protocol.ts'
+import type { DeckFormatReport, ImportedCardReport } from './net/protocol.ts'
 import { computeBoardEntries } from './game/board.ts'
 import type { BoardEntry } from './game/board.ts'
 import { playerLabel, seatClassOf } from './format.ts'
@@ -217,6 +217,7 @@ function LobbyScreen({
 function ImportDeckScreen({ onBack }: { readonly onBack: () => void }) {
   const [text, setText] = useState('')
   const [cards, setCards] = useState<readonly ImportedCardReport[] | null>(null)
+  const [format, setFormat] = useState<DeckFormatReport | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -225,15 +226,21 @@ function ImportDeckScreen({ onBack }: { readonly onBack: () => void }) {
     setLoading(true)
     setError(null)
     setCards(null)
+    setFormat(null)
     fetch(IMPORT_DECK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text }),
     })
       .then(async (res) => {
-        const data = (await res.json()) as { cards?: ImportedCardReport[]; error?: string }
+        const data = (await res.json()) as {
+          cards?: ImportedCardReport[]
+          format?: DeckFormatReport
+          error?: string
+        }
         if (!res.ok) throw new Error(data.error ?? 'import failed')
         setCards(data.cards ?? [])
+        setFormat(data.format ?? null)
       })
       .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
       .finally(() => setLoading(false))
@@ -268,6 +275,24 @@ function ImportDeckScreen({ onBack }: { readonly onBack: () => void }) {
           </button>
         </form>
         {error ? <div className="error-banner">⚠ {error}</div> : null}
+        {format ? (
+          <div className={`import-deck-format ${format.legal ? 'legal' : 'illegal'}`}>
+            <strong>
+              Commander format: {format.legal ? '✓ legal' : `✗ ${format.violations.length} issue(s)`}
+            </strong>
+            <div className="muted">
+              commander: {format.commander ?? '(none found)'} · identity:{' '}
+              {format.identity || 'colourless'}
+            </div>
+            {format.violations.length > 0 ? (
+              <ul>
+                {format.violations.map((v, i) => (
+                  <li key={i}>{v}</li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        ) : null}
         {cards ? (
           <div className="import-deck-report">
             <p className="muted">
@@ -1125,7 +1150,8 @@ function Table({ view, seat, opponents, game }: TableProps) {
    * not which zone the card is actually sitting in). */
   const commandZoneTile = (obj: VisibleObject) => {
     const castable = mode === 'priority' && castByCard.has(obj.id)
-    const commanderTax = 2 * (view.players[obj.owner]?.commanderCastCount ?? 0)
+    const commanderTax =
+      2 * (view.players[obj.owner]?.commanderCastCounts?.[obj.cardName] ?? 0)
     return (
       <CardTile
         key={obj.id}

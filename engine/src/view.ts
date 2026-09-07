@@ -39,9 +39,10 @@ export interface PublicPlayerInfo {
   readonly lossReason: string | null;
   /** Combat damage taken from each opponent's commander so far this game. */
   readonly commanderDamageTaken: Readonly<Record<PlayerId, number>>;
-  /** Times this player has cast their commander from the command zone —
-   * each one adds {2} generic to its cost the next time (rule 903.4). */
-  readonly commanderCastCount: number;
+  /** Times this player has cast each commander (by name) from the command
+   * zone — each adds {2} generic to that commander's cost next time (rule
+   * 903.8). */
+  readonly commanderCastCounts: Readonly<Record<string, number>>;
 }
 
 export interface VisibleObject {
@@ -259,7 +260,7 @@ export function viewFor(
       hasLost: playerState.hasLost,
       lossReason: playerState.lossReason,
       commanderDamageTaken: { ...playerState.commanderDamageTaken },
-      commanderCastCount: playerState.commanderCastCount,
+      commanderCastCounts: { ...playerState.commanderCastCounts },
     };
     graveyards[player] = [...zones.graveyard];
     visibleIds.push(...zones.graveyard);

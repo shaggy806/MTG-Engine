@@ -3,7 +3,7 @@ import { WebSocketServer } from "ws";
 import { createDefaultRegistry } from "engine";
 import { RoomManager } from "./room-manager.js";
 import { attachRoomServer } from "./ws-server.js";
-import { evaluateDecklist, parseDecklistText } from "./import-deck.js";
+import { evaluateDecklist, formatCheck, parseDecklistText } from "./import-deck.js";
 
 const port = Number(process.env.PORT ?? 4000);
 const manager = new RoomManager();
@@ -20,12 +20,14 @@ const httpServer = createServer((req, res) => {
         try {
           const { text } = JSON.parse(body) as { text?: string };
           if (typeof text !== "string") throw new Error("missing 'text' field");
-          const cards = await evaluateDecklist(parseDecklistText(text), registry);
+          const entries = parseDecklistText(text);
+          const cards = await evaluateDecklist(entries, registry);
+          const format = formatCheck(entries, registry);
           res.writeHead(200, {
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": "*",
           });
-          res.end(JSON.stringify({ cards }));
+          res.end(JSON.stringify({ cards, format }));
         } catch (err) {
           res.writeHead(400, {
             "Content-Type": "application/json",

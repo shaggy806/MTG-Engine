@@ -20,6 +20,7 @@ import _poolBloodthroneVampire from "./pool/bloodthrone-vampire.js";
 import _poolBoggartBrute from "./pool/boggart-brute.js";
 import _poolBonesplitter from "./pool/bonesplitter.js";
 import _poolBoomerang from "./pool/boomerang.js";
+import _poolBramblewingTheUntamed from "./pool/bramblewing-the-untamed.js";
 import _poolChandraAcolyteOfFlame from "./pool/chandra-acolyte-of-flame.js";
 import _poolChromaticLantern from "./pool/chromatic-lantern.js";
 import _poolClone from "./pool/clone.js";
@@ -27,6 +28,7 @@ import _poolCombatThresher from "./pool/combat-thresher.js";
 import _poolCommandTower from "./pool/command-tower.js";
 import _poolConsider from "./pool/consider.js";
 import _poolContentiousPlan from "./pool/contentious-plan.js";
+import _poolCorvathEmberScribe from "./pool/corvath-ember-scribe.js";
 import _poolCounterspell from "./pool/counterspell.js";
 import _poolCrawWurm from "./pool/craw-wurm.js";
 import _poolCryptolithRite from "./pool/cryptolith-rite.js";
@@ -105,6 +107,7 @@ import _poolRiftBolt from "./pool/rift-bolt.js";
 import _poolRoguesPassage from "./pool/rogues-passage.js";
 import _poolRumblingBaloth from "./pool/rumbling-baloth.js";
 import _poolSarovaTheUndyingCurrent from "./pool/sarova-the-undying-current.js";
+import _poolSeraphineDawnherald from "./pool/seraphine-dawnherald.js";
 import _poolSerraAngel from "./pool/serra-angel.js";
 import _poolSnapcasterMage from "./pool/snapcaster-mage.js";
 import _poolSolRing from "./pool/sol-ring.js";
@@ -160,6 +163,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolBoggartBrute,
   _poolBonesplitter,
   _poolBoomerang,
+  _poolBramblewingTheUntamed,
   _poolChandraAcolyteOfFlame,
   _poolChromaticLantern,
   _poolClone,
@@ -167,6 +171,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolCommandTower,
   _poolConsider,
   _poolContentiousPlan,
+  _poolCorvathEmberScribe,
   _poolCounterspell,
   _poolCrawWurm,
   _poolCryptolithRite,
@@ -245,6 +250,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolRoguesPassage,
   _poolRumblingBaloth,
   _poolSarovaTheUndyingCurrent,
+  _poolSeraphineDawnherald,
   _poolSerraAngel,
   _poolSnapcasterMage,
   _poolSolRing,

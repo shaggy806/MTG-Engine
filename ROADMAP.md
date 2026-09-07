@@ -24,7 +24,7 @@ the diagram) are in.
 - [x] **Phase 6** — Alternate casting zones + the cast pipeline *(6a/6b done — flashback, Snapcaster, suspend, foretell, escape; 6c long tail deferred)*
 - [x] **Phase 7** — Combat depth + turn-structure control *(core done — extra turns, additional combat, can't-be-blocked; first-strike window / trample-as-choice / must-be-blocked deferred)*
 - [x] **Phase 8** — Cascade, storm, "cast" triggers, copy-a-spell
-- [ ] **Phase 9** — Commander-format completeness + deck validation
+- [x] **Phase 9** — Commander-format completeness + deck validation *(core done — colour identity, deck validation, Partner, a 4th commander; Companion / legend-rule choice / simultaneous mulligans deferred)*
 - [ ] **Phase 10** — Tier 3 long tail (demand-driven; sagas, multi-face cards **10a modal/split + 10b transform**, day/night, battles, emblems, …)
 
 ## Dependency spine
@@ -505,21 +505,35 @@ are auto-picked (the `chooseTargets` gap).
 
 ---
 
-## Phase 9 — Commander-format completeness + deck validation
+## Phase 9 — Commander-format completeness + deck validation  *(core done)*
 
-- Colour-identity computation for a card (mana cost + rules-text mana symbols +
-  colour indicator) → **server-side deck validation** (identity within the
-  commander's; singleton; 100 cards). Reject at room creation / deck import.
-- Partner / "Choose a Background" / "Friends forever" — two commanders in the
-  command zone (`DeckList.commanders: string[]`).
-- Companion (the `{3}` from the sideboard to hand).
-- Player choice on which legendary permanent the legend rule keeps (deterministic
-  today).
-- Simultaneous mulligan rounds (all players decide, then all bottom) instead of
-  the current sequential order.
-- Design **two more legendary creatures** so Carol/Dave get real commanders.
+- [x] **Colour identity** (`engine/src/identity.ts` — `colorIdentityOf(def)`):
+  a lexical scan of every `{…}` symbol in the mana cost + rules text + ability
+  costs/text (rule 903.4), plus `withinIdentity` / `identityString`.
+- [x] **Deck validation** (`server/src/deck-validation.ts` —
+  `validateCommanderDeck`): singleton (basics exempt), colour identity within
+  the commander(s)', size, "is a legendary creature". `formatCheck` runs it
+  over the *implemented* cards of a pasted list (commander = first legendary
+  creature), folded into the `/import-deck` response as a `format` block; the
+  client renders a legal/illegal panel. Not enforced at room creation — the
+  built-in `SEATS` decks are deliberately illegal "good stuff" piles.
+- [x] **Partner** — `DeckList.commanders: readonly string[]` (1 or 2);
+  `setup` mints each into the command zone. `PlayerState.commanderCastCount`
+  → `commanderCastCounts: Record<string, number>` (per-commander tax, rule
+  903.8); `commanderTax(player, cardId)` keys by name. View + client updated.
+  Cards: `Bramblewing, the Untamed` / `Corvath, Ember Scribe` (a Partner
+  pair). `partner.test.ts`.
+- [x] **A fourth commander** — `Seraphine, Dawnherald` (a GW legendary — a
+  self-excluding `grantPt` anthem + a "creature you control enters → gain 1
+  life" trigger), wired as Dave's commander so all four seats have one.
 
-**Tests:** `server/src/deck-validation.test.ts`, `partner.test.ts`.
+**Deferred (Phase-9 long tail):** "Choose a Background" / "Friends forever"
+(more partner-like variants), Companion (the `{3}` from a sideboard), a player
+choice on which legendary permanent the legend rule keeps (deterministic —
+oldest survives — today), simultaneous mulligan rounds (sequential today).
+
+**Tests:** `engine/src/identity.test.ts`, `engine/src/partner.test.ts`,
+`server/src/deck-validation.test.ts`.
 
 ---
 

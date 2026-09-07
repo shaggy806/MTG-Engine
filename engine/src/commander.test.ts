@@ -150,11 +150,11 @@ describe("casting from the command zone", () => {
     game.dispatch({ type: "cast-spell", player: A, card: commanderId, targets: [] });
     game.advanceUntil(stackEmpty);
     expect(game.state.objects[commanderId].zone).toBe("battlefield");
-    expect(game.state.players[A].commanderCastCount).toBe(1);
+    expect(game.state.players[A].commanderCastCounts["Test Commander"]).toBe(1);
     // Exposed in the public view too — the client displays the tax from
     // this, since it has no other way to know how many times a commander
     // has been recast.
-    expect(game.viewFor(A).players[A].commanderCastCount).toBe(1);
+    expect(game.viewFor(A).players[A].commanderCastCounts["Test Commander"]).toBe(1);
 
     // Kill it with a Bolt — commander replacement (903.9a) lets Alice move it
     // to the command zone instead of the graveyard. Her AutomaticController
@@ -182,7 +182,7 @@ describe("casting from the command zone", () => {
     expect(before).toBeGreaterThanOrEqual(4);
 
     game.dispatch({ type: "cast-spell", player: A, card: commanderId, targets: [] });
-    expect(game.state.players[A].commanderCastCount).toBe(2);
+    expect(game.state.players[A].commanderCastCounts["Test Commander"]).toBe(2);
     expect(before - untappedForests()).toBe(4);
   });
 });

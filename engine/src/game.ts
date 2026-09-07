@@ -61,6 +61,9 @@ export interface DeckList {
   /** Name of a card to start in the command zone instead of the library
    * (rule 903.4). Not one of `cards` — an extra card on top of the deck. */
   readonly commander?: string;
+  /** One or two commanders (Partner / "Choose a Background" — rule 702.124 /
+   * ROADMAP Phase 9). Takes precedence over `commander` when set. */
+  readonly commanders?: readonly string[];
 }
 
 export interface GameConfig {
@@ -792,7 +795,8 @@ export class Game {
     shuffleLibrary: boolean,
     mulligans: boolean,
   ): void {
-    for (const { player, cards, commander } of decks) {
+    for (const { player, cards, commander, commanders } of decks) {
+      const commanderNames = commanders ?? (commander !== undefined ? [commander] : []);
       this.state.players[player] = createPlayerState(player, this.state.rules);
       this.state.zones.perPlayer[player] = {
         library: [],
@@ -841,12 +845,12 @@ export class Game {
         ? shuffle(ids, this.rng)
         : ids;
 
-      if (commander !== undefined) {
-        this.registry.get(commander); // validate up front
+      for (const commanderName of commanderNames) {
+        this.registry.get(commanderName); // validate up front
         const id = this.mintObjectId();
         this.state.objects[id] = {
           id,
-          cardName: commander,
+          cardName: commanderName,
           owner: player,
           controller: player,
           zone: "command",
@@ -2322,10 +2326,11 @@ export class Game {
     );
   }
 
-  /** {2} more each previous time this player's commander was cast from the
-   * command zone this game (rule 903.4, "commander tax"). */
-  private commanderTax(player: PlayerId): number {
-    return 2 * this.state.players[player].commanderCastCount;
+  /** {2} more for each previous time *this* commander (by name) was cast from
+   * the command zone this game (rule 903.8, "commander tax"). */
+  private commanderTax(player: PlayerId, cardId: ObjectId): number {
+    const name = this.state.objects[cardId].cardName;
+    return 2 * (this.state.players[player].commanderCastCounts[name] ?? 0);
   }
 
   /** `def.manaCost`, plus the commander tax if `cardId` is being cast from
@@ -2340,7 +2345,7 @@ export class Game {
     costString: string | null = def.manaCost,
   ): ManaCost {
     const base = parseManaCost(costString);
-    const tax = this.isCastableCommander(player, cardId) ? this.commanderTax(player) : 0;
+    const tax = this.isCastableCommander(player, cardId) ? this.commanderTax(player, cardId) : 0;
     let generic = base.generic + tax + base.x * Math.max(0, xValue);
     generic += this.costModificationFor(player, cardId);
     return {
@@ -2527,7 +2532,11 @@ export class Game {
     object.castVia = via ?? null;
     object.stormCount = stormCount;
     this.executePayment(player, payment);
-    if (castingFromCommand) this.state.players[player].commanderCastCount += 1;
+    if (castingFromCommand) {
+      const name = object.cardName;
+      const counts = this.state.players[player].commanderCastCounts;
+      counts[name] = (counts[name] ?? 0) + 1;
+    }
     this.state.players[player].spellsCastThisTurn += 1;
     this.state.spellsCastThisTurn += 1;
 

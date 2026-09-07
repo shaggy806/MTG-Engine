@@ -57,6 +57,15 @@ export interface ImportedCardReport {
   readonly oracleText: string
 }
 
+/** Mirrors `server/src/deck-validation.ts`'s `DeckValidationResult` (plus the
+ * guessed commander) — the `format` field of the `/import-deck` response. */
+export interface DeckFormatReport {
+  readonly legal: boolean
+  readonly violations: readonly string[]
+  readonly identity: string
+  readonly commander: string | null
+}
+
 export type ServerMessage =
   | { readonly type: 'room-created'; readonly roomId: string }
   | {

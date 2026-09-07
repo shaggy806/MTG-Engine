@@ -191,9 +191,11 @@ export interface PlayerState {
    * cleared by state-based actions (rule 704.5c).
    */
   attemptedDrawFromEmptyLibrary: boolean;
-  /** Times this player has cast their commander from the command zone —
-   * each one adds {2} generic to its cost the next time (rule 903.4). */
-  commanderCastCount: number;
+  /** Times this player has cast each commander from the command zone, keyed by
+   * card name — each cast adds {2} generic to *that* commander's cost next
+   * time (rule 903.8 — the tax is per-commander, so Partner pairs are tracked
+   * separately). */
+  commanderCastCounts: Record<string, number>;
   /** Cumulative combat damage taken from each opponent's commander since the
    * game began, keyed by that commander's controller. 21+ from the same
    * commander is a loss (rule 903.10a / SBA 704.5m). */
@@ -483,7 +485,7 @@ export function createPlayerState(id: PlayerId, rules: GameRules): PlayerState {
     hasLost: false,
     lossReason: null,
     attemptedDrawFromEmptyLibrary: false,
-    commanderCastCount: 0,
+    commanderCastCounts: {},
     commanderDamageTaken: {},
     spellsCastThisTurn: 0,
   };

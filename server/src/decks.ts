@@ -177,10 +177,11 @@ export const SEATS: readonly SeatDeck[] = [
       ["Jump", 1],
     ]),
   },
-  // Dave has no commander yet — a plain go-wide / lifegain / hatebears deck
-  // with anthems, equipment, a board wipe, and graveyard hate.
+  // Selesnya go-wide — anthems, tokens, lifegain, a board wipe, graveyard
+  // hate — anchored by Seraphine.
   {
     id: DAVE,
+    commander: "Seraphine, Dawnherald",
     cards: list([
       ["Plains", 9],
       ["Forest", 7],

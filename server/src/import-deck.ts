@@ -13,6 +13,8 @@
  */
 
 import type { CardDefinition, CardRegistry } from "engine";
+import { validateCommanderDeck } from "./deck-validation.js";
+import type { DeckValidationResult } from "./deck-validation.js";
 
 export interface DecklistEntry {
   readonly name: string;
@@ -211,4 +213,37 @@ export async function evaluateDecklist(
     });
   }
   return results;
+}
+
+/**
+ * A best-effort Commander-format check over the *implemented* cards in a
+ * pasted list (ROADMAP Phase 9). The commander is guessed as the first
+ * legendary creature/planeswalker in the list; everything else is the 99. It
+ * only surfaces singleton / colour-identity / size violations — feasibility
+ * (is each card implemented) is the `cards` report's job.
+ */
+export function formatCheck(
+  entries: readonly DecklistEntry[],
+  registry: CardRegistry,
+): DeckValidationResult & { readonly commander: string | null } {
+  const flat: string[] = [];
+  for (const e of entries) {
+    for (let i = 0; i < e.count; i += 1) flat.push(e.name);
+  }
+  const commander =
+    flat.find((n) => {
+      if (!registry.has(n)) return false;
+      const def = registry.get(n);
+      return (
+        def.supertypes.includes("legendary") &&
+        (def.types.includes("creature") || def.types.includes("planeswalker"))
+      );
+    }) ?? null;
+
+  const rest = commander === null ? flat : flat.filter((n, i) => !(n === commander && i === flat.indexOf(commander)));
+  const result = validateCommanderDeck(
+    { commanders: commander ? [commander] : [], cards: rest, size: 100 },
+    registry,
+  );
+  return { ...result, commander };
 }

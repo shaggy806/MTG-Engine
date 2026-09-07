@@ -64,6 +64,7 @@ const deckA = deck([
   ["Command Tower", 1],
   ["Prosperous Innkeeper", 1],
   ["Wilt-Leaf Cavaliers", 1],
+  ["Seraphine, Dawnherald", 1],
   ["Garruk Wildspeaker", 1],
   ["Cryptolith Rite", 1],
   ["Chromatic Lantern", 1],
