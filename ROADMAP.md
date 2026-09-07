@@ -20,7 +20,7 @@ the diagram) are in.
 - [x] **Phase 2** — Effect vocabulary: `CardFilter`, effect scopes, mass effects, tutors, scry/surveil
 - [x] **Phase 3** — Ability grammar breadth (triggers, statics, activated-ability costs)
 - [x] **Phase 4** — Mana system depth (`{C}` / any-colour / multi-mana / Treasure / hybrid / twobrid / Phyrexian / snow / ability-granting to a group / fetchlands)
-- [ ] **Phase 5** — Planeswalkers
+- [x] **Phase 5** — Planeswalkers
 - [ ] **Phase 6** — Alternate casting zones + the cast pipeline
 - [ ] **Phase 7** — Combat depth + turn-structure control
 - [ ] **Phase 8** — Cascade, storm, "cast" triggers, copy-a-spell
@@ -329,22 +329,39 @@ today) / protection-from-everything / "hexproof from", land/artifact/planeswalke
 
 ---
 
-## Phase 5 — Planeswalkers
+## Phase 5 — Planeswalkers  *(done)*
 
-- `CardType` `"planeswalker"` (already in the union); `loyalty: number` on
-  `CardDefinition`; enters with that many loyalty counters (Phase 1
-  replacement-style or a dedicated ETB routine).
-- Loyalty abilities: `ActivatedAbility` += `loyaltyCost: number` (may be
-  negative); once per turn per permanent (`GameObject.loyaltyActivatedThisTurn`),
-  sorcery-speed, paid by ±loyalty counters. `whyCannotActivateAbility` enforces.
-- Combat: `AttackerDeclaration.defender: PlayerId | ObjectId`; `legalDefenders`
-  extends to opponents' planeswalkers; combat damage to a planeswalker removes
-  loyalty; SBA: ≤0 loyalty → graveyard; extend the legend rule.
-- **Cards:** `Garruk Wildspeaker`, `Chandra, Acolyte of Flame`-lite.
-- **Client:** planeswalker tiles as attack targets (extend the existing
-  click-a-panel redirect flow), loyalty-ability menu.
+- [x] **Permanents.** `CardDefinition.loyalty: number | null`; `defineCard`
+  synthesizes an `enters-battlefield { counters: { loyalty } }` self-replacement
+  from it (so `moveObject` / Doubling Season apply unchanged). SBA (rule 704.5i):
+  a planeswalker with 0 loyalty → its owner's graveyard. The legend rule already
+  keyed on `supertypes: ["legendary"]`, so it covers legendary planeswalkers with
+  no change.
+- [x] **Loyalty abilities.** `ActivatedAbility.loyaltyCost?: number` (negative
+  removes). `whyCannotActivateAbility` enforces sorcery-speed,
+  once-per-permanent-per-turn (`GameObject.loyaltyActivatedThisTurn`, reset in
+  the untap step), and "enough counters for a minus". `activateAbility` adjusts
+  `counters.loyalty` and mints on the stack (rule 606.3 — not a mana ability
+  even if it adds mana). A targeted loyalty ability (Garruk +1: untap two target
+  lands) reuses the normal ability targeting.
+- [x] **Combat.** `AttackerDeclaration.defender` / `GameObject.attacking` /
+  `attacker-declared` are `PlayerId | ObjectId`; `legalDefenders` adds opponents'
+  planeswalkers; `defendingPlayerOf` / `attackTargetRef` route blocker-declaration
+  and combat damage. `dealDamage` to a planeswalker removes loyalty counters
+  (rule 120.3c) — combat *or* burn.
+- [x] **Mass effects.** `modify-pt-all` / `grant-keyword-all` `EffectSpec`s
+  (`{ filter: CardFilter, … }`, like `destroy-all` / `damage-all`) for Garruk's
+  Overrun ult. New `loyalty-changed` event.
+- [x] **Cards:** `Garruk Wildspeaker` (legendary; +1 untap 2 lands / -1 make a
+  3/3 Beast / -4 Overrun), `Chandra, Acolyte of Flame`-lite (+0 deal 2 / -2 make
+  two hasty 1/1 Elementals). Tokens: `3/3 Beast Token`, `Elemental Token`.
+- [x] **Client:** loyalty badge on the tile; loyalty-ability menu (reuses the
+  ability menu — the `[+1]` / `[-1]` text labels each button); an opponent's
+  planeswalker highlights + click-redirects an attacker at it (same focus flow
+  as the multi-opponent attack redirect); `board.ts` `planeswalker` bucket;
+  `loyalty-changed` in both event-log formatters.
 
-**Tests:** `planeswalker.test.ts`.
+**Tests:** `planeswalker.test.ts` (11 cases).
 
 ---
 
