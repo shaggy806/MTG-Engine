@@ -13,7 +13,7 @@
 import type { CardRegistry, CardType, Keyword } from "./cards.js";
 import { computeCharacteristics } from "./characteristics.js";
 import type { GameEvent } from "./events.js";
-import type { ManaPool } from "./mana.js";
+import type { Color, ManaPool } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type {
   AwaitingDecision,
@@ -63,6 +63,9 @@ export interface VisibleObject {
   readonly power: number | null;
   readonly toughness: number | null;
   readonly keywords: readonly Keyword[];
+  /** Computed colours (rule 105 / layer 5) — e.g. `["U"]` for a Turn-to-
+   * Frogged permanent, `[]` for something colourless. */
+  readonly colors: readonly Color[];
   readonly tapped: boolean;
   readonly damageMarked: number;
   readonly counters: Readonly<Record<string, number>>;
@@ -132,6 +135,21 @@ function visible(
   // Computed, not printed — a man-land currently animated (layer 4) is a
   // creature and should carry a P/T; a land again next turn and it won't.
   const isCreature = computed.types.includes("creature");
+  // A permanent that lost its abilities (layer 6 — Turn to Frog) shows no
+  // rules text; its keywords are already gone from `computed`.
+  const onBattlefield = object.zone === "battlefield";
+  const lostAbilities =
+    onBattlefield && object.modifiers.some((m) => m.loseAbilities === true);
+  // Layer 3 (text-change — Artificial Evolution): rewrite the displayed word
+  // so the card reads the way it now functions.
+  let text = lostAbilities ? "" : def.text;
+  if (onBattlefield && text.length > 0) {
+    for (const m of object.modifiers) {
+      if (m.textSubstitution) {
+        text = text.split(m.textSubstitution.from).join(m.textSubstitution.to);
+      }
+    }
+  }
   return {
     id: object.id,
     // The permanent's true identity ("Clone"); `copyOf` carries the copied
@@ -142,12 +160,13 @@ function visible(
     controller: object.controller,
     zone: object.zone,
     manaCost: def.manaCost,
-    text: def.text,
+    text,
     types: computed.types,
     subtypes: computed.subtypes,
     power: isCreature ? computed.power : null,
     toughness: isCreature ? computed.toughness : null,
     keywords: [...computed.keywords],
+    colors: [...computed.colors],
     tapped: object.tapped,
     damageMarked: object.damageMarked,
     counters: { ...object.counters },

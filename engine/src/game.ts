@@ -19,7 +19,7 @@ import type {
 } from "./actions.js";
 import { CardRegistry, createDefaultRegistry } from "./cards.js";
 import type { CardDefinition, CardType, Keyword } from "./cards.js";
-import { computeCharacteristics } from "./characteristics.js";
+import { computeCharacteristics, effectiveSubtypes, hasLostAbilities } from "./characteristics.js";
 import type { Characteristics } from "./characteristics.js";
 import { AutomaticController } from "./controller.js";
 import type { ControllerView, PlayerController } from "./controller.js";
@@ -32,7 +32,7 @@ import type {
   GameEventType,
 } from "./events.js";
 import { COLORS, MANA_TYPES, emptyPool, parseManaCost } from "./mana.js";
-import type { ManaCost, ManaType } from "./mana.js";
+import type { Color, ManaCost, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId, Rng } from "./primitives.js";
 import { asObjectId, createRng, shuffle } from "./primitives.js";
 import { DEFAULT_RULES, activePlayerOf, createPlayerState, printedCardName } from "./state.js";
@@ -85,6 +85,15 @@ const ADVANCE_BUDGET = 200_000;
 const GENERIC_SPEND_ORDER = ["C", "W", "U", "B", "R", "G"] as const;
 /** Combat damage from the same commander at or above this total is a loss (rule 903.10a). */
 const COMMANDER_DAMAGE_THRESHOLD = 21;
+
+/** The creature types Artificial Evolution (layer 3 text-change) offers as
+ * the old / new word — the ones the card pool actually cares about, so the
+ * choice stays a short menu. "Wall" is deliberately excluded as a *new* type
+ * (the card forbids it) — see `beginTextChoice`. */
+const CHANGEABLE_CREATURE_TYPES: readonly string[] = [
+  "Goblin", "Elf", "Bear", "Zombie", "Vampire", "Bird",
+  "Spirit", "Elemental", "Frog", "Insect", "Angel", "Wall",
+];
 
 export class Game {
   readonly state: GameState;
@@ -293,6 +302,9 @@ export class Game {
       case "choose-copy":
         this.applyCopyChoice(action.player, action.copy);
         break;
+      case "choose-text":
+        this.applyTextChoice(action.player, action.from, action.to);
+        break;
       default:
         throw new Error(
           `unhandled action: ${(action as { type: string }).type}`,
@@ -341,6 +353,8 @@ export class Game {
         return this.whyCannotCommanderChoice(action.player);
       case "choose-copy":
         return this.whyCannotCopyChoice(action.player, action.copy);
+      case "choose-text":
+        return this.whyCannotTextChoice(action.player, action.from, action.to);
       default:
         return `unknown action: ${(action as { type: string }).type}`;
     }
@@ -427,6 +441,17 @@ export class Game {
       if (awaiting.kind === "choose-copy") {
         return [
           { kind: "choose-copy", source: awaiting.source, options: [...awaiting.options] },
+        ];
+      }
+      if (awaiting.kind === "choose-text") {
+        return [
+          {
+            kind: "choose-text",
+            source: awaiting.source,
+            target: awaiting.target,
+            fromOptions: [...awaiting.fromOptions],
+            toOptions: [...awaiting.toOptions],
+          },
         ];
       }
       return [
@@ -1902,6 +1927,9 @@ export class Game {
     if (ability === undefined) {
       return `${def.name} has no ability #${abilityIndex}`;
     }
+    if (hasLostAbilities(source)) {
+      return `${def.name} has lost its abilities`;
+    }
     if (ability.cost.tap) {
       if (source.tapped) return `${def.name} is already tapped`;
       if (this.tapAbilityBlockedBySickness(source)) {
@@ -2094,6 +2122,7 @@ export class Game {
       const object = this.state.objects[id];
       if (object.controller !== player || object.tapped) continue;
       if (this.tapAbilityBlockedBySickness(object)) continue;
+      if (hasLostAbilities(object)) continue; // layer 6 — no mana ability
 
       const def = this.registry.get(printedCardName(object));
       const produces: ManaType[] = [];
@@ -2421,6 +2450,7 @@ export class Game {
     for (const id of candidates) {
       const object = this.state.objects[id];
       if (object === undefined) continue;
+      if (hasLostAbilities(object)) continue; // layer 6 — no triggered abilities
       const abilities = this.registry.get(printedCardName(object)).triggered;
       abilities.forEach((ability, index) => {
         if (this.triggerMatches(ability.trigger, event, object)) {
@@ -2671,6 +2701,7 @@ export class Game {
       grantKeyword: (target, keyword, duration) =>
         this.grantKeyword(target, keyword, duration),
       animate: (target, opts) => this.animate(target, opts),
+      changeText: (target) => this.beginTextChoice(controller, source, target),
       createToken: (token, count) => this.createTokens(controller, token, count),
       attach: (target) => this.attachPermanent(source, target),
       lookAndChoose: (zone, count, min, max, destination, leftover, filter) =>
@@ -2816,9 +2847,10 @@ export class Game {
     });
   }
 
-  /** A permanent becomes a creature (rule 613 layer 4 for the added types,
-   * layer 7b for the set P/T, layer 6 for `keywords`) via a single modifier —
-   * a man-land's activated ability. Printed types are kept. */
+  /** A permanent becomes a creature via a single modifier spanning layers 4
+   * (types/subtypes), 5 (`setColors`), 6 (`keywords` / `loseAbilities`) and
+   * 7b (set P/T). A man-land adds a type and keeps its printed types; Turn to
+   * Frog replaces the subtypes, sets the colour, and strips abilities. */
   private animate(
     target: TargetRef,
     opts: {
@@ -2826,6 +2858,9 @@ export class Game {
       readonly toughness: number;
       readonly addTypes: readonly CardType[];
       readonly addSubtypes: readonly string[];
+      readonly setSubtypes?: readonly string[];
+      readonly setColors?: readonly Color[];
+      readonly loseAbilities?: boolean;
       readonly keywords: readonly Keyword[];
       readonly duration: PtDuration;
     },
@@ -2839,6 +2874,9 @@ export class Game {
       keywords: [...opts.keywords],
       addTypes: [...opts.addTypes],
       addSubtypes: [...opts.addSubtypes],
+      ...(opts.setSubtypes ? { setSubtypes: [...opts.setSubtypes] } : {}),
+      ...(opts.setColors ? { setColors: [...opts.setColors] } : {}),
+      ...(opts.loseAbilities ? { loseAbilities: true } : {}),
       setPt: [opts.power, opts.toughness],
       untilEndOfTurn: opts.duration === "end-of-turn",
     });
@@ -2849,6 +2887,75 @@ export class Game {
       toughness: opts.toughness,
       duration: opts.duration,
     });
+  }
+
+  /** Begin a text-changing effect (Artificial Evolution — layer 3): raise a
+   * `choose-text` decision offering the target's current creature subtypes as
+   * the word to replace. Nothing to replace ⇒ the effect does nothing. */
+  private beginTextChoice(
+    player: PlayerId,
+    _source: ObjectId,
+    target: TargetRef,
+  ): void {
+    if (target.kind !== "object") return;
+    const object = this.state.objects[target.object];
+    if (object === undefined || object.zone !== "battlefield") return;
+    const fromOptions = effectiveSubtypes(this.registry, object).filter((s) =>
+      CHANGEABLE_CREATURE_TYPES.includes(s),
+    );
+    if (fromOptions.length === 0) return;
+    this.state.awaiting = {
+      kind: "choose-text",
+      player,
+      source: target.object,
+      target: target.object,
+      fromOptions,
+      // The new type can't be Wall (rule text), nor a word already present.
+      toOptions: CHANGEABLE_CREATURE_TYPES.filter(
+        (t) => t !== "Wall" && !fromOptions.includes(t),
+      ),
+    };
+  }
+
+  /** Answer a pending `choose-text` decision (Artificial Evolution). */
+  private applyTextChoice(player: PlayerId, from: string, to: string): void {
+    const why = this.whyCannotTextChoice(player, from, to);
+    if (why !== null) throw new Error(why);
+    const awaiting = this.state.awaiting;
+    if (awaiting === null || awaiting.kind !== "choose-text") {
+      throw new Error("unreachable: whyCannotTextChoice should have caught this");
+    }
+    const object = this.state.objects[awaiting.target];
+    if (object !== undefined && object.zone === "battlefield") {
+      object.modifiers.push({
+        power: 0,
+        toughness: 0,
+        keywords: [],
+        textSubstitution: { from, to },
+        untilEndOfTurn: false,
+      });
+      this.emit({ type: "text-changed", object: awaiting.target, from, to });
+    }
+    this.state.awaiting = null;
+    this.prepareForPriority(this.activePlayer);
+  }
+
+  private whyCannotTextChoice(
+    player: PlayerId,
+    from: string,
+    to: string,
+  ): string | null {
+    const awaiting = this.state.awaiting;
+    if (awaiting === null || awaiting.kind !== "choose-text" || awaiting.player !== player) {
+      return `${player} is not being asked to change any text`;
+    }
+    if (!awaiting.fromOptions.includes(from)) {
+      return `${from} is not a creature type on that permanent`;
+    }
+    if (!awaiting.toOptions.includes(to)) {
+      return `${to} is not an allowed new creature type`;
+    }
+    return null;
   }
 
   private addCounter(target: TargetRef, counter: string, amount: number): void {

@@ -69,6 +69,8 @@ export const makeFormatter = (game) => {
         return `${name(e.object)} becomes a ${e.power}/${e.toughness} creature${
           e.duration === "end-of-turn" ? " until EOT" : ""
         }`;
+      case "text-changed":
+        return `${name(e.object)}: text "${e.from}" → "${e.to}"`;
       case "attacker-declared":
         return `${name(e.attacker)} attacks ${e.defender}`;
       case "blocker-declared":

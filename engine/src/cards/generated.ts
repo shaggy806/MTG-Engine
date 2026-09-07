@@ -6,6 +6,7 @@ import type { CardDefinition } from "./define.js";
 import _poolActOfTreason from "./pool/act-of-treason.js";
 import _poolAmbushViper from "./pool/ambush-viper.js";
 import _poolAngelicEdict from "./pool/angelic-edict.js";
+import _poolArtificialEvolution from "./pool/artificial-evolution.js";
 import _poolAshmarkMarduVanguard from "./pool/ashmark-mardu-vanguard.js";
 import _poolBlaze from "./pool/blaze.js";
 import _poolBlightning from "./pool/blightning.js";
@@ -20,6 +21,7 @@ import _poolCounterspell from "./pool/counterspell.js";
 import _poolCrawWurm from "./pool/craw-wurm.js";
 import _poolDarksteelMyr from "./pool/darksteel-myr.js";
 import _poolDisenchant from "./pool/disenchant.js";
+import _poolDoomBlade from "./pool/doom-blade.js";
 import _poolElvishVisionary from "./pool/elvish-visionary.js";
 import _poolEssenceScatter from "./pool/essence-scatter.js";
 import _poolExplorersInsight from "./pool/explorers-insight.js";
@@ -68,6 +70,7 @@ import _poolSwamp from "./pool/swamp.js";
 import _poolThievingMagpie from "./pool/thieving-magpie.js";
 import _poolThreaten from "./pool/threaten.js";
 import _poolTomeScour from "./pool/tome-scour.js";
+import _poolTurnToFrog from "./pool/turn-to-frog.js";
 import _poolTyphoidRats from "./pool/typhoid-rats.js";
 import _poolUnsummon from "./pool/unsummon.js";
 import _poolUreniOfTheUnwritten from "./pool/ureni-of-the-unwritten.js";
@@ -87,6 +90,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolActOfTreason,
   _poolAmbushViper,
   _poolAngelicEdict,
+  _poolArtificialEvolution,
   _poolAshmarkMarduVanguard,
   _poolBlaze,
   _poolBlightning,
@@ -101,6 +105,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolCrawWurm,
   _poolDarksteelMyr,
   _poolDisenchant,
+  _poolDoomBlade,
   _poolElvishVisionary,
   _poolEssenceScatter,
   _poolExplorersInsight,
@@ -149,6 +154,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolThievingMagpie,
   _poolThreaten,
   _poolTomeScour,
+  _poolTurnToFrog,
   _poolTyphoidRats,
   _poolUnsummon,
   _poolUreniOfTheUnwritten,

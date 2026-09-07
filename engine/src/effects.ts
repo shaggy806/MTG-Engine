@@ -9,7 +9,7 @@
  */
 
 import type { CardType, Keyword } from "./cards.js";
-import type { ManaType } from "./mana.js";
+import type { Color, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { TargetRef } from "./target.js";
 
@@ -119,18 +119,32 @@ export type EffectSpec =
       readonly duration: PtDuration;
     }
   | {
-      /** `target` becomes a creature (rule 613 layer 4 for the added types +
-       * subtypes, layer 7b for the set P/T, layer 6 for `keywords`). Printed
-       * types are kept — a man-land is "still a land". `"source"` is the
-       * usual target (man-lands animate themselves). */
+      /** `target` becomes a creature (rule 613 layer 4 for the added/set
+       * types + subtypes, layer 5 for `setColors`, layer 6 for `keywords` /
+       * `loseAbilities`, layer 7b for the set P/T). Printed types are kept —
+       * a man-land is "still a land". `"source"` is the usual target
+       * (man-lands animate themselves); Turn to Frog targets a creature. */
       readonly kind: "animate";
       readonly target: EffectTargetRef;
       readonly power: number;
       readonly toughness: number;
       readonly addTypes: readonly CardType[];
       readonly addSubtypes: readonly string[];
+      /** Replace the printed subtypes entirely (Turn to Frog: "a … Frog"). */
+      readonly setSubtypes?: readonly string[];
+      /** Set the colours (Turn to Frog: "blue"). */
+      readonly setColors?: readonly Color[];
+      /** The permanent loses all of its own abilities (Turn to Frog). */
+      readonly loseAbilities?: boolean;
       readonly keywords?: readonly Keyword[];
       readonly duration: PtDuration;
+    }
+  | {
+      /** `target`'s text changes: one creature-type word is replaced by
+       * another its controller chooses (Artificial Evolution — rule 612 /
+       * layer 3). Resolving this raises a `choose-text` decision. */
+      readonly kind: "change-text";
+      readonly target: number;
     }
   | {
       readonly kind: "create-token";
@@ -204,10 +218,15 @@ export interface EffectApi {
       readonly toughness: number;
       readonly addTypes: readonly CardType[];
       readonly addSubtypes: readonly string[];
+      readonly setSubtypes?: readonly string[];
+      readonly setColors?: readonly Color[];
+      readonly loseAbilities?: boolean;
       readonly keywords: readonly Keyword[];
       readonly duration: PtDuration;
     },
   ): void;
+  /** Begin a text-changing effect — see the `"change-text"` {@link EffectSpec}. */
+  changeText(target: TargetRef): void;
   /** Create `count` copies of the named token, controlled by `ctx.controller`. */
   createToken(token: string, count: number): void;
   /** Attach `ctx.source` (an Aura/Equipment) to `target`. */
@@ -352,10 +371,18 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
           toughness: spec.toughness,
           addTypes: spec.addTypes,
           addSubtypes: spec.addSubtypes,
+          setSubtypes: spec.setSubtypes,
+          setColors: spec.setColors,
+          loseAbilities: spec.loseAbilities,
           keywords: spec.keywords ?? [],
           duration: spec.duration,
         });
       }
+      return;
+    }
+    case "change-text": {
+      const target = ctx.targets[spec.target];
+      if (target !== undefined) ctx.changeText(target);
       return;
     }
     case "create-token":

@@ -10,6 +10,9 @@ export type TargetRef =
 export type TargetSpec =
   | "any-target"
   | "creature"
+  /** A creature whose current (computed, layer 5) colours don't include black
+   * — Doom Blade / Terror. */
+  | "nonblack-creature"
   | "creature-you-control"
   | "creature-an-opponent-controls"
   | "player"

@@ -128,6 +128,14 @@ export type GameEvent =
       readonly duration: "end-of-turn" | "permanent";
     })
   | (Base & {
+      /** A text-changing effect replaced a creature-type word (Artificial
+       * Evolution — rule 612 / layer 3). */
+      readonly type: "text-changed";
+      readonly object: ObjectId;
+      readonly from: string;
+      readonly to: string;
+    })
+  | (Base & {
       readonly type: "attacker-declared";
       readonly attacker: ObjectId;
       readonly defender: PlayerId;

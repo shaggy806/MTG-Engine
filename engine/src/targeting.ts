@@ -68,6 +68,12 @@ export function isLegalTarget(
       return isLivingPlayer(state, ref);
     case "creature":
       return ref.kind === "object" && isLivingCreature(state, registry, ref.object);
+    case "nonblack-creature":
+      return (
+        ref.kind === "object" &&
+        isLivingCreature(state, registry, ref.object) &&
+        !computeCharacteristics(state, registry, ref.object).colors.has("B")
+      );
     case "creature-you-control":
       return (
         ref.kind === "object" &&

@@ -7,7 +7,7 @@
  */
 
 import type { CardType, Keyword } from "./cards.js";
-import type { ManaPool } from "./mana.js";
+import type { Color, ManaPool } from "./mana.js";
 import { emptyPool } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameEvent } from "./events.js";
@@ -101,6 +101,23 @@ export interface PtModifier {
   addTypes?: CardType[];
   /** Layer 4 — subtypes this modifier adds (e.g. `["Blinkmoth"]`). */
   addSubtypes?: string[];
+  /** Layer 4 — subtypes this modifier *replaces* the printed ones with (Turn
+   * to Frog: "becomes a … Frog"). Applied before `addSubtypes`. */
+  setSubtypes?: string[];
+  /** Layer 3 — a text-changing effect (Artificial Evolution): every instance
+   * of the creature-type word `from` reads as `to`, in this permanent's own
+   * subtypes *and* in its static abilities' `subtype` clause. */
+  textSubstitution?: { from: string; to: string };
+  /** Layer 5 — colours this modifier adds ("becomes red in addition to its
+   * other colours"). */
+  addColors?: Color[];
+  /** Layer 5 — colours this modifier *sets* (Turn to Frog: "becomes … blue").
+   * Applied before `addColors`; the latest such modifier wins. */
+  setColors?: Color[];
+  /** Layer 6 — this permanent loses all of its own abilities (Turn to Frog).
+   * External anthems / grants still apply to it; its own keywords / activated
+   * / triggered / static abilities stop functioning. */
+  loseAbilities?: boolean;
   /** Layer 7b — a "becomes a N/N" that *sets* base P/T rather than adding to
    * it. Applied after a CDA, before counters (7c) and +N/+N bonuses (7d);
    * the latest such modifier wins. */
@@ -248,6 +265,19 @@ export type AwaitingDecision =
       readonly player: PlayerId;
       readonly source: ObjectId;
       readonly options: readonly ObjectId[];
+    }
+  | {
+      /** A text-changing spell is resolving (Artificial Evolution); its
+       * controller picks which creature-type word to replace, and with what
+       * (rule 612 / layer 3). */
+      readonly kind: "choose-text";
+      readonly player: PlayerId;
+      readonly source: ObjectId;
+      readonly target: ObjectId;
+      /** The target's current creature subtypes — the word to replace. */
+      readonly fromOptions: readonly string[];
+      /** The creature types the new word may be. */
+      readonly toOptions: readonly string[];
     };
 
 /** The zones a commander can be moved to that offer the 903.9a choice. */

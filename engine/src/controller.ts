@@ -99,6 +99,16 @@ export interface PlayerController {
     source: ObjectId,
     options: readonly ObjectId[],
   ): ObjectId | null;
+  /**
+   * A text-changing spell is resolving (Artificial Evolution — layer 3):
+   * return `[from, to]` — the creature-type word to replace and its
+   * replacement, drawn from `fromOptions` / `toOptions`.
+   */
+  chooseText(
+    view: ControllerView,
+    fromOptions: readonly string[],
+    toOptions: readonly string[],
+  ): readonly [string, string];
 }
 
 const passFor = (player: PlayerId): Action => ({
@@ -173,6 +183,14 @@ function answerAwaited(
       player,
       copy: controller.chooseCopy(view, awaiting.source, awaiting.options),
     };
+  }
+  if (awaiting.kind === "choose-text") {
+    const [from, to] = controller.chooseText(
+      view,
+      awaiting.fromOptions,
+      awaiting.toOptions,
+    );
+    return { type: "choose-text", player, from, to };
   }
   const hand = view.state.zones.perPlayer[player].hand.map(
     (id) => view.state.objects[id],
@@ -268,6 +286,14 @@ export class AutomaticController implements PlayerController {
   ): ObjectId | null {
     return options[0] ?? null;
   }
+
+  chooseText(
+    _view: ControllerView,
+    fromOptions: readonly string[],
+    toOptions: readonly string[],
+  ): readonly [string, string] {
+    return [fromOptions[0], toOptions[0]];
+  }
 }
 
 /** A queued action, optionally gated on a condition being true. */
@@ -315,6 +341,11 @@ type CopyChooser = (
   source: ObjectId,
   options: readonly ObjectId[],
 ) => ObjectId | null;
+type TextChooser = (
+  view: ControllerView,
+  fromOptions: readonly string[],
+  toOptions: readonly string[],
+) => readonly [string, string];
 
 /**
  * Plays a fixed queue of priority actions (each firing when its `when` guard is
@@ -335,6 +366,10 @@ export class ScriptedController implements PlayerController {
   chooseBottomOfLibraryFn: BottomChooser = (hand, count) => discardFromFront(hand, count);
   commanderReplacementFn: CommanderReplacementChooser = () => true;
   chooseCopyFn: CopyChooser = (_view, _source, options) => options[0] ?? null;
+  chooseTextFn: TextChooser = (_view, fromOptions, toOptions) => [
+    fromOptions[0],
+    toOptions[0],
+  ];
 
   constructor(playerId: PlayerId, script: readonly ScriptEntry[] = []) {
     this.playerId = playerId;
@@ -427,6 +462,14 @@ export class ScriptedController implements PlayerController {
     options: readonly ObjectId[],
   ): ObjectId | null {
     return this.chooseCopyFn(view, source, options);
+  }
+
+  chooseText(
+    view: ControllerView,
+    fromOptions: readonly string[],
+    toOptions: readonly string[],
+  ): readonly [string, string] {
+    return this.chooseTextFn(view, fromOptions, toOptions);
   }
 }
 
@@ -564,6 +607,11 @@ export class RandomController extends AutomaticController {
             ? legal.options[this.pickIndex(legal.options.length)]
             : null;
         return { type: "choose-copy", player, copy };
+      }
+      case "choose-text": {
+        const from = legal.fromOptions[this.pickIndex(legal.fromOptions.length)];
+        const to = legal.toOptions[this.pickIndex(legal.toOptions.length)];
+        return { type: "choose-text", player, from, to };
       }
       default:
         return passFor(player);

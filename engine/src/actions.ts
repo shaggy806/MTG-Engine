@@ -100,6 +100,14 @@ export type Action =
       readonly type: "choose-copy";
       readonly player: PlayerId;
       readonly copy: ObjectId | null;
+    }
+  | {
+      /** Answers a pending text-change decision (Artificial Evolution — layer
+       * 3): replace the creature-type word `from` with `to`. */
+      readonly type: "choose-text";
+      readonly player: PlayerId;
+      readonly from: string;
+      readonly to: string;
     };
 
 export type ActionType = Action["type"];
@@ -198,4 +206,13 @@ export type LegalAction =
       readonly source: ObjectId;
       /** Permanents this Clone may copy; `null` (copy nothing) is also legal. */
       readonly options: readonly ObjectId[];
+    }
+  | {
+      readonly kind: "choose-text";
+      readonly source: ObjectId;
+      readonly target: ObjectId;
+      /** Creature-type words on the target — the one to replace. */
+      readonly fromOptions: readonly string[];
+      /** Creature types the replacement may be. */
+      readonly toOptions: readonly string[];
     };

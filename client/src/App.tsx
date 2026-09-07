@@ -43,6 +43,7 @@ type MulliganAction = Extract<LegalAction, { kind: 'mulligan' }>
 type BottomAction = Extract<LegalAction, { kind: 'put-on-bottom' }>
 type CommanderChoiceAction = Extract<LegalAction, { kind: 'commander-replacement' }>
 type CopyChoiceAction = Extract<LegalAction, { kind: 'choose-copy' }>
+type TextChoiceAction = Extract<LegalAction, { kind: 'choose-text' }>
 
 interface Targeting {
   readonly kind: 'cast' | 'activate'
@@ -80,6 +81,7 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
   'mulligan-bottom': 'put cards on the bottom of their library',
   'commander-replacement': 'decide where their commander goes',
   'choose-copy': 'choose what to copy',
+  'choose-text': 'choose a text change',
 }
 
 export default function App() {
@@ -429,6 +431,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
   const [orderPicks, setOrderPicks] = useState<readonly ObjectId[]>([])
   const [discardPicks, setDiscardPicks] = useState<readonly ObjectId[]>([])
   const [bottomPicks, setBottomPicks] = useState<readonly ObjectId[]>([])
+  const [textFrom, setTextFrom] = useState<string | null>(null)
   const [zoneView, setZoneView] = useState<{
     readonly title: string
     readonly ids: readonly ObjectId[]
@@ -483,6 +486,9 @@ function Table({ view, seat, opponents, game }: TableProps) {
   const copyChoiceAction = actions.find(
     (a): a is CopyChoiceAction => a.kind === 'choose-copy',
   )
+  const textChoiceAction = actions.find(
+    (a): a is TextChoiceAction => a.kind === 'choose-text',
+  )
   const canPass = actions.some((a) => a.kind === 'pass-priority')
   // Only the active player may skip the rest of their own turn — a defender
   // holding priority to respond during it shouldn't get this button.
@@ -498,6 +504,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
     | 'put-on-bottom'
     | 'commander-replacement'
     | 'choose-copy'
+    | 'choose-text'
     | 'choose-x'
     | 'choose-sacrifice'
     | 'targeting'
@@ -507,6 +514,8 @@ function Table({ view, seat, opponents, game }: TableProps) {
       ? 'commander-replacement'
       : copyChoiceAction
         ? 'choose-copy'
+        : textChoiceAction
+          ? 'choose-text'
         : bottomAction
           ? 'put-on-bottom'
       : discardAction
@@ -1134,6 +1143,39 @@ function Table({ view, seat, opponents, game }: TableProps) {
         >
           Copy nothing
         </button>
+      </div>
+    )
+  } else if (mode === 'choose-text' && textChoiceAction) {
+    const from = textFrom ?? textChoiceAction.fromOptions[0]
+    controls = (
+      <div className="controls">
+        <span>
+          {game.nameOf(textChoiceAction.target)} — replace{' '}
+          {textChoiceAction.fromOptions.length > 1 ? 'which type' : `“${from}”`}
+        </span>
+        {textChoiceAction.fromOptions.length > 1 &&
+          textChoiceAction.fromOptions.map((w) => (
+            <button
+              key={w}
+              type="button"
+              className={w === from ? 'selected' : undefined}
+              onClick={() => setTextFrom(w)}
+            >
+              {w}
+            </button>
+          ))}
+        <span>with</span>
+        {textChoiceAction.toOptions.map((w) => (
+          <button
+            key={w}
+            type="button"
+            onClick={() =>
+              game.dispatch({ type: 'choose-text', player: seat, from, to: w })
+            }
+          >
+            {w}
+          </button>
+        ))}
       </div>
     )
   } else if (mode === 'commander-replacement' && commanderChoiceAction) {
