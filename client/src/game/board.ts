@@ -72,7 +72,10 @@ export function computeBoardEntries(
     const attachments = attachmentsByHost.get(obj.id) ?? []
     const bucket = bucketOf(obj)
     const stackable =
-      bucket === 'land' && isEmpty(obj.counters) && attachments.length === 0
+      bucket === 'land' &&
+      obj.power === null && // a man-land animated to a creature stands alone
+      isEmpty(obj.counters) &&
+      attachments.length === 0
     if (stackable) {
       const key = `${obj.cardName}|${obj.tapped}`
       const idx = stackIndex.get(key)

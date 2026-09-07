@@ -4,9 +4,12 @@
  *
  * Implemented: **layer 1** (copy — every read resolves through
  * `printedCardName`, so a Clone has the copied card's P/T / types / abilities),
- * **layer 6** (keyword grants), **layer 7b** (a `"self"` CDA sets base P/T),
- * **layer 7c** (counters), **layer 7d** (P/T bonuses + modifiers), timestamp-
- * ordered within a layer. NOT yet: layers 3–5 (text, type-change, colour) and
+ * **layer 4** (type-change — a `PtModifier.addTypes`/`addSubtypes` from a
+ * man-land's "becomes a … creature" animation, added on top of the printed
+ * types), **layer 6** (keyword grants), **layer 7b** (a `"self"` CDA sets base
+ * P/T, then a `PtModifier.setPt` from a "becomes a N/N"), **layer 7c**
+ * (counters), **layer 7d** (P/T bonuses + modifiers), timestamp-ordered within
+ * a layer. NOT yet: layers 3 (text) and 5 (colour) — no card needs them — and
  * dependency ordering. Layer 2 (control-change) is modeled in `game.ts` by
  * reassigning `GameObject.controller`, not here.
  */
@@ -133,11 +136,29 @@ export function computeCharacteristics(
   let power = def.power ?? 0;
   let toughness = def.toughness ?? 0;
   const keywords = new Set<Keyword>(def.keywords);
+  let types: readonly CardType[] = def.types;
+  let subtypes: readonly string[] = def.subtypes;
 
   const staticEffects =
     object.zone === "battlefield"
       ? collectStaticEffects(state, registry, object)
       : [];
+
+  // Layer 4 — type-changing effects. A man-land's animation adds `creature`
+  // (and often `artifact` + a subtype) on top of the printed types; nothing
+  // removes types yet.
+  if (object.zone === "battlefield") {
+    const addedTypes: CardType[] = [];
+    const addedSubtypes: string[] = [];
+    for (const modifier of object.modifiers) {
+      if (modifier.addTypes) addedTypes.push(...modifier.addTypes);
+      if (modifier.addSubtypes) addedSubtypes.push(...modifier.addSubtypes);
+    }
+    if (addedTypes.length > 0) types = [...new Set([...types, ...addedTypes])];
+    if (addedSubtypes.length > 0) {
+      subtypes = [...new Set([...subtypes, ...addedSubtypes])];
+    }
+  }
 
   // Layer 6 — ability adds.
   for (const effect of staticEffects) {
@@ -160,6 +181,14 @@ export function computeCharacteristics(
       );
       power = n + ability.setBasePtFromCount.plusPower;
       toughness = n + ability.setBasePtFromCount.plusToughness;
+    }
+    // Layer 7b — a "becomes a N/N" that *sets* base P/T (man-land animation).
+    // Latest one wins; applied after a CDA, before counters and bonuses.
+    for (const modifier of object.modifiers) {
+      if (modifier.setPt) {
+        power = modifier.setPt[0];
+        toughness = modifier.setPt[1];
+      }
     }
   }
 
@@ -184,8 +213,8 @@ export function computeCharacteristics(
     power,
     toughness,
     keywords,
-    types: def.types,
-    subtypes: def.subtypes,
+    types,
+    subtypes,
     controller: object.controller,
   };
 }

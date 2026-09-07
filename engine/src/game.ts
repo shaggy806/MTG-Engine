@@ -18,7 +18,7 @@ import type {
   LegalAction,
 } from "./actions.js";
 import { CardRegistry, createDefaultRegistry } from "./cards.js";
-import type { CardDefinition, Keyword } from "./cards.js";
+import type { CardDefinition, CardType, Keyword } from "./cards.js";
 import { computeCharacteristics } from "./characteristics.js";
 import type { Characteristics } from "./characteristics.js";
 import { AutomaticController } from "./controller.js";
@@ -1201,7 +1201,14 @@ export class Game {
     const object = this.state.objects[id];
     if (object === undefined || object.zone !== "battlefield") return null;
     const def = this.registry.get(printedCardName(object));
-    return def.types.includes("creature") ? def : null;
+    // Printed OR currently a creature by a layer-4 type-change (a man-land
+    // animated this turn). The returned def is still the printed one — it's
+    // used for the permanent's name and ability list, while its live P/T /
+    // keywords come from `computeCharacteristics`.
+    if (def.types.includes("creature")) return def;
+    return computeCharacteristics(this.state, this.registry, id).types.includes("creature")
+      ? def
+      : null;
   }
 
   private hasSummoningSickness(object: GameObject): boolean {
@@ -1964,7 +1971,13 @@ export class Game {
     }
 
     const manaCost = parseManaCost(ability.cost.mana);
-    const plan = this.planManaPayment(player, manaCost);
+    // Don't auto-tap the source for its own ability's mana cost unless there's
+    // no other way to pay (it may want to attack / hold up its `{T}` ability).
+    const plan = this.planManaPayment(
+      player,
+      manaCost,
+      ability.cost.tap ? undefined : sourceId,
+    );
     if (plan === null) {
       throw new Error(`${player} cannot pay for ${def.name}'s ability`);
     }
@@ -2120,7 +2133,11 @@ export class Game {
    * Which of `player`'s mana sources to tap to cover `cost`, or `null` if it
    * can't be covered. Existing floating mana is spent first.
    */
-  private planManaPayment(player: PlayerId, cost: ManaCost): ObjectId[] | null {
+  private planManaPayment(
+    player: PlayerId,
+    cost: ManaCost,
+    avoid?: ObjectId,
+  ): ObjectId[] | null {
     const pool = this.state.players[player].manaPool;
     const coloredNeed: Record<string, number> = {};
     for (const color of COLORS) {
@@ -2134,7 +2151,18 @@ export class Game {
       MANA_TYPES.reduce((sum, type) => sum + pool[type], 0) - poolSpentOnColors;
     let genericNeed = Math.max(0, cost.generic - poolLeftForGeneric);
 
-    const sources = this.manaSources(player);
+    // `avoid` (the permanent whose ability is being activated) goes last, so a
+    // man-land paying its own `{1}: becomes a creature` cost taps something
+    // else and stays free to attack — but still taps itself if nothing else
+    // can cover the cost.
+    const allSources = this.manaSources(player);
+    const sources =
+      avoid === undefined
+        ? allSources
+        : [
+            ...allSources.filter((s) => s.id !== avoid),
+            ...allSources.filter((s) => s.id === avoid),
+          ];
     const used = new Set<ObjectId>();
     const plan: ObjectId[] = [];
 
@@ -2642,6 +2670,7 @@ export class Game {
       proliferate: () => this.proliferateAll(),
       grantKeyword: (target, keyword, duration) =>
         this.grantKeyword(target, keyword, duration),
+      animate: (target, opts) => this.animate(target, opts),
       createToken: (token, count) => this.createTokens(controller, token, count),
       attach: (target) => this.attachPermanent(source, target),
       lookAndChoose: (zone, count, min, max, destination, leftover, filter) =>
@@ -2784,6 +2813,41 @@ export class Game {
       object: target.object,
       keyword,
       duration,
+    });
+  }
+
+  /** A permanent becomes a creature (rule 613 layer 4 for the added types,
+   * layer 7b for the set P/T, layer 6 for `keywords`) via a single modifier —
+   * a man-land's activated ability. Printed types are kept. */
+  private animate(
+    target: TargetRef,
+    opts: {
+      readonly power: number;
+      readonly toughness: number;
+      readonly addTypes: readonly CardType[];
+      readonly addSubtypes: readonly string[];
+      readonly keywords: readonly Keyword[];
+      readonly duration: PtDuration;
+    },
+  ): void {
+    if (target.kind !== "object") return;
+    const object = this.state.objects[target.object];
+    if (object === undefined || object.zone !== "battlefield") return;
+    object.modifiers.push({
+      power: 0,
+      toughness: 0,
+      keywords: [...opts.keywords],
+      addTypes: [...opts.addTypes],
+      addSubtypes: [...opts.addSubtypes],
+      setPt: [opts.power, opts.toughness],
+      untilEndOfTurn: opts.duration === "end-of-turn",
+    });
+    this.emit({
+      type: "permanent-animated",
+      object: target.object,
+      power: opts.power,
+      toughness: opts.toughness,
+      duration: opts.duration,
     });
   }
 
@@ -3035,9 +3099,7 @@ export class Game {
   private sourceHasKeyword(source: ObjectId, keyword: Keyword): boolean {
     const object = this.state.objects[source];
     if (object === undefined || object.zone !== "battlefield") return false;
-    if (!this.registry.get(printedCardName(object)).types.includes("creature")) {
-      return false;
-    }
+    if (this.creatureDef(source) === null) return false;
     return this.objHasKeyword(source, keyword);
   }
 
@@ -3096,8 +3158,11 @@ export class Game {
 
       for (const id of [...this.state.zones.shared.battlefield]) {
         const object = this.state.objects[id];
-        const def = this.registry.get(printedCardName(object));
-        if (!def.types.includes("creature")) continue;
+        const computed = computeCharacteristics(this.state, this.registry, id);
+        // Printed creatures and man-lands currently animated to creatures
+        // (layer 4) both face the lethal-toughness / lethal-damage SBAs; once
+        // an animation wears off the land isn't a creature and is skipped.
+        if (!computed.types.includes("creature")) continue;
         // A 0/0 Clone still choosing what to copy hasn't finished entering —
         // don't kill it before its controller answers.
         if (
@@ -3106,7 +3171,6 @@ export class Game {
         ) {
           continue;
         }
-        const computed = computeCharacteristics(this.state, this.registry, id);
         const toughness = computed.toughness;
         const indestructible = computed.keywords.has("indestructible");
         let reason: string | null = null;

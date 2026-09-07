@@ -6,7 +6,7 @@
  * instance and is the only thing that writes to it; everything else reads.
  */
 
-import type { Keyword } from "./cards.js";
+import type { CardType, Keyword } from "./cards.js";
 import type { ManaPool } from "./mana.js";
 import { emptyPool } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
@@ -96,6 +96,15 @@ export interface PtModifier {
   power: number;
   toughness: number;
   keywords: Keyword[];
+  /** Layer 4 — card types this modifier adds (a man-land's "becomes a …
+   * creature. It's still a land." keeps the printed types and adds these). */
+  addTypes?: CardType[];
+  /** Layer 4 — subtypes this modifier adds (e.g. `["Blinkmoth"]`). */
+  addSubtypes?: string[];
+  /** Layer 7b — a "becomes a N/N" that *sets* base P/T rather than adding to
+   * it. Applied after a CDA, before counters (7c) and +N/+N bonuses (7d);
+   * the latest such modifier wins. */
+  setPt?: [number, number];
   untilEndOfTurn: boolean;
 }
 

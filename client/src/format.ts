@@ -88,6 +88,10 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       }`
     case 'pt-modifier-expired':
       return `${event.objects.map(name).join(', ')} — modifiers wear off`
+    case 'permanent-animated':
+      return `${name(event.object)} becomes a ${event.power}/${event.toughness} creature${
+        event.duration === 'end-of-turn' ? ' until EOT' : ''
+      }`
     case 'attacker-declared':
       return `${name(event.attacker)} attacks ${event.defender}`
     case 'blocker-declared':

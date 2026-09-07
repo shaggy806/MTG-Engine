@@ -119,6 +119,20 @@ export type EffectSpec =
       readonly duration: PtDuration;
     }
   | {
+      /** `target` becomes a creature (rule 613 layer 4 for the added types +
+       * subtypes, layer 7b for the set P/T, layer 6 for `keywords`). Printed
+       * types are kept — a man-land is "still a land". `"source"` is the
+       * usual target (man-lands animate themselves). */
+      readonly kind: "animate";
+      readonly target: EffectTargetRef;
+      readonly power: number;
+      readonly toughness: number;
+      readonly addTypes: readonly CardType[];
+      readonly addSubtypes: readonly string[];
+      readonly keywords?: readonly Keyword[];
+      readonly duration: PtDuration;
+    }
+  | {
       readonly kind: "create-token";
       /** Name of a token definition in the {@link CardRegistry}. */
       readonly token: string;
@@ -182,6 +196,18 @@ export interface EffectApi {
   /** Proliferate — see the `"proliferate"` {@link EffectSpec}. */
   proliferate(): void;
   grantKeyword(target: TargetRef, keyword: Keyword, duration: PtDuration): void;
+  /** `target` becomes a creature — see the `"animate"` {@link EffectSpec}. */
+  animate(
+    target: TargetRef,
+    opts: {
+      readonly power: number;
+      readonly toughness: number;
+      readonly addTypes: readonly CardType[];
+      readonly addSubtypes: readonly string[];
+      readonly keywords: readonly Keyword[];
+      readonly duration: PtDuration;
+    },
+  ): void;
   /** Create `count` copies of the named token, controlled by `ctx.controller`. */
   createToken(token: string, count: number): void;
   /** Attach `ctx.source` (an Aura/Equipment) to `target`. */
@@ -315,6 +341,20 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) {
         ctx.grantKeyword(target, spec.keyword, spec.duration);
+      }
+      return;
+    }
+    case "animate": {
+      const target = resolveEffectTarget(spec.target, ctx);
+      if (target !== undefined) {
+        ctx.animate(target, {
+          power: spec.power,
+          toughness: spec.toughness,
+          addTypes: spec.addTypes,
+          addSubtypes: spec.addSubtypes,
+          keywords: spec.keywords ?? [],
+          duration: spec.duration,
+        });
       }
       return;
     }

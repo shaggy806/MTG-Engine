@@ -65,6 +65,10 @@ export const makeFormatter = (game) => {
         }`;
       case "pt-modifier-expired":
         return `${e.objects.map(name).join(", ")} — modifiers wear off`;
+      case "permanent-animated":
+        return `${name(e.object)} becomes a ${e.power}/${e.toughness} creature${
+          e.duration === "end-of-turn" ? " until EOT" : ""
+        }`;
       case "attacker-declared":
         return `${name(e.attacker)} attacks ${e.defender}`;
       case "blocker-declared":

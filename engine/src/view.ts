@@ -129,7 +129,9 @@ function visible(
   const object = state.objects[id];
   const def = registry.get(printedCardName(object));
   const computed = computeCharacteristics(state, registry, id);
-  const isCreature = def.types.includes("creature");
+  // Computed, not printed — a man-land currently animated (layer 4) is a
+  // creature and should carry a P/T; a land again next turn and it won't.
+  const isCreature = computed.types.includes("creature");
   return {
     id: object.id,
     // The permanent's true identity ("Clone"); `copyOf` carries the copied

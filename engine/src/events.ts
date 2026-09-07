@@ -119,6 +119,15 @@ export type GameEvent =
       readonly objects: readonly ObjectId[];
     })
   | (Base & {
+      /** A permanent became a creature via an "animate" effect (a man-land's
+       * activated ability — rule 613 layer 4). */
+      readonly type: "permanent-animated";
+      readonly object: ObjectId;
+      readonly power: number;
+      readonly toughness: number;
+      readonly duration: "end-of-turn" | "permanent";
+    })
+  | (Base & {
       readonly type: "attacker-declared";
       readonly attacker: ObjectId;
       readonly defender: PlayerId;

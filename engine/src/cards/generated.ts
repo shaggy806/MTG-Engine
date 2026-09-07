@@ -9,6 +9,7 @@ import _poolAngelicEdict from "./pool/angelic-edict.js";
 import _poolAshmarkMarduVanguard from "./pool/ashmark-mardu-vanguard.js";
 import _poolBlaze from "./pool/blaze.js";
 import _poolBlightning from "./pool/blightning.js";
+import _poolBlinkmothNexus from "./pool/blinkmoth-nexus.js";
 import _poolBloodthroneVampire from "./pool/bloodthrone-vampire.js";
 import _poolBoggartBrute from "./pool/boggart-brute.js";
 import _poolBonesplitter from "./pool/bonesplitter.js";
@@ -46,6 +47,7 @@ import _poolLordOfExtinction from "./pool/lord-of-extinction.js";
 import _poolManOWar from "./pool/man-o-war.js";
 import _poolMindControl from "./pool/mind-control.js";
 import _poolMindRot from "./pool/mind-rot.js";
+import _poolMishrasFactory from "./pool/mishras-factory.js";
 import _poolMonasterySwiftspear from "./pool/monastery-swiftspear.js";
 import _poolMortivore from "./pool/mortivore.js";
 import _poolMossbackDragon from "./pool/mossback-dragon.js";
@@ -88,6 +90,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolAshmarkMarduVanguard,
   _poolBlaze,
   _poolBlightning,
+  _poolBlinkmothNexus,
   _poolBloodthroneVampire,
   _poolBoggartBrute,
   _poolBonesplitter,
@@ -125,6 +128,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolManOWar,
   _poolMindControl,
   _poolMindRot,
+  _poolMishrasFactory,
   _poolMonasterySwiftspear,
   _poolMortivore,
   _poolMossbackDragon,
