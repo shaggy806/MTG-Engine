@@ -106,17 +106,23 @@ and `{X}` creatures.
   Tranquil Thicket, Walking Ballista. `replacement.test.ts`. Also fixed a
   pre-existing Clone + "Sacrifice this" cost crash (mint the ability object
   with `def.name`, not `printedCardName(source)`).
-- [ ] **1b — damage / token / counter / graveyard replacements.** Extend the
-  pipeline: add an `applyReplacements(event)` interception routine and route
-  `dealDamage` / `dealCombatDamage`, `createTokens` (token *multiplier*),
-  `addCounter`, and the battlefield→graveyard `moveObject` path through it.
-  New `ReplacementSpec` variants: `would-be-dealt-damage` (prevention;
-  `Fog` is a per-player/turn shield — a plain `PlayerState` field, not a
-  static), `would-create-token { multiplier }`, `would-add-counter`,
-  `would-die { instead: "exile" }`. Rule 616 ordering: self-replacement
-  first, then the affected player picks; each replacement fires ≤1× per
-  event (carry a seen-set on the in-flight event). Cards: Fog, a token
-  doubler, Rest in Peace-lite. Add to fuzz decks + `replacement.test.ts`.
+- [x] **1b — damage / token / counter / graveyard replacements.** Done
+  pragmatically (not the fully generic `applyReplacements(event)` router —
+  the 1b cases are heterogeneous enough that per-mutator helpers read
+  cleaner). `ReplacementSpec` is now a discriminated union.
+  `Game.tokenCreationMultiplier` / `counterMultiplier` /
+  `graveyardIsReplacedWithExile` scan battlefield statics and are folded
+  into `createTokens`, `addCounter` (+ the enters-with-counters path), and
+  `moveObject`'s graveyard branch respectively. Fog is a turn-scoped
+  `GameState.preventAllCombatDamage` flag (no permanent to hang a static on)
+  set by a `prevent-all-combat-damage` effect, checked in `dealDamage`
+  (which now returns the amount actually dealt so prevented hits don't grow
+  `commanderDamageTaken`). Multipliers stack as a product (order-independent)
+  so no `choose-replacement-order` decision was needed. Cards: Fog,
+  Doubling Season, Rest in Peace. Added to the fuzz decks; 8 new
+  `replacement.test.ts` cases; fuzzer clean at 2p/3p/4p. **Deferred to 1c's
+  consolidated browser check:** no UI changes here (no new `AwaitingDecision`
+  / `Table` mode), only the two log formatters gained the new events.
 - [ ] **1c — modal / "you may" + 903.9a.** `EffectSpec` `modal { choose,
   modes }` + `may { effect }`; `choose-modes` decision (state.ts variant,
   actions.ts Action + LegalAction, game.ts dispatch/legalActions,
