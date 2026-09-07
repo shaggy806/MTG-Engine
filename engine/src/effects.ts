@@ -182,6 +182,14 @@ export type EffectSpec =
       readonly duration: PtDuration;
     }
   | {
+      /** `target` (an instant/sorcery card in a graveyard, via the
+       * `"instant-or-sorcery-in-your-graveyard"` target spec) gains flashback
+       * until end of turn for a cost equal to its mana cost — Snapcaster Mage
+       * (ROADMAP Phase 6b). */
+      readonly kind: "grant-flashback";
+      readonly target: number;
+    }
+  | {
       /** `target` becomes a creature (rule 613 layer 4 for the added/set
        * types + subtypes, layer 5 for `setColors`, layer 6 for `keywords` /
        * `loseAbilities`, layer 7b for the set P/T). Printed types are kept —
@@ -328,6 +336,10 @@ export interface EffectApi {
   ): void;
   returnToHand(target: TargetRef): void;
   exileObject(target: TargetRef): void;
+  /** Grant flashback to `target` (an instant/sorcery card in a graveyard) for
+   * the rest of the turn, at a flashback cost equal to its mana cost
+   * (Snapcaster Mage). */
+  grantFlashback(target: TargetRef): void;
   /** `a` and `b` (both creatures) fight; with `oneSided` only `a` deals. */
   fight(a: TargetRef, b: TargetRef, oneSided: boolean): void;
   /** Counter a target spell on the stack. */
@@ -516,6 +528,11 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     case "exile": {
       const target = ctx.targets[spec.target];
       if (target !== undefined) ctx.exileObject(target);
+      return;
+    }
+    case "grant-flashback": {
+      const target = ctx.targets[spec.target];
+      if (target !== undefined) ctx.grantFlashback(target);
       return;
     }
     case "mill": {

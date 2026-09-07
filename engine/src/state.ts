@@ -6,6 +6,7 @@
  * instance and is the only thing that writes to it; everything else reads.
  */
 
+import type { CastVia } from "./actions.js";
 import type { CardType, Keyword } from "./cards.js";
 import type { EffectSpec } from "./effects.js";
 import type { CardFilter } from "./filter.js";
@@ -64,10 +65,30 @@ export interface GameObject {
    * cost had no `{X}`. Cleared by `moveObject` on any later zone change. */
   xValue: number | null;
   /** The alternative permission this spell was cast under while it's on the
-   * stack — `"flashback"` (cast from the graveyard, rule 702.34) means it is
-   * exiled instead of going anywhere else from the stack. `null` / absent for
-   * a normally-cast spell. Cleared by `moveObject` on any zone change. */
-  castVia?: "flashback" | null;
+   * stack (ROADMAP Phase 6). `"flashback"` (rule 702.34) additionally means it
+   * is exiled instead of going anywhere else from the stack. `null` / absent
+   * for a normally-cast spell. Cleared by `moveObject` on any zone change. */
+  castVia?: CastVia | null;
+  /** A temporary "this instant/sorcery card in a graveyard has flashback"
+   * grant (Snapcaster Mage — ROADMAP Phase 6b). Read alongside
+   * `CardDefinition.flashback`. Cleared on any zone change and (when
+   * `untilEndOfTurn`) in cleanup. */
+  grantedFlashback?: { cost: string; untilEndOfTurn: boolean } | null;
+  /** True while this card is suspended — exiled with time counters (rule
+   * 702.62 — ROADMAP Phase 6b). A turn-based action removes one time counter
+   * at the owner's upkeep; at zero it's cast for free. Cleared on any zone
+   * change. */
+  suspended?: boolean;
+  /** True on a permanent cast from suspend (or another "has haste until it
+   * leaves" grant) — `hasSummoningSickness` returns false for it. Cleared on
+   * any zone change. */
+  hastyUntilItLeaves?: boolean;
+  /** True while this card is foretold — exiled face-down for `{2}`, castable
+   * later for its foretell cost (rule 702.144 — ROADMAP Phase 6b).
+   * `foretoldOnTurn` is the turn it was foretold (can't be cast the same
+   * turn). Both cleared on any zone change. */
+  foretold?: boolean;
+  foretoldOnTurn?: number | null;
   /** What this creature is attacking — a player, or an opponent's planeswalker
    * (rule 508.1) — or `null` if not attacking. */
   attacking: PlayerId | ObjectId | null;

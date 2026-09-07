@@ -25,7 +25,10 @@ export type TargetSpec =
   /** A spell on the stack (a card, not an ability). */
   | "spell"
   | "creature-spell"
-  | "noncreature-spell";
+  | "noncreature-spell"
+  /** An instant or sorcery card in the targeting player's graveyard
+   * (Snapcaster Mage — ROADMAP Phase 6b). */
+  | "instant-or-sorcery-in-your-graveyard";
 
 export const targetsPlayer = (ref: TargetRef, player: PlayerId): boolean =>
   ref.kind === "player" && ref.player === player;

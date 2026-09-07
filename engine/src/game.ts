@@ -15,6 +15,7 @@ import type {
   Action,
   AttackerDeclaration,
   BlockerDeclaration,
+  CastVia,
   LegalAction,
 } from "./actions.js";
 import { CardRegistry, createDefaultRegistry } from "./cards.js";
@@ -582,13 +583,15 @@ export class Game {
     }
 
     // Flashback (rule 702.34) — an instant/sorcery in this player's graveyard
-    // may be cast from there for its flashback cost.
+    // with a printed *or granted* (Snapcaster Mage) flashback cost may be cast
+    // from there.
     for (const card of this.state.zones.perPlayer[player].graveyard) {
       const cardName = this.state.objects[card].cardName;
       const def = this.registry.get(cardName);
-      if (def.flashback === null) continue;
+      const cost = this.flashbackCostOf(card);
+      if (cost === null) continue;
       if (this.whyCannotCastSpell(player, card, "flashback") !== null) continue;
-      const parsed = parseManaCost(def.flashback.cost);
+      const parsed = parseManaCost(cost);
       out.push({
         kind: "cast-spell",
         card,
@@ -597,7 +600,7 @@ export class Game {
         targetSpecs: def.targets,
         targetOptions: this.targetOptionsFor(def.targets, player, this.cardSource(def)),
         ...(parsed.x > 0
-          ? { xCost: { maxX: this.maxAffordableX(player, card, def, def.flashback.cost) } }
+          ? { xCost: { maxX: this.maxAffordableX(player, card, def, cost) } }
           : {}),
       });
     }
@@ -1404,6 +1407,15 @@ export class Game {
       }
     }
 
+    // "Until end of turn" flashback grants (Snapcaster Mage) end — these ride
+    // on cards in a graveyard, not the battlefield, so scan all objects.
+    for (const object of Object.values(this.state.objects)) {
+      if (object.grantedFlashback?.untilEndOfTurn) {
+        object.grantedFlashback = null;
+        this.emit({ type: "flashback-grant-expired", object: object.id });
+      }
+    }
+
     const expired: ObjectId[] = [];
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
@@ -2140,24 +2152,25 @@ export class Game {
   }
 
   /** The mana-cost string `player` would pay to cast `cardId` under `via`
-   * (the flashback cost from the graveyard, else the printed cost). */
-  private castCostString(cardId: ObjectId, via: "flashback" | undefined): string | null {
-    if (via === "flashback") {
-      return this.registry.get(this.state.objects[cardId].cardName).flashback?.cost ?? null;
-    }
-    return this.registry.get(this.state.objects[cardId].cardName).manaCost;
+   * (the flashback cost from the graveyard, the foretell cost from exile, else
+   * the printed cost). */
+  private castCostString(cardId: ObjectId, via: CastVia | undefined): string | null {
+    const def = this.registry.get(this.state.objects[cardId].cardName);
+    if (via === "flashback" || via === "escape") return this.flashbackCostOf(cardId);
+    if (via === "foretell") return def.foretell?.cost ?? null;
+    return def.manaCost;
   }
 
   private whyCannotCastSpell(
     player: PlayerId,
     cardId: ObjectId,
-    via?: "flashback",
+    via?: CastVia,
   ): string | null {
     const blocked = this.whyCannotAct(player);
     if (blocked !== null) return blocked;
     const def = this.registry.get(this.state.objects[cardId].cardName);
     if (via === "flashback") {
-      if (def.flashback === null) return `${def.name} does not have flashback`;
+      if (this.flashbackCostOf(cardId) === null) return `${def.name} does not have flashback`;
       if (!this.state.zones.perPlayer[player].graveyard.includes(cardId)) {
         return `${def.name} is not in ${player}'s graveyard`;
       }
@@ -2195,7 +2208,7 @@ export class Game {
     cardId: ObjectId,
     targets: readonly TargetRef[],
     xValue = 0,
-    via?: "flashback",
+    via?: CastVia,
   ): void {
     const why = this.whyCannotCastSpell(player, cardId, via);
     if (why !== null) throw new Error(why);
@@ -3432,6 +3445,7 @@ export class Game {
         this.sacrificeByEffect(controller, who, filter, count),
       returnToHand: (target) => this.returnToHandByEffect(target),
       exileObject: (target) => this.exileByEffect(target),
+      grantFlashback: (target) => this.grantFlashbackByEffect(target),
       fight: (a, b, oneSided) => this.fightCreatures(a, b, oneSided),
       counterSpell: (target) => this.counterSpellByEffect(target),
       gainControl: (target, untilEndOfTurn) =>
@@ -4116,6 +4130,28 @@ export class Game {
     this.emit({ type: "permanent-exiled", object: target.object });
   }
 
+  /** Snapcaster Mage — grant flashback to a graveyard instant/sorcery until
+   * end of turn, at a cost equal to its mana cost. */
+  private grantFlashbackByEffect(target: TargetRef): void {
+    if (target.kind !== "object") return;
+    const object = this.state.objects[target.object];
+    if (object === undefined || object.zone !== "graveyard") return;
+    const cost = this.registry.get(printedCardName(object)).manaCost;
+    if (cost === null) return;
+    object.grantedFlashback = { cost, untilEndOfTurn: true };
+    this.emit({ type: "flashback-granted", object: target.object, cost });
+  }
+
+  /** The flashback cost `cardId` currently has — its printed `flashback.cost`,
+   * or a temporary grant (Snapcaster Mage), or `null`. */
+  private flashbackCostOf(cardId: ObjectId): string | null {
+    const object = this.state.objects[cardId];
+    if (object === undefined) return null;
+    const printed = this.registry.get(object.cardName).flashback?.cost;
+    if (printed !== undefined) return printed;
+    return object.grantedFlashback?.cost ?? null;
+  }
+
   /** Recompute every battlefield permanent's controller from continuous
    * effects (temporary steals + control-granting Auras). Returns whether any
    * changed. A temporary steal (`controlEndsAtCleanup`) outranks an Aura
@@ -4750,6 +4786,12 @@ export class Game {
     // A copy effect ends when the object changes zones (rule 707.2) — a Clone
     // that dies and returns is a Clone again.
     object.copyOf = null;
+    // Alt-cast zone markers (ROADMAP Phase 6) end on any zone change: a
+    // Snapcaster grant, a suspend / foretell exile state.
+    object.grantedFlashback = null;
+    object.suspended = false;
+    object.foretold = false;
+    object.foretoldOnTurn = null;
 
     if (to === "battlefield") {
       object.enteredBattlefieldOnTurn = this.state.turn.number;
@@ -4774,6 +4816,8 @@ export class Game {
       // fresh 0/0 with X=0, not its old size.
       object.xValue = null;
       object.castVia = null;
+      // "Has haste until it leaves the battlefield" (a suspend cast) ends here.
+      object.hastyUntilItLeaves = false;
     }
 
     // The hook for `leaves-battlefield` triggers (rule 603.6d) — fired for

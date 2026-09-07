@@ -9,6 +9,12 @@
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { TargetRef, TargetSpec } from "./target.js";
 
+/** An alternative permission a spell can be cast under, from a zone other than
+ * the hand and/or for a cost other than its mana cost (ROADMAP Phase 6):
+ * `"flashback"` / `"escape"` cast an instant/sorcery from the graveyard,
+ * `"foretell"` casts a card foretold (exiled face-down) on an earlier turn. */
+export type CastVia = "flashback" | "escape" | "foretell";
+
 export interface AttackerDeclaration {
   readonly attacker: ObjectId;
   /** A player, or an opponent's planeswalker to attack (rule 508.1). */
@@ -33,9 +39,9 @@ export type Action =
        * otherwise. */
       readonly xValue?: number;
       /** Cast under an alternative permission rather than from the hand for the
-       * printed cost — `"flashback"` casts an instant/sorcery from the owner's
-       * graveyard for its flashback cost (rule 702.34). */
-      readonly via?: "flashback";
+       * printed cost (ROADMAP Phase 6): `"flashback"` / `"escape"` from the
+       * graveyard, `"foretell"` from face-down exile. */
+      readonly via?: CastVia;
     }
   | {
       readonly type: "activate-ability";
@@ -166,9 +172,10 @@ export type LegalAction =
        * action; anything from 0 to `maxX` is legal. */
       readonly xCost?: { readonly maxX: number };
       /** Present when this is an alternative-permission cast (not from the hand
-       * for the printed cost). `"flashback"` = the card is in the player's
-       * graveyard; the driver must echo `via` back in the `cast-spell` action. */
-      readonly via?: "flashback";
+       * for the printed cost — `"flashback"` / `"escape"` from the graveyard,
+       * `"foretell"` from face-down exile). The driver must echo `via` back in
+       * the `cast-spell` action. */
+      readonly via?: CastVia;
     }
   | {
       readonly kind: "activate-ability";

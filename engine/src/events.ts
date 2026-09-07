@@ -4,6 +4,7 @@
  * networking.
  */
 
+import type { CastVia } from "./actions.js";
 import type { ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { TargetRef } from "./target.js";
@@ -91,10 +92,21 @@ export type GameEvent =
       /** The value chosen for `{X}`, or `null` when the cost had no `{X}`. */
       readonly x: number | null;
       /** The alternative permission the spell was cast under, if any (Phase 6
-       * — `"flashback"` = cast from the graveyard). */
-      readonly via?: "flashback";
+       * — flashback / escape / foretell). */
+      readonly via?: CastVia;
     })
   | (Base & { readonly type: "spell-resolved"; readonly object: ObjectId })
+  | (Base & {
+      /** Snapcaster Mage granted a graveyard instant/sorcery flashback until
+       * end of turn (ROADMAP Phase 6b). */
+      readonly type: "flashback-granted";
+      readonly object: ObjectId;
+      readonly cost: string;
+    })
+  | (Base & {
+      readonly type: "flashback-grant-expired";
+      readonly object: ObjectId;
+    })
   | (Base & {
       readonly type: "ability-activated";
       readonly source: ObjectId;

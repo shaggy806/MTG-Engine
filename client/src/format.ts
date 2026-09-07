@@ -56,12 +56,16 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${event.player} plays ${name(event.object)}`
     case 'spell-cast':
       return `${event.player} casts ${name(event.object)}${
-        event.via === 'flashback' ? ' (flashback)' : ''
+        event.via ? ` (${event.via})` : ''
       }${event.x != null ? ` (X=${event.x})` : ''}${
         event.targets.length ? ` at ${event.targets.map(tgt).join(', ')}` : ''
       }`
     case 'spell-resolved':
       return `${name(event.object)} resolves`
+    case 'flashback-granted':
+      return `${name(event.object)} gains flashback ${event.cost}`
+    case 'flashback-grant-expired':
+      return `${name(event.object)}'s flashback grant expires`
     case 'spell-fizzled':
       return `${name(event.object)} fizzles — ${event.reason}`
     case 'spell-countered':

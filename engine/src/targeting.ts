@@ -164,6 +164,20 @@ export function isLegalTarget(
         isSpellOnStack(state, ref.object) &&
         !registry.get(state.objects[ref.object].cardName).types.includes("creature")
       );
+    case "instant-or-sorcery-in-your-graveyard": {
+      if (ref.kind !== "object") return false;
+      const object = state.objects[ref.object];
+      if (
+        object === undefined ||
+        object.zone !== "graveyard" ||
+        object.owner !== forPlayer ||
+        object.kind !== "card"
+      ) {
+        return false;
+      }
+      const types = registry.get(printedCardName(object)).types;
+      return types.includes("instant") || types.includes("sorcery");
+    }
     case "any-target":
     case "creature-or-player":
       return (
@@ -195,6 +209,14 @@ export function legalTargets(
   for (const id of state.zones.shared.stack) {
     const ref: TargetRef = { kind: "object", object: id };
     if (isLegalTarget(state, registry, spec, ref, forPlayer, source)) out.push(ref);
+  }
+  // Graveyard-targeting specs (Snapcaster Mage) — only this spec needs it, so
+  // don't pay the scan for every other target.
+  if (spec === "instant-or-sorcery-in-your-graveyard") {
+    for (const id of state.zones.perPlayer[forPlayer].graveyard) {
+      const ref: TargetRef = { kind: "object", object: id };
+      if (isLegalTarget(state, registry, spec, ref, forPlayer, source)) out.push(ref);
+    }
   }
   return out;
 }

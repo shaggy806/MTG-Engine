@@ -45,12 +45,16 @@ export const makeFormatter = (game) => {
         return `${e.player} plays ${name(e.object)}`;
       case "spell-cast":
         return `${e.player} casts ${name(e.object)}${
-          e.via === "flashback" ? " (flashback)" : ""
+          e.via ? ` (${e.via})` : ""
         }${e.x != null ? ` (X=${e.x})` : ""}${
           e.targets.length ? ` at ${e.targets.map(target).join(", ")}` : ""
         }`;
       case "spell-resolved":
         return `${name(e.object)} resolves`;
+      case "flashback-granted":
+        return `${name(e.object)} gains flashback ${e.cost}`;
+      case "flashback-grant-expired":
+        return `${name(e.object)}'s flashback grant expires`;
       case "ability-activated":
         return `${e.player} activates ${name(e.source)}'s ability${
           e.onStack ? "" : " (mana)"

@@ -113,3 +113,61 @@ describe("Flashback — Faithless Looting", () => {
     ).toBe(false);
   });
 });
+
+describe("Snapcaster Mage — a granted flashback", () => {
+  const setup = (): { game: Game; bolt: import("./primitives.js").ObjectId } => {
+    const game = mkGame(["Lightning Bolt", "Snapcaster Mage", "Island"]);
+    game.advanceUntil(atFirstMain);
+    playN(game, "Island", 1);
+    playN(game, "Mountain", 3);
+    const bolt = cardNamed(game, game.handOf(A), "Lightning Bolt");
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: bolt,
+      targets: [{ kind: "player", player: B }],
+    });
+    game.advanceUntil(settled);
+    const snap = cardNamed(game, game.handOf(A), "Snapcaster Mage");
+    game.dispatch({ type: "cast-spell", player: A, card: snap, targets: [] });
+    game.advanceUntil(settled);
+    return { game, bolt };
+  };
+
+  it("lets the graveyard spell be cast from there until end of turn, then exiles it", () => {
+    const { game, bolt } = setup();
+    expect(game.state.objects[bolt].grantedFlashback).toEqual({
+      cost: "{R}",
+      untilEndOfTurn: true,
+    });
+    expect(game.eventsOfType("flashback-granted").some((e) => e.object === bolt)).toBe(true);
+
+    const flash = game
+      .legalActions(A)
+      .find((x) => x.kind === "cast-spell" && x.card === bolt && x.via === "flashback");
+    expect(flash).toBeDefined();
+
+    const before = game.state.players[B].life;
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: bolt,
+      targets: [{ kind: "player", player: B }],
+      via: "flashback",
+    });
+    game.advanceUntil(settled);
+    expect(game.state.players[B].life).toBe(before - 3);
+    expect(game.state.zones.shared.exile).toContain(bolt);
+  });
+
+  it("the grant expires at end of turn if unused", () => {
+    const { game, bolt } = setup();
+    game.advanceUntil((s) => s.turn.activePlayer === B && s.turn.step === "precombat-main");
+    expect(game.state.objects[bolt].grantedFlashback ?? null).toBeNull();
+    expect(game.eventsOfType("flashback-grant-expired").some((e) => e.object === bolt)).toBe(true);
+    expect(game.graveyardOf(A)).toContain(bolt);
+    expect(
+      game.legalActions(A).some((x) => x.kind === "cast-spell" && x.card === bolt),
+    ).toBe(false);
+  });
+});

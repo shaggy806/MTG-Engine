@@ -100,6 +100,7 @@ import _poolRestInPeace from "./pool/rest-in-peace.js";
 import _poolRumblingBaloth from "./pool/rumbling-baloth.js";
 import _poolSarovaTheUndyingCurrent from "./pool/sarova-the-undying-current.js";
 import _poolSerraAngel from "./pool/serra-angel.js";
+import _poolSnapcasterMage from "./pool/snapcaster-mage.js";
 import _poolSolRing from "./pool/sol-ring.js";
 import _poolSoulWarden from "./pool/soul-warden.js";
 import _poolSwamp from "./pool/swamp.js";
@@ -230,6 +231,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolRumblingBaloth,
   _poolSarovaTheUndyingCurrent,
   _poolSerraAngel,
+  _poolSnapcasterMage,
   _poolSolRing,
   _poolSoulWarden,
   _poolSwamp,

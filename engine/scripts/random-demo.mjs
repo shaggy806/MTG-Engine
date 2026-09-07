@@ -105,6 +105,7 @@ const deckB = deck([
   ["Mind Rot", 1],
   ["Blightning", 1],
   ["Faithless Looting", 2],
+  ["Snapcaster Mage", 1],
   ["Counterspell", 1],
   ["Negate", 1],
   ["Essence Scatter", 1],

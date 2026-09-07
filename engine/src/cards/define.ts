@@ -170,6 +170,15 @@ export interface CardDefinition {
    * exiled instead of going anywhere else from the stack. `null` for a card
    * without flashback. */
   readonly flashback: { readonly cost: string } | null;
+  /** Foretell (rule 702.144 — ROADMAP Phase 6b) — during your turn you may pay
+   * `{2}` to exile this card from your hand face-down; on a later turn you may
+   * cast it from exile for `cost`. `null` for a card without foretell. */
+  readonly foretell: { readonly cost: string } | null;
+  /** Suspend (rule 702.62 — ROADMAP Phase 6b) — instead of casting this from
+   * your hand you may pay `cost` to exile it with `n` time counters; one comes
+   * off at each of your upkeeps, and at zero it's cast for free (with haste if
+   * it's a creature). `null` for a card without suspend. */
+  readonly suspend: { readonly n: number; readonly cost: string } | null;
 }
 
 interface CardDraft {
@@ -194,6 +203,8 @@ interface CardDraft {
   copyOnEnter?: { readonly filter: "creature" };
   loyalty?: number;
   flashback?: { readonly cost: string };
+  foretell?: { readonly cost: string };
+  suspend?: { readonly n: number; readonly cost: string };
 }
 
 /** Build a {@link CardDefinition} from a partial draft, filling in defaults. */
@@ -237,6 +248,8 @@ export function defineCard(draft: CardDraft): CardDefinition {
     copyOnEnter: draft.copyOnEnter ?? null,
     loyalty,
     flashback: draft.flashback ?? null,
+    foretell: draft.foretell ?? null,
+    suspend: draft.suspend ?? null,
   };
 }
 

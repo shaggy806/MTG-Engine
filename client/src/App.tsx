@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import type {
+  CastVia,
   LegalAction,
   ObjectId,
   PlayerId,
@@ -60,8 +61,8 @@ interface Targeting {
   readonly xValue?: number
   /** Permanent chosen to pay a "sacrifice a creature you control" ability cost. */
   readonly sacrifice?: ObjectId
-  /** Alternative casting permission (Phase 6) — `'flashback'` casts from the graveyard. */
-  readonly via?: 'flashback'
+  /** Alternative casting permission (Phase 6) — flashback / escape / foretell. */
+  readonly via?: CastVia
 }
 
 /**
