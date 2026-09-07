@@ -12,10 +12,11 @@ import type { TargetRef, TargetSpec } from "./target.js";
 /** An alternative permission a spell can be cast under, from a zone other than
  * the hand and/or for a cost other than its mana cost (ROADMAP Phase 6):
  * `"flashback"` / `"escape"` cast an instant/sorcery from the graveyard,
- * `"foretell"` casts a card foretold (exiled face-down) on an earlier turn,
- * `"suspend"` is the engine casting a card whose last time counter came off
- * (never dispatched by a player). */
-export type CastVia = "flashback" | "escape" | "foretell" | "suspend";
+ * `"foretell"` casts a card foretold (exiled face-down) on an earlier turn.
+ * `"suspend"` (last time counter came off) and `"cascade"` (revealed off the
+ * top of the library — ROADMAP Phase 8) are the engine casting a card for
+ * free; never dispatched by a player. */
+export type CastVia = "flashback" | "escape" | "foretell" | "suspend" | "cascade";
 
 export interface AttackerDeclaration {
   readonly attacker: ObjectId;

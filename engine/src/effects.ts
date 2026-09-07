@@ -195,6 +195,24 @@ export type EffectSpec =
       readonly kind: "take-extra-turn";
     }
   | {
+      /** Storm (rule 702.40 — ROADMAP Phase 8): put a copy of the spell this
+       * ability is on onto the stack for each other spell its controller cast
+       * before it this turn. Copies keep the original's targets. */
+      readonly kind: "storm";
+    }
+  | {
+      /** Cascade (rule 702.85 — ROADMAP Phase 8): exile cards off the top of
+       * the controller's library until a nonland card with lesser mana value
+       * is exiled, then cast that card for free; the rest go to the bottom. */
+      readonly kind: "cascade";
+    }
+  | {
+      /** Copy target instant/sorcery spell on the stack (Twincast — rule
+       * 707.10 / ROADMAP Phase 8). The copy keeps the original's targets. */
+      readonly kind: "copy-spell";
+      readonly target: number;
+    }
+  | {
       /** After this (post-combat) main phase there is an additional combat
        * phase then an additional main phase (Aggravated Assault — rule 500.8 /
        * ROADMAP Phase 7). */
@@ -388,6 +406,13 @@ export interface EffectApi {
   grantKeyword(target: TargetRef, keyword: Keyword, duration: PtDuration): void;
   /** The effect's controller takes an extra turn after this one (Time Warp). */
   takeExtraTurn(): void;
+  /** Storm — copy the spell `sourceId` for each earlier spell its controller
+   * cast this turn. */
+  storm(sourceId: ObjectId): void;
+  /** Cascade off `sourceId` (the cascade spell) for `controller`. */
+  cascade(controller: PlayerId, sourceId: ObjectId): void;
+  /** Copy the spell at `TargetRef` (an instant/sorcery on the stack). */
+  copySpell(target: TargetRef): void;
   /** Queue an additional combat + main phase after this main phase (Aggravated
    * Assault). */
   additionalCombat(): void;
@@ -605,6 +630,17 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     case "take-extra-turn":
       ctx.takeExtraTurn();
       return;
+    case "storm":
+      ctx.storm(ctx.source);
+      return;
+    case "cascade":
+      ctx.cascade(ctx.controller, ctx.source);
+      return;
+    case "copy-spell": {
+      const target = ctx.targets[spec.target];
+      if (target !== undefined) ctx.copySpell(target);
+      return;
+    }
     case "additional-combat":
       ctx.additionalCombat();
       return;

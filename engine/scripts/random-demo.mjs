@@ -145,6 +145,9 @@ const deckB = deck([
   ["Time Warp", 1],
   ["Aggravated Assault", 1],
   ["Rogue's Passage", 1],
+  ["Grapeshot", 1],
+  ["Bloodbraid Elf", 1],
+  ["Twincast", 1],
 ]);
 
 // A lean Dimir deck for Carol — carries the `Sarova, the Undying Current`

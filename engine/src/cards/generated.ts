@@ -15,6 +15,7 @@ import _poolBeholdTheMultiverse from "./pool/behold-the-multiverse.js";
 import _poolBlaze from "./pool/blaze.js";
 import _poolBlightning from "./pool/blightning.js";
 import _poolBlinkmothNexus from "./pool/blinkmoth-nexus.js";
+import _poolBloodbraidElf from "./pool/bloodbraid-elf.js";
 import _poolBloodthroneVampire from "./pool/bloodthrone-vampire.js";
 import _poolBoggartBrute from "./pool/boggart-brute.js";
 import _poolBonesplitter from "./pool/bonesplitter.js";
@@ -57,6 +58,7 @@ import _poolGladecoverScout from "./pool/gladecover-scout.js";
 import _poolGloriousAnthem from "./pool/glorious-anthem.js";
 import _poolGoblinChieftain from "./pool/goblin-chieftain.js";
 import _poolGoblinRaider from "./pool/goblin-raider.js";
+import _poolGrapeshot from "./pool/grapeshot.js";
 import _poolGravePact from "./pool/grave-pact.js";
 import _poolGraveRecall from "./pool/grave-recall.js";
 import _poolGreed from "./pool/greed.js";
@@ -115,6 +117,7 @@ import _poolTimeWarp from "./pool/time-warp.js";
 import _poolTomeScour from "./pool/tome-scour.js";
 import _poolTranquilThicket from "./pool/tranquil-thicket.js";
 import _poolTurnToFrog from "./pool/turn-to-frog.js";
+import _poolTwincast from "./pool/twincast.js";
 import _poolTyphoidRats from "./pool/typhoid-rats.js";
 import _poolUnderworldRageHound from "./pool/underworld-rage-hound.js";
 import _poolUnsummon from "./pool/unsummon.js";
@@ -152,6 +155,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolBlaze,
   _poolBlightning,
   _poolBlinkmothNexus,
+  _poolBloodbraidElf,
   _poolBloodthroneVampire,
   _poolBoggartBrute,
   _poolBonesplitter,
@@ -194,6 +198,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolGloriousAnthem,
   _poolGoblinChieftain,
   _poolGoblinRaider,
+  _poolGrapeshot,
   _poolGravePact,
   _poolGraveRecall,
   _poolGreed,
@@ -252,6 +257,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolTomeScour,
   _poolTranquilThicket,
   _poolTurnToFrog,
+  _poolTwincast,
   _poolTyphoidRats,
   _poolUnderworldRageHound,
   _poolUnsummon,

@@ -44,6 +44,23 @@ export type GameEvent =
       readonly type: "additional-combat-phase";
     })
   | (Base & {
+      /** A copy of a spell was put on the stack (storm / Twincast — rule
+       * 707.10 / ROADMAP Phase 8). */
+      readonly type: "spell-copied";
+      readonly original: ObjectId;
+      readonly copy: ObjectId;
+      readonly controller: PlayerId;
+    })
+  | (Base & {
+      /** Cascade exiled cards off the top of the library; `cast` is the
+       * nonland card with lesser mana value that will be cast free, or `null`
+       * (ROADMAP Phase 8). */
+      readonly type: "cascade-revealed";
+      readonly player: PlayerId;
+      readonly exiled: readonly ObjectId[];
+      readonly cast: ObjectId | null;
+    })
+  | (Base & {
       readonly type: "step-began";
       readonly step: Step;
       readonly phase: Phase;
@@ -108,8 +125,11 @@ export type GameEvent =
       /** The value chosen for `{X}`, or `null` when the cost had no `{X}`. */
       readonly x: number | null;
       /** The alternative permission the spell was cast under, if any (Phase 6
-       * — flashback / escape / foretell). */
+       * — flashback / escape / foretell / suspend / cascade). */
       readonly via?: CastVia;
+      /** The caster's spell count *including* this spell (the storm count —
+       * ROADMAP Phase 8). Absent for a copy (a copy isn't cast). */
+      readonly spellsThisTurn?: number;
     })
   | (Base & { readonly type: "spell-resolved"; readonly object: ObjectId })
   | (Base & {

@@ -114,6 +114,13 @@ export interface GameObject {
   timestamp: number;
   /** True for a token (rule 111): ceases to exist as an SBA once it leaves the battlefield. */
   isToken: boolean;
+  /** True for a copy of a spell on the stack (rule 707.10 — storm, Twincast).
+   * `cardName` is the copied spell's name; the copy ceases to exist instead of
+   * moving to any zone other than the stack. ROADMAP Phase 8. */
+  isCopy?: boolean;
+  /** Spells (by any player) cast this turn *before* this spell — captured when
+   * it's cast, read by a `storm` effect on it (rule 702.40a). ROADMAP Phase 8. */
+  stormCount?: number;
   /** The permanent this Aura/Equipment is attached to, or `null`. */
   attachedTo: ObjectId | null;
   /**
@@ -191,6 +198,10 @@ export interface PlayerState {
    * game began, keyed by that commander's controller. 21+ from the same
    * commander is a loss (rule 903.10a / SBA 704.5m). */
   commanderDamageTaken: Record<PlayerId, number>;
+  /** Spells *this player* has cast this turn — read by "your first spell each
+   * turn" triggers. (Storm counts *all* players' spells — see
+   * `GameState.spellsCastThisTurn`.) Reset in `beginTurn`. ROADMAP Phase 8. */
+  spellsCastThisTurn: number;
 }
 
 export interface GameRules {
@@ -451,6 +462,10 @@ export interface GameState {
    * `endStep` decrements it and re-enters `begin-combat` (a combat phase then
    * another main phase) instead of moving to the end step. */
   extraCombats: number;
+  /** Spells cast this turn by *any* player — the Storm count (rule 702.40a).
+   * Reset in `beginTurn`. `PlayerState.spellsCastThisTurn` is the per-player
+   * count for "your first spell each turn" triggers. ROADMAP Phase 8. */
+  spellsCastThisTurn: number;
   /** Monotonic source for battlefield-entry timestamps. */
   timestampSeq: number;
   eventLog: GameEvent[];
@@ -470,6 +485,7 @@ export function createPlayerState(id: PlayerId, rules: GameRules): PlayerState {
     attemptedDrawFromEmptyLibrary: false,
     commanderCastCount: 0,
     commanderDamageTaken: {},
+    spellsCastThisTurn: 0,
   };
 }
 

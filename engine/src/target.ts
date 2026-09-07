@@ -26,6 +26,8 @@ export type TargetSpec =
   | "spell"
   | "creature-spell"
   | "noncreature-spell"
+  /** An instant or sorcery spell on the stack (Twincast). */
+  | "instant-or-sorcery-spell"
   /** An instant or sorcery card in the targeting player's graveyard
    * (Snapcaster Mage — ROADMAP Phase 6b). */
   | "instant-or-sorcery-in-your-graveyard";

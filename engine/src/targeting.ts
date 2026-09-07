@@ -164,6 +164,11 @@ export function isLegalTarget(
         isSpellOnStack(state, ref.object) &&
         !registry.get(state.objects[ref.object].cardName).types.includes("creature")
       );
+    case "instant-or-sorcery-spell": {
+      if (ref.kind !== "object" || !isSpellOnStack(state, ref.object)) return false;
+      const t = registry.get(state.objects[ref.object].cardName).types;
+      return t.includes("instant") || t.includes("sorcery");
+    }
     case "instant-or-sorcery-in-your-graveyard": {
       if (ref.kind !== "object") return false;
       const object = state.objects[ref.object];

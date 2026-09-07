@@ -28,6 +28,12 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${event.player} gets an additional combat phase`
     case 'additional-combat-phase':
       return `additional combat phase`
+    case 'spell-copied':
+      return `${event.controller} copies ${name(event.original)}`
+    case 'cascade-revealed':
+      return event.cast
+        ? `${event.player} cascades into ${name(event.cast)} (${event.exiled.length} exiled)`
+        : `${event.player} cascades — nothing to cast (${event.exiled.length} exiled)`
     case 'step-began':
       return `[${event.phase}] ${event.step}`
     case 'priority-received':

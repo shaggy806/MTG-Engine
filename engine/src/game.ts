@@ -41,7 +41,7 @@ import type {
   GameEventInput,
   GameEventType,
 } from "./events.js";
-import { COLORS, MANA_TYPES, emptyPool, parseManaCost, poolTotal } from "./mana.js";
+import { COLORS, MANA_TYPES, emptyPool, manaValue, parseManaCost, poolTotal } from "./mana.js";
 import type { Color, ManaCost, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId, Rng } from "./primitives.js";
 import { asObjectId, createRng, shuffle } from "./primitives.js";
@@ -209,6 +209,7 @@ export class Game {
       preventAllCombatDamage: false,
       extraTurns: [],
       extraCombats: 0,
+      spellsCastThisTurn: 0,
       timestampSeq: 0,
       eventLog: [],
       eventSeq: 0,
@@ -1190,6 +1191,7 @@ export class Game {
     // owes no extra combats yet.
     this.state.preventAllCombatDamage = false;
     this.state.extraCombats = 0;
+    this.state.spellsCastThisTurn = 0;
     // An extra turn (Time Warp — rule 500.7) is taken by the player at the
     // front of the queue instead of advancing the normal rotation.
     const extraFor = this.state.extraTurns.length > 0 ? this.state.extraTurns.shift() ?? null : null;
@@ -1205,6 +1207,7 @@ export class Game {
     }
     for (const player of this.state.turnOrder) {
       this.state.players[player].landsPlayedThisTurn = 0;
+      this.state.players[player].spellsCastThisTurn = 0;
     }
     this.emit({
       type: "turn-began",
@@ -2209,24 +2212,24 @@ export class Game {
     for (const id of ready) this.castSuspendedCard(id);
   }
 
-  /** Cast a suspended card whose last time counter just came off, without
-   * paying its mana cost (rule 702.62e). Its controller chooses targets; if
-   * any slot has none it stays exiled. A permanent so cast has haste. */
-  private castSuspendedCard(cardId: ObjectId): void {
+  /** Put `cardId` (from exile or library) onto the stack without paying its
+   * mana cost — the shared core of suspend / cascade free casts (rules 702.62e
+   * / 702.85e). Its controller chooses targets; returns `false` if any slot
+   * has no legal option (the caller decides what happens then). A permanent so
+   * cast has haste when `grantHaste`. Counts as a spell cast this turn. */
+  private castCardWithoutPaying(
+    cardId: ObjectId,
+    opts: { via: CastVia; grantHaste?: boolean },
+  ): boolean {
     const object = this.state.objects[cardId];
-    if (object === undefined || object.zone !== "exile") return;
+    if (object === undefined) return false;
     const owner = object.owner;
     const def = this.registry.get(object.cardName);
 
     const targets: TargetRef[] = [];
     for (const spec of def.targets) {
       const options = legalTargets(this.state, this.registry, spec, owner, this.cardSource(def));
-      if (options.length === 0) {
-        // Can't be cast now — it just remains in exile, no longer suspended.
-        object.suspended = false;
-        this.emit({ type: "spell-fizzled", object: cardId, reason: "no legal targets" });
-        return;
-      }
+      if (options.length === 0) return false;
       const picked = this.controllers[owner].chooseTargets(
         this.controllerView(owner),
         def.name,
@@ -2236,18 +2239,35 @@ export class Game {
       targets.push(picked[0]);
     }
 
+    const stormCount = this.state.spellsCastThisTurn;
     this.moveObject(cardId, "stack");
     object.targets = targets.length > 0 ? [...targets] : null;
-    object.castVia = "suspend";
-    object.hastyUntilItLeaves = true;
+    object.castVia = opts.via;
+    object.stormCount = stormCount;
+    if (opts.grantHaste) object.hastyUntilItLeaves = true;
+    this.state.players[owner].spellsCastThisTurn += 1;
+    this.state.spellsCastThisTurn += 1;
     this.emit({
       type: "spell-cast",
       player: owner,
       object: cardId,
       targets: [...targets],
-      x: null,
-      via: "suspend",
+      x: object.xValue ?? null,
+      spellsThisTurn: this.state.players[owner].spellsCastThisTurn,
+      via: opts.via,
     });
+    return true;
+  }
+
+  /** Cast a suspended card whose last time counter just came off (rule
+   * 702.62e). If it can't be cast now it stays exiled, no longer suspended. */
+  private castSuspendedCard(cardId: ObjectId): void {
+    const object = this.state.objects[cardId];
+    if (object === undefined || object.zone !== "exile") return;
+    if (!this.castCardWithoutPaying(cardId, { via: "suspend", grantHaste: true })) {
+      object.suspended = false;
+      this.emit({ type: "spell-fizzled", object: cardId, reason: "no legal targets" });
+    }
   }
 
   /** The fixed cost to foretell any card (rule 702.144c). */
@@ -2497,13 +2517,19 @@ export class Game {
       this.emit({ type: "escape-cost-paid", object: cardId, exiled: [...exiled] });
     }
 
+    // Storm (rule 702.40a) counts spells cast *before* this one, by any player.
+    const stormCount = this.state.spellsCastThisTurn;
+
     // Commit: move to the stack, pay, announce.
     this.moveObject(cardId, "stack");
     object.targets = targets.length > 0 ? [...targets] : null;
     object.xValue = hasX ? chosenX : null;
     object.castVia = via ?? null;
+    object.stormCount = stormCount;
     this.executePayment(player, payment);
     if (castingFromCommand) this.state.players[player].commanderCastCount += 1;
+    this.state.players[player].spellsCastThisTurn += 1;
+    this.state.spellsCastThisTurn += 1;
 
     this.emit({
       type: "spell-cast",
@@ -2511,6 +2537,7 @@ export class Game {
       object: cardId,
       targets: [...targets],
       x: hasX ? chosenX : null,
+      spellsThisTurn: this.state.players[player].spellsCastThisTurn,
       ...(via !== undefined ? { via } : {}),
     });
     this.afterPlayerAction(player);
@@ -3251,13 +3278,21 @@ export class Game {
       def.targets.length > 0 &&
       !this.anyTargetLegal(def.targets, targets, object.controller, this.cardSource(def))
     ) {
-      this.moveObject(id, "graveyard");
       object.targets = null;
       this.emit({
         type: "spell-fizzled",
         object: id,
         reason: "all targets are illegal",
       });
+      // A copy that fizzles ceases to exist (707.10c); a real spell goes to the
+      // graveyard.
+      if (object.isCopy) {
+        const idx = stack.indexOf(id);
+        if (idx >= 0) stack.splice(idx, 1);
+        delete this.state.objects[id];
+      } else {
+        this.moveObject(id, "graveyard");
+      }
       return;
     }
 
@@ -3287,6 +3322,16 @@ export class Game {
       applyEffectSpec(def.effect, context);
     }
     this.emit({ type: "spell-resolved", object: id });
+
+    // A copy of a spell (rule 707.10c) ceases to exist instead of moving to
+    // any zone other than the stack.
+    if (object.isCopy) {
+      const stack = this.state.zones.shared.stack;
+      const stackIndex = stack.indexOf(id);
+      if (stackIndex >= 0) stack.splice(stackIndex, 1);
+      delete this.state.objects[id];
+      return;
+    }
 
     if (this.isPermanentSpell(def)) {
       this.moveObject(id, "battlefield");
@@ -3390,6 +3435,9 @@ export class Game {
     const candidates = new Set<ObjectId>(this.state.zones.shared.battlefield);
     if (event.type === "permanent-destroyed") candidates.add(event.object);
     if (event.type === "permanent-left-battlefield") candidates.add(event.object);
+    // A spell's own `this-cast` trigger (cascade, storm) lives on the card on
+    // the stack, not a permanent.
+    if (event.type === "spell-cast") candidates.add(event.object);
     for (const id of candidates) {
       const object = this.state.objects[id];
       if (object === undefined) continue;
@@ -3477,17 +3525,20 @@ export class Game {
         const casterMatches =
           spec.who === "any" || (spec.who === "you" && event.player === self.controller);
         if (!casterMatches) return false;
+        if (spec.firstEachTurn && event.spellsThisTurn !== 1) return false;
         if (spec.noncreatureOnly) {
           const castObject = this.state.objects[event.object];
           if (
             castObject !== undefined &&
-            this.registry.get(castObject.cardName).types.includes("creature")
+            this.registry.get(printedCardName(castObject)).types.includes("creature")
           ) {
             return false;
           }
         }
         return true;
       }
+      case "this-cast":
+        return event.type === "spell-cast" && event.object === self.id;
       default:
         return false;
     }
@@ -3727,6 +3778,9 @@ export class Game {
         this.state.extraTurns.push(controller);
         this.emit({ type: "extra-turn-queued", player: controller });
       },
+      storm: (sourceId) => this.stormCopy(sourceId),
+      cascade: (player, sourceId) => this.cascade(player, sourceId),
+      copySpell: (target) => this.copySpellByEffect(controller, target),
       additionalCombat: () => {
         this.state.extraCombats += 1;
         this.emit({ type: "additional-combat-queued", player: controller });
@@ -3953,6 +4007,119 @@ export class Game {
       }
       this.emit({ type: "permanent-entered-battlefield", object: id });
     }
+  }
+
+  // --- copying spells (storm / cascade / Twincast — ROADMAP Phase 8) -------
+
+  /** Put a copy of the instant/sorcery spell `originalId` onto the stack under
+   * `controller` (rule 707.10). The copy keeps the original's targets and
+   * `{X}`; it ceases to exist rather than moving off the stack. Returns the
+   * copy's id, or `null` if `originalId` isn't a copiable spell. */
+  private copyStackSpell(originalId: ObjectId, controller: PlayerId): ObjectId | null {
+    const original = this.state.objects[originalId];
+    if (
+      original === undefined ||
+      original.zone !== "stack" ||
+      original.kind !== "card"
+    ) {
+      return null;
+    }
+    // Permanent-spell copies become token permanents (rule 707.10a) — not
+    // modeled yet (Phase 10). Copy only instants/sorceries.
+    const def = this.registry.get(printedCardName(original));
+    if (this.isPermanentSpell(def)) return null;
+
+    const id = this.mintObjectId();
+    this.state.objects[id] = {
+      id,
+      cardName: printedCardName(original),
+      owner: controller,
+      controller,
+      zone: "stack",
+      tapped: false,
+      damageMarked: 0,
+      markedByDeathtouch: false,
+      enteredBattlefieldOnTurn: null,
+      summoningSick: false,
+      loyaltyActivatedThisTurn: false,
+      targets: original.targets ? [...original.targets] : null,
+      attacking: null,
+      blocking: null,
+      blockedBy: [],
+      blocked: false,
+      kind: "card",
+      abilityKind: null,
+      sourceObjectId: null,
+      abilityIndex: null,
+      counters: {},
+      modifiers: [],
+      timestamp: 0,
+      isToken: false,
+      isCopy: true,
+      attachedTo: null,
+      isCommander: false,
+      xValue: original.xValue ?? null,
+      controlEndsAtCleanup: false,
+      copyOf: null,
+    };
+    this.state.zones.shared.stack.push(id);
+    this.emit({ type: "spell-copied", original: originalId, copy: id, controller });
+    return id;
+  }
+
+  /** Storm (rule 702.40a): copy `sourceId` for each spell cast before it this
+   * turn (by any player) — the count captured on the spell when it was cast. */
+  private stormCopy(sourceId: ObjectId): void {
+    const source = this.state.objects[sourceId];
+    if (source === undefined) return;
+    const n = Math.max(0, source.stormCount ?? 0);
+    for (let i = 0; i < n; i += 1) this.copyStackSpell(sourceId, source.controller);
+  }
+
+  /** Cascade (rule 702.85e): exile off the top of `controller`'s library until
+   * a nonland card with mana value less than the cascade spell's is exiled,
+   * then cast it without paying its mana cost. The rest go to the bottom in a
+   * random order; the trigger card too if nothing castable turned up. */
+  private cascade(controller: PlayerId, sourceId: ObjectId): void {
+    const source = this.state.objects[sourceId];
+    if (source === undefined) return;
+    const threshold = manaValue(parseManaCost(this.registry.get(printedCardName(source)).manaCost));
+    const library = this.state.zones.perPlayer[controller].library;
+    const exiledHere: ObjectId[] = [];
+    let hit: ObjectId | null = null;
+
+    while (library.length > 0) {
+      const top = library[0];
+      this.moveObject(top, "exile");
+      exiledHere.push(top);
+      const topDef = this.registry.get(this.state.objects[top].cardName);
+      const mv = manaValue(parseManaCost(topDef.manaCost));
+      if (!topDef.types.includes("land") && mv < threshold) {
+        hit = top;
+        break;
+      }
+    }
+
+    this.emit({ type: "cascade-revealed", player: controller, exiled: [...exiledHere], cast: hit });
+
+    if (hit !== null) {
+      const cast = this.castCardWithoutPaying(hit, { via: "cascade", grantHaste: false });
+      if (!cast) hit = null; // no legal targets — it goes to the bottom too
+    }
+
+    // Everything still in exile from this cascade goes to the bottom of the
+    // library in a random order (rule 702.85e).
+    const toBottom = exiledHere.filter(
+      (id) => id !== hit && this.state.objects[id]?.zone === "exile",
+    );
+    for (const id of shuffle(toBottom, this.rng)) this.moveObject(id, "library");
+    this.state.rngState = this.rng.seed;
+  }
+
+  /** Twincast (rule 707.10): copy the instant/sorcery spell `target`. */
+  private copySpellByEffect(controller: PlayerId, target: TargetRef): void {
+    if (target.kind !== "object") return;
+    this.copyStackSpell(target.object, controller);
   }
 
   /** Attach an Aura/Equipment (`source`) to `target` (used by Equip-like effects). */

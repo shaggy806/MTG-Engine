@@ -17,6 +17,12 @@ export const makeFormatter = (game) => {
         return `${e.player} gets an additional combat phase`;
       case "additional-combat-phase":
         return `additional combat phase`;
+      case "spell-copied":
+        return `${e.controller} copies ${name(e.original)}`;
+      case "cascade-revealed":
+        return e.cast
+          ? `${e.player} cascades into ${name(e.cast)} (${e.exiled.length} exiled)`
+          : `${e.player} cascades — nothing to cast (${e.exiled.length} exiled)`;
       case "step-began":
         return `[${e.phase}] ${e.step}`;
       case "priority-received":

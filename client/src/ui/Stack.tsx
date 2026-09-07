@@ -24,11 +24,13 @@ export function Stack({ view }: { readonly view: PlayerView }) {
           const label =
             obj.kind === 'ability'
               ? `${obj.sourceObjectId ? nameOf(obj.sourceObjectId) : obj.cardName}'s ability`
-              : null
+              : obj.isCopy
+                ? `copy of ${obj.cardName}`
+                : null
           return (
             <div className="stack-entry" key={id}>
               {label ? <div className="stack-entry-label">{label}</div> : null}
-              <CardTile obj={obj} compact={index > 0} />
+              <CardTile obj={obj} compact={index > 0} badge={obj.isCopy ? 'copy' : undefined} />
               {obj.targets && obj.targets.length > 0 ? (
                 <div className="stack-targets">
                   {'→ '}

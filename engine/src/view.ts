@@ -88,6 +88,8 @@ export interface VisibleObject {
   /** The value chosen for `{X}` if this is an X spell/permanent, else `null`. */
   readonly xValue: number | null;
   readonly isToken: boolean;
+  /** A copy of a spell on the stack (storm / Twincast) — ROADMAP Phase 8. */
+  readonly isCopy: boolean;
   /** Suspended in exile with time counters (`counters.time`) — ROADMAP Phase 6b. */
   readonly suspended: boolean;
   /** Foretold — face-down in exile, castable later for its foretell cost.
@@ -198,6 +200,7 @@ function visible(
     targets: object.targets === null ? null : [...object.targets],
     xValue: object.xValue,
     isToken: object.isToken,
+    isCopy: object.isCopy ?? false,
     suspended: object.suspended ?? false,
     foretold: object.foretold ?? false,
     attachedTo: object.attachedTo,

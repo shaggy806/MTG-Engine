@@ -104,10 +104,18 @@ export type TriggerSpec =
   | {
       /** A spell was cast. `who` is relative to the caster: `"you"` = this
        * permanent's controller cast it. `noncreatureOnly` narrows to a
-       * noncreature spell (prowess, rule 702.108). */
+       * noncreature spell (prowess, rule 702.108). `firstEachTurn` narrows to
+       * the caster's first spell of the turn. */
       readonly on: "cast-spell";
       readonly who: TriggerWho;
       readonly noncreatureOnly?: boolean;
+      readonly firstEachTurn?: boolean;
+    }
+  | {
+      /** *This* spell (the one carrying the ability) was cast — a triggered
+       * ability that lives on the card on the stack, not a permanent (cascade,
+       * storm — rules 702.85 / 702.40). ROADMAP Phase 8. */
+      readonly on: "this-cast";
     }
   /** Escape hatch: match the raw event yourself. */
   | { readonly on: "predicate"; readonly match: (event: GameEvent) => boolean };
