@@ -41,6 +41,11 @@ export interface GameObject {
    * the battlefield, cleared in the controller's untap step.
    */
   summoningSick: boolean;
+  /**
+   * True once a loyalty ability of this permanent has been activated this turn
+   * (rule 606.3 — at most one per turn). Reset in the controller's untap step.
+   */
+  loyaltyActivatedThisTurn: boolean;
   /** Chosen targets while this is a spell/ability on the stack; `null` otherwise. */
   targets: TargetRef[] | null;
   /** True when a temporary control-change effect (Act of Treason) controls this
@@ -58,8 +63,9 @@ export interface GameObject {
    * "enters with X counters"-style effect can still read it. `null` when the
    * cost had no `{X}`. Cleared by `moveObject` on any later zone change. */
   xValue: number | null;
-  /** The player this creature is attacking, or `null` if not attacking. */
-  attacking: PlayerId | null;
+  /** What this creature is attacking — a player, or an opponent's planeswalker
+   * (rule 508.1) — or `null` if not attacking. */
+  attacking: PlayerId | ObjectId | null;
   /** The attacker this creature is blocking, or `null` if not blocking. */
   blocking: ObjectId | null;
   /** Blockers assigned to this attacker, in damage-assignment order. */

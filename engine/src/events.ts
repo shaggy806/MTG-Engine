@@ -160,7 +160,16 @@ export type GameEvent =
   | (Base & {
       readonly type: "attacker-declared";
       readonly attacker: ObjectId;
-      readonly defender: PlayerId;
+      /** A player, or an opponent's planeswalker (rule 508.1). */
+      readonly defender: PlayerId | ObjectId;
+    })
+  | (Base & {
+      /** A planeswalker's loyalty changed — a loyalty-ability cost, or
+       * damage (rule 306.7 / 120.3c). `loyalty` is the new total. */
+      readonly type: "loyalty-changed";
+      readonly object: ObjectId;
+      readonly delta: number;
+      readonly loyalty: number;
     })
   | (Base & {
       readonly type: "blocker-declared";

@@ -21,7 +21,7 @@ const spawn = (
   game.state.objects[id] = {
     id, cardName, owner: controller, controller, zone: "battlefield",
     tapped: false, damageMarked: 0, markedByDeathtouch: false,
-    enteredBattlefieldOnTurn: 0, summoningSick: opts.sick ?? false, targets: null,
+    enteredBattlefieldOnTurn: 0, summoningSick: opts.sick ?? false, loyaltyActivatedThisTurn: false, targets: null,
     attacking: null, blocking: null, blockedBy: [], blocked: false,
     kind: "card", abilityKind: null, sourceObjectId: null, abilityIndex: null,
     counters: {}, modifiers: [], timestamp: game.state.timestampSeq,

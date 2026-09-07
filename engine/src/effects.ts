@@ -143,6 +143,24 @@ export type EffectSpec =
       readonly duration: PtDuration;
     }
   | {
+      /** Every battlefield permanent matching `filter` gets +power/+toughness
+       * (Garruk Wildspeaker's ult / Overrun: `{ type: "creature",
+       * controlledBy: "you" }`, `+3/+3`, `end-of-turn`). */
+      readonly kind: "modify-pt-all";
+      readonly filter: CardFilter;
+      readonly power: number;
+      readonly toughness: number;
+      readonly duration: PtDuration;
+    }
+  | {
+      /** Every battlefield permanent matching `filter` gains `keyword` (Overrun:
+       * trample until end of turn). */
+      readonly kind: "grant-keyword-all";
+      readonly filter: CardFilter;
+      readonly keyword: Keyword;
+      readonly duration: PtDuration;
+    }
+  | {
       readonly kind: "add-counter";
       readonly target: EffectTargetRef;
       readonly counter: string;
@@ -324,6 +342,15 @@ export interface EffectApi {
     toughness: number,
     duration: PtDuration,
   ): void;
+  /** +power/+toughness to every battlefield permanent matching `filter`. */
+  modifyPtAll(
+    filter: CardFilter,
+    power: number,
+    toughness: number,
+    duration: PtDuration,
+  ): void;
+  /** Grant `keyword` to every battlefield permanent matching `filter`. */
+  grantKeywordAll(filter: CardFilter, keyword: Keyword, duration: PtDuration): void;
   addCounter(target: TargetRef, counter: string, amount: number): void;
   /** Proliferate — see the `"proliferate"` {@link EffectSpec}. */
   proliferate(): void;
@@ -506,6 +533,12 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       }
       return;
     }
+    case "modify-pt-all":
+      ctx.modifyPtAll(spec.filter, spec.power, spec.toughness, spec.duration);
+      return;
+    case "grant-keyword-all":
+      ctx.grantKeywordAll(spec.filter, spec.keyword, spec.duration);
+      return;
     case "add-counter": {
       const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) {

@@ -11,7 +11,8 @@ import type { TargetRef, TargetSpec } from "./target.js";
 
 export interface AttackerDeclaration {
   readonly attacker: ObjectId;
-  readonly defender: PlayerId;
+  /** A player, or an opponent's planeswalker to attack (rule 508.1). */
+  readonly defender: PlayerId | ObjectId;
 }
 
 export interface BlockerDeclaration {
@@ -173,12 +174,17 @@ export type LegalAction =
        * `choices` is every permanent that could be sacrificed to pay it. A
        * `"self"` sacrifice is implicit (no field) — the source is always used. */
       readonly sacrifice?: { readonly choices: readonly ObjectId[] };
+      /** Present for a planeswalker loyalty ability — the loyalty counters it
+       * adds (negative = removes), so a UI can label it "+1" / "−3". */
+      readonly loyalty?: number;
     }
   | {
       readonly kind: "declare-attackers";
       readonly eligible: readonly ObjectId[];
-      /** Every legal opponent an attacker can be declared against. */
-      readonly defenders: readonly PlayerId[];
+      /** Every legal defender an attacker can be declared against — each
+       * non-eliminated opponent, plus every planeswalker those opponents
+       * control (a planeswalker's id, not a player id). */
+      readonly defenders: readonly (PlayerId | ObjectId)[];
     }
   | {
       readonly kind: "declare-blockers";

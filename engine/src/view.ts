@@ -62,6 +62,8 @@ export interface VisibleObject {
   /** Computed power/toughness; `null` for objects that are not creatures. */
   readonly power: number | null;
   readonly toughness: number | null;
+  /** Current loyalty (`counters.loyalty`) for a planeswalker; `null` otherwise. */
+  readonly loyalty: number | null;
   readonly keywords: readonly Keyword[];
   /** Combat restrictions from static abilities (`"cant-attack"` from a
    * Pacifism, `"must-attack"` from Juggernaut). */
@@ -73,7 +75,8 @@ export interface VisibleObject {
   readonly damageMarked: number;
   readonly counters: Readonly<Record<string, number>>;
   readonly summoningSick: boolean;
-  readonly attacking: PlayerId | null;
+  /** A player, or an opponent's planeswalker (an `ObjectId`), or `null`. */
+  readonly attacking: PlayerId | ObjectId | null;
   readonly blocking: ObjectId | null;
   readonly blockedBy: readonly ObjectId[];
   readonly blocked: boolean;
@@ -168,6 +171,9 @@ function visible(
     subtypes: computed.subtypes,
     power: isCreature ? computed.power : null,
     toughness: isCreature ? computed.toughness : null,
+    loyalty: computed.types.includes("planeswalker")
+      ? (object.counters.loyalty ?? 0)
+      : null,
     keywords: [...computed.keywords],
     restrictions: [...computed.restrictions],
     colors: [...computed.colors],

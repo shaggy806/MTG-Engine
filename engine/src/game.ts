@@ -445,9 +445,10 @@ export class Game {
         ];
       }
       if (awaiting.kind === "blockers") {
-        const attackers = this.currentAttackers().filter(
-          (id) => this.state.objects[id].attacking === player,
-        );
+        const attackers = this.currentAttackers().filter((id) => {
+          const attacking = this.state.objects[id].attacking;
+          return attacking !== null && this.defendingPlayerOf(attacking) === player;
+        });
         const eligible = this.state.zones.shared.battlefield
           .filter((id) => this.state.objects[id].controller === player)
           .map((blocker) => ({
@@ -595,6 +596,7 @@ export class Game {
           ...(ability.cost.sacrifice === "creature-you-control"
             ? { sacrifice: { choices: this.sacrificeCandidates(player, source, ability) } }
             : {}),
+          ...(ability.loyaltyCost !== undefined ? { loyalty: ability.loyaltyCost } : {}),
         });
       });
     }
@@ -721,6 +723,7 @@ export class Game {
           markedByDeathtouch: false,
           enteredBattlefieldOnTurn: null,
           summoningSick: false,
+          loyaltyActivatedThisTurn: false,
           targets: null,
           attacking: null,
           blocking: null,
@@ -760,6 +763,7 @@ export class Game {
           markedByDeathtouch: false,
           enteredBattlefieldOnTurn: null,
           summoningSick: false,
+          loyaltyActivatedThisTurn: false,
           targets: null,
           attacking: null,
           blocking: null,
@@ -1209,6 +1213,8 @@ export class Game {
       if (object.controller !== active) continue;
       // Summoning sickness wears off as the controller's turn begins.
       object.summoningSick = false;
+      // A loyalty ability may be activated again (rule 606.3).
+      object.loyaltyActivatedThisTurn = false;
       if (object.tapped) {
         object.tapped = false;
         this.emit({ type: "permanent-untapped", object: id });
@@ -1405,10 +1411,35 @@ export class Game {
   // --- combat -----------------------------------------------------
 
   /** Every player `attacker` could legally declare an attack against. */
-  private legalDefenders(attacker: PlayerId): PlayerId[] {
-    return this.state.turnOrder.filter(
+  /** Everything the active player's attackers may be declared against: each
+   * non-eliminated opponent, plus every planeswalker those opponents control
+   * (rule 508.1). A planeswalker is identified by its `ObjectId`. */
+  private legalDefenders(attacker: PlayerId): (PlayerId | ObjectId)[] {
+    const opponents = this.state.turnOrder.filter(
       (player) => player !== attacker && !this.state.players[player].hasLost,
     );
+    const planeswalkers = this.state.zones.shared.battlefield.filter((id) => {
+      const object = this.state.objects[id];
+      return (
+        opponents.includes(object.controller) &&
+        computeCharacteristics(this.state, this.registry, id).types.includes("planeswalker")
+      );
+    });
+    return [...opponents, ...planeswalkers];
+  }
+
+  /** True if an attack target `id` is a planeswalker (an `ObjectId`) rather
+   * than a player. */
+  private isPlaneswalkerTarget(id: PlayerId | ObjectId): id is ObjectId {
+    return this.state.objects[id as ObjectId] !== undefined;
+  }
+
+  /** The player who defends against an attack aimed at `target` — the target
+   * itself if it's a player, or the controller of an attacked planeswalker. */
+  private defendingPlayerOf(target: PlayerId | ObjectId): PlayerId {
+    return this.isPlaneswalkerTarget(target)
+      ? this.state.objects[target].controller
+      : (target as PlayerId);
   }
 
   /** Battlefield creatures currently declared as attackers. */
@@ -1463,7 +1494,10 @@ export class Game {
     const attackers = this.currentAttackers();
     if (attackers.length === 0) return;
     const attackedBy = new Set(
-      attackers.map((id) => this.state.objects[id].attacking).filter((p) => p !== null),
+      attackers
+        .map((id) => this.state.objects[id].attacking)
+        .filter((t): t is PlayerId | ObjectId => t !== null)
+        .map((t) => this.defendingPlayerOf(t)),
     );
     // Ask in turn order starting after the active player — an arbitrary but
     // consistent choice for this engine's one-decision-at-a-time model; real
@@ -1506,7 +1540,7 @@ export class Game {
   private whyCannotAttack(
     player: PlayerId,
     creatureId: ObjectId,
-    target: PlayerId,
+    target: PlayerId | ObjectId,
   ): string | null {
     const object = this.state.objects[creatureId];
     const def = this.creatureDef(creatureId);
@@ -1530,7 +1564,9 @@ export class Game {
       return `${def.name} has summoning sickness`;
     }
     if (!this.legalDefenders(player).includes(target)) {
-      return "attackers can only attack an opponent who hasn't already lost";
+      return this.isPlaneswalkerTarget(target)
+        ? `${def.name} can't attack that planeswalker`
+        : "attackers can only attack an opponent who hasn't already lost";
     }
     return null;
   }
@@ -1566,7 +1602,7 @@ export class Game {
       const attackerDef = this.registry.get(printedCardName(attacker));
       return `${blockerDef.name} can't block ${attackerDef.name} (protection)`;
     }
-    if (attacker.attacking !== player) {
+    if (this.defendingPlayerOf(attacker.attacking) !== player) {
       const attackerDef = this.registry.get(printedCardName(attacker));
       return `${blockerDef.name} can't block ${attackerDef.name} — it isn't attacking ${player}`;
     }
@@ -1820,6 +1856,14 @@ export class Game {
     return ds || !this.objHasKeyword(id, "first-strike");
   }
 
+  /** The `TargetRef` combat damage goes to for a creature attacking `attacking`
+   * — the player, or the planeswalker (an `ObjectId`). */
+  private attackTargetRef(attacking: PlayerId | ObjectId): TargetRef {
+    return this.isPlaneswalkerTarget(attacking)
+      ? { kind: "object", object: attacking }
+      : { kind: "player", player: attacking as PlayerId };
+  }
+
   private dealCombatDamage(pass: "first" | "regular" | "all"): void {
     const assignments: {
       source: ObjectId;
@@ -1844,7 +1888,7 @@ export class Game {
             if (attacker.attacking !== null) {
               assignments.push({
                 source: attackerId,
-                target: { kind: "player", player: attacker.attacking },
+                target: this.attackTargetRef(attacker.attacking),
                 amount: power,
               });
             }
@@ -1874,7 +1918,7 @@ export class Game {
             if (trample && remaining > 0 && attacker.attacking !== null) {
               assignments.push({
                 source: attackerId,
-                target: { kind: "player", player: attacker.attacking },
+                target: this.attackTargetRef(attacker.attacking),
                 amount: remaining,
               });
             }
@@ -2224,6 +2268,19 @@ export class Game {
     if (hasLostAbilities(source)) {
       return `${def.name} has lost its abilities`;
     }
+    if (ability.loyaltyCost !== undefined) {
+      // Loyalty ability (rule 606): sorcery-speed, once per permanent per turn,
+      // and a "minus" ability needs that many loyalty counters to spend.
+      const timing = this.whyNotSorcerySpeed(player, `activate ${def.name}'s loyalty ability`);
+      if (timing !== null) return timing;
+      if (source.loyaltyActivatedThisTurn) {
+        return `a loyalty ability of ${def.name} has already been activated this turn`;
+      }
+      const loyalty = source.counters.loyalty ?? 0;
+      if (loyalty + ability.loyaltyCost < 0) {
+        return `${def.name} does not have ${-ability.loyaltyCost} loyalty to remove`;
+      }
+    }
     if (ability.cost.tap) {
       if (source.tapped) return `${def.name} is already tapped`;
       if (this.tapAbilityBlockedBySickness(source)) {
@@ -2342,6 +2399,16 @@ export class Game {
       if (source.counters[kind] <= 0) delete source.counters[kind];
       this.emit({ type: "counter-removed", object: sourceId, counter: kind, amount: count });
     }
+    if (ability.loyaltyCost !== undefined) {
+      source.counters.loyalty = (source.counters.loyalty ?? 0) + ability.loyaltyCost;
+      source.loyaltyActivatedThisTurn = true;
+      this.emit({
+        type: "loyalty-changed",
+        object: sourceId,
+        delta: ability.loyaltyCost,
+        loyalty: source.counters.loyalty,
+      });
+    }
     if (sacrificeVictim !== null) {
       this.moveObject(sacrificeVictim, "graveyard");
       this.emit({ type: "permanent-sacrificed", object: sacrificeVictim, player });
@@ -2401,6 +2468,7 @@ export class Game {
       markedByDeathtouch: false,
       enteredBattlefieldOnTurn: null,
       summoningSick: false,
+      loyaltyActivatedThisTurn: false,
       targets: targets.length > 0 ? [...targets] : null,
       attacking: null,
       blocking: null,
@@ -3319,6 +3387,10 @@ export class Game {
       discardCards: (target, amount) => this.discardByEffect(target, amount),
       modifyPt: (target, power, toughness, duration) =>
         this.modifyPt(target, power, toughness, duration),
+      modifyPtAll: (filter, power, toughness, duration) =>
+        this.modifyPtAll(controller, filter, power, toughness, duration),
+      grantKeywordAll: (filter, keyword, duration) =>
+        this.grantKeywordAll(controller, filter, keyword, duration),
       addCounter: (target, counter, amount) =>
         this.addCounter(target, counter, amount),
       proliferate: () => this.proliferateAll(),
@@ -3507,6 +3579,7 @@ export class Game {
         markedByDeathtouch: false,
         enteredBattlefieldOnTurn: this.state.turn.number,
         summoningSick: true,
+        loyaltyActivatedThisTurn: false,
         targets: null,
         attacking: null,
         blocking: null,
@@ -3598,6 +3671,37 @@ export class Game {
       keyword,
       duration,
     });
+  }
+
+  /** Which battlefield permanents a mass P/T / keyword effect (Overrun) hits —
+   * `matchesFilter` from the effect's controller's perspective. */
+  private battlefieldMatching(you: PlayerId, filter: CardFilter): ObjectId[] {
+    return this.state.zones.shared.battlefield.filter((id) =>
+      matchesFilter(this.state, this.registry, id, filter, { you }),
+    );
+  }
+
+  private modifyPtAll(
+    you: PlayerId,
+    filter: CardFilter,
+    power: number,
+    toughness: number,
+    duration: PtDuration,
+  ): void {
+    for (const id of this.battlefieldMatching(you, filter)) {
+      this.modifyPt({ kind: "object", object: id }, power, toughness, duration);
+    }
+  }
+
+  private grantKeywordAll(
+    you: PlayerId,
+    filter: CardFilter,
+    keyword: Keyword,
+    duration: PtDuration,
+  ): void {
+    for (const id of this.battlefieldMatching(you, filter)) {
+      this.grantKeyword({ kind: "object", object: id }, keyword, duration);
+    }
   }
 
   /** A permanent becomes a creature via a single modifier spanning layers 4
@@ -4189,6 +4293,20 @@ export class Game {
       this.emit({ type: "damage-prevented", source, target, amount });
       return 0;
     }
+    // Damage to a planeswalker removes that many loyalty counters (rule
+    // 120.3c / 306.7) — it's not "marked" like a creature.
+    if (computeCharacteristics(this.state, this.registry, target.object).types.includes("planeswalker")) {
+      object.counters.loyalty = (object.counters.loyalty ?? 0) - amount;
+      this.emit({ type: "damage-dealt", source, target, amount, combat });
+      this.emit({
+        type: "loyalty-changed",
+        object: target.object,
+        delta: -amount,
+        loyalty: object.counters.loyalty,
+      });
+      this.applyLifelink(source, amount);
+      return amount;
+    }
     object.damageMarked += amount;
     if (this.sourceHasKeyword(source, "deathtouch")) {
       object.markedByDeathtouch = true;
@@ -4314,6 +4432,20 @@ export class Game {
           this.emit({ type: "permanent-destroyed", object: id, reason });
           changed = true;
         }
+      }
+
+      // A planeswalker with 0 loyalty is put into its owner's graveyard
+      // (rule 704.5i).
+      for (const id of [...this.state.zones.shared.battlefield]) {
+        const object = this.state.objects[id];
+        if (!computeCharacteristics(this.state, this.registry, id).types.includes("planeswalker")) {
+          continue;
+        }
+        if ((object.counters.loyalty ?? 0) > 0) continue;
+        this.moveObject(id, "graveyard");
+        if (this.state.awaiting !== null) return; // deferred 903.9a choice
+        this.emit({ type: "permanent-destroyed", object: id, reason: "0 loyalty" });
+        changed = true;
       }
 
       // Auras with no legal permanent to enchant go to the graveyard (704.5n);

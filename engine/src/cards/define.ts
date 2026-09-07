@@ -161,6 +161,10 @@ export interface CardDefinition {
    * chooses (Clone — rule 707); `filter` narrows what may be copied. `null`
    * for a normal card. */
   readonly copyOnEnter: { readonly filter: "creature" } | null;
+  /** Starting loyalty for a planeswalker (rule 306.5b — it enters with this
+   * many loyalty counters). `null` for a non-planeswalker. `defineCard`
+   * synthesizes the enters-with-counters replacement from this. */
+  readonly loyalty: number | null;
 }
 
 interface CardDraft {
@@ -183,10 +187,28 @@ interface CardDraft {
   revealsOwnLibraryTop?: boolean;
   controlEnchanted?: boolean;
   copyOnEnter?: { readonly filter: "creature" };
+  loyalty?: number;
 }
 
 /** Build a {@link CardDefinition} from a partial draft, filling in defaults. */
 export function defineCard(draft: CardDraft): CardDefinition {
+  const loyalty = draft.loyalty ?? null;
+  // A planeswalker enters with `loyalty` loyalty counters (rule 306.5b) —
+  // synthesized as an enters-with-counters self-replacement so the existing
+  // `moveObject` / Doubling Season machinery applies unchanged.
+  const loyaltyStatic: readonly StaticAbility[] =
+    loyalty === null
+      ? []
+      : [
+          {
+            affects: { scope: "self" },
+            replacement: {
+              event: "enters-battlefield",
+              counters: { kind: "loyalty", amount: loyalty },
+            },
+            text: `${draft.name} enters with ${loyalty} loyalty counters.`,
+          },
+        ];
   return {
     name: draft.name,
     manaCost: draft.manaCost ?? null,
@@ -203,10 +225,11 @@ export function defineCard(draft: CardDraft): CardDefinition {
     resolve: draft.resolve ?? null,
     activated: draft.activated ?? [],
     triggered: draft.triggered ?? [],
-    static: draft.static ?? [],
+    static: [...(draft.static ?? []), ...loyaltyStatic],
     revealsOwnLibraryTop: draft.revealsOwnLibraryTop ?? false,
     controlEnchanted: draft.controlEnchanted ?? false,
     copyOnEnter: draft.copyOnEnter ?? null,
+    loyalty,
   };
 }
 

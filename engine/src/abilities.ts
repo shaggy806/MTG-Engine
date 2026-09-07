@@ -46,6 +46,15 @@ export interface ActivatedAbility {
   readonly text: string;
   /** True for abilities like Equip that function only as a sorcery (rule 602.3). */
   readonly sorcerySpeed?: boolean;
+  /**
+   * A loyalty ability (rule 606) — present ⇒ this ability's cost is "add
+   * `loyaltyCost` loyalty counters to the source" (negative removes them),
+   * it functions only as a sorcery, and only one loyalty ability of a given
+   * permanent may be activated each turn. `cost.mana` / `cost.tap` are
+   * ignored; a loyalty ability with a target is fine ("+1: Untap two target
+   * lands"). Uses the stack like any other activated ability.
+   */
+  readonly loyaltyCost?: number;
 }
 
 /** Who the triggering object must be relative to the ability's source. */
@@ -123,6 +132,8 @@ export interface StackAbility {
  * only knows how to pay a bare `{T}`). */
 export function isManaAbility(ability: ActivatedAbility): boolean {
   return (
+    // A loyalty ability uses the stack even if it adds mana (rule 606.3).
+    ability.loyaltyCost === undefined &&
     ability.targets.length === 0 &&
     // A "Sacrifice this: Add …" mana ability (Treasure) is fine — the payment
     // machinery handles a self-sacrifice. A "sacrifice a creature you

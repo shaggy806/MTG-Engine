@@ -42,7 +42,7 @@ const mkObject = (
     damageMarked: 0,
     markedByDeathtouch: false,
     enteredBattlefieldOnTurn: 0,
-    summoningSick: false,
+    summoningSick: false, loyaltyActivatedThisTurn: false,
     targets: null,
     attacking: null,
     blocking: null,
