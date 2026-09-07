@@ -114,6 +114,16 @@ interface ManaPlanStep {
   readonly mana: readonly ManaType[];
   readonly sacrifice: boolean;
 }
+
+/** A fully-worked-out way to pay a cost: which sources to tap ({@link
+ * ManaPlanStep}), how much life to pay for Phyrexian pips, and the cost with
+ * every hybrid pip resolved to a concrete colour / generic amount — which is
+ * what {@link Game.spendFromPool} actually deducts. */
+interface ManaPayment {
+  readonly steps: readonly ManaPlanStep[];
+  readonly life: number;
+  readonly resolved: ManaCost;
+}
 /** Combat damage from the same commander at or above this total is a loss (rule 903.10a). */
 const COMMANDER_DAMAGE_THRESHOLD = 21;
 
@@ -2007,6 +2017,7 @@ export class Game {
       colorless: base.colorless,
       generic: Math.max(0, generic),
       x: 0,
+      hybrid: base.hybrid,
     };
   }
 
@@ -2048,7 +2059,7 @@ export class Game {
       ) + MANA_TYPES.reduce((n, t) => n + pool[t], 0);
     let best = 0;
     for (let k = 1; k <= cap; k += 1) {
-      if (this.planManaPayment(player, this.castingCostOf(player, cardId, def, k)) === null) {
+      if (this.payMana(player, this.castingCostOf(player, cardId, def, k)) === null) {
         break;
       }
       best = k;
@@ -2080,7 +2091,7 @@ export class Game {
         return `${def.name} has no legal ${spec} target`;
       }
     }
-    if (this.planManaPayment(player, this.castingCostOf(player, cardId, def)) === null) {
+    if (this.payMana(player, this.castingCostOf(player, cardId, def)) === null) {
       return `${player} cannot pay the cost of ${def.name}`;
     }
     return null;
@@ -2113,8 +2124,8 @@ export class Game {
 
     const castingFromCommand = this.isCastableCommander(player, cardId);
     const cost = this.castingCostOf(player, cardId, def, chosenX);
-    const plan = this.planManaPayment(player, cost);
-    if (plan === null) {
+    const payment = this.payMana(player, cost);
+    if (payment === null) {
       throw new Error(`${player} cannot pay the cost of ${def.name}`);
     }
 
@@ -2122,8 +2133,7 @@ export class Game {
     this.moveObject(cardId, "stack");
     object.targets = targets.length > 0 ? [...targets] : null;
     object.xValue = hasX ? chosenX : null;
-    for (const step of plan) this.useManaSource(step);
-    this.spendFromPool(player, cost);
+    this.executePayment(player, payment);
     if (castingFromCommand) this.state.players[player].commanderCastCount += 1;
 
     this.emit({
@@ -2195,7 +2205,7 @@ export class Game {
         return `${def.name}'s ability has no legal ${spec} target`;
       }
     }
-    if (this.planManaPayment(player, parseManaCost(ability.cost.mana)) === null) {
+    if (this.payMana(player, parseManaCost(ability.cost.mana)) === null) {
       return `${player} cannot pay for ${def.name}'s ability`;
     }
     if (
@@ -2272,12 +2282,12 @@ export class Game {
     const manaCost = parseManaCost(ability.cost.mana);
     // Don't auto-tap the source for its own ability's mana cost unless there's
     // no other way to pay (it may want to attack / hold up its `{T}` ability).
-    const plan = this.planManaPayment(
+    const payment = this.payMana(
       player,
       manaCost,
       ability.cost.tap ? undefined : sourceId,
     );
-    if (plan === null) {
+    if (payment === null) {
       throw new Error(`${player} cannot pay for ${def.name}'s ability`);
     }
 
@@ -2286,8 +2296,7 @@ export class Game {
       source.tapped = true;
       this.emit({ type: "permanent-tapped", object: sourceId });
     }
-    for (const step of plan) this.useManaSource(step);
-    this.spendFromPool(player, manaCost);
+    this.executePayment(player, payment);
     if (ability.cost.payLife !== undefined) {
       this.changeLife(player, -ability.cost.payLife);
     }
@@ -2457,7 +2466,99 @@ export class Game {
   }
 
   /**
+   * The full worked-out payment for `cost` — hybrid pips resolved, sources
+   * chosen, life counted — or `null` if `player` can't pay. This is the entry
+   * point every caster / activator / ward check goes through; feed the result
+   * to {@link executePayment}.
+   */
+  private payMana(
+    player: PlayerId,
+    cost: ManaCost,
+    avoid?: ObjectId,
+  ): ManaPayment | null {
+    const resolved = this.resolveHybridCost(player, cost, avoid);
+    if (resolved === null) return null;
+    const steps = this.planManaPayment(player, resolved.concrete, avoid);
+    if (steps === null) return null;
+    return { steps, life: resolved.life, resolved: resolved.concrete };
+  }
+
+  /** Carry out a {@link payMana} result: tap/sacrifice each planned source and
+   * add its mana, spend the resolved cost from the pool, then pay any
+   * Phyrexian life. */
+  private executePayment(player: PlayerId, payment: ManaPayment): void {
+    for (const step of payment.steps) this.useManaSource(step);
+    this.spendFromPool(player, payment.resolved);
+    if (payment.life > 0) this.changeLife(player, -payment.life);
+  }
+
+  /**
+   * Resolve every hybrid / twobrid / Phyrexian pip in `cost` to a concrete
+   * payment, returning the pip-free cost plus the life owed for Phyrexian pips
+   * (or `null` if a pip can't be paid at all). Greedy and auto-pilot: for each
+   * pip, prefer a coloured half the player can still afford, then the twobrid
+   * `{2}`, then paying 2 life — and never take yourself below 1 life. Each
+   * tentative choice is re-checked against the running total with
+   * {@link planManaPayment}; since that planner is itself greedy, a cost that
+   * needs genuine cross-pip coordination (`{W/U}{W/U}` off one W source and one
+   * U source) can still misresolve, but ordinary hybrid costs are fine.
+   */
+  private resolveHybridCost(
+    player: PlayerId,
+    cost: ManaCost,
+    avoid: ObjectId | undefined,
+  ): { concrete: ManaCost; life: number } | null {
+    if (cost.hybrid.length === 0) return { concrete: cost, life: 0 };
+
+    let concrete: ManaCost = {
+      generic: cost.generic,
+      colored: { ...cost.colored },
+      colorless: cost.colorless,
+      x: 0,
+      hybrid: [],
+    };
+    let life = 0;
+    const startingLife = this.state.players[player].life;
+
+    for (const pip of cost.hybrid) {
+      let chosen: ManaCost | null = null;
+      for (const option of pip) {
+        if (option.kind !== "color") continue;
+        const nextColored = { ...concrete.colored };
+        nextColored[option.color] += 1;
+        const trial: ManaCost = { ...concrete, colored: nextColored };
+        if (this.planManaPayment(player, trial, avoid) !== null) {
+          chosen = trial;
+          break;
+        }
+      }
+      if (chosen === null) {
+        for (const option of pip) {
+          if (option.kind !== "generic") continue;
+          const trial: ManaCost = { ...concrete, generic: concrete.generic + option.amount };
+          if (this.planManaPayment(player, trial, avoid) !== null) {
+            chosen = trial;
+            break;
+          }
+        }
+      }
+      if (chosen !== null) {
+        concrete = chosen;
+        continue;
+      }
+      if (pip.some((o) => o.kind === "phyrexian") && startingLife - life - 2 >= 1) {
+        life += 2;
+        continue;
+      }
+      return null;
+    }
+    return { concrete, life };
+  }
+
+  /**
    * How `player` would pay `cost` from mana sources, or `null` if they can't.
+   * `cost.hybrid` is ignored here — {@link resolveHybridCost} lowers hybrid
+   * pips to concrete colour / generic needs before this runs.
    * Existing floating mana is spent first; then colored pips, then `{C}` pips,
    * then generic are covered in turn, tapping a fresh source only when the
    * already-tapped ones can't. A source that makes more than one mana (Sol
@@ -3914,15 +4015,14 @@ export class Game {
       if (ward === null) continue;
 
       const manaCost = parseManaCost(ward.mana ?? null);
-      const plan = this.planManaPayment(caster, manaCost);
+      const payment = this.payMana(caster, manaCost);
       const lifeOk =
         ward.payLife === undefined || this.state.players[caster].life >= ward.payLife;
-      if (plan === null || !lifeOk) {
+      if (payment === null || !lifeOk) {
         onCountered();
         return false;
       }
-      for (const step of plan) this.useManaSource(step);
-      this.spendFromPool(caster, manaCost);
+      this.executePayment(caster, payment);
       if (ward.payLife !== undefined) this.changeLife(caster, -ward.payLife);
       this.emit({ type: "ward-paid", object: target.object, player: caster });
     }

@@ -20,6 +20,7 @@ describe("parseManaCost", () => {
       colored: { W: 0, U: 0, B: 0, R: 0, G: 0 },
       colorless: 0,
       x: 0,
+      hybrid: [],
     });
     expect(manaValue(parseManaCost(""))).toBe(0);
   });
@@ -39,12 +40,46 @@ describe("parseManaCost", () => {
   });
 
   it("rejects unsupported symbols", () => {
-    expect(() => parseManaCost("{G/U}")).toThrow(/unsupported/);
-    expect(() => parseManaCost("{W/P}")).toThrow();
+    expect(() => parseManaCost("{Q}")).toThrow(/unsupported/);
+    expect(() => parseManaCost("{W/Q}")).toThrow(/unsupported/);
   });
 
   it("manaValue counts every pip", () => {
     expect(manaValue(parseManaCost("{3}{W}{U}"))).toBe(5);
     expect(manaValue(parseManaCost("{R}"))).toBe(1);
+  });
+
+  it("parses hybrid, twobrid, and Phyrexian pips", () => {
+    const hybrid = parseManaCost("{W/U}");
+    expect(hybrid.hybrid).toEqual([
+      [
+        { kind: "color", color: "W" },
+        { kind: "color", color: "U" },
+      ],
+    ]);
+
+    const twobrid = parseManaCost("{2/R}{2/R}{2/R}");
+    expect(twobrid.hybrid).toHaveLength(3);
+    expect(twobrid.hybrid[0]).toEqual([
+      { kind: "generic", amount: 2 },
+      { kind: "color", color: "R" },
+    ]);
+
+    const phyrexian = parseManaCost("{R/P}");
+    expect(phyrexian.hybrid[0]).toEqual([
+      { kind: "color", color: "R" },
+      { kind: "phyrexian" },
+    ]);
+  });
+
+  it("mana value of a hybrid pip is its greatest half (rule 202.3f)", () => {
+    expect(manaValue(parseManaCost("{W/U}"))).toBe(1);
+    expect(manaValue(parseManaCost("{2/W}{2/W}{2/W}"))).toBe(6);
+    expect(manaValue(parseManaCost("{R/P}"))).toBe(1);
+    expect(manaValue(parseManaCost("{2}{G/W}{G/W}"))).toBe(4);
+  });
+
+  it("parses {S} (snow) as a generic pip", () => {
+    expect(parseManaCost("{S}{S}{1}").generic).toBe(3);
   });
 });

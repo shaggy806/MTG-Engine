@@ -93,6 +93,7 @@ describe("parseManaCost with {X}", () => {
       colored: { W: 0, U: 0, B: 0, R: 1, G: 0 },
       colorless: 0,
       x: 1,
+      hybrid: [],
     });
     expect(parseManaCost("{X}{X}{2}").x).toBe(2);
   });
