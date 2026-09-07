@@ -25,7 +25,7 @@ the diagram) are in.
 - [ ] **Phase 7** — Combat depth + turn-structure control
 - [ ] **Phase 8** — Cascade, storm, "cast" triggers, copy-a-spell
 - [ ] **Phase 9** — Commander-format completeness + deck validation
-- [ ] **Phase 10** — Tier 3 long tail (demand-driven)
+- [ ] **Phase 10** — Tier 3 long tail (demand-driven; sagas, multi-face cards **10a modal/split + 10b transform**, day/night, battles, emblems, …)
 
 ## Dependency spine
 
@@ -39,7 +39,8 @@ Phase 2 (CardFilter + effect scope) ─┬─► Phase 3 (trigger / static / cos
                                      └─► Phase 8 (cascade needs "a lower-mv nonland card")
 
 Phase 4 (mana) ──► Phase 3's cost-modification statics actually land here
-Phase 6 (cast pipeline) ──► Phase 8 (cascade / storm / copy-spell)
+Phase 6 (cast pipeline) ─┬─► Phase 8 (cascade / storm / copy-spell)
+                         └─► Phase 10a (modal / split faces — a cast-time face choice)
 ```
 
 Phases 2, 4, 6, 7 are otherwise independent and can be reordered by demand.
@@ -377,6 +378,10 @@ today) / protection-from-everything / "hexproof from", land/artifact/planeswalke
   `disturb { cost }`.
 - Defines a **clean `spell-cast` event** carrying the spell's characteristics —
   the prerequisite for Phase 8.
+- The `cast-spell` / `play-land` **`face` field** and per-side `legalActions`
+  enumeration belong here too (a cast-time choice like `{X}` / modes) — it's the
+  hard half of Phase 10a (modal / split faces). Fold it in if a DFC deck is a
+  priority; otherwise 10a stays deferred.
 - **Cards:** `Faithless Looting` (flashback), an escape card, `Rift Bolt`
   (suspend), `Snapcaster Mage`-lite (grants a graveyard spell flashback).
 
@@ -441,13 +446,50 @@ today) / protection-from-everything / "hexproof from", land/artifact/planeswalke
 Each is small once Phases 1–3 exist. Pull them in as specific decks need them.
 
 - **Sagas** (chapter counters + `chapter` triggers + a saga-specific SBA).
-- **Multi-face cards** — `CardDefinition.faces: CardDefinition[]` + a chosen
-  face on cast/play → MDFC, adventure, split, rooms.
+- **10a — modal / split faces (a *cast-time* face choice).** The card is one
+  object with two (or more) castable faces; you pick one as it leaves the hand
+  and it's that face for the rest of its existence. Covers **MDFC** (`//` modal
+  double-faced), **split**, **adventure**, and **rooms**.
+  - `CardDefinition.faces: string[]` (each face registered under its own name in
+    the `CardRegistry`, like any card) + a `faceGroup` marker so the two are
+    known to be the same physical card.
+  - `cast-spell` / `play-land` gain a `face` field; `legalActions` enumerates a
+    playable face per side (respecting each side's own type / timing / cost —
+    an MDFC land side is a land drop, the spell side is a cast).
+  - `GameObject.face` (which side is "up"); `printedCardName(object)` resolves
+    `copyOf ?? faceName(object)` — the same one-selector pattern Clone uses, so
+    every `registry.get` site is unaffected.
+  - Adventure adds an exile-with-"may cast the creature later" state (a small
+    `playableUntil`-style marker, shared with Phase 6's impulse-draw work).
+  - **Depends on Phase 6** — face selection is a cast-pipeline choice, same
+    shape as `{X}` / modal-mode selection.
+- **10b — transforming DFCs (an *in-place* face flip).** A permanent flips
+  between its two printed faces while staying the same object (Innistrad
+  werewolves, `//` transform cards, the Marvel Spider-Man hero/alter-ego
+  cards).
+  - `transform` `EffectSpec` + a `transformed` flag on `GameObject` (toggles
+    `GameObject.face`); "enters transformed" / "you may cast the front face; it
+    enters transformed" as ETB variants.
+  - `transforms` / `becomes-transformed` `TriggerSpec`s; a card's back-face
+    abilities only function while it's the up face (already free — they're on
+    the resolved face's `CardDefinition`).
+  - The **Day / Night** designation (below) drives the modern werewolf subset;
+    other transform cards carry their own trigger.
+  - A card can be **both 10a and 10b** — cast on either side *and* transformable
+    once in play (the Marvel Spider-Man DFCs). `faces` + `face` cover both; 10b
+    just adds the in-play toggle.
+- **Day / Night** — a `GameState.dayNight` value + the "becomes day/night"
+  turn-based check; werewolf transform triggers read it. Coupled with 10b.
 - **Battles** (Siege subtype, defense counters, attack-a-battle).
-- **Day / Night; the Monarch; the Initiative + Undercity; venture / dungeons;
-  the Ring tempts you + Ring-bearer; energy.**
+- **The Monarch; the Initiative + Undercity; venture / dungeons; the Ring
+  tempts you + Ring-bearer; energy.**
 - **Emblems** — a player-owned continuous-effect object.
 - **Rules-lawyer:** split second, "can't be countered", phasing, banding.
+
+**Demand note:** the Marvel Spider-Man DFC deck needs **10a + 10b together**
+(hero/alter-ego cards are castable on either side and transform in play). When
+that deck becomes a priority, pull 10a forward next to Phase 6 and land 10b +
+Day/Night right after.
 
 ---
 
