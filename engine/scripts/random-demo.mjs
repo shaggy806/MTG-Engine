@@ -105,15 +105,34 @@ const deckB = deck([
   ["Deliberate Course", 2],
 ]);
 
+// A lean Dimir deck for Carol — carries the `Sarova, the Undying Current`
+// commander (a `leaves-battlefield` + `dies` trigger) so the fuzzer exercises
+// the 903.9a "ask before the move" replacement path.
+const deckC = deck([
+  ["Island", 9],
+  ["Swamp", 9],
+  ["Prodigal Sorcerer", 3],
+  ["Typhoid Rats", 3],
+  ["Vengeful Ghoul", 3],
+  ["Vampire Nighthawk", 3],
+  ["Hypnotic Specter", 2],
+  ["Man-o'-War", 2],
+  ["Unsummon", 2],
+  ["Doom Blade", 2],
+  ["Counterspell", 2],
+  ["Mind Rot", 1],
+  ["Tome Scour", 1],
+  ["Levitation", 1],
+]);
+
 // All four seats' decks/commanders, in seating order — sliced down to
-// `numPlayers` for a 2-4 player game. Carol/Dave reuse deckA/deckB (no
-// commander needed; this is fuzz coverage for multi-defender combat, not a
-// Commander-specific scenario) so the extra seats still have decks that can
-// actually cast their own spells.
+// `numPlayers` for a 2-4 player game. Dave reuses deckB (no commander needed;
+// fuzz coverage for multi-defender combat) so the fourth seat still has a
+// deck that can cast its own spells.
 const allSeats = [
   { player: A, cards: deckA, commander: "Ureni of the Unwritten" },
   { player: B, cards: deckB, commander: "Ashmark, Mardu Vanguard" },
-  { player: C, cards: deckA },
+  { player: C, cards: deckC, commander: "Sarova, the Undying Current" },
   { player: D, cards: deckB },
 ];
 const seats = allSeats.slice(0, numPlayers);

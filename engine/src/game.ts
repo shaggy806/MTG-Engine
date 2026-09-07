@@ -159,7 +159,7 @@ export class Game {
       pendingBlockerOrders: [],
       pendingBlockerDeclarations: [],
       pendingTriggers: [],
-      pendingCommanderChoices: [],
+      deferredCommanderMove: null,
       preventAllCombatDamage: false,
       timestampSeq: 0,
       eventLog: [],
@@ -440,7 +440,7 @@ export class Game {
           {
             kind: "commander-replacement",
             commander: awaiting.commander,
-            movedTo: awaiting.movedTo,
+            intendedZone: awaiting.intendedZone,
           },
         ];
       }
@@ -830,30 +830,45 @@ export class Game {
     return null;
   }
 
-  /** Answers a pending `commander-replacement` decision (rule 903.9a). */
+  /**
+   * Answers a pending `commander-replacement` decision (rule 903.9a) and
+   * *then* performs the move that was deferred — straight to the command zone
+   * if the owner chose that, otherwise to the zone it was headed for. Because
+   * the move happens here (not before the decision), a "dies" trigger fires
+   * only when the commander actually lands in a graveyard.
+   */
   private applyCommanderChoice(player: PlayerId, toCommandZone: boolean): void {
     const why = this.whyCannotCommanderChoice(player);
     if (why !== null) throw new Error(why);
-    const awaiting = this.state.awaiting;
-    if (awaiting === null || awaiting.kind !== "commander-replacement") {
+    const deferred = this.state.deferredCommanderMove;
+    if (deferred === null) {
       throw new Error("unreachable: whyCannotCommanderChoice should have caught this");
     }
 
-    const commander = awaiting.commander;
-    if (toCommandZone) {
-      this.moveObject(commander, "command");
+    const { commander, intendedZone } = deferred;
+    this.state.awaiting = null;
+    const destination = toCommandZone ? "command" : intendedZone;
+    // `deferredCommanderMove` is still set here, so `moveObject` won't re-defer.
+    this.moveObject(commander, destination);
+    this.state.deferredCommanderMove = null;
+
+    if (!toCommandZone && intendedZone === "graveyard") {
+      // It really was put into a graveyard from the battlefield — a "dies"
+      // event (rule 700.4). Emitting it here (not in `moveObject`) keeps the
+      // non-commander death path untouched.
+      this.emit({
+        type: "permanent-destroyed",
+        object: commander,
+        reason: "put into its owner's graveyard",
+      });
     }
     this.emit({
       type: "commander-zone-decision",
       object: commander,
       toCommandZone,
-      from: awaiting.movedTo,
+      from: intendedZone,
     });
 
-    this.state.pendingCommanderChoices = this.state.pendingCommanderChoices.filter(
-      (c) => c.commander !== commander,
-    );
-    this.state.awaiting = null;
     this.prepareForPriority(this.activePlayer);
   }
 
@@ -1036,9 +1051,10 @@ export class Game {
   }
 
   /**
-   * Repeatedly: perform state-based actions, then resolve any pending commander
-   * replacement choice (rule 903.9a), then put any waiting triggered abilities
-   * on the stack — until nothing more happens. Then grant priority.
+   * Repeatedly: perform state-based actions, then put any waiting triggered
+   * abilities on the stack — until nothing more happens. Then grant priority.
+   * A replacement (903.9a commander redirect) or an SBA (cleanup discard) may
+   * raise a decision along the way; that player gets priority to answer it.
    */
   private prepareForPriority(player: PlayerId): void {
     let guard = 0;
@@ -1049,36 +1065,16 @@ export class Game {
       }
       this.runStateBasedActions();
       if (this.state.result.over) return;
-      // A commander that just changed zones owes its owner a choice; hand them
-      // priority to make it. `applyCommanderChoice` calls back into here.
-      if (this.promptCommanderChoice()) return;
+      // An SBA / replacement raised a decision (e.g. a commander about to
+      // leave the battlefield owes its owner a 903.9a choice) — hand that
+      // player priority to answer it. `apply…Choice` calls back into here.
+      if (this.state.awaiting !== null) {
+        this.grantPriority(this.state.awaiting.player);
+        return;
+      }
       if (!this.placePendingTriggers()) break;
     }
     this.grantPriority(player);
-  }
-
-  /**
-   * If a commander is sitting in a hidden zone awaiting its owner's 903.9a
-   * choice, set `awaiting` and give that player priority. Returns whether it
-   * did. Drops stale entries (the commander has since moved on its own).
-   */
-  private promptCommanderChoice(): boolean {
-    while (this.state.pendingCommanderChoices.length > 0) {
-      const next = this.state.pendingCommanderChoices[0];
-      const object = this.state.objects[next.commander];
-      if (object !== undefined && object.zone === next.movedTo) {
-        this.state.awaiting = {
-          kind: "commander-replacement",
-          player: object.owner,
-          commander: next.commander,
-          movedTo: next.movedTo,
-        };
-        this.grantPriority(object.owner);
-        return true;
-      }
-      this.state.pendingCommanderChoices.shift();
-    }
-    return false;
   }
 
   private endStep(): void {
@@ -2540,6 +2536,7 @@ export class Game {
   private detectTriggers(event: GameEvent): void {
     const candidates = new Set<ObjectId>(this.state.zones.shared.battlefield);
     if (event.type === "permanent-destroyed") candidates.add(event.object);
+    if (event.type === "permanent-left-battlefield") candidates.add(event.object);
     for (const id of candidates) {
       const object = this.state.objects[id];
       if (object === undefined) continue;
@@ -2581,6 +2578,11 @@ export class Game {
       case "dies":
         return (
           event.type === "permanent-destroyed" &&
+          this.matchesWho(spec.who, event.object, self)
+        );
+      case "leaves-battlefield":
+        return (
+          event.type === "permanent-left-battlefield" &&
           this.matchesWho(spec.who, event.object, self)
         );
       case "attacks":
@@ -3119,6 +3121,10 @@ export class Game {
       return;
     }
     this.moveObject(target.object, "graveyard");
+    // A commander's move can be deferred for its owner's 903.9a choice —
+    // `applyCommanderChoice` finishes it (and emits `permanent-destroyed`
+    // itself if it lands in a graveyard).
+    if (this.state.awaiting !== null) return;
     this.emit({
       type: "permanent-destroyed",
       object: target.object,
@@ -3130,11 +3136,11 @@ export class Game {
     if (target.kind !== "object") return;
     const object = this.state.objects[target.object];
     if (object === undefined || object.zone !== "battlefield") return;
-    // A token would just be swept by SBAs; a commander is redirected to the
-    // command zone by `moveObject` — both handled downstream, this just asks
-    // for the hand.
+    // A token would just be swept by SBAs; a commander may be redirected to
+    // the command zone via a deferred 903.9a choice — both handled downstream.
     const owner = object.owner;
     this.moveObject(target.object, "hand");
+    if (this.state.awaiting !== null) return;
     this.emit({ type: "permanent-returned-to-hand", object: target.object, owner });
   }
 
@@ -3143,6 +3149,7 @@ export class Game {
     const object = this.state.objects[target.object];
     if (object === undefined || object.zone !== "battlefield") return;
     this.moveObject(target.object, "exile");
+    if (this.state.awaiting !== null) return;
     this.emit({ type: "permanent-exiled", object: target.object });
   }
 
@@ -3353,6 +3360,10 @@ export class Game {
   private runStateBasedActions(): void {
     let changed = true;
     while (changed) {
+      // A replacement raised a decision mid-sweep (a commander about to leave
+      // the battlefield — rule 903.9a). Stop until it's answered; the caller
+      // (`prepareForPriority` / `applyCommanderChoice`) resumes the sweep.
+      if (this.state.awaiting !== null) return;
       changed = false;
 
       // Continuous control effects (layer 2), recomputed each pass: a
@@ -3392,14 +3403,9 @@ export class Game {
         // (layer 4) both face the lethal-toughness / lethal-damage SBAs; once
         // an animation wears off the land isn't a creature and is skipped.
         if (!computed.types.includes("creature")) continue;
-        // A 0/0 Clone still choosing what to copy hasn't finished entering —
-        // don't kill it before its controller answers.
-        if (
-          this.state.awaiting?.kind === "choose-copy" &&
-          this.state.awaiting.source === id
-        ) {
-          continue;
-        }
+        // (A 0/0 Clone still choosing what to copy is protected by the
+        // `awaiting !== null` guard at the top of this loop — SBAs don't run
+        // while any decision is pending.)
         const toughness = computed.toughness;
         const indestructible = computed.keywords.has("indestructible");
         let reason: string | null = null;
@@ -3414,6 +3420,10 @@ export class Game {
         }
         if (reason !== null) {
           this.moveObject(id, "graveyard");
+          // A commander's move was deferred for its owner's 903.9a choice —
+          // stop the sweep; `applyCommanderChoice` finishes the move and emits
+          // `permanent-destroyed` itself if it lands in a graveyard.
+          if (this.state.awaiting !== null) return;
           this.emit({ type: "permanent-destroyed", object: id, reason });
           changed = true;
         }
@@ -3463,6 +3473,7 @@ export class Game {
         for (const id of group) {
           if (id === survivor) continue;
           this.moveObject(id, "graveyard");
+          if (this.state.awaiting !== null) return; // deferred 903.9a choice
           this.emit({ type: "permanent-destroyed", object: id, reason: "legend rule" });
         }
         changed = true;
@@ -3602,6 +3613,8 @@ export class Game {
 
   private moveObject(id: ObjectId, to: ZoneType): void {
     const object = this.state.objects[id];
+    const leavingBattlefield = object.zone === "battlefield" && to !== "battlefield";
+
     // Rest in Peace (rule 614): a *card* that would be put into a graveyard is
     // exiled instead. Tokens are exempt — they'd cease to exist either way.
     if (
@@ -3612,17 +3625,29 @@ export class Game {
       to = "exile";
       this.emit({ type: "graveyard-replaced-with-exile", object: id });
     }
-    // Commander replacement (rule 903.9a): a commander put into a hidden zone
-    // *may* go to the command zone instead — that's the owner's choice. The
-    // move to `to` happens now; `promptCommanderChoice` (run before priority)
-    // asks, and moves it to the command zone if they say yes.
+
+    // Commander replacement (rule 903.9a): a commander that would leave the
+    // battlefield for a hidden zone — its owner may send it to the command
+    // zone instead. Ask *before* moving (this is a replacement effect, rule
+    // 614), so a "dies" trigger never fires unless it truly lands in a
+    // graveyard. The move is deferred to `applyCommanderChoice`.
     if (
+      leavingBattlefield &&
       object.isCommander &&
       (to === "graveyard" || to === "exile" || to === "hand" || to === "library") &&
-      !this.state.pendingCommanderChoices.some((c) => c.commander === id)
+      this.state.deferredCommanderMove === null &&
+      this.state.awaiting === null
     ) {
-      this.state.pendingCommanderChoices.push({ commander: id, movedTo: to });
+      this.state.deferredCommanderMove = { commander: id, intendedZone: to };
+      this.state.awaiting = {
+        kind: "commander-replacement",
+        player: object.owner,
+        commander: id,
+        intendedZone: to,
+      };
+      return;
     }
+
     const from = this.zoneList(object.zone, object.owner);
     const index = from.indexOf(id);
     if (index >= 0) from.splice(index, 1);
@@ -3670,6 +3695,16 @@ export class Game {
       // 608.2h) — so a Walking Ballista that dies and returns re-enters as a
       // fresh 0/0 with X=0, not its old size.
       object.xValue = null;
+    }
+
+    // The hook for `leaves-battlefield` triggers (rule 603.6d) — fired for
+    // every destination, and (from the death paths) just before the more
+    // specific `permanent-destroyed`.
+    if (
+      leavingBattlefield &&
+      (to === "graveyard" || to === "exile" || to === "hand" || to === "library" || to === "command")
+    ) {
+      this.emit({ type: "permanent-left-battlefield", object: id, toZone: to });
     }
   }
 

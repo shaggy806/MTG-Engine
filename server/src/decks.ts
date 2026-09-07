@@ -63,13 +63,12 @@ export const SEATS: readonly SeatDeck[] = [
       ["Disenchant", 2],
     ]),
   },
-  // Carol and Dave have no commander yet — there are no other legendary
-  // creatures in the card pool to give them one. Plain 40-card decks for now.
   {
     id: CAROL,
+    commander: "Sarova, the Undying Current",
     cards: list([
-      ["Island", 9],
-      ["Swamp", 9],
+      ["Island", 10],
+      ["Swamp", 10],
       ["Prodigal Sorcerer", 4],
       ["Typhoid Rats", 4],
       ["Vengeful Ghoul", 4],
@@ -79,6 +78,7 @@ export const SEATS: readonly SeatDeck[] = [
       ["Jump", 2],
     ]),
   },
+  // Dave has no commander yet — a plain 40-card deck for now.
   {
     id: DAVE,
     cards: list([

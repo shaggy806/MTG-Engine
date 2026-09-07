@@ -100,6 +100,8 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${name(event.blocker)} blocks ${name(event.attacker)}`
     case 'permanent-entered-battlefield':
       return `${name(event.object)} enters the battlefield`
+    case 'permanent-left-battlefield':
+      return `${name(event.object)} leaves the battlefield → ${event.toZone}`
     case 'permanent-attached':
       return `${name(event.source)} attaches to ${name(event.target)}`
     case 'damage-dealt':

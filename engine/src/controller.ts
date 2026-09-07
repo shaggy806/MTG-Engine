@@ -185,7 +185,7 @@ function answerAwaited(
       toCommandZone: controller.commanderReplacement(
         view,
         awaiting.commander,
-        awaiting.movedTo,
+        awaiting.intendedZone,
       ),
     };
   }

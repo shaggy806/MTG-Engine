@@ -208,7 +208,9 @@ export type LegalAction =
   | {
       readonly kind: "commander-replacement";
       readonly commander: ObjectId;
-      readonly movedTo: "graveyard" | "exile" | "hand" | "library";
+      /** Where the commander would go if left where the rules put it (before
+       * the owner's 903.9a choice). */
+      readonly intendedZone: "graveyard" | "exile" | "hand" | "library";
     }
   | {
       readonly kind: "choose-copy";

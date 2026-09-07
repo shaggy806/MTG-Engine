@@ -252,12 +252,14 @@ export type AwaitingDecision =
       readonly count: number;
     }
   | {
-      /** A commander was just put into a hidden/graveyard zone; its owner
-       * may move it to the command zone instead (rule 903.9a). */
+      /** A commander *would* be put into a hidden/graveyard zone from the
+       * battlefield; its owner may send it to the command zone instead
+       * (rule 903.9a). The move hasn't happened yet — it's still on the
+       * battlefield until this is answered. */
       readonly kind: "commander-replacement";
       readonly player: PlayerId;
       readonly commander: ObjectId;
-      readonly movedTo: CommanderReplacementZone;
+      readonly intendedZone: CommanderReplacementZone;
     }
   | {
       /** A Clone-style permanent just entered; its controller chooses what
@@ -335,14 +337,19 @@ export interface GameState {
   /** Triggered abilities that have fired but not yet been put on the stack. */
   pendingTriggers: PendingTrigger[];
   /**
-   * Commanders just moved to a hidden zone whose owner hasn't yet decided
-   * whether to move them to the command zone (rule 903.9a). Drained one
-   * `commander-replacement` action at a time, like `pendingBlockerOrders`.
+   * A commander that is *about to* be put into a hidden zone from the
+   * battlefield and whose owner is being asked whether to send it to the
+   * command zone instead (rule 903.9a — a replacement effect). While this is
+   * set the corresponding `commander-replacement` decision is on
+   * `awaiting`; `moveObject` has NOT moved the commander yet, so a "dies"
+   * trigger never sees it in the graveyard. `applyCommanderChoice` completes
+   * the move. `null` when no such choice is pending.
    */
-  pendingCommanderChoices: {
-    commander: ObjectId;
-    movedTo: CommanderReplacementZone;
-  }[];
+  deferredCommanderMove: {
+    readonly commander: ObjectId;
+    /** Where it would have gone had 903.9a not applied. */
+    readonly intendedZone: CommanderReplacementZone;
+  } | null;
   /** True while a Fog-style effect has prevented all combat damage this turn
    * (rule 614 replacement, but turn-scoped with no permanent to hang it on).
    * Set by the `prevent-all-combat-damage` effect, cleared at the start of the

@@ -1264,8 +1264,8 @@ function Table({ view, seat, opponents, game }: TableProps) {
     controls = (
       <div className="controls">
         <span>
-          {game.nameOf(commanderChoiceAction.commander)} was put into your{' '}
-          {commanderChoiceAction.movedTo} — move it to the command zone instead?
+          {game.nameOf(commanderChoiceAction.commander)} would go to your{' '}
+          {commanderChoiceAction.intendedZone} — move it to the command zone instead?
         </span>
         <button
           type="button"
@@ -1281,7 +1281,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
             game.dispatch({ type: 'commander-replacement', player: seat, toCommandZone: false })
           }
         >
-          Leave in {commanderChoiceAction.movedTo}
+          Leave in {commanderChoiceAction.intendedZone}
         </button>
       </div>
     )

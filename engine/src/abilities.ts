@@ -47,6 +47,13 @@ export type TriggerWho = "self" | "you-control" | "any" | "you";
 export type TriggerSpec =
   | { readonly on: "enters-battlefield"; readonly who: TriggerWho }
   | { readonly on: "dies"; readonly who: TriggerWho }
+  | {
+      /** A permanent left the battlefield — for any destination (graveyard,
+       * exile, hand, library, command zone). Broader than `"dies"`, which
+       * only fires for a move to a graveyard. Rule 603.6d / 700.4. */
+      readonly on: "leaves-battlefield";
+      readonly who: TriggerWho;
+    }
   | { readonly on: "attacks"; readonly who: TriggerWho }
   | {
       /** This creature dealt combat damage to a player. The ability's first

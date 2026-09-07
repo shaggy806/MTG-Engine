@@ -89,6 +89,8 @@ export const makeFormatter = (game) => {
           : `${name(e.object)} copies nothing`;
       case "permanent-entered-battlefield":
         return `${name(e.object)} enters the battlefield`;
+      case "permanent-left-battlefield":
+        return `${name(e.object)} leaves the battlefield → ${e.toZone}`;
       case "permanent-attached":
         return `${name(e.source)} attaches to ${name(e.target)}`;
       case "damage-dealt":

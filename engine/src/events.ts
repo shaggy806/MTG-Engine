@@ -172,6 +172,15 @@ export type GameEvent =
       readonly object: ObjectId;
     })
   | (Base & {
+      /** A permanent left the battlefield, for any destination. Fires
+       * alongside (and just before) `permanent-destroyed` when the
+       * destination is a graveyard; on its own otherwise. The hook for
+       * `leaves-battlefield` triggers (rule 603.6d). */
+      readonly type: "permanent-left-battlefield";
+      readonly object: ObjectId;
+      readonly toZone: "graveyard" | "exile" | "hand" | "library" | "command";
+    })
+  | (Base & {
       readonly type: "permanent-attached";
       readonly source: ObjectId;
       readonly target: ObjectId;
