@@ -73,6 +73,10 @@ export const makeFormatter = (game) => {
         return `${name(e.object)} fizzles — ${e.reason}`;
       case "spell-countered":
         return `${name(e.object)} is countered`;
+      case "control-changed":
+        return `${e.controller} gains control of ${name(e.object)}${
+          e.untilEndOfTurn ? " until EOT" : ""
+        }`;
       case "permanent-entered-battlefield":
         return `${name(e.object)} enters the battlefield`;
       case "permanent-attached":

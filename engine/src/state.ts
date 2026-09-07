@@ -41,6 +41,10 @@ export interface GameObject {
   summoningSick: boolean;
   /** Chosen targets while this is a spell/ability on the stack; `null` otherwise. */
   targets: TargetRef[] | null;
+  /** True when a temporary control-change effect (Act of Treason) controls this
+   * permanent — cleanup reverts `controller` to `owner`. Cleared by
+   * `moveObject` on any zone change. */
+  controlEndsAtCleanup: boolean;
   /** The value chosen for `{X}` when this spell was cast (rule 601.2b). Set on
    * the stack object and preserved onto the permanent it becomes, so an
    * "enters with X counters"-style effect can still read it. `null` when the

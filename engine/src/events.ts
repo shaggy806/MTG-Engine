@@ -138,6 +138,12 @@ export type GameEvent =
       readonly object: ObjectId;
     })
   | (Base & {
+      readonly type: "control-changed";
+      readonly object: ObjectId;
+      readonly controller: PlayerId;
+      readonly untilEndOfTurn: boolean;
+    })
+  | (Base & {
       readonly type: "permanent-entered-battlefield";
       readonly object: ObjectId;
     })

@@ -602,6 +602,7 @@ export class Game {
           attachedTo: null,
           isCommander: false,
           xValue: null,
+          controlEndsAtCleanup: false,
         };
         ids.push(id);
       }
@@ -639,6 +640,7 @@ export class Game {
           attachedTo: null,
           isCommander: true,
           xValue: null,
+          controlEndsAtCleanup: false,
         };
         this.state.zones.shared.command.push(id);
       }
@@ -1077,6 +1079,26 @@ export class Game {
   }
 
   private finishCleanup(): void {
+    // "Until end of turn" control effects (Act of Treason) end — control
+    // reverts to the owner, and the creature is summoning-sick for them again.
+    for (const id of this.state.zones.shared.battlefield) {
+      const object = this.state.objects[id];
+      if (!object.controlEndsAtCleanup) continue;
+      object.controlEndsAtCleanup = false;
+      if (object.controller !== object.owner) {
+        object.controller = object.owner;
+        object.summoningSick = true;
+        object.attacking = null;
+        object.blocking = null;
+        this.emit({
+          type: "control-changed",
+          object: id,
+          controller: object.owner,
+          untilEndOfTurn: false,
+        });
+      }
+    }
+
     const expired: ObjectId[] = [];
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
@@ -1969,6 +1991,7 @@ export class Game {
       attachedTo: null,
       isCommander: false,
       xValue: null,
+      controlEndsAtCleanup: false,
     };
     this.state.zones.shared.stack.push(abilityId);
     return abilityId;
@@ -2550,6 +2573,8 @@ export class Game {
       exileObject: (target) => this.exileByEffect(target),
       fight: (a, b, oneSided) => this.fightCreatures(a, b, oneSided),
       counterSpell: (target) => this.counterSpellByEffect(target),
+      gainControl: (target, untilEndOfTurn) =>
+        this.gainControlByEffect(controller, target, untilEndOfTurn),
       mill: (target, amount) => this.millByEffect(target, amount),
       discardCards: (target, amount) => this.discardByEffect(target, amount),
       modifyPt: (target, power, toughness, duration) =>
@@ -2639,6 +2664,7 @@ export class Game {
         attachedTo: null,
         isCommander: false,
         xValue: null,
+        controlEndsAtCleanup: false,
       };
       this.state.zones.shared.battlefield.push(id);
       this.emit({ type: "permanent-entered-battlefield", object: id });
@@ -2776,6 +2802,32 @@ export class Game {
     if (object === undefined || object.zone !== "battlefield") return;
     this.moveObject(target.object, "exile");
     this.emit({ type: "permanent-exiled", object: target.object });
+  }
+
+  /** `player` gains control of `target` (rule 613.1b, layer 2 — modeled by
+   * reassigning `controller`). The creature is summoning-sick for its new
+   * controller (rule 302.6; Act of Treason grants haste to compensate).
+   * `untilEndOfTurn` marks it for a cleanup-step revert to its owner. */
+  private gainControlByEffect(
+    player: PlayerId,
+    target: TargetRef,
+    untilEndOfTurn: boolean,
+  ): void {
+    if (target.kind !== "object") return;
+    const object = this.state.objects[target.object];
+    if (object === undefined || object.zone !== "battlefield") return;
+    if (object.controller === player) return;
+    object.controller = player;
+    object.summoningSick = true;
+    object.attacking = null;
+    object.blocking = null;
+    if (untilEndOfTurn) object.controlEndsAtCleanup = true;
+    this.emit({
+      type: "control-changed",
+      object: target.object,
+      controller: player,
+      untilEndOfTurn,
+    });
   }
 
   /** Counter a spell on the stack (rule 701.5): it's removed from the stack and
@@ -3075,6 +3127,11 @@ export class Game {
     object.counters = {};
     object.modifiers = [];
     object.attachedTo = null;
+    // A permanent that leaves the battlefield reverts to its owner's control
+    // (rule 110.2 / 400.3) — so a stolen creature that dies or is bounced goes
+    // to its owner, not the thief.
+    object.controlEndsAtCleanup = false;
+    object.controller = object.owner;
 
     if (to === "battlefield") {
       object.enteredBattlefieldOnTurn = this.state.turn.number;

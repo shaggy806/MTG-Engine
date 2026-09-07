@@ -63,6 +63,7 @@ const spawn = (
     attachedTo: null,
     isCommander: false,
     xValue: null,
+    controlEndsAtCleanup: false,
     counters: {},
     modifiers: [],
   };

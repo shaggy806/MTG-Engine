@@ -3,6 +3,7 @@
 
 import type { CardDefinition } from "./define.js";
 
+import _poolActOfTreason from "./pool/act-of-treason.js";
 import _poolAmbushViper from "./pool/ambush-viper.js";
 import _poolAngelicEdict from "./pool/angelic-edict.js";
 import _poolAshmarkMarduVanguard from "./pool/ashmark-mardu-vanguard.js";
@@ -59,6 +60,7 @@ import _poolRumblingBaloth from "./pool/rumbling-baloth.js";
 import _poolSerraAngel from "./pool/serra-angel.js";
 import _poolSwamp from "./pool/swamp.js";
 import _poolThievingMagpie from "./pool/thieving-magpie.js";
+import _poolThreaten from "./pool/threaten.js";
 import _poolTomeScour from "./pool/tome-scour.js";
 import _poolTyphoidRats from "./pool/typhoid-rats.js";
 import _poolUnsummon from "./pool/unsummon.js";
@@ -76,6 +78,7 @@ import _tokensSoldierToken from "./tokens/soldier-token.js";
 
 /** The built-in card pool — every file under `pool/` and `tokens/`. */
 export const BUILTIN_CARDS: readonly CardDefinition[] = [
+  _poolActOfTreason,
   _poolAmbushViper,
   _poolAngelicEdict,
   _poolAshmarkMarduVanguard,
@@ -132,6 +135,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolSerraAngel,
   _poolSwamp,
   _poolThievingMagpie,
+  _poolThreaten,
   _poolTomeScour,
   _poolTyphoidRats,
   _poolUnsummon,

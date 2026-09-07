@@ -32,6 +32,7 @@ export const makeSpawn =
       timestamp: game.state.timestampSeq,
       isToken: false,
       attachedTo: null,
+      controlEndsAtCleanup: false,
       xValue: null,
     };
     game.state.zones.shared.battlefield.push(id);

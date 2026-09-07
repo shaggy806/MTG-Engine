@@ -70,6 +70,15 @@ export type EffectSpec =
       readonly target: number;
     }
   | {
+      /** Gain control of a target permanent (rule 613.1b, layer 2 — modeled
+       * here by reassigning `controller`). `untilEndOfTurn` reverts it in the
+       * cleanup step (Act of Treason); otherwise it lasts until the permanent
+       * changes zones. */
+      readonly kind: "gain-control";
+      readonly target: number;
+      readonly untilEndOfTurn: boolean;
+    }
+  | {
       /** Target player puts the top `amount` cards of their library into
        * their graveyard. */
       readonly kind: "mill";
@@ -157,6 +166,8 @@ export interface EffectApi {
   fight(a: TargetRef, b: TargetRef, oneSided: boolean): void;
   /** Counter a target spell on the stack. */
   counterSpell(target: TargetRef): void;
+  /** The effect's controller gains control of `target`. */
+  gainControl(target: TargetRef, untilEndOfTurn: boolean): void;
   /** `target` (a player) mills `amount` cards. */
   mill(target: TargetRef, amount: number): void;
   /** `target` (a player) discards `amount` cards. */
@@ -256,6 +267,11 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     case "counter": {
       const target = ctx.targets[spec.target];
       if (target !== undefined) ctx.counterSpell(target);
+      return;
+    }
+    case "gain-control": {
+      const target = ctx.targets[spec.target];
+      if (target !== undefined) ctx.gainControl(target, spec.untilEndOfTurn);
       return;
     }
     case "return-to-hand": {

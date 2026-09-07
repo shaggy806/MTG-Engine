@@ -58,6 +58,10 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${name(event.object)} fizzles — ${event.reason}`
     case 'spell-countered':
       return `${name(event.object)} is countered`
+    case 'control-changed':
+      return `${event.controller} gains control of ${name(event.object)}${
+        event.untilEndOfTurn ? ' until EOT' : ''
+      }`
     case 'ability-activated':
       return `${event.player} activates ${name(event.source)}${
         event.onStack ? '' : ' (mana)'

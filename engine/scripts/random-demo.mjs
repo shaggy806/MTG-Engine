@@ -70,6 +70,7 @@ const deckB = deck([
   ["Lightning Bolt", 2],
   ["Fireball", 1],
   ["Volt Charge", 1],
+  ["Act of Treason", 2],
   ["Man-o'-War", 2],
   ["Unsummon", 1],
   ["Fume Spitter", 1],
