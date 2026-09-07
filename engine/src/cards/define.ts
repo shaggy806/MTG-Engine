@@ -14,6 +14,7 @@
 
 import type { ActivatedAbility, TriggeredAbility } from "../abilities.js";
 import type { EffectSpec, SpellResolver } from "../effects.js";
+import type { CardFilter } from "../filter.js";
 import type { Color } from "../mana.js";
 import type { ReplacementSpec } from "../replacements.js";
 import type { TargetSpec } from "../target.js";
@@ -88,6 +89,16 @@ export interface StaticAbility {
    * "self"`) must pay this or their spell/ability is countered. Applied at the
    * target's resolution, auto-paid if the opponent can afford it. */
   readonly ward?: { readonly mana?: string; readonly payLife?: number };
+  /** Adjust the generic-mana cost of matching *spells* as they're cast
+   * (Foundry Inspector: `{ applies: { type: "artifact", controlledBy: "you" },
+   * reduceGeneric: 1 }`; Thalia: `{ applies: { notTypes: ["creature"] },
+   * increaseGeneric: 1 }`). Rule 601.2f. `affects` is ignored — the filter
+   * `applies` says what it hits. */
+  readonly costModification?: {
+    readonly applies: CardFilter;
+    readonly reduceGeneric?: number;
+    readonly increaseGeneric?: number;
+  };
   /** Layer 7b: set base power and toughness to a dynamic count (+ the given
    * offsets). Only meaningful with `affects.scope === "self"` (a CDA). */
   readonly setBasePtFromCount?: {

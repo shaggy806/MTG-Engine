@@ -38,6 +38,7 @@ import _poolFireball from "./pool/fireball.js";
 import _poolFleshbagMarauder from "./pool/fleshbag-marauder.js";
 import _poolFog from "./pool/fog.js";
 import _poolForest from "./pool/forest.js";
+import _poolFoundryInspector from "./pool/foundry-inspector.js";
 import _poolFumeSpitter from "./pool/fume-spitter.js";
 import _poolGiantGrowth from "./pool/giant-growth.js";
 import _poolGiantSpider from "./pool/giant-spider.js";
@@ -90,6 +91,7 @@ import _poolSarovaTheUndyingCurrent from "./pool/sarova-the-undying-current.js";
 import _poolSerraAngel from "./pool/serra-angel.js";
 import _poolSoulWarden from "./pool/soul-warden.js";
 import _poolSwamp from "./pool/swamp.js";
+import _poolThaliaGuardianOfThraben from "./pool/thalia-guardian-of-thraben.js";
 import _poolThievingMagpie from "./pool/thieving-magpie.js";
 import _poolThreaten from "./pool/threaten.js";
 import _poolTomeScour from "./pool/tome-scour.js";
@@ -150,6 +152,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolFleshbagMarauder,
   _poolFog,
   _poolForest,
+  _poolFoundryInspector,
   _poolFumeSpitter,
   _poolGiantGrowth,
   _poolGiantSpider,
@@ -202,6 +205,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolSerraAngel,
   _poolSoulWarden,
   _poolSwamp,
+  _poolThaliaGuardianOfThraben,
   _poolThievingMagpie,
   _poolThreaten,
   _poolTomeScour,

@@ -1950,7 +1950,9 @@ export class Game {
   }
 
   /** `def.manaCost`, plus the commander tax if `cardId` is being cast from
-   * the command zone, with `{X}` resolved to `xValue` (folded into generic). */
+   * the command zone, with `{X}` resolved to `xValue` (folded into generic),
+   * and battlefield `costModification` statics (Foundry Inspector, Thalia)
+   * applied to the generic portion (rule 601.2f — can't go below 0). */
   private castingCostOf(
     player: PlayerId,
     cardId: ObjectId,
@@ -1959,11 +1961,32 @@ export class Game {
   ): ManaCost {
     const base = parseManaCost(def.manaCost);
     const tax = this.isCastableCommander(player, cardId) ? this.commanderTax(player) : 0;
-    return {
-      colored: base.colored,
-      generic: base.generic + tax + base.x * Math.max(0, xValue),
-      x: 0,
-    };
+    let generic = base.generic + tax + base.x * Math.max(0, xValue);
+    generic += this.costModificationFor(player, cardId);
+    return { colored: base.colored, generic: Math.max(0, generic), x: 0 };
+  }
+
+  /** Net generic-mana adjustment to `cardId`'s cost from `costModification`
+   * statics on the battlefield (increases first, then reductions — rule
+   * 601.2f). Positive = costs more. */
+  private costModificationFor(player: PlayerId, cardId: ObjectId): number {
+    let delta = 0;
+    for (const id of this.state.zones.shared.battlefield) {
+      const source = this.state.objects[id];
+      if (hasLostAbilities(source)) continue;
+      for (const ability of this.registry.get(printedCardName(source)).static) {
+        const mod = ability.costModification;
+        if (mod === undefined) continue;
+        // The filter is evaluated from the casting player's perspective, so
+        // `controlledBy: "you"` means "a spell this player casts".
+        if (!matchesFilter(this.state, this.registry, cardId, mod.applies, { you: player })) {
+          continue;
+        }
+        delta += mod.increaseGeneric ?? 0;
+        delta -= mod.reduceGeneric ?? 0;
+      }
+    }
+    return delta;
   }
 
   /** Largest value of `{X}` this player could currently pay for when casting

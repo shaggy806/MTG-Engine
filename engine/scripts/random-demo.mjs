@@ -59,6 +59,7 @@ const deckA = deck([
   ["Rampaging Baloths", 1],
   ["Juggernaut", 1],
   ["Combat Thresher", 1],
+  ["Foundry Inspector", 1],
 ]);
 // Kept deliberately lean (~50 cards) so the RandomController actually draws
 // and plays its threats — a bloated deck just stalls out and the fuzz only
@@ -120,6 +121,8 @@ const deckB = deck([
   ["Pacifism", 2],
   ["Greed", 1],
   ["Combat Thresher", 1],
+  ["Foundry Inspector", 1],
+  ["Thalia, Guardian of Thraben", 1],
 ]);
 
 // A lean Dimir deck for Carol — carries the `Sarova, the Undying Current`
