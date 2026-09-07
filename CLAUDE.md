@@ -10,6 +10,13 @@ room server (`server/`) and a React web client (`client/`) — a real networked 
 (`workspaces: ["engine", "server", "client"]` in the root `package.json`, in that order so
 `engine` builds first, then `server`).
 
+**`ROADMAP.md` is the plan of record.** It carries the 10-phase plan for growing the engine to
+a "baseline cardpool" (enough coverage for ordinary Commander decks), a dependency spine, and
+per-phase file-level notes. The "Wave 1/2/3" labels below are the historical cadence — Waves 1–3
+are done; new work follows ROADMAP's phases. Read ROADMAP's *Architecture constraints* section
+before touching the engine, and tick its status checkboxes / update this file's engine header as
+each phase lands.
+
 - `engine/` — a TypeScript library package, ESM (`"type": "module"`), NodeNext resolution. Emits to `dist/` with declarations; `package.json` `exports`/`main`/`types` point there. No I/O, no UI — a pure state machine driven entirely through `dispatch`.
 - `server/` — a Node + `ws` package: the authoritative multiplayer room host. Owns the one real `Game` instance per room, keyed by a room code; every connected device gets its own redacted `viewFor(seat)` pushed after each dispatch. Imports `engine` the same way `client` does.
 - `client/` — a Vite + React 19 + TypeScript app: a **networked** client — each device is one seat, connected over WebSocket to a `server` room, never running a local `Game` or a controller loop itself. Imports `engine` (`"engine": "*"`, the workspace symlink) and consumes only its public seam — `Game`, `viewFor`, `legalActions`, `dispatch`, the `Action`/`LegalAction` types — indirectly, via the wire protocol `server` speaks. Needs `engine/dist/` built (`npm run build` does engine, then server, then client).
