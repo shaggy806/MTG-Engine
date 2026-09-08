@@ -26,7 +26,7 @@ the diagram) are in.
 - [x] **Phase 8** — Cascade, storm, "cast" triggers, copy-a-spell
 - [x] **Phase 9** — Commander-format completeness + deck validation *(core done — colour identity, deck validation, Partner, a 4th commander; Companion / legend-rule choice / simultaneous mulligans deferred)*
 - [~] **Phase 10** — Tier 3 long tail (demand-driven) — **Sagas, 10a (MDFC), 10b (transform) + Day/Night, Monarch, Energy, Emblems, can't-be-countered, disturb, adventure all landed**; battles, phasing, dungeons/Initiative/Ring, banding deferred as large/niche
-- [~] **Phase 11** — Engine-fidelity gaps — **EG-1 (uniform targeting decisions) + EG-2 (targeted modal spells) done**; EG-3 `{X}` activated costs + conditional statics, EG-4 combat depth, EG-5 planeswalker ability coverage, EG-6 replacement pipeline v2 open
+- [~] **Phase 11** — Engine-fidelity gaps — **EG-1 (uniform targeting decisions) + EG-2 (targeted modal spells) + EG-3 (`{X}` activated costs + conditional statics) done**; EG-4 combat depth, EG-5 planeswalker ability coverage, EG-6 replacement pipeline v2 open
 
 ## Dependency spine
 
@@ -756,7 +756,27 @@ target selection into the cast pipeline (the `{X}` / `face` precedent).
 - **Unlocks:** the charm / command cycle and most modern modal cards — the
   largest single card-unlock in Phase 11.
 
-### EG‑3 — `{X}` in activated costs + conditional static abilities  · M
+### EG‑3 — `{X}` in activated costs + conditional static abilities  · [x] done
+
+*Landed:* `AbilityCost.mana` may contain `{X}`; `activate-ability` Action
+gains `xValue`, `activateAbility` folds it into the paid cost and stamps
+`GameObject.xValue` on the ability object (so `ctx.x` reads it), `legalActions`
+carries `xCost: { maxX }` (new `maxAffordableAbilityX`). Client routes an
+ability with `xCost` through the same number-input step as an X spell.
+`StaticAbility.condition?: StaticCondition` (`controls { filter, atLeast }` /
+`your-turn` / `threshold` / `metalcraft`) — `staticConditionMet` in
+characteristics.ts, gated at every static-consuming site *after* `staticAffects`
+(so an unreachable static never evaluates its condition; a re-entrancy guard
+covers two mutually-conditional permanents). Cards: Cinder Elemental
+(`{X}{R}, {T}, Sacrifice`), Kird Ape (`controls` a Forest), Werebear
+(`threshold`), Ardent Recruit (`metalcraft`). `x-abilities.test.ts`. Also
+fixed a pre-existing bug: `whyCannotCastSpell` / `maxAffordableX` now evaluate
+`costModification` (Thalia / Foundry Inspector) against the *face being cast*
+(a `withFace` helper) — an adventure card's instant half was taxed or not by
+whichever face was up, so `legalActions` could offer a cast `castSpell` refused.
+The `predicate` escape-hatch condition and `{X}`-in-a-modal-cost stay deferred.
+
+*Original design notes:*
 
 Two small independent Phase-3-tail items.
 
@@ -825,8 +845,7 @@ Two small independent Phase-3-tail items.
   an "if a creature would die, exile it" enchantment. `replacement-v2.test.ts`.
 - Biggest and most niche; `dealDamage` / `drawCard` are hot paths — goes last.
 
-**Ordering:** EG‑1 (foundational cleanup — makes EG‑2/4/6's new decisions
-uniform) → EG‑2 (biggest card-unlock) → EG‑3 (quick independent wins) → EG‑4
+**Ordering:** EG‑1 ✓ → EG‑2 ✓ → EG‑3 ✓ → EG‑4
 (self-contained, real gameplay impact) → EG‑5 (mostly audit) → EG‑6 (largest /
 riskiest / most niche).
 
