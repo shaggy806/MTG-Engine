@@ -42,6 +42,7 @@ import _poolDiabolicEdict from "./pool/diabolic-edict.js";
 import _poolDisenchant from "./pool/disenchant.js";
 import _poolDoomBlade from "./pool/doom-blade.js";
 import _poolDoublingSeason from "./pool/doubling-season.js";
+import _poolDuskwoodVerdict from "./pool/duskwood-verdict.js";
 import _poolElvishVisionary from "./pool/elvish-visionary.js";
 import _poolEmberDart from "./pool/ember-dart.js";
 import _poolEmberclawScout from "./pool/emberclaw-scout.js";
@@ -125,6 +126,7 @@ import _poolSnapcasterMage from "./pool/snapcaster-mage.js";
 import _poolSolRing from "./pool/sol-ring.js";
 import _poolSoulWarden from "./pool/soul-warden.js";
 import _poolSpectralSquire from "./pool/spectral-squire.js";
+import _poolSunderCharm from "./pool/sunder-charm.js";
 import _poolSwamp from "./pool/swamp.js";
 import _poolThaliaGuardianOfThraben from "./pool/thalia-guardian-of-thraben.js";
 import _poolThievingMagpie from "./pool/thieving-magpie.js";
@@ -201,6 +203,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolDisenchant,
   _poolDoomBlade,
   _poolDoublingSeason,
+  _poolDuskwoodVerdict,
   _poolElvishVisionary,
   _poolEmberDart,
   _poolEmberclawScout,
@@ -284,6 +287,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolSolRing,
   _poolSoulWarden,
   _poolSpectralSquire,
+  _poolSunderCharm,
   _poolSwamp,
   _poolThaliaGuardianOfThraben,
   _poolThievingMagpie,
