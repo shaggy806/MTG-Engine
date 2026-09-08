@@ -176,6 +176,12 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${name(event.source)}'s ${event.amount} damage to ${tgt(event.target)} is prevented`
     case 'graveyard-replaced-with-exile':
       return `${name(event.object)} is exiled instead of going to a graveyard`
+    case 'prevention-shield-created':
+      return `a shield prevents the next ${event.amount} damage to ${tgt(event.target)}`
+    case 'draw-redirected':
+      return `${playerLabel(event.from)}'s draw is redirected — ${playerLabel(
+        event.to,
+      )} draws instead`
     case 'modes-chosen':
       return event.modes.length > 0
         ? `${name(event.source)} — mode(s) ${event.modes.map((m) => m + 1).join(', ')}`

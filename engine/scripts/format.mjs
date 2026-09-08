@@ -170,6 +170,10 @@ export const makeFormatter = (game) => {
         return `${name(e.source)}'s ${e.amount} damage to ${target(e.target)} is prevented`;
       case "graveyard-replaced-with-exile":
         return `${name(e.object)} is exiled instead of going to a graveyard`;
+      case "prevention-shield-created":
+        return `a shield prevents the next ${e.amount} damage to ${target(e.target)}`;
+      case "draw-redirected":
+        return `${e.from}'s draw is redirected — ${e.to} draws instead`;
       case "modes-chosen":
         return e.modes.length > 0
           ? `${name(e.source)} — mode(s) ${e.modes.map((m) => m + 1).join(", ")}`
