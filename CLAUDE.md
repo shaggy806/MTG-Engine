@@ -10,12 +10,13 @@ room server (`server/`) and a React web client (`client/`) — a real networked 
 (`workspaces: ["engine", "server", "client"]` in the root `package.json`, in that order so
 `engine` builds first, then `server`).
 
-**`ROADMAP.md` is the plan of record.** It carries the 10-phase plan for growing the engine to
+**`ROADMAP.md` is the plan of record.** It carried an 11-phase plan for growing the engine to
 a "baseline cardpool" (enough coverage for ordinary Commander decks), a dependency spine, and
-per-phase file-level notes. The "Wave 1/2/3" labels below are the historical cadence — Waves 1–3
-are done; new work follows ROADMAP's phases. Read ROADMAP's *Architecture constraints* section
-before touching the engine, and tick its status checkboxes / update this file's engine header as
-each phase lands.
+per-phase file-level notes. **All 11 phases are now done** (Phases 3/4/6/7/9/10 shipped core +
+a deferred long tail); ROADMAP's *Where next* section lists candidate directions — the biggest
+is a bulk card-authoring pass against a real precon. The "Wave 1/2/3" labels below are the
+historical cadence — Waves 1–3 are done. Read ROADMAP's *Architecture constraints* section
+before touching the engine, and update this file's engine header as new work lands.
 
 - `engine/` — a TypeScript library package, ESM (`"type": "module"`), NodeNext resolution. Emits to `dist/` with declarations; `package.json` `exports`/`main`/`types` point there. No I/O, no UI — a pure state machine driven entirely through `dispatch`.
 - `server/` — a Node + `ws` package: the authoritative multiplayer room host. Owns the one real `Game` instance per room, keyed by a room code; every connected device gets its own redacted `viewFor(seat)` pushed after each dispatch. Imports `engine` the same way `client` does.

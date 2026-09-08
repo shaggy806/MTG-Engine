@@ -14,6 +14,12 @@ way `git log` does, update CLAUDE.md's engine header + the relevant bullets, the
 tick the box here. Don't start a later phase before its spine dependencies (see
 the diagram) are in.
 
+**Status (2026-09-08):** all 11 phases are done (Phases 3/4/6/7/9/10 shipped
+their *core* and deferred a named long tail; the rest are complete). The engine
+now expresses the mechanics an ordinary Commander deck needs. See
+[**Where next**](#where-next) at the bottom for candidate directions — the
+biggest is a bulk card-authoring pass against a real precon.
+
 ## Status
 
 - [x] **Phase 1** — Replacement-effects engine (+ modal / "you may" primitives)
@@ -915,3 +921,28 @@ redirection to a third object (Harm's Way).
 - **Card volume:** the actual baseline pool is hundreds of cards. Engine phases
   make mechanics *expressible*; the payoff is a bulk authoring pass after Phases
   1–4 land, targeting one or two real precons end-to-end.
+
+---
+
+## Where next
+
+All 11 phases are done. Candidate directions, roughly by payoff:
+
+1. **Bulk card-authoring pass** — pick one real Commander precon (~100 cards),
+   author every card in it, run it end-to-end 2–4 players. The pool is only
+   ~168 cards today; this is where the engine's coverage gets *proven* and the
+   real remaining gaps surface. The highest-value next move.
+2. **`resolve`-hatch sweep** — convert the remaining bespoke imperative
+   `resolve` cards to declarative `effect` form now that the vocab is broad
+   (cross-cutting note above).
+3. **Phase 10 deferred (large/niche)** — Battles (a card type + attack target),
+   phasing (a state dimension), dungeons / Initiative + Undercity / Ring, banding.
+   Demand-driven; none blocks ordinary Commander play.
+4. **Engine long tail** — see CLAUDE.md's "Not yet" paragraph: snow *sources*,
+   conditional anthems beyond `StaticCondition`, `discard` in an activated cost,
+   `first-spell-each-turn` / `end-step` triggers, protection from a full filter,
+   full text-change, `modify-pt` / `draw` / `mill` effect scopes, dependency
+   ordering, the scry "reorder kept cards" clause, multi-destination /
+   sac-death tutors (Cultivate, Sakura-Tribe Elder), the legend-rule player
+   choice, Companion / Backgrounds, EG-6's deferred bits (replacement ordering,
+   damage redirection), a static that animates a planeswalker (Gideon).
