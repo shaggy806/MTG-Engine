@@ -26,7 +26,7 @@ the diagram) are in.
 - [x] **Phase 8** — Cascade, storm, "cast" triggers, copy-a-spell
 - [x] **Phase 9** — Commander-format completeness + deck validation *(core done — colour identity, deck validation, Partner, a 4th commander; Companion / legend-rule choice / simultaneous mulligans deferred)*
 - [~] **Phase 10** — Tier 3 long tail (demand-driven) — **Sagas, 10a (MDFC), 10b (transform) + Day/Night, Monarch, Energy, Emblems, can't-be-countered, disturb, adventure all landed**; battles, phasing, dungeons/Initiative/Ring, banding deferred as large/niche
-- [ ] **Phase 11** — Engine-fidelity gaps: uniform targeting decisions, targeted modal spells, `{X}` activated costs + conditional statics, combat depth (trample choice / first-strike window / must-be-blocked), planeswalker ability coverage, replacement pipeline v2
+- [~] **Phase 11** — Engine-fidelity gaps — **EG-1 (uniform targeting decisions / retire `chooseTargets`) done**; EG-2 targeted modal spells, EG-3 `{X}` activated costs + conditional statics, EG-4 combat depth, EG-5 planeswalker ability coverage, EG-6 replacement pipeline v2 open
 
 ## Dependency spine
 
@@ -664,7 +664,21 @@ being *expressible*. Six increments, ordered by leverage and dependency. Each is
 a shippable increment (same bar as every other phase). EG‑1 and EG‑2 together
 clear most of what currently blocks real cards.
 
-### EG‑1 — Uniform targeting decisions (retire `chooseTargets`)  · S/M · first
+### EG‑1 — Uniform targeting decisions (retire `chooseTargets`)  · [x] done
+
+*Landed:* a dispatched `choose-targets` `AwaitingDecision` — a triggered ability
+(or Saga chapter) with a real target choice parks in `GameState.pendingTargetedTrigger`
+and raises it; a suspended spell coming off suspend parks in `pendingTargetedCast`
+(+ a `pendingSuspendedCasts` queue). `placeTriggerOnStack` returns `"done" | "paused"`;
+`applyChooseTargets` assembles the full target list (interleaving auto-filled
+slots — a saboteur's victim) and mints the ability / `commitFreeCast`s. Auto-filled
+slots and single forced choices don't raise a decision. Cascade's free-cast
+targets stay auto-picked (deferring cascade's "put the rest on the bottom" tail
+wasn't worth it). Client: `activeTargeting` derived from the decision, only the
+running picks in state. `RandomController` picks randomly. Spell-copy "you may
+choose new targets" still deferred (declining is legal). `targeting-decisions.test.ts`.
+
+*Original design notes:*
 
 `chooseTargets` is the last synchronous `PlayerController` callback the engine
 still calls directly (`game.ts` — `placeTriggerOnStack` per target spec, and
