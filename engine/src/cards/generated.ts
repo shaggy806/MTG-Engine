@@ -119,6 +119,7 @@ import _poolRagingGoblin from "./pool/raging-goblin.js";
 import _poolRaiseTheAlarm from "./pool/raise-the-alarm.js";
 import _poolRampagingBaloths from "./pool/rampaging-baloths.js";
 import _poolRampantGrowth from "./pool/rampant-growth.js";
+import _poolRendwinWardenOfTheGrove from "./pool/rendwin-warden-of-the-grove.js";
 import _poolRestInPeace from "./pool/rest-in-peace.js";
 import _poolRiftBolt from "./pool/rift-bolt.js";
 import _poolRoguesPassage from "./pool/rogues-passage.js";
@@ -157,6 +158,7 @@ import _poolWildwoodSentinel from "./pool/wildwood-sentinel.js";
 import _poolWiltLeafCavaliers from "./pool/wilt-leaf-cavaliers.js";
 import _poolWrathOfGod from "./pool/wrath-of-god.js";
 import _poolWurmcoilEngine from "./pool/wurmcoil-engine.js";
+import _poolYulraKindledSpark from "./pool/yulra-kindled-spark.js";
 import _poolZulaportCutthroat from "./pool/zulaport-cutthroat.js";
 import _tokensBeastToken33 from "./tokens/beast-token-3-3.js";
 import _tokensBeastToken from "./tokens/beast-token.js";
@@ -285,6 +287,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolRaiseTheAlarm,
   _poolRampagingBaloths,
   _poolRampantGrowth,
+  _poolRendwinWardenOfTheGrove,
   _poolRestInPeace,
   _poolRiftBolt,
   _poolRoguesPassage,
@@ -323,6 +326,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolWiltLeafCavaliers,
   _poolWrathOfGod,
   _poolWurmcoilEngine,
+  _poolYulraKindledSpark,
   _poolZulaportCutthroat,
   _tokensBeastToken33,
   _tokensBeastToken,
