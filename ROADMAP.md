@@ -26,7 +26,7 @@ the diagram) are in.
 - [x] **Phase 8** — Cascade, storm, "cast" triggers, copy-a-spell
 - [x] **Phase 9** — Commander-format completeness + deck validation *(core done — colour identity, deck validation, Partner, a 4th commander, simultaneous mulligans; Companion / legend-rule choice deferred)*
 - [~] **Phase 10** — Tier 3 long tail (demand-driven) — **Sagas, 10a (MDFC), 10b (transform) + Day/Night, Monarch, Energy, Emblems, can't-be-countered, disturb, adventure all landed**; battles, phasing, dungeons/Initiative/Ring, banding deferred as large/niche
-- [~] **Phase 11** — Engine-fidelity gaps — **EG-1 (uniform targeting decisions) + EG-2 (targeted modal spells) + EG-3 (`{X}` activated costs + conditional statics) done**; EG-4 combat depth, EG-5 planeswalker ability coverage, EG-6 replacement pipeline v2 open
+- [~] **Phase 11** — Engine-fidelity gaps — **EG-1 (uniform targeting decisions) + EG-2 (targeted modal spells) + EG-3 (`{X}` activated costs + conditional statics) + EG-4 (combat depth) done**; EG-5 planeswalker ability coverage, EG-6 replacement pipeline v2 open
 
 ## Dependency spine
 
@@ -800,7 +800,24 @@ Two small independent Phase-3-tail items.
   `x-abilities.test.ts`.
 - Risk: low; both independent.
 
-### EG‑4 — Combat depth  · M
+### EG‑4 — Combat depth  · [x] done
+
+*Landed:* **4a** — a blocked attacker whose controller has a real choice
+dividing its combat damage (2+ live blockers, or trample with slack past every
+blocker's lethal) owes an `assign-combat-damage` `AwaitingDecision`;
+`whyCannotAssignCombatDamage` enforces the 510.1c ordering; `dealCombatDamage`
+takes the chosen split as an override, else `standardDamageAssignment`. Client:
+a per-blocker number input + a "→ defender" trample readout. **4b** —
+`GameState.combatDamage` tracks the sub-pass; with a first/double striker in
+combat the `combat-damage` step runs a first-strike sub-pass, SBAs, a priority
+window, then the regular sub-pass, SBAs, another window (rule 510.4/510.5) —
+the step name stays `combat-damage`, no new `Step`. **4c** — a `"must-be-blocked"`
+`CombatRestriction` (Lure); `whyCannotDeclareBlockers` forces every able creature
+to block one, `declare-blockers` LegalAction carries `mustBlock`. Cards: Lure.
+`combat-depth.test.ts` (10). Deferred: must-be-blocked + menace, granular
+"prevent the next N combat damage" shields, `end-the-turn` (Time Stop).
+
+*Original design notes:*
 
 - **4a — trample damage assignment as a player choice** (rule 510.1c). A blocked
   attacker with `trample` (and, optionally, any multi-blocked attacker) owes an
@@ -849,9 +866,8 @@ Two small independent Phase-3-tail items.
   an "if a creature would die, exile it" enchantment. `replacement-v2.test.ts`.
 - Biggest and most niche; `dealDamage` / `drawCard` are hot paths — goes last.
 
-**Ordering:** EG‑1 ✓ → EG‑2 ✓ → EG‑3 ✓ → EG‑4
-(self-contained, real gameplay impact) → EG‑5 (mostly audit) → EG‑6 (largest /
-riskiest / most niche).
+**Ordering:** EG‑1 ✓ → EG‑2 ✓ → EG‑3 ✓ → EG‑4 ✓ → EG‑5 (mostly audit) → EG‑6
+(largest / riskiest / most niche).
 
 ---
 
