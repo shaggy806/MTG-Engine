@@ -25,7 +25,7 @@ the diagram) are in.
 - [x] **Phase 7** — Combat depth + turn-structure control *(core done — extra turns, additional combat, can't-be-blocked; first-strike window / trample-as-choice / must-be-blocked deferred)*
 - [x] **Phase 8** — Cascade, storm, "cast" triggers, copy-a-spell
 - [x] **Phase 9** — Commander-format completeness + deck validation *(core done — colour identity, deck validation, Partner, a 4th commander; Companion / legend-rule choice / simultaneous mulligans deferred)*
-- [~] **Phase 10** — Tier 3 long tail (demand-driven) — **Sagas + 10a (cast-time face choice / MDFC) landed**; **10b transform**, day/night, battles, emblems, … still open
+- [~] **Phase 10** — Tier 3 long tail (demand-driven) — **Sagas, 10a (MDFC / cast-time face choice), 10b (transforming DFCs) + Day/Night landed**; battles, emblems, Monarch, dungeons, energy, … still open
 
 ## Dependency spine
 
@@ -407,7 +407,8 @@ today) / protection-from-everything / "hexproof from", land/artifact/planeswalke
   Foretold badges. Cards: Snapcaster Mage, Rift Bolt, Behold the Multiverse,
   Underworld Rage-Hound. `alt-cast.test.ts` 5→8 cases; fuzz deck B gains all
   four; fuzzer clean at 2p/3p/4p.
-- [ ] **6c (deferred)** — `disturb` (a transforming back face — Phase 10b); a
+- [ ] **6c (deferred)** — `disturb` (cast a transforming DFC's back face from the
+  graveyard; the Phase 10b transform machinery now exists to build on); a
   `playableUntil` impulse-draw marker; a *characteristics-carrying*
   `spell-cast` event (the Phase 8 prerequisite); a real player choice for a
   targeted suspended spell's targets and Snapcaster's target (the
@@ -536,7 +537,7 @@ oldest survives — today), simultaneous mulligan rounds (sequential today).
 
 ---
 
-## Phase 10 — Tier 3 long tail (demand-driven)  *(begun — Sagas landed)*
+## Phase 10 — Tier 3 long tail (demand-driven)  *(begun — Sagas, 10a MDFC, 10b transform + Day/Night landed)*
 
 Each is small once Phases 1–3 exist. Pull them in as specific decks need them.
 
@@ -580,33 +581,46 @@ Each is small once Phases 1–3 exist. Pull them in as specific decks need them.
     vigilance creature / an enters-tapped {G} land). `mdfc.test.ts`.
   - Adventure adds an exile-with-"may cast the creature later" state (a small
     `playableUntil`-style marker, shared with Phase 6's impulse-draw work) — still open.
-- **10b — transforming DFCs (an *in-place* face flip).** A permanent flips
-  between its two printed faces while staying the same object (Innistrad
-  werewolves, `//` transform cards, the Marvel Spider-Man hero/alter-ego
+- [x] **10b — transforming DFCs (an *in-place* face flip).** A permanent flips
+  between its two printed faces while staying the same object, same timestamp,
+  same counters/attachments (rule 712.10 — Innistrad werewolves, `//` transform
   cards).
-  - `transform` `EffectSpec` + a `transformed` flag on `GameObject` (toggles
-    `GameObject.face`); "enters transformed" / "you may cast the front face; it
-    enters transformed" as ETB variants.
-  - `transforms` / `becomes-transformed` `TriggerSpec`s; a card's back-face
-    abilities only function while it's the up face (already free — they're on
-    the resolved face's `CardDefinition`).
-  - The **Day / Night** designation (below) drives the modern werewolf subset;
-    other transform cards carry their own trigger.
-  - A card can be **both 10a and 10b** — cast on either side *and* transformable
-    once in play (the Marvel Spider-Man DFCs). `faces` + `face` cover both; 10b
-    just adds the in-play toggle.
-- **Day / Night** — a `GameState.dayNight` value + the "becomes day/night"
-  turn-based check; werewolf transform triggers read it. Coupled with 10b.
+  - `CardDefinition.transform: boolean` marks a *transforming* DFC (rule 712.4)
+    — set on both faces; it's only ever cast/played as its front face, so
+    `legalActions`' hand loop doesn't enumerate its faces (unlike a modal DFC).
+  - `transform` `EffectSpec` (`target: "source" | slot`) → `Game.transformPermanent`
+    toggles `GameObject.face` and emits `permanent-transformed { object, face,
+    front }`. An `enters-battlefield { transformed }` replacement covers an
+    unconditional "enters the battlefield transformed".
+  - `transforms` `TriggerSpec` (`who`, `intoFront?`, `filter?`) — matches
+    `permanent-transformed`; `detectTriggers` reads the *now-up* face's
+    `triggered` list, so a "when this transforms into its back face" ability
+    lives on the back face's `CardDefinition`.
+  - A card can be **both 10a and 10b** in principle (`faces` + `transform` on a
+    modal-and-transforming card) — no such card in the pool yet.
+  - Cards: `Nightfall Cultist` // `Voidfall Horror` (a `{2}{B}: Transform`
+    ability + a `transforms` trigger), `Moonrise Cultivator` // `Moonrise
+    Marauder` (a daybound/nightbound werewolf). `transform.test.ts`.
+- [x] **Day / Night** (rule 726). `GameState.dayNight: "day" | "night" | null`
+  (null until a card first makes it day/night — a daybound permanent casting/
+  entering does so, rule 726.2). `beginTurn` flips it: day → night if the
+  previous turn's active player cast no spells (726.3), night → day if they
+  cast two or more (726.4). A `day-night` `EffectSpec` sets it directly.
+  `Game.setDayNight` transforms every daybound permanent to its nightbound face
+  (→ night) / back (→ day) — rule 702.145e; the `daybound` / `nightbound`
+  keywords carry it. A daybound permanent enters transformed while it's night
+  (702.145f). `PlayerView.dayNight` + a "☀ Day" / "☾ Night" turn-banner marker.
 - **Battles** (Siege subtype, defense counters, attack-a-battle).
 - **The Monarch; the Initiative + Undercity; venture / dungeons; the Ring
   tempts you + Ring-bearer; energy.**
 - **Emblems** — a player-owned continuous-effect object.
 - **Rules-lawyer:** split second, "can't be countered", phasing, banding.
 
-**Demand note:** the Marvel Spider-Man DFC deck needs **10a + 10b together**
-(hero/alter-ego cards are castable on either side and transform in play). When
-that deck becomes a priority, pull 10a forward next to Phase 6 and land 10b +
-Day/Night right after.
+**Demand note:** 10a + 10b + Day/Night have all landed. A card that is *both*
+modal-and-transforming (the Marvel Spider-Man hero/alter-ego DFCs — cast on
+either side *and* transform in play) would need `faces` + `transform` set
+together and `legalActions` to enumerate faces for a `transform` card too; no
+such card is in the pool yet.
 
 ---
 
