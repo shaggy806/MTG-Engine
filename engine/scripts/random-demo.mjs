@@ -71,6 +71,7 @@ const deckA = deck([
   ["Kird Ape", 2],
   ["Werebear", 2],
   ["Cinder Elemental", 2],
+  ["Lure", 1],
   ["Seraphine, Dawnherald", 1],
   ["Garruk Wildspeaker", 1],
   ["Cryptolith Rite", 1],
