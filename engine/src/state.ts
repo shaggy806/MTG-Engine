@@ -272,6 +272,15 @@ export interface GameResult {
   reason: string | null;
 }
 
+/** One player's state within the parallel mulligan phase. */
+export interface MulliganHandState {
+  /** Mulligans taken so far (0 = first hand). */
+  readonly taken: number;
+  /** `"decide"` — still choosing keep-or-mulligan-again; `"bottom"` — kept,
+   * now owes `taken` cards to the bottom of the library (London mulligan). */
+  readonly step: "decide" | "bottom";
+}
+
 /**
  * A decision the rules are waiting on. While this is set, the named player's
  * only legal action is the matching declaration.
@@ -319,17 +328,19 @@ export type AwaitingDecision =
       readonly enterTapped?: boolean;
     }
   | {
+      /**
+       * The pre-turn-1 mulligan phase (London style). Unlike every other
+       * decision this one is **parallel** — every player in `hands` may act
+       * right now, in any order, not turn order (rule 103.4 — players don't
+       * wait on each other). `player` is just the lowest-turn-order player
+       * still to act, for generic `awaiting.player` consumers. A player is
+       * removed from `hands` once they've kept (and bottomed, if they took
+       * any mulligans); the phase ends and turn 1 begins when `hands` is
+       * empty.
+       */
       readonly kind: "mulligan";
       readonly player: PlayerId;
-      /** Mulligans this player has already taken (0 for their first hand). */
-      readonly count: number;
-    }
-  | {
-      readonly kind: "mulligan-bottom";
-      readonly player: PlayerId;
-      /** Cards this player must put on the bottom of their library, equal
-       * to the number of mulligans they took (the London mulligan). */
-      readonly count: number;
+      readonly hands: Readonly<Record<string, MulliganHandState>>;
     }
   | {
       /** A commander *would* be put into a hidden/graveyard zone from the

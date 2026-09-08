@@ -165,8 +165,15 @@ function answerAwaited(
   view: ControllerView,
 ): Action | null {
   const awaiting = view.state.awaiting;
-  if (awaiting === null || awaiting.player !== controller.playerId) return null;
+  if (awaiting === null) return null;
   const player = controller.playerId;
+  // The mulligan phase is parallel — this controller may act if it's still in
+  // `hands`, not only when it's the `awaiting.player` pointer.
+  const mayAct =
+    awaiting.kind === "mulligan"
+      ? awaiting.hands[player] !== undefined
+      : awaiting.player === player;
+  if (!mayAct) return null;
 
   if (awaiting.kind === "attackers") {
     return { type: "declare-attackers", player, attackers: controller.declareAttackers(view) };
@@ -191,10 +198,21 @@ function answerAwaited(
     };
   }
   if (awaiting.kind === "mulligan") {
+    const hand = awaiting.hands[player];
+    if (hand.step === "bottom") {
+      const held = view.state.zones.perPlayer[player].hand.map(
+        (id) => view.state.objects[id],
+      );
+      return {
+        type: "put-on-bottom",
+        player,
+        cards: controller.chooseBottomOfLibrary(held, hand.taken),
+      };
+    }
     return {
       type: "mulligan",
       player,
-      keep: !controller.mulligan(view, awaiting.count),
+      keep: !controller.mulligan(view, hand.taken),
     };
   }
   if (awaiting.kind === "commander-replacement") {
@@ -264,13 +282,6 @@ function answerAwaited(
   const hand = view.state.zones.perPlayer[player].hand.map(
     (id) => view.state.objects[id],
   );
-  if (awaiting.kind === "mulligan-bottom") {
-    return {
-      type: "put-on-bottom",
-      player,
-      cards: controller.chooseBottomOfLibrary(hand, awaiting.count),
-    };
-  }
   return {
     type: "discard",
     player,

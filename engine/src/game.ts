@@ -58,7 +58,14 @@ import type { Color, ManaCost, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId, Rng } from "./primitives.js";
 import { asObjectId, createRng, shuffle } from "./primitives.js";
 import { DEFAULT_RULES, activePlayerOf, createPlayerState, printedCardName } from "./state.js";
-import type { AwaitingDecision, GameObject, GameRules, GameState, ZoneType } from "./state.js";
+import type {
+  AwaitingDecision,
+  GameObject,
+  GameRules,
+  GameState,
+  MulliganHandState,
+  ZoneType,
+} from "./state.js";
 import type { TargetRef, TargetSpec } from "./target.js";
 import { isLegalTarget, legalTargets, protectionBlocks } from "./targeting.js";
 import type { TargetSource } from "./targeting.js";
@@ -482,7 +489,13 @@ export class Game {
 
     const awaiting = this.state.awaiting;
     if (awaiting !== null) {
-      if (awaiting.player !== player) return [];
+      // The mulligan phase is parallel — any player still in `hands` may act,
+      // not just `awaiting.player`. Every other decision is single-player.
+      const mayAct =
+        awaiting.kind === "mulligan"
+          ? awaiting.hands[player] !== undefined
+          : awaiting.player === player;
+      if (!mayAct) return [];
       if (awaiting.kind === "attackers") {
         const defenders = this.legalDefenders(player);
         return [
@@ -535,16 +548,16 @@ export class Game {
         ];
       }
       if (awaiting.kind === "mulligan") {
-        return [{ kind: "mulligan", count: awaiting.count }];
-      }
-      if (awaiting.kind === "mulligan-bottom") {
-        return [
-          {
-            kind: "put-on-bottom",
-            count: awaiting.count,
-            from: [...this.state.zones.perPlayer[player].hand],
-          },
-        ];
+        const hand = awaiting.hands[player];
+        return hand.step === "decide"
+          ? [{ kind: "mulligan", count: hand.taken }]
+          : [
+              {
+                kind: "put-on-bottom",
+                count: hand.taken,
+                from: [...this.state.zones.perPlayer[player].hand],
+              },
+            ];
       }
       if (awaiting.kind === "commander-replacement") {
         return [
@@ -1037,32 +1050,37 @@ export class Game {
   }
 
   /**
-   * Deals opening hands, then asks each player in turn order whether to
-   * mulligan (London style — shuffle hand into library, draw a fresh 7, no
-   * cap), and once they keep, how many cards (equal to mulligans taken) to
-   * put on the bottom. Fully resolves one player before moving to the next;
-   * real tournament rules poll every player simultaneously each round, but
-   * this engine answers one awaiting decision at a time, so this reaches
-   * the same end state sequentially instead — a documented simplification,
-   * like the automatic commander-replacement redirect.
+   * Deals opening hands, then runs the London mulligan phase. Every player is
+   * asked to keep-or-mulligan **at the same time** — they act in parallel, in
+   * whatever order they choose, not turn order (rule 103.4 — a player never
+   * waits on another to make their own mulligan decision). Each player loops
+   * their own decide → (mulligan → decide)* → keep → (bottom `taken` cards)
+   * independently; turn 1 begins once every player has finished.
    */
   private beginMulligans(): void {
+    const hands: Record<string, MulliganHandState> = {};
     for (const player of this.state.turnOrder) {
       for (let i = 0; i < this.state.rules.openingHandSize; i += 1) {
         this.drawCard(player);
       }
+      hands[player] = { taken: 0, step: "decide" };
     }
-    this.advanceMulligans(0);
+    this.state.awaiting = { kind: "mulligan", player: this.state.turnOrder[0], hands };
+    this.prepareForPriority(this.state.turnOrder[0]);
   }
 
-  private advanceMulligans(index: number): void {
-    if (index >= this.state.turnOrder.length) {
+  /** After a mulligan-phase action: if anyone is still to act, keep the phase
+   * open (repointing `awaiting.player` at the lowest-turn-order such player);
+   * otherwise begin turn 1. */
+  private advanceMulliganPhase(hands: Record<string, MulliganHandState>): void {
+    const next = this.state.turnOrder.find((p) => hands[p] !== undefined);
+    if (next === undefined) {
+      this.state.awaiting = null;
       this.beginTurn();
       return;
     }
-    const player = this.state.turnOrder[index];
-    this.state.awaiting = { kind: "mulligan", player, count: 0 };
-    this.prepareForPriority(player);
+    this.state.awaiting = { kind: "mulligan", player: next, hands };
+    this.prepareForPriority(next);
   }
 
   private applyMulligan(player: PlayerId, keep: boolean): void {
@@ -1073,6 +1091,8 @@ export class Game {
     if (awaiting === null || awaiting.kind !== "mulligan") {
       throw new Error("unreachable: whyCannotMulligan should have caught this");
     }
+    const hands = { ...awaiting.hands };
+    const taken = hands[player].taken;
 
     if (!keep) {
       const hand = [...this.state.zones.perPlayer[player].hand];
@@ -1085,26 +1105,28 @@ export class Game {
       for (let i = 0; i < this.state.rules.openingHandSize; i += 1) {
         this.drawCard(player);
       }
-      const count = awaiting.count + 1;
-      this.emit({ type: "mulligan-taken", player, count });
-      this.state.awaiting = { kind: "mulligan", player, count };
-      this.prepareForPriority(player);
+      this.emit({ type: "mulligan-taken", player, count: taken + 1 });
+      hands[player] = { taken: taken + 1, step: "decide" };
+      this.advanceMulliganPhase(hands);
       return;
     }
 
-    this.emit({ type: "hand-kept", player, mulligans: awaiting.count });
-    if (awaiting.count > 0) {
-      this.state.awaiting = { kind: "mulligan-bottom", player, count: awaiting.count };
-      this.prepareForPriority(player);
-      return;
+    this.emit({ type: "hand-kept", player, mulligans: taken });
+    if (taken > 0) {
+      hands[player] = { taken, step: "bottom" };
+    } else {
+      delete hands[player];
     }
-    this.state.awaiting = null;
-    this.advanceMulligans(this.state.turnOrder.indexOf(player) + 1);
+    this.advanceMulliganPhase(hands);
   }
 
   private whyCannotMulligan(player: PlayerId): string | null {
     const awaiting = this.state.awaiting;
-    if (awaiting === null || awaiting.kind !== "mulligan" || awaiting.player !== player) {
+    if (
+      awaiting === null ||
+      awaiting.kind !== "mulligan" ||
+      awaiting.hands[player]?.step !== "decide"
+    ) {
       return `${player} is not being asked about a mulligan`;
     }
     return null;
@@ -1113,11 +1135,16 @@ export class Game {
   private applyPutOnBottom(player: PlayerId, cards: readonly ObjectId[]): void {
     const why = this.whyCannotPutOnBottom(player, cards);
     if (why !== null) throw new Error(why);
+    const awaiting = this.state.awaiting;
+    if (awaiting === null || awaiting.kind !== "mulligan") {
+      throw new Error("unreachable: whyCannotPutOnBottom should have caught this");
+    }
 
     for (const id of cards) this.moveObject(id, "library");
     this.emit({ type: "cards-put-on-bottom", player, objects: [...cards] });
-    this.state.awaiting = null;
-    this.advanceMulligans(this.state.turnOrder.indexOf(player) + 1);
+    const hands = { ...awaiting.hands };
+    delete hands[player];
+    this.advanceMulliganPhase(hands);
   }
 
   private whyCannotPutOnBottom(
@@ -1127,13 +1154,14 @@ export class Game {
     const awaiting = this.state.awaiting;
     if (
       awaiting === null ||
-      awaiting.kind !== "mulligan-bottom" ||
-      awaiting.player !== player
+      awaiting.kind !== "mulligan" ||
+      awaiting.hands[player]?.step !== "bottom"
     ) {
       return `${player} is not being asked to put cards on the bottom of their library`;
     }
-    if (cards.length !== awaiting.count) {
-      return `${player} must put exactly ${awaiting.count} card(s) on the bottom, chose ${cards.length}`;
+    const owed = awaiting.hands[player].taken;
+    if (cards.length !== owed) {
+      return `${player} must put exactly ${owed} card(s) on the bottom, chose ${cards.length}`;
     }
     if (new Set(cards).size !== cards.length) {
       return `${player} chose the same card twice`;
