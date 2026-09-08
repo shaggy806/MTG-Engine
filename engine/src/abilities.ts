@@ -95,6 +95,16 @@ export type TriggerSpec =
     }
   | { readonly on: "attacks"; readonly who: TriggerWho }
   | {
+      /** A permanent turned over to its other face (rule 712.10 — ROADMAP
+       * Phase 10b). `who: "self"` = this permanent transformed; `"you-control"`
+       * = one you control did. `intoFront` narrows to a transform *into* the
+       * front (`true`) or back (`false`) face. */
+      readonly on: "transforms";
+      readonly who: TriggerWho;
+      readonly intoFront?: boolean;
+      readonly filter?: CardFilter;
+    }
+  | {
       /** This creature dealt combat damage to a player. The ability's first
        * target slot (if any) is auto-filled with that player. */
       readonly on: "deals-combat-damage-to-player";

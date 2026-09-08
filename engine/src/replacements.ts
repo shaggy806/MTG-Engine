@@ -41,6 +41,11 @@ export interface EntersBattlefieldReplacement {
   /** It enters with these counters already on it. `amount: "x"` reads the
    * `{X}` chosen when it was cast (Walking Ballista). */
   readonly counters?: { readonly kind: string; readonly amount: EffectAmount };
+  /** It enters transformed — a transforming DFC that says "enters the
+   * battlefield transformed" unconditionally (rule 712.10 — ROADMAP Phase
+   * 10b). Daybound's conditional "if it's night" is handled by the engine,
+   * not this flag. */
+  readonly transformed?: boolean;
 }
 
 /** "If one or more tokens would be created under your control, twice that many

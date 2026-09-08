@@ -64,6 +64,21 @@ export type GameEvent =
       readonly object: ObjectId;
     })
   | (Base & {
+      /** A permanent turned over to its other face (rule 712.10 — a transform
+       * keyword action / a day-night change / an "enters transformed" effect;
+       * ROADMAP Phase 10b). Same object, same timestamp. `face` is the index
+       * now up; `front` is `face === 0`. */
+      readonly type: "permanent-transformed";
+      readonly object: ObjectId;
+      readonly face: number;
+      readonly front: boolean;
+    })
+  | (Base & {
+      /** The game became day or night (rule 726 — ROADMAP Phase 10b). */
+      readonly type: "day-night-changed";
+      readonly value: "day" | "night";
+    })
+  | (Base & {
       /** Cascade exiled cards off the top of the library; `cast` is the
        * nonland card with lesser mana value that will be cast free, or `null`
        * (ROADMAP Phase 8). */

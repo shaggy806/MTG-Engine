@@ -136,6 +136,9 @@ export interface PlayerView {
   /** Each player's top library card, if some permanent they control makes it
    * public knowledge (e.g. Oracle of Mul Daya) — `null` otherwise. */
   readonly revealedLibraryTop: Readonly<Record<PlayerId, ObjectId | null>>;
+  /** The day/night designation (rule 726 — ROADMAP Phase 10b), or `null` until
+   * a card first makes it day or night. */
+  readonly dayNight: "day" | "night" | null;
   readonly events: readonly GameEvent[];
 }
 
@@ -318,6 +321,7 @@ export function viewFor(
       graveyards,
     },
     revealedLibraryTop,
+    dayNight: state.dayNight,
     events: state.eventLog,
   };
 }

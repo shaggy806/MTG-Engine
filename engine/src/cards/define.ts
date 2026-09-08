@@ -47,7 +47,15 @@ export type Keyword =
   | "hexproof"
   | "flash"
   /** Can't be blocked (Invisible Stalker). Evasion, checked in combat. */
-  | "unblockable";
+  | "unblockable"
+  /** Daybound (rule 702.145 — ROADMAP Phase 10b): the front face of a modern
+   * werewolf. As it becomes night, daybound permanents transform to their
+   * nightbound back face; a daybound permanent enters transformed if it's
+   * already night, and casting one makes it day if it's neither. */
+  | "daybound"
+  /** Nightbound (rule 702.146): the back face — it transforms back as it
+   * becomes day. */
+  | "nightbound";
 
 /** Which objects a static ability applies its continuous effect to. */
 export type AffectSpec =
@@ -198,6 +206,12 @@ export interface CardDefinition {
    * single-faced card. Every face's own `CardDefinition` should carry the same
    * `faces` list so `registry.get(backName).faces` works too. */
   readonly faces: readonly string[] | null;
+  /** True for a *transforming* double-faced card (rule 712.4 — ROADMAP Phase
+   * 10b): it's only ever cast/played as its front face, and turns over in
+   * place via a transform effect / a day-night change (werewolves) / an
+   * "enters transformed" clause. A modal DFC (`faces` set, `transform` false)
+   * is cast by choosing a face and never turns over. Set on both faces. */
+  readonly transform: boolean;
 }
 
 /** One chapter ability of a Saga (rule 714.2c). `at` lists the lore-counter
@@ -238,6 +252,7 @@ interface CardDraft {
   escape?: { readonly cost: string; readonly exileCount: number };
   chapters?: readonly SagaChapter[];
   faces?: readonly string[];
+  transform?: boolean;
 }
 
 /** Build a {@link CardDefinition} from a partial draft, filling in defaults. */
@@ -286,6 +301,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     escape: draft.escape ?? null,
     chapters: draft.chapters ?? null,
     faces: draft.faces ?? null,
+    transform: draft.transform ?? false,
   };
 }
 

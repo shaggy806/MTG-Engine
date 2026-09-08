@@ -264,6 +264,20 @@ export type EffectSpec =
       readonly target: number;
     }
   | {
+      /** Transform `target` — turn a transforming double-faced permanent over
+       * to its other face (rule 701.28 / 712.10 — ROADMAP Phase 10b). No-op
+       * for a permanent that isn't a transforming DFC. `"source"` transforms
+       * the ability's own permanent (a werewolf, "sacrifice …: transform ~"). */
+      readonly kind: "transform";
+      readonly target: EffectTargetRef;
+    }
+  | {
+      /** The game becomes day or night (rule 726 — ROADMAP Phase 10b). All
+       * daybound/nightbound permanents transform to match. */
+      readonly kind: "day-night";
+      readonly value: "day" | "night";
+    }
+  | {
       /** Prevent all combat damage that would be dealt this turn (Fog). A
        * rule-614 replacement, tracked as a turn-scoped `GameState` flag. */
       readonly kind: "prevent-all-combat-damage";
@@ -439,6 +453,11 @@ export interface EffectApi {
   createToken(token: string, count: number): void;
   /** Attach `ctx.source` (an Aura/Equipment) to `target`. */
   attach(target: TargetRef): void;
+  /** Transform `target` (a transforming DFC permanent) — see the `"transform"`
+   * {@link EffectSpec}. */
+  transform(target: TargetRef): void;
+  /** The game becomes day or night (rule 726). */
+  setDayNight(value: "day" | "night"): void;
   /** Prevent all combat damage this turn (Fog). */
   preventAllCombatDamage(): void;
   /** Raise a `choose-modes` decision — see the `modal` / `may` {@link EffectSpec}.
@@ -677,6 +696,14 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       if (target !== undefined) ctx.attach(target);
       return;
     }
+    case "transform": {
+      const target = resolveEffectTarget(spec.target, ctx);
+      if (target !== undefined) ctx.transform(target);
+      return;
+    }
+    case "day-night":
+      ctx.setDayNight(spec.value);
+      return;
     case "prevent-all-combat-damage":
       ctx.preventAllCombatDamage();
       return;

@@ -213,6 +213,7 @@ export class Game {
       extraTurns: [],
       extraCombats: 0,
       spellsCastThisTurn: 0,
+      dayNight: null,
       timestampSeq: 0,
       eventLog: [],
       eventSeq: 0,
@@ -580,9 +581,11 @@ export class Game {
     );
     for (const card of [...this.state.zones.perPlayer[player].hand, ...ownCommanders]) {
       const ownName = this.state.objects[card].cardName;
-      const cardFaces = this.registry.get(ownName).faces;
-      // Each face of a multi-face card is a separately-playable option (rule
-      // 712 — ROADMAP Phase 10); a single-faced card has one.
+      const ownDef = this.registry.get(ownName);
+      // Each face of a *modal* multi-face card is a separately-playable option
+      // (rule 712 — ROADMAP Phase 10a); a single-faced card, and a transforming
+      // DFC (which is only ever cast as its front face — 10b), has just one.
+      const cardFaces = ownDef.transform ? null : ownDef.faces;
       const faceList: readonly (readonly [number | undefined, string])[] =
         cardFaces !== null
           ? cardFaces.map((n, i) => [i, n] as const)
@@ -610,7 +613,7 @@ export class Game {
         }
       }
       const cardName = ownName;
-      const def = this.registry.get(ownName);
+      const def = ownDef;
       // Suspend (rule 702.62) — a special action, offered alongside the cast.
       if (def.suspend !== null && this.whyCannotSuspend(player, card) === null) {
         out.push({ kind: "suspend", card, cardName, n: def.suspend.n, cost: def.suspend.cost });
@@ -1206,6 +1209,13 @@ export class Game {
 
   private beginTurn(): void {
     this.state.turn.number += 1;
+    // Day/Night (rule 726.3/726.4) is checked as a turn begins, against the
+    // spells the *previous* turn's active player cast that turn — captured now,
+    // before the per-player counts are reset below. `null` on turn 1.
+    const prevActive =
+      this.state.turn.number > 1 ? this.activePlayer : null;
+    const prevActiveSpells =
+      prevActive !== null ? this.state.players[prevActive].spellsCastThisTurn : 0;
     // Fog's "prevent all combat damage this turn" shield lapses; a fresh turn
     // owes no extra combats yet.
     this.state.preventAllCombatDamage = false;
@@ -1227,6 +1237,15 @@ export class Game {
     for (const player of this.state.turnOrder) {
       this.state.players[player].landsPlayedThisTurn = 0;
       this.state.players[player].spellsCastThisTurn = 0;
+    }
+    // Day → night if the previous turn's player cast no spells (726.3);
+    // night → day if they cast two or more (726.4). Only once it's day or night.
+    if (prevActive !== null) {
+      if (this.state.dayNight === "day" && prevActiveSpells === 0) {
+        this.setDayNight("night");
+      } else if (this.state.dayNight === "night" && prevActiveSpells >= 2) {
+        this.setDayNight("day");
+      }
     }
     this.emit({
       type: "turn-began",
@@ -3589,6 +3608,13 @@ export class Game {
           event.type === "attacker-declared" &&
           this.matchesWho(spec.who, event.attacker, self)
         );
+      case "transforms":
+        return (
+          event.type === "permanent-transformed" &&
+          (spec.intoFront === undefined || spec.intoFront === event.front) &&
+          this.matchesWho(spec.who, event.object, self) &&
+          this.triggerFilterOk(spec.filter, event.object, self)
+        );
       case "deals-combat-damage-to-player":
         return (
           event.type === "damage-dealt" &&
@@ -3883,6 +3909,10 @@ export class Game {
       changeText: (target) => this.beginTextChoice(controller, source, target),
       createToken: (token, count) => this.createTokens(controller, token, count),
       attach: (target) => this.attachPermanent(source, target),
+      transform: (target) => {
+        if (target.kind === "object") this.transformPermanent(target.object);
+      },
+      setDayNight: (value) => this.setDayNight(value),
       preventAllCombatDamage: () => {
         this.state.preventAllCombatDamage = true;
         this.emit({ type: "combat-damage-prevention-set" });
@@ -4340,6 +4370,64 @@ export class Game {
       toughness: opts.toughness,
       duration: opts.duration,
     });
+  }
+
+  /** The front face's `CardDefinition` for `id`'s card — resolves through
+   * `faces[0]` for a multi-face card. Used to read the shared `transform` flag
+   * and daybound/nightbound keywords regardless of which face is up. */
+  private frontFaceDef(id: ObjectId): CardDefinition {
+    const object = this.state.objects[id];
+    const own = this.registry.get(object.cardName);
+    return own.faces !== null ? this.registry.get(own.faces[0]) : own;
+  }
+
+  /** Is `id` a transforming double-faced permanent (rule 712.4)? — only these
+   * can be turned over by a `transform` effect / a day-night change. */
+  private isTransformingDfc(id: ObjectId): boolean {
+    const object = this.state.objects[id];
+    return (
+      object.faces !== undefined &&
+      object.faces.length >= 2 &&
+      this.frontFaceDef(id).transform
+    );
+  }
+
+  /**
+   * Transform `id` (rule 701.28) — turn a transforming DFC permanent over to
+   * its other face. Same object, same timestamp, same counters / attachments
+   * (rule 712.10); characteristics recompute through `faceName`. A no-op for
+   * anything that isn't a transforming DFC on the battlefield.
+   */
+  private transformPermanent(id: ObjectId): void {
+    const object = this.state.objects[id];
+    if (object === undefined || object.zone !== "battlefield") return;
+    if (!this.isTransformingDfc(id)) return;
+    object.face = (object.face ?? 0) === 0 ? 1 : 0;
+    this.emit({
+      type: "permanent-transformed",
+      object: id,
+      face: object.face,
+      front: object.face === 0,
+    });
+  }
+
+  /**
+   * The game becomes day or night (rule 726). Idempotent. As it changes, every
+   * daybound permanent transforms to its nightbound face (→ night) and every
+   * nightbound permanent transforms back (→ day) — rule 702.145e.
+   */
+  private setDayNight(value: "day" | "night"): void {
+    if (this.state.dayNight === value) return;
+    this.state.dayNight = value;
+    this.emit({ type: "day-night-changed", value });
+    for (const id of [...this.state.zones.shared.battlefield]) {
+      const object = this.state.objects[id];
+      if (object === undefined) continue;
+      const front = this.frontFaceDef(id);
+      if (!front.transform || !front.keywords.includes("daybound")) continue;
+      if (value === "night" && (object.face ?? 0) === 0) this.transformPermanent(id);
+      else if (value === "day" && (object.face ?? 0) === 1) this.transformPermanent(id);
+    }
   }
 
   /** Begin a text-changing effect (Artificial Evolution — layer 3): raise a
@@ -5188,16 +5276,19 @@ export class Game {
    */
   private entersBattlefieldReplacement(id: ObjectId): {
     tapped: boolean;
+    transformed: boolean;
     counters: { kind: string; amount: number }[];
   } {
     const object = this.state.objects[id];
     const def = this.registry.get(printedCardName(object));
     let tapped = false;
+    let transformed = false;
     const counters: { kind: string; amount: number }[] = [];
     for (const ability of def.static) {
       const r = ability.replacement;
       if (r === undefined || r.event !== "enters-battlefield") continue;
       if (r.tapped) tapped = true;
+      if (r.transformed) transformed = true;
       if (r.counters) {
         const base =
           r.counters.amount === "x" ? (object.xValue ?? 0) : r.counters.amount;
@@ -5205,7 +5296,7 @@ export class Game {
         if (amount > 0) counters.push({ kind: r.counters.kind, amount });
       }
     }
-    return { tapped, counters };
+    return { tapped, transformed, counters };
   }
 
   /** Product of every `would-create-token` multiplier (rule 614) on a
@@ -5357,6 +5448,19 @@ export class Game {
       object.tapped = entering.tapped;
       for (const c of entering.counters) {
         object.counters[c.kind] = (object.counters[c.kind] ?? 0) + c.amount;
+      }
+      // Transforming DFCs (ROADMAP Phase 10b). A daybound/nightbound permanent
+      // makes the game day if it's neither (726.2); a daybound one then enters
+      // transformed if it's night (702.145f). A card that just says "enters the
+      // battlefield transformed" carries the replacement flag instead.
+      if (this.isTransformingDfc(id)) {
+        const front = this.frontFaceDef(id);
+        if (front.keywords.includes("daybound")) {
+          if (this.state.dayNight === null) this.setDayNight("day");
+          if (this.state.dayNight === "night") object.face = 1;
+        } else if (entering.transformed) {
+          object.face = 1;
+        }
       }
       // A Saga enters with one lore counter, firing its chapter I ability
       // (rule 714.2b).
