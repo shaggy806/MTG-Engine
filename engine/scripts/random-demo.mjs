@@ -159,6 +159,8 @@ const deckB = deck([
   ["Coronation Rite", 1],
   ["Gravebound Squire", 2],
   ["Emberclaw Scout", 2],
+  ["Sunder Charm", 2],
+  ["Duskwood Verdict", 1],
 ]);
 
 // A lean Dimir deck for Carol — carries the `Sarova, the Undying Current`
