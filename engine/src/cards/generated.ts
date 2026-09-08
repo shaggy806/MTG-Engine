@@ -9,6 +9,7 @@ import _poolAjanisPridemate from "./pool/ajanis-pridemate.js";
 import _poolAmbushViper from "./pool/ambush-viper.js";
 import _poolAngelicEdict from "./pool/angelic-edict.js";
 import _poolArcaneSignet from "./pool/arcane-signet.js";
+import _poolArdentRecruit from "./pool/ardent-recruit.js";
 import _poolArtificialEvolution from "./pool/artificial-evolution.js";
 import _poolAshmarkMarduVanguard from "./pool/ashmark-mardu-vanguard.js";
 import _poolBeholdTheMultiverse from "./pool/behold-the-multiverse.js";
@@ -24,6 +25,7 @@ import _poolBramblewingTheUntamed from "./pool/bramblewing-the-untamed.js";
 import _poolCarnageTyrant from "./pool/carnage-tyrant.js";
 import _poolChandraAcolyteOfFlame from "./pool/chandra-acolyte-of-flame.js";
 import _poolChromaticLantern from "./pool/chromatic-lantern.js";
+import _poolCinderElemental from "./pool/cinder-elemental.js";
 import _poolClone from "./pool/clone.js";
 import _poolCombatThresher from "./pool/combat-thresher.js";
 import _poolCommandTower from "./pool/command-tower.js";
@@ -82,6 +84,7 @@ import _poolInvisibleStalker from "./pool/invisible-stalker.js";
 import _poolIsland from "./pool/island.js";
 import _poolJuggernaut from "./pool/juggernaut.js";
 import _poolJump from "./pool/jump.js";
+import _poolKirdApe from "./pool/kird-ape.js";
 import _poolLevitation from "./pool/levitation.js";
 import _poolLightningBolt from "./pool/lightning-bolt.js";
 import _poolLlanowarElves from "./pool/llanowar-elves.js";
@@ -147,6 +150,7 @@ import _poolVoidfallHorror from "./pool/voidfall-horror.js";
 import _poolVoltCharge from "./pool/volt-charge.js";
 import _poolWalkingBallista from "./pool/walking-ballista.js";
 import _poolWallOfWood from "./pool/wall-of-wood.js";
+import _poolWerebear from "./pool/werebear.js";
 import _poolWhiteKnight from "./pool/white-knight.js";
 import _poolWildwoodSentinel from "./pool/wildwood-sentinel.js";
 import _poolWiltLeafCavaliers from "./pool/wilt-leaf-cavaliers.js";
@@ -170,6 +174,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolAmbushViper,
   _poolAngelicEdict,
   _poolArcaneSignet,
+  _poolArdentRecruit,
   _poolArtificialEvolution,
   _poolAshmarkMarduVanguard,
   _poolBeholdTheMultiverse,
@@ -185,6 +190,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolCarnageTyrant,
   _poolChandraAcolyteOfFlame,
   _poolChromaticLantern,
+  _poolCinderElemental,
   _poolClone,
   _poolCombatThresher,
   _poolCommandTower,
@@ -243,6 +249,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolIsland,
   _poolJuggernaut,
   _poolJump,
+  _poolKirdApe,
   _poolLevitation,
   _poolLightningBolt,
   _poolLlanowarElves,
@@ -308,6 +315,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolVoltCharge,
   _poolWalkingBallista,
   _poolWallOfWood,
+  _poolWerebear,
   _poolWhiteKnight,
   _poolWildwoodSentinel,
   _poolWiltLeafCavaliers,
