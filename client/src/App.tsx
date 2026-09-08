@@ -457,9 +457,10 @@ function Table({ view, seat, opponents, game }: TableProps) {
   const actions = game.actions
 
   const [targeting, setTargeting] = useState<Targeting | null>(null)
-  // Set while an X spell's cost is being chosen, before target selection.
+  // Set while an `{X}` cost is being chosen, before target selection — for an
+  // X spell (`CastAction`) or an X activated ability (`AbilityAction`, EG-3).
   const [pendingX, setPendingX] = useState<{
-    readonly cast: CastAction
+    readonly action: CastAction | AbilityAction
     readonly value: number
   } | null>(null)
   // Set while a targeted modal spell's modes are being chosen (Phase 11 EG-2),
@@ -685,6 +686,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
                 abilityIndex: t.abilityIndex,
                 targets: [...targets],
                 ...(t.sacrifice !== undefined ? { sacrifice: t.sacrifice } : {}),
+                ...(t.xValue !== undefined ? { xValue: t.xValue } : {}),
               },
       )
     },
@@ -709,7 +711,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
         return
       }
       if (cast.xCost) {
-        setPendingX({ cast, value: cast.xCost.maxX })
+        setPendingX({ action: cast, value: cast.xCost.maxX })
         return
       }
       beginTargeting({
@@ -765,18 +767,30 @@ function Table({ view, seat, opponents, game }: TableProps) {
 
   const confirmX = useCallback(() => {
     if (!pendingX) return
-    const { cast, value } = pendingX
+    const { action, value } = pendingX
     setPendingX(null)
+    if (action.kind === 'activate-ability') {
+      beginTargeting({
+        kind: 'activate',
+        source: action.source,
+        abilityIndex: action.abilityIndex,
+        label: action.text || `${action.cardName} ability`,
+        specs: action.targetSpecs,
+        options: action.targetOptions,
+        xValue: value,
+      })
+      return
+    }
     beginTargeting({
       kind: 'cast',
-      source: cast.card,
+      source: action.card,
       abilityIndex: 0,
-      label: `Cast ${cast.cardName}`,
-      specs: cast.targetSpecs,
-      options: cast.targetOptions,
+      label: `Cast ${action.cardName}`,
+      specs: action.targetSpecs,
+      options: action.targetOptions,
       xValue: value,
-      ...(cast.via !== undefined ? { via: cast.via } : {}),
-      ...(cast.face !== undefined ? { face: cast.face } : {}),
+      ...(action.via !== undefined ? { via: action.via } : {}),
+      ...(action.face !== undefined ? { face: action.face } : {}),
     })
   }, [beginTargeting, pendingX])
 
@@ -797,6 +811,10 @@ function Table({ view, seat, opponents, game }: TableProps) {
 
   const clickAbility = useCallback(
     (ab: AbilityAction) => {
+      if (ab.xCost) {
+        setPendingX({ action: ab, value: ab.xCost.maxX })
+        return
+      }
       if (ab.sacrifice) {
         if (ab.sacrifice.choices.length === 0) return
         if (ab.sacrifice.choices.length === 1) {
@@ -1629,22 +1647,25 @@ function Table({ view, seat, opponents, game }: TableProps) {
       </div>
     )
   } else if (mode === 'choose-x' && pendingX) {
+    const pxMax = pendingX.action.xCost?.maxX ?? 0
+    const pxVerb = pendingX.action.kind === 'activate-ability' ? 'Activate' : 'Cast'
     controls = (
       <div className="controls">
-        <span>Cast {pendingX.cast.cardName} — choose X</span>
+        <span>
+          {pxVerb} {pendingX.action.cardName} — choose X
+        </span>
         <input
           type="number"
           min={0}
-          max={pendingX.cast.xCost?.maxX ?? 0}
+          max={pxMax}
           value={pendingX.value}
           onChange={(e) => {
-            const max = pendingX.cast.xCost?.maxX ?? 0
-            const n = Math.max(0, Math.min(max, Math.floor(Number(e.target.value) || 0)))
-            setPendingX({ cast: pendingX.cast, value: n })
+            const n = Math.max(0, Math.min(pxMax, Math.floor(Number(e.target.value) || 0)))
+            setPendingX({ action: pendingX.action, value: n })
           }}
           style={{ width: '4rem' }}
         />
-        <span>(max {pendingX.cast.xCost?.maxX ?? 0})</span>
+        <span>(max {pxMax})</span>
         <button type="button" onClick={confirmX}>
           Confirm
         </button>
