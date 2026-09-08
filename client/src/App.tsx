@@ -61,6 +61,8 @@ interface Targeting {
   readonly specs: readonly TargetSpec[]
   readonly options: readonly (readonly TargetRef[])[]
   readonly picked: readonly TargetRef[]
+  /** Chosen modes for a targeted modal spell (Phase 11 EG-2). */
+  readonly modes?: readonly number[]
   /** Chosen value for `{X}`, when casting an X spell. */
   readonly xValue?: number
   /** Permanent chosen to pay a "sacrifice a creature you control" ability cost. */
@@ -460,6 +462,12 @@ function Table({ view, seat, opponents, game }: TableProps) {
     readonly cast: CastAction
     readonly value: number
   } | null>(null)
+  // Set while a targeted modal spell's modes are being chosen (Phase 11 EG-2),
+  // before target selection.
+  const [pendingModes, setPendingModes] = useState<{
+    readonly cast: CastAction
+    readonly picked: readonly number[]
+  } | null>(null)
   // Set while choosing which creature to sacrifice for an ability's cost.
   const [pendingSac, setPendingSac] = useState<AbilityAction | null>(null)
   const [selectedSource, setSelectedSource] = useState<ObjectId | null>(null)
@@ -607,6 +615,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
     | 'sacrifice'
     | 'scry'
     | 'choose-x'
+    | 'choose-cast-modes'
     | 'choose-sacrifice'
     | 'targeting'
     | 'priority' = mulliganAction
@@ -635,6 +644,8 @@ function Table({ view, seat, opponents, game }: TableProps) {
               ? 'blockers'
               : zoneChoiceAction
                 ? 'choose-from-zone'
+                : pendingModes
+                  ? 'choose-cast-modes'
                 : pendingX
                   ? 'choose-x'
                   : pendingSac
@@ -650,7 +661,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
 
   const finishTargets = useCallback(
     (
-      t: Pick<Targeting, 'kind' | 'source' | 'abilityIndex' | 'xValue' | 'sacrifice' | 'via' | 'face'>,
+      t: Pick<Targeting, 'kind' | 'source' | 'abilityIndex' | 'xValue' | 'sacrifice' | 'via' | 'face' | 'modes'>,
       targets: readonly TargetRef[],
     ) => {
       game.dispatch(
@@ -662,6 +673,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
                 player: seat,
                 card: t.source,
                 targets: [...targets],
+                ...(t.modes !== undefined ? { modes: [...t.modes] } : {}),
                 ...(t.xValue !== undefined ? { xValue: t.xValue } : {}),
                 ...(t.via !== undefined ? { via: t.via } : {}),
                 ...(t.face !== undefined ? { face: t.face } : {}),
@@ -692,6 +704,10 @@ function Table({ view, seat, opponents, game }: TableProps) {
 
   const beginCast = useCallback(
     (cast: CastAction) => {
+      if (cast.castModal) {
+        setPendingModes({ cast, picked: [] })
+        return
+      }
       if (cast.xCost) {
         setPendingX({ cast, value: cast.xCost.maxX })
         return
@@ -709,6 +725,26 @@ function Table({ view, seat, opponents, game }: TableProps) {
     },
     [beginTargeting],
   )
+
+  // Confirm the chosen modes for a targeted modal spell (Phase 11 EG-2) →
+  // proceed to targeting over the union of those modes' target specs.
+  const confirmModes = useCallback(() => {
+    if (!pendingModes?.cast.castModal) return
+    const { cast, picked } = pendingModes
+    const modes = [...picked].sort((a, b) => a - b)
+    setPendingModes(null)
+    const chosen = modes.map((i) => cast.castModal!.modes[i])
+    beginTargeting({
+      kind: 'cast',
+      source: cast.card,
+      abilityIndex: 0,
+      label: `Cast ${cast.cardName}`,
+      specs: chosen.flatMap((m) => m.targetSpecs),
+      options: chosen.flatMap((m) => m.targetOptions),
+      modes,
+      ...(cast.face !== undefined ? { face: cast.face } : {}),
+    })
+  }, [beginTargeting, pendingModes])
 
   /** Dispatch / begin one playable face of a hand card. */
   const playFace = useCallback(
@@ -1431,6 +1467,53 @@ function Table({ view, seat, opponents, game }: TableProps) {
             </button>
           </>
         )}
+      </div>
+    )
+  } else if (mode === 'choose-cast-modes' && pendingModes?.cast.castModal) {
+    const cm = pendingModes.cast.castModal
+    const picked = pendingModes.picked
+    const uncastable = (i: number) =>
+      cm.modes[i].targetOptions.some((o) => o.length === 0)
+    const toggle = (i: number) =>
+      setPendingModes((prev) =>
+        prev === null
+          ? prev
+          : {
+              ...prev,
+              picked: prev.picked.includes(i)
+                ? prev.picked.filter((x) => x !== i)
+                : prev.picked.length >= cm.maxModes
+                  ? [...prev.picked.slice(1), i]
+                  : [...prev.picked, i],
+            },
+      )
+    controls = (
+      <div className="controls">
+        <span>
+          {pendingModes.cast.cardName} — choose{' '}
+          {cm.minModes === cm.maxModes ? cm.minModes : `${cm.minModes}–${cm.maxModes}`}
+        </span>
+        {cm.modes.map((m, i) => (
+          <button
+            key={i}
+            type="button"
+            className={picked.includes(i) ? 'selected' : undefined}
+            disabled={uncastable(i) && !picked.includes(i)}
+            onClick={() => toggle(i)}
+          >
+            {m.text}
+          </button>
+        ))}
+        <button
+          type="button"
+          disabled={picked.length < cm.minModes || picked.length > cm.maxModes}
+          onClick={confirmModes}
+        >
+          Confirm
+        </button>
+        <button type="button" onClick={() => setPendingModes(null)}>
+          Cancel
+        </button>
       </div>
     )
   } else if (mode === 'sacrifice' && sacrificeAction) {
