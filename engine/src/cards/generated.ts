@@ -90,6 +90,7 @@ import _poolLightningBolt from "./pool/lightning-bolt.js";
 import _poolLlanowarElves from "./pool/llanowar-elves.js";
 import _poolLongtuskCub from "./pool/longtusk-cub.js";
 import _poolLordOfExtinction from "./pool/lord-of-extinction.js";
+import _poolLure from "./pool/lure.js";
 import _poolManOWar from "./pool/man-o-war.js";
 import _poolMindControl from "./pool/mind-control.js";
 import _poolMindRot from "./pool/mind-rot.js";
@@ -255,6 +256,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolLlanowarElves,
   _poolLongtuskCub,
   _poolLordOfExtinction,
+  _poolLure,
   _poolManOWar,
   _poolMindControl,
   _poolMindRot,
