@@ -25,7 +25,7 @@ the diagram) are in.
 - [x] **Phase 7** — Combat depth + turn-structure control *(core done — extra turns, additional combat, can't-be-blocked; first-strike window / trample-as-choice / must-be-blocked deferred)*
 - [x] **Phase 8** — Cascade, storm, "cast" triggers, copy-a-spell
 - [x] **Phase 9** — Commander-format completeness + deck validation *(core done — colour identity, deck validation, Partner, a 4th commander; Companion / legend-rule choice / simultaneous mulligans deferred)*
-- [~] **Phase 10** — Tier 3 long tail (demand-driven) — **Sagas, 10a (MDFC / cast-time face choice), 10b (transforming DFCs) + Day/Night landed**; battles, emblems, Monarch, dungeons, energy, … still open
+- [~] **Phase 10** — Tier 3 long tail (demand-driven) — **Sagas, 10a (MDFC), 10b (transform) + Day/Night, Monarch, Energy, Emblems, can't-be-countered, disturb, adventure all landed**; battles, phasing, dungeons/Initiative/Ring, banding deferred as large/niche
 
 ## Dependency spine
 
@@ -537,7 +537,7 @@ oldest survives — today), simultaneous mulligan rounds (sequential today).
 
 ---
 
-## Phase 10 — Tier 3 long tail (demand-driven)  *(begun — Sagas, 10a MDFC, 10b transform + Day/Night landed)*
+## Phase 10 — Tier 3 long tail (demand-driven)  *(Sagas, 10a/10b, Day/Night, Monarch, Energy, Emblems, can't-be-countered, disturb, adventure landed; Battles / phasing / dungeons / banding deferred)*
 
 Each is small once Phases 1–3 exist. Pull them in as specific decks need them.
 
@@ -610,17 +610,49 @@ Each is small once Phases 1–3 exist. Pull them in as specific decks need them.
   (→ night) / back (→ day) — rule 702.145e; the `daybound` / `nightbound`
   keywords carry it. A daybound permanent enters transformed while it's night
   (702.145f). `PlayerView.dayNight` + a "☀ Day" / "☾ Night" turn-banner marker.
-- **Battles** (Siege subtype, defense counters, attack-a-battle).
-- **The Monarch; the Initiative + Undercity; venture / dungeons; the Ring
-  tempts you + Ring-bearer; energy.**
-- **Emblems** — a player-owned continuous-effect object.
-- **Rules-lawyer:** split second, "can't be countered", phasing, banding.
+- [x] **The Monarch** (rule 720). `GameState.monarch: PlayerId | null` →
+  `PlayerView.monarch` + a 👑 on the panel. A `become-monarch` effect sets it;
+  the monarch draws at the beginning of their end step (720.6 — folded into
+  `endStepActions`, no stack); a creature dealing combat damage to the monarch
+  makes its controller the monarch (720.5 — in `dealDamage`). Card:
+  `Thorn of the Black Rose`.
+- [x] **Energy** ({E} — rule 122). `PlayerState.energy` → `PublicPlayerInfo.energy`
+  + a ⚡ badge. A `get-energy { amount, who? }` effect adds it; an
+  `AbilityCost.payEnergy` spends it (automatic, like `payLife`). Card:
+  `Longtusk Cub`.
+- [x] **Emblems** (rule 114). `GameState.emblems: EmblemState[]` → `PlayerView.emblems`
+  + a 🎗 line on the panel. A `create-emblem { text, static? }` effect adds one;
+  `collectStaticEffects` folds an emblem's `"creatures-you-control"` anthem
+  `static` into the layer system (the common planeswalker-ultimate emblem —
+  triggered/`grantsActivated` emblems not modeled). Card: `Coronation Rite`.
+- [x] **"Can't be countered"** (rule 701.5f). `CardDefinition.cantBeCountered` —
+  `Game.counterObject` no-ops and emits `counter-failed`; ward's "counter it"
+  then lets the spell resolve. Card: `Carnage Tyrant`.
+- [x] **disturb** (rule 702.150). `CardDefinition.disturb { cost }` on the front
+  face of a transforming DFC — `legalActions` offers a `via: "disturb"` cast of
+  the back face (face 1) from the graveyard; `castVia: "disturb"` rides on the
+  object so `moveObject` exiles it instead of ever graveyarding it (from the
+  stack *or* the battlefield). Card: `Gravebound Squire` // `Spectral Squire`.
+- [x] **adventure** (rule 715). `CardDefinition.adventure` + `faces:
+  [creature, adventure]` (reuses 10a's modal-face enumeration from hand). When
+  the adventure half (face 1) resolves, `resolveTopOfStack` exiles the card
+  with `GameObject.onAdventure = true` instead of graveyarding it; `legalActions`
+  then offers a `via: "adventure"` cast of the creature (face 0) from exile.
+  Card: `Emberclaw Scout` // `Ember Dart`. `phase10-misc.test.ts` covers all six.
+- **Battles** (Siege subtype, defense counters, attack-a-battle) — *deferred*
+  (a full new card type + combat surface).
+- **The Initiative + Undercity; venture / dungeons; the Ring tempts you +
+  Ring-bearer** — *deferred* (large, niche).
+- **Rules-lawyer:** split second, phasing, banding — *deferred* (niche;
+  phasing is a whole state dimension).
 
-**Demand note:** 10a + 10b + Day/Night have all landed. A card that is *both*
-modal-and-transforming (the Marvel Spider-Man hero/alter-ego DFCs — cast on
-either side *and* transform in play) would need `faces` + `transform` set
-together and `legalActions` to enumerate faces for a `transform` card too; no
-such card is in the pool yet.
+**Demand note:** 10a + 10b + Day/Night + Monarch + Energy + Emblems + can't-be-
+countered + disturb + adventure have all landed. Phase 10's remaining items
+(Battles, phasing, dungeons/Initiative/Ring, banding) are deferred as
+large/niche — pull them in on demand, like earlier phases' deferred long tails.
+A card that is *both* modal-and-transforming (the Marvel Spider-Man hero/alter-
+ego DFCs) would need `faces` + `transform` set together and `legalActions` to
+enumerate faces for a `transform` card too; no such card is in the pool yet.
 
 ---
 
