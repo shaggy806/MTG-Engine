@@ -211,6 +211,9 @@ export class Game {
       pendingBlockerOrders: [],
       pendingBlockerDeclarations: [],
       pendingTriggers: [],
+      pendingTargetedTrigger: null,
+      pendingTargetedCast: null,
+      pendingSuspendedCasts: [],
       deferredCommanderMove: null,
       pendingDestruction: [],
       pendingSacrifices: [],
@@ -383,6 +386,9 @@ export class Game {
       case "choose-modes":
         this.applyModesChoice(action.player, action.modes);
         break;
+      case "choose-targets":
+        this.applyChooseTargets(action.player, action.targets);
+        break;
       case "sacrifice":
         this.applySacrifice(action.player, action.permanents);
         break;
@@ -445,6 +451,8 @@ export class Game {
         return this.whyCannotTextChoice(action.player, action.from, action.to);
       case "choose-modes":
         return this.whyCannotChooseModes(action.player, action.modes);
+      case "choose-targets":
+        return this.whyCannotChooseTargets(action.player, action.targets);
       case "sacrifice":
         return this.whyCannotSacrifice(action.player, action.permanents);
       case "scry":
@@ -571,6 +579,17 @@ export class Game {
       }
       if (awaiting.kind === "scry") {
         return [{ kind: "scry", mode: awaiting.mode, cards: [...awaiting.cards] }];
+      }
+      if (awaiting.kind === "choose-targets") {
+        return [
+          {
+            kind: "choose-targets",
+            source: awaiting.source,
+            cardName: awaiting.cardName,
+            specs: [...awaiting.specs],
+            options: awaiting.options.map((o) => [...o]),
+          },
+        ];
       }
       return [
         {
@@ -1247,6 +1266,67 @@ export class Game {
     for (const i of modeIndices) {
       if (i < 0 || i >= awaiting.modes.length || !Number.isInteger(i)) {
         return `${i} is not a valid mode index`;
+      }
+    }
+    return null;
+  }
+
+  /** Answers a pending `choose-targets` decision (ROADMAP Phase 11 EG-1) — a
+   * triggered ability, or a suspended spell coming off suspend. Mints the
+   * ability / commits the free cast with the chosen targets, then resumes. */
+  private applyChooseTargets(player: PlayerId, chosen: readonly TargetRef[]): void {
+    const why = this.whyCannotChooseTargets(player, chosen);
+    if (why !== null) throw new Error(why);
+    this.state.awaiting = null;
+
+    const trig = this.state.pendingTargetedTrigger;
+    const cast = this.state.pendingTargetedCast;
+    if (trig !== null) {
+      this.state.pendingTargetedTrigger = null;
+      const queue = [...chosen];
+      const targets = trig.slots.map((s) =>
+        "auto" in s ? s.auto : (queue.shift() as TargetRef),
+      );
+      this.mintTriggerAbility(
+        trig.sourceObjectId,
+        trig.cardName,
+        trig.controller,
+        trig.abilityKind,
+        trig.abilityIndex,
+        targets,
+      );
+    } else if (cast !== null) {
+      this.state.pendingTargetedCast = null;
+      this.commitFreeCast(cast.cardId, cast.via, cast.grantHaste, [...chosen]);
+      // Other suspended cards owed a free cast this upkeep (rule 702.62e).
+      while (this.state.pendingSuspendedCasts.length > 0 && this.state.awaiting === null) {
+        const next = this.state.pendingSuspendedCasts.shift();
+        if (next !== undefined) this.castSuspendedCard(next);
+      }
+    }
+    if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
+  }
+
+  private whyCannotChooseTargets(
+    player: PlayerId,
+    chosen: readonly TargetRef[],
+  ): string | null {
+    const awaiting = this.state.awaiting;
+    if (awaiting === null || awaiting.kind !== "choose-targets" || awaiting.player !== player) {
+      return `${player} is not being asked to choose targets`;
+    }
+    if (chosen.length !== awaiting.specs.length) {
+      return `${awaiting.cardName} needs ${awaiting.specs.length} target(s), got ${chosen.length}`;
+    }
+    const src =
+      this.state.pendingTargetedCast !== null
+        ? this.cardSource(this.registry.get(this.state.objects[awaiting.source].cardName))
+        : this.state.objects[awaiting.source] !== undefined
+          ? this.permanentSource(awaiting.source)
+          : undefined;
+    for (let i = 0; i < chosen.length; i += 1) {
+      if (!isLegalTarget(this.state, this.registry, awaiting.specs[i], chosen[i], player, src)) {
+        return `illegal target for ${awaiting.cardName}`;
       }
     }
     return null;
@@ -2328,7 +2408,15 @@ export class Game {
       this.emit({ type: "time-counter-removed", object: id, remaining });
       if (remaining === 0) ready.push(id);
     }
-    for (const id of ready) this.castSuspendedCard(id);
+    for (let i = 0; i < ready.length; i += 1) {
+      this.castSuspendedCard(ready[i]);
+      if (this.state.awaiting !== null) {
+        // A suspended spell paused on a `choose-targets` decision — the rest
+        // are cast after `applyChooseTargets` drains this queue.
+        this.state.pendingSuspendedCasts = ready.slice(i + 1);
+        return;
+      }
+    }
   }
 
   /** Beginning of the active player's precombat main phase (rule 714.4): add a
@@ -2369,11 +2457,16 @@ export class Game {
     });
   }
 
-  /** Put `cardId` (from exile or library) onto the stack without paying its
-   * mana cost — the shared core of suspend / cascade free casts (rules 702.62e
-   * / 702.85e). Its controller chooses targets; returns `false` if any slot
-   * has no legal option (the caller decides what happens then). A permanent so
-   * cast has haste when `grantHaste`. Counts as a spell cast this turn. */
+  /**
+   * Put `cardId` (from exile or library) onto the stack without paying its mana
+   * cost — the shared core of suspend / cascade free casts (rules 702.62e /
+   * 702.85e). Returns `false` if a target slot has no legal option (the caller
+   * decides what happens then); `true` if the spell was committed *or* a
+   * `choose-targets` decision was raised (a suspend cast with a real choice —
+   * ROADMAP Phase 11 EG-1). A cascade cast's targets stay auto-picked (deferring
+   * cascade's "then put the rest on the bottom" tail is more churn than it's
+   * worth for a rare edge).
+   */
   private castCardWithoutPaying(
     cardId: ObjectId,
     opts: { via: CastVia; grantHaste?: boolean },
@@ -2382,26 +2475,50 @@ export class Game {
     if (object === undefined) return false;
     const owner = object.owner;
     const def = this.registry.get(object.cardName);
+    const grantHaste = opts.grantHaste ?? false;
 
-    const targets: TargetRef[] = [];
+    const optionsPerSlot: TargetRef[][] = [];
     for (const spec of def.targets) {
       const options = legalTargets(this.state, this.registry, spec, owner, this.cardSource(def));
       if (options.length === 0) return false;
-      const picked = this.controllers[owner].chooseTargets(
-        this.controllerView(owner),
-        def.name,
-        [spec],
-        [options],
-      );
-      targets.push(picked[0]);
+      optionsPerSlot.push([...options]);
     }
 
+    const forced = optionsPerSlot.every((o) => o.length === 1);
+    if (def.targets.length === 0 || forced || opts.via === "cascade") {
+      this.commitFreeCast(cardId, opts.via, grantHaste, optionsPerSlot.map((o) => o[0]));
+      return true;
+    }
+
+    // A suspend cast with a real choice — park a `choose-targets` decision.
+    this.state.pendingTargetedCast = { cardId, via: opts.via, grantHaste };
+    this.state.awaiting = {
+      kind: "choose-targets",
+      player: owner,
+      source: cardId,
+      cardName: def.name,
+      specs: [...def.targets],
+      options: optionsPerSlot,
+    };
+    return true;
+  }
+
+  /** Move `cardId` to the stack as a free cast with the given targets (rule
+   * 702.62e / 702.85e) — the commit half of {@link castCardWithoutPaying}. */
+  private commitFreeCast(
+    cardId: ObjectId,
+    via: CastVia,
+    grantHaste: boolean,
+    targets: readonly TargetRef[],
+  ): void {
+    const object = this.state.objects[cardId];
+    const owner = object.owner;
     const stormCount = this.state.spellsCastThisTurn;
     this.moveObject(cardId, "stack");
     object.targets = targets.length > 0 ? [...targets] : null;
-    object.castVia = opts.via;
+    object.castVia = via;
     object.stormCount = stormCount;
-    if (opts.grantHaste) object.hastyUntilItLeaves = true;
+    if (grantHaste) object.hastyUntilItLeaves = true;
     this.state.players[owner].spellsCastThisTurn += 1;
     this.state.spellsCastThisTurn += 1;
     this.emit({
@@ -2411,9 +2528,8 @@ export class Game {
       targets: [...targets],
       x: object.xValue ?? null,
       spellsThisTurn: this.state.players[owner].spellsCastThisTurn,
-      via: opts.via,
+      via,
     });
-    return true;
   }
 
   /** Cast a suspended card whose last time counter just came off (rule
@@ -3816,10 +3932,24 @@ export class Game {
     const ordered = rotated.flatMap((player) =>
       pending.filter((t) => t.controller === player),
     );
-    for (const trigger of ordered) this.placeTriggerOnStack(trigger);
+    for (let i = 0; i < ordered.length; i += 1) {
+      if (this.placeTriggerOnStack(ordered[i]) === "paused") {
+        // A trigger raised a `choose-targets` decision — put the not-yet-placed
+        // triggers back (in front of any newly-detected ones); `applyChooseTargets`
+        // resumes the fixpoint.
+        this.state.pendingTriggers = [...ordered.slice(i + 1), ...this.state.pendingTriggers];
+        return true;
+      }
+    }
     return true;
   }
 
+  /**
+   * Put one fired trigger on the stack (rule 603.3). Returns `"paused"` when the
+   * controller has a real target choice to make — a `choose-targets` decision is
+   * raised and the trigger parked in `pendingTargetedTrigger`; `"done"` when it
+   * was minted (or removed for no legal targets).
+   */
   private placeTriggerOnStack(trigger: {
     readonly sourceObjectId: ObjectId;
     readonly cardName: string;
@@ -3827,7 +3957,7 @@ export class Game {
     readonly controller: PlayerId;
     readonly autoTargets?: readonly TargetRef[];
     readonly chapter?: boolean;
-  }): void {
+  }): "done" | "paused" {
     const def = this.registry.get(trigger.cardName);
     const ability = trigger.chapter
       ? (def.chapters ?? [])[trigger.abilityIndex]
@@ -3836,86 +3966,72 @@ export class Game {
     const triggerSource = this.state.objects[trigger.sourceObjectId] !== undefined
       ? this.permanentSource(trigger.sourceObjectId)
       : undefined;
-    let targets: readonly TargetRef[] = [];
-    if (ability.targets.length > 0) {
-      const auto = trigger.autoTargets ?? [];
-      const chosen: TargetRef[] = [];
-      for (let i = 0; i < ability.targets.length; i += 1) {
-        const spec = ability.targets[i];
-        if (auto[i] !== undefined) {
-          // The triggering event determined this target (a saboteur's victim).
-          if (
-            !isLegalTarget(
-              this.state,
-              this.registry,
-              spec,
-              auto[i],
-              trigger.controller,
-              triggerSource,
-            )
-          ) {
-            this.emit({
-              type: "trigger-removed",
-              source: trigger.sourceObjectId,
-              reason: "no legal targets",
-            });
-            return;
-          }
-          chosen.push(auto[i]);
-          continue;
+    const abilityKind: "triggered" | "chapter" = trigger.chapter ? "chapter" : "triggered";
+
+    // Resolve each slot: an event-determined `auto` target (a saboteur's
+    // victim), or a `spec` the controller must pick from.
+    const auto = trigger.autoTargets ?? [];
+    const slots: ({ auto: TargetRef } | { spec: TargetSpec; options: readonly TargetRef[] })[] = [];
+    for (let i = 0; i < ability.targets.length; i += 1) {
+      const spec = ability.targets[i];
+      if (auto[i] !== undefined) {
+        if (!isLegalTarget(this.state, this.registry, spec, auto[i], trigger.controller, triggerSource)) {
+          this.emit({ type: "trigger-removed", source: trigger.sourceObjectId, reason: "no legal targets" });
+          return "done";
         }
-        const options = legalTargets(
-          this.state,
-          this.registry,
-          spec,
-          trigger.controller,
-          triggerSource,
-        );
-        if (options.length === 0) {
-          this.emit({
-            type: "trigger-removed",
-            source: trigger.sourceObjectId,
-            reason: "no legal targets",
-          });
-          return;
-        }
-        const picked = this.controllers[trigger.controller].chooseTargets(
-          this.controllerView(trigger.controller),
-          trigger.cardName,
-          [spec],
-          [options],
-        );
-        if (
-          picked.length !== 1 ||
-          !isLegalTarget(
-            this.state,
-            this.registry,
-            spec,
-            picked[0],
-            trigger.controller,
-            triggerSource,
-          )
-        ) {
-          throw new Error(`illegal target chosen for ${trigger.cardName}'s trigger`);
-        }
-        chosen.push(picked[0]);
+        slots.push({ auto: auto[i] });
+        continue;
       }
-      targets = chosen;
+      const options = legalTargets(this.state, this.registry, spec, trigger.controller, triggerSource);
+      if (options.length === 0) {
+        this.emit({ type: "trigger-removed", source: trigger.sourceObjectId, reason: "no legal targets" });
+        return "done";
+      }
+      slots.push({ spec, options });
     }
 
-    this.mintAbilityObject(
-      trigger.sourceObjectId,
-      trigger.cardName,
-      trigger.controller,
-      trigger.chapter ? "chapter" : "triggered",
-      trigger.abilityIndex,
-      targets,
+    const chooserSlots = slots.filter(
+      (s): s is { spec: TargetSpec; options: readonly TargetRef[] } => "spec" in s,
     );
-    this.emit({
-      type: "ability-triggered",
-      source: trigger.sourceObjectId,
+    // A single forced choice (one slot, one legal option) is no decision.
+    const forced =
+      chooserSlots.length > 0 &&
+      chooserSlots.every((s) => s.options.length === 1);
+    if (chooserSlots.length === 0 || forced) {
+      const targets = slots.map((s) => ("auto" in s ? s.auto : s.options[0]));
+      this.mintTriggerAbility(trigger.sourceObjectId, trigger.cardName, trigger.controller, abilityKind, trigger.abilityIndex, targets);
+      return "done";
+    }
+
+    this.state.pendingTargetedTrigger = {
+      sourceObjectId: trigger.sourceObjectId,
+      cardName: trigger.cardName,
+      abilityKind,
+      abilityIndex: trigger.abilityIndex,
       controller: trigger.controller,
-    });
+      slots: slots.map((s) => ("auto" in s ? { auto: s.auto } : { spec: s.spec })),
+    };
+    this.state.awaiting = {
+      kind: "choose-targets",
+      player: trigger.controller,
+      source: trigger.sourceObjectId,
+      cardName: trigger.cardName,
+      specs: chooserSlots.map((s) => s.spec),
+      options: chooserSlots.map((s) => [...s.options]),
+    };
+    return "paused";
+  }
+
+  private mintTriggerAbility(
+    sourceId: ObjectId,
+    cardName: string,
+    controller: PlayerId,
+    abilityKind: "triggered" | "chapter",
+    abilityIndex: number,
+    targets: readonly TargetRef[],
+  ): void {
+    this.mintAbilityObject(sourceId, cardName, controller, abilityKind, abilityIndex, targets);
+    this.emit({ type: "ability-triggered", source: sourceId, controller });
   }
 
   private anyTargetLegal(

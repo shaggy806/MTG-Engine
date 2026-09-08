@@ -14,7 +14,7 @@ import type { Color, ManaPool } from "./mana.js";
 import { emptyPool } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameEvent } from "./events.js";
-import type { TargetRef } from "./target.js";
+import type { TargetRef, TargetSpec } from "./target.js";
 import type { Phase, Step } from "./turn.js";
 import { phaseOfStep } from "./turn.js";
 
@@ -397,6 +397,20 @@ export type AwaitingDecision =
       readonly modes: readonly { readonly text: string; readonly effect: EffectSpec }[];
       /** `{X}` from the resolving spell/ability, forwarded to the modes. */
       readonly x: number;
+    }
+  | {
+      /** A triggered ability (or a suspended spell coming off suspend) needs
+       * targets and its controller has a real choice (rule 603.3d / 601.2c —
+       * ROADMAP Phase 11 EG-1). `specs[i]` / `options[i]` are the spec and the
+       * legal `TargetRef`s for the i-th slot still to be chosen (auto-filled
+       * slots — a saboteur's victim — aren't listed). The answer supplies one
+       * `TargetRef` per spec, in order. */
+      readonly kind: "choose-targets";
+      readonly player: PlayerId;
+      readonly source: ObjectId;
+      readonly cardName: string;
+      readonly specs: readonly TargetSpec[];
+      readonly options: readonly (readonly TargetRef[])[];
     };
 
 /** The zones a commander can be moved to that offer the 903.9a choice. */
@@ -448,6 +462,36 @@ export interface GameState {
   pendingBlockerDeclarations: PlayerId[];
   /** Triggered abilities that have fired but not yet been put on the stack. */
   pendingTriggers: PendingTrigger[];
+  /**
+   * A fired trigger (or Saga chapter) parked mid-placement while its controller
+   * chooses targets (ROADMAP Phase 11 EG-1). The corresponding `choose-targets`
+   * decision is on `awaiting`; `applyChooseTargets` mints the ability onto the
+   * stack with the assembled targets, then resumes placing the rest of
+   * `pendingTriggers`. `null` when no such choice is pending.
+   */
+  pendingTargetedTrigger: {
+    readonly sourceObjectId: ObjectId;
+    readonly cardName: string;
+    readonly abilityKind: "triggered" | "chapter";
+    readonly abilityIndex: number;
+    readonly controller: PlayerId;
+    /** One entry per target slot, in order: an `auto`-filled slot (a saboteur's
+     * victim) or a `spec` slot whose `TargetRef` comes from the answer. */
+    readonly slots: readonly (
+      | { readonly auto: TargetRef }
+      | { readonly spec: TargetSpec }
+    )[];
+  } | null;
+  /**
+   * A suspended spell coming off suspend, parked while its controller chooses
+   * targets (ROADMAP Phase 11 EG-1). `applyChooseTargets` commits the free cast.
+   */
+  pendingTargetedCast:
+    | { readonly cardId: ObjectId; readonly via: CastVia; readonly grantHaste: boolean }
+    | null;
+  /** Suspended cards still to be free-cast this upkeep, after one of them
+   * paused on a `choose-targets` decision. Drained by `applyChooseTargets`. */
+  pendingSuspendedCasts: ObjectId[];
   /**
    * Battlefield permanents a mass-destroy effect (Wrath of God) still has to
    * destroy, one at a time — so a commander's 903.9a choice mid-wipe can pause

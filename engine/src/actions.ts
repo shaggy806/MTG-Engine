@@ -168,6 +168,14 @@ export type Action =
       readonly modes: readonly number[];
     }
   | {
+      /** Answers a pending `choose-targets` decision (a triggered ability, or a
+       * suspended spell — ROADMAP Phase 11 EG-1): one `TargetRef` per unfilled
+       * target slot, in `awaiting.specs` order. */
+      readonly type: "choose-targets";
+      readonly player: PlayerId;
+      readonly targets: readonly TargetRef[];
+    }
+  | {
       /** Answers a pending `sacrifice` decision (a sacrifice effect — Diabolic
        * Edict): the permanents this player sacrifices. */
       readonly type: "sacrifice";
@@ -340,4 +348,13 @@ export type LegalAction =
       readonly mode: "scry" | "surveil";
       /** The top cards of the library, in order — revealed to this player. */
       readonly cards: readonly ObjectId[];
+    }
+  | {
+      /** A triggered ability / suspended spell needs targets — one per
+       * `specs`/`options` slot (ROADMAP Phase 11 EG-1). */
+      readonly kind: "choose-targets";
+      readonly source: ObjectId;
+      readonly cardName: string;
+      readonly specs: readonly TargetSpec[];
+      readonly options: readonly (readonly TargetRef[])[];
     };

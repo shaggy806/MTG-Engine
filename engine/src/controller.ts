@@ -249,6 +249,18 @@ function answerAwaited(
       away: controller.chooseScry(view, awaiting.cards, awaiting.mode),
     };
   }
+  if (awaiting.kind === "choose-targets") {
+    return {
+      type: "choose-targets",
+      player,
+      targets: controller.chooseTargets(
+        view,
+        awaiting.cardName,
+        awaiting.specs,
+        awaiting.options,
+      ),
+    };
+  }
   const hand = view.state.zones.perPlayer[player].hand.map(
     (id) => view.state.objects[id],
   );
@@ -777,6 +789,8 @@ export class RandomController extends AutomaticController {
         const away = legal.cards.filter(() => this.random() < 0.5);
         return { type: "scry", player, away };
       }
+      case "choose-targets":
+        return { type: "choose-targets", player, targets: this.pickTargets(legal.options) };
       default:
         return passFor(player);
     }
