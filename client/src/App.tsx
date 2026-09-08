@@ -51,9 +51,10 @@ type TextChoiceAction = Extract<LegalAction, { kind: 'choose-text' }>
 type ModesChoiceAction = Extract<LegalAction, { kind: 'choose-modes' }>
 type SacrificeAction = Extract<LegalAction, { kind: 'sacrifice' }>
 type ScryAction = Extract<LegalAction, { kind: 'scry' }>
+type ChooseTargetsAction = Extract<LegalAction, { kind: 'choose-targets' }>
 
 interface Targeting {
-  readonly kind: 'cast' | 'activate'
+  readonly kind: 'cast' | 'activate' | 'choose-targets'
   readonly source: ObjectId
   readonly abilityIndex: number
   readonly label: string
@@ -94,6 +95,7 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
   'choose-copy': 'choose what to copy',
   'choose-text': 'choose a text change',
   'choose-modes': 'choose a mode',
+  'choose-targets': 'choose targets',
   sacrifice: 'choose what to sacrifice',
   scry: 'scry',
 }
@@ -561,6 +563,30 @@ function Table({ view, seat, opponents, game }: TableProps) {
     (a): a is SacrificeAction => a.kind === 'sacrifice',
   )
   const scryAction = actions.find((a): a is ScryAction => a.kind === 'scry')
+  const chooseTargetsAction = actions.find(
+    (a): a is ChooseTargetsAction => a.kind === 'choose-targets',
+  )
+  // A `choose-targets` decision (a triggered ability / a suspended spell —
+  // ROADMAP Phase 11 EG-1) drives the same targeting flow as a cast, but it's
+  // *derived* from the decision rather than stored — only the running picks
+  // live in state — so a state refresh mid-choice just re-derives it.
+  const [ctPicks, setCtPicks] = useState<readonly TargetRef[]>([])
+  const activeTargeting: Targeting | null = useMemo(
+    () =>
+      targeting ??
+      (chooseTargetsAction
+        ? {
+            kind: 'choose-targets',
+            source: chooseTargetsAction.source,
+            abilityIndex: 0,
+            label: `Choose targets for ${chooseTargetsAction.cardName}`,
+            specs: chooseTargetsAction.specs,
+            options: chooseTargetsAction.options,
+            picked: ctPicks,
+          }
+        : null),
+    [targeting, chooseTargetsAction, ctPicks],
+  )
   const canPass = actions.some((a) => a.kind === 'pass-priority')
   // Only the active player may skip the rest of their own turn — a defender
   // holding priority to respond during it shouldn't get this button.
@@ -613,7 +639,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
                   ? 'choose-x'
                   : pendingSac
                     ? 'choose-sacrifice'
-                    : targeting
+                    : activeTargeting
                       ? 'targeting'
                       : 'priority'
 
@@ -628,24 +654,26 @@ function Table({ view, seat, opponents, game }: TableProps) {
       targets: readonly TargetRef[],
     ) => {
       game.dispatch(
-        t.kind === 'cast'
-          ? {
-              type: 'cast-spell',
-              player: seat,
-              card: t.source,
-              targets: [...targets],
-              ...(t.xValue !== undefined ? { xValue: t.xValue } : {}),
-              ...(t.via !== undefined ? { via: t.via } : {}),
-              ...(t.face !== undefined ? { face: t.face } : {}),
-            }
-          : {
-              type: 'activate-ability',
-              player: seat,
-              source: t.source,
-              abilityIndex: t.abilityIndex,
-              targets: [...targets],
-              ...(t.sacrifice !== undefined ? { sacrifice: t.sacrifice } : {}),
-            },
+        t.kind === 'choose-targets'
+          ? { type: 'choose-targets', player: seat, targets: [...targets] }
+          : t.kind === 'cast'
+            ? {
+                type: 'cast-spell',
+                player: seat,
+                card: t.source,
+                targets: [...targets],
+                ...(t.xValue !== undefined ? { xValue: t.xValue } : {}),
+                ...(t.via !== undefined ? { via: t.via } : {}),
+                ...(t.face !== undefined ? { face: t.face } : {}),
+              }
+            : {
+                type: 'activate-ability',
+                player: seat,
+                source: t.source,
+                abilityIndex: t.abilityIndex,
+                targets: [...targets],
+                ...(t.sacrifice !== undefined ? { sacrifice: t.sacrifice } : {}),
+              },
       )
     },
     [game, seat],
@@ -749,18 +777,22 @@ function Table({ view, seat, opponents, game }: TableProps) {
 
   const pickTarget = useCallback(
     (ref: TargetRef) => {
-      if (!targeting) return
-      const picked = [...targeting.picked, ref]
-      if (picked.length < targeting.specs.length) {
-        setTargeting({ ...targeting, picked })
+      const t = activeTargeting
+      if (!t) return
+      const picked = [...t.picked, ref]
+      const derived = t.kind === 'choose-targets'
+      if (picked.length < t.specs.length) {
+        if (derived) setCtPicks(picked)
+        else setTargeting({ ...t, picked })
         return
       }
       // All slots filled — dispatch outside any state updater (updaters must
       // be pure; React double-invokes them in dev).
-      setTargeting(null)
-      finishTargets(targeting, picked)
+      if (derived) setCtPicks([])
+      else setTargeting(null)
+      finishTargets(t, picked)
     },
-    [finishTargets, targeting],
+    [activeTargeting, finishTargets],
   )
 
   const clickHandCard = useCallback(
@@ -795,8 +827,8 @@ function Table({ view, seat, opponents, game }: TableProps) {
   /** Which id a click on a (possibly stacked) tile should act on. */
   const pickIdForClick = useCallback(
     (ids: readonly ObjectId[]): ObjectId => {
-      if (mode === 'targeting' && targeting) {
-        const slot = targeting.options[targeting.picked.length] ?? []
+      if (mode === 'targeting' && activeTargeting) {
+        const slot = activeTargeting.options[activeTargeting.picked.length] ?? []
         const found = ids.find((i) =>
           slot.some((o) => o.kind === 'object' && o.object === i),
         )
@@ -804,14 +836,14 @@ function Table({ view, seat, opponents, game }: TableProps) {
       }
       return ids[0]
     },
-    [mode, targeting],
+    [mode, activeTargeting],
   )
 
   const clickPermanent = useCallback(
     (ids: readonly ObjectId[]) => {
       const id = pickIdForClick(ids)
-      if (mode === 'targeting' && targeting) {
-        const slot = targeting.options[targeting.picked.length] ?? []
+      if (mode === 'targeting' && activeTargeting) {
+        const slot = activeTargeting.options[activeTargeting.picked.length] ?? []
         if (slot.some((o) => o.kind === 'object' && o.object === id)) {
           pickTarget({ kind: 'object', object: id })
         }
@@ -910,7 +942,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
       pickIdForClick,
       pickTarget,
       sacrificeAction,
-      targeting,
+      activeTargeting,
     ],
   )
 
@@ -923,13 +955,13 @@ function Table({ view, seat, opponents, game }: TableProps) {
         }
         return
       }
-      if (mode !== 'targeting' || !targeting) return
-      const slot = targeting.options[targeting.picked.length] ?? []
+      if (mode !== 'targeting' || !activeTargeting) return
+      const slot = activeTargeting.options[activeTargeting.picked.length] ?? []
       if (slot.some((o) => o.kind === 'player' && o.player === pid)) {
         pickTarget({ kind: 'player', player: pid })
       }
     },
-    [attackAction, attackFocus, mode, pickTarget, targeting],
+    [attackAction, attackFocus, mode, pickTarget, activeTargeting],
   )
 
   const confirmAttackers = useCallback(() => {
@@ -1014,11 +1046,11 @@ function Table({ view, seat, opponents, game }: TableProps) {
   }, [mode, pass])
 
   // --- render ----------------------------------------------------
-  const targetSlot = targeting
-    ? (targeting.options[targeting.picked.length] ?? [])
+  const targetSlot = activeTargeting
+    ? (activeTargeting.options[activeTargeting.picked.length] ?? [])
     : []
   const pickedObjKeys = new Set(
-    (targeting?.picked ?? [])
+    (activeTargeting?.picked ?? [])
       .filter((r) => r.kind === 'object')
       .map((r) => (r.kind === 'object' ? r.object : '')),
   )
@@ -1460,7 +1492,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
         </button>
       </div>
     )
-  } else if (mode === 'targeting' && targeting) {
+  } else if (mode === 'targeting' && activeTargeting) {
     // Stack objects (a spell being countered) aren't clickable on the board —
     // offer them as buttons in the controls bar instead.
     const stackTargets = targetSlot.filter(
@@ -1469,8 +1501,9 @@ function Table({ view, seat, opponents, game }: TableProps) {
     controls = (
       <div className="controls">
         <span>
-          {targeting.label}: choose {targeting.specs[targeting.picked.length]} (
-          {targeting.picked.length + 1}/{targeting.specs.length})
+          {activeTargeting.label}: choose{' '}
+          {activeTargeting.specs[activeTargeting.picked.length]} (
+          {activeTargeting.picked.length + 1}/{activeTargeting.specs.length})
         </span>
         {stackTargets.map((o) =>
           o.kind === 'object' ? (
@@ -1483,9 +1516,11 @@ function Table({ view, seat, opponents, game }: TableProps) {
             </button>
           ) : null,
         )}
-        <button type="button" onClick={() => setTargeting(null)}>
-          Cancel
-        </button>
+        {activeTargeting.kind === 'choose-targets' ? null : (
+          <button type="button" onClick={() => setTargeting(null)}>
+            Cancel
+          </button>
+        )}
       </div>
     )
   } else if (mode === 'choose-sacrifice' && pendingSac?.sacrifice) {
