@@ -421,6 +421,20 @@ export type GameEvent =
       readonly object: ObjectId;
     })
   | (Base & {
+      /** A one-shot damage-prevention shield was created (Healing Salve —
+       * ROADMAP Phase 11 EG-6). */
+      readonly type: "prevention-shield-created";
+      readonly target: TargetRef;
+      readonly amount: number;
+    })
+  | (Base & {
+      /** A player's draw was replaced by another player drawing instead
+       * (Notion Thief-lite — rule 614 / ROADMAP Phase 11 EG-6). */
+      readonly type: "draw-redirected";
+      readonly from: PlayerId;
+      readonly to: PlayerId;
+    })
+  | (Base & {
       /** A modal spell/ability's controller (or a "you may" clause) chose
        * which modes to apply — `modes` are indices into the mode list, or
        * empty for a declined "you may". */

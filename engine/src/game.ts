@@ -65,6 +65,7 @@ import type {
   GameRules,
   GameState,
   MulliganHandState,
+  PreventionShield,
   ZoneType,
 } from "./state.js";
 import type { TargetRef, TargetSpec } from "./target.js";
@@ -233,6 +234,7 @@ export class Game {
       pendingSacrifices: [],
       pendingSacrificeVictims: [],
       preventAllCombatDamage: false,
+      preventionShields: [],
       extraTurns: [],
       extraCombats: 0,
       spellsCastThisTurn: 0,
@@ -1444,9 +1446,10 @@ export class Game {
       this.state.turn.number > 1 ? this.activePlayer : null;
     const prevActiveSpells =
       prevActive !== null ? this.state.players[prevActive].spellsCastThisTurn : 0;
-    // Fog's "prevent all combat damage this turn" shield lapses; a fresh turn
-    // owes no extra combats yet.
+    // Fog's "prevent all combat damage this turn" shield and any one-shot
+    // prevention shields lapse; a fresh turn owes no extra combats yet.
     this.state.preventAllCombatDamage = false;
+    this.state.preventionShields = [];
     this.state.extraCombats = 0;
     this.state.spellsCastThisTurn = 0;
     // An extra turn (Time Warp — rule 500.7) is taken by the player at the
@@ -4633,6 +4636,11 @@ export class Game {
         this.state.preventAllCombatDamage = true;
         this.emit({ type: "combat-damage-prevention-set" });
       },
+      preventDamage: (target, amount, combatOnly) => {
+        if (amount <= 0) return;
+        this.state.preventionShields.push({ target, amount, combatOnly });
+        this.emit({ type: "prevention-shield-created", target, amount });
+      },
       chooseModes: (minModes, maxModes, modes) =>
         this.beginModesChoice(source, controller, x, minModes, maxModes, modes),
       changeLifeScoped: (who, delta) => this.changeLifeScoped(controller, who, delta),
@@ -5706,6 +5714,42 @@ export class Game {
   /** Deal `amount` damage from `source` to `target`. Returns the amount
    * actually dealt after replacement effects (0 when a Fog-style shield
    * prevented it). */
+  /** Whether prevention shield `shield` covers a hit on `target` (combat or not). */
+  private shieldCovers(
+    shield: PreventionShield,
+    target: TargetRef,
+    combat: boolean,
+  ): boolean {
+    if (shield.combatOnly && !combat) return false;
+    if (shield.target.kind !== target.kind) return false;
+    return shield.target.kind === "player"
+      ? shield.target.player === (target as { player: PlayerId }).player
+      : shield.target.object === (target as { object: ObjectId }).object;
+  }
+
+  /** Run `amount` damage aimed at `target` through the one-shot prevention
+   * shields (Healing Salve — rule 614.9 / EG-6), shrinking / removing them,
+   * and return the amount that gets through. */
+  private consumePreventionShields(
+    source: ObjectId,
+    target: TargetRef,
+    amount: number,
+    combat: boolean,
+  ): number {
+    let through = amount;
+    for (const shield of this.state.preventionShields) {
+      if (through <= 0) break;
+      if (!this.shieldCovers(shield, target, combat)) continue;
+      const prevented = Math.min(through, shield.amount);
+      if (prevented <= 0) continue;
+      shield.amount -= prevented;
+      through -= prevented;
+      this.emit({ type: "damage-prevented", source, target, amount: prevented });
+    }
+    this.state.preventionShields = this.state.preventionShields.filter((s) => s.amount > 0);
+    return through;
+  }
+
   private dealDamage(
     source: ObjectId,
     target: TargetRef,
@@ -5718,6 +5762,12 @@ export class Game {
     if (combat && this.state.preventAllCombatDamage) {
       this.emit({ type: "damage-prevented", source, target, amount });
       return 0;
+    }
+
+    // One-shot prevention shields (Healing Salve — rule 614.9 / EG-6).
+    if (this.state.preventionShields.length > 0) {
+      amount = this.consumePreventionShields(source, target, amount, combat);
+      if (amount <= 0) return 0;
     }
 
     if (target.kind === "player") {
@@ -6040,6 +6090,40 @@ export class Game {
   // --- zones -------------------------------------------------
 
   private drawCard(player: PlayerId): void {
+    // would-draw replacement (Notion Thief-lite — rule 614 / ROADMAP Phase 11
+    // EG-6): an opponent's draw is replaced by the replacement source's
+    // controller drawing instead. Applied once — the redirected draw itself
+    // isn't re-redirected.
+    const redirectTo = this.drawRedirectFor(player);
+    if (redirectTo !== null) {
+      this.emit({ type: "draw-redirected", from: player, to: redirectTo });
+      this.drawCardRaw(redirectTo);
+      return;
+    }
+    this.drawCardRaw(player);
+  }
+
+  /** Whose draw replaces `player`'s (a `would-draw` static an opponent
+   * controls), or `null`. */
+  private drawRedirectFor(player: PlayerId): PlayerId | null {
+    for (const id of this.state.zones.shared.battlefield) {
+      const source = this.state.objects[id];
+      if (hasLostAbilities(source) || source.controller === player) continue;
+      for (const ability of this.registry.get(printedCardName(source)).static) {
+        const r = ability.replacement;
+        if (
+          r?.event === "would-draw" &&
+          r.who === "opponent" &&
+          this.staticActive(source, ability)
+        ) {
+          return source.controller;
+        }
+      }
+    }
+    return null;
+  }
+
+  private drawCardRaw(player: PlayerId): void {
     const library = this.state.zones.perPlayer[player].library;
     if (library.length === 0) {
       this.state.players[player].attemptedDrawFromEmptyLibrary = true;
@@ -6130,21 +6214,31 @@ export class Game {
     return mult;
   }
 
-  /** Whether a battlefield permanent replaces "put a card into a graveyard"
-   * with "exile it instead" (Rest in Peace — rule 614). */
-  private graveyardIsReplacedWithExile(): boolean {
+  /** Whether a battlefield permanent replaces "put `cardId` into a graveyard"
+   * with "exile it instead" (Rest in Peace unfiltered; Anafenza-style with a
+   * `CardFilter` — rule 614 / ROADMAP Phase 11 EG-6). The filter is matched
+   * against the card's printed characteristics from the replacement source's
+   * controller's perspective. */
+  private graveyardIsReplacedWithExile(cardId: ObjectId): boolean {
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
       if (hasLostAbilities(object)) continue;
       for (const ability of this.registry.get(printedCardName(object)).static) {
         const r = ability.replacement;
         if (
-          r?.event === "would-be-put-into-graveyard" &&
-          r.instead === "exile" &&
-          this.staticActive(object, ability)
+          r?.event !== "would-be-put-into-graveyard" ||
+          r.instead !== "exile" ||
+          !this.staticActive(object, ability)
         ) {
-          return true;
+          continue;
         }
+        if (
+          r.filter !== undefined &&
+          !matchesFilter(this.state, this.registry, cardId, r.filter, { you: object.controller })
+        ) {
+          continue;
+        }
+        return true;
       }
     }
     return false;
@@ -6159,7 +6253,7 @@ export class Game {
     if (
       to === "graveyard" &&
       !object.isToken &&
-      this.graveyardIsReplacedWithExile()
+      this.graveyardIsReplacedWithExile(id)
     ) {
       to = "exile";
       this.emit({ type: "graveyard-replaced-with-exile", object: id });

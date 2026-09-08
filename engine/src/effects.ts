@@ -304,6 +304,16 @@ export type EffectSpec =
       readonly kind: "prevent-all-combat-damage";
     }
   | {
+      /** "Prevent the next `amount` damage that would be dealt to `target`
+       * this turn" (Healing Salve — rule 614.9 / ROADMAP Phase 11 EG-6). A
+       * one-shot prevention *shield* on `GameState.preventionShields`, consumed
+       * in `dealDamage`. `combatOnly` narrows it to combat damage. */
+      readonly kind: "prevent-damage";
+      readonly target: number;
+      readonly amount: EffectAmount;
+      readonly combatOnly?: boolean;
+    }
+  | {
       /** A modal spell/ability (rule 700.2): as it resolves, its controller
        * chooses between `minModes` and `maxModes` of `modes` (usually 1 and 1
        * — "choose one"; 1 and 2 for "choose one or both") and the chosen
@@ -494,6 +504,9 @@ export interface EffectApi {
   createEmblem(text: string, staticAbility: StaticAbility | undefined): void;
   /** Prevent all combat damage this turn (Fog). */
   preventAllCombatDamage(): void;
+  /** Add a one-shot damage-prevention shield on `target` (a player or object)
+   * for `amount` damage this turn — Healing Salve (ROADMAP Phase 11 EG-6). */
+  preventDamage(target: TargetRef, amount: number, combatOnly: boolean): void;
   /** Raise a `choose-modes` decision — see the `modal` / `may` {@link EffectSpec}.
    * The chosen modes' effects are applied after the controller answers. */
   chooseModes(
@@ -750,6 +763,13 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     case "prevent-all-combat-damage":
       ctx.preventAllCombatDamage();
       return;
+    case "prevent-damage": {
+      const ref = ctx.targets[spec.target];
+      if (ref !== undefined) {
+        ctx.preventDamage(ref, amountValue(spec.amount, ctx), spec.combatOnly ?? false);
+      }
+      return;
+    }
     case "modal":
       ctx.chooseModes(spec.minModes, spec.maxModes, spec.modes);
       return;

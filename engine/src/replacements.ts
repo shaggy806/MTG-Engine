@@ -24,13 +24,15 @@
  */
 
 import type { EffectAmount } from "./effects.js";
+import type { CardFilter } from "./filter.js";
 
 /** A single replacement clause on a `StaticAbility`. Discriminated by `event`. */
 export type ReplacementSpec =
   | EntersBattlefieldReplacement
   | TokenMultiplierReplacement
   | CounterMultiplierReplacement
-  | GraveyardExileReplacement;
+  | GraveyardExileReplacement
+  | DrawRedirectReplacement;
 
 /** As the source permanent enters the battlefield (rule 614.1c). A self-
  * replacement — printed on the card, applies only to it. */
@@ -69,10 +71,27 @@ export interface CounterMultiplierReplacement {
 }
 
 /** "If a card would be put into a graveyard from anywhere, exile it instead"
- * (Rest in Peace, Leyline of the Void). An external replacement affecting every
- * player. Applies to real cards only, not tokens (a token would just cease to
- * exist either way). */
+ * (Rest in Peace, Leyline of the Void). An external replacement. Applies to
+ * real cards only, not tokens (a token would just cease to exist either way).
+ * `filter` (ROADMAP Phase 11 EG-6) narrows which cards it catches — omit for
+ * "every card" (Rest in Peace); `{ type: "creature", ownedBy: "opponent" }`
+ * for Anafenza-style graveyard hate. The filter is evaluated from the
+ * replacement source's controller's perspective, against the card's *printed*
+ * characteristics (it's off the battlefield by the time it would be put into a
+ * graveyard). */
 export interface GraveyardExileReplacement {
   readonly event: "would-be-put-into-graveyard";
   readonly instead: "exile";
+  readonly filter?: CardFilter;
+}
+
+/** "If a player [who] would draw a card, [this permanent's controller] draws a
+ * card instead" (Notion Thief-lite — ROADMAP Phase 11 EG-6). Applied in
+ * `Game.drawCard`. */
+export interface DrawRedirectReplacement {
+  readonly event: "would-draw";
+  /** Whose draw is replaced, relative to this permanent's controller. */
+  readonly who: "opponent";
+  /** The replacement: the source's controller draws instead. */
+  readonly instead: "you-draw";
 }

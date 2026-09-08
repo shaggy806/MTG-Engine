@@ -451,6 +451,16 @@ export type AwaitingDecision =
 /** The zones a commander can be moved to that offer the 903.9a choice. */
 export type CommanderReplacementZone = "graveyard" | "exile" | "hand" | "library";
 
+/** A one-shot damage-prevention shield (Healing Salve — ROADMAP Phase 11 EG-6). */
+export interface PreventionShield {
+  /** The player or object it protects. */
+  readonly target: TargetRef;
+  /** Damage still to absorb (shrinks as hits are prevented; removed at 0). */
+  amount: number;
+  /** Only prevents combat damage. */
+  readonly combatOnly: boolean;
+}
+
 /**
  * The combat-damage step in progress (rule 510 — ROADMAP Phase 11 EG-4).
  * `"single"` = no first/double striker in combat, one pass; `"first"` = the
@@ -589,6 +599,11 @@ export interface GameState {
    * Set by the `prevent-all-combat-damage` effect, cleared at the start of the
    * next turn. */
   preventAllCombatDamage: boolean;
+  /** One-shot damage-prevention shields (Healing Salve — rule 614.9 / ROADMAP
+   * Phase 11 EG-6). Each absorbs up to `amount` damage aimed at `target`;
+   * consumed (and shrunk / removed) in `dealDamage` before the hit lands.
+   * Cleared at the start of the next turn (all such effects are "this turn"). */
+  preventionShields: PreventionShield[];
   /** Extra turns still owed, in the order they'll be taken (rule 500.7 —
    * ROADMAP Phase 7). `beginTurn` shifts the front instead of advancing the
    * active-player rotation. Time Warp pushes the caster. */
