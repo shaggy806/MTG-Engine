@@ -85,11 +85,14 @@ import _poolMindControl from "./pool/mind-control.js";
 import _poolMindRot from "./pool/mind-rot.js";
 import _poolMishrasFactory from "./pool/mishras-factory.js";
 import _poolMonasterySwiftspear from "./pool/monastery-swiftspear.js";
+import _poolMoonriseCultivator from "./pool/moonrise-cultivator.js";
+import _poolMoonriseMarauder from "./pool/moonrise-marauder.js";
 import _poolMortivore from "./pool/mortivore.js";
 import _poolMossbackDragon from "./pool/mossback-dragon.js";
 import _poolMountain from "./pool/mountain.js";
 import _poolNaturalize from "./pool/naturalize.js";
 import _poolNegate from "./pool/negate.js";
+import _poolNightfallCultist from "./pool/nightfall-cultist.js";
 import _poolOpt from "./pool/opt.js";
 import _poolOracleOfMulDaya from "./pool/oracle-of-mul-daya.js";
 import _poolPacifism from "./pool/pacifism.js";
@@ -130,6 +133,7 @@ import _poolUnsummon from "./pool/unsummon.js";
 import _poolUreniOfTheUnwritten from "./pool/ureni-of-the-unwritten.js";
 import _poolVampireNighthawk from "./pool/vampire-nighthawk.js";
 import _poolVengefulGhoul from "./pool/vengeful-ghoul.js";
+import _poolVoidfallHorror from "./pool/voidfall-horror.js";
 import _poolVoltCharge from "./pool/volt-charge.js";
 import _poolWalkingBallista from "./pool/walking-ballista.js";
 import _poolWallOfWood from "./pool/wall-of-wood.js";
@@ -232,11 +236,14 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolMindRot,
   _poolMishrasFactory,
   _poolMonasterySwiftspear,
+  _poolMoonriseCultivator,
+  _poolMoonriseMarauder,
   _poolMortivore,
   _poolMossbackDragon,
   _poolMountain,
   _poolNaturalize,
   _poolNegate,
+  _poolNightfallCultist,
   _poolOpt,
   _poolOracleOfMulDaya,
   _poolPacifism,
@@ -277,6 +284,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolUreniOfTheUnwritten,
   _poolVampireNighthawk,
   _poolVengefulGhoul,
+  _poolVoidfallHorror,
   _poolVoltCharge,
   _poolWalkingBallista,
   _poolWallOfWood,
