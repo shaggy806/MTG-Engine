@@ -26,7 +26,7 @@ the diagram) are in.
 - [x] **Phase 8** — Cascade, storm, "cast" triggers, copy-a-spell
 - [x] **Phase 9** — Commander-format completeness + deck validation *(core done — colour identity, deck validation, Partner, a 4th commander, simultaneous mulligans; Companion / legend-rule choice deferred)*
 - [~] **Phase 10** — Tier 3 long tail (demand-driven) — **Sagas, 10a (MDFC), 10b (transform) + Day/Night, Monarch, Energy, Emblems, can't-be-countered, disturb, adventure all landed**; battles, phasing, dungeons/Initiative/Ring, banding deferred as large/niche
-- [~] **Phase 11** — Engine-fidelity gaps — **EG-1..EG-5 done** (uniform targeting decisions, targeted modal spells, `{X}` activated costs + conditional statics, combat depth, planeswalker ability coverage audit); EG-6 replacement pipeline v2 open
+- [x] **Phase 11** — Engine-fidelity gaps — **all six increments done**: EG-1 uniform targeting decisions, EG-2 targeted modal spells, EG-3 `{X}` activated costs + conditional statics, EG-4 combat depth, EG-5 planeswalker ability coverage audit, EG-6 replacement pipeline v2 *(deferred: `choose-replacement-order`, damage redirection)*
 
 ## Dependency spine
 
@@ -861,7 +861,22 @@ makes a planeswalker a creature (Gideon — needs a static→type-change path), 
   attack / ETB / upkeep triggered ability. `planeswalker-abilities.test.ts`.
 - Mostly verification; low risk, but may surface a structural gap that grows scope.
 
-### EG‑6 — Replacement pipeline v2  · M · split 6a / 6b · last
+### EG‑6 — Replacement pipeline v2  · [x] done
+
+*Landed:* **prevention shields** — `GameState.preventionShields: PreventionShield[]`,
+each absorbing up to `amount` damage aimed at a player/object; `dealDamage`
+runs a hit through them (shrinking / removing) before it lands. `prevent-damage
+{ target, amount, combatOnly? }` effect; shields lapse at the next turn's start.
+Card `Sunlit Bastion`. **Filtered graveyard-exile** — `would-be-put-into-graveyard`
+gains an optional `filter: CardFilter`, generalizing Rest in Peace's global to
+Anafenza-style ("a creature card an opponent owns → exile"). Card `Anafenza,
+the Foremost`. **`would-draw` redirect** — a `DrawRedirectReplacement` static;
+`Game.drawCard` redirects an opponent's draw to the source's controller
+(applied once). Card `Notion Thief`-lite. `replacement-v2.test.ts` (4). Deferred:
+`choose-replacement-order` (no card-pool case where order matters), damage
+redirection to a third object (Harm's Way).
+
+*Original design notes:*
 
 - **6a — order + shields.** `choose-replacement-order` `AwaitingDecision` when
   ≥ 2 replacements apply to one event (rule 616.1 — the affected player /
@@ -879,8 +894,7 @@ makes a planeswalker a creature (Gideon — needs a static→type-change path), 
   an "if a creature would die, exile it" enchantment. `replacement-v2.test.ts`.
 - Biggest and most niche; `dealDamage` / `drawCard` are hot paths — goes last.
 
-**Ordering:** EG‑1 ✓ → EG‑2 ✓ → EG‑3 ✓ → EG‑4 ✓ → EG‑5 ✓ → EG‑6
-(largest / riskiest / most niche).
+**Ordering:** EG‑1 ✓ → EG‑2 ✓ → EG‑3 ✓ → EG‑4 ✓ → EG‑5 ✓ → EG‑6 ✓ — Phase 11 complete.
 
 ---
 

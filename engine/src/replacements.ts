@@ -19,8 +19,11 @@
  * not a static (rule 614 calls it a replacement, but there's no permanent to
  * hang it on). See ROADMAP.md Phase 1.
  *
- * Later phases add `would-be-dealt-damage` (prevention/redirection as a static),
- * `would-die { instead }`, `would-draw`, and `CardFilter`-gated targeting.
+ * **Phase 11 EG-6** adds `would-draw` (Notion Thief-lite) and an optional
+ * `CardFilter` on `would-be-put-into-graveyard` (Anafenza). One-shot
+ * damage-prevention shields (Healing Salve) live on `GameState.preventionShields`
+ * rather than here (no permanent to hang them on, like Fog). Still not modeled:
+ * multi-replacement ordering, damage *redirection* to a third object (Harm's Way).
  */
 
 import type { EffectAmount } from "./effects.js";
