@@ -24,7 +24,7 @@ the diagram) are in.
 - [x] **Phase 6** — Alternate casting zones + the cast pipeline *(6a/6b done — flashback, Snapcaster, suspend, foretell, escape; 6c long tail deferred)*
 - [x] **Phase 7** — Combat depth + turn-structure control *(core done — extra turns, additional combat, can't-be-blocked; first-strike window / trample-as-choice / must-be-blocked deferred)*
 - [x] **Phase 8** — Cascade, storm, "cast" triggers, copy-a-spell
-- [x] **Phase 9** — Commander-format completeness + deck validation *(core done — colour identity, deck validation, Partner, a 4th commander; Companion / legend-rule choice / simultaneous mulligans deferred)*
+- [x] **Phase 9** — Commander-format completeness + deck validation *(core done — colour identity, deck validation, Partner, a 4th commander, simultaneous mulligans; Companion / legend-rule choice deferred)*
 - [~] **Phase 10** — Tier 3 long tail (demand-driven) — **Sagas, 10a (MDFC), 10b (transform) + Day/Night, Monarch, Energy, Emblems, can't-be-countered, disturb, adventure all landed**; battles, phasing, dungeons/Initiative/Ring, banding deferred as large/niche
 - [~] **Phase 11** — Engine-fidelity gaps — **EG-1 (uniform targeting decisions) + EG-2 (targeted modal spells) + EG-3 (`{X}` activated costs + conditional statics) done**; EG-4 combat depth, EG-5 planeswalker ability coverage, EG-6 replacement pipeline v2 open
 
@@ -531,7 +531,11 @@ are auto-picked (the `chooseTargets` gap).
 **Deferred (Phase-9 long tail):** "Choose a Background" / "Friends forever"
 (more partner-like variants), Companion (the `{3}` from a sideboard), a player
 choice on which legendary permanent the legend rule keeps (deterministic —
-oldest survives — today), simultaneous mulligan rounds (sequential today).
+oldest survives — today).
+
+**Landed later:** simultaneous mulligans — the `mulligan` `AwaitingDecision`
+carries `hands: Record<player, { taken, step }>`, every player in it may act
+in any order (not turn order), turn 1 begins once it empties.
 
 **Tests:** `engine/src/identity.test.ts`, `engine/src/partner.test.ts`,
 `server/src/deck-validation.test.ts`.
