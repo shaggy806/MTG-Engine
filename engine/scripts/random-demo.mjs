@@ -65,6 +65,7 @@ const deckA = deck([
   ["Prosperous Innkeeper", 1],
   ["Wilt-Leaf Cavaliers", 1],
   ["Grovewatch Elder", 2],
+  ["Moonrise Cultivator", 2],
   ["Seraphine, Dawnherald", 1],
   ["Garruk Wildspeaker", 1],
   ["Cryptolith Rite", 1],
@@ -151,6 +152,7 @@ const deckB = deck([
   ["Grapeshot", 1],
   ["Bloodbraid Elf", 1],
   ["Twincast", 1],
+  ["Nightfall Cultist", 2],
 ]);
 
 // A lean Dimir deck for Carol — carries the `Sarova, the Undying Current`
