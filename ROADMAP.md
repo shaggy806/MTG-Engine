@@ -26,7 +26,7 @@ the diagram) are in.
 - [x] **Phase 8** — Cascade, storm, "cast" triggers, copy-a-spell
 - [x] **Phase 9** — Commander-format completeness + deck validation *(core done — colour identity, deck validation, Partner, a 4th commander, simultaneous mulligans; Companion / legend-rule choice deferred)*
 - [~] **Phase 10** — Tier 3 long tail (demand-driven) — **Sagas, 10a (MDFC), 10b (transform) + Day/Night, Monarch, Energy, Emblems, can't-be-countered, disturb, adventure all landed**; battles, phasing, dungeons/Initiative/Ring, banding deferred as large/niche
-- [~] **Phase 11** — Engine-fidelity gaps — **EG-1 (uniform targeting decisions) + EG-2 (targeted modal spells) + EG-3 (`{X}` activated costs + conditional statics) + EG-4 (combat depth) done**; EG-5 planeswalker ability coverage, EG-6 replacement pipeline v2 open
+- [~] **Phase 11** — Engine-fidelity gaps — **EG-1..EG-5 done** (uniform targeting decisions, targeted modal spells, `{X}` activated costs + conditional statics, combat depth, planeswalker ability coverage audit); EG-6 replacement pipeline v2 open
 
 ## Dependency spine
 
@@ -837,7 +837,20 @@ to block one, `declare-blockers` LegalAction carries `mustBlock`. Cards: Lure.
 - Cards: a big trampler, a first-strike-vs-instant interaction, Lure.
   `combat-depth.test.ts`. Removes the "Phase 7 not yet" combat items.
 
-### EG‑5 — Planeswalker / permanent ability coverage audit  · S/M
+### EG‑5 — Planeswalker / permanent ability coverage audit  · [x] done
+
+*Landed:* an audit — a planeswalker source is scanned by `collectStaticEffects`
+and `detectTriggers` like any other battlefield permanent, so a static anthem
+and a triggered ability on a planeswalker both already worked with **no engine
+change**. The loyalty cap (rule 606.3) is per-`GameObject.loyaltyActivatedThisTurn`
+(so per-planeswalker) and reset in the controller's untap step; a targeted
+trigger with no legal targets is already removed (603.3c). Cards `Rendwin,
+Warden of the Grove` (static +1/+1 anthem) / `Yulra, Kindled Spark` (a targeted
+upkeep trigger). `planeswalker-abilities.test.ts` (6). Deferred: a static that
+makes a planeswalker a creature (Gideon — needs a static→type-change path), a
+`grantPt` whose magnitude reads the source's own loyalty (no real card).
+
+*Original design notes:*
 
 - Verify triggered abilities on planeswalkers fire (they should — `detectTriggers`
   scans every battlefield object's `triggered`); fill any static-`affects`
@@ -866,7 +879,7 @@ to block one, `declare-blockers` LegalAction carries `mustBlock`. Cards: Lure.
   an "if a creature would die, exile it" enchantment. `replacement-v2.test.ts`.
 - Biggest and most niche; `dealDamage` / `drawCard` are hot paths — goes last.
 
-**Ordering:** EG‑1 ✓ → EG‑2 ✓ → EG‑3 ✓ → EG‑4 ✓ → EG‑5 (mostly audit) → EG‑6
+**Ordering:** EG‑1 ✓ → EG‑2 ✓ → EG‑3 ✓ → EG‑4 ✓ → EG‑5 ✓ → EG‑6
 (largest / riskiest / most niche).
 
 ---
