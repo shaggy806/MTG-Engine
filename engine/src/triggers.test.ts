@@ -73,7 +73,8 @@ const spawn = (
 };
 
 const atFirstMain = (s: GameState): boolean => s.turn.step === "precombat-main";
-const stackEmpty = (s: GameState): boolean => s.zones.shared.stack.length === 0;
+const stackEmpty = (s: GameState): boolean =>
+  s.zones.shared.stack.length === 0 && s.awaiting === null;
 const named = (game: Game, ids: readonly ObjectId[], name: string): ObjectId => {
   const id = ids.find((each) => game.state.objects[each].cardName === name);
   if (id === undefined) throw new Error(`no ${name}`);

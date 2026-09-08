@@ -4,7 +4,7 @@ import { defineCard } from "../define.js";
  * ROADMAP Phase 6b — suspend. Cast from hand for `{2}{R}`, or suspend it for
  * `{R}` (exile with one time counter); the counter comes off at your next
  * upkeep and the engine casts it for free. Its controller chooses the target
- * — auto-picked for now (the `chooseTargets` gap).
+ * via a `choose-targets` decision (ROADMAP Phase 11 EG-1).
  */
 export default defineCard({
   name: "Rift Bolt",
