@@ -70,8 +70,13 @@ export type AffectSpec =
   | { readonly scope: "attached" };
 
 /** A combat restriction a static ability imposes on the objects it `affects`
- * (Pacifism: can't attack / can't block; Juggernaut: must attack if able). */
-export type CombatRestriction = "cant-attack" | "cant-block" | "must-attack";
+ * (Pacifism: can't attack / can't block; Juggernaut: must attack if able;
+ * Lure: all creatures able to block this one must do so — rule 509.1c). */
+export type CombatRestriction =
+  | "cant-attack"
+  | "cant-block"
+  | "must-attack"
+  | "must-be-blocked";
 
 /** A dynamic quantity a characteristic-defining ability can read (rule 604.3). */
 export type CountSpec =

@@ -26,7 +26,9 @@ export type Step =
 
 /**
  * Every step of a turn in order. Main phases are represented as a single
- * step each; the combat-damage step is not yet split for first strike.
+ * step each. The combat-damage step stays one `Step` even when first strike
+ * splits it into two damage sub-passes (rule 510.5) — `GameState.combatDamage`
+ * tracks the sub-pass, and each gets its own priority window.
  */
 export const TURN_SEQUENCE = [
   "untap",

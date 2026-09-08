@@ -47,6 +47,24 @@ export interface PlayerController {
     blockers: readonly ObjectId[],
   ): readonly ObjectId[];
   /**
+   * Assign a blocked attacker's combat damage (rule 510.1c). Return one
+   * amount per blocker in `blockers` order; `power − sum` (allowed only with
+   * `trample`, and it must be ≥ 0) goes to the defending player / planeswalker.
+   * `lethal[i]` is the minimum for each blocker before a later one / the
+   * defender may be assigned. Reached via `act` when
+   * `awaiting.kind === "assign-combat-damage"`.
+   */
+  assignCombatDamage(
+    view: ControllerView,
+    assignment: {
+      readonly attacker: ObjectId;
+      readonly blockers: readonly ObjectId[];
+      readonly power: number;
+      readonly lethal: readonly number[];
+      readonly trample: boolean;
+    },
+  ): readonly number[];
+  /**
    * Choose one target per spec for a triggered ability being put on the stack.
    * `legalOptions[i]` is the non-empty list of legal targets for `specs[i]`.
    */
@@ -156,6 +174,22 @@ const firstOfEach = (
   legalOptions: readonly (readonly TargetRef[])[],
 ): readonly TargetRef[] => legalOptions.map((options) => options[0]);
 
+/** The standard combat-damage assignment: lethal down the blocker order, the
+ * remainder to the last blocker (or, with trample, over to the defender). */
+export const standardDamageAssignment = (a: {
+  readonly power: number;
+  readonly lethal: readonly number[];
+  readonly trample: boolean;
+}): number[] => {
+  let remaining = a.power;
+  return a.lethal.map((lethal, index) => {
+    const isLastAndNoTrample = !a.trample && index === a.lethal.length - 1;
+    const amount = isLastAndNoTrample ? remaining : Math.min(remaining, lethal);
+    remaining -= amount;
+    return amount;
+  });
+};
+
 /**
  * Answer whatever the engine is waiting on, or `null` if it isn't waiting.
  * Shared by every controller so `act` only has to handle priority choices.
@@ -188,6 +222,19 @@ function answerAwaited(
       player,
       attacker: awaiting.attacker,
       order: controller.orderBlockers(view, awaiting.attacker, [...blockers]),
+    };
+  }
+  if (awaiting.kind === "assign-combat-damage") {
+    return {
+      type: "assign-combat-damage",
+      player,
+      assignment: controller.assignCombatDamage(view, {
+        attacker: awaiting.attacker,
+        blockers: awaiting.blockers,
+        power: awaiting.power,
+        lethal: awaiting.lethal,
+        trample: awaiting.trample,
+      }),
     };
   }
   if (awaiting.kind === "choose-from-zone") {
@@ -322,6 +369,13 @@ export class AutomaticController implements PlayerController {
     blockers: readonly ObjectId[],
   ): readonly ObjectId[] {
     return blockers;
+  }
+
+  assignCombatDamage(
+    _view: ControllerView,
+    a: { readonly power: number; readonly lethal: readonly number[]; readonly trample: boolean },
+  ): readonly number[] {
+    return standardDamageAssignment(a);
   }
 
   chooseTargets(
@@ -470,6 +524,16 @@ type ScryChooser = (
   cards: readonly ObjectId[],
   mode: "scry" | "surveil",
 ) => readonly ObjectId[];
+type DamageAssigner = (
+  view: ControllerView,
+  assignment: {
+    readonly attacker: ObjectId;
+    readonly blockers: readonly ObjectId[];
+    readonly power: number;
+    readonly lethal: readonly number[];
+    readonly trample: boolean;
+  },
+) => readonly number[];
 
 /**
  * Plays a fixed queue of priority actions (each firing when its `when` guard is
@@ -483,6 +547,7 @@ export class ScriptedController implements PlayerController {
   declareAttackersFn: AttackChooser = () => [];
   declareBlockersFn: BlockChooser = () => [];
   orderBlockersFn: OrderChooser = (_view, _attacker, blockers) => blockers;
+  assignCombatDamageFn: DamageAssigner = (_view, a) => standardDamageAssignment(a);
   chooseTargetsFn: TargetChooser = (_view, _source, _specs, legalOptions) =>
     firstOfEach(legalOptions);
   chooseFromZoneFn: ZoneChooser = (_view, eligible, min, _max) => eligible.slice(0, min);
@@ -545,6 +610,19 @@ export class ScriptedController implements PlayerController {
     blockers: readonly ObjectId[],
   ): readonly ObjectId[] {
     return this.orderBlockersFn(view, attacker, blockers);
+  }
+
+  assignCombatDamage(
+    view: ControllerView,
+    a: {
+      readonly attacker: ObjectId;
+      readonly blockers: readonly ObjectId[];
+      readonly power: number;
+      readonly lethal: readonly number[];
+      readonly trample: boolean;
+    },
+  ): readonly number[] {
+    return this.assignCombatDamageFn(view, a);
   }
 
   chooseTargets(
@@ -728,21 +806,29 @@ export class RandomController extends AutomaticController {
             })),
         };
       case "declare-blockers": {
-        const blocks: BlockerDeclaration[] = [];
+        const chosen = new Map<ObjectId, ObjectId>(); // blocker -> attacker
         for (const entry of legal.eligible) {
-          if (this.random() < 0.5) continue;
-          blocks.push({
-            blocker: entry.blocker,
-            attacker: entry.canBlock[this.pickIndex(entry.canBlock.length)],
-          });
+          // Lure (rule 509.1c): a creature able to block a must-be-blocked
+          // attacker must block one of them; otherwise a coin flip.
+          const mustOptions = entry.canBlock.filter((a) => legal.mustBlock.includes(a));
+          if (mustOptions.length > 0) {
+            chosen.set(entry.blocker, mustOptions[this.pickIndex(mustOptions.length)]);
+          } else if (this.random() < 0.5) {
+            chosen.set(entry.blocker, entry.canBlock[this.pickIndex(entry.canBlock.length)]);
+          }
         }
-        // A menace attacker must be blocked by 0 or 2+ creatures; drop lone blocks.
-        const filtered = blocks.filter(
+        let blocks: BlockerDeclaration[] = [...chosen].map(([blocker, attacker]) => ({
+          blocker,
+          attacker,
+        }));
+        // A menace attacker must be blocked by 0 or 2+ creatures; drop lone blocks
+        // (must-be-blocked menace attackers are excluded from `mustBlock`).
+        blocks = blocks.filter(
           (b) =>
             !legal.menaceAttackers.includes(b.attacker) ||
             blocks.filter((x) => x.attacker === b.attacker).length >= 2,
         );
-        return { type: "declare-blockers", player, blocks: filtered };
+        return { type: "declare-blockers", player, blocks };
       }
       case "order-blockers": {
         const order = [...legal.blockers];
@@ -753,6 +839,17 @@ export class RandomController extends AutomaticController {
           order[j] = tmp;
         }
         return { type: "order-blockers", player, attacker: legal.attacker, order };
+      }
+      case "assign-combat-damage": {
+        // Start from the standard split, then sometimes pile extra onto a
+        // blocker instead of trampling / dumping on the last — still legal.
+        const assignment = standardDamageAssignment(legal);
+        const spare =
+          legal.power - assignment.reduce((sum, n) => sum + n, 0);
+        if (spare > 0 && assignment.length > 0 && this.random() < 0.5) {
+          assignment[this.pickIndex(assignment.length)] += spare;
+        }
+        return { type: "assign-combat-damage", player, assignment };
       }
       case "discard": {
         const pool = [...legal.from];

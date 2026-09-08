@@ -186,6 +186,15 @@ export type Action =
       readonly targets: readonly TargetRef[];
     }
   | {
+      /** Answers a pending `assign-combat-damage` decision (rule 510.1c —
+       * ROADMAP Phase 11 EG-4a): one amount per blocker in `awaiting.blockers`
+       * order. `power − sum` (≥ 0, and 0 unless the attacker has trample) is
+       * dealt to the defending player / planeswalker. */
+      readonly type: "assign-combat-damage";
+      readonly player: PlayerId;
+      readonly assignment: readonly number[];
+    }
+  | {
       /** Answers a pending `sacrifice` decision (a sacrifice effect — Diabolic
        * Edict): the permanents this player sacrifices. */
       readonly type: "sacrifice";
@@ -305,12 +314,29 @@ export type LegalAction =
       }[];
       /** Attackers with menace: block them with 0 or 2+ creatures, never 1. */
       readonly menaceAttackers: readonly ObjectId[];
+      /** Attackers that must be blocked (Lure — rule 509.1c): every creature
+       * this defender controls that's able to block one of these must block a
+       * must-be-blocked attacker. Menace ones are excluded. */
+      readonly mustBlock: readonly ObjectId[];
     }
   | {
       readonly kind: "order-blockers";
       readonly attacker: ObjectId;
       /** The blockers to order; the current order is the default. */
       readonly blockers: readonly ObjectId[];
+    }
+  | {
+      /** A blocked attacker's controller assigns its combat damage (rule
+       * 510.1c — ROADMAP Phase 11 EG-4a). Answer with one amount per blocker
+       * in `blockers` order; `power − sum` (0 unless `trample`) tramples over
+       * to the defender. `lethal[i]` is the minimum for `blockers[i]` before a
+       * later blocker or the defender may be assigned any. */
+      readonly kind: "assign-combat-damage";
+      readonly attacker: ObjectId;
+      readonly blockers: readonly ObjectId[];
+      readonly power: number;
+      readonly lethal: readonly number[];
+      readonly trample: boolean;
     }
   | {
       readonly kind: "discard";

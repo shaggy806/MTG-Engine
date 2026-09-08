@@ -60,6 +60,7 @@ import { asObjectId, createRng, shuffle } from "./primitives.js";
 import { DEFAULT_RULES, activePlayerOf, createPlayerState, printedCardName } from "./state.js";
 import type {
   AwaitingDecision,
+  CombatDamageState,
   GameObject,
   GameRules,
   GameState,
@@ -238,6 +239,7 @@ export class Game {
       dayNight: null,
       monarch: null,
       emblems: [],
+      combatDamage: null,
       timestampSeq: 0,
       eventLog: [],
       eventSeq: 0,
@@ -404,6 +406,9 @@ export class Game {
       case "choose-targets":
         this.applyChooseTargets(action.player, action.targets);
         break;
+      case "assign-combat-damage":
+        this.applyAssignCombatDamage(action.player, action.assignment);
+        break;
       case "sacrifice":
         this.applySacrifice(action.player, action.permanents);
         break;
@@ -474,6 +479,8 @@ export class Game {
         return this.whyCannotChooseModes(action.player, action.modes);
       case "choose-targets":
         return this.whyCannotChooseTargets(action.player, action.targets);
+      case "assign-combat-damage":
+        return this.whyCannotAssignCombatDamage(action.player, action.assignment);
       case "sacrifice":
         return this.whyCannotSacrifice(action.player, action.permanents);
       case "scry":
@@ -525,7 +532,13 @@ export class Game {
         const menaceAttackers = attackers.filter((id) =>
           this.objHasKeyword(id, "menace"),
         );
-        return [{ kind: "declare-blockers", eligible, menaceAttackers }];
+        // Attackers this defender's able creatures are *forced* to block
+        // (Lure — rule 509.1c); menace ones excluded (see whyCannotDeclareBlockers).
+        const mustBlock = attackers.filter(
+          (id) =>
+            this.restrictionsOf(id).has("must-be-blocked") && !this.objHasKeyword(id, "menace"),
+        );
+        return [{ kind: "declare-blockers", eligible, menaceAttackers, mustBlock }];
       }
       if (awaiting.kind === "order-blockers") {
         return [
@@ -615,6 +628,18 @@ export class Game {
             cardName: awaiting.cardName,
             specs: [...awaiting.specs],
             options: awaiting.options.map((o) => [...o]),
+          },
+        ];
+      }
+      if (awaiting.kind === "assign-combat-damage") {
+        return [
+          {
+            kind: "assign-combat-damage",
+            attacker: awaiting.attacker,
+            blockers: [...awaiting.blockers],
+            power: awaiting.power,
+            lethal: [...awaiting.lethal],
+            trample: awaiting.trample,
           },
         ];
       }
@@ -1477,6 +1502,9 @@ export class Game {
       this.prepareForPriority(this.state.awaiting.player);
       return;
     }
+    // A turn-based action already granted priority itself (the combat-damage
+    // step, whose sub-passes grant their own windows — rule 510.4).
+    if (this.state.priority.active) return;
     if (stepUsesPriority(step)) {
       this.prepareForPriority(this.activePlayer);
     } else {
@@ -1527,6 +1555,25 @@ export class Game {
   }
 
   private endStep(): void {
+    // Between the first-strike and regular combat-damage sub-passes (rule
+    // 510.4/510.5): the priority window after the first sub-pass just closed —
+    // run the regular one (which may itself raise assignment decisions or
+    // grant its own priority window) instead of leaving the combat-damage step.
+    if (
+      this.state.turn.step === "combat-damage" &&
+      this.state.combatDamage !== null &&
+      this.state.combatDamage.pass === "first"
+    ) {
+      this.state.combatDamage = {
+        pass: "regular",
+        regularOwed: false,
+        pendingAssignments: [],
+        assigned: {},
+      };
+      this.runCombatDamageSubPass();
+      this.prepareForPriority(this.state.awaiting?.player ?? this.activePlayer);
+      return;
+    }
     // Additional combat (Aggravated Assault — rule 500.8): when the postcombat
     // main phase ends with combats still owed, loop back to begin-combat (a
     // combat phase then another main phase) instead of moving to the end step.
@@ -2059,6 +2106,32 @@ export class Game {
         return `${def?.name ?? attacker} has menace and must be blocked by two or more creatures`;
       }
     }
+
+    // "Must be blocked" (Lure — rule 509.1c): every creature this defender
+    // controls that's able to block a must-be-blocked attacker must block one
+    // of them. (A must-be-blocked attacker with menace isn't forced — a lone
+    // creature isn't "able" to block it; that combination is left unmodeled.)
+    const mustBeBlocked = this.currentAttackers().filter((id) => {
+      const attacking = this.state.objects[id].attacking;
+      return (
+        this.restrictionsOf(id).has("must-be-blocked") &&
+        !this.objHasKeyword(id, "menace") &&
+        attacking !== null &&
+        this.defendingPlayerOf(attacking) === player
+      );
+    });
+    if (mustBeBlocked.length > 0) {
+      const blockingAMust = new Set(
+        blocks.filter((b) => mustBeBlocked.includes(b.attacker)).map((b) => b.blocker),
+      );
+      for (const id of this.state.zones.shared.battlefield) {
+        if (this.state.objects[id].controller !== player || blockingAMust.has(id)) continue;
+        if (mustBeBlocked.some((a) => this.whyCannotBlock(player, id, a) === null)) {
+          const def = this.creatureDef(id);
+          return `${def?.name ?? id} must block (a "must be blocked" attacker)`;
+        }
+      }
+    }
     return null;
   }
 
@@ -2202,18 +2275,209 @@ export class Game {
     this.promptNextBlockerOrder();
   }
 
+  /** Turn-based action for the combat-damage step (rule 510). Sets up the
+   * sub-pass state (first strike splits it — 510.5) and runs the first one.
+   * A blocked attacker's controller may owe a damage-assignment choice
+   * (`assign-combat-damage`) before damage is dealt (510.1c). */
   private combatDamageStep(): void {
-    // Rule 510: if any combatant has first or double strike there are two
-    // damage passes. We fold both into this one step (no priority window
-    // between them), running SBAs after the first so dead combatants drop out.
-    if (this.combatFirstStrikeInPlay()) {
-      this.dealCombatDamage("first");
-      this.runStateBasedActions();
-      if (this.state.result.over) return;
-      this.dealCombatDamage("regular");
-    } else {
-      this.dealCombatDamage("all");
+    if (this.currentAttackers().length === 0) {
+      this.state.combatDamage = null;
+      return;
     }
+    const firstStrike = this.combatFirstStrikeInPlay();
+    this.state.combatDamage = {
+      pass: firstStrike ? "first" : "single",
+      regularOwed: firstStrike,
+      pendingAssignments: [],
+      assigned: {},
+    };
+    this.runCombatDamageSubPass();
+  }
+
+  private subPassKind(pass: CombatDamageState["pass"]): "first" | "regular" | "all" {
+    return pass === "first" ? "first" : pass === "regular" ? "regular" : "all";
+  }
+
+  /** Begin one combat-damage sub-pass: collect any blocked attackers whose
+   * controller owes an assignment choice; if none, deal the damage. Leaves
+   * `awaiting` set (via `promptNextDamageAssignment`) when a choice is owed. */
+  private runCombatDamageSubPass(): void {
+    const cd = this.state.combatDamage;
+    if (cd === null) return;
+    const kind = this.subPassKind(cd.pass);
+    const pending = this.currentAttackers().filter(
+      (id) =>
+        this.state.objects[id].blocked &&
+        this.dealsInPass(id, kind) &&
+        this.needsDamageAssignmentChoice(id),
+    );
+    this.state.combatDamage = { ...cd, pendingAssignments: pending };
+    this.promptNextDamageAssignment();
+  }
+
+  /** The blockers of `attackerId` still on the battlefield, in assignment order. */
+  private liveBlockersOf(attackerId: ObjectId): ObjectId[] {
+    return this.state.objects[attackerId].blockedBy.filter(
+      (id) => this.state.objects[id]?.zone === "battlefield",
+    );
+  }
+
+  private lethalFor(attackerId: ObjectId, blockerId: ObjectId): number {
+    if (this.objHasKeyword(attackerId, "deathtouch")) return 1;
+    const marked = this.state.objects[blockerId].damageMarked;
+    const toughness = computeCharacteristics(this.state, this.registry, blockerId).toughness;
+    return Math.max(0, toughness - marked);
+  }
+
+  /** Whether the attacking player has a real choice in how `attackerId` (a
+   * blocked attacker) divides its combat damage — 2+ live blockers with slack,
+   * or trample with room past the blockers' lethal. */
+  private needsDamageAssignmentChoice(attackerId: ObjectId): boolean {
+    const live = this.liveBlockersOf(attackerId);
+    if (live.length === 0) return false;
+    const power = computeCharacteristics(this.state, this.registry, attackerId).power;
+    if (power <= 0) return false;
+    const trample = this.objHasKeyword(attackerId, "trample");
+    if (live.length === 1 && !trample) return false;
+    // Damage that's rigidly forced: lethal to each blocker except (without
+    // trample) the last, which just takes the remainder.
+    let forced = 0;
+    live.forEach((blockerId, index) => {
+      if (!trample && index === live.length - 1) return;
+      forced += this.lethalFor(attackerId, blockerId);
+    });
+    return power > forced;
+  }
+
+  /** The standard auto-assignment for `attackerId`'s combat damage this
+   * sub-pass: lethal down the blocker order, remainder to the last blocker
+   * (or trampled over). One entry per live blocker. */
+  private autoAssignForAttacker(attackerId: ObjectId): number[] {
+    const live = this.liveBlockersOf(attackerId);
+    const trample = this.objHasKeyword(attackerId, "trample");
+    let remaining = computeCharacteristics(this.state, this.registry, attackerId).power;
+    return live.map((blockerId, index) => {
+      const lethal = this.lethalFor(attackerId, blockerId);
+      const isLastAndNoTrample = !trample && index === live.length - 1;
+      const amount = isLastAndNoTrample ? remaining : Math.min(remaining, lethal);
+      remaining -= amount;
+      return amount;
+    });
+  }
+
+  private promptNextDamageAssignment(): void {
+    const cd = this.state.combatDamage;
+    if (cd === null) return;
+    if (cd.pendingAssignments.length > 0) {
+      const attackerId = cd.pendingAssignments[0];
+      const blockers = this.liveBlockersOf(attackerId);
+      this.state.awaiting = {
+        kind: "assign-combat-damage",
+        player: this.state.objects[attackerId].controller,
+        attacker: attackerId,
+        blockers,
+        power: computeCharacteristics(this.state, this.registry, attackerId).power,
+        lethal: blockers.map((b) => this.lethalFor(attackerId, b)),
+        trample: this.objHasKeyword(attackerId, "trample"),
+      };
+      return;
+    }
+    this.applyCombatDamageSubPass();
+  }
+
+  private whyCannotAssignCombatDamage(
+    player: PlayerId,
+    assignment: readonly number[],
+  ): string | null {
+    const awaiting = this.state.awaiting;
+    if (
+      awaiting === null ||
+      awaiting.kind !== "assign-combat-damage" ||
+      awaiting.player !== player
+    ) {
+      return `${player} is not being asked to assign combat damage`;
+    }
+    const { blockers, power, lethal, trample } = awaiting;
+    if (assignment.length !== blockers.length) {
+      return `expected an amount for each of ${blockers.length} blocker(s), got ${assignment.length}`;
+    }
+    if (assignment.some((n) => !Number.isInteger(n) || n < 0)) {
+      return "combat damage assignments must be non-negative whole numbers";
+    }
+    const total = assignment.reduce((sum, n) => sum + n, 0);
+    const over = power - total;
+    if (over < 0) return "assigned more than the attacker's power";
+    if (over > 0 && !trample) {
+      return "only a trampling attacker can assign combat damage to the defending player";
+    }
+    // Rule 510.1c: an amount may be assigned to a blocker (or trampled over)
+    // only once every *earlier* blocker has at least lethal.
+    for (let i = 0; i < blockers.length; i += 1) {
+      const laterAssigned = assignment[i] > 0;
+      if (!laterAssigned && over === 0) continue;
+      for (let j = 0; j < i; j += 1) {
+        if (assignment[j] < lethal[j]) {
+          return "each earlier blocker must be assigned lethal damage first";
+        }
+      }
+    }
+    if (over > 0) {
+      for (let j = 0; j < blockers.length; j += 1) {
+        if (assignment[j] < lethal[j]) {
+          return "every blocker must be assigned lethal damage before trampling over";
+        }
+      }
+    }
+    return null;
+  }
+
+  private applyAssignCombatDamage(
+    player: PlayerId,
+    assignment: readonly number[],
+  ): void {
+    const why = this.whyCannotAssignCombatDamage(player, assignment);
+    if (why !== null) throw new Error(why);
+    const awaiting = this.state.awaiting as Extract<
+      AwaitingDecision,
+      { kind: "assign-combat-damage" }
+    >;
+    const cd = this.state.combatDamage;
+    if (cd === null) throw new Error("unreachable: no combat-damage step in progress");
+
+    this.state.combatDamage = {
+      ...cd,
+      assigned: { ...cd.assigned, [awaiting.attacker]: [...assignment] },
+      pendingAssignments: cd.pendingAssignments.slice(1),
+    };
+    this.state.awaiting = null;
+    this.promptNextDamageAssignment();
+    // `promptNextDamageAssignment` may have set `awaiting` for the next
+    // attacker; TS's narrowing from the `= null` above doesn't see that.
+    const next = this.state.awaiting as AwaitingDecision | null;
+    this.prepareForPriority(next?.player ?? this.activePlayer);
+  }
+
+  /** Deal all combat damage for the current sub-pass, run SBAs, then either
+   * hold for the between-passes priority window (a regular sub-pass is still
+   * owed) or clear the combat-damage state. Priority is granted by the
+   * caller. */
+  private applyCombatDamageSubPass(): void {
+    const cd = this.state.combatDamage;
+    if (cd === null) return;
+    this.dealCombatDamage(this.subPassKind(cd.pass), cd.assigned);
+    this.runStateBasedActions();
+    if (this.state.result.over) {
+      this.state.combatDamage = null;
+      return;
+    }
+    if (cd.pass === "first" && cd.regularOwed) {
+      // Rule 510.4 — players get priority between the first-strike and regular
+      // combat-damage sub-passes. `endStep` starts the regular one once they
+      // all pass. Keep `pass: "first"` as the marker for that.
+      this.state.combatDamage = { ...cd, pendingAssignments: [], assigned: {} };
+      return;
+    }
+    this.state.combatDamage = null;
   }
 
   /** Any attacker or blocker in the current combat with first or double strike. */
@@ -2252,7 +2516,10 @@ export class Game {
       : { kind: "player", player: attacking as PlayerId };
   }
 
-  private dealCombatDamage(pass: "first" | "regular" | "all"): void {
+  private dealCombatDamage(
+    pass: "first" | "regular" | "all",
+    assigned: Readonly<Record<string, readonly number[]>> = {},
+  ): void {
     const assignments: {
       source: ObjectId;
       target: TargetRef;
@@ -2260,8 +2527,6 @@ export class Game {
     }[] = [];
     const powerOf = (id: ObjectId): number =>
       computeCharacteristics(this.state, this.registry, id).power;
-    const toughnessOf = (id: ObjectId): number =>
-      computeCharacteristics(this.state, this.registry, id).toughness;
 
     for (const attackerId of this.currentAttackers()) {
       const attacker = this.state.objects[attackerId];
@@ -2281,20 +2546,19 @@ export class Game {
               });
             }
           } else {
-            const deathtouch = this.objHasKeyword(attackerId, "deathtouch");
             const trample = this.objHasKeyword(attackerId, "trample");
-            let remaining = power;
+            // A player-chosen distribution (rule 510.1c — ROADMAP Phase 11
+            // EG-4a) overrides the standard "lethal down the line"; otherwise
+            // auto-assign (deathtouch already folded into `autoAssignForAttacker`).
+            const override = assigned[attackerId];
+            const perBlocker =
+              override !== undefined && override.length === liveBlockers.length
+                ? override
+                : this.autoAssignForAttacker(attackerId);
+            let assignedTotal = 0;
             liveBlockers.forEach((blockerId, index) => {
-              const marked = this.state.objects[blockerId].damageMarked;
-              const lethal = deathtouch
-                ? 1
-                : Math.max(0, toughnessOf(blockerId) - marked);
-              const isLastAndNoTrample =
-                !trample && index === liveBlockers.length - 1;
-              const amount = isLastAndNoTrample
-                ? remaining
-                : Math.min(remaining, lethal);
-              remaining -= amount;
+              const amount = perBlocker[index] ?? 0;
+              assignedTotal += amount;
               if (amount > 0) {
                 assignments.push({
                   source: attackerId,
@@ -2303,11 +2567,12 @@ export class Game {
                 });
               }
             });
-            if (trample && remaining > 0 && attacker.attacking !== null) {
+            const over = power - assignedTotal;
+            if (trample && over > 0 && attacker.attacking !== null) {
               assignments.push({
                 source: attackerId,
                 target: this.attackTargetRef(attacker.attacking),
-                amount: remaining,
+                amount: over,
               });
             }
           }
@@ -2341,6 +2606,7 @@ export class Game {
   private endCombatStep(): void {
     this.state.pendingBlockerOrders = [];
     this.state.pendingBlockerDeclarations = [];
+    this.state.combatDamage = null;
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
       object.attacking = null;

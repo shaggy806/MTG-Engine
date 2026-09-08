@@ -428,10 +428,48 @@ export type AwaitingDecision =
       readonly cardName: string;
       readonly specs: readonly TargetSpec[];
       readonly options: readonly (readonly TargetRef[])[];
+    }
+  | {
+      /** A blocked attacker's controller assigns its combat damage among the
+       * blockers (and, with trample, the defender) — rule 510.1c / ROADMAP
+       * Phase 11 EG-4a. Only raised when there's a real choice (2+ blockers,
+       * or trample with room to divide). The answer is one amount per blocker
+       * in `blockers` order; `power − sum` (must be ≥ 0, and 0 unless
+       * `trample`) is dealt to the defending player / planeswalker. */
+      readonly kind: "assign-combat-damage";
+      readonly player: PlayerId;
+      readonly attacker: ObjectId;
+      readonly blockers: readonly ObjectId[];
+      readonly power: number;
+      /** Lethal-damage threshold per blocker (toughness − damage already
+       * marked, or 1 for a deathtouch source): each must get at least this
+       * before a later blocker or the defender is assigned any. */
+      readonly lethal: readonly number[];
+      readonly trample: boolean;
     };
 
 /** The zones a commander can be moved to that offer the 903.9a choice. */
 export type CommanderReplacementZone = "graveyard" | "exile" | "hand" | "library";
+
+/**
+ * The combat-damage step in progress (rule 510 — ROADMAP Phase 11 EG-4).
+ * `"single"` = no first/double striker in combat, one pass; `"first"` = the
+ * first-strike sub-pass (510.5); `"regular"` = the main sub-pass. `regularOwed`
+ * is true only during `"first"`, and drives `endStep` to start the regular
+ * sub-pass (with a priority window between — 510.4) rather than leaving combat.
+ */
+export interface CombatDamageState {
+  readonly pass: "single" | "first" | "regular";
+  readonly regularOwed: boolean;
+  /** Blocked attackers dealing damage this sub-pass whose controller still
+   * owes an `assign-combat-damage` choice (multiple blockers, or trample with
+   * slack). Drained one at a time. */
+  readonly pendingAssignments: readonly ObjectId[];
+  /** Damage-assignment choices already made this sub-pass: attacker id → the
+   * amount dealt to each of its blockers, in `blockedBy` order (leftover, if
+   * trample, goes to the defender). */
+  readonly assigned: Readonly<Record<string, readonly number[]>>;
+}
 
 /** An emblem (rule 114 — ROADMAP Phase 10): a player-owned object carrying one
  * ability, with no zone and no way to be removed. Currently only a
@@ -580,6 +618,12 @@ export interface GameState {
    * no zone and can't be removed. Its `ability` is applied by the layer system
    * (a `"creatures-you-control"` anthem) and/or `detectTriggers`. */
   emblems: EmblemState[];
+  /** The combat-damage step in progress (rule 510 — ROADMAP Phase 11 EG-4).
+   * Tracks which sub-pass is running (first strike / regular), whether a
+   * regular sub-pass is still owed, and any blocked attackers whose
+   * controller still owes a damage-assignment choice. `null` outside the
+   * combat-damage step. */
+  combatDamage: CombatDamageState | null;
   /** Monotonic source for battlefield-entry timestamps. */
   timestampSeq: number;
   eventLog: GameEvent[];
