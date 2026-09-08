@@ -65,6 +65,8 @@ import _poolGravePact from "./pool/grave-pact.js";
 import _poolGraveRecall from "./pool/grave-recall.js";
 import _poolGreed from "./pool/greed.js";
 import _poolGrizzlyBears from "./pool/grizzly-bears.js";
+import _poolGrovewatchElder from "./pool/grovewatch-elder.js";
+import _poolGrovewatchHollow from "./pool/grovewatch-hollow.js";
 import _poolGutShot from "./pool/gut-shot.js";
 import _poolHillGiant from "./pool/hill-giant.js";
 import _poolHistoryOfBenalia from "./pool/history-of-benalia.js";
@@ -210,6 +212,8 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolGraveRecall,
   _poolGreed,
   _poolGrizzlyBears,
+  _poolGrovewatchElder,
+  _poolGrovewatchHollow,
   _poolGutShot,
   _poolHillGiant,
   _poolHistoryOfBenalia,

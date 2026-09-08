@@ -636,7 +636,12 @@ export class RandomController extends AutomaticController {
     const player = this.playerId;
     switch (legal.kind) {
       case "play-land":
-        return { type: "play-land", player, card: legal.card };
+        return {
+          type: "play-land",
+          player,
+          card: legal.card,
+          ...(legal.face !== undefined ? { face: legal.face } : {}),
+        };
       case "suspend":
         return { type: "suspend", player, card: legal.card };
       case "foretell":
@@ -651,6 +656,7 @@ export class RandomController extends AutomaticController {
             ? { xValue: this.pickIndex(legal.xCost.maxX + 1) }
             : {}),
           ...(legal.via !== undefined ? { via: legal.via } : {}),
+          ...(legal.face !== undefined ? { face: legal.face } : {}),
         };
       case "activate-ability": {
         const sac = legal.sacrifice;

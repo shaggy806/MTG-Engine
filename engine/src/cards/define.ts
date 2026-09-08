@@ -190,6 +190,14 @@ export interface CardDefinition {
    * its `at`. After the final chapter's ability leaves the stack the Saga is
    * sacrificed (an SBA). `null` for a non-Saga. */
   readonly chapters: readonly SagaChapter[] | null;
+  /** The faces of a multi-face card (rule 712 — ROADMAP Phase 10a/10b), by
+   * name, front face first. Each name is registered under its own
+   * `CardDefinition` like any card. A card with `faces` is cast/played by
+   * choosing a face (`cast-spell` / `play-land` carry `face`); a transform
+   * effect flips `GameObject.face` in place. `null` (or length < 2) for a
+   * single-faced card. Every face's own `CardDefinition` should carry the same
+   * `faces` list so `registry.get(backName).faces` works too. */
+  readonly faces: readonly string[] | null;
 }
 
 /** One chapter ability of a Saga (rule 714.2c). `at` lists the lore-counter
@@ -229,6 +237,7 @@ interface CardDraft {
   suspend?: { readonly n: number; readonly cost: string };
   escape?: { readonly cost: string; readonly exileCount: number };
   chapters?: readonly SagaChapter[];
+  faces?: readonly string[];
 }
 
 /** Build a {@link CardDefinition} from a partial draft, filling in defaults. */
@@ -276,6 +285,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     suspend: draft.suspend ?? null,
     escape: draft.escape ?? null,
     chapters: draft.chapters ?? null,
+    faces: draft.faces ?? null,
   };
 }
 

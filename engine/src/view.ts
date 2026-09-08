@@ -23,7 +23,7 @@ import type {
   TurnState,
   ZoneType,
 } from "./state.js";
-import { activePlayerOf, printedCardName } from "./state.js";
+import { activePlayerOf, faceName, printedCardName } from "./state.js";
 import type { TargetRef } from "./target.js";
 
 export interface PublicPlayerInfo {
@@ -53,6 +53,11 @@ export interface VisibleObject {
   /** The name this permanent is a copy of (rule 707), or `null`. Its
    * mana cost / text / computed P/T already reflect the copy. */
   readonly copyOf: string | null;
+  /** The name of the multi-face card's up face (rule 712 — ROADMAP Phase 10);
+   * `= cardName` for a single-faced card. The client renders the face from
+   * `copyOf ?? faceName`. `faces` lists all of them (front first) or is `null`. */
+  readonly faceName: string;
+  readonly faces: readonly string[] | null;
   readonly owner: PlayerId;
   readonly controller: PlayerId;
   readonly zone: ZoneType;
@@ -171,6 +176,8 @@ function visible(
     // card's name (rule 707) and the client renders that face.
     cardName: object.cardName,
     copyOf: object.copyOf,
+    faceName: faceName(object),
+    faces: object.faces === undefined ? null : [...object.faces],
     owner: object.owner,
     controller: object.controller,
     zone: object.zone,

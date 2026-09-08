@@ -314,7 +314,7 @@ export class Game {
         this.passPriority(action.player);
         break;
       case "play-land":
-        this.playLand(action.player, action.card);
+        this.playLand(action.player, action.card, action.face ?? 0);
         break;
       case "suspend":
         this.suspendCard(action.player, action.card);
@@ -329,6 +329,7 @@ export class Game {
           action.targets ?? [],
           action.xValue ?? 0,
           action.via,
+          action.face ?? 0,
         );
         break;
       case "activate-ability":
@@ -396,13 +397,13 @@ export class Game {
           ? null
           : `${action.player} does not have priority`;
       case "play-land":
-        return this.whyCannotPlayLand(action.player, action.card);
+        return this.whyCannotPlayLand(action.player, action.card, action.face ?? 0);
       case "suspend":
         return this.whyCannotSuspend(action.player, action.card);
       case "foretell":
         return this.whyCannotForetell(action.player, action.card);
       case "cast-spell":
-        return this.whyCannotCastSpell(action.player, action.card, action.via);
+        return this.whyCannotCastSpell(action.player, action.card, action.via, action.face ?? 0);
       case "activate-ability":
         return this.whyCannotActivateAbility(
           action.player,
@@ -578,25 +579,38 @@ export class Game {
       this.isCastableCommander(player, id),
     );
     for (const card of [...this.state.zones.perPlayer[player].hand, ...ownCommanders]) {
-      const cardName = this.state.objects[card].cardName;
-      const def = this.registry.get(cardName);
-      if (def.types.includes("land")) {
-        if (this.whyCannotPlayLand(player, card) === null) {
-          out.push({ kind: "play-land", card, cardName });
+      const ownName = this.state.objects[card].cardName;
+      const cardFaces = this.registry.get(ownName).faces;
+      // Each face of a multi-face card is a separately-playable option (rule
+      // 712 — ROADMAP Phase 10); a single-faced card has one.
+      const faceList: readonly (readonly [number | undefined, string])[] =
+        cardFaces !== null
+          ? cardFaces.map((n, i) => [i, n] as const)
+          : [[undefined, ownName] as const];
+      for (const [face, cardName] of faceList) {
+        const def = this.faceDef(card, face ?? 0);
+        const faceProp = face !== undefined ? { face } : {};
+        if (def.types.includes("land")) {
+          if (this.whyCannotPlayLand(player, card, face ?? 0) === null) {
+            out.push({ kind: "play-land", card, cardName, ...faceProp });
+          }
+        } else if (this.whyCannotCastSpell(player, card, undefined, face ?? 0) === null) {
+          const parsed = parseManaCost(def.manaCost);
+          out.push({
+            kind: "cast-spell",
+            card,
+            cardName,
+            targetSpecs: def.targets,
+            targetOptions: this.targetOptionsFor(def.targets, player, this.cardSource(def)),
+            ...faceProp,
+            ...(parsed.x > 0
+              ? { xCost: { maxX: this.maxAffordableX(player, card, def) } }
+              : {}),
+          });
         }
-      } else if (this.whyCannotCastSpell(player, card) === null) {
-        const parsed = parseManaCost(def.manaCost);
-        out.push({
-          kind: "cast-spell",
-          card,
-          cardName,
-          targetSpecs: def.targets,
-          targetOptions: this.targetOptionsFor(def.targets, player, this.cardSource(def)),
-          ...(parsed.x > 0
-            ? { xCost: { maxX: this.maxAffordableX(player, card, def) } }
-            : {}),
-        });
       }
+      const cardName = ownName;
+      const def = this.registry.get(ownName);
       // Suspend (rule 702.62) — a special action, offered alongside the cast.
       if (def.suspend !== null && this.whyCannotSuspend(player, card) === null) {
         out.push({ kind: "suspend", card, cardName, n: def.suspend.n, cost: def.suspend.cost });
@@ -806,11 +820,12 @@ export class Game {
 
       const ids: ObjectId[] = [];
       for (const name of cards) {
-        this.registry.get(name); // validate the deck list up front
+        const def = this.registry.get(name); // validate the deck list up front
         const id = this.mintObjectId();
         this.state.objects[id] = {
           id,
           cardName: name,
+          ...(def.faces !== null ? { faces: def.faces, face: 0 } : {}),
           owner: player,
           controller: player,
           zone: "library",
@@ -2120,12 +2135,21 @@ export class Game {
     return null;
   }
 
-  private whyCannotPlayLand(player: PlayerId, cardId: ObjectId): string | null {
+  /** The `CardDefinition` for face `face` of `cardId` — its own def for a
+   * single-faced card, or `faces[face]`'s def for a multi-face card (rule
+   * 712). */
+  private faceDef(cardId: ObjectId, face = 0): CardDefinition {
+    const own = this.registry.get(this.state.objects[cardId].cardName);
+    const faceName = own.faces?.[face];
+    return faceName !== undefined ? this.registry.get(faceName) : own;
+  }
+
+  private whyCannotPlayLand(player: PlayerId, cardId: ObjectId, face = 0): string | null {
     return (
       this.whyCannotAct(player) ??
       this.whyNotSorcerySpeed(player, "play a land") ??
       this.landDropReason(player) ??
-      this.landInHandReason(player, cardId)
+      this.landInHandReason(player, cardId, face)
     );
   }
 
@@ -2136,19 +2160,20 @@ export class Game {
       : null;
   }
 
-  private landInHandReason(player: PlayerId, cardId: ObjectId): string | null {
+  private landInHandReason(player: PlayerId, cardId: ObjectId, face = 0): string | null {
     if (!this.state.zones.perPlayer[player].hand.includes(cardId)) {
       return `${player} does not have that card in hand`;
     }
-    const def = this.registry.get(this.state.objects[cardId].cardName);
+    const def = this.faceDef(cardId, face);
     return def.types.includes("land") ? null : `${def.name} is not a land`;
   }
 
-  private playLand(player: PlayerId, cardId: ObjectId): void {
-    const why = this.whyCannotPlayLand(player, cardId);
+  private playLand(player: PlayerId, cardId: ObjectId, face = 0): void {
+    const why = this.whyCannotPlayLand(player, cardId, face);
     if (why !== null) throw new Error(why);
     const playerState = this.state.players[player];
 
+    this.state.objects[cardId].face = face;
     this.moveObject(cardId, "battlefield");
     playerState.landsPlayedThisTurn += 1;
     this.emit({ type: "land-played", player, object: cardId });
@@ -2451,8 +2476,8 @@ export class Game {
   /** The mana-cost string `player` would pay to cast `cardId` under `via`
    * (the flashback cost from the graveyard, the foretell cost from exile, else
    * the printed cost). */
-  private castCostString(cardId: ObjectId, via: CastVia | undefined): string | null {
-    const def = this.registry.get(this.state.objects[cardId].cardName);
+  private castCostString(cardId: ObjectId, via: CastVia | undefined, face = 0): string | null {
+    const def = this.faceDef(cardId, face);
     if (via === "flashback") return this.flashbackCostOf(cardId);
     if (via === "escape") return def.escape?.cost ?? null;
     if (via === "foretell") return def.foretell?.cost ?? null;
@@ -2463,10 +2488,11 @@ export class Game {
     player: PlayerId,
     cardId: ObjectId,
     via?: CastVia,
+    face = 0,
   ): string | null {
     const blocked = this.whyCannotAct(player);
     if (blocked !== null) return blocked;
-    const def = this.registry.get(this.state.objects[cardId].cardName);
+    const def = this.faceDef(cardId, face);
     if (via === "flashback") {
       if (this.flashbackCostOf(cardId) === null) return `${def.name} does not have flashback`;
       if (!this.state.zones.perPlayer[player].graveyard.includes(cardId)) {
@@ -2511,8 +2537,10 @@ export class Game {
       }
     }
     if (
-      this.payMana(player, this.castingCostOf(player, cardId, def, 0, this.castCostString(cardId, via))) ===
-      null
+      this.payMana(
+        player,
+        this.castingCostOf(player, cardId, def, 0, this.castCostString(cardId, via, face)),
+      ) === null
     ) {
       return `${player} cannot pay the cost of ${def.name}`;
     }
@@ -2525,13 +2553,17 @@ export class Game {
     targets: readonly TargetRef[],
     xValue = 0,
     via?: CastVia,
+    face = 0,
   ): void {
-    const why = this.whyCannotCastSpell(player, cardId, via);
+    const why = this.whyCannotCastSpell(player, cardId, via, face);
     if (why !== null) throw new Error(why);
 
     const object = this.state.objects[cardId];
+    // Set the face up front so `printedCardName` / characteristics resolve to
+    // the chosen face for the rest of this method and while on the stack.
+    if (object.faces !== undefined) object.face = face;
     const def = this.registry.get(printedCardName(object));
-    const costString = this.castCostString(cardId, via);
+    const costString = this.castCostString(cardId, via, face);
     const hasX = parseManaCost(costString).x > 0;
     const chosenX = hasX ? Math.max(0, Math.floor(xValue)) : 0;
 
@@ -5308,6 +5340,11 @@ export class Game {
     object.suspended = false;
     object.foretold = false;
     object.foretoldOnTurn = null;
+    // A multi-face card reverts to its front face while not on the battlefield
+    // or stack (rule 712); casting/playing it sets the face again.
+    if (object.faces !== undefined && to !== "battlefield" && to !== "stack") {
+      object.face = 0;
+    }
 
     if (to === "battlefield") {
       object.enteredBattlefieldOnTurn = this.state.turn.number;

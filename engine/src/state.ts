@@ -59,6 +59,16 @@ export interface GameObject {
    * `printedCardName`, which returns this when set. Cleared on any zone change
    * (a Clone that dies and returns is a Clone again). */
   copyOf: string | null;
+  /** The faces of a multi-face card (rule 712 — ROADMAP Phase 10), by name,
+   * front first — copied from `CardDefinition.faces` when the object is
+   * created. Absent for a single-faced card. */
+  faces?: readonly string[];
+  /** Which face of a multi-face card is up (index into `faces`). `0` / absent
+   * = the front face. Set by the cast/play face choice; a transform effect
+   * toggles it in place; reset to `0` on a move to a hidden zone (rule 712 —
+   * a DFC has only its front face's characteristics while not on the
+   * battlefield or stack). */
+  face?: number;
   /** The value chosen for `{X}` when this spell was cast (rule 601.2b). Set on
    * the stack object and preserved onto the permanent it becomes, so an
    * "enters with X counters"-style effect can still read it. `null` when the
@@ -496,11 +506,21 @@ export function createPlayerState(id: PlayerId, rules: GameRules): PlayerState {
 
 // --- selectors -------------------------------------------------------------
 
-/** The card name whose printed characteristics this object currently has — its
- * own, or the one it's a copy of (rule 707 / layer 1). Every `registry.get`
- * for an object's characteristics/abilities/face should go through this. */
+/** The name of the face of a multi-face card that is currently up (rule 712) —
+ * its front face's name (`object.cardName`) unless a different face was chosen
+ * / it was transformed. */
+export const faceName = (object: GameObject): string => {
+  const faces = object.faces;
+  if (faces === undefined || faces.length < 2) return object.cardName;
+  return faces[object.face ?? 0] ?? object.cardName;
+};
+
+/** The card name whose printed characteristics this object currently has — the
+ * one it's a copy of (rule 707 / layer 1), else its up face (rule 712), else
+ * its own. Every `registry.get` for an object's characteristics/abilities
+ * should go through this. */
 export const printedCardName = (object: GameObject): string =>
-  object.copyOf ?? object.cardName;
+  object.copyOf ?? faceName(object);
 
 export const activePlayerOf = (state: GameState): PlayerId =>
   state.turnOrder[state.turn.activePlayerIndex];

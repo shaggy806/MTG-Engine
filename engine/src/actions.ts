@@ -31,7 +31,14 @@ export interface BlockerDeclaration {
 
 export type Action =
   | { readonly type: "pass-priority"; readonly player: PlayerId }
-  | { readonly type: "play-land"; readonly player: PlayerId; readonly card: ObjectId }
+  | {
+      readonly type: "play-land";
+      readonly player: PlayerId;
+      readonly card: ObjectId;
+      /** Which face of a multi-face card to play (rule 712 — ROADMAP Phase
+       * 10). Index into `CardDefinition.faces`; `0` / omitted = the front. */
+      readonly face?: number;
+    }
   | {
       /** Suspend a card from hand (rule 702.62): a special action, pay the
        * suspend cost, exile it with N time counters. */
@@ -56,6 +63,9 @@ export type Action =
        * only meaningful) when the card's cost contains `{X}`; ignored
        * otherwise. */
       readonly xValue?: number;
+      /** Which face of a multi-face card to cast (rule 712 — ROADMAP Phase
+       * 10). Index into `CardDefinition.faces`; `0` / omitted = the front. */
+      readonly face?: number;
       /** Cast under an alternative permission rather than from the hand for the
        * printed cost (ROADMAP Phase 6): `"flashback"` / `"escape"` from the
        * graveyard, `"foretell"` from face-down exile. */
@@ -177,6 +187,9 @@ export type LegalAction =
       readonly kind: "play-land";
       readonly card: ObjectId;
       readonly cardName: string;
+      /** Set when `card` is a multi-face card — the face this action plays.
+       * The driver echoes it back in the `play-land` action. */
+      readonly face?: number;
     }
   | {
       readonly kind: "suspend";
@@ -207,6 +220,9 @@ export type LegalAction =
        * `"foretell"` from face-down exile). The driver must echo `via` back in
        * the `cast-spell` action. */
       readonly via?: CastVia;
+      /** Set when `card` is a multi-face card — the face this action casts.
+       * The driver echoes it back in the `cast-spell` action. */
+      readonly face?: number;
     }
   | {
       readonly kind: "activate-ability";
