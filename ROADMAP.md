@@ -25,7 +25,7 @@ the diagram) are in.
 - [x] **Phase 7** — Combat depth + turn-structure control *(core done — extra turns, additional combat, can't-be-blocked; first-strike window / trample-as-choice / must-be-blocked deferred)*
 - [x] **Phase 8** — Cascade, storm, "cast" triggers, copy-a-spell
 - [x] **Phase 9** — Commander-format completeness + deck validation *(core done — colour identity, deck validation, Partner, a 4th commander; Companion / legend-rule choice / simultaneous mulligans deferred)*
-- [~] **Phase 10** — Tier 3 long tail (demand-driven) — **Sagas landed**; multi-face cards **10a modal/split + 10b transform**, day/night, battles, emblems, … still open
+- [~] **Phase 10** — Tier 3 long tail (demand-driven) — **Sagas + 10a (cast-time face choice / MDFC) landed**; **10b transform**, day/night, battles, emblems, … still open
 
 ## Dependency spine
 
@@ -40,7 +40,7 @@ Phase 2 (CardFilter + effect scope) ─┬─► Phase 3 (trigger / static / cos
 
 Phase 4 (mana) ──► Phase 3's cost-modification statics actually land here
 Phase 6 (cast pipeline) ─┬─► Phase 8 (cascade / storm / copy-spell)
-                         └─► Phase 10a (modal / split faces — a cast-time face choice)
+                         └─► Phase 10a (modal / split faces — a cast-time face choice) ✓
 ```
 
 Phases 2, 4, 6, 7 are otherwise independent and can be reordered by demand.
@@ -407,11 +407,11 @@ today) / protection-from-everything / "hexproof from", land/artifact/planeswalke
   Foretold badges. Cards: Snapcaster Mage, Rift Bolt, Behold the Multiverse,
   Underworld Rage-Hound. `alt-cast.test.ts` 5→8 cases; fuzz deck B gains all
   four; fuzzer clean at 2p/3p/4p.
-- [ ] **6c (deferred)** — `disturb` (needs a back face — Phase 10a); a
+- [ ] **6c (deferred)** — `disturb` (a transforming back face — Phase 10b); a
   `playableUntil` impulse-draw marker; a *characteristics-carrying*
   `spell-cast` event (the Phase 8 prerequisite); a real player choice for a
   targeted suspended spell's targets and Snapcaster's target (the
-  `chooseTargets` gap); cast-time `face` selection (Phase 10a).
+  `chooseTargets` gap). Cast-time `face` selection landed with **Phase 10a**.
 
 - `castSpell(card, fromZone, permission)`: cast from graveyard / exile / anywhere
   via a static grant. A per-object `playableUntil` marker (turn number) for
@@ -424,9 +424,8 @@ today) / protection-from-everything / "hexproof from", land/artifact/planeswalke
 - Defines a **clean `spell-cast` event** carrying the spell's characteristics —
   the prerequisite for Phase 8.
 - The `cast-spell` / `play-land` **`face` field** and per-side `legalActions`
-  enumeration belong here too (a cast-time choice like `{X}` / modes) — it's the
-  hard half of Phase 10a (modal / split faces). Fold it in if a DFC deck is a
-  priority; otherwise 10a stays deferred.
+  enumeration landed with **Phase 10a** (a cast-time choice like `{X}` / modes) —
+  see the Phase 10 section.
 - **Cards:** `Faithless Looting` (flashback), an escape card, `Rift Bolt`
   (suspend), `Snapcaster Mage`-lite (grants a graveyard spell flashback).
 
@@ -554,23 +553,33 @@ Each is small once Phases 1–3 exist. Pull them in as specific decks need them.
   sacrificed (`saga-completed` event). New `lore-counter-added` event; both log
   formatters + a lore-counter badge (the client already renders `counters`).
   Card: `History of Benalia` (+ a `Knight Token`). `saga.test.ts`.
-- **10a — modal / split faces (a *cast-time* face choice).** The card is one
+- [x] **10a — modal / split faces (a *cast-time* face choice).** The card is one
   object with two (or more) castable faces; you pick one as it leaves the hand
-  and it's that face for the rest of its existence. Covers **MDFC** (`//` modal
-  double-faced), **split**, **adventure**, and **rooms**.
-  - `CardDefinition.faces: string[]` (each face registered under its own name in
-    the `CardRegistry`, like any card) + a `faceGroup` marker so the two are
-    known to be the same physical card.
-  - `cast-spell` / `play-land` gain a `face` field; `legalActions` enumerates a
-    playable face per side (respecting each side's own type / timing / cost —
-    an MDFC land side is a land drop, the spell side is a cast).
-  - `GameObject.face` (which side is "up"); `printedCardName(object)` resolves
-    `copyOf ?? faceName(object)` — the same one-selector pattern Clone uses, so
-    every `registry.get` site is unaffected.
+  and it's that face for the rest of its existence. **MDFC** (`//` modal
+  double-faced) done; **split**, **adventure**, and **rooms** reuse the same seam.
+  - `CardDefinition.faces: readonly string[] | null` — each face is registered
+    under its own name in the `CardRegistry` like any card, front face first;
+    the shared `faces` array on each face's `CardDefinition` is what ties them
+    together as one physical card.
+  - `cast-spell` / `play-land` Actions + `LegalAction`s gain an optional `face`
+    field; `legalActions`' hand loop iterates a `faceList` and offers a playable
+    entry per side (respecting each side's own type / timing / cost — an MDFC
+    land side is a `play-land`, the spell side a `cast-spell`). `game.faceDef(id,
+    face)` resolves the chosen face's definition; `whyCannotPlayLand` /
+    `whyCannotCastSpell` / `castCostString` / `playLand` / `castSpell` all take a
+    `face` and set `GameObject.face` before the move.
+  - `GameObject.faces` / `face` (which side is "up"); `faceName(object)` returns
+    `faces[face]`, and `printedCardName(object)` resolves `copyOf ?? faceName` —
+    the same one-selector pattern Clone uses, so every `registry.get` site is
+    unaffected. `moveObject` resets `face` to 0 on any move to a hidden zone
+    (rule 712 — a multi-face card off the battlefield/stack has only its front face).
+  - `VisibleObject` gains `faceName` + `faces`; the client renders the up face
+    from `copyOf ?? faceName ?? cardName`, shows a `⇄` marker on a multi-face
+    tile, and offers one button per playable face in hand.
+  - Card: `Grovewatch Elder` // `Grovewatch Hollow` (a made-up MDFC — {2}{G} 2/3
+    vigilance creature / an enters-tapped {G} land). `mdfc.test.ts`.
   - Adventure adds an exile-with-"may cast the creature later" state (a small
-    `playableUntil`-style marker, shared with Phase 6's impulse-draw work).
-  - **Depends on Phase 6** — face selection is a cast-pipeline choice, same
-    shape as `{X}` / modal-mode selection.
+    `playableUntil`-style marker, shared with Phase 6's impulse-draw work) — still open.
 - **10b — transforming DFCs (an *in-place* face flip).** A permanent flips
   between its two printed faces while staying the same object (Innistrad
   werewolves, `//` transform cards, the Marvel Spider-Man hero/alter-ego
