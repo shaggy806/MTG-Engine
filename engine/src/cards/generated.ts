@@ -7,6 +7,7 @@ import _poolActOfTreason from "./pool/act-of-treason.js";
 import _poolAggravatedAssault from "./pool/aggravated-assault.js";
 import _poolAjanisPridemate from "./pool/ajanis-pridemate.js";
 import _poolAmbushViper from "./pool/ambush-viper.js";
+import _poolAnafenzaTheForemost from "./pool/anafenza-the-foremost.js";
 import _poolAngelicEdict from "./pool/angelic-edict.js";
 import _poolArcaneSignet from "./pool/arcane-signet.js";
 import _poolArdentRecruit from "./pool/ardent-recruit.js";
@@ -104,6 +105,7 @@ import _poolMountain from "./pool/mountain.js";
 import _poolNaturalize from "./pool/naturalize.js";
 import _poolNegate from "./pool/negate.js";
 import _poolNightfallCultist from "./pool/nightfall-cultist.js";
+import _poolNotionThief from "./pool/notion-thief.js";
 import _poolOpt from "./pool/opt.js";
 import _poolOracleOfMulDaya from "./pool/oracle-of-mul-daya.js";
 import _poolPacifism from "./pool/pacifism.js";
@@ -132,6 +134,7 @@ import _poolSolRing from "./pool/sol-ring.js";
 import _poolSoulWarden from "./pool/soul-warden.js";
 import _poolSpectralSquire from "./pool/spectral-squire.js";
 import _poolSunderCharm from "./pool/sunder-charm.js";
+import _poolSunlitBastion from "./pool/sunlit-bastion.js";
 import _poolSwamp from "./pool/swamp.js";
 import _poolThaliaGuardianOfThraben from "./pool/thalia-guardian-of-thraben.js";
 import _poolThievingMagpie from "./pool/thieving-magpie.js";
@@ -175,6 +178,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolAggravatedAssault,
   _poolAjanisPridemate,
   _poolAmbushViper,
+  _poolAnafenzaTheForemost,
   _poolAngelicEdict,
   _poolArcaneSignet,
   _poolArdentRecruit,
@@ -272,6 +276,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolNaturalize,
   _poolNegate,
   _poolNightfallCultist,
+  _poolNotionThief,
   _poolOpt,
   _poolOracleOfMulDaya,
   _poolPacifism,
@@ -300,6 +305,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolSoulWarden,
   _poolSpectralSquire,
   _poolSunderCharm,
+  _poolSunlitBastion,
   _poolSwamp,
   _poolThaliaGuardianOfThraben,
   _poolThievingMagpie,
