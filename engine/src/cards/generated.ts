@@ -21,6 +21,7 @@ import _poolBoggartBrute from "./pool/boggart-brute.js";
 import _poolBonesplitter from "./pool/bonesplitter.js";
 import _poolBoomerang from "./pool/boomerang.js";
 import _poolBramblewingTheUntamed from "./pool/bramblewing-the-untamed.js";
+import _poolCarnageTyrant from "./pool/carnage-tyrant.js";
 import _poolChandraAcolyteOfFlame from "./pool/chandra-acolyte-of-flame.js";
 import _poolChromaticLantern from "./pool/chromatic-lantern.js";
 import _poolClone from "./pool/clone.js";
@@ -28,6 +29,7 @@ import _poolCombatThresher from "./pool/combat-thresher.js";
 import _poolCommandTower from "./pool/command-tower.js";
 import _poolConsider from "./pool/consider.js";
 import _poolContentiousPlan from "./pool/contentious-plan.js";
+import _poolCoronationRite from "./pool/coronation-rite.js";
 import _poolCorvathEmberScribe from "./pool/corvath-ember-scribe.js";
 import _poolCounterspell from "./pool/counterspell.js";
 import _poolCrawWurm from "./pool/craw-wurm.js";
@@ -41,6 +43,8 @@ import _poolDisenchant from "./pool/disenchant.js";
 import _poolDoomBlade from "./pool/doom-blade.js";
 import _poolDoublingSeason from "./pool/doubling-season.js";
 import _poolElvishVisionary from "./pool/elvish-visionary.js";
+import _poolEmberDart from "./pool/ember-dart.js";
+import _poolEmberclawScout from "./pool/emberclaw-scout.js";
 import _poolEssenceScatter from "./pool/essence-scatter.js";
 import _poolEvolvingWilds from "./pool/evolving-wilds.js";
 import _poolExplorersInsight from "./pool/explorers-insight.js";
@@ -63,6 +67,7 @@ import _poolGoblinRaider from "./pool/goblin-raider.js";
 import _poolGrapeshot from "./pool/grapeshot.js";
 import _poolGravePact from "./pool/grave-pact.js";
 import _poolGraveRecall from "./pool/grave-recall.js";
+import _poolGraveboundSquire from "./pool/gravebound-squire.js";
 import _poolGreed from "./pool/greed.js";
 import _poolGrizzlyBears from "./pool/grizzly-bears.js";
 import _poolGrovewatchElder from "./pool/grovewatch-elder.js";
@@ -79,6 +84,7 @@ import _poolJump from "./pool/jump.js";
 import _poolLevitation from "./pool/levitation.js";
 import _poolLightningBolt from "./pool/lightning-bolt.js";
 import _poolLlanowarElves from "./pool/llanowar-elves.js";
+import _poolLongtuskCub from "./pool/longtusk-cub.js";
 import _poolLordOfExtinction from "./pool/lord-of-extinction.js";
 import _poolManOWar from "./pool/man-o-war.js";
 import _poolMindControl from "./pool/mind-control.js";
@@ -118,9 +124,11 @@ import _poolSerraAngel from "./pool/serra-angel.js";
 import _poolSnapcasterMage from "./pool/snapcaster-mage.js";
 import _poolSolRing from "./pool/sol-ring.js";
 import _poolSoulWarden from "./pool/soul-warden.js";
+import _poolSpectralSquire from "./pool/spectral-squire.js";
 import _poolSwamp from "./pool/swamp.js";
 import _poolThaliaGuardianOfThraben from "./pool/thalia-guardian-of-thraben.js";
 import _poolThievingMagpie from "./pool/thieving-magpie.js";
+import _poolThornOfTheBlackRose from "./pool/thorn-of-the-black-rose.js";
 import _poolThreaten from "./pool/threaten.js";
 import _poolTimeWarp from "./pool/time-warp.js";
 import _poolTomeScour from "./pool/tome-scour.js";
@@ -172,6 +180,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolBonesplitter,
   _poolBoomerang,
   _poolBramblewingTheUntamed,
+  _poolCarnageTyrant,
   _poolChandraAcolyteOfFlame,
   _poolChromaticLantern,
   _poolClone,
@@ -179,6 +188,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolCommandTower,
   _poolConsider,
   _poolContentiousPlan,
+  _poolCoronationRite,
   _poolCorvathEmberScribe,
   _poolCounterspell,
   _poolCrawWurm,
@@ -192,6 +202,8 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolDoomBlade,
   _poolDoublingSeason,
   _poolElvishVisionary,
+  _poolEmberDart,
+  _poolEmberclawScout,
   _poolEssenceScatter,
   _poolEvolvingWilds,
   _poolExplorersInsight,
@@ -214,6 +226,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolGrapeshot,
   _poolGravePact,
   _poolGraveRecall,
+  _poolGraveboundSquire,
   _poolGreed,
   _poolGrizzlyBears,
   _poolGrovewatchElder,
@@ -230,6 +243,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolLevitation,
   _poolLightningBolt,
   _poolLlanowarElves,
+  _poolLongtuskCub,
   _poolLordOfExtinction,
   _poolManOWar,
   _poolMindControl,
@@ -269,9 +283,11 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolSnapcasterMage,
   _poolSolRing,
   _poolSoulWarden,
+  _poolSpectralSquire,
   _poolSwamp,
   _poolThaliaGuardianOfThraben,
   _poolThievingMagpie,
+  _poolThornOfTheBlackRose,
   _poolThreaten,
   _poolTimeWarp,
   _poolTomeScour,
