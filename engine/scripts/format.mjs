@@ -1,7 +1,12 @@
 // Shared pretty-printing for the playground scripts.
 
 export const makeFormatter = (game) => {
-  const name = (id) => game.state.objects[id]?.cardName ?? id;
+  const name = (id) => {
+    const o = game.state.objects[id];
+    if (o === undefined) return id;
+    const faces = o.faces;
+    return faces && faces.length > 1 ? (faces[o.face ?? 0] ?? o.cardName) : o.cardName;
+  };
   const target = (t) =>
     t.kind === "player" ? t.player : name(t.object);
 

@@ -347,7 +347,10 @@ export function useNetworkGame(): NetworkGame {
   }, [send])
 
   const nameOf = useCallback(
-    (id: ObjectId): string => view?.objects[id]?.cardName ?? id,
+    (id: ObjectId): string => {
+      const o = view?.objects[id]
+      return o ? (o.faceName ?? o.cardName) : id
+    },
     [view],
   )
 

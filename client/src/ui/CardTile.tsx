@@ -82,9 +82,9 @@ export function CardTile({
   compact = false,
   onClick,
 }: CardTileProps) {
-  // A Clone renders the *copied* card's face (art + name); `cardName` stays
-  // its true identity for the log.
-  const face = obj.copyOf ?? obj.cardName
+  // A Clone renders the *copied* card's face; a multi-face card renders its up
+  // face (`faceName`); `cardName` stays the true identity for the log.
+  const face = obj.copyOf ?? obj.faceName ?? obj.cardName
   const [artFailed, setArtFailed] = useState(() => artMisses.has(face))
   const isCreature = obj.power !== null && obj.toughness !== null
   const isPlaneswalker = obj.loyalty !== null
@@ -123,6 +123,9 @@ export function CardTile({
         <span className="ct-name">
           {face}
           {obj.copyOf ? <span className="ct-copy"> (copy)</span> : null}
+          {obj.faces && obj.faces.length > 1 ? (
+            <span className="ct-copy" title={obj.faces.join(' // ')}> ⇄</span>
+          ) : null}
         </span>
         {obj.manaCost ? (
           <span className="ct-cost">

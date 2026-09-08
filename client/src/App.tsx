@@ -34,6 +34,7 @@ const IMPORT_DECK_URL = `${
 }/import-deck`
 
 type CastAction = Extract<LegalAction, { kind: 'cast-spell' }>
+type LandAction = Extract<LegalAction, { kind: 'play-land' }>
 type SuspendAction = Extract<LegalAction, { kind: 'suspend' }>
 type ForetellAction = Extract<LegalAction, { kind: 'foretell' }>
 type AbilityAction = Extract<LegalAction, { kind: 'activate-ability' }>
@@ -65,6 +66,8 @@ interface Targeting {
   readonly sacrifice?: ObjectId
   /** Alternative casting permission (Phase 6) — flashback / escape / foretell. */
   readonly via?: CastVia
+  /** Which face of a multi-face card is being cast (Phase 10). */
+  readonly face?: number
 }
 
 /**
@@ -480,13 +483,24 @@ function Table({ view, seat, opponents, game }: TableProps) {
 
   // --- classify the legal actions ------------------------------------
   const landByCard = useMemo(() => {
-    const m = new Map<ObjectId, LegalAction>()
+    const m = new Map<ObjectId, LandAction>()
     for (const a of actions) if (a.kind === 'play-land') m.set(a.card, a)
     return m
   }, [actions])
   const castByCard = useMemo(() => {
     const m = new Map<ObjectId, CastAction>()
     for (const a of actions) if (a.kind === 'cast-spell') m.set(a.card, a)
+    return m
+  }, [actions])
+  /** Every playable face of a card (a multi-face card has 2+). */
+  const playFacesByCard = useMemo(() => {
+    const m = new Map<ObjectId, (CastAction | LandAction)[]>()
+    for (const a of actions) {
+      if (a.kind !== 'cast-spell' && a.kind !== 'play-land') continue
+      const list = m.get(a.card) ?? []
+      list.push(a)
+      m.set(a.card, list)
+    }
     return m
   }, [actions])
   const suspendByCard = useMemo(() => {
@@ -610,7 +624,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
 
   const finishTargets = useCallback(
     (
-      t: Pick<Targeting, 'kind' | 'source' | 'abilityIndex' | 'xValue' | 'sacrifice' | 'via'>,
+      t: Pick<Targeting, 'kind' | 'source' | 'abilityIndex' | 'xValue' | 'sacrifice' | 'via' | 'face'>,
       targets: readonly TargetRef[],
     ) => {
       game.dispatch(
@@ -622,6 +636,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
               targets: [...targets],
               ...(t.xValue !== undefined ? { xValue: t.xValue } : {}),
               ...(t.via !== undefined ? { via: t.via } : {}),
+              ...(t.face !== undefined ? { face: t.face } : {}),
             }
           : {
               type: 'activate-ability',
@@ -661,9 +676,27 @@ function Table({ view, seat, opponents, game }: TableProps) {
         specs: cast.targetSpecs,
         options: cast.targetOptions,
         ...(cast.via !== undefined ? { via: cast.via } : {}),
+        ...(cast.face !== undefined ? { face: cast.face } : {}),
       })
     },
     [beginTargeting],
+  )
+
+  /** Dispatch / begin one playable face of a hand card. */
+  const playFace = useCallback(
+    (a: CastAction | LandAction) => {
+      if (a.kind === 'play-land') {
+        game.dispatch({
+          type: 'play-land',
+          player: seat,
+          card: a.card,
+          ...(a.face !== undefined ? { face: a.face } : {}),
+        })
+      } else {
+        beginCast(a)
+      }
+    },
+    [beginCast, game, seat],
   )
 
   const confirmX = useCallback(() => {
@@ -679,6 +712,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
       options: cast.targetOptions,
       xValue: value,
       ...(cast.via !== undefined ? { via: cast.via } : {}),
+      ...(cast.face !== undefined ? { face: cast.face } : {}),
     })
   }, [beginTargeting, pendingX])
 
@@ -750,15 +784,12 @@ function Table({ view, seat, opponents, game }: TableProps) {
         return
       }
       if (mode !== 'priority') return
-      const land = landByCard.get(id)
-      if (land?.kind === 'play-land') {
-        game.dispatch({ type: 'play-land', player: seat, card: id })
-        return
-      }
-      const cast = castByCard.get(id)
-      if (cast) beginCast(cast)
+      const opts = playFacesByCard.get(id) ?? []
+      // A multi-face card shows a button per face (below the tile) — a bare
+      // click does nothing so the choice stays explicit.
+      if (opts.length === 1) playFace(opts[0])
     },
-    [beginCast, bottomAction, castByCard, discardAction, game, landByCard, mode, seat],
+    [bottomAction, discardAction, mode, playFace, playFacesByCard],
   )
 
   /** Which id a click on a (possibly stacked) tile should act on. */
@@ -1743,6 +1774,9 @@ function Table({ view, seat, opponents, game }: TableProps) {
             }
             const suspend = mode === 'priority' ? suspendByCard.get(id) : undefined
             const foretell = mode === 'priority' ? foretellByCard.get(id) : undefined
+            const faceOpts =
+              mode === 'priority' ? (playFacesByCard.get(id) ?? []) : []
+            const multiFace = faceOpts.length > 1
             return (
               <div key={id} className="hand-card">
                 <CardTile
@@ -1751,6 +1785,13 @@ function Table({ view, seat, opponents, game }: TableProps) {
                   selected={selected}
                   onClick={() => clickHandCard(id)}
                 />
+                {multiFace
+                  ? faceOpts.map((a, i) => (
+                      <button key={i} type="button" onClick={() => playFace(a)}>
+                        {a.kind === 'play-land' ? 'Play' : 'Cast'} {a.cardName}
+                      </button>
+                    ))
+                  : null}
                 {suspend ? (
                   <button
                     type="button"
