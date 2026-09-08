@@ -7,7 +7,7 @@
  */
 
 import type { CastVia } from "./actions.js";
-import type { CardType, Keyword } from "./cards.js";
+import type { CardType, Keyword, StaticAbility } from "./cards.js";
 import type { EffectSpec } from "./effects.js";
 import type { CardFilter } from "./filter.js";
 import type { Color, ManaPool } from "./mana.js";
@@ -99,6 +99,10 @@ export interface GameObject {
    * turn). Both cleared on any zone change. */
   foretold?: boolean;
   foretoldOnTurn?: number | null;
+  /** True while this adventure card sits in exile after its adventure resolved
+   * (rule 715.3 — ROADMAP Phase 10): its owner may cast the creature half from
+   * exile. Cleared on any zone change. */
+  onAdventure?: boolean;
   /** What this creature is attacking — a player, or an opponent's planeswalker
    * (rule 508.1) — or `null` if not attacking. */
   attacking: PlayerId | ObjectId | null;
@@ -217,6 +221,10 @@ export interface PlayerState {
    * turn" triggers. (Storm counts *all* players' spells — see
    * `GameState.spellsCastThisTurn`.) Reset in `beginTurn`. ROADMAP Phase 8. */
   spellsCastThisTurn: number;
+  /** Energy counters this player has (rule 122 / {E} — ROADMAP Phase 10). A
+   * player resource, not tied to any permanent; spent by a `payEnergy` ability
+   * cost, gained by a `get-energy` effect. */
+  energy: number;
 }
 
 export interface GameRules {
@@ -394,6 +402,20 @@ export type AwaitingDecision =
 /** The zones a commander can be moved to that offer the 903.9a choice. */
 export type CommanderReplacementZone = "graveyard" | "exile" | "hand" | "library";
 
+/** An emblem (rule 114 — ROADMAP Phase 10): a player-owned object carrying one
+ * ability, with no zone and no way to be removed. Currently only a
+ * `"creatures-you-control"` anthem `static` is modeled (the common
+ * planeswalker-ultimate emblem) — folded in by the layer system. `text` is for
+ * the log / client. */
+export interface EmblemState {
+  readonly id: string;
+  readonly owner: PlayerId;
+  readonly text: string;
+  /** Timestamp (rule 613.7) for ordering this emblem's anthem among others. */
+  readonly timestamp: number;
+  readonly static: StaticAbility | null;
+}
+
 export interface GameState {
   seed: number;
   /** Current PRNG position; rebuild the stream with `createRng(rngState)`. */
@@ -487,6 +509,16 @@ export interface GameState {
    * night → day if they cast two or more). Daybound/nightbound permanents
    * transform when it changes. */
   dayNight: "day" | "night" | null;
+  /** The monarch (rule 720 — ROADMAP Phase 10), or `null` when no player is the
+   * monarch. The monarch draws a card at the beginning of their end step
+   * (720.6); a creature dealing combat damage to the monarch makes its
+   * controller the monarch (720.5). */
+  monarch: PlayerId | null;
+  /** Emblems in the game (rule 114 — ROADMAP Phase 10). An emblem is a
+   * player-owned object with one ability and no other characteristics; it has
+   * no zone and can't be removed. Its `ability` is applied by the layer system
+   * (a `"creatures-you-control"` anthem) and/or `detectTriggers`. */
+  emblems: EmblemState[];
   /** Monotonic source for battlefield-entry timestamps. */
   timestampSeq: number;
   eventLog: GameEvent[];
@@ -507,6 +539,7 @@ export function createPlayerState(id: PlayerId, rules: GameRules): PlayerState {
     commanderCastCounts: {},
     commanderDamageTaken: {},
     spellsCastThisTurn: 0,
+    energy: 0,
   };
 }
 

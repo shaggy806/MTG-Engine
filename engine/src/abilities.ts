@@ -36,6 +36,9 @@ export interface AbilityCost {
   /** Counters to remove from the source as part of the cost (Walking
    * Ballista: "Remove a +1/+1 counter from ~"). */
   readonly removeCounter?: { readonly kind: string; readonly count: number };
+  /** Energy counters to pay ({E} — rule 122 / ROADMAP Phase 10; automatic,
+   * like `payLife`). */
+  readonly payEnergy?: number;
 }
 
 export interface ActivatedAbility {
@@ -159,6 +162,7 @@ export function isManaAbility(ability: ActivatedAbility): boolean {
     (ability.cost.sacrifice === undefined || ability.cost.sacrifice === "self") &&
     ability.cost.payLife === undefined &&
     ability.cost.removeCounter === undefined &&
+    ability.cost.payEnergy === undefined &&
     ability.resolve === null &&
     ability.effect !== null &&
     ability.effect.kind === "add-mana"

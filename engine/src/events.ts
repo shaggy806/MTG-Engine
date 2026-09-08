@@ -79,6 +79,39 @@ export type GameEvent =
       readonly value: "day" | "night";
     })
   | (Base & {
+      /** A `counter` effect / ward tried to counter a spell that can't be
+       * countered (rule 701.5f — ROADMAP Phase 10). */
+      readonly type: "counter-failed";
+      readonly object: ObjectId;
+    })
+  | (Base & {
+      /** A player became the monarch (rule 720 — ROADMAP Phase 10). `via` is
+       * how — an effect, or combat damage to the previous monarch. */
+      readonly type: "monarch-changed";
+      readonly player: PlayerId;
+      readonly via: "effect" | "combat-damage";
+    })
+  | (Base & {
+      /** A player's energy count changed (rule 122 / {E} — ROADMAP Phase 10). */
+      readonly type: "energy-changed";
+      readonly player: PlayerId;
+      readonly delta: number;
+      readonly energy: number;
+    })
+  | (Base & {
+      /** A player got an emblem (rule 114 — ROADMAP Phase 10). */
+      readonly type: "emblem-created";
+      readonly player: PlayerId;
+      readonly text: string;
+    })
+  | (Base & {
+      /** An adventure spell resolved and its card was exiled with a "may cast
+       * the creature later" permission (rule 715.3 — ROADMAP Phase 10). */
+      readonly type: "card-on-adventure";
+      readonly object: ObjectId;
+      readonly player: PlayerId;
+    })
+  | (Base & {
       /** Cascade exiled cards off the top of the library; `cast` is the
        * nonland card with lesser mana value that will be cast free, or `null`
        * (ROADMAP Phase 8). */

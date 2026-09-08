@@ -13,10 +13,20 @@ import type { TargetRef, TargetSpec } from "./target.js";
  * the hand and/or for a cost other than its mana cost (ROADMAP Phase 6):
  * `"flashback"` / `"escape"` cast an instant/sorcery from the graveyard,
  * `"foretell"` casts a card foretold (exiled face-down) on an earlier turn.
+ * `"disturb"` casts a transforming DFC's back face from the graveyard (rule
+ * 702.150 — ROADMAP Phase 10), `"adventure"` casts the creature half of an
+ * adventure card that was exiled by its adventure resolving (rule 715).
  * `"suspend"` (last time counter came off) and `"cascade"` (revealed off the
  * top of the library — ROADMAP Phase 8) are the engine casting a card for
  * free; never dispatched by a player. */
-export type CastVia = "flashback" | "escape" | "foretell" | "suspend" | "cascade";
+export type CastVia =
+  | "flashback"
+  | "escape"
+  | "foretell"
+  | "disturb"
+  | "adventure"
+  | "suspend"
+  | "cascade";
 
 export interface AttackerDeclaration {
   readonly attacker: ObjectId;

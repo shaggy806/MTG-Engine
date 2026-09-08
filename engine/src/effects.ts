@@ -8,7 +8,7 @@
  * into the spell's or ability's chosen targets, or the literal `"source"`.
  */
 
-import type { CardType, Keyword } from "./cards.js";
+import type { CardType, Keyword, StaticAbility } from "./cards.js";
 import type { CardFilter } from "./filter.js";
 import type { Color, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
@@ -278,6 +278,27 @@ export type EffectSpec =
       readonly value: "day" | "night";
     }
   | {
+      /** A player becomes the monarch (rule 720 — ROADMAP Phase 10). `who`
+       * defaults to the effect's controller. */
+      readonly kind: "become-monarch";
+      readonly who?: PlayerScope;
+    }
+  | {
+      /** A player gets `amount` energy counters ({E} — rule 122 / ROADMAP
+       * Phase 10). `who` defaults to the effect's controller. */
+      readonly kind: "get-energy";
+      readonly amount: number;
+      readonly who?: PlayerScope;
+    }
+  | {
+      /** The effect's controller gets an emblem (rule 114 — ROADMAP Phase 10).
+       * `static` is a `"creatures-you-control"` anthem, folded in by the layer
+       * system (the common planeswalker-ultimate emblem). */
+      readonly kind: "create-emblem";
+      readonly text: string;
+      readonly static?: StaticAbility;
+    }
+  | {
       /** Prevent all combat damage that would be dealt this turn (Fog). A
        * rule-614 replacement, tracked as a turn-scoped `GameState` flag. */
       readonly kind: "prevent-all-combat-damage";
@@ -458,6 +479,12 @@ export interface EffectApi {
   transform(target: TargetRef): void;
   /** The game becomes day or night (rule 726). */
   setDayNight(value: "day" | "night"): void;
+  /** `who` becomes the monarch (rule 720). */
+  becomeMonarch(who: PlayerScope | undefined): void;
+  /** `who` gets `amount` energy counters (rule 122). */
+  getEnergy(amount: number, who: PlayerScope | undefined): void;
+  /** The effect's controller gets an emblem (rule 114). */
+  createEmblem(text: string, staticAbility: StaticAbility | undefined): void;
   /** Prevent all combat damage this turn (Fog). */
   preventAllCombatDamage(): void;
   /** Raise a `choose-modes` decision — see the `modal` / `may` {@link EffectSpec}.
@@ -703,6 +730,15 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     }
     case "day-night":
       ctx.setDayNight(spec.value);
+      return;
+    case "become-monarch":
+      ctx.becomeMonarch(spec.who);
+      return;
+    case "get-energy":
+      ctx.getEnergy(spec.amount, spec.who);
+      return;
+    case "create-emblem":
+      ctx.createEmblem(spec.text, spec.static);
       return;
     case "prevent-all-combat-damage":
       ctx.preventAllCombatDamage();

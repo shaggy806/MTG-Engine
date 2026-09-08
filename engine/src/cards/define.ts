@@ -206,12 +206,26 @@ export interface CardDefinition {
    * single-faced card. Every face's own `CardDefinition` should carry the same
    * `faces` list so `registry.get(backName).faces` works too. */
   readonly faces: readonly string[] | null;
+  /** "This spell can't be countered." (rule 701.5f) — a `counter` effect / a
+   * ward "counter it" clause does nothing to this spell. `false` for normal
+   * cards. */
+  readonly cantBeCountered: boolean;
   /** True for a *transforming* double-faced card (rule 712.4 — ROADMAP Phase
    * 10b): it's only ever cast/played as its front face, and turns over in
    * place via a transform effect / a day-night change (werewolves) / an
    * "enters transformed" clause. A modal DFC (`faces` set, `transform` false)
    * is cast by choosing a face and never turns over. Set on both faces. */
   readonly transform: boolean;
+  /** Disturb (rule 702.150 — ROADMAP Phase 10) — a transforming DFC whose back
+   * face may be cast from the graveyard for `cost`; a spell so cast is exiled
+   * instead of going anywhere else (like flashback), and a permanent back face
+   * enters transformed. Set on the front face's def. `null` without disturb. */
+  readonly disturb: { readonly cost: string } | null;
+  /** Adventure (rule 715 — ROADMAP Phase 10) — a creature card with an
+   * instant/sorcery "adventure" as its second `faces` entry. Casting the
+   * adventure exiles the card (rather than graveyard) with a "you may cast the
+   * creature later from exile" permission. `true` on both faces. */
+  readonly adventure: boolean;
 }
 
 /** One chapter ability of a Saga (rule 714.2c). `at` lists the lore-counter
@@ -252,7 +266,10 @@ interface CardDraft {
   escape?: { readonly cost: string; readonly exileCount: number };
   chapters?: readonly SagaChapter[];
   faces?: readonly string[];
+  cantBeCountered?: boolean;
   transform?: boolean;
+  disturb?: { readonly cost: string };
+  adventure?: boolean;
 }
 
 /** Build a {@link CardDefinition} from a partial draft, filling in defaults. */
@@ -301,7 +318,10 @@ export function defineCard(draft: CardDraft): CardDefinition {
     escape: draft.escape ?? null,
     chapters: draft.chapters ?? null,
     faces: draft.faces ?? null,
+    cantBeCountered: draft.cantBeCountered ?? false,
     transform: draft.transform ?? false,
+    disturb: draft.disturb ?? null,
+    adventure: draft.adventure ?? false,
   };
 }
 

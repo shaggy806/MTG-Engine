@@ -19,7 +19,13 @@ import type {
   LegalAction,
 } from "./actions.js";
 import { CardRegistry, createDefaultRegistry } from "./cards.js";
-import type { CardDefinition, CardType, CombatRestriction, Keyword } from "./cards.js";
+import type {
+  CardDefinition,
+  CardType,
+  CombatRestriction,
+  Keyword,
+  StaticAbility,
+} from "./cards.js";
 import { computeCharacteristics, effectiveSubtypes, hasLostAbilities, staticAffects } from "./characteristics.js";
 import type { Characteristics } from "./characteristics.js";
 import { AutomaticController } from "./controller.js";
@@ -214,6 +220,8 @@ export class Game {
       extraCombats: 0,
       spellsCastThisTurn: 0,
       dayNight: null,
+      monarch: null,
+      emblems: [],
       timestampSeq: 0,
       eventLog: [],
       eventSeq: 0,
@@ -667,6 +675,51 @@ export class Game {
         targetOptions: this.targetOptionsFor(def.targets, player, this.cardSource(def)),
         ...(parsed.x > 0
           ? { xCost: { maxX: this.maxAffordableX(player, card, def, cost) } }
+          : {}),
+      });
+    }
+
+    // Disturb (rule 702.150) — a transforming DFC in this player's graveyard
+    // whose front face has disturb may be cast as its back face (face 1) from
+    // there; the spell is then exiled (like flashback).
+    for (const card of this.state.zones.perPlayer[player].graveyard) {
+      const front = this.frontFaceDef(card);
+      if (front.disturb === null) continue;
+      if (this.whyCannotCastSpell(player, card, "disturb", 1) !== null) continue;
+      const backDef = this.faceDef(card, 1);
+      const parsed = parseManaCost(front.disturb.cost);
+      out.push({
+        kind: "cast-spell",
+        card,
+        cardName: backDef.name,
+        via: "disturb",
+        face: 1,
+        targetSpecs: backDef.targets,
+        targetOptions: this.targetOptionsFor(backDef.targets, player, this.cardSource(backDef)),
+        ...(parsed.x > 0
+          ? { xCost: { maxX: this.maxAffordableX(player, card, backDef, front.disturb.cost) } }
+          : {}),
+      });
+    }
+
+    // Adventure (rule 715.3) — a card exiled by its adventure resolving may be
+    // cast as its creature half (face 0) from exile.
+    for (const card of this.state.zones.shared.exile) {
+      const object = this.state.objects[card];
+      if (object === undefined || !object.onAdventure || object.owner !== player) continue;
+      if (this.whyCannotCastSpell(player, card, "adventure", 0) !== null) continue;
+      const creatureDef = this.faceDef(card, 0);
+      const parsed = parseManaCost(creatureDef.manaCost);
+      out.push({
+        kind: "cast-spell",
+        card,
+        cardName: creatureDef.name,
+        via: "adventure",
+        face: 0,
+        targetSpecs: creatureDef.targets,
+        targetOptions: this.targetOptionsFor(creatureDef.targets, player, this.cardSource(creatureDef)),
+        ...(parsed.x > 0
+          ? { xCost: { maxX: this.maxAffordableX(player, card, creatureDef) } }
           : {}),
       });
     }
@@ -1358,8 +1411,24 @@ export class Game {
       this.combatDamageStep();
     } else if (step === "end-combat") {
       this.endCombatStep();
+    } else if (step === "end") {
+      this.endStepActions();
     } else if (step === "cleanup") {
       this.cleanupStep();
+    }
+  }
+
+  /** Turn-based-ish end-step housekeeping. The monarch draws a card at the
+   * beginning of their end step (rule 720.6 — a triggered ability; folded in
+   * here without the stack, like the draw step). */
+  private endStepActions(): void {
+    const monarch = this.state.monarch;
+    if (
+      monarch !== null &&
+      monarch === this.activePlayer &&
+      !this.state.players[monarch].hasLost
+    ) {
+      this.drawCard(monarch);
     }
   }
 
@@ -2500,6 +2569,9 @@ export class Game {
     if (via === "flashback") return this.flashbackCostOf(cardId);
     if (via === "escape") return def.escape?.cost ?? null;
     if (via === "foretell") return def.foretell?.cost ?? null;
+    // Disturb (rule 702.150) — the disturb cost is printed on the front face.
+    if (via === "disturb") return this.frontFaceDef(cardId).disturb?.cost ?? null;
+    // Adventure (rule 715) — the creature is cast from exile for its own cost.
     return def.manaCost;
   }
 
@@ -2535,6 +2607,20 @@ export class Game {
       if (object.foretoldOnTurn === this.state.turn.number) {
         return `${def.name} was foretold this turn`;
       }
+    } else if (via === "disturb") {
+      // Rule 702.150 — cast the back face (face 1) from the graveyard.
+      if (this.frontFaceDef(cardId).disturb === null) return `${def.name} does not have disturb`;
+      if (face !== 1) return `disturb casts ${def.name}'s back face`;
+      if (!this.state.zones.perPlayer[player].graveyard.includes(cardId)) {
+        return `${def.name} is not in ${player}'s graveyard`;
+      }
+    } else if (via === "adventure") {
+      // Rule 715.3 — cast the creature (face 0) from exile after its adventure.
+      const object = this.state.objects[cardId];
+      if (!object.onAdventure || object.owner !== player || object.zone !== "exile") {
+        return `${def.name} is not on an adventure in ${player}'s exile`;
+      }
+      if (face !== 0) return `an adventure card is cast as its creature half`;
     } else if (
       !this.state.zones.perPlayer[player].hand.includes(cardId) &&
       !this.isCastableCommander(player, cardId)
@@ -2772,6 +2858,12 @@ export class Game {
         return `${def.name} does not have ${count} ${kind} counter(s) to remove`;
       }
     }
+    if (
+      ability.cost.payEnergy !== undefined &&
+      this.state.players[player].energy < ability.cost.payEnergy
+    ) {
+      return `${player} does not have {E}×${ability.cost.payEnergy} to pay`;
+    }
     return null;
   }
 
@@ -2851,6 +2943,9 @@ export class Game {
       source.counters[kind] = (source.counters[kind] ?? 0) - count;
       if (source.counters[kind] <= 0) delete source.counters[kind];
       this.emit({ type: "counter-removed", object: sourceId, counter: kind, amount: count });
+    }
+    if (ability.cost.payEnergy !== undefined) {
+      this.changeEnergy(player, -ability.cost.payEnergy);
     }
     if (ability.loyaltyCost !== undefined) {
       source.counters.loyalty = (source.counters.loyalty ?? 0) + ability.loyaltyCost;
@@ -3400,12 +3495,7 @@ export class Game {
     // the spell, or counters it if the caster can't pay.
     if (
       targets.length > 0 &&
-      !this.wardCheckPasses(object.controller, targets, () => {
-        object.targets = null;
-        object.xValue = null;
-        this.moveObject(id, "graveyard");
-        this.emit({ type: "spell-countered", object: id });
-      })
+      !this.wardCheckPasses(object.controller, targets, () => this.counterObject(id))
     ) {
       return;
     }
@@ -3449,6 +3539,17 @@ export class Game {
         }
       }
       if (def.copyOnEnter !== null) this.beginCopyChoice(id, object.controller);
+    } else if (
+      // Adventure (rule 715.3) — the adventure half (face 1) resolving exiles
+      // the card with a "you may cast the creature later" permission, instead
+      // of going to the graveyard.
+      this.frontFaceDef(id).adventure &&
+      (object.face ?? 0) === 1
+    ) {
+      object.targets = null;
+      this.moveObject(id, "exile");
+      object.onAdventure = true;
+      this.emit({ type: "card-on-adventure", object: id, player: object.owner });
     } else {
       this.moveObject(id, "graveyard");
       object.targets = null;
@@ -3502,6 +3603,7 @@ export class Game {
       !this.wardCheckPasses(object.controller, targets, () => {
         this.removeAbilityFromStack(id);
         this.emit({ type: "spell-countered", object: id });
+        return true;
       })
     ) {
       return;
@@ -3913,6 +4015,18 @@ export class Game {
         if (target.kind === "object") this.transformPermanent(target.object);
       },
       setDayNight: (value) => this.setDayNight(value),
+      becomeMonarch: (who) => {
+        for (const p of this.scopedPlayers(controller, who ?? "you")) {
+          this.setMonarch(p, "effect");
+        }
+      },
+      getEnergy: (amount, who) => {
+        for (const p of this.scopedPlayers(controller, who ?? "you")) {
+          this.changeEnergy(p, amount);
+        }
+      },
+      createEmblem: (text, staticAbility) =>
+        this.createEmblem(controller, text, staticAbility ?? null),
       preventAllCombatDamage: () => {
         this.state.preventAllCombatDamage = true;
         this.emit({ type: "combat-damage-prevention-set" });
@@ -4870,7 +4984,7 @@ export class Game {
   private wardCheckPasses(
     caster: PlayerId,
     targets: readonly TargetRef[],
-    onCountered: () => void,
+    onCountered: () => boolean,
   ): boolean {
     for (const target of targets) {
       if (target.kind !== "object") continue;
@@ -4890,8 +5004,9 @@ export class Game {
       const lifeOk =
         ward.payLife === undefined || this.state.players[caster].life >= ward.payLife;
       if (payment === null || !lifeOk) {
-        onCountered();
-        return false;
+        // Ward "counters unless the player pays" — but if the spell can't be
+        // countered, it resolves anyway (the counter just does nothing).
+        return !onCountered();
       }
       this.executePayment(caster, payment);
       if (ward.payLife !== undefined) this.changeLife(caster, -ward.payLife);
@@ -4902,12 +5017,29 @@ export class Game {
 
   private counterSpellByEffect(target: TargetRef): void {
     if (target.kind !== "object") return;
-    const object = this.state.objects[target.object];
-    if (object === undefined || object.zone !== "stack" || object.kind !== "card") return;
+    this.counterObject(target.object);
+  }
+
+  /**
+   * Counter the spell/ability on the stack (rule 701.5). Returns `false`
+   * without countering when it "can't be countered" (`CardDefinition.cantBeCountered`
+   * — rule 701.5f), so the caller lets it resolve; `true` when it was countered.
+   */
+  private counterObject(id: ObjectId): boolean {
+    const object = this.state.objects[id];
+    if (object === undefined || object.zone !== "stack") return false;
+    if (
+      object.kind === "card" &&
+      this.registry.get(printedCardName(object)).cantBeCountered
+    ) {
+      this.emit({ type: "counter-failed", object: id });
+      return false;
+    }
     object.targets = null;
     object.xValue = null;
-    this.moveObject(target.object, "graveyard");
-    this.emit({ type: "spell-countered", object: target.object });
+    this.moveObject(id, "graveyard");
+    this.emit({ type: "spell-countered", object: id });
+    return true;
   }
 
   /** Two creatures fight (rule 701.12): each deals damage equal to its power to
@@ -4987,6 +5119,17 @@ export class Game {
       this.emit({ type: "damage-dealt", source, target, amount, combat });
       this.changeLife(target.player, -amount);
       this.applyLifelink(source, amount);
+      // A creature dealing combat damage to the monarch makes its controller
+      // the monarch (rule 720.5).
+      const src = this.state.objects[source];
+      if (
+        combat &&
+        this.state.monarch === target.player &&
+        src !== undefined &&
+        src.controller !== target.player
+      ) {
+        this.setMonarch(src.controller, "combat-damage");
+      }
       return amount;
     }
     const object = this.state.objects[target.object];
@@ -5046,24 +5189,59 @@ export class Game {
     });
   }
 
-  /** Change life for a whole `PlayerScope` (a `gain-life` / `lose-life` effect
-   * with `who`), APNAP-ordered so any resulting triggers stack in turn order. */
-  private changeLifeScoped(controller: PlayerId, who: PlayerScope, delta: number): void {
-    if (delta === 0) return;
+  /** The players a `PlayerScope` names, APNAP-ordered (active player first) so
+   * any resulting triggers stack in turn order. */
+  private scopedPlayers(controller: PlayerId, who: PlayerScope): PlayerId[] {
+    if (who === "you") return [controller];
     const active = this.state.turnOrder.indexOf(this.activePlayer);
     const rotated = [
       ...this.state.turnOrder.slice(active),
       ...this.state.turnOrder.slice(0, active),
     ];
-    const players =
-      who === "you"
-        ? [controller]
-        : rotated.filter(
-            (p) =>
-              !this.state.players[p].hasLost &&
-              (who === "each-player" || p !== controller),
-          );
-    for (const p of players) this.changeLife(p, delta);
+    return rotated.filter(
+      (p) =>
+        !this.state.players[p].hasLost &&
+        (who === "each-player" || p !== controller),
+    );
+  }
+
+  /** Change life for a whole `PlayerScope` (a `gain-life` / `lose-life` effect
+   * with `who`), APNAP-ordered so any resulting triggers stack in turn order. */
+  private changeLifeScoped(controller: PlayerId, who: PlayerScope, delta: number): void {
+    if (delta === 0) return;
+    for (const p of this.scopedPlayers(controller, who)) this.changeLife(p, delta);
+  }
+
+  /** Add (or spend, when negative) energy counters for `player` — rule 122. */
+  private changeEnergy(player: PlayerId, delta: number): void {
+    if (delta === 0) return;
+    const ps = this.state.players[player];
+    ps.energy = Math.max(0, ps.energy + delta);
+    this.emit({ type: "energy-changed", player, delta, energy: ps.energy });
+  }
+
+  /** Make `player` the monarch (rule 720). No-op if they already are. */
+  private setMonarch(player: PlayerId, via: "effect" | "combat-damage"): void {
+    if (this.state.monarch === player) return;
+    this.state.monarch = player;
+    this.emit({ type: "monarch-changed", player, via });
+  }
+
+  /** Give `owner` an emblem (rule 114 — ROADMAP Phase 10). */
+  private createEmblem(
+    owner: PlayerId,
+    text: string,
+    staticAbility: StaticAbility | null,
+  ): void {
+    this.state.timestampSeq += 1;
+    this.state.emblems.push({
+      id: `emblem-${this.state.emblems.length + 1}`,
+      owner,
+      text,
+      timestamp: this.state.timestampSeq,
+      static: staticAbility,
+    });
+    this.emit({ type: "emblem-created", player: owner, text });
   }
 
   // --- state-based actions -----------------------------------
@@ -5373,9 +5551,14 @@ export class Game {
       this.emit({ type: "graveyard-replaced-with-exile", object: id });
     }
 
-    // Flashback (rule 702.34): a spell cast from the graveyard via flashback
-    // is exiled instead of going anywhere else from the stack.
-    if (object.zone === "stack" && object.castVia === "flashback" && to === "graveyard") {
+    // Flashback (rule 702.34) / disturb (rule 702.150): a card cast this way is
+    // exiled instead of ever going to a graveyard — from the stack (fizzle /
+    // counter) or, for a disturb permanent, from the battlefield when it dies.
+    // `castVia` rides on the object (kept across the stack→battlefield move).
+    if (
+      (object.castVia === "flashback" || object.castVia === "disturb") &&
+      to === "graveyard"
+    ) {
       to = "exile";
     }
 
@@ -5431,6 +5614,10 @@ export class Game {
     object.suspended = false;
     object.foretold = false;
     object.foretoldOnTurn = null;
+    // The adventure "may cast the creature from exile" permission (rule 715.3)
+    // ends when the card changes zones. `resolveTopOfStack` re-sets it *after*
+    // the move to exile that creates the state.
+    object.onAdventure = false;
     // A multi-face card reverts to its front face while not on the battlefield
     // or stack (rule 712); casting/playing it sets the face again.
     if (object.faces !== undefined && to !== "battlefield" && to !== "stack") {

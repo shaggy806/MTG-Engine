@@ -43,6 +43,8 @@ export interface PublicPlayerInfo {
    * zone — each adds {2} generic to that commander's cost next time (rule
    * 903.8). */
   readonly commanderCastCounts: Readonly<Record<string, number>>;
+  /** Energy counters this player has ({E} — rule 122 / ROADMAP Phase 10). */
+  readonly energy: number;
 }
 
 export interface VisibleObject {
@@ -139,6 +141,10 @@ export interface PlayerView {
   /** The day/night designation (rule 726 — ROADMAP Phase 10b), or `null` until
    * a card first makes it day or night. */
   readonly dayNight: "day" | "night" | null;
+  /** The monarch (rule 720 — ROADMAP Phase 10), or `null`. */
+  readonly monarch: PlayerId | null;
+  /** Emblems in the game (rule 114 — ROADMAP Phase 10), owner + text only. */
+  readonly emblems: readonly { readonly owner: PlayerId; readonly text: string }[];
   readonly events: readonly GameEvent[];
 }
 
@@ -271,6 +277,7 @@ export function viewFor(
       lossReason: playerState.lossReason,
       commanderDamageTaken: { ...playerState.commanderDamageTaken },
       commanderCastCounts: { ...playerState.commanderCastCounts },
+      energy: playerState.energy,
     };
     graveyards[player] = [...zones.graveyard];
     visibleIds.push(...zones.graveyard);
@@ -322,6 +329,8 @@ export function viewFor(
     },
     revealedLibraryTop,
     dayNight: state.dayNight,
+    monarch: state.monarch,
+    emblems: state.emblems.map((e) => ({ owner: e.owner, text: e.text })),
     events: state.eventLog,
   };
 }

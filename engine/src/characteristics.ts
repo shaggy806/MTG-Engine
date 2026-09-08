@@ -219,6 +219,36 @@ function collectStaticEffects(
       }
     }
   }
+  // Emblems (rule 114 — ROADMAP Phase 10): a player-owned anthem with no
+  // battlefield object. Only the `"creatures-you-control"` scope is supported.
+  for (const emblem of state.emblems) {
+    const ability = emblem.static;
+    if (
+      ability === null ||
+      ability.affects.scope !== "creatures-you-control" ||
+      (ability.grantPt === undefined &&
+        ability.grantKeywords === undefined &&
+        ability.restrictions === undefined &&
+        ability.protection === undefined)
+    ) {
+      continue;
+    }
+    if (target.controller !== emblem.owner || !isPrintedCreature(registry, target)) continue;
+    if (
+      ability.affects.subtype !== undefined &&
+      !effectiveSubtypes(registry, target).includes(ability.affects.subtype)
+    ) {
+      continue;
+    }
+    out.push({
+      timestamp: emblem.timestamp,
+      power: ability.grantPt?.[0] ?? 0,
+      toughness: ability.grantPt?.[1] ?? 0,
+      keywords: ability.grantKeywords ?? [],
+      restrictions: ability.restrictions ?? [],
+      protection: ability.protection ?? null,
+    });
+  }
   out.sort((a, b) => a.timestamp - b.timestamp);
   return out;
 }
