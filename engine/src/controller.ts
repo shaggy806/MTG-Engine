@@ -658,7 +658,25 @@ export class RandomController extends AutomaticController {
         return { type: "suspend", player, card: legal.card };
       case "foretell":
         return { type: "foretell", player, card: legal.card };
-      case "cast-spell":
+      case "cast-spell": {
+        // A targeted modal spell (Phase 11 EG-2): pick a random set of modes
+        // whose targets are all fillable, then targets for them.
+        if (legal.castModal !== undefined) {
+          const cm = legal.castModal;
+          const castable = cm.modes
+            .map((_m, i) => i)
+            .filter((i) => cm.modes[i].targetOptions.every((o) => o.length > 0));
+          if (castable.length < cm.minModes) return passFor(player);
+          const want = cm.minModes + this.pickIndex(Math.min(cm.maxModes, castable.length) - cm.minModes + 1);
+          const pool = [...castable];
+          const modes: number[] = [];
+          for (let i = 0; i < want && pool.length > 0; i += 1) {
+            modes.push(pool.splice(this.pickIndex(pool.length), 1)[0]);
+          }
+          modes.sort((a, b) => a - b);
+          const targets = modes.flatMap((i) => this.pickTargets(cm.modes[i].targetOptions));
+          return { type: "cast-spell", player, card: legal.card, targets, modes };
+        }
         return {
           type: "cast-spell",
           player,
@@ -670,6 +688,7 @@ export class RandomController extends AutomaticController {
           ...(legal.via !== undefined ? { via: legal.via } : {}),
           ...(legal.face !== undefined ? { face: legal.face } : {}),
         };
+      }
       case "activate-ability": {
         const sac = legal.sacrifice;
         return {

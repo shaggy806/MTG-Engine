@@ -13,7 +13,7 @@
  */
 
 import type { ActivatedAbility, TriggeredAbility } from "../abilities.js";
-import type { EffectSpec, SpellResolver } from "../effects.js";
+import type { EffectSpec, ModeOption, SpellResolver } from "../effects.js";
 import type { CardFilter } from "../filter.js";
 import type { Color } from "../mana.js";
 import type { ReplacementSpec } from "../replacements.js";
@@ -145,8 +145,19 @@ export interface CardDefinition {
   readonly toughness: number | null;
   readonly keywords: readonly Keyword[];
   readonly text: string;
-  /** Target slots, in order. Chosen when the spell is cast. */
+  /** Target slots, in order. Chosen when the spell is cast. Empty for a
+   * `castModal` spell (its targets come from the chosen modes). */
   readonly targets: readonly TargetSpec[];
+  /** A *targeted* modal spell (rule 700.2 — ROADMAP Phase 11 EG-2): the
+   * caster picks `minModes..maxModes` modes *as it's cast* (601.2b), then
+   * targets for those modes (601.2c). Each mode's `effect` applies with its
+   * own target slice. `null` for a non-modal card; a non-targeted modal spell
+   * uses the resolution-time `modal` {@link EffectSpec} instead. */
+  readonly castModal: {
+    readonly minModes: number;
+    readonly maxModes: number;
+    readonly modes: readonly ModeOption[];
+  } | null;
   /** Declarative resolution effect, or `null`. */
   readonly effect: EffectSpec | null;
   /** Imperative resolution script (takes precedence over `effect`), or `null`. */
@@ -251,6 +262,11 @@ interface CardDraft {
   keywords?: readonly Keyword[];
   text?: string;
   targets?: readonly TargetSpec[];
+  castModal?: {
+    readonly minModes: number;
+    readonly maxModes: number;
+    readonly modes: readonly ModeOption[];
+  };
   effect?: EffectSpec;
   resolve?: SpellResolver;
   activated?: readonly ActivatedAbility[];
@@ -303,6 +319,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     keywords: draft.keywords ?? [],
     text: draft.text ?? "",
     targets: draft.targets ?? [],
+    castModal: draft.castModal ?? null,
     effect: draft.effect ?? null,
     resolve: draft.resolve ?? null,
     activated: draft.activated ?? [],

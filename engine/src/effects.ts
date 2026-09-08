@@ -12,7 +12,7 @@ import type { CardType, Keyword, StaticAbility } from "./cards.js";
 import type { CardFilter } from "./filter.js";
 import type { Color, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
-import type { TargetRef } from "./target.js";
+import type { TargetRef, TargetSpec } from "./target.js";
 
 export type EffectTargetRef = number | "source";
 export type PtDuration = "end-of-turn" | "permanent";
@@ -374,11 +374,18 @@ export type EffectSpec =
       readonly filter?: ZoneChoiceFilter;
     };
 
-/** One selectable mode of a `modal` effect (rule 700.2). */
+/** One selectable mode of a `modal` effect (rule 700.2) or a `castModal` card
+ * (ROADMAP Phase 11 EG-2). */
 export interface ModeOption {
   /** Rules text of this mode, shown in the chooser. */
   readonly text: string;
   readonly effect: EffectSpec;
+  /** Target specs this mode needs (ROADMAP Phase 11 EG-2 — `castModal` only).
+   * The mode's `effect` reads them as slots `0..n-1` of the resolution
+   * context's targets. Omitted / empty for a non-targeted mode. The
+   * resolution-time `modal` / `may` effect requires *non*-targeted modes and
+   * ignores this. */
+  readonly targets?: readonly TargetSpec[];
 }
 
 /** Primitive mutations an effect can perform. Implemented by the engine. */

@@ -69,6 +69,11 @@ export type Action =
       readonly player: PlayerId;
       readonly card: ObjectId;
       readonly targets?: readonly TargetRef[];
+      /** The modes chosen for a targeted modal spell (rule 700.2 — ROADMAP
+       * Phase 11 EG-2): indices into `CardDefinition.castModal.modes`, distinct.
+       * `targets` are then the concatenation of those modes' target slots, in
+       * mode order. Required (and only meaningful) for a `castModal` card. */
+      readonly modes?: readonly number[];
       /** The chosen value for `{X}` in the spell's mana cost. Required (and
        * only meaningful) when the card's cost contains `{X}`; ignored
        * otherwise. */
@@ -228,6 +233,22 @@ export type LegalAction =
       readonly cardName: string;
       readonly targetSpecs: readonly TargetSpec[];
       readonly targetOptions: readonly (readonly TargetRef[])[];
+      /** Set for a *targeted modal* spell (rule 700.2 — ROADMAP Phase 11 EG-2):
+       * the driver picks `minModes..maxModes` of `modes` (each a text label +
+       * its own target specs), then targets for the chosen modes, then echoes
+       * `modes` + `targets` in the `cast-spell` action. `targetSpecs` /
+       * `targetOptions` above are empty in this case. */
+      readonly castModal?: {
+        readonly minModes: number;
+        readonly maxModes: number;
+        readonly modes: readonly {
+          readonly text: string;
+          readonly targetSpecs: readonly TargetSpec[];
+          /** Legal `TargetRef`s per slot of this mode, right now. A slot with an
+           * empty list has no legal target — the mode can't be chosen. */
+          readonly targetOptions: readonly (readonly TargetRef[])[];
+        }[];
+      };
       /** Set when the spell's cost contains `{X}`. `maxX` is the largest value
        * of X this player could currently pay for (0 when only X=0 is
        * affordable). A driver must include `xValue` in the `cast-spell`

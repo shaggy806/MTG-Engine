@@ -342,6 +342,7 @@ export class Game {
           action.xValue ?? 0,
           action.via,
           action.face ?? 0,
+          action.modes,
         );
         break;
       case "activate-ability":
@@ -418,7 +419,13 @@ export class Game {
       case "foretell":
         return this.whyCannotForetell(action.player, action.card);
       case "cast-spell":
-        return this.whyCannotCastSpell(action.player, action.card, action.via, action.face ?? 0);
+        return this.whyCannotCastSpell(
+          action.player,
+          action.card,
+          action.via,
+          action.face ?? 0,
+          action.modes,
+        );
       case "activate-ability":
         return this.whyCannotActivateAbility(
           action.player,
@@ -633,6 +640,23 @@ export class Game {
             targetSpecs: def.targets,
             targetOptions: this.targetOptionsFor(def.targets, player, this.cardSource(def)),
             ...faceProp,
+            ...(def.castModal !== null
+              ? {
+                  castModal: {
+                    minModes: def.castModal.minModes,
+                    maxModes: def.castModal.maxModes,
+                    modes: def.castModal.modes.map((m) => ({
+                      text: m.text,
+                      targetSpecs: [...(m.targets ?? [])],
+                      targetOptions: this.targetOptionsFor(
+                        m.targets ?? [],
+                        player,
+                        this.cardSource(def),
+                      ),
+                    })),
+                  },
+                }
+              : {}),
             ...(parsed.x > 0
               ? { xCost: { maxX: this.maxAffordableX(player, card, def) } }
               : {}),
@@ -2691,11 +2715,39 @@ export class Game {
     return def.manaCost;
   }
 
+  /** The concrete target specs of a spell — its own, or (for a targeted modal
+   * spell) the concatenation of the chosen modes' specs, in mode order. */
+  private effectiveTargetSpecs(
+    def: CardDefinition,
+    modes: readonly number[] | undefined,
+  ): readonly TargetSpec[] {
+    if (def.castModal === null || modes === undefined) return def.targets;
+    return [...modes]
+      .sort((a, b) => a - b)
+      .flatMap((i) => def.castModal?.modes[i]?.targets ?? []);
+  }
+
+  /** Why the chosen `modes` are illegal for a `castModal` card (or `null`). */
+  private whyCannotChooseCastModes(
+    castModal: NonNullable<CardDefinition["castModal"]>,
+    modes: readonly number[],
+  ): string | null {
+    if (new Set(modes).size !== modes.length) return "the same mode was chosen twice";
+    if (modes.length < castModal.minModes || modes.length > castModal.maxModes) {
+      return `choose between ${castModal.minModes} and ${castModal.maxModes} mode(s)`;
+    }
+    if (modes.some((i) => !Number.isInteger(i) || i < 0 || i >= castModal.modes.length)) {
+      return "invalid mode index";
+    }
+    return null;
+  }
+
   private whyCannotCastSpell(
     player: PlayerId,
     cardId: ObjectId,
     via?: CastVia,
     face = 0,
+    modes?: readonly number[],
   ): string | null {
     const blocked = this.whyCannotAct(player);
     if (blocked !== null) return blocked;
@@ -2750,7 +2802,14 @@ export class Game {
       const timing = this.whyNotSorcerySpeed(player, `cast ${def.name}`);
       if (timing !== null) return timing;
     }
-    for (const spec of def.targets) {
+    if (def.castModal !== null && modes !== undefined) {
+      const bad = this.whyCannotChooseCastModes(def.castModal, modes);
+      if (bad !== null) return `${def.name}: ${bad}`;
+    }
+    // A non-modal spell's target legality is checked up front; a modal spell's
+    // is checked per chosen mode (only once `modes` is known — at enumeration
+    // time the driver hasn't picked yet).
+    for (const spec of this.effectiveTargetSpecs(def, modes)) {
       if (
         legalTargets(this.state, this.registry, spec, player, this.cardSource(def)).length === 0
       ) {
@@ -2775,8 +2834,9 @@ export class Game {
     xValue = 0,
     via?: CastVia,
     face = 0,
+    modes?: readonly number[],
   ): void {
-    const why = this.whyCannotCastSpell(player, cardId, via, face);
+    const why = this.whyCannotCastSpell(player, cardId, via, face, modes);
     if (why !== null) throw new Error(why);
 
     const object = this.state.objects[cardId];
@@ -2788,12 +2848,19 @@ export class Game {
     const hasX = parseManaCost(costString).x > 0;
     const chosenX = hasX ? Math.max(0, Math.floor(xValue)) : 0;
 
-    if (targets.length !== def.targets.length) {
+    if (def.castModal !== null && modes === undefined) {
+      throw new Error(`${def.name} is a modal spell — choose modes to cast it`);
+    }
+    const sortedModes =
+      def.castModal !== null ? [...(modes ?? [])].sort((a, b) => a - b) : undefined;
+    const targetSpecs = this.effectiveTargetSpecs(def, sortedModes);
+
+    if (targets.length !== targetSpecs.length) {
       throw new Error(
-        `${def.name} takes ${def.targets.length} target(s), got ${targets.length}`,
+        `${def.name} takes ${targetSpecs.length} target(s), got ${targets.length}`,
       );
     }
-    def.targets.forEach((spec, i) => {
+    targetSpecs.forEach((spec, i) => {
       if (!isLegalTarget(this.state, this.registry, spec, targets[i], player, this.cardSource(def))) {
         throw new Error(`illegal target for ${def.name}`);
       }
@@ -2824,6 +2891,7 @@ export class Game {
     object.xValue = hasX ? chosenX : null;
     object.castVia = via ?? null;
     object.stormCount = stormCount;
+    if (sortedModes !== undefined) object.chosenModes = sortedModes;
     this.executePayment(player, payment);
     if (castingFromCommand) {
       const name = object.cardName;
@@ -2842,6 +2910,9 @@ export class Game {
       spellsThisTurn: this.state.players[player].spellsCastThisTurn,
       ...(via !== undefined ? { via } : {}),
     });
+    if (sortedModes !== undefined) {
+      this.emit({ type: "modes-chosen", source: cardId, modes: [...sortedModes] });
+    }
     this.afterPlayerAction(player);
   }
 
@@ -3616,16 +3687,46 @@ export class Game {
       return;
     }
 
-    const context = this.makeResolutionContext(
-      id,
-      object.controller,
-      targets,
-      object.xValue ?? 0,
-    );
-    if (def.resolve !== null) {
-      def.resolve(context);
-    } else if (def.effect !== null) {
-      applyEffectSpec(def.effect, context);
+    if (object.chosenModes !== undefined && def.castModal !== null) {
+      // A targeted modal spell (rule 700.2 — ROADMAP Phase 11 EG-2): apply each
+      // chosen mode with its own slice of `targets`; skip a mode whose targets
+      // are now illegal (608.2b); the spell "fizzles" only if every mode does.
+      let offset = 0;
+      let anyApplied = false;
+      for (const mi of object.chosenModes) {
+        const mode = def.castModal.modes[mi];
+        const specs = mode?.targets ?? [];
+        const slice = targets.slice(offset, offset + specs.length);
+        offset += specs.length;
+        const ok =
+          mode !== undefined &&
+          specs.every(
+            (spec, i) =>
+              slice[i] !== undefined &&
+              isLegalTarget(this.state, this.registry, spec, slice[i], object.controller, this.cardSource(def)),
+          );
+        if (!ok || mode === undefined) continue;
+        applyEffectSpec(
+          mode.effect,
+          this.makeResolutionContext(id, object.controller, slice, object.xValue ?? 0),
+        );
+        anyApplied = true;
+      }
+      if (!anyApplied) {
+        this.emit({ type: "spell-fizzled", object: id, reason: "all chosen modes have illegal targets" });
+      }
+    } else {
+      const context = this.makeResolutionContext(
+        id,
+        object.controller,
+        targets,
+        object.xValue ?? 0,
+      );
+      if (def.resolve !== null) {
+        def.resolve(context);
+      } else if (def.effect !== null) {
+        applyEffectSpec(def.effect, context);
+      }
     }
     this.emit({ type: "spell-resolved", object: id });
 
@@ -5730,6 +5831,8 @@ export class Game {
     object.suspended = false;
     object.foretold = false;
     object.foretoldOnTurn = null;
+    // Modes chosen for a targeted modal spell (Phase 11 EG-2) end with the stack.
+    object.chosenModes = undefined;
     // The adventure "may cast the creature from exile" permission (rule 715.3)
     // ends when the card changes zones. `resolveTopOfStack` re-sets it *after*
     // the move to exile that creates the state.

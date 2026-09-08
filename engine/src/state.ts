@@ -74,6 +74,12 @@ export interface GameObject {
    * "enters with X counters"-style effect can still read it. `null` when the
    * cost had no `{X}`. Cleared by `moveObject` on any later zone change. */
   xValue: number | null;
+  /** The modes chosen for a targeted modal spell as it was cast (rule 700.2 —
+   * ROADMAP Phase 11 EG-2), sorted ascending — indices into
+   * `CardDefinition.castModal.modes`. `resolveTopOfStack` applies each with its
+   * own slice of `targets`. Absent for a non-modal spell; cleared on any zone
+   * change. */
+  chosenModes?: readonly number[];
   /** The alternative permission this spell was cast under while it's on the
    * stack (ROADMAP Phase 6). `"flashback"` (rule 702.34) additionally means it
    * is exiled instead of going anywhere else from the stack. `null` / absent
