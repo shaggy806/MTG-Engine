@@ -51,6 +51,7 @@ type TextChoiceAction = Extract<LegalAction, { kind: 'choose-text' }>
 type ModesChoiceAction = Extract<LegalAction, { kind: 'choose-modes' }>
 type SacrificeAction = Extract<LegalAction, { kind: 'sacrifice' }>
 type ScryAction = Extract<LegalAction, { kind: 'scry' }>
+type AssignDamageAction = Extract<LegalAction, { kind: 'assign-combat-damage' }>
 type ChooseTargetsAction = Extract<LegalAction, { kind: 'choose-targets' }>
 
 interface Targeting {
@@ -97,6 +98,7 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
   'choose-text': 'choose a text change',
   'choose-modes': 'choose a mode',
   'choose-targets': 'choose targets',
+  'assign-combat-damage': 'assign combat damage',
   sacrifice: 'choose what to sacrifice',
   scry: 'scry',
 }
@@ -483,6 +485,9 @@ function Table({ view, seat, opponents, game }: TableProps) {
   const [orderPicks, setOrderPicks] = useState<readonly ObjectId[]>([])
   const [discardPicks, setDiscardPicks] = useState<readonly ObjectId[]>([])
   const [bottomPicks, setBottomPicks] = useState<readonly ObjectId[]>([])
+  // Per-blocker combat-damage amounts (EG-4a), null until the player edits one
+  // (falls back to the lethal-down-the-line default when confirmed unedited).
+  const [damagePicks, setDamagePicks] = useState<readonly number[] | null>(null)
   const [textFrom, setTextFrom] = useState<string | null>(null)
   const [modePicks, setModePicks] = useState<readonly number[]>([])
   const [sacrificePicks, setSacrificePicks] = useState<readonly ObjectId[]>([])
@@ -571,6 +576,9 @@ function Table({ view, seat, opponents, game }: TableProps) {
     (a): a is SacrificeAction => a.kind === 'sacrifice',
   )
   const scryAction = actions.find((a): a is ScryAction => a.kind === 'scry')
+  const assignDamageAction = actions.find(
+    (a): a is AssignDamageAction => a.kind === 'assign-combat-damage',
+  )
   const chooseTargetsAction = actions.find(
     (a): a is ChooseTargetsAction => a.kind === 'choose-targets',
   )
@@ -617,6 +625,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
     | 'choose-x'
     | 'choose-cast-modes'
     | 'choose-sacrifice'
+    | 'assign-combat-damage'
     | 'targeting'
     | 'priority' = mulliganAction
     ? 'mulligan'
@@ -632,6 +641,8 @@ function Table({ view, seat, opponents, game }: TableProps) {
           ? 'sacrifice'
         : scryAction
           ? 'scry'
+        : assignDamageAction
+          ? 'assign-combat-damage'
         : bottomAction
           ? 'put-on-bottom'
       : discardAction
@@ -1742,6 +1753,15 @@ function Table({ view, seat, opponents, game }: TableProps) {
     const loneMenace = blockAction.menaceAttackers.filter(
       (id) => counts.get(id) === 1,
     )
+    // Lure (rule 509.1c): a creature able to block a must-be-blocked attacker
+    // must be assigned to one of them.
+    const unforcedBlockers = blockAction.eligible
+      .filter(
+        (e) =>
+          e.canBlock.some((a) => blockAction.mustBlock.includes(a)) &&
+          !blockAction.mustBlock.includes(blockAssign[e.blocker]),
+      )
+      .map((e) => e.blocker)
     controls = (
       <div className="controls">
         <span>
@@ -1753,6 +1773,11 @@ function Table({ view, seat, opponents, game }: TableProps) {
             ? ` · ${loneMenace
                 .map((id) => game.nameOf(id))
                 .join(', ')} has menace (needs 2+ blockers)`
+            : ''}
+          {unforcedBlockers.length > 0
+            ? ` · ${unforcedBlockers
+                .map((id) => game.nameOf(id))
+                .join(', ')} must block (Lure)`
             : ''}
         </span>
         <button
@@ -1766,7 +1791,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
         </button>
         <button
           type="button"
-          disabled={loneMenace.length > 0}
+          disabled={loneMenace.length > 0 || unforcedBlockers.length > 0}
           onClick={confirmBlockers}
         >
           {n === 0 ? 'No blocks' : `Block (${n})`}
@@ -1806,6 +1831,71 @@ function Table({ view, seat, opponents, game }: TableProps) {
           {scryAction.mode === 'surveil' ? 'Surveil' : 'Scry'} — pick cards in the popup to
           move {scryAction.mode === 'surveil' ? 'to your graveyard' : 'to the bottom'}
         </span>
+      </div>
+    )
+  } else if (mode === 'assign-combat-damage' && assignDamageAction) {
+    // Default: lethal down the blocker order, remainder to the last blocker
+    // (or, with trample, left to trample over).
+    const dflt: number[] = []
+    let rem = assignDamageAction.power
+    assignDamageAction.blockers.forEach((_b, i) => {
+      const last = !assignDamageAction.trample && i === assignDamageAction.blockers.length - 1
+      const amt = last ? rem : Math.min(rem, assignDamageAction.lethal[i])
+      rem -= amt
+      dflt.push(amt)
+    })
+    const picks = damagePicks ?? dflt
+    const total = picks.reduce((s, n) => s + n, 0)
+    const over = assignDamageAction.power - total
+    const valid =
+      over >= 0 &&
+      (over === 0 || assignDamageAction.trample) &&
+      picks.every((n, i) => {
+        if (n === 0 && over === 0) return true
+        return assignDamageAction.blockers.every(
+          (_b, j) => j >= i || picks[j] >= assignDamageAction.lethal[j],
+        )
+      }) &&
+      (over === 0 ||
+        picks.every((n, j) => n >= assignDamageAction.lethal[j]))
+    controls = (
+      <div className="controls">
+        <span>
+          Assign {game.nameOf(assignDamageAction.attacker)}&rsquo;s {assignDamageAction.power} damage
+        </span>
+        {assignDamageAction.blockers.map((b, i) => (
+          <label key={b} style={{ display: 'inline-flex', gap: '0.25rem', alignItems: 'center' }}>
+            {game.nameOf(b)} (lethal {assignDamageAction.lethal[i]})
+            <input
+              type="number"
+              min={0}
+              max={assignDamageAction.power}
+              value={picks[i]}
+              onChange={(e) => {
+                const n = Math.max(0, Math.floor(Number(e.target.value) || 0))
+                setDamagePicks(picks.map((v, j) => (j === i ? n : v)))
+              }}
+              style={{ width: '3.5rem' }}
+            />
+          </label>
+        ))}
+        <span className={over > 0 && !assignDamageAction.trample ? 'muted' : ''}>
+          → defender: {Math.max(0, over)}
+          {assignDamageAction.trample ? '' : over > 0 ? ' (needs trample)' : ''}
+        </span>
+        <button
+          type="button"
+          disabled={!valid}
+          onClick={() =>
+            game.dispatch({
+              type: 'assign-combat-damage',
+              player: seat,
+              assignment: [...picks],
+            })
+          }
+        >
+          Confirm
+        </button>
       </div>
     )
   } else {
