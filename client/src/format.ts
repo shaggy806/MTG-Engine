@@ -34,6 +34,10 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${name(event.object)} — lore counter ${event.lore}`
     case 'saga-completed':
       return `${name(event.object)} is sacrificed (final chapter)`
+    case 'permanent-transformed':
+      return `${name(event.object)} transforms (now ${event.front ? 'front' : 'back'} face)`
+    case 'day-night-changed':
+      return `it becomes ${event.value}`
     case 'cascade-revealed':
       return event.cast
         ? `${event.player} cascades into ${name(event.cast)} (${event.exiled.length} exiled)`

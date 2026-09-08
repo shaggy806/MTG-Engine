@@ -143,6 +143,10 @@
 .turn-banner-phase {
   color: var(--text);
 }
+.turn-banner-daynight {
+  color: var(--muted);
+  font-weight: 600;
+}
 .turn-banner.seat-a .turn-banner-player {
   color: var(--seat-a);
 }

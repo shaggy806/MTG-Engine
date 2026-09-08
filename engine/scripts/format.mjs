@@ -28,6 +28,10 @@ export const makeFormatter = (game) => {
         return `${name(e.object)} — lore counter ${e.lore}`;
       case "saga-completed":
         return `${name(e.object)} is sacrificed (final chapter)`;
+      case "permanent-transformed":
+        return `${name(e.object)} transforms (now ${e.front ? "front" : "back"} face)`;
+      case "day-night-changed":
+        return `it becomes ${e.value}`;
       case "cascade-revealed":
         return e.cast
           ? `${e.player} cascades into ${name(e.cast)} (${e.exiled.length} exiled)`

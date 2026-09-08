@@ -22,6 +22,14 @@ export function TurnBanner({
       </span>
       <span className="turn-banner-sep">·</span>
       <span className="turn-banner-phase">{STEP_LABEL[view.turn.step]}</span>
+      {view.dayNight !== null ? (
+        <>
+          <span className="turn-banner-sep">·</span>
+          <span className="turn-banner-daynight" title={`It is ${view.dayNight} (rule 726)`}>
+            {view.dayNight === 'day' ? '☀ Day' : '☾ Night'}
+          </span>
+        </>
+      ) : null}
     </div>
   )
 }
