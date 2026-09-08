@@ -25,11 +25,85 @@ import type {
   CombatRestriction,
   CountSpec,
   Keyword,
+  StaticCondition,
 } from "./cards.js";
+import { matchesFilter } from "./filter.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { printedCardName } from "./state.js";
 import type { GameObject, GameState } from "./state.js";
+
+/**
+ * Ids whose static `condition` is currently being evaluated. A condition that
+ * reads other permanents' *computed* characteristics (`controls` / `metalcraft`)
+ * can loop back here — two Kird Apes each ask "does the other satisfy my
+ * condition?". Re-entry for an id already on this stack returns `false`
+ * (conservative): the inner call resolves that permanent's non-conditional
+ * characteristics (type / subtypes), which is all the outer scan needs.
+ * Transient computation scaffolding — never part of `GameState`.
+ */
+const conditionInProgress = new Set<ObjectId>();
+
+/**
+ * Whether a static ability's `condition` (rule 604.3 — "as long as …") is
+ * currently met, evaluated from the perspective of `source`'s controller.
+ * A static with no condition is always "met" — callers check that first.
+ *
+ * The battlefield scan skips `source` itself, and a re-entrant call for the
+ * same id short-circuits to `false` (see `conditionInProgress`). Full
+ * dependency ordering between mutually-conditional permanents is not modeled
+ * (the same gap noted for layers generally).
+ * ROADMAP Phase 11 EG-3.
+ */
+export function staticConditionMet(
+  state: GameState,
+  registry: CardRegistry,
+  source: GameObject,
+  condition: StaticCondition,
+): boolean {
+  if (conditionInProgress.has(source.id)) return false;
+  conditionInProgress.add(source.id);
+  try {
+    return evalStaticCondition(state, registry, source, condition);
+  } finally {
+    conditionInProgress.delete(source.id);
+  }
+}
+
+function evalStaticCondition(
+  state: GameState,
+  registry: CardRegistry,
+  source: GameObject,
+  condition: StaticCondition,
+): boolean {
+  const you = source.controller;
+  switch (condition.kind) {
+    case "your-turn":
+      return state.turnOrder[state.turn.activePlayerIndex] === you;
+    case "threshold":
+      return state.zones.perPlayer[you].graveyard.length >= 7;
+    case "metalcraft":
+      return (
+        state.zones.shared.battlefield.filter((id) => {
+          const o = state.objects[id];
+          return (
+            id !== source.id &&
+            o.controller === you &&
+            computeCharacteristics(state, registry, id).types.includes("artifact")
+          );
+        }).length >= 3
+      );
+    case "controls":
+      return (
+        state.zones.shared.battlefield.filter(
+          (id) =>
+            id !== source.id &&
+            state.objects[id].controller === you &&
+            matchesFilter(state, registry, id, condition.filter, { you }),
+        ).length >= condition.atLeast
+      );
+  }
+}
 
 export interface Characteristics {
   readonly power: number;
@@ -207,16 +281,25 @@ function collectStaticEffects(
       ) {
         continue;
       }
-      if (staticAffects(registry, ability.affects, source, target)) {
-        out.push({
-          timestamp: source.timestamp,
-          power: ability.grantPt?.[0] ?? 0,
-          toughness: ability.grantPt?.[1] ?? 0,
-          keywords: ability.grantKeywords ?? [],
-          restrictions: ability.restrictions ?? [],
-          protection: ability.protection ?? null,
-        });
+      if (!staticAffects(registry, ability.affects, source, target)) continue;
+      // "As long as …" gate (rule 604.3 — ROADMAP Phase 11 EG-3). Checked
+      // *after* `staticAffects` so a static that can't reach `target` never
+      // evaluates its condition (which may itself read other permanents'
+      // characteristics — checking it eagerly would recurse).
+      if (
+        ability.condition !== undefined &&
+        !staticConditionMet(state, registry, source, ability.condition)
+      ) {
+        continue;
       }
+      out.push({
+        timestamp: source.timestamp,
+        power: ability.grantPt?.[0] ?? 0,
+        toughness: ability.grantPt?.[1] ?? 0,
+        keywords: ability.grantKeywords ?? [],
+        restrictions: ability.restrictions ?? [],
+        protection: ability.protection ?? null,
+      });
     }
   }
   // Emblems (rule 114 — ROADMAP Phase 10): a player-owned anthem with no
@@ -317,6 +400,12 @@ export function computeCharacteristics(
   if (onBattlefield && !lostAbilities) {
     for (const ability of def.static) {
       if (ability.setBasePtFromCount === undefined) continue;
+      if (
+        ability.condition !== undefined &&
+        !staticConditionMet(state, registry, object, ability.condition)
+      ) {
+        continue;
+      }
       const n = countValue(
         ability.setBasePtFromCount.countOf,
         state,

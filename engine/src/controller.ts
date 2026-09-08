@@ -700,6 +700,9 @@ export class RandomController extends AutomaticController {
           ...(sac !== undefined && sac.choices.length > 0
             ? { sacrifice: sac.choices[this.pickIndex(sac.choices.length)] }
             : {}),
+          ...(legal.xCost !== undefined
+            ? { xValue: this.pickIndex(legal.xCost.maxX + 1) }
+            : {}),
         };
       }
       case "declare-attackers":

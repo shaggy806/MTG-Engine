@@ -80,12 +80,34 @@ export type CountSpec =
   | "lands-you-control";
 
 /**
+ * A condition gating a static ability (rule 604.3 — "as long as …"). Evaluated
+ * live every time characteristics are recomputed, from the perspective of the
+ * static's own permanent (its controller is "you"). When false, the static
+ * contributes nothing — no P/T, no keywords, no granted abilities, no cost
+ * change. ROADMAP Phase 11 EG-3.
+ */
+export type StaticCondition =
+  /** You control at least `atLeast` permanents matching `filter` (Kird Ape —
+   * "as long as you control a Forest"). */
+  | { readonly kind: "controls"; readonly filter: CardFilter; readonly atLeast: number }
+  /** It's your turn. */
+  | { readonly kind: "your-turn" }
+  /** Threshold (rule 702.27) — seven or more cards in your graveyard. */
+  | { readonly kind: "threshold" }
+  /** Metalcraft (rule 702.44) — you control three or more artifacts. */
+  | { readonly kind: "metalcraft" };
+
+/**
  * A static ability: continuously modifies characteristics (rule 613 layers 6 /
  * 7b / 7d), and/or carries a `replacement` clause (rule 614 — applied by
  * `game.ts`, not by the layer fold).
  */
 export interface StaticAbility {
   readonly affects: AffectSpec;
+  /** A condition gating this static (rule 604.3 — "as long as …"). When
+   * present and false, the static contributes nothing. Re-evaluated on every
+   * characteristics read, so it's live. ROADMAP Phase 11 EG-3. */
+  readonly condition?: StaticCondition;
   /** A replacement effect (rule 614) — see `replacements.ts`. Phase 1a: only
    * `enters-battlefield` self-replacements. */
   readonly replacement?: ReplacementSpec;

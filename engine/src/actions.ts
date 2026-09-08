@@ -96,6 +96,11 @@ export type Action =
        * `"creature-you-control"` sacrifice. Ignored for a `"self"` sacrifice
        * (the source is always what's sacrificed) or no sacrifice. */
       readonly sacrifice?: ObjectId;
+      /** The chosen value for `{X}` in the ability's mana cost (ROADMAP Phase
+       * 11 EG-3). Required (and only meaningful) when the cost contains `{X}`;
+       * ignored otherwise. Folded into the generic portion when paid and
+       * stamped on the ability object so `ctx.x` reads it. */
+      readonly xValue?: number;
     }
   | {
       readonly type: "declare-attackers";
@@ -278,6 +283,11 @@ export type LegalAction =
       /** Present for a planeswalker loyalty ability — the loyalty counters it
        * adds (negative = removes), so a UI can label it "+1" / "−3". */
       readonly loyalty?: number;
+      /** Set when the ability's cost contains `{X}` (ROADMAP Phase 11 EG-3).
+       * `maxX` is the largest value of X this player could currently pay for
+       * (0 when only X=0 is affordable). The driver must include `xValue` in
+       * the `activate-ability` action; anything from 0 to `maxX` is legal. */
+      readonly xCost?: { readonly maxX: number };
     }
   | {
       readonly kind: "declare-attackers";

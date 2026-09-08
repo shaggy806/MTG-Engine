@@ -26,7 +26,13 @@ import type {
   Keyword,
   StaticAbility,
 } from "./cards.js";
-import { computeCharacteristics, effectiveSubtypes, hasLostAbilities, staticAffects } from "./characteristics.js";
+import {
+  computeCharacteristics,
+  effectiveSubtypes,
+  hasLostAbilities,
+  staticAffects,
+  staticConditionMet,
+} from "./characteristics.js";
 import type { Characteristics } from "./characteristics.js";
 import { AutomaticController } from "./controller.js";
 import type { ControllerView, PlayerController } from "./controller.js";
@@ -352,6 +358,7 @@ export class Game {
           action.abilityIndex,
           action.targets ?? [],
           action.sacrifice,
+          action.xValue ?? 0,
         );
         break;
       case "declare-attackers":
@@ -658,7 +665,7 @@ export class Game {
                 }
               : {}),
             ...(parsed.x > 0
-              ? { xCost: { maxX: this.maxAffordableX(player, card, def) } }
+              ? { xCost: { maxX: this.maxAffordableX(player, card, def, def.manaCost, face ?? 0) } }
               : {}),
           });
         }
@@ -740,7 +747,7 @@ export class Game {
         targetSpecs: backDef.targets,
         targetOptions: this.targetOptionsFor(backDef.targets, player, this.cardSource(backDef)),
         ...(parsed.x > 0
-          ? { xCost: { maxX: this.maxAffordableX(player, card, backDef, front.disturb.cost) } }
+          ? { xCost: { maxX: this.maxAffordableX(player, card, backDef, front.disturb.cost, 1) } }
           : {}),
       });
     }
@@ -805,6 +812,17 @@ export class Game {
             ? { sacrifice: { choices: this.sacrificeCandidates(player, source, ability) } }
             : {}),
           ...(ability.loyaltyCost !== undefined ? { loyalty: ability.loyaltyCost } : {}),
+          ...(parseManaCost(ability.cost.mana).x > 0
+            ? {
+                xCost: {
+                  maxX: this.maxAffordableAbilityX(
+                    player,
+                    ability.cost.mana,
+                    ability.cost.tap ? undefined : source,
+                  ),
+                },
+              }
+            : {}),
         });
       });
     }
@@ -2336,6 +2354,27 @@ export class Game {
     return faceName !== undefined ? this.registry.get(faceName) : own;
   }
 
+  /**
+   * Run `fn` with `cardId`'s `GameObject.face` temporarily set to `face`, so a
+   * computation that reads the object's *current* characteristics
+   * (`costModificationFor` → `matchesFilter` → `printedCardName`) sees the face
+   * being cast/played, not whichever face happens to be up. Restored on the way
+   * out — a query, not a mutation. No-op for a single-faced card.
+   */
+  private withFace<T>(cardId: ObjectId, face: number, fn: () => T): T {
+    const object = this.state.objects[cardId];
+    if (object === undefined || object.faces === undefined || object.face === face) {
+      return fn();
+    }
+    const saved = object.face;
+    object.face = face;
+    try {
+      return fn();
+    } finally {
+      object.face = saved;
+    }
+  }
+
   private whyCannotPlayLand(player: PlayerId, cardId: ObjectId, face = 0): string | null {
     return (
       this.whyCannotAct(player) ??
@@ -2650,6 +2689,15 @@ export class Game {
     };
   }
 
+  /** Whether static `ability` on `source` is currently active — its `condition`
+   * gate (rule 604.3 — "as long as …"), if any, is met. ROADMAP Phase 11 EG-3. */
+  private staticActive(source: GameObject, ability: StaticAbility): boolean {
+    return (
+      ability.condition === undefined ||
+      staticConditionMet(this.state, this.registry, source, ability.condition)
+    );
+  }
+
   /** Net generic-mana adjustment to `cardId`'s cost from `costModification`
    * statics on the battlefield (increases first, then reductions — rule
    * 601.2f). Positive = costs more. */
@@ -2661,6 +2709,7 @@ export class Game {
       for (const ability of this.registry.get(printedCardName(source)).static) {
         const mod = ability.costModification;
         if (mod === undefined) continue;
+        if (!this.staticActive(source, ability)) continue;
         // The filter is evaluated from the casting player's perspective, so
         // `controlledBy: "you"` means "a spell this player casts".
         if (!matchesFilter(this.state, this.registry, cardId, mod.applies, { you: player })) {
@@ -2680,6 +2729,7 @@ export class Game {
     cardId: ObjectId,
     def: CardDefinition,
     costString: string | null = def.manaCost,
+    face = 0,
   ): number {
     const parsed = parseManaCost(costString);
     if (parsed.x === 0) return 0;
@@ -2691,11 +2741,40 @@ export class Game {
         (n, s) => n + s.fixed.length + s.anyColor,
         0,
       ) + MANA_TYPES.reduce((n, t) => n + pool[t], 0);
+    return this.withFace(cardId, face, () => {
+      let best = 0;
+      for (let k = 1; k <= cap; k += 1) {
+        if (this.payMana(player, this.castingCostOf(player, cardId, def, k, costString)) === null) {
+          break;
+        }
+        best = k;
+      }
+      return best;
+    });
+  }
+
+  /** Largest value of `{X}` this player could currently pay for in an
+   * activated-ability mana cost (`manaString`), not tapping `avoid` (the
+   * source, when the cost has no `{T}`). 0 if the cost has no `{X}`. */
+  private maxAffordableAbilityX(
+    player: PlayerId,
+    manaString: string | null,
+    avoid?: ObjectId,
+  ): number {
+    const parsed = parseManaCost(manaString);
+    if (parsed.x === 0) return 0;
+    const pool = this.state.players[player].manaPool;
+    const cap =
+      this.manaSources(player).reduce((n, s) => n + s.fixed.length + s.anyColor, 0) +
+      MANA_TYPES.reduce((n, t) => n + pool[t], 0);
     let best = 0;
     for (let k = 1; k <= cap; k += 1) {
-      if (this.payMana(player, this.castingCostOf(player, cardId, def, k, costString)) === null) {
-        break;
-      }
+      const cost: ManaCost = {
+        ...parsed,
+        generic: parsed.generic + parsed.x * k,
+        x: 0,
+      };
+      if (this.payMana(player, cost, avoid) === null) break;
       best = k;
     }
     return best;
@@ -2819,7 +2898,9 @@ export class Game {
     if (
       this.payMana(
         player,
-        this.castingCostOf(player, cardId, def, 0, this.castCostString(cardId, via, face)),
+        this.withFace(cardId, face, () =>
+          this.castingCostOf(player, cardId, def, 0, this.castCostString(cardId, via, face)),
+        ),
       ) === null
     ) {
       return `${player} cannot pay the cost of ${def.name}`;
@@ -2952,9 +3033,9 @@ export class Game {
       if (hasLostAbilities(source)) continue;
       for (const ability of this.registry.get(printedCardName(source)).static) {
         if (ability.grantsActivated === undefined) continue;
-        if (staticAffects(this.registry, ability.affects, source, target)) {
-          grants.push({ ts: source.timestamp, abilities: ability.grantsActivated });
-        }
+        if (!staticAffects(this.registry, ability.affects, source, target)) continue;
+        if (!this.staticActive(source, ability)) continue;
+        grants.push({ ts: source.timestamp, abilities: ability.grantsActivated });
       }
     }
     grants.sort((a, b) => a.ts - b.ts);
@@ -3060,6 +3141,7 @@ export class Game {
     abilityIndex: number,
     targets: readonly TargetRef[],
     sacrifice?: ObjectId,
+    xValue = 0,
   ): void {
     const why = this.whyCannotActivateAbility(player, sourceId, abilityIndex);
     if (why !== null) throw new Error(why);
@@ -3104,7 +3186,15 @@ export class Game {
       }
     }
 
-    const manaCost = parseManaCost(ability.cost.mana);
+    // `{X}` in the cost (rule 107.3 — ROADMAP Phase 11 EG-3): fold the chosen
+    // value into the generic portion before paying, and stamp it on the
+    // ability object below so `ctx.x` reads it at resolution.
+    const manaParsed = parseManaCost(ability.cost.mana);
+    const hasX = manaParsed.x > 0;
+    const chosenX = hasX ? Math.max(0, Math.floor(xValue)) : 0;
+    const manaCost: ManaCost = hasX
+      ? { ...manaParsed, generic: manaParsed.generic + manaParsed.x * chosenX, x: 0 }
+      : manaParsed;
     // Don't auto-tap the source for its own ability's mana cost unless there's
     // no other way to pay (it may want to attack / hold up its `{T}` ability).
     const payment = this.payMana(
@@ -3151,7 +3241,7 @@ export class Game {
 
     if (isManaAbility(ability)) {
       // Mana abilities resolve immediately and never use the stack.
-      const context = this.makeResolutionContext(sourceId, player, []);
+      const context = this.makeResolutionContext(sourceId, player, [], chosenX);
       if (ability.effect !== null) applyEffectSpec(ability.effect, context);
       this.emit({
         type: "ability-activated",
@@ -3162,7 +3252,7 @@ export class Game {
       return;
     }
 
-    this.mintAbilityObject(
+    const abilityId = this.mintAbilityObject(
       sourceId,
       // `def.name`, captured above — not `printedCardName(source)` now, since a
       // "Sacrifice this" cost may have moved the source (clearing a Clone's
@@ -3174,6 +3264,7 @@ export class Game {
       abilityIndex,
       targets,
     );
+    if (chosenX > 0) this.state.objects[abilityId].xValue = chosenX;
     this.emit({
       type: "ability-activated",
       source: sourceId,
@@ -5183,7 +5274,11 @@ export class Game {
     const object = this.state.objects[id];
     if (object === undefined || hasLostAbilities(object)) return null;
     for (const ability of this.registry.get(printedCardName(object)).static) {
-      if (ability.ward !== undefined && ability.affects.scope === "self") {
+      if (
+        ability.ward !== undefined &&
+        ability.affects.scope === "self" &&
+        this.staticActive(object, ability)
+      ) {
         return ability.ward;
       }
     }
@@ -5682,6 +5777,7 @@ export class Game {
     for (const ability of def.static) {
       const r = ability.replacement;
       if (r === undefined || r.event !== "enters-battlefield") continue;
+      if (!this.staticActive(object, ability)) continue;
       if (r.tapped) tapped = true;
       if (r.transformed) transformed = true;
       if (r.counters) {
@@ -5704,7 +5800,9 @@ export class Game {
       if (object.controller !== controller || hasLostAbilities(object)) continue;
       for (const ability of this.registry.get(printedCardName(object)).static) {
         const r = ability.replacement;
-        if (r?.event === "would-create-token") mult *= r.multiplier;
+        if (r?.event === "would-create-token" && this.staticActive(object, ability)) {
+          mult *= r.multiplier;
+        }
       }
     }
     return mult;
@@ -5728,7 +5826,8 @@ export class Game {
         const r = ability.replacement;
         if (
           r?.event === "would-add-counter" &&
-          (r.counterKind === undefined || r.counterKind === kind)
+          (r.counterKind === undefined || r.counterKind === kind) &&
+          this.staticActive(object, ability)
         ) {
           mult *= r.multiplier;
         }
@@ -5745,7 +5844,11 @@ export class Game {
       if (hasLostAbilities(object)) continue;
       for (const ability of this.registry.get(printedCardName(object)).static) {
         const r = ability.replacement;
-        if (r?.event === "would-be-put-into-graveyard" && r.instead === "exile") {
+        if (
+          r?.event === "would-be-put-into-graveyard" &&
+          r.instead === "exile" &&
+          this.staticActive(object, ability)
+        ) {
           return true;
         }
       }
