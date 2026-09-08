@@ -26,6 +26,7 @@ the diagram) are in.
 - [x] **Phase 8** — Cascade, storm, "cast" triggers, copy-a-spell
 - [x] **Phase 9** — Commander-format completeness + deck validation *(core done — colour identity, deck validation, Partner, a 4th commander; Companion / legend-rule choice / simultaneous mulligans deferred)*
 - [~] **Phase 10** — Tier 3 long tail (demand-driven) — **Sagas, 10a (MDFC), 10b (transform) + Day/Night, Monarch, Energy, Emblems, can't-be-countered, disturb, adventure all landed**; battles, phasing, dungeons/Initiative/Ring, banding deferred as large/niche
+- [ ] **Phase 11** — Engine-fidelity gaps: uniform targeting decisions, targeted modal spells, `{X}` activated costs + conditional statics, combat depth (trample choice / first-strike window / must-be-blocked), planeswalker ability coverage, replacement pipeline v2
 
 ## Dependency spine
 
@@ -653,6 +654,151 @@ large/niche — pull them in on demand, like earlier phases' deferred long tails
 A card that is *both* modal-and-transforming (the Marvel Spider-Man hero/alter-
 ego DFCs) would need `faces` + `transform` set together and `legalActions` to
 enumerate faces for a `transform` card too; no such card is in the pool yet.
+
+---
+
+## Phase 11 — Engine-fidelity gaps
+
+The rules engine is broad but a handful of real gaps still block cards from
+being *expressible*. Six increments, ordered by leverage and dependency. Each is
+a shippable increment (same bar as every other phase). EG‑1 and EG‑2 together
+clear most of what currently blocks real cards.
+
+### EG‑1 — Uniform targeting decisions (retire `chooseTargets`)  · S/M · first
+
+`chooseTargets` is the last synchronous `PlayerController` callback the engine
+still calls directly (`game.ts` — `placeTriggerOnStack` per target spec, and
+`castCardWithoutPaying` for cascade / suspend). Nothing in server/client routes
+a human choice to it — it falls through to `AutomaticController` (first legal).
+Convert it to a dispatched `AwaitingDecision` like every other choice.
+
+- New `AwaitingDecision` `choose-targets { source, cardName, specs, options,
+  autoTargets? }` + `{ type: "choose-targets", targets }` `Action` / `LegalAction`.
+- `GameState` gains `pendingTargetedTrigger` (a fired trigger parked while its
+  controller picks targets) and `pendingTargetedCast` (`{ cardId, via,
+  grantHaste } | null` for a free-cast). Both drained by `applyChooseTargets`,
+  which validates against `isLegalTarget` and then `mintAbilityObject`s /
+  finishes the free-cast, then re-enters `prepareForPriority`'s fixpoint. Same
+  pause-resume shape as `deferredCommanderMove` (903.9a).
+- `placeTriggerOnStack`: when `ability.targets.length > 0` and no `autoTargets`
+  cover a slot, raise the decision instead of the callback; keep APNAP placement
+  order (one targeted trigger resolved at a time).
+- `castCardWithoutPaying` + `castSuspendedCard`: raise the decision before the
+  spell goes on the stack.
+- `controller.ts`: `ScriptedController.chooseTargetsFn` now answered via
+  `answerAwaited`; `RandomController` picks from `choose-targets` options;
+  delete the direct `chooseTargets` engine call path.
+- `view.ts`: the decision's `options` are `TargetRef[][]`, one list per slot
+  (client renders like the cast-time `targeting` flow).
+- Client: a `choose-targets` `Table` mode reusing the `Targeting` component.
+- **Deferred:** spell-copy "you may choose new targets for the copy" (rule
+  707.10 — declining is legal, so keeping targets is a valid default).
+- Tests: `targeting-decisions.test.ts` — Bloodbraid Elf cascading into a
+  targeted burn spell (human picks), a saboteur trigger with a *second*
+  non-auto target slot.
+- Risk: touches the `prepareForPriority` fixpoint (every phase's hot path) —
+  well understood, medium blast radius.
+
+### EG‑2 — Targeted modal spells  · M
+
+`modal` resolves via `choose-modes` at *resolution*; modes must be non-targeted
+because a spell's targets lock in at *cast* time (rule 601.2b). Move mode +
+target selection into the cast pipeline (the `{X}` / `face` precedent).
+
+- `CardDefinition.castModal: { minModes, maxModes, modes: (ModeOption & {
+  targets?: TargetSpec[] })[] } | null`. `cast-spell` `Action` / `LegalAction`
+  gain `modes: number[]`; `GameObject.chosenModes`.
+- `legalActions`' hand loop emits one `cast-spell` entry carrying the
+  `castModal` descriptor. Client adds a **mode-picker step** (before `{X}`,
+  before targeting) — reuse the `choose-modes` toggle UI; then a targeting flow
+  whose specs are the concatenation of the chosen modes' `targets`, in mode
+  order.
+- `whyCannotCastSpell` / `castSpell` take `modes` — validate count in
+  `[min, max]`, distinct, ascending; effective `def.targets` = the union;
+  `object.chosenModes` on the stack.
+- `resolveTopOfStack`: apply each chosen mode's `effect` with its own target
+  slice (track an offset as slots are consumed). Legal-target recheck / fizzle
+  is per the whole spell (all modes illegal ⇒ fizzle).
+- Keep the resolution-time `modal` EffectSpec for non-targeted ability modes and
+  `may`.
+- Cards: a charm ({1}{W}{B}, "choose one", each half targeted), a Cryptic
+  Command-lite ("choose two"). `modal-cast.test.ts`.
+- **Unlocks:** the charm / command cycle and most modern modal cards — the
+  largest single card-unlock in Phase 11.
+
+### EG‑3 — `{X}` in activated costs + conditional static abilities  · M
+
+Two small independent Phase-3-tail items.
+
+- **`{X}` activated costs:** `AbilityCost.mana` may contain `{X}`;
+  `activate-ability` `Action` gains `xValue`; `whyCannotActivateAbility`
+  computes the max affordable X (mirror `maxAffordableX`); `activateAbility`
+  folds it into the paid cost and stamps `object.xValue` on the ability object
+  so `ctx.x` reads it. `legalActions` carries `xCost: { maxX }` on the
+  `activate-ability` entry.
+- **Conditional statics:** `StaticAbility.condition?: StaticCondition` — a small
+  predicate union (`controls { filter, atLeast }` / `your-turn` / `threshold` /
+  `metalcraft` / `predicate`) evaluated in `collectStaticEffects` (skip the
+  effect when false). Recomputed every characteristics read, so it's live.
+- Cards: Hangarback Walker (`{X}{X}` cast is Phase 1 already; this adds nothing
+  new there — pick a real `{X}`-activated card: e.g. a Fireball-artifact, or
+  Walking Ballista's sibling), a threshold / landfall conditional lord.
+  `x-abilities.test.ts`.
+- Risk: low; both independent.
+
+### EG‑4 — Combat depth  · M
+
+- **4a — trample damage assignment as a player choice** (rule 510.1c). A blocked
+  attacker with `trample` (and, optionally, any multi-blocked attacker) owes an
+  `assign-combat-damage { attacker, blockers, power }` `AwaitingDecision` — the
+  controller assigns ≥ lethal to each blocker in `blockedBy` order, then the
+  rest tramples to the defending player / planeswalker. Auto-resolves (current
+  behaviour) when there's no meaningful choice. Client: a distribute-N control.
+- **4b — first-strike priority window.** Split `combat-damage` into
+  `combat-damage-first` + `combat-damage` `Step`s, each granting priority; the
+  first is only entered when a combatant has first / double strike (rule
+  510.5). `turn.ts` (`Step`, `TURN_SEQUENCE`, `nextStep`, `stepUsesPriority`),
+  `performTurnBasedActions`, client `PhaseTrack`, and a few step-name test
+  assertions.
+- **4c — `must-be-blocked`** (Lure). A new `CombatRestriction` enforced in
+  `declareBlockersStep` — every able creature must block a `must-be-blocked`
+  attacker.
+- Cards: a big trampler, a first-strike-vs-instant interaction, Lure.
+  `combat-depth.test.ts`. Removes the "Phase 7 not yet" combat items.
+
+### EG‑5 — Planeswalker / permanent ability coverage audit  · S/M
+
+- Verify triggered abilities on planeswalkers fire (they should — `detectTriggers`
+  scans every battlefield object's `triggered`); fill any static-`affects`
+  scope gaps; close per-turn loyalty-cap edge cases (rule 606.3).
+- Static abilities that read the source's own counters / state (needs the
+  characteristics fold to expose the source object to a `predicate` static).
+- Cards: two real planeswalkers — one with a static anthem, one with an
+  attack / ETB / upkeep triggered ability. `planeswalker-abilities.test.ts`.
+- Mostly verification; low risk, but may surface a structural gap that grows scope.
+
+### EG‑6 — Replacement pipeline v2  · M · split 6a / 6b · last
+
+- **6a — order + shields.** `choose-replacement-order` `AwaitingDecision` when
+  ≥ 2 replacements apply to one event (rule 616.1 — the affected player /
+  controller orders them). Granular damage-prevention shields:
+  `GameState.preventionShields: { target, amount, combatOnly?, source? }[]`,
+  consumed in `dealDamage` before the hit lands; a `prevent-damage { target,
+  amount, combatOnly? }` effect creates one. Damage redirection ("the next time
+  ~ would deal damage, it's dealt to X instead" — Harm's Way).
+- **6b — draw + would-die.** A `would-draw` replacement pipeline in `drawCard`
+  (skip the draw / draw extra / redirect to an opponent — Notion Thief, "skip
+  your draw step"). A `CardFilter`-gated `would-die { instead: "exile" |
+  "hand" | "shuffle" }` static, generalizing the bespoke 903.9a mover and Rest
+  in Peace's global.
+- Cards: a "prevent the next N damage" instant, a redirect, Notion Thief-lite,
+  an "if a creature would die, exile it" enchantment. `replacement-v2.test.ts`.
+- Biggest and most niche; `dealDamage` / `drawCard` are hot paths — goes last.
+
+**Ordering:** EG‑1 (foundational cleanup — makes EG‑2/4/6's new decisions
+uniform) → EG‑2 (biggest card-unlock) → EG‑3 (quick independent wins) → EG‑4
+(self-contained, real gameplay impact) → EG‑5 (mostly audit) → EG‑6 (largest /
+riskiest / most niche).
 
 ---
 
