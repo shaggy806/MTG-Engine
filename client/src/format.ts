@@ -38,6 +38,16 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${name(event.object)} transforms (now ${event.front ? 'front' : 'back'} face)`
     case 'day-night-changed':
       return `it becomes ${event.value}`
+    case 'counter-failed':
+      return `${name(event.object)} can't be countered`
+    case 'monarch-changed':
+      return `${event.player} becomes the monarch (${event.via})`
+    case 'energy-changed':
+      return `${event.player} ${event.delta >= 0 ? '+' : ''}${event.delta} energy (now ${event.energy})`
+    case 'emblem-created':
+      return `${event.player} gets an emblem — "${event.text}"`
+    case 'card-on-adventure':
+      return `${name(event.object)} goes on an adventure (exiled)`
     case 'cascade-revealed':
       return event.cast
         ? `${event.player} cascades into ${name(event.cast)} (${event.exiled.length} exiled)`

@@ -32,6 +32,16 @@ export const makeFormatter = (game) => {
         return `${name(e.object)} transforms (now ${e.front ? "front" : "back"} face)`;
       case "day-night-changed":
         return `it becomes ${e.value}`;
+      case "counter-failed":
+        return `${name(e.object)} can't be countered`;
+      case "monarch-changed":
+        return `${e.player} becomes the monarch (${e.via})`;
+      case "energy-changed":
+        return `${e.player} ${e.delta >= 0 ? "+" : ""}${e.delta} energy (now ${e.energy})`;
+      case "emblem-created":
+        return `${e.player} gets an emblem — "${e.text}"`;
+      case "card-on-adventure":
+        return `${name(e.object)} goes on an adventure (exiled)`;
       case "cascade-revealed":
         return e.cast
           ? `${e.player} cascades into ${name(e.cast)} (${e.exiled.length} exiled)`

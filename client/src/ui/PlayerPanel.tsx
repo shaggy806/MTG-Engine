@@ -17,6 +17,10 @@ export interface PlayerPanelProps {
   readonly exileSize?: number
   /** Won the highroll and went first this game. */
   readonly wentFirst?: boolean
+  /** This player is the monarch (rule 720). */
+  readonly isMonarch?: boolean
+  /** Rules text of this player's emblems (rule 114), if any. */
+  readonly emblemTexts?: readonly string[]
   /** Opens a read-only viewer of this player's graveyard/exile/hand, if provided. */
   readonly onOpenGraveyard?: () => void
   readonly onOpenExile?: () => void
@@ -42,6 +46,8 @@ export function PlayerPanel({
   seats,
   exileSize = 0,
   wentFirst = false,
+  isMonarch = false,
+  emblemTexts = [],
   onOpenGraveyard,
   onOpenExile,
   onOpenHand,
@@ -78,6 +84,7 @@ export function PlayerPanel({
         )}
         <span className="pp-name">{playerLabel(info.id, seats)}</span>
         {wentFirst ? <span className="pp-went-first" title="Won the highroll, goes first">🎲</span> : null}
+        {isMonarch ? <span className="pp-monarch" title="The monarch (rule 720)">👑</span> : null}
         <span className="pp-life">{info.life}</span>
       </div>
       <div className="pp-zones">
@@ -120,6 +127,18 @@ export function PlayerPanel({
         </span>
       </div>
       {mana ? <div className="pp-mana">{mana}</div> : null}
+      {info.energy > 0 ? (
+        <div className="pp-energy" title="Energy counters ({E} — rule 122)">
+          ⚡ {info.energy}
+        </div>
+      ) : null}
+      {emblemTexts.length > 0 ? (
+        <div className="pp-emblems" title="Emblems (rule 114)">
+          {emblemTexts.map((t, i) => (
+            <span key={i}>🎗 {t}</span>
+          ))}
+        </div>
+      ) : null}
       {commanderDamage.length > 0 ? (
         <div className="pp-commander-damage">
           {commanderDamage.map(([from, amount]) => (

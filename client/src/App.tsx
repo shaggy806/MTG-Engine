@@ -1715,6 +1715,8 @@ function Table({ view, seat, opponents, game }: TableProps) {
       seats={game.seats}
       exileSize={exileOf(pid).length}
       wentFirst={pid === view.startingPlayer}
+      isMonarch={view.monarch === pid}
+      emblemTexts={view.emblems.filter((e) => e.owner === pid).map((e) => e.text)}
       onOpenGraveyard={() =>
         openZone(`${playerLabel(pid, game.seats)}'s graveyard`, view.zones.graveyards[pid] ?? [])
       }

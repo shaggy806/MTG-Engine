@@ -147,6 +147,20 @@
   color: var(--muted);
   font-weight: 600;
 }
+.pp-monarch {
+  margin-left: 4px;
+}
+.pp-energy {
+  font-size: 12px;
+  color: #d9b44a;
+}
+.pp-emblems {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--muted);
+}
 .turn-banner.seat-a .turn-banner-player {
   color: var(--seat-a);
 }
