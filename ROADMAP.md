@@ -26,7 +26,7 @@ the diagram) are in.
 - [x] **Phase 8** — Cascade, storm, "cast" triggers, copy-a-spell
 - [x] **Phase 9** — Commander-format completeness + deck validation *(core done — colour identity, deck validation, Partner, a 4th commander; Companion / legend-rule choice / simultaneous mulligans deferred)*
 - [~] **Phase 10** — Tier 3 long tail (demand-driven) — **Sagas, 10a (MDFC), 10b (transform) + Day/Night, Monarch, Energy, Emblems, can't-be-countered, disturb, adventure all landed**; battles, phasing, dungeons/Initiative/Ring, banding deferred as large/niche
-- [~] **Phase 11** — Engine-fidelity gaps — **EG-1 (uniform targeting decisions / retire `chooseTargets`) done**; EG-2 targeted modal spells, EG-3 `{X}` activated costs + conditional statics, EG-4 combat depth, EG-5 planeswalker ability coverage, EG-6 replacement pipeline v2 open
+- [~] **Phase 11** — Engine-fidelity gaps — **EG-1 (uniform targeting decisions) + EG-2 (targeted modal spells) done**; EG-3 `{X}` activated costs + conditional statics, EG-4 combat depth, EG-5 planeswalker ability coverage, EG-6 replacement pipeline v2 open
 
 ## Dependency spine
 
@@ -129,8 +129,8 @@ and `{X}` creatures.
   maxModes, modes }` + `may { effect, prompt }` (sugar for a 0-or-1 modal);
   `choose-modes` decision, fully wired (state / actions / game / controller
   ×3 / App.tsx mode + controls + `AWAITING_LABEL`). **Modes are
-  non-targeted only** — targeted modal spells (most real charms) need
-  cast-time mode selection, deferred to a later cast-pipeline phase (~6).
+  non-targeted only** — targeted modal spells (most real charms) got cast-time
+  mode selection in Phase 11 EG-2 (`CardDefinition.castModal`).
   903.9a reworked: `moveObject` raises `commander-replacement` *before* the
   move (rule 614 replacement), `applyCommanderChoice` completes it;
   `pendingCommanderChoices` / `promptCommanderChoice` deleted for a single
@@ -713,7 +713,23 @@ Convert it to a dispatched `AwaitingDecision` like every other choice.
 - Risk: touches the `prepareForPriority` fixpoint (every phase's hot path) —
   well understood, medium blast radius.
 
-### EG‑2 — Targeted modal spells  · M
+### EG‑2 — Targeted modal spells  · [x] done
+
+*Landed:* `CardDefinition.castModal { minModes, maxModes, modes }` (each
+`ModeOption` gains an optional `targets: TargetSpec[]`; `def.targets` is empty).
+`cast-spell` Action / LegalAction gain `modes` (+ a `castModal` descriptor with
+per-mode `targetSpecs` / `targetOptions`). `castSpell` / `whyCannotCastSpell`
+take `modes`; `Game.effectiveTargetSpecs` / `whyCannotChooseCastModes`;
+`GameObject.chosenModes` on the stack; `resolveTopOfStack` applies each chosen
+mode's `effect` with its own `targets` slice, skipping an illegal mode, fizzling
+only if all do. Client: a `choose-cast-modes` controls step (mode toggles, then
+Confirm) before targeting. `RandomController` picks a random castable subset.
+The resolution-time `modal` / `may` EffectSpec stays for non-targeted ability
+modes. Cards `Sunder Charm` (choose one) / `Duskwood Verdict` (choose two).
+`modal-cast.test.ts` (6). {X}-in-a-modal-cost and modal *activated abilities*
+still deferred.
+
+*Original design notes:*
 
 `modal` resolves via `choose-modes` at *resolution*; modes must be non-targeted
 because a spell's targets lock in at *cast* time (rule 601.2b). Move mode +
