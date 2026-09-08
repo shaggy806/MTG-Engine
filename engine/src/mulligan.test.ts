@@ -6,6 +6,7 @@ import { asPlayerId } from "./primitives.js";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
+const C = asPlayerId("carol");
 
 const deck = (n: number): string[] =>
   Array.from({ length: n }, (_, i) => (i % 2 === 0 ? "Forest" : "Grizzly Bears"));
@@ -21,6 +22,8 @@ const newGame = (overrides: Partial<GameConfig> = {}): Game =>
     ...overrides,
   });
 
+const deciding = (taken = 0) => ({ taken, step: "decide" as const });
+
 describe("mulligans (opt-in via GameConfig.mulligans)", () => {
   it("does nothing to Game.create's default behavior when the flag is omitted", () => {
     const game = Game.create({
@@ -35,18 +38,27 @@ describe("mulligans (opt-in via GameConfig.mulligans)", () => {
     expect(game.state.turn.step).toBe("untap");
   });
 
-  it("asks the first turn-order player to keep or mulligan before turn 1 begins", () => {
+  it("asks every player at once — parallel, not turn order", () => {
     const game = newGame();
     expect(game.state.turn.number).toBe(0);
-    expect(game.state.awaiting).toEqual({ kind: "mulligan", player: A, count: 0 });
+    expect(game.state.awaiting).toEqual({
+      kind: "mulligan",
+      player: A,
+      hands: { alice: deciding(), bob: deciding() },
+    });
     expect(game.legalActions(A)).toEqual([{ kind: "mulligan", count: 0 }]);
-    expect(game.legalActions(B)).toEqual([]);
+    expect(game.legalActions(B)).toEqual([{ kind: "mulligan", count: 0 }]);
   });
 
-  it("keeping with zero mulligans moves straight to the next player, then to turn 1", () => {
+  it("a player who has kept is removed from the phase; it ends when all have", () => {
     const game = newGame();
     game.dispatch({ type: "mulligan", player: A, keep: true });
-    expect(game.state.awaiting).toEqual({ kind: "mulligan", player: B, count: 0 });
+    expect(game.state.awaiting).toEqual({
+      kind: "mulligan",
+      player: B,
+      hands: { bob: deciding() },
+    });
+    expect(game.legalActions(A)).toEqual([]);
 
     game.dispatch({ type: "mulligan", player: B, keep: true });
     expect(game.state.awaiting).toBeNull();
@@ -56,19 +68,35 @@ describe("mulligans (opt-in via GameConfig.mulligans)", () => {
     expect(game.handOf(B)).toHaveLength(7);
   });
 
-  it("a mulligan shuffles the hand back, draws a fresh 7, and re-asks with an incremented count", () => {
+  it("a later-seated player can keep before an earlier one has decided", () => {
     const game = newGame();
-    const firstHand = [...game.handOf(A)];
+    game.dispatch({ type: "mulligan", player: B, keep: true });
+    expect(game.state.awaiting).toEqual({
+      kind: "mulligan",
+      player: A,
+      hands: { alice: deciding() },
+    });
 
+    game.dispatch({ type: "mulligan", player: A, keep: true });
+    expect(game.state.awaiting).toBeNull();
+    expect(game.state.turn.number).toBe(1);
+  });
+
+  it("one player mulliganing doesn't touch another player's hand or phase state", () => {
+    const game = newGame();
+    const bHand = [...game.handOf(B)];
     game.dispatch({ type: "mulligan", player: A, keep: false });
-
-    expect(game.state.awaiting).toEqual({ kind: "mulligan", player: A, count: 1 });
+    expect(game.state.awaiting).toEqual({
+      kind: "mulligan",
+      player: A,
+      hands: { alice: deciding(1), bob: deciding() },
+    });
     expect(game.handOf(A)).toHaveLength(7);
-    // A fresh 7 from a reshuffled 40-card library needn't be the same ids.
-    expect([...game.handOf(A)]).not.toEqual(firstHand);
-    expect(game.libraryOf(A)).toHaveLength(33);
+    expect([...game.handOf(B)]).toEqual(bHand);
     const mulliganEvents = game.events.filter((e) => e.type === "mulligan-taken");
-    expect(mulliganEvents).toEqual([{ ...mulliganEvents[0], type: "mulligan-taken", player: A, count: 1 }]);
+    expect(mulliganEvents).toEqual([
+      { ...mulliganEvents[0], type: "mulligan-taken", player: A, count: 1 },
+    ]);
   });
 
   it("is uncapped: repeated mulligans keep incrementing the count", () => {
@@ -76,7 +104,9 @@ describe("mulligans (opt-in via GameConfig.mulligans)", () => {
     game.dispatch({ type: "mulligan", player: A, keep: false });
     game.dispatch({ type: "mulligan", player: A, keep: false });
     game.dispatch({ type: "mulligan", player: A, keep: false });
-    expect(game.state.awaiting).toEqual({ kind: "mulligan", player: A, count: 3 });
+    expect((game.state.awaiting as { hands: Record<string, unknown> }).hands.alice).toEqual(
+      deciding(3),
+    );
   });
 
   it("keeping after mulligans asks to put that many cards on the bottom", () => {
@@ -85,7 +115,11 @@ describe("mulligans (opt-in via GameConfig.mulligans)", () => {
     game.dispatch({ type: "mulligan", player: A, keep: false });
     game.dispatch({ type: "mulligan", player: A, keep: true });
 
-    expect(game.state.awaiting).toEqual({ kind: "mulligan-bottom", player: A, count: 2 });
+    expect(game.state.awaiting).toEqual({
+      kind: "mulligan",
+      player: A,
+      hands: { alice: { taken: 2, step: "bottom" }, bob: deciding() },
+    });
     expect(game.legalActions(A)).toEqual([
       { kind: "put-on-bottom", count: 2, from: [...game.handOf(A)] },
     ]);
@@ -115,7 +149,7 @@ describe("mulligans (opt-in via GameConfig.mulligans)", () => {
     ).toThrow(/not in hand/);
   });
 
-  it("bottoming moves the chosen cards to the library's bottom and hands off to the next player", () => {
+  it("bottoming moves the chosen cards to the library's bottom and finishes that player", () => {
     const game = newGame();
     game.dispatch({ type: "mulligan", player: A, keep: false });
     game.dispatch({ type: "mulligan", player: A, keep: true });
@@ -127,10 +161,38 @@ describe("mulligans (opt-in via GameConfig.mulligans)", () => {
     expect(game.handOf(A)).toHaveLength(6);
     expect(game.libraryOf(A)).toHaveLength(34);
     expect(game.libraryOf(A).at(-1)).toBe(bottomed);
-    expect(game.state.awaiting).toEqual({ kind: "mulligan", player: B, count: 0 });
+    expect(game.state.awaiting).toEqual({
+      kind: "mulligan",
+      player: B,
+      hands: { bob: deciding() },
+    });
 
     game.dispatch({ type: "mulligan", player: B, keep: true });
     expect(game.state.awaiting).toBeNull();
+    expect(game.state.turn.number).toBe(1);
+  });
+
+  it("a 3-player game — all three asked at once, resolved in any order", () => {
+    const game = Game.create({
+      seed: 7,
+      mulligans: true,
+      decks: [
+        { player: A, cards: deck(40) },
+        { player: B, cards: deck(40) },
+        { player: C, cards: deck(40) },
+      ],
+    });
+    for (const p of [A, B, C]) {
+      expect(game.legalActions(p)).toEqual([{ kind: "mulligan", count: 0 }]);
+    }
+    game.dispatch({ type: "mulligan", player: C, keep: true });
+    game.dispatch({ type: "mulligan", player: A, keep: true });
+    expect(game.state.awaiting).toEqual({
+      kind: "mulligan",
+      player: B,
+      hands: { bob: deciding() },
+    });
+    game.dispatch({ type: "mulligan", player: B, keep: true });
     expect(game.state.turn.number).toBe(1);
   });
 

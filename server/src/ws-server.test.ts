@@ -111,9 +111,17 @@ describe("room server (end to end over WebSocket)", () => {
     }
     expect(aliceRebroadcast.seats.every((s) => s.claimed)).toBe(true);
     expect(bobState.seat).toBe(BOB);
-    // Real rooms turn on mulligans — both players keep their opening hand
-    // before turn 1's priority even exists.
-    expect(bobState.view.awaiting).toEqual({ kind: "mulligan", player: ALICE, count: 0 });
+    // Real rooms turn on mulligans — both players are asked at once (parallel,
+    // not turn order) and keep their opening hand before turn 1's priority
+    // even exists.
+    expect(bobState.view.awaiting).toEqual({
+      kind: "mulligan",
+      player: ALICE,
+      hands: {
+        [ALICE]: { taken: 0, step: "decide" },
+        [BOB]: { taken: 0, step: "decide" },
+      },
+    });
 
     aliceWs.send(
       JSON.stringify({

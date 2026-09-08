@@ -92,7 +92,6 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
   'order-blockers': 'order blockers',
   'choose-from-zone': 'look at cards',
   mulligan: 'decide on a mulligan',
-  'mulligan-bottom': 'put cards on the bottom of their library',
   'commander-replacement': 'decide where their commander goes',
   'choose-copy': 'choose what to copy',
   'choose-text': 'choose a text change',
