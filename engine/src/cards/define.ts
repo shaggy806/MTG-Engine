@@ -163,6 +163,18 @@ export interface StaticAbility {
 /** Printed characteristics of a card. Immutable reference data. */
 export interface CardDefinition {
   readonly name: string;
+  /**
+   * A Scryfall link pinning this card's art to a specific printing, or `null`
+   * to fall back to the by-name art lookup. Accepts any of:
+   *   - a card page URL — `https://scryfall.com/card/dmu/120/...`
+   *   - an API URL — `https://api.scryfall.com/cards/dmu/120`
+   *   - a direct image URL — `https://cards.scryfall.io/art_crop/...`
+   *   - a bare Scryfall card UUID
+   * The client (`client/src/ui/art.ts`) resolves it to an image URL; no lookup
+   * happens engine-side. Useful for made-up cards and tokens with no real
+   * printing, or to lock in a preferred illustration.
+   */
+  readonly art: string | null;
   readonly manaCost: string | null;
   readonly colors: readonly Color[];
   readonly supertypes: readonly Supertype[];
@@ -279,6 +291,9 @@ export interface SagaChapter {
 
 interface CardDraft {
   name: string;
+  /** A Scryfall link (page / API / image URL, or a bare card UUID) pinning
+   * this card's art to a specific printing. See {@link CardDefinition.art}. */
+  art?: string;
   manaCost?: string;
   colors?: readonly Color[];
   supertypes?: readonly Supertype[];
@@ -336,6 +351,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
         ];
   return {
     name: draft.name,
+    art: draft.art ?? null,
     manaCost: draft.manaCost ?? null,
     colors: draft.colors ?? [],
     supertypes: draft.supertypes ?? [],

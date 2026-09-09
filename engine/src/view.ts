@@ -60,6 +60,9 @@ export interface VisibleObject {
    * `copyOf ?? faceName`. `faces` lists all of them (front first) or is `null`. */
   readonly faceName: string;
   readonly faces: readonly string[] | null;
+  /** A Scryfall link pinning this card's art (its up face's / copied card's),
+   * or `null` for the by-name lookup. See `CardDefinition.art`. */
+  readonly art: string | null;
   readonly owner: PlayerId;
   readonly controller: PlayerId;
   readonly zone: ZoneType;
@@ -187,6 +190,7 @@ function visible(
     copyOf: object.copyOf,
     faceName: faceName(object),
     faces: object.faces === undefined ? null : [...object.faces],
+    art: def.art,
     owner: object.owner,
     controller: object.controller,
     zone: object.zone,
