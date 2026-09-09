@@ -871,6 +871,15 @@ export class Game {
       });
     }
 
+    // A static permission to play lands from your graveyard (Ramunap
+    // Excavator — rule 118.9). Still consumes the land drop / sorcery timing.
+    for (const card of this.state.zones.perPlayer[player].graveyard) {
+      const def = this.registry.get(this.state.objects[card].cardName);
+      if (!def.types.includes("land")) continue;
+      if (this.whyCannotPlayLand(player, card) !== null) continue;
+      out.push({ kind: "play-land", card, cardName: def.name });
+    }
+
     for (const source of this.state.zones.shared.battlefield) {
       const object = this.state.objects[source];
       if (object.controller !== player) continue;
@@ -2754,8 +2763,26 @@ export class Game {
       this.whyCannotAct(player) ??
       this.whyNotSorcerySpeed(player, "play a land") ??
       this.landDropReason(player) ??
-      this.landInHandReason(player, cardId, face)
+      this.landPlayableReason(player, cardId, face)
     );
+  }
+
+  /** While a `playFromGraveyard` static (Ramunap Excavator) is on the
+   * battlefield under `player`'s control, they may play a matching card from
+   * their graveyard (rule 118.9 / 305.9). */
+  private mayPlayFromGraveyard(player: PlayerId, cardId: ObjectId): boolean {
+    for (const id of this.state.zones.shared.battlefield) {
+      const source = this.state.objects[id];
+      if (source.controller !== player || hasLostAbilities(source)) continue;
+      for (const ability of this.registry.get(printedCardName(source)).static) {
+        const filter = ability.playFromGraveyard;
+        if (filter === undefined || !this.staticActive(source, ability)) continue;
+        if (matchesFilter(this.state, this.registry, cardId, filter, { you: player })) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   private landDropReason(player: PlayerId): string | null {
@@ -2765,9 +2792,13 @@ export class Game {
       : null;
   }
 
-  private landInHandReason(player: PlayerId, cardId: ObjectId, face = 0): string | null {
-    if (!this.state.zones.perPlayer[player].hand.includes(cardId)) {
-      return `${player} does not have that card in hand`;
+  private landPlayableReason(player: PlayerId, cardId: ObjectId, face = 0): string | null {
+    const zones = this.state.zones.perPlayer[player];
+    const playable =
+      zones.hand.includes(cardId) ||
+      (zones.graveyard.includes(cardId) && this.mayPlayFromGraveyard(player, cardId));
+    if (!playable) {
+      return `${player} cannot play that card as a land`;
     }
     const def = this.faceDef(cardId, face);
     return def.types.includes("land") ? null : `${def.name} is not a land`;

@@ -129,6 +129,12 @@ export interface StaticAbility {
   readonly grantsActivated?: readonly ActivatedAbility[];
   /** Combat restrictions imposed on the affected objects (Pacifism, Juggernaut). */
   readonly restrictions?: readonly CombatRestriction[];
+  /** A permission (rule 305.9 / 118.9) — while this permanent is on the
+   * battlefield its controller may *play* cards matching `filter` from their
+   * graveyard (Ramunap Excavator: `{ type: "land" }`). `affects` is ignored;
+   * this grants the controller a play permission, not a characteristic. Still
+   * costs the land drop / sorcery timing. */
+  readonly playFromGraveyard?: CardFilter;
   /** Protection (rule 702.16) — the affected object can't be targeted,
    * blocked, enchanted/equipped, or damaged by a source whose colour or type
    * matches (White Knight: `{ colors: ["B"] }`). */

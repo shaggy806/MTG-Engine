@@ -2172,16 +2172,23 @@ function Table({ view, seat, opponents, game }: TableProps) {
           resolve={(id) => view.objects[id]}
           onClose={() => setZoneView(null)}
           castable={{
-            ids: zoneView.ids.filter((id) => castByCard.get(id)?.via !== undefined),
+            // Flashback/escape/… casts from the graveyard (Phase 6), plus a
+            // land playable from the graveyard (Ramunap Excavator — P2B).
+            ids: zoneView.ids.filter(
+              (id) => castByCard.get(id)?.via !== undefined || landByCard.has(id),
+            ),
             label: (id) => {
               const c = castByCard.get(id)
-              return c?.via ? `Cast (${c.via})` : 'Cast'
+              if (c?.via) return `Cast (${c.via})`
+              if (landByCard.has(id)) return 'Play land'
+              return 'Cast'
             },
             onCast: (id) => {
+              const land = landByCard.get(id)
               const c = castByCard.get(id)
-              if (!c) return
               setZoneView(null)
-              beginCast(c)
+              if (land) playFace(land)
+              else if (c) beginCast(c)
             },
           }}
         />

@@ -59,6 +59,7 @@ const deckA = deck([
   ["Splendid Reclamation", 1],
   ["Aftermath Analyst", 1],
   ["World Shaper", 1],
+  ["Ramunap Excavator", 1],
   ["Rampaging Baloths", 1],
   ["Juggernaut", 1],
   ["Combat Thresher", 1],

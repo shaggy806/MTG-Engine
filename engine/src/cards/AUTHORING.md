@@ -439,6 +439,10 @@ static: [
 - `costModification: { applies: CardFilter, reduceGeneric?, increaseGeneric? }`
   — Foundry Inspector, Thalia. `affects` is ignored — `applies` says what it
   hits.
+- `playFromGraveyard: CardFilter` — while this permanent is on the battlefield
+  its controller may *play* matching cards from their graveyard (Ramunap
+  Excavator: `{ type: "land" }`). `affects` is ignored. Still costs the land
+  drop / sorcery timing; `legalActions` enumerates the play.
 
 **`condition?`** (`StaticCondition`) gates the *whole* static — when false it
 contributes nothing:
@@ -592,8 +596,8 @@ different card, or extend the engine (see `ROADMAP.md`).
 - Returning a card from **another player's** graveyard, or to the library, as
   an effect. `return-from-graveyard` covers *your own* graveyard → battlefield
   / hand; `escape` / `flashback` / `disturb` cover self-recursion of the spell
-  itself. No "play lands from your graveyard" static permission yet either
-  (Ramunap Excavator).
+  itself; `StaticAbility.playFromGraveyard` (Ramunap Excavator) lets you *play*
+  matching cards from your graveyard.
 - `modify-pt` / `draw` / `discard` / `tap` targeting **another player** by
   scope — `draw` is always the controller; `discard`/`mill` take a
   target-player slot (or `"you"`) but there's no "each opponent draws/mills"

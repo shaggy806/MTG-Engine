@@ -124,6 +124,53 @@ describe("Aftermath Analyst", () => {
   });
 });
 
+describe("Ramunap Excavator — play lands from your graveyard", () => {
+  it("offers a graveyard land as a play-land action only while the Excavator is out, and it costs the land drop", () => {
+    const { game } = mkGame([]);
+    game.advanceUntil(toPrecombat);
+    const gyForest = game.debugSpawn("Forest", A, "graveyard");
+    const gyMountain = game.debugSpawn("Mountain", A, "graveyard");
+
+    // No permission yet.
+    expect(
+      game.legalActions(A).some((a) => a.kind === "play-land" && a.card === gyForest),
+    ).toBe(false);
+
+    game.debugSpawn("Ramunap Excavator", A, "battlefield");
+    const plays = game
+      .legalActions(A)
+      .filter((a) => a.kind === "play-land")
+      .map((a) => (a as { card: string }).card);
+    expect(plays).toContain(gyForest);
+    expect(plays).toContain(gyMountain);
+
+    const landsBefore = game.state.players[A].landsPlayedThisTurn;
+    game.dispatch({ type: "play-land", player: A, card: gyForest });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[gyForest].zone).toBe("battlefield");
+    expect(game.state.zones.perPlayer[A].graveyard).not.toContain(gyForest);
+    // It consumed the land drop (rule 305.2).
+    expect(game.state.players[A].landsPlayedThisTurn).toBe(landsBefore + 1);
+    expect(game.eventsOfType("land-played").some((e) => e.object === gyForest)).toBe(true);
+  });
+
+  it("stops offering graveyard land-plays once the Excavator leaves", () => {
+    const { game } = mkGame([]);
+    game.advanceUntil(toPrecombat);
+    const gyForest = game.debugSpawn("Forest", A, "graveyard");
+    const excavator = game.debugSpawn("Ramunap Excavator", A, "battlefield");
+    expect(
+      game.legalActions(A).some((a) => a.kind === "play-land" && a.card === gyForest),
+    ).toBe(true);
+
+    game.state.objects[excavator].damageMarked = 3;
+    game.advanceUntil((s) => quiet(s) && game.state.objects[excavator].zone === "graveyard");
+    expect(
+      game.legalActions(A).some((a) => a.kind === "play-land" && a.card === gyForest),
+    ).toBe(false);
+  });
+});
+
 describe("World Shaper", () => {
   it("returns all land cards from the graveyard when it dies", () => {
     const { game } = mkGame([]);
