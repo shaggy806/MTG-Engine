@@ -1810,8 +1810,9 @@ export class Game {
 
     for (const id of chosen) {
       this.moveObject(id, awaiting.destination);
-      if (awaiting.enterTapped && awaiting.destination === "battlefield") {
-        this.state.objects[id].tapped = true;
+      if (awaiting.destination === "battlefield") {
+        if (awaiting.enterTapped) this.state.objects[id].tapped = true;
+        this.emit({ type: "permanent-entered-battlefield", object: id });
       }
     }
 
@@ -4744,6 +4745,8 @@ export class Game {
       gainControl: (target, untilEndOfTurn) =>
         this.gainControlByEffect(controller, target, untilEndOfTurn),
       mill: (target, amount) => this.millByEffect(target, amount),
+      returnFromGraveyard: (filter, destination, count, enterTapped) =>
+        this.returnFromGraveyardByEffect(controller, filter, destination, count, enterTapped),
       discardCards: (target, amount) => this.discardByEffect(target, amount),
       modifyPt: (target, power, toughness, duration) =>
         this.modifyPt(target, power, toughness, duration),
@@ -5853,6 +5856,44 @@ export class Game {
     if (milled.length > 0) {
       this.emit({ type: "cards-milled", player, objects: milled });
     }
+  }
+
+  /** See the `"return-from-graveyard"` {@link EffectSpec}. Returns cards from
+   * `player`'s graveyard. `count: "all"` (or fewer matches than `count`) moves
+   * every match straight away; otherwise it raises a `choose-from-zone`
+   * decision, the unchosen matches staying in the graveyard. */
+  private returnFromGraveyardByEffect(
+    player: PlayerId,
+    filter: CardFilter,
+    destination: "battlefield" | "hand",
+    count: number | "all",
+    enterTapped: boolean,
+  ): void {
+    const eligible = this.state.zones.perPlayer[player].graveyard.filter((id) =>
+      matchesFilter(this.state, this.registry, id, filter, { you: player }),
+    );
+    if (eligible.length === 0) return;
+    if (count === "all" || eligible.length <= count) {
+      for (const id of eligible) {
+        this.moveObject(id, destination);
+        if (destination === "battlefield") {
+          if (enterTapped) this.state.objects[id].tapped = true;
+          this.emit({ type: "permanent-entered-battlefield", object: id });
+        }
+      }
+      return;
+    }
+    this.state.awaiting = {
+      kind: "choose-from-zone",
+      player,
+      ids: eligible,
+      eligible,
+      min: count,
+      max: count,
+      destination,
+      leftover: "stay",
+      ...(enterTapped && destination === "battlefield" ? { enterTapped: true } : {}),
+    };
   }
 
   /** Target player discards `amount` cards. If their hand is that small or

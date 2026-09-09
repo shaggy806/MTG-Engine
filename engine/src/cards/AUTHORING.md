@@ -214,7 +214,7 @@ ability does on resolution. A `target:` field is an **index into `targets[]`**
 | `lose-life` | `amount`, `who?` | Zulaport Cutthroat |
 | `draw` | `amount` | Divination (controller draws) |
 | `discard` | `target` (slot \| `"you"`), `amount` | Mind Rot / Faithless Looting |
-| `mill` | `target`, `amount` | Tome Scour |
+| `mill` | `target` (slot \| `"you"`), `amount` | Tome Scour / Aftermath Analyst (`"you"`) |
 
 `who?` is a `PlayerScope`: `"each-player" \| "each-opponent" \| "you"` (default
 = the effect's controller).
@@ -227,6 +227,7 @@ ability does on resolution. A `target:` field is an **index into `targets[]`**
 | `destroy-all` | `filter` | Wrath of God |
 | `exile` | `target` | Angelic Edict |
 | `return-to-hand` | `target` | Unsummon |
+| `return-from-graveyard` | `filter`, `destination: "battlefield" \| "hand"`, `count: number \| "all"`, `enterTapped?` | Splendid Reclamation (from *your* graveyard; a `number` less than the match count raises a `choose-from-zone`) |
 | `counter` | `target` (a spell) | Counterspell |
 | `sacrifice` | `who`, `filter`, `count` | Diabolic Edict (`who: "target"`), Fleshbag Marauder (`who: "each-player"`) |
 | `fight` | `a`, `b`, `oneSided?` | Prey Upon / Rabid Bite |
@@ -588,12 +589,15 @@ different card, or extend the engine (see `ROADMAP.md`).
 
 **No vocabulary for:**
 
-- Returning a card from a graveyard to hand/battlefield/library as an effect
-  (no `return-from-graveyard`). `escape` / `flashback` / `disturb` cover
-  self-recursion only.
-- `modify-pt` / `draw` / `discard` / `mill` / `tap` targeting **another
-  player** by scope — `draw` is always the controller; `discard`/`mill` take a
-  target-player slot but there's no "each opponent draws" form.
+- Returning a card from **another player's** graveyard, or to the library, as
+  an effect. `return-from-graveyard` covers *your own* graveyard → battlefield
+  / hand; `escape` / `flashback` / `disturb` cover self-recursion of the spell
+  itself. No "play lands from your graveyard" static permission yet either
+  (Ramunap Excavator).
+- `modify-pt` / `draw` / `discard` / `tap` targeting **another player** by
+  scope — `draw` is always the controller; `discard`/`mill` take a
+  target-player slot (or `"you"`) but there's no "each opponent draws/mills"
+  form.
 - Reordering the cards you keep on top after a scry.
 - Multi-destination or sacrifice-on-death tutors (Cultivate's "one to
   battlefield, one to hand"; Sakura-Tribe Elder).

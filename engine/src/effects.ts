@@ -128,10 +128,24 @@ export type EffectSpec =
     }
   | {
       /** Target player puts the top `amount` cards of their library into
-       * their graveyard. */
+       * their graveyard. `target: "you"` = the effect's controller, with no
+       * target slot (Aftermath Analyst's "mill three cards"). */
       readonly kind: "mill";
-      readonly target: number;
+      readonly target: number | "you";
       readonly amount: EffectAmount;
+    }
+  | {
+      /** Return every card matching `filter` from the effect's controller's
+       * graveyard to `destination` (Splendid Reclamation: all land cards to
+       * the battlefield tapped — rule 608). `count: "all"` moves every match
+       * with no decision; a number raises a `choose-from-zone` decision when
+       * there are more matches than that, the rest staying in the graveyard. */
+      readonly kind: "return-from-graveyard";
+      readonly filter: CardFilter;
+      readonly destination: "battlefield" | "hand";
+      readonly count: number | "all";
+      /** Battlefield-bound cards enter tapped (Splendid Reclamation). */
+      readonly enterTapped?: boolean;
     }
   | {
       /** Target player discards `amount` cards (their choice, unless it's the
@@ -440,6 +454,14 @@ export interface EffectApi {
   gainControl(target: TargetRef, untilEndOfTurn: boolean): void;
   /** `target` (a player) mills `amount` cards. */
   mill(target: TargetRef, amount: number): void;
+  /** See the `"return-from-graveyard"` {@link EffectSpec} — from the effect's
+   * controller's graveyard. */
+  returnFromGraveyard(
+    filter: CardFilter,
+    destination: "battlefield" | "hand",
+    count: number | "all",
+    enterTapped: boolean,
+  ): void;
   /** `target` (a player) discards `amount` cards. */
   discardCards(target: TargetRef, amount: number): void;
   modifyPt(
@@ -662,10 +684,21 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       return;
     }
     case "mill": {
-      const target = ctx.targets[spec.target];
+      const target =
+        spec.target === "you"
+          ? ({ kind: "player", player: ctx.controller } as const)
+          : ctx.targets[spec.target];
       if (target !== undefined) ctx.mill(target, amountValue(spec.amount, ctx));
       return;
     }
+    case "return-from-graveyard":
+      ctx.returnFromGraveyard(
+        spec.filter,
+        spec.destination,
+        spec.count,
+        spec.enterTapped ?? false,
+      );
+      return;
     case "discard": {
       const target =
         spec.target === "you"

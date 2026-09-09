@@ -90,7 +90,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [x] 1 Ureni of the Unwritten           (commander — in pool)
 
 === Deck 2 — Korvold / Lord Windgrace (Jund lands) ===
-[ ] 1 Aftermath Analyst                FEATURE: return all land cards from your graveyard to the battlefield
+[+] 1 Aftermath Analyst
 [ ] 1 Amulet of Vigor                  FEATURE: "whenever a permanent enters tapped, untap it"
 [ ] 1 Beast Within                     (dup — see Deck 1)
 [ ] 1 Blasphemous Act                  (dup — see Deck 1)
@@ -152,7 +152,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Six                              FEATURE: forests-matter; play lands from graveyard; regeneration-ish
 [x] 1 Sol Ring
 [ ] 1 Spelunking                       FEATURE: "lands you control enter untapped" replacement
-[ ] 1 Splendid Reclamation             FEATURE: return all land cards from your graveyard to the battlefield
+[+] 1 Splendid Reclamation
 [ ] 1 Springheart Nantuko              FEATURE: landfall + bestow
 [ ] 1 Stomping Ground                  (dup — see Deck 1)
 [ ] 1 Summon: Titan                    FEATURE: FF "Summon" saga-creature (chapter counters on a creature)
@@ -174,7 +174,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Walk-In Closet / Forgotten Cellar FEATURE: Room card
 [ ] 1 Will of the Sultai               FEATURE: (modal / "free if you control a permanent of each type" — text TBD)
 [+] 1 Wooded Foothills
-[ ] 1 World Shaper                     FEATURE: mill on attack; return all lands from graveyard on death
+[+] 1 World Shaper
 [ ] 1 Zuran Orb                        FEATURE: "sacrifice a land: gain 2 life"
 
 === Standalone ===

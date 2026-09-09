@@ -4,6 +4,7 @@
 import type { CardDefinition } from "./define.js";
 
 import _poolActOfTreason from "./pool/act-of-treason.js";
+import _poolAftermathAnalyst from "./pool/aftermath-analyst.js";
 import _poolAggravatedAssault from "./pool/aggravated-assault.js";
 import _poolAjanisPridemate from "./pool/ajanis-pridemate.js";
 import _poolAmbushViper from "./pool/ambush-viper.js";
@@ -156,6 +157,7 @@ import _poolSnapcasterMage from "./pool/snapcaster-mage.js";
 import _poolSolRing from "./pool/sol-ring.js";
 import _poolSoulWarden from "./pool/soul-warden.js";
 import _poolSpectralSquire from "./pool/spectral-squire.js";
+import _poolSplendidReclamation from "./pool/splendid-reclamation.js";
 import _poolStompingGround from "./pool/stomping-ground.js";
 import _poolSulfurFalls from "./pool/sulfur-falls.js";
 import _poolSunderCharm from "./pool/sunder-charm.js";
@@ -191,6 +193,7 @@ import _poolWhiteKnight from "./pool/white-knight.js";
 import _poolWildwoodSentinel from "./pool/wildwood-sentinel.js";
 import _poolWiltLeafCavaliers from "./pool/wilt-leaf-cavaliers.js";
 import _poolWoodedFoothills from "./pool/wooded-foothills.js";
+import _poolWorldShaper from "./pool/world-shaper.js";
 import _poolWrathOfGod from "./pool/wrath-of-god.js";
 import _poolWurmcoilEngine from "./pool/wurmcoil-engine.js";
 import _poolYavimayaCoast from "./pool/yavimaya-coast.js";
@@ -209,6 +212,7 @@ import _tokensTreasureToken from "./tokens/treasure-token.js";
 /** The built-in card pool — every file under `pool/` and `tokens/`. */
 export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolActOfTreason,
+  _poolAftermathAnalyst,
   _poolAggravatedAssault,
   _poolAjanisPridemate,
   _poolAmbushViper,
@@ -361,6 +365,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolSolRing,
   _poolSoulWarden,
   _poolSpectralSquire,
+  _poolSplendidReclamation,
   _poolStompingGround,
   _poolSulfurFalls,
   _poolSunderCharm,
@@ -396,6 +401,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolWildwoodSentinel,
   _poolWiltLeafCavaliers,
   _poolWoodedFoothills,
+  _poolWorldShaper,
   _poolWrathOfGod,
   _poolWurmcoilEngine,
   _poolYavimayaCoast,

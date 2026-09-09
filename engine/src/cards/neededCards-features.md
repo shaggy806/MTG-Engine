@@ -7,7 +7,8 @@ Status:
 | already in pool | 8 (+ 4 basics) |
 | **added — first pass** | 8 (Birds of Paradise, Nature's Lore, Infernal Grasp, Heroic Intervention, Dragonspeaker Shaman, Lathliss + Dragon Token, Temur Ascendancy, Terramorphic Expanse) |
 | **added — P0 (multi-color mana + check/fetch/pain/shock/trikeland + cycling)** | 24 — the 16 below + **Cinder Glade**, **Rockfall Vale**, **Blood Crypt**, **Overgrown Tomb**, **Stomping Ground**, **Cabaretti Courtyard**, **Riveteers Overlook**, **Sheltered Thicket** (+ Tranquil Thicket now faithful) |
-| blocked on an engine feature | ~94 |
+| **added — P2A (`return-from-graveyard` + self-`mill`)** | 3 — **Splendid Reclamation**, **Aftermath Analyst**, **World Shaper** |
+| blocked on an engine feature | ~91 |
 
 † Rootbound Crag isn't on the list (Rockfall Vale is the list's R/G land) — added as the check-land cycle-mate.
 
@@ -84,14 +85,24 @@ cost (already existed). Helper `fetchLand(name, [typeA, typeB])`. Shipped: **Far
 
 ## P2 — Land recursion from the graveyard  (~9 cards)
 
-No `return-from-graveyard` effect of any kind exists (documented limitation in
-`AUTHORING.md §15`). Need at least:
-
-- `return-from-graveyard { filter, destination, count | "all" }` — **Splendid Reclamation**,
-  **Aftermath Analyst**, **World Shaper** (on death), **Hearthhull** (random), Nahiri's
-  Lithoforming.
-- a static "you may play lands from your graveyard" permission — **Ramunap Excavator**,
-  **Conduit of Worlds**, **Six**, **Lord Windgrace** (-3).
+- **DONE — `return-from-graveyard { filter, destination, count: number | "all",
+  enterTapped? }`.** Returns matching cards from the effect's controller's
+  graveyard; `count: "all"` (or fewer matches than a numeric `count`) moves
+  every match with no decision, otherwise a `choose-from-zone` decision, the
+  rest staying in the graveyard. Also added a self form to `mill`
+  (`target: number | "you"`) for the ETB/attacks self-mill on these cards, and
+  `applyChooseFromZone` / the direct path now emit `permanent-entered-battlefield`
+  for a battlefield destination (landfall off Splendid Reclamation, and off
+  Rampant Growth's fetch, now fires). Shipped **Splendid Reclamation**,
+  **Aftermath Analyst** (`{3}{G}, Sacrifice this` ability), **World Shaper**
+  (dies trigger + `may`-mill on attack). `graveyard-recursion.test.ts`.
+  - Still TBD for this sub-feature: **Hearthhull** (random — needs a "random
+    permanent card" pick; it's also a Spacecraft/Station), Nahiri's Lithoforming.
+- **TBD — a static "you may play lands from your graveyard" permission** —
+  **Ramunap Excavator**, **Conduit of Worlds** (also needs the "cast a nonland
+  from your graveyard" activated ability), **Six**, **Lord Windgrace** (-3).
+  Needs `legalActions` to enumerate graveyard land-plays + client support
+  (a "Play (from graveyard)" button in the graveyard `ZoneViewer`).
 
 ## P3 — Landfall payloads  (~8 cards)
 
