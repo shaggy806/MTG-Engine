@@ -94,6 +94,7 @@ import _poolInvisibleStalker from "./pool/invisible-stalker.js";
 import _poolIsland from "./pool/island.js";
 import _poolJuggernaut from "./pool/juggernaut.js";
 import _poolJump from "./pool/jump.js";
+import _poolKarplusanForest from "./pool/karplusan-forest.js";
 import _poolKirdApe from "./pool/kird-ape.js";
 import _poolKorvoldFaeCursedKing from "./pool/korvold-fae-cursed-king.js";
 import _poolLathlissDragonQueen from "./pool/lathliss-dragon-queen.js";
@@ -143,6 +144,7 @@ import _poolRumblingBaloth from "./pool/rumbling-baloth.js";
 import _poolSarovaTheUndyingCurrent from "./pool/sarova-the-undying-current.js";
 import _poolSeraphineDawnherald from "./pool/seraphine-dawnherald.js";
 import _poolSerraAngel from "./pool/serra-angel.js";
+import _poolShivanReef from "./pool/shivan-reef.js";
 import _poolSnapcasterMage from "./pool/snapcaster-mage.js";
 import _poolSolRing from "./pool/sol-ring.js";
 import _poolSoulWarden from "./pool/soul-warden.js";
@@ -183,6 +185,7 @@ import _poolWiltLeafCavaliers from "./pool/wilt-leaf-cavaliers.js";
 import _poolWoodedFoothills from "./pool/wooded-foothills.js";
 import _poolWrathOfGod from "./pool/wrath-of-god.js";
 import _poolWurmcoilEngine from "./pool/wurmcoil-engine.js";
+import _poolYavimayaCoast from "./pool/yavimaya-coast.js";
 import _poolYulraKindledSpark from "./pool/yulra-kindled-spark.js";
 import _poolZulaportCutthroat from "./pool/zulaport-cutthroat.js";
 import _tokensBeastToken33 from "./tokens/beast-token-3-3.js";
@@ -288,6 +291,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolIsland,
   _poolJuggernaut,
   _poolJump,
+  _poolKarplusanForest,
   _poolKirdApe,
   _poolKorvoldFaeCursedKing,
   _poolLathlissDragonQueen,
@@ -337,6 +341,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolSarovaTheUndyingCurrent,
   _poolSeraphineDawnherald,
   _poolSerraAngel,
+  _poolShivanReef,
   _poolSnapcasterMage,
   _poolSolRing,
   _poolSoulWarden,
@@ -377,6 +382,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolWoodedFoothills,
   _poolWrathOfGod,
   _poolWurmcoilEngine,
+  _poolYavimayaCoast,
   _poolYulraKindledSpark,
   _poolZulaportCutthroat,
   _tokensBeastToken33,

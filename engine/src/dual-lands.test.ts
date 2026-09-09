@@ -174,6 +174,49 @@ describe("fixed multi-color mana sources (P0)", () => {
     expect(game.state.objects[fetched[0]!].tapped).toBe(false); // untapped fetch
   });
 
+  it("a pain land: colourless is free, a colour costs 1 life", () => {
+    const generic = makeGame(["Bonesplitter"]);
+    const kf1 = generic.debugSpawn("Karplusan Forest", A);
+    generic.state.objects[kf1]!.tapped = false;
+    const life1 = generic.state.players[A].life;
+    generic.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: generic.handOf(A).find((id) => generic.state.objects[id].cardName === "Bonesplitter")!,
+    });
+    generic.advanceUntil((s) => s.zones.shared.stack.length === 0 && s.awaiting === null);
+    expect(generic.state.players[A].life).toBe(life1); // {1} paid with {C} — painless
+
+    const coloured = makeGame(["Raging Goblin"]);
+    const kf2 = coloured.debugSpawn("Karplusan Forest", A);
+    coloured.state.objects[kf2]!.tapped = false;
+    const life2 = coloured.state.players[A].life;
+    coloured.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: coloured.handOf(A).find((id) => coloured.state.objects[id].cardName === "Raging Goblin")!,
+    });
+    coloured.advanceUntil((s) => s.zones.shared.stack.length === 0 && s.awaiting === null);
+    expect(coloured.state.players[A].life).toBe(life2 - 1); // {R} hurts
+  });
+
+  it("the auto-payer uses a basic before a pain land for the same colour", () => {
+    const game = makeGame(["Raging Goblin"]);
+    const mtn = game.debugSpawn("Mountain", A);
+    const kf = game.debugSpawn("Karplusan Forest", A);
+    game.state.objects[kf]!.tapped = false;
+    const life0 = game.state.players[A].life;
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: game.handOf(A).find((id) => game.state.objects[id].cardName === "Raging Goblin")!,
+    });
+    game.advanceUntil((s) => s.zones.shared.stack.length === 0 && s.awaiting === null);
+    expect(game.state.players[A].life).toBe(life0); // Mountain tapped, not the painland
+    expect(game.state.objects[mtn]?.tapped).toBe(true);
+    expect(game.state.objects[kf]?.tapped).toBe(false);
+  });
+
   it("a scry-land's ETB trigger raises a scry decision", () => {
     const game = makeGame([]);
     const id = asObjectId(`hand-${game.state.nextObjectSeq}`);

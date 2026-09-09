@@ -45,6 +45,11 @@ export type EffectSpec =
       readonly kind: "add-mana";
       readonly mana: ManaType | "any-color";
       readonly amount: number;
+      /** Damage this mana ability deals to its controller when it's used (a
+       * painland's coloured tap — Karplusan Forest: "{T}: Add {R} or {G}.
+       * Karplusan Forest deals 1 damage to you."). The auto-payer prefers a
+       * painless option and only reaches for this when it must. */
+      readonly painToController?: number;
     }
   | { readonly kind: "draw"; readonly amount: number }
   | {
@@ -575,6 +580,12 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     }
     case "add-mana":
       ctx.addMana(ctx.controller, spec.mana, spec.amount);
+      if (spec.painToController !== undefined && spec.painToController > 0) {
+        ctx.dealDamage(
+          { kind: "player", player: ctx.controller },
+          spec.painToController,
+        );
+      }
       return;
     case "draw":
       ctx.draw(ctx.controller, spec.amount);

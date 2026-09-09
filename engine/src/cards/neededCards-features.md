@@ -6,8 +6,8 @@ Status:
 | --- | --- |
 | already in pool | 8 (+ 4 basics) |
 | **added — first pass** | 8 (Birds of Paradise, Nature's Lore, Infernal Grasp, Heroic Intervention, Dragonspeaker Shaman, Lathliss + Dragon Token, Temur Ascendancy, Terramorphic Expanse) |
-| **added — P0 (multi-color mana + check/fetch lands)** | 13 (Frontier Bivouac, Temple of Abandon, Temple of Mystery, Commercial District, Raucous Theater, Underground Mortuary, Sulfur Falls, Hinterland Harbor, Rootbound Crag†, Farseek, Wooded Foothills, Bloodstained Mire, Verdant Catacombs) |
-| blocked on an engine feature | ~105 |
+| **added — P0 (multi-color mana + check/fetch/pain lands)** | 16 (Frontier Bivouac, Temple of Abandon, Temple of Mystery, Commercial District, Raucous Theater, Underground Mortuary, Sulfur Falls, Hinterland Harbor, Rootbound Crag†, Farseek, Wooded Foothills, Bloodstained Mire, Verdant Catacombs, Karplusan Forest, Shivan Reef, Yavimaya Coast) |
+| blocked on an engine feature | ~102 |
 
 † Rootbound Crag isn't on the list (Rockfall Vale is the list's R/G land) — added as the check-land cycle-mate.
 
@@ -37,11 +37,16 @@ is unchanged (one dominating option). Tests: `dual-lands.test.ts`.
   damage when it enters untapped" clause (an enters-untapped trigger).
 - Still to layer on for the rest of the ~30:
 
+- **DONE — pain lands.** `add-mana` effect gained `painToController?: number`;
+  `ManaOption`/`ManaPlanStep` carry `pain`; `chooseOption` prefers a painless option
+  and `manaSources` sorts a painland after a painless source of the same flexibility.
+  Helper `painLand(name, [colorA, colorB])`. Shipped **Karplusan Forest**, **Shivan
+  Reef**, **Yavimaya Coast**.
+
 | sub-feature | cards |
 | --- | --- |
 | "pay 2 life or it enters tapped" (shock) — a real cast/ETB **choice** (an `awaiting` decision + a client step; auto-payer heuristic otherwise) | Blood Crypt, Stomping Ground, Overgrown Tomb |
-| painland "{T}: Add {R} or {G}. ~ deals 1 damage to you" (a mana ability with a side effect / life loss) | Karplusan Forest, Shivan Reef, Yavimaya Coast |
-| pay-life multicolor mana (trikelands) | Cabaretti Courtyard, Riveteers Overlook |
+| pay-life multicolor mana (trikelands — `painToController` + an "any of three" option) | Cabaretti Courtyard, Riveteers Overlook |
 | filter lands ("{G/U}{G/U}, {T}: Add {G}{G}/{G}{U}/{U}{U}") — hybrid mana in an **activation cost** + multi-mana fixed output | Flooded Grove, Mossfire Valley |
 | cycling `{2}` | Sheltered Thicket |
 | restricted mana ("spend only to cast a Dragon / creature") | Temple of the Dragon Queen, Carnelian Orb of Dragonkind, Path of Ancestry |

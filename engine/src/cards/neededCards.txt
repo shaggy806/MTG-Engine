@@ -42,7 +42,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Hinterland Harbor
 [ ] 1 Incinerator of the Guilty        FEATURE: (TDM dragon — likely damage + exile-on-death)
 [x] 3 Island
-[ ] 1 Karplusan Forest                 FEATURE: painland (fixed dual + "deals 1 damage to you" mana)
+[+] 1 Karplusan Forest
 [ ] 1 Kessig Wolf Run                  FEATURE: {X} in a modify-pt effect (land pump ability)
 [ ] 1 Kiora, Behemoth Beckoner         FEATURE: keyword grant conditioned on power>=4; untap target permanent
 [ ] 1 Kodama's Reach                   FEATURE: = Cultivate (multi-destination tutor)
@@ -69,7 +69,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Scourge of Valkas                FEATURE: damage = number of Dragons you control (count-scaled)
 [ ] 1 Selvala, Heart of the Wilds      FEATURE: variable mana ability + power-gated draw
 [ ] 1 Sheltered Thicket                FEATURE: cycling; fixed dual land
-[ ] 1 Shivan Reef                      FEATURE: painland
+[+] 1 Shivan Reef
 [ ] 1 Smuggler's Surprise              FEATURE: targeted "choose one or more" modal
 [x] 1 Sol Ring
 [ ] 1 Starfield Vocalist               FEATURE: "as long as it's your turn" hexproof anthem; constellation
@@ -86,7 +86,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Utvara Hellkite                  FEATURE: filter on the attacks trigger ("a Dragon you control attacks")
 [ ] 1 Virtue of Knowledge              FEATURE: "triggered abilities trigger an additional time"; adventure
 [ ] 1 World War Hulk                    FEATURE: (Marvel — text TBD; likely trample + cost reduction + ETB)
-[ ] 1 Yavimaya Coast                    FEATURE: painland
+[+] 1 Yavimaya Coast
 [x] 1 Ureni of the Unwritten           (commander — in pool)
 
 === Deck 2 — Korvold / Lord Windgrace (Jund lands) ===

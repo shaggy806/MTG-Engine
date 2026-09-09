@@ -121,10 +121,13 @@ const GENERIC_SPEND_ORDER = ["C", "W", "U", "B", "R", "G"] as const;
 
 /** One possible output of a single mana-ability activation: `fixed` is the
  * concrete mana it makes, `anyColor` is how many "one mana of any colour"
- * units it adds on top (Arcane Signet, Command Tower, Treasure). */
+ * units it adds on top (Arcane Signet, Command Tower, Treasure). `pain` is the
+ * damage the source deals to its controller when this option is used (a
+ * painland's coloured option — Karplusan Forest); 0 for the ordinary case. */
 interface ManaOption {
   readonly fixed: readonly ManaType[];
   readonly anyColor: number;
+  readonly pain: number;
 }
 
 /** One of `player`'s permanents that can produce mana right now. `options` is
@@ -141,11 +144,13 @@ interface ManaSource {
 }
 
 /** One entry of a mana-payment plan: activate `source`, adding the concrete
- * `mana` list to the pool; `sacrifice` if it's a Treasure-style ability. */
+ * `mana` list to the pool; `sacrifice` if it's a Treasure-style ability;
+ * `pain` damage to the controller (a painland's coloured tap). */
 interface ManaPlanStep {
   readonly source: ObjectId;
   readonly mana: readonly ManaType[];
   readonly sacrifice: boolean;
+  readonly pain: number;
 }
 
 /** A fully-worked-out way to pay a cost: which sources to tap ({@link
@@ -3670,7 +3675,7 @@ export class Game {
       // mixes a tap-only and a sacrifice mana ability on one permanent.
       let sacrificeSelf = false;
       const key = (o: ManaOption): string =>
-        `${[...o.fixed].sort().join(",")}|${o.anyColor}`;
+        `${[...o.fixed].sort().join(",")}|${o.anyColor}|${o.pain}`;
       for (const ability of this.effectiveActivated(id)) {
         if (
           !isManaAbility(ability) ||
@@ -3681,12 +3686,14 @@ export class Game {
         ) {
           continue;
         }
+        const pain = ability.effect.painToController ?? 0;
         const option: ManaOption =
           ability.effect.mana === "any-color"
-            ? { fixed: [], anyColor: ability.effect.amount }
+            ? { fixed: [], anyColor: ability.effect.amount, pain }
             : {
                 fixed: Array<ManaType>(ability.effect.amount).fill(ability.effect.mana),
                 anyColor: 0,
+                pain,
               };
         if (!options.some((o) => key(o) === key(option))) options.push(option);
         if (ability.cost.sacrifice === "self") sacrificeSelf = true;
@@ -3697,9 +3704,18 @@ export class Game {
     const flexibility = (s: ManaSource): number =>
       new Set(s.options.flatMap((o) => [...o.fixed])).size +
       (s.options.some((o) => o.anyColor > 0) ? 5 : 0);
+    // A source that can only make a colour by hurting its controller (a
+    // painland — every option that isn't `{C}` costs life) is reached for
+    // after a painless one of the same flexibility.
+    const onlyPainfulColour = (s: ManaSource): boolean =>
+      s.options.some((o) => o.pain > 0) &&
+      s.options.every((o) => o.pain > 0 || o.fixed.every((m) => m === "C"));
     out.sort((a, b) => {
       if (a.isLand !== b.isLand) return a.isLand ? -1 : 1;
       if (a.sacrificeSelf !== b.sacrificeSelf) return a.sacrificeSelf ? 1 : -1;
+      if (onlyPainfulColour(a) !== onlyPainfulColour(b)) {
+        return onlyPainfulColour(a) ? 1 : -1;
+      }
       return flexibility(a) - flexibility(b);
     });
     return out;
@@ -3851,6 +3867,7 @@ export class Game {
       readonly produced: ManaType[];
       readonly freeFixed: ManaType[];
       freeAny: number;
+      readonly pain: number;
     }
     const tapped: Tapped[] = [];
     const isTapped = (id: ObjectId): boolean => tapped.some((t) => t.src.id === id);
@@ -3858,18 +3875,23 @@ export class Game {
     // for a specific need, an option that makes that colour directly, else an
     // "any colour" one; for a generic need (or no match), the richest option,
     // spending the fewest "any colour" units so they stay available for a
-    // later coloured need.
+    // later coloured need. A painless option always beats an equally-useful
+    // painful one (a painland taps for `{C}` for free before it hurts).
     const chooseOption = (src: ManaSource, want: ManaType | null): ManaOption => {
+      const painless = (pred: (o: ManaOption) => boolean): ManaOption | undefined =>
+        src.options.find((o) => o.pain === 0 && pred(o)) ??
+        src.options.find((o) => pred(o));
       if (want !== null) {
-        const exact = src.options.find((o) => o.fixed.includes(want));
+        const exact = painless((o) => o.fixed.includes(want));
         if (exact !== undefined) return exact;
         if (want !== "C") {
-          const any = src.options.find((o) => o.anyColor > 0);
+          const any = painless((o) => o.anyColor > 0);
           if (any !== undefined) return any;
         }
       }
       return [...src.options].sort(
         (a, b) =>
+          a.pain - b.pain ||
           b.fixed.length + b.anyColor - (a.fixed.length + a.anyColor) ||
           a.anyColor - b.anyColor,
       )[0];
@@ -3881,6 +3903,7 @@ export class Game {
         produced: [],
         freeFixed: [...opt.fixed],
         freeAny: opt.anyColor,
+        pain: opt.pain,
       };
       tapped.push(t);
       return t;
@@ -3933,6 +3956,7 @@ export class Game {
     return tapped.map((t) => ({
       source: t.src.id,
       sacrifice: t.src.sacrificeSelf,
+      pain: t.pain,
       mana: [
         ...t.produced,
         ...t.freeFixed,
@@ -3941,8 +3965,8 @@ export class Game {
     }));
   }
 
-  /** Carry out one {@link ManaPlanStep}: tap (or sacrifice) the source and add
-   * its mana to the controller's pool. */
+  /** Carry out one {@link ManaPlanStep}: tap (or sacrifice) the source, add its
+   * mana to the controller's pool, and deal any painland damage. */
   private useManaSource(step: ManaPlanStep): void {
     const object = this.state.objects[step.source];
     const player = object.controller;
@@ -3953,6 +3977,9 @@ export class Game {
     } else {
       object.tapped = true;
       this.emit({ type: "permanent-tapped", object: step.source });
+    }
+    if (step.pain > 0) {
+      this.dealDamage(step.source, { kind: "player", player }, step.pain);
     }
   }
 

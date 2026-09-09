@@ -107,6 +107,45 @@ export const fetchLand = (
   });
 };
 
+/**
+ * A "pain land" (Karplusan Forest, Shivan Reef, Yavimaya Coast): "{T}: Add
+ * {C}." plus "{T}: Add {A} or {B}. ~ deals 1 damage to you." — the coloured
+ * tap hurts, the colourless one doesn't. The auto-payer reaches for the
+ * painless option first (see `Game.chooseOption`).
+ */
+export const painLand = (
+  name: string,
+  colors: readonly [Color, Color],
+): CardDefinition =>
+  defineCard({
+    name,
+    types: ["land"],
+    text:
+      "{T}: Add {C}.\n" +
+      `{T}: Add {${colors[0]}} or {${colors[1]}}. ${name} deals 1 damage to you.`,
+    activated: [
+      {
+        cost: { mana: null, tap: true },
+        targets: [],
+        effect: { kind: "add-mana", mana: "C", amount: 1 },
+        resolve: null,
+        text: "{T}: Add {C}.",
+      },
+      ...colors.map((c) => ({
+        cost: { mana: null, tap: true },
+        targets: [],
+        effect: {
+          kind: "add-mana" as const,
+          mana: c,
+          amount: 1,
+          painToController: 1,
+        },
+        resolve: null,
+        text: `{T}: Add {${c}}. ${name} deals 1 damage to you.`,
+      })),
+    ],
+  });
+
 const BASIC_LAND_MANA: Readonly<Record<string, Color>> = {
   Plains: "W",
   Island: "U",

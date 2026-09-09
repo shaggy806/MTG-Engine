@@ -84,6 +84,8 @@ const deckA = deck([
   ["Rootbound Crag", 1],
   ["Hinterland Harbor", 1],
   ["Farseek", 1],
+  ["Karplusan Forest", 1],
+  ["Yavimaya Coast", 1],
 ]);
 // Kept deliberately lean (~50 cards) so the RandomController actually draws
 // and plays its threats — a bloated deck just stalls out and the fuzz only
