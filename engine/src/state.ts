@@ -353,6 +353,16 @@ export type AwaitingDecision =
       readonly intendedZone: CommanderReplacementZone;
     }
   | {
+      /** A "shock land" (rule 614.13) just entered: its controller may pay
+       * `life` life to have it enter untapped, otherwise it stays tapped. The
+       * land is already on the battlefield (tapped) — answering yes untaps it
+       * and deducts the life. */
+      readonly kind: "pay-life-for-untapped";
+      readonly player: PlayerId;
+      readonly source: ObjectId;
+      readonly life: number;
+    }
+  | {
       /** A Clone-style permanent just entered; its controller chooses what
        * (if anything) it copies (rule 707). */
       readonly kind: "choose-copy";

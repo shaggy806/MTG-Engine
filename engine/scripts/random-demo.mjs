@@ -86,6 +86,9 @@ const deckA = deck([
   ["Farseek", 1],
   ["Karplusan Forest", 1],
   ["Yavimaya Coast", 1],
+  ["Stomping Ground", 1],
+  ["Sheltered Thicket", 1],
+  ["Cinder Glade", 1],
 ]);
 // Kept deliberately lean (~50 cards) so the RandomController actually draws
 // and plays its threats — a bloated deck just stalls out and the fuzz only
@@ -212,6 +215,10 @@ const deckC = deck([
   ["Sulfur Falls", 1],
   ["Wooded Foothills", 1],
   ["Bloodstained Mire", 1],
+  ["Blood Crypt", 1],
+  ["Overgrown Tomb", 1],
+  ["Riveteers Overlook", 1],
+  ["Tranquil Thicket", 1],
 ]);
 
 // All four seats' decks/commanders, in seating order — sliced down to

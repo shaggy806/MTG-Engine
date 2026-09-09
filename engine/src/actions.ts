@@ -65,6 +65,13 @@ export type Action =
       readonly card: ObjectId;
     }
   | {
+      /** Cycle a card from hand (rule 702.29): pay its cycling cost, discard
+       * it, draw a card. Any time you could cast an instant. */
+      readonly type: "cycle";
+      readonly player: PlayerId;
+      readonly card: ObjectId;
+    }
+  | {
       readonly type: "cast-spell";
       readonly player: PlayerId;
       readonly card: ObjectId;
@@ -151,6 +158,13 @@ export type Action =
       readonly type: "commander-replacement";
       readonly player: PlayerId;
       readonly toCommandZone: boolean;
+    }
+  | {
+      /** Answers a pending shock-land decision (rule 614.13): `pay` = pay the
+       * life to have it enter untapped, otherwise leave it tapped. */
+      readonly type: "pay-life-for-untapped";
+      readonly player: PlayerId;
+      readonly pay: boolean;
     }
   | {
       /** Answers a pending "choose what this Clone copies" decision (rule 707).
@@ -240,6 +254,13 @@ export type LegalAction =
       readonly kind: "foretell";
       readonly card: ObjectId;
       readonly cardName: string;
+    }
+  | {
+      readonly kind: "cycle";
+      readonly card: ObjectId;
+      readonly cardName: string;
+      /** The cycling cost, e.g. `"{2}"`. */
+      readonly cost: string;
     }
   | {
       readonly kind: "cast-spell";
@@ -369,6 +390,12 @@ export type LegalAction =
       /** Where the commander would go if left where the rules put it (before
        * the owner's 903.9a choice). */
       readonly intendedZone: "graveyard" | "exile" | "hand" | "library";
+    }
+  | {
+      /** A shock land just entered tapped — pay `life` to untap it? (rule 614.13) */
+      readonly kind: "pay-life-for-untapped";
+      readonly source: ObjectId;
+      readonly life: number;
     }
   | {
       readonly kind: "choose-copy";

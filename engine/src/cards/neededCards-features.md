@@ -6,8 +6,8 @@ Status:
 | --- | --- |
 | already in pool | 8 (+ 4 basics) |
 | **added — first pass** | 8 (Birds of Paradise, Nature's Lore, Infernal Grasp, Heroic Intervention, Dragonspeaker Shaman, Lathliss + Dragon Token, Temur Ascendancy, Terramorphic Expanse) |
-| **added — P0 (multi-color mana + check/fetch/pain lands)** | 16 (Frontier Bivouac, Temple of Abandon, Temple of Mystery, Commercial District, Raucous Theater, Underground Mortuary, Sulfur Falls, Hinterland Harbor, Rootbound Crag†, Farseek, Wooded Foothills, Bloodstained Mire, Verdant Catacombs, Karplusan Forest, Shivan Reef, Yavimaya Coast) |
-| blocked on an engine feature | ~102 |
+| **added — P0 (multi-color mana + check/fetch/pain/shock/trikeland + cycling)** | 24 — the 16 below + **Cinder Glade**, **Rockfall Vale**, **Blood Crypt**, **Overgrown Tomb**, **Stomping Ground**, **Cabaretti Courtyard**, **Riveteers Overlook**, **Sheltered Thicket** (+ Tranquil Thicket now faithful) |
+| blocked on an engine feature | ~94 |
 
 † Rootbound Crag isn't on the list (Rockfall Vale is the list's R/G land) — added as the check-land cycle-mate.
 
@@ -28,34 +28,49 @@ is unchanged (one dominating option). Tests: `dual-lands.test.ts`.
 - Shipped taplands: **Frontier Bivouac**, **Temple of Abandon**, **Temple of Mystery**,
   **Commercial District**, **Raucous Theater**, **Underground Mortuary** (unconditional
   enters-tapped via `entersTappedStatic` helper + ETB `scry`/`surveil` trigger).
-- **DONE — conditional enters-tapped (check lands).** `EntersBattlefieldReplacement`
-  gained `tappedUnless?: StaticCondition`; `CardFilter` gained `subtypes?: string[]`
-  (any-of). Helper `checkLandStatic(name, [typeA, typeB])`. Shipped: **Sulfur Falls**,
-  **Hinterland Harbor**, + Rootbound Crag (cycle-mate). Cinder Glade uses "two or more
-  basic lands" (a count, not a type — `{ kind: "controls", filter: { supertype: "basic",
-  type: "land" }, atLeast: 2 }` — try it); Rockfall Vale additionally needs the "deals 1
-  damage when it enters untapped" clause (an enters-untapped trigger).
-- **DONE — pain lands.** `add-mana` effect gained `painToController?: number`;
-  `ManaOption`/`ManaPlanStep` carry `pain`; `chooseOption` prefers a painless option
-  and `manaSources` sorts a painland after a painless source of the same flexibility.
-  Helper `painLand(name, [colorA, colorB])`. Shipped **Karplusan Forest**, **Shivan
-  Reef**, **Yavimaya Coast**.
+- **DONE — conditional enters-tapped (check lands + count-lands).**
+  `EntersBattlefieldReplacement` gained `tappedUnless?: StaticCondition`; `CardFilter`
+  gained `subtypes?: string[]` (any-of). Helpers `checkLandStatic(name, [typeA, typeB])`
+  / `enterTappedUnlessLands(name, atLeast, "basic"|"any")`. Shipped: **Sulfur Falls**,
+  **Hinterland Harbor**, Rootbound Crag, **Cinder Glade** ("two or more basic lands").
+- **DONE — pain lands + `painIfUntapped`.** `add-mana` effect gained
+  `painToController?: number`; `EntersBattlefieldReplacement` gained `painIfUntapped?`
+  (Rockfall Vale — "deals 1 damage when it enters untapped"); `ManaOption`/`ManaPlanStep`
+  carry `pain`/`lifeCost`; `chooseOption` prefers a free option; `manaSources` sorts a
+  costly source after a free one of the same flexibility; `planManaPayment` won't spend
+  life it can't afford. Helper `painLand(name, [colorA, colorB])`. Shipped **Karplusan
+  Forest**, **Shivan Reef**, **Yavimaya Coast**, **Rockfall Vale**.
+- **DONE — trikelands.** `isManaAbility` now permits a `payLife` cost (rule 605.1a — a
+  mana ability may cost life); the mana planner auto-pays it via the `lifeCost` field.
+  Helper `trikeland(name, [c1, c2, c3])`. Shipped **Cabaretti Courtyard**, **Riveteers
+  Overlook**.
+- **DONE — shock lands (a real decision).** `EntersBattlefieldReplacement.mayPayLife?`
+  → a new `pay-life-for-untapped` `AwaitingDecision` (raised inside `moveObject`, like
+  the 903.9a commander choice): the land enters tapped, its controller answers
+  `{ type: "pay-life-for-untapped", pay }` — yes untaps it and deducts the life.
+  `PlayerController.payLifeForUntapped` (Automatic declines; Random 70% pays; Scripted
+  `payLifeForUntappedFn`). Client: a `pay-life-for-untapped` controls mode with
+  **[Pay N life] / [Enter tapped]** — verified live. Helper `shockLand(name, [typeA,
+  typeB])`. Shipped **Blood Crypt**, **Overgrown Tomb**, **Stomping Ground**.
+- **DONE — cycling.** `CardDefinition.cycling { cost }` → a `cycle` special action
+  (pay, discard, draw — an immediate action, no stack / no "when you cycle" window).
+  `card-cycled` event. Client: a "Cycle {cost}" button on hand cards (like Suspend /
+  Foretell) — verified live. Shipped **Sheltered Thicket**, **Combat Thresher**,
+  fixed **Tranquil Thicket** (now `{T}, Sac: Add {G}` + cycling `{G}`).
 
-### P0 — remaining (each 2–3 cards, diminishing returns; needs a design call)
+### P0 — remaining (a thin long tail, ~5 cards)
 
 | sub-feature | cards | note |
 | --- | --- | --- |
-| **shock lands** — "As ~ enters, you may pay 2 life. If you don't, it enters tapped." | Blood Crypt, Stomping Ground, Overgrown Tomb | A genuine player choice. Needs either a new `awaiting` decision (+ a client step) or an auto-heuristic (pay if life > N). **Design call needed** before building. |
-| trikelands — "{T}, Pay 1 life: Add {B}, {R}, or {G}" enters tapped | Cabaretti Courtyard, Riveteers Overlook | Nearly there: `isManaAbility` currently *excludes* a `payLife` cost (deliberate). Allow it (mana abilities may cost life — rule 605.1a), reusing the `pain` plumbing. |
-| filter lands — "{G/U}{G/U}, {T}: Add {G}{G}/{G}{U}/{U}{U}" | Flooded Grove, Mossfire Valley | Hybrid mana in an **activation cost** + a multi-mana fixed option. |
-| cycling `{2}` | Sheltered Thicket | A discard-for-a-card activated ability from hand. |
-| restricted mana — "spend only to cast a Dragon" | Temple of the Dragon Queen, Carnelian Orb, Path of Ancestry | `ManaType` has no "restricted" tag; `spendFromPool` doesn't track provenance. |
-| commander-identity mana + "used to cast a creature → scry 1" | Path of Ancestry | |
+| filter lands — "{G/U}{G/U}, {T}: Add {G}{G}/{G}{U}/{U}{U}" | Flooded Grove, Mossfire Valley | Hybrid mana in an **activation cost** + a multi-mana fixed option; the greedy planner would need to *fund* a filter land. |
+| restricted mana — "spend only to cast a Dragon" | Temple of the Dragon Queen, Carnelian Orb, Path of Ancestry | `ManaType` has no "restricted" tag; `spendFromPool` doesn't track provenance. Would thread a spell-context into `payMana`. |
+| commander-identity mana + "used to cast a creature → scry 1" | Path of Ancestry | on top of restricted mana |
 | "a color a land an opponent controls could produce" | Exotic Orchard | |
 
-**P0 verdict:** the core (multi-color mana, check/fetch/pain lands — 16 cards) is done.
-The rest is a long tail of 2-3-card sub-features; shock lands are the only remaining
-staple and they hinge on a "how do we model a cast-time optional life payment" decision.
+**P0 verdict:** effectively complete — 24 cards, the whole manabase toolkit
+(dual/check/fetch/pain/shock/trikeland + cycling). Only filter lands, restricted-mana
+lands, and Exotic Orchard remain, all niche and needing a planner/pool change out of
+proportion to the ~5 cards.
 
 ## P1 — Fetch lands  (~6 cards)
 

@@ -109,6 +109,11 @@ export interface PlayerController {
     movedTo: "graveyard" | "exile" | "hand" | "library",
   ): boolean;
   /**
+   * A shock land (`source`) just entered tapped — return `true` to pay `life`
+   * life to have it enter untapped, `false` to leave it tapped (rule 614.13).
+   */
+  payLifeForUntapped(view: ControllerView, source: ObjectId, life: number): boolean;
+  /**
    * A Clone-style permanent just entered — return which of `options` it copies,
    * or `null` to copy nothing (rule 707).
    */
@@ -273,6 +278,13 @@ function answerAwaited(
       ),
     };
   }
+  if (awaiting.kind === "pay-life-for-untapped") {
+    return {
+      type: "pay-life-for-untapped",
+      player,
+      pay: controller.payLifeForUntapped(view, awaiting.source, awaiting.life),
+    };
+  }
   if (awaiting.kind === "choose-copy") {
     return {
       type: "choose-copy",
@@ -411,6 +423,12 @@ export class AutomaticController implements PlayerController {
     // Default to the command zone — matches the pre-choice behavior, so
     // tests that don't care about the decision are unaffected.
     return true;
+  }
+
+  payLifeForUntapped(): boolean {
+    // Conservative default: never bleed life for an untapped land (declining
+    // is always legal). Tests that care override via a ScriptedController.
+    return false;
   }
 
   chooseCopy(
@@ -554,6 +572,8 @@ export class ScriptedController implements PlayerController {
   mulliganFn: MulliganChooser = () => false;
   chooseBottomOfLibraryFn: BottomChooser = (hand, count) => discardFromFront(hand, count);
   commanderReplacementFn: CommanderReplacementChooser = () => true;
+  payLifeForUntappedFn: (view: ControllerView, source: ObjectId, life: number) => boolean =
+    () => false;
   chooseCopyFn: CopyChooser = (_view, _source, options) => options[0] ?? null;
   chooseTextFn: TextChooser = (_view, fromOptions, toOptions) => [
     fromOptions[0],
@@ -662,6 +682,10 @@ export class ScriptedController implements PlayerController {
     return this.commanderReplacementFn(view, commander, movedTo);
   }
 
+  payLifeForUntapped(view: ControllerView, source: ObjectId, life: number): boolean {
+    return this.payLifeForUntappedFn(view, source, life);
+  }
+
   chooseCopy(
     view: ControllerView,
     source: ObjectId,
@@ -747,6 +771,8 @@ export class RandomController extends AutomaticController {
         return { type: "suspend", player, card: legal.card };
       case "foretell":
         return { type: "foretell", player, card: legal.card };
+      case "cycle":
+        return { type: "cycle", player, card: legal.card };
       case "cast-spell": {
         // A targeted modal spell (Phase 11 EG-2): pick a random set of modes
         // whose targets are all fillable, then targets for them.
@@ -883,6 +909,8 @@ export class RandomController extends AutomaticController {
       }
       case "commander-replacement":
         return { type: "commander-replacement", player, toCommandZone: this.random() < 0.85 };
+      case "pay-life-for-untapped":
+        return { type: "pay-life-for-untapped", player, pay: this.random() < 0.7 };
       case "choose-copy": {
         // Usually copy the biggest thing; sometimes copy nothing.
         const copy =

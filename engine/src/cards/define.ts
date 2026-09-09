@@ -242,6 +242,11 @@ export interface CardDefinition {
    * off at each of your upkeeps, and at zero it's cast for free (with haste if
    * it's a creature). `null` for a card without suspend. */
   readonly suspend: { readonly n: number; readonly cost: string } | null;
+  /** Cycling (rule 702.29) — `cost`, Discard this card: Draw a card. Any time
+   * you could cast an instant. Modeled as an immediate special action (pay,
+   * discard, draw), not a stack-using ability — no "respond to cycling"
+   * window, no "when you cycle" triggers. `null` for a card without cycling. */
+  readonly cycling: { readonly cost: string } | null;
   /** Saga chapters (rule 714 — ROADMAP Phase 10). A Saga enters with one lore
    * counter and gains one at the start of its controller's precombat main
    * phase; each `SagaChapter` fires when the lore count reaches any number in
@@ -321,6 +326,7 @@ interface CardDraft {
   flashback?: { readonly cost: string };
   foretell?: { readonly cost: string };
   suspend?: { readonly n: number; readonly cost: string };
+  cycling?: { readonly cost: string };
   escape?: { readonly cost: string; readonly exileCount: number };
   chapters?: readonly SagaChapter[];
   faces?: readonly string[];
@@ -375,6 +381,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     flashback: draft.flashback ?? null,
     foretell: draft.foretell ?? null,
     suspend: draft.suspend ?? null,
+    cycling: draft.cycling ?? null,
     escape: draft.escape ?? null,
     chapters: draft.chapters ?? null,
     faces: draft.faces ?? null,

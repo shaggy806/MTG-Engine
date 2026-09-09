@@ -11,7 +11,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Bountiful Landscape              FEATURE: DFT reveal-a-basic-or-enters-tapped land (+ needs the fixed-dual mana work)
 [ ] 1 Broodcaller Scourge              FEATURE: (TDM dragon — text TBD; likely count-scaled / cast-trigger)
 [ ] 1 Carnelian Orb of Dragonkind      FEATURE: restricted mana ("spend only on Dragons")
-[ ] 1 Cinder Glade                     FEATURE: fixed dual land + conditional enters-tapped
+[+] 1 Cinder Glade
 [x] 1 Command Tower
 [ ] 1 Cultivate                        FEATURE: multi-destination tutor (one to battlefield, one to hand)
 [ ] 1 Deceptive Frostkite             FEATURE: (TDM dragon — text TBD)
@@ -63,17 +63,17 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [x] 1 Rampant Growth
 [ ] 1 Rapid Hybridization              FEATURE: "its controller creates a 3/3" (token for the target's controller)
 [ ] 1 Rhythm of the Wild               FEATURE: riot; "creature spells you control can't be countered"
-[ ] 1 Rockfall Vale                    FEATURE: "deals 1 damage to you when it enters untapped" (the enters-tapped-unless-2-other-lands half is now doable)
+[+] 1 Rockfall Vale
 [ ] 1 Sakura-Tribe Elder              FEATURE: sacrifice-on-death tutor
 [ ] 1 Sarkhan, Soul Aflame             FEATURE: (planeswalker / dragon-copy — text TBD)
 [ ] 1 Scourge of Valkas                FEATURE: damage = number of Dragons you control (count-scaled)
 [ ] 1 Selvala, Heart of the Wilds      FEATURE: variable mana ability + power-gated draw
-[ ] 1 Sheltered Thicket                FEATURE: cycling; fixed dual land
+[+] 1 Sheltered Thicket
 [+] 1 Shivan Reef
 [ ] 1 Smuggler's Surprise              FEATURE: targeted "choose one or more" modal
 [x] 1 Sol Ring
 [ ] 1 Starfield Vocalist               FEATURE: "as long as it's your turn" hexproof anthem; constellation
-[ ] 1 Stomping Ground                  FEATURE: shock land (pay 2 life or enters tapped) + fixed dual
+[+] 1 Stomping Ground
 [+] 1 Sulfur Falls
 [+] 1 Temple of Abandon
 [+] 1 Temple of Mystery
@@ -94,11 +94,11 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Amulet of Vigor                  FEATURE: "whenever a permanent enters tapped, untap it"
 [ ] 1 Beast Within                     (dup — see Deck 1)
 [ ] 1 Blasphemous Act                  (dup — see Deck 1)
-[ ] 1 Blood Crypt                      FEATURE: shock land
+[+] 1 Blood Crypt
 [+] 1 Bloodstained Mire
 [ ] 1 Bojuka Bog                       FEATURE: ETB "exile target player's graveyard"
 [ ] 1 Burgeoning                       FEATURE: "whenever an opponent plays a land, put a land from your hand onto the battlefield"
-[ ] 1 Cabaretti Courtyard              FEATURE: SNC trikeland (enters tapped, pay-1-life tri-color mana)
+[+] 1 Cabaretti Courtyard
 [ ] 1 Cinder Glade                     (dup — see Deck 1)
 [x] 1 Command Tower
 [+] 1 Commercial District
@@ -137,13 +137,13 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Ob Nixilis, the Fallen           FEATURE: landfall "you may have target opponent lose 3 life" + counters
 [x] 1 Oracle of Mul Daya
 [ ] 1 Orcish Lumberjack                FEATURE: "sacrifice a Forest: add {R}{R}{R}" (sac a filtered noncreature as a cost)
-[ ] 1 Overgrown Tomb                   FEATURE: shock land
+[+] 1 Overgrown Tomb
 [ ] 1 Princess Sarah                   FEATURE: (FF — text TBD)
 [ ] 1 Rain of Filth                    FEATURE: "sacrifice a land: add {B}" granted until end of turn (ritual)
 [ ] 1 Rakdos Charm                     FEATURE: targeted modal (graveyard exile / damage = power / destroy artifact)
 [ ] 1 Ramunap Excavator                FEATURE: "you may play lands from your graveyard"
 [+] 1 Raucous Theater
-[ ] 1 Riveteers Overlook               FEATURE: SNC trikeland (pay-life tri-color mana)
+[+] 1 Riveteers Overlook
 [ ] 1 Rydia, Summoner of Mist          FEATURE: (FF — text TBD)
 [ ] 1 Sabotender                       FEATURE: (FF — text TBD)
 [ ] 1 Saw in Half                      FEATURE: "create two tokens that are copies of it, except 1/1"

@@ -123,11 +123,13 @@ const GENERIC_SPEND_ORDER = ["C", "W", "U", "B", "R", "G"] as const;
  * concrete mana it makes, `anyColor` is how many "one mana of any colour"
  * units it adds on top (Arcane Signet, Command Tower, Treasure). `pain` is the
  * damage the source deals to its controller when this option is used (a
- * painland's coloured option — Karplusan Forest); 0 for the ordinary case. */
+ * painland's coloured option — Karplusan Forest); `lifeCost` is a `Pay N life`
+ * on the ability's cost (a trikeland); both 0 for the ordinary case. */
 interface ManaOption {
   readonly fixed: readonly ManaType[];
   readonly anyColor: number;
   readonly pain: number;
+  readonly lifeCost: number;
 }
 
 /** One of `player`'s permanents that can produce mana right now. `options` is
@@ -145,12 +147,14 @@ interface ManaSource {
 
 /** One entry of a mana-payment plan: activate `source`, adding the concrete
  * `mana` list to the pool; `sacrifice` if it's a Treasure-style ability;
- * `pain` damage to the controller (a painland's coloured tap). */
+ * `pain` damage / `lifeCost` life paid by the controller (a painland's or
+ * trikeland's coloured tap). */
 interface ManaPlanStep {
   readonly source: ObjectId;
   readonly mana: readonly ManaType[];
   readonly sacrifice: boolean;
   readonly pain: number;
+  readonly lifeCost: number;
 }
 
 /** A fully-worked-out way to pay a cost: which sources to tap ({@link
@@ -364,6 +368,9 @@ export class Game {
       case "foretell":
         this.foretellCard(action.player, action.card);
         break;
+      case "cycle":
+        this.cycleCard(action.player, action.card);
+        break;
       case "cast-spell":
         this.castSpell(
           action.player,
@@ -409,6 +416,9 @@ export class Game {
       case "commander-replacement":
         this.applyCommanderChoice(action.player, action.toCommandZone);
         break;
+      case "pay-life-for-untapped":
+        this.applyPayLifeForUntapped(action.player, action.pay);
+        break;
       case "choose-copy":
         this.applyCopyChoice(action.player, action.copy);
         break;
@@ -452,6 +462,8 @@ export class Game {
         return this.whyCannotSuspend(action.player, action.card);
       case "foretell":
         return this.whyCannotForetell(action.player, action.card);
+      case "cycle":
+        return this.whyCannotCycle(action.player, action.card);
       case "cast-spell":
         return this.whyCannotCastSpell(
           action.player,
@@ -486,6 +498,8 @@ export class Game {
         return this.whyCannotPutOnBottom(action.player, action.cards);
       case "commander-replacement":
         return this.whyCannotCommanderChoice(action.player);
+      case "pay-life-for-untapped":
+        return this.whyCannotPayLifeForUntapped(action.player);
       case "choose-copy":
         return this.whyCannotCopyChoice(action.player, action.copy);
       case "choose-text":
@@ -594,6 +608,11 @@ export class Game {
             commander: awaiting.commander,
             intendedZone: awaiting.intendedZone,
           },
+        ];
+      }
+      if (awaiting.kind === "pay-life-for-untapped") {
+        return [
+          { kind: "pay-life-for-untapped", source: awaiting.source, life: awaiting.life },
         ];
       }
       if (awaiting.kind === "choose-copy") {
@@ -732,6 +751,10 @@ export class Game {
       // Foretell (rule 702.144) — a special action.
       if (def.foretell !== null && this.whyCannotForetell(player, card) === null) {
         out.push({ kind: "foretell", card, cardName });
+      }
+      // Cycling (rule 702.29) — a special action, any time you could cast an instant.
+      if (def.cycling !== null && this.whyCannotCycle(player, card) === null) {
+        out.push({ kind: "cycle", card, cardName, cost: def.cycling.cost });
       }
     }
 
@@ -1202,6 +1225,37 @@ export class Game {
       return `${player} is not being asked about a commander replacement`;
     }
     return null;
+  }
+
+  private whyCannotPayLifeForUntapped(player: PlayerId): string | null {
+    const awaiting = this.state.awaiting;
+    if (
+      awaiting === null ||
+      awaiting.kind !== "pay-life-for-untapped" ||
+      awaiting.player !== player
+    ) {
+      return `${player} is not being asked about a shock land`;
+    }
+    return null;
+  }
+
+  /** Answer a `pay-life-for-untapped` decision (a shock land — rule 614.13). */
+  private applyPayLifeForUntapped(player: PlayerId, pay: boolean): void {
+    const why = this.whyCannotPayLifeForUntapped(player);
+    if (why !== null) throw new Error(why);
+    const awaiting = this.state.awaiting;
+    if (awaiting === null || awaiting.kind !== "pay-life-for-untapped") {
+      throw new Error("no shock-land decision pending");
+    }
+    const { source, life } = awaiting;
+    this.state.awaiting = null;
+    const object = this.state.objects[source];
+    if (pay && object !== undefined && object.zone === "battlefield") {
+      object.tapped = false;
+      this.emit({ type: "permanent-untapped", object: source });
+      this.changeLife(player, -life);
+    }
+    this.prepareForPriority(this.activePlayer);
   }
 
   /** A Clone-style permanent just entered — ask its controller what to copy
@@ -2752,6 +2806,38 @@ export class Game {
     return null;
   }
 
+  private whyCannotCycle(player: PlayerId, cardId: ObjectId): string | null {
+    const blocked = this.whyCannotAct(player);
+    if (blocked !== null) return blocked;
+    if (!this.state.zones.perPlayer[player].hand.includes(cardId)) {
+      return `${player} does not have that card in hand`;
+    }
+    const def = this.registry.get(this.state.objects[cardId].cardName);
+    if (def.cycling === null) return `${def.name} does not have cycling`;
+    if (this.payMana(player, parseManaCost(def.cycling.cost)) === null) {
+      return `${player} cannot pay the cycling cost of ${def.name}`;
+    }
+    return null;
+  }
+
+  /** Cycling (rule 702.29) — modeled as an immediate special action: pay the
+   * cost, discard the card, draw one. No stack, no "when you cycle" window. */
+  private cycleCard(player: PlayerId, cardId: ObjectId): void {
+    const why = this.whyCannotCycle(player, cardId);
+    if (why !== null) throw new Error(why);
+    const def = this.registry.get(this.state.objects[cardId].cardName);
+    const cycling = def.cycling;
+    if (cycling === null) throw new Error(`${def.name} does not have cycling`);
+
+    const payment = this.payMana(player, parseManaCost(cycling.cost));
+    if (payment === null) throw new Error(`${player} cannot pay the cycling cost of ${def.name}`);
+    this.executePayment(player, payment);
+    this.moveObject(cardId, "graveyard");
+    this.emit({ type: "card-cycled", player, object: cardId });
+    this.drawCard(player);
+    this.afterPlayerAction(player);
+  }
+
   private suspendCard(player: PlayerId, cardId: ObjectId): void {
     const why = this.whyCannotSuspend(player, cardId);
     if (why !== null) throw new Error(why);
@@ -3675,7 +3761,7 @@ export class Game {
       // mixes a tap-only and a sacrifice mana ability on one permanent.
       let sacrificeSelf = false;
       const key = (o: ManaOption): string =>
-        `${[...o.fixed].sort().join(",")}|${o.anyColor}|${o.pain}`;
+        `${[...o.fixed].sort().join(",")}|${o.anyColor}|${o.pain}|${o.lifeCost}`;
       for (const ability of this.effectiveActivated(id)) {
         if (
           !isManaAbility(ability) ||
@@ -3687,13 +3773,15 @@ export class Game {
           continue;
         }
         const pain = ability.effect.painToController ?? 0;
+        const lifeCost = ability.cost.payLife ?? 0;
         const option: ManaOption =
           ability.effect.mana === "any-color"
-            ? { fixed: [], anyColor: ability.effect.amount, pain }
+            ? { fixed: [], anyColor: ability.effect.amount, pain, lifeCost }
             : {
                 fixed: Array<ManaType>(ability.effect.amount).fill(ability.effect.mana),
                 anyColor: 0,
                 pain,
+                lifeCost,
               };
         if (!options.some((o) => key(o) === key(option))) options.push(option);
         if (ability.cost.sacrifice === "self") sacrificeSelf = true;
@@ -3704,17 +3792,19 @@ export class Game {
     const flexibility = (s: ManaSource): number =>
       new Set(s.options.flatMap((o) => [...o.fixed])).size +
       (s.options.some((o) => o.anyColor > 0) ? 5 : 0);
-    // A source that can only make a colour by hurting its controller (a
-    // painland — every option that isn't `{C}` costs life) is reached for
-    // after a painless one of the same flexibility.
-    const onlyPainfulColour = (s: ManaSource): boolean =>
-      s.options.some((o) => o.pain > 0) &&
-      s.options.every((o) => o.pain > 0 || o.fixed.every((m) => m === "C"));
+    // A source that can only make a colour by costing its controller life (a
+    // painland — every option that isn't `{C}` deals damage; a trikeland —
+    // every option costs life) is reached for after a free one of the same
+    // flexibility.
+    const costsLife = (o: ManaOption): boolean => o.pain > 0 || o.lifeCost > 0;
+    const onlyCostlyColour = (s: ManaSource): boolean =>
+      s.options.some(costsLife) &&
+      s.options.every((o) => costsLife(o) || o.fixed.every((m) => m === "C"));
     out.sort((a, b) => {
       if (a.isLand !== b.isLand) return a.isLand ? -1 : 1;
       if (a.sacrificeSelf !== b.sacrificeSelf) return a.sacrificeSelf ? 1 : -1;
-      if (onlyPainfulColour(a) !== onlyPainfulColour(b)) {
-        return onlyPainfulColour(a) ? 1 : -1;
+      if (onlyCostlyColour(a) !== onlyCostlyColour(b)) {
+        return onlyCostlyColour(a) ? 1 : -1;
       }
       return flexibility(a) - flexibility(b);
     });
@@ -3856,7 +3946,19 @@ export class Game {
     // man-land paying its own `{1}: becomes a creature` cost taps something
     // else and stays free to attack — but still taps itself if nothing else
     // can cover the cost.
-    const all = this.manaSources(player);
+    // The auto-payer won't spend life it can't safely afford (a painland /
+    // trikeland option whose toll would drop it to 0 or below) — a human's
+    // casts are auto-paid too, and "kill yourself to cast a spell" is never
+    // the intent. Consistent with `resolveHybridCost`'s Phyrexian "never
+    // below 1 life" rule.
+    const currentLife = this.state.players[player].life;
+    const affordableOptions = (s: ManaSource): ManaSource => ({
+      ...s,
+      options: s.options.filter((o) => o.pain + o.lifeCost < currentLife),
+    });
+    const all = this.manaSources(player)
+      .map(affordableOptions)
+      .filter((s) => s.options.length > 0);
     const sources =
       avoid === undefined
         ? all
@@ -3868,6 +3970,7 @@ export class Game {
       readonly freeFixed: ManaType[];
       freeAny: number;
       readonly pain: number;
+      readonly lifeCost: number;
     }
     const tapped: Tapped[] = [];
     const isTapped = (id: ObjectId): boolean => tapped.some((t) => t.src.id === id);
@@ -3875,23 +3978,24 @@ export class Game {
     // for a specific need, an option that makes that colour directly, else an
     // "any colour" one; for a generic need (or no match), the richest option,
     // spending the fewest "any colour" units so they stay available for a
-    // later coloured need. A painless option always beats an equally-useful
-    // painful one (a painland taps for `{C}` for free before it hurts).
+    // later coloured need. A free option always beats an equally-useful one
+    // that costs life (a painland taps for `{C}` for free before it hurts).
+    const lifeToll = (o: ManaOption): number => o.pain + o.lifeCost;
     const chooseOption = (src: ManaSource, want: ManaType | null): ManaOption => {
-      const painless = (pred: (o: ManaOption) => boolean): ManaOption | undefined =>
-        src.options.find((o) => o.pain === 0 && pred(o)) ??
+      const free = (pred: (o: ManaOption) => boolean): ManaOption | undefined =>
+        src.options.find((o) => lifeToll(o) === 0 && pred(o)) ??
         src.options.find((o) => pred(o));
       if (want !== null) {
-        const exact = painless((o) => o.fixed.includes(want));
+        const exact = free((o) => o.fixed.includes(want));
         if (exact !== undefined) return exact;
         if (want !== "C") {
-          const any = painless((o) => o.anyColor > 0);
+          const any = free((o) => o.anyColor > 0);
           if (any !== undefined) return any;
         }
       }
       return [...src.options].sort(
         (a, b) =>
-          a.pain - b.pain ||
+          lifeToll(a) - lifeToll(b) ||
           b.fixed.length + b.anyColor - (a.fixed.length + a.anyColor) ||
           a.anyColor - b.anyColor,
       )[0];
@@ -3904,6 +4008,7 @@ export class Game {
         freeFixed: [...opt.fixed],
         freeAny: opt.anyColor,
         pain: opt.pain,
+        lifeCost: opt.lifeCost,
       };
       tapped.push(t);
       return t;
@@ -3957,6 +4062,7 @@ export class Game {
       source: t.src.id,
       sacrifice: t.src.sacrificeSelf,
       pain: t.pain,
+      lifeCost: t.lifeCost,
       mana: [
         ...t.produced,
         ...t.freeFixed,
@@ -3978,6 +4084,7 @@ export class Game {
       object.tapped = true;
       this.emit({ type: "permanent-tapped", object: step.source });
     }
+    if (step.lifeCost > 0) this.changeLife(player, -step.lifeCost);
     if (step.pain > 0) {
       this.dealDamage(step.source, { kind: "player", player }, step.pain);
     }
@@ -6203,11 +6310,15 @@ export class Game {
     tapped: boolean;
     transformed: boolean;
     counters: { kind: string; amount: number }[];
+    painIfUntapped: number;
+    mayPayLife: number;
   } {
     const object = this.state.objects[id];
     const def = this.registry.get(printedCardName(object));
     let tapped = false;
     let transformed = false;
+    let painIfUntapped = 0;
+    let mayPayLife = 0;
     const counters: { kind: string; amount: number }[] = [];
     for (const ability of def.static) {
       const r = ability.replacement;
@@ -6220,6 +6331,8 @@ export class Game {
       ) {
         tapped = true;
       }
+      if (r.painIfUntapped !== undefined) painIfUntapped = r.painIfUntapped;
+      if (r.mayPayLife !== undefined) mayPayLife = r.mayPayLife;
       if (r.transformed) transformed = true;
       if (r.counters) {
         const base =
@@ -6228,7 +6341,13 @@ export class Game {
         if (amount > 0) counters.push({ kind: r.counters.kind, amount });
       }
     }
-    return { tapped, transformed, counters };
+    return {
+      tapped,
+      transformed,
+      counters,
+      painIfUntapped: tapped ? 0 : painIfUntapped,
+      mayPayLife: tapped ? 0 : mayPayLife,
+    };
   }
 
   /** Product of every `would-create-token` multiplier (rule 614) on a
@@ -6408,6 +6527,28 @@ export class Game {
       object.tapped = entering.tapped;
       for (const c of entering.counters) {
         object.counters[c.kind] = (object.counters[c.kind] ?? 0) + c.amount;
+      }
+      if (entering.painIfUntapped > 0) {
+        this.dealDamage(
+          id,
+          { kind: "player", player: object.controller },
+          entering.painIfUntapped,
+        );
+      }
+      // A shock land (rule 614.13): "you may pay N life; if you don't, it
+      // enters tapped". It enters tapped by default; if its controller can
+      // afford the life, the `pay-life-for-untapped` decision pauses the game
+      // here (like the 903.9a commander choice) to let them untap it.
+      if (entering.mayPayLife > 0 && this.state.awaiting === null) {
+        object.tapped = true;
+        if (this.state.players[object.controller].life >= entering.mayPayLife) {
+          this.state.awaiting = {
+            kind: "pay-life-for-untapped",
+            player: object.controller,
+            source: id,
+            life: entering.mayPayLife,
+          };
+        }
       }
       // Transforming DFCs (ROADMAP Phase 10b). A daybound/nightbound permanent
       // makes the game day if it's neither (726.2); a daybound one then enters

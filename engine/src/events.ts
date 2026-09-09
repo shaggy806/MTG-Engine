@@ -226,6 +226,13 @@ export type GameEvent =
       readonly object: ObjectId;
     })
   | (Base & {
+      /** A card was cycled — its cycling cost paid, discarded, a card drawn
+       * (rule 702.29). */
+      readonly type: "card-cycled";
+      readonly player: PlayerId;
+      readonly object: ObjectId;
+    })
+  | (Base & {
       /** `object` was cast via escape (rule 702.139) — `exiled` are the other
        * graveyard cards exiled to pay the additional cost. */
       readonly type: "escape-cost-paid";

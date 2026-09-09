@@ -37,6 +37,7 @@ type CastAction = Extract<LegalAction, { kind: 'cast-spell' }>
 type LandAction = Extract<LegalAction, { kind: 'play-land' }>
 type SuspendAction = Extract<LegalAction, { kind: 'suspend' }>
 type ForetellAction = Extract<LegalAction, { kind: 'foretell' }>
+type CycleAction = Extract<LegalAction, { kind: 'cycle' }>
 type AbilityAction = Extract<LegalAction, { kind: 'activate-ability' }>
 type AttackAction = Extract<LegalAction, { kind: 'declare-attackers' }>
 type BlockAction = Extract<LegalAction, { kind: 'declare-blockers' }>
@@ -46,6 +47,7 @@ type ZoneChoiceAction = Extract<LegalAction, { kind: 'choose-from-zone' }>
 type MulliganAction = Extract<LegalAction, { kind: 'mulligan' }>
 type BottomAction = Extract<LegalAction, { kind: 'put-on-bottom' }>
 type CommanderChoiceAction = Extract<LegalAction, { kind: 'commander-replacement' }>
+type ShockChoiceAction = Extract<LegalAction, { kind: 'pay-life-for-untapped' }>
 type CopyChoiceAction = Extract<LegalAction, { kind: 'choose-copy' }>
 type TextChoiceAction = Extract<LegalAction, { kind: 'choose-text' }>
 type ModesChoiceAction = Extract<LegalAction, { kind: 'choose-modes' }>
@@ -94,6 +96,7 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
   'choose-from-zone': 'look at cards',
   mulligan: 'decide on a mulligan',
   'commander-replacement': 'decide where their commander goes',
+  'pay-life-for-untapped': 'decide on a shock land',
   'choose-copy': 'choose what to copy',
   'choose-text': 'choose a text change',
   'choose-modes': 'choose a mode',
@@ -523,6 +526,11 @@ function Table({ view, seat, opponents, game }: TableProps) {
     for (const a of actions) if (a.kind === 'suspend') m.set(a.card, a)
     return m
   }, [actions])
+  const cycleByCard = useMemo(() => {
+    const m = new Map<ObjectId, CycleAction>()
+    for (const a of actions) if (a.kind === 'cycle') m.set(a.card, a)
+    return m
+  }, [actions])
   const foretellByCard = useMemo(() => {
     const m = new Map<ObjectId, ForetellAction>()
     for (const a of actions) if (a.kind === 'foretell') m.set(a.card, a)
@@ -562,6 +570,9 @@ function Table({ view, seat, opponents, game }: TableProps) {
   )
   const commanderChoiceAction = actions.find(
     (a): a is CommanderChoiceAction => a.kind === 'commander-replacement',
+  )
+  const shockChoiceAction = actions.find(
+    (a): a is ShockChoiceAction => a.kind === 'pay-life-for-untapped',
   )
   const copyChoiceAction = actions.find(
     (a): a is CopyChoiceAction => a.kind === 'choose-copy',
@@ -617,6 +628,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
     | 'mulligan'
     | 'put-on-bottom'
     | 'commander-replacement'
+    | 'pay-life-for-untapped'
     | 'choose-copy'
     | 'choose-text'
     | 'choose-modes'
@@ -631,6 +643,8 @@ function Table({ view, seat, opponents, game }: TableProps) {
     ? 'mulligan'
     : commanderChoiceAction
       ? 'commander-replacement'
+    : shockChoiceAction
+      ? 'pay-life-for-untapped'
       : copyChoiceAction
         ? 'choose-copy'
         : textChoiceAction
@@ -1587,6 +1601,31 @@ function Table({ view, seat, opponents, game }: TableProps) {
         </button>
       </div>
     )
+  } else if (mode === 'pay-life-for-untapped' && shockChoiceAction) {
+    controls = (
+      <div className="controls">
+        <span>
+          {game.nameOf(shockChoiceAction.source)} — pay {shockChoiceAction.life} life to have
+          it enter untapped?
+        </span>
+        <button
+          type="button"
+          onClick={() =>
+            game.dispatch({ type: 'pay-life-for-untapped', player: seat, pay: true })
+          }
+        >
+          Pay {shockChoiceAction.life} life
+        </button>
+        <button
+          type="button"
+          onClick={() =>
+            game.dispatch({ type: 'pay-life-for-untapped', player: seat, pay: false })
+          }
+        >
+          Enter tapped
+        </button>
+      </div>
+    )
   } else if (mode === 'put-on-bottom' && bottomAction) {
     controls = (
       <div className="controls">
@@ -2004,6 +2043,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
             }
             const suspend = mode === 'priority' ? suspendByCard.get(id) : undefined
             const foretell = mode === 'priority' ? foretellByCard.get(id) : undefined
+            const cycle = mode === 'priority' ? cycleByCard.get(id) : undefined
             const faceOpts =
               mode === 'priority' ? (playFacesByCard.get(id) ?? []) : []
             const multiFace = faceOpts.length > 1
@@ -2011,7 +2051,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
               <div key={id} className="hand-card">
                 <CardTile
                   obj={obj}
-                  highlight={highlight || Boolean(suspend) || Boolean(foretell)}
+                  highlight={highlight || Boolean(suspend) || Boolean(foretell) || Boolean(cycle)}
                   selected={selected}
                   onClick={() => clickHandCard(id)}
                 />
@@ -2036,6 +2076,14 @@ function Table({ view, seat, opponents, game }: TableProps) {
                     onClick={() => game.dispatch({ type: 'foretell', player: seat, card: id })}
                   >
                     Foretell
+                  </button>
+                ) : null}
+                {cycle ? (
+                  <button
+                    type="button"
+                    onClick={() => game.dispatch({ type: 'cycle', player: seat, card: id })}
+                  >
+                    Cycle {cycle.cost}
                   </button>
                 ) : null}
               </div>

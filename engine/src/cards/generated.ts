@@ -18,6 +18,7 @@ import _poolBirdsOfParadise from "./pool/birds-of-paradise.js";
 import _poolBlaze from "./pool/blaze.js";
 import _poolBlightning from "./pool/blightning.js";
 import _poolBlinkmothNexus from "./pool/blinkmoth-nexus.js";
+import _poolBloodCrypt from "./pool/blood-crypt.js";
 import _poolBloodbraidElf from "./pool/bloodbraid-elf.js";
 import _poolBloodstainedMire from "./pool/bloodstained-mire.js";
 import _poolBloodthroneVampire from "./pool/bloodthrone-vampire.js";
@@ -25,10 +26,12 @@ import _poolBoggartBrute from "./pool/boggart-brute.js";
 import _poolBonesplitter from "./pool/bonesplitter.js";
 import _poolBoomerang from "./pool/boomerang.js";
 import _poolBramblewingTheUntamed from "./pool/bramblewing-the-untamed.js";
+import _poolCabarettiCourtyard from "./pool/cabaretti-courtyard.js";
 import _poolCarnageTyrant from "./pool/carnage-tyrant.js";
 import _poolChandraAcolyteOfFlame from "./pool/chandra-acolyte-of-flame.js";
 import _poolChromaticLantern from "./pool/chromatic-lantern.js";
 import _poolCinderElemental from "./pool/cinder-elemental.js";
+import _poolCinderGlade from "./pool/cinder-glade.js";
 import _poolClone from "./pool/clone.js";
 import _poolCombatThresher from "./pool/combat-thresher.js";
 import _poolCommandTower from "./pool/command-tower.js";
@@ -121,6 +124,7 @@ import _poolNightfallCultist from "./pool/nightfall-cultist.js";
 import _poolNotionThief from "./pool/notion-thief.js";
 import _poolOpt from "./pool/opt.js";
 import _poolOracleOfMulDaya from "./pool/oracle-of-mul-daya.js";
+import _poolOvergrownTomb from "./pool/overgrown-tomb.js";
 import _poolPacifism from "./pool/pacifism.js";
 import _poolPhyrexianArena from "./pool/phyrexian-arena.js";
 import _poolPlains from "./pool/plains.js";
@@ -138,17 +142,21 @@ import _poolRaucousTheater from "./pool/raucous-theater.js";
 import _poolRendwinWardenOfTheGrove from "./pool/rendwin-warden-of-the-grove.js";
 import _poolRestInPeace from "./pool/rest-in-peace.js";
 import _poolRiftBolt from "./pool/rift-bolt.js";
+import _poolRiveteersOverlook from "./pool/riveteers-overlook.js";
+import _poolRockfallVale from "./pool/rockfall-vale.js";
 import _poolRoguesPassage from "./pool/rogues-passage.js";
 import _poolRootboundCrag from "./pool/rootbound-crag.js";
 import _poolRumblingBaloth from "./pool/rumbling-baloth.js";
 import _poolSarovaTheUndyingCurrent from "./pool/sarova-the-undying-current.js";
 import _poolSeraphineDawnherald from "./pool/seraphine-dawnherald.js";
 import _poolSerraAngel from "./pool/serra-angel.js";
+import _poolShelteredThicket from "./pool/sheltered-thicket.js";
 import _poolShivanReef from "./pool/shivan-reef.js";
 import _poolSnapcasterMage from "./pool/snapcaster-mage.js";
 import _poolSolRing from "./pool/sol-ring.js";
 import _poolSoulWarden from "./pool/soul-warden.js";
 import _poolSpectralSquire from "./pool/spectral-squire.js";
+import _poolStompingGround from "./pool/stomping-ground.js";
 import _poolSulfurFalls from "./pool/sulfur-falls.js";
 import _poolSunderCharm from "./pool/sunder-charm.js";
 import _poolSunlitBastion from "./pool/sunlit-bastion.js";
@@ -215,6 +223,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolBlaze,
   _poolBlightning,
   _poolBlinkmothNexus,
+  _poolBloodCrypt,
   _poolBloodbraidElf,
   _poolBloodstainedMire,
   _poolBloodthroneVampire,
@@ -222,10 +231,12 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolBonesplitter,
   _poolBoomerang,
   _poolBramblewingTheUntamed,
+  _poolCabarettiCourtyard,
   _poolCarnageTyrant,
   _poolChandraAcolyteOfFlame,
   _poolChromaticLantern,
   _poolCinderElemental,
+  _poolCinderGlade,
   _poolClone,
   _poolCombatThresher,
   _poolCommandTower,
@@ -318,6 +329,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolNotionThief,
   _poolOpt,
   _poolOracleOfMulDaya,
+  _poolOvergrownTomb,
   _poolPacifism,
   _poolPhyrexianArena,
   _poolPlains,
@@ -335,17 +347,21 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolRendwinWardenOfTheGrove,
   _poolRestInPeace,
   _poolRiftBolt,
+  _poolRiveteersOverlook,
+  _poolRockfallVale,
   _poolRoguesPassage,
   _poolRootboundCrag,
   _poolRumblingBaloth,
   _poolSarovaTheUndyingCurrent,
   _poolSeraphineDawnherald,
   _poolSerraAngel,
+  _poolShelteredThicket,
   _poolShivanReef,
   _poolSnapcasterMage,
   _poolSolRing,
   _poolSoulWarden,
   _poolSpectralSquire,
+  _poolStompingGround,
   _poolSulfurFalls,
   _poolSunderCharm,
   _poolSunlitBastion,

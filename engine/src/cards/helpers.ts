@@ -54,6 +54,14 @@ export const entersTappedStatic = (name: string): StaticAbility => ({
 const withArticle = (word: string): string =>
   `${/^[AEIOU]/.test(word) ? "an" : "a"} ${word}`;
 
+const BASIC_LAND_MANA: Readonly<Record<string, Color>> = {
+  Plains: "W",
+  Island: "U",
+  Swamp: "B",
+  Mountain: "R",
+  Forest: "G",
+};
+
 /**
  * The "~ enters the battlefield tapped unless you control [one of these basic
  * land types]" self-replacement of the check-land cycle (Rootbound Crag,
@@ -72,6 +80,87 @@ export const checkLandStatic = (
     landTypes[0],
   )} or ${withArticle(landTypes[1])}.`,
 });
+
+/**
+ * A "shock land" (Blood Crypt, Overgrown Tomb, Stomping Ground): "As ~ enters
+ * the battlefield, you may pay 2 life. If you don't, it enters tapped." Typed
+ * with its two basic land types, so it also taps for both colours and counts
+ * for a check land. Raised as a `pay-life-for-untapped` decision.
+ */
+export const shockLand = (
+  name: string,
+  landTypes: readonly [string, string],
+): CardDefinition => {
+  const colors = landTypes.map((t) => BASIC_LAND_MANA[t]).filter((c): c is Color => c !== undefined);
+  return defineCard({
+    name,
+    types: ["land"],
+    subtypes: [...landTypes],
+    text:
+      `As ${name} enters the battlefield, you may pay 2 life. ` +
+      `If you don't, ${name} enters the battlefield tapped.\n` +
+      `({T}: Add ${landTypes.map((t) => `{${BASIC_LAND_MANA[t]}}`).join(" or ")}.)`,
+    static: [
+      {
+        affects: { scope: "self" },
+        replacement: { event: "enters-battlefield", mayPayLife: 2 },
+        text: `As ${name} enters the battlefield, you may pay 2 life. If you don't, ${name} enters the battlefield tapped.`,
+      },
+    ],
+    activated: colors.map((c) => manaTapAbility(c)),
+  });
+};
+
+const NUM_WORD: Readonly<Record<number, string>> = { 2: "two", 3: "three", 4: "four" };
+
+/**
+ * "~ enters the battlefield tapped unless you control [N] or more [basic lands
+ * / other lands]" — Cinder Glade ("two or more basic lands"), Rockfall Vale
+ * ("two or more other lands", + a `painIfUntapped` on the card).
+ */
+export const enterTappedUnlessLands = (
+  name: string,
+  atLeast: number,
+  what: "basic" | "any",
+): StaticAbility => ({
+  affects: { scope: "self" },
+  replacement: {
+    event: "enters-battlefield",
+    tappedUnless: {
+      kind: "controls",
+      filter: what === "basic" ? { supertype: "basic", type: "land" } : { type: "land" },
+      atLeast,
+    },
+  },
+  text: `${name} enters the battlefield tapped unless you control ${
+    NUM_WORD[atLeast] ?? atLeast
+  } or more ${what === "basic" ? "basic lands" : "other lands"}.`,
+});
+
+/**
+ * A "tri-land pain land" (the SNC "-Courtyard" / "-Overlook" cycle): enters
+ * tapped, "{T}, Pay 1 life: Add one of three colours". Each colour is a
+ * mana ability with a `payLife: 1` cost (auto-paid by the mana planner).
+ */
+export const trikeland = (
+  name: string,
+  colors: readonly [Color, Color, Color],
+): CardDefinition =>
+  defineCard({
+    name,
+    types: ["land"],
+    text:
+      `${name} enters the battlefield tapped.\n` +
+      `{T}, Pay 1 life: Add {${colors[0]}}, {${colors[1]}}, or {${colors[2]}}.`,
+    static: [entersTappedStatic(name)],
+    activated: colors.map((c) => ({
+      cost: { mana: null, tap: true, payLife: 1 },
+      targets: [],
+      effect: { kind: "add-mana" as const, mana: c, amount: 1 },
+      resolve: null,
+      text: `{T}, Pay 1 life: Add {${c}}.`,
+    })),
+  });
 
 /**
  * A "{T}, Pay 1 life, Sacrifice ~: Search your library for a [type-A] or
@@ -145,14 +234,6 @@ export const painLand = (
       })),
     ],
   });
-
-const BASIC_LAND_MANA: Readonly<Record<string, Color>> = {
-  Plains: "W",
-  Island: "U",
-  Swamp: "B",
-  Mountain: "R",
-  Forest: "G",
-};
 
 /**
  * The single color of mana a land taps for, or `null` if it is not a

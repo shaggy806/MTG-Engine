@@ -98,6 +98,8 @@ export const makeFormatter = (game) => {
         return `${name(e.object)} — time counter removed (${e.remaining} left)`;
       case "card-foretold":
         return `${e.player} foretells a card`;
+      case "card-cycled":
+        return `${e.player} cycles ${name(e.object)}`;
       case "escape-cost-paid":
         return `${name(e.object)} escapes (exiling ${e.exiled.length} cards)`;
       case "ability-activated":

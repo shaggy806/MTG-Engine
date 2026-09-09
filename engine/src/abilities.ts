@@ -160,7 +160,9 @@ export function isManaAbility(ability: ActivatedAbility): boolean {
     // machinery handles a self-sacrifice. A "sacrifice a creature you
     // control" cost isn't (it needs a choice).
     (ability.cost.sacrifice === undefined || ability.cost.sacrifice === "self") &&
-    ability.cost.payLife === undefined &&
+    // A `Pay N life` cost is fine — a mana ability may cost life (rule 605.1a
+    // says nothing about costs; the trikelands, City of Brass-likes). It's
+    // auto-paid, same as a Phyrexian pip.
     ability.cost.removeCounter === undefined &&
     ability.cost.payEnergy === undefined &&
     ability.resolve === null &&

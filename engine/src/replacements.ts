@@ -46,8 +46,17 @@ export interface EntersBattlefieldReplacement {
   readonly tapped?: boolean;
   /** It enters tapped *unless* this condition holds when it enters — the
    * "check land" cycle (Rootbound Crag: "enters tapped unless you control a
-   * Mountain or a Forest"). Evaluated once, as it enters. */
+   * Mountain or a Forest"), and the count-based version (Cinder Glade: "unless
+   * you control two or more basic lands"). Evaluated once, as it enters. */
   readonly tappedUnless?: StaticCondition;
+  /** If it ends up entering *untapped*, it deals this much damage to its
+   * controller (Rockfall Vale: "When Rockfall Vale enters untapped, it deals
+   * 1 damage to you"). */
+  readonly painIfUntapped?: number;
+  /** A "shock land" (rule 614.13): as it enters, its controller may pay this
+   * much life to have it enter untapped; otherwise it enters tapped. Raised
+   * as a `pay-life-for-untapped` decision. */
+  readonly mayPayLife?: number;
   /** It enters with these counters already on it. `amount: "x"` reads the
    * `{X}` chosen when it was cast (Walking Ballista). */
   readonly counters?: { readonly kind: string; readonly amount: EffectAmount };
