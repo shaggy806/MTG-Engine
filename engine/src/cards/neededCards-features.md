@@ -35,23 +35,27 @@ is unchanged (one dominating option). Tests: `dual-lands.test.ts`.
   basic lands" (a count, not a type — `{ kind: "controls", filter: { supertype: "basic",
   type: "land" }, atLeast: 2 }` — try it); Rockfall Vale additionally needs the "deals 1
   damage when it enters untapped" clause (an enters-untapped trigger).
-- Still to layer on for the rest of the ~30:
-
 - **DONE — pain lands.** `add-mana` effect gained `painToController?: number`;
   `ManaOption`/`ManaPlanStep` carry `pain`; `chooseOption` prefers a painless option
   and `manaSources` sorts a painland after a painless source of the same flexibility.
   Helper `painLand(name, [colorA, colorB])`. Shipped **Karplusan Forest**, **Shivan
   Reef**, **Yavimaya Coast**.
 
-| sub-feature | cards |
-| --- | --- |
-| "pay 2 life or it enters tapped" (shock) — a real cast/ETB **choice** (an `awaiting` decision + a client step; auto-payer heuristic otherwise) | Blood Crypt, Stomping Ground, Overgrown Tomb |
-| pay-life multicolor mana (trikelands — `painToController` + an "any of three" option) | Cabaretti Courtyard, Riveteers Overlook |
-| filter lands ("{G/U}{G/U}, {T}: Add {G}{G}/{G}{U}/{U}{U}") — hybrid mana in an **activation cost** + multi-mana fixed output | Flooded Grove, Mossfire Valley |
-| cycling `{2}` | Sheltered Thicket |
-| restricted mana ("spend only to cast a Dragon / creature") | Temple of the Dragon Queen, Carnelian Orb of Dragonkind, Path of Ancestry |
-| mana "of any color in your commander's color identity" (+ "when used to cast a creature, scry 1") | Path of Ancestry |
-| mana "a color a land an opponent controls could produce" | Exotic Orchard |
+### P0 — remaining (each 2–3 cards, diminishing returns; needs a design call)
+
+| sub-feature | cards | note |
+| --- | --- | --- |
+| **shock lands** — "As ~ enters, you may pay 2 life. If you don't, it enters tapped." | Blood Crypt, Stomping Ground, Overgrown Tomb | A genuine player choice. Needs either a new `awaiting` decision (+ a client step) or an auto-heuristic (pay if life > N). **Design call needed** before building. |
+| trikelands — "{T}, Pay 1 life: Add {B}, {R}, or {G}" enters tapped | Cabaretti Courtyard, Riveteers Overlook | Nearly there: `isManaAbility` currently *excludes* a `payLife` cost (deliberate). Allow it (mana abilities may cost life — rule 605.1a), reusing the `pain` plumbing. |
+| filter lands — "{G/U}{G/U}, {T}: Add {G}{G}/{G}{U}/{U}{U}" | Flooded Grove, Mossfire Valley | Hybrid mana in an **activation cost** + a multi-mana fixed option. |
+| cycling `{2}` | Sheltered Thicket | A discard-for-a-card activated ability from hand. |
+| restricted mana — "spend only to cast a Dragon" | Temple of the Dragon Queen, Carnelian Orb, Path of Ancestry | `ManaType` has no "restricted" tag; `spendFromPool` doesn't track provenance. |
+| commander-identity mana + "used to cast a creature → scry 1" | Path of Ancestry | |
+| "a color a land an opponent controls could produce" | Exotic Orchard | |
+
+**P0 verdict:** the core (multi-color mana, check/fetch/pain lands — 16 cards) is done.
+The rest is a long tail of 2-3-card sub-features; shock lands are the only remaining
+staple and they hinge on a "how do we model a cast-time optional life payment" decision.
 
 ## P1 — Fetch lands  (~6 cards)
 
