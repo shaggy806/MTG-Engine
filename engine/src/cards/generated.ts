@@ -126,6 +126,7 @@ import _poolNaturesLore from "./pool/natures-lore.js";
 import _poolNegate from "./pool/negate.js";
 import _poolNightfallCultist from "./pool/nightfall-cultist.js";
 import _poolNotionThief from "./pool/notion-thief.js";
+import _poolOldGnawbone from "./pool/old-gnawbone.js";
 import _poolOpt from "./pool/opt.js";
 import _poolOracleOfMulDaya from "./pool/oracle-of-mul-daya.js";
 import _poolOvergrownTomb from "./pool/overgrown-tomb.js";
@@ -172,6 +173,7 @@ import _poolTempleOfAbandon from "./pool/temple-of-abandon.js";
 import _poolTempleOfMystery from "./pool/temple-of-mystery.js";
 import _poolTemurAscendancy from "./pool/temur-ascendancy.js";
 import _poolTerramorphicExpanse from "./pool/terramorphic-expanse.js";
+import _poolTerrorOfThePeaks from "./pool/terror-of-the-peaks.js";
 import _poolThaliaGuardianOfThraben from "./pool/thalia-guardian-of-thraben.js";
 import _poolThievingMagpie from "./pool/thieving-magpie.js";
 import _poolThornOfTheBlackRose from "./pool/thorn-of-the-black-rose.js";
@@ -341,6 +343,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolNegate,
   _poolNightfallCultist,
   _poolNotionThief,
+  _poolOldGnawbone,
   _poolOpt,
   _poolOracleOfMulDaya,
   _poolOvergrownTomb,
@@ -387,6 +390,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolTempleOfMystery,
   _poolTemurAscendancy,
   _poolTerramorphicExpanse,
+  _poolTerrorOfThePeaks,
   _poolThaliaGuardianOfThraben,
   _poolThievingMagpie,
   _poolThornOfTheBlackRose,

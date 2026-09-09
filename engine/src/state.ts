@@ -74,6 +74,12 @@ export interface GameObject {
    * "enters with X counters"-style effect can still read it. `null` when the
    * cost had no `{X}`. Cleared by `moveObject` on any later zone change. */
   xValue: number | null;
+  /** For a triggered-ability object on the stack: a numeric quantity from the
+   * triggering event (the entering / attacking creature's power, or the combat
+   * damage a creature dealt), snapshotted at trigger time — read by
+   * `EffectAmount` `{ triggerValue: true }` (Terror of the Peaks, Old
+   * Gnawbone). ROADMAP P4b. */
+  triggerValue?: number;
   /** The modes chosen for a targeted modal spell as it was cast (rule 700.2 —
    * ROADMAP Phase 11 EG-2), sorted ascending — indices into
    * `CardDefinition.castModal.modes`. `resolveTopOfStack` applies each with its
@@ -196,6 +202,11 @@ export interface PendingTrigger {
    * player a saboteur just dealt combat damage to. Fills the ability's target
    * slots in order, ahead of any `chooseTargets` prompt. */
   readonly autoTargets?: readonly TargetRef[];
+  /** A numeric quantity from the triggering event (the entering / attacking
+   * creature's power, or the combat damage a creature dealt a player),
+   * snapshotted when the trigger was detected — for an `EffectAmount`
+   * `{ triggerValue: true }` (Terror of the Peaks, Old Gnawbone). ROADMAP P4b. */
+  readonly triggerValue?: number;
   /** True for a Saga chapter ability (rule 714) — `abilityIndex` indexes
    * `def.chapters` rather than `def.triggered`. ROADMAP Phase 10. */
   readonly chapter?: boolean;
@@ -556,6 +567,8 @@ export interface GameState {
       | { readonly auto: TargetRef }
       | { readonly spec: TargetSpec }
     )[];
+    /** See {@link PendingTrigger.triggerValue}. */
+    readonly triggerValue?: number;
   } | null;
   /**
    * A suspended spell coming off suspend, parked while its controller chooses

@@ -202,13 +202,17 @@ keyword string — it's a static or triggered ability. See §9–10.
 `EffectSpec` (`effects.ts`) is the declarative vocabulary for what a spell or
 ability does on resolution. A `target:` field is an **index into `targets[]`**
 (0-based), or the literal `"source"` where allowed. An `EffectAmount` is a
-number, `"x"` (the cast `{X}`), or `{ countOf: CardFilter }` — a live count of
+number, `"x"` (the cast `{X}`), `{ countOf: CardFilter }` — a live count of
 battlefield permanents matching the filter, from the effect's controller's
 view (Scourge of Valkas: `{ countOf: { subtype: "Dragon", controlledBy: "you" } }`;
-Craterhoof: `{ countOf: { type: "creature", controlledBy: "you" } }`). It's
-accepted by `damage` / `damage-all` / `mill` / `discard` / `draw` /
-`prevent-damage` `amount`, `modify-pt` / `modify-pt-all` `power`/`toughness`,
-and `create-token` `count`.
+Craterhoof: `{ countOf: { type: "creature", controlledBy: "you" } }`) — or
+`{ triggerValue: true }` — a number the firing event supplied to a **triggered
+ability**: the entering / attacking creature's power (Terror of the Peaks:
+`damage`), or the combat damage a creature dealt a player (Old Gnawbone:
+`create-token` `count`). `0` outside a triggered-ability resolution. An
+`EffectAmount` is accepted by `damage` / `damage-all` / `mill` / `discard` /
+`draw` / `prevent-damage` `amount`, `modify-pt` / `modify-pt-all`
+`power`/`toughness`, and `create-token` `count`.
 
 ### Damage / life / cards
 

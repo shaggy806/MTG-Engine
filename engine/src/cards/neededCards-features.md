@@ -10,7 +10,8 @@ Status:
 | **added — P2 (`return-from-graveyard` + self-`mill` + `playFromGraveyard`)** | 4 — **Splendid Reclamation**, **Aftermath Analyst**, **World Shaper**, **Ramunap Excavator** |
 | **added — P3 (landfall payloads: modal token / colour, `"opponent"` target)** | 3 — **Tireless Provisioner**, **Lotus Cobra**, **Iridescent Vinelasher** |
 | **added — P4a (`EffectAmount.countOf`)** | 2 — **Scourge of Valkas**, **Craterhoof Behemoth** |
-| blocked on an engine feature | ~85 |
+| **added — P4b (`EffectAmount.triggerValue`)** | 2 — **Terror of the Peaks**, **Old Gnawbone** |
+| blocked on an engine feature | ~83 |
 
 † Rootbound Crag isn't on the list (Rockfall Vale is the list's R/G land) — added as the check-land cycle-mate.
 
@@ -144,10 +145,16 @@ Landfall *triggers* already work (`enters-battlefield`, `filter: { type: "land" 
     its `castModal` descriptor and with the RandomController dropping `via` — now
     `Game.castModalDescriptor` is spread into every `cast-spell` `LegalAction` and the
     RandomController / client `confirmModes` forward `via`/`face`.
-- **TBD — "power of the triggering / target creature"** (needs the triggering object
-  threaded onto the stack ability, like `autoTargets`): **Terror of the Peaks** (damage
-  = the entering creature's power), **Old Gnawbone** (X Treasures = the attacker's power),
-  Dragon Tempest's second clause.
+- **DONE — `EffectAmount` gains `{ triggerValue: true }`** — a numeric quantity the triggering
+  event supplies, snapshotted at trigger time and threaded onto the stack ability
+  (`PendingTrigger.triggerValue` → `GameObject.triggerValue` → `ResolutionContext.triggerValue`,
+  the same plumbing as `autoTargets`): the entering / attacking creature's *power*, or the
+  *combat damage* a creature dealt a player. Shipped **Terror of the Peaks** (damage = the
+  entering creature's power; `ward { payLife: 3 }` approximates its "costs 3 life to target it"
+  clause) and **Old Gnawbone** (Treasures = combat damage dealt — its real text, not the
+  "X = power" the note guessed). `trigger-value.test.ts`.
+  - Still TBD: Dragon Tempest's "it gains haste / deals X damage" (aims `grant-keyword` /
+    `damage` at *the triggerer* — a target-slot, not an amount).
 - **Not this shape:** **Last March of the Ents** — "draw = greatest toughness among your
   creatures" + "put any number of creature cards from hand onto the battlefield" (a
   max-of, plus a cheat-into-play effect); the neededCards note had an older templating.

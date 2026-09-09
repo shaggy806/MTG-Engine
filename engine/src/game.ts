@@ -1420,6 +1420,7 @@ export class Game {
         trig.abilityKind,
         trig.abilityIndex,
         targets,
+        trig.triggerValue,
       );
     } else if (cast !== null) {
       this.state.pendingTargetedCast = null;
@@ -3734,6 +3735,7 @@ export class Game {
     abilityKind: "activated" | "triggered" | "chapter",
     abilityIndex: number,
     targets: readonly TargetRef[],
+    triggerValue?: number,
   ): ObjectId {
     const abilityId = this.mintObjectId();
     this.state.objects[abilityId] = {
@@ -3764,6 +3766,7 @@ export class Game {
       attachedTo: null,
       isCommander: false,
       xValue: null,
+      ...(triggerValue !== undefined ? { triggerValue } : {}),
       controlEndsAtCleanup: false,
       copyOf: null,
     };
@@ -4431,6 +4434,7 @@ export class Game {
       object.controller,
       targets,
       object.xValue ?? 0,
+      object.triggerValue ?? 0,
     );
     if (ability.resolve !== null) {
       ability.resolve(context);
@@ -4471,12 +4475,30 @@ export class Game {
             event.target.kind === "player"
               ? [event.target]
               : undefined;
+          // A numeric quantity the triggering event supplies, snapshotted now —
+          // for an `EffectAmount` `{ triggerValue: true }`: the entering /
+          // attacking creature's power (Terror of the Peaks), or the combat
+          // damage a creature just dealt a player (Old Gnawbone). ROADMAP P4b.
+          const powerOfId =
+            event.type === "permanent-entered-battlefield"
+              ? event.object
+              : event.type === "attacker-declared"
+                ? event.attacker
+                : undefined;
+          const triggerValue =
+            powerOfId !== undefined && this.state.objects[powerOfId] !== undefined
+              ? computeCharacteristics(this.state, this.registry, powerOfId).power
+              : ability.trigger.on === "deals-combat-damage-to-player" &&
+                  event.type === "damage-dealt"
+                ? event.amount
+                : undefined;
           this.state.pendingTriggers.push({
             sourceObjectId: id,
             cardName: printedCardName(object),
             abilityIndex: index,
             controller: object.controller,
             ...(autoTargets ? { autoTargets } : {}),
+            ...(triggerValue !== undefined ? { triggerValue } : {}),
           });
         }
       });
@@ -4657,6 +4679,7 @@ export class Game {
     readonly abilityIndex: number;
     readonly controller: PlayerId;
     readonly autoTargets?: readonly TargetRef[];
+    readonly triggerValue?: number;
     readonly chapter?: boolean;
   }): "done" | "paused" {
     const def = this.registry.get(trigger.cardName);
@@ -4700,7 +4723,15 @@ export class Game {
       chooserSlots.every((s) => s.options.length === 1);
     if (chooserSlots.length === 0 || forced) {
       const targets = slots.map((s) => ("auto" in s ? s.auto : s.options[0]));
-      this.mintTriggerAbility(trigger.sourceObjectId, trigger.cardName, trigger.controller, abilityKind, trigger.abilityIndex, targets);
+      this.mintTriggerAbility(
+        trigger.sourceObjectId,
+        trigger.cardName,
+        trigger.controller,
+        abilityKind,
+        trigger.abilityIndex,
+        targets,
+        trigger.triggerValue,
+      );
       return "done";
     }
 
@@ -4711,6 +4742,9 @@ export class Game {
       abilityIndex: trigger.abilityIndex,
       controller: trigger.controller,
       slots: slots.map((s) => ("auto" in s ? { auto: s.auto } : { spec: s.spec })),
+      ...(trigger.triggerValue !== undefined
+        ? { triggerValue: trigger.triggerValue }
+        : {}),
     };
     this.state.awaiting = {
       kind: "choose-targets",
@@ -4730,8 +4764,17 @@ export class Game {
     abilityKind: "triggered" | "chapter",
     abilityIndex: number,
     targets: readonly TargetRef[],
+    triggerValue?: number,
   ): void {
-    this.mintAbilityObject(sourceId, cardName, controller, abilityKind, abilityIndex, targets);
+    this.mintAbilityObject(
+      sourceId,
+      cardName,
+      controller,
+      abilityKind,
+      abilityIndex,
+      targets,
+      triggerValue,
+    );
     this.emit({ type: "ability-triggered", source: sourceId, controller });
   }
 
@@ -4764,12 +4807,14 @@ export class Game {
     controller: PlayerId,
     targets: readonly TargetRef[],
     x = 0,
+    triggerValue = 0,
   ): ResolutionContext {
     return {
       controller,
       source,
       targets,
       x,
+      triggerValue,
       dealDamage: (target, amount) => this.dealDamage(source, target, amount),
       draw: (player, count) => {
         for (let i = 0; i < count; i += 1) this.drawCard(player);

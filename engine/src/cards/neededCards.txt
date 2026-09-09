@@ -58,7 +58,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Mosswort Bridge                  FEATURE: Hideaway
 [x] 6 Mountain
 [+] 1 Nature's Lore
-[ ] 1 Old Gnawbone                     FEATURE: create X tokens where X = a creature's power
+[+] 1 Old Gnawbone
 [ ] 1 Path of Ancestry                 FEATURE: mana within commander color identity + "used to cast a creature -> scry 1"
 [x] 1 Rampant Growth
 [ ] 1 Rapid Hybridization              FEATURE: "its controller creates a 3/3" (token for the target's controller)
@@ -80,7 +80,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Temple of the Dragon Queen       FEATURE: restricted any-color mana
 [+] 1 Temur Ascendancy
 [ ] 1 Temur Battlecrier                FEATURE: (attack / cost-reduction trigger — text TBD)
-[ ] 1 Terror of the Peaks              FEATURE: damage = the entering creature's power
+[+] 1 Terror of the Peaks
 [ ] 1 Ureni, the Song Unending         FEATURE: (TDM Ureni — big ETB/attacks value engine)
 [ ] 1 Urza's Incubator                 FEATURE: "choose a creature type as this enters" + type-scoped cost reduction
 [ ] 1 Utvara Hellkite                  FEATURE: filter on the attacks trigger ("a Dragon you control attacks")

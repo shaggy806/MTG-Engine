@@ -22,7 +22,16 @@ export type PtDuration = "end-of-turn" | "permanent";
  * the effect's controller's perspective (Scourge of Valkas: `{ countOf:
  * { subtype: "Dragon", controlledBy: "you" } }`; Craterhoof Behemoth:
  * `{ countOf: { type: "creature", controlledBy: "you" } }`). */
-export type EffectAmount = number | "x" | { readonly countOf: CardFilter };
+export type EffectAmount =
+  | number
+  | "x"
+  | { readonly countOf: CardFilter }
+  /** A numeric quantity the triggering event supplies (ROADMAP P4b): the power
+   * of the entering creature (Terror of the Peaks) or, for a "deals combat
+   * damage to a player" trigger, the damage dealt (Old Gnawbone — "create that
+   * many Treasure tokens"). Snapshotted when the trigger is detected; `0`
+   * outside a triggered-ability resolution. */
+  | { readonly triggerValue: true };
 
 /** @deprecated Use {@link CardFilter} directly — kept as an alias so existing
  * `look-and-choose` / `matchesZoneChoiceFilter` call sites still type-check. */
@@ -579,12 +588,17 @@ export interface ResolutionContext extends EffectApi {
   /** The value chosen for `{X}` when this spell/ability was put on the stack,
    * or 0 if its cost had no `{X}`. */
   readonly x: number;
+  /** A numeric quantity supplied by the event that fired this triggered
+   * ability (the triggering creature's power, or combat damage it dealt), or 0
+   * outside a triggered-ability resolution. ROADMAP P4b. */
+  readonly triggerValue: number;
 }
 
 /** Resolve an {@link EffectAmount} against the resolution context. */
 export function amountValue(amount: EffectAmount, ctx: ResolutionContext): number {
   if (amount === "x") return ctx.x;
   if (typeof amount === "number") return amount;
+  if ("triggerValue" in amount) return ctx.triggerValue;
   return ctx.countMatching(amount.countOf);
 }
 
