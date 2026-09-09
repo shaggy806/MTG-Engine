@@ -19,10 +19,14 @@ const CARDS_DIR = fileURLToPath(new URL("../src/cards/", import.meta.url));
 const OUT_FILE = path.join(CARDS_DIR, "generated.ts");
 const SUBDIRS = ["pool", "tokens"];
 
-/** `lightning-bolt` -> `_lightningBolt` (leading `_` dodges keywords / digits). */
+/** `lightning-bolt` -> `_lightningBolt` (leading `_` dodges keywords / digits).
+ * Any character that isn't a letter or digit (a comma, apostrophe, space in a
+ * filename) is dropped after the `-`-to-camelCase pass, so a stray one can't
+ * produce a broken identifier. The `.name` field, not the filename, is the
+ * registry key — so this only needs to be unique, which `collect()` checks. */
 function identifier(basename) {
-  const camel = basename.replace(/-([a-z0-9])/g, (_, c) => c.toUpperCase());
-  return `_${camel}`;
+  const camel = basename.replace(/[-_\s]+([a-z0-9])/gi, (_, c) => c.toUpperCase());
+  return `_${camel.replace(/[^A-Za-z0-9]/g, "")}`;
 }
 
 function collect() {
