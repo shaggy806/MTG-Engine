@@ -19,6 +19,7 @@ import _poolBlaze from "./pool/blaze.js";
 import _poolBlightning from "./pool/blightning.js";
 import _poolBlinkmothNexus from "./pool/blinkmoth-nexus.js";
 import _poolBloodbraidElf from "./pool/bloodbraid-elf.js";
+import _poolBloodstainedMire from "./pool/bloodstained-mire.js";
 import _poolBloodthroneVampire from "./pool/bloodthrone-vampire.js";
 import _poolBoggartBrute from "./pool/boggart-brute.js";
 import _poolBonesplitter from "./pool/bonesplitter.js";
@@ -56,6 +57,7 @@ import _poolEssenceScatter from "./pool/essence-scatter.js";
 import _poolEvolvingWilds from "./pool/evolving-wilds.js";
 import _poolExplorersInsight from "./pool/explorers-insight.js";
 import _poolFaithlessLooting from "./pool/faithless-looting.js";
+import _poolFarseek from "./pool/farseek.js";
 import _poolFencingAce from "./pool/fencing-ace.js";
 import _poolFireball from "./pool/fireball.js";
 import _poolFlameJavelin from "./pool/flame-javelin.js";
@@ -83,6 +85,7 @@ import _poolGrovewatchHollow from "./pool/grovewatch-hollow.js";
 import _poolGutShot from "./pool/gut-shot.js";
 import _poolHeroicIntervention from "./pool/heroic-intervention.js";
 import _poolHillGiant from "./pool/hill-giant.js";
+import _poolHinterlandHarbor from "./pool/hinterland-harbor.js";
 import _poolHistoryOfBenalia from "./pool/history-of-benalia.js";
 import _poolHolyStrength from "./pool/holy-strength.js";
 import _poolHypnoticSpecter from "./pool/hypnotic-specter.js";
@@ -135,6 +138,7 @@ import _poolRendwinWardenOfTheGrove from "./pool/rendwin-warden-of-the-grove.js"
 import _poolRestInPeace from "./pool/rest-in-peace.js";
 import _poolRiftBolt from "./pool/rift-bolt.js";
 import _poolRoguesPassage from "./pool/rogues-passage.js";
+import _poolRootboundCrag from "./pool/rootbound-crag.js";
 import _poolRumblingBaloth from "./pool/rumbling-baloth.js";
 import _poolSarovaTheUndyingCurrent from "./pool/sarova-the-undying-current.js";
 import _poolSeraphineDawnherald from "./pool/seraphine-dawnherald.js";
@@ -143,6 +147,7 @@ import _poolSnapcasterMage from "./pool/snapcaster-mage.js";
 import _poolSolRing from "./pool/sol-ring.js";
 import _poolSoulWarden from "./pool/soul-warden.js";
 import _poolSpectralSquire from "./pool/spectral-squire.js";
+import _poolSulfurFalls from "./pool/sulfur-falls.js";
 import _poolSunderCharm from "./pool/sunder-charm.js";
 import _poolSunlitBastion from "./pool/sunlit-bastion.js";
 import _poolSwamp from "./pool/swamp.js";
@@ -166,6 +171,7 @@ import _poolUnsummon from "./pool/unsummon.js";
 import _poolUreniOfTheUnwritten from "./pool/ureni-of-the-unwritten.js";
 import _poolVampireNighthawk from "./pool/vampire-nighthawk.js";
 import _poolVengefulGhoul from "./pool/vengeful-ghoul.js";
+import _poolVerdantCatacombs from "./pool/verdant-catacombs.js";
 import _poolVoidfallHorror from "./pool/voidfall-horror.js";
 import _poolVoltCharge from "./pool/volt-charge.js";
 import _poolWalkingBallista from "./pool/walking-ballista.js";
@@ -174,6 +180,7 @@ import _poolWerebear from "./pool/werebear.js";
 import _poolWhiteKnight from "./pool/white-knight.js";
 import _poolWildwoodSentinel from "./pool/wildwood-sentinel.js";
 import _poolWiltLeafCavaliers from "./pool/wilt-leaf-cavaliers.js";
+import _poolWoodedFoothills from "./pool/wooded-foothills.js";
 import _poolWrathOfGod from "./pool/wrath-of-god.js";
 import _poolWurmcoilEngine from "./pool/wurmcoil-engine.js";
 import _poolYulraKindledSpark from "./pool/yulra-kindled-spark.js";
@@ -206,6 +213,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolBlightning,
   _poolBlinkmothNexus,
   _poolBloodbraidElf,
+  _poolBloodstainedMire,
   _poolBloodthroneVampire,
   _poolBoggartBrute,
   _poolBonesplitter,
@@ -243,6 +251,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolEvolvingWilds,
   _poolExplorersInsight,
   _poolFaithlessLooting,
+  _poolFarseek,
   _poolFencingAce,
   _poolFireball,
   _poolFlameJavelin,
@@ -270,6 +279,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolGutShot,
   _poolHeroicIntervention,
   _poolHillGiant,
+  _poolHinterlandHarbor,
   _poolHistoryOfBenalia,
   _poolHolyStrength,
   _poolHypnoticSpecter,
@@ -322,6 +332,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolRestInPeace,
   _poolRiftBolt,
   _poolRoguesPassage,
+  _poolRootboundCrag,
   _poolRumblingBaloth,
   _poolSarovaTheUndyingCurrent,
   _poolSeraphineDawnherald,
@@ -330,6 +341,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolSolRing,
   _poolSoulWarden,
   _poolSpectralSquire,
+  _poolSulfurFalls,
   _poolSunderCharm,
   _poolSunlitBastion,
   _poolSwamp,
@@ -353,6 +365,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolUreniOfTheUnwritten,
   _poolVampireNighthawk,
   _poolVengefulGhoul,
+  _poolVerdantCatacombs,
   _poolVoidfallHorror,
   _poolVoltCharge,
   _poolWalkingBallista,
@@ -361,6 +374,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolWhiteKnight,
   _poolWildwoodSentinel,
   _poolWiltLeafCavaliers,
+  _poolWoodedFoothills,
   _poolWrathOfGod,
   _poolWurmcoilEngine,
   _poolYulraKindledSpark,

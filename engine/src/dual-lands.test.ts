@@ -98,6 +98,82 @@ describe("fixed multi-color mana sources (P0)", () => {
     expect(game.state.objects[game.debugSpawn("Temple of Mystery", A)]?.tapped).toBe(true);
   });
 
+  it("a check land enters untapped only if you already control a matching basic", () => {
+    const noBasic = makeGame([]);
+    expect(noBasic.state.objects[noBasic.debugSpawn("Rootbound Crag", A)]?.tapped).toBe(true);
+
+    const withForest = makeGame([]);
+    withForest.debugSpawn("Forest", A);
+    expect(
+      withForest.state.objects[withForest.debugSpawn("Rootbound Crag", A)]?.tapped,
+    ).toBe(false);
+
+    // an unrelated basic doesn't count
+    const withSwamp = makeGame([]);
+    withSwamp.debugSpawn("Swamp", A);
+    expect(
+      withSwamp.state.objects[withSwamp.debugSpawn("Rootbound Crag", A)]?.tapped,
+    ).toBe(true);
+
+    // a matching basic an opponent controls doesn't count
+    const oppForest = makeGame([]);
+    oppForest.debugSpawn("Forest", B);
+    expect(
+      oppForest.state.objects[oppForest.debugSpawn("Rootbound Crag", A)]?.tapped,
+    ).toBe(true);
+  });
+
+  it("a fetch land: pay 1 life, sacrifice, put a matching land onto the battlefield", () => {
+    const a = new ScriptedController(A);
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
+      controllers: { [A]: a, [B]: new ScriptedController(B) },
+      decks: [
+        {
+          player: A,
+          cards: [
+            ...Array(7).fill("Island"),
+            "Mountain",
+            "Forest",
+            ...Array(31).fill("Swamp"),
+          ],
+        },
+        { player: B, cards: pad([]) },
+      ],
+    });
+    game.advanceUntil(toPrecombat);
+    const fetch = game.debugSpawn("Wooded Foothills", A);
+    game.state.objects[fetch]!.tapped = false;
+    const life0 = game.state.players[A].life;
+    a.chooseFromZoneFn = (_v, eligible) => eligible.slice(0, 1);
+
+    game.dispatch({ type: "activate-ability", player: A, source: fetch, abilityIndex: 0 });
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-from-zone" || s.result.over);
+    // the picker only lists Mountain/Forest — never the 31 Swamps
+    const awaiting = game.state.awaiting;
+    expect(awaiting?.kind).toBe("choose-from-zone");
+    if (awaiting?.kind === "choose-from-zone") {
+      expect(awaiting.eligible.length).toBeGreaterThan(0);
+      // only Mountain/Forest are choosable — never one of the 31 Swamps
+      expect(
+        awaiting.eligible.every((id) =>
+          ["Mountain", "Forest"].includes(game.state.objects[id].cardName),
+        ),
+      ).toBe(true);
+    }
+
+    game.advanceUntil((s) => s.zones.shared.stack.length === 0 && s.awaiting === null);
+    expect(game.state.players[A].life).toBe(life0 - 1);
+    expect(game.state.objects[fetch]?.zone).toBe("graveyard");
+    const fetched = game.battlefield.filter((id) =>
+      ["Mountain", "Forest"].includes(game.state.objects[id].cardName),
+    );
+    expect(fetched.length).toBe(1);
+    expect(game.state.objects[fetched[0]!].tapped).toBe(false); // untapped fetch
+  });
+
   it("a scry-land's ETB trigger raises a scry decision", () => {
     const game = makeGame([]);
     const id = asObjectId(`hand-${game.state.nextObjectSeq}`);

@@ -26,6 +26,7 @@
  * multi-replacement ordering, damage *redirection* to a third object (Harm's Way).
  */
 
+import type { StaticCondition } from "./cards/define.js";
 import type { EffectAmount } from "./effects.js";
 import type { CardFilter } from "./filter.js";
 
@@ -43,6 +44,10 @@ export interface EntersBattlefieldReplacement {
   readonly event: "enters-battlefield";
   /** It enters tapped (every "enters the battlefield tapped" land / creature). */
   readonly tapped?: boolean;
+  /** It enters tapped *unless* this condition holds when it enters — the
+   * "check land" cycle (Rootbound Crag: "enters tapped unless you control a
+   * Mountain or a Forest"). Evaluated once, as it enters. */
+  readonly tappedUnless?: StaticCondition;
   /** It enters with these counters already on it. `amount: "x"` reads the
    * `{X}` chosen when it was cast (Walking Ballista). */
   readonly counters?: { readonly kind: string; readonly amount: EffectAmount };

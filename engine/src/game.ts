@@ -6187,6 +6187,12 @@ export class Game {
       if (r === undefined || r.event !== "enters-battlefield") continue;
       if (!this.staticActive(object, ability)) continue;
       if (r.tapped) tapped = true;
+      if (
+        r.tappedUnless !== undefined &&
+        !staticConditionMet(this.state, this.registry, object, r.tappedUnless)
+      ) {
+        tapped = true;
+      }
       if (r.transformed) transformed = true;
       if (r.counters) {
         const base =

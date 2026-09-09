@@ -50,6 +50,63 @@ export const entersTappedStatic = (name: string): StaticAbility => ({
   text: `${name} enters the battlefield tapped.`,
 });
 
+/** "a Mountain" / "an Island" — the indefinite article for a land-type word. */
+const withArticle = (word: string): string =>
+  `${/^[AEIOU]/.test(word) ? "an" : "a"} ${word}`;
+
+/**
+ * The "~ enters the battlefield tapped unless you control [one of these basic
+ * land types]" self-replacement of the check-land cycle (Rootbound Crag,
+ * Sulfur Falls, Hinterland Harbor).
+ */
+export const checkLandStatic = (
+  name: string,
+  landTypes: readonly [string, string],
+): StaticAbility => ({
+  affects: { scope: "self" },
+  replacement: {
+    event: "enters-battlefield",
+    tappedUnless: { kind: "controls", filter: { subtypes: landTypes }, atLeast: 1 },
+  },
+  text: `${name} enters the battlefield tapped unless you control ${withArticle(
+    landTypes[0],
+  )} or ${withArticle(landTypes[1])}.`,
+});
+
+/**
+ * A "{T}, Pay 1 life, Sacrifice ~: Search your library for a [type-A] or
+ * [type-B] card, put it onto the battlefield, then shuffle" fetch land
+ * (Wooded Foothills, Bloodstained Mire, Verdant Catacombs).
+ */
+export const fetchLand = (
+  name: string,
+  landTypes: readonly [string, string],
+): CardDefinition => {
+  const text = `{T}, Pay 1 life, Sacrifice ${name}: Search your library for ${withArticle(
+    landTypes[0],
+  )} or ${withArticle(landTypes[1])} card, put it onto the battlefield, then shuffle.`;
+  return defineCard({
+    name,
+    types: ["land"],
+    text,
+    activated: [
+      {
+        cost: { mana: null, tap: true, sacrifice: "self", payLife: 1 },
+        targets: [],
+        effect: {
+          kind: "search-library",
+          filter: { type: "land", subtypes: landTypes },
+          destination: "battlefield",
+          min: 0,
+          max: 1,
+        },
+        resolve: null,
+        text,
+      },
+    ],
+  });
+};
+
 const BASIC_LAND_MANA: Readonly<Record<string, Color>> = {
   Plains: "W",
   Island: "U",

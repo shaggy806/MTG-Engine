@@ -1,12 +1,15 @@
 # Features needed to finish `neededCards.txt`
 
-Status after this pass:
+Status:
 
 | bucket | count |
 | --- | --- |
 | already in pool | 8 (+ 4 basics) |
-| **added this pass** | **8** (Birds of Paradise, Nature's Lore, Infernal Grasp, Heroic Intervention, Dragonspeaker Shaman, Lathliss + Dragon Token, Temur Ascendancy, Terramorphic Expanse) |
-| blocked on an engine feature | ~120 |
+| **added — first pass** | 8 (Birds of Paradise, Nature's Lore, Infernal Grasp, Heroic Intervention, Dragonspeaker Shaman, Lathliss + Dragon Token, Temur Ascendancy, Terramorphic Expanse) |
+| **added — P0 (multi-color mana + check/fetch lands)** | 13 (Frontier Bivouac, Temple of Abandon, Temple of Mystery, Commercial District, Raucous Theater, Underground Mortuary, Sulfur Falls, Hinterland Harbor, Rootbound Crag†, Farseek, Wooded Foothills, Bloodstained Mire, Verdant Catacombs) |
+| blocked on an engine feature | ~105 |
+
+† Rootbound Crag isn't on the list (Rockfall Vale is the list's R/G land) — added as the check-land cycle-mate.
 
 The two decks are a **fixed-dual-land manabase** deck and a **lands-in-graveyard** deck,
 so the two biggest unlocks (below) each clear ~30 and ~10 cards respectively. Everything
@@ -25,12 +28,18 @@ is unchanged (one dominating option). Tests: `dual-lands.test.ts`.
 - Shipped taplands: **Frontier Bivouac**, **Temple of Abandon**, **Temple of Mystery**,
   **Commercial District**, **Raucous Theater**, **Underground Mortuary** (unconditional
   enters-tapped via `entersTappedStatic` helper + ETB `scry`/`surveil` trigger).
+- **DONE — conditional enters-tapped (check lands).** `EntersBattlefieldReplacement`
+  gained `tappedUnless?: StaticCondition`; `CardFilter` gained `subtypes?: string[]`
+  (any-of). Helper `checkLandStatic(name, [typeA, typeB])`. Shipped: **Sulfur Falls**,
+  **Hinterland Harbor**, + Rootbound Crag (cycle-mate). Cinder Glade uses "two or more
+  basic lands" (a count, not a type — `{ kind: "controls", filter: { supertype: "basic",
+  type: "land" }, atLeast: 2 }` — try it); Rockfall Vale additionally needs the "deals 1
+  damage when it enters untapped" clause (an enters-untapped trigger).
 - Still to layer on for the rest of the ~30:
 
 | sub-feature | cards |
 | --- | --- |
-| conditional enters-tapped (`replacement: enters-battlefield` with a `condition`) | Cinder Glade, Hinterland Harbor, Rockfall Vale, Sulfur Falls, Rootbound Crag |
-| "pay 2 life or it enters tapped" (shock) — a cast/ETB choice replacement | Blood Crypt, Stomping Ground, Overgrown Tomb |
+| "pay 2 life or it enters tapped" (shock) — a real cast/ETB **choice** (an `awaiting` decision + a client step; auto-payer heuristic otherwise) | Blood Crypt, Stomping Ground, Overgrown Tomb |
 | painland "{T}: Add {R} or {G}. ~ deals 1 damage to you" (a mana ability with a side effect / life loss) | Karplusan Forest, Shivan Reef, Yavimaya Coast |
 | pay-life multicolor mana (trikelands) | Cabaretti Courtyard, Riveteers Overlook |
 | filter lands ("{G/U}{G/U}, {T}: Add {G}{G}/{G}{U}/{U}{U}") — hybrid mana in an **activation cost** + multi-mana fixed output | Flooded Grove, Mossfire Valley |
@@ -41,14 +50,13 @@ is unchanged (one dominating option). Tests: `dual-lands.test.ts`.
 
 ## P1 — Fetch lands  (~6 cards)
 
-`search-library` + `sacrifice: "self"` + `payLife` on the ability cost all exist
-(Evolving Wilds is 90% of this). The one true gap is an **OR-of-subtypes `CardFilter`**
-("a Mountain **or** Forest card"). Add `subtypes?: string[]` meaning "has any of".
+**DONE.** OR-of-subtypes `CardFilter` (`subtypes?: string[]`) + `payLife` on an ability
+cost (already existed). Helper `fetchLand(name, [typeA, typeB])`. Shipped: **Farseek**,
+**Wooded Foothills**, **Bloodstained Mire**, **Verdant Catacombs**. `dual-lands.test.ts`.
 
-- **Bloodstained Mire**, **Verdant Catacombs**, **Wooded Foothills** — untapped, pay 1 life.
-- **Fabled Passage** — + "if you control 4+ lands, untap it" (a conditional post-fetch untap).
-- **Farseek** (Plains/Island/Swamp/Mountain), **Myriad Landscape** ("two basics that share a
-  land type") — same OR-filter need.
+- **Fabled Passage** — still needs "if you control 4+ lands, untap it" (a conditional
+  post-fetch untap).
+- **Myriad Landscape** — "two basics that share a land type" (the "share a type" nuance).
 
 ## P2 — Land recursion from the graveyard  (~9 cards)
 

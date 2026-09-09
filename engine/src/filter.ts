@@ -54,6 +54,9 @@ export interface CardFilter {
   readonly notTypes?: readonly CardType[];
   /** Must have this subtype (creature type, land type, …). */
   readonly subtype?: string;
+  /** Must have AT LEAST ONE of these subtypes — an OR (Farseek: "a Plains,
+   * Island, Swamp, or Mountain card"; a checkland's "a Mountain or a Forest"). */
+  readonly subtypes?: readonly string[];
   /** Must have this supertype (`"legendary"`, `"basic"`, …). */
   readonly supertype?: Supertype;
   /** Exact true printed card name. */
@@ -101,6 +104,12 @@ export function matchesFilter(
     return false;
   }
   if (filter.subtype !== undefined && !c.subtypes.includes(filter.subtype)) return false;
+  if (
+    filter.subtypes !== undefined &&
+    !filter.subtypes.some((s) => c.subtypes.includes(s))
+  ) {
+    return false;
+  }
   if (
     filter.supertype !== undefined &&
     !registry.get(printedCardName(object)).supertypes.includes(filter.supertype)

@@ -81,6 +81,9 @@ const deckA = deck([
   ["Evolving Wilds", 2],
   ["Temple of Abandon", 1],
   ["Frontier Bivouac", 1],
+  ["Rootbound Crag", 1],
+  ["Hinterland Harbor", 1],
+  ["Farseek", 1],
 ]);
 // Kept deliberately lean (~50 cards) so the RandomController actually draws
 // and plays its threats — a bloated deck just stalls out and the fuzz only
@@ -204,6 +207,9 @@ const deckC = deck([
   ["Command Tower", 1],
   ["Underground Mortuary", 1],
   ["Raucous Theater", 1],
+  ["Sulfur Falls", 1],
+  ["Wooded Foothills", 1],
+  ["Bloodstained Mire", 1],
 ]);
 
 // All four seats' decks/commanders, in seating order — sliced down to
