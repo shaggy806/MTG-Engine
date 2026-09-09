@@ -719,23 +719,7 @@ export class Game {
             targetSpecs: def.targets,
             targetOptions: this.targetOptionsFor(def.targets, player, this.cardSource(def)),
             ...faceProp,
-            ...(def.castModal !== null
-              ? {
-                  castModal: {
-                    minModes: def.castModal.minModes,
-                    maxModes: def.castModal.maxModes,
-                    modes: def.castModal.modes.map((m) => ({
-                      text: m.text,
-                      targetSpecs: [...(m.targets ?? [])],
-                      targetOptions: this.targetOptionsFor(
-                        m.targets ?? [],
-                        player,
-                        this.cardSource(def),
-                      ),
-                    })),
-                  },
-                }
-              : {}),
+            ...this.castModalDescriptor(def, player),
             ...(parsed.x > 0
               ? { xCost: { maxX: this.maxAffordableX(player, card, def, def.manaCost, face ?? 0) } }
               : {}),
@@ -776,6 +760,7 @@ export class Game {
         via: "foretell",
         targetSpecs: def.targets,
         targetOptions: this.targetOptionsFor(def.targets, player, this.cardSource(def)),
+        ...this.castModalDescriptor(def, player),
         ...(parsed.x > 0
           ? { xCost: { maxX: this.maxAffordableX(player, card, def, cost) } }
           : {}),
@@ -799,6 +784,7 @@ export class Game {
         via: "flashback",
         targetSpecs: def.targets,
         targetOptions: this.targetOptionsFor(def.targets, player, this.cardSource(def)),
+        ...this.castModalDescriptor(def, player),
         ...(parsed.x > 0
           ? { xCost: { maxX: this.maxAffordableX(player, card, def, cost) } }
           : {}),
@@ -822,6 +808,7 @@ export class Game {
         face: 1,
         targetSpecs: backDef.targets,
         targetOptions: this.targetOptionsFor(backDef.targets, player, this.cardSource(backDef)),
+        ...this.castModalDescriptor(backDef, player),
         ...(parsed.x > 0
           ? { xCost: { maxX: this.maxAffordableX(player, card, backDef, front.disturb.cost, 1) } }
           : {}),
@@ -844,6 +831,7 @@ export class Game {
         face: 0,
         targetSpecs: creatureDef.targets,
         targetOptions: this.targetOptionsFor(creatureDef.targets, player, this.cardSource(creatureDef)),
+        ...this.castModalDescriptor(creatureDef, player),
         ...(parsed.x > 0
           ? { xCost: { maxX: this.maxAffordableX(player, card, creatureDef) } }
           : {}),
@@ -865,6 +853,7 @@ export class Game {
         via: "escape",
         targetSpecs: def.targets,
         targetOptions: this.targetOptionsFor(def.targets, player, this.cardSource(def)),
+        ...this.castModalDescriptor(def, player),
         ...(parsed.x > 0
           ? { xCost: { maxX: this.maxAffordableX(player, card, def, def.escape.cost) } }
           : {}),
@@ -953,6 +942,33 @@ export class Game {
   /** The colour/type identity of a card (its printed values). */
   private cardSource(def: CardDefinition): TargetSource {
     return { colors: def.colors, types: def.types };
+  }
+
+  /** The `castModal` descriptor for a `cast-spell` `LegalAction` (ROADMAP
+   * Phase 11 EG-2), or `{}` when `def` isn't a targeted modal spell. Spread
+   * into every `cast-spell` push — from hand *and* from an alternative zone
+   * (a `castModal` instant/sorcery Snapcaster grants flashback to still needs
+   * cast-time mode selection). */
+  private castModalDescriptor(
+    def: CardDefinition,
+    player: PlayerId,
+  ): Pick<Extract<LegalAction, { kind: "cast-spell" }>, "castModal"> {
+    if (def.castModal === null) return {};
+    return {
+      castModal: {
+        minModes: def.castModal.minModes,
+        maxModes: def.castModal.maxModes,
+        modes: def.castModal.modes.map((m) => ({
+          text: m.text,
+          targetSpecs: [...(m.targets ?? [])],
+          targetOptions: this.targetOptionsFor(
+            m.targets ?? [],
+            player,
+            this.cardSource(def),
+          ),
+        })),
+      },
+    };
   }
 
   /** The colour/type identity of a permanent (its computed values). */
@@ -4776,6 +4792,7 @@ export class Game {
       gainControl: (target, untilEndOfTurn) =>
         this.gainControlByEffect(controller, target, untilEndOfTurn),
       mill: (target, amount) => this.millByEffect(target, amount),
+      countMatching: (filter) => this.battlefieldMatching(controller, filter).length,
       returnFromGraveyard: (filter, destination, count, enterTapped) =>
         this.returnFromGraveyardByEffect(controller, filter, destination, count, enterTapped),
       discardCards: (target, amount) => this.discardByEffect(target, amount),

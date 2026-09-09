@@ -768,6 +768,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
       specs: chosen.flatMap((m) => m.targetSpecs),
       options: chosen.flatMap((m) => m.targetOptions),
       modes,
+      ...(cast.via !== undefined ? { via: cast.via } : {}),
       ...(cast.face !== undefined ? { face: cast.face } : {}),
     })
   }, [beginTargeting, pendingModes])

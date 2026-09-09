@@ -9,7 +9,8 @@ Status:
 | **added — P0 (multi-color mana + check/fetch/pain/shock/trikeland + cycling)** | 24 — the 16 below + **Cinder Glade**, **Rockfall Vale**, **Blood Crypt**, **Overgrown Tomb**, **Stomping Ground**, **Cabaretti Courtyard**, **Riveteers Overlook**, **Sheltered Thicket** (+ Tranquil Thicket now faithful) |
 | **added — P2 (`return-from-graveyard` + self-`mill` + `playFromGraveyard`)** | 4 — **Splendid Reclamation**, **Aftermath Analyst**, **World Shaper**, **Ramunap Excavator** |
 | **added — P3 (landfall payloads: modal token / colour, `"opponent"` target)** | 3 — **Tireless Provisioner**, **Lotus Cobra**, **Iridescent Vinelasher** |
-| blocked on an engine feature | ~87 |
+| **added — P4a (`EffectAmount.countOf`)** | 2 — **Scourge of Valkas**, **Craterhoof Behemoth** |
+| blocked on an engine feature | ~85 |
 
 † Rootbound Crag isn't on the list (Rockfall Vale is the list's R/G land) — added as the check-land cycle-mate.
 
@@ -130,12 +131,26 @@ Landfall *triggers* already work (`enters-battlefield`, `filter: { type: "land" 
 
 ## P4 — Count-scaled effect amounts  (~7 cards)
 
-`EffectAmount` is `number | "x"`. Add `{ countOf: CardFilter | "power-of-target" }`.
-
-- number of Dragons you control → **Scourge of Valkas**, Dragon Tempest, Dragonhawk.
-- the entering/target creature's power → **Terror of the Peaks**, **Old Gnawbone**
-  (X Treasures = power), Craterhoof Behemoth.
-- creatures you control → Craterhoof (+X/+X), **Last March of the Ents** (draw X).
+- **DONE — `EffectAmount` gains `{ countOf: CardFilter }`** — a live count of battlefield
+  permanents matching the filter, evaluated with the effect's controller as "you"
+  (`amountValue` → `ResolutionContext.countMatching`). Wired into `damage` (already),
+  `draw`, `modify-pt`, `modify-pt-all`, `create-token` `count`. `replacements.ts`'s
+  enters-with-counters `amount` was narrowed to `number | "x"` (it never needed the count).
+  Shipped **Scourge of Valkas** (damage = your Dragons, incl. itself) and **Craterhoof
+  Behemoth** (creatures you control gain trample + `modify-pt-all` `{ countOf: creatures
+  you control }`). `count-scaled.test.ts`.
+  - Also fixed a latent bug found by the fuzz: a `castModal` instant/sorcery cast from an
+    alternative zone (Snapcaster grants flashback to Duskwood Verdict) was offered without
+    its `castModal` descriptor and with the RandomController dropping `via` — now
+    `Game.castModalDescriptor` is spread into every `cast-spell` `LegalAction` and the
+    RandomController / client `confirmModes` forward `via`/`face`.
+- **TBD — "power of the triggering / target creature"** (needs the triggering object
+  threaded onto the stack ability, like `autoTargets`): **Terror of the Peaks** (damage
+  = the entering creature's power), **Old Gnawbone** (X Treasures = the attacker's power),
+  Dragon Tempest's second clause.
+- **Not this shape:** **Last March of the Ents** — "draw = greatest toughness among your
+  creatures" + "put any number of creature cards from hand onto the battlefield" (a
+  max-of, plus a cheat-into-play effect); the neededCards note had an older templating.
 
 ## P5 — Tokens for another player / token copies  (~6 cards)
 

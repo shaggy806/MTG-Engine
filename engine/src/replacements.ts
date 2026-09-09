@@ -27,7 +27,6 @@
  */
 
 import type { StaticCondition } from "./cards/define.js";
-import type { EffectAmount } from "./effects.js";
 import type { CardFilter } from "./filter.js";
 
 /** A single replacement clause on a `StaticAbility`. Discriminated by `event`. */
@@ -59,7 +58,7 @@ export interface EntersBattlefieldReplacement {
   readonly mayPayLife?: number;
   /** It enters with these counters already on it. `amount: "x"` reads the
    * `{X}` chosen when it was cast (Walking Ballista). */
-  readonly counters?: { readonly kind: string; readonly amount: EffectAmount };
+  readonly counters?: { readonly kind: string; readonly amount: number | "x" };
   /** It enters transformed — a transforming DFC that says "enters the
    * battlefield transformed" unconditionally (rule 712.10 — ROADMAP Phase
    * 10b). Daybound's conditional "if it's night" is handled by the engine,

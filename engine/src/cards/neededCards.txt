@@ -66,7 +66,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Rockfall Vale
 [ ] 1 Sakura-Tribe Elder              FEATURE: sacrifice-on-death tutor
 [ ] 1 Sarkhan, Soul Aflame             FEATURE: (planeswalker / dragon-copy — text TBD)
-[ ] 1 Scourge of Valkas                FEATURE: damage = number of Dragons you control (count-scaled)
+[+] 1 Scourge of Valkas
 [ ] 1 Selvala, Heart of the Wilds      FEATURE: variable mana ability + power-gated draw
 [+] 1 Sheltered Thicket
 [+] 1 Shivan Reef
@@ -103,7 +103,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [x] 1 Command Tower
 [+] 1 Commercial District
 [ ] 1 Conduit of Worlds                FEATURE: play lands/permanents from your graveyard
-[ ] 1 Craterhoof Behemoth              FEATURE: team pump where X = creature count (grant-trample-all alone is doable)
+[+] 1 Craterhoof Behemoth
 [ ] 1 Crop Rotation                    FEATURE: additional cost "sacrifice a land"
 [ ] 1 Dryad of the Ilysian Grove       FEATURE: extra land drop; "lands are every basic land type"
 [ ] 1 Earthbender Ascension            FEATURE: (Avatar — counter-accumulation enchantment, text TBD)

@@ -790,7 +790,15 @@ export class RandomController extends AutomaticController {
           }
           modes.sort((a, b) => a - b);
           const targets = modes.flatMap((i) => this.pickTargets(cm.modes[i].targetOptions));
-          return { type: "cast-spell", player, card: legal.card, targets, modes };
+          return {
+            type: "cast-spell",
+            player,
+            card: legal.card,
+            targets,
+            modes,
+            ...(legal.via !== undefined ? { via: legal.via } : {}),
+            ...(legal.face !== undefined ? { face: legal.face } : {}),
+          };
         }
         return {
           type: "cast-spell",

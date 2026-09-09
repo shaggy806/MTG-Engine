@@ -42,6 +42,7 @@ import _poolContentiousPlan from "./pool/contentious-plan.js";
 import _poolCoronationRite from "./pool/coronation-rite.js";
 import _poolCorvathEmberScribe from "./pool/corvath-ember-scribe.js";
 import _poolCounterspell from "./pool/counterspell.js";
+import _poolCraterhoofBehemoth from "./pool/craterhoof-behemoth.js";
 import _poolCrawWurm from "./pool/craw-wurm.js";
 import _poolCryptolithRite from "./pool/cryptolith-rite.js";
 import _poolDamnation from "./pool/damnation.js";
@@ -152,6 +153,7 @@ import _poolRoguesPassage from "./pool/rogues-passage.js";
 import _poolRootboundCrag from "./pool/rootbound-crag.js";
 import _poolRumblingBaloth from "./pool/rumbling-baloth.js";
 import _poolSarovaTheUndyingCurrent from "./pool/sarova-the-undying-current.js";
+import _poolScourgeOfValkas from "./pool/scourge-of-valkas.js";
 import _poolSeraphineDawnherald from "./pool/seraphine-dawnherald.js";
 import _poolSerraAngel from "./pool/serra-angel.js";
 import _poolShelteredThicket from "./pool/sheltered-thicket.js";
@@ -255,6 +257,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolCoronationRite,
   _poolCorvathEmberScribe,
   _poolCounterspell,
+  _poolCraterhoofBehemoth,
   _poolCrawWurm,
   _poolCryptolithRite,
   _poolDamnation,
@@ -365,6 +368,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolRootboundCrag,
   _poolRumblingBaloth,
   _poolSarovaTheUndyingCurrent,
+  _poolScourgeOfValkas,
   _poolSeraphineDawnherald,
   _poolSerraAngel,
   _poolShelteredThicket,

@@ -78,6 +78,38 @@ const named = (game: Game, ids: readonly ObjectId[], name: string): ObjectId => 
   return id;
 };
 
+describe("a castModal spell cast from an alternative zone (Snapcaster-style flashback)", () => {
+  it("still carries its castModal descriptor and resolves with cast-time modes", () => {
+    const { game } = scriptedGame([]);
+    game.advanceUntil(toPrecombat);
+    for (const land of ["Plains", "Island", "Swamp"]) spawn(game, land, A);
+    const charm = game.debugSpawn("Sunder Charm", A, "graveyard");
+    game.state.objects[charm].grantedFlashback = { cost: "{W}{U}{B}", untilEndOfTurn: true };
+
+    const flash = game
+      .legalActions(A)
+      .find((x) => x.kind === "cast-spell" && x.card === charm && x.via === "flashback");
+    expect(flash).toBeDefined();
+    // The bug this guards: the alt-zone cast-spell loops used to omit castModal.
+    expect((flash as { castModal?: unknown }).castModal).toBeDefined();
+
+    const handBefore = game.handOf(A).length;
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: charm,
+      via: "flashback",
+      modes: [2], // "You draw a card."
+      targets: [],
+    });
+    game.advanceUntil(settled);
+
+    expect(game.handOf(A).length).toBe(handBefore + 1);
+    // A flashback spell is exiled, not put back in the graveyard.
+    expect(game.state.zones.shared.exile).toContain(charm);
+  });
+});
+
 describe("modal spells (rule 700.2) — Deliberate Course", () => {
   it("the game pauses on a choose-modes decision as the spell resolves", () => {
     const { game } = scriptedGame(["Deliberate Course"]);

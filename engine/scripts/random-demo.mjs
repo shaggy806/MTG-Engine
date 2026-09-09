@@ -62,6 +62,8 @@ const deckA = deck([
   ["Ramunap Excavator", 1],
   ["Tireless Provisioner", 1],
   ["Lotus Cobra", 1],
+  ["Craterhoof Behemoth", 1],
+  ["Scourge of Valkas", 1],
   ["Rampaging Baloths", 1],
   ["Juggernaut", 1],
   ["Combat Thresher", 1],

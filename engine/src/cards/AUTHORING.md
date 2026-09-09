@@ -201,8 +201,14 @@ keyword string — it's a static or triggered ability. See §9–10.
 
 `EffectSpec` (`effects.ts`) is the declarative vocabulary for what a spell or
 ability does on resolution. A `target:` field is an **index into `targets[]`**
-(0-based), or the literal `"source"` where allowed. `amount` is a number, or
-`"x"` to read the cast `{X}`.
+(0-based), or the literal `"source"` where allowed. An `EffectAmount` is a
+number, `"x"` (the cast `{X}`), or `{ countOf: CardFilter }` — a live count of
+battlefield permanents matching the filter, from the effect's controller's
+view (Scourge of Valkas: `{ countOf: { subtype: "Dragon", controlledBy: "you" } }`;
+Craterhoof: `{ countOf: { type: "creature", controlledBy: "you" } }`). It's
+accepted by `damage` / `damage-all` / `mill` / `discard` / `draw` /
+`prevent-damage` `amount`, `modify-pt` / `modify-pt-all` `power`/`toughness`,
+and `create-token` `count`.
 
 ### Damage / life / cards
 

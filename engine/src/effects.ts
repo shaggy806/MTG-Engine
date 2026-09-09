@@ -16,9 +16,13 @@ import type { TargetRef, TargetSpec } from "./target.js";
 
 export type EffectTargetRef = number | "source";
 export type PtDuration = "end-of-turn" | "permanent";
-/** A numeric amount in an effect: a literal, or `"x"` for the value chosen for
- * `{X}` when the spell/ability was put on the stack (`ResolutionContext.x`). */
-export type EffectAmount = number | "x";
+/** A numeric amount in an effect: a literal, `"x"` for the value chosen for
+ * `{X}` when the spell/ability was put on the stack (`ResolutionContext.x`),
+ * or a live count of battlefield permanents matching a filter, evaluated from
+ * the effect's controller's perspective (Scourge of Valkas: `{ countOf:
+ * { subtype: "Dragon", controlledBy: "you" } }`; Craterhoof Behemoth:
+ * `{ countOf: { type: "creature", controlledBy: "you" } }`). */
+export type EffectAmount = number | "x" | { readonly countOf: CardFilter };
 
 /** @deprecated Use {@link CardFilter} directly — kept as an alias so existing
  * `look-and-choose` / `matchesZoneChoiceFilter` call sites still type-check. */
@@ -51,7 +55,7 @@ export type EffectSpec =
        * painless option and only reaches for this when it must. */
       readonly painToController?: number;
     }
-  | { readonly kind: "draw"; readonly amount: number }
+  | { readonly kind: "draw"; readonly amount: EffectAmount }
   | {
       readonly kind: "gain-life";
       readonly amount: number;
@@ -159,18 +163,19 @@ export type EffectSpec =
   | {
       readonly kind: "modify-pt";
       readonly target: EffectTargetRef;
-      readonly power: number;
-      readonly toughness: number;
+      readonly power: EffectAmount;
+      readonly toughness: EffectAmount;
       readonly duration: PtDuration;
     }
   | {
       /** Every battlefield permanent matching `filter` gets +power/+toughness
        * (Garruk Wildspeaker's ult / Overrun: `{ type: "creature",
-       * controlledBy: "you" }`, `+3/+3`, `end-of-turn`). */
+       * controlledBy: "you" }`, `+3/+3`, `end-of-turn`; Craterhoof Behemoth:
+       * `power`/`toughness` `{ countOf: … }` — a live count). */
       readonly kind: "modify-pt-all";
       readonly filter: CardFilter;
-      readonly power: number;
-      readonly toughness: number;
+      readonly power: EffectAmount;
+      readonly toughness: EffectAmount;
       readonly duration: PtDuration;
     }
   | {
@@ -275,7 +280,7 @@ export type EffectSpec =
       readonly kind: "create-token";
       /** Name of a token definition in the {@link CardRegistry}. */
       readonly token: string;
-      readonly count: number;
+      readonly count: EffectAmount;
     }
   | {
       /** Attach the source (an Aura/Equipment) to a target permanent. */
@@ -454,6 +459,9 @@ export interface EffectApi {
   gainControl(target: TargetRef, untilEndOfTurn: boolean): void;
   /** `target` (a player) mills `amount` cards. */
   mill(target: TargetRef, amount: number): void;
+  /** Number of battlefield permanents matching `filter`, evaluated with the
+   * effect's controller as "you" (for an `EffectAmount` `{ countOf }`). */
+  countMatching(filter: CardFilter): number;
   /** See the `"return-from-graveyard"` {@link EffectSpec} — from the effect's
    * controller's graveyard. */
   returnFromGraveyard(
@@ -573,9 +581,11 @@ export interface ResolutionContext extends EffectApi {
   readonly x: number;
 }
 
-/** Resolve an {@link EffectAmount} against a context's chosen X. */
+/** Resolve an {@link EffectAmount} against the resolution context. */
 export function amountValue(amount: EffectAmount, ctx: ResolutionContext): number {
-  return amount === "x" ? ctx.x : amount;
+  if (amount === "x") return ctx.x;
+  if (typeof amount === "number") return amount;
+  return ctx.countMatching(amount.countOf);
 }
 
 /** Imperative escape hatch for a spell or ability the vocab can't express. */
@@ -610,7 +620,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       }
       return;
     case "draw":
-      ctx.draw(ctx.controller, spec.amount);
+      ctx.draw(ctx.controller, amountValue(spec.amount, ctx));
       return;
     case "gain-life":
       if (spec.who === undefined || spec.who === "you") ctx.gainLife(ctx.controller, spec.amount);
@@ -710,12 +720,22 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     case "modify-pt": {
       const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) {
-        ctx.modifyPt(target, spec.power, spec.toughness, spec.duration);
+        ctx.modifyPt(
+          target,
+          amountValue(spec.power, ctx),
+          amountValue(spec.toughness, ctx),
+          spec.duration,
+        );
       }
       return;
     }
     case "modify-pt-all":
-      ctx.modifyPtAll(spec.filter, spec.power, spec.toughness, spec.duration);
+      ctx.modifyPtAll(
+        spec.filter,
+        amountValue(spec.power, ctx),
+        amountValue(spec.toughness, ctx),
+        spec.duration,
+      );
       return;
     case "grant-keyword-all":
       ctx.grantKeywordAll(spec.filter, spec.keyword, spec.duration);
@@ -780,7 +800,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       return;
     }
     case "create-token":
-      ctx.createToken(spec.token, spec.count);
+      ctx.createToken(spec.token, amountValue(spec.count, ctx));
       return;
     case "attach": {
       const target = ctx.targets[spec.target];
