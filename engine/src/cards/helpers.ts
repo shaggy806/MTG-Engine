@@ -6,7 +6,7 @@
 
 import type { ActivatedAbility } from "../abilities.js";
 import type { Color, ManaType } from "../mana.js";
-import { defineCard, type CardDefinition } from "./define.js";
+import { defineCard, type CardDefinition, type StaticAbility } from "./define.js";
 
 /** The `{T}: Add {C}` ability every mana-producing basic land has. */
 export const manaTapAbility = (mana: Color): ActivatedAbility => ({
@@ -38,6 +38,16 @@ export const addManaAbility = (opts: {
   effect: { kind: "add-mana", mana: opts.mana, amount: opts.amount ?? 1 },
   resolve: null,
   text: opts.text,
+});
+
+/**
+ * The unconditional "~ enters the battlefield tapped" self-replacement most
+ * nonbasic lands carry (Grovewatch Hollow, the temples, the trilands).
+ */
+export const entersTappedStatic = (name: string): StaticAbility => ({
+  affects: { scope: "self" },
+  replacement: { event: "enters-battlefield", tapped: true },
+  text: `${name} enters the battlefield tapped.`,
 });
 
 const BASIC_LAND_MANA: Readonly<Record<string, Color>> = {

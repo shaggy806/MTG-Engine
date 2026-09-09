@@ -31,6 +31,7 @@ import _poolCinderElemental from "./pool/cinder-elemental.js";
 import _poolClone from "./pool/clone.js";
 import _poolCombatThresher from "./pool/combat-thresher.js";
 import _poolCommandTower from "./pool/command-tower.js";
+import _poolCommercialDistrict from "./pool/commercial-district.js";
 import _poolConsider from "./pool/consider.js";
 import _poolContentiousPlan from "./pool/contentious-plan.js";
 import _poolCoronationRite from "./pool/coronation-rite.js";
@@ -62,6 +63,7 @@ import _poolFleshbagMarauder from "./pool/fleshbag-marauder.js";
 import _poolFog from "./pool/fog.js";
 import _poolForest from "./pool/forest.js";
 import _poolFoundryInspector from "./pool/foundry-inspector.js";
+import _poolFrontierBivouac from "./pool/frontier-bivouac.js";
 import _poolFumeSpitter from "./pool/fume-spitter.js";
 import _poolGarrukWildspeaker from "./pool/garruk-wildspeaker.js";
 import _poolGiantGrowth from "./pool/giant-growth.js";
@@ -128,6 +130,7 @@ import _poolRagingGoblin from "./pool/raging-goblin.js";
 import _poolRaiseTheAlarm from "./pool/raise-the-alarm.js";
 import _poolRampagingBaloths from "./pool/rampaging-baloths.js";
 import _poolRampantGrowth from "./pool/rampant-growth.js";
+import _poolRaucousTheater from "./pool/raucous-theater.js";
 import _poolRendwinWardenOfTheGrove from "./pool/rendwin-warden-of-the-grove.js";
 import _poolRestInPeace from "./pool/rest-in-peace.js";
 import _poolRiftBolt from "./pool/rift-bolt.js";
@@ -143,6 +146,8 @@ import _poolSpectralSquire from "./pool/spectral-squire.js";
 import _poolSunderCharm from "./pool/sunder-charm.js";
 import _poolSunlitBastion from "./pool/sunlit-bastion.js";
 import _poolSwamp from "./pool/swamp.js";
+import _poolTempleOfAbandon from "./pool/temple-of-abandon.js";
+import _poolTempleOfMystery from "./pool/temple-of-mystery.js";
 import _poolTemurAscendancy from "./pool/temur-ascendancy.js";
 import _poolTerramorphicExpanse from "./pool/terramorphic-expanse.js";
 import _poolThaliaGuardianOfThraben from "./pool/thalia-guardian-of-thraben.js";
@@ -155,6 +160,7 @@ import _poolTranquilThicket from "./pool/tranquil-thicket.js";
 import _poolTurnToFrog from "./pool/turn-to-frog.js";
 import _poolTwincast from "./pool/twincast.js";
 import _poolTyphoidRats from "./pool/typhoid-rats.js";
+import _poolUndergroundMortuary from "./pool/underground-mortuary.js";
 import _poolUnderworldRageHound from "./pool/underworld-rage-hound.js";
 import _poolUnsummon from "./pool/unsummon.js";
 import _poolUreniOfTheUnwritten from "./pool/ureni-of-the-unwritten.js";
@@ -212,6 +218,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolClone,
   _poolCombatThresher,
   _poolCommandTower,
+  _poolCommercialDistrict,
   _poolConsider,
   _poolContentiousPlan,
   _poolCoronationRite,
@@ -243,6 +250,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolFog,
   _poolForest,
   _poolFoundryInspector,
+  _poolFrontierBivouac,
   _poolFumeSpitter,
   _poolGarrukWildspeaker,
   _poolGiantGrowth,
@@ -309,6 +317,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolRaiseTheAlarm,
   _poolRampagingBaloths,
   _poolRampantGrowth,
+  _poolRaucousTheater,
   _poolRendwinWardenOfTheGrove,
   _poolRestInPeace,
   _poolRiftBolt,
@@ -324,6 +333,8 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolSunderCharm,
   _poolSunlitBastion,
   _poolSwamp,
+  _poolTempleOfAbandon,
+  _poolTempleOfMystery,
   _poolTemurAscendancy,
   _poolTerramorphicExpanse,
   _poolThaliaGuardianOfThraben,
@@ -336,6 +347,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolTurnToFrog,
   _poolTwincast,
   _poolTyphoidRats,
+  _poolUndergroundMortuary,
   _poolUnderworldRageHound,
   _poolUnsummon,
   _poolUreniOfTheUnwritten,

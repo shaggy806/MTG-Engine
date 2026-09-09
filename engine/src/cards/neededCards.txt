@@ -28,7 +28,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Farseek                          FEATURE: OR-of-subtypes CardFilter ("Plains, Island, Swamp, or Mountain")
 [ ] 1 Flooded Grove                    FEATURE: filter land ({T}: {C}; hybrid activation cost for two colored)
 [x] 5 Forest
-[ ] 1 Frontier Bivouac                 FEATURE: fixed tri-color land (auto-payer only reads the first option)
+[+] 1 Frontier Bivouac
 [ ] 1 Frontier Siege                   FEATURE: mode-on-enter + recurring mana / attack trigger
 [ ] 1 Frostcliff Siege                 FEATURE: (mode-on-enter siege)
 [ ] 1 Ganax, Astral Hunter             FEATURE: mana on a trigger that doesn't empty between steps
@@ -75,8 +75,8 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Starfield Vocalist               FEATURE: "as long as it's your turn" hexproof anthem; constellation
 [ ] 1 Stomping Ground                  FEATURE: shock land (pay 2 life or enters tapped) + fixed dual
 [ ] 1 Sulfur Falls                     FEATURE: check land (fixed dual + conditional enters-tapped)
-[ ] 1 Temple of Abandon                FEATURE: fixed dual (ETB scry is fine on its own)
-[ ] 1 Temple of Mystery                FEATURE: fixed dual (ETB scry is fine on its own)
+[+] 1 Temple of Abandon
+[+] 1 Temple of Mystery
 [ ] 1 Temple of the Dragon Queen       FEATURE: restricted any-color mana
 [+] 1 Temur Ascendancy
 [ ] 1 Temur Battlecrier                FEATURE: (attack / cost-reduction trigger — text TBD)
@@ -101,7 +101,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Cabaretti Courtyard              FEATURE: SNC trikeland (enters tapped, pay-1-life tri-color mana)
 [ ] 1 Cinder Glade                     (dup — see Deck 1)
 [x] 1 Command Tower
-[ ] 1 Commercial District              FEATURE: fixed dual (ETB surveil is fine on its own)
+[+] 1 Commercial District
 [ ] 1 Conduit of Worlds                FEATURE: play lands/permanents from your graveyard
 [ ] 1 Craterhoof Behemoth              FEATURE: team pump where X = creature count (grant-trample-all alone is doable)
 [ ] 1 Crop Rotation                    FEATURE: additional cost "sacrifice a land"
@@ -142,7 +142,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Rain of Filth                    FEATURE: "sacrifice a land: add {B}" granted until end of turn (ritual)
 [ ] 1 Rakdos Charm                     FEATURE: targeted modal (graveyard exile / damage = power / destroy artifact)
 [ ] 1 Ramunap Excavator                FEATURE: "you may play lands from your graveyard"
-[ ] 1 Raucous Theater                  FEATURE: fixed dual (ETB surveil is fine on its own)
+[+] 1 Raucous Theater
 [ ] 1 Riveteers Overlook               FEATURE: SNC trikeland (pay-life tri-color mana)
 [ ] 1 Rydia, Summoner of Mist          FEATURE: (FF — text TBD)
 [ ] 1 Sabotender                       FEATURE: (FF — text TBD)
@@ -166,7 +166,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Toph, Hardheaded Teacher         FEATURE: (Avatar — text TBD)
 [ ] 1 Traveling Chocobo                FEATURE: landfall (multi-land ETB) Food / counters
 [ ] 1 Turbulent Fen                    FEATURE: fixed dual land (DFT)
-[ ] 1 Underground Mortuary             FEATURE: fixed dual (ETB surveil is fine on its own)
+[+] 1 Underground Mortuary
 [ ] 1 Valakut Exploration              FEATURE: landfall impulse-draw; end-step damage for unplayed cards
 [ ] 1 Veil of Summer                   FEATURE: conditional draw; "can't be countered"; hexproof-from-color
 [ ] 1 Verdant Catacombs                FEATURE: fetch land

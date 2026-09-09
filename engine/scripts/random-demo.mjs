@@ -79,6 +79,8 @@ const deckA = deck([
   ["Cryptolith Rite", 1],
   ["Chromatic Lantern", 1],
   ["Evolving Wilds", 2],
+  ["Temple of Abandon", 1],
+  ["Frontier Bivouac", 1],
 ]);
 // Kept deliberately lean (~50 cards) so the RandomController actually draws
 // and plays its threats — a bloated deck just stalls out and the fuzz only
@@ -200,6 +202,8 @@ const deckC = deck([
   ["Greed", 1],
   ["Arcane Signet", 1],
   ["Command Tower", 1],
+  ["Underground Mortuary", 1],
+  ["Raucous Theater", 1],
 ]);
 
 // All four seats' decks/commanders, in seating order — sliced down to

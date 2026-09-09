@@ -119,16 +119,24 @@ export interface SnapshotEnv {
 const ADVANCE_BUDGET = 200_000;
 const GENERIC_SPEND_ORDER = ["C", "W", "U", "B", "R", "G"] as const;
 
-/** One of `player`'s permanents that can produce mana right now, with the
- * output of a single activation flattened: `fixed` is the concrete mana it
- * always makes, `anyColor` is how many "one mana of any colour" units it adds
- * on top (Arcane Signet, Command Tower, Treasure). `sacrificeSelf` = using it
- * sacrifices the source (Treasure) rather than tapping it. */
+/** One possible output of a single mana-ability activation: `fixed` is the
+ * concrete mana it makes, `anyColor` is how many "one mana of any colour"
+ * units it adds on top (Arcane Signet, Command Tower, Treasure). */
+interface ManaOption {
+  readonly fixed: readonly ManaType[];
+  readonly anyColor: number;
+}
+
+/** One of `player`'s permanents that can produce mana right now. `options` is
+ * the set of alternative single-activation outputs — one tap picks one of them
+ * (rule 605.1a): a basic land has one option, a dual land offers "{R}" or
+ * "{G}", a Chromatic-Lantern'd basic offers its own colour or "any colour".
+ * `sacrificeSelf` = using it sacrifices the source (Treasure) rather than
+ * tapping it. */
 interface ManaSource {
   readonly id: ObjectId;
   readonly isLand: boolean;
-  readonly fixed: readonly ManaType[];
-  readonly anyColor: number;
+  readonly options: readonly ManaOption[];
   readonly sacrificeSelf: boolean;
 }
 
@@ -3044,7 +3052,7 @@ export class Game {
     const pool = this.state.players[player].manaPool;
     const cap =
       this.manaSources(player).reduce(
-        (n, s) => n + s.fixed.length + s.anyColor,
+        (n, s) => n + Game.sourceCapacity(s),
         0,
       ) + MANA_TYPES.reduce((n, t) => n + pool[t], 0);
     return this.withFace(cardId, face, () => {
@@ -3071,7 +3079,7 @@ export class Game {
     if (parsed.x === 0) return 0;
     const pool = this.state.players[player].manaPool;
     const cap =
-      this.manaSources(player).reduce((n, s) => n + s.fixed.length + s.anyColor, 0) +
+      this.manaSources(player).reduce((n, s) => n + Game.sourceCapacity(s), 0) +
       MANA_TYPES.reduce((n, t) => n + pool[t], 0);
     let best = 0;
     for (let k = 1; k <= cap; k += 1) {
@@ -3643,10 +3651,10 @@ export class Game {
    * that could cover more needs stays open longer. Ties keep battlefield order
    * (`Array.prototype.sort` is stable), so the choice is deterministic.
    *
-   * A permanent with more than one `{T}: Add` ability (a basic land under
-   * Chromatic Lantern, a creature under Cryptolith Rite) offers them as
-   * alternatives — one tap, one of them — so this reports the richest single
-   * option (an "any colour" one wins a tie).
+   * A permanent with more than one `{T}: Add` ability (a dual land, a basic
+   * under Chromatic Lantern, a creature under Cryptolith Rite) reports each as
+   * an alternative `ManaOption` — one tap picks one of them (rule 605.1a) and
+   * `planManaPayment` makes that choice per cost.
    */
   private manaSources(player: PlayerId): ManaSource[] {
     const out: ManaSource[] = [];
@@ -3657,14 +3665,12 @@ export class Game {
       if (hasLostAbilities(object)) continue; // layer 6 — no mana ability
 
       const def = this.registry.get(printedCardName(object));
-      // A permanent's `{T}: Add …` abilities (printed + any granted by
-      // Chromatic Lantern / Cryptolith Rite) are *alternatives* — one tap
-      // activates one of them (rule 605.1a). Pick the richest single option,
-      // preferring an "any colour" one on a tie (Lantern over a basic land's
-      // own colour).
-      let best: { fixed: ManaType[]; anyColor: number; sacrificeSelf: boolean } | null = null;
-      const output = (o: { fixed: ManaType[]; anyColor: number }): number =>
-        o.fixed.length + o.anyColor;
+      const options: ManaOption[] = [];
+      // `sacrificeSelf` is tracked per source, not per option: no real card
+      // mixes a tap-only and a sacrifice mana ability on one permanent.
+      let sacrificeSelf = false;
+      const key = (o: ManaOption): string =>
+        `${[...o.fixed].sort().join(",")}|${o.anyColor}`;
       for (const ability of this.effectiveActivated(id)) {
         if (
           !isManaAbility(ability) ||
@@ -3675,40 +3681,34 @@ export class Game {
         ) {
           continue;
         }
-        const option =
+        const option: ManaOption =
           ability.effect.mana === "any-color"
-            ? { fixed: [] as ManaType[], anyColor: ability.effect.amount }
+            ? { fixed: [], anyColor: ability.effect.amount }
             : {
                 fixed: Array<ManaType>(ability.effect.amount).fill(ability.effect.mana),
                 anyColor: 0,
               };
-        const sacrificeSelf = ability.cost.sacrifice === "self";
-        if (
-          best === null ||
-          output(option) > output(best) ||
-          (output(option) === output(best) && option.anyColor > best.anyColor)
-        ) {
-          best = { ...option, sacrificeSelf };
-        }
+        if (!options.some((o) => key(o) === key(option))) options.push(option);
+        if (ability.cost.sacrifice === "self") sacrificeSelf = true;
       }
-      if (best !== null) {
-        out.push({
-          id,
-          isLand: def.types.includes("land"),
-          fixed: best.fixed,
-          anyColor: best.anyColor,
-          sacrificeSelf: best.sacrificeSelf,
-        });
-      }
+      if (options.length === 0) continue;
+      out.push({ id, isLand: def.types.includes("land"), options, sacrificeSelf });
     }
     const flexibility = (s: ManaSource): number =>
-      new Set(s.fixed).size + (s.anyColor > 0 ? 5 : 0);
+      new Set(s.options.flatMap((o) => [...o.fixed])).size +
+      (s.options.some((o) => o.anyColor > 0) ? 5 : 0);
     out.sort((a, b) => {
       if (a.isLand !== b.isLand) return a.isLand ? -1 : 1;
       if (a.sacrificeSelf !== b.sacrificeSelf) return a.sacrificeSelf ? 1 : -1;
       return flexibility(a) - flexibility(b);
     });
     return out;
+  }
+
+  /** The most mana one activation of `s` can put in the pool (used only as a
+   * loose upper bound for `{X}` affordability). */
+  private static sourceCapacity(s: ManaSource): number {
+    return s.options.reduce((m, o) => Math.max(m, o.fixed.length + o.anyColor), 0);
   }
 
   /** True if `object` is a summoning-sick creature (so its `{T}` costs can't be paid). */
@@ -3854,12 +3854,33 @@ export class Game {
     }
     const tapped: Tapped[] = [];
     const isTapped = (id: ObjectId): boolean => tapped.some((t) => t.src.id === id);
-    const open = (src: ManaSource): Tapped => {
+    // Which of a source's alternative outputs to commit to as it's tapped:
+    // for a specific need, an option that makes that colour directly, else an
+    // "any colour" one; for a generic need (or no match), the richest option,
+    // spending the fewest "any colour" units so they stay available for a
+    // later coloured need.
+    const chooseOption = (src: ManaSource, want: ManaType | null): ManaOption => {
+      if (want !== null) {
+        const exact = src.options.find((o) => o.fixed.includes(want));
+        if (exact !== undefined) return exact;
+        if (want !== "C") {
+          const any = src.options.find((o) => o.anyColor > 0);
+          if (any !== undefined) return any;
+        }
+      }
+      return [...src.options].sort(
+        (a, b) =>
+          b.fixed.length + b.anyColor - (a.fixed.length + a.anyColor) ||
+          a.anyColor - b.anyColor,
+      )[0];
+    };
+    const open = (src: ManaSource, want: ManaType | null): Tapped => {
+      const opt = chooseOption(src, want);
       const t: Tapped = {
         src,
         produced: [],
-        freeFixed: [...src.fixed],
-        freeAny: src.anyColor,
+        freeFixed: [...opt.fixed],
+        freeAny: opt.anyColor,
       };
       tapped.push(t);
       return t;
@@ -3893,14 +3914,14 @@ export class Game {
     const coverSpecific = (m: ManaType): boolean => {
       for (const t of tapped) if (takeSpecific(t, m)) return true;
       const canMake = (s: ManaSource): boolean =>
-        s.fixed.includes(m) || (m !== "C" && s.anyColor > 0);
+        s.options.some((o) => o.fixed.includes(m) || (m !== "C" && o.anyColor > 0));
       const next = sources.find((s) => !isTapped(s.id) && canMake(s));
-      return next !== undefined && takeSpecific(open(next), m);
+      return next !== undefined && takeSpecific(open(next, m), m);
     };
     const coverGeneric = (): boolean => {
       for (const t of tapped) if (takeGeneric(t)) return true;
       const next = sources.find((s) => !isTapped(s.id));
-      return next !== undefined && takeGeneric(open(next));
+      return next !== undefined && takeGeneric(open(next, null));
     };
 
     for (const color of COLORS) {

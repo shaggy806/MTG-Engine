@@ -16,17 +16,16 @@ here is ordered by how many list cards it unblocks.
 
 ## P0 — Fixed multi-color mana sources  (~30 cards)
 
-**The single highest-value gap.** `Game.manaSources` collapses a permanent's several
-`{T}: Add` abilities into "the richest single option" (game.ts ~3651, added for
-Chromatic Lantern where that's correct). A real dual land offers **a choice of fixed
-outputs** and the payer picks per-cost. Need `ManaSource` to carry a list of alternative
-fixed outputs and `planManaPayment` to choose among them.
+**DONE (core).** `ManaSource` now carries `options: ManaOption[]` — the alternative
+single-activation outputs — and `planManaPayment` picks one per cost (`chooseOption`
+in game.ts). `manaSources` reports every `{T}: Add` ability as an option instead of
+collapsing to the richest one. Chromatic Lantern / Cryptolith Rite / Sol Ring behaviour
+is unchanged (one dominating option). Tests: `dual-lands.test.ts`.
 
-- Unlocks the plain taplands directly: **Frontier Bivouac**, **Temple of Abandon**,
-  **Temple of Mystery**, **Commercial District**, **Raucous Theater**,
-  **Underground Mortuary** (the ETB scry/surveil half already works — `scry`/`surveil`
-  are valid triggered-ability effects today).
-- Then layer these sub-features for the rest:
+- Shipped taplands: **Frontier Bivouac**, **Temple of Abandon**, **Temple of Mystery**,
+  **Commercial District**, **Raucous Theater**, **Underground Mortuary** (unconditional
+  enters-tapped via `entersTappedStatic` helper + ETB `scry`/`surveil` trigger).
+- Still to layer on for the rest of the ~30:
 
 | sub-feature | cards |
 | --- | --- |
