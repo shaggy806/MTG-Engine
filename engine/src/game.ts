@@ -977,80 +977,17 @@ export class Game {
 
       const ids: ObjectId[] = [];
       for (const name of cards) {
-        const def = this.registry.get(name); // validate the deck list up front
-        const id = this.mintObjectId();
-        this.state.objects[id] = {
-          id,
-          cardName: name,
-          ...(def.faces !== null ? { faces: def.faces, face: 0 } : {}),
-          owner: player,
-          controller: player,
-          zone: "library",
-          tapped: false,
-          damageMarked: 0,
-          markedByDeathtouch: false,
-          enteredBattlefieldOnTurn: null,
-          summoningSick: false,
-          loyaltyActivatedThisTurn: false,
-          targets: null,
-          attacking: null,
-          blocking: null,
-          blockedBy: [],
-          blocked: false,
-          kind: "card",
-          abilityKind: null,
-          sourceObjectId: null,
-          abilityIndex: null,
-          counters: {},
-          modifiers: [],
-          timestamp: 0,
-          isToken: false,
-          attachedTo: null,
-          isCommander: false,
-          xValue: null,
-          controlEndsAtCleanup: false,
-          copyOf: null,
-        };
-        ids.push(id);
+        ids.push(this.makeCardObject(name, player));
       }
       this.state.zones.perPlayer[player].library = shuffleLibrary
         ? shuffle(ids, this.rng)
         : ids;
 
       for (const commanderName of commanderNames) {
-        this.registry.get(commanderName); // validate up front
-        const id = this.mintObjectId();
-        this.state.objects[id] = {
-          id,
-          cardName: commanderName,
-          owner: player,
-          controller: player,
+        const id = this.makeCardObject(commanderName, player, {
           zone: "command",
-          tapped: false,
-          damageMarked: 0,
-          markedByDeathtouch: false,
-          enteredBattlefieldOnTurn: null,
-          summoningSick: false,
-          loyaltyActivatedThisTurn: false,
-          targets: null,
-          attacking: null,
-          blocking: null,
-          blockedBy: [],
-          blocked: false,
-          kind: "card",
-          abilityKind: null,
-          sourceObjectId: null,
-          abilityIndex: null,
-          counters: {},
-          modifiers: [],
-          timestamp: 0,
-          isToken: false,
-          attachedTo: null,
           isCommander: true,
-          xValue: null,
-          controlEndsAtCleanup: false,
-          copyOf: null,
-        };
+        });
         this.state.zones.shared.command.push(id);
       }
     }
@@ -1433,6 +1370,78 @@ export class Game {
     const n = this.state.nextObjectSeq;
     this.state.nextObjectSeq += 1;
     return asObjectId(`obj-${n}`);
+  }
+
+  /** Mint a fresh card {@link GameObject} in the given hidden zone (default
+   * `"library"`), registered in `state.objects` but not yet added to any zone
+   * list. The single canonical "new card object" shape — `setup` and
+   * {@link debugSpawn} both build cards through here. */
+  private makeCardObject(
+    name: string,
+    player: PlayerId,
+    opts: { zone?: ZoneType; isCommander?: boolean } = {},
+  ): ObjectId {
+    const def = this.registry.get(name); // validates the name up front
+    const id = this.mintObjectId();
+    this.state.objects[id] = {
+      id,
+      cardName: name,
+      ...(def.faces !== null ? { faces: def.faces, face: 0 } : {}),
+      owner: player,
+      controller: player,
+      zone: opts.zone ?? "library",
+      tapped: false,
+      damageMarked: 0,
+      markedByDeathtouch: false,
+      enteredBattlefieldOnTurn: null,
+      summoningSick: false,
+      loyaltyActivatedThisTurn: false,
+      targets: null,
+      attacking: null,
+      blocking: null,
+      blockedBy: [],
+      blocked: false,
+      kind: "card",
+      abilityKind: null,
+      sourceObjectId: null,
+      abilityIndex: null,
+      counters: {},
+      modifiers: [],
+      timestamp: 0,
+      isToken: false,
+      attachedTo: null,
+      isCommander: opts.isCommander ?? false,
+      xValue: null,
+      controlEndsAtCleanup: false,
+      copyOf: null,
+    };
+    return id;
+  }
+
+  /**
+   * **Debug / sandbox only** — put a card straight into a zone, bypassing
+   * drawing and casting. Used by `engine/src/sandbox.ts` (the card lab) and
+   * ad-hoc scripts; never part of normal play. A move to `"battlefield"` /
+   * `"graveyard"` / `"exile"` / `"hand"` goes through the real `moveObject`
+   * so ETB replacements, triggers, and Aura attachment all fire as usual.
+   * Returns the new object's id.
+   */
+  debugSpawn(
+    name: string,
+    player: PlayerId,
+    zone: ZoneType = "battlefield",
+    opts: { tapped?: boolean; summoningSick?: boolean } = {},
+  ): ObjectId {
+    const id = this.makeCardObject(name, player);
+    this.state.zones.perPlayer[player].library.unshift(id);
+    if (zone === "library") return id;
+    this.moveObject(id, zone);
+    const object = this.state.objects[id];
+    if (object !== undefined && object.zone === "battlefield") {
+      if (opts.tapped) object.tapped = true;
+      if (opts.summoningSick === false) object.summoningSick = false;
+    }
+    return id;
   }
 
   // --- turn / step progression --------------------------------------
