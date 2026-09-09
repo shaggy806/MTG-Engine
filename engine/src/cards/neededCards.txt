@@ -1,0 +1,181 @@
+Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEATURE tag / neededCards-features.md
+
+=== Deck 1 — Ureni of the Unwritten (Temur dragons) ===
+[ ] 1 An Offer You Can't Refuse        FEATURE: counter + "its controller creates N Treasures" (token for another player)
+[x] 1 Arcane Signet
+[ ] 1 Atarka, World Render             FEATURE: attacks-trigger auto-targeting the attacked player/planeswalker
+[ ] 1 Beast Within                     FEATURE: "its controller creates a 3/3" (token minted for the target's controller)
+[+] 1 Birds of Paradise
+[ ] 1 Blasphemous Act                  FEATURE: self cost reduction by a board count ("costs {1} less per creature")
+[ ] 1 Bloom Tender                     FEATURE: mana "for each color among permanents you control"
+[ ] 1 Bountiful Landscape              FEATURE: DFT reveal-a-basic-or-enters-tapped land (+ needs the fixed-dual mana work)
+[ ] 1 Broodcaller Scourge              FEATURE: (TDM dragon — text TBD; likely count-scaled / cast-trigger)
+[ ] 1 Carnelian Orb of Dragonkind      FEATURE: restricted mana ("spend only on Dragons")
+[ ] 1 Cinder Glade                     FEATURE: fixed dual land + conditional enters-tapped
+[x] 1 Command Tower
+[ ] 1 Cultivate                        FEATURE: multi-destination tutor (one to battlefield, one to hand)
+[ ] 1 Deceptive Frostkite             FEATURE: (TDM dragon — text TBD)
+[ ] 1 Defense of the Heart             FEATURE: intervening-if upkeep trigger + sacrifice-self + search creatures to battlefield
+[ ] 1 Dracogenesis                     FEATURE: (impulse / token generation — text TBD)
+[ ] 1 Dragon Tempest                   FEATURE: grant a keyword to "the creature that entered"; damage = Dragon count
+[ ] 1 Dragonhawk, Fate's Tempest       FEATURE: (TDM — damage divided / count-scaled)
+[ ] 1 Dragonlord Atarka                FEATURE: ETB "5 damage divided as you choose" among targets
+[+] 1 Dragonspeaker Shaman
+[ ] 1 Encroaching Dragonstorm          FEATURE: (search / cost — text TBD)
+[ ] 1 Essence Flux                     FEATURE: flicker (exile then return under your control)
+[ ] 1 Exotic Orchard                   FEATURE: mana = "a color a land an opponent controls could produce"
+[ ] 1 Fanatic of Rhonas                FEATURE: conditional mana ability + variable output
+[ ] 1 Farseek                          FEATURE: OR-of-subtypes CardFilter ("Plains, Island, Swamp, or Mountain")
+[ ] 1 Flooded Grove                    FEATURE: filter land ({T}: {C}; hybrid activation cost for two colored)
+[x] 5 Forest
+[ ] 1 Frontier Bivouac                 FEATURE: fixed tri-color land (auto-payer only reads the first option)
+[ ] 1 Frontier Siege                   FEATURE: mode-on-enter + recurring mana / attack trigger
+[ ] 1 Frostcliff Siege                 FEATURE: (mode-on-enter siege)
+[ ] 1 Ganax, Astral Hunter             FEATURE: mana on a trigger that doesn't empty between steps
+[ ] 1 Garruk's Uprising                FEATURE: intervening-if ETB draw (the anthem + power>=4 draw trigger alone are doable)
+[ ] 1 Genesis Ultimatum                FEATURE: reveal N, put permanents onto battlefield / rest to hand
+[ ] 1 Goldspan Dragon                  FEATURE: "becomes the target of a spell" trigger; static buffing Treasures
+[ ] 1 Haven of the Spirit Dragon       FEATURE: restricted mana + return-from-graveyard activated ability
+[ ] 1 Hellkite Courser                 FEATURE: put a commander onto the battlefield attacking
+[ ] 1 Hellkite Tyrant                  FEATURE: gain control of all of a player's artifacts; alternate win condition
+[+] 1 Heroic Intervention
+[ ] 1 Hinterland Harbor                FEATURE: fixed dual + conditional enters-tapped (check land)
+[ ] 1 Incinerator of the Guilty        FEATURE: (TDM dragon — likely damage + exile-on-death)
+[x] 3 Island
+[ ] 1 Karplusan Forest                 FEATURE: painland (fixed dual + "deals 1 damage to you" mana)
+[ ] 1 Kessig Wolf Run                  FEATURE: {X} in a modify-pt effect (land pump ability)
+[ ] 1 Kiora, Behemoth Beckoner         FEATURE: keyword grant conditioned on power>=4; untap target permanent
+[ ] 1 Kodama's Reach                   FEATURE: = Cultivate (multi-destination tutor)
+[ ] 1 Last March of the Ents           FEATURE: draw per creature you control; counter on each; can't be countered
+[+] 1 Lathliss, Dragon Queen           (+ token "Dragon Token" 5/5 flying)
+[ ] 1 Lightning Greaves                FEATURE: shroud keyword (equip {0} + haste are already fine)
+[x] 1 Llanowar Elves
+[ ] 1 Magmaquake                       FEATURE: damage-all excluding a keyword (no-flying) + hitting planeswalkers; {X} amount
+[ ] 1 Marang River Regent              FEATURE: conditional unblockable (ETB bounce alone is doable)
+[ ] 1 Miirym, Sentinel Wyrm            FEATURE: create a token that's a copy of a permanent
+[ ] 1 Mirror Room / Fractured Realm    FEATURE: Room cards (Duskmourn split-enchantment / door unlock)
+[ ] 1 Mossfire Valley                  FEATURE: filter land
+[ ] 1 Mosswort Bridge                  FEATURE: Hideaway
+[x] 6 Mountain
+[+] 1 Nature's Lore
+[ ] 1 Old Gnawbone                     FEATURE: create X tokens where X = a creature's power
+[ ] 1 Path of Ancestry                 FEATURE: mana within commander color identity + "used to cast a creature -> scry 1"
+[x] 1 Rampant Growth
+[ ] 1 Rapid Hybridization              FEATURE: "its controller creates a 3/3" (token for the target's controller)
+[ ] 1 Rhythm of the Wild               FEATURE: riot; "creature spells you control can't be countered"
+[ ] 1 Rockfall Vale                    FEATURE: conditional enters-tapped + fixed dual
+[ ] 1 Sakura-Tribe Elder              FEATURE: sacrifice-on-death tutor
+[ ] 1 Sarkhan, Soul Aflame             FEATURE: (planeswalker / dragon-copy — text TBD)
+[ ] 1 Scourge of Valkas                FEATURE: damage = number of Dragons you control (count-scaled)
+[ ] 1 Selvala, Heart of the Wilds      FEATURE: variable mana ability + power-gated draw
+[ ] 1 Sheltered Thicket                FEATURE: cycling; fixed dual land
+[ ] 1 Shivan Reef                      FEATURE: painland
+[ ] 1 Smuggler's Surprise              FEATURE: targeted "choose one or more" modal
+[x] 1 Sol Ring
+[ ] 1 Starfield Vocalist               FEATURE: "as long as it's your turn" hexproof anthem; constellation
+[ ] 1 Stomping Ground                  FEATURE: shock land (pay 2 life or enters tapped) + fixed dual
+[ ] 1 Sulfur Falls                     FEATURE: check land (fixed dual + conditional enters-tapped)
+[ ] 1 Temple of Abandon                FEATURE: fixed dual (ETB scry is fine on its own)
+[ ] 1 Temple of Mystery                FEATURE: fixed dual (ETB scry is fine on its own)
+[ ] 1 Temple of the Dragon Queen       FEATURE: restricted any-color mana
+[+] 1 Temur Ascendancy
+[ ] 1 Temur Battlecrier                FEATURE: (attack / cost-reduction trigger — text TBD)
+[ ] 1 Terror of the Peaks              FEATURE: damage = the entering creature's power
+[ ] 1 Ureni, the Song Unending         FEATURE: (TDM Ureni — big ETB/attacks value engine)
+[ ] 1 Urza's Incubator                 FEATURE: "choose a creature type as this enters" + type-scoped cost reduction
+[ ] 1 Utvara Hellkite                  FEATURE: filter on the attacks trigger ("a Dragon you control attacks")
+[ ] 1 Virtue of Knowledge              FEATURE: "triggered abilities trigger an additional time"; adventure
+[ ] 1 World War Hulk                    FEATURE: (Marvel — text TBD; likely trample + cost reduction + ETB)
+[ ] 1 Yavimaya Coast                    FEATURE: painland
+[x] 1 Ureni of the Unwritten           (commander — in pool)
+
+=== Deck 2 — Korvold / Lord Windgrace (Jund lands) ===
+[ ] 1 Aftermath Analyst                FEATURE: return all land cards from your graveyard to the battlefield
+[ ] 1 Amulet of Vigor                  FEATURE: "whenever a permanent enters tapped, untap it"
+[ ] 1 Beast Within                     (dup — see Deck 1)
+[ ] 1 Blasphemous Act                  (dup — see Deck 1)
+[ ] 1 Blood Crypt                      FEATURE: shock land
+[ ] 1 Bloodstained Mire                FEATURE: fetch land (pay 1 life, sac, search a typed nonbasic; OR-filter)
+[ ] 1 Bojuka Bog                       FEATURE: ETB "exile target player's graveyard"
+[ ] 1 Burgeoning                       FEATURE: "whenever an opponent plays a land, put a land from your hand onto the battlefield"
+[ ] 1 Cabaretti Courtyard              FEATURE: SNC trikeland (enters tapped, pay-1-life tri-color mana)
+[ ] 1 Cinder Glade                     (dup — see Deck 1)
+[x] 1 Command Tower
+[ ] 1 Commercial District              FEATURE: fixed dual (ETB surveil is fine on its own)
+[ ] 1 Conduit of Worlds                FEATURE: play lands/permanents from your graveyard
+[ ] 1 Craterhoof Behemoth              FEATURE: team pump where X = creature count (grant-trample-all alone is doable)
+[ ] 1 Crop Rotation                    FEATURE: additional cost "sacrifice a land"
+[ ] 1 Dryad of the Ilysian Grove       FEATURE: extra land drop; "lands are every basic land type"
+[ ] 1 Earthbender Ascension            FEATURE: (Avatar — counter-accumulation enchantment, text TBD)
+[ ] 1 Evendo, Waking Haven             FEATURE: (creature-land / DFC — text TBD)
+[x] 1 Evolving Wilds
+[ ] 1 Exploration Broodship            FEATURE: (EOE — spacecraft / crew — text TBD)
+[ ] 1 Fabled Passage                   FEATURE: fetch land with conditional untap
+[ ] 1 Famished Worldsire               FEATURE: (EOE — big creature, token generation — text TBD)
+[ ] 1 Festering Thicket                FEATURE: fixed dual land (DFT)
+[ ] 1 Finale of Devastation            FEATURE: {X} tutor to battlefield + team overrun at X>=10
+[x] 8 Forest
+[ ] 1 Gaze of Granite                  FEATURE: {X} in a destroy-all filter (mana value <= X)
+[ ] 1 Greater Gargadon                 FEATURE: "sacrifice a permanent: put a time counter on this" (suspend itself is supported)
+[ ] 1 Harrow                           FEATURE: additional cost "sacrifice a land" + two basics to battlefield
+[ ] 1 Horizon Explorer                 FEATURE: (lands-matter creature — text TBD)
+[ ] 1 Icetill Explorer                 FEATURE: (DFT snow / lands — text TBD)
+[ ] 1 Ignoble Hierarch                 FEATURE: exalted; fixed multi-color mana ability
+[+] 1 Infernal Grasp
+[ ] 1 Iridescent Vinelasher            FEATURE: landfall ping (damage on land ETB) + counter
+[ ] 1 Kavaron, Memorial World          FEATURE: (DFC land — text TBD)
+[ ] 1 Korvold, Fae-Cursed King         FEATURE: "whenever you sacrifice a permanent" trigger; "sacrifice another permanent" effect. NOTE: a broken stub file exists in pool/ — finish or delete it.
+[ ] 1 Lord Windgrace                   FEATURE: planeswalker — discard/draw, land recursion from graveyard, land destruction, Cat token emblem
+[ ] 1 Lotus Cobra                      FEATURE: landfall mana ("add one mana of any color")
+[ ] 1 Lotus Field                      FEATURE: ETB "sacrifice two lands"; "add three mana of any one color"
+[ ] 1 Manifold Key                     FEATURE: untap target artifact; grant unblockable
+[ ] 1 Mole Man, Moloid Master          FEATURE: (Marvel — text TBD)
+[ ] 1 Moraug, Fury of Akoum            FEATURE: landfall extra combat phase (after main)
+[x] 3 Mountain
+[ ] 1 Myriad Landscape                 FEATURE: search two basics "that share a land type"
+[ ] 1 Nahiri's Lithoforming            FEATURE: sacrifice any number of lands, draw / replay
+[ ] 1 Ob Nixilis, the Fallen           FEATURE: landfall "you may have target opponent lose 3 life" + counters
+[x] 1 Oracle of Mul Daya
+[ ] 1 Orcish Lumberjack                FEATURE: "sacrifice a Forest: add {R}{R}{R}" (sac a filtered noncreature as a cost)
+[ ] 1 Overgrown Tomb                   FEATURE: shock land
+[ ] 1 Princess Sarah                   FEATURE: (FF — text TBD)
+[ ] 1 Rain of Filth                    FEATURE: "sacrifice a land: add {B}" granted until end of turn (ritual)
+[ ] 1 Rakdos Charm                     FEATURE: targeted modal (graveyard exile / damage = power / destroy artifact)
+[ ] 1 Ramunap Excavator                FEATURE: "you may play lands from your graveyard"
+[ ] 1 Raucous Theater                  FEATURE: fixed dual (ETB surveil is fine on its own)
+[ ] 1 Riveteers Overlook               FEATURE: SNC trikeland (pay-life tri-color mana)
+[ ] 1 Rydia, Summoner of Mist          FEATURE: (FF — text TBD)
+[ ] 1 Sabotender                       FEATURE: (FF — text TBD)
+[ ] 1 Saw in Half                      FEATURE: "create two tokens that are copies of it, except 1/1"
+[ ] 1 Scute Swarm                      FEATURE: landfall "create a token that's a copy of this"
+[ ] 1 Shifting Woodland                FEATURE: "becomes a copy of target permanent card in your graveyard"
+[ ] 1 Six                              FEATURE: forests-matter; play lands from graveyard; regeneration-ish
+[x] 1 Sol Ring
+[ ] 1 Spelunking                       FEATURE: "lands you control enter untapped" replacement
+[ ] 1 Splendid Reclamation             FEATURE: return all land cards from your graveyard to the battlefield
+[ ] 1 Springheart Nantuko              FEATURE: landfall + bestow
+[ ] 1 Stomping Ground                  (dup — see Deck 1)
+[ ] 1 Summon: Titan                    FEATURE: FF "Summon" saga-creature (chapter counters on a creature)
+[x] 5 Swamp
+[ ] 1 Sylvan Safekeeper                FEATURE: "sacrifice a land: target creature gains hexproof"
+[ ] 1 Tannuk, Memorial Ensign          FEATURE: (DFC / lands-matter — text TBD)
+[ ] 1 Tear Asunder                     FEATURE: kicker
+[+] 1 Terramorphic Expanse
+[ ] 1 The Gitrog Monster               FEATURE: extra land drop; "sacrifice a land or discard" upkeep; draw on a land -> graveyard
+[ ] 1 Tireless Provisioner             FEATURE: landfall Treasure/Food; sac-for-value
+[ ] 1 Toph, Hardheaded Teacher         FEATURE: (Avatar — text TBD)
+[ ] 1 Traveling Chocobo                FEATURE: landfall (multi-land ETB) Food / counters
+[ ] 1 Turbulent Fen                    FEATURE: fixed dual land (DFT)
+[ ] 1 Underground Mortuary             FEATURE: fixed dual (ETB surveil is fine on its own)
+[ ] 1 Valakut Exploration              FEATURE: landfall impulse-draw; end-step damage for unplayed cards
+[ ] 1 Veil of Summer                   FEATURE: conditional draw; "can't be countered"; hexproof-from-color
+[ ] 1 Verdant Catacombs                FEATURE: fetch land
+[ ] 1 Vernal Fen                       FEATURE: fixed dual land (DFT)
+[ ] 1 Walk-In Closet / Forgotten Cellar FEATURE: Room card
+[ ] 1 Will of the Sultai               FEATURE: (modal / "free if you control a permanent of each type" — text TBD)
+[ ] 1 Wooded Foothills                 FEATURE: fetch land
+[ ] 1 World Shaper                     FEATURE: mill on attack; return all lands from graveyard on death
+[ ] 1 Zuran Orb                        FEATURE: "sacrifice a land: gain 2 life"
+
+=== Standalone ===
+[ ] 1 Hearthhull, the Worldseed        FEATURE: (EOE commander — mill + return a random permanent card from graveyard; landfall)

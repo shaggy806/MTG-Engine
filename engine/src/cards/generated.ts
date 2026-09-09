@@ -14,6 +14,7 @@ import _poolArdentRecruit from "./pool/ardent-recruit.js";
 import _poolArtificialEvolution from "./pool/artificial-evolution.js";
 import _poolAshmarkMarduVanguard from "./pool/ashmark-mardu-vanguard.js";
 import _poolBeholdTheMultiverse from "./pool/behold-the-multiverse.js";
+import _poolBirdsOfParadise from "./pool/birds-of-paradise.js";
 import _poolBlaze from "./pool/blaze.js";
 import _poolBlightning from "./pool/blightning.js";
 import _poolBlinkmothNexus from "./pool/blinkmoth-nexus.js";
@@ -45,6 +46,7 @@ import _poolDiabolicEdict from "./pool/diabolic-edict.js";
 import _poolDisenchant from "./pool/disenchant.js";
 import _poolDoomBlade from "./pool/doom-blade.js";
 import _poolDoublingSeason from "./pool/doubling-season.js";
+import _poolDragonspeakerShaman from "./pool/dragonspeaker-shaman.js";
 import _poolDuskwoodVerdict from "./pool/duskwood-verdict.js";
 import _poolElvishVisionary from "./pool/elvish-visionary.js";
 import _poolEmberDart from "./pool/ember-dart.js";
@@ -77,15 +79,19 @@ import _poolGrizzlyBears from "./pool/grizzly-bears.js";
 import _poolGrovewatchElder from "./pool/grovewatch-elder.js";
 import _poolGrovewatchHollow from "./pool/grovewatch-hollow.js";
 import _poolGutShot from "./pool/gut-shot.js";
+import _poolHeroicIntervention from "./pool/heroic-intervention.js";
 import _poolHillGiant from "./pool/hill-giant.js";
 import _poolHistoryOfBenalia from "./pool/history-of-benalia.js";
 import _poolHolyStrength from "./pool/holy-strength.js";
 import _poolHypnoticSpecter from "./pool/hypnotic-specter.js";
+import _poolInfernalGrasp from "./pool/infernal-grasp.js";
 import _poolInvisibleStalker from "./pool/invisible-stalker.js";
 import _poolIsland from "./pool/island.js";
 import _poolJuggernaut from "./pool/juggernaut.js";
 import _poolJump from "./pool/jump.js";
 import _poolKirdApe from "./pool/kird-ape.js";
+import _poolKorvoldFaeCursedKing from "./pool/korvold-fae-cursed-king.js";
+import _poolLathlissDragonQueen from "./pool/lathliss-dragon-queen.js";
 import _poolLevitation from "./pool/levitation.js";
 import _poolLightningBolt from "./pool/lightning-bolt.js";
 import _poolLlanowarElves from "./pool/llanowar-elves.js";
@@ -103,6 +109,7 @@ import _poolMortivore from "./pool/mortivore.js";
 import _poolMossbackDragon from "./pool/mossback-dragon.js";
 import _poolMountain from "./pool/mountain.js";
 import _poolNaturalize from "./pool/naturalize.js";
+import _poolNaturesLore from "./pool/natures-lore.js";
 import _poolNegate from "./pool/negate.js";
 import _poolNightfallCultist from "./pool/nightfall-cultist.js";
 import _poolNotionThief from "./pool/notion-thief.js";
@@ -136,6 +143,8 @@ import _poolSpectralSquire from "./pool/spectral-squire.js";
 import _poolSunderCharm from "./pool/sunder-charm.js";
 import _poolSunlitBastion from "./pool/sunlit-bastion.js";
 import _poolSwamp from "./pool/swamp.js";
+import _poolTemurAscendancy from "./pool/temur-ascendancy.js";
+import _poolTerramorphicExpanse from "./pool/terramorphic-expanse.js";
 import _poolThaliaGuardianOfThraben from "./pool/thalia-guardian-of-thraben.js";
 import _poolThievingMagpie from "./pool/thieving-magpie.js";
 import _poolThornOfTheBlackRose from "./pool/thorn-of-the-black-rose.js";
@@ -165,6 +174,7 @@ import _poolYulraKindledSpark from "./pool/yulra-kindled-spark.js";
 import _poolZulaportCutthroat from "./pool/zulaport-cutthroat.js";
 import _tokensBeastToken33 from "./tokens/beast-token-3-3.js";
 import _tokensBeastToken from "./tokens/beast-token.js";
+import _tokensDragonToken55 from "./tokens/dragon-token-5-5.js";
 import _tokensElementalToken from "./tokens/elemental-token.js";
 import _tokensKnightToken from "./tokens/knight-token.js";
 import _tokensPhyrexianWurmDeathtouch from "./tokens/phyrexian-wurm-deathtouch.js";
@@ -185,6 +195,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolArtificialEvolution,
   _poolAshmarkMarduVanguard,
   _poolBeholdTheMultiverse,
+  _poolBirdsOfParadise,
   _poolBlaze,
   _poolBlightning,
   _poolBlinkmothNexus,
@@ -216,6 +227,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolDisenchant,
   _poolDoomBlade,
   _poolDoublingSeason,
+  _poolDragonspeakerShaman,
   _poolDuskwoodVerdict,
   _poolElvishVisionary,
   _poolEmberDart,
@@ -248,15 +260,19 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolGrovewatchElder,
   _poolGrovewatchHollow,
   _poolGutShot,
+  _poolHeroicIntervention,
   _poolHillGiant,
   _poolHistoryOfBenalia,
   _poolHolyStrength,
   _poolHypnoticSpecter,
+  _poolInfernalGrasp,
   _poolInvisibleStalker,
   _poolIsland,
   _poolJuggernaut,
   _poolJump,
   _poolKirdApe,
+  _poolKorvoldFaeCursedKing,
+  _poolLathlissDragonQueen,
   _poolLevitation,
   _poolLightningBolt,
   _poolLlanowarElves,
@@ -274,6 +290,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolMossbackDragon,
   _poolMountain,
   _poolNaturalize,
+  _poolNaturesLore,
   _poolNegate,
   _poolNightfallCultist,
   _poolNotionThief,
@@ -307,6 +324,8 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolSunderCharm,
   _poolSunlitBastion,
   _poolSwamp,
+  _poolTemurAscendancy,
+  _poolTerramorphicExpanse,
   _poolThaliaGuardianOfThraben,
   _poolThievingMagpie,
   _poolThornOfTheBlackRose,
@@ -336,6 +355,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolZulaportCutthroat,
   _tokensBeastToken33,
   _tokensBeastToken,
+  _tokensDragonToken55,
   _tokensElementalToken,
   _tokensKnightToken,
   _tokensPhyrexianWurmDeathtouch,
