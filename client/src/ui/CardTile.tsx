@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { VisibleObject } from 'engine'
 import { Symbols } from './Symbols.tsx'
 import { costColor } from './symbols.ts'
+import { resolveArtUrl } from './art.ts'
 
 export interface CardTileProps {
   readonly obj: VisibleObject
@@ -41,13 +42,7 @@ const KEYWORD_LABEL: Record<string, string> = {
   flash: 'Flash',
 }
 
-/** Scryfall serves art crops for real card names straight from this URL. */
-const artUrl = (name: string): string =>
-  `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(
-    name,
-  )}&format=image&version=art_crop`
-
-/** Card names whose art 404'd this session — don't re-request on every remount. */
+/** Art URLs that 404'd this session — don't re-request on every remount. */
 const artMisses = new Set<string>()
 
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1)
@@ -85,7 +80,8 @@ export function CardTile({
   // A Clone renders the *copied* card's face; a multi-face card renders its up
   // face (`faceName`); `cardName` stays the true identity for the log.
   const face = obj.copyOf ?? obj.faceName ?? obj.cardName
-  const [artFailed, setArtFailed] = useState(() => artMisses.has(face))
+  const artSrc = resolveArtUrl(obj.art, face)
+  const [artFailed, setArtFailed] = useState(() => artMisses.has(artSrc))
   const isCreature = obj.power !== null && obj.toughness !== null
   const isPlaneswalker = obj.loyalty !== null
   const counters = Object.entries(obj.counters).filter(
@@ -142,11 +138,11 @@ export function CardTile({
       <span className={`ct-art tint-${tint}`}>
         {!artFailed ? (
           <img
-            src={artUrl(face)}
+            src={artSrc}
             alt=""
             loading="lazy"
             onError={() => {
-              artMisses.add(face)
+              artMisses.add(artSrc)
               setArtFailed(true)
             }}
           />
