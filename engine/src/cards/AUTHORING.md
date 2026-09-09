@@ -259,7 +259,7 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 
 | kind | fields |
 | --- | --- |
-| `create-token` | `token` (a registry name), `count` |
+| `create-token` | `token` (a registry name), `count`, `who?: "you" \| "target-controller"` (Beast Within — under `targets[0]`'s controller) |
 | `attach` | `target` (Equip-style) |
 | `transform` | `target` (`"source"` \| slot) |
 | `day-night` | `value: "day" \| "night"` |

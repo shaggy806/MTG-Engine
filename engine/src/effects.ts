@@ -290,6 +290,12 @@ export type EffectSpec =
       /** Name of a token definition in the {@link CardRegistry}. */
       readonly token: string;
       readonly count: EffectAmount;
+      /** Who the tokens are created under the control of — the effect's
+       * controller (default), or the controller of `targets[0]` (Beast Within:
+       * "its controller creates a 3/3 Beast"; An Offer You Can't Refuse: the
+       * countered spell's controller). Rule 111.11 — for a destroyed /
+       * countered target this is its last-known controller. */
+      readonly who?: "you" | "target-controller";
     }
   | {
       /** Attach the source (an Aura/Equipment) to a target permanent. */
@@ -532,7 +538,11 @@ export interface EffectApi {
   /** Begin a text-changing effect — see the `"change-text"` {@link EffectSpec}. */
   changeText(target: TargetRef): void;
   /** Create `count` copies of the named token, controlled by `ctx.controller`. */
-  createToken(token: string, count: number): void;
+  createToken(
+    token: string,
+    count: number,
+    who?: "you" | "target-controller",
+  ): void;
   /** Attach `ctx.source` (an Aura/Equipment) to `target`. */
   attach(target: TargetRef): void;
   /** Transform `target` (a transforming DFC permanent) — see the `"transform"`
@@ -814,7 +824,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       return;
     }
     case "create-token":
-      ctx.createToken(spec.token, amountValue(spec.count, ctx));
+      ctx.createToken(spec.token, amountValue(spec.count, ctx), spec.who);
       return;
     case "attach": {
       const target = ctx.targets[spec.target];

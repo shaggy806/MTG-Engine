@@ -11,7 +11,8 @@ Status:
 | **added — P3 (landfall payloads: modal token / colour, `"opponent"` target)** | 3 — **Tireless Provisioner**, **Lotus Cobra**, **Iridescent Vinelasher** |
 | **added — P4a (`EffectAmount.countOf`)** | 2 — **Scourge of Valkas**, **Craterhoof Behemoth** |
 | **added — P4b (`EffectAmount.triggerValue`)** | 2 — **Terror of the Peaks**, **Old Gnawbone** |
-| blocked on an engine feature | ~83 |
+| **added — P5a (`create-token` `who: "target-controller"`)** | 3 — **Beast Within**, **Rapid Hybridization**, **An Offer You Can't Refuse** |
+| blocked on an engine feature | ~80 |
 
 † Rootbound Crag isn't on the list (Rockfall Vale is the list's R/G land) — added as the check-land cycle-mate.
 
@@ -161,8 +162,12 @@ Landfall *triggers* already work (`enters-battlefield`, `filter: { type: "land" 
 
 ## P5 — Tokens for another player / token copies  (~6 cards)
 
-- `create-token` minted under **the target's controller** — **Beast Within**,
-  **Rapid Hybridization**, **An Offer You Can't Refuse**.
+- **DONE — `create-token` gains `who?: "you" | "target-controller"`** — the tokens are minted
+  under the controller of `targets[0]` (a permanent or a spell on the stack), reading its
+  *current* `controller` at that point (rule 111.11 — for a destroyed/countered target that's
+  its last-known controller, which `moveObject` has already reverted to owner; the stolen-target
+  corner is imperfect). Shipped **Beast Within**, **Rapid Hybridization** (+ a `Frog Lizard
+  Token`), **An Offer You Can't Refuse**. `token-for-target.test.ts`.
 - "a token that's a copy of [permanent]" — **Miirym**, **Scute Swarm**, **Saw in Half**
   ("copies, except 1/1"). The Clone machinery (`copyOf`) exists on `GameObject`; needs a
   `create-token-copy` effect that mints one carrying `copyOf`.

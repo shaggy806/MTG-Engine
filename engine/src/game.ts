@@ -4874,7 +4874,21 @@ export class Game {
       },
       animate: (target, opts) => this.animate(target, opts),
       changeText: (target) => this.beginTextChoice(controller, source, target),
-      createToken: (token, count) => this.createTokens(controller, token, count),
+      createToken: (token, count, who) => {
+        let tokenController = controller;
+        if (who === "target-controller") {
+          const ref = targets[0];
+          if (ref?.kind === "player") tokenController = ref.player;
+          else if (ref?.kind === "object" && this.state.objects[ref.object] !== undefined) {
+            // Rule 111.11 — a destroyed/countered target's *last-known*
+            // controller. `moveObject` has already reverted `controller` to
+            // `owner` for a permanent that left the battlefield; for a spell
+            // controller === owner anyway.
+            tokenController = this.state.objects[ref.object].controller;
+          }
+        }
+        this.createTokens(tokenController, token, count);
+      },
       attach: (target) => this.attachPermanent(source, target),
       transform: (target) => {
         if (target.kind === "object") this.transformPermanent(target.object);

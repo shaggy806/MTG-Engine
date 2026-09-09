@@ -8,12 +8,14 @@ import _poolAftermathAnalyst from "./pool/aftermath-analyst.js";
 import _poolAggravatedAssault from "./pool/aggravated-assault.js";
 import _poolAjanisPridemate from "./pool/ajanis-pridemate.js";
 import _poolAmbushViper from "./pool/ambush-viper.js";
+import _poolAnOfferYouCantRefuse from "./pool/an-offer-you-cant-refuse.js";
 import _poolAnafenzaTheForemost from "./pool/anafenza-the-foremost.js";
 import _poolAngelicEdict from "./pool/angelic-edict.js";
 import _poolArcaneSignet from "./pool/arcane-signet.js";
 import _poolArdentRecruit from "./pool/ardent-recruit.js";
 import _poolArtificialEvolution from "./pool/artificial-evolution.js";
 import _poolAshmarkMarduVanguard from "./pool/ashmark-mardu-vanguard.js";
+import _poolBeastWithin from "./pool/beast-within.js";
 import _poolBeholdTheMultiverse from "./pool/behold-the-multiverse.js";
 import _poolBirdsOfParadise from "./pool/birds-of-paradise.js";
 import _poolBlaze from "./pool/blaze.js";
@@ -144,6 +146,7 @@ import _poolRaiseTheAlarm from "./pool/raise-the-alarm.js";
 import _poolRampagingBaloths from "./pool/rampaging-baloths.js";
 import _poolRampantGrowth from "./pool/rampant-growth.js";
 import _poolRamunapExcavator from "./pool/ramunap-excavator.js";
+import _poolRapidHybridization from "./pool/rapid-hybridization.js";
 import _poolRaucousTheater from "./pool/raucous-theater.js";
 import _poolRendwinWardenOfTheGrove from "./pool/rendwin-warden-of-the-grove.js";
 import _poolRestInPeace from "./pool/rest-in-peace.js";
@@ -212,6 +215,7 @@ import _tokensBeastToken from "./tokens/beast-token.js";
 import _tokensDragonToken55 from "./tokens/dragon-token-5-5.js";
 import _tokensElementalToken from "./tokens/elemental-token.js";
 import _tokensFoodToken from "./tokens/food-token.js";
+import _tokensFrogLizardToken from "./tokens/frog-lizard-token.js";
 import _tokensKnightToken from "./tokens/knight-token.js";
 import _tokensPhyrexianWurmDeathtouch from "./tokens/phyrexian-wurm-deathtouch.js";
 import _tokensPhyrexianWurmLifelink from "./tokens/phyrexian-wurm-lifelink.js";
@@ -225,12 +229,14 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolAggravatedAssault,
   _poolAjanisPridemate,
   _poolAmbushViper,
+  _poolAnOfferYouCantRefuse,
   _poolAnafenzaTheForemost,
   _poolAngelicEdict,
   _poolArcaneSignet,
   _poolArdentRecruit,
   _poolArtificialEvolution,
   _poolAshmarkMarduVanguard,
+  _poolBeastWithin,
   _poolBeholdTheMultiverse,
   _poolBirdsOfParadise,
   _poolBlaze,
@@ -361,6 +367,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolRampagingBaloths,
   _poolRampantGrowth,
   _poolRamunapExcavator,
+  _poolRapidHybridization,
   _poolRaucousTheater,
   _poolRendwinWardenOfTheGrove,
   _poolRestInPeace,
@@ -429,6 +436,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _tokensDragonToken55,
   _tokensElementalToken,
   _tokensFoodToken,
+  _tokensFrogLizardToken,
   _tokensKnightToken,
   _tokensPhyrexianWurmDeathtouch,
   _tokensPhyrexianWurmLifelink,

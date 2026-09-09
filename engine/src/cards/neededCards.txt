@@ -1,10 +1,10 @@
 Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEATURE tag / neededCards-features.md
 
 === Deck 1 — Ureni of the Unwritten (Temur dragons) ===
-[ ] 1 An Offer You Can't Refuse        FEATURE: counter + "its controller creates N Treasures" (token for another player)
+[+] 1 An Offer You Can't Refuse
 [x] 1 Arcane Signet
 [ ] 1 Atarka, World Render             FEATURE: attacks-trigger auto-targeting the attacked player/planeswalker
-[ ] 1 Beast Within                     FEATURE: "its controller creates a 3/3" (token minted for the target's controller)
+[+] 1 Beast Within
 [+] 1 Birds of Paradise
 [ ] 1 Blasphemous Act                  FEATURE: self cost reduction by a board count ("costs {1} less per creature")
 [ ] 1 Bloom Tender                     FEATURE: mana "for each color among permanents you control"
@@ -61,7 +61,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Old Gnawbone
 [ ] 1 Path of Ancestry                 FEATURE: mana within commander color identity + "used to cast a creature -> scry 1"
 [x] 1 Rampant Growth
-[ ] 1 Rapid Hybridization              FEATURE: "its controller creates a 3/3" (token for the target's controller)
+[+] 1 Rapid Hybridization
 [ ] 1 Rhythm of the Wild               FEATURE: riot; "creature spells you control can't be countered"
 [+] 1 Rockfall Vale
 [ ] 1 Sakura-Tribe Elder              FEATURE: sacrifice-on-death tutor
@@ -92,7 +92,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 === Deck 2 — Korvold / Lord Windgrace (Jund lands) ===
 [+] 1 Aftermath Analyst
 [ ] 1 Amulet of Vigor                  FEATURE: "whenever a permanent enters tapped, untap it"
-[ ] 1 Beast Within                     (dup — see Deck 1)
+[+] 1 Beast Within
 [ ] 1 Blasphemous Act                  (dup — see Deck 1)
 [+] 1 Blood Crypt
 [+] 1 Bloodstained Mire
