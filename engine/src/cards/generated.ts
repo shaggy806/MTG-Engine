@@ -95,6 +95,7 @@ import _poolHolyStrength from "./pool/holy-strength.js";
 import _poolHypnoticSpecter from "./pool/hypnotic-specter.js";
 import _poolInfernalGrasp from "./pool/infernal-grasp.js";
 import _poolInvisibleStalker from "./pool/invisible-stalker.js";
+import _poolIridescentVinelasher from "./pool/iridescent-vinelasher.js";
 import _poolIsland from "./pool/island.js";
 import _poolJuggernaut from "./pool/juggernaut.js";
 import _poolJump from "./pool/jump.js";
@@ -107,6 +108,7 @@ import _poolLightningBolt from "./pool/lightning-bolt.js";
 import _poolLlanowarElves from "./pool/llanowar-elves.js";
 import _poolLongtuskCub from "./pool/longtusk-cub.js";
 import _poolLordOfExtinction from "./pool/lord-of-extinction.js";
+import _poolLotusCobra from "./pool/lotus-cobra.js";
 import _poolLure from "./pool/lure.js";
 import _poolManOWar from "./pool/man-o-war.js";
 import _poolMindControl from "./pool/mind-control.js";
@@ -173,6 +175,7 @@ import _poolThievingMagpie from "./pool/thieving-magpie.js";
 import _poolThornOfTheBlackRose from "./pool/thorn-of-the-black-rose.js";
 import _poolThreaten from "./pool/threaten.js";
 import _poolTimeWarp from "./pool/time-warp.js";
+import _poolTirelessProvisioner from "./pool/tireless-provisioner.js";
 import _poolTomeScour from "./pool/tome-scour.js";
 import _poolTranquilThicket from "./pool/tranquil-thicket.js";
 import _poolTurnToFrog from "./pool/turn-to-frog.js";
@@ -204,6 +207,7 @@ import _tokensBeastToken33 from "./tokens/beast-token-3-3.js";
 import _tokensBeastToken from "./tokens/beast-token.js";
 import _tokensDragonToken55 from "./tokens/dragon-token-5-5.js";
 import _tokensElementalToken from "./tokens/elemental-token.js";
+import _tokensFoodToken from "./tokens/food-token.js";
 import _tokensKnightToken from "./tokens/knight-token.js";
 import _tokensPhyrexianWurmDeathtouch from "./tokens/phyrexian-wurm-deathtouch.js";
 import _tokensPhyrexianWurmLifelink from "./tokens/phyrexian-wurm-lifelink.js";
@@ -304,6 +308,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolHypnoticSpecter,
   _poolInfernalGrasp,
   _poolInvisibleStalker,
+  _poolIridescentVinelasher,
   _poolIsland,
   _poolJuggernaut,
   _poolJump,
@@ -316,6 +321,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolLlanowarElves,
   _poolLongtuskCub,
   _poolLordOfExtinction,
+  _poolLotusCobra,
   _poolLure,
   _poolManOWar,
   _poolMindControl,
@@ -382,6 +388,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolThornOfTheBlackRose,
   _poolThreaten,
   _poolTimeWarp,
+  _poolTirelessProvisioner,
   _poolTomeScour,
   _poolTranquilThicket,
   _poolTurnToFrog,
@@ -413,6 +420,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _tokensBeastToken,
   _tokensDragonToken55,
   _tokensElementalToken,
+  _tokensFoodToken,
   _tokensKnightToken,
   _tokensPhyrexianWurmDeathtouch,
   _tokensPhyrexianWurmLifelink,

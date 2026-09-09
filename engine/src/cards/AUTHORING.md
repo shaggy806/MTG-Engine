@@ -303,7 +303,8 @@ Abilities (`activated` / `triggered`) carry their own `targets`. `TargetSpec`
 values (`target.ts`):
 
 `"any-target"`, `"creature"`, `"nonblack-creature"`, `"creature-you-control"`,
-`"creature-an-opponent-controls"`, `"player"`, `"creature-or-player"`,
+`"creature-an-opponent-controls"`, `"player"`, `"opponent"` (a player other
+than the chooser), `"creature-or-player"`,
 `"permanent"`, `"nonland-permanent"`, `"land"`, `"artifact-or-enchantment"`,
 `"creature-or-enchantment"`, `"spell"`, `"creature-spell"`,
 `"noncreature-spell"`, `"instant-or-sorcery-spell"`,

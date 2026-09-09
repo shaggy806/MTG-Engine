@@ -16,6 +16,9 @@ export type TargetSpec =
   | "creature-you-control"
   | "creature-an-opponent-controls"
   | "player"
+  /** A player other than the one choosing the target ("target opponent" —
+   * Iridescent Vinelasher). */
+  | "opponent"
   | "creature-or-player"
   | "permanent"
   | "nonland-permanent"

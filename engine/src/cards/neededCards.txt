@@ -122,11 +122,11 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Icetill Explorer                 FEATURE: (DFT snow / lands — text TBD)
 [ ] 1 Ignoble Hierarch                 FEATURE: exalted; fixed multi-color mana ability
 [+] 1 Infernal Grasp
-[ ] 1 Iridescent Vinelasher            FEATURE: landfall ping (damage on land ETB) + counter
+[+] 1 Iridescent Vinelasher
 [ ] 1 Kavaron, Memorial World          FEATURE: (DFC land — text TBD)
 [ ] 1 Korvold, Fae-Cursed King         FEATURE: "whenever you sacrifice a permanent" trigger; "sacrifice another permanent" effect. NOTE: a broken stub file exists in pool/ — finish or delete it.
 [ ] 1 Lord Windgrace                   FEATURE: planeswalker — discard/draw, land recursion from graveyard, land destruction, Cat token emblem
-[ ] 1 Lotus Cobra                      FEATURE: landfall mana ("add one mana of any color")
+[+] 1 Lotus Cobra
 [ ] 1 Lotus Field                      FEATURE: ETB "sacrifice two lands"; "add three mana of any one color"
 [ ] 1 Manifold Key                     FEATURE: untap target artifact; grant unblockable
 [ ] 1 Mole Man, Moloid Master          FEATURE: (Marvel — text TBD)
@@ -162,7 +162,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Tear Asunder                     FEATURE: kicker
 [+] 1 Terramorphic Expanse
 [ ] 1 The Gitrog Monster               FEATURE: extra land drop; "sacrifice a land or discard" upkeep; draw on a land -> graveyard
-[ ] 1 Tireless Provisioner             FEATURE: landfall Treasure/Food; sac-for-value
+[+] 1 Tireless Provisioner
 [ ] 1 Toph, Hardheaded Teacher         FEATURE: (Avatar — text TBD)
 [ ] 1 Traveling Chocobo                FEATURE: landfall (multi-land ETB) Food / counters
 [ ] 1 Turbulent Fen                    FEATURE: fixed dual land (DFT)

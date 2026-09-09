@@ -8,7 +8,8 @@ Status:
 | **added — first pass** | 8 (Birds of Paradise, Nature's Lore, Infernal Grasp, Heroic Intervention, Dragonspeaker Shaman, Lathliss + Dragon Token, Temur Ascendancy, Terramorphic Expanse) |
 | **added — P0 (multi-color mana + check/fetch/pain/shock/trikeland + cycling)** | 24 — the 16 below + **Cinder Glade**, **Rockfall Vale**, **Blood Crypt**, **Overgrown Tomb**, **Stomping Ground**, **Cabaretti Courtyard**, **Riveteers Overlook**, **Sheltered Thicket** (+ Tranquil Thicket now faithful) |
 | **added — P2 (`return-from-graveyard` + self-`mill` + `playFromGraveyard`)** | 4 — **Splendid Reclamation**, **Aftermath Analyst**, **World Shaper**, **Ramunap Excavator** |
-| blocked on an engine feature | ~90 |
+| **added — P3 (landfall payloads: modal token / colour, `"opponent"` target)** | 3 — **Tireless Provisioner**, **Lotus Cobra**, **Iridescent Vinelasher** |
+| blocked on an engine feature | ~87 |
 
 † Rootbound Crag isn't on the list (Rockfall Vale is the list's R/G land) — added as the check-land cycle-mate.
 
@@ -112,17 +113,20 @@ cost (already existed). Helper `fetchLand(name, [typeA, typeB])`. Shipped: **Far
 ## P3 — Landfall payloads  (~8 cards)
 
 Landfall *triggers* already work (`enters-battlefield`, `filter: { type: "land" }`,
-`who: "you-control"` — Rampaging Baloths does exactly this). Missing payloads:
+`who: "you-control"` — Rampaging Baloths does exactly this). Payload status:
 
-| payload | cards | note |
+| payload | cards | status |
 | --- | --- | --- |
-| `create-token` from a landfall trigger | **Tireless Provisioner** (Treasure), Traveling Chocobo | **likely already works — try authoring it** |
-| damage to a chosen opponent from the trigger | **Iridescent Vinelasher** | likely works; the +1/+1-counter rider needs "if you paid" |
-| `add-mana` from a trigger (into the pool) | **Lotus Cobra**, Ganax | works mechanically; "mana doesn't empty as steps end" is the nuance |
-| `additional-combat` from the trigger | **Moraug, Fury of Akoum** | `additional-combat` effect exists; needs "only in your main phase" gating |
+| `create-token` from a landfall trigger | **Tireless Provisioner** | **DONE** — a landfall `modal` ["create a Food", "create a Treasure"] + a new `Food Token` (`{2},{T},Sac: gain 3`). No new engine vocab. |
+| damage to a chosen opponent from the trigger | **Iridescent Vinelasher** | **DONE** — new `"opponent"` `TargetSpec` (a player ≠ the chooser); the landfall ping flows through the Phase-11-EG-1 `choose-targets` decision (forced, no prompt, with one opponent). Offspring not modeled. |
+| `add-mana` from a trigger (into the pool) | **Lotus Cobra** | **DONE** — a landfall `modal` over the 5 colours (a real colour choice; a standalone `add-mana: "any-color"` would just make white). Mana still empties at step/phase end. |
+| `additional-combat` from the trigger | **Moraug, Fury of Akoum** | TBD — `additional-combat` effect exists; needs "if it's your main phase" gating on the trigger. |
+| Ganax, Traveling Chocobo, Tireless Tracker | — | TBD — Ganax also has Choose-a-Background; Chocobo has "play from top of library" + "triggers an additional time"; Tracker needs a sacrifice trigger (P6). |
 | "create a token that's a copy of this" | **Scute Swarm** | needs token-copy (see P5) |
 | impulse draw + delayed end-step damage | **Valakut Exploration** | needs impulse-draw marker + conditional end-step trigger |
 | "may have target opponent lose 3 life, then counters" | **Ob Nixilis, the Fallen** | needs `may` with a target (currently non-targeted only) |
+
+`landfall-payloads.test.ts`.
 
 ## P4 — Count-scaled effect amounts  (~7 cards)
 

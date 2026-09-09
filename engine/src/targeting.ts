@@ -95,6 +95,8 @@ export function isLegalTarget(
   switch (spec) {
     case "player":
       return isLivingPlayer(state, ref);
+    case "opponent":
+      return isLivingPlayer(state, ref) && ref.kind === "player" && ref.player !== forPlayer;
     case "creature":
       return ref.kind === "object" && isLivingCreature(state, registry, ref.object);
     case "nonblack-creature":
