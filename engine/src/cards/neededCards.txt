@@ -52,7 +52,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [x] 1 Llanowar Elves
 [ ] 1 Magmaquake                       FEATURE: damage-all excluding a keyword (no-flying) + hitting planeswalkers; {X} amount
 [ ] 1 Marang River Regent              FEATURE: conditional unblockable (ETB bounce alone is doable)
-[ ] 1 Miirym, Sentinel Wyrm            FEATURE: create a token that's a copy of a permanent
+[+] 1 Miirym, Sentinel Wyrm            (P5b — create-token-copy of: trigger-object)
 [ ] 1 Mirror Room / Fractured Realm    FEATURE: Room cards (Duskmourn split-enchantment / door unlock)
 [ ] 1 Mossfire Valley                  FEATURE: filter land
 [ ] 1 Mosswort Bridge                  FEATURE: Hideaway
@@ -146,8 +146,8 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Riveteers Overlook
 [ ] 1 Rydia, Summoner of Mist          FEATURE: (FF — text TBD)
 [ ] 1 Sabotender                       FEATURE: (FF — text TBD)
-[ ] 1 Saw in Half                      FEATURE: "create two tokens that are copies of it, except 1/1"
-[ ] 1 Scute Swarm                      FEATURE: landfall "create a token that's a copy of this"
+[+] 1 Saw in Half                      (P5b — create-token-copy of: <slot>, basePt)
+[+] 1 Scute Swarm                      (P5b — create-token-copy of: source + conditional effect)
 [ ] 1 Shifting Woodland                FEATURE: "becomes a copy of target permanent card in your graveyard"
 [ ] 1 Six                              FEATURE: forests-matter; play lands from graveyard; regeneration-ish
 [x] 1 Sol Ring

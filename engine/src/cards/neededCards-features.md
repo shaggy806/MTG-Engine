@@ -12,7 +12,8 @@ Status:
 | **added — P4a (`EffectAmount.countOf`)** | 2 — **Scourge of Valkas**, **Craterhoof Behemoth** |
 | **added — P4b (`EffectAmount.triggerValue`)** | 2 — **Terror of the Peaks**, **Old Gnawbone** |
 | **added — P5a (`create-token` `who: "target-controller"`)** | 3 — **Beast Within**, **Rapid Hybridization**, **An Offer You Can't Refuse** |
-| blocked on an engine feature | ~80 |
+| **added — P5b (`create-token-copy` + `conditional` effect + `triggerObject`)** | 3 — **Miirym, Sentinel Wyrm**, **Scute Swarm** (+ Insect Token), **Saw in Half** |
+| blocked on an engine feature | ~77 |
 
 † Rootbound Crag isn't on the list (Rockfall Vale is the list's R/G land) — added as the check-land cycle-mate.
 
@@ -168,9 +169,26 @@ Landfall *triggers* already work (`enters-battlefield`, `filter: { type: "land" 
   its last-known controller, which `moveObject` has already reverted to owner; the stolen-target
   corner is imperfect). Shipped **Beast Within**, **Rapid Hybridization** (+ a `Frog Lizard
   Token`), **An Offer You Can't Refuse**. `token-for-target.test.ts`.
-- "a token that's a copy of [permanent]" — **Miirym**, **Scute Swarm**, **Saw in Half**
-  ("copies, except 1/1"). The Clone machinery (`copyOf`) exists on `GameObject`; needs a
-  `create-token-copy` effect that mints one carrying `copyOf`.
+- **DONE — `create-token-copy { of, count, gainsHaste?, exileAtEndStep?, notLegendary?,
+  basePt? }`** (P5b). `of` is `"source"` (Scute Swarm), `"trigger-object"` (Miirym — the
+  permanent whose entering fired the trigger, threaded from `detectTriggers` onto the
+  stacked ability via `GameObject.triggerObject` → `ResolutionContext.triggerObject`,
+  mirroring `triggerValue`), or a target-slot index (Saw in Half). Mints a token whose
+  `copyOf` is the copied permanent's name (every characteristic read already resolves
+  through `printedCardName = copyOf ?? faceName`), under *that permanent's* controller.
+  `gainsHaste` / `basePt` push modifiers (layer 6 / 7b); `notLegendary` (a new intrinsic
+  `GameObject` flag the legend-rule SBA skips); `exileAtEndStep` (a flag swept in
+  `endStepActions`). Also added a general **`conditional { condition: StaticCondition,
+  then, else? }`** effect (Scute Swarm's "if you control six or more lands … Otherwise …")
+  and hardened `permanentSource` against a vanished ability source (rule 608.2b — pre-existing
+  latent crash the fuzz surfaced once Miirym copies could self-exile mid-trigger). Shipped
+  **Miirym, Sentinel Wyrm** (fully faithful — haste + not-legendary + end-step exile),
+  **Scute Swarm** (+ `Insect Token`), **Saw in Half** (drops only the "if it had a printed
+  power" gate — every real creature card has one). `token-copy.test.ts`.
+  - Still TBD: **Scute Swarm**'s copies snowball correctly, but a very land-heavy fuzz game
+    could in principle balloon the object count (accepted — it's real MTG behaviour);
+    **Miirym**'s copy of a card that was itself a Clone degrades to a 0/0 (we copy the name,
+    not last-known copyable values).
 
 ## P6 — Sacrifice a filtered permanent as a cost  (~5 cards)
 

@@ -260,6 +260,7 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 | kind | fields |
 | --- | --- |
 | `create-token` | `token` (a registry name), `count`, `who?: "you" \| "target-controller"` (Beast Within — under `targets[0]`'s controller) |
+| `create-token-copy` | `of: "source" \| "trigger-object" \| slot`, `count`, `gainsHaste?`, `exileAtEndStep?`, `notLegendary?`, `basePt?: [p, t]` — a token that's a copy of a permanent, under *its* controller. `"trigger-object"` = the permanent whose entering/attacking fired the trigger (Miirym); a slot = a target (Saw in Half). |
 | `attach` | `target` (Equip-style) |
 | `transform` | `target` (`"source"` \| slot) |
 | `day-night` | `value: "day" \| "night"` |
@@ -294,6 +295,11 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
   top-level `castModal` field instead (mode choice happens at cast time).
 - **`may { effect, prompt }`** — "You may [effect]". One optional mode. Same
   non-targeted restriction.
+- **`conditional { condition: StaticCondition, then, else? }`** — apply `then`
+  if `condition` holds at resolution (evaluated from the source's controller's
+  view — same `{ controls, your-turn, threshold, metalcraft }` union as a
+  static's `condition`), otherwise `else`. Scute Swarm ("if you control six or
+  more lands …").
 
 `modal` / `may` / `look-and-choose` must be the whole effect or the **last**
 step of a `sequence`.

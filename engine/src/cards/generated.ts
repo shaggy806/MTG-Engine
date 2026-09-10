@@ -114,6 +114,7 @@ import _poolLordOfExtinction from "./pool/lord-of-extinction.js";
 import _poolLotusCobra from "./pool/lotus-cobra.js";
 import _poolLure from "./pool/lure.js";
 import _poolManOWar from "./pool/man-o-war.js";
+import _poolMiirymSentinelWyrm from "./pool/miirym-sentinel-wyrm.js";
 import _poolMindControl from "./pool/mind-control.js";
 import _poolMindRot from "./pool/mind-rot.js";
 import _poolMishrasFactory from "./pool/mishras-factory.js";
@@ -157,7 +158,9 @@ import _poolRoguesPassage from "./pool/rogues-passage.js";
 import _poolRootboundCrag from "./pool/rootbound-crag.js";
 import _poolRumblingBaloth from "./pool/rumbling-baloth.js";
 import _poolSarovaTheUndyingCurrent from "./pool/sarova-the-undying-current.js";
+import _poolSawInHalf from "./pool/saw-in-half.js";
 import _poolScourgeOfValkas from "./pool/scourge-of-valkas.js";
+import _poolScuteSwarm from "./pool/scute-swarm.js";
 import _poolSeraphineDawnherald from "./pool/seraphine-dawnherald.js";
 import _poolSerraAngel from "./pool/serra-angel.js";
 import _poolShelteredThicket from "./pool/sheltered-thicket.js";
@@ -216,6 +219,7 @@ import _tokensDragonToken55 from "./tokens/dragon-token-5-5.js";
 import _tokensElementalToken from "./tokens/elemental-token.js";
 import _tokensFoodToken from "./tokens/food-token.js";
 import _tokensFrogLizardToken from "./tokens/frog-lizard-token.js";
+import _tokensInsectToken from "./tokens/insect-token.js";
 import _tokensKnightToken from "./tokens/knight-token.js";
 import _tokensPhyrexianWurmDeathtouch from "./tokens/phyrexian-wurm-deathtouch.js";
 import _tokensPhyrexianWurmLifelink from "./tokens/phyrexian-wurm-lifelink.js";
@@ -335,6 +339,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolLotusCobra,
   _poolLure,
   _poolManOWar,
+  _poolMiirymSentinelWyrm,
   _poolMindControl,
   _poolMindRot,
   _poolMishrasFactory,
@@ -378,7 +383,9 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolRootboundCrag,
   _poolRumblingBaloth,
   _poolSarovaTheUndyingCurrent,
+  _poolSawInHalf,
   _poolScourgeOfValkas,
+  _poolScuteSwarm,
   _poolSeraphineDawnherald,
   _poolSerraAngel,
   _poolShelteredThicket,
@@ -437,6 +444,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _tokensElementalToken,
   _tokensFoodToken,
   _tokensFrogLizardToken,
+  _tokensInsectToken,
   _tokensKnightToken,
   _tokensPhyrexianWurmDeathtouch,
   _tokensPhyrexianWurmLifelink,

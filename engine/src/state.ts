@@ -80,6 +80,11 @@ export interface GameObject {
    * `EffectAmount` `{ triggerValue: true }` (Terror of the Peaks, Old
    * Gnawbone). ROADMAP P4b. */
   triggerValue?: number;
+  /** For a triggered-ability object on the stack: the object whose entering /
+   * attacking / etc. fired the trigger, snapshotted at trigger time — read by
+   * a `create-token-copy` effect with `of: "trigger-object"` (Miirym, Sentinel
+   * Wyrm — needed-cards P5b). */
+  triggerObject?: ObjectId;
   /** The modes chosen for a targeted modal spell as it was cast (rule 700.2 —
    * ROADMAP Phase 11 EG-2), sorted ascending — indices into
    * `CardDefinition.castModal.modes`. `resolveTopOfStack` applies each with its
@@ -105,6 +110,14 @@ export interface GameObject {
    * leaves" grant) — `hasSummoningSickness` returns false for it. Cleared on
    * any zone change. */
   hastyUntilItLeaves?: boolean;
+  /** True on a token copy that must be exiled at the beginning of the next end
+   * step (Miirym, Sentinel Wyrm — rule 707 / needed-cards P5b). Swept in
+   * `endStepActions`. */
+  exileAtEndStep?: boolean;
+  /** True on a token copy created "except it's not legendary" (Miirym — rule
+   * 707 / needed-cards P5b). The legend-rule SBA skips it. Intrinsic, like
+   * `isToken` — never reset. */
+  notLegendary?: boolean;
   /** True while this card is foretold — exiled face-down for `{2}`, castable
    * later for its foretell cost (rule 702.144 — ROADMAP Phase 6b).
    * `foretoldOnTurn` is the turn it was foretold (can't be cast the same
@@ -207,6 +220,10 @@ export interface PendingTrigger {
    * snapshotted when the trigger was detected — for an `EffectAmount`
    * `{ triggerValue: true }` (Terror of the Peaks, Old Gnawbone). ROADMAP P4b. */
   readonly triggerValue?: number;
+  /** The object whose entering / attacking / etc. fired this trigger,
+   * snapshotted when it was detected — for a `create-token-copy` effect with
+   * `of: "trigger-object"` (Miirym, Sentinel Wyrm — needed-cards P5b). */
+  readonly triggerObject?: ObjectId;
   /** True for a Saga chapter ability (rule 714) — `abilityIndex` indexes
    * `def.chapters` rather than `def.triggered`. ROADMAP Phase 10. */
   readonly chapter?: boolean;
@@ -569,6 +586,8 @@ export interface GameState {
     )[];
     /** See {@link PendingTrigger.triggerValue}. */
     readonly triggerValue?: number;
+    /** See {@link PendingTrigger.triggerObject}. */
+    readonly triggerObject?: ObjectId;
   } | null;
   /**
    * A suspended spell coming off suspend, parked while its controller chooses

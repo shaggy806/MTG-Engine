@@ -8,7 +8,7 @@
  * into the spell's or ability's chosen targets, or the literal `"source"`.
  */
 
-import type { CardType, Keyword, StaticAbility } from "./cards.js";
+import type { CardType, Keyword, StaticAbility, StaticCondition } from "./cards.js";
 import type { CardFilter } from "./filter.js";
 import type { Color, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
@@ -298,6 +298,27 @@ export type EffectSpec =
       readonly who?: "you" | "target-controller";
     }
   | {
+      /** Create `count` token(s) that are copies of a permanent (rule 707.10 —
+       * needed-cards P5b). `of` names what to copy: `"source"` (Scute Swarm —
+       * the ability's own permanent), `"trigger-object"` (Miirym — the
+       * permanent whose entering fired the trigger), or a target-slot index.
+       * The tokens enter under the copied permanent's controller (rule 111.11 /
+       * "its controller creates" — for a destroyed target its last-known
+       * controller). */
+      readonly kind: "create-token-copy";
+      readonly of: "source" | "trigger-object" | number;
+      readonly count: number;
+      /** The token copies gain haste (Miirym). */
+      readonly gainsHaste?: boolean;
+      /** Exile the token copies at the beginning of the next end step (Miirym). */
+      readonly exileAtEndStep?: boolean;
+      /** The copies are not legendary (Miirym — "except it's not legendary"). */
+      readonly notLegendary?: boolean;
+      /** Override the copies' base power/toughness (Saw in Half — "except
+       * they're each 1/1"; a layer-7b set, so counters / anthems still apply). */
+      readonly basePt?: readonly [number, number];
+    }
+  | {
       /** Attach the source (an Aura/Equipment) to a target permanent. */
       readonly kind: "attach";
       readonly target: number;
@@ -364,6 +385,17 @@ export type EffectSpec =
       readonly minModes: number;
       readonly maxModes: number;
       readonly modes: readonly ModeOption[];
+    }
+  | {
+      /** Apply `then` if `condition` holds at resolution, otherwise `else`
+       * (rule 608.2 — an "if … then … otherwise …" clause). `condition` is
+       * evaluated from the effect's source's controller's perspective, reusing
+       * the static-ability {@link StaticCondition} union. needed-cards P5b —
+       * Scute Swarm ("if you control six or more lands"). */
+      readonly kind: "conditional";
+      readonly condition: StaticCondition;
+      readonly then: EffectSpec;
+      readonly else?: EffectSpec;
     }
   | {
       /** "You may [effect]" (rule 601.3e / 608.2). Resolves via the same
@@ -543,6 +575,21 @@ export interface EffectApi {
     count: number,
     who?: "you" | "target-controller",
   ): void;
+  /** Create `count` token(s) that are copies of the permanent `of` — see the
+   * `"create-token-copy"` {@link EffectSpec}. */
+  createTokenCopy(
+    of: ObjectId,
+    count: number,
+    opts: {
+      gainsHaste: boolean;
+      exileAtEndStep: boolean;
+      notLegendary: boolean;
+      basePt?: readonly [number, number];
+    },
+  ): void;
+  /** True if `condition` holds from the effect source's controller's
+   * perspective — see the `"conditional"` {@link EffectSpec}. */
+  conditionMet(condition: StaticCondition): boolean;
   /** Attach `ctx.source` (an Aura/Equipment) to `target`. */
   attach(target: TargetRef): void;
   /** Transform `target` (a transforming DFC permanent) — see the `"transform"`
@@ -602,6 +649,10 @@ export interface ResolutionContext extends EffectApi {
    * ability (the triggering creature's power, or combat damage it dealt), or 0
    * outside a triggered-ability resolution. ROADMAP P4b. */
   readonly triggerValue: number;
+  /** The object whose entering / attacking fired this triggered ability, or
+   * `undefined` outside such a resolution — for `create-token-copy` with
+   * `of: "trigger-object"` (Miirym). needed-cards P5b. */
+  readonly triggerObject?: ObjectId;
 }
 
 /** Resolve an {@link EffectAmount} against the resolution context. */
@@ -826,6 +877,29 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     case "create-token":
       ctx.createToken(spec.token, amountValue(spec.count, ctx), spec.who);
       return;
+    case "create-token-copy": {
+      let of: ObjectId | undefined;
+      if (spec.of === "source") of = ctx.source;
+      else if (spec.of === "trigger-object") of = ctx.triggerObject;
+      else {
+        const ref = ctx.targets[spec.of];
+        of = ref?.kind === "object" ? ref.object : undefined;
+      }
+      if (of !== undefined) {
+        ctx.createTokenCopy(of, spec.count, {
+          gainsHaste: spec.gainsHaste ?? false,
+          exileAtEndStep: spec.exileAtEndStep ?? false,
+          notLegendary: spec.notLegendary ?? false,
+          ...(spec.basePt ? { basePt: spec.basePt } : {}),
+        });
+      }
+      return;
+    }
+    case "conditional": {
+      const branch = ctx.conditionMet(spec.condition) ? spec.then : spec.else;
+      if (branch !== undefined) applyEffectSpec(branch, ctx);
+      return;
+    }
     case "attach": {
       const target = ctx.targets[spec.target];
       if (target !== undefined) ctx.attach(target);

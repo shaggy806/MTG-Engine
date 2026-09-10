@@ -973,6 +973,12 @@ export class Game {
 
   /** The colour/type identity of a permanent (its computed values). */
   private permanentSource(id: ObjectId): TargetSource {
+    // The source may be gone by the time an ability it put on the stack
+    // resolves (rule 608.2b — e.g. a creature Saw-in-Half'd, or a Miirym copy
+    // exiled at end step, in response to its own trigger). We don't retain
+    // last-known characteristics, so degrade to a neutral source (no colours /
+    // types — no protection or DEBT clause matches).
+    if (this.state.objects[id] === undefined) return { colors: new Set(), types: [] };
     const c = computeCharacteristics(this.state, this.registry, id);
     return { colors: c.colors, types: c.types };
   }
@@ -1421,6 +1427,7 @@ export class Game {
         trig.abilityIndex,
         targets,
         trig.triggerValue,
+        trig.triggerObject,
       );
     } else if (cast !== null) {
       this.state.pendingTargetedCast = null;
@@ -1731,6 +1738,14 @@ export class Game {
       !this.state.players[monarch].hasLost
     ) {
       this.drawCard(monarch);
+    }
+    // Token copies made by Miirym-style effects are exiled at the beginning of
+    // the next end step (rule 707 / needed-cards P5b). They're tokens, so the
+    // move to exile also has an SBA delete them.
+    for (const id of [...this.state.zones.shared.battlefield]) {
+      if (this.state.objects[id]?.exileAtEndStep === true) {
+        this.moveObject(id, "exile");
+      }
     }
   }
 
@@ -3736,6 +3751,7 @@ export class Game {
     abilityIndex: number,
     targets: readonly TargetRef[],
     triggerValue?: number,
+    triggerObject?: ObjectId,
   ): ObjectId {
     const abilityId = this.mintObjectId();
     this.state.objects[abilityId] = {
@@ -3767,6 +3783,7 @@ export class Game {
       isCommander: false,
       xValue: null,
       ...(triggerValue !== undefined ? { triggerValue } : {}),
+      ...(triggerObject !== undefined ? { triggerObject } : {}),
       controlEndsAtCleanup: false,
       copyOf: null,
     };
@@ -4435,6 +4452,7 @@ export class Game {
       targets,
       object.xValue ?? 0,
       object.triggerValue ?? 0,
+      object.triggerObject,
     );
     if (ability.resolve !== null) {
       ability.resolve(context);
@@ -4479,6 +4497,17 @@ export class Game {
           // for an `EffectAmount` `{ triggerValue: true }`: the entering /
           // attacking creature's power (Terror of the Peaks), or the combat
           // damage a creature just dealt a player (Old Gnawbone). ROADMAP P4b.
+          // The object whose entering / attacking / etc. fired this trigger —
+          // for `create-token-copy` `of: "trigger-object"` (Miirym). P5b.
+          const triggerObject =
+            event.type === "permanent-entered-battlefield" ||
+            event.type === "permanent-destroyed" ||
+            event.type === "permanent-left-battlefield" ||
+            event.type === "permanent-transformed"
+              ? event.object
+              : event.type === "attacker-declared"
+                ? event.attacker
+                : undefined;
           const powerOfId =
             event.type === "permanent-entered-battlefield"
               ? event.object
@@ -4499,6 +4528,7 @@ export class Game {
             controller: object.controller,
             ...(autoTargets ? { autoTargets } : {}),
             ...(triggerValue !== undefined ? { triggerValue } : {}),
+            ...(triggerObject !== undefined ? { triggerObject } : {}),
           });
         }
       });
@@ -4680,6 +4710,7 @@ export class Game {
     readonly controller: PlayerId;
     readonly autoTargets?: readonly TargetRef[];
     readonly triggerValue?: number;
+    readonly triggerObject?: ObjectId;
     readonly chapter?: boolean;
   }): "done" | "paused" {
     const def = this.registry.get(trigger.cardName);
@@ -4731,6 +4762,7 @@ export class Game {
         trigger.abilityIndex,
         targets,
         trigger.triggerValue,
+        trigger.triggerObject,
       );
       return "done";
     }
@@ -4744,6 +4776,9 @@ export class Game {
       slots: slots.map((s) => ("auto" in s ? { auto: s.auto } : { spec: s.spec })),
       ...(trigger.triggerValue !== undefined
         ? { triggerValue: trigger.triggerValue }
+        : {}),
+      ...(trigger.triggerObject !== undefined
+        ? { triggerObject: trigger.triggerObject }
         : {}),
     };
     this.state.awaiting = {
@@ -4765,6 +4800,7 @@ export class Game {
     abilityIndex: number,
     targets: readonly TargetRef[],
     triggerValue?: number,
+    triggerObject?: ObjectId,
   ): void {
     this.mintAbilityObject(
       sourceId,
@@ -4774,6 +4810,7 @@ export class Game {
       abilityIndex,
       targets,
       triggerValue,
+      triggerObject,
     );
     this.emit({ type: "ability-triggered", source: sourceId, controller });
   }
@@ -4808,6 +4845,7 @@ export class Game {
     targets: readonly TargetRef[],
     x = 0,
     triggerValue = 0,
+    triggerObject?: ObjectId,
   ): ResolutionContext {
     return {
       controller,
@@ -4815,6 +4853,7 @@ export class Game {
       targets,
       x,
       triggerValue,
+      triggerObject,
       dealDamage: (target, amount) => this.dealDamage(source, target, amount),
       draw: (player, count) => {
         for (let i = 0; i < count; i += 1) this.drawCard(player);
@@ -4888,6 +4927,11 @@ export class Game {
           }
         }
         this.createTokens(tokenController, token, count);
+      },
+      createTokenCopy: (of, count, opts) => this.createTokenCopy(of, count, opts),
+      conditionMet: (condition) => {
+        const src = this.state.objects[source];
+        return src !== undefined && staticConditionMet(this.state, this.registry, src, condition);
       },
       attach: (target) => this.attachPermanent(source, target),
       transform: (target) => {
@@ -5118,6 +5162,92 @@ export class Game {
         this.state.objects[id].counters[c.kind] =
           (this.state.objects[id].counters[c.kind] ?? 0) + c.amount;
       }
+      this.emit({ type: "permanent-entered-battlefield", object: id });
+    }
+  }
+
+  /** Create `count` token(s) that are copies of the permanent `ofId` (rule
+   * 707.10 — needed-cards P5b). The copies enter under `ofId`'s controller
+   * ("its controller creates" / rule 111.11 — its last-known controller for a
+   * permanent that has already left). In this engine a copy is a stored card
+   * *name* every characteristic read resolves through (`copyOf`), so the token
+   * gets the copiable printed values — not counters, other copy effects, or
+   * non-copy modifiers on the original. */
+  private createTokenCopy(
+    ofId: ObjectId,
+    count: number,
+    opts: {
+      gainsHaste: boolean;
+      exileAtEndStep: boolean;
+      notLegendary: boolean;
+      basePt?: readonly [number, number];
+    },
+  ): void {
+    const of = this.state.objects[ofId];
+    if (of === undefined) return;
+    const copyName = printedCardName(of);
+    this.registry.get(copyName); // validate it's a known definition
+    const controller = of.controller;
+    const total = count * this.tokenCreationMultiplier(controller);
+    for (let i = 0; i < total; i += 1) {
+      const id = this.mintObjectId();
+      this.state.timestampSeq += 1;
+      this.state.objects[id] = {
+        id,
+        cardName: copyName,
+        owner: controller,
+        controller,
+        zone: "battlefield",
+        tapped: false,
+        damageMarked: 0,
+        markedByDeathtouch: false,
+        enteredBattlefieldOnTurn: this.state.turn.number,
+        summoningSick: true,
+        loyaltyActivatedThisTurn: false,
+        targets: null,
+        attacking: null,
+        blocking: null,
+        blockedBy: [],
+        blocked: false,
+        kind: "card",
+        abilityKind: null,
+        sourceObjectId: null,
+        abilityIndex: null,
+        counters: {},
+        modifiers: [
+          ...(opts.gainsHaste
+            ? [{ power: 0, toughness: 0, keywords: ["haste" as const], untilEndOfTurn: false }]
+            : []),
+          ...(opts.basePt
+            ? [
+                {
+                  power: 0,
+                  toughness: 0,
+                  keywords: [],
+                  setPt: [opts.basePt[0], opts.basePt[1]] as [number, number],
+                  untilEndOfTurn: false,
+                },
+              ]
+            : []),
+        ],
+        timestamp: this.state.timestampSeq,
+        isToken: true,
+        attachedTo: null,
+        isCommander: false,
+        xValue: null,
+        controlEndsAtCleanup: false,
+        copyOf: copyName,
+        ...(opts.exileAtEndStep ? { exileAtEndStep: true } : {}),
+        ...(opts.notLegendary ? { notLegendary: true } : {}),
+      };
+      this.state.zones.shared.battlefield.push(id);
+      const entering = this.entersBattlefieldReplacement(id);
+      this.state.objects[id].tapped = entering.tapped;
+      for (const c of entering.counters) {
+        this.state.objects[id].counters[c.kind] =
+          (this.state.objects[id].counters[c.kind] ?? 0) + c.amount;
+      }
+      this.emit({ type: "permanent-copied", object: id, copyOf: copyName });
       this.emit({ type: "permanent-entered-battlefield", object: id });
     }
   }
@@ -6328,6 +6458,7 @@ export class Game {
       const legendaryGroups = new Map<string, ObjectId[]>();
       for (const id of this.state.zones.shared.battlefield) {
         const object = this.state.objects[id];
+        if (object.notLegendary === true) continue; // Miirym's copies (P5b)
         if (!this.registry.get(printedCardName(object)).supertypes.includes("legendary")) continue;
         const key = `${object.controller} ${object.cardName}`;
         const group = legendaryGroups.get(key);
@@ -6650,6 +6781,7 @@ export class Game {
     // Snapcaster grant, a suspend / foretell exile state.
     object.grantedFlashback = null;
     object.suspended = false;
+    object.exileAtEndStep = false;
     object.foretold = false;
     object.foretoldOnTurn = null;
     // Modes chosen for a targeted modal spell (Phase 11 EG-2) end with the stack.

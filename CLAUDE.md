@@ -237,6 +237,22 @@ controller (a permanent or a stack spell — for a destroyed/countered target th
 last-known controller, already reverted to owner by `moveObject`). Cards: Beast Within,
 Rapid Hybridization (+ a `Frog Lizard Token`), An Offer You Can't Refuse (`sequence`
 [counter, create-token who: target-controller]). `token-for-target.test.ts`.
+**P5b (needed-cards — tokens that are copies of a permanent)** — `create-token-copy
+{ of, count, gainsHaste?, exileAtEndStep?, notLegendary?, basePt? }` (`of` = `"source"` /
+`"trigger-object"` / a target-slot index). Mints a token whose `copyOf` is the copied
+permanent's name (all characteristic reads already go through `printedCardName = copyOf ??
+faceName`), under *that permanent's* controller. `"trigger-object"` = the permanent whose
+entering/attacking fired the trigger — snapshotted in `detectTriggers` onto
+`GameObject.triggerObject` → `ResolutionContext.triggerObject`, mirroring `triggerValue`.
+`gainsHaste`/`basePt` push layer-6/7b modifiers; `notLegendary` a new intrinsic
+`GameObject` flag the legend-rule SBA skips; `exileAtEndStep` a flag swept in
+`endStepActions`. Also new: a general **`conditional { condition: StaticCondition, then,
+else? }`** effect (Scute Swarm's "if you control six or more lands … Otherwise …");
+`permanentSource` now tolerates a vanished ability source (rule 608.2b — a pre-existing
+latent crash the fuzz surfaced once Miirym copies could self-exile mid-trigger — degrades
+to a neutral colours/types source). Cards: Miirym, Sentinel Wyrm (faithful — haste +
+not-legendary + end-step exile), Scute Swarm (+ `Insect Token`), Saw in Half (drops only
+the "if it had a printed power" gate). `token-copy.test.ts`.
 **ROADMAP Phase 5** (done) — **planeswalkers**. `CardDefinition.loyalty: number | null`;
 `defineCard` synthesizes an `enters-battlefield { counters: { loyalty } }` self-replacement so
 `moveObject` (and Doubling Season) handle "enters with N loyalty" unchanged. `ActivatedAbility.loyaltyCost?: number`
