@@ -104,6 +104,9 @@ export type EffectSpec =
       readonly who: PlayerScope | "target";
       readonly filter: CardFilter;
       readonly count: number;
+      /** Exclude the effect's own source ("sacrifice **another** permanent" —
+       * Korvold). needed-cards P6. */
+      readonly exceptSource?: boolean;
     }
   | {
       /** `targets[a]` and `targets[b]` each deal damage equal to their power
@@ -491,6 +494,7 @@ export interface EffectApi {
     who: PlayerScope | { readonly player: PlayerId },
     filter: CardFilter,
     count: number,
+    exceptId?: ObjectId,
   ): void;
   returnToHand(target: TargetRef): void;
   exileObject(target: TargetRef): void;
@@ -727,13 +731,14 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       ctx.damageAll(spec.filter, amountValue(spec.amount, ctx));
       return;
     case "sacrifice": {
+      const exceptId = spec.exceptSource ? ctx.source : undefined;
       if (spec.who === "target") {
         const target = ctx.targets[0];
         if (target?.kind === "player") {
-          ctx.sacrificePermanents({ player: target.player }, spec.filter, spec.count);
+          ctx.sacrificePermanents({ player: target.player }, spec.filter, spec.count, exceptId);
         }
       } else {
-        ctx.sacrificePermanents(spec.who, spec.filter, spec.count);
+        ctx.sacrificePermanents(spec.who, spec.filter, spec.count, exceptId);
       }
       return;
     }

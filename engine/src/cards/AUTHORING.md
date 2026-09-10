@@ -239,7 +239,7 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 | `return-to-hand` | `target` | Unsummon |
 | `return-from-graveyard` | `filter`, `destination: "battlefield" \| "hand"`, `count: number \| "all"`, `enterTapped?` | Splendid Reclamation (from *your* graveyard; a `number` less than the match count raises a `choose-from-zone`) |
 | `counter` | `target` (a spell) | Counterspell |
-| `sacrifice` | `who`, `filter`, `count` | Diabolic Edict (`who: "target"`), Fleshbag Marauder (`who: "each-player"`) |
+| `sacrifice` | `who`, `filter`, `count`, `exceptSource?` | Diabolic Edict (`who: "target"`), Fleshbag Marauder (`who: "each-player"`), Korvold (`who: "you"`, `exceptSource: true` = "another") |
 | `fight` | `a`, `b`, `oneSided?` | Prey Upon / Rabid Bite |
 | `gain-control` | `target`, `untilEndOfTurn` | Act of Treason |
 
@@ -353,8 +353,9 @@ removeCounter?, payEnergy? }`.
 
 - `mana`: a cost string (`"{2}"`) or `null`. May contain `{X}`.
 - `tap: true` adds `{T}`.
-- `sacrifice: "self"` ("Sacrifice this: …") or `"creature-you-control"` (the
-  player picks).
+- `sacrifice: "self"` ("Sacrifice this: …"), `"creature-you-control"`, or
+  `{ filter: CardFilter }` (Zuran Orb — "Sacrifice a land"). The last two make
+  the player pick (a `sacrifice` choice on the `activate-ability` LegalAction).
 - `payLife: 2`, `payEnergy: 3`, `removeCounter: { kind: "+1/+1", count: 1 }` —
   all paid automatically (no decision).
 
@@ -397,6 +398,7 @@ triggered: [
 | `leaves-battlefield` | `who` | a permanent leaves for **any** zone |
 | `gains-life` / `loses-life` | `who` | a player's life changes (`who` = whose) |
 | `attacks` | `who` | a creature is declared as an attacker |
+| `sacrifice` | `who` | a player sacrifices a permanent (Korvold, Mayhem Devil — `who` = who sacrificed) |
 | `deals-combat-damage-to-player` | `who` | auto-fills the first target slot with the damaged player |
 | `transforms` | `who`, `intoFront?`, `filter?` | a DFC turns over |
 | `step-begins` | `step`, `who` | the start of a step (`"upkeep"` etc.) |

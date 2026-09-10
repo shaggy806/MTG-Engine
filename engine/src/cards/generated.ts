@@ -175,6 +175,7 @@ import _poolSulfurFalls from "./pool/sulfur-falls.js";
 import _poolSunderCharm from "./pool/sunder-charm.js";
 import _poolSunlitBastion from "./pool/sunlit-bastion.js";
 import _poolSwamp from "./pool/swamp.js";
+import _poolSylvanSafekeeper from "./pool/sylvan-safekeeper.js";
 import _poolTempleOfAbandon from "./pool/temple-of-abandon.js";
 import _poolTempleOfMystery from "./pool/temple-of-mystery.js";
 import _poolTemurAscendancy from "./pool/temur-ascendancy.js";
@@ -213,6 +214,7 @@ import _poolWurmcoilEngine from "./pool/wurmcoil-engine.js";
 import _poolYavimayaCoast from "./pool/yavimaya-coast.js";
 import _poolYulraKindledSpark from "./pool/yulra-kindled-spark.js";
 import _poolZulaportCutthroat from "./pool/zulaport-cutthroat.js";
+import _poolZuranOrb from "./pool/zuran-orb.js";
 import _tokensBeastToken33 from "./tokens/beast-token-3-3.js";
 import _tokensBeastToken from "./tokens/beast-token.js";
 import _tokensDragonToken55 from "./tokens/dragon-token-5-5.js";
@@ -400,6 +402,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolSunderCharm,
   _poolSunlitBastion,
   _poolSwamp,
+  _poolSylvanSafekeeper,
   _poolTempleOfAbandon,
   _poolTempleOfMystery,
   _poolTemurAscendancy,
@@ -438,6 +441,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolYavimayaCoast,
   _poolYulraKindledSpark,
   _poolZulaportCutthroat,
+  _poolZuranOrb,
   _tokensBeastToken33,
   _tokensBeastToken,
   _tokensDragonToken55,

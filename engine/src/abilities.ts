@@ -21,7 +21,11 @@ export type SacrificeCost =
   | "self"
   /** Sacrifice a creature the activating player controls (their choice; may be
    * the source itself). */
-  | "creature-you-control";
+  | "creature-you-control"
+  /** Sacrifice a permanent the activating player controls matching `filter`
+   * (their choice — Zuran Orb "Sacrifice a land", Orcish Lumberjack "Sacrifice
+   * a Forest"). needed-cards P6. */
+  | { readonly filter: CardFilter };
 
 export interface AbilityCost {
   /** Mana portion of the cost, e.g. `"{2}"`; `null` for no mana. */
@@ -97,6 +101,13 @@ export type TriggerSpec =
       readonly who: TriggerWho;
     }
   | { readonly on: "attacks"; readonly who: TriggerWho }
+  | {
+      /** A player sacrificed a permanent (Korvold, Mayhem Devil — rule 701.19).
+       * `who` is relative to the sacrificing player: `"you"` = this permanent's
+       * controller sacrificed one, `"any"` = anyone did. needed-cards P6. */
+      readonly on: "sacrifice";
+      readonly who: TriggerWho;
+    }
   | {
       /** A permanent turned over to its other face (rule 712.10 — ROADMAP
        * Phase 10b). `who: "self"` = this permanent transformed; `"you-control"`

@@ -124,7 +124,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Infernal Grasp
 [+] 1 Iridescent Vinelasher
 [ ] 1 Kavaron, Memorial World          FEATURE: (DFC land — text TBD)
-[ ] 1 Korvold, Fae-Cursed King         FEATURE: "whenever you sacrifice a permanent" trigger; "sacrifice another permanent" effect. NOTE: a broken stub file exists in pool/ — finish or delete it.
+[+] 1 Korvold, Fae-Cursed King         (P6 — on:"sacrifice" trigger + sacrifice exceptSource; stub finished)
 [ ] 1 Lord Windgrace                   FEATURE: planeswalker — discard/draw, land recursion from graveyard, land destruction, Cat token emblem
 [+] 1 Lotus Cobra
 [ ] 1 Lotus Field                      FEATURE: ETB "sacrifice two lands"; "add three mana of any one color"
@@ -157,7 +157,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Stomping Ground                  (dup — see Deck 1)
 [ ] 1 Summon: Titan                    FEATURE: FF "Summon" saga-creature (chapter counters on a creature)
 [x] 5 Swamp
-[ ] 1 Sylvan Safekeeper                FEATURE: "sacrifice a land: target creature gains hexproof"
+[+] 1 Sylvan Safekeeper                (P6 — AbilityCost.sacrifice: { filter })
 [ ] 1 Tannuk, Memorial Ensign          FEATURE: (DFC / lands-matter — text TBD)
 [ ] 1 Tear Asunder                     FEATURE: kicker
 [+] 1 Terramorphic Expanse
@@ -175,7 +175,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Will of the Sultai               FEATURE: (modal / "free if you control a permanent of each type" — text TBD)
 [+] 1 Wooded Foothills
 [+] 1 World Shaper
-[ ] 1 Zuran Orb                        FEATURE: "sacrifice a land: gain 2 life"
+[+] 1 Zuran Orb                        (P6 — AbilityCost.sacrifice: { filter })
 
 === Standalone ===
 [ ] 1 Hearthhull, the Worldseed        FEATURE: (EOE commander — mill + return a random permanent card from graveyard; landfall)

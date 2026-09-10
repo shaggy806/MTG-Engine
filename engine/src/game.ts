@@ -9,7 +9,13 @@
  */
 
 import { isManaAbility } from "./abilities.js";
-import type { ActivatedAbility, StackAbility, TriggerSpec, TriggerWho } from "./abilities.js";
+import type {
+  ActivatedAbility,
+  SacrificeCost,
+  StackAbility,
+  TriggerSpec,
+  TriggerWho,
+} from "./abilities.js";
 import { actionPlayer } from "./actions.js";
 import type {
   Action,
@@ -882,7 +888,7 @@ export class Game {
           text: ability.text,
           targetSpecs: ability.targets,
           targetOptions: this.targetOptionsFor(ability.targets, player, this.permanentSource(source)),
-          ...(ability.cost.sacrifice === "creature-you-control"
+          ...(ability.cost.sacrifice !== undefined && ability.cost.sacrifice !== "self"
             ? { sacrifice: { choices: this.sacrificeCandidates(player, source, ability) } }
             : {}),
           ...(ability.loyaltyCost !== undefined ? { loyalty: ability.loyaltyCost } : {}),
@@ -3472,17 +3478,19 @@ export class Game {
   private sacrificeCandidates(
     player: PlayerId,
     sourceId: ObjectId,
-    ability: { readonly cost: { readonly sacrifice?: string } },
+    ability: { readonly cost: { readonly sacrifice?: SacrificeCost } },
   ): ObjectId[] {
-    if (ability.cost.sacrifice === undefined) return [];
-    if (ability.cost.sacrifice === "self") return [sourceId];
-    // "creature-you-control"
+    const sac = ability.cost.sacrifice;
+    if (sac === undefined) return [];
+    if (sac === "self") return [sourceId];
     return this.state.zones.shared.battlefield.filter((id) => {
       const object = this.state.objects[id];
-      return (
-        object.controller === player &&
-        this.registry.get(printedCardName(object)).types.includes("creature")
-      );
+      if (object.controller !== player) return false;
+      if (sac === "creature-you-control") {
+        return this.registry.get(printedCardName(object)).types.includes("creature");
+      }
+      // { filter } — Zuran Orb "a land", Orcish Lumberjack "a Forest".
+      return matchesFilter(this.state, this.registry, id, sac.filter, { you: player });
     });
   }
 
@@ -3648,7 +3656,7 @@ export class Game {
       } else {
         if (sacrifice === undefined || !candidates.includes(sacrifice)) {
           throw new Error(
-            `${def.name}'s ability requires sacrificing a creature you control`,
+            `${def.name}'s ability requires sacrificing a permanent you control`,
           );
         }
         sacrificeVictim = sacrifice;
@@ -4579,6 +4587,11 @@ export class Game {
           event.type === "attacker-declared" &&
           this.matchesWho(spec.who, event.attacker, self)
         );
+      case "sacrifice":
+        return (
+          event.type === "permanent-sacrificed" &&
+          this.matchesWhoPlayer(spec.who, event.player, self)
+        );
       case "transforms":
         return (
           event.type === "permanent-transformed" &&
@@ -4866,8 +4879,8 @@ export class Game {
       destroyPermanent: (target) => this.destroyByEffect(target),
       destroyAll: (filter) => this.destroyAllByEffect(controller, filter),
       damageAll: (filter, amount) => this.damageAllByEffect(source, controller, filter, amount),
-      sacrificePermanents: (who, filter, count) =>
-        this.sacrificeByEffect(controller, who, filter, count),
+      sacrificePermanents: (who, filter, count, exceptId) =>
+        this.sacrificeByEffect(controller, who, filter, count, exceptId),
       returnToHand: (target) => this.returnToHandByEffect(target),
       exileObject: (target) => this.exileByEffect(target),
       grantFlashback: (target) => this.grantFlashbackByEffect(target),
@@ -5741,6 +5754,7 @@ export class Game {
     who: PlayerScope | { readonly player: PlayerId },
     filter: CardFilter,
     count: number,
+    exceptId?: ObjectId,
   ): void {
     if (count <= 0) return;
     let players: PlayerId[];
@@ -5763,17 +5777,27 @@ export class Game {
             );
     }
     for (const player of players) {
-      if (this.eligibleSacrifices(player, filter).length > 0) {
-        this.state.pendingSacrifices.push({ player, filter, count });
+      if (this.eligibleSacrifices(player, filter, exceptId).length > 0) {
+        this.state.pendingSacrifices.push({
+          player,
+          filter,
+          count,
+          ...(exceptId !== undefined ? { exceptId } : {}),
+        });
       }
     }
   }
 
   /** Permanents `player` controls that match `filter` (they can only ever
-   * sacrifice their own — rule 701.16a). */
-  private eligibleSacrifices(player: PlayerId, filter: CardFilter): ObjectId[] {
+   * sacrifice their own — rule 701.16a), excluding `exceptId` ("another"). */
+  private eligibleSacrifices(
+    player: PlayerId,
+    filter: CardFilter,
+    exceptId?: ObjectId,
+  ): ObjectId[] {
     return this.state.zones.shared.battlefield.filter(
       (id) =>
+        id !== exceptId &&
         this.state.objects[id].controller === player &&
         matchesFilter(this.state, this.registry, id, filter, { you: player }),
     );
@@ -5784,7 +5808,7 @@ export class Game {
   private promptNextSacrifice(): void {
     while (this.state.pendingSacrifices.length > 0) {
       const next = this.state.pendingSacrifices[0];
-      const eligible = this.eligibleSacrifices(next.player, next.filter);
+      const eligible = this.eligibleSacrifices(next.player, next.filter, next.exceptId);
       if (eligible.length === 0) {
         this.state.pendingSacrifices = this.state.pendingSacrifices.slice(1);
         continue;

@@ -615,6 +615,8 @@ export interface GameState {
     readonly player: PlayerId;
     readonly filter: CardFilter;
     readonly count: number;
+    /** A permanent to exclude — "sacrifice **another** permanent" (Korvold). */
+    readonly exceptId?: ObjectId;
   }[];
   /**
    * Specific permanents (chosen, or auto-selected when there was no choice)

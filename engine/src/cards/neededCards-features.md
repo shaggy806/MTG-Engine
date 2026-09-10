@@ -13,7 +13,8 @@ Status:
 | **added — P4b (`EffectAmount.triggerValue`)** | 2 — **Terror of the Peaks**, **Old Gnawbone** |
 | **added — P5a (`create-token` `who: "target-controller"`)** | 3 — **Beast Within**, **Rapid Hybridization**, **An Offer You Can't Refuse** |
 | **added — P5b (`create-token-copy` + `conditional` effect + `triggerObject`)** | 3 — **Miirym, Sentinel Wyrm**, **Scute Swarm** (+ Insect Token), **Saw in Half** |
-| blocked on an engine feature | ~77 |
+| **added — P6 (`AbilityCost.sacrifice: { filter }` + `on: "sacrifice"` trigger)** | 3 — **Zuran Orb**, **Sylvan Safekeeper**, **Korvold, Fae-Cursed King** (stub finished) |
+| blocked on an engine feature | ~74 |
 
 † Rootbound Crag isn't on the list (Rockfall Vale is the list's R/G land) — added as the check-land cycle-mate.
 
@@ -192,15 +193,23 @@ Landfall *triggers* already work (`enters-battlefield`, `filter: { type: "land" 
 
 ## P6 — Sacrifice a filtered permanent as a cost  (~5 cards)
 
-`AbilityCost.sacrifice` is `"self" | "creature-you-control"`. Add a filter form
-(`"land-you-control"`, `{ filter }`).
-
-- **Zuran Orb** ("Sacrifice a land: gain 2 life"), **Sylvan Safekeeper**, **Orcish
-  Lumberjack** ("Sacrifice a Forest"), **Greater Gargadon** ("Sacrifice an artifact,
-  creature, or land: +1 time counter" — suspend itself is supported).
-- Companion feature: a **"whenever you sacrifice a permanent" trigger** — **Korvold**
-  (both halves), Mayhem-Devil-style cards. `permanent-sacrificed` events already exist;
-  needs a `TriggerSpec` case + `who`.
+- **DONE — `AbilityCost.sacrifice` gains a `{ filter: CardFilter }` form** — the player
+  picks a matching permanent they control (the `activate-ability` LegalAction carries the
+  usual `sacrifice: { choices }`; `sacrificeCandidates` / `isManaAbility` / `legalActions`
+  handle it generically). Shipped **Zuran Orb** ("Sacrifice a land: gain 2 life") and
+  **Sylvan Safekeeper** ("Sacrifice a land: target creature you control gains hexproof" —
+  Oracle text; the original said shroud, which the engine doesn't model).
+- **DONE — `on: "sacrifice"` `TriggerSpec`** (`who` relative to the sacrificing player)
+  + the `sacrifice` effect's `exceptSource?: boolean` ("sacrifice **another** permanent").
+  Finished the former **Korvold, Fae-Cursed King** stub — both halves (enters/attacks →
+  sac another; whenever you sacrifice → +1/+1 counter + draw). `sacrifice-cost.test.ts`.
+- **Still TBD:** **Orcish Lumberjack** ("{T}, Sacrifice a Forest: Add {R}{R}{R}") — a
+  *mana* ability with a filtered sacrifice cost; the auto-mana-payment machinery can't pick
+  which Forest, so it'd have to go on the stack (a timing deviation) or need a "choose the
+  sacrifice as part of the mana payment" hook. **Greater Gargadon** — its ability is on a
+  *suspended card in exile* ("Activate only if suspended"), not a battlefield permanent.
+  Mayhem-Devil-style "whenever a player sacrifices" is now authorable (`who: "any"`) but no
+  such card was on the list.
 
 ## P7 — Intervening-if / conditional triggered abilities  (~6 cards)
 
@@ -285,11 +294,8 @@ Pull the Oracle text (the `/import-deck` Scryfall lookup already does this) befo
 
 ---
 
-## Note on the existing Korvold stub
+## Note on the former Korvold stub
 
-`engine/src/cards/pool/korvold-fae-cursed-king.ts` is an **incomplete stub**
-(`text: "Flying\nWhenever"`, no `keywords`, no behaviour) and is already wired into
-`generated.ts`. It needs P6 (the "whenever you sacrifice" trigger + "sacrifice another
-permanent" effect) to be authored faithfully — until then it's a vanilla 4/4 with a
-misleading text box. Recommend either finishing it once P6 lands or removing it from the
-pool.
+`engine/src/cards/pool/korvold-fae-cursed-king.ts` was an incomplete stub; **P6
+finished it** — both triggered halves are now authored (enters/attacks → sacrifice
+another permanent; whenever you sacrifice → +1/+1 counter + draw).
