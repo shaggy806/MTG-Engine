@@ -92,6 +92,14 @@ export type Action =
        * printed cost (ROADMAP Phase 6): `"flashback"` / `"escape"` from the
        * graveyard, `"foretell"` from face-down exile. */
       readonly via?: CastVia;
+      /** The permanent to sacrifice for a `CardDefinition.additionalCost`
+       * sacrifice (rule 601.2f — Harrow, Crop Rotation). Required (and only
+       * meaningful) when the card has one. needed-cards P8. */
+      readonly sacrifice?: ObjectId;
+      /** Pay the card's kicker cost (rule 702.33), announced as the spell is
+       * cast and *before* targets are chosen — it can change the target specs.
+       * Only meaningful for a card with `CardDefinition.kicker`. P8. */
+      readonly kicked?: boolean;
     }
   | {
       readonly type: "activate-ability";
@@ -297,6 +305,18 @@ export type LegalAction =
       /** Set when `card` is a multi-face card — the face this action casts.
        * The driver echoes it back in the `cast-spell` action. */
       readonly face?: number;
+      /** Present when casting this costs an additional sacrifice (rule 601.2f
+       * — Harrow "sacrifice a land"): `choices` is every permanent that could
+       * pay it. The driver picks one and echoes it as `sacrifice`. P8. */
+      readonly sacrifice?: { readonly choices: readonly ObjectId[] };
+      /** A kickable spell (rule 702.33) is enumerated **twice**, once unkicked
+       * and once with `kicked: true` and the kicker cost folded in — the same
+       * "one entry per playable variant" shape `via` / `face` already use, so a
+       * driver just shows both. `targetSpecs` are the kicked ones when set.
+       * The driver echoes `kicked` back in the `cast-spell` action. P8. */
+      readonly kicked?: boolean;
+      /** The kicker cost this variant pays, for labelling. Set with `kicked`. */
+      readonly kickerCost?: string;
     }
   | {
       readonly kind: "activate-ability";

@@ -96,7 +96,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Blasphemous Act                  (dup — see Deck 1)
 [+] 1 Blood Crypt
 [+] 1 Bloodstained Mire
-[ ] 1 Bojuka Bog                       FEATURE: ETB "exile target player's graveyard"
+[+] 1 Bojuka Bog                      (P8 — exile-graveyard effect)
 [ ] 1 Burgeoning                       FEATURE: "whenever an opponent plays a land, put a land from your hand onto the battlefield"
 [+] 1 Cabaretti Courtyard
 [ ] 1 Cinder Glade                     (dup — see Deck 1)
@@ -104,7 +104,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Commercial District
 [ ] 1 Conduit of Worlds                FEATURE: play lands/permanents from your graveyard
 [+] 1 Craterhoof Behemoth
-[ ] 1 Crop Rotation                    FEATURE: additional cost "sacrifice a land"
+[+] 1 Crop Rotation                   (P8 — CardDefinition.additionalCost sacrifice)
 [ ] 1 Dryad of the Ilysian Grove       FEATURE: extra land drop; "lands are every basic land type"
 [ ] 1 Earthbender Ascension            FEATURE: (Avatar — counter-accumulation enchantment, text TBD)
 [ ] 1 Evendo, Waking Haven             FEATURE: (creature-land / DFC — text TBD)
@@ -117,7 +117,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [x] 8 Forest
 [ ] 1 Gaze of Granite                  FEATURE: {X} in a destroy-all filter (mana value <= X)
 [ ] 1 Greater Gargadon                 FEATURE: "sacrifice a permanent: put a time counter on this" (suspend itself is supported)
-[ ] 1 Harrow                           FEATURE: additional cost "sacrifice a land" + two basics to battlefield
+[+] 1 Harrow                          (P8 — CardDefinition.additionalCost sacrifice)
 [ ] 1 Horizon Explorer                 FEATURE: (lands-matter creature — text TBD)
 [ ] 1 Icetill Explorer                 FEATURE: (DFT snow / lands — text TBD)
 [ ] 1 Ignoble Hierarch                 FEATURE: exalted; fixed multi-color mana ability
@@ -159,7 +159,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [x] 5 Swamp
 [+] 1 Sylvan Safekeeper                (P6 — AbilityCost.sacrifice: { filter })
 [ ] 1 Tannuk, Memorial Ensign          FEATURE: (DFC / lands-matter — text TBD)
-[ ] 1 Tear Asunder                     FEATURE: kicker
+[+] 1 Tear Asunder                    (P8 — CardDefinition.kicker)
 [+] 1 Terramorphic Expanse
 [ ] 1 The Gitrog Monster               FEATURE: extra land drop; "sacrifice a land or discard" upkeep; draw on a land -> graveyard
 [+] 1 Tireless Provisioner

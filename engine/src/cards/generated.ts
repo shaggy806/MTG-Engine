@@ -26,6 +26,7 @@ import _poolBloodbraidElf from "./pool/bloodbraid-elf.js";
 import _poolBloodstainedMire from "./pool/bloodstained-mire.js";
 import _poolBloodthroneVampire from "./pool/bloodthrone-vampire.js";
 import _poolBoggartBrute from "./pool/boggart-brute.js";
+import _poolBojukaBog from "./pool/bojuka-bog.js";
 import _poolBonesplitter from "./pool/bonesplitter.js";
 import _poolBoomerang from "./pool/boomerang.js";
 import _poolBramblewingTheUntamed from "./pool/bramblewing-the-untamed.js";
@@ -46,6 +47,7 @@ import _poolCorvathEmberScribe from "./pool/corvath-ember-scribe.js";
 import _poolCounterspell from "./pool/counterspell.js";
 import _poolCraterhoofBehemoth from "./pool/craterhoof-behemoth.js";
 import _poolCrawWurm from "./pool/craw-wurm.js";
+import _poolCropRotation from "./pool/crop-rotation.js";
 import _poolCryptolithRite from "./pool/cryptolith-rite.js";
 import _poolDamnation from "./pool/damnation.js";
 import _poolDarksteelMyr from "./pool/darksteel-myr.js";
@@ -92,6 +94,7 @@ import _poolGrizzlyBears from "./pool/grizzly-bears.js";
 import _poolGrovewatchElder from "./pool/grovewatch-elder.js";
 import _poolGrovewatchHollow from "./pool/grovewatch-hollow.js";
 import _poolGutShot from "./pool/gut-shot.js";
+import _poolHarrow from "./pool/harrow.js";
 import _poolHeroicIntervention from "./pool/heroic-intervention.js";
 import _poolHillGiant from "./pool/hill-giant.js";
 import _poolHinterlandHarbor from "./pool/hinterland-harbor.js";
@@ -178,6 +181,7 @@ import _poolSunderCharm from "./pool/sunder-charm.js";
 import _poolSunlitBastion from "./pool/sunlit-bastion.js";
 import _poolSwamp from "./pool/swamp.js";
 import _poolSylvanSafekeeper from "./pool/sylvan-safekeeper.js";
+import _poolTearAsunder from "./pool/tear-asunder.js";
 import _poolTempleOfAbandon from "./pool/temple-of-abandon.js";
 import _poolTempleOfMystery from "./pool/temple-of-mystery.js";
 import _poolTemurAscendancy from "./pool/temur-ascendancy.js";
@@ -255,6 +259,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolBloodstainedMire,
   _poolBloodthroneVampire,
   _poolBoggartBrute,
+  _poolBojukaBog,
   _poolBonesplitter,
   _poolBoomerang,
   _poolBramblewingTheUntamed,
@@ -275,6 +280,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolCounterspell,
   _poolCraterhoofBehemoth,
   _poolCrawWurm,
+  _poolCropRotation,
   _poolCryptolithRite,
   _poolDamnation,
   _poolDarksteelMyr,
@@ -321,6 +327,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolGrovewatchElder,
   _poolGrovewatchHollow,
   _poolGutShot,
+  _poolHarrow,
   _poolHeroicIntervention,
   _poolHillGiant,
   _poolHinterlandHarbor,
@@ -407,6 +414,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolSunlitBastion,
   _poolSwamp,
   _poolSylvanSafekeeper,
+  _poolTearAsunder,
   _poolTempleOfAbandon,
   _poolTempleOfMystery,
   _poolTemurAscendancy,

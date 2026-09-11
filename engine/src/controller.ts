@@ -729,6 +729,25 @@ export class ScriptedController implements PlayerController {
 }
 
 /**
+ * The cast-time extras a `cast-spell` `LegalAction` may demand beyond targets:
+ * the `kicked` flag (the engine enumerates kicked and unkicked as separate
+ * actions, so it's just echoed back) and a choice of which permanent pays an
+ * additional sacrifice cost (rule 601.2f — Harrow). needed-cards P8.
+ */
+function castExtras(
+  legal: Extract<LegalAction, { kind: "cast-spell" }>,
+  pickIndex: (n: number) => number,
+): { kicked?: boolean; sacrifice?: ObjectId } {
+  const sac = legal.sacrifice;
+  return {
+    ...(legal.kicked === true ? { kicked: true } : {}),
+    ...(sac !== undefined && sac.choices.length > 0
+      ? { sacrifice: sac.choices[pickIndex(sac.choices.length)] }
+      : {}),
+  };
+}
+
+/**
  * Picks uniformly at random from `legalActions()`. Useful as a filler opponent
  * and as a fuzz test: a random-vs-random game that runs to completion exercises
  * every action path the engine claims is legal.
@@ -798,6 +817,7 @@ export class RandomController extends AutomaticController {
             modes,
             ...(legal.via !== undefined ? { via: legal.via } : {}),
             ...(legal.face !== undefined ? { face: legal.face } : {}),
+            ...castExtras(legal, (n) => this.pickIndex(n)),
           };
         }
         return {
@@ -810,6 +830,7 @@ export class RandomController extends AutomaticController {
             : {}),
           ...(legal.via !== undefined ? { via: legal.via } : {}),
           ...(legal.face !== undefined ? { face: legal.face } : {}),
+          ...castExtras(legal, (n) => this.pickIndex(n)),
         };
       }
       case "activate-ability": {

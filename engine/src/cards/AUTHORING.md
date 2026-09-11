@@ -136,6 +136,8 @@ from the same link.
 | --- | --- | --- |
 | `loyalty` | `number` | planeswalker starting loyalty — §8, §12 |
 | `castModal` | `{ minModes, maxModes, modes: ModeOption[] }` | a **targeted** modal spell (choose modes at cast time). Non-targeted modes use the `modal` *effect* instead — §6. |
+| `additionalCost` | `{ sacrifice: CardFilter }` | a **mandatory** extra cost to cast (rule 601.2f — Harrow: "sacrifice a land"). Paid as the spell is cast, so it stands even if the spell is countered, and the spell isn't castable at all without it. The caster picks which permanent. |
+| `kicker` | `{ cost, targets?, effect? }` | **kicker** (rule 702.33 — Tear Asunder). `cost` is folded onto the printed cost; `targets` / `effect` replace the unkicked ones when kicked. `legalActions` offers the card twice, kicked and unkicked. |
 | `flashback` | `{ cost }` | cast from graveyard, then exiled (rule 702.34) |
 | `foretell` | `{ cost }` | pay `{2}` to exile face-down, cast later for `cost` |
 | `escape` | `{ cost, exileCount }` | cast from graveyard + exile N other graveyard cards |
@@ -236,6 +238,7 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 | `destroy` | `target` | Doom Blade |
 | `destroy-all` | `filter` | Wrath of God |
 | `exile` | `target` | Angelic Edict |
+| `exile-graveyard` | `target` (a player slot, or `"you"`) | Bojuka Bog — exiles that player's whole graveyard at once (rule 406; the cards in it are never individually targeted) |
 | `return-to-hand` | `target` | Unsummon |
 | `return-from-graveyard` | `filter`, `destination: "battlefield" \| "hand"`, `count: number \| "all"`, `enterTapped?` | Splendid Reclamation (from *your* graveyard; a `number` less than the match count raises a `choose-from-zone`) |
 | `counter` | `target` (a spell) | Counterspell |
@@ -670,6 +673,10 @@ different card, or extend the engine (see `ROADMAP.md`).
   requirements.
 - **`proliferate`** always proliferates everything eligible (no "choose any
   number").
+- **Additional costs** are a sacrifice only (`additionalCost.sacrifice`) — no
+  "discard a card", "pay N life", "exile a creature from your graveyard" form
+  yet, and only one such cost per card. **Kicker** is a single optional cost
+  (no multikicker, no two different kickers on one card).
 
 **Not modeled at all:** phasing, Battles, dungeons / the Initiative / the Ring,
 banding, "day/night"-independent double-faced tokens, a static ability that

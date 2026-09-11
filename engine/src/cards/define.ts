@@ -217,6 +217,33 @@ export interface CardDefinition {
     readonly maxModes: number;
     readonly modes: readonly ModeOption[];
   } | null;
+  /**
+   * An **additional cost** to cast this spell (rule 601.2f/h) — paid as it's
+   * cast, so it happens even if the spell is later countered, and the spell
+   * can't be cast at all if it can't be paid. `null` for none. needed-cards P8.
+   *
+   * `sacrifice` is the only form so far: "As an additional cost to cast this
+   * spell, sacrifice a land" (Harrow, Crop Rotation). The caster picks which
+   * matching permanent, as a `sacrifice` on the `cast-spell` action — the same
+   * shape an activated ability's `AbilityCost.sacrifice: { filter }` uses.
+   */
+  readonly additionalCost: { readonly sacrifice: CardFilter } | null;
+  /**
+   * Kicker (rule 702.33 — needed-cards P8): an **optional** additional cost
+   * announced as the spell is cast (601.2b), before targets are chosen, that
+   * changes what the spell does. `null` for none.
+   *
+   * `cost` is folded onto the printed mana cost when kicked. `targets` /
+   * `effect` replace the unkicked ones when kicked — Tear Asunder exiles an
+   * artifact or enchantment normally, "instead exile target permanent" when
+   * kicked, so the *target spec itself* differs and must be known before
+   * targeting. Omit either to leave it unchanged.
+   */
+  readonly kicker: {
+    readonly cost: string;
+    readonly targets?: readonly TargetSpec[];
+    readonly effect?: EffectSpec;
+  } | null;
   /** Declarative resolution effect, or `null`. */
   readonly effect: EffectSpec | null;
   /** Imperative resolution script (takes precedence over `effect`), or `null`. */
@@ -334,6 +361,12 @@ interface CardDraft {
     readonly maxModes: number;
     readonly modes: readonly ModeOption[];
   };
+  additionalCost?: { readonly sacrifice: CardFilter };
+  kicker?: {
+    readonly cost: string;
+    readonly targets?: readonly TargetSpec[];
+    readonly effect?: EffectSpec;
+  };
   effect?: EffectSpec;
   resolve?: SpellResolver;
   activated?: readonly ActivatedAbility[];
@@ -389,6 +422,8 @@ export function defineCard(draft: CardDraft): CardDefinition {
     text: draft.text ?? "",
     targets: draft.targets ?? [],
     castModal: draft.castModal ?? null,
+    additionalCost: draft.additionalCost ?? null,
+    kicker: draft.kicker ?? null,
     effect: draft.effect ?? null,
     resolve: draft.resolve ?? null,
     activated: draft.activated ?? [],

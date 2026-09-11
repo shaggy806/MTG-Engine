@@ -388,6 +388,8 @@ export class Game {
           action.via,
           action.face ?? 0,
           action.modes,
+          action.kicked === true,
+          action.sacrifice,
         );
         break;
       case "activate-ability":
@@ -479,6 +481,8 @@ export class Game {
           action.via,
           action.face ?? 0,
           action.modes,
+          action.kicked === true,
+          action.sacrifice,
         );
       case "activate-ability":
         return this.whyCannotActivateAbility(
@@ -718,20 +722,13 @@ export class Game {
           if (this.whyCannotPlayLand(player, card, face ?? 0) === null) {
             out.push({ kind: "play-land", card, cardName, ...faceProp });
           }
-        } else if (this.whyCannotCastSpell(player, card, undefined, face ?? 0) === null) {
-          const parsed = parseManaCost(def.manaCost);
-          out.push({
-            kind: "cast-spell",
-            card,
-            cardName,
-            targetSpecs: def.targets,
-            targetOptions: this.targetOptionsFor(def.targets, player, this.cardSource(def)),
-            ...faceProp,
-            ...this.castModalDescriptor(def, player),
-            ...(parsed.x > 0
-              ? { xCost: { maxX: this.maxAffordableX(player, card, def, def.manaCost, face ?? 0) } }
-              : {}),
-          });
+        } else {
+          out.push(
+            ...this.castSpellActions(player, card, cardName, def, {
+              ...faceProp,
+              costString: def.manaCost,
+            }),
+          );
         }
       }
       const cardName = ownName;
@@ -755,24 +752,16 @@ export class Game {
     for (const card of this.state.zones.shared.exile) {
       const object = this.state.objects[card];
       if (object === undefined || !object.foretold || object.owner !== player) continue;
-      if (this.whyCannotCastSpell(player, card, "foretell") !== null) continue;
       const cardName = object.cardName;
       const def = this.registry.get(cardName);
       const cost = def.foretell?.cost ?? null;
       if (cost === null) continue;
-      const parsed = parseManaCost(cost);
-      out.push({
-        kind: "cast-spell",
-        card,
-        cardName,
-        via: "foretell",
-        targetSpecs: def.targets,
-        targetOptions: this.targetOptionsFor(def.targets, player, this.cardSource(def)),
-        ...this.castModalDescriptor(def, player),
-        ...(parsed.x > 0
-          ? { xCost: { maxX: this.maxAffordableX(player, card, def, cost) } }
-          : {}),
-      });
+      out.push(
+        ...this.castSpellActions(player, card, cardName, def, {
+          via: "foretell",
+          costString: cost,
+        }),
+      );
     }
 
     // Flashback (rule 702.34) — an instant/sorcery in this player's graveyard
@@ -783,20 +772,12 @@ export class Game {
       const def = this.registry.get(cardName);
       const cost = this.flashbackCostOf(card);
       if (cost === null) continue;
-      if (this.whyCannotCastSpell(player, card, "flashback") !== null) continue;
-      const parsed = parseManaCost(cost);
-      out.push({
-        kind: "cast-spell",
-        card,
-        cardName,
-        via: "flashback",
-        targetSpecs: def.targets,
-        targetOptions: this.targetOptionsFor(def.targets, player, this.cardSource(def)),
-        ...this.castModalDescriptor(def, player),
-        ...(parsed.x > 0
-          ? { xCost: { maxX: this.maxAffordableX(player, card, def, cost) } }
-          : {}),
-      });
+      out.push(
+        ...this.castSpellActions(player, card, cardName, def, {
+          via: "flashback",
+          costString: cost,
+        }),
+      );
     }
 
     // Disturb (rule 702.150) — a transforming DFC in this player's graveyard
@@ -805,22 +786,14 @@ export class Game {
     for (const card of this.state.zones.perPlayer[player].graveyard) {
       const front = this.frontFaceDef(card);
       if (front.disturb === null) continue;
-      if (this.whyCannotCastSpell(player, card, "disturb", 1) !== null) continue;
       const backDef = this.faceDef(card, 1);
-      const parsed = parseManaCost(front.disturb.cost);
-      out.push({
-        kind: "cast-spell",
-        card,
-        cardName: backDef.name,
-        via: "disturb",
-        face: 1,
-        targetSpecs: backDef.targets,
-        targetOptions: this.targetOptionsFor(backDef.targets, player, this.cardSource(backDef)),
-        ...this.castModalDescriptor(backDef, player),
-        ...(parsed.x > 0
-          ? { xCost: { maxX: this.maxAffordableX(player, card, backDef, front.disturb.cost, 1) } }
-          : {}),
-      });
+      out.push(
+        ...this.castSpellActions(player, card, backDef.name, backDef, {
+          via: "disturb",
+          face: 1,
+          costString: front.disturb.cost,
+        }),
+      );
     }
 
     // Adventure (rule 715.3) — a card exiled by its adventure resolving may be
@@ -828,22 +801,14 @@ export class Game {
     for (const card of this.state.zones.shared.exile) {
       const object = this.state.objects[card];
       if (object === undefined || !object.onAdventure || object.owner !== player) continue;
-      if (this.whyCannotCastSpell(player, card, "adventure", 0) !== null) continue;
       const creatureDef = this.faceDef(card, 0);
-      const parsed = parseManaCost(creatureDef.manaCost);
-      out.push({
-        kind: "cast-spell",
-        card,
-        cardName: creatureDef.name,
-        via: "adventure",
-        face: 0,
-        targetSpecs: creatureDef.targets,
-        targetOptions: this.targetOptionsFor(creatureDef.targets, player, this.cardSource(creatureDef)),
-        ...this.castModalDescriptor(creatureDef, player),
-        ...(parsed.x > 0
-          ? { xCost: { maxX: this.maxAffordableX(player, card, creatureDef) } }
-          : {}),
-      });
+      out.push(
+        ...this.castSpellActions(player, card, creatureDef.name, creatureDef, {
+          via: "adventure",
+          face: 0,
+          costString: creatureDef.manaCost,
+        }),
+      );
     }
 
     // Escape (rule 702.139) — a card in this player's graveyard with escape,
@@ -852,20 +817,12 @@ export class Game {
       const cardName = this.state.objects[card].cardName;
       const def = this.registry.get(cardName);
       if (def.escape === null) continue;
-      if (this.whyCannotCastSpell(player, card, "escape") !== null) continue;
-      const parsed = parseManaCost(def.escape.cost);
-      out.push({
-        kind: "cast-spell",
-        card,
-        cardName,
-        via: "escape",
-        targetSpecs: def.targets,
-        targetOptions: this.targetOptionsFor(def.targets, player, this.cardSource(def)),
-        ...this.castModalDescriptor(def, player),
-        ...(parsed.x > 0
-          ? { xCost: { maxX: this.maxAffordableX(player, card, def, def.escape.cost) } }
-          : {}),
-      });
+      out.push(
+        ...this.castSpellActions(player, card, cardName, def, {
+          via: "escape",
+          costString: def.escape.cost,
+        }),
+      );
     }
 
     // A static permission to play lands from your graveyard (Ramunap
@@ -977,6 +934,56 @@ export class Game {
         })),
       },
     };
+  }
+
+  /**
+   * Every `cast-spell` `LegalAction` for one castable card in one zone — the
+   * shared builder behind all six enumeration sites (hand / command zone,
+   * foretell, flashback, disturb, adventure, escape), which differ only in
+   * `via` / `face` / which cost string is paid.
+   *
+   * Usually one entry. A **kickable** card (rule 702.33 — needed-cards P8)
+   * yields up to two, unkicked and kicked, each with its own cost, target specs
+   * and affordability — the same "one entry per playable variant" shape `via`
+   * and `face` already use, so a driver just offers both buttons.
+   */
+  private castSpellActions(
+    player: PlayerId,
+    card: ObjectId,
+    cardName: string,
+    def: CardDefinition,
+    opts: { via?: CastVia; face?: number; costString: string | null },
+  ): LegalAction[] {
+    const { via, face, costString } = opts;
+    const out: LegalAction[] = [];
+    for (const kicked of def.kicker !== null ? [false, true] : [false]) {
+      if (this.whyCannotCastSpell(player, card, via, face ?? 0, undefined, kicked) !== null) {
+        continue;
+      }
+      const specs = this.effectiveTargetSpecs(def, undefined, kicked);
+      const cost = kicked && def.kicker !== null && costString !== null
+        ? costString + def.kicker.cost
+        : costString;
+      const sacrifices = this.additionalCostSacrifices(player, def);
+      out.push({
+        kind: "cast-spell",
+        card,
+        cardName,
+        targetSpecs: specs,
+        targetOptions: this.targetOptionsFor(specs, player, this.cardSource(def)),
+        ...(via !== undefined ? { via } : {}),
+        ...(face !== undefined ? { face } : {}),
+        ...this.castModalDescriptor(def, player),
+        ...(sacrifices.length > 0 ? { sacrifice: { choices: sacrifices } } : {}),
+        ...(kicked && def.kicker !== null
+          ? { kicked: true, kickerCost: def.kicker.cost }
+          : {}),
+        ...(parseManaCost(cost).x > 0
+          ? { xCost: { maxX: this.maxAffordableX(player, card, def, cost, face ?? 0) } }
+          : {}),
+      });
+    }
+    return out;
   }
 
   /** The colour/type identity of a permanent (its computed values). */
@@ -3502,27 +3509,59 @@ export class Game {
   /** The mana-cost string `player` would pay to cast `cardId` under `via`
    * (the flashback cost from the graveyard, the foretell cost from exile, else
    * the printed cost). */
-  private castCostString(cardId: ObjectId, via: CastVia | undefined, face = 0): string | null {
+  private castCostString(
+    cardId: ObjectId,
+    via: CastVia | undefined,
+    face = 0,
+    kicked = false,
+  ): string | null {
     const def = this.faceDef(cardId, face);
-    if (via === "flashback") return this.flashbackCostOf(cardId);
-    if (via === "escape") return def.escape?.cost ?? null;
-    if (via === "foretell") return def.foretell?.cost ?? null;
-    // Disturb (rule 702.150) — the disturb cost is printed on the front face.
-    if (via === "disturb") return this.frontFaceDef(cardId).disturb?.cost ?? null;
-    // Adventure (rule 715) — the creature is cast from exile for its own cost.
-    return def.manaCost;
+    const base =
+      via === "flashback"
+        ? this.flashbackCostOf(cardId)
+        : via === "escape"
+          ? (def.escape?.cost ?? null)
+          : via === "foretell"
+            ? (def.foretell?.cost ?? null)
+            : // Disturb (rule 702.150) — the disturb cost is on the front face.
+              via === "disturb"
+              ? (this.frontFaceDef(cardId).disturb?.cost ?? null)
+              : // Adventure (rule 715) — the creature is cast for its own cost.
+                def.manaCost;
+    // Kicker (rule 702.33) is an additional cost, so it just concatenates onto
+    // whatever cost is being paid — `parseManaCost` is order-independent.
+    if (!kicked || def.kicker === null || base === null) return base;
+    return base + def.kicker.cost;
   }
 
-  /** The concrete target specs of a spell — its own, or (for a targeted modal
+  /** The concrete target specs of a spell — its own, the kicked ones if it was
+   * kicked into a different target (Tear Asunder), or (for a targeted modal
    * spell) the concatenation of the chosen modes' specs, in mode order. */
   private effectiveTargetSpecs(
     def: CardDefinition,
     modes: readonly number[] | undefined,
+    kicked = false,
   ): readonly TargetSpec[] {
+    if (kicked && def.kicker?.targets !== undefined) return def.kicker.targets;
     if (def.castModal === null || modes === undefined) return def.targets;
     return [...modes]
       .sort((a, b) => a - b)
       .flatMap((i) => def.castModal?.modes[i]?.targets ?? []);
+  }
+
+  /**
+   * Permanents `player` could sacrifice to pay a card's
+   * {@link CardDefinition.additionalCost} (rule 601.2f — Harrow "sacrifice a
+   * land"). `[]` when the card has no such cost. needed-cards P8.
+   */
+  private additionalCostSacrifices(player: PlayerId, def: CardDefinition): ObjectId[] {
+    const filter = def.additionalCost?.sacrifice;
+    if (filter === undefined) return [];
+    return this.state.zones.shared.battlefield.filter(
+      (id) =>
+        this.state.objects[id].controller === player &&
+        matchesFilter(this.state, this.registry, id, filter, { you: player }),
+    );
   }
 
   /** Why the chosen `modes` are illegal for a `castModal` card (or `null`). */
@@ -3546,6 +3585,8 @@ export class Game {
     via?: CastVia,
     face = 0,
     modes?: readonly number[],
+    kicked = false,
+    sacrifice?: ObjectId,
   ): string | null {
     const blocked = this.whyCannotAct(player);
     if (blocked !== null) return blocked;
@@ -3604,10 +3645,22 @@ export class Game {
       const bad = this.whyCannotChooseCastModes(def.castModal, modes);
       if (bad !== null) return `${def.name}: ${bad}`;
     }
+    if (kicked && def.kicker === null) return `${def.name} has no kicker`;
+    // An additional sacrifice cost (rule 601.2f) must be payable, and — once
+    // the driver has named one — that permanent must actually qualify.
+    if (def.additionalCost !== null) {
+      const candidates = this.additionalCostSacrifices(player, def);
+      if (candidates.length === 0) {
+        return `${player} has nothing to sacrifice to cast ${def.name}`;
+      }
+      if (sacrifice !== undefined && !candidates.includes(sacrifice)) {
+        return `that permanent cannot pay ${def.name}'s additional cost`;
+      }
+    }
     // A non-modal spell's target legality is checked up front; a modal spell's
     // is checked per chosen mode (only once `modes` is known — at enumeration
     // time the driver hasn't picked yet).
-    for (const spec of this.effectiveTargetSpecs(def, modes)) {
+    for (const spec of this.effectiveTargetSpecs(def, modes, kicked)) {
       if (
         legalTargets(this.state, this.registry, spec, player, this.cardSource(def)).length === 0
       ) {
@@ -3618,7 +3671,13 @@ export class Game {
       this.payMana(
         player,
         this.withFace(cardId, face, () =>
-          this.castingCostOf(player, cardId, def, 0, this.castCostString(cardId, via, face)),
+          this.castingCostOf(
+            player,
+            cardId,
+            def,
+            0,
+            this.castCostString(cardId, via, face, kicked),
+          ),
         ),
       ) === null
     ) {
@@ -3635,8 +3694,10 @@ export class Game {
     via?: CastVia,
     face = 0,
     modes?: readonly number[],
+    kicked = false,
+    sacrifice?: ObjectId,
   ): void {
-    const why = this.whyCannotCastSpell(player, cardId, via, face, modes);
+    const why = this.whyCannotCastSpell(player, cardId, via, face, modes, kicked, sacrifice);
     if (why !== null) throw new Error(why);
 
     const object = this.state.objects[cardId];
@@ -3644,7 +3705,7 @@ export class Game {
     // the chosen face for the rest of this method and while on the stack.
     if (object.faces !== undefined) object.face = face;
     const def = this.registry.get(printedCardName(object));
-    const costString = this.castCostString(cardId, via, face);
+    const costString = this.castCostString(cardId, via, face, kicked);
     const hasX = parseManaCost(costString).x > 0;
     const chosenX = hasX ? Math.max(0, Math.floor(xValue)) : 0;
 
@@ -3653,7 +3714,13 @@ export class Game {
     }
     const sortedModes =
       def.castModal !== null ? [...(modes ?? [])].sort((a, b) => a - b) : undefined;
-    const targetSpecs = this.effectiveTargetSpecs(def, sortedModes);
+    const targetSpecs = this.effectiveTargetSpecs(def, sortedModes, kicked);
+    // An additional sacrifice cost the driver didn't name (only one candidate,
+    // or a driver that doesn't care): take the first eligible permanent.
+    const sacrificeVictim =
+      def.additionalCost === null
+        ? undefined
+        : (sacrifice ?? this.additionalCostSacrifices(player, def)[0]);
 
     if (targets.length !== targetSpecs.length) {
       throw new Error(
@@ -3692,7 +3759,19 @@ export class Game {
     object.castVia = via ?? null;
     object.stormCount = stormCount;
     if (sortedModes !== undefined) object.chosenModes = sortedModes;
+    if (kicked) object.kicked = true;
     this.executePayment(player, payment);
+    // The additional sacrifice (rule 601.2f/h) is paid *after* mana, so the
+    // land being sacrificed can still be tapped for the spell's own cost first
+    // (601.2g — mana abilities are activated before costs are paid; Crop
+    // Rotation off a single Forest). It happens as the spell is cast, so it
+    // stands even if the spell is later countered.
+    if (sacrificeVictim !== undefined && this.state.objects[sacrificeVictim] !== undefined) {
+      const victim = this.splitOneFromStack(sacrificeVictim);
+      const owner = this.state.objects[victim].owner;
+      this.moveObject(victim, "graveyard");
+      this.emit({ type: "permanent-sacrificed", object: victim, player: owner });
+    }
     if (castingFromCommand) {
       const name = object.cardName;
       const counts = this.state.players[player].commanderCastCounts;
@@ -4534,9 +4613,13 @@ export class Game {
     const def = this.registry.get(printedCardName(object));
     const targets = object.targets ?? [];
 
+    // A kicked spell may target something its unkicked specs wouldn't allow
+    // (Tear Asunder), so the fizzle check uses the specs it was actually cast
+    // with — `chosenModes` handles the modal case below, on its own.
+    const castSpecs = this.effectiveTargetSpecs(def, undefined, object.kicked === true);
     if (
-      def.targets.length > 0 &&
-      !this.anyTargetLegal(def.targets, targets, object.controller, this.cardSource(def))
+      castSpecs.length > 0 &&
+      !this.anyTargetLegal(castSpecs, targets, object.controller, this.cardSource(def))
     ) {
       object.targets = null;
       this.emit({
@@ -4600,7 +4683,13 @@ export class Game {
         targets,
         object.xValue ?? 0,
       );
-      if (def.resolve !== null) {
+      // Kicker (rule 702.33): a kicked spell does its kicked effect "instead"
+      // when it has one (Tear Asunder), else the same effect as unkicked.
+      const kickedEffect =
+        object.kicked === true ? (def.kicker?.effect ?? null) : null;
+      if (kickedEffect !== null) {
+        applyEffectSpec(kickedEffect, context);
+      } else if (def.resolve !== null) {
         def.resolve(context);
       } else if (def.effect !== null) {
         applyEffectSpec(def.effect, context);
@@ -5203,6 +5292,13 @@ export class Game {
       sacrificeSource: () => this.sacrificeSourceByEffect(source),
       returnToHand: (target) => this.returnToHandByEffect(target),
       exileObject: (target) => this.exileByEffect(target),
+      exileGraveyard: (target) => {
+        if (target.kind !== "player") return;
+        // Snapshot: `moveObject` mutates the graveyard array as it goes.
+        for (const id of [...this.state.zones.perPlayer[target.player].graveyard]) {
+          this.moveObject(id, "exile");
+        }
+      },
       grantFlashback: (target) => this.grantFlashbackByEffect(target),
       fight: (a, b, oneSided) => this.fightCreatures(a, b, oneSided),
       counterSpell: (target) => this.counterSpellByEffect(target),
@@ -7261,8 +7357,10 @@ export class Game {
     object.exileAtEndStep = false;
     object.foretold = false;
     object.foretoldOnTurn = null;
-    // Modes chosen for a targeted modal spell (Phase 11 EG-2) end with the stack.
+    // Modes chosen for a targeted modal spell (Phase 11 EG-2) and a kicker
+    // paid as it was cast (P8) both end with the stack.
     object.chosenModes = undefined;
+    object.kicked = undefined;
     // The adventure "may cast the creature from exile" permission (rule 715.3)
     // ends when the card changes zones. `resolveTopOfStack` re-sets it *after*
     // the move to exile that creates the state.

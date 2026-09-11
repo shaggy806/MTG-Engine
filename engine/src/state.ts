@@ -105,6 +105,10 @@ export interface GameObject {
    * own slice of `targets`. Absent for a non-modal spell; cleared on any zone
    * change. */
   chosenModes?: readonly number[];
+  /** This spell was kicked as it was cast (rule 702.33 — needed-cards P8): its
+   * kicker cost was paid, so `resolveTopOfStack` applies the kicked `effect`.
+   * Absent for an unkicked or unkickable spell; cleared on any zone change. */
+  kicked?: boolean;
   /** The alternative permission this spell was cast under while it's on the
    * stack (ROADMAP Phase 6). `"flashback"` (rule 702.34) additionally means it
    * is exiled instead of going anywhere else from the stack. `null` / absent

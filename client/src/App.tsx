@@ -34,6 +34,14 @@ const IMPORT_DECK_URL = `${
 }/import-deck`
 
 type CastAction = Extract<LegalAction, { kind: 'cast-spell' }>
+
+/** The "which variant of this cast" fields a `cast-spell` action carries all
+ * the way from `legalActions` back into the dispatched action. */
+const castExtras = (cast: CastAction) => ({
+  ...(cast.via !== undefined ? { via: cast.via } : {}),
+  ...(cast.face !== undefined ? { face: cast.face } : {}),
+  ...(cast.kicked === true ? { kicked: true } : {}),
+})
 type LandAction = Extract<LegalAction, { kind: 'play-land' }>
 type SuspendAction = Extract<LegalAction, { kind: 'suspend' }>
 type ForetellAction = Extract<LegalAction, { kind: 'foretell' }>
@@ -74,6 +82,10 @@ interface Targeting {
   readonly via?: CastVia
   /** Which face of a multi-face card is being cast (Phase 10). */
   readonly face?: number
+  /** Casting this for its kicker cost (rule 702.33 — P8). The engine offers
+   * kicked and unkicked as separate `cast-spell` actions; this just echoes
+   * which one the player picked. */
+  readonly kicked?: boolean
 }
 
 /**
@@ -466,15 +478,19 @@ function Table({ view, seat, opponents, game }: TableProps) {
   const [pendingX, setPendingX] = useState<{
     readonly action: CastAction | AbilityAction
     readonly value: number
+    /** A permanent already chosen to pay an additional sacrifice cost (P8). */
+    readonly sacrifice?: ObjectId
   } | null>(null)
   // Set while a targeted modal spell's modes are being chosen (Phase 11 EG-2),
   // before target selection.
   const [pendingModes, setPendingModes] = useState<{
     readonly cast: CastAction
     readonly picked: readonly number[]
+    /** A permanent already chosen to pay an additional sacrifice cost (P8). */
+    readonly sacrifice?: ObjectId
   } | null>(null)
   // Set while choosing which creature to sacrifice for an ability's cost.
-  const [pendingSac, setPendingSac] = useState<AbilityAction | null>(null)
+  const [pendingSac, setPendingSac] = useState<AbilityAction | CastAction | null>(null)
   const [selectedSource, setSelectedSource] = useState<ObjectId | null>(null)
   // Attacker -> chosen defender. With more than one legal opponent, clicking
   // an attacker assigns it to the first opponent by default and focuses it;
@@ -507,7 +523,10 @@ function Table({ view, seat, opponents, game }: TableProps) {
   }, [actions])
   const castByCard = useMemo(() => {
     const m = new Map<ObjectId, CastAction>()
-    for (const a of actions) if (a.kind === 'cast-spell') m.set(a.card, a)
+    // First entry wins: a kickable spell is enumerated unkicked then kicked
+    // (P8), and this map backs the "just cast it" shortcuts, which mean the
+    // plain cast. The per-variant buttons come from `playFacesByCard`.
+    for (const a of actions) if (a.kind === 'cast-spell' && !m.has(a.card)) m.set(a.card, a)
     return m
   }, [actions])
   /** Every playable face of a card (a multi-face card has 2+). */
@@ -686,7 +705,18 @@ function Table({ view, seat, opponents, game }: TableProps) {
 
   const finishTargets = useCallback(
     (
-      t: Pick<Targeting, 'kind' | 'source' | 'abilityIndex' | 'xValue' | 'sacrifice' | 'via' | 'face' | 'modes'>,
+      t: Pick<
+        Targeting,
+        | 'kind'
+        | 'source'
+        | 'abilityIndex'
+        | 'xValue'
+        | 'sacrifice'
+        | 'via'
+        | 'face'
+        | 'modes'
+        | 'kicked'
+      >,
       targets: readonly TargetRef[],
     ) => {
       game.dispatch(
@@ -702,6 +732,8 @@ function Table({ view, seat, opponents, game }: TableProps) {
                 ...(t.xValue !== undefined ? { xValue: t.xValue } : {}),
                 ...(t.via !== undefined ? { via: t.via } : {}),
                 ...(t.face !== undefined ? { face: t.face } : {}),
+                ...(t.kicked === true ? { kicked: true } : {}),
+                ...(t.sacrifice !== undefined ? { sacrifice: t.sacrifice } : {}),
               }
             : {
                 type: 'activate-ability',
@@ -728,14 +760,17 @@ function Table({ view, seat, opponents, game }: TableProps) {
     [finishTargets],
   )
 
-  const beginCast = useCallback(
-    (cast: CastAction) => {
+  /** Cast, past the additional-cost step — `sacrifice` is the permanent chosen
+   * to pay a `CardDefinition.additionalCost` (Harrow: "sacrifice a land"). */
+  const startCast = useCallback(
+    (cast: CastAction, sacrifice?: ObjectId) => {
+      const sacProp = sacrifice !== undefined ? { sacrifice } : {}
       if (cast.castModal) {
-        setPendingModes({ cast, picked: [] })
+        setPendingModes({ cast, picked: [], ...sacProp })
         return
       }
       if (cast.xCost) {
-        setPendingX({ action: cast, value: cast.xCost.maxX })
+        setPendingX({ action: cast, value: cast.xCost.maxX, ...sacProp })
         return
       }
       beginTargeting({
@@ -745,18 +780,36 @@ function Table({ view, seat, opponents, game }: TableProps) {
         label: `Cast ${cast.cardName}`,
         specs: cast.targetSpecs,
         options: cast.targetOptions,
-        ...(cast.via !== undefined ? { via: cast.via } : {}),
-        ...(cast.face !== undefined ? { face: cast.face } : {}),
+        ...castExtras(cast),
+        ...sacProp,
       })
     },
     [beginTargeting],
+  )
+
+  const beginCast = useCallback(
+    (cast: CastAction) => {
+      // An additional sacrifice cost (rule 601.2f) is chosen first, before
+      // modes / X / targets — same order the rules announce costs in.
+      if (cast.sacrifice) {
+        if (cast.sacrifice.choices.length === 0) return
+        if (cast.sacrifice.choices.length === 1) {
+          startCast(cast, cast.sacrifice.choices[0])
+        } else {
+          setPendingSac(cast)
+        }
+        return
+      }
+      startCast(cast)
+    },
+    [startCast],
   )
 
   // Confirm the chosen modes for a targeted modal spell (Phase 11 EG-2) →
   // proceed to targeting over the union of those modes' target specs.
   const confirmModes = useCallback(() => {
     if (!pendingModes?.cast.castModal) return
-    const { cast, picked } = pendingModes
+    const { cast, picked, sacrifice } = pendingModes
     const modes = [...picked].sort((a, b) => a - b)
     setPendingModes(null)
     const chosen = modes.map((i) => cast.castModal!.modes[i])
@@ -768,8 +821,8 @@ function Table({ view, seat, opponents, game }: TableProps) {
       specs: chosen.flatMap((m) => m.targetSpecs),
       options: chosen.flatMap((m) => m.targetOptions),
       modes,
-      ...(cast.via !== undefined ? { via: cast.via } : {}),
-      ...(cast.face !== undefined ? { face: cast.face } : {}),
+      ...castExtras(cast),
+      ...(sacrifice !== undefined ? { sacrifice } : {}),
     })
   }, [beginTargeting, pendingModes])
 
@@ -792,7 +845,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
 
   const confirmX = useCallback(() => {
     if (!pendingX) return
-    const { action, value } = pendingX
+    const { action, value, sacrifice } = pendingX
     setPendingX(null)
     if (action.kind === 'activate-ability') {
       beginTargeting({
@@ -814,8 +867,8 @@ function Table({ view, seat, opponents, game }: TableProps) {
       specs: action.targetSpecs,
       options: action.targetOptions,
       xValue: value,
-      ...(action.via !== undefined ? { via: action.via } : {}),
-      ...(action.face !== undefined ? { face: action.face } : {}),
+      ...castExtras(action),
+      ...(sacrifice !== undefined ? { sacrifice } : {}),
     })
   }, [beginTargeting, pendingX])
 
@@ -1678,18 +1731,29 @@ function Table({ view, seat, opponents, game }: TableProps) {
         )}
       </div>
     )
-  } else if (mode === 'choose-sacrifice' && pendingSac?.sacrifice) {
+  } else if (
+    mode === 'choose-sacrifice' &&
+    pendingSac !== null &&
+    pendingSac.sacrifice !== undefined
+  ) {
+    // Either an activated ability's sacrifice cost, or a spell's additional
+    // cost to cast (rule 601.2f — Harrow "sacrifice a land"). P8.
+    const sacChoices = pendingSac.sacrifice.choices
+    const sacChoice = pendingSac
     controls = (
       <div className="controls">
-        <span>{pendingSac.cardName} — sacrifice which creature?</span>
-        {pendingSac.sacrifice.choices.map((id) => (
+        <span>
+          {sacChoice.cardName} — sacrifice which{' '}
+          {sacChoice.kind === 'cast-spell' ? 'permanent' : 'creature'}?
+        </span>
+        {sacChoices.map((id) => (
           <button
             key={id}
             type="button"
             onClick={() => {
-              const ab = pendingSac
               setPendingSac(null)
-              startAbility(ab, id)
+              if (sacChoice.kind === 'cast-spell') startCast(sacChoice, id)
+              else startAbility(sacChoice, id)
             }}
           >
             {game.nameOf(id)}
@@ -2051,6 +2115,8 @@ function Table({ view, seat, opponents, game }: TableProps) {
             const cycle = mode === 'priority' ? cycleByCard.get(id) : undefined
             const faceOpts =
               mode === 'priority' ? (playFacesByCard.get(id) ?? []) : []
+            // More than one way to play this card: a multi-face card's sides,
+            // or a kickable spell's kicked / unkicked casts (P8).
             const multiFace = faceOpts.length > 1
             return (
               <div key={id} className="hand-card">
@@ -2064,6 +2130,9 @@ function Table({ view, seat, opponents, game }: TableProps) {
                   ? faceOpts.map((a, i) => (
                       <button key={i} type="button" onClick={() => playFace(a)}>
                         {a.kind === 'play-land' ? 'Play' : 'Cast'} {a.cardName}
+                        {a.kind === 'cast-spell' && a.kicked
+                          ? ` (kicked ${a.kickerCost ?? ''})`
+                          : ''}
                       </button>
                     ))
                   : null}

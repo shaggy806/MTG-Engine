@@ -137,6 +137,13 @@ export type EffectSpec =
       readonly target: number;
     }
   | {
+      /** Exile every card in a target *player's* graveyard (rule 406 — Bojuka
+       * Bog). `target` is a target-slot index holding a player, or `"you"` for
+       * the effect's own controller with no slot. needed-cards P8. */
+      readonly kind: "exile-graveyard";
+      readonly target: number | "you";
+    }
+  | {
       /** Counter a target spell on the stack — it moves to its owner's
        * graveyard without resolving (rule 701.5). */
       readonly kind: "counter";
@@ -511,6 +518,8 @@ export interface EffectApi {
   sacrificeSource(): boolean;
   returnToHand(target: TargetRef): void;
   exileObject(target: TargetRef): void;
+  /** Exile every card in `target`'s graveyard (a player — Bojuka Bog). */
+  exileGraveyard(target: TargetRef): void;
   /** Grant flashback to `target` (an instant/sorcery card in a graveyard) for
    * the rest of the turn, at a flashback cost equal to its mana cost
    * (Snapcaster Mage). */
@@ -821,6 +830,14 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     case "exile": {
       const target = ctx.targets[spec.target];
       if (target !== undefined) ctx.exileObject(target);
+      return;
+    }
+    case "exile-graveyard": {
+      const target =
+        spec.target === "you"
+          ? ({ kind: "player", player: ctx.controller } as const)
+          : ctx.targets[spec.target];
+      if (target !== undefined) ctx.exileGraveyard(target);
       return;
     }
     case "grant-flashback": {

@@ -15,7 +15,8 @@ Status:
 | **added — P5b (`create-token-copy` + `conditional` effect + `triggerObject`)** | 3 — **Miirym, Sentinel Wyrm**, **Scute Swarm** (+ Insect Token), **Saw in Half** |
 | **added — P6 (`AbilityCost.sacrifice: { filter }` + `on: "sacrifice"` trigger)** | 3 — **Zuran Orb**, **Sylvan Safekeeper**, **Korvold, Fae-Cursed King** (stub finished) |
 | **added — P7 (`TriggeredAbility.condition` — intervening-if)** | 2 — **Garruk's Uprising**, **Defense of the Heart** |
-| blocked on an engine feature | ~72 |
+| **added — P8 (`additionalCost` + `kicker` + `exile-graveyard`)** | 4 — **Harrow**, **Crop Rotation**, **Tear Asunder**, **Bojuka Bog** |
+| blocked on an engine feature | ~68 |
 
 † Rootbound Crag isn't on the list (Rockfall Vale is the list's R/G land) — added as the check-land cycle-mate.
 
@@ -259,9 +260,38 @@ Landfall *triggers* already work (`enters-battlefield`, `filter: { type: "land" 
 
 ## P8 — Additional costs & kicker  (~4 cards)
 
-- "As an additional cost to cast this, sacrifice a land." — **Harrow**, **Crop Rotation**.
-- **Kicker** (optional cast-time extra cost that changes the effect) — **Tear Asunder**.
-- **Bojuka Bog** needs an "exile target player's graveyard" effect (small, standalone).
+**DONE — all four.**
+
+- **`CardDefinition.additionalCost: { sacrifice: CardFilter }`** (rule 601.2f/h) — a
+  *mandatory* extra cost paid as the spell is cast. `cast-spell` Action gains
+  `sacrifice?: ObjectId` and its `LegalAction` a `sacrifice: { choices }` (the same
+  shape P6 gave an activated ability's filtered sacrifice cost, so the RandomController
+  and the client's `choose-sacrifice` controls step both route through unchanged —
+  `pendingSac` just widened to `AbilityAction | CastAction`). The cost is paid *after*
+  mana (rule 601.2g — mana abilities are activated before costs are paid), so Crop
+  Rotation off a single Forest works: tap it for {G}, then sacrifice it. It stands even
+  if the spell is countered. `whyCannotCastSpell` refuses the cast outright when there's
+  nothing to sacrifice. Shipped **Harrow**, **Crop Rotation**.
+- **`CardDefinition.kicker: { cost, targets?, effect? }`** (rule 702.33). Kicker is
+  announced as the spell is cast (601.2b), *before* targets — which matters, because
+  Tear Asunder's kicked target spec is different (`"permanent"` vs
+  `"artifact-or-enchantment"`). Rather than a new cast-time decision step,
+  `legalActions` enumerates the card **twice** — unkicked and `kicked: true` with the
+  kicker folded onto the cost — the same "one entry per playable variant" shape `via`
+  and `face` already use, so the client just renders both buttons ("Cast Tear Asunder"
+  / "Cast Tear Asunder (kicked {2})"). `GameObject.kicked` rides on the stack object;
+  `resolveTopOfStack` applies `def.kicker.effect` "instead" when set, and the fizzle
+  check uses the specs it was actually cast with. Shipped **Tear Asunder**.
+  - Along the way the six duplicated `cast-spell` `LegalAction` builders (hand /
+    foretell / flashback / disturb / adventure / escape) collapsed into one
+    `Game.castSpellActions` helper — they only ever differed in `via` / `face` / cost
+    string, and the kicker fan-out would otherwise have had to be written six times.
+- **`exile-graveyard { target }` effect** — exiles a target *player's* whole graveyard
+  in one action (rule 406; the cards are never individually targeted). Shipped
+  **Bojuka Bog**. `additional-costs.test.ts`.
+- **Still TBD:** additional costs other than a sacrifice ("discard a card", "pay N
+  life", "exile a creature from your graveyard"), more than one per card, multikicker,
+  and two different kickers on one card.
 
 ## P9 — Flicker / blink  (2+ cards)
 
