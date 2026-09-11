@@ -16,13 +16,13 @@ import type { GameState } from "./state.js";
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
 
-const mkGame = (aHand: readonly string[] = [], land = "Forest") => {
+const mkGame = (aHand: readonly string[] = [], land = "Forest", startingLife = 20) => {
   const a = new ScriptedController(A);
   const b = new ScriptedController(B);
   const game = Game.create({
     seed: 1,
     shuffle: false,
-    rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
+    rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99, startingLife },
     controllers: { [A]: a, [B]: b },
     decks: [
       { player: A, cards: [...aHand, ...Array(40).fill(land)] },
@@ -166,5 +166,82 @@ describe("token stacking — individual interactions split correctly", () => {
     game.advanceUntil(quiet);
 
     expect(game.state.objects[stack]).toBeUndefined(); // the whole group died at once
+  });
+});
+
+describe("token stacking — combat stays bounded", () => {
+  /** Total tokens the board stands for, stacks counted in full. */
+  const totalScutes = (game: Game): number =>
+    game.battlefield
+      .filter(
+        (id) =>
+          game.state.objects[id].cardName === "Scute Swarm" &&
+          game.state.objects[id].isToken,
+      )
+      .reduce((sum, id) => sum + (game.state.objects[id].stackCount ?? 1), 0);
+
+  /** A grown stack forced up to `count`, at A's turn-3 precombat main with the
+   * opponent on enough life to survive the swing (so the turn actually
+   * reaches its cleanup step). */
+  const bigStackAtTurn3 = (count: number) => {
+    const { game, a } = mkGame([], "Forest", 10_000);
+    const stack = growStack(game, 2);
+    game.state.objects[stack].stackCount = count;
+    game.advanceUntil((s) => s.turn.number === 3 && s.turn.step === "precombat-main");
+    a.declareAttackersFn = () => [{ attacker: stack, defender: B }];
+    return { game, a, stack };
+  };
+
+  it("an over-cap stack wakes up only 100 attackers and keeps the rest compacted", () => {
+    // Attacking is optional (rule 508.1a), so declaring a legal *subset* is a
+    // choice the engine may make — and it must, or one declaration mints
+    // millions of objects and the game stops responding.
+    const { game } = bigStackAtTurn3(5000);
+    const objectsBefore = game.battlefield.length;
+    const lifeBefore = game.state.players[B].life;
+
+    game.advanceUntil((s) => s.turn.number === 3 && s.turn.step === "postcombat-main");
+
+    // 100 real 1/1 attackers got through; the other 4900 sat this one out.
+    expect(game.state.players[B].life).toBe(lifeBefore - 100);
+    expect(game.battlefield.length - objectsBefore).toBeLessThanOrEqual(100);
+    expect(totalScutes(game)).toBe(5000); // nothing was lost, only left home
+  });
+
+  it("recompacts the woken-up individuals in cleanup, so they don't accumulate", () => {
+    const { game } = bigStackAtTurn3(5000);
+    game.advanceUntil((s) => s.turn.number === 3 && s.turn.step === "postcombat-main");
+    const duringCombat = game.battlefield.length;
+
+    // Past this turn's cleanup the 100 individuals have folded back together —
+    // into their own (tapped) stack, distinct from the untapped remainder.
+    game.advanceUntil((s) => s.turn.number === 4 && s.turn.step === "upkeep");
+    expect(game.battlefield.length).toBeLessThan(duringCombat - 90);
+    expect(totalScutes(game)).toBe(5000);
+  });
+
+  it("leaves a handful of ordinary tokens alone, and never merges across a difference", () => {
+    // Recompaction is gated like `mintTokenBatch`'s fold: an everyday couple of
+    // Soldier tokens stays a couple of tiles. And even at scale it only ever
+    // merges objects a real game couldn't tell apart — not one that's tapped,
+    // enchanted, or someone else's.
+    const { game } = mkGame([], "Plains");
+    game.advanceUntil(toPrecombat);
+    const plain = game.debugSpawn("Soldier Token", A, "battlefield");
+    const alsoPlain = game.debugSpawn("Soldier Token", A, "battlefield");
+    const tapped = game.debugSpawn("Soldier Token", A, "battlefield", { tapped: true });
+    const enchanted = game.debugSpawn("Soldier Token", A, "battlefield");
+    const aura = game.debugSpawn("Holy Strength", A, "battlefield");
+    game.state.objects[aura].attachedTo = enchanted;
+    const theirs = game.debugSpawn("Soldier Token", B, "battlefield");
+
+    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "upkeep");
+
+    // Every one of them survived cleanup as its own object.
+    for (const id of [plain, alsoPlain, tapped, enchanted, theirs]) {
+      expect(game.state.objects[id]).toBeDefined();
+      expect(game.state.objects[id].stackCount ?? 1).toBe(1);
+    }
+    expect(game.state.objects[aura].attachedTo).toBe(enchanted);
   });
 });

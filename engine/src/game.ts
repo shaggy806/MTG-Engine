@@ -1071,29 +1071,141 @@ export class Game {
   }
 
   /**
-   * Expand a compacted stack into `stackCount` separate ordinary objects (the
-   * original id becomes one of them, `stackCount` cleared) and return every
-   * resulting id, original included — `[id]` unchanged when it isn't a stack.
-   * Combat needs this (as opposed to `splitOneFromStack`'s "peel off one"):
-   * a stack's shared `power` can't otherwise represent "N attackers each
-   * dealing their own damage", so declaring one as an attacker or blocker
-   * materializes the whole group and lets the existing, unmodified combat
-   * code handle them from there — the only place this optimization "wakes
-   * up" a stack rather than singling one member out of it. A known,
-   * documented restriction of that: a compacted stack can currently only
-   * attack/block as a whole (today's `AttackerDeclaration`/
-   * `BlockerDeclaration` can't name the same id twice to mean "N of them"),
-   * so a player can't hold *some* of an accumulated army back — a real but
-   * narrow gap, not a silent one (nothing produces an incorrect board state;
-   * it just doesn't yet offer that particular choice).
+   * The most members of one compacted stack that combat will ever wake up at
+   * once (see {@link materializeStack}). Comfortably above any board a human
+   * game reaches — a self-replicating generator (Scute Swarm) is the only
+   * thing that passes it, and it passes it by orders of magnitude.
+   */
+  private static readonly MAX_MATERIALIZED = 100;
+
+  /**
+   * Expand a compacted stack into separate ordinary objects and return them —
+   * `[id]` unchanged when it isn't a stack. Combat needs this (as opposed to
+   * `splitOneFromStack`'s "peel off one"): a stack's shared `power` can't
+   * otherwise represent "N attackers each dealing their own damage", so
+   * declaring one as an attacker or blocker materializes the group and lets
+   * the existing, unmodified combat code handle them from there — the only
+   * place this optimization "wakes up" a stack rather than singling one member
+   * out of it.
+   *
+   * At most {@link MAX_MATERIALIZED} members wake up; past that the remainder
+   * stays compacted on `id` and simply doesn't join this combat. That's a
+   * *legal* declaration, not a fudged board: attacking and blocking are both
+   * optional (rules 508.1a / 509.1a — a player may attack or block with any
+   * subset of their able creatures), so "only 100 of the four million attack"
+   * is a choice the engine is allowed to make. Without the cap a generator
+   * that doubles every land drop makes one attack declaration mint millions of
+   * objects and the game stops responding — the fuzz hang this cap fixes. The
+   * one clause it can't honour is a `must-attack` / `must-be-blocked`
+   * restriction on an over-cap stack (508.1d / 509.1c would demand all of
+   * them); no token in the pool is both stackable and restricted.
+   *
+   * A known, documented restriction either way: a compacted stack attacks or
+   * blocks as a whole up to the cap — today's `AttackerDeclaration` /
+   * `BlockerDeclaration` can't name the same id twice to mean "N of them", so
+   * a player can't deliberately hold *part* of an accumulated army back.
    */
   private materializeStack(id: ObjectId): ObjectId[] {
     const stack = this.state.objects[id];
     const count = stack?.stackCount ?? 1;
     if (stack === undefined || count <= 1) return [id];
-    const ids = [id];
-    for (let i = 1; i < count; i += 1) ids.push(this.splitOneFromStack(id));
-    return ids;
+    if (count <= Game.MAX_MATERIALIZED) {
+      // `id` itself becomes the last individual as its count drains to 1.
+      const ids = [id];
+      for (let i = 1; i < count; i += 1) ids.push(this.splitOneFromStack(id));
+      return ids;
+    }
+    const ids: ObjectId[] = [];
+    for (let i = 0; i < Game.MAX_MATERIALIZED; i += 1) {
+      ids.push(this.splitOneFromStack(id));
+    }
+    return ids; // `id` keeps the rest, compacted and out of this combat
+  }
+
+  /**
+   * Fold interchangeable, untouched tokens back into `stackCount` stacks —
+   * the counterpart to `mintTokenBatch`'s fold, run once per turn in the
+   * cleanup step. Without it the individuals {@link materializeStack} wakes up
+   * for a combat accumulate forever: a self-replicating generator adds another
+   * cap's worth every turn, and since every game event re-scans the
+   * battlefield for triggers, an ever-growing object count is what actually
+   * makes a long game crawl. Pure engine resource safety, not a rule — it only
+   * ever merges objects that are indistinguishable in every respect the game
+   * can observe, so no board state changes.
+   *
+   * Deliberately conservative, and gated exactly like `mintTokenBatch`'s fold
+   * so the everyday case stays untouched: it runs only with an empty stack and
+   * nothing pending (so no ability object, trigger, or decision can be holding
+   * an id it would delete); merges only tokens that are eligible
+   * (`isStackableTokenName`), pristine (nothing attached, not in combat, no
+   * marked damage) and not themselves the host of an attachment; and only
+   * collapses a group that either already contains a stack or is at least
+   * `STACK_ORIGIN_THRESHOLD` strong. Two Soldier tokens from Raise the Alarm
+   * stay two tiles on the board, exactly as before.
+   */
+  private recompactTokens(): void {
+    if (
+      this.state.awaiting !== null ||
+      this.state.zones.shared.stack.length > 0 ||
+      this.state.pendingTriggers.length > 0
+    ) {
+      return;
+    }
+    const hosts = new Set<ObjectId>();
+    for (const id of this.state.zones.shared.battlefield) {
+      const attached = this.state.objects[id].attachedTo;
+      if (attached !== null) hosts.add(attached);
+    }
+    const groups = new Map<string, ObjectId[]>();
+    for (const id of this.state.zones.shared.battlefield) {
+      const o = this.state.objects[id];
+      if (
+        !o.isToken ||
+        hosts.has(id) ||
+        o.attachedTo !== null ||
+        o.attacking !== null ||
+        o.blocking !== null ||
+        o.damageMarked !== 0 ||
+        o.markedByDeathtouch ||
+        !this.isStackableTokenName(printedCardName(o))
+      ) {
+        continue;
+      }
+      // Every field `findMergeableStack` compares, as one key.
+      const shape = JSON.stringify([
+        o.cardName,
+        o.copyOf,
+        o.controller,
+        o.tapped,
+        o.summoningSick,
+        o.exileAtEndStep ?? false,
+        o.notLegendary ?? false,
+        o.counters,
+        o.modifiers,
+      ]);
+      const group = groups.get(shape);
+      if (group === undefined) groups.set(shape, [id]);
+      else group.push(id);
+    }
+    const merged: ObjectId[] = [];
+    for (const group of groups.values()) {
+      if (group.length < 2) continue;
+      const worthIt =
+        group.length >= Game.STACK_ORIGIN_THRESHOLD ||
+        group.some((id) => (this.state.objects[id].stackCount ?? 1) > 1);
+      if (!worthIt) continue;
+      const into = this.state.objects[group[0]];
+      for (const id of group.slice(1)) {
+        into.stackCount = (into.stackCount ?? 1) + (this.state.objects[id].stackCount ?? 1);
+        merged.push(id);
+      }
+    }
+    if (merged.length === 0) return;
+    const gone = new Set(merged);
+    this.state.zones.shared.battlefield = this.state.zones.shared.battlefield.filter(
+      (id) => !gone.has(id),
+    );
+    for (const id of merged) delete this.state.objects[id];
   }
 
   /** If `ref` names a compacted stack, split one member off and return a ref
@@ -2083,6 +2195,11 @@ export class Game {
     if (cleared.length > 0) {
       this.emit({ type: "damage-cleared", objects: cleared });
     }
+
+    // Last, once damage and until-EOT modifiers are gone and every token is
+    // back to a comparable resting state: fold interchangeable ones together
+    // again (engine resource safety — see `recompactTokens`).
+    this.recompactTokens();
   }
 
   // --- combat -----------------------------------------------------

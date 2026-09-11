@@ -244,16 +244,18 @@ Landfall *triggers* already work (`enters-battlefield`, `filter: { type: "land" 
   (needs a `may` with a *target*, currently non-targeted only — see P3).
 - Related and now unblocked: a generic **"at the beginning of your end step" step
   trigger with a condition** is just `step-begins { step: "end" }` + `condition`.
-- **Fuzz finding (pre-existing, not P7):** adding these two to `random-demo.mjs`'s deck A
-  reshuffled it into a **Scute Swarm hang** at 2p seed 109. The token-stacking work
-  bounds the *object* count, but `materializeStack` still expands a whole compacted
-  stack into N real objects the moment it attacks or blocks — and N doubles every land
-  drop, so a long game locks up. Reproduces at HEAD too (same deck without these cards:
-  seeds 251-500 contain games taking 2-6 s against a ~100 ms norm, the same curve just
-  short of the cliff), and vanishes entirely with Scute Swarm removed (250/250 clean
-  with these two cards in). `random-demo.mjs` gained a **`--progress`** flag for exactly
-  this — it announces each seed on stderr *before* playing it, so a stalled seed names
-  itself instead of a long run just printing nothing.
+- **Fuzz finding (pre-existing, not P7) — since fixed.** Adding these two to
+  `random-demo.mjs`'s deck A reshuffled it into a **Scute Swarm hang** at 2p seed 109:
+  the token-stacking work bounded the *object* count, but `materializeStack` still
+  expanded a whole compacted stack into N real objects the moment it attacked, and N
+  doubles every land drop. It reproduced at HEAD too (same deck without these cards:
+  seeds 251-500 contain games taking 2-6 s against a ~100 ms norm — the same curve just
+  short of the cliff) and vanished entirely with Scute Swarm removed (250/250 clean with
+  these two cards in). Fixed in the next commit by capping the wake-up at 100 members
+  (attacking is optional, so a subset is a legal declaration) and folding the woken-up
+  individuals back together in cleanup (`recompactTokens`). `random-demo.mjs` gained a
+  **`--progress`** flag out of this — it announces each seed on stderr *before* playing
+  it, so a stalled seed names itself instead of a long run just printing nothing.
 
 ## P8 — Additional costs & kicker  (~4 cards)
 

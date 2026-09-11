@@ -44,6 +44,7 @@ export function defToVisible(def: CardDefinition): VisibleObject {
     targets: null,
     xValue: null,
     isToken: false,
+    stackCount: null,
     isCopy: false,
     suspended: false,
     foretold: false,

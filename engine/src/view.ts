@@ -99,6 +99,14 @@ export interface VisibleObject {
   /** The value chosen for `{X}` if this is an X spell/permanent, else `null`. */
   readonly xValue: number | null;
   readonly isToken: boolean;
+  /**
+   * How many identical tokens this one object stands for (`GameObject.
+   * stackCount`), or `null` for the ordinary one-object-one-permanent case.
+   * A purely internal resource-safety compaction — but the board would
+   * otherwise show one 1/1 where the player really has thousands, so the
+   * client renders it as a `×N` badge.
+   */
+  readonly stackCount: number | null;
   /** A copy of a spell on the stack (storm / Twincast) — ROADMAP Phase 8. */
   readonly isCopy: boolean;
   /** Suspended in exile with time counters (`counters.time`) — ROADMAP Phase 6b. */
@@ -221,6 +229,7 @@ function visible(
     targets: object.targets === null ? null : [...object.targets],
     xValue: object.xValue,
     isToken: object.isToken,
+    stackCount: object.stackCount ?? null,
     isCopy: object.isCopy ?? false,
     suspended: object.suspended ?? false,
     foretold: object.foretold ?? false,

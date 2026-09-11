@@ -1241,7 +1241,11 @@ function Table({ view, seat, opponents, game }: TableProps) {
         {list.map((entry) => (
           <div className="board-entry" key={entry.ids[0]}>
             {tileFor(entry.sample, pid, entry.ids, {
-              stackCount: entry.ids.length,
+              // Two independent kinds of "one tile, many permanents": several
+              // identical lands collapsed here in the client, and the engine's
+              // own token compaction (`VisibleObject.stackCount`). Only one is
+              // ever > 1 for a given tile, so the larger is the true count.
+              stackCount: Math.max(entry.ids.length, entry.sample.stackCount ?? 1),
             })}
             {entry.attachments.length > 0 ? (
               <div className="attachments">
