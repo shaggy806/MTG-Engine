@@ -355,6 +355,15 @@ export type GameEvent =
   | (Base & {
       readonly type: "permanent-entered-battlefield";
       readonly object: ObjectId;
+      /** How many real permanents this one event stands for — set > 1 only
+       * when a batch of otherwise-identical fresh tokens was minted as one
+       * compacted `stackCount` object (a pure engine resource-safety
+       * optimization, not a rule) instead of one event per token. A watcher
+       * whose triggered effect isn't safe to scale (see
+       * `Game.isCountScalableEffect`) still fires once per real entry — this
+       * only lets the *cheap* case skip materializing them. `undefined`/`1`
+       * = one ordinary entry. */
+      readonly count?: number;
     })
   | (Base & {
       /** A permanent left the battlefield, for any destination. Fires

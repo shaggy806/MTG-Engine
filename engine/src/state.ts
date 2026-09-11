@@ -85,6 +85,20 @@ export interface GameObject {
    * a `create-token-copy` effect with `of: "trigger-object"` (Miirym, Sentinel
    * Wyrm — needed-cards P5b). */
   triggerObject?: ObjectId;
+  /** For a triggered-ability object on the stack: how many real, independent
+   * firings this one stack-object represents — the ability's own source's
+   * `stackCount` (a `stackCount`-carrying token's ability fired once but
+   * stands for that many identical creatures each triggering separately,
+   * rule 603.3d) times the triggering event's own `count`, if any. Read by
+   * `applyEffectSpec`'s `create-token` / `create-token-copy` cases to scale
+   * `count` — the only effect kinds proven safe to multiply this way (no
+   * per-firing choice or target). `1` outside a scaled resolution; a
+   * multiplier > 1 is only ever produced for a *non-targeted* ability whose
+   * whole effect is safe to scale (see `Game.isCountScalableEffect`) —
+   * anything else is fired once per real instance instead, at full cost, so
+   * this never changes another card's observable behaviour. Pure engine
+   * resource-safety optimization, not derived from any rule. */
+  stackMultiplier?: number;
   /** The modes chosen for a targeted modal spell as it was cast (rule 700.2 —
    * ROADMAP Phase 11 EG-2), sorted ascending — indices into
    * `CardDefinition.castModal.modes`. `resolveTopOfStack` applies each with its
@@ -153,6 +167,25 @@ export interface GameObject {
   timestamp: number;
   /** True for a token (rule 111): ceases to exist as an SBA once it leaves the battlefield. */
   isToken: boolean;
+  /**
+   * A pure engine resource-safety optimization, **not derived from any
+   * rule**: when set (> 1), this one `GameObject` stands in for `stackCount`
+   * fully interchangeable, still-pristine token copies — e.g. a self-copying
+   * token generator (Scute Swarm) that would otherwise mint one real object
+   * per copy and blow up exponentially over a long game. Only ever set on a
+   * freshly-minted, untouched token batch with no activated ability (see
+   * `Game.isStackableTokenName`); the moment anything singles one out
+   * (targeted, attacked/blocked, damaged, given a counter, attached to,
+   * sacrificed, destroyed, tapped alone, copied) that one is split off into
+   * its own ordinary object first (`Game.splitOneFromStack`) — a stacked
+   * object's fields besides this one and `id`/`timestamp` are always exactly
+   * the shared "just entered" state every member has. A *uniform* action
+   * (destroy-all, damage-all, untap-all, or the stack lapsing as a whole —
+   * rule 707/111 apply the same to every member) mutates or removes the
+   * whole object directly, no split needed. Absent/`1` = an ordinary single
+   * permanent — the overwhelmingly common case, entirely unaffected.
+   */
+  stackCount?: number;
   /** True for a copy of a spell on the stack (rule 707.10 — storm, Twincast).
    * `cardName` is the copied spell's name; the copy ceases to exist instead of
    * moving to any zone other than the stack. ROADMAP Phase 8. */
@@ -224,6 +257,9 @@ export interface PendingTrigger {
    * snapshotted when it was detected — for a `create-token-copy` effect with
    * `of: "trigger-object"` (Miirym, Sentinel Wyrm — needed-cards P5b). */
   readonly triggerObject?: ObjectId;
+  /** See {@link GameObject.stackMultiplier} — how many real firings this one
+   * queued trigger represents. `undefined`/`1` outside a scaled resolution. */
+  readonly multiplier?: number;
   /** True for a Saga chapter ability (rule 714) — `abilityIndex` indexes
    * `def.chapters` rather than `def.triggered`. ROADMAP Phase 10. */
   readonly chapter?: boolean;

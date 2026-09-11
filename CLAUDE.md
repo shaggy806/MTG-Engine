@@ -264,6 +264,52 @@ original shroud), and the former **Korvold, Fae-Cursed King** stub finished (bot
 Deferred: Orcish Lumberjack (a *mana* ability with a filtered sac cost — the auto-payment
 planner can't pick which land), Greater Gargadon (ability on a suspended exile card).
 `sacrifice-cost.test.ts`.
+**Token stacking** (engine resource safety, not a rule — found by the fuzzer: Scute Swarm's
+landfall "create a copy of Scute Swarm" is copied onto every copy it makes, so N copies on the
+battlefield turn one land drop into N new copies — a real, exponential doubling every drop, and
+at high N each drop *also* got slower (every event does an O(battlefield) `detectTriggers` scan),
+so a long fuzz game hung for hours, not because of an infinite loop but because both the object
+count and the per-step cost were unbounded). `GameObject.stackCount` — one object can stand in
+for that many fully interchangeable, still-*pristine* token copies. `Game.mintTokenBatch` (the
+shared core of `createTokens`/`createTokenCopy`) always folds a new batch into an existing
+matching object regardless of size (this is what actually stops the runaway growth — most of it
+comes from many independent single-token firings, one per creature already there, rule 603.3d);
+with no existing match, a *fresh* batch only originates a stack once it's at least
+`STACK_ORIGIN_THRESHOLD` (8, comfortably above any real card's one-shot count even doubled by
+Doubling Season) — below that it mints ordinary separate objects exactly as before, so an everyday
+"create two tokens" card is untouched. Only a token with no activated ability and, for every
+triggered ability, no targets and a proven count-scalable effect (`isCountScalableEffect` —
+`create-token`/`create-token-copy`/`sequence`/`conditional`, in `effects.ts`) is ever eligible
+(`Game.isStackableTokenName`) — Food/Treasure's activated abilities, or a targeted trigger, are
+never compacted. `detectTriggers` computes a `stackMultiplier` (the ability source's `stackCount`
+× the triggering event's own `count`, if any — `GameEvent`'s `permanent-entered-battlefield` gained
+an optional `count`) and, for a safely-scalable non-targeted ability, threads it onto the queued
+`PendingTrigger`/minted ability object (mirroring `triggerValue`/`triggerObject`) so
+`ResolutionContext.stackMultiplier` scales `create-token`/`create-token-copy`'s count in one
+resolution instead of firing once per real instance; anything unsafe still fires for real, once per
+instance, so no other card's behaviour changes. The instant anything singles one out —
+`Game.splitOneFromStack` (a targeted destroy/exile/bounce/damage/control-change/counter/keyword-
+grant/attach/animate/text-change/fight, or a chosen sacrifice) peels exactly one off into its own
+ordinary object first; `Game.materializeStack` (declaring an attacker or a blocker — a stack's
+shared `power` can't otherwise represent "N attackers each dealing their own damage") expands the
+*whole* group into real individual objects and lets the unmodified combat code take it from there.
+A *uniform* mass effect (destroy-all/damage-all/modify-pt-all/grant-keyword-all/untap-all, or
+"sacrifice everything eligible, no real choice") mutates or removes a stack directly — no split —
+since every member is hit identically anyway; `destroyByEffect`/`modifyPt`/`grantKeyword` take a
+`split` flag so their mass-effect callers (`drainPendingDestruction`, `modifyPtAll`,
+`grantKeywordAll`) opt out of it, and `promptNextSacrifice`'s "no real choice" check now sums each
+candidate's `stackCount` rather than counting distinct ids (else a stack of 10 could get
+wholesale-sacrificed to pay a Diabolic-Edict-style "sacrifice 1"). Known, *documented* (not
+silent) gap: today's `AttackerDeclaration`/`BlockerDeclaration`/sacrifice-choice can't name the
+same id twice to mean "N of them", so a compacted stack can currently only attack/block/be
+sacrificed-from as a whole — a player can't hold back part of an accumulated army. Also
+undercounts (not silently wrong-*state*, just under-triggering) for a card watching a stack's
+*mass* death/sacrifice with a count-sensitive effect (Zulaport Cutthroat, Grave Pact) — not
+exercised by any card combo in the current pool (the generators and the watchers are on different
+controllers). `random-demo.mjs` repro: a 4-Scute-Swarm-stack land-drop chain that previously grew
+to hundreds of objects in under a second (and would have kept compounding for hours) now keeps
+battlefield object count flat while `stackCount` grows into the tens of millions.
+`token-stacking.test.ts`.
 **ROADMAP Phase 5** (done) — **planeswalkers**. `CardDefinition.loyalty: number | null`;
 `defineCard` synthesizes an `enters-battlefield { counters: { loyalty } }` self-replacement so
 `moveObject` (and Doubling Season) handle "enters with N loyalty" unchanged. `ActivatedAbility.loyaltyCost?: number`

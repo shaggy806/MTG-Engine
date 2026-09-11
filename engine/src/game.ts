@@ -42,7 +42,7 @@ import {
 import type { Characteristics } from "./characteristics.js";
 import { AutomaticController } from "./controller.js";
 import type { ControllerView, PlayerController } from "./controller.js";
-import { applyEffectSpec } from "./effects.js";
+import { applyEffectSpec, isCountScalableEffect } from "./effects.js";
 import type {
   EffectSpec,
   ModeOption,
@@ -72,6 +72,7 @@ import type {
   GameState,
   MulliganHandState,
   PreventionShield,
+  PtModifier,
   ZoneType,
 } from "./state.js";
 import type { TargetRef, TargetSpec } from "./target.js";
@@ -987,6 +988,122 @@ export class Game {
     if (this.state.objects[id] === undefined) return { colors: new Set(), types: [] };
     const c = computeCharacteristics(this.state, this.registry, id);
     return { colors: c.colors, types: c.types };
+  }
+
+  // --- token stacking (engine resource safety, not a rule) ------------
+
+  /** Whether a named token definition is ever eligible to be compacted into a
+   * `stackCount` (see `GameObject.stackCount`) — only one with no activated
+   * ability and, for every triggered ability, no targets and a proven
+   * count-scalable effect. Anything else (Food/Treasure's activated
+   * abilities; a targeted or otherwise unproven trigger) is always minted as
+   * separate ordinary objects, exactly as before this optimization existed. */
+  private isStackableTokenName(name: string): boolean {
+    const def = this.registry.get(name);
+    if (def.activated.length > 0) return false;
+    return def.triggered.every(
+      (t) => t.targets.length === 0 && t.effect !== null && isCountScalableEffect(t.effect),
+    );
+  }
+
+  /** An existing battlefield object `repId` (itself not yet on the
+   * battlefield) could merge into — same name/copy/controller and every
+   * field a "just entered, untouched" token has, so folding `repId`'s count
+   * into it is indistinguishable from minting `repId` separately. `null` if
+   * none. */
+  private findMergeableStack(repId: ObjectId, controller: PlayerId): ObjectId | null {
+    const rep = this.state.objects[repId];
+    const repCounters = JSON.stringify(rep.counters);
+    const repModifiers = JSON.stringify(rep.modifiers);
+    for (const id of this.state.zones.shared.battlefield) {
+      const o = this.state.objects[id];
+      if (
+        o.isToken &&
+        o.controller === controller &&
+        o.cardName === rep.cardName &&
+        o.copyOf === rep.copyOf &&
+        o.tapped === rep.tapped &&
+        o.summoningSick === rep.summoningSick &&
+        o.attachedTo === null &&
+        o.attacking === null &&
+        o.blocking === null &&
+        o.damageMarked === 0 &&
+        !o.markedByDeathtouch &&
+        (o.exileAtEndStep ?? false) === (rep.exileAtEndStep ?? false) &&
+        (o.notLegendary ?? false) === (rep.notLegendary ?? false) &&
+        JSON.stringify(o.counters) === repCounters &&
+        JSON.stringify(o.modifiers) === repModifiers
+      ) {
+        return id;
+      }
+    }
+    return null;
+  }
+
+  /** If `id` names a compacted token stack (`stackCount > 1`), peel exactly
+   * one member off into its own ordinary object — decrementing the stack
+   * (clearing the field entirely once it drops to 1) — and return the new
+   * individual's id; callers apply whatever singles it out (a target, an
+   * attacker/blocker declaration, damage, a counter, an attachment, a
+   * sacrifice, a tap alone, …) to *that* id instead. A no-op returning `id`
+   * unchanged when it isn't a stack — the overwhelmingly common case. The
+   * split-off object shares the stack's own timestamp (they genuinely
+   * entered together, rule 613.7) and is otherwise byte-for-byte what a
+   * never-compacted token would have been. */
+  private splitOneFromStack(id: ObjectId): ObjectId {
+    const stack = this.state.objects[id];
+    if (stack === undefined || (stack.stackCount ?? 1) <= 1) return id;
+    const remaining = (stack.stackCount ?? 1) - 1;
+    if (remaining <= 1) delete stack.stackCount;
+    else stack.stackCount = remaining;
+    const newId = this.mintObjectId();
+    this.state.objects[newId] = {
+      ...stack,
+      id: newId,
+      counters: { ...stack.counters },
+      modifiers: stack.modifiers.map((m) => ({ ...m })),
+      blockedBy: [...stack.blockedBy],
+    };
+    delete this.state.objects[newId].stackCount;
+    this.state.zones.shared.battlefield.push(newId);
+    return newId;
+  }
+
+  /**
+   * Expand a compacted stack into `stackCount` separate ordinary objects (the
+   * original id becomes one of them, `stackCount` cleared) and return every
+   * resulting id, original included — `[id]` unchanged when it isn't a stack.
+   * Combat needs this (as opposed to `splitOneFromStack`'s "peel off one"):
+   * a stack's shared `power` can't otherwise represent "N attackers each
+   * dealing their own damage", so declaring one as an attacker or blocker
+   * materializes the whole group and lets the existing, unmodified combat
+   * code handle them from there — the only place this optimization "wakes
+   * up" a stack rather than singling one member out of it. A known,
+   * documented restriction of that: a compacted stack can currently only
+   * attack/block as a whole (today's `AttackerDeclaration`/
+   * `BlockerDeclaration` can't name the same id twice to mean "N of them"),
+   * so a player can't hold *some* of an accumulated army back — a real but
+   * narrow gap, not a silent one (nothing produces an incorrect board state;
+   * it just doesn't yet offer that particular choice).
+   */
+  private materializeStack(id: ObjectId): ObjectId[] {
+    const stack = this.state.objects[id];
+    const count = stack?.stackCount ?? 1;
+    if (stack === undefined || count <= 1) return [id];
+    const ids = [id];
+    for (let i = 1; i < count; i += 1) ids.push(this.splitOneFromStack(id));
+    return ids;
+  }
+
+  /** If `ref` names a compacted stack, split one member off and return a ref
+   * to that new individual instead — see `splitOneFromStack`. Used wherever
+   * an effect singles out *one* object (as opposed to a mass effect
+   * uniformly hitting every matching permanent, which should mutate a stack
+   * directly and never needs to split). */
+  private splitTargetRef(ref: TargetRef): TargetRef {
+    if (ref.kind !== "object") return ref;
+    const split = this.splitOneFromStack(ref.object);
+    return split === ref.object ? ref : { kind: "object", object: split };
   }
 
   /** Run automatic game actions until the game ends. */
@@ -2285,14 +2402,18 @@ export class Game {
     }
 
     for (const { attacker, defender } of [...declarations, ...forced]) {
-      const object = this.state.objects[attacker];
-      object.attacking = defender;
-      object.blockedBy = [];
-      object.blocked = false;
-      if (!this.objHasKeyword(attacker, "vigilance")) {
-        object.tapped = true;
+      // A compacted stack materializes into real individual attackers here —
+      // see `materializeStack`.
+      for (const id of this.materializeStack(attacker)) {
+        const object = this.state.objects[id];
+        object.attacking = defender;
+        object.blockedBy = [];
+        object.blocked = false;
+        if (!this.objHasKeyword(id, "vigilance")) {
+          object.tapped = true;
+        }
+        this.emit({ type: "attacker-declared", attacker: id, defender });
       }
-      this.emit({ type: "attacker-declared", attacker, defender });
     }
 
     this.state.awaiting = null;
@@ -2307,16 +2428,21 @@ export class Game {
     if (why !== null) throw new Error(why);
 
     for (const { blocker: blockerId, attacker: attackerId } of blocks) {
-      const blocker = this.state.objects[blockerId];
-      const attacker = this.state.objects[attackerId];
-      blocker.blocking = attackerId;
-      attacker.blockedBy.push(blockerId);
-      attacker.blocked = true;
-      this.emit({
-        type: "blocker-declared",
-        blocker: blockerId,
-        attacker: attackerId,
-      });
+      // A compacted stack materializes into real individual blockers here —
+      // the attacker is never a stack itself by this point (it already
+      // materialized when declared, above).
+      for (const bId of this.materializeStack(blockerId)) {
+        const blocker = this.state.objects[bId];
+        const attacker = this.state.objects[attackerId];
+        blocker.blocking = attackerId;
+        attacker.blockedBy.push(bId);
+        attacker.blocked = true;
+        this.emit({
+          type: "blocker-declared",
+          blocker: bId,
+          attacker: attackerId,
+        });
+      }
     }
 
     // This defender is done; move to the next queued one if there is one
@@ -3712,8 +3838,12 @@ export class Game {
       });
     }
     if (sacrificeVictim !== null) {
-      this.moveObject(sacrificeVictim, "graveyard");
-      this.emit({ type: "permanent-sacrificed", object: sacrificeVictim, player });
+      // The chosen victim singles out one — split it off a compacted stack
+      // first (a "self" cost's source is never a stack: only ability-less
+      // tokens are ever stackable).
+      const victim = this.splitOneFromStack(sacrificeVictim);
+      this.moveObject(victim, "graveyard");
+      this.emit({ type: "permanent-sacrificed", object: victim, player });
     }
 
     if (isManaAbility(ability)) {
@@ -3760,6 +3890,7 @@ export class Game {
     targets: readonly TargetRef[],
     triggerValue?: number,
     triggerObject?: ObjectId,
+    multiplier?: number,
   ): ObjectId {
     const abilityId = this.mintObjectId();
     this.state.objects[abilityId] = {
@@ -3792,6 +3923,7 @@ export class Game {
       xValue: null,
       ...(triggerValue !== undefined ? { triggerValue } : {}),
       ...(triggerObject !== undefined ? { triggerObject } : {}),
+      ...(multiplier !== undefined ? { stackMultiplier: multiplier } : {}),
       controlEndsAtCleanup: false,
       copyOf: null,
     };
@@ -4461,6 +4593,7 @@ export class Game {
       object.xValue ?? 0,
       object.triggerValue ?? 0,
       object.triggerObject,
+      object.stackMultiplier ?? 1,
     );
     if (ability.resolve !== null) {
       ability.resolve(context);
@@ -4529,7 +4662,7 @@ export class Game {
                   event.type === "damage-dealt"
                 ? event.amount
                 : undefined;
-          this.state.pendingTriggers.push({
+          const base = {
             sourceObjectId: id,
             cardName: printedCardName(object),
             abilityIndex: index,
@@ -4537,7 +4670,29 @@ export class Game {
             ...(autoTargets ? { autoTargets } : {}),
             ...(triggerValue !== undefined ? { triggerValue } : {}),
             ...(triggerObject !== undefined ? { triggerObject } : {}),
-          });
+          };
+          // A stacked source's ability really fires once per creature it
+          // stands for (rule 603.3d); likewise a compacted batch-entry event
+          // (GameEvent.count). A non-targeted, count-scalable effect can fire
+          // once with its amount multiplied instead of materializing every
+          // instance — pure engine resource-safety, see
+          // `GameObject.stackCount`. Anything else (a target, an unproven
+          // effect kind) still fires for real, once per instance, so no other
+          // card's observable behaviour ever changes.
+          const multiplier =
+            (object.stackCount ?? 1) *
+            (event.type === "permanent-entered-battlefield" ? (event.count ?? 1) : 1);
+          if (multiplier <= 1) {
+            this.state.pendingTriggers.push(base);
+          } else if (
+            ability.targets.length === 0 &&
+            ability.effect !== null &&
+            isCountScalableEffect(ability.effect)
+          ) {
+            this.state.pendingTriggers.push({ ...base, multiplier });
+          } else {
+            for (let i = 0; i < multiplier; i += 1) this.state.pendingTriggers.push(base);
+          }
         }
       });
     }
@@ -4724,6 +4879,7 @@ export class Game {
     readonly autoTargets?: readonly TargetRef[];
     readonly triggerValue?: number;
     readonly triggerObject?: ObjectId;
+    readonly multiplier?: number;
     readonly chapter?: boolean;
   }): "done" | "paused" {
     const def = this.registry.get(trigger.cardName);
@@ -4776,6 +4932,7 @@ export class Game {
         targets,
         trigger.triggerValue,
         trigger.triggerObject,
+        trigger.multiplier,
       );
       return "done";
     }
@@ -4814,6 +4971,7 @@ export class Game {
     targets: readonly TargetRef[],
     triggerValue?: number,
     triggerObject?: ObjectId,
+    multiplier?: number,
   ): void {
     this.mintAbilityObject(
       sourceId,
@@ -4824,6 +4982,7 @@ export class Game {
       targets,
       triggerValue,
       triggerObject,
+      multiplier,
     );
     this.emit({ type: "ability-triggered", source: sourceId, controller });
   }
@@ -4859,6 +5018,7 @@ export class Game {
     x = 0,
     triggerValue = 0,
     triggerObject?: ObjectId,
+    stackMultiplier = 1,
   ): ResolutionContext {
     return {
       controller,
@@ -4867,7 +5027,8 @@ export class Game {
       x,
       triggerValue,
       triggerObject,
-      dealDamage: (target, amount) => this.dealDamage(source, target, amount),
+      stackMultiplier,
+      dealDamage: (target, amount) => this.dealDamage(source, this.splitTargetRef(target), amount),
       draw: (player, count) => {
         for (let i = 0; i < count; i += 1) this.drawCard(player);
       },
@@ -4948,7 +5109,8 @@ export class Game {
       },
       attach: (target) => this.attachPermanent(source, target),
       transform: (target) => {
-        if (target.kind === "object") this.transformPermanent(target.object);
+        const t = this.splitTargetRef(target);
+        if (t.kind === "object") this.transformPermanent(t.object);
       },
       setDayNight: (value) => this.setDayNight(value),
       becomeMonarch: (who) => {
@@ -5133,50 +5295,7 @@ export class Game {
     this.registry.get(tokenName); // validate the token is a known definition
     // Doubling Season / Parallel Lives (rule 614): "twice that many instead".
     const total = count * this.tokenCreationMultiplier(controller);
-    for (let i = 0; i < total; i += 1) {
-      const id = this.mintObjectId();
-      this.state.timestampSeq += 1;
-      this.state.objects[id] = {
-        id,
-        cardName: tokenName,
-        owner: controller,
-        controller,
-        zone: "battlefield",
-        tapped: false,
-        damageMarked: 0,
-        markedByDeathtouch: false,
-        enteredBattlefieldOnTurn: this.state.turn.number,
-        summoningSick: true,
-        loyaltyActivatedThisTurn: false,
-        targets: null,
-        attacking: null,
-        blocking: null,
-        blockedBy: [],
-        blocked: false,
-        kind: "card",
-        abilityKind: null,
-        sourceObjectId: null,
-        abilityIndex: null,
-        counters: {},
-        modifiers: [],
-        timestamp: this.state.timestampSeq,
-        isToken: true,
-        attachedTo: null,
-        isCommander: false,
-        xValue: null,
-        controlEndsAtCleanup: false,
-        copyOf: null,
-      };
-      this.state.zones.shared.battlefield.push(id);
-      // A token can carry the same enters-battlefield replacements as any card.
-      const entering = this.entersBattlefieldReplacement(id);
-      this.state.objects[id].tapped = entering.tapped;
-      for (const c of entering.counters) {
-        this.state.objects[id].counters[c.kind] =
-          (this.state.objects[id].counters[c.kind] ?? 0) + c.amount;
-      }
-      this.emit({ type: "permanent-entered-battlefield", object: id });
-    }
+    this.mintTokenBatch(controller, tokenName, null, total, [], false, false, false);
   }
 
   /** Create `count` token(s) that are copies of the permanent `ofId` (rule
@@ -5202,67 +5321,180 @@ export class Game {
     this.registry.get(copyName); // validate it's a known definition
     const controller = of.controller;
     const total = count * this.tokenCreationMultiplier(controller);
-    for (let i = 0; i < total; i += 1) {
-      const id = this.mintObjectId();
-      this.state.timestampSeq += 1;
-      this.state.objects[id] = {
-        id,
-        cardName: copyName,
-        owner: controller,
-        controller,
-        zone: "battlefield",
-        tapped: false,
-        damageMarked: 0,
-        markedByDeathtouch: false,
-        enteredBattlefieldOnTurn: this.state.turn.number,
-        summoningSick: true,
-        loyaltyActivatedThisTurn: false,
-        targets: null,
-        attacking: null,
-        blocking: null,
-        blockedBy: [],
-        blocked: false,
-        kind: "card",
-        abilityKind: null,
-        sourceObjectId: null,
-        abilityIndex: null,
-        counters: {},
-        modifiers: [
-          ...(opts.gainsHaste
-            ? [{ power: 0, toughness: 0, keywords: ["haste" as const], untilEndOfTurn: false }]
-            : []),
-          ...(opts.basePt
-            ? [
-                {
-                  power: 0,
-                  toughness: 0,
-                  keywords: [],
-                  setPt: [opts.basePt[0], opts.basePt[1]] as [number, number],
-                  untilEndOfTurn: false,
-                },
-              ]
-            : []),
-        ],
-        timestamp: this.state.timestampSeq,
-        isToken: true,
-        attachedTo: null,
-        isCommander: false,
-        xValue: null,
-        controlEndsAtCleanup: false,
-        copyOf: copyName,
-        ...(opts.exileAtEndStep ? { exileAtEndStep: true } : {}),
-        ...(opts.notLegendary ? { notLegendary: true } : {}),
-      };
-      this.state.zones.shared.battlefield.push(id);
-      const entering = this.entersBattlefieldReplacement(id);
-      this.state.objects[id].tapped = entering.tapped;
-      for (const c of entering.counters) {
-        this.state.objects[id].counters[c.kind] =
-          (this.state.objects[id].counters[c.kind] ?? 0) + c.amount;
+    const modifiers: PtModifier[] = [
+      ...(opts.gainsHaste
+        ? [{ power: 0, toughness: 0, keywords: ["haste" as const], untilEndOfTurn: false }]
+        : []),
+      ...(opts.basePt
+        ? [
+            {
+              power: 0,
+              toughness: 0,
+              keywords: [],
+              setPt: [opts.basePt[0], opts.basePt[1]] as [number, number],
+              untilEndOfTurn: false,
+            },
+          ]
+        : []),
+    ];
+    this.mintTokenBatch(
+      controller,
+      copyName,
+      copyName,
+      total,
+      modifiers,
+      opts.exileAtEndStep,
+      opts.notLegendary,
+      true,
+    );
+  }
+
+  /** Below this, a *fresh* batch (no existing pristine match to fold into)
+   * mints ordinary separate objects, exactly as before this optimization —
+   * so an everyday "create two tokens" card (Raise the Alarm, Chandra) is
+   * completely unaffected. An *existing* matching object always absorbs a
+   * new batch regardless of size, however small — that's what actually
+   * stops a self-replicating generator (Scute Swarm): most of its growth
+   * comes from many independent single-token firings (one per creature it
+   * already has, rule 603.3d), each of which finds and folds into the one
+   * growing object instead of ever minting a distinct one. */
+  private static readonly STACK_ORIGIN_THRESHOLD = 8;
+
+  /** Mint `total` fresh tokens under `controller` — the shared core of
+   * `createTokens` / `createTokenCopy`. When the token is eligible
+   * (`isStackableTokenName`), folds them into one `stackCount`-carrying
+   * object instead of `total` separate ones — a pure engine resource-safety
+   * optimization against a self-replicating token generator (Scute Swarm)
+   * blowing up over a long game; not derived from any rule, and every
+   * triggered ability on such a token still fires the correct number of
+   * times (see `detectTriggers`'s `stackMultiplier`). Any token this can't
+   * safely cover (an activated ability, a targeted trigger) is always minted
+   * as `total` separate ordinary objects. */
+  private mintTokenBatch(
+    controller: PlayerId,
+    cardName: string,
+    copyOf: string | null,
+    total: number,
+    modifiers: PtModifier[],
+    exileAtEndStep: boolean,
+    notLegendary: boolean,
+    copied: boolean,
+  ): void {
+    if (total <= 0) return;
+    const printedName = copyOf ?? cardName;
+    const mintIndividually = (): void => {
+      for (let i = 0; i < total; i += 1) {
+        const id = this.mintFreshTokenObject(
+          controller,
+          cardName,
+          copyOf,
+          modifiers,
+          exileAtEndStep,
+          notLegendary,
+        );
+        if (copied) this.emit({ type: "permanent-copied", object: id, copyOf: printedName });
+        this.emit({ type: "permanent-entered-battlefield", object: id });
       }
-      this.emit({ type: "permanent-copied", object: id, copyOf: copyName });
-      this.emit({ type: "permanent-entered-battlefield", object: id });
+    };
+    if (!this.isStackableTokenName(printedName)) {
+      mintIndividually();
+      return;
     }
+    const repId = this.mintFreshTokenObject(
+      controller,
+      cardName,
+      copyOf,
+      modifiers,
+      exileAtEndStep,
+      notLegendary,
+      true,
+    );
+    const existing = this.findMergeableStack(repId, controller);
+    delete this.state.objects[repId]; // the representative never really "exists" on its own
+    if (existing === null && total < Game.STACK_ORIGIN_THRESHOLD) {
+      mintIndividually();
+      return;
+    }
+    let finalId: ObjectId;
+    if (existing !== null) {
+      const stack = this.state.objects[existing];
+      stack.stackCount = (stack.stackCount ?? 1) + total;
+      finalId = existing;
+    } else {
+      const id = this.mintFreshTokenObject(
+        controller,
+        cardName,
+        copyOf,
+        modifiers,
+        exileAtEndStep,
+        notLegendary,
+      );
+      this.state.objects[id].stackCount = total;
+      finalId = id;
+    }
+    if (copied) this.emit({ type: "permanent-copied", object: finalId, copyOf: printedName });
+    this.emit({ type: "permanent-entered-battlefield", object: finalId, count: total });
+  }
+
+  /** Build one fresh token `GameObject`, apply its enters-tapped /
+   * enters-with-counters replacement, and — unless `skipBattlefield` — assign
+   * it a timestamp and push it onto the battlefield. The shared literal
+   * `createTokens` / `createTokenCopy` / `mintTokenBatch` all build from. */
+  private mintFreshTokenObject(
+    controller: PlayerId,
+    cardName: string,
+    copyOf: string | null,
+    modifiers: PtModifier[],
+    exileAtEndStep: boolean,
+    notLegendary: boolean,
+    skipBattlefield = false,
+  ): ObjectId {
+    const id = this.mintObjectId();
+    this.state.objects[id] = {
+      id,
+      cardName,
+      owner: controller,
+      controller,
+      zone: "battlefield",
+      tapped: false,
+      damageMarked: 0,
+      markedByDeathtouch: false,
+      enteredBattlefieldOnTurn: this.state.turn.number,
+      summoningSick: true,
+      loyaltyActivatedThisTurn: false,
+      targets: null,
+      attacking: null,
+      blocking: null,
+      blockedBy: [],
+      blocked: false,
+      kind: "card",
+      abilityKind: null,
+      sourceObjectId: null,
+      abilityIndex: null,
+      counters: {},
+      modifiers,
+      timestamp: 0,
+      isToken: true,
+      attachedTo: null,
+      isCommander: false,
+      xValue: null,
+      controlEndsAtCleanup: false,
+      copyOf,
+      ...(exileAtEndStep ? { exileAtEndStep: true } : {}),
+      ...(notLegendary ? { notLegendary: true } : {}),
+    };
+    const entering = this.entersBattlefieldReplacement(id);
+    this.state.objects[id].tapped = entering.tapped;
+    for (const c of entering.counters) {
+      this.state.objects[id].counters[c.kind] =
+        (this.state.objects[id].counters[c.kind] ?? 0) + c.amount;
+    }
+    if (!skipBattlefield) {
+      this.state.timestampSeq += 1;
+      this.state.objects[id].timestamp = this.state.timestampSeq;
+      this.state.zones.shared.battlefield.push(id);
+    }
+    return id;
   }
 
   // --- copying spells (storm / cascade / Twincast — ROADMAP Phase 8) -------
@@ -5381,27 +5613,34 @@ export class Game {
   /** Attach an Aura/Equipment (`source`) to `target` (used by Equip-like effects). */
   private attachPermanent(source: ObjectId, target: TargetRef): void {
     if (target.kind !== "object") return;
+    const targetId = this.splitOneFromStack(target.object);
     const sourceObject = this.state.objects[source];
-    const targetObject = this.state.objects[target.object];
+    const targetObject = this.state.objects[targetId];
     if (sourceObject === undefined || sourceObject.zone !== "battlefield") return;
     if (targetObject === undefined || targetObject.zone !== "battlefield") return;
     // Protection (rule 702.16) — can't be enchanted / equipped by a matching
     // Aura / Equipment.
-    if (protectionBlocks(this.state, this.registry, target.object, this.permanentSource(source))) {
+    if (protectionBlocks(this.state, this.registry, targetId, this.permanentSource(source))) {
       return;
     }
-    sourceObject.attachedTo = target.object;
-    this.emit({ type: "permanent-attached", source, target: target.object });
+    sourceObject.attachedTo = targetId;
+    this.emit({ type: "permanent-attached", source, target: targetId });
   }
 
+  /** `split: false` (`modifyPtAll`'s per-match loop) hits the whole matched
+   * permanent uniformly — a compacted stack is buffed as one. `split: true`
+   * (the default — a single *targeted* modify-pt effect) singles one member
+   * off a stack first. */
   private modifyPt(
     target: TargetRef,
     power: number,
     toughness: number,
     duration: PtDuration,
+    split = true,
   ): void {
     if (target.kind !== "object") return;
-    const object = this.state.objects[target.object];
+    const id = split ? this.splitOneFromStack(target.object) : target.object;
+    const object = this.state.objects[id];
     if (object === undefined || object.zone !== "battlefield") return;
     object.modifiers.push({
       power,
@@ -5411,20 +5650,25 @@ export class Game {
     });
     this.emit({
       type: "pt-modified",
-      object: target.object,
+      object: id,
       power,
       toughness,
       duration,
     });
   }
 
+  /** `split: false` (`grantKeywordAll`'s per-match loop) hits the whole
+   * matched permanent uniformly. `split: true` (the default — a single
+   * *targeted* grant-keyword effect) singles one member off a stack first. */
   private grantKeyword(
     target: TargetRef,
     keyword: Keyword,
     duration: PtDuration,
+    split = true,
   ): void {
     if (target.kind !== "object") return;
-    const object = this.state.objects[target.object];
+    const id = split ? this.splitOneFromStack(target.object) : target.object;
+    const object = this.state.objects[id];
     if (object === undefined || object.zone !== "battlefield") return;
     object.modifiers.push({
       power: 0,
@@ -5434,7 +5678,7 @@ export class Game {
     });
     this.emit({
       type: "keyword-granted",
-      object: target.object,
+      object: id,
       keyword,
       duration,
     });
@@ -5456,7 +5700,7 @@ export class Game {
     duration: PtDuration,
   ): void {
     for (const id of this.battlefieldMatching(you, filter)) {
-      this.modifyPt({ kind: "object", object: id }, power, toughness, duration);
+      this.modifyPt({ kind: "object", object: id }, power, toughness, duration, false);
     }
   }
 
@@ -5467,7 +5711,7 @@ export class Game {
     duration: PtDuration,
   ): void {
     for (const id of this.battlefieldMatching(you, filter)) {
-      this.grantKeyword({ kind: "object", object: id }, keyword, duration);
+      this.grantKeyword({ kind: "object", object: id }, keyword, duration, false);
     }
   }
 
@@ -5490,7 +5734,8 @@ export class Game {
     },
   ): void {
     if (target.kind !== "object") return;
-    const object = this.state.objects[target.object];
+    const id = this.splitOneFromStack(target.object);
+    const object = this.state.objects[id];
     if (object === undefined || object.zone !== "battlefield") return;
     object.modifiers.push({
       power: 0,
@@ -5506,7 +5751,7 @@ export class Game {
     });
     this.emit({
       type: "permanent-animated",
-      object: target.object,
+      object: id,
       power: opts.power,
       toughness: opts.toughness,
       duration: opts.duration,
@@ -5580,7 +5825,8 @@ export class Game {
     target: TargetRef,
   ): void {
     if (target.kind !== "object") return;
-    const object = this.state.objects[target.object];
+    const id = this.splitOneFromStack(target.object);
+    const object = this.state.objects[id];
     if (object === undefined || object.zone !== "battlefield") return;
     const fromOptions = effectiveSubtypes(this.registry, object).filter((s) =>
       CHANGEABLE_CREATURE_TYPES.includes(s),
@@ -5589,8 +5835,8 @@ export class Game {
     this.state.awaiting = {
       kind: "choose-text",
       player,
-      source: target.object,
-      target: target.object,
+      source: id,
+      target: id,
       fromOptions,
       // The new type can't be Wall (rule text), nor a word already present.
       toOptions: CHANGEABLE_CREATURE_TYPES.filter(
@@ -5642,14 +5888,14 @@ export class Game {
 
   private addCounter(target: TargetRef, counter: string, amount: number): void {
     if (target.kind !== "object") return;
-    const object = this.state.objects[target.object];
+    const id = this.splitOneFromStack(target.object);
+    const object = this.state.objects[id];
     if (object === undefined || object.zone !== "battlefield") return;
     // Doubling Season (rule 614): "twice that many counters instead" — only
     // when counters are being *added*, never a removal.
-    const total =
-      amount > 0 ? amount * this.counterMultiplier(target.object, counter) : amount;
+    const total = amount > 0 ? amount * this.counterMultiplier(id, counter) : amount;
     object.counters[counter] = (object.counters[counter] ?? 0) + total;
-    this.emit({ type: "counter-added", object: target.object, counter, amount: total });
+    this.emit({ type: "counter-added", object: id, counter, amount: total });
   }
 
   /** Proliferate (rule 701.27), simplified: every battlefield permanent that
@@ -5669,37 +5915,47 @@ export class Game {
 
   private setTapped(target: TargetRef, tapped: boolean): void {
     if (target.kind !== "object") return;
-    const object = this.state.objects[target.object];
-    if (object === undefined || object.zone !== "battlefield") return;
-    if (object.tapped === tapped) return;
+    const before = this.state.objects[target.object];
+    if (before === undefined || before.zone !== "battlefield") return;
+    if (before.tapped === tapped) return;
+    // Tapping/untapping just this one (as opposed to a mass "untap all"
+    // effect, which mutates a stack directly and never reaches here) singles
+    // it out from the rest of a compacted stack.
+    const id = this.splitOneFromStack(target.object);
+    const object = this.state.objects[id];
     object.tapped = tapped;
     this.emit(
       tapped
-        ? { type: "permanent-tapped", object: target.object }
-        : { type: "permanent-untapped", object: target.object },
+        ? { type: "permanent-tapped", object: id }
+        : { type: "permanent-untapped", object: id },
     );
   }
 
-  private destroyByEffect(target: TargetRef): void {
+  /** `split: false` (destroy-*all* draining `pendingDestruction`) hits the
+   * whole matched permanent uniformly — a compacted stack goes wholesale.
+   * `split: true` (the default — a single *targeted* destroy effect) singles
+   * one member off a stack first. */
+  private destroyByEffect(target: TargetRef, split = true): void {
     if (target.kind !== "object") return;
-    const object = this.state.objects[target.object];
+    const id = split ? this.splitOneFromStack(target.object) : target.object;
+    const object = this.state.objects[id];
     if (object === undefined || object.zone !== "battlefield") return;
-    if (this.objHasKeyword(target.object, "indestructible")) {
+    if (this.objHasKeyword(id, "indestructible")) {
       this.emit({
         type: "permanent-destroy-prevented",
-        object: target.object,
+        object: id,
         reason: "indestructible",
       });
       return;
     }
-    this.moveObject(target.object, "graveyard");
+    this.moveObject(id, "graveyard");
     // A commander's move can be deferred for its owner's 903.9a choice —
     // `applyCommanderChoice` finishes it (and emits `permanent-destroyed`
     // itself if it lands in a graveyard).
     if (this.state.awaiting !== null) return;
     this.emit({
       type: "permanent-destroyed",
-      object: target.object,
+      object: id,
       reason: "destroyed",
     });
   }
@@ -5723,7 +5979,7 @@ export class Game {
       const id = this.state.pendingDestruction.shift() as ObjectId;
       const object = this.state.objects[id];
       if (object === undefined || object.zone !== "battlefield") continue;
-      this.destroyByEffect({ kind: "object", object: id });
+      this.destroyByEffect({ kind: "object", object: id }, false);
     }
   }
 
@@ -5813,7 +6069,15 @@ export class Game {
         this.state.pendingSacrifices = this.state.pendingSacrifices.slice(1);
         continue;
       }
-      if (eligible.length <= next.count) {
+      // "No real choice" means not enough *creatures* to exceed what's owed —
+      // a compacted stack among `eligible` counts for its whole `stackCount`,
+      // not as 1 (otherwise a stack of 10 could get wholesale-sacrificed to
+      // pay a Diabolic-Edict-style "sacrifice 1").
+      const totalEligible = eligible.reduce(
+        (sum, id) => sum + (this.state.objects[id].stackCount ?? 1),
+        0,
+      );
+      if (totalEligible <= next.count) {
         for (const id of eligible) {
           this.state.pendingSacrificeVictims.push({ player: next.player, object: id });
         }
@@ -5852,7 +6116,10 @@ export class Game {
     if (why !== null) throw new Error(why);
     this.state.awaiting = null;
     for (const id of permanents) {
-      this.state.pendingSacrificeVictims.push({ player, object: id });
+      // A specific chosen sacrifice singles out one — split it off a
+      // compacted stack (the "sacrifice everything eligible, no choice" path
+      // in `promptNextSacrifice` sacrifices a whole matched stack directly).
+      this.state.pendingSacrificeVictims.push({ player, object: this.splitOneFromStack(id) });
     }
     this.prepareForPriority(this.activePlayer);
   }
@@ -5880,23 +6147,25 @@ export class Game {
 
   private returnToHandByEffect(target: TargetRef): void {
     if (target.kind !== "object") return;
-    const object = this.state.objects[target.object];
+    const id = this.splitOneFromStack(target.object);
+    const object = this.state.objects[id];
     if (object === undefined || object.zone !== "battlefield") return;
     // A token would just be swept by SBAs; a commander may be redirected to
     // the command zone via a deferred 903.9a choice — both handled downstream.
     const owner = object.owner;
-    this.moveObject(target.object, "hand");
+    this.moveObject(id, "hand");
     if (this.state.awaiting !== null) return;
-    this.emit({ type: "permanent-returned-to-hand", object: target.object, owner });
+    this.emit({ type: "permanent-returned-to-hand", object: id, owner });
   }
 
   private exileByEffect(target: TargetRef): void {
     if (target.kind !== "object") return;
-    const object = this.state.objects[target.object];
+    const id = this.splitOneFromStack(target.object);
+    const object = this.state.objects[id];
     if (object === undefined || object.zone !== "battlefield") return;
-    this.moveObject(target.object, "exile");
+    this.moveObject(id, "exile");
     if (this.state.awaiting !== null) return;
-    this.emit({ type: "permanent-exiled", object: target.object });
+    this.emit({ type: "permanent-exiled", object: id });
   }
 
   /** Snapcaster Mage — grant flashback to a graveyard instant/sorcery until
@@ -5979,7 +6248,8 @@ export class Game {
     untilEndOfTurn: boolean,
   ): void {
     if (target.kind !== "object") return;
-    const object = this.state.objects[target.object];
+    const id = this.splitOneFromStack(target.object);
+    const object = this.state.objects[id];
     if (object === undefined || object.zone !== "battlefield") return;
     if (object.controller === player) return;
     object.controller = player;
@@ -5989,7 +6259,7 @@ export class Game {
     if (untilEndOfTurn) object.controlEndsAtCleanup = true;
     this.emit({
       type: "control-changed",
-      object: target.object,
+      object: id,
       controller: player,
       untilEndOfTurn,
     });
@@ -6089,6 +6359,8 @@ export class Game {
    * already gone deals/takes nothing. */
   private fightCreatures(a: TargetRef, b: TargetRef, oneSided: boolean): void {
     if (a.kind !== "object" || b.kind !== "object") return;
+    a = { kind: "object", object: this.splitOneFromStack(a.object) };
+    b = { kind: "object", object: this.splitOneFromStack(b.object) };
     const liveCreature = (id: ObjectId): boolean => this.creatureDef(id) !== null;
     const powerOf = (id: ObjectId): number =>
       computeCharacteristics(this.state, this.registry, id).power;

@@ -657,6 +657,40 @@ export interface ResolutionContext extends EffectApi {
    * `undefined` outside such a resolution — for `create-token-copy` with
    * `of: "trigger-object"` (Miirym). needed-cards P5b. */
   readonly triggerObject?: ObjectId;
+  /** How many real, independent firings this resolution stands for — see
+   * `GameObject.stackMultiplier`. `1` outside a scaled resolution. Only
+   * `create-token` / `create-token-copy` read it (the only effect kinds
+   * proven safe to multiply). Pure engine resource-safety optimization. */
+  readonly stackMultiplier: number;
+}
+
+/** Effect kinds safe to fire once with their count/amount multiplied by a
+ * stack's size instead of once per real, independent firing — no per-firing
+ * choice or target, so N identical simultaneous firings are indistinguishable
+ * from one firing scaled by N. Used only to decide whether a `stackCount`
+ * object's ability (or a batch-entry event with `count > 1`) can take the
+ * cheap path; anything else still fires once per real instance. Pure engine
+ * resource-safety optimization (needed-cards P5b/P6 fuzz hardening) — not
+ * derived from any rule, and never changes what a card actually does, only
+ * how cheaply an exponential/large-batch case is computed. */
+export function isCountScalableEffect(effect: EffectSpec): boolean {
+  switch (effect.kind) {
+    case "create-token":
+      return effect.who !== "target-controller"; // that reads targets[0]
+    case "create-token-copy":
+      // "trigger-object" / a target slot each name a specific instance from
+      // *this* firing — not safe to multiply as "N more of the same".
+      return effect.of !== "trigger-object" && typeof effect.of !== "number";
+    case "sequence":
+      return effect.effects.every(isCountScalableEffect);
+    case "conditional":
+      return (
+        isCountScalableEffect(effect.then) &&
+        (effect.else === undefined || isCountScalableEffect(effect.else))
+      );
+    default:
+      return false;
+  }
 }
 
 /** Resolve an {@link EffectAmount} against the resolution context. */
@@ -880,7 +914,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       return;
     }
     case "create-token":
-      ctx.createToken(spec.token, amountValue(spec.count, ctx), spec.who);
+      ctx.createToken(spec.token, amountValue(spec.count, ctx) * ctx.stackMultiplier, spec.who);
       return;
     case "create-token-copy": {
       let of: ObjectId | undefined;
@@ -891,7 +925,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
         of = ref?.kind === "object" ? ref.object : undefined;
       }
       if (of !== undefined) {
-        ctx.createTokenCopy(of, spec.count, {
+        ctx.createTokenCopy(of, spec.count * ctx.stackMultiplier, {
           gainsHaste: spec.gainsHaste ?? false,
           exileAtEndStep: spec.exileAtEndStep ?? false,
           notLegendary: spec.notLegendary ?? false,
