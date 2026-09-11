@@ -14,7 +14,8 @@ Status:
 | **added — P5a (`create-token` `who: "target-controller"`)** | 3 — **Beast Within**, **Rapid Hybridization**, **An Offer You Can't Refuse** |
 | **added — P5b (`create-token-copy` + `conditional` effect + `triggerObject`)** | 3 — **Miirym, Sentinel Wyrm**, **Scute Swarm** (+ Insect Token), **Saw in Half** |
 | **added — P6 (`AbilityCost.sacrifice: { filter }` + `on: "sacrifice"` trigger)** | 3 — **Zuran Orb**, **Sylvan Safekeeper**, **Korvold, Fae-Cursed King** (stub finished) |
-| blocked on an engine feature | ~74 |
+| **added — P7 (`TriggeredAbility.condition` — intervening-if)** | 2 — **Garruk's Uprising**, **Defense of the Heart** |
+| blocked on an engine feature | ~72 |
 
 † Rootbound Crag isn't on the list (Rockfall Vale is the list's R/G land) — added as the check-land cycle-mate.
 
@@ -213,15 +214,46 @@ Landfall *triggers* already work (`enters-battlefield`, `filter: { type: "land" 
 
 ## P7 — Intervening-if / conditional triggered abilities  (~6 cards)
 
-"When ~ enters, **if** you control a creature with power 4+, draw." No conditional
-trigger. Add `TriggeredAbility.condition?: StaticCondition` (reuse the EG-3 union, extend
-with `opponent-controls`).
-
-- **Garruk's Uprising** (the anthem + the power>=4-ETB-draw trigger are already
-  authorable — only the ETB "if" clause blocks it), **Defense of the Heart**,
-  **Hellkite Tyrant** (win-con), Ob Nixilis.
-- Related: a generic **"at the beginning of your end step" step trigger with a
-  condition** (documented gap).
+- **DONE — `TriggeredAbility.condition?: StaticCondition`** (rule 603.4). The
+  condition is checked **twice**: in `detectTriggers` as the event happens (false ⇒
+  the ability never triggers at all — no stack object, nothing to fizzle) and again
+  at the top of `resolveAbility` (false by then ⇒ removed from the stack with no
+  effect, logged as a `spell-fizzled` with an "intervening-if" reason). Evaluated by
+  the same `staticConditionMet` the EG-3 statics use, via a new `ConditionOptions
+  { includeSelf }` — a *static*'s condition leaves its own permanent out of the board
+  scan (the `conditionInProgress` recursion guard), an intervening-if runs outside
+  the layer fold and **must** count it. Once on the stack, the source permanent may
+  be gone; the recheck then evaluates against the stack ability object, whose
+  `controller` is the same.
+- **DONE — `StaticCondition` gains `opponent-controls { filter, atLeast }`** — *one*
+  opponent must meet the count on their own ("if an opponent controls three or more
+  creatures" isn't satisfied by two creatures each across two opponents). `filter` is
+  evaluated with that opponent as its "you".
+- **DONE — a `sacrifice-source { then? }` effect** — "Sacrifice ~. **If you do,** …".
+  No choice and no `sacrifice` decision (rule 701.17): `Game.sacrificeSourceByEffect`
+  moves the source straight to the graveyard and returns whether it happened, which
+  gates `then`. A source that already left the battlefield in response does nothing
+  at all.
+- Shipped **Garruk's Uprising** (all three clauses: the intervening-if ETB draw, the
+  unconditional "a creature with power 4+ enters" draw, the trample anthem) and
+  **Defense of the Heart** (upkeep intervening-if → sacrifice itself → search up to
+  two creature cards onto the battlefield). `intervening-if.test.ts`.
+- **Still TBD:** **Hellkite Tyrant** (its intervening-if upkeep clause is now
+  authorable, but it also needs "gain control of *all* artifacts a player controls"
+  and an alternate **win condition** — neither exists); **Ob Nixilis, the Fallen**
+  (needs a `may` with a *target*, currently non-targeted only — see P3).
+- Related and now unblocked: a generic **"at the beginning of your end step" step
+  trigger with a condition** is just `step-begins { step: "end" }` + `condition`.
+- **Fuzz finding (pre-existing, not P7):** adding these two to `random-demo.mjs`'s deck A
+  reshuffled it into a **Scute Swarm hang** at 2p seed 109. The token-stacking work
+  bounds the *object* count, but `materializeStack` still expands a whole compacted
+  stack into N real objects the moment it attacks or blocks — and N doubles every land
+  drop, so a long game locks up. Reproduces at HEAD too (same deck without these cards:
+  seeds 251-500 contain games taking 2-6 s against a ~100 ms norm, the same curve just
+  short of the cliff), and vanishes entirely with Scute Swarm removed (250/250 clean
+  with these two cards in). `random-demo.mjs` gained a **`--progress`** flag for exactly
+  this — it announces each seed on stderr *before* playing it, so a stalled seed names
+  itself instead of a long run just printing nothing.
 
 ## P8 — Additional costs & kicker  (~4 cards)
 

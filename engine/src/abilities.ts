@@ -9,6 +9,7 @@
  * Costs and effects reuse the spell vocabulary.
  */
 
+import type { StaticCondition } from "./cards/define.js";
 import type { EffectSpec, SpellResolver } from "./effects.js";
 import type { GameEvent } from "./events.js";
 import type { CardFilter } from "./filter.js";
@@ -149,6 +150,16 @@ export interface TriggeredAbility {
   readonly targets: readonly TargetSpec[];
   readonly effect: EffectSpec | null;
   readonly resolve: SpellResolver | null;
+  /**
+   * An *intervening-if* clause (rule 603.4) — "When ~ enters, **if** you
+   * control a creature with power 4 or greater, draw a card". The condition is
+   * checked twice: as the trigger event happens (a false condition means the
+   * ability never triggers at all) and again as the ability resolves (a
+   * condition that has since become false removes it from the stack with no
+   * effect). Evaluated from the source's controller's perspective, counting
+   * the source itself. needed-cards P7.
+   */
+  readonly condition?: StaticCondition;
   readonly text: string;
 }
 

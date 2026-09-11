@@ -90,11 +90,25 @@ export type CountSpec =
  * static's own permanent (its controller is "you"). When false, the static
  * contributes nothing — no P/T, no keywords, no granted abilities, no cost
  * change. ROADMAP Phase 11 EG-3.
+ *
+ * The same union is also a triggered ability's intervening-if clause
+ * ({@link TriggeredAbility.condition} — rule 603.4), where it's checked as the
+ * trigger fires and again as it resolves.
  */
 export type StaticCondition =
   /** You control at least `atLeast` permanents matching `filter` (Kird Ape —
    * "as long as you control a Forest"). */
   | { readonly kind: "controls"; readonly filter: CardFilter; readonly atLeast: number }
+  /** *Some one* opponent controls at least `atLeast` permanents matching
+   * `filter` (Defense of the Heart — "if an opponent controls three or more
+   * creatures"). Each opponent is counted separately — three creatures spread
+   * across two opponents doesn't satisfy `atLeast: 3`. `filter` is evaluated
+   * with that opponent as its "you". needed-cards P7. */
+  | {
+      readonly kind: "opponent-controls";
+      readonly filter: CardFilter;
+      readonly atLeast: number;
+    }
   /** It's your turn. */
   | { readonly kind: "your-turn" }
   /** Threshold (rule 702.27) — seven or more cards in your graveyard. */

@@ -44,27 +44,43 @@ import type { GameObject, GameState } from "./state.js";
  */
 const conditionInProgress = new Set<ObjectId>();
 
+/** Options for {@link staticConditionMet}. */
+export interface ConditionOptions {
+  /**
+   * Whether `source` itself counts toward a board-scanning condition
+   * (`controls` / `opponent-controls` / `metalcraft`). A *static* ability's
+   * condition leaves itself out (default) — the scan would otherwise recurse
+   * straight back into the characteristics computation that asked. A
+   * triggered ability's intervening-if clause (rule 603.4) is evaluated
+   * outside the layer fold and *must* count the source ("When ~ enters, if
+   * you control a Dragon …" on a Dragon counts itself), so it passes `true`.
+   */
+  readonly includeSelf?: boolean;
+}
+
 /**
- * Whether a static ability's `condition` (rule 604.3 — "as long as …") is
- * currently met, evaluated from the perspective of `source`'s controller.
- * A static with no condition is always "met" — callers check that first.
+ * Whether a {@link StaticCondition} is currently met, evaluated from the
+ * perspective of `source`'s controller. A static / trigger with no condition
+ * is always "met" — callers check that first.
  *
- * The battlefield scan skips `source` itself, and a re-entrant call for the
- * same id short-circuits to `false` (see `conditionInProgress`). Full
- * dependency ordering between mutually-conditional permanents is not modeled
- * (the same gap noted for layers generally).
- * ROADMAP Phase 11 EG-3.
+ * By default the battlefield scan skips `source` itself (see
+ * {@link ConditionOptions.includeSelf}), and a re-entrant call for the same id
+ * short-circuits to `false` (see `conditionInProgress`). Full dependency
+ * ordering between mutually-conditional permanents is not modeled (the same
+ * gap noted for layers generally).
+ * ROADMAP Phase 11 EG-3; extended to triggered abilities in needed-cards P7.
  */
 export function staticConditionMet(
   state: GameState,
   registry: CardRegistry,
   source: GameObject,
   condition: StaticCondition,
+  opts: ConditionOptions = {},
 ): boolean {
   if (conditionInProgress.has(source.id)) return false;
   conditionInProgress.add(source.id);
   try {
-    return evalStaticCondition(state, registry, source, condition);
+    return evalStaticCondition(state, registry, source, condition, opts);
   } finally {
     conditionInProgress.delete(source.id);
   }
@@ -75,8 +91,11 @@ function evalStaticCondition(
   registry: CardRegistry,
   source: GameObject,
   condition: StaticCondition,
+  opts: ConditionOptions,
 ): boolean {
   const you = source.controller;
+  const skipsSelf = (id: ObjectId): boolean =>
+    opts.includeSelf !== true && id === source.id;
   switch (condition.kind) {
     case "your-turn":
       return state.turnOrder[state.turn.activePlayerIndex] === you;
@@ -87,7 +106,7 @@ function evalStaticCondition(
         state.zones.shared.battlefield.filter((id) => {
           const o = state.objects[id];
           return (
-            id !== source.id &&
+            !skipsSelf(id) &&
             o.controller === you &&
             computeCharacteristics(state, registry, id).types.includes("artifact")
           );
@@ -97,10 +116,24 @@ function evalStaticCondition(
       return (
         state.zones.shared.battlefield.filter(
           (id) =>
-            id !== source.id &&
+            !skipsSelf(id) &&
             state.objects[id].controller === you &&
             matchesFilter(state, registry, id, condition.filter, { you }),
         ).length >= condition.atLeast
+      );
+    case "opponent-controls":
+      // "an opponent controls three or more creatures" — one opponent must
+      // meet the count on their own, so count per player and take the best.
+      return state.turnOrder.some(
+        (p) =>
+          p !== you &&
+          !state.players[p].hasLost &&
+          state.zones.shared.battlefield.filter(
+            (id) =>
+              !skipsSelf(id) &&
+              state.objects[id].controller === p &&
+              matchesFilter(state, registry, id, condition.filter, { you: p }),
+          ).length >= condition.atLeast,
       );
   }
 }

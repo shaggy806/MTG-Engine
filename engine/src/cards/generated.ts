@@ -49,6 +49,7 @@ import _poolCrawWurm from "./pool/craw-wurm.js";
 import _poolCryptolithRite from "./pool/cryptolith-rite.js";
 import _poolDamnation from "./pool/damnation.js";
 import _poolDarksteelMyr from "./pool/darksteel-myr.js";
+import _poolDefenseOfTheHeart from "./pool/defense-of-the-heart.js";
 import _poolDeliberateCourse from "./pool/deliberate-course.js";
 import _poolDemonicTutor from "./pool/demonic-tutor.js";
 import _poolDiabolicEdict from "./pool/diabolic-edict.js";
@@ -75,6 +76,7 @@ import _poolFoundryInspector from "./pool/foundry-inspector.js";
 import _poolFrontierBivouac from "./pool/frontier-bivouac.js";
 import _poolFumeSpitter from "./pool/fume-spitter.js";
 import _poolGarrukWildspeaker from "./pool/garruk-wildspeaker.js";
+import _poolGarruksUprising from "./pool/garruks-uprising.js";
 import _poolGiantGrowth from "./pool/giant-growth.js";
 import _poolGiantSpider from "./pool/giant-spider.js";
 import _poolGladecoverScout from "./pool/gladecover-scout.js";
@@ -276,6 +278,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolCryptolithRite,
   _poolDamnation,
   _poolDarksteelMyr,
+  _poolDefenseOfTheHeart,
   _poolDeliberateCourse,
   _poolDemonicTutor,
   _poolDiabolicEdict,
@@ -302,6 +305,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolFrontierBivouac,
   _poolFumeSpitter,
   _poolGarrukWildspeaker,
+  _poolGarruksUprising,
   _poolGiantGrowth,
   _poolGiantSpider,
   _poolGladecoverScout,

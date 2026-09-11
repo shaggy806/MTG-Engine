@@ -31,6 +31,7 @@ import type {
   CombatRestriction,
   Keyword,
   StaticAbility,
+  StaticCondition,
 } from "./cards.js";
 import {
   computeCharacteristics,
@@ -4555,6 +4556,23 @@ export class Game {
     const targets = object.targets ?? [];
     const source = object.sourceObjectId ?? id;
 
+    // Intervening-if, second check (rule 603.4): a triggered ability whose
+    // condition is no longer true is removed from the stack and does nothing.
+    if (object.abilityKind === "triggered") {
+      const condition = this.registry.get(printedCardName(object)).triggered[
+        object.abilityIndex ?? 0
+      ]?.condition;
+      if (!this.interveningIfMet(condition, this.state.objects[source] ?? object)) {
+        this.removeAbilityFromStack(id);
+        this.emit({
+          type: "spell-fizzled",
+          object: id,
+          reason: "its intervening-if condition is no longer met",
+        });
+        return;
+      }
+    }
+
     if (
       ability.targets.length > 0 &&
       !this.anyTargetLegal(
@@ -4627,7 +4645,10 @@ export class Game {
       if (hasLostAbilities(object)) continue; // layer 6 — no triggered abilities
       const abilities = this.registry.get(printedCardName(object)).triggered;
       abilities.forEach((ability, index) => {
-        if (this.triggerMatches(ability.trigger, event, object)) {
+        if (
+          this.triggerMatches(ability.trigger, event, object) &&
+          this.interveningIfMet(ability.condition, object)
+        ) {
           const autoTargets =
             ability.trigger.on === "deals-combat-damage-to-player" &&
             event.type === "damage-dealt" &&
@@ -4789,6 +4810,26 @@ export class Game {
       default:
         return false;
     }
+  }
+
+  /**
+   * A triggered ability's *intervening-if* clause (rule 603.4): checked both
+   * as the event happens (from `detectTriggers` — a false condition means it
+   * never triggers at all) and again as the ability resolves (from
+   * `resolveAbility`). No condition ⇒ always met. `source` is the permanent
+   * the ability is on, or — once it's on the stack and its permanent is gone —
+   * the stack ability object itself, whose `controller` is the same. Unlike a
+   * *static* ability's condition, the source counts toward its own board scan.
+   * needed-cards P7.
+   */
+  private interveningIfMet(
+    condition: StaticCondition | undefined,
+    source: GameObject,
+  ): boolean {
+    if (condition === undefined) return true;
+    return staticConditionMet(this.state, this.registry, source, condition, {
+      includeSelf: true,
+    });
   }
 
   /** A trigger's optional `CardFilter` on the object that fired it. Evaluated
@@ -5042,6 +5083,7 @@ export class Game {
       damageAll: (filter, amount) => this.damageAllByEffect(source, controller, filter, amount),
       sacrificePermanents: (who, filter, count, exceptId) =>
         this.sacrificeByEffect(controller, who, filter, count, exceptId),
+      sacrificeSource: () => this.sacrificeSourceByEffect(source),
       returnToHand: (target) => this.returnToHandByEffect(target),
       exileObject: (target) => this.exileByEffect(target),
       grantFlashback: (target) => this.grantFlashbackByEffect(target),
@@ -6042,6 +6084,28 @@ export class Game {
         });
       }
     }
+  }
+
+  /**
+   * "Sacrifice ~" naming the effect's own source (Defense of the Heart), as
+   * opposed to the choice-raising {@link sacrificeByEffect}. Immediate, like a
+   * sacrifice paid as a cost — there's nothing to choose (rule 701.17).
+   * Returns whether it happened: `false` if the source already left the
+   * battlefield, which is what gates an "if you do" tail. needed-cards P7.
+   */
+  private sacrificeSourceByEffect(source: ObjectId): boolean {
+    const object = this.state.objects[source];
+    if (object === undefined || object.zone !== "battlefield") return false;
+    this.moveObject(source, "graveyard");
+    // A commander's 903.9a choice defers the move (`moveObject` returns with
+    // the permanent still on the battlefield and a decision raised). Nothing
+    // has been sacrificed yet, and running an "if you do" tail here would
+    // clobber that pending decision — so report "didn't happen". Narrow
+    // documented gap: a commander with a `sacrifice-source` ability skips its
+    // own tail. No pool card is both.
+    if (this.state.awaiting !== null) return false;
+    this.emit({ type: "permanent-sacrificed", object: source, player: object.owner });
+    return true;
   }
 
   /** Permanents `player` controls that match `filter` (they can only ever

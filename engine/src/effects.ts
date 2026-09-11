@@ -109,6 +109,15 @@ export type EffectSpec =
       readonly exceptSource?: boolean;
     }
   | {
+      /** Sacrifice the permanent this effect's own source is (Defense of the
+       * Heart: "sacrifice ~. If you do, …"). No choice and no decision — rule
+       * 701.17. `then` is the "if you do" tail: applied only when the
+       * sacrifice actually happened, so a source that already left the
+       * battlefield in response does nothing at all. needed-cards P7. */
+      readonly kind: "sacrifice-source";
+      readonly then?: EffectSpec;
+    }
+  | {
       /** `targets[a]` and `targets[b]` each deal damage equal to their power
        * to the other (rule 701.12). With `oneSided`, only `a` deals to `b`
        * (Rabid Bite). */
@@ -496,6 +505,10 @@ export interface EffectApi {
     count: number,
     exceptId?: ObjectId,
   ): void;
+  /** Sacrifice this effect's own source. Returns whether it actually happened
+   * (false if the source has already left the battlefield) — the "if you do"
+   * gate on a `sacrifice-source` effect's `then`. */
+  sacrificeSource(): boolean;
   returnToHand(target: TargetRef): void;
   exileObject(target: TargetRef): void;
   /** Grant flashback to `target` (an instant/sorcery card in a graveyard) for
@@ -774,6 +787,14 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       } else {
         ctx.sacrificePermanents(spec.who, spec.filter, spec.count, exceptId);
       }
+      return;
+    }
+    case "sacrifice-source": {
+      // "Sacrifice ~. If you do, …" — the tail only applies when the sacrifice
+      // actually happened (rule 603.4-adjacent: the source may have been
+      // removed in response).
+      const sacrificed = ctx.sacrificeSource();
+      if (sacrificed && spec.then !== undefined) applyEffectSpec(spec.then, ctx);
       return;
     }
     case "fight": {

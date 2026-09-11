@@ -240,6 +240,7 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 | `return-from-graveyard` | `filter`, `destination: "battlefield" \| "hand"`, `count: number \| "all"`, `enterTapped?` | Splendid Reclamation (from *your* graveyard; a `number` less than the match count raises a `choose-from-zone`) |
 | `counter` | `target` (a spell) | Counterspell |
 | `sacrifice` | `who`, `filter`, `count`, `exceptSource?` | Diabolic Edict (`who: "target"`), Fleshbag Marauder (`who: "each-player"`), Korvold (`who: "you"`, `exceptSource: true` = "another") |
+| `sacrifice-source` | `then?` | Defense of the Heart — "Sacrifice ~. **If you do,** …"; no choice, and `then` only applies if the source was still there to sacrifice |
 | `fight` | `a`, `b`, `oneSided?` | Prey Upon / Rabid Bite |
 | `gain-control` | `target`, `untilEndOfTurn` | Act of Treason |
 
@@ -418,6 +419,25 @@ If the ability has `targets`, the controller chooses them via a dispatched
 `choose-targets` decision when the trigger goes on the stack. A slot the event
 determines (`deals-combat-damage-to-player`) is auto-filled.
 
+**`condition?`** (`StaticCondition`, the same union section 10 documents) is an
+**intervening-if** clause — rule 603.4, "When ~ enters, **if** you control a
+creature with power 4 or greater, draw a card":
+
+```ts
+{
+  trigger: { on: "enters-battlefield", who: "self" },
+  condition: { kind: "controls", filter: { type: "creature", power: { op: "gte", n: 4 } }, atLeast: 1 },
+  ...
+}
+```
+
+It's checked **twice** — as the event happens (false ⇒ it never triggers at
+all) and again as the ability resolves (false by then ⇒ it leaves the stack and
+does nothing, logged as a fizzle). Unlike a static's condition it counts the
+source permanent itself. Put the "if" clause here, never inside the effect: a
+`conditional` effect would still trigger and still resolve, which is a
+different (and wrong) thing.
+
 ---
 
 ## 10. Static abilities
@@ -464,9 +484,13 @@ static: [
   drop / sorcery timing; `legalActions` enumerates the play.
 
 **`condition?`** (`StaticCondition`) gates the *whole* static — when false it
-contributes nothing:
+contributes nothing. The same union is a triggered ability's intervening-if
+clause (section 9):
 
 - `{ kind: "controls", filter: CardFilter, atLeast: number }` — Kird Ape.
+- `{ kind: "opponent-controls", filter: CardFilter, atLeast: number }` — *one*
+  opponent must meet the count on their own (Defense of the Heart: "if an
+  opponent controls three or more creatures").
 - `{ kind: "your-turn" }`
 - `{ kind: "threshold" }` — 7+ cards in your graveyard.
 - `{ kind: "metalcraft" }` — 3+ artifacts.
@@ -625,8 +649,7 @@ different card, or extend the engine (see `ROADMAP.md`).
 - Multi-destination or sacrifice-on-death tutors (Cultivate's "one to
   battlefield, one to hand"; Sakura-Tribe Elder).
 - `discard` as part of an **activated ability cost**.
-- `spellsCastThisTurn` triggers beyond `cast-spell` / `this-cast`; no generic
-  "at the beginning of your end step" trigger with a condition.
+- `spellsCastThisTurn` triggers beyond `cast-spell` / `this-cast`.
 
 **Partial:**
 
@@ -634,9 +657,10 @@ different card, or extend the engine (see `ROADMAP.md`).
   full "the words X become Y".
 - **Protection** is `{ colors, types }` only — not "protection from
   [full filter]" (e.g. "from Dragons", "from everything").
-- **Conditional statics** are limited to the four `StaticCondition` kinds
-  (`controls` / `your-turn` / `threshold` / `metalcraft`). Other "as long as
-  …" clauses aren't expressible.
+- **Conditional statics / intervening-ifs** are limited to the five
+  `StaticCondition` kinds (`controls` / `opponent-controls` / `your-turn` /
+  `threshold` / `metalcraft`). Other "as long as …" / "if …" clauses aren't
+  expressible.
 - **Replacement ordering** — if two replacements would apply to one event
   there's no `choose-replacement-order`; the pool has no such case. No damage
   **redirection** to a third object (Harm's Way).

@@ -18,6 +18,10 @@ const flag = (name, fallback) => {
 const games = Number(flag("games", "10"));
 const showLog = args.includes("--log");
 const numPlayers = Number(flag("players", "2"));
+// Long runs print nothing until the very end, so a game that never terminates
+// looks identical to one that's merely slow. `--progress` announces each seed
+// on stderr *before* playing it — the last line printed names the culprit.
+const showProgress = args.includes("--progress");
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
@@ -68,6 +72,8 @@ const deckA = deck([
   ["Old Gnawbone", 1],
   ["Miirym, Sentinel Wyrm", 1],
   ["Scute Swarm", 1],
+  ["Garruk's Uprising", 1],
+  ["Defense of the Heart", 1],
   ["Rampaging Baloths", 1],
   ["Juggernaut", 1],
   ["Combat Thresher", 1],
@@ -257,6 +263,8 @@ let last = null;
 const results = [];
 
 for (let seed = 1; seed <= games; seed += 1) {
+  if (showProgress) process.stderr.write(`seed ${seed}/${games}… `);
+  const startedAt = Date.now();
   const rng = createRng(seed * 7919);
   const pick = () => rng.next();
   const game = Game.create({
@@ -269,6 +277,13 @@ for (let seed = 1; seed <= games; seed += 1) {
   });
 
   game.advance();
+  if (showProgress) {
+    process.stderr.write(
+      `${game.state.turn.number} turns, ${game.events.length} events, ${
+        Date.now() - startedAt
+      }ms\n`,
+    );
+  }
   last = game;
   results.push({
     seed,

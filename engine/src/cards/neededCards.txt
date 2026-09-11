@@ -15,7 +15,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [x] 1 Command Tower
 [ ] 1 Cultivate                        FEATURE: multi-destination tutor (one to battlefield, one to hand)
 [ ] 1 Deceptive Frostkite             FEATURE: (TDM dragon — text TBD)
-[ ] 1 Defense of the Heart             FEATURE: intervening-if upkeep trigger + sacrifice-self + search creatures to battlefield
+[+] 1 Defense of the Heart            (P7 — opponent-controls condition + sacrifice-source effect)
 [ ] 1 Dracogenesis                     FEATURE: (impulse / token generation — text TBD)
 [ ] 1 Dragon Tempest                   FEATURE: grant a keyword to "the creature that entered"; damage = Dragon count
 [ ] 1 Dragonhawk, Fate's Tempest       FEATURE: (TDM — damage divided / count-scaled)
@@ -32,7 +32,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Frontier Siege                   FEATURE: mode-on-enter + recurring mana / attack trigger
 [ ] 1 Frostcliff Siege                 FEATURE: (mode-on-enter siege)
 [ ] 1 Ganax, Astral Hunter             FEATURE: mana on a trigger that doesn't empty between steps
-[ ] 1 Garruk's Uprising                FEATURE: intervening-if ETB draw (the anthem + power>=4 draw trigger alone are doable)
+[+] 1 Garruk's Uprising               (P7 — TriggeredAbility.condition, an intervening-if ETB draw)
 [ ] 1 Genesis Ultimatum                FEATURE: reveal N, put permanents onto battlefield / rest to hand
 [ ] 1 Goldspan Dragon                  FEATURE: "becomes the target of a spell" trigger; static buffing Treasures
 [ ] 1 Haven of the Spirit Dragon       FEATURE: restricted mana + return-from-graveyard activated ability
