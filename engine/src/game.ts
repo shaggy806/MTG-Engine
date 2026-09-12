@@ -3416,6 +3416,12 @@ export class Game {
     const tax = this.isCastableCommander(player, cardId) ? this.commanderTax(player, cardId) : 0;
     let generic = base.generic + tax + base.x * Math.max(0, xValue);
     generic += this.costModificationFor(player, cardId);
+    if (
+      def.selfCostReduction !== null &&
+      staticConditionMet(this.state, this.registry, this.state.objects[cardId], def.selfCostReduction.condition)
+    ) {
+      generic -= def.selfCostReduction.reduceGeneric;
+    }
     return {
       colored: base.colored,
       colorless: base.colorless,

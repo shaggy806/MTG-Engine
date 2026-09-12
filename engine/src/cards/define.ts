@@ -244,6 +244,16 @@ export interface CardDefinition {
     readonly targets?: readonly TargetSpec[];
     readonly effect?: EffectSpec;
   } | null;
+  /**
+   * A cost reduction printed on the spell itself, gated on a board-state
+   * condition (rule 601.2f — Ferocious: "if you control a creature with
+   * power 4 or greater, this spell costs {2} less to cast"). Unlike
+   * {@link StaticAbility.costModification} (a *permanent*'s ability reducing
+   * *other* spells) this is evaluated for the card being cast itself, from
+   * whatever zone it's cast from — so it applies before the card could ever
+   * reach the battlefield to grant anything. `null` for none. needed-cards P10.
+   */
+  readonly selfCostReduction: { readonly condition: StaticCondition; readonly reduceGeneric: number } | null;
   /** Declarative resolution effect, or `null`. */
   readonly effect: EffectSpec | null;
   /** Imperative resolution script (takes precedence over `effect`), or `null`. */
@@ -367,6 +377,7 @@ interface CardDraft {
     readonly targets?: readonly TargetSpec[];
     readonly effect?: EffectSpec;
   };
+  selfCostReduction?: { readonly condition: StaticCondition; readonly reduceGeneric: number };
   effect?: EffectSpec;
   resolve?: SpellResolver;
   activated?: readonly ActivatedAbility[];
@@ -424,6 +435,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     castModal: draft.castModal ?? null,
     additionalCost: draft.additionalCost ?? null,
     kicker: draft.kicker ?? null,
+    selfCostReduction: draft.selfCostReduction ?? null,
     effect: draft.effect ?? null,
     resolve: draft.resolve ?? null,
     activated: draft.activated ?? [],

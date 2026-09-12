@@ -16,7 +16,9 @@ Status:
 | **added — P6 (`AbilityCost.sacrifice: { filter }` + `on: "sacrifice"` trigger)** | 3 — **Zuran Orb**, **Sylvan Safekeeper**, **Korvold, Fae-Cursed King** (stub finished) |
 | **added — P7 (`TriggeredAbility.condition` — intervening-if)** | 2 — **Garruk's Uprising**, **Defense of the Heart** |
 | **added — P8 (`additionalCost` + `kicker` + `exile-graveyard`)** | 4 — **Harrow**, **Crop Rotation**, **Tear Asunder**, **Bojuka Bog** |
-| blocked on an engine feature | ~68 |
+| **added — P9 (`flicker` effect)** | 1 — **Essence Flux** |
+| **added — P10 (`{X}` in more effect positions + `selfCostReduction`)** | 3 — **Kessig Wolf Run**, **Gaze of Granite**, **Finale of Devastation** (partial) |
+| blocked on an engine feature | ~64 |
 
 † Rootbound Crag isn't on the list (Rockfall Vale is the list's R/G land) — added as the check-land cycle-mate.
 
@@ -304,9 +306,37 @@ pre-empts the return. Shipped **Essence Flux**. `flicker.test.ts`.
 
 ## P10 — `{X}` in more effect positions  (~3 cards)
 
-- `{X}` in `modify-pt` → **Kessig Wolf Run**.
-- `{X}` in a `destroy-all`/filter mana-value comparison → **Gaze of Granite**.
-- `{X}` tutor-to-battlefield + threshold-gated team pump → **Finale of Devastation**.
+**DONE — all three, no `EffectAmount`/`CardFilter` change needed.** `modify-pt`'s
+`power`/`toughness` were already `EffectAmount`, and an activated ability's `{X}`
+cost already stamps `ctx.x` (Phase 11 EG-3 / Cinder Elemental) — so a land whose
+pump ability keys off its own `{X}` cost just works. A `destroy-all` filter's
+`manaValue` is a fixed `NumCompare`, not an `EffectAmount`, but a card's
+imperative `resolve` hatch can build one with a literal `n: ctx.x` and call
+`ctx.destroyAll`/`ctx.searchLibrary` directly — no framework change there either.
+
+- Shipped **Kessig Wolf Run**: `{X}{1}{R}, {T}: …+X/+0…` (approximates "X is the
+  amount of red mana spent" as an ordinary `{X}` cost — the engine has no notion
+  of which color paid which part of a cost).
+- Shipped **Gaze of Granite**: `resolve: (ctx) => ctx.destroyAll({ type:
+  "creature", manaValue: { op: "lte", n: ctx.x } })`. Awaken isn't modeled — the
+  alternate-cost land-animation clause is dropped.
+- Shipped **Finale of Devastation**'s tutor (`resolve` + `ctx.searchLibrary`
+  with a `manaValue <= x` filter) and its Ferocious cost reduction — a genuinely
+  new mechanism, **`CardDefinition.selfCostReduction: { condition:
+  StaticCondition, reduceGeneric }`**: a discount printed on the spell itself,
+  gated on board state, evaluated for the card being cast from whatever zone
+  it's in (rule 601.2f). Unlike `StaticAbility.costModification` (a battlefield
+  permanent discounting *other* spells — Foundry Inspector, Thalia) this needs
+  no permanent on the battlefield granting it, since the spell being reduced
+  *is* the source; wired into `Game.castingCostOf` alongside the existing
+  battlefield-static check.
+  - **Still TBD:** "if X is 10 or more, that creature gains haste and you may
+    have it fight target creature an opponent controls" — hooking a follow-up
+    effect onto whichever permanent a `choose-from-zone` decision resolves to
+    isn't something the engine can do yet (the decision is answered
+    asynchronously, after the spell has already left the stack).
+
+`x-effects.test.ts`.
 
 ## P11 — `attacks` trigger `filter`  (~3 cards)
 

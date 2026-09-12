@@ -70,6 +70,7 @@ import _poolExplorersInsight from "./pool/explorers-insight.js";
 import _poolFaithlessLooting from "./pool/faithless-looting.js";
 import _poolFarseek from "./pool/farseek.js";
 import _poolFencingAce from "./pool/fencing-ace.js";
+import _poolFinaleOfDevastation from "./pool/finale-of-devastation.js";
 import _poolFireball from "./pool/fireball.js";
 import _poolFlameJavelin from "./pool/flame-javelin.js";
 import _poolFleshbagMarauder from "./pool/fleshbag-marauder.js";
@@ -80,6 +81,7 @@ import _poolFrontierBivouac from "./pool/frontier-bivouac.js";
 import _poolFumeSpitter from "./pool/fume-spitter.js";
 import _poolGarrukWildspeaker from "./pool/garruk-wildspeaker.js";
 import _poolGarruksUprising from "./pool/garruks-uprising.js";
+import _poolGazeOfGranite from "./pool/gaze-of-granite.js";
 import _poolGiantGrowth from "./pool/giant-growth.js";
 import _poolGiantSpider from "./pool/giant-spider.js";
 import _poolGladecoverScout from "./pool/gladecover-scout.js";
@@ -109,6 +111,7 @@ import _poolIsland from "./pool/island.js";
 import _poolJuggernaut from "./pool/juggernaut.js";
 import _poolJump from "./pool/jump.js";
 import _poolKarplusanForest from "./pool/karplusan-forest.js";
+import _poolKessigWolfRun from "./pool/kessig-wolf-run.js";
 import _poolKirdApe from "./pool/kird-ape.js";
 import _poolKorvoldFaeCursedKing from "./pool/korvold-fae-cursed-king.js";
 import _poolLathlissDragonQueen from "./pool/lathliss-dragon-queen.js";
@@ -304,6 +307,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolFaithlessLooting,
   _poolFarseek,
   _poolFencingAce,
+  _poolFinaleOfDevastation,
   _poolFireball,
   _poolFlameJavelin,
   _poolFleshbagMarauder,
@@ -314,6 +318,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolFumeSpitter,
   _poolGarrukWildspeaker,
   _poolGarruksUprising,
+  _poolGazeOfGranite,
   _poolGiantGrowth,
   _poolGiantSpider,
   _poolGladecoverScout,
@@ -343,6 +348,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolJuggernaut,
   _poolJump,
   _poolKarplusanForest,
+  _poolKessigWolfRun,
   _poolKirdApe,
   _poolKorvoldFaeCursedKing,
   _poolLathlissDragonQueen,

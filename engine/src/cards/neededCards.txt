@@ -43,7 +43,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Incinerator of the Guilty        FEATURE: (TDM dragon — likely damage + exile-on-death)
 [x] 3 Island
 [+] 1 Karplusan Forest
-[ ] 1 Kessig Wolf Run                  FEATURE: {X} in a modify-pt effect (land pump ability)
+[+] 1 Kessig Wolf Run                  (P10 — {X} activated-ability cost feeds modify-pt "x")
 [ ] 1 Kiora, Behemoth Beckoner         FEATURE: keyword grant conditioned on power>=4; untap target permanent
 [ ] 1 Kodama's Reach                   FEATURE: = Cultivate (multi-destination tutor)
 [ ] 1 Last March of the Ents           FEATURE: draw per creature you control; counter on each; can't be countered
@@ -113,9 +113,9 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Fabled Passage                   FEATURE: fetch land with conditional untap
 [ ] 1 Famished Worldsire               FEATURE: (EOE — big creature, token generation — text TBD)
 [ ] 1 Festering Thicket                FEATURE: fixed dual land (DFT)
-[ ] 1 Finale of Devastation            FEATURE: {X} tutor to battlefield + team overrun at X>=10
+[+] 1 Finale of Devastation            (P10 — tutor + Ferocious selfCostReduction; X>=10 haste/fight TBD)
 [x] 8 Forest
-[ ] 1 Gaze of Granite                  FEATURE: {X} in a destroy-all filter (mana value <= X)
+[+] 1 Gaze of Granite                  (P10 — destroy-all with a resolve-time manaValue<=X filter)
 [ ] 1 Greater Gargadon                 FEATURE: "sacrifice a permanent: put a time counter on this" (suspend itself is supported)
 [+] 1 Harrow                          (P8 — CardDefinition.additionalCost sacrifice)
 [ ] 1 Horizon Explorer                 FEATURE: (lands-matter creature — text TBD)
