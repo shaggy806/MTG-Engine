@@ -113,6 +113,7 @@ import _poolJuggernaut from "./pool/juggernaut.js";
 import _poolJump from "./pool/jump.js";
 import _poolKarplusanForest from "./pool/karplusan-forest.js";
 import _poolKessigWolfRun from "./pool/kessig-wolf-run.js";
+import _poolKioraBehemothBeckoner from "./pool/kiora-behemoth-beckoner.js";
 import _poolKirdApe from "./pool/kird-ape.js";
 import _poolKorvoldFaeCursedKing from "./pool/korvold-fae-cursed-king.js";
 import _poolLathlissDragonQueen from "./pool/lathliss-dragon-queen.js";
@@ -353,6 +354,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolJump,
   _poolKarplusanForest,
   _poolKessigWolfRun,
+  _poolKioraBehemothBeckoner,
   _poolKirdApe,
   _poolKorvoldFaeCursedKing,
   _poolLathlissDragonQueen,

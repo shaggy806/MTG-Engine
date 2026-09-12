@@ -19,7 +19,8 @@ Status:
 | **added — P9 (`flicker` effect)** | 1 — **Essence Flux** |
 | **added — P10 (`{X}` in more effect positions + `selfCostReduction`)** | 3 — **Kessig Wolf Run**, **Gaze of Granite**, **Finale of Devastation** (partial) |
 | **added — P11 (`attacks` `TriggerSpec.filter`)** | 2 — **Utvara Hellkite**, **Atarka, World Render** |
-| blocked on an engine feature | ~62 |
+| **added — P12 (no new vocab — the guessed static was wrong)** | 1 — **Kiora, Behemoth Beckoner** |
+| blocked on an engine feature | ~61 |
 
 † Rootbound Crag isn't on the list (Rockfall Vale is the list's R/G land) — added as the check-land cycle-mate.
 
@@ -362,12 +363,64 @@ checked in `triggerMatches` via the existing `triggerFilterOk` helper (the same 
 
 ## P12 — Planeswalker / conditional-static gaps  (~4 cards)
 
-- static keyword grant **conditioned on a creature's power** ("creatures you control with
-  power 4+ have trample/vigilance") — **Kiora, Behemoth Beckoner** (its "untap target
-  permanent" +1 is already an `untap` effect); Garruk's Uprising is the anthem-only
-  version.
-- **Lord Windgrace**, **Sarkhan, Soul Aflame** — multi-clause planeswalkers, each needs
-  several of the above.
+**Reassessed against real Oracle text (pulled from Scryfall) — the original guess's whole
+premise (a static keyword grant conditioned on power) doesn't actually apply to any of the
+three cards below.** Same "reality corrected the plan" pattern as P9/P11.
+
+- **DONE — Kiora, Behemoth Beckoner.** Real text (War of the Spark, `{2}{G/U}`, loyalty 7):
+  "Whenever a creature you control with power 4 or greater enters, draw a card. −1: Untap
+  target permanent." No static at all — the trigger is the exact `enters-battlefield` +
+  `filter: { type: "creature", power: { op: "gte", n: 4 } }` + `who: "you-control"` shape
+  Garruk's Uprising already shipped (P7), and −1 is an ordinary single-target loyalty
+  ability (`untap`, `targets: ["permanent"]`). Zero new vocab. `planeswalker.test.ts`.
+  - Caught along the way: `Game.debugSpawn`'s doc comment claims a move to the battlefield
+    fires triggers "as usual", but `moveObject` itself never emits
+    `permanent-entered-battlefield` — every real call site (casting, tokens,
+    `return-from-graveyard`, …) emits it *after* calling `moveObject`, and `debugSpawn`
+    doesn't. No test anywhere actually relies on a debugSpawned permanent's entry firing
+    *another* permanent's trigger (every ETB-trigger test casts/plays the entering card for
+    real — see `trigger-value.test.ts`'s Terror of the Peaks); the Kiora draw test follows
+    that same convention. Left as-is rather than patched — fixing a sandbox-only helper's
+    doc/behavior mismatch head-on risks reshaping trigger counts across every other test
+    file that debugSpawns multiple permanents, for a helper the doc comment overpromises on
+    but nothing actually depends on.
+- **Still blocked — Sarkhan, Soul Aflame.** Not a planeswalker — a **creature** (TDC 2025,
+  `{1}{U}{R}`, 2/4 Human Shaman): "Dragon spells you cast cost {1} less to cast. Whenever a
+  Dragon you control enters, you may have Sarkhan become a copy of it until end of turn,
+  except its name is Sarkhan, Soul Aflame and it's legendary in addition to its other
+  types." The cost reduction alone is already-shipped vocab (`costModification`, a
+  `subtype: "Dragon"` filter). The copy clause needs a real new primitive: today
+  `GameObject.copyOf` (Clone, P5b's `create-token-copy`) makes *every* characteristic
+  read — including `printedCardName`, so the name too — resolve through the copied
+  card, permanently until the object changes zones. Sarkhan's version keeps its *own*
+  name (and stacks an added supertype) on top of the copied P/T/types/abilities, and
+  reverts at end of turn rather than on a zone change — a name-override exception (rule
+  707.9) the current model has no room for. Building it just for this one card is
+  disproportionate (the P0-tail verdict); worth a proper pass if another "become a copy,
+  except …" card shows up. Not shipped even the partial cost-reduction-only form, since
+  the copy clause is the card's whole point.
+- **Still blocked — Lord Windgrace.** A genuine planeswalker (C18, `{2}{B}{R}{G}`,
+  loyalty 5): "+2: Discard a card, then draw a card. If a land card is discarded this
+  way, draw an additional card. −3: Return up to two target land cards from your
+  graveyard to the battlefield. −11: Destroy up to six target nonland permanents, then
+  create six 2/2 green Cat Warrior creature tokens with forestwalk. Lord Windgrace can be
+  your commander." No land destruction and no emblem, unlike the original guess. Three
+  separate new primitives, all disproportionate for one card alone:
+  - `+2` needs the discard resolution (today asynchronous — it parks an
+    `AwaitingDecision` and waits for a dispatched `discard` action) to branch on *what
+    was actually discarded* once that decision resolves — nothing else in the engine
+    resumes a follow-on effect off a decision's outcome this way (`sacrifice-source`'s
+    `then` is the closest precedent, but it's a synchronous yes/no, not "inspect the
+    chosen object's type").
+  - `−3`/`−11` need "up to N" targeting — every `TargetSpec` slot today is mandatory;
+    there's no optional/"any number up to N" target arity anywhere in `target.ts` /
+    `targeting.ts` / `legalActions`. (`−3` could degrade to the existing non-targeted
+    `return-from-graveyard { filter: { type: "land" }, count: 2 }` — functionally close,
+    just not "target" cards — but `−11`'s "up to six target nonland permanents" has no
+    reasonable non-targeted stand-in.)
+  - "Can be your commander" is a new `CardDefinition` flag with no representation at all
+    in `identity.ts` / `server/src/deck-validation.ts` today (commander legality assumes
+    a legendary *creature*).
 
 ## P13 — Divided damage  (~2 cards)
 

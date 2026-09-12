@@ -100,6 +100,7 @@ const deckA = deck([
   ["Sunlit Bastion", 2],
   ["Seraphine, Dawnherald", 1],
   ["Garruk Wildspeaker", 1],
+  ["Kiora, Behemoth Beckoner", 1],
   ["Cryptolith Rite", 1],
   ["Chromatic Lantern", 1],
   ["Evolving Wilds", 2],

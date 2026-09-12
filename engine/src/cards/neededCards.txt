@@ -44,7 +44,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [x] 3 Island
 [+] 1 Karplusan Forest
 [+] 1 Kessig Wolf Run                  (P10 — {X} activated-ability cost feeds modify-pt "x")
-[ ] 1 Kiora, Behemoth Beckoner         FEATURE: keyword grant conditioned on power>=4; untap target permanent
+[+] 1 Kiora, Behemoth Beckoner         (P12 — real text needed no new vocab; the guessed static was wrong)
 [ ] 1 Kodama's Reach                   FEATURE: = Cultivate (multi-destination tutor)
 [ ] 1 Last March of the Ents           FEATURE: draw per creature you control; counter on each; can't be countered
 [+] 1 Lathliss, Dragon Queen           (+ token "Dragon Token" 5/5 flying)
@@ -65,7 +65,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Rhythm of the Wild               FEATURE: riot; "creature spells you control can't be countered"
 [+] 1 Rockfall Vale
 [ ] 1 Sakura-Tribe Elder              FEATURE: sacrifice-on-death tutor
-[ ] 1 Sarkhan, Soul Aflame             FEATURE: (planeswalker / dragon-copy — text TBD)
+[ ] 1 Sarkhan, Soul Aflame             FEATURE: a creature (not a planeswalker) becomes a copy of an entering Dragon until end of turn, except it keeps its own name and gains legendary (rule 707.9-style exception — see P12)
 [+] 1 Scourge of Valkas
 [ ] 1 Selvala, Heart of the Wilds      FEATURE: variable mana ability + power-gated draw
 [+] 1 Sheltered Thicket
@@ -125,7 +125,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Iridescent Vinelasher
 [ ] 1 Kavaron, Memorial World          FEATURE: (DFC land — text TBD)
 [+] 1 Korvold, Fae-Cursed King         (P6 — on:"sacrifice" trigger + sacrifice exceptSource; stub finished)
-[ ] 1 Lord Windgrace                   FEATURE: planeswalker — discard/draw, land recursion from graveyard, land destruction, Cat token emblem
+[ ] 1 Lord Windgrace                   FEATURE: planeswalker — +2 discard-then-draw with a bonus draw conditioned on the discarded card's type (an async "branch on a resolved decision" not yet modeled), -3/-11 "up to N target" multi-targeting (not modeled at all), and "can be your commander" for a non-creature legendary (see P12; real text has no land destruction or emblem — the guess was wrong)
 [+] 1 Lotus Cobra
 [ ] 1 Lotus Field                      FEATURE: ETB "sacrifice two lands"; "add three mana of any one color"
 [ ] 1 Manifold Key                     FEATURE: untap target artifact; grant unblockable

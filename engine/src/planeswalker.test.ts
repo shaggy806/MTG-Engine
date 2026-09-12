@@ -276,3 +276,56 @@ describe("legend rule", () => {
     expect(game.state.objects[second].zone).toBe("graveyard");
   });
 });
+
+// needed-cards P12. Real Oracle text has no static keyword grant (the
+// planning note's guess was wrong) — just a power>=4 filtered ETB draw
+// (the same shape Garruk's Uprising uses) and an ordinary single-target -1.
+describe("Kiora, Behemoth Beckoner", () => {
+  it("enters with 7 loyalty", () => {
+    const { game } = makeGame();
+    game.advanceUntil(toPrecombat);
+    const kiora = game.debugSpawn("Kiora, Behemoth Beckoner", A, "battlefield");
+    expect(game.state.objects[kiora].counters.loyalty).toBe(7);
+  });
+
+  it("draws a card whenever a creature you control with power 4+ enters", () => {
+    // Real trigger-firing entries go through the actual cast, not debugSpawn
+    // (debugSpawn never emits `permanent-entered-battlefield` itself — the
+    // same convention `trigger-value.test.ts` uses for Terror of the Peaks).
+    const { game } = makeGame();
+    game.advanceUntil(toPrecombat);
+    game.debugSpawn("Kiora, Behemoth Beckoner", A, "battlefield");
+    for (let i = 0; i < 8; i += 1) game.debugSpawn("Forest", A, "battlefield");
+    const wurm = game.debugSpawn("Craw Wurm", A, "hand"); // 6/4
+    const bear = game.debugSpawn("Grizzly Bears", A, "hand"); // 2/2 — too small
+    const before = game.eventsOfType("card-drawn").filter((e) => e.player === A).length;
+
+    game.dispatch({ type: "cast-spell", player: A, card: bear });
+    game.advanceUntil(settled);
+    expect(game.eventsOfType("card-drawn").filter((e) => e.player === A).length).toBe(before);
+
+    game.dispatch({ type: "cast-spell", player: A, card: wurm });
+    game.advanceUntil(settled);
+    expect(game.eventsOfType("card-drawn").filter((e) => e.player === A).length).toBe(before + 1);
+  });
+
+  it("[-1] untaps a target permanent", () => {
+    const { game } = makeGame();
+    game.advanceUntil(toPrecombat);
+    const kiora = spawn(game, "Kiora, Behemoth Beckoner", A, { counters: { loyalty: 7 } });
+    const land = spawn(game, "Forest", A, { tapped: true });
+
+    const minusOne = loyaltyAbility(game, kiora, -1);
+    game.dispatch({
+      type: "activate-ability",
+      player: A,
+      source: kiora,
+      abilityIndex: minusOne.kind === "activate-ability" ? minusOne.abilityIndex : 0,
+      targets: [{ kind: "object", object: land }],
+    });
+    game.advanceUntil(settled);
+
+    expect(game.state.objects[land].tapped).toBe(false);
+    expect(game.state.objects[kiora].counters.loyalty).toBe(6);
+  });
+});
