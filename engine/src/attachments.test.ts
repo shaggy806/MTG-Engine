@@ -300,3 +300,40 @@ describe("Equipment", () => {
     expect(game.state.objects[equipment].attachedTo).toBeNull();
   });
 });
+
+// needed-cards P15 — the new "shroud" keyword (rule 702.18): unlike
+// hexproof, it blocks *every* spell/ability, including its own controller's.
+describe("shroud — Lightning Greaves", () => {
+  it("blocks its own controller's targeted spell, not just an opponent's", () => {
+    const game = mkGame(["Mountain", "Lightning Bolt"]);
+    const bear = spawn(game, "Grizzly Bears", A);
+    const greaves = spawn(game, "Lightning Greaves", A);
+    game.advanceUntil(atFirstMain);
+    game.dispatch({
+      type: "play-land",
+      player: A,
+      card: named(game, game.handOf(A), "Mountain"),
+    });
+
+    game.dispatch({
+      type: "activate-ability",
+      player: A,
+      source: greaves,
+      abilityIndex: 0,
+      targets: [{ kind: "object", object: bear }],
+    });
+    game.advanceUntil(stackEmpty);
+    expect(game.state.objects[greaves].attachedTo).toBe(bear);
+    expect(game.characteristics(bear).keywords.has("shroud")).toBe(true);
+    expect(game.characteristics(bear).keywords.has("haste")).toBe(true);
+
+    expect(() =>
+      game.dispatch({
+        type: "cast-spell",
+        player: A,
+        card: named(game, game.handOf(A), "Lightning Bolt"),
+        targets: [{ kind: "object", object: bear }],
+      }),
+    ).toThrow(/illegal target|no legal/);
+  });
+});

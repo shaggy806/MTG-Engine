@@ -311,6 +311,13 @@ export type GameEvent =
       readonly defender: PlayerId | ObjectId;
     })
   | (Base & {
+      /** Exactly one creature was declared as an attacker this combat (rule
+       * 702.111a — Exalted, needed-cards P15). Emitted once, after every
+       * `attacker-declared` event for the same declaration. */
+      readonly type: "attacked-alone";
+      readonly attacker: ObjectId;
+    })
+  | (Base & {
       /** A planeswalker's loyalty changed — a loyalty-ability cost, or
        * damage (rule 306.7 / 120.3c). `loyalty` is the new total. */
       readonly type: "loyalty-changed";

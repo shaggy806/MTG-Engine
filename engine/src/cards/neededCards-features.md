@@ -22,7 +22,8 @@ Status:
 | **added — P12 (no new vocab — the guessed static was wrong)** | 1 — **Kiora, Behemoth Beckoner** |
 | **added — P13 (`CardFilter.notKeyword`)** | 1 — **Magmaquake** |
 | **added — P14 (`choose-creature-type` decision + `costModification.matchesChosenCreatureType`)** | 1 — **Urza's Incubator** |
-| blocked on an engine feature | ~59 |
+| **added — P15 (shroud, Exalted, ETB-trigger doubling, + a creature-Saga needing no new vocab)** | 4 — **Lightning Greaves**, **Ignoble Hierarch**, **Starfield Vocalist**, **Summon: Titan** |
+| blocked on an engine feature | ~55 |
 
 † Rootbound Crag isn't on the list (Rockfall Vale is the list's R/G land) — added as the check-land cycle-mate.
 
@@ -496,13 +497,100 @@ the choice is used for. `cost-modification.test.ts`.
 
 ## P15 — Keyword mechanics, 1–2 cards each
 
-Exalted (Ignoble Hierarch), Riot / "your creature spells can't be countered"
-(Rhythm of the Wild), Constellation + "your-turn hexproof anthem" (Starfield Vocalist),
-Bestow (Springheart Nantuko), Hideaway (Mosswort Bridge), Cycling (Sheltered Thicket),
-Room cards (Mirror Room // Fractured Realm, Walk-In Closet // Forgotten Cellar),
-"Summon" saga-creatures (Summon: Titan), spacecraft/crew (Exploration Broodship),
-"triggered abilities trigger an additional time" (Virtue of Knowledge),
-shroud (Lightning Greaves — equip {0} + haste already fine).
+**Reassessed against real Oracle text — three of the eight remaining cards needed no new
+vocab or a much smaller primitive than guessed (P9/P11/P12/P13/P15's own Starfield Vocalist
+all show this pattern); shipped those plus Exalted. Cycling (Sheltered Thicket) had already
+shipped in P0, so it's dropped from this bucket's count.**
+
+- **DONE — Lightning Greaves.** A new **`"shroud"`** `Keyword` (rule 702.18) — stronger than
+  hexproof: `isLegalTarget` now blocks *every* targeting attempt on a shrouded permanent, not
+  just an opponent's. Equip `{0}` and haste were already expressible. `attachments.test.ts`.
+- **DONE — Ignoble Hierarch.** Exalted (rule 702.111a: "whenever a creature you control
+  attacks alone, that creature gets +1/+1 until end of turn") needed two additions: a new
+  **`TriggerSpec.on: "attacks-alone"`**, matched against a new **`attacked-alone`** `GameEvent`
+  emitted once per `declare-attackers` action (only when it declared exactly one attacker
+  total — *not* checked per `attacker-declared` event, which would wrongly read "alone" for
+  the first of several attackers declared together) — and a new **`EffectTargetRef`**
+  case, `"trigger-object"`, so a `modify-pt` can pump the lone attacker itself rather than a
+  target or the ability's own source. Its mana ability ({T}: Add {B}, {R}, or {G}) needed no
+  new vocab — three `manaTapAbility` alternatives, same as any dual/tri-land. Multiple Exalted
+  sources stack correctly (each is an independent triggered ability). `exalted.test.ts`.
+- **DONE — Starfield Vocalist.** Real text has no Constellation and no turn-based hexproof
+  anthem — the guess was wrong. It's actually a **Panharmonicon effect**: "If a permanent
+  entering the battlefield causes a triggered ability of a permanent you control to trigger,
+  that ability triggers an additional time." New **`StaticAbility.doubleEntryTriggers: {
+  filter?: CardFilter }`** (`filter` narrows the *entering* permanent — omitted here, matching
+  its unrestricted text; Panharmonicon itself would use `{ type: "artifact" }` unioned with
+  `{ type: "creature" }`... no such card is on the list, so an OR-of-types filter shape wasn't
+  needed). `Game.entryTriggerDoublers` counts how many active doublers the ability's
+  controller has and folds `1 + that count` into the same `multiplier` the `stackCount` /
+  batch-`count` machinery already uses — so it composes for free with a stacked token's ETB
+  trigger, a batch of tokens entering at once, *and* multiple doublers, without touching any
+  of that existing logic. Warp (its actual alt-cast mechanic) isn't modeled — dropped, same as
+  other cards' unimplemented alt-cast clauses elsewhere in the pool. `entry-trigger-doubling.test.ts`.
+- **DONE — Summon: Titan.** Real text needed *zero* new vocab — the guessed feature ("chapter
+  counters on a creature" as something new) was wrong: an enchantment creature with
+  `CardDefinition.chapters` already works exactly like any other Saga, because the SBA that
+  sacrifices a completed Saga (`704.5s`) never checked for "enchantment only" to begin with —
+  it just is one, generically, alongside being a 7/7 Reach/Trample creature. Every chapter
+  effect was already-shipped vocab too: `mill`, `return-from-graveyard` (Splendid Reclamation's
+  exact shape), and a `countOf`-scaled `modify-pt` + `grant-keyword` (Craterhoof's shape).
+  Chapter III's "**another** target creature you control" drops the "another" the same way
+  Anafenza, the Foremost's attack trigger already does — no generic "not this object"
+  targeting exclusion exists. `saga.test.ts`.
+- **Still blocked — Rhythm of the Wild.** Confirmed real text: "Creature spells you control
+  can't be countered. Nontoken creatures you control have riot." Two gaps: (1) riot (rule
+  702.157) is itself an ETB choice (+1/+1 counter or haste) — but unlike Urza's Incubator's
+  choice (P14, made once as *that* permanent enters), riot has to fire for *any* creature that
+  *has* the keyword, printed **or granted** by a static like this one, meaning the check has to
+  run generically in the entering-a-creature path against its post-layer-6 characteristics,
+  not be wired to one specific `CardDefinition` flag; (2) "spells you control can't be
+  countered" is a new kind of static — a battlefield permanent granting *other* spells
+  protection from countering, as opposed to `CardDefinition.cantBeCountered` (a fixed
+  per-card flag, Carnage Tyrant) or `costModification` (adjusts cost, not counterability).
+- **Still blocked — Mosswort Bridge.** Confirmed real text: Hideaway 4 (look at top four,
+  exile one face down, rest to the bottom) + a conditional "you may play the exiled card
+  without paying its cost if creatures you control have total power 10+." Hideaway itself
+  (an ETB look-and-exile) is close to the existing `look-and-choose` effect but exiling
+  face-down with a *separate*, later, condition-gated "cast for free" permission is new
+  shape — `look-and-choose`'s destinations are hand/battlefield, not "sitting in exile until a
+  later condition is met."
+- **Still blocked — Springheart Nantuko.** Confirmed real text: Bestow `{1}{G}` (rule
+  702.103 — a spell cast as an Aura that can also just be a creature spell, and stops being
+  an Aura if what it enchants leaves) + a landfall trigger that conditionally creates either a
+  copy of the enchanted creature or a 1/1 Insect. Bestow is a real, structural gap — no
+  "spell that's optionally an Aura" concept exists (`copyOnEnter`/`castModal` don't cover a
+  card that's a creature *or* an Aura depending how it's cast); the landfall payload itself
+  (a `conditional` between `create-token-copy` and `create-token`) is already expressible.
+- **Still blocked — Room cards (Mirror Room // Fractured Realm, Walk-In Closet // Forgotten
+  Cellar).** Confirmed real text for both. Rooms (Duskmourn, rule 715-adjacent) are a genuinely
+  new card shape: two enchantment halves ("doors"), either castable, each door unlocking
+  independently onto the *same* permanent (not a `faces` MDFC/adventure choice — both doors
+  can eventually be unlocked on one Room). Needs real card-shape work before any individual
+  door's own ability matters. Once Rooms exist: Mirror Room's door is an ordinary
+  `create-token-copy`; Fractured Realm's door is a **broader** version of this pass's
+  `doubleEntryTriggers` (rule text: "if a triggered ability of a permanent you control
+  triggers" — no restriction to an entering permanent at all, so it'd need its own, wider
+  static rather than reusing this pass's `filter`-on-the-entering-permanent shape as-is);
+  Walk-In Closet's door reuses the already-shipped `playFromGraveyard` permission; Forgotten
+  Cellar's door needs "cast spells from your graveyard this turn" (a temporary zone-wide
+  casting permission) plus an exile-instead-of-graveyard replacement, both new.
+- **Still blocked — Exploration Broodship.** Confirmed real text: Station (rule
+  702.171 — not crew), an activated ability that piles charge counters onto this Spacecraft
+  equal to a tapped creature's power, with count-gated ("3+", "8+") text abilities and an
+  animation into a creature at 8+. A new permanent sub-type (Spacecraft) plus the Station
+  activation/threshold machinery — no existing vocab covers "an activated ability's magnitude
+  scales with what it taps, accumulated across multiple activations as counters, gating
+  later text by counter thresholds."
+- **Still blocked — Virtue of Knowledge.** Its enchantment front half is now *un*blocked —
+  it's the exact same `doubleEntryTriggers` primitive Starfield Vocalist just shipped, with no
+  filter. Its Adventure instant half ("Copy target activated or triggered ability you control.
+  You may choose new targets for the copy") is the actual gap: a new "copy an ability
+  currently on the stack" effect — `copy-spell` only copies a *spell* object on the stack, and
+  an activated/triggered ability's stack object (`GameObject.abilityKind`) has no `isCopy`/
+  duplication path at all today.
+
+`exalted.test.ts`, `entry-trigger-doubling.test.ts`, `attachments.test.ts`, `saga.test.ts`.
 
 ## P16 — Newer sets, text unverified
 

@@ -45,6 +45,10 @@ export type Keyword =
   | "menace"
   | "indestructible"
   | "hexproof"
+  /** Can't be the target of ANY spell or ability, even its controller's own
+   * (rule 702.18 — stronger than hexproof, which only blocks opponents —
+   * needed-cards P15, Lightning Greaves). */
+  | "shroud"
   | "flash"
   /** Can't be blocked (Invisible Stalker). Evasion, checked in combat. */
   | "unblockable"
@@ -182,6 +186,14 @@ export interface StaticAbility {
     readonly plusPower: number;
     readonly plusToughness: number;
   };
+  /** Panharmonicon-style doubling (needed-cards P15 — Starfield Vocalist:
+   * "If a permanent entering the battlefield causes a triggered ability of a
+   * permanent you control to trigger, that ability triggers an additional
+   * time"). `filter`, when present, narrows which *entering* permanent counts
+   * (Panharmonicon: artifact or creature); omitted = any permanent.
+   * `affects` is ignored — this only ever doubles its own controller's
+   * `enters-battlefield` triggers. */
+  readonly doubleEntryTriggers?: { readonly filter?: CardFilter };
   readonly text: string;
 }
 

@@ -2600,6 +2600,7 @@ export class Game {
       if (defender !== undefined) forced.push({ attacker: id, defender });
     }
 
+    const allAttackers: ObjectId[] = [];
     for (const { attacker, defender } of [...declarations, ...forced]) {
       // A compacted stack materializes into real individual attackers here —
       // see `materializeStack`.
@@ -2612,7 +2613,15 @@ export class Game {
           object.tapped = true;
         }
         this.emit({ type: "attacker-declared", attacker: id, defender });
+        allAttackers.push(id);
       }
+    }
+    // Exalted (rule 702.111a — needed-cards P15): a single dedicated event
+    // once the whole declaration is known, rather than checking "how many
+    // attackers so far" per `attacker-declared` (which would wrongly read as
+    // "alone" for the first of several attackers declared in the same action).
+    if (allAttackers.length === 1) {
+      this.emit({ type: "attacked-alone", attacker: allAttackers[0] });
     }
 
     this.state.awaiting = null;
@@ -3533,6 +3542,30 @@ export class Game {
       }
     }
     return delta;
+  }
+
+  /** How many active `doubleEntryTriggers` statics `controller` has that
+   * apply to `enteringId` entering (Panharmonicon-style — needed-cards P15).
+   * Two such statics make an ETB trigger fire three times total (1 + 2). */
+  private entryTriggerDoublers(controller: PlayerId, enteringId: ObjectId): number {
+    let count = 0;
+    for (const id of this.state.zones.shared.battlefield) {
+      const source = this.state.objects[id];
+      if (source.controller !== controller || hasLostAbilities(source)) continue;
+      for (const ability of this.registry.get(printedCardName(source)).static) {
+        const d = ability.doubleEntryTriggers;
+        if (d === undefined) continue;
+        if (!this.staticActive(source, ability)) continue;
+        if (
+          d.filter !== undefined &&
+          !matchesFilter(this.state, this.registry, enteringId, d.filter, { you: controller })
+        ) {
+          continue;
+        }
+        count += 1;
+      }
+    }
+    return count;
   }
 
   /** Largest value of `{X}` this player could currently pay for when casting
@@ -5000,7 +5033,7 @@ export class Game {
             event.type === "permanent-left-battlefield" ||
             event.type === "permanent-transformed"
               ? event.object
-              : event.type === "attacker-declared"
+              : event.type === "attacker-declared" || event.type === "attacked-alone"
                 ? event.attacker
                 : undefined;
           const powerOfId =
@@ -5033,9 +5066,19 @@ export class Game {
           // `GameObject.stackCount`. Anything else (a target, an unproven
           // effect kind) still fires for real, once per instance, so no other
           // card's observable behaviour ever changes.
+          // Panharmonicon-style doubling (needed-cards P15): each active
+          // `doubleEntryTriggers` static the ability's controller has makes
+          // this ETB trigger fire one additional time (two doublers = fires
+          // three times total).
+          const entryDoublers =
+            ability.trigger.on === "enters-battlefield" &&
+            event.type === "permanent-entered-battlefield"
+              ? this.entryTriggerDoublers(object.controller, event.object)
+              : 0;
           const multiplier =
             (object.stackCount ?? 1) *
-            (event.type === "permanent-entered-battlefield" ? (event.count ?? 1) : 1);
+            (event.type === "permanent-entered-battlefield" ? (event.count ?? 1) : 1) *
+            (1 + entryDoublers);
           if (multiplier <= 1) {
             this.state.pendingTriggers.push(base);
           } else if (
@@ -5096,6 +5139,10 @@ export class Game {
           event.type === "attacker-declared" &&
           this.matchesWho(spec.who, event.attacker, self) &&
           this.triggerFilterOk(spec.filter, event.attacker, self)
+        );
+      case "attacks-alone":
+        return (
+          event.type === "attacked-alone" && this.matchesWho(spec.who, event.attacker, self)
         );
       case "sacrifice":
         return (

@@ -76,16 +76,15 @@ export function isLegalTarget(
   source?: TargetSource,
 ): boolean {
   // Hexproof (rule 702.11): a permanent with hexproof can't be the target of
-  // spells or abilities an opponent of its controller controls.
+  // spells or abilities an opponent of its controller controls. Shroud (rule
+  // 702.18 — needed-cards P15) is the same, but blocks *everyone*, including
+  // its own controller.
   if (ref.kind === "object") {
     const object = state.objects[ref.object];
-    if (
-      object !== undefined &&
-      object.zone === "battlefield" &&
-      object.controller !== forPlayer &&
-      computeCharacteristics(state, registry, ref.object).keywords.has("hexproof")
-    ) {
-      return false;
+    if (object !== undefined && object.zone === "battlefield") {
+      const keywords = computeCharacteristics(state, registry, ref.object).keywords;
+      if (keywords.has("shroud")) return false;
+      if (object.controller !== forPlayer && keywords.has("hexproof")) return false;
     }
     // Protection (rule 702.16) — can't be targeted by a matching source.
     if (source !== undefined && protectionBlocks(state, registry, ref.object, source)) {

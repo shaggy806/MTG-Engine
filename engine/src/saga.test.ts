@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { computeCharacteristics } from "./characteristics.js";
 import { createDefaultRegistry } from "./cards.js";
+import { ScriptedController } from "./controller.js";
 import { Game } from "./game.js";
 import type { GameConfig } from "./game.js";
 import { asPlayerId } from "./primitives.js";
@@ -79,5 +80,64 @@ describe("Saga — History of Benalia", () => {
     game.dispatch({ type: "cast-spell", player: A, card: saga, targets: [] });
     game.advanceUntil(settled);
     expect(game.state.objects[saga].counters.lore).toBe(1);
+  });
+});
+
+// needed-cards P15 — an enchantment *creature* Saga. No new vocab: the
+// sacrifice-after-final-chapter SBA doesn't care what other types the
+// permanent has, and every chapter effect is already-shipped vocab.
+describe("Saga — Summon: Titan (an enchantment creature Saga)", () => {
+  it("mills, then returns milled lands, then pumps a target creature — and is a 7/7 throughout", () => {
+    const a = new ScriptedController(A);
+    const game = mkGame(["Forest", "Forest", "Forest", "Forest", "Forest", "Summon: Titan"], {
+      controllers: { [A]: a },
+    });
+    game.advanceUntil(atMain);
+    for (const id of [...game.handOf(A)].filter((i) => game.state.objects[i].cardName === "Forest")) {
+      game.dispatch({ type: "play-land", player: A, card: id });
+    }
+    const titan = [...game.handOf(A)].find((i) => game.state.objects[i].cardName === "Summon: Titan")!;
+    game.dispatch({ type: "cast-spell", player: A, card: titan, targets: [] });
+    game.advanceUntil(settled);
+
+    // Chapter I: enters with 1 lore counter, mills five, and is a 7/7 creature.
+    expect(game.state.objects[titan].counters.lore).toBe(1);
+    expect(game.state.objects[titan].zone).toBe("battlefield");
+    expect(game.characteristics(titan)).toMatchObject({ power: 7, toughness: 7 });
+    const milledLands = game.state.zones.perPlayer[A].graveyard.filter(
+      (id) => game.state.objects[id].cardName === "Plains",
+    ).length;
+    expect(milledLands).toBeGreaterThan(0);
+    const landsOnField = () =>
+      game.battlefield.filter(
+        (id) => game.state.objects[id].controller === A && game.characteristics(id).types.includes("land"),
+      ).length;
+    const landsBeforeCh2 = landsOnField();
+
+    // Alice's next turn — chapter II returns the milled lands, tapped.
+    game.advanceUntil((s) => s.turn.number === 3 && s.turn.step === "postcombat-main");
+    expect(game.state.objects[titan].counters.lore).toBe(2);
+    expect(landsOnField()).toBe(landsBeforeCh2 + milledLands);
+    expect(
+      game.battlefield
+        .filter((id) => game.state.objects[id].cardName === "Plains")
+        .every((id) => game.state.objects[id].tapped),
+    ).toBe(true);
+
+    // Turn 5 — chapter III pumps a target creature by the (now larger) land
+    // count, then the SBA sacrifices the Saga. Force the target choice onto
+    // the bear rather than the Titan itself — the engine has no generic
+    // "not this object" targeting exclusion, so both are legal targets.
+    const bear = game.debugSpawn("Grizzly Bears", A, "battlefield");
+    a.chooseTargetsFn = () => [{ kind: "object", object: bear }];
+    const landCount = landsOnField();
+    game.advanceUntil((s) => s.turn.number === 5 && s.turn.step === "declare-attackers");
+    expect(game.eventsOfType("saga-completed").some((e) => e.object === titan)).toBe(true);
+    expect(game.state.zones.perPlayer[A].graveyard).toContain(titan);
+    expect(game.characteristics(bear)).toMatchObject({
+      power: 2 + landCount,
+      toughness: 2 + landCount,
+    });
+    expect(game.characteristics(bear).keywords.has("trample")).toBe(true);
   });
 });

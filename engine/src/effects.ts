@@ -14,7 +14,10 @@ import type { Color, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { TargetRef, TargetSpec } from "./target.js";
 
-export type EffectTargetRef = number | "source";
+/** `"trigger-object"` reads `ResolutionContext.triggerObject` (needed-cards
+ * P15 — Exalted's "that creature gets +1/+1", the lone attacker rather than
+ * a target or the ability's own source). */
+export type EffectTargetRef = number | "source" | "trigger-object";
 export type PtDuration = "end-of-turn" | "permanent";
 /** A numeric amount in an effect: a literal, `"x"` for the value chosen for
  * `{X}` when the spell/ability was put on the stack (`ResolutionContext.x`),
@@ -744,6 +747,11 @@ function resolveEffectTarget(
   ctx: ResolutionContext,
 ): TargetRef | undefined {
   if (ref === "source") return { kind: "object", object: ctx.source };
+  if (ref === "trigger-object") {
+    return ctx.triggerObject !== undefined
+      ? { kind: "object", object: ctx.triggerObject }
+      : undefined;
+  }
   return ctx.targets[ref];
 }
 

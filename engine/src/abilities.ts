@@ -109,6 +109,15 @@ export type TriggerSpec =
       readonly filter?: CardFilter;
     }
   | {
+      /** Exalted (rule 702.111a — needed-cards P15): a creature you control
+       * attacked alone this combat — exactly one attacker was declared.
+       * `who: "you-control"` = the lone attacker is yours. The attacker isn't
+       * a target; an effect reads it via `ResolutionContext.triggerObject`
+       * (a `modify-pt` with `target: "trigger-object"`). */
+      readonly on: "attacks-alone";
+      readonly who: TriggerWho;
+    }
+  | {
       /** A player sacrificed a permanent (Korvold, Mayhem Devil — rule 701.19).
        * `who` is relative to the sacrificing player: `"you"` = this permanent's
        * controller sacrificed one, `"any"` = anyone did. needed-cards P6. */

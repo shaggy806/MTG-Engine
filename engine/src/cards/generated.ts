@@ -105,6 +105,7 @@ import _poolHinterlandHarbor from "./pool/hinterland-harbor.js";
 import _poolHistoryOfBenalia from "./pool/history-of-benalia.js";
 import _poolHolyStrength from "./pool/holy-strength.js";
 import _poolHypnoticSpecter from "./pool/hypnotic-specter.js";
+import _poolIgnobleHierarch from "./pool/ignoble-hierarch.js";
 import _poolInfernalGrasp from "./pool/infernal-grasp.js";
 import _poolInvisibleStalker from "./pool/invisible-stalker.js";
 import _poolIridescentVinelasher from "./pool/iridescent-vinelasher.js";
@@ -119,6 +120,7 @@ import _poolKorvoldFaeCursedKing from "./pool/korvold-fae-cursed-king.js";
 import _poolLathlissDragonQueen from "./pool/lathliss-dragon-queen.js";
 import _poolLevitation from "./pool/levitation.js";
 import _poolLightningBolt from "./pool/lightning-bolt.js";
+import _poolLightningGreaves from "./pool/lightning-greaves.js";
 import _poolLlanowarElves from "./pool/llanowar-elves.js";
 import _poolLongtuskCub from "./pool/longtusk-cub.js";
 import _poolLordOfExtinction from "./pool/lord-of-extinction.js";
@@ -182,8 +184,10 @@ import _poolSolRing from "./pool/sol-ring.js";
 import _poolSoulWarden from "./pool/soul-warden.js";
 import _poolSpectralSquire from "./pool/spectral-squire.js";
 import _poolSplendidReclamation from "./pool/splendid-reclamation.js";
+import _poolStarfieldVocalist from "./pool/starfield-vocalist.js";
 import _poolStompingGround from "./pool/stomping-ground.js";
 import _poolSulfurFalls from "./pool/sulfur-falls.js";
+import _poolSummonTitan from "./pool/summon-titan.js";
 import _poolSunderCharm from "./pool/sunder-charm.js";
 import _poolSunlitBastion from "./pool/sunlit-bastion.js";
 import _poolSwamp from "./pool/swamp.js";
@@ -348,6 +352,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolHistoryOfBenalia,
   _poolHolyStrength,
   _poolHypnoticSpecter,
+  _poolIgnobleHierarch,
   _poolInfernalGrasp,
   _poolInvisibleStalker,
   _poolIridescentVinelasher,
@@ -362,6 +367,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolLathlissDragonQueen,
   _poolLevitation,
   _poolLightningBolt,
+  _poolLightningGreaves,
   _poolLlanowarElves,
   _poolLongtuskCub,
   _poolLordOfExtinction,
@@ -425,8 +431,10 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolSoulWarden,
   _poolSpectralSquire,
   _poolSplendidReclamation,
+  _poolStarfieldVocalist,
   _poolStompingGround,
   _poolSulfurFalls,
+  _poolSummonTitan,
   _poolSunderCharm,
   _poolSunlitBastion,
   _poolSwamp,
