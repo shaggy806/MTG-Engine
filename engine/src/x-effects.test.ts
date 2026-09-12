@@ -87,6 +87,34 @@ describe("Gaze of Granite — destroys each creature with mana value X or less",
   });
 });
 
+// needed-cards P13 — a new CardFilter.notKeyword, plus a plain sequence of
+// two damage-all sweeps (creatures-without-flying, then planeswalkers)
+// rather than one filter matching either.
+describe("Magmaquake — X damage to each non-flying creature and each planeswalker", () => {
+  it("spares a flyer, kills a grounded creature, and drains a planeswalker's loyalty", () => {
+    const { game } = mkGame(["Magmaquake"]);
+    game.advanceUntil(toPrecombat);
+    for (let i = 0; i < 6; i += 1) game.debugSpawn("Mountain", A, "battlefield");
+    const bear = game.debugSpawn("Grizzly Bears", B, "battlefield"); // 2/2, no flying
+    const specter = game.debugSpawn("Hypnotic Specter", B, "battlefield"); // 2/2 flying
+    const chandra = game.debugSpawn("Chandra, Acolyte of Flame", B, "battlefield"); // loyalty 4
+
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Magmaquake"),
+      targets: [],
+      xValue: 2,
+    });
+    game.advanceUntil(quiet);
+
+    expect(game.state.objects[bear].zone).toBe("graveyard");
+    expect(game.state.objects[specter].zone).toBe("battlefield");
+    expect(game.state.objects[specter].damageMarked).toBe(0);
+    expect(game.state.objects[chandra].counters.loyalty).toBe(2);
+  });
+});
+
 describe("Finale of Devastation — tutors a creature onto the battlefield, Ferocious reduces its cost", () => {
   it("finds a creature with mana value X or less and puts it onto the battlefield", () => {
     const { game, a } = mkGame(

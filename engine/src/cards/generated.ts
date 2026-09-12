@@ -124,6 +124,7 @@ import _poolLongtuskCub from "./pool/longtusk-cub.js";
 import _poolLordOfExtinction from "./pool/lord-of-extinction.js";
 import _poolLotusCobra from "./pool/lotus-cobra.js";
 import _poolLure from "./pool/lure.js";
+import _poolMagmaquake from "./pool/magmaquake.js";
 import _poolManOWar from "./pool/man-o-war.js";
 import _poolMiirymSentinelWyrm from "./pool/miirym-sentinel-wyrm.js";
 import _poolMindControl from "./pool/mind-control.js";
@@ -365,6 +366,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolLordOfExtinction,
   _poolLotusCobra,
   _poolLure,
+  _poolMagmaquake,
   _poolManOWar,
   _poolMiirymSentinelWyrm,
   _poolMindControl,

@@ -20,7 +20,8 @@ Status:
 | **added — P10 (`{X}` in more effect positions + `selfCostReduction`)** | 3 — **Kessig Wolf Run**, **Gaze of Granite**, **Finale of Devastation** (partial) |
 | **added — P11 (`attacks` `TriggerSpec.filter`)** | 2 — **Utvara Hellkite**, **Atarka, World Render** |
 | **added — P12 (no new vocab — the guessed static was wrong)** | 1 — **Kiora, Behemoth Beckoner** |
-| blocked on an engine feature | ~61 |
+| **added — P13 (`CardFilter.notKeyword`)** | 1 — **Magmaquake** |
+| blocked on an engine feature | ~60 |
 
 † Rootbound Crag isn't on the list (Rockfall Vale is the list's R/G land) — added as the check-land cycle-mate.
 
@@ -421,6 +422,43 @@ three cards below.** Same "reality corrected the plan" pattern as P9/P11.
   - "Can be your commander" is a new `CardDefinition` flag with no representation at all
     in `identity.ts` / `server/src/deck-validation.ts` today (commander legality assumes
     a legendary *creature*).
+
+## P13 — Divided damage  (~2 cards)
+
+**Reassessed against real Oracle text — only one of the two candidate cards actually
+needs "divided damage"; the other's guess was wrong (same P9/P11/P12 pattern).**
+
+- **DONE — Magmaquake.** Real text (`{X}{R}{R}` instant): "Magmaquake deals X damage to
+  each creature without flying and each planeswalker." Not divided damage at all — a
+  plain `damage-all`, twice, needing only a new `CardFilter.notKeyword` (mirrors the
+  existing `keyword` clause) for "each creature *without* flying"; the planeswalker half
+  reuses the existing `damage-all` unchanged (`dealDamage` already reduces loyalty for a
+  planeswalker target, per the EG-5 audit). `{X}` as the amount already worked
+  (`EffectAmount = "x"`). No card in the pool is both a creature and a planeswalker, so
+  running the two sweeps back-to-back in a `sequence` never double-hits anything.
+  `x-effects.test.ts`.
+- **Still blocked — Dragonlord Atarka.** Real text (TDC 2025, `{5}{R}{G}`, 8/8 flying
+  trample Elder Dragon): "When Dragonlord Atarka enters, it deals 5 damage divided as
+  you choose among any number of target creatures and/or planeswalkers your opponents
+  control." This *is* the genuine "divided damage" mechanic (rule 601.2d — the split is
+  chosen as targets are announced, one to five targets, each getting at least 1 of the
+  5). It needs a new targeting shape the engine has never had: every `TargetSpec` slot
+  today is a fixed, mandatory arity (`targets: readonly TargetSpec[]`, one slot per
+  index); there's nothing for "choose *any number* of targets, then divide N among them."
+  This is the same missing primitive P12 flagged for Lord Windgrace's −3/−11 ("up to N"
+  targeting) — Atarka is the only card on the list that would need the *division*
+  half on top of the arity half, so it's a good future candidate to build both pieces
+  against at once, but doing it for this card alone right now is disproportionate (the
+  P0-tail verdict, again).
+- **Still blocked — Dragonhawk, Fate's Tempest.** Not divided damage either — real text
+  (Bloomburrow, `{3}{R}{R}`, 5/5 flying): "Whenever Dragonhawk enters or attacks, exile
+  the top X cards of your library, where X is the number of creatures you control with
+  power 4 or greater. You may play those cards until your next end step. At the
+  beginning of your next end step, Dragonhawk deals 2 damage to each opponent for each
+  of those cards that are still exiled." An impulse-draw-then-delayed-conditional-damage
+  shape — exactly the gap already noted against **Valakut Exploration** in P3 ("impulse
+  draw + delayed end-step damage"), now with a second candidate card. Worth building
+  once, for both.
 
 ## P13 — Divided damage  (~2 cards)
 

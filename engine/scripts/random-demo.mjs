@@ -179,6 +179,7 @@ const deckB = deck([
   ["Deliberate Course", 2],
   ["Pyroclasm", 1],
   ["Gaze of Granite", 1],
+  ["Magmaquake", 1],
   ["Kessig Wolf Run", 1],
   ["Wrath of God", 1],
   ["Diabolic Edict", 2],

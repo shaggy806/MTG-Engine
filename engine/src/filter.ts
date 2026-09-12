@@ -80,6 +80,9 @@ export interface CardFilter {
   /** Owned by the filtering player / anyone else (zone-agnostic, for graveyards). */
   readonly ownedBy?: "you" | "opponent";
   readonly keyword?: Keyword;
+  /** Must NOT have this keyword (Magmaquake: "each creature without flying" —
+   * needed-cards P13). */
+  readonly notKeyword?: Keyword;
   readonly tapped?: boolean;
   readonly token?: boolean;
 }
@@ -161,11 +164,12 @@ export function matchesFilter(
   if (filter.tapped !== undefined && object.tapped !== filter.tapped) return false;
   if (filter.token !== undefined && object.isToken !== filter.token) return false;
 
-  // Only these three need the layer fold (external anthems / keyword grants).
+  // Only these four need the layer fold (external anthems / keyword grants).
   if (
     filter.power !== undefined ||
     filter.toughness !== undefined ||
-    filter.keyword !== undefined
+    filter.keyword !== undefined ||
+    filter.notKeyword !== undefined
   ) {
     const c = computeCharacteristics(state, registry, id);
     if (filter.power !== undefined && !compareNum(c.power, filter.power)) return false;
@@ -173,6 +177,7 @@ export function matchesFilter(
       return false;
     }
     if (filter.keyword !== undefined && !c.keywords.has(filter.keyword)) return false;
+    if (filter.notKeyword !== undefined && c.keywords.has(filter.notKeyword)) return false;
   }
 
   return true;

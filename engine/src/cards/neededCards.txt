@@ -18,8 +18,8 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Defense of the Heart            (P7 — opponent-controls condition + sacrifice-source effect)
 [ ] 1 Dracogenesis                     FEATURE: (impulse / token generation — text TBD)
 [ ] 1 Dragon Tempest                   FEATURE: grant a keyword to "the creature that entered"; damage = Dragon count
-[ ] 1 Dragonhawk, Fate's Tempest       FEATURE: (TDM — damage divided / count-scaled)
-[ ] 1 Dragonlord Atarka                FEATURE: ETB "5 damage divided as you choose" among targets
+[ ] 1 Dragonhawk, Fate's Tempest       FEATURE: not divided damage at all (real text: impulse-draw = count of power-4+ creatures you control, then delayed end-step damage per card still exiled) — same shape as Valakut Exploration's P3 gap
+[ ] 1 Dragonlord Atarka                FEATURE: ETB "5 damage divided as you choose" among any number of target creatures/planeswalkers — needs variable-arity targeting (see P13)
 [+] 1 Dragonspeaker Shaman
 [ ] 1 Encroaching Dragonstorm          FEATURE: (search / cost — text TBD)
 [+] 1 Essence Flux                     FEATURE: flicker (exile then return under your control)
@@ -50,7 +50,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Lathliss, Dragon Queen           (+ token "Dragon Token" 5/5 flying)
 [ ] 1 Lightning Greaves                FEATURE: shroud keyword (equip {0} + haste are already fine)
 [x] 1 Llanowar Elves
-[ ] 1 Magmaquake                       FEATURE: damage-all excluding a keyword (no-flying) + hitting planeswalkers; {X} amount
+[+] 1 Magmaquake                       (P13 — CardFilter.notKeyword + two damage-all sweeps; {X} already worked)
 [ ] 1 Marang River Regent              FEATURE: conditional unblockable (ETB bounce alone is doable)
 [+] 1 Miirym, Sentinel Wyrm            (P5b — create-token-copy of: trigger-object)
 [ ] 1 Mirror Room / Fractured Realm    FEATURE: Room cards (Duskmourn split-enchantment / door unlock)
