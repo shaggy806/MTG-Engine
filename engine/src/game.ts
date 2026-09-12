@@ -5348,6 +5348,7 @@ export class Game {
           this.moveObject(id, "exile");
         }
       },
+      flicker: (target) => this.flickerByEffect(target),
       grantFlashback: (target) => this.grantFlashbackByEffect(target),
       fight: (a, b, oneSided) => this.fightCreatures(a, b, oneSided),
       counterSpell: (target) => this.counterSpellByEffect(target),
@@ -6492,6 +6493,51 @@ export class Game {
     this.moveObject(id, "exile");
     if (this.state.awaiting !== null) return;
     this.emit({ type: "permanent-exiled", object: id });
+  }
+
+  /** "Blink": exile a permanent, then immediately return it to the
+   * battlefield under its owner's control (rule 400.7 — needed-cards P9). A
+   * token exiled this way ceases to exist (rule 111.7) and is never brought
+   * back; a commander's 903.9a command-zone choice, raised as it leaves,
+   * takes priority over the return. */
+  private flickerByEffect(target: TargetRef): void {
+    if (target.kind !== "object") return;
+    const id = this.splitOneFromStack(target.object);
+    const object = this.state.objects[id];
+    if (object === undefined || object.zone !== "battlefield") return;
+    const isToken = object.isToken;
+    this.moveObject(id, "exile");
+    if (this.state.awaiting !== null) return;
+    if (this.state.objects[id]?.zone !== "exile") return;
+    this.emit({ type: "permanent-exiled", object: id });
+    // Rule 400.7: the object returning to the battlefield is brand new, so
+    // nothing that was attached to the *old* object stays attached — unlike
+    // an ordinary exile, `id` comes straight back here before a state-based
+    // action ever gets a chance to notice it left, so its old attachments
+    // won't have fallen off on their own (704.5n).
+    this.detachFrom(id);
+    if (isToken) return;
+    this.moveObject(id, "battlefield");
+    this.emit({ type: "permanent-entered-battlefield", object: id });
+  }
+
+  /** Detach every Aura/Equipment pointed at `id` (rule 704.5n): an Aura goes
+   * to its owner's graveyard, Equipment just becomes unattached. */
+  private detachFrom(id: ObjectId): void {
+    for (const other of [...this.state.zones.shared.battlefield]) {
+      const object = this.state.objects[other];
+      if (object.attachedTo !== id) continue;
+      if (this.registry.get(printedCardName(object)).subtypes.includes("Aura")) {
+        this.moveObject(other, "graveyard");
+        this.emit({
+          type: "permanent-destroyed",
+          object: other,
+          reason: "no longer attached to a legal permanent",
+        });
+      } else {
+        object.attachedTo = null;
+      }
+    }
   }
 
   /** Snapcaster Mage — grant flashback to a graveyard instant/sorcery until

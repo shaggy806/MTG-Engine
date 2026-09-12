@@ -63,6 +63,7 @@ import _poolDuskwoodVerdict from "./pool/duskwood-verdict.js";
 import _poolElvishVisionary from "./pool/elvish-visionary.js";
 import _poolEmberDart from "./pool/ember-dart.js";
 import _poolEmberclawScout from "./pool/emberclaw-scout.js";
+import _poolEssenceFlux from "./pool/essence-flux.js";
 import _poolEssenceScatter from "./pool/essence-scatter.js";
 import _poolEvolvingWilds from "./pool/evolving-wilds.js";
 import _poolExplorersInsight from "./pool/explorers-insight.js";
@@ -296,6 +297,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolElvishVisionary,
   _poolEmberDart,
   _poolEmberclawScout,
+  _poolEssenceFlux,
   _poolEssenceScatter,
   _poolEvolvingWilds,
   _poolExplorersInsight,

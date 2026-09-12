@@ -22,7 +22,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Dragonlord Atarka                FEATURE: ETB "5 damage divided as you choose" among targets
 [+] 1 Dragonspeaker Shaman
 [ ] 1 Encroaching Dragonstorm          FEATURE: (search / cost — text TBD)
-[ ] 1 Essence Flux                     FEATURE: flicker (exile then return under your control)
+[+] 1 Essence Flux                     FEATURE: flicker (exile then return under your control)
 [ ] 1 Exotic Orchard                   FEATURE: mana = "a color a land an opponent controls could produce"
 [ ] 1 Fanatic of Rhonas                FEATURE: conditional mana ability + variable output
 [+] 1 Farseek

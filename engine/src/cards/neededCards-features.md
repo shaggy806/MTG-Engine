@@ -295,8 +295,12 @@ Landfall *triggers* already work (`enters-battlefield`, `filter: { type: "land" 
 
 ## P9 — Flicker / blink  (2+ cards)
 
-`exile` then `return-to-battlefield-under-your-control` as one effect. **Essence Flux**,
-and a very common Commander primitive.
+**DONE.** A new `flicker` effect: exiles `target`, then immediately returns it to the
+battlefield under its owner's control (rule 400.7 — a brand-new object, so counters/
+Auras/tapped-status/stolen-control all fall off, same as `moveObject` already does for
+any other zone change). A token exiled this way ceases to exist and is never brought
+back (rule 111.7); a commander's 903.9a command-zone choice, raised as it leaves,
+pre-empts the return. Shipped **Essence Flux**. `flicker.test.ts`.
 
 ## P10 — `{X}` in more effect positions  (~3 cards)
 

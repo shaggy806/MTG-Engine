@@ -162,6 +162,7 @@ const deckB = deck([
   ["Essence Scatter", 1],
   ["Bonesplitter", 1],
   ["Holy Strength", 1],
+  ["Essence Flux", 1],
   ["Disenchant", 1],
   ["Angelic Edict", 1],
   ["Tome Scour", 1],

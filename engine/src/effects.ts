@@ -144,6 +144,16 @@ export type EffectSpec =
       readonly target: number | "you";
     }
   | {
+      /** Exile a target permanent, then immediately return it to the
+       * battlefield under its owner's control (rule 400.7 — a "blink": the
+       * returning permanent is a brand-new object with no memory of the old
+       * one, so counters, Auras/Equipment, tapped status, and effects like
+       * stolen control all fall off). A token exiled this way ceases to exist
+       * and never returns (rule 111.7 / 704.5d). needed-cards P9 — Essence Flux. */
+      readonly kind: "flicker";
+      readonly target: number;
+    }
+  | {
       /** Counter a target spell on the stack — it moves to its owner's
        * graveyard without resolving (rule 701.5). */
       readonly kind: "counter";
@@ -520,6 +530,9 @@ export interface EffectApi {
   exileObject(target: TargetRef): void;
   /** Exile every card in `target`'s graveyard (a player — Bojuka Bog). */
   exileGraveyard(target: TargetRef): void;
+  /** Exile `target`, then immediately return it to the battlefield under its
+   * owner's control — see the `"flicker"` {@link EffectSpec}. */
+  flicker(target: TargetRef): void;
   /** Grant flashback to `target` (an instant/sorcery card in a graveyard) for
    * the rest of the turn, at a flashback cost equal to its mana cost
    * (Snapcaster Mage). */
@@ -838,6 +851,11 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
           ? ({ kind: "player", player: ctx.controller } as const)
           : ctx.targets[spec.target];
       if (target !== undefined) ctx.exileGraveyard(target);
+      return;
+    }
+    case "flicker": {
+      const target = ctx.targets[spec.target];
+      if (target !== undefined) ctx.flicker(target);
       return;
     }
     case "grant-flashback": {

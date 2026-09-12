@@ -239,6 +239,7 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 | `destroy-all` | `filter` | Wrath of God |
 | `exile` | `target` | Angelic Edict |
 | `exile-graveyard` | `target` (a player slot, or `"you"`) | Bojuka Bog — exiles that player's whole graveyard at once (rule 406; the cards in it are never individually targeted) |
+| `flicker` | `target` | Essence Flux — exiles `target`, then immediately returns it to the battlefield under its owner's control (rule 400.7 — a brand-new object; a token exiled this way never comes back) |
 | `return-to-hand` | `target` | Unsummon |
 | `return-from-graveyard` | `filter`, `destination: "battlefield" \| "hand"`, `count: number \| "all"`, `enterTapped?` | Splendid Reclamation (from *your* graveyard; a `number` less than the match count raises a `choose-from-zone`) |
 | `counter` | `target` (a spell) | Counterspell |
