@@ -84,6 +84,7 @@ const deckA = deck([
   ["Juggernaut", 1],
   ["Combat Thresher", 1],
   ["Foundry Inspector", 1],
+  ["Urza's Incubator", 1],
   ["Sol Ring", 1],
   ["Command Tower", 1],
   ["Prosperous Innkeeper", 1],

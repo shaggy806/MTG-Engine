@@ -169,6 +169,11 @@ export interface StaticAbility {
     readonly applies: CardFilter;
     readonly reduceGeneric?: number;
     readonly increaseGeneric?: number;
+    /** Also require the spell's subtype to match this permanent's own
+     * `chosenCreatureType` (Urza's Incubator: "creature spells of the chosen
+     * type" — needed-cards P14). No effect (matches nothing) before the
+     * ETB choice is made. */
+    readonly matchesChosenCreatureType?: boolean;
   };
   /** Layer 7b: set base power and toughness to a dynamic count (+ the given
    * offsets). Only meaningful with `affects.scope === "self"` (a CDA). */
@@ -276,6 +281,10 @@ export interface CardDefinition {
    * chooses (Clone — rule 707); `filter` narrows what may be copied. `null`
    * for a normal card. */
   readonly copyOnEnter: { readonly filter: "creature" } | null;
+  /** "As this enters, choose a creature type" (Urza's Incubator — needed-cards
+   * P14). The permanent's `chosenCreatureType` is set once its controller
+   * answers; a `costModification.matchesChosenCreatureType` reads it back. */
+  readonly chooseCreatureTypeOnEnter: boolean;
   /** Starting loyalty for a planeswalker (rule 306.5b — it enters with this
    * many loyalty counters). `null` for a non-planeswalker. `defineCard`
    * synthesizes the enters-with-counters replacement from this. */
@@ -386,6 +395,7 @@ interface CardDraft {
   revealsOwnLibraryTop?: boolean;
   controlEnchanted?: boolean;
   copyOnEnter?: { readonly filter: "creature" };
+  chooseCreatureTypeOnEnter?: boolean;
   loyalty?: number;
   flashback?: { readonly cost: string };
   foretell?: { readonly cost: string };
@@ -444,6 +454,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     revealsOwnLibraryTop: draft.revealsOwnLibraryTop ?? false,
     controlEnchanted: draft.controlEnchanted ?? false,
     copyOnEnter: draft.copyOnEnter ?? null,
+    chooseCreatureTypeOnEnter: draft.chooseCreatureTypeOnEnter ?? false,
     loyalty,
     flashback: draft.flashback ?? null,
     foretell: draft.foretell ?? null,

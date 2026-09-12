@@ -21,7 +21,8 @@ Status:
 | **added — P11 (`attacks` `TriggerSpec.filter`)** | 2 — **Utvara Hellkite**, **Atarka, World Render** |
 | **added — P12 (no new vocab — the guessed static was wrong)** | 1 — **Kiora, Behemoth Beckoner** |
 | **added — P13 (`CardFilter.notKeyword`)** | 1 — **Magmaquake** |
-| blocked on an engine feature | ~60 |
+| **added — P14 (`choose-creature-type` decision + `costModification.matchesChosenCreatureType`)** | 1 — **Urza's Incubator** |
+| blocked on an engine feature | ~59 |
 
 † Rootbound Crag isn't on the list (Rockfall Vale is the list's R/G land) — added as the check-land cycle-mate.
 
@@ -468,8 +469,30 @@ planeswalkers).
 
 ## P14 — Choose-a-type-on-ETB  (~2 cards)
 
-"As ~ enters, choose a creature type" + type-scoped cost reduction — **Urza's Incubator**.
-(Dragonspeaker Shaman shipped this pass because its type is fixed.)
+**DONE — Urza's Incubator.** Real text confirmed the guess this time: "As Urza's
+Incubator enters, choose a creature type. Creature spells of the chosen type cost {2}
+less to cast." Two additions:
+
+- **`CardDefinition.chooseCreatureTypeOnEnter: boolean`** → a new **`choose-creature-type`**
+  `AwaitingDecision`, mirroring Clone's `choose-copy` exactly (an ETB choice, not a cast-time
+  one — raised from the same `resolveTopOfStack` hook, right where `copyOnEnter` is checked).
+  `Game.beginCreatureTypeChoice` offers a short curated menu (`INCUBATOR_CREATURE_TYPES` —
+  weighted toward subtypes the pool actually casts as creature spells, so the fuzzer
+  exercises the discount); `applyCreatureTypeChoice` stores the answer on the permanent's new
+  `GameObject.chosenCreatureType`, cleared on any zone change like `copyOf` (a fresh entry
+  chooses again). Full stack: `Action`/`LegalAction` variant, `PlayerController.chooseCreatureType`
+  (Automatic/Scripted/Random all implemented — Random picks uniformly), a client `choose-creature-type`
+  `Table` mode (one button per option), `AWAITING_LABEL` entry, both event-log formatters. Browser-verified live.
+- **`StaticAbility.costModification.matchesChosenCreatureType?: boolean`** — `costModificationFor`
+  folds the source's own `chosenCreatureType` into the `applies` filter's `subtype` clause at
+  read time (nothing matches before the choice is made), rather than the filter being fixed on
+  the card the way Foundry Inspector's is. No change needed to `EffectSpec`/`EffectApi` — this
+  is a static, not a resolving effect.
+
+Shipped as one card (Dragonspeaker Shaman, shipped in an earlier pass, has a *fixed* type —
+no ETB choice needed, hence excluded from this feature's count). `choose-creature-type` is
+now a reusable primitive for any future "choose a creature type" card, independent of what
+the choice is used for. `cost-modification.test.ts`.
 
 ## P15 — Keyword mechanics, 1–2 cards each
 

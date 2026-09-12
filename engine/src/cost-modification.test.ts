@@ -146,3 +146,72 @@ describe("cost increase — Thalia, Guardian of Thraben", () => {
     ).toBe(true);
   });
 });
+
+// needed-cards P14 — a new "choose a creature type as this enters" decision
+// (mirrors Clone's choose-copy) feeding a costModification whose filter
+// is completed from the chosen type, not fixed on the card.
+describe("cost reduction keyed to a chosen creature type — Urza's Incubator", () => {
+  it("reduces a creature spell of the chosen type, and only that type", () => {
+    const { game } = mkGame(["Urza's Incubator", "Grizzly Bears"]);
+    game.advanceUntil(toPrecombat);
+    for (let i = 0; i < 4; i += 1) spawn(game, "Forest", A); // {3} for the artifact + {G} for Bears
+
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Urza's Incubator"),
+    });
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-creature-type");
+    expect(game.state.awaiting).toMatchObject({ kind: "choose-creature-type", player: A });
+    game.dispatch({ type: "choose-creature-type", player: A, creatureType: "Bear" });
+    game.advanceUntil(settled);
+
+    // Grizzly Bears is {1}{G}, reduced by {2} (clamped) to just {G} — the one
+    // remaining untapped Forest pays it.
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Grizzly Bears"),
+    });
+    game.advanceUntil(settled);
+    expect(
+      game.battlefield.some((id) => game.state.objects[id].cardName === "Grizzly Bears"),
+    ).toBe(true);
+  });
+
+  it("does not reduce a creature spell of a different type", () => {
+    const { game } = mkGame(["Urza's Incubator", "Grizzly Bears"]);
+    game.advanceUntil(toPrecombat);
+    for (let i = 0; i < 3; i += 1) spawn(game, "Forest", A); // pays the artifact's {3}
+
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Urza's Incubator"),
+    });
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-creature-type");
+    game.dispatch({ type: "choose-creature-type", player: A, creatureType: "Dragon" });
+    game.advanceUntil(settled);
+
+    // Grizzly Bears is still {1}{G} — one Forest can't pay it.
+    spawn(game, "Forest", A);
+    expect(
+      game.canDispatch({
+        type: "cast-spell",
+        player: A,
+        card: named(game, game.handOf(A), "Grizzly Bears"),
+      }),
+    ).not.toBeNull();
+
+    spawn(game, "Forest", A);
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Grizzly Bears"),
+    });
+    game.advanceUntil(settled);
+    expect(
+      game.battlefield.some((id) => game.state.objects[id].cardName === "Grizzly Bears"),
+    ).toBe(true);
+  });
+});

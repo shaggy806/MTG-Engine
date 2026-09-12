@@ -122,6 +122,8 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return event.copyOf
         ? `${name(event.object)} enters as a copy of ${event.copyOf}`
         : `${name(event.object)} copies nothing`
+    case 'creature-type-chosen':
+      return `${name(event.object)} chooses ${event.creatureType}`
     case 'ability-activated':
       return `${event.player} activates ${name(event.source)}${
         event.onStack ? '' : ' (mana)'

@@ -82,7 +82,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Temur Battlecrier                FEATURE: (attack / cost-reduction trigger — text TBD)
 [+] 1 Terror of the Peaks
 [ ] 1 Ureni, the Song Unending         FEATURE: (TDM Ureni — big ETB/attacks value engine)
-[ ] 1 Urza's Incubator                 FEATURE: "choose a creature type as this enters" + type-scoped cost reduction
+[+] 1 Urza's Incubator                 (P14 — new choose-creature-type AwaitingDecision + costModification.matchesChosenCreatureType)
 [+] 1 Utvara Hellkite                  (P11 — attacks TriggerSpec.filter)
 [ ] 1 Virtue of Knowledge              FEATURE: "triggered abilities trigger an additional time"; adventure
 [ ] 1 World War Hulk                    FEATURE: (Marvel — text TBD; likely trample + cost reduction + ETB)

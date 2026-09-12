@@ -152,6 +152,8 @@ export const makeFormatter = (game) => {
         return e.copyOf
           ? `${name(e.object)} enters as a copy of ${e.copyOf}`
           : `${name(e.object)} copies nothing`;
+      case "creature-type-chosen":
+        return `${name(e.object)} chooses ${e.creatureType}`;
       case "permanent-entered-battlefield":
         return `${name(e.object)} enters the battlefield`;
       case "permanent-left-battlefield":

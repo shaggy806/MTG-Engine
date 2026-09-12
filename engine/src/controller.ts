@@ -133,6 +133,15 @@ export interface PlayerController {
     toOptions: readonly string[],
   ): readonly [string, string];
   /**
+   * A permanent with "as this enters, choose a creature type" just entered
+   * (Urza's Incubator — needed-cards P14). Return one of `options`.
+   */
+  chooseCreatureType(
+    view: ControllerView,
+    source: ObjectId,
+    options: readonly string[],
+  ): string;
+  /**
    * A modal spell/ability is resolving (rule 700.2), or a "you may" clause
    * (rule 601.3e). Return the indices of the modes to apply — distinct, and
    * between `minModes` and `maxModes` in count. An empty array declines an
@@ -300,6 +309,13 @@ function answerAwaited(
     );
     return { type: "choose-text", player, from, to };
   }
+  if (awaiting.kind === "choose-creature-type") {
+    return {
+      type: "choose-creature-type",
+      player,
+      creatureType: controller.chooseCreatureType(view, awaiting.source, awaiting.options),
+    };
+  }
   if (awaiting.kind === "choose-modes") {
     return {
       type: "choose-modes",
@@ -447,6 +463,14 @@ export class AutomaticController implements PlayerController {
     return [fromOptions[0], toOptions[0]];
   }
 
+  chooseCreatureType(
+    _view: ControllerView,
+    _source: ObjectId,
+    options: readonly string[],
+  ): string {
+    return options[0];
+  }
+
   chooseModes(
     _view: ControllerView,
     minModes: number,
@@ -526,6 +550,11 @@ type TextChooser = (
   fromOptions: readonly string[],
   toOptions: readonly string[],
 ) => readonly [string, string];
+type CreatureTypeChooser = (
+  view: ControllerView,
+  source: ObjectId,
+  options: readonly string[],
+) => string;
 type ModesChooser = (
   view: ControllerView,
   minModes: number,
@@ -579,6 +608,7 @@ export class ScriptedController implements PlayerController {
     fromOptions[0],
     toOptions[0],
   ];
+  chooseCreatureTypeFn: CreatureTypeChooser = (_view, _source, options) => options[0];
   chooseModesFn: ModesChooser = (_view, minModes) =>
     Array.from({ length: minModes }, (_unused, i) => i);
   chooseSacrificesFn: SacrificeChooser = (_view, eligible, count) => eligible.slice(0, count);
@@ -700,6 +730,14 @@ export class ScriptedController implements PlayerController {
     toOptions: readonly string[],
   ): readonly [string, string] {
     return this.chooseTextFn(view, fromOptions, toOptions);
+  }
+
+  chooseCreatureType(
+    view: ControllerView,
+    source: ObjectId,
+    options: readonly string[],
+  ): string {
+    return this.chooseCreatureTypeFn(view, source, options);
   }
 
   chooseModes(
@@ -952,6 +990,10 @@ export class RandomController extends AutomaticController {
         const from = legal.fromOptions[this.pickIndex(legal.fromOptions.length)];
         const to = legal.toOptions[this.pickIndex(legal.toOptions.length)];
         return { type: "choose-text", player, from, to };
+      }
+      case "choose-creature-type": {
+        const creatureType = legal.options[this.pickIndex(legal.options.length)];
+        return { type: "choose-creature-type", player, creatureType };
       }
       case "choose-modes": {
         const count =

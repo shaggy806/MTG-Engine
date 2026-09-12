@@ -353,6 +353,13 @@ export type GameEvent =
       readonly copyOf: string | null;
     })
   | (Base & {
+      /** "As this enters, choose a creature type" was answered (Urza's
+       * Incubator — needed-cards P14). */
+      readonly type: "creature-type-chosen";
+      readonly object: ObjectId;
+      readonly creatureType: string;
+    })
+  | (Base & {
       readonly type: "permanent-entered-battlefield";
       readonly object: ObjectId;
       /** How many real permanents this one event stands for — set > 1 only

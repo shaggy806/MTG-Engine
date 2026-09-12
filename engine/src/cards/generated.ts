@@ -209,6 +209,7 @@ import _poolUndergroundMortuary from "./pool/underground-mortuary.js";
 import _poolUnderworldRageHound from "./pool/underworld-rage-hound.js";
 import _poolUnsummon from "./pool/unsummon.js";
 import _poolUreniOfTheUnwritten from "./pool/ureni-of-the-unwritten.js";
+import _poolUrzasIncubator from "./pool/urzas-incubator.js";
 import _poolUtvaraHellkite from "./pool/utvara-hellkite.js";
 import _poolVampireNighthawk from "./pool/vampire-nighthawk.js";
 import _poolVengefulGhoul from "./pool/vengeful-ghoul.js";
@@ -451,6 +452,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolUnderworldRageHound,
   _poolUnsummon,
   _poolUreniOfTheUnwritten,
+  _poolUrzasIncubator,
   _poolUtvaraHellkite,
   _poolVampireNighthawk,
   _poolVengefulGhoul,

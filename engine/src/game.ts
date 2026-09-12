@@ -195,6 +195,15 @@ const CHANGEABLE_CREATURE_TYPES: readonly string[] = [
   "Spirit", "Elemental", "Frog", "Insect", "Angel", "Wall",
 ];
 
+/** The creature types Urza's Incubator (needed-cards P14) offers "as this
+ * enters, choose a creature type" — a short curated menu (rule 700.11 puts no
+ * bound on the real card), weighted toward subtypes the pool actually casts
+ * as creature spells so the cost reduction is exercised by the fuzzer. */
+const INCUBATOR_CREATURE_TYPES: readonly string[] = [
+  "Dragon", "Elf", "Goblin", "Human", "Wurm", "Elemental",
+  "Bear", "Zombie", "Spirit", "Beast",
+];
+
 export class Game {
   readonly state: GameState;
   private readonly registry: CardRegistry;
@@ -444,6 +453,9 @@ export class Game {
       case "choose-text":
         this.applyTextChoice(action.player, action.from, action.to);
         break;
+      case "choose-creature-type":
+        this.applyCreatureTypeChoice(action.player, action.creatureType);
+        break;
       case "choose-modes":
         this.applyModesChoice(action.player, action.modes);
         break;
@@ -525,6 +537,8 @@ export class Game {
         return this.whyCannotCopyChoice(action.player, action.copy);
       case "choose-text":
         return this.whyCannotTextChoice(action.player, action.from, action.to);
+      case "choose-creature-type":
+        return this.whyCannotCreatureTypeChoice(action.player, action.creatureType);
       case "choose-modes":
         return this.whyCannotChooseModes(action.player, action.modes);
       case "choose-targets":
@@ -650,6 +664,11 @@ export class Game {
             fromOptions: [...awaiting.fromOptions],
             toOptions: [...awaiting.toOptions],
           },
+        ];
+      }
+      if (awaiting.kind === "choose-creature-type") {
+        return [
+          { kind: "choose-creature-type", source: awaiting.source, options: [...awaiting.options] },
         ];
       }
       if (awaiting.kind === "choose-modes") {
@@ -1582,6 +1601,51 @@ export class Game {
     }
     if (copy !== null && !awaiting.options.includes(copy)) {
       return `${copy} is not one of the permanents that may be copied`;
+    }
+    return null;
+  }
+
+  /** "As this enters, choose a creature type" (Urza's Incubator — needed-cards
+   * P14). Always a real choice — `INCUBATOR_CREATURE_TYPES` is never empty. */
+  private beginCreatureTypeChoice(sourceId: ObjectId, controller: PlayerId): void {
+    this.state.awaiting = {
+      kind: "choose-creature-type",
+      player: controller,
+      source: sourceId,
+      options: INCUBATOR_CREATURE_TYPES,
+    };
+  }
+
+  /** Answers a pending `choose-creature-type` decision. */
+  private applyCreatureTypeChoice(player: PlayerId, creatureType: string): void {
+    const why = this.whyCannotCreatureTypeChoice(player, creatureType);
+    if (why !== null) throw new Error(why);
+    const awaiting = this.state.awaiting;
+    if (awaiting === null || awaiting.kind !== "choose-creature-type") {
+      throw new Error("unreachable: whyCannotCreatureTypeChoice should have caught this");
+    }
+    const source = this.state.objects[awaiting.source];
+    source.chosenCreatureType = creatureType;
+    this.emit({
+      type: "creature-type-chosen",
+      object: awaiting.source,
+      creatureType,
+    });
+    this.state.awaiting = null;
+    this.prepareForPriority(this.activePlayer);
+  }
+
+  private whyCannotCreatureTypeChoice(player: PlayerId, creatureType: string): string | null {
+    const awaiting = this.state.awaiting;
+    if (
+      awaiting === null ||
+      awaiting.kind !== "choose-creature-type" ||
+      awaiting.player !== player
+    ) {
+      return `${player} is not being asked to choose a creature type`;
+    }
+    if (!awaiting.options.includes(creatureType)) {
+      return `${creatureType} is not one of the offered creature types`;
     }
     return null;
   }
@@ -3452,9 +3516,16 @@ export class Game {
         const mod = ability.costModification;
         if (mod === undefined) continue;
         if (!this.staticActive(source, ability)) continue;
+        // Urza's Incubator (needed-cards P14): the filter also requires the
+        // spell's subtype to match this permanent's own ETB choice — nothing
+        // matches before that choice is made.
+        if (mod.matchesChosenCreatureType && source.chosenCreatureType == null) continue;
+        const applies = mod.matchesChosenCreatureType
+          ? { ...mod.applies, subtype: source.chosenCreatureType ?? undefined }
+          : mod.applies;
         // The filter is evaluated from the casting player's perspective, so
         // `controlledBy: "you"` means "a spell this player casts".
-        if (!matchesFilter(this.state, this.registry, cardId, mod.applies, { you: player })) {
+        if (!matchesFilter(this.state, this.registry, cardId, applies, { you: player })) {
           continue;
         }
         delta += mod.increaseGeneric ?? 0;
@@ -4778,6 +4849,7 @@ export class Game {
         }
       }
       if (def.copyOnEnter !== null) this.beginCopyChoice(id, object.controller);
+      if (def.chooseCreatureTypeOnEnter) this.beginCreatureTypeChoice(id, object.controller);
     } else if (
       // Adventure (rule 715.3) — the adventure half (face 1) resolving exiles
       // the card with a "you may cast the creature later" permission, instead
@@ -7452,6 +7524,9 @@ export class Game {
     // A copy effect ends when the object changes zones (rule 707.2) — a Clone
     // that dies and returns is a Clone again.
     object.copyOf = null;
+    // An ETB "choose a creature type" choice ends when the object changes
+    // zones — a fresh entry chooses again (Urza's Incubator — P14).
+    object.chosenCreatureType = null;
     // Alt-cast zone markers (ROADMAP Phase 6) end on any zone change: a
     // Snapcaster grant, a suspend / foretell exile state.
     object.grantedFlashback = null;

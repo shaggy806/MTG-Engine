@@ -58,6 +58,7 @@ type CommanderChoiceAction = Extract<LegalAction, { kind: 'commander-replacement
 type ShockChoiceAction = Extract<LegalAction, { kind: 'pay-life-for-untapped' }>
 type CopyChoiceAction = Extract<LegalAction, { kind: 'choose-copy' }>
 type TextChoiceAction = Extract<LegalAction, { kind: 'choose-text' }>
+type CreatureTypeChoiceAction = Extract<LegalAction, { kind: 'choose-creature-type' }>
 type ModesChoiceAction = Extract<LegalAction, { kind: 'choose-modes' }>
 type SacrificeAction = Extract<LegalAction, { kind: 'sacrifice' }>
 type ScryAction = Extract<LegalAction, { kind: 'scry' }>
@@ -111,6 +112,7 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
   'pay-life-for-untapped': 'decide on a shock land',
   'choose-copy': 'choose what to copy',
   'choose-text': 'choose a text change',
+  'choose-creature-type': 'choose a creature type',
   'choose-modes': 'choose a mode',
   'choose-targets': 'choose targets',
   'assign-combat-damage': 'assign combat damage',
@@ -599,6 +601,9 @@ function Table({ view, seat, opponents, game }: TableProps) {
   const textChoiceAction = actions.find(
     (a): a is TextChoiceAction => a.kind === 'choose-text',
   )
+  const creatureTypeChoiceAction = actions.find(
+    (a): a is CreatureTypeChoiceAction => a.kind === 'choose-creature-type',
+  )
   const modesChoiceAction = actions.find(
     (a): a is ModesChoiceAction => a.kind === 'choose-modes',
   )
@@ -650,6 +655,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
     | 'pay-life-for-untapped'
     | 'choose-copy'
     | 'choose-text'
+    | 'choose-creature-type'
     | 'choose-modes'
     | 'sacrifice'
     | 'scry'
@@ -668,6 +674,8 @@ function Table({ view, seat, opponents, game }: TableProps) {
         ? 'choose-copy'
         : textChoiceAction
           ? 'choose-text'
+        : creatureTypeChoiceAction
+          ? 'choose-creature-type'
         : modesChoiceAction
           ? 'choose-modes'
         : sacrificeAction
@@ -1493,6 +1501,23 @@ function Table({ view, seat, opponents, game }: TableProps) {
             }
           >
             {w}
+          </button>
+        ))}
+      </div>
+    )
+  } else if (mode === 'choose-creature-type' && creatureTypeChoiceAction) {
+    controls = (
+      <div className="controls">
+        <span>{game.nameOf(creatureTypeChoiceAction.source)} — choose a creature type</span>
+        {creatureTypeChoiceAction.options.map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() =>
+              game.dispatch({ type: 'choose-creature-type', player: seat, creatureType: t })
+            }
+          >
+            {t}
           </button>
         ))}
       </div>

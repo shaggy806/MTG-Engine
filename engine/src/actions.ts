@@ -191,6 +191,14 @@ export type Action =
       readonly to: string;
     }
   | {
+      /** Answers a pending "as this enters, choose a creature type" decision
+       * (Urza's Incubator — needed-cards P14). `creatureType` must be one of
+       * the offered options. */
+      readonly type: "choose-creature-type";
+      readonly player: PlayerId;
+      readonly creatureType: string;
+    }
+  | {
       /** Answers a pending `choose-modes` decision (a modal spell/ability, or
        * a "you may" clause): the indices into the mode list to apply, distinct,
        * between the decision's `minModes` and `maxModes`. An empty array
@@ -431,6 +439,11 @@ export type LegalAction =
       readonly fromOptions: readonly string[];
       /** Creature types the replacement may be. */
       readonly toOptions: readonly string[];
+    }
+  | {
+      readonly kind: "choose-creature-type";
+      readonly source: ObjectId;
+      readonly options: readonly string[];
     }
   | {
       readonly kind: "choose-modes";

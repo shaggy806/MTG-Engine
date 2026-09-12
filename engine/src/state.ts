@@ -59,6 +59,11 @@ export interface GameObject {
    * `printedCardName`, which returns this when set. Cleared on any zone change
    * (a Clone that dies and returns is a Clone again). */
   copyOf: string | null;
+  /** The creature type chosen as this permanent entered (Urza's Incubator —
+   * needed-cards P14, rule 601.2f-adjacent — an ETB choice, not a cast-time
+   * one). Absent for a permanent with no such choice; cleared on any zone
+   * change (a fresh entry chooses again). */
+  chosenCreatureType?: string | null;
   /** The faces of a multi-face card (rule 712 — ROADMAP Phase 10), by name,
    * front first — copied from `CardDefinition.faces` when the object is
    * created. Absent for a single-faced card. */
@@ -437,6 +442,15 @@ export type AwaitingDecision =
       readonly player: PlayerId;
       readonly source: ObjectId;
       readonly options: readonly ObjectId[];
+    }
+  | {
+      /** "As this enters, choose a creature type" (Urza's Incubator — needed-cards
+       * P14). `source`'s `chosenCreatureType` is set once answered; a
+       * `CardDefinition.costModification` reads it back. */
+      readonly kind: "choose-creature-type";
+      readonly player: PlayerId;
+      readonly source: ObjectId;
+      readonly options: readonly string[];
     }
   | {
       /** A text-changing spell is resolving (Artificial Evolution); its
