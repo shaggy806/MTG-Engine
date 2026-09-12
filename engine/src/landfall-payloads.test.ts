@@ -102,3 +102,118 @@ describe("Iridescent Vinelasher — landfall ping to an opponent", () => {
     expect(opts).toHaveLength(2);
   });
 });
+
+// needed-cards P16 — a new EffectSpec "damage" `who` scope (untargeted,
+// mirroring `lose-life`), instead of always needing a chosen target.
+describe("Sabotender — landfall damage to each opponent (untargeted)", () => {
+  it("hits every opponent in a multiplayer game, not just one", () => {
+    const game = mkGame([A, B, C]);
+    game.advanceUntil(toPrecombat);
+    game.debugSpawn("Sabotender", A, "battlefield");
+    const bLife = game.state.players[B].life;
+    const cLife = game.state.players[C].life;
+
+    game.dispatch({ type: "play-land", player: A, card: firstHandLand(game) });
+    game.advanceUntil(quiet);
+
+    expect(game.state.players[B].life).toBe(bLife - 1);
+    expect(game.state.players[C].life).toBe(cLife - 1);
+    expect(game.state.players[A].life).toBe(20); // not itself
+  });
+});
+
+describe("Tannuk, Memorial Ensign — landfall damage to each opponent", () => {
+  it("deals 1 to the sole opponent on a land drop", () => {
+    const game = mkGame();
+    game.advanceUntil(toPrecombat);
+    game.debugSpawn("Tannuk, Memorial Ensign", A, "battlefield");
+    const bLife = game.state.players[B].life;
+
+    game.dispatch({ type: "play-land", player: A, card: firstHandLand(game) });
+    game.advanceUntil(quiet);
+
+    expect(game.state.players[B].life).toBe(bLife - 1);
+  });
+});
+
+// needed-cards P16 — no new vocab: a landfall create-token trigger, and the
+// token's own "may mill" attack trigger, were already shipped.
+describe("Mole Man, Moloid Master — landfall creates a Moloid", () => {
+  it("mints a 1/1 green Minion named Moloid on a land drop", () => {
+    const game = mkGame();
+    game.advanceUntil(toPrecombat);
+    game.debugSpawn("Mole Man, Moloid Master", A, "battlefield");
+
+    game.dispatch({ type: "play-land", player: A, card: firstHandLand(game) });
+    game.advanceUntil(quiet);
+
+    const moloid = game.battlefield.find((id) => game.state.objects[id].cardName === "Moloid");
+    expect(moloid).toBeDefined();
+    expect(game.state.objects[moloid!].isToken).toBe(true);
+    expect(game.characteristics(moloid!)).toMatchObject({ power: 1, toughness: 1 });
+  });
+});
+
+// needed-cards P16 — search-library was already shipped; "return-to-hand"
+// widened to accept `target: "source"` so it can bounce the effect's own
+// permanent with no target at all.
+describe("Encroaching Dragonstorm — searches on ETB, bounces itself on a Dragon ETB", () => {
+  it("finds two basics, then returns itself to hand when a Dragon enters", () => {
+    const a = new ScriptedController(A);
+    a.chooseFromZoneFn = (_v, eligible, _min, max) => eligible.slice(0, max);
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
+      controllers: { [A]: a, [B]: new ScriptedController(B) },
+      decks: [
+        { player: A, cards: Array(40).fill("Forest") },
+        { player: B, cards: Array(40).fill("Forest") },
+      ],
+    });
+    game.advanceUntil(toPrecombat);
+    for (let i = 0; i < 10; i += 1) game.debugSpawn("Forest", A, "battlefield");
+    const dragonstorm = game.debugSpawn("Encroaching Dragonstorm", A, "hand");
+    const dragon = game.debugSpawn("Mossback Dragon", A, "hand");
+    const libraryBefore = game.libraryOf(A).length;
+
+    game.dispatch({ type: "cast-spell", player: A, card: dragonstorm });
+    game.advanceUntil(quiet);
+
+    expect(game.state.objects[dragonstorm].zone).toBe("battlefield");
+    expect(game.libraryOf(A).length).toBe(libraryBefore - 2);
+
+    game.dispatch({ type: "cast-spell", player: A, card: dragon });
+    game.advanceUntil(quiet);
+
+    expect(game.state.objects[dragonstorm].zone).toBe("hand");
+  });
+});
+
+describe("Rydia, Summoner of Mist — landfall loot", () => {
+  it("discards then draws when the player accepts", () => {
+    const a = new ScriptedController(A);
+    const b = new ScriptedController(B);
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
+      controllers: { [A]: a, [B]: b },
+      decks: [
+        { player: A, cards: Array(40).fill("Forest") },
+        { player: B, cards: Array(40).fill("Forest") },
+      ],
+    });
+    game.advanceUntil(toPrecombat);
+    game.debugSpawn("Rydia, Summoner of Mist", A, "battlefield");
+    const before = game.eventsOfType("card-drawn").filter((e) => e.player === A).length;
+
+    game.dispatch({ type: "play-land", player: A, card: firstHandLand(game) });
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-modes");
+    game.dispatch({ type: "choose-modes", player: A, modes: [0] });
+    game.advanceUntil(quiet);
+
+    expect(game.eventsOfType("card-drawn").filter((e) => e.player === A).length).toBe(before + 1);
+    expect(game.eventsOfType("cards-discarded").some((e) => e.player === A)).toBe(true);
+  });
+});

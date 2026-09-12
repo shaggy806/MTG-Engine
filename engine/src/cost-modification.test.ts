@@ -215,3 +215,70 @@ describe("cost reduction keyed to a chosen creature type — Urza's Incubator", 
     ).toBe(true);
   });
 });
+
+// needed-cards P16 — caught while generalizing costModification for Temur
+// Battlecrier: `controlledBy: "you"` in `applies` was evaluated from the
+// *casting* player's perspective, which a spell always trivially satisfies
+// (it's always controlled by whoever casts it) — so an opponent's Foundry
+// Inspector incorrectly discounted your own artifact spells too. Fixed to
+// evaluate from the static's own controller's perspective.
+describe("cost reduction only benefits its own controller (regression)", () => {
+  it("an opponent's Foundry Inspector does not discount your artifact spell", () => {
+    const { game } = mkGame(["Bonesplitter"]);
+    game.advanceUntil(toPrecombat);
+    spawn(game, "Foundry Inspector", B); // an opponent's, not Alice's
+    spawn(game, "Plains", A);
+
+    // Bonesplitter is {1} — Bob's Inspector must not reduce it for Alice.
+    expect(
+      game.canDispatch({
+        type: "cast-spell",
+        player: A,
+        card: named(game, game.handOf(A), "Bonesplitter"),
+      }),
+    ).toBeNull();
+    expect(
+      game.battlefield.some((id) => game.state.objects[id].cardName === "Bonesplitter"),
+    ).toBe(false);
+  });
+});
+
+// needed-cards P16 — costModification.reduceGeneric may be a live count
+// instead of a fixed number.
+describe("cost reduction scaled by a count — Temur Battlecrier", () => {
+  it("reduces generic cost by the number of power-4+ creatures you control, only on your turn", () => {
+    const { game } = mkGame(["Craterhoof Behemoth"]);
+    game.advanceUntil(toPrecombat);
+    spawn(game, "Temur Battlecrier", A); // itself a 4/3 — one qualifying creature
+    spawn(game, "Craw Wurm", A); // 6/4 — a second qualifying creature
+    for (let i = 0; i < 6; i += 1) spawn(game, "Forest", A);
+
+    // Craterhoof Behemoth is {5}{G}{G}{G} (5 generic + 3 green) — reduced by
+    // 2 to 3 generic, so 3+3 = 6 mana instead of 8, exactly what six Forests
+    // pay; without the reduction it would be short by two.
+    expect(
+      game.canDispatch({
+        type: "cast-spell",
+        player: A,
+        card: named(game, game.handOf(A), "Craterhoof Behemoth"),
+      }),
+    ).toBeNull();
+  });
+
+  it("an opponent's Battlecrier doesn't discount you on your own turn either — its condition is its own controller's turn", () => {
+    const { game } = mkGame(["Craterhoof Behemoth"]);
+    game.advanceUntil(toPrecombat); // Alice's own turn 1
+    spawn(game, "Temur Battlecrier", B); // Bob's — its condition checks Bob's turn, not Alice's
+    spawn(game, "Craw Wurm", B);
+    for (let i = 0; i < 5; i += 1) spawn(game, "Forest", A);
+
+    // It's not Bob's turn, so Alice's cast of Craterhoof still costs the full 8.
+    expect(
+      game.canDispatch({
+        type: "cast-spell",
+        player: A,
+        card: named(game, game.handOf(A), "Craterhoof Behemoth"),
+      }),
+    ).not.toBeNull();
+  });
+});

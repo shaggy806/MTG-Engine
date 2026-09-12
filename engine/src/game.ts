@@ -3157,9 +3157,25 @@ export class Game {
     return false;
   }
 
+  /** The base land-drop limit plus any `extraLandsPerTurn` statics `player`
+   * controls (Princess Sarah, Icetill Explorer — needed-cards P16). */
+  private maxLandsFor(player: PlayerId): number {
+    let extra = 0;
+    for (const id of this.state.zones.shared.battlefield) {
+      const source = this.state.objects[id];
+      if (source.controller !== player || hasLostAbilities(source)) continue;
+      for (const ability of this.registry.get(printedCardName(source)).static) {
+        if (ability.extraLandsPerTurn !== undefined && this.staticActive(source, ability)) {
+          extra += ability.extraLandsPerTurn;
+        }
+      }
+    }
+    return this.state.rules.maxLandsPerTurn + extra;
+  }
+
   private landDropReason(player: PlayerId): string | null {
     const playerState = this.state.players[player];
-    return playerState.landsPlayedThisTurn >= this.state.rules.maxLandsPerTurn
+    return playerState.landsPlayedThisTurn >= this.maxLandsFor(player)
       ? `${player} has already played a land this turn`
       : null;
   }
@@ -3488,7 +3504,7 @@ export class Game {
     const base = parseManaCost(costString);
     const tax = this.isCastableCommander(player, cardId) ? this.commanderTax(player, cardId) : 0;
     let generic = base.generic + tax + base.x * Math.max(0, xValue);
-    generic += this.costModificationFor(player, cardId);
+    generic += this.costModificationFor(cardId);
     if (
       def.selfCostReduction !== null &&
       staticConditionMet(this.state, this.registry, this.state.objects[cardId], def.selfCostReduction.condition)
@@ -3516,7 +3532,7 @@ export class Game {
   /** Net generic-mana adjustment to `cardId`'s cost from `costModification`
    * statics on the battlefield (increases first, then reductions — rule
    * 601.2f). Positive = costs more. */
-  private costModificationFor(player: PlayerId, cardId: ObjectId): number {
+  private costModificationFor(cardId: ObjectId): number {
     let delta = 0;
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
@@ -3532,13 +3548,23 @@ export class Game {
         const applies = mod.matchesChosenCreatureType
           ? { ...mod.applies, subtype: source.chosenCreatureType ?? undefined }
           : mod.applies;
-        // The filter is evaluated from the casting player's perspective, so
-        // `controlledBy: "you"` means "a spell this player casts".
-        if (!matchesFilter(this.state, this.registry, cardId, applies, { you: player })) {
+        // The filter is evaluated from *this static's controller's*
+        // perspective, so `controlledBy: "you"` means "a spell its
+        // controller casts" (Foundry Inspector reducing only its own
+        // controller's artifact spells, not anyone's) — fixed alongside
+        // needed-cards P16's Temur Battlecrier, which needs the same
+        // scoping for its live count.
+        if (!matchesFilter(this.state, this.registry, cardId, applies, { you: source.controller })) {
           continue;
         }
+        const reduceGeneric =
+          mod.reduceGeneric === undefined
+            ? 0
+            : typeof mod.reduceGeneric === "number"
+              ? mod.reduceGeneric
+              : this.battlefieldMatching(source.controller, mod.reduceGeneric.countOf).length;
         delta += mod.increaseGeneric ?? 0;
-        delta -= mod.reduceGeneric ?? 0;
+        delta -= reduceGeneric;
       }
     }
     return delta;
@@ -5451,6 +5477,11 @@ export class Game {
       triggerObject,
       stackMultiplier,
       dealDamage: (target, amount) => this.dealDamage(source, this.splitTargetRef(target), amount),
+      dealDamageScoped: (who, amount) => {
+        for (const p of this.scopedPlayers(controller, who)) {
+          this.dealDamage(source, { kind: "player", player: p }, amount);
+        }
+      },
       draw: (player, count) => {
         for (let i = 0; i < count; i += 1) this.drawCard(player);
       },

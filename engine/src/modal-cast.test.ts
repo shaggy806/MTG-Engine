@@ -184,3 +184,28 @@ describe("ROADMAP Phase 11 EG-2 — targeted modal spells", () => {
     expect(computeCharacteristics(game.state, reg, safe).keywords.has("vigilance")).toBe(true);
   });
 });
+
+// needed-cards P16 — a new live-count `add-counter` amount (mirrors
+// modify-pt's power/toughness already being an EffectAmount).
+describe("Will of the Sultai — mode 2 puts X counters where X is lands controlled", () => {
+  it("counts the caster's own lands, not the target's controller's", () => {
+    const { game } = makeGame(["Will of the Sultai"], "Forest");
+    mana(game); // 6 lands — enough for {4}{G} and a non-trivial land count
+    for (let i = 0; i < 3; i += 1) spawn(game, "Forest", B); // shouldn't count
+    const bear = spawn(game, "Grizzly Bears", B);
+    game.advanceUntil(atMain);
+
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: inHand(game, "Will of the Sultai"),
+      modes: [1],
+      targets: [{ kind: "object", object: bear }],
+    });
+    game.advanceUntil(settled);
+
+    // 6 from mana() — Bob's 3 Forests must not count toward Alice's total.
+    expect(game.state.objects[bear].counters["+1/+1"]).toBe(6);
+    expect(computeCharacteristics(game.state, reg, bear).keywords.has("trample")).toBe(true);
+  });
+});

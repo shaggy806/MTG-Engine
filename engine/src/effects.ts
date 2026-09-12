@@ -52,7 +52,16 @@ export type EffectSpec =
       readonly kind: "sequence";
       readonly effects: readonly EffectSpec[];
     }
-  | { readonly kind: "damage"; readonly amount: EffectAmount; readonly target: number }
+  | {
+      readonly kind: "damage";
+      readonly amount: EffectAmount;
+      /** A target slot index — omit when `who` is set instead. */
+      readonly target?: number;
+      /** Untargeted damage to a whole scope of players (Sabotender / Tannuk:
+       * "deals 1 damage to each opponent" — needed-cards P16), instead of a
+       * chosen target. */
+      readonly who?: PlayerScope;
+    }
   | {
       /** `mana: "any-color"` — one mana of any of the five colours, the
        * player's choice (Arcane Signet, Command Tower, Treasure). During
@@ -130,9 +139,11 @@ export type EffectSpec =
       readonly oneSided?: boolean;
     }
   | {
-      /** Return a target permanent to its owner's hand (rule 614-style bounce). */
+      /** Return a target permanent to its owner's hand (rule 614-style
+       * bounce). `target: "source"` bounces the effect's own permanent, with
+       * no target at all (Encroaching Dragonstorm — needed-cards P16). */
       readonly kind: "return-to-hand";
-      readonly target: number;
+      readonly target: EffectTargetRef;
     }
   | {
       /** Put a target permanent into exile. */
@@ -231,7 +242,10 @@ export type EffectSpec =
       readonly kind: "add-counter";
       readonly target: EffectTargetRef;
       readonly counter: string;
-      readonly amount: number;
+      /** A fixed amount, `"x"`, or a live count (Will of the Sultai: "X
+       * +1/+1 counters, where X is the number of lands you control" —
+       * needed-cards P16). */
+      readonly amount: EffectAmount;
     }
   | {
       /** Proliferate (rule 701.27): every permanent that already has any
@@ -504,6 +518,9 @@ export interface ModeOption {
 /** Primitive mutations an effect can perform. Implemented by the engine. */
 export interface EffectApi {
   dealDamage(target: TargetRef, amount: number): void;
+  /** Deal damage to a whole scope of players, untargeted (Sabotender /
+   * Tannuk: "deals 1 damage to each opponent" — needed-cards P16). */
+  dealDamageScoped(who: PlayerScope, amount: number): void;
   draw(player: PlayerId, count: number): void;
   gainLife(player: PlayerId, amount: number): void;
   loseLife(player: PlayerId, amount: number): void;
@@ -762,7 +779,11 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       return;
     }
     case "damage": {
-      const target = ctx.targets[spec.target];
+      if (spec.who !== undefined) {
+        ctx.dealDamageScoped(spec.who, amountValue(spec.amount, ctx));
+        return;
+      }
+      const target = spec.target !== undefined ? ctx.targets[spec.target] : undefined;
       if (target !== undefined) ctx.dealDamage(target, amountValue(spec.amount, ctx));
       return;
     }
@@ -844,7 +865,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       return;
     }
     case "return-to-hand": {
-      const target = ctx.targets[spec.target];
+      const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) ctx.returnToHand(target);
       return;
     }
@@ -921,7 +942,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     case "add-counter": {
       const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) {
-        ctx.addCounter(target, spec.counter, spec.amount);
+        ctx.addCounter(target, spec.counter, amountValue(spec.amount, ctx));
       }
       return;
     }

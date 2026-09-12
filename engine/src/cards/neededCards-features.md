@@ -23,7 +23,8 @@ Status:
 | **added — P13 (`CardFilter.notKeyword`)** | 1 — **Magmaquake** |
 | **added — P14 (`choose-creature-type` decision + `costModification.matchesChosenCreatureType`)** | 1 — **Urza's Incubator** |
 | **added — P15 (shroud, Exalted, ETB-trigger doubling, + a creature-Saga needing no new vocab)** | 4 — **Lightning Greaves**, **Ignoble Hierarch**, **Starfield Vocalist**, **Summon: Titan** |
-| blocked on an engine feature | ~55 |
+| **added — P16 (extra land drops, scoped damage, return-to-hand-source, countOf cost/counter amounts)** | 9 — **Princess Sarah**, **Icetill Explorer**, **Sabotender**, **Tannuk, Memorial Ensign**, **Encroaching Dragonstorm**, **Temur Battlecrier**, **Mole Man, Moloid Master**, **Rydia, Summoner of Mist**, **Will of the Sultai** |
+| blocked on an engine feature | ~46 |
 
 † Rootbound Crag isn't on the list (Rockfall Vale is the list's R/G land) — added as the check-land cycle-mate.
 
@@ -592,17 +593,117 @@ shipped in P0, so it's dropped from this bucket's count.**
 
 `exalted.test.ts`, `entry-trigger-doubling.test.ts`, `attachments.test.ts`, `saga.test.ts`.
 
-## P16 — Newer sets, text unverified
+## P16 — Newer sets, verified
 
-TDM (Tarkir: Dragonstorm) dragons and various UB / Final Fantasy / Avatar / Marvel /
-Edge of Eternities cards in the list whose exact templating I didn't want to guess:
-Broodcaller Scourge, Deceptive Frostkite, Dracogenesis, Dragonhawk Fate's Tempest,
-Encroaching Dragonstorm, Frontier Siege, Frostcliff Siege, Incinerator of the Guilty,
-Ureni the Song Unending, World War Hulk, Earthbender Ascension, Evendo Waking Haven,
-Famished Worldsire, Horizon Explorer, Icetill Explorer, Kavaron Memorial World,
-Mole Man Moloid Master, Princess Sarah, Rydia Summoner of Mist, Sabotender,
-Tannuk Memorial Ensign, Toph Hardheaded Teacher, Will of the Sultai, Temur Battlecrier.
-Pull the Oracle text (the `/import-deck` Scryfall lookup already does this) before authoring.
+**All 20 cards' real Oracle text pulled from Scryfall and cross-checked against the guesses
+below.** 9 shipped — most needing no new vocab at all, or a small, reusable generalization of
+something already shipped; the rest documented precisely, several sharing a gap with a card
+from an earlier pass (or with each other) rather than needing something bespoke.
+
+- **DONE — Princess Sarah.** "You may play two additional lands on each of your turns." New
+  **`StaticAbility.extraLandsPerTurn: number`**, folded into a new `Game.maxLandsFor(player)`
+  on top of the global `GameRules.maxLandsPerTurn` (previously a flat rule with no per-player
+  override at all). `extra-land-drops.test.ts`.
+- **DONE — Icetill Explorer.** "You may play an additional land… / play lands from your
+  graveyard. / Landfall — mill a card." Only the first clause is new (`extraLandsPerTurn: 1`);
+  `playFromGraveyard` and a filtered landfall `mill` were already shipped. `extra-land-drops.test.ts`.
+- **DONE — Sabotender.** "Landfall — deals 1 damage to each opponent." New: the `damage`
+  `EffectSpec` gains an optional **`who?: PlayerScope`** (mirroring `lose-life`) for untargeted
+  damage to a whole scope, plus `EffectApi.dealDamageScoped`. `landfall-payloads.test.ts`.
+- **DONE — Tannuk, Memorial Ensign.** Reuses Sabotender's `who`-scoped damage exactly. Drops
+  "if this is the second time this ability has resolved this turn, draw a card" — counting a
+  *specific ability's* own resolutions this turn (reset next turn) isn't tracked anywhere;
+  approximated the same way other cards drop a clause. `landfall-payloads.test.ts`.
+- **DONE — Encroaching Dragonstorm.** ETB search (already-shipped `search-library`) + "when a
+  Dragon you control enters, return this enchantment to its owner's hand." New:
+  **`return-to-hand`'s `target` widened from `number` to `EffectTargetRef`**, so `"source"`
+  bounces the effect's own permanent with no target at all (previously every `return-to-hand`
+  needed a chosen target). `landfall-payloads.test.ts`.
+- **DONE — Temur Battlecrier.** "During your turn, spells you cast cost {1} less… for each
+  creature you control with power 4+." New: **`costModification.reduceGeneric` widened to
+  `number | { countOf: CardFilter }`** — a live count, evaluated the same way `EffectAmount`'s
+  `countOf` is. "During your turn" was already expressible (`StaticCondition` `"your-turn"`).
+  **Caught and fixed along the way:** `costModificationFor` evaluated a filter's
+  `controlledBy: "you"` from the *casting* player's perspective, which a spell always
+  trivially satisfies (it's controlled by whoever casts it) — so an opponent's Foundry
+  Inspector / Dragonspeaker Shaman / Urza's Incubator could incorrectly discount *your* spells
+  too, a latent bug in all three already-shipped cards. Fixed to evaluate from the static's own
+  controller's perspective, which is what `controlledBy: "you"` actually means on every one of
+  those cards' printed text. `cost-modification.test.ts` (a regression test + Temur Battlecrier
+  coverage).
+- **DONE — Mole Man, Moloid Master.** "You may play lands from your graveyard. / Landfall —
+  create a 1/1 green Minion token named Moloid with 'whenever this token attacks, you may mill
+  a card.'" Zero new vocab — `playFromGraveyard`, a landfall `create-token`, and the token's own
+  `may` + `mill` attack trigger (World Shaper's exact shape) were all already shipped.
+  `landfall-payloads.test.ts`.
+- **DONE — Rydia, Summoner of Mist.** Ships the landfall loot half only ("may discard a card,
+  if you do draw a card" — a `may` wrapping a `sequence` of `discard`+`draw`, no new vocab).
+  Drops the "Summon" activated ability ("return target Saga card with mana value X from your
+  graveyard… with a finality counter on it") — no `TargetSpec` for "a Saga card in your
+  graveyard" exists, and finality counters (rule 122.3e — exile instead of any further zone
+  change) aren't modeled as a replacement at all; this is the only card on the list needing
+  either. `landfall-payloads.test.ts`.
+- **DONE — Will of the Sultai.** A `castModal` "choose one" (mode 1: mill + `return-from-
+  graveyard`, already-shipped shapes; mode 2: `add-counter` + `grant-keyword`). New: **the
+  `add-counter` `EffectSpec`'s `amount` widened from `number` to `EffectAmount`** (mirrors
+  `modify-pt`'s power/toughness already being one), for "X counters where X is the number of
+  lands you control." Drops "if you control a commander, you may choose both instead" —
+  `castModal`'s `minModes`/`maxModes` are fixed per `CardDefinition`, not conditional on board
+  state at cast time; approximated as a plain "choose one," the common case. `modal-cast.test.ts`.
+
+**Still blocked**, each with a specific, now-verified reason:
+
+- **Broodcaller Scourge** — `deals-combat-damage-to-player` needs a `filter` (today it only
+  supports `who`) for "one or more Dragons you control," and "put a permanent card with mana
+  value ≤ X from your hand onto the battlefield" is a new cheat-into-play effect gated by a
+  live amount.
+- **Deceptive Frostkite** — `copyOnEnter` needs an "except gains an extra type/keyword" option
+  on top of the copy. Notably *simpler* than Sarkhan's P12 gap: Frostkite's copy keeps the
+  *copied* thing's name (ordinary copy semantics), it just also gains Dragon + flying: a
+  reasonable, self-contained extension, just not built yet.
+- **Dracogenesis** — "you may cast Dragon spells without paying their mana costs" (an
+  Omniscience-style free-cast permission covering the *whole* cost, colored pips included) —
+  `costModification` only ever adjusts the generic portion.
+- **Incinerator of the Guilty** — "collect evidence X" (rule 725, Duskmourn) is a real new
+  sub-system: an at-resolution cost paid by exiling graveyard cards totaling mana value ≥ a
+  player-chosen X, unlike anything currently modeled (every existing cost is paid at cast/
+  activation time, not mid-resolution).
+- **World War Hulk** — a Saga; chapter II ("three +1/+1 counters") is already-shipped
+  `add-counter`. Chapter I ("cast the next red or green creature spell this turn for free")
+  needs a delayed, one-shot free-cast permission applied to whatever the player casts next.
+  Chapter III ("double its power and toughness") needs a new effect that reads a permanent's
+  *current* computed P/T and doubles it — every existing P/T effect adds an independent
+  amount, none reads and transforms the current value.
+- **Earthbender Ascension** / **Toph, Hardheaded Teacher** — both need "earthbend N" (Avatar):
+  animate a land as a 0/0 haste creature with N counters, returning it tapped when it next
+  dies or is exiled (its own small replacement-on-a-specific-object rule). Two cards would
+  share the primitive if built. Toph also references a "Lesson" card type/subtype that isn't
+  in the pool.
+- **Famished Worldsire** — Ward `{3}` already works. "Devour land 3" (sacrifice lands as it
+  enters, get 3× that many counters) is a new ETB replacement; its own ETB effect then needs
+  X = *this creature's current power* (post-devour), which no `resolve` script can read today
+  — `EffectApi` has no characteristics-reading call at all.
+- **Horizon Explorer** — "lands you control enter untapped" is the *inverse* of the existing
+  enters-tapped replacement machinery (an override, not another tapped-condition). "Whenever
+  you attack a player, create a Lander" fires once per *attacked player* per combat — a
+  different granularity than the existing `"attacks"` `TriggerSpec`, which fires once per
+  *attacking creature*.
+- **Ureni, the Song Unending** — the same "divided damage among any number of targets"
+  primitive blocking Dragonlord Atarka (P13) and Lord Windgrace's −3/−11 (P12). A third card
+  now wants it.
+- **Evendo, Waking Haven** / **Kavaron, Memorial World** — Station (rule 702.171), the same
+  unbuilt mechanic blocking Exploration Broodship (P15). Two more cards would share it.
+- **Frontier Siege / Frostcliff Siege** ("Siege" cycle) — "as this enters, choose [A] or [B]"
+  then carry a *different* static/triggered ability set for the rest of the game depending on
+  the choice. Structurally close to P14's `choose-creature-type` (an ETB choice), but the
+  choice has to gate which of two whole ability sets apply — needs a new `StaticCondition`
+  kind reading back a stored per-permanent choice, not just a filter completion. Both Sieges
+  would share the primitive; deferred rather than folded into this already-large pass.
+- **Dragonhawk, Fate's Tempest** — already assessed in P13 (impulse-draw + delayed
+  conditional damage — see there), unrelated to anything else in this bucket.
+
+`extra-land-drops.test.ts`, `landfall-payloads.test.ts`, `cost-modification.test.ts`,
+`modal-cast.test.ts`.
 
 ---
 

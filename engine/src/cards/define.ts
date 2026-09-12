@@ -171,7 +171,11 @@ export interface StaticAbility {
    * `applies` says what it hits. */
   readonly costModification?: {
     readonly applies: CardFilter;
-    readonly reduceGeneric?: number;
+    /** A fixed amount, or a live count of battlefield permanents matching a
+     * filter, evaluated with this static's controller as "you" (Temur
+     * Battlecrier: "{1} less for each creature you control with power 4 or
+     * greater" — needed-cards P16). */
+    readonly reduceGeneric?: number | { readonly countOf: CardFilter };
     readonly increaseGeneric?: number;
     /** Also require the spell's subtype to match this permanent's own
      * `chosenCreatureType` (Urza's Incubator: "creature spells of the chosen
@@ -186,6 +190,10 @@ export interface StaticAbility {
     readonly plusPower: number;
     readonly plusToughness: number;
   };
+  /** Additional land drops per turn for this permanent's controller (rule
+   * 305.2c-adjacent — needed-cards P16, Princess Sarah / Icetill Explorer).
+   * `affects` is ignored — folded into the controller's land-drop budget. */
+  readonly extraLandsPerTurn?: number;
   /** Panharmonicon-style doubling (needed-cards P15 — Starfield Vocalist:
    * "If a permanent entering the battlefield causes a triggered ability of a
    * permanent you control to trigger, that ability triggers an additional

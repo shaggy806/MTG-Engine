@@ -9,19 +9,19 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Blasphemous Act                  FEATURE: self cost reduction by a board count ("costs {1} less per creature")
 [ ] 1 Bloom Tender                     FEATURE: mana "for each color among permanents you control"
 [ ] 1 Bountiful Landscape              FEATURE: DFT reveal-a-basic-or-enters-tapped land (+ needs the fixed-dual mana work)
-[ ] 1 Broodcaller Scourge              FEATURE: (TDM dragon — text TBD; likely count-scaled / cast-trigger)
+[ ] 1 Broodcaller Scourge              FEATURE: "deals-combat-damage-to-player" TriggerSpec needs a filter (Dragons you control, not just self) + a new "put a permanent card with mv <= X from hand onto the battlefield" cheat-into-play effect gated by the damage dealt
 [ ] 1 Carnelian Orb of Dragonkind      FEATURE: restricted mana ("spend only on Dragons")
 [+] 1 Cinder Glade
 [x] 1 Command Tower
 [ ] 1 Cultivate                        FEATURE: multi-destination tutor (one to battlefield, one to hand)
-[ ] 1 Deceptive Frostkite             FEATURE: (TDM dragon — text TBD)
+[ ] 1 Deceptive Frostkite             FEATURE: copyOnEnter needs an "except gains extra type/keyword" exception on top of the copy (the copy itself keeps the copied thing's name — a different, simpler ask than Sarkhan's P12 "keeps its OWN name" case)
 [+] 1 Defense of the Heart            (P7 — opponent-controls condition + sacrifice-source effect)
-[ ] 1 Dracogenesis                     FEATURE: (impulse / token generation — text TBD)
+[ ] 1 Dracogenesis                     FEATURE: "you may cast Dragon spells without paying their mana costs" — an Omniscience-style free-cast permission on ALL of a cost (colored pips included), not just a generic reduction
 [ ] 1 Dragon Tempest                   FEATURE: grant a keyword to "the creature that entered"; damage = Dragon count
 [ ] 1 Dragonhawk, Fate's Tempest       FEATURE: not divided damage at all (real text: impulse-draw = count of power-4+ creatures you control, then delayed end-step damage per card still exiled) — same shape as Valakut Exploration's P3 gap
 [ ] 1 Dragonlord Atarka                FEATURE: ETB "5 damage divided as you choose" among any number of target creatures/planeswalkers — needs variable-arity targeting (see P13)
 [+] 1 Dragonspeaker Shaman
-[ ] 1 Encroaching Dragonstorm          FEATURE: (search / cost — text TBD)
+[+] 1 Encroaching Dragonstorm          (P16 — already-shipped search-library + return-to-hand widened to accept "source")
 [+] 1 Essence Flux                     FEATURE: flicker (exile then return under your control)
 [ ] 1 Exotic Orchard                   FEATURE: mana = "a color a land an opponent controls could produce"
 [ ] 1 Fanatic of Rhonas                FEATURE: conditional mana ability + variable output
@@ -40,7 +40,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Hellkite Tyrant                  FEATURE: gain control of all of a player's artifacts; alternate win condition
 [+] 1 Heroic Intervention
 [+] 1 Hinterland Harbor
-[ ] 1 Incinerator of the Guilty        FEATURE: (TDM dragon — likely damage + exile-on-death)
+[ ] 1 Incinerator of the Guilty        FEATURE: "collect evidence X" (Duskmourn rule 725) — exile graveyard cards totaling mana value >= a chosen X, a real new sub-system (a graveyard-selection cost paid at resolution, not cast time)
 [x] 3 Island
 [+] 1 Karplusan Forest
 [+] 1 Kessig Wolf Run                  (P10 — {X} activated-ability cost feeds modify-pt "x")
@@ -79,13 +79,13 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Temple of Mystery
 [ ] 1 Temple of the Dragon Queen       FEATURE: restricted any-color mana
 [+] 1 Temur Ascendancy
-[ ] 1 Temur Battlecrier                FEATURE: (attack / cost-reduction trigger — text TBD)
+[+] 1 Temur Battlecrier                (P16 — costModification.reduceGeneric widened to a live count; also fixed a latent controlledBy bug)
 [+] 1 Terror of the Peaks
-[ ] 1 Ureni, the Song Unending         FEATURE: (TDM Ureni — big ETB/attacks value engine)
+[ ] 1 Ureni, the Song Unending         FEATURE: ETB "X damage divided as you choose among any number of targets" — the same variable-arity divided-damage primitive blocking Dragonlord Atarka (P13) and Lord Windgrace's -3/-11 (P12)
 [+] 1 Urza's Incubator                 (P14 — new choose-creature-type AwaitingDecision + costModification.matchesChosenCreatureType)
 [+] 1 Utvara Hellkite                  (P11 — attacks TriggerSpec.filter)
 [ ] 1 Virtue of Knowledge              FEATURE: front half (doubleEntryTriggers) now unblocked by P15/Starfield Vocalist; the Adventure instant half needs a new "copy target activated or triggered ability" effect (copy-spell only copies a spell on the stack)
-[ ] 1 World War Hulk                    FEATURE: (Marvel — text TBD; likely trample + cost reduction + ETB)
+[ ] 1 World War Hulk                    FEATURE: a Saga — chapter II ("+1/+1 counter x3") is already-shipped add-counter; I "cast the next qualifying spell for free" and III "double target creature's power/toughness" both need new effect kinds (a delayed one-shot free-cast permission; a "read current P/T and multiply" op, not an independent add)
 [+] 1 Yavimaya Coast
 [x] 1 Ureni of the Unwritten           (commander — in pool)
 
@@ -106,30 +106,30 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Craterhoof Behemoth
 [+] 1 Crop Rotation                   (P8 — CardDefinition.additionalCost sacrifice)
 [ ] 1 Dryad of the Ilysian Grove       FEATURE: extra land drop; "lands are every basic land type"
-[ ] 1 Earthbender Ascension            FEATURE: (Avatar — counter-accumulation enchantment, text TBD)
-[ ] 1 Evendo, Waking Haven             FEATURE: (creature-land / DFC — text TBD)
+[ ] 1 Earthbender Ascension            FEATURE: "earthbend N" (Avatar — animate a land as a 0/0 haste creature with N +1/+1 counters, return it tapped when it dies/exiled) — a new mechanic also needed by Toph, Hardheaded Teacher
+[ ] 1 Evendo, Waking Haven             FEATURE: Station (rule 702.171) — same unbuilt mechanic as Exploration Broodship (P15) and Kavaron, Memorial World
 [x] 1 Evolving Wilds
 [ ] 1 Exploration Broodship            FEATURE: Station (not crew) — an activated ability that piles charge counters equal to a tapped creature's power onto this Spacecraft, with threshold-gated abilities (3+/8+) and an 8+ animation into a creature
 [ ] 1 Fabled Passage                   FEATURE: fetch land with conditional untap
-[ ] 1 Famished Worldsire               FEATURE: (EOE — big creature, token generation — text TBD)
+[ ] 1 Famished Worldsire               FEATURE: Ward {3} already works; "devour land 3" (sac lands as it enters, gets 3x that many counters) is a new ETB replacement, and its own ETB effect needs X = this creature's current power, which EffectApi can't read (no characteristics access from a resolve script)
 [ ] 1 Festering Thicket                FEATURE: fixed dual land (DFT)
 [+] 1 Finale of Devastation            (P10 — tutor + Ferocious selfCostReduction; X>=10 haste/fight TBD)
 [x] 8 Forest
 [+] 1 Gaze of Granite                  (P10 — destroy-all with a resolve-time manaValue<=X filter)
 [ ] 1 Greater Gargadon                 FEATURE: "sacrifice a permanent: put a time counter on this" (suspend itself is supported)
 [+] 1 Harrow                          (P8 — CardDefinition.additionalCost sacrifice)
-[ ] 1 Horizon Explorer                 FEATURE: (lands-matter creature — text TBD)
-[ ] 1 Icetill Explorer                 FEATURE: (DFT snow / lands — text TBD)
+[ ] 1 Horizon Explorer                 FEATURE: "lands you control enter untapped" needs a static that overrides an enters-tapped determination (the opposite of entersTappedStatic); "whenever you attack a player, create a Lander" fires once per attacked PLAYER per combat, not once per attacking creature like the existing "attacks" trigger
+[+] 1 Icetill Explorer                 (P16 — new extraLandsPerTurn static; playFromGraveyard + landfall mill already shipped)
 [+] 1 Ignoble Hierarch                 (P15 — new Exalted: attacks-alone TriggerSpec + trigger-object EffectTargetRef)
 [+] 1 Infernal Grasp
 [+] 1 Iridescent Vinelasher
-[ ] 1 Kavaron, Memorial World          FEATURE: (DFC land — text TBD)
+[ ] 1 Kavaron, Memorial World          FEATURE: Station (rule 702.171) — same unbuilt mechanic as Exploration Broodship (P15) and Evendo, Waking Haven
 [+] 1 Korvold, Fae-Cursed King         (P6 — on:"sacrifice" trigger + sacrifice exceptSource; stub finished)
 [ ] 1 Lord Windgrace                   FEATURE: planeswalker — +2 discard-then-draw with a bonus draw conditioned on the discarded card's type (an async "branch on a resolved decision" not yet modeled), -3/-11 "up to N target" multi-targeting (not modeled at all), and "can be your commander" for a non-creature legendary (see P12; real text has no land destruction or emblem — the guess was wrong)
 [+] 1 Lotus Cobra
 [ ] 1 Lotus Field                      FEATURE: ETB "sacrifice two lands"; "add three mana of any one color"
 [ ] 1 Manifold Key                     FEATURE: untap target artifact; grant unblockable
-[ ] 1 Mole Man, Moloid Master          FEATURE: (Marvel — text TBD)
+[+] 1 Mole Man, Moloid Master          (P16 — zero new vocab: playFromGraveyard + landfall create-token + the token's own may-mill attack trigger, all already shipped)
 [ ] 1 Moraug, Fury of Akoum            FEATURE: landfall extra combat phase (after main)
 [x] 3 Mountain
 [ ] 1 Myriad Landscape                 FEATURE: search two basics "that share a land type"
@@ -138,14 +138,14 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [x] 1 Oracle of Mul Daya
 [ ] 1 Orcish Lumberjack                FEATURE: "sacrifice a Forest: add {R}{R}{R}" (sac a filtered noncreature as a cost)
 [+] 1 Overgrown Tomb
-[ ] 1 Princess Sarah                   FEATURE: (FF — text TBD)
+[+] 1 Princess Sarah                   (P16 — new extraLandsPerTurn static)
 [ ] 1 Rain of Filth                    FEATURE: "sacrifice a land: add {B}" granted until end of turn (ritual)
 [ ] 1 Rakdos Charm                     FEATURE: targeted modal (graveyard exile / damage = power / destroy artifact)
 [+] 1 Ramunap Excavator
 [+] 1 Raucous Theater
 [+] 1 Riveteers Overlook
-[ ] 1 Rydia, Summoner of Mist          FEATURE: (FF — text TBD)
-[ ] 1 Sabotender                       FEATURE: (FF — text TBD)
+[+] 1 Rydia, Summoner of Mist          (P16 — landfall-loot half ships with already-shipped vocab; the Summon ability is dropped — targets a Saga in the graveyard + a finality counter, both unbuilt)
+[+] 1 Sabotender                       (P16 — new EffectSpec "damage" `who` scope, untargeted, mirroring lose-life)
 [+] 1 Saw in Half                      (P5b — create-token-copy of: <slot>, basePt)
 [+] 1 Scute Swarm                      (P5b — create-token-copy of: source + conditional effect)
 [ ] 1 Shifting Woodland                FEATURE: "becomes a copy of target permanent card in your graveyard"
@@ -158,12 +158,12 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Summon: Titan                    (P15 — zero new vocab; the guess was wrong, an enchantment-creature Saga just works)
 [x] 5 Swamp
 [+] 1 Sylvan Safekeeper                (P6 — AbilityCost.sacrifice: { filter })
-[ ] 1 Tannuk, Memorial Ensign          FEATURE: (DFC / lands-matter — text TBD)
+[+] 1 Tannuk, Memorial Ensign          (P16 — reuses Sabotender's damage-each-opponent primitive; drops "if this is the second time this ability has resolved this turn, draw a card" — per-ability-per-turn resolution counting isn't tracked)
 [+] 1 Tear Asunder                    (P8 — CardDefinition.kicker)
 [+] 1 Terramorphic Expanse
 [ ] 1 The Gitrog Monster               FEATURE: extra land drop; "sacrifice a land or discard" upkeep; draw on a land -> graveyard
 [+] 1 Tireless Provisioner
-[ ] 1 Toph, Hardheaded Teacher         FEATURE: (Avatar — text TBD)
+[ ] 1 Toph, Hardheaded Teacher         FEATURE: "earthbend 1" (see Earthbender Ascension) on every spell cast, plus a "that land" reference into a later clause that only applies if the spell was a Lesson (no Lesson subtype/card-type in the pool)
 [ ] 1 Traveling Chocobo                FEATURE: landfall (multi-land ETB) Food / counters
 [ ] 1 Turbulent Fen                    FEATURE: fixed dual land (DFT)
 [+] 1 Underground Mortuary
@@ -172,7 +172,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Verdant Catacombs
 [ ] 1 Vernal Fen                       FEATURE: fixed dual land (DFT)
 [ ] 1 Walk-In Closet / Forgotten Cellar FEATURE: Room card (front half is already-shipped playFromGraveyard; back half needs temporary graveyard-casting + an exile-instead-of-graveyard replacement, on top of Room support itself)
-[ ] 1 Will of the Sultai               FEATURE: (modal / "free if you control a permanent of each type" — text TBD)
+[+] 1 Will of the Sultai               (P16 — a plain castModal + a new add-counter live-count amount; drops "if you control a commander, may choose both" — castModal's minModes/maxModes are fixed per card, approximated as "choose one")
 [+] 1 Wooded Foothills
 [+] 1 World Shaper
 [+] 1 Zuran Orb                        (P6 — AbilityCost.sacrifice: { filter })
