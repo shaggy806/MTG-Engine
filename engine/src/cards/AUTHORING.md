@@ -403,7 +403,7 @@ triggered: [
 | `dies` | `who`, `filter?`, `otherOnly?` | a permanent → graveyard from the battlefield |
 | `leaves-battlefield` | `who` | a permanent leaves for **any** zone |
 | `gains-life` / `loses-life` | `who` | a player's life changes (`who` = whose) |
-| `attacks` | `who` | a creature is declared as an attacker |
+| `attacks` | `who`, `filter?` | a creature is declared as an attacker (`filter` narrows which one — Utvara Hellkite / Atarka, World Render: "a Dragon you control") |
 | `sacrifice` | `who` | a player sacrifices a permanent (Korvold, Mayhem Devil — `who` = who sacrificed) |
 | `deals-combat-damage-to-player` | `who` | auto-fills the first target slot with the damaged player |
 | `transforms` | `who`, `intoFront?`, `filter?` | a DFC turns over |

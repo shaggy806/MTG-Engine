@@ -15,6 +15,7 @@ import _poolArcaneSignet from "./pool/arcane-signet.js";
 import _poolArdentRecruit from "./pool/ardent-recruit.js";
 import _poolArtificialEvolution from "./pool/artificial-evolution.js";
 import _poolAshmarkMarduVanguard from "./pool/ashmark-mardu-vanguard.js";
+import _poolAtarkaWorldRender from "./pool/atarka-world-render.js";
 import _poolBeastWithin from "./pool/beast-within.js";
 import _poolBeholdTheMultiverse from "./pool/behold-the-multiverse.js";
 import _poolBirdsOfParadise from "./pool/birds-of-paradise.js";
@@ -206,6 +207,7 @@ import _poolUndergroundMortuary from "./pool/underground-mortuary.js";
 import _poolUnderworldRageHound from "./pool/underworld-rage-hound.js";
 import _poolUnsummon from "./pool/unsummon.js";
 import _poolUreniOfTheUnwritten from "./pool/ureni-of-the-unwritten.js";
+import _poolUtvaraHellkite from "./pool/utvara-hellkite.js";
 import _poolVampireNighthawk from "./pool/vampire-nighthawk.js";
 import _poolVengefulGhoul from "./pool/vengeful-ghoul.js";
 import _poolVerdantCatacombs from "./pool/verdant-catacombs.js";
@@ -228,6 +230,7 @@ import _poolZuranOrb from "./pool/zuran-orb.js";
 import _tokensBeastToken33 from "./tokens/beast-token-3-3.js";
 import _tokensBeastToken from "./tokens/beast-token.js";
 import _tokensDragonToken55 from "./tokens/dragon-token-5-5.js";
+import _tokensDragonToken66 from "./tokens/dragon-token-6-6.js";
 import _tokensElementalToken from "./tokens/elemental-token.js";
 import _tokensFoodToken from "./tokens/food-token.js";
 import _tokensFrogLizardToken from "./tokens/frog-lizard-token.js";
@@ -252,6 +255,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolArdentRecruit,
   _poolArtificialEvolution,
   _poolAshmarkMarduVanguard,
+  _poolAtarkaWorldRender,
   _poolBeastWithin,
   _poolBeholdTheMultiverse,
   _poolBirdsOfParadise,
@@ -443,6 +447,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolUnderworldRageHound,
   _poolUnsummon,
   _poolUreniOfTheUnwritten,
+  _poolUtvaraHellkite,
   _poolVampireNighthawk,
   _poolVengefulGhoul,
   _poolVerdantCatacombs,
@@ -465,6 +470,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _tokensBeastToken33,
   _tokensBeastToken,
   _tokensDragonToken55,
+  _tokensDragonToken66,
   _tokensElementalToken,
   _tokensFoodToken,
   _tokensFrogLizardToken,

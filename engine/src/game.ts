@@ -5022,7 +5022,8 @@ export class Game {
       case "attacks":
         return (
           event.type === "attacker-declared" &&
-          this.matchesWho(spec.who, event.attacker, self)
+          this.matchesWho(spec.who, event.attacker, self) &&
+          this.triggerFilterOk(spec.filter, event.attacker, self)
         );
       case "sacrifice":
         return (

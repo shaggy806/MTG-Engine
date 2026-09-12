@@ -101,7 +101,13 @@ export type TriggerSpec =
       readonly on: "loses-life";
       readonly who: TriggerWho;
     }
-  | { readonly on: "attacks"; readonly who: TriggerWho }
+  | {
+      readonly on: "attacks";
+      readonly who: TriggerWho;
+      /** Narrow which attacker counts (Utvara Hellkite / Atarka, World
+       * Render: "a Dragon you control"). needed-cards P11. */
+      readonly filter?: CardFilter;
+    }
   | {
       /** A player sacrificed a permanent (Korvold, Mayhem Devil — rule 701.19).
        * `who` is relative to the sacrificing player: `"you"` = this permanent's

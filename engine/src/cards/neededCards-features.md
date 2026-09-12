@@ -18,7 +18,8 @@ Status:
 | **added — P8 (`additionalCost` + `kicker` + `exile-graveyard`)** | 4 — **Harrow**, **Crop Rotation**, **Tear Asunder**, **Bojuka Bog** |
 | **added — P9 (`flicker` effect)** | 1 — **Essence Flux** |
 | **added — P10 (`{X}` in more effect positions + `selfCostReduction`)** | 3 — **Kessig Wolf Run**, **Gaze of Granite**, **Finale of Devastation** (partial) |
-| blocked on an engine feature | ~64 |
+| **added — P11 (`attacks` `TriggerSpec.filter`)** | 2 — **Utvara Hellkite**, **Atarka, World Render** |
+| blocked on an engine feature | ~62 |
 
 † Rootbound Crag isn't on the list (Rockfall Vale is the list's R/G land) — added as the check-land cycle-mate.
 
@@ -340,13 +341,24 @@ imperative `resolve` hatch can build one with a literal `n: ctx.x` and call
 
 ## P11 — `attacks` trigger `filter`  (~3 cards)
 
-`triggerMatches`'s `"attacks"` case (game.ts ~4322) checks `who` but **not** a `filter`.
-Add `triggerFilterOk(spec.filter, event.attacker, self)`.
+**DONE.** `TriggerSpec`'s `"attacks"` variant gained an optional `filter?: CardFilter`,
+checked in `triggerMatches` via the existing `triggerFilterOk` helper (the same one
+`enters-battlefield`/`dies`/`transforms` already use).
 
-- **Utvara Hellkite** ("a Dragon you control attacks" → 6/6 Dragon token; bake haste into
-  the token — functionally identical), Old Gnawbone, Miirym.
-- **Atarka, World Render** additionally needs the trigger to **auto-target the attacked
-  player/planeswalker** (like `deals-combat-damage-to-player` auto-fills its slot).
+- Shipped **Utvara Hellkite**: "Whenever a Dragon you control attacks, create a 6/6 red
+  Dragon creature token with flying" (`filter: { subtype: "Dragon" }`) — its real Oracle
+  text (pulled from Gatherer) has no haste and no "tapped and attacking" clause; the
+  original planning note here had guessed both, faithfully corrected once checked.
+- Shipped **Atarka, World Render**: "Whenever a Dragon you control attacks, it gains
+  double strike until end of turn" — also simpler than this doc originally guessed (no
+  targeting at all, on either the real card or Atarka's own text). The keyword goes on
+  `ctx.triggerObject` (the attacking Dragon, which may not be Atarka itself), via the
+  `resolve` hatch — no new `EffectApi` needed, `grantKeyword` already exists.
+  Old Gnawbone and Miirym, Sentinel Wyrm (both cited here originally) turned out to
+  already be correctly implemented on `deals-combat-damage-to-player` /
+  `enters-battlefield`, not `attacks` — no changes needed for either.
+
+`attacks-filter.test.ts`.
 
 ## P12 — Planeswalker / conditional-static gaps  (~4 cards)
 

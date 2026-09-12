@@ -74,6 +74,8 @@ const deckA = deck([
   ["Finale of Devastation", 1],
   ["Scourge of Valkas", 1],
   ["Old Gnawbone", 1],
+  ["Utvara Hellkite", 1],
+  ["Atarka, World Render", 1],
   ["Miirym, Sentinel Wyrm", 1],
   ["Scute Swarm", 1],
   ["Garruk's Uprising", 1],

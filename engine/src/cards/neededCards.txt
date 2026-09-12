@@ -3,7 +3,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 === Deck 1 — Ureni of the Unwritten (Temur dragons) ===
 [+] 1 An Offer You Can't Refuse
 [x] 1 Arcane Signet
-[ ] 1 Atarka, World Render             FEATURE: attacks-trigger auto-targeting the attacked player/planeswalker
+[+] 1 Atarka, World Render             (P11 — attacks TriggerSpec.filter; real text has no targeting)
 [+] 1 Beast Within
 [+] 1 Birds of Paradise
 [ ] 1 Blasphemous Act                  FEATURE: self cost reduction by a board count ("costs {1} less per creature")
@@ -83,7 +83,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Terror of the Peaks
 [ ] 1 Ureni, the Song Unending         FEATURE: (TDM Ureni — big ETB/attacks value engine)
 [ ] 1 Urza's Incubator                 FEATURE: "choose a creature type as this enters" + type-scoped cost reduction
-[ ] 1 Utvara Hellkite                  FEATURE: filter on the attacks trigger ("a Dragon you control attacks")
+[+] 1 Utvara Hellkite                  (P11 — attacks TriggerSpec.filter)
 [ ] 1 Virtue of Knowledge              FEATURE: "triggered abilities trigger an additional time"; adventure
 [ ] 1 World War Hulk                    FEATURE: (Marvel — text TBD; likely trample + cost reduction + ETB)
 [+] 1 Yavimaya Coast
