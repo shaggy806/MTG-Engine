@@ -12,7 +12,12 @@
  * filter wants.
  */
 
-import { computeCharacteristics } from "./characteristics.js";
+import {
+  computeCharacteristics,
+  effectiveColors,
+  effectiveSubtypes,
+  effectiveTypes,
+} from "./characteristics.js";
 import type { CardRegistry, CardType, Keyword, Supertype } from "./cards.js";
 import type { Color } from "./mana.js";
 import { manaValue, parseManaCost } from "./mana.js";
@@ -94,21 +99,30 @@ export function matchesFilter(
 ): boolean {
   const object = state.objects[id];
   if (object === undefined) return false;
-  const c = computeCharacteristics(state, registry, id);
 
-  if (filter.type !== undefined && !c.types.includes(filter.type)) return false;
-  if (filter.types !== undefined && !filter.types.every((t) => c.types.includes(t))) {
+  // Types, subtypes and colours are self-contained (layers 4 / 3 / 5 come only
+  // from the object's own modifiers), so they're answered without the layer
+  // fold. Only `keyword` / `power` / `toughness` need external statics — and
+  // the fold is expensive enough that it's worth deferring: a static
+  // ability's condition (Kird Ape's "you control a Forest") runs this over the
+  // whole battlefield every time anything reads its characteristics.
+  const types = effectiveTypes(registry, object);
+  if (filter.type !== undefined && !types.includes(filter.type)) return false;
+  if (filter.types !== undefined && !filter.types.every((t) => types.includes(t))) {
     return false;
   }
-  if (filter.notTypes !== undefined && filter.notTypes.some((t) => c.types.includes(t))) {
+  if (filter.notTypes !== undefined && filter.notTypes.some((t) => types.includes(t))) {
     return false;
   }
-  if (filter.subtype !== undefined && !c.subtypes.includes(filter.subtype)) return false;
-  if (
-    filter.subtypes !== undefined &&
-    !filter.subtypes.some((s) => c.subtypes.includes(s))
-  ) {
-    return false;
+  if (filter.subtype !== undefined || filter.subtypes !== undefined) {
+    const subtypes = effectiveSubtypes(registry, object);
+    if (filter.subtype !== undefined && !subtypes.includes(filter.subtype)) return false;
+    if (
+      filter.subtypes !== undefined &&
+      !filter.subtypes.some((s) => subtypes.includes(s))
+    ) {
+      return false;
+    }
   }
   if (
     filter.supertype !== undefined &&
@@ -118,13 +132,20 @@ export function matchesFilter(
   }
   if (filter.name !== undefined && printedCardName(object) !== filter.name) return false;
 
-  if (filter.colors !== undefined && !filter.colors.every((col) => c.colors.has(col))) {
-    return false;
+  if (
+    filter.colors !== undefined ||
+    filter.notColors !== undefined ||
+    filter.colorless === true
+  ) {
+    const colors = effectiveColors(registry, object);
+    if (filter.colors !== undefined && !filter.colors.every((col) => colors.has(col))) {
+      return false;
+    }
+    if (filter.notColors !== undefined && filter.notColors.some((col) => colors.has(col))) {
+      return false;
+    }
+    if (filter.colorless === true && colors.size > 0) return false;
   }
-  if (filter.notColors !== undefined && filter.notColors.some((col) => c.colors.has(col))) {
-    return false;
-  }
-  if (filter.colorless === true && c.colors.size > 0) return false;
 
   if (
     filter.manaValue !== undefined &&
@@ -132,19 +153,27 @@ export function matchesFilter(
   ) {
     return false;
   }
-  if (filter.power !== undefined && !compareNum(c.power, filter.power)) return false;
-  if (filter.toughness !== undefined && !compareNum(c.toughness, filter.toughness)) {
-    return false;
-  }
-
+  // Cheap, purely-positional clauses before the expensive fold below.
   if (filter.controlledBy === "you" && object.controller !== ctx.you) return false;
   if (filter.controlledBy === "opponent" && object.controller === ctx.you) return false;
   if (filter.ownedBy === "you" && object.owner !== ctx.you) return false;
   if (filter.ownedBy === "opponent" && object.owner === ctx.you) return false;
-
-  if (filter.keyword !== undefined && !c.keywords.has(filter.keyword)) return false;
   if (filter.tapped !== undefined && object.tapped !== filter.tapped) return false;
   if (filter.token !== undefined && object.isToken !== filter.token) return false;
+
+  // Only these three need the layer fold (external anthems / keyword grants).
+  if (
+    filter.power !== undefined ||
+    filter.toughness !== undefined ||
+    filter.keyword !== undefined
+  ) {
+    const c = computeCharacteristics(state, registry, id);
+    if (filter.power !== undefined && !compareNum(c.power, filter.power)) return false;
+    if (filter.toughness !== undefined && !compareNum(c.toughness, filter.toughness)) {
+      return false;
+    }
+    if (filter.keyword !== undefined && !c.keywords.has(filter.keyword)) return false;
+  }
 
   return true;
 }

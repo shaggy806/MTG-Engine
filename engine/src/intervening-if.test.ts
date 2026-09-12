@@ -168,6 +168,30 @@ describe("Garruk's Uprising — an intervening-if ETB draw", () => {
     expect(drawsBy(game, A)).toBe(before + 1);
   });
 
+  it("sees power a *conditional* static is granting (Werebear past threshold)", () => {
+    // Rule 604.3 / 603.4: the condition reads the creature's real power, which
+    // here comes from another conditional static. A fuzz game caught an
+    // optimization that skipped conditional statics while evaluating a
+    // condition — cheap, but it made this 5/5 read as a 1/1 and silently ate
+    // the draw.
+    const { game } = mkGame(["Garruk's Uprising"]);
+    game.advanceUntil(toPrecombat);
+    for (let i = 0; i < 3; i += 1) game.debugSpawn("Forest", A, "battlefield");
+    const bear = game.debugSpawn("Werebear", A, "battlefield"); // 1/1 base
+    for (let i = 0; i < 7; i += 1) game.debugSpawn("Forest", A, "graveyard");
+    expect(game.characteristics(bear).power).toBe(4); // threshold: +3/+3
+    const before = drawsBy(game, A);
+
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Garruk's Uprising"),
+    });
+    game.advanceUntil(quiet);
+
+    expect(drawsBy(game, A)).toBe(before + 1);
+  });
+
   it("grants trample to your creatures only", () => {
     const { game } = mkGame([]);
     game.advanceUntil(toPrecombat);

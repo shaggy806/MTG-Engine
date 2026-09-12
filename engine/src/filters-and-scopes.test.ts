@@ -280,3 +280,70 @@ describe("sacrifice effect — edicts (rule 701.16)", () => {
     expect(zoneOf(game, fleshbag)).toBe("battlefield");
   });
 });
+
+// `matchesFilter` answers type / subtype / colour clauses from the object's own
+// printed values plus its own modifiers (layers 3-5), and only reaches for the
+// full layer fold when a `power` / `toughness` / `keyword` clause needs it —
+// the fold is expensive enough that a static ability's condition scanning the
+// battlefield used to dominate a long game's runtime. These pin the cases where
+// the cheap path must still see a *changed* characteristic.
+describe("matchesFilter sees layer 3-5 changes without the full fold", () => {
+  const filterIn = (game: Game, id: ObjectId, filter: Parameters<typeof matchesFilter>[3]) =>
+    matchesFilter(game.state, game.registry, id, filter, { you: A });
+
+  it("an animated man-land matches a creature filter (layer 4)", () => {
+    const { game } = mkGame([]);
+    game.advanceUntil(toPrecombat);
+    const factory = spawn(game, "Mishra's Factory", A);
+    spawn(game, "Forest", A);
+
+    expect(filterIn(game, factory, { type: "creature" })).toBe(false);
+    expect(filterIn(game, factory, { type: "land" })).toBe(true);
+
+    game.dispatch({ type: "activate-ability", player: A, source: factory, abilityIndex: 1 });
+    game.advanceUntil(settled);
+
+    // Still a land, and now also a creature and an Assembly-Worker.
+    expect(filterIn(game, factory, { type: "creature" })).toBe(true);
+    expect(filterIn(game, factory, { type: "land" })).toBe(true);
+    expect(filterIn(game, factory, { subtype: "Assembly-Worker" })).toBe(true);
+  });
+
+  it("a Turn to Frog'd creature matches on its new colour and subtype (layers 3-5)", () => {
+    const { game } = mkGame(["Turn to Frog"]);
+    game.advanceUntil(toPrecombat);
+    const bear = spawn(game, "Grizzly Bears", B);
+    spawn(game, "Island", A);
+    spawn(game, "Island", A); // {1}{U}
+
+    expect(filterIn(game, bear, { colors: ["G"] })).toBe(true);
+    expect(filterIn(game, bear, { subtype: "Bear" })).toBe(true);
+
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Turn to Frog"),
+      targets: [{ kind: "object", object: bear }],
+    });
+    game.advanceUntil(settled);
+
+    expect(filterIn(game, bear, { colors: ["U"] })).toBe(true);
+    expect(filterIn(game, bear, { notColors: ["G"] })).toBe(true);
+    expect(filterIn(game, bear, { subtype: "Frog" })).toBe(true);
+    expect(filterIn(game, bear, { subtype: "Bear" })).toBe(false);
+  });
+
+  it("still consults the layer fold for an anthem's P/T and keyword grant", () => {
+    const { game } = mkGame([]);
+    game.advanceUntil(toPrecombat);
+    const bear = spawn(game, "Grizzly Bears", A);
+    expect(filterIn(game, bear, { power: { op: "gte", n: 3 } })).toBe(false);
+    expect(filterIn(game, bear, { keyword: "trample" })).toBe(false);
+
+    spawn(game, "Garruk's Uprising", A); // creatures you control have trample
+    spawn(game, "Glorious Anthem", A); // +1/+1
+
+    expect(filterIn(game, bear, { power: { op: "gte", n: 3 } })).toBe(true);
+    expect(filterIn(game, bear, { keyword: "trample" })).toBe(true);
+  });
+});

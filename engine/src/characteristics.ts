@@ -108,7 +108,7 @@ function evalStaticCondition(
           return (
             !skipsSelf(id) &&
             o.controller === you &&
-            computeCharacteristics(state, registry, id).types.includes("artifact")
+            effectiveTypes(registry, o).includes("artifact")
           );
         }).length >= 3
       );
@@ -194,6 +194,23 @@ export function effectiveSubtypes(
   const added: string[] = [];
   for (const m of object.modifiers) if (m.addSubtypes) added.push(...m.addSubtypes);
   return added.length > 0 ? [...new Set([...subtypes, ...added])] : subtypes;
+}
+
+/**
+ * A permanent's current card types: printed → layer 4 (`addTypes` from an
+ * `animate` — a man-land becoming a creature). Nothing *external* grants a
+ * type, so like {@link effectiveSubtypes} this is self-contained and doesn't
+ * need the layer fold — which lets `matchesFilter` answer a type question
+ * without recursing into {@link computeCharacteristics}.
+ */
+export function effectiveTypes(
+  registry: CardRegistry,
+  object: GameObject,
+): readonly CardType[] {
+  const printed = registry.get(printedCardName(object)).types;
+  const added: CardType[] = [];
+  for (const m of object.modifiers) if (m.addTypes) added.push(...m.addTypes);
+  return added.length > 0 ? [...new Set([...printed, ...added])] : printed;
 }
 
 /** A permanent's current colours: printed → layer 5 (`setColors` replaces,

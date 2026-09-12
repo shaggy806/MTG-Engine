@@ -127,6 +127,15 @@ export interface SnapshotEnv {
 const ADVANCE_BUDGET = 200_000;
 const GENERIC_SPEND_ORDER = ["C", "W", "U", "B", "R", "G"] as const;
 
+/** One battlefield static that grants activated abilities (Chromatic Lantern,
+ * Cryptolith Rite) — see `Game.activatedGrantSources`. `abilities` is
+ * `ability.grantsActivated`, pulled out so it's known to be defined. */
+interface GrantSource {
+  readonly source: GameObject;
+  readonly ability: StaticAbility;
+  readonly abilities: readonly ActivatedAbility[];
+}
+
 /** One possible output of a single mana-ability activation: `fixed` is the
  * concrete mana it makes, `anyColor` is how many "one mana of any colour"
  * units it adds on top (Arcane Signet, Command Tower, Treasure). `pain` is the
@@ -834,10 +843,11 @@ export class Game {
       out.push({ kind: "play-land", card, cardName: def.name });
     }
 
+    const abilityGrantors = this.activatedGrantSources();
     for (const source of this.state.zones.shared.battlefield) {
       const object = this.state.objects[source];
       if (object.controller !== player) continue;
-      this.effectiveActivated(source).forEach((ability, index) => {
+      this.effectiveActivated(source, abilityGrantors).forEach((ability, index) => {
         if (this.whyCannotActivateAbility(player, source, index) !== null) return;
         out.push({
           kind: "activate-ability",
@@ -3818,25 +3828,52 @@ export class Game {
   }
 
   /**
+   * Every `grantsActivated` static currently on the battlefield (Chromatic
+   * Lantern, Cryptolith Rite) — usually none at all.
+   *
+   * Hoisted out of {@link grantedActivated} because the callers that matter
+   * loop over the battlefield calling it *per permanent* (`manaSources` on
+   * every affordability check, `legalActions`' ability enumeration), which
+   * made the scan quadratic. Computing it once per loop and passing it down
+   * makes those callers linear.
+   */
+  private activatedGrantSources(): GrantSource[] {
+    const out: GrantSource[] = [];
+    for (const id of this.state.zones.shared.battlefield) {
+      const source = this.state.objects[id];
+      if (source === undefined || hasLostAbilities(source)) continue;
+      for (const ability of this.registry.get(printedCardName(source)).static) {
+        if (ability.grantsActivated !== undefined) {
+          out.push({ source, ability, abilities: ability.grantsActivated });
+        }
+      }
+    }
+    return out;
+  }
+
+  /**
    * Activated abilities `objectId` has right now on top of its printed ones —
    * granted by `grantsActivated` statics on the battlefield (Chromatic
    * Lantern, Cryptolith Rite). Ordered by the granting permanent's timestamp
    * so the index is stable for a given game state.
+   *
+   * Pass `grantors` (from {@link activatedGrantSources}) when calling this in
+   * a loop over many objects; it defaults to computing them per call.
    */
-  private grantedActivated(objectId: ObjectId): readonly ActivatedAbility[] {
+  private grantedActivated(
+    objectId: ObjectId,
+    grantors?: readonly GrantSource[],
+  ): readonly ActivatedAbility[] {
     const target = this.state.objects[objectId];
     if (target === undefined || target.zone !== "battlefield") return [];
     if (hasLostAbilities(target)) return [];
+    const sources = grantors ?? this.activatedGrantSources();
+    if (sources.length === 0) return []; // nothing grants anything — the norm
     const grants: { ts: number; abilities: readonly ActivatedAbility[] }[] = [];
-    for (const sourceId of this.state.zones.shared.battlefield) {
-      const source = this.state.objects[sourceId];
-      if (hasLostAbilities(source)) continue;
-      for (const ability of this.registry.get(printedCardName(source)).static) {
-        if (ability.grantsActivated === undefined) continue;
-        if (!staticAffects(this.registry, ability.affects, source, target)) continue;
-        if (!this.staticActive(source, ability)) continue;
-        grants.push({ ts: source.timestamp, abilities: ability.grantsActivated });
-      }
+    for (const { source, ability, abilities } of sources) {
+      if (!staticAffects(this.registry, ability.affects, source, target)) continue;
+      if (!this.staticActive(source, ability)) continue;
+      grants.push({ ts: source.timestamp, abilities });
     }
     grants.sort((a, b) => a.ts - b.ts);
     return grants.flatMap((g) => g.abilities);
@@ -3845,11 +3882,14 @@ export class Game {
   /** `objectId`'s printed `activated` abilities plus any currently granted to
    * it — printed first, then granted, so an `abilityIndex` into a printed
    * ability never shifts. */
-  private effectiveActivated(objectId: ObjectId): readonly ActivatedAbility[] {
+  private effectiveActivated(
+    objectId: ObjectId,
+    grantors?: readonly GrantSource[],
+  ): readonly ActivatedAbility[] {
     const printed = this.registry.get(
       printedCardName(this.state.objects[objectId]),
     ).activated;
-    const granted = this.grantedActivated(objectId);
+    const granted = this.grantedActivated(objectId, grantors);
     return granted.length === 0 ? printed : [...printed, ...granted];
   }
 
@@ -4154,6 +4194,8 @@ export class Game {
    */
   private manaSources(player: PlayerId): ManaSource[] {
     const out: ManaSource[] = [];
+    // Computed once for the whole scan — see `activatedGrantSources`.
+    const grantors = this.activatedGrantSources();
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
       if (object.controller !== player || object.tapped) continue;
@@ -4167,7 +4209,7 @@ export class Game {
       let sacrificeSelf = false;
       const key = (o: ManaOption): string =>
         `${[...o.fixed].sort().join(",")}|${o.anyColor}|${o.pain}|${o.lifeCost}`;
-      for (const ability of this.effectiveActivated(id)) {
+      for (const ability of this.effectiveActivated(id, grantors)) {
         if (
           !isManaAbility(ability) ||
           !ability.cost.tap ||
@@ -4205,13 +4247,20 @@ export class Game {
     const onlyCostlyColour = (s: ManaSource): boolean =>
       s.options.some(costsLife) &&
       s.options.every((o) => costsLife(o) || o.fixed.every((m) => m === "C"));
+    // Sort keys computed once per source, not once per comparison — both
+    // predicates allocate, and this list is re-sorted on every affordability
+    // check (`payMana` → `manaSources`).
+    const keys = new Map<ObjectId, { costly: boolean; flex: number }>(
+      out.map((s) => [s.id, { costly: onlyCostlyColour(s), flex: flexibility(s) }]),
+    );
     out.sort((a, b) => {
       if (a.isLand !== b.isLand) return a.isLand ? -1 : 1;
       if (a.sacrificeSelf !== b.sacrificeSelf) return a.sacrificeSelf ? 1 : -1;
-      if (onlyCostlyColour(a) !== onlyCostlyColour(b)) {
-        return onlyCostlyColour(a) ? 1 : -1;
-      }
-      return flexibility(a) - flexibility(b);
+      const ka = keys.get(a.id);
+      const kb = keys.get(b.id);
+      if (ka === undefined || kb === undefined) return 0;
+      if (ka.costly !== kb.costly) return ka.costly ? 1 : -1;
+      return ka.flex - kb.flex;
     });
     return out;
   }
