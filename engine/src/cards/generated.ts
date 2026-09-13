@@ -58,6 +58,7 @@ import _poolCyclonicRift from "./pool/cyclonic-rift.js";
 import _poolDamn from "./pool/damn.js";
 import _poolDamnation from "./pool/damnation.js";
 import _poolDarksteelMyr from "./pool/darksteel-myr.js";
+import _poolDeadlyRollick from "./pool/deadly-rollick.js";
 import _poolDefenseOfTheHeart from "./pool/defense-of-the-heart.js";
 import _poolDeliberateCourse from "./pool/deliberate-course.js";
 import _poolDemonicTutor from "./pool/demonic-tutor.js";
@@ -82,9 +83,11 @@ import _poolFanaticOfRhonas from "./pool/fanatic-of-rhonas.js";
 import _poolFarseek from "./pool/farseek.js";
 import _poolFencingAce from "./pool/fencing-ace.js";
 import _poolFesteringThicket from "./pool/festering-thicket.js";
+import _poolFierceGuardianship from "./pool/fierce-guardianship.js";
 import _poolFinaleOfDevastation from "./pool/finale-of-devastation.js";
 import _poolFireball from "./pool/fireball.js";
 import _poolFlameJavelin from "./pool/flame-javelin.js";
+import _poolFlawlessManeuver from "./pool/flawless-maneuver.js";
 import _poolFleshbagMarauder from "./pool/fleshbag-marauder.js";
 import _poolFog from "./pool/fog.js";
 import _poolForest from "./pool/forest.js";
@@ -338,6 +341,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolDamn,
   _poolDamnation,
   _poolDarksteelMyr,
+  _poolDeadlyRollick,
   _poolDefenseOfTheHeart,
   _poolDeliberateCourse,
   _poolDemonicTutor,
@@ -362,9 +366,11 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolFarseek,
   _poolFencingAce,
   _poolFesteringThicket,
+  _poolFierceGuardianship,
   _poolFinaleOfDevastation,
   _poolFireball,
   _poolFlameJavelin,
+  _poolFlawlessManeuver,
   _poolFleshbagMarauder,
   _poolFog,
   _poolForest,

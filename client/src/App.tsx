@@ -42,6 +42,7 @@ const castExtras = (cast: CastAction) => ({
   ...(cast.face !== undefined ? { face: cast.face } : {}),
   ...(cast.kicked === true ? { kicked: true } : {}),
   ...(cast.overload === true ? { overload: true } : {}),
+  ...(cast.free === true ? { free: true } : {}),
 })
 type LandAction = Extract<LegalAction, { kind: 'play-land' }>
 type SuspendAction = Extract<LegalAction, { kind: 'suspend' }>
@@ -91,6 +92,9 @@ interface Targeting {
   /** Casting this for its overload cost (rule 702.126) instead of its mana
    * cost — no targets are chosen for this variant. */
   readonly overload?: boolean
+  /** Casting this for free under a `CardDefinition.freeCastIf` permission
+   * instead of paying the mana cost. Targets are unchanged. */
+  readonly free?: boolean
 }
 
 /**
@@ -729,6 +733,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
         | 'modes'
         | 'kicked'
         | 'overload'
+        | 'free'
       >,
       targets: readonly TargetRef[],
     ) => {
@@ -747,6 +752,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
                 ...(t.face !== undefined ? { face: t.face } : {}),
                 ...(t.kicked === true ? { kicked: true } : {}),
                 ...(t.overload === true ? { overload: true } : {}),
+                ...(t.free === true ? { free: true } : {}),
                 ...(t.sacrifice !== undefined ? { sacrifice: t.sacrifice } : {}),
               }
             : {
@@ -2167,6 +2173,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
                         {a.kind === 'cast-spell' && a.overload
                           ? ` (overload ${a.overloadCost ?? ''})`
                           : ''}
+                        {a.kind === 'cast-spell' && a.free ? ' (free)' : ''}
                       </button>
                     ))
                   : null}

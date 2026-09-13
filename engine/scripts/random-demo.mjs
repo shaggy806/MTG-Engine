@@ -141,6 +141,7 @@ const deckA = deck([
   ["Boseiju, Who Endures", 1],
   ["Otawara, Soaring City", 1],
   ["Cyclonic Rift", 1],
+  ["Fierce Guardianship", 1],
 ]);
 // Kept deliberately lean (~50 cards) so the RandomController actually draws
 // and plays its threats — a bloated deck just stalls out and the fuzz only
@@ -252,6 +253,8 @@ const deckB = deck([
   ["Eiganjo, Seat of the Empire", 1],
   ["Vandalblast", 1],
   ["Damn", 1],
+  ["Deadly Rollick", 1],
+  ["Flawless Maneuver", 1],
 ]);
 
 // A lean Dimir deck for Carol — carries the `Sarova, the Undying Current`

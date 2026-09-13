@@ -89,6 +89,9 @@ export interface CardFilter {
   readonly notKeyword?: Keyword;
   readonly tapped?: boolean;
   readonly token?: boolean;
+  /** Is (or isn't) a commander (rule 903.3) — Fierce Guardianship's "if you
+   * control a commander" gate. */
+  readonly isCommander?: boolean;
 }
 
 export interface FilterContext {
@@ -170,6 +173,7 @@ export function matchesFilter(
   if (filter.ownedBy === "opponent" && object.owner === ctx.you) return false;
   if (filter.tapped !== undefined && object.tapped !== filter.tapped) return false;
   if (filter.token !== undefined && object.isToken !== filter.token) return false;
+  if (filter.isCommander !== undefined && object.isCommander !== filter.isCommander) return false;
 
   // Only these four need the layer fold (external anthems / keyword grants).
   if (

@@ -104,6 +104,11 @@ export type Action =
        * cost — replaces "target" with "each" and takes no targets. Only
        * meaningful for a card with `CardDefinition.overload`. */
       readonly overload?: boolean;
+      /** Cast for free under `CardDefinition.freeCastIf`'s permission (Fierce
+       * Guardianship: "if you control a commander, you may cast this spell
+       * without paying its mana cost") instead of paying the mana cost.
+       * Targets are unchanged — only the cost differs. */
+      readonly free?: boolean;
     }
   | {
       readonly type: "activate-ability";
@@ -337,6 +342,13 @@ export type LegalAction =
       /** The overload cost this variant pays (replaces the mana cost
        * entirely), for labelling. Set with `overload`. */
       readonly overloadCost?: string;
+      /** A conditional free-cast permission (`CardDefinition.freeCastIf`) is
+       * enumerated **twice** when its condition is currently met — once
+       * paying the printed cost, once free — the same "one entry per
+       * playable variant" shape as `kicked`/`overload`. `targetSpecs` are
+       * unchanged (only the cost differs). The driver echoes `free` back in
+       * the `cast-spell` action. */
+      readonly free?: boolean;
     }
   | {
       readonly kind: "activate-ability";

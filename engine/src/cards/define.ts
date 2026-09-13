@@ -293,6 +293,18 @@ export interface CardDefinition {
     readonly effect: EffectSpec;
   } | null;
   /**
+   * A conditional free-cast permission printed on the spell itself (the CMM
+   * commander-precon cycle: "If you control a commander, you may cast this
+   * spell without paying its mana cost."). Unlike `overload` this doesn't
+   * change the spell's targets or effect at all — same targets, same
+   * resolution — only the cost (checked live, from the card's own
+   * controller's perspective, same as `selfCostReduction`). It's *in
+   * addition to* the normal cast, not instead of it: a player who doesn't
+   * meet the condition (or simply prefers to) can still pay the printed mana
+   * cost. `null` for no such permission.
+   */
+  readonly freeCastIf: { readonly condition: StaticCondition } | null;
+  /**
    * A cost reduction printed on the spell itself, gated on a board-state
    * condition (rule 601.2f — Ferocious: "if you control a creature with
    * power 4 or greater, this spell costs {2} less to cast"). Unlike
@@ -448,6 +460,7 @@ interface CardDraft {
     readonly cost: string;
     readonly effect: EffectSpec;
   };
+  freeCastIf?: { readonly condition: StaticCondition };
   selfCostReduction?: {
     readonly condition: StaticCondition;
     readonly reduceGeneric: number | { readonly countOf: CardFilter };
@@ -512,6 +525,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     additionalCost: draft.additionalCost ?? null,
     kicker: draft.kicker ?? null,
     overload: draft.overload ?? null,
+    freeCastIf: draft.freeCastIf ?? null,
     selfCostReduction: draft.selfCostReduction ?? null,
     effect: draft.effect ?? null,
     resolve: draft.resolve ?? null,

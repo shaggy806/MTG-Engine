@@ -429,6 +429,7 @@ export class Game {
           action.kicked === true,
           action.sacrifice,
           action.overload === true,
+          action.free === true,
         );
         break;
       case "activate-ability":
@@ -526,6 +527,7 @@ export class Game {
           action.kicked === true,
           action.sacrifice,
           action.overload === true,
+          action.free === true,
         );
       case "activate-ability":
         return this.whyCannotActivateAbility(
@@ -1032,20 +1034,35 @@ export class Game {
   ): LegalAction[] {
     const { via, face, costString } = opts;
     const out: LegalAction[] = [];
-    const variants: { kicked: boolean; overload: boolean }[] = [{ kicked: false, overload: false }];
-    if (def.kicker !== null) variants.push({ kicked: true, overload: false });
-    // Overload (rule 702.126) — an alternative cast, mutually exclusive with
-    // kicker (no card on the list has both).
-    if (def.overload !== null) variants.push({ kicked: false, overload: true });
-    for (const { kicked, overload } of variants) {
+    const variants: { kicked: boolean; overload: boolean; free: boolean }[] = [
+      { kicked: false, overload: false, free: false },
+    ];
+    if (def.kicker !== null) variants.push({ kicked: true, overload: false, free: false });
+    // Overload (rule 702.126) and a conditional free-cast permission (Fierce
+    // Guardianship) are each an alternative cast, mutually exclusive with
+    // kicker and each other (no card on the list has more than one).
+    if (def.overload !== null) variants.push({ kicked: false, overload: true, free: false });
+    if (def.freeCastIf !== null) variants.push({ kicked: false, overload: false, free: true });
+    for (const { kicked, overload, free } of variants) {
       if (
-        this.whyCannotCastSpell(player, card, via, face ?? 0, undefined, kicked, undefined, overload) !== null
+        this.whyCannotCastSpell(
+          player,
+          card,
+          via,
+          face ?? 0,
+          undefined,
+          kicked,
+          undefined,
+          overload,
+          free,
+        ) !== null
       ) {
         continue;
       }
       const specs = this.effectiveTargetSpecs(def, undefined, kicked, overload);
-      const cost =
-        overload && def.overload !== null
+      const cost = free
+        ? "{0}"
+        : overload && def.overload !== null
           ? def.overload.cost
           : kicked && def.kicker !== null && costString !== null
             ? costString + def.kicker.cost
@@ -1067,6 +1084,7 @@ export class Game {
         ...(overload && def.overload !== null
           ? { overload: true, overloadCost: def.overload.cost }
           : {}),
+        ...(free ? { free: true } : {}),
         ...(parseManaCost(cost).x > 0
           ? { xCost: { maxX: this.maxAffordableX(player, card, def, cost, face ?? 0) } }
           : {}),
@@ -3735,8 +3753,12 @@ export class Game {
     face = 0,
     kicked = false,
     overload = false,
+    free = false,
   ): string | null {
     const def = this.faceDef(cardId, face);
+    // A conditional free-cast permission (Fierce Guardianship) also replaces
+    // the mana cost entirely, same as overload.
+    if (free && def.freeCastIf !== null) return "{0}";
     // Overload (rule 702.126b) *replaces* the mana cost entirely, unlike
     // kicker's additive cost.
     if (overload && def.overload !== null) return def.overload.cost;
@@ -3815,6 +3837,7 @@ export class Game {
     kicked = false,
     sacrifice?: ObjectId,
     overload = false,
+    free = false,
   ): string | null {
     const blocked = this.whyCannotAct(player);
     if (blocked !== null) return blocked;
@@ -3875,6 +3898,12 @@ export class Game {
     }
     if (kicked && def.kicker === null) return `${def.name} has no kicker`;
     if (overload && def.overload === null) return `${def.name} has no overload cost`;
+    if (free) {
+      if (def.freeCastIf === null) return `${def.name} has no free-cast permission`;
+      if (!staticConditionMet(this.state, this.registry, this.state.objects[cardId], def.freeCastIf.condition)) {
+        return `${def.name}'s free-cast condition isn't met`;
+      }
+    }
     // An additional sacrifice cost (rule 601.2f) must be payable, and — once
     // the driver has named one — that permanent must actually qualify.
     if (def.additionalCost !== null) {
@@ -3905,7 +3934,7 @@ export class Game {
             cardId,
             def,
             0,
-            this.castCostString(cardId, via, face, kicked, overload),
+            this.castCostString(cardId, via, face, kicked, overload, free),
           ),
         ),
       ) === null
@@ -3926,8 +3955,9 @@ export class Game {
     kicked = false,
     sacrifice?: ObjectId,
     overload = false,
+    free = false,
   ): void {
-    const why = this.whyCannotCastSpell(player, cardId, via, face, modes, kicked, sacrifice, overload);
+    const why = this.whyCannotCastSpell(player, cardId, via, face, modes, kicked, sacrifice, overload, free);
     if (why !== null) throw new Error(why);
 
     const object = this.state.objects[cardId];
@@ -3935,7 +3965,7 @@ export class Game {
     // the chosen face for the rest of this method and while on the stack.
     if (object.faces !== undefined) object.face = face;
     const def = this.registry.get(printedCardName(object));
-    const costString = this.castCostString(cardId, via, face, kicked, overload);
+    const costString = this.castCostString(cardId, via, face, kicked, overload, free);
     const hasX = parseManaCost(costString).x > 0;
     const chosenX = hasX ? Math.max(0, Math.floor(xValue)) : 0;
 
