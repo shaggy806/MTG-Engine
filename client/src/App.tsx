@@ -1237,7 +1237,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
     obj: VisibleObject,
     ownerSeat: PlayerId,
     ids: readonly ObjectId[] = [obj.id],
-    opts: { stackCount?: number; compact?: boolean; mini?: boolean } = {},
+    opts: { stackCount?: number; mini?: boolean } = {},
   ) => {
     const id = obj.id
     let highlight = false
@@ -1322,7 +1322,6 @@ function Table({ view, seat, opponents, game }: TableProps) {
         badge={badge}
         order={order}
         stackCount={opts.stackCount ?? null}
-        compact={opts.compact ?? false}
         onClick={() => clickPermanent(ids)}
       />
     )

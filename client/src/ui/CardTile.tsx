@@ -26,8 +26,6 @@ export interface CardTileProps {
   readonly order?: number | null
   /** How many identical permanents this tile stands in for (a land stack). */
   readonly stackCount?: number | null
-  /** Shrinks the tile (an Aura/Equipment nested under its host). */
-  readonly compact?: boolean
   readonly onClick?: () => void
 }
 
@@ -77,7 +75,6 @@ export function CardTile({
   extraGenericCost = 0,
   order = null,
   stackCount = null,
-  compact = false,
   onClick,
 }: CardTileProps) {
   // A Clone renders the *copied* card's face; a multi-face card renders its up
@@ -114,7 +111,6 @@ export function CardTile({
     activatable ? 'activatable' : '',
     dimmed ? 'dimmed' : '',
     clickable ? 'clickable' : '',
-    compact ? 'compact' : '',
   ]
     .filter(Boolean)
     .join(' ')

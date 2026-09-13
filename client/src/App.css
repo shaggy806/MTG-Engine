@@ -609,45 +609,56 @@
   margin-bottom: 4px;
 }
 /* a floating overlay (Arena-style: it only exists while something's on the
-   stack, not a permanent panel) pinned to the right-middle of the screen,
-   above board content but below modal overlays (zone viewers, history). */
+   stack, not a permanent panel) pinned above board content but below modal
+   overlays (zone viewers, history). A FIXED anchor point, not
+   content-centered -- pinning the top-of-stack card's screen position is
+   the whole point. Centering the pile's own (size-varying) box was the
+   original bug: growing the pile from 1 to several cards changed its
+   height/width, and centering it re-anchored around that new size, so the
+   top card (which never moves relative to the pile) still jumped on screen
+   because the pile's own origin did. */
 .stack-overlay {
   position: fixed;
-  top: 50%;
-  right: 16px;
-  transform: translateY(-50%);
+  top: clamp(96px, 50vh, calc(100vh - 230px));
+  right: clamp(14px, 2vw, 26px);
   z-index: 20;
   pointer-events: none;
-  /* a solid backdrop plate, not bare floating cards — reads as clearly
-     foreground no matter how wide the screen or how much board content is
-     behind it (quadrant boards can reach nearly edge-to-edge on a wide
-     display, unlike the 2-player layout this design was first tried on). */
-  padding: 16px 20px;
-  background: rgba(8, 9, 12, 0.82);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(2px);
 }
-.stack-cards {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
+/* every entry is positioned absolutely, anchored from the pile's top-RIGHT
+   corner via top/right (not left) -- the top-of-stack entry sits at
+   top:0;right:0, i.e. exactly at the overlay's fixed anchor, always,
+   regardless of how many cards are behind it. The pile itself needs no
+   explicit size: right/top on an absolutely-positioned child resolve
+   against the ancestor's edge regardless of the ancestor's own box size. */
+.stack-pile {
+  position: relative;
+  pointer-events: none;
 }
 .stack-entry {
+  position: absolute;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
+  pointer-events: auto;
+  transition:
+    top 0.38s cubic-bezier(0.2, 0.8, 0.2, 1),
+    right 0.38s cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.28s ease;
 }
-/* the top of the stack — what a player facing a decision is responding to
-   — renders noticeably larger than a normal tile; everything beneath it
-   stays compact-sized (see Stack.tsx). */
-.stack-entry:first-child .card-tile {
-  transform: scale(1.45);
-  transform-origin: center;
-  margin: 14px 0;
+@media (prefers-reduced-motion: reduce) {
+  .stack-entry {
+    transition: none;
+  }
+}
+/* the top of the stack -- what a player facing a decision is responding to
+   -- gets an accent border so it reads as the "live" one at a glance;
+   everything behind it is already smaller/dimmer/rotated by its own inline
+   style (computed per-depth in Stack.tsx), not a separate CSS size rule. */
+.stack-entry.is-top .card-tile {
+  border-color: var(--accent);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55), 0 0 0 3px var(--accent-bg);
 }
 .stack-entry-label {
   font-size: 11px;
@@ -1004,12 +1015,6 @@
   border-radius: 9px;
   z-index: 1;
 }
-/* an Aura/Equipment nested under its host, and a non-top Stack entry — see
-   Stack.tsx; the battlefield itself uses MiniTile now, not this */
-.card-tile.compact {
-  zoom: 0.6;
-}
-
 /* ===== MiniTile — a battlefield permanent reduced to its art + a stat badge.
    Hovering/focusing reveals the full CardTile in .mini-tile-popover, anchored
    to the tile itself (not cursor-tracked), so this is pure CSS, no JS

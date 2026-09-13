@@ -196,7 +196,7 @@ landRow]`). **No new work needed here** beyond whatever visual polish falls
 out of Phase 1's sizing token and Phase 4's compact tiles — just re-check it
 still looks right once those land.
 
-### Phase 6 — Stack redesign — TODO
+### Phase 6 — Stack redesign — DONE
 The real `Stack.tsx`/`.stack-overlay` already does a lot of what the mockup
 wants (floating overlay, top card enlarged, `position: fixed; top: 50%;
 right: 16px; transform: translateY(-50%)`, mounts only when non-empty) — this
@@ -221,6 +221,37 @@ phase is refinement, not a rewrite:
 - Rotation pivot must be `transform-origin: top left` (the corner meant to
   stay exposed) — pivoting on the wrong corner was a real bug in the mockup
   that swallowed the exposed sliver of deeper cards; don't reintroduce it.
+
+**Done as:** `Stack.tsx` rewritten to compute each entry's `top`/`right`/
+`transform`/`opacity`/`z-index` inline per depth (same formulas as the
+mockup: `STAGGER_X`/`STAGGER_Y`=20/15, `ROT_STEP`=3, scale/opacity floors at
+0.6/0.55, offset saturates past depth 7, second-from-top stays upright,
+`transform-origin: top left`). `.stack-overlay` is now a fixed top-right
+anchor (`top: clamp(96px,50vh,calc(100vh-230px))`); `.stack-pile`'s children
+are `position: absolute`, so the pile itself needs no explicit size. Each
+`.stack-entry` is keyed by object id (not array index), which is what makes
+the animation work with zero JS animation code: React reuses the same DOM
+node across a re-render when only its depth (and therefore its inline
+style) changes, and the new `.stack-entry` CSS transition on
+`top`/`right`/`transform`/`opacity` (respecting `prefers-reduced-motion`)
+interpolates automatically. Verified live: cast a spell, watched it land at
+the pinned top-right position with the accent border.
+
+**Deliberate simplification vs. the pre-existing app:** dropped the old
+solid backdrop plate (`background: rgba(8,9,12,.82)` + blur) behind the
+whole stack, and the old "top card enlarged 1.45x" treatment — the mockup's
+extensively-iterated design uses each card's own shadow/border for
+separation (no shared plate, since a plate would need the same pinning
+treatment to avoid resizing under the top card) and keeps the top card at
+normal full-tile size (matching every other full-detail CardTile in the
+app, rather than a one-off larger size).
+
+**Cleanup that fell out of this phase:** `CardTile`'s `compact` prop is now
+*fully* dead (its only two callers were the battlefield's attachments,
+switched to `MiniTile` in Phase 4, and `Stack.tsx`'s non-top entries,
+replaced by the scale-via-transform approach above) — removed the prop,
+its CSS class, and `.card-tile.compact { zoom: 0.6 }` entirely rather than
+leave unused code around.
 
 ### Phase 7 — Priority actions + mana-available indicator — PARTLY DONE
 - ~~Priority action buttons move to a fixed bottom-right corner.~~ **Done in
