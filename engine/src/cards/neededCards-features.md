@@ -1021,6 +1021,42 @@ Full suite green (590 engine tests, 54 server tests); 2-player (300 games) and 4
 
 ---
 
+## P20 — Two more small widenings
+
+Continued down the same list: `needed-cards-p20.test.ts`, added to `random-demo.mjs`
+deck A/B, `card:verify` clean.
+
+- **New `"creatures-damage-controllers"` effect** — every permanent matching `filter`
+  deals `amount` damage to its own controller, the reverse direction from `damage-all`
+  (which deals damage FROM the effect's source TO matching permanents). Unblocks the
+  third mode of **Rakdos Charm** ("each creature deals 1 damage to its controller");
+  its other two modes (exile target player's graveyard, destroy target artifact) turned
+  out to already be fully expressible via `castModal` once P17 added the "artifact"
+  TargetSpec — the whole card is authored now, no partial/dropped clauses.
+- **`add-mana` gained an `{ oneOf: ManaType[] }` mana form** — `amount` mana in any
+  combination of the listed colours, each unit independently chosen, distinct from the
+  fully-open "any-color" (all five). A standalone (non-payment) activation defaults to
+  `amount` of `oneOf[0]`, mirroring "any-color"'s existing default-to-white
+  simplification; during cost payment, `manaSources()` enumerates every achievable
+  combination (`manaCombinations` — a small "combinations with repetition" helper) as a
+  separate `ManaOption` for the planner to pick from. Unblocks **Orcish Lumberjack**
+  ("three mana in any combination of {R} and/or {G}") — though its filtered
+  sacrifice-a-Forest cost separately disqualifies it from `isManaAbility` (which requires
+  a self-or-no sacrifice, since a filtered one needs a real choice the auto-payment scan
+  doesn't make), so it resolves via the stack like an ordinary activated ability rather
+  than instantly as a true mana ability — a minor, documented deviation from rule 605.1a.
+  No pool card currently exercises the `manaSources()` combination-enumeration path (every
+  other combination-mana candidate found so far — Flooded Grove, Mossfire Valley,
+  Selvala, Heart of the Wilds — pays a *mana* cost to activate, which `manaSources()`
+  excludes entirely to avoid circular payment planning); it's in place for a future card
+  shaped like a plain tap-only "any combination" mana ability.
+
+Full suite green (594 engine tests, 54 server tests); 2-player (300 games) and 4-player
+(150 games) fuzzer runs clean; `card:verify` clean (228 checked, 0 mismatched — a
+transient Scryfall 429 on one lookup cleared on retry).
+
+---
+
 ## Note on the former Korvold stub
 
 `engine/src/cards/pool/korvold-fae-cursed-king.ts` was an incomplete stub; **P6

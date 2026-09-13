@@ -160,6 +160,7 @@ import _poolObNixilisTheFallen from "./pool/ob-nixilis-the-fallen.js";
 import _poolOldGnawbone from "./pool/old-gnawbone.js";
 import _poolOpt from "./pool/opt.js";
 import _poolOracleOfMulDaya from "./pool/oracle-of-mul-daya.js";
+import _poolOrcishLumberjack from "./pool/orcish-lumberjack.js";
 import _poolOvergrownTomb from "./pool/overgrown-tomb.js";
 import _poolPacifism from "./pool/pacifism.js";
 import _poolPhyrexianArena from "./pool/phyrexian-arena.js";
@@ -173,6 +174,7 @@ import _poolPyroclasm from "./pool/pyroclasm.js";
 import _poolRabidBite from "./pool/rabid-bite.js";
 import _poolRagingGoblin from "./pool/raging-goblin.js";
 import _poolRaiseTheAlarm from "./pool/raise-the-alarm.js";
+import _poolRakdosCharm from "./pool/rakdos-charm.js";
 import _poolRampagingBaloths from "./pool/rampaging-baloths.js";
 import _poolRampantGrowth from "./pool/rampant-growth.js";
 import _poolRamunapExcavator from "./pool/ramunap-excavator.js";
@@ -431,6 +433,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolOldGnawbone,
   _poolOpt,
   _poolOracleOfMulDaya,
+  _poolOrcishLumberjack,
   _poolOvergrownTomb,
   _poolPacifism,
   _poolPhyrexianArena,
@@ -444,6 +447,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolRabidBite,
   _poolRagingGoblin,
   _poolRaiseTheAlarm,
+  _poolRakdosCharm,
   _poolRampagingBaloths,
   _poolRampantGrowth,
   _poolRamunapExcavator,

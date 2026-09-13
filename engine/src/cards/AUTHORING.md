@@ -243,6 +243,7 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 | --- | --- | --- |
 | `damage` | `amount`, `target` | Lightning Bolt |
 | `damage-all` | `filter`, `amount` | Pyroclasm |
+| `creatures-damage-controllers` | `filter`, `amount` | Rakdos Charm — "each creature deals 1 damage to its controller"; the reverse direction from `damage-all` (each matching permanent is its own source, hitting its own controller, not the caster). needed-cards P20 |
 | `gain-life` | `amount`, `who?` | Healing Salve |
 | `lose-life` | `amount`, `who?` \| `target?` | Zulaport Cutthroat (`who`); Ob Nixilis, the Fallen — "target player loses 3 life" (`target`, a target-slot index — mutually exclusive with `who`, needed-cards P19) |
 | `draw` | `amount` | Divination (controller draws) |
@@ -397,7 +398,24 @@ removeCounter?, payEnergy? }`.
 no `resolve`, an `add-mana` effect, and no life/counter/energy/non-self
 sacrifice cost. These resolve immediately without using the stack. Use the
 `manaTapAbility(color)` / `addManaAbility({...})` helpers from
-`cards/helpers.js`.
+`cards/helpers.js`. **A *filtered* sacrifice cost (`{ filter }`, not `"self"`)
+disqualifies an ability from `isManaAbility`** even if it's otherwise
+mana-shaped (Orcish Lumberjack: "{T}, Sacrifice a Forest: Add …") — it needs a
+real choice the auto-payment scan doesn't make, so it resolves on the stack
+like an ordinary activated ability instead. needed-cards P20.
+
+`add-mana`'s `mana` field: a fixed `ManaType` (`"W"`/`"U"`/`"B"`/`"R"`/`"G"`/
+`"C"`), `"any-color"` (one of the five, the payer's choice — Arcane Signet), or
+`{ oneOf: ManaType[] }` (`amount` mana in any combination of the listed
+colours, each unit independently chosen — Orcish Lumberjack: `{ oneOf: ["R",
+"G"] }`, `amount: 3`, needed-cards P20). A standalone activation (not part of
+paying a cost) defaults to white for `"any-color"`, or `oneOf[0]` repeated for
+`{ oneOf }` — during actual cost payment the auto-payer resolves the colour(s)
+that fit. **Still can't produce a genuine mix in one activation from a fixed
+list of *different* amounts per colour**, and an ability whose activation
+*cost* itself contains mana (a filter land's `{G/U}, {T}: …`) is excluded from
+`manaSources()`'s auto-payment scan entirely, to avoid circular payment
+planning — see §15.
 
 - `sorcerySpeed: true` — the ability works only when you could cast a sorcery
   (Equip). An Equipment is `types: ["artifact"], subtypes: ["Equipment"]` with
@@ -730,10 +748,14 @@ different card, or extend the engine (see `ROADMAP.md`).
   gains haste" (Carnelian Orb of Dragonkind) and "spend this mana only to cast
   a Dragon spell" (Haven of the Spirit Dragon, Temple of the Dragon Queen,
   Path of Ancestry) are both unmodeled (needed-cards P18).
-- **`add-mana` can't output a mix of colors** in one activation (only one
-  fixed `ManaType` or `"any-color"`, `amount` times) — blocks filter lands
-  (Flooded Grove, Mossfire Valley) and "any combination of two colors"
-  (Orcish Lumberjack, Selvala, Heart of the Wilds) (needed-cards P18).
+- **`add-mana`'s cost-attached mana lands remain unmodeled.** The `{ oneOf }`
+  combination form (needed-cards P20, §8) covers "any combination of these
+  colours" for an ability with no mana in its own *cost* (Orcish Lumberjack).
+  Filter lands (Flooded Grove, Mossfire Valley) and Selvala, Heart of the
+  Wilds still can't be authored as true mana abilities: their activation cost
+  itself contains mana, which `manaSources()` excludes from the auto-payment
+  scan entirely (to avoid circular payment planning) regardless of what the
+  ability's own output shape is.
 - **No "target card in a graveyard" `TargetSpec`** beyond the narrow
   `"instant-or-sorcery-in-your-graveyard"` (Snapcaster Mage's flashback grant)
   — blocks any card that targets a specific permanent card sitting in a

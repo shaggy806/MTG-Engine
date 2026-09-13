@@ -137,11 +137,11 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Nahiri's Lithoforming            FEATURE: `sacrifice`'s `count` is a fixed `number`, not an `EffectAmount` — can't sacrifice "X" lands where X is the spell's own chosen value; plus a temporary (this-turn-only) extra-land-drop grant and a temporary "lands enter tapped this turn" replacement, both distinct from the permanent per-card forms that exist today
 [+] 1 Ob Nixilis, the Fallen           (P19 — new `may` `then`/`else` tails + a targeted `lose-life` form, mirroring `damage`'s target/who split. Along the way, fixed a latent bug: a `may`/`modal` effect's chosen mode now sees the enclosing ability's own already-chosen targets instead of an empty array, so "you may have *target* X" wrapped in `may` actually resolves against the right target)
 [x] 1 Oracle of Mul Daya
-[ ] 1 Orcish Lumberjack                FEATURE: the sacrifice-a-Forest cost is already solved (`sacrifice: {filter}`, P6) — the real remaining blocker is `add-mana`'s output: "three mana in any combination of {R} and/or {G}" needs each unit independently choosable between two specific colors, which neither a fixed single type nor "any-color" (all five) expresses
+[+] 1 Orcish Lumberjack                (P20 — new `add-mana` `{ oneOf }` combination-mana form. The filtered-sacrifice cost still disqualifies it from `isManaAbility`, so it uses the stack rather than resolving instantly as a true mana ability — documented in the card file)
 [+] 1 Overgrown Tomb
 [+] 1 Princess Sarah                   (P16 — new extraLandsPerTurn static)
 [ ] 1 Rain of Filth                    FEATURE: "sacrifice a land: add {B}" granted to every land you control, until end of turn (ritual) — a temporary ability grant to a filtered class of permanents; only a permanent static can grant abilities today
-[ ] 1 Rakdos Charm                     FEATURE: modes 1 and 2 (exile target player's graveyard; destroy target artifact) are already fully expressible now via `castModal` (`exile-graveyard` / `destroy` with the "artifact" TargetSpec, P17) — only mode 3 blocks it, and it isn't "damage = power" (a stale guess): real text is "each creature deals 1 damage to its controller", a mass *reflexive* damage effect (each creature its own source, hitting its own controller) that no existing effect models
+[+] 1 Rakdos Charm                     (P20 — modes 1/2 already worked via `castModal`; new "creatures-damage-controllers" effect for mode 3, a mass reflexive damage effect distinct from `damage-all`)
 [+] 1 Ramunap Excavator
 [+] 1 Raucous Theater
 [+] 1 Riveteers Overlook

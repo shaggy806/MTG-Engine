@@ -136,6 +136,26 @@ interface GrantSource {
   readonly abilities: readonly ActivatedAbility[];
 }
 
+/** Every multiset of size `amount` drawn from `colors` (order-independent,
+ * "combinations with repetition") — Orcish Lumberjack's "three mana in any
+ * combination of {R} and/or {G}" over `["R", "G"]`/`3` yields `[R,R,R]`,
+ * `[R,R,G]`, `[R,G,G]`, `[G,G,G]`. Small by construction (a handful of
+ * colours, a handful of mana), so no need to worry about blowup. needed-cards
+ * P20 — `add-mana`'s `{ oneOf }` mana form. */
+function manaCombinations(colors: readonly ManaType[], amount: number): ManaType[][] {
+  if (amount === 0) return [[]];
+  const [first, ...rest] = colors;
+  if (first === undefined) return [];
+  if (rest.length === 0) return [Array<ManaType>(amount).fill(first)];
+  const out: ManaType[][] = [];
+  for (let useFirst = amount; useFirst >= 0; useFirst -= 1) {
+    for (const tail of manaCombinations(rest, amount - useFirst)) {
+      out.push([...Array<ManaType>(useFirst).fill(first), ...tail]);
+    }
+  }
+  return out;
+}
+
 /** One possible output of a single mana-ability activation: `fixed` is the
  * concrete mana it makes, `anyColor` is how many "one mana of any colour"
  * units it adds on top (Arcane Signet, Command Tower, Treasure). `pain` is the
@@ -4389,16 +4409,28 @@ export class Game {
         }
         const pain = ability.effect.painToController ?? 0;
         const lifeCost = ability.cost.payLife ?? 0;
-        const option: ManaOption =
-          ability.effect.mana === "any-color"
-            ? { fixed: [], anyColor: ability.effect.amount, pain, lifeCost }
-            : {
-                fixed: Array<ManaType>(ability.effect.amount).fill(ability.effect.mana),
-                anyColor: 0,
-                pain,
-                lifeCost,
-              };
-        if (!options.some((o) => key(o) === key(option))) options.push(option);
+        const mana = ability.effect.mana;
+        const candidates: ManaOption[] =
+          mana === "any-color"
+            ? [{ fixed: [], anyColor: ability.effect.amount, pain, lifeCost }]
+            : typeof mana === "object"
+              ? manaCombinations(mana.oneOf, ability.effect.amount).map((fixed) => ({
+                  fixed,
+                  anyColor: 0,
+                  pain,
+                  lifeCost,
+                }))
+              : [
+                  {
+                    fixed: Array<ManaType>(ability.effect.amount).fill(mana),
+                    anyColor: 0,
+                    pain,
+                    lifeCost,
+                  },
+                ];
+        for (const option of candidates) {
+          if (!options.some((o) => key(o) === key(option))) options.push(option);
+        }
         if (ability.cost.sacrifice === "self") sacrificeSelf = true;
       }
       if (options.length === 0) continue;
@@ -4714,12 +4746,14 @@ export class Game {
 
   private addMana(
     player: PlayerId,
-    mana: ManaType | "any-color",
+    mana: ManaType | "any-color" | { readonly oneOf: readonly ManaType[] },
     amount: number,
   ): void {
-    // A standalone "add one mana of any colour" (not paying a cost) just makes
-    // white — the planner resolves the colour itself when it's a payment.
-    const concrete: ManaType = mana === "any-color" ? "W" : mana;
+    // A standalone "add one mana of any colour"/"any combination of [...]"
+    // (not paying a cost) just makes white / all of the first listed colour —
+    // the planner resolves the colour(s) itself when it's a payment (P20).
+    const concrete: ManaType =
+      mana === "any-color" ? "W" : typeof mana === "object" ? mana.oneOf[0] : mana;
     this.state.players[player].manaPool[concrete] += amount;
     this.emit({ type: "mana-added", player, mana: concrete, amount });
   }
@@ -5528,6 +5562,8 @@ export class Game {
       destroyPermanent: (target) => this.destroyByEffect(target),
       destroyAll: (filter) => this.destroyAllByEffect(controller, filter),
       damageAll: (filter, amount) => this.damageAllByEffect(source, controller, filter, amount),
+      creaturesDamageControllers: (filter, amount) =>
+        this.creaturesDamageControllersByEffect(controller, filter, amount),
       sacrificePermanents: (who, filter, count, exceptId) =>
         this.sacrificeByEffect(controller, who, filter, count, exceptId),
       sacrificeSource: () => this.sacrificeSourceByEffect(source),
@@ -6492,6 +6528,26 @@ export class Game {
     for (const id of [...this.state.zones.shared.battlefield]) {
       if (matchesFilter(this.state, this.registry, id, filter, { you })) {
         this.dealDamage(source, { kind: "object", object: id }, amount);
+      }
+    }
+  }
+
+  /** Every battlefield permanent matching `filter` deals `amount` damage to
+   * its own controller (Rakdos Charm — needed-cards P20). Each permanent is
+   * its own damage source; snapshot the battlefield first since dealing
+   * damage can trigger SBAs mid-loop. */
+  private creaturesDamageControllersByEffect(
+    you: PlayerId,
+    filter: CardFilter,
+    amount: number,
+  ): void {
+    if (amount <= 0) return;
+    for (const id of [...this.state.zones.shared.battlefield]) {
+      if (matchesFilter(this.state, this.registry, id, filter, { you })) {
+        const controller = this.state.objects[id]?.controller;
+        if (controller !== undefined) {
+          this.dealDamage(id, { kind: "player", player: controller }, amount);
+        }
       }
     }
   }

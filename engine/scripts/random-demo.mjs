@@ -137,6 +137,7 @@ const deckA = deck([
   ["Blasphemous Act", 1],
   ["Genesis Ultimatum", 1],
   ["Fanatic of Rhonas", 1],
+  ["Orcish Lumberjack", 1],
 ]);
 // Kept deliberately lean (~50 cards) so the RandomController actually draws
 // and plays its threats — a bloated deck just stalls out and the fuzz only
@@ -243,6 +244,7 @@ const deckB = deck([
   ["Duskwood Verdict", 1],
   ["Ardent Recruit", 2],
   ["Ob Nixilis, the Fallen", 1],
+  ["Rakdos Charm", 1],
 ]);
 
 // A lean Dimir deck for Carol — carries the `Sarova, the Undying Current`

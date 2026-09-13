@@ -66,9 +66,17 @@ export type EffectSpec =
       /** `mana: "any-color"` — one mana of any of the five colours, the
        * player's choice (Arcane Signet, Command Tower, Treasure). During
        * cost payment the planner picks the colour it needs; a standalone
-       * activation (holding priority, not paying anything) just adds white. */
+       * activation (holding priority, not paying anything) just adds white.
+       * `mana: { oneOf: [...] }` — `amount` mana in any combination of the
+       * listed colours, each unit independently chosen (Orcish Lumberjack:
+       * "three mana in any combination of {R} and/or {G}" —
+       * `{ oneOf: ["R", "G"] }`, `amount: 3`). During cost payment the planner
+       * enumerates every achievable combination as a separate option and
+       * picks whichever pays the cost; a standalone activation defaults to
+       * `amount` of `oneOf[0]`, same simplification as "any-color" defaulting
+       * to white. needed-cards P20. */
       readonly kind: "add-mana";
-      readonly mana: ManaType | "any-color";
+      readonly mana: ManaType | "any-color" | { readonly oneOf: readonly ManaType[] };
       readonly amount: number;
       /** Damage this mana ability deals to its controller when it's used (a
        * painland's coloured tap — Karplusan Forest: "{T}: Add {R} or {G}.
@@ -114,6 +122,17 @@ export type EffectSpec =
        * (Pyroclasm: 2 to each creature). The source of the damage is the
        * resolving spell/ability. */
       readonly kind: "damage-all";
+      readonly filter: CardFilter;
+      readonly amount: EffectAmount;
+    }
+  | {
+      /** Every permanent matching `filter` deals `amount` damage to its own
+       * controller (Rakdos Charm: "each creature deals 1 damage to its
+       * controller") — the reverse direction from `damage-all` (which deals
+       * damage FROM the effect's source TO matching permanents; here each
+       * matching permanent is its own damage source, and the target is
+       * always its controller, never the effect's caster). needed-cards P20. */
+      readonly kind: "creatures-damage-controllers";
       readonly filter: CardFilter;
       readonly amount: EffectAmount;
     }
@@ -551,7 +570,11 @@ export interface EffectApi {
   loseLife(player: PlayerId, amount: number): void;
   /** Change life for a whole scope (`gain-life` / `lose-life` with `who`). */
   changeLifeScoped(who: PlayerScope, delta: number): void;
-  addMana(player: PlayerId, mana: ManaType | "any-color", amount: number): void;
+  addMana(
+    player: PlayerId,
+    mana: ManaType | "any-color" | { readonly oneOf: readonly ManaType[] },
+    amount: number,
+  ): void;
   tapPermanent(target: TargetRef): void;
   untapPermanent(target: TargetRef): void;
   destroyPermanent(target: TargetRef): void;
@@ -559,6 +582,10 @@ export interface EffectApi {
   destroyAll(filter: CardFilter): void;
   /** Deal `amount` damage to every battlefield permanent matching `filter`. */
   damageAll(filter: CardFilter, amount: number): void;
+  /** Every battlefield permanent matching `filter` deals `amount` damage to
+   * its own controller — see the `"creatures-damage-controllers"`
+   * {@link EffectSpec}. */
+  creaturesDamageControllers(filter: CardFilter, amount: number): void;
   /** Each of `who` (a scope, or `{ player }` for a targeted edict) sacrifices
    * `count` permanents matching `filter`. */
   sacrificePermanents(
@@ -861,6 +888,9 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       return;
     case "damage-all":
       ctx.damageAll(spec.filter, amountValue(spec.amount, ctx));
+      return;
+    case "creatures-damage-controllers":
+      ctx.creaturesDamageControllers(spec.filter, amountValue(spec.amount, ctx));
       return;
     case "sacrifice": {
       const exceptId = spec.exceptSource ? ctx.source : undefined;
