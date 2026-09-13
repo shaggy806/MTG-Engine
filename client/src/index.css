@@ -1,26 +1,38 @@
+/* Board redesign phase 8: felt-table/gold palette + Cinzel (headings, whose-
+   turn) / JetBrains Mono (numbers) ported from the mockup artifact, layered
+   onto the existing token *names* so every rule already written against
+   --bg/--panel/--border/etc. picks up the new look without a rename. */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+
 :root {
-  color-scheme: light dark;
-  --bg: #14161b;
-  --panel: #1e2129;
-  --panel-2: #262a34;
-  --border: #333846;
-  --text: #d7dae1;
-  --muted: #888e9c;
-  --accent: #6ea8fe;
-  --accent-bg: rgba(110, 168, 254, 0.16);
-  --good: #5bd18b;
-  --bad: #ef6f6f;
-  --warn: #e7c05b;
+  color-scheme: dark;
+  --bg: #12171b;
+  --panel: #1c242b;
+  --panel-2: #212b33;
+  --border: #2b3640;
+  /* a lighter divider than --border -- used inside a panel (e.g. the
+     quadrant head/body split) where a full --border would read too heavy */
+  --border-soft: #232d35;
+  --text: #e7edf1;
+  --muted: #93a3ad;
+  --muted-dim: #5e6d76;
+  --accent: #63a0d6;
+  --accent-dim: #3c5f7d;
+  --accent-bg: rgba(99, 160, 214, 0.14);
+  --gold: #cda653;
+  --good: #5fae7c;
+  --bad: #c2564f;
+  --warn: #d9b054;
 
   /* per-player identity colors, by seating order (not table position) */
-  --seat-a: #b98cf0;
-  --seat-a-bg: rgba(185, 140, 240, 0.08);
-  --seat-b: #f0954a;
-  --seat-b-bg: rgba(240, 149, 74, 0.08);
-  --seat-c: #4ecdc4;
-  --seat-c-bg: rgba(78, 205, 196, 0.08);
-  --seat-d: #e85d8a;
-  --seat-d-bg: rgba(232, 93, 138, 0.08);
+  --seat-a: #b48ee0;
+  --seat-a-bg: rgba(180, 142, 224, 0.08);
+  --seat-b: #e0985a;
+  --seat-b-bg: rgba(224, 152, 90, 0.08);
+  --seat-c: #5cc3b8;
+  --seat-c-bg: rgba(92, 195, 184, 0.08);
+  --seat-d: #d97398;
+  --seat-d-bg: rgba(217, 115, 152, 0.08);
 
   /* card tile width, viewport-scaled instead of a fixed px guess -- the
      single source every card-shaped thing (tiles, empty command-zone slots,
@@ -32,7 +44,7 @@
      one doesn't silently resize the other. */
   --mini-w: clamp(50px, 4.6vw, 78px);
 
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
   font-size: 14px;
   color: var(--text);
   background: var(--bg);
@@ -68,8 +80,14 @@ h2,
 h3 {
   margin: 0;
   font-weight: 600;
+  font-family: 'Cinzel', serif;
 }
 
 .muted {
   color: var(--muted);
+}
+
+.mono {
+  font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
 }

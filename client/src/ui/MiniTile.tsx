@@ -2,6 +2,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react'
 import type { VisibleObject } from 'engine'
 import { CardTile } from './CardTile.tsx'
 import { costColor } from './symbols.ts'
+import { manaSymbolUrl } from './mana.ts'
 import {
   artMisses,
   getArtCacheVersion,
@@ -9,6 +10,8 @@ import {
   resolveArtUrl,
   subscribeArtCache,
 } from './art.ts'
+
+const TAP_ICON_URL = manaSymbolUrl('T')
 
 export interface MiniTileProps {
   readonly obj: VisibleObject
@@ -139,6 +142,9 @@ export function MiniTile({
         ) : null}
         {obj.summoningSick && isCreature ? <span className="card-flag sick">Z</span> : null}
         {badge ? <span className="mt-badge">{badge}</span> : null}
+        {obj.tapped && TAP_ICON_URL ? (
+          <img className="tap-icon" src={TAP_ICON_URL} alt="" />
+        ) : null}
       </button>
 
       <div className="mini-tile-popover">

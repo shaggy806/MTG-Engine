@@ -21,7 +21,11 @@
   overflow-y: auto;
   padding: 12px 20px;
   position: relative;
-  background: var(--bg);
+  background-color: var(--bg);
+  /* a faint felt-table sheen -- background-color (not this shorthand) is
+     what the active-seat wash below transitions, so it layers on top
+     instead of getting wiped by it */
+  background-image: radial-gradient(ellipse at 50% -10%, #1a232b 0%, transparent 60%);
   transition: background-color 0.6s ease;
 }
 /* whose turn it is, as a faint wash over the whole page */
@@ -48,24 +52,38 @@
   display: flex;
   align-items: center;
   gap: clamp(10px, 1.4vw, 20px);
-  padding: 0 4px;
-  margin-bottom: 8px;
+  padding: 0 clamp(8px, 1.2vw, 16px);
+  margin: -12px -20px 8px;
+  background: linear-gradient(180deg, var(--panel-2), var(--panel));
   border-bottom: 1px solid var(--border);
   font-size: clamp(11px, 1.05vw, 13px);
 }
 .ts-room {
-  color: var(--muted);
+  color: var(--muted-dim);
+  letter-spacing: 0.04em;
   white-space: nowrap;
+  font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
 }
 .ts-acting {
-  color: var(--text);
+  color: var(--muted);
   white-space: nowrap;
 }
 .ts-menu {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   margin-left: auto;
+}
+.ts-menu button {
+  background: transparent;
+  border-color: var(--border-soft);
+  color: var(--muted);
+  font-size: 11px;
+  padding: 3px 9px;
+}
+.ts-menu button:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--muted-dim);
 }
 
 /* phase track — a compact pip row, meant to sit inline in .top-strip */
@@ -82,16 +100,17 @@
 .phase-steps li {
   padding: 2px 6px;
   border-radius: 5px;
-  background: var(--panel-2);
-  color: var(--muted);
+  background: var(--border-soft);
+  color: var(--muted-dim);
   font-size: 11px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 .phase-steps li.current {
   background: var(--accent);
-  color: #0b0e14;
+  color: #0c0f12;
   font-weight: 700;
+  box-shadow: 0 0 8px var(--accent);
 }
 
 /* 2-player layout only now (quadrant mode gives each opponent their own
@@ -121,12 +140,18 @@
   white-space: nowrap;
   font-weight: 600;
 }
+.turn-banner-player {
+  font-family: 'Cinzel', serif;
+  color: var(--gold);
+  letter-spacing: 0.02em;
+}
 .turn-banner-sep {
   margin: 0 8px;
-  color: var(--muted);
+  color: var(--muted-dim);
 }
 .turn-banner-phase {
-  color: var(--text);
+  color: var(--muted);
+  font-weight: 500;
 }
 .turn-banner-daynight {
   color: var(--muted);
@@ -353,24 +378,87 @@
    leaves the 4th cell blank (see the fixed [oppA, oppB, you, oppC] cell
    order in App.tsx) rather than switching to a different grid shape. */
 .quadrant-grid {
+  /* fills whatever height .table has to give (its parent's flex:1) instead
+     of sizing to its own content -- that's what keeps all 4 frames fully
+     visible with nothing but each cell's own body scrolling internally. */
+  flex: 1;
+  min-height: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
   gap: 10px;
 }
+/* one bordered, rounded-rect frame per quadrant -- previously the player
+   panel, board, and side-zone were three separately-boxed pieces; this is
+   now the single frame all three nest inside, with dividers (not boxes)
+   between the head/body and permanents/rail (see .quadrant-head,
+   .quadrant-body, and the .quadrant-body-scoped .board/.side-zone overrides
+   below) instead. */
 .quadrant-cell {
   min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  background: radial-gradient(120% 140% at 50% 0%, var(--panel) 0%, var(--bg) 85%);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  /* not overflow:hidden -- .quadrant-head/.quadrant-body stay transparent
+     (the frame's own background shows through), and a hover/focus mini-tile
+     popover in .quadrant-body needs to be able to spill past this frame's
+     edge, not get clipped by it */
 }
 .quadrant-cell.self {
-  background: var(--accent-bg);
-  border-radius: 8px;
-  padding: 6px;
+  border-color: var(--accent-dim);
+}
+.quadrant-cell.active-turn {
+  box-shadow:
+    inset 0 0 0 1px var(--gold),
+    0 0 22px -6px rgba(205, 166, 83, 0.35);
 }
 .quadrant-blank {
   min-height: 50px;
+}
+.quadrant-head {
+  flex: none;
+  border-bottom: 1px solid var(--border-soft);
+}
+/* the frame + head divider above already provide the box this used to draw
+   for itself -- strip its own so there's exactly one border per quadrant */
+.quadrant-head .player-panel {
+  border: none;
+  border-radius: 0;
+  background: none;
+  padding: 6px 9px;
+}
+.quadrant-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px 7px;
+}
+.quadrant-body::-webkit-scrollbar {
+  width: 6px;
+}
+.quadrant-body::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+/* same reasoning as .quadrant-head .player-panel -- the frame is the one
+   box now, so the permanents area and the command/library rail lose their
+   own borders/backgrounds in favor of a divider between them. */
+.quadrant-body .board,
+.quadrant-body .board.opp {
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+}
+.quadrant-body .side-zone {
+  background: none;
+  border: none;
+  border-radius: 0;
+  border-left: 1px solid var(--border-soft);
+  padding: 0 0 0 8px;
 }
 /* your hand + ability menu + priority/attack/block controls, in their own
    full-width strip below the quadrant grid (closer to how Arena keeps your
@@ -453,6 +541,16 @@
   margin-top: 0;
   max-width: min(90vw, 480px);
   justify-content: flex-end;
+  /* this wrapper's background/border/padding is for its *other* use as an
+     inline decision-UI panel elsewhere in the hand-strip flow -- here the
+     buttons should float individually, each already boxed by the global
+     `button` base style. */
+  background: none;
+  border: none;
+  padding: 0;
+}
+.priority-actions .controls button {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
 }
 
 .board {
@@ -727,8 +825,61 @@
   cursor: default;
   transition: transform 0.1s ease;
 }
+/* MTG Arena-style tapped treatment: a partial tilt (not a full 90°) plus a
+   dimming scrim and a translucent tap-icon overlay, instead of a full
+   quarter-turn.
+   Re-derived rather than assumed: a rotated w×h box's own bounding box is
+   w|cosθ|+h|sinθ| by w|sinθ|+h|cosθ|, which grows fastest around 45° --
+   nowhere near monotonic in θ -- so a shallower angle does NOT obviously
+   need less scale-down than a full 90° turn. For this 5:7 box (w=1,h=1.4),
+   solving scale <= min(1/bw, 1.4/bh) gives ~0.705 at 20° vs. ~0.714 at a
+   full 90° -- i.e. about the *same* compensation, not "much looser." 20°
+   is still worth it purely for how much more legible "tapped" reads
+   alongside the scrim/icon than a barely-there tilt would. */
 .card-tile.tapped {
-  transform: rotate(90deg) scale(0.66);
+  transform: rotate(20deg) scale(0.65);
+}
+/* .mt-art (unlike .ct-art) is itself position:absolute -- painting order
+   among positioned siblings with the same z-index follows tree order, and
+   ::before is always the first box in that order regardless of where it's
+   declared in CSS, so without an explicit z-index the scrim would paint
+   *below* .mt-art's opaque image and never show. Explicit z-index on the
+   scrim (1) and the tap icon (3) puts every corner badge (all bumped to 2
+   below) legibly in between: scrim over the art, badges over the scrim,
+   tap icon over everything. */
+.card-tile.tapped::before,
+.mini-tile.tapped::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(4, 6, 8, 0.45);
+  border-radius: inherit;
+  pointer-events: none;
+}
+.tap-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 3;
+  width: 34%;
+  translate: -50% -50%;
+  opacity: 0.6;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.7));
+  pointer-events: none;
+}
+/* stays readable over a tapped tile's dimming scrim (z-index:1 above) --
+   see the comment on .card-tile.tapped::before/.mini-tile.tapped::before.
+   .card-order/.card-stack set their own z-index further down instead of
+   listing them here, since a rule appearing later in the file always wins
+   a same-specificity conflict regardless of what's declared here. */
+.ct-pt,
+.ct-loyalty,
+.card-flag,
+.card-badge,
+.mt-kw,
+.mt-badge {
+  z-index: 2;
 }
 .card-tile.highlight {
   border-color: var(--accent);
@@ -750,7 +901,7 @@
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
 }
 .card-tile.clickable.tapped:hover {
-  transform: rotate(90deg) scale(0.66) translateY(-3px);
+  transform: rotate(20deg) scale(0.65) translateY(-3px);
 }
 .card-tile.dimmed {
   opacity: 0.4;
@@ -996,7 +1147,9 @@
   color: #0b0e14;
   background: var(--accent);
   border-radius: 50%;
-  z-index: 1;
+  /* above a tapped tile's dimming scrim (z-index:1) -- see the comment on
+     .card-tile.tapped::before/.mini-tile.tapped::before. */
+  z-index: 2;
 }
 /* how many identical lands a stacked tile stands in for */
 .card-stack {
@@ -1013,7 +1166,7 @@
   color: #0b0e14;
   background: var(--accent);
   border-radius: 9px;
-  z-index: 1;
+  z-index: 2;
 }
 /* ===== MiniTile — a battlefield permanent reduced to its art + a stat badge.
    Hovering/focusing reveals the full CardTile in .mini-tile-popover, anchored
@@ -1046,12 +1199,15 @@
   transition: translate 0.1s ease, box-shadow 0.1s ease, border-color 0.1s ease;
 }
 .mini-tile.tapped {
-  /* matches .card-tile.tapped's own approach: scaling down after rotating
-     (not just rotating) keeps the tile within its original footprint --
-     rotating alone swaps width<->height, which would overflow the space
-     flex reserves for it. The scale factor differs from .card-tile's 0.66
-     because this is a 4:3 box, not 5:7 -- 0.66 was tuned for that ratio. */
-  transform: rotate(90deg) scale(0.7);
+  /* same partial-tilt treatment as .card-tile.tapped, re-derived for this
+     4:3 box (w=1,h=0.75): scale <= ~0.717 at 20° vs. ~0.75 at a full 90° --
+     if anything slightly *tighter* at 20° than at 90°, same non-monotonic
+     result as the 5:7 card box above. 20° is worth it for legibility, not
+     for any scale-down it saves. */
+  transform: rotate(20deg) scale(0.68);
+}
+.mini-tile .tap-icon {
+  width: 42%;
 }
 .mini-tile.highlight {
   border-color: var(--accent);
@@ -1161,6 +1317,13 @@
   visibility: visible;
   pointer-events: auto;
 }
+/* the popover's CardTile has no onClick (read-only), so it renders as
+   <button disabled> and would otherwise inherit index.css's generic
+   dimmed-disabled-button look -- only override that, same pattern as
+   .stack-entry/.zone-viewer-cards below. */
+.mini-tile-popover .card-tile:disabled {
+  opacity: 1;
+}
 @media (prefers-reduced-motion: reduce) {
   .mini-tile-popover {
     transition: none;
@@ -1187,25 +1350,48 @@
   font-size: 15px;
 }
 
-/* hand */
+/* hand -- no group container (the mockup has none, just floating cards); a
+   card's own shadow is what separates it from the felt behind it. */
 .hand {
   margin-top: 12px;
-  padding: 10px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  padding: 10px 0 0;
 }
 .hand h3 {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--muted);
+  color: var(--muted-dim);
   margin-bottom: 6px;
 }
 .hand-cards {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-end;
   gap: 8px;
+  padding-top: 16px;
+}
+/* symmetric fan (see App.tsx's HAND_FAN_STEP_DEG) -- --r/--y are set inline
+   per card; the standalone rotate/translate properties (not `transform`)
+   are what let :hover below override with a plain CSS rule instead of
+   fighting an inline `style.transform`. */
+.hand-cards .hand-card {
+  position: relative;
+  rotate: var(--r, 0deg);
+  translate: 0 calc(-1 * var(--y, 0px));
+  transition:
+    translate 0.15s ease,
+    rotate 0.15s ease;
+}
+.hand-cards .hand-card:hover {
+  translate: 0 -16px;
+  rotate: 0deg;
+  z-index: 5;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hand-cards .hand-card {
+    transition: none;
+  }
 }
 
 /* full-screen centered panel: connecting/disconnected/lobby/seat-picker */

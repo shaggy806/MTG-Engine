@@ -2,6 +2,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react'
 import type { VisibleObject } from 'engine'
 import { Symbols } from './Symbols.tsx'
 import { costColor } from './symbols.ts'
+import { manaSymbolUrl } from './mana.ts'
 import {
   artMisses,
   getArtCacheVersion,
@@ -9,6 +10,8 @@ import {
   resolveArtUrl,
   subscribeArtCache,
 } from './art.ts'
+
+const TAP_ICON_URL = manaSymbolUrl('T')
 
 export interface CardTileProps {
   readonly obj: VisibleObject
@@ -200,6 +203,9 @@ export function CardTile({
         <span className="card-flag sick">sick</span>
       ) : null}
       {badge ? <span className="card-badge">{badge}</span> : null}
+      {obj.tapped && TAP_ICON_URL ? (
+        <img className="tap-icon" src={TAP_ICON_URL} alt="" />
+      ) : null}
     </button>
   )
 }

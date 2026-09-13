@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import type { FormEvent, ReactNode } from 'react'
+import type { CSSProperties, FormEvent, ReactNode } from 'react'
 import type {
   CastVia,
   LegalAction,
@@ -33,6 +33,15 @@ const IMPORT_DECK_URL = `${
   ((import.meta.env.VITE_SERVER_URL as string | undefined) ?? `ws://${window.location.hostname}:4000`)
     .replace(/^ws/, 'http')
 }/import-deck`
+
+// Symmetric fan for the hand tray (P8): card i's offset from the hand's
+// center is i - (N-1)/2; rotation and lift both scale off that same offset,
+// so the fan stays symmetric regardless of hand size. Only applied while the
+// hand is actually being browsed full-size -- the collapsed peek (priority
+// mode, not raised) renders flat, since a rotated/lifted card only shows a
+// sliver above the fold and reads as visually broken rather than fanned.
+const HAND_FAN_STEP_DEG = 4.4
+const HAND_FAN_STEP_Y = 5.2
 
 type CastAction = Extract<LegalAction, { kind: 'cast-spell' }>
 
@@ -2191,9 +2200,21 @@ function Table({ view, seat, opponents, game }: TableProps) {
           {playerLabel(seat, game.seats)}'s hand ({handIds.length})
         </h3>
         <div className="hand-cards">
-          {handIds.map((id) => {
+          {handIds.map((id, i) => {
             const obj = view.objects[id]
             if (!obj) return null
+            // Flat while peeked-but-not-raised (mode === 'priority' && !handRaised)
+            // -- see HAND_FAN_STEP_DEG's comment above -- fanned everywhere else,
+            // including every forced-decision mode, where the hand is always
+            // fully visible anyway.
+            const fanned = !(mode === 'priority' && !handRaised)
+            const fanOffset = i - (handIds.length - 1) / 2
+            const fanStyle: CSSProperties = fanned
+              ? ({
+                  '--r': `${fanOffset * HAND_FAN_STEP_DEG}deg`,
+                  '--y': `${Math.abs(fanOffset) * HAND_FAN_STEP_Y}px`,
+                } as CSSProperties)
+              : {}
             let highlight = false
             let selected = false
             if (mode === 'discard') {
@@ -2214,7 +2235,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
             // or a kickable spell's kicked / unkicked casts (P8).
             const multiFace = faceOpts.length > 1
             return (
-              <div key={id} className="hand-card">
+              <div key={id} className="hand-card" style={fanStyle}>
                 <CardTile
                   obj={obj}
                   highlight={highlight || Boolean(suspend) || Boolean(foretell) || Boolean(cycle)}
@@ -2287,13 +2308,17 @@ function Table({ view, seat, opponents, game }: TableProps) {
                 }
                 return (
                   <div
-                    className={`quadrant-cell ${pid === seat ? 'self' : ''}`}
+                    className={`quadrant-cell ${pid === seat ? 'self' : ''} ${
+                      view.activePlayer === pid ? 'active-turn' : ''
+                    }`}
                     key={pid}
                   >
-                    {renderPlayerPanel(pid)}
-                    <div className="board-with-sidezone">
-                      {renderBoard(pid, pid !== seat)}
-                      {renderSideZone(pid)}
+                    <div className="quadrant-head">{renderPlayerPanel(pid)}</div>
+                    <div className="quadrant-body">
+                      <div className="board-with-sidezone">
+                        {renderBoard(pid, pid !== seat)}
+                        {renderSideZone(pid)}
+                      </div>
                     </div>
                   </div>
                 )
