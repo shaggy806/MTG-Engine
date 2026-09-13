@@ -14,15 +14,20 @@ matching this repo's usual git history — not one giant diff. `scratch.mjs` +
 `npm run dev -w client` (client dev server proxies `ws://localhost:4000`) is
 the fastest way to eyeball a change; see CLAUDE.md's Commands section.
 
-**Status: Phases 1-6 done and committed.** Phase 5 turned out to already be
-built before this plan started. Phase 7 is split: the priority-action-bar
-half landed early (inside phase 3); the mana-available-indicator half is
-**not started** — it's blocked on a real engine/protocol gap (an
-untapped-mana-by-color summary was never exposed through `PlayerView` or
-the wire protocol), not client work, and is written up in detail at the
-bottom of Phase 7 below for whoever picks it up next. Non-land token
-stacking (part of phase 4) is implemented but not live-verified — see that
-phase's note on why (`debugSpawn` can't exercise it).
+**Status: Phases 1-6 done and committed. Phase 8 is next — approved by the
+user, not yet started; read Phase 8 below before doing anything else.**
+Phase 5 turned out to already be built before this plan started. Phase 7's
+priority-action-bar half landed early (inside phase 3); its mana-available-
+indicator half is explicitly **descoped by the user** (too much
+engine/protocol work for something that's the player's own job to track —
+see the note appended to Phase 7). Non-land token stacking (part of phase
+4) is implemented but not live-verified — see that phase's note on why
+(`debugSpawn` can't exercise it). **Phase 8 exists because the user found
+phases 1-6, while individually correct, still looked "very distant" from
+the mockup** — the gap turned out to be visual design system (colors/
+typography/decorative styling), never ported, not structure/behavior. A
+full client rebuild was considered and rejected in favor of Phase 8's
+targeted, CSS-mostly approach — see Phase 8's own intro for why.
 
 ## Why this redesign
 
@@ -305,6 +310,141 @@ leave unused code around.
   3. Client: render it in each quadrant header via `<Symbols>`.
   Steps 1-2 are the real work and are outside this plan's client-only scope
   — flagging for a follow-up session rather than attempting a shortcut.
+  **Descoped by the user (see Phase 8's note) — do not build this.** An
+  "available mana" indicator is a lot of engine/protocol work for something
+  that's the player's own responsibility to track; skip it. A *floating*
+  mana display (what's already been added to the pool, not what's
+  available) is a much smaller, already-real thing — see Phase 8.
+
+### Phase 8 — Visual reskin — TODO (approved, not yet started)
+
+**Why this phase exists**: after phases 1-6, the user reported the live
+client still looks "very distant" from the mockup despite every
+structural/behavioral piece (grid layout, compact tiles, collapsible hand,
+pinned stack, command rail, button placement) working correctly when
+checked individually. Comparing the live app side-by-side against the
+mockup artifact confirmed the actual gap: phases 1-6 ported *layout and
+behavior* but never touched the *visual design system* — the client is
+still wearing its original skin (muted panel greys, dashed orange/purple
+per-seat borders, system-ui font, blue accent) instead of the mockup's
+felt-table/gold/Cinzel-and-JetBrains-Mono look. **This phase is a
+considered alternative to a full ground-up client rebuild**, which was
+raised and rejected: the real complexity/risk in this codebase is `Table`'s
+~15-branch decision-routing logic (mulligan, targeting, attackers,
+blockers, sacrifice, scry, choose-x, choose-modes, assign-combat-damage,
+…), which a rebuild would have to touch for no benefit, with no automated
+tests to catch a regression. This phase is deliberately CSS-only except
+where noted, to get the visual fidelity fix without going near that logic.
+
+**Testing note — do this differently from phases 1-6**: don't use
+`scratch.mjs`. Run the real server (`npm run build -w server` once if
+needed, then `npm run start -w server`) + `npm run dev -w client`, and
+create a room through the actual lobby UI with the player-count picker set
+to **4** (`LobbyScreen`'s `players` state, `game.createRoom(undefined,
+players)`). `server/src/decks.ts`'s `SEATS` are real ~60-card "good stuff"
+piles with commanders already populated — far more realistic than a custom
+scratch deck for checking the quadrant grid, command-zone rail, and compact
+tiles all at once. Test **both** 2-player and a 4-player room before
+considering any step done, per this file's standing rule (layouts diverge).
+
+Confirmed root causes below (checked in the code before writing this, not
+guessed) — a future session can trust these without re-deriving them:
+
+1. **Design tokens.** Port the mockup's palette into `index.css`'s `:root`
+   (felt background, gold accent, a more refined per-seat palette than the
+   current one) plus the Cinzel + JetBrains Mono pairing via a Google Fonts
+   `<link>` (or `@import`) in `index.css`. This is the foundation every
+   other step in this phase visually depends on — do it first.
+
+2. **Top strip restyle.** Re-style `.top-strip`/`.ts-*`/`.phase-steps` (all
+   in App.css, added in Phase 2) using the new tokens to match the mockup's
+   spacing/typography/color treatment. Pure CSS, no JSX changes.
+
+3. **Quadrant unification** (solves the user's #3 *and* #5 together — they
+   are the same underlying change). Currently each quadrant is *several*
+   separately-boxed pieces: `.board` has its own `border:1px dashed`, the
+   player panel above it and `.side-zone` next to it are styled
+   independently, and `.table` scrolls the whole page (`overflow-y: auto`)
+   if content overflows. Restructure to: one bordered, rounded-rect frame
+   per quadrant (`.quadrant-cell` becomes that frame, or a new wrapping
+   element if cleaner), a `border-bottom` divider between the player-panel
+   header and the body instead of the header having its own box, a
+   `border-left` divider between the permanents area and the
+   command-zone/library rail instead of `.side-zone` having its own box,
+   and — this is the part that actually removes page-level scrolling —
+   only the quadrant's *body* (permanents area) scrolls internally
+   (`overflow-y: auto` moved from `.table` down to each quadrant's body),
+   so all 4 quadrant frames stay fully visible at all times and only an
+   individual quadrant's *contents* scroll if it has too many permanents.
+   Likely needs a small JSX wrapper change in `Table` (App.tsx) to group
+   the player-panel + board-with-sidezone under one element with a
+   head/body split — not an interaction-logic change, just markup nesting.
+   Check current nesting in `Table`'s quadrant-grid branch before writing
+   the new structure, rather than assuming it from this description.
+
+4. **Hand redesign** (small JSX change, in `App.tsx`'s
+   `renderHandAndControls`/hand-card rendering). Two fixes, done together:
+   - Drop `.hand`'s own `background`/`border`/`border-radius` (the "border
+     around the whole hand" the user flagged) — the mockup has no group
+     container, just floating cards.
+   - `.hand-cards` is currently a plain `flex-wrap` row with no per-card
+     offset. Give each card a computed `rotate`/lift `translate`, the same
+     symmetric-fan formula validated extensively in the mockup: for N
+     cards, card `i`'s offset from center is `i - (N-1)/2`, rotation =
+     `offset * STEP_DEG`, lift = `abs(offset) * STEP_Y` (see the mockup's
+     final JS for exact constants, or re-derive — the shape matters more
+     than exact degrees). This needs to still look right in the collapsed
+     peek state from Phase 3 (`.hand-strip.peekable`) — check that the
+     fan's rotation doesn't make the peeked sliver look broken/clipped
+     oddly; may need to reduce the peek's rotation angle or accept a
+     slightly different peek treatment than the mockup's flat-row peek.
+
+5. **Priority buttons — strip the container.** `.priority-actions` wraps
+   its buttons in `.controls`, which carries its own `background`/`border`/
+   `padding` (meant for its *other* use as an inline decision-UI panel
+   elsewhere in the hand-strip flow) — remove `background`/`border` from
+   `.priority-actions .controls` specifically (already scoped by that
+   selector, added in Phase 3) so the buttons float individually. Each
+   button already gets its own box from the global `button` base style in
+   `index.css` — that's correct and matches the mockup, only the *wrapping*
+   panel needs to go.
+
+6. **Popover opacity fix.** `index.css` has a global `button:disabled {
+   opacity: 0.4 }`. `CardTile` renders as `<button disabled>` when it has
+   no `onClick` (true for the popover's `CardTile` instance in
+   `MiniTile.tsx`, since it's read-only), so it inherits that 40%-dim look
+   even though `.mini-tile-popover` itself is `opacity: 1`. The existing,
+   already-proven fix for this exact issue is one line — see
+   `.stack-entry .card-tile:disabled { opacity: 1; }` and
+   `.zone-viewer-cards .card-tile:disabled { opacity: 1; }` in App.css for
+   the pattern (each comments "only override the generic dimmed-disabled-
+   button look"); add the matching
+   `.mini-tile-popover .card-tile:disabled { opacity: 1; }`.
+
+7. **Tapped-state redesign** (small JSX change, in both `CardTile.tsx` and
+   `MiniTile.tsx`). Currently `.card-tile.tapped`/`.mini-tile.tapped` do a
+   full `transform: rotate(90deg) scale(...)`. Replace with an MTG
+   Arena-style treatment: a partial rotation (not 90°), a dimming overlay
+   (reduced opacity or a dark semi-transparent scrim), and a translucent
+   tap-icon overlay on top. For the icon, **reuse the existing tap symbol
+   asset** — `manaSymbolUrl('T')` from `client/src/ui/mana.ts` already
+   resolves to `public/mana/T.svg` (the same sliced-WotC-artwork system
+   `<Symbols>` uses for `{T}` in rules text) — don't add a new icon system
+   for this; render that SVG as an absolutely-positioned overlay `<img>`
+   at reduced opacity. A small enough rotation angle likely doesn't need
+   the current scale-down compensation at all (re-derive whether it's
+   still needed once the angle is decided, using the same overflow math
+   Phase 4's `.mini-tile.tapped` comment worked through: rotating by angle
+   θ needs `scale <= min(box-width, box-height) / max(rotated bounding
+   box dimensions)` to stay inside the reserved flex space, and a small θ
+   makes that constraint much looser than 90° did).
+
+**Explicitly out of scope for this phase** (per the user, item 6 of their
+list): no "available mana" indicator — see the note appended to Phase 7
+above. A *floating*-mana upgrade (`PlayerPanel.tsx`'s existing `.pp-mana`,
+currently plain text like `2{W}` via `manaString()`) to use real
+`<Symbols>` pips instead was raised as an optional nice-to-have, not
+requested — ask before doing it, don't fold it into this phase silently.
 
 ## Cross-cutting notes
 
