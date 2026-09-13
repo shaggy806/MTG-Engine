@@ -142,6 +142,9 @@ const deckA = deck([
   ["Otawara, Soaring City", 1],
   ["Cyclonic Rift", 1],
   ["Fierce Guardianship", 1],
+  ["Kalonian Hydra", 1],
+  ["Bristly Bill, Spine Sower", 1],
+  ["Unnatural Growth", 1],
 ]);
 // Kept deliberately lean (~50 cards) so the RandomController actually draws
 // and plays its threats — a bloated deck just stalls out and the fuzz only

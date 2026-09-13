@@ -35,6 +35,7 @@ import _poolBoomerang from "./pool/boomerang.js";
 import _poolBoseijuWhoEndures from "./pool/boseiju-who-endures.js";
 import _poolBountifulLandscape from "./pool/bountiful-landscape.js";
 import _poolBramblewingTheUntamed from "./pool/bramblewing-the-untamed.js";
+import _poolBristlyBillSpineSower from "./pool/bristly-bill-spine-sower.js";
 import _poolCabarettiCourtyard from "./pool/cabaretti-courtyard.js";
 import _poolCarnageTyrant from "./pool/carnage-tyrant.js";
 import _poolChandraAcolyteOfFlame from "./pool/chandra-acolyte-of-flame.js";
@@ -129,6 +130,7 @@ import _poolIridescentVinelasher from "./pool/iridescent-vinelasher.js";
 import _poolIsland from "./pool/island.js";
 import _poolJuggernaut from "./pool/juggernaut.js";
 import _poolJump from "./pool/jump.js";
+import _poolKalonianHydra from "./pool/kalonian-hydra.js";
 import _poolKarplusanForest from "./pool/karplusan-forest.js";
 import _poolKessigWolfRun from "./pool/kessig-wolf-run.js";
 import _poolKioraBehemothBeckoner from "./pool/kiora-behemoth-beckoner.js";
@@ -243,6 +245,7 @@ import _poolTwincast from "./pool/twincast.js";
 import _poolTyphoidRats from "./pool/typhoid-rats.js";
 import _poolUndergroundMortuary from "./pool/underground-mortuary.js";
 import _poolUnderworldRageHound from "./pool/underworld-rage-hound.js";
+import _poolUnnaturalGrowth from "./pool/unnatural-growth.js";
 import _poolUnsummon from "./pool/unsummon.js";
 import _poolUreniOfTheUnwritten from "./pool/ureni-of-the-unwritten.js";
 import _poolUrzasIncubator from "./pool/urzas-incubator.js";
@@ -318,6 +321,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolBoseijuWhoEndures,
   _poolBountifulLandscape,
   _poolBramblewingTheUntamed,
+  _poolBristlyBillSpineSower,
   _poolCabarettiCourtyard,
   _poolCarnageTyrant,
   _poolChandraAcolyteOfFlame,
@@ -412,6 +416,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolIsland,
   _poolJuggernaut,
   _poolJump,
+  _poolKalonianHydra,
   _poolKarplusanForest,
   _poolKessigWolfRun,
   _poolKioraBehemothBeckoner,
@@ -526,6 +531,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolTyphoidRats,
   _poolUndergroundMortuary,
   _poolUnderworldRageHound,
+  _poolUnnaturalGrowth,
   _poolUnsummon,
   _poolUreniOfTheUnwritten,
   _poolUrzasIncubator,

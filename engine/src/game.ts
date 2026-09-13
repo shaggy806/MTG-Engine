@@ -5725,6 +5725,9 @@ export class Game {
         this.modifyPtAll(controller, filter, power, toughness, duration),
       grantKeywordAll: (filter, keyword, duration) =>
         this.grantKeywordAll(controller, filter, keyword, duration),
+      doublePtAll: (filter, duration) => this.doublePtAll(controller, filter, duration),
+      doubleCountersAll: (filter, counterKind) =>
+        this.doubleCountersAll(controller, filter, counterKind),
       addCounter: (target, counter, amount) =>
         this.addCounter(target, counter, amount),
       proliferate: () => this.proliferateAll(),
@@ -6366,6 +6369,23 @@ export class Game {
   ): void {
     for (const id of this.battlefieldMatching(you, filter)) {
       this.modifyPt({ kind: "object", object: id }, power, toughness, duration, false);
+    }
+  }
+
+  private doublePtAll(you: PlayerId, filter: CardFilter, duration: PtDuration): void {
+    // Each matching permanent's *own* current P/T, read individually — a 2/2
+    // and a 5/5 both matching become a 4/4 and a 10/10, not identical stats
+    // (unlike `modifyPtAll`'s single shared amount).
+    for (const id of this.battlefieldMatching(you, filter)) {
+      const c = computeCharacteristics(this.state, this.registry, id);
+      this.modifyPt({ kind: "object", object: id }, c.power, c.toughness, duration, false);
+    }
+  }
+
+  private doubleCountersAll(you: PlayerId, filter: CardFilter, counterKind: string): void {
+    for (const id of this.battlefieldMatching(you, filter)) {
+      const current = this.state.objects[id].counters[counterKind] ?? 0;
+      if (current > 0) this.addCounter({ kind: "object", object: id }, counterKind, current);
     }
   }
 

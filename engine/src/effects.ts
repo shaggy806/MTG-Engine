@@ -267,6 +267,30 @@ export type EffectSpec =
       readonly duration: PtDuration;
     }
   | {
+      /** Double each matching permanent's *current* power and toughness
+       * (Unnatural Growth: "double the power and toughness of each creature
+       * you control until end of turn"). Reads each one's own computed P/T
+       * individually and adds that much again, unlike `modify-pt-all`'s
+       * single shared amount — a 2/2 and a 5/5 both matching become a 4/4
+       * and a 10/10, not identical stat lines. */
+      readonly kind: "double-pt-all";
+      readonly filter: CardFilter;
+      readonly duration: PtDuration;
+    }
+  | {
+      /** Double the number of a specific counter kind on each matching
+       * permanent (Kalonian Hydra / Bristly Bill: "double the number of
+       * +1/+1 counters on each creature you control") — adds a counter count
+       * equal to what's already there. Routes through the same `addCounter`
+       * a targeted `add-counter` effect uses, so Doubling Season's
+       * replacement still folds in on top (rule ruling: doubling an existing
+       * count via an effect and Doubling Season compose to 3x, not 4x). A
+       * permanent with none of `counterKind` is untouched. */
+      readonly kind: "double-counters-all";
+      readonly filter: CardFilter;
+      readonly counterKind: string;
+    }
+  | {
       /** Every battlefield permanent matching `filter` gains `keyword` (Overrun:
        * trample until end of turn). */
       readonly kind: "grant-keyword-all";
@@ -654,6 +678,10 @@ export interface EffectApi {
   ): void;
   /** Grant `keyword` to every battlefield permanent matching `filter`. */
   grantKeywordAll(filter: CardFilter, keyword: Keyword, duration: PtDuration): void;
+  /** See the `"double-pt-all"` {@link EffectSpec}. */
+  doublePtAll(filter: CardFilter, duration: PtDuration): void;
+  /** See the `"double-counters-all"` {@link EffectSpec}. */
+  doubleCountersAll(filter: CardFilter, counterKind: string): void;
   addCounter(target: TargetRef, counter: string, amount: number): void;
   /** Proliferate — see the `"proliferate"` {@link EffectSpec}. */
   proliferate(): void;
@@ -1011,6 +1039,12 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
         amountValue(spec.toughness, ctx),
         spec.duration,
       );
+      return;
+    case "double-pt-all":
+      ctx.doublePtAll(spec.filter, spec.duration);
+      return;
+    case "double-counters-all":
+      ctx.doubleCountersAll(spec.filter, spec.counterKind);
       return;
     case "grant-keyword-all":
       ctx.grantKeywordAll(spec.filter, spec.keyword, spec.duration);
