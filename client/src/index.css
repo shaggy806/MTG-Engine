@@ -22,6 +22,12 @@
   --seat-d: #e85d8a;
   --seat-d-bg: rgba(232, 93, 138, 0.08);
 
+  /* card tile width, viewport-scaled instead of a fixed px guess -- the
+     single source every card-shaped thing (tiles, empty command-zone slots,
+     the library back, a board row's min-height) derives its size from, so
+     they all stay in lockstep across monitors instead of just this one. */
+  --card-w: clamp(96px, 9vw, 150px);
+
   font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
   font-size: 14px;
   color: var(--text);

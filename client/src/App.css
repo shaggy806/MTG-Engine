@@ -453,7 +453,7 @@
   gap: 10px 8px;
   /* Matches a card tile's height, so the row holds its size whether it's
      empty or full instead of collapsing down to nothing. */
-  min-height: 190px;
+  min-height: calc(var(--card-w) * 1.4);
 }
 .board-entry {
   display: flex;
@@ -514,15 +514,15 @@
 /* an empty command zone slot — an outline, not a face-down card, since
    there's nothing there at all (unlike the library, which always has one) */
 .card-slot-empty {
-  width: var(--card-w, 138px);
-  min-height: 190px;
+  width: var(--card-w);
+  min-height: calc(var(--card-w) * 1.4);
   border: 1px dashed var(--border);
   border-radius: 8px;
 }
 /* face-down library placeholder — CSS-only, no image, so it can never 404 */
 .card-back {
-  width: var(--card-w, 138px);
-  min-height: 190px;
+  width: var(--card-w);
+  min-height: calc(var(--card-w) * 1.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -535,11 +535,11 @@
 .card-back-count {
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: clamp(32px, 3.2vw, 48px);
+  height: clamp(32px, 3.2vw, 48px);
   border-radius: 50%;
   border: 2px solid rgba(255, 255, 255, 0.35);
-  font-size: 16px;
+  font-size: clamp(12px, 1.2vw, 16px);
   font-weight: 800;
   color: rgba(255, 255, 255, 0.85);
 }
@@ -650,10 +650,9 @@
 
 /* card tiles — a small but complete card face: title + cost, art, type, text */
 .card-tile {
-  --card-w: 138px;
   position: relative;
   width: var(--card-w);
-  min-height: 190px;
+  min-height: calc(var(--card-w) * 1.4);
   display: flex;
   flex-direction: column;
   padding: 0;
