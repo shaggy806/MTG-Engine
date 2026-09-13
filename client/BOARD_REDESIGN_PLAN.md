@@ -14,6 +14,16 @@ matching this repo's usual git history — not one giant diff. `scratch.mjs` +
 `npm run dev -w client` (client dev server proxies `ws://localhost:4000`) is
 the fastest way to eyeball a change; see CLAUDE.md's Commands section.
 
+**Status: Phases 1-6 done and committed.** Phase 5 turned out to already be
+built before this plan started. Phase 7 is split: the priority-action-bar
+half landed early (inside phase 3); the mana-available-indicator half is
+**not started** — it's blocked on a real engine/protocol gap (an
+untapped-mana-by-color summary was never exposed through `PlayerView` or
+the wire protocol), not client work, and is written up in detail at the
+bottom of Phase 7 below for whoever picks it up next. Non-land token
+stacking (part of phase 4) is implemented but not live-verified — see that
+phase's note on why (`debugSpawn` can't exercise it).
+
 ## Why this redesign
 
 Original ask: the board UI was cluttered, pixel-based sizing didn't scale
@@ -253,7 +263,7 @@ replaced by the scale-via-transform approach above) — removed the prop,
 its CSS class, and `.card-tile.compact { zoom: 0.6 }` entirely rather than
 leave unused code around.
 
-### Phase 7 — Priority actions + mana-available indicator — PARTLY DONE
+### Phase 7 — Priority actions + mana-available indicator — HALF DONE
 - ~~Priority action buttons move to a fixed bottom-right corner.~~ **Done in
   Phase 3** (needed then to let the hand-strip peek cleanly) — see `.priority-
   actions` in App.css and the `mode === 'priority'` branch in `Table`'s
@@ -271,6 +281,30 @@ leave unused code around.
   mockup that used a fake asset system on purpose (artifacts can't load
   arbitrary local SVGs); porting it means routing through `<Symbols>`
   properly instead of copying the mockup's CSS pips verbatim.
+
+  **Blocked on an engine/protocol gap, checked and confirmed before
+  attempting this — not started.** "Untapped sources by color" is
+  `Game.manaSources(player)` (engine/src/game.ts ~line 4654), which is
+  **private** and never exposed via `view.ts`'s `PlayerView`/
+  `PublicPlayerInfo`, nor the wire protocol (`server/src/protocol.ts` /
+  `client/src/net/protocol.ts`, hand-mirrored between the two per CLAUDE.md).
+  `PlayerPanel.tsx`'s existing `info.manaPool` is a *different* thing
+  (currently floating/added mana, which empties between steps under normal
+  rules) — not "what could I tap for." A client-side heuristic (e.g.
+  inferring color from a land's subtype) would be *wrong* for nonbasics,
+  dual lands, mana rocks, and dorks, which this project's own standing
+  rules-accuracy bar (CLAUDE.md, and this repo's "Rules accuracy is
+  mandatory" feedback) rules out — a visibly-wrong mana indicator is worse
+  than no indicator. Doing this properly is a real, separate feature:
+  1. Engine: expose a per-player untapped-mana-by-color summary through
+     `view.ts` (a new `PlayerView`/`PublicPlayerInfo` field, computed from
+     the same `manaSources` logic `payMana` already uses — reuse it, don't
+     reimplement it).
+  2. Protocol: add that field to both `server/src/protocol.ts` and
+     `client/src/net/protocol.ts` (kept in sync by hand, not shared code).
+  3. Client: render it in each quadrant header via `<Symbols>`.
+  Steps 1-2 are the real work and are outside this plan's client-only scope
+  — flagging for a follow-up session rather than attempting a shortcut.
 
 ## Cross-cutting notes
 
