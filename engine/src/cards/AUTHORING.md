@@ -157,6 +157,9 @@ from the same link.
 | `castModal` | `{ minModes, maxModes, modes: ModeOption[] }` | a **targeted** modal spell (choose modes at cast time). Non-targeted modes use the `modal` *effect* instead — §6. |
 | `additionalCost` | `{ sacrifice: CardFilter }` | a **mandatory** extra cost to cast (rule 601.2f — Harrow: "sacrifice a land"). Paid as the spell is cast, so it stands even if the spell is countered, and the spell isn't castable at all without it. The caster picks which permanent. |
 | `kicker` | `{ cost, targets?, effect? }` | **kicker** (rule 702.33 — Tear Asunder). `cost` is folded onto the printed cost; `targets` / `effect` replace the unkicked ones when kicked. `legalActions` offers the card twice, kicked and unkicked. |
+| `overload` | `{ cost, effect }` | **Overload** (rule 702.126 — Cyclonic Rift). An alternative cost that *replaces* the mana cost entirely (unlike kicker's additive cost) and takes **no targets** — `effect` is the whole "each ..." version of the card (typically a `-all` `EffectSpec`, e.g. `return-to-hand-all`/`destroy-all`), applied with the printed `targets`/`effect` untouched for the ordinary cast. `legalActions` offers the card twice. |
+| `freeCastIf` | `{ condition: StaticCondition }` | a conditional free-cast permission printed on the spell itself (the CMM commander-precon cycle — Fierce Guardianship: "If you control a commander, you may cast this spell without paying its mana cost."). Unlike `overload`, targets/effect are completely unchanged — only the cost differs, and it's *in addition to* the normal cast, not instead of it. `legalActions` offers the card twice whenever the condition is currently met. |
+| `convoke` | `boolean` | **Convoke** (rule 702.51 — Chord of Calling, Hour of Reckoning). A pure payment-*method* choice made as the spell is cast (`Action.convoke: ConvokePayment[]`, each `{ creature, pays: "generic" \| Color }`) — tap untapped creatures instead of mana for part of the cost. Doesn't change the printed cost, targets, or effect; not enumerated as a second `cast-spell` variant — the one `LegalAction` carries `convoke: { candidates, maxGeneric }` (every untapped creature the caster controls) instead. |
 | `selfCostReduction` | `{ condition: StaticCondition, reduceGeneric }` | a reduction printed on the spell itself, gated on board state (rule 601.2f — Ferocious, Finale of Devastation: "if you control a creature with power 4 or greater, this spell costs {2} less"). Unlike a `StaticAbility.costModification` (a permanent reducing *other* spells) this is evaluated for the card being cast, from whatever zone — no permanent has to be on the battlefield granting it. `reduceGeneric` accepts a live count too (`{ countOf: CardFilter }` — Blasphemous Act: "{1} less for each creature on the battlefield", `{ type: "creature" }` with no `controlledBy` counts every player's). `condition` is mandatory; a reduction with no real "if" clause uses `{ kind: "controls", filter: {}, atLeast: 0 }` (trivially always true). needed-cards P10, P19. |
 | `flashback` | `{ cost }` | cast from graveyard, then exiled (rule 702.34) |
 | `foretell` | `{ cost }` | pay `{2}` to exile face-down, cast later for `cost` |
@@ -265,6 +268,7 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 | `exile-graveyard` | `target` (a player slot, or `"you"`) | Bojuka Bog — exiles that player's whole graveyard at once (rule 406; the cards in it are never individually targeted) |
 | `flicker` | `target` | Essence Flux — exiles `target`, then immediately returns it to the battlefield under its owner's control (rule 400.7 — a brand-new object; a token exiled this way never comes back) |
 | `return-to-hand` | `target` | Unsummon |
+| `return-to-hand-all` | `filter` | Cyclonic Rift, overloaded — mirrors `destroy-all` |
 | `return-from-graveyard` | `filter`, `destination: "battlefield" \| "hand"`, `count: number \| "all"`, `enterTapped?` | Splendid Reclamation (from *your* graveyard; a `number` less than the match count raises a `choose-from-zone`) |
 | `counter` | `target` (a spell) | Counterspell |
 | `sacrifice` | `who`, `filter`, `count`, `exceptSource?` | Diabolic Edict (`who: "target"`), Fleshbag Marauder (`who: "each-player"`), Korvold (`who: "you"`, `exceptSource: true` = "another") |
@@ -281,6 +285,8 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 | `grant-keyword` | `target`, `keyword`, `duration` | |
 | `grant-keyword-all` | `filter`, `keyword`, `duration` | Overrun's trample |
 | `add-counter` | `target`, `counter` (string), `amount` | `counter: "+1/+1"` etc. |
+| `double-counters-all` | `filter`, `counterKind` | Kalonian Hydra / Bristly Bill — doubles each matching permanent's own current count of that counter kind (routes through `add-counter`'s own logic, so Doubling Season's replacement still composes on top: 3x, not 4x) |
+| `double-pt-all` | `filter`, `duration` | Unnatural Growth — doubles each matching permanent's own *current computed* power/toughness individually (a 2/2 and a 5/5 both matching become a 4/4 and a 10/10), unlike `modify-pt-all`'s single shared amount |
 | `proliferate` | — | proliferates *everything* eligible (no "choose any number") |
 | `animate` | `target`, `power`, `toughness`, `addTypes`, `addSubtypes`, `setSubtypes?`, `setColors?`, `loseAbilities?`, `keywords?`, `duration` | man-lands, Turn to Frog |
 
@@ -340,10 +346,13 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 step of a `sequence`.
 
 `CardFilter` (used by the mass / tutor effects) is a predicate over an object's
-*computed* characteristics — `{ type, types, notTypes, subtype, supertype,
-name, colors, notColors, colorless, manaValue, power, toughness, controlledBy,
-ownedBy, keyword, tapped, token }`, every present clause ANDed. Numeric fields
-take `{ op: "eq"|"ne"|"lt"|"lte"|"gt"|"gte", n }`.
+*computed* characteristics — `{ type, types, notTypes, typesAnyOf, subtype,
+subtypes, supertype, name, colors, notColors, colorless, manaValue, power,
+toughness, controlledBy, ownedBy, keyword, notKeyword, tapped, token,
+isCommander }`, every present clause ANDed. `subtypes`/`typesAnyOf` are an OR
+within themselves (Farseek: "a Plains, Island, Swamp, or Mountain card";
+Takenuma's Channel: "a creature or planeswalker card"). Numeric fields take
+`{ op: "eq"|"ne"|"lt"|"lte"|"gt"|"gte", n }`.
 
 ---
 
@@ -356,9 +365,11 @@ values (`target.ts`):
 `"any-target"`, `"creature"`, `"nonblack-creature"`, `"creature-you-control"`,
 `"creature-an-opponent-controls"`, `"player"`, `"opponent"` (a player other
 than the chooser), `"creature-or-player"`,
-`"permanent"`, `"nonland-permanent"`, `"land"`, `"artifact"`, `"artifact-or-enchantment"`,
-`"creature-or-enchantment"`, `"spell"`, `"creature-spell"`,
-`"noncreature-spell"`, `"instant-or-sorcery-spell"`,
+`"permanent"`, `"nonland-permanent"`, `"nonland-permanent-an-opponent-controls"`,
+`"land"`, `"artifact"`, `"artifact-an-opponent-controls"`, `"artifact-or-enchantment"`,
+`"artifact-enchantment-or-nonbasic-land-an-opponent-controls"`,
+`"creature-or-enchantment"`, `"attacking-or-blocking-creature"`, `"spell"`,
+`"creature-spell"`, `"noncreature-spell"`, `"instant-or-sorcery-spell"`,
 `"instant-or-sorcery-in-your-graveyard"`.
 
 Legality is checked at cast **and** again on resolution; a spell whose targets
@@ -439,6 +450,16 @@ planning — see §15.
   controller's perspective. A gated *mana* ability is also excluded from
   `manaSources()`'s auto-payment scan while the condition is false, not just
   from manual activation. needed-cards P19.
+- `zone: "hand"` — **Channel** (rule 702.51a — Boseiju, Who Endures):
+  activatable only while the card is in hand, never as a permanent's ability.
+  Discarding the source card is an implicit, unconditional part of the cost
+  (no separate `sacrifice`/flag needed) — the ability still goes on the stack
+  like any other activated ability. `legalActions` scans hand cards for these
+  the same way it scans the battlefield for ordinary ones.
+- `costReduction: { reduceGeneric }` — a live-count discount printed on the
+  ability itself (mirrors `CardDefinition.selfCostReduction`, but for an
+  activated ability's own cost) — the Kamigawa Channel lands' "This ability
+  costs {1} less to activate for each legendary creature you control."
 
 ---
 
@@ -731,8 +752,10 @@ different card, or extend the engine (see `ROADMAP.md`).
   target-player slot (or `"you"`) but there's no "each opponent draws/mills"
   form.
 - Reordering the cards you keep on top after a scry.
-- Multi-destination or sacrifice-on-death tutors (Cultivate's "one to
-  battlefield, one to hand"; Sakura-Tribe Elder).
+- Multi-destination tutors (Cultivate's "one to battlefield, one to hand").
+  Sakura-Tribe Elder turned out *not* to need this when checked against real
+  Oracle text (needed-cards P17) — it's a bare sacrifice-cost activated
+  ability + an ordinary `search-library`, already fully expressible.
 - `discard` as part of an **activated ability cost**.
 - `spellsCastThisTurn` triggers beyond `cast-spell` / `this-cast`.
 - **Optional / "up to N" targeting.** Every slot in a spell's or ability's

@@ -17,8 +17,8 @@ the diagram) are in.
 **Status (2026-09-08):** all 11 phases are done (Phases 3/4/6/7/9/10 shipped
 their *core* and deferred a named long tail; the rest are complete). The engine
 now expresses the mechanics an ordinary Commander deck needs. See
-[**Where next**](#where-next) at the bottom for candidate directions — the
-biggest is a bulk card-authoring pass against a real precon.
+[**Where next**](#where-next) at the bottom — the plan of record for new work
+now lives in `engine/src/cards/neededCards-features.md`.
 
 ## Status
 
@@ -926,23 +926,27 @@ redirection to a third object (Harm's Way).
 
 ## Where next
 
-All 11 phases are done. Candidate directions, roughly by payoff:
+All 11 phases are done, and so is the bulk card-authoring pass this section
+originally pointed at (needed-cards P0–P20 — two curated precon decks, ~170
+cards, effectively complete; see `engine/src/cards/neededCards-features.md`).
 
-1. **Bulk card-authoring pass** — pick one real Commander precon (~100 cards),
-   author every card in it, run it end-to-end 2–4 players. The pool is only
-   ~168 cards today; this is where the engine's coverage gets *proven* and the
-   real remaining gaps surface. The highest-value next move.
-2. **`resolve`-hatch sweep** — convert the remaining bespoke imperative
+**The plan of record for what to build next now lives in
+`engine/src/cards/neededCards-features.md`**, not here: an EDH-popularity-driven
+backlog (the top 2000 Commander cards by EDHREC rank, cross-referenced against
+the pool and screened for likely-unsupported mechanics) ranking engine features
+by how many real cards each would unblock, with a "Tier 1/2/3" prioritization
+and a recommended build order. That file is kept current as each feature
+ships; this section isn't. Candidate directions that don't fit that
+card-driven framing, roughly by payoff:
+
+1. **`resolve`-hatch sweep** — convert the remaining bespoke imperative
    `resolve` cards to declarative `effect` form now that the vocab is broad
    (cross-cutting note above).
-3. **Phase 10 deferred (large/niche)** — Battles (a card type + attack target),
+2. **Phase 10 deferred (large/niche)** — Battles (a card type + attack target),
    phasing (a state dimension), dungeons / Initiative + Undercity / Ring, banding.
-   Demand-driven; none blocks ordinary Commander play.
-4. **Engine long tail** — see CLAUDE.md's "Not yet" paragraph: snow *sources*,
-   conditional anthems beyond `StaticCondition`, `discard` in an activated cost,
-   `first-spell-each-turn` / `end-step` triggers, protection from a full filter,
-   full text-change, `modify-pt` / `draw` / `mill` effect scopes, dependency
-   ordering, the scry "reorder kept cards" clause, multi-destination /
-   sac-death tutors (Cultivate, Sakura-Tribe Elder), the legend-rule player
-   choice, Companion / Backgrounds, EG-6's deferred bits (replacement ordering,
-   damage redirection), a static that animates a planeswalker (Gideon).
+   Demand-driven; none blocks ordinary Commander play. (These also show up with
+   low EDH-popularity card counts in the backlog doc above, which is further
+   evidence they're not worth a scope change yet.)
+3. **Engine long tail** — see CLAUDE.md's "Not modeled" paragraph and
+   `cards/AUTHORING.md` §15 for the current, maintained list of specific
+   unmodeled vocabulary and partial features.
