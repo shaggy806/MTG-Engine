@@ -113,6 +113,16 @@ export type StaticCondition =
       readonly filter: CardFilter;
       readonly atLeast: number;
     }
+  /** Your opponents control at least `atLeast` permanents matching `filter`
+   * *combined* (Turbulent Fen — "unless your opponents control eight or more
+   * lands"; plural "opponents" sums across all of them, unlike the singular
+   * "an opponent" of `opponent-controls`). `filter` is evaluated with each
+   * permanent's own controller as its "you". needed-cards P17. */
+  | {
+      readonly kind: "opponents-control-total";
+      readonly filter: CardFilter;
+      readonly atLeast: number;
+    }
   /** It's your turn. */
   | { readonly kind: "your-turn" }
   /** Threshold (rule 702.27) — seven or more cards in your graveyard. */

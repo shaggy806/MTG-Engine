@@ -90,7 +90,13 @@ export type EffectSpec =
       readonly who?: PlayerScope;
     }
   | { readonly kind: "tap"; readonly target: number }
-  | { readonly kind: "untap"; readonly target: number }
+  | {
+      /** `target` accepts `"trigger-object"` for an untargeted "untap it"
+       * off a trigger (Amulet of Vigor: untap the permanent that just
+       * entered tapped). needed-cards P17. */
+      readonly kind: "untap";
+      readonly target: EffectTargetRef;
+    }
   | { readonly kind: "destroy"; readonly target: number }
   | {
       /** Destroy every battlefield permanent matching `filter` (Wrath of God:
@@ -813,7 +819,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       return;
     }
     case "untap": {
-      const target = ctx.targets[spec.target];
+      const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) ctx.untapPermanent(target);
       return;
     }

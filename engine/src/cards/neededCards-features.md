@@ -24,7 +24,8 @@ Status:
 | **added — P14 (`choose-creature-type` decision + `costModification.matchesChosenCreatureType`)** | 1 — **Urza's Incubator** |
 | **added — P15 (shroud, Exalted, ETB-trigger doubling, + a creature-Saga needing no new vocab)** | 4 — **Lightning Greaves**, **Ignoble Hierarch**, **Starfield Vocalist**, **Summon: Titan** |
 | **added — P16 (extra land drops, scoped damage, return-to-hand-source, countOf cost/counter amounts)** | 9 — **Princess Sarah**, **Icetill Explorer**, **Sabotender**, **Tannuk, Memorial Ensign**, **Encroaching Dragonstorm**, **Temur Battlecrier**, **Mole Man, Moloid Master**, **Rydia, Summoner of Mist**, **Will of the Sultai** |
-| blocked on an engine feature | ~46 |
+| **added — P17 (untap-trigger-object, a new "artifact" target, a combined-opponents static condition)** | 7 — **Amulet of Vigor**, **Sakura-Tribe Elder**, **Bountiful Landscape**, **Festering Thicket**, **Vernal Fen**, **Turbulent Fen**, **Manifold Key** |
+| blocked on an engine feature | ~39 |
 
 † Rootbound Crag isn't on the list (Rockfall Vale is the list's R/G land) — added as the check-land cycle-mate.
 
@@ -704,6 +705,65 @@ from an earlier pass (or with each other) rather than needing something bespoke.
 
 `extra-land-drops.test.ts`, `landfall-payloads.test.ts`, `cost-modification.test.ts`,
 `modal-cast.test.ts`.
+
+## P17 — A small grab-bag pass, verified
+
+**All seven cards' real Oracle text pulled from Scryfall (`npm run card:lookup -w engine`) and
+cross-checked against the guesses below — two more "the guess was wrong" cases (Bountiful
+Landscape, Sakura-Tribe Elder), the rest needing one small, reusable primitive each.**
+
+- **DONE — Amulet of Vigor.** "Whenever a permanent you control enters tapped, untap it." No
+  target — the `untap` `EffectSpec`'s `target` field was `number`-only (an index into a chosen
+  target), so it widened to **`EffectTargetRef`** (mirroring `return-to-hand`'s P16 widening),
+  letting `target: "trigger-object"` untap the permanent whose entering fired the trigger with no
+  target slot at all. The trigger itself needed no new vocab: `on: "enters-battlefield", who:
+  "you-control", filter: { tapped: true }` — `CardFilter.tapped` already existed, and the
+  `permanent-entered-battlefield` event already stamps `triggerObject` on every `enters-battlefield`
+  trigger (P5b/P15's plumbing). `needed-cards-p17.test.ts`.
+- **DONE — Sakura-Tribe Elder.** Real text: "Sacrifice Sakura-Tribe Elder: Search your library for
+  a basic land card, put that card onto the battlefield tapped, then shuffle." The neededCards
+  guess ("sacrifice-on-death tutor") was wrong — it's not a dies-trigger tutor at all, just an
+  **activated ability whose cost is a bare sacrifice** (`cost: { mana: null, tap: false, sacrifice:
+  "self" }`) plus Rampant Growth's exact `search-library` effect. Zero new vocab.
+  `needed-cards-p17.test.ts`.
+- **DONE — Bountiful Landscape.** Real text: `{T}: Add {C}.` / `{T}, Sacrifice this land: Search
+  your library for a basic Forest, Island, or Mountain card, put it onto the battlefield tapped,
+  then shuffle.` / `Cycling {G}{U}{R}`. The neededCards guess ("a DFT reveal-a-basic-or-enters-
+  tapped land") was wrong — the real card never enters tapped at all; it's an always-untapped
+  colourless tapland with a sac-fetch (the OR-of-3-subtypes `CardFilter.subtypes` P1 already
+  supports) and already-shipped cycling (P0). Zero new vocab.
+- **DONE — Festering Thicket.** Real text: an unconditional-enters-tapped B/G dual + `Cycling
+  {2}` — Sheltered Thicket's exact shape (P0), just a different colour pair. Zero new vocab.
+- **DONE — Vernal Fen.** Real text: "enters the battlefield tapped unless you control two or
+  more basic lands" — a count-check land, `enterTappedUnlessLands("Vernal Fen", 2, "basic")`,
+  Cinder Glade's exact shape (P0). Zero new vocab.
+- **DONE — Turbulent Fen.** Real text: "enters the battlefield tapped unless your opponents
+  control eight or more lands." The plural "your opponents" sums the count **across every
+  opponent combined**, unlike `opponent-controls`'s per-opponent-on-their-own semantics (P7,
+  Defense of the Heart's singular "an opponent"). New **`StaticCondition` kind
+  `opponents-control-total { filter, atLeast }`** (`characteristics.ts`'s `evalStaticCondition`)
+  sums a filter match across every non-source, non-eliminated opponent's battlefield. A one-off
+  static (`tappedUnless`) rather than a new helper, since no other card on the list needs it yet.
+  `needed-cards-p17.test.ts`.
+- **DONE — Manifold Key.** "{1}, {T}: Untap another target artifact. {3}, {T}: Target creature
+  can't be blocked this turn." The unblockable half needed no new vocab (`grant-keyword`,
+  keyword `"unblockable"`, `duration: "end-of-turn"` — already shipped). The untap half needed a
+  new **`"artifact"`** `TargetSpec`, since only `"artifact-or-enchantment"` existed (which would
+  incorrectly also allow enchantments) — matched in `targeting.ts` the same way
+  `"artifact-or-enchantment"` is. **Caught by the 4-player fuzzer:** dropping "another" (the
+  usual precedent for a missing exclusion — Anafenza, the Foremost's attack trigger) isn't
+  harmless here — a self-untap ability is a *repeatable, no-net-cost loop* (tap self as the
+  cost, untap self as the effect), and `RandomController` spamming it long enough tripped the
+  200k-tick `Game.advance` safety budget. Fixed properly instead of dropped: new
+  **`ActivatedAbility.otherOnly?: boolean`** (mirrors `TriggeredAbility.otherOnly`) excludes the
+  source from every target slot's legal options, threaded through `targetOptionsFor` (the
+  `legalActions` builder), `whyCannotActivateAbility`'s per-spec legality check, and
+  `activateAbility`'s dispatch-time validation. Still no such exclusion for a *triggered*
+  ability's or spell's targets. `needed-cards-p17.test.ts`.
+
+`needed-cards-p17.test.ts`; all seven added to `random-demo.mjs`'s deck A/C for fuzz coverage
+(Amulet of Vigor pairs directly with deck A's existing tapland suite — Frontier Bivouac, Temple
+of Abandon, Rootbound Crag, Hinterland Harbor, Sheltered Thicket, Cinder Glade).
 
 ---
 

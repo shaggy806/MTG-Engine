@@ -63,6 +63,12 @@ export interface ActivatedAbility {
    * lands"). Uses the stack like any other activated ability.
    */
   readonly loyaltyCost?: number;
+  /** "…another target X" (Manifold Key: "Untap another target artifact") —
+   * the source permanent itself is excluded from every target slot's legal
+   * options. Without it a self-untap-style ability can target itself and
+   * become a repeatable no-net-cost loop the fuzzer's tick budget catches;
+   * mirrors `TriggerSpec.otherOnly`. needed-cards P17. */
+  readonly otherOnly?: boolean;
 }
 
 /** Who the triggering object must be relative to the ability's source. */

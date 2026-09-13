@@ -2,13 +2,14 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 
 === Deck 1 — Ureni of the Unwritten (Temur dragons) ===
 [+] 1 An Offer You Can't Refuse
+[+] 1 Amulet of Vigor              (P17 — untap effect widened to accept "trigger-object")
 [x] 1 Arcane Signet
 [+] 1 Atarka, World Render             (P11 — attacks TriggerSpec.filter; real text has no targeting)
 [+] 1 Beast Within
 [+] 1 Birds of Paradise
 [ ] 1 Blasphemous Act                  FEATURE: self cost reduction by a board count ("costs {1} less per creature")
 [ ] 1 Bloom Tender                     FEATURE: mana "for each color among permanents you control"
-[ ] 1 Bountiful Landscape              FEATURE: DFT reveal-a-basic-or-enters-tapped land (+ needs the fixed-dual mana work)
+[+] 1 Bountiful Landscape              (P17 — real text is a plain colourless tapland + sac-fetch-a-Forest/Island/Mountain + cycling, not a reveal-conditional land — the guess was wrong)
 [ ] 1 Broodcaller Scourge              FEATURE: "deals-combat-damage-to-player" TriggerSpec needs a filter (Dragons you control, not just self) + a new "put a permanent card with mv <= X from hand onto the battlefield" cheat-into-play effect gated by the damage dealt
 [ ] 1 Carnelian Orb of Dragonkind      FEATURE: restricted mana ("spend only on Dragons")
 [+] 1 Cinder Glade
@@ -64,7 +65,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Rapid Hybridization
 [ ] 1 Rhythm of the Wild               FEATURE: riot; "creature spells you control can't be countered"
 [+] 1 Rockfall Vale
-[ ] 1 Sakura-Tribe Elder              FEATURE: sacrifice-on-death tutor
+[+] 1 Sakura-Tribe Elder              (P17 — real text is a sac-cost activated ability, not a dies trigger — zero new vocab, the same shape as Rampant Growth's search + AbilityCost.sacrifice: "self")
 [ ] 1 Sarkhan, Soul Aflame             FEATURE: a creature (not a planeswalker) becomes a copy of an entering Dragon until end of turn, except it keeps its own name and gains legendary (rule 707.9-style exception — see P12)
 [+] 1 Scourge of Valkas
 [ ] 1 Selvala, Heart of the Wilds      FEATURE: variable mana ability + power-gated draw
@@ -112,7 +113,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Exploration Broodship            FEATURE: Station (not crew) — an activated ability that piles charge counters equal to a tapped creature's power onto this Spacecraft, with threshold-gated abilities (3+/8+) and an 8+ animation into a creature
 [ ] 1 Fabled Passage                   FEATURE: fetch land with conditional untap
 [ ] 1 Famished Worldsire               FEATURE: Ward {3} already works; "devour land 3" (sac lands as it enters, gets 3x that many counters) is a new ETB replacement, and its own ETB effect needs X = this creature's current power, which EffectApi can't read (no characteristics access from a resolve script)
-[ ] 1 Festering Thicket                FEATURE: fixed dual land (DFT)
+[+] 1 Festering Thicket                (P17 — an unconditional-tapped B/G dual + cycling {2} — zero new vocab, Sheltered Thicket's exact shape)
 [+] 1 Finale of Devastation            (P10 — tutor + Ferocious selfCostReduction; X>=10 haste/fight TBD)
 [x] 8 Forest
 [+] 1 Gaze of Granite                  (P10 — destroy-all with a resolve-time manaValue<=X filter)
@@ -128,7 +129,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Lord Windgrace                   FEATURE: planeswalker — +2 discard-then-draw with a bonus draw conditioned on the discarded card's type (an async "branch on a resolved decision" not yet modeled), -3/-11 "up to N target" multi-targeting (not modeled at all), and "can be your commander" for a non-creature legendary (see P12; real text has no land destruction or emblem — the guess was wrong)
 [+] 1 Lotus Cobra
 [ ] 1 Lotus Field                      FEATURE: ETB "sacrifice two lands"; "add three mana of any one color"
-[ ] 1 Manifold Key                     FEATURE: untap target artifact; grant unblockable
+[+] 1 Manifold Key                     (P17 — new "artifact" TargetSpec; the unblockable half reuses the existing grant-keyword effect)
 [+] 1 Mole Man, Moloid Master          (P16 — zero new vocab: playFromGraveyard + landfall create-token + the token's own may-mill attack trigger, all already shipped)
 [ ] 1 Moraug, Fury of Akoum            FEATURE: landfall extra combat phase (after main)
 [x] 3 Mountain
@@ -165,12 +166,12 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Tireless Provisioner
 [ ] 1 Toph, Hardheaded Teacher         FEATURE: "earthbend 1" (see Earthbender Ascension) on every spell cast, plus a "that land" reference into a later clause that only applies if the spell was a Lesson (no Lesson subtype/card-type in the pool)
 [ ] 1 Traveling Chocobo                FEATURE: landfall (multi-land ETB) Food / counters
-[ ] 1 Turbulent Fen                    FEATURE: fixed dual land (DFT)
+[+] 1 Turbulent Fen                    (P17 — new "opponents-control-total" StaticCondition, a combined-across-all-opponents count distinct from opponent-controls's per-opponent one)
 [+] 1 Underground Mortuary
 [ ] 1 Valakut Exploration              FEATURE: landfall impulse-draw; end-step damage for unplayed cards
 [ ] 1 Veil of Summer                   FEATURE: conditional draw; "can't be countered"; hexproof-from-color
 [+] 1 Verdant Catacombs
-[ ] 1 Vernal Fen                       FEATURE: fixed dual land (DFT)
+[+] 1 Vernal Fen                       (P17 — a count-check land, zero new vocab — enterTappedUnlessLands("Vernal Fen", 2, "basic"), Cinder Glade's exact shape)
 [ ] 1 Walk-In Closet / Forgotten Cellar FEATURE: Room card (front half is already-shipped playFromGraveyard; back half needs temporary graveyard-casting + an exile-instead-of-graveyard replacement, on top of Room support itself)
 [+] 1 Will of the Sultai               (P16 — a plain castModal + a new add-counter live-count amount; drops "if you control a commander, may choose both" — castModal's minModes/maxModes are fixed per card, approximated as "choose one")
 [+] 1 Wooded Foothills

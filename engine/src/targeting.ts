@@ -131,6 +131,11 @@ export function isLegalTarget(
         ref.kind === "object" &&
         isPermanentOfType(state, registry, ref.object, (t) => t.includes("land"))
       );
+    case "artifact":
+      return (
+        ref.kind === "object" &&
+        isPermanentOfType(state, registry, ref.object, (t) => t.includes("artifact"))
+      );
     case "artifact-or-enchantment":
       return (
         ref.kind === "object" &&

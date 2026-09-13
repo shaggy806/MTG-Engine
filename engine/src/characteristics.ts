@@ -135,6 +135,18 @@ function evalStaticCondition(
               matchesFilter(state, registry, id, condition.filter, { you: p }),
           ).length >= condition.atLeast,
       );
+    case "opponents-control-total":
+      return (
+        state.zones.shared.battlefield.filter((id) => {
+          const controller = state.objects[id].controller;
+          return (
+            !skipsSelf(id) &&
+            controller !== you &&
+            !state.players[controller].hasLost &&
+            matchesFilter(state, registry, id, condition.filter, { you: controller })
+          );
+        }).length >= condition.atLeast
+      );
   }
 }
 

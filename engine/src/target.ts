@@ -23,6 +23,7 @@ export type TargetSpec =
   | "permanent"
   | "nonland-permanent"
   | "land"
+  | "artifact"
   | "artifact-or-enchantment"
   | "creature-or-enchantment"
   /** A spell on the stack (a card, not an ability). */

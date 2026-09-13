@@ -128,6 +128,9 @@ const deckA = deck([
   ["Stomping Ground", 1],
   ["Sheltered Thicket", 1],
   ["Cinder Glade", 1],
+  ["Amulet of Vigor", 1],
+  ["Sakura-Tribe Elder", 1],
+  ["Bountiful Landscape", 1],
 ]);
 // Kept deliberately lean (~50 cards) so the RandomController actually draws
 // and plays its threats — a bloated deck just stalls out and the fuzz only
@@ -271,6 +274,10 @@ const deckC = deck([
   ["Overgrown Tomb", 1],
   ["Riveteers Overlook", 1],
   ["Tranquil Thicket", 1],
+  ["Vernal Fen", 1],
+  ["Turbulent Fen", 1],
+  ["Festering Thicket", 1],
+  ["Manifold Key", 1],
 ]);
 
 // All four seats' decks/commanders, in seating order — sliced down to

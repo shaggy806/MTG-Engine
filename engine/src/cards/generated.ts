@@ -8,6 +8,7 @@ import _poolAftermathAnalyst from "./pool/aftermath-analyst.js";
 import _poolAggravatedAssault from "./pool/aggravated-assault.js";
 import _poolAjanisPridemate from "./pool/ajanis-pridemate.js";
 import _poolAmbushViper from "./pool/ambush-viper.js";
+import _poolAmuletOfVigor from "./pool/amulet-of-vigor.js";
 import _poolAnOfferYouCantRefuse from "./pool/an-offer-you-cant-refuse.js";
 import _poolAnafenzaTheForemost from "./pool/anafenza-the-foremost.js";
 import _poolAngelicEdict from "./pool/angelic-edict.js";
@@ -30,6 +31,7 @@ import _poolBoggartBrute from "./pool/boggart-brute.js";
 import _poolBojukaBog from "./pool/bojuka-bog.js";
 import _poolBonesplitter from "./pool/bonesplitter.js";
 import _poolBoomerang from "./pool/boomerang.js";
+import _poolBountifulLandscape from "./pool/bountiful-landscape.js";
 import _poolBramblewingTheUntamed from "./pool/bramblewing-the-untamed.js";
 import _poolCabarettiCourtyard from "./pool/cabaretti-courtyard.js";
 import _poolCarnageTyrant from "./pool/carnage-tyrant.js";
@@ -72,6 +74,7 @@ import _poolExplorersInsight from "./pool/explorers-insight.js";
 import _poolFaithlessLooting from "./pool/faithless-looting.js";
 import _poolFarseek from "./pool/farseek.js";
 import _poolFencingAce from "./pool/fencing-ace.js";
+import _poolFesteringThicket from "./pool/festering-thicket.js";
 import _poolFinaleOfDevastation from "./pool/finale-of-devastation.js";
 import _poolFireball from "./pool/fireball.js";
 import _poolFlameJavelin from "./pool/flame-javelin.js";
@@ -130,6 +133,7 @@ import _poolLotusCobra from "./pool/lotus-cobra.js";
 import _poolLure from "./pool/lure.js";
 import _poolMagmaquake from "./pool/magmaquake.js";
 import _poolManOWar from "./pool/man-o-war.js";
+import _poolManifoldKey from "./pool/manifold-key.js";
 import _poolMiirymSentinelWyrm from "./pool/miirym-sentinel-wyrm.js";
 import _poolMindControl from "./pool/mind-control.js";
 import _poolMindRot from "./pool/mind-rot.js";
@@ -177,6 +181,7 @@ import _poolRootboundCrag from "./pool/rootbound-crag.js";
 import _poolRumblingBaloth from "./pool/rumbling-baloth.js";
 import _poolRydiaSummonerOfMist from "./pool/rydia-summoner-of-mist.js";
 import _poolSabotender from "./pool/sabotender.js";
+import _poolSakuraTribeElder from "./pool/sakura-tribe-elder.js";
 import _poolSarovaTheUndyingCurrent from "./pool/sarova-the-undying-current.js";
 import _poolSawInHalf from "./pool/saw-in-half.js";
 import _poolScourgeOfValkas from "./pool/scourge-of-valkas.js";
@@ -214,6 +219,7 @@ import _poolTimeWarp from "./pool/time-warp.js";
 import _poolTirelessProvisioner from "./pool/tireless-provisioner.js";
 import _poolTomeScour from "./pool/tome-scour.js";
 import _poolTranquilThicket from "./pool/tranquil-thicket.js";
+import _poolTurbulentFen from "./pool/turbulent-fen.js";
 import _poolTurnToFrog from "./pool/turn-to-frog.js";
 import _poolTwincast from "./pool/twincast.js";
 import _poolTyphoidRats from "./pool/typhoid-rats.js";
@@ -226,6 +232,7 @@ import _poolUtvaraHellkite from "./pool/utvara-hellkite.js";
 import _poolVampireNighthawk from "./pool/vampire-nighthawk.js";
 import _poolVengefulGhoul from "./pool/vengeful-ghoul.js";
 import _poolVerdantCatacombs from "./pool/verdant-catacombs.js";
+import _poolVernalFen from "./pool/vernal-fen.js";
 import _poolVoidfallHorror from "./pool/voidfall-horror.js";
 import _poolVoltCharge from "./pool/volt-charge.js";
 import _poolWalkingBallista from "./pool/walking-ballista.js";
@@ -265,6 +272,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolAggravatedAssault,
   _poolAjanisPridemate,
   _poolAmbushViper,
+  _poolAmuletOfVigor,
   _poolAnOfferYouCantRefuse,
   _poolAnafenzaTheForemost,
   _poolAngelicEdict,
@@ -287,6 +295,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolBojukaBog,
   _poolBonesplitter,
   _poolBoomerang,
+  _poolBountifulLandscape,
   _poolBramblewingTheUntamed,
   _poolCabarettiCourtyard,
   _poolCarnageTyrant,
@@ -329,6 +338,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolFaithlessLooting,
   _poolFarseek,
   _poolFencingAce,
+  _poolFesteringThicket,
   _poolFinaleOfDevastation,
   _poolFireball,
   _poolFlameJavelin,
@@ -387,6 +397,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolLure,
   _poolMagmaquake,
   _poolManOWar,
+  _poolManifoldKey,
   _poolMiirymSentinelWyrm,
   _poolMindControl,
   _poolMindRot,
@@ -434,6 +445,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolRumblingBaloth,
   _poolRydiaSummonerOfMist,
   _poolSabotender,
+  _poolSakuraTribeElder,
   _poolSarovaTheUndyingCurrent,
   _poolSawInHalf,
   _poolScourgeOfValkas,
@@ -471,6 +483,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolTirelessProvisioner,
   _poolTomeScour,
   _poolTranquilThicket,
+  _poolTurbulentFen,
   _poolTurnToFrog,
   _poolTwincast,
   _poolTyphoidRats,
@@ -483,6 +496,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolVampireNighthawk,
   _poolVengefulGhoul,
   _poolVerdantCatacombs,
+  _poolVernalFen,
   _poolVoidfallHorror,
   _poolVoltCharge,
   _poolWalkingBallista,

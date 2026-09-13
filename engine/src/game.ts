@@ -875,7 +875,12 @@ export class Game {
           cardName: printedCardName(object),
           text: ability.text,
           targetSpecs: ability.targets,
-          targetOptions: this.targetOptionsFor(ability.targets, player, this.permanentSource(source)),
+          targetOptions: this.targetOptionsFor(
+            ability.targets,
+            player,
+            this.permanentSource(source),
+            ability.otherOnly ? source : undefined,
+          ),
           ...(ability.cost.sacrifice !== undefined && ability.cost.sacrifice !== "self"
             ? { sacrifice: { choices: this.sacrificeCandidates(player, source, ability) } }
             : {}),
@@ -927,9 +932,12 @@ export class Game {
     specs: readonly TargetSpec[],
     forPlayer: PlayerId,
     source?: TargetSource,
+    excludeObject?: ObjectId,
   ): readonly (readonly TargetRef[])[] {
     return specs.map((spec) =>
-      legalTargets(this.state, this.registry, spec, forPlayer, source),
+      legalTargets(this.state, this.registry, spec, forPlayer, source).filter(
+        (ref) => excludeObject === undefined || ref.kind !== "object" || ref.object !== excludeObject,
+      ),
     );
   }
 
@@ -4075,9 +4083,11 @@ export class Game {
       if (timing !== null) return timing;
     }
     for (const spec of ability.targets) {
-      if (
-        legalTargets(this.state, this.registry, spec, player, this.permanentSource(sourceId)).length === 0
-      ) {
+      const options = legalTargets(this.state, this.registry, spec, player, this.permanentSource(sourceId));
+      const eligible = ability.otherOnly
+        ? options.filter((ref) => ref.kind !== "object" || ref.object !== sourceId)
+        : options;
+      if (eligible.length === 0) {
         return `${def.name}'s ability has no legal ${spec} target`;
       }
     }
@@ -4132,15 +4142,11 @@ export class Game {
       );
     }
     ability.targets.forEach((spec, i) => {
+      const target = targets[i];
+      const isSource = target.kind === "object" && target.object === sourceId;
       if (
-        !isLegalTarget(
-          this.state,
-          this.registry,
-          spec,
-          targets[i],
-          player,
-          this.permanentSource(sourceId),
-        )
+        (ability.otherOnly && isSource) ||
+        !isLegalTarget(this.state, this.registry, spec, target, player, this.permanentSource(sourceId))
       ) {
         throw new Error(`illegal target for ${def.name}'s ability`);
       }

@@ -255,6 +255,8 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 
 | kind | fields | example |
 | --- | --- | --- |
+| `tap` | `target` (index only) | |
+| `untap` | `target: EffectTargetRef` — an index, `"source"`, or `"trigger-object"` | Amulet of Vigor: `target: "trigger-object"` untaps the permanent whose entering fired the trigger, with no target slot at all |
 | `destroy` | `target` | Doom Blade |
 | `destroy-all` | `filter` | Wrath of God |
 | `exile` | `target` | Angelic Edict |
@@ -346,7 +348,7 @@ values (`target.ts`):
 `"any-target"`, `"creature"`, `"nonblack-creature"`, `"creature-you-control"`,
 `"creature-an-opponent-controls"`, `"player"`, `"opponent"` (a player other
 than the chooser), `"creature-or-player"`,
-`"permanent"`, `"nonland-permanent"`, `"land"`, `"artifact-or-enchantment"`,
+`"permanent"`, `"nonland-permanent"`, `"land"`, `"artifact"`, `"artifact-or-enchantment"`,
 `"creature-or-enchantment"`, `"spell"`, `"creature-spell"`,
 `"noncreature-spell"`, `"instant-or-sorcery-spell"`,
 `"instant-or-sorcery-in-your-graveyard"`.
@@ -397,6 +399,14 @@ sacrifice cost. These resolve immediately without using the stack. Use the
 - `loyaltyCost: 1` (or `-3`) — marks a **loyalty ability**: `cost.mana` /
   `cost.tap` are ignored, it's sorcery-speed, once per planeswalker per turn,
   and paid by adding/removing loyalty counters. Requires `loyalty` on the card.
+- `otherOnly: true` — "…**another** target X" (Manifold Key: "Untap another
+  target artifact") excludes the source permanent itself from every target
+  slot's legal options. Without it, a self-referential ability like an untap
+  can target itself and become a repeatable no-net-cost loop — needed-cards
+  P17 caught exactly this in the fuzzer. Mirrors `TriggeredAbility`'s
+  `otherOnly` (§9); there is still no generic "not this object" exclusion
+  for a *triggered* ability's or spell's targets, or for a `resolve`
+  script's own target choices — see §15.
 
 ---
 
@@ -515,6 +525,10 @@ clause (section 9):
 - `{ kind: "opponent-controls", filter: CardFilter, atLeast: number }` — *one*
   opponent must meet the count on their own (Defense of the Heart: "if an
   opponent controls three or more creatures").
+- `{ kind: "opponents-control-total", filter: CardFilter, atLeast: number }` —
+  a combined count summed across *every* opponent (Turbulent Fen: "unless your
+  opponents control eight or more lands" — plural "opponents" sums, unlike
+  `opponent-controls`'s singular "an opponent").
 - `{ kind: "your-turn" }`
 - `{ kind: "threshold" }` — 7+ cards in your graveyard.
 - `{ kind: "metalcraft" }` — 3+ artifacts.
