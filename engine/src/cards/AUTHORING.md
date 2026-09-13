@@ -850,10 +850,10 @@ makes a planeswalker a creature (Gideon), ability-dependency ordering (rule
   --games 300`. If `legalActions` ever offers something `dispatch` refuses,
   this crashes.
 - **Write a focused test** if the card exercises new-ish behaviour — one
-  `engine/src/<card-or-feature>.test.ts` that builds a `Game` (or uses
+  `engine/src/test/<card-or-feature>.test.ts` that builds a `Game` (or uses
   `createSandbox` from `sandbox.ts`), dispatches through the interaction, and
-  asserts the outcome. See `engine/src/clone.test.ts` for the white-box
-  `spawn` pattern, or `engine/src/sandbox.test.ts` for the sandbox helper.
+  asserts the outcome. See `engine/src/test/clone.test.ts` for the white-box
+  `spawn` pattern, or `engine/src/test/sandbox.test.ts` for the sandbox helper.
 - **Run the suite:** `npm run test -w engine`.
 - **Eyeball it:** `npm run lab -w client`, Sandbox tab.
 
