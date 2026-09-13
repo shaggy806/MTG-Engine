@@ -1668,6 +1668,8 @@ export class Game {
     minModes: number,
     maxModes: number,
     modes: readonly ModeOption[],
+    onDecline?: EffectSpec,
+    targets: readonly TargetRef[] = [],
   ): void {
     this.state.awaiting = {
       kind: "choose-modes",
@@ -1677,6 +1679,8 @@ export class Game {
       maxModes: Math.min(maxModes, modes.length),
       modes: modes.map((m) => ({ text: m.text, effect: m.effect })),
       x,
+      targets,
+      ...(onDecline !== undefined ? { onDecline } : {}),
     };
   }
 
@@ -1690,13 +1694,16 @@ export class Game {
       throw new Error("unreachable: whyCannotChooseModes should have caught this");
     }
 
-    const { source, modes, x } = awaiting;
+    const { source, modes, x, onDecline, targets } = awaiting;
     this.state.awaiting = null;
     // Listed order, not the order the player named them (rule 700.2b).
     const ordered = [...modeIndices].sort((a, b) => a - b);
     this.emit({ type: "modes-chosen", source, modes: ordered });
-    const context = this.makeResolutionContext(source, player, [], x);
+    const context = this.makeResolutionContext(source, player, targets, x);
     for (const i of ordered) applyEffectSpec(modes[i].effect, context);
+    if (ordered.length === 0 && onDecline !== undefined) {
+      applyEffectSpec(onDecline, context);
+    }
 
     // A mode's effect may itself raise a decision (rare); otherwise resume.
     if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
@@ -2196,6 +2203,9 @@ export class Game {
       library.push(...order);
       this.state.rngState = this.rng.seed;
       this.emit({ type: "library-shuffled", player });
+    } else if (awaiting.leftover === "hand") {
+      // Genesis Ultimatum: "… and the rest into your hand." needed-cards P19.
+      for (const id of leftover) this.moveObject(id, "hand");
     }
     // leftover === "stay": nothing to do — those cards were only ever looked
     // at, never removed from wherever they already were.
@@ -3517,7 +3527,11 @@ export class Game {
       def.selfCostReduction !== null &&
       staticConditionMet(this.state, this.registry, this.state.objects[cardId], def.selfCostReduction.condition)
     ) {
-      generic -= def.selfCostReduction.reduceGeneric;
+      const { reduceGeneric } = def.selfCostReduction;
+      generic -=
+        typeof reduceGeneric === "number"
+          ? reduceGeneric
+          : this.battlefieldMatching(player, reduceGeneric.countOf).length;
     }
     return {
       colored: base.colored,
@@ -4059,6 +4073,12 @@ export class Game {
     if (hasLostAbilities(source)) {
       return `${def.name} has lost its abilities`;
     }
+    if (
+      ability.condition !== undefined &&
+      !staticConditionMet(this.state, this.registry, source, ability.condition)
+    ) {
+      return `${def.name}'s ability's activation condition isn't met`;
+    }
     if (ability.loyaltyCost !== undefined) {
       // Loyalty ability (rule 606): sorcery-speed, once per permanent per turn,
       // and a "minus" ability needs that many loyalty counters to spend.
@@ -4358,6 +4378,12 @@ export class Game {
           ability.cost.mana !== null ||
           ability.effect === null ||
           ability.effect.kind !== "add-mana"
+        ) {
+          continue;
+        }
+        if (
+          ability.condition !== undefined &&
+          !staticConditionMet(this.state, this.registry, object, ability.condition)
         ) {
           continue;
         }
@@ -4927,7 +4953,10 @@ export class Game {
       object.onAdventure = true;
       this.emit({ type: "card-on-adventure", object: id, player: object.owner });
     } else {
-      this.moveObject(id, "graveyard");
+      // "Exile ~" printed on the spell's own resolution text (Genesis
+      // Ultimatum — needed-cards P19), unconditional and independent of how
+      // it was cast (unlike flashback/disturb/adventure above).
+      this.moveObject(id, def.exileOnResolve ? "exile" : "graveyard");
       object.targets = null;
     }
   }
@@ -5602,8 +5631,8 @@ export class Game {
         this.state.preventionShields.push({ target, amount, combatOnly });
         this.emit({ type: "prevention-shield-created", target, amount });
       },
-      chooseModes: (minModes, maxModes, modes) =>
-        this.beginModesChoice(source, controller, x, minModes, maxModes, modes),
+      chooseModes: (minModes, maxModes, modes, onDecline) =>
+        this.beginModesChoice(source, controller, x, minModes, maxModes, modes, onDecline, targets),
       changeLifeScoped: (who, delta) => this.changeLifeScoped(controller, who, delta),
       searchLibrary: (filter, destination, min, max, enterTapped) =>
         this.beginLibrarySearch(controller, filter, destination, min, max, enterTapped),
@@ -5634,7 +5663,7 @@ export class Game {
     min: number,
     max: number,
     destination: "battlefield" | "hand",
-    leftover: "bottom-random" | "stay",
+    leftover: "bottom-random" | "stay" | "hand",
     filter: ZoneChoiceFilter | undefined,
   ): void {
     const zoneCards = this.state.zones.perPlayer[player][zone];

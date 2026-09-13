@@ -20,6 +20,7 @@ import _poolAtarkaWorldRender from "./pool/atarka-world-render.js";
 import _poolBeastWithin from "./pool/beast-within.js";
 import _poolBeholdTheMultiverse from "./pool/behold-the-multiverse.js";
 import _poolBirdsOfParadise from "./pool/birds-of-paradise.js";
+import _poolBlasphemousAct from "./pool/blasphemous-act.js";
 import _poolBlaze from "./pool/blaze.js";
 import _poolBlightning from "./pool/blightning.js";
 import _poolBlinkmothNexus from "./pool/blinkmoth-nexus.js";
@@ -73,6 +74,7 @@ import _poolEssenceScatter from "./pool/essence-scatter.js";
 import _poolEvolvingWilds from "./pool/evolving-wilds.js";
 import _poolExplorersInsight from "./pool/explorers-insight.js";
 import _poolFaithlessLooting from "./pool/faithless-looting.js";
+import _poolFanaticOfRhonas from "./pool/fanatic-of-rhonas.js";
 import _poolFarseek from "./pool/farseek.js";
 import _poolFencingAce from "./pool/fencing-ace.js";
 import _poolFesteringThicket from "./pool/festering-thicket.js";
@@ -89,6 +91,7 @@ import _poolGanaxAstralHunter from "./pool/ganax-astral-hunter.js";
 import _poolGarrukWildspeaker from "./pool/garruk-wildspeaker.js";
 import _poolGarruksUprising from "./pool/garruks-uprising.js";
 import _poolGazeOfGranite from "./pool/gaze-of-granite.js";
+import _poolGenesisUltimatum from "./pool/genesis-ultimatum.js";
 import _poolGiantGrowth from "./pool/giant-growth.js";
 import _poolGiantSpider from "./pool/giant-spider.js";
 import _poolGladecoverScout from "./pool/gladecover-scout.js";
@@ -153,6 +156,7 @@ import _poolNaturesLore from "./pool/natures-lore.js";
 import _poolNegate from "./pool/negate.js";
 import _poolNightfallCultist from "./pool/nightfall-cultist.js";
 import _poolNotionThief from "./pool/notion-thief.js";
+import _poolObNixilisTheFallen from "./pool/ob-nixilis-the-fallen.js";
 import _poolOldGnawbone from "./pool/old-gnawbone.js";
 import _poolOpt from "./pool/opt.js";
 import _poolOracleOfMulDaya from "./pool/oracle-of-mul-daya.js";
@@ -287,6 +291,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolBeastWithin,
   _poolBeholdTheMultiverse,
   _poolBirdsOfParadise,
+  _poolBlasphemousAct,
   _poolBlaze,
   _poolBlightning,
   _poolBlinkmothNexus,
@@ -340,6 +345,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolEvolvingWilds,
   _poolExplorersInsight,
   _poolFaithlessLooting,
+  _poolFanaticOfRhonas,
   _poolFarseek,
   _poolFencingAce,
   _poolFesteringThicket,
@@ -356,6 +362,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolGarrukWildspeaker,
   _poolGarruksUprising,
   _poolGazeOfGranite,
+  _poolGenesisUltimatum,
   _poolGiantGrowth,
   _poolGiantSpider,
   _poolGladecoverScout,
@@ -420,6 +427,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolNegate,
   _poolNightfallCultist,
   _poolNotionThief,
+  _poolObNixilisTheFallen,
   _poolOldGnawbone,
   _poolOpt,
   _poolOracleOfMulDaya,

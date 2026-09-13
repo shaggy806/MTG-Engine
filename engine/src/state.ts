@@ -393,9 +393,10 @@ export type AwaitingDecision =
       readonly destination: "battlefield" | "hand";
       /** What happens to any candidate not chosen: shuffled to the bottom of
        * the library; left exactly where it already was (nothing was ever
-       * moved just to look at it — the graveyard-search case); or the whole
-       * library is shuffled (a library *search* / tutor — rule 701.19). */
-      readonly leftover: "bottom-random" | "stay" | "shuffle";
+       * moved just to look at it — the graveyard-search case); the whole
+       * library is shuffled (a library *search* / tutor — rule 701.19); or
+       * put into the chooser's hand (Genesis Ultimatum — needed-cards P19). */
+      readonly leftover: "bottom-random" | "stay" | "shuffle" | "hand";
       /** A library-search result that enters the battlefield does so tapped
        * (Rampant Growth). Only meaningful with `destination: "battlefield"`. */
       readonly enterTapped?: boolean;
@@ -506,6 +507,18 @@ export type AwaitingDecision =
       readonly modes: readonly { readonly text: string; readonly effect: EffectSpec }[];
       /** `{X}` from the resolving spell/ability, forwarded to the modes. */
       readonly x: number;
+      /** A `may` effect's `else` — applied instead when zero modes are
+       * chosen. `undefined` for an ordinary `modal` effect (declining a
+       * modal spell/ability entirely isn't a legal answer, so it never
+       * reaches zero chosen). needed-cards P19. */
+      readonly onDecline?: EffectSpec;
+      /** The enclosing ability's own already-chosen targets, forwarded to the
+       * modes (and to `onDecline`) — a `may`/`modal` effect doesn't choose
+       * new targets itself, so a mode referencing `target: 0` means "the
+       * ability's own target 0" (Ob Nixilis, the Fallen: "you may have
+       * *target player* lose 3 life"). Empty for the ordinary case where
+       * nothing outside the modal choice was targeted. needed-cards P19. */
+      readonly targets: readonly TargetRef[];
     }
   | {
       /** A triggered ability (or a suspended spell coming off suspend) needs

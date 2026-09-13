@@ -969,6 +969,58 @@ checked, 0 mismatched).
 
 ---
 
+## P19 — Four small widenings from the P18 audit, verified
+
+Picked up the highest-leverage items P18 flagged — small, precedented vocab widenings
+that each unblock at least one card — and authored the cards that became buildable.
+`needed-cards-p19.test.ts`, added to `random-demo.mjs` deck A/B, `card:verify` clean.
+
+- **`selfCostReduction.reduceGeneric` accepts a live count** (`number | { countOf:
+  CardFilter }`), mirroring P16's `costModification.reduceGeneric` exactly. Unblocks
+  **Blasphemous Act** ("costs {1} less to cast for each creature on the battlefield") —
+  `reduceGeneric: { countOf: { type: "creature" } }` with no `controlledBy` clause counts
+  every player's creatures, matching `battlefieldMatching`'s scan of the whole shared
+  battlefield. The gating `condition` field is still mandatory on `selfCostReduction`, so
+  a card whose reduction has no real "if" clause uses `{ kind: "controls", filter: {},
+  atLeast: 0 }` — trivially always true.
+- **`look-and-choose` gained a `leftover: "hand"` variant**, and a new
+  `CardDefinition.exileOnResolve: boolean` lets a plain (non-flashback/disturb/adventure)
+  spell exile itself after resolving unconditionally. Together, unblock **Genesis
+  Ultimatum** ("put any number of permanent cards … onto the battlefield and the rest
+  into your hand. Exile Genesis Ultimatum.").
+- **The resolution-time `may` effect gained `then`/`else` tails** (mirroring
+  `sacrifice-source.then`), and **`lose-life` gained a targeted `target` form**
+  (mirroring `damage`'s `target`/`who` split — life loss previously could only hit a
+  `PlayerScope`, never a single chosen player). Together, unblock **Ob Nixilis, the
+  Fallen** ("you may have target player lose 3 life. If you do, put three +1/+1 counters
+  on Ob Nixilis"). Building this card exposed a real latent bug in `may`/`modal`:
+  `applyModesChoice` built the chosen mode's resolution context with a hardcoded empty
+  `targets: []`, discarding whatever the enclosing ability had already targeted — fine
+  for the modal spells that existed so far (all non-targeted, per §6/§15's restriction),
+  but wrong the moment a `may` wraps an effect that reads the *ability's own* target
+  (`target: 0`). Fixed by threading the original `ctx.targets` through
+  `chooseModes`/`beginModesChoice`/the `choose-modes` `AwaitingDecision` and back into the
+  follow-up context — a no-op for every existing modal/may user (they never had non-empty
+  targets to lose in the first place), verified by the full suite staying green.
+- **`ActivatedAbility` gained a `condition` gate** (`StaticCondition`, mirroring
+  `StaticAbility`/`TriggeredAbility`'s), checked both in `whyCannotActivateAbility` (manual
+  activation / `legalActions`) and in `manaSources()` (the auto-payment scan — a
+  condition-gated mana ability must not be treated as always-available for auto-payment
+  either). Unblocks the Ferocious half of **Fanatic of Rhonas** ("{T}: Add {G}{G}{G}{G}.
+  Activate only if you control a creature with power 4 or greater"); Eternalize remains
+  unmodeled and is dropped (documented in the card file, same convention as Mortivore's
+  dropped Regenerate).
+
+Two `neededCards.txt` entries that share the `may` `then`/`else` gap with Ob Nixilis
+(Springheart Nantuko, The Gitrog Monster) had their notes updated to reflect that the
+combinator is solved now — both are still blocked, by Bestow and by a still-missing
+"card entered a graveyard from anywhere" trigger respectively.
+
+Full suite green (590 engine tests, 54 server tests); 2-player (300 games) and 4-player
+(150 games) fuzzer runs clean; `card:verify` clean (227 checked, 0 mismatched).
+
+---
+
 ## Note on the former Korvold stub
 
 `engine/src/cards/pool/korvold-fae-cursed-king.ts` was an incomplete stub; **P6

@@ -157,7 +157,7 @@ from the same link.
 | `castModal` | `{ minModes, maxModes, modes: ModeOption[] }` | a **targeted** modal spell (choose modes at cast time). Non-targeted modes use the `modal` *effect* instead — §6. |
 | `additionalCost` | `{ sacrifice: CardFilter }` | a **mandatory** extra cost to cast (rule 601.2f — Harrow: "sacrifice a land"). Paid as the spell is cast, so it stands even if the spell is countered, and the spell isn't castable at all without it. The caster picks which permanent. |
 | `kicker` | `{ cost, targets?, effect? }` | **kicker** (rule 702.33 — Tear Asunder). `cost` is folded onto the printed cost; `targets` / `effect` replace the unkicked ones when kicked. `legalActions` offers the card twice, kicked and unkicked. |
-| `selfCostReduction` | `{ condition: StaticCondition, reduceGeneric }` | a reduction printed on the spell itself, gated on board state (rule 601.2f — Ferocious, Finale of Devastation: "if you control a creature with power 4 or greater, this spell costs {2} less"). Unlike a `StaticAbility.costModification` (a permanent reducing *other* spells) this is evaluated for the card being cast, from whatever zone — no permanent has to be on the battlefield granting it. needed-cards P10. |
+| `selfCostReduction` | `{ condition: StaticCondition, reduceGeneric }` | a reduction printed on the spell itself, gated on board state (rule 601.2f — Ferocious, Finale of Devastation: "if you control a creature with power 4 or greater, this spell costs {2} less"). Unlike a `StaticAbility.costModification` (a permanent reducing *other* spells) this is evaluated for the card being cast, from whatever zone — no permanent has to be on the battlefield granting it. `reduceGeneric` accepts a live count too (`{ countOf: CardFilter }` — Blasphemous Act: "{1} less for each creature on the battlefield", `{ type: "creature" }` with no `controlledBy` counts every player's). `condition` is mandatory; a reduction with no real "if" clause uses `{ kind: "controls", filter: {}, atLeast: 0 }` (trivially always true). needed-cards P10, P19. |
 | `flashback` | `{ cost }` | cast from graveyard, then exiled (rule 702.34) |
 | `foretell` | `{ cost }` | pay `{2}` to exile face-down, cast later for `cost` |
 | `escape` | `{ cost, exileCount }` | cast from graveyard + exile N other graveyard cards |
@@ -170,6 +170,7 @@ from the same link.
 | `copyOnEnter` | `{ filter: "creature" }` | Clone — enters as a copy of a chosen creature |
 | `controlEnchanted` | `boolean` | an Aura whose controller controls the enchanted permanent (Mind Control) |
 | `cantBeCountered` | `boolean` | "This spell can't be countered." |
+| `exileOnResolve` | `boolean` | "Exile ~" printed on a non-permanent spell's own resolution text (Genesis Ultimatum) — goes to exile instead of the graveyard after resolving, unconditionally (however it was cast). Distinct from flashback/disturb/adventure, which only redirect a spell cast *that way*. needed-cards P19. |
 | `revealsOwnLibraryTop` | `boolean` | play with your top card revealed (Oracle of Mul Daya) |
 
 ---
@@ -243,7 +244,7 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 | `damage` | `amount`, `target` | Lightning Bolt |
 | `damage-all` | `filter`, `amount` | Pyroclasm |
 | `gain-life` | `amount`, `who?` | Healing Salve |
-| `lose-life` | `amount`, `who?` | Zulaport Cutthroat |
+| `lose-life` | `amount`, `who?` \| `target?` | Zulaport Cutthroat (`who`); Ob Nixilis, the Fallen — "target player loses 3 life" (`target`, a target-slot index — mutually exclusive with `who`, needed-cards P19) |
 | `draw` | `amount` | Divination (controller draws) |
 | `discard` | `target` (slot \| `"you"`), `amount` | Mind Rot / Faithless Looting |
 | `mill` | `target` (slot \| `"you"`), `amount` | Tome Scour / Aftermath Analyst (`"you"`) |
@@ -299,7 +300,7 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 | `search-library` | `filter`, `destination: "hand" \| "battlefield"`, `min`, `max`, `enterTapped?` | Demonic Tutor, Rampant Growth |
 | `scry` | `amount`, `then?` | Preordain (`then: { kind: "draw", amount: 1 }`) |
 | `surveil` | `amount`, `then?` | Consider |
-| `look-and-choose` | `zone`, `count?`, `min`, `max`, `destination`, `leftover: "bottom-random" \| "stay"`, `filter?` | Ureni of the Unwritten |
+| `look-and-choose` | `zone`, `count?`, `min`, `max`, `destination`, `leftover: "bottom-random" \| "stay" \| "hand"`, `filter?` | Ureni of the Unwritten; Genesis Ultimatum uses `leftover: "hand"` — every non-chosen looked-at card goes to hand, regardless of `filter` (needed-cards P19) |
 
 ### Turn structure / cast-triggered
 
@@ -317,11 +318,17 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 - **`sequence { effects: [...] }`** — apply several effects in order, sharing
   the same `targets` and `x` (Blightning: damage a player *and* they discard).
 - **`modal { minModes, maxModes, modes: ModeOption[] }`** — "choose one" /
-  "choose one or both". Each `ModeOption` is `{ text, effect }`. **The modes
-  must be non-targeted.** For a modal spell whose modes have targets, use the
-  top-level `castModal` field instead (mode choice happens at cast time).
-- **`may { effect, prompt }`** — "You may [effect]". One optional mode. Same
-  non-targeted restriction.
+  "choose one or both". Each `ModeOption` is `{ text, effect }`. **A mode
+  can't introduce a *new* target choice of its own** — for a modal spell whose
+  modes need their own targets, use the top-level `castModal` field instead
+  (mode choice happens at cast time). A mode's effect *can* reference the
+  enclosing ability's own already-chosen targets (`target: 0`, same as
+  anywhere else) — needed-cards P19.
+- **`may { effect, prompt, then?, else? }`** — "You may [effect]". One
+  optional mode; same targeting rule as `modal`. `then` applies only when
+  `effect` was chosen ("If you do, …" — Ob Nixilis, the Fallen); `else` only
+  when it was declined ("If you didn't, …", or an "unless" cost framed as the
+  decline branch — Springheart Nantuko, The Gitrog Monster's upkeep). needed-cards P19.
 - **`conditional { condition: StaticCondition, then, else? }`** — apply `then`
   if `condition` holds at resolution (evaluated from the source's controller's
   view — same `{ controls, your-turn, threshold, metalcraft }` union as a
@@ -407,6 +414,13 @@ sacrifice cost. These resolve immediately without using the stack. Use the
   `otherOnly` (§9); there is still no generic "not this object" exclusion
   for a *triggered* ability's or spell's targets, or for a `resolve`
   script's own target choices — see §15.
+- `condition: StaticCondition` — "Activate only if …" (rule 602.5, Fanatic of
+  Rhonas's Ferocious: "{T}: Add {G}{G}{G}{G}. Activate only if you control a
+  creature with power 4 or greater"). Mirrors `StaticAbility`/
+  `TriggeredAbility`'s `condition`, checked live from the source's
+  controller's perspective. A gated *mana* ability is also excluded from
+  `manaSources()`'s auto-payment scan while the condition is false, not just
+  from manual activation. needed-cards P19.
 
 ---
 
@@ -711,18 +725,6 @@ different card, or extend the engine (see `ROADMAP.md`).
   Distinct from the *unbounded* "any number of targets, divide an amount among
   them" gap below, which is about a variable slot **count**, not a fixed number
   of independently-skippable slots.
-- **`ActivatedAbility` has no `condition` gate.** `StaticAbility` and
-  `TriggeredAbility` both take a `condition?: StaticCondition` (an "activate /
-  triggers only if …" check); an activated ability has no equivalent, so
-  "Activate only if you control a creature with power 4 or greater" (Fanatic of
-  Rhonas's Ferocious mana ability) can't be expressed (needed-cards P18).
-- **`may` has no "if you do" tail.** `sacrifice-source` has a `then` conditioned
-  on the sacrifice actually happening; the resolution-time `may` effect ("You
-  may [effect]") has no equivalent `then`/`else`, so "You may have target
-  player lose 3 life. If you do, put three +1/+1 counters on ~" (Ob Nixilis,
-  the Fallen) or "if you do X, else Y" (Springheart Nantuko, The Gitrog
-  Monster's "sacrifice ~ unless you sacrifice a land") aren't expressible
-  (needed-cards P18).
 - **Mana provenance / restricted spend.** No effect tracks what a specific unit
   of mana was later spent on — "if that mana is spent on a Dragon spell, it
   gains haste" (Carnelian Orb of Dragonkind) and "spend this mana only to cast

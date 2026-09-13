@@ -69,6 +69,14 @@ export interface ActivatedAbility {
    * become a repeatable no-net-cost loop the fuzzer's tick budget catches;
    * mirrors `TriggerSpec.otherOnly`. needed-cards P17. */
   readonly otherOnly?: boolean;
+  /** "Activate only if …" (rule 602.5, e.g. Ferocious — Fanatic of Rhonas:
+   * "{T}: Add {G}{G}{G}{G}. Activate only if you control a creature with
+   * power 4 or greater"). Mirrors `StaticAbility.condition` /
+   * `TriggeredAbility.condition` — checked live, from the source's
+   * controller's perspective. A mana ability gated this way is also excluded
+   * from `Game.manaSources()`'s auto-payment scan while the condition is
+   * false, not just from manual activation. needed-cards P19. */
+  readonly condition?: StaticCondition;
 }
 
 /** Who the triggering object must be relative to the ability's source. */

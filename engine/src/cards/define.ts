@@ -287,8 +287,16 @@ export interface CardDefinition {
    * *other* spells) this is evaluated for the card being cast itself, from
    * whatever zone it's cast from — so it applies before the card could ever
    * reach the battlefield to grant anything. `null` for none. needed-cards P10.
+   * `reduceGeneric` accepts a live count (`{ countOf: CardFilter }`, evaluated
+   * against the *whole* battlefield — Blasphemous Act: "costs {1} less to
+   * cast for each creature on the battlefield", no `controlledBy` clause so
+   * every player's creatures count) mirroring {@link StaticAbility.costModification}'s
+   * `reduceGeneric`. needed-cards P19.
    */
-  readonly selfCostReduction: { readonly condition: StaticCondition; readonly reduceGeneric: number } | null;
+  readonly selfCostReduction: {
+    readonly condition: StaticCondition;
+    readonly reduceGeneric: number | { readonly countOf: CardFilter };
+  } | null;
   /** Declarative resolution effect, or `null`. */
   readonly effect: EffectSpec | null;
   /** Imperative resolution script (takes precedence over `effect`), or `null`. */
@@ -361,6 +369,13 @@ export interface CardDefinition {
    * ward "counter it" clause does nothing to this spell. `false` for normal
    * cards. */
   readonly cantBeCountered: boolean;
+  /** "Exile ~" as a printed clause of a non-permanent spell's own resolution
+   * text (Genesis Ultimatum) — it goes to exile instead of the graveyard
+   * after resolving, unconditionally. Distinct from flashback/disturb/
+   * adventure, which redirect to exile only for a spell cast *that way*; this
+   * applies no matter how the spell was cast. `false` for normal cards.
+   * needed-cards P19. */
+  readonly exileOnResolve: boolean;
   /** True for a *transforming* double-faced card (rule 712.4 — ROADMAP Phase
    * 10b): it's only ever cast/played as its front face, and turns over in
    * place via a transform effect / a day-night change (werewolves) / an
@@ -416,7 +431,10 @@ interface CardDraft {
     readonly targets?: readonly TargetSpec[];
     readonly effect?: EffectSpec;
   };
-  selfCostReduction?: { readonly condition: StaticCondition; readonly reduceGeneric: number };
+  selfCostReduction?: {
+    readonly condition: StaticCondition;
+    readonly reduceGeneric: number | { readonly countOf: CardFilter };
+  };
   effect?: EffectSpec;
   resolve?: SpellResolver;
   activated?: readonly ActivatedAbility[];
@@ -435,6 +453,7 @@ interface CardDraft {
   chapters?: readonly SagaChapter[];
   faces?: readonly string[];
   cantBeCountered?: boolean;
+  exileOnResolve?: boolean;
   transform?: boolean;
   disturb?: { readonly cost: string };
   adventure?: boolean;
@@ -494,6 +513,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     chapters: draft.chapters ?? null,
     faces: draft.faces ?? null,
     cantBeCountered: draft.cantBeCountered ?? false,
+    exileOnResolve: draft.exileOnResolve ?? false,
     transform: draft.transform ?? false,
     disturb: draft.disturb ?? null,
     adventure: draft.adventure ?? false,

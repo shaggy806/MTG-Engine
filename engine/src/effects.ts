@@ -88,6 +88,10 @@ export type EffectSpec =
       readonly kind: "lose-life";
       readonly amount: number;
       readonly who?: PlayerScope;
+      /** A single *targeted* player instead of a scope (Ob Nixilis, the
+       * Fallen: "target player loses 3 life") — a target-slot index holding
+       * a player. Mutually exclusive with `who`. needed-cards P19. */
+      readonly target?: number;
     }
   | { readonly kind: "tap"; readonly target: number }
   | {
@@ -457,6 +461,18 @@ export type EffectSpec =
       readonly effect: EffectSpec;
       /** The yes/no prompt, e.g. "Draw a card?". */
       readonly prompt: string;
+      /** "If you do, [effect]" (rule 608.2h) — applied only when `effect` was
+       * actually chosen (Ob Nixilis, the Fallen: "you may have target player
+       * lose 3 life. If you do, put three +1/+1 counters on Ob Nixilis.").
+       * needed-cards P19. */
+      readonly then?: EffectSpec;
+      /** "If you don't, [effect]" — applied only when `effect` was declined
+       * (Springheart Nantuko: "…if you do, create a token copy… If you
+       * didn't create a token this way, create a 1/1 Insect instead."; The
+       * Gitrog Monster's "sacrifice ~ unless you sacrifice a land" is the
+       * same shape with `effect` framed as the *unless* clause). needed-cards
+       * P19. */
+      readonly else?: EffectSpec;
     }
   | {
       /** Scry `amount` (rule 701.18) — look at the top N, put any number on
@@ -500,7 +516,10 @@ export type EffectSpec =
       readonly min: number;
       readonly max: number;
       readonly destination: "battlefield" | "hand";
-      readonly leftover: "bottom-random" | "stay";
+      /** `"hand"` (needed-cards P19 — Genesis Ultimatum: "…and the rest into
+       * your hand") puts every non-chosen looked-at card into the chooser's
+       * hand, regardless of `filter`. */
+      readonly leftover: "bottom-random" | "stay" | "hand";
       /** Narrows which revealed candidates can be chosen (e.g. Ureni of the
        * Unwritten: only a Dragon card). Everything is still revealed either
        * way — omit for "any of them". */
@@ -674,11 +693,14 @@ export interface EffectApi {
    * for `amount` damage this turn — Healing Salve (ROADMAP Phase 11 EG-6). */
   preventDamage(target: TargetRef, amount: number, combatOnly: boolean): void;
   /** Raise a `choose-modes` decision — see the `modal` / `may` {@link EffectSpec}.
-   * The chosen modes' effects are applied after the controller answers. */
+   * The chosen modes' effects are applied after the controller answers.
+   * `onDecline` (a `may` effect's `else` only) applies when zero modes end up
+   * chosen. */
   chooseModes(
     minModes: number,
     maxModes: number,
     modes: readonly ModeOption[],
+    onDecline?: EffectSpec,
   ): void;
   /** Scry (`surveil: false`) or surveil (`surveil: true`) `amount` cards;
    * apply `then` afterwards. See the `"scry"` / `"surveil"` {@link EffectSpec}. */
@@ -698,7 +720,7 @@ export interface EffectApi {
     min: number,
     max: number,
     destination: "battlefield" | "hand",
-    leftover: "bottom-random" | "stay",
+    leftover: "bottom-random" | "stay" | "hand",
     filter: ZoneChoiceFilter | undefined,
   ): void;
 }
@@ -809,10 +831,16 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       if (spec.who === undefined || spec.who === "you") ctx.gainLife(ctx.controller, spec.amount);
       else ctx.changeLifeScoped(spec.who, spec.amount);
       return;
-    case "lose-life":
+    case "lose-life": {
+      if (spec.target !== undefined) {
+        const ref = ctx.targets[spec.target];
+        if (ref?.kind === "player") ctx.loseLife(ref.player, spec.amount);
+        return;
+      }
       if (spec.who === undefined || spec.who === "you") ctx.loseLife(ctx.controller, spec.amount);
       else ctx.changeLifeScoped(spec.who, -spec.amount);
       return;
+    }
     case "tap": {
       const target = ctx.targets[spec.target];
       if (target !== undefined) ctx.tapPermanent(target);
@@ -1065,9 +1093,14 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     case "modal":
       ctx.chooseModes(spec.minModes, spec.maxModes, spec.modes);
       return;
-    case "may":
-      ctx.chooseModes(0, 1, [{ text: spec.prompt, effect: spec.effect }]);
+    case "may": {
+      const chosenEffect: EffectSpec =
+        spec.then === undefined
+          ? spec.effect
+          : { kind: "sequence", effects: [spec.effect, spec.then] };
+      ctx.chooseModes(0, 1, [{ text: spec.prompt, effect: chosenEffect }], spec.else);
       return;
+    }
     case "scry":
       ctx.scry(spec.amount, false, spec.then);
       return;

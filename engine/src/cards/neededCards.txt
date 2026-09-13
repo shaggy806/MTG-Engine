@@ -7,7 +7,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Atarka, World Render             (P11 — attacks TriggerSpec.filter; real text has no targeting)
 [+] 1 Beast Within
 [+] 1 Birds of Paradise
-[ ] 1 Blasphemous Act                  FEATURE: `selfCostReduction.reduceGeneric` is a fixed number — needs the live-count form `{countOf: CardFilter}` that P16 already added to `costModification.reduceGeneric` (a cheap, precedented widening), counting ALL creatures on the battlefield, not just yours
+[+] 1 Blasphemous Act                  (P19 — `selfCostReduction.reduceGeneric` widened to accept the live-count `{countOf}` form, mirroring P16's `costModification.reduceGeneric`)
 [ ] 1 Bloom Tender                     FEATURE: a new `add-mana` form — one mana of EACH color among permanents you control, not a single chosen color like the existing "any-color"
 [+] 1 Bountiful Landscape              (P17 — real text is a plain colourless tapland + sac-fetch-a-Forest/Island/Mountain + cycling, not a reveal-conditional land — the guess was wrong)
 [ ] 1 Broodcaller Scourge              FEATURE: `deals-combat-damage-to-player` has no `filter` (needed for "one or more Dragons you control", not just self) + a new "put a permanent card with mv <= X from hand onto the battlefield" cheat-into-play effect, gated by the trigger-supplied damage amount
@@ -25,7 +25,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Encroaching Dragonstorm          (P16 — already-shipped search-library + return-to-hand widened to accept "source")
 [+] 1 Essence Flux                     FEATURE: flicker (exile then return under your control)
 [ ] 1 Exotic Orchard                   FEATURE: mana = "a color a land an opponent controls could produce"
-[ ] 1 Fanatic of Rhonas                FEATURE: two gaps — `ActivatedAbility` has no "Activate only if …" condition gate (Ferocious's "{T}: Add {G}{G}{G}{G}. Activate only if you control a creature with power 4+", unlike a static/triggered ability's `condition`) + Eternalize is a wholly separate, unmodeled alt-cast-as-a-token-from-graveyard mechanic
+[+] 1 Fanatic of Rhonas                (P19 — new `ActivatedAbility.condition` gate for the Ferocious mana ability, mirroring StaticAbility/TriggeredAbility's; drops Eternalize — a wholly separate, unmodeled alt-cast-as-a-token-from-graveyard mechanic)
 [+] 1 Farseek
 [ ] 1 Flooded Grove                    FEATURE: filter land — `add-mana` produces one color x amount only; needs either a mixed-color output ("Add {G}{U}" in one activation) or `isManaAbility` recognizing a `sequence` of `add-mana` steps as a mana ability
 [x] 5 Forest
@@ -34,7 +34,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Frostcliff Siege                 FEATURE: (mode-on-enter siege — same gap as Frontier Siege)
 [+] 1 Ganax, Astral Hunter             (P18 — zero new vocab: a plain Dragon-ETB Treasure trigger; the old FEATURE note here described a different, wrong mechanic. "Choose a Background" — a Commander deckbuilding option, pairing with a second non-legendary commander — isn't modeled; the engine's Partner support only pairs two same-type commanders)
 [+] 1 Garruk's Uprising               (P7 — TriggeredAbility.condition, an intervening-if ETB draw)
-[ ] 1 Genesis Ultimatum                FEATURE: `look-and-choose`'s `leftover` is only "bottom-random"/"stay" — needs a third "hand" variant for the unchosen cards (a small, single-value addition, not a new effect kind)
+[+] 1 Genesis Ultimatum                (P19 — new `look-and-choose` `leftover: "hand"` variant + a new `exileOnResolve` field for "Exile ~" as a plain resolution clause)
 [ ] 1 Goldspan Dragon                  FEATURE: no "becomes the target of a spell" TriggerSpec; and `AffectSpec` has no "artifacts you control" scope to buff Treasures with (only self / creatures-you-control / lands-you-control / attached)
 [ ] 1 Haven of the Spirit Dragon       FEATURE: only the "any color, spend it only on a Dragon creature spell" restricted mana blocks this — no mana-provenance/restricted-spend tracking exists anywhere (shared gap with Path of Ancestry and Temple of the Dragon Queen below). The graveyard-return ability is already expressible now (`return-from-graveyard` filtered to Dragon, approximating away the "or Ugin planeswalker card" clause — the pool has no Ugin printing to need it for anyway)
 [ ] 1 Hellkite Courser                 FEATURE: real text has no "attacking" clause at all (a stale guess) — it puts a commander from the command zone onto the battlefield with haste, returning it to the command zone at the next end step. No effect moves a card from the command zone to the battlefield, nor is there a delayed "return it to the command zone" trigger
@@ -135,7 +135,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [x] 3 Mountain
 [ ] 1 Myriad Landscape                 FEATURE: search two basics "that share a land type" — a relational constraint between the two found cards, not just a per-card filter
 [ ] 1 Nahiri's Lithoforming            FEATURE: `sacrifice`'s `count` is a fixed `number`, not an `EffectAmount` — can't sacrifice "X" lands where X is the spell's own chosen value; plus a temporary (this-turn-only) extra-land-drop grant and a temporary "lands enter tapped this turn" replacement, both distinct from the permanent per-card forms that exist today
-[ ] 1 Ob Nixilis, the Fallen           FEATURE: `may` has no "if you do" tail (only `sacrifice-source` has a `then`) — needed for "you may have target player lose 3 life. If you do, put three +1/+1 counters on Ob Nixilis." A small, broadly useful widening — it also blocks Springheart Nantuko's may/else and The Gitrog Monster's upkeep "unless", both below
+[+] 1 Ob Nixilis, the Fallen           (P19 — new `may` `then`/`else` tails + a targeted `lose-life` form, mirroring `damage`'s target/who split. Along the way, fixed a latent bug: a `may`/`modal` effect's chosen mode now sees the enclosing ability's own already-chosen targets instead of an empty array, so "you may have *target* X" wrapped in `may` actually resolves against the right target)
 [x] 1 Oracle of Mul Daya
 [ ] 1 Orcish Lumberjack                FEATURE: the sacrifice-a-Forest cost is already solved (`sacrifice: {filter}`, P6) — the real remaining blocker is `add-mana`'s output: "three mana in any combination of {R} and/or {G}" needs each unit independently choosable between two specific colors, which neither a fixed single type nor "any-color" (all five) expresses
 [+] 1 Overgrown Tomb
@@ -154,7 +154,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [x] 1 Sol Ring
 [ ] 1 Spelunking                       FEATURE: "lands you control enter untapped" replacement (shares the gap with Horizon Explorer above); the ETB "draw, then may put a land from hand onto the battlefield" is also blocked — no "put a card from hand onto the battlefield" effect exists
 [+] 1 Splendid Reclamation
-[ ] 1 Springheart Nantuko              FEATURE: Bestow (rule 702.103) isn't modeled at all — no `CardDefinition` field for it, unlike adventure/transform/disturb/foretell/etc.; its landfall ability also needs the "may X, if you do A, else B" combinator noted at Ob Nixilis above
+[ ] 1 Springheart Nantuko              FEATURE: Bestow (rule 702.103) isn't modeled at all — no `CardDefinition` field for it, unlike adventure/transform/disturb/foretell/etc. The landfall ability's own "may X, if you do A, else B" is solved now (P19's `may` `then`/`else`), so Bestow alone blocks this one
 [+] 1 Stomping Ground                  (dup — see Deck 1)
 [+] 1 Summon: Titan                    (P15 — zero new vocab; the guess was wrong, an enchantment-creature Saga just works)
 [x] 5 Swamp
@@ -162,7 +162,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Tannuk, Memorial Ensign          (P16 — reuses Sabotender's damage-each-opponent primitive; drops "if this is the second time this ability has resolved this turn, draw a card" — per-ability-per-turn resolution counting isn't tracked)
 [+] 1 Tear Asunder                    (P8 — CardDefinition.kicker)
 [+] 1 Terramorphic Expanse
-[ ] 1 The Gitrog Monster               FEATURE: real upkeep clause is "sacrifice Gitrog unless you sacrifice a land" — no discard alternative at all (a stale guess); needs the same "may X, else Y" combinator as Ob Nixilis / Springheart Nantuko above, plus a general "a card was put into a graveyard from anywhere" trigger (broader than `dies`, which only covers battlefield-to-graveyard) for the draw ability. The extra land drop is already free now (`extraLandsPerTurn`, P16)
+[ ] 1 The Gitrog Monster               FEATURE: real upkeep clause is "sacrifice Gitrog unless you sacrifice a land" — no discard alternative at all (a stale guess). The "may/unless" half is solved now (P19's `may` `then`/`else`); still needs a general "a card was put into a graveyard from anywhere" trigger (broader than `dies`, which only covers battlefield-to-graveyard) for the draw ability. The extra land drop is already free (`extraLandsPerTurn`, P16)
 [+] 1 Tireless Provisioner
 [ ] 1 Toph, Hardheaded Teacher         FEATURE: "earthbend 1" (see Earthbender Ascension above) on every spell cast, plus a "that land" reference into a later clause that only applies if the spell was a Lesson (no Lesson subtype/card-type in the pool). The ETB "may discard a card; if you do, return target instant/sorcery from graveyard to hand" is close but still needs the "target card in graveyard" TargetSpec noted at Shifting Woodland above
 [ ] 1 Traveling Chocobo                FEATURE: real text has no Food, landfall, or counters at all (a fabricated guess) — "you may play lands and cast Bird spells from the top of your library" needs a play-from-library-top permission (Oracle of Mul Daya only got the *reveal* + extra land drop; the actual play/cast permission is explicitly still unmodeled per that card's own file comment). The trigger-doubling clause is already free now (`doubleEntryTriggers: {filter}`, P15)
