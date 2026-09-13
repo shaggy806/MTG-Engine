@@ -733,3 +733,13 @@ makes a planeswalker a creature (Gideon), ability-dependency ordering (rule
   `spawn` pattern, or `engine/src/sandbox.test.ts` for the sandbox helper.
 - **Run the suite:** `npm run test -w engine`.
 - **Eyeball it:** `npm run lab -w client`, Sandbox tab.
+
+Periodically re-verify the *whole* pool, not just new cards — `npm run card:verify -w
+engine` (`engine/scripts/verify-cards.mjs`) diffs every `cards/pool/` card's mana cost,
+colors, supertypes/types/subtypes, and power/toughness/loyalty against real Scryfall
+data (batched, ~4 requests for the whole pool). A prior pass had shipped several cards
+with a plainly wrong cost/color/stat block that no test caught, because nothing was
+checking a card's characteristics against the real thing once it was in the pool — see
+"Full-pool Scryfall verification pass" in `neededCards-features.md`. It only checks
+structural fields, not ability text/behaviour, and skips `cards/tokens/` (token names
+aren't unique on Scryfall).

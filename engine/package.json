@@ -17,6 +17,7 @@
   "scripts": {
     "gen:cards": "node scripts/gen-cards.mjs",
     "card:lookup": "node scripts/scryfall-lookup.mjs",
+    "card:verify": "npm run build && node scripts/verify-cards.mjs",
     "prebuild": "node scripts/gen-cards.mjs",
     "build": "tsc",
     "pretypecheck": "node scripts/gen-cards.mjs",

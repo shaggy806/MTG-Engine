@@ -143,6 +143,7 @@ Run from the repo root unless noted. Workspace scripts: `npm run <script> -w eng
 
 **Engine** (`engine/`):
 - `npm run card:lookup -w engine -- "Card Name"` — fetches the card's authoritative mana cost/type line/Oracle text/rulings from the Scryfall API (`engine/scripts/scryfall-lookup.mjs`). Run this before authoring a new card — see `cards/AUTHORING.md` §1.
+- `npm run card:verify -w engine` — diffs every `cards/pool/` card's mana cost/colors/types/subtypes/P-T/loyalty against real Scryfall data, batched (`engine/scripts/verify-cards.mjs`). Structural fields only, not ability text. See `cards/AUTHORING.md` §16.
 - `npm run test -w engine` — vitest, single pass (CI mode); `-- path/to/file.test.ts` for one file, `-- -t "name"` for a name match
 - `npm run test:watch -w engine` — vitest watch mode
 - `npm run build -w engine` / `npm run typecheck -w engine`
