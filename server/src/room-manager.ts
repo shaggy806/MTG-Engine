@@ -32,4 +32,18 @@ export class RoomManager {
   get(roomId: string): Room | undefined {
     return this.rooms.get(roomId);
   }
+
+  /** Deletes rooms with no connected seats that have been idle past
+   * `maxIdleMs`, so an abandoned or never-joined room doesn't sit in memory
+   * for the life of the process. Returns how many were reaped. */
+  reapIdle(maxIdleMs: number): number {
+    let reaped = 0;
+    for (const [id, room] of this.rooms) {
+      if (room.connectedSeats().length === 0 && room.idleMs() > maxIdleMs) {
+        this.rooms.delete(id);
+        reaped += 1;
+      }
+    }
+    return reaped;
+  }
 }

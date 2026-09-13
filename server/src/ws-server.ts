@@ -5,11 +5,21 @@
  * be exercised in tests against an in-process server on an ephemeral port.
  */
 
+import type { IncomingMessage } from "node:http";
 import type { WebSocket, WebSocketServer } from "ws";
 import type { RoomManager } from "./room-manager.js";
 import type { Room, Connection } from "./room.js";
 import type { ClientMessage, ServerMessage } from "./protocol.js";
 import { SEATS } from "./decks.js";
+
+const RATE_LIMIT_WINDOW_MS = 5_000;
+const RATE_LIMIT_MAX_MESSAGES = 40;
+
+function clientIp(req: IncomingMessage): string {
+  const forwarded = req.headers["cf-connecting-ip"];
+  if (typeof forwarded === "string") return forwarded;
+  return req.socket.remoteAddress ?? "unknown";
+}
 
 function send(ws: WebSocket, message: ServerMessage): void {
   ws.send(JSON.stringify(message));
@@ -38,8 +48,37 @@ function requireRoom(manager: RoomManager, roomId: string): Room {
 }
 
 export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): void {
-  wss.on("connection", (ws: WebSocket) => {
+  // Keyed by client IP rather than per-connection, since nothing stops one
+  // IP from opening many sockets — a fixed window is enough to blunt a bot
+  // hammering `join-room`/`claim-seat` to brute-force room codes without
+  // getting in the way of normal play (a real game is nowhere near this
+  // chatty). Swept periodically so the map doesn't grow unbounded across
+  // many distinct visitors over the life of the process; the sweep stops
+  // once `wss` closes rather than outliving it.
+  const rateLimitState = new Map<string, { count: number; resetAt: number }>();
+  const sweep = setInterval(() => {
+    const now = Date.now();
+    for (const [ip, entry] of rateLimitState) {
+      if (now >= entry.resetAt) rateLimitState.delete(ip);
+    }
+  }, RATE_LIMIT_WINDOW_MS * 10);
+  sweep.unref();
+  wss.once("close", () => clearInterval(sweep));
+
+  function isRateLimited(ip: string): boolean {
+    const now = Date.now();
+    const entry = rateLimitState.get(ip);
+    if (entry === undefined || now >= entry.resetAt) {
+      rateLimitState.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+      return false;
+    }
+    entry.count += 1;
+    return entry.count > RATE_LIMIT_MAX_MESSAGES;
+  }
+
+  wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
     let boundRoom: Room | null = null;
+    const ip = clientIp(req);
     const connection: Connection = { send: (message) => send(ws, message) };
 
     const handle = (message: ClientMessage): void => {
@@ -128,6 +167,10 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
     };
 
     ws.on("message", (raw) => {
+      if (isRateLimited(ip)) {
+        send(ws, { type: "error", message: "too many requests, slow down" });
+        return;
+      }
       let message: ClientMessage;
       try {
         message = JSON.parse(raw.toString()) as ClientMessage;

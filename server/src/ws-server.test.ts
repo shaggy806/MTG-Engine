@@ -268,4 +268,35 @@ describe("room server (end to end over WebSocket)", () => {
     if (joined.type !== "room-joined") throw new Error("unreachable");
     expect(joined.seats).toHaveLength(4);
   });
+
+  it("rate-limits a connection that sends a flood of messages", async () => {
+    const ws = await openSocket();
+    const nextMsg = messageQueue(ws);
+    // Comfortably past RATE_LIMIT_MAX_MESSAGES within the same window.
+    for (let i = 0; i < 60; i += 1) {
+      ws.send(JSON.stringify({ type: "join-room", roomId: "NOPE1" }));
+    }
+    const replies = await Promise.all(Array.from({ length: 60 }, () => nextMsg()));
+    expect(replies.some((r) => r.type === "error" && r.message === "too many requests, slow down"))
+      .toBe(true);
+    // Everything up to the limit still went through as normal "no such room" errors.
+    expect(replies.some((r) => r.type === "error" && r.message === "no such room: NOPE1")).toBe(
+      true,
+    );
+  });
+
+  it("doesn't rate-limit ordinary play", async () => {
+    const ws = await openSocket();
+    const nextMsg = messageQueue(ws);
+    // Fewer messages than the limit, spread across normal room setup —
+    // should never see a rate-limit error.
+    ws.send(JSON.stringify({ type: "create-room" }));
+    const created = await nextMsg();
+    if (created.type !== "room-created") throw new Error("unreachable");
+    for (let i = 0; i < 10; i += 1) {
+      ws.send(JSON.stringify({ type: "join-room", roomId: created.roomId }));
+    }
+    const replies = await Promise.all(Array.from({ length: 10 }, () => nextMsg()));
+    expect(replies.every((r) => r.type === "room-joined")).toBe(true);
+  });
 });

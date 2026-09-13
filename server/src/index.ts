@@ -6,8 +6,19 @@ import { attachRoomServer } from "./ws-server.js";
 import { evaluateDecklist, formatCheck, parseDecklistText } from "./import-deck.js";
 
 const port = Number(process.env.PORT ?? 4000);
+// "*" is fine for local/LAN dev; set CLIENT_ORIGIN to the real site once
+// this is reachable from the open internet so a stranger's page can't drive
+// this endpoint against a browser that happens to have it open.
+const clientOrigin = process.env.CLIENT_ORIGIN ?? "*";
 const manager = new RoomManager();
 const registry = createDefaultRegistry();
+
+const IDLE_ROOM_MS = 2 * 60 * 60 * 1000;
+const REAP_INTERVAL_MS = 15 * 60 * 1000;
+setInterval(() => {
+  const reaped = manager.reapIdle(IDLE_ROOM_MS);
+  if (reaped > 0) console.log(`reaped ${reaped} idle room(s)`);
+}, REAP_INTERVAL_MS);
 
 const httpServer = createServer((req, res) => {
   if (req.method === "POST" && req.url === "/import-deck") {
@@ -25,13 +36,13 @@ const httpServer = createServer((req, res) => {
           const format = formatCheck(entries, registry);
           res.writeHead(200, {
             "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Origin": clientOrigin,
           });
           res.end(JSON.stringify({ cards, format }));
         } catch (err) {
           res.writeHead(400, {
             "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Origin": clientOrigin,
           });
           res.end(JSON.stringify({ error: err instanceof Error ? err.message : String(err) }));
         }
@@ -41,7 +52,7 @@ const httpServer = createServer((req, res) => {
   }
   if (req.method === "OPTIONS" && req.url === "/import-deck") {
     res.writeHead(204, {
-      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Origin": clientOrigin,
       "Access-Control-Allow-Methods": "POST",
       "Access-Control-Allow-Headers": "Content-Type",
     });

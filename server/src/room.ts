@@ -48,6 +48,7 @@ export class Room {
   readonly id: string;
   readonly game: Game;
   private readonly seats: Seat[];
+  private lastActivityAt: number;
 
   constructor(id: string, game: Game) {
     this.id = id;
@@ -60,6 +61,14 @@ export class Room {
       skipManaOnly: false,
       displayName: null,
     }));
+    this.lastActivityAt = Date.now();
+  }
+
+  /** Milliseconds since a seat was claimed or an action dispatched here —
+   * used by `RoomManager` to reap abandoned rooms, which otherwise live in
+   * memory for the life of the process with no expiry. */
+  idleMs(): number {
+    return Date.now() - this.lastActivityAt;
   }
 
   seatStatuses(): SeatStatus[] {
@@ -102,6 +111,7 @@ export class Room {
     if (trimmed) {
       seat.displayName = trimmed.slice(0, MAX_DISPLAY_NAME_LENGTH);
     }
+    this.lastActivityAt = Date.now();
   }
 
   seatOf(connection: Connection): PlayerId | null {
@@ -118,6 +128,7 @@ export class Room {
       );
     }
     this.game.dispatch(action);
+    this.lastActivityAt = Date.now();
     this.settle();
   }
 
