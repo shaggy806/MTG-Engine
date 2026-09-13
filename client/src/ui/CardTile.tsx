@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import type { VisibleObject } from 'engine'
 import { Symbols } from './Symbols.tsx'
 import { costColor } from './symbols.ts'
-import { resolveArtUrl } from './art.ts'
+import { getArtCacheVersion, queueArtLookup, resolveArtUrl, subscribeArtCache } from './art.ts'
 
 export interface CardTileProps {
   readonly obj: VisibleObject
@@ -80,8 +80,17 @@ export function CardTile({
   // A Clone renders the *copied* card's face; a multi-face card renders its up
   // face (`faceName`); `cardName` stays the true identity for the log.
   const face = obj.copyOf ?? obj.faceName ?? obj.cardName
+  // Re-render once a batched art lookup resolves so `artSrc` below can pick
+  // up the direct (no-redirect) CDN URL instead of the by-name fallback.
+  useSyncExternalStore(subscribeArtCache, getArtCacheVersion, getArtCacheVersion)
+  useEffect(() => {
+    if (!obj.art) queueArtLookup(face)
+  }, [obj.art, face])
   const artSrc = resolveArtUrl(obj.art, face)
-  const [artFailed, setArtFailed] = useState(() => artMisses.has(artSrc))
+  // Derived fresh from artSrc (which can change once the batched lookup
+  // resolves) rather than captured once at mount.
+  const artFailed = artMisses.has(artSrc)
+  const [, forceRerender] = useState(0)
   const isCreature = obj.power !== null && obj.toughness !== null
   const isPlaneswalker = obj.loyalty !== null
   const counters = Object.entries(obj.counters).filter(
@@ -143,7 +152,7 @@ export function CardTile({
             loading="lazy"
             onError={() => {
               artMisses.add(artSrc)
-              setArtFailed(true)
+              forceRerender((n) => n + 1)
             }}
           />
         ) : null}
