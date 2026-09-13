@@ -57,6 +57,29 @@ bob.send(JSON.stringify({ type: "join-room", roomId }));
 log("bob", await next(bob));
 bob.send(JSON.stringify({ type: "claim-seat", roomId, seat: "bob", clientToken: "bob-token" }));
 log("alice", await next(alice)); // rebroadcast once bob's seat is claimed
+log("bob", await next(bob));
+
+// Real rooms turn on mulligans (rules.startingLife: 40, Commander-style) —
+// both players are asked at once and must keep before priority exists.
+console.log("\nboth players keep their opening hand");
+alice.send(
+  JSON.stringify({
+    type: "dispatch",
+    roomId,
+    action: { type: "mulligan", player: "alice", keep: true },
+  }),
+);
+log("alice", await next(alice));
+log("bob", await next(bob));
+
+bob.send(
+  JSON.stringify({
+    type: "dispatch",
+    roomId,
+    action: { type: "mulligan", player: "bob", keep: true },
+  }),
+);
+log("alice", await next(alice));
 const bobState = await next(bob);
 log("bob", bobState);
 
