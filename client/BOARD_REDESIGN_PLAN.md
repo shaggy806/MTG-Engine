@@ -14,9 +14,8 @@ matching this repo's usual git history — not one giant diff. `scratch.mjs` +
 `npm run dev -w client` (client dev server proxies `ws://localhost:4000`) is
 the fastest way to eyeball a change; see CLAUDE.md's Commands section.
 
-**Status: Phases 1-6 done and committed. Phase 8 is next — approved by the
-user, not yet started; read Phase 8 below before doing anything else.**
-Phase 5 turned out to already be built before this plan started. Phase 7's
+**Status: Phases 1-6 and 8 done and committed.** Phase 5 turned out to
+already be built before this plan started. Phase 7's
 priority-action-bar half landed early (inside phase 3); its mana-available-
 indicator half is explicitly **descoped by the user** (too much
 engine/protocol work for something that's the player's own job to track —
@@ -316,7 +315,7 @@ leave unused code around.
   mana display (what's already been added to the pool, not what's
   available) is a much smaller, already-real thing — see Phase 8.
 
-### Phase 8 — Visual reskin — TODO (approved, not yet started)
+### Phase 8 — Visual reskin — DONE
 
 **Why this phase exists**: after phases 1-6, the user reported the live
 client still looks "very distant" from the mockup despite every
@@ -438,6 +437,54 @@ guessed) — a future session can trust these without re-deriving them:
    θ needs `scale <= min(box-width, box-height) / max(rotated bounding
    box dimensions)` to stay inside the reserved flex space, and a small θ
    makes that constraint much looser than 90° did).
+
+**Done as:** items 1-7 landed together as one commit (the tokens step is a
+prerequisite for everything visual after it, so splitting them apart would
+have left intermediate commits looking broken). A few things worked out
+differently from how this section predicted, all confirmed live rather than
+assumed:
+
+- **Item 1**: kept the existing token *names* (`--bg`/`--panel`/`--border`/
+  `--muted`/`--accent`/etc.) and only changed their *values* to the felt/gold
+  palette, plus added `--border-soft`, `--muted-dim`, `--accent-dim`, and
+  `--gold` as new tokens — every existing rule written against the old names
+  picked up the new look for free instead of needing a rename pass across
+  App.css. `color-scheme` changed from `light dark` to `dark` (this app
+  commits to one dark felt look, not a light/dark toggle).
+- **Item 3**: the seat-colored `.side-zone.seat-*`/`.board.seat-*` rules
+  (pre-existing, for identity coloring) still cascade onto the new
+  `.quadrant-body .side-zone` divider — same specificity, later in the file
+  wins — so each quadrant's command-rail divider ends up tinted in that
+  seat's color rather than a flat neutral `--border-soft`. Kept deliberately
+  (confirmed live, looks intentional, matches the app's existing per-seat
+  identity convention) rather than fighting the cascade for a plainer line.
+  `.board.opp`'s own `background` needed one extra specificity bump
+  (`.quadrant-body .board.opp`, not just `.quadrant-body .board`) to
+  actually win over the pre-existing `.board.opp` rule — verified via
+  computed styles in a live 4-player room, not assumed from reading the CSS.
+- **Item 4**: the fan is suppressed (flat `--r`/`--y: 0`) specifically while
+  `mode === 'priority' && !handRaised` (the collapsed peek) — every other
+  mode, including every forced-decision mode, fans normally. Confirmed live
+  that this avoids the "broken/clipped" look this section worried about.
+- **Item 7**: re-derived the rotation/scale relationship properly rather
+  than trusting "a small θ makes that constraint much looser than 90° did"
+  above — it doesn't. A rotated box's own bounding box grows fastest around
+  45°, not monotonically with angle, so 20° needs *about the same* (if
+  anything marginally more) scale-down as a full 90° turn for both the 5:7
+  card box and the 4:3 mini box (~0.70-0.72 either way). 20° was kept purely
+  for legibility, not because it saves anything on the scale math (see the
+  comments on `.card-tile.tapped`/`.mini-tile.tapped` in App.css for the
+  worked numbers). Layering the scrim/badges/tap-icon correctly needed
+  explicit `z-index`s (1/2/3) rather than relying on paint order, because
+  `MiniTile`'s `.mt-art` (unlike `CardTile`'s `.ct-art`) is itself
+  `position: absolute` and would otherwise paint over a z-index:auto scrim.
+- Verified live per this phase's own testing note: a real 4-player room
+  (quadrant frames, command rail, tapped lands, hand fan, raised/collapsed
+  peek) and a real 2-player room (classic layout's `.board`/`.side-zone`
+  keep their own boxed style unaffected, since the quadrant overrides are
+  scoped under `.quadrant-body`) — both via the real server + lobby UI, not
+  `scratch.mjs`, casting real spells and tapping real lands for mana rather
+  than `debugSpawn`.
 
 **Explicitly out of scope for this phase** (per the user, item 6 of their
 list): no "available mana" indicator — see the note appended to Phase 7
