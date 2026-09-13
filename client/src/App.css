@@ -375,13 +375,13 @@
 /* your hand + ability menu + priority/attack/block controls, in their own
    full-width strip below the quadrant grid (closer to how Arena keeps your
    hand as a fixed row) rather than squeezed into your quadrant cell. */
-/* pinned to the bottom of the screen, like .pinned-bottom, but taller (it
-   holds full-size hand cards + controls, not a single PlayerPanel line) and
-   internally scrollable so a big hand never grows past its reserved space. */
-/* your hand + ability menu + priority/attack/block controls (including the
-   keep/mulligan decision) — always sized to its own natural content, never
+/* your hand + ability menu + an active forced decision (mulligan,
+   discard-to-hand-size, …) — always sized to its own natural content, never
    clipped or scrolled, so it's never necessary to scroll to see your full
-   hand and whatever decision is pending on it. */
+   hand and whatever decision is pending on it. This is the default,
+   always-visible layout; the .peekable modifier below overrides it for the
+   one case (ordinary priority — just browsing, nothing forcing your
+   attention) where collapsing it to a peek is actually an improvement. */
 .hand-strip {
   flex: none;
   display: flex;
@@ -389,6 +389,70 @@
   gap: 8px;
   padding: 8px 0 0;
   border-top: 1px solid var(--border);
+}
+
+/* Collapsed peek tray — priority mode only (see Table's `renderHandStrip`).
+   A two-zone hitbox, JS-driven (plain CSS :hover can't have a different
+   threshold to enter vs. stay): .hand-trigger, a small band hugging the
+   bottom edge, is what raises it (`onMouseEnter` sets `raised`); the whole
+   (much taller) .hand-strip has to be left — `onMouseLeave` on it, not the
+   trigger — before it drops back down. :focus-within is the keyboard/touch
+   fallback (tabbing into a hand card raises it same as a hover would). */
+.hand-strip.peekable {
+  position: fixed;
+  left: 50%;
+  translate: -50% 0;
+  bottom: 0;
+  width: min(78vw, 1100px);
+  height: clamp(260px, 38vh, 360px);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0;
+  padding: 0;
+  border-top: none;
+  pointer-events: none;
+}
+.hand-trigger {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: clamp(50px, 7vh, 70px);
+  pointer-events: auto;
+}
+.hand-strip.peekable .hand-strip-inner {
+  width: 100%;
+  pointer-events: auto;
+  /* only a sliver -- roughly the hand title + a card's own name/cost bar --
+     stays visible above the bottom edge until raised */
+  translate: 0 calc(100% - clamp(40px, 5vh, 56px));
+  transition: translate 0.18s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+.hand-strip.peekable.raised .hand-strip-inner,
+.hand-strip.peekable:focus-within .hand-strip-inner {
+  translate: 0 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hand-strip.peekable .hand-strip-inner {
+    transition: none;
+  }
+}
+
+/* priority mode's Pass/Pass Turn/Auto-pass/Skip-mana controls, pulled out of
+   the (now peekable) hand strip into their own fixed corner so they're
+   reachable without hovering the hand open first. */
+.priority-actions {
+  position: fixed;
+  right: clamp(10px, 1.4vw, 18px);
+  bottom: clamp(12px, 2vh, 20px);
+  z-index: 110;
+}
+.priority-actions .controls {
+  margin-top: 0;
+  max-width: min(90vw, 480px);
+  justify-content: flex-end;
 }
 
 .board {

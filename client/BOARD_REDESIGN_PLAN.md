@@ -63,7 +63,7 @@ Quadrant mode's `.pinned-top` wrapper is gone entirely (it held nothing else);
 quadrant-style per-board header yet, since 2-player doesn't have quadrant
 cells to put one in). Verified live via `scratch.mjs`.
 
-### Phase 3 — Hand tray: peek + asymmetric hover — TODO
+### Phase 3 — Hand tray: peek + asymmetric hover — DONE
 Replace `.hand-strip` (currently always-visible, full-size, "never
 clipped/scrolled" by design comment) with the mockup's collapsed-peek tray:
 - A small height sliver always visible at the bottom edge (not fully hidden,
@@ -82,6 +82,32 @@ clipped/scrolled" by design comment) with the mockup's collapsed-peek tray:
 - Mulligan/keep decision UI currently lives in `.hand-strip` too — needs to
   stay reachable; simplest is probably keeping the always-visible peek show
   it plainly (mulligan is rare/blocking, unlike normal hand browsing).
+
+**Done as:** the peek/collapse behavior (`renderHandStrip` in App.tsx, new
+`.hand-strip.peekable`/`.hand-trigger`/`.hand-strip-inner` CSS) is scoped to
+`mode === 'priority'` only — every other mode (discard, put-on-bottom,
+mulligan, targeting, etc.) keeps `.hand-strip` in its old always-visible,
+in-flow form untouched, since those are forced decisions where hover-to-
+reveal would actively hurt. A `handRaised` React state (not the mockup's
+vanilla `classList`) drives the two-zone hitbox: `.hand-trigger` (small,
+bottom-edge) `onMouseEnter` raises it, the whole `.hand-strip`'s
+`onMouseLeave` lowers it; `:focus-within` is the keyboard fallback. Verified
+live: peeks to just the hand title, raises fully on hover, drops again on
+mouseleave.
+
+Same phase also pulled priority mode's Pass/Pass Turn/Auto-pass/Skip-mana
+controls out of the hand-strip's inline `{controls}` into a new fixed
+bottom-right `.priority-actions` bar (this is Phase 7's "priority actions
+reposition" item — done early since it was needed to make the hand-strip
+peek cleanly: those controls used to render inline in `.hand-strip` for
+priority mode specifically).
+
+**Known limitation, documented not fixed:** switching between priority mode
+and a forced-decision mode mid-game moves the hand-strip between fixed
+(peekable) and in-flow positioning, which reflows the board area's height.
+Accepted tradeoff — the alternative (always-fixed, always-peekable, even
+during forced decisions) risks hiding UI the player needs to see immediately,
+which is worse.
 
 ### Phase 4 — Compact battlefield tiles — TODO (biggest phase)
 Cards on the battlefield become small (image + tabular P/T badge + tiny
@@ -157,13 +183,16 @@ phase is refinement, not a rewrite:
   stay exposed) — pivoting on the wrong corner was a real bug in the mockup
   that swallowed the exposed sliver of deeper cards; don't reintroduce it.
 
-### Phase 7 — Priority actions + mana-available indicator — TODO
-- Priority action buttons (Pass/Pass Turn/Auto-pass/Skip-mana-only — find
-  their current markup in `App.tsx`) move to a fixed bottom-right corner,
-  matching the mockup's `.priority-actions`. Leave a clear seam for swapping
-  in mulligan actions during that phase (same anchor, different buttons —
-  the mockup left a comment marking this; the real app may already switch
-  content by phase, check first).
+### Phase 7 — Priority actions + mana-available indicator — PARTLY DONE
+- ~~Priority action buttons move to a fixed bottom-right corner.~~ **Done in
+  Phase 3** (needed then to let the hand-strip peek cleanly) — see `.priority-
+  actions` in App.css and the `mode === 'priority'` branch in `Table`'s
+  return. Still open: this doesn't yet swap in mulligan-specific actions
+  during that phase (mulligan still renders inline via `controls` in the
+  normal `.hand-strip` flow, per its own branch in the big mode if/else
+  chain) — decide whether that's worth unifying into the same fixed corner
+  or is fine left as-is (mulligan is a one-time, attention-demanding
+  decision, arguably fine inline).
 - Each quadrant header gets a compact "mana available" indicator — colored
   WUBRG pips with a count badge for untapped sources of that color — using
   the *real* mana symbol SVGs (`client/src/ui/Symbols.tsx` /

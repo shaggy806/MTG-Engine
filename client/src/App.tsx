@@ -487,6 +487,12 @@ function Table({ view, seat, opponents, game }: TableProps) {
   const actions = game.actions
 
   const [targeting, setTargeting] = useState<Targeting | null>(null)
+  // Whether the collapsed hand tray (priority mode only -- see .hand-strip's
+  // peekable variant) is raised. Hover/focus raises it; a two-zone hitbox
+  // (a small .hand-trigger vs. the whole peekable strip) means raising it
+  // needs less precision than keeping it raised does, so idle mouse movement
+  // doesn't summon it but browsing it tolerates real cursor drift.
+  const [handRaised, setHandRaised] = useState(false)
   // Set while an `{X}` cost is being chosen, before target selection — for an
   // X spell (`CastAction`) or an X activated ability (`AbilityAction`, EG-3).
   const [pendingX, setPendingX] = useState<{
@@ -2108,6 +2114,33 @@ function Table({ view, seat, opponents, game }: TableProps) {
     />
   )
 
+  /** Wraps `renderHandAndControls` with the collapsed-peek tray behavior —
+   * only during ordinary priority (browsing your hand, not an active forced
+   * decision like a mulligan or a discard-to-hand-size, which stay fully
+   * visible exactly as before so nothing about those flows changes). A
+   * two-zone hitbox: a small `.hand-trigger` hugging the bottom edge is what
+   * raises it, but the whole (much larger) `.hand-strip` has to be left
+   * before it lowers again -- easier to leave up than to summon by accident. */
+  const renderHandStrip = () => {
+    const peekable = mode === 'priority'
+    return (
+      <div
+        className={`hand-strip ${peekable ? 'peekable' : ''} ${handRaised ? 'raised' : ''}`}
+        onMouseLeave={() => setHandRaised(false)}
+      >
+        {peekable ? (
+          <div className="hand-trigger" onMouseEnter={() => setHandRaised(true)} />
+        ) : null}
+        <div
+          className="hand-strip-inner"
+          onMouseEnter={peekable ? () => setHandRaised(true) : undefined}
+        >
+          {renderHandAndControls()}
+        </div>
+      </div>
+    )
+  }
+
   /** The ability menu (for a selected permanent with 2+ activated
    * abilities), the priority/attack/block/etc. controls, and your own hand
    * — the interactive strip below your board, shared by both the classic
@@ -2130,7 +2163,12 @@ function Table({ view, seat, opponents, game }: TableProps) {
         </div>
       ) : null}
 
-      {controls}
+      {/* priority mode's controls (Pass/Pass Turn/Auto-pass/Skip-mana) render
+          in a fixed bottom-right bar instead (see .priority-actions below) —
+          every other mode's decision UI stays inline here, since those need
+          the player's attention immediately rather than living somewhere
+          that only shows up on hover */}
+      {mode === 'priority' ? null : controls}
 
       <div className="hand">
         <h3>
@@ -2247,7 +2285,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
             </div>
           </main>
 
-          <div className="hand-strip">{renderHandAndControls()}</div>
+          {renderHandStrip()}
         </>
       ) : (
         <>
@@ -2269,11 +2307,13 @@ function Table({ view, seat, opponents, game }: TableProps) {
             </div>
           </main>
 
-          <div className="hand-strip">{renderHandAndControls()}</div>
+          {renderHandStrip()}
 
           <div className="pinned-bottom">{renderPlayerPanel(seat)}</div>
         </>
       )}
+
+      {mode === 'priority' ? <div className="priority-actions">{controls}</div> : null}
 
       {zoneView ? (
         <ZoneViewer
