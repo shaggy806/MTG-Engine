@@ -24,8 +24,14 @@ export type TargetSpec =
   | "nonland-permanent"
   | "land"
   | "artifact"
+  /** An artifact an opponent controls (Vandalblast: "target artifact you
+   * don't control"). */
+  | "artifact-an-opponent-controls"
   | "artifact-or-enchantment"
   | "creature-or-enchantment"
+  /** A nonland permanent an opponent controls (Cyclonic Rift's unkicked
+   * mode: "target nonland permanent you don't control"). */
+  | "nonland-permanent-an-opponent-controls"
   /** A creature currently attacking or blocking (Eiganjo, Seat of the
    * Empire's Channel — "target attacking or blocking creature"). */
   | "attacking-or-blocking-creature"

@@ -114,6 +114,11 @@ export interface GameObject {
    * kicker cost was paid, so `resolveTopOfStack` applies the kicked `effect`.
    * Absent for an unkicked or unkickable spell; cleared on any zone change. */
   kicked?: boolean;
+  /** This spell was cast for its overload cost (rule 702.126 — Cyclonic
+   * Rift): its overload cost was paid instead of its mana cost, with no
+   * targets, so `resolveTopOfStack` applies `CardDefinition.overload.effect`.
+   * Absent otherwise; cleared on any zone change. */
+  overloaded?: boolean;
   /** The alternative permission this spell was cast under while it's on the
    * stack (ROADMAP Phase 6). `"flashback"` (rule 702.34) additionally means it
    * is exiled instead of going anywhere else from the stack. `null` / absent

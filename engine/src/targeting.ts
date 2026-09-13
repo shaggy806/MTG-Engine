@@ -136,6 +136,18 @@ export function isLegalTarget(
         ref.kind === "object" &&
         isPermanentOfType(state, registry, ref.object, (t) => t.includes("artifact"))
       );
+    case "artifact-an-opponent-controls":
+      return (
+        ref.kind === "object" &&
+        isPermanentOfType(state, registry, ref.object, (t) => t.includes("artifact")) &&
+        state.objects[ref.object].controller !== forPlayer
+      );
+    case "nonland-permanent-an-opponent-controls":
+      return (
+        ref.kind === "object" &&
+        isPermanentOfType(state, registry, ref.object, (t) => !t.includes("land")) &&
+        state.objects[ref.object].controller !== forPlayer
+      );
     case "artifact-or-enchantment":
       return (
         ref.kind === "object" &&

@@ -280,6 +280,19 @@ export interface CardDefinition {
     readonly effect?: EffectSpec;
   } | null;
   /**
+   * Overload (rule 702.126 — Cyclonic Rift): an alternative cost that
+   * *replaces* the mana cost entirely (unlike kicker, which adds to it) and
+   * targets nothing at all — "change all instances of the word 'target' in
+   * its text to 'each' and you can't choose targets for it." `effect` is
+   * therefore always the whole-battlefield ("each ...") version of the
+   * card's effect (typically a `-all` `EffectSpec` variant), applied with no
+   * targets chosen. `null` for no overload cost.
+   */
+  readonly overload: {
+    readonly cost: string;
+    readonly effect: EffectSpec;
+  } | null;
+  /**
    * A cost reduction printed on the spell itself, gated on a board-state
    * condition (rule 601.2f — Ferocious: "if you control a creature with
    * power 4 or greater, this spell costs {2} less to cast"). Unlike
@@ -431,6 +444,10 @@ interface CardDraft {
     readonly targets?: readonly TargetSpec[];
     readonly effect?: EffectSpec;
   };
+  overload?: {
+    readonly cost: string;
+    readonly effect: EffectSpec;
+  };
   selfCostReduction?: {
     readonly condition: StaticCondition;
     readonly reduceGeneric: number | { readonly countOf: CardFilter };
@@ -494,6 +511,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     castModal: draft.castModal ?? null,
     additionalCost: draft.additionalCost ?? null,
     kicker: draft.kicker ?? null,
+    overload: draft.overload ?? null,
     selfCostReduction: draft.selfCostReduction ?? null,
     effect: draft.effect ?? null,
     resolve: draft.resolve ?? null,

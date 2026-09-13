@@ -775,10 +775,11 @@ export class ScriptedController implements PlayerController {
 function castExtras(
   legal: Extract<LegalAction, { kind: "cast-spell" }>,
   pickIndex: (n: number) => number,
-): { kicked?: boolean; sacrifice?: ObjectId } {
+): { kicked?: boolean; overload?: boolean; sacrifice?: ObjectId } {
   const sac = legal.sacrifice;
   return {
     ...(legal.kicked === true ? { kicked: true } : {}),
+    ...(legal.overload === true ? { overload: true } : {}),
     ...(sac !== undefined && sac.choices.length > 0
       ? { sacrifice: sac.choices[pickIndex(sac.choices.length)] }
       : {}),

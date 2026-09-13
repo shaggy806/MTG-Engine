@@ -428,6 +428,7 @@ export class Game {
           action.modes,
           action.kicked === true,
           action.sacrifice,
+          action.overload === true,
         );
         break;
       case "activate-ability":
@@ -524,6 +525,7 @@ export class Game {
           action.modes,
           action.kicked === true,
           action.sacrifice,
+          action.overload === true,
         );
       case "activate-ability":
         return this.whyCannotActivateAbility(
@@ -1030,14 +1032,24 @@ export class Game {
   ): LegalAction[] {
     const { via, face, costString } = opts;
     const out: LegalAction[] = [];
-    for (const kicked of def.kicker !== null ? [false, true] : [false]) {
-      if (this.whyCannotCastSpell(player, card, via, face ?? 0, undefined, kicked) !== null) {
+    const variants: { kicked: boolean; overload: boolean }[] = [{ kicked: false, overload: false }];
+    if (def.kicker !== null) variants.push({ kicked: true, overload: false });
+    // Overload (rule 702.126) — an alternative cast, mutually exclusive with
+    // kicker (no card on the list has both).
+    if (def.overload !== null) variants.push({ kicked: false, overload: true });
+    for (const { kicked, overload } of variants) {
+      if (
+        this.whyCannotCastSpell(player, card, via, face ?? 0, undefined, kicked, undefined, overload) !== null
+      ) {
         continue;
       }
-      const specs = this.effectiveTargetSpecs(def, undefined, kicked);
-      const cost = kicked && def.kicker !== null && costString !== null
-        ? costString + def.kicker.cost
-        : costString;
+      const specs = this.effectiveTargetSpecs(def, undefined, kicked, overload);
+      const cost =
+        overload && def.overload !== null
+          ? def.overload.cost
+          : kicked && def.kicker !== null && costString !== null
+            ? costString + def.kicker.cost
+            : costString;
       const sacrifices = this.additionalCostSacrifices(player, def);
       out.push({
         kind: "cast-spell",
@@ -1051,6 +1063,9 @@ export class Game {
         ...(sacrifices.length > 0 ? { sacrifice: { choices: sacrifices } } : {}),
         ...(kicked && def.kicker !== null
           ? { kicked: true, kickerCost: def.kicker.cost }
+          : {}),
+        ...(overload && def.overload !== null
+          ? { overload: true, overloadCost: def.overload.cost }
           : {}),
         ...(parseManaCost(cost).x > 0
           ? { xCost: { maxX: this.maxAffordableX(player, card, def, cost, face ?? 0) } }
@@ -3719,8 +3734,12 @@ export class Game {
     via: CastVia | undefined,
     face = 0,
     kicked = false,
+    overload = false,
   ): string | null {
     const def = this.faceDef(cardId, face);
+    // Overload (rule 702.126b) *replaces* the mana cost entirely, unlike
+    // kicker's additive cost.
+    if (overload && def.overload !== null) return def.overload.cost;
     const base =
       via === "flashback"
         ? this.flashbackCostOf(cardId)
@@ -3746,7 +3765,10 @@ export class Game {
     def: CardDefinition,
     modes: readonly number[] | undefined,
     kicked = false,
+    overload = false,
   ): readonly TargetSpec[] {
+    // Overload (rule 702.126a): "you can't choose targets for it".
+    if (overload) return [];
     if (kicked && def.kicker?.targets !== undefined) return def.kicker.targets;
     if (def.castModal === null || modes === undefined) return def.targets;
     return [...modes]
@@ -3792,6 +3814,7 @@ export class Game {
     modes?: readonly number[],
     kicked = false,
     sacrifice?: ObjectId,
+    overload = false,
   ): string | null {
     const blocked = this.whyCannotAct(player);
     if (blocked !== null) return blocked;
@@ -3851,6 +3874,7 @@ export class Game {
       if (bad !== null) return `${def.name}: ${bad}`;
     }
     if (kicked && def.kicker === null) return `${def.name} has no kicker`;
+    if (overload && def.overload === null) return `${def.name} has no overload cost`;
     // An additional sacrifice cost (rule 601.2f) must be payable, and — once
     // the driver has named one — that permanent must actually qualify.
     if (def.additionalCost !== null) {
@@ -3865,7 +3889,7 @@ export class Game {
     // A non-modal spell's target legality is checked up front; a modal spell's
     // is checked per chosen mode (only once `modes` is known — at enumeration
     // time the driver hasn't picked yet).
-    for (const spec of this.effectiveTargetSpecs(def, modes, kicked)) {
+    for (const spec of this.effectiveTargetSpecs(def, modes, kicked, overload)) {
       if (
         legalTargets(this.state, this.registry, spec, player, this.cardSource(def)).length === 0
       ) {
@@ -3881,7 +3905,7 @@ export class Game {
             cardId,
             def,
             0,
-            this.castCostString(cardId, via, face, kicked),
+            this.castCostString(cardId, via, face, kicked, overload),
           ),
         ),
       ) === null
@@ -3901,8 +3925,9 @@ export class Game {
     modes?: readonly number[],
     kicked = false,
     sacrifice?: ObjectId,
+    overload = false,
   ): void {
-    const why = this.whyCannotCastSpell(player, cardId, via, face, modes, kicked, sacrifice);
+    const why = this.whyCannotCastSpell(player, cardId, via, face, modes, kicked, sacrifice, overload);
     if (why !== null) throw new Error(why);
 
     const object = this.state.objects[cardId];
@@ -3910,7 +3935,7 @@ export class Game {
     // the chosen face for the rest of this method and while on the stack.
     if (object.faces !== undefined) object.face = face;
     const def = this.registry.get(printedCardName(object));
-    const costString = this.castCostString(cardId, via, face, kicked);
+    const costString = this.castCostString(cardId, via, face, kicked, overload);
     const hasX = parseManaCost(costString).x > 0;
     const chosenX = hasX ? Math.max(0, Math.floor(xValue)) : 0;
 
@@ -3919,7 +3944,7 @@ export class Game {
     }
     const sortedModes =
       def.castModal !== null ? [...(modes ?? [])].sort((a, b) => a - b) : undefined;
-    const targetSpecs = this.effectiveTargetSpecs(def, sortedModes, kicked);
+    const targetSpecs = this.effectiveTargetSpecs(def, sortedModes, kicked, overload);
     // An additional sacrifice cost the driver didn't name (only one candidate,
     // or a driver that doesn't care): take the first eligible permanent.
     const sacrificeVictim =
@@ -3965,6 +3990,7 @@ export class Game {
     object.stormCount = stormCount;
     if (sortedModes !== undefined) object.chosenModes = sortedModes;
     if (kicked) object.kicked = true;
+    if (overload) object.overloaded = true;
     this.executePayment(player, payment);
     // The additional sacrifice (rule 601.2f/h) is paid *after* mana, so the
     // land being sacrificed can still be tapped for the spell's own cost first
@@ -4932,7 +4958,12 @@ export class Game {
     // A kicked spell may target something its unkicked specs wouldn't allow
     // (Tear Asunder), so the fizzle check uses the specs it was actually cast
     // with — `chosenModes` handles the modal case below, on its own.
-    const castSpecs = this.effectiveTargetSpecs(def, undefined, object.kicked === true);
+    const castSpecs = this.effectiveTargetSpecs(
+      def,
+      undefined,
+      object.kicked === true,
+      object.overloaded === true,
+    );
     if (
       castSpecs.length > 0 &&
       !this.anyTargetLegal(castSpecs, targets, object.controller, this.cardSource(def))
@@ -4999,12 +5030,17 @@ export class Game {
         targets,
         object.xValue ?? 0,
       );
-      // Kicker (rule 702.33): a kicked spell does its kicked effect "instead"
-      // when it has one (Tear Asunder), else the same effect as unkicked.
-      const kickedEffect =
-        object.kicked === true ? (def.kicker?.effect ?? null) : null;
-      if (kickedEffect !== null) {
-        applyEffectSpec(kickedEffect, context);
+      // Overload (rule 702.126) and kicker (rule 702.33) each replace the
+      // ordinary effect "instead" when chosen; overload takes priority since
+      // no card has both.
+      const altEffect =
+        object.overloaded === true
+          ? (def.overload?.effect ?? null)
+          : object.kicked === true
+            ? (def.kicker?.effect ?? null)
+            : null;
+      if (altEffect !== null) {
+        applyEffectSpec(altEffect, context);
       } else if (def.resolve !== null) {
         def.resolve(context);
       } else if (def.effect !== null) {
@@ -5626,6 +5662,7 @@ export class Game {
       untapPermanent: (target) => this.setTapped(target, false),
       destroyPermanent: (target) => this.destroyByEffect(target),
       destroyAll: (filter) => this.destroyAllByEffect(controller, filter),
+      returnToHandAll: (filter) => this.returnToHandAllByEffect(controller, filter),
       damageAll: (filter, amount) => this.damageAllByEffect(source, controller, filter, amount),
       creaturesDamageControllers: (filter, amount) =>
         this.creaturesDamageControllersByEffect(controller, filter, amount),
@@ -6569,6 +6606,13 @@ export class Game {
       }
     }
     this.drainPendingDestruction();
+  }
+
+  private returnToHandAllByEffect(you: PlayerId, filter: CardFilter): void {
+    // Snapshot: `returnToHandByEffect` mutates the battlefield array as it goes.
+    for (const id of this.battlefieldMatching(you, filter)) {
+      this.returnToHandByEffect({ kind: "object", object: id });
+    }
   }
 
   private drainPendingDestruction(): void {
@@ -7772,6 +7816,7 @@ export class Game {
     // paid as it was cast (P8) both end with the stack.
     object.chosenModes = undefined;
     object.kicked = undefined;
+    object.overloaded = undefined;
     // The adventure "may cast the creature from exile" permission (rule 715.3)
     // ends when the card changes zones. `resolveTopOfStack` re-sets it *after*
     // the move to exile that creates the state.

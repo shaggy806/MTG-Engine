@@ -175,6 +175,13 @@ export type EffectSpec =
       readonly target: EffectTargetRef;
     }
   | {
+      /** Return every battlefield permanent matching `filter` to its owner's
+       * hand (Cyclonic Rift, overloaded: "Return each nonland permanent you
+       * don't control to its owner's hand"). Mirrors `destroy-all`. */
+      readonly kind: "return-to-hand-all";
+      readonly filter: CardFilter;
+    }
+  | {
       /** Put a target permanent into exile. */
       readonly kind: "exile";
       readonly target: number;
@@ -580,6 +587,8 @@ export interface EffectApi {
   destroyPermanent(target: TargetRef): void;
   /** Destroy every battlefield permanent matching `filter`. */
   destroyAll(filter: CardFilter): void;
+  /** Return every battlefield permanent matching `filter` to its owner's hand. */
+  returnToHandAll(filter: CardFilter): void;
   /** Deal `amount` damage to every battlefield permanent matching `filter`. */
   damageAll(filter: CardFilter, amount: number): void;
   /** Every battlefield permanent matching `filter` deals `amount` damage to
@@ -885,6 +894,9 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     }
     case "destroy-all":
       ctx.destroyAll(spec.filter);
+      return;
+    case "return-to-hand-all":
+      ctx.returnToHandAll(spec.filter);
       return;
     case "damage-all":
       ctx.damageAll(spec.filter, amountValue(spec.amount, ctx));

@@ -100,6 +100,10 @@ export type Action =
        * cast and *before* targets are chosen — it can change the target specs.
        * Only meaningful for a card with `CardDefinition.kicker`. P8. */
       readonly kicked?: boolean;
+      /** Cast for the card's overload cost (rule 702.126) instead of its mana
+       * cost — replaces "target" with "each" and takes no targets. Only
+       * meaningful for a card with `CardDefinition.overload`. */
+      readonly overload?: boolean;
     }
   | {
       readonly type: "activate-ability";
@@ -325,6 +329,14 @@ export type LegalAction =
       readonly kicked?: boolean;
       /** The kicker cost this variant pays, for labelling. Set with `kicked`. */
       readonly kickerCost?: string;
+      /** An overloadable spell (rule 702.126) is enumerated **twice**, once
+       * normal and once with `overload: true` — this variant's `targetSpecs`
+       * is always `[]` (you can't choose targets for an overloaded spell).
+       * The driver echoes `overload` back in the `cast-spell` action. */
+      readonly overload?: boolean;
+      /** The overload cost this variant pays (replaces the mana cost
+       * entirely), for labelling. Set with `overload`. */
+      readonly overloadCost?: string;
     }
   | {
       readonly kind: "activate-ability";

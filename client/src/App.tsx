@@ -41,6 +41,7 @@ const castExtras = (cast: CastAction) => ({
   ...(cast.via !== undefined ? { via: cast.via } : {}),
   ...(cast.face !== undefined ? { face: cast.face } : {}),
   ...(cast.kicked === true ? { kicked: true } : {}),
+  ...(cast.overload === true ? { overload: true } : {}),
 })
 type LandAction = Extract<LegalAction, { kind: 'play-land' }>
 type SuspendAction = Extract<LegalAction, { kind: 'suspend' }>
@@ -87,6 +88,9 @@ interface Targeting {
    * kicked and unkicked as separate `cast-spell` actions; this just echoes
    * which one the player picked. */
   readonly kicked?: boolean
+  /** Casting this for its overload cost (rule 702.126) instead of its mana
+   * cost — no targets are chosen for this variant. */
+  readonly overload?: boolean
 }
 
 /**
@@ -724,6 +728,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
         | 'face'
         | 'modes'
         | 'kicked'
+        | 'overload'
       >,
       targets: readonly TargetRef[],
     ) => {
@@ -741,6 +746,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
                 ...(t.via !== undefined ? { via: t.via } : {}),
                 ...(t.face !== undefined ? { face: t.face } : {}),
                 ...(t.kicked === true ? { kicked: true } : {}),
+                ...(t.overload === true ? { overload: true } : {}),
                 ...(t.sacrifice !== undefined ? { sacrifice: t.sacrifice } : {}),
               }
             : {
@@ -2157,6 +2163,9 @@ function Table({ view, seat, opponents, game }: TableProps) {
                         {a.kind === 'play-land' ? 'Play' : 'Cast'} {a.cardName}
                         {a.kind === 'cast-spell' && a.kicked
                           ? ` (kicked ${a.kickerCost ?? ''})`
+                          : ''}
+                        {a.kind === 'cast-spell' && a.overload
+                          ? ` (overload ${a.overloadCost ?? ''})`
                           : ''}
                       </button>
                     ))

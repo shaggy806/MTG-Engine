@@ -54,6 +54,8 @@ import _poolCraterhoofBehemoth from "./pool/craterhoof-behemoth.js";
 import _poolCrawWurm from "./pool/craw-wurm.js";
 import _poolCropRotation from "./pool/crop-rotation.js";
 import _poolCryptolithRite from "./pool/cryptolith-rite.js";
+import _poolCyclonicRift from "./pool/cyclonic-rift.js";
+import _poolDamn from "./pool/damn.js";
 import _poolDamnation from "./pool/damnation.js";
 import _poolDarksteelMyr from "./pool/darksteel-myr.js";
 import _poolDefenseOfTheHeart from "./pool/defense-of-the-heart.js";
@@ -243,6 +245,7 @@ import _poolUreniOfTheUnwritten from "./pool/ureni-of-the-unwritten.js";
 import _poolUrzasIncubator from "./pool/urzas-incubator.js";
 import _poolUtvaraHellkite from "./pool/utvara-hellkite.js";
 import _poolVampireNighthawk from "./pool/vampire-nighthawk.js";
+import _poolVandalblast from "./pool/vandalblast.js";
 import _poolVengefulGhoul from "./pool/vengeful-ghoul.js";
 import _poolVerdantCatacombs from "./pool/verdant-catacombs.js";
 import _poolVernalFen from "./pool/vernal-fen.js";
@@ -331,6 +334,8 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolCrawWurm,
   _poolCropRotation,
   _poolCryptolithRite,
+  _poolCyclonicRift,
+  _poolDamn,
   _poolDamnation,
   _poolDarksteelMyr,
   _poolDefenseOfTheHeart,
@@ -520,6 +525,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolUrzasIncubator,
   _poolUtvaraHellkite,
   _poolVampireNighthawk,
+  _poolVandalblast,
   _poolVengefulGhoul,
   _poolVerdantCatacombs,
   _poolVernalFen,
