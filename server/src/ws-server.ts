@@ -91,8 +91,14 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
           // governs deck shuffling) so it doesn't shift the deterministic
           // draw order tests and replays rely on.
           const startingPlayer = seats[Math.floor(Math.random() * seats.length)].id;
+          // A real room should shuffle freshly every time — only fall back
+          // to Game.create's fixed internal default (meant for scripts/tests
+          // that omit a seed on purpose) when nobody asked for a specific
+          // one. Without this, every "Create Room" click reused that same
+          // constant and every game opened with an identical shuffle.
+          const seed = message.seed ?? Math.floor(Math.random() * 0x100000000);
           const room = manager.create({
-            seed: message.seed,
+            seed,
             mulligans: true,
             rules: { startingLife: 40 },
             startingPlayer,

@@ -52,12 +52,14 @@ function connect(port: number): Promise<WebSocket> {
 
 describe("room server (end to end over WebSocket)", () => {
   let wss: WebSocketServer;
+  let manager: RoomManager;
   let port: number;
   let sockets: WebSocket[];
 
   beforeEach(async () => {
     wss = new WebSocketServer({ port: 0 });
-    attachRoomServer(wss, new RoomManager());
+    manager = new RoomManager();
+    attachRoomServer(wss, manager);
     await new Promise<void>((resolve) => wss.once("listening", resolve));
     port = (wss.address() as AddressInfo).port;
     sockets = [];
@@ -157,6 +159,22 @@ describe("room server (end to end over WebSocket)", () => {
     ]);
     expect(holderUpdate.type).toBe("state");
     expect(otherUpdate.type).toBe("state");
+  });
+
+  it("creating a room without a seed picks a fresh random one each time, not a fixed default", async () => {
+    const aliceWs = await openSocket();
+    aliceWs.send(JSON.stringify({ type: "create-room" }));
+    const first = await nextMessage(aliceWs);
+    if (first.type !== "room-created") throw new Error("unreachable");
+    aliceWs.send(JSON.stringify({ type: "create-room" }));
+    const second = await nextMessage(aliceWs);
+    if (second.type !== "room-created") throw new Error("unreachable");
+
+    const firstSeed = manager.get(first.roomId)?.game.state.seed;
+    const secondSeed = manager.get(second.roomId)?.game.state.seed;
+    expect(firstSeed).toBeDefined();
+    expect(secondSeed).toBeDefined();
+    expect(firstSeed).not.toBe(secondSeed);
   });
 
   it("rejects a dispatch for a seat the connection hasn't claimed", async () => {
