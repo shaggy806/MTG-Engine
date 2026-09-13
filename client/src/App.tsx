@@ -20,6 +20,7 @@ import { PhaseTrack } from './ui/PhaseTrack.tsx'
 import { TurnBanner } from './ui/TurnBanner.tsx'
 import { PlayerPanel } from './ui/PlayerPanel.tsx'
 import { CardTile } from './ui/CardTile.tsx'
+import { MiniTile } from './ui/MiniTile.tsx'
 import { Stack } from './ui/Stack.tsx'
 import { EventLog } from './ui/EventLog.tsx'
 import { ZoneViewer } from './ui/ZoneViewer.tsx'
@@ -1236,7 +1237,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
     obj: VisibleObject,
     ownerSeat: PlayerId,
     ids: readonly ObjectId[] = [obj.id],
-    opts: { stackCount?: number; compact?: boolean } = {},
+    opts: { stackCount?: number; compact?: boolean; mini?: boolean } = {},
   ) => {
     const id = obj.id
     let highlight = false
@@ -1296,6 +1297,21 @@ function Table({ view, seat, opponents, game }: TableProps) {
       selected = selectedSource !== null && ids.includes(selectedSource)
     }
 
+    if (opts.mini) {
+      return (
+        <MiniTile
+          key={id}
+          obj={obj}
+          highlight={highlight}
+          selected={selected}
+          activatable={activatable}
+          badge={badge}
+          order={order}
+          stackCount={opts.stackCount ?? null}
+          onClick={() => clickPermanent(ids)}
+        />
+      )
+    }
     return (
       <CardTile
         key={id}
@@ -1329,11 +1345,12 @@ function Table({ view, seat, opponents, game }: TableProps) {
               // own token compaction (`VisibleObject.stackCount`). Only one is
               // ever > 1 for a given tile, so the larger is the true count.
               stackCount: Math.max(entry.ids.length, entry.sample.stackCount ?? 1),
+              mini: true,
             })}
             {entry.attachments.length > 0 ? (
               <div className="attachments">
                 {entry.attachments.map((a) => (
-                  <div key={a.id}>{tileFor(a, pid, [a.id], { compact: true })}</div>
+                  <div key={a.id}>{tileFor(a, pid, [a.id], { mini: true })}</div>
                 ))}
               </div>
             ) : null}

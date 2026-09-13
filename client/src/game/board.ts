@@ -5,8 +5,13 @@
  *    more than one (e.g. an artifact creature renders with the creatures);
  *  - Auras/Equipment pulled out of their own bucket and nested under whatever
  *    they're attached to, wherever that host ends up;
- *  - otherwise-identical lands (same name, same tapped state, same controller,
- *    no counters, nothing attached) collapsed into one stack with a count.
+ *  - otherwise-identical lands, or identical *token* copies of a nonland
+ *    permanent (same name, tapped state, power/toughness, summoning
+ *    sickness, same controller, no counters, nothing attached) collapsed
+ *    into one stack with a count. Nonland stacking is token-only — a
+ *    same-named nontoken permanent (rare, but real, e.g. two cast copies of
+ *    a card that allows it) stays its own tile rather than folding into a
+ *    stack that implies "these are interchangeable".
  */
 
 import type { ObjectId, PlayerId, PlayerView, VisibleObject } from 'engine'
@@ -73,12 +78,13 @@ export function computeBoardEntries(
     const attachments = attachmentsByHost.get(obj.id) ?? []
     const bucket = bucketOf(obj)
     const stackable =
-      bucket === 'land' &&
-      obj.power === null && // a man-land animated to a creature stands alone
       isEmpty(obj.counters) &&
-      attachments.length === 0
+      attachments.length === 0 &&
+      (bucket === 'land'
+        ? obj.power === null // a man-land animated to a creature stands alone
+        : obj.isToken) // real (nontoken) permanents never fold into a stack
     if (stackable) {
-      const key = `${obj.cardName}|${obj.tapped}`
+      const key = `${obj.cardName}|${obj.tapped}|${obj.power}|${obj.toughness}|${obj.summoningSick}`
       const idx = stackIndex.get(key)
       if (idx !== undefined) {
         entries[idx].ids.push(obj.id)

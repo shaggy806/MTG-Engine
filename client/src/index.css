@@ -27,6 +27,10 @@
      the library back, a board row's min-height) derives its size from, so
      they all stay in lockstep across monitors instead of just this one. */
   --card-w: clamp(96px, 9vw, 150px);
+  /* battlefield permanents render much smaller than a full card face (see
+     MiniTile.tsx) -- their own token, not derived from --card-w, so tuning
+     one doesn't silently resize the other. */
+  --mini-w: clamp(50px, 4.6vw, 78px);
 
   font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
   font-size: 14px;

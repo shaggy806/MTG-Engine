@@ -22,6 +22,12 @@
 
 export type ArtVersion = 'art_crop' | 'normal' | 'large' | 'png'
 
+/** Art URLs that 404'd this session — don't re-request on every remount.
+ * Shared by `CardTile.tsx` and `MiniTile.tsx`, which can both render the
+ * same battlefield object (full detail vs. a hover popover) and would
+ * otherwise track the same failure twice. */
+export const artMisses = new Set<string>()
+
 /** The by-name lookup — Scryfall serves art for any real card name from here. */
 function byNameUrl(name: string, version: ArtVersion): string {
   return `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(

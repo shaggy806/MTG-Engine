@@ -500,9 +500,11 @@
   flex-wrap: wrap;
   align-items: flex-start;
   gap: 10px 8px;
-  /* Matches a card tile's height, so the row holds its size whether it's
-     empty or full instead of collapsing down to nothing. */
-  min-height: calc(var(--card-w) * 1.4);
+  /* Matches a mini tile's height (battlefield permanents render as MiniTile,
+     not the full CardTile — see tileFor's `mini` option, and MiniTile's own
+     4:3 aspect-ratio), so the row holds its size whether it's empty or full
+     instead of collapsing to nothing. */
+  min-height: calc(var(--mini-w) * 0.75);
 }
 .board-entry {
   display: flex;
@@ -1002,9 +1004,162 @@
   border-radius: 9px;
   z-index: 1;
 }
-/* an Aura/Equipment nested under its host */
+/* an Aura/Equipment nested under its host, and a non-top Stack entry — see
+   Stack.tsx; the battlefield itself uses MiniTile now, not this */
 .card-tile.compact {
   zoom: 0.6;
+}
+
+/* ===== MiniTile — a battlefield permanent reduced to its art + a stat badge.
+   Hovering/focusing reveals the full CardTile in .mini-tile-popover, anchored
+   to the tile itself (not cursor-tracked), so this is pure CSS, no JS
+   position math). ===== */
+.mini-tile-wrap {
+  position: relative;
+  display: inline-block;
+}
+/* raise the hovered/focused tile's own stacking context above its siblings'
+   (each of which is also position:relative) so its popover isn't covered by
+   a later tile in the same wrapped row */
+.mini-tile-wrap:hover,
+.mini-tile-wrap:focus-within {
+  z-index: 40;
+}
+.mini-tile {
+  position: relative;
+  width: var(--mini-w);
+  /* the art_crop images this draws (see art.ts) are landscape, roughly
+     4:3 -- not the 5:7 portrait ratio of a full card, which only made sense
+     when a title/type/text frame around the art justified the taller shape.
+     Pure art with no frame should match what it's actually drawing. */
+  aspect-ratio: 4 / 3;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 5px;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  cursor: default;
+  transition: translate 0.1s ease, box-shadow 0.1s ease, border-color 0.1s ease;
+}
+.mini-tile.tapped {
+  /* matches .card-tile.tapped's own approach: scaling down after rotating
+     (not just rotating) keeps the tile within its original footprint --
+     rotating alone swaps width<->height, which would overflow the space
+     flex reserves for it. The scale factor differs from .card-tile's 0.66
+     because this is a 4:3 box, not 5:7 -- 0.66 was tuned for that ratio. */
+  transform: rotate(90deg) scale(0.7);
+}
+.mini-tile.highlight {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-bg);
+}
+.mini-tile.selected {
+  border-color: var(--warn);
+  box-shadow: 0 0 0 2px rgba(231, 192, 91, 0.35);
+}
+.mini-tile.activatable:not(.highlight):not(.selected) {
+  border-color: var(--accent);
+  border-style: dashed;
+}
+.mini-tile.clickable {
+  cursor: pointer;
+}
+.mini-tile.clickable:hover,
+.mini-tile.clickable:focus-visible {
+  translate: 0 -3px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
+  outline: none;
+}
+.mini-tile.dimmed {
+  opacity: 0.4;
+}
+.mt-art {
+  position: absolute;
+  inset: 0;
+  background: #14161c;
+}
+.mt-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+.mt-art.tint-W {
+  background: linear-gradient(160deg, #4a4633, #23241d);
+}
+.mt-art.tint-U {
+  background: linear-gradient(160deg, #26415c, #1a2530);
+}
+.mt-art.tint-B {
+  background: linear-gradient(160deg, #3a3040, #201d26);
+}
+.mt-art.tint-R {
+  background: linear-gradient(160deg, #5a2f28, #2a1d1b);
+}
+.mt-art.tint-G {
+  background: linear-gradient(160deg, #2f4a2c, #1d271c);
+}
+.mt-kw {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.mt-kw span {
+  width: 11px;
+  height: 11px;
+  display: grid;
+  place-items: center;
+  font-size: 7.5px;
+  color: #fff;
+  background: rgba(10, 12, 16, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+}
+.mt-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  max-width: calc(100% - 4px);
+  font-size: 8px;
+  font-weight: 700;
+  color: #0b0e14;
+  background: var(--warn);
+  border-radius: 3px;
+  padding: 0 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* the full CardTile, hidden until the tile it's anchored to is hovered or
+   focused — opens downward so it has room within the board area below it
+   (a top-row opponent quadrant has little room above; the board area below
+   a tile, or the collapsed hand tray beneath it for your own board, both
+   have more slack) */
+.mini-tile-popover {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 60;
+  margin-top: 6px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.1s ease;
+}
+.mini-tile-wrap:hover .mini-tile-popover,
+.mini-tile-wrap:focus-within .mini-tile-popover {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mini-tile-popover {
+    transition: none;
+  }
 }
 
 /* ability menu + controls */

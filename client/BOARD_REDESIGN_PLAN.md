@@ -109,7 +109,7 @@ Accepted tradeoff — the alternative (always-fixed, always-peekable, even
 during forced decisions) risks hiding UI the player needs to see immediately,
 which is worse.
 
-### Phase 4 — Compact battlefield tiles — TODO (biggest phase)
+### Phase 4 — Compact battlefield tiles — DONE
 Cards on the battlefield become small (image + tabular P/T badge + tiny
 keyword-icon stack), not full detail — hover (or focus, for keyboard/touch)
 to see the full card via a popover. This is the mockup's core "declutter"
@@ -143,6 +143,45 @@ idea and the largest single phase:
   display grouping, not touching the engine's own `GameObject.stackCount`
   token-compaction (`engine/src/game.ts` — a completely different mechanism
   for resource-safety, not display; don't conflate the two).
+
+**Done as:** a new `MiniTile.tsx` (art + tabular P/T/loyalty badge, tiny
+keyword-icon dots, no name/cost/type/text) reuses `CardTile.tsx` unmodified
+as the hover/focus popover content (`.mini-tile-popover`, pure CSS
+`:hover`/`:focus-within` reveal -- no JS cursor-tracking, so it is anchored to
+the tile itself, not the mouse; opens downward, a documented limitation for
+tiles with little room below). `tileFor` in App.tsx got a `mini?: boolean`
+option; both battlefield call sites (permanents + nested attachments) pass
+it, the library-reveal call site does not (that one should stay full detail).
+`artMisses` moved from `CardTile.tsx` to `art.ts` so both components share
+one failed-art-URL cache instead of tracking it twice. A new `--mini-w`
+token (`clamp(50px, 4.6vw, 78px)`, separate from `--card-w`) sizes it;
+`.board-row-cards`'s min-height now derives from `--mini-w` too. Land row
+ordering and the command-zone/library rail (Phase 5) were already correct
+before this phase (see Phase 5 note below) and needed no changes.
+
+Non-land stacking landed in `board.ts`'s `computeBoardEntries`: the
+stacking key now also includes power/toughness/summoningSick, and the gate
+is `bucket === 'land' ? obj.power === null : obj.isToken` -- tokens only,
+real (nontoken) permanents sharing a name never fold into a stack. **Not
+live-verified** -- `debugSpawn` (what `scratch.mjs` uses) always creates a
+real card object (`isToken: false`), even for a card literally named
+"Beast Token", so it cannot exercise this path; confirmed correct by
+inspection instead (`isToken: true` is set at the real minting site,
+`Game`'s private `mintTokenBatch`, engine/src/game.ts ~line 6301). A future
+session verifying this live needs a card whose own effect actually creates
+tokens, cast/triggered in a real game (dispatched through the room, not
+`debugSpawn`) -- e.g. spawn a cheap token-making card to hand and cast it.
+
+Verified live (2-player, both the top opponent row and the bottom own-board
+row, via `scratch.mjs`): art renders, P/T badge, summoning-sickness flag,
+land stacking (`x4`), the flying keyword icon, and the hover popover
+(showing full name/cost-with-real-mana-pips/type/"Flying"/rules text/P-T)
+all work. Also fixed mid-phase: MiniTile's aspect-ratio was originally 5:7
+(matching a full card), which is wrong once there is no title/type/text
+frame around the art to justify a portrait shape -- the `art_crop` images it
+actually draws are landscape, so it is 4:3 now (and the tapped-rotation
+scale factor, 0.66 for CardTile's 5:7 box, is 0.7 for this one -- different
+box, different scale-to-avoid-overflow math).
 
 ### Phase 5 — Command zone / library rail — ALREADY DONE, verify only
 Checked `App.tsx`'s `renderSideZone` (~line 1386) and `.board-with-sidezone`/

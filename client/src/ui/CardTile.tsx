@@ -2,7 +2,13 @@ import { useEffect, useState, useSyncExternalStore } from 'react'
 import type { VisibleObject } from 'engine'
 import { Symbols } from './Symbols.tsx'
 import { costColor } from './symbols.ts'
-import { getArtCacheVersion, queueArtLookup, resolveArtUrl, subscribeArtCache } from './art.ts'
+import {
+  artMisses,
+  getArtCacheVersion,
+  queueArtLookup,
+  resolveArtUrl,
+  subscribeArtCache,
+} from './art.ts'
 
 export interface CardTileProps {
   readonly obj: VisibleObject
@@ -41,9 +47,6 @@ const KEYWORD_LABEL: Record<string, string> = {
   hexproof: 'Hexproof',
   flash: 'Flash',
 }
-
-/** Art URLs that 404'd this session — don't re-request on every remount. */
-const artMisses = new Set<string>()
 
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1)
 
