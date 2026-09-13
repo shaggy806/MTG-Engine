@@ -221,18 +221,18 @@ describe("kicker — Tear Asunder", () => {
     expect(actions).toHaveLength(2);
     const kicked = actions.find((la) => la.kind === "cast-spell" && la.kicked === true);
     const plain = actions.find((la) => la.kind === "cast-spell" && la.kicked !== true);
-    expect(kicked?.kind === "cast-spell" && kicked.kickerCost).toBe("{2}");
+    expect(kicked?.kind === "cast-spell" && kicked.kickerCost).toBe("{1}{B}");
     expect(plain?.kind === "cast-spell" && plain.targetSpecs).toEqual([
       "artifact-or-enchantment",
     ]);
-    expect(kicked?.kind === "cast-spell" && kicked.targetSpecs).toEqual(["permanent"]);
+    expect(kicked?.kind === "cast-spell" && kicked.targetSpecs).toEqual(["nonland-permanent"]);
   });
 
   it("only offers the unkicked cast when the kicker is unaffordable", () => {
     const { game } = mkGame(["Tear Asunder"]);
     game.advanceUntil(toPrecombat);
     game.debugSpawn("Swamp", A, "battlefield");
-    game.debugSpawn("Forest", A, "battlefield"); // exactly {B}{G}, no kicker
+    game.debugSpawn("Forest", A, "battlefield"); // exactly {1}{G}, no kicker
     game.debugSpawn("Sol Ring", B, "battlefield");
 
     const actions = castActionsFor(game, A, "Tear Asunder");
@@ -289,7 +289,7 @@ describe("kicker — Tear Asunder", () => {
       targets: [{ kind: "object", object: bear }],
     });
 
-    // {B}{G} + the {2} kicker = four lands tapped, one spare.
+    // {1}{G} + the {1}{B} kicker = four lands tapped, one spare.
     expect(lands.filter((id) => game.state.objects[id].tapped)).toHaveLength(4);
   });
 

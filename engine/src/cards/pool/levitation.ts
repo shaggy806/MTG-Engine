@@ -2,7 +2,7 @@ import { defineCard } from "../define.js";
 
 export default defineCard({
   name: "Levitation",
-  manaCost: "{2}{U}",
+  manaCost: "{2}{U}{U}",
   colors: ["U"],
   types: ["enchantment"],
   text: "Creatures you control have flying.",

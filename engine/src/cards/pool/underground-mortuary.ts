@@ -4,6 +4,7 @@ import { entersTappedStatic, manaTapAbility } from "../helpers.js";
 export default defineCard({
   name: "Underground Mortuary",
   types: ["land"],
+  subtypes: ["Swamp", "Forest"],
   text:
     "Underground Mortuary enters the battlefield tapped.\n" +
     "When Underground Mortuary enters the battlefield, surveil 1.\n" +

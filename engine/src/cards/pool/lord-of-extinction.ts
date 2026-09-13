@@ -2,7 +2,7 @@ import { defineCard } from "../define.js";
 
 export default defineCard({
   name: "Lord of Extinction",
-  manaCost: "{4}{B}{G}",
+  manaCost: "{3}{B}{G}",
   colors: ["B", "G"],
   types: ["creature"],
   subtypes: ["Elemental"],

@@ -5,7 +5,7 @@ export default defineCard({
   manaCost: "{1}{B}",
   colors: ["B"],
   types: ["creature"],
-  subtypes: ["Human", "Cleric", "Rogue"],
+  subtypes: ["Human", "Rogue", "Ally"],
   power: 1,
   toughness: 1,
   text:

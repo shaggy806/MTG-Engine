@@ -8,18 +8,18 @@ import { defineCard } from "../define.js";
 // target options.
 export default defineCard({
   name: "Tear Asunder",
-  manaCost: "{B}{G}",
-  colors: ["B", "G"],
+  manaCost: "{1}{G}",
+  colors: ["G"],
   types: ["instant"],
   text:
-    "Kicker {2}\n" +
+    "Kicker {1}{B}\n" +
     "Exile target artifact or enchantment. If this spell was kicked, instead " +
-    "exile target permanent.",
+    "exile target nonland permanent.",
   targets: ["artifact-or-enchantment"],
   effect: { kind: "exile", target: 0 },
   kicker: {
-    cost: "{2}",
-    targets: ["permanent"],
+    cost: "{1}{B}",
+    targets: ["nonland-permanent"],
     effect: { kind: "exile", target: 0 },
   },
 });

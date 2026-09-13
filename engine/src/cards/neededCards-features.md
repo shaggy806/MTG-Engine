@@ -194,7 +194,11 @@ Landfall *triggers* already work (`enters-battlefield`, `filter: { type: "land" 
   then, else? }`** effect (Scute Swarm's "if you control six or more lands … Otherwise …")
   and hardened `permanentSource` against a vanished ability source (rule 608.2b — pre-existing
   latent crash the fuzz surfaced once Miirym copies could self-exile mid-trigger). Shipped
-  **Miirym, Sentinel Wyrm** (fully faithful — haste + not-legendary + end-step exile),
+  **Miirym, Sentinel Wyrm** (originally shipped with an invented haste + end-step-exile
+  clause neither Miirym nor any card on the list actually has — corrected in the
+  needed-cards verification pass to a permanent, non-legendary copy, its real text; the
+  `gainsHaste`/`exileAtEndStep` flags remain implemented for a future Reflection-of-
+  Kiki-Jiki-shaped card, just unexercised by any pool card right now),
   **Scute Swarm** (+ `Insect Token`), **Saw in Half** (drops only the "if it had a printed
   power" gate — every real creature card has one). `token-copy.test.ts`.
   - Still TBD: **Scute Swarm**'s copies snowball correctly, but a very land-heavy fuzz game
@@ -764,6 +768,89 @@ Landscape, Sakura-Tribe Elder), the rest needing one small, reusable primitive e
 `needed-cards-p17.test.ts`; all seven added to `random-demo.mjs`'s deck A/C for fuzz coverage
 (Amulet of Vigor pairs directly with deck A's existing tapland suite — Frontier Bivouac, Temple
 of Abandon, Rootbound Crag, Hinterland Harbor, Sheltered Thicket, Cinder Glade).
+
+## Full-pool Scryfall verification pass
+
+**Every already-implemented card in `cards/pool/` (not just newly-authored ones) checked
+against real Scryfall data, prompted by a user-found bug (Ureni of the Unwritten was
+mono-green `{4}{G}{G}` instead of Temur `{4}{G}{U}{R}`) — the first time this project
+audited its *existing* pool rather than a card being newly authored.**
+
+Built `engine/scripts/verify-cards.mjs`: resolves every pool card's real mana cost,
+colors, supertypes/types/subtypes, and power/toughness/loyalty via Scryfall's batch
+`/cards/collection` endpoint (up to 75 names per request — ~250 cards in 4 requests
+instead of one-per-card), with a fuzzy-search fallback for the names it can't
+exact-match (typically one face of a DFC/split/adventure card) and a
+[`namesOf`/`actuallyNamed`] guard against the fuzzy fallback returning a real but
+*unrelated* card for a homebrew name that merely contains a real card's words (caught
+live: "Rendwin, Warden of the Grove" fuzzy-matched the real, unrelated "Warden of the
+Grove"). Every HTTP call has a hard timeout and a bounded retry count (never an
+unbounded loop) — 429s and 5xx (Scryfall/Cloudflare hiccups, observed in practice after
+a day of heavy lookups) are retried; a real 404 is not. `flavor_name` is checked
+alongside `name` (Universes Beyond crossovers print a card under a different name —
+"Princess Sarah" *is* "Azusa, Lost but Seeking").
+
+**Result: 220 checked, 27 confirmed not real Magic cards (this project's own homebrew —
+commanders like Sarova/Ashmark/Bramblewing built for multiplayer/fuzz coverage, and the
+worked examples AUTHORING.md names for DFC/adventure/modal cards), 31 real mismatches,
+all fixed:**
+
+- **Pure stat/cost/type corrections (25 cards)** — Angelic Edict, Cinder Elemental,
+  Darksteel Myr, Defense of the Heart, Dragonspeaker Shaman, Fume Spitter, Goblin Raider
+  (also restored a missing "can't block" static — the ability was dropped entirely, not
+  just mistyped), Grapeshot, Levitation, Lord of Extinction, Mortivore (+ a documented
+  dropped Regenerate — rule 701.16, unmodeled), Oracle of Mul Daya (+ restored a missing
+  `extraLandsPerTurn` and a documented dropped "play lands from the top of your library"
+  permission — a distinct capability from `playFromGraveyard` the engine doesn't have),
+  Prodigal Sorcerer, Prosperous Innkeeper, Rumbling Baloth, Scute Swarm, Thieving Magpie,
+  Thorn of the Black Rose, Wurmcoil Engine, Zulaport Cutthroat, and the three MKM
+  surveil-land reskins (Commercial District, Raucous Theater, Underground Mortuary —
+  missing only their land-type subtypes; the surveil trigger itself was already correct).
+- **Boggart Brute** — an entirely wrong card: implemented as `{1}{B}` black instead of
+  the real `{2}{R}` red (Menace was already correct).
+- **Essence Flux** — wrong color/cost (`{1}{W}` white instead of `{U}` blue). Drops "if
+  it's a Spirit, put a +1/+1 counter on it" — `EffectApi.flicker` returns `void`, with no
+  way for a `resolve` script to read back the new object it just created.
+- **Gaze of Granite** — wrong color/cost (`{X}{R}{R}` instead of `{X}{B}{B}{G}`) *and* a
+  wrong filter: destroyed only creatures, when the real card hits every nonland permanent
+  (`CardFilter.notTypes: ["land"]`, a generalization already available, just unused here).
+- **Tear Asunder** — the unkicked cost/color was wrong (`{B}{G}` instead of `{1}{G}` —
+  black should only ever enter via the `{1}{B}` kicker, not `{2}`), and the kicked target
+  spec loosened to the real "target nonland permanent" (was `"permanent"`, which would
+  also have allowed targeting a land).
+- **Wilt-Leaf Cavaliers** — wrong cost/stats (`{2}{G/W}{G/W}` 5/5 instead of
+  `{G/W}{G/W}{G/W}` 3/4) and a wrong keyword: **vigilance**, not trample (the real card
+  has no trample at all).
+- **Combat Thresher** — wrong cost/stats (`{6}` 4/4 instead of the real `{7}` 3/3), an
+  invented Ward {2} and Cycling {2} neither exist on the real card, and a missing Double
+  strike. Prototype (rule 702.163 — the alternate {2}{W} 1/1 casting mode) isn't
+  modeled; only the base printing is authored. Its Ward {2} had specifically been chosen
+  as `ward.test.ts`'s worked example — since the real card has none, that test now uses
+  **Miirym, Sentinel Wyrm** instead (see below), which genuinely has it.
+- **Miirym, Sentinel Wyrm** — wrong cost/stats/subtype (`{2}{G}{U}{R}` 3/7 Dragon instead
+  of `{3}{G}{U}{R}` 6/6 Dragon Spirit), the wrong keyword (vigilance instead of flying +
+  ward {2}), *and* the token-copy ability had an entirely invented clause — "that token
+  gains haste, exile it at the beginning of the next end step" — that doesn't exist on
+  the real card at all (a permanent, ordinary non-legendary copy, full stop). This was
+  the P5b pass's own worked example for `create-token-copy`'s `gainsHaste`/
+  `exileAtEndStep` flags, checked in as "fully faithful" without the text ever having
+  been checked against Scryfall; `token-copy.test.ts` rewritten to match the real card
+  (the two flags stay implemented, now unexercised by any pool card, pending a real
+  future card shaped like Reflection of Kiki-Jiki).
+- **Ureni of the Unwritten** — the bug that started this pass: `{4}{G}{G}` mono-green
+  Elf Shaman 5/5 instead of the real `{4}{G}{U}{R}` Temur Spirit Dragon 7/7 with flying
+  and trample (neither keyword was present at all). Also missing half the ability — real
+  text triggers on **enters or attacks**; only the ETB half existed. All of deck A
+  (`random-demo.mjs`) and the server's Ureni precon (`server/src/decks.ts`) were already
+  built assuming the correct Temur manabase, so the fix is a strict improvement, not a
+  deck rework.
+
+`needed-cards-p17.test.ts` gained coverage incidentally via the Combat Thresher →
+Miirym swap in `ward.test.ts`; `additional-costs.test.ts`, `x-effects.test.ts`,
+`hybrid-mana.test.ts`, `bounce.test.ts`, `fight-and-keywords.test.ts`, and
+`zone-choice.test.ts` all needed mana-base/assertion updates to match the corrected
+costs. Full suite (589 tests) green; both the 2-player (300 games) and 4-player (150
+games) fuzzer runs clean afterward.
 
 ---
 

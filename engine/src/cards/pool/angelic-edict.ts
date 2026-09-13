@@ -2,7 +2,7 @@ import { defineCard } from "../define.js";
 
 export default defineCard({
   name: "Angelic Edict",
-  manaCost: "{3}{W}",
+  manaCost: "{4}{W}",
   colors: ["W"],
   types: ["sorcery"],
   text: "Exile target creature or enchantment.",

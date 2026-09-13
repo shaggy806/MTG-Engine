@@ -65,13 +65,15 @@ describe("Kessig Wolf Run — {X} activated ability pumps power", () => {
   });
 });
 
-describe("Gaze of Granite — destroys each creature with mana value X or less", () => {
-  it("spares creatures above the threshold", () => {
+describe("Gaze of Granite — destroys each nonland permanent with mana value X or less", () => {
+  it("spares creatures above the threshold, and spares lands entirely", () => {
     const { game } = mkGame(["Gaze of Granite"]);
     game.advanceUntil(toPrecombat);
-    for (let i = 0; i < 6; i += 1) game.debugSpawn("Mountain", A, "battlefield");
+    for (let i = 0; i < 3; i += 1) game.debugSpawn("Swamp", A, "battlefield");
+    for (let i = 0; i < 3; i += 1) game.debugSpawn("Forest", A, "battlefield");
     const bear = game.debugSpawn("Grizzly Bears", B, "battlefield"); // mv 2
     const wurm = game.debugSpawn("Craw Wurm", B, "battlefield"); // mv 5
+    const land = game.debugSpawn("Island", B, "battlefield"); // mv 0, but a land
 
     game.dispatch({
       type: "cast-spell",
@@ -84,6 +86,7 @@ describe("Gaze of Granite — destroys each creature with mana value X or less",
 
     expect(game.state.objects[bear].zone).toBe("graveyard");
     expect(game.state.objects[wurm].zone).toBe("battlefield");
+    expect(game.state.objects[land].zone).toBe("battlefield");
   });
 });
 

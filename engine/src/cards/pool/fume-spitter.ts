@@ -5,8 +5,8 @@ export default defineCard({
   manaCost: "{B}",
   colors: ["B"],
   types: ["creature"],
-  subtypes: ["Insect"],
-  power: 0,
+  subtypes: ["Phyrexian", "Horror"],
+  power: 1,
   toughness: 1,
   text: "Sacrifice Fume Spitter: Put a -1/-1 counter on target creature.",
   activated: [

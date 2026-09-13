@@ -169,21 +169,19 @@ describe("indestructible", () => {
   });
 
   it("still dies to 0 toughness", () => {
-    const game = mkGame(["Swamp", "Fume Spitter", "Fume Spitter", "Fume Spitter"]);
+    const game = mkGame(["Swamp", "Fume Spitter"]);
     game.advanceUntil(atFirstMain);
     playN(game, "Swamp", 1);
-    const myr = spawn(game, "Darksteel Myr", B); // 0/3
-    for (let i = 0; i < 3; i += 1) {
-      const spitter = spawn(game, "Fume Spitter", A);
-      game.dispatch({
-        type: "activate-ability",
-        player: A,
-        source: spitter,
-        abilityIndex: 0,
-        targets: [{ kind: "object", object: myr }],
-      });
-      game.advanceUntil(settled);
-    }
+    const myr = spawn(game, "Darksteel Myr", B); // 0/1
+    const spitter = spawn(game, "Fume Spitter", A);
+    game.dispatch({
+      type: "activate-ability",
+      player: A,
+      source: spitter,
+      abilityIndex: 0,
+      targets: [{ kind: "object", object: myr }],
+    });
+    game.advanceUntil(settled);
     expect(game.state.objects[myr].zone).toBe("graveyard");
   });
 });

@@ -236,26 +236,37 @@ describe("look-and-choose: graveyard (Grave Recall)", () => {
   });
 });
 
-/** Alice's opening hand: 6 Forests (for Ureni's {4}{G}{G}) + Ureni itself —
- * cast directly from hand here (not via the command zone) since the filter
- * is a property of the effect, independent of commander mechanics, which
- * this file doesn't otherwise touch. */
+/** Alice's opening hand: 7 lands (for Ureni's {4}{G}{U}{R} — 5 Forests,
+ * covering the {G} pip plus 4 of the generic, plus one each of
+ * Island/Mountain for the {U}/{R} pips) + Ureni itself — cast directly from
+ * hand here (not via the command zone) since the filter is a property of
+ * the effect, independent of commander mechanics, which this file doesn't
+ * otherwise touch. */
 const URENI_HAND = [
   "Forest",
   "Forest",
   "Forest",
   "Forest",
   "Forest",
-  "Forest",
+  "Island",
+  "Mountain",
   "Ureni of the Unwritten",
 ];
 
 function castUreni(game: Game): void {
-  for (let i = 0; i < 6; i += 1) {
+  for (const landName of [
+    "Forest",
+    "Forest",
+    "Forest",
+    "Forest",
+    "Forest",
+    "Island",
+    "Mountain",
+  ]) {
     game.dispatch({
       type: "play-land",
       player: A,
-      card: named(game, game.handOf(A), "Forest"),
+      card: named(game, game.handOf(A), landName),
     });
   }
   const card = named(game, game.handOf(A), "Ureni of the Unwritten");
@@ -275,7 +286,7 @@ describe("look-and-choose filter: only a Dragon card (Ureni of the Unwritten)", 
       "Llanowar Elves",
       "Wildwood Sentinel",
     ];
-    const game = mkGame([...URENI_HAND, ...topEight]);
+    const game = mkGame([...URENI_HAND, ...topEight], [], { rules: { openingHandSize: 8 } });
     game.advanceUntil(atFirstMain);
     castUreni(game);
 
@@ -293,7 +304,7 @@ describe("look-and-choose filter: only a Dragon card (Ureni of the Unwritten)", 
 
   it("rejects choosing a revealed but non-Dragon card", () => {
     const topEight = ["Grizzly Bears", "Craw Wurm", "Mossback Dragon", "Giant Growth"];
-    const game = mkGame([...URENI_HAND, ...topEight]);
+    const game = mkGame([...URENI_HAND, ...topEight], [], { rules: { openingHandSize: 8 } });
     game.advanceUntil(atFirstMain);
     castUreni(game);
 
@@ -316,7 +327,7 @@ describe("look-and-choose filter: only a Dragon card (Ureni of the Unwritten)", 
       "Wildwood Sentinel",
       "Rumbling Baloth",
     ];
-    const game = mkGame([...URENI_HAND, ...topEight]);
+    const game = mkGame([...URENI_HAND, ...topEight], [], { rules: { openingHandSize: 8 } });
     game.advanceUntil(atFirstMain);
     castUreni(game);
 
@@ -344,7 +355,7 @@ describe("look-and-choose filter: only a Dragon card (Ureni of the Unwritten)", 
       "Rumbling Baloth",
       "Forest",
     ];
-    const game = mkGame([...URENI_HAND, ...topEight]);
+    const game = mkGame([...URENI_HAND, ...topEight], [], { rules: { openingHandSize: 8 } });
     game.advanceUntil(atFirstMain);
     castUreni(game);
 

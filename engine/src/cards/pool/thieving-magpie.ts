@@ -2,12 +2,12 @@ import { defineCard } from "../define.js";
 
 export default defineCard({
   name: "Thieving Magpie",
-  manaCost: "{2}{U}",
+  manaCost: "{2}{U}{U}",
   colors: ["U"],
   types: ["creature"],
   subtypes: ["Bird"],
   power: 1,
-  toughness: 1,
+  toughness: 3,
   keywords: ["flying"],
   text: "Flying. Whenever Thieving Magpie deals combat damage to a player, draw a card.",
   triggered: [

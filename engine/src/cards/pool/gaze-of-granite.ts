@@ -4,11 +4,11 @@ import { defineCard } from "../define.js";
  * animation clause is dropped, same as this card's other omitted lines. */
 export default defineCard({
   name: "Gaze of Granite",
-  manaCost: "{X}{R}{R}",
-  colors: ["R"],
+  manaCost: "{X}{B}{B}{G}",
+  colors: ["B", "G"],
   types: ["sorcery"],
-  text: "Destroy each creature with mana value X or less.",
+  text: "Destroy each nonland permanent with mana value X or less.",
   resolve: (ctx) => {
-    ctx.destroyAll({ type: "creature", manaValue: { op: "lte", n: ctx.x } });
+    ctx.destroyAll({ notTypes: ["land"], manaValue: { op: "lte", n: ctx.x } });
   },
 });

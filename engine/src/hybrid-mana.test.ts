@@ -189,11 +189,11 @@ describe("Twobrid mana — Flame Javelin ({2/R}{2/R}{2/R})", () => {
   });
 });
 
-describe("Hybrid mana — Wilt-Leaf Cavaliers ({2}{G/W}{G/W})", () => {
+describe("Hybrid mana — Wilt-Leaf Cavaliers ({G/W}{G/W}{G/W})", () => {
   it("pays each hybrid pip from whichever colour is on hand", () => {
     const { game } = scriptedGame(["Wilt-Leaf Cavaliers"], "Forest");
     game.advanceUntil(toPrecombat);
-    Array.from({ length: 4 }, () => spawn(game, "Forest", A));
+    Array.from({ length: 3 }, () => spawn(game, "Forest", A));
 
     game.dispatch({
       type: "cast-spell",
@@ -213,6 +213,6 @@ describe("Hybrid mana — Wilt-Leaf Cavaliers ({2}{G/W}{G/W})", () => {
           game.state.objects[id].cardName === "Forest" &&
           game.state.objects[id].tapped,
       ).length,
-    ).toBe(4);
+    ).toBe(3);
   });
 });

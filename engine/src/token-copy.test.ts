@@ -44,7 +44,13 @@ const tokensOf = (game: Game, p: typeof A, name: string): ObjectId[] =>
       game.state.objects[id].isToken,
   );
 
-describe("Miirym, Sentinel Wyrm — a haste'd, non-legendary copy exiled at end step", () => {
+// `create-token-copy`'s `gainsHaste`/`exileAtEndStep` flags (a temporary,
+// hasty copy — Reflection of Kiki-Jiki's shape) remain implemented but are
+// currently unexercised by any pool card: Miirym's real Oracle text (checked
+// against Scryfall — needed-cards verification pass) makes a permanent,
+// ordinary copy with neither haste nor an expiry, unlike what an earlier
+// pass here had guessed.
+describe("Miirym, Sentinel Wyrm — a permanent, non-legendary copy", () => {
   it("copies a legendary Dragon that enters, and the legend rule spares the copy", () => {
     const { game } = mkGame(["Lathliss, Dragon Queen"], "Mountain");
     game.advanceUntil(toPrecombat);
@@ -61,7 +67,6 @@ describe("Miirym, Sentinel Wyrm — a haste'd, non-legendary copy exiled at end 
     const copies = tokensOf(game, A, "Lathliss, Dragon Queen");
     expect(copies).toHaveLength(1); // survives — the copy is not legendary
     expect(game.state.objects[copies[0]].notLegendary).toBe(true);
-    expect(game.characteristics(copies[0]).keywords.has("haste")).toBe(true);
     expect(
       game.battlefield.filter(
         (id) =>
@@ -71,24 +76,24 @@ describe("Miirym, Sentinel Wyrm — a haste'd, non-legendary copy exiled at end 
     ).toHaveLength(1);
   });
 
-  it("exiles the token copy at the beginning of the next end step", () => {
-    const { game, a } = mkGame(["Terror of the Peaks"], "Mountain");
+  it("does not exile the copy at the next end step — it's permanent", () => {
+    const { game } = mkGame(["Lathliss, Dragon Queen"], "Mountain");
     game.advanceUntil(toPrecombat);
-    for (let i = 0; i < 6; i += 1) game.debugSpawn("Mountain", A, "battlefield");
+    for (let i = 0; i < 8; i += 1) game.debugSpawn("Mountain", A, "battlefield");
     game.debugSpawn("Miirym, Sentinel Wyrm", A, "battlefield");
-    a.chooseTargetsFn = () => [{ kind: "player", player: B }];
 
     game.dispatch({
       type: "cast-spell",
       player: A,
-      card: named(game, game.handOf(A), "Terror of the Peaks"),
+      card: named(game, game.handOf(A), "Lathliss, Dragon Queen"),
     });
     game.advanceUntil(quiet);
-    const copy = tokensOf(game, A, "Terror of the Peaks");
+    const copy = tokensOf(game, A, "Lathliss, Dragon Queen");
     expect(copy).toHaveLength(1);
 
     game.advanceUntil((s) => s.turn.number === 2);
-    expect(game.state.objects[copy[0]]).toBeUndefined(); // exiled, then token-cleanup SBA deleted it
+    expect(game.state.objects[copy[0]]).toBeDefined();
+    expect(game.state.objects[copy[0]]?.zone).toBe("battlefield");
   });
 });
 

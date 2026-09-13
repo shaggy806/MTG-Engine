@@ -69,18 +69,18 @@ type TargetLike =
   | { kind: "object"; object: ObjectId }
   | { kind: "player"; player: PlayerId };
 
-describe("Ward — Combat Thresher (Ward {2})", () => {
+describe("Ward — Miirym, Sentinel Wyrm (Ward {2})", () => {
   it("taxes an opponent's targeted spell when they can pay", () => {
     const { game } = mkGame(["Lightning Bolt"]);
     game.advanceUntil(toPrecombat);
-    const thresher = spawn(game, "Combat Thresher", B);
+    const miirym = spawn(game, "Miirym, Sentinel Wyrm", B);
     for (let i = 0; i < 3; i += 1) spawn(game, "Mountain", A);
 
-    boltA(game, { kind: "object", object: thresher });
+    boltA(game, { kind: "object", object: miirym });
     game.advanceUntil(settled);
 
-    expect(game.eventsOfType("ward-paid").some((e) => e.object === thresher)).toBe(true);
-    expect(game.state.objects[thresher].damageMarked).toBe(3); // the Bolt still hit
+    expect(game.eventsOfType("ward-paid").some((e) => e.object === miirym)).toBe(true);
+    expect(game.state.objects[miirym].damageMarked).toBe(3); // the Bolt still hit
     // {R} for the Bolt + {2} for ward = all three Mountains tapped.
     expect(
       game.battlefield.filter(
@@ -92,14 +92,14 @@ describe("Ward — Combat Thresher (Ward {2})", () => {
   it("counters an opponent's spell when they can't pay the ward", () => {
     const { game } = mkGame(["Lightning Bolt"]);
     game.advanceUntil(toPrecombat);
-    const thresher = spawn(game, "Combat Thresher", B);
+    const miirym = spawn(game, "Miirym, Sentinel Wyrm", B);
     spawn(game, "Mountain", A); // only enough for the Bolt itself
 
-    boltA(game, { kind: "object", object: thresher });
+    boltA(game, { kind: "object", object: miirym });
     game.advanceUntil(settled);
 
     expect(game.eventsOfType("spell-countered").length).toBeGreaterThan(0);
-    expect(game.state.objects[thresher].damageMarked).toBe(0);
+    expect(game.state.objects[miirym].damageMarked).toBe(0);
     expect(
       game.graveyardOf(A).some((id) => game.state.objects[id].cardName === "Lightning Bolt"),
     ).toBe(true);
@@ -108,20 +108,20 @@ describe("Ward — Combat Thresher (Ward {2})", () => {
   it("does not tax the controller's own spell", () => {
     const { game } = mkGame(["Lightning Bolt"]);
     game.advanceUntil(toPrecombat);
-    const thresher = spawn(game, "Combat Thresher", A); // Alice's own
+    const miirym = spawn(game, "Miirym, Sentinel Wyrm", A); // Alice's own
     spawn(game, "Mountain", A);
 
-    boltA(game, { kind: "object", object: thresher });
+    boltA(game, { kind: "object", object: miirym });
     game.advanceUntil(settled);
 
     expect(game.eventsOfType("ward-paid")).toHaveLength(0);
-    expect(game.state.objects[thresher].damageMarked).toBe(3);
+    expect(game.state.objects[miirym].damageMarked).toBe(3);
   });
 
   it("also protects against a targeted ability", () => {
     const { game } = mkGame();
     game.advanceUntil(toPrecombat);
-    const thresher = spawn(game, "Combat Thresher", B);
+    const miirym = spawn(game, "Miirym, Sentinel Wyrm", B);
     const tim = spawn(game, "Prodigal Sorcerer", A); // {T}: deal 1 to any target
     // no spare mana for Alice — the ward can't be paid
 
@@ -130,11 +130,11 @@ describe("Ward — Combat Thresher (Ward {2})", () => {
       player: A,
       source: tim,
       abilityIndex: 0,
-      targets: [{ kind: "object", object: thresher }],
+      targets: [{ kind: "object", object: miirym }],
     });
     game.advanceUntil(settled);
 
-    expect(game.state.objects[thresher].damageMarked).toBe(0);
+    expect(game.state.objects[miirym].damageMarked).toBe(0);
     expect(game.eventsOfType("spell-countered").length).toBeGreaterThan(0);
   });
 });

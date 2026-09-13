@@ -7,7 +7,7 @@ export default defineCard({
   colors: ["B"],
   types: ["creature"],
   subtypes: ["Human", "Assassin"],
-  power: 2,
+  power: 1,
   toughness: 3,
   keywords: ["deathtouch"],
   text: "Deathtouch\nWhen Thorn of the Black Rose enters the battlefield, you become the monarch.",

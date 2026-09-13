@@ -8,7 +8,7 @@ import { defineCard } from "../define.js";
 // do" tail.
 export default defineCard({
   name: "Defense of the Heart",
-  manaCost: "{2}{G}{G}",
+  manaCost: "{3}{G}",
   colors: ["G"],
   types: ["enchantment"],
   text:

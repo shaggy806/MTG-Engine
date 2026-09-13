@@ -4,7 +4,7 @@ export default defineCard({
   name: "Wurmcoil Engine",
   manaCost: "{6}",
   types: ["artifact", "creature"],
-  subtypes: ["Wurm"],
+  subtypes: ["Phyrexian", "Wurm"],
   power: 6,
   toughness: 6,
   keywords: ["deathtouch", "lifelink"],

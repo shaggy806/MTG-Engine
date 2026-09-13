@@ -7,7 +7,7 @@ import { defineCard } from "../define.js";
  */
 export default defineCard({
   name: "Cinder Elemental",
-  manaCost: "{2}{R}",
+  manaCost: "{3}{R}",
   colors: ["R"],
   types: ["creature"],
   subtypes: ["Elemental"],

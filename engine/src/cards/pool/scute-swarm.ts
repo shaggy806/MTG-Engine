@@ -7,7 +7,7 @@ import { defineCard } from "../define.js";
 // card's behaviour.
 export default defineCard({
   name: "Scute Swarm",
-  manaCost: "{1}{G}",
+  manaCost: "{2}{G}",
   colors: ["G"],
   types: ["creature"],
   subtypes: ["Insect"],

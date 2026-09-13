@@ -9,7 +9,7 @@ import { defineCard } from "../define.js";
  */
 export default defineCard({
   name: "Grapeshot",
-  manaCost: "{2}{R}",
+  manaCost: "{1}{R}",
   colors: ["R"],
   types: ["sorcery"],
   text: "Storm (When you cast this spell, copy it for each spell cast before it this turn.)\nGrapeshot deals 1 damage to any target.",

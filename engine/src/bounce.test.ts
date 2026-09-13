@@ -152,9 +152,9 @@ describe("Man-o'-War", () => {
 
 describe("Angelic Edict", () => {
   it("exiles a target creature", () => {
-    const game = mkGame(["Plains", "Plains", "Plains", "Plains", "Angelic Edict"]);
+    const game = mkGame(["Plains", "Plains", "Plains", "Plains", "Plains", "Angelic Edict"]);
     game.advanceUntil(atFirstMain);
-    playLands(game, ["Plains", "Plains", "Plains", "Plains"]);
+    playLands(game, ["Plains", "Plains", "Plains", "Plains", "Plains"]);
     const bear = spawn(game, "Grizzly Bears", B);
 
     game.dispatch({

@@ -4,6 +4,7 @@ import { entersTappedStatic, manaTapAbility } from "../helpers.js";
 export default defineCard({
   name: "Commercial District",
   types: ["land"],
+  subtypes: ["Mountain", "Forest"],
   text:
     "Commercial District enters the battlefield tapped.\n" +
     "When Commercial District enters the battlefield, surveil 1.\n" +

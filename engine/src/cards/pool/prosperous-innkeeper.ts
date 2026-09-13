@@ -2,12 +2,12 @@ import { defineCard } from "../define.js";
 
 export default defineCard({
   name: "Prosperous Innkeeper",
-  manaCost: "{2}{G}",
+  manaCost: "{1}{G}",
   colors: ["G"],
   types: ["creature"],
-  subtypes: ["Halfling", "Cleric"],
+  subtypes: ["Halfling", "Citizen"],
   power: 1,
-  toughness: 3,
+  toughness: 1,
   text:
     "When Prosperous Innkeeper enters the battlefield, create a Treasure token. " +
     "Whenever another creature you control enters, you gain 1 life.",

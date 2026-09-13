@@ -14,7 +14,7 @@ describe("colorIdentityOf (rule 903.4)", () => {
   });
 
   it("counts a hybrid pip's colours", () => {
-    expect(id("Wilt-Leaf Cavaliers")).toBe("WG"); // {2}{G/W}{G/W}
+    expect(id("Wilt-Leaf Cavaliers")).toBe("WG"); // {G/W}{G/W}{G/W}
   });
 
   it("reads mana symbols in rules / ability text, not just the cost", () => {

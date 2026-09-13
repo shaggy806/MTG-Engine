@@ -1,22 +1,18 @@
 import { defineCard } from "../define.js";
 
-// Modern Horizons 3.
+// Brothers' War. Prototype (rule 702.163 — an alternate cost/color/size the
+// spell can be cast with, keeping its abilities and types) isn't modeled —
+// only the base {7} printing is authored, faithfully (no invented Ward or
+// Cycling; the real card has neither).
 export default defineCard({
   name: "Combat Thresher",
-  manaCost: "{6}",
+  manaCost: "{7}",
   types: ["artifact", "creature"],
   subtypes: ["Construct"],
-  power: 4,
-  toughness: 4,
-  cycling: { cost: "{2}" },
-  text: "Ward {2}\nWhen Combat Thresher enters the battlefield, draw a card.\nCycling {2}",
-  static: [
-    {
-      affects: { scope: "self" },
-      ward: { mana: "{2}" },
-      text: "Ward {2}",
-    },
-  ],
+  power: 3,
+  toughness: 3,
+  keywords: ["double-strike"],
+  text: "Double strike\nWhen Combat Thresher enters the battlefield, draw a card.",
   triggered: [
     {
       trigger: { on: "enters-battlefield", who: "self" },

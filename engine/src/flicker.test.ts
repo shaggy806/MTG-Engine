@@ -17,7 +17,7 @@ const mkGame = (aHand: readonly string[]) => {
     rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
     controllers: { [A]: a, [B]: b },
     decks: [
-      { player: A, cards: [...aHand, ...Array(40).fill("Plains")] },
+      { player: A, cards: [...aHand, ...Array(40).fill("Island")] },
       { player: B, cards: Array(40).fill("Island") },
     ],
   });
@@ -33,13 +33,12 @@ const quiet = (s: GameState): boolean =>
 
 describe("Essence Flux — exile a creature you control, then return it fresh", () => {
   it("re-enters as a new object: untapped, no counters, no Aura, summoning sick again", () => {
-    const { game } = mkGame(["Essence Flux", "Plains", "Plains"]);
+    const { game } = mkGame(["Essence Flux", "Island"]);
     game.advanceUntil(toPrecombat);
     const bear = game.debugSpawn("Grizzly Bears", A, "battlefield", { tapped: true });
     game.state.objects[bear].counters["+1/+1"] = 2;
     game.state.objects[bear].summoningSick = false;
-    game.debugSpawn("Plains", A, "battlefield");
-    game.debugSpawn("Plains", A, "battlefield");
+    game.debugSpawn("Island", A, "battlefield");
 
     game.dispatch({
       type: "cast-spell",
@@ -57,13 +56,12 @@ describe("Essence Flux — exile a creature you control, then return it fresh", 
   });
 
   it("drops an attached Aura, which then falls off to the graveyard", () => {
-    const { game } = mkGame(["Essence Flux", "Plains", "Plains"]);
+    const { game } = mkGame(["Essence Flux", "Island"]);
     game.advanceUntil(toPrecombat);
     const bear = game.debugSpawn("Grizzly Bears", A, "battlefield");
     const aura = game.debugSpawn("Holy Strength", A, "battlefield");
     game.state.objects[aura].attachedTo = bear;
-    game.debugSpawn("Plains", A, "battlefield");
-    game.debugSpawn("Plains", A, "battlefield");
+    game.debugSpawn("Island", A, "battlefield");
 
     game.dispatch({
       type: "cast-spell",
@@ -78,12 +76,11 @@ describe("Essence Flux — exile a creature you control, then return it fresh", 
   });
 
   it("a flickered token ceases to exist instead of returning", () => {
-    const { game } = mkGame(["Essence Flux", "Plains", "Plains"]);
+    const { game } = mkGame(["Essence Flux", "Island"]);
     game.advanceUntil(toPrecombat);
     const token = game.debugSpawn("Grizzly Bears", A, "battlefield");
     game.state.objects[token].isToken = true;
-    game.debugSpawn("Plains", A, "battlefield");
-    game.debugSpawn("Plains", A, "battlefield");
+    game.debugSpawn("Island", A, "battlefield");
 
     game.dispatch({
       type: "cast-spell",

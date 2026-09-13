@@ -1,8 +1,10 @@
 import { defineCard } from "../define.js";
 
+/** Regenerate (rule 701.16) isn't modeled — the "{B}: Regenerate this
+ * creature" activated ability is dropped. */
 export default defineCard({
   name: "Mortivore",
-  manaCost: "{3}{B}{B}",
+  manaCost: "{2}{B}{B}",
   colors: ["B"],
   types: ["creature"],
   subtypes: ["Lhurgoyf"],

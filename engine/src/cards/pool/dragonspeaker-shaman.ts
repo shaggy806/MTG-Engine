@@ -2,7 +2,7 @@ import { defineCard } from "../define.js";
 
 export default defineCard({
   name: "Dragonspeaker Shaman",
-  manaCost: "{2}{R}",
+  manaCost: "{1}{R}{R}",
   colors: ["R"],
   types: ["creature"],
   subtypes: ["Human", "Barbarian", "Shaman"],

@@ -5,7 +5,7 @@ export default defineCard({
   manaCost: "{2}{U}",
   colors: ["U"],
   types: ["creature"],
-  subtypes: ["Human", "Wizard"],
+  subtypes: ["Human", "Wizard", "Sorcerer"],
   power: 1,
   toughness: 1,
   text: "{T}: Prodigal Sorcerer deals 1 damage to any target.",

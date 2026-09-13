@@ -4,6 +4,7 @@ import { entersTappedStatic, manaTapAbility } from "../helpers.js";
 export default defineCard({
   name: "Raucous Theater",
   types: ["land"],
+  subtypes: ["Swamp", "Mountain"],
   text:
     "Raucous Theater enters the battlefield tapped.\n" +
     "When Raucous Theater enters the battlefield, surveil 1.\n" +
