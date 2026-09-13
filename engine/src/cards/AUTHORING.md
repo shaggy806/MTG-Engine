@@ -27,7 +27,26 @@ card is one file, one `defineCard({...})` call, one `export default`.
 
 ## 1. Quick start
 
-Create `engine/src/cards/pool/grizzly-bears.ts`:
+**Look the card up on Scryfall first.** Don't author from memory — mana
+costs, P/T, and especially Oracle text wording are easy to misremember and
+the engine's behaviour is only as correct as the printed card. Run:
+
+```
+npm run card:lookup -w engine -- "Card Name"
+```
+
+(`engine/scripts/scryfall-lookup.mjs`, a thin wrapper over the [Scryfall
+card API](https://scryfall.com/docs/api/cards/named)). It prints the
+authoritative mana cost, type line, P/T or loyalty, colors, keywords, and
+full Oracle text — every face separately for a DFC/split/adventure card,
+plus any related token names under "Related parts". Add `--rulings` to also
+pull official rulings (useful when a card's exact interaction is unclear —
+e.g. how an intervening-if or a replacement effect is worded), or `--json`
+for the raw Scryfall payload. It accepts multiple names in one call and
+does its own rate-limit throttling/retry, so batch-lookup a set of cards
+before authoring all of them.
+
+Then create `engine/src/cards/pool/grizzly-bears.ts`:
 
 ```ts
 import { defineCard } from "../define.js";
