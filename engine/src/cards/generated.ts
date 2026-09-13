@@ -32,6 +32,7 @@ import _poolBoggartBrute from "./pool/boggart-brute.js";
 import _poolBojukaBog from "./pool/bojuka-bog.js";
 import _poolBonesplitter from "./pool/bonesplitter.js";
 import _poolBoomerang from "./pool/boomerang.js";
+import _poolBoseijuWhoEndures from "./pool/boseiju-who-endures.js";
 import _poolBountifulLandscape from "./pool/bountiful-landscape.js";
 import _poolBramblewingTheUntamed from "./pool/bramblewing-the-untamed.js";
 import _poolCabarettiCourtyard from "./pool/cabaretti-courtyard.js";
@@ -65,6 +66,7 @@ import _poolDoublingSeason from "./pool/doubling-season.js";
 import _poolDragonTempest from "./pool/dragon-tempest.js";
 import _poolDragonspeakerShaman from "./pool/dragonspeaker-shaman.js";
 import _poolDuskwoodVerdict from "./pool/duskwood-verdict.js";
+import _poolEiganjoSeatOfTheEmpire from "./pool/eiganjo-seat-of-the-empire.js";
 import _poolElvishVisionary from "./pool/elvish-visionary.js";
 import _poolEmberDart from "./pool/ember-dart.js";
 import _poolEmberclawScout from "./pool/emberclaw-scout.js";
@@ -161,6 +163,7 @@ import _poolOldGnawbone from "./pool/old-gnawbone.js";
 import _poolOpt from "./pool/opt.js";
 import _poolOracleOfMulDaya from "./pool/oracle-of-mul-daya.js";
 import _poolOrcishLumberjack from "./pool/orcish-lumberjack.js";
+import _poolOtawaraSoaringCity from "./pool/otawara-soaring-city.js";
 import _poolOvergrownTomb from "./pool/overgrown-tomb.js";
 import _poolPacifism from "./pool/pacifism.js";
 import _poolPhyrexianArena from "./pool/phyrexian-arena.js";
@@ -212,6 +215,7 @@ import _poolSunderCharm from "./pool/sunder-charm.js";
 import _poolSunlitBastion from "./pool/sunlit-bastion.js";
 import _poolSwamp from "./pool/swamp.js";
 import _poolSylvanSafekeeper from "./pool/sylvan-safekeeper.js";
+import _poolTakenumaAbandonedMire from "./pool/takenuma-abandoned-mire.js";
 import _poolTannukMemorialEnsign from "./pool/tannuk-memorial-ensign.js";
 import _poolTearAsunder from "./pool/tear-asunder.js";
 import _poolTempleOfAbandon from "./pool/temple-of-abandon.js";
@@ -305,6 +309,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolBojukaBog,
   _poolBonesplitter,
   _poolBoomerang,
+  _poolBoseijuWhoEndures,
   _poolBountifulLandscape,
   _poolBramblewingTheUntamed,
   _poolCabarettiCourtyard,
@@ -338,6 +343,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolDragonTempest,
   _poolDragonspeakerShaman,
   _poolDuskwoodVerdict,
+  _poolEiganjoSeatOfTheEmpire,
   _poolElvishVisionary,
   _poolEmberDart,
   _poolEmberclawScout,
@@ -434,6 +440,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolOpt,
   _poolOracleOfMulDaya,
   _poolOrcishLumberjack,
+  _poolOtawaraSoaringCity,
   _poolOvergrownTomb,
   _poolPacifism,
   _poolPhyrexianArena,
@@ -485,6 +492,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolSunlitBastion,
   _poolSwamp,
   _poolSylvanSafekeeper,
+  _poolTakenumaAbandonedMire,
   _poolTannukMemorialEnsign,
   _poolTearAsunder,
   _poolTempleOfAbandon,

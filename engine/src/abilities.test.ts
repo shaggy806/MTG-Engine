@@ -369,7 +369,7 @@ describe("activated abilities on the stack", () => {
         source: asObjectId("ghost"),
         abilityIndex: 0,
       }),
-    ).toThrow(/not on the battlefield/);
+    ).toThrow(/does not exist/);
   });
 
   it("an ability fizzles if its target is gone by resolution", () => {

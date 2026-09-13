@@ -882,41 +882,58 @@ export class Game {
       out.push({ kind: "play-land", card, cardName: def.name });
     }
 
+    const pushActivateAbility = (
+      source: ObjectId,
+      cardName: string,
+      ability: ActivatedAbility,
+      index: number,
+    ): void => {
+      if (this.whyCannotActivateAbility(player, source, index) !== null) return;
+      out.push({
+        kind: "activate-ability",
+        source,
+        abilityIndex: index,
+        cardName,
+        text: ability.text,
+        targetSpecs: ability.targets,
+        targetOptions: this.targetOptionsFor(
+          ability.targets,
+          player,
+          this.permanentSource(source),
+          ability.otherOnly ? source : undefined,
+        ),
+        ...(ability.cost.sacrifice !== undefined && ability.cost.sacrifice !== "self"
+          ? { sacrifice: { choices: this.sacrificeCandidates(player, source, ability) } }
+          : {}),
+        ...(ability.loyaltyCost !== undefined ? { loyalty: ability.loyaltyCost } : {}),
+        ...(parseManaCost(ability.cost.mana).x > 0
+          ? {
+              xCost: {
+                maxX: this.maxAffordableAbilityX(
+                  player,
+                  ability.cost.mana,
+                  ability.cost.tap || ability.zone === "hand" ? undefined : source,
+                ),
+              },
+            }
+          : {}),
+      });
+    };
+
     const abilityGrantors = this.activatedGrantSources();
     for (const source of this.state.zones.shared.battlefield) {
       const object = this.state.objects[source];
       if (object.controller !== player) continue;
-      this.effectiveActivated(source, abilityGrantors).forEach((ability, index) => {
-        if (this.whyCannotActivateAbility(player, source, index) !== null) return;
-        out.push({
-          kind: "activate-ability",
-          source,
-          abilityIndex: index,
-          cardName: printedCardName(object),
-          text: ability.text,
-          targetSpecs: ability.targets,
-          targetOptions: this.targetOptionsFor(
-            ability.targets,
-            player,
-            this.permanentSource(source),
-            ability.otherOnly ? source : undefined,
-          ),
-          ...(ability.cost.sacrifice !== undefined && ability.cost.sacrifice !== "self"
-            ? { sacrifice: { choices: this.sacrificeCandidates(player, source, ability) } }
-            : {}),
-          ...(ability.loyaltyCost !== undefined ? { loyalty: ability.loyaltyCost } : {}),
-          ...(parseManaCost(ability.cost.mana).x > 0
-            ? {
-                xCost: {
-                  maxX: this.maxAffordableAbilityX(
-                    player,
-                    ability.cost.mana,
-                    ability.cost.tap ? undefined : source,
-                  ),
-                },
-              }
-            : {}),
-        });
+      this.effectiveActivated(source, abilityGrantors).forEach((ability, index) =>
+        pushActivateAbility(source, printedCardName(object), ability, index),
+      );
+    }
+
+    // Channel (rule 702.51a) — activated from hand, not the battlefield.
+    for (const card of this.state.zones.perPlayer[player].hand) {
+      const def = this.registry.get(this.state.objects[card].cardName);
+      this.effectiveActivated(card).forEach((ability, index) => {
+        if (ability.zone === "hand") pushActivateAbility(card, def.name, ability, index);
       });
     }
 
@@ -4071,6 +4088,41 @@ export class Game {
     return granted.length === 0 ? printed : [...printed, ...granted];
   }
 
+  /** `ability.cost.mana`, with `{X}` resolved to `xValue` (folded into
+   * generic) and `ability.costReduction` applied to the generic portion
+   * (rule 601.2f-style — can't go below 0). Mirrors `castingCostOf`'s
+   * `selfCostReduction` handling, but for an ability's own printed cost
+   * rather than a spell's. Returns the resolved cost alongside the chosen
+   * X, since `activateAbility` needs to stamp the latter on the stack
+   * object. */
+  private activatedAbilityManaCost(
+    player: PlayerId,
+    ability: ActivatedAbility,
+    xValue = 0,
+  ): { cost: ManaCost; chosenX: number } {
+    const parsed = parseManaCost(ability.cost.mana);
+    const hasX = parsed.x > 0;
+    const chosenX = hasX ? Math.max(0, Math.floor(xValue)) : 0;
+    let generic = parsed.generic + parsed.x * chosenX;
+    if (ability.costReduction !== undefined) {
+      const { reduceGeneric } = ability.costReduction;
+      generic -=
+        typeof reduceGeneric === "number"
+          ? reduceGeneric
+          : this.battlefieldMatching(player, reduceGeneric.countOf).length;
+    }
+    return {
+      cost: {
+        colored: parsed.colored,
+        colorless: parsed.colorless,
+        generic: Math.max(0, generic),
+        x: 0,
+        hybrid: parsed.hybrid,
+      },
+      chosenX,
+    };
+  }
+
   private whyCannotActivateAbility(
     player: PlayerId,
     sourceId: ObjectId,
@@ -4079,19 +4131,27 @@ export class Game {
     const blocked = this.whyCannotAct(player);
     if (blocked !== null) return blocked;
     const source = this.state.objects[sourceId];
-    if (source === undefined || source.zone !== "battlefield") {
-      return "that permanent is not on the battlefield";
-    }
-    if (source.controller !== player) {
-      return `${player} does not control that permanent`;
-    }
+    if (source === undefined) return "that object does not exist";
     const def = this.registry.get(printedCardName(source));
     const ability = this.effectiveActivated(sourceId)[abilityIndex];
     if (ability === undefined) {
       return `${def.name} has no ability #${abilityIndex}`;
     }
-    if (hasLostAbilities(source)) {
-      return `${def.name} has lost its abilities`;
+    if (ability.zone === "hand") {
+      // Channel (rule 702.51a) — activatable only from hand, never as a
+      // permanent's ability.
+      if (source.zone !== "hand") return "that card is not in hand";
+      if (source.owner !== player) return `${player} does not own that card`;
+    } else {
+      if (source.zone !== "battlefield") {
+        return "that permanent is not on the battlefield";
+      }
+      if (source.controller !== player) {
+        return `${player} does not control that permanent`;
+      }
+      if (hasLostAbilities(source)) {
+        return `${def.name} has lost its abilities`;
+      }
     }
     if (
       ability.condition !== undefined &&
@@ -4131,7 +4191,7 @@ export class Game {
         return `${def.name}'s ability has no legal ${spec} target`;
       }
     }
-    if (this.payMana(player, parseManaCost(ability.cost.mana)) === null) {
+    if (this.payMana(player, this.activatedAbilityManaCost(player, ability).cost) === null) {
       return `${player} cannot pay for ${def.name}'s ability`;
     }
     if (
@@ -4210,19 +4270,17 @@ export class Game {
 
     // `{X}` in the cost (rule 107.3 — ROADMAP Phase 11 EG-3): fold the chosen
     // value into the generic portion before paying, and stamp it on the
-    // ability object below so `ctx.x` reads it at resolution.
-    const manaParsed = parseManaCost(ability.cost.mana);
-    const hasX = manaParsed.x > 0;
-    const chosenX = hasX ? Math.max(0, Math.floor(xValue)) : 0;
-    const manaCost: ManaCost = hasX
-      ? { ...manaParsed, generic: manaParsed.generic + manaParsed.x * chosenX, x: 0 }
-      : manaParsed;
+    // ability object below so `ctx.x` reads it at resolution. Also folds in
+    // `ability.costReduction` (the Kamigawa Channel lands' per-legendary
+    // discount).
+    const { cost: manaCost, chosenX } = this.activatedAbilityManaCost(player, ability, xValue);
     // Don't auto-tap the source for its own ability's mana cost unless there's
     // no other way to pay (it may want to attack / hold up its `{T}` ability).
+    // A hand-zone (Channel) source is never a mana source to begin with.
     const payment = this.payMana(
       player,
       manaCost,
-      ability.cost.tap ? undefined : sourceId,
+      ability.cost.tap || ability.zone === "hand" ? undefined : sourceId,
     );
     if (payment === null) {
       throw new Error(`${player} cannot pay for ${def.name}'s ability`);
@@ -4263,6 +4321,13 @@ export class Game {
       const victim = this.splitOneFromStack(sacrificeVictim);
       this.moveObject(victim, "graveyard");
       this.emit({ type: "permanent-sacrificed", object: victim, player });
+    }
+
+    if (ability.zone === "hand") {
+      // Channel (rule 702.51a): discarding the source card is an implicit,
+      // unconditional part of the cost, paid alongside the mana above.
+      this.moveObject(sourceId, "graveyard");
+      this.emit({ type: "cards-discarded", player, objects: [sourceId] });
     }
 
     if (isManaAbility(ability)) {

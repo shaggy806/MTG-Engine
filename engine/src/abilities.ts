@@ -77,6 +77,20 @@ export interface ActivatedAbility {
    * from `Game.manaSources()`'s auto-payment scan while the condition is
    * false, not just from manual activation. needed-cards P19. */
   readonly condition?: StaticCondition;
+  /** Activatable only from hand, never from the battlefield — a Channel
+   * ability (rule 702.51a): "Channel — [cost], Discard this card: [effect]".
+   * Discarding the card is an implicit, unconditional part of the cost
+   * (there's no `{T}` and nothing to sacrifice); the ability still goes on
+   * the stack like any other activated ability. */
+  readonly zone?: "hand";
+  /** A live cost reduction printed on the ability itself, mirroring
+   * `CardDefinition.selfCostReduction` for a spell — the Kamigawa Channel
+   * lands' "This ability costs {1} less to activate for each legendary
+   * creature you control." Unlike `selfCostReduction` there's no gating
+   * `condition`; every card needing one so far applies unconditionally. */
+  readonly costReduction?: {
+    readonly reduceGeneric: number | { readonly countOf: CardFilter };
+  };
 }
 
 /** Who the triggering object must be relative to the ability's source. */

@@ -57,6 +57,10 @@ export interface CardFilter {
   readonly type?: CardType;
   /** Must have NONE of these card types. */
   readonly notTypes?: readonly CardType[];
+  /** Must have AT LEAST ONE of these card types — an OR (Takenuma, Abandoned
+   * Mire's Channel: "a creature or planeswalker card" — needed-cards-adjacent,
+   * mirrors `subtypes`' OR semantics). */
+  readonly typesAnyOf?: readonly CardType[];
   /** Must have this subtype (creature type, land type, …). */
   readonly subtype?: string;
   /** Must have AT LEAST ONE of these subtypes — an OR (Farseek: "a Plains,
@@ -115,6 +119,9 @@ export function matchesFilter(
     return false;
   }
   if (filter.notTypes !== undefined && filter.notTypes.some((t) => types.includes(t))) {
+    return false;
+  }
+  if (filter.typesAnyOf !== undefined && !filter.typesAnyOf.some((t) => types.includes(t))) {
     return false;
   }
   if (filter.subtype !== undefined || filter.subtypes !== undefined) {

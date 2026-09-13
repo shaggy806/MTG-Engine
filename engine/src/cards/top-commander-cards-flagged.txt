@@ -1,0 +1,1073 @@
+Cards flagged as mechanically risky for this engine (264/2000 scanned)
+This is a heuristic screen, not a verdict — sanity-check before skipping a card.
+
+Reason-tag summary:
+   238  keyword
+    27  conditional-free-cast — a conditional 'you may cast this without paying its mana cost' free-cast permission — not the same as the engine's one-shot cascade/suspend free-cast core
+    11  layout
+     8  phasing — phasing (rule 702.26) is explicitly not modeled
+     3  dungeon-initiative — dungeons/Initiative/the Ring are explicitly not modeled
+     3  background — Backgrounds are explicitly not modeled
+     2  text-change-broad — text-change beyond a single creature-type word is explicitly not modeled
+     2  vehicle-crew — Vehicles/crew have no engine support at all (grep found zero references)
+     2  battle-type — Battle cards are explicitly not modeled
+     1  divided-damage — variable-arity divided damage among any number of targets — engine's targeting is fixed-arity
+
+---
+
+   54  Cyclonic Rift
+       Instant
+       reasons: keyword:Overload
+
+   75  Deflecting Swat
+       Instant
+       reasons: conditional-free-cast
+
+   76  Boseiju, Who Endures
+       Legendary Land
+       reasons: keyword:Channel
+
+   83  Fierce Guardianship
+       Instant
+       reasons: conditional-free-cast
+
+   88  Otawara, Soaring City
+       Legendary Land
+       reasons: keyword:Channel
+
+   99  Mystic Remora
+       Enchantment
+       reasons: keyword:Cumulative upkeep
+
+  101  Vandalblast
+       Sorcery
+       reasons: keyword:Overload
+
+  107  Deadly Rollick
+       Instant
+       reasons: conditional-free-cast
+
+  109  Teferi's Protection
+       Instant
+       reasons: phasing
+
+  131  Black Market Connections
+       Enchantment
+       reasons: keyword:Hire a Mercenary, keyword:Sell Contraband, keyword:Buy Information
+
+  150  Chrome Mox
+       Artifact
+       reasons: keyword:Imprint
+
+  181  Flawless Maneuver
+       Instant
+       reasons: conditional-free-cast
+
+  195  Mosswort Bridge
+       Land
+       reasons: keyword:Hideaway
+
+  203  Storm-Kiln Artist
+       Creature — Dwarf Shaman
+       reasons: keyword:Magecraft
+
+  206  Ash Barrens
+       Land
+       reasons: keyword:Landcycling, keyword:Basic landcycling, keyword:Typecycling
+
+  243  Rishkar's Expertise
+       Sorcery
+       reasons: conditional-free-cast
+
+  244  Takenuma, Abandoned Mire
+       Legendary Land
+       reasons: keyword:Channel
+
+  254  Everflowing Chalice
+       Artifact
+       reasons: keyword:Multikicker
+
+  255  Archmage Emeritus
+       Creature — Human Wizard
+       reasons: keyword:Magecraft
+
+  257  Orcish Bowmasters
+       Creature — Orc Archer
+       reasons: keyword:Amass
+
+  258  Bloom Tender
+       Creature — Elf Druid
+       reasons: keyword:Vivid
+
+  270  Etali, Primal Storm
+       Legendary Creature — Elder Dinosaur
+       reasons: conditional-free-cast
+
+  279  Ragavan, Nimble Pilferer
+       Legendary Creature — Monkey Pirate
+       reasons: keyword:Dash
+
+  283  Reality Shift
+       Instant
+       reasons: keyword:Manifest
+
+  346  Damn
+       Sorcery
+       reasons: keyword:Overload
+
+  355  Dawn's Truce
+       Instant
+       reasons: keyword:Gift
+
+  359  Shifting Woodland
+       Land
+       reasons: keyword:Delirium
+
+  371  Arena of Glory
+       Land
+       reasons: keyword:Exert
+
+  382  Eiganjo, Seat of the Empire
+       Legendary Land
+       reasons: keyword:Channel
+
+  389  Dauthi Voidwalker
+       Creature — Dauthi Rogue
+       reasons: keyword:Shadow
+
+  440  Ephemerate
+       Instant
+       reasons: keyword:Rebound, conditional-free-cast
+
+  444  Unnatural Growth
+       Enchantment
+       reasons: keyword:Double
+
+  502  Blind Obedience
+       Enchantment
+       reasons: keyword:Extort
+
+  521  Chord of Calling
+       Instant
+       reasons: keyword:Convoke
+
+  529  Voice of Victory
+       Creature — Human Bard
+       reasons: keyword:Mobilize
+
+  530  Crypt Ghast
+       Creature — Spirit
+       reasons: keyword:Extort
+
+  550  Displacer Kitten
+       Creature — Cat Beast
+       reasons: keyword:Avoidance
+
+  558  Unbreakable Formation
+       Instant
+       reasons: keyword:Addendum
+
+  562  Marionette Apprentice
+       Creature — Human Artificer
+       reasons: keyword:Fabricate
+
+  575  Talon Gates of Madara
+       Land — Gate
+       reasons: phasing
+
+  577  Clever Concealment
+       Instant
+       reasons: keyword:Convoke, phasing
+
+  592  Return the Favor
+       Instant
+       reasons: keyword:Spree
+
+  595  Mulldrifter
+       Creature — Elemental
+       reasons: keyword:Evoke
+
+  606  Realmwalker
+       Creature — Shapeshifter
+       reasons: keyword:Changeling
+
+  622  Dig Through Time
+       Instant
+       reasons: keyword:Delve
+
+  629  Caretaker's Talent
+       Enchantment — Class
+       reasons: layout:class
+
+  633  Wizard Class
+       Enchantment — Class
+       reasons: layout:class
+
+  634  Treasure Cruise
+       Sorcery
+       reasons: keyword:Delve
+
+  644  Incubation Druid
+       Creature — Elf Druid
+       reasons: keyword:Adapt
+
+  646  Krosan Grip
+       Instant
+       reasons: keyword:Split second
+
+  655  Tireless Tracker
+       Creature — Human Scout
+       reasons: keyword:Investigate
+
+  658  Windbrisk Heights
+       Land
+       reasons: keyword:Hideaway
+
+  673  Changeling Outcast
+       Creature — Shapeshifter
+       reasons: keyword:Changeling
+
+  685  Innkeeper's Talent
+       Enchantment — Class
+       reasons: layout:class
+
+  694  Muddle the Mixture
+       Instant
+       reasons: keyword:Transmute
+
+  696  Into the Flood Maw
+       Instant
+       reasons: keyword:Gift
+
+  697  Springheart Nantuko
+       Enchantment Creature — Insect Monk
+       reasons: keyword:Bestow
+
+  701  Life from the Loam
+       Sorcery
+       reasons: keyword:Dredge
+
+  721  Sheoldred, Whispering One
+       Legendary Creature — Phyrexian Praetor
+       reasons: keyword:Landwalk, keyword:Swampwalk
+
+  748  Isochron Scepter
+       Artifact
+       reasons: keyword:Imprint, conditional-free-cast
+
+  753  Loyal Apprentice
+       Creature — Human Artificer
+       reasons: keyword:Lieutenant
+
+  758  Chimil, the Inner Sun
+       Legendary Artifact
+       reasons: keyword:Discover
+
+  764  Veyran, Voice of Duality
+       Legendary Creature — Efreet Wizard
+       reasons: keyword:Magecraft
+
+  768  Mossborn Hydra
+       Creature — Elemental Hydra
+       reasons: keyword:Double
+
+  776  Spinerock Knoll
+       Land
+       reasons: keyword:Hideaway
+
+  780  Collective Resistance
+       Instant
+       reasons: keyword:Escalate
+
+  793  Coruscation Mage
+       Creature — Otter Wizard
+       reasons: keyword:Offspring
+
+  794  Twinflame Tyrant
+       Creature — Dragon
+       reasons: keyword:Double
+
+  800  Etali, Primal Conqueror // Etali, Primal Sickness
+       Legendary Creature — Elder Dinosaur // Legendary Creature — Phyrexian Elder Dinosaur // Legendary Creature — Elder Dinosaur // Legendary Creature — Phyrexian Elder Dinosaur
+       reasons: conditional-free-cast
+
+  808  Mizzix's Mastery
+       Sorcery
+       reasons: keyword:Overload, conditional-free-cast
+
+  832  Ledger Shredder
+       Creature — Bird Advisor
+       reasons: keyword:Connive
+
+  837  Gyre Sage
+       Creature — Elf Druid
+       reasons: keyword:Evolve
+
+  854  Boromir, Warden of the Tower
+       Legendary Creature — Human Soldier
+       reasons: dungeon-initiative
+
+  855  Fiery Emancipation
+       Enchantment
+       reasons: keyword:Triple
+
+  868  Tempt with Discovery
+       Sorcery
+       reasons: keyword:Tempting offer
+
+  870  City on Fire
+       Enchantment
+       reasons: keyword:Triple, keyword:Convoke
+
+  872  Tragic Slip
+       Instant
+       reasons: keyword:Morbid
+
+  873  Beseech the Mirror
+       Sorcery
+       reasons: keyword:Bargain, conditional-free-cast
+
+  879  Bear Umbra
+       Enchantment — Aura
+       reasons: keyword:Umbra armor
+
+  885  Disrupt Decorum
+       Sorcery
+       reasons: keyword:Goad
+
+  889  Solphim, Mayhem Dominus
+       Legendary Creature — Phyrexian Horror
+       reasons: keyword:Double
+
+  894  Buster Sword
+       Artifact — Equipment
+       reasons: conditional-free-cast
+
+  913  Nature's Rhythm
+       Sorcery
+       reasons: keyword:Harmonize
+
+  914  Jaheira, Friend of the Forest
+       Legendary Creature — Human Elf Druid
+       reasons: keyword:Choose a background, background
+
+  921  Bristly Bill, Spine Sower
+       Legendary Creature — Plant Druid
+       reasons: keyword:Double
+
+  930  Evolution Witness
+       Creature — Elf Shaman Mutant
+       reasons: keyword:Adapt
+
+  938  Kappa Cannoneer
+       Artifact Creature — Turtle Warrior
+       reasons: keyword:Improvise
+
+  940  Ripples of Potential
+       Instant
+       reasons: phasing
+
+  943  Dusk // Dawn
+       Sorcery // Sorcery // Sorcery // Sorcery
+       reasons: keyword:Aftermath, layout:split
+
+  948  Taurean Mauler
+       Creature — Shapeshifter
+       reasons: keyword:Changeling
+
+  951  Evendo, Waking Haven
+       Land — Planet
+       reasons: keyword:Station
+
+  956  Desperate Ritual
+       Instant — Arcane
+       reasons: keyword:Splice
+
+  972  Karmic Guide
+       Creature — Angel Spirit
+       reasons: keyword:Echo
+
+  983  Mirror Entity
+       Creature — Shapeshifter
+       reasons: keyword:Changeling, text-change-broad
+
+  992  Sokenzan, Crucible of Defiance
+       Legendary Land
+       reasons: keyword:Channel
+
+  996  Blightsteel Colossus
+       Artifact Creature — Phyrexian Golem
+       reasons: keyword:Infect
+
+ 1006  Combat Celebrant
+       Creature — Human Warrior
+       reasons: keyword:Exert
+
+ 1023  Omniscience
+       Enchantment
+       reasons: conditional-free-cast
+
+ 1025  Swarmyard
+       Land
+       reasons: keyword:Heal
+
+ 1030  Hour of Reckoning
+       Sorcery
+       reasons: keyword:Convoke
+
+ 1036  Wear // Tear
+       Instant // Instant // Instant // Instant
+       reasons: keyword:Fuse, layout:split
+
+ 1040  Wayward Swordtooth
+       Creature — Dinosaur
+       reasons: keyword:Ascend
+
+ 1041  Chatterfang, Squirrel General
+       Legendary Creature — Squirrel Warrior
+       reasons: keyword:Landwalk, keyword:Forestwalk
+
+ 1042  Nettlecyst
+       Artifact — Equipment
+       reasons: keyword:Living weapon
+
+ 1046  Apex Devastator
+       Creature — Chimera Hydra
+       reasons: conditional-free-cast
+
+ 1056  Karlach, Fury of Avernus
+       Legendary Creature — Tiefling Barbarian
+       reasons: keyword:Choose a background, background
+
+ 1060  The Reality Chip
+       Legendary Artifact Creature — Equipment Jellyfish
+       reasons: keyword:Reconfigure
+
+ 1067  Angel of the Ruins
+       Artifact Creature — Angel
+       reasons: keyword:Plainscycling, keyword:Landcycling, keyword:Typecycling
+
+ 1076  Three Steps Ahead
+       Instant
+       reasons: keyword:Spree
+
+ 1091  Slip Out the Back
+       Instant
+       reasons: phasing
+
+ 1097  Not Dead After All
+       Instant
+       reasons: keyword:Role token
+
+ 1107  Tataru Taru
+       Legendary Creature — Dwarf Advisor
+       reasons: keyword:Scions' Secretary
+
+ 1111  Ocelot Pride
+       Creature — Cat
+       reasons: keyword:Ascend
+
+ 1114  Great Train Heist
+       Instant
+       reasons: keyword:Spree
+
+ 1119  Kalonian Hydra
+       Creature — Hydra
+       reasons: keyword:Double
+
+ 1120  Skrelv, Defector Mite
+       Legendary Artifact Creature — Phyrexian Mite
+       reasons: keyword:Toxic
+
+ 1124  Kozilek, Butcher of Truth
+       Legendary Creature — Eldrazi
+       reasons: keyword:Annihilator
+
+ 1125  Restoration Magic
+       Instant
+       reasons: keyword:Curaga, keyword:Cura, keyword:Tiered, keyword:Cure
+
+ 1127  Twilight Prophet
+       Creature — Vampire Cleric
+       reasons: keyword:Ascend
+
+ 1135  Augur of Autumn
+       Creature — Human Druid
+       reasons: keyword:Coven
+
+ 1139  Gisela, Blade of Goldnight
+       Legendary Creature — Angel
+       reasons: keyword:Double
+
+ 1140  Grim Haruspex
+       Creature — Human Wizard
+       reasons: keyword:Morph
+
+ 1144  Fiery Inscription
+       Enchantment
+       reasons: dungeon-initiative
+
+ 1145  Spymaster's Vault
+       Land
+       reasons: keyword:Connive
+
+ 1160  Pollywog Prodigy
+       Creature — Frog Wizard
+       reasons: keyword:Evolve
+
+ 1185  Zopandrel, Hunger Dominus
+       Legendary Creature — Phyrexian Horror
+       reasons: keyword:Double
+
+ 1189  Insatiable Avarice
+       Sorcery
+       reasons: keyword:Spree
+
+ 1191  Neheb, the Eternal
+       Legendary Creature — Zombie Minotaur Warrior
+       reasons: keyword:Afflict
+
+ 1201  Artisan of Kozilek
+       Creature — Eldrazi
+       reasons: keyword:Annihilator
+
+ 1202  Dreamtide Whale
+       Creature — Whale
+       reasons: keyword:Vanishing
+
+ 1208  Legion Leadership // Legion Stronghold
+       Instant // Land // Instant // Land
+       reasons: keyword:Double
+
+ 1209  Lórien Revealed
+       Sorcery
+       reasons: keyword:Islandcycling, keyword:Landcycling, keyword:Typecycling
+
+ 1218  Agate Instigator
+       Creature — Lizard Rogue
+       reasons: keyword:Offspring
+
+ 1223  Light Up the Stage
+       Sorcery
+       reasons: keyword:Spectacle
+
+ 1224  Requisition Raid
+       Sorcery
+       reasons: keyword:Spree
+
+ 1230  Badgermole Cub
+       Creature — Badger Mole
+       reasons: keyword:Earthbend
+
+ 1258  Hedge Shredder
+       Artifact — Vehicle
+       reasons: keyword:Crew, vehicle-crew
+
+ 1259  Twinflame
+       Sorcery
+       reasons: keyword:Strive
+
+ 1265  Molten Gatekeeper
+       Artifact Creature — Golem
+       reasons: keyword:Unearth
+
+ 1281  Sephiroth, Fabled SOLDIER // Sephiroth, One-Winged Angel
+       Legendary Creature — Human Avatar Soldier // Legendary Creature — Angel Nightmare Avatar // Legendary Creature — Human Avatar Soldier // Legendary Creature — Angel Nightmare Avatar
+       reasons: keyword:Super Nova
+
+ 1286  Scourge of the Throne
+       Creature — Dragon
+       reasons: keyword:Dethrone
+
+ 1289  Sphere Grid
+       Enchantment
+       reasons: keyword:Unlock Ability
+
+ 1290  Lethal Scheme
+       Instant
+       reasons: keyword:Connive, keyword:Convoke
+
+ 1291  Dakmor Salvage
+       Land
+       reasons: keyword:Dredge
+
+ 1297  Timeless Witness
+       Creature — Human Shaman
+       reasons: keyword:Eternalize
+
+ 1302  Tendershoot Dryad
+       Creature — Dryad
+       reasons: keyword:Ascend
+
+ 1308  Mikaeus, the Unhallowed
+       Legendary Creature — Zombie Cleric
+       reasons: keyword:Intimidate
+
+ 1319  Whir of Invention
+       Instant
+       reasons: keyword:Improvise
+
+ 1322  Asceticism
+       Enchantment
+       reasons: keyword:Heal
+
+ 1326  Organic Extinction
+       Sorcery
+       reasons: keyword:Improvise
+
+ 1330  Rootborn Defenses
+       Instant
+       reasons: keyword:Populate
+
+ 1333  Endurance
+       Creature — Elemental Incarnation
+       reasons: keyword:Evoke
+
+ 1348  Uthros, Titanic Godcore
+       Land — Planet
+       reasons: keyword:Station
+
+ 1358  Vraska, Betrayal's Sting
+       Legendary Planeswalker — Vraska
+       reasons: keyword:Compleated
+
+ 1366  Invasion of Ikoria // Zilortha, Apex of Ikoria
+       Battle — Siege // Legendary Creature — Dinosaur // Battle — Siege // Legendary Creature — Dinosaur
+       reasons: battle-type
+
+ 1382  Shiny Impetus
+       Enchantment — Aura
+       reasons: keyword:Goad
+
+ 1386  Ulamog, the Infinite Gyre
+       Legendary Creature — Eldrazi
+       reasons: keyword:Annihilator
+
+ 1387  Exalted Sunborn
+       Creature — Angel Wizard
+       reasons: keyword:Warp
+
+ 1391  Electrodominance
+       Instant
+       reasons: conditional-free-cast
+
+ 1393  Forensic Gadgeteer
+       Creature — Vedalken Artificer Detective
+       reasons: keyword:Investigate
+
+ 1394  Shatterskull Smashing // Shatterskull, the Hammer Pass
+       Sorcery // Land // Sorcery // Land
+       reasons: divided-damage
+
+ 1403  Call of the Ring
+       Enchantment
+       reasons: dungeon-initiative
+
+ 1420  Abzan Falconer
+       Creature — Human Soldier
+       reasons: keyword:Outlast
+
+ 1439  Legolas's Quick Reflexes
+       Instant
+       reasons: keyword:Split second
+
+ 1442  Lizard Blades
+       Artifact Creature — Equipment Lizard
+       reasons: keyword:Reconfigure
+
+ 1444  Comet Storm
+       Instant
+       reasons: keyword:Multikicker
+
+ 1449  Weftstalker Ardent
+       Creature — Drix Artificer
+       reasons: keyword:Warp
+
+ 1450  Muraganda Raceway
+       Land
+       reasons: keyword:Max speed, keyword:Start your engines!
+
+ 1461  Long River's Pull
+       Instant
+       reasons: keyword:Gift
+
+ 1473  Witty Roastmaster
+       Creature — Devil Citizen
+       reasons: keyword:Alliance
+
+ 1476  Dreadhorde Invasion
+       Enchantment
+       reasons: keyword:Amass
+
+ 1477  Cleric Class
+       Enchantment — Class
+       reasons: layout:class
+
+ 1481  Bulk Up
+       Instant
+       reasons: keyword:Double
+
+ 1483  Deadeye Navigator
+       Creature — Spirit
+       reasons: keyword:Soulbond
+
+ 1484  Lae'zel, Vlaakith's Champion
+       Legendary Creature — Gith Warrior
+       reasons: keyword:Choose a background, background
+
+ 1492  Case of the Locked Hothouse
+       Enchantment — Case
+       reasons: keyword:Solved, layout:case
+
+ 1494  Apex Altisaur
+       Creature — Dinosaur
+       reasons: keyword:Enrage
+
+ 1500  Obscuring Haze
+       Instant
+       reasons: conditional-free-cast
+
+ 1503  Snake Umbra
+       Enchantment — Aura
+       reasons: keyword:Umbra armor
+
+ 1505  Rain of Riches
+       Enchantment
+       reasons: conditional-free-cast
+
+ 1514  Gratuitous Violence
+       Enchantment
+       reasons: keyword:Double
+
+ 1541  Rumor Gatherer
+       Creature — Elf Wizard
+       reasons: keyword:Alliance
+
+ 1544  Marionette Master
+       Creature — Human Artificer
+       reasons: keyword:Fabricate
+
+ 1552  Ashling, Flame Dancer
+       Legendary Creature — Elemental Shaman
+       reasons: keyword:Magecraft
+
+ 1553  Haliya, Guided by Light
+       Legendary Creature — Human Soldier
+       reasons: keyword:Warp
+
+ 1554  It That Betrays
+       Creature — Eldrazi
+       reasons: keyword:Annihilator
+
+ 1557  Artist's Talent
+       Enchantment — Class
+       reasons: layout:class
+
+ 1559  Malcolm, Alluring Scoundrel
+       Legendary Creature — Siren Pirate
+       reasons: conditional-free-cast
+
+ 1562  Morophon, the Boundless
+       Legendary Creature — Shapeshifter
+       reasons: keyword:Changeling
+
+ 1572  Brass's Tunnel-Grinder // Tecutlan, the Searing Rift
+       Legendary Artifact // Legendary Land — Cave // Legendary Artifact // Legendary Land — Cave
+       reasons: keyword:Discover
+
+ 1573  Smuggler's Surprise
+       Instant
+       reasons: keyword:Spree
+
+ 1581  Shriekmaw
+       Creature — Elemental
+       reasons: keyword:Evoke, keyword:Fear
+
+ 1585  March of Swirling Mist
+       Instant
+       reasons: phasing
+
+ 1605  Maelstrom Wanderer
+       Legendary Creature — Elemental
+       reasons: conditional-free-cast
+
+ 1609  Exploration Broodship
+       Artifact — Spacecraft
+       reasons: keyword:Station
+
+ 1610  Call the Coppercoats
+       Instant
+       reasons: keyword:Strive
+
+ 1625  The Skullspore Nexus
+       Legendary Artifact
+       reasons: keyword:Double
+
+ 1627  Unleash Fury
+       Instant
+       reasons: keyword:Double
+
+ 1630  Druid Class
+       Enchantment — Class
+       reasons: layout:class
+
+ 1639  Trumpeting Carnosaur
+       Creature — Dinosaur
+       reasons: keyword:Discover
+
+ 1640  Wild-Magic Sorcerer
+       Creature — Orc Shaman Sorcerer
+       reasons: conditional-free-cast
+
+ 1641  Grenzo, Havoc Raiser
+       Legendary Creature — Goblin Rogue
+       reasons: keyword:Goad
+
+ 1643  Avatar's Wrath
+       Sorcery
+       reasons: keyword:Airbend
+
+ 1656  Galadriel's Dismissal
+       Instant
+       reasons: phasing
+
+ 1657  The Eternity Elevator
+       Legendary Artifact — Spacecraft
+       reasons: keyword:Station
+
+ 1658  Adagia, Windswept Bastion
+       Land — Planet
+       reasons: keyword:Station
+
+ 1672  Kaldra Compleat
+       Legendary Artifact — Equipment
+       reasons: keyword:Living weapon
+
+ 1673  Parting Gust
+       Instant
+       reasons: keyword:Gift
+
+ 1682  Glen Elendra Archmage
+       Creature — Faerie Wizard
+       reasons: keyword:Persist
+
+ 1693  Reforge the Soul
+       Sorcery
+       reasons: keyword:Miracle
+
+ 1697  Shigeki, Jukai Visionary
+       Legendary Enchantment Creature — Snake Druid
+       reasons: keyword:Channel
+
+ 1702  Profane Tutor
+       Sorcery
+       reasons: conditional-free-cast
+
+ 1704  Lively Dirge
+       Sorcery
+       reasons: keyword:Spree
+
+ 1706  Gala Greeters
+       Creature — Elf Druid
+       reasons: keyword:Alliance
+
+ 1708  Extraplanar Lens
+       Artifact
+       reasons: keyword:Imprint
+
+ 1709  Painful Truths
+       Sorcery
+       reasons: keyword:Converge
+
+ 1712  Ba Sing Se
+       Land
+       reasons: keyword:Earthbend
+
+ 1713  Hoarding Broodlord
+       Creature — Dragon
+       reasons: keyword:Convoke
+
+ 1716  Fathom Mage
+       Creature — Human Wizard
+       reasons: keyword:Evolve
+
+ 1726  Overlord of the Hauntwoods
+       Enchantment Creature — Avatar Horror
+       reasons: keyword:Impending
+
+ 1728  Impulsive Pilferer
+       Creature — Goblin Pirate
+       reasons: keyword:Encore
+
+ 1748  Jaxis, the Troublemaker
+       Legendary Creature — Human Warrior
+       reasons: keyword:Blitz
+
+ 1755  Barad-dûr
+       Legendary Land
+       reasons: keyword:Amass
+
+ 1764  Alesha, Who Laughs at Fate
+       Legendary Creature — Human Warrior
+       reasons: keyword:Raid
+
+ 1768  Walk-In Closet // Forgotten Cellar
+       Enchantment — Room // Enchantment — Room // Enchantment — Room // Enchantment — Room
+       reasons: layout:split
+
+ 1770  Lion Sash
+       Artifact Creature — Equipment Cat
+       reasons: keyword:Reconfigure
+
+ 1779  Quantum Misalignment
+       Sorcery
+       reasons: keyword:Rebound, conditional-free-cast
+
+ 1782  Battle Angels of Tyr
+       Creature — Angel Knight
+       reasons: keyword:Myriad
+
+ 1784  Dazzling Theater // Prop Room
+       Enchantment — Room // Enchantment — Room // Enchantment — Room // Enchantment — Room
+       reasons: layout:split
+
+ 1787  Matzalantli, the Great Door // The Core
+       Legendary Artifact // Legendary Land // Legendary Artifact // Legendary Land
+       reasons: keyword:Fathomless descent
+
+ 1790  Ugin, Eye of the Storms
+       Legendary Planeswalker — Ugin
+       reasons: conditional-free-cast
+
+ 1792  Demonic Counsel
+       Sorcery
+       reasons: keyword:Delirium
+
+ 1800  Legion Warboss
+       Creature — Goblin Soldier
+       reasons: keyword:Mentor
+
+ 1804  Uthros Research Craft
+       Artifact — Spacecraft
+       reasons: keyword:Station
+
+ 1811  Call Forth the Tempest
+       Sorcery
+       reasons: conditional-free-cast
+
+ 1812  Search for Tomorrow
+       Sorcery
+       reasons: conditional-free-cast
+
+ 1813  Hit the Mother Lode
+       Sorcery
+       reasons: keyword:Discover
+
+ 1814  Get Lost
+       Instant
+       reasons: keyword:Explore
+
+ 1822  Dragon's Rage Channeler
+       Creature — Human Shaman
+       reasons: keyword:Delirium
+
+ 1830  Bennie Bracks, Zoologist
+       Legendary Creature — Elf Druid
+       reasons: keyword:Convoke
+
+ 1837  Deepglow Skate
+       Creature — Fish
+       reasons: keyword:Double
+
+ 1852  Chameleon, Master of Disguise
+       Legendary Creature — Human Shapeshifter Villain
+       reasons: keyword:Mayhem
+
+ 1859  Bloodline Pretender
+       Artifact Creature — Shapeshifter
+       reasons: keyword:Changeling
+
+ 1864  Touch the Spirit Realm
+       Enchantment
+       reasons: keyword:Channel
+
+ 1868  Susur Secundi, Void Altar
+       Land — Planet
+       reasons: keyword:Station
+
+ 1879  Knuckles the Echidna
+       Legendary Creature — Echidna Warrior
+       reasons: keyword:Treasure Hunter
+
+ 1894  Aven Interrupter
+       Creature — Bird Rogue
+       reasons: keyword:Plot
+
+ 1895  Smuggler's Copter
+       Artifact — Vehicle
+       reasons: keyword:Crew, vehicle-crew
+
+ 1896  Sunbird's Invocation
+       Enchantment
+       reasons: conditional-free-cast
+
+ 1902  Mutavault
+       Land
+       reasons: text-change-broad
+
+ 1922  One with the Multiverse
+       Enchantment
+       reasons: conditional-free-cast
+
+ 1930  Guardian of Faith
+       Creature — Spirit Knight
+       reasons: phasing
+
+ 1939  Varragoth, Bloodsky Sire
+       Legendary Creature — Demon Rogue
+       reasons: keyword:Boast
+
+ 1941  Overpowering Attack
+       Sorcery
+       reasons: keyword:Freerunning
+
+ 1943  Tempt with Bunnies
+       Sorcery
+       reasons: keyword:Tempting offer
+
+ 1963  Eldritch Immunity
+       Kindred Instant — Eldrazi
+       reasons: keyword:Overload
+
+ 1965  Hero of Bladehold
+       Creature — Human Knight
+       reasons: keyword:Battle Cry, battle-type
+
+ 1971  Goldlust Triad
+       Creature — Dragon
+       reasons: keyword:Myriad
+
+ 1978  Solitude
+       Creature — Elemental Incarnation
+       reasons: keyword:Evoke
+
+ 1980  Bitterthorn, Nissa's Animus
+       Legendary Artifact — Equipment
+       reasons: keyword:Living weapon
+
+ 1981  Angel's Grace
+       Instant
+       reasons: keyword:Split second
+
+ 1986  Power Depot
+       Artifact Land
+       reasons: keyword:Modular
+
+ 1995  Winds of Abandon
+       Sorcery
+       reasons: keyword:Overload
+
+ 2004  Starscape Cleric
+       Creature — Bat Cleric
+       reasons: keyword:Offspring
+

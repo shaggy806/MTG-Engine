@@ -26,6 +26,12 @@ export type TargetSpec =
   | "artifact"
   | "artifact-or-enchantment"
   | "creature-or-enchantment"
+  /** A creature currently attacking or blocking (Eiganjo, Seat of the
+   * Empire's Channel — "target attacking or blocking creature"). */
+  | "attacking-or-blocking-creature"
+  /** An artifact, enchantment, or nonbasic land an opponent controls
+   * (Boseiju, Who Endures's Channel). */
+  | "artifact-enchantment-or-nonbasic-land-an-opponent-controls"
   /** A spell on the stack (a card, not an ability). */
   | "spell"
   | "creature-spell"

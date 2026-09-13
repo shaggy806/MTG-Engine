@@ -138,6 +138,8 @@ const deckA = deck([
   ["Genesis Ultimatum", 1],
   ["Fanatic of Rhonas", 1],
   ["Orcish Lumberjack", 1],
+  ["Boseiju, Who Endures", 1],
+  ["Otawara, Soaring City", 1],
 ]);
 // Kept deliberately lean (~50 cards) so the RandomController actually draws
 // and plays its threats — a bloated deck just stalls out and the fuzz only
@@ -245,6 +247,8 @@ const deckB = deck([
   ["Ardent Recruit", 2],
   ["Ob Nixilis, the Fallen", 1],
   ["Rakdos Charm", 1],
+  ["Takenuma, Abandoned Mire", 1],
+  ["Eiganjo, Seat of the Empire", 1],
 ]);
 
 // A lean Dimir deck for Carol — carries the `Sarova, the Undying Current`

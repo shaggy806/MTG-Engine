@@ -156,6 +156,23 @@ export function isLegalTarget(
           (t) => t.includes("creature") || t.includes("enchantment"),
         )
       );
+    case "attacking-or-blocking-creature":
+      return (
+        ref.kind === "object" &&
+        isLivingCreature(state, registry, ref.object) &&
+        (state.objects[ref.object].attacking !== null ||
+          state.objects[ref.object].blocking !== null)
+      );
+    case "artifact-enchantment-or-nonbasic-land-an-opponent-controls": {
+      if (ref.kind !== "object") return false;
+      const object = state.objects[ref.object];
+      if (object === undefined || object.zone !== "battlefield" || object.controller === forPlayer) {
+        return false;
+      }
+      const def = registry.get(printedCardName(object));
+      if (def.types.includes("artifact") || def.types.includes("enchantment")) return true;
+      return def.types.includes("land") && !def.supertypes.includes("basic");
+    }
     case "spell":
       return ref.kind === "object" && isSpellOnStack(state, ref.object);
     case "creature-spell":
