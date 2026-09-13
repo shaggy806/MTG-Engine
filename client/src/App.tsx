@@ -417,22 +417,26 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
 
   return (
     <div className={`app active-${activeSeatClass}`}>
-      <header className="topbar">
-        <h1>MTG Engine</h1>
-        <div className="topbar-right">
+      {/* One slim row replaces the old topbar + seat-banner + per-layout
+          pinned PhaseTrack/TurnBanner — room code, whose-turn (spelled out),
+          the step pips, who's actually waiting to act, and the menu, all in
+          one place instead of stacked as separate banners. */}
+      <header className="top-strip">
+        <span className="ts-room">room {game.roomId}</span>
+        <TurnBanner view={view} seats={game.seats} />
+        <PhaseTrack view={view} />
+        <span className="ts-acting">
+          {over ? 'Game over' : `${playerLabel(actingPlayer(view) ?? seat, game.seats)} to act`}
+        </span>
+        <div className="ts-menu">
           <button type="button" onClick={() => setShowHistory(true)}>
             History
           </button>
-          <span className="muted">room {game.roomId}</span>
           <button type="button" onClick={() => window.location.assign('/')}>
             Leave
           </button>
         </div>
       </header>
-
-      <div className="seat-banner">
-        {over ? 'Game over' : `${playerLabel(actingPlayer(view) ?? seat, game.seats)} to act`}
-      </div>
 
       <ErrorLine game={game} />
 
@@ -2221,11 +2225,6 @@ function Table({ view, seat, opponents, game }: TableProps) {
     <div className="player-col">
       {isQuadrant ? (
         <>
-          <div className="pinned-top">
-            <PhaseTrack view={view} seats={game.seats} />
-            <TurnBanner view={view} seats={game.seats} />
-          </div>
-
           <main className="table">
             <div className="quadrant-grid">
               {[opponents[0], opponents[1], seat, opponents[2]].map((pid, index) => {
@@ -2252,11 +2251,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
         </>
       ) : (
         <>
-          <div className="pinned-top">
-            <PhaseTrack view={view} seats={game.seats} />
-            <TurnBanner view={view} seats={game.seats} />
-            {opponents.map(renderPlayerPanel)}
-          </div>
+          <div className="pinned-top">{opponents.map(renderPlayerPanel)}</div>
 
           <main className="table">
             {opponents.map((pid) => (

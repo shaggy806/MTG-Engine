@@ -39,7 +39,7 @@ comment history in this conversation if something seems arbitrary.
   server — hand/battlefield/command-zone tiles all render at a sensible,
   consistent, viewport-scaled size.
 
-### Phase 2 — Top chrome consolidation — TODO
+### Phase 2 — Top chrome consolidation — DONE
 Collapse `.topbar` + `.seat-banner` + `.highroll-banner` + `.pinned-top` (in
 `App.tsx`'s `GameScreen`/`Table`) into one slim strip (`clamp(30px,3.6vh,40px)`
 tall in the mockup), matching the mockup's `.topstrip`: room code, whose-turn,
@@ -50,6 +50,18 @@ Current opponent-PlayerPanel-in-pinned-top behavior (2-player layout only)
 needs a new home — the mockup folds per-player life/mana into each quadrant's
 own header instead (see Phase 4/5), so once quadrant headers exist this
 strip no longer needs to carry opponent info at all, 2-player included.
+
+**Done as:** a new `.top-strip` in `GameScreen` (App.tsx) replaces
+`.topbar`+`.seat-banner` and folds in `<TurnBanner>`+`<PhaseTrack>` (both
+moved up from `Table`'s two `.pinned-top` blocks). `PhaseTrack.tsx` was
+trimmed to just the step-pip row (the "Turn N — Player" text it used to also
+render is now part of `TurnBanner`, already inline in the strip).
+`TurnBanner`'s CSS switched from a centered block to an inline flex span.
+Quadrant mode's `.pinned-top` wrapper is gone entirely (it held nothing else);
+2-player mode's still exists, now holding only the opponent `PlayerPanel`
+(kept as future work per this phase's note above — not moved into a
+quadrant-style per-board header yet, since 2-player doesn't have quadrant
+cells to put one in). Verified live via `scratch.mjs`.
 
 ### Phase 3 — Hand tray: peek + asymmetric hover — TODO
 Replace `.hand-strip` (currently always-visible, full-size, "never
@@ -106,14 +118,18 @@ idea and the largest single phase:
   token-compaction (`engine/src/game.ts` — a completely different mechanism
   for resource-safety, not display; don't conflate the two).
 
-### Phase 5 — Command zone / library rail — TODO
-A narrow column to the right of each quadrant's permanent rows: commander
-mini-card (or an empty dashed slot if not yet cast) above a library
-card-back pile + count. The real app already has command-zone and library
-rendering somewhere (`.card-slot-empty`, `.card-back`, `.card-back-count` all
-exist in App.css already, worked on in Phase 1) — this phase is about
-*repositioning* that existing UI into the mockup's rail layout per quadrant,
-not building it from scratch. Find its current location in `App.tsx` first.
+### Phase 5 — Command zone / library rail — ALREADY DONE, verify only
+Checked `App.tsx`'s `renderSideZone` (~line 1386) and `.board-with-sidezone`/
+`.side-zone*` in App.css (~line 345, ~472): this already exists in
+essentially the mockup's shape — a right-of-board column, commander tile (or
+`.card-slot-empty` dashed placeholder) above a library section (face-down
+`.card-back` + `.card-back-count`, or the revealed top card if public). Land
+row ordering (Phase 4's other concern) is also already correct: `renderBoard`
+already puts lands above permanents for opponents and permanents above lands
+for your own board (`isOpp ? [landRow, permanentRow] : [permanentRow,
+landRow]`). **No new work needed here** beyond whatever visual polish falls
+out of Phase 1's sizing token and Phase 4's compact tiles — just re-check it
+still looks right once those land.
 
 ### Phase 6 — Stack redesign — TODO
 The real `Stack.tsx`/`.stack-overlay` already does a lot of what the mockup

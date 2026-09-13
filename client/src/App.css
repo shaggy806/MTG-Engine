@@ -38,61 +38,55 @@
   background-color: var(--seat-d-bg);
 }
 
-.topbar {
+/* One slim row for everything that used to be a stack of separate banners
+   (app title, room code, "X to act", the phase-track block, the turn-banner
+   block) -- height is viewport-scaled, not a fixed guess, and never wraps to
+   a second line (the step pips shrink/scroll before that happens). */
+.top-strip {
+  flex: none;
+  height: clamp(30px, 3.6vh, 40px);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 10px;
+  gap: clamp(10px, 1.4vw, 20px);
+  padding: 0 4px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  font-size: clamp(11px, 1.05vw, 13px);
 }
-.topbar h1 {
-  font-size: 16px;
-}
-.topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.topbar-right label {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+.ts-room {
   color: var(--muted);
-}
-
-/* phase track */
-.phase-track {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 6px 10px;
-}
-.phase-turn {
-  font-weight: 600;
   white-space: nowrap;
 }
-.phase-active {
-  margin-left: 6px;
-  color: var(--accent);
+.ts-acting {
+  color: var(--text);
+  white-space: nowrap;
 }
+.ts-menu {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* phase track — a compact pip row, meant to sit inline in .top-strip */
 .phase-steps {
   display: flex;
   gap: 4px;
   list-style: none;
   margin: 0;
   padding: 0;
-  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
 }
 .phase-steps li {
-  padding: 3px 7px;
+  padding: 2px 6px;
   border-radius: 5px;
   background: var(--panel-2);
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 .phase-steps li.current {
   background: var(--accent);
@@ -100,9 +94,10 @@
   font-weight: 700;
 }
 
-/* Whoever's not driving this device — turn/phase plus their life, mana and
-   zone counts — pinned to the very top of the viewport so it's visible
-   regardless of how far the board has scrolled. Mirrored at the bottom for
+/* 2-player layout only now (quadrant mode gives each opponent their own
+   header via renderPlayerPanel inside their quadrant cell instead) — the
+   one opponent's life/mana/zone counts, pinned above the board so they're
+   visible regardless of how far it's scrolled. Mirrored at the bottom for
    your own seat (see .pinned-bottom). */
 .pinned-top {
   flex: none;
@@ -118,23 +113,13 @@
   border-top: 1px solid var(--border);
 }
 
-.seat-banner {
-  margin: 6px 0;
-  padding: 5px 10px;
-  text-align: center;
-  font-weight: 600;
-  background: var(--accent-bg);
-  border: 1px solid var(--accent);
-  border-radius: 8px;
-}
-
-/* whose turn + full phase name, spelled out — bigger and more central than
-   the compact phase-track pips above it */
+/* whose turn + full phase name, spelled out — lives inline in .top-strip now,
+   not as its own centered block */
 .turn-banner {
-  margin: 4px 0 2px;
-  text-align: center;
-  font-size: 20px;
-  font-weight: 700;
+  display: flex;
+  align-items: baseline;
+  white-space: nowrap;
+  font-weight: 600;
 }
 .turn-banner-sep {
   margin: 0 8px;

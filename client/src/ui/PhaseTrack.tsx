@@ -1,6 +1,4 @@
 import type { PlayerView } from 'engine'
-import { playerLabel } from '../format.ts'
-import type { SeatStatus } from '../net/protocol.ts'
 
 const STEPS = [
   ['untap', 'UT'],
@@ -17,30 +15,21 @@ const STEPS = [
   ['cleanup', 'CU'],
 ] as const
 
-export function PhaseTrack({
-  view,
-  seats,
-}: {
-  readonly view: PlayerView
-  readonly seats?: readonly SeatStatus[]
-}) {
+/**
+ * A compact, at-a-glance pip row for the whole turn sequence — meant to sit
+ * inline inside the top strip alongside the spelled-out "whose turn, what
+ * phase" text (that text lives in the top strip itself now, not here, so
+ * this can drop straight into a single-row layout without also carrying a
+ * redundant "Turn N — Player" block).
+ */
+export function PhaseTrack({ view }: { readonly view: PlayerView }) {
   return (
-    <div className="phase-track">
-      <div className="phase-turn">
-        Turn {view.turn.number}
-        <span className="phase-active">{playerLabel(view.activePlayer, seats)}</span>
-      </div>
-      <ol className="phase-steps">
-        {STEPS.map(([step, abbr]) => (
-          <li
-            key={step}
-            className={step === view.turn.step ? 'current' : ''}
-            title={step}
-          >
-            {abbr}
-          </li>
-        ))}
-      </ol>
-    </div>
+    <ol className="phase-steps">
+      {STEPS.map(([step, abbr]) => (
+        <li key={step} className={step === view.turn.step ? 'current' : ''} title={step}>
+          {abbr}
+        </li>
+      ))}
+    </ol>
   )
 }
