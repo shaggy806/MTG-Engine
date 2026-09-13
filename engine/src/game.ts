@@ -22,6 +22,7 @@ import type {
   AttackerDeclaration,
   BlockerDeclaration,
   CastVia,
+  ConvokePayment,
   LegalAction,
 } from "./actions.js";
 import { CardRegistry, createDefaultRegistry } from "./cards.js";
@@ -430,6 +431,7 @@ export class Game {
           action.sacrifice,
           action.overload === true,
           action.free === true,
+          action.convoke,
         );
         break;
       case "activate-ability":
@@ -528,6 +530,7 @@ export class Game {
           action.sacrifice,
           action.overload === true,
           action.free === true,
+          action.convoke,
         );
       case "activate-ability":
         return this.whyCannotActivateAbility(
@@ -1044,7 +1047,7 @@ export class Game {
     if (def.overload !== null) variants.push({ kicked: false, overload: true, free: false });
     if (def.freeCastIf !== null) variants.push({ kicked: false, overload: false, free: true });
     for (const { kicked, overload, free } of variants) {
-      if (
+      let castable =
         this.whyCannotCastSpell(
           player,
           card,
@@ -1055,10 +1058,34 @@ export class Game {
           undefined,
           overload,
           free,
-        ) !== null
-      ) {
-        continue;
+        ) === null;
+      // Convoke (rule 702.51): not affordable with mana alone doesn't mean
+      // not castable — check again assuming every untapped creature helps,
+      // maximally, before giving up on this variant.
+      if (!castable && def.convoke) {
+        const baseCost = this.withFace(card, face ?? 0, () =>
+          this.castingCostOf(player, card, def, 0, this.castCostString(card, via, face, kicked, overload, free)),
+        );
+        const proof = this.maxConvokeFor(this.convokeCandidates(player), baseCost);
+        if (
+          proof.length > 0 &&
+          this.whyCannotCastSpell(
+            player,
+            card,
+            via,
+            face ?? 0,
+            undefined,
+            kicked,
+            undefined,
+            overload,
+            free,
+            proof,
+          ) === null
+        ) {
+          castable = true;
+        }
       }
+      if (!castable) continue;
       const specs = this.effectiveTargetSpecs(def, undefined, kicked, overload);
       const cost = free
         ? "{0}"
@@ -1085,10 +1112,57 @@ export class Game {
           ? { overload: true, overloadCost: def.overload.cost }
           : {}),
         ...(free ? { free: true } : {}),
+        ...(def.convoke
+          ? {
+              convoke: {
+                candidates: this.convokeCandidates(player),
+                maxGeneric: this.castingCostOf(player, card, def, 0, cost).generic,
+              },
+            }
+          : {}),
         ...(parseManaCost(cost).x > 0
           ? { xCost: { maxX: this.maxAffordableX(player, card, def, cost, face ?? 0) } }
           : {}),
       });
+    }
+    return out;
+  }
+
+  /** Every untapped creature `player` controls — the full candidate pool for
+   * a convokable spell (rule 702.51a). The actual cast may use any subset,
+   * each paying however the caster likes; this is just "what's eligible". */
+  private convokeCandidates(player: PlayerId): ObjectId[] {
+    return this.state.zones.shared.battlefield.filter((id) => {
+      const object = this.state.objects[id];
+      return (
+        object.controller === player &&
+        !object.tapped &&
+        computeCharacteristics(this.state, this.registry, id).types.includes("creature")
+      );
+    });
+  }
+
+  /** A greedy convoke allocation using as many of `candidates` as usefully
+   * reduce `cost` (colored pips first, since a creature can only help with
+   * its own colors or generic; leftover creatures go to generic; a
+   * creature that can't help either is left out). Used only to test whether
+   * a convokable spell is affordable *at all* — enumerated in
+   * `castSpellActions`, never dispatched as-is; the real cast can use any
+   * subset/allocation the driver actually chooses. */
+  private maxConvokeFor(candidates: readonly ObjectId[], cost: ManaCost): ConvokePayment[] {
+    const out: ConvokePayment[] = [];
+    const colorLeft = { ...cost.colored };
+    let genericLeft = cost.generic;
+    for (const creature of candidates) {
+      const colors = computeCharacteristics(this.state, this.registry, creature).colors;
+      const payColor = COLORS.find((c) => colors.has(c) && colorLeft[c] > 0);
+      if (payColor !== undefined) {
+        out.push({ creature, pays: payColor });
+        colorLeft[payColor] -= 1;
+      } else if (genericLeft > 0) {
+        out.push({ creature, pays: "generic" });
+        genericLeft -= 1;
+      }
     }
     return out;
   }
@@ -3838,6 +3912,7 @@ export class Game {
     sacrifice?: ObjectId,
     overload = false,
     free = false,
+    convoke?: readonly ConvokePayment[],
   ): string | null {
     const blocked = this.whyCannotAct(player);
     if (blocked !== null) return blocked;
@@ -3925,23 +4000,77 @@ export class Game {
         return `${def.name} has no legal ${spec} target`;
       }
     }
-    if (
-      this.payMana(
+    const baseCost = this.withFace(cardId, face, () =>
+      this.castingCostOf(
         player,
-        this.withFace(cardId, face, () =>
-          this.castingCostOf(
-            player,
-            cardId,
-            def,
-            0,
-            this.castCostString(cardId, via, face, kicked, overload, free),
-          ),
-        ),
-      ) === null
-    ) {
+        cardId,
+        def,
+        0,
+        this.castCostString(cardId, via, face, kicked, overload, free),
+      ),
+    );
+    if (convoke !== undefined && convoke.length > 0) {
+      if (!def.convoke) return `${def.name} does not have convoke`;
+      const convokeError = this.whyCannotConvoke(player, convoke, baseCost);
+      if (convokeError !== null) return convokeError;
+    }
+    const cost =
+      convoke !== undefined && convoke.length > 0 ? this.reduceCostByConvoke(baseCost, convoke) : baseCost;
+    if (this.payMana(player, cost) === null) {
       return `${player} cannot pay the cost of ${def.name}`;
     }
     return null;
+  }
+
+  /** Why `convoke` (rule 702.51a) is illegal against `cost` — each entry
+   * must be an untapped creature `player` controls, tapped only once, paying
+   * either `"generic"` or one of its own current colors, and never more
+   * generic/colored payers than `cost` actually has of that kind (tapping a
+   * creature "for" a pip the spell doesn't need isn't a legal choice). */
+  private whyCannotConvoke(
+    player: PlayerId,
+    convoke: readonly ConvokePayment[],
+    cost: ManaCost,
+  ): string | null {
+    const seen = new Set<ObjectId>();
+    let genericPay = 0;
+    const colorPay: Record<Color, number> = { W: 0, U: 0, B: 0, R: 0, G: 0 };
+    for (const { creature, pays } of convoke) {
+      if (seen.has(creature)) return "the same creature can't convoke twice";
+      seen.add(creature);
+      const object = this.state.objects[creature];
+      if (object === undefined || object.zone !== "battlefield" || object.controller !== player) {
+        return `${player} does not control that creature`;
+      }
+      if (object.tapped) return "that creature is already tapped";
+      const c = computeCharacteristics(this.state, this.registry, creature);
+      if (!c.types.includes("creature")) return "only a creature can convoke";
+      if (pays === "generic") {
+        genericPay += 1;
+      } else {
+        if (!c.colors.has(pays)) return `that creature isn't ${pays}`;
+        colorPay[pays] += 1;
+      }
+    }
+    if (genericPay > cost.generic) return "convoke can't pay more generic mana than the cost has left";
+    for (const color of COLORS) {
+      if (colorPay[color] > cost.colored[color]) {
+        return `convoke can't pay more {${color}} than the cost has left`;
+      }
+    }
+    return null;
+  }
+
+  /** `cost`, minus what `convoke` pays for (already validated by
+   * `whyCannotConvoke`) — the remainder is paid with mana as usual. */
+  private reduceCostByConvoke(cost: ManaCost, convoke: readonly ConvokePayment[]): ManaCost {
+    let generic = cost.generic;
+    const colored = { ...cost.colored };
+    for (const { pays } of convoke) {
+      if (pays === "generic") generic -= 1;
+      else colored[pays] -= 1;
+    }
+    return { ...cost, generic, colored };
   }
 
   private castSpell(
@@ -3956,8 +4085,20 @@ export class Game {
     sacrifice?: ObjectId,
     overload = false,
     free = false,
+    convoke?: readonly ConvokePayment[],
   ): void {
-    const why = this.whyCannotCastSpell(player, cardId, via, face, modes, kicked, sacrifice, overload, free);
+    const why = this.whyCannotCastSpell(
+      player,
+      cardId,
+      via,
+      face,
+      modes,
+      kicked,
+      sacrifice,
+      overload,
+      free,
+      convoke,
+    );
     if (why !== null) throw new Error(why);
 
     const object = this.state.objects[cardId];
@@ -3994,10 +4135,25 @@ export class Game {
     });
 
     const castingFromCommand = this.isCastableCommander(player, cardId);
-    const cost = this.castingCostOf(player, cardId, def, chosenX, costString);
+    const fullCost = this.castingCostOf(player, cardId, def, chosenX, costString);
+    const cost =
+      convoke !== undefined && convoke.length > 0
+        ? this.reduceCostByConvoke(fullCost, convoke)
+        : fullCost;
     const payment = this.payMana(player, cost);
     if (payment === null) {
       throw new Error(`${player} cannot pay the cost of ${def.name}`);
+    }
+    // Convoke (rule 702.51a): tap the chosen creatures as part of the cost,
+    // alongside the mana payment above.
+    if (convoke !== undefined) {
+      for (const { creature } of convoke) {
+        const c = this.state.objects[creature];
+        if (c !== undefined) {
+          c.tapped = true;
+          this.emit({ type: "permanent-tapped", object: creature });
+        }
+      }
     }
 
     // Escape (rule 702.139): exile N other cards from the graveyard as an

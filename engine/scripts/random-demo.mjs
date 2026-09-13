@@ -258,6 +258,7 @@ const deckB = deck([
   ["Damn", 1],
   ["Deadly Rollick", 1],
   ["Flawless Maneuver", 1],
+  ["Hour of Reckoning", 1],
 ]);
 
 // A lean Dimir deck for Carol — carries the `Sarova, the Undying Current`

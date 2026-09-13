@@ -121,6 +121,7 @@ import _poolHillGiant from "./pool/hill-giant.js";
 import _poolHinterlandHarbor from "./pool/hinterland-harbor.js";
 import _poolHistoryOfBenalia from "./pool/history-of-benalia.js";
 import _poolHolyStrength from "./pool/holy-strength.js";
+import _poolHourOfReckoning from "./pool/hour-of-reckoning.js";
 import _poolHypnoticSpecter from "./pool/hypnotic-specter.js";
 import _poolIcetillExplorer from "./pool/icetill-explorer.js";
 import _poolIgnobleHierarch from "./pool/ignoble-hierarch.js";
@@ -407,6 +408,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolHinterlandHarbor,
   _poolHistoryOfBenalia,
   _poolHolyStrength,
+  _poolHourOfReckoning,
   _poolHypnoticSpecter,
   _poolIcetillExplorer,
   _poolIgnobleHierarch,

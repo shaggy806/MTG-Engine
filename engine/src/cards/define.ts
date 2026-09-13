@@ -305,6 +305,14 @@ export interface CardDefinition {
    */
   readonly freeCastIf: { readonly condition: StaticCondition } | null;
   /**
+   * Convoke (rule 702.51 — Chord of Calling): "Your creatures can help cast
+   * this spell. Each creature you tap while casting this spell pays for
+   * {1} or one mana of that creature's color." A pure payment-method
+   * choice made as the spell is cast (`Action.convoke`) — it doesn't change
+   * the printed cost, targets, or effect at all, unlike `overload`/`kicker`.
+   */
+  readonly convoke: boolean;
+  /**
    * A cost reduction printed on the spell itself, gated on a board-state
    * condition (rule 601.2f — Ferocious: "if you control a creature with
    * power 4 or greater, this spell costs {2} less to cast"). Unlike
@@ -461,6 +469,7 @@ interface CardDraft {
     readonly effect: EffectSpec;
   };
   freeCastIf?: { readonly condition: StaticCondition };
+  convoke?: boolean;
   selfCostReduction?: {
     readonly condition: StaticCondition;
     readonly reduceGeneric: number | { readonly countOf: CardFilter };
@@ -526,6 +535,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     kicker: draft.kicker ?? null,
     overload: draft.overload ?? null,
     freeCastIf: draft.freeCastIf ?? null,
+    convoke: draft.convoke ?? false,
     selfCostReduction: draft.selfCostReduction ?? null,
     effect: draft.effect ?? null,
     resolve: draft.resolve ?? null,

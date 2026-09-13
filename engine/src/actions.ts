@@ -6,8 +6,17 @@
  * the engine through the same entry point.
  */
 
+import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { TargetRef, TargetSpec } from "./target.js";
+
+/** One creature tapped to help pay a convoke cost (rule 702.51a): it pays
+ * for `{1}` (`"generic"`) or one mana of one of its own colors — the
+ * player's choice per creature, made as the spell is cast. */
+export interface ConvokePayment {
+  readonly creature: ObjectId;
+  readonly pays: "generic" | Color;
+}
 
 /** An alternative permission a spell can be cast under, from a zone other than
  * the hand and/or for a cost other than its mana cost (ROADMAP Phase 6):
@@ -109,6 +118,10 @@ export type Action =
        * without paying its mana cost") instead of paying the mana cost.
        * Targets are unchanged — only the cost differs. */
       readonly free?: boolean;
+      /** Creatures tapped to help pay a convoke cost (rule 702.51), each
+       * with its chosen contribution. Only meaningful for a card with
+       * `CardDefinition.convoke`. */
+      readonly convoke?: readonly ConvokePayment[];
     }
   | {
       readonly type: "activate-ability";
@@ -349,6 +362,19 @@ export type LegalAction =
        * unchanged (only the cost differs). The driver echoes `free` back in
        * the `cast-spell` action. */
       readonly free?: boolean;
+      /** A convokable spell (rule 702.51): every untapped creature the
+       * player controls is a legal convoke payer. The driver builds a
+       * `ConvokePayment[]` (which candidates, and what each pays) and echoes
+       * it back as `convoke` in the `cast-spell` action; `[]` or omitted
+       * pays the ordinary mana cost in full. `maxGeneric` is the cost's
+       * generic amount — an upper bound on how many candidates can validly
+       * all pay `"generic"` at once (a driver that doesn't want to reason
+       * about colors can always pick any subset of candidates up to this
+       * many and have every one pay `"generic"`; paying a specific color
+       * instead needs no such cap beyond that color's own pip count, which
+       * isn't echoed here — a driver that wants to pay colors reads them
+       * off `PlayerView`). */
+      readonly convoke?: { readonly candidates: readonly ObjectId[]; readonly maxGeneric: number };
     }
   | {
       readonly kind: "activate-ability";

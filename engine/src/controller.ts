@@ -11,6 +11,7 @@ import type {
   Action,
   AttackerDeclaration,
   BlockerDeclaration,
+  ConvokePayment,
   LegalAction,
 } from "./actions.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
@@ -775,14 +776,39 @@ export class ScriptedController implements PlayerController {
 function castExtras(
   legal: Extract<LegalAction, { kind: "cast-spell" }>,
   pickIndex: (n: number) => number,
-): { kicked?: boolean; overload?: boolean; free?: boolean; sacrifice?: ObjectId } {
+): {
+  kicked?: boolean;
+  overload?: boolean;
+  free?: boolean;
+  sacrifice?: ObjectId;
+  convoke?: ConvokePayment[];
+} {
   const sac = legal.sacrifice;
+  const convokeInfo = legal.convoke;
   return {
     ...(legal.kicked === true ? { kicked: true } : {}),
     ...(legal.overload === true ? { overload: true } : {}),
     ...(legal.free === true ? { free: true } : {}),
     ...(sac !== undefined && sac.choices.length > 0
       ? { sacrifice: sac.choices[pickIndex(sac.choices.length)] }
+      : {}),
+    // Always pays "generic" — simple and always valid regardless of a
+    // creature's own colors, capped at `maxGeneric` so the random subset
+    // can never overpay the cost's generic portion. Doesn't exercise
+    // colored convoke payment; `convoke.test.ts` covers that directly.
+    ...(convokeInfo !== undefined && convokeInfo.candidates.length > 0 && convokeInfo.maxGeneric > 0
+      ? {
+          convoke: (() => {
+            const pool = [...convokeInfo.candidates];
+            const want = Math.min(pool.length, convokeInfo.maxGeneric, pickIndex(pool.length + 1));
+            const chosen: ConvokePayment[] = [];
+            for (let i = 0; i < want; i += 1) {
+              const [creature] = pool.splice(pickIndex(pool.length), 1);
+              chosen.push({ creature, pays: "generic" });
+            }
+            return chosen;
+          })(),
+        }
       : {}),
   };
 }
