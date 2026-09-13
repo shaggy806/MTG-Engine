@@ -854,6 +854,121 @@ games) fuzzer runs clean afterward.
 
 ---
 
+## Client Scryfall image batching
+
+Separately from the verification pass above, `client/src/ui/art.ts` was doing a
+per-card-tile `api.scryfall.com/cards/named?...&format=image` lookup — a real card-name
+lookup **plus** a 302 redirect to the actual CDN file, two round trips per rendered
+card, against the same 10 req/sec budget the JSON API shares. `CardTile.tsx` now queues
+each card's name (`queueArtLookup`) in a `useEffect` rather than fetching inline; every
+name queued in the same ~30ms window is folded into one `POST /cards/collection` call
+(batched, ≤75 identifiers per request), and the returned `image_uris` are cached so
+`resolveArtUrl` returns a direct CDN URL — no redirect — once resolved. A
+`useSyncExternalStore` subscription re-renders `CardTile` when the cache updates; until
+then (or if the batch fetch fails) the old by-name URL still renders, so nothing
+regresses. Verified live via a scratch room with ten distinct real cards on the
+battlefield: every image request went straight to `cards.scryfall.io`, zero requests to
+`api.scryfall.com/cards/named` at all.
+
+---
+
+## P18 — A `neededCards.txt` re-audit against real Scryfall text + current vocab
+
+Prompted by: "get the number of `neededCards.txt` entries that can be implemented
+without adding new features much higher, and verify the FEATURE notes are actually
+accurate." Batch-fetched real Oracle text for every `[ ]` entry (one `/cards/collection`
+call, 70 identifiers) and re-checked each FEATURE note against both that text and the
+engine's *current* vocabulary — grown substantially since several of these notes were
+first written (P14–P17 added `extraLandsPerTurn`, `doubleEntryTriggers`, `otherOnly`,
+`opponents-control-total`, `EffectTargetRef: "trigger-object"`, `castModal`,
+`additionalCost`, `kicker`, `selfCostReduction`, the "artifact" TargetSpec, and more).
+
+**Three stale duplicate lines**, where Deck 1's copy of a card had been implemented but
+Deck 2's `(dup — see Deck 1)` line was never flipped to match: Amulet of Vigor, Cinder
+Glade, Stomping Ground — all now `[+]` in both decks.
+
+**Three cards needed zero new vocab and are now implemented** (`needed-cards-p18.test.ts`,
+added to `random-demo.mjs` deck A, `card:verify` clean):
+
+- **Ganax, Astral Hunter** — the file's old FEATURE note ("mana on a trigger that
+  doesn't empty between steps") described a mechanic the real card doesn't have at all.
+  Real text is a plain Dragon-ETB Treasure trigger (`trigger: { on:
+  "enters-battlefield", who: "you-control", filter: { subtype: "Dragon" } }` — no
+  `otherOnly`, since "Ganax or another Dragon" counts its own entry too). "Choose a
+  Background" (a Commander deckbuilding option) isn't modeled and isn't needed for the
+  creature to function as an ordinary card.
+- **Dragon Tempest** — both triggers turned out to be already-shipped vocab: "a flying
+  creature gains haste" is `grant-keyword` with `target: "trigger-object"` (Amulet of
+  Vigor's P17 addition); "deals X damage where X = Dragons you control" is `damage` with
+  `amount: { countOf: { subtype: "Dragon", controlledBy: "you" } }` (Scourge of Valkas's
+  exact shape). The old FEATURE note predated both additions.
+- **Lotus Field** — "sacrifice two lands" is a plain `sacrifice` effect (`who: "you"`,
+  `filter: { type: "land" }`, `count: 2`) — `sacrificeByEffect` already auto-resolves
+  with no decision when the eligible count doesn't exceed what's owed, which correctly
+  covers the real rules interaction where playing it with no other land sacrifices it
+  too. "Add three mana of any one color" is `add-mana` with `mana: "any-color", amount:
+  3` — the existing "any-color" plumbing already commits to one chosen color for the
+  *whole* activation (confirmed by reading `Game.addMana` — the color is picked once per
+  ability activation, not once per mana unit), so a multi-unit any-color ability was
+  already correctly supported, just never exercised by a pool card before.
+
+**Two "half-free" finds** — not fully authored (the rest of the card is still blocked),
+but worth knowing about since the blocked half isn't what the note used to say:
+
+- **Conduit of Worlds** — "you may play lands from your graveyard" is already
+  `playFromGraveyard: { type: "land" }` (Ramunap Excavator's exact shape). Only the
+  second ability (target a nonland permanent card in your graveyard, cast it once per
+  turn) needs new vocab.
+- **Dryad of the Ilysian Grove** — the extra land drop is already `extraLandsPerTurn: 1`
+  (P16). Only "lands you control are every basic land type" needs new vocab (a
+  continuous "grant subtypes" static — nothing like `grantKeywords` exists for
+  subtypes).
+
+**Several FEATURE notes described the wrong mechanic entirely** (written from memory
+without checking Scryfall — exactly the failure mode this pass exists to catch) and were
+rewritten to match the real card:
+
+- **Last March of the Ents** — no counters at all on the real card (draw = greatest
+  toughness among your creatures, a max-stat aggregate `EffectAmount` doesn't have; then
+  put creature cards from hand onto the battlefield, an effect that doesn't exist).
+- **Marang River Regent** — no unblockable clause; it's an Omen MDFC needing optional
+  "up to N" targeting (see below) and an Omen-specific "shuffle into library instead of
+  graveyard" alt-zone rule.
+- **Hellkite Courser** — no "attacking" clause; it cheats a commander out of the command
+  zone (not a graveyard/library/hand zone any existing effect reads from).
+- **Temple of the Dragon Queen** — not restricted mana like Haven of the Spirit Dragon;
+  it locks in one fixed color on ETB and needs an OR-combined `tappedUnless` condition.
+- **Six** — no forests-matter, graveyard-land-play, or regeneration text anywhere on the
+  real card; it's Reach + a mill-then-take-a-land attack trigger + retrace.
+- **Traveling Chocobo** — no Food, landfall, or counters at all; it's a play/cast-from-
+  library-top permission (Bird-restricted) plus an already-free (P15) trigger-doubler.
+- **Orcish Lumberjack** — its FEATURE note named an already-solved blocker (sacrificing a
+  filtered permanent as a cost, P6); the real remaining gap is `add-mana`'s output shape.
+- **Rakdos Charm** — two of its three modes are already expressible via `castModal`
+  (P17's "artifact" TargetSpec); the third mode isn't "damage = power" as the note said,
+  it's a mass reflexive "each creature deals 1 damage to its own controller" effect.
+- **The Gitrog Monster** — no discard alternative on the real upkeep clause, just
+  "sacrifice unless you sacrifice a land" (needs a `may`-with-`else` combinator).
+
+**A recurring small gap worth flagging on its own**: `may` (the "You may [effect]"
+EffectSpec) has no "if you do" tail — only `sacrifice-source` has a `then`. Widening
+`may` to take an optional `then`/`else` (mirroring `sacrifice-source.then` and
+`conditional.else`) would be a single, cheap change that unblocks pieces of Ob Nixilis,
+the Fallen; Springheart Nantuko; and The Gitrog Monster at once.
+
+**Two engine limitations, previously true but undocumented anywhere**, added to
+`AUTHORING.md` §15: every declared target slot is mandatory (no "up to N" / optional
+targeting — `game.ts`'s `targets.length !== targetSpecs.length` check throws), and
+`ActivatedAbility` has no `condition` gate (`StaticAbility`/`TriggeredAbility` both have
+one) — so "Activate only if …" printed on an activated ability can't be expressed yet
+(Fanatic of Rhonas's Ferocious mana ability, Shifting Woodland's Delirium ability).
+
+Full suite green after the 3 new cards (590 tests engine + 54 server); 2-player
+(300 games) and 4-player (150 games) fuzzer runs clean; `card:verify` clean (223
+checked, 0 mismatched).
+
+---
+
 ## Note on the former Korvold stub
 
 `engine/src/cards/pool/korvold-fae-cursed-king.ts` was an incomplete stub; **P6

@@ -61,6 +61,7 @@ import _poolDiabolicEdict from "./pool/diabolic-edict.js";
 import _poolDisenchant from "./pool/disenchant.js";
 import _poolDoomBlade from "./pool/doom-blade.js";
 import _poolDoublingSeason from "./pool/doubling-season.js";
+import _poolDragonTempest from "./pool/dragon-tempest.js";
 import _poolDragonspeakerShaman from "./pool/dragonspeaker-shaman.js";
 import _poolDuskwoodVerdict from "./pool/duskwood-verdict.js";
 import _poolElvishVisionary from "./pool/elvish-visionary.js";
@@ -84,6 +85,7 @@ import _poolForest from "./pool/forest.js";
 import _poolFoundryInspector from "./pool/foundry-inspector.js";
 import _poolFrontierBivouac from "./pool/frontier-bivouac.js";
 import _poolFumeSpitter from "./pool/fume-spitter.js";
+import _poolGanaxAstralHunter from "./pool/ganax-astral-hunter.js";
 import _poolGarrukWildspeaker from "./pool/garruk-wildspeaker.js";
 import _poolGarruksUprising from "./pool/garruks-uprising.js";
 import _poolGazeOfGranite from "./pool/gaze-of-granite.js";
@@ -130,6 +132,7 @@ import _poolLlanowarElves from "./pool/llanowar-elves.js";
 import _poolLongtuskCub from "./pool/longtusk-cub.js";
 import _poolLordOfExtinction from "./pool/lord-of-extinction.js";
 import _poolLotusCobra from "./pool/lotus-cobra.js";
+import _poolLotusField from "./pool/lotus-field.js";
 import _poolLure from "./pool/lure.js";
 import _poolMagmaquake from "./pool/magmaquake.js";
 import _poolManOWar from "./pool/man-o-war.js";
@@ -325,6 +328,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolDisenchant,
   _poolDoomBlade,
   _poolDoublingSeason,
+  _poolDragonTempest,
   _poolDragonspeakerShaman,
   _poolDuskwoodVerdict,
   _poolElvishVisionary,
@@ -348,6 +352,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolFoundryInspector,
   _poolFrontierBivouac,
   _poolFumeSpitter,
+  _poolGanaxAstralHunter,
   _poolGarrukWildspeaker,
   _poolGarruksUprising,
   _poolGazeOfGranite,
@@ -394,6 +399,7 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolLongtuskCub,
   _poolLordOfExtinction,
   _poolLotusCobra,
+  _poolLotusField,
   _poolLure,
   _poolMagmaquake,
   _poolManOWar,

@@ -131,6 +131,9 @@ const deckA = deck([
   ["Amulet of Vigor", 1],
   ["Sakura-Tribe Elder", 1],
   ["Bountiful Landscape", 1],
+  ["Ganax, Astral Hunter", 1],
+  ["Dragon Tempest", 1],
+  ["Lotus Field", 1],
 ]);
 // Kept deliberately lean (~50 cards) so the RandomController actually draws
 // and plays its threats — a bloated deck just stalls out and the fuzz only

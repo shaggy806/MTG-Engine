@@ -433,6 +433,7 @@ triggered: [
 | `leaves-battlefield` | `who` | a permanent leaves for **any** zone |
 | `gains-life` / `loses-life` | `who` | a player's life changes (`who` = whose) |
 | `attacks` | `who`, `filter?` | a creature is declared as an attacker (`filter` narrows which one — Utvara Hellkite / Atarka, World Render: "a Dragon you control") |
+| `attacks-alone` | `who` | Exalted (needed-cards P15) — a creature you control attacked alone this combat; the lone attacker isn't a target, read it via `ResolutionContext.triggerObject` / `EffectTargetRef: "trigger-object"` |
 | `sacrifice` | `who` | a player sacrifices a permanent (Korvold, Mayhem Devil — `who` = who sacrificed) |
 | `deals-combat-damage-to-player` | `who` | auto-fills the first target slot with the damaged player |
 | `transforms` | `who`, `intoFront?`, `filter?` | a DFC turns over |
@@ -516,6 +517,14 @@ static: [
   its controller may *play* matching cards from their graveyard (Ramunap
   Excavator: `{ type: "land" }`). `affects` is ignored. Still costs the land
   drop / sorcery timing; `legalActions` enumerates the play.
+- `extraLandsPerTurn: number` — additional land drops per turn for this
+  permanent's controller (Oracle of Mul Daya, Princess Sarah — needed-cards
+  P16). `affects` is ignored.
+- `doubleEntryTriggers: { filter? }` — Panharmonicon-style doubling (needed-cards
+  P15 — Starfield Vocalist): if a permanent entering causes a triggered ability
+  of this permanent's controller to trigger, it triggers an additional time.
+  `filter`, when present, narrows which *entering* permanent counts. `affects`
+  is ignored — this only ever doubles its own controller's triggers.
 
 **`condition?`** (`StaticCondition`) gates the *whole* static — when false it
 contributes nothing. The same union is a triggered ability's intervening-if
@@ -536,8 +545,14 @@ clause (section 9):
 **`replacement?`** (`ReplacementSpec`, `replacements.ts`) — a replacement effect
 *is* a static ability:
 
-- `{ event: "enters-battlefield", tapped?, counters?: { kind, amount },
-  transformed? }` — a self-replacement (enters tapped / with counters).
+- `{ event: "enters-battlefield", tapped?, tappedUnless?, painIfUntapped?,
+  mayPayLife?, counters?: { kind, amount }, transformed? }` — a self-replacement.
+  `tapped` is unconditional; `tappedUnless: StaticCondition` is the check-land
+  cycle (Rootbound Crag: `{ kind: "controls", filter: { subtypes: [...] },
+  atLeast: 1 }`, via the `checkLandStatic`/`enterTappedUnlessLands` helpers);
+  `mayPayLife: N` is a shock land (a `pay-life-for-untapped` decision, via the
+  `shockLand` helper); `painIfUntapped: N` deals damage if it *did* end up
+  entering untapped (Rockfall Vale).
 - `{ event: "would-create-token", multiplier }` — Doubling Season.
 - `{ event: "would-add-counter", multiplier, counterKind? }` — Doubling Season.
 - `{ event: "would-be-put-into-graveyard", instead: "exile", filter? }` — Rest
@@ -688,6 +703,67 @@ different card, or extend the engine (see `ROADMAP.md`).
   battlefield, one to hand"; Sakura-Tribe Elder).
 - `discard` as part of an **activated ability cost**.
 - `spellsCastThisTurn` triggers beyond `cast-spell` / `this-cast`.
+- **Optional / "up to N" targeting.** Every slot in a spell's or ability's
+  `targets` must be filled with a legal target — `castSpell`/`activateAbility`
+  throw if the chosen count doesn't exactly match the declared `TargetSpec[]`
+  length. There's no way to leave a declared slot empty (needed-cards P18 —
+  Marang River Regent's "return up to two other target nonland permanents").
+  Distinct from the *unbounded* "any number of targets, divide an amount among
+  them" gap below, which is about a variable slot **count**, not a fixed number
+  of independently-skippable slots.
+- **`ActivatedAbility` has no `condition` gate.** `StaticAbility` and
+  `TriggeredAbility` both take a `condition?: StaticCondition` (an "activate /
+  triggers only if …" check); an activated ability has no equivalent, so
+  "Activate only if you control a creature with power 4 or greater" (Fanatic of
+  Rhonas's Ferocious mana ability) can't be expressed (needed-cards P18).
+- **`may` has no "if you do" tail.** `sacrifice-source` has a `then` conditioned
+  on the sacrifice actually happening; the resolution-time `may` effect ("You
+  may [effect]") has no equivalent `then`/`else`, so "You may have target
+  player lose 3 life. If you do, put three +1/+1 counters on ~" (Ob Nixilis,
+  the Fallen) or "if you do X, else Y" (Springheart Nantuko, The Gitrog
+  Monster's "sacrifice ~ unless you sacrifice a land") aren't expressible
+  (needed-cards P18).
+- **Mana provenance / restricted spend.** No effect tracks what a specific unit
+  of mana was later spent on — "if that mana is spent on a Dragon spell, it
+  gains haste" (Carnelian Orb of Dragonkind) and "spend this mana only to cast
+  a Dragon spell" (Haven of the Spirit Dragon, Temple of the Dragon Queen,
+  Path of Ancestry) are both unmodeled (needed-cards P18).
+- **`add-mana` can't output a mix of colors** in one activation (only one
+  fixed `ManaType` or `"any-color"`, `amount` times) — blocks filter lands
+  (Flooded Grove, Mossfire Valley) and "any combination of two colors"
+  (Orcish Lumberjack, Selvala, Heart of the Wilds) (needed-cards P18).
+- **No "target card in a graveyard" `TargetSpec`** beyond the narrow
+  `"instant-or-sorcery-in-your-graveyard"` (Snapcaster Mage's flashback grant)
+  — blocks any card that targets a specific permanent card sitting in a
+  graveyard (Conduit of Worlds, Shifting Woodland, Toph, Hardheaded Teacher's
+  ETB) (needed-cards P18).
+- **No "put card(s) from hand onto the battlefield" effect** — every mass
+  cheat-into-play effect (`search-library`, `look-and-choose`) sources from a
+  library or graveyard, never a hand (Last March of the Ents, Spelunking,
+  Broodcaller Scourge) (needed-cards P18).
+- **`EffectSpec.sacrifice.count` is a fixed `number`**, not an `EffectAmount` —
+  can't sacrifice "X" of something where X is the spell's own chosen value
+  (Nahiri's Lithoforming) (needed-cards P18).
+- No **"a player plays a land"** trigger distinct from "a land enters the
+  battlefield" generally (Burgeoning) — the latter also fires for a land
+  fetched by an effect, which the former shouldn't (needed-cards P18).
+- No **"a card was put into a graveyard from anywhere"** trigger — `dies` only
+  covers a permanent's battlefield → graveyard move (The Gitrog Monster's "a
+  land card goes to a graveyard from anywhere, draw a card") (needed-cards P18).
+- No **temporary, this-turn-only ability grant** to a filtered class of
+  permanents you don't control the printing of (Rain of Filth: "lands you
+  control gain 'Sacrifice: Add {B}' until end of turn") — `grantsActivated` is
+  a permanent static's ongoing grant, not a one-shot resolution effect
+  (needed-cards P18).
+- No **"choose a mode as this enters, then behave permanently as that mode"**
+  primitive (Frontier Siege, Frostcliff Siege) — distinct from
+  `chooseCreatureTypeOnEnter`, which only feeds a cost-matching check, not a
+  whole alternate ability set (needed-cards P18).
+- **Bestow** (rule 702.103 — Springheart Nantuko), **Eternalize** (rule
+  702.129 — Fanatic of Rhonas), **retrace** (rule 702.83 — Six), **riot**
+  (rule 702.152 — Rhythm of the Wild), **Hideaway** (rule 702.104 — Mosswort
+  Bridge), and **Station** (rule 702.171 — Exploration Broodship and others)
+  are unmodeled alt-cast / ETB-choice mechanics (needed-cards P18).
 
 **Partial:**
 
