@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { createDefaultRegistry } from "engine";
 
 import { validateCommanderDeck } from "../deck-validation.js";
-import { formatCheck, parseDecklistText } from "../import-deck.js";
+import { createDefaultRegistry } from "../cards.js";
 
 const reg = createDefaultRegistry();
 
@@ -62,21 +61,5 @@ describe("validateCommanderDeck", () => {
       reg,
     );
     expect(r.violations.some((v) => v.includes("can't be a commander"))).toBe(true);
-  });
-});
-
-describe("formatCheck (over a pasted list's implemented cards)", () => {
-  it("guesses the commander and reports identity + violations", () => {
-    const text = [
-      "1 Ashmark, Mardu Vanguard",
-      "3 Lightning Bolt",
-      "1 Llanowar Elves",
-      "10 Mountain",
-    ].join("\n");
-    const r = formatCheck(parseDecklistText(text), reg);
-    expect(r.commander).toBe("Ashmark, Mardu Vanguard");
-    expect(r.identity).toBe("WBR");
-    expect(r.violations.some((v) => v.includes('3× "Lightning Bolt"'))).toBe(true);
-    expect(r.violations.some((v) => v.includes("Llanowar Elves"))).toBe(true);
   });
 });

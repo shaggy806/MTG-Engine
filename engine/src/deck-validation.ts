@@ -1,12 +1,19 @@
 /**
  * Commander-format deck validation (rule 903 — ROADMAP Phase 9). Pure and
  * synchronous: it only checks cards the engine already implements (an
- * unimplemented card is reported by the `/import-deck` feasibility audit, not
- * here). Returns a flat list of human-readable violations.
+ * unimplemented card is reported by the server's `/import-deck` feasibility
+ * audit, not here). Returns a flat list of human-readable violations.
+ *
+ * Lives in the engine (not the server, where it originated) because it's
+ * pure logic over `CardRegistry` data with no I/O — the client's deck
+ * builder needs the exact same rules, synchronously, with no network round-
+ * trip, so duplicating this between client and server would just invite
+ * drift.
  */
 
-import { colorIdentityOf, identityString, withinIdentity } from "engine";
-import type { CardRegistry, Color } from "engine";
+import { colorIdentityOf, identityString, withinIdentity } from "./identity.js";
+import type { Color } from "./mana.js";
+import type { CardRegistry } from "./cards.js";
 
 export interface DeckToValidate {
   /** One or two commander card names (two = Partner / Background). */
@@ -25,7 +32,9 @@ export interface DeckValidationResult {
   readonly identity: string;
 }
 
-const BASIC_LANDS = new Set([
+/** Names exempt from the singleton rule — the deck builder uses this too, to
+ * decide whether its "+1 copy" control should go past 1. */
+export const BASIC_LANDS: ReadonlySet<string> = new Set([
   "Plains",
   "Island",
   "Swamp",

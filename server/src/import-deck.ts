@@ -12,9 +12,8 @@
  * yes or no".
  */
 
-import type { CardDefinition, CardRegistry } from "engine";
-import { validateCommanderDeck } from "./deck-validation.js";
-import type { DeckValidationResult } from "./deck-validation.js";
+import { validateCommanderDeck } from "engine";
+import type { CardDefinition, CardRegistry, DeckValidationResult } from "engine";
 
 export interface DecklistEntry {
   readonly name: string;

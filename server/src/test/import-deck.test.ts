@@ -1,6 +1,8 @@
 import { describe, expect, it, vi, afterEach } from "vitest";
 import { createDefaultRegistry } from "engine";
-import { evaluateDecklist, parseDecklistText } from "../import-deck.js";
+import { evaluateDecklist, formatCheck, parseDecklistText } from "../import-deck.js";
+
+const registry = createDefaultRegistry();
 
 describe("parseDecklistText", () => {
   it("parses plain 'N Card Name' lines", () => {
@@ -49,8 +51,6 @@ describe("parseDecklistText", () => {
 });
 
 describe("evaluateDecklist", () => {
-  const registry = createDefaultRegistry();
-
   afterEach(() => {
     vi.unstubAllGlobals();
   });
@@ -97,5 +97,21 @@ describe("evaluateDecklist", () => {
 
     expect(result.implemented).toBe(false);
     expect(result.found).toBe(false);
+  });
+});
+
+describe("formatCheck (over a pasted list's implemented cards)", () => {
+  it("guesses the commander and reports identity + violations", () => {
+    const text = [
+      "1 Ashmark, Mardu Vanguard",
+      "3 Lightning Bolt",
+      "1 Llanowar Elves",
+      "10 Mountain",
+    ].join("\n");
+    const r = formatCheck(parseDecklistText(text), registry);
+    expect(r.commander).toBe("Ashmark, Mardu Vanguard");
+    expect(r.identity).toBe("WBR");
+    expect(r.violations.some((v) => v.includes('3× "Lightning Bolt"'))).toBe(true);
+    expect(r.violations.some((v) => v.includes("Llanowar Elves"))).toBe(true);
   });
 });
