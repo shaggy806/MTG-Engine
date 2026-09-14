@@ -25,6 +25,7 @@ import { Stack } from './ui/Stack.tsx'
 import { EventLog } from './ui/EventLog.tsx'
 import { ZoneViewer } from './ui/ZoneViewer.tsx'
 import { Symbols } from './ui/Symbols.tsx'
+import { getActiveDeck, getActivePayload } from './deck-builder/decks.ts'
 import './App.css'
 
 // Same host/port convention as useNetworkGame's SERVER_URL, but http(s) for
@@ -215,6 +216,9 @@ export default function App() {
   if (game.status === 'choosing-seat') {
     return <SeatPickerScreen game={game} />
   }
+  if (game.status === 'waiting-for-players') {
+    return <WaitingForPlayersScreen game={game} />
+  }
   return <GameScreen game={game} />
 }
 
@@ -301,6 +305,9 @@ function LobbyScreen({
       </button>
       <a className="link-button" href="/library">
         Browse the card library
+      </a>
+      <a className="link-button" href="/deck-builder">
+        Build a deck
       </a>
     </CenteredScreen>
   )
@@ -421,6 +428,33 @@ function ImportDeckScreen({ onBack }: { readonly onBack: () => void }) {
   )
 }
 
+/** Shared between `SeatPickerScreen` (before I've claimed a seat) and
+ * `WaitingForPlayersScreen` (after — still lets me fill any other still-open
+ * seat with a bot to get the room started). */
+function SeatStatusList({ game }: { readonly game: NetworkGame }) {
+  return (
+    <div className="seat-picker-status">
+      {game.seats.map((s) => (
+        <span key={s.player} className={s.claimed || s.isBot ? 'seat-status claimed' : 'seat-status'}>
+          {playerLabel(s.player, game.seats)}
+          {s.isBot
+            ? ' (bot)'
+            : s.claimed
+              ? s.online
+                ? ' (taken)'
+                : ' (taken · offline)'
+              : ' (open)'}
+          {!s.claimed && !s.isBot ? (
+            <button type="button" className="add-bot" onClick={() => game.addBot(s.player)}>
+              Add bot
+            </button>
+          ) : null}
+        </span>
+      ))}
+    </div>
+  )
+}
+
 function SeatPickerScreen({ game }: { readonly game: NetworkGame }) {
   const [name, setName] = useState('')
   const nextSeatIndex = game.seats.findIndex((s) => !s.claimed)
@@ -429,7 +463,7 @@ function SeatPickerScreen({ game }: { readonly game: NetworkGame }) {
   const join = (e: FormEvent) => {
     e.preventDefault()
     if (!nextSeat) return
-    game.claimSeat(nextSeat.player, name.trim() || `Player ${nextSeatIndex + 1}`)
+    game.claimSeat(nextSeat.player, name.trim() || `Player ${nextSeatIndex + 1}`, getActivePayload())
   }
 
   return (
@@ -450,26 +484,36 @@ function SeatPickerScreen({ game }: { readonly game: NetworkGame }) {
       ) : (
         <p className="muted">Room is full.</p>
       )}
-      <div className="seat-picker-status">
-        {game.seats.map((s) => (
-          <span key={s.player} className={s.claimed || s.isBot ? 'seat-status claimed' : 'seat-status'}>
-            {playerLabel(s.player, game.seats)}
-            {s.isBot
-              ? ' (bot)'
-              : s.claimed
-                ? s.online
-                  ? ' (taken)'
-                  : ' (taken · offline)'
-                : ' (open)'}
-            {!s.claimed && !s.isBot ? (
-              <button type="button" className="add-bot" onClick={() => game.addBot(s.player)}>
-                Add bot
-              </button>
-            ) : null}
-          </span>
-        ))}
-      </div>
+      <ActiveDeckNote />
+      <SeatStatusList game={game} />
     </CenteredScreen>
+  )
+}
+
+/** Shown once my own seat is claimed but the room's `Game` hasn't started
+ * yet — see `ConnectionStatus`'s `waiting-for-players`. */
+function WaitingForPlayersScreen({ game }: { readonly game: NetworkGame }) {
+  return (
+    <CenteredScreen title={`Room ${game.roomId ?? ''}`}>
+      <p className="muted">Waiting for the rest of the table…</p>
+      <ErrorLine game={game} />
+      <SeatStatusList game={game} />
+    </CenteredScreen>
+  )
+}
+
+/** A one-line reminder of which deck (if any) is about to come along —
+ * shown right above the seat list so it's clear *before* clicking Join,
+ * not a surprise once the game starts. */
+function ActiveDeckNote() {
+  const deck = getActiveDeck()
+  return (
+    <p className="muted db-active-note">
+      {deck
+        ? `Bringing "${deck.name}"${deck.commander ? ` (${deck.commander})` : ''} — `
+        : 'No deck selected — you’ll get this room’s starter deck — '}
+      <a href="/deck-builder">choose a deck</a>
+    </p>
   )
 }
 

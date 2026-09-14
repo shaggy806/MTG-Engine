@@ -25,6 +25,11 @@ export type ConnectionStatus =
   | 'no-room'
   | 'room-not-found'
   | 'choosing-seat'
+  /** My own seat is claimed, but the room's `Game` doesn't exist yet — at
+   * least one other seat is still open (see the server's `PendingRoom`).
+   * `seat` is set the same as it is once `playing`; `seats` keeps updating
+   * live as other seats fill. */
+  | 'waiting-for-players'
   | 'playing'
   | 'disconnected'
 
@@ -105,7 +110,11 @@ export interface NetworkGame {
   readonly revision: number
   createRoom: (seed?: number, players?: number) => void
   joinRoom: (roomId: string) => void
-  claimSeat: (seat: PlayerId, displayName?: string) => void
+  claimSeat: (
+    seat: PlayerId,
+    displayName?: string,
+    deck?: { readonly cards: readonly string[]; readonly commander?: string },
+  ) => void
   /** Fills an open seat with a basic heuristic bot instead of a human. */
   addBot: (seat: PlayerId) => void
   dispatch: (action: Action) => void
@@ -196,6 +205,21 @@ export function useNetworkGame(): NetworkGame {
           roomIdRef.current = message.roomId
           setRoomId(message.roomId)
           setSeats(message.seats)
+          const pending = pendingClaimRef.current
+          if (pending) {
+            // My own claim-seat (just now, or the auto-reclaim below on an
+            // earlier room-joined) evidently succeeded — an outright
+            // rejection would have come back as `error` instead, not this.
+            // The room just isn't ready to start yet (see the server's
+            // `PendingRoom`) — persist the claim now rather than waiting for
+            // a `state` that might be a while off, so a refresh while
+            // waiting still reclaims the same seat; stay on this status
+            // showing a waiting panel until a real `state` promotes us.
+            storeSeat(message.roomId, pending.seat, pending.clientToken)
+            setSeat(pending.seat)
+            setStatus('waiting-for-players')
+            return
+          }
           const stored = loadStoredSeat(message.roomId)
           if (stored) {
             pendingClaimRef.current = {
@@ -309,14 +333,18 @@ export function useNetworkGame(): NetworkGame {
   )
 
   const claimSeat = useCallback(
-    (chosen: PlayerId, displayName?: string) => {
+    (
+      chosen: PlayerId,
+      displayName?: string,
+      deck?: { readonly cards: readonly string[]; readonly commander?: string },
+    ) => {
       const id = roomIdRef.current
       if (id === null) return
       const token = newClientToken()
-      // Not persisted yet — the `state` handler stores it once the server
-      // confirms the claim with a `state` message (see `pendingClaimRef`).
+      // Not persisted yet — the `room-joined`/`state` handlers store it once
+      // the server confirms the claim (see `pendingClaimRef`).
       pendingClaimRef.current = { seat: chosen, clientToken: token }
-      send({ type: 'claim-seat', roomId: id, seat: chosen, clientToken: token, displayName })
+      send({ type: 'claim-seat', roomId: id, seat: chosen, clientToken: token, displayName, deck })
     },
     [send],
   )

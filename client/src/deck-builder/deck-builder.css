@@ -1,0 +1,271 @@
+/* The deck builder — a list/detail layout like the card library
+   (client/src/library/library.css), with its own `.db-*` prefix since it
+   ships in the production bundle and needs its own editing controls
+   (add/remove, commander toggle, legality panel) the library doesn't have. */
+.db-page {
+  height: 100vh;
+  display: flex;
+  background: var(--bg);
+}
+
+.db-list {
+  flex: none;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.db-back {
+  align-self: flex-start;
+}
+
+.db-list-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-soft);
+}
+.db-list-section:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+.db-list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-dim);
+}
+.db-list-head button {
+  font-size: 11px;
+  padding: 2px 8px;
+}
+.db-note {
+  font-size: 11px;
+  margin: 0;
+}
+.db-empty {
+  font-size: 12px;
+  margin: 0;
+}
+
+.db-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.db-list li button {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 8px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.db-list li button:hover {
+  background: var(--panel-2);
+}
+.db-list li button.selected {
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+.db-active-badge {
+  margin-left: auto;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--good);
+  color: #0c0f12;
+  font-weight: 700;
+}
+
+.db-detail {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 24px 32px;
+}
+.db-prompt {
+  margin-top: 40px;
+  text-align: center;
+}
+
+.db-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 760px;
+}
+.db-editor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.db-name-input {
+  font: inherit;
+  font-family: 'Cinzel', serif;
+  font-size: 20px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 2px 6px;
+  color: var(--text);
+}
+.db-name-input:hover,
+.db-name-input:focus {
+  border-color: var(--border);
+  outline: none;
+}
+.db-editor-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.db-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.db-legality {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+}
+.db-legality.legal {
+  border-color: var(--good);
+}
+.db-legality.illegal {
+  border-color: var(--warn);
+}
+.db-legality ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.db-search-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.db-search {
+  flex: 1;
+  font: inherit;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+.db-toggle {
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.db-type-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.db-type-filters button {
+  font-size: 12px;
+  padding: 3px 9px;
+  background: var(--panel-2);
+  color: var(--muted);
+}
+.db-type-filters button.selected {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.db-card-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-height: 60vh;
+  overflow-y: auto;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+}
+.db-card-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+}
+.db-card-list li.db-in-deck {
+  background: var(--accent-bg);
+}
+.db-card-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.db-card-row-spacer {
+  flex: 1;
+}
+.db-card-list button {
+  font-size: 12px;
+  padding: 2px 9px;
+}
+.db-count {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.db-readonly-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  columns: 2;
+  column-gap: 24px;
+  max-height: 65vh;
+  overflow-y: auto;
+}
+.db-readonly-list li {
+  padding: 2px 0;
+  font-size: 13px;
+  break-inside: avoid;
+}
+
+@media (max-width: 700px) {
+  .db-page {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+  .db-list {
+    width: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .db-readonly-list {
+    columns: 1;
+  }
+}
