@@ -236,6 +236,43 @@ export const painLand = (
   });
 
 /**
+ * A "Talisman" (Talisman of Dominance, Talisman of Progress, …): a {2} artifact
+ * with exactly a pain land's ability set — "{T}: Add {C}." plus "{T}: Add {A} or
+ * {B}. ~ deals 1 damage to you." The auto-payer reaches for the painless option
+ * first, same as `painLand`.
+ */
+export const talisman = (name: string, colors: readonly [Color, Color]): CardDefinition =>
+  defineCard({
+    name,
+    manaCost: "{2}",
+    types: ["artifact"],
+    text:
+      "{T}: Add {C}.\n" +
+      `{T}: Add {${colors[0]}} or {${colors[1]}}. ${name} deals 1 damage to you.`,
+    activated: [
+      {
+        cost: { mana: null, tap: true },
+        targets: [],
+        effect: { kind: "add-mana", mana: "C", amount: 1 },
+        resolve: null,
+        text: "{T}: Add {C}.",
+      },
+      ...colors.map((c) => ({
+        cost: { mana: null, tap: true },
+        targets: [],
+        effect: {
+          kind: "add-mana" as const,
+          mana: c,
+          amount: 1,
+          painToController: 1,
+        },
+        resolve: null,
+        text: `{T}: Add {${c}}. ${name} deals 1 damage to you.`,
+      })),
+    ],
+  });
+
+/**
  * The single color of mana a land taps for, or `null` if it is not a
  * mana-producing basic land. (Non-basic mana lands come later.)
  */

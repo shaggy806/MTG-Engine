@@ -482,7 +482,8 @@ triggered: [
 | `on` | extra fields | fires when |
 | --- | --- | --- |
 | `enters-battlefield` | `who`, `filter?`, `otherOnly?` | a permanent enters |
-| `dies` | `who`, `filter?`, `otherOnly?` | a permanent → graveyard from the battlefield |
+| `dies` | `who`, `filter?`, `otherOnly?` | a permanent → graveyard from the battlefield, **however it got there** (rule 700.4) — destroyed, sacrificed, the legend rule, a Saga completing. A commander redirected to the command zone by 903.9a doesn't die. |
+| `becomes-tapped` | `who`, `filter?` | a permanent became tapped (rule 701.21a — City of Brass). Fires for every tapping: a mana ability, a cost that taps it, an opponent's tap effect. Not the same as `add-mana`'s `painToController`, which only charges the mana-ability path. |
 | `leaves-battlefield` | `who` | a permanent leaves for **any** zone |
 | `gains-life` / `loses-life` | `who` | a player's life changes (`who` = whose) |
 | `attacks` | `who`, `filter?` | a creature is declared as an attacker (`filter` narrows which one — Utvara Hellkite / Atarka, World Render: "a Dragon you control") |
@@ -681,6 +682,13 @@ activated: [{
 ```
 
 **Mana dork** (`llanowar-elves.ts`): `activated: [manaTapAbility("G")]`.
+
+**A whole land/rock cycle** — `cards/helpers.ts` has a one-line constructor for
+each of the big repeating shapes, and a new member of a cycle should use it
+rather than being spelled out: `shockLand`, `fetchLand`, `checkLandStatic`,
+`enterTappedUnlessLands`, `painLand`, `trikeland`, `talisman` (a pain land's
+ability set on a `{2}` artifact), `basicLand`. `blood-crypt.ts` is the whole
+file: `export default shockLand("Blood Crypt", ["Swamp", "Mountain"]);`
 
 **{X} burn** (`fireball.ts` / `blaze.ts`): `manaCost: "{X}{R}"`, `targets:
 ["any-target"]`, `effect: { kind: "damage", amount: "x", target: 0 }`.

@@ -88,6 +88,73 @@ one at a time.
 **Tier 1 is complete.** Work down Tier 2 opportunistically next, and treat Tier 3 as "revisit if the
 card count grows," not a queue.
 
+### E1 — the first bulk-authoring pass (53 cards, no new feature needed)
+
+Tier 1 finished the *features* the popularity list demanded; this pass took the
+other half of the same list — the top-200 staples that need **no** new
+vocabulary — and authored them in bulk. 53 cards, all verified against Scryfall
+by `card:verify`.
+
+**A tooling correction first.** `top-commander-cards.txt`'s `[x]`/`[ ]` marks
+are produced by regexing `name: "…"` out of each `pool/` file, so every card
+built by a `helpers.ts` constructor (`shockLand("Blood Crypt", …)` — the whole
+file) was falsely reported missing. Ten already-implemented lands were listed as
+unauthored. Re-derive the real set from `BUILTIN_CARDS`, not from the file's
+marks, until `scripts/top-commander-cards.mjs` learns to read the helper calls.
+
+Shipped:
+
+- **Five land cycles completed** (32 cards) — shock (Watery Grave, Breeding
+  Pool, Godless Shrine, Hallowed Fountain, Steam Vents, Sacred Foundry, Temple
+  Garden), fetch (Polluted Delta, Flooded Strand, Misty Rainforest, Windswept
+  Heath, Scalding Tarn, Marsh Flats, Arid Mesa), check (Clifftop Retreat,
+  Dragonskull Summit, Isolated Chapel, Glacial Fortress, Drowned Catacomb,
+  Woodland Cemetery, Sunpetal Grove), pain (Battlefield Forge, Caves of Koilos,
+  Llanowar Wastes, Underground River, Adarkar Wastes, Sulfurous Springs,
+  Brushland), BFZ duals (Sunken Hollow, Smoldering Marsh, Canopy Vista, Prairie
+  Stream). Every one is a single `helpers.ts` call — the P0/P1 land toolkit had
+  already paid for all of them, and each cycle now has all ten members, which
+  is what a real imported decklist actually asks for.
+- **The Talisman cycle** (10) — a new `talisman()` helper: a pain land's exact
+  ability set on a `{2}` artifact.
+- **Rocks and utility lands** — Mind Stone, Lotus Petal, Ashnod's Altar,
+  Wayfarer's Bauble, Swiftfoot Boots, Ancient Tomb, Mana Confluence, City of
+  Brass.
+- **Spells and creatures** — Dark Ritual, Three Visits, Elvish Mystic, Abrade,
+  Deadly Dispute, Generous Gift (+ an Elephant token), Blood Artist, Solemn
+  Simulacrum, Eternal Witness.
+
+Two engine changes came out of it, both rules bugs rather than new vocabulary:
+
+1. **`TriggerSpec.on: "becomes-tapped"`** (rule 701.21a) — City of Brass. A
+   `predicate` trigger can't express it: the predicate sees only the raw event,
+   never which permanent carries the ability, so two Cities would each fire for
+   the other's tapping. `painToController` doesn't fit either — the City hurts
+   however it got tapped, including when tapped to pay a cost.
+2. **`dies` now matches any battlefield → graveyard move**, not just
+   `permanent-destroyed` (rule 700.4). It had missed **every sacrifice**, so
+   Zulaport Cutthroat — in the pool since P-era — silently did nothing when you
+   sacrificed a creature, and the whole aristocrats interaction was dead.
+   Keyed off `permanent-left-battlefield`'s `toZone`, which also gets the
+   903.9a case right for free: a commander redirected to the command zone
+   never reaches a graveyard, so it doesn't die.
+
+`edh-staples.test.ts`. Both bugs were found by authoring a card and testing it,
+not by reading the engine — worth repeating for the next bulk pass.
+
+**Deliberately skipped** (each needs a primitive the engine doesn't have, all
+in the top 125): Exotic Orchard / Fellwar Stone / Path of Ancestry (mana
+provenance — "a color a land an opponent controls could produce"), Reliquary
+Tower / Thought Vessel (no `maxHandSize` static), Cultivate / Kodama's Reach
+(multi-destination tutor), Swords to Plowshares / Path to Exile (life or a
+search for *another* player, scaled off the target), Rhystic Study / Smothering
+Tithe / Esper Sentinel (an "unless that player pays" clause), Reanimate
+(another player's graveyard), Brainstorm / Ponder (put cards back on top in any
+order), Toxic Deluge (pay-X-life as an additional cost), Urborg / Yavimaya (a
+global type-change static), Skullclamp ("equipped creature dies"), Chaos Warp
+(shuffle a permanent into a library), Cavern of Souls, The One Ring, Urza's
+Saga.
+
 ---
 
 ## Completed: `neededCards.txt` passes (P0-P20)
