@@ -889,6 +889,17 @@ export class Game {
       out.push({ kind: "play-land", card, cardName: def.name });
     }
 
+    // A static permission to play the top card of your library if it's a
+    // land (Oracle of Mul Daya). Still consumes the land drop / sorcery
+    // timing.
+    const libraryTop = this.state.zones.perPlayer[player].library[0];
+    if (libraryTop !== undefined) {
+      const def = this.registry.get(this.state.objects[libraryTop].cardName);
+      if (def.types.includes("land") && this.whyCannotPlayLand(player, libraryTop) === null) {
+        out.push({ kind: "play-land", card: libraryTop, cardName: def.name });
+      }
+    }
+
     const pushActivateAbility = (
       source: ObjectId,
       cardName: string,
@@ -3327,6 +3338,24 @@ export class Game {
     return false;
   }
 
+  /** While a `playFromLibraryTop` static (Oracle of Mul Daya) is on the
+   * battlefield under `player`'s control, they may play the top card of
+   * their library if it matches (rule 118.9-adjacent). */
+  private mayPlayFromLibraryTop(player: PlayerId, cardId: ObjectId): boolean {
+    for (const id of this.state.zones.shared.battlefield) {
+      const source = this.state.objects[id];
+      if (source.controller !== player || hasLostAbilities(source)) continue;
+      for (const ability of this.registry.get(printedCardName(source)).static) {
+        const filter = ability.playFromLibraryTop;
+        if (filter === undefined || !this.staticActive(source, ability)) continue;
+        if (matchesFilter(this.state, this.registry, cardId, filter, { you: player })) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   /** The base land-drop limit plus any `extraLandsPerTurn` statics `player`
    * controls (Princess Sarah, Icetill Explorer — needed-cards P16). */
   private maxLandsFor(player: PlayerId): number {
@@ -3354,7 +3383,8 @@ export class Game {
     const zones = this.state.zones.perPlayer[player];
     const playable =
       zones.hand.includes(cardId) ||
-      (zones.graveyard.includes(cardId) && this.mayPlayFromGraveyard(player, cardId));
+      (zones.graveyard.includes(cardId) && this.mayPlayFromGraveyard(player, cardId)) ||
+      (zones.library[0] === cardId && this.mayPlayFromLibraryTop(player, cardId));
     if (!playable) {
       return `${player} cannot play that card as a land`;
     }

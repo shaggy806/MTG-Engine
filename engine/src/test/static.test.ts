@@ -247,6 +247,33 @@ describe("keyword-granting statics and one-shots", () => {
   });
 });
 
+describe("Oracle of Mul Daya (reveals the top of your library and lets you play it)", () => {
+  it("lets you play the top card of your library once it's on the battlefield", () => {
+    const game = mkGame(["Grizzly Bears"]);
+    game.advanceUntil(atFirstMain);
+    spawn(game, "Oracle of Mul Daya", A);
+    const topId = game.state.zones.perPlayer[A].library[0];
+    expect(game.state.objects[topId].cardName).toBe("Forest"); // the deck's padding
+
+    game.dispatch({ type: "play-land", player: A, card: topId });
+
+    expect(game.state.objects[topId].zone).toBe("battlefield");
+    expect(game.state.players[A].landsPlayedThisTurn).toBe(1);
+    // Oracle's own extra land drop (`extraLandsPerTurn: 1`) still allows a
+    // second land this turn, from hand.
+    const handForest = game.handOf(A).find((id) => game.state.objects[id].cardName === "Forest")!;
+    expect(game.canDispatch({ type: "play-land", player: A, card: handForest })).toBeNull();
+  });
+
+  it("refuses to play the top card of your library without an Oracle in play", () => {
+    const game = mkGame(["Grizzly Bears"]);
+    game.advanceUntil(atFirstMain);
+    const topId = game.state.zones.perPlayer[A].library[0];
+
+    expect(game.canDispatch({ type: "play-land", player: A, card: topId })).not.toBeNull();
+  });
+});
+
 describe("Oracle of Mul Daya (reveals the top of your library)", () => {
   it("exposes the top card to every viewer once it's on the battlefield", () => {
     const game = mkGame(["Grizzly Bears"]);

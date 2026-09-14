@@ -163,6 +163,13 @@ export interface StaticAbility {
    * this grants the controller a play permission, not a characteristic. Still
    * costs the land drop / sorcery timing. */
   readonly playFromGraveyard?: CardFilter;
+  /** A permission (rule 118.9-adjacent) — while this permanent is on the
+   * battlefield its controller may *play* the top card of their library if it
+   * matches `filter` (Oracle of Mul Daya: `{ type: "land" }`). `affects` is
+   * ignored; this grants the controller a play permission, not a
+   * characteristic. Still costs the land drop / sorcery timing. Distinct from
+   * `revealsOwnLibraryTop` (the "play with the top card revealed" half). */
+  readonly playFromLibraryTop?: CardFilter;
   /** Protection (rule 702.16) — the affected object can't be targeted,
    * blocked, enchanted/equipped, or damaged by a source whose colour or type
    * matches (White Knight: `{ colors: ["B"] }`). */

@@ -570,6 +570,12 @@ static: [
   its controller may *play* matching cards from their graveyard (Ramunap
   Excavator: `{ type: "land" }`). `affects` is ignored. Still costs the land
   drop / sorcery timing; `legalActions` enumerates the play.
+- `playFromLibraryTop: CardFilter` — while this permanent is on the
+  battlefield its controller may *play* the top card of their library if it
+  matches (Oracle of Mul Daya: `{ type: "land" }`). `affects` is ignored.
+  Still costs the land drop / sorcery timing; `legalActions` enumerates the
+  play. Distinct from `revealsOwnLibraryTop` (the "play with the top card
+  revealed" half, which only affects `viewFor`).
 - `extraLandsPerTurn: number` — additional land drops per turn for this
   permanent's controller (Oracle of Mul Daya, Princess Sarah — needed-cards
   P16). `affects` is ignored.
