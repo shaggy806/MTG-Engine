@@ -299,6 +299,9 @@ function LobbyScreen({
       <button type="button" className="link-button" onClick={onImport}>
         Import a decklist
       </button>
+      <a className="link-button" href="/library">
+        Browse the card library
+      </a>
     </CenteredScreen>
   )
 }

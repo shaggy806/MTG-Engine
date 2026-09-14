@@ -1,0 +1,123 @@
+/* The public card library — a trimmed sibling of the dev card lab's
+   list/detail layout (client/src/lab/lab.css), rebuilt with its own class
+   prefix rather than shared, since this page ships in the production
+   bundle and the lab's classes are meant to stay dev-only. */
+.lib-page {
+  height: 100vh;
+  display: flex;
+  background: var(--bg);
+}
+
+.lib-list {
+  flex: none;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.lib-back {
+  align-self: flex-start;
+}
+
+.lib-search {
+  font: inherit;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
+.lib-type-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.lib-type-filters button {
+  font-size: 12px;
+  padding: 3px 9px;
+  background: var(--panel-2);
+  color: var(--muted);
+}
+.lib-type-filters button.selected {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.lib-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.lib-list li button {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 8px;
+  color: var(--text);
+}
+.lib-list li button:hover {
+  background: var(--panel-2);
+}
+.lib-list li button.selected {
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+.lib-empty {
+  padding: 5px 8px;
+}
+
+.lib-detail {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px;
+  overflow-y: auto;
+}
+
+.lib-toggle {
+  font-size: 13px;
+  color: var(--muted);
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.lib-tile-frame .card-tile {
+  transform: scale(1.9);
+  transform-origin: top center;
+  /* the tile is scaled up in place -- reserve the room that takes so it
+     doesn't overlap the toggle above it or get clipped by the page edge */
+  margin-bottom: calc(var(--card-w) * 1.4 * 0.9);
+}
+
+.lib-full-card {
+  max-width: min(90vw, 480px);
+  border-radius: 4.5% / 3.5%;
+}
+
+@media (max-width: 700px) {
+  .lib-page {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+  .lib-list {
+    width: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
