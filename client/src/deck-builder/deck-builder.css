@@ -47,6 +47,10 @@
   font-size: 11px;
   padding: 2px 8px;
 }
+.db-list-head-actions {
+  display: flex;
+  gap: 4px;
+}
 .db-note {
   font-size: 11px;
   margin: 0;
@@ -252,6 +256,51 @@
   padding: 2px 0;
   font-size: 13px;
   break-inside: avoid;
+}
+
+.db-import-panel {
+  max-width: 640px;
+}
+.db-import-panel form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
+.db-import-textarea {
+  font: inherit;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.db-import-report {
+  max-width: 760px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background: var(--accent-bg);
+  margin-bottom: 12px;
+}
+.db-import-report-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.db-import-report-head button {
+  font-size: 11px;
+  padding: 2px 8px;
+}
+.db-import-report-list {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  font-size: 13px;
+  max-height: 160px;
+  overflow-y: auto;
 }
 
 @media (max-width: 700px) {

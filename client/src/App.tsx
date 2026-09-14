@@ -12,7 +12,6 @@ import type {
 } from 'engine'
 import { useNetworkGame } from './net/useNetworkGame.ts'
 import type { NetworkGame } from './net/useNetworkGame.ts'
-import type { DeckFormatReport, ImportedCardReport } from './net/protocol.ts'
 import { computeBoardEntries } from './game/board.ts'
 import type { BoardEntry } from './game/board.ts'
 import { playerLabel, seatClassOf } from './format.ts'
@@ -24,16 +23,8 @@ import { MiniTile } from './ui/MiniTile.tsx'
 import { Stack } from './ui/Stack.tsx'
 import { EventLog } from './ui/EventLog.tsx'
 import { ZoneViewer } from './ui/ZoneViewer.tsx'
-import { Symbols } from './ui/Symbols.tsx'
 import { getActiveDeck, getActivePayload } from './deck-builder/decks.ts'
 import './App.css'
-
-// Same host/port convention as useNetworkGame's SERVER_URL, but http(s) for
-// this one-off request/response endpoint rather than the room's WebSocket.
-const IMPORT_DECK_URL = `${
-  ((import.meta.env.VITE_SERVER_URL as string | undefined) ?? `ws://${window.location.hostname}:4000`)
-    .replace(/^ws/, 'http')
-}/import-deck`
 
 // Symmetric fan for the hand tray (P8): card i's offset from the hand's
 // center is i - (N-1)/2; rotation and lift both scale off that same offset,
@@ -187,11 +178,7 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
 
 export default function App() {
   const game = useNetworkGame()
-  const [showImport, setShowImport] = useState(false)
 
-  if (showImport) {
-    return <ImportDeckScreen onBack={() => setShowImport(false)} />
-  }
   if (game.status === 'connecting') {
     return <CenteredScreen title="Connecting…" />
   }
@@ -208,10 +195,10 @@ export default function App() {
     )
   }
   if (game.status === 'room-not-found') {
-    return <LobbyScreen game={game} notFound onImport={() => setShowImport(true)} />
+    return <LobbyScreen game={game} notFound />
   }
   if (game.status === 'no-room') {
-    return <LobbyScreen game={game} onImport={() => setShowImport(true)} />
+    return <LobbyScreen game={game} />
   }
   if (game.status === 'choosing-seat') {
     return <SeatPickerScreen game={game} />
@@ -251,11 +238,9 @@ function ErrorLine({ game }: { readonly game: NetworkGame }) {
 function LobbyScreen({
   game,
   notFound = false,
-  onImport,
 }: {
   readonly game: NetworkGame
   readonly notFound?: boolean
-  readonly onImport: () => void
 }) {
   const [joinCode, setJoinCode] = useState('')
   const [players, setPlayers] = useState(2)
@@ -300,9 +285,6 @@ function LobbyScreen({
           Join
         </button>
       </form>
-      <button type="button" className="link-button" onClick={onImport}>
-        Import a decklist
-      </button>
       <a className="link-button" href="/library">
         Browse the card library
       </a>
@@ -310,121 +292,6 @@ function LobbyScreen({
         Build a deck
       </a>
     </CenteredScreen>
-  )
-}
-
-function ImportDeckScreen({ onBack }: { readonly onBack: () => void }) {
-  const [text, setText] = useState('')
-  const [cards, setCards] = useState<readonly ImportedCardReport[] | null>(null)
-  const [format, setFormat] = useState<DeckFormatReport | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-
-  const submit = (e: FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
-    setCards(null)
-    setFormat(null)
-    fetch(IMPORT_DECK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text }),
-    })
-      .then(async (res) => {
-        const data = (await res.json()) as {
-          cards?: ImportedCardReport[]
-          format?: DeckFormatReport
-          error?: string
-        }
-        if (!res.ok) throw new Error(data.error ?? 'import failed')
-        setCards(data.cards ?? [])
-        setFormat(data.format ?? null)
-      })
-      .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
-      .finally(() => setLoading(false))
-  }
-
-  const implementedCount = cards?.filter((c) => c.implemented).length ?? 0
-
-  return (
-    <div className="zone-viewer-overlay">
-      <div className="zone-viewer-box import-deck-box">
-        <div className="zone-viewer-head">
-          <h2>Import a decklist</h2>
-          <button type="button" onClick={onBack}>
-            Back
-          </button>
-        </div>
-        <p className="muted">
-          Paste a plain-text decklist export (Moxfield's "Export" feature, either with or
-          without the "(SET) collector-number" printing suffix) to see which cards the engine
-          already implements. This doesn't start a game — it's a feasibility report only.
-        </p>
-        <form onSubmit={submit}>
-          <textarea
-            className="import-deck-textarea"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            rows={10}
-            placeholder={'1 Sol Ring\n1 Ureni of the Unwritten\n...'}
-          />
-          <button type="submit" disabled={!text.trim() || loading}>
-            {loading ? 'Importing…' : 'Import'}
-          </button>
-        </form>
-        {error ? <div className="error-banner">⚠ {error}</div> : null}
-        {format ? (
-          <div className={`import-deck-format ${format.legal ? 'legal' : 'illegal'}`}>
-            <strong>
-              Commander format: {format.legal ? '✓ legal' : `✗ ${format.violations.length} issue(s)`}
-            </strong>
-            <div className="muted">
-              commander: {format.commander ?? '(none found)'} · identity:{' '}
-              {format.identity || 'colourless'}
-            </div>
-            {format.violations.length > 0 ? (
-              <ul>
-                {format.violations.map((v, i) => (
-                  <li key={i}>{v}</li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
-        ) : null}
-        {cards ? (
-          <div className="import-deck-report">
-            <p className="muted">
-              {implementedCount} / {cards.length} cards already implemented
-            </p>
-            <ul className="import-deck-list">
-              {cards.map((c) => (
-                <li key={c.name} className={c.implemented ? 'implemented' : 'not-implemented'}>
-                  <div className="import-deck-row">
-                    <span className="import-deck-name">
-                      {c.count > 1 ? `${c.count}x ` : ''}
-                      {c.name}
-                    </span>
-                    {c.manaCost ? <Symbols text={c.manaCost} /> : null}
-                    <span className="import-deck-badge">
-                      {c.implemented ? 'implemented' : c.found ? 'not yet' : 'not found'}
-                    </span>
-                  </div>
-                  {!c.implemented && c.typeLine ? (
-                    <div className="import-deck-detail">
-                      <div className="muted">{c.typeLine}</div>
-                      <div>
-                        <Symbols text={c.oracleText} />
-                      </div>
-                    </div>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
-      </div>
-    </div>
   )
 }
 

@@ -69,6 +69,21 @@ export function createDeck(name: string): SavedDeck {
   return deck
 }
 
+/** Same as `createDeck`, but pre-populated — for the deck builder's decklist
+ * import flow, once it's resolved a final card list (implemented cards
+ * as-is, an already-implemented stand-in for anything the engine doesn't
+ * have yet). */
+export function createDeckFromImport(
+  name: string,
+  cards: readonly string[],
+  commander?: string,
+): SavedDeck {
+  const deck: SavedDeck = { id: newId(), name, cards, commander }
+  writeDecks([...readDecks(), deck])
+  setActive({ kind: 'saved', id: deck.id })
+  return deck
+}
+
 /** Upserts by id — the builder calls this on every edit (add/remove a card,
  * set the commander, rename). */
 export function saveDeck(deck: SavedDeck): void {
