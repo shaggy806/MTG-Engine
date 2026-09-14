@@ -706,8 +706,19 @@
   position: relative;
   pointer-events: none;
 }
+/* top/right/transform/opacity read from custom properties (set inline per
+   depth in Stack.tsx) rather than being set directly inline -- same trick
+   the hand fan uses -- so :hover/:focus-within below can cancel the depth
+   styling with a plain CSS rule instead of fighting an inline style (which
+   always beats a stylesheet rule short of `!important`). */
 .stack-entry {
   position: absolute;
+  top: var(--st-y, 0px);
+  right: var(--st-x, 0px);
+  z-index: var(--st-z, 0);
+  transform-origin: top left;
+  transform: rotate(var(--st-rot, 0deg)) scale(var(--st-scale, 1));
+  opacity: var(--st-opacity, 1);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -726,11 +737,23 @@
 }
 /* the top of the stack -- what a player facing a decision is responding to
    -- gets an accent border so it reads as the "live" one at a glance;
-   everything behind it is already smaller/dimmer/rotated by its own inline
-   style (computed per-depth in Stack.tsx), not a separate CSS size rule. */
+   everything behind it is already smaller/dimmer/rotated by its own custom-
+   property styling (computed per-depth in Stack.tsx), not a separate CSS
+   size rule. */
 .stack-entry.is-top .card-tile {
   border-color: var(--accent);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55), 0 0 0 3px var(--accent-bg);
+}
+/* Read a buried card at full size without resolving everything in front of
+   it: hovering (or focusing, for keyboard/touch -- a targetable entry is a
+   real focusable button, see CardTile's `clickable`) any entry cancels its
+   depth transform/rotation/dimming and brings it to the front, in place --
+   its top/right position doesn't change, it just pops out at full size. */
+.stack-entry:hover,
+.stack-entry:focus-within {
+  transform: none;
+  opacity: 1;
+  z-index: 999;
 }
 .stack-entry-label {
   font-size: 11px;
@@ -1597,8 +1620,16 @@
   align-items: center;
   gap: 4px;
 }
-.zone-viewer-card > button,
-.hand-card > button {
+/* :not(.card-tile) -- CardTile itself renders as a <button> and is also a
+   direct child of .zone-viewer-card/.hand-card, so a bare `button` selector
+   here was also matching it (higher specificity than .card-tile's own
+   `padding: 0`, since an extra element-type selector still adds to a
+   class-only one) and inset the whole tile by this padding -- most visible
+   as the hand's art-first layout not reaching the card's own edges. This
+   rule is only meant for the small secondary action buttons (Suspend/
+   Foretell/Cycle/multi-face plays, cast-from-zone) that sit alongside it. */
+.zone-viewer-card > button:not(.card-tile),
+.hand-card > button:not(.card-tile) {
   font-size: 0.8rem;
   padding: 2px 8px;
 }

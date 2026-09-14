@@ -14,7 +14,7 @@ matching this repo's usual git history — not one giant diff. `scratch.mjs` +
 `npm run dev -w client` (client dev server proxies `ws://localhost:4000`) is
 the fastest way to eyeball a change; see CLAUDE.md's Commands section.
 
-**Status: Phases 1-6, 8, 9, 10, and 11 done and committed.** Phase 5 turned out to
+**Status: Phases 1-6, 8, 9, 10, 11, and 12 done and committed.** Phase 5 turned out to
 already be built before this plan started. Phase 7's
 priority-action-bar half landed early (inside phase 3); its mana-available-
 indicator half is explicitly **descoped by the user** (too much
@@ -662,6 +662,72 @@ SVGs (generic `{2}`/`{1}{G}`) overlaid top-right on the art in a dark chip,
 the name/type below, and the P/T badge bottom-right for Grizzly Bears --
 confirmed via a cropped screenshot before *and* after the `.ct-art > img`
 fix (the "before" shot is what caught the bug).
+
+### Phase 12 — Stack targeting/hover, hand-art edge bug, mini-tile size — DONE
+
+Three more user-reported gaps, unrelated to each other, landed together:
+
+1. **Stack entries are now legal-target-clickable and hover-readable.**
+   `Stack.tsx` didn't wire any of `tileFor`'s targeting logic (`highlight`/
+   `selected`/`onClick`) -- a spell on the stack could only be targeted via
+   the existing text-button fallback in the inline `controls` panel ("Cast
+   Counterspell: choose spell — Cyclonic Rift (on the stack)"), never by
+   clicking the card itself. The *engine* side already fully supported this
+   (a `TargetSpec` of `"spell"`/`"creature-spell"`/`"noncreature-spell"`/
+   `"instant-or-sorcery-spell"` resolves to ordinary `{kind:"object"}`
+   `TargetRef`s regardless of zone) -- this was a client wiring gap, not a
+   missing architecture piece. Fixed by moving `<Stack>`'s render call from
+   `GameScreen` (a sibling of `Table`, with no access to its targeting
+   state) into `Table`'s own return, next to `renderMulliganModal()`, and
+   giving `Stack` new `targetSlot`/`pickedIds`/`onTargetClick` props sourced
+   from the exact same `targetSlot`/`pickedObjKeys`/`clickPermanent` `Table`
+   already computes for battlefield permanents -- `CardTile`'s existing
+   `highlight`/`selected`/`onClick` props do the rest, no new targeting
+   logic needed.
+   Also: a buried stack card (small/dimmed/rotated by depth) couldn't
+   actually be *read* without resolving everything in front of it first.
+   Fixed by switching `Stack.tsx`'s per-depth `top`/`right`/`transform`/
+   `opacity`/`z-index` from direct inline styles to CSS custom properties
+   (`--st-y`/`--st-x`/`--st-rot`/`--st-scale`/`--st-opacity`/`--st-z`) that
+   `.stack-entry` reads via `var()` -- the same indirection the hand fan
+   already uses (see `HAND_FAN_STEP_DEG`'s comment) specifically so a
+   `:hover`/`:focus-within` CSS rule can cancel them with a plain rule
+   instead of fighting an inline style, which always wins over a stylesheet
+   rule short of `!important`. `.stack-entry:hover,:focus-within { transform:
+   none; opacity: 1; z-index: 999; }` pops the hovered/focused card to full
+   size in place (position unchanged) without needing any JS.
+2. **Hand-card art now genuinely fills to the card's edges.** Root cause:
+   `.zone-viewer-card > button, .hand-card > button { padding: 2px 8px }`
+   was written for the small secondary action buttons (Suspend/Foretell/
+   Cycle/multi-face plays/cast-from-zone) that sit *alongside* `CardTile` as
+   siblings under `.hand-card`/`.zone-viewer-card` -- but `CardTile` itself
+   renders as a `<button>` and is *also* a direct child there, so the bare
+   `button` selector matched it too, and (being an element+class selector,
+   marginally more specific than `.card-tile`'s own class-only `padding: 0`)
+   won, insetting the whole tile by that padding on all four sides. Mostly
+   invisible in the old title-first layout (the title bar's own background
+   partially masked it); glaring in Phase 11's art-first layout, where nothing
+   sat between the card's edge and the art. Fixed with `:not(.card-tile)` on
+   both selectors. This was a pre-existing bug, not something Phase 11
+   introduced -- Phase 11 just made it visible.
+3. **Board permanent tiles (MiniTile) sized up to match the mockup.**
+   `--mini-w` was `clamp(50px, 4.6vw, 78px)`; the mockup's own `.mini` is
+   `clamp(46px, 5.4vw, 80px)` -- floor/ceiling were already close, but our
+   4.6vw scaled noticeably slower than the mockup's 5.4vw at ordinary
+   desktop widths, reading smaller than the reference at anything short of
+   the ceiling. Changed to match the mockup exactly.
+
+Verified live via `scratch.mjs`: a real Counterspell cast (from hand, with 2
+untapped Islands) against two debug-spawned stack spells showed both as
+`highlight clickable` `CardTile`s; clicking one directly (bypassing the
+text-button fallback entirely) dispatched the target and resolved correctly
+(confirmed via the resulting graveyard count). Hovering a buried 5-deep
+stack entry showed `transform: none; opacity: 1; z-index: 999` via computed
+style, and a screenshot confirmed it visually popping to full size in place.
+The hand-art padding fix was confirmed both by computed style (`padding:
+2px 8px` → `0px`) and a before/after cropped screenshot showing the art
+reaching every edge. The mini-tile size bump was confirmed via a cropped
+before/after screenshot of the same battlefield permanents.
 
 ## Cross-cutting notes
 

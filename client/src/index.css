@@ -41,8 +41,12 @@
   --card-w: clamp(96px, 9vw, 150px);
   /* battlefield permanents render much smaller than a full card face (see
      MiniTile.tsx) -- their own token, not derived from --card-w, so tuning
-     one doesn't silently resize the other. */
-  --mini-w: clamp(50px, 4.6vw, 78px);
+     one doesn't silently resize the other. Matches the mockup's own .mini
+     exactly (clamp(46px,5.4vw,80px)) -- our previous 4.6vw scaled noticeably
+     slower than the mockup's 5.4vw at ordinary desktop widths, so board
+     permanents read smaller than the reference even though the floor/
+     ceiling were already close. */
+  --mini-w: clamp(46px, 5.4vw, 80px);
 
   font-family: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
   font-size: 14px;

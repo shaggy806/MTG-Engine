@@ -469,8 +469,6 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
 
       <Table key={game.revision} view={view} seat={seat} opponents={opponents} game={game} />
 
-      {view.zones.stack.length > 0 ? <Stack view={view} /> : null}
-
       {showHistory ? (
         <div className="zone-viewer-overlay" onClick={() => setShowHistory(false)}>
           <div
@@ -2401,6 +2399,19 @@ function Table({ view, seat, opponents, game }: TableProps) {
 
       {mode === 'priority' ? <div className="priority-actions">{controls}</div> : null}
       {renderMulliganModal()}
+      {/* moved here (from GameScreen, a sibling of Table) so it can reuse
+          Table's own targeting state/handlers -- a spell on the stack is
+          just another legal-target object (e.g. a counterspell targeting
+          "spell"), the same architecture tileFor already uses for
+          battlefield permanents. */}
+      {view.zones.stack.length > 0 ? (
+        <Stack
+          view={view}
+          targetSlot={targetSlot}
+          pickedIds={pickedObjKeys}
+          onTargetClick={(id) => clickPermanent([id])}
+        />
+      ) : null}
 
       {zoneView ? (
         <ZoneViewer
