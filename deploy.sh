@@ -10,6 +10,7 @@ VITE_SERVER_URL="${VITE_SERVER_URL:-wss://ws.tobyens.com}"
 git pull --ff-only
 npm install
 VITE_SERVER_URL="$VITE_SERVER_URL" npm run build
+sudo systemctl daemon-reload
 sudo systemctl restart mtg-server
 
 echo "Deployed. Server status:"

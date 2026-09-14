@@ -164,10 +164,13 @@ cd /opt/mtg-engine
 ```
 
 `deploy.sh` (repo root): `git pull --ff-only` → `npm install` → rebuild engine/server/client with
-`VITE_SERVER_URL=wss://ws.tobyens.com` baked into the client → `sudo systemctl restart
-mtg-server`. Caddy and cloudflared don't need restarting for an ordinary code change — only
-`mtg-server` actually changes. **A `sudo reboot` does *not* deploy new code** — it just restarts
-whatever's already built on disk; always run `./deploy.sh` instead.
+`VITE_SERVER_URL=wss://ws.tobyens.com` baked into the client → `sudo systemctl daemon-reload` →
+`sudo systemctl restart mtg-server`. The `daemon-reload` is there so a hand-edited unit file or
+drop-in override (e.g. the `CLIENT_ORIGIN` override above) is never silently stale after a
+deploy — cheap and harmless even when the unit file didn't change. Caddy and cloudflared don't
+need restarting for an ordinary code change — only `mtg-server` actually changes. **A `sudo
+reboot` does *not* deploy new code** — it just restarts whatever's already built on disk; always
+run `./deploy.sh` instead.
 
 ## Operational odds and ends
 
