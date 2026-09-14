@@ -14,7 +14,7 @@ matching this repo's usual git history — not one giant diff. `scratch.mjs` +
 `npm run dev -w client` (client dev server proxies `ws://localhost:4000`) is
 the fastest way to eyeball a change; see CLAUDE.md's Commands section.
 
-**Status: Phases 1-6, 8, 9, 10, 11, 12, 13, 14, 15, 16, and 17 done and committed.** Phase 5 turned out to
+**Status: Phases 1-6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, and 18 done and committed.** Phase 5 turned out to
 already be built before this plan started. Phase 7's
 priority-action-bar half landed early (inside phase 3); its mana-available-
 indicator half is explicitly **descoped by the user** (too much
@@ -965,6 +965,76 @@ shrinking (`--type-scale: 0.9`, converging to `scrollWidth === clientWidth`,
 148 === 148), the other two staying unscaled since they already fit;
 confirmed visually too via a hover screenshot showing the full unclipped
 type line.
+
+### Phase 18 — Large-hand fan: rotation cap, hover jitter, paint-order fix — DONE
+
+User feedback from a large-hand stress test (a hand well past the mockup's
+own tested range — its "many" preset tops out at 14 cards), three
+independent bugs found and fixed together:
+
+1. **Unbounded rotation.** `HAND_FAN_STEP_DEG`/`HAND_FAN_STEP_Y` are
+   per-card constants with no ceiling on the *total* sweep — fine at the
+   mockup's tested sizes (outermost card well under 30°), but a hand that
+   draws well past that (easy before a cleanup-step discard) pushed the
+   outermost card's rotation past 60-90°, which stops reading as a fan at
+   all. Added `HAND_FAN_MAX_ROT_DEG`/`HAND_FAN_MAX_LIFT_PX` (32°/38px):
+   `renderHand()` now computes an *effective* per-card step
+   (`Math.min(step, cap / maxOffset)`) so the sweep only ever compresses
+   below the tuned default, never exceeds it — an ordinary-sized hand
+   (roughly ≤15 cards, where the natural sweep already sits under the cap)
+   renders identically to before.
+2. **Hover jitter on a heavily-overlapping hand.** Reported as "hovering a
+   spot that touches the shrunk card but not the zoomed one makes it jitter
+   like crazy," and reproduced: `.hand-cards .hand-card` was both the
+   `:hover`-matching element *and* the element Phase 14's grow-on-hover
+   transform moved — translating/scaling a hovered element out from under a
+   stationary cursor makes `:hover` stop matching mid-transition, which
+   un-hovers it, moves it back under the cursor, re-hovers, repeat. Fixed by
+   splitting the two roles the same way `MiniTile.tsx`'s popover already
+   does: `.hand-card` itself (the flex item, positioned by layout/margin
+   only) never transforms and is the sole `:hover`/`:focus-within` target;
+   the fan's baseline `rotate`/`translate` *and* the hover grow both moved
+   onto `.hand-card .card-tile` (a child), driven by the parent's hover
+   state (`.hand-card:hover .card-tile {...}`) rather than the child's own.
+   `z-index` stays on the parent (a child's z-index doesn't reorder its
+   *siblings*, only its own children) — verified stable via a 1.5s polling
+   trace at a real overlap boundary (`element.matches(':hover')` sampled
+   every 100ms) showing zero flicker, where the same trace before this fix
+   would have shown the hovered index changing every transition tick.
+3. **Cards look like they're fanning the wrong way once there's enough
+   overlap to hide it (there isn't, at ordinary hand sizes).** Not a
+   rotation-sign bug — verified byte-for-byte against the mockup's own
+   `off = i-(N-1)/2; rotate:var(--r)` and by fetching the live mockup
+   artifact and measuring its actual rendered corner positions, both
+   matching this client exactly. The real cause: default stacking (no
+   `.hand-card` had its own `z-index` outside `:hover`) paints a later
+   sibling over an earlier one, i.e. each card's more-central neighbor
+   always paints on top of it. For a left-of-center card that neighbor sits
+   on its *right* — exactly where that card's own rotation lifts its inner
+   corner — so the corner that's supposed to visibly tilt up toward center
+   was getting buried under the neighbor, while the right half (where the
+   more-central neighbor is earlier in DOM, i.e. already underneath) never
+   had the problem. Invisible with a handful of cards (little/no overlap);
+   glaring once overlap is heavy, which reads as "the rotation direction is
+   backwards" even though the per-card angle never changed sign. Fixed with
+   a `--z` custom property (`Math.abs(fanOffset) * 10`, same
+   custom-property-feeds-a-real-property indirection as `--r`/`--y`, so a
+   plain `:hover` rule can still win without a specificity fight): edges in
+   front, center card at the back, symmetric on both sides, so every card's
+   inward corner stays exposed regardless of which side of center it's on.
+   Hover's own `z-index` bumped from 20 to 10000 to stay above any hand size
+   (37 cards tops out around 180).
+
+Verified live via a 37-card synthetic hand (`.scratch/stress-server.mjs`,
+git-ignored, not part of the actual `scratch.mjs`): before this phase, the
+collapsed peek showed near-illegible near-90° outer cards and the raised
+view showed one enlarged card plus an indistinct sliver mess; after, the
+peek shows a clean bounded arc and the raised view shows every card's name
+legible in a coherent shingled fan on both sides, matching the mockup's own
+shape. The hover-jitter fix and the rotation cap were each independently
+confirmed not to regress a small (7-card) hand, which renders unchanged
+(natural sweep already under the cap, negligible overlap so the paint-order
+fix has nothing to correct).
 
 ## Cross-cutting notes
 

@@ -43,6 +43,18 @@ const IMPORT_DECK_URL = `${
 // fanned look depending on which.
 const HAND_FAN_STEP_DEG = 4.4
 const HAND_FAN_STEP_Y = 5.2
+// The per-card step above is tuned against the mockup's own tested range (up
+// to 14 cards -- see BOARD_REDESIGN_PLAN.md Phase 8/mockup source), where the
+// outermost card lands well under these caps and nothing here changes
+// anything. Applied unscaled, a hand bigger than that (draw effects easily
+// push a hand past 14-20 before a discard step) grows the outermost card's
+// rotation without bound -- past ~20 cards the edges approach 90 degrees and
+// stop reading as a fan at all. These caps bound the *total sweep*, not each
+// card's own rotation, so a large hand compresses its per-card step instead
+// of blowing past a sane maximum -- same "shrink only once actually needed"
+// shape as HAND_CARD_GAP's overlap floor and recomputeBoardMiniW below.
+const HAND_FAN_MAX_ROT_DEG = 32
+const HAND_FAN_MAX_LIFT_PX = 38
 
 // The hand row never wraps to a second line and never shrinks card width
 // below its normal --card-w size -- once N cards no longer fit the row at
@@ -2338,7 +2350,20 @@ function Table({ view, seat, opponents, game }: TableProps) {
    * actively raised/browsing. Shared between `renderHandAndControls` (every
    * mode except mulligan, which shows it inside its own popup instead --
    * see `renderMulliganModal`) so the hand only has one render path. */
-  const renderHand = () => (
+  const renderHand = () => {
+    // Only ever compresses the per-card step below the tuned default above
+    // (never exceeds it), so an ordinary-sized hand renders identically to
+    // before -- see HAND_FAN_MAX_ROT_DEG/HAND_FAN_MAX_LIFT_PX's comment.
+    const maxFanOffset = (handIds.length - 1) / 2
+    const fanStepDeg =
+      maxFanOffset > 0
+        ? Math.min(HAND_FAN_STEP_DEG, HAND_FAN_MAX_ROT_DEG / maxFanOffset)
+        : HAND_FAN_STEP_DEG
+    const fanStepY =
+      maxFanOffset > 0
+        ? Math.min(HAND_FAN_STEP_Y, HAND_FAN_MAX_LIFT_PX / maxFanOffset)
+        : HAND_FAN_STEP_Y
+    return (
     <div className="hand">
       <h3>
         {playerLabel(seat, game.seats)}'s hand ({handIds.length})
@@ -2349,8 +2374,24 @@ function Table({ view, seat, opponents, game }: TableProps) {
           if (!obj) return null
           const fanOffset = i - (handIds.length - 1) / 2
           const fanStyle: CSSProperties = {
-            '--r': `${fanOffset * HAND_FAN_STEP_DEG}deg`,
-            '--y': `${Math.abs(fanOffset) * HAND_FAN_STEP_Y}px`,
+            '--r': `${fanOffset * fanStepDeg}deg`,
+            '--y': `${Math.abs(fanOffset) * fanStepY}px`,
+            // Baseline stacking order, read via var(--z) in App.css so a
+            // plain stylesheet :hover rule can still win over it (same
+            // reason --r/--y are custom properties feeding a real `rotate`/
+            // `translate` property instead of baking straight into an
+            // inline transform -- see that comment below). Increases with
+            // distance from center (edges in front, center card at the
+            // back), not the reverse: with heavy overlap (many cards),
+            // default DOM-order stacking (later card always on top) buries
+            // each card's own rotated-up inner corner -- the one that's
+            // supposed to peek out toward its more-central neighbor --
+            // under that neighbor, which is what's actually behind a hand
+            // that "looks like it's fanning the wrong way" once there are
+            // enough cards to overlap heavily. Every card sitting on top of
+            // its more-central neighbor keeps that inner corner exposed on
+            // both sides symmetrically.
+            '--z': Math.round(Math.abs(fanOffset) * 10),
             // Never wraps to a second row and never shrinks the card
             // itself -- past a natural fit, cards overlap (a shrinking,
             // even negative, gap) instead. See HAND_CARD_GAP's comment.
@@ -2428,7 +2469,8 @@ function Table({ view, seat, opponents, game }: TableProps) {
         {handIds.length === 0 ? <span className="muted">empty</span> : null}
       </div>
     </div>
-  )
+    )
+  }
 
   const renderHandAndControls = () => (
     <>

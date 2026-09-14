@@ -1473,23 +1473,48 @@
   padding-top: 16px;
 }
 /* symmetric fan (see App.tsx's HAND_FAN_STEP_DEG) -- --r/--y are set inline
-   per card; the standalone rotate/translate properties (not `transform`)
-   are what let :hover below override with a plain CSS rule instead of
-   fighting an inline `style.transform`. margin-left is also set inline per
-   card (the overlap amount) -- flex:none keeps a card at its fixed width
-   instead of letting flex-shrink squeeze it as the row gets tight. --y is
-   POSITIVE translate (not negated) -- the center card (offset 0, y:0) stays
-   at the row's normal baseline while cards further from center droop lower,
-   which is what actually reads as an arch/fan (center card peeking up,
-   outer cards angling down and away), matching the mockup. Always applied,
+   per card (as custom properties, which inherit to .card-tile below without
+   needing to be repeated). margin-left is also set inline per card (the
+   overlap amount) -- flex:none keeps a card at its fixed width instead of
+   letting flex-shrink squeeze it as the row gets tight. --y is POSITIVE
+   translate (not negated) -- the center card (offset 0, y:0) stays at the
+   row's normal baseline while cards further from center droop lower, which
+   is what actually reads as an arch/fan (center card peeking up, outer
+   cards angling down and away), matching the mockup. Always applied,
    including the collapsed peek -- a hand that's only rotated while raised
-   looked like two different components, not one tray opening. */
+   looked like two different components, not one tray opening.
+
+   `.hand-card` itself (this rule) never rotates/translates/scales -- only
+   `z-index` changes on hover, below. Deliberately split from the actual fan
+   transform (applied to the `.card-tile` child instead): a heavily
+   overlapping hand means the mouse is often near the boundary between two
+   cards, and a *hovered* element that moves itself out from under the
+   cursor stops matching `:hover` mid-transition, un-hovers, moves back
+   under the cursor, re-hovers, and so on -- a real jitter loop, not
+   hypothetical (reproduced with a large hand before this split existed).
+   Keeping the hover-triggering box (`.hand-card`) stable and animating a
+   *child* instead means the cursor's target never moves, so hovering never
+   un-hovers itself -- the same stable-hitbox/animated-child split
+   `MiniTile.tsx`'s popover already uses for the same reason. */
 .hand-cards .hand-card {
   position: relative;
   flex: none;
-  /* the bottom edge is what a fanned card visually "sits" on -- growing
-     from there on hover keeps that anchor point in place and only expands
-     upward/outward, instead of also pushing down into the row below it. */
+  /* --z is set inline per card (see App.tsx's fanStyle comment) -- read via
+     var() rather than baked into the inline style directly so the plain
+     :hover rule below can still win over it without a specificity fight. */
+  z-index: var(--z, 0);
+}
+.hand-cards .hand-card:hover,
+.hand-cards .hand-card:focus-within {
+  /* Comfortably above any --z a hand can produce (even a huge hand stays
+     under 1000) so the hovered/grown card is always on top regardless of
+     where it sits in the fan. */
+  z-index: 10000;
+}
+/* the bottom edge is what a fanned card visually "sits" on -- growing from
+   there on hover keeps that anchor point in place and only expands
+   upward/outward, instead of also pushing down into the row below it. */
+.hand-cards .hand-card .card-tile {
   transform-origin: bottom center;
   rotate: var(--r, 0deg);
   translate: 0 var(--y, 0px);
@@ -1497,20 +1522,18 @@
   transition:
     translate 0.15s ease,
     rotate 0.15s ease,
-    scale 0.15s ease,
-    margin-left 0.15s ease;
+    scale 0.15s ease;
 }
 /* Grow, not just lift -- a card whose rules text got shrunk to fit its
    fixed box (see CardTile.tsx's --text-scale) can end up genuinely hard to
    read at the hand's normal size; scaling the whole tile up on hover/focus
    (:focus-within for keyboard/touch parity, same convention as the stack's
    own hover reveal) enlarges its already-shrunk text right along with it. */
-.hand-cards .hand-card:hover,
-.hand-cards .hand-card:focus-within {
+.hand-cards .hand-card:hover .card-tile,
+.hand-cards .hand-card:focus-within .card-tile {
   translate: 0 -30px;
   rotate: 0deg;
   scale: 1.65;
-  z-index: 20;
 }
 /* The mulligan popup shows the whole hand already, all at once, purely to
    read before a keep/mulligan decision -- growing whichever card the mouse
@@ -1518,15 +1541,18 @@
    not helpful, unlike the ordinary browsing hand this hover behavior was
    built for. Wins over the rule above on specificity (one extra class)
    without needing !important. */
-.mulligan-modal .hand-cards .hand-card:hover,
-.mulligan-modal .hand-cards .hand-card:focus-within {
+.mulligan-modal .hand-cards .hand-card:hover .card-tile,
+.mulligan-modal .hand-cards .hand-card:focus-within .card-tile {
   translate: 0 var(--y, 0px);
   rotate: var(--r, 0deg);
   scale: 1;
-  z-index: auto;
+}
+.mulligan-modal .hand-cards .hand-card:hover,
+.mulligan-modal .hand-cards .hand-card:focus-within {
+  z-index: var(--z, 0);
 }
 @media (prefers-reduced-motion: reduce) {
-  .hand-cards .hand-card {
+  .hand-cards .hand-card .card-tile {
     transition: none;
   }
 }
