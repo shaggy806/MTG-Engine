@@ -14,7 +14,7 @@ matching this repo's usual git history — not one giant diff. `scratch.mjs` +
 `npm run dev -w client` (client dev server proxies `ws://localhost:4000`) is
 the fastest way to eyeball a change; see CLAUDE.md's Commands section.
 
-**Status: Phases 1-6 and 8 done and committed.** Phase 5 turned out to
+**Status: Phases 1-6, 8, and 9 done and committed.** Phase 5 turned out to
 already be built before this plan started. Phase 7's
 priority-action-bar half landed early (inside phase 3); its mana-available-
 indicator half is explicitly **descoped by the user** (too much
@@ -492,6 +492,75 @@ above. A *floating*-mana upgrade (`PlayerPanel.tsx`'s existing `.pp-mana`,
 currently plain text like `2{W}` via `manaString()`) to use real
 `<Symbols>` pips instead was raised as an optional nice-to-have, not
 requested — ask before doing it, don't fold it into this phase silently.
+
+### Phase 9 — Hand fixes + mulligan popup — DONE
+
+User feedback after living with Phase 8's hand fan for a while, unrelated to
+any specific earlier phase's own predictions:
+
+1. **Unplayable-card dimming removed.** `CardTile` renders as `<button
+   disabled>` when a card isn't currently playable (`clickable` false), which
+   picked up `index.css`'s generic `button:disabled { opacity: 0.4 }` —
+   correct for the board/stack/zone-viewer (those uses of `:disabled` really
+   do mean "not relevant"), wrong for the hand, where it just means "can't
+   afford this right now" and made half your hand look like it had gone
+   missing. Fixed the same way the stack/zone-viewer/mini-tile-popover
+   already override this for their own read-only cases: `.hand-card
+   .card-tile:disabled { opacity: 1; }` in App.css.
+2. **Fixed card silhouette.** `.card-tile` only sets `min-height` (a floor),
+   so a card with a lot of rules text (e.g. Craterhoof Behemoth) rendered
+   visibly taller than a vanilla Forest — fine elsewhere (a stack/
+   zone-viewer tile growing to fit is harmless), wrong in the hand, where it
+   broke the fan's silhouette. `.hand-card .card-tile { height: calc(
+   var(--card-w) * 1.4); }` makes hand cards a real fixed box; the existing
+   `overflow: hidden` on `.card-tile` clips whatever text doesn't fit,
+   exactly like the mockup's `.hc-text { overflow:hidden }`.
+3. **No second row, overlap instead of shrinking.** `.hand-cards` was
+   `flex-wrap: wrap`, so more than ~7-8 cards (depending on viewport)
+   wrapped to a second line. Changed to `flex-wrap: nowrap` and ported the
+   mockup's core idea: cards never shrink below their normal `--card-w`
+   size — once N cards no longer fit the row at that width, they overlap
+   (a shrinking, eventually negative, `margin-left`) instead, capped at
+   `-cw*0.82` so a huge hand never fully hides a card. Differs from the
+   mockup's implementation in one way: rather than duplicating `--card-w`'s
+   `clamp(96px,9vw,150px)` bounds as a second hardcoded formula in JS (which
+   the mockup does and would need to be kept in sync by hand), the real port
+   measures an actual rendered `.hand-card .card-tile`'s width via a
+   `ResizeObserver` on the hand row (`App.tsx`'s `handRowRef`/
+   `handCardGap` state) — single source of truth, stays correct if
+   `--card-w` ever changes. Applies uniformly to every mode that renders the
+   hand (priority, discard, put-on-bottom, mulligan), not just priority.
+4. **Mulligan moved to a centered popup**, out of the inline `.controls`
+   banner every other forced decision still uses. It's the one decision
+   that blocks the whole table (every player still deciding, in parallel —
+   see `state.ts`'s `awaiting: {kind:"mulligan"}`), so per the user it
+   deserves an attention-grabbing placement rather than sharing space with
+   the hand strip. New `.mulligan-modal`/`.mulligan-modal-actions` in
+   App.css (`position: fixed; top/left: 50%; translate: -50% -50%`, gold
+   border, felt-panel background, matching the app's existing popup idiom
+   like `.overlay-box`/`.zone-viewer-box` but without a full-screen backdrop
+   — the hand keeps rendering normally in the in-flow hand-strip underneath
+   so the player can still see what they'd be keeping while deciding).
+   `App.tsx`'s big `controls` if/else chain lost its `mode === 'mulligan'`
+   branch entirely (moved into a new standalone `renderMulliganModal()`,
+   rendered once at the top level next to `.priority-actions`) rather than
+   computing the same content twice.
+
+Verified live via `scratch.mjs` (not the real server — a small enough,
+config-only change that the usual scratch workflow was the faster path,
+unlike Phase 8's note about needing the real lobby/decks): a 19-card hand
+(opening 7 Forests + 12 debug-spawned cards including two long-text real
+cards, Craterhoof Behemoth and Blasphemous Act, with only 2 untapped lands
+so several cards were genuinely unaffordable) rendered as a single
+non-wrapping overlapping row, every `.card-tile` measured `150×210`
+(`offsetWidth`/`offsetHeight`, unaffected by the fan's `rotate`) regardless
+of card text length or disabled state, and every tile's computed `opacity`
+was `1` including the four disabled/unaffordable ones. Separately, with
+`mulligans: true` in `Game.create`, the Keep/Mulligan popup appeared
+centered on screen (not as a bottom banner) through a full
+keep→mulligan→keep cycle, and the subsequent put-on-bottom step (a
+different forced-decision mode, untouched by this phase) still rendered
+inline as before.
 
 ## Cross-cutting notes
 

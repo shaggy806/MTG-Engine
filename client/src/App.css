@@ -1350,6 +1350,36 @@
   font-size: 15px;
 }
 
+/* Mulligan is the one forced decision that blocks the whole table (every
+   player still deciding), so it gets its own attention-grabbing centered
+   popup instead of sharing the hand-strip's inline .controls slot with
+   every other forced decision -- the hand itself still renders normally in
+   the hand-strip below it so the player can see what they'd be keeping. */
+.mulligan-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 32px;
+  background: var(--panel);
+  border: 1px solid var(--gold);
+  border-radius: 12px;
+  box-shadow:
+    0 18px 40px -12px rgba(0, 0, 0, 0.65),
+    0 2px 8px rgba(0, 0, 0, 0.4);
+  text-align: center;
+  font-size: 15px;
+}
+.mulligan-modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
 /* hand -- no group container (the mockup has none, just floating cards); a
    card's own shadow is what separates it from the felt behind it. */
 .hand {
@@ -1363,25 +1393,34 @@
   color: var(--muted-dim);
   margin-bottom: 6px;
 }
+/* Never wraps to a second row: a fixed set of cards that don't fit the row
+   at their normal width overlap (a computed, possibly negative
+   margin-left -- see App.tsx's HAND_CARD_GAP) instead of flowing onto a new
+   line or shrinking. `gap` is 0 here because that per-card margin-left is
+   the only spacing mechanism -- adding a flex `gap` too would double it up. */
 .hand-cards {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
   align-items: flex-end;
-  gap: 8px;
+  gap: 0;
   padding-top: 16px;
 }
 /* symmetric fan (see App.tsx's HAND_FAN_STEP_DEG) -- --r/--y are set inline
    per card; the standalone rotate/translate properties (not `transform`)
    are what let :hover below override with a plain CSS rule instead of
-   fighting an inline `style.transform`. */
+   fighting an inline `style.transform`. margin-left is also set inline per
+   card (the overlap amount) -- flex:none keeps a card at its fixed width
+   instead of letting flex-shrink squeeze it as the row gets tight. */
 .hand-cards .hand-card {
   position: relative;
+  flex: none;
   rotate: var(--r, 0deg);
   translate: 0 calc(-1 * var(--y, 0px));
   transition:
     translate 0.15s ease,
-    rotate 0.15s ease;
+    rotate 0.15s ease,
+    margin-left 0.15s ease;
 }
 .hand-cards .hand-card:hover {
   translate: 0 -16px;
@@ -1392,6 +1431,22 @@
   .hand-cards .hand-card {
     transition: none;
   }
+}
+/* Fixed silhouette regardless of card text length -- .card-tile's shared
+   min-height (needed elsewhere so e.g. a zone-viewer tile can grow if it
+   must) is a floor, not a ceiling, so a wordy card would otherwise render
+   taller than its neighbors and break the fan/overlap math above. Content
+   that doesn't fit clips via .card-tile's own existing overflow:hidden. */
+.hand-card .card-tile {
+  height: calc(var(--card-w) * 1.4);
+}
+/* A card you currently can't play is still a real card in your hand, not a
+   ghost of one -- unlike the board/stack/zone-viewer, "disabled" here only
+   means "clicking does nothing right now" (see CardTile's `clickable`), so
+   it shouldn't get the generic dimmed-disabled-button look either (same
+   pattern as .stack-entry/.mini-tile-popover/.zone-viewer-cards below). */
+.hand-card .card-tile:disabled {
+  opacity: 1;
 }
 
 /* full-screen centered panel: connecting/disconnected/lobby/seat-picker */

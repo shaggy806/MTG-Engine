@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, FormEvent, ReactNode } from 'react'
 import type {
   CastVia,
@@ -42,6 +42,16 @@ const IMPORT_DECK_URL = `${
 // sliver above the fold and reads as visually broken rather than fanned.
 const HAND_FAN_STEP_DEG = 4.4
 const HAND_FAN_STEP_Y = 5.2
+
+// The hand row never wraps to a second line and never shrinks card width
+// below its normal --card-w size -- once N cards no longer fit the row at
+// their natural width and this default gap, cards overlap (a shrinking, even
+// negative, margin-left) instead. cw is measured from an actual rendered
+// card (not a duplicated copy of --card-w's clamp() bounds), so this stays
+// correct if that token ever changes. -cw*0.82 caps how far cards can
+// overlap so at least a sliver of each stays visible in a huge hand.
+const HAND_CARD_GAP = 8
+const HAND_OVERLAP_FLOOR = 0.82
 
 type CastAction = Extract<LegalAction, { kind: 'cast-spell' }>
 
@@ -503,6 +513,11 @@ function Table({ view, seat, opponents, game }: TableProps) {
   // needs less precision than keeping it raised does, so idle mouse movement
   // doesn't summon it but browsing it tolerates real cursor drift.
   const [handRaised, setHandRaised] = useState(false)
+  // Measured (not guessed) hand-row layout, recomputed whenever the row's
+  // real rendered width changes (viewport resize, peekable<->in-flow mode
+  // switch) or the hand's card count changes -- see HAND_CARD_GAP's comment.
+  const handRowRef = useRef<HTMLDivElement>(null)
+  const [handCardGap, setHandCardGap] = useState(HAND_CARD_GAP)
   // Set while an `{X}` cost is being chosen, before target selection — for an
   // X spell (`CastAction`) or an X activated ability (`AbilityAction`, EG-3).
   const [pendingX, setPendingX] = useState<{
@@ -1461,6 +1476,31 @@ function Table({ view, seat, opponents, game }: TableProps) {
   }
 
   const handIds = view.zones.hands[seat] ?? []
+  useEffect(() => {
+    const row = handRowRef.current
+    if (!row) return
+    const recompute = () => {
+      const cardEl = row.querySelector<HTMLElement>('.hand-card .card-tile')
+      const cw = cardEl?.getBoundingClientRect().width ?? 0
+      const n = row.querySelectorAll('.hand-card').length
+      if (cw === 0 || n <= 1) {
+        setHandCardGap(HAND_CARD_GAP)
+        return
+      }
+      const naturalTotal = n * cw + (n - 1) * HAND_CARD_GAP
+      const available = row.clientWidth
+      if (naturalTotal <= available) {
+        setHandCardGap(HAND_CARD_GAP)
+        return
+      }
+      const overlap = (available - n * cw) / (n - 1)
+      setHandCardGap(Math.max(overlap, -cw * HAND_OVERLAP_FLOOR))
+    }
+    recompute()
+    const observer = new ResizeObserver(recompute)
+    observer.observe(row)
+    return () => observer.disconnect()
+  }, [handIds.length])
   const onlineOf = (pid: PlayerId): boolean | null =>
     game.seats.find((s) => s.player === pid)?.online ?? null
   // Exile is one shared zone (not per-player) — split it by each object's
@@ -1478,22 +1518,6 @@ function Table({ view, seat, opponents, game }: TableProps) {
           {view.result.winner ? `${playerLabel(view.result.winner, game.seats)} wins` : 'Draw'}
         </strong>
         <span className="muted">{view.result.reason}</span>
-      </div>
-    )
-  } else if (mode === 'mulligan' && mulliganAction) {
-    controls = (
-      <div className="controls">
-        <span>
-          {mulliganAction.count === 0
-            ? 'Keep your opening hand?'
-            : `Mulligan #${mulliganAction.count} taken — keep this hand?`}
-        </span>
-        <button type="button" onClick={() => confirmMulligan(true)}>
-          Keep
-        </button>
-        <button type="button" onClick={() => confirmMulligan(false)}>
-          Mulligan
-        </button>
       </div>
     )
   } else if (mode === 'choose-copy' && copyChoiceAction) {
@@ -2139,6 +2163,34 @@ function Table({ view, seat, opponents, game }: TableProps) {
     />
   )
 
+  /** The mulligan keep/decide prompt as its own centered popup instead of an
+   * inline banner at the bottom of the screen -- it's the one forced
+   * decision that blocks the whole game for every player still deciding, so
+   * it gets an attention-grabbing placement of its own rather than sharing
+   * the hand-strip's `.controls` slot with every other forced decision. The
+   * hand itself still renders normally in the hand-strip below so the
+   * player can see what they'd be keeping. */
+  const renderMulliganModal = () => {
+    if (mode !== 'mulligan' || !mulliganAction) return null
+    return (
+      <div className="mulligan-modal">
+        <span>
+          {mulliganAction.count === 0
+            ? 'Keep your opening hand?'
+            : `Mulligan #${mulliganAction.count} taken — keep this hand?`}
+        </span>
+        <div className="mulligan-modal-actions">
+          <button type="button" onClick={() => confirmMulligan(true)}>
+            Keep
+          </button>
+          <button type="button" onClick={() => confirmMulligan(false)}>
+            Mulligan
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   /** Wraps `renderHandAndControls` with the collapsed-peek tray behavior —
    * only during ordinary priority (browsing your hand, not an active forced
    * decision like a mulligan or a discard-to-hand-size, which stay fully
@@ -2189,17 +2241,19 @@ function Table({ view, seat, opponents, game }: TableProps) {
       ) : null}
 
       {/* priority mode's controls (Pass/Pass Turn/Auto-pass/Skip-mana) render
-          in a fixed bottom-right bar instead (see .priority-actions below) —
-          every other mode's decision UI stays inline here, since those need
-          the player's attention immediately rather than living somewhere
-          that only shows up on hover */}
-      {mode === 'priority' ? null : controls}
+          in a fixed bottom-right bar instead (see .priority-actions below),
+          and mulligan's Keep/Mulligan choice renders as its own centered
+          popup (see .mulligan-modal below) -- every other mode's decision UI
+          stays inline here, since those need the player's attention
+          immediately rather than living somewhere that only shows up on
+          hover or is easy to miss off in a corner. */}
+      {mode === 'priority' || mode === 'mulligan' ? null : controls}
 
       <div className="hand">
         <h3>
           {playerLabel(seat, game.seats)}'s hand ({handIds.length})
         </h3>
-        <div className="hand-cards">
+        <div className="hand-cards" ref={handRowRef}>
           {handIds.map((id, i) => {
             const obj = view.objects[id]
             if (!obj) return null
@@ -2209,12 +2263,18 @@ function Table({ view, seat, opponents, game }: TableProps) {
             // fully visible anyway.
             const fanned = !(mode === 'priority' && !handRaised)
             const fanOffset = i - (handIds.length - 1) / 2
-            const fanStyle: CSSProperties = fanned
-              ? ({
-                  '--r': `${fanOffset * HAND_FAN_STEP_DEG}deg`,
-                  '--y': `${Math.abs(fanOffset) * HAND_FAN_STEP_Y}px`,
-                } as CSSProperties)
-              : {}
+            const fanStyle: CSSProperties = {
+              ...(fanned
+                ? {
+                    '--r': `${fanOffset * HAND_FAN_STEP_DEG}deg`,
+                    '--y': `${Math.abs(fanOffset) * HAND_FAN_STEP_Y}px`,
+                  }
+                : {}),
+              // Never wraps to a second row and never shrinks the card
+              // itself -- past a natural fit, cards overlap (a shrinking,
+              // even negative, gap) instead. See HAND_CARD_GAP's comment.
+              marginLeft: i === 0 ? 0 : `${handCardGap}px`,
+            } as CSSProperties
             let highlight = false
             let selected = false
             if (mode === 'discard') {
@@ -2355,6 +2415,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
       )}
 
       {mode === 'priority' ? <div className="priority-actions">{controls}</div> : null}
+      {renderMulliganModal()}
 
       {zoneView ? (
         <ZoneViewer
