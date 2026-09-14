@@ -54,6 +54,29 @@ const HAND_FAN_STEP_Y = 5.2
 const HAND_CARD_GAP = 8
 const HAND_OVERLAP_FLOOR = 0.82
 
+// Battlefield tiles get a real max size (index.css's --mini-w) and wrap to
+// as many rows as they need at that size -- multiple rows of creatures is
+// normal and fine, same as a physical table. Only once even that wrapping
+// overflows a board's own scrollable area (.quadrant-body) do tiles shrink
+// below the ceiling, and only as far as it takes to fit again (see
+// recomputeBoardMiniW below) -- shrinking is the fallback for a genuinely
+// crowded board, not the default response to "more than fits one row."
+// --mini-w's own clamp() bounds are duplicated here (rather than measured,
+// unlike the hand's own shrink-to-fit) because the natural size only
+// depends on viewport width, not on any container this component would
+// need to render first to read from; keep these in sync if that token's
+// clamp() in index.css ever changes.
+const MINI_W_FLOOR = 56
+const MINI_W_VW_PERCENT = 7.2
+const MINI_W_CEILING = 130
+// Below this, a tile stops shrinking further and the board's own scroll
+// (already there regardless -- .quadrant-body's overflow-y:auto) takes over.
+const MINI_SHRINK_FLOOR = 40
+const MINI_SHRINK_STEP = 6
+
+const naturalMiniW = (): number =>
+  Math.min(MINI_W_CEILING, Math.max(MINI_W_FLOOR, window.innerWidth * (MINI_W_VW_PERCENT / 100)))
+
 type CastAction = Extract<LegalAction, { kind: 'cast-spell' }>
 
 /** The "which variant of this cast" fields a `cast-spell` action carries all
@@ -517,6 +540,16 @@ function Table({ view, seat, opponents, game }: TableProps) {
   // switch) or the hand's card count changes -- see HAND_CARD_GAP's comment.
   const handRowRef = useRef<HTMLDivElement>(null)
   const [handCardGap, setHandCardGap] = useState(HAND_CARD_GAP)
+  // Per-player board elements (keyed by seat, since up to 4 boards each need
+  // independent handling) that need their tile size shrunk below --mini-w's
+  // ceiling once wrapping alone overflows their board's own scrollable area.
+  // A Map + shared observers rather than one ref/effect per player, since
+  // `renderBoard` runs in a loop/JSX map and hooks can't be called
+  // conditionally or a variable number of times per render. See
+  // `registerBoardEl`/`recomputeBoardMiniW` below.
+  const boardElsRef = useRef<Map<PlayerId, HTMLDivElement>>(new Map())
+  const boardResizeObserverRef = useRef<ResizeObserver | null>(null)
+  const boardMutationObserverRef = useRef<MutationObserver | null>(null)
   // Set while an `{X}` cost is being chosen, before target selection — for an
   // X spell (`CastAction`) or an X activated ability (`AbilityAction`, EG-3).
   const [pendingX, setPendingX] = useState<{
@@ -1400,7 +1433,10 @@ function Table({ view, seat, opponents, game }: TableProps) {
     const rows = isOpp ? [landRow, permanentRow] : [permanentRow, landRow]
 
     return (
-      <div className={`board ${isOpp ? 'opp' : 'you'} ${seatClassOf(view.turnOrder, pid)}`}>
+      <div
+        className={`board ${isOpp ? 'opp' : 'you'} ${seatClassOf(view.turnOrder, pid)}`}
+        ref={registerBoardEl(pid)}
+      >
         {rows}
       </div>
     )
@@ -1500,6 +1536,86 @@ function Table({ view, seat, opponents, game }: TableProps) {
     observer.observe(row)
     return () => observer.disconnect()
   }, [handIds.length])
+
+  /** Wraps at --mini-w's own ceiling first (multiple rows of creatures is
+   * normal, not something to avoid) -- only shrinks `boardEl`'s tiles below
+   * that ceiling once wrapping alone still overflows its board's own
+   * scrollable area (`.quadrant-body`'s `overflow-y:auto`), and only as far
+   * as it takes to stop overflowing (or the floor). Resets to the ceiling
+   * and re-measures from there every time, rather than nudging up/down from
+   * wherever it last landed, so it also grows back once the board isn't
+   * crowded any more (a creature dying, say). Mirrors CardTile.tsx's own
+   * shrink-to-fit loop (measure, step, re-measure) for the same reason: a
+   * single ratio-based guess over/undershoots because reflowed wrap counts
+   * don't scale linearly with tile size. */
+  const recomputeBoardMiniW = (boardEl: HTMLDivElement) => {
+    const scrollArea = boardEl.closest<HTMLElement>('.quadrant-body')
+    if (!scrollArea) return
+    boardEl.style.removeProperty('--mini-w')
+    if (scrollArea.scrollHeight <= scrollArea.clientHeight) return
+    let miniW = naturalMiniW()
+    boardEl.style.setProperty('--mini-w', `${miniW}px`)
+    while (scrollArea.scrollHeight > scrollArea.clientHeight && miniW > MINI_SHRINK_FLOOR) {
+      miniW = Math.max(MINI_SHRINK_FLOOR, miniW - MINI_SHRINK_STEP)
+      boardEl.style.setProperty('--mini-w', `${miniW}px`)
+    }
+  }
+  // Two triggers to recompute a board: its scrollable area resizing (window
+  // resize, a layout change) and its own tile count changing (a permanent
+  // entering/leaving) -- the latter doesn't necessarily change
+  // .quadrant-body's own box size (it's the *content* that grew, and
+  // overflow:auto means that alone doesn't resize the scrolling box), so
+  // ResizeObserver alone wouldn't catch it; a MutationObserver on each
+  // board's subtree does. One shared instance of each rather than one
+  // ref/effect per player -- see boardElsRef's comment above.
+  useEffect(() => {
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        for (const boardEl of boardElsRef.current.values()) {
+          if (boardEl.closest('.quadrant-body') === entry.target) recomputeBoardMiniW(boardEl)
+        }
+      }
+    })
+    const mutationObserver = new MutationObserver((mutations) => {
+      const changed = new Set<HTMLDivElement>()
+      for (const m of mutations) {
+        const boardEl = (m.target as HTMLElement).closest<HTMLDivElement>('.board')
+        if (boardEl) changed.add(boardEl)
+      }
+      for (const boardEl of changed) recomputeBoardMiniW(boardEl)
+    })
+    boardResizeObserverRef.current = resizeObserver
+    boardMutationObserverRef.current = mutationObserver
+    for (const el of boardElsRef.current.values()) {
+      const scrollArea = el.closest('.quadrant-body')
+      if (scrollArea) resizeObserver.observe(scrollArea)
+      mutationObserver.observe(el, { childList: true, subtree: true })
+      recomputeBoardMiniW(el)
+    }
+    return () => {
+      resizeObserver.disconnect()
+      mutationObserver.disconnect()
+    }
+  }, [])
+  const registerBoardEl = useCallback(
+    (pid: PlayerId) => (el: HTMLDivElement | null) => {
+      const prev = boardElsRef.current.get(pid)
+      if (prev) {
+        const prevScrollArea = prev.closest('.quadrant-body')
+        if (prevScrollArea) boardResizeObserverRef.current?.unobserve(prevScrollArea)
+      }
+      if (el) {
+        boardElsRef.current.set(pid, el)
+        const scrollArea = el.closest('.quadrant-body')
+        if (scrollArea) boardResizeObserverRef.current?.observe(scrollArea)
+        boardMutationObserverRef.current?.observe(el, { childList: true, subtree: true })
+        recomputeBoardMiniW(el)
+      } else {
+        boardElsRef.current.delete(pid)
+      }
+    },
+    [],
+  )
   const onlineOf = (pid: PlayerId): boolean | null =>
     game.seats.find((s) => s.player === pid)?.online ?? null
   // Exile is one shared zone (not per-player) — split it by each object's

@@ -14,7 +14,7 @@ matching this repo's usual git history — not one giant diff. `scratch.mjs` +
 `npm run dev -w client` (client dev server proxies `ws://localhost:4000`) is
 the fastest way to eyeball a change; see CLAUDE.md's Commands section.
 
-**Status: Phases 1-6, 8, 9, 10, 11, 12, 13, 14, and 15 done and committed.** Phase 5 turned out to
+**Status: Phases 1-6, 8, 9, 10, 11, 12, 13, 14, 15, and 16 done and committed.** Phase 5 turned out to
 already be built before this plan started. Phase 7's
 priority-action-bar half landed early (inside phase 3); its mana-available-
 indicator half is explicitly **descoped by the user** (too much
@@ -863,6 +863,83 @@ confirmed no growth), while keeping the hand and hovering the same way in
 ordinary priority mode still grew the hovered card as before. Confirmed via
 `hasAttribute('title')` that no hand-card `.card-tile` carries a `title`
 attribute any more.
+
+### Phase 16 — Board tiles get a real max size, shrink only when crowded — DONE
+
+Final user ask to close out this redesign: `--mini-w` (battlefield permanent
+tiles, via `MiniTile.tsx`) was a pure viewport-width clamp
+(`clamp(46px,5.4vw,80px)`) with no relationship at all to how many
+permanents were actually on a given board — a board with 2 creatures and a
+board with 20 rendered tiles at the exact same (small) size, the 20-creature
+board just wrapping to more rows. Bumped the ceiling substantially
+(`clamp(56px, 7.2vw, 130px)`) so an ordinary, uncrowded board reads much
+bigger by default.
+
+**First cut (revised the same session, see below):** shrink to fit every
+tile onto one row whenever a board's item count didn't fit the ceiling size
+at the board's measured width. **User feedback: wrong tradeoff** —
+multiple rows of creatures is normal (a physical table does the same), and
+shrinking should only be the fallback once even wrapping can't keep a board
+inside its own visible area, not the default response to "more than fits
+one row." Reworked to match:
+
+**Final implementation** (`App.tsx`): tiles wrap at the full ceiling size
+by default — plain CSS `flex-wrap`, nothing new needed there — and only
+shrink once that wrapped layout actually overflows the board's own
+scrollable area (`.quadrant-body`'s `overflow-y:auto`, present at every
+player count since Phase 10 unified 2-4 players onto the same quadrant-cell
+structure). `recomputeBoardMiniW(boardEl)`: resets `--mini-w` to nothing
+(natural ceiling), and if `.quadrant-body`'s `scrollHeight` still exceeds
+its `clientHeight` after that reset — real overflow, not a guess — steps
+`--mini-w` down (6px at a time, floor 40px) via direct
+`boardEl.style.setProperty`, re-measuring after each step, until it fits or
+bottoms out. Mirrors `CardTile.tsx`'s own text shrink-to-fit loop
+(Phase 13) for the same reason: a single ratio-based guess
+(`clientHeight/scrollHeight`) over/undershoots because reflowed wrap counts
+don't scale linearly with tile size, so measuring after each step is worth
+the extra cheap reflow reads.
+
+Two independent triggers feed this, both needed: `.quadrant-body` *resizing*
+(a window resize, a layout change) via a `ResizeObserver`, and a board's own
+*tile count* changing (a permanent entering/leaving) via a `MutationObserver`
+on each board's subtree — `overflow:auto` means content growing alone
+doesn't resize `.quadrant-body`'s own box, so `ResizeObserver` alone
+wouldn't catch that case. Same constraint as the first cut drove the
+plumbing shape: up to 4 boards each need independent handling, and
+`renderBoard` is a plain closure invoked in a `.map()`, so hooks can't be
+one-per-board — a shared `Map<PlayerId, HTMLDivElement>` (`boardElsRef`)
+plus one shared instance of each observer, fed by a `registerBoardEl(pid)`
+ref-callback factory attached to each `.board` div, which also runs an
+initial `recomputeBoardMiniW` and wires both observers up to that specific
+board (and its ancestor `.quadrant-body`) when it mounts. Resetting to the
+ceiling and re-measuring from scratch every time (rather than nudging
+up/down from wherever a tile last landed) is also what makes a board grow
+back once it's no longer crowded — a creature dying, say — not just shrink
+further. No React state at all for the sizing itself (a deliberate change
+from the first cut's `boardWidths` state) — `recomputeBoardMiniW` mutates
+the DOM directly, same as `CardTile.tsx`'s text shrink-to-fit, sidestepping
+any render-timing complexity around "reset, then measure the reset."
+
+`naturalMiniW()` still duplicates `--mini-w`'s own `clamp()` bounds in JS
+(floor/vw-factor/ceiling) rather than measuring an actual rendered tile —
+the natural size only depends on viewport width, not on any container that
+would need to render first to read from, so there's nothing to gain by
+measuring instead; keep the two in sync if that token's `clamp()` in
+index.css ever changes.
+
+Verified live via a 4-player `scratch.mjs` game with three different board
+densities at once: a sparse board (2 creatures) kept the raw
+`clamp(56px, 7.2vw, 130px)` on `--mini-w` (no override — not needed); a
+moderately crowded board (14 distinct real creatures, which never
+auto-stack regardless of shared names — only tokens/lands do) also kept the
+ceiling and simply **wrapped to two rows**, confirmed by screenshot; and an
+extremely crowded board (40 copies of the same non-token creature, so 40
+real separate tiles) computed a real override (`--mini-w: 64px`) and
+wrapped to several rows at that shrunk size. `getComputedStyle` confirmed
+`.quadrant-body`'s `scrollHeight === clientHeight` (`overflowing: false`)
+for **all four** boards afterward, including the 40-tile one — the shrink
+loop actually converges to eliminate the scrollbar it was watching for,
+not just "shrinks some."
 
 ## Cross-cutting notes
 
