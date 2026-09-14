@@ -1,12 +1,14 @@
-import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useLayoutEffect, useRef, useSyncExternalStore } from 'react'
 import type { VisibleObject } from 'engine'
 import { Symbols } from './Symbols.tsx'
 import { costColor } from './symbols.ts'
 import { manaSymbolUrl } from './mana.ts'
 import {
-  artMisses,
+  isArtBlocked,
+  isArtPending,
   getArtCacheVersion,
   queueArtLookup,
+  recordArtFailure,
   resolveArtUrl,
   subscribeArtCache,
 } from './art.ts'
@@ -122,14 +124,22 @@ export function CardTile({
   // Re-render once a batched art lookup resolves so `artSrc` below can pick
   // up the direct (no-redirect) CDN URL instead of the by-name fallback.
   useSyncExternalStore(subscribeArtCache, getArtCacheVersion, getArtCacheVersion)
-  useEffect(() => {
-    if (!obj.art) queueArtLookup(face)
-  }, [obj.art, face])
+  // Queued synchronously during render, not from an effect: an effect fires
+  // after the browser has already committed this tile's <img> and started
+  // loading whatever `artSrc` said on the very first render. Queuing here
+  // instead means `isArtPending` below already sees this name as queued in
+  // that same render, so the eager by-name <img> never mounts in the first
+  // place — see `isArtPending`'s comment in art.ts for why that matters.
+  // `queueArtLookup` is idempotent, so a React Strict Mode double-render (or
+  // an unrelated re-render) costs nothing extra.
+  if (!obj.art) queueArtLookup(face)
+  // While the batched lookup for this name is still in flight (or retrying
+  // a transient failure), hold off on the eager by-name <img> entirely.
+  const pending = !obj.art && isArtPending(face)
   const artSrc = resolveArtUrl(obj.art, face)
   // Derived fresh from artSrc (which can change once the batched lookup
   // resolves) rather than captured once at mount.
-  const artFailed = artMisses.has(artSrc)
-  const [, forceRerender] = useState(0)
+  const artFailed = !pending && isArtBlocked(artSrc)
   const isCreature = obj.power !== null && obj.toughness !== null
   const isPlaneswalker = obj.loyalty !== null
   const counters = Object.entries(obj.counters).filter(
@@ -231,15 +241,12 @@ export function CardTile({
       )}
 
       <span className={`ct-art tint-${tint}`}>
-        {!artFailed ? (
+        {!pending && !artFailed ? (
           <img
             src={artSrc}
             alt=""
             loading="lazy"
-            onError={() => {
-              artMisses.add(artSrc)
-              forceRerender((n) => n + 1)
-            }}
+            onError={() => recordArtFailure(artSrc)}
           />
         ) : null}
         {artFirst && costNode ? <span className="ct-cost-overlay">{costNode}</span> : null}

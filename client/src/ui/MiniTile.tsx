@@ -1,12 +1,14 @@
-import { useEffect, useState, useSyncExternalStore } from 'react'
+import { useSyncExternalStore } from 'react'
 import type { VisibleObject } from 'engine'
 import { CardTile } from './CardTile.tsx'
 import { costColor } from './symbols.ts'
 import { manaSymbolUrl } from './mana.ts'
 import {
-  artMisses,
+  isArtBlocked,
+  isArtPending,
   getArtCacheVersion,
   queueArtLookup,
+  recordArtFailure,
   resolveArtUrl,
   subscribeArtCache,
 } from './art.ts'
@@ -70,12 +72,11 @@ export function MiniTile({
 }: MiniTileProps) {
   const face = obj.copyOf ?? obj.faceName ?? obj.cardName
   useSyncExternalStore(subscribeArtCache, getArtCacheVersion, getArtCacheVersion)
-  useEffect(() => {
-    if (!obj.art) queueArtLookup(face)
-  }, [obj.art, face])
+  // Queued synchronously during render — see the comment in CardTile.tsx.
+  if (!obj.art) queueArtLookup(face)
+  const pending = !obj.art && isArtPending(face)
   const artSrc = resolveArtUrl(obj.art, face)
-  const artFailed = artMisses.has(artSrc)
-  const [, forceRerender] = useState(0)
+  const artFailed = !pending && isArtBlocked(artSrc)
   const isCreature = obj.power !== null && obj.toughness !== null
   const isPlaneswalker = obj.loyalty !== null
   const clickable = Boolean(onClick) && (highlight || selected || activatable)
@@ -102,15 +103,12 @@ export function MiniTile({
         disabled={!clickable}
       >
         <span className={`mt-art tint-${tint}`}>
-          {!artFailed ? (
+          {!pending && !artFailed ? (
             <img
               src={artSrc}
               alt=""
               loading="lazy"
-              onError={() => {
-                artMisses.add(artSrc)
-                forceRerender((n) => n + 1)
-              }}
+              onError={() => recordArtFailure(artSrc)}
             />
           ) : null}
         </span>
