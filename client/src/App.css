@@ -1114,10 +1114,15 @@
 
 .ct-type {
   padding: 2px 5px;
-  font-size: 8.5px;
+  /* --type-scale: set by CardTile.tsx only for the hand's art-first layout,
+     same idea as .ct-text's --text-scale -- a long type line (e.g.
+     "Legendary Creature — Human Wizard") shrinks to fit this fixed-width
+     single line instead of just ellipsis-truncating. Unset (1) elsewhere. */
+  font-size: calc(8.5px * var(--type-scale, 1));
   color: var(--muted);
   background: #2b303c;
   white-space: nowrap;
+  /* still the fallback once even the shrink floor doesn't fully fit. */
   overflow: hidden;
   text-overflow: ellipsis;
 }

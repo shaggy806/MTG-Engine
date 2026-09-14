@@ -167,6 +167,22 @@ export function CardTile({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [artFirst, displayText, keywordLine, showText, counters.length])
+  // Same idea, one dimension: the type line is a single `white-space:nowrap`
+  // line (see .ct-type), so "doesn't fit" means it overflows horizontally
+  // (scrollWidth > clientWidth) rather than vertically -- otherwise the same
+  // measure/step/re-measure loop as the rules text above.
+  const typeLineText = typeLine(obj)
+  const typeRef = useRef<HTMLSpanElement>(null)
+  useLayoutEffect(() => {
+    const el = typeRef.current
+    if (!artFirst || !el) return
+    el.style.removeProperty('--type-scale')
+    let scale = 1
+    while (el.scrollWidth > el.clientWidth && scale > 0.55) {
+      scale = Math.round((scale - 0.05) * 100) / 100
+      el.style.setProperty('--type-scale', String(scale))
+    }
+  }, [artFirst, typeLineText])
   const nameNode = (
     <span className="ct-name">
       {face}
@@ -231,7 +247,9 @@ export function CardTile({
 
       {artFirst ? <span className="ct-name-row">{nameNode}</span> : null}
 
-      <span className="ct-type">{typeLine(obj)}</span>
+      <span className="ct-type" ref={typeRef}>
+        {typeLineText}
+      </span>
 
       <span className="ct-text" ref={textRef}>
         {keywordLine ? <b className="ct-kw">{keywordLine}</b> : null}

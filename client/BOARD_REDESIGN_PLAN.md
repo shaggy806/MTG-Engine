@@ -14,7 +14,7 @@ matching this repo's usual git history — not one giant diff. `scratch.mjs` +
 `npm run dev -w client` (client dev server proxies `ws://localhost:4000`) is
 the fastest way to eyeball a change; see CLAUDE.md's Commands section.
 
-**Status: Phases 1-6, 8, 9, 10, 11, 12, 13, 14, 15, and 16 done and committed.** Phase 5 turned out to
+**Status: Phases 1-6, 8, 9, 10, 11, 12, 13, 14, 15, 16, and 17 done and committed.** Phase 5 turned out to
 already be built before this plan started. Phase 7's
 priority-action-bar half landed early (inside phase 3); its mana-available-
 indicator half is explicitly **descoped by the user** (too much
@@ -940,6 +940,31 @@ wrapped to several rows at that shrunk size. `getComputedStyle` confirmed
 for **all four** boards afterward, including the 40-tile one — the shrink
 loop actually converges to eliminate the scrollbar it was watching for,
 not just "shrinks some."
+
+### Phase 17 — Hand card type line also shrinks to fit — DONE
+
+Small follow-up to Phase 13's rules-text shrink-to-fit: the type line (e.g.
+"Artifact Creature — Phyrexian Wurm") only ever ellipsis-truncated when it
+didn't fit `.ct-type`'s fixed width, unlike the rules text below it, which
+already shrinks to stay fully readable (Phase 13). Gave it the same
+treatment: `CardTile.tsx` gained a second, near-identical `useLayoutEffect`
+(art-first/hand layout only, same as the rules-text one) that measures
+`.ct-type`'s `scrollWidth` vs. `clientWidth` — one dimension instead of the
+rules text's two, since `.ct-type` is a single `white-space:nowrap` line —
+and steps a `--type-scale` custom property down (same 0.05 step, 0.55 floor)
+until it fits or bottoms out. `.ct-type`'s `font-size` reads
+`calc(8.5px * var(--type-scale, 1))`; `overflow:hidden` +
+`text-overflow:ellipsis` stay in place as the fallback for the (rare) case
+where even the floor doesn't fully fit.
+
+Verified live via `scratch.mjs`: three hand cards with type lines of
+increasing length — Craterhoof Behemoth ("Creature — Beast"), Miirym,
+Sentinel Wyrm ("Creature — Dragon Spirit"), Wurmcoil Engine ("Artifact
+Creature — Phyrexian Wurm") — showed only Wurmcoil Engine's actually needed
+shrinking (`--type-scale: 0.9`, converging to `scrollWidth === clientWidth`,
+148 === 148), the other two staying unscaled since they already fit;
+confirmed visually too via a hover screenshot showing the full unclipped
+type line.
 
 ## Cross-cutting notes
 
