@@ -14,7 +14,7 @@ matching this repo's usual git history — not one giant diff. `scratch.mjs` +
 `npm run dev -w client` (client dev server proxies `ws://localhost:4000`) is
 the fastest way to eyeball a change; see CLAUDE.md's Commands section.
 
-**Status: Phases 1-6, 8, 9, 10, 11, 12, 13, and 14 done and committed.** Phase 5 turned out to
+**Status: Phases 1-6, 8, 9, 10, 11, 12, 13, 14, and 15 done and committed.** Phase 5 turned out to
 already be built before this plan started. Phase 7's
 priority-action-bar half landed early (inside phase 3); its mana-available-
 indicator half is explicitly **descoped by the user** (too much
@@ -830,6 +830,39 @@ lifelink" (that now shows once, bold, via `.ct-kw`), and Craterhoof
 Behemoth (a real-newline-separated keyword line, the other code path
 through the same regex) was checked the same way and also deduplicated
 correctly.
+
+### Phase 15 — No hover-grow in the mulligan popup, no native tooltips — DONE
+
+Two follow-ups from actually using Phase 14's hover-grow:
+
+1. **Hand cards no longer grow on hover inside the mulligan popup.** The
+   mulligan modal shows the whole hand at once purely to read it before a
+   keep/mulligan decision — growing whichever card the mouse happens to
+   cross while scanning the fan was distracting there, not helpful, unlike
+   the ordinary browsing hand Phase 14's hover-grow was built for. Added
+   `.mulligan-modal .hand-cards .hand-card:hover, :focus-within` resetting
+   `translate`/`rotate`/`scale`/`z-index` back to the same values as the
+   unhovered state — wins over Phase 14's general rule on specificity (one
+   extra class) without needing `!important`. The ordinary hand-strip
+   (outside the mulligan popup) is untouched and still grows on hover.
+2. **Dropped the native browser title-attribute tooltip** on `CardTile`
+   (`title={obj.text || face}`) and `MiniTile` (`title={face}`) — both were
+   redundant with content the tile already shows (or, for `MiniTile`, with
+   its own proper `.mini-tile-popover` hover reveal) and, being a plain OS/
+   browser tooltip, couldn't be styled or suppressed short of removing the
+   attribute; it was popping up over cards, hand and board alike, on any
+   hover that lingered past the browser's own delay. `CardTile`'s handful of
+   small, genuinely-clarifying tooltips on cryptic sub-elements (the
+   multi-face "⇄" marker, the commander-tax badge, a planeswalker's
+   "Loyalty" label) were left alone — those aren't full-card duplicates,
+   just short glosses on an otherwise-unlabeled icon.
+
+Verified live via `scratch.mjs` (`mulligans: true`): hovering a card inside
+the "Keep your opening hand?" popup left the whole fan unchanged (screenshot
+confirmed no growth), while keeping the hand and hovering the same way in
+ordinary priority mode still grew the hovered card as before. Confirmed via
+`hasAttribute('title')` that no hand-card `.card-tile` carries a `title`
+attribute any more.
 
 ## Cross-cutting notes
 

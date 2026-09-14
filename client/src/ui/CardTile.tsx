@@ -206,7 +206,6 @@ export function CardTile({
       className={classes}
       onClick={clickable ? onClick : undefined}
       disabled={!clickable}
-      title={obj.text || face}
     >
       {artFirst ? null : (
         <span className="ct-title">

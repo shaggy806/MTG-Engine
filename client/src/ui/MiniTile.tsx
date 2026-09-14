@@ -100,7 +100,6 @@ export function MiniTile({
         className={classes}
         onClick={clickable ? onClick : undefined}
         disabled={!clickable}
-        title={face}
       >
         <span className={`mt-art tint-${tint}`}>
           {!artFailed ? (

@@ -1507,6 +1507,19 @@
   scale: 1.65;
   z-index: 20;
 }
+/* The mulligan popup shows the whole hand already, all at once, purely to
+   read before a keep/mulligan decision -- growing whichever card the mouse
+   happens to be over while scanning across the fan is distracting there,
+   not helpful, unlike the ordinary browsing hand this hover behavior was
+   built for. Wins over the rule above on specificity (one extra class)
+   without needing !important. */
+.mulligan-modal .hand-cards .hand-card:hover,
+.mulligan-modal .hand-cards .hand-card:focus-within {
+  translate: 0 var(--y, 0px);
+  rotate: var(--r, 0deg);
+  scale: 1;
+  z-index: auto;
+}
 @media (prefers-reduced-motion: reduce) {
   .hand-cards .hand-card {
     transition: none;
