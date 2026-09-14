@@ -14,7 +14,7 @@ matching this repo's usual git history — not one giant diff. `scratch.mjs` +
 `npm run dev -w client` (client dev server proxies `ws://localhost:4000`) is
 the fastest way to eyeball a change; see CLAUDE.md's Commands section.
 
-**Status: Phases 1-6, 8, 9, 10, 11, 12, and 13 done and committed.** Phase 5 turned out to
+**Status: Phases 1-6, 8, 9, 10, 11, 12, 13, and 14 done and committed.** Phase 5 turned out to
 already be built before this plan started. Phase 7's
 priority-action-bar half landed early (inside phase 3); its mana-available-
 indicator half is explicitly **descoped by the user** (too much
@@ -780,6 +780,56 @@ actually runs and converges -- it settled at `--text-scale: 0.55` with
 `scrollHeight === clientHeight` (65 === 65, an exact fit), confirmed with a
 cropped screenshot showing the full ability text fitting inside the card
 instead of being cut off mid-line.
+
+### Phase 14 — Hover-to-grow hand cards, drop redundant keyword text — DONE
+
+Two more user asks, both readability-driven follow-ups to Phase 13's
+shrink-to-fit:
+
+1. **Hand cards grow on hover, not just lift.** A card whose rules text got
+   shrunk (see Phase 13) could still end up genuinely hard to read at the
+   hand's normal on-screen size — a bigger fix than font-size alone.
+   `.hand-cards .hand-card` gained `transform-origin: bottom center` (so
+   growth expands upward/outward from the card's own base instead of also
+   pushing down into the row below it) and a `scale` property (`1` at rest,
+   part of the same standalone-property transition list as `rotate`/
+   `translate` — not `transform`, for the same reason noted in this file's
+   other hover work: a stylesheet `:hover` rule can't cleanly override an
+   inline `transform`, but it can override standalone `rotate`/`translate`/
+   `scale`). `:hover`/`:focus-within` (keyboard/touch parity, same
+   convention as the stack's own hover reveal) sets `scale: 1.65` alongside
+   the existing lift/de-rotate, growing the whole tile — its already-shrunk
+   text included — well past normal size.
+2. **Dropped the redundant keyword restatement in card body text.** The
+   bold `.ct-kw` line (e.g. "Deathtouch, Lifelink") and the printed rules
+   text both showed the same words — most cards restate their keywords as
+   the first line/sentence of Oracle text, which `.ct-kw` already surfaces
+   on its own. `CardTile.tsx`'s `bodyText(obj)` now strips a leading
+   keyword-only segment from what's actually displayed in `.ct-rules`,
+   terminated by either a real line break or (for some of this pool's
+   hand-authored cards, e.g. Wurmcoil Engine's `"Deathtouch, lifelink. When
+   ~ dies, …"`) a `". "` within one paragraph — both count, since this
+   pool's card text doesn't consistently use one or the other. Only the
+   *leading* segment is ever stripped; a later mention of the same word
+   elsewhere in the text (Wurmcoil Engine's own sentence describes what
+   abilities the *tokens it creates* have) is left untouched, since that's
+   real content, not restatement. Applies to every `CardTile` (not just the
+   hand's art-first layout) — the duplication was never layout-specific, it
+   was just easiest to *see* once Phase 13 made the hand's own box tight
+   enough to force shrinking around it. A nice side effect: less text to
+   fit means Phase 13's shrink-to-fit needs a less aggressive `--text-scale`
+   for the same card (Wurmcoil Engine went from 0.55, the shrink floor
+   basically maxed out, to 0.7 with the duplicate line gone).
+
+Verified live via `scratch.mjs`: hovering a hand card (confirmed both a
+plain Forest and Wurmcoil Engine specifically) grew it well above its
+fanned neighbors, upright and at full opacity, screenshot-confirmed both
+times. Wurmcoil Engine's `.ct-rules` text was checked via computed
+`textContent` before and after: no longer starts with "Deathtouch,
+lifelink" (that now shows once, bold, via `.ct-kw`), and Craterhoof
+Behemoth (a real-newline-separated keyword line, the other code path
+through the same regex) was checked the same way and also deduplicated
+correctly.
 
 ## Cross-cutting notes
 

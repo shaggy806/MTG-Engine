@@ -64,14 +64,43 @@ function typeLine(obj: VisibleObject): string {
     : types
 }
 
-/** True when `text` only restates the card's keywords (e.g. "First strike"). */
-function textIsJustKeywords(obj: VisibleObject): boolean {
-  if (obj.text.length === 0) return false
-  const kw = new Set(
-    obj.keywords.flatMap((k) => k.replace(/-/g, ' ').toLowerCase().split(' ')),
-  )
-  const words = obj.text.toLowerCase().split(/[\s,.]+/).filter(Boolean)
+/** The card's keywords, normalized to individual lowercase words so a
+ * multi-word keyword (e.g. "first strike") matches a comma-separated line
+ * listing it alongside others. */
+function keywordWordSet(obj: VisibleObject): Set<string> {
+  return new Set(obj.keywords.flatMap((k) => k.replace(/-/g, ' ').toLowerCase().split(' ')))
+}
+
+/** True when `text` (a full text block or a single line) only restates
+ * words from `kw` (e.g. "First strike", "Deathtouch, lifelink"). */
+function isJustKeywords(text: string, kw: Set<string>): boolean {
+  if (text.length === 0) return false
+  const words = text.toLowerCase().split(/[\s,.]+/).filter(Boolean)
   return words.length > 0 && words.every((w) => kw.has(w))
+}
+
+/** The rules text to actually display: drops a leading segment that only
+ * restates the card's keyword abilities, since those already render as
+ * their own bold `.ct-kw` line above — most cards print keywords as their
+ * own leading sentence of Oracle text, so showing both is otherwise pure
+ * duplication (Wurmcoil Engine: "Deathtouch, lifelink" bold, then the exact
+ * same words again to start the body text). The leading segment can be
+ * terminated either by a real line break or, for some hand-authored cards
+ * in this pool, a ". " within one paragraph (e.g. "Deathtouch, lifelink.
+ * When ~ dies, …") — both count. Only ever strips the one leading segment,
+ * and only when there's more text after it — a keyword-only card (e.g. a
+ * vanilla "Flying" creature) has nothing left to strip; it already
+ * collapses to just the bold line via `showText` below. A *later* mention
+ * of the same word (e.g. Wurmcoil's own text describing what abilities the
+ * tokens it creates have) is left alone; only the leading restatement is
+ * ever removed. */
+function bodyText(obj: VisibleObject): string {
+  if (obj.keywords.length === 0 || obj.text.length === 0) return obj.text
+  const lead = obj.text.match(/^([^.\n]+)[.\n]\s*/)
+  if (lead && isJustKeywords(lead[1], keywordWordSet(obj))) {
+    return obj.text.slice(lead[0].length)
+  }
+  return obj.text
 }
 
 export function CardTile({
@@ -107,7 +136,12 @@ export function CardTile({
     ([k, n]) => n !== 0 && k !== 'loyalty',
   )
   const clickable = Boolean(onClick) && (highlight || selected || activatable)
-  const showText = obj.text.length > 0 && !textIsJustKeywords(obj)
+  // Drops a leading line that just restates the keywords (see bodyText's
+  // comment) before deciding whether there's any body text left to show at
+  // all -- a keyword-only card (nothing left after stripping) shows just
+  // the bold keyword line below, not an empty rules-text box.
+  const displayText = bodyText(obj)
+  const showText = displayText.length > 0 && !isJustKeywords(displayText, keywordWordSet(obj))
   const keywordLine = obj.keywords
     .map((k) => KEYWORD_LABEL[k] ?? cap(k))
     .join(', ')
@@ -132,7 +166,7 @@ export function CardTile({
       el.style.setProperty('--text-scale', String(scale))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [artFirst, obj.text, keywordLine, showText, counters.length])
+  }, [artFirst, displayText, keywordLine, showText, counters.length])
   const nameNode = (
     <span className="ct-name">
       {face}
@@ -204,7 +238,7 @@ export function CardTile({
         {keywordLine ? <b className="ct-kw">{keywordLine}</b> : null}
         {showText ? (
           <span className="ct-rules">
-            <Symbols text={obj.text} />
+            <Symbols text={displayText} />
           </span>
         ) : null}
         {counters.length > 0 ? (
