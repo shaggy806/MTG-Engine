@@ -1600,7 +1600,16 @@
   display: flex;
   flex-wrap: nowrap;
   justify-content: center;
-  align-items: flex-end;
+  /* Tops, not bottoms. Every hand tile is the same fixed height (see
+     `.hand-card .card-tile` below), so for an ordinary card the two are
+     identical -- but a card carrying a secondary action button (Foretell,
+     Suspend, Cycle, a second face) has a *taller* .hand-card box than its
+     neighbours, and aligning bottoms levered its tile up out of the fan's
+     arc by the height of that button. The card's own --r/--y were correct
+     and symmetric the whole time; it was the box around it that sat wrong.
+     Aligning tops pins every tile to the same baseline and lets the button
+     hang below its own card, so the arc comes from --y alone. */
+  align-items: flex-start;
   gap: 0;
   padding-top: 16px;
   /* How wide the fan is allowed to get. The overlap math (App.tsx's
