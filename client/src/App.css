@@ -409,6 +409,14 @@
   min-height: 0;
   overflow-y: auto;
   padding: 6px 7px;
+  /* a size container, so the command/library rail inside can size its card
+     slots against the height this quadrant actually has (cqh) instead of
+     against viewport width -- see .quadrant-body .side-zone below. Size
+     containment only stops this box's own contents from feeding back into
+     its size (already true: its height comes from .quadrant-grid's 1fr row,
+     its width from the cell) and does not clip painting, so a mini-tile
+     popover still spills past the frame the way .quadrant-cell intends. */
+  container-type: size;
 }
 .quadrant-body::-webkit-scrollbar {
   width: 6px;
@@ -433,6 +441,22 @@
   border-radius: 0;
   border-left: 1px solid var(--border-soft);
   padding: 0 0 0 8px;
+  /* The rail stacks two card-shaped boxes (command zone, library) plus their
+     labels in a box only as tall as one quadrant -- i.e. about half the
+     viewport's *height* -- while --card-w is derived from viewport *width*.
+     Those two scale independently: on a 2560x1440 screen --card-w's 150px
+     ceiling left the rail comfortably inside a 571px quadrant, but on a
+     1920x1080 one the rail stayed 458px tall in a 394px quadrant. The
+     overflow that caused was read by `recomputeBoardMiniW` (which measures
+     .quadrant-body, the rail included) as "this board is too crowded",
+     crushing every battlefield tile to MINI_SHRINK_FLOOR on every monitor
+     shorter than the one this was built on -- see App.tsx. Capping the
+     token against the quadrant's own height fixes the cause: 28cqh leaves
+     two 39.2cqh-tall slots plus room for the labels and gaps, and the
+     min() keeps a tall quadrant from inflating the rail past a normal
+     card. Every card-shaped box in here reads --card-w, so nothing else
+     needs its own rule. */
+  --card-w: min(var(--card-w-max), 28cqh);
 }
 /* your hand + ability menu + priority/attack/block controls, in their own
    full-width strip below the quadrant grid (closer to how Arena keeps your
@@ -472,8 +496,20 @@
   height: clamp(260px, 38vh, 360px);
   z-index: 100;
   display: flex;
-  align-items: flex-end;
-  justify-content: center;
+  /* .hand-strip's base rule makes this a *column* flex container, and
+     .peekable doesn't change that -- so the main axis here is vertical and
+     the cross axis horizontal, the opposite of what an `align-items:
+     flex-end` / `justify-content: center` pair reads as at a glance. Written
+     the right way round: justify-content pins the tray's content to its
+     bottom edge (which is the fixed viewport edge it slides up from), and
+     align-items centers it across. It was previously *centering* vertically,
+     which went unnoticed only because the content happened to be a hair
+     shorter than the tray -- once .hand-cards reserved real room for the
+     fan's droop below it, that centering pushed the whole fan back off the
+     bottom of the screen. */
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
   gap: 0;
   padding: 0;
   border-top: none;
@@ -1505,6 +1541,18 @@
   align-items: flex-end;
   gap: 0;
   padding-top: 16px;
+  /* Room for how far the fan hangs below a card's own bottom edge. Both the
+     droop (--y, up to App.tsx's HAND_FAN_MAX_LIFT_PX) and the rotation
+     (--r, up to HAND_FAN_MAX_ROT_DEG about `transform-origin: bottom
+     center`, which swings the lower corners down by about
+     sin(32deg) * --card-w / 2) are transforms, so neither takes any layout
+     space -- the outermost cards simply hung off the bottom of the viewport
+     and got clipped. That cost 17% of a card's height at 2560x1440, where
+     this was built, but 36% at 1366x768: --card-w shrinks with the viewport
+     while the lift cap stays a fixed 38px, so the same droop eats a steadily
+     bigger share of a steadily smaller card. Reserving it here is what keeps
+     the bottom of the fan on screen at any size. */
+  padding-bottom: calc(38px + var(--card-w) * 0.27);
 }
 /* symmetric fan (see App.tsx's HAND_FAN_STEP_DEG) -- --r/--y are set inline
    per card (as custom properties, which inherit to .card-tile below without

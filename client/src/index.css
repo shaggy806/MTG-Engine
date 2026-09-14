@@ -37,8 +37,16 @@
   /* card tile width, viewport-scaled instead of a fixed px guess -- the
      single source every card-shaped thing (tiles, empty command-zone slots,
      the library back, a board row's min-height) derives its size from, so
-     they all stay in lockstep across monitors instead of just this one. */
-  --card-w: clamp(96px, 9vw, 150px);
+     they all stay in lockstep across monitors instead of just this one.
+
+     Split in two: --card-w-max is the ceiling this token would take on its
+     own, and --card-w is what everything actually reads. A context whose
+     *height* is the real constraint (the command/library rail -- see
+     App.css's .quadrant-body .side-zone) narrows --card-w for its own
+     subtree against that ceiling, so every card-shaped thing inside it
+     still derives from one number rather than re-deriving the clamp. */
+  --card-w-max: clamp(96px, 9vw, 150px);
+  --card-w: var(--card-w-max);
   /* battlefield permanents render much smaller than a full card face (see
      MiniTile.tsx) -- their own token, not derived from --card-w, so tuning
      one doesn't silently resize the other. This is the *ceiling* size, used

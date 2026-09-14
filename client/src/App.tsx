@@ -1513,11 +1513,26 @@ function Table({ view, seat, opponents, game }: TableProps) {
   const recomputeBoardMiniW = (boardEl: HTMLDivElement) => {
     const scrollArea = boardEl.closest<HTMLElement>('.quadrant-body')
     if (!scrollArea) return
+    // The board's *own* height against the space the quadrant gives it --
+    // not .quadrant-body's total overflow, which also counts the command/
+    // library rail sitting beside it in the same scroll box. Measuring the
+    // whole box meant a rail too tall for the quadrant (which is what it is
+    // on any monitor shorter than 1440p -- see .quadrant-body .side-zone in
+    // App.css) read as "this board is overflowing", so the loop below
+    // ratcheted every tile to MINI_SHRINK_FLOOR and still couldn't clear an
+    // overflow the board was never causing. offsetHeight, not
+    // getBoundingClientRect: a tapped tile's rotation is visual overflow,
+    // which mustn't count as the board needing less room.
+    const padding = getComputedStyle(scrollArea)
+    const available =
+      scrollArea.clientHeight -
+      parseFloat(padding.paddingTop) -
+      parseFloat(padding.paddingBottom)
     boardEl.style.removeProperty('--mini-w')
-    if (scrollArea.scrollHeight <= scrollArea.clientHeight) return
+    if (boardEl.offsetHeight <= available) return
     let miniW = naturalMiniW()
     boardEl.style.setProperty('--mini-w', `${miniW}px`)
-    while (scrollArea.scrollHeight > scrollArea.clientHeight && miniW > MINI_SHRINK_FLOOR) {
+    while (boardEl.offsetHeight > available && miniW > MINI_SHRINK_FLOOR) {
       miniW = Math.max(MINI_SHRINK_FLOOR, miniW - MINI_SHRINK_STEP)
       boardEl.style.setProperty('--mini-w', `${miniW}px`)
     }
