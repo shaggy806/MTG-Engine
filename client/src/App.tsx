@@ -2214,22 +2214,46 @@ function Table({ view, seat, opponents, game }: TableProps) {
     const awaiting = view.awaiting
     controls = (
       <div className="controls">
-        <span className="muted">
-          {awaiting !== null
-            ? `Waiting for ${playerLabel(who, game.seats)} to ${AWAITING_LABEL[awaiting.kind]}…`
-            : `${playerLabel(who, game.seats)} has priority · ${view.turn.step}`}
-        </span>
+        {/* Only the "waiting on someone else" line — what they're deciding
+            isn't shown anywhere else. The other case this used to render
+            ("X has priority · <step>") is already in the top strip, spelled
+            out, as "X to act" plus the full phase name; repeating it here
+            was what pushed these four buttons onto a second row and made
+            this corner tall enough to cover a whole quadrant's rail. */}
+        {awaiting !== null ? (
+          <span className="muted">
+            {`Waiting for ${playerLabel(who, game.seats)} to ${AWAITING_LABEL[awaiting.kind]}…`}
+          </span>
+        ) : null}
         <button type="button" onClick={pass} disabled={!canPass}>
           Pass (space)
         </button>
         <button type="button" onClick={game.passTurn} disabled={!canPassTurn}>
           Pass Turn
         </button>
-        <button type="button" onClick={game.autoPass}>
-          {game.autoPassing ? 'Stop auto-pass' : 'Auto-pass until my turn'}
+        {/* Short labels so all four fit one row; `title` carries the full
+            sentence, since that's the part that actually explains them. */}
+        <button
+          type="button"
+          onClick={game.autoPass}
+          title={
+            game.autoPassing
+              ? 'Stop passing automatically'
+              : 'Pass automatically until my own turn comes round again'
+          }
+        >
+          {game.autoPassing ? 'Stop auto-pass' : 'Auto-pass'}
         </button>
-        <button type="button" onClick={game.toggleManaSkip}>
-          {game.skipManaOnly ? 'Show mana-only priority' : 'Skip mana-only priority'}
+        <button
+          type="button"
+          onClick={game.toggleManaSkip}
+          title={
+            game.skipManaOnly
+              ? 'Stop at priority windows where the only thing to do is tap for mana'
+              : 'Skip priority windows where the only thing to do is tap for mana'
+          }
+        >
+          {game.skipManaOnly ? 'Show mana stops' : 'Skip mana stops'}
         </button>
       </div>
     )
@@ -2513,7 +2537,12 @@ function Table({ view, seat, opponents, game }: TableProps) {
 
   return (
     <div className="player-col">
-      <main className="table">
+      {/* `peekable` is exactly the modes where the hand collapses to its
+          fixed tray and the priority controls float in the corner — i.e.
+          where something is permanently drawn over the bottom of the
+          screen. In the other modes the hand strip is in normal flow and
+          takes its own height, so there's nothing to reserve. */}
+      <main className={`table ${peekable ? 'bottom-band' : ''}`}>
         <div className={`quadrant-grid ${opponents.length === 1 ? 'two-player' : ''}`}>
           {quadrantCells.map((pid, i) => (
             <div

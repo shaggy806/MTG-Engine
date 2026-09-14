@@ -8,6 +8,15 @@
    a plain Forest), so any fixed guess either wastes space or clips a real
    hand. */
 .app {
+  /* The strip along the bottom of the screen that the always-visible
+     overlays own: the collapsed hand tray's peek sliver, and the floating
+     priority controls in the corner. `.table.bottom-band` reserves it (see
+     below) so no board content ever sits underneath either of them. Sized to
+     clear both with room to spare -- the sliver is clamp(40px, 5vh, 56px)
+     tall (see .hand-strip.peekable .hand-strip-inner) and the controls are a
+     single ~32px row sitting clamp(12px, 2vh, 20px) up from the bottom edge
+     (see .priority-actions). */
+  --bottom-band: clamp(52px, 6vh, 72px);
   display: flex;
   flex-direction: column;
   /* a hard ceiling, not just a floor — min-height would let .app grow past
@@ -211,6 +220,13 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+/* Keeps the quadrants clear of the fixed overlays along the bottom edge --
+   see --bottom-band on .app, and Table's `peekable` for when this applies.
+   Padding on .table (not on .quadrant-grid) so the reservation also holds
+   when the grid is scrolled within it. */
+.table.bottom-band {
+  padding-bottom: var(--bottom-band);
 }
 
 .player-panel {
@@ -552,7 +568,12 @@
 }
 .priority-actions .controls {
   margin-top: 0;
-  max-width: min(90vw, 480px);
+  /* wide enough for all four buttons on one row -- the two-row block this
+     used to be is what reached up out of the reserved bottom band and
+     covered the bottom-right seat's command/library rail. It can still wrap
+     when the "waiting for …" line is present, which is fine: that's a state
+     where the buttons are mostly disabled anyway. */
+  max-width: min(92vw, 560px);
   justify-content: flex-end;
   /* this wrapper's background/border/padding is for its *other* use as an
      inline decision-UI panel elsewhere in the hand-strip flow -- here the
