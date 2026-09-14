@@ -71,10 +71,14 @@ export interface ImportedCardReport {
   readonly manaCost: string | null
   readonly typeLine: string
   readonly oracleText: string
+  /** An already-implemented card the deck builder's import flow can
+   * substitute in for this one — `null` when `implemented`, or when
+   * nothing in the pool shares even this card's primary type. */
+  readonly suggestedReplacement: string | null
 }
 
-/** Mirrors `server/src/deck-validation.ts`'s `DeckValidationResult` (plus the
- * guessed commander) — the `format` field of the `/import-deck` response. */
+/** Mirrors `engine`'s `DeckValidationResult` (plus the guessed/explicit
+ * commander) — the `format` field of the `/import-deck` response. */
 export interface DeckFormatReport {
   readonly legal: boolean
   readonly violations: readonly string[]

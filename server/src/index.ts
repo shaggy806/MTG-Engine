@@ -31,9 +31,9 @@ const httpServer = createServer((req, res) => {
         try {
           const { text } = JSON.parse(body) as { text?: string };
           if (typeof text !== "string") throw new Error("missing 'text' field");
-          const entries = parseDecklistText(text);
+          const { entries, commanders } = parseDecklistText(text);
           const cards = await evaluateDecklist(entries, registry);
-          const format = formatCheck(entries, registry);
+          const format = formatCheck(entries, registry, commanders);
           res.writeHead(200, {
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": clientOrigin,

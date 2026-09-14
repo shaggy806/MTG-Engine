@@ -12,12 +12,23 @@
  * yes or no".
  */
 
-import { validateCommanderDeck } from "engine";
+import { suggestReplacement, validateCommanderDeck } from "engine";
 import type { CardDefinition, CardRegistry, DeckValidationResult } from "engine";
 
 export interface DecklistEntry {
   readonly name: string;
   readonly count: number;
+}
+
+export interface ParsedDecklist {
+  readonly entries: readonly DecklistEntry[];
+  /** Card name(s) that appeared directly under an explicit "Commander"
+   * section header (Moxfield's export format, among others, marks the
+   * commander this way rather than leaving it to be guessed). Empty when
+   * the pasted text has no such header — `formatCheck` falls back to its
+   * own guess in that case. Still included among `entries` too, so the
+   * commander gets an ordinary feasibility row like any other card. */
+  readonly commanders: readonly string[];
 }
 
 const LINE_PATTERN = /^(\d+)\s+(.+)$/;
@@ -33,20 +44,36 @@ function stripPrintingSuffix(rest: string): string {
 }
 
 /** Parses decklist lines, merging duplicate names (e.g. a commander also
- * listed among the support cards). Blank lines, `//` comments, and any
- * non-matching line (a section header some export variants include) are
- * silently skipped rather than treated as errors. */
-export function parseDecklistText(text: string): DecklistEntry[] {
+ * listed among the support cards). Blank lines and `//` comments are
+ * skipped; any other non-matching line is treated as a section header (some
+ * export variants have one, e.g. "Commander"/"Companion"/"Deck") — silently
+ * ignored except for "Commander" itself, whose cards are also collected
+ * into `commanders`. A section ends at the next header line or a blank
+ * line, whichever comes first. */
+export function parseDecklistText(text: string): ParsedDecklist {
   const counts = new Map<string, number>();
+  const commanders: string[] = [];
+  let inCommanderSection = false;
   for (const rawLine of text.split(/\r?\n/)) {
     const line = rawLine.trim();
-    if (line === "" || line.startsWith("//")) continue;
+    if (line === "") {
+      inCommanderSection = false;
+      continue;
+    }
+    if (line.startsWith("//")) continue;
     const match = LINE_PATTERN.exec(line);
-    if (match === null) continue;
+    if (match === null) {
+      inCommanderSection = /^commanders?$/i.test(line);
+      continue;
+    }
     const name = stripPrintingSuffix(match[2].trim());
     counts.set(name, (counts.get(name) ?? 0) + Number(match[1]));
+    if (inCommanderSection) commanders.push(name);
   }
-  return [...counts.entries()].map(([name, count]) => ({ name, count }));
+  return {
+    entries: [...counts.entries()].map(([name, count]) => ({ name, count })),
+    commanders,
+  };
 }
 
 export interface ScryfallCardSummary {
@@ -177,12 +204,20 @@ export interface CardReportEntry extends DecklistEntry {
   readonly manaCost: string | null;
   readonly typeLine: string;
   readonly oracleText: string;
+  /** An already-implemented card the client's deck builder can substitute
+   * in for this one — `null` when `implemented` (nothing to replace) or
+   * when nothing in the pool shares even this card's primary type (see
+   * `engine`'s `suggestReplacement`). Only ever computed from Scryfall's
+   * *type line and mana cost*, not its rules text — a similarity pick, not
+   * a claim that the two cards play the same. */
+  readonly suggestedReplacement: string | null;
 }
 
 /** Cross-references each decklist entry against the engine's card registry
  * by exact name. Implemented cards are reported straight from their local
  * `CardDefinition` (no network call needed); everything else is looked up on
- * Scryfall so its real characteristics can be reviewed. */
+ * Scryfall so its real characteristics can be reviewed, and matched against
+ * the pool for a stand-in the deck builder's import flow can use. */
 export async function evaluateDecklist(
   entries: readonly DecklistEntry[],
   registry: CardRegistry,
@@ -198,6 +233,7 @@ export async function evaluateDecklist(
         manaCost: def.manaCost,
         typeLine: localTypeLine(def),
         oracleText: def.text,
+        suggestedReplacement: null,
       });
       continue;
     }
@@ -209,6 +245,10 @@ export async function evaluateDecklist(
       manaCost: scryfall?.manaCost ?? null,
       typeLine: scryfall?.typeLine ?? "",
       oracleText: scryfall?.oracleText ?? "",
+      suggestedReplacement:
+        scryfall !== null
+          ? suggestReplacement({ manaCost: scryfall.manaCost, typeLine: scryfall.typeLine })
+          : null,
     });
   }
   return results;
@@ -216,20 +256,29 @@ export async function evaluateDecklist(
 
 /**
  * A best-effort Commander-format check over the *implemented* cards in a
- * pasted list (ROADMAP Phase 9). The commander is guessed as the first
- * legendary creature/planeswalker in the list; everything else is the 99. It
- * only surfaces singleton / colour-identity / size violations — feasibility
- * (is each card implemented) is the `cards` report's job.
+ * pasted list (ROADMAP Phase 9). Prefers `explicitCommanders` (from
+ * `parseDecklistText`'s "Commander" section, when the pasted text had one);
+ * otherwise falls back to guessing the first implemented legendary
+ * creature/planeswalker in the list. Everything else is the 99. Only
+ * surfaces singleton / colour-identity / size violations — feasibility (is
+ * each card implemented) is the `cards` report's job. An explicit commander
+ * that isn't implemented is still reported *as* the commander (accurately
+ * showing "not implemented" among the violations, and a colourless identity)
+ * rather than silently falling through to the guess — the deck builder's
+ * import flow is what actually repairs this, by substituting `cards[]`'s
+ * `suggestedReplacement` for it.
  */
 export function formatCheck(
   entries: readonly DecklistEntry[],
   registry: CardRegistry,
+  explicitCommanders: readonly string[] = [],
 ): DeckValidationResult & { readonly commander: string | null } {
   const flat: string[] = [];
   for (const e of entries) {
     for (let i = 0; i < e.count; i += 1) flat.push(e.name);
   }
   const commander =
+    explicitCommanders[0] ??
     flat.find((n) => {
       if (!registry.has(n)) return false;
       const def = registry.get(n);
@@ -237,7 +286,8 @@ export function formatCheck(
         def.supertypes.includes("legendary") &&
         (def.types.includes("creature") || def.types.includes("planeswalker"))
       );
-    }) ?? null;
+    }) ??
+    null;
 
   const rest = commander === null ? flat : flat.filter((n, i) => !(n === commander && i === flat.indexOf(commander)));
   const result = validateCommanderDeck(

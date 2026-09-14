@@ -6,7 +6,7 @@ const registry = createDefaultRegistry();
 
 describe("parseDecklistText", () => {
   it("parses plain 'N Card Name' lines", () => {
-    const entries = parseDecklistText("1 Sol Ring\n1 Ureni of the Unwritten\n\n1 Forest");
+    const { entries } = parseDecklistText("1 Sol Ring\n1 Ureni of the Unwritten\n\n1 Forest");
     expect(entries).toEqual(
       expect.arrayContaining([
         { name: "Sol Ring", count: 1 },
@@ -17,7 +17,7 @@ describe("parseDecklistText", () => {
   });
 
   it("strips a '(SET) collector-number' printing suffix, including foil/etched markers", () => {
-    const entries = parseDecklistText(
+    const { entries } = parseDecklistText(
       [
         "1 Ureni of the Unwritten (TDC) 9 *F*",
         "5 Forest (STX) 374",
@@ -38,15 +38,43 @@ describe("parseDecklistText", () => {
   });
 
   it("keeps a split-card name with its printing suffix stripped", () => {
-    const entries = parseDecklistText("1 Marang River Regent / Coil and Catch (TDM) 378");
+    const { entries } = parseDecklistText("1 Marang River Regent / Coil and Catch (TDM) 378");
     expect(entries).toEqual([{ name: "Marang River Regent / Coil and Catch", count: 1 }]);
   });
 
   it("merges duplicate names and skips blank lines / comments / non-matching lines", () => {
-    const entries = parseDecklistText(
-      ["// a comment", "", "Commander", "1 Sol Ring", "1 Sol Ring"].join("\n"),
+    const { entries, commanders } = parseDecklistText(
+      ["// a comment", "", "1 Sol Ring", "1 Sol Ring"].join("\n"),
     );
     expect(entries).toEqual([{ name: "Sol Ring", count: 2 }]);
+    expect(commanders).toEqual([]);
+  });
+
+  it("collects cards under an explicit Commander section header", () => {
+    const text = [
+      "Commander",
+      "1 Ashmark, Mardu Vanguard",
+      "",
+      "Deck",
+      "1 Sol Ring",
+      "1 Lightning Bolt",
+    ].join("\n");
+    const { entries, commanders } = parseDecklistText(text);
+    expect(commanders).toEqual(["Ashmark, Mardu Vanguard"]);
+    // Still an ordinary row among the rest, not excluded from feasibility.
+    expect(entries).toEqual(
+      expect.arrayContaining([{ name: "Ashmark, Mardu Vanguard", count: 1 }]),
+    );
+  });
+
+  it("supports two commanders (Partner) under one Commander section", () => {
+    const text = ["Commander", "1 Alice", "1 Bob", "", "Deck", "1 Sol Ring"].join("\n");
+    expect(parseDecklistText(text).commanders).toEqual(["Alice", "Bob"]);
+  });
+
+  it("a blank line ends the Commander section even without a following header", () => {
+    const text = ["Commander", "1 Alice", "", "1 Bob"].join("\n");
+    expect(parseDecklistText(text).commanders).toEqual(["Alice"]);
   });
 });
 
@@ -88,6 +116,15 @@ describe("evaluateDecklist", () => {
     expect(result.oracleText).toBe(
       "{T}: Add one mana of any color that a land you control could produce.",
     );
+    // An artifact that taps for mana -- some already-implemented mana rock
+    // is a plausible enough stand-in.
+    expect(result.suggestedReplacement).not.toBeNull();
+    expect(registry.has(result.suggestedReplacement!)).toBe(true);
+  });
+
+  it("suggestedReplacement is null for an implemented card (nothing to replace)", async () => {
+    const [result] = await evaluateDecklist([{ name: "Lightning Bolt", count: 1 }], registry);
+    expect(result.suggestedReplacement).toBeNull();
   });
 
   it("reports found:false for a card Scryfall doesn't recognize either", async () => {
@@ -97,6 +134,7 @@ describe("evaluateDecklist", () => {
 
     expect(result.implemented).toBe(false);
     expect(result.found).toBe(false);
+    expect(result.suggestedReplacement).toBeNull();
   });
 });
 
@@ -108,10 +146,45 @@ describe("formatCheck (over a pasted list's implemented cards)", () => {
       "1 Llanowar Elves",
       "10 Mountain",
     ].join("\n");
-    const r = formatCheck(parseDecklistText(text), registry);
+    const { entries, commanders } = parseDecklistText(text);
+    const r = formatCheck(entries, registry, commanders);
     expect(r.commander).toBe("Ashmark, Mardu Vanguard");
     expect(r.identity).toBe("WBR");
     expect(r.violations.some((v) => v.includes('3× "Lightning Bolt"'))).toBe(true);
     expect(r.violations.some((v) => v.includes("Llanowar Elves"))).toBe(true);
+  });
+
+  it("prefers an explicit Commander section over the first-legendary guess", () => {
+    // Ashmark would otherwise be guessed first -- an explicit section names
+    // Ureni instead, and formatCheck should honour it.
+    const text = [
+      "Commander",
+      "1 Ureni of the Unwritten",
+      "",
+      "Deck",
+      "1 Ashmark, Mardu Vanguard",
+      "1 Forest",
+    ].join("\n");
+    const { entries, commanders } = parseDecklistText(text);
+    const r = formatCheck(entries, registry, commanders);
+    expect(r.commander).toBe("Ureni of the Unwritten");
+  });
+
+  it("falls back to guessing when the pasted list has no Commander section", () => {
+    const { entries, commanders } = parseDecklistText(
+      ["1 Ashmark, Mardu Vanguard", "1 Forest"].join("\n"),
+    );
+    expect(commanders).toEqual([]);
+    const r = formatCheck(entries, registry, commanders);
+    expect(r.commander).toBe("Ashmark, Mardu Vanguard");
+  });
+
+  it("reports an unimplemented explicit commander honestly rather than silently falling back", () => {
+    const text = ["Commander", "1 Some Made Up Legend", "", "Deck", "1 Forest"].join("\n");
+    const { entries, commanders } = parseDecklistText(text);
+    const r = formatCheck(entries, registry, commanders);
+    expect(r.commander).toBe("Some Made Up Legend");
+    expect(r.legal).toBe(false);
+    expect(r.violations.some((v) => v.includes("not implemented"))).toBe(true);
   });
 });
