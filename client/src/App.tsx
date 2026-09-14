@@ -2274,6 +2274,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
                 obj={obj}
                 highlight={highlight || Boolean(suspend) || Boolean(foretell) || Boolean(cycle)}
                 selected={selected}
+                layout="art-first"
                 onClick={() => clickHandCard(id)}
               />
               {multiFace

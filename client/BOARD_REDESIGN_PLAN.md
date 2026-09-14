@@ -14,7 +14,7 @@ matching this repo's usual git history — not one giant diff. `scratch.mjs` +
 `npm run dev -w client` (client dev server proxies `ws://localhost:4000`) is
 the fastest way to eyeball a change; see CLAUDE.md's Commands section.
 
-**Status: Phases 1-6, 8, 9, and 10 done and committed.** Phase 5 turned out to
+**Status: Phases 1-6, 8, 9, 10, and 11 done and committed.** Phase 5 turned out to
 already be built before this plan started. Phase 7's
 priority-action-bar half landed early (inside phase 3); its mana-available-
 indicator half is explicitly **descoped by the user** (too much
@@ -623,6 +623,45 @@ bordered `.quadrant-cell` frame as a 3-4 player room (verified: header
 divider, command/library rail divider, per-seat active-turn/self styling
 all present) instead of the old unboxed layout, with real battlefield
 permanents (mini tiles, P/T badges, land/creature row ordering) unaffected.
+
+### Phase 11 — Hand card matches the mockup's own layout — DONE
+
+User ask: shift each individual hand card closer to the mockup's own
+`.hand-card`/`.hc-*` layout (art first, cost pips floating on the art
+itself, name below instead of a title bar above), but with real mana-symbol
+SVGs (`<Symbols>`) in place of the mockup's placeholder colored circles.
+
+**Done as:** `CardTile.tsx` gained a `layout?: 'title' | 'art-first'` prop
+(default `'title'`, unchanged everywhere else) rather than a new component,
+since every other piece -- art loading/caching, the keyword line, counters,
+P/T/loyalty badges, the tapped-state scrim -- is identical between the two,
+just reordered. `'art-first'`: no `.ct-title` bar; `.ct-cost` (the same
+`<Symbols>`-rendered pips, unchanged) renders inside `.ct-art` instead, in a
+new absolutely-positioned `.ct-cost-overlay` (top-right, a translucent dark
+chip so the pips read against any art); the name renders below the art in a
+new `.ct-name-row` instead of above it. `.card-tile.art-first .ct-art` gets
+`flex: 0 0 46%; height: auto` (was a fixed `86px`) to match the mockup's own
+proportion, matching the mockup's `flex:0 0 46%` (fine since the hand card's
+overall height is already fixed per Phase 9). App.tsx's hand `CardTile` call
+passes `layout="art-first"`; every other `CardTile` call site (board
+popover, stack, zone-viewer) is untouched.
+
+**Bug found and fixed during verification, not present before this phase**:
+`.ct-art img { width:100%; height:100% }` was written back when `.ct-art`
+only ever held one `<img>` (the card's own art) -- once the cost overlay's
+pip `<img>` also nests inside `.ct-art`, that rule matched it too and blew
+the mana-symbol SVG up to the size of the whole art box (a giant "1" circle
+swallowing the card). Fixed by scoping the rule to `.ct-art > img` (direct
+child only) instead of the descendant combinator -- the overlay's `<img>` is
+nested two levels deeper (`.ct-art > .ct-cost-overlay > .ct-cost > img`), so
+it stops matching without touching the pip's own sizing at all.
+
+Verified live via `scratch.mjs`: a hand mixing Forests, Urza's Incubator,
+and Grizzly Bears showed art filling the top of each card, real mana-pip
+SVGs (generic `{2}`/`{1}{G}`) overlaid top-right on the art in a dark chip,
+the name/type below, and the P/T badge bottom-right for Grizzly Bears --
+confirmed via a cropped screenshot before *and* after the `.ct-art > img`
+fix (the "before" shot is what caught the bug).
 
 ## Cross-cutting notes
 

@@ -29,6 +29,12 @@ export interface CardTileProps {
   readonly order?: number | null
   /** How many identical permanents this tile stands in for (a land stack). */
   readonly stackCount?: number | null
+  /** 'title' (default): a name+cost bar above the art, like a real card's
+   * frame -- used everywhere except the hand. 'art-first': cost pips
+   * overlaid on the art itself, with the name below it instead -- the
+   * mockup's own hand-card treatment (real mana-symbol SVGs via `Symbols`
+   * in place of its placeholder colored circles). */
+  readonly layout?: 'title' | 'art-first'
   readonly onClick?: () => void
 }
 
@@ -78,6 +84,7 @@ export function CardTile({
   extraGenericCost = 0,
   order = null,
   stackCount = null,
+  layout = 'title',
   onClick,
 }: CardTileProps) {
   // A Clone renders the *copied* card's face; a multi-face card renders its up
@@ -106,8 +113,30 @@ export function CardTile({
     .join(', ')
   const tint = costColor(obj.manaCost) ?? 'C'
 
+  const artFirst = layout === 'art-first'
+  const nameNode = (
+    <span className="ct-name">
+      {face}
+      {obj.copyOf ? <span className="ct-copy"> (copy)</span> : null}
+      {obj.faces && obj.faces.length > 1 ? (
+        <span className="ct-copy" title={obj.faces.join(' // ')}> ⇄</span>
+      ) : null}
+    </span>
+  )
+  const costNode = obj.manaCost ? (
+    <span className="ct-cost">
+      <Symbols text={obj.manaCost} />
+      {extraGenericCost > 0 ? (
+        <span className="ct-tax" title="Commander tax">
+          +{extraGenericCost}
+        </span>
+      ) : null}
+    </span>
+  ) : null
+
   const classes = [
     'card-tile',
+    artFirst ? 'art-first' : '',
     obj.tapped ? 'tapped' : '',
     highlight ? 'highlight' : '',
     selected ? 'selected' : '',
@@ -126,25 +155,12 @@ export function CardTile({
       disabled={!clickable}
       title={obj.text || face}
     >
-      <span className="ct-title">
-        <span className="ct-name">
-          {face}
-          {obj.copyOf ? <span className="ct-copy"> (copy)</span> : null}
-          {obj.faces && obj.faces.length > 1 ? (
-            <span className="ct-copy" title={obj.faces.join(' // ')}> ⇄</span>
-          ) : null}
+      {artFirst ? null : (
+        <span className="ct-title">
+          {nameNode}
+          {costNode}
         </span>
-        {obj.manaCost ? (
-          <span className="ct-cost">
-            <Symbols text={obj.manaCost} />
-            {extraGenericCost > 0 ? (
-              <span className="ct-tax" title="Commander tax">
-                +{extraGenericCost}
-              </span>
-            ) : null}
-          </span>
-        ) : null}
-      </span>
+      )}
 
       <span className={`ct-art tint-${tint}`}>
         {!artFailed ? (
@@ -158,7 +174,10 @@ export function CardTile({
             }}
           />
         ) : null}
+        {artFirst && costNode ? <span className="ct-cost-overlay">{costNode}</span> : null}
       </span>
+
+      {artFirst ? <span className="ct-name-row">{nameNode}</span> : null}
 
       <span className="ct-type">{typeLine(obj)}</span>
 

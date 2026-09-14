@@ -914,6 +914,28 @@
   font-weight: 700;
   color: var(--warn);
 }
+/* art-first layout (the hand -- see CardTile's `layout` prop): the cost bar
+   isn't a separate row above the art, it floats on top of the art itself,
+   top-right -- same .ct-cost/.pip markup (real mana-symbol SVGs via
+   Symbols), just repositioned. */
+.ct-cost-overlay {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  padding: 2px 3px;
+  background: rgba(12, 15, 18, 0.6);
+  border-radius: 6px;
+}
+/* art-first layout's name, below the art instead of in a title bar above it
+   -- reuses .ct-name's own truncation styling, just needs its own padding
+   now that it's not inside .ct-title. */
+.ct-name-row {
+  padding: 4px 6px 0;
+}
+.card-tile.art-first .ct-name-row .ct-name {
+  font-weight: 700;
+  font-size: 11px;
+}
 .ct-copy {
   font-weight: 400;
   color: var(--muted);
@@ -989,11 +1011,23 @@
 }
 
 .ct-art {
+  position: relative;
   height: 86px;
   flex-shrink: 0;
   background: #14161c;
 }
-.ct-art img {
+/* art-first layout (the hand): no separate title bar to give the art a
+   fixed pixel height against -- it's a proportion of the card's own (now
+   fixed, see .hand-card .card-tile's height) box instead, matching the
+   mockup's own hand-card art (flex:0 0 46%). */
+.card-tile.art-first .ct-art {
+  flex: 0 0 46%;
+  height: auto;
+}
+/* direct child only -- art-first layout nests a second <img> (the overlaid
+   cost pip's SVG, inside .ct-cost-overlay) inside .ct-art, and this rule
+   must not also stretch that one to fill the art box. */
+.ct-art > img {
   width: 100%;
   height: 100%;
   object-fit: cover;
