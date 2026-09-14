@@ -15,6 +15,7 @@ export * from "./cards.js";
 export * from "./identity.js";
 export * from "./deck-validation.js";
 export * from "./sample-decks.js";
+export * from "./card-replacer.js";
 export * from "./characteristics.js";
 export * from "./turn.js";
 export * from "./events.js";
