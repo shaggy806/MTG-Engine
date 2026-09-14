@@ -5531,8 +5531,17 @@ export class Game {
           this.triggerFilterOk(spec.filter, event.object, self)
         );
       case "dies":
+        // Rule 700.4: a permanent "dies" when it is put into a graveyard *from
+        // the battlefield* — however it got there. Keying this off
+        // `permanent-destroyed` missed every sacrifice (Ashnod's Altar,
+        // Korvold, a Saga completing) and the legend rule, so an aristocrats
+        // drain (Blood Artist, Zulaport Cutthroat) silently did nothing.
+        // `permanent-left-battlefield` fires exactly once per exit and carries
+        // the destination, so a commander redirected to the command zone by
+        // 903.9a correctly does *not* die.
         return (
-          event.type === "permanent-destroyed" &&
+          event.type === "permanent-left-battlefield" &&
+          event.toZone === "graveyard" &&
           !(spec.otherOnly === true && event.object === self.id) &&
           this.matchesWho(spec.who, event.object, self) &&
           this.triggerFilterOk(spec.filter, event.object, self)
@@ -5582,6 +5591,12 @@ export class Game {
           event.combat &&
           event.target.kind === "player" &&
           this.matchesWho(spec.who, event.source, self)
+        );
+      case "becomes-tapped":
+        return (
+          event.type === "permanent-tapped" &&
+          this.matchesWho(spec.who, event.object, self) &&
+          this.triggerFilterOk(spec.filter, event.object, self)
         );
       case "step-begins":
         return (

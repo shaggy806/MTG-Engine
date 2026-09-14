@@ -168,6 +168,16 @@ export type TriggerSpec =
       readonly on: "deals-combat-damage-to-player";
       readonly who: TriggerWho;
     }
+  | {
+      /** A permanent became tapped (rule 701.21a — City of Brass, Grand
+       * Coliseum: "Whenever this land becomes tapped, it deals 1 damage to
+       * you"). Fires for *any* tapping — paying a cost, a mana ability, or an
+       * opponent's tap effect — which is why this can't be a `painToController`
+       * mana ability instead: that only charges the mana-ability path. */
+      readonly on: "becomes-tapped";
+      readonly who: TriggerWho;
+      readonly filter?: CardFilter;
+    }
   | { readonly on: "step-begins"; readonly step: Step; readonly who: TriggerWho }
   | {
       /** A spell was cast. `who` is relative to the caster: `"you"` = this
