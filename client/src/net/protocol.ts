@@ -34,6 +34,12 @@ export type ClientMessage =
       /** Omit to keep whatever name (if any) this seat already had — e.g. a
        * silent reconnect shouldn't blank out a name chosen earlier. */
       readonly displayName?: string
+      /** The deck to seed this seat with (built or picked in the deck
+       * builder). Omitted falls back to this seat's positional starter deck
+       * — only meaningful the first time a seat is claimed, since the
+       * room's Game doesn't exist yet before that (see server's
+       * `PendingRoom`). */
+      readonly deck?: { readonly cards: readonly string[]; readonly commander?: string }
     }
   | {
       /** Fills an open seat with a basic heuristic bot instead of a human —

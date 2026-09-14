@@ -7,6 +7,7 @@ import type { AddressInfo } from "node:net";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { WebSocket, WebSocketServer } from "ws";
 import { RoomManager } from "../room-manager.js";
+import { Room } from "../room.js";
 import { attachRoomServer } from "../ws-server.js";
 import type { ServerMessage } from "../protocol.js";
 import { ALICE, BOB, CAROL, DAVE } from "../decks.js";
@@ -89,11 +90,12 @@ describe("room server (end to end over WebSocket)", () => {
     aliceWs.send(
       JSON.stringify({ type: "claim-seat", roomId, seat: ALICE, clientToken: "alice-token" }),
     );
-    const aliceState = await nextMessage(aliceWs);
-    expect(aliceState.type).toBe("state");
-    if (aliceState.type !== "state") throw new Error("unreachable");
-    expect(aliceState.seat).toBe(ALICE);
-    expect(aliceState.seats).toEqual([
+    // The room isn't ready to start yet — Bob hasn't claimed a seat, so
+    // there's no Game yet, just a refreshed seat list (no `state`).
+    const aliceJoined = await nextMessage(aliceWs);
+    expect(aliceJoined.type).toBe("room-joined");
+    if (aliceJoined.type !== "room-joined") throw new Error("unreachable");
+    expect(aliceJoined.seats).toEqual([
       { player: ALICE, claimed: true, online: true, displayName: null, isBot: false },
       { player: BOB, claimed: false, online: false, displayName: null, isBot: false },
     ]);
@@ -163,18 +165,34 @@ describe("room server (end to end over WebSocket)", () => {
 
   it("creating a room without a seed picks a fresh random one each time, not a fixed default", async () => {
     const aliceWs = await openSocket();
-    aliceWs.send(JSON.stringify({ type: "create-room" }));
-    const first = await nextMessage(aliceWs);
-    if (first.type !== "room-created") throw new Error("unreachable");
-    aliceWs.send(JSON.stringify({ type: "create-room" }));
-    const second = await nextMessage(aliceWs);
-    if (second.type !== "room-created") throw new Error("unreachable");
 
-    const firstSeed = manager.get(first.roomId)?.game.state.seed;
-    const secondSeed = manager.get(second.roomId)?.game.state.seed;
-    expect(firstSeed).toBeDefined();
-    expect(secondSeed).toBeDefined();
-    expect(firstSeed).not.toBe(secondSeed);
+    async function createAndStartRoom(): Promise<string> {
+      aliceWs.send(JSON.stringify({ type: "create-room" }));
+      const created = await nextMessage(aliceWs);
+      if (created.type !== "room-created") throw new Error("unreachable");
+      aliceWs.send(
+        JSON.stringify({
+          type: "claim-seat",
+          roomId: created.roomId,
+          seat: ALICE,
+          clientToken: "alice-token",
+        }),
+      );
+      await nextMessage(aliceWs); // room-joined — Bob hasn't claimed yet
+      aliceWs.send(JSON.stringify({ type: "add-bot", roomId: created.roomId, seat: BOB }));
+      await nextMessage(aliceWs); // state — both seats filled, room started
+      return created.roomId;
+    }
+
+    const firstRoomId = await createAndStartRoom();
+    const secondRoomId = await createAndStartRoom();
+
+    const firstRoom = manager.get(firstRoomId);
+    const secondRoom = manager.get(secondRoomId);
+    if (!(firstRoom instanceof Room) || !(secondRoom instanceof Room)) {
+      throw new Error("expected both rooms to have started");
+    }
+    expect(firstRoom.game.state.seed).not.toBe(secondRoom.game.state.seed);
   });
 
   it("rejects a dispatch for a seat the connection hasn't claimed", async () => {
@@ -207,7 +225,7 @@ describe("room server (end to end over WebSocket)", () => {
         clientToken: "alice-token",
       }),
     );
-    await nextMessage(aliceWs); // state — Alice is in
+    await nextMessage(aliceWs); // room-joined — Alice is in, room not started yet
 
     // Bob's device tries to grab Alice's seat with a different token.
     const bobWs = await openSocket();
@@ -353,7 +371,7 @@ describe("room server (end to end over WebSocket)", () => {
     aliceWs.send(
       JSON.stringify({ type: "claim-seat", roomId, seat: ALICE, clientToken: "alice-token" }),
     );
-    await nextMessage(aliceWs); // state
+    await nextMessage(aliceWs); // room-joined
 
     aliceWs.send(JSON.stringify({ type: "add-bot", roomId, seat: ALICE }));
     const reply = await nextMessage(aliceWs);

@@ -1,21 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { RoomManager } from "../room-manager.js";
-import { ALICE, BOB, DECKS } from "../decks.js";
+import { ALICE } from "../decks.js";
 
 function config(seed = 1) {
-  return {
-    seed,
-    decks: [
-      { player: ALICE, cards: [...DECKS.alice] },
-      { player: BOB, cards: [...DECKS.bob] },
-    ],
-  };
+  return { seed };
 }
 
 describe("RoomManager", () => {
-  it("creates a room with a short, unique code", () => {
+  it("creates a pending room with a short, unique code", () => {
     const manager = new RoomManager();
-    const room = manager.create(config());
+    const room = manager.createPending(2, config());
     expect(room.id).toMatch(/^[A-Z0-9]{5}$/);
     expect(manager.get(room.id)).toBe(room);
   });
@@ -24,7 +18,7 @@ describe("RoomManager", () => {
     const manager = new RoomManager();
     const ids = new Set<string>();
     for (let i = 0; i < 50; i += 1) {
-      ids.add(manager.create(config(i)).id);
+      ids.add(manager.createPending(2, config(i)).id);
     }
     expect(ids.size).toBe(50);
   });
@@ -34,13 +28,37 @@ describe("RoomManager", () => {
     expect(manager.get("NOPE1")).toBeUndefined();
   });
 
+  describe("promote", () => {
+    it("refuses to promote a room that isn't ready yet", () => {
+      const manager = new RoomManager();
+      const room = manager.createPending(2, config());
+      room.claimSeat(ALICE, "alice-token", { send: () => {} });
+      expect(() => manager.promote(room.id)).toThrow(/isn't ready/);
+    });
+
+    it("builds a real Game once every seat is claimed or bot-filled, replaying connections", () => {
+      const manager = new RoomManager();
+      const pending = manager.createPending(2, config());
+      const aliceConnection = { send: () => {} };
+      pending.claimSeat(ALICE, "alice-token", aliceConnection, "Alice");
+      pending.addBot(pending.seatStatuses()[1].player);
+      expect(pending.isReady()).toBe(true);
+
+      const room = manager.promote(pending.id);
+      expect(manager.get(pending.id)).toBe(room);
+      expect(room.seatOf(aliceConnection)).toBe(ALICE);
+      expect(room.seatStatuses().find((s) => s.player === ALICE)?.displayName).toBe("Alice");
+      expect(room.seatStatuses().every((s) => s.claimed || s.isBot)).toBe(true);
+    });
+  });
+
   describe("reapIdle", () => {
     beforeEach(() => vi.useFakeTimers());
     afterEach(() => vi.useRealTimers());
 
     it("deletes a room with no connected seats once it's past the idle threshold", () => {
       const manager = new RoomManager();
-      const room = manager.create(config());
+      const room = manager.createPending(2, config());
       vi.advanceTimersByTime(1_000);
 
       expect(manager.reapIdle(500)).toBe(1);
@@ -49,7 +67,7 @@ describe("RoomManager", () => {
 
     it("leaves a room alone until it's actually past the threshold", () => {
       const manager = new RoomManager();
-      const room = manager.create(config());
+      const room = manager.createPending(2, config());
       vi.advanceTimersByTime(1_000);
 
       expect(manager.reapIdle(5_000)).toBe(0);
@@ -58,7 +76,7 @@ describe("RoomManager", () => {
 
     it("never reaps a room with a connected seat, no matter how idle", () => {
       const manager = new RoomManager();
-      const room = manager.create(config());
+      const room = manager.createPending(2, config());
       room.claimSeat(ALICE, "alice-token", { send: () => {} });
       vi.advanceTimersByTime(1_000_000);
 
@@ -66,9 +84,9 @@ describe("RoomManager", () => {
       expect(manager.get(room.id)).toBe(room);
     });
 
-    it("resets the idle clock on real activity (a claim or a dispatch)", () => {
+    it("resets the idle clock on real activity (a claim)", () => {
       const manager = new RoomManager();
-      const room = manager.create(config());
+      const room = manager.createPending(2, config());
       const connection = { send: () => {} };
       vi.advanceTimersByTime(1_000);
       room.claimSeat(ALICE, "alice-token", connection);

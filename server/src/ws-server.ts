@@ -9,8 +9,8 @@ import type { IncomingMessage } from "node:http";
 import type { WebSocket, WebSocketServer } from "ws";
 import type { RoomManager } from "./room-manager.js";
 import type { Room, Connection } from "./room.js";
+import { PendingRoom } from "./pending-room.js";
 import type { ClientMessage, ServerMessage } from "./protocol.js";
-import { SEATS } from "./decks.js";
 
 const RATE_LIMIT_WINDOW_MS = 5_000;
 const RATE_LIMIT_MAX_MESSAGES = 40;
@@ -41,9 +41,32 @@ function broadcast(room: Room): void {
   }
 }
 
-function requireRoom(manager: RoomManager, roomId: string): Room {
+/** Every currently-connected seat of a still-waiting room gets a refreshed
+ * seat list (no `state` — there's no `Game` yet), same as `broadcast` does
+ * for a real `Room`. */
+function broadcastPending(room: PendingRoom): void {
+  const seats = room.seatStatuses();
+  for (const { connection } of room.connectedSeats()) {
+    connection.send({ type: "room-joined", roomId: room.id, seats });
+  }
+}
+
+function requireRoom(manager: RoomManager, roomId: string): Room | PendingRoom {
   const room = manager.get(roomId);
   if (room === undefined) throw new Error(`no such room: ${roomId}`);
+  return room;
+}
+
+/** Like `requireRoom`, but for messages (`dispatch`/`pass-turn`/etc.) that
+ * only make sense once the room's `Game` actually exists — a client
+ * shouldn't be able to send these before its first `state` message arrives,
+ * but this guards it with a clear error instead of a confusing crash if it
+ * somehow does. */
+function requireActiveRoom(manager: RoomManager, roomId: string): Room {
+  const room = requireRoom(manager, roomId);
+  if (room instanceof PendingRoom) {
+    throw new Error(`room ${roomId} hasn't started yet — still waiting on seats`);
+  }
   return room;
 }
 
@@ -77,7 +100,7 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
   }
 
   wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
-    let boundRoom: Room | null = null;
+    let boundRoom: Room | PendingRoom | null = null;
     const ip = clientIp(req);
     const connection: Connection = { send: (message) => send(ws, message) };
 
@@ -85,28 +108,16 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
       switch (message.type) {
         case "create-room": {
           const numPlayers = Math.min(4, Math.max(2, message.players ?? 2));
-          const seats = SEATS.slice(0, numPlayers);
-          // The "highroll" — who goes first is randomized per room, not
-          // always the first-listed seat. Independent of `seed` (which only
-          // governs deck shuffling) so it doesn't shift the deterministic
-          // draw order tests and replays rely on.
-          const startingPlayer = seats[Math.floor(Math.random() * seats.length)].id;
           // A real room should shuffle freshly every time — only fall back
           // to Game.create's fixed internal default (meant for scripts/tests
           // that omit a seed on purpose) when nobody asked for a specific
           // one. Without this, every "Create Room" click reused that same
           // constant and every game opened with an identical shuffle.
           const seed = message.seed ?? Math.floor(Math.random() * 0x100000000);
-          const room = manager.create({
+          const room = manager.createPending(numPlayers, {
             seed,
             mulligans: true,
             rules: { startingLife: 40, freeFirstMulligan: true },
-            startingPlayer,
-            decks: seats.map((seat) => ({
-              player: seat.id,
-              cards: [...seat.cards],
-              commander: seat.commander,
-            })),
           });
           send(ws, { type: "room-created", roomId: room.id });
           return;
@@ -125,6 +136,7 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
               message.clientToken,
               connection,
               message.displayName,
+              message.deck,
             );
           } catch (err) {
             // Rejected claim (seat taken by someone else, etc.) — tell the
@@ -141,8 +153,15 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
             });
             return;
           }
+          if (room instanceof PendingRoom && room.isReady()) {
+            const activeRoom = manager.promote(room.id);
+            boundRoom = activeRoom;
+            broadcast(activeRoom);
+            return;
+          }
           boundRoom = room;
-          broadcast(room);
+          if (room instanceof PendingRoom) broadcastPending(room);
+          else broadcast(room);
           return;
         }
         case "add-bot": {
@@ -156,10 +175,15 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
             });
             return;
           }
-          broadcast(room);
+          if (room instanceof PendingRoom && room.isReady()) {
+            broadcast(manager.promote(room.id));
+            return;
+          }
+          if (room instanceof PendingRoom) broadcastPending(room);
+          else broadcast(room);
           // A caller who hasn't claimed a seat yet (still on the seat
-          // picker) isn't in `connectedSeats()`, so `broadcast` above never
-          // reaches them — refresh their picker directly, same as a
+          // picker) isn't in `connectedSeats()`, so the broadcast above
+          // never reaches them — refresh their picker directly, same as a
           // rejected `claim-seat` does.
           if (room.seatOf(connection) === null) {
             send(ws, { type: "room-joined", roomId: room.id, seats: room.seatStatuses() });
@@ -167,25 +191,25 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
           return;
         }
         case "dispatch": {
-          const room = requireRoom(manager, message.roomId);
+          const room = requireActiveRoom(manager, message.roomId);
           room.dispatch(connection, message.action);
           broadcast(room);
           return;
         }
         case "pass-turn": {
-          const room = requireRoom(manager, message.roomId);
+          const room = requireActiveRoom(manager, message.roomId);
           room.requestPassTurn(connection);
           broadcast(room);
           return;
         }
         case "auto-pass": {
-          const room = requireRoom(manager, message.roomId);
+          const room = requireActiveRoom(manager, message.roomId);
           room.requestAutoPass(connection);
           broadcast(room);
           return;
         }
         case "toggle-mana-skip": {
-          const room = requireRoom(manager, message.roomId);
+          const room = requireActiveRoom(manager, message.roomId);
           room.toggleSkipManaOnly(connection);
           broadcast(room);
           return;
