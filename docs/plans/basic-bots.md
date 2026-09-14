@@ -11,8 +11,9 @@ card-library page, a deck builder, server-side deck save/share, an automatic rep
 unimplemented cards on decklist import, and basic bots. Bots went first because — unlike
 the other four — it needed no new persistence/identity layer: it plugs into the engine's
 existing `PlayerController` seam, and it's immediately useful (solo deck testing, filling
-empty seats, a second fuzz target beyond `random-demo.mjs`'s `RandomController`). The other
-four are still unscoped; when picked up, deck save/share should use shareable deck codes
+empty seats, a second fuzz target beyond `random-demo.mjs`'s `RandomController`). The card-
+library page (`card-library-page.md`) and the deck builder (`deck-builder.md`) followed; deck
+save/share and the card replacer are still unscoped. When picked up, deck save/share should use shareable deck codes
 (no login), matching the existing room-code pattern, rather than full user accounts.
 
 ## Key architectural finding

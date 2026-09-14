@@ -7,8 +7,8 @@ documentation — see `CLAUDE.md` for current architecture.
 
 Second of five long-term client/server features discussed together (see `basic-bots.md`): a
 public card-library page, a deck builder, server-side deck save/share, an automatic replacer for
-unimplemented cards on decklist import, and basic bots (shipped first). The remaining two
-(deck builder, deck save/share, card replacer) are still unscoped.
+unimplemented cards on decklist import, and basic bots (shipped first). The deck builder
+(`deck-builder.md`) followed; deck save/share and the card replacer are still unscoped.
 
 ## Key architectural finding
 
