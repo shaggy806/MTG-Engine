@@ -318,6 +318,11 @@ export interface GameRules {
   maxLandsPerTurn: number;
   /** In a two-player game the player who goes first skips their first draw. */
   skipFirstDraw: boolean;
+  /** The traditional Commander mulligan rule: a player's first mulligan each
+   * game doesn't require putting a card on the bottom of their library —
+   * only the second and later mulligans do (London mulligan otherwise).
+   * Default false; the server turns this on for its Commander rooms. */
+  freeFirstMulligan: boolean;
 }
 
 export const DEFAULT_RULES: GameRules = {
@@ -326,6 +331,7 @@ export const DEFAULT_RULES: GameRules = {
   maxHandSize: 7,
   maxLandsPerTurn: 1,
   skipFirstDraw: true,
+  freeFirstMulligan: false,
 };
 
 export interface TurnState {

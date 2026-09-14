@@ -196,6 +196,35 @@ describe("mulligans (opt-in via GameConfig.mulligans)", () => {
     expect(game.state.turn.number).toBe(1);
   });
 
+  it("freeFirstMulligan waives the bottoming on the first mulligan only", () => {
+    const game = newGame({ rules: { freeFirstMulligan: true } });
+    game.dispatch({ type: "mulligan", player: A, keep: false });
+    game.dispatch({ type: "mulligan", player: A, keep: true });
+
+    // First mulligan is free -- straight past the "bottom" step, same as
+    // never having mulliganed at all.
+    expect(game.state.awaiting).toEqual({
+      kind: "mulligan",
+      player: B,
+      hands: { bob: deciding() },
+    });
+    expect(game.handOf(A)).toHaveLength(7);
+    expect(game.libraryOf(A)).toHaveLength(33);
+
+    game.dispatch({ type: "mulligan", player: B, keep: false });
+    game.dispatch({ type: "mulligan", player: B, keep: false });
+    game.dispatch({ type: "mulligan", player: B, keep: true });
+
+    // Second mulligan owes 1 card (2 taken - 1 free), not 2.
+    expect(game.legalActions(B)).toEqual([
+      { kind: "put-on-bottom", count: 1, from: [...game.handOf(B)] },
+    ]);
+    game.dispatch({ type: "put-on-bottom", player: B, cards: [game.handOf(B)[0]] });
+    expect(game.state.awaiting).toBeNull();
+    expect(game.state.turn.number).toBe(1);
+    expect(game.handOf(B)).toHaveLength(6);
+  });
+
   it("works alongside a configured commander, which stays in the command zone throughout", () => {
     const game = Game.create({
       seed: 1,

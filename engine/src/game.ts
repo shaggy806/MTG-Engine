@@ -658,7 +658,7 @@ export class Game {
           : [
               {
                 kind: "put-on-bottom",
-                count: hand.taken,
+                count: this.mulliganCardsOwed(hand.taken),
                 from: [...this.state.zones.perPlayer[player].hand],
               },
             ];
@@ -1567,12 +1567,20 @@ export class Game {
     }
 
     this.emit({ type: "hand-kept", player, mulligans: taken });
-    if (taken > 0) {
+    if (this.mulliganCardsOwed(taken) > 0) {
       hands[player] = { taken, step: "bottom" };
     } else {
       delete hands[player];
     }
     this.advanceMulliganPhase(hands);
+  }
+
+  /** How many cards a player who has taken `taken` mulligans owes to the
+   * bottom of their library on keeping (rule 103.4, or the traditional
+   * Commander waiver on the first one — `GameRules.freeFirstMulligan`). */
+  private mulliganCardsOwed(taken: number): number {
+    const free = this.state.rules.freeFirstMulligan ? 1 : 0;
+    return Math.max(0, taken - free);
   }
 
   private whyCannotMulligan(player: PlayerId): string | null {
@@ -1614,7 +1622,7 @@ export class Game {
     ) {
       return `${player} is not being asked to put cards on the bottom of their library`;
     }
-    const owed = awaiting.hands[player].taken;
+    const owed = this.mulliganCardsOwed(awaiting.hands[player].taken);
     if (cards.length !== owed) {
       return `${player} must put exactly ${owed} card(s) on the bottom, chose ${cards.length}`;
     }

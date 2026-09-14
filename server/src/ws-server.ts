@@ -100,7 +100,7 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
           const room = manager.create({
             seed,
             mulligans: true,
-            rules: { startingLife: 40 },
+            rules: { startingLife: 40, freeFirstMulligan: true },
             startingPlayer,
             decks: seats.map((seat) => ({
               player: seat.id,
