@@ -530,6 +530,32 @@
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
 }
 
+/* Every mode's decision controls except priority (its own .priority-actions
+   corner) and discard/put-on-bottom (inline with the hand -- see App.tsx's
+   `peekable`) float here instead: fixed and centered, near the top where
+   the turn/phase info already draws the eye, so it's just as attention-
+   grabbing as the old inline placement without taking any height away from
+   .quadrant-grid -- docking it inline used to force the whole hand-strip out
+   of its peekable/fixed tray and into normal flow every time a declare-
+   attackers/blockers, sacrifice, scry, etc. decision came up, which starved
+   .quadrant-body of height and made recomputeBoardMiniW crush the board's
+   own mini tiles to compensate. */
+.decision-banner {
+  position: fixed;
+  top: clamp(44px, 6vh, 56px);
+  left: 50%;
+  translate: -50% 0;
+  z-index: 120;
+  width: min(94vw, 900px);
+  pointer-events: none;
+}
+.decision-banner .controls {
+  margin-top: 0;
+  justify-content: center;
+  pointer-events: auto;
+  box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.55);
+}
+
 .board {
   flex: 1;
   min-width: 0;
@@ -1657,7 +1683,10 @@
   font-size: 11px;
 }
 
-/* read-only zone browser (graveyard/exile today) */
+/* read-only zone browser (graveyard/exile today), also reused as the
+   choose-from-zone/scry decision popup -- above the hand-strip/
+   priority-actions/decision-banner stack (100-120) since it's a full-screen
+   opaque overlay that has to actually cover them, not sit behind them. */
 .zone-viewer-overlay {
   position: fixed;
   inset: 0;
@@ -1665,7 +1694,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 30;
+  z-index: 130;
   padding: 40px;
 }
 .zone-viewer-box {
