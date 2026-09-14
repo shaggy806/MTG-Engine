@@ -1528,7 +1528,21 @@ function Table({ view, seat, opponents, game }: TableProps) {
     if (!row) return
     const recompute = () => {
       const cardEl = row.querySelector<HTMLElement>('.hand-card .card-tile')
-      const cw = cardEl?.getBoundingClientRect().width ?? 0
+      // offsetWidth, not getBoundingClientRect().width -- the latter is the
+      // *visual* (post-transform) bounding box, which for any card past the
+      // fan's uncapped range is rotated by up to HAND_FAN_MAX_ROT_DEG and
+      // therefore reports a width inflated well past the card's real,
+      // unrotated size (a rotated rectangle's axis-aligned bounding box is
+      // always wider than the rectangle itself). Since every card shares the
+      // same CSS width regardless of its own rotation, offsetWidth (the
+      // layout box, untouched by the `rotate`/`translate` CSS properties)
+      // gives the true, stable card width no matter which card in the row
+      // happens to get queried. Using the rotated bounding width here was
+      // the actual cause of a hand's fan looking wrong past ~16 cards (the
+      // point the rotation cap engages): an inflated cw overstates how much
+      // overlap is needed, so cards get crushed far tighter than the real
+      // available width requires.
+      const cw = cardEl?.offsetWidth ?? 0
       const n = row.querySelectorAll('.hand-card').length
       if (cw === 0 || n <= 1) {
         setHandCardGap(HAND_CARD_GAP)

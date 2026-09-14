@@ -1422,7 +1422,15 @@
   z-index: 200;
   width: min(90vw, 1100px);
   max-height: 90vh;
-  overflow-y: auto;
+  /* overflow-y: auto alone makes overflow-x auto too (CSS spec: an axis set
+     to a non-visible value forces the other axis off 'visible' as well) --
+     a rotated edge card's paint/ink overflow (CSS transforms don't affect
+     layout, but do count toward an ancestor's scrollable overflow) was
+     enough to spawn a horizontal scrollbar even for a normal, correctly-
+     fanned 7-card hand. Pinned to hidden since nothing here is meant to
+     scroll sideways -- the fan's own overlap math (HAND_CARD_GAP) already
+     sizes the hand to fit the modal's width. */
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
