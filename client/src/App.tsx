@@ -36,7 +36,7 @@ import './App.css'
 const HAND_FAN_STEP_DEG = 4.4
 const HAND_FAN_STEP_Y = 5.2
 // The per-card step above is tuned against the mockup's own tested range (up
-// to 14 cards -- see BOARD_REDESIGN_PLAN.md Phase 8/mockup source), where the
+// to 14 cards -- see the mockup source linked from BOARD_REDESIGN_PLAN.md), where the
 // outermost card lands well under these caps and nothing here changes
 // anything. Applied unscaled, a hand bigger than that (draw effects easily
 // push a hand past 14-20 before a discard step) grows the outermost card's
