@@ -36,10 +36,11 @@ const IMPORT_DECK_URL = `${
 
 // Symmetric fan for the hand tray (P8): card i's offset from the hand's
 // center is i - (N-1)/2; rotation and lift both scale off that same offset,
-// so the fan stays symmetric regardless of hand size. Only applied while the
-// hand is actually being browsed full-size -- the collapsed peek (priority
-// mode, not raised) renders flat, since a rotated/lifted card only shows a
-// sliver above the fold and reads as visually broken rather than fanned.
+// so the fan stays symmetric regardless of hand size. Always applied,
+// including the collapsed peek (priority mode, not raised) and the mulligan
+// popup -- the hand should read as the same tray whether it's peeking,
+// raised, or shown inside a decision popup, not switch between a flat and a
+// fanned look depending on which.
 const HAND_FAN_STEP_DEG = 4.4
 const HAND_FAN_STEP_Y = 5.2
 
@@ -2168,8 +2169,10 @@ function Table({ view, seat, opponents, game }: TableProps) {
    * decision that blocks the whole game for every player still deciding, so
    * it gets an attention-grabbing placement of its own rather than sharing
    * the hand-strip's `.controls` slot with every other forced decision. The
-   * hand itself still renders normally in the hand-strip below so the
-   * player can see what they'd be keeping. */
+   * hand itself renders inside the popup (via `renderHand`, the same one
+   * every other mode uses) rather than separately below it, so the whole
+   * decision -- what's in your hand and whether to keep it -- lives in one
+   * place instead of split across a banner and a strip. */
   const renderMulliganModal = () => {
     if (mode !== 'mulligan' || !mulliganAction) return null
     return (
@@ -2179,6 +2182,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
             ? 'Keep your opening hand?'
             : `Mulligan #${mulliganAction.count} taken — keep this hand?`}
         </span>
+        {renderHand()}
         <div className="mulligan-modal-actions">
           <button type="button" onClick={() => confirmMulligan(true)}>
             Keep
@@ -2220,9 +2224,104 @@ function Table({ view, seat, opponents, game }: TableProps) {
 
   /** The ability menu (for a selected permanent with 2+ activated
    * abilities), the priority/attack/block/etc. controls, and your own hand
-   * — the interactive strip below your board, shared by both the classic
-   * 2-player layout (inline in `.player-area`) and the 3-4 player quadrant
-   * layout (its own full-width strip below the grid). */
+   * — the interactive strip below the quadrant grid, shared by every player
+   * count (2-4). */
+  /** Your hand, fanned (see HAND_FAN_STEP_DEG/HAND_FAN_STEP_Y) -- always,
+   * including the collapsed peek and the mulligan popup, not just while
+   * actively raised/browsing. Shared between `renderHandAndControls` (every
+   * mode except mulligan, which shows it inside its own popup instead --
+   * see `renderMulliganModal`) so the hand only has one render path. */
+  const renderHand = () => (
+    <div className="hand">
+      <h3>
+        {playerLabel(seat, game.seats)}'s hand ({handIds.length})
+      </h3>
+      <div className="hand-cards" ref={handRowRef}>
+        {handIds.map((id, i) => {
+          const obj = view.objects[id]
+          if (!obj) return null
+          const fanOffset = i - (handIds.length - 1) / 2
+          const fanStyle: CSSProperties = {
+            '--r': `${fanOffset * HAND_FAN_STEP_DEG}deg`,
+            '--y': `${Math.abs(fanOffset) * HAND_FAN_STEP_Y}px`,
+            // Never wraps to a second row and never shrinks the card
+            // itself -- past a natural fit, cards overlap (a shrinking,
+            // even negative, gap) instead. See HAND_CARD_GAP's comment.
+            marginLeft: i === 0 ? 0 : `${handCardGap}px`,
+          } as CSSProperties
+          let highlight = false
+          let selected = false
+          if (mode === 'discard') {
+            highlight = discardAction?.from.includes(id) ?? false
+            selected = discardPicks.includes(id)
+          } else if (mode === 'put-on-bottom') {
+            highlight = bottomAction?.from.includes(id) ?? false
+            selected = bottomPicks.includes(id)
+          } else if (mode === 'priority') {
+            highlight = landByCard.has(id) || castByCard.has(id)
+          }
+          const suspend = mode === 'priority' ? suspendByCard.get(id) : undefined
+          const foretell = mode === 'priority' ? foretellByCard.get(id) : undefined
+          const cycle = mode === 'priority' ? cycleByCard.get(id) : undefined
+          const faceOpts =
+            mode === 'priority' ? (playFacesByCard.get(id) ?? []) : []
+          // More than one way to play this card: a multi-face card's sides,
+          // or a kickable spell's kicked / unkicked casts (P8).
+          const multiFace = faceOpts.length > 1
+          return (
+            <div key={id} className="hand-card" style={fanStyle}>
+              <CardTile
+                obj={obj}
+                highlight={highlight || Boolean(suspend) || Boolean(foretell) || Boolean(cycle)}
+                selected={selected}
+                onClick={() => clickHandCard(id)}
+              />
+              {multiFace
+                ? faceOpts.map((a, i) => (
+                    <button key={i} type="button" onClick={() => playFace(a)}>
+                      {a.kind === 'play-land' ? 'Play' : 'Cast'} {a.cardName}
+                      {a.kind === 'cast-spell' && a.kicked
+                        ? ` (kicked ${a.kickerCost ?? ''})`
+                        : ''}
+                      {a.kind === 'cast-spell' && a.overload
+                        ? ` (overload ${a.overloadCost ?? ''})`
+                        : ''}
+                      {a.kind === 'cast-spell' && a.free ? ' (free)' : ''}
+                    </button>
+                  ))
+                : null}
+              {suspend ? (
+                <button
+                  type="button"
+                  onClick={() => game.dispatch({ type: 'suspend', player: seat, card: id })}
+                >
+                  Suspend {suspend.cost}
+                </button>
+              ) : null}
+              {foretell ? (
+                <button
+                  type="button"
+                  onClick={() => game.dispatch({ type: 'foretell', player: seat, card: id })}
+                >
+                  Foretell
+                </button>
+              ) : null}
+              {cycle ? (
+                <button
+                  type="button"
+                  onClick={() => game.dispatch({ type: 'cycle', player: seat, card: id })}
+                >
+                  Cycle {cycle.cost}
+                </button>
+              ) : null}
+            </div>
+          )
+        })}
+        {handIds.length === 0 ? <span className="muted">empty</span> : null}
+      </div>
+    </div>
+  )
+
   const renderHandAndControls = () => (
     <>
       {selectedAbilities.length > 0 ? (
@@ -2242,177 +2341,62 @@ function Table({ view, seat, opponents, game }: TableProps) {
 
       {/* priority mode's controls (Pass/Pass Turn/Auto-pass/Skip-mana) render
           in a fixed bottom-right bar instead (see .priority-actions below),
-          and mulligan's Keep/Mulligan choice renders as its own centered
-          popup (see .mulligan-modal below) -- every other mode's decision UI
-          stays inline here, since those need the player's attention
-          immediately rather than living somewhere that only shows up on
-          hover or is easy to miss off in a corner. */}
+          and mulligan's Keep/Mulligan choice (with the hand itself) renders
+          as its own centered popup (see .mulligan-modal below) -- every
+          other mode's decision UI stays inline here, since those need the
+          player's attention immediately rather than living somewhere that
+          only shows up on hover or is easy to miss off in a corner. */}
       {mode === 'priority' || mode === 'mulligan' ? null : controls}
 
-      <div className="hand">
-        <h3>
-          {playerLabel(seat, game.seats)}'s hand ({handIds.length})
-        </h3>
-        <div className="hand-cards" ref={handRowRef}>
-          {handIds.map((id, i) => {
-            const obj = view.objects[id]
-            if (!obj) return null
-            // Flat while peeked-but-not-raised (mode === 'priority' && !handRaised)
-            // -- see HAND_FAN_STEP_DEG's comment above -- fanned everywhere else,
-            // including every forced-decision mode, where the hand is always
-            // fully visible anyway.
-            const fanned = !(mode === 'priority' && !handRaised)
-            const fanOffset = i - (handIds.length - 1) / 2
-            const fanStyle: CSSProperties = {
-              ...(fanned
-                ? {
-                    '--r': `${fanOffset * HAND_FAN_STEP_DEG}deg`,
-                    '--y': `${Math.abs(fanOffset) * HAND_FAN_STEP_Y}px`,
-                  }
-                : {}),
-              // Never wraps to a second row and never shrinks the card
-              // itself -- past a natural fit, cards overlap (a shrinking,
-              // even negative, gap) instead. See HAND_CARD_GAP's comment.
-              marginLeft: i === 0 ? 0 : `${handCardGap}px`,
-            } as CSSProperties
-            let highlight = false
-            let selected = false
-            if (mode === 'discard') {
-              highlight = discardAction?.from.includes(id) ?? false
-              selected = discardPicks.includes(id)
-            } else if (mode === 'put-on-bottom') {
-              highlight = bottomAction?.from.includes(id) ?? false
-              selected = bottomPicks.includes(id)
-            } else if (mode === 'priority') {
-              highlight = landByCard.has(id) || castByCard.has(id)
-            }
-            const suspend = mode === 'priority' ? suspendByCard.get(id) : undefined
-            const foretell = mode === 'priority' ? foretellByCard.get(id) : undefined
-            const cycle = mode === 'priority' ? cycleByCard.get(id) : undefined
-            const faceOpts =
-              mode === 'priority' ? (playFacesByCard.get(id) ?? []) : []
-            // More than one way to play this card: a multi-face card's sides,
-            // or a kickable spell's kicked / unkicked casts (P8).
-            const multiFace = faceOpts.length > 1
-            return (
-              <div key={id} className="hand-card" style={fanStyle}>
-                <CardTile
-                  obj={obj}
-                  highlight={highlight || Boolean(suspend) || Boolean(foretell) || Boolean(cycle)}
-                  selected={selected}
-                  onClick={() => clickHandCard(id)}
-                />
-                {multiFace
-                  ? faceOpts.map((a, i) => (
-                      <button key={i} type="button" onClick={() => playFace(a)}>
-                        {a.kind === 'play-land' ? 'Play' : 'Cast'} {a.cardName}
-                        {a.kind === 'cast-spell' && a.kicked
-                          ? ` (kicked ${a.kickerCost ?? ''})`
-                          : ''}
-                        {a.kind === 'cast-spell' && a.overload
-                          ? ` (overload ${a.overloadCost ?? ''})`
-                          : ''}
-                        {a.kind === 'cast-spell' && a.free ? ' (free)' : ''}
-                      </button>
-                    ))
-                  : null}
-                {suspend ? (
-                  <button
-                    type="button"
-                    onClick={() => game.dispatch({ type: 'suspend', player: seat, card: id })}
-                  >
-                    Suspend {suspend.cost}
-                  </button>
-                ) : null}
-                {foretell ? (
-                  <button
-                    type="button"
-                    onClick={() => game.dispatch({ type: 'foretell', player: seat, card: id })}
-                  >
-                    Foretell
-                  </button>
-                ) : null}
-                {cycle ? (
-                  <button
-                    type="button"
-                    onClick={() => game.dispatch({ type: 'cycle', player: seat, card: id })}
-                  >
-                    Cycle {cycle.cost}
-                  </button>
-                ) : null}
-              </div>
-            )
-          })}
-          {handIds.length === 0 ? <span className="muted">empty</span> : null}
-        </div>
-      </div>
+      {/* mulligan shows the hand inside its own popup instead (see
+          renderMulliganModal) -- rendering it here too would show it twice */}
+      {mode === 'mulligan' ? null : renderHand()}
     </>
   )
 
-  // 1 opponent (a 2-player game): the classic vertical layout, unchanged.
-  // 2-3 opponents (3-4 players): a 2x2 quadrant grid instead, per-cell order
-  // [opponents[0], opponents[1], you, opponents[2]] — top-left, top-right,
-  // bottom-left (always you), bottom-right, with a 3-player game simply
-  // leaving the 4th cell blank.
-  const isQuadrant = opponents.length >= 2
+  // Every player count uses the same quadrant-cell frame (one bordered,
+  // rounded-rect box per seat: a head with that seat's PlayerPanel, a body
+  // with their board + command/library rail, internally scrolling on its
+  // own) -- there's no separate "classic" layout for 2 players anymore. 1
+  // opponent (2-player) is a single-column, 2-row grid (opponent on top, you
+  // on the bottom); 2-3 opponents (3-4 players) is the 2x2 grid, per-cell
+  // order [opponents[0], opponents[1], you, opponents[2]] — top-left,
+  // top-right, bottom-left (always you), bottom-right, with a 3-player game
+  // simply leaving the 4th cell blank.
+  const quadrantCells: readonly PlayerId[] =
+    opponents.length === 1
+      ? [opponents[0], seat]
+      : [opponents[0], opponents[1], seat, opponents[2]].filter(
+          (pid): pid is PlayerId => pid !== undefined,
+        )
 
   return (
     <div className="player-col">
-      {isQuadrant ? (
-        <>
-          <main className="table">
-            <div className="quadrant-grid">
-              {[opponents[0], opponents[1], seat, opponents[2]].map((pid, index) => {
-                if (pid === undefined) {
-                  return <div className="quadrant-blank" key={`blank-${index}`} />
-                }
-                return (
-                  <div
-                    className={`quadrant-cell ${pid === seat ? 'self' : ''} ${
-                      view.activePlayer === pid ? 'active-turn' : ''
-                    }`}
-                    key={pid}
-                  >
-                    <div className="quadrant-head">{renderPlayerPanel(pid)}</div>
-                    <div className="quadrant-body">
-                      <div className="board-with-sidezone">
-                        {renderBoard(pid, pid !== seat)}
-                        {renderSideZone(pid)}
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </main>
-
-          {renderHandStrip()}
-        </>
-      ) : (
-        <>
-          <div className="pinned-top">{opponents.map(renderPlayerPanel)}</div>
-
-          <main className="table">
-            {opponents.map((pid) => (
-              <div className="opponent-block" key={pid}>
+      <main className="table">
+        <div className={`quadrant-grid ${opponents.length === 1 ? 'two-player' : ''}`}>
+          {quadrantCells.map((pid) => (
+            <div
+              className={`quadrant-cell ${pid === seat ? 'self' : ''} ${
+                view.activePlayer === pid ? 'active-turn' : ''
+              }`}
+              key={pid}
+            >
+              <div className="quadrant-head">{renderPlayerPanel(pid)}</div>
+              <div className="quadrant-body">
                 <div className="board-with-sidezone">
-                  {renderBoard(pid, true)}
+                  {renderBoard(pid, pid !== seat)}
                   {renderSideZone(pid)}
                 </div>
               </div>
-            ))}
-
-            <div className="player-area-with-sidezone">
-              <div className="player-area">{renderBoard(seat, false)}</div>
-              {renderSideZone(seat)}
             </div>
-          </main>
+          ))}
+          {/* a 3-player game leaves the 4th cell blank rather than switching
+              grid shapes */}
+          {opponents.length === 2 ? <div className="quadrant-blank" /> : null}
+        </div>
+      </main>
 
-          {renderHandStrip()}
-
-          <div className="pinned-bottom">{renderPlayerPanel(seat)}</div>
-        </>
-      )}
+      {renderHandStrip()}
 
       {mode === 'priority' ? <div className="priority-actions">{controls}</div> : null}
       {renderMulliganModal()}

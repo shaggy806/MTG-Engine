@@ -14,7 +14,7 @@ matching this repo's usual git history — not one giant diff. `scratch.mjs` +
 `npm run dev -w client` (client dev server proxies `ws://localhost:4000`) is
 the fastest way to eyeball a change; see CLAUDE.md's Commands section.
 
-**Status: Phases 1-6, 8, and 9 done and committed.** Phase 5 turned out to
+**Status: Phases 1-6, 8, 9, and 10 done and committed.** Phase 5 turned out to
 already be built before this plan started. Phase 7's
 priority-action-bar half landed early (inside phase 3); its mana-available-
 indicator half is explicitly **descoped by the user** (too much
@@ -561,6 +561,68 @@ centered on screen (not as a bottom banner) through a full
 keep→mulligan→keep cycle, and the subsequent put-on-bottom step (a
 different forced-decision mode, untouched by this phase) still rendered
 inline as before.
+
+### Phase 10 — 2-player/quadrant parity, real arch, mulligan-popup hand — DONE
+
+More user feedback on Phase 9's own work, all landed together:
+
+1. **2-player layout now uses the same quadrant-cell frame as 3-4 player.**
+   `Table` (App.tsx) used to branch on `opponents.length >= 2`: 3-4 players
+   got the bordered `.quadrant-cell` treatment (Phase 8), but 2 players got
+   a separate, older layout -- `.pinned-top`/`.pinned-bottom` banner strips
+   plus unboxed `.opponent-block`/`.player-area-with-sidezone` -- that never
+   picked up Phase 8's one-frame-per-seat redesign, so it looked visibly
+   behind. Replaced with a single code path for every player count: a
+   `quadrantCells` array (`[opponent, you]` for 2 players, the existing
+   `[oppA, oppB, you, oppC]` for 3-4) rendered through the exact same
+   `.quadrant-cell`/`.quadrant-head`/`.quadrant-body` markup. `.quadrant-grid`
+   gained a `.two-player` modifier (`grid-template-columns: 1fr;
+   grid-template-rows: 1fr 1fr`, opponent on top, you on the bottom) instead
+   of the 2x2 grid -- same frame component, just a 1-column arrangement,
+   matching how the mockup's own `.layout-2p` reused `.quad` rather than a
+   different layout. `.pinned-top`/`.pinned-bottom`/`.player-area-with-
+   sidezone`/`.player-area` are gone from App.css (fully dead once the old
+   branch was removed).
+2. **The hand fan is a real arch now, and always on.** Two bugs in Phase 9's
+   port of the mockup's fan, both in App.css's `.hand-cards .hand-card`:
+   - `translate: 0 calc(-1 * var(--y))` had the sign flipped from the
+     mockup's `translate: 0 var(--y)` -- our port raised outer cards *up*
+     (higher than center), the opposite of a real card fan (center card
+     peeking highest, outer cards angling down and away). Removed the
+     negation so it matches the mockup: positive `--y` (larger for cards
+     further from center) now moves them *down* relative to the center
+     card, which is what actually reads as an arch.
+   - The fan was suppressed (flat, `--r`/`--y` both unset) specifically
+     during the collapsed peek (`mode === 'priority' && !handRaised`) --
+     a deliberate Phase 8 decision at the time ("avoids a broken/clipped
+     look"), but the user now wants the arch visible even in the peeked
+     sliver, not just once raised. Removed the `fanned` conditional
+     entirely in App.tsx -- `--r`/`--y` are set unconditionally now, in
+     every mode including the collapsed peek and the mulligan popup.
+3. **Mulligan popup now includes the hand itself**, not just the prompt and
+   buttons. Extracted the hand's render (title + `.hand-cards` row, unified
+   with #2 above) into a new `renderHand()` in App.tsx, shared between
+   `renderHandAndControls` (every mode except mulligan) and
+   `renderMulliganModal` (mulligan only) -- the same hand only renders in
+   one place per mode, never twice. `.mulligan-modal` widened to `min(90vw,
+   1100px)` (roughly the old peekable hand-strip's own width budget) with
+   `max-height: 90vh; overflow-y: auto` so a fanned 7-card hand fits
+   comfortably without forcing heavy overlap.
+
+Verified live via `scratch.mjs`: with `mulligans: true`, the popup showed
+"Keep your opening hand?", the 7-card hand fanned in a clear arch (center
+card highest, outer cards rotated and drooping down on both sides -- a
+screenshot zoom confirmed the shape directly) and Keep/Mulligan buttons,
+centered on screen; clicking Mulligan cycled to "Mulligan #1 taken -- keep
+this hand?" with a fresh hand, and the later put-on-bottom step (untouched
+by this phase) still rendered inline as before. After keeping, the
+collapsed peek at the bottom edge showed the fan's rotation in the sliver
+itself (not flat), and hovering to raise it showed the same arch as the
+modal. Separately, a 2-player room's board rendered through the same
+bordered `.quadrant-cell` frame as a 3-4 player room (verified: header
+divider, command/library rail divider, per-seat active-turn/self styling
+all present) instead of the old unboxed layout, with real battlefield
+permanents (mini tiles, P/T badges, land/creature row ordering) unaffected.
 
 ## Cross-cutting notes
 

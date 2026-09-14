@@ -113,25 +113,6 @@
   box-shadow: 0 0 8px var(--accent);
 }
 
-/* 2-player layout only now (quadrant mode gives each opponent their own
-   header via renderPlayerPanel inside their quadrant cell instead) — the
-   one opponent's life/mana/zone counts, pinned above the board so they're
-   visible regardless of how far it's scrolled. Mirrored at the bottom for
-   your own seat (see .pinned-bottom). */
-.pinned-top {
-  flex: none;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--border);
-}
-.pinned-bottom {
-  flex: none;
-  padding: 8px 0;
-  border-top: 1px solid var(--border);
-}
-
 /* whose turn + full phase name, spelled out — lives inline in .top-strip now,
    not as its own centered block */
 .turn-banner {
@@ -357,26 +338,15 @@
   align-items: flex-start;
   gap: 8px;
 }
-/* your side: the command/library column spans your board AND your hand (and
-   whatever controls sit between them), not just the board — so it stretches
-   to match its sibling's full height instead of stopping at the board. */
-.player-area-with-sidezone {
-  display: flex;
-  align-items: stretch;
-  gap: 8px;
-}
-.player-area {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* 3-4 players: each seat (including your own) gets a quadrant instead of
-   opponents stacking vertically above your own row. A 3-player game just
-   leaves the 4th cell blank (see the fixed [oppA, oppB, you, oppC] cell
-   order in App.tsx) rather than switching to a different grid shape. */
+/* Every player count uses this same quadrant grid (see App.tsx's
+   `quadrantCells`) -- there's no separate stacked-rows layout for 2 players
+   anymore. 3-4 players: each seat (including your own) gets a quadrant
+   instead of opponents stacking vertically above your own row. A 3-player
+   game just leaves the 4th cell blank (see the fixed [oppA, oppB, you, oppC]
+   cell order in App.tsx) rather than switching to a different grid shape.
+   2 players (.two-player): a single column, two rows -- the one opponent on
+   top, you on the bottom -- reusing the identical bordered quadrant-cell
+   frame rather than a different, unboxed layout. */
 .quadrant-grid {
   /* fills whatever height .table has to give (its parent's flex:1) instead
      of sizing to its own content -- that's what keeps all 4 frames fully
@@ -387,6 +357,10 @@
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
   gap: 10px;
+}
+.quadrant-grid.two-player {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 1fr;
 }
 /* one bordered, rounded-rect frame per quadrant -- previously the player
    panel, board, and side-zone were three separately-boxed pieces; this is
@@ -1353,18 +1327,26 @@
 /* Mulligan is the one forced decision that blocks the whole table (every
    player still deciding), so it gets its own attention-grabbing centered
    popup instead of sharing the hand-strip's inline .controls slot with
-   every other forced decision -- the hand itself still renders normally in
-   the hand-strip below it so the player can see what they'd be keeping. */
+   every other forced decision -- and the hand itself (via renderHand, same
+   as every other mode) renders inside the popup, not off in the hand-strip
+   below it, so what you'd be keeping and the keep/mulligan choice are one
+   self-contained decision instead of two separate things on screen at once.
+   Wide enough to hold a normal hand fanned without forcing heavy overlap
+   (see HAND_CARD_GAP's comment) -- roughly the old peekable hand-strip's
+   own width budget -- but still capped well short of the viewport. */
 .mulligan-modal {
   position: fixed;
   top: 50%;
   left: 50%;
   translate: -50% -50%;
   z-index: 200;
+  width: min(90vw, 1100px);
+  max-height: 90vh;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   padding: 22px 32px;
   background: var(--panel);
   border: 1px solid var(--gold);
@@ -1374,6 +1356,10 @@
     0 2px 8px rgba(0, 0, 0, 0.4);
   text-align: center;
   font-size: 15px;
+}
+.mulligan-modal .hand {
+  width: 100%;
+  margin-top: 0;
 }
 .mulligan-modal-actions {
   display: flex;
@@ -1411,12 +1397,18 @@
    are what let :hover below override with a plain CSS rule instead of
    fighting an inline `style.transform`. margin-left is also set inline per
    card (the overlap amount) -- flex:none keeps a card at its fixed width
-   instead of letting flex-shrink squeeze it as the row gets tight. */
+   instead of letting flex-shrink squeeze it as the row gets tight. --y is
+   POSITIVE translate (not negated) -- the center card (offset 0, y:0) stays
+   at the row's normal baseline while cards further from center droop lower,
+   which is what actually reads as an arch/fan (center card peeking up,
+   outer cards angling down and away), matching the mockup. Always applied,
+   including the collapsed peek -- a hand that's only rotated while raised
+   looked like two different components, not one tray opening. */
 .hand-cards .hand-card {
   position: relative;
   flex: none;
   rotate: var(--r, 0deg);
-  translate: 0 calc(-1 * var(--y, 0px));
+  translate: 0 var(--y, 0px);
   transition:
     translate 0.15s ease,
     rotate 0.15s ease,
