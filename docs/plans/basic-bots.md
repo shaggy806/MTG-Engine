@@ -12,9 +12,10 @@ unimplemented cards on decklist import, and basic bots. Bots went first because 
 the other four — it needed no new persistence/identity layer: it plugs into the engine's
 existing `PlayerController` seam, and it's immediately useful (solo deck testing, filling
 empty seats, a second fuzz target beyond `random-demo.mjs`'s `RandomController`). The card-
-library page (`card-library-page.md`) and the deck builder (`deck-builder.md`) followed; deck
-save/share and the card replacer are still unscoped. When picked up, deck save/share should use shareable deck codes
-(no login), matching the existing room-code pattern, rather than full user accounts.
+library page (`card-library-page.md`), the deck builder (`deck-builder.md`), and the card
+replacer (`card-replacer.md`) followed. Only deck save/share is still unscoped — it should use
+shareable deck codes (no login), matching the existing room-code pattern, rather than full user
+accounts.
 
 ## Key architectural finding
 

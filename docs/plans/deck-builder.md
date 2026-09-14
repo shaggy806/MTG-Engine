@@ -7,8 +7,8 @@ Status: **implemented** — see `client/src/deck-builder/` (the page + local per
 living documentation — see `CLAUDE.md` for current architecture.
 
 Third of the five long-term features named in `basic-bots.md` (bots and the public card-library
-page shipped first). The remaining two — server-side deck save/share, and a decklist-import card
-replacer — are still unscoped.
+page shipped first). The decklist-import card replacer (`card-replacer.md`) followed; only
+server-side deck save/share is still unscoped.
 
 ## Key architectural finding
 
