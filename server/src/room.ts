@@ -4,8 +4,8 @@
  * this is unit-testable without a real WebSocket.
  */
 
-import { Game, actionPlayer, activePlayerOf, isSettled } from "engine";
-import type { Action, GameState, PlayerId } from "engine";
+import { Game, HeuristicBotController, actionPlayer, activePlayerOf, isSettled } from "engine";
+import type { Action, AwaitingDecision, ControllerView, GameState, PlayerController, PlayerId } from "engine";
 import type { SeatStatus, ServerMessage } from "./protocol.js";
 
 export interface Connection {
@@ -48,6 +48,7 @@ export class Room {
   readonly id: string;
   readonly game: Game;
   private readonly seats: Seat[];
+  private readonly bots = new Map<PlayerId, PlayerController>();
   private lastActivityAt: number;
 
   constructor(id: string, game: Game) {
@@ -77,7 +78,21 @@ export class Room {
       claimed: s.clientToken !== null,
       online: s.connection !== null,
       displayName: s.displayName,
+      isBot: this.bots.has(s.player),
     }));
+  }
+
+  /** Fills `player`'s seat with a basic heuristic bot instead of a human
+   * connection — rejects a seat already claimed by a human or already
+   * bot-controlled. Settles immediately afterward: the bot may already be
+   * up to act (e.g. the mulligan phase, before any human has joined). */
+  addBot(player: PlayerId): void {
+    const seat = this.seatFor(player);
+    if (seat.clientToken !== null) throw new Error(`seat ${player} is already claimed`);
+    if (this.bots.has(player)) throw new Error(`seat ${player} already has a bot`);
+    this.bots.set(player, new HeuristicBotController(player));
+    this.lastActivityAt = Date.now();
+    this.settle();
   }
 
   private seatFor(player: PlayerId): Seat {
@@ -102,6 +117,7 @@ export class Room {
     displayName?: string,
   ): void {
     const seat = this.seatFor(player);
+    if (this.bots.has(player)) throw new Error(`seat ${player} is played by a bot`);
     if (seat.clientToken !== null && seat.clientToken !== clientToken) {
       throw new Error(`seat ${player} is already claimed`);
     }
@@ -183,6 +199,34 @@ export class Room {
     return this.seatFor(player).skipManaOnly;
   }
 
+  /**
+   * The bot seat (if any) that still owes a decision for `awaiting` right
+   * now. Mulligan is answered in parallel (`awaiting.hands`, not a single
+   * `awaiting.player` pointer — every seat still in `hands` may act) so it's
+   * checked seat-by-seat; every other `awaiting` kind has one decider.
+   */
+  private nextBotDecider(awaiting: AwaitingDecision): PlayerId | null {
+    if (awaiting.kind === "mulligan") {
+      const stillDeciding = Object.keys(awaiting.hands) as PlayerId[];
+      return stillDeciding.find((p) => this.bots.has(p)) ?? null;
+    }
+    return this.bots.has(awaiting.player) ? awaiting.player : null;
+  }
+
+  /** Synthesizes and dispatches `seat`'s bot decision in-process — no
+   * `Connection` involved, unlike a human seat's `dispatch`. */
+  private dispatchForBot(seat: PlayerId): void {
+    const bot = this.bots.get(seat);
+    if (bot === undefined) throw new Error(`no bot on seat ${seat}`);
+    const view: ControllerView = {
+      state: this.game.state,
+      player: seat,
+      legalActions: () => this.game.legalActions(seat),
+    };
+    this.game.dispatch(bot.act(view));
+    this.lastActivityAt = Date.now();
+  }
+
   /** Has `seat`'s auto-pass condition been reached? Clears it if so. */
   private clearAutoPassIfDone(seat: Seat, state: GameState): boolean {
     const until = seat.autoPassUntil;
@@ -213,6 +257,11 @@ export class Room {
       if (s.result.over) return;
 
       if (s.awaiting !== null) {
+        const botDecider = this.nextBotDecider(s.awaiting);
+        if (botDecider !== null) {
+          this.dispatchForBot(botDecider);
+          continue;
+        }
         const seat = this.seatFor(s.awaiting.player);
         const wasActive = seat.autoPassUntil !== null;
         const justCleared = this.clearAutoPassIfDone(seat, s);
@@ -229,6 +278,10 @@ export class Room {
 
       const holder = s.priority.holder;
       if (holder === null) return;
+      if (this.bots.has(holder)) {
+        this.dispatchForBot(holder);
+        continue;
+      }
       const seat = this.seatFor(holder);
       const wasActive = seat.autoPassUntil !== null;
       const justCleared = this.clearAutoPassIfDone(seat, s);

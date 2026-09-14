@@ -145,6 +145,27 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
           broadcast(room);
           return;
         }
+        case "add-bot": {
+          const room = requireRoom(manager, message.roomId);
+          try {
+            room.addBot(message.seat);
+          } catch (err) {
+            send(ws, {
+              type: "error",
+              message: err instanceof Error ? err.message : String(err),
+            });
+            return;
+          }
+          broadcast(room);
+          // A caller who hasn't claimed a seat yet (still on the seat
+          // picker) isn't in `connectedSeats()`, so `broadcast` above never
+          // reaches them — refresh their picker directly, same as a
+          // rejected `claim-seat` does.
+          if (room.seatOf(connection) === null) {
+            send(ws, { type: "room-joined", roomId: room.id, seats: room.seatStatuses() });
+          }
+          return;
+        }
         case "dispatch": {
           const room = requireRoom(manager, message.roomId);
           room.dispatch(connection, message.action);

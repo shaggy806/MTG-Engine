@@ -16,6 +16,9 @@ export interface SeatStatus {
   /** The claimer's chosen name, or `null` to fall back to the seat's own
    * label ("Alice", "Bob", ...). */
   readonly displayName: string | null;
+  /** This seat is played by a basic heuristic bot, not a human — never
+   * `claimed`/`online`. */
+  readonly isBot: boolean;
 }
 
 export type ClientMessage =
@@ -35,6 +38,13 @@ export type ClientMessage =
       /** Omit to keep whatever name (if any) this seat already had — e.g. a
        * silent reconnect shouldn't blank out a name chosen earlier. */
       readonly displayName?: string;
+    }
+  | {
+      /** Fills an open seat with a basic heuristic bot instead of a human —
+       * anyone in the room can do this to any still-open seat. */
+      readonly type: "add-bot";
+      readonly roomId: string;
+      readonly seat: PlayerId;
     }
   | {
       readonly type: "dispatch";

@@ -1647,6 +1647,15 @@
 .seat-status.claimed {
   color: var(--text);
 }
+.seat-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.add-bot {
+  padding: 2px 8px;
+  font-size: 11px;
+}
 
 /* read-only zone browser (graveyard/exile today) */
 .zone-viewer-overlay {

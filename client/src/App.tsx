@@ -449,9 +449,20 @@ function SeatPickerScreen({ game }: { readonly game: NetworkGame }) {
       )}
       <div className="seat-picker-status">
         {game.seats.map((s) => (
-          <span key={s.player} className={s.claimed ? 'seat-status claimed' : 'seat-status'}>
+          <span key={s.player} className={s.claimed || s.isBot ? 'seat-status claimed' : 'seat-status'}>
             {playerLabel(s.player, game.seats)}
-            {s.claimed ? (s.online ? ' (taken)' : ' (taken · offline)') : ' (open)'}
+            {s.isBot
+              ? ' (bot)'
+              : s.claimed
+                ? s.online
+                  ? ' (taken)'
+                  : ' (taken · offline)'
+                : ' (open)'}
+            {!s.claimed && !s.isBot ? (
+              <button type="button" className="add-bot" onClick={() => game.addBot(s.player)}>
+                Add bot
+              </button>
+            ) : null}
           </span>
         ))}
       </div>

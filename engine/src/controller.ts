@@ -14,6 +14,9 @@ import type {
   ConvokePayment,
   LegalAction,
 } from "./actions.js";
+import { computeCharacteristics } from "./characteristics.js";
+import { CardRegistry, createDefaultRegistry } from "./cards.js";
+import { manaValue, parseManaCost } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameObject, GameState } from "./state.js";
 import type { TargetRef, TargetSpec } from "./target.js";
@@ -1057,5 +1060,214 @@ export class RandomController extends AutomaticController {
       default:
         return passFor(player);
     }
+  }
+}
+
+type CastSpellLegal = Extract<LegalAction, { kind: "cast-spell" }>;
+type PlayLandLegal = Extract<LegalAction, { kind: "play-land" }>;
+type ActivateAbilityLegal = Extract<LegalAction, { kind: "activate-ability" }>;
+type DeclareAttackersLegal = Extract<LegalAction, { kind: "declare-attackers" }>;
+type DeclareBlockersLegal = Extract<LegalAction, { kind: "declare-blockers" }>;
+
+/**
+ * A basic heuristic opponent for live rooms (not the random-vs-random
+ * fuzzer's `RandomController`): each priority window, plays a land if it
+ * can, else casts the highest-mana-value affordable spell, else activates
+ * an ability, else passes — repeated calls to `act` greedily spend a turn's
+ * resources with no lookahead. Attacks with everything that can, aimed at
+ * whichever defender has the least life/loyalty; blocks favorable trades
+ * first, then chump-blocks against lethal damage. Every other decision
+ * (targeting, modes, sacrifice, scry, mulligan, ...) falls back to
+ * `AutomaticController`'s existing conservative defaults — deliberately
+ * simple, "plays a sensible game" rather than "plays well". See the "basic
+ * bots" plan and `heuristic-bot.test.ts` for known limitations (no combat
+ * math beyond power/toughness, no block prediction before attacking).
+ */
+export class HeuristicBotController extends AutomaticController {
+  private readonly registry: CardRegistry;
+
+  constructor(playerId: PlayerId, registry: CardRegistry = createDefaultRegistry()) {
+    super(playerId);
+    this.registry = registry;
+  }
+
+  private manaValueOf(cardName: string): number {
+    if (!this.registry.has(cardName)) return 0;
+    return manaValue(parseManaCost(this.registry.get(cardName).manaCost));
+  }
+
+  private toPlayLand(legal: PlayLandLegal): Action {
+    return {
+      type: "play-land",
+      player: this.playerId,
+      card: legal.card,
+      ...(legal.face !== undefined ? { face: legal.face } : {}),
+    };
+  }
+
+  private toCastSpell(legal: CastSpellLegal): Action {
+    const player = this.playerId;
+    // Deterministic "pick the last option" policy for sacrifice/convoke
+    // choices — for convoke specifically this maximizes creatures tapped,
+    // which is the payment this variant of the LegalAction may depend on
+    // being affordable at all (see castSpellActions's convoke fallback).
+    const pickLast = (n: number) => Math.max(0, n - 1);
+    if (legal.castModal !== undefined) {
+      const cm = legal.castModal;
+      const fillable = cm.modes
+        .map((_mode, i) => i)
+        .filter((i) => cm.modes[i].targetOptions.every((options) => options.length > 0));
+      if (fillable.length < cm.minModes) return passFor(player);
+      const modes = fillable.slice(0, Math.max(cm.minModes, Math.min(cm.maxModes, fillable.length)));
+      const targets = modes.flatMap((i) => firstOfEach(cm.modes[i].targetOptions));
+      return {
+        type: "cast-spell",
+        player,
+        card: legal.card,
+        targets,
+        modes,
+        ...(legal.via !== undefined ? { via: legal.via } : {}),
+        ...(legal.face !== undefined ? { face: legal.face } : {}),
+        ...castExtras(legal, pickLast),
+      };
+    }
+    return {
+      type: "cast-spell",
+      player,
+      card: legal.card,
+      targets: firstOfEach(legal.targetOptions),
+      ...(legal.xCost !== undefined ? { xValue: legal.xCost.maxX } : {}),
+      ...(legal.via !== undefined ? { via: legal.via } : {}),
+      ...(legal.face !== undefined ? { face: legal.face } : {}),
+      ...castExtras(legal, pickLast),
+    };
+  }
+
+  private toActivateAbility(legal: ActivateAbilityLegal): Action {
+    const player = this.playerId;
+    const sac = legal.sacrifice;
+    return {
+      type: "activate-ability",
+      player,
+      source: legal.source,
+      abilityIndex: legal.abilityIndex,
+      targets: firstOfEach(legal.targetOptions),
+      ...(sac !== undefined && sac.choices.length > 0
+        ? { sacrifice: sac.choices[sac.choices.length - 1] }
+        : {}),
+      ...(legal.xCost !== undefined ? { xValue: legal.xCost.maxX } : {}),
+    };
+  }
+
+  act(view: ControllerView): Action {
+    const awaited = answerAwaited(this, view);
+    if (awaited !== null) return awaited;
+
+    const player = this.playerId;
+    const options = view.legalActions();
+
+    const land = options.find((o): o is PlayLandLegal => o.kind === "play-land");
+    if (land !== undefined) return this.toPlayLand(land);
+
+    const spells = options.filter((o): o is CastSpellLegal => o.kind === "cast-spell");
+    if (spells.length > 0) {
+      const best = spells.reduce((a, b) =>
+        this.manaValueOf(b.cardName) > this.manaValueOf(a.cardName) ? b : a,
+      );
+      return this.toCastSpell(best);
+    }
+
+    const ability = options.find((o): o is ActivateAbilityLegal => o.kind === "activate-ability");
+    if (ability !== undefined) return this.toActivateAbility(ability);
+
+    return passFor(player);
+  }
+
+  /** The value (life, or a planeswalker's loyalty) of attacking `defender`
+   * down to zero — used to aim attacks at whoever's closest to losing. */
+  private defenderValue(state: GameState, defender: PlayerId | ObjectId): number {
+    const asPlayer = state.players[defender as PlayerId];
+    if (asPlayer !== undefined) return asPlayer.life;
+    return state.objects[defender as ObjectId]?.counters.loyalty ?? 0;
+  }
+
+  declareAttackers(view: ControllerView): readonly AttackerDeclaration[] {
+    const legal = view
+      .legalActions()
+      .find((o): o is DeclareAttackersLegal => o.kind === "declare-attackers");
+    if (legal === undefined || legal.defenders.length === 0) return [];
+    const state = view.state;
+    const defender = [...legal.defenders].sort(
+      (a, b) => this.defenderValue(state, a) - this.defenderValue(state, b),
+    )[0];
+    return legal.eligible
+      .filter((id) => computeCharacteristics(state, this.registry, id).power > 0)
+      .map((attacker) => ({ attacker, defender }));
+  }
+
+  declareBlockers(view: ControllerView): readonly BlockerDeclaration[] {
+    const legal = view
+      .legalActions()
+      .find((o): o is DeclareBlockersLegal => o.kind === "declare-blockers");
+    if (legal === undefined) return [];
+    const state = view.state;
+    const power = (id: ObjectId) => computeCharacteristics(state, this.registry, id).power;
+    const toughness = (id: ObjectId) => computeCharacteristics(state, this.registry, id).toughness;
+
+    const chosen = new Map<ObjectId, ObjectId>(); // blocker -> attacker
+    const used = new Set<ObjectId>();
+
+    // Lure (rule 509.1c): a creature able to block a must-be-blocked
+    // attacker must block one of them.
+    for (const entry of legal.eligible) {
+      const mustOptions = entry.canBlock.filter((a) => legal.mustBlock.includes(a));
+      if (mustOptions.length > 0) {
+        chosen.set(entry.blocker, mustOptions[0]);
+        used.add(entry.blocker);
+      }
+    }
+
+    // A favorable trade: this blocker kills the attacker and survives.
+    // Doesn't account for deathtouch/first strike — a simplification, not
+    // a correctness bug (the engine still resolves the real combat math).
+    for (const entry of legal.eligible) {
+      if (used.has(entry.blocker)) continue;
+      const favorable = entry.canBlock.find(
+        (a) => power(entry.blocker) >= toughness(a) && toughness(entry.blocker) > power(a),
+      );
+      if (favorable !== undefined) {
+        chosen.set(entry.blocker, favorable);
+        used.add(entry.blocker);
+      }
+    }
+
+    // Chump-block the biggest remaining unblocked attackers if the
+    // unblocked damage left over would be lethal (or close to it).
+    const blockedAttackers = new Set(chosen.values());
+    const unblocked = [...new Set(legal.eligible.flatMap((e) => e.canBlock))]
+      .filter((a) => !blockedAttackers.has(a))
+      .sort((a, b) => power(b) - power(a));
+    let remaining = unblocked.reduce((sum, a) => sum + power(a), 0);
+    const myLife = view.state.players[this.playerId].life;
+    for (const attacker of unblocked) {
+      if (remaining < myLife) break;
+      const entry = legal.eligible.find((e) => !used.has(e.blocker) && e.canBlock.includes(attacker));
+      if (entry === undefined) continue;
+      chosen.set(entry.blocker, attacker);
+      used.add(entry.blocker);
+      remaining -= power(attacker);
+    }
+
+    let blocks: BlockerDeclaration[] = [...chosen].map(([blocker, attacker]) => ({
+      blocker,
+      attacker,
+    }));
+    // A menace attacker must be blocked by 0 or 2+ creatures.
+    blocks = blocks.filter(
+      (b) =>
+        !legal.menaceAttackers.includes(b.attacker) ||
+        blocks.filter((x) => x.attacker === b.attacker).length >= 2,
+    );
+    return blocks;
   }
 }

@@ -106,6 +106,8 @@ export interface NetworkGame {
   createRoom: (seed?: number, players?: number) => void
   joinRoom: (roomId: string) => void
   claimSeat: (seat: PlayerId, displayName?: string) => void
+  /** Fills an open seat with a basic heuristic bot instead of a human. */
+  addBot: (seat: PlayerId) => void
   dispatch: (action: Action) => void
   passTurn: () => void
   /** Toggles auto-passing my priority windows clean through an opponent's
@@ -328,6 +330,15 @@ export function useNetworkGame(): NetworkGame {
     [send],
   )
 
+  const addBot = useCallback(
+    (seat: PlayerId) => {
+      const id = roomIdRef.current
+      if (id === null) return
+      send({ type: 'add-bot', roomId: id, seat })
+    },
+    [send],
+  )
+
   const passTurn = useCallback(() => {
     const id = roomIdRef.current
     if (id === null) return
@@ -391,6 +402,7 @@ export function useNetworkGame(): NetworkGame {
     createRoom,
     joinRoom,
     claimSeat,
+    addBot,
     dispatch,
     passTurn,
     autoPass,

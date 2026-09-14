@@ -94,8 +94,8 @@ describe("room server (end to end over WebSocket)", () => {
     if (aliceState.type !== "state") throw new Error("unreachable");
     expect(aliceState.seat).toBe(ALICE);
     expect(aliceState.seats).toEqual([
-      { player: ALICE, claimed: true, online: true, displayName: null },
-      { player: BOB, claimed: false, online: false, displayName: null },
+      { player: ALICE, claimed: true, online: true, displayName: null, isBot: false },
+      { player: BOB, claimed: false, online: false, displayName: null, isBot: false },
     ]);
 
     bobWs.send(JSON.stringify({ type: "join-room", roomId }));
@@ -316,5 +316,47 @@ describe("room server (end to end over WebSocket)", () => {
     }
     const replies = await Promise.all(Array.from({ length: 10 }, () => nextMsg()));
     expect(replies.every((r) => r.type === "room-joined")).toBe(true);
+  });
+
+  it("fills an open seat with a bot and refreshes an unclaimed watcher's seat list", async () => {
+    const aliceWs = await openSocket();
+    aliceWs.send(JSON.stringify({ type: "create-room" }));
+    const created = await nextMessage(aliceWs);
+    if (created.type !== "room-created") throw new Error("unreachable");
+    const roomId = created.roomId;
+
+    // Alice hasn't claimed a seat yet — she's still on the seat picker,
+    // deciding whether to fill Bob's seat with a bot before claiming her own.
+    const aliceMsg = messageQueue(aliceWs);
+    aliceWs.send(JSON.stringify({ type: "join-room", roomId }));
+    await aliceMsg(); // room-joined
+
+    aliceWs.send(JSON.stringify({ type: "add-bot", roomId, seat: BOB }));
+    const refreshed = await aliceMsg();
+    if (refreshed.type !== "room-joined") throw new Error("expected room-joined");
+    expect(refreshed.seats).toContainEqual({
+      player: BOB,
+      claimed: false,
+      online: false,
+      displayName: null,
+      isBot: true,
+    });
+  });
+
+  it("rejects adding a bot to a seat someone already claimed", async () => {
+    const aliceWs = await openSocket();
+    aliceWs.send(JSON.stringify({ type: "create-room" }));
+    const created = await nextMessage(aliceWs);
+    if (created.type !== "room-created") throw new Error("unreachable");
+    const roomId = created.roomId;
+
+    aliceWs.send(
+      JSON.stringify({ type: "claim-seat", roomId, seat: ALICE, clientToken: "alice-token" }),
+    );
+    await nextMessage(aliceWs); // state
+
+    aliceWs.send(JSON.stringify({ type: "add-bot", roomId, seat: ALICE }));
+    const reply = await nextMessage(aliceWs);
+    expect(reply.type).toBe("error");
   });
 });

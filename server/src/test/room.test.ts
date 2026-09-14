@@ -49,8 +49,8 @@ describe("Room", () => {
   it("starts with both seats unclaimed and offline", () => {
     const room = makeRoom();
     expect(room.seatStatuses()).toEqual([
-      { player: ALICE, claimed: false, online: false, displayName: null },
-      { player: BOB, claimed: false, online: false, displayName: null },
+      { player: ALICE, claimed: false, online: false, displayName: null, isBot: false },
+      { player: BOB, claimed: false, online: false, displayName: null, isBot: false },
     ]);
   });
 
@@ -59,8 +59,8 @@ describe("Room", () => {
     const { connection } = fakeConnection();
     room.claimSeat(ALICE, "token-a", connection);
     expect(room.seatStatuses()).toEqual([
-      { player: ALICE, claimed: true, online: true, displayName: null },
-      { player: BOB, claimed: false, online: false, displayName: null },
+      { player: ALICE, claimed: true, online: true, displayName: null, isBot: false },
+      { player: BOB, claimed: false, online: false, displayName: null, isBot: false },
     ]);
     expect(room.seatOf(connection)).toBe(ALICE);
   });
@@ -74,6 +74,7 @@ describe("Room", () => {
       claimed: true,
       online: true,
       displayName: "Toby",
+      isBot: false,
     });
   });
 
@@ -310,8 +311,8 @@ describe("Room", () => {
     room.disconnect(connection);
     expect(room.seatOf(connection)).toBeNull();
     expect(room.seatStatuses()).toEqual([
-      { player: ALICE, claimed: true, online: false, displayName: null },
-      { player: BOB, claimed: false, online: false, displayName: null },
+      { player: ALICE, claimed: true, online: false, displayName: null, isBot: false },
+      { player: BOB, claimed: false, online: false, displayName: null, isBot: false },
     ]);
   });
 
@@ -326,8 +327,8 @@ describe("Room", () => {
 
     expect(room.seatOf(second)).toBe(ALICE);
     expect(room.seatStatuses()).toEqual([
-      { player: ALICE, claimed: true, online: true, displayName: null },
-      { player: BOB, claimed: false, online: false, displayName: null },
+      { player: ALICE, claimed: true, online: true, displayName: null, isBot: false },
+      { player: BOB, claimed: false, online: false, displayName: null, isBot: false },
     ]);
   });
 
@@ -341,5 +342,101 @@ describe("Room", () => {
     // same token can come back to it.
     const { connection: stranger } = fakeConnection();
     expect(() => room.claimSeat(ALICE, "token-b", stranger)).toThrow(/already claimed/);
+  });
+
+  describe("bot seats", () => {
+    it("reports a bot seat as such, and never claimed/online", () => {
+      const room = makeRoom();
+      room.addBot(BOB);
+      expect(room.seatStatuses()).toEqual([
+        { player: ALICE, claimed: false, online: false, displayName: null, isBot: false },
+        { player: BOB, claimed: false, online: false, displayName: null, isBot: true },
+      ]);
+    });
+
+    it("rejects adding a bot to a seat a human already claimed", () => {
+      const room = makeRoom();
+      const { connection } = fakeConnection();
+      room.claimSeat(ALICE, "token-a", connection);
+      expect(() => room.addBot(ALICE)).toThrow(/already claimed/);
+    });
+
+    it("rejects claiming a seat that's already bot-controlled", () => {
+      const room = makeRoom();
+      room.addBot(ALICE);
+      const { connection } = fakeConnection();
+      expect(() => room.claimSeat(ALICE, "token-a", connection)).toThrow(/played by a bot/);
+    });
+
+    it("rejects adding a second bot to an already-bot seat", () => {
+      const room = makeRoom();
+      room.addBot(ALICE);
+      expect(() => room.addBot(ALICE)).toThrow(/already has a bot/);
+    });
+
+    it("answers its own parallel mulligan decision the moment it's added, leaving only the human", () => {
+      const game = Game.create({
+        seed: 1,
+        mulligans: true,
+        decks: [
+          { player: ALICE, cards: [...DECKS.alice] },
+          { player: BOB, cards: [...DECKS.bob] },
+        ],
+      });
+      const room = new Room("MULL1", game);
+      const before = room.game.state.awaiting;
+      if (before === null || before.kind !== "mulligan") throw new Error("expected mulligan");
+      expect(Object.keys(before.hands).sort()).toEqual([ALICE, BOB].sort());
+
+      room.addBot(BOB);
+
+      const after = room.game.state.awaiting;
+      if (after === null || after.kind !== "mulligan") throw new Error("expected mulligan");
+      expect(Object.keys(after.hands)).toEqual([ALICE]);
+    });
+
+    it("plays its own turn without any dispatch on its behalf", () => {
+      const room = makeSparseRoom();
+      room.addBot(BOB);
+      const { connection: aliceConn } = fakeConnection();
+      room.claimSeat(ALICE, "alice-token", aliceConn);
+
+      // All-Forest decks — nothing castable, so this only exercises land
+      // drops and passes. Alice plays her land and passes for the turn;
+      // settle() stops again almost immediately, at Bob's own upkeep — not
+      // because of Bob (his dead window already auto-passed, with no
+      // dispatch on his behalf), but because Alice still has a leftover
+      // Forest of her own and, as a human, stops for that trivial mana-tap
+      // decision every priority round. That's pre-existing, bot-unrelated
+      // `Room.settle` behavior (see the mana-skip tests above) — simulate
+      // her declining it, same as a real human clicking past it, and
+      // confirm Bob's land lands on the battlefield on his own.
+      expect(room.game.activePlayer).toBe(ALICE); // sparse decks never trigger a mulligan
+      const forest = namedCard(room, room.game.handOf(ALICE), "Forest");
+      room.dispatch(aliceConn, { type: "play-land", player: ALICE, card: forest });
+      room.requestPassTurn(aliceConn);
+
+      expect(room.game.activePlayer).toBe(BOB);
+      expect(room.game.state.priority.holder).toBe(ALICE);
+      expect(
+        room.game.state.zones.shared.battlefield.some(
+          (id) => room.game.state.objects[id].controller === BOB,
+        ),
+      ).toBe(false); // Bob hasn't reached his main phase yet
+
+      for (
+        let i = 0;
+        i < 20 && room.game.state.zones.shared.battlefield.length < 2;
+        i += 1
+      ) {
+        if (room.game.state.priority.holder !== ALICE) break;
+        room.dispatch(aliceConn, { type: "pass-priority", player: ALICE });
+      }
+
+      const bobBattlefield = room.game.state.zones.shared.battlefield.filter(
+        (id) => room.game.state.objects[id].controller === BOB,
+      );
+      expect(bobBattlefield).toHaveLength(1); // Bob's land, played by the bot alone
+    });
   });
 });
