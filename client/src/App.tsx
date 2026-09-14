@@ -1331,7 +1331,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
     )
   }
 
-  const renderBoard = (pid: PlayerId, isOpp: boolean) => {
+  const renderBoard = (pid: PlayerId, isOpp: boolean, landsBelow: boolean) => {
     const entries = computeBoardEntries(view, pid)
     const lands = entries.filter((e) => e.bucket === 'land')
     // Creatures, artifacts, and enchantments all share one area — no
@@ -1352,8 +1352,21 @@ function Table({ view, seat, opponents, game }: TableProps) {
             })}
             {entry.attachments.length > 0 ? (
               <div className="attachments">
-                {entry.attachments.map((a) => (
-                  <div key={a.id}>{tileFor(a, pid, [a.id], { mini: true })}</div>
+                {entry.attachments.map((a, i) => (
+                  <div
+                    key={a.id}
+                    // Back to front: the first attachment sits directly
+                    // behind the host and each later one further back, so
+                    // every strip stays visible instead of being covered by
+                    // the attachment peeking out below it. Read via var()
+                    // in App.css (same reason as the hand fan's own --z) so
+                    // the plain :hover rule there can still win over it.
+                    style={
+                      { '--att-z': entry.attachments.length - i } as CSSProperties
+                    }
+                  >
+                    {tileFor(a, pid, [a.id], { mini: true })}
+                  </div>
                 ))}
               </div>
             ) : null}
@@ -1365,9 +1378,14 @@ function Table({ view, seat, opponents, game }: TableProps) {
     // Lands and permanents each always reserve their row, even empty, so the
     // board doesn't resize/jump around as things come and go. Lands get
     // their own row, like a physical Commander table's mana base — kept
-    // nearest this player's own edge (below their permanents when it's your
-    // own board, above when it's the opponent's, so creatures from both
-    // sides meet toward the middle of the screen).
+    // nearest this seat's own edge of the table, so creatures from every
+    // side meet toward the middle of the screen. Which edge that is depends
+    // on the seat's row in the quadrant grid, not on whether it's an
+    // opponent: in the 2x2 grid the bottom-right seat is an opponent sitting
+    // along the *bottom* edge, so its lands belong under its creatures just
+    // like your own. (Keying this off `isOpp` is a leftover from the layout
+    // where every opponent stacked above you, and left that one seat
+    // mirrored the wrong way.)
     const landRow = (
       <div className="board-row" key="lands">
         {renderEntries(lands)}
@@ -1378,7 +1396,7 @@ function Table({ view, seat, opponents, game }: TableProps) {
         {renderEntries(permanents)}
       </div>
     )
-    const rows = isOpp ? [landRow, permanentRow] : [permanentRow, landRow]
+    const rows = landsBelow ? [permanentRow, landRow] : [landRow, permanentRow]
 
     return (
       <div
@@ -2345,18 +2363,17 @@ function Table({ view, seat, opponents, game }: TableProps) {
             // plain stylesheet :hover rule can still win over it (same
             // reason --r/--y are custom properties feeding a real `rotate`/
             // `translate` property instead of baking straight into an
-            // inline transform -- see that comment below). Increases with
-            // distance from center (edges in front, center card at the
-            // back), not the reverse: with heavy overlap (many cards),
-            // default DOM-order stacking (later card always on top) buries
-            // each card's own rotated-up inner corner -- the one that's
-            // supposed to peek out toward its more-central neighbor --
-            // under that neighbor, which is what's actually behind a hand
-            // that "looks like it's fanning the wrong way" once there are
-            // enough cards to overlap heavily. Every card sitting on top of
-            // its more-central neighbor keeps that inner corner exposed on
-            // both sides symmetrically.
-            '--z': Math.round(Math.abs(fanOffset) * 10),
+            // inline transform -- see that comment below). Highest at the
+            // center and falling off toward both edges, so the hand reads as
+            // a fan opening outward from the middle: each card is overlapped
+            // by its more-central neighbour and reveals its own outer edge,
+            // symmetrically on both sides. Deliberately not plain DOM order
+            // (where the last card would always win and the whole hand would
+            // shingle one way), and deliberately not the reverse of this
+            // either -- edges-in-front puts the outermost, most-rotated
+            // cards on top of everything, which reads as the fan being in
+            // front of itself rather than fanning out.
+            '--z': Math.round((maxFanOffset - Math.abs(fanOffset)) * 10),
             // Never wraps to a second row and never shrinks the card
             // itself -- past a natural fit, cards overlap (a shrinking,
             // even negative, gap) instead. See HAND_CARD_GAP's comment.
@@ -2489,12 +2506,16 @@ function Table({ view, seat, opponents, game }: TableProps) {
       : [opponents[0], opponents[1], seat, opponents[2]].filter(
           (pid): pid is PlayerId => pid !== undefined,
         )
+  // Mirrors .quadrant-grid / .quadrant-grid.two-player's grid-template-columns
+  // in App.css — the only thing the cell order needs it for is telling a
+  // top-row cell from a bottom-row one.
+  const quadrantColumns = opponents.length === 1 ? 1 : 2
 
   return (
     <div className="player-col">
       <main className="table">
         <div className={`quadrant-grid ${opponents.length === 1 ? 'two-player' : ''}`}>
-          {quadrantCells.map((pid) => (
+          {quadrantCells.map((pid, i) => (
             <div
               className={`quadrant-cell ${pid === seat ? 'self' : ''} ${
                 view.activePlayer === pid ? 'active-turn' : ''
@@ -2504,7 +2525,12 @@ function Table({ view, seat, opponents, game }: TableProps) {
               <div className="quadrant-head">{renderPlayerPanel(pid)}</div>
               <div className="quadrant-body">
                 <div className="board-with-sidezone">
-                  {renderBoard(pid, pid !== seat)}
+                  {/* a cell past the first row sits along the bottom edge of
+                      the table, so its lands go under its creatures — see
+                      renderBoard. The grid is one column for 2 players and
+                      two for 3-4, so that's just the cell's index against
+                      the column count. */}
+                  {renderBoard(pid, pid !== seat, i >= quadrantColumns)}
                   {renderSideZone(pid)}
                 </div>
               </div>

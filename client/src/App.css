@@ -644,16 +644,58 @@
   min-height: calc(var(--mini-w) * 0.75);
 }
 .board-entry {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 0;
 }
+/* Auras/Equipment slide *underneath* the permanent they're attached to, the
+   way you'd tuck them under the card on a physical table: each stays a full
+   tile, hidden behind its host with only a strip of its art showing below
+   it, and each further one peeks out below the last. That strip is the hover
+   target — hovering it lifts that attachment clear of the pile and opens its
+   full card (see .mini-tile-popover).
+
+   Previously they were laid out as ordinary tiles in a row beneath the host,
+   which made an entry as wide as its attachments (a creature with three
+   Auras was three tiles wide, shoving its neighbours around) and, because
+   every entry top-aligns in .board-row-cards, left all of a board's
+   attachments sitting in one undifferentiated band under the creature row —
+   readable as "there are some attachments below these creatures", not as
+   "this Aura is on that creature". */
 .board-entry .attachments {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 4px;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  width: var(--mini-w);
+  /* a tile is --mini-w * 0.75 tall (4:3 — see .mini-tile), so pulling the
+     run up by 0.53 of --mini-w leaves 0.22 of it, about a third of a tile's
+     height, peeking out below the host */
+  margin-top: calc(var(--mini-w) * -0.53);
+}
+.board-entry .attachments > * + * {
+  margin-top: calc(var(--mini-w) * -0.53);
+}
+/* Painted back to front: --att-z counts down from the first attachment (see
+   App.tsx's renderBoard), so each one sits *behind* the one whose strip it's
+   peeking out below, rather than covering it — DOM order alone would paint
+   every attachment over the strip of the one above it and hide all but the
+   last. */
+.board-entry .attachments > * {
+  position: relative;
+  z-index: var(--att-z, 0);
+}
+/* the host covers all of them... */
+.board-entry > .mini-tile-wrap {
+  z-index: 20;
+}
+/* ...until a strip is hovered or focused, which lifts that attachment out of
+   the pile so it can be read in place as well as in its popover */
+.board-entry .attachments > *:hover,
+.board-entry .attachments > *:focus-within {
+  z-index: 40;
 }
 
 /* command zone (above) + library (below), to the right of a player's board */
@@ -1348,6 +1390,17 @@
 .mini-tile.dimmed {
   opacity: 0.4;
 }
+/* A permanent you can't click *right now* is still a permanent on the board,
+   not a ghost of one — "disabled" here only means "clicking does nothing at
+   this moment" (see MiniTile's `clickable`, which is false for most of the
+   board most of the time), so it shouldn't get index.css's generic
+   dimmed-disabled-button look. Same override the stack, the hand, the zone
+   viewer and the hover popover each already make; the board was the one
+   surface still washing its cards out. `.dimmed` above stays — that's an
+   explicit, deliberate dim, not a side effect of being a <button>. */
+.mini-tile:disabled {
+  opacity: 1;
+}
 .mt-art {
   position: absolute;
   inset: 0;
@@ -1550,6 +1603,19 @@
   align-items: flex-end;
   gap: 0;
   padding-top: 16px;
+  /* How wide the fan is allowed to get. The overlap math (App.tsx's
+     HAND_CARD_GAP) spreads a hand across whatever width this row has, so
+     without a cap the hand sprawled the full width of its container -- and
+     the peek tray's own `min(94vw, 1500px)` is nearly the entire screen on
+     anything narrower than ~1600px. A normal opening hand at its natural
+     width is about seven cards across, so that's the budget: seven cards sit
+     shoulder to shoulder with no overlap at all, and a bigger hand fans
+     tighter inside the same span instead of stretching further across the
+     screen. Derived from --card-w, so it tracks the card size rather than
+     re-guessing a width per breakpoint; the vw term only binds on a very
+     narrow viewport. */
+  max-width: min(88vw, calc(var(--card-w) * 7.2));
+  margin-inline: auto;
   /* Room for how far the fan hangs below a card's own bottom edge. Both the
      droop (--y, up to App.tsx's HAND_FAN_MAX_LIFT_PX) and the rotation
      (--r, up to HAND_FAN_MAX_ROT_DEG about `transform-origin: bottom
