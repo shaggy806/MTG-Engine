@@ -1284,15 +1284,16 @@
 }
 /* ===== MiniTile — a battlefield permanent reduced to its art + a stat badge.
    Hovering/focusing reveals the full CardTile in .mini-tile-popover, anchored
-   to the tile itself (not cursor-tracked), so this is pure CSS, no JS
-   position math). ===== */
+   to the tile itself (not cursor-tracked) but rendered out of this subtree
+   entirely — see .mini-tile-popover below and MiniTile.tsx. ===== */
 .mini-tile-wrap {
   position: relative;
   display: inline-block;
 }
 /* raise the hovered/focused tile's own stacking context above its siblings'
-   (each of which is also position:relative) so its popover isn't covered by
-   a later tile in the same wrapped row */
+   (each of which is also position:relative) so a tapped tile's rotated
+   corner isn't covered by a later tile in the same wrapped row. The popover
+   no longer needs this — it's portalled out and carries its own z-index. */
 .mini-tile-wrap:hover,
 .mini-tile-wrap:focus-within {
   z-index: 40;
@@ -1409,27 +1410,35 @@
   text-overflow: ellipsis;
 }
 
-/* the full CardTile, hidden until the tile it's anchored to is hovered or
-   focused — opens downward so it has room within the board area below it
-   (a top-row opponent quadrant has little room above; the board area below
-   a tile, or the collapsed hand tray beneath it for your own board, both
-   have more slack) */
+/* the full CardTile, mounted only while the tile it belongs to is hovered or
+   focused. Portalled to <body> and positioned from JS -- see MiniTile.tsx for
+   why it can't be an absolutely-positioned child any more (`.quadrant-body`
+   is a scroll box, so it clipped every popover at the quadrant's edge) and
+   how it picks a side. left/top arrive as inline styles; everything else is
+   here.
+   z-index sits above the hand tray (100), the floating priority controls
+   (110) and the decision banner (120), since it's a transient read that has
+   to win over all three -- but below the zone-viewer/history overlay (130),
+   which is a real modal and should cover it. */
 .mini-tile-popover {
-  position: absolute;
-  top: 100%;
+  position: fixed;
   left: 0;
-  z-index: 60;
-  margin-top: 6px;
+  top: 0;
+  z-index: 125;
+  /* never intercepts the pointer: the popover is a read-only display, and
+     the hover that opened it belongs to the tile underneath. Letting it take
+     the pointer would also mean the mouse crossing into it counted as
+     leaving the tile. */
+  pointer-events: none;
   opacity: 0;
   visibility: hidden;
-  pointer-events: none;
   transition: opacity 0.1s ease;
 }
-.mini-tile-wrap:hover .mini-tile-popover,
-.mini-tile-wrap:focus-within .mini-tile-popover {
+/* added once JS has measured the popover and knows where to put it -- until
+   then it renders offscreen-invisible for a single layout pass */
+.mini-tile-popover.placed {
   opacity: 1;
   visibility: visible;
-  pointer-events: auto;
 }
 /* the popover's CardTile has no onClick (read-only), so it renders as
    <button disabled> and would otherwise inherit index.css's generic
