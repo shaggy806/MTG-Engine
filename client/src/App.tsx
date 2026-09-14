@@ -1796,29 +1796,22 @@ function Table({ view, seat, opponents, game }: TableProps) {
       </div>
     )
   } else if (mode === 'targeting' && activeTargeting) {
-    // Stack objects (a spell being countered) aren't clickable on the board —
-    // offer them as buttons in the controls bar instead.
-    const stackTargets = targetSlot.filter(
-      (o) => o.kind === 'object' && view.zones.stack.includes(o.object),
-    )
-    controls = (
+    // A slot whose only legal options are spells on the stack (Counterspell
+    // and the like) needs no banner at all -- the stack itself is directly
+    // clickable/highlighted now (see Stack.tsx's targetSlot/onTargetClick
+    // wiring), so the player picks a target by clicking the actual card
+    // instead of a text-button duplicate of it. Escape still cancels (see
+    // the global keydown handler above) even with no visible Cancel button.
+    const allStackTargets =
+      targetSlot.length > 0 &&
+      targetSlot.every((o) => o.kind === 'object' && view.zones.stack.includes(o.object))
+    controls = allStackTargets ? null : (
       <div className="controls">
         <span>
           {activeTargeting.label}: choose{' '}
           {activeTargeting.specs[activeTargeting.picked.length]} (
           {activeTargeting.picked.length + 1}/{activeTargeting.specs.length})
         </span>
-        {stackTargets.map((o) =>
-          o.kind === 'object' ? (
-            <button
-              key={o.object}
-              type="button"
-              onClick={() => pickTarget(o)}
-            >
-              {game.nameOf(o.object)} (on the stack)
-            </button>
-          ) : null,
-        )}
         {activeTargeting.kind === 'choose-targets' ? null : (
           <button type="button" onClick={() => setTargeting(null)}>
             Cancel

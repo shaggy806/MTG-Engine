@@ -14,7 +14,7 @@ matching this repo's usual git history — not one giant diff. `scratch.mjs` +
 `npm run dev -w client` (client dev server proxies `ws://localhost:4000`) is
 the fastest way to eyeball a change; see CLAUDE.md's Commands section.
 
-**Status: Phases 1-6, 8, 9, 10, 11, and 12 done and committed.** Phase 5 turned out to
+**Status: Phases 1-6, 8, 9, 10, 11, 12, and 13 done and committed.** Phase 5 turned out to
 already be built before this plan started. Phase 7's
 priority-action-bar half landed early (inside phase 3); its mana-available-
 indicator half is explicitly **descoped by the user** (too much
@@ -728,6 +728,58 @@ The hand-art padding fix was confirmed both by computed style (`padding:
 2px 8px` → `0px`) and a before/after cropped screenshot showing the art
 reaching every edge. The mini-tile size bump was confirmed via a cropped
 before/after screenshot of the same battlefield permanents.
+
+### Phase 13 — Targeting banner removed, hand widened, text shrink-to-fit — DONE
+
+1. **The targeting `.controls` banner is gone specifically when every legal
+   option is a spell on the stack.** Since Phase 12 made stack entries
+   directly clickable/highlighted as targets, the banner's `stackTargets`
+   text-button list (`"Cyclonic Rift (on the stack)"`) duplicated the real,
+   now-clickable cards right above it — confusing, not helpful. `App.tsx`'s
+   `mode === 'targeting'` branch now computes `allStackTargets` (every
+   option in the current slot is a stack object) and renders `controls =
+   null` in that case; every other targeting case (creature/player targets,
+   still not directly clickable everywhere) keeps the label+Cancel banner
+   as before. Escape still cancels either way (the existing global keydown
+   handler, untouched).
+2. **Hand-strip width widened.** `.hand-strip.peekable` (the ordinary
+   priority-mode browsing tray) was `width: min(78vw, 1100px)`; bumped to
+   `min(94vw, 1500px)` -- more room means the hand's own overlap math (see
+   `HAND_CARD_GAP`) needs less overlap to fit an ordinary hand before
+   cards start squashing together. The mulligan popup's own width was left
+   alone (still `min(90vw, 1100px)`) -- it's a centered modal dialog, not
+   a persistent browsing tray, so matching the peekable tray's new width
+   1:1 wasn't appropriate; only the comment explaining the two was
+   updated since it referenced a now-inaccurate "same budget" claim.
+3. **Hand-card rules text now shrinks to fit instead of silently clipping**
+   (Wurmcoil Engine and other wordy cards). `CardTile.tsx` gained a
+   `useLayoutEffect` (art-first/hand layout only) that measures `.ct-text`'s
+   `scrollHeight` vs. `clientHeight` and, if it overflows, decrements a
+   `--text-scale` custom property in 0.05 steps (floor 0.55) re-measuring
+   after each step, until it fits or bottoms out -- a single ratio-based
+   guess (`clientHeight/scrollHeight`) was considered and rejected, since
+   font-size doesn't reduce wrapped line count linearly (over/undershoots).
+   `.ct-text`'s `font-size` reads `calc(9.5px * var(--text-scale, 1))`
+   (unset = 1 = unchanged everywhere else). Needed one supporting fix:
+   `.card-tile.art-first .ct-text { min-height: 0; }` -- without it, a flex
+   item's default `min-height: auto` lets `.ct-text` grow to fit its own
+   content instead of respecting its flex-computed share, which would have
+   made `scrollHeight > clientHeight` never true even while the card's own
+   fixed height was visibly clipping the last lines. Scoped to `art-first`
+   only so a stack/zone-viewer/board tile (no fixed card height) keeps
+   growing taller to fit its text if it must, same as before.
+
+Verified live via `scratch.mjs`: casting a real Counterspell (2 untapped
+Islands) against two stack spells showed no `.controls` banner at all
+(`document.querySelector('.controls')` → `null`) while both stack entries
+stayed `highlight clickable` and a direct click still resolved the counter
+correctly. The hand (10 cards) visibly spanned much more of the screen width
+at the new cap. Wurmcoil Engine's card was checked by instrumenting the
+effect (a temporary diagnostic, removed after) to confirm the shrink loop
+actually runs and converges -- it settled at `--text-scale: 0.55` with
+`scrollHeight === clientHeight` (65 === 65, an exact fit), confirmed with a
+cropped screenshot showing the full ability text fitting inside the card
+instead of being cut off mid-line.
 
 ## Cross-cutting notes
 

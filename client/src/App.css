@@ -465,7 +465,10 @@
   left: 50%;
   translate: -50% 0;
   bottom: 0;
-  width: min(78vw, 1100px);
+  /* wide -- more room here means the hand's own overlap math (see App.tsx's
+     HAND_CARD_GAP) needs less overlap to fit an ordinary hand, so cards read
+     clearer before it ever has to squash them together. */
+  width: min(94vw, 1500px);
   height: clamp(260px, 38vh, 360px);
   z-index: 100;
   display: flex;
@@ -1124,9 +1127,22 @@
   flex-direction: column;
   gap: 2px;
   padding: 4px 5px 16px;
-  font-size: 9.5px;
+  /* --text-scale: set by CardTile.tsx only for the hand's art-first layout,
+     when the printed text doesn't fit this fixed box at normal size
+     (Wurmcoil Engine and the like) -- unset (1) everywhere else. */
+  font-size: calc(9.5px * var(--text-scale, 1));
   line-height: 1.35;
   overflow: hidden;
+}
+/* art-first (hand) only: without this, a flex item's default min-height:auto
+   lets .ct-text grow past its flex-computed share to fit its own content
+   instead of respecting it, which would make `scrollHeight > clientHeight`
+   (CardTile.tsx's shrink-to-fit check) never true even while the card's own
+   fixed height + overflow:hidden is visibly clipping the last lines --
+   scoped to art-first specifically so a stack/zone-viewer/board tile (no
+   fixed height) can still grow taller to fit its text, same as before. */
+.card-tile.art-first .ct-text {
+  min-height: 0;
 }
 .ct-kw {
   color: #cbb26a;
@@ -1389,8 +1405,10 @@
    below it, so what you'd be keeping and the keep/mulligan choice are one
    self-contained decision instead of two separate things on screen at once.
    Wide enough to hold a normal hand fanned without forcing heavy overlap
-   (see HAND_CARD_GAP's comment) -- roughly the old peekable hand-strip's
-   own width budget -- but still capped well short of the viewport. */
+   (see HAND_CARD_GAP's comment), but deliberately narrower than the
+   peekable hand-strip's own (wider) budget -- this is a centered modal
+   dialog, not a persistent browsing tray, so it stays capped well short of
+   the viewport instead of matching that width 1:1. */
 .mulligan-modal {
   position: fixed;
   top: 50%;

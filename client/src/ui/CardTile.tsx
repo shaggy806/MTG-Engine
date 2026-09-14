@@ -1,4 +1,4 @@
-import { useEffect, useState, useSyncExternalStore } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import type { VisibleObject } from 'engine'
 import { Symbols } from './Symbols.tsx'
 import { costColor } from './symbols.ts'
@@ -114,6 +114,25 @@ export function CardTile({
   const tint = costColor(obj.manaCost) ?? 'C'
 
   const artFirst = layout === 'art-first'
+  // Hand cards (art-first) have a fixed box -- rather than silently clipping
+  // a wordy card's rules text (Wurmcoil Engine and the like), shrink it in
+  // small steps until it actually fits, or the floor is hit. A single
+  // ratio-based guess (targetHeight/scrollHeight) over/undershoots because
+  // font-size doesn't reduce wrapped line count linearly, so this measures
+  // and re-checks after each step instead -- cheap enough for a few lines of
+  // text on the modest number of cards a hand ever holds.
+  const textRef = useRef<HTMLSpanElement>(null)
+  useLayoutEffect(() => {
+    const el = textRef.current
+    if (!artFirst || !el) return
+    el.style.removeProperty('--text-scale')
+    let scale = 1
+    while (el.scrollHeight > el.clientHeight && scale > 0.55) {
+      scale = Math.round((scale - 0.05) * 100) / 100
+      el.style.setProperty('--text-scale', String(scale))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [artFirst, obj.text, keywordLine, showText, counters.length])
   const nameNode = (
     <span className="ct-name">
       {face}
@@ -181,7 +200,7 @@ export function CardTile({
 
       <span className="ct-type">{typeLine(obj)}</span>
 
-      <span className="ct-text">
+      <span className="ct-text" ref={textRef}>
         {keywordLine ? <b className="ct-kw">{keywordLine}</b> : null}
         {showText ? (
           <span className="ct-rules">
