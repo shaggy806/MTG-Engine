@@ -508,3 +508,9 @@
   pointer-events: none;
   filter: drop-shadow(0 8px 20px rgb(0 0 0 / 0.55));
 }
+/* `CardTile` renders a <button>, and a preview tile is given no click
+   handler, so the global `button:disabled` dimming would wash it out. The
+   preview is purely presentational — it reads at full strength. */
+.card-hover-preview .card-tile:disabled {
+  opacity: 1;
+}

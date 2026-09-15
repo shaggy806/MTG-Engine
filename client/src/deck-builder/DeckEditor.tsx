@@ -136,6 +136,10 @@ export function DeckEditor({
   const toggleCommander = (cardName: string) =>
     onChange({ ...deck, commander: deck.commander === cardName ? undefined : cardName })
 
+  /** Spread onto a whole card *row*, not just its name: the row is the drag
+   * handle and the click target, so that's the area a preview should follow
+   * — catching the pointer only over the text made it feel broken anywhere
+   * else along the row. */
   const hoverProps = (def: CardDefinition | undefined) =>
     def === undefined
       ? {}
@@ -263,10 +267,9 @@ export function DeckEditor({
                     setHover(null)
                   }}
                   onDoubleClick={() => addCard(c.name)}
+                  {...hoverProps(c)}
                 >
-                  <span className="db-card-name" {...hoverProps(c)}>
-                    {c.name}
-                  </span>
+                  <span className="db-card-name">{c.name}</span>
                   {c.manaCost ? <Symbols text={c.manaCost} /> : null}
                   <span className="db-card-row-spacer" />
                   {isCommanderEligible(c) ? (
@@ -307,16 +310,11 @@ export function DeckEditor({
             </span>
           </header>
 
-          <div className="db-commander-slot">
+          <div className="db-commander-slot" {...hoverProps(byName.get(deck.commander ?? ''))}>
             {deck.commander ? (
               <>
                 <span className="muted">Commander</span>
-                <span
-                  className="db-card-name"
-                  {...hoverProps(byName.get(deck.commander))}
-                >
-                  {deck.commander}
-                </span>
+                <span className="db-card-name">{deck.commander}</span>
                 <span className="db-card-row-spacer" />
                 <button type="button" title="Clear commander" onClick={() => toggleCommander(deck.commander!)}>
                   −
@@ -343,11 +341,13 @@ export function DeckEditor({
                   </div>
                   <ul>
                     {rows.map((row) => (
-                      <li key={row.name} className={row.def === undefined ? 'db-unknown-row' : undefined}>
+                      <li
+                        key={row.name}
+                        className={row.def === undefined ? 'db-unknown-row' : undefined}
+                        {...hoverProps(row.def)}
+                      >
                         <span className="db-count mono">{row.n}</span>
-                        <span className="db-card-name" {...hoverProps(row.def)}>
-                          {row.name}
-                        </span>
+                        <span className="db-card-name">{row.name}</span>
                         {row.def?.manaCost ? <Symbols text={row.def.manaCost} /> : null}
                         <span className="db-card-row-spacer" />
                         <button type="button" title="Remove one" onClick={() => removeCard(row.name)}>
