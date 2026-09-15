@@ -154,7 +154,24 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
             return;
           }
           if (room instanceof PendingRoom && room.isReady()) {
-            const activeRoom = manager.promote(room.id);
+            // Promotion is where every seat's deck is finally turned into a
+            // real `Game` — the first moment anything can object to a deck.
+            // A throw here used to escape the handler entirely, so one bad
+            // deck took the room down for everyone at the instant its last
+            // seat filled; report it instead and leave the room pending.
+            let activeRoom;
+            try {
+              activeRoom = manager.promote(room.id);
+            } catch (err) {
+              send(ws, {
+                type: "error",
+                message: `could not start the game: ${
+                  err instanceof Error ? err.message : String(err)
+                }`,
+              });
+              broadcastPending(room);
+              return;
+            }
             boundRoom = activeRoom;
             broadcast(activeRoom);
             return;

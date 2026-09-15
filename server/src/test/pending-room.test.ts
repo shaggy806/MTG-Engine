@@ -44,7 +44,7 @@ describe("PendingRoom", () => {
     const conn1 = { send: () => {} };
     room.claimSeat(ALICE, "alice-token", conn1, undefined, {
       cards: ["Island"],
-      commander: "Some Commander",
+      commander: "Ayara, First of Locthwain",
     });
     const conn2 = { send: () => {} };
     room.claimSeat(ALICE, "alice-token", conn2); // reconnect, no deck resent
@@ -89,6 +89,40 @@ describe("PendingRoom", () => {
     // Still ready — disconnecting doesn't un-claim a seat, only unbinds the
     // live connection (same as `Room`).
     expect(room.isReady()).toBe(true);
+  });
+
+  // A deck saved in a browser's localStorage outlives any card the pool later
+  // renames or drops. Without this the bad name survives until `toGameConfig`
+  // and then throws inside promotion — at the instant the room's last seat
+  // fills, taking the room down for everyone in it.
+  it("rejects a deck naming a card the registry doesn't have", () => {
+    const room = pendingRoom();
+    expect(() =>
+      room.claimSeat(ALICE, "alice-token", { send: () => {} }, undefined, {
+        cards: ["Forest", "Ashmark, Mardu Vanguard", "Island"],
+      }),
+    ).toThrow(/doesn't know: Ashmark, Mardu Vanguard/);
+    // The seat is left unclaimed, so the player can pick another deck.
+    expect(room.seatStatuses()[0].claimed).toBe(false);
+  });
+
+  it("rejects a deck whose commander is unknown, even when its cards are fine", () => {
+    const room = pendingRoom();
+    expect(() =>
+      room.claimSeat(ALICE, "alice-token", { send: () => {} }, undefined, {
+        cards: ["Forest", "Forest"],
+        commander: "Sarova, the Undying Current",
+      }),
+    ).toThrow(/doesn't know: Sarova, the Undying Current/);
+  });
+
+  it("accepts a deck whose cards are all real", () => {
+    const room = pendingRoom();
+    room.claimSeat(ALICE, "alice-token", { send: () => {} }, undefined, {
+      cards: ["Forest", "Forest"],
+      commander: "Ayara, First of Locthwain",
+    });
+    expect(room.seatStatuses()[0].claimed).toBe(true);
   });
 
   it("scales seat count with players (3-4)", () => {

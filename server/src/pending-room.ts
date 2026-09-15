@@ -16,6 +16,7 @@
  * null-checks through `Room`'s entire API for no benefit.
  */
 
+import { createDefaultRegistry } from "engine";
 import type { DeckList, GameConfig, PlayerId } from "engine";
 import type { Connection } from "./room.js";
 import type { SeatStatus } from "./protocol.js";
@@ -36,6 +37,40 @@ interface PendingSeat {
 }
 
 const MAX_DISPLAY_NAME_LENGTH = 20;
+
+/** Every card the registry knows, built once. */
+const REGISTRY = createDefaultRegistry();
+
+/** The maximum distinct unknown names worth naming back to the client — a
+ * decklist built against an older pool could have dozens. */
+const MAX_REPORTED_UNKNOWN = 5;
+
+/**
+ * A claimed deck has to be buildable *before* it is stored, because nothing
+ * downstream can cope with a card the registry has never heard of: the deck
+ * isn't touched again until `toGameConfig`, and `Game.create` then throws
+ * deep inside promotion — at the instant the room's last seat fills, taking
+ * the whole room down for everyone in it rather than the one player whose
+ * deck is broken.
+ *
+ * This is a live risk rather than a theoretical one: a deck saved in a
+ * browser's `localStorage` outlives any card the pool later renames or drops.
+ */
+function assertDeckIsBuildable(deck: PendingDeck): void {
+  const unknown = [
+    ...new Set(
+      [...deck.cards, ...(deck.commander === undefined ? [] : [deck.commander])].filter(
+        (name) => !REGISTRY.has(name),
+      ),
+    ),
+  ];
+  if (unknown.length === 0) return;
+  const shown = unknown.slice(0, MAX_REPORTED_UNKNOWN).join(", ");
+  const rest = unknown.length > MAX_REPORTED_UNKNOWN ? `, and ${unknown.length - MAX_REPORTED_UNKNOWN} more` : "";
+  throw new Error(
+    `deck contains ${unknown.length} card(s) this server doesn't know: ${shown}${rest}`,
+  );
+}
 
 /** Config a `PendingRoom` needs up front — everything `GameConfig` wants
  * except `decks` (unknown until every seat is filled) and `startingPlayer`
@@ -108,14 +143,20 @@ export class PendingRoom {
     if (seat.clientToken !== null && seat.clientToken !== clientToken) {
       throw new Error(`seat ${player} is already claimed`);
     }
+    // Every rejection happens before the first mutation, so a refused claim
+    // leaves the seat exactly as it was and the player can try another deck.
+    if (deck !== undefined) assertDeckIsBuildable(deck);
     seat.connection = connection;
     seat.clientToken = clientToken;
     const trimmed = displayName?.trim();
     if (trimmed) {
       seat.displayName = trimmed.slice(0, MAX_DISPLAY_NAME_LENGTH);
     }
-    if (deck !== undefined) seat.deck = deck;
-    else if (seat.deck === null) seat.deck = this.fallbackDeck(player);
+    if (deck !== undefined) {
+      seat.deck = deck;
+    } else if (seat.deck === null) {
+      seat.deck = this.fallbackDeck(player);
+    }
     this.lastActivityAt = Date.now();
   }
 
