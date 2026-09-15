@@ -6,6 +6,7 @@ import { CardTile } from './CardTile.tsx'
 import { playerLabel, seatClassOf } from '../format.ts'
 import type { SeatClass } from '../format.ts'
 import type { SeatStatus } from '../net/protocol.ts'
+import { scheduleEvents } from '../game/animationSchedule.ts'
 
 /** How far an attacker visually lunges toward what it's hitting, in px — a
  * fixed jab distance rather than a fraction of the real gap between the two
@@ -19,7 +20,11 @@ const LUNGE_DURATION_MS = 380
  * attacker actually arrives, not before or after. */
 const LUNGE_IMPACT_FRACTION = 0.4
 const HIT_REACTION_DURATION_MS = 320
-const PLAYED_CARD_DURATION_MS = 1150
+/** Matches animationSchedule.ts's own CARD_STEP_MS — the card's visible
+ * lifetime and the pacing slot it reserves are the same length, so the next
+ * scheduled animation picks up right as this one finishes rather than
+ * leaving a gap or cutting it off early. */
+const PLAYED_CARD_DURATION_MS = 1800
 const TURN_BANNER_DURATION_MS = 1700
 const PHASE_BANNER_DURATION_MS = 1150
 
@@ -184,32 +189,39 @@ export function AnimationLayer({
       advanceBannerQueue()
     }
 
-    for (const ev of events.slice(from)) {
-      if (ev.type === 'spell-cast' || ev.type === 'land-played') {
-        const obj = view.objects[ev.object]
-        if (!obj) continue
-        const key = `card-${ev.seq}`
-        setPlayedCards((cur) => [...cur, { key, obj, fromTop: ev.player !== seat }])
-        window.setTimeout(() => {
-          setPlayedCards((cur) => cur.filter((c) => c.key !== key))
-        }, PLAYED_CARD_DURATION_MS)
-      } else if (ev.type === 'damage-dealt' && ev.combat) {
-        runHit(ev.source, ev.target)
-      } else if (ev.type === 'turn-began') {
-        lastPhaseRef.current = 'beginning'
-        enqueueBanner({
-          key: `turn-${ev.seq}`,
-          kind: 'turn',
-          text: `${playerLabel(ev.activePlayer, seats)}'s Turn${ev.extra ? ' (extra)' : ''}`,
-          seatClass: seatClassOf(view.turnOrder, ev.activePlayer),
-        })
-      } else if (ev.type === 'step-began') {
-        if (ev.phase === lastPhaseRef.current) continue
-        lastPhaseRef.current = ev.phase
-        const text = PHASE_LABEL[ev.phase]
-        if (!text) continue
-        enqueueBanner({ key: `phase-${ev.seq}`, kind: 'phase', text, seatClass: null })
-      }
+    // Same schedule `useDelayedView` computes the board's hold from (see its
+    // own comment) — staggering each event's animation across that hold
+    // instead of firing every one the instant the batch arrives is what
+    // makes a busy bot turn read as "several things happened in a row"
+    // rather than one instant flip with a pile of animations on top of it.
+    const schedule = scheduleEvents(events.slice(from), lastPhaseRef.current)
+    lastPhaseRef.current = schedule.endPhase
+
+    for (const { event: ev, offset } of schedule.items) {
+      window.setTimeout(() => {
+        if (ev.type === 'spell-cast' || ev.type === 'land-played') {
+          const obj = view.objects[ev.object]
+          if (!obj) return
+          const key = `card-${ev.seq}`
+          setPlayedCards((cur) => [...cur, { key, obj, fromTop: ev.player !== seat }])
+          window.setTimeout(() => {
+            setPlayedCards((cur) => cur.filter((c) => c.key !== key))
+          }, PLAYED_CARD_DURATION_MS)
+        } else if (ev.type === 'damage-dealt' && ev.combat) {
+          runHit(ev.source, ev.target)
+        } else if (ev.type === 'turn-began') {
+          enqueueBanner({
+            key: `turn-${ev.seq}`,
+            kind: 'turn',
+            text: `${playerLabel(ev.activePlayer, seats)}'s Turn${ev.extra ? ' (extra)' : ''}`,
+            seatClass: seatClassOf(view.turnOrder, ev.activePlayer),
+          })
+        } else if (ev.type === 'step-began') {
+          const text = PHASE_LABEL[ev.phase]
+          if (!text) return
+          enqueueBanner({ key: `phase-${ev.seq}`, kind: 'phase', text, seatClass: null })
+        }
+      }, offset)
     }
   }, [view, seat, seats])
 

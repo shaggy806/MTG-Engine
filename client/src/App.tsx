@@ -83,6 +83,11 @@ const MINI_SHRINK_STEP = 6
 const naturalMiniW = (): number =>
   Math.min(MINI_W_CEILING, Math.max(MINI_W_FLOOR, window.innerWidth * (MINI_W_VW_PERCENT / 100)))
 
+// A stable reference (not `[]` inline at each use) so passing it as `Table`'s
+// `actions` prop while `useDelayedView` reports `busy` doesn't itself count
+// as a changed prop across re-renders.
+const EMPTY_ACTIONS: readonly LegalAction[] = []
+
 type CastAction = Extract<LegalAction, { kind: 'cast-spell' }>
 
 /** The "which variant of this cast" fields a `cast-spell` action carries all
@@ -413,7 +418,11 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
         <TurnBanner view={view} seats={game.seats} />
         <PhaseTrack view={view} />
         <span className="ts-acting">
-          {over ? 'Game over' : `${playerLabel(actingPlayer(view) ?? seat, game.seats)} to act`}
+          {over
+            ? 'Game over'
+            : delayed.busy
+              ? 'Resolving…'
+              : `${playerLabel(actingPlayer(view) ?? seat, game.seats)} to act`}
         </span>
         <div className="ts-menu">
           <button type="button" onClick={() => setShowHistory(true)}>
@@ -445,7 +454,12 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
         seat={seat}
         opponents={opponents}
         game={game}
-        actions={delayed.actions}
+        // Emptied rather than the real (already-current) actions while an
+        // animation batch is still playing out — see useDelayedView's own
+        // comment: those actions belong to a board the player can't see yet,
+        // and dispatching one now would race the animation showing how the
+        // game got there.
+        actions={delayed.busy ? EMPTY_ACTIONS : delayed.actions}
       />
 
       {showHistory ? (
