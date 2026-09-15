@@ -9,7 +9,7 @@ const id = (name: string): string => identityString(colorIdentityOf(reg.get(name
 describe("colorIdentityOf (rule 903.4)", () => {
   it("reads the mana cost", () => {
     expect(id("Lightning Bolt")).toBe("R");
-    expect(id("Ashmark, Mardu Vanguard")).toBe("WBR");
+    expect(id("Atraxa, Praetors' Voice")).toBe("WUBG");
     expect(id("Bloodbraid Elf")).toBe("RG");
   });
 

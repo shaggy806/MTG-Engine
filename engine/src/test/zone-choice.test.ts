@@ -83,127 +83,9 @@ const named = (game: Game, ids: readonly ObjectId[], name: string): ObjectId => 
   return id;
 };
 
-/** Alice's opening hand ends up ["Forest","Forest","Forest","Explorer's
- * Insight","Grizzly Bears","Craw Wurm","Wildwood Sentinel"] (shuffle:false,
- * dealt from the front), leaving the next 4 library cards — in this exact
- * order — as the top 4 Explorer's Insight looks at. */
-const EXPLORE_HAND = [
-  "Forest",
-  "Forest",
-  "Forest",
-  "Explorer's Insight",
-  "Grizzly Bears",
-  "Craw Wurm",
-  "Wildwood Sentinel",
-];
-const TOP_FOUR = ["Llanowar Elves", "Rumbling Baloth", "Giant Growth", "Elvish Visionary"];
-
-function castExplorersInsight(game: Game): ObjectId {
-  for (let i = 0; i < 3; i += 1) {
-    game.dispatch({
-      type: "play-land",
-      player: A,
-      card: named(game, game.handOf(A), "Forest"),
-    });
-  }
-  const card = named(game, game.handOf(A), "Explorer's Insight");
-  game.dispatch({ type: "cast-spell", player: A, card, targets: [] });
-  // Both players' (default, automatic) controllers pass, resolving the
-  // spell — which stops holding the stack the instant its effect sets
-  // `awaiting`, before any controller gets a chance to auto-answer it
-  // (advanceUntil's predicate is checked before each further tick).
-  game.advanceUntil(stackEmpty);
-  return card;
-}
-
-describe("look-and-choose: library (Explorer's Insight)", () => {
-  it("reveals the top 4 as choose-from-zone candidates for the caster only", () => {
-    const game = mkGame([...EXPLORE_HAND, ...TOP_FOUR]);
-    game.advanceUntil(atFirstMain);
-    castExplorersInsight(game);
-
-    const awaiting = game.state.awaiting;
-    expect(awaiting?.kind).toBe("choose-from-zone");
-    if (awaiting?.kind !== "choose-from-zone") throw new Error("unreachable");
-    expect(awaiting.player).toBe(A);
-    expect(awaiting.min).toBe(0);
-    expect(awaiting.max).toBe(1);
-    expect(awaiting.ids.map((id) => game.state.objects[id].cardName)).toEqual(TOP_FOUR);
-    // No filter on Explorer's Insight — every revealed card is choosable.
-    expect(awaiting.eligible).toEqual(awaiting.ids);
-
-    expect(game.legalActions(A)).toEqual([
-      { kind: "choose-from-zone", ids: awaiting.ids, eligible: awaiting.ids, min: 0, max: 1 },
-    ]);
-    expect(game.legalActions(B)).toEqual([]);
-  });
-
-  it("puts the chosen card onto the battlefield and shuffles the rest to the bottom", () => {
-    const game = mkGame([...EXPLORE_HAND, ...TOP_FOUR]);
-    game.advanceUntil(atFirstMain);
-    castExplorersInsight(game);
-
-    const awaiting = game.state.awaiting;
-    if (awaiting?.kind !== "choose-from-zone") throw new Error("unreachable");
-    const baloth = named(game, awaiting.ids, "Rumbling Baloth");
-    const librarySizeBefore = game.state.zones.perPlayer[A].library.length;
-
-    game.dispatch({ type: "choose-from-zone", player: A, chosen: [baloth] });
-
-    expect(game.state.awaiting).toBeNull();
-    expect(game.state.objects[baloth].zone).toBe("battlefield");
-    expect(game.state.objects[baloth].controller).toBe(A);
-
-    const library = game.state.zones.perPlayer[A].library;
-    expect(library.length).toBe(librarySizeBefore - 1);
-    const leftoverNames = ["Llanowar Elves", "Giant Growth", "Elvish Visionary"];
-    const bottomThree = library.slice(-3).map((id) => game.state.objects[id].cardName);
-    expect(new Set(bottomThree)).toEqual(new Set(leftoverNames));
-    // Everything ahead of those 3 is the Forest padding that used to sit
-    // right after the top 4 — never touched by the shuffle.
-    expect(game.state.objects[library[0]].cardName).toBe("Forest");
-  });
-
-  it("declining (choosing none) leaves all 4 in the library, now at the bottom", () => {
-    const game = mkGame([...EXPLORE_HAND, ...TOP_FOUR]);
-    game.advanceUntil(atFirstMain);
-    castExplorersInsight(game);
-    const librarySizeBefore = game.state.zones.perPlayer[A].library.length;
-
-    game.dispatch({ type: "choose-from-zone", player: A, chosen: [] });
-
-    const library = game.state.zones.perPlayer[A].library;
-    expect(library.length).toBe(librarySizeBefore);
-    const bottomFour = library.slice(-4).map((id) => game.state.objects[id].cardName);
-    expect(new Set(bottomFour)).toEqual(new Set(TOP_FOUR));
-  });
-
-  it("rejects choosing more than max, a duplicate, a non-candidate, or the wrong player", () => {
-    const game = mkGame([...EXPLORE_HAND, ...TOP_FOUR]);
-    game.advanceUntil(atFirstMain);
-    castExplorersInsight(game);
-    const awaiting = game.state.awaiting;
-    if (awaiting?.kind !== "choose-from-zone") throw new Error("unreachable");
-    const [first, second] = awaiting.ids;
-
-    expect(() =>
-      game.dispatch({ type: "choose-from-zone", player: A, chosen: [first, second] }),
-    ).toThrow(/must choose between/);
-    expect(() =>
-      game.dispatch({ type: "choose-from-zone", player: A, chosen: [first, first] }),
-    ).toThrow(/same card twice/);
-    expect(() =>
-      game.dispatch({ type: "choose-from-zone", player: A, chosen: [asObjectId("not-a-candidate")] }),
-    ).toThrow(/not an eligible candidate/);
-    expect(() =>
-      game.dispatch({ type: "choose-from-zone", player: B, chosen: [] }),
-    ).toThrow(/not being asked/);
-  });
-});
-
-describe("look-and-choose: graveyard (Grave Recall)", () => {
+describe("look-and-choose: graveyard (Regrowth)", () => {
   it("puts the chosen card into hand and leaves the rest sitting in the graveyard", () => {
-    const game = mkGame(["Forest", "Forest", "Forest", "Grave Recall"]);
+    const game = mkGame(["Forest", "Forest", "Forest", "Regrowth"]);
     game.advanceUntil(atFirstMain);
     const bear = spawnInto(game, "Grizzly Bears", A, "graveyard");
     const wurm = spawnInto(game, "Craw Wurm", A, "graveyard");
@@ -218,7 +100,7 @@ describe("look-and-choose: graveyard (Grave Recall)", () => {
     game.dispatch({
       type: "cast-spell",
       player: A,
-      card: named(game, game.handOf(A), "Grave Recall"),
+      card: named(game, game.handOf(A), "Regrowth"),
       targets: [],
     });
     game.advanceUntil(stackEmpty);
@@ -277,14 +159,14 @@ function castUreni(game: Game): void {
 describe("look-and-choose filter: only a Dragon card (Ureni of the Unwritten)", () => {
   it("still reveals all 8 — the filter only narrows what's eligible to choose", () => {
     const topEight = [
-      "Mossback Dragon",
+      "Old Gnawbone",
       "Grizzly Bears",
-      "Mossback Dragon",
+      "Old Gnawbone",
       "Craw Wurm",
       "Elvish Visionary",
       "Giant Growth",
       "Llanowar Elves",
-      "Wildwood Sentinel",
+      "Walking Ballista",
     ];
     const game = mkGame([...URENI_HAND, ...topEight], [], { rules: { openingHandSize: 8 } });
     game.advanceUntil(atFirstMain);
@@ -294,7 +176,7 @@ describe("look-and-choose filter: only a Dragon card (Ureni of the Unwritten)", 
     if (awaiting?.kind !== "choose-from-zone") throw new Error("unreachable");
     expect(awaiting.ids.map((id) => game.state.objects[id].cardName)).toEqual(topEight);
     const dragons = awaiting.ids.filter(
-      (id) => game.state.objects[id].cardName === "Mossback Dragon",
+      (id) => game.state.objects[id].cardName === "Old Gnawbone",
     );
     expect(awaiting.eligible).toEqual(dragons);
     expect(awaiting.eligible.length).toBe(2);
@@ -302,8 +184,69 @@ describe("look-and-choose filter: only a Dragon card (Ureni of the Unwritten)", 
     expect(awaiting.max).toBe(1);
   });
 
+  it("is shown to the caster only, as a single choose-from-zone action", () => {
+    const topEight = ["Grizzly Bears", "Craw Wurm", "Old Gnawbone", "Giant Growth"];
+    const game = mkGame([...URENI_HAND, ...topEight], [], { rules: { openingHandSize: 8 } });
+    game.advanceUntil(atFirstMain);
+    castUreni(game);
+
+    const awaiting = game.state.awaiting;
+    if (awaiting?.kind !== "choose-from-zone") throw new Error("unreachable");
+    expect(awaiting.player).toBe(A);
+    expect(game.legalActions(A)).toEqual([
+      {
+        kind: "choose-from-zone",
+        ids: awaiting.ids,
+        eligible: awaiting.eligible,
+        min: 0,
+        max: 1,
+      },
+    ]);
+    expect(game.legalActions(B)).toEqual([]);
+  });
+
+  it("declining leaves every revealed card in the library, now at the bottom", () => {
+    const topEight = ["Grizzly Bears", "Craw Wurm", "Old Gnawbone", "Giant Growth"];
+    const game = mkGame([...URENI_HAND, ...topEight], [], { rules: { openingHandSize: 8 } });
+    game.advanceUntil(atFirstMain);
+    castUreni(game);
+    const librarySizeBefore = game.state.zones.perPlayer[A].library.length;
+
+    game.dispatch({ type: "choose-from-zone", player: A, chosen: [] });
+
+    const library = game.state.zones.perPlayer[A].library;
+    expect(library.length).toBe(librarySizeBefore);
+    // Ureni looks at eight, so the four named cards plus four Forests of
+    // padding all land at the bottom.
+    const bottom = library.slice(-8).map((id) => game.state.objects[id].cardName);
+    for (const name of topEight) expect(bottom).toContain(name);
+  });
+
+  it("rejects more than max, a duplicate, a non-candidate, or the wrong player", () => {
+    const topEight = ["Old Gnawbone", "Grizzly Bears", "Old Gnawbone", "Giant Growth"];
+    const game = mkGame([...URENI_HAND, ...topEight], [], { rules: { openingHandSize: 8 } });
+    game.advanceUntil(atFirstMain);
+    castUreni(game);
+    const awaiting = game.state.awaiting;
+    if (awaiting?.kind !== "choose-from-zone") throw new Error("unreachable");
+    const [first, second] = awaiting.eligible;
+
+    expect(() =>
+      game.dispatch({ type: "choose-from-zone", player: A, chosen: [first, second] }),
+    ).toThrow(/must choose between/);
+    expect(() =>
+      game.dispatch({ type: "choose-from-zone", player: A, chosen: [first, first] }),
+    ).toThrow(/same card twice/);
+    expect(() =>
+      game.dispatch({ type: "choose-from-zone", player: A, chosen: [asObjectId("not-a-candidate")] }),
+    ).toThrow(/not an eligible candidate/);
+    expect(() =>
+      game.dispatch({ type: "choose-from-zone", player: B, chosen: [] }),
+    ).toThrow(/not being asked/);
+  });
+
   it("rejects choosing a revealed but non-Dragon card", () => {
-    const topEight = ["Grizzly Bears", "Craw Wurm", "Mossback Dragon", "Giant Growth"];
+    const topEight = ["Grizzly Bears", "Craw Wurm", "Old Gnawbone", "Giant Growth"];
     const game = mkGame([...URENI_HAND, ...topEight], [], { rules: { openingHandSize: 8 } });
     game.advanceUntil(atFirstMain);
     castUreni(game);
@@ -320,11 +263,11 @@ describe("look-and-choose filter: only a Dragon card (Ureni of the Unwritten)", 
     const topEight = [
       "Grizzly Bears",
       "Craw Wurm",
-      "Mossback Dragon",
+      "Old Gnawbone",
       "Giant Growth",
       "Elvish Visionary",
       "Llanowar Elves",
-      "Wildwood Sentinel",
+      "Walking Ballista",
       "Rumbling Baloth",
     ];
     const game = mkGame([...URENI_HAND, ...topEight], [], { rules: { openingHandSize: 8 } });
@@ -333,13 +276,13 @@ describe("look-and-choose filter: only a Dragon card (Ureni of the Unwritten)", 
 
     const awaiting = game.state.awaiting;
     if (awaiting?.kind !== "choose-from-zone") throw new Error("unreachable");
-    const dragon = named(game, awaiting.ids, "Mossback Dragon");
+    const dragon = named(game, awaiting.ids, "Old Gnawbone");
 
     game.dispatch({ type: "choose-from-zone", player: A, chosen: [dragon] });
 
     expect(game.state.objects[dragon].zone).toBe("battlefield");
     const library = game.state.zones.perPlayer[A].library;
-    const leftoverNames = topEight.filter((name) => name !== "Mossback Dragon");
+    const leftoverNames = topEight.filter((name) => name !== "Old Gnawbone");
     const bottomSeven = library.slice(-7).map((id) => game.state.objects[id].cardName);
     expect(new Set(bottomSeven)).toEqual(new Set(leftoverNames));
   });
@@ -351,7 +294,7 @@ describe("look-and-choose filter: only a Dragon card (Ureni of the Unwritten)", 
       "Elvish Visionary",
       "Giant Growth",
       "Llanowar Elves",
-      "Wildwood Sentinel",
+      "Walking Ballista",
       "Rumbling Baloth",
       "Forest",
     ];

@@ -256,8 +256,8 @@ describe("APNAP trigger ordering with more than two players", () => {
     const { game } = makeThreePlayerGame();
     // Spawned in reverse-of-turn-order (C then B) so the old "everyone else
     // in scan order" bug and the turn-order-correct fix disagree.
-    const cGhoul = spawn(game, "Vengeful Ghoul", C);
-    const bGhoul = spawn(game, "Vengeful Ghoul", B);
+    const cGhoul = spawn(game, "Mudbutton Torchrunner", C);
+    const bGhoul = spawn(game, "Mudbutton Torchrunner", B);
     game.state.objects[cGhoul].damageMarked = 99;
     game.state.objects[bGhoul].damageMarked = 99;
 

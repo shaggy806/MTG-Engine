@@ -51,9 +51,11 @@ describe("card sandbox", () => {
   });
 
   it("carries a CardDefinition.art override through to the view", () => {
-    const sb = createSandbox("Grovewatch Elder");
-    const elder = findObj(sb, "Grovewatch Elder", sb.you);
-    const view = sb.game.viewFor(sb.you).objects[elder!.id];
-    expect(view.art).toContain("scryfall.io");
+    // Tokens carry an explicit art link — Scryfall can't be searched by a
+    // token's name reliably.
+    const sb = createSandbox("Elephant Token");
+    const token = findObj(sb, "Elephant Token", sb.you);
+    const view = sb.game.viewFor(sb.you).objects[token!.id];
+    expect(view.art).toContain("scryfall.com");
   });
 });

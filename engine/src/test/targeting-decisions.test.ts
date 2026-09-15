@@ -77,7 +77,7 @@ describe("ROADMAP Phase 11 EG-1 — targeting decisions", () => {
   it("a targeted dies trigger raises a choose-targets decision its controller answers", () => {
     const { game, b } = makeGame(["Lightning Bolt"]);
     for (let i = 0; i < 3; i += 1) spawn(game, "Mountain", A);
-    const ghoul = spawn(game, "Vengeful Ghoul", B); // "when ~ dies, 2 damage to any target"
+    const ghoul = spawn(game, "Mudbutton Torchrunner", B); // "when ~ dies, 2 damage to any target"
     const decoy = spawn(game, "Grizzly Bears", A);
     game.advanceUntil(atMain);
 

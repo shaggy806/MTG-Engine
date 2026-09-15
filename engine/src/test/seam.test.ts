@@ -86,7 +86,7 @@ const fuzzDeckA = deck([
   ["Llanowar Elves", 4],
   ["Grizzly Bears", 4],
   ["Elvish Visionary", 4],
-  ["Wildwood Sentinel", 2],
+  ["Walking Ballista", 2],
   ["Rumbling Baloth", 3],
   ["Craw Wurm", 3],
   ["Giant Growth", 3],

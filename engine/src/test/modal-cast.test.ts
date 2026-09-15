@@ -65,14 +65,13 @@ const inHand = (g: Game, name: string): ObjectId =>
 
 describe("ROADMAP Phase 11 EG-2 — targeted modal spells", () => {
   it("legalActions offers a castModal descriptor with per-mode target options", () => {
-    const { game } = makeGame(["Sunder Charm"], "Plains");
+    const { game } = makeGame(["Simic Charm"], "Plains");
     mana(game);
-    const bear = spawn(game, "Grizzly Bears", B);
-    void bear;
+    spawn(game, "Grizzly Bears", B);
     game.advanceUntil(atMain);
     const la = game
       .legalActions(A)
-      .find((x) => x.kind === "cast-spell" && "card" in x && x.card === inHand(game, "Sunder Charm"));
+      .find((x) => x.kind === "cast-spell" && "card" in x && x.card === inHand(game, "Simic Charm"));
     expect(la).toBeDefined();
     const cm = (la as { castModal?: unknown }).castModal as
       | { minModes: number; maxModes: number; modes: { text: string; targetOptions: unknown[] }[] }
@@ -81,45 +80,45 @@ describe("ROADMAP Phase 11 EG-2 — targeted modal spells", () => {
     expect(cm!.minModes).toBe(1);
     expect(cm!.maxModes).toBe(1);
     expect(cm!.modes).toHaveLength(3);
-    expect(cm!.modes[0].targetOptions).toHaveLength(1); // "damage target creature"
-    expect(cm!.modes[2].targetOptions).toHaveLength(0); // "draw a card"
+    expect(cm!.modes[0].targetOptions).toHaveLength(1); // "target creature gets +3/+3"
+    expect(cm!.modes[1].targetOptions).toHaveLength(0); // "permanents you control gain hexproof"
   });
 
-  it("choose the damage mode → 3 damage to the chosen creature", () => {
-    const { game } = makeGame(["Sunder Charm"], "Plains");
+  it("choose the pump mode → +3/+3 on the chosen creature", () => {
+    const { game } = makeGame(["Simic Charm"], "Plains");
     mana(game);
     const wurm = spawn(game, "Craw Wurm", B); // 6/4
     game.advanceUntil(atMain);
     game.dispatch({
       type: "cast-spell",
       player: A,
-      card: inHand(game, "Sunder Charm"),
+      card: inHand(game, "Simic Charm"),
       modes: [0],
       targets: [{ kind: "object", object: wurm }],
     });
     game.advanceUntil(settled);
-    expect(game.state.objects[wurm].damageMarked).toBe(3);
+    expect(computeCharacteristics(game.state, reg, wurm).power).toBe(9);
     expect(game.state.eventLog.some((e) => e.type === "modes-chosen")).toBe(true);
   });
 
-  it("choose the non-targeted draw mode → draw a card, no targets", () => {
-    const { game } = makeGame(["Sunder Charm"], "Plains");
+  it("choose the non-targeted mode → a mass grant, no targets", () => {
+    const { game } = makeGame(["Simic Charm"], "Plains");
     mana(game);
+    const mine = spawn(game, "Grizzly Bears", A);
     game.advanceUntil(atMain);
-    const before = game.handOf(A).length;
     game.dispatch({
       type: "cast-spell",
       player: A,
-      card: inHand(game, "Sunder Charm"),
-      modes: [2],
+      card: inHand(game, "Simic Charm"),
+      modes: [1],
       targets: [],
     });
     game.advanceUntil(settled);
-    expect(game.handOf(A).length).toBe(before - 1 /* the Charm */ + 1 /* the draw */);
+    expect(computeCharacteristics(game.state, reg, mine).keywords.has("hexproof")).toBe(true);
   });
 
   it("too many modes is rejected", () => {
-    const { game } = makeGame(["Sunder Charm"], "Plains");
+    const { game } = makeGame(["Simic Charm"], "Plains");
     mana(game);
     const wurm = spawn(game, "Craw Wurm", B);
     game.advanceUntil(atMain);
@@ -127,7 +126,7 @@ describe("ROADMAP Phase 11 EG-2 — targeted modal spells", () => {
       game.canDispatch({
         type: "cast-spell",
         player: A,
-        card: inHand(game, "Sunder Charm"),
+        card: inHand(game, "Simic Charm"),
         modes: [0, 2],
         targets: [{ kind: "object", object: wurm }],
       }),
@@ -135,40 +134,43 @@ describe("ROADMAP Phase 11 EG-2 — targeted modal spells", () => {
   });
 
   it("choose two → both modes apply with their own target slice", () => {
-    const { game } = makeGame(["Duskwood Verdict"], "Forest");
+    const { game } = makeGame(["Kolaghan's Command"], "Forest");
     mana(game);
-    const mine = spawn(game, "Grizzly Bears", A); // 2/2
     game.advanceUntil(atMain);
-    const life = game.state.players[A].life;
-    // Mode 0 (+1/+1 counter on target creature) + mode 2 (gain 3 life).
+    const handBefore = game.state.zones.perPlayer[B].hand.length;
+    // Mode 1 ("target player discards a card") + mode 3 ("2 damage to any
+    // target") — one target slot each, filled in mode order.
     game.dispatch({
       type: "cast-spell",
       player: A,
-      card: inHand(game, "Duskwood Verdict"),
-      modes: [0, 2],
-      targets: [{ kind: "object", object: mine }],
+      card: inHand(game, "Kolaghan's Command"),
+      modes: [1, 3],
+      targets: [
+        { kind: "player", player: B },
+        { kind: "player", player: B },
+      ],
     });
     game.advanceUntil(settled);
-    expect(game.state.objects[mine].counters["+1/+1"]).toBe(1);
-    expect(computeCharacteristics(game.state, reg, mine).power).toBe(3);
-    expect(game.state.players[A].life).toBe(life + 3);
+    expect(game.state.zones.perPlayer[B].hand.length).toBe(handBefore - 1);
+    expect(game.state.players[B].life).toBe(18);
   });
 
   it("a mode whose target became illegal is skipped; the other still applies", () => {
-    const { game } = makeGame(["Duskwood Verdict", "Lightning Bolt"], "Forest");
+    const { game } = makeGame(["Kolaghan's Command", "Lightning Bolt"], "Forest");
     mana(game);
+    spawn(game, "Mountain", A);
     const doomed = spawn(game, "Grizzly Bears", B); // will be bolted in response
-    const safe = spawn(game, "Craw Wurm", A);
     game.advanceUntil(atMain);
-    // Cast Verdict: mode 0 (counter on `doomed`) + mode 1 (vigilance on `safe`).
+    const handBefore = game.state.zones.perPlayer[B].hand.length;
+    // Mode 1 (Bob discards) + mode 3 (2 damage to `doomed`).
     game.dispatch({
       type: "cast-spell",
       player: A,
-      card: inHand(game, "Duskwood Verdict"),
-      modes: [0, 1],
+      card: inHand(game, "Kolaghan's Command"),
+      modes: [1, 3],
       targets: [
+        { kind: "player", player: B },
         { kind: "object", object: doomed },
-        { kind: "object", object: safe },
       ],
     });
     // Alice holds priority — bolt her own target off the stack's reach.
@@ -179,9 +181,9 @@ describe("ROADMAP Phase 11 EG-2 — targeted modal spells", () => {
       targets: [{ kind: "object", object: doomed }],
     });
     game.advanceUntil(settled);
-    // `doomed` is gone; its mode was skipped. `safe` still got vigilance.
+    // `doomed` is gone; its mode was skipped. Bob still discarded.
     expect(game.state.objects[doomed].zone).toBe("graveyard");
-    expect(computeCharacteristics(game.state, reg, safe).keywords.has("vigilance")).toBe(true);
+    expect(game.state.zones.perPlayer[B].hand.length).toBe(handBefore - 1);
   });
 });
 

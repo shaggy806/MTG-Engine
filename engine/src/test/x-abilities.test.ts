@@ -51,7 +51,7 @@ const mkGame = (aHand: readonly string[] = []) => {
       { player: B, cards: pad([]) },
     ],
   });
-  return { game };
+  return { game, a, b };
 };
 
 const inHand = (game: Game, name: string): ObjectId => {
@@ -194,39 +194,34 @@ describe("conditional static abilities", () => {
 
 describe("cost modification is evaluated against the face being cast", () => {
   // Regression: Thalia taxes noncreature spells. An adventure card's creature
-  // half is a creature (untaxed); its adventure half is an instant (taxed +1).
+  // half is a creature (untaxed); its adventure half is a sorcery (taxed +1).
   // `whyCannotCastSpell` must set the chosen face before consulting
   // `costModification`, or `legalActions` offers a cast `castSpell` then refuses.
-  it("Thalia taxes an adventure's instant half but not its creature half", () => {
-    const { game } = mkGame(["Emberclaw Scout"]);
+  it("Thalia taxes an adventure's sorcery half but not its creature half", () => {
+    const { game, a } = mkGame(["Beanstalk Giant"]);
+    a.chooseFromZoneFn = (_view, eligible) => eligible.slice(0, 1);
     game.advanceUntil(toPrecombat);
     spawn(game, "Thalia, Guardian of Thraben", B);
-    spawn(game, "Mountain", A);
-    const dummy = spawn(game, "Grizzly Bears", B);
-    const card = inHand(game, "Emberclaw Scout");
+    for (let i = 0; i < 3; i += 1) spawn(game, "Forest", A);
+    const card = inHand(game, "Beanstalk Giant");
 
-    // One Mountain: {R}. Ember Dart is {R} + Thalia's {1} = {1}{R} — unaffordable.
+    // Three Forests. Fertile Footsteps is {2}{G} + Thalia's {1} = 4 — unaffordable.
     const casts1 = game
       .legalActions(A)
       .filter((x) => x.kind === "cast-spell" && "card" in x && x.card === card);
-    expect(casts1.map((x) => "face" in x ? x.face : undefined).sort()).toEqual([]);
+    expect(casts1.map((x) => ("face" in x ? x.face : undefined)).sort()).toEqual([]);
 
-    spawn(game, "Mountain", A); // now {R}{R} → {1}{R} affordable
+    spawn(game, "Forest", A); // a fourth → {3}{G} affordable
     const casts2 = game
       .legalActions(A)
       .filter((x) => x.kind === "cast-spell" && "card" in x && x.card === card);
     expect(casts2.some((x) => "face" in x && x.face === 1)).toBe(true);
 
-    // And it actually casts (no "cannot pay" throw) — Ember Dart, {1}{R}.
-    game.dispatch({
-      type: "cast-spell",
-      player: A,
-      card,
-      face: 1,
-      targets: [{ kind: "object", object: dummy }],
-    });
+    // And it actually casts (no "cannot pay" throw).
+    const before = game.state.zones.shared.battlefield.length;
+    game.dispatch({ type: "cast-spell", player: A, card, face: 1, targets: [] });
     game.advanceUntil(settled);
-    expect(game.state.objects[dummy].zone).toBe("graveyard"); // 2 damage killed the 2/2
+    expect(game.state.zones.shared.battlefield.length).toBe(before + 1); // fetched a basic
     expect(game.state.objects[card].zone).toBe("exile"); // adventure → exile
   });
 });

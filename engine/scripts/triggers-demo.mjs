@@ -60,7 +60,7 @@ game.dispatch({ type: "play-land", player: A, card: inHand("Swamp") });
 game.dispatch({ type: "play-land", player: A, card: inHand("Mountain") });
 game.dispatch({ type: "cast-spell", player: A, card: inHand("Phyrexian Arena") });
 game.advanceUntil(stackEmpty);
-const ghoul = spawn("Vengeful Ghoul", B);
+const ghoul = spawn("Mudbutton Torchrunner", B);
 game.dispatch({
   type: "cast-spell",
   player: A,

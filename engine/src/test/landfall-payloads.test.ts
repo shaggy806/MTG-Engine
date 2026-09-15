@@ -172,9 +172,9 @@ describe("Encroaching Dragonstorm — searches on ETB, bounces itself on a Drago
       ],
     });
     game.advanceUntil(toPrecombat);
-    for (let i = 0; i < 10; i += 1) game.debugSpawn("Forest", A, "battlefield");
+    for (let i = 0; i < 12; i += 1) game.debugSpawn("Forest", A, "battlefield");
     const dragonstorm = game.debugSpawn("Encroaching Dragonstorm", A, "hand");
-    const dragon = game.debugSpawn("Mossback Dragon", A, "hand");
+    const dragon = game.debugSpawn("Old Gnawbone", A, "hand");
     const libraryBefore = game.libraryOf(A).length;
 
     game.dispatch({ type: "cast-spell", player: A, card: dragonstorm });

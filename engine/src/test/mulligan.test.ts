@@ -230,7 +230,7 @@ describe("mulligans (opt-in via GameConfig.mulligans)", () => {
       seed: 1,
       mulligans: true,
       decks: [
-        { player: A, cards: deck(40), commander: "Ashmark, Mardu Vanguard" },
+        { player: A, cards: deck(40), commander: "Atraxa, Praetors' Voice" },
         { player: B, cards: deck(40) },
       ],
     });

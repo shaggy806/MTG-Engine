@@ -83,7 +83,8 @@ describe("a castModal spell cast from an alternative zone (Snapcaster-style flas
     const { game } = scriptedGame([]);
     game.advanceUntil(toPrecombat);
     for (const land of ["Plains", "Island", "Swamp"]) spawn(game, land, A);
-    const charm = game.debugSpawn("Sunder Charm", A, "graveyard");
+    const bears = spawn(game, "Grizzly Bears", A);
+    const charm = game.debugSpawn("Simic Charm", A, "graveyard");
     game.state.objects[charm].grantedFlashback = { cost: "{W}{U}{B}", untilEndOfTurn: true };
 
     const flash = game
@@ -93,113 +94,118 @@ describe("a castModal spell cast from an alternative zone (Snapcaster-style flas
     // The bug this guards: the alt-zone cast-spell loops used to omit castModal.
     expect((flash as { castModal?: unknown }).castModal).toBeDefined();
 
-    const handBefore = game.handOf(A).length;
     game.dispatch({
       type: "cast-spell",
       player: A,
       card: charm,
       via: "flashback",
-      modes: [2], // "You draw a card."
+      modes: [1], // "Permanents you control gain hexproof until end of turn." — no targets
       targets: [],
     });
     game.advanceUntil(settled);
 
-    expect(game.handOf(A).length).toBe(handBefore + 1);
+    expect(game.viewFor(A).objects[bears].keywords).toContain("hexproof");
     // A flashback spell is exiled, not put back in the graveyard.
     expect(game.state.zones.shared.exile).toContain(charm);
   });
 });
 
-describe("modal spells (rule 700.2) — Deliberate Course", () => {
-  it("the game pauses on a choose-modes decision as the spell resolves", () => {
-    const { game } = scriptedGame(["Deliberate Course"]);
-    game.advanceUntil(toPrecombat);
-    spawn(game, "Island", A);
-    spawn(game, "Island", A);
+describe("modal spells (rule 700.2) — Austere Command", () => {
+  // Every mode is a targetless mass effect, so the modes are chosen as the
+  // spell *resolves* (the `modal` EffectSpec), not as it is cast.
+  const withSixMana = (): ReturnType<typeof scriptedGame> => {
+    const made = scriptedGame(["Austere Command"]);
+    made.game.advanceUntil(toPrecombat);
+    for (let i = 0; i < 6; i += 1) spawn(made.game, "Plains", A);
+    return made;
+  };
+
+  const cast = (game: Game): void => {
     game.dispatch({
       type: "cast-spell",
       player: A,
-      card: named(game, game.handOf(A), "Deliberate Course"),
+      card: named(game, game.handOf(A), "Austere Command"),
     });
     game.advanceUntil((s) => s.awaiting !== null);
+  };
+
+  it("the game pauses on a choose-modes decision as the spell resolves", () => {
+    const { game } = withSixMana();
+    cast(game);
 
     expect(game.state.awaiting).toMatchObject({ kind: "choose-modes", player: A });
     const legal = game.legalActions(A);
     expect(legal).toHaveLength(1);
     expect(legal[0]).toMatchObject({
       kind: "choose-modes",
-      minModes: 1,
-      maxModes: 1,
-      modeTexts: ["Draw two cards.", "You gain 5 life.", "Proliferate."],
+      minModes: 2,
+      maxModes: 2,
+      modeTexts: [
+        "Destroy all artifacts.",
+        "Destroy all enchantments.",
+        "Destroy all creatures with mana value 3 or less.",
+        "Destroy all creatures with mana value 4 or greater.",
+      ],
     });
   });
 
-  it("mode 0 draws two cards", () => {
-    const { game } = scriptedGame(["Deliberate Course"]);
-    game.advanceUntil(toPrecombat);
-    spawn(game, "Island", A);
-    spawn(game, "Island", A);
-    const before = game.handOf(A).length;
-    game.dispatch({
-      type: "cast-spell",
-      player: A,
-      card: named(game, game.handOf(A), "Deliberate Course"),
-    });
-    game.advanceUntil((s) => s.awaiting !== null);
-    game.dispatch({ type: "choose-modes", player: A, modes: [0] });
+  it("applies exactly the two chosen modes", () => {
+    const { game } = withSixMana();
+    const signet = spawn(game, "Arcane Signet", A);
+    const anthem = spawn(game, "Glorious Anthem", A);
+    const bears = spawn(game, "Grizzly Bears", A); // MV 2
+    const wurm = spawn(game, "Craw Wurm", A); // MV 6
+    cast(game);
+
+    game.dispatch({ type: "choose-modes", player: A, modes: [0, 2] });
     game.advanceUntil(settled);
 
-    // -1 for the card cast, +2 drawn.
-    expect(game.handOf(A).length).toBe(before - 1 + 2);
+    expect(game.state.objects[signet].zone).toBe("graveyard");
+    expect(game.state.objects[bears].zone).toBe("graveyard");
+    // The two unchosen modes did nothing.
+    expect(game.state.objects[anthem].zone).toBe("battlefield");
+    expect(game.state.objects[wurm].zone).toBe("battlefield");
   });
 
-  it("mode 1 gains 5 life", () => {
-    const { game } = scriptedGame(["Deliberate Course"]);
-    game.advanceUntil(toPrecombat);
-    spawn(game, "Island", A);
-    spawn(game, "Island", A);
-    game.dispatch({
-      type: "cast-spell",
-      player: A,
-      card: named(game, game.handOf(A), "Deliberate Course"),
-    });
-    game.advanceUntil((s) => s.awaiting !== null);
-    game.dispatch({ type: "choose-modes", player: A, modes: [1] });
+  it("splits creatures by mana value across the two creature modes", () => {
+    const { game } = withSixMana();
+    const bears = spawn(game, "Grizzly Bears", A); // MV 2
+    const wurm = spawn(game, "Craw Wurm", A); // MV 6
+    cast(game);
+
+    game.dispatch({ type: "choose-modes", player: A, modes: [2, 3] });
     game.advanceUntil(settled);
 
-    expect(game.state.players[A].life).toBe(25);
+    expect(game.state.objects[bears].zone).toBe("graveyard");
+    expect(game.state.objects[wurm].zone).toBe("graveyard");
   });
 
-  it("rejects choosing two modes when only one is allowed", () => {
-    const { game } = scriptedGame(["Deliberate Course"]);
-    game.advanceUntil(toPrecombat);
-    spawn(game, "Island", A);
-    spawn(game, "Island", A);
-    game.dispatch({
-      type: "cast-spell",
-      player: A,
-      card: named(game, game.handOf(A), "Deliberate Course"),
-    });
-    game.advanceUntil((s) => s.awaiting !== null);
+  it("rejects any mode count other than exactly two", () => {
+    const { game } = withSixMana();
+    cast(game);
 
-    expect(game.canDispatch({ type: "choose-modes", player: A, modes: [0, 1] })).not.toBeNull();
+    expect(game.canDispatch({ type: "choose-modes", player: A, modes: [0] })).not.toBeNull();
     expect(game.canDispatch({ type: "choose-modes", player: A, modes: [] })).not.toBeNull();
-    expect(game.canDispatch({ type: "choose-modes", player: A, modes: [0] })).toBeNull();
+    expect(
+      game.canDispatch({ type: "choose-modes", player: A, modes: [0, 1, 2] }),
+    ).not.toBeNull();
+    expect(game.canDispatch({ type: "choose-modes", player: A, modes: [0, 1] })).toBeNull();
   });
 
   it("a ScriptedController answers via chooseModesFn", () => {
-    const { game, a } = scriptedGame(["Deliberate Course"]);
-    a.chooseModesFn = () => [1];
-    game.advanceUntil(toPrecombat);
-    spawn(game, "Island", A);
-    spawn(game, "Island", A);
+    const { game, a } = withSixMana();
+    a.chooseModesFn = () => [1, 3];
+    const anthem = spawn(game, "Glorious Anthem", A);
+    const wurm = spawn(game, "Craw Wurm", A);
+
     game.dispatch({
       type: "cast-spell",
       player: A,
-      card: named(game, game.handOf(A), "Deliberate Course"),
+      card: named(game, game.handOf(A), "Austere Command"),
     });
     game.advanceUntil(settled);
 
-    expect(game.state.players[A].life).toBe(25);
+    expect(game.state.objects[anthem].zone).toBe("graveyard");
+    expect(game.state.objects[wurm].zone).toBe("graveyard");
   });
 });

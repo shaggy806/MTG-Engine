@@ -105,8 +105,8 @@ describe("Protection from black — White Knight", () => {
   it("prevents combat damage dealt by a black creature it blocks", () => {
     const { game, a, b } = mkGame();
     // A big black attacker that survives the Knight's first strike.
-    const ghoul = spawn(game, "Vengeful Ghoul", A); // 2/2 black
-    game.state.objects[ghoul].counters = { "+1/+1": 3 }; // -> 5/5
+    const ghoul = spawn(game, "Typhoid Rats", A); // 1/1 black deathtouch
+    game.state.objects[ghoul].counters = { "+1/+1": 3 }; // -> 4/4
     const knight = spawn(game, "White Knight", B); // blocks it
     a.declareAttackersFn = () => [{ attacker: ghoul, defender: B }];
     b.declareBlockersFn = () => [{ blocker: knight, attacker: ghoul }];
@@ -114,8 +114,8 @@ describe("Protection from black — White Knight", () => {
     game.advanceUntil(toPostcombat);
     game.advanceUntil(settled);
 
-    // The Knight (first strike) marks 2 on the 5/5 Ghoul; the Ghoul's 5 damage
-    // back is entirely prevented by protection from black.
+    // The Knight (first strike) marks 2 on the 4/4 Rats; the Rats' 4 damage
+    // back — deathtouch and all — is entirely prevented by protection from black.
     expect(game.state.objects[knight]?.zone).toBe("battlefield");
     expect(game.state.objects[knight].damageMarked).toBe(0);
     expect(game.state.objects[ghoul].damageMarked).toBe(2);

@@ -122,7 +122,7 @@ describe("Cascade — Bloodbraid Elf", () => {
       "Forest", "Forest", "Forest", "Forest", "Mountain", "Mountain", // opening hand
       "Forest", // turn-1 draw
       "Island", // cascade exiles this (a land)
-      "Deliberate Course", // ...then this — MV 2 < 4, nonland → the cascade hit
+      "Raise the Alarm", // ...then this — MV 2 < 4, nonland → the cascade hit
     ]);
     giveLands(game, A, "Forest", 3);
     giveLands(game, A, "Mountain", 3);
@@ -135,7 +135,7 @@ describe("Cascade — Bloodbraid Elf", () => {
     const revealed = game.eventsOfType("cascade-revealed")[0];
     expect(revealed).toBeDefined();
     expect(revealed.exiled).toHaveLength(2);
-    expect(game.state.objects[revealed.cast!].cardName).toBe("Deliberate Course");
+    expect(game.state.objects[revealed.cast!].cardName).toBe("Raise the Alarm");
     expect(game.eventsOfType("spell-cast").some((e) => e.via === "cascade")).toBe(true);
 
     // Bloodbraid Elf resolved onto the battlefield.

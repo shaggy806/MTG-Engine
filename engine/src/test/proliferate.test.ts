@@ -87,7 +87,7 @@ describe("proliferate", () => {
     const game = mkGame(["Contentious Plan"]);
     game.advanceUntil(atFirstMain);
     giveLands(game, "Island", 2);
-    const buffed = spawn(game, "Wildwood Sentinel", A, { "+1/+1": 2 });
+    const buffed = spawn(game, "Walking Ballista", A, { "+1/+1": 2 });
     const shrunk = spawn(game, "Rumbling Baloth", B, { "-1/-1": 1 }); // 4/4 → survives
     const plain = spawn(game, "Grizzly Bears", A); // no counters — untouched
 
@@ -107,7 +107,7 @@ describe("proliferate", () => {
     const game = mkGame(["Mountain", "Mountain", "Mountain", "Volt Charge"]);
     game.advanceUntil(atFirstMain);
     giveLands(game, "Mountain", 3);
-    const sentinel = spawn(game, "Wildwood Sentinel", A, { "+1/+1": 1 });
+    const sentinel = spawn(game, "Walking Ballista", A, { "+1/+1": 1 });
     const bear = spawn(game, "Grizzly Bears", B); // 2/2, no counters
 
     game.dispatch({

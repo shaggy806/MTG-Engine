@@ -10,7 +10,7 @@ const B = asPlayerId("bob");
 
 const pad = (cards: readonly string[]): string[] => [
   ...cards,
-  ...Array(Math.max(0, 40 - cards.length)).fill("Forest"),
+  ...Array(Math.max(0, 40 - cards.length)).fill("Command Tower"),
 ];
 
 const atFirstMain = (s: GameState): boolean => s.turn.step === "precombat-main";
@@ -34,7 +34,7 @@ describe("Partner — two commanders", () => {
         {
           player: A,
           cards: pad([]),
-          commanders: ["Bramblewing, the Untamed", "Corvath, Ember Scribe"],
+          commanders: ["Tana, the Bloodsower", "Bruse Tarl, Boorish Herder"],
         },
         { player: B, cards: pad([]) },
       ],
@@ -42,16 +42,16 @@ describe("Partner — two commanders", () => {
 
   it("both start in the command zone and are castable from there", () => {
     const game = mkGame();
-    const bram = commanderNamed(game, "Bramblewing, the Untamed");
-    const corv = commanderNamed(game, "Corvath, Ember Scribe");
+    const bram = commanderNamed(game, "Tana, the Bloodsower");
+    const corv = commanderNamed(game, "Bruse Tarl, Boorish Herder");
     expect(game.state.objects[bram].isCommander).toBe(true);
     expect(game.state.objects[corv].isCommander).toBe(true);
 
     game.advanceUntil(atFirstMain);
-    // Forests are the whole deck — play two, cast Bramblewing ({1}{G}).
+    // Command Towers are the whole deck — play four, cast Tana ({2}{R}{G}).
     for (let i = 0; i < 4; i += 1) {
-      const forest = game.handOf(A).find((id) => game.state.objects[id].cardName === "Forest")!;
-      game.dispatch({ type: "play-land", player: A, card: forest });
+      const land = game.handOf(A).find((id) => game.state.objects[id].cardName === "Command Tower")!;
+      game.dispatch({ type: "play-land", player: A, card: land });
     }
     game.dispatch({ type: "cast-spell", player: A, card: bram, targets: [] });
     game.advanceUntil(stackEmpty);
@@ -60,34 +60,35 @@ describe("Partner — two commanders", () => {
 
   it("taxes each commander separately (rule 903.8)", () => {
     const game = mkGame();
-    const bram = commanderNamed(game, "Bramblewing, the Untamed");
-    const corv = commanderNamed(game, "Corvath, Ember Scribe");
+    const bram = commanderNamed(game, "Tana, the Bloodsower");
+    const corv = commanderNamed(game, "Bruse Tarl, Boorish Herder");
     game.advanceUntil(atFirstMain);
     for (let i = 0; i < 6; i += 1) {
-      const forest = game.handOf(A).find((id) => game.state.objects[id].cardName === "Forest")!;
-      game.dispatch({ type: "play-land", player: A, card: forest });
+      const land = game.handOf(A).find((id) => game.state.objects[id].cardName === "Command Tower")!;
+      game.dispatch({ type: "play-land", player: A, card: land });
     }
 
     game.dispatch({ type: "cast-spell", player: A, card: bram, targets: [] });
     game.advanceUntil(stackEmpty);
-    // Send Bramblewing back to the command zone.
+    // Send Tana back to the command zone.
     game.state.objects[bram].zone = "command";
     game.state.zones.shared.battlefield = game.state.zones.shared.battlefield.filter((i) => i !== bram);
     game.state.zones.shared.command.push(bram);
 
-    expect(game.state.players[A].commanderCastCounts["Bramblewing, the Untamed"]).toBe(1);
-    expect(game.state.players[A].commanderCastCounts["Corvath, Ember Scribe"] ?? 0).toBe(0);
+    expect(game.state.players[A].commanderCastCounts["Tana, the Bloodsower"]).toBe(1);
+    expect(game.state.players[A].commanderCastCounts["Bruse Tarl, Boorish Herder"] ?? 0).toBe(0);
 
-    // Recasting Bramblewing now costs {1}{G} + {2} tax; Corvath still just {1}{R}.
+    // Recasting Tana now costs {2}{R}{G} + {2} tax; Bruse Tarl is still untaxed.
     game.advanceUntil((s) => s.turn.number === 3 && s.turn.step === "precombat-main");
     const untapped = () =>
       game.state.zones.shared.battlefield.filter(
-        (id) => game.state.objects[id].cardName === "Forest" && !game.state.objects[id].tapped,
+        (id) =>
+          game.state.objects[id].cardName === "Command Tower" && !game.state.objects[id].tapped,
       ).length;
     const before = untapped();
     game.dispatch({ type: "cast-spell", player: A, card: bram, targets: [] });
     game.advanceUntil(stackEmpty);
-    expect(before - untapped()).toBe(4); // {1}{G} + {2}
+    expect(before - untapped()).toBe(6); // {2}{R}{G} + {2}
     void corv;
   });
 });

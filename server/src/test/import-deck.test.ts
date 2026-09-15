@@ -53,17 +53,17 @@ describe("parseDecklistText", () => {
   it("collects cards under an explicit Commander section header", () => {
     const text = [
       "Commander",
-      "1 Ashmark, Mardu Vanguard",
+      "1 Atraxa, Praetors' Voice",
       "",
       "Deck",
       "1 Sol Ring",
       "1 Lightning Bolt",
     ].join("\n");
     const { entries, commanders } = parseDecklistText(text);
-    expect(commanders).toEqual(["Ashmark, Mardu Vanguard"]);
+    expect(commanders).toEqual(["Atraxa, Praetors' Voice"]);
     // Still an ordinary row among the rest, not excluded from feasibility.
     expect(entries).toEqual(
-      expect.arrayContaining([{ name: "Ashmark, Mardu Vanguard", count: 1 }]),
+      expect.arrayContaining([{ name: "Atraxa, Praetors' Voice", count: 1 }]),
     );
   });
 
@@ -141,28 +141,28 @@ describe("evaluateDecklist", () => {
 describe("formatCheck (over a pasted list's implemented cards)", () => {
   it("guesses the commander and reports identity + violations", () => {
     const text = [
-      "1 Ashmark, Mardu Vanguard",
+      "1 Atraxa, Praetors' Voice",
       "3 Lightning Bolt",
-      "1 Llanowar Elves",
-      "10 Mountain",
+      "1 Raging Goblin",
+      "10 Forest",
     ].join("\n");
     const { entries, commanders } = parseDecklistText(text);
     const r = formatCheck(entries, registry, commanders);
-    expect(r.commander).toBe("Ashmark, Mardu Vanguard");
-    expect(r.identity).toBe("WBR");
+    expect(r.commander).toBe("Atraxa, Praetors' Voice");
+    expect(r.identity).toBe("WUBG");
     expect(r.violations.some((v) => v.includes('3× "Lightning Bolt"'))).toBe(true);
-    expect(r.violations.some((v) => v.includes("Llanowar Elves"))).toBe(true);
+    expect(r.violations.some((v) => v.includes("Raging Goblin"))).toBe(true);
   });
 
   it("prefers an explicit Commander section over the first-legendary guess", () => {
-    // Ashmark would otherwise be guessed first -- an explicit section names
+    // Atraxa would otherwise be guessed first -- an explicit section names
     // Ureni instead, and formatCheck should honour it.
     const text = [
       "Commander",
       "1 Ureni of the Unwritten",
       "",
       "Deck",
-      "1 Ashmark, Mardu Vanguard",
+      "1 Atraxa, Praetors' Voice",
       "1 Forest",
     ].join("\n");
     const { entries, commanders } = parseDecklistText(text);
@@ -172,11 +172,11 @@ describe("formatCheck (over a pasted list's implemented cards)", () => {
 
   it("falls back to guessing when the pasted list has no Commander section", () => {
     const { entries, commanders } = parseDecklistText(
-      ["1 Ashmark, Mardu Vanguard", "1 Forest"].join("\n"),
+      ["1 Atraxa, Praetors' Voice", "1 Forest"].join("\n"),
     );
     expect(commanders).toEqual([]);
     const r = formatCheck(entries, registry, commanders);
-    expect(r.commander).toBe("Ashmark, Mardu Vanguard");
+    expect(r.commander).toBe("Atraxa, Praetors' Voice");
   });
 
   it("reports an unimplemented explicit commander honestly rather than silently falling back", () => {

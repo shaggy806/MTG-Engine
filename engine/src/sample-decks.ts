@@ -2,7 +2,8 @@
  * Four hand-curated, differently-themed 60-card decks, each showing off a
  * broad slice of the implemented card pool (alt-cast zones, cascade / storm,
  * extra turns, planeswalkers, replacements, tutors, board wipes, man-lands,
- * copy effects, …). Deliberately *not* format-legal — colour identity is
+ * copy effects, …). Every card is a real Magic card. Deliberately *not*
+ * format-legal — colour identity is
  * ignored (Command Tower / Chromatic Lantern / mana rocks / Evolving Wilds
  * keep the splashes castable) and they're 60 cards, not Commander's 100.
  *
@@ -57,7 +58,7 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Combat Thresher", 1],
       ["Snapcaster Mage", 1],
       ["Clone", 1],
-      ["Mossback Dragon", 1],
+      ["Colossal Dreadmaw", 1],
       ["Garruk Wildspeaker", 1],
       ["Giant Growth", 2],
       ["Prey Upon", 1],
@@ -71,7 +72,7 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Twincast", 1],
       ["Turn to Frog", 1],
       ["Demonic Tutor", 1],
-      ["Explorer's Insight", 1],
+      ["Craterhoof Behemoth", 1],
       ["Contentious Plan", 1],
     ]),
   },
@@ -79,7 +80,7 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
     // Mardu aggro + a full burn suite — suspend, storm, flashback, edicts,
     // steal-your-guy, and Chandra to close.
     name: "Mardu Burn",
-    commander: "Ashmark, Mardu Vanguard",
+    commander: "Bruse Tarl, Boorish Herder",
     cards: list([
       ["Mountain", 9],
       ["Plains", 4],
@@ -124,9 +125,9 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
   },
   {
     // Dimir tempo/control — counters, bounce, foretell, mill, a Twincast, and
-    // graveyard-fed fatties for Sarova's recursion.
+    // graveyard-fed fatties, anchored by Ayara's drain.
     name: "Dimir Control",
-    commander: "Sarova, the Undying Current",
+    commander: "Ayara, First of Locthwain",
     cards: list([
       ["Island", 9],
       ["Swamp", 8],
@@ -136,7 +137,7 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Arcane Signet", 1],
       ["Prodigal Sorcerer", 2],
       ["Typhoid Rats", 2],
-      ["Vengeful Ghoul", 1],
+      ["Bloodthrone Vampire", 1],
       ["Vampire Nighthawk", 2],
       ["Thieving Magpie", 2],
       ["Snapcaster Mage", 1],
@@ -162,7 +163,7 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Contentious Plan", 1],
       ["Phyrexian Arena", 1],
       ["Greed", 1],
-      ["Explorer's Insight", 1],
+      ["Zulaport Cutthroat", 1],
       ["Tome Scour", 1],
       ["Levitation", 1],
       ["Jump", 1],
@@ -170,9 +171,9 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
   },
   {
     // Selesnya go-wide — anthems, tokens, lifegain, a board wipe, graveyard
-    // hate — anchored by Seraphine.
+    // hate — anchored by Emmara's token drip.
     name: "Selesnya Go-Wide",
-    commander: "Seraphine, Dawnherald",
+    commander: "Emmara, Soul of the Accord",
     cards: list([
       ["Plains", 9],
       ["Forest", 7],
@@ -186,7 +187,7 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Fencing Ace", 2],
       ["Gladecover Scout", 1],
       ["Wall of Wood", 1],
-      ["Wildwood Sentinel", 1],
+      ["Walking Ballista", 1],
       ["Giant Spider", 1],
       ["Serra Angel", 2],
       ["Soul Warden", 1],
@@ -196,7 +197,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Combat Thresher", 1],
       ["Foundry Inspector", 1],
       ["Darksteel Myr", 1],
-      ["Walking Ballista", 1],
       ["Raise the Alarm", 2],
       ["Glorious Anthem", 1],
       ["Bonesplitter", 1],
@@ -209,7 +209,7 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Rest in Peace", 1],
       ["Grave Pact", 1],
       ["Naturalize", 1],
-      ["Deliberate Course", 1],
+      ["Austere Command", 1],
     ]),
   },
 ];

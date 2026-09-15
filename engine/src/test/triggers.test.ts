@@ -105,7 +105,7 @@ describe("triggered abilities", () => {
     const game = mkGame(["Mountain", "Lightning Bolt"]);
     game.advanceUntil(atFirstMain);
     game.dispatch({ type: "play-land", player: A, card: game.handOf(A)[0] });
-    const ghoul = spawn(game, "Vengeful Ghoul", B);
+    const ghoul = spawn(game, "Mudbutton Torchrunner", B);
     const bolt = named(game, game.handOf(A), "Lightning Bolt");
 
     game.dispatch({
@@ -123,7 +123,7 @@ describe("triggered abilities", () => {
     expect(
       game
         .eventsOfType("damage-dealt")
-        .some((e) => e.source === ghoul && e.amount === 2),
+        .some((e) => e.source === ghoul && e.amount === 3),
     ).toBe(true);
   });
 
@@ -147,26 +147,25 @@ describe("triggered abilities", () => {
 
 describe("P/T layer", () => {
   it("a +1/+1 counter raises power and toughness", () => {
-    const game = mkGame(["Forest", "Forest"]);
+    // Walking Ballista is a 0/0 that enters with X +1/+1 counters — which is
+    // the only thing keeping it alive, so its size *is* the counter layer.
+    const game = mkGame(["Walking Ballista", "Forest", "Forest", "Forest", "Forest"]);
     game.advanceUntil(atFirstMain);
-    const [f1, f2] = game.handOf(A);
-    game.dispatch({ type: "play-land", player: A, card: f1 });
-    game.dispatch({ type: "play-land", player: A, card: f2 });
-    const sentinel = spawn(game, "Wildwood Sentinel", A);
-
-    game.dispatch({
-      type: "activate-ability",
-      player: A,
-      source: sentinel,
-      abilityIndex: 0,
-    });
+    for (const land of game.handOf(A).filter((id) => game.state.objects[id].cardName === "Forest")) {
+      game.dispatch({ type: "play-land", player: A, card: land });
+    }
+    const ballista = named(game, game.handOf(A), "Walking Ballista");
+    game.dispatch({ type: "cast-spell", player: A, card: ballista, targets: [], xValue: 1 });
     game.advanceUntil(stackEmpty);
 
-    expect(game.state.objects[sentinel].counters["+1/+1"]).toBe(1);
-    expect(game.characteristics(sentinel)).toMatchObject({
-      power: 3,
-      toughness: 3,
-    });
+    expect(game.state.objects[ballista].counters["+1/+1"]).toBe(1);
+    expect(game.characteristics(ballista)).toMatchObject({ power: 1, toughness: 1 });
+
+    // A second counter, this time from its own activated ability.
+    game.dispatch({ type: "activate-ability", player: A, source: ballista, abilityIndex: 0 });
+    game.advanceUntil(stackEmpty);
+    expect(game.state.objects[ballista].counters["+1/+1"]).toBe(2);
+    expect(game.characteristics(ballista)).toMatchObject({ power: 2, toughness: 2 });
   });
 
   it("Giant Growth is +3/+3 until end of turn", () => {

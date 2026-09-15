@@ -79,8 +79,8 @@ const bolt = (game: Game, target: { kind: "player"; player: PlayerId } | { kind:
 describe("EG-6 — one-shot damage-prevention shields (Sunlit Bastion)", () => {
   it("absorbs damage across multiple hits, then lapses", () => {
     const { game } = mkGame([
-      "Sunlit Bastion",
-      "Sunlit Bastion",
+      "Mending Hands",
+      "Mending Hands",
       "Lightning Bolt",
       "Lightning Bolt",
       "Lightning Bolt",
@@ -91,7 +91,7 @@ describe("EG-6 — one-shot damage-prevention shields (Sunlit Bastion)", () => {
     game.dispatch({
       type: "cast-spell",
       player: A,
-      card: inHand(game, "Sunlit Bastion"),
+      card: inHand(game, "Mending Hands"),
       targets: [{ kind: "player", player: B }],
     });
     game.advanceUntil(settled);
@@ -110,7 +110,7 @@ describe("EG-6 — one-shot damage-prevention shields (Sunlit Bastion)", () => {
     game.dispatch({
       type: "cast-spell",
       player: A,
-      card: inHand(game, "Sunlit Bastion"),
+      card: inHand(game, "Mending Hands"),
       targets: [{ kind: "player", player: B }],
     });
     game.advanceUntil(settled);
@@ -121,7 +121,7 @@ describe("EG-6 — one-shot damage-prevention shields (Sunlit Bastion)", () => {
   });
 
   it("shields a creature — a lethal burn spell is prevented", () => {
-    const { game } = mkGame(["Sunlit Bastion", "Lightning Bolt"]);
+    const { game } = mkGame(["Mending Hands", "Lightning Bolt"]);
     game.advanceUntil(toPrecombat);
     mana(game);
     const bear = spawn(game, "Grizzly Bears", B); // 2/2
@@ -129,7 +129,7 @@ describe("EG-6 — one-shot damage-prevention shields (Sunlit Bastion)", () => {
     game.dispatch({
       type: "cast-spell",
       player: A,
-      card: inHand(game, "Sunlit Bastion"),
+      card: inHand(game, "Mending Hands"),
       targets: [{ kind: "object", object: bear }],
     });
     game.advanceUntil(settled);

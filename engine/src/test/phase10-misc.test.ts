@@ -162,35 +162,47 @@ describe("Phase 10 — the Monarch", () => {
 });
 
 describe("Phase 10 — emblems", () => {
-  it("Coronation Rite's emblem is a permanent anthem for its caster", () => {
-    const { game } = makeGame(["Coronation Rite"]);
-    for (let i = 0; i < 4; i += 1) spawn(game, "Plains", A);
+  it("Elspeth's ultimate leaves a permanent anthem for its caster", () => {
+    const { game } = makeGame(["Elspeth, Sun's Champion"]);
+    for (let i = 0; i < 6; i += 1) spawn(game, "Plains", A);
     const bears = spawn(game, "Grizzly Bears", A);
     game.advanceUntil(atMain);
 
+    const elspeth = hand(game, "Elspeth, Sun's Champion")[0];
+    game.dispatch({ type: "cast-spell", player: A, card: elspeth, targets: [] });
+    game.advanceUntil(settled);
+
+    // Skip the three +1 turns it would take to reach the ultimate — the
+    // subject here is the emblem, not loyalty arithmetic.
+    game.state.objects[elspeth].counters.loyalty = 7;
+    const ultimate = game
+      .legalActions(A)
+      .find((x) => x.kind === "activate-ability" && x.source === elspeth && x.loyalty === -7);
+    expect(ultimate).toBeDefined();
     game.dispatch({
-      type: "cast-spell",
+      type: "activate-ability",
       player: A,
-      card: hand(game, "Coronation Rite")[0],
+      source: elspeth,
+      abilityIndex: (ultimate as { abilityIndex: number }).abilityIndex,
       targets: [],
     });
     game.advanceUntil(settled);
 
     expect(game.state.emblems).toHaveLength(1);
     const c = computeCharacteristics(game.state, reg, bears);
-    expect([c.power, c.toughness]).toEqual([3, 3]);
-    expect(c.keywords.has("vigilance")).toBe(true);
+    expect([c.power, c.toughness]).toEqual([4, 4]); // 2/2 + 2/+2
+    expect(c.keywords.has("flying")).toBe(true);
   });
 });
 
 describe("Phase 10 — disturb", () => {
   it("the back face is cast from the graveyard transformed, and exiled if it leaves play", () => {
-    const { game } = makeGame(["Gravebound Squire", "Pyroclasm", "Pyroclasm"], [], "Plains");
-    for (let i = 0; i < 12; i += 1) spawn(game, "Plains", A);
+    const { game } = makeGame(["Baithook Angler", "Pyroclasm", "Pyroclasm"], [], "Island");
+    for (let i = 0; i < 12; i += 1) spawn(game, "Island", A);
     for (let i = 0; i < 4; i += 1) spawn(game, "Mountain", A);
     game.advanceUntil(atMain);
 
-    const squire = hand(game, "Gravebound Squire")[0];
+    const squire = hand(game, "Baithook Angler")[0];
     game.dispatch({ type: "cast-spell", player: A, card: squire, targets: [] });
     game.advanceUntil(settled);
     game.dispatch({ type: "cast-spell", player: A, card: hand(game, "Pyroclasm")[0], targets: [] });
@@ -207,7 +219,7 @@ describe("Phase 10 — disturb", () => {
     expect(game.state.objects[squire].zone).toBe("battlefield");
     expect(game.state.objects[squire].face).toBe(1);
     const c = computeCharacteristics(game.state, reg, squire);
-    expect([c.power, c.toughness]).toEqual([1, 1]);
+    expect([c.power, c.toughness]).toEqual([1, 2]);
     expect(c.keywords.has("flying")).toBe(true);
 
     // A second wipe — it's exiled, not graveyarded (rule 702.150c).
@@ -219,41 +231,42 @@ describe("Phase 10 — disturb", () => {
 
 describe("Phase 10 — adventure", () => {
   it("casting the adventure exiles the card; the creature is castable from exile", () => {
-    const { game } = makeGame(["Emberclaw Scout"], [], "Mountain");
-    for (let i = 0; i < 4; i += 1) spawn(game, "Mountain", A);
-    const dummy = spawn(game, "Giant Spider", A); // 2/4 — survives Ember Dart's 2
+    const { game, a } = makeGame(["Beanstalk Giant"], [], "Forest");
+    a.chooseFromZoneFn = (_view, eligible) => eligible.slice(0, 1);
+    for (let i = 0; i < 10; i += 1) spawn(game, "Forest", A);
     game.advanceUntil(atMain);
 
-    const scout = hand(game, "Emberclaw Scout")[0];
+    const giant = hand(game, "Beanstalk Giant")[0];
     const faces = game
       .legalActions(A)
-      .filter((x) => x.kind === "cast-spell" && "card" in x && x.card === scout)
+      .filter((x) => x.kind === "cast-spell" && "card" in x && x.card === giant)
       .map((x) => (x as { cardName: string }).cardName)
       .sort();
-    expect(faces).toEqual(["Ember Dart", "Emberclaw Scout"]);
+    expect(faces).toEqual(["Beanstalk Giant", "Fertile Footsteps"]);
 
-    // Cast the adventure (Ember Dart) at the dummy.
-    game.dispatch({
-      type: "cast-spell",
-      player: A,
-      card: scout,
-      targets: [{ kind: "object", object: dummy }],
-      face: 1,
-    });
+    // Cast the adventure half (Fertile Footsteps — a basic-land tutor).
+    const landsBefore = game.state.zones.shared.battlefield.length;
+    game.dispatch({ type: "cast-spell", player: A, card: giant, targets: [], face: 1 });
     game.advanceUntil(settled);
-    expect(game.state.objects[dummy].damageMarked).toBe(2);
-    expect(game.state.objects[scout].zone).toBe("exile");
-    expect(game.state.objects[scout].onAdventure).toBe(true);
+    expect(game.state.zones.shared.battlefield.length).toBe(landsBefore + 1);
+    expect(game.state.objects[giant].zone).toBe("exile");
+    expect(game.state.objects[giant].onAdventure).toBe(true);
 
     // Cast the creature from exile.
     const advCast = game
       .legalActions(A)
-      .find((x) => x.kind === "cast-spell" && "card" in x && x.card === scout && x.via === "adventure");
+      .find((x) => x.kind === "cast-spell" && "card" in x && x.card === giant && x.via === "adventure");
     expect(advCast).toBeDefined();
-    game.dispatch({ type: "cast-spell", player: A, card: scout, targets: [], via: "adventure", face: 0 });
+    game.dispatch({ type: "cast-spell", player: A, card: giant, targets: [], via: "adventure", face: 0 });
     game.advanceUntil(settled);
-    expect(game.state.objects[scout].zone).toBe("battlefield");
-    expect(game.state.objects[scout].onAdventure).toBeFalsy();
-    expect(computeCharacteristics(game.state, reg, scout).types).toContain("creature");
+    expect(game.state.objects[giant].zone).toBe("battlefield");
+    expect(game.state.objects[giant].onAdventure).toBeFalsy();
+    const c = computeCharacteristics(game.state, reg, giant);
+    expect(c.types).toContain("creature");
+    // */* — power and toughness each equal the lands its controller has.
+    const lands = game.state.zones.shared.battlefield.filter(
+      (id) => game.state.objects[id].controller === A && computeCharacteristics(game.state, reg, id).types.includes("land"),
+    ).length;
+    expect([c.power, c.toughness]).toEqual([lands, lands]);
   });
 });

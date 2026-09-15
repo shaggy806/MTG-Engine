@@ -41,58 +41,57 @@ const inHand = (game: Game, name: string): ObjectId => {
 
 describe("MDFC — Grovewatch Elder // Grovewatch Hollow", () => {
   it("legalActions offers a cast for the front face and a land drop for the back", () => {
-    const game = mkGame(["Grovewatch Elder"]);
+    const game = mkGame(["Kazandu Mammoth"]);
     game.advanceUntil(atMain);
     for (let i = 0; i < 3; i += 1) {
       game.dispatch({ type: "play-land", player: A, card: inHand(game, "Forest") });
     }
-    const card = inHand(game, "Grovewatch Elder");
+    const card = inHand(game, "Kazandu Mammoth");
     const actions = game.legalActions(A).filter((x) => "card" in x && x.card === card);
     expect(actions).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ kind: "cast-spell", cardName: "Grovewatch Elder", face: 0 }),
-        expect.objectContaining({ kind: "play-land", cardName: "Grovewatch Hollow", face: 1 }),
+        expect.objectContaining({ kind: "cast-spell", cardName: "Kazandu Mammoth", face: 0 }),
+        expect.objectContaining({ kind: "play-land", cardName: "Kazandu Valley", face: 1 }),
       ]),
     );
   });
 
-  it("casting the front face resolves a 2/3 vigilance creature", () => {
-    const game = mkGame(["Grovewatch Elder"]);
+  it("casting the front face resolves a 3/3 landfall creature", () => {
+    const game = mkGame(["Kazandu Mammoth"]);
     game.advanceUntil(atMain);
     for (let i = 0; i < 3; i += 1) {
       game.dispatch({ type: "play-land", player: A, card: inHand(game, "Forest") });
     }
-    const card = inHand(game, "Grovewatch Elder");
+    const card = inHand(game, "Kazandu Mammoth");
     game.dispatch({ type: "cast-spell", player: A, card, targets: [], face: 0 });
     game.advanceUntil(stackEmpty);
     expect(game.state.objects[card].zone).toBe("battlefield");
-    expect(printedCardName(game.state.objects[card])).toBe("Grovewatch Elder");
+    expect(printedCardName(game.state.objects[card])).toBe("Kazandu Mammoth");
     const c = computeCharacteristics(game.state, reg, card);
-    expect([c.power, c.toughness]).toEqual([2, 3]);
-    expect(c.keywords.has("vigilance")).toBe(true);
+    expect([c.power, c.toughness]).toEqual([3, 3]);
     expect(c.types).toContain("creature");
   });
 
   it("playing the back face puts an enters-tapped land in play that taps for {G}", () => {
-    const game = mkGame(["Grovewatch Elder"]);
+    const game = mkGame(["Kazandu Mammoth"]);
     game.advanceUntil(atMain);
-    const card = inHand(game, "Grovewatch Elder");
+    const card = inHand(game, "Kazandu Mammoth");
     game.dispatch({ type: "play-land", player: A, card, face: 1 });
 
     const obj = game.state.objects[card];
     expect(obj.zone).toBe("battlefield");
     expect(obj.face).toBe(1);
-    expect(printedCardName(obj)).toBe("Grovewatch Hollow");
+    expect(printedCardName(obj)).toBe("Kazandu Valley");
     expect(obj.tapped).toBe(true); // enters tapped
     expect(computeCharacteristics(game.state, reg, card).types).toEqual(["land"]);
   });
 
   it("reverts to the front face when it leaves the battlefield", () => {
-    const game = mkGame(["Grovewatch Elder", "Boomerang", "Island", "Island"]);
+    const game = mkGame(["Kazandu Mammoth", "Boomerang", "Island", "Island"]);
     game.advanceUntil(atMain);
     game.dispatch({ type: "play-land", player: A, card: inHand(game, "Island") });
     game.dispatch({ type: "play-land", player: A, card: inHand(game, "Island") });
-    const card = inHand(game, "Grovewatch Elder");
+    const card = inHand(game, "Kazandu Mammoth");
     game.dispatch({ type: "play-land", player: A, card, face: 1 });
     // Bounce the land back to hand.
     game.dispatch({
@@ -104,6 +103,6 @@ describe("MDFC — Grovewatch Elder // Grovewatch Hollow", () => {
     game.advanceUntil(stackEmpty);
     expect(game.state.objects[card].zone).toBe("hand");
     expect(game.state.objects[card].face ?? 0).toBe(0); // front face in hand again
-    expect(printedCardName(game.state.objects[card])).toBe("Grovewatch Elder");
+    expect(printedCardName(game.state.objects[card])).toBe("Kazandu Mammoth");
   });
 });

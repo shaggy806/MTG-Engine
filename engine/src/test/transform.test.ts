@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { computeCharacteristics } from "../characteristics.js";
 import { createDefaultRegistry } from "../cards.js";
+import { ScriptedController } from "../controller.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId } from "../primitives.js";
@@ -39,59 +40,142 @@ const settled = (s: GameState): boolean =>
 const handCards = (game: Game, name: string): ObjectId[] =>
   game.handOf(A).filter((i) => game.state.objects[i].cardName === name);
 
+/** Bloodline Keeper's transform is its *second* ability (the first makes a
+ * token) and is gated on controlling five or more Vampires. */
+const TRANSFORM_ABILITY = 1;
+
 describe("transforming DFCs (ROADMAP Phase 10b)", () => {
-  it("a self-transform ability turns the permanent over and fires its transforms trigger", () => {
-    const game = mkGame(["Nightfall Cultist"], "Swamp");
+  const castKeeper = (game: Game): ObjectId => {
     game.advanceUntil(atMain);
     for (const id of handCards(game, "Swamp").slice(0, 5)) {
       game.dispatch({ type: "play-land", player: A, card: id });
     }
-    const card = handCards(game, "Nightfall Cultist")[0];
+    const card = handCards(game, "Bloodline Keeper")[0];
     game.dispatch({ type: "cast-spell", player: A, card, targets: [] });
     game.advanceUntil(settled);
+    return card;
+  };
+
+  it("a self-transform ability turns the permanent over, keeping the same object", () => {
+    const game = mkGame(["Bloodline Keeper"], "Swamp");
+    const card = castKeeper(game);
 
     expect(game.state.objects[card].zone).toBe("battlefield");
     expect(game.state.objects[card].face ?? 0).toBe(0);
-    expect(printedCardName(game.state.objects[card])).toBe("Nightfall Cultist");
-    const beforeLife = game.state.players[B].life;
+    expect(printedCardName(game.state.objects[card])).toBe("Bloodline Keeper");
 
-    game.dispatch({ type: "activate-ability", player: A, source: card, abilityIndex: 0 });
+    // "Activate only if you control five or more Vampires" — the Keeper is one
+    // of them, so four tokens reach the threshold.
+    for (let i = 0; i < 4; i += 1) game.debugSpawn("Vampire Token", A);
+    game.dispatch({
+      type: "activate-ability",
+      player: A,
+      source: card,
+      abilityIndex: TRANSFORM_ABILITY,
+    });
     game.advanceUntil(settled);
 
     expect(game.state.objects[card].face).toBe(1);
-    expect(printedCardName(game.state.objects[card])).toBe("Voidfall Horror");
+    expect(printedCardName(game.state.objects[card])).toBe("Lord of Lineage");
     const c = computeCharacteristics(game.state, reg, card);
     expect([c.power, c.toughness]).toEqual([5, 5]);
-    expect(c.keywords.has("menace")).toBe(true);
-    // The `transforms` trigger on the back face resolved.
-    expect(game.state.players[B].life).toBe(beforeLife - 2);
-    // Same object, same timestamp (rule 712.10) — no re-summoning-sickness reset.
+    expect(c.keywords.has("flying")).toBe(true);
+    // Same object (rule 712.10) — not a token, not re-summoned.
     expect(game.state.objects[card].isToken).toBeFalsy();
   });
 
-  it("legalActions only offers the front face of a transforming DFC", () => {
-    const game = mkGame(["Nightfall Cultist"], "Swamp");
+  it("the transform ability is unavailable until its condition is met (rule 602.5)", () => {
+    const game = mkGame(["Bloodline Keeper"], "Swamp");
+    const card = castKeeper(game);
+
+    const transformOffered = (): boolean =>
+      game
+        .legalActions(A)
+        .some(
+          (x) =>
+            x.kind === "activate-ability" &&
+            x.source === card &&
+            x.abilityIndex === TRANSFORM_ABILITY,
+        );
+
+    expect(transformOffered()).toBe(false); // one Vampire — the Keeper itself
+    for (let i = 0; i < 3; i += 1) game.debugSpawn("Vampire Token", A);
+    expect(transformOffered()).toBe(false); // four
+    game.debugSpawn("Vampire Token", A);
+    expect(transformOffered()).toBe(true); // five
+  });
+
+  it("a `transforms` trigger on the back face fires as the permanent turns over", () => {
+    // Sidequest: Raise a Chocobo flips itself at your first main phase once you
+    // control four or more Birds; Black Chocobo's transforms trigger then
+    // fetches a land.
+    // A scripted Alice actually takes the card out of the search (the default
+    // controller takes the minimum, which is zero for an "up to one" search).
+    const alice = new ScriptedController(A);
+    alice.chooseFromZoneFn = (_view, eligible) => eligible.slice(0, 1);
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      rules: { maxLandsPerTurn: 99, skipFirstDraw: false },
+      controllers: { [A]: alice, [B]: new ScriptedController(B) },
+      decks: [
+        { player: A, cards: fill(["Sidequest: Raise a Chocobo"], "Forest") },
+        { player: B, cards: fill([], "Forest") },
+      ],
+    });
     game.advanceUntil(atMain);
-    for (const id of handCards(game, "Swamp").slice(0, 3)) {
+    const sidequest = game.debugSpawn("Sidequest: Raise a Chocobo", A);
+    for (let i = 0; i < 4; i += 1) game.debugSpawn("Chocobo Bird Token", A);
+    const forests = (): readonly ObjectId[] =>
+      game.state.zones.shared.battlefield.filter(
+        (id) => game.state.objects[id].cardName === "Forest",
+      );
+    const before = forests().length;
+
+    game.advanceUntil((s) => s.turn.number === 3 && atMain(s));
+    // The trigger is only *pending* at the moment the step begins — let it
+    // reach the stack before waiting for the stack to drain.
+    game.advanceUntil((s) => s.pendingTriggers.length === 0);
+    game.advanceUntil(settled);
+
+    expect(game.state.objects[sidequest].face).toBe(1);
+    expect(printedCardName(game.state.objects[sidequest])).toBe("Black Chocobo");
+    expect(forests().length).toBe(before + 1);
+    // The fetched land entered tapped.
+    expect(forests().some((id) => game.state.objects[id].tapped)).toBe(true);
+  });
+
+  it("legalActions only offers the front face of a transforming DFC", () => {
+    const game = mkGame(["Bloodline Keeper"], "Swamp");
+    game.advanceUntil(atMain);
+    for (const id of handCards(game, "Swamp").slice(0, 4)) {
       game.dispatch({ type: "play-land", player: A, card: id });
     }
-    const card = handCards(game, "Nightfall Cultist")[0];
+    const card = handCards(game, "Bloodline Keeper")[0];
     const actions = game.legalActions(A).filter((x) => "card" in x && x.card === card);
     expect(actions).toHaveLength(1);
-    expect(actions[0]).toMatchObject({ kind: "cast-spell", cardName: "Nightfall Cultist" });
+    expect(actions[0]).toMatchObject({ kind: "cast-spell", cardName: "Bloodline Keeper" });
     expect("face" in actions[0]).toBe(false);
   });
 
   it("a daybound werewolf makes it day, then transforms with the day/night cycle", () => {
     const game = mkGame(
-      ["Moonrise Cultivator", "Forest", "Forest", "Forest", "Forest", "Grizzly Bears", "Grizzly Bears"],
-      "Forest",
+      [
+        "Harvesttide Infiltrator",
+        "Mountain",
+        "Mountain",
+        "Mountain",
+        "Mountain",
+        "Raging Goblin",
+        "Raging Goblin",
+      ],
+      "Mountain",
     );
     game.advanceUntil(atMain);
-    for (const id of handCards(game, "Forest").slice(0, 2)) {
+    for (const id of handCards(game, "Mountain").slice(0, 3)) {
       game.dispatch({ type: "play-land", player: A, card: id });
     }
-    const card = handCards(game, "Moonrise Cultivator")[0];
+    const card = handCards(game, "Harvesttide Infiltrator")[0];
     game.dispatch({ type: "cast-spell", player: A, card, targets: [] });
     game.advanceUntil(settled);
 
@@ -104,35 +188,43 @@ describe("transforming DFCs (ROADMAP Phase 10b)", () => {
     game.advanceUntil((s) => s.turn.number === 3 && atMain(s));
     expect(game.state.dayNight).toBe("night");
     expect(game.state.objects[card].face).toBe(1);
-    expect(printedCardName(game.state.objects[card])).toBe("Moonrise Marauder");
+    expect(printedCardName(game.state.objects[card])).toBe("Harvesttide Assailant");
     const night = computeCharacteristics(game.state, reg, card);
     expect([night.power, night.toughness]).toEqual([4, 4]);
     expect(night.keywords.has("trample")).toBe(true);
 
     // Alice casts two spells this turn → turn 4 begins day (726.4), transforms back.
-    for (const id of handCards(game, "Forest").slice(0, 2)) {
+    for (const id of handCards(game, "Mountain").slice(0, 2)) {
       game.dispatch({ type: "play-land", player: A, card: id });
     }
-    for (const bear of handCards(game, "Grizzly Bears")) {
-      game.dispatch({ type: "cast-spell", player: A, card: bear, targets: [] });
+    for (const goblin of handCards(game, "Raging Goblin")) {
+      game.dispatch({ type: "cast-spell", player: A, card: goblin, targets: [] });
       game.advanceUntil(settled);
     }
     game.advanceUntil((s) => s.turn.number === 4 && s.turn.step === "upkeep");
     expect(game.state.dayNight).toBe("day");
     expect(game.state.objects[card].face ?? 0).toBe(0);
-    expect(computeCharacteristics(game.state, reg, card).power).toBe(2);
+    expect(computeCharacteristics(game.state, reg, card).power).toBe(3);
   });
 
   it("a daybound werewolf enters transformed while it's already night", () => {
     const game = mkGame(
-      ["Moonrise Cultivator", "Moonrise Cultivator", "Forest", "Forest", "Forest", "Forest", "Forest"],
-      "Forest",
+      [
+        "Harvesttide Infiltrator",
+        "Harvesttide Infiltrator",
+        "Mountain",
+        "Mountain",
+        "Mountain",
+        "Mountain",
+        "Mountain",
+      ],
+      "Mountain",
     );
     game.advanceUntil(atMain);
-    for (const id of handCards(game, "Forest").slice(0, 2)) {
+    for (const id of handCards(game, "Mountain").slice(0, 3)) {
       game.dispatch({ type: "play-land", player: A, card: id });
     }
-    const first = handCards(game, "Moonrise Cultivator")[0];
+    const first = handCards(game, "Harvesttide Infiltrator")[0];
     game.dispatch({ type: "cast-spell", player: A, card: first, targets: [] });
     game.advanceUntil(settled); // becomes day
 
@@ -141,34 +233,34 @@ describe("transforming DFCs (ROADMAP Phase 10b)", () => {
     expect(game.state.dayNight).toBe("night");
 
     // Cast the second copy now, at night — it enters already transformed.
-    for (const id of handCards(game, "Forest").slice(0, 2)) {
+    for (const id of handCards(game, "Mountain").slice(0, 3)) {
       game.dispatch({ type: "play-land", player: A, card: id });
     }
-    const second = handCards(game, "Moonrise Cultivator")[0];
+    const second = handCards(game, "Harvesttide Infiltrator")[0];
     game.dispatch({ type: "cast-spell", player: A, card: second, targets: [] });
     game.advanceUntil(settled);
     expect(game.state.objects[second].face).toBe(1);
-    expect(printedCardName(game.state.objects[second])).toBe("Moonrise Marauder");
+    expect(printedCardName(game.state.objects[second])).toBe("Harvesttide Assailant");
   });
 
   it("a transformed permanent reverts to its front face when it leaves the battlefield", () => {
     const game = mkGame(
-      ["Nightfall Cultist", "Swamp", "Swamp", "Swamp", "Swamp", "Swamp"],
+      ["Bloodline Keeper", "Swamp", "Swamp", "Swamp", "Swamp", "Swamp"],
       "Island",
       ["Unsummon"],
     );
-    game.advanceUntil(atMain);
-    for (const id of handCards(game, "Swamp").slice(0, 5)) {
-      game.dispatch({ type: "play-land", player: A, card: id });
-    }
-    const card = handCards(game, "Nightfall Cultist")[0];
-    game.dispatch({ type: "cast-spell", player: A, card, targets: [] });
-    game.advanceUntil(settled);
-    game.dispatch({ type: "activate-ability", player: A, source: card, abilityIndex: 0 });
+    const card = castKeeper(game);
+    for (let i = 0; i < 4; i += 1) game.debugSpawn("Vampire Token", A);
+    game.dispatch({
+      type: "activate-ability",
+      player: A,
+      source: card,
+      abilityIndex: TRANSFORM_ABILITY,
+    });
     game.advanceUntil(settled);
     expect(game.state.objects[card].face).toBe(1);
 
-    // Bob bounces the Horror back to alice's hand.
+    // Bob bounces the Lord back to alice's hand.
     game.advanceUntil((s) => s.turn.number === 2 && atMain(s));
     const island = game.handOf(B).find((i) => game.state.objects[i].cardName === "Island")!;
     game.dispatch({ type: "play-land", player: B, card: island });
@@ -182,6 +274,6 @@ describe("transforming DFCs (ROADMAP Phase 10b)", () => {
     game.advanceUntil(settled);
     expect(game.state.objects[card].zone).toBe("hand");
     expect(game.state.objects[card].face ?? 0).toBe(0);
-    expect(printedCardName(game.state.objects[card])).toBe("Nightfall Cultist");
+    expect(printedCardName(game.state.objects[card])).toBe("Bloodline Keeper");
   });
 });
