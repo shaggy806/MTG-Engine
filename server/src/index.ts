@@ -28,23 +28,51 @@ const httpServer = createServer((req, res) => {
     });
     req.on("end", () => {
       void (async () => {
+        // Newline-delimited JSON, streamed: one `{type:"progress"}` line per
+        // resolved card, then a single `{type:"result"}` line. A long
+        // decklist spends a throttled Scryfall round-trip on every card the
+        // engine doesn't implement, so the client needs to see it moving
+        // rather than stare at a silent request for half a minute.
+        let streaming = false;
+        const write = (line: unknown): void => {
+          res.write(`${JSON.stringify(line)}\n`);
+        };
         try {
           const { text } = JSON.parse(body) as { text?: string };
           if (typeof text !== "string") throw new Error("missing 'text' field");
           const { entries, commanders } = parseDecklistText(text);
-          const cards = await evaluateDecklist(entries, registry);
-          const format = formatCheck(entries, registry, commanders);
+
           res.writeHead(200, {
-            "Content-Type": "application/json",
+            "Content-Type": "application/x-ndjson",
+            "Cache-Control": "no-cache, no-transform",
+            // Asks an intermediate proxy not to buffer the body, which would
+            // defeat the point of streaming it.
+            "X-Accel-Buffering": "no",
             "Access-Control-Allow-Origin": clientOrigin,
           });
-          res.end(JSON.stringify({ cards, format }));
+          streaming = true;
+          write({ type: "progress", done: 0, total: entries.length, name: null });
+
+          const cards = await evaluateDecklist(entries, registry, (p) =>
+            write({ type: "progress", ...p }),
+          );
+          const format = formatCheck(entries, registry, commanders);
+          write({ type: "result", cards, format });
+          res.end();
         } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          if (streaming) {
+            // Headers are already out at 200 — the only way left to report
+            // the failure is an error line the client watches for.
+            write({ type: "error", error: message });
+            res.end();
+            return;
+          }
           res.writeHead(400, {
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": clientOrigin,
           });
-          res.end(JSON.stringify({ error: err instanceof Error ? err.message : String(err) }));
+          res.end(JSON.stringify({ error: message }));
         }
       })();
     });

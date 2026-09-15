@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { SAMPLE_DECKS } from 'engine'
-import type { DeckFormatReport, ImportedCardReport } from '../net/protocol.ts'
+import type { DeckFormatReport, ImportDeckLine, ImportedCardReport } from '../net/protocol.ts'
 import {
   createDeck,
   createDeckFromImport,
@@ -198,6 +198,62 @@ export function DeckBuilderPage() {
   )
 }
 
+/** How far along the server is, as reported by the import endpoint's
+ * `progress` lines. `name` is the card just resolved (null before the first
+ * one lands). */
+interface ImportProgress {
+  readonly done: number
+  readonly total: number
+  readonly name: string | null
+}
+
+/**
+ * POSTs a pasted decklist and consumes the endpoint's newline-delimited JSON
+ * response, calling `onProgress` as each card is resolved and returning the
+ * terminal `result` line. Streamed rather than awaited whole because every
+ * card the engine doesn't implement costs a throttled Scryfall round-trip —
+ * a 100-card list is tens of seconds of otherwise-silent waiting.
+ */
+async function importDecklist(
+  text: string,
+  onProgress: (progress: ImportProgress) => void,
+): Promise<{ readonly cards: readonly ImportedCardReport[]; readonly format: DeckFormatReport | null }> {
+  const res = await fetch(IMPORT_DECK_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text }),
+  })
+  if (!res.ok) {
+    const data = (await res.json().catch(() => null)) as { error?: string } | null
+    throw new Error(data?.error ?? `import failed (${res.status})`)
+  }
+  const reader = res.body?.getReader()
+  if (!reader) throw new Error('import failed: no response body')
+
+  const decoder = new TextDecoder()
+  let buffer = ''
+  let outcome: { cards: readonly ImportedCardReport[]; format: DeckFormatReport | null } | null = null
+  let finished = false
+  while (!finished) {
+    const chunk = await reader.read()
+    finished = chunk.done
+    if (chunk.value) buffer += decoder.decode(chunk.value, { stream: true })
+    const parts = buffer.split('\n')
+    // The last piece is a partial line until the stream ends, at which point
+    // everything left is complete.
+    buffer = finished ? '' : (parts.pop() ?? '')
+    for (const part of parts) {
+      if (part.trim() === '') continue
+      const line = JSON.parse(part) as ImportDeckLine
+      if (line.type === 'progress') onProgress(line)
+      else if (line.type === 'result') outcome = { cards: line.cards, format: line.format }
+      else throw new Error(line.error)
+    }
+  }
+  if (outcome === null) throw new Error('import ended before the deck was resolved')
+  return outcome
+}
+
 /**
  * Paste a decklist export, resolve it into a deck the engine can actually
  * play right now: an implemented card is kept as-is, an unimplemented one
@@ -218,26 +274,17 @@ function ImportPanel({
 }) {
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
+  const [progress, setProgress] = useState<ImportProgress | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setProgress(null)
     setError(null)
-    fetch(IMPORT_DECK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text }),
-    })
-      .then(async (res) => {
-        const data = (await res.json()) as {
-          cards?: ImportedCardReport[]
-          format?: DeckFormatReport
-          error?: string
-        }
-        if (!res.ok) throw new Error(data.error ?? 'import failed')
-        const cardReports = data.cards ?? []
-        const commanderName = data.format?.commander ?? null
+    importDecklist(text, setProgress)
+      .then(({ cards: cardReports, format }) => {
+        const commanderName = format?.commander ?? null
 
         const finalCards: string[] = []
         const substituted: { from: string; to: string }[] = []
@@ -304,7 +351,41 @@ function ImportPanel({
           {loading ? 'Importing…' : 'Import'}
         </button>
       </form>
+      {loading ? <ImportProgressBar progress={progress} /> : null}
       {error ? <div className="error-banner">⚠ {error}</div> : null}
+    </div>
+  )
+}
+
+/** Live progress while the server resolves a pasted list. Before the first
+ * line lands (the request is still in flight) there's no total yet, so it
+ * shows an indeterminate "Contacting the server…" state rather than a
+ * misleading 0%. */
+function ImportProgressBar({ progress }: { readonly progress: ImportProgress | null }) {
+  const pct =
+    progress === null || progress.total === 0
+      ? 0
+      : Math.round((progress.done / progress.total) * 100)
+  return (
+    <div className="db-import-progress">
+      <div className="db-import-progress-track">
+        <div
+          className={`db-import-progress-fill${progress === null ? ' indeterminate' : ''}`}
+          style={progress === null ? undefined : { width: `${pct}%` }}
+        />
+      </div>
+      <div className="db-import-progress-label">
+        {progress === null ? (
+          <span className="muted">Contacting the server…</span>
+        ) : (
+          <>
+            <span>
+              {progress.done} / {progress.total} cards
+            </span>
+            <span className="muted db-import-progress-card">{progress.name ?? 'Starting…'}</span>
+          </>
+        )}
+      </div>
     </div>
   )
 }

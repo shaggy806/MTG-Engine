@@ -127,6 +127,25 @@ describe("evaluateDecklist", () => {
     expect(result.suggestedReplacement).toBeNull();
   });
 
+  it("reports progress after each entry, counting up to the total", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false }));
+    const seen: { done: number; total: number; name: string; implemented: boolean }[] = [];
+
+    await evaluateDecklist(
+      [
+        { name: "Lightning Bolt", count: 1 },
+        { name: "Not A Real Card Name", count: 1 },
+      ],
+      registry,
+      (p) => seen.push(p),
+    );
+
+    expect(seen).toEqual([
+      { done: 1, total: 2, name: "Lightning Bolt", implemented: true },
+      { done: 2, total: 2, name: "Not A Real Card Name", implemented: false },
+    ]);
+  });
+
   it("reports found:false for a card Scryfall doesn't recognize either", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false }));
 

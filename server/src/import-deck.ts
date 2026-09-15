@@ -213,6 +213,18 @@ export interface CardReportEntry extends DecklistEntry {
   readonly suggestedReplacement: string | null;
 }
 
+/** Called after each entry is resolved, so a caller streaming the audit to a
+ * client can show real progress — an unimplemented card costs a throttled
+ * Scryfall round-trip, so a long list takes tens of seconds and a silent
+ * wait looks like a hang. */
+export type EvaluateProgress = (progress: {
+  readonly done: number;
+  readonly total: number;
+  /** The entry just resolved. */
+  readonly name: string;
+  readonly implemented: boolean;
+}) => void;
+
 /** Cross-references each decklist entry against the engine's card registry
  * by exact name. Implemented cards are reported straight from their local
  * `CardDefinition` (no network call needed); everything else is looked up on
@@ -221,8 +233,12 @@ export interface CardReportEntry extends DecklistEntry {
 export async function evaluateDecklist(
   entries: readonly DecklistEntry[],
   registry: CardRegistry,
+  onProgress?: EvaluateProgress,
 ): Promise<CardReportEntry[]> {
   const results: CardReportEntry[] = [];
+  const report = (entry: DecklistEntry, implemented: boolean): void => {
+    onProgress?.({ done: results.length, total: entries.length, name: entry.name, implemented });
+  };
   for (const entry of entries) {
     if (registry.has(entry.name)) {
       const def = registry.get(entry.name);
@@ -235,6 +251,7 @@ export async function evaluateDecklist(
         oracleText: def.text,
         suggestedReplacement: null,
       });
+      report(entry, true);
       continue;
     }
     const scryfall = await lookupScryfall(entry.name);
@@ -250,6 +267,7 @@ export async function evaluateDecklist(
           ? suggestReplacement({ manaCost: scryfall.manaCost, typeLine: scryfall.typeLine })
           : null,
     });
+    report(entry, false);
   }
   return results;
 }

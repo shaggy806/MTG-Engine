@@ -276,6 +276,51 @@
   resize: vertical;
 }
 
+/* Live progress while the server resolves a pasted list one card at a time
+   (each unimplemented one costs a throttled Scryfall lookup). */
+.db-import-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 10px;
+}
+.db-import-progress-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.db-import-progress-fill {
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  transition: width 120ms linear;
+}
+.db-import-progress-fill.indeterminate {
+  width: 30%;
+  animation: db-import-sweep 1.1s ease-in-out infinite;
+}
+@keyframes db-import-sweep {
+  0% {
+    margin-left: -30%;
+  }
+  100% {
+    margin-left: 100%;
+  }
+}
+.db-import-progress-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+}
+.db-import-progress-card {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .db-import-report {
   max-width: 760px;
   padding: 8px 12px;

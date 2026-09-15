@@ -86,6 +86,27 @@ export interface DeckFormatReport {
   readonly commander: string | null
 }
 
+/** `POST /import-deck` answers with newline-delimited JSON, not one JSON
+ * object: a `progress` line per card as the server resolves it (a card the
+ * engine doesn't implement costs a throttled Scryfall round-trip, so a
+ * 100-card list takes a while), then exactly one terminal `result` or
+ * `error` line. Mirrors what `server/src/index.ts` writes. */
+export type ImportDeckLine =
+  | {
+      readonly type: 'progress'
+      readonly done: number
+      readonly total: number
+      /** The card just resolved; `null` on the opening 0-of-N line. */
+      readonly name: string | null
+      readonly implemented?: boolean
+    }
+  | {
+      readonly type: 'result'
+      readonly cards: readonly ImportedCardReport[]
+      readonly format: DeckFormatReport
+    }
+  | { readonly type: 'error'; readonly error: string }
+
 export type ServerMessage =
   | { readonly type: 'room-created'; readonly roomId: string }
   | {
