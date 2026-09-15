@@ -112,7 +112,6 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-width: 760px;
 }
 .db-editor-head {
   display: flex;
@@ -317,4 +316,150 @@
   .db-readonly-list {
     columns: 1;
   }
+}
+
+/* --- the two-pane editor: card pool on the left, the deck on the right --- */
+.db-panes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+/* One column on a narrow screen — the deck pane drops below the pool. */
+@media (max-width: 860px) {
+  .db-panes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.db-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.db-pane-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.db-pane-head h3 {
+  margin: 0;
+  font-family: 'Cinzel', serif;
+  font-size: 15px;
+  font-weight: 600;
+}
+/* The deck pane is a drop target for a card dragged out of the pool; the
+   dashed outline only appears while a drag is actually over it. */
+.db-pane-deck {
+  border: 1px dashed transparent;
+  border-radius: 8px;
+  padding: 6px;
+  margin: -6px;
+}
+.db-pane-deck.db-drop-active {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+.db-card-list li[draggable='true'] {
+  cursor: grab;
+}
+.db-empty {
+  margin: 0;
+  padding: 18px 12px;
+  text-align: center;
+  font-size: 13px;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+}
+
+.db-commander-slot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: var(--panel);
+  font-size: 13px;
+}
+
+.db-deck-list,
+.db-deck-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.db-deck-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 60vh;
+  overflow-y: auto;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 6px;
+}
+.db-deck-group-head {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 4px;
+}
+.db-deck-list li li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 6px;
+  border-radius: 5px;
+}
+.db-deck-list li li:hover {
+  background: var(--panel-2);
+}
+.db-deck-list button {
+  font-size: 12px;
+  padding: 1px 8px;
+}
+.db-deck-list .db-count {
+  min-width: 1.6em;
+  text-align: right;
+}
+.db-unknown-row .db-card-name {
+  color: var(--warn);
+  text-decoration: line-through;
+}
+
+.db-unknown {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--warn);
+  background: var(--panel);
+  font-size: 13px;
+}
+.db-unknown ul {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.db-unknown li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+/* The floating card preview, portalled to <body> — see CardHoverPreview.tsx.
+   `.card-tile` sizes itself from --card-w, which is tuned for a board tile
+   (96-150px); a preview exists to be *read*, so it overrides the token for
+   its own subtree rather than scaling the tile up with a transform. */
+.card-hover-preview {
+  position: fixed;
+  z-index: 60;
+  --card-w: 220px;
+  width: var(--card-w);
+  pointer-events: none;
+  filter: drop-shadow(0 8px 20px rgb(0 0 0 / 0.55));
 }

@@ -310,7 +310,7 @@ const deckB = deck([
   ["Hour of Reckoning", 1],
 ]);
 
-// A lean Dimir deck for Carol — carries the `Sarova, the Undying Current`
+// A lean Dimir deck for Carol — carries the `Ayara, First of Locthwain`
 // commander (a `leaves-battlefield` + `dies` trigger) so the fuzzer exercises
 // the 903.9a "ask before the move" replacement path.
 const deckC = deck([

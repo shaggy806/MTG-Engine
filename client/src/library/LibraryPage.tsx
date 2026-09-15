@@ -3,7 +3,7 @@ import type { CardDefinition } from 'engine'
 import { BUILTIN_CARDS } from 'engine'
 import { CardTile } from '../ui/CardTile.tsx'
 import { resolveArtUrl } from '../ui/art.ts'
-import { defToVisible } from '../lab/defToVisible.ts'
+import { defToVisible } from '../ui/defToVisible.ts'
 import './library.css'
 
 const TYPE_FILTERS = [

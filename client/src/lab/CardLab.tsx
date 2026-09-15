@@ -4,7 +4,7 @@ import { BUILTIN_CARDS } from 'engine'
 import { CardTile } from '../ui/CardTile.tsx'
 import { Symbols } from '../ui/Symbols.tsx'
 import { resolveArtUrl } from '../ui/art.ts'
-import { defToVisible } from './defToVisible.ts'
+import { defToVisible } from '../ui/defToVisible.ts'
 import { describeCardFeatures } from './cardFeatures.ts'
 import { Sandbox } from './Sandbox.tsx'
 

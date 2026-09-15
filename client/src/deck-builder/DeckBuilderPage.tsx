@@ -1,8 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import type { CardDefinition } from 'engine'
-import { BUILTIN_CARDS, SAMPLE_DECKS, createDefaultRegistry, validateCommanderDeck } from 'engine'
-import { Symbols } from '../ui/Symbols.tsx'
+import { SAMPLE_DECKS } from 'engine'
 import type { DeckFormatReport, ImportedCardReport } from '../net/protocol.ts'
 import {
   createDeck,
@@ -16,6 +14,7 @@ import {
   setActive,
 } from './decks.ts'
 import type { SavedDeck } from './decks.ts'
+import { DeckEditor } from './DeckEditor.tsx'
 import './deck-builder.css'
 
 // Same host/port convention as useNetworkGame's SERVER_URL, but http(s) for
@@ -25,24 +24,9 @@ const IMPORT_DECK_URL = `${
     .replace(/^ws/, 'http')
 }/import-deck`
 
-const TYPE_FILTERS = [
-  'creature',
-  'instant',
-  'sorcery',
-  'artifact',
-  'enchantment',
-  'planeswalker',
-  'land',
-] as const
 
-const DECK_SIZE = 100
 
-const cards = [...BUILTIN_CARDS].sort((a, b) => a.name.localeCompare(b.name))
-const registry = createDefaultRegistry()
 
-const isCommanderEligible = (def: CardDefinition): boolean =>
-  def.supertypes.includes('legendary') &&
-  (def.types.includes('creature') || def.types.includes('planeswalker'))
 
 type Selection = { readonly kind: 'saved'; readonly id: string } | { readonly kind: 'starter'; readonly index: number } | null
 
@@ -406,180 +390,6 @@ function StarterViewer({
             {name}
           </li>
         ))}
-      </ul>
-    </div>
-  )
-}
-
-function DeckEditor({
-  deck,
-  isActive,
-  onChange,
-  onMakeActive,
-  onDuplicate,
-  onDelete,
-}: {
-  readonly deck: SavedDeck
-  readonly isActive: boolean
-  readonly onChange: (next: SavedDeck) => void
-  readonly onMakeActive: () => void
-  readonly onDuplicate: () => void
-  readonly onDelete: () => void
-}) {
-  const [query, setQuery] = useState('')
-  const [typeFilter, setTypeFilter] = useState<string | null>(null)
-  const [onlyInDeck, setOnlyInDeck] = useState(false)
-  const [name, setName] = useState(deck.name)
-
-  const counts = useMemo(() => {
-    const m = new Map<string, number>()
-    for (const c of deck.cards) m.set(c, (m.get(c) ?? 0) + 1)
-    return m
-  }, [deck.cards])
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    return cards.filter((c) => {
-      if (typeFilter && !c.types.includes(typeFilter as CardDefinition['types'][number])) return false
-      if (onlyInDeck && (counts.get(c.name) ?? 0) === 0 && deck.commander !== c.name) return false
-      if (!q) return true
-      return (
-        c.name.toLowerCase().includes(q) ||
-        c.text.toLowerCase().includes(q) ||
-        c.subtypes.some((s) => s.toLowerCase().includes(q))
-      )
-    })
-  }, [query, typeFilter, onlyInDeck, counts, deck.commander])
-
-  const totalCount = deck.cards.length + (deck.commander ? 1 : 0)
-
-  const legality = useMemo(
-    () =>
-      validateCommanderDeck(
-        { commanders: deck.commander ? [deck.commander] : [], cards: deck.cards, size: DECK_SIZE },
-        registry,
-      ),
-    [deck.commander, deck.cards],
-  )
-
-  const addCard = (cardName: string) => onChange({ ...deck, cards: [...deck.cards, cardName] })
-  const removeCard = (cardName: string) => {
-    const i = deck.cards.indexOf(cardName)
-    if (i === -1) return
-    onChange({ ...deck, cards: [...deck.cards.slice(0, i), ...deck.cards.slice(i + 1)] })
-  }
-  const toggleCommander = (cardName: string) =>
-    onChange({ ...deck, commander: deck.commander === cardName ? undefined : cardName })
-
-  return (
-    <div className="db-editor">
-      <div className="db-editor-head">
-        <input
-          className="db-name-input"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onBlur={() => {
-            if (name.trim() && name !== deck.name) onChange({ ...deck, name: name.trim() })
-          }}
-        />
-        <div className="db-editor-actions">
-          <button type="button" onClick={onMakeActive} disabled={isActive}>
-            {isActive ? 'Active' : 'Make active'}
-          </button>
-          <button type="button" onClick={onDuplicate}>
-            Duplicate
-          </button>
-          <button type="button" onClick={onDelete}>
-            Delete
-          </button>
-        </div>
-      </div>
-
-      <div className="db-summary">
-        <span>
-          {deck.commander ? (
-            <>
-              Commander: <strong>{deck.commander}</strong>
-            </>
-          ) : (
-            <span className="muted">No commander set</span>
-          )}
-        </span>
-        <span className="mono">
-          {totalCount} / {DECK_SIZE}
-        </span>
-      </div>
-
-      <div className={`db-legality ${legality.legal ? 'legal' : 'illegal'}`}>
-        <strong>{legality.legal ? '✓ Commander-legal' : `✗ ${legality.violations.length} issue(s)`}</strong>
-        <span className="muted"> · identity: {legality.identity || 'colourless'}</span>
-        {legality.violations.length > 0 ? (
-          <ul>
-            {legality.violations.slice(0, 6).map((v, i) => (
-              <li key={i}>{v}</li>
-            ))}
-            {legality.violations.length > 6 ? <li className="muted">…and {legality.violations.length - 6} more</li> : null}
-          </ul>
-        ) : null}
-      </div>
-
-      <div className="db-search-row">
-        <input
-          className="db-search"
-          placeholder={`Search ${cards.length} cards…`}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        <label className="db-toggle">
-          <input type="checkbox" checked={onlyInDeck} onChange={(e) => setOnlyInDeck(e.target.checked)} />
-          in this deck
-        </label>
-      </div>
-      <div className="db-type-filters">
-        <button type="button" className={typeFilter === null ? 'selected' : undefined} onClick={() => setTypeFilter(null)}>
-          all
-        </button>
-        {TYPE_FILTERS.map((t) => (
-          <button
-            key={t}
-            type="button"
-            className={typeFilter === t ? 'selected' : undefined}
-            onClick={() => setTypeFilter(typeFilter === t ? null : t)}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
-
-      <ul className="db-card-list">
-        {filtered.map((c) => {
-          const n = counts.get(c.name) ?? 0
-          const eligible = isCommanderEligible(c)
-          const isThisCommander = deck.commander === c.name
-          return (
-            <li key={c.name} className={n > 0 || isThisCommander ? 'db-in-deck' : undefined}>
-              <span className="db-card-name">{c.name}</span>
-              {c.manaCost ? <Symbols text={c.manaCost} /> : null}
-              <span className="db-card-row-spacer" />
-              {eligible ? (
-                <button type="button" className={isThisCommander ? 'selected' : undefined} onClick={() => toggleCommander(c.name)}>
-                  {isThisCommander ? '★ commander' : 'commander'}
-                </button>
-              ) : null}
-              {n > 0 ? (
-                <>
-                  <span className="db-count mono">×{n}</span>
-                  <button type="button" onClick={() => removeCard(c.name)}>
-                    −
-                  </button>
-                </>
-              ) : null}
-              <button type="button" onClick={() => addCard(c.name)} disabled={isThisCommander}>
-                +
-              </button>
-            </li>
-          )
-        })}
       </ul>
     </div>
   )

@@ -1,7 +1,8 @@
 import type { CardDefinition, ObjectId, PlayerId, VisibleObject } from 'engine'
 
 /**
- * A cheap `CardDefinition` → `VisibleObject` adapter for gallery tiles —
+ * A cheap `CardDefinition` → `VisibleObject` adapter for gallery tiles and
+ * hover previews (the library page, the deck builder, the card lab) —
  * *printed* values only, no layer computation. The detail pane and the
  * sandbox use a real `game.viewFor(...)` instead, which reflects static
  * abilities / counters / animation.
@@ -10,7 +11,7 @@ export function defToVisible(def: CardDefinition): VisibleObject {
   const owner = 'you' as PlayerId
   const isCreature = def.power !== null && def.toughness !== null
   return {
-    id: `lab-${def.name}` as ObjectId,
+    id: `def-${def.name}` as ObjectId,
     cardName: def.name,
     copyOf: null,
     faceName: def.faces && def.faces.length > 1 ? def.faces[0] : def.name,
