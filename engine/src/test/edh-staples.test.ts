@@ -277,3 +277,46 @@ describe("Solemn Simulacrum", () => {
     expect(game.state.objects[fetched[0]].tapped).toBe(true);
   });
 });
+
+describe("Temple of the False God", () => {
+  it("is activatable only once you control five lands, counting itself", () => {
+    const game = makeGame();
+    const temple = game.debugSpawn("Temple of the False God", A);
+    const offered = (): boolean =>
+      game.legalActions(A).some((a) => a.kind === "activate-ability" && a.source === temple);
+
+    expect(offered()).toBe(false); // one land -- the Temple
+    for (let i = 0; i < 3; i += 1) game.debugSpawn("Forest", A);
+    expect(offered()).toBe(false); // four
+    game.debugSpawn("Forest", A);
+    expect(offered()).toBe(true); // five, the Temple among them (rule 602.5)
+
+    activate(game, A, temple, "Add {C}{C}");
+    settle(game);
+    expect(game.state.players[A].manaPool.C).toBe(2);
+  });
+});
+
+describe("Jet Medallion", () => {
+  it("discounts only your spells of its colour", () => {
+    const game = makeGame(["Doom Blade", "Lightning Bolt"]);
+    game.debugSpawn("Jet Medallion", A);
+    game.debugSpawn("Swamp", A);
+
+    // Doom Blade is {1}{B}; the Medallion makes it {B}, so one Swamp pays it.
+    const target = game.debugSpawn("Grizzly Bears", B);
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: handCard(game, A, "Doom Blade"),
+      targets: [{ kind: "object", object: target }],
+    });
+    settle(game);
+    expect(game.state.objects[target].zone).toBe("graveyard");
+
+    // A red spell is untouched — {R} with no red source is still uncastable.
+    expect(
+      game.legalActions(A).some((a) => a.kind === "cast-spell" && a.cardName === "Lightning Bolt"),
+    ).toBe(false);
+  });
+});

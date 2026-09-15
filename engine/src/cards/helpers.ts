@@ -236,6 +236,111 @@ export const painLand = (
   });
 
 /**
+ * A "scry land" (the Theros temple cycle — Temple of Epiphany, Temple of
+ * Silence): enters tapped, scries 1 on the way in, taps for either of two
+ * colours.
+ */
+export const scryLand = (name: string, colors: readonly [Color, Color]): CardDefinition =>
+  defineCard({
+    name,
+    types: ["land"],
+    text:
+      `${name} enters the battlefield tapped.\n` +
+      `When ${name} enters the battlefield, scry 1.\n` +
+      `{T}: Add {${colors[0]}} or {${colors[1]}}.`,
+    static: [entersTappedStatic(name)],
+    triggered: [
+      {
+        trigger: { on: "enters-battlefield", who: "self" },
+        targets: [],
+        effect: { kind: "scry", amount: 1 },
+        resolve: null,
+        text: `When ${name} enters the battlefield, scry 1.`,
+      },
+    ],
+    activated: colors.map((c) => manaTapAbility(c)),
+  });
+
+/**
+ * A "slow land" (the Innistrad: Midnight Hunt / Crimson Vow cycle — Shipwreck
+ * Marsh, Deserted Beach): "enters tapped unless you control two or more *other*
+ * lands". Same shape as `Rockfall Vale` without its pain rider.
+ */
+export const slowLand = (name: string, colors: readonly [Color, Color]): CardDefinition =>
+  defineCard({
+    name,
+    types: ["land"],
+    text:
+      `${name} enters the battlefield tapped unless you control two or more other lands.\n` +
+      `{T}: Add {${colors[0]}} or {${colors[1]}}.`,
+    static: [enterTappedUnlessLands(name, 2, "any")],
+    activated: colors.map((c) => manaTapAbility(c)),
+  });
+
+/**
+ * An original dual land (Underground Sea, Tundra): two basic land types and
+ * nothing else — no printed rules text at all, since both mana abilities come
+ * from the types.
+ */
+export const dualLand = (
+  name: string,
+  landTypes: readonly [string, string],
+): CardDefinition => {
+  const colors = landTypes
+    .map((t) => BASIC_LAND_MANA[t])
+    .filter((c): c is Color => c !== undefined);
+  return defineCard({
+    name,
+    types: ["land"],
+    subtypes: [...landTypes],
+    text: `({T}: Add ${colors.map((c) => `{${c}}`).join(" or ")}.)`,
+    activated: colors.map((c) => manaTapAbility(c)),
+  });
+};
+
+/**
+ * An artifact land (Seat of the Synod, Vault of Whispers) — a land that is also
+ * an artifact, tapping for one fixed colour.
+ */
+export const artifactLand = (name: string, produces: Color): CardDefinition =>
+  defineCard({
+    name,
+    types: ["artifact", "land"],
+    text: `{T}: Add {${produces}}.`,
+    activated: [manaTapAbility(produces)],
+  });
+
+/**
+ * A "Medallion" (Jet Medallion, Ruby Medallion): a {2} artifact making your
+ * spells of one colour cost {1} less.
+ */
+export const medallion = (name: string, color: Color): CardDefinition => {
+  const text = `${colorWord(color)} spells you cast cost {1} less to cast.`;
+  return defineCard({
+    name,
+    manaCost: "{2}",
+    types: ["artifact"],
+    text,
+    static: [
+      {
+        affects: { scope: "self" },
+        costModification: { applies: { colors: [color] }, reduceGeneric: 1 },
+        text,
+      },
+    ],
+  });
+};
+
+const COLOR_WORD: Readonly<Record<Color, string>> = {
+  W: "White",
+  U: "Blue",
+  B: "Black",
+  R: "Red",
+  G: "Green",
+};
+const colorWord = (c: Color): string => COLOR_WORD[c];
+
+/**
  * A "Talisman" (Talisman of Dominance, Talisman of Progress, …): a {2} artifact
  * with exactly a pain land's ability set — "{T}: Add {C}." plus "{T}: Add {A} or
  * {B}. ~ deals 1 damage to you." The auto-payer reaches for the painless option

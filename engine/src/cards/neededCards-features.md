@@ -203,6 +203,39 @@ can't express the real card faithfully and inventing one is no longer allowed:
 - **An *unfiltered* library `look-and-choose`.** Every real card of that shape
   filters what you may take (Ureni: a Dragon). The filtered path is covered.
 
+### E3 — five more cycles and the text-structure audit (57 cards)
+
+Another no-new-feature bulk pass, same shape as E1: **five complete cycles**
+behind new `helpers.ts` constructors — the original dual lands (`dualLand`),
+the Theros scry lands (`scryLand`, which the two already-authored Temples were
+refactored onto), the Innistrad slow lands (`slowLand`), the artifact lands
+(`artifactLand`) and the Medallions (`medallion`) — plus 19 hand-authored
+staples: Fyndhorn Elves, Harmonize, Night's Whisper, Thran Dynamo, Ornithopter
+of Paradise, Reclamation Sage, Viscera Seer, Village Rites, Terminate, Diabolic
+Intent, Skyshroud Claim, Pongify, Stroke of Midnight, Anguished Unmaking,
+Basilisk Collar, Karn's Bastion, Phyrexian Tower, Buried Ruin, Temple of the
+False God, Darksteel Citadel. Pool is 384 cards, all verified.
+
+**The display half.** A card's `text` is rendered verbatim, so its "\n"s are
+what separate one ability from the next on screen — except nothing was
+checking them and `.ct-rules` had no `white-space` rule, so every newline
+collapsed to a space and abilities ran together. `card:verify --text` now
+audits each card's line structure against Scryfall's `oracle_text`; it found
+15 cards genuinely missing a break. The flag is opt-in because ~34 remaining
+differences are correct by design (the keyword line comes from `keywords`, a
+typed dual needs an explicit "{T}: Add" line Scryfall leaves implicit, an
+unmodeled ability's line is missing on purpose).
+
+**The fuzzer caught a real priority bug**, unrelated to any of these cards but
+newly reachable once the decks changed: `tick()` runs state-based actions and
+*then* asks the priority holder to act, but an SBA sweep can raise a decision
+mid-tick — a wrath killing a commander owes its owner the 903.9a choice.
+`prepareForPriority` hands that player priority; `tick` didn't, so whoever
+already held priority was asked to act with a declaration pending and threw on
+passing. Needed a commander, a mass destroy and Rest in Peace (redirecting the
+commander's move to exile) on the board at once, which is why it survived this
+long.
+
 **Deliberately skipped** (each needs a primitive the engine doesn't have, all
 in the top 125): Exotic Orchard / Fellwar Stone / Path of Ancestry (mana
 provenance — "a color a land an opponent controls could produce"), Reliquary
