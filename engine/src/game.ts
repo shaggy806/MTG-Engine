@@ -1443,6 +1443,19 @@ export class Game {
     this.runStateBasedActions();
     if (this.state.result.over) return;
 
+    // The sweep above can raise a decision mid-tick — a wrath killing a
+    // commander owes its owner the 903.9a choice, and `runStateBasedActions`
+    // stops the sweep the moment it does. `prepareForPriority` hands that
+    // player priority on the paths that go through it, but this one doesn't:
+    // without this, whoever already held priority is asked to act while a
+    // declaration is pending, and passing throws.
+    if (
+      this.state.awaiting !== null &&
+      this.state.priority.holder !== this.state.awaiting.player
+    ) {
+      this.grantPriority(this.state.awaiting.player);
+    }
+
     if (this.state.priority.active && this.state.priority.holder !== null) {
       const holder = this.state.priority.holder;
       const view = this.controllerView(holder);
