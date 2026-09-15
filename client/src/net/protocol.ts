@@ -87,18 +87,17 @@ export interface DeckFormatReport {
 }
 
 /** `POST /import-deck` answers with newline-delimited JSON, not one JSON
- * object: a `progress` line per card as the server resolves it (a card the
- * engine doesn't implement costs a throttled Scryfall round-trip, so a
- * 100-card list takes a while), then exactly one terminal `result` or
+ * object: `progress` lines as the server resolves the list (cards the engine
+ * already implements land at once, then each batched Scryfall lookup of up
+ * to 75 unimplemented ones), followed by exactly one terminal `result` or
  * `error` line. Mirrors what `server/src/index.ts` writes. */
 export type ImportDeckLine =
   | {
       readonly type: 'progress'
       readonly done: number
       readonly total: number
-      /** The card just resolved; `null` on the opening 0-of-N line. */
+      /** The last card accounted for; `null` when nothing specific. */
       readonly name: string | null
-      readonly implemented?: boolean
     }
   | {
       readonly type: 'result'

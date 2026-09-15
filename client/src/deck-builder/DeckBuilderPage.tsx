@@ -382,7 +382,9 @@ function ImportProgressBar({ progress }: { readonly progress: ImportProgress | n
             <span>
               {progress.done} / {progress.total} cards
             </span>
-            <span className="muted db-import-progress-card">{progress.name ?? 'Starting…'}</span>
+            <span className="muted db-import-progress-card">
+              {progress.name ?? 'Looking up cards…'}
+            </span>
           </>
         )}
       </div>

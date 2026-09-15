@@ -78,6 +78,23 @@ describe("parseDecklistText", () => {
   });
 });
 
+/** Stands in for Scryfall's `POST /cards/collection`: answers with whichever
+ * of `cards` the batch actually asked for, the way the real endpoint does
+ * (found cards in `data`, everything else simply absent). */
+function stubCollection(cards: Record<string, Record<string, unknown>>) {
+  const fetchMock = vi.fn(async (_url: string, init?: { body?: string }) => {
+    const { identifiers } = JSON.parse(init?.body ?? "{}") as {
+      identifiers?: { name: string }[];
+    };
+    const data = (identifiers ?? [])
+      .map((id) => cards[id.name])
+      .filter((c): c is Record<string, unknown> => c !== undefined);
+    return { ok: true, status: 200, json: async () => ({ data }) };
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  return fetchMock;
+}
+
 describe("evaluateDecklist", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -96,17 +113,14 @@ describe("evaluateDecklist", () => {
   });
 
   it("looks up an unimplemented card on Scryfall and reports it as not implemented", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          mana_cost: "{2}",
-          type_line: "Artifact",
-          oracle_text: "{T}: Add one mana of any color that a land you control could produce.",
-        }),
-      }),
-    );
+    stubCollection({
+      "Fellwar Stone": {
+        name: "Fellwar Stone",
+        mana_cost: "{2}",
+        type_line: "Artifact",
+        oracle_text: "{T}: Add one mana of any color that a land you control could produce.",
+      },
+    });
 
     const [result] = await evaluateDecklist([{ name: "Fellwar Stone", count: 1 }], registry);
 
@@ -127,27 +141,111 @@ describe("evaluateDecklist", () => {
     expect(result.suggestedReplacement).toBeNull();
   });
 
-  it("reports progress after each entry, counting up to the total", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false }));
-    const seen: { done: number; total: number; name: string; implemented: boolean }[] = [];
+  it("looks every unimplemented card up in one batched request, not one each", async () => {
+    const names = ["Batched One", "Batched Two", "Batched Three"];
+    const fetchMock = stubCollection(
+      Object.fromEntries(names.map((n) => [n, { name: n, type_line: "Artifact" }])),
+    );
+
+    const results = await evaluateDecklist(
+      // The implemented card must not contribute an identifier.
+      [...names, "Lightning Bolt"].map((name) => ({ name, count: 1 })),
+      registry,
+    );
+
+    expect(results.map((r) => r.found)).toEqual([true, true, true, true]);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0] as [string, { body: string }];
+    expect(url).toBe("https://api.scryfall.com/cards/collection");
+    expect(JSON.parse(init.body)).toEqual({ identifiers: names.map((name) => ({ name })) });
+  });
+
+  it("splits a list longer than Scryfall's 75-identifier cap across requests", async () => {
+    const names = Array.from({ length: 80 }, (_, i) => `Bulk Filler ${i}`);
+    const fetchMock = stubCollection(
+      Object.fromEntries(names.map((n) => [n, { name: n, type_line: "Artifact" }])),
+    );
+
+    await evaluateDecklist(names.map((name) => ({ name, count: 1 })), registry);
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const sizes = fetchMock.mock.calls.map(
+      (c) => (JSON.parse((c[1] as { body: string }).body) as { identifiers: unknown[] }).identifiers.length,
+    );
+    expect(sizes).toEqual([75, 5]);
+  });
+
+  it("reports progress: local cards first, then each lookup batch", async () => {
+    const names = Array.from({ length: 80 }, (_, i) => `Progress Filler ${i}`);
+    stubCollection(Object.fromEntries(names.map((n) => [n, { name: n, type_line: "Artifact" }])));
+    const seen: { done: number; total: number; name: string | null }[] = [];
 
     await evaluateDecklist(
-      [
-        { name: "Lightning Bolt", count: 1 },
-        { name: "Not A Real Card Name", count: 1 },
-      ],
+      ["Lightning Bolt", ...names].map((name) => ({ name, count: 1 })),
       registry,
       (p) => seen.push(p),
     );
 
     expect(seen).toEqual([
-      { done: 1, total: 2, name: "Lightning Bolt", implemented: true },
-      { done: 2, total: 2, name: "Not A Real Card Name", implemented: false },
+      { done: 1, total: 81, name: null },
+      { done: 76, total: 81, name: "Progress Filler 74" },
+      { done: 81, total: 81, name: "Progress Filler 79" },
+      { done: 81, total: 81, name: null },
     ]);
   });
 
+  it("still reaches 100% when every name is already cached", async () => {
+    stubCollection({ "Twice Imported": { name: "Twice Imported", type_line: "Artifact" } });
+    const entries = [{ name: "Twice Imported", count: 1 }];
+    await evaluateDecklist(entries, registry);
+
+    const seen: { done: number; total: number; name: string | null }[] = [];
+    await evaluateDecklist(entries, registry, (p) => seen.push(p));
+
+    expect(seen[seen.length - 1]).toEqual({ done: 1, total: 1, name: null });
+  });
+
+  it("retries a split-card name in Scryfall's '//' spelling, in a second batch", async () => {
+    // Only the "//" spelling resolves, so round 0 must miss and round 1
+    // must re-ask for the same card under its alternate name.
+    const fetchMock = stubCollection({
+      "Split Alpha // Split Beta": {
+        name: "Split Alpha // Split Beta",
+        type_line: "Instant // Instant",
+        card_faces: [
+          { name: "Split Alpha", oracle_text: "Alpha text" },
+          { name: "Split Beta", oracle_text: "Beta text" },
+        ],
+      },
+    });
+
+    const [result] = await evaluateDecklist(
+      [{ name: "Split Alpha / Split Beta", count: 1 }],
+      registry,
+    );
+
+    expect(result.found).toBe(true);
+    expect(result.oracleText).toBe("Alpha text\n//\nBeta text");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(JSON.parse((fetchMock.mock.calls[1][1] as { body: string }).body)).toEqual({
+      identifiers: [{ name: "Split Alpha // Split Beta" }],
+    });
+  });
+
+  it("caches a resolved name so a second import doesn't re-request it", async () => {
+    const fetchMock = stubCollection({
+      "Cached Rock": { name: "Cached Rock", type_line: "Artifact" },
+    });
+    const entries = [{ name: "Cached Rock", count: 1 }];
+
+    await evaluateDecklist(entries, registry);
+    await evaluateDecklist(entries, registry);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it("reports found:false for a card Scryfall doesn't recognize either", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false }));
+    stubCollection({});
 
     const [result] = await evaluateDecklist([{ name: "Not A Real Card Name", count: 1 }], registry);
 
