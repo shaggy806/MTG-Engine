@@ -142,6 +142,67 @@ Two engine changes came out of it, both rules bugs rather than new vocabulary:
 `edh-staples.test.ts`. Both bugs were found by authoring a card and testing it,
 not by reading the engine — worth repeating for the next bulk pass.
 
+### E2 — every made-up card replaced with a real one
+
+The pool had carried 27 invented cards since the ROADMAP phases — placeholders
+written to exercise a mechanic when no real card had been looked up for it
+(`Grovewatch Elder // Grovewatch Hollow` for MDFCs, `Nightfall Cultist //
+Voidfall Horror` for a transform ability and a `transforms` trigger, `Rendwin,
+Warden of the Grove` for a planeswalker, four seat commanders, and so on). They
+were invisible to `card:verify` (a name Scryfall has never heard of is reported
+as `NOT FOUND`, not as a mismatch), so nothing flagged them, and a deck built in
+the deck builder could contain cards that don't exist.
+
+All 27 are gone, replaced by real cards carrying the same mechanic, and
+`card:verify` now reports **327 checked, 0 mismatched, 0 not found**. The
+substitutions, by what each was covering:
+
+| mechanic | was | now |
+| --- | --- | --- |
+| MDFC (creature // land) | Grovewatch Elder // Hollow | **Kazandu Mammoth // Kazandu Valley** |
+| Adventure | Emberclaw Scout // Ember Dart | **Beanstalk Giant // Fertile Footsteps** |
+| Disturb | Gravebound Squire // Spectral Squire | **Baithook Angler // Hook-Haunt Drifter** |
+| daybound / nightbound | Moonrise Cultivator // Marauder | **Harvesttide Infiltrator // Harvesttide Assailant** |
+| activated transform | Nightfall Cultist | **Bloodline Keeper // Lord of Lineage** |
+| `transforms` trigger | Voidfall Horror | **Sidequest: Raise a Chocobo // Black Chocobo** |
+| planeswalker | Rendwin / Yulra | **Garruk Wildspeaker**, **Elspeth, Sun's Champion** |
+| emblem | Coronation Rite | **Elspeth, Sun's Champion**'s −7 |
+| resolution-time `modal` | Deliberate Course | **Austere Command** (choose two) |
+| cast-time `castModal` | Sunder Charm / Duskwood Verdict | **Simic Charm** / **Kolaghan's Command** |
+| Partner pair | Bramblewing / Corvath | **Tana, the Bloodsower** / **Bruse Tarl, Boorish Herder** |
+| seat commanders | Ashmark / Sarova / Seraphine | **Atraxa, Praetors' Voice** / **Ayara, First of Locthwain** / **Emmara, Soul of the Accord** |
+| `prevent-damage` shield | Sunlit Bastion | **Mending Hands** |
+| dies → damage | Vengeful Ghoul | **Mudbutton Torchrunner** |
+| graveyard `look-and-choose` | Grave Recall | **Regrowth** |
+| library `look-and-choose` | Explorer's Insight | **Ureni of the Unwritten** (already in the pool) |
+| counter-pump creature | Wildwood Sentinel | **Walking Ballista** (already in the pool) |
+| big body | Mossback Dragon | **Colossal Dreadmaw** |
+
+Two more rules bugs fell out of the swap, both found the same way as E1's — by
+making a real card work:
+
+1. **An activated ability's "Activate only if …" condition skipped its own
+   source.** Rule 602.5 checks the game state, and the permanent is part of it:
+   Bloodline Keeper is one of the five Vampires its own transform ability
+   counts. (A *static* ability's condition is the one that skips itself, so
+   "as long as you control another …" can't read itself.) Fixed in both the
+   `whyCannotActivateAbility` gate and `manaSources`' auto-payment scan.
+2. **`ActivatedAbility.otherOnly` now also excludes the source from a
+   sacrifice cost** — Ayara's "Sacrifice **another** black creature" could
+   otherwise eat Ayara herself.
+
+Three things the real cards could not carry over, each because the engine
+can't express the real card faithfully and inventing one is no longer allowed:
+
+- **A static anthem on a planeswalker.** Domri, Anarch of Bolas is the only
+  real printing, and its +1 grants "creature spells you cast this turn can't be
+  countered", which has no vocabulary. The layer path itself is unchanged —
+  `collectStaticEffects` never special-cased planeswalkers.
+- **A triggered ability on a planeswalker** — same story; no real planeswalker
+  in the pool has one.
+- **An *unfiltered* library `look-and-choose`.** Every real card of that shape
+  filters what you may take (Ureni: a Dragon). The filtered path is covered.
+
 **Deliberately skipped** (each needs a primitive the engine doesn't have, all
 in the top 125): Exotic Orchard / Fellwar Stone / Path of Ancestry (mana
 provenance — "a color a land an opponent controls could produce"), Reliquary

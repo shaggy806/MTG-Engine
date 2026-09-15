@@ -157,9 +157,11 @@ function faceFor(card, name) {
  * can't misfire — but the fuzzy fallback (`?fuzzy=`, used only for a name
  * the batch endpoint couldn't exact-match) is lenient enough to return a
  * completely unrelated real card for a homebrew name that merely contains a
- * real card's words (e.g. "Rendwin, Warden of the Grove" fuzzy-matched the
- * real, unrelated "Warden of the Grove"). Without this check that reads as
- * a false "mismatch" instead of the true "not on Scryfall at all". */
+ * real card's words (a homebrew "Rendwin, Warden of the Grove" once
+ * fuzzy-matched the real, unrelated "Warden of the Grove"). Without this
+ * check that reads as a false "mismatch" instead of the true "not on
+ * Scryfall at all" — which is now the only thing a NOT FOUND can mean, since
+ * every card in the pool is a real card. */
 function actuallyNamed(card, name) {
   const lower = name.toLowerCase();
   if (namesOf(card).some((n) => n.toLowerCase() === lower)) return true;
