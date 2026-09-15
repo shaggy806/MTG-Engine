@@ -67,7 +67,11 @@ export interface ActivatedAbility {
    * the source permanent itself is excluded from every target slot's legal
    * options. Without it a self-untap-style ability can target itself and
    * become a repeatable no-net-cost loop the fuzzer's tick budget catches;
-   * mirrors `TriggerSpec.otherOnly`. needed-cards P17. */
+   * mirrors `TriggerSpec.otherOnly`. needed-cards P17.
+   *
+   * It also keeps the source out of its own **sacrifice cost** (Ayara, First
+   * of Locthwain: "Sacrifice **another** black creature") — same word, same
+   * meaning, and without it Ayara could eat herself to draw. */
   readonly otherOnly?: boolean;
   /** "Activate only if …" (rule 602.5, e.g. Ferocious — Fanatic of Rhonas:
    * "{T}: Add {G}{G}{G}{G}. Activate only if you control a creature with

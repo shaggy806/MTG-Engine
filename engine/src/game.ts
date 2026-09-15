@@ -4256,7 +4256,10 @@ export class Game {
   private sacrificeCandidates(
     player: PlayerId,
     sourceId: ObjectId,
-    ability: { readonly cost: { readonly sacrifice?: SacrificeCost } },
+    ability: {
+      readonly cost: { readonly sacrifice?: SacrificeCost };
+      readonly otherOnly?: boolean;
+    },
   ): ObjectId[] {
     const sac = ability.cost.sacrifice;
     if (sac === undefined) return [];
@@ -4264,6 +4267,10 @@ export class Game {
     return this.state.zones.shared.battlefield.filter((id) => {
       const object = this.state.objects[id];
       if (object.controller !== player) return false;
+      // "Sacrifice **another** black creature" (Ayara) — `otherOnly` keeps the
+      // source out of its own sacrifice cost, the same way it keeps it out of
+      // its own target slots.
+      if (ability.otherOnly === true && id === sourceId) return false;
       if (sac === "creature-you-control") {
         return this.registry.get(printedCardName(object)).types.includes("creature");
       }
@@ -4405,7 +4412,14 @@ export class Game {
     }
     if (
       ability.condition !== undefined &&
-      !staticConditionMet(this.state, this.registry, source, ability.condition)
+      // Rule 602.5: "Activate only if …" is a check against the game state as
+      // it stands, and the source permanent is part of that state — Bloodline
+      // Keeper is one of the five Vampires its own transform ability counts.
+      // (A *static* ability's condition is the one that skips itself, to keep
+      // "as long as you control another …" from reading itself.)
+      !staticConditionMet(this.state, this.registry, source, ability.condition, {
+        includeSelf: true,
+      })
     ) {
       return `${def.name}'s ability's activation condition isn't met`;
     }
@@ -4718,7 +4732,11 @@ export class Game {
         }
         if (
           ability.condition !== undefined &&
-          !staticConditionMet(this.state, this.registry, object, ability.condition)
+          // Same rule 602.5 reading as `whyCannotActivateAbility` — the gated
+          // mana ability's own permanent counts toward its condition.
+          !staticConditionMet(this.state, this.registry, object, ability.condition, {
+            includeSelf: true,
+          })
         ) {
           continue;
         }
