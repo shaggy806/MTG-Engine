@@ -308,9 +308,9 @@ function LobbyScreen({
 function SeatStatusList({ game }: { readonly game: NetworkGame }) {
   return (
     <div className="seat-picker-status">
-      {game.seats.map((s) => (
+      {game.seats.map((s, i) => (
         <span key={s.player} className={s.claimed || s.isBot ? 'seat-status claimed' : 'seat-status'}>
-          {playerLabel(s.player, game.seats)}
+          {s.claimed || s.isBot ? playerLabel(s.player, game.seats) : `Player ${i + 1}`}
           {s.isBot
             ? ' (bot)'
             : s.claimed
@@ -331,7 +331,7 @@ function SeatStatusList({ game }: { readonly game: NetworkGame }) {
 
 function SeatPickerScreen({ game }: { readonly game: NetworkGame }) {
   const [name, setName] = useState('')
-  const nextSeatIndex = game.seats.findIndex((s) => !s.claimed)
+  const nextSeatIndex = game.seats.findIndex((s) => !s.claimed && !s.isBot)
   const nextSeat = nextSeatIndex === -1 ? null : game.seats[nextSeatIndex]
 
   const join = (e: FormEvent) => {
