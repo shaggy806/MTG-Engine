@@ -14,6 +14,7 @@ import { useNetworkGame } from './net/useNetworkGame.ts'
 import type { NetworkGame } from './net/useNetworkGame.ts'
 import { computeBoardEntries } from './game/board.ts'
 import type { BoardEntry } from './game/board.ts'
+import { useDelayedView } from './game/useDelayedView.ts'
 import { playerLabel, seatClassOf } from './format.ts'
 import { PhaseTrack } from './ui/PhaseTrack.tsx'
 import { TurnBanner } from './ui/TurnBanner.tsx'
@@ -390,7 +391,11 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
   const { view, seat, opponents } = game
   const [showHistory, setShowHistory] = useState(false)
   const [dismissedHighroll, setDismissedHighroll] = useState(false)
-  if (view === null || seat === null || opponents.length === 0) {
+  // Called unconditionally (before the loading-guard below) per the rules of
+  // hooks — see useDelayedView's own comment for why Table specifically (not
+  // the header/AnimationLayer) renders off this instead of `view` directly.
+  const delayed = useDelayedView(view, game.actions)
+  if (view === null || seat === null || opponents.length === 0 || delayed.view === null) {
     return <CenteredScreen title="Loading…" />
   }
   const over = view.result.over
@@ -428,12 +433,20 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
         </div>
       ) : null}
 
-      {/* Not keyed to game.revision like <Table> — its own "which events have
-          I already animated" bookkeeping needs to survive the remount that
-          key triggers on every single dispatch. */}
+      {/* Reacts to the raw `view`, not `delayed.view` below — it needs new
+          events (and the objects they reference) the instant they exist, and
+          isn't keyed/remounted the way <Table> is, so its own "which events
+          have I already animated" bookkeeping survives every dispatch. */}
       <AnimationLayer view={view} seat={seat} seats={game.seats} />
 
-      <Table key={game.revision} view={view} seat={seat} opponents={opponents} game={game} />
+      <Table
+        key={delayed.revision}
+        view={delayed.view}
+        seat={seat}
+        opponents={opponents}
+        game={game}
+        actions={delayed.actions}
+      />
 
       {showHistory ? (
         <div className="zone-viewer-overlay" onClick={() => setShowHistory(false)}>
@@ -462,14 +475,18 @@ interface TableProps {
   readonly seat: PlayerId
   readonly opponents: readonly PlayerId[]
   readonly game: NetworkGame
+  /** `useDelayedView`'s held-back list, matching the held-back `view` above
+   * — never `game.actions` directly, which is already ahead of what's drawn
+   * on screen (see GameScreen's own comment). */
+  readonly actions: readonly LegalAction[]
 }
 
 /**
- * Everything interactive. Keyed on `game.revision` in the parent, so every
- * in-progress selection resets whenever the game state moves on.
+ * Everything interactive. Keyed on the parent's delayed revision, so every
+ * in-progress selection resets in step with the board the player can see,
+ * not with every raw network push (see useDelayedView).
  */
-function Table({ view, seat, opponents, game }: TableProps) {
-  const actions = game.actions
+function Table({ view, seat, opponents, game, actions }: TableProps) {
 
   const [targeting, setTargeting] = useState<Targeting | null>(null)
   // Whether the collapsed hand tray (priority mode only -- see .hand-strip's
