@@ -1280,6 +1280,14 @@
 }
 .ct-rules {
   color: #c2c6cf;
+  /* A card's `text` separates its abilities with "\n", the way the printed
+     card does (Aftermath Analyst's ETB and its activated ability are two
+     paragraphs, not one run-on line). Without this those newlines collapse
+     to spaces and every ability runs together. `pre-line`, not `pre-wrap`:
+     it honours the line breaks while still collapsing the incidental
+     indentation that comes from how the `text` strings are written in the
+     card files, and still wraps long lines normally. */
+  white-space: pre-line;
 }
 .ct-counters {
   margin-top: auto;

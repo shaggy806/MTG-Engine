@@ -9,7 +9,8 @@ export default defineCard({
   toughness: 6,
   keywords: ["deathtouch", "lifelink"],
   text:
-    "Deathtouch, lifelink. When Wurmcoil Engine dies, create a 3/3 colorless " +
+    "Deathtouch, lifelink\n" +
+    "When Wurmcoil Engine dies, create a 3/3 colorless " +
     "Phyrexian Wurm artifact creature token with deathtouch and a 3/3 " +
     "colorless Phyrexian Wurm artifact creature token with lifelink.",
   triggered: [

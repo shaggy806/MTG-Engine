@@ -5,6 +5,6 @@ export default defineCard({
   manaCost: "{U}",
   colors: ["U"],
   types: ["instant"],
-  text: "Scry 1, then draw a card.",
+  text: "Scry 1.\nDraw a card.",
   effect: { kind: "scry", amount: 1, then: { kind: "draw", amount: 1 } },
 });

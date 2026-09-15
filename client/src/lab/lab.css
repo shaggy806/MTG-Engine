@@ -141,6 +141,8 @@
   border-radius: 6px;
   padding: 0.6rem;
   line-height: 1.5;
+  /* Same as .ct-rules — one paragraph per ability, as printed. */
+  white-space: pre-line;
 }
 .lab-chip-row {
   display: flex;

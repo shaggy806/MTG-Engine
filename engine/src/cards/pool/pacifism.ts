@@ -6,7 +6,7 @@ export default defineCard({
   colors: ["W"],
   types: ["enchantment"],
   subtypes: ["Aura"],
-  text: "Enchant creature. Enchanted creature can't attack or block.",
+  text: "Enchant creature\nEnchanted creature can't attack or block.",
   targets: ["creature"],
   static: [
     {

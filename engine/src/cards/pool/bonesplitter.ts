@@ -5,7 +5,7 @@ export default defineCard({
   manaCost: "{1}",
   types: ["artifact"],
   subtypes: ["Equipment"],
-  text: "Equipped creature gets +2/+0. Equip {1}",
+  text: "Equipped creature gets +2/+0.\nEquip {1}",
   static: [
     {
       affects: { scope: "attached" },

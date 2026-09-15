@@ -5,7 +5,17 @@
 // comparable printed characteristics. Tokens (cards/tokens/) are skipped:
 // their names aren't unique/canonical on Scryfall.
 //
-// Usage: node scripts/verify-cards.mjs [--json out.json] [--limit N] [--start N]
+// `--text` additionally audits the *line structure* of each card's rules text
+// against Scryfall's `oracle_text` — the client renders `text` verbatim
+// (white-space: pre-line), so a card whose text is missing a newline escape
+// runs two abilities together on one line.
+// Opt-in, because a pile of differences are expected and correct:
+// the client draws the keyword line from `keywords` rather than `text`, a
+// typed dual land needs an explicit "{T}: Add" line Scryfall leaves implicit
+// in the type line, and a card with an unmodeled ability is missing that
+// ability's line on purpose. Read the output, don't count it.
+//
+// Usage: node scripts/verify-cards.mjs [--json out.json] [--limit N] [--start N] [--text]
 
 import { readdirSync } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -23,6 +33,7 @@ const flag = (name, fallback) => {
 const jsonOut = flag("json", null);
 const limit = Number(flag("limit", Infinity));
 const start = Number(flag("start", 0));
+const checkText = args.includes("--text");
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -174,6 +185,24 @@ function numOrNull(s) {
   return Number.isFinite(n) ? n : null;
 }
 
+/**
+ * The *lines* of a rules-text block, normalized for comparison. A card's
+ * `text` is displayed verbatim (the client renders it `white-space: pre-line`),
+ * so its line breaks have to match the printed card's or two abilities run
+ * together on one line. Only the line *structure* is compared, never the
+ * wording — the pool paraphrases freely, keeps the card's own name where
+ * Scryfall now says "this creature", and usually drops reminder text.
+ */
+function textLines(s) {
+  return (s ?? "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    // A line that is *only* reminder text is optional — the pool normally
+    // leaves it out, and its presence or absence isn't a structural error.
+    .filter((line) => !/^\(.*\)$/.test(line));
+}
+
 function compare(def, card) {
   const face = faceFor(card, def.name);
   const issues = [];
@@ -215,6 +244,19 @@ function compare(def, card) {
   const theirLoyalty = numOrNull(face.loyalty);
   if (theirLoyalty !== null && def.loyalty !== undefined && def.loyalty !== theirLoyalty) {
     issues.push(`loyalty: ours=${def.loyalty} scryfall=${face.loyalty}`);
+  }
+
+  // One line per printed ability. Fewer lines than the real card means two
+  // abilities are being displayed as one run-on paragraph; more means a line
+  // break the printed card doesn't have.
+  const ourLines = textLines(def.text);
+  const theirLines = textLines(face.oracle_text);
+  if (checkText && theirLines.length > 0 && ourLines.length > 0 && ourLines.length !== theirLines.length) {
+    issues.push(
+      `text lines: ours=${ourLines.length} scryfall=${theirLines.length}` +
+        `\n      ours:     ${ourLines.map((l) => l.slice(0, 60)).join(" | ")}` +
+        `\n      scryfall: ${theirLines.map((l) => l.slice(0, 60)).join(" | ")}`,
+    );
   }
 
   return issues;

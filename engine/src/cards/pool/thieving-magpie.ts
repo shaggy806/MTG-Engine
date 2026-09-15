@@ -9,7 +9,9 @@ export default defineCard({
   power: 1,
   toughness: 3,
   keywords: ["flying"],
-  text: "Flying. Whenever Thieving Magpie deals combat damage to a player, draw a card.",
+  text:
+    "Flying\n" +
+    "Whenever Thieving Magpie deals combat damage to a player, draw a card.",
   triggered: [
     {
       trigger: { on: "deals-combat-damage-to-player", who: "self" },

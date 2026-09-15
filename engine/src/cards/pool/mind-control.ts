@@ -6,7 +6,7 @@ export default defineCard({
   colors: ["U"],
   types: ["enchantment"],
   subtypes: ["Aura"],
-  text: "Enchant creature. You control enchanted creature.",
+  text: "Enchant creature\nYou control enchanted creature.",
   targets: ["creature"],
   controlEnchanted: true,
 });

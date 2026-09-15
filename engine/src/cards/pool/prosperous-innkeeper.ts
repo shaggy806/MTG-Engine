@@ -9,7 +9,7 @@ export default defineCard({
   power: 1,
   toughness: 1,
   text:
-    "When Prosperous Innkeeper enters the battlefield, create a Treasure token. " +
+    "When Prosperous Innkeeper enters the battlefield, create a Treasure token.\n" +
     "Whenever another creature you control enters, you gain 1 life.",
   triggered: [
     {

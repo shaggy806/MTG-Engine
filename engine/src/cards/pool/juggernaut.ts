@@ -7,7 +7,9 @@ export default defineCard({
   subtypes: ["Juggernaut"],
   power: 5,
   toughness: 3,
-  text: "Juggernaut attacks each combat if able. Juggernaut can't be blocked by Walls.",
+  text:
+    "Juggernaut attacks each combat if able.\n" +
+    "Juggernaut can't be blocked by Walls.",
   static: [
     {
       affects: { scope: "self" },

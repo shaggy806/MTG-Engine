@@ -7,7 +7,7 @@ export default defineCard({
   manaCost: "{2}",
   types: ["artifact"],
   subtypes: ["Equipment"],
-  text: "Equipped creature has haste and shroud. Equip {0}",
+  text: "Equipped creature has haste and shroud.\nEquip {0}",
   static: [
     {
       affects: { scope: "attached" },

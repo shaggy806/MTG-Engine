@@ -9,7 +9,10 @@ export default defineCard({
   power: 1,
   toughness: 2,
   keywords: ["haste"],
-  text: "Haste. Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)",
+  text:
+    "Haste\n" +
+    "Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until " +
+    "end of turn.)",
   triggered: [
     {
       trigger: { on: "cast-spell", who: "you", noncreatureOnly: true },

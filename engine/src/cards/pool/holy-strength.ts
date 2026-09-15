@@ -6,7 +6,7 @@ export default defineCard({
   colors: ["W"],
   types: ["enchantment"],
   subtypes: ["Aura"],
-  text: "Enchant creature. Enchanted creature gets +1/+2.",
+  text: "Enchant creature\nEnchanted creature gets +1/+2.",
   targets: ["creature"],
   static: [
     {

@@ -9,7 +9,10 @@ export default defineCard({
   power: 2,
   toughness: 2,
   keywords: ["flying"],
-  text: "Flying. Whenever Hypnotic Specter deals combat damage to a player, that player discards a card.",
+  text:
+    "Flying\n" +
+    "Whenever Hypnotic Specter deals combat damage to a player, that player discards " +
+    "a card.",
   triggered: [
     {
       trigger: { on: "deals-combat-damage-to-player", who: "self" },
