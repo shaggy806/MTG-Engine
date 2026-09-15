@@ -74,6 +74,9 @@ export function PlayerPanel({
       className={classes}
       onClick={targetable ? onTargetClick : undefined}
       role={targetable ? 'button' : undefined}
+      // Read by AnimationLayer to find this player's panel as an attack
+      // lunge's target — not used for anything React-owned.
+      data-player-id={info.id}
     >
       <div className="pp-head">
         {online === null ? null : (

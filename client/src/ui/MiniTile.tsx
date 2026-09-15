@@ -172,6 +172,9 @@ export function MiniTile({
     <div
       className="mini-tile-wrap"
       ref={wrapRef}
+      // Read by AnimationLayer to find this tile's DOM node for an attack
+      // lunge — not used for anything React-owned.
+      data-obj-id={obj.id}
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
       // Keyboard/touch parity, standing in for the `:focus-within` the CSS

@@ -17,6 +17,7 @@ import type { BoardEntry } from './game/board.ts'
 import { playerLabel, seatClassOf } from './format.ts'
 import { PhaseTrack } from './ui/PhaseTrack.tsx'
 import { TurnBanner } from './ui/TurnBanner.tsx'
+import { AnimationLayer } from './ui/AnimationLayer.tsx'
 import { PlayerPanel } from './ui/PlayerPanel.tsx'
 import { CardTile } from './ui/CardTile.tsx'
 import { MiniTile } from './ui/MiniTile.tsx'
@@ -426,6 +427,11 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
           🎲 {playerLabel(view.startingPlayer, game.seats)} won the highroll and goes first
         </div>
       ) : null}
+
+      {/* Not keyed to game.revision like <Table> — its own "which events have
+          I already animated" bookkeeping needs to survive the remount that
+          key triggers on every single dispatch. */}
+      <AnimationLayer view={view} seat={seat} seats={game.seats} />
 
       <Table key={game.revision} view={view} seat={seat} opponents={opponents} game={game} />
 
