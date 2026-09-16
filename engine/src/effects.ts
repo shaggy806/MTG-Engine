@@ -399,6 +399,12 @@ export type EffectSpec =
       readonly power: EffectAmount;
       readonly toughness: EffectAmount;
       readonly duration: PtDuration;
+      /** Spare the effect's own source — "**other** attacking creatures you
+       * control with flying" (Steel-Plume Marshal), which is itself an
+       * attacking creature with flying. Same clause `damage-all` carries, and
+       * for the same reason: a `CardFilter` describes the permanent matched,
+       * not its relationship to the source. */
+      readonly exceptSource?: boolean;
     }
   | {
       /** Double each matching permanent's *current* power and toughness
@@ -1023,6 +1029,7 @@ export interface EffectApi {
     power: number,
     toughness: number,
     duration: PtDuration,
+    exceptSource?: boolean,
   ): void;
   /** Grant `keyword` to every battlefield permanent matching `filter`. */
   grantKeywordAll(filter: CardFilter, keyword: Keyword, duration: PtDuration): void;
@@ -1508,6 +1515,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
         amountValue(spec.power, ctx),
         amountValue(spec.toughness, ctx),
         spec.duration,
+        spec.exceptSource === true,
       );
       return;
     case "double-pt-all":

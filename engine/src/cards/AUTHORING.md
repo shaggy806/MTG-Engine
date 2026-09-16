@@ -876,9 +876,10 @@ activated: [{
 each of the big repeating shapes, and a new member of a cycle should use it
 rather than being spelled out: `shockLand`, `fetchLand`, `checkLandStatic`,
 `enterTappedUnlessLands`, `painLand`, `trikeland`, `talisman` (a pain land's
-ability set on a `{2}` artifact), `tapLand` (enters tapped, taps for two
-colours — Timber Gorge; pass `true` for the gain-1-life variant, Kazandu
-Refuge), `revealLand`, `basicLand`. `blood-crypt.ts` is the whole
+ability set on a `{2}` artifact), `signet` (a `{2}` artifact with "{1}, {T}:
+Add [two colours]" — see the converter note in §15), `tapLand` (enters tapped,
+taps for two colours — Timber Gorge; pass `true` for the gain-1-life variant,
+Kazandu Refuge), `revealLand`, `basicLand`. `blood-crypt.ts` is the whole
 file: `export default shockLand("Blood Crypt", ["Swamp", "Mountain"]);`
 
 **{X} burn** (`fireball.ts` / `blaze.ts`): `manaCost: "{X}{R}"`, `targets:
@@ -986,14 +987,17 @@ different card, or extend the engine (see `ROADMAP.md`).
   Dragonspeaker's ultimate: "At the beginning of your draw step, draw two
   additional cards") is therefore unauthorable. This is the common shape for
   planeswalker ultimates, so it's a real gap rather than a one-card one.
-- **`add-mana`'s cost-attached mana lands remain unmodeled.** The `{ oneOf }`
-  combination form (needed-cards P20, §8) covers "any combination of these
-  colours" for an ability with no mana in its own *cost* (Orcish Lumberjack).
-  Filter lands (Flooded Grove, Mossfire Valley) and Selvala, Heart of the
-  Wilds still can't be authored as true mana abilities: their activation cost
-  itself contains mana, which `manaSources()` excludes from the auto-payment
-  scan entirely (to avoid circular payment planning) regardless of what the
-  ability's own output shape is.
+- **A mana ability whose activation cost contains a *coloured* pip is still
+  unmodeled.** `manaSources()` now admits a "converter" — a mana ability whose
+  own cost is purely **generic** and which produces more than it costs (the ten
+  Signets via the `signet` helper, filter lands like Flooded Grove). The
+  planner reaches for one only after the ordinary sources are spent, funds its
+  cost from those (never from another converter, and preferring a source whose
+  colour the cost doesn't want), and orders it last so the mana is in the pool
+  when it activates. A *coloured* activation cost stays out, because it is
+  genuinely circular — you'd need the colour to make the colour — and so does
+  an `{X}` one, since nothing is resolving during payment planning. Selvala,
+  Heart of the Wilds is still blocked, on its output rather than its cost.
 - **Tapping *other* permanents as an ability cost** (Gravespawn Sovereign:
   "Tap five untapped Zombies you control"). `AbilityCost.tap` taps the source
   only.

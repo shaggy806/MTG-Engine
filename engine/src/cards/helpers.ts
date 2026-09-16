@@ -192,6 +192,31 @@ export const tapLand = (
   });
 };
 
+/**
+ * A "Signet" (Azorius Signet, Dimir Signet, Rakdos Signet, …): a `{2}` artifact
+ * with "{1}, {T}: Add [two colours]".
+ *
+ * Net +1 mana and colour-fixing, which is why it has a mana cost of its own —
+ * see `ManaOption.genericCost`, the machinery that lets the auto-payer fund it
+ * from other sources.
+ */
+export const signet = (name: string, colors: readonly [Color, Color]): CardDefinition =>
+  defineCard({
+    name,
+    manaCost: "{2}",
+    types: ["artifact"],
+    text: `{1}, {T}: Add {${colors[0]}}{${colors[1]}}.`,
+    activated: [
+      {
+        cost: { mana: "{1}", tap: true },
+        targets: [],
+        effect: { kind: "add-mana", mana: { oneOf: colors }, amount: 2 },
+        resolve: null,
+        text: `{1}, {T}: Add {${colors[0]}}{${colors[1]}}.`,
+      },
+    ],
+  });
+
 const NUM_WORD: Readonly<Record<number, string>> = { 2: "two", 3: "three", 4: "four" };
 
 /**

@@ -188,6 +188,18 @@ interface ManaOption {
   readonly anyColor: number;
   readonly pain: number;
   readonly lifeCost: number;
+  /**
+   * Generic mana this activation *costs* — a Signet's "{1}, {T}: Add {B}{R}",
+   * a filter land's "{1}, {T}: Add {G}{G}, {G}{U}, or {U}{U}".
+   *
+   * These are "converter" sources: net-positive in count but colour-fixing,
+   * and unlike everything else here they can't pay for themselves. Only a
+   * purely *generic* activation cost is admitted — a coloured one would be
+   * genuinely circular (you'd need the colour to make the colour). See
+   * `planManaPayment`, which funds a converter from plain sources only and
+   * orders it after them.
+   */
+  readonly genericCost: number;
 }
 
 /** One of `player`'s permanents that can produce mana right now. `options` is
@@ -213,6 +225,17 @@ interface ManaPlanStep {
   readonly sacrifice: boolean;
   readonly pain: number;
   readonly lifeCost: number;
+  /**
+   * The exact mana this step spends from the pool before adding its own — a
+   * Signet's `{1}`, resolved at planning time to the specific unit the plan
+   * took from another source. Empty for every ordinary source.
+   *
+   * Spelled out rather than left as "one generic" because a colour-blind
+   * deduction can consume a colour the spell still needs: two Islands, two
+   * Swamps and an Azorius Signet paying `{3}{W}{U}` underflow if the Signet's
+   * `{1}` eats an Island's `{U}`.
+   */
+  readonly spends: readonly ManaType[];
 }
 
 /** A fully-worked-out way to pay a cost: which sources to tap ({@link
@@ -5298,16 +5321,29 @@ export class Game {
       // mixes a tap-only and a sacrifice mana ability on one permanent.
       let sacrificeSelf = false;
       const key = (o: ManaOption): string =>
-        `${[...o.fixed].sort().join(",")}|${o.anyColor}|${o.pain}|${o.lifeCost}`;
+        `${[...o.fixed].sort().join(",")}|${o.anyColor}|${o.pain}|${o.lifeCost}|${o.genericCost}`;
       for (const ability of this.effectiveActivated(id, grantors)) {
         if (
           !isManaAbility(ability) ||
           !ability.cost.tap ||
-          ability.cost.mana !== null ||
           ability.effect === null ||
           ability.effect.kind !== "add-mana"
         ) {
           continue;
+        }
+        // A mana ability whose own activation cost contains mana is a
+        // "converter" (a Signet, a filter land). Only a purely *generic* cost
+        // is admitted: a coloured one would be circular, needing the colour to
+        // make the colour. `{X}` is out for the same reason it is everywhere
+        // else here — nothing is resolving, so there's no X to read.
+        let genericCost = 0;
+        if (ability.cost.mana !== null) {
+          const parsed = parseManaCost(ability.cost.mana);
+          const colouredPips =
+            COLORS.reduce((n, c) => n + parsed.colored[c], 0) + parsed.colorless;
+          if (colouredPips > 0 || parsed.x > 0 || parsed.hybrid.length > 0) continue;
+          genericCost = parsed.generic;
+          if (genericCost <= 0) continue;
         }
         if (
           ability.condition !== undefined &&
@@ -5338,15 +5374,19 @@ export class Game {
         // not offered as a source rather than being guessed at.
         if (typeof ability.effect.amount !== "number") continue;
         const manaAmount = ability.effect.amount;
+        // A converter that doesn't produce more than it costs is never worth
+        // offering, and admitting one would let the planner loop.
+        if (genericCost >= manaAmount) continue;
         const candidates: ManaOption[] =
           mana === "any-color"
-            ? [{ fixed: [], anyColor: manaAmount, pain, lifeCost }]
+            ? [{ fixed: [], anyColor: manaAmount, pain, lifeCost, genericCost }]
             : typeof mana === "object"
               ? manaCombinations(mana.oneOf, manaAmount).map((fixed) => ({
                   fixed,
                   anyColor: 0,
                   pain,
                   lifeCost,
+                  genericCost,
                 }))
               : [
                   {
@@ -5354,6 +5394,7 @@ export class Game {
                     anyColor: 0,
                     pain,
                     lifeCost,
+                    genericCost,
                   },
                 ];
         for (const option of candidates) {
@@ -5550,10 +5591,17 @@ export class Game {
     const all = this.manaSources(player)
       .map(affordableOptions)
       .filter((s) => s.options.length > 0 && s.id !== exclude);
-    const sources =
+    // A converter (a Signet) is only reached once the plain sources are
+    // exhausted: it costs mana someone else has to make, and on a board with
+    // none of them nothing below behaves any differently than it did before
+    // converters existed.
+    const isConverter = (s: ManaSource): boolean =>
+      s.options.every((o) => o.genericCost > 0);
+    const ordered =
       avoid === undefined
         ? all
         : [...all.filter((s) => s.id !== avoid), ...all.filter((s) => s.id === avoid)];
+    const sources = [...ordered.filter((s) => !isConverter(s)), ...ordered.filter(isConverter)];
 
     interface Tapped {
       readonly src: ManaSource;
@@ -5562,7 +5610,15 @@ export class Game {
       freeAny: number;
       readonly pain: number;
       readonly lifeCost: number;
+      readonly genericCost: number;
+      /** For a converter, the exact mana taken from other sources to pay its
+       * own cost — spent back verbatim by `useManaSource`. */
+      readonly spends: ManaType[];
     }
+    // Colours this cost still wants, for `coverGenericFrom`'s preference.
+    const wantedColors = new Set<ManaType>(
+      (["W", "U", "B", "R", "G", "C"] as const).filter((m) => need[m] > 0),
+    );
     const tapped: Tapped[] = [];
     const isTapped = (id: ObjectId): boolean => tapped.some((t) => t.src.id === id);
     // Which of a source's alternative outputs to commit to as it's tapped:
@@ -5600,8 +5656,33 @@ export class Game {
         freeAny: opt.anyColor,
         pain: opt.pain,
         lifeCost: opt.lifeCost,
+        genericCost: opt.genericCost,
+        spends: [],
       };
       tapped.push(t);
+      return t;
+    };
+
+    /**
+     * Open `src` only if its activation cost can be met — for an ordinary
+     * source that's free, for a converter it means covering `genericCost`
+     * generic from *other* sources first (never from itself, and never from
+     * another converter, which is what keeps this from recursing).
+     *
+     * On failure the tentative entry is rolled back, so a converter the board
+     * can't fund leaves no trace and the caller simply moves on.
+     */
+    const openFunded = (src: ManaSource, want: ManaType | null): Tapped | null => {
+      const mark = tapped.length;
+      const t = open(src, want);
+      for (let i = 0; i < t.genericCost; i += 1) {
+        const m = coverGenericFrom(src.id);
+        if (m === null) {
+          tapped.length = mark;
+          return null;
+        }
+        t.spends.push(m);
+      }
       return t;
     };
     const takeSpecific = (t: Tapped, m: ManaType): boolean => {
@@ -5618,29 +5699,73 @@ export class Game {
       }
       return false;
     };
-    const takeGeneric = (t: Tapped): boolean => {
+    /** Take one generic from `t`, returning *which* mana type it turned out
+     * to be — a converter has to spend exactly that back, not "one generic",
+     * or it can eat a colour the cost still needs. */
+    const takeGeneric = (t: Tapped): ManaType | null => {
       if (t.freeFixed.length > 0) {
-        t.produced.push(t.freeFixed.shift() as ManaType);
-        return true;
+        const m = t.freeFixed.shift() as ManaType;
+        t.produced.push(m);
+        return m;
       }
       if (t.freeAny > 0) {
         t.freeAny -= 1;
         t.produced.push("C");
-        return true;
+        return "C";
       }
-      return false;
+      return null;
     };
     const coverSpecific = (m: ManaType): boolean => {
       for (const t of tapped) if (takeSpecific(t, m)) return true;
       const canMake = (s: ManaSource): boolean =>
         s.options.some((o) => o.fixed.includes(m) || (m !== "C" && o.anyColor > 0));
-      const next = sources.find((s) => !isTapped(s.id) && canMake(s));
-      return next !== undefined && takeSpecific(open(next, m), m);
+      for (const next of sources) {
+        if (isTapped(next.id) || !canMake(next)) continue;
+        const t = openFunded(next, m);
+        if (t !== null && takeSpecific(t, m)) return true;
+      }
+      return false;
+    };
+    /**
+     * Cover one generic, never drawing on `exclude` or on another converter —
+     * this is what funds a converter's own cost.
+     *
+     * Spends a source that can't make any colour this cost still wants before
+     * one that can: the whole point of tapping a Signet is that the board is
+     * short on a colour, and funding it with the one land that made that
+     * colour defeats the exercise (two Islands and a Signet paying
+     * `{W}{U}{U}` — fund from a Swamp, not from an Island).
+     */
+    const coverGenericFrom = (exclude: ObjectId): ManaType | null => {
+      const eligible = (t: Tapped): boolean => t.src.id !== exclude && t.spends.length === 0;
+      const dull = (src: ManaSource): boolean =>
+        src.options.every(
+          (o) => o.anyColor === 0 && !o.fixed.some((m) => wantedColors.has(m)),
+        );
+      for (const t of tapped) {
+        if (!eligible(t) || !dull(t.src)) continue;
+        const m = takeGeneric(t);
+        if (m !== null) return m;
+      }
+      for (const t of tapped) {
+        if (!eligible(t)) continue;
+        const m = takeGeneric(t);
+        if (m !== null) return m;
+      }
+      const free = sources.filter(
+        (s) => !isTapped(s.id) && s.id !== exclude && !isConverter(s),
+      );
+      const next = free.find(dull) ?? free[0];
+      return next === undefined ? null : takeGeneric(open(next, null));
     };
     const coverGeneric = (): boolean => {
-      for (const t of tapped) if (takeGeneric(t)) return true;
-      const next = sources.find((s) => !isTapped(s.id));
-      return next !== undefined && takeGeneric(open(next, null));
+      for (const t of tapped) if (takeGeneric(t) !== null) return true;
+      for (const next of sources) {
+        if (isTapped(next.id)) continue;
+        const t = openFunded(next, null);
+        if (t !== null && takeGeneric(t) !== null) return true;
+      }
+      return false;
     };
 
     for (const color of COLORS) {
@@ -5649,11 +5774,16 @@ export class Game {
     for (let i = 0; i < need.C; i += 1) if (!coverSpecific("C")) return null;
     for (let i = 0; i < genericNeed; i += 1) if (!coverGeneric()) return null;
 
-    return tapped.map((t) => ({
+    // Converters last: each spends from the pool, and everything funding it
+    // is an ordinary source, so putting them after the rest is enough to
+    // guarantee the mana is there when `useManaSource` runs.
+    const steps = [...tapped].sort((a, b) => a.spends.length - b.spends.length);
+    return steps.map((t) => ({
       source: t.src.id,
       sacrifice: t.src.sacrificeSelf,
       pain: t.pain,
       lifeCost: t.lifeCost,
+      spends: [...t.spends],
       mana: [
         ...t.produced,
         ...t.freeFixed,
@@ -5667,6 +5797,10 @@ export class Game {
   private useManaSource(step: ManaPlanStep): void {
     const object = this.state.objects[step.source];
     const player = object.controller;
+    // A converter's own cost comes out of the pool before its output goes in
+    // — the plan orders its funding sources ahead of it, and names the exact
+    // units they contributed.
+    for (const m of step.spends) this.removeMana(player, m);
     for (const m of step.mana) this.addMana(player, m, 1);
     if (step.sacrifice) {
       this.moveObject(step.source, "graveyard");
@@ -5679,6 +5813,16 @@ export class Game {
     if (step.pain > 0) {
       this.dealDamage(step.source, { kind: "player", player }, step.pain);
     }
+  }
+
+  /** Take one specific unit of mana back out of `player`'s pool — the other
+   * half of `addMana`, used by a converter paying its own activation cost. */
+  private removeMana(player: PlayerId, mana: ManaType): void {
+    const pool = this.state.players[player].manaPool;
+    if ((pool[mana] ?? 0) <= 0) {
+      throw new Error(`mana pool underflow paying a converter's own cost (${mana})`);
+    }
+    pool[mana] -= 1;
   }
 
   private addMana(
@@ -6655,8 +6799,15 @@ export class Game {
       discardCards: (target, amount) => this.discardByEffect(target, amount),
       modifyPt: (target, power, toughness, duration) =>
         this.modifyPt(target, power, toughness, duration),
-      modifyPtAll: (filter, power, toughness, duration) =>
-        this.modifyPtAll(controller, filter, power, toughness, duration),
+      modifyPtAll: (filter, power, toughness, duration, exceptSource) =>
+        this.modifyPtAll(
+          controller,
+          filter,
+          power,
+          toughness,
+          duration,
+          exceptSource === true ? source : undefined,
+        ),
       grantKeywordAll: (filter, keyword, duration) =>
         this.grantKeywordAll(controller, filter, keyword, duration),
       doublePtAll: (filter, duration) => this.doublePtAll(controller, filter, duration),
@@ -7749,8 +7900,10 @@ export class Game {
     power: number,
     toughness: number,
     duration: PtDuration,
+    except?: ObjectId,
   ): void {
     for (const id of this.battlefieldMatching(you, filter)) {
+      if (id === except) continue;
       this.modifyPt({ kind: "object", object: id }, power, toughness, duration, false);
     }
   }

@@ -410,3 +410,58 @@ listed under phase H plus a few more the wider triage surfaced:
 
 The Signets remain the single highest-value item, for the reason given under
 phase H.
+
+---
+
+## Phase J — mana converters (the Signets)
+
+The item phase H flagged as highest-value. `manaSources()` dropped any mana
+ability whose own activation cost contained mana, which made all ten Signets,
+the filter lands and Molten Slagheap unauthorable. Three of the five precons
+want a Signet.
+
+A "converter" is now admitted on three conditions, all checked in
+`manaSources`:
+
+1. **The activation cost is purely generic.** A coloured one is genuinely
+   circular — you'd need the colour to make the colour — and `{X}` is out
+   because nothing is resolving during payment planning, so there's no X.
+2. **It produces more than it costs.** A net-zero converter is never worth
+   offering and would let the planner loop.
+3. **It's ordered last.** `planManaPayment` sorts converters behind every
+   ordinary source, so a board with none of them takes exactly the path it
+   took before this existed — which is why all 857 existing tests passed
+   unchanged.
+
+Funding is the interesting half. `openFunded` opens a converter tentatively
+and covers its cost from other sources; on failure it rolls the entry back
+and the caller moves on, so an unfundable Signet leaves no trace. The funding
+draw (`coverGenericFrom`) excludes the converter itself and every other
+converter — that's what bounds the recursion — and prefers a source whose
+colour the cost doesn't want. That last preference is not a nicety: two
+Islands, two Swamps and an Azorius Signet pay `{3}{W}{U}` only if the Signet's
+`{1}` comes from a Swamp. Funding it from an Island strands the `{U}` and the
+whole plan fails.
+
+The plan emits converters last and `useManaSource` spends the converter's own
+cost from the pool before adding its output, so the ordering guarantee is what
+makes the payment work at execution time, not just at planning time.
+
+**What the fuzzer caught here**, and the reason a `ManaPlanStep` records
+`spends: ManaType[]` rather than a bare count: paying a converter's `{1}` as
+"one generic" is colour-blind, and it can eat a colour the spell still needs.
+Two Islands, two Swamps and an Azorius Signet paying `{3}{W}{U}` underflowed —
+the plan promised the `{U}`, then the Signet's own payment took it back out of
+the pool. Each converter now records the exact unit every funding source gave
+it and spends that back verbatim. Unit tests missed it; 200 random games found
+it in under a minute.
+
+Still unmodeled: a *coloured* activation cost, and Selvala, Heart of the Wilds
+(blocked on its output, not its cost).
+
+Shipped alongside: the three Signets the precons want (Azorius, Dimir, Rakdos,
+via a `signet` helper) and ~25 more cards, plus `modify-pt-all { exceptSource }`
+— the same clause `damage-all` already had, for Steel-Plume Marshal's "**other**
+attacking creatures you control with flying", which is itself one.
+
+101 of the original 286 cards remain.
