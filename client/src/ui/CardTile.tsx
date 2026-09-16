@@ -136,7 +136,11 @@ export function CardTile({
   // While the batched lookup for this name is still in flight (or retrying
   // a transient failure), hold off on the eager by-name <img> entirely.
   const pending = !obj.art && isArtPending(face)
-  const artSrc = resolveArtUrl(obj.art, face)
+  // `faceIsBack` comes from the engine: a chosen printing is named by
+  // card id, which serves the front image unless asked otherwise, and
+  // only the registry knows a two-entry `faces` list is a real back face
+  // rather than an adventure's spell half.
+  const artSrc = resolveArtUrl(obj.art, face, 'art_crop', { backFace: obj.faceIsBack })
   // Derived fresh from artSrc (which can change once the batched lookup
   // resolves) rather than captured once at mount.
   const artFailed = !pending && isArtBlocked(artSrc)

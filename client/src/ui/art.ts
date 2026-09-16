@@ -284,8 +284,38 @@ const PAGE_RE = /^https?:\/\/(?:www\.)?scryfall\.com\/card\/([^/]+)\/([^/]+)/i
 /** `api.scryfall.com/cards/{set}/{num}` or `api.scryfall.com/cards/{uuid}`. */
 const API_RE = /^https?:\/\/api\.scryfall\.com\/cards\/(.+?)(?:\?|$)/i
 
-function withImageParams(base: string, version: ArtVersion): string {
-  return `${base}?format=image&version=${version}`
+function withImageParams(base: string, version: ArtVersion, backFace: boolean): string {
+  // `face=back` asks Scryfall's own card endpoint for the second printed
+  // image — the only way to address a back face by card id, since an id
+  // names the whole card and serves its front. 422 if the card has no back
+  // face, hence the caller-side guard (`VisibleObject.faceIsBack`, which is
+  // false for an adventure's spell half — same `faces` shape, one image).
+  return `${base}?format=image&version=${version}${backFace ? '&face=back' : ''}`
+}
+
+/** Hosts an art URL may point at.
+ *
+ * Defence in depth around `CardDefinition.art`, which is authored in this
+ * repo but is *also* where a deck's chosen printing lands after travelling
+ * from another player's browser (`PlayerState.printings` → `viewFor`'s
+ * `art`). The server already narrows that to a bare card id, but this
+ * function is what turns a value into an `<img src>`, so it refuses to emit
+ * a URL pointing anywhere else regardless of what reached it — an arbitrary
+ * host here would mean every viewer's browser making a request that leaks
+ * their IP address to whoever chose the value. */
+const ALLOWED_ART_HOSTS: readonly string[] = [
+  'api.scryfall.com',
+  'cards.scryfall.io',
+  'scryfall.com',
+  'www.scryfall.com',
+]
+
+function hostIsAllowed(url: string): boolean {
+  try {
+    return ALLOWED_ART_HOSTS.includes(new URL(url).hostname.toLowerCase())
+  } catch {
+    return false
+  }
 }
 
 /** A direct Scryfall CDN file — `cards.scryfall.io/{version}/{front|back}/…`.
@@ -312,6 +342,18 @@ export function cssUrl(url: string): string {
   return `url("${url.replace(/[\\"]/g, '\\$&')}")`
 }
 
+export interface ArtOptions {
+  /** The object is showing a card's *second printed image* — a transforming
+   * DFC turned over, or an MDFC's other face (see `VisibleObject.faceIsBack`,
+   * which the engine computes; an adventure has the same `faces` shape but
+   * only one image, so it is never true there).
+   *
+   * Only honoured for a reference that names a whole card (an id, a page or
+   * API link): a direct CDN file already spells out which face it is, and a
+   * by-name lookup is already being made under the back face's own name. */
+  readonly backFace?: boolean
+}
+
 /**
  * @param art the card's `art` field (`null` ⇒ fall back to the by-name lookup)
  * @param name the card / face name, for the fallback
@@ -320,7 +362,9 @@ export function resolveArtUrl(
   art: string | null | undefined,
   name: string,
   version: ArtVersion = 'art_crop',
+  opts: ArtOptions = {},
 ): string {
+  const back = opts.backFace === true
   if (!art) {
     const cached = imageCache.get(name.toLowerCase())?.[version]
     return cached ?? byNameUrl(name, version)
@@ -328,7 +372,7 @@ export function resolveArtUrl(
   const trimmed = art.trim()
 
   if (UUID_RE.test(trimmed)) {
-    return withImageParams(`https://api.scryfall.com/cards/${trimmed}`, version)
+    return withImageParams(`https://api.scryfall.com/cards/${trimmed}`, version, back)
   }
 
   const page = PAGE_RE.exec(trimmed)
@@ -337,12 +381,13 @@ export function resolveArtUrl(
     return withImageParams(
       `https://api.scryfall.com/cards/${set.toLowerCase()}/${collector}`,
       version,
+      back,
     )
   }
 
   const api = API_RE.exec(trimmed)
   if (api) {
-    return withImageParams(`https://api.scryfall.com/cards/${api[1]}`, version)
+    return withImageParams(`https://api.scryfall.com/cards/${api[1]}`, version, back)
   }
 
   // A direct Scryfall CDN file — re-point it at the requested size (a `png`
@@ -352,9 +397,11 @@ export function resolveArtUrl(
     return `${cdn[1]}${version}${cdn[3]}`
   }
 
-  // Any other direct image URL — use as given.
-  if (/^https?:\/\//i.test(trimmed)) return trimmed
+  // Any other direct image URL — use as given, but only on a host we're
+  // willing to send a viewer's browser to (see ALLOWED_ART_HOSTS).
+  if (/^https?:\/\//i.test(trimmed) && hostIsAllowed(trimmed)) return trimmed
 
-  // Unrecognised — safest to fall back rather than emit a broken <img src>.
+  // Unrecognised, or somewhere we won't fetch from — fall back rather than
+  // emit a broken (or hostile) <img src>.
   return byNameUrl(name, version)
 }

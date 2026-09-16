@@ -33,6 +33,10 @@ export function defToVisible(def: CardDefinition, art?: string | null): VisibleO
     faceName: def.faces && def.faces.length > 1 ? def.faces[0] : def.name,
     faces: def.faces ?? null,
     art: art ?? def.art,
+    // Always the face this definition *is* — `defToVisible` is handed one
+    // face's own `CardDefinition`, and a back face pins its own art, so
+    // there's never a front image to ask Scryfall past.
+    faceIsBack: false,
     owner,
     controller: owner,
     zone: 'battlefield',

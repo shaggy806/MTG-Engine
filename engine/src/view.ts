@@ -11,7 +11,6 @@
  */
 
 import type { CardRegistry, CardType, CombatRestriction, Keyword } from "./cards.js";
-import { isCardFront } from "./cards/classify.js";
 import { computeCharacteristics } from "./characteristics.js";
 import type { GameEvent } from "./events.js";
 import type { Color, ManaPool } from "./mana.js";
@@ -62,8 +61,14 @@ export interface VisibleObject {
   readonly faceName: string;
   readonly faces: readonly string[] | null;
   /** A Scryfall link pinning this card's art (its up face's / copied card's),
-   * or `null` for the by-name lookup. See `CardDefinition.art`. */
+   * or `null` for the by-name lookup. See `CardDefinition.art`. Carries the
+   * printing this card's owner brought when they chose one (`DeckList.printings`). */
   readonly art: string | null;
+  /** The up face is the card's *second printed image* — a transforming DFC
+   * turned over, or an MDFC's other face; false for an adventure's spell
+   * half, which shares one image with its creature. A client needs this to
+   * ask for the right side of a printing named by card id. */
+  readonly faceIsBack: boolean;
   readonly owner: PlayerId;
   readonly controller: PlayerId;
   readonly zone: ZoneType;
@@ -175,15 +180,17 @@ function visible(
   const def = registry.get(printedName);
   const computed = computeCharacteristics(state, registry, id);
   // The printing this card's *owner* brought (see `PlayerState.printings`)
-  // stands in for the pool's default illustration. Only for a face a
-  // printing reference can actually address: a Scryfall card id resolves to
-  // the whole card, which serves its *front* image, so applying an owner's
-  // chosen printing to a turned-over back face would show the wrong face
-  // rather than a different printing of the right one. A back face keeps
-  // the definition's own pinned art.
-  const printing = isCardFront(def)
-    ? state.players[object.owner]?.printings[printedName]
-    : undefined;
+  // stands in for the pool's default illustration. Keyed by the card's front
+  // face, which is the name a decklist (and so the printings map) uses — a
+  // turned-over permanent is still the same physical card.
+  const printing = state.players[object.owner]?.printings[def.faces?.[0] ?? printedName];
+  // Whether the up face is the card's *second printed image* — a
+  // transforming DFC turned over, or an MDFC's other face. An adventure has
+  // the same two-entry `faces` shape but only one printed image, so it is
+  // never true there. The client needs this to ask Scryfall for the right
+  // side of a chosen printing (`face=back`), which a card id alone can't
+  // say; it can't work it out itself without the card registry.
+  const faceIsBack = (object.faces === undefined ? 0 : (object.face ?? 0)) > 0 && !def.adventure;
   // Computed, not printed — a man-land currently animated (layer 4) is a
   // creature and should carry a P/T; a land again next turn and it won't.
   const isCreature = computed.types.includes("creature");
@@ -211,6 +218,7 @@ function visible(
     faceName: faceName(object),
     faces: object.faces === undefined ? null : [...object.faces],
     art: printing ?? def.art,
+    faceIsBack,
     owner: object.owner,
     controller: object.controller,
     zone: object.zone,

@@ -54,7 +54,11 @@ export function CommanderTile({
   // Queued synchronously during render — see the comment in CardTile.tsx.
   if (!obj.art) queueArtLookup(face)
   const pending = !obj.art && isArtPending(face)
-  const artSrc = resolveArtUrl(obj.art, face)
+  // `faceIsBack` comes from the engine: a chosen printing is named by
+  // card id, which serves the front image unless asked otherwise, and
+  // only the registry knows a two-entry `faces` list is a real back face
+  // rather than an adventure's spell half.
+  const artSrc = resolveArtUrl(obj.art, face, 'art_crop', { backFace: obj.faceIsBack })
   const artFailed = !pending && isArtBlocked(artSrc)
   const tint = costColor(obj.manaCost) ?? 'C'
 

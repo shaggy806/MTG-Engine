@@ -114,20 +114,16 @@ describe("deck printings", () => {
     expect(artOf(game, A, find(game, "Lightning Bolt"))).toBeNull();
   });
 
-  it("doesn't apply to a turned-over back face", () => {
-    // A Scryfall card id addresses the whole card, and serves its *front*
-    // image — so honouring a chosen printing on a back face would show the
-    // wrong face rather than a different printing of the right one. The
-    // back face keeps the art its own definition pins.
+  // A decklist names a double-faced card by its front face, so that's the
+  // key the printings map carries — but a turned-over permanent is still
+  // the same physical card and wears the same printing.
+  it("follows a card over when it transforms, keyed by its front face", () => {
     const game = Game.create({
       decks: [
         {
           player: A,
           cards: deck(["Harvesttide Infiltrator"]),
-          printings: {
-            "Harvesttide Infiltrator": PRINTING,
-            "Harvesttide Assailant": PRINTING,
-          },
+          printings: { "Harvesttide Infiltrator": PRINTING },
         },
         { player: B, cards: deck([]) },
       ],
@@ -139,11 +135,34 @@ describe("deck printings", () => {
       (o) => o.cardName === "Harvesttide Infiltrator" && o.zone === "battlefield",
     )!.id;
     expect(artOf(game, A, id)).toBe(PRINTING);
+    expect(game.viewFor(A).objects[id].faceIsBack).toBe(false);
 
     const snap = game.snapshot();
     snap.objects[id].face = 1;
     const flipped = Game.fromSnapshot(snap, {});
-    expect(flipped.viewFor(A).objects[id].faceName).toBe("Harvesttide Assailant");
-    expect(artOf(flipped, A, id)).not.toBe(PRINTING);
+    const back = flipped.viewFor(A).objects[id];
+    expect(back.faceName).toBe("Harvesttide Assailant");
+    expect(back.art).toBe(PRINTING);
+    // A card id names the whole card and serves its front image, so the
+    // client has to ask for `face=back` — and only the registry knows that
+    // this two-entry `faces` list is a real second image.
+    expect(back.faceIsBack).toBe(true);
+  });
+
+  it("doesn't call an adventure's spell half a back face — it's one image", () => {
+    const game = Game.create({
+      decks: [{ player: A, cards: deck(["Beanstalk Giant"]) }, { player: B, cards: deck([]) }],
+      seed: 3,
+      shuffle: false,
+    });
+    game.debugSpawn("Beanstalk Giant", A, "hand");
+    const id = find(game, "Beanstalk Giant");
+
+    const snap = game.snapshot();
+    snap.objects[id].face = 1;
+    const onAdventure = Game.fromSnapshot(snap, {});
+    const view = onAdventure.viewFor(A).objects[id];
+    expect(view.faceName).toBe("Fertile Footsteps");
+    expect(view.faceIsBack).toBe(false);
   });
 });
