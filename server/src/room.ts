@@ -2,6 +2,30 @@
  * One in-progress game and the seats connected to it. Transport-agnostic —
  * a `Connection` is just "something we can push a `ServerMessage` to" — so
  * this is unit-testable without a real WebSocket.
+ *
+ * ## Frames, and why a bot doesn't get to play its whole turn at once
+ *
+ * Everything a room shows its clients travels as a **frame**: one numbered
+ * `state` push carrying the board as it stands plus, implicitly, the events
+ * that got it there since the previous frame. A client plays those events
+ * out as animations, puts the resulting board on screen, and replies `ack`.
+ *
+ * That numbering exists because a bot used to take its entire turn inside a
+ * single `settle()` call: land, spell, attack and pass all landed on the
+ * client as one push, so the only picture of the board anybody ever saw was
+ * the one *after* all of it, with the animations for how it got there
+ * playing over a board that had already moved on. A land shown flying onto
+ * the battlefield was already tapped for the spell that came after it.
+ *
+ * So `settle()` now stops at every bot decision instead of running through
+ * it: it publishes a frame, waits for the acking seats to finish showing it
+ * (`FRAME_ACK_TIMEOUT_MS` caps the wait, and a seat that has never acked
+ * never gates anything, so no client can deadlock a room), and only then
+ * lets the bot move. One bot action per frame, in lockstep with whatever is
+ * on screen.
+ *
+ * `pacing: "immediate"` opts out of all of it — no bot delay, no gate, one
+ * push at the end — which is what tests and scripts drive rooms with.
  */
 
 import { Game, HeuristicBotController, actionPlayer, activePlayerOf, isSettled } from "engine";
@@ -39,10 +63,69 @@ interface Seat {
   /** The claimer's chosen name, or `null` to fall back to the seat's own
    * label ("Alice", "Bob", ...). */
   displayName: string | null;
+  /** The highest frame this seat has reported finished showing. */
+  ackedSeq: number;
+  /** Whether this seat has *ever* acked. Only seats that have shown they
+   * speak the ack half of the protocol are waited on, so a headless client,
+   * an old build, or a test's fake connection can't wedge a room. */
+  acksFrames: boolean;
 }
+
+/** How long the frame gate will wait on a seat that has acked before but has
+ * gone quiet — a backgrounded tab throttles its timers, so its animations
+ * (and therefore its acks) can slow right down. Past this the game moves on
+ * without it rather than stalling for everyone else. */
+const FRAME_ACK_TIMEOUT_MS = 6_000;
+/** A floor on the gap between one bot action and the next, so a string of
+ * moves with nothing animatable in them (passing priority round a table,
+ * say) still reads as separate moves rather than one blur. */
+const BOT_MIN_THINK_MS = 350;
 
 const SETTLE_BUDGET = 10_000;
 const MAX_DISPLAY_NAME_LENGTH = 20;
+
+/** Swappable so tests can run a room's bot pacing on a fake clock. */
+export interface RoomTimers {
+  readonly setTimeout: (fn: () => void, ms: number) => unknown;
+  readonly clearTimeout: (handle: unknown) => void;
+}
+
+const realTimers: RoomTimers = {
+  setTimeout: (fn, ms) => {
+    const handle = setTimeout(fn, ms);
+    // A room idling on a bot's think timer shouldn't be what keeps the
+    // process (or a test's event loop) alive.
+    handle.unref?.();
+    return handle;
+  },
+  clearTimeout: (handle) => clearTimeout(handle as ReturnType<typeof setTimeout>),
+};
+
+export interface RoomOptions {
+  /** Where this room's published frames go. The transport layer turns each
+   * into a `state` push per connected seat (see `ws-server.ts`), and binds
+   * it itself for any room it's handed — passing it here matters for a room
+   * that publishes before its first message, which is every promoted one. */
+  readonly onUpdate?: (room: Room) => void;
+  /**
+   * `"realtime"` (the default) paces bots against the clients' animations —
+   * one bot action per frame, held until every acking seat has caught up.
+   * `"immediate"` runs them to completion inside one `settle()` with a
+   * single push at the end, which is what tests and scripts want.
+   */
+  readonly pacing?: "realtime" | "immediate";
+  readonly timers?: RoomTimers;
+}
+
+/** A bot move parked until the clients have finished showing the frame it
+ * will act on. */
+interface FrameGate {
+  readonly run: () => void;
+  /** The `BOT_MIN_THINK_MS` floor has elapsed. */
+  minElapsed: boolean;
+  minHandle: unknown;
+  timeoutHandle: unknown;
+}
 
 export class Room {
   readonly id: string;
@@ -50,10 +133,20 @@ export class Room {
   private readonly seats: Seat[];
   private readonly bots = new Map<PlayerId, PlayerController>();
   private lastActivityAt: number;
+  /** Mutable so a transport can bind itself to a room it didn't build — see
+   * `RoomOptions.onUpdate`. */
+  onUpdate: (room: Room) => void;
+  private readonly pacing: "realtime" | "immediate";
+  private readonly timers: RoomTimers;
+  private seq = 0;
+  private gate: FrameGate | null = null;
 
-  constructor(id: string, game: Game) {
+  constructor(id: string, game: Game, options: RoomOptions = {}) {
     this.id = id;
     this.game = game;
+    this.onUpdate = options.onUpdate ?? (() => {});
+    this.pacing = options.pacing ?? "realtime";
+    this.timers = options.timers ?? realTimers;
     this.seats = game.state.turnOrder.map((player) => ({
       player,
       clientToken: null,
@@ -61,8 +154,21 @@ export class Room {
       autoPassUntil: null,
       skipManaOnly: false,
       displayName: null,
+      ackedSeq: 0,
+      acksFrames: false,
     }));
     this.lastActivityAt = Date.now();
+  }
+
+  /** The frame number of the most recent push — `ServerMessage.state.seq`. */
+  get frameSeq(): number {
+    return this.seq;
+  }
+
+  /** Settles a freshly-promoted room to the first thing anyone has to answer
+   * and publishes that opening frame. */
+  start(): void {
+    this.settle();
   }
 
   /** Milliseconds since a seat was claimed or an action dispatched here —
@@ -148,6 +254,11 @@ export class Room {
     }
     seat.connection = connection;
     seat.clientToken = clientToken;
+    // A fresh connection hasn't shown anything yet, so it starts out not
+    // gating: it re-earns that with its first ack on the push this claim is
+    // about to trigger.
+    seat.acksFrames = false;
+    seat.ackedSeq = this.seq;
     const trimmed = displayName?.trim();
     if (trimmed) {
       seat.displayName = trimmed.slice(0, MAX_DISPLAY_NAME_LENGTH);
@@ -171,6 +282,20 @@ export class Room {
     this.game.dispatch(action);
     this.lastActivityAt = Date.now();
     this.settle();
+  }
+
+  /**
+   * "I've finished showing frame `seq`." Recorded per seat and used purely
+   * to pace bots (see the class comment) — never to gate anything a human
+   * does, and deliberately not counted as activity for idle reaping, since
+   * it's automatic client traffic rather than someone playing.
+   */
+  ack(connection: Connection, seq: number): void {
+    const seat = this.seats.find((s) => s.connection === connection);
+    if (seat === undefined) return;
+    seat.acksFrames = true;
+    if (seq > seat.ackedSeq) seat.ackedSeq = seq;
+    this.tryOpenGate();
   }
 
   /**
@@ -238,9 +363,21 @@ export class Room {
     return this.bots.has(awaiting.player) ? awaiting.player : null;
   }
 
-  /** Synthesizes and dispatches `seat`'s bot decision in-process — no
-   * `Connection` involved, unlike a human seat's `dispatch`. */
-  private dispatchForBot(seat: PlayerId): void {
+  /** The bot seat that owes the game its next action right now, if any —
+   * whether that's a raised decision or simply holding priority. */
+  private currentBotActor(): PlayerId | null {
+    const s = this.game.state;
+    if (s.result.over) return null;
+    if (s.awaiting !== null) return this.nextBotDecider(s.awaiting);
+    const holder = s.priority.holder;
+    return holder !== null && this.bots.has(holder) ? holder : null;
+  }
+
+  /** What `seat`'s bot would do right now. Read-only — asked once to decide
+   * whether the move is worth pacing, then again when it's actually time to
+   * make it, so a move is never computed against one board and played onto
+   * another. */
+  private botAction(seat: PlayerId): Action {
     const bot = this.bots.get(seat);
     if (bot === undefined) throw new Error(`no bot on seat ${seat}`);
     const view: ControllerView = {
@@ -248,7 +385,13 @@ export class Room {
       player: seat,
       legalActions: () => this.game.legalActions(seat),
     };
-    this.game.dispatch(bot.act(view));
+    return bot.act(view);
+  }
+
+  /** Synthesizes and dispatches `seat`'s bot decision in-process — no
+   * `Connection` involved, unlike a human seat's `dispatch`. */
+  private dispatchForBot(seat: PlayerId): void {
+    this.game.dispatch(this.botAction(seat));
     this.lastActivityAt = Date.now();
   }
 
@@ -266,66 +409,174 @@ export class Room {
   }
 
   /**
-   * Advances the game one settled state at a time. At each stop: a plain
+   * One human-seat auto-advance at the current stopping point: a plain
    * priority window with no other legal option skips itself for *any* seat
    * (there's no real choice to take away); a seat that opted in to skipping
    * mana-only windows also skips one where tapping for mana is the only
    * other option; a seat with an active auto-pass skips its own non-empty
-   * windows too, until that condition clears. One hop per `advanceUntil`
-   * call (never the cascading `autoSettle`) so a just-reached stopping point
-   * can never be jumped over mid-cascade.
+   * windows too, until that condition clears. Returns whether it dispatched
+   * something — i.e. whether the caller should look again.
+   */
+  private autoAdvanceHumanSeat(s: GameState): boolean {
+    if (s.awaiting !== null) {
+      const seat = this.seatFor(s.awaiting.player);
+      const wasActive = seat.autoPassUntil !== null;
+      const justCleared = this.clearAutoPassIfDone(seat, s);
+      if (s.awaiting.kind === "attackers" && wasActive && !justCleared) {
+        this.game.dispatch({ type: "declare-attackers", player: seat.player, attackers: [] });
+        return true;
+      }
+      return false; // a real decision, or this seat's auto-pass just ran out
+    }
+
+    const holder = s.priority.holder;
+    if (holder === null) return false;
+    const seat = this.seatFor(holder);
+    const wasActive = seat.autoPassUntil !== null;
+    const justCleared = this.clearAutoPassIfDone(seat, s);
+
+    const legal = this.game.legalActions(holder);
+    const forcedPass = legal.length === 1 && legal[0].kind === "pass-priority";
+    const manaOnlyAndSkipping = seat.skipManaOnly && this.game.isDeadForMana(holder);
+    if (forcedPass || manaOnlyAndSkipping || (wasActive && !justCleared)) {
+      this.game.dispatch({ type: "pass-priority", player: holder });
+      return true;
+    }
+    return false; // a real choice for whoever holds it
+  }
+
+  /**
+   * Advances the game one settled state at a time, stopping at the first
+   * thing a human has to answer — or, in `"realtime"` pacing, at each bot
+   * action, which is published as its own frame and then held behind the
+   * frame gate (see the class comment). Always publishes exactly one frame
+   * before it returns. One `advanceUntil` hop at a time (never the cascading
+   * `autoSettle`) so a just-reached stopping point can never be jumped over
+   * mid-cascade.
    */
   private settle(): void {
+    // A bot move is already parked on the gate; it will resume the loop
+    // itself once the clients have caught up. Whatever got us here (a human
+    // answering a parallel mulligan, a seat arming auto-pass) still deserves
+    // to be shown right away, and publishing extends the gate's wait to that
+    // newer frame, which is exactly right.
+    if (this.gate !== null) {
+      this.publish();
+      return;
+    }
+
     for (let i = 0; i < SETTLE_BUDGET; i += 1) {
       this.game.advanceUntil(isSettled);
       const s = this.game.state;
-      if (s.result.over) return;
+      if (s.result.over) break;
 
-      if (s.awaiting !== null) {
-        const botDecider = this.nextBotDecider(s.awaiting);
-        if (botDecider !== null) {
-          this.dispatchForBot(botDecider);
+      const bot = this.currentBotActor();
+      if (bot !== null) {
+        if (this.pacing === "immediate") {
+          this.dispatchForBot(bot);
           continue;
         }
-        const seat = this.seatFor(s.awaiting.player);
-        const wasActive = seat.autoPassUntil !== null;
-        const justCleared = this.clearAutoPassIfDone(seat, s);
-        if (s.awaiting.kind === "attackers" && wasActive && !justCleared) {
-          this.game.dispatch({
-            type: "declare-attackers",
-            player: seat.player,
-            attackers: [],
-          });
+        if (this.botAction(bot).type === "pass-priority") {
+          // Nothing on a board changes because a bot declined to act, so
+          // there's nothing to pace: taking a frame (and a think-time beat)
+          // per pass would spend most of a turn showing nothing happening.
+          // Whatever the pass lets through — a spell resolving, the turn
+          // moving on — lands in the next frame and is paced there.
+          this.game.dispatch({ type: "pass-priority", player: bot });
+          this.lastActivityAt = Date.now();
           continue;
         }
-        return; // a real decision, or this seat's auto-pass condition was just met
+        // Show the board this bot is about to act on, then let the clients
+        // finish playing it before the bot touches anything.
+        this.publish();
+        this.holdForClients(() => {
+          // The game may have moved on while we waited (a human answering
+          // the other half of a parallel mulligan, say), so the move is
+          // re-derived here rather than replayed from before the wait.
+          const stillUp = this.currentBotActor();
+          if (stillUp !== null) this.dispatchForBot(stillUp);
+          this.settle();
+        });
+        return;
       }
 
-      const holder = s.priority.holder;
-      if (holder === null) return;
-      if (this.bots.has(holder)) {
-        this.dispatchForBot(holder);
-        continue;
-      }
-      const seat = this.seatFor(holder);
-      const wasActive = seat.autoPassUntil !== null;
-      const justCleared = this.clearAutoPassIfDone(seat, s);
-
-      const legal = this.game.legalActions(holder);
-      const forcedPass = legal.length === 1 && legal[0].kind === "pass-priority";
-      const manaOnlyAndSkipping = seat.skipManaOnly && this.game.isDeadForMana(holder);
-      if (forcedPass || manaOnlyAndSkipping || (wasActive && !justCleared)) {
-        this.game.dispatch({ type: "pass-priority", player: holder });
-        continue;
-      }
-      return; // a real choice for whoever holds it
+      if (this.autoAdvanceHumanSeat(s)) continue;
+      break;
     }
-    throw new Error("Room.settle did not settle; likely stuck in a loop");
+    this.publish();
+  }
+
+  /** Parks `run` until every acking seat has reported finishing the current
+   * frame and the bot think-time floor has elapsed, whichever is later —
+   * with `FRAME_ACK_TIMEOUT_MS` as a backstop for a seat that has gone
+   * quiet. */
+  private holdForClients(run: () => void): void {
+    const gate: FrameGate = { run, minElapsed: false, minHandle: null, timeoutHandle: null };
+    this.gate = gate;
+    gate.minHandle = this.timers.setTimeout(() => {
+      gate.minHandle = null;
+      gate.minElapsed = true;
+      this.tryOpenGate();
+    }, BOT_MIN_THINK_MS);
+    // Only worth arming if the floor above didn't already carry us straight
+    // through the gate (a fake immediate clock in tests does exactly that).
+    if (this.gate === gate) {
+      gate.timeoutHandle = this.timers.setTimeout(() => {
+        gate.timeoutHandle = null;
+        this.openGate();
+      }, FRAME_ACK_TIMEOUT_MS);
+    }
+  }
+
+  /** Every seat that gates (connected, and has acked at least once) has
+   * reported finishing the frame we're currently showing. */
+  private everyoneCaughtUp(): boolean {
+    return this.seats.every(
+      (s) => s.connection === null || !s.acksFrames || s.ackedSeq >= this.seq,
+    );
+  }
+
+  private tryOpenGate(): void {
+    const gate = this.gate;
+    if (gate === null || !gate.minElapsed || !this.everyoneCaughtUp()) return;
+    this.openGate();
+  }
+
+  private openGate(): void {
+    const gate = this.gate;
+    if (gate === null) return;
+    this.gate = null;
+    if (gate.minHandle !== null) this.timers.clearTimeout(gate.minHandle);
+    if (gate.timeoutHandle !== null) this.timers.clearTimeout(gate.timeoutHandle);
+    gate.run();
+  }
+
+  /** Numbers and hands out the next frame. The single path to a `state`
+   * push — `ws-server.ts` turns one of these into one message per connected
+   * seat — so every seat always sees the same frame under the same `seq`. */
+  publish(): void {
+    this.seq += 1;
+    this.onUpdate(this);
   }
 
   disconnect(connection: Connection): void {
     const seat = this.seats.find((s) => s.connection === connection);
-    if (seat !== undefined) seat.connection = null;
+    if (seat !== undefined) {
+      seat.connection = null;
+      seat.acksFrames = false;
+      // Whoever just dropped may have been the seat the gate was waiting on.
+      this.tryOpenGate();
+    }
+  }
+
+  /** Drops any parked bot move and its timers — for a room being reaped, so
+   * nothing keeps firing against a game nobody is watching. */
+  dispose(): void {
+    const gate = this.gate;
+    if (gate === null) return;
+    this.gate = null;
+    if (gate.minHandle !== null) this.timers.clearTimeout(gate.minHandle);
+    if (gate.timeoutHandle !== null) this.timers.clearTimeout(gate.timeoutHandle);
   }
 
   /** Every currently-connected seat, for pushing each its own redacted view. */

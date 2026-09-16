@@ -25,12 +25,21 @@ function send(ws: WebSocket, message: ServerMessage): void {
   ws.send(JSON.stringify(message));
 }
 
+/**
+ * Turns one published frame into one `state` message per connected seat.
+ * Never called directly by a message handler: a room publishes its own
+ * frames (it paces bot moves against the clients' animations, so pushes
+ * don't line up one-to-one with incoming messages any more), and this is
+ * wired up as `RoomManager.onRoomUpdate`. Anything that wants a push asks
+ * the room for one via `room.publish()`.
+ */
 function broadcast(room: Room): void {
   const seats = room.seatStatuses();
   for (const { seat, connection } of room.connectedSeats()) {
     connection.send({
       type: "state",
       roomId: room.id,
+      seq: room.frameSeq,
       seat,
       view: room.game.viewFor(seat),
       actions: room.game.legalActions(seat),
@@ -54,6 +63,11 @@ function broadcastPending(room: PendingRoom): void {
 function requireRoom(manager: RoomManager, roomId: string): Room | PendingRoom {
   const room = manager.get(roomId);
   if (room === undefined) throw new Error(`no such room: ${roomId}`);
+  // Bind this transport to the room's frames if nobody has. Rooms this
+  // manager promoted are wired at construction; one built by hand and served
+  // through a bare manager (the repo-root `scratch.mjs` pattern) is wired
+  // here instead. Idempotent, so it doesn't matter which came first.
+  if (!(room instanceof PendingRoom)) room.onUpdate = broadcast;
   return room;
 }
 
@@ -86,9 +100,10 @@ function requirePendingRoom(manager: RoomManager, roomId: string): PendingRoom {
  * success so the caller can update its own `boundRoom`, or `null` if
  * promotion failed (the room is left pending). */
 function tryPromote(ws: WebSocket, manager: RoomManager, room: PendingRoom): Room | null {
-  let activeRoom: Room;
   try {
-    activeRoom = manager.promote(room.id);
+    // `promote` settles the new room and publishes its opening frame itself,
+    // so there's nothing to broadcast here on the way out.
+    return manager.promote(room.id);
   } catch (err) {
     send(ws, {
       type: "error",
@@ -97,11 +112,14 @@ function tryPromote(ws: WebSocket, manager: RoomManager, room: PendingRoom): Roo
     broadcastPending(room);
     return null;
   }
-  broadcast(activeRoom);
-  return activeRoom;
 }
 
 export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): void {
+  // Every frame a promoted room publishes — whether it came from a message
+  // just handled or from a bot the room released on its own clock — goes out
+  // through here.
+  manager.onRoomUpdate = broadcast;
+
   // Keyed by client IP rather than per-connection, since nothing stops one
   // IP from opening many sockets — a fixed window is enough to blunt a bot
   // hammering `join-room`/`claim-seat` to brute-force room codes without
@@ -187,7 +205,7 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
           }
           boundRoom = room;
           if (room instanceof PendingRoom) broadcastPending(room);
-          else broadcast(room);
+          else room.publish();
           return;
         }
         case "add-bot": {
@@ -201,8 +219,9 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
             });
             return;
           }
+          // An active room already published a frame from inside `addBot`
+          // (it settles), so only a pending one needs a push here.
           if (room instanceof PendingRoom) broadcastPending(room);
-          else broadcast(room);
           // A caller who hasn't claimed a seat yet (still on the seat
           // picker) isn't in `connectedSeats()`, so the broadcast above
           // never reaches them — refresh their picker directly, same as a
@@ -223,8 +242,9 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
             });
             return;
           }
+          // `setBotDeck` throws outright on an active room, so this is only
+          // ever the pending case.
           if (room instanceof PendingRoom) broadcastPending(room);
-          else broadcast(room);
           // Same as `add-bot` above — a caller still on the seat picker
           // isn't in `connectedSeats()`, so refresh them directly.
           if (room.seatOf(connection) === null) {
@@ -256,43 +276,51 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
           if (activeRoom !== null) boundRoom = activeRoom;
           return;
         }
+        // Each of these settles the room, and settling publishes its own
+        // frame (one per bot action, in `"realtime"` pacing) — so none of
+        // them broadcasts on the way out.
         case "dispatch": {
-          const room = requireActiveRoom(manager, message.roomId);
-          room.dispatch(connection, message.action);
-          broadcast(room);
+          requireActiveRoom(manager, message.roomId).dispatch(connection, message.action);
           return;
         }
         case "pass-turn": {
-          const room = requireActiveRoom(manager, message.roomId);
-          room.requestPassTurn(connection);
-          broadcast(room);
+          requireActiveRoom(manager, message.roomId).requestPassTurn(connection);
           return;
         }
         case "auto-pass": {
-          const room = requireActiveRoom(manager, message.roomId);
-          room.requestAutoPass(connection);
-          broadcast(room);
+          requireActiveRoom(manager, message.roomId).requestAutoPass(connection);
           return;
         }
         case "toggle-mana-skip": {
-          const room = requireActiveRoom(manager, message.roomId);
-          room.toggleSkipManaOnly(connection);
-          broadcast(room);
+          requireActiveRoom(manager, message.roomId).toggleSkipManaOnly(connection);
+          return;
+        }
+        case "ack": {
+          // Purely a pacing signal, and one the client sends on its own
+          // schedule — a stale room id here means the game is over or the
+          // server restarted, which is nothing to report back about.
+          const room = manager.get(message.roomId);
+          if (room instanceof PendingRoom || room === undefined) return;
+          room.ack(connection, message.seq);
           return;
         }
       }
     };
 
     ws.on("message", (raw) => {
-      if (isRateLimited(ip)) {
-        send(ws, { type: "error", message: "too many requests, slow down" });
-        return;
-      }
       let message: ClientMessage;
       try {
         message = JSON.parse(raw.toString()) as ClientMessage;
       } catch {
-        send(ws, { type: "error", message: "malformed message" });
+        if (!isRateLimited(ip)) send(ws, { type: "error", message: "malformed message" });
+        return;
+      }
+      // `ack` is automatic traffic — one per frame the client finishes
+      // showing, with no effect beyond releasing a bot — and a busy table
+      // sends plenty of them, so it doesn't spend the budget meant for
+      // someone hammering `join-room` to guess room codes.
+      if (message.type !== "ack" && isRateLimited(ip)) {
+        send(ws, { type: "error", message: "too many requests, slow down" });
         return;
       }
       try {

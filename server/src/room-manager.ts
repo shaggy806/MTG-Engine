@@ -1,6 +1,6 @@
 /** Creates rooms with unique short codes and looks them up by code. */
 
-import { Game, autoSettle } from "engine";
+import { Game } from "engine";
 import { PendingRoom } from "./pending-room.js";
 import type { PendingGameConfig } from "./pending-room.js";
 import { Room } from "./room.js";
@@ -20,6 +20,15 @@ function randomRoomId(): string {
 export class RoomManager {
   private readonly rooms = new Map<string, Room | PendingRoom>();
 
+  /**
+   * Called whenever any promoted room publishes a frame — the transport
+   * layer sets this once (see `attachRoomServer`) and every `Room` this
+   * manager builds is wired to it. A room paces its own bots against the
+   * clients' animations, so pushes no longer line up one-to-one with
+   * incoming messages and can't be left to the message handlers.
+   */
+  onRoomUpdate: (room: Room) => void = () => {};
+
   /** Creates a room with no `Game` yet — every seat's deck is unknown until
    * whoever claims it connects (see `PendingRoom`'s own comment). Call
    * `promote` once `get(id).isReady()` (a `PendingRoom` only) to actually
@@ -34,9 +43,8 @@ export class RoomManager {
 
   /** Builds the real `Game`/`Room` for a ready `PendingRoom`, replaying its
    * already-connected seats' claims and bot fills onto the new `Room`, then
-   * settles it once (mirroring the old eager `create`'s one-time
-   * `autoSettle` call) before anyone can act. Replaces the map entry and
-   * returns the promoted `Room`. */
+   * settles it to the first thing anyone has to answer and publishes that
+   * opening frame. Replaces the map entry and returns the promoted `Room`. */
   promote(id: string): Room {
     const pending = this.rooms.get(id);
     if (!(pending instanceof PendingRoom)) {
@@ -45,15 +53,18 @@ export class RoomManager {
     if (!pending.isReady()) throw new Error(`room ${id} isn't ready to start yet`);
 
     const game = Game.create(pending.toGameConfig());
-    const room = new Room(id, game);
+    const room = new Room(id, game, { onUpdate: (r) => this.onRoomUpdate(r) });
     for (const claim of pending.claims()) {
       room.claimSeat(claim.player, claim.clientToken, claim.connection, claim.displayName ?? undefined);
     }
+    this.rooms.set(id, room);
+    // Bot seats go on last, and each one settles the room as it lands — by
+    // which point every human claim is already bound, so the opening frame
+    // (and any bot mulligan behind it) reaches everybody.
     for (const player of pending.botSeats()) {
       room.addBot(player);
     }
-    autoSettle(game);
-    this.rooms.set(id, room);
+    room.start();
     return room;
   }
 
@@ -68,6 +79,7 @@ export class RoomManager {
     let reaped = 0;
     for (const [id, room] of this.rooms) {
       if (room.connectedSeats().length === 0 && room.idleMs() > maxIdleMs) {
+        if (room instanceof Room) room.dispose();
         this.rooms.delete(id);
         reaped += 1;
       }

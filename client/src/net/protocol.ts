@@ -109,6 +109,17 @@ export type ClientMessage =
   | { readonly type: 'pass-turn'; readonly roomId: string }
   | { readonly type: 'auto-pass'; readonly roomId: string }
   | { readonly type: 'toggle-mana-skip'; readonly roomId: string }
+  | {
+      /** "I've finished showing frame `seq`" — sent once this client has
+       * played that push's animations out and put the resulting board on
+       * screen. The room holds a bot's next move until every acking seat has
+       * caught up, which is what stops a bot playing three cards while the
+       * first is still flying across the table. A client that never sends
+       * these is simply never waited on. */
+      readonly type: 'ack'
+      readonly roomId: string
+      readonly seq: number
+    }
 
 /** Mirrors `server/src/import-deck.ts`'s `CardReportEntry` — the response
  * shape of the plain HTTP `POST /import-deck` endpoint (not part of the
@@ -169,6 +180,10 @@ export type ServerMessage =
   | {
       readonly type: 'state'
       readonly roomId: string
+      /** This push's frame number, counting up for the life of the room.
+       * Played out in order and acked back once shown — see the `ack`
+       * message above. */
+      readonly seq: number
       readonly seat: PlayerId
       readonly view: PlayerView
       readonly actions: readonly LegalAction[]

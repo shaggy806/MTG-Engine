@@ -14,6 +14,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Action, LegalAction, ObjectId, PlayerId, PlayerView } from 'engine'
+import type { Frame } from '../game/usePlayback.ts'
 import type { ClientMessage, SeatStatus, ServerMessage, WireDeck } from './protocol.ts'
 
 const SERVER_URL =
@@ -34,6 +35,10 @@ export type ConnectionStatus =
   | 'disconnected'
 
 const MAX_RECONNECT_DELAY_MS = 8000
+
+/** A stable empty list, so "no frame yet" doesn't look like a changed
+ * `actions` prop on every re-render. */
+const EMPTY_ACTIONS: readonly LegalAction[] = []
 
 interface StoredSeat {
   readonly seat: PlayerId
@@ -100,6 +105,16 @@ export interface NetworkGame {
   readonly seats: readonly SeatStatus[]
   readonly seat: PlayerId | null
   readonly opponents: readonly PlayerId[]
+  /**
+   * The most recent push, whole: its frame number, the board, and what this
+   * seat may do on it. Handed to `usePlayback`, which plays each frame's
+   * animations out before showing its board — so anything the *player* looks
+   * at should come from there, not from `view` below.
+   */
+  readonly frame: Frame | null
+  /** The newest board the server has sent, which during an animation is
+   * ahead of what's drawn. For bookkeeping that has to be current (seating,
+   * card names) rather than for rendering the table. */
   readonly view: PlayerView | null
   readonly actions: readonly LegalAction[]
   /** Whether *my* seat currently has an auto-pass in effect. */
@@ -108,6 +123,10 @@ export interface NetworkGame {
   readonly skipManaOnly: boolean
   /** Changes whenever a new state arrives — a stable signature for `key`ing UI. */
   readonly revision: number
+  /** Tells the server this client has finished showing frame `seq`. The room
+   * won't let a bot take its next move until every seat that acks has caught
+   * up, which is what keeps bot play in step with the animations. */
+  ackFrame: (seq: number) => void
   createRoom: (seed?: number, players?: number) => void
   joinRoom: (roomId: string) => void
   /** Claims `seat` (the first time it's called for that seat) or updates it
@@ -168,11 +187,11 @@ export function useNetworkGame(): NetworkGame {
   const [roomId, setRoomId] = useState<string | null>(null)
   const [seats, setSeats] = useState<readonly SeatStatus[]>([])
   const [seat, setSeat] = useState<PlayerId | null>(null)
-  const [view, setView] = useState<PlayerView | null>(null)
-  const [actions, setActions] = useState<readonly LegalAction[]>([])
+  const [frame, setFrame] = useState<Frame | null>(null)
   const [autoPassing, setAutoPassing] = useState(false)
   const [skipManaOnly, setSkipManaOnly] = useState(false)
-  const [revision, setRevision] = useState(0)
+  const view = frame?.view ?? null
+  const actions = frame?.actions ?? EMPTY_ACTIONS
 
   const send = useCallback((message: ClientMessage) => {
     wsRef.current?.send(JSON.stringify(message))
@@ -263,12 +282,10 @@ export function useNetworkGame(): NetworkGame {
           if (!wasPlaying) setError(null)
           setSeats(message.seats)
           setSeat(message.seat)
-          setView(message.view)
-          setActions(message.actions)
+          setFrame({ seq: message.seq, view: message.view, actions: message.actions })
           setAutoPassing(message.autoPassing)
           setSkipManaOnly(message.skipManaOnly)
           setStatus('playing')
-          setRevision((n) => n + 1)
           return
         }
         case 'error': {
@@ -372,6 +389,15 @@ export function useNetworkGame(): NetworkGame {
     [send],
   )
 
+  const ackFrame = useCallback(
+    (seq: number) => {
+      const id = roomIdRef.current
+      if (id === null) return
+      send({ type: 'ack', roomId: id, seq })
+    },
+    [send],
+  )
+
   const addBot = useCallback(
     (seat: PlayerId, deck?: WireDeck) => {
       const id = roomIdRef.current
@@ -460,11 +486,13 @@ export function useNetworkGame(): NetworkGame {
     seats,
     seat,
     opponents,
+    frame,
     view,
     actions,
     autoPassing,
     skipManaOnly,
-    revision,
+    revision: frame?.seq ?? 0,
+    ackFrame,
     createRoom,
     joinRoom,
     claimSeat,

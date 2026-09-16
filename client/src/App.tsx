@@ -14,7 +14,8 @@ import { useNetworkGame } from './net/useNetworkGame.ts'
 import type { NetworkGame } from './net/useNetworkGame.ts'
 import { computeBoardEntries } from './game/board.ts'
 import type { BoardEntry } from './game/board.ts'
-import { useDelayedView } from './game/useDelayedView.ts'
+import { usePlayback } from './game/usePlayback.ts'
+import { AnimationBus } from './game/animationBus.ts'
 import { playerLabel, seatClassOf } from './format.ts'
 import { PhaseTrack } from './ui/PhaseTrack.tsx'
 import { TurnBanner } from './ui/TurnBanner.tsx'
@@ -335,16 +336,29 @@ function WaitingForPlayersScreen({ game }: { readonly game: NetworkGame }) {
   )
 }
 
-/** Renders once `useNetworkGame` has a claimed seat and a pushed view. */
+/**
+ * Renders once `useNetworkGame` has a claimed seat and a pushed frame.
+ *
+ * Everything on screen is drawn from `shown` — the frame playback has
+ * actually finished animating — not from the newest push. The two differ
+ * for as long as an animation is running, and mixing them is what used to
+ * put a card's arrival animation over a board that already had the card on
+ * it. `game.view` is only for bookkeeping that has to be current, like
+ * resolving a card name in the history popup.
+ */
 function GameScreen({ game }: { readonly game: NetworkGame }) {
-  const { view, seat, opponents } = game
+  const { seat, opponents } = game
   const [showHistory, setShowHistory] = useState(false)
   const [dismissedHighroll, setDismissedHighroll] = useState(false)
+  // One bus per screen, carrying each frame's cues from playback across to
+  // the overlay layer (they're siblings — see AnimationLayer's own comment).
+  const [bus] = useState(() => new AnimationBus())
   // Called unconditionally (before the loading-guard below) per the rules of
-  // hooks — see useDelayedView's own comment for why Table specifically (not
-  // the header/AnimationLayer) renders off this instead of `view` directly.
-  const delayed = useDelayedView(view, game.actions)
-  if (view === null || seat === null || opponents.length === 0 || delayed.view === null) {
+  // hooks. `ackFrame` is what lets the server pace its bots against these
+  // animations rather than racing ahead of them.
+  const shown = usePlayback(game.frame, bus, game.ackFrame)
+  const view = shown.view
+  if (view === null || seat === null || opponents.length === 0) {
     return <CenteredScreen title="Loading…" />
   }
   const over = view.result.over
@@ -364,7 +378,7 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
         <span className="ts-acting">
           {over
             ? 'Game over'
-            : delayed.busy
+            : shown.busy
               ? 'Resolving…'
               : `${playerLabel(actingPlayer(view) ?? seat, game.seats)} to act`}
         </span>
@@ -386,24 +400,22 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
         </div>
       ) : null}
 
-      {/* Reacts to the raw `view`, not `delayed.view` below — it needs new
-          events (and the objects they reference) the instant they exist, and
-          isn't keyed/remounted the way <Table> is, so its own "which events
-          have I already animated" bookkeeping survives every dispatch. */}
-      <AnimationLayer view={view} seat={seat} seats={game.seats} />
+      {/* A sibling of <Table>, not a child: Table remounts on every frame
+          it's keyed on, which would tear down anything animating inside it.
+          Its cues come off the bus, each carrying the board it belongs to. */}
+      <AnimationLayer bus={bus} seat={seat} seats={game.seats} />
 
       <Table
-        key={delayed.revision}
-        view={delayed.view}
+        key={shown.revision}
+        view={view}
         seat={seat}
         opponents={opponents}
         game={game}
-        // Emptied rather than the real (already-current) actions while an
-        // animation batch is still playing out — see useDelayedView's own
-        // comment: those actions belong to a board the player can't see yet,
-        // and dispatching one now would race the animation showing how the
-        // game got there.
-        actions={delayed.busy ? EMPTY_ACTIONS : delayed.actions}
+        // Emptied while a frame is still playing out: those actions belong
+        // to a board the player can't see yet, and taking one now would race
+        // the animation showing how the game got there. The server holds its
+        // bots to the same rule — see `ackFrame`.
+        actions={shown.busy ? EMPTY_ACTIONS : shown.actions}
       />
 
       {showHistory ? (

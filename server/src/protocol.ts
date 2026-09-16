@@ -146,6 +146,22 @@ export type ClientMessage =
        */
       readonly type: "toggle-mana-skip";
       readonly roomId: string;
+    }
+  | {
+      /**
+       * "I have finished showing frame `seq`" — sent once this client has
+       * played out that push's animations and put its board on screen. The
+       * room holds a bot's next move until every acking seat has caught up
+       * (see `Room`'s frame gate), which is what keeps a bot from playing
+       * three cards while the first one is still flying across the table.
+       *
+       * Seats that never ack simply don't participate in the gate, so an
+       * older or headless client can't deadlock a room; a seat that acks and
+       * then stalls is covered by the gate's own timeout instead.
+       */
+      readonly type: "ack";
+      readonly roomId: string;
+      readonly seq: number;
     };
 
 export type ServerMessage =
@@ -159,6 +175,14 @@ export type ServerMessage =
       /** Pushed to every connected seat after a room is created/joined or any dispatch settles. */
       readonly type: "state";
       readonly roomId: string;
+      /**
+       * This push's frame number, counting up for the life of the room. A
+       * client plays each frame's new events out in order and replies with
+       * `ack` once the resulting board is on screen; the room uses those acks
+       * to pace its bots (see `Room`). Every seat in a room sees the same
+       * `seq` for the same frame.
+       */
+      readonly seq: number;
       readonly seat: PlayerId;
       readonly view: PlayerView;
       readonly actions: readonly LegalAction[];

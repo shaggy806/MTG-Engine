@@ -5,6 +5,10 @@ import type { ServerMessage } from "../protocol.js";
 import { Room } from "../room.js";
 import { ALICE, BOB, DECKS } from "../decks.js";
 
+/** `pacing: "immediate"` throughout this file: it runs bot seats straight
+ * through inside `settle()`, the way a room did before bot moves were paced
+ * against the clients' animations, so these tests stay synchronous. The
+ * paced path has its own file (`room-pacing.test.ts`). */
 function makeRoom(): Room {
   const game = Game.create({
     seed: 1,
@@ -14,7 +18,7 @@ function makeRoom(): Room {
     ],
   });
   autoSettle(game);
-  return new Room("TEST1", game);
+  return new Room("TEST1", game, { pacing: "immediate" });
 }
 
 function namedCard(room: Room, ids: readonly ObjectId[], name: string): ObjectId {
@@ -37,7 +41,7 @@ function makeSparseRoom(): Room {
     ],
   });
   autoSettle(game);
-  return new Room("SPARSE", game);
+  return new Room("SPARSE", game, { pacing: "immediate" });
 }
 
 function fakeConnection(): { received: ServerMessage[]; connection: { send: (m: ServerMessage) => void } } {
@@ -391,7 +395,7 @@ describe("Room", () => {
           { player: BOB, cards: [...DECKS.bob] },
         ],
       });
-      const room = new Room("MULL1", game);
+      const room = new Room("MULL1", game, { pacing: "immediate" });
       const before = room.game.state.awaiting;
       if (before === null || before.kind !== "mulligan") throw new Error("expected mulligan");
       expect(Object.keys(before.hands).sort()).toEqual([ALICE, BOB].sort());
