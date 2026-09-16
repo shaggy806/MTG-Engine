@@ -20,17 +20,25 @@ const SEATS = ["alice", "bob", "carol", "dave"].map(asPlayerId);
 // rebuilding it per game dwarfs the game itself.
 const registry = createDefaultRegistry();
 
-parentPort.on("message", ({ seed, weights, players, horizon }) => {
+parentPort.on("message", ({ seed, weights, opponentWeights, players, horizon }) => {
   const seats = SEATS.slice(0, players);
   // Seat parity alternates which seat the candidate occupies.
   const candidateSeat = seats[seed % seats.length];
 
+  // `opponentWeights` set means a head-to-head between two weight vectors
+  // (what `tune` does); absent means measure against the v1 bot (`bench`).
   const controllers = {};
   for (const seat of seats) {
-    controllers[seat] =
-      seat === candidateSeat
-        ? new EvalBotController(seat, registry, { weights, horizon })
-        : new HeuristicBotController(seat, registry);
+    if (seat === candidateSeat) {
+      controllers[seat] = new EvalBotController(seat, registry, { weights, horizon });
+    } else if (opponentWeights !== undefined && opponentWeights !== null) {
+      controllers[seat] = new EvalBotController(seat, registry, {
+        weights: opponentWeights,
+        horizon,
+      });
+    } else {
+      controllers[seat] = new HeuristicBotController(seat, registry);
+    }
   }
 
   try {

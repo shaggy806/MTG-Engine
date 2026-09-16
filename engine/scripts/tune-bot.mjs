@@ -11,8 +11,9 @@
 //   npm run bot:tune  -w engine -- --games 200 --iterations 40
 //
 // `bench` measures one weight vector against the v1 `HeuristicBotController`.
-// `tune` runs a (1+1) evolution strategy over the weight vector, keeping a
-// mutation only when it beats the incumbent by more than the noise floor.
+// `tune` runs a (1+1) evolution strategy over the weight vector, playing each
+// mutation head-to-head against the incumbent and keeping it only when the
+// whole confidence interval sits above even.
 //
 // See `docs/plans/smarter-bots.md`.
 
@@ -38,8 +39,12 @@ const iterations = Number(flag("iterations", "30"));
 const jsonOut = flag("json", null);
 const workers = Math.max(1, Math.min(Number(flag("workers", String(os.cpus().length - 2))), os.cpus().length));
 
-/** Run `games` seeds of candidate-vs-v1 across the pool; resolve a tally. */
-function runMatch(weights, seedOffset = 0) {
+/**
+ * Run `games` seeds across the worker pool and resolve a tally for the
+ * candidate. With `opponentWeights` the match is a head-to-head between two
+ * weight vectors; without, it's against the v1 `HeuristicBotController`.
+ */
+function runMatch(weights, seedOffset = 0, opponentWeights = null) {
   return new Promise((resolve, reject) => {
     const tally = { wins: 0, losses: 0, draws: 0, errors: 0 };
     let next = 0;
@@ -53,7 +58,13 @@ function runMatch(weights, seedOffset = 0) {
         if (live === 0 && !failed) resolve(tally);
         return;
       }
-      worker.postMessage({ seed: seedOffset + next + 1, weights, players, horizon });
+      worker.postMessage({
+        seed: seedOffset + next + 1,
+        weights,
+        opponentWeights,
+        players,
+        horizon,
+      });
       next += 1;
     };
 
@@ -125,26 +136,33 @@ if (mode === "bench") {
 } else {
   const rng = mulberry32(0xc0ffee);
   let incumbent = { ...DEFAULT_WEIGHTS };
-  let best = summarise(await runMatch(incumbent));
-  console.log(`baseline: ${fmt(best)}`);
-  const history = [{ iteration: 0, weights: incumbent, summary: best }];
+
+  // The candidate plays the *incumbent* directly, not a third party. Scoring
+  // both against v1 and comparing the two numbers is far less sensitive: each
+  // estimate carries its own sampling error, so at 200 games a candidate would
+  // have to clear roughly 62% against v1 to look better than a 55% incumbent,
+  // and in practice nothing ever does — an earlier revision of this script
+  // rejected all 14 mutations it tried for exactly that reason. Head-to-head
+  // asks the question once instead of twice.
+  console.log(`incumbent vs v1, for reference: ${fmt(summarise(await runMatch(incumbent)))}`);
+  const history = [{ iteration: 0, weights: incumbent }];
 
   for (let i = 1; i <= iterations; i += 1) {
     const candidate = mutate(incumbent, rng);
     // A fresh seed block each iteration, so a winner can't be one that merely
     // memorised a lucky set of shuffles.
-    const summary = summarise(await runMatch(candidate, i * games));
-    // Only accept a candidate that clears the incumbent's own error bar.
-    const accepted = summary.rate - summary.halfWidth > best.rate;
-    if (accepted) {
-      incumbent = candidate;
-      best = summary;
-    }
-    console.log(`  ${String(i).padStart(3)}: ${fmt(summary)} ${accepted ? "ACCEPT" : "reject"}`);
+    const summary = summarise(await runMatch(candidate, i * games, incumbent));
+    // Accept only when the whole interval sits above even: the candidate has
+    // to be better than the incumbent, not merely luckier.
+    const accepted = summary.rate - summary.halfWidth > 0.5;
+    if (accepted) incumbent = candidate;
+    console.log(
+      `  ${String(i).padStart(3)}: vs incumbent ${fmt(summary)} ${accepted ? "ACCEPT" : "reject"}`,
+    );
     history.push({ iteration: i, weights: candidate, summary, accepted });
-    if (jsonOut) writeFileSync(jsonOut, JSON.stringify({ best: { weights: incumbent, summary: best }, history }, null, 2));
+    if (jsonOut) writeFileSync(jsonOut, JSON.stringify({ best: incumbent, history }, null, 2));
   }
 
-  console.log(`\nbest: ${fmt(best)}`);
+  console.log(`\nfinal vs v1: ${fmt(summarise(await runMatch(incumbent)))}`);
   console.log(JSON.stringify(incumbent, null, 2));
 }
