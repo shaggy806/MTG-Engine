@@ -366,6 +366,42 @@ export type EffectSpec =
       readonly amount: EffectAmount;
     }
   | {
+      /**
+       * Put counters on **every** battlefield permanent matching `filter`
+       * (Loyal Guardian: "put a +1/+1 counter on each creature you control").
+       * The untargeted, mass form of `add-counter`; routes through the same
+       * per-permanent path, so a `would-add-counter` replacement (Doubling
+       * Season) still composes.
+       */
+      readonly kind: "add-counter-all";
+      readonly filter: CardFilter;
+      readonly counter: string;
+      readonly amount: EffectAmount;
+    }
+  | {
+      /** "You gain hexproof until end of turn" (Lazotep Plating). A *player*
+       * can't be targeted by opponents' spells or abilities; permanents
+       * gaining hexproof is `grant-keyword-all` instead. */
+      readonly kind: "grant-player-hexproof";
+      readonly who?: PlayerScope;
+    }
+  | {
+      /**
+       * Amass N (rule 701.44) — "Amass Zombies 2": put N +1/+1 counters on an
+       * Army you control; it's also a `creatureType`. If you control no Army,
+       * create a 0/0 black Army creature token first.
+       *
+       * One effect rather than a `conditional` + `create-token` +
+       * `add-counter` sequence, because "an Army you control" has to be the
+       * *same* Army across the create and the counters — the whole point of
+       * the mechanic is that repeated amassing grows one creature.
+       */
+      readonly kind: "amass";
+      readonly amount: EffectAmount;
+      /** The creature type amass names; the Army gains it (701.44b). */
+      readonly creatureType: string;
+    }
+  | {
       /** Proliferate (rule 701.27): every permanent that already has any
        * counter gets one more of each kind it has. This engine always
        * proliferates *everything* eligible rather than modeling the
@@ -781,6 +817,12 @@ export interface EffectApi {
   grantKeywordAll(filter: CardFilter, keyword: Keyword, duration: PtDuration): void;
   /** See the `"double-pt-all"` {@link EffectSpec}. */
   doublePtAll(filter: CardFilter, duration: PtDuration): void;
+  /** See the `"grant-player-hexproof"` {@link EffectSpec}. */
+  grantPlayerHexproof(who: PlayerScope): void;
+  /** See the `"amass"` {@link EffectSpec}. */
+  amass(amount: number, creatureType: string): void;
+  /** See the `"add-counter-all"` {@link EffectSpec}. */
+  addCounterAll(filter: CardFilter, counter: string, amount: number): void;
   /** See the `"double-counters-all"` {@link EffectSpec}. */
   doubleCountersAll(filter: CardFilter, counterKind: string): void;
   addCounter(target: TargetRef, counter: string, amount: number): void;
@@ -1187,6 +1229,15 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       return;
     case "double-pt-all":
       ctx.doublePtAll(spec.filter, spec.duration);
+      return;
+    case "grant-player-hexproof":
+      ctx.grantPlayerHexproof(spec.who ?? "you");
+      return;
+    case "amass":
+      ctx.amass(amountValue(spec.amount, ctx), spec.creatureType);
+      return;
+    case "add-counter-all":
+      ctx.addCounterAll(spec.filter, spec.counter, amountValue(spec.amount, ctx));
       return;
     case "double-counters-all":
       ctx.doubleCountersAll(spec.filter, spec.counterKind);

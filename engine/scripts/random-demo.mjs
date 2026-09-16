@@ -40,6 +40,9 @@ const deckA = deck([
   ["Scavenging Ooze", 1],
   ["Primal Might", 1],
   ["Hunter's Prowess", 1],
+  ["Loyal Guardian", 1],
+  ["Thunderfoot Baloth", 1],
+  ["Rishkar, Peema Renegade", 1],
   ["Hunter's Insight", 1],
   ["Return to Nature", 1],
   ["Harvest Season", 1],
@@ -193,6 +196,9 @@ const deckB = deck([
   ["Withered Wretch", 1],
   ["Hate Mirage", 1],
   ["Thunderbreak Regent", 1],
+  ["Loyal Subordinate", 1],
+  ["Lazotep Reaver", 1],
+  ["Vizier of the Scorpion", 1],
   ["Tyrant's Familiar", 1],
   ["Ajani, Caller of the Pride", 1],
   ["Cemetery Reaper", 1],
@@ -341,6 +347,10 @@ const deckB = deck([
 // commander (a `leaves-battlefield` + `dies` trigger) so the fuzzer exercises
 // the 903.9a "ask before the move" replacement path.
 const deckC = deck([
+  ["Eternal Skylord", 1],
+  ["Gleaming Overseer", 1],
+  ["Lazotep Plating", 1],
+  ["Enter the God-Eternals", 1],
   ["Island", 7],
   ["Swamp", 7],
   ["Watery Grave", 1],

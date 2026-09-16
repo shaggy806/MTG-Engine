@@ -309,6 +309,15 @@ export function staticAffects(
   if (affects.excludeSelf && source.id === target.id) return false;
   if (target.controller !== source.controller) return false;
   if (!isPrintedCreature(registry, target)) return false;
+  if (affects.tokenOnly === true && target.isToken !== true) return false;
+  if (affects.withCounter !== undefined) {
+    const kind = affects.withCounter.kind;
+    const held =
+      kind === undefined
+        ? Object.values(target.counters).reduce((n, v) => n + (v ?? 0), 0)
+        : (target.counters[kind] ?? 0);
+    if (held <= 0) return false;
+  }
   if (affects.subtype !== undefined) {
     // The source's own text-change (Artificial Evolution on Goblin Chieftain)
     // rewrites the word in its lord clause too; the target is matched on its

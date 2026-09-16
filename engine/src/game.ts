@@ -317,6 +317,7 @@ export class Game {
       pendingSacrifices: [],
       pendingSacrificeVictims: [],
       preventAllCombatDamage: false,
+      hexproofPlayers: [],
       preventionShields: [],
       extraTurns: [],
       extraCombats: 0,
@@ -2112,15 +2113,20 @@ export class Game {
    * **Debug / sandbox only** — put a card straight into a zone, bypassing
    * drawing and casting. Used by `engine/src/sandbox.ts` (the card lab) and
    * ad-hoc scripts; never part of normal play. A move to `"battlefield"` /
-   * `"graveyard"` / `"exile"` / `"hand"` goes through the real `moveObject`
-   * so ETB replacements, triggers, and Aura attachment all fire as usual.
-   * Returns the new object's id.
+   * `"graveyard"` / `"exile"` / `"hand"` goes through the real `moveObject`,
+   * so enters-battlefield *replacements* (enters tapped, enters with
+   * counters) and Aura attachment apply as usual.
+   *
+   * The entry is **not announced** unless `opts.announceEntry` is set, so no
+   * enters-battlefield *trigger* fires — that's what keeps the helper usable
+   * for setting up a board. Pass the flag when the entry is the thing under
+   * test. Returns the new object's id.
    */
   debugSpawn(
     name: string,
     player: PlayerId,
     zone: ZoneType = "battlefield",
-    opts: { tapped?: boolean; summoningSick?: boolean } = {},
+    opts: { tapped?: boolean; summoningSick?: boolean; announceEntry?: boolean } = {},
   ): ObjectId {
     const id = this.makeCardObject(name, player);
     this.state.zones.perPlayer[player].library.unshift(id);
@@ -2130,6 +2136,14 @@ export class Game {
     if (object !== undefined && object.zone === "battlefield") {
       if (opts.tapped) object.tapped = true;
       if (opts.summoningSick === false) object.summoningSick = false;
+      // `moveObject` applies enters-battlefield *replacements* but does not
+      // announce the entry — every ordinary caller emits that itself. So a
+      // spawn is silent by default, which is what makes it usable for board
+      // setup: spawning six lands shouldn't fire six landfall triggers.
+      // `announceEntry` opts in when the entry itself is what's under test.
+      if (opts.announceEntry === true) {
+        this.emit({ type: "permanent-entered-battlefield", object: id });
+      }
     }
     return id;
   }
@@ -2175,6 +2189,7 @@ export class Game {
     // Fog's "prevent all combat damage this turn" shield and any one-shot
     // prevention shields lapse; a fresh turn owes no extra combats yet.
     this.state.preventAllCombatDamage = false;
+    this.state.hexproofPlayers = [];
     this.state.preventionShields = [];
     this.state.extraCombats = 0;
     this.state.spellsCastThisTurn = 0;
@@ -6287,11 +6302,26 @@ export class Game {
         this.doubleCountersAll(controller, filter, counterKind),
       addCounter: (target, counter, amount) =>
         this.addCounter(target, counter, amount),
+      amass: (amount, creatureType) => this.amass(controller, amount, creatureType),
+      addCounterAll: (filter, counter, amount) => {
+        // Snapshot first — `addCounter` can kill a permanent (a -1/-1 counter)
+        // and mutate the battlefield array underneath the loop.
+        for (const id of this.battlefieldMatching(controller, filter)) {
+          this.addCounter({ kind: "object", object: id }, counter, amount);
+        }
+      },
       proliferate: () => this.proliferateAll(),
       grantKeyword: (target, keyword, duration) =>
         this.grantKeyword(target, keyword, duration),
       grantTriggered: (target, ability, duration) =>
         this.grantTriggered(target, ability, duration),
+      grantPlayerHexproof: (who) => {
+        for (const player of this.scopedPlayers(controller, who)) {
+          if (!this.state.hexproofPlayers.includes(player)) {
+            this.state.hexproofPlayers.push(player);
+          }
+        }
+      },
       takeExtraTurn: () => {
         this.state.extraTurns.push(controller);
         this.emit({ type: "extra-turn-queued", player: controller });
@@ -6545,6 +6575,53 @@ export class Game {
   }
 
   /** Create `count` copies of the named token, controlled by `controller` (rule 111). */
+  /**
+   * Amass N (rule 701.44) — see the `"amass"` {@link EffectSpec}.
+   *
+   * The Army has to be found (or made) *before* the counters go on, and the
+   * same one has to receive them, which is why this is one operation rather
+   * than a sequence of smaller effects: repeatedly amassing grows a single
+   * creature, and that only works if "an Army you control" resolves to the
+   * same object each time.
+   *
+   * Picks the first Army on the battlefield rather than asking. The rules let
+   * the controller choose which Army when they control several; nothing in
+   * the precons makes more than one, so the choice would never come up.
+   */
+  private amass(controller: PlayerId, amount: number, creatureType: string): void {
+    if (amount <= 0) return;
+    let army = this.state.zones.shared.battlefield.find((id) => {
+      const object = this.state.objects[id];
+      return (
+        object !== undefined &&
+        object.controller === controller &&
+        effectiveSubtypes(this.registry, object).includes("Army")
+      );
+    });
+    if (army === undefined) {
+      const before = new Set(this.state.zones.shared.battlefield);
+      this.createTokens(controller, "Army Token", 1);
+      army = this.state.zones.shared.battlefield.find((id) => !before.has(id));
+      if (army === undefined) return;
+      // An Army entering as a stacked batch would share one object with
+      // others; amass always makes exactly one, so peel it off to be safe.
+      army = this.splitOneFromStack(army);
+    }
+    // 701.44b — "It's also a [type]". A permanent subtype grant, so it sticks
+    // across turns the way the printed type would.
+    const object = this.state.objects[army];
+    if (object !== undefined && !effectiveSubtypes(this.registry, object).includes(creatureType)) {
+      object.modifiers.push({
+        power: 0,
+        toughness: 0,
+        keywords: [],
+        addSubtypes: [creatureType],
+        untilEndOfTurn: false,
+      });
+    }
+    this.addCounter({ kind: "object", object: army }, "+1/+1", amount);
+  }
+
   private createTokens(controller: PlayerId, tokenName: string, count: number): void {
     this.registry.get(tokenName); // validate the token is a known definition
     // Doubling Season / Parallel Lives (rule 614): "twice that many instead".

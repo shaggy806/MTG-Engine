@@ -68,6 +68,20 @@ export type AffectSpec =
       readonly scope: "creatures-you-control";
       readonly excludeSelf?: boolean;
       readonly subtype?: string;
+      /**
+       * Only creatures that have a counter on them — Rishkar's "each creature
+       * you control **with a counter on it** has '{T}: Add {G}'". `kind`
+       * omitted means a counter of any kind, which is what that wording means.
+       *
+       * Narrower than a full `CardFilter` on purpose: `staticAffects` runs on
+       * every characteristics read and is deliberately given no `GameState`,
+       * and a counter count is answerable from the object alone.
+       */
+      readonly withCounter?: { readonly kind?: string };
+      /** Only *token* creatures — "Zombie tokens you control have flying"
+       * (Eternal Skylord). Like `withCounter`, answerable from the object
+       * alone, which is why it's a flag here rather than a `CardFilter`. */
+      readonly tokenOnly?: boolean;
     }
   /** Every land the source's controller controls (Chromatic Lantern). */
   | { readonly scope: "lands-you-control" }

@@ -116,8 +116,10 @@ import _poolElvishVisionary from "./pool/elvish-visionary.js";
 import _poolEmeraldMedallion from "./pool/emerald-medallion.js";
 import _poolEmmaraSoulOfTheAccord from "./pool/emmara-soul-of-the-accord.js";
 import _poolEncroachingDragonstorm from "./pool/encroaching-dragonstorm.js";
+import _poolEnterTheGodEternals from "./pool/enter-the-god-eternals.js";
 import _poolEssenceFlux from "./pool/essence-flux.js";
 import _poolEssenceScatter from "./pool/essence-scatter.js";
+import _poolEternalSkylord from "./pool/eternal-skylord.js";
 import _poolEternalWitness from "./pool/eternal-witness.js";
 import _poolEvolvingWilds from "./pool/evolving-wilds.js";
 import _poolFaithlessLooting from "./pool/faithless-looting.js";
@@ -153,6 +155,7 @@ import _poolGiantGrowth from "./pool/giant-growth.js";
 import _poolGiantSpider from "./pool/giant-spider.js";
 import _poolGlacialFortress from "./pool/glacial-fortress.js";
 import _poolGladecoverScout from "./pool/gladecover-scout.js";
+import _poolGleamingOverseer from "./pool/gleaming-overseer.js";
 import _poolGloriousAnthem from "./pool/glorious-anthem.js";
 import _poolGoblinChieftain from "./pool/goblin-chieftain.js";
 import _poolGoblinRaider from "./pool/goblin-raider.js";
@@ -203,6 +206,8 @@ import _poolKirdApe from "./pool/kird-ape.js";
 import _poolKolaghansCommand from "./pool/kolaghans-command.js";
 import _poolKorvoldFaeCursedKing from "./pool/korvold-fae-cursed-king.js";
 import _poolLathlissDragonQueen from "./pool/lathliss-dragon-queen.js";
+import _poolLazotepPlating from "./pool/lazotep-plating.js";
+import _poolLazotepReaver from "./pool/lazotep-reaver.js";
 import _poolLevitation from "./pool/levitation.js";
 import _poolLightningBolt from "./pool/lightning-bolt.js";
 import _poolLightningGreaves from "./pool/lightning-greaves.js";
@@ -214,6 +219,8 @@ import _poolLordOfLineage from "./pool/lord-of-lineage.js";
 import _poolLotusCobra from "./pool/lotus-cobra.js";
 import _poolLotusField from "./pool/lotus-field.js";
 import _poolLotusPetal from "./pool/lotus-petal.js";
+import _poolLoyalGuardian from "./pool/loyal-guardian.js";
+import _poolLoyalSubordinate from "./pool/loyal-subordinate.js";
 import _poolLure from "./pool/lure.js";
 import _poolMagmaquake from "./pool/magmaquake.js";
 import _poolManOWar from "./pool/man-o-war.js";
@@ -278,6 +285,7 @@ import _poolRegrowth from "./pool/regrowth.js";
 import _poolRestInPeace from "./pool/rest-in-peace.js";
 import _poolReturnToNature from "./pool/return-to-nature.js";
 import _poolRiftBolt from "./pool/rift-bolt.js";
+import _poolRishkarPeemaRenegade from "./pool/rishkar-peema-renegade.js";
 import _poolRiveteersOverlook from "./pool/riveteers-overlook.js";
 import _poolRockfallVale from "./pool/rockfall-vale.js";
 import _poolRoguesPassage from "./pool/rogues-passage.js";
@@ -367,6 +375,7 @@ import _poolThranDynamo from "./pool/thran-dynamo.js";
 import _poolThreaten from "./pool/threaten.js";
 import _poolThreeVisits from "./pool/three-visits.js";
 import _poolThunderbreakRegent from "./pool/thunderbreak-regent.js";
+import _poolThunderfootBaloth from "./pool/thunderfoot-baloth.js";
 import _poolTimeWarp from "./pool/time-warp.js";
 import _poolTirelessProvisioner from "./pool/tireless-provisioner.js";
 import _poolTomeScour from "./pool/tome-scour.js";
@@ -395,6 +404,7 @@ import _poolVerdantCatacombs from "./pool/verdant-catacombs.js";
 import _poolVernalFen from "./pool/vernal-fen.js";
 import _poolVillageRites from "./pool/village-rites.js";
 import _poolVisceraSeer from "./pool/viscera-seer.js";
+import _poolVizierOfTheScorpion from "./pool/vizier-of-the-scorpion.js";
 import _poolVolcanicIsland from "./pool/volcanic-island.js";
 import _poolVoltCharge from "./pool/volt-charge.js";
 import _poolWalkingBallista from "./pool/walking-ballista.js";
@@ -416,6 +426,7 @@ import _poolYavimayaCoast from "./pool/yavimaya-coast.js";
 import _poolZulaportCutthroat from "./pool/zulaport-cutthroat.js";
 import _poolZuranOrb from "./pool/zuran-orb.js";
 import _tokensApeToken from "./tokens/ape-token.js";
+import _tokensArmyToken from "./tokens/army-token.js";
 import _tokensBeastToken33 from "./tokens/beast-token-3-3.js";
 import _tokensBeastToken from "./tokens/beast-token.js";
 import _tokensCatToken from "./tokens/cat-token.js";
@@ -554,8 +565,10 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolEmeraldMedallion,
   _poolEmmaraSoulOfTheAccord,
   _poolEncroachingDragonstorm,
+  _poolEnterTheGodEternals,
   _poolEssenceFlux,
   _poolEssenceScatter,
+  _poolEternalSkylord,
   _poolEternalWitness,
   _poolEvolvingWilds,
   _poolFaithlessLooting,
@@ -591,6 +604,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolGiantSpider,
   _poolGlacialFortress,
   _poolGladecoverScout,
+  _poolGleamingOverseer,
   _poolGloriousAnthem,
   _poolGoblinChieftain,
   _poolGoblinRaider,
@@ -641,6 +655,8 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolKolaghansCommand,
   _poolKorvoldFaeCursedKing,
   _poolLathlissDragonQueen,
+  _poolLazotepPlating,
+  _poolLazotepReaver,
   _poolLevitation,
   _poolLightningBolt,
   _poolLightningGreaves,
@@ -652,6 +668,8 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolLotusCobra,
   _poolLotusField,
   _poolLotusPetal,
+  _poolLoyalGuardian,
+  _poolLoyalSubordinate,
   _poolLure,
   _poolMagmaquake,
   _poolManOWar,
@@ -716,6 +734,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolRestInPeace,
   _poolReturnToNature,
   _poolRiftBolt,
+  _poolRishkarPeemaRenegade,
   _poolRiveteersOverlook,
   _poolRockfallVale,
   _poolRoguesPassage,
@@ -805,6 +824,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolThreaten,
   _poolThreeVisits,
   _poolThunderbreakRegent,
+  _poolThunderfootBaloth,
   _poolTimeWarp,
   _poolTirelessProvisioner,
   _poolTomeScour,
@@ -833,6 +853,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolVernalFen,
   _poolVillageRites,
   _poolVisceraSeer,
+  _poolVizierOfTheScorpion,
   _poolVolcanicIsland,
   _poolVoltCharge,
   _poolWalkingBallista,
@@ -860,6 +881,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
  * deck-legal, and hidden from the card library by default. */
 export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensApeToken,
+  _tokensArmyToken,
   _tokensBeastToken33,
   _tokensBeastToken,
   _tokensCatToken,

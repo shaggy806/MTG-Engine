@@ -293,6 +293,9 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 | `grant-triggered` | `target`, `ability`, `duration` | "gains 'Whenever this creature deals combat damage to a player, draw that many cards'" (Hunter's Prowess, Hunter's Insight). Rides on the target's own modifiers, so `"end-of-turn"` expires with every other until-end-of-turn modifier. The ongoing equivalent is `StaticAbility.grantsTriggered` (§10). |
 | `grant-keyword-all` | `filter`, `keyword`, `duration` | Overrun's trample |
 | `add-counter` | `target`, `counter` (string), `amount` | `counter: "+1/+1"` etc. |
+| `add-counter-all` | `filter`, `counter`, `amount` | the untargeted mass form (Loyal Guardian: "a +1/+1 counter on each creature you control"). Routes through `add-counter` per permanent, so Doubling Season still composes. |
+| `amass` | `amount`, `creatureType` | Amass N (rule 701.44). One effect rather than create-then-count, because "an Army you control" has to resolve to the **same** object each time — that's what makes repeated amassing grow one creature. Picks the first Army rather than asking; no precon makes two. |
+| `grant-player-hexproof` | `who?` | "You gain hexproof until end of turn" (Lazotep Plating). A *player* can't be targeted by opponents; permanents gaining hexproof is `grant-keyword-all`. Turn-scoped on `GameState.hexproofPlayers`. |
 | `double-counters-all` | `filter`, `counterKind` | Kalonian Hydra / Bristly Bill — doubles each matching permanent's own current count of that counter kind (routes through `add-counter`'s own logic, so Doubling Season's replacement still composes on top: 3x, not 4x) |
 | `double-pt-all` | `filter`, `duration` | Unnatural Growth — doubles each matching permanent's own *current computed* power/toughness individually (a 2/2 and a 5/5 both matching become a 4/4 and a 10/10), unlike `modify-pt-all`'s single shared amount |
 | `proliferate` | — | proliferates *everything* eligible (no "choose any number") |
@@ -363,7 +366,7 @@ source, so it isn't a `CardFilter` clause.
 `CardFilter` (used by the mass / tutor effects) is a predicate over an object's
 *computed* characteristics — `{ type, types, notTypes, typesAnyOf, subtype,
 subtypes, supertype, name, colors, notColors, colorless, manaValue, power,
-toughness, controlledBy, ownedBy, keyword, notKeyword, tapped, token,
+toughness, counters, controlledBy, ownedBy, keyword, notKeyword, tapped, token,
 isCommander }`, every present clause ANDed. `subtypes`/`typesAnyOf` are an OR
 within themselves (Farseek: "a Plains, Island, Swamp, or Mountain card";
 Takenuma's Channel: "a creature or planeswalker card"). Numeric fields take
@@ -594,7 +597,12 @@ static: [
 **`affects.scope`**:
 
 - `"self"` — this permanent (CDAs, "~ has …", enters-tapped replacements).
-- `"creatures-you-control"` — `+ excludeSelf?`, `+ subtype?` (a lord clause).
+- `"creatures-you-control"` — `+ excludeSelf?`, `+ subtype?` (a lord clause),
+  `+ withCounter?: { kind? }` (Rishkar: "each creature you control **with a
+  counter on it**"), `+ tokenOnly?` (Eternal Skylord: "Zombie **tokens** you
+  control"). The last two are flags rather than a `CardFilter` because
+  `staticAffects` runs on every characteristics read and is deliberately given
+  no `GameState` — both are answerable from the object alone.
 - `"lands-you-control"` — Chromatic Lantern.
 - `"attached"` — the permanent this Aura/Equipment is attached to (how Auras
   grant their effect).

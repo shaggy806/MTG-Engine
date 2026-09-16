@@ -764,6 +764,13 @@ export interface GameState {
    * Set by the `prevent-all-combat-damage` effect, cleared at the start of the
    * next turn. */
   preventAllCombatDamage: boolean;
+  /**
+   * Players with hexproof until end of turn (Lazotep Plating: "**You** and
+   * permanents you control gain hexproof"). Turn-scoped rather than a
+   * per-player flag for the same reason `preventAllCombatDamage` is: there's
+   * no permanent to hang it on. Cleared as each turn begins.
+   */
+  hexproofPlayers: PlayerId[];
   /** One-shot damage-prevention shields (Healing Salve — rule 614.9 / ROADMAP
    * Phase 11 EG-6). Each absorbs up to `amount` damage aimed at `target`;
    * consumed (and shrunk / removed) in `dealDamage` before the hit lands.

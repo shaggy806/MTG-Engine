@@ -84,6 +84,15 @@ export interface CardFilter {
   /** Must be colourless. */
   readonly colorless?: boolean;
   readonly manaValue?: NumCompare;
+  /**
+   * How many counters of a given kind are on the object — Rishkar's "each
+   * creature you control **with a counter on it**", Undying's "if it had no
+   * +1/+1 counters on it".
+   *
+   * `kind` omitted counts every counter of every kind, which is what a bare
+   * "with a counter on it" means.
+   */
+  readonly counters?: { readonly kind?: string; readonly compare: NumCompare };
   readonly power?: NumCompare;
   readonly toughness?: NumCompare;
   /** Controlled by the filtering player (`"you"`) or anyone else (`"opponent"`). */
@@ -170,6 +179,12 @@ export function matchesFilter(
     if (filter.colorless === true && colors.size > 0) return false;
   }
 
+  if (filter.counters !== undefined) {
+    const held = filter.counters.kind === undefined
+      ? Object.values(object.counters).reduce((n, v) => n + (v ?? 0), 0)
+      : (object.counters[filter.counters.kind] ?? 0);
+    if (!compareNum(held, filter.counters.compare, ctx.x)) return false;
+  }
   if (
     filter.manaValue !== undefined &&
     !compareNum(
