@@ -440,6 +440,12 @@ export type AwaitingDecision =
       /** A library-search result that enters the battlefield does so tapped
        * (Rampant Growth). Only meaningful with `destination: "battlefield"`. */
       readonly enterTapped?: boolean;
+      /** Where every *chosen* card after the first goes, when a tutor splits
+       * its finds across two zones (Cultivate: "put one onto the battlefield
+       * tapped and the other into your hand"). Absent means every chosen card
+       * goes to `destination`. Distinct from `leftover`, which is about cards
+       * that were **not** chosen. */
+      readonly restDestination?: "battlefield" | "hand";
     }
   | {
       /**

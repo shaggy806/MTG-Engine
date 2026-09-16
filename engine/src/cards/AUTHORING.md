@@ -310,7 +310,7 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 
 | kind | fields | example |
 | --- | --- | --- |
-| `search-library` | `filter`, `destination: "hand" \| "battlefield"`, `min`, `max`, `enterTapped?` | Demonic Tutor, Rampant Growth |
+| `search-library` | `filter`, `destination: "hand" \| "battlefield"`, `min`, `max`, `enterTapped?`, `restDestination?` | Demonic Tutor, Rampant Growth. `max` is an `EffectAmount`, so "up to X basic lands, where X is the number of tapped creatures you control" is a `countOf` (Harvest Season). `restDestination` sends every *chosen* card after the first somewhere else — Cultivate's "put one onto the battlefield tapped and the other into your hand" (distinct from `leftover`, which is about cards **not** chosen). |
 | `scry` | `amount`, `then?` | Preordain (`then: { kind: "draw", amount: 1 }`) |
 | `surveil` | `amount`, `then?` | Consider |
 | `look-and-choose` | `zone`, `count?`, `min`, `max`, `destination`, `leftover: "bottom-random" \| "stay" \| "hand"`, `filter?` | Ureni of the Unwritten; Genesis Ultimatum uses `leftover: "hand"` — every non-chosen looked-at card goes to hand, regardless of `filter` (needed-cards P19) |
@@ -627,6 +627,11 @@ clause (section 9):
 - `{ kind: "your-turn" }`
 - `{ kind: "threshold" }` — 7+ cards in your graveyard.
 - `{ kind: "metalcraft" }` — 3+ artifacts.
+- `{ kind: "trigger-object", filter }` — the object whose event fired the
+  *triggered ability* currently resolving matches `filter` (Akoum Hellkite:
+  "If that land is a Mountain, it deals 2 damage instead"). Only meaningful
+  inside a triggered ability's `conditional` effect; always false on a static,
+  which has no triggering object.
 
 **`replacement?`** (`ReplacementSpec`, `replacements.ts`) — a replacement effect
 *is* a static ability:
@@ -798,10 +803,11 @@ different card, or extend the engine (see `ROADMAP.md`).
   no "each opponent mills" form. (`draw` *does* now take both a `who` scope
   and a `target` slot, and `discard-hand` takes a scope — see §6.)
 - Reordering the cards you keep on top after a scry.
-- Multi-destination tutors (Cultivate's "one to battlefield, one to hand").
-  Sakura-Tribe Elder turned out *not* to need this when checked against real
-  Oracle text (needed-cards P17) — it's a bare sacrifice-cost activated
-  ability + an ordinary `search-library`, already fully expressible.
+- Tutors whose finds must **share a characteristic with each other** (Myriad
+  Landscape: "up to two basic land cards that share a land type"). A
+  `CardFilter` constrains each card independently; nothing relates one chosen
+  card to another. (A plain two-destination split — Cultivate — *is* now
+  expressible, via `search-library.restDestination`.)
 - `discard` as part of an **activated ability cost**.
 - `spellsCastThisTurn` triggers beyond `cast-spell` / `this-cast`.
 - **Optional / "up to N" targeting.** Every slot in a spell's or ability's

@@ -9,6 +9,7 @@ import _poolAdarkarWastes from "./pool/adarkar-wastes.js";
 import _poolAftermathAnalyst from "./pool/aftermath-analyst.js";
 import _poolAggravatedAssault from "./pool/aggravated-assault.js";
 import _poolAjanisPridemate from "./pool/ajanis-pridemate.js";
+import _poolAkoumHellkite from "./pool/akoum-hellkite.js";
 import _poolAmbushViper from "./pool/ambush-viper.js";
 import _poolAmuletOfVigor from "./pool/amulet-of-vigor.js";
 import _poolAnOfferYouCantRefuse from "./pool/an-offer-you-cant-refuse.js";
@@ -59,6 +60,7 @@ import _poolBristlyBillSpineSower from "./pool/bristly-bill-spine-sower.js";
 import _poolBruseTarlBoorishHerder from "./pool/bruse-tarl-boorish-herder.js";
 import _poolBrushland from "./pool/brushland.js";
 import _poolBuriedRuin from "./pool/buried-ruin.js";
+import _poolBurnishedHart from "./pool/burnished-hart.js";
 import _poolCabarettiCourtyard from "./pool/cabaretti-courtyard.js";
 import _poolCanopyVista from "./pool/canopy-vista.js";
 import _poolCarnageTyrant from "./pool/carnage-tyrant.js";
@@ -81,6 +83,7 @@ import _poolCraterhoofBehemoth from "./pool/craterhoof-behemoth.js";
 import _poolCrawWurm from "./pool/craw-wurm.js";
 import _poolCropRotation from "./pool/crop-rotation.js";
 import _poolCryptolithRite from "./pool/cryptolith-rite.js";
+import _poolCultivate from "./pool/cultivate.js";
 import _poolCyclonicRift from "./pool/cyclonic-rift.js";
 import _poolDamn from "./pool/damn.js";
 import _poolDamnation from "./pool/damnation.js";
@@ -161,6 +164,7 @@ import _poolGutShot from "./pool/gut-shot.js";
 import _poolHallowedFountain from "./pool/hallowed-fountain.js";
 import _poolHarmonize from "./pool/harmonize.js";
 import _poolHarrow from "./pool/harrow.js";
+import _poolHarvestSeason from "./pool/harvest-season.js";
 import _poolHarvesttideAssailant from "./pool/harvesttide-assailant.js";
 import _poolHarvesttideInfiltrator from "./pool/harvesttide-infiltrator.js";
 import _poolHauntedRidge from "./pool/haunted-ridge.js";
@@ -227,6 +231,7 @@ import _poolNaturalize from "./pool/naturalize.js";
 import _poolNaturesLore from "./pool/natures-lore.js";
 import _poolNegate from "./pool/negate.js";
 import _poolNightsWhisper from "./pool/nights-whisper.js";
+import _poolNissasExpedition from "./pool/nissas-expedition.js";
 import _poolNotionThief from "./pool/notion-thief.js";
 import _poolObNixilisTheFallen from "./pool/ob-nixilis-the-fallen.js";
 import _poolOldGnawbone from "./pool/old-gnawbone.js";
@@ -429,6 +434,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAftermathAnalyst,
   _poolAggravatedAssault,
   _poolAjanisPridemate,
+  _poolAkoumHellkite,
   _poolAmbushViper,
   _poolAmuletOfVigor,
   _poolAnOfferYouCantRefuse,
@@ -479,6 +485,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBruseTarlBoorishHerder,
   _poolBrushland,
   _poolBuriedRuin,
+  _poolBurnishedHart,
   _poolCabarettiCourtyard,
   _poolCanopyVista,
   _poolCarnageTyrant,
@@ -501,6 +508,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolCrawWurm,
   _poolCropRotation,
   _poolCryptolithRite,
+  _poolCultivate,
   _poolCyclonicRift,
   _poolDamn,
   _poolDamnation,
@@ -581,6 +589,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolHallowedFountain,
   _poolHarmonize,
   _poolHarrow,
+  _poolHarvestSeason,
   _poolHarvesttideAssailant,
   _poolHarvesttideInfiltrator,
   _poolHauntedRidge,
@@ -647,6 +656,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolNaturesLore,
   _poolNegate,
   _poolNightsWhisper,
+  _poolNissasExpedition,
   _poolNotionThief,
   _poolObNixilisTheFallen,
   _poolOldGnawbone,

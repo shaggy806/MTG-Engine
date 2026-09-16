@@ -2408,13 +2408,20 @@ export class Game {
     const chosenSet = new Set(chosen);
     const leftover = awaiting.ids.filter((id) => !chosenSet.has(id));
 
-    for (const id of chosen) {
-      this.moveObject(id, awaiting.destination);
-      if (awaiting.destination === "battlefield") {
+    // A split tutor (Cultivate) sends the first find to `destination` and the
+    // rest to `restDestination`; with no `restDestination` they all go to the
+    // same place, which is every other tutor.
+    chosen.forEach((id, index) => {
+      const to =
+        index === 0 || awaiting.restDestination === undefined
+          ? awaiting.destination
+          : awaiting.restDestination;
+      this.moveObject(id, to);
+      if (to === "battlefield") {
         if (awaiting.enterTapped) this.state.objects[id].tapped = true;
         this.emit({ type: "permanent-entered-battlefield", object: id });
       }
-    }
+    });
 
     if (awaiting.leftover === "bottom-random") {
       // `moveObject` always appends to a zone's array, and the library's
@@ -6136,6 +6143,16 @@ export class Game {
       },
       createTokenCopy: (of, count, opts) => this.createTokenCopy(of, count, opts),
       conditionMet: (condition) => {
+        // "If that land is a Mountain" — a question about the object that
+        // fired this trigger, which only the resolution context knows, so it
+        // is answered here rather than in `staticConditionMet` (a static
+        // ability has no triggering object at all).
+        if (condition.kind === "trigger-object") {
+          if (triggerObject === undefined) return false;
+          return matchesFilter(this.state, this.registry, triggerObject, condition.filter, {
+            you: controller,
+          });
+        }
         const src = this.state.objects[source];
         return src !== undefined && staticConditionMet(this.state, this.registry, src, condition);
       },
@@ -6169,8 +6186,16 @@ export class Game {
       chooseModes: (minModes, maxModes, modes, onDecline) =>
         this.beginModesChoice(source, controller, x, minModes, maxModes, modes, onDecline, targets),
       changeLifeScoped: (who, delta) => this.changeLifeScoped(controller, who, delta),
-      searchLibrary: (filter, destination, min, max, enterTapped) =>
-        this.beginLibrarySearch(controller, filter, destination, min, max, enterTapped),
+      searchLibrary: (filter, destination, min, max, enterTapped, restDestination) =>
+        this.beginLibrarySearch(
+          controller,
+          filter,
+          destination,
+          min,
+          max,
+          enterTapped,
+          restDestination,
+        ),
       scry: (amount, surveil, then) =>
         this.beginScry(source, controller, x, amount, surveil ? "surveil" : "scry", then ?? null),
       lookAndChoose: (zone, count, min, max, destination, leftover, filter) =>
@@ -6231,6 +6256,7 @@ export class Game {
     min: number,
     max: number,
     enterTapped: boolean,
+    restDestination?: "hand" | "battlefield",
   ): void {
     const eligible = this.state.zones.perPlayer[player].library.filter((id) =>
       matchesFilter(this.state, this.registry, id, filter, { you: player }),
@@ -6245,6 +6271,7 @@ export class Game {
       destination,
       leftover: "shuffle",
       ...(enterTapped && destination === "battlefield" ? { enterTapped: true } : {}),
+      ...(restDestination !== undefined ? { restDestination } : {}),
     };
   }
 

@@ -587,9 +587,16 @@ export type EffectSpec =
       readonly filter: CardFilter;
       readonly destination: "hand" | "battlefield";
       readonly min: number;
-      readonly max: number;
+      /** An `EffectAmount` so a tutor can find "up to X" where X is a live
+       * count — Harvest Season's "up to X basic land cards, where X is the
+       * number of tapped creatures you control". */
+      readonly max: EffectAmount;
       /** Put battlefield-bound cards in tapped (Rampant Growth). */
       readonly enterTapped?: boolean;
+      /** Where chosen cards after the first go, for a tutor that splits its
+       * finds (Cultivate: "put one onto the battlefield tapped and the other
+       * into your hand"). Omit when every find goes to `destination`. */
+      readonly restDestination?: "hand" | "battlefield";
     }
   | {
       /** Reveal `count` cards from the top of the controller's library (or
@@ -829,6 +836,7 @@ export interface EffectApi {
     min: number,
     max: number,
     enterTapped: boolean,
+    restDestination?: "hand" | "battlefield",
   ): void;
   /** See the `"look-and-choose"` {@link EffectSpec}. */
   lookAndChoose(
@@ -1258,8 +1266,9 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
         spec.filter,
         spec.destination,
         spec.min,
-        spec.max,
+        amountValue(spec.max, ctx),
         spec.enterTapped === true,
+        spec.restDestination,
       );
       return;
     case "look-and-choose":

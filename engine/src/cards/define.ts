@@ -128,7 +128,17 @@ export type StaticCondition =
   /** Threshold (rule 702.27) — seven or more cards in your graveyard. */
   | { readonly kind: "threshold" }
   /** Metalcraft (rule 702.44) — you control three or more artifacts. */
-  | { readonly kind: "metalcraft" };
+  | { readonly kind: "metalcraft" }
+  /**
+   * The object whose event fired the *triggered ability* currently resolving
+   * matches `filter` — Akoum Hellkite's "Whenever a land you control enters,
+   * … If that land is a Mountain, [it] deals 2 damage instead".
+   *
+   * Only meaningful inside a `conditional` effect of a triggered ability,
+   * where `ResolutionContext.triggerObject` is set; a *static* ability has no
+   * triggering object and this is always false there.
+   */
+  | { readonly kind: "trigger-object"; readonly filter: CardFilter };
 
 /**
  * A static ability: continuously modifies characteristics (rule 613 layers 6 /
