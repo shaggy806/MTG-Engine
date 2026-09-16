@@ -298,3 +298,64 @@ abilities, and `create-emblem` carries only a `StaticAbility`. Emblems live in
 `GameState.emblems` rather than as `GameObject`s, so `detectTriggers` cannot see them.
 That is a real, recurring gap — planeswalker ultimates are the main source of emblems and
 most of them trigger — but it is a feature, not a card, and is not in this phase.
+
+---
+
+## Phase H — Chaos Incarnate, first pass
+
+41 missing down to 23. This deck is markedly harder than Draconic Destruction:
+where that one was mostly Dragons with clean triggers, this one is full of
+"greatest mana value among", "chosen at random" and per-opponent choices.
+
+| addition | card |
+|---|---|
+| `cast-spell` trigger: a `filter` on the spell, and `who: "opponent"` (which the matcher never handled — see below) | Guttersnipe, Thermo-Alchemist, Kaervek the Merciless |
+| `add-mana.amount` widened to an `EffectAmount` | Mana Geyser |
+| `StaticCondition` `{ kind: "not", of }` | Titan Hunter |
+| `damage { toControllerOfTarget }` + `EffectApi.controllerOf` | Unlicensed Disintegration |
+| `goad { who }` (a `PlayerScope` instead of one target) | Kardur, Doomscourge |
+| `CardFilter.attacking` falls back to `GameObject.wasAttacking` off the battlefield | Kardur, Doomscourge |
+
+### Three more latent bugs
+
+1. **`cast-spell` with `who: "opponent"` never matched.** The caster check
+   handled `"any"` and `"you"` only, so the spec type-checked and silently
+   never fired. No card in the pool used it.
+2. **`spell-cast` didn't set `triggerObject`.** So `{ manaValueOf: "trigger-object" }`
+   on a cast trigger read 0 — Kaervek dealt no damage.
+3. **`StaticCondition` `not` read inverted through the re-entrancy guard.**
+   `staticConditionMet` keys its guard on `source.id`; a `not` recursing back
+   through it hit the guard, got `false`, and negated to `true` — so every
+   `not` was unconditionally satisfied. It now calls `evalStaticCondition`
+   directly, since the guard exists for mutually-conditional *permanents*, not
+   for a composite condition on one of them.
+
+### Still missing from this deck — 23 cards
+
+Grouped by what they actually need, since several share a cause:
+
+| cause | cards |
+|---|---|
+| "greatest mana value among …" — a superlative over a set, not a filter | Soul Shatter, Scythe Specter |
+| a count of what an effect *just did*, per player | Deadly Tempest, Reign of the Pit, Syphon Mind |
+| per-opponent choices from their own graveyard | Dredge the Mire, Sepulchral Primordial |
+| "chosen at random" | Explosion of Riches, Wildfire Devils |
+| a repeatable mode ("choose three, you may choose the same mode more than once") | Fiery Confluence |
+| variable target count | Profane Command, Loaming Shaman |
+| a triggered emblem | Ob Nixilis Reignited |
+| a "whenever a player draws a card" trigger | Spiteful Visions |
+| a "whenever this is dealt damage" trigger | Brash Taunter |
+| an "opponent discards" trigger | Sangromancer |
+| mana in a *mana ability's* own cost (`manaSources` excludes these) | Rakdos Signet, Molten Slagheap |
+| mana provenance | Sunbird's Invocation |
+| shuffle-into-library + reveal-and-maybe-play | Chaos Warp |
+| copy a spell and re-choose its targets | Wild Ricochet |
+| one-off compound texts | Combustible Gearhulk, Coveted Jewel, Myriad Landscape |
+
+**Signets are the highest-value item there.** All ten are staples, they will
+recur in the remaining three decks, and the blocker is one known limitation:
+`manaSources()` drops any mana ability whose activation cost contains mana, to
+avoid circular payment planning. A Signet is net-neutral in count but converts
+colour, so the planner would have to consider spending generic to gain
+coloured. That is a real change to `planManaPayment`, not a vocabulary
+addition, and it deserves its own phase.

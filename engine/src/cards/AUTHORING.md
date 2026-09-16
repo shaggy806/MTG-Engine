@@ -260,7 +260,7 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 
 | kind | fields | example |
 | --- | --- | --- |
-| `damage` | `amount`, `target` | Lightning Bolt |
+| `damage` | `amount`, `target` \| `who` \| `toControllerOfTarget` | Lightning Bolt (`target`); Breath of Malfegor (`who: "each-opponent"`); Unlicensed Disintegration — "deals 3 damage to **that creature's** controller" (`toControllerOfTarget: 0`, mirroring `create-token`'s `who: "target-controller"`) |
 | `damage-all` | `filter`, `amount`, `exceptSource?` | Pyroclasm. `exceptSource` spares the source itself — Harbinger of the Hunt's "each **other** creature with flying", which a `CardFilter` can't say (it describes the permanent matched, not its relationship to the damage source). |
 | `creatures-damage-controllers` | `filter`, `amount` | Rakdos Charm — "each creature deals 1 damage to its controller"; the reverse direction from `damage-all` (each matching permanent is its own source, hitting its own controller, not the caster). needed-cards P20 |
 | `gain-life` | `amount` (an `EffectAmount`), `who?` | Healing Salve; Shamanic Revelation's "4 life for each creature you control with power 4 or greater" is `{ countOf: …, times: 4 }` |
@@ -367,11 +367,14 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
   Fallen); `else` only when it was declined ("If you didn't, …", or an
   "unless" cost framed as the decline branch — Springheart Nantuko, The
   Gitrog Monster's upkeep). needed-cards P19.
-- **`goad { target }`** — goad every creature a target player controls (rule
-  701.38 — Geode Rager). Marks `GameObject.goadedBy`; those creatures then
-  attack each combat if able and must attack someone *other* than the goader
-  when another defender is legal. The goad lapses as the goader's own next
-  turn begins.
+- **`goad { target }`** / **`goad { who }`** — goad every creature a target
+  player controls (rule 701.38 — Geode Rager), or every creature a whole
+  `PlayerScope` controls (Kardur, Doomscourge's `who: "each-opponent"`).
+  Marks `GameObject.goadedBy`; those creatures then attack each combat if able
+  and must attack someone *other* than the goader when another defender is
+  legal. The goad lapses as the goader's own next turn begins — which is why
+  a card printed as "until your next turn, creatures your opponents control
+  attack each combat if able" is a `goad` rather than a bespoke effect.
 - **`encore {}`** — Encore (rule 702.140 — Rakshasa Debaser, Kangee's
   Lieutenant): one hasty token copy per opponent, each with
   `mustAttackPlayer` set to *that* opponent, all sacrificed at the next end
@@ -620,7 +623,7 @@ triggered: [
 | `deals-combat-damage-to-player` | `who` | auto-fills the first target slot with the damaged player |
 | `transforms` | `who`, `intoFront?`, `filter?` | a DFC turns over |
 | `step-begins` | `step`, `who` | the start of a step (`"upkeep"` etc.) |
-| `cast-spell` | `who`, `noncreatureOnly?`, `firstEachTurn?` | a spell is cast (prowess) |
+| `cast-spell` | `who`, `noncreatureOnly?`, `firstEachTurn?`, `filter?` | a spell is cast. `who: "opponent"` is anyone but this permanent's controller (Kaervek the Merciless); `filter` narrows on the *spell* — `{ typesAnyOf: ["instant", "sorcery"] }` for Guttersnipe. `noncreatureOnly` predates `filter` and stays, because prowess is printed as its own word. `trigger-object` is the spell, so `{ manaValueOf: "trigger-object" }` reads its mana value. |
 | `this-cast` | — | the spell carrying this ability is cast (cascade, storm) |
 | `predicate` | `match: (event) => boolean` | escape hatch — match the raw `GameEvent` |
 
@@ -749,6 +752,9 @@ clause (section 9):
 - `{ kind: "creature-died-this-turn" }` — Liliana's Devotee. Reads the
   turn-scoped `GameState.creaturesDiedThisTurn`, counted in `moveObject`
   while the dying permanent's types are still readable.
+- `{ kind: "not", of }` — the negation of any other condition (Titan Hunter's
+  "**if no creatures died this turn**"). Composes, so it's cheaper than a
+  `no-` variant of each condition.
 - `{ kind: "self-kicked" }` — the ability's own source was cast **kicked**
   (Verix Bladewing: "When this enters, *if it was kicked*, …"). A permanent
   spell's kicker rider can't live in `CardDefinition.kicker` the way an

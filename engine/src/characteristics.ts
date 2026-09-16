@@ -156,6 +156,13 @@ function evalStaticCondition(
       return source.enteredKicked === true || source.kicked === true;
     case "creature-died-this-turn":
       return state.creaturesDiedThisTurn > 0;
+    case "not":
+      // `evalStaticCondition`, not `staticConditionMet`: the re-entrancy guard
+      // keys on `source.id`, and this is still the *same* source — routing
+      // back through it would short-circuit to false and make every `not`
+      // read true. The guard exists for mutually-conditional permanents, not
+      // for a composite condition on one of them.
+      return !evalStaticCondition(state, registry, source, condition.of, opts);
     case "opponent-lost-life-this-turn":
       return state.turnOrder.some(
         (p) => p !== you && state.players[p].lostLifeThisTurn,

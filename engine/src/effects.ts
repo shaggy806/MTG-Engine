@@ -104,6 +104,17 @@ export type EffectSpec =
        * "deals 1 damage to each opponent" — needed-cards P16), instead of a
        * chosen target. */
       readonly who?: PlayerScope;
+      /**
+       * Damage aimed at the *controller* of whatever a target slot points at
+       * — Unlicensed Disintegration's "deals 3 damage to **that creature's**
+       * controller", where the targeted thing is the creature, not a player.
+       * Mirrors `create-token`'s `who: "target-controller"`.
+       *
+       * Rule 111.11 / 608.2h: read as last-known information, so a creature
+       * destroyed by the same spell still names whoever controlled it — which
+       * is exactly the order every card printed this way resolves in.
+       */
+      readonly toControllerOfTarget?: number;
     }
   | {
       /** `mana: "any-color"` — one mana of any of the five colours, the
@@ -127,7 +138,11 @@ export type EffectSpec =
         | "any-color"
         | "chosen"
         | { readonly oneOf: readonly ManaType[] };
-      readonly amount: number;
+      /** An `EffectAmount` so a ritual can scale off the board — Mana Geyser's
+       * "{R} for each tapped land your opponents control". A mana *ability*
+       * should keep this a plain number: `manaSources()` reports what each
+       * permanent can produce without resolving anything. */
+      readonly amount: EffectAmount;
       /** Damage this mana ability deals to its controller when it's used (a
        * painland's coloured tap — Karplusan Forest: "{T}: Add {R} or {G}.
        * Karplusan Forest deals 1 damage to you."). The auto-payer prefers a
@@ -775,7 +790,11 @@ export type EffectSpec =
        */
       readonly kind: "goad";
       /** A target-slot index holding the player whose creatures are goaded. */
-      readonly target: number;
+      readonly target?: number;
+      /** Goad a whole scope of players instead of one chosen target — Kardur,
+       * Doomscourge's "creatures your opponents control attack each combat if
+       * able". Mutually exclusive with `target`. */
+      readonly who?: PlayerScope;
     }
   | {
       /**
@@ -891,6 +910,17 @@ export interface EffectApi {
   /** See the `{ countInGraveyard }` {@link EffectAmount}. */
   countInGraveyard(filter: CardFilter): number;
   /** See the `{ powerOf }` {@link EffectAmount}. */
+  /**
+   * Who controls what `ref` points at — the player itself for a player ref,
+   * else the object's controller.
+   *
+   * Rule 111.11 / 608.2h — *last-known* information for an object that has
+   * already left the battlefield, which is the usual case for the cards that
+   * ask (they destroy the permanent first). `moveObject` reverts `controller`
+   * to `owner` on the way out, so a permanent that was under someone else's
+   * control names its owner here; the two coincide for everything else.
+   */
+  controllerOf(ref: TargetRef): PlayerId | undefined;
   powerOf(target: TargetRef): number;
   /** Every player a `PlayerScope` names, in APNAP order and skipping anyone
    * who has already lost. The shared scope resolution behind `draw`'s `who`,
@@ -1243,6 +1273,14 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       return;
     }
     case "damage": {
+      if (spec.toControllerOfTarget !== undefined) {
+        const of = ctx.targets[spec.toControllerOfTarget];
+        const controller = of === undefined ? undefined : ctx.controllerOf(of);
+        if (controller !== undefined) {
+          ctx.dealDamage({ kind: "player", player: controller }, amountValue(spec.amount, ctx));
+        }
+        return;
+      }
       if (spec.who !== undefined) {
         ctx.dealDamageScoped(spec.who, amountValue(spec.amount, ctx));
         return;
@@ -1258,7 +1296,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
         // back to the payer's choice if the label isn't a colour (it always
         // is on the cards that use this).
         spec.mana === "chosen" ? (ctx.chosenColorOfSource() ?? "any-color") : spec.mana,
-        spec.amount,
+        amountValue(spec.amount, ctx),
       );
       if (spec.painToController !== undefined && spec.painToController > 0) {
         ctx.dealDamage(
@@ -1619,7 +1657,11 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       ctx.encore();
       return;
     case "goad": {
-      const ref = ctx.targets[spec.target];
+      if (spec.who !== undefined) {
+        for (const player of ctx.playersInScope(spec.who)) ctx.goadCreaturesOf(player);
+        return;
+      }
+      const ref = spec.target === undefined ? undefined : ctx.targets[spec.target];
       if (ref?.kind === "player") ctx.goadCreaturesOf(ref.player);
       return;
     }

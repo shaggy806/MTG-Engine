@@ -5330,11 +5330,19 @@ export class Game {
             ? (MANA_TYPES.includes(chosen as ManaType) ? (chosen as ManaType) : null)
             : ability.effect.mana;
         if (mana === null) continue;
+        // A mana *ability* has to report a fixed output: `manaSources` runs
+        // during payment planning, with nothing resolving and no resolution
+        // context to size an `EffectAmount` against. A board-scaled amount
+        // (Mana Geyser's "{R} for each tapped land your opponents control")
+        // only ever appears on a spell, so an ability carrying one is simply
+        // not offered as a source rather than being guessed at.
+        if (typeof ability.effect.amount !== "number") continue;
+        const manaAmount = ability.effect.amount;
         const candidates: ManaOption[] =
           mana === "any-color"
-            ? [{ fixed: [], anyColor: ability.effect.amount, pain, lifeCost }]
+            ? [{ fixed: [], anyColor: manaAmount, pain, lifeCost }]
             : typeof mana === "object"
-              ? manaCombinations(mana.oneOf, ability.effect.amount).map((fixed) => ({
+              ? manaCombinations(mana.oneOf, manaAmount).map((fixed) => ({
                   fixed,
                   anyColor: 0,
                   pain,
@@ -5342,7 +5350,7 @@ export class Game {
                 }))
               : [
                   {
-                    fixed: Array<ManaType>(ability.effect.amount).fill(mana),
+                    fixed: Array<ManaType>(manaAmount).fill(mana),
                     anyColor: 0,
                     pain,
                     lifeCost,
@@ -6294,6 +6302,7 @@ export class Game {
           (spec.who === "opponent" && event.player !== self.controller);
         if (!casterMatches) return false;
         if (spec.firstEachTurn && event.spellsThisTurn !== 1) return false;
+        if (!this.triggerFilterOk(spec.filter, event.object, self)) return false;
         if (spec.noncreatureOnly) {
           const castObject = this.state.objects[event.object];
           if (
@@ -6760,6 +6769,8 @@ export class Game {
         }
         this.createTokens(tokenController, token, count);
       },
+      controllerOf: (ref) =>
+        ref.kind === "player" ? ref.player : this.state.objects[ref.object]?.controller,
       createTokenCopy: (of, count, opts) => this.createTokenCopy(of, count, opts),
       conditionMet: (condition) => {
         // "If that land is a Mountain" — a question about the object that
@@ -9350,6 +9361,10 @@ export class Game {
     // graveyard. See `GameObject.lastKnownCounters`.
     if (leavingBattlefield) {
       object.lastKnownCounters = { ...object.counters };
+      // Likewise "whenever an **attacking** creature dies" (Kardur,
+      // Doomscourge): the reset below clears `attacking` before the
+      // dies-trigger is ever matched, so the answer has to be kept.
+      object.wasAttacking = object.attacking !== null;
       // "If a creature died this turn" (rule 700.4 — a creature going to a
       // graveyard from the battlefield), counted while its types are still
       // readable.

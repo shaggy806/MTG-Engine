@@ -166,6 +166,10 @@ export type StaticCondition =
   /** A creature died this turn (Liliana's Devotee). Reads the turn-scoped
    * `GameState.creaturesDiedThisTurn`. */
   | { readonly kind: "creature-died-this-turn" }
+  /** The negation of another condition — Titan Hunter's "**if no creatures
+   * died this turn**". Cheaper than a `no-` variant of every condition, and
+   * it composes. */
+  | { readonly kind: "not"; readonly of: StaticCondition }
   /** The source's `chosenOnEnter` label equals `value` — Frontier Siege's
    * "Khans" / "Dragons" halves. */
   | { readonly kind: "chosen-on-enter"; readonly value: string }

@@ -266,13 +266,21 @@ export type TriggerSpec =
   | { readonly on: "step-begins"; readonly step: Step; readonly who: TriggerWho }
   | {
       /** A spell was cast. `who` is relative to the caster: `"you"` = this
-       * permanent's controller cast it. `noncreatureOnly` narrows to a
-       * noncreature spell (prowess, rule 702.108). `firstEachTurn` narrows to
-       * the caster's first spell of the turn. */
+       * permanent's controller cast it, `"opponent"` = anyone else did
+       * (Kaervek the Merciless). `noncreatureOnly` narrows to a noncreature
+       * spell (prowess, rule 702.108). `firstEachTurn` narrows to the
+       * caster's first spell of the turn. */
       readonly on: "cast-spell";
       readonly who: TriggerWho;
       readonly noncreatureOnly?: boolean;
       readonly firstEachTurn?: boolean;
+      /**
+       * A filter on the *spell* (Guttersnipe, Thermo-Alchemist: "whenever you
+       * cast an instant or sorcery spell"). The general form of
+       * `noncreatureOnly`, which predates it and is kept for the cards that
+       * already use it — prowess is printed as its own word, not as a filter.
+       */
+      readonly filter?: CardFilter;
     }
   | {
       /** *This* spell (the one carrying the ability) was cast — a triggered

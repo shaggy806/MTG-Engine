@@ -182,8 +182,12 @@ export function matchesFilter(
     if (filter.colorless === true && colors.size > 0) return false;
   }
 
-  if (filter.attacking !== undefined && (object.attacking !== null) !== filter.attacking) {
-    return false;
+  if (filter.attacking !== undefined) {
+    // Off the battlefield, `attacking` has already been cleared by the move
+    // that took it there — fall back to the snapshot (rule 608.2h).
+    const attacking =
+      object.zone === "battlefield" ? object.attacking !== null : object.wasAttacking === true;
+    if (attacking !== filter.attacking) return false;
   }
   if (filter.counters !== undefined) {
     const held = filter.counters.kind === undefined

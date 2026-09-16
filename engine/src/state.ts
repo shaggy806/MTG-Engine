@@ -39,6 +39,14 @@ export interface GameObject {
    * rider is an ETB trigger (Verix Bladewing). See `moveObject`.
    */
   enteredKicked?: boolean;
+  /**
+   * Was this permanent attacking when it left the battlefield? — the
+   * last-known-information counterpart of `attacking`, for a dies-trigger
+   * filtered on it (Kardur, Doomscourge's "whenever an attacking creature
+   * dies"). `moveObject` clears `attacking` before any such trigger is
+   * matched. See `lastKnownCounters`, which exists for the same reason.
+   */
+  wasAttacking?: boolean;
   /** True once dealt damage by a deathtouch source this turn (rule 704.5h). Cleared with `damageMarked`. */
   markedByDeathtouch: boolean;
   /** Turn number this object last entered the battlefield; `null` otherwise. */
