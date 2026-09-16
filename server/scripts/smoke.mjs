@@ -48,15 +48,36 @@ const created = await next(alice);
 log("alice", created);
 const roomId = created.roomId;
 
+// Claiming with `ready: true` does the seat-picker's claim-and-ready in one
+// round trip; the room still needs an explicit `start-game` afterwards.
 alice.send(
-  JSON.stringify({ type: "claim-seat", roomId, seat: "alice", clientToken: "alice-token" }),
+  JSON.stringify({
+    type: "claim-seat",
+    roomId,
+    seat: "alice",
+    clientToken: "alice-token",
+    ready: true,
+  }),
 );
 log("alice", await next(alice));
 
 bob.send(JSON.stringify({ type: "join-room", roomId }));
 log("bob", await next(bob));
-bob.send(JSON.stringify({ type: "claim-seat", roomId, seat: "bob", clientToken: "bob-token" }));
+bob.send(
+  JSON.stringify({
+    type: "claim-seat",
+    roomId,
+    seat: "bob",
+    clientToken: "bob-token",
+    ready: true,
+  }),
+);
 log("alice", await next(alice)); // rebroadcast once bob's seat is claimed
+log("bob", await next(bob));
+
+console.log("\nboth seats ready — starting the game");
+alice.send(JSON.stringify({ type: "start-game", roomId }));
+log("alice", await next(alice)); // the opening frame
 log("bob", await next(bob));
 
 // Real rooms turn on mulligans (rules.startingLife: 40, Commander-style) —
