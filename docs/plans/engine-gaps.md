@@ -31,10 +31,14 @@ targets" bucket into ~8 real ones plus a handful that were miscounted.
 Ordered by cards unblocked per unit of work, and by dependency — the target-system work in
 phase B is the largest single change and several phase-D mechanics lean on it.
 
-### Phase A — small self-contained primitives (15 cards)
+### Phase A — small self-contained primitives — **done**
 
-Each of these is a narrow addition to an existing vocabulary, independently testable, and
-none touches the target system.
+Each of these was a narrow addition to an existing vocabulary, independently testable, and
+none touched the target system. Fifteen cards authored: Bloodgift Demon, Stormfist
+Crusader, Dragon Mage, Feed the Swarm, Aura Mutation, Hoard-Smelter Dragon, Port Town,
+Game Trail, Foreboding Ruins, Fortified Village, Runehorn Hellkite, Steel Hellkite,
+Cultivate, Harvest Season, Akoum Hellkite — plus Burnished Hart and Nissa's Expedition,
+which the triage had wrongly listed as blocked.
 
 | gap | shape | cards |
 |---|---|---|
@@ -46,6 +50,21 @@ none touches the target system.
 | conditional on the trigger object's characteristics | `conditional` condition gains a trigger-object `CardFilter` | Akoum Hellkite |
 | multi-destination tutor | `search-library` gains a second destination for the remainder | Cultivate |
 | `search-library.max` as a live count | `max` accepts an `EffectAmount` | Harvest Season |
+
+Three things surfaced during the work that the text-scan triage had missed, and they are
+the reason this doc exists rather than a checklist:
+
+- **Deep Analysis** needs `flashback` to carry a life cost ("Flashback—{1}{U}, Pay 3
+  life"); `flashback: { cost: string }` is mana only. Still blocked, now on a named cause.
+- **Myriad Landscape** needs a tutor whose finds share a characteristic *with each other*
+  ("two basic land cards that share a land type"). A `CardFilter` constrains each card
+  independently. Still blocked.
+- **Steel Hellkite** needed three separate pieces, not one: `oncePerTurn`, per-source
+  combat-damage tracking, and `{ n: "x" }` in a `CardFilter` numeric clause. Expect more
+  cards to be like this — a one-line rules sentence is not one engine feature.
+
+Also fixed along the way, found by the 4-player fuzzer rather than by any card: an
+activated ability's advertised `maxX` didn't match what it could actually pay.
 
 The reveal-from-hand land is the one with a rules wrinkle: the card says "you **may**
 reveal", and declining is never beneficial except as hidden-information management, which
