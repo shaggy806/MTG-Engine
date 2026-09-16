@@ -337,6 +337,22 @@ export function staticAffects(
       registry.get(printedCardName(target)).types.includes("land")
     );
   }
+  if (affects.scope === "all-creatures") {
+    // Every creature on the battlefield, whoever controls it.
+    if (affects.excludeSelf === true && source.id === target.id) return false;
+    if (!isPrintedCreature(registry, target)) return false;
+    const printed = registry.get(printedCardName(target));
+    if (affects.subtype !== undefined && !effectiveSubtypes(registry, target).includes(affects.subtype)) {
+      return false;
+    }
+    if (affects.withKeyword !== undefined && !printed.keywords.includes(affects.withKeyword)) {
+      return false;
+    }
+    if (affects.withoutKeyword !== undefined && printed.keywords.includes(affects.withoutKeyword)) {
+      return false;
+    }
+    return true;
+  }
   // "creatures-you-control"
   if (affects.excludeSelf && source.id === target.id) return false;
   if (target.controller !== source.controller) return false;
@@ -396,6 +412,7 @@ function collectStaticEffects(
       // a CDA (`setBasePtFromCount`, handled in its own pass) modifies nothing.
       if (
         ability.grantPt === undefined &&
+        ability.grantPtPerCount === undefined &&
         ability.grantKeywords === undefined &&
         ability.restrictions === undefined &&
         ability.protection === undefined
@@ -413,10 +430,24 @@ function collectStaticEffects(
       ) {
         continue;
       }
+      // A count-scaled bonus is read live, from the source's controller's
+      // perspective — the same way `setBasePtFromCount` reads its own.
+      let scaledPower = 0;
+      let scaledToughness = 0;
+      if (ability.grantPtPerCount !== undefined) {
+        const per = ability.grantPtPerCount;
+        const n = state.zones.shared.battlefield.filter(
+          (id) =>
+            !(per.excludeSelf === true && id === source.id) &&
+            matchesFilter(state, registry, id, per.filter, { you: source.controller }),
+        ).length;
+        scaledPower = n * per.pt[0];
+        scaledToughness = n * per.pt[1];
+      }
       out.push({
         timestamp: source.timestamp,
-        power: ability.grantPt?.[0] ?? 0,
-        toughness: ability.grantPt?.[1] ?? 0,
+        power: (ability.grantPt?.[0] ?? 0) + scaledPower,
+        toughness: (ability.grantPt?.[1] ?? 0) + scaledToughness,
         keywords: ability.grantKeywords ?? [],
         restrictions: ability.restrictions ?? [],
         protection: ability.protection ?? null,

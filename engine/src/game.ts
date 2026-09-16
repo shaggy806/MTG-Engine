@@ -2566,10 +2566,25 @@ export class Game {
     this.drawCard(active);
   }
 
+  /** Does `player` control something saying they have no maximum hand size
+   * (Thought Vessel)? Read directly off the battlefield: it's a fact about the
+   * player, so there's no affected object for the layer system to hang it on. */
+  private hasNoMaxHandSize(player: PlayerId): boolean {
+    return this.state.zones.shared.battlefield.some((id) => {
+      const object = this.state.objects[id];
+      if (object.controller !== player || hasLostAbilities(object)) return false;
+      return this.registry
+        .get(printedCardName(object))
+        .static.some((ability) => ability.noMaxHandSize === true);
+    });
+  }
+
   private cleanupStep(): void {
     const active = this.activePlayer;
     const hand = this.state.zones.perPlayer[active].hand;
-    const excess = hand.length - this.state.players[active].maxHandSize;
+    const excess = this.hasNoMaxHandSize(active)
+      ? 0
+      : hand.length - this.state.players[active].maxHandSize;
     if (excess > 0) {
       // Ask for the discard; finishCleanup runs once it is dispatched.
       this.state.awaiting = { kind: "discard", player: active, count: excess };
@@ -5144,6 +5159,12 @@ export class Game {
     // Ancestry's "discard your hand, then draw a card for each creature"
     // work out as a refill rather than a discard of what it drew.
     if (ability.cost.discardHand === true) this.discardWholeHand(player);
+    if (ability.cost.exileSelf === true) {
+      // Not a sacrifice: the source never touches a graveyard, so a
+      // dies-trigger elsewhere doesn't fire.
+      this.moveObject(sourceId, "exile");
+      this.emit({ type: "permanent-exiled", object: sourceId });
+    }
     if (ability.oncePerTurn === true || ability.boast === true) {
       // Rule 602.5g — recorded per ability index, so a permanent with two
       // once-each-turn abilities limits each of them separately.
@@ -6468,6 +6489,12 @@ export class Game {
           event.target.kind === "object" &&
           this.matchesWho(spec.who, event.target.object, self)
         );
+      case "blocks":
+        return (
+          event.type === "blocker-declared" &&
+          this.matchesWho(spec.who, event.blocker, self) &&
+          this.triggerFilterOk(spec.filter, event.blocker, self)
+        );
       case "discards":
         return (
           event.type === "cards-discarded" &&
@@ -6480,9 +6507,16 @@ export class Game {
         if (event.type !== "attackers-declared") return false;
         if (spec.who === "you" && event.player !== self.controller) return false;
         if (spec.who === "opponent" && event.player === self.controller) return false;
-        const counted = event.attackers.filter((id) =>
-          this.triggerFilterOk(spec.filter, id, self),
-        );
+        const counted = event.attackers.filter((id) => {
+          if (!this.triggerFilterOk(spec.filter, id, self)) return false;
+          if (spec.attackingYou !== true) return true;
+          const at = this.state.objects[id]?.attacking;
+          if (at === null || at === undefined) return false;
+          return (
+            at === self.controller ||
+            this.state.objects[at as ObjectId]?.controller === self.controller
+          );
+        });
         return counted.length >= spec.atLeast;
       }
       case "becomes-tapped":
@@ -6935,6 +6969,21 @@ export class Game {
         target.kind === "object" && this.state.objects[target.object] !== undefined
           ? computeCharacteristics(this.state, this.registry, target.object).power
           : 0,
+      toughnessOf: (target) =>
+        target.kind === "object" && this.state.objects[target.object] !== undefined
+          ? computeCharacteristics(this.state, this.registry, target.object).toughness
+          : 0,
+      putOnBottomOfLibrary: (target) => {
+        if (target.kind !== "object") return;
+        const id = this.splitOneFromStack(target.object);
+        const object = this.state.objects[id];
+        if (object === undefined || object.zone !== "battlefield") return;
+        // Index 0 is the library *top* (that's what `drawCard` takes), and
+        // `moveObject` pushes onto the end — so a plain move already lands on
+        // the bottom, which is what `applyPutOnBottom` relies on too. A token
+        // ceases to exist either way (rule 111.7).
+        this.moveObject(id, "library");
+      },
       addCounterAll: (filter, counter, amount) => {
         // Snapshot first — `addCounter` can kill a permanent (a -1/-1 counter)
         // and mutate the battlefield array underneath the loop.

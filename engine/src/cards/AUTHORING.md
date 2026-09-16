@@ -253,8 +253,24 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 `damage`), or the combat damage a creature dealt a player (Old Gnawbone:
 `create-token` `count`). `0` outside a triggered-ability resolution. An
 `EffectAmount` is accepted by `damage` / `damage-all` / `mill` / `discard` /
-`draw` / `lose-life` / `prevent-damage` `amount`, `modify-pt` / `modify-pt-all`
-`power`/`toughness`, and `create-token` `count`.
+`draw` / `gain-life` / `lose-life` / `prevent-damage` `amount`, `modify-pt` /
+`modify-pt-all` `power`/`toughness`, `add-mana` `amount`, and `create-token`
+`count`.
+
+The rest of the shapes: `{ countOf: CardFilter, times? }` (a battlefield
+count, optionally multiplied — Shamanic Revelation's "4 life **for each**"),
+`{ countInGraveyard }`, `{ manaValueOf }`, `{ powerOf }`, `{ toughnessOf }`
+(Condemn), `{ lifeTotal: "you" }` (Storm Herd), `{ devotionTo: Color }` (rule
+700.5 — Gray Merchant of Asphodel; a hybrid pip counts for each colour it
+contains, `{X}` and generic for nothing), `{ creaturesDiedThisTurn: true }`
+(per *player*, unlike `GameState`'s global counter — Liliana's Standard
+Bearer), `{ countPlayers: PlayerScope }` (Inspired Sphinx; counts living
+players, so it shrinks as a multiplayer game does),
+`{ opponentsControllingFewer: CardFilter }` (Voice of Many — a comparison per
+player, which no single filter can express), and `{ product: [...] }`, which
+is how compound amounts compose without every other shape growing a
+multiplier (Gray Merchant's "life equal to the life lost this way" is devotion
+× opponents, and neither factor is static).
 
 ### Damage / life / cards
 
@@ -282,6 +298,7 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 | `tap-all` | `filter` | Thundermaw Hellkite's "Tap those creatures" — the mirror of `untap-all`. `tap` only ever takes one chosen target. |
 | `untap` | `target: EffectTargetRef` — an index, `"source"`, or `"trigger-object"` | Amulet of Vigor: `target: "trigger-object"` untaps the permanent whose entering fired the trigger, with no target slot at all |
 | `destroy` | `target` | Doom Blade |
+| `put-on-bottom-of-library` | `target` | Condemn — buries a permanent under its **owner's** library. Not a shuffle and not a bounce, which is why it isn't a `return-to-hand` variant. |
 | `destroy-all` | `filter` | Wrath of God |
 | `exile` | `target`, `untilSourceLeaves?` | Angelic Edict. Works on a card in a **graveyard** as well as a permanent (Withered Wretch). `untilSourceLeaves` is an "O-Ring" (Banishing Light, Conclave Tribunal) — see below. |
 | `return-exiled-by-source` | — | The other half of an O-Ring: returns everything this source exiled, to the battlefield under its **owner's** control. |
@@ -529,7 +546,10 @@ removeCounter?, payEnergy?, discardHand?, tapOthers? }`.
   `{ filter: CardFilter }` (Zuran Orb — "Sacrifice a land"). The last two make
   the player pick (a `sacrifice` choice on the `activate-ability` LegalAction).
 - `payLife: 2`, `payEnergy: 3`, `removeCounter: { kind: "+1/+1", count: 1 }`,
-  `discardHand: true` — all paid automatically (no decision). `discardHand` is
+  `discardHand: true`, `exileSelf: true` — all paid automatically (no
+  decision). `exileSelf` is Hanged Executioner's "Exile this creature",
+  distinct from `sacrifice: "self"`: the source never reaches a graveyard, so
+  nothing watching for a death sees one. `discardHand` is
   Slate of Ancestry's "Discard your hand"; being a *cost* is what makes its
   "draw a card for each creature you control" a refill rather than a wash, and
   an empty hand is a legal payment, so it never gates activation.
@@ -643,8 +663,9 @@ triggered: [
 | `transforms` | `who`, `intoFront?`, `filter?` | a DFC turns over |
 | `step-begins` | `step`, `who` | the start of a step (`"upkeep"` etc.) |
 | `discards` | `who` | "whenever an opponent discards a card" (Sangromancer). Fires once per *discard event*, not once per card — see §15. |
+| `blocks` | `who`, `filter?` | the mirror of `attacks` (Kangee, Sky Warden) |
 | `dealt-damage` | `who` | the receiving end — "whenever this creature **is dealt damage**" (Brash Taunter, Hornet Nest). Combat and non-combat alike; `{ triggerValue: true }` is how much. |
-| `attack-with` | `who`, `atLeast`, `filter?` | "whenever you attack with three or more creatures" (Overwhelming Instinct, Tide Skimmer). Fires once per declaration, off the whole attacker list — an `attacks` trigger fires per attacker and can't count them. |
+| `attack-with` | `who`, `atLeast`, `filter?`, `attackingYou?` | "whenever you attack with three or more creatures" (Overwhelming Instinct, Tide Skimmer). Fires once per declaration, off the whole attacker list — an `attacks` trigger fires per attacker and can't count them. |
 | `deals-combat-damage-to-player` | `who`, `filter?` | `filter` narrows on the *damaging creature* — Sharding Sphinx's "whenever an **artifact** creature you control deals combat damage to a player". The first target slot is auto-filled with the damaged player, but only if that slot can hold one. |
 | `cast-spell` | `who`, `noncreatureOnly?`, `firstEachTurn?`, `filter?` | a spell is cast. `who: "opponent"` is anyone but this permanent's controller (Kaervek the Merciless); `filter` narrows on the *spell* — `{ typesAnyOf: ["instant", "sorcery"] }` for Guttersnipe. `noncreatureOnly` predates `filter` and stays, because prowess is printed as its own word. `trigger-object` is the spell, so `{ manaValueOf: "trigger-object" }` reads its mana value. |
 | `this-cast` | — | the spell carrying this ability is cast (cascade, storm) |
@@ -708,12 +729,26 @@ static: [
   `staticAffects` runs on every characteristics read and is deliberately given
   no `GameState` — both are answerable from the object alone.
 - `"lands-you-control"` — Chromatic Lantern.
+- `"all-creatures"` — **every** creature on the battlefield, whoever controls
+  it (Gravitational Shift). Takes `excludeSelf`, `subtype`, `withKeyword` and
+  `withoutKeyword`; like the `creatures-you-control` narrowings these are
+  flags rather than a `CardFilter`, because `staticAffects` runs on every
+  characteristics read and is given no `GameState`.
 - `"attached"` — the permanent this Aura/Equipment is attached to (how Auras
   grant their effect).
 
 **Continuous-effect fields:**
 
 - `grantPt: [p, t]` — layer 7d P/T bonus.
+- `grantPtPerCount: { filter, pt, excludeSelf? }` — a layer 7d bonus that
+  *scales* with a live count (Skycat Sovereign's "+1/+1 for each **other**
+  creature you control with flying"). Distinct from `setBasePtFromCount`,
+  which is a CDA in layer 7b that *replaces* the printed P/T; this adds on
+  top, so counters and other anthems stack with it normally.
+- `noMaxHandSize: true` — "You have no maximum hand size" (Thought Vessel).
+  A fact about the *controller* rather than about anything the ability
+  affects, so it's read straight off the battlefield at cleanup instead of
+  going through the layer system; pair it with `affects: { scope: "self" }`.
 - `grantKeywords: [...]` — layer 6 keyword grant.
 - `grantsActivated: [...]` — give the affected permanents these activated
   abilities (Chromatic Lantern, Cryptolith Rite).

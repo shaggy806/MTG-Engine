@@ -103,6 +103,22 @@ export type AffectSpec =
        */
       readonly withKeyword?: Keyword;
     }
+  /**
+   * Every creature on the battlefield, whoever controls it — Gravitational
+   * Shift's "creatures with flying get +2/+0". Takes the same narrowing
+   * clauses as `creatures-you-control`, and for the same reason they're
+   * flags rather than a `CardFilter`: `staticAffects` runs on every
+   * characteristics read and is given no `GameState`.
+   */
+  | {
+      readonly scope: "all-creatures";
+      readonly excludeSelf?: boolean;
+      readonly subtype?: string;
+      readonly withKeyword?: Keyword;
+      /** Only creatures *without* the keyword — the other half of
+       * Gravitational Shift ("creatures without flying get -2/-0"). */
+      readonly withoutKeyword?: Keyword;
+    }
   /** Every land the source's controller controls (Chromatic Lantern). */
   | { readonly scope: "lands-you-control" }
   | { readonly scope: "attached" };
@@ -239,6 +255,19 @@ export interface StaticAbility {
   readonly replacement?: ReplacementSpec;
   /** `[power, toughness]` bonus applied in layer 7d. */
   readonly grantPt?: readonly [number, number];
+  /**
+   * A layer-7d bonus that *scales* with a live count — Skycat Sovereign's
+   * "gets +1/+1 for each **other** creature you control with flying".
+   *
+   * Distinct from `setBasePtFromCount`, which is a CDA (layer 7b) that
+   * replaces the printed P/T; this adds on top, so counters and other
+   * anthems stack with it normally. `excludeSelf` is what "other" means.
+   */
+  readonly grantPtPerCount?: {
+    readonly filter: CardFilter;
+    readonly pt: readonly [number, number];
+    readonly excludeSelf?: boolean;
+  };
   /** Keywords granted in layer 6. */
   readonly grantKeywords?: readonly Keyword[];
   /** Activated abilities this static grants to every object it `affects`
@@ -260,6 +289,11 @@ export interface StaticAbility {
    * stack object both carry — stays stable.
    */
   readonly grantsTriggered?: readonly TriggeredAbility[];
+  /** "You have no maximum hand size" (Thought Vessel, Reliquary Tower). A
+   * property of the *controller*, not of anything this ability `affects`, so
+   * it's read straight off the battlefield at cleanup rather than through the
+   * layer system. */
+  readonly noMaxHandSize?: boolean;
   /** Combat restrictions imposed on the affected objects (Pacifism, Juggernaut). */
   readonly restrictions?: readonly CombatRestriction[];
   /** A permission (rule 305.9 / 118.9) — while this permanent is on the

@@ -562,3 +562,38 @@ remaining groups:
   Flesh, Syphon Mind, Reign of the Pit.
 - **Randomness** — Explosion of Riches, Wildfire Devils.
 - **Triggered emblems** — Ob Nixilis Reignited (and Sarkhan, from phase G).
+
+---
+
+## Phase M — the fifth pass (mostly First Flight)
+
+286 → 52. Eight additions, again one card each:
+
+| addition | card |
+|---|---|
+| `AffectSpec` scope `"all-creatures"` (+ `withKeyword` / `withoutKeyword`) | Gravitational Shift |
+| `StaticAbility.grantPtPerCount` | Skycat Sovereign |
+| `StaticAbility.noMaxHandSize` | Thought Vessel |
+| `put-on-bottom-of-library` and `EffectAmount` `{ toughnessOf }` | Condemn |
+| `AbilityCost.exileSelf` | Hanged Executioner |
+| a `blocks` trigger (the mirror of `attacks`) and `CardFilter.blocking` | Kangee, Sky Warden |
+| `attack-with { attackingYou }` | Ever-Watching Threshold |
+
+Two notes on getting these *right* rather than merely working:
+
+**Ever-Watching Threshold nearly shipped over-triggering.** Written as an
+`attacks` trigger with `attackingYou`, it would have drawn one card per
+attacking creature; the card draws one per *attack*. `attack-with` already
+fires once per declaration, so it only needed an `attackingYou` clause of its
+own — which is exact.
+
+**`put-on-bottom-of-library` needed no index arithmetic.** Index 0 is the
+library *top* (that's what `drawCard` takes) and `moveObject` pushes onto the
+end, so a plain move already lands on the bottom — the same thing
+`applyPutOnBottom` relies on for mulligans. The first draft spliced the card
+to index 0, i.e. exactly the wrong end.
+
+**Skipped: Moorland Haunt.** "Exile a creature card from your graveyard" as an
+activation cost needs a real *choice* of which card, and which one you keep
+matters for the rest of the deck. Auto-picking would be an unchosen decision,
+so it stays unauthored.

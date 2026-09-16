@@ -44,6 +44,11 @@ export interface AbilityCost {
   /** Energy counters to pay ({E} — rule 122 / ROADMAP Phase 10; automatic,
    * like `payLife`). */
   readonly payEnergy?: number;
+  /** Exile the source itself as part of the cost (Hanged Executioner:
+   * "{3}{W}, Exile this creature: Exile target creature"). Distinct from
+   * `sacrifice: "self"` — the source doesn't reach a graveyard, so nothing
+   * that watches for a death sees one. */
+  readonly exileSelf?: boolean;
   /** Discard your whole hand as part of the cost (Slate of Ancestry: "{4},
    * {T}, Discard your hand: Draw a card for each creature you control").
    * Nothing to choose, so it's automatic like `payLife` — the empty hand is
@@ -260,6 +265,13 @@ export type TriggerSpec =
       readonly filter?: CardFilter;
     }
   | {
+      /** This creature was declared as a blocker — the mirror of `attacks`
+       * (Kangee, Sky Warden's second half). */
+      readonly on: "blocks";
+      readonly who: TriggerWho;
+      readonly filter?: CardFilter;
+    }
+  | {
       /**
        * A player discarded one or more cards — Sangromancer's "whenever an
        * opponent discards a card".
@@ -287,6 +299,11 @@ export type TriggerSpec =
       readonly who: TriggerWho;
       readonly atLeast: number;
       readonly filter?: CardFilter;
+      /** Only count attackers aimed at *this* permanent's controller or a
+       * planeswalker they control — Ever-Watching Threshold's "whenever an
+       * opponent attacks, **if they attacked you and/or a planeswalker you
+       * control**". */
+      readonly attackingYou?: boolean;
     }
   | {
       /**

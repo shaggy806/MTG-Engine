@@ -66,6 +66,9 @@ export type EffectAmount =
   /** The *current* power of whatever a target slot points at — Unleash Fury's
    * "double the power of target creature" is a `modify-pt` that adds this. */
   | { readonly powerOf: EffectTargetRef }
+  /** The *current* toughness of whatever a target slot points at — Condemn's
+   * "its controller gains life equal to its toughness". */
+  | { readonly toughnessOf: EffectTargetRef }
   /** Your **devotion** to a colour (rule 700.5): every mana symbol of that
    * colour in the mana costs of permanents you control, hybrid pips included.
    * Gray Merchant of Asphodel's "each opponent loses X life, where X is your
@@ -231,6 +234,13 @@ export type EffectSpec =
       readonly target: EffectTargetRef;
     }
   | { readonly kind: "destroy"; readonly target: number }
+  | {
+      /** Put a permanent on the bottom of its **owner's** library (Condemn).
+       * Not a shuffle and not a bounce: the card is buried, which is why this
+       * is its own effect rather than a `return-to-hand` variant. */
+      readonly kind: "put-on-bottom-of-library";
+      readonly target: number;
+    }
   | {
       /** Destroy every battlefield permanent matching `filter` (Wrath of God:
        * `{ type: "creature" }`). Indestructible / 903.9a handled per-permanent
@@ -1002,6 +1012,9 @@ export interface EffectApi {
   /** See the `{ creaturesDiedThisTurn }` {@link EffectAmount}. */
   creaturesDiedThisTurn(): number;
   powerOf(target: TargetRef): number;
+  toughnessOf(target: TargetRef): number;
+  /** See the `"put-on-bottom-of-library"` {@link EffectSpec}. */
+  putOnBottomOfLibrary(target: TargetRef): void;
   /** Every player a `PlayerScope` names, in APNAP order and skipping anyone
    * who has already lost. The shared scope resolution behind `draw`'s `who`,
    * `discard-hand`, and anything else that acts on a scope one player at a
@@ -1338,6 +1351,10 @@ export function amountValue(amount: EffectAmount, ctx: ResolutionContext): numbe
     const ref = resolveEffectTarget(amount.powerOf, ctx);
     return ref === undefined ? 0 : ctx.powerOf(ref);
   }
+  if ("toughnessOf" in amount) {
+    const ref = resolveEffectTarget(amount.toughnessOf, ctx);
+    return ref === undefined ? 0 : ctx.toughnessOf(ref);
+  }
   if ("manaValueOf" in amount) {
     const ref = resolveEffectTarget(amount.manaValueOf, ctx);
     return ref === undefined ? 0 : ctx.manaValueOf(ref);
@@ -1464,6 +1481,11 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     case "untap": {
       const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) ctx.untapPermanent(target);
+      return;
+    }
+    case "put-on-bottom-of-library": {
+      const target = ctx.targets[spec.target];
+      if (target !== undefined) ctx.putOnBottomOfLibrary(target);
       return;
     }
     case "destroy": {

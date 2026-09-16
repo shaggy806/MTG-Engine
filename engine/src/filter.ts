@@ -99,6 +99,9 @@ export interface CardFilter {
   /** Currently attacking (Kangee's Lieutenant: "attacking creatures with
    * flying get +1/+1"). */
   readonly attacking?: boolean;
+  /** Currently blocking — the mirror of `attacking` (Kangee, Sky Warden's
+   * "blocking creatures with flying get +0/+2"). */
+  readonly blocking?: boolean;
   readonly power?: NumCompare;
   readonly toughness?: NumCompare;
   /** Controlled by the filtering player (`"you"`) or anyone else (`"opponent"`). */
@@ -195,6 +198,9 @@ export function matchesFilter(
     if (filter.colorless === true && colors.size > 0) return false;
   }
 
+  if (filter.blocking !== undefined && (object.blocking !== null) !== filter.blocking) {
+    return false;
+  }
   if (filter.attacking !== undefined) {
     // Off the battlefield, `attacking` has already been cleared by the move
     // that took it there — fall back to the snapshot (rule 608.2h).
