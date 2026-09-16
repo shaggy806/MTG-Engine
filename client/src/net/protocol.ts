@@ -15,6 +15,10 @@ export interface WireDeck {
   readonly cards: readonly string[]
   readonly commander?: string
   readonly name?: string
+  /** Which printing of each card this deck brings, keyed by card name — a
+   * Scryfall card id, which is all the server accepts here (see
+   * `server/src/pending-room.ts`'s `assertPrintingsAreSafe`). */
+  readonly printings?: Readonly<Record<string, string>>
 }
 
 export interface SeatStatus {
@@ -35,7 +39,13 @@ export interface SeatStatus {
    * on the seat-picker screen — `null` only while the seat is still open
    * (neither claimed nor bot-filled). Always `null` once the room is
    * promoted to a real game, since that screen is behind us by then. */
-  readonly deck: { readonly name: string; readonly commander: string | null } | null
+  readonly deck: {
+    readonly name: string
+    readonly commander: string | null
+    /** Which printing this deck brings for its commander, if it isn't the
+     * default — just the one card, since the seat board only draws that. */
+    readonly commanderPrinting: string | null
+  } | null
   /** This seat has signaled it's ready to start (`set-ready`) — a bot seat
    * is always ready. The room only starts once every seat is ready
    * (`start-game`), not the instant the last seat is filled. Always `true`

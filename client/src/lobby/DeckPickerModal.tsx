@@ -78,7 +78,12 @@ function DeckPickerRow({
   readonly onPick: (deck: PickableDeck) => void
 }) {
   const commanderDef = deck.commander ? findCardDef(deck.commander) : null
-  const artUrl = commanderDef ? resolveArtUrl(commanderDef.art, commanderDef.name) : null
+  // The deck's own chosen printing for its commander, so the row previews
+  // the art that will actually hit the table (see `SavedDeck.printings`).
+  const printing = deck.commander ? deck.printings?.[deck.commander] : undefined
+  const artUrl = commanderDef
+    ? resolveArtUrl(printing ?? commanderDef.art, commanderDef.name)
+    : null
 
   return (
     <button type="button" className="deck-picker-row" onClick={() => onPick(deck)}>

@@ -19,6 +19,15 @@ export interface SavedDeck {
   readonly name: string;
   readonly commander?: string;
   readonly cards: readonly string[];
+  /**
+   * Which printing of a card this deck brings, keyed by card name → Scryfall
+   * card id. Keyed by *name*, not per copy: the format is singleton, and for
+   * the one card type that does repeat (basic lands) wanting two different
+   * arts in the same deck is a niche the picker isn't worth complicating for.
+   * A name with no entry plays as the pool's default printing, which is what
+   * every deck saved before the picker existed has.
+   */
+  readonly printings?: Readonly<Record<string, string>>;
 }
 
 export type ActiveRef = { readonly kind: 'saved'; readonly id: string } | { readonly kind: 'starter'; readonly index: number }
@@ -143,7 +152,14 @@ export function setActive(ref: ActiveRef | null): void {
 /** The active deck's display name + card data, regardless of whether it's a
  * saved deck or a starter — `null` when nothing's active or the active
  * reference no longer resolves (a deleted saved deck). */
-export function getActiveDeck(): { readonly name: string; readonly commander?: string; readonly cards: readonly string[] } | null {
+export function getActiveDeck():
+  | {
+      readonly name: string
+      readonly commander?: string
+      readonly cards: readonly string[]
+      readonly printings?: Readonly<Record<string, string>>
+    }
+  | null {
   const ref = getActiveRef()
   if (ref === null) return null
   if (ref.kind === 'starter') return SAMPLE_DECKS[ref.index] ?? null
@@ -155,11 +171,21 @@ export function getActiveDeck(): { readonly name: string; readonly commander?: s
  * back to that seat's positional starter deck (see
  * `server/src/pending-room.ts`). */
 export function getActivePayload():
-  | { readonly cards: readonly string[]; readonly commander?: string; readonly name: string }
+  | {
+      readonly cards: readonly string[]
+      readonly commander?: string
+      readonly name: string
+      readonly printings?: Readonly<Record<string, string>>
+    }
   | undefined {
   const deck = getActiveDeck()
   if (deck === null || deck.cards.length === 0) return undefined
-  return { cards: deck.cards, commander: deck.commander, name: deck.name }
+  return {
+    cards: deck.cards,
+    commander: deck.commander,
+    name: deck.name,
+    printings: deck.printings,
+  }
 }
 
 /** One pickable option in the seat-picker's deck-choice popup — a saved deck
@@ -173,6 +199,7 @@ export interface PickableDeck {
   readonly name: string
   readonly commander?: string
   readonly cards: readonly string[]
+  readonly printings?: Readonly<Record<string, string>>
 }
 
 /** Every deck the seat-picker's popup can offer: this browser's saved decks,
@@ -186,6 +213,7 @@ export function listPickableDecks(): readonly PickableDeck[] {
       name: d.name,
       commander: d.commander,
       cards: d.cards,
+      printings: d.printings,
     })),
     ...SAMPLE_DECKS.map((d, i) => ({
       key: `starter:${i}`,

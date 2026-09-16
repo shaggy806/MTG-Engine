@@ -514,3 +514,146 @@
 .card-hover-preview .card-tile:disabled {
   opacity: 1;
 }
+
+/* --- right-click menu on a card row ------------------------------------ */
+
+/* Portalled to <body> and placed from JS (see CardContextMenu.tsx) for the
+   same reason the hover preview is: the card lists are scroll boxes, so an
+   absolutely-positioned child would be clipped by `overflow`. */
+.db-context-menu {
+  position: fixed;
+  z-index: 70;
+  min-width: 190px;
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 14px 34px rgb(0 0 0 / 0.55);
+}
+.db-context-title {
+  padding: 5px 9px 7px;
+  font-size: 11px;
+  color: var(--muted-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.db-context-menu button {
+  text-align: left;
+  font-size: 13px;
+  padding: 6px 9px;
+  border: none;
+  border-radius: 5px;
+  background: none;
+}
+.db-context-menu button:hover:not(:disabled) {
+  background: var(--panel-2);
+}
+.db-context-menu button.separated {
+  margin-top: 4px;
+  border-top: 1px solid var(--border-soft);
+  border-radius: 0 0 5px 5px;
+  padding-top: 9px;
+}
+
+/* A card whose deck entry pins a specific printing. */
+.db-printing-mark {
+  flex: none;
+  font-size: 9px;
+  color: var(--gold);
+}
+
+/* --- the printing picker ------------------------------------------------ */
+
+.db-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 65;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(14px, 4vh, 44px) clamp(14px, 4vw, 44px);
+  background: rgb(6 9 12 / 0.76);
+  backdrop-filter: blur(3px);
+}
+.db-modal-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(960px, 100%);
+  max-height: 100%;
+  padding: clamp(16px, 2.4vw, 24px);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 24px 60px rgb(0 0 0 / 0.55);
+}
+.db-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.db-modal-head h3 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.db-printing-note {
+  margin: 0;
+  font-size: 12px;
+}
+
+.db-printing-grid {
+  display: grid;
+  /* Card-shaped, so derived from the shared --card-w token rather than a new
+     hardcoded number (see CLAUDE.md's standing UI rules). */
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--card-w) * 1.15), 1fr));
+  gap: 10px;
+  overflow-y: auto;
+  padding: 2px;
+}
+.db-printing {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+  background: var(--panel-2);
+  border-radius: 8px;
+  text-align: left;
+}
+.db-printing img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  object-fit: cover;
+  border-radius: 4.75% / 3.4%;
+  background: var(--panel);
+}
+.db-printing-noimage {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  font-size: 12px;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+}
+.db-printing-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 11px;
+}
+.db-printing.selected {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+.db-printing-more {
+  align-self: center;
+  font-size: 12px;
+}

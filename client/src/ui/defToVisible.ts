@@ -17,8 +17,13 @@ export function findCardDef(name: string): CardDefinition | null {
  * *printed* values only, no layer computation. The detail pane and the
  * sandbox use a real `game.viewFor(...)` instead, which reflects static
  * abilities / counters / animation.
+ *
+ * `art` overrides the definition's own illustration, for a deck that has
+ * chosen a printing (`SavedDeck.printings`) — the same substitution
+ * `viewFor` makes in a real game, so a card previewed in the deck builder
+ * looks like the one that will hit the table.
  */
-export function defToVisible(def: CardDefinition): VisibleObject {
+export function defToVisible(def: CardDefinition, art?: string | null): VisibleObject {
   const owner = 'you' as PlayerId
   const isCreature = def.power !== null && def.toughness !== null
   return {
@@ -27,7 +32,7 @@ export function defToVisible(def: CardDefinition): VisibleObject {
     copyOf: null,
     faceName: def.faces && def.faces.length > 1 ? def.faces[0] : def.name,
     faces: def.faces ?? null,
-    art: def.art,
+    art: art ?? def.art,
     owner,
     controller: owner,
     zone: 'battlefield',

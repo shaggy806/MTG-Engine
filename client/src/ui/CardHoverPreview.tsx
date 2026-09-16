@@ -14,6 +14,8 @@ export interface HoverTarget {
   /** Where the pointer was, in viewport coordinates. */
   readonly x: number
   readonly y: number
+  /** The printing this deck brings for the card, if it isn't the default. */
+  readonly art?: string | null
 }
 
 /**
@@ -39,7 +41,7 @@ export function CardHoverPreview({ target }: { readonly target: HoverTarget | nu
 
   return createPortal(
     <div className="card-hover-preview" style={{ left, top }} aria-hidden="true">
-      <CardTile obj={defToVisible(target.def)} />
+      <CardTile obj={defToVisible(target.def, target.art)} />
     </div>,
     document.body,
   )

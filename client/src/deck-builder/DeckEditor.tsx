@@ -1,10 +1,13 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import type { DragEvent, MouseEvent } from 'react'
 import type { CardDefinition } from 'engine'
 import { BUILTIN_CARDS, createDefaultRegistry, isDeckableCard, validateCommanderDeck } from 'engine'
 import { Symbols } from '../ui/Symbols.tsx'
 import { CardHoverPreview } from '../ui/CardHoverPreview.tsx'
 import type { HoverTarget } from '../ui/CardHoverPreview.tsx'
+import { CardContextMenu } from './CardContextMenu.tsx'
+import type { MenuAnchor, MenuItem } from './CardContextMenu.tsx'
+import { PrintingPicker } from './PrintingPicker.tsx'
 import type { SavedDeck } from './decks.ts'
 
 const TYPE_FILTERS = [
@@ -76,6 +79,9 @@ export function DeckEditor({
   const [name, setName] = useState(deck.name)
   const [hover, setHover] = useState<HoverTarget | null>(null)
   const [dropActive, setDropActive] = useState(false)
+  const [menu, setMenu] = useState<MenuAnchor | null>(null)
+  /** Which card's printing picker is open, by name. */
+  const [picking, setPicking] = useState<string | null>(null)
 
   const counts = useMemo(() => {
     const m = new Map<string, number>()
@@ -144,18 +150,68 @@ export function DeckEditor({
   const toggleCommander = (cardName: string) =>
     onChange({ ...deck, commander: deck.commander === cardName ? undefined : cardName })
 
+  /** Records (or clears) which printing this deck brings for one card.
+   * `null` drops the entry entirely rather than storing a sentinel, so a
+   * deck that never leaves a default carries no `printings` at all. */
+  const setPrinting = (cardName: string, id: string | null) => {
+    const next = { ...deck.printings }
+    if (id === null) delete next[cardName]
+    else next[cardName] = id
+    onChange({
+      ...deck,
+      printings: Object.keys(next).length === 0 ? undefined : next,
+    })
+  }
+
   /** Spread onto a whole card *row*, not just its name: the row is the drag
    * handle and the click target, so that's the area a preview should follow
    * — catching the pointer only over the text made it feel broken anywhere
    * else along the row. */
-  const hoverProps = (def: CardDefinition | undefined) =>
+  const hoverProps = (def: CardDefinition | undefined) => {
+    if (def === undefined) return {}
+    // The preview shows the printing this deck brings, not the pool's own
+    // art — otherwise picking one gave no feedback anywhere in the builder.
+    const at = (e: MouseEvent): HoverTarget => ({
+      def,
+      x: e.clientX,
+      y: e.clientY,
+      art: deck.printings?.[def.name] ?? null,
+    })
+    return {
+      onMouseEnter: (e: MouseEvent) => setHover(at(e)),
+      onMouseMove: (e: MouseEvent) => setHover(at(e)),
+      onMouseLeave: () => setHover(null),
+    }
+  }
+
+  /**
+   * Right-click on a card row. `extra` is whatever that row's own buttons
+   * do, so the menu is a superset of what's already visible rather than a
+   * second, different vocabulary — "Change printing…" is the one thing it
+   * offers that has nowhere else to live.
+   */
+  const menuProps = (def: CardDefinition | undefined, extra: readonly MenuItem[]) =>
     def === undefined
       ? {}
       : {
-          onMouseEnter: (e: MouseEvent) => setHover({ def, x: e.clientX, y: e.clientY }),
-          onMouseMove: (e: MouseEvent) => setHover({ def, x: e.clientX, y: e.clientY }),
-          onMouseLeave: () => setHover(null),
+          onContextMenu: (e: MouseEvent) => {
+            e.preventDefault()
+            setHover(null)
+            setMenu({
+              x: e.clientX,
+              y: e.clientY,
+              title: def.name,
+              items: [
+                { label: 'Change printing…', onSelect: () => setPicking(def.name) },
+                ...extra.map((item, i) => (i === 0 ? { ...item, separated: true } : item)),
+              ],
+            })
+          },
         }
+
+  // Stable, because `CardContextMenu` registers it as a window listener.
+  const closeMenu = useCallback(() => setMenu(null), [])
+  const pickingDef = picking === null ? null : (byName.get(picking) ?? null)
 
   const onDrop = (e: DragEvent) => {
     e.preventDefault()
@@ -276,8 +332,31 @@ export function DeckEditor({
                   }}
                   onDoubleClick={() => addCard(c.name)}
                   {...hoverProps(c)}
+                  {...menuProps(c, [
+                    {
+                      label: 'Add to deck',
+                      onSelect: () => addCard(c.name),
+                      disabled: isThisCommander,
+                    },
+                    ...(isCommanderEligible(c)
+                      ? [
+                          {
+                            label: isThisCommander ? 'Clear commander' : 'Make commander',
+                            onSelect: () => toggleCommander(c.name),
+                          },
+                        ]
+                      : []),
+                    ...(n > 0
+                      ? [{ label: 'Remove one', onSelect: () => removeCard(c.name) }]
+                      : []),
+                  ])}
                 >
                   <span className="db-card-name">{c.name}</span>
+                  {deck.printings?.[c.name] ? (
+                    <span className="db-printing-mark" title="Custom printing">
+                      ◆
+                    </span>
+                  ) : null}
                   {c.manaCost ? <Symbols text={c.manaCost} /> : null}
                   <span className="db-card-row-spacer" />
                   {isCommanderEligible(c) ? (
@@ -318,11 +397,25 @@ export function DeckEditor({
             </span>
           </header>
 
-          <div className="db-commander-slot" {...hoverProps(byName.get(deck.commander ?? ''))}>
+          <div
+            className="db-commander-slot"
+            {...hoverProps(byName.get(deck.commander ?? ''))}
+            {...menuProps(
+              byName.get(deck.commander ?? ''),
+              deck.commander === undefined
+                ? []
+                : [{ label: 'Clear commander', onSelect: () => toggleCommander(deck.commander!) }],
+            )}
+          >
             {deck.commander ? (
               <>
                 <span className="muted">Commander</span>
                 <span className="db-card-name">{deck.commander}</span>
+                {deck.printings?.[deck.commander] ? (
+                  <span className="db-printing-mark" title="Custom printing">
+                    ◆
+                  </span>
+                ) : null}
                 <span className="db-card-row-spacer" />
                 <button type="button" title="Clear commander" onClick={() => toggleCommander(deck.commander!)}>
                   −
@@ -353,9 +446,19 @@ export function DeckEditor({
                         key={row.name}
                         className={row.def === undefined ? 'db-unknown-row' : undefined}
                         {...hoverProps(row.def)}
+                        {...menuProps(row.def, [
+                          { label: 'Add another', onSelect: () => addCard(row.name) },
+                          { label: 'Remove one', onSelect: () => removeCard(row.name) },
+                          { label: 'Remove all copies', onSelect: () => removeAll(row.name) },
+                        ])}
                       >
                         <span className="db-count mono">{row.n}</span>
                         <span className="db-card-name">{row.name}</span>
+                        {deck.printings?.[row.name] ? (
+                          <span className="db-printing-mark" title="Custom printing">
+                            ◆
+                          </span>
+                        ) : null}
                         {row.def?.manaCost ? <Symbols text={row.def.manaCost} /> : null}
                         <span className="db-card-row-spacer" />
                         <button type="button" title="Remove one" onClick={() => removeCard(row.name)}>
@@ -377,7 +480,22 @@ export function DeckEditor({
         </section>
       </div>
 
-      <CardHoverPreview target={hover} />
+      {/* The preview is suppressed while the menu is open: the pointer is
+          still over the row that opened it, so the two otherwise overlap. */}
+      <CardHoverPreview target={menu === null ? hover : null} />
+      <CardContextMenu anchor={menu} onClose={closeMenu} />
+      {pickingDef ? (
+        <PrintingPicker
+          key={pickingDef.name}
+          def={pickingDef}
+          current={deck.printings?.[pickingDef.name] ?? null}
+          onChoose={(id) => {
+            setPrinting(pickingDef.name, id)
+            setPicking(null)
+          }}
+          onClose={() => setPicking(null)}
+        />
+      ) : null}
     </div>
   )
 }

@@ -11,14 +11,24 @@ import { cssUrl, resolveArtUrl } from '../ui/art.ts'
 import { DeckPickerModal } from './DeckPickerModal.tsx'
 import './lobby.css'
 
-type LocalDeck = { readonly name: string; readonly commander?: string; readonly cards: readonly string[] }
+type LocalDeck = {
+  readonly name: string
+  readonly commander?: string
+  readonly cards: readonly string[]
+  readonly printings?: Readonly<Record<string, string>>
+}
 
 /** A table is 2-4 seats. Mirrors `PendingRoom`'s own limits, which are what
  * actually enforce this — these only decide whether to draw the control. */
 const MIN_SEATS = 2
 const MAX_SEATS = 4
 
-const toWire = (d: LocalDeck): WireDeck => ({ cards: d.cards, commander: d.commander, name: d.name })
+const toWire = (d: LocalDeck): WireDeck => ({
+  cards: d.cards,
+  commander: d.commander,
+  name: d.name,
+  printings: d.printings,
+})
 
 /**
  * The seat-picker/waiting-room board: one panel per seat, side by side, each
@@ -106,10 +116,26 @@ export function SeatBoard({ game }: { readonly game: NetworkGame }) {
       <div className={`seat-board-grid${canAddSeat ? ' has-add' : ''}`}>
         {game.seats.map((s, i) => {
           const isMySeat = s.player === mySeatPlayer
-          const deck: LocalDeck | null = isMySeat
-            ? myDeck
+          const deck: (LocalDeck & { commanderPrinting?: string | null }) | null = isMySeat
+            ? myDeck === null
+              ? null
+              : {
+                  ...myDeck,
+                  // My own seat draws from the local deck, which has the
+                  // whole printings map; every other seat only gets the one
+                  // the server forwards on its `SeatStatus`.
+                  commanderPrinting:
+                    myDeck.commander === undefined
+                      ? null
+                      : (myDeck.printings?.[myDeck.commander] ?? null),
+                }
             : s.deck
-              ? { name: s.deck.name, commander: s.deck.commander ?? undefined, cards: [] }
+              ? {
+                  name: s.deck.name,
+                  commander: s.deck.commander ?? undefined,
+                  commanderPrinting: s.deck.commanderPrinting,
+                  cards: [],
+                }
               : null
           // My own seat's deck is editable until I ready up; any other
           // still-open or bot-filled seat is editable by anyone at any time
@@ -221,12 +247,21 @@ function DeckSlot({
   editable,
   onClick,
 }: {
-  readonly deck: { readonly name: string; readonly commander?: string } | null
+  readonly deck: {
+    readonly name: string
+    readonly commander?: string
+    /** The printing this deck brings for its commander, if it isn't the
+     * default — the thumbnail is a preview of what will hit the table, so
+     * it shows the art its owner picked. */
+    readonly commanderPrinting?: string | null
+  } | null
   readonly editable: boolean
   readonly onClick: () => void
 }) {
   const commanderDef = deck?.commander ? findCardDef(deck.commander) : null
-  const artUrl = commanderDef ? resolveArtUrl(commanderDef.art, commanderDef.name) : null
+  const artUrl = commanderDef
+    ? resolveArtUrl(deck?.commanderPrinting ?? commanderDef.art, commanderDef.name)
+    : null
 
   return (
     <button
