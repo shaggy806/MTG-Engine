@@ -14,7 +14,8 @@
 
 import type { Action, ConvokePayment, LegalAction } from "../actions.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
-import type { TargetRef } from "../target.js";
+import { isOptionalSpec } from "../target.js";
+import type { TargetRef, TargetSpec } from "../target.js";
 
 type CastSpellLegal = Extract<LegalAction, { kind: "cast-spell" }>;
 type ActivateAbilityLegal = Extract<LegalAction, { kind: "activate-ability" }>;
@@ -30,21 +31,31 @@ export const MAX_TARGET_COMBOS = 8;
 function targetCombos(
   optionLists: readonly (readonly TargetRef[])[],
   limit: number,
-): TargetRef[][] {
+  specs: readonly TargetSpec[] = [],
+): (TargetRef | null)[][] {
   if (optionLists.length === 0) return [[]];
-  if (optionLists.some((options) => options.length === 0)) return [];
-  let combos: TargetRef[][] = [[]];
-  for (const options of optionLists) {
-    const next: TargetRef[][] = [];
+  // A required slot with nothing to point at means the action isn't playable.
+  // An optional one ("up to one target creature") just gets skipped.
+  if (optionLists.some((options, i) => options.length === 0 && !isOptionalSpec(specs[i]))) {
+    return [];
+  }
+  let combos: (TargetRef | null)[][] = [[]];
+  optionLists.forEach((options, i) => {
+    // Skipping is a real choice for an optional slot, so offer it alongside
+    // the targets rather than only when there's nothing to point at.
+    const choices: (TargetRef | null)[] = isOptionalSpec(specs[i])
+      ? [...options, null]
+      : [...options];
+    const next: (TargetRef | null)[][] = [];
     for (const combo of combos) {
-      for (const option of options) {
+      for (const choice of choices) {
         if (next.length >= limit) break;
-        next.push([...combo, option]);
+        next.push([...combo, choice]);
       }
       if (next.length >= limit) break;
     }
     combos = next;
-  }
+  });
   return combos;
 }
 
@@ -109,7 +120,8 @@ function castCandidates(legal: CastSpellLegal, player: PlayerId): Action[] {
       Math.max(modal.minModes, Math.min(modal.maxModes, fillable.length)),
     );
     const targets = modes.flatMap(
-      (index) => targetCombos(modal.modes[index].targetOptions, 1)[0] ?? [],
+      (index) =>
+        targetCombos(modal.modes[index].targetOptions, 1, modal.modes[index].targetSpecs)[0] ?? [],
     );
     return [{ ...common, targets, modes }];
   }
@@ -117,11 +129,9 @@ function castCandidates(legal: CastSpellLegal, player: PlayerId): Action[] {
   // X is taken at its maximum. Enumerating every X multiplies the search by
   // the mana available and almost always lands on the maximum anyway.
   const xValue = legal.xCost !== undefined ? { xValue: legal.xCost.maxX } : {};
-  return targetCombos(legal.targetOptions, MAX_TARGET_COMBOS).map((targets) => ({
-    ...common,
-    ...xValue,
-    targets,
-  }));
+  return targetCombos(legal.targetOptions, MAX_TARGET_COMBOS, legal.targetSpecs).map(
+    (targets) => ({ ...common, ...xValue, targets }),
+  );
 }
 
 function abilityCandidates(legal: ActivateAbilityLegal, player: PlayerId): Action[] {
@@ -136,10 +146,9 @@ function abilityCandidates(legal: ActivateAbilityLegal, player: PlayerId): Actio
       : {}),
     ...(legal.xCost !== undefined ? { xValue: legal.xCost.maxX } : {}),
   };
-  return targetCombos(legal.targetOptions, MAX_TARGET_COMBOS).map((targets) => ({
-    ...common,
-    targets,
-  }));
+  return targetCombos(legal.targetOptions, MAX_TARGET_COMBOS, legal.targetSpecs).map(
+    (targets) => ({ ...common, targets }),
+  );
 }
 
 /**

@@ -12,7 +12,7 @@ import type { CardType, Keyword, StaticAbility, StaticCondition } from "./cards.
 import type { CardFilter } from "./filter.js";
 import type { Color, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
-import type { TargetRef, TargetSpec } from "./target.js";
+import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
 
 /** `"trigger-object"` reads `ResolutionContext.triggerObject` (needed-cards
  * P15 — Exalted's "that creature gets +1/+1", the lone attacker rather than
@@ -46,7 +46,11 @@ export type EffectAmount =
    * the permanent *first* and then reads its mana value. `0` for a player
    * target or an object that no longer exists at all.
    */
-  | { readonly manaValueOf: EffectTargetRef };
+  | { readonly manaValueOf: EffectTargetRef }
+  /** The effect controller's current life total (Ajani, Caller of the Pride's
+   * ultimate: "create X 2/2 white Cat creature tokens, where X is your life
+   * total"). */
+  | { readonly lifeTotal: "you" };
 
 /** @deprecated Use {@link CardFilter} directly — kept as an alias so existing
  * `look-and-choose` / `matchesZoneChoiceFilter` call sites still type-check. */
@@ -473,6 +477,11 @@ export type EffectSpec =
       readonly exileAtEndStep?: boolean;
       /** The copies are not legendary (Miirym — "except it's not legendary"). */
       readonly notLegendary?: boolean;
+      /** Who the token enters under. Default is the *copied* permanent's own
+       * controller (Miirym copying your own Dragons); `"you"` puts it under
+       * the effect's controller instead, which is what a card that copies
+       * something an opponent controls means (Hate Mirage). */
+      readonly who?: "you";
       /** Override the copies' base power/toughness (Saw in Half — "except
        * they're each 1/1"; a layer-7b set, so counters / anthems still apply). */
       readonly basePt?: readonly [number, number];
@@ -661,6 +670,8 @@ export interface EffectApi {
    * the `{ manaValueOf }` {@link EffectAmount}. `0` for a player target or an
    * object that no longer exists. */
   manaValueOf(target: TargetRef): number;
+  /** A player's current life total — see the `{ lifeTotal }` {@link EffectAmount}. */
+  lifeTotalOf(player: PlayerId): number;
   /** Every player a `PlayerScope` names, in APNAP order and skipping anyone
    * who has already lost. The shared scope resolution behind `draw`'s `who`,
    * `discard-hand`, and anything else that acts on a scope one player at a
@@ -803,6 +814,8 @@ export interface EffectApi {
     of: ObjectId,
     count: number,
     opts: {
+      /** Controller for the new token; defaults to the copied permanent's. */
+      readonly under?: PlayerId;
       gainsHaste: boolean;
       exileAtEndStep: boolean;
       notLegendary: boolean;
@@ -873,7 +886,11 @@ export interface EffectApi {
 export interface ResolutionContext extends EffectApi {
   readonly controller: PlayerId;
   readonly source: ObjectId;
-  readonly targets: readonly TargetRef[];
+  /** One entry per declared slot; a hole marks an **optional** slot the
+   * player left empty (see `ResolvedTargets`). Reading `ctx.targets[i]` and
+   * checking for `undefined` — which effects already do for an out-of-range
+   * index — is all a skipped slot needs. */
+  readonly targets: ResolvedTargets;
   /** The value chosen for `{X}` when this spell/ability was put on the stack,
    * or 0 if its cost had no `{X}`. */
   readonly x: number;
@@ -926,6 +943,7 @@ export function amountValue(amount: EffectAmount, ctx: ResolutionContext): numbe
   if (amount === "x") return ctx.x;
   if (typeof amount === "number") return amount;
   if ("triggerValue" in amount) return ctx.triggerValue;
+  if ("lifeTotal" in amount) return ctx.lifeTotalOf(ctx.controller);
   if ("manaValueOf" in amount) {
     const ref = resolveEffectTarget(amount.manaValueOf, ctx);
     return ref === undefined ? 0 : ctx.manaValueOf(ref);
@@ -1229,6 +1247,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
           gainsHaste: spec.gainsHaste ?? false,
           exileAtEndStep: spec.exileAtEndStep ?? false,
           notLegendary: spec.notLegendary ?? false,
+          under: spec.who === "you" ? ctx.controller : undefined,
           ...(spec.basePt ? { basePt: spec.basePt } : {}),
         });
       }

@@ -77,7 +77,8 @@ import type {
   PtModifier,
   ZoneType,
 } from "./state.js";
-import type { TargetRef, TargetSpec } from "./target.js";
+import { describeTargetSpec, isOptionalSpec, normalizeTargets } from "./target.js";
+import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
 import { isLegalTarget, legalTargets, protectionBlocks } from "./targeting.js";
 import type { TargetSource } from "./targeting.js";
 import { PHASE_OF_STEP, isMainPhase, nextStep, stepUsesPriority } from "./turn.js";
@@ -432,7 +433,7 @@ export class Game {
         this.castSpell(
           action.player,
           action.card,
-          action.targets ?? [],
+          normalizeTargets(action.targets),
           action.xValue ?? 0,
           action.via,
           action.face ?? 0,
@@ -449,7 +450,7 @@ export class Game {
           action.player,
           action.source,
           action.abilityIndex,
-          action.targets ?? [],
+          normalizeTargets(action.targets),
           action.sacrifice,
           action.xValue ?? 0,
         );
@@ -494,7 +495,7 @@ export class Game {
         this.applyModesChoice(action.player, action.modes);
         break;
       case "choose-targets":
-        this.applyChooseTargets(action.player, action.targets);
+        this.applyChooseTargets(action.player, normalizeTargets(action.targets));
         break;
       case "assign-combat-damage":
         this.applyAssignCombatDamage(action.player, action.assignment);
@@ -579,7 +580,7 @@ export class Game {
       case "choose-modes":
         return this.whyCannotChooseModes(action.player, action.modes);
       case "choose-targets":
-        return this.whyCannotChooseTargets(action.player, action.targets);
+        return this.whyCannotChooseTargets(action.player, normalizeTargets(action.targets));
       case "assign-combat-damage":
         return this.whyCannotAssignCombatDamage(action.player, action.assignment);
       case "sacrifice":
@@ -1116,6 +1117,18 @@ export class Game {
       }
       if (!castable) continue;
       const specs = this.effectiveTargetSpecs(def, undefined, kicked, overload);
+      const options = this.targetOptionsFor(specs, player, this.cardSource(def));
+      // Rule 601.2c — a spell can't be cast without a legal target for every
+      // slot that demands one. An *optional* slot ("up to one target
+      // creature") with nothing to point at is simply skipped, so it never
+      // blocks the cast. A targeted modal spell picks its slots per mode and
+      // is gated by `castModalDescriptor` instead.
+      if (
+        def.castModal === null &&
+        specs.some((spec, i) => options[i].length === 0 && !isOptionalSpec(spec))
+      ) {
+        continue;
+      }
       const cost = free
         ? "{0}"
         : overload && def.overload !== null
@@ -1129,7 +1142,7 @@ export class Game {
         card,
         cardName,
         targetSpecs: specs,
-        targetOptions: this.targetOptionsFor(specs, player, this.cardSource(def)),
+        targetOptions: options,
         ...(via !== undefined ? { via } : {}),
         ...(face !== undefined ? { face } : {}),
         ...this.castModalDescriptor(def, player),
@@ -1871,7 +1884,7 @@ export class Game {
     maxModes: number,
     modes: readonly ModeOption[],
     onDecline?: EffectSpec,
-    targets: readonly TargetRef[] = [],
+    targets: ResolvedTargets = [],
   ): void {
     this.state.awaiting = {
       kind: "choose-modes",
@@ -1940,7 +1953,7 @@ export class Game {
   /** Answers a pending `choose-targets` decision (ROADMAP Phase 11 EG-1) — a
    * triggered ability, or a suspended spell coming off suspend. Mints the
    * ability / commits the free cast with the chosen targets, then resumes. */
-  private applyChooseTargets(player: PlayerId, chosen: readonly TargetRef[]): void {
+  private applyChooseTargets(player: PlayerId, chosen: ResolvedTargets): void {
     const why = this.whyCannotChooseTargets(player, chosen);
     if (why !== null) throw new Error(why);
     this.state.awaiting = null;
@@ -1975,16 +1988,46 @@ export class Game {
     if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
   }
 
+  /**
+   * Why `chosen` isn't a valid filling of `specs`, or `null` if it is.
+   *
+   * The one place that decides a **hole** is allowed: a slot declared
+   * `{ kind: "optional" }` ("up to one target creature") may be left empty,
+   * every other slot must be filled with a currently-legal target, and the
+   * arity must match either way — "up to two" is two optional slots, not a
+   * variable count, so the shape of `targets` always mirrors the spec list
+   * and each effect's `target:` index stays a fixed position.
+   */
+  private whyTargetsInvalid(
+    specs: readonly TargetSpec[],
+    chosen: ResolvedTargets,
+    player: PlayerId,
+    name: string,
+    source?: TargetSource,
+  ): string | null {
+    if (chosen.length !== specs.length) {
+      return `${name} takes ${specs.length} target(s), got ${chosen.length}`;
+    }
+    for (let i = 0; i < specs.length; i += 1) {
+      const ref = chosen[i];
+      if (ref === undefined) {
+        if (isOptionalSpec(specs[i])) continue;
+        return `${name} needs a target for slot ${i}`;
+      }
+      if (!isLegalTarget(this.state, this.registry, specs[i], ref, player, source)) {
+        return `illegal target for ${name}`;
+      }
+    }
+    return null;
+  }
+
   private whyCannotChooseTargets(
     player: PlayerId,
-    chosen: readonly TargetRef[],
+    chosen: ResolvedTargets,
   ): string | null {
     const awaiting = this.state.awaiting;
     if (awaiting === null || awaiting.kind !== "choose-targets" || awaiting.player !== player) {
       return `${player} is not being asked to choose targets`;
-    }
-    if (chosen.length !== awaiting.specs.length) {
-      return `${awaiting.cardName} needs ${awaiting.specs.length} target(s), got ${chosen.length}`;
     }
     const src =
       this.state.pendingTargetedCast !== null
@@ -1992,11 +2035,14 @@ export class Game {
         : this.state.objects[awaiting.source] !== undefined
           ? this.permanentSource(awaiting.source)
           : undefined;
-    for (let i = 0; i < chosen.length; i += 1) {
-      if (!isLegalTarget(this.state, this.registry, awaiting.specs[i], chosen[i], player, src)) {
-        return `illegal target for ${awaiting.cardName}`;
-      }
-    }
+    const why = this.whyTargetsInvalid(
+      awaiting.specs,
+      chosen,
+      player,
+      awaiting.cardName,
+      src,
+    );
+    if (why !== null) return why;
     return null;
   }
 
@@ -3682,7 +3728,7 @@ export class Game {
     cardId: ObjectId,
     via: CastVia,
     grantHaste: boolean,
-    targets: readonly TargetRef[],
+    targets: ResolvedTargets,
   ): void {
     const object = this.state.objects[cardId];
     const owner = object.owner;
@@ -3698,7 +3744,7 @@ export class Game {
       type: "spell-cast",
       player: owner,
       object: cardId,
-      targets: [...targets],
+      targets: targets.filter((t): t is TargetRef => t !== undefined),
       x: object.xValue ?? null,
       spellsThisTurn: this.state.players[owner].spellsCastThisTurn,
       via,
@@ -4129,10 +4175,14 @@ export class Game {
     // is checked per chosen mode (only once `modes` is known — at enumeration
     // time the driver hasn't picked yet).
     for (const spec of this.effectiveTargetSpecs(def, modes, kicked, overload)) {
+      // An *optional* slot with nothing to point at is simply left empty, so
+      // it never blocks the cast (rule 601.2c only demands a legal target for
+      // the slots that require one).
+      if (isOptionalSpec(spec)) continue;
       if (
         legalTargets(this.state, this.registry, spec, player, this.cardSource(def)).length === 0
       ) {
-        return `${def.name} has no legal ${spec} target`;
+        return `${def.name} has no legal ${describeTargetSpec(spec)} target`;
       }
     }
     const baseCost = this.withFace(cardId, face, () =>
@@ -4211,7 +4261,7 @@ export class Game {
   private castSpell(
     player: PlayerId,
     cardId: ObjectId,
-    targets: readonly TargetRef[],
+    targets: ResolvedTargets,
     xValue = 0,
     via?: CastVia,
     face = 0,
@@ -4258,16 +4308,14 @@ export class Game {
         ? undefined
         : (sacrifice ?? this.additionalCostSacrifices(player, def)[0]);
 
-    if (targets.length !== targetSpecs.length) {
-      throw new Error(
-        `${def.name} takes ${targetSpecs.length} target(s), got ${targets.length}`,
-      );
-    }
-    targetSpecs.forEach((spec, i) => {
-      if (!isLegalTarget(this.state, this.registry, spec, targets[i], player, this.cardSource(def))) {
-        throw new Error(`illegal target for ${def.name}`);
-      }
-    });
+    const badTarget = this.whyTargetsInvalid(
+      targetSpecs,
+      targets,
+      player,
+      def.name,
+      this.cardSource(def),
+    );
+    if (badTarget !== null) throw new Error(badTarget);
 
     const castingFromCommand = this.isCastableCommander(player, cardId);
     const fullCost = this.castingCostOf(player, cardId, def, chosenX, costString);
@@ -4336,7 +4384,7 @@ export class Game {
       type: "spell-cast",
       player,
       object: cardId,
-      targets: [...targets],
+      targets: targets.filter((t): t is TargetRef => t !== undefined),
       x: hasX ? chosenX : null,
       spellsThisTurn: this.state.players[player].spellsCastThisTurn,
       ...(via !== undefined ? { via } : {}),
@@ -4552,12 +4600,13 @@ export class Game {
       if (timing !== null) return timing;
     }
     for (const spec of ability.targets) {
+      if (isOptionalSpec(spec)) continue;
       const options = legalTargets(this.state, this.registry, spec, player, this.permanentSource(sourceId));
       const eligible = ability.otherOnly
         ? options.filter((ref) => ref.kind !== "object" || ref.object !== sourceId)
         : options;
       if (eligible.length === 0) {
-        return `${def.name}'s ability has no legal ${spec} target`;
+        return `${def.name}'s ability has no legal ${describeTargetSpec(spec)} target`;
       }
     }
     if (
@@ -4603,7 +4652,7 @@ export class Game {
     player: PlayerId,
     sourceId: ObjectId,
     abilityIndex: number,
-    targets: readonly TargetRef[],
+    targets: ResolvedTargets,
     sacrifice?: ObjectId,
     xValue = 0,
   ): void {
@@ -4614,18 +4663,18 @@ export class Game {
     const def = this.registry.get(printedCardName(source));
     const ability = this.effectiveActivated(sourceId)[abilityIndex];
 
-    if (targets.length !== ability.targets.length) {
-      throw new Error(
-        `that ability of ${def.name} takes ${ability.targets.length} target(s), got ${targets.length}`,
-      );
-    }
-    ability.targets.forEach((spec, i) => {
+    const badTarget = this.whyTargetsInvalid(
+      ability.targets,
+      targets,
+      player,
+      `${def.name}'s ability`,
+      this.permanentSource(sourceId),
+    );
+    if (badTarget !== null) throw new Error(badTarget);
+    ability.targets.forEach((_spec, i) => {
       const target = targets[i];
-      const isSource = target.kind === "object" && target.object === sourceId;
-      if (
-        (ability.otherOnly && isSource) ||
-        !isLegalTarget(this.state, this.registry, spec, target, player, this.permanentSource(sourceId))
-      ) {
+      const isSource = target?.kind === "object" && target.object === sourceId;
+      if (ability.otherOnly === true && isSource) {
         throw new Error(`illegal target for ${def.name}'s ability`);
       }
     });
@@ -4766,7 +4815,7 @@ export class Game {
     controller: PlayerId,
     abilityKind: "activated" | "triggered" | "chapter",
     abilityIndex: number,
-    targets: readonly TargetRef[],
+    targets: ResolvedTargets,
     triggerValue?: number,
     triggerObject?: ObjectId,
     multiplier?: number,
@@ -5983,7 +6032,7 @@ export class Game {
     controller: PlayerId,
     abilityKind: "triggered" | "chapter",
     abilityIndex: number,
-    targets: readonly TargetRef[],
+    targets: ResolvedTargets,
     triggerValue?: number,
     triggerObject?: ObjectId,
     multiplier?: number,
@@ -6004,7 +6053,7 @@ export class Game {
 
   private anyTargetLegal(
     specs: readonly TargetSpec[],
-    targets: readonly TargetRef[],
+    targets: ResolvedTargets,
     forPlayer: PlayerId,
     source?: TargetSource,
   ): boolean {
@@ -6029,7 +6078,7 @@ export class Game {
   private makeResolutionContext(
     source: ObjectId,
     controller: PlayerId,
-    targets: readonly TargetRef[],
+    targets: ResolvedTargets,
     x = 0,
     triggerValue = 0,
     triggerObject?: ObjectId,
@@ -6055,6 +6104,7 @@ export class Game {
       playersInScope: (who) => this.scopedPlayers(controller, who),
       discardHand: (player) => this.discardWholeHand(player),
       manaValueOf: (target) => this.manaValueOfTarget(target),
+      lifeTotalOf: (player) => this.state.players[player]?.life ?? 0,
       gainLife: (player, amount) => this.changeLife(player, amount),
       loseLife: (player, amount) => this.changeLife(player, -amount),
       addMana: (player, mana, amount) => this.addMana(player, mana, amount),
@@ -6386,13 +6436,17 @@ export class Game {
       exileAtEndStep: boolean;
       notLegendary: boolean;
       basePt?: readonly [number, number];
+      under?: PlayerId;
     },
   ): void {
     const of = this.state.objects[ofId];
     if (of === undefined) return;
     const copyName = printedCardName(of);
     this.registry.get(copyName); // validate it's a known definition
-    const controller = of.controller;
+    // The copy defaults to the copied permanent's controller (Miirym), but a
+    // card that copies something an *opponent* controls means "under your
+    // control" (Hate Mirage).
+    const controller = opts.under ?? of.controller;
     const total = count * this.tokenCreationMultiplier(controller);
     const modifiers: PtModifier[] = [
       ...(opts.gainsHaste
@@ -7535,11 +7589,12 @@ export class Game {
    */
   private wardCheckPasses(
     caster: PlayerId,
-    targets: readonly TargetRef[],
+    targets: ResolvedTargets,
     onCountered: () => boolean,
   ): boolean {
     for (const target of targets) {
-      if (target.kind !== "object") continue;
+      // A skipped optional slot has nothing to ward.
+      if (target === undefined || target.kind !== "object") continue;
       const permanent = this.state.objects[target.object];
       if (
         permanent === undefined ||

@@ -14,7 +14,7 @@ import type { Color, ManaPool } from "./mana.js";
 import { emptyPool } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameEvent } from "./events.js";
-import type { TargetRef, TargetSpec } from "./target.js";
+import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
 import type { Phase, Step } from "./turn.js";
 import { phaseOfStep } from "./turn.js";
 
@@ -63,7 +63,9 @@ export interface GameObject {
    */
   combatDamagedPlayersThisTurn?: PlayerId[];
   /** Chosen targets while this is a spell/ability on the stack; `null` otherwise. */
-  targets: TargetRef[] | null;
+  /** A hole (`undefined`) marks an optional target slot the caster chose to
+   * leave empty — see `ResolvedTargets`. */
+  targets: (TargetRef | undefined)[] | null;
   /** True when a temporary control-change effect (Act of Treason) controls this
    * permanent — cleanup reverts `controller` to `owner`. Cleared by
    * `moveObject` on any zone change. */
@@ -564,7 +566,7 @@ export type AwaitingDecision =
        * ability's own target 0" (Ob Nixilis, the Fallen: "you may have
        * *target player* lose 3 life"). Empty for the ordinary case where
        * nothing outside the modal choice was targeted. needed-cards P19. */
-      readonly targets: readonly TargetRef[];
+      readonly targets: ResolvedTargets;
     }
   | {
       /** A triggered ability (or a suspended spell coming off suspend) needs

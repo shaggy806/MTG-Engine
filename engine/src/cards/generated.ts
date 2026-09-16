@@ -8,6 +8,7 @@ import _poolActOfTreason from "./pool/act-of-treason.js";
 import _poolAdarkarWastes from "./pool/adarkar-wastes.js";
 import _poolAftermathAnalyst from "./pool/aftermath-analyst.js";
 import _poolAggravatedAssault from "./pool/aggravated-assault.js";
+import _poolAjaniCallerOfThePride from "./pool/ajani-caller-of-the-pride.js";
 import _poolAjanisPridemate from "./pool/ajanis-pridemate.js";
 import _poolAkoumHellkite from "./pool/akoum-hellkite.js";
 import _poolAmbushViper from "./pool/ambush-viper.js";
@@ -168,6 +169,7 @@ import _poolHarrow from "./pool/harrow.js";
 import _poolHarvestSeason from "./pool/harvest-season.js";
 import _poolHarvesttideAssailant from "./pool/harvesttide-assailant.js";
 import _poolHarvesttideInfiltrator from "./pool/harvesttide-infiltrator.js";
+import _poolHateMirage from "./pool/hate-mirage.js";
 import _poolHauntedRidge from "./pool/haunted-ridge.js";
 import _poolHeroicIntervention from "./pool/heroic-intervention.js";
 import _poolHillGiant from "./pool/hill-giant.js";
@@ -255,6 +257,7 @@ import _poolPortTown from "./pool/port-town.js";
 import _poolPrairieStream from "./pool/prairie-stream.js";
 import _poolPreordain from "./pool/preordain.js";
 import _poolPreyUpon from "./pool/prey-upon.js";
+import _poolPrimalMight from "./pool/primal-might.js";
 import _poolPrincessSarah from "./pool/princess-sarah.js";
 import _poolProdigalSorcerer from "./pool/prodigal-sorcerer.js";
 import _poolProsperousInnkeeper from "./pool/prosperous-innkeeper.js";
@@ -411,6 +414,7 @@ import _poolZuranOrb from "./pool/zuran-orb.js";
 import _tokensApeToken from "./tokens/ape-token.js";
 import _tokensBeastToken33 from "./tokens/beast-token-3-3.js";
 import _tokensBeastToken from "./tokens/beast-token.js";
+import _tokensCatToken from "./tokens/cat-token.js";
 import _tokensChocoboBirdToken from "./tokens/chocobo-bird-token.js";
 import _tokensDragonToken55 from "./tokens/dragon-token-5-5.js";
 import _tokensDragonToken66 from "./tokens/dragon-token-6-6.js";
@@ -438,6 +442,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAdarkarWastes,
   _poolAftermathAnalyst,
   _poolAggravatedAssault,
+  _poolAjaniCallerOfThePride,
   _poolAjanisPridemate,
   _poolAkoumHellkite,
   _poolAmbushViper,
@@ -598,6 +603,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolHarvestSeason,
   _poolHarvesttideAssailant,
   _poolHarvesttideInfiltrator,
+  _poolHateMirage,
   _poolHauntedRidge,
   _poolHeroicIntervention,
   _poolHillGiant,
@@ -685,6 +691,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolPrairieStream,
   _poolPreordain,
   _poolPreyUpon,
+  _poolPrimalMight,
   _poolPrincessSarah,
   _poolProdigalSorcerer,
   _poolProsperousInnkeeper,
@@ -847,6 +854,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensApeToken,
   _tokensBeastToken33,
   _tokensBeastToken,
+  _tokensCatToken,
   _tokensChocoboBirdToken,
   _tokensDragonToken55,
   _tokensDragonToken66,

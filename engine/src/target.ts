@@ -71,7 +71,45 @@ export type TargetSpec =
       readonly kind: "card-in-graveyard";
       readonly whose?: "any" | "you" | "opponent";
       readonly filter?: CardFilter;
-    };
+    }
+  /**
+   * A slot that may be left empty — "up to one target creature" (Ajani,
+   * Caller of the Pride), "up to two target creatures you don't control"
+   * (Hate Mirage), "fights up to one target creature" (Primal Might).
+   *
+   * "Up to N" is spelled as N optional slots rather than a variable count, so
+   * the shape of `targets` still matches the shape of the spec list and every
+   * effect's `target:` index stays a fixed position. A skipped slot travels
+   * as `null` in `Action.targets` and arrives at resolution as `undefined`,
+   * which is what an effect reading `ctx.targets[i]` already checks for.
+   */
+  | { readonly kind: "optional"; readonly of: TargetSpec };
+
+/**
+ * Targets as the engine carries them internally, once a dispatched action has
+ * been normalized: a **hole** (`undefined`) where an optional slot was
+ * skipped. `undefined` rather than `null` on purpose — every effect already
+ * guards `ctx.targets[i]` with an `undefined` check, because an out-of-range
+ * index reads that way, so skipped slots need no new handling anywhere.
+ */
+export type ResolvedTargets = readonly (TargetRef | undefined)[];
+
+/** Turn a dispatched action's `null` holes into `undefined` ones. */
+export function normalizeTargets(
+  chosen: readonly (TargetRef | null)[] | undefined,
+): ResolvedTargets {
+  return (chosen ?? []).map((ref) => ref ?? undefined);
+}
+
+/** The underlying spec a (possibly optional) slot accepts. */
+export function requiredSpec(spec: TargetSpec): TargetSpec {
+  return typeof spec === "object" && spec.kind === "optional" ? spec.of : spec;
+}
+
+/** May this slot be left empty? */
+export function isOptionalSpec(spec: TargetSpec): boolean {
+  return typeof spec === "object" && spec.kind === "optional";
+}
 
 /**
  * A short human label for a target slot, for a UI prompt ("choose a
@@ -80,6 +118,7 @@ export type TargetSpec =
  */
 export function describeTargetSpec(spec: TargetSpec | string): string {
   if (typeof spec === "string") return spec;
+  if (spec.kind === "optional") return `${describeTargetSpec(spec.of)} (optional)`;
   const whose =
     spec.whose === "you"
       ? "your graveyard"

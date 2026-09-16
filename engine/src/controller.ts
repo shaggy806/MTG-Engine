@@ -11,6 +11,7 @@ import type {
   Action,
   AttackerDeclaration,
   BlockerDeclaration,
+  ChosenTargets,
   ConvokePayment,
   LegalAction,
 } from "./actions.js";
@@ -20,6 +21,7 @@ import { CardRegistry, createDefaultRegistry } from "./cards.js";
 import { manaValue, parseManaCost } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameObject, GameState } from "./state.js";
+import { isOptionalSpec } from "./target.js";
 import type { TargetRef, TargetSpec } from "./target.js";
 
 export type { AttackerDeclaration, BlockerDeclaration };
@@ -78,7 +80,7 @@ export interface PlayerController {
     sourceName: string,
     specs: readonly TargetSpec[],
     legalOptions: readonly (readonly TargetRef[])[],
-  ): readonly TargetRef[];
+  ): ChosenTargets;
   /**
    * Choose between `min` and `max` cards from `eligible` (the choosable
    * subset of a `"look-and-choose"` effect's revealed candidates — narrower
@@ -189,9 +191,17 @@ const discardFromFront = (
   count: number,
 ): readonly ObjectId[] => hand.slice(0, count).map((object) => object.id);
 
+/**
+ * One target per slot, taking the first option. A slot with no options is
+ * left as a hole (`null`), which is legal exactly when that slot is optional
+ * — "up to one target creature" with nothing to point at. `specs`, when
+ * given, is only needed to distinguish "empty because optional" from "empty
+ * because the action shouldn't have been offered"; `legalActions` already
+ * refuses to offer the latter (rule 601.2c).
+ */
 const firstOfEach = (
   legalOptions: readonly (readonly TargetRef[])[],
-): readonly TargetRef[] => legalOptions.map((options) => options[0]);
+): ChosenTargets => legalOptions.map((options) => options[0] ?? null);
 
 /** The standard combat-damage assignment: lethal down the blocker order, the
  * remainder to the last blocker (or, with trample, over to the defender). */
@@ -422,7 +432,7 @@ export class AutomaticController implements PlayerController {
     _sourceName: string,
     _specs: readonly TargetSpec[],
     legalOptions: readonly (readonly TargetRef[])[],
-  ): readonly TargetRef[] {
+  ): ChosenTargets {
     return firstOfEach(legalOptions);
   }
 
@@ -534,7 +544,7 @@ type TargetChooser = (
   sourceName: string,
   specs: readonly TargetSpec[],
   legalOptions: readonly (readonly TargetRef[])[],
-) => readonly TargetRef[];
+) => ChosenTargets;
 type ZoneChooser = (
   view: ControllerView,
   eligible: readonly ObjectId[],
@@ -691,7 +701,7 @@ export class ScriptedController implements PlayerController {
     sourceName: string,
     specs: readonly TargetSpec[],
     legalOptions: readonly (readonly TargetRef[])[],
-  ): readonly TargetRef[] {
+  ): ChosenTargets {
     return this.chooseTargetsFn(view, sourceName, specs, legalOptions);
   }
 
@@ -838,10 +848,18 @@ export class RandomController extends AutomaticController {
     return Math.min(length - 1, Math.floor(this.random() * length));
   }
 
+  /** A random target per slot, or a hole for a slot with no options (an
+   * optional slot with nothing to point at). Also skips an optional slot at
+   * random, so the fuzzer exercises both branches. */
   private pickTargets(
     options: readonly (readonly TargetRef[])[],
-  ): readonly TargetRef[] {
-    return options.map((choices) => choices[this.pickIndex(choices.length)]);
+    specs: readonly TargetSpec[] = [],
+  ): ChosenTargets {
+    return options.map((choices, i) => {
+      if (choices.length === 0) return null;
+      if (isOptionalSpec(specs[i] ?? "creature") && this.random() < 0.25) return null;
+      return choices[this.pickIndex(choices.length)];
+    });
   }
 
   private toAction(legal: LegalAction): Action {
@@ -892,7 +910,7 @@ export class RandomController extends AutomaticController {
           type: "cast-spell",
           player,
           card: legal.card,
-          targets: this.pickTargets(legal.targetOptions),
+          targets: this.pickTargets(legal.targetOptions, legal.targetSpecs),
           ...(legal.xCost !== undefined
             ? { xValue: this.pickIndex(legal.xCost.maxX + 1) }
             : {}),
@@ -908,7 +926,7 @@ export class RandomController extends AutomaticController {
           player,
           source: legal.source,
           abilityIndex: legal.abilityIndex,
-          targets: this.pickTargets(legal.targetOptions),
+          targets: this.pickTargets(legal.targetOptions, legal.targetSpecs),
           ...(sac !== undefined && sac.choices.length > 0
             ? { sacrifice: sac.choices[this.pickIndex(sac.choices.length)] }
             : {}),
@@ -1049,7 +1067,11 @@ export class RandomController extends AutomaticController {
         return { type: "scry", player, away };
       }
       case "choose-targets":
-        return { type: "choose-targets", player, targets: this.pickTargets(legal.options) };
+        return {
+          type: "choose-targets",
+          player,
+          targets: this.pickTargets(legal.options, legal.specs),
+        };
       default:
         return passFor(player);
     }

@@ -92,6 +92,11 @@ export function isLegalTarget(
       return false;
     }
   }
+  // An optional slot accepts exactly what its inner spec accepts; whether it
+  // may be left *empty* is a question for the caller, not for a given ref.
+  if (typeof spec === "object" && spec.kind === "optional") {
+    return isLegalTarget(state, registry, spec.of, ref, forPlayer, source);
+  }
   // The one structured spec — a card in a graveyard (see `TargetSpec`).
   // Handled ahead of the string switch rather than inside it.
   if (typeof spec === "object") {
@@ -272,6 +277,11 @@ export function legalTargets(
   forPlayer: PlayerId,
   source?: TargetSource,
 ): TargetRef[] {
+  // An optional slot offers the same candidates; skipping it isn't a
+  // `TargetRef`, so it can't be one of them (see `isOptionalSpec`).
+  if (typeof spec === "object" && spec.kind === "optional") {
+    return legalTargets(state, registry, spec.of, forPlayer, source);
+  }
   const out: TargetRef[] = [];
   for (const player of state.turnOrder) {
     const ref: TargetRef = { kind: "player", player };
@@ -294,7 +304,7 @@ export function legalTargets(
       const ref: TargetRef = { kind: "object", object: id };
       if (isLegalTarget(state, registry, spec, ref, forPlayer, source)) out.push(ref);
     }
-  } else if (typeof spec === "object") {
+  } else if (typeof spec === "object" && spec.kind === "card-in-graveyard") {
     for (const player of state.turnOrder) {
       for (const id of state.zones.perPlayer[player].graveyard) {
         const ref: TargetRef = { kind: "object", object: id };

@@ -246,7 +246,11 @@ function visible(
     abilityKind: object.abilityKind,
     sourceObjectId: object.sourceObjectId,
     abilityIndex: object.abilityIndex,
-    targets: object.targets === null ? null : [...object.targets],
+    // A hole is a skipped optional slot; the view shows only real targets.
+    targets:
+      object.targets === null
+        ? null
+        : object.targets.filter((t): t is TargetRef => t !== undefined),
     xValue: object.xValue,
     isToken: object.isToken,
     stackCount: object.stackCount ?? null,

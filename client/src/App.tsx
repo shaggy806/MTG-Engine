@@ -10,7 +10,7 @@ import type {
   TargetSpec,
   VisibleObject,
 } from 'engine'
-import { describeTargetSpec } from 'engine'
+import { describeTargetSpec, isOptionalSpec } from 'engine'
 import { useNetworkGame } from './net/useNetworkGame.ts'
 import type { NetworkGame } from './net/useNetworkGame.ts'
 import { computeBoardEntries } from './game/board.ts'
@@ -134,7 +134,9 @@ interface Targeting {
   readonly label: string
   readonly specs: readonly TargetSpec[]
   readonly options: readonly (readonly TargetRef[])[]
-  readonly picked: readonly TargetRef[]
+  /** One entry per slot filled so far; `null` is an optional slot the player
+   * chose to skip ("up to one target creature"). */
+  readonly picked: readonly (TargetRef | null)[]
   /** Chosen modes for a targeted modal spell (Phase 11 EG-2). */
   readonly modes?: readonly number[]
   /** Chosen value for `{X}`, when casting an X spell. */
@@ -603,7 +605,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   // ROADMAP Phase 11 EG-1) drives the same targeting flow as a cast, but it's
   // *derived* from the decision rather than stored — only the running picks
   // live in state — so a state refresh mid-choice just re-derives it.
-  const [ctPicks, setCtPicks] = useState<readonly TargetRef[]>([])
+  const [ctPicks, setCtPicks] = useState<readonly (TargetRef | null)[]>([])
   const activeTargeting: Targeting | null = useMemo(
     () =>
       targeting ??
@@ -720,7 +722,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         | 'overload'
         | 'free'
       >,
-      targets: readonly TargetRef[],
+      targets: readonly (TargetRef | null)[],
     ) => {
       game.dispatch(
         t.kind === 'choose-targets'
@@ -913,7 +915,9 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   )
 
   const pickTarget = useCallback(
-    (ref: TargetRef) => {
+    // `null` skips the current slot, which is legal only for an optional one
+    // — the Skip button is only rendered for those.
+    (ref: TargetRef | null) => {
       const t = activeTargeting
       if (!t) return
       const picked = [...t.picked, ref]
@@ -1188,8 +1192,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     : []
   const pickedObjKeys = new Set(
     (activeTargeting?.picked ?? [])
-      .filter((r) => r.kind === 'object')
-      .map((r) => (r.kind === 'object' ? r.object : '')),
+      .filter((r) => r?.kind === 'object')
+      .map((r) => (r?.kind === 'object' ? r.object : '')),
   )
   /** Label for an attack target — a player, or an opponent's planeswalker. */
   const attackTargetLabel = (t: PlayerId | ObjectId): string =>
@@ -1897,6 +1901,11 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           {describeTargetSpec(activeTargeting.specs[activeTargeting.picked.length])} (
           {activeTargeting.picked.length + 1}/{activeTargeting.specs.length})
         </span>
+        {isOptionalSpec(activeTargeting.specs[activeTargeting.picked.length]) ? (
+          <button type="button" onClick={() => pickTarget(null)}>
+            Skip
+          </button>
+        ) : null}
         {activeTargeting.kind === 'choose-targets' ? null : (
           <button type="button" onClick={() => setTargeting(null)}>
             Cancel

@@ -302,7 +302,7 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 | kind | fields |
 | --- | --- |
 | `create-token` | `token` (a registry name), `count`, `who?: "you" \| "target-controller"` (Beast Within — under `targets[0]`'s controller) |
-| `create-token-copy` | `of: "source" \| "trigger-object" \| slot`, `count`, `gainsHaste?`, `exileAtEndStep?`, `notLegendary?`, `basePt?: [p, t]` — a token that's a copy of a permanent, under *its* controller. `"trigger-object"` = the permanent whose entering/attacking fired the trigger (Miirym); a slot = a target (Saw in Half). |
+| `create-token-copy` | `of: "source" \| "trigger-object" \| slot`, `count`, `gainsHaste?`, `exileAtEndStep?`, `notLegendary?`, `basePt?: [p, t]`, `who?: "you"` — a token that's a copy of a permanent, under *its* controller by default; `who: "you"` puts it under the effect's controller instead, which is what a card copying something an **opponent** controls means (Hate Mirage). `"trigger-object"` = the permanent whose entering/attacking fired the trigger (Miirym); a slot = a target (Saw in Half). |
 | `attach` | `target` (Equip-style) |
 | `transform` | `target` (`"source"` \| slot) |
 | `day-night` | `value: "day" \| "night"` |
@@ -386,6 +386,17 @@ than the chooser), `"creature-or-player"`,
 `"creature-or-enchantment-an-opponent-controls"`, `"attacking-or-blocking-creature"`, `"spell"`,
 `"creature-spell"`, `"noncreature-spell"`, `"instant-or-sorcery-spell"`,
 `"instant-or-sorcery-in-your-graveyard"`.
+
+A slot may be made **optional** by wrapping it:
+`{ kind: "optional", of: TargetSpec }` — "up to one target creature" (Ajani,
+Caller of the Pride), "up to two target creatures you don't control" (Hate
+Mirage). "Up to N" is spelled as N optional slots rather than a variable
+count, so `targets` always mirrors the spec list and each effect's `target:`
+index stays a fixed position. A skipped slot travels as `null` in the
+dispatched action and arrives at resolution as a hole, which every effect
+already guards for (that's how an out-of-range index reads). Only *required*
+slots gate castability (rule 601.2c), and the client offers a **Skip** button
+for an optional one.
 
 One spec is **structured** rather than a string —
 `{ kind: "card-in-graveyard", whose?: "any" | "you" | "opponent", filter?: CardFilter }`
@@ -824,14 +835,10 @@ different card, or extend the engine (see `ROADMAP.md`).
   expressible, via `search-library.restDestination`.)
 - `discard` as part of an **activated ability cost**.
 - `spellsCastThisTurn` triggers beyond `cast-spell` / `this-cast`.
-- **Optional / "up to N" targeting.** Every slot in a spell's or ability's
-  `targets` must be filled with a legal target — `castSpell`/`activateAbility`
-  throw if the chosen count doesn't exactly match the declared `TargetSpec[]`
-  length. There's no way to leave a declared slot empty (needed-cards P18 —
-  Marang River Regent's "return up to two other target nonland permanents").
-  Distinct from the *unbounded* "any number of targets, divide an amount among
-  them" gap below, which is about a variable slot **count**, not a fixed number
-  of independently-skippable slots.
+- **Unbounded targeting** — "any number of target …", and "divide N damage
+  among any number of targets". The slot *count* is still fixed by the
+  declared `TargetSpec[]`. ("Up to N" *is* expressible — N slots marked
+  `{ kind: "optional", of: spec }`, see §7.)
 - **Mana provenance / restricted spend.** No effect tracks what a specific unit
   of mana was later spent on — "if that mana is spent on a Dragon spell, it
   gains haste" (Carnelian Orb of Dragonkind) and "spend this mana only to cast

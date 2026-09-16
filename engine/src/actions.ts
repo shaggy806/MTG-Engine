@@ -84,7 +84,7 @@ export type Action =
       readonly type: "cast-spell";
       readonly player: PlayerId;
       readonly card: ObjectId;
-      readonly targets?: readonly TargetRef[];
+      readonly targets?: ChosenTargets;
       /** The modes chosen for a targeted modal spell (rule 700.2 — ROADMAP
        * Phase 11 EG-2): indices into `CardDefinition.castModal.modes`, distinct.
        * `targets` are then the concatenation of those modes' target slots, in
@@ -128,7 +128,7 @@ export type Action =
       readonly player: PlayerId;
       readonly source: ObjectId;
       readonly abilityIndex: number;
-      readonly targets?: readonly TargetRef[];
+      readonly targets?: ChosenTargets;
       /** The permanent to sacrifice, when the ability's cost is a
        * `"creature-you-control"` sacrifice. Ignored for a `"self"` sacrifice
        * (the source is always what's sacrificed) or no sacrifice. */
@@ -235,7 +235,7 @@ export type Action =
        * target slot, in `awaiting.specs` order. */
       readonly type: "choose-targets";
       readonly player: PlayerId;
-      readonly targets: readonly TargetRef[];
+      readonly targets: ChosenTargets;
     }
   | {
       /** Answers a pending `assign-combat-damage` decision (rule 510.1c —
@@ -270,6 +270,15 @@ export const actionPlayer = (action: Action): PlayerId => action.player;
  * A thing the player may legally do right now. `targetOptions[i]` lists every
  * legal target for target slot `i`, so a UI can highlight without guessing.
  */
+/**
+ * Chosen targets, one entry per declared slot. `null` marks an **optional**
+ * slot the player chose to leave empty (`TargetSpec` `{ kind: "optional" }` —
+ * "up to one target creature"); the engine turns it into a hole so an effect
+ * reading `ctx.targets[i]` sees `undefined`, which every effect already
+ * checks for. A `null` in a non-optional slot is rejected.
+ */
+export type ChosenTargets = readonly (TargetRef | null)[];
+
 export type LegalAction =
   | { readonly kind: "pass-priority" }
   | {
