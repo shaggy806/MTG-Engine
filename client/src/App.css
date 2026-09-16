@@ -94,6 +94,14 @@
   color: var(--text);
   border-color: var(--muted-dim);
 }
+.ts-menu .bot-speed {
+  margin-right: 6px;
+  font-size: 11px;
+}
+.ts-menu .bot-speed-option.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
 
 /* phase track — a compact pip row, meant to sit inline in .top-strip */
 .phase-steps {

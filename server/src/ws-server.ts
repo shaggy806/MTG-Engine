@@ -46,18 +46,40 @@ function broadcast(room: Room): void {
       seats,
       autoPassing: room.isAutoPassing(seat),
       skipManaOnly: room.isSkippingManaOnly(seat),
+      isHost: room.isHost(connection),
+      botSpeed: room.botSpeed,
     });
   }
+}
+
+/** A `room-joined` for one connection — `isHost` differs per recipient. */
+function roomJoined(room: Room | PendingRoom, connection: Connection): ServerMessage {
+  return {
+    type: "room-joined",
+    roomId: room.id,
+    seats: room.seatStatuses(),
+    isHost: room.isHost(connection),
+    botSpeed: room.botSpeed,
+  };
 }
 
 /** Every currently-connected seat of a still-waiting room gets a refreshed
  * seat list (no `state` — there's no `Game` yet), same as `broadcast` does
  * for a real `Room`. */
-function broadcastPending(room: PendingRoom): void {
-  const seats = room.seatStatuses();
-  for (const { connection } of room.connectedSeats()) {
-    connection.send({ type: "room-joined", roomId: room.id, seats });
+function broadcastPending(room: PendingRoom, except?: Connection): void {
+  const connections = room.connectedSeats().map((s) => s.connection);
+  // A host who hasn't picked a seat yet is running the table from the seat
+  // picker, and needs to see it change as much as anyone seated.
+  const host = room.unseatedHost();
+  if (host !== null) connections.push(host);
+  for (const connection of connections) {
+    if (connection !== except) connection.send(roomJoined(room, connection));
   }
+}
+
+/** Throws unless `connection` holds `room`'s host role — see `HostRole`. */
+function requireHost(room: Room | PendingRoom, connection: Connection, what: string): void {
+  if (!room.isHost(connection)) throw new Error(`only the host can ${what}`);
 }
 
 function requireRoom(manager: RoomManager, roomId: string): Room | PendingRoom {
@@ -163,18 +185,26 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
           // one. Without this, every "Create Room" click reused that same
           // constant and every game opened with an identical shuffle.
           const seed = message.seed ?? Math.floor(Math.random() * 0x100000000);
-          const room = manager.createPending(numPlayers, {
-            seed,
-            mulligans: true,
-            rules: { startingLife: 40, freeFirstMulligan: true },
-          });
+          const room = manager.createPending(
+            numPlayers,
+            {
+              seed,
+              mulligans: true,
+              rules: { startingLife: 40, freeFirstMulligan: true },
+            },
+            message.hostToken,
+          );
           send(ws, { type: "room-created", roomId: room.id });
           return;
         }
         case "join-room": {
           const room = requireRoom(manager, message.roomId);
           boundRoom = room;
-          send(ws, { type: "room-joined", roomId: room.id, seats: room.seatStatuses() });
+          room.bindHost(connection, message.hostToken);
+          send(ws, roomJoined(room, connection));
+          // The host coming back takes the role back from whoever was
+          // standing in, which everyone else's seat board shows.
+          if (room instanceof PendingRoom) broadcastPending(room, connection);
           return;
         }
         case "claim-seat": {
@@ -196,11 +226,7 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
               type: "error",
               message: err instanceof Error ? err.message : String(err),
             });
-            send(ws, {
-              type: "room-joined",
-              roomId: room.id,
-              seats: room.seatStatuses(),
-            });
+            send(ws, roomJoined(room, connection));
             return;
           }
           boundRoom = room;
@@ -211,6 +237,7 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
         case "add-bot": {
           const room = requireRoom(manager, message.roomId);
           try {
+            requireHost(room, connection, "add bots");
             room.addBot(message.seat, message.deck);
           } catch (err) {
             send(ws, {
@@ -226,14 +253,15 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
           // picker) isn't in `connectedSeats()`, so the broadcast above
           // never reaches them — refresh their picker directly, same as a
           // rejected `claim-seat` does.
-          if (room.seatOf(connection) === null) {
-            send(ws, { type: "room-joined", roomId: room.id, seats: room.seatStatuses() });
+          if (room.seatOf(connection) === null && !(room instanceof PendingRoom && room.unseatedHost() === connection)) {
+            send(ws, roomJoined(room, connection));
           }
           return;
         }
         case "set-bot-deck": {
           const room = requireRoom(manager, message.roomId);
           try {
+            requireHost(room, connection, "choose a bot's deck");
             room.setBotDeck(message.seat, message.deck);
           } catch (err) {
             send(ws, {
@@ -247,8 +275,8 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
           if (room instanceof PendingRoom) broadcastPending(room);
           // Same as `add-bot` above — a caller still on the seat picker
           // isn't in `connectedSeats()`, so refresh them directly.
-          if (room.seatOf(connection) === null) {
-            send(ws, { type: "room-joined", roomId: room.id, seats: room.seatStatuses() });
+          if (room.seatOf(connection) === null && !(room instanceof PendingRoom && room.unseatedHost() === connection)) {
+            send(ws, roomJoined(room, connection));
           }
           return;
         }
@@ -258,6 +286,7 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
           // once there's a `Game`, its turn order is dealt and fixed.
           const room = requirePendingRoom(manager, message.roomId);
           try {
+            requireHost(room, connection, "change the table size");
             if (message.type === "add-seat") room.addSeat();
             else room.removeSeat(message.seat);
           } catch (err) {
@@ -271,8 +300,8 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
           // Same as `add-bot` above: whoever resized the table may not hold a
           // seat here yet, so they aren't in `connectedSeats()` and the
           // broadcast above never reaches them.
-          if (room.seatOf(connection) === null) {
-            send(ws, { type: "room-joined", roomId: room.id, seats: room.seatStatuses() });
+          if (room.seatOf(connection) === null && room.unseatedHost() !== connection) {
+            send(ws, roomJoined(room, connection));
           }
           return;
         }
@@ -292,12 +321,24 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
         }
         case "start-game": {
           const room = requirePendingRoom(manager, message.roomId);
+          requireHost(room, connection, "start the game");
           if (!room.allReady()) {
             send(ws, { type: "error", message: "not everyone is ready yet" });
             return;
           }
           const activeRoom = tryPromote(ws, manager, room);
           if (activeRoom !== null) boundRoom = activeRoom;
+          return;
+        }
+        case "set-bot-speed": {
+          const room = requireRoom(manager, message.roomId);
+          requireHost(room, connection, "set the bot speed");
+          if (!["fast", "normal", "slow"].includes(message.speed)) {
+            throw new Error(`unknown bot speed: ${String(message.speed)}`);
+          }
+          room.setBotSpeed(message.speed);
+          if (room instanceof PendingRoom) broadcastPending(room);
+          else room.publish();
           return;
         }
         // Each of these settles the room, and settling publishes its own
@@ -355,7 +396,10 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
     });
 
     ws.on("close", () => {
-      if (boundRoom !== null) boundRoom.disconnect(connection);
+      if (boundRoom === null) return;
+      boundRoom.disconnect(connection);
+      // The host leaving hands the role to someone still here.
+      if (boundRoom instanceof PendingRoom) broadcastPending(boundRoom);
     });
   });
 }

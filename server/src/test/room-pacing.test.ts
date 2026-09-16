@@ -9,7 +9,7 @@ import { describe, expect, it } from "vitest";
 import { Game, autoSettle } from "engine";
 import { Room } from "../room.js";
 import type { Connection, RoomTimers } from "../room.js";
-import type { ServerMessage } from "../protocol.js";
+import type { BotSpeed, ServerMessage } from "../protocol.js";
 import { ALICE, BOB } from "../decks.js";
 
 /** A hand-cranked clock — `advance(ms)` fires whatever is due, so a test can
@@ -67,7 +67,7 @@ function watcher(room: () => Room, ackAll: boolean) {
 /** All-Forest decks: nothing is ever castable, so a bot's turn is a
  * predictable string of land drops and passes rather than whatever a shuffle
  * happens to deal. */
-function makePacedRoom(ackAll: boolean) {
+function makePacedRoom(ackAll: boolean, botSpeed: BotSpeed = "fast") {
   const clock = fakeClock();
   const forests = Array<string>(40).fill("Forest");
   const game = Game.create({
@@ -83,6 +83,9 @@ function makePacedRoom(ackAll: boolean) {
   const alice = watcher(() => room, ackAll);
   room = new Room("PACE1", game, {
     timers: clock.timers,
+    // No pause after a move is shown, so these tests are about the ack gate
+    // alone; the pause itself has its own tests below.
+    botSpeed,
     onUpdate: (r) => {
       const seats = r.connectedSeats();
       for (const { seat, connection } of seats) {
@@ -96,6 +99,8 @@ function makePacedRoom(ackAll: boolean) {
           seats: r.seatStatuses(),
           autoPassing: r.isAutoPassing(seat),
           skipManaOnly: r.isSkippingManaOnly(seat),
+          isHost: r.isHost(connection),
+          botSpeed: r.botSpeed,
         });
       }
     },
@@ -226,5 +231,69 @@ describe("Room pacing (realtime)", () => {
     expect(clock.pendingCount).toBeGreaterThan(0);
     room.dispose();
     expect(clock.pendingCount).toBe(0);
+  });
+
+  describe("bot speed", () => {
+    it("pauses after everyone has caught up, for as long as the speed says", () => {
+      const { room, clock, alice } = makePacedRoom(false, "normal");
+      room.addBot(BOB);
+      room.start();
+      room.ack(alice.connection, room.frameSeq);
+
+      room.requestPassTurn(alice.connection);
+      const before = alice.frames.length;
+      clock.advance(400);
+      room.ack(alice.connection, room.frameSeq);
+      // Caught up, but "normal" lets the move sit on screen first.
+      clock.advance(650);
+      expect(alice.frames.length).toBe(before);
+      clock.advance(100);
+      expect(alice.frames.length).toBeGreaterThan(before);
+    });
+
+    it("pauses longer on slow", () => {
+      const { room, clock, alice } = makePacedRoom(false, "slow");
+      room.addBot(BOB);
+      room.start();
+      room.ack(alice.connection, room.frameSeq);
+
+      room.requestPassTurn(alice.connection);
+      const before = alice.frames.length;
+      clock.advance(400);
+      room.ack(alice.connection, room.frameSeq);
+      clock.advance(1_500);
+      expect(alice.frames.length).toBe(before);
+      clock.advance(200);
+      expect(alice.frames.length).toBeGreaterThan(before);
+    });
+
+    it("isn't cut short by the ack timeout", () => {
+      const { room, clock, alice } = makePacedRoom(false, "slow");
+      room.addBot(BOB);
+      room.start();
+      room.ack(alice.connection, room.frameSeq);
+
+      room.requestPassTurn(alice.connection);
+      const before = alice.frames.length;
+      // A slow client catches up just before the 6s backstop would have
+      // fired; the pause still runs its full length after that.
+      clock.advance(5_900);
+      room.ack(alice.connection, room.frameSeq);
+      clock.advance(1_000);
+      expect(alice.frames.length).toBe(before);
+      clock.advance(700);
+      expect(alice.frames.length).toBeGreaterThan(before);
+    });
+
+    it("applies a changed speed to the next move", () => {
+      const { room, clock, alice } = makePacedRoom(true, "slow");
+      room.addBot(BOB);
+      room.start();
+      room.setBotSpeed("fast");
+      room.requestPassTurn(alice.connection);
+      const before = alice.frames.length;
+      clock.advance(400);
+      expect(alice.frames.length).toBeGreaterThan(before);
+    });
   });
 });

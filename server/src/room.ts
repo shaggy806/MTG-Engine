@@ -30,7 +30,8 @@
 
 import { Game, HeuristicBotController, actionPlayer, activePlayerOf, isSettled } from "engine";
 import type { Action, AwaitingDecision, ControllerView, GameState, PlayerController, PlayerId } from "engine";
-import type { SeatStatus, ServerMessage, WireDeck } from "./protocol.js";
+import { HostRole } from "./host.js";
+import type { BotSpeed, SeatStatus, ServerMessage, WireDeck } from "./protocol.js";
 
 export interface Connection {
   readonly send: (message: ServerMessage) => void;
@@ -80,6 +81,19 @@ const FRAME_ACK_TIMEOUT_MS = 6_000;
  * moves with nothing animatable in them (passing priority round a table,
  * say) still reads as separate moves rather than one blur. */
 const BOT_MIN_THINK_MS = 350;
+/**
+ * The host's bot speed, as a pause *after* every client has finished showing
+ * a bot's move and before the next one. On top of the animation wait rather
+ * than instead of it: a card play already holds the table for its whole
+ * animation, but attacks, blocks and a land drop in a row went by faster than
+ * a person could follow. `"fast"` is how rooms played before there was a
+ * setting.
+ */
+const BOT_LINGER_MS: Readonly<Record<BotSpeed, number>> = {
+  fast: 0,
+  normal: 700,
+  slow: 1_600,
+};
 
 const SETTLE_BUDGET = 10_000;
 const MAX_DISPLAY_NAME_LENGTH = 20;
@@ -115,6 +129,9 @@ export interface RoomOptions {
    */
   readonly pacing?: "realtime" | "immediate";
   readonly timers?: RoomTimers;
+  /** The waiting room's host role, carried across promotion. */
+  readonly host?: HostRole;
+  readonly botSpeed?: BotSpeed;
 }
 
 /** A bot move parked until the clients have finished showing the frame it
@@ -125,6 +142,8 @@ interface FrameGate {
   minElapsed: boolean;
   minHandle: unknown;
   timeoutHandle: unknown;
+  /** The bot-speed pause, once everyone has caught up. */
+  lingerHandle: unknown;
 }
 
 export class Room {
@@ -140,10 +159,14 @@ export class Room {
   private readonly timers: RoomTimers;
   private seq = 0;
   private gate: FrameGate | null = null;
+  readonly host: HostRole;
+  botSpeed: BotSpeed;
 
   constructor(id: string, game: Game, options: RoomOptions = {}) {
     this.id = id;
     this.game = game;
+    this.host = options.host ?? new HostRole(null);
+    this.botSpeed = options.botSpeed ?? "normal";
     this.onUpdate = options.onUpdate ?? (() => {});
     this.pacing = options.pacing ?? "realtime";
     this.timers = options.timers ?? realTimers;
@@ -192,7 +215,33 @@ export class Room {
       // The ready/start-game dance is behind us too — every seat that's
       // going to play is, definitionally, already in.
       ready: true,
+      isHost: s.connection !== null && s.connection === this.hostConnection(),
     }));
+  }
+
+  private humanSeats(): Seat[] {
+    return this.seats.filter((s) => !this.bots.has(s.player));
+  }
+
+  private hostConnection(): Connection | null {
+    return this.host.current(this.humanSeats());
+  }
+
+  /** Whether `connection` may take a host-only action — see `HostRole`. */
+  isHost(connection: Connection): boolean {
+    return this.host.allows(connection, this.humanSeats());
+  }
+
+  /** Binds `connection` as the host if it presents the room's host token. */
+  bindHost(connection: Connection, hostToken: string | undefined): void {
+    this.host.bind(connection, hostToken);
+  }
+
+  /** Takes effect from the next bot move; a move already waiting keeps the
+   * pause it started with. */
+  setBotSpeed(speed: BotSpeed): void {
+    this.botSpeed = speed;
+    this.lastActivityAt = Date.now();
   }
 
   /** Fills `player`'s seat with a basic heuristic bot instead of a human
@@ -512,7 +561,13 @@ export class Room {
    * with `FRAME_ACK_TIMEOUT_MS` as a backstop for a seat that has gone
    * quiet. */
   private holdForClients(run: () => void): void {
-    const gate: FrameGate = { run, minElapsed: false, minHandle: null, timeoutHandle: null };
+    const gate: FrameGate = {
+      run,
+      minElapsed: false,
+      minHandle: null,
+      timeoutHandle: null,
+      lingerHandle: null,
+    };
     this.gate = gate;
     gate.minHandle = this.timers.setTimeout(() => {
       gate.minHandle = null;
@@ -540,7 +595,22 @@ export class Room {
   private tryOpenGate(): void {
     const gate = this.gate;
     if (gate === null || !gate.minElapsed || !this.everyoneCaughtUp()) return;
-    this.openGate();
+    if (gate.lingerHandle !== null) return; // already pausing
+    const linger = BOT_LINGER_MS[this.botSpeed];
+    if (linger === 0) {
+      this.openGate();
+      return;
+    }
+    // Everyone has seen the move; the ack timeout has done its job, and
+    // shouldn't cut the pause short.
+    if (gate.timeoutHandle !== null) {
+      this.timers.clearTimeout(gate.timeoutHandle);
+      gate.timeoutHandle = null;
+    }
+    gate.lingerHandle = this.timers.setTimeout(() => {
+      gate.lingerHandle = null;
+      this.openGate();
+    }, linger);
   }
 
   private openGate(): void {
@@ -549,6 +619,7 @@ export class Room {
     this.gate = null;
     if (gate.minHandle !== null) this.timers.clearTimeout(gate.minHandle);
     if (gate.timeoutHandle !== null) this.timers.clearTimeout(gate.timeoutHandle);
+    if (gate.lingerHandle !== null) this.timers.clearTimeout(gate.lingerHandle);
     gate.run();
   }
 
@@ -561,6 +632,7 @@ export class Room {
   }
 
   disconnect(connection: Connection): void {
+    this.host.drop(connection);
     const seat = this.seats.find((s) => s.connection === connection);
     if (seat !== undefined) {
       seat.connection = null;
@@ -578,6 +650,7 @@ export class Room {
     this.gate = null;
     if (gate.minHandle !== null) this.timers.clearTimeout(gate.minHandle);
     if (gate.timeoutHandle !== null) this.timers.clearTimeout(gate.timeoutHandle);
+    if (gate.lingerHandle !== null) this.timers.clearTimeout(gate.lingerHandle);
   }
 
   /** Every currently-connected seat, for pushing each its own redacted view. */

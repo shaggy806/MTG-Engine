@@ -56,7 +56,17 @@ export interface SeatStatus {
    * the room is promoted to a real `Room` (the concept is behind us by
    * then). */
   readonly ready: boolean;
+  /** This seat's connection currently holds the host role (see `HostRole`).
+   * `false` for every seat when the host hasn't claimed one. */
+  readonly isHost: boolean;
 }
+
+/**
+ * How long a room lets a bot's move sit on screen before the next one — a
+ * pause on top of waiting for every client to finish animating it. Set by the
+ * host (`set-bot-speed`); `"normal"` by default.
+ */
+export type BotSpeed = "fast" | "normal" | "slow";
 
 export type ClientMessage =
   | {
@@ -68,8 +78,18 @@ export type ClientMessage =
        * a parameter for scripts and tests that want a 3-4 player room in one
        * step. */
       readonly players?: number;
+      /** A secret the creating client keeps and presents on `join-room` to be
+       * this room's host (see `HostRole`). Omitted means nobody is bound as
+       * host, and the role falls to the first connected human seat. */
+      readonly hostToken?: string;
     }
-  | { readonly type: "join-room"; readonly roomId: string }
+  | {
+      readonly type: "join-room";
+      readonly roomId: string;
+      /** The token from this room's `create-room`, if this client created it
+       * — binds this connection as the host. */
+      readonly hostToken?: string;
+    }
   | {
       readonly type: "claim-seat";
       readonly roomId: string;
@@ -96,8 +116,8 @@ export type ClientMessage =
       readonly ready?: boolean;
     }
   | {
-      /** Fills an open seat with a basic heuristic bot instead of a human —
-       * anyone in the room can do this to any still-open seat. Omitted
+      /** Fills an open seat with a basic heuristic bot instead of a human.
+       * Host only. Omitted
        * `deck` falls back to that seat's positional starter deck, same as an
        * omitted `deck` on `claim-seat`. */
       readonly type: "add-bot";
@@ -108,7 +128,7 @@ export type ClientMessage =
   | {
       /** Changes which deck an already-bot-filled seat is bringing — only
        * meaningful before the room's `Game` exists (a `PendingRoom`); once
-       * promoted, decks are baked into the game and can't change. */
+       * promoted, decks are baked into the game and can't change. Host only. */
       readonly type: "set-bot-deck";
       readonly roomId: string;
       readonly seat: PlayerId;
@@ -119,16 +139,14 @@ export type ClientMessage =
        * board's "Add seat" tile. How big the table is used to be answered on
        * the landing page, before anyone had seen a seat; it's asked here
        * instead, where the seats are visible and a wrong guess costs one
-       * click to fix. Rejected once the table is full (four seats). Anyone in
-       * the room may do this, same as `add-bot`. */
+       * click to fix. Rejected once the table is full (four seats). Host only. */
       readonly type: "add-seat";
       readonly roomId: string;
     }
   | {
       /** Drops a seat from a room that hasn't started yet. Rejected below two
        * seats, and for a seat a human has claimed — that player leaving is
-       * theirs to do. An open or bot-filled seat is fair game for anyone in
-       * the room, on the same reasoning as `add-bot` filling one. */
+       * theirs to do. Host only. */
       readonly type: "remove-seat";
       readonly roomId: string;
       readonly seat: PlayerId;
@@ -143,11 +161,17 @@ export type ClientMessage =
     }
   | {
       /** Explicitly starts the game once every seat is filled (bot or
-       * claimed) and every human seat has readied up — anyone in the room
-       * may call this, not just a claimed seat. Rejected while any seat
-       * still isn't ready. */
+       * claimed) and every human seat has readied up. Host only. Rejected
+       * while any seat still isn't ready. */
       readonly type: "start-game";
       readonly roomId: string;
+    }
+  | {
+      /** Sets how fast this room's bots play. Host only; allowed before and
+       * during the game, and takes effect from the next bot move. */
+      readonly type: "set-bot-speed";
+      readonly roomId: string;
+      readonly speed: BotSpeed;
     }
   | {
       readonly type: "dispatch";
@@ -206,6 +230,10 @@ export type ServerMessage =
       readonly type: "room-joined";
       readonly roomId: string;
       readonly seats: readonly SeatStatus[];
+      /** Whether *this* connection holds the host role — true for a host who
+       * hasn't claimed a seat, which no `SeatStatus.isHost` can say. */
+      readonly isHost: boolean;
+      readonly botSpeed: BotSpeed;
     }
   | {
       /** Pushed to every connected seat after a room is created/joined or any dispatch settles. */
@@ -227,5 +255,8 @@ export type ServerMessage =
       readonly autoPassing: boolean;
       /** Whether *this* seat is currently skipping mana-only priority windows. */
       readonly skipManaOnly: boolean;
+      /** Whether *this* connection holds the host role. */
+      readonly isHost: boolean;
+      readonly botSpeed: BotSpeed;
     }
   | { readonly type: "error"; readonly message: string };

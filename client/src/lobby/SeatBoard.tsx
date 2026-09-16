@@ -9,6 +9,7 @@ import type { PickableDeck } from '../deck-builder/decks.ts'
 import { findCardDef } from '../ui/defToVisible.ts'
 import { cssUrl, resolveArtUrl } from '../ui/art.ts'
 import { DeckPickerModal } from './DeckPickerModal.tsx'
+import { BotSpeedControl } from '../ui/BotSpeedControl.tsx'
 import './lobby.css'
 
 type LocalDeck = {
@@ -57,6 +58,12 @@ const toWire = (d: LocalDeck): WireDeck => ({
  * (`DeckPickerModal`) picks from decks already on this browser; its own
  * "Build or import a deck" link carries `?room=<code>` along so the deck
  * builder's own back link can return here instead.
+ *
+ * Everything that shapes the table for everyone — seats, bots and their
+ * decks, bot speed, starting — is the host's (`game.isHost`, the room's
+ * creator); everyone else sees those controls' results but not the controls,
+ * since the server refuses them. Your own seat, deck and ready state are
+ * always yours.
  */
 export function SeatBoard({ game }: { readonly game: NetworkGame }) {
   const joined = game.seat !== null
@@ -109,7 +116,9 @@ export function SeatBoard({ game }: { readonly game: NetworkGame }) {
   }
 
   const allReady = game.seats.every((s) => s.ready)
-  const canAddSeat = game.seats.length < MAX_SEATS
+  const host = game.isHost
+  const canAddSeat = host && game.seats.length < MAX_SEATS
+  const hostSeat = game.seats.find((s) => s.isHost)
 
   return (
     <div className="seat-board" style={{ '--seat-count': game.seats.length } as CSSProperties}>
@@ -141,12 +150,12 @@ export function SeatBoard({ game }: { readonly game: NetworkGame }) {
           // still-open or bot-filled seat is editable by anyone at any time
           // (a bot has no ready state of its own to gate on); a human's
           // seat other than mine is never editable.
-          const deckEditable = isMySeat ? !amReady : !s.claimed
+          const deckEditable = isMySeat ? !amReady : host && !s.claimed
           // Nobody is sitting here, and dropping it wouldn't take the table
           // below two. `isMySeat` also covers the seat I haven't claimed yet
           // but would take on "Ready" — removing the chair out from under
           // myself just shunts me to the next one, which reads as a bug.
-          const removable = !s.claimed && !isMySeat && game.seats.length > MIN_SEATS
+          const removable = host && !s.claimed && !isMySeat && game.seats.length > MIN_SEATS
 
           return (
             <div
@@ -158,6 +167,7 @@ export function SeatBoard({ game }: { readonly game: NetworkGame }) {
                   {s.claimed || s.isBot ? playerLabel(s.player, game.seats) : `Player ${i + 1}`}
                   {isMySeat && joined ? ' (you)' : ''}
                 </span>
+                {s.isHost ? <span className="seat-host-badge">Host</span> : null}
                 <span className="seat-panel-tag">
                   {s.isBot
                     ? 'Bot'
@@ -205,7 +215,7 @@ export function SeatBoard({ game }: { readonly game: NetworkGame }) {
                     </button>
                   </>
                 )
-              ) : !s.claimed && !s.isBot ? (
+              ) : host && !s.claimed && !s.isBot ? (
                 <button type="button" className="seat-panel-add-bot" onClick={() => game.addBot(s.player)}>
                   Add bot (default deck)
                 </button>
@@ -223,10 +233,19 @@ export function SeatBoard({ game }: { readonly game: NetworkGame }) {
       </div>
 
       <div className="seat-board-footer">
-        <button type="button" className="start-game-btn" disabled={!allReady} onClick={game.startGame}>
-          Start Game
-        </button>
-        {!allReady ? <p className="muted seat-board-hint">Waiting for everyone to ready up…</p> : null}
+        <BotSpeedControl speed={game.botSpeed} editable={host} onChange={game.setBotSpeed} />
+        {host ? (
+          <button type="button" className="start-game-btn" disabled={!allReady} onClick={game.startGame}>
+            Start Game
+          </button>
+        ) : null}
+        {!allReady ? (
+          <p className="muted seat-board-hint">Waiting for everyone to ready up…</p>
+        ) : !host ? (
+          <p className="muted seat-board-hint">
+            Waiting for {hostSeat ? playerLabel(hostSeat.player, game.seats) : 'the host'} to start the game…
+          </p>
+        ) : null}
       </div>
 
       {pickerSeat !== null ? (

@@ -129,3 +129,25 @@ h3 {
   font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
   font-variant-numeric: tabular-nums;
 }
+
+/* The host's bot-speed toggle (ui/BotSpeedControl.tsx) — shared by the seat
+   board and the in-game top strip, hence here rather than in either page's
+   stylesheet. */
+.bot-speed {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+.bot-speed-label {
+  color: var(--muted);
+  margin-right: 4px;
+}
+.bot-speed-option {
+  padding: 3px 10px;
+  font-size: 12px;
+}
+.bot-speed-option.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}

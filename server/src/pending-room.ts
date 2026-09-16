@@ -19,7 +19,8 @@
 import { createDefaultRegistry } from "engine";
 import type { DeckList, GameConfig, PlayerId } from "engine";
 import type { Connection } from "./room.js";
-import type { SeatStatus, WireDeck } from "./protocol.js";
+import { HostRole } from "./host.js";
+import type { BotSpeed, SeatStatus, WireDeck } from "./protocol.js";
 import { SEATS } from "./decks.js";
 
 export type PendingDeck = WireDeck;
@@ -135,10 +136,14 @@ export class PendingRoom {
   private readonly config: PendingGameConfig;
   private readonly seats: PendingSeat[];
   private lastActivityAt: number;
+  /** Carried onto the promoted `Room` — see `HostRole`. */
+  readonly host: HostRole;
+  botSpeed: BotSpeed = "normal";
 
-  constructor(id: string, players: number, config: PendingGameConfig) {
+  constructor(id: string, players: number, config: PendingGameConfig, hostToken?: string) {
     this.id = id;
     this.config = config;
+    this.host = new HostRole(hostToken ?? null);
     this.seats = SEATS.slice(0, players).map((s) => emptySeat(s.id));
     this.lastActivityAt = Date.now();
   }
@@ -166,7 +171,36 @@ export class PendingRoom {
                   : (s.deck.printings?.[s.deck.commander] ?? null),
             },
       ready: s.isBot || s.ready,
+      isHost: s.connection !== null && s.connection === this.hostConnection(),
     }));
+  }
+
+  private humanSeats(): PendingSeat[] {
+    return this.seats.filter((s) => !s.isBot);
+  }
+
+  private hostConnection(): Connection | null {
+    return this.host.current(this.humanSeats());
+  }
+
+  /** Whether `connection` may take a host-only action — see `HostRole`. */
+  isHost(connection: Connection): boolean {
+    return this.host.allows(connection, this.humanSeats());
+  }
+
+  bindHost(connection: Connection, hostToken: string | undefined): void {
+    this.host.bind(connection, hostToken);
+  }
+
+  setBotSpeed(speed: BotSpeed): void {
+    this.botSpeed = speed;
+    this.lastActivityAt = Date.now();
+  }
+
+  /** The host's connection when they haven't claimed a seat — everyone
+   * `connectedSeats` misses who still needs the waiting room kept current. */
+  unseatedHost(): Connection | null {
+    return this.host.unseatedConnection(this.seats);
   }
 
   private seatFor(player: PlayerId): PendingSeat {
@@ -244,9 +278,8 @@ export class PendingRoom {
   }
 
   /** Drops a seat. A seat a human holds is never pulled out from under them
-   * — leaving is that player's own call — but an open or bot-filled one may
-   * be removed by anyone in the room, on the same reasoning that lets anyone
-   * fill one with `addBot`. */
+   * — leaving is that player's own call — but the host may remove an open or
+   * bot-filled one. */
   removeSeat(player: PlayerId): void {
     const index = this.seats.findIndex((s) => s.player === player);
     if (index === -1) throw new Error(`no such seat: ${player}`);
@@ -296,6 +329,7 @@ export class PendingRoom {
   }
 
   disconnect(connection: Connection): void {
+    this.host.drop(connection);
     const seat = this.seats.find((s) => s.connection === connection);
     if (seat !== undefined) seat.connection = null;
   }

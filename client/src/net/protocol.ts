@@ -51,11 +51,24 @@ export interface SeatStatus {
    * (`start-game`), not the instant the last seat is filled. Always `true`
    * once the room is promoted to a real game. */
   readonly ready: boolean
+  /** This seat's player currently holds the host role. `false` for every
+   * seat while the host hasn't claimed one. */
+  readonly isHost: boolean
 }
 
+/** How long a bot's move sits on screen before its next one — the host's
+ * setting. `'normal'` by default. */
+export type BotSpeed = 'fast' | 'normal' | 'slow'
+
 export type ClientMessage =
-  | { readonly type: 'create-room'; readonly seed?: number; readonly players?: number }
-  | { readonly type: 'join-room'; readonly roomId: string }
+  | {
+      readonly type: 'create-room'
+      readonly seed?: number
+      readonly players?: number
+      /** Kept by the creating tab and presented on `join-room` to be host. */
+      readonly hostToken?: string
+    }
+  | { readonly type: 'join-room'; readonly roomId: string; readonly hostToken?: string }
   | {
       readonly type: 'claim-seat'
       readonly roomId: string
@@ -124,10 +137,16 @@ export type ClientMessage =
     }
   | {
       /** Explicitly starts the game once every seat is filled (bot or
-       * claimed) and every human seat has readied up — anyone in the room
-       * may call this. Rejected while any seat still isn't ready. */
+       * claimed) and every human seat has readied up. Host only. Rejected
+       * while any seat still isn't ready. */
       readonly type: 'start-game'
       readonly roomId: string
+    }
+  | {
+      /** Host only; before or during the game. */
+      readonly type: 'set-bot-speed'
+      readonly roomId: string
+      readonly speed: BotSpeed
     }
   | {
       readonly type: 'dispatch'
@@ -209,6 +228,10 @@ export type ServerMessage =
       readonly type: 'room-joined'
       readonly roomId: string
       readonly seats: readonly SeatStatus[]
+      /** Whether *this* client holds the host role — including a host who
+       * hasn't taken a seat. */
+      readonly isHost: boolean
+      readonly botSpeed: BotSpeed
     }
   | {
       readonly type: 'state'
@@ -223,5 +246,7 @@ export type ServerMessage =
       readonly seats: readonly SeatStatus[]
       readonly autoPassing: boolean
       readonly skipManaOnly: boolean
+      readonly isHost: boolean
+      readonly botSpeed: BotSpeed
     }
   | { readonly type: 'error'; readonly message: string }

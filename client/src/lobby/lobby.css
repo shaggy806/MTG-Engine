@@ -264,6 +264,16 @@
   font-size: 12px;
   margin: 0;
 }
+.seat-host-badge {
+  flex: none;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 1px 6px;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  color: var(--accent);
+}
 
 /* the deck-choice popup */
 .deck-picker-overlay {

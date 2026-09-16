@@ -10,8 +10,8 @@ describe("PendingRoom", () => {
   it("starts with every seat unclaimed and not ready", () => {
     const room = pendingRoom();
     expect(room.seatStatuses()).toEqual([
-      { player: ALICE, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: false },
-      { player: BOB, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: false },
+      { player: ALICE, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: false, isHost: false },
+      { player: BOB, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: false, isHost: false },
     ]);
     expect(room.isReady()).toBe(false);
     expect(room.allReady()).toBe(false);

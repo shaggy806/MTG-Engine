@@ -28,6 +28,7 @@ import { CommanderTile } from './ui/CommanderTile.tsx'
 import { AbilityMenu } from './ui/AbilityMenu.tsx'
 import { Stack } from './ui/Stack.tsx'
 import { EventLog } from './ui/EventLog.tsx'
+import { BotSpeedControl } from './ui/BotSpeedControl.tsx'
 import { ZoneViewer } from './ui/ZoneViewer.tsx'
 import { CreatureTypePicker } from './ui/CreatureTypePicker.tsx'
 import { SeatBoard } from './lobby/SeatBoard.tsx'
@@ -349,6 +350,15 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
               : `${playerLabel(actingPlayer(view) ?? seat, game.seats)} to act`}
         </span>
         <div className="ts-menu">
+          {/* Only the host sets it, and only a table with bots needs it. */}
+          {game.isHost && game.seats.some((s) => s.isBot) ? (
+            <BotSpeedControl
+              className="ts-bot-speed"
+              speed={game.botSpeed}
+              editable
+              onChange={game.setBotSpeed}
+            />
+          ) : null}
           <button type="button" onClick={() => setShowHistory(true)}>
             History
           </button>

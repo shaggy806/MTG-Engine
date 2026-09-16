@@ -106,8 +106,9 @@ describe("room server (end to end over WebSocket)", () => {
         // starter deck (see `PendingRoom.claimSeat`).
         deck: { name: SEATS[0].name, commander: SEATS[0].commander ?? null, commanderPrinting: null },
         ready: false,
+        isHost: true,
       },
-      { player: BOB, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: false },
+      { player: BOB, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: false, isHost: false },
     ]);
 
     bobWs.send(JSON.stringify({ type: "join-room", roomId }));
@@ -462,6 +463,7 @@ describe("room server (end to end over WebSocket)", () => {
       isBot: true,
       deck: { name: SEATS[1].name, commander: SEATS[1].commander ?? null, commanderPrinting: null },
       ready: true,
+      isHost: false,
     });
   });
 

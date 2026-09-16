@@ -53,8 +53,8 @@ describe("Room", () => {
   it("starts with both seats unclaimed and offline", () => {
     const room = makeRoom();
     expect(room.seatStatuses()).toEqual([
-      { player: ALICE, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: true },
-      { player: BOB, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: true },
+      { player: ALICE, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: true, isHost: false },
+      { player: BOB, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: true, isHost: false },
     ]);
   });
 
@@ -63,8 +63,8 @@ describe("Room", () => {
     const { connection } = fakeConnection();
     room.claimSeat(ALICE, "token-a", connection);
     expect(room.seatStatuses()).toEqual([
-      { player: ALICE, claimed: true, online: true, displayName: null, isBot: false, deck: null, ready: true },
-      { player: BOB, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: true },
+      { player: ALICE, claimed: true, online: true, displayName: null, isBot: false, deck: null, ready: true, isHost: true },
+      { player: BOB, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: true, isHost: false },
     ]);
     expect(room.seatOf(connection)).toBe(ALICE);
   });
@@ -81,6 +81,9 @@ describe("Room", () => {
       isBot: false,
       deck: null,
       ready: true,
+      // Nobody created this room with a host token, so the role falls to
+      // the first connected human seat (see `HostRole`).
+      isHost: true,
     });
   });
 
@@ -317,8 +320,8 @@ describe("Room", () => {
     room.disconnect(connection);
     expect(room.seatOf(connection)).toBeNull();
     expect(room.seatStatuses()).toEqual([
-      { player: ALICE, claimed: true, online: false, displayName: null, isBot: false, deck: null, ready: true },
-      { player: BOB, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: true },
+      { player: ALICE, claimed: true, online: false, displayName: null, isBot: false, deck: null, ready: true, isHost: false },
+      { player: BOB, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: true, isHost: false },
     ]);
   });
 
@@ -333,8 +336,8 @@ describe("Room", () => {
 
     expect(room.seatOf(second)).toBe(ALICE);
     expect(room.seatStatuses()).toEqual([
-      { player: ALICE, claimed: true, online: true, displayName: null, isBot: false, deck: null, ready: true },
-      { player: BOB, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: true },
+      { player: ALICE, claimed: true, online: true, displayName: null, isBot: false, deck: null, ready: true, isHost: true },
+      { player: BOB, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: true, isHost: false },
     ]);
   });
 
@@ -355,8 +358,8 @@ describe("Room", () => {
       const room = makeRoom();
       room.addBot(BOB);
       expect(room.seatStatuses()).toEqual([
-        { player: ALICE, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: true },
-        { player: BOB, claimed: false, online: false, displayName: null, isBot: true, deck: null, ready: true },
+        { player: ALICE, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: true, isHost: false },
+        { player: BOB, claimed: false, online: false, displayName: null, isBot: true, deck: null, ready: true, isHost: false },
       ]);
     });
 

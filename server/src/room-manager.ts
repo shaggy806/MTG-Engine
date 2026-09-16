@@ -33,10 +33,10 @@ export class RoomManager {
    * whoever claims it connects (see `PendingRoom`'s own comment). Call
    * `promote` once `get(id).isReady()` (a `PendingRoom` only) to actually
    * build the `Game` and turn it into a real `Room`. */
-  createPending(players: number, config: PendingGameConfig): PendingRoom {
+  createPending(players: number, config: PendingGameConfig, hostToken?: string): PendingRoom {
     let id = randomRoomId();
     while (this.rooms.has(id)) id = randomRoomId();
-    const room = new PendingRoom(id, players, config);
+    const room = new PendingRoom(id, players, config, hostToken);
     this.rooms.set(id, room);
     return room;
   }
@@ -53,7 +53,11 @@ export class RoomManager {
     if (!pending.isReady()) throw new Error(`room ${id} isn't ready to start yet`);
 
     const game = Game.create(pending.toGameConfig());
-    const room = new Room(id, game, { onUpdate: (r) => this.onRoomUpdate(r) });
+    const room = new Room(id, game, {
+      onUpdate: (r) => this.onRoomUpdate(r),
+      host: pending.host,
+      botSpeed: pending.botSpeed,
+    });
     for (const claim of pending.claims()) {
       room.claimSeat(claim.player, claim.clientToken, claim.connection, claim.displayName ?? undefined);
     }

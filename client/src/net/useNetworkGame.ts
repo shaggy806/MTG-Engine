@@ -15,7 +15,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Action, LegalAction, ObjectId, PlayerId, PlayerView } from 'engine'
 import type { Frame } from '../game/usePlayback.ts'
-import type { ClientMessage, SeatStatus, ServerMessage, WireDeck } from './protocol.ts'
+import type { BotSpeed, ClientMessage, SeatStatus, ServerMessage, WireDeck } from './protocol.ts'
 
 const SERVER_URL =
   (import.meta.env.VITE_SERVER_URL as string | undefined) ??
@@ -69,6 +69,26 @@ function storeSeat(roomId: string, seat: PlayerId, clientToken: string): void {
   } catch {
     // A private window or blocked storage just skips persistence — the seat
     // picker still works, it just won't auto-reclaim on the next load.
+  }
+}
+
+/** The host token for a room this tab created (see the server's `HostRole`).
+ * Per-tab for the same reason the seat token is: two tabs are two players. */
+const hostKey = (roomId: string): string => `mtg-engine:host:${roomId}`
+
+function loadHostToken(roomId: string): string | undefined {
+  try {
+    return window.sessionStorage.getItem(hostKey(roomId)) ?? undefined
+  } catch {
+    return undefined
+  }
+}
+
+function storeHostToken(roomId: string, token: string): void {
+  try {
+    window.sessionStorage.setItem(hostKey(roomId), token)
+  } catch {
+    // Blocked storage: this tab is still host until it reconnects.
   }
 }
 
@@ -129,6 +149,13 @@ export interface NetworkGame {
   readonly autoPassing: boolean
   /** Whether *my* seat is currently skipping mana-only priority windows. */
   readonly skipManaOnly: boolean
+  /** Whether this client runs the room: sizes the table, fills bot seats,
+   * starts the game, sets bot speed. The room's creator, or a stand-in while
+   * they're away. */
+  readonly isHost: boolean
+  readonly botSpeed: BotSpeed
+  /** Host only — the server refuses anyone else. */
+  setBotSpeed: (speed: BotSpeed) => void
   /** Changes whenever a new state arrives — a stable signature for `key`ing UI. */
   readonly revision: number
   /** Tells the server this client has finished showing frame `seq`. The room
@@ -190,6 +217,9 @@ export function useNetworkGame(): NetworkGame {
    * only written to `sessionStorage` once confirmed, so a rejected claim never
    * poisons the auto-reclaim on the next load. */
   const pendingClaimRef = useRef<{ seat: PlayerId; clientToken: string } | null>(null)
+  /** The host token sent with `create-room`, kept until `room-created` says
+   * which room it belongs to. */
+  const pendingHostTokenRef = useRef<string | null>(null)
   const unmountedRef = useRef(false)
   const reconnectAttemptRef = useRef(0)
   const reconnectTimeoutRef = useRef<number | null>(null)
@@ -206,6 +236,8 @@ export function useNetworkGame(): NetworkGame {
   const [frame, setFrame] = useState<Frame | null>(null)
   const [autoPassing, setAutoPassing] = useState(false)
   const [skipManaOnly, setSkipManaOnly] = useState(false)
+  const [isHost, setIsHost] = useState(false)
+  const [botSpeed, setBotSpeedState] = useState<BotSpeed>('normal')
   const view = frame?.view ?? null
   const actions = frame?.actions ?? EMPTY_ACTIONS
 
@@ -222,7 +254,7 @@ export function useNetworkGame(): NetworkGame {
     const joinRoomId = (id: string) => {
       joiningRef.current = true
       roomIdRef.current = id
-      send({ type: 'join-room', roomId: id })
+      send({ type: 'join-room', roomId: id, hostToken: loadHostToken(id) })
     }
 
     ws.onopen = () => {
@@ -243,6 +275,10 @@ export function useNetworkGame(): NetworkGame {
       const message = JSON.parse(event.data as string) as ServerMessage
       switch (message.type) {
         case 'room-created': {
+          if (pendingHostTokenRef.current !== null) {
+            storeHostToken(message.roomId, pendingHostTokenRef.current)
+            pendingHostTokenRef.current = null
+          }
           roomIdRef.current = message.roomId
           setRoomId(message.roomId)
           window.history.replaceState(null, '', roomUrl(message.roomId))
@@ -254,6 +290,8 @@ export function useNetworkGame(): NetworkGame {
           roomIdRef.current = message.roomId
           setRoomId(message.roomId)
           setSeats(message.seats)
+          setIsHost(message.isHost)
+          setBotSpeedState(message.botSpeed)
           const pending = pendingClaimRef.current
           if (pending) {
             // My own claim-seat (just now, or the auto-reclaim below on an
@@ -302,6 +340,8 @@ export function useNetworkGame(): NetworkGame {
           setFrame({ seq: message.seq, view: message.view, actions: message.actions })
           setAutoPassing(message.autoPassing)
           setSkipManaOnly(message.skipManaOnly)
+          setIsHost(message.isHost)
+          setBotSpeedState(message.botSpeed)
           setStatus('playing')
           return
         }
@@ -365,7 +405,11 @@ export function useNetworkGame(): NetworkGame {
   }, [openSocket])
 
   const createRoom = useCallback(
-    (seed?: number, players?: number) => send({ type: 'create-room', seed, players }),
+    (seed?: number, players?: number) => {
+      const hostToken = newClientToken()
+      pendingHostTokenRef.current = hostToken
+      send({ type: 'create-room', seed, players, hostToken })
+    },
     [send],
   )
 
@@ -374,7 +418,16 @@ export function useNetworkGame(): NetworkGame {
       joiningRef.current = true
       roomIdRef.current = id
       window.history.replaceState(null, '', roomUrl(id))
-      send({ type: 'join-room', roomId: id })
+      send({ type: 'join-room', roomId: id, hostToken: loadHostToken(id) })
+    },
+    [send],
+  )
+
+  const setBotSpeed = useCallback(
+    (speed: BotSpeed) => {
+      const id = roomIdRef.current
+      if (id === null) return
+      send({ type: 'set-bot-speed', roomId: id, speed })
     },
     [send],
   )
@@ -524,6 +577,9 @@ export function useNetworkGame(): NetworkGame {
     actions,
     autoPassing,
     skipManaOnly,
+    isHost,
+    botSpeed,
+    setBotSpeed,
     revision: frame?.seq ?? 0,
     ackFrame,
     createRoom,
