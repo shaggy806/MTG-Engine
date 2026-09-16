@@ -5,6 +5,16 @@
 
 import type { Action, LegalAction, PlayerId, PlayerView } from "engine";
 
+/** A deck as it travels over the wire — `claim-seat`, `add-bot`, and
+ * `set-bot-deck` all carry one of these. `name` is a display label only (the
+ * client's local deck name, or a starter deck's name); nothing server-side
+ * keys off it. */
+export interface WireDeck {
+  readonly cards: readonly string[];
+  readonly commander?: string;
+  readonly name?: string;
+}
+
 export interface SeatStatus {
   readonly player: PlayerId;
   /** Someone has claimed this seat (has a `clientToken` on file), regardless
@@ -19,6 +29,20 @@ export interface SeatStatus {
   /** This seat is played by a basic heuristic bot, not a human — never
    * `claimed`/`online`. */
   readonly isBot: boolean;
+  /** The deck this seat is bringing, so every device in the room (not just
+   * this seat's own) can show it on the seat-picker screen — `null` before a
+   * `PendingRoom` seat has resolved one (never true once `claimed` or
+   * `isBot`, both of which always resolve a deck immediately). Always `null`
+   * once the room is promoted to a real `Room`; nothing needs it once the
+   * game itself is visible. */
+  readonly deck: { readonly name: string; readonly commander: string | null } | null;
+  /** This seat has signaled it's ready to start (`set-ready`) — a bot seat
+   * is always ready, since there's no human decision to wait on. The room
+   * only promotes once every seat is ready (`start-game`), not the instant
+   * the last seat is filled — see `PendingRoom.allReady`. Always `true` once
+   * the room is promoted to a real `Room` (the concept is behind us by
+   * then). */
+  readonly ready: boolean;
 }
 
 export type ClientMessage =
@@ -45,14 +69,49 @@ export type ClientMessage =
        * Only meaningful the first time a seat is claimed: the room's `Game`
        * doesn't exist yet at that point (see `PendingRoom`), so there's
        * nothing here to re-deal even if a later reconnect omitted it. */
-      readonly deck?: { readonly cards: readonly string[]; readonly commander?: string };
+      readonly deck?: WireDeck;
+      /** Sets this seat's ready state as part of the same claim — lets the
+       * seat-picker's "Ready" button claim-and-ready in one round trip the
+       * first time a seat is filled. Omitted leaves `ready` at whatever it
+       * already was (`false` for a brand new seat). A reclaim that also
+       * changes `deck` is rejected while the seat is currently ready — see
+       * `PendingRoom.claimSeat`; un-ready first (`set-ready`). */
+      readonly ready?: boolean;
     }
   | {
       /** Fills an open seat with a basic heuristic bot instead of a human —
-       * anyone in the room can do this to any still-open seat. */
+       * anyone in the room can do this to any still-open seat. Omitted
+       * `deck` falls back to that seat's positional starter deck, same as an
+       * omitted `deck` on `claim-seat`. */
       readonly type: "add-bot";
       readonly roomId: string;
       readonly seat: PlayerId;
+      readonly deck?: WireDeck;
+    }
+  | {
+      /** Changes which deck an already-bot-filled seat is bringing — only
+       * meaningful before the room's `Game` exists (a `PendingRoom`); once
+       * promoted, decks are baked into the game and can't change. */
+      readonly type: "set-bot-deck";
+      readonly roomId: string;
+      readonly seat: PlayerId;
+      readonly deck: WireDeck;
+    }
+  | {
+      /** Toggles the caller's own already-claimed seat between ready and not
+       * — the seat-picker's "Ready"/"Un-ready" button once a deck's already
+       * locked in. Only valid before the room's game exists. */
+      readonly type: "set-ready";
+      readonly roomId: string;
+      readonly ready: boolean;
+    }
+  | {
+      /** Explicitly starts the game once every seat is filled (bot or
+       * claimed) and every human seat has readied up — anyone in the room
+       * may call this, not just a claimed seat. Rejected while any seat
+       * still isn't ready. */
+      readonly type: "start-game";
+      readonly roomId: string;
     }
   | {
       readonly type: "dispatch";

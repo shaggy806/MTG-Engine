@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { CSSProperties, FormEvent, ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import type {
   CastVia,
   LegalAction,
@@ -25,7 +25,7 @@ import { MiniTile } from './ui/MiniTile.tsx'
 import { Stack } from './ui/Stack.tsx'
 import { EventLog } from './ui/EventLog.tsx'
 import { ZoneViewer } from './ui/ZoneViewer.tsx'
-import { getActiveDeck, getActivePayload } from './deck-builder/decks.ts'
+import { SeatBoard } from './lobby/SeatBoard.tsx'
 import './App.css'
 
 // Symmetric fan for the hand tray (P8): card i's offset from the hand's
@@ -302,92 +302,35 @@ function LobbyScreen({
   )
 }
 
-/** Shared between `SeatPickerScreen` (before I've claimed a seat) and
- * `WaitingForPlayersScreen` (after — still lets me fill any other still-open
- * seat with a bot to get the room started). */
-function SeatStatusList({ game }: { readonly game: NetworkGame }) {
+function SeatPickerScreen({ game }: { readonly game: NetworkGame }) {
+  const roomFull = game.seats.every((s) => s.claimed || s.isBot)
   return (
-    <div className="seat-picker-status">
-      {game.seats.map((s, i) => (
-        <span key={s.player} className={s.claimed || s.isBot ? 'seat-status claimed' : 'seat-status'}>
-          {s.claimed || s.isBot ? playerLabel(s.player, game.seats) : `Player ${i + 1}`}
-          {s.isBot
-            ? ' (bot)'
-            : s.claimed
-              ? s.online
-                ? ' (taken)'
-                : ' (taken · offline)'
-              : ' (open)'}
-          {!s.claimed && !s.isBot ? (
-            <button type="button" className="add-bot" onClick={() => game.addBot(s.player)}>
-              Add bot
-            </button>
-          ) : null}
-        </span>
-      ))}
+    <div className="overlay">
+      <div className="overlay-box seat-board-box">
+        <h2>Room {game.roomId ?? ''}</h2>
+        <p className="muted">Share this room code, then everyone joins.</p>
+        <ErrorLine game={game} />
+        {roomFull ? <p className="muted">Room is full.</p> : null}
+        <SeatBoard game={game} />
+      </div>
     </div>
   )
 }
 
-function SeatPickerScreen({ game }: { readonly game: NetworkGame }) {
-  const [name, setName] = useState('')
-  const nextSeatIndex = game.seats.findIndex((s) => !s.claimed && !s.isBot)
-  const nextSeat = nextSeatIndex === -1 ? null : game.seats[nextSeatIndex]
-
-  const join = (e: FormEvent) => {
-    e.preventDefault()
-    if (!nextSeat) return
-    game.claimSeat(nextSeat.player, name.trim() || `Player ${nextSeatIndex + 1}`, getActivePayload())
-  }
-
-  return (
-    <CenteredScreen title={`Room ${game.roomId ?? ''}`}>
-      <p className="muted">Share this room code, then everyone joins.</p>
-      <ErrorLine game={game} />
-      {nextSeat ? (
-        <form onSubmit={join}>
-          <input
-            className="name-input"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Your name (optional)"
-            maxLength={20}
-          />
-          <button type="submit">Join</button>
-        </form>
-      ) : (
-        <p className="muted">Room is full.</p>
-      )}
-      <ActiveDeckNote />
-      <SeatStatusList game={game} />
-    </CenteredScreen>
-  )
-}
-
 /** Shown once my own seat is claimed but the room's `Game` hasn't started
- * yet — see `ConnectionStatus`'s `waiting-for-players`. */
+ * yet — see `ConnectionStatus`'s `waiting-for-players`. `SeatBoard`'s own
+ * footer already reports the precise status (seats still open vs. everyone
+ * in but not all readied up), so there's no separate line to duplicate it
+ * here. */
 function WaitingForPlayersScreen({ game }: { readonly game: NetworkGame }) {
   return (
-    <CenteredScreen title={`Room ${game.roomId ?? ''}`}>
-      <p className="muted">Waiting for the rest of the table…</p>
-      <ErrorLine game={game} />
-      <SeatStatusList game={game} />
-    </CenteredScreen>
-  )
-}
-
-/** A one-line reminder of which deck (if any) is about to come along —
- * shown right above the seat list so it's clear *before* clicking Join,
- * not a surprise once the game starts. */
-function ActiveDeckNote() {
-  const deck = getActiveDeck()
-  return (
-    <p className="muted db-active-note">
-      {deck
-        ? `Bringing "${deck.name}"${deck.commander ? ` (${deck.commander})` : ''} — `
-        : 'No deck selected — you’ll get this room’s starter deck — '}
-      <a href="/deck-builder">choose a deck</a>
-    </p>
+    <div className="overlay">
+      <div className="overlay-box seat-board-box">
+        <h2>Room {game.roomId ?? ''}</h2>
+        <ErrorLine game={game} />
+        <SeatBoard game={game} />
+      </div>
+    </div>
   )
 }
 

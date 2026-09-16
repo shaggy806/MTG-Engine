@@ -1826,29 +1826,12 @@
   border-color: var(--accent);
   font-weight: 600;
 }
-.db-active-note {
-  font-size: 12px;
-  margin: 0;
-}
-.seat-picker-status {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  color: var(--muted);
-  font-size: 13px;
-}
-.seat-status.claimed {
-  color: var(--text);
-}
-.seat-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.add-bot {
-  padding: 2px 8px;
-  font-size: 11px;
+/* the seat-picker/waiting-room screen (SeatPickerScreen/WaitingForPlayersScreen
+   in App.tsx) needs a much wider box than the default overlay-box's small
+   centered-dialog width to fit a per-seat grid (see client/src/lobby/) */
+.seat-board-box {
+  width: min(1180px, 94vw);
+  max-width: none;
 }
 
 /* read-only zone browser (graveyard/exile today), also reused as the

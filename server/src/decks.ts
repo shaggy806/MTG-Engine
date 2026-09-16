@@ -18,6 +18,7 @@ export const DAVE: PlayerId = asPlayerId("dave");
 
 export interface SeatDeck {
   readonly id: PlayerId;
+  readonly name: string;
   readonly cards: readonly string[];
   /** No commander configured means a plain (non-Commander) 40-card deck. */
   readonly commander?: string;
@@ -27,6 +28,7 @@ export interface SeatDeck {
  * players were asked for (2-4). */
 export const SEATS: readonly SeatDeck[] = [ALICE, BOB, CAROL, DAVE].map((id, i) => ({
   id,
+  name: SAMPLE_DECKS[i].name,
   commander: SAMPLE_DECKS[i].commander,
   cards: SAMPLE_DECKS[i].cards,
 }));

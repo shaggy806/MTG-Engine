@@ -10,7 +10,7 @@ import { RoomManager } from "../room-manager.js";
 import { Room } from "../room.js";
 import { attachRoomServer } from "../ws-server.js";
 import type { ServerMessage } from "../protocol.js";
-import { ALICE, BOB, CAROL, DAVE } from "../decks.js";
+import { ALICE, BOB, CAROL, DAVE, SEATS } from "../decks.js";
 
 function nextMessage(ws: WebSocket): Promise<ServerMessage> {
   return new Promise((resolve, reject) => {
@@ -96,8 +96,18 @@ describe("room server (end to end over WebSocket)", () => {
     expect(aliceJoined.type).toBe("room-joined");
     if (aliceJoined.type !== "room-joined") throw new Error("unreachable");
     expect(aliceJoined.seats).toEqual([
-      { player: ALICE, claimed: true, online: true, displayName: null, isBot: false },
-      { player: BOB, claimed: false, online: false, displayName: null, isBot: false },
+      {
+        player: ALICE,
+        claimed: true,
+        online: true,
+        displayName: null,
+        isBot: false,
+        // Claimed with no explicit deck — falls back to ALICE's positional
+        // starter deck (see `PendingRoom.claimSeat`).
+        deck: { name: SEATS[0].name, commander: SEATS[0].commander ?? null },
+        ready: false,
+      },
+      { player: BOB, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: false },
     ]);
 
     bobWs.send(JSON.stringify({ type: "join-room", roomId }));
@@ -107,7 +117,20 @@ describe("room server (end to end over WebSocket)", () => {
     bobWs.send(
       JSON.stringify({ type: "claim-seat", roomId, seat: BOB, clientToken: "bob-token" }),
     );
-    // Both sockets get pushed a fresh state once the second seat is claimed.
+    await nextMessage(aliceWs); // room-joined — both claimed, neither ready yet
+    await nextMessage(bobWs);
+
+    // Filling every seat doesn't start the game by itself — every human seat
+    // has to ready up, and someone still has to explicitly start it.
+    aliceWs.send(JSON.stringify({ type: "set-ready", roomId, ready: true }));
+    await nextMessage(aliceWs);
+    await nextMessage(bobWs);
+    bobWs.send(JSON.stringify({ type: "set-ready", roomId, ready: true }));
+    await nextMessage(aliceWs);
+    await nextMessage(bobWs);
+
+    aliceWs.send(JSON.stringify({ type: "start-game", roomId }));
+    // Both sockets get pushed a fresh state once the game actually starts.
     const aliceRebroadcast = await nextMessage(aliceWs);
     const bobState = await nextMessage(bobWs);
     if (aliceRebroadcast.type !== "state" || bobState.type !== "state") {
@@ -176,11 +199,14 @@ describe("room server (end to end over WebSocket)", () => {
           roomId: created.roomId,
           seat: ALICE,
           clientToken: "alice-token",
+          ready: true,
         }),
       );
       await nextMessage(aliceWs); // room-joined — Bob hasn't claimed yet
       aliceWs.send(JSON.stringify({ type: "add-bot", roomId: created.roomId, seat: BOB }));
-      await nextMessage(aliceWs); // state — both seats filled, room started
+      await nextMessage(aliceWs); // room-joined — bot-filled, but not started until asked
+      aliceWs.send(JSON.stringify({ type: "start-game", roomId: created.roomId }));
+      await nextMessage(aliceWs); // state — room started
       return created.roomId;
     }
 
@@ -358,7 +384,39 @@ describe("room server (end to end over WebSocket)", () => {
       online: false,
       displayName: null,
       isBot: true,
+      deck: { name: SEATS[1].name, commander: SEATS[1].commander ?? null },
+      ready: true,
     });
+  });
+
+  it("rejects starting the game before everyone is ready, and rejects it again after the game has started", async () => {
+    const aliceWs = await openSocket();
+    aliceWs.send(JSON.stringify({ type: "create-room" }));
+    const created = await nextMessage(aliceWs);
+    if (created.type !== "room-created") throw new Error("unreachable");
+    const roomId = created.roomId;
+
+    aliceWs.send(
+      JSON.stringify({ type: "claim-seat", roomId, seat: ALICE, clientToken: "alice-token" }),
+    );
+    await nextMessage(aliceWs); // room-joined — Alice claimed but not ready
+    aliceWs.send(JSON.stringify({ type: "add-bot", roomId, seat: BOB }));
+    await nextMessage(aliceWs); // room-joined — Bob's a bot (always ready), Alice still isn't
+
+    aliceWs.send(JSON.stringify({ type: "start-game", roomId }));
+    const rejected = await nextMessage(aliceWs);
+    expect(rejected).toEqual({ type: "error", message: "not everyone is ready yet" });
+
+    aliceWs.send(JSON.stringify({ type: "set-ready", roomId, ready: true }));
+    await nextMessage(aliceWs); // room-joined
+    aliceWs.send(JSON.stringify({ type: "start-game", roomId }));
+    const started = await nextMessage(aliceWs);
+    expect(started.type).toBe("state");
+
+    // Once the game exists, both the readiness dance and a second start are moot.
+    aliceWs.send(JSON.stringify({ type: "start-game", roomId }));
+    const afterStart = await nextMessage(aliceWs);
+    expect(afterStart).toEqual({ type: "error", message: `room ${roomId} has already started` });
   });
 
   it("rejects adding a bot to a seat someone already claimed", async () => {

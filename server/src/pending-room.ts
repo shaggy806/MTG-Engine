@@ -19,13 +19,10 @@
 import { createDefaultRegistry } from "engine";
 import type { DeckList, GameConfig, PlayerId } from "engine";
 import type { Connection } from "./room.js";
-import type { SeatStatus } from "./protocol.js";
+import type { SeatStatus, WireDeck } from "./protocol.js";
 import { SEATS } from "./decks.js";
 
-export interface PendingDeck {
-  readonly cards: readonly string[];
-  readonly commander?: string;
-}
+export type PendingDeck = WireDeck;
 
 interface PendingSeat {
   readonly player: PlayerId;
@@ -34,6 +31,10 @@ interface PendingSeat {
   displayName: string | null;
   isBot: boolean;
   deck: PendingDeck | null;
+  /** Signaled ready via `set-ready` (or `claimSeat`'s own `ready` param) —
+   * meaningless for a bot seat, which is always reported ready (see
+   * `seatStatuses`/`allReady`). */
+  ready: boolean;
 }
 
 const MAX_DISPLAY_NAME_LENGTH = 20;
@@ -95,6 +96,7 @@ export class PendingRoom {
       displayName: null,
       isBot: false,
       deck: null,
+      ready: false,
     }));
     this.lastActivityAt = Date.now();
   }
@@ -110,6 +112,8 @@ export class PendingRoom {
       online: s.connection !== null,
       displayName: s.displayName,
       isBot: s.isBot,
+      deck: s.deck === null ? null : { name: s.deck.name ?? "Custom deck", commander: s.deck.commander ?? null },
+      ready: s.isBot || s.ready,
     }));
   }
 
@@ -122,21 +126,27 @@ export class PendingRoom {
   private fallbackDeck(player: PlayerId): PendingDeck {
     const example = SEATS.find((s) => s.id === player);
     if (example === undefined) throw new Error(`no such seat: ${player}`);
-    return { cards: example.cards, commander: example.commander };
+    return { cards: example.cards, commander: example.commander, name: example.name };
   }
 
   /** Same claim/reclaim semantics as `Room.claimSeat` — a seat already
    * claimed by a *different* token is rejected even while offline; the same
-   * token reclaims it. `deck`, when given, becomes this seat's deck;
+   * token reclaims it, which is also how the seat-picker updates an
+   * already-claimed seat's deck (resending `claimSeat` with the same token
+   * and a new `deck`) — rejected while the seat is currently ready; un-ready
+   * (`setReady`) first. `deck`, when given, becomes this seat's deck;
    * omitted (or on a silent reconnect that doesn't resend it) falls back to
    * this seat's positional starter deck (`server/src/decks.ts`) so a bare
-   * room-code link with nobody having visited the deck builder still works. */
+   * room-code link with nobody having visited the deck builder still works.
+   * `ready`, when given, sets this seat's ready state as part of the same
+   * call — lets a first-time claim also ready up in one round trip. */
   claimSeat(
     player: PlayerId,
     clientToken: string,
     connection: Connection,
     displayName?: string,
     deck?: PendingDeck,
+    ready?: boolean,
   ): void {
     const seat = this.seatFor(player);
     if (seat.isBot) throw new Error(`seat ${player} is played by a bot`);
@@ -145,7 +155,10 @@ export class PendingRoom {
     }
     // Every rejection happens before the first mutation, so a refused claim
     // leaves the seat exactly as it was and the player can try another deck.
-    if (deck !== undefined) assertDeckIsBuildable(deck);
+    if (deck !== undefined) {
+      if (seat.ready) throw new Error(`seat ${player} is readied up — un-ready before changing decks`);
+      assertDeckIsBuildable(deck);
+    }
     seat.connection = connection;
     seat.clientToken = clientToken;
     const trimmed = displayName?.trim();
@@ -157,17 +170,42 @@ export class PendingRoom {
     } else if (seat.deck === null) {
       seat.deck = this.fallbackDeck(player);
     }
+    if (ready !== undefined) seat.ready = ready;
     this.lastActivityAt = Date.now();
   }
 
-  /** Fills `player`'s seat with a bot — same guards as `Room.addBot` — using
-   * that seat's positional starter deck (no bot deck-picking UI). */
-  addBot(player: PlayerId): void {
+  /** Toggles `connection`'s own already-claimed seat's ready state — the
+   * seat-picker's "Ready"/"Un-ready" control once a deck's already locked
+   * in. Rejects a connection that hasn't claimed a seat here. */
+  setReady(connection: Connection, ready: boolean): void {
+    const player = this.seatOf(connection);
+    if (player === null) throw new Error("claim a seat before readying up");
+    this.seatFor(player).ready = ready;
+    this.lastActivityAt = Date.now();
+  }
+
+  /** Fills `player`'s seat with a bot — same guards as `Room.addBot`. `deck`,
+   * when given, becomes the bot's deck (validated the same way a human
+   * claim's deck is); omitted falls back to that seat's positional starter
+   * deck. */
+  addBot(player: PlayerId, deck?: PendingDeck): void {
     const seat = this.seatFor(player);
     if (seat.clientToken !== null) throw new Error(`seat ${player} is already claimed`);
     if (seat.isBot) throw new Error(`seat ${player} already has a bot`);
+    if (deck !== undefined) assertDeckIsBuildable(deck);
     seat.isBot = true;
-    seat.deck = this.fallbackDeck(player);
+    seat.deck = deck ?? this.fallbackDeck(player);
+    this.lastActivityAt = Date.now();
+  }
+
+  /** Changes an already-bot-filled seat's deck — the seat-picker's "pick
+   * which deck this bot plays" control. Rejects a seat that isn't currently
+   * a bot (a human's own deck is only set via `claimSeat`). */
+  setBotDeck(player: PlayerId, deck: PendingDeck): void {
+    const seat = this.seatFor(player);
+    if (!seat.isBot) throw new Error(`seat ${player} isn't played by a bot`);
+    assertDeckIsBuildable(deck);
+    seat.deck = deck;
     this.lastActivityAt = Date.now();
   }
 
@@ -189,9 +227,18 @@ export class PendingRoom {
   }
 
   /** Every seat is either claimed (which always resolves a deck — see
-   * `claimSeat`) or bot-filled. */
+   * `claimSeat`) or bot-filled — every seat has somewhere to deal a hand
+   * from, but says nothing about whether anyone's actually ready to start
+   * (see `allReady`). */
   isReady(): boolean {
     return this.seats.every((s) => s.isBot || s.clientToken !== null);
+  }
+
+  /** Every seat is bot-filled, or claimed *and* readied up — the gate on
+   * `start-game`. Stricter than `isReady`: a table can be entirely filled
+   * and still not start until every human seat says go. */
+  allReady(): boolean {
+    return this.seats.every((s) => s.isBot || (s.clientToken !== null && s.ready));
   }
 
   /** The finished `GameConfig` — only meaningful once `isReady()`. Picks the

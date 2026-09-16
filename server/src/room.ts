@@ -6,7 +6,7 @@
 
 import { Game, HeuristicBotController, actionPlayer, activePlayerOf, isSettled } from "engine";
 import type { Action, AwaitingDecision, ControllerView, GameState, PlayerController, PlayerId } from "engine";
-import type { SeatStatus, ServerMessage } from "./protocol.js";
+import type { SeatStatus, ServerMessage, WireDeck } from "./protocol.js";
 
 export interface Connection {
   readonly send: (message: ServerMessage) => void;
@@ -79,20 +79,37 @@ export class Room {
       online: s.connection !== null,
       displayName: s.displayName,
       isBot: this.bots.has(s.player),
+      // Once promoted to a real `Room`, every seat's deck is already baked
+      // into `game.state` — the seat-picker screen that shows `deck` is
+      // behind us, so there's nothing to report here.
+      deck: null,
+      // The ready/start-game dance is behind us too — every seat that's
+      // going to play is, definitionally, already in.
+      ready: true,
     }));
   }
 
   /** Fills `player`'s seat with a basic heuristic bot instead of a human
    * connection — rejects a seat already claimed by a human or already
    * bot-controlled. Settles immediately afterward: the bot may already be
-   * up to act (e.g. the mulligan phase, before any human has joined). */
-  addBot(player: PlayerId): void {
+   * up to act (e.g. the mulligan phase, before any human has joined).
+   * `deck` is accepted only for call-site symmetry with `PendingRoom.addBot`
+   * (the seat-picker's deck choice) — an active `Room`'s decks are already
+   * dealt, so it's ignored here. */
+  addBot(player: PlayerId, deck?: WireDeck): void {
+    void deck;
     const seat = this.seatFor(player);
     if (seat.clientToken !== null) throw new Error(`seat ${player} is already claimed`);
     if (this.bots.has(player)) throw new Error(`seat ${player} already has a bot`);
     this.bots.set(player, new HeuristicBotController(player));
     this.lastActivityAt = Date.now();
     this.settle();
+  }
+
+  /** A bot's deck can only be changed before the game exists (see
+   * `PendingRoom.setBotDeck`) — once promoted, decks are baked into `game.state`. */
+  setBotDeck(_player: PlayerId, _deck: WireDeck): void {
+    throw new Error("the game has already started — decks can't change now");
   }
 
   private seatFor(player: PlayerId): Seat {
@@ -108,14 +125,22 @@ export class Room {
    * mid-reconnect. The same token reclaims it (e.g. a page refresh, or
    * genuinely coming back online). `displayName` is optional and, when
    * omitted, leaves whatever name (if any) this seat already had alone —
-   * a silent reconnect shouldn't blank out a name chosen earlier.
+   * a silent reconnect shouldn't blank out a name chosen earlier. `deck` and
+   * `ready` are accepted only for call-site symmetry with
+   * `PendingRoom.claimSeat` (the seat-picker's deck choice / ready toggle) —
+   * an active `Room`'s decks and readiness are both behind us, so they're
+   * ignored here.
    */
   claimSeat(
     player: PlayerId,
     clientToken: string,
     connection: Connection,
     displayName?: string,
+    deck?: WireDeck,
+    ready?: boolean,
   ): void {
+    void deck;
+    void ready;
     const seat = this.seatFor(player);
     if (this.bots.has(player)) throw new Error(`seat ${player} is played by a bot`);
     if (seat.clientToken !== null && seat.clientToken !== clientToken) {

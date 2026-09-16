@@ -1,0 +1,285 @@
+/* The seat-picker/waiting-room board (`SeatBoard.tsx`) and its deck-choice
+   popup (`DeckPickerModal.tsx`) — one panel per seat, laid out side by side.
+   Scoped to its own `--card-w` (bigger than the in-game default — this
+   screen's whole point is to be legible before anyone's squinting at a real
+   board) so nothing outside this subtree is affected. */
+.seat-board {
+  --card-w: clamp(110px, 15vw, 190px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: min(1180px, 90vw);
+}
+
+.seat-board-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--seat-count), minmax(0, 1fr));
+  gap: 16px;
+}
+
+.seat-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 14px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--seat-color, var(--border));
+  border-radius: 10px;
+  /* the "ready" indicator is a ring outside the border (doesn't fight the
+     per-seat identity color already on the border/top-border) */
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  transition: outline-color 0.15s ease;
+}
+.seat-panel.seat-a { --seat-color: var(--seat-a); }
+.seat-panel.seat-b { --seat-color: var(--seat-b); }
+.seat-panel.seat-c { --seat-color: var(--seat-c); }
+.seat-panel.seat-d { --seat-color: var(--seat-d); }
+.seat-panel.ready {
+  outline-color: var(--good);
+}
+
+.seat-panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.seat-panel-name {
+  font-weight: 600;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.seat-panel-tag {
+  flex: none;
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* the deck "card" itself -- filled (art + name + commander) or a blank
+   dashed "+" placeholder, same box either way so a seat's slot doesn't
+   jump around as it fills in */
+.seat-deck-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 8px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font: inherit;
+  cursor: default;
+}
+.seat-deck-slot.editable {
+  cursor: pointer;
+}
+.seat-deck-slot.editable:hover {
+  border-color: var(--accent);
+}
+.seat-deck-slot.blank {
+  border-style: dashed;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(var(--card-w) * 0.9);
+}
+.seat-deck-slot:disabled {
+  opacity: 1;
+}
+
+.seat-deck-art {
+  width: 100%;
+  aspect-ratio: 1.4 / 1;
+  border-radius: 6px;
+  background-color: var(--panel-2);
+  background-size: cover;
+  background-position: center 30%;
+  border: 1px solid var(--border-soft);
+}
+.seat-deck-art.blank {
+  display: flex;
+}
+
+.seat-deck-name {
+  width: 100%;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.seat-deck-commander {
+  width: 100%;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.seat-deck-plus {
+  font-size: calc(var(--card-w) * 0.28);
+  line-height: 1;
+  color: var(--muted-dim);
+}
+.seat-deck-slot.editable .seat-deck-plus {
+  color: var(--accent);
+}
+
+.seat-deck-hint {
+  font-size: 10px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.seat-panel input.name-input {
+  width: 100%;
+}
+.seat-panel-ready-btn {
+  font-weight: 600;
+}
+.seat-panel-ready-btn.active {
+  color: var(--good);
+  border-color: var(--good);
+  background: rgba(95, 174, 124, 0.12);
+}
+.seat-panel-add-bot {
+  font-size: 11px;
+  padding: 4px 8px;
+}
+
+.seat-board-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.start-game-btn {
+  padding: 10px 28px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--good);
+  border-color: var(--good);
+  background: rgba(95, 174, 124, 0.12);
+}
+.start-game-btn:disabled {
+  color: var(--muted-dim);
+  border-color: var(--border);
+  background: none;
+  cursor: default;
+}
+.seat-board-hint {
+  font-size: 12px;
+  margin: 0;
+}
+
+/* the deck-choice popup */
+.deck-picker-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 12, 16, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 140;
+  padding: 24px;
+}
+.deck-picker-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(420px, 100%);
+  max-height: min(640px, 90vh);
+  padding: 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.deck-picker-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.deck-picker-head h3 {
+  font-size: 16px;
+}
+.deck-picker-close {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1;
+  padding: 4px;
+}
+.deck-picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+}
+.deck-picker-section {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.deck-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px;
+  background: var(--panel-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  color: var(--text);
+  text-align: left;
+  font: inherit;
+}
+.deck-picker-row:hover {
+  border-color: var(--accent);
+}
+.deck-picker-row-art {
+  flex: none;
+  width: 44px;
+  aspect-ratio: 1.4 / 1;
+  border-radius: 4px;
+  background-color: var(--panel);
+  background-size: cover;
+  background-position: center 30%;
+}
+.deck-picker-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.deck-picker-row-name {
+  font-size: 13px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.deck-picker-row-commander {
+  font-size: 11px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.deck-picker-build {
+  align-self: center;
+  font-size: 12px;
+}

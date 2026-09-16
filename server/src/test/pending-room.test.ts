@@ -10,10 +10,11 @@ describe("PendingRoom", () => {
   it("starts with every seat unclaimed and not ready", () => {
     const room = pendingRoom();
     expect(room.seatStatuses()).toEqual([
-      { player: ALICE, claimed: false, online: false, displayName: null, isBot: false },
-      { player: BOB, claimed: false, online: false, displayName: null, isBot: false },
+      { player: ALICE, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: false },
+      { player: BOB, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: false },
     ]);
     expect(room.isReady()).toBe(false);
+    expect(room.allReady()).toBe(false);
   });
 
   it("claiming a seat without a deck falls back to its positional starter deck", () => {
@@ -65,7 +66,9 @@ describe("PendingRoom", () => {
   it("addBot fills a seat with its positional starter deck and rejects a claimed seat", () => {
     const room = pendingRoom();
     room.addBot(BOB);
-    expect(room.seatStatuses().find((s) => s.player === BOB)?.isBot).toBe(true);
+    const bobStatus = room.seatStatuses().find((s) => s.player === BOB);
+    expect(bobStatus?.isBot).toBe(true);
+    expect(bobStatus?.deck).toEqual({ name: SEATS[1].name, commander: SEATS[1].commander ?? null });
     expect(() => room.addBot(BOB)).toThrow("already has a bot");
 
     room.claimSeat(ALICE, "alice-token", { send: () => {} });
@@ -73,6 +76,36 @@ describe("PendingRoom", () => {
 
     expect(room.isReady()).toBe(true);
     expect(room.botSeats()).toEqual([BOB]);
+  });
+
+  it("addBot with a chosen deck uses it instead of the positional default", () => {
+    const room = pendingRoom();
+    room.addBot(BOB, { cards: ["Forest", "Forest"], commander: "Ureni of the Unwritten", name: "My Deck" });
+    expect(room.seatStatuses().find((s) => s.player === BOB)?.deck).toEqual({
+      name: "My Deck",
+      commander: "Ureni of the Unwritten",
+    });
+    room.claimSeat(ALICE, "alice-token", { send: () => {} });
+    expect(room.toGameConfig().decks.find((d) => d.player === BOB)?.cards).toEqual(["Forest", "Forest"]);
+  });
+
+  it("setBotDeck changes an already-bot-filled seat's deck, and only a bot seat's", () => {
+    const room = pendingRoom();
+    room.addBot(BOB);
+    room.setBotDeck(BOB, { cards: ["Island", "Island"], commander: "Ayara, First of Locthwain", name: "Mono-Black" });
+    expect(room.seatStatuses().find((s) => s.player === BOB)?.deck).toEqual({
+      name: "Mono-Black",
+      commander: "Ayara, First of Locthwain",
+    });
+
+    room.claimSeat(ALICE, "alice-token", { send: () => {} });
+    expect(() => room.setBotDeck(ALICE, { cards: ["Forest"] })).toThrow("isn't played by a bot");
+  });
+
+  it("setBotDeck rejects a deck naming an unknown card", () => {
+    const room = pendingRoom();
+    room.addBot(BOB);
+    expect(() => room.setBotDeck(BOB, { cards: ["Ashmark, Mardu Vanguard"] })).toThrow(/doesn't know/);
   });
 
   it("claims() only reports currently-connected claimed seats", () => {
@@ -128,5 +161,53 @@ describe("PendingRoom", () => {
   it("scales seat count with players (3-4)", () => {
     expect(pendingRoom(3).seatStatuses()).toHaveLength(3);
     expect(pendingRoom(4).seatStatuses()).toHaveLength(4);
+  });
+
+  describe("ready / allReady", () => {
+    it("a bot seat is always reported ready; a claimed seat starts not ready", () => {
+      const room = pendingRoom();
+      room.addBot(BOB);
+      room.claimSeat(ALICE, "alice-token", { send: () => {} });
+      expect(room.seatStatuses().find((s) => s.player === BOB)?.ready).toBe(true);
+      expect(room.seatStatuses().find((s) => s.player === ALICE)?.ready).toBe(false);
+      expect(room.isReady()).toBe(true); // every seat filled...
+      expect(room.allReady()).toBe(false); // ...but Alice hasn't readied up
+    });
+
+    it("claimSeat's own ready param readies up in the same call", () => {
+      const room = pendingRoom();
+      room.addBot(BOB);
+      room.claimSeat(ALICE, "alice-token", { send: () => {} }, undefined, undefined, true);
+      expect(room.seatStatuses().find((s) => s.player === ALICE)?.ready).toBe(true);
+      expect(room.allReady()).toBe(true);
+    });
+
+    it("setReady toggles the caller's own seat and rejects an unclaimed connection", () => {
+      const room = pendingRoom();
+      const conn = { send: () => {} };
+      room.claimSeat(ALICE, "alice-token", conn);
+      room.setReady(conn, true);
+      expect(room.seatStatuses().find((s) => s.player === ALICE)?.ready).toBe(true);
+      room.setReady(conn, false);
+      expect(room.seatStatuses().find((s) => s.player === ALICE)?.ready).toBe(false);
+
+      expect(() => room.setReady({ send: () => {} }, true)).toThrow(/claim a seat/);
+    });
+
+    it("rejects changing a readied seat's deck until it un-readies", () => {
+      const room = pendingRoom();
+      const conn = { send: () => {} };
+      room.claimSeat(ALICE, "alice-token", conn, undefined, { cards: ["Forest"] }, true);
+      expect(() =>
+        room.claimSeat(ALICE, "alice-token", conn, undefined, { cards: ["Island"] }),
+      ).toThrow(/readied up/);
+      // still the original deck
+      room.addBot(BOB);
+      expect(room.toGameConfig().decks.find((d) => d.player === ALICE)?.cards).toEqual(["Forest"]);
+
+      room.setReady(conn, false);
+      room.claimSeat(ALICE, "alice-token", conn, undefined, { cards: ["Island"] });
+      expect(room.toGameConfig().decks.find((d) => d.player === ALICE)?.cards).toEqual(["Island"]);
+    });
   });
 });

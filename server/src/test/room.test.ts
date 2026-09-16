@@ -49,8 +49,8 @@ describe("Room", () => {
   it("starts with both seats unclaimed and offline", () => {
     const room = makeRoom();
     expect(room.seatStatuses()).toEqual([
-      { player: ALICE, claimed: false, online: false, displayName: null, isBot: false },
-      { player: BOB, claimed: false, online: false, displayName: null, isBot: false },
+      { player: ALICE, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: true },
+      { player: BOB, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: true },
     ]);
   });
 
@@ -59,8 +59,8 @@ describe("Room", () => {
     const { connection } = fakeConnection();
     room.claimSeat(ALICE, "token-a", connection);
     expect(room.seatStatuses()).toEqual([
-      { player: ALICE, claimed: true, online: true, displayName: null, isBot: false },
-      { player: BOB, claimed: false, online: false, displayName: null, isBot: false },
+      { player: ALICE, claimed: true, online: true, displayName: null, isBot: false, deck: null, ready: true },
+      { player: BOB, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: true },
     ]);
     expect(room.seatOf(connection)).toBe(ALICE);
   });
@@ -75,6 +75,8 @@ describe("Room", () => {
       online: true,
       displayName: "Toby",
       isBot: false,
+      deck: null,
+      ready: true,
     });
   });
 
@@ -311,8 +313,8 @@ describe("Room", () => {
     room.disconnect(connection);
     expect(room.seatOf(connection)).toBeNull();
     expect(room.seatStatuses()).toEqual([
-      { player: ALICE, claimed: true, online: false, displayName: null, isBot: false },
-      { player: BOB, claimed: false, online: false, displayName: null, isBot: false },
+      { player: ALICE, claimed: true, online: false, displayName: null, isBot: false, deck: null, ready: true },
+      { player: BOB, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: true },
     ]);
   });
 
@@ -327,8 +329,8 @@ describe("Room", () => {
 
     expect(room.seatOf(second)).toBe(ALICE);
     expect(room.seatStatuses()).toEqual([
-      { player: ALICE, claimed: true, online: true, displayName: null, isBot: false },
-      { player: BOB, claimed: false, online: false, displayName: null, isBot: false },
+      { player: ALICE, claimed: true, online: true, displayName: null, isBot: false, deck: null, ready: true },
+      { player: BOB, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: true },
     ]);
   });
 
@@ -349,8 +351,8 @@ describe("Room", () => {
       const room = makeRoom();
       room.addBot(BOB);
       expect(room.seatStatuses()).toEqual([
-        { player: ALICE, claimed: false, online: false, displayName: null, isBot: false },
-        { player: BOB, claimed: false, online: false, displayName: null, isBot: true },
+        { player: ALICE, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: true },
+        { player: BOB, claimed: false, online: false, displayName: null, isBot: true, deck: null, ready: true },
       ]);
     });
 
@@ -359,6 +361,12 @@ describe("Room", () => {
       const { connection } = fakeConnection();
       room.claimSeat(ALICE, "token-a", connection);
       expect(() => room.addBot(ALICE)).toThrow(/already claimed/);
+    });
+
+    it("rejects changing a bot's deck once the game has started", () => {
+      const room = makeRoom();
+      room.addBot(BOB);
+      expect(() => room.setBotDeck(BOB, { cards: ["Forest"] })).toThrow(/already started/);
     });
 
     it("rejects claiming a seat that's already bot-controlled", () => {

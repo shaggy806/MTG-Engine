@@ -14,7 +14,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Action, LegalAction, ObjectId, PlayerId, PlayerView } from 'engine'
-import type { ClientMessage, SeatStatus, ServerMessage } from './protocol.ts'
+import type { ClientMessage, SeatStatus, ServerMessage, WireDeck } from './protocol.ts'
 
 const SERVER_URL =
   (import.meta.env.VITE_SERVER_URL as string | undefined) ??
@@ -110,13 +110,26 @@ export interface NetworkGame {
   readonly revision: number
   createRoom: (seed?: number, players?: number) => void
   joinRoom: (roomId: string) => void
-  claimSeat: (
-    seat: PlayerId,
-    displayName?: string,
-    deck?: { readonly cards: readonly string[]; readonly commander?: string },
-  ) => void
-  /** Fills an open seat with a basic heuristic bot instead of a human. */
-  addBot: (seat: PlayerId) => void
+  /** Claims `seat` (the first time it's called for that seat) or updates it
+   * (any later call — reuses the same seat's already-stored token, so the
+   * server treats it as a reclaim rather than a conflicting claim). That's
+   * also how the seat-picker changes its own deck while un-ready: call this
+   * again with a new `deck` and no `ready`. `ready`, when given, sets this
+   * seat's ready state as part of the same call — the "Ready" button's
+   * first click claims and readies in one round trip. */
+  claimSeat: (seat: PlayerId, displayName?: string, deck?: WireDeck, ready?: boolean) => void
+  /** Fills an open seat with a basic heuristic bot instead of a human.
+   * Omitted `deck` falls back to that seat's positional starter deck. */
+  addBot: (seat: PlayerId, deck?: WireDeck) => void
+  /** Changes which deck an already-bot-filled seat brings — only usable
+   * before the room's game has started. */
+  setBotDeck: (seat: PlayerId, deck: WireDeck) => void
+  /** Toggles my own already-claimed seat between ready and not — only usable
+   * before the room's game has started. Un-ready to edit my deck again. */
+  setReady: (ready: boolean) => void
+  /** Explicitly starts the game — only takes effect once every seat is
+   * filled and ready; the server rejects it otherwise. */
+  startGame: () => void
   dispatch: (action: Action) => void
   passTurn: () => void
   /** Toggles auto-passing my priority windows clean through an opponent's
@@ -333,18 +346,19 @@ export function useNetworkGame(): NetworkGame {
   )
 
   const claimSeat = useCallback(
-    (
-      chosen: PlayerId,
-      displayName?: string,
-      deck?: { readonly cards: readonly string[]; readonly commander?: string },
-    ) => {
+    (chosen: PlayerId, displayName?: string, deck?: WireDeck, ready?: boolean) => {
       const id = roomIdRef.current
       if (id === null) return
-      const token = newClientToken()
+      // Reuse the seat's already-stored token when this is an update to a
+      // seat we've already claimed (e.g. changing our own deck while
+      // un-ready) — a fresh token here would read to the server as a
+      // different device trying to steal an already-claimed seat.
+      const existing = loadStoredSeat(id)
+      const token = existing && existing.seat === chosen ? existing.clientToken : newClientToken()
       // Not persisted yet — the `room-joined`/`state` handlers store it once
       // the server confirms the claim (see `pendingClaimRef`).
       pendingClaimRef.current = { seat: chosen, clientToken: token }
-      send({ type: 'claim-seat', roomId: id, seat: chosen, clientToken: token, displayName, deck })
+      send({ type: 'claim-seat', roomId: id, seat: chosen, clientToken: token, displayName, deck, ready })
     },
     [send],
   )
@@ -359,13 +373,37 @@ export function useNetworkGame(): NetworkGame {
   )
 
   const addBot = useCallback(
-    (seat: PlayerId) => {
+    (seat: PlayerId, deck?: WireDeck) => {
       const id = roomIdRef.current
       if (id === null) return
-      send({ type: 'add-bot', roomId: id, seat })
+      send({ type: 'add-bot', roomId: id, seat, deck })
     },
     [send],
   )
+
+  const setBotDeck = useCallback(
+    (seat: PlayerId, deck: WireDeck) => {
+      const id = roomIdRef.current
+      if (id === null) return
+      send({ type: 'set-bot-deck', roomId: id, seat, deck })
+    },
+    [send],
+  )
+
+  const setReady = useCallback(
+    (ready: boolean) => {
+      const id = roomIdRef.current
+      if (id === null) return
+      send({ type: 'set-ready', roomId: id, ready })
+    },
+    [send],
+  )
+
+  const startGame = useCallback(() => {
+    const id = roomIdRef.current
+    if (id === null) return
+    send({ type: 'start-game', roomId: id })
+  }, [send])
 
   const passTurn = useCallback(() => {
     const id = roomIdRef.current
@@ -431,6 +469,9 @@ export function useNetworkGame(): NetworkGame {
     joinRoom,
     claimSeat,
     addBot,
+    setBotDeck,
+    setReady,
+    startGame,
     dispatch,
     passTurn,
     autoPass,

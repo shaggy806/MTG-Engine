@@ -150,13 +150,49 @@ export function getActiveDeck(): { readonly name: string; readonly commander?: s
   return getDeck(ref.id)
 }
 
-/** What `useNetworkGame.claimSeat` sends over the wire — `undefined` when no
- * deck is active (or it's empty), so the server falls back to that seat's
- * positional starter deck (see `server/src/pending-room.ts`). */
+/** What `useNetworkGame.claimSeat`/`addBot`/`setBotDeck` send over the wire —
+ * `undefined` when no deck is active (or it's empty), so the server falls
+ * back to that seat's positional starter deck (see
+ * `server/src/pending-room.ts`). */
 export function getActivePayload():
-  | { readonly cards: readonly string[]; readonly commander?: string }
+  | { readonly cards: readonly string[]; readonly commander?: string; readonly name: string }
   | undefined {
   const deck = getActiveDeck()
   if (deck === null || deck.cards.length === 0) return undefined
-  return { cards: deck.cards, commander: deck.commander }
+  return { cards: deck.cards, commander: deck.commander, name: deck.name }
+}
+
+/** One pickable option in the seat-picker's deck-choice popup — a saved deck
+ * or one of `engine`'s starters, normalized to the same shape. `key` is
+ * stable for React lists; `ref` is what selecting it should persist as
+ * "active" (a saved deck only — picking a starter for someone *else's* seat,
+ * a bot, shouldn't change what *you'd* bring if you later join yourself). */
+export interface PickableDeck {
+  readonly key: string
+  readonly ref: ActiveRef | null
+  readonly name: string
+  readonly commander?: string
+  readonly cards: readonly string[]
+}
+
+/** Every deck the seat-picker's popup can offer: this browser's saved decks,
+ * then the four starters — in that order, since a saved deck is more likely
+ * to be what someone actually wants to bring than a generic starter. */
+export function listPickableDecks(): readonly PickableDeck[] {
+  return [
+    ...readDecks().map((d) => ({
+      key: `saved:${d.id}`,
+      ref: { kind: 'saved', id: d.id } as ActiveRef,
+      name: d.name,
+      commander: d.commander,
+      cards: d.cards,
+    })),
+    ...SAMPLE_DECKS.map((d, i) => ({
+      key: `starter:${i}`,
+      ref: { kind: 'starter', index: i } as ActiveRef,
+      name: d.name,
+      commander: d.commander,
+      cards: d.cards,
+    })),
+  ]
 }

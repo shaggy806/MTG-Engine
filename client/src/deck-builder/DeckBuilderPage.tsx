@@ -72,10 +72,17 @@ export function DeckBuilderPage() {
     ((ref.kind === 'saved' && activeRef.kind === 'saved' && activeRef.id === ref.id) ||
       (ref.kind === 'starter' && activeRef.kind === 'starter' && activeRef.index === ref.index))
 
+  // A visit from the room seat-picker's deck-picker popup carries the room
+  // code along (`?room=<code>`) specifically so this link can return to that
+  // same room instead of dropping you back at the bare lobby — see
+  // `client/src/lobby/DeckPickerModal.tsx`.
+  const roomId = new URLSearchParams(window.location.search).get('room')
+  const backHref = roomId ? `/?room=${roomId}` : '/'
+
   return (
     <div className="db-page">
       <aside className="db-list">
-        <a className="link-button db-back" href="/">
+        <a className="link-button db-back" href={backHref}>
           ← Back
         </a>
         <h1>Deck Builder</h1>

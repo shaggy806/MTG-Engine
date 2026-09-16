@@ -230,7 +230,7 @@ export const playerLabel = (id: PlayerId, seats?: readonly SeatStatus[]): string
 
 export type SeatClass = 'seat-a' | 'seat-b' | 'seat-c' | 'seat-d'
 
-const SEAT_CLASSES: readonly SeatClass[] = ['seat-a', 'seat-b', 'seat-c', 'seat-d']
+export const SEAT_CLASSES: readonly SeatClass[] = ['seat-a', 'seat-b', 'seat-c', 'seat-d']
 
 /**
  * A stable per-player identity class, by seating order rather than table

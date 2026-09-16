@@ -70,6 +70,37 @@ function requireActiveRoom(manager: RoomManager, roomId: string): Room {
   return room;
 }
 
+/** The inverse of `requireActiveRoom` — for messages (`set-ready`/
+ * `start-game`) that only make sense before the room's `Game` exists. */
+function requirePendingRoom(manager: RoomManager, roomId: string): PendingRoom {
+  const room = requireRoom(manager, roomId);
+  if (!(room instanceof PendingRoom)) {
+    throw new Error(`room ${roomId} has already started`);
+  }
+  return room;
+}
+
+/** Promotes a ready `PendingRoom` and broadcasts the result, or reports why
+ * not without taking the whole room down — a bad deck only surfaces here,
+ * at promotion time (see `manager.promote`). Returns the new `Room` on
+ * success so the caller can update its own `boundRoom`, or `null` if
+ * promotion failed (the room is left pending). */
+function tryPromote(ws: WebSocket, manager: RoomManager, room: PendingRoom): Room | null {
+  let activeRoom: Room;
+  try {
+    activeRoom = manager.promote(room.id);
+  } catch (err) {
+    send(ws, {
+      type: "error",
+      message: `could not start the game: ${err instanceof Error ? err.message : String(err)}`,
+    });
+    broadcastPending(room);
+    return null;
+  }
+  broadcast(activeRoom);
+  return activeRoom;
+}
+
 export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): void {
   // Keyed by client IP rather than per-connection, since nothing stops one
   // IP from opening many sockets — a fixed window is enough to blunt a bot
@@ -137,6 +168,7 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
               connection,
               message.displayName,
               message.deck,
+              message.ready,
             );
           } catch (err) {
             // Rejected claim (seat taken by someone else, etc.) — tell the
@@ -153,29 +185,6 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
             });
             return;
           }
-          if (room instanceof PendingRoom && room.isReady()) {
-            // Promotion is where every seat's deck is finally turned into a
-            // real `Game` — the first moment anything can object to a deck.
-            // A throw here used to escape the handler entirely, so one bad
-            // deck took the room down for everyone at the instant its last
-            // seat filled; report it instead and leave the room pending.
-            let activeRoom;
-            try {
-              activeRoom = manager.promote(room.id);
-            } catch (err) {
-              send(ws, {
-                type: "error",
-                message: `could not start the game: ${
-                  err instanceof Error ? err.message : String(err)
-                }`,
-              });
-              broadcastPending(room);
-              return;
-            }
-            boundRoom = activeRoom;
-            broadcast(activeRoom);
-            return;
-          }
           boundRoom = room;
           if (room instanceof PendingRoom) broadcastPending(room);
           else broadcast(room);
@@ -184,16 +193,12 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
         case "add-bot": {
           const room = requireRoom(manager, message.roomId);
           try {
-            room.addBot(message.seat);
+            room.addBot(message.seat, message.deck);
           } catch (err) {
             send(ws, {
               type: "error",
               message: err instanceof Error ? err.message : String(err),
             });
-            return;
-          }
-          if (room instanceof PendingRoom && room.isReady()) {
-            broadcast(manager.promote(room.id));
             return;
           }
           if (room instanceof PendingRoom) broadcastPending(room);
@@ -205,6 +210,50 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
           if (room.seatOf(connection) === null) {
             send(ws, { type: "room-joined", roomId: room.id, seats: room.seatStatuses() });
           }
+          return;
+        }
+        case "set-bot-deck": {
+          const room = requireRoom(manager, message.roomId);
+          try {
+            room.setBotDeck(message.seat, message.deck);
+          } catch (err) {
+            send(ws, {
+              type: "error",
+              message: err instanceof Error ? err.message : String(err),
+            });
+            return;
+          }
+          if (room instanceof PendingRoom) broadcastPending(room);
+          else broadcast(room);
+          // Same as `add-bot` above — a caller still on the seat picker
+          // isn't in `connectedSeats()`, so refresh them directly.
+          if (room.seatOf(connection) === null) {
+            send(ws, { type: "room-joined", roomId: room.id, seats: room.seatStatuses() });
+          }
+          return;
+        }
+        case "set-ready": {
+          const room = requirePendingRoom(manager, message.roomId);
+          try {
+            room.setReady(connection, message.ready);
+          } catch (err) {
+            send(ws, {
+              type: "error",
+              message: err instanceof Error ? err.message : String(err),
+            });
+            return;
+          }
+          broadcastPending(room);
+          return;
+        }
+        case "start-game": {
+          const room = requirePendingRoom(manager, message.roomId);
+          if (!room.allReady()) {
+            send(ws, { type: "error", message: "not everyone is ready yet" });
+            return;
+          }
+          const activeRoom = tryPromote(ws, manager, room);
+          if (activeRoom !== null) boundRoom = activeRoom;
           return;
         }
         case "dispatch": {
