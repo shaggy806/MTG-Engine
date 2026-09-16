@@ -496,11 +496,14 @@
   min-height: 0;
 }
 .quadrant-body .side-zone .card-back {
-  /* replaces .card-back's own --card-w-derived height: the pile stretches to
+  /* Replaces .card-back's own --card-w-derived height: the pile takes
      whatever the commander above it leaves, down to a floor that keeps the
-     count badge legible. */
+     count badge legible and up to the height a real card of this width would
+     be — past that it stops looking like a stack of cards and starts looking
+     like a tall empty box. Any room left over simply goes unused. */
   min-height: 52px;
   height: 100%;
+  max-height: calc(var(--card-w) * 1.4);
 }
 /* your hand + ability menu + priority/attack/block controls, in their own
    full-width strip below the quadrant grid (closer to how Arena keeps your
