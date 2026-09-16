@@ -36,6 +36,8 @@ const deck = (entries) =>
 // otherwise one side just sits there and the fuzz only exercises one player.
 const deckA = deck([
   ["Aura Mutation", 1],
+  ["Fortified Village", 1],
+  ["Game Trail", 1],
   ["Forest", 9],
   ["Tranquil Thicket", 2],
   ["Mishra's Factory", 2],
@@ -175,6 +177,7 @@ const deckA = deck([
 const deckB = deck([
   ["Stormfist Crusader", 1],
   ["Feed the Swarm", 1],
+  ["Foreboding Ruins", 1],
   ["Hoard-Smelter Dragon", 1],
   ["Dragon Mage", 1],
   ["Bloodgift Demon", 1],

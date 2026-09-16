@@ -612,11 +612,17 @@ clause (section 9):
 **`replacement?`** (`ReplacementSpec`, `replacements.ts`) — a replacement effect
 *is* a static ability:
 
-- `{ event: "enters-battlefield", tapped?, tappedUnless?, painIfUntapped?,
-  mayPayLife?, counters?: { kind, amount }, transformed? }` — a self-replacement.
+- `{ event: "enters-battlefield", tapped?, tappedUnless?,
+  tappedUnlessRevealFromHand?, painIfUntapped?, mayPayLife?,
+  counters?: { kind, amount }, transformed? }` — a self-replacement.
   `tapped` is unconditional; `tappedUnless: StaticCondition` is the check-land
   cycle (Rootbound Crag: `{ kind: "controls", filter: { subtypes: [...] },
   atLeast: 1 }`, via the `checkLandStatic`/`enterTappedUnlessLands` helpers);
+  `tappedUnlessRevealFromHand: [type, type]` is the reveal-land cycle (Port
+  Town, via the `revealLand` helper) — the one enters-tapped check that reads
+  your **hand** rather than the battlefield, which is why it isn't a
+  `StaticCondition`. The card says "you *may* reveal" and the engine always
+  does: declining only ever hides information, which nothing here models.
   `mayPayLife: N` is a shock land (a `pay-life-for-untapped` decision, via the
   `shockLand` helper); `painIfUntapped: N` deals damage if it *did* end up
   entering untapped (Rockfall Vale).
@@ -834,6 +840,10 @@ different card, or extend the engine (see `ROADMAP.md`).
   are unmodeled alt-cast / ETB-choice mechanics (needed-cards P18).
 
 **Partial:**
+
+- **"You may reveal a card from your hand"** on the reveal-land cycle is taken
+  automatically rather than offered as a choice — see
+  `tappedUnlessRevealFromHand` above.
 
 - **Text-change** only swaps one creature-type word (Artificial Evolution). No
   full "the words X become Y".

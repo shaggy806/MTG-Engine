@@ -111,6 +111,47 @@ export const shockLand = (
   });
 };
 
+/**
+ * A "reveal land" (Port Town, Game Trail, Foreboding Ruins, Fortified
+ * Village): "As ~ enters, you may reveal a [type] or [type] card from your
+ * hand. If you don't, it enters tapped."
+ *
+ * Unlike a check land, the condition reads your *hand* rather than the
+ * battlefield — and unlike a shock land, it isn't typed with the two basic
+ * land types, so it doesn't itself turn on a check land. The engine reveals
+ * automatically whenever it can; see `tappedUnlessRevealFromHand`.
+ */
+export const revealLand = (
+  name: string,
+  landTypes: readonly [string, string],
+): CardDefinition => {
+  const colors = landTypes
+    .map((t) => BASIC_LAND_MANA[t])
+    .filter((c): c is Color => c !== undefined);
+  return defineCard({
+    name,
+    types: ["land"],
+    text:
+      `As ${name} enters, you may reveal ${withArticle(landTypes[0])} or ` +
+      `${withArticle(landTypes[1])} card from your hand. If you don't, ` +
+      `${name} enters tapped.\n` +
+      `{T}: Add ${colors.map((c) => `{${c}}`).join(" or ")}.`,
+    static: [
+      {
+        affects: { scope: "self" },
+        replacement: {
+          event: "enters-battlefield",
+          tappedUnlessRevealFromHand: [...landTypes],
+        },
+        text:
+          `As ${name} enters, you may reveal ${withArticle(landTypes[0])} or ` +
+          `${withArticle(landTypes[1])} card from your hand. If you don't, ${name} enters tapped.`,
+      },
+    ],
+    activated: colors.map((c) => manaTapAbility(c)),
+  });
+};
+
 const NUM_WORD: Readonly<Record<number, string>> = { 2: "two", 3: "three", 4: "four" };
 
 /**

@@ -7565,6 +7565,26 @@ export class Game {
    * by the time this runs the object is in a graveyard. That's rule 608.2h,
    * last known information.
    */
+  /**
+   * Does `player` hold a card with one of `subtypes`, for the reveal-land
+   * cycle's "you may reveal a Plains or Island card from your hand"?
+   *
+   * Reads the *printed* subtypes off the registry rather than computed
+   * characteristics: the card is in hand, where layer effects don't reach,
+   * and `computeCharacteristics` degrades to printed values there anyway.
+   */
+  private canRevealFromHand(player: PlayerId, subtypes: readonly string[]): boolean {
+    for (const id of this.state.zones.perPlayer[player].hand) {
+      const object = this.state.objects[id];
+      if (object === undefined) continue;
+      const name = printedCardName(object);
+      if (!this.registry.has(name)) continue;
+      const def = this.registry.get(name);
+      if (def.subtypes.some((subtype) => subtypes.includes(subtype))) return true;
+    }
+    return false;
+  }
+
   private manaValueOfTarget(target: TargetRef): number {
     if (target.kind !== "object") return 0;
     const object = this.state.objects[target.object];
@@ -8036,6 +8056,12 @@ export class Game {
       if (
         r.tappedUnless !== undefined &&
         !staticConditionMet(this.state, this.registry, object, r.tappedUnless)
+      ) {
+        tapped = true;
+      }
+      if (
+        r.tappedUnlessRevealFromHand !== undefined &&
+        !this.canRevealFromHand(object.controller, r.tappedUnlessRevealFromHand)
       ) {
         tapped = true;
       }

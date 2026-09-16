@@ -130,11 +130,14 @@ import _poolFlawlessManeuver from "./pool/flawless-maneuver.js";
 import _poolFleshbagMarauder from "./pool/fleshbag-marauder.js";
 import _poolFloodedStrand from "./pool/flooded-strand.js";
 import _poolFog from "./pool/fog.js";
+import _poolForebodingRuins from "./pool/foreboding-ruins.js";
 import _poolForest from "./pool/forest.js";
+import _poolFortifiedVillage from "./pool/fortified-village.js";
 import _poolFoundryInspector from "./pool/foundry-inspector.js";
 import _poolFrontierBivouac from "./pool/frontier-bivouac.js";
 import _poolFumeSpitter from "./pool/fume-spitter.js";
 import _poolFyndhornElves from "./pool/fyndhorn-elves.js";
+import _poolGameTrail from "./pool/game-trail.js";
 import _poolGanaxAstralHunter from "./pool/ganax-astral-hunter.js";
 import _poolGarrukWildspeaker from "./pool/garruk-wildspeaker.js";
 import _poolGarruksUprising from "./pool/garruks-uprising.js";
@@ -242,6 +245,7 @@ import _poolPlains from "./pool/plains.js";
 import _poolPlateau from "./pool/plateau.js";
 import _poolPollutedDelta from "./pool/polluted-delta.js";
 import _poolPongify from "./pool/pongify.js";
+import _poolPortTown from "./pool/port-town.js";
 import _poolPrairieStream from "./pool/prairie-stream.js";
 import _poolPreordain from "./pool/preordain.js";
 import _poolPreyUpon from "./pool/prey-upon.js";
@@ -544,11 +548,14 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolFleshbagMarauder,
   _poolFloodedStrand,
   _poolFog,
+  _poolForebodingRuins,
   _poolForest,
+  _poolFortifiedVillage,
   _poolFoundryInspector,
   _poolFrontierBivouac,
   _poolFumeSpitter,
   _poolFyndhornElves,
+  _poolGameTrail,
   _poolGanaxAstralHunter,
   _poolGarrukWildspeaker,
   _poolGarruksUprising,
@@ -656,6 +663,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolPlateau,
   _poolPollutedDelta,
   _poolPongify,
+  _poolPortTown,
   _poolPrairieStream,
   _poolPreordain,
   _poolPreyUpon,

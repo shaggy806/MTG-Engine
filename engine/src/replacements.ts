@@ -48,6 +48,21 @@ export interface EntersBattlefieldReplacement {
    * Mountain or a Forest"), and the count-based version (Cinder Glade: "unless
    * you control two or more basic lands"). Evaluated once, as it enters. */
   readonly tappedUnless?: StaticCondition;
+  /**
+   * It enters tapped unless its controller reveals a card with one of these
+   * subtypes from their hand — the Shadows over Innistrad "reveal land" cycle
+   * (Port Town: "As this land enters, you may reveal a Plains or Island card
+   * from your hand. If you don't, this land enters tapped").
+   *
+   * Distinct from `tappedUnless`, which is a `StaticCondition` over the
+   * *battlefield*; this one reads the hand, which no `StaticCondition` can.
+   *
+   * The printed card says "you **may** reveal", and this reveals
+   * automatically whenever it can. Declining is never better except as
+   * hidden-information management, which the engine doesn't model anywhere —
+   * a deliberate simplification, recorded in AUTHORING.md §15.
+   */
+  readonly tappedUnlessRevealFromHand?: readonly string[];
   /** If it ends up entering *untapped*, it deals this much damage to its
    * controller (Rockfall Vale: "When Rockfall Vale enters untapped, it deals
    * 1 damage to you"). */
