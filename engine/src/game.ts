@@ -6112,7 +6112,13 @@ export class Game {
                 ? event.attacker
                 : event.type === "object-targeted"
                   ? event.object
-                  : undefined;
+                  : // The spell that was cast, so a cast trigger can read it —
+                    // "damage equal to **that spell's** mana value" is a
+                    // `{ manaValueOf: "trigger-object" }`, which read 0 without
+                    // this.
+                    event.type === "spell-cast"
+                    ? event.object
+                    : undefined;
           const powerOfId =
             event.type === "permanent-entered-battlefield"
               ? event.object
@@ -6279,7 +6285,13 @@ export class Game {
       case "cast-spell": {
         if (event.type !== "spell-cast") return false;
         const casterMatches =
-          spec.who === "any" || (spec.who === "you" && event.player === self.controller);
+          spec.who === "any" ||
+          (spec.who === "you" && event.player === self.controller) ||
+          // Anyone but this permanent's controller — Kaervek the Merciless's
+          // "whenever an opponent casts a spell". `TriggerWho` has always
+          // offered `"opponent"` here, but the match never handled it, so a
+          // card written that way type-checked and silently never fired.
+          (spec.who === "opponent" && event.player !== self.controller);
         if (!casterMatches) return false;
         if (spec.firstEachTurn && event.spellsThisTurn !== 1) return false;
         if (spec.noncreatureOnly) {
