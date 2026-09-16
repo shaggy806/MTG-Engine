@@ -1182,6 +1182,24 @@ export class HeuristicBotController extends AutomaticController {
     };
   }
 
+  /**
+   * Take as much as the choice allows, rather than `AutomaticController`'s
+   * conservative minimum. Every decision that reaches here is an upside the
+   * bot has usually just paid for — a library search, a graveyard
+   * recursion, a "look at the top N and take some" — and taking the minimum
+   * means cracking an Evolving Wilds and then declining to find the land.
+   * (Giving cards up is never routed through here: discarding, putting cards
+   * on the bottom and sacrificing are all their own decisions.)
+   */
+  chooseFromZone(
+    _view: ControllerView,
+    eligible: readonly ObjectId[],
+    min: number,
+    max: number,
+  ): readonly ObjectId[] {
+    return eligible.slice(0, Math.max(min, Math.min(max, eligible.length)));
+  }
+
   act(view: ControllerView): Action {
     const awaited = answerAwaited(this, view);
     if (awaited !== null) return awaited;

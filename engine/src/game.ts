@@ -4468,7 +4468,16 @@ export class Game {
         return `${def.name}'s ability has no legal ${spec} target`;
       }
     }
-    if (this.payMana(player, this.activatedAbilityManaCost(player, ability).cost) === null) {
+    if (
+      this.payMana(
+        player,
+        this.activatedAbilityManaCost(player, ability).cost,
+        undefined,
+        // Matches `activateAbility`'s own payment below: a source being tapped
+        // to pay `{T}` isn't available to pay the mana half as well.
+        ability.cost.tap ? sourceId : undefined,
+      ) === null
+    ) {
       return `${player} cannot pay for ${def.name}'s ability`;
     }
     if (
@@ -4551,13 +4560,17 @@ export class Game {
     // `ability.costReduction` (the Kamigawa Channel lands' per-legendary
     // discount).
     const { cost: manaCost, chosenX } = this.activatedAbilityManaCost(player, ability, xValue);
-    // Don't auto-tap the source for its own ability's mana cost unless there's
-    // no other way to pay (it may want to attack / hold up its `{T}` ability).
-    // A hand-zone (Channel) source is never a mana source to begin with.
+    // A `{T}` in the cost taps the source as part of paying, so it can't also
+    // be tapped for mana toward the same activation (rule 602.2a) — that's an
+    // exclusion, not a preference. Otherwise merely prefer to leave the source
+    // alone unless there's no other way to pay (it may want to attack, or hold
+    // up its own `{T}` ability). A hand-zone (Channel) source is never a mana
+    // source to begin with.
     const payment = this.payMana(
       player,
       manaCost,
       ability.cost.tap || ability.zone === "hand" ? undefined : sourceId,
+      ability.cost.tap ? sourceId : undefined,
     );
     if (payment === null) {
       throw new Error(`${player} cannot pay for ${def.name}'s ability`);
@@ -4830,15 +4843,22 @@ export class Game {
    * chosen, life counted — or `null` if `player` can't pay. This is the entry
    * point every caster / activator / ward check goes through; feed the result
    * to {@link executePayment}.
+   *
+   * `avoid` is a preference: that source is tried last, so a permanent isn't
+   * casually tapped for its own ability's mana cost when something else could
+   * pay. `exclude` is a fact: that source cannot be used at all, because it is
+   * already being tapped to pay a `{T}` cost and rule 602.2a doesn't let one
+   * permanent pay two tap costs at once.
    */
   private payMana(
     player: PlayerId,
     cost: ManaCost,
     avoid?: ObjectId,
+    exclude?: ObjectId,
   ): ManaPayment | null {
-    const resolved = this.resolveHybridCost(player, cost, avoid);
+    const resolved = this.resolveHybridCost(player, cost, avoid, exclude);
     if (resolved === null) return null;
-    const steps = this.planManaPayment(player, resolved.concrete, avoid);
+    const steps = this.planManaPayment(player, resolved.concrete, avoid, exclude);
     if (steps === null) return null;
     return { steps, life: resolved.life, resolved: resolved.concrete };
   }
@@ -4867,6 +4887,7 @@ export class Game {
     player: PlayerId,
     cost: ManaCost,
     avoid: ObjectId | undefined,
+    exclude?: ObjectId,
   ): { concrete: ManaCost; life: number } | null {
     if (cost.hybrid.length === 0) return { concrete: cost, life: 0 };
 
@@ -4887,7 +4908,7 @@ export class Game {
         const nextColored = { ...concrete.colored };
         nextColored[option.color] += 1;
         const trial: ManaCost = { ...concrete, colored: nextColored };
-        if (this.planManaPayment(player, trial, avoid) !== null) {
+        if (this.planManaPayment(player, trial, avoid, exclude) !== null) {
           chosen = trial;
           break;
         }
@@ -4896,7 +4917,7 @@ export class Game {
         for (const option of pip) {
           if (option.kind !== "generic") continue;
           const trial: ManaCost = { ...concrete, generic: concrete.generic + option.amount };
-          if (this.planManaPayment(player, trial, avoid) !== null) {
+          if (this.planManaPayment(player, trial, avoid, exclude) !== null) {
             chosen = trial;
             break;
           }
@@ -4929,6 +4950,7 @@ export class Game {
     player: PlayerId,
     cost: ManaCost,
     avoid?: ObjectId,
+    exclude?: ObjectId,
   ): ManaPlanStep[] | null {
     const pool = this.state.players[player].manaPool;
 
@@ -4958,7 +4980,7 @@ export class Game {
     });
     const all = this.manaSources(player)
       .map(affordableOptions)
-      .filter((s) => s.options.length > 0);
+      .filter((s) => s.options.length > 0 && s.id !== exclude);
     const sources =
       avoid === undefined
         ? all
