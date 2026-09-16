@@ -278,6 +278,13 @@ export function isLegalTarget(
       const types = registry.get(printedCardName(object)).types;
       return types.includes("instant") || types.includes("sorcery");
     }
+    case "opponent-or-planeswalker":
+      return (
+        (isLivingPlayer(state, ref) && ref.kind === "player" && ref.player !== forPlayer) ||
+        (ref.kind === "object" &&
+          isPermanentOfType(state, registry, ref.object, (t) => t.includes("planeswalker")))
+      );
+    // `any-target` deliberately falls through — keep them adjacent.
     case "any-target":
     case "creature-or-player":
       return (

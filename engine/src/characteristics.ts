@@ -149,6 +149,10 @@ function evalStaticCondition(
       );
     case "creature-died-this-turn":
       return state.creaturesDiedThisTurn > 0;
+    case "opponent-lost-life-this-turn":
+      return state.turnOrder.some(
+        (p) => p !== you && state.players[p].lostLifeThisTurn,
+      );
     case "self-counters": {
       // Last-known information once the source has left the battlefield
       // (603.10) — `moveObject` clears `counters`, so a dies-trigger asking

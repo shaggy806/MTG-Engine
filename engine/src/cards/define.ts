@@ -152,6 +152,9 @@ export type StaticCondition =
   /** A creature died this turn (Liliana's Devotee). Reads the turn-scoped
    * `GameState.creaturesDiedThisTurn`. */
   | { readonly kind: "creature-died-this-turn" }
+  /** An opponent of the source's controller has lost life this turn (Theater
+   * of Horrors). Reads the per-player `lostLifeThisTurn` flag. */
+  | { readonly kind: "opponent-lost-life-this-turn" }
   /**
    * The object whose event fired the *triggered ability* currently resolving
    * matches `filter` — Akoum Hellkite's "Whenever a land you control enters,

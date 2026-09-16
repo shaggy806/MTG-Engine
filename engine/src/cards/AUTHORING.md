@@ -363,6 +363,18 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
   Fallen); `else` only when it was declined ("If you didn't, …", or an
   "unless" cost framed as the decline branch — Springheart Nantuko, The
   Gitrog Monster's upkeep). needed-cards P19.
+- **`impulse-exile { amount, duration, castOnly?, choose?, yourTurnOnly?, gate? }`**
+  — "impulse draw": exile the top N cards face-up and let yourself play them
+  (Dream Pillager, Tectonic Giant, Theater of Horrors). `duration` is
+  `"end-of-turn"`, `"your-next-turn"` (counted down as *that player's* turns
+  end, so extra turns and multiplayer order stay exact) or `"while-source"`.
+  `castOnly` is "cast **spells** from among them" (no lands) rather than "play
+  them". `choose` grants the permission to only that many of the exiled cards,
+  via a `choose-from-zone` decision whose `destination` is `"exile-playable"`
+  — the cards never move. `yourTurnOnly` / `gate` are checked live every time
+  the permission is *used*, as opposed to `duration`, which is when it lapses.
+  The mark rides on `GameObject.impulse`, so it survives cloning and the
+  source leaving.
 - **`unless { chooser, options, otherwise }`** — a *punisher* clause, where
   **someone else** decides whether to pay and `otherwise` happens only if they
   don't (Demanding Dragon, Indulgent Tormentor, Kazuul). `chooser` is a
@@ -409,7 +421,7 @@ values (`target.ts`):
 
 `"any-target"`, `"creature"`, `"nonblack-creature"`, `"creature-you-control"`,
 `"creature-an-opponent-controls"`, `"player"`, `"opponent"` (a player other
-than the chooser), `"creature-or-player"`,
+than the chooser), `"creature-or-player"`, `"opponent-or-planeswalker"`,
 `"permanent"`, `"nonland-permanent"`, `"nonland-permanent-an-opponent-controls"`,
 `"land"`, `"artifact"`, `"artifact-an-opponent-controls"`, `"artifact-or-enchantment"`,
 `"artifact-enchantment-or-nonbasic-land-an-opponent-controls"`,
@@ -695,6 +707,9 @@ clause (section 9):
 - `{ kind: "your-turn" }`
 - `{ kind: "threshold" }` — 7+ cards in your graveyard.
 - `{ kind: "metalcraft" }` — 3+ artifacts.
+- `{ kind: "opponent-lost-life-this-turn" }` — Theater of Horrors. Reads the
+  per-player `lostLifeThisTurn` flag, set in `changeLife` so it catches damage
+  and drain alike.
 - `{ kind: "creature-died-this-turn" }` — Liliana's Devotee. Reads the
   turn-scoped `GameState.creaturesDiedThisTurn`, counted in `moveObject`
   while the dying permanent's types are still readable.

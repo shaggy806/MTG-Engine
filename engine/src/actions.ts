@@ -35,7 +35,10 @@ export type CastVia =
   | "disturb"
   | "adventure"
   | "suspend"
-  | "cascade";
+  | "cascade"
+  /** "Impulse draw" (Dream Pillager, Tectonic Giant, Theater of Horrors) — a
+   * card exiled face-up with permission to play it, for its normal cost. */
+  | "impulse";
 
 export interface AttackerDeclaration {
   readonly attacker: ObjectId;

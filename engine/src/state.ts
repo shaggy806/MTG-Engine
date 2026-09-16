@@ -8,7 +8,7 @@
 
 import type { CastVia } from "./actions.js";
 import type { TriggeredAbility } from "./abilities.js";
-import type { CardType, Keyword, StaticAbility } from "./cards.js";
+import type { CardType, Keyword, StaticAbility, StaticCondition } from "./cards.js";
 import type { EffectSpec } from "./effects.js";
 import type { CardFilter } from "./filter.js";
 import type { Color, ManaPool } from "./mana.js";
@@ -64,6 +64,40 @@ export interface GameObject {
    * (rule 603.10) for a question that can only be asked after the permanent
    * has left — Undying's "if it had no +1/+1 counters on it". */
   lastKnownCounters?: Record<string, number>;
+  /**
+   * "Impulse draw" — this card is exiled face-up and its owner may play it.
+   * `until` is the turn number the permission lapses on (an "until end of
+   * turn" impulse); absent means it lasts as long as `exiledWith` is on the
+   * battlefield (Theater of Horrors).
+   *
+   * `castOnly` distinguishes "you may **cast spells** from among those cards"
+   * (Dream Pillager — no lands) from "you may **play** them" (Tectonic Giant).
+   */
+  impulse?: {
+    readonly player: PlayerId;
+    /**
+     * When the permission lapses:
+     * - `end-of-turn` — this turn only (Dream Pillager).
+     * - `your-turns` — through the end of the player's next `remaining`
+     *   turns (Tectonic Giant's "until the end of your next turn").
+     *   Counted down as each of *their* turns ends, so extra turns and
+     *   multiplayer turn order are handled exactly rather than by guessing a
+     *   turn number.
+     * - `while-source` — for as long as the permanent that exiled it is on
+     *   the battlefield (Theater of Horrors).
+     */
+    expiry:
+      | { readonly kind: "end-of-turn"; readonly turn: number }
+      | { kind: "your-turns"; remaining: number }
+      | { readonly kind: "while-source"; readonly source: ObjectId };
+    readonly castOnly?: boolean;
+    /** Extra gates on *using* the permission, as opposed to when it lapses —
+     * Theater of Horrors' "**During your turn, if an opponent lost life this
+     * turn**, you may play …". Evaluated live, so the cards become playable
+     * and unplayable again as the condition changes. */
+    readonly yourTurnOnly?: boolean;
+    readonly gate?: StaticCondition;
+  };
   /**
    * Players this permanent has dealt combat damage to this turn — Steel
    * Hellkite's "whose controller was dealt combat damage by this creature
@@ -337,6 +371,9 @@ export interface PlayerState {
    * turn" triggers. (Storm counts *all* players' spells — see
    * `GameState.spellsCastThisTurn`.) Reset in `beginTurn`. ROADMAP Phase 8. */
   spellsCastThisTurn: number;
+  /** True once this player has lost life this turn — Theater of Horrors's
+   * "if an opponent lost life this turn". Reset in `beginTurn`. */
+  lostLifeThisTurn: boolean;
   /** Energy counters this player has (rule 122 / {E} — ROADMAP Phase 10). A
    * player resource, not tied to any permanent; spent by a `payEnergy` ability
    * cost, gained by a `get-energy` effect. */
@@ -447,7 +484,11 @@ export type AwaitingDecision =
       readonly eligible: readonly ObjectId[];
       readonly min: number;
       readonly max: number;
-      readonly destination: "battlefield" | "hand";
+      readonly destination: "battlefield" | "hand" | "exile-playable";
+      /** For `destination: "exile-playable"` — the impulse permission to
+       * stamp on the chosen cards, which stay in exile either way
+       * (Tectonic Giant: "exile the top two, choose one of them"). */
+      readonly impulseGrant?: GameObject["impulse"];
       /** What happens to any candidate not chosen: shuffled to the bottom of
        * the library; left exactly where it already was (nothing was ever
        * moved just to look at it — the graveyard-search case); the whole
@@ -847,6 +888,7 @@ export function createPlayerState(id: PlayerId, rules: GameRules): PlayerState {
     commanderCastCounts: {},
     commanderDamageTaken: {},
     spellsCastThisTurn: 0,
+    lostLifeThisTurn: false,
     energy: 0,
     printings: {},
   };

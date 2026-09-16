@@ -873,6 +873,29 @@ export class Game {
       );
     }
 
+    // "Impulse draw" — a card exiled face-up with permission to play it, for
+    // its ordinary cost (Dream Pillager, Tectonic Giant, Theater of Horrors).
+    for (const card of this.state.zones.shared.exile) {
+      if (!this.impulsePlayable(player, card)) continue;
+      const object = this.state.objects[card];
+      const def = this.registry.get(object.cardName);
+      if (def.types.includes("land")) {
+        // "You may *play* them" includes lands; "cast spells from among them"
+        // doesn't. Still costs the land drop.
+        if (object.impulse?.castOnly === true) continue;
+        if (this.whyCannotPlayLand(player, card) === null) {
+          out.push({ kind: "play-land", card, cardName: def.name });
+        }
+        continue;
+      }
+      out.push(
+        ...this.castSpellActions(player, card, def.name, def, {
+          via: "impulse",
+          costString: def.manaCost,
+        }),
+      );
+    }
+
     // Adventure (rule 715.3) — a card exiled by its adventure resolving may be
     // cast as its creature half (face 0) from exile.
     for (const card of this.state.zones.shared.exile) {
@@ -2234,6 +2257,7 @@ export class Game {
     for (const player of this.state.turnOrder) {
       this.state.players[player].landsPlayedThisTurn = 0;
       this.state.players[player].spellsCastThisTurn = 0;
+      this.state.players[player].lostLifeThisTurn = false;
     }
     // Day → night if the previous turn's player cast no spells (726.3);
     // night → day if they cast two or more (726.4). Only once it's day or night.
@@ -2514,6 +2538,15 @@ export class Game {
     // rest to `restDestination`; with no `restDestination` they all go to the
     // same place, which is every other tutor.
     chosen.forEach((id, index) => {
+      // "Exile the top two, choose one of them" — the chosen cards don't
+      // move at all, they just gain the impulse permission.
+      if (awaiting.destination === "exile-playable") {
+        const object = this.state.objects[id];
+        if (object !== undefined && awaiting.impulseGrant !== undefined) {
+          object.impulse = { ...awaiting.impulseGrant };
+        }
+        return;
+      }
       const to =
         index === 0 || awaiting.restDestination === undefined
           ? awaiting.destination
@@ -2577,6 +2610,9 @@ export class Game {
   }
 
   private finishCleanup(): void {
+    // Impulse-draw permissions age here, alongside every other
+    // "until end of turn" effect — see `GameObject.impulse`.
+    this.expireImpulsePermissions();
     // "Until end of turn" control effects (Act of Treason) end — control
     // reverts to the owner, and the creature is summoning-sick for them again.
     for (const id of this.state.zones.shared.battlefield) {
@@ -3590,7 +3626,11 @@ export class Game {
     const playable =
       zones.hand.includes(cardId) ||
       (zones.graveyard.includes(cardId) && this.mayPlayFromGraveyard(player, cardId)) ||
-      (zones.library[0] === cardId && this.mayPlayFromLibraryTop(player, cardId));
+      (zones.library[0] === cardId && this.mayPlayFromLibraryTop(player, cardId)) ||
+      // "Impulse draw" that says *play* rather than *cast* includes lands
+      // (Tectonic Giant, Theater of Horrors).
+      (this.impulsePlayable(player, cardId) &&
+        this.state.objects[cardId]?.impulse?.castOnly !== true);
     if (!playable) {
       return `${player} cannot play that card as a land`;
     }
@@ -4220,6 +4260,12 @@ export class Game {
         return `${def.name} is not on an adventure in ${player}'s exile`;
       }
       if (face !== 0) return `an adventure card is cast as its creature half`;
+    } else if (via === "impulse") {
+      // "Impulse draw" — exiled face-up with permission to play it, for its
+      // ordinary cost.
+      if (!this.impulsePlayable(player, cardId)) {
+        return `${def.name} is not playable from exile by ${player}`;
+      }
     } else if (
       !this.state.zones.perPlayer[player].hand.includes(cardId) &&
       !this.isCastableCommander(player, cardId)
@@ -6383,6 +6429,8 @@ export class Game {
         this.addCounter(target, counter, amount),
       amass: (amount, creatureType) => this.amass(controller, amount, creatureType),
       populate: () => this.populate(controller),
+      impulseExile: (amount, duration, castOnly, opts) =>
+        this.impulseExile(controller, source, amount, duration, castOnly, opts),
       unless: (chooser, options, otherwise) =>
         this.beginUnless(source, controller, x, targets, triggerObject, chooser, options, otherwise),
       powerOf: (target) =>
@@ -6809,6 +6857,128 @@ export class Game {
       targets,
       manaOption?.pay,
     );
+  }
+
+  /**
+   * "Impulse draw" — see the `"impulse-exile"` {@link EffectSpec}.
+   *
+   * The cards are exiled face-up and marked as playable by `controller`.
+   * `legalActions` scans exile for those marks, so the permission is carried
+   * on the *card* rather than on a list somewhere, which means it survives
+   * the source leaving, a `structuredClone`, and anything else that moves
+   * state around.
+   */
+  private impulseExile(
+    controller: PlayerId,
+    source: ObjectId,
+    amount: number,
+    duration: "end-of-turn" | "your-next-turn" | "while-source",
+    castOnly: boolean,
+    opts: {
+      readonly choose?: number;
+      readonly yourTurnOnly?: boolean;
+      readonly gate?: StaticCondition;
+    } = {},
+  ): void {
+    if (amount <= 0) return;
+    const taken = this.state.zones.perPlayer[controller].library.slice(0, amount);
+    if (taken.length === 0) return;
+    for (const id of taken) this.moveObject(id, "exile");
+
+    const grant: GameObject["impulse"] = {
+      player: controller,
+      expiry:
+        duration === "end-of-turn"
+          ? { kind: "end-of-turn", turn: this.state.turn.number }
+          : duration === "your-next-turn"
+            // One more of *this player's* turns has to end before it lapses.
+            ? { kind: "your-turns", remaining: 1 }
+            : { kind: "while-source", source },
+      ...(castOnly ? { castOnly: true } : {}),
+      ...(opts.yourTurnOnly ? { yourTurnOnly: true } : {}),
+      ...(opts.gate !== undefined ? { gate: opts.gate } : {}),
+    };
+
+    // "Choose one of them" — the rest stay exiled with no permission.
+    const choose = opts.choose;
+    if (choose !== undefined && choose < taken.length) {
+      this.state.awaiting = {
+        kind: "choose-from-zone",
+        player: controller,
+        ids: taken,
+        eligible: taken,
+        min: Math.min(choose, taken.length),
+        max: Math.min(choose, taken.length),
+        destination: "exile-playable",
+        leftover: "stay",
+        impulseGrant: grant,
+      };
+      return;
+    }
+    for (const id of taken) {
+      const object = this.state.objects[id];
+      if (object !== undefined) object.impulse = { ...grant };
+    }
+  }
+
+  /**
+   * Age every impulse permission as a turn ends — see `GameObject.impulse`.
+   *
+   * A `your-turns` expiry counts down only on *that player's* turns, which is
+   * how "until the end of your next turn" stays exact through extra turns and
+   * however many opponents there are, instead of guessing a turn number when
+   * the permission was granted.
+   */
+  private expireImpulsePermissions(): void {
+    const active = this.activePlayer;
+    for (const id of this.state.zones.shared.exile) {
+      const object = this.state.objects[id];
+      const impulse = object?.impulse;
+      if (object === undefined || impulse === undefined) continue;
+      if (impulse.expiry.kind === "end-of-turn") {
+        if (impulse.expiry.turn <= this.state.turn.number) delete object.impulse;
+      } else if (impulse.expiry.kind === "your-turns" && impulse.player === active) {
+        if (impulse.expiry.remaining <= 0) delete object.impulse;
+        else impulse.expiry.remaining -= 1;
+      }
+    }
+  }
+
+  /**
+   * May `player` play `card` off an impulse-draw exile right now?
+   *
+   * `until` is the turn the permission was granted on, so it lapses the
+   * moment the turn number moves; `exiledWith` keeps it alive only while that
+   * permanent is still on the battlefield (Theater of Horrors).
+   */
+  private impulsePlayable(player: PlayerId, card: ObjectId): boolean {
+    const object = this.state.objects[card];
+    const impulse = object?.impulse;
+    if (object === undefined || impulse === undefined) return false;
+    if (object.zone !== "exile" || impulse.player !== player) return false;
+    // Gates on *using* it, checked live — Theater of Horrors' cards come and
+    // go as the turn and the life-loss condition change.
+    if (impulse.yourTurnOnly === true && this.activePlayer !== player) return false;
+    if (impulse.gate !== undefined) {
+      const gateSource =
+        impulse.expiry.kind === "while-source"
+          ? this.state.objects[impulse.expiry.source]
+          : object;
+      if (
+        gateSource === undefined ||
+        !staticConditionMet(this.state, this.registry, gateSource, impulse.gate)
+      ) {
+        return false;
+      }
+    }
+    if (impulse.expiry.kind === "end-of-turn") {
+      return impulse.expiry.turn === this.state.turn.number;
+    }
+    if (impulse.expiry.kind === "while-source") {
+      const src = this.state.objects[impulse.expiry.source];
+      return src !== undefined && src.zone === "battlefield";
+    }
+    return true;
   }
 
   private populate(controller: PlayerId): void {
@@ -8395,6 +8565,9 @@ export class Game {
   private changeLife(player: PlayerId, delta: number): void {
     const playerState = this.state.players[player];
     playerState.life += delta;
+    // "If an opponent lost life this turn" (Theater of Horrors) — recorded
+    // here so it catches every path, damage and drain alike.
+    if (delta < 0) playerState.lostLifeThisTurn = true;
     this.emit({
       type: "life-changed",
       player,

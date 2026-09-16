@@ -702,6 +702,31 @@ export type EffectSpec =
       readonly otherwise: EffectSpec;
     }
   | {
+      /**
+       * "Impulse draw" — exile the top `amount` cards of your library face-up
+       * and let yourself play them (Dream Pillager, Tectonic Giant, Theater
+       * of Horrors).
+       *
+       * `duration: "end-of-turn"` is the common shape; `"while-source"` keeps
+       * the permission for as long as the permanent that exiled them is on
+       * the battlefield. `castOnly` is "you may **cast spells** from among
+       * them" (no lands) rather than "you may **play** them".
+       */
+      readonly kind: "impulse-exile";
+      readonly amount: EffectAmount;
+      readonly duration: "end-of-turn" | "your-next-turn" | "while-source";
+      readonly castOnly?: boolean;
+      /** Grant the permission to only this many of the exiled cards, chosen
+       * by the controller — Tectonic Giant's "exile the top two cards of your
+       * library. **Choose one of them.**" The rest stay exiled with no
+       * permission. Omit to grant it to all of them. */
+      readonly choose?: number;
+      /** Gates on *using* the permission (Theater of Horrors), as opposed to
+       * `duration`, which is when it lapses for good. */
+      readonly yourTurnOnly?: boolean;
+      readonly gate?: StaticCondition;
+    }
+  | {
       /** Scry `amount` (rule 701.18) — look at the top N, put any number on
        * the bottom, keep the rest on top. `then` (Preordain: draw a card) is
        * applied after. */
@@ -886,6 +911,17 @@ export interface EffectApi {
   doublePtAll(filter: CardFilter, duration: PtDuration): void;
   /** See the `"grant-player-hexproof"` {@link EffectSpec}. */
   grantPlayerHexproof(who: PlayerScope): void;
+  /** See the `"impulse-exile"` {@link EffectSpec}. */
+  impulseExile(
+    amount: number,
+    duration: "end-of-turn" | "your-next-turn" | "while-source",
+    castOnly: boolean,
+    opts?: {
+      readonly choose?: number;
+      readonly yourTurnOnly?: boolean;
+      readonly gate?: StaticCondition;
+    },
+  ): void;
   /** See the `"unless"` {@link EffectSpec}. */
   unless(
     chooser: number | "trigger-controller",
@@ -1476,6 +1512,13 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       );
       return;
     }
+    case "impulse-exile":
+      ctx.impulseExile(amountValue(spec.amount, ctx), spec.duration, spec.castOnly === true, {
+        choose: spec.choose,
+        yourTurnOnly: spec.yourTurnOnly,
+        gate: spec.gate,
+      });
+      return;
     case "unless":
       ctx.unless(spec.chooser, spec.options, spec.otherwise);
       return;

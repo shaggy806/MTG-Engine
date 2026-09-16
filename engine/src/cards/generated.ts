@@ -111,6 +111,7 @@ import _poolDragonTempest from "./pool/dragon-tempest.js";
 import _poolDragonkinBerserker from "./pool/dragonkin-berserker.js";
 import _poolDragonskullSummit from "./pool/dragonskull-summit.js";
 import _poolDragonspeakerShaman from "./pool/dragonspeaker-shaman.js";
+import _poolDreamPillager from "./pool/dream-pillager.js";
 import _poolDreamrootCascade from "./pool/dreamroot-cascade.js";
 import _poolDrownedCatacomb from "./pool/drowned-catacomb.js";
 import _poolEiganjoSeatOfTheEmpire from "./pool/eiganjo-seat-of-the-empire.js";
@@ -365,6 +366,7 @@ import _poolTalismanOfUnity from "./pool/talisman-of-unity.js";
 import _poolTanaTheBloodsower from "./pool/tana-the-bloodsower.js";
 import _poolTannukMemorialEnsign from "./pool/tannuk-memorial-ensign.js";
 import _poolTearAsunder from "./pool/tear-asunder.js";
+import _poolTectonicGiant from "./pool/tectonic-giant.js";
 import _poolTempleGarden from "./pool/temple-garden.js";
 import _poolTempleOfAbandon from "./pool/temple-of-abandon.js";
 import _poolTempleOfDeceit from "./pool/temple-of-deceit.js";
@@ -383,6 +385,7 @@ import _poolTerminate from "./pool/terminate.js";
 import _poolTerramorphicExpanse from "./pool/terramorphic-expanse.js";
 import _poolTerrorOfThePeaks from "./pool/terror-of-the-peaks.js";
 import _poolThaliaGuardianOfThraben from "./pool/thalia-guardian-of-thraben.js";
+import _poolTheaterOfHorrors from "./pool/theater-of-horrors.js";
 import _poolThievingMagpie from "./pool/thieving-magpie.js";
 import _poolThornOfTheBlackRose from "./pool/thorn-of-the-black-rose.js";
 import _poolThranDynamo from "./pool/thran-dynamo.js";
@@ -578,6 +581,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolDragonkinBerserker,
   _poolDragonskullSummit,
   _poolDragonspeakerShaman,
+  _poolDreamPillager,
   _poolDreamrootCascade,
   _poolDrownedCatacomb,
   _poolEiganjoSeatOfTheEmpire,
@@ -832,6 +836,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTanaTheBloodsower,
   _poolTannukMemorialEnsign,
   _poolTearAsunder,
+  _poolTectonicGiant,
   _poolTempleGarden,
   _poolTempleOfAbandon,
   _poolTempleOfDeceit,
@@ -850,6 +855,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTerramorphicExpanse,
   _poolTerrorOfThePeaks,
   _poolThaliaGuardianOfThraben,
+  _poolTheaterOfHorrors,
   _poolThievingMagpie,
   _poolThornOfTheBlackRose,
   _poolThranDynamo,

@@ -21,6 +21,9 @@ export type TargetSpec =
    * Iridescent Vinelasher). */
   | "opponent"
   | "creature-or-player"
+  /** An opponent, or any planeswalker (Theater of Horrors' "target opponent
+   * or planeswalker"). */
+  | "opponent-or-planeswalker"
   | "permanent"
   | "nonland-permanent"
   | "land"
