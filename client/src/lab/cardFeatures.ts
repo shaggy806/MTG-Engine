@@ -5,6 +5,7 @@ import type {
   StaticAbility,
   TriggeredAbility,
 } from 'engine'
+import { describeTargetSpec } from 'engine'
 
 /**
  * A flat readout of which engine features a card exercises — effect kinds,
@@ -72,28 +73,28 @@ export function describeCardFeatures(def: CardDefinition): CardFeatures {
 
   walkEffect(def.effect, effects)
   if (def.resolve) flags.add('imperative resolve()')
-  for (const t of def.targets) targets.add(t)
+  for (const t of def.targets) targets.add(describeTargetSpec(t))
 
   for (const a of def.activated as readonly ActivatedAbility[]) {
     abilityCostTags(a, costs)
     walkEffect(a.effect, effects)
-    for (const t of a.targets) targets.add(t)
+    for (const t of a.targets) targets.add(describeTargetSpec(t))
     if (a.resolve) flags.add('imperative resolve()')
   }
   for (const tr of def.triggered as readonly TriggeredAbility[]) {
     triggers.add(tr.trigger.on)
     walkEffect(tr.effect, effects)
-    for (const t of tr.targets) targets.add(t)
+    for (const t of tr.targets) targets.add(describeTargetSpec(t))
     if (tr.resolve) flags.add('imperative resolve()')
   }
   for (const s of def.static) staticTags(s, statics)
   for (const ch of def.chapters ?? []) {
     walkEffect(ch.effect, effects)
-    for (const t of ch.targets) targets.add(t)
+    for (const t of ch.targets) targets.add(describeTargetSpec(t))
   }
   for (const m of def.castModal?.modes ?? []) {
     walkEffect(m.effect, effects)
-    for (const t of m.targets ?? []) targets.add(t)
+    for (const t of m.targets ?? []) targets.add(describeTargetSpec(t))
   }
 
   const flagFields: (keyof CardDefinition)[] = [

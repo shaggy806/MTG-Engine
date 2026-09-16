@@ -10,6 +10,7 @@ import type {
   TargetSpec,
   VisibleObject,
 } from 'engine'
+import { describeTargetSpec } from 'engine'
 import { useNetworkGame } from './net/useNetworkGame.ts'
 import type { NetworkGame } from './net/useNetworkGame.ts'
 import { computeBoardEntries } from './game/board.ts'
@@ -1893,7 +1894,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       <div className="controls">
         <span>
           {activeTargeting.label}: choose{' '}
-          {activeTargeting.specs[activeTargeting.picked.length]} (
+          {describeTargetSpec(activeTargeting.specs[activeTargeting.picked.length])} (
           {activeTargeting.picked.length + 1}/{activeTargeting.specs.length})
         </span>
         {activeTargeting.kind === 'choose-targets' ? null : (

@@ -374,7 +374,22 @@ export type LegalAction =
        * instead needs no such cap beyond that color's own pip count, which
        * isn't echoed here — a driver that wants to pay colors reads them
        * off `PlayerView`). */
-      readonly convoke?: { readonly candidates: readonly ObjectId[]; readonly maxGeneric: number };
+      readonly convoke?: {
+        readonly candidates: readonly ObjectId[];
+        readonly maxGeneric: number;
+        /**
+         * A payment that is known to work: the greedy allocation
+         * `legalActions` itself used to decide this spell is castable at all.
+         *
+         * This matters because a convoke-only-affordable spell is offered on
+         * the strength of that allocation, and it may pay *coloured* pips
+         * with matching creatures. A driver that taps the same creatures but
+         * has them all pay `"generic"` can therefore still fail to cover the
+         * cost — which is correct rules behaviour, and used to crash the
+         * fuzzer. A driver with no opinion should echo this back verbatim.
+         */
+        readonly proof: readonly ConvokePayment[];
+      };
     }
   | {
       readonly kind: "activate-ability";

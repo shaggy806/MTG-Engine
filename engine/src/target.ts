@@ -1,5 +1,6 @@
 /** Reference types for spell / ability targets. Pure data, no logic. */
 
+import type { CardFilter } from "./filter.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 
 export type TargetRef =
@@ -50,7 +51,44 @@ export type TargetSpec =
   | "instant-or-sorcery-spell"
   /** An instant or sorcery card in the targeting player's graveyard
    * (Snapcaster Mage — ROADMAP Phase 6b). */
-  | "instant-or-sorcery-in-your-graveyard";
+  | "instant-or-sorcery-in-your-graveyard"
+  /**
+   * A card in a graveyard — the general form, and the only structured
+   * (non-string) `TargetSpec`.
+   *
+   * Every other spec is a string literal because the set of "permanent on the
+   * battlefield" shapes is small and enumerable. Graveyard targeting isn't:
+   * cards differ on *whose* graveyard and on an arbitrary card filter
+   * (Withered Wretch takes any card in any graveyard; Cemetery Reaper a
+   * creature card; Haven of the Spirit Dragon a Dragon creature card in
+   * **your** graveyard), and spelling each combination as its own literal
+   * would not converge.
+   *
+   * `whose` defaults to `"any"`. `filter` is matched against the card's
+   * printed characteristics — layer effects don't reach a graveyard.
+   */
+  | {
+      readonly kind: "card-in-graveyard";
+      readonly whose?: "any" | "you" | "opponent";
+      readonly filter?: CardFilter;
+    };
+
+/**
+ * A short human label for a target slot, for a UI prompt ("choose a
+ * creature"). The string specs are already their own label; the structured
+ * one needs building.
+ */
+export function describeTargetSpec(spec: TargetSpec | string): string {
+  if (typeof spec === "string") return spec;
+  const whose =
+    spec.whose === "you"
+      ? "your graveyard"
+      : spec.whose === "opponent"
+        ? "an opponent's graveyard"
+        : "a graveyard";
+  const what = spec.filter?.type ?? "card";
+  return `${what} in ${whose}`;
+}
 
 export const targetsPlayer = (ref: TargetRef, player: PlayerId): boolean =>
   ref.kind === "player" && ref.player === player;

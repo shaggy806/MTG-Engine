@@ -147,10 +147,11 @@ function evalStaticCondition(
           );
         }).length >= condition.atLeast
       );
+    case "target":
     case "trigger-object":
-      // A static ability has no triggering object — this kind is only ever
-      // meaningful inside a triggered ability's `conditional` effect, where
-      // the resolution context answers it instead (see `Game`'s
+      // A static ability has neither a triggering object nor chosen targets —
+      // both kinds are only meaningful inside a `conditional` effect, where
+      // the resolution context answers them instead (see `Game`'s
       // `conditionMet`).
       return false;
   }

@@ -802,23 +802,15 @@ function castExtras(
     ...(sac !== undefined && sac.choices.length > 0
       ? { sacrifice: sac.choices[pickIndex(sac.choices.length)] }
       : {}),
-    // Always pays "generic" — simple and always valid regardless of a
-    // creature's own colors, capped at `maxGeneric` so the random subset
-    // can never overpay the cost's generic portion. Doesn't exercise
-    // colored convoke payment; `convoke.test.ts` covers that directly.
-    ...(convokeInfo !== undefined && convokeInfo.candidates.length > 0 && convokeInfo.maxGeneric > 0
-      ? {
-          convoke: (() => {
-            const pool = [...convokeInfo.candidates];
-            const want = Math.min(pool.length, convokeInfo.maxGeneric, pickIndex(pool.length + 1));
-            const chosen: ConvokePayment[] = [];
-            for (let i = 0; i < want; i += 1) {
-              const [creature] = pool.splice(pickIndex(pool.length), 1);
-              chosen.push({ creature, pays: "generic" });
-            }
-            return chosen;
-          })(),
-        }
+    // Echo back the allocation `legalActions` proved castable rather than
+    // inventing one. A convoke-only-affordable spell is offered on the
+    // strength of that specific allocation, which may pay coloured pips with
+    // matching creatures — tapping the same creatures but having them all pay
+    // "generic" can leave the cost uncovered, which is correct rules
+    // behaviour and used to crash the fuzzer. Colour-aware convoke payment is
+    // covered directly by `convoke.test.ts`.
+    ...(convokeInfo !== undefined && convokeInfo.proof.length > 0
+      ? { convoke: [...convokeInfo.proof] }
       : {}),
   };
 }

@@ -138,7 +138,19 @@ export type StaticCondition =
    * where `ResolutionContext.triggerObject` is set; a *static* ability has no
    * triggering object and this is always false there.
    */
-  | { readonly kind: "trigger-object"; readonly filter: CardFilter };
+  | { readonly kind: "trigger-object"; readonly filter: CardFilter }
+  /**
+   * The object in target slot `index` matches `filter` — Scavenging Ooze's
+   * "Exile target card from a graveyard. **If it was a creature card**, put a
+   * +1/+1 counter on this creature and you gain 1 life."
+   *
+   * Like `trigger-object`, only meaningful inside a `conditional` effect,
+   * where the resolution context knows the chosen targets; always false on a
+   * static ability. The filter is matched against the card wherever it now
+   * is, which for the "if it *was*" wording means after the exile — printed
+   * characteristics still answer correctly (608.2h).
+   */
+  | { readonly kind: "target"; readonly index: number; readonly filter: CardFilter };
 
 /**
  * A static ability: continuously modifies characteristics (rule 613 layers 6 /

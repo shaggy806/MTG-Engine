@@ -1142,12 +1142,17 @@ export class Game {
           : {}),
         ...(free ? { free: true } : {}),
         ...(def.convoke
-          ? {
-              convoke: {
-                candidates: this.convokeCandidates(player),
-                maxGeneric: this.castingCostOf(player, card, def, 0, cost).generic,
-              },
-            }
+          ? (() => {
+              const candidates = this.convokeCandidates(player);
+              const full = this.castingCostOf(player, card, def, 0, cost);
+              return {
+                convoke: {
+                  candidates,
+                  maxGeneric: full.generic,
+                  proof: this.maxConvokeFor(candidates, full),
+                },
+              };
+            })()
           : {}),
         ...(parseManaCost(cost).x > 0
           ? { xCost: { maxX: this.maxAffordableX(player, card, def, cost, face ?? 0) } }
@@ -6072,6 +6077,8 @@ export class Game {
       sacrificeSource: () => this.sacrificeSourceByEffect(source),
       returnToHand: (target) => this.returnToHandByEffect(target),
       exileObject: (target) => this.exileByEffect(target),
+      putOntoBattlefield: (target, underYourControl, enterTapped) =>
+        this.putOntoBattlefieldByEffect(target, controller, underYourControl, enterTapped),
       exileGraveyard: (target) => {
         if (target.kind !== "player") return;
         // Snapshot: `moveObject` mutates the graveyard array as it goes.
@@ -6147,6 +6154,13 @@ export class Game {
         // fired this trigger, which only the resolution context knows, so it
         // is answered here rather than in `staticConditionMet` (a static
         // ability has no triggering object at all).
+        if (condition.kind === "target") {
+          const ref = targets[condition.index];
+          if (ref === undefined || ref.kind !== "object") return false;
+          return matchesFilter(this.state, this.registry, ref.object, condition.filter, {
+            you: controller,
+          });
+        }
         if (condition.kind === "trigger-object") {
           if (triggerObject === undefined) return false;
           return matchesFilter(this.state, this.registry, triggerObject, condition.filter, {
@@ -7301,14 +7315,52 @@ export class Game {
     this.emit({ type: "permanent-returned-to-hand", object: id, owner });
   }
 
+  /**
+   * Put a targeted card onto the battlefield (Gravespawn Sovereign). Unlike
+   * `return-from-graveyard`, which filters over the resolving player's own
+   * graveyard, this names one card and may take it from anyone's.
+   *
+   * `underYourControl` sets `controller` away from `owner` — the card still
+   * belongs to whoever owned it, and goes back to *their* graveyard when it
+   * dies, which is why owner and controller have to diverge here rather than
+   * the object simply changing hands. `runStateBasedActions` recomputes
+   * control (layer 2) afterwards and leaves an unattached control change
+   * alone, so this sticks.
+   */
+  private putOntoBattlefieldByEffect(
+    target: TargetRef,
+    controller: PlayerId,
+    underYourControl: boolean,
+    enterTapped: boolean,
+  ): void {
+    if (target.kind !== "object") return;
+    const object = this.state.objects[target.object];
+    // Only from a zone a card can be reanimated out of; a permanent already
+    // on the battlefield isn't put onto it again.
+    if (object === undefined || object.zone === "battlefield") return;
+    this.moveObject(target.object, "battlefield");
+    const entered = this.state.objects[target.object];
+    if (entered === undefined || entered.zone !== "battlefield") return;
+    if (underYourControl) entered.controller = controller;
+    if (enterTapped) entered.tapped = true;
+    this.emit({ type: "permanent-entered-battlefield", object: target.object });
+  }
+
   private exileByEffect(target: TargetRef): void {
     if (target.kind !== "object") return;
     const id = this.splitOneFromStack(target.object);
     const object = this.state.objects[id];
-    if (object === undefined || object.zone !== "battlefield") return;
+    // Graveyard as well as battlefield: "Exile target card from a graveyard"
+    // (Withered Wretch, Scavenging Ooze) targets a card, not a permanent.
+    // Anything already in exile, or on the stack, is left alone.
+    if (object === undefined) return;
+    if (object.zone !== "battlefield" && object.zone !== "graveyard") return;
+    const wasPermanent = object.zone === "battlefield";
     this.moveObject(id, "exile");
     if (this.state.awaiting !== null) return;
-    this.emit({ type: "permanent-exiled", object: id });
+    // The event is about a permanent leaving the battlefield; a graveyard
+    // card being exiled isn't one, and the log formatters read it that way.
+    if (wasPermanent) this.emit({ type: "permanent-exiled", object: id });
   }
 
   /** "Blink": exile a permanent, then immediately return it to the

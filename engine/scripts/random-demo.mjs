@@ -37,6 +37,8 @@ const deck = (entries) =>
 const deckA = deck([
   ["Aura Mutation", 1],
   ["Cultivate", 1],
+  ["Scavenging Ooze", 1],
+  ["Return to Nature", 1],
   ["Harvest Season", 1],
   ["Nissa's Expedition", 1],
   ["Burnished Hart", 1],
@@ -185,6 +187,8 @@ const deckB = deck([
   ["Runehorn Hellkite", 1],
   ["Steel Hellkite", 1],
   ["Akoum Hellkite", 1],
+  ["Withered Wretch", 1],
+  ["Cemetery Reaper", 1],
   ["Hoard-Smelter Dragon", 1],
   ["Dragon Mage", 1],
   ["Bloodgift Demon", 1],

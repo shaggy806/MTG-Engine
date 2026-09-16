@@ -270,7 +270,8 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 | `untap` | `target: EffectTargetRef` — an index, `"source"`, or `"trigger-object"` | Amulet of Vigor: `target: "trigger-object"` untaps the permanent whose entering fired the trigger, with no target slot at all |
 | `destroy` | `target` | Doom Blade |
 | `destroy-all` | `filter` | Wrath of God |
-| `exile` | `target` | Angelic Edict |
+| `exile` | `target` | Angelic Edict. Works on a card in a **graveyard** as well as a permanent (Withered Wretch). |
+| `put-onto-battlefield` | `target`, `underYourControl?`, `enterTapped?` | Reanimation that names one card, from anyone's graveyard — as opposed to `return-from-graveyard`'s filter over your own. `underYourControl` makes controller diverge from owner, so the card still goes back to its **owner's** graveyard when it dies. |
 | `exile-graveyard` | `target` (a player slot, or `"you"`) | Bojuka Bog — exiles that player's whole graveyard at once (rule 406; the cards in it are never individually targeted) |
 | `flicker` | `target` | Essence Flux — exiles `target`, then immediately returns it to the battlefield under its owner's control (rule 400.7 — a brand-new object; a token exiled this way never comes back) |
 | `return-to-hand` | `target` | Unsummon |
@@ -385,6 +386,15 @@ than the chooser), `"creature-or-player"`,
 `"creature-or-enchantment-an-opponent-controls"`, `"attacking-or-blocking-creature"`, `"spell"`,
 `"creature-spell"`, `"noncreature-spell"`, `"instant-or-sorcery-spell"`,
 `"instant-or-sorcery-in-your-graveyard"`.
+
+One spec is **structured** rather than a string —
+`{ kind: "card-in-graveyard", whose?: "any" | "you" | "opponent", filter?: CardFilter }`
+(Withered Wretch, Cemetery Reaper, Return to Nature's third mode). Every other
+spec names a shape of permanent on the battlefield, a small enumerable set;
+graveyard targeting varies on both *whose* graveyard and an arbitrary card
+filter, which wouldn't converge as literals. `whose` defaults to `"any"`, and
+`filter` matches printed characteristics (layer effects don't reach a
+graveyard). `describeTargetSpec(spec)` renders any spec as a UI label.
 
 Legality is checked at cast **and** again on resolution; a spell whose targets
 have all become illegal is countered by the game (fizzles).
@@ -627,6 +637,10 @@ clause (section 9):
 - `{ kind: "your-turn" }`
 - `{ kind: "threshold" }` — 7+ cards in your graveyard.
 - `{ kind: "metalcraft" }` — 3+ artifacts.
+- `{ kind: "target", index, filter }` — the object in target slot `index`
+  matches `filter` (Scavenging Ooze: "Exile target card from a graveyard.
+  **If it was a creature card**, …"). Same restriction as `trigger-object`
+  below: only meaningful inside a `conditional` effect.
 - `{ kind: "trigger-object", filter }` — the object whose event fired the
   *triggered ability* currently resolving matches `filter` (Akoum Hellkite:
   "If that land is a Mountain, it deals 2 damage instead"). Only meaningful
@@ -831,11 +845,9 @@ different card, or extend the engine (see `ROADMAP.md`).
   itself contains mana, which `manaSources()` excludes from the auto-payment
   scan entirely (to avoid circular payment planning) regardless of what the
   ability's own output shape is.
-- **No "target card in a graveyard" `TargetSpec`** beyond the narrow
-  `"instant-or-sorcery-in-your-graveyard"` (Snapcaster Mage's flashback grant)
-  — blocks any card that targets a specific permanent card sitting in a
-  graveyard (Conduit of Worlds, Shifting Woodland, Toph, Hardheaded Teacher's
-  ETB) (needed-cards P18).
+- **Tapping *other* permanents as an ability cost** (Gravespawn Sovereign:
+  "Tap five untapped Zombies you control"). `AbilityCost.tap` taps the source
+  only.
 - **No "put card(s) from hand onto the battlefield" effect** — every mass
   cheat-into-play effect (`search-library`, `look-and-choose`) sources from a
   library or graveyard, never a hand (Last March of the Ents, Spelunking,

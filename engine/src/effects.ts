@@ -226,6 +226,20 @@ export type EffectSpec =
       readonly target: number;
     }
   | {
+      /**
+       * Put a targeted card onto the battlefield — reanimation that names a
+       * specific card, as opposed to `return-from-graveyard`'s filter over
+       * your own graveyard. With `underYourControl` the card enters under the
+       * *resolving* player's control even though its owner is someone else
+       * (Gravespawn Sovereign: "put target creature card from a graveyard
+       * onto the battlefield under your control").
+       */
+      readonly kind: "put-onto-battlefield";
+      readonly target: number;
+      readonly underYourControl?: boolean;
+      readonly enterTapped?: boolean;
+    }
+  | {
       /** Exile every card in a target *player's* graveyard (rule 406 — Bojuka
        * Bog). `target` is a target-slot index holding a player, or `"you"` for
        * the effect's own controller with no slot. needed-cards P8. */
@@ -829,6 +843,12 @@ export interface EffectApi {
   /** Scry (`surveil: false`) or surveil (`surveil: true`) `amount` cards;
    * apply `then` afterwards. See the `"scry"` / `"surveil"` {@link EffectSpec}. */
   scry(amount: number, surveil: boolean, then: EffectSpec | undefined): void;
+  /** See the `"put-onto-battlefield"` {@link EffectSpec}. */
+  putOntoBattlefield(
+    target: TargetRef,
+    underYourControl: boolean,
+    enterTapped: boolean,
+  ): void;
   /** See the `"search-library"` {@link EffectSpec}. */
   searchLibrary(
     filter: CardFilter,
@@ -1054,6 +1074,13 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     case "exile": {
       const target = ctx.targets[spec.target];
       if (target !== undefined) ctx.exileObject(target);
+      return;
+    }
+    case "put-onto-battlefield": {
+      const target = ctx.targets[spec.target];
+      if (target !== undefined) {
+        ctx.putOntoBattlefield(target, spec.underYourControl === true, spec.enterTapped === true);
+      }
       return;
     }
     case "exile-graveyard": {

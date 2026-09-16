@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { LegalAction, ObjectId, PlayerId, TargetRef, VisibleObject } from 'engine'
+import type {
+  LegalAction,
+  ObjectId,
+  PlayerId,
+  TargetRef,
+  TargetSpec,
+  VisibleObject,
+} from 'engine'
+import { describeTargetSpec } from 'engine'
 import { CardTile } from '../ui/CardTile.tsx'
 import { Symbols } from '../ui/Symbols.tsx'
 import { EventLog } from '../ui/EventLog.tsx'
@@ -16,7 +24,9 @@ const FOE = 'foe' as PlayerId
 
 interface Targeting {
   readonly label: string
-  readonly specs: readonly string[]
+  /** `string` covers the lab's own pseudo-slots (e.g. a sacrifice prompt),
+   * which aren't real `TargetSpec`s. */
+  readonly specs: readonly (TargetSpec | string)[]
   readonly options: readonly (readonly TargetRef[])[]
   readonly picked: readonly TargetRef[]
   /** Finalise once every slot is filled. */
@@ -87,7 +97,7 @@ export function Sandbox({ cardName }: { readonly cardName: string }) {
   // --- targeting -------------------------------------------------------
   const startTargeting = (
     label: string,
-    specs: readonly string[],
+    specs: readonly (TargetSpec | string)[],
     options: readonly (readonly TargetRef[])[],
     commit: (t: readonly TargetRef[]) => void,
   ) => {
@@ -297,7 +307,8 @@ export function Sandbox({ cardName }: { readonly cardName: string }) {
     controls = (
       <>
         <span>
-          {targeting.label} — {targeting.specs[targeting.picked.length]} (
+          {targeting.label} —{' '}
+          {describeTargetSpec(targeting.specs[targeting.picked.length])} (
           {targeting.picked.length + 1}/{targeting.specs.length})
         </span>
         {playerSlots.map((o) =>

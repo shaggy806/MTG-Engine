@@ -65,6 +65,7 @@ import _poolCabarettiCourtyard from "./pool/cabaretti-courtyard.js";
 import _poolCanopyVista from "./pool/canopy-vista.js";
 import _poolCarnageTyrant from "./pool/carnage-tyrant.js";
 import _poolCavesOfKoilos from "./pool/caves-of-koilos.js";
+import _poolCemeteryReaper from "./pool/cemetery-reaper.js";
 import _poolChandraAcolyteOfFlame from "./pool/chandra-acolyte-of-flame.js";
 import _poolChromaticLantern from "./pool/chromatic-lantern.js";
 import _poolCinderElemental from "./pool/cinder-elemental.js";
@@ -270,6 +271,7 @@ import _poolRaucousTheater from "./pool/raucous-theater.js";
 import _poolReclamationSage from "./pool/reclamation-sage.js";
 import _poolRegrowth from "./pool/regrowth.js";
 import _poolRestInPeace from "./pool/rest-in-peace.js";
+import _poolReturnToNature from "./pool/return-to-nature.js";
 import _poolRiftBolt from "./pool/rift-bolt.js";
 import _poolRiveteersOverlook from "./pool/riveteers-overlook.js";
 import _poolRockfallVale from "./pool/rockfall-vale.js";
@@ -286,6 +288,7 @@ import _poolSapphireMedallion from "./pool/sapphire-medallion.js";
 import _poolSavannah from "./pool/savannah.js";
 import _poolSawInHalf from "./pool/saw-in-half.js";
 import _poolScaldingTarn from "./pool/scalding-tarn.js";
+import _poolScavengingOoze from "./pool/scavenging-ooze.js";
 import _poolScourgeOfValkas from "./pool/scourge-of-valkas.js";
 import _poolScrubland from "./pool/scrubland.js";
 import _poolScuteSwarm from "./pool/scute-swarm.js";
@@ -396,6 +399,7 @@ import _poolWhiteKnight from "./pool/white-knight.js";
 import _poolWillOfTheSultai from "./pool/will-of-the-sultai.js";
 import _poolWiltLeafCavaliers from "./pool/wilt-leaf-cavaliers.js";
 import _poolWindsweptHeath from "./pool/windswept-heath.js";
+import _poolWitheredWretch from "./pool/withered-wretch.js";
 import _poolWoodedFoothills from "./pool/wooded-foothills.js";
 import _poolWoodlandCemetery from "./pool/woodland-cemetery.js";
 import _poolWorldShaper from "./pool/world-shaper.js";
@@ -425,6 +429,7 @@ import _tokensSaprolingToken from "./tokens/saproling-token.js";
 import _tokensSoldierToken from "./tokens/soldier-token.js";
 import _tokensTreasureToken from "./tokens/treasure-token.js";
 import _tokensVampireToken from "./tokens/vampire-token.js";
+import _tokensZombieToken from "./tokens/zombie-token.js";
 
 /** Real Magic cards — every file under `pool/`. */
 export const POOL_CARDS: readonly CardDefinition[] = [
@@ -490,6 +495,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolCanopyVista,
   _poolCarnageTyrant,
   _poolCavesOfKoilos,
+  _poolCemeteryReaper,
   _poolChandraAcolyteOfFlame,
   _poolChromaticLantern,
   _poolCinderElemental,
@@ -695,6 +701,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolReclamationSage,
   _poolRegrowth,
   _poolRestInPeace,
+  _poolReturnToNature,
   _poolRiftBolt,
   _poolRiveteersOverlook,
   _poolRockfallVale,
@@ -711,6 +718,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSavannah,
   _poolSawInHalf,
   _poolScaldingTarn,
+  _poolScavengingOoze,
   _poolScourgeOfValkas,
   _poolScrubland,
   _poolScuteSwarm,
@@ -821,6 +829,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolWillOfTheSultai,
   _poolWiltLeafCavaliers,
   _poolWindsweptHeath,
+  _poolWitheredWretch,
   _poolWoodedFoothills,
   _poolWoodlandCemetery,
   _poolWorldShaper,
@@ -856,6 +865,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensSoldierToken,
   _tokensTreasureToken,
   _tokensVampireToken,
+  _tokensZombieToken,
 ];
 
 /** The built-in card pool — every file under `pool/` and `tokens/`. */

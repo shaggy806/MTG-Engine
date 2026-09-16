@@ -2,6 +2,7 @@
 
 import type { CardRegistry, CardType } from "./cards.js";
 import { computeCharacteristics } from "./characteristics.js";
+import { matchesFilter } from "./filter.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { printedCardName } from "./state.js";
@@ -90,6 +91,24 @@ export function isLegalTarget(
     if (source !== undefined && protectionBlocks(state, registry, ref.object, source)) {
       return false;
     }
+  }
+  // The one structured spec — a card in a graveyard (see `TargetSpec`).
+  // Handled ahead of the string switch rather than inside it.
+  if (typeof spec === "object") {
+    if (ref.kind !== "object") return false;
+    const object = state.objects[ref.object];
+    if (object === undefined || object.zone !== "graveyard" || object.kind !== "card") {
+      return false;
+    }
+    const whose = spec.whose ?? "any";
+    if (whose === "you" && object.owner !== forPlayer) return false;
+    if (whose === "opponent" && object.owner === forPlayer) return false;
+    // Printed characteristics: layer effects don't reach a graveyard, and
+    // `matchesFilter` degrades to printed values off the battlefield anyway.
+    return (
+      spec.filter === undefined ||
+      matchesFilter(state, registry, ref.object, spec.filter, { you: forPlayer })
+    );
   }
   switch (spec) {
     case "player":
@@ -266,12 +285,21 @@ export function legalTargets(
     const ref: TargetRef = { kind: "object", object: id };
     if (isLegalTarget(state, registry, spec, ref, forPlayer, source)) out.push(ref);
   }
-  // Graveyard-targeting specs (Snapcaster Mage) — only this spec needs it, so
-  // don't pay the scan for every other target.
+  // Graveyard-targeting specs — only these need the scan, so don't pay it for
+  // every other target. `instant-or-sorcery-in-your-graveyard` (Snapcaster
+  // Mage) looks only at the targeting player's own graveyard; the structured
+  // `card-in-graveyard` spec may reach any of them.
   if (spec === "instant-or-sorcery-in-your-graveyard") {
     for (const id of state.zones.perPlayer[forPlayer].graveyard) {
       const ref: TargetRef = { kind: "object", object: id };
       if (isLegalTarget(state, registry, spec, ref, forPlayer, source)) out.push(ref);
+    }
+  } else if (typeof spec === "object") {
+    for (const player of state.turnOrder) {
+      for (const id of state.zones.perPlayer[player].graveyard) {
+        const ref: TargetRef = { kind: "object", object: id };
+        if (isLegalTarget(state, registry, spec, ref, forPlayer, source)) out.push(ref);
+      }
     }
   }
   return out;
