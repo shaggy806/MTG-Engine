@@ -92,6 +92,16 @@ export type AffectSpec =
        * colour — Heraldic Banner's "creatures you control **of the chosen
        * color**". */
       readonly chosenColorOnly?: boolean;
+      /**
+       * Only creatures with this keyword — Sephara's "other creatures you
+       * control **with flying** have indestructible".
+       *
+       * Matched against *printed* keywords: `staticAffects` runs on every
+       * characteristics read and is deliberately given no `GameState`, so it
+       * can't do the full layer fold. A creature that only has the keyword
+       * from another effect is therefore missed — recorded in AUTHORING §15.
+       */
+      readonly withKeyword?: Keyword;
     }
   /** Every land the source's controller controls (Chromatic Lantern). */
   | { readonly scope: "lands-you-control" }
@@ -393,6 +403,21 @@ export interface CardDefinition {
    */
   readonly freeCastIf: { readonly condition: StaticCondition } | null;
   /**
+   * An alternative cost that replaces the mana cost and also taps permanents
+   * (rule 601.2b) — Sephara, Sky's Blade's "You may pay {W} and tap four
+   * untapped creatures you control with flying rather than pay this spell's
+   * mana cost."
+   *
+   * Offered as a second `cast-spell` variant (`altCost: true`), the same
+   * "one entry per playable variant" shape `kicked` / `overload` / `free`
+   * use. The engine taps the first eligible creatures rather than asking —
+   * see AUTHORING §15.
+   */
+  readonly alternativeCost: {
+    readonly mana: string;
+    readonly tapCreatures: { readonly count: number; readonly filter: CardFilter };
+  } | null;
+  /**
    * Convoke (rule 702.51 — Chord of Calling): "Your creatures can help cast
    * this spell. Each creature you tap while casting this spell pays for
    * {1} or one mana of that creature's color." A pure payment-method
@@ -581,6 +606,10 @@ interface CardDraft {
     readonly effect: EffectSpec;
   };
   freeCastIf?: { readonly condition: StaticCondition };
+  alternativeCost?: {
+    readonly mana: string;
+    readonly tapCreatures: { readonly count: number; readonly filter: CardFilter };
+  };
   convoke?: boolean;
   selfCostReduction?: {
     readonly condition: StaticCondition;
@@ -648,6 +677,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     kicker: draft.kicker ?? null,
     overload: draft.overload ?? null,
     freeCastIf: draft.freeCastIf ?? null,
+    alternativeCost: draft.alternativeCost ?? null,
     convoke: draft.convoke ?? false,
     selfCostReduction: draft.selfCostReduction ?? null,
     effect: draft.effect ?? null,

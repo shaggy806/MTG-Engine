@@ -121,6 +121,10 @@ export type Action =
        * without paying its mana cost") instead of paying the mana cost.
        * Targets are unchanged — only the cost differs. */
       readonly free?: boolean;
+      /** Casting for `CardDefinition.alternativeCost` (Sephara) — a second
+       * variant, like `free`, whose mana cost is replaced and which taps
+       * creatures as part of the cost. The driver echoes it back. */
+      readonly altCost?: boolean;
       /** Creatures tapped to help pay a convoke cost (rule 702.51), each
        * with its chosen contribution. Only meaningful for a card with
        * `CardDefinition.convoke`. */
@@ -231,6 +235,9 @@ export type Action =
       readonly type: "choose-modes";
       readonly player: PlayerId;
       readonly modes: readonly number[];
+      /** The value chosen for `{X}` when the decision's own cost contains one
+       * — Flameblast Dragon's "you may pay {X}{R}". Ignored otherwise. */
+      readonly xValue?: number;
     }
   | {
       /** Answers a pending `choose-targets` decision (a triggered ability, or a
@@ -374,6 +381,10 @@ export type LegalAction =
        * unchanged (only the cost differs). The driver echoes `free` back in
        * the `cast-spell` action. */
       readonly free?: boolean;
+      /** Casting for `CardDefinition.alternativeCost` (Sephara) — a second
+       * variant, like `free`, whose mana cost is replaced and which taps
+       * creatures as part of the cost. The driver echoes it back. */
+      readonly altCost?: boolean;
       /** A convokable spell (rule 702.51): every untapped creature the
        * player controls is a legal convoke payer. The driver builds a
        * `ConvokePayment[]` (which candidates, and what each pays) and echoes
@@ -527,6 +538,10 @@ export type LegalAction =
       readonly source: ObjectId;
       readonly minModes: number;
       readonly maxModes: number;
+      /** Present when the decision's cost contains `{X}` (Flameblast
+       * Dragon): the largest X the chooser could pay for right now. The
+       * driver echoes its pick back as `xValue`. */
+      readonly xCost?: { readonly maxX: number };
       /** Rules text of each mode, in order — index into this is what the
        * `choose-modes` action submits. */
       readonly modeTexts: readonly string[];

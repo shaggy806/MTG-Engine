@@ -140,6 +140,7 @@ import _poolFierceGuardianship from "./pool/fierce-guardianship.js";
 import _poolFinaleOfDevastation from "./pool/finale-of-devastation.js";
 import _poolFireball from "./pool/fireball.js";
 import _poolFlameJavelin from "./pool/flame-javelin.js";
+import _poolFlameblastDragon from "./pool/flameblast-dragon.js";
 import _poolFlawlessManeuver from "./pool/flawless-maneuver.js";
 import _poolFleshbagMarauder from "./pool/fleshbag-marauder.js";
 import _poolFloodedStrand from "./pool/flooded-strand.js";
@@ -172,6 +173,7 @@ import _poolGoblinRaider from "./pool/goblin-raider.js";
 import _poolGodlessShrine from "./pool/godless-shrine.js";
 import _poolGrapeshot from "./pool/grapeshot.js";
 import _poolGravePact from "./pool/grave-pact.js";
+import _poolGravespawnSovereign from "./pool/gravespawn-sovereign.js";
 import _poolGreatFurnace from "./pool/great-furnace.js";
 import _poolGreed from "./pool/greed.js";
 import _poolGrizzlyBears from "./pool/grizzly-bears.js";
@@ -327,6 +329,7 @@ import _poolScourgeOfValkas from "./pool/scourge-of-valkas.js";
 import _poolScrubland from "./pool/scrubland.js";
 import _poolScuteSwarm from "./pool/scute-swarm.js";
 import _poolSeatOfTheSynod from "./pool/seat-of-the-synod.js";
+import _poolSepharaSkysBlade from "./pool/sephara-skys-blade.js";
 import _poolSerraAngel from "./pool/serra-angel.js";
 import _poolShatteredSanctum from "./pool/shattered-sanctum.js";
 import _poolShelteredThicket from "./pool/sheltered-thicket.js";
@@ -617,6 +620,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolFinaleOfDevastation,
   _poolFireball,
   _poolFlameJavelin,
+  _poolFlameblastDragon,
   _poolFlawlessManeuver,
   _poolFleshbagMarauder,
   _poolFloodedStrand,
@@ -649,6 +653,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolGodlessShrine,
   _poolGrapeshot,
   _poolGravePact,
+  _poolGravespawnSovereign,
   _poolGreatFurnace,
   _poolGreed,
   _poolGrizzlyBears,
@@ -804,6 +809,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolScrubland,
   _poolScuteSwarm,
   _poolSeatOfTheSynod,
+  _poolSepharaSkysBlade,
   _poolSerraAngel,
   _poolShatteredSanctum,
   _poolShelteredThicket,

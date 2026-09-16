@@ -127,6 +127,17 @@ export interface GameObject {
    * permanent — cleanup reverts `controller` to `owner`. Cleared by
    * `moveObject` on any zone change. */
   controlEndsAtCleanup: boolean;
+  /**
+   * A *permanent* control change from an effect rather than an Aura — "put it
+   * onto the battlefield under your control" (Gravespawn Sovereign), or a
+   * `gain-control` with `untilEndOfTurn: false`.
+   *
+   * Needed because layer 2 recomputes control on every state-based-action
+   * pass and reverts to the owner unless something still says otherwise; an
+   * Aura says so by staying attached, and this is how an effect says so.
+   * Cleared by `moveObject` with every other per-permanent flag.
+   */
+  controlledByEffect?: PlayerId;
   /** The name of the card this permanent is currently a *copy* of (rule 707 /
    * layer 1), or `null` when it is just itself. Every characteristic read —
    * P/T, types, abilities, the client's card face — resolves through

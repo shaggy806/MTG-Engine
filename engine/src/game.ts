@@ -454,6 +454,7 @@ export class Game {
           action.overload === true,
           action.free === true,
           action.convoke,
+          action.altCost === true,
         );
         break;
       case "activate-ability":
@@ -503,7 +504,7 @@ export class Game {
         this.applyCreatureTypeChoice(action.player, action.creatureType);
         break;
       case "choose-modes":
-        this.applyModesChoice(action.player, action.modes);
+        this.applyModesChoice(action.player, action.modes, action.xValue);
         break;
       case "choose-targets":
         this.applyChooseTargets(action.player, normalizeTargets(action.targets));
@@ -553,6 +554,7 @@ export class Game {
           action.overload === true,
           action.free === true,
           action.convoke,
+          action.altCost === true,
         );
       case "activate-ability":
         return this.whyCannotActivateAbility(
@@ -728,6 +730,14 @@ export class Game {
             minModes: awaiting.minModes,
             maxModes: awaiting.maxModes,
             modeTexts: awaiting.modes.map((m) => m.text),
+            // "You may pay {X}{R}" — tell the driver how large X may be.
+            ...(awaiting.cost !== undefined && parseManaCost(awaiting.cost).x > 0
+              ? {
+                  xCost: {
+                    maxX: this.maxAffordableAbilityX(awaiting.player, awaiting.cost),
+                  },
+                }
+              : {}),
           },
         ];
       }
@@ -1101,16 +1111,22 @@ export class Game {
   ): LegalAction[] {
     const { via, face, costString } = opts;
     const out: LegalAction[] = [];
-    const variants: { kicked: boolean; overload: boolean; free: boolean }[] = [
-      { kicked: false, overload: false, free: false },
-    ];
+    const variants: {
+      kicked: boolean;
+      overload: boolean;
+      free: boolean;
+      altCost?: boolean;
+    }[] = [{ kicked: false, overload: false, free: false }];
     if (def.kicker !== null) variants.push({ kicked: true, overload: false, free: false });
     // Overload (rule 702.126) and a conditional free-cast permission (Fierce
     // Guardianship) are each an alternative cast, mutually exclusive with
     // kicker and each other (no card on the list has more than one).
     if (def.overload !== null) variants.push({ kicked: false, overload: true, free: false });
     if (def.freeCastIf !== null) variants.push({ kicked: false, overload: false, free: true });
-    for (const { kicked, overload, free } of variants) {
+    if (def.alternativeCost !== null) {
+      variants.push({ kicked: false, overload: false, free: false, altCost: true });
+    }
+    for (const { kicked, overload, free, altCost } of variants) {
       let castable =
         this.whyCannotCastSpell(
           player,
@@ -1122,6 +1138,8 @@ export class Game {
           undefined,
           overload,
           free,
+          undefined,
+          altCost === true,
         ) === null;
       // Convoke (rule 702.51): not affordable with mana alone doesn't mean
       // not castable — check again assuming every untapped creature helps,
@@ -1163,7 +1181,9 @@ export class Game {
       ) {
         continue;
       }
-      const cost = free
+      const cost = altCost === true && def.alternativeCost !== null
+        ? def.alternativeCost.mana
+        : free
         ? "{0}"
         : overload && def.overload !== null
           ? def.overload.cost
@@ -1188,6 +1208,7 @@ export class Game {
           ? { overload: true, overloadCost: def.overload.cost }
           : {}),
         ...(free ? { free: true } : {}),
+        ...(altCost === true ? { altCost: true } : {}),
         ...(def.convoke
           ? (() => {
               const candidates = this.convokeCandidates(player);
@@ -1935,7 +1956,14 @@ export class Game {
     // "You may pay {B}" — an unpayable cost isn't a choice at all, so skip
     // straight to the decline branch rather than offering something the
     // player can't take (rule 601.2h / 608.2).
-    if (cost !== undefined && this.payMana(controller, parseManaCost(cost)) === null) {
+    const costParsed = cost !== undefined ? parseManaCost(cost) : null;
+    // With `{X}` the cost is affordable whenever X=0 is, so check that
+    // baseline rather than the literal string.
+    const baseline =
+      costParsed === null
+        ? null
+        : { ...costParsed, generic: costParsed.generic, x: 0 };
+    if (baseline !== null && this.payMana(controller, baseline) === null) {
       if (onDecline !== undefined) {
         applyEffectSpec(onDecline, this.makeResolutionContext(source, controller, targets, x));
       }
@@ -1957,7 +1985,11 @@ export class Game {
 
   /** Answers a pending `choose-modes` decision. Applies the chosen modes'
    * effects, in listed order, against a fresh context for the source. */
-  private applyModesChoice(player: PlayerId, modeIndices: readonly number[]): void {
+  private applyModesChoice(
+    player: PlayerId,
+    modeIndices: readonly number[],
+    xValue?: number,
+  ): void {
     const why = this.whyCannotChooseModes(player, modeIndices);
     if (why !== null) throw new Error(why);
     const awaiting = this.state.awaiting;
@@ -1973,15 +2005,26 @@ export class Game {
     // on in between (a mana source sacrificed in response), so a failed
     // payment falls back to the decline branch rather than giving it away.
     let chosen = [...modeIndices];
+    let chosenX = 0;
     if (cost !== undefined && chosen.length > 0) {
-      const payment = this.payMana(player, parseManaCost(cost));
+      const parsed = parseManaCost(cost);
+      chosenX = parsed.x > 0 ? Math.max(0, Math.floor(xValue ?? 0)) : 0;
+      const concrete = {
+        ...parsed,
+        generic: parsed.generic + parsed.x * chosenX,
+        x: 0,
+      };
+      const payment = this.payMana(player, concrete);
       if (payment === null) chosen = [];
       else this.executePayment(player, payment);
     }
     // Listed order, not the order the player named them (rule 700.2b).
     const ordered = chosen.sort((a, b) => a - b);
     this.emit({ type: "modes-chosen", source, modes: ordered });
-    const context = this.makeResolutionContext(source, player, targets, x);
+    // The X paid for the choice is what the mode's effect reads (Flameblast
+    // Dragon's "it deals X damage"), overriding the ability's own X, which is
+    // 0 on a trigger.
+    const context = this.makeResolutionContext(source, player, targets, chosenX > 0 ? chosenX : x);
     for (const i of ordered) applyEffectSpec(modes[i].effect, context);
     if (ordered.length === 0 && onDecline !== undefined) {
       applyEffectSpec(onDecline, context);
@@ -4194,8 +4237,13 @@ export class Game {
     kicked = false,
     overload = false,
     free = false,
+    altCost = false,
   ): string | null {
     const def = this.faceDef(cardId, face);
+    // An alternative cost (Sephara) replaces the mana cost entirely, like
+    // overload and a free-cast permission — the creature-tapping half is
+    // paid separately in `castSpell`.
+    if (altCost && def.alternativeCost !== null) return def.alternativeCost.mana;
     // A conditional free-cast permission (Fierce Guardianship) also replaces
     // the mana cost entirely, same as overload.
     if (free && def.freeCastIf !== null) return "{0}";
@@ -4279,6 +4327,7 @@ export class Game {
     overload = false,
     free = false,
     convoke?: readonly ConvokePayment[],
+    altCost = false,
   ): string | null {
     const blocked = this.whyCannotAct(player);
     if (blocked !== null) return blocked;
@@ -4338,6 +4387,18 @@ export class Game {
     ) {
       return `${player} does not have that card in hand`;
     }
+    if (altCost) {
+      const alt = def.alternativeCost;
+      if (alt === null) return `${def.name} has no alternative cost`;
+      if (
+        this.tapOthersCandidates(player, cardId, {
+          ...alt.tapCreatures,
+          includeSelf: false,
+        }).length < alt.tapCreatures.count
+      ) {
+        return `${def.name}'s alternative cost needs ${alt.tapCreatures.count} untapped creatures`;
+      }
+    }
     if (def.types.includes("land")) return "lands are played, not cast";
     // Instant-speed if it's an instant or has flash (rule 702.8); otherwise
     // sorcery timing applies.
@@ -4388,7 +4449,7 @@ export class Game {
         cardId,
         def,
         0,
-        this.castCostString(cardId, via, face, kicked, overload, free),
+        this.castCostString(cardId, via, face, kicked, overload, free, altCost),
       ),
     );
     if (convoke !== undefined && convoke.length > 0) {
@@ -4468,6 +4529,7 @@ export class Game {
     overload = false,
     free = false,
     convoke?: readonly ConvokePayment[],
+    altCost = false,
   ): void {
     const why = this.whyCannotCastSpell(
       player,
@@ -4480,6 +4542,7 @@ export class Game {
       overload,
       free,
       convoke,
+      altCost,
     );
     if (why !== null) throw new Error(why);
 
@@ -4488,7 +4551,7 @@ export class Game {
     // the chosen face for the rest of this method and while on the stack.
     if (object.faces !== undefined) object.face = face;
     const def = this.registry.get(printedCardName(object));
-    const costString = this.castCostString(cardId, via, face, kicked, overload, free);
+    const costString = this.castCostString(cardId, via, face, kicked, overload, free, altCost);
     const hasX = parseManaCost(costString).x > 0;
     const chosenX = hasX ? Math.max(0, Math.floor(xValue)) : 0;
 
@@ -4558,6 +4621,19 @@ export class Game {
     if (kicked) object.kicked = true;
     if (overload) object.overloaded = true;
     this.executePayment(player, payment);
+    // Sephara's "tap four untapped creatures you control with flying" — the
+    // other half of its alternative cost, paid as the spell is cast.
+    if (altCost && def.alternativeCost !== null) {
+      const alt = def.alternativeCost;
+      const victims = this.tapOthersCandidates(player, cardId, {
+        ...alt.tapCreatures,
+        includeSelf: false,
+      }).slice(0, alt.tapCreatures.count);
+      for (const id of victims) {
+        this.state.objects[id].tapped = true;
+        this.emit({ type: "permanent-tapped", object: id });
+      }
+    }
     // "Flashback—{cost}, Pay N life" (Deep Analysis) — part of the cost, paid
     // as the spell is cast.
     if (via === "flashback" && def.flashback?.payLife !== undefined) {
@@ -4894,6 +4970,13 @@ export class Game {
       return `${player} has nothing to sacrifice for ${def.name}'s ability`;
     }
     if (
+      ability.cost.tapOthers !== undefined &&
+      this.tapOthersCandidates(player, sourceId, ability.cost.tapOthers).length <
+        ability.cost.tapOthers.count
+    ) {
+      return `${def.name}'s ability needs ${ability.cost.tapOthers.count} untapped permanents to tap`;
+    }
+    if (
       ability.cost.payLife !== undefined &&
       this.state.players[player].life < ability.cost.payLife
     ) {
@@ -4987,6 +5070,17 @@ export class Game {
     if (ability.cost.tap) {
       source.tapped = true;
       this.emit({ type: "permanent-tapped", object: sourceId });
+    }
+    if (ability.cost.tapOthers !== undefined) {
+      // "Tap five untapped Zombies you control" — see `AbilityCost.tapOthers`.
+      const victims = this.tapOthersCandidates(player, sourceId, ability.cost.tapOthers).slice(
+        0,
+        ability.cost.tapOthers.count,
+      );
+      for (const id of victims) {
+        this.state.objects[id].tapped = true;
+        this.emit({ type: "permanent-tapped", object: id });
+      }
     }
     this.executePayment(player, payment);
     if (ability.cost.payLife !== undefined) {
@@ -7129,6 +7223,32 @@ export class Game {
     }
   }
 
+  /** Untapped permanents `player` controls that could pay an
+   * `AbilityCost.tapOthers`, excluding the ability's own source. */
+  private tapOthersCandidates(
+    player: PlayerId,
+    sourceId: ObjectId,
+    spec: {
+      readonly count: number;
+      readonly filter: CardFilter;
+      readonly includeSelf?: boolean;
+    },
+  ): ObjectId[] {
+    return this.state.zones.shared.battlefield.filter((id) => {
+      const object = this.state.objects[id];
+      return (
+        object !== undefined &&
+        (spec.includeSelf === true || id !== sourceId) &&
+        object.controller === player &&
+        !object.tapped &&
+        // A creature that's only just arrived can't be tapped for a cost
+        // (rule 302.6), the same rule that gates its own `{T}` abilities.
+        !this.tapAbilityBlockedBySickness(object) &&
+        matchesFilter(this.state, this.registry, id, spec.filter, { you: player })
+      );
+    });
+  }
+
   private populate(controller: PlayerId): void {
     let best: ObjectId | undefined;
     let bestPower = -Infinity;
@@ -8154,7 +8274,13 @@ export class Game {
     this.moveObject(target.object, "battlefield");
     const entered = this.state.objects[target.object];
     if (entered === undefined || entered.zone !== "battlefield") return;
-    if (underYourControl) entered.controller = controller;
+    if (underYourControl && entered.controller !== controller) {
+      // Layer 2 recomputes control every SBA pass and reverts to the owner
+      // unless a control *effect* says otherwise, so this has to go through
+      // the same path `gain-control` uses rather than just assigning.
+      this.gainControlByEffect(controller, { kind: "object", object: target.object }, false);
+      entered.summoningSick = true;
+    }
     if (enterTapped) entered.tapped = true;
     if (withCounters !== undefined) {
       this.addCounter(target, withCounters.kind, withCounters.amount);
@@ -8263,7 +8389,9 @@ export class Game {
       const object = this.state.objects[id];
       if (object.controlEndsAtCleanup) continue;
 
-      let controller = object.owner;
+      // An effect that changed control permanently (Gravespawn Sovereign's
+      // "under your control") keeps it until something else takes over.
+      let controller = object.controlledByEffect ?? object.owner;
       let bestTimestamp = -1;
       for (const auraId of this.state.zones.shared.battlefield) {
         const aura = this.state.objects[auraId];
@@ -8313,6 +8441,7 @@ export class Game {
     object.attacking = null;
     object.blocking = null;
     if (untilEndOfTurn) object.controlEndsAtCleanup = true;
+    else object.controlledByEffect = player;
     this.emit({
       type: "control-changed",
       object: id,

@@ -44,6 +44,25 @@ export interface AbilityCost {
   /** Energy counters to pay ({E} — rule 122 / ROADMAP Phase 10; automatic,
    * like `payLife`). */
   readonly payEnergy?: number;
+  /**
+   * Tap *other* permanents you control as part of the cost — Gravespawn
+   * Sovereign's "Tap five untapped Zombies you control". Distinct from
+   * `tap`, which taps the source itself.
+   *
+   * The engine taps the first eligible ones rather than asking. The rules
+   * give the controller the choice; it only matters when the candidates
+   * differ in some other way (one has its own tap ability), and no card in
+   * the pool creates that situation — recorded in AUTHORING §15 alongside
+   * `populate`'s similar compromise.
+   */
+  readonly tapOthers?: {
+    readonly count: number;
+    readonly filter: CardFilter;
+    /** Whether the ability's own source may be one of the permanents tapped.
+     * True for Gravespawn Sovereign, which is itself a Zombie and has no
+     * `{T}` of its own to conflict with. */
+    readonly includeSelf?: boolean;
+  };
 }
 
 export interface ActivatedAbility {

@@ -330,6 +330,12 @@ export function staticAffects(
   if (target.controller !== source.controller) return false;
   if (!isPrintedCreature(registry, target)) return false;
   if (affects.tokenOnly === true && target.isToken !== true) return false;
+  if (
+    affects.withKeyword !== undefined &&
+    !registry.get(printedCardName(target)).keywords.includes(affects.withKeyword)
+  ) {
+    return false;
+  }
   if (affects.chosenColorOnly === true) {
     const chosen = source.chosenOnEnter;
     if (chosen == null) return false;
