@@ -149,6 +149,9 @@ export type StaticCondition =
   | { readonly kind: "threshold" }
   /** Metalcraft (rule 702.44) — you control three or more artifacts. */
   | { readonly kind: "metalcraft" }
+  /** A creature died this turn (Liliana's Devotee). Reads the turn-scoped
+   * `GameState.creaturesDiedThisTurn`. */
+  | { readonly kind: "creature-died-this-turn" }
   /**
    * The object whose event fired the *triggered ability* currently resolving
    * matches `filter` — Akoum Hellkite's "Whenever a land you control enters,

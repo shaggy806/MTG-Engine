@@ -92,6 +92,7 @@ import _poolDamnation from "./pool/damnation.js";
 import _poolDarkRitual from "./pool/dark-ritual.js";
 import _poolDarksteelCitadel from "./pool/darksteel-citadel.js";
 import _poolDarksteelMyr from "./pool/darksteel-myr.js";
+import _poolDawnOfHope from "./pool/dawn-of-hope.js";
 import _poolDeadlyDispute from "./pool/deadly-dispute.js";
 import _poolDeadlyRollick from "./pool/deadly-rollick.js";
 import _poolDeathcapGlade from "./pool/deathcap-glade.js";
@@ -214,6 +215,7 @@ import _poolLazotepReaver from "./pool/lazotep-reaver.js";
 import _poolLevitation from "./pool/levitation.js";
 import _poolLightningBolt from "./pool/lightning-bolt.js";
 import _poolLightningGreaves from "./pool/lightning-greaves.js";
+import _poolLilianasDevotee from "./pool/lilianas-devotee.js";
 import _poolLlanowarElves from "./pool/llanowar-elves.js";
 import _poolLlanowarWastes from "./pool/llanowar-wastes.js";
 import _poolLongtuskCub from "./pool/longtusk-cub.js";
@@ -232,6 +234,7 @@ import _poolManaConfluence from "./pool/mana-confluence.js";
 import _poolManifoldKey from "./pool/manifold-key.js";
 import _poolMarshFlats from "./pool/marsh-flats.js";
 import _poolMendingHands from "./pool/mending-hands.js";
+import _poolMentorOfTheMeek from "./pool/mentor-of-the-meek.js";
 import _poolMigratoryRoute from "./pool/migratory-route.js";
 import _poolMiirymSentinelWyrm from "./pool/miirym-sentinel-wyrm.js";
 import _poolMindControl from "./pool/mind-control.js";
@@ -248,6 +251,7 @@ import _poolNaturalize from "./pool/naturalize.js";
 import _poolNaturesLore from "./pool/natures-lore.js";
 import _poolNegate from "./pool/negate.js";
 import _poolNightsWhisper from "./pool/nights-whisper.js";
+import _poolNihilSpellbomb from "./pool/nihil-spellbomb.js";
 import _poolNissasExpedition from "./pool/nissas-expedition.js";
 import _poolNotionThief from "./pool/notion-thief.js";
 import _poolObNixilisTheFallen from "./pool/ob-nixilis-the-fallen.js";
@@ -325,6 +329,7 @@ import _poolSnapcasterMage from "./pool/snapcaster-mage.js";
 import _poolSolRing from "./pool/sol-ring.js";
 import _poolSolemnSimulacrum from "./pool/solemn-simulacrum.js";
 import _poolSoulWarden from "./pool/soul-warden.js";
+import _poolSpitFlame from "./pool/spit-flame.js";
 import _poolSplendidReclamation from "./pool/splendid-reclamation.js";
 import _poolStarfieldVocalist from "./pool/starfield-vocalist.js";
 import _poolSteamVents from "./pool/steam-vents.js";
@@ -550,6 +555,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolDarkRitual,
   _poolDarksteelCitadel,
   _poolDarksteelMyr,
+  _poolDawnOfHope,
   _poolDeadlyDispute,
   _poolDeadlyRollick,
   _poolDeathcapGlade,
@@ -672,6 +678,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolLevitation,
   _poolLightningBolt,
   _poolLightningGreaves,
+  _poolLilianasDevotee,
   _poolLlanowarElves,
   _poolLlanowarWastes,
   _poolLongtuskCub,
@@ -690,6 +697,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolManifoldKey,
   _poolMarshFlats,
   _poolMendingHands,
+  _poolMentorOfTheMeek,
   _poolMigratoryRoute,
   _poolMiirymSentinelWyrm,
   _poolMindControl,
@@ -706,6 +714,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolNaturesLore,
   _poolNegate,
   _poolNightsWhisper,
+  _poolNihilSpellbomb,
   _poolNissasExpedition,
   _poolNotionThief,
   _poolObNixilisTheFallen,
@@ -783,6 +792,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSolRing,
   _poolSolemnSimulacrum,
   _poolSoulWarden,
+  _poolSpitFlame,
   _poolSplendidReclamation,
   _poolStarfieldVocalist,
   _poolSteamVents,

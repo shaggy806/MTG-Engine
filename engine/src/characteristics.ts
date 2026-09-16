@@ -147,6 +147,8 @@ function evalStaticCondition(
           );
         }).length >= condition.atLeast
       );
+    case "creature-died-this-turn":
+      return state.creaturesDiedThisTurn > 0;
     case "self-counters": {
       // Last-known information once the source has left the battlefield
       // (603.10) — `moveObject` clears `counters`, so a dies-trigger asking

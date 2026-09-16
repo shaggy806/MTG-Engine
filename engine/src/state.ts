@@ -582,6 +582,10 @@ export type AwaitingDecision =
        * *target player* lose 3 life"). Empty for the ordinary case where
        * nothing outside the modal choice was targeted. needed-cards P19. */
       readonly targets: ResolvedTargets;
+      /** A mana cost the chooser must pay to pick a mode (`may.cost` — "you
+       * may pay {B}. If you do, …"). Only offered when it's payable, so
+       * declining by choice and being unable to pay both land on `onDecline`. */
+      readonly cost?: string;
     }
   | {
       /** A triggered ability (or a suspended spell coming off suspend) needs
@@ -780,6 +784,9 @@ export interface GameState {
    * no permanent to hang it on. Cleared as each turn begins.
    */
   hexproofPlayers: PlayerId[];
+  /** How many creatures have died this turn — Liliana's Devotee's "if a
+   * creature died this turn". Turn-scoped; reset as each turn begins. */
+  creaturesDiedThisTurn: number;
   /** One-shot damage-prevention shields (Healing Salve — rule 614.9 / ROADMAP
    * Phase 11 EG-6). Each absorbs up to `amount` damage aimed at `target`;
    * consumed (and shrunk / removed) in `dealDamage` before the hit lands.

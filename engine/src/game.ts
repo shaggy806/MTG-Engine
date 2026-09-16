@@ -318,6 +318,7 @@ export class Game {
       pendingSacrificeVictims: [],
       preventAllCombatDamage: false,
       hexproofPlayers: [],
+      creaturesDiedThisTurn: 0,
       preventionShields: [],
       extraTurns: [],
       extraCombats: 0,
@@ -1896,7 +1897,17 @@ export class Game {
     modes: readonly ModeOption[],
     onDecline?: EffectSpec,
     targets: ResolvedTargets = [],
+    cost?: string,
   ): void {
+    // "You may pay {B}" — an unpayable cost isn't a choice at all, so skip
+    // straight to the decline branch rather than offering something the
+    // player can't take (rule 601.2h / 608.2).
+    if (cost !== undefined && this.payMana(controller, parseManaCost(cost)) === null) {
+      if (onDecline !== undefined) {
+        applyEffectSpec(onDecline, this.makeResolutionContext(source, controller, targets, x));
+      }
+      return;
+    }
     this.state.awaiting = {
       kind: "choose-modes",
       player: controller,
@@ -1907,6 +1918,7 @@ export class Game {
       x,
       targets,
       ...(onDecline !== undefined ? { onDecline } : {}),
+      ...(cost !== undefined ? { cost } : {}),
     };
   }
 
@@ -1920,10 +1932,21 @@ export class Game {
       throw new Error("unreachable: whyCannotChooseModes should have caught this");
     }
 
-    const { source, modes, x, onDecline, targets } = awaiting;
+    const { source, modes, x, onDecline, targets, cost } = awaiting;
     this.state.awaiting = null;
+
+    // Pay for the choice before applying it. The cost was checked as
+    // affordable when the decision was raised, but the board can have moved
+    // on in between (a mana source sacrificed in response), so a failed
+    // payment falls back to the decline branch rather than giving it away.
+    let chosen = [...modeIndices];
+    if (cost !== undefined && chosen.length > 0) {
+      const payment = this.payMana(player, parseManaCost(cost));
+      if (payment === null) chosen = [];
+      else this.executePayment(player, payment);
+    }
     // Listed order, not the order the player named them (rule 700.2b).
-    const ordered = [...modeIndices].sort((a, b) => a - b);
+    const ordered = chosen.sort((a, b) => a - b);
     this.emit({ type: "modes-chosen", source, modes: ordered });
     const context = this.makeResolutionContext(source, player, targets, x);
     for (const i of ordered) applyEffectSpec(modes[i].effect, context);
@@ -2190,6 +2213,7 @@ export class Game {
     // prevention shields lapse; a fresh turn owes no extra combats yet.
     this.state.preventAllCombatDamage = false;
     this.state.hexproofPlayers = [];
+    this.state.creaturesDiedThisTurn = 0;
     this.state.preventionShields = [];
     this.state.extraCombats = 0;
     this.state.spellsCastThisTurn = 0;
@@ -6465,8 +6489,18 @@ export class Game {
         this.state.preventionShields.push({ target, amount, combatOnly });
         this.emit({ type: "prevention-shield-created", target, amount });
       },
-      chooseModes: (minModes, maxModes, modes, onDecline) =>
-        this.beginModesChoice(source, controller, x, minModes, maxModes, modes, onDecline, targets),
+      chooseModes: (minModes, maxModes, modes, onDecline, cost) =>
+        this.beginModesChoice(
+          source,
+          controller,
+          x,
+          minModes,
+          maxModes,
+          modes,
+          onDecline,
+          targets,
+          cost,
+        ),
       changeLifeScoped: (who, delta) => this.changeLifeScoped(controller, who, delta),
       searchLibrary: (filter, destination, min, max, enterTapped, restDestination) =>
         this.beginLibrarySearch(
@@ -8709,7 +8743,18 @@ export class Game {
     // Snapshot before anything clears them — a dies-trigger's "if it had no
     // +1/+1 counters on it" (Undying) is asked once the card is already in a
     // graveyard. See `GameObject.lastKnownCounters`.
-    if (leavingBattlefield) object.lastKnownCounters = { ...object.counters };
+    if (leavingBattlefield) {
+      object.lastKnownCounters = { ...object.counters };
+      // "If a creature died this turn" (rule 700.4 — a creature going to a
+      // graveyard from the battlefield), counted while its types are still
+      // readable.
+      if (
+        to === "graveyard" &&
+        computeCharacteristics(this.state, this.registry, id).types.includes("creature")
+      ) {
+        this.state.creaturesDiedThisTurn += 1;
+      }
+    }
 
     // Rest in Peace (rule 614): a *card* that would be put into a graveyard is
     // exiled instead. Tokens are exempt — they'd cease to exist either way.

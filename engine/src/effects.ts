@@ -649,6 +649,15 @@ export type EffectSpec =
       readonly effect: EffectSpec;
       /** The yes/no prompt, e.g. "Draw a card?". */
       readonly prompt: string;
+      /**
+       * An optional *cost* to say yes — "you may pay {B}. If you do, draw a
+       * card" (Nihil Spellbomb, Dawn of Hope, Mentor of the Meek).
+       *
+       * The choice is only offered when the player could actually pay, so
+       * declining for lack of mana and declining by choice both land on
+       * `else`. Paid as the choice is answered, not when the effect resolves.
+       */
+      readonly cost?: string;
       /** "If you do, [effect]" (rule 608.2h) — applied only when `effect` was
        * actually chosen (Ob Nixilis, the Fallen: "you may have target player
        * lose 3 life. If you do, put three +1/+1 counters on Ob Nixilis.").
@@ -946,6 +955,8 @@ export interface EffectApi {
     maxModes: number,
     modes: readonly ModeOption[],
     onDecline?: EffectSpec,
+    /** A mana cost the chooser must pay to pick a mode — see `may.cost`. */
+    cost?: string,
   ): void;
   /** Scry (`surveil: false`) or surveil (`surveil: true`) `amount` cards;
    * apply `then` afterwards. See the `"scry"` / `"surveil"` {@link EffectSpec}. */
@@ -1420,7 +1431,13 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
         spec.then === undefined
           ? spec.effect
           : { kind: "sequence", effects: [spec.effect, spec.then] };
-      ctx.chooseModes(0, 1, [{ text: spec.prompt, effect: chosenEffect }], spec.else);
+      ctx.chooseModes(
+        0,
+        1,
+        [{ text: spec.prompt, effect: chosenEffect }],
+        spec.else,
+        spec.cost,
+      );
       return;
     }
     case "scry":
