@@ -2,7 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- The `?v=` is a cache-buster, and it is not optional. Chrome keeps
+         favicons in a database separate from the normal HTTP cache, keyed by
+         page URL, which survives a reload and even Ctrl+Shift+R — so
+         replacing favicon.svg on disk leaves every browser that has already
+         visited showing the previous icon indefinitely. Changing the URL is
+         what actually retires it. Bump this whenever favicon.svg changes. -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MTG Engine</title>
   </head>
