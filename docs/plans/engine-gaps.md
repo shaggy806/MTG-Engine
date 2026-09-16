@@ -177,9 +177,28 @@ clause. That is a phase-E-shaped job, not a mechanic bolt-on.
 X's next turn" state plus a must-attack-but-not-the-goader requirement, which is the same
 player-directed attack requirement Encore wants. The two should land together.
 
-### Phase E — the awkward ones (17 cards)
+### Phase E — the awkward ones — **done** (21 cards)
 
-Left late because each is a genuinely new *shape*, not an extension of one.
+Left late because each is a genuinely new *shape*, not an extension of one. Done in full
+rather than cherry-picked: these mechanics are common in real Commander well beyond this
+handful of decks, which the precon card-counts badly undersell.
+
+Landed across seven passes: optional costs during resolution (5 cards), punisher clauses
+(3), **impulse draw** (3), **Goad + Encore** (3), inverse sacrifice and flashback-with-life
+(2), "as this enters, choose …" (2), and tapping permanents as a cost plus `{X}` in a
+`may` cost (3).
+
+Bugs this phase surfaced that predated it, all found by tests rather than by cards:
+
+- `"any-target"` falls through to `"creature-or-player"` in the target switch; a new case
+  landed between them and broke 42 tests at once.
+- A non-Aura **permanent control change didn't stick** — layer 2 reverted it to the owner
+  every state-based-action pass, so `gain-control` with `untilEndOfTurn: false` silently
+  undid itself. Now `GameObject.controlledByEffect`.
+- `whyCannotCastSpell` computed the cost without the cast-variant flag, so an alternative
+  cost was checked against the full mana cost and never offered.
+
+### Phase E — original scope
 
 | gap | cards |
 |---|---|
@@ -192,6 +211,18 @@ Left late because each is a genuinely new *shape*, not an extension of one.
 
 `may { effect, prompt }` already exists for a free optional effect; phase E's first row is
 that with a cost attached, which is why those seven cluster.
+
+### Still blocked — four cards, recorded rather than approximated
+
+| card | why |
+|---|---|
+| Loaming Shaman | "any number of target cards" — a genuinely variable target *count*, not a fixed number of skippable slots |
+| Myriad Landscape | two finds that must **share a land type with each other**; a `CardFilter` constrains each card independently |
+| Sunbird's Invocation | cast free from among revealed cards |
+| Haven of the Spirit Dragon | mana provenance — phase F |
+
+None of these recurs the way impulse draw or Goad does, and each needs a mechanism of its
+own. They stay unauthored and their deck slots get an explicit substitution.
 
 ### Phase F — decide, don't assume (2 cards)
 
