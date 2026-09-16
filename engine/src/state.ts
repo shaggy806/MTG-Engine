@@ -55,6 +55,15 @@ export interface GameObject {
    * controller's untap step alongside `loyaltyActivatedThisTurn`.
    */
   abilitiesUsedThisTurn?: number[];
+  /** True once this permanent has been declared as an attacker this turn —
+   * the "attacked this turn" half of Boast (rule 702.135). Reset in the
+   * controller's untap step. */
+  attackedThisTurn?: boolean;
+  /** The counters this object had the last time it was on the battlefield,
+   * snapshotted by `moveObject` before it clears them. Last-known information
+   * (rule 603.10) for a question that can only be asked after the permanent
+   * has left — Undying's "if it had no +1/+1 counters on it". */
+  lastKnownCounters?: Record<string, number>;
   /**
    * Players this permanent has dealt combat damage to this turn — Steel
    * Hellkite's "whose controller was dealt combat damage by this creature

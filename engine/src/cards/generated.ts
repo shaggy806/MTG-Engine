@@ -105,6 +105,7 @@ import _poolDoomBlade from "./pool/doom-blade.js";
 import _poolDoublingSeason from "./pool/doubling-season.js";
 import _poolDragonMage from "./pool/dragon-mage.js";
 import _poolDragonTempest from "./pool/dragon-tempest.js";
+import _poolDragonkinBerserker from "./pool/dragonkin-berserker.js";
 import _poolDragonskullSummit from "./pool/dragonskull-summit.js";
 import _poolDragonspeakerShaman from "./pool/dragonspeaker-shaman.js";
 import _poolDreamrootCascade from "./pool/dreamroot-cascade.js";
@@ -151,6 +152,7 @@ import _poolGarruksUprising from "./pool/garruks-uprising.js";
 import _poolGazeOfGranite from "./pool/gaze-of-granite.js";
 import _poolGenerousGift from "./pool/generous-gift.js";
 import _poolGenesisUltimatum from "./pool/genesis-ultimatum.js";
+import _poolGeralfsMindcrusher from "./pool/geralfs-mindcrusher.js";
 import _poolGiantGrowth from "./pool/giant-growth.js";
 import _poolGiantSpider from "./pool/giant-spider.js";
 import _poolGlacialFortress from "./pool/glacial-fortress.js";
@@ -216,6 +218,7 @@ import _poolLlanowarWastes from "./pool/llanowar-wastes.js";
 import _poolLongtuskCub from "./pool/longtusk-cub.js";
 import _poolLordOfExtinction from "./pool/lord-of-extinction.js";
 import _poolLordOfLineage from "./pool/lord-of-lineage.js";
+import _poolLotlethGiant from "./pool/lotleth-giant.js";
 import _poolLotusCobra from "./pool/lotus-cobra.js";
 import _poolLotusField from "./pool/lotus-field.js";
 import _poolLotusPetal from "./pool/lotus-petal.js";
@@ -400,6 +403,7 @@ import _poolUtvaraHellkite from "./pool/utvara-hellkite.js";
 import _poolVampireNighthawk from "./pool/vampire-nighthawk.js";
 import _poolVandalblast from "./pool/vandalblast.js";
 import _poolVaultOfWhispers from "./pool/vault-of-whispers.js";
+import _poolVelaTheNightClad from "./pool/vela-the-night-clad.js";
 import _poolVerdantCatacombs from "./pool/verdant-catacombs.js";
 import _poolVernalFen from "./pool/vernal-fen.js";
 import _poolVillageRites from "./pool/village-rites.js";
@@ -554,6 +558,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolDoublingSeason,
   _poolDragonMage,
   _poolDragonTempest,
+  _poolDragonkinBerserker,
   _poolDragonskullSummit,
   _poolDragonspeakerShaman,
   _poolDreamrootCascade,
@@ -600,6 +605,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolGazeOfGranite,
   _poolGenerousGift,
   _poolGenesisUltimatum,
+  _poolGeralfsMindcrusher,
   _poolGiantGrowth,
   _poolGiantSpider,
   _poolGlacialFortress,
@@ -665,6 +671,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolLongtuskCub,
   _poolLordOfExtinction,
   _poolLordOfLineage,
+  _poolLotlethGiant,
   _poolLotusCobra,
   _poolLotusField,
   _poolLotusPetal,
@@ -849,6 +856,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolVampireNighthawk,
   _poolVandalblast,
   _poolVaultOfWhispers,
+  _poolVelaTheNightClad,
   _poolVerdantCatacombs,
   _poolVernalFen,
   _poolVillageRites,

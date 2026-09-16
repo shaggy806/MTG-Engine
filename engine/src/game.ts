@@ -2393,6 +2393,7 @@ export class Game {
       object.loyaltyActivatedThisTurn = false;
       object.abilitiesUsedThisTurn = [];
       object.combatDamagedPlayersThisTurn = [];
+      object.attackedThisTurn = false;
       if (object.tapped) {
         object.tapped = false;
         this.emit({ type: "permanent-untapped", object: id });
@@ -2812,6 +2813,27 @@ export class Game {
       const attackerDef = this.registry.get(printedCardName(attacker));
       return `${blockerDef.name} can't block ${attackerDef.name} — it isn't attacking ${player}`;
     }
+    // Fear (702.36) / Intimidate (702.13) — blockable only by an artifact
+    // creature, plus black creatures (fear) or colour-sharers (intimidate).
+    const fear = this.objHasKeyword(attackerId, "fear");
+    const intimidate = this.objHasKeyword(attackerId, "intimidate");
+    if (fear || intimidate) {
+      const blockerChars = computeCharacteristics(this.state, this.registry, blockerId);
+      let ok = blockerChars.types.includes("artifact");
+      if (!ok && fear) ok = blockerChars.colors.has("B");
+      if (!ok && intimidate) {
+        const attackerColors = computeCharacteristics(this.state, this.registry, attackerId).colors;
+        // A colourless attacker shares no colour with anything, so only an
+        // artifact creature can block it.
+        for (const color of attackerColors) {
+          if (blockerChars.colors.has(color)) ok = true;
+        }
+      }
+      if (!ok) {
+        const attackerDef = this.registry.get(printedCardName(attacker));
+        return `${blockerDef.name} can't block ${attackerDef.name} (${fear ? "fear" : "intimidate"})`;
+      }
+    }
     if (
       this.objHasKeyword(attackerId, "flying") &&
       !this.objHasKeyword(blockerId, "flying") &&
@@ -2937,6 +2959,9 @@ export class Game {
         object.attacking = defender;
         object.blockedBy = [];
         object.blocked = false;
+        // Boast (702.135) asks whether this creature attacked this turn —
+        // recorded here, and reset in the controller's untap step.
+        object.attackedThisTurn = true;
         if (!this.objHasKeyword(id, "vigilance")) {
           object.tapped = true;
         }
@@ -4655,10 +4680,15 @@ export class Game {
     ) {
       return `${def.name}'s ability's activation condition isn't met`;
     }
+    // Boast (rule 702.135) — only if this creature attacked this turn.
+    if (ability.boast === true && source.attackedThisTurn !== true) {
+      return `${def.name} hasn't attacked this turn`;
+    }
     // "Activate only once each turn" (rule 602.5g) — applies to any ability,
     // not just a loyalty one, so it is checked before the loyalty block.
+    // Boast implies it.
     if (
-      ability.oncePerTurn === true &&
+      (ability.oncePerTurn === true || ability.boast === true) &&
       (source.abilitiesUsedThisTurn ?? []).includes(abilityIndex)
     ) {
       return `${def.name}'s ability has already been activated this turn`;
@@ -4822,7 +4852,7 @@ export class Game {
     if (ability.cost.payEnergy !== undefined) {
       this.changeEnergy(player, -ability.cost.payEnergy);
     }
-    if (ability.oncePerTurn === true) {
+    if (ability.oncePerTurn === true || ability.boast === true) {
       // Rule 602.5g — recorded per ability index, so a permanent with two
       // once-each-turn abilities limits each of them separately.
       source.abilitiesUsedThisTurn = [
@@ -6249,6 +6279,15 @@ export class Game {
       discardHand: (player) => this.discardWholeHand(player),
       manaValueOf: (target) => this.manaValueOfTarget(target),
       lifeTotalOf: (player) => this.state.players[player]?.life ?? 0,
+      countInGraveyard: (filter) => {
+        let n = 0;
+        for (const player of this.state.turnOrder) {
+          for (const id of this.state.zones.perPlayer[player].graveyard) {
+            if (matchesFilter(this.state, this.registry, id, filter, { you: controller })) n += 1;
+          }
+        }
+        return n;
+      },
       gainLife: (player, amount) => this.changeLife(player, amount),
       loseLife: (player, amount) => this.changeLife(player, -amount),
       addMana: (player, mana, amount) => this.addMana(player, mana, amount),
@@ -6271,8 +6310,14 @@ export class Game {
       sacrificeSource: () => this.sacrificeSourceByEffect(source),
       returnToHand: (target) => this.returnToHandByEffect(target),
       exileObject: (target) => this.exileByEffect(target),
-      putOntoBattlefield: (target, underYourControl, enterTapped) =>
-        this.putOntoBattlefieldByEffect(target, controller, underYourControl, enterTapped),
+      putOntoBattlefield: (target, underYourControl, enterTapped, withCounters) =>
+        this.putOntoBattlefieldByEffect(
+          target,
+          controller,
+          underYourControl,
+          enterTapped,
+          withCounters,
+        ),
       exileGraveyard: (target) => {
         if (target.kind !== "player") return;
         // Snapshot: `moveObject` mutates the graveyard array as it goes.
@@ -7616,6 +7661,7 @@ export class Game {
     controller: PlayerId,
     underYourControl: boolean,
     enterTapped: boolean,
+    withCounters?: { readonly kind: string; readonly amount: number },
   ): void {
     if (target.kind !== "object") return;
     const object = this.state.objects[target.object];
@@ -7627,6 +7673,9 @@ export class Game {
     if (entered === undefined || entered.zone !== "battlefield") return;
     if (underYourControl) entered.controller = controller;
     if (enterTapped) entered.tapped = true;
+    if (withCounters !== undefined) {
+      this.addCounter(target, withCounters.kind, withCounters.amount);
+    }
     this.emit({ type: "permanent-entered-battlefield", object: target.object });
   }
 
@@ -8589,6 +8638,10 @@ export class Game {
   private moveObject(id: ObjectId, to: ZoneType): void {
     const object = this.state.objects[id];
     const leavingBattlefield = object.zone === "battlefield" && to !== "battlefield";
+    // Snapshot before anything clears them — a dies-trigger's "if it had no
+    // +1/+1 counters on it" (Undying) is asked once the card is already in a
+    // graveyard. See `GameObject.lastKnownCounters`.
+    if (leavingBattlefield) object.lastKnownCounters = { ...object.counters };
 
     // Rest in Peace (rule 614): a *card* that would be put into a graveyard is
     // exiled instead. Tokens are exempt — they'd cease to exist either way.

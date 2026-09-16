@@ -198,6 +198,7 @@ const deckB = deck([
   ["Thunderbreak Regent", 1],
   ["Loyal Subordinate", 1],
   ["Lazotep Reaver", 1],
+  ["Dragonkin Berserker", 1],
   ["Vizier of the Scorpion", 1],
   ["Tyrant's Familiar", 1],
   ["Ajani, Caller of the Pride", 1],
@@ -348,6 +349,9 @@ const deckB = deck([
 // the 903.9a "ask before the move" replacement path.
 const deckC = deck([
   ["Eternal Skylord", 1],
+  ["Vela the Night-Clad", 1],
+  ["Geralf's Mindcrusher", 1],
+  ["Lotleth Giant", 1],
   ["Gleaming Overseer", 1],
   ["Lazotep Plating", 1],
   ["Enter the God-Eternals", 1],

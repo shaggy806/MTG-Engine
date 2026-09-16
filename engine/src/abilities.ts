@@ -102,6 +102,11 @@ export interface ActivatedAbility {
    * per ability index on `GameObject.abilitiesUsedThisTurn`, so a permanent
    * with two such abilities limits each separately. */
   readonly oncePerTurn?: boolean;
+  /** Boast (rule 702.135 — Dragonkin Berserker): activatable only if this
+   * creature attacked this turn, and only once each turn. Implies
+   * `oncePerTurn`; the "attacked this turn" half reads
+   * `GameObject.attackedThisTurn`. */
+  readonly boast?: boolean;
   /** A live cost reduction printed on the ability itself, mirroring
    * `CardDefinition.selfCostReduction` for a spell — the Kamigawa Channel
    * lands' "This ability costs {1} less to activate for each legendary

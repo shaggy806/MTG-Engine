@@ -27,7 +27,7 @@ import type {
   Keyword,
   StaticCondition,
 } from "./cards.js";
-import { matchesFilter } from "./filter.js";
+import { compareNum, matchesFilter } from "./filter.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { printedCardName } from "./state.js";
@@ -147,6 +147,18 @@ function evalStaticCondition(
           );
         }).length >= condition.atLeast
       );
+    case "self-counters": {
+      // Last-known information once the source has left the battlefield
+      // (603.10) — `moveObject` clears `counters`, so a dies-trigger asking
+      // "did it have counters" has only the snapshot to go on.
+      const held =
+        source.zone === "battlefield" ? source.counters : (source.lastKnownCounters ?? {});
+      const n =
+        condition.counter === undefined
+          ? Object.values(held).reduce((sum, v) => sum + (v ?? 0), 0)
+          : (held[condition.counter] ?? 0);
+      return compareNum(n, condition.compare);
+    }
     case "target":
     case "trigger-object":
       // A static ability has neither a triggering object nor chosen targets —

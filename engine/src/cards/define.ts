@@ -14,7 +14,7 @@
 
 import type { ActivatedAbility, TriggeredAbility } from "../abilities.js";
 import type { EffectSpec, ModeOption, SpellResolver } from "../effects.js";
-import type { CardFilter } from "../filter.js";
+import type { CardFilter, NumCompare } from "../filter.js";
 import type { Color } from "../mana.js";
 import type { ReplacementSpec } from "../replacements.js";
 import type { TargetSpec } from "../target.js";
@@ -52,6 +52,12 @@ export type Keyword =
   | "flash"
   /** Can't be blocked (Invisible Stalker). Evasion, checked in combat. */
   | "unblockable"
+  /** Fear (rule 702.36) — blockable only by artifact creatures and/or black
+   * creatures. */
+  | "fear"
+  /** Intimidate (rule 702.13) — blockable only by artifact creatures and/or
+   * creatures sharing a colour with it (Vela the Night-Clad). */
+  | "intimidate"
   /** Daybound (rule 702.145 — ROADMAP Phase 10b): the front face of a modern
    * werewolf. As it becomes night, daybound permanents transform to their
    * nightbound back face; a daybound permanent enters transformed if it's
@@ -164,7 +170,21 @@ export type StaticCondition =
    * is, which for the "if it *was*" wording means after the exile — printed
    * characteristics still answer correctly (608.2h).
    */
-  | { readonly kind: "target"; readonly index: number; readonly filter: CardFilter };
+  | { readonly kind: "target"; readonly index: number; readonly filter: CardFilter }
+  /**
+   * How many counters the ability's own source has — Undying's "**if it had
+   * no +1/+1 counters on it**".
+   *
+   * Reads last-known information once the source has left the battlefield
+   * (rule 603.10), which is the only way this question can be asked at all:
+   * a dies-trigger is checked after the permanent is already in a graveyard,
+   * and `moveObject` clears counters on every zone change.
+   */
+  | {
+      readonly kind: "self-counters";
+      readonly counter?: string;
+      readonly compare: NumCompare;
+    };
 
 /**
  * A static ability: continuously modifies characteristics (rule 613 layers 6 /

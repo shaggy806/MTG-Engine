@@ -215,6 +215,11 @@ kills), `unblockable` (evasion — Invisible Stalker).
 
 **Targeting:** `hexproof` (can't be targeted by opponents).
 
+**Evasion:** `fear` (rule 702.36 — blockable only by artifact and/or black
+creatures) and `intimidate` (702.13 — artifact creatures and/or creatures
+sharing a colour with it; a colourless attacker with intimidate is blockable
+only by artifact creatures).
+
 **Day/Night:** `daybound` / `nightbound` — the two faces of a modern werewolf;
 `Game.setDayNight` transforms them with the cycle.
 
@@ -232,6 +237,10 @@ number, `"x"` (the cast `{X}`), `{ countOf: CardFilter }` — a live count of
 battlefield permanents matching the filter, from the effect's controller's
 view (Scourge of Valkas: `{ countOf: { subtype: "Dragon", controlledBy: "you" } }`;
 Craterhoof: `{ countOf: { type: "creature", controlledBy: "you" } }`);
+`{ countInGraveyard: CardFilter }` — how many cards in *graveyards* match
+(Undergrowth — Lotleth Giant's "for each creature card in your graveyard";
+`ownedBy: "you"` is what narrows it to your own);
+`{ lifeTotal: "you" }` — the controller's life total (Ajani's ultimate);
 `{ manaValueOf: ref }` — the mana value of whatever a target slot (or
 `"source"` / `"trigger-object"`) points at, read off the printed card so it
 still answers after that permanent has left the battlefield (rule 608.2h, last
@@ -271,7 +280,7 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 | `destroy` | `target` | Doom Blade |
 | `destroy-all` | `filter` | Wrath of God |
 | `exile` | `target` | Angelic Edict. Works on a card in a **graveyard** as well as a permanent (Withered Wretch). |
-| `put-onto-battlefield` | `target`, `underYourControl?`, `enterTapped?` | Reanimation that names one card, from anyone's graveyard — as opposed to `return-from-graveyard`'s filter over your own. `underYourControl` makes controller diverge from owner, so the card still goes back to its **owner's** graveyard when it dies. |
+| `put-onto-battlefield` | `target` (an `EffectTargetRef`, so `"trigger-object"` works — Undying returns *itself*), `underYourControl?`, `enterTapped?`, `withCounters?` | Reanimation that names one card, from anyone's graveyard — as opposed to `return-from-graveyard`'s filter over your own. `underYourControl` makes controller diverge from owner, so the card still goes back to its **owner's** graveyard when it dies. |
 | `exile-graveyard` | `target` (a player slot, or `"you"`) | Bojuka Bog — exiles that player's whole graveyard at once (rule 406; the cards in it are never individually targeted) |
 | `flicker` | `target` | Essence Flux — exiles `target`, then immediately returns it to the battlefield under its owner's control (rule 400.7 — a brand-new object; a token exiled this way never comes back) |
 | `return-to-hand` | `target` | Unsummon |
@@ -483,6 +492,9 @@ planning — see §15.
   `otherOnly` (§9); there is still no generic "not this object" exclusion
   for a *triggered* ability's or spell's targets, or for a `resolve`
   script's own target choices — see §15.
+- `boast: true` — **Boast** (rule 702.135 — Dragonkin Berserker): activatable
+  only if this creature attacked this turn (`GameObject.attackedThisTurn`),
+  and only once each turn. Implies `oncePerTurn`.
 - `oncePerTurn: true` — "Activate only once each turn" (rule 602.5g — Steel
   Hellkite). Recorded per ability index on `GameObject.abilitiesUsedThisTurn`,
   so a permanent with two such abilities limits each separately, and reset in
@@ -665,6 +677,12 @@ clause (section 9):
 - `{ kind: "your-turn" }`
 - `{ kind: "threshold" }` — 7+ cards in your graveyard.
 - `{ kind: "metalcraft" }` — 3+ artifacts.
+- `{ kind: "self-counters", counter?, compare }` — how many counters the
+  ability's **own source** has. Reads last-known information once the source
+  has left the battlefield (rule 603.10), which is the only way Undying's "if
+  it had no +1/+1 counters on it" can be asked at all: a dies-trigger is
+  checked after the card is already in a graveyard, and `moveObject` clears
+  counters on every zone change (`GameObject.lastKnownCounters`).
 - `{ kind: "target", index, filter }` — the object in target slot `index`
   matches `filter` (Scavenging Ooze: "Exile target card from a graveyard.
   **If it was a creature card**, …"). Same restriction as `trigger-object`

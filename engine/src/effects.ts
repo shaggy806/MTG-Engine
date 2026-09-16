@@ -51,7 +51,12 @@ export type EffectAmount =
   /** The effect controller's current life total (Ajani, Caller of the Pride's
    * ultimate: "create X 2/2 white Cat creature tokens, where X is your life
    * total"). */
-  | { readonly lifeTotal: "you" };
+  | { readonly lifeTotal: "you" }
+  /** How many cards in **graveyards** match a filter — Undergrowth's "for
+   * each creature card in your graveyard" (Lotleth Giant). Distinct from
+   * `countOf`, which only ever counts battlefield permanents. The filter's
+   * `ownedBy: "you"` is what restricts it to your own graveyard. */
+  | { readonly countInGraveyard: CardFilter };
 
 /** @deprecated Use {@link CardFilter} directly — kept as an alias so existing
  * `look-and-choose` / `matchesZoneChoiceFilter` call sites still type-check. */
@@ -240,9 +245,13 @@ export type EffectSpec =
        * onto the battlefield under your control").
        */
       readonly kind: "put-onto-battlefield";
-      readonly target: number;
+      /** An `EffectTargetRef` so it can also name the object that fired the
+       * trigger — Undying returns *itself*, which is never a chosen target. */
+      readonly target: EffectTargetRef;
       readonly underYourControl?: boolean;
       readonly enterTapped?: boolean;
+      /** Counters it enters with (Undying: "with a +1/+1 counter on it"). */
+      readonly withCounters?: { readonly kind: string; readonly amount: number };
     }
   | {
       /** Exile every card in a target *player's* graveyard (rule 406 — Bojuka
@@ -724,6 +733,8 @@ export interface EffectApi {
   manaValueOf(target: TargetRef): number;
   /** A player's current life total — see the `{ lifeTotal }` {@link EffectAmount}. */
   lifeTotalOf(player: PlayerId): number;
+  /** See the `{ countInGraveyard }` {@link EffectAmount}. */
+  countInGraveyard(filter: CardFilter): number;
   /** Every player a `PlayerScope` names, in APNAP order and skipping anyone
    * who has already lost. The shared scope resolution behind `draw`'s `who`,
    * `discard-hand`, and anything else that acts on a scope one player at a
@@ -925,6 +936,7 @@ export interface EffectApi {
     target: TargetRef,
     underYourControl: boolean,
     enterTapped: boolean,
+    withCounters?: { readonly kind: string; readonly amount: number },
   ): void;
   /** See the `"search-library"` {@link EffectSpec}. */
   searchLibrary(
@@ -1008,6 +1020,7 @@ export function amountValue(amount: EffectAmount, ctx: ResolutionContext): numbe
   if (typeof amount === "number") return amount;
   if ("triggerValue" in amount) return ctx.triggerValue;
   if ("lifeTotal" in amount) return ctx.lifeTotalOf(ctx.controller);
+  if ("countInGraveyard" in amount) return ctx.countInGraveyard(amount.countInGraveyard);
   if ("manaValueOf" in amount) {
     const ref = resolveEffectTarget(amount.manaValueOf, ctx);
     return ref === undefined ? 0 : ctx.manaValueOf(ref);
@@ -1159,9 +1172,14 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       return;
     }
     case "put-onto-battlefield": {
-      const target = ctx.targets[spec.target];
+      const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) {
-        ctx.putOntoBattlefield(target, spec.underYourControl === true, spec.enterTapped === true);
+        ctx.putOntoBattlefield(
+          target,
+          spec.underYourControl === true,
+          spec.enterTapped === true,
+          spec.withCounters,
+        );
       }
       return;
     }
