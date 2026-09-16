@@ -7,7 +7,7 @@ import { playerLabel, SEAT_CLASSES } from '../format.ts'
 import { getActiveDeck, setActive } from '../deck-builder/decks.ts'
 import type { PickableDeck } from '../deck-builder/decks.ts'
 import { findCardDef } from '../ui/defToVisible.ts'
-import { resolveArtUrl } from '../ui/art.ts'
+import { cssUrl, resolveArtUrl } from '../ui/art.ts'
 import { DeckPickerModal } from './DeckPickerModal.tsx'
 import './lobby.css'
 
@@ -202,7 +202,7 @@ function DeckSlot({
         <>
           <span
             className={`seat-deck-art${artUrl ? '' : ' blank'}`}
-            style={artUrl ? { backgroundImage: `url(${artUrl})` } : undefined}
+            style={artUrl ? { backgroundImage: cssUrl(artUrl) } : undefined}
           />
           <span className="seat-deck-name">{deck.name}</span>
           <span className="seat-deck-commander">{deck.commander ?? 'No commander'}</span>

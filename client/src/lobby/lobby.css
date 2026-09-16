@@ -18,27 +18,38 @@
 }
 
 .seat-panel {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: stretch;
   gap: 10px;
-  padding: 14px;
+  padding: 18px;
   background: var(--panel-2);
   border: 1px solid var(--border);
   border-top: 3px solid var(--seat-color, var(--border));
   border-radius: 10px;
-  /* the "ready" indicator is a ring outside the border (doesn't fight the
-     per-seat identity color already on the border/top-border) */
-  outline: 2px solid transparent;
-  outline-offset: 2px;
-  transition: outline-color 0.15s ease;
+}
+/* The "ready" indicator: a ring floating just inside the panel, with room to
+   breathe on both sides of it, so it doesn't fight the per-seat identity
+   colour already on the border/top-border. An inset pseudo-element rather
+   than an `outline`, which is painted *outside* the border box and takes no
+   layout space — on the first and last seat of the grid that spilled past
+   the edge of the board containing them. */
+.seat-panel::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 2px solid transparent;
+  border-radius: 7px;
+  pointer-events: none;
+  transition: border-color 0.15s ease;
 }
 .seat-panel.seat-a { --seat-color: var(--seat-a); }
 .seat-panel.seat-b { --seat-color: var(--seat-b); }
 .seat-panel.seat-c { --seat-color: var(--seat-c); }
 .seat-panel.seat-d { --seat-color: var(--seat-d); }
-.seat-panel.ready {
-  outline-color: var(--good);
+.seat-panel.ready::after {
+  border-color: var(--good);
 }
 
 .seat-panel-head {

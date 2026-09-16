@@ -289,6 +289,20 @@ function withImageParams(base: string, version: ArtVersion): string {
 }
 
 /**
+ * Wraps a resolved art URL as a CSS `url()` value, for `background-image`.
+ *
+ * Not optional quoting: an unquoted `url()` token may not contain a quote
+ * character, and `encodeURIComponent` deliberately leaves an apostrophe
+ * alone — so the by-name lookup for a card like "Atraxa, Praetors' Voice"
+ * produced a URL with a bare `'` in it, which made the whole declaration
+ * invalid and silently dropped. Every card whose name has an apostrophe lost
+ * its art this way; every other card looked fine.
+ */
+export function cssUrl(url: string): string {
+  return `url("${url.replace(/[\\"]/g, '\\$&')}")`
+}
+
+/**
  * @param art the card's `art` field (`null` ⇒ fall back to the by-name lookup)
  * @param name the card / face name, for the fallback
  */

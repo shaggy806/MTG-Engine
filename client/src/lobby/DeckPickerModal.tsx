@@ -1,5 +1,5 @@
 import { findCardDef } from '../ui/defToVisible.ts'
-import { resolveArtUrl } from '../ui/art.ts'
+import { cssUrl, resolveArtUrl } from '../ui/art.ts'
 import { listPickableDecks } from '../deck-builder/decks.ts'
 import type { PickableDeck } from '../deck-builder/decks.ts'
 import './lobby.css'
@@ -84,7 +84,7 @@ function DeckPickerRow({
     <button type="button" className="deck-picker-row" onClick={() => onPick(deck)}>
       <span
         className={`deck-picker-row-art${artUrl ? '' : ' deck-picker-row-art-blank'}`}
-        style={artUrl ? { backgroundImage: `url(${artUrl})` } : undefined}
+        style={artUrl ? { backgroundImage: cssUrl(artUrl) } : undefined}
       />
       <span className="deck-picker-row-text">
         <span className="deck-picker-row-name">{deck.name}</span>

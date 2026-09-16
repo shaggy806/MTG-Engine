@@ -20,6 +20,9 @@ export const CARD_STEP_MS = 1800
  * it (see AnimationLayer), so the next animation doesn't start on top of a
  * creature still shaking. */
 export const HIT_STEP_MS = 720
+/** A permanent fading off the board. Short on purpose — it's a beat of
+ * punctuation after whatever killed it, not an event in its own right. */
+export const DEATH_STEP_MS = 420
 export const TURN_STEP_MS = 1300
 export const PHASE_STEP_MS = 700
 
@@ -58,17 +61,18 @@ export interface EventSchedule {
   readonly endPhase: Phase
 }
 
-type SlotKind = 'card' | 'hit' | 'turn' | 'phase'
+type SlotKind = 'card' | 'hit' | 'death' | 'turn' | 'phase'
 
 /**
- * Which animations the game actually waits for. A card being played and a
- * creature connecting are *what happened*, so the board mustn't jump to the
- * outcome until they've run. A turn or phase banner is only a caption on
- * top: it holds nothing up, costs no time, and plays over whatever the board
- * has moved on to — otherwise a land the bot played sits in the air for the
- * length of an "End Phase" banner before reaching the table.
+ * Which animations the game actually waits for. A card being played, a
+ * creature connecting, a permanent leaving the board are *what happened*, so
+ * the board mustn't jump to the outcome until they've run. A turn or phase
+ * banner is only a caption on top: it holds nothing up, costs no time, and
+ * plays over whatever the board has moved on to — otherwise a land the bot
+ * played sits in the air for the length of an "End Phase" banner before
+ * reaching the table.
  */
-const PACED: ReadonlySet<SlotKind> = new Set<SlotKind>(['card', 'hit'])
+const PACED: ReadonlySet<SlotKind> = new Set<SlotKind>(['card', 'hit', 'death'])
 
 interface Slot {
   readonly event: GameEvent
@@ -86,6 +90,9 @@ function slotFor(ev: GameEvent, phase: { current: Phase }): Slot | null {
   }
   if (ev.type === 'damage-dealt' && ev.combat) {
     return { event: ev, kind: 'hit', duration: HIT_STEP_MS }
+  }
+  if (ev.type === 'permanent-left-battlefield') {
+    return { event: ev, kind: 'death', duration: DEATH_STEP_MS }
   }
   if (ev.type === 'turn-began') {
     phase.current = 'beginning'
@@ -127,11 +134,21 @@ export function scheduleEvents(
 
   const items: ScheduledEvent[] = []
   let cumulative = 0
+  // A run of permanents leaving at once (a wrath, a creature and the Aura
+  // that fell off it) fades together on one beat rather than queueing up one
+  // death-length each — the board is showing them all go at the same moment,
+  // because they did.
+  let sharedDeathOffset: number | null = null
   for (const slot of kept) {
     // Past the ceiling an event is simply not animated — the phase tracking
     // above has still been advanced, so the next frame's banners stay right.
     if (cumulative >= MAX_FRAME_MS) continue
+    if (slot.kind === 'death' && sharedDeathOffset !== null) {
+      items.push({ event: slot.event, offset: sharedDeathOffset })
+      continue
+    }
     items.push({ event: slot.event, offset: cumulative })
+    sharedDeathOffset = slot.kind === 'death' ? cumulative : null
     if (PACED.has(slot.kind)) cumulative += slot.duration
   }
   return { items, totalMs: cumulative, endPhase: phase.current }

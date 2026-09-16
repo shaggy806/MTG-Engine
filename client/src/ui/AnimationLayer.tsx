@@ -14,7 +14,12 @@ import { CardTile } from './CardTile.tsx'
 import { playerLabel, seatClassOf } from '../format.ts'
 import type { SeatClass } from '../format.ts'
 import type { SeatStatus } from '../net/protocol.ts'
-import { CARD_STEP_MS, PHASE_STEP_MS, TURN_STEP_MS } from '../game/animationSchedule.ts'
+import {
+  CARD_STEP_MS,
+  DEATH_STEP_MS,
+  PHASE_STEP_MS,
+  TURN_STEP_MS,
+} from '../game/animationSchedule.ts'
 import type { AnimationBus } from '../game/animationBus.ts'
 
 /** How far an attacker visually lunges toward what it's hitting, in px — a
@@ -37,6 +42,7 @@ const HIT_REACTION_DURATION_MS = 320
 const PLAYED_CARD_DURATION_MS = CARD_STEP_MS
 const TURN_BANNER_DURATION_MS = TURN_STEP_MS
 const PHASE_BANNER_DURATION_MS = PHASE_STEP_MS
+const DEATH_DURATION_MS = DEATH_STEP_MS
 
 /** How far the banner queue may fall behind the game before it starts
  * dropping the oldest. */
@@ -103,6 +109,24 @@ function elementFor(ref: TargetRef): HTMLElement | null {
 }
 
 /**
+ * The transform a tile is already wearing, as a string safe to compose with.
+ * A tapped permanent carries `rotate(20deg) scale(0.68)` from CSS — and, on
+ * `MiniTile`, that arrives as the separate `rotate`/`scale` properties rather
+ * than inside `transform`, so both have to be folded back in by hand.
+ */
+function srcBaseTransform(el: HTMLElement): string {
+  const cs = getComputedStyle(el)
+  const parts: string[] = []
+  if (cs.transform && cs.transform !== 'none') parts.push(cs.transform)
+  if (cs.rotate && cs.rotate !== 'none') parts.push(`rotate(${cs.rotate})`)
+  if (cs.scale && cs.scale !== 'none') {
+    const [sx, sy = sx] = cs.scale.split(/\s+/)
+    parts.push(`scale(${sx}, ${sy})`)
+  }
+  return parts.join(' ')
+}
+
+/**
  * Punches the source's own battlefield tile a short distance toward what it
  * just hit, and shakes/flashes the thing on the receiving end right as the
  * punch lands — triggered off `damage-dealt` (rather than
@@ -127,31 +151,56 @@ function runHit(source: ObjectId, target: TargetRef): void {
   const dist = Math.hypot(dx, dy) || 1
   const nx = (dx / dist) * LUNGE_DISTANCE_PX
   const ny = (dy / dist) * LUNGE_DISTANCE_PX
+  const base = srcBaseTransform(srcEl)
 
+  // The jab itself travels on the outer box (`data-obj-id`), which carries no
+  // transform of its own, so the path is a straight line to the target.
   srcEl.animate(
     [
-      { transform: 'translate(0, 0) scale(1)', offset: 0 },
-      { transform: `translate(${nx}px, ${ny}px) scale(1.08)`, offset: LUNGE_IMPACT_FRACTION },
-      { transform: 'translate(0, 0) scale(1)', offset: 1 },
+      { transform: `translate(0, 0) ${base}`, offset: 0 },
+      { transform: `translate(${nx}px, ${ny}px) ${base}`, offset: LUNGE_IMPACT_FRACTION },
+      { transform: `translate(0, 0) ${base}`, offset: 1 },
     ],
     { duration: LUNGE_DURATION_MS, easing: 'ease-out' },
   )
 
+  // An attacker is tapped, and a tapped tile is drawn tilted and shrunk (see
+  // `.mini-tile.tapped`) — so a creature attacking used to slide across the
+  // board at a 20° angle, which reads as a card being dragged rather than a
+  // creature striking. It straightens up and comes back to full size as it
+  // connects, then settles back to tapped. The tilt lives on the inner tile
+  // rather than the box the lunge moves, so the two compose without fighting.
+  const face = srcEl.querySelector<HTMLElement>('.mini-tile, .card-tile')
+  const faceBase = face ? srcBaseTransform(face) : ''
+  if (face && faceBase) {
+    face.animate(
+      [
+        { transform: faceBase, offset: 0 },
+        { transform: 'rotate(0deg) scale(1)', offset: LUNGE_IMPACT_FRACTION },
+        { transform: faceBase, offset: 1 },
+      ],
+      { duration: LUNGE_DURATION_MS, easing: 'ease-out' },
+    )
+  }
+
   window.setTimeout(() => {
     // Direction-agnostic shake (a fixed left/right wobble, not aimed back
     // along the hit vector) -- simpler than steering it, and reads the same
-    // either way since it's over in a fifth of a second.
+    // either way since it's over in a fifth of a second. Composed onto the
+    // target's own transform for the same reason as the lunge above: a
+    // blocker taking damage back is usually tapped too.
+    const targetBase = srcBaseTransform(targetEl)
     targetEl.animate(
       [
-        { transform: 'translate(0, 0)', filter: 'brightness(1)', offset: 0 },
+        { transform: `translate(0, 0) ${targetBase}`, filter: 'brightness(1)', offset: 0 },
         {
-          transform: 'translate(-5px, 0)',
+          transform: `translate(-5px, 0) ${targetBase}`,
           filter: 'brightness(1.5) drop-shadow(0 0 10px rgba(255, 70, 70, 0.85))',
           offset: 0.22,
         },
-        { transform: 'translate(4px, 0)', offset: 0.5 },
-        { transform: 'translate(-2px, 0)', offset: 0.78 },
-        { transform: 'translate(0, 0)', filter: 'brightness(1)', offset: 1 },
+        { transform: `translate(4px, 0) ${targetBase}`, offset: 0.5 },
+        { transform: `translate(-2px, 0) ${targetBase}`, offset: 0.78 },
+        { transform: `translate(0, 0) ${targetBase}`, filter: 'brightness(1)', offset: 1 },
       ],
       { duration: HIT_REACTION_DURATION_MS, easing: 'ease-out' },
     )
@@ -159,9 +208,40 @@ function runHit(source: ObjectId, target: TargetRef): void {
 }
 
 /**
+ * Fades a permanent off the board as it leaves, whatever the destination —
+ * dying, sacrificed, bounced, exiled. Runs while the board on screen is
+ * still the one that has it (see usePlayback), and the frame it belongs to
+ * holds that board for `DEATH_STEP_MS`, so the tile is gone by the time the
+ * fade finishes rather than blinking out of existence unannounced.
+ */
+function runDeath(object: ObjectId): void {
+  const el = elementFor({ kind: 'object', object })
+  if (!el) return // never drawn (entered and left inside one frame)
+  const base = srcBaseTransform(el)
+  el.animate(
+    [
+      { opacity: 1, filter: 'grayscale(0)', transform: `scale(1) ${base}`, offset: 0 },
+      {
+        opacity: 0.85,
+        filter: 'grayscale(0.6) brightness(1.3)',
+        transform: `scale(1.06) ${base}`,
+        offset: 0.25,
+      },
+      {
+        opacity: 0,
+        filter: 'grayscale(1) brightness(0.6)',
+        transform: `scale(0.72) ${base}`,
+        offset: 1,
+      },
+    ],
+    { duration: DEATH_DURATION_MS, easing: 'ease-in', fill: 'forwards' },
+  )
+}
+
+/**
  * Purely cosmetic overlays — a card zooming up when cast or played, an
- * attacker hitting whatever it deals combat damage to, and Hearthstone-style
- * turn/phase banners.
+ * attacker hitting whatever it deals combat damage to, a permanent fading as
+ * it leaves the board, and Hearthstone-style turn/phase banners.
  *
  * Deliberately a sibling of `<Table>` in `GameScreen`, not something inside
  * it: `Table` remounts wholesale on every frame it's keyed on, which would
@@ -244,6 +324,8 @@ export function AnimationLayer({
         }, PLAYED_CARD_DURATION_MS)
       } else if (ev.type === 'damage-dealt' && ev.combat) {
         runHit(ev.source, ev.target)
+      } else if (ev.type === 'permanent-left-battlefield') {
+        runDeath(ev.object)
       } else if (ev.type === 'turn-began') {
         enqueueBanner({
           key: `turn-${ev.seq}`,
