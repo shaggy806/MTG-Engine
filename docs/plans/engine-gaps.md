@@ -145,15 +145,37 @@ Two things worth carrying forward:
 
 Lieutenant needed no feature at all, as the triage predicted.
 
-### Phase D — the ten named mechanics (18 cards)
+### Phase D — the ten named mechanics — **mostly done** (19 cards)
 
-Amass (6), damage doubling (2), and one each of Goad, Boast, Undying, Populate,
-Undergrowth, Fear/Intimidate, landcycling/typecycling, Encore. Encore depends on phase A's
-`zone: "graveyard"`; Populate and Amass are both token work and should land together.
+Landed across three passes: **Lieutenant** (3 cards — needed no feature at all,
+`CardFilter.isCommander` already said it), **Amass** (6), **Fear/Intimidate**, **Undying**,
+**Boast**, **Undergrowth**, **landcycling**, **Populate**, and **damage doubling** (2).
+Rishkar came along for free once `CardFilter.counters` existed.
 
-Fear and Intimidate are evasion keywords and go in the `Keyword` union next to `menace`;
-Goad is a `CombatRestriction` (it already has `must-attack`, so this is mostly "and not
-you").
+Findings worth keeping:
+
+- **"Double" was two unrelated mechanisms.** Unleash Fury is a one-shot `modify-pt` adding
+  the creature's own power; Dictate of the Twin Gods is the engine's first *symmetric,
+  global* replacement, doubling damage from anyone to anyone.
+- **Undying can only be answered from last-known information.** Its "if it had no +1/+1
+  counters on it" is checked once the card is already in a graveyard, and `moveObject`
+  clears counters on every zone change — hence `GameObject.lastKnownCounters`.
+- **Amass is one effect, not a sequence.** "An Army you control" has to resolve to the
+  *same* object every time or repeated amassing wouldn't grow one creature.
+- **Two choice-simplifications** are recorded rather than hidden: populate copies the
+  largest creature token instead of asking, matching `proliferate`'s existing compromise.
+
+**Deferred to phase E: Encore and Goad.**
+
+*Encore* (Rakshasa Debaser, Kangee's Lieutenant) needs roughly five new mechanisms for two
+cards — a token copy per opponent, an attack requirement aimed at a *specific* player,
+sacrifice-at-next-end-step (not the existing exile-at-end-step), plus each card's other
+blocked half: "defending player's graveyard" as a target scope, and a `CardFilter.attacking`
+clause. That is a phase-E-shaped job, not a mechanic bolt-on.
+
+*Goad* (Geode Rager) is the same story in miniature: it needs per-object "goaded by X until
+X's next turn" state plus a must-attack-but-not-the-goader requirement, which is the same
+player-directed attack requirement Encore wants. The two should land together.
 
 ### Phase E — the awkward ones (17 cards)
 
