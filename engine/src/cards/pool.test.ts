@@ -4,10 +4,15 @@
  * disk must exactly match what `createDefaultRegistry()` builds — so adding a
  * card file without re-running `scripts/gen-cards.mjs` fails here rather than
  * silently shipping a card that no registry knows about.
+ *
+ * Also guards the pool/tokens split the codegen records as `POOL_CARDS` /
+ * `TOKEN_CARDS`, since `isTokenCard` has no other way to tell the two apart.
  */
 
 import { describe, expect, it } from "vitest";
+import { isCardFront, isDeckableCard, isTokenCard } from "./classify.js";
 import type { CardDefinition } from "./define.js";
+import { POOL_CARDS, TOKEN_CARDS } from "./generated.js";
 import { createDefaultRegistry } from "./registry.js";
 
 const modules = import.meta.glob<{ default: CardDefinition }>(
@@ -40,5 +45,40 @@ describe("card pool layout", () => {
         `${name} is on disk but not registered — run \`npm run gen:cards -w engine\``,
       ).toBe(true);
     }
+  });
+
+  it("POOL_CARDS / TOKEN_CARDS match the directories on disk", () => {
+    const named = (sub: string) =>
+      new Set(
+        files.filter(([p]) => p.startsWith(`./${sub}/`)).map(([, mod]) => mod.default.name),
+      );
+    expect(new Set(POOL_CARDS.map((c) => c.name))).toEqual(named("pool"));
+    expect(new Set(TOKEN_CARDS.map((c) => c.name))).toEqual(named("tokens"));
+  });
+});
+
+describe("classify", () => {
+  it("isTokenCard is the tokens/ directory, not a name guess", () => {
+    for (const def of TOKEN_CARDS) expect(isTokenCard(def), def.name).toBe(true);
+    for (const def of POOL_CARDS) expect(isTokenCard(def), def.name).toBe(false);
+  });
+
+  it("isCardFront picks the face a card is deck-listed under", () => {
+    for (const def of POOL_CARDS) {
+      if (def.faces === null) {
+        expect(isCardFront(def), def.name).toBe(true);
+      } else {
+        expect(isCardFront(def), def.name).toBe(def.faces[0] === def.name);
+      }
+    }
+  });
+
+  it("isDeckableCard excludes tokens and back faces", () => {
+    const deckable = POOL_CARDS.concat(TOKEN_CARDS).filter(isDeckableCard);
+    expect(deckable.some((d) => isTokenCard(d))).toBe(false);
+    expect(deckable.some((d) => !isCardFront(d))).toBe(false);
+    // Sanity: the overwhelming majority of the pool is still deckable, so a
+    // predicate that accidentally rejected everything would fail here.
+    expect(deckable.length).toBeGreaterThan(POOL_CARDS.length - 20);
   });
 });

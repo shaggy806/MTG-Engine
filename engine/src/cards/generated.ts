@@ -409,8 +409,8 @@ import _tokensSoldierToken from "./tokens/soldier-token.js";
 import _tokensTreasureToken from "./tokens/treasure-token.js";
 import _tokensVampireToken from "./tokens/vampire-token.js";
 
-/** The built-in card pool — every file under `pool/` and `tokens/`. */
-export const BUILTIN_CARDS: readonly CardDefinition[] = [
+/** Real Magic cards — every file under `pool/`. */
+export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAbrade,
   _poolActOfTreason,
   _poolAdarkarWastes,
@@ -795,6 +795,12 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _poolYavimayaCoast,
   _poolZulaportCutthroat,
   _poolZuranOrb,
+];
+
+/** Token definitions — every file under `tokens/`. Registered like any
+ * other card (a `create-token` effect names one), but not a card: never
+ * deck-legal, and hidden from the card library by default. */
+export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensApeToken,
   _tokensBeastToken33,
   _tokensBeastToken,
@@ -817,3 +823,6 @@ export const BUILTIN_CARDS: readonly CardDefinition[] = [
   _tokensTreasureToken,
   _tokensVampireToken,
 ];
+
+/** The built-in card pool — every file under `pool/` and `tokens/`. */
+export const BUILTIN_CARDS: readonly CardDefinition[] = [...POOL_CARDS, ...TOKEN_CARDS];

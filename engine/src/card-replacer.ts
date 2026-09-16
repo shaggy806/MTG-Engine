@@ -16,7 +16,7 @@
  * just isn't pre-filtered against a particular deck's identity.
  */
 
-import { BUILTIN_CARDS } from "./cards.js";
+import { BUILTIN_CARDS, isDeckableCard } from "./cards.js";
 import type { CardType } from "./cards/define.js";
 import { COLORS, manaValue, parseManaCost } from "./mana.js";
 import type { Color, ManaCost } from "./mana.js";
@@ -78,12 +78,6 @@ export interface ReplacementTarget {
   readonly typeLine: string;
 }
 
-/** Tokens ("3/3 Beast Token") are real `BUILTIN_CARDS` entries but aren't a
- * legal thing to put in a deck's 99 — never worth suggesting. */
-function isToken(name: string): boolean {
-  return name.toLowerCase().includes("token");
-}
-
 /**
  * The closest `BUILTIN_CARDS` entry to `target`, or `null` if nothing
  * shares even its primary type (a creature only ever matches a creature, a
@@ -104,7 +98,9 @@ export function suggestReplacement(target: ReplacementTarget): string | null {
   let bestName: string | null = null;
   let bestScore = Infinity;
   for (const def of BUILTIN_CARDS) {
-    if (isToken(def.name)) continue;
+    // Tokens and back faces are registered definitions but not decklist
+    // entries (see `cards/classify.ts`) — never worth suggesting.
+    if (!isDeckableCard(def)) continue;
     const defTypes = new Set<string>(def.types);
     let sharedTypes = 0;
     for (const t of targetTypes) if (defTypes.has(t)) sharedTypes += 1;

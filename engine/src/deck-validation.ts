@@ -12,8 +12,9 @@
  */
 
 import { colorIdentityOf, identityString, withinIdentity } from "./identity.js";
+import { isCardFront, isTokenCard } from "./cards/classify.js";
 import type { Color } from "./mana.js";
-import type { CardRegistry } from "./cards.js";
+import type { CardDefinition, CardRegistry } from "./cards.js";
 
 export interface DeckToValidate {
   /** One or two commander card names (two = Partner / Background). */
@@ -48,6 +49,20 @@ export const BASIC_LANDS: ReadonlySet<string> = new Set([
   "Snow-Covered Forest",
 ]);
 
+/**
+ * Why `name` can't be a decklist entry at all, or `null` if it can. Tokens
+ * aren't cards (rule 111.1), and a multi-face card is deck-listed under its
+ * front face only (rule 712.3) — both are registered definitions, so without
+ * this they'd pass every other check here silently.
+ */
+function notACardReason(name: string, def: CardDefinition): string | null {
+  if (isTokenCard(def)) return `"${name}" is a token, not a card`;
+  if (!isCardFront(def)) {
+    return `"${name}" is the back face of ${def.faces?.[0] ?? "another card"} — list the front face instead`;
+  }
+  return null;
+}
+
 export function validateCommanderDeck(
   deck: DeckToValidate,
   registry: CardRegistry,
@@ -66,6 +81,8 @@ export function validateCommanderDeck(
       continue;
     }
     const def = registry.get(name);
+    const notACard = notACardReason(name, def);
+    if (notACard !== null) violations.push(notACard);
     const isLegendaryCreature =
       def.supertypes.includes("legendary") &&
       (def.types.includes("creature") || def.types.includes("planeswalker"));
@@ -90,6 +107,8 @@ export function validateCommanderDeck(
   }
   for (const [name, n] of counts) {
     if (!registry.has(name)) continue; // feasibility audit's job, not ours
+    const notACard = notACardReason(name, registry.get(name));
+    if (notACard !== null) violations.push(notACard);
     if (n > 1 && !BASIC_LANDS.has(name)) {
       violations.push(`${n}× "${name}" — singleton format allows only 1`);
     }

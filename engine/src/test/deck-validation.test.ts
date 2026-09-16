@@ -63,4 +63,38 @@ describe("validateCommanderDeck", () => {
     );
     expect(r.violations.some((v) => v.includes("can't be a commander"))).toBe(true);
   });
+
+  // A token and a back face are both fully-registered definitions, so without
+  // an explicit check they pass singleton/identity/size like any other name.
+  it("rejects a token in the 99", () => {
+    const r = validateCommanderDeck(
+      {
+        commanders: ["Atraxa, Praetors' Voice"],
+        cards: ["Treasure Token", ...basics(98)],
+        size: 100,
+      },
+      reg,
+    );
+    expect(r.violations.some((v) => v.includes("Treasure Token") && v.includes("token"))).toBe(
+      true,
+    );
+  });
+
+  it("rejects a card's back face in the 99", () => {
+    const r = validateCommanderDeck(
+      {
+        commanders: ["Atraxa, Praetors' Voice"],
+        // The night side of Harvesttide Infiltrator, which is what a decklist
+        // would actually name.
+        cards: ["Harvesttide Assailant", ...basics(98)],
+        size: 100,
+      },
+      reg,
+    );
+    expect(
+      r.violations.some(
+        (v) => v.includes("Harvesttide Assailant") && v.includes("Harvesttide Infiltrator"),
+      ),
+    ).toBe(true);
+  });
 });
