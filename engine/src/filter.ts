@@ -93,6 +93,9 @@ export interface CardFilter {
    * "with a counter on it" means.
    */
   readonly counters?: { readonly kind?: string; readonly compare: NumCompare };
+  /** Currently attacking (Kangee's Lieutenant: "attacking creatures with
+   * flying get +1/+1"). */
+  readonly attacking?: boolean;
   readonly power?: NumCompare;
   readonly toughness?: NumCompare;
   /** Controlled by the filtering player (`"you"`) or anyone else (`"opponent"`). */
@@ -179,6 +182,9 @@ export function matchesFilter(
     if (filter.colorless === true && colors.size > 0) return false;
   }
 
+  if (filter.attacking !== undefined && (object.attacking !== null) !== filter.attacking) {
+    return false;
+  }
   if (filter.counters !== undefined) {
     const held = filter.counters.kind === undefined
       ? Object.values(object.counters).reduce((n, v) => n + (v ?? 0), 0)

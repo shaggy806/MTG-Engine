@@ -112,6 +112,16 @@ export function isLegalTarget(
     const whose = spec.whose ?? "any";
     if (whose === "you" && object.owner !== forPlayer) return false;
     if (whose === "opponent" && object.owner === forPlayer) return false;
+    if (whose === "defending-player") {
+      const attacker = source?.object !== undefined ? state.objects[source.object] : undefined;
+      const attacking = attacker?.attacking;
+      if (attacking === null || attacking === undefined) return false;
+      const defender =
+        state.players[attacking as PlayerId] !== undefined
+          ? (attacking as PlayerId)
+          : state.objects[attacking as ObjectId]?.controller;
+      if (defender === undefined || object.owner !== defender) return false;
+    }
     // Printed characteristics: layer effects don't reach a graveyard, and
     // `matchesFilter` degrades to printed values off the battlefield anyway.
     return (

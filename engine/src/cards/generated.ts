@@ -156,6 +156,7 @@ import _poolGarruksUprising from "./pool/garruks-uprising.js";
 import _poolGazeOfGranite from "./pool/gaze-of-granite.js";
 import _poolGenerousGift from "./pool/generous-gift.js";
 import _poolGenesisUltimatum from "./pool/genesis-ultimatum.js";
+import _poolGeodeRager from "./pool/geode-rager.js";
 import _poolGeralfsMindcrusher from "./pool/geralfs-mindcrusher.js";
 import _poolGiantGrowth from "./pool/giant-growth.js";
 import _poolGiantSpider from "./pool/giant-spider.js";
@@ -203,6 +204,7 @@ import _poolJetMedallion from "./pool/jet-medallion.js";
 import _poolJuggernaut from "./pool/juggernaut.js";
 import _poolJump from "./pool/jump.js";
 import _poolKalonianHydra from "./pool/kalonian-hydra.js";
+import _poolKangeesLieutenant from "./pool/kangees-lieutenant.js";
 import _poolKarnsBastion from "./pool/karns-bastion.js";
 import _poolKarplusanForest from "./pool/karplusan-forest.js";
 import _poolKazanduMammoth from "./pool/kazandu-mammoth.js";
@@ -288,6 +290,7 @@ import _poolRabidBite from "./pool/rabid-bite.js";
 import _poolRagingGoblin from "./pool/raging-goblin.js";
 import _poolRaiseTheAlarm from "./pool/raise-the-alarm.js";
 import _poolRakdosCharm from "./pool/rakdos-charm.js";
+import _poolRakshasaDebaser from "./pool/rakshasa-debaser.js";
 import _poolRampagingBaloths from "./pool/rampaging-baloths.js";
 import _poolRampantGrowth from "./pool/rampant-growth.js";
 import _poolRamunapExcavator from "./pool/ramunap-excavator.js";
@@ -626,6 +629,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolGazeOfGranite,
   _poolGenerousGift,
   _poolGenesisUltimatum,
+  _poolGeodeRager,
   _poolGeralfsMindcrusher,
   _poolGiantGrowth,
   _poolGiantSpider,
@@ -673,6 +677,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolJuggernaut,
   _poolJump,
   _poolKalonianHydra,
+  _poolKangeesLieutenant,
   _poolKarnsBastion,
   _poolKarplusanForest,
   _poolKazanduMammoth,
@@ -758,6 +763,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolRagingGoblin,
   _poolRaiseTheAlarm,
   _poolRakdosCharm,
+  _poolRakshasaDebaser,
   _poolRampagingBaloths,
   _poolRampantGrowth,
   _poolRamunapExcavator,

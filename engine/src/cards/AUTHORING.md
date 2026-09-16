@@ -363,6 +363,17 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
   Fallen); `else` only when it was declined ("If you didn't, …", or an
   "unless" cost framed as the decline branch — Springheart Nantuko, The
   Gitrog Monster's upkeep). needed-cards P19.
+- **`goad { target }`** — goad every creature a target player controls (rule
+  701.38 — Geode Rager). Marks `GameObject.goadedBy`; those creatures then
+  attack each combat if able and must attack someone *other* than the goader
+  when another defender is legal. The goad lapses as the goader's own next
+  turn begins.
+- **`encore {}`** — Encore (rule 702.140 — Rakshasa Debaser, Kangee's
+  Lieutenant): one hasty token copy per opponent, each with
+  `mustAttackPlayer` set to *that* opponent, all sacrificed at the next end
+  step. One effect because the loop, the per-opponent attack requirement and
+  the sacrifice are one instruction — and it copies a card in **exile**, which
+  the Encore cost put there (`zone: "graveyard"`).
 - **`impulse-exile { amount, duration, castOnly?, choose?, yourTurnOnly?, gate? }`**
   — "impulse draw": exile the top N cards face-up and let yourself play them
   (Dream Pillager, Tectonic Giant, Theater of Horrors). `duration` is
@@ -406,7 +417,8 @@ source, so it isn't a `CardFilter` clause.
 *computed* characteristics — `{ type, types, notTypes, typesAnyOf, subtype,
 subtypes, supertype, name, colors, notColors, colorless, manaValue, power,
 toughness, counters, controlledBy, ownedBy, keyword, notKeyword, tapped, token,
-isCommander }`, every present clause ANDed. `subtypes`/`typesAnyOf` are an OR
+isCommander }`, every present clause ANDed. `attacking` asks whether the permanent is currently attacking (Kangee's
+Lieutenant). `subtypes`/`typesAnyOf` are an OR
 within themselves (Farseek: "a Plains, Island, Swamp, or Mountain card";
 Takenuma's Channel: "a creature or planeswalker card"). Numeric fields take
 `{ op: "eq"|"ne"|"lt"|"lte"|"gt"|"gte", n }`.

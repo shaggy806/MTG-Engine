@@ -703,6 +703,29 @@ export type EffectSpec =
     }
   | {
       /**
+       * Encore (rule 702.140) — "For each opponent, create a token copy of
+       * this card that attacks that opponent this turn if able. They gain
+       * haste. Sacrifice them at the beginning of the next end step."
+       *
+       * One effect because the per-opponent loop, the attack requirement
+       * aimed at *that* opponent, and the end-step sacrifice are one
+       * instruction — and the copies are of a card in exile (the Encore cost
+       * exiled it), which nothing else does.
+       */
+      readonly kind: "encore";
+    }
+  | {
+      /**
+       * Goad every creature a target player controls (rule 701.38 — Geode
+       * Rager). Until the goader's next turn those creatures attack each
+       * combat if able, and attack someone other than the goader if able.
+       */
+      readonly kind: "goad";
+      /** A target-slot index holding the player whose creatures are goaded. */
+      readonly target: number;
+    }
+  | {
+      /**
        * "Impulse draw" — exile the top `amount` cards of your library face-up
        * and let yourself play them (Dream Pillager, Tectonic Giant, Theater
        * of Horrors).
@@ -911,6 +934,10 @@ export interface EffectApi {
   doublePtAll(filter: CardFilter, duration: PtDuration): void;
   /** See the `"grant-player-hexproof"` {@link EffectSpec}. */
   grantPlayerHexproof(who: PlayerScope): void;
+  /** See the `"encore"` {@link EffectSpec}. */
+  encore(): void;
+  /** See the `"goad"` {@link EffectSpec}. */
+  goadCreaturesOf(player: PlayerId): void;
   /** See the `"impulse-exile"` {@link EffectSpec}. */
   impulseExile(
     amount: number,
@@ -1510,6 +1537,14 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
         spec.else,
         spec.cost,
       );
+      return;
+    }
+    case "encore":
+      ctx.encore();
+      return;
+    case "goad": {
+      const ref = ctx.targets[spec.target];
+      if (ref?.kind === "player") ctx.goadCreaturesOf(ref.player);
       return;
     }
     case "impulse-exile":

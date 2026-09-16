@@ -2428,10 +2428,28 @@ export class Game {
         this.moveObject(id, "exile");
       }
     }
+    // Encore's tokens are *sacrificed* rather than exiled, so dies-triggers
+    // see them go (rule 702.140).
+    for (const id of [...this.state.zones.shared.battlefield]) {
+      const object = this.state.objects[id];
+      if (object?.sacrificeAtEndStep !== true) continue;
+      const player = object.controller;
+      this.moveObject(id, "graveyard");
+      this.emit({ type: "permanent-sacrificed", object: id, player });
+    }
   }
 
   private untapStep(): void {
     const active = this.activePlayer;
+    // A goad lasts "until your next turn" (rule 701.38), so the active
+    // player's own goads lapse now — on every creature, not just theirs.
+    for (const id of this.state.zones.shared.battlefield) {
+      const goaded = this.state.objects[id]?.goadedBy;
+      if (goaded === undefined || !goaded.includes(active)) continue;
+      const left = goaded.filter((p) => p !== active);
+      if (left.length === 0) delete this.state.objects[id].goadedBy;
+      else this.state.objects[id].goadedBy = left;
+    }
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
       if (object.controller !== active) continue;
@@ -2926,6 +2944,22 @@ export class Game {
       seen.add(attacker);
       const why = this.whyCannotAttack(player, attacker, defender);
       if (why !== null) return why;
+      // Goad (rule 701.38b) — "attacks a player other than you if able". The
+      // requirement only bites when some other defender was actually legal,
+      // so a goaded creature with nowhere else to go may still attack its
+      // goader.
+      const goadedBy = this.state.objects[attacker].goadedBy ?? [];
+      if (goadedBy.includes(this.defendingPlayerOf(defender))) {
+        const elsewhere = this.legalDefenders(player).some(
+          (d) =>
+            !goadedBy.includes(this.defendingPlayerOf(d)) &&
+            this.whyCannotAttack(player, attacker, d) === null,
+        );
+        if (elsewhere) {
+          const name = this.creatureDef(attacker)?.name ?? attacker;
+          return `${name} is goaded and must attack someone else if able`;
+        }
+      }
     }
     return null;
   }
@@ -3003,11 +3037,28 @@ export class Game {
     const declared = new Set(declarations.map((d) => d.attacker));
     const forced: AttackerDeclaration[] = [];
     for (const id of this.state.zones.shared.battlefield) {
-      if (declared.has(id) || this.state.objects[id].controller !== player) continue;
-      if (!this.restrictionsOf(id).has("must-attack")) continue;
-      const defender = this.legalDefenders(player).find(
+      const object = this.state.objects[id];
+      if (declared.has(id) || object.controller !== player) continue;
+      const goadedBy = object.goadedBy ?? [];
+      // Goad (701.38) and Encore's "attacks that opponent if able" are both
+      // attack *requirements*, so they force a declaration exactly the way
+      // `must-attack` does.
+      const required =
+        this.restrictionsOf(id).has("must-attack") ||
+        goadedBy.length > 0 ||
+        object.mustAttackPlayer !== undefined;
+      if (!required) continue;
+      const legal = this.legalDefenders(player).filter(
         (d) => this.whyCannotAttack(player, id, d) === null,
       );
+      // "…attacks that opponent if able" beats everything; otherwise a goaded
+      // creature must avoid its goaders if it can (701.38b).
+      const defender =
+        (object.mustAttackPlayer !== undefined
+          ? legal.find((d) => d === object.mustAttackPlayer)
+          : undefined) ??
+        legal.find((d) => !goadedBy.includes(this.defendingPlayerOf(d))) ??
+        legal[0];
       if (defender !== undefined) forced.push({ attacker: id, defender });
     }
 
@@ -6429,6 +6480,18 @@ export class Game {
         this.addCounter(target, counter, amount),
       amass: (amount, creatureType) => this.amass(controller, amount, creatureType),
       populate: () => this.populate(controller),
+      encore: () => this.encore(controller, source),
+      goadCreaturesOf: (player) => {
+        for (const id of this.state.zones.shared.battlefield) {
+          const object = this.state.objects[id];
+          if (object === undefined || object.controller !== player) continue;
+          if (!computeCharacteristics(this.state, this.registry, id).types.includes("creature")) {
+            continue;
+          }
+          const by = object.goadedBy ?? [];
+          if (!by.includes(controller)) object.goadedBy = [...by, controller];
+        }
+      },
       impulseExile: (amount, duration, castOnly, opts) =>
         this.impulseExile(controller, source, amount, duration, castOnly, opts),
       unless: (chooser, options, otherwise) =>
@@ -6979,6 +7042,36 @@ export class Game {
       return src !== undefined && src.zone === "battlefield";
     }
     return true;
+  }
+
+  /**
+   * Encore (rule 702.140) — see the `"encore"` {@link EffectSpec}.
+   *
+   * The card being copied is in *exile* by now: the Encore ability's cost
+   * exiled it (`ActivatedAbility.zone: "graveyard"`). `createTokenCopy` reads
+   * the printed name rather than the zone, so that works, but the copies have
+   * to be put under `controller` explicitly — the exiled card's own
+   * controller is meaningless.
+   */
+  private encore(controller: PlayerId, source: ObjectId): void {
+    for (const opponent of this.scopedPlayers(controller, "each-opponent")) {
+      const before = new Set(this.state.zones.shared.battlefield);
+      this.createTokenCopy(source, 1, {
+        gainsHaste: true,
+        exileAtEndStep: false,
+        notLegendary: false,
+        under: controller,
+      });
+      for (const id of this.state.zones.shared.battlefield) {
+        if (before.has(id)) continue;
+        const token = this.state.objects[id];
+        if (token === undefined) continue;
+        // "…that attacks that opponent this turn if able", and is sacrificed
+        // — not exiled — at the beginning of the next end step.
+        token.mustAttackPlayer = opponent;
+        token.sacrificeAtEndStep = true;
+      }
+    }
   }
 
   private populate(controller: PlayerId): void {

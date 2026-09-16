@@ -59,6 +59,19 @@ export interface GameObject {
    * the "attacked this turn" half of Boast (rule 702.135). Reset in the
    * controller's untap step. */
   attackedThisTurn?: boolean;
+  /**
+   * Players who have goaded this creature (rule 701.38). While non-empty it
+   * "attacks each combat if able and attacks a player other than [the
+   * goader] if able".
+   *
+   * Cleared for a given goader as *their* next turn begins, which is exactly
+   * how long the goad lasts. A creature can be goaded by several players at
+   * once, hence a list.
+   */
+  goadedBy?: PlayerId[];
+  /** This creature must attack this specific player if able — Encore's
+   * "create a token copy that attacks that opponent this turn if able". */
+  mustAttackPlayer?: PlayerId;
   /** The counters this object had the last time it was on the battlefield,
    * snapshotted by `moveObject` before it clears them. Last-known information
    * (rule 603.10) for a question that can only be asked after the permanent
@@ -203,6 +216,10 @@ export interface GameObject {
    * step (Miirym, Sentinel Wyrm — rule 707 / needed-cards P5b). Swept in
    * `endStepActions`. */
   exileAtEndStep?: boolean;
+  /** True on a token that must be *sacrificed* at the beginning of the next
+   * end step (Encore — rule 702.140). Distinct from `exileAtEndStep`: a
+   * sacrifice sees dies-triggers, an exile doesn't. */
+  sacrificeAtEndStep?: boolean;
   /** True on a token copy created "except it's not legendary" (Miirym — rule
    * 707 / needed-cards P5b). The legend-rule SBA skips it. Intrinsic, like
    * `isToken` — never reset. */

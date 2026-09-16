@@ -82,7 +82,11 @@ export type TargetSpec =
    */
   | {
       readonly kind: "card-in-graveyard";
-      readonly whose?: "any" | "you" | "opponent";
+      /** `"defending-player"` reads the graveyard of whoever the ability's
+       * source is currently attacking (Rakshasa Debaser), and so needs
+       * `TargetSource.object` — the same way
+       * `"creature-defending-player-controls"` does. */
+      readonly whose?: "any" | "you" | "opponent" | "defending-player";
       readonly filter?: CardFilter;
     }
   /**
