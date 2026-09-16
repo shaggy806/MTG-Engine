@@ -341,20 +341,24 @@ describe("evaluateDecklist", () => {
   it("doesn't resolve a printing for an unimplemented card", async () => {
     // A name no earlier test has looked up — `lookupScryfallMany`'s cache is
     // process-wide, so a repeat would make no call at all and prove nothing.
+    // It also has to stay unimplemented: this test once used Thought Vessel,
+    // which silently broke when that card joined the pool.
+    const name = "Sunbird's Invocation";
+    expect(registry.has(name), `${name} is implemented now — pick another card`).toBe(false);
     const fetchMock = stubCollection({
-      "Thought Vessel": {
+      [name]: {
         id: "aaaa1111-0000-0000-0000-000000000003",
-        name: "Thought Vessel",
-        mana_cost: "{2}",
-        type_line: "Artifact",
+        name,
+        mana_cost: "{5}{R}",
+        type_line: "Enchantment",
         oracle_text: "",
-        set: "p03",
-        collector_number: "33",
+        set: "m19",
+        collector_number: "165",
       },
     });
 
     const [result] = await evaluateDecklist(
-      [{ name: "Thought Vessel", count: 1, printing: { set: "p03", collectorNumber: "33" } }],
+      [{ name, count: 1, printing: { set: "m19", collectorNumber: "165" } }],
       registry,
     );
 
@@ -364,7 +368,7 @@ describe("evaluateDecklist", () => {
     expect(result.printingId).toBeNull();
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(JSON.parse((fetchMock.mock.calls[0][1] as { body: string }).body)).toEqual({
-      identifiers: [{ name: "Thought Vessel" }],
+      identifiers: [{ name }],
     });
   });
 
