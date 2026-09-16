@@ -818,8 +818,16 @@
    top card (which never moves relative to the pile) still jumped on screen
    because the pile's own origin did. */
 .stack-overlay {
+  /* The stack is the one thing on screen a player is actively responding to,
+     so it reads at half again the size of an ordinary card -- narrowed
+     against viewport *height* as well, per the standing rule, since this is
+     anchored partway down the screen and a 1.5x card is tall enough to run
+     off the bottom of a short one otherwise. */
+  --card-w: min(calc(var(--card-w-max) * 1.5), 28vh);
   position: fixed;
-  top: clamp(96px, 50vh, calc(100vh - 230px));
+  /* the bottom cap is derived from the (enlarged) card above rather than a
+     fixed 230px, so growing --card-w here can't push the pile off-screen */
+  top: clamp(96px, 50vh, calc(100vh - var(--card-w) * 1.95));
   right: clamp(14px, 2vw, 26px);
   z-index: 20;
   pointer-events: none;
@@ -863,14 +871,47 @@
     transition: none;
   }
 }
-/* the top of the stack -- what a player facing a decision is responding to
-   -- gets an accent border so it reads as the "live" one at a glance;
-   everything behind it is already smaller/dimmer/rotated by its own custom-
-   property styling (computed per-depth in Stack.tsx), not a separate CSS
-   size rule. */
+/* Every card on the stack gets a warm outline so "something is on the stack"
+   is impossible to miss against the dark table; the top one -- what a player
+   facing a decision is actually responding to -- gets a brighter, slowly
+   pulsing version of the same glow. Everything behind it is already
+   smaller/dimmer/rotated by its own custom-property styling (computed
+   per-depth in Stack.tsx), not a separate CSS size rule. */
+.stack-entry .card-tile {
+  --ct-scale: calc(var(--card-w) / var(--card-w-max));
+  border-color: rgba(255, 176, 48, 0.75);
+  box-shadow:
+    0 0 0 2px rgba(255, 176, 48, 0.4),
+    0 0 14px 2px rgba(255, 146, 24, 0.4),
+    0 8px 24px rgba(0, 0, 0, 0.55);
+}
 .stack-entry.is-top .card-tile {
-  border-color: var(--accent);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55), 0 0 0 3px var(--accent-bg);
+  border-color: #ffc046;
+  box-shadow:
+    0 0 0 3px rgba(255, 190, 70, 0.75),
+    0 0 26px 7px rgba(255, 150, 24, 0.6),
+    0 8px 24px rgba(0, 0, 0, 0.55);
+  animation: stack-top-glow 1.9s ease-in-out infinite;
+}
+@keyframes stack-top-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 3px rgba(255, 190, 70, 0.7),
+      0 0 22px 5px rgba(255, 150, 24, 0.5),
+      0 8px 24px rgba(0, 0, 0, 0.55);
+  }
+  50% {
+    box-shadow:
+      0 0 0 3px rgba(255, 206, 110, 0.95),
+      0 0 34px 10px rgba(255, 160, 32, 0.75),
+      0 8px 24px rgba(0, 0, 0, 0.55);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stack-entry.is-top .card-tile {
+    animation: none;
+  }
 }
 /* Read a buried card at full size without resolving everything in front of
    it: hovering (or focusing, for keyboard/touch -- a targetable entry is a
@@ -1038,8 +1079,8 @@
 .ct-title {
   display: flex;
   align-items: center;
-  gap: 3px;
-  padding: 3px 5px;
+  gap: calc(3px * var(--ct-scale, 1));
+  padding: calc(3px * var(--ct-scale, 1)) calc(5px * var(--ct-scale, 1));
   background: #2b303c;
   border-bottom: 1px solid var(--border);
 }
@@ -1047,7 +1088,7 @@
   flex: 1;
   min-width: 0;
   font-weight: 600;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--ct-scale, 1));
   line-height: 1.15;
   color: var(--text);
   white-space: nowrap;
@@ -1061,7 +1102,7 @@
   flex-shrink: 0;
 }
 .ct-tax {
-  font-size: 9px;
+  font-size: calc(9px * var(--ct-scale, 1));
   font-weight: 700;
   color: var(--warn);
 }
@@ -1071,32 +1112,32 @@
    Symbols), just repositioned. */
 .ct-cost-overlay {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  padding: 2px 3px;
+  top: calc(4px * var(--ct-scale, 1));
+  right: calc(4px * var(--ct-scale, 1));
+  padding: calc(2px * var(--ct-scale, 1)) calc(3px * var(--ct-scale, 1));
   background: rgba(12, 15, 18, 0.6);
-  border-radius: 6px;
+  border-radius: calc(6px * var(--ct-scale, 1));
 }
 /* art-first layout's name, below the art instead of in a title bar above it
    -- reuses .ct-name's own truncation styling, just needs its own padding
    now that it's not inside .ct-title. */
 .ct-name-row {
-  padding: 4px 6px 0;
+  padding: calc(4px * var(--ct-scale, 1)) calc(6px * var(--ct-scale, 1)) 0;
 }
 .card-tile.art-first .ct-name-row .ct-name {
   font-weight: 700;
-  font-size: 11px;
+  font-size: calc(11px * var(--ct-scale, 1));
 }
 .ct-copy {
   font-weight: 400;
   color: var(--muted);
 }
 .pip {
-  width: 13px;
-  height: 13px;
+  width: calc(13px * var(--ct-scale, 1));
+  height: calc(13px * var(--ct-scale, 1));
   display: inline-grid;
   place-items: center;
-  font-size: 9px;
+  font-size: calc(9px * var(--ct-scale, 1));
   font-weight: 700;
   line-height: 1;
   border-radius: 50%;
@@ -1106,9 +1147,9 @@
 }
 /* smaller pips inside body text */
 .ct-text .pip {
-  width: 11px;
-  height: 11px;
-  font-size: 8px;
+  width: calc(11px * var(--ct-scale, 1));
+  height: calc(11px * var(--ct-scale, 1));
+  font-size: calc(8px * var(--ct-scale, 1));
   vertical-align: -1px;
 }
 /* pips backed by real WotC artwork (an <img>) — the SVG carries its own
@@ -1141,31 +1182,31 @@
 }
 .pip-hybrid {
   width: auto;
-  min-width: 13px;
-  padding: 0 3px;
-  border-radius: 7px;
-  font-size: 8px;
+  min-width: calc(13px * var(--ct-scale, 1));
+  padding: 0 calc(3px * var(--ct-scale, 1));
+  border-radius: calc(7px * var(--ct-scale, 1));
+  font-size: calc(8px * var(--ct-scale, 1));
   letter-spacing: -0.5px;
 }
 .ct-text .pip-hybrid {
-  min-width: 11px;
+  min-width: calc(11px * var(--ct-scale, 1));
 }
 .pip-tap,
 .pip-untap {
   background: #d7d3c8;
-  font-size: 11px;
+  font-size: calc(11px * var(--ct-scale, 1));
   font-weight: 400;
 }
 .ct-text .pip-tap,
 .ct-text .pip-untap {
-  font-size: 9px;
+  font-size: calc(9px * var(--ct-scale, 1));
 }
 
 .ct-art {
   position: relative;
-  height: 86px;
+  height: calc(86px * var(--ct-scale, 1));
   flex-shrink: 0;
-  background: #14161c;
+  background: var(--tint-bg, #14161c);
 }
 /* art-first layout (the hand): no separate title bar to give the art a
    fixed pixel height against -- it's a proportion of the card's own (now
@@ -1185,30 +1226,36 @@
   object-position: center 24%;
   display: block;
 }
-.ct-art.tint-W {
-  background: linear-gradient(160deg, #4a4633, #23241d);
+/* Shared by .ct-art, .mt-art and .cmdt-art — the art box's identity-coloured
+   fallback, visible whenever the image hasn't loaded or is blocked. Set as a
+   custom property the three art rules read as `background: var(--tint-bg,
+   #14161c)`, rather than a `background` here: these are single-class
+   selectors, so an art rule declared later in the file would otherwise win
+   the cascade outright and the tint would silently never apply. */
+.tint-W {
+  --tint-bg: linear-gradient(160deg, #4a4633, #23241d);
 }
-.ct-art.tint-U {
-  background: linear-gradient(160deg, #26415c, #1a2530);
+.tint-U {
+  --tint-bg: linear-gradient(160deg, #26415c, #1a2530);
 }
-.ct-art.tint-B {
-  background: linear-gradient(160deg, #3a3040, #201d26);
+.tint-B {
+  --tint-bg: linear-gradient(160deg, #3a3040, #201d26);
 }
-.ct-art.tint-R {
-  background: linear-gradient(160deg, #5a2f28, #2a1d1b);
+.tint-R {
+  --tint-bg: linear-gradient(160deg, #5a2f28, #2a1d1b);
 }
-.ct-art.tint-G {
-  background: linear-gradient(160deg, #2f4a2c, #1d271c);
+.tint-G {
+  --tint-bg: linear-gradient(160deg, #2f4a2c, #1d271c);
 }
 /* P/T box in the card's bottom-right corner, like a real MTG card */
 .ct-pt {
   position: absolute;
   right: -1px;
   bottom: -1px;
-  min-width: 34px;
-  padding: 1px 6px 2px;
+  min-width: calc(34px * var(--ct-scale, 1));
+  padding: calc(1px * var(--ct-scale, 1)) calc(6px * var(--ct-scale, 1)) calc(2px * var(--ct-scale, 1));
   text-align: center;
-  font-size: 13px;
+  font-size: calc(13px * var(--ct-scale, 1));
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   color: #f4f4f4;
@@ -1218,17 +1265,17 @@
 }
 .ct-dmg {
   color: #ff8f8f;
-  font-size: 11px;
+  font-size: calc(11px * var(--ct-scale, 1));
 }
 /* planeswalker loyalty — a shield-ish badge in the bottom-right corner */
 .ct-loyalty {
   position: absolute;
   right: -1px;
   bottom: -1px;
-  min-width: 22px;
-  padding: 2px 6px 4px;
+  min-width: calc(22px * var(--ct-scale, 1));
+  padding: calc(2px * var(--ct-scale, 1)) calc(6px * var(--ct-scale, 1)) calc(4px * var(--ct-scale, 1));
   text-align: center;
-  font-size: 13px;
+  font-size: calc(13px * var(--ct-scale, 1));
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   color: #10131a;
@@ -1238,12 +1285,12 @@
 }
 
 .ct-type {
-  padding: 2px 5px;
+  padding: calc(2px * var(--ct-scale, 1)) calc(5px * var(--ct-scale, 1));
   /* --type-scale: set by CardTile.tsx only for the hand's art-first layout,
      same idea as .ct-text's --text-scale -- a long type line (e.g.
      "Legendary Creature — Human Wizard") shrinks to fit this fixed-width
      single line instead of just ellipsis-truncating. Unset (1) elsewhere. */
-  font-size: calc(8.5px * var(--type-scale, 1));
+  font-size: calc(8.5px * var(--type-scale, 1) * var(--ct-scale, 1));
   color: var(--muted);
   background: #2b303c;
   white-space: nowrap;
@@ -1255,12 +1302,12 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 4px 5px 16px;
+  gap: calc(2px * var(--ct-scale, 1));
+  padding: calc(4px * var(--ct-scale, 1)) calc(5px * var(--ct-scale, 1)) calc(16px * var(--ct-scale, 1));
   /* --text-scale: set by CardTile.tsx only for the hand's art-first layout,
      when the printed text doesn't fit this fixed box at normal size
      (Wurmcoil Engine and the like) -- unset (1) everywhere else. */
-  font-size: calc(9.5px * var(--text-scale, 1));
+  font-size: calc(9.5px * var(--text-scale, 1) * var(--ct-scale, 1));
   line-height: 1.35;
   overflow: hidden;
 }
@@ -1291,7 +1338,7 @@
 }
 .ct-counters {
   margin-top: auto;
-  padding-right: 34px;
+  padding-right: calc(34px * var(--ct-scale, 1));
   font-weight: 700;
   color: #8be0a8;
 }
@@ -1935,7 +1982,26 @@
    own comment) and there's no stable "before" element to tween from. */
 .played-card-fly {
   position: absolute;
-  width: clamp(210px, 21vw, 340px);
+  /* Double the ordinary card size -- this is the "here is what just got
+     played" beat, so it wants to dominate the screen -- capped against
+     viewport height as well (a card box is 1.4x its own width, and the two
+     axes scale independently), same rule as --card-w everywhere else.
+     It has to be --card-w and not a `width` here: CardTile sizes itself from
+     the token, so a width on this wrapper alone left a 150px card floating
+     inside a 559px box -- which is exactly what the old
+     `width: clamp(210px, 21vw, 340px)` was silently doing. */
+  --card-w: min(calc(var(--card-w-max) * 2), 33vh);
+  width: var(--card-w);
+}
+/* …and the card *face* has to grow with the box: everything inside a
+   CardTile (text, pips, art height, the P/T badge) is sized in fixed px
+   against the default --card-w, so without this an enlarged card is just a
+   normal-size card face floating in an oversized frame. --ct-scale is the
+   ratio to an ordinary card, read by every one of those px values via
+   `var(--ct-scale, 1)`; unset (1) everywhere else, so the board, hand and
+   zone viewers are untouched. */
+.played-card-fly .card-tile {
+  --ct-scale: calc(var(--card-w) / var(--card-w-max));
   /* matches AnimationLayer.tsx's own PLAYED_CARD_DURATION_MS */
   animation-duration: 1.8s;
   animation-timing-function: ease-out;
