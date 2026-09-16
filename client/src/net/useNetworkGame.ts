@@ -100,6 +100,14 @@ function clearRoomFromUrl(): void {
 
 export interface NetworkGame {
   readonly status: ConnectionStatus
+  /** Whether this page has ever had the room server on the line. A first
+   * visit to a server that isn't up yet fails the same way a mid-game drop
+   * does — `onerror` then `onclose`, straight to `disconnected` without ever
+   * passing through `no-room` — but "lost the connection" is untrue for
+   * someone who has only just arrived, and it reads as though they broke
+   * something. The retry loop is identical either way; only the wording
+   * differs (see `App`'s `disconnected` branch). */
+  readonly everConnected: boolean
   readonly error: string | null
   readonly roomId: string | null
   readonly seats: readonly SeatStatus[]
@@ -140,6 +148,13 @@ export interface NetworkGame {
   /** Fills an open seat with a basic heuristic bot instead of a human.
    * Omitted `deck` falls back to that seat's positional starter deck. */
   addBot: (seat: PlayerId, deck?: WireDeck) => void
+  /** Adds one more seat to the table, up to four — how the table is sized,
+   * now that the landing page doesn't ask. Only usable before the game
+   * starts. */
+  addSeat: () => void
+  /** Drops an open or bot-filled seat, down to two. A seat a human has
+   * claimed is refused by the server. */
+  removeSeat: (seat: PlayerId) => void
   /** Changes which deck an already-bot-filled seat brings — only usable
    * before the room's game has started. */
   setBotDeck: (seat: PlayerId, deck: WireDeck) => void
@@ -183,6 +198,7 @@ export function useNetworkGame(): NetworkGame {
   const openSocketRef = useRef<() => void>(() => {})
 
   const [status, setStatus] = useState<ConnectionStatus>('connecting')
+  const [everConnected, setEverConnected] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [roomId, setRoomId] = useState<string | null>(null)
   const [seats, setSeats] = useState<readonly SeatStatus[]>([])
@@ -212,6 +228,7 @@ export function useNetworkGame(): NetworkGame {
     ws.onopen = () => {
       if (!isCurrent()) return
       reconnectAttemptRef.current = 0
+      setEverConnected(true)
       setError(null)
       const fromUrl = new URL(window.location.href).searchParams.get('room')
       if (fromUrl) {
@@ -416,6 +433,21 @@ export function useNetworkGame(): NetworkGame {
     [send],
   )
 
+  const addSeat = useCallback(() => {
+    const id = roomIdRef.current
+    if (id === null) return
+    send({ type: 'add-seat', roomId: id })
+  }, [send])
+
+  const removeSeat = useCallback(
+    (seat: PlayerId) => {
+      const id = roomIdRef.current
+      if (id === null) return
+      send({ type: 'remove-seat', roomId: id, seat })
+    },
+    [send],
+  )
+
   const setReady = useCallback(
     (ready: boolean) => {
       const id = roomIdRef.current
@@ -481,6 +513,7 @@ export function useNetworkGame(): NetworkGame {
 
   return {
     status,
+    everConnected,
     error,
     roomId,
     seats,
@@ -498,6 +531,8 @@ export function useNetworkGame(): NetworkGame {
     claimSeat,
     addBot,
     setBotDeck,
+    addSeat,
+    removeSeat,
     setReady,
     startGame,
     dispatch,

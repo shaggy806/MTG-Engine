@@ -28,6 +28,7 @@ import { Stack } from './ui/Stack.tsx'
 import { EventLog } from './ui/EventLog.tsx'
 import { ZoneViewer } from './ui/ZoneViewer.tsx'
 import { SeatBoard } from './lobby/SeatBoard.tsx'
+import { LandingScreen } from './lobby/LandingScreen.tsx'
 import './App.css'
 
 // Symmetric fan for the hand tray (P8): card i's offset from the hand's
@@ -192,7 +193,12 @@ export default function App() {
     return <CenteredScreen title="Connecting…" />
   }
   if (game.status === 'disconnected') {
-    return (
+    // A first visit that never got through fails exactly like a mid-game drop
+    // — `onerror` then `onclose`, so this same branch catches both — but
+    // telling someone who has only just arrived that they "lost the
+    // connection" is untrue and reads as though they broke something. The
+    // retry loop behind these two is identical; only the words differ.
+    return game.everConnected ? (
       <CenteredScreen title="Reconnecting…">
         <p className="muted">
           Lost the connection to the room server — retrying automatically.
@@ -201,13 +207,23 @@ export default function App() {
           Retry now
         </button>
       </CenteredScreen>
+    ) : (
+      <CenteredScreen title="Waiting for the server…">
+        <p className="muted">
+          The room server isn't answering yet. Still trying — this page will
+          carry on by itself once it comes up.
+        </p>
+        <button type="button" onClick={game.reconnect}>
+          Retry now
+        </button>
+      </CenteredScreen>
     )
   }
   if (game.status === 'room-not-found') {
-    return <LobbyScreen game={game} notFound />
+    return <LandingScreen game={game} notFound />
   }
   if (game.status === 'no-room') {
-    return <LobbyScreen game={game} />
+    return <LandingScreen game={game} />
   }
   if (game.status === 'choosing-seat') {
     return <SeatPickerScreen game={game} />
@@ -241,66 +257,6 @@ function ErrorLine({ game }: { readonly game: NetworkGame }) {
     <div className="error-banner" onClick={game.clearError} role="alert">
       ⚠ {game.error}
     </div>
-  )
-}
-
-function LobbyScreen({
-  game,
-  notFound = false,
-}: {
-  readonly game: NetworkGame
-  readonly notFound?: boolean
-}) {
-  const [joinCode, setJoinCode] = useState('')
-  const [players, setPlayers] = useState(2)
-  return (
-    <CenteredScreen title="MTG Engine">
-      {notFound ? (
-        <p className="muted">
-          That room wasn't found — it may have closed. Start a new one or try
-          another code.
-        </p>
-      ) : null}
-      <ErrorLine game={game} />
-      <div className="player-count-picker">
-        {[2, 3, 4].map((n) => (
-          <button
-            key={n}
-            type="button"
-            className={n === players ? 'selected' : ''}
-            onClick={() => setPlayers(n)}
-          >
-            {n} players
-          </button>
-        ))}
-      </div>
-      <button type="button" onClick={() => game.createRoom(undefined, players)}>
-        Create a game
-      </button>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          const code = joinCode.trim().toUpperCase()
-          if (code) game.joinRoom(code)
-        }}
-      >
-        <input
-          value={joinCode}
-          onChange={(e) => setJoinCode(e.target.value)}
-          placeholder="Room code"
-          maxLength={5}
-        />
-        <button type="submit" disabled={!joinCode.trim()}>
-          Join
-        </button>
-      </form>
-      <a className="link-button" href="/library">
-        Browse the card library
-      </a>
-      <a className="link-button" href="/deck-builder">
-        Build a deck
-      </a>
-    </CenteredScreen>
   )
 }
 

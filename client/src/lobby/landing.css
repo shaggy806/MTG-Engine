@@ -1,0 +1,304 @@
+/* The front door (`LandingScreen.tsx`). A real page, not a dialog: this used
+   to reuse `.overlay`/`.overlay-box` — the same component that draws
+   "Connecting…" — which meant the app's first impression was a 368x277 modal
+   floating on a full-screen scrim over nothing at all, about 2% of a 1440p
+   screen. Everything here is sized off clamp()/vw/vh so it holds together
+   from a phone up, and the whole column scrolls if a very short viewport
+   can't take it. */
+.landing {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* `safe` matters here: plain `center` on an overflowing flex column pushes
+     the first item off the top edge, where no amount of scrolling reaches it
+     — so a viewport too short for the whole column falls back to top-aligned
+     instead of losing the title. */
+  justify-content: safe center;
+  gap: clamp(14px, 2.6vh, 30px);
+  /* The middle column that both the action row and the footer nav are split
+     by. Shared so the two nav cards line up edge-for-edge with the two
+     panels above them, and the "or" rule runs down the centre of the same
+     channel the gap below it opens. */
+  --landing-split: clamp(24px, 2.6vw, 38px);
+  padding: clamp(18px, 4vh, 54px) clamp(16px, 4vw, 40px);
+  overflow-y: auto;
+  background-color: var(--bg);
+  /* the same felt sheen the table itself uses (see App.css's .app), so the
+     front door and the game look like one product */
+  background-image: radial-gradient(ellipse at 50% -10%, #1a232b 0%, transparent 62%);
+}
+
+/* Every block shares one measure, so the hero, the two action panels and the
+   footer nav line up down both edges. */
+.landing-hero,
+.landing-actions,
+.landing-nav,
+.landing-notice {
+  width: min(880px, 100%);
+}
+
+.landing-hero {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(20px, 4.4vh, 46px) clamp(18px, 4vw, 44px);
+  text-align: center;
+  background: linear-gradient(160deg, var(--panel-2), var(--panel));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+/* Decorative only — the gradient above is the real background, so a card
+   image that fails to load (or a Scryfall lookup that doesn't resolve) just
+   leaves the panel as it was. Masked to fade out before it reaches the
+   tagline rather than ending on a hard edge. */
+.landing-hero-art {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center 38%;
+  opacity: 0.34;
+  filter: blur(2px) saturate(0.85);
+  -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.95), transparent 86%);
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.95), transparent 86%);
+}
+.landing-hero-text {
+  position: relative;
+}
+.landing-title {
+  font-size: clamp(30px, 5.2vw, 52px);
+  line-height: 1.1;
+  letter-spacing: 0.05em;
+  color: var(--gold);
+}
+.landing-tagline {
+  max-width: 56ch;
+  margin: clamp(8px, 1.4vh, 14px) auto 0;
+  font-size: clamp(13px, 1.2vw, 16px);
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.landing-notice {
+  margin: 0;
+  padding: 10px 14px;
+  font-size: 13px;
+  text-align: center;
+  color: var(--text);
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-dim);
+  border-radius: 8px;
+}
+.landing-notice.bad {
+  background: rgba(194, 86, 79, 0.14);
+  border-color: var(--bad);
+  cursor: pointer;
+}
+
+/* Two paths, side by side with a rule between them, so "start one" and "join
+   one" read as a choice rather than as one continuous stack of controls. */
+.landing-actions {
+  display: grid;
+  /* `minmax(0, …)`, not a bare `1fr`, which is `minmax(auto, 1fr)` and lets a
+     column grow past its share to fit its content's minimum width. The join
+     panel's row of input-plus-button has a wider minimum than the start
+     panel's single button, so bare `1fr`s gave it 414px against the other's
+     387 — and the footer nav below, with no such pressure, split evenly and
+     lined up with neither. */
+  grid-template-columns: minmax(0, 1fr) var(--landing-split) minmax(0, 1fr);
+  align-items: stretch;
+  gap: clamp(10px, 2vw, 22px);
+}
+.landing-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: clamp(15px, 2.6vh, 26px);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.landing-card h2 {
+  font-size: clamp(17px, 1.7vw, 21px);
+}
+/* Grows to fill, which pushes the CTA and the join form to the bottom of
+   their panels so the two actions sit on the same line as each other however
+   differently the copy above them wraps. */
+.landing-card-body {
+  flex: 1;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.landing-or {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted-dim);
+}
+.landing-or::before,
+.landing-or::after {
+  content: '';
+  flex: 1;
+  width: 1px;
+  min-height: 0;
+  background: var(--border);
+}
+
+/* The one unmistakable primary action on the page. Filled accent, where
+   everything else is outlined — the old landing page spent the accent on the
+   *selected player count* and left "Create a game" in the same grey as the
+   two unselected counts beside it, so the eye landed on a setting and the
+   four buttons read as one menu. */
+.landing-cta {
+  /* A touch-target floor, not a layout size — the clamped padding alone can
+     fall under 44px on a short viewport, where this stops shrinking. */
+  min-height: 44px;
+  padding: clamp(9px, 1.4vh, 13px) 20px;
+  font-size: clamp(14px, 1.3vw, 16px);
+  font-weight: 600;
+  color: #0c0f12;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+}
+.landing-cta:hover:not(:disabled) {
+  background: #7ab3e4;
+  border-color: #7ab3e4;
+}
+
+.landing-join-form {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+/* Label left, hint right, one line — which leaves the input itself as the
+   last thing in this panel, so it sits level with the "Create a game" button
+   in the panel beside it rather than a hint's height above it. */
+.landing-field-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.landing-field-label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.landing-join-row {
+  display: flex;
+  gap: 8px;
+}
+.landing-code-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 10px;
+  /* Never below 16px: a smaller font in a focused field is what makes iOS
+     Safari zoom the whole page in on tap. */
+  font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  font-size: clamp(16px, 1.6vw, 20px);
+  letter-spacing: 0.3em;
+  /* letter-spacing puts a trailing gap after the last character, which drags
+     centred text off-centre by exactly that much — the indent puts it back. */
+  text-indent: 0.3em;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.landing-code-input::placeholder {
+  color: var(--muted-dim);
+}
+.landing-code-input:focus-visible {
+  outline: 2px solid var(--accent-dim);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+.landing-join-btn {
+  flex: none;
+  min-height: 44px;
+  padding: 0 18px;
+  font-weight: 600;
+  border-radius: 8px;
+}
+.landing-field-hint {
+  font-size: 11px;
+  color: var(--muted-dim);
+}
+
+/* The library and the deck builder — the two things that make the app look
+   like more than a tech demo, and previously two underlined text links at the
+   bottom of a dialog. */
+.landing-nav {
+  display: grid;
+  /* Same three columns as the action row above, with the cards placed either
+     side of the empty middle one, so all four boxes on this page share two
+     edges and one centre channel. */
+  grid-template-columns: minmax(0, 1fr) var(--landing-split) minmax(0, 1fr);
+  gap: clamp(10px, 2vw, 22px);
+}
+.landing-nav-card:first-child {
+  grid-column: 1;
+}
+.landing-nav-card:last-child {
+  grid-column: 3;
+}
+.landing-nav-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: clamp(12px, 2vh, 18px);
+  color: var(--text);
+  text-decoration: none;
+  background: var(--panel);
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+}
+.landing-nav-card:hover {
+  background: var(--panel-2);
+  border-color: var(--accent);
+}
+.landing-nav-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.landing-nav-desc {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* Below this the two action panels no longer have room to sit beside each
+   other, so they stack and the divider between them lies down with them. */
+@media (max-width: 760px) {
+  .landing-actions {
+    grid-template-columns: 1fr;
+  }
+  .landing-or {
+    flex-direction: row;
+  }
+  .landing-or::before,
+  .landing-or::after {
+    width: auto;
+    height: 1px;
+    min-height: 1px;
+  }
+  .landing-nav {
+    grid-template-columns: 1fr;
+  }
+  .landing-nav-card:first-child,
+  .landing-nav-card:last-child {
+    grid-column: 1;
+  }
+}

@@ -88,6 +88,31 @@ button:disabled {
   cursor: default;
 }
 
+/* Text fields got the same baseline as buttons, which they had never had --
+   the landing page's room-code box and the seat panel's name box were the
+   browser's own dark-mode default (a flat #3b3b3b on white text) sitting in
+   the middle of the themed palette, because nothing here styled `input` and
+   neither of them carried a class that did.
+
+   The type list is deliberately narrow: checkboxes must keep their native
+   rendering, and `number` is left alone because its only uses are the
+   steppers inside in-game decision dialogs, which this isn't the change to
+   restyle. `:where()` contributes no specificity, so the whole selector
+   weighs the same as a bare `input` and every existing per-page rule
+   (.lib-search, .db-search, .db-name-input, .lab-search) still wins. */
+input:where([type='text'], [type='search'], [type='email'], [type='url'], :not([type])) {
+  font: inherit;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 10px;
+}
+input:focus-visible {
+  outline: 2px solid var(--accent-dim);
+  outline-offset: 1px;
+}
+
 h1,
 h2,
 h3 {
