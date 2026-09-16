@@ -6,6 +6,16 @@
 //   npm run play:random -w engine -- --games 50
 //   npm run play:random -w engine -- --log        # print the last game's log
 //   npm run play:random -w engine -- --players 3  # or 4 — exercises multi-opponent combat
+//   npm run play:random -w engine -- --seed 19    # replay exactly one seed
+//   npm run play:random -w engine -- --timeout 60 # per-game limit, seconds (default 30)
+//
+// Each game runs in a worker thread with a wall-clock limit. A game that
+// never finishes is killed and reported as a failure naming its seed, instead
+// of stalling the whole run — a runaway loop inside one `tick()` never yields,
+// so nothing short of terminating the thread can stop it. Any failure (a
+// timeout, or a thrown error) makes the process exit non-zero.
+
+import { Worker } from "node:worker_threads";
 
 import { Game, RandomController, asPlayerId, createRng } from "../dist/index.js";
 import { printLog, printSummary } from "./format.mjs";
@@ -22,6 +32,8 @@ const numPlayers = Number(flag("players", "2"));
 // looks identical to one that's merely slow. `--progress` announces each seed
 // on stderr *before* playing it — the last line printed names the culprit.
 const showProgress = args.includes("--progress");
+const onlySeed = flag("seed", null);
+const timeoutMs = Number(flag("timeout", "30")) * 1000;
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
@@ -625,15 +637,63 @@ const allSeats = [
 ];
 const seats = allSeats.slice(0, numPlayers);
 
-let last = null;
 const results = [];
+const failures = [];
 
-for (let seed = 1; seed <= games; seed += 1) {
+const workerUrl = new URL("./random-game-worker.mjs", import.meta.url);
+const spawn = () => new Worker(workerUrl, { workerData: { seats } });
+let worker = spawn();
+
+/** Play one seed in the worker, or kill it after `timeoutMs`. */
+const play = (seed) =>
+  new Promise((resolve) => {
+    const timer = setTimeout(() => {
+      worker.removeAllListeners("message");
+      // Terminate and replace: the thread may be stuck mid-tick forever.
+      void worker.terminate();
+      worker = spawn();
+      resolve({ seed, ok: false, timedOut: true, ms: timeoutMs });
+    }, timeoutMs);
+    worker.once("message", (result) => {
+      clearTimeout(timer);
+      resolve(result);
+    });
+    worker.postMessage({ seed });
+  });
+
+const seedsToPlay =
+  onlySeed !== null
+    ? [Number(onlySeed)]
+    : Array.from({ length: games }, (_, k) => k + 1);
+
+for (const seed of seedsToPlay) {
   if (showProgress) process.stderr.write(`seed ${seed}/${games}… `);
-  const startedAt = Date.now();
+  const result = await play(seed);
+  if (result.ok) {
+    if (showProgress) {
+      process.stderr.write(`${result.turns} turns, ${result.events} events, ${result.ms}ms\n`);
+    }
+    results.push(result);
+  } else if (result.timedOut) {
+    const line = `FAILED seed ${seed}: TIMED OUT after ${timeoutMs / 1000}s (replay with --seed ${seed})`;
+    process.stderr.write(`${showProgress ? "\n" : ""}${line}\n`);
+    failures.push(line);
+  } else {
+    const line = `FAILED seed ${seed}: ${result.error}`;
+    process.stderr.write(`${showProgress ? "\n" : ""}${line}\n`);
+    failures.push(`FAILED seed ${seed} (replay with --seed ${seed})`);
+  }
+}
+await worker.terminate();
+
+// `--log` needs the Game object itself, which can't cross the worker boundary.
+// Games are deterministic per seed, so replay the last successful one here.
+let last = null;
+if (showLog && results.length > 0) {
+  const seed = results[results.length - 1].seed;
   const rng = createRng(seed * 7919);
   const pick = () => rng.next();
-  const game = Game.create({
+  last = Game.create({
     seed,
     mulligans: true,
     controllers: Object.fromEntries(
@@ -641,23 +701,7 @@ for (let seed = 1; seed <= games; seed += 1) {
     ),
     decks: seats,
   });
-
-  game.advance();
-  if (showProgress) {
-    process.stderr.write(
-      `${game.state.turn.number} turns, ${game.events.length} events, ${
-        Date.now() - startedAt
-      }ms\n`,
-    );
-  }
-  last = game;
-  results.push({
-    seed,
-    winner: game.winner ?? "draw",
-    reason: game.state.result.reason,
-    turns: game.state.turn.number,
-    events: game.events.length,
-  });
+  last.advance();
 }
 
 if (showLog && last !== null) {
@@ -681,7 +725,13 @@ const tally = seats
   .map(({ player }) => `${player} ${wins(player)}`)
   .concat(`draws ${wins("draw")}`)
   .join(", ");
-console.log(`${games} games — ${tally}`);
+console.log(`${results.length} games — ${tally}`);
 console.log(
-  `avg turns ${(results.reduce((s, r) => s + r.turns, 0) / games).toFixed(1)}`,
+  `avg turns ${(results.reduce((s, r) => s + r.turns, 0) / Math.max(1, results.length)).toFixed(1)}`,
 );
+if (failures.length > 0) {
+  console.log("");
+  console.log(`${failures.length} FAILED:`);
+  for (const f of failures) console.log(`  ${f}`);
+  process.exitCode = 1;
+}
