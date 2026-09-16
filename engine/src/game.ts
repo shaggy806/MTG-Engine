@@ -937,10 +937,13 @@ export class Game {
         ...(parseManaCost(ability.cost.mana).x > 0
           ? {
               xCost: {
+                // Mirrors activateAbility's own payMana call exactly — see
+                // maxAffordableAbilityX.
                 maxX: this.maxAffordableAbilityX(
                   player,
                   ability.cost.mana,
                   ability.cost.tap || ability.zone === "hand" ? undefined : source,
+                  ability.cost.tap ? source : undefined,
                 ),
               },
             }
@@ -3885,10 +3888,22 @@ export class Game {
   /** Largest value of `{X}` this player could currently pay for in an
    * activated-ability mana cost (`manaString`), not tapping `avoid` (the
    * source, when the cost has no `{T}`). 0 if the cost has no `{X}`. */
+  /**
+   * The largest `{X}` `player` could currently pay for an activated ability.
+   *
+   * `avoid` and `exclude` must be passed exactly as `activateAbility` passes
+   * them to {@link payMana} — a preference versus a rule (rule 602.2a). They
+   * used to diverge: this took only `avoid`, so for a `{X}…{T}` ability the
+   * source counted as an available mana source here and was excluded at
+   * payment time, and `legalActions` advertised an X one higher than the
+   * player could actually pay. The 4-player fuzzer found it on Kessig Wolf
+   * Run, which is `{X}{1}{R}, {T}` off a land that taps for mana itself.
+   */
   private maxAffordableAbilityX(
     player: PlayerId,
     manaString: string | null,
     avoid?: ObjectId,
+    exclude?: ObjectId,
   ): number {
     const parsed = parseManaCost(manaString);
     if (parsed.x === 0) return 0;
@@ -3903,7 +3918,7 @@ export class Game {
         generic: parsed.generic + parsed.x * k,
         x: 0,
       };
-      if (this.payMana(player, cost, avoid) === null) break;
+      if (this.payMana(player, cost, avoid, exclude) === null) break;
       best = k;
     }
     return best;
