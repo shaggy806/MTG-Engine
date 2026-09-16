@@ -2065,6 +2065,33 @@ export class Game {
     return id;
   }
 
+  /**
+   * **Debug / sandbox only** — resolve a bare {@link EffectSpec} as though
+   * `player` controlled a source that produced it, with no card, no stack and
+   * no cost. The sibling of {@link debugSpawn} for the *effect* vocabulary:
+   * it lets a test exercise one effect kind directly instead of building a
+   * card, casting it, and settling the stack around it.
+   *
+   * `source` defaults to a throwaway object id, which is fine for any effect
+   * that doesn't read its own source; pass a real one for effects that do.
+   */
+  debugApplyEffect(
+    player: PlayerId,
+    effect: EffectSpec,
+    targets: readonly TargetRef[] = [],
+    opts: { source?: ObjectId; x?: number } = {},
+  ): void {
+    applyEffectSpec(
+      effect,
+      this.makeResolutionContext(
+        opts.source ?? asObjectId("debug-effect-source"),
+        player,
+        targets,
+        opts.x ?? 0,
+      ),
+    );
+  }
+
   // --- turn / step progression --------------------------------------
 
   private beginTurn(): void {
@@ -5960,6 +5987,8 @@ export class Game {
       draw: (player, count) => {
         for (let i = 0; i < count; i += 1) this.drawCard(player);
       },
+      playersInScope: (who) => this.scopedPlayers(controller, who),
+      discardHand: (player) => this.discardWholeHand(player),
       gainLife: (player, amount) => this.changeLife(player, amount),
       loseLife: (player, amount) => this.changeLife(player, -amount),
       addMana: (player, mana, amount) => this.addMana(player, mana, amount),
@@ -7501,6 +7530,21 @@ export class Game {
       return;
     }
     this.state.awaiting = { kind: "discard", player, count: amount, fromEffect: true };
+  }
+
+  /**
+   * Discard `player`'s whole hand (rule 701.8 — Dragon Mage, Runehorn
+   * Hellkite). There is nothing to choose, so unlike {@link discardByEffect}
+   * this never raises a `discard` decision, which is what lets "each player
+   * discards their hand, then draws seven" resolve in one pass instead of
+   * stalling on each opponent in turn.
+   */
+  private discardWholeHand(player: PlayerId): void {
+    if (this.state.players[player] === undefined) return;
+    const all = [...this.state.zones.perPlayer[player].hand];
+    if (all.length === 0) return;
+    for (const id of all) this.moveObject(id, "graveyard");
+    this.emit({ type: "cards-discarded", player, objects: all });
   }
 
   /** Deal `amount` damage from `source` to `target`. Returns the amount

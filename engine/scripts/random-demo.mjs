@@ -172,6 +172,9 @@ const deckA = deck([
 // and plays its threats — a bloated deck just stalls out and the fuzz only
 // exercises one side. One or two copies of each mechanic is enough coverage.
 const deckB = deck([
+  ["Stormfist Crusader", 1],
+  ["Dragon Mage", 1],
+  ["Bloodgift Demon", 1],
   ["Mountain", 4],
   ["Swamp", 4],
   ["Island", 3],

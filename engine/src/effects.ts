@@ -84,7 +84,27 @@ export type EffectSpec =
        * painless option and only reaches for this when it must. */
       readonly painToController?: number;
     }
-  | { readonly kind: "draw"; readonly amount: EffectAmount }
+  | {
+      readonly kind: "draw";
+      readonly amount: EffectAmount;
+      /**
+       * Who draws. Defaults to the effect's controller. `who` is a scope
+       * (Stormfist Crusader: "each player draws a card"); `target` is a
+       * target-slot index holding a player (Deep Analysis: "target player
+       * draws two cards"). Mutually exclusive — `target` wins if both are set.
+       */
+      readonly who?: PlayerScope;
+      readonly target?: number;
+    }
+  | {
+      /**
+       * "Each player discards their hand" (Dragon Mage, Runehorn Hellkite) —
+       * a whole hand at once, with no choice to make, so it's distinct from
+       * `discard`'s "choose N cards" and never raises a decision.
+       */
+      readonly kind: "discard-hand";
+      readonly who: PlayerScope;
+    }
   | {
       readonly kind: "gain-life";
       readonly amount: number;
@@ -597,6 +617,14 @@ export interface EffectApi {
    * Tannuk: "deals 1 damage to each opponent" — needed-cards P16). */
   dealDamageScoped(who: PlayerScope, amount: number): void;
   draw(player: PlayerId, count: number): void;
+  /** Every player a `PlayerScope` names, in APNAP order and skipping anyone
+   * who has already lost. The shared scope resolution behind `draw`'s `who`,
+   * `discard-hand`, and anything else that acts on a scope one player at a
+   * time rather than in one call. */
+  playersInScope(who: PlayerScope): readonly PlayerId[];
+  /** Discard a player's whole hand at once (rule 701.8) — no choice, so this
+   * never raises a `discard` decision the way `discardCards` does. */
+  discardHand(player: PlayerId): void;
   gainLife(player: PlayerId, amount: number): void;
   loseLife(player: PlayerId, amount: number): void;
   /** Change life for a whole scope (`gain-life` / `lose-life` with `who`). */
@@ -888,8 +916,20 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
         );
       }
       return;
-    case "draw":
-      ctx.draw(ctx.controller, amountValue(spec.amount, ctx));
+    case "draw": {
+      const amount = amountValue(spec.amount, ctx);
+      if (spec.target !== undefined) {
+        const ref = ctx.targets[spec.target];
+        if (ref?.kind === "player") ctx.draw(ref.player, amount);
+        return;
+      }
+      for (const player of ctx.playersInScope(spec.who ?? "you")) {
+        ctx.draw(player, amount);
+      }
+      return;
+    }
+    case "discard-hand":
+      for (const player of ctx.playersInScope(spec.who)) ctx.discardHand(player);
       return;
     case "gain-life":
       if (spec.who === undefined || spec.who === "you") ctx.gainLife(ctx.controller, spec.amount);

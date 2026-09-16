@@ -43,6 +43,7 @@ import _poolBlinkmothNexus from "./pool/blinkmoth-nexus.js";
 import _poolBloodArtist from "./pool/blood-artist.js";
 import _poolBloodCrypt from "./pool/blood-crypt.js";
 import _poolBloodbraidElf from "./pool/bloodbraid-elf.js";
+import _poolBloodgiftDemon from "./pool/bloodgift-demon.js";
 import _poolBloodlineKeeper from "./pool/bloodline-keeper.js";
 import _poolBloodstainedMire from "./pool/bloodstained-mire.js";
 import _poolBloodthroneVampire from "./pool/bloodthrone-vampire.js";
@@ -96,6 +97,7 @@ import _poolDiabolicIntent from "./pool/diabolic-intent.js";
 import _poolDisenchant from "./pool/disenchant.js";
 import _poolDoomBlade from "./pool/doom-blade.js";
 import _poolDoublingSeason from "./pool/doubling-season.js";
+import _poolDragonMage from "./pool/dragon-mage.js";
 import _poolDragonTempest from "./pool/dragon-tempest.js";
 import _poolDragonskullSummit from "./pool/dragonskull-summit.js";
 import _poolDragonspeakerShaman from "./pool/dragonspeaker-shaman.js";
@@ -293,6 +295,7 @@ import _poolStarfieldVocalist from "./pool/starfield-vocalist.js";
 import _poolSteamVents from "./pool/steam-vents.js";
 import _poolStompingGround from "./pool/stomping-ground.js";
 import _poolStormcarvedCoast from "./pool/stormcarved-coast.js";
+import _poolStormfistCrusader from "./pool/stormfist-crusader.js";
 import _poolStrokeOfMidnight from "./pool/stroke-of-midnight.js";
 import _poolSulfurFalls from "./pool/sulfur-falls.js";
 import _poolSulfurousSprings from "./pool/sulfurous-springs.js";
@@ -451,6 +454,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBloodArtist,
   _poolBloodCrypt,
   _poolBloodbraidElf,
+  _poolBloodgiftDemon,
   _poolBloodlineKeeper,
   _poolBloodstainedMire,
   _poolBloodthroneVampire,
@@ -504,6 +508,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolDisenchant,
   _poolDoomBlade,
   _poolDoublingSeason,
+  _poolDragonMage,
   _poolDragonTempest,
   _poolDragonskullSummit,
   _poolDragonspeakerShaman,
@@ -701,6 +706,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSteamVents,
   _poolStompingGround,
   _poolStormcarvedCoast,
+  _poolStormfistCrusader,
   _poolStrokeOfMidnight,
   _poolSulfurFalls,
   _poolSulfurousSprings,
