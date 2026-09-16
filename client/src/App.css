@@ -614,6 +614,15 @@
 }
 
 .board {
+  /* A mini tile is a name banner over a 4:3 art box (see .mt-banner /
+     .mt-body), so its height is no longer just --mini-w * 0.75. Both tokens
+     are declared *here*, on the same element `recomputeBoardMiniW` writes
+     its inline --mini-w to, so they re-resolve against that override rather
+     than against :root's untouched value -- a custom property declared on
+     :root would substitute :root's --mini-w once and inherit the frozen
+     result down. */
+  --mt-banner-h: clamp(11px, calc(var(--mini-w) * 0.19), 18px);
+  --mini-h: calc(var(--mini-w) * 0.75 + var(--mt-banner-h));
   flex: 1;
   min-width: 0;
   display: flex;
@@ -659,10 +668,9 @@
   align-items: flex-start;
   gap: 10px 8px;
   /* Matches a mini tile's height (battlefield permanents render as MiniTile,
-     not the full CardTile — see tileFor's `mini` option, and MiniTile's own
-     4:3 aspect-ratio), so the row holds its size whether it's empty or full
-     instead of collapsing to nothing. */
-  min-height: calc(var(--mini-w) * 0.75);
+     not the full CardTile — see tileFor's `mini` option), so the row holds
+     its size whether it's empty or full instead of collapsing to nothing. */
+  min-height: var(--mini-h);
 }
 .board-entry {
   position: relative;
@@ -691,13 +699,13 @@
   align-items: center;
   gap: 0;
   width: var(--mini-w);
-  /* a tile is --mini-w * 0.75 tall (4:3 — see .mini-tile), so pulling the
-     run up by 0.53 of --mini-w leaves 0.22 of it, about a third of a tile's
-     height, peeking out below the host */
-  margin-top: calc(var(--mini-w) * -0.53);
+  /* a tile is --mini-h tall (a name banner over a 4:3 art box — see
+     .mt-banner/.mt-body), so pulling the run up by all but 0.22 of --mini-w
+     leaves about a third of an art box peeking out below the host */
+  margin-top: calc(var(--mini-w) * 0.22 - var(--mini-h));
 }
 .board-entry .attachments > * + * {
-  margin-top: calc(var(--mini-w) * -0.53);
+  margin-top: calc(var(--mini-w) * 0.22 - var(--mini-h));
 }
 /* Painted back to front: --att-z counts down from the first attachment (see
    App.tsx's renderBoard), so each one sits *behind* the one whose strip it's
@@ -763,12 +771,114 @@
   font-size: 12px;
 }
 /* an empty command zone slot — an outline, not a face-down card, since
-   there's nothing there at all (unlike the library, which always has one) */
+   there's nothing there at all (unlike the library, which always has one).
+   Sized to a CommanderTile, not a full card, since that's what fills it. */
 .card-slot-empty {
   width: var(--card-w);
-  min-height: calc(var(--card-w) * 1.4);
+  min-height: calc(var(--card-w) * 0.6 + 58px);
   border: 1px dashed var(--border);
   border-radius: 8px;
+}
+
+/* A commander in the command zone, reduced to name + cost + stats, with the
+   full card face on hover (see CommanderTile.tsx). Card-width so it lines up
+   with the library below it, but a fraction of a card's height — the rail is
+   the narrowest column on the board and the tightest on vertical space. */
+.commander-tile-wrap {
+  position: relative;
+  display: block;
+}
+.commander-tile {
+  width: var(--card-w);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  padding: 0 0 5px;
+  overflow: hidden;
+  text-align: left;
+  color: var(--text);
+  background: #20242e;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: default;
+}
+/* Art crop, not the full card frame — the same "recognize it at a glance,
+   hover to read it" trade .mt-art makes on the board. Reuses .ct-art's own
+   tint-* fallback gradients for a card whose art hasn't loaded (or is
+   blocked), so an empty box is still coloured by the card's identity. */
+.cmdt-art {
+  display: block;
+  height: calc(var(--card-w) * 0.6);
+  flex-shrink: 0;
+  background: var(--tint-bg, #14161c);
+}
+.cmdt-art > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 22%;
+  display: block;
+}
+.cmdt-row {
+  margin: 0 6px;
+}
+.commander-tile.highlight {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-bg);
+}
+.commander-tile.clickable {
+  cursor: pointer;
+}
+.commander-tile.clickable:hover {
+  border-color: var(--accent);
+}
+/* the global `button:disabled { opacity: 0.4 }` (index.css) would otherwise
+   grey out every commander that simply isn't castable right now */
+.commander-tile:disabled {
+  opacity: 1;
+}
+/* a name banner above the art, the same shape .mt-banner gives a board tile
+   — up to three lines rather than one, since a legendary name is long and
+   the rail is the narrowest column on screen ("Atraxa, Praetors' Voice"
+   wraps to three at a 4-player quadrant's rail width) */
+.cmdt-name {
+  flex: none;
+  padding: 3px 6px;
+  background: #2b303c;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.45);
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+.cmdt-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+.cmdt-cost {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.cmdt-pt {
+  flex-shrink: 0;
+  padding: 0 5px 1px;
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #f4f4f4;
+  background: #1a1d25;
+  border: 1px solid var(--border);
+  border-radius: 6px 2px 6px 2px;
 }
 /* face-down library placeholder — CSS-only, no image, so it can never 404 */
 .card-back {
@@ -1422,11 +1532,8 @@
 .mini-tile {
   position: relative;
   width: var(--mini-w);
-  /* the art_crop images this draws (see art.ts) are landscape, roughly
-     4:3 -- not the 5:7 portrait ratio of a full card, which only made sense
-     when a title/type/text frame around the art justified the taller shape.
-     Pure art with no frame should match what it's actually drawing. */
-  aspect-ratio: 4 / 3;
+  display: flex;
+  flex-direction: column;
   padding: 0;
   overflow: hidden;
   border-radius: 5px;
@@ -1439,7 +1546,9 @@
      4:3 box (w=1,h=0.75): scale <= ~0.717 at 20° vs. ~0.75 at a full 90° --
      if anything slightly *tighter* at 20° than at 90°, same non-monotonic
      result as the 5:7 card box above. 20° is worth it for legibility, not
-     for any scale-down it saves. */
+     for any scale-down it saves. The name banner makes the real box a bit
+     taller than 4:3 (w=1, h≈0.9), which loosens the bound to ~0.758 rather
+     than tightening it, so 0.68 still clears it. */
   transform: rotate(20deg) scale(0.68);
 }
 .mini-tile .tap-icon {
@@ -1480,10 +1589,39 @@
 .mini-tile:disabled {
   opacity: 1;
 }
+/* the tile's name strip -- see MiniTile.tsx. Sized off --mini-w so it
+   shrinks in step with a crowded board's tiles (recomputeBoardMiniW), with a
+   floor that keeps it legible and a ceiling that keeps it from dominating a
+   full-size tile. */
+.mt-banner {
+  flex: none;
+  display: block;
+  height: var(--mt-banner-h);
+  line-height: var(--mt-banner-h);
+  padding: 0 4px;
+  background: #2b303c;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.45);
+  font-size: calc(var(--mt-banner-h) * 0.66);
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* the art and everything overlaid on it. Carries the 4:3 ratio the tile
+   itself used to: the art_crop images this draws (see art.ts) are landscape,
+   roughly 4:3 -- not the 5:7 portrait ratio of a full card, which only made
+   sense when a title/type/text frame around the art justified the taller
+   shape. It's also the positioning context for every badge below. */
+.mt-body {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+}
 .mt-art {
   position: absolute;
   inset: 0;
-  background: #14161c;
+  background: var(--tint-bg, #14161c);
 }
 .mt-art img {
   width: 100%;
@@ -1492,21 +1630,7 @@
   object-position: center;
   display: block;
 }
-.mt-art.tint-W {
-  background: linear-gradient(160deg, #4a4633, #23241d);
-}
-.mt-art.tint-U {
-  background: linear-gradient(160deg, #26415c, #1a2530);
-}
-.mt-art.tint-B {
-  background: linear-gradient(160deg, #3a3040, #201d26);
-}
-.mt-art.tint-R {
-  background: linear-gradient(160deg, #5a2f28, #2a1d1b);
-}
-.mt-art.tint-G {
-  background: linear-gradient(160deg, #2f4a2c, #1d271c);
-}
+/* (the tint-* fallbacks themselves are shared — see .tint-W above) */
 .mt-kw {
   position: absolute;
   top: 2px;

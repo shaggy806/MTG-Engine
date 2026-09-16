@@ -22,6 +22,7 @@ import { AnimationLayer } from './ui/AnimationLayer.tsx'
 import { PlayerPanel } from './ui/PlayerPanel.tsx'
 import { CardTile } from './ui/CardTile.tsx'
 import { MiniTile } from './ui/MiniTile.tsx'
+import { CommanderTile } from './ui/CommanderTile.tsx'
 import { Stack } from './ui/Stack.tsx'
 import { EventLog } from './ui/EventLog.tsx'
 import { ZoneViewer } from './ui/ZoneViewer.tsx'
@@ -1397,17 +1398,18 @@ function Table({ view, seat, opponents, game, actions }: TableProps) {
    * doesn't go through `tileFor` (targeting/attacking/blocking don't apply)
    * — it's castable like a hand card instead, via the same `castByCard`
    * map and `clickHandCard` dispatch (which only ever consults that map,
-   * not which zone the card is actually sitting in). */
+   * not which zone the card is actually sitting in). Rendered compactly
+   * (name/cost/stats, full card on hover) rather than as a full `CardTile`
+   * — see `CommanderTile`. */
   const commandZoneTile = (obj: VisibleObject) => {
     const castable = mode === 'priority' && castByCard.has(obj.id)
     const commanderTax =
       2 * (view.players[obj.owner]?.commanderCastCounts?.[obj.cardName] ?? 0)
     return (
-      <CardTile
+      <CommanderTile
         key={obj.id}
         obj={obj}
         highlight={castable}
-        badge="Commander"
         extraGenericCost={commanderTax}
         onClick={castable ? () => clickHandCard(obj.id) : undefined}
       />
