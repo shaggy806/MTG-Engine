@@ -156,6 +156,10 @@ function evalStaticCondition(
       return source.enteredKicked === true || source.kicked === true;
     case "creature-died-this-turn":
       return state.creaturesDiedThisTurn > 0;
+    case "created-token-this-turn":
+      return state.players[you]?.createdTokenThisTurn === true;
+    case "used-graveyard-this-turn":
+      return state.players[you]?.usedGraveyardThisTurn === true;
     case "not":
       // `evalStaticCondition`, not `staticConditionMet`: the re-entrancy guard
       // keys on `source.id`, and this is still the *same* source — routing
@@ -436,11 +440,20 @@ function collectStaticEffects(
       let scaledToughness = 0;
       if (ability.grantPtPerCount !== undefined) {
         const per = ability.grantPtPerCount;
-        const n = state.zones.shared.battlefield.filter(
-          (id) =>
-            !(per.excludeSelf === true && id === source.id) &&
-            matchesFilter(state, registry, id, per.filter, { you: source.controller }),
-        ).length;
+        const filter = per.filter;
+        const n =
+          per.commanderCasts === true
+            ? Object.values(state.players[source.controller]?.commanderCastCounts ?? {}).reduce(
+                (total, casts) => total + casts,
+                0,
+              )
+            : filter === undefined
+              ? 0
+              : state.zones.shared.battlefield.filter(
+                  (id) =>
+                    !(per.excludeSelf === true && id === source.id) &&
+                    matchesFilter(state, registry, id, filter, { you: source.controller }),
+                ).length;
         scaledPower = n * per.pt[0];
         scaledToughness = n * per.pt[1];
       }

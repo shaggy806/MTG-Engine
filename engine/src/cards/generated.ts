@@ -107,6 +107,7 @@ import _poolCollectiveUnconscious from "./pool/collective-unconscious.js";
 import _poolColossalDreadmaw from "./pool/colossal-dreadmaw.js";
 import _poolCombatThresher from "./pool/combat-thresher.js";
 import _poolCommandTower from "./pool/command-tower.js";
+import _poolCommandersInsignia from "./pool/commanders-insignia.js";
 import _poolCommandersSphere from "./pool/commanders-sphere.js";
 import _poolCommercialDistrict from "./pool/commercial-district.js";
 import _poolConclaveTribunal from "./pool/conclave-tribunal.js";
@@ -269,6 +270,7 @@ import _poolHuntersInsight from "./pool/hunters-insight.js";
 import _poolHuntersProwess from "./pool/hunters-prowess.js";
 import _poolHypnoticSpecter from "./pool/hypnotic-specter.js";
 import _poolIcetillExplorer from "./pool/icetill-explorer.js";
+import _poolIdolOfOblivion from "./pool/idol-of-oblivion.js";
 import _poolIgnobleHierarch from "./pool/ignoble-hierarch.js";
 import _poolIndulgentTormentor from "./pool/indulgent-tormentor.js";
 import _poolInfernalGrasp from "./pool/infernal-grasp.js";
@@ -302,6 +304,7 @@ import _poolKioraBehemothBeckoner from "./pool/kiora-behemoth-beckoner.js";
 import _poolKirdApe from "./pool/kird-ape.js";
 import _poolKolaghansCommand from "./pool/kolaghans-command.js";
 import _poolKorvoldFaeCursedKing from "./pool/korvold-fae-cursed-king.js";
+import _poolLaboratoryDrudge from "./pool/laboratory-drudge.js";
 import _poolLathlissDragonQueen from "./pool/lathliss-dragon-queen.js";
 import _poolLazotepPlating from "./pool/lazotep-plating.js";
 import _poolLazotepReaver from "./pool/lazotep-reaver.js";
@@ -599,6 +602,7 @@ import _poolVizierOfTheScorpion from "./pool/vizier-of-the-scorpion.js";
 import _poolVoiceOfMany from "./pool/voice-of-many.js";
 import _poolVolcanicIsland from "./pool/volcanic-island.js";
 import _poolVoltCharge from "./pool/volt-charge.js";
+import _poolVowOfDuty from "./pool/vow-of-duty.js";
 import _poolWalkingBallista from "./pool/walking-ballista.js";
 import _poolWallOfWood from "./pool/wall-of-wood.js";
 import _poolWardenOfEvosIsle from "./pool/warden-of-evos-isle.js";
@@ -606,6 +610,7 @@ import _poolWateryGrave from "./pool/watery-grave.js";
 import _poolWayfarersBauble from "./pool/wayfarers-bauble.js";
 import _poolWerebear from "./pool/werebear.js";
 import _poolWhiteKnight from "./pool/white-knight.js";
+import _poolWhiteSunsZenith from "./pool/white-suns-zenith.js";
 import _poolWillOfTheSultai from "./pool/will-of-the-sultai.js";
 import _poolWiltLeafCavaliers from "./pool/wilt-leaf-cavaliers.js";
 import _poolWindreaderSphinx from "./pool/windreader-sphinx.js";
@@ -633,6 +638,7 @@ import _tokensCatToken from "./tokens/cat-token.js";
 import _tokensChocoboBirdToken from "./tokens/chocobo-bird-token.js";
 import _tokensDragonToken55 from "./tokens/dragon-token-5-5.js";
 import _tokensDragonToken66 from "./tokens/dragon-token-6-6.js";
+import _tokensEldraziToken from "./tokens/eldrazi-token.js";
 import _tokensElementalToken from "./tokens/elemental-token.js";
 import _tokensElephantToken from "./tokens/elephant-token.js";
 import _tokensElfWarriorToken from "./tokens/elf-warrior-token.js";
@@ -766,6 +772,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolColossalDreadmaw,
   _poolCombatThresher,
   _poolCommandTower,
+  _poolCommandersInsignia,
   _poolCommandersSphere,
   _poolCommercialDistrict,
   _poolConclaveTribunal,
@@ -928,6 +935,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolHuntersProwess,
   _poolHypnoticSpecter,
   _poolIcetillExplorer,
+  _poolIdolOfOblivion,
   _poolIgnobleHierarch,
   _poolIndulgentTormentor,
   _poolInfernalGrasp,
@@ -961,6 +969,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolKirdApe,
   _poolKolaghansCommand,
   _poolKorvoldFaeCursedKing,
+  _poolLaboratoryDrudge,
   _poolLathlissDragonQueen,
   _poolLazotepPlating,
   _poolLazotepReaver,
@@ -1258,6 +1267,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolVoiceOfMany,
   _poolVolcanicIsland,
   _poolVoltCharge,
+  _poolVowOfDuty,
   _poolWalkingBallista,
   _poolWallOfWood,
   _poolWardenOfEvosIsle,
@@ -1265,6 +1275,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolWayfarersBauble,
   _poolWerebear,
   _poolWhiteKnight,
+  _poolWhiteSunsZenith,
   _poolWillOfTheSultai,
   _poolWiltLeafCavaliers,
   _poolWindreaderSphinx,
@@ -1298,6 +1309,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensChocoboBirdToken,
   _tokensDragonToken55,
   _tokensDragonToken66,
+  _tokensEldraziToken,
   _tokensElementalToken,
   _tokensElephantToken,
   _tokensElfWarriorToken,

@@ -176,6 +176,7 @@ from the same link.
 | `controlEnchanted` | `boolean` | an Aura whose controller controls the enchanted permanent (Mind Control) |
 | `cantBeCountered` | `boolean` | "This spell can't be countered." |
 | `exileOnResolve` | `boolean` | "Exile ~" printed on a non-permanent spell's own resolution text (Genesis Ultimatum) — goes to exile instead of the graveyard after resolving, unconditionally (however it was cast). Distinct from flashback/disturb/adventure, which only redirect a spell cast *that way*. needed-cards P19. |
+| `shuffleIntoLibraryOnResolve` | `boolean` | "Shuffle ~ into its owner's library" as the last part of resolving (White Sun's Zenith). Only on resolving: a *countered* one goes to the graveyard, because the shuffle is an instruction the spell never got to carry out. |
 | `revealsOwnLibraryTop` | `boolean` | play with your top card revealed (Oracle of Mul Daya) |
 
 ---
@@ -740,12 +741,27 @@ static: [
 **Continuous-effect fields:**
 
 - `grantPt: [p, t]` — layer 7d P/T bonus.
-- `grantPtPerCount: { filter, pt, excludeSelf? }` — a layer 7d bonus that
+- `grantPtPerCount: { filter?, commanderCasts?, pt, excludeSelf? }` — a layer 7d bonus that
   *scales* with a live count (Skycat Sovereign's "+1/+1 for each **other**
   creature you control with flying"). Distinct from `setBasePtFromCount`,
   which is a CDA in layer 7b that *replaces* the printed P/T; this adds on
-  top, so counters and other anthems stack with it normally.
+  top, so counters and other anthems stack with it normally. `commanderCasts:
+  true` counts the times its controller has cast a commander from the command
+  zone this game instead of a battlefield filter (Commander's Insignia), summed
+  across a Partner pair.
 - `noMaxHandSize: true` — "You have no maximum hand size" (Thought Vessel).
+- `castFromGraveyard: { filter, oncePerTurn?, yourTurnOnly? }` — a permission
+  to cast spells from your graveyard for their normal cost (Gisa and Geralf:
+  "Once during each of your turns, you may cast a Zombie creature spell from
+  your graveyard" — both gates). Offered as `via: "graveyard-permission"`.
+  Unlike flashback the permission belongs to the *grantor*, so it ends when
+  that permanent leaves, and nothing exiles the spell afterwards: a countered
+  one goes back to the graveyard.
+- `cantAttackController: true` — with `affects: { scope: "attached" }`, the
+  enchanted creature "can't attack you or planeswalkers you control" (Vow of
+  Duty), where "you" is the *Aura's* controller. Checked in `whyCannotAttack`
+  rather than as a `CombatRestriction`, because those are bare strings and
+  can't say whose "you" is meant.
   A fact about the *controller* rather than about anything the ability
   affects, so it's read straight off the battlefield at cleanup instead of
   going through the layer system; pair it with `affects: { scope: "self" }`.
@@ -810,6 +826,12 @@ clause (section 9):
 - `{ kind: "creature-died-this-turn" }` — Liliana's Devotee. Reads the
   turn-scoped `GameState.creaturesDiedThisTurn`, counted in `moveObject`
   while the dying permanent's types are still readable.
+- `{ kind: "created-token-this-turn" }` — the source's controller made a token
+  this turn (Idol of Oblivion). Set in `mintTokenBatch`, the funnel every
+  token-making path goes through, so a token *copy* counts too.
+- `{ kind: "used-graveyard-this-turn" }` — the source's controller cast a spell
+  from a graveyard (flashback, escape, disturb, a graveyard permission) or
+  activated an ability of a card in one this turn (Laboratory Drudge).
 - `{ kind: "not", of }` — the negation of any other condition (Titan Hunter's
   "**if no creatures died this turn**"). Composes, so it's cheaper than a
   `no-` variant of each condition.

@@ -182,6 +182,11 @@ export type StaticCondition =
   /** A creature died this turn (Liliana's Devotee). Reads the turn-scoped
    * `GameState.creaturesDiedThisTurn`. */
   | { readonly kind: "creature-died-this-turn" }
+  /** The source's controller created a token this turn (Idol of Oblivion). */
+  | { readonly kind: "created-token-this-turn" }
+  /** The source's controller cast a spell from a graveyard or activated an
+   * ability of a card in a graveyard this turn (Laboratory Drudge). */
+  | { readonly kind: "used-graveyard-this-turn" }
   /** The negation of another condition — Titan Hunter's "**if no creatures
    * died this turn**". Cheaper than a `no-` variant of every condition, and
    * it composes. */
@@ -264,10 +269,20 @@ export interface StaticAbility {
    * anthems stack with it normally. `excludeSelf` is what "other" means.
    */
   readonly grantPtPerCount?: {
-    readonly filter: CardFilter;
+    /** What to count: battlefield permanents matching a filter, or the number
+     * of times the controller has cast a commander from the command zone this
+     * game (Commander's Insignia). */
+    readonly filter?: CardFilter;
+    readonly commanderCasts?: boolean;
     readonly pt: readonly [number, number];
     readonly excludeSelf?: boolean;
   };
+  /** The creature this is attached to "can't attack you or planeswalkers you
+   * control" (Vow of Duty), where "you" is *this* permanent's controller.
+   * Checked directly in `whyCannotAttack` rather than as a
+   * `CombatRestriction`: those are bare strings, and this one has to know
+   * whose "you" it means. Only meaningful with `affects: { scope: "attached" }`. */
+  readonly cantAttackController?: boolean;
   /** Keywords granted in layer 6. */
   readonly grantKeywords?: readonly Keyword[];
   /** Activated abilities this static grants to every object it `affects`
@@ -610,6 +625,11 @@ export interface CardDefinition {
    * applies no matter how the spell was cast. `false` for normal cards.
    * needed-cards P19. */
   readonly exileOnResolve: boolean;
+  /** "Shuffle ~ into its owner's library" as the last part of the spell's own
+   * resolution (White Sun's Zenith). Only on resolving: a *countered* one goes
+   * to the graveyard like any other spell, because the shuffle is an
+   * instruction the spell never got to carry out. */
+  readonly shuffleIntoLibraryOnResolve: boolean;
   /** True for a *transforming* double-faced card (rule 712.4 — ROADMAP Phase
    * 10b): it's only ever cast/played as its front face, and turns over in
    * place via a transform effect / a day-night change (werewolves) / an
@@ -699,6 +719,7 @@ interface CardDraft {
   faces?: readonly string[];
   cantBeCountered?: boolean;
   exileOnResolve?: boolean;
+  shuffleIntoLibraryOnResolve?: boolean;
   transform?: boolean;
   disturb?: { readonly cost: string };
   adventure?: boolean;
@@ -764,6 +785,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     faces: draft.faces ?? null,
     cantBeCountered: draft.cantBeCountered ?? false,
     exileOnResolve: draft.exileOnResolve ?? false,
+    shuffleIntoLibraryOnResolve: draft.shuffleIntoLibraryOnResolve ?? false,
     transform: draft.transform ?? false,
     disturb: draft.disturb ?? null,
     adventure: draft.adventure ?? false,

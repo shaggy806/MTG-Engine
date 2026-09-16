@@ -443,6 +443,13 @@ export interface PlayerState {
    * counterpart of `GameState.creaturesDiedThisTurn`, which is global. Reset
    * with it at cleanup. */
   creaturesDiedThisTurn: number;
+  /** This player created at least one token this turn (Idol of Oblivion:
+   * "Activate only if you created a token this turn"). Set in
+   * `mintTokenBatch`, which every token-making path goes through. */
+  createdTokenThisTurn: boolean;
+  /** This player cast a spell from a graveyard, or activated an ability of a
+   * card in a graveyard, this turn (Laboratory Drudge). */
+  usedGraveyardThisTurn: boolean;
   /** Energy counters this player has (rule 122 / {E} — ROADMAP Phase 10). A
    * player resource, not tied to any permanent; spent by a `payEnergy` ability
    * cost, gained by a `get-energy` effect. */
@@ -971,6 +978,8 @@ export function createPlayerState(id: PlayerId, rules: GameRules): PlayerState {
     spellsCastThisTurn: 0,
     lostLifeThisTurn: false,
     creaturesDiedThisTurn: 0,
+    createdTokenThisTurn: false,
+    usedGraveyardThisTurn: false,
     energy: 0,
     printings: {},
   };

@@ -2371,6 +2371,8 @@ export class Game {
       this.state.players[player].spellsCastThisTurn = 0;
       this.state.players[player].lostLifeThisTurn = false;
       this.state.players[player].creaturesDiedThisTurn = 0;
+      this.state.players[player].createdTokenThisTurn = false;
+      this.state.players[player].usedGraveyardThisTurn = false;
     }
     // Day → night if the previous turn's player cast no spells (726.3);
     // night → day if they cast two or more (726.4). Only once it's day or night.
@@ -2713,12 +2715,7 @@ export class Game {
       this.state.rngState = this.rng.seed;
     } else if (awaiting.leftover === "shuffle") {
       // A library search — shuffle the whole library afterwards (rule 701.19j).
-      const library = this.state.zones.perPlayer[player].library;
-      const order = shuffle([...library], this.rng);
-      library.length = 0;
-      library.push(...order);
-      this.state.rngState = this.rng.seed;
-      this.emit({ type: "library-shuffled", player });
+      this.shuffleLibraryOf(player);
     } else if (awaiting.leftover === "hand") {
       // Genesis Ultimatum: "… and the rest into your hand." needed-cards P19.
       for (const id of leftover) this.moveObject(id, "hand");
@@ -2982,6 +2979,18 @@ export class Game {
       return this.isPlaneswalkerTarget(target)
         ? `${def.name} can't attack that planeswalker`
         : "attackers can only attack an opponent who hasn't already lost";
+    }
+    // "Can't attack you or planeswalkers you control" (Vow of Duty) — "you"
+    // is the controller of whatever is attached, not of the creature.
+    const defendingPlayer = this.defendingPlayerOf(target);
+    for (const id of this.state.zones.shared.battlefield) {
+      const attached = this.state.objects[id];
+      if (attached.attachedTo !== creatureId || hasLostAbilities(attached)) continue;
+      if (attached.controller !== defendingPlayer) continue;
+      const forbids = this.registry
+        .get(printedCardName(attached))
+        .static.some((ability) => ability.cantAttackController === true);
+      if (forbids) return `${def.name} can't attack ${defendingPlayer}`;
     }
     return null;
   }
@@ -4715,6 +4724,16 @@ export class Game {
     // Storm (rule 702.40a) counts spells cast *before* this one, by any player.
     const stormCount = this.state.spellsCastThisTurn;
 
+    // Laboratory Drudge: every route that casts a spell out of a graveyard.
+    if (
+      via === "flashback" ||
+      via === "escape" ||
+      via === "disturb" ||
+      via === "graveyard-permission"
+    ) {
+      this.state.players[player].usedGraveyardThisTurn = true;
+    }
+
     // Spend a once-per-turn graveyard permission *before* the card leaves the
     // graveyard, while the grantor lookup can still see it there.
     if (via === "graveyard-permission") {
@@ -5254,6 +5273,7 @@ export class Game {
       this.moveObject(sourceId, "graveyard");
       this.emit({ type: "cards-discarded", player, objects: [sourceId] });
     } else if (ability.zone === "graveyard") {
+      this.state.players[player].usedGraveyardThisTurn = true;
       // The graveyard equivalent — "Exile this card from your graveyard" is
       // likewise part of the cost, so it happens now rather than on
       // resolution, and stands even if the ability is countered.
@@ -6203,7 +6223,12 @@ export class Game {
       // "Exile ~" printed on the spell's own resolution text (Genesis
       // Ultimatum — needed-cards P19), unconditional and independent of how
       // it was cast (unlike flashback/disturb/adventure above).
-      this.moveObject(id, def.exileOnResolve ? "exile" : "graveyard");
+      if (def.shuffleIntoLibraryOnResolve) {
+        this.moveObject(id, "library");
+        this.shuffleLibraryOf(object.owner);
+      } else {
+        this.moveObject(id, def.exileOnResolve ? "exile" : "graveyard");
+      }
       object.targets = null;
     }
   }
@@ -7579,6 +7604,18 @@ export class Game {
    * moment the turn number moves; `exiledWith` keeps it alive only while that
    * permanent is still on the battlefield (Theater of Horrors).
    */
+  /** Shuffle `player`'s whole library with the game's seeded RNG, and
+   * announce it. Shared by library searches and "shuffle ~ into its owner's
+   * library" (White Sun's Zenith). */
+  private shuffleLibraryOf(player: PlayerId): void {
+    const library = this.state.zones.perPlayer[player].library;
+    const order = shuffle([...library], this.rng);
+    library.length = 0;
+    library.push(...order);
+    this.state.rngState = this.rng.seed;
+    this.emit({ type: "library-shuffled", player });
+  }
+
   /** A permanent's `castFromGraveyard` permission, if its printed statics
    * carry one and it hasn't lost its abilities. */
   private graveyardCastAbility(
@@ -7827,6 +7864,7 @@ export class Game {
     tapped = false,
   ): void {
     if (total <= 0) return;
+    this.state.players[controller].createdTokenThisTurn = true;
     const printedName = copyOf ?? cardName;
     const mintIndividually = (): void => {
       for (let i = 0; i < total; i += 1) {
