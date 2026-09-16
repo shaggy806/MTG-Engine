@@ -7,14 +7,80 @@
   --card-w: clamp(110px, 15vw, 190px);
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  width: min(1180px, 90vw);
+  /* `--seat-gap` is declared on the dialog that holds this (App.css's
+     .seat-board-box), which sets its own side padding to the same value so
+     the row is evenly spaced end to end. The fallback covers any other host. */
+  gap: var(--seat-gap, 16px);
+  /* Fills whatever the box gives it. It used to name a width of its own
+     (min(1180px, 90vw)) against a box sized min(1180px, 94vw), which on a
+     wide screen made the grid wider than the box's content area and pushed
+     the outer seat panels out through its padding. */
+  width: 100%;
 }
 
 .seat-board-grid {
   display: grid;
   grid-template-columns: repeat(var(--seat-count), minmax(0, 1fr));
-  gap: 16px;
+  gap: var(--seat-gap, 16px);
+}
+/* The "Add seat" tile sits on the end as a narrow `auto` column rather than
+   an equal share of the row -- it's a control, not a seat, and giving it a
+   seat's width makes a 2-player table look like a 3-player one with an empty
+   chair. `--seat-count` deliberately stays the number of real seats. */
+.seat-board-grid.has-add {
+  grid-template-columns: repeat(var(--seat-count), minmax(0, 1fr)) auto;
+}
+
+.seat-add-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  /* Centred rather than stretched: a full-height dashed box beside the real
+     seats reads as another (empty) seat, which is the opposite of what a
+     control to *make* one should look like. */
+  align-self: center;
+  width: clamp(76px, 8vw, 104px);
+  padding: 22px 10px;
+  background: none;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  color: var(--muted);
+}
+.seat-add-panel:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.seat-add-plus {
+  font-size: 26px;
+  line-height: 1;
+}
+.seat-add-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Drops an empty or bot-filled seat. Deliberately quiet until hovered -- it
+   removes something, and it sits in the corner of every open seat, so it
+   shouldn't compete with the deck slot that is the panel's actual content. */
+.seat-panel-remove {
+  flex: none;
+  /* the head is baseline-aligned for its text; a glyph-only button has no
+     useful baseline to share with it */
+  align-self: center;
+  padding: 0 5px;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--muted-dim);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 5px;
+}
+.seat-panel-remove:hover:not(:disabled) {
+  color: var(--bad);
+  border-color: var(--bad);
 }
 
 .seat-panel {
@@ -67,6 +133,10 @@
 }
 .seat-panel-tag {
   flex: none;
+  /* Soaks up the free space so the head reads name-left / status-right even
+     with the remove button as a third child -- `space-between` alone would
+     strand the tag in the middle. */
+  margin-left: auto;
   font-size: 11px;
   color: var(--muted);
   text-transform: uppercase;

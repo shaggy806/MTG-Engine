@@ -13,6 +13,11 @@ import './lobby.css'
 
 type LocalDeck = { readonly name: string; readonly commander?: string; readonly cards: readonly string[] }
 
+/** A table is 2-4 seats. Mirrors `PendingRoom`'s own limits, which are what
+ * actually enforce this — these only decide whether to draw the control. */
+const MIN_SEATS = 2
+const MAX_SEATS = 4
+
 const toWire = (d: LocalDeck): WireDeck => ({ cards: d.cards, commander: d.commander, name: d.name })
 
 /**
@@ -27,6 +32,14 @@ const toWire = (d: LocalDeck): WireDeck => ({ cards: d.cards, commander: d.comma
  * ready up (a green outline — bots always are) and the *Start Game* button
  * at the bottom only lights up once every seat has. Un-readying (mine only)
  * reopens my own deck slot for editing; a readied deck is locked until then.
+ *
+ * This is also where the table gets its size (2-4 seats), via the "Add seat"
+ * tile on the end of the row and a small × on any seat nobody is sitting in.
+ * That question used to be asked on the landing page instead, as three "N
+ * players" buttons above "Create a game" — before anyone had seen a seat, in
+ * a layout where nothing tied the counts to the button below them. Here the
+ * seats are on screen, and a wrong guess costs one click rather than a whole
+ * new room.
  *
  * Choosing a deck never navigates away to `/deck-builder` — the old flow's
  * dead end, since that page has no room context and there was no way back to
@@ -86,10 +99,11 @@ export function SeatBoard({ game }: { readonly game: NetworkGame }) {
   }
 
   const allReady = game.seats.every((s) => s.ready)
+  const canAddSeat = game.seats.length < MAX_SEATS
 
   return (
     <div className="seat-board" style={{ '--seat-count': game.seats.length } as CSSProperties}>
-      <div className="seat-board-grid">
+      <div className={`seat-board-grid${canAddSeat ? ' has-add' : ''}`}>
         {game.seats.map((s, i) => {
           const isMySeat = s.player === mySeatPlayer
           const deck: LocalDeck | null = isMySeat
@@ -102,6 +116,11 @@ export function SeatBoard({ game }: { readonly game: NetworkGame }) {
           // (a bot has no ready state of its own to gate on); a human's
           // seat other than mine is never editable.
           const deckEditable = isMySeat ? !amReady : !s.claimed
+          // Nobody is sitting here, and dropping it wouldn't take the table
+          // below two. `isMySeat` also covers the seat I haven't claimed yet
+          // but would take on "Ready" — removing the chair out from under
+          // myself just shunts me to the next one, which reads as a bug.
+          const removable = !s.claimed && !isMySeat && game.seats.length > MIN_SEATS
 
           return (
             <div
@@ -124,6 +143,17 @@ export function SeatBoard({ game }: { readonly game: NetworkGame }) {
                           : 'Taken · offline'
                       : 'Open'}
                 </span>
+                {removable ? (
+                  <button
+                    type="button"
+                    className="seat-panel-remove"
+                    title="Remove this seat"
+                    aria-label={`Remove seat ${i + 1}`}
+                    onClick={() => game.removeSeat(s.player)}
+                  >
+                    ×
+                  </button>
+                ) : null}
               </div>
 
               <DeckSlot deck={deck} editable={deckEditable} onClick={() => setPickerSeat(s.player)} />
@@ -157,6 +187,13 @@ export function SeatBoard({ game }: { readonly game: NetworkGame }) {
             </div>
           )
         })}
+
+        {canAddSeat ? (
+          <button type="button" className="seat-add-panel" onClick={game.addSeat}>
+            <span className="seat-add-plus">+</span>
+            <span className="seat-add-label">Add seat</span>
+          </button>
+        ) : null}
       </div>
 
       <div className="seat-board-footer">
