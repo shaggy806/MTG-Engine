@@ -56,7 +56,10 @@ export type EffectAmount =
    * each creature card in your graveyard" (Lotleth Giant). Distinct from
    * `countOf`, which only ever counts battlefield permanents. The filter's
    * `ownedBy: "you"` is what restricts it to your own graveyard. */
-  | { readonly countInGraveyard: CardFilter };
+  | { readonly countInGraveyard: CardFilter }
+  /** The *current* power of whatever a target slot points at — Unleash Fury's
+   * "double the power of target creature" is a `modify-pt` that adds this. */
+  | { readonly powerOf: EffectTargetRef };
 
 /** @deprecated Use {@link CardFilter} directly — kept as an alias so existing
  * `look-and-choose` / `matchesZoneChoiceFilter` call sites still type-check. */
@@ -393,6 +396,18 @@ export type EffectSpec =
        * gaining hexproof is `grant-keyword-all` instead. */
       readonly kind: "grant-player-hexproof";
       readonly who?: PlayerScope;
+    }
+  | {
+      /**
+       * Populate (rule 701.32) — create a token that's a copy of a creature
+       * token you control (Rootborn Defenses).
+       *
+       * The rules let the controller pick which creature token to copy; this
+       * copies the largest by power. With zero or one creature token — which
+       * is every case the precons produce — the choice is forced anyway. See
+       * AUTHORING §15 "Partial".
+       */
+      readonly kind: "populate";
     }
   | {
       /**
@@ -735,6 +750,8 @@ export interface EffectApi {
   lifeTotalOf(player: PlayerId): number;
   /** See the `{ countInGraveyard }` {@link EffectAmount}. */
   countInGraveyard(filter: CardFilter): number;
+  /** See the `{ powerOf }` {@link EffectAmount}. */
+  powerOf(target: TargetRef): number;
   /** Every player a `PlayerScope` names, in APNAP order and skipping anyone
    * who has already lost. The shared scope resolution behind `draw`'s `who`,
    * `discard-hand`, and anything else that acts on a scope one player at a
@@ -830,6 +847,8 @@ export interface EffectApi {
   doublePtAll(filter: CardFilter, duration: PtDuration): void;
   /** See the `"grant-player-hexproof"` {@link EffectSpec}. */
   grantPlayerHexproof(who: PlayerScope): void;
+  /** See the `"populate"` {@link EffectSpec}. */
+  populate(): void;
   /** See the `"amass"` {@link EffectSpec}. */
   amass(amount: number, creatureType: string): void;
   /** See the `"add-counter-all"` {@link EffectSpec}. */
@@ -1021,6 +1040,10 @@ export function amountValue(amount: EffectAmount, ctx: ResolutionContext): numbe
   if ("triggerValue" in amount) return ctx.triggerValue;
   if ("lifeTotal" in amount) return ctx.lifeTotalOf(ctx.controller);
   if ("countInGraveyard" in amount) return ctx.countInGraveyard(amount.countInGraveyard);
+  if ("powerOf" in amount) {
+    const ref = resolveEffectTarget(amount.powerOf, ctx);
+    return ref === undefined ? 0 : ctx.powerOf(ref);
+  }
   if ("manaValueOf" in amount) {
     const ref = resolveEffectTarget(amount.manaValueOf, ctx);
     return ref === undefined ? 0 : ctx.manaValueOf(ref);
@@ -1250,6 +1273,9 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       return;
     case "grant-player-hexproof":
       ctx.grantPlayerHexproof(spec.who ?? "you");
+      return;
+    case "populate":
+      ctx.populate();
       return;
     case "amass":
       ctx.amass(amountValue(spec.amount, ctx), spec.creatureType);

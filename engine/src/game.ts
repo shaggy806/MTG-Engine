@@ -3635,7 +3635,14 @@ export class Game {
     this.executePayment(player, payment);
     this.moveObject(cardId, "graveyard");
     this.emit({ type: "card-cycled", player, object: cardId });
-    this.drawCard(player);
+    if (cycling.search !== undefined) {
+      // Landcycling / typecycling (702.29f): a library search instead of the
+      // draw. `min: 0` so an empty library isn't a hard failure, matching
+      // every other tutor in the pool.
+      this.beginLibrarySearch(player, cycling.search, "hand", 0, 1, false);
+    } else {
+      this.drawCard(player);
+    }
     this.afterPlayerAction(player);
   }
 
@@ -6348,6 +6355,11 @@ export class Game {
       addCounter: (target, counter, amount) =>
         this.addCounter(target, counter, amount),
       amass: (amount, creatureType) => this.amass(controller, amount, creatureType),
+      populate: () => this.populate(controller),
+      powerOf: (target) =>
+        target.kind === "object" && this.state.objects[target.object] !== undefined
+          ? computeCharacteristics(this.state, this.registry, target.object).power
+          : 0,
       addCounterAll: (filter, counter, amount) => {
         // Snapshot first — `addCounter` can kill a permanent (a -1/-1 counter)
         // and mutate the battlefield array underneath the loop.
@@ -6665,6 +6677,35 @@ export class Game {
       });
     }
     this.addCounter({ kind: "object", object: army }, "+1/+1", amount);
+  }
+
+  /**
+   * Populate (rule 701.32) — copy a creature token you control.
+   *
+   * Picks the largest by power rather than asking. The rules give the
+   * controller the choice, but it only ever matters with two or more creature
+   * tokens of different sizes, and no precon produces that; recorded in
+   * AUTHORING §15 alongside `proliferate`'s similar simplification.
+   */
+  private populate(controller: PlayerId): void {
+    let best: ObjectId | undefined;
+    let bestPower = -Infinity;
+    for (const id of this.state.zones.shared.battlefield) {
+      const object = this.state.objects[id];
+      if (object === undefined || object.controller !== controller || !object.isToken) continue;
+      const c = computeCharacteristics(this.state, this.registry, id);
+      if (!c.types.includes("creature")) continue;
+      if (c.power > bestPower) {
+        bestPower = c.power;
+        best = id;
+      }
+    }
+    if (best === undefined) return;
+    this.createTokenCopy(best, 1, {
+      gainsHaste: false,
+      exileAtEndStep: false,
+      notLegendary: false,
+    });
   }
 
   private createTokens(controller: PlayerId, tokenName: string, count: number): void {
@@ -8116,6 +8157,27 @@ export class Game {
     return through;
   }
 
+  /**
+   * The product of every active `would-deal-damage` replacement on the
+   * battlefield (Dictate of the Twin Gods). Global and symmetric — it doubles
+   * damage from *anyone* to *anyone*, so it is not filtered by controller.
+   * `1` when nothing is doubling, which is the overwhelmingly common case.
+   */
+  private damageMultiplier(): number {
+    let multiplier = 1;
+    for (const id of this.state.zones.shared.battlefield) {
+      const object = this.state.objects[id];
+      if (object === undefined || hasLostAbilities(object)) continue;
+      for (const ability of this.registry.get(printedCardName(object)).static) {
+        const r = ability.replacement;
+        if (r === undefined || r.event !== "would-deal-damage") continue;
+        if (!this.staticActive(object, ability)) continue;
+        multiplier *= r.multiplier;
+      }
+    }
+    return multiplier;
+  }
+
   private dealDamage(
     source: ObjectId,
     target: TargetRef,
@@ -8129,6 +8191,12 @@ export class Game {
       this.emit({ type: "damage-prevented", source, target, amount });
       return 0;
     }
+
+    // Damage multipliers (Dictate of the Twin Gods — rule 614). Applied
+    // before prevention, so a shield eats the *doubled* amount, which is the
+    // printed interaction: doubling replaces the damage event, and prevention
+    // then applies to what it became.
+    amount *= this.damageMultiplier();
 
     // One-shot prevention shields (Healing Salve — rule 614.9 / EG-6).
     if (this.state.preventionShields.length > 0) {

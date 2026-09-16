@@ -35,7 +35,8 @@ export type ReplacementSpec =
   | TokenMultiplierReplacement
   | CounterMultiplierReplacement
   | GraveyardExileReplacement
-  | DrawRedirectReplacement;
+  | DrawRedirectReplacement
+  | DamageMultiplierReplacement;
 
 /** As the source permanent enters the battlefield (rule 614.1c). A self-
  * replacement — printed on the card, applies only to it. */
@@ -125,4 +126,16 @@ export interface DrawRedirectReplacement {
   readonly who: "opponent";
   /** The replacement: the source's controller draws instead. */
   readonly instead: "you-draw";
+}
+
+/**
+ * "If a source would deal damage to a permanent or player, it deals double
+ * that damage to that permanent or player instead" (Dictate of the Twin
+ * Gods). Unlike every other replacement here this one is **symmetric and
+ * global** — it applies to damage from any source to any recipient, not only
+ * to its controller's.
+ */
+export interface DamageMultiplierReplacement {
+  readonly event: "would-deal-damage";
+  readonly multiplier: number;
 }

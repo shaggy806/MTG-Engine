@@ -458,7 +458,18 @@ export interface CardDefinition {
    * you could cast an instant. Modeled as an immediate special action (pay,
    * discard, draw), not a stack-using ability — no "respond to cycling"
    * window, no "when you cycle" triggers. `null` for a card without cycling. */
-  readonly cycling: { readonly cost: string } | null;
+  readonly cycling: {
+    readonly cost: string;
+    /**
+     * **Landcycling / typecycling** (rule 702.29f — Migratory Route's "Basic
+     * landcycling {2}"): instead of drawing, search your library for a card
+     * matching this filter and put it into your hand.
+     *
+     * Same special action as ordinary cycling — pay, discard, then this
+     * instead of the draw.
+     */
+    readonly search?: CardFilter;
+  } | null;
   /** Saga chapters (rule 714 — ROADMAP Phase 10). A Saga enters with one lore
    * counter and gains one at the start of its controller's precombat main
    * phase; each `SagaChapter` fires when the lore count reaches any number in
@@ -562,7 +573,7 @@ interface CardDraft {
   flashback?: { readonly cost: string };
   foretell?: { readonly cost: string };
   suspend?: { readonly n: number; readonly cost: string };
-  cycling?: { readonly cost: string };
+  cycling?: { readonly cost: string; readonly search?: CardFilter };
   escape?: { readonly cost: string; readonly exileCount: number };
   chapters?: readonly SagaChapter[];
   faces?: readonly string[];

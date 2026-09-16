@@ -165,6 +165,7 @@ from the same link.
 | `foretell` | `{ cost }` | pay `{2}` to exile face-down, cast later for `cost` |
 | `escape` | `{ cost, exileCount }` | cast from graveyard + exile N other graveyard cards |
 | `suspend` | `{ n, cost }` | exile with N time counters; cast free at 0 with haste |
+| `cycling` | `{ cost, search? }` | pay `cost`, discard this card, draw a card (rule 702.29). With `search` it's **landcycling / typecycling** (702.29f — Migratory Route's "Basic landcycling {2}"): the same special action, but a library search into your hand instead of the draw. |
 | `chapters` | `SagaChapter[]` | a Saga — §12 |
 | `faces` | `string[]` | a multi-face card (front first) — §12 |
 | `transform` | `boolean` | a *transforming* DFC (set on both faces) — §12 |
@@ -303,6 +304,7 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 | `grant-keyword-all` | `filter`, `keyword`, `duration` | Overrun's trample |
 | `add-counter` | `target`, `counter` (string), `amount` | `counter: "+1/+1"` etc. |
 | `add-counter-all` | `filter`, `counter`, `amount` | the untargeted mass form (Loyal Guardian: "a +1/+1 counter on each creature you control"). Routes through `add-counter` per permanent, so Doubling Season still composes. |
+| `populate` | — | Populate (rule 701.32): create a token copying a creature token you control (Rootborn Defenses). Copies the largest by power rather than asking — see §15 "Partial". |
 | `amass` | `amount`, `creatureType` | Amass N (rule 701.44). One effect rather than create-then-count, because "an Army you control" has to resolve to the **same** object each time — that's what makes repeated amassing grow one creature. Picks the first Army rather than asking; no precon makes two. |
 | `grant-player-hexproof` | `who?` | "You gain hexproof until end of turn" (Lazotep Plating). A *player* can't be targeted by opponents; permanents gaining hexproof is `grant-keyword-all`. Turn-scoped on `GameState.hexproofPlayers`. |
 | `double-counters-all` | `filter`, `counterKind` | Kalonian Hydra / Bristly Bill — doubles each matching permanent's own current count of that counter kind (routes through `add-counter`'s own logic, so Doubling Season's replacement still composes on top: 3x, not 4x) |
@@ -716,6 +718,11 @@ clause (section 9):
   in Peace / Anafenza.
 - `{ event: "would-draw", who: "opponent", instead: "you-draw" }` — Notion
   Thief.
+- `{ event: "would-deal-damage", multiplier }` — Dictate of the Twin Gods.
+  **Symmetric and global**, unlike every other replacement here: it doubles
+  damage from any source to any recipient, including its own controller's, so
+  `affects` is irrelevant. Applied before prevention shields, so a shield eats
+  the doubled amount.
 
 ---
 
@@ -941,7 +948,10 @@ different card, or extend the engine (see `ROADMAP.md`).
 - **Snow** mana is treated as generic — no snow permanents / snow-mana
   requirements.
 - **`proliferate`** always proliferates everything eligible (no "choose any
-  number").
+  number"), and **`populate`** copies the largest creature token you control
+  rather than letting you pick. Both are *choice* simplifications rather than
+  outcome ones, and populate's only bites with two or more creature tokens of
+  different sizes.
 - **Additional costs** are a sacrifice only (`additionalCost.sacrifice`) — no
   "discard a card", "pay N life", "exile a creature from your graveyard" form
   yet, and only one such cost per card. **Kicker** is a single optional cost

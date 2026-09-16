@@ -100,6 +100,7 @@ import _poolDemonicTutor from "./pool/demonic-tutor.js";
 import _poolDesertedBeach from "./pool/deserted-beach.js";
 import _poolDiabolicEdict from "./pool/diabolic-edict.js";
 import _poolDiabolicIntent from "./pool/diabolic-intent.js";
+import _poolDictateOfTheTwinGods from "./pool/dictate-of-the-twin-gods.js";
 import _poolDisenchant from "./pool/disenchant.js";
 import _poolDoomBlade from "./pool/doom-blade.js";
 import _poolDoublingSeason from "./pool/doubling-season.js";
@@ -231,6 +232,7 @@ import _poolManaConfluence from "./pool/mana-confluence.js";
 import _poolManifoldKey from "./pool/manifold-key.js";
 import _poolMarshFlats from "./pool/marsh-flats.js";
 import _poolMendingHands from "./pool/mending-hands.js";
+import _poolMigratoryRoute from "./pool/migratory-route.js";
 import _poolMiirymSentinelWyrm from "./pool/miirym-sentinel-wyrm.js";
 import _poolMindControl from "./pool/mind-control.js";
 import _poolMindRot from "./pool/mind-rot.js";
@@ -292,6 +294,7 @@ import _poolRishkarPeemaRenegade from "./pool/rishkar-peema-renegade.js";
 import _poolRiveteersOverlook from "./pool/riveteers-overlook.js";
 import _poolRockfallVale from "./pool/rockfall-vale.js";
 import _poolRoguesPassage from "./pool/rogues-passage.js";
+import _poolRootbornDefenses from "./pool/rootborn-defenses.js";
 import _poolRootboundCrag from "./pool/rootbound-crag.js";
 import _poolRubyMedallion from "./pool/ruby-medallion.js";
 import _poolRumblingBaloth from "./pool/rumbling-baloth.js";
@@ -395,6 +398,7 @@ import _poolUndergroundMortuary from "./pool/underground-mortuary.js";
 import _poolUndergroundRiver from "./pool/underground-river.js";
 import _poolUndergroundSea from "./pool/underground-sea.js";
 import _poolUnderworldRageHound from "./pool/underworld-rage-hound.js";
+import _poolUnleashFury from "./pool/unleash-fury.js";
 import _poolUnnaturalGrowth from "./pool/unnatural-growth.js";
 import _poolUnsummon from "./pool/unsummon.js";
 import _poolUreniOfTheUnwritten from "./pool/ureni-of-the-unwritten.js";
@@ -433,6 +437,7 @@ import _tokensApeToken from "./tokens/ape-token.js";
 import _tokensArmyToken from "./tokens/army-token.js";
 import _tokensBeastToken33 from "./tokens/beast-token-3-3.js";
 import _tokensBeastToken from "./tokens/beast-token.js";
+import _tokensBirdToken from "./tokens/bird-token.js";
 import _tokensCatToken from "./tokens/cat-token.js";
 import _tokensChocoboBirdToken from "./tokens/chocobo-bird-token.js";
 import _tokensDragonToken55 from "./tokens/dragon-token-5-5.js";
@@ -553,6 +558,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolDesertedBeach,
   _poolDiabolicEdict,
   _poolDiabolicIntent,
+  _poolDictateOfTheTwinGods,
   _poolDisenchant,
   _poolDoomBlade,
   _poolDoublingSeason,
@@ -684,6 +690,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolManifoldKey,
   _poolMarshFlats,
   _poolMendingHands,
+  _poolMigratoryRoute,
   _poolMiirymSentinelWyrm,
   _poolMindControl,
   _poolMindRot,
@@ -745,6 +752,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolRiveteersOverlook,
   _poolRockfallVale,
   _poolRoguesPassage,
+  _poolRootbornDefenses,
   _poolRootboundCrag,
   _poolRubyMedallion,
   _poolRumblingBaloth,
@@ -848,6 +856,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolUndergroundRiver,
   _poolUndergroundSea,
   _poolUnderworldRageHound,
+  _poolUnleashFury,
   _poolUnnaturalGrowth,
   _poolUnsummon,
   _poolUreniOfTheUnwritten,
@@ -892,6 +901,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensArmyToken,
   _tokensBeastToken33,
   _tokensBeastToken,
+  _tokensBirdToken,
   _tokensCatToken,
   _tokensChocoboBirdToken,
   _tokensDragonToken55,
