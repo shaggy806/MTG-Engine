@@ -499,11 +499,22 @@
 /* The floating card preview, portalled to <body> — see CardHoverPreview.tsx.
    `.card-tile` sizes itself from --card-w, which is tuned for a board tile
    (96-150px); a preview exists to be *read*, so it overrides the token for
-   its own subtree rather than scaling the tile up with a transform. */
+   its own subtree rather than scaling the tile up with a transform.
+
+   Widening the token is only half of it: everything *inside* a CardTile —
+   the art box's height, every font size, the pips, the P/T badge — is a
+   fixed px tuned against --card-w-max's 150px ceiling, and reads it back
+   through `var(--ct-scale, 1)`. Overriding --card-w alone left all of that
+   at board size inside a much wider card, which showed up as text too small
+   to be the point of a preview, and as an art box the same 86px tall but
+   half again as wide — so `object-fit: cover` cropped the illustration far
+   harder vertically than the same art on the board. --ct-scale is the ratio
+   between the two widths, the same correction .played-card-fly makes. */
 .card-hover-preview {
   position: fixed;
   z-index: 60;
   --card-w: 220px;
+  --ct-scale: calc(220 / 150);
   width: var(--card-w);
   pointer-events: none;
   filter: drop-shadow(0 8px 20px rgb(0 0 0 / 0.55));
@@ -513,6 +524,14 @@
    preview is purely presentational — it reads at full strength. */
 .card-hover-preview .card-tile:disabled {
   opacity: 1;
+}
+/* A board tile truncates a long type line to one line because it sits in a
+   row of tiles whose heights have to agree; a preview is a lone box whose
+   whole job is to be read, and at preview text size "Artifact Creature —
+   Phyrexian Wurm" no longer fits on one. `.card-tile` is min-height, so the
+   second line just makes the box taller. */
+.card-hover-preview .ct-type {
+  white-space: normal;
 }
 
 /* --- right-click menu on a card row ------------------------------------ */
