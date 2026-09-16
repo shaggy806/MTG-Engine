@@ -2414,3 +2414,81 @@
   }
 }
 
+
+/* "Choose a creature type" over the full catalog (~350 types) — suggested
+   chips above a search box. Reuses the zone-viewer overlay/box so it sits in
+   the same decision-popup layer (130), above the hand strip. Sized with
+   clamp()/viewport units per the board's no-fixed-px rule; the results list is
+   the one scroll region, capped against viewport *height* so the box still
+   fits a 768px-tall window. */
+.ctype-box {
+  width: min(clamp(320px, 56vw, 760px), 100%);
+  gap: clamp(8px, 1.4vh, 14px);
+}
+.ctype-section {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(4px, 0.7vh, 8px);
+}
+.ctype-label {
+  font-size: clamp(11px, 0.85vw, 13px);
+  color: var(--muted);
+}
+.ctype-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(4px, 0.5vw, 8px);
+}
+.ctype-chip {
+  border-color: var(--accent-dim);
+  background: var(--accent-bg);
+  color: var(--text);
+}
+.ctype-chip:hover {
+  border-color: var(--accent);
+}
+.ctype-search {
+  width: 100%;
+  font-size: clamp(13px, 1vw, 16px);
+}
+.ctype-results {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(clamp(96px, 9vw, 140px), 1fr));
+  gap: clamp(4px, 0.5vw, 6px);
+  /* A fixed height, not max-height: the dialog is vertically centred, so a
+     results area that shrank as matches narrowed made the whole box re-centre
+     and the search field jump ~100px under the cursor while typing. */
+  height: clamp(160px, 38vh, 420px);
+  /* Rows must stay content-height and let the area scroll. With a definite
+     height, plain `auto` rows shrink to fit instead — and .ctype-result's
+     `overflow: hidden` gives each button a zero minimum, so they collapsed to
+     ~10px with the text clipped. `flex-shrink: 0` stops the surrounding flex
+     column squeezing the area itself. */
+  grid-auto-rows: max-content;
+  align-content: start;
+  flex-shrink: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.ctype-result {
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ctype-result--active {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+/* The collapsed form: a pill in the decision layer, clear of the topbar, that
+   restores the picker. Mandatory decision, so it never disappears entirely. */
+.ctype-pill {
+  position: fixed;
+  top: clamp(44px, 7vh, 64px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 130;
+  border-color: var(--accent);
+  background: var(--panel);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}

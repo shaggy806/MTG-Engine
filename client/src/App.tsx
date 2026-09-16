@@ -29,6 +29,7 @@ import { AbilityMenu } from './ui/AbilityMenu.tsx'
 import { Stack } from './ui/Stack.tsx'
 import { EventLog } from './ui/EventLog.tsx'
 import { ZoneViewer } from './ui/ZoneViewer.tsx'
+import { CreatureTypePicker } from './ui/CreatureTypePicker.tsx'
 import { SeatBoard } from './lobby/SeatBoard.tsx'
 import { LandingScreen } from './lobby/LandingScreen.tsx'
 import './App.css'
@@ -1678,10 +1679,20 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         ))}
       </div>
     )
-  } else if (mode === 'choose-creature-type' && creatureTypeChoiceAction) {
+  } else if (mode === 'choose-creature-type' && creatureTypeChoiceAction?.catalog) {
+    // The full creature-type catalog is far too many buttons for this strip —
+    // it's answered in the `CreatureTypePicker` popup rendered below.
     controls = (
       <div className="controls">
-        <span>{game.nameOf(creatureTypeChoiceAction.source)} — choose a creature type</span>
+        <span>{game.nameOf(creatureTypeChoiceAction.source)} — choosing a creature type</span>
+      </div>
+    )
+  } else if (mode === 'choose-creature-type' && creatureTypeChoiceAction) {
+    // A short fixed menu reusing the same decision (Heraldic Banner's colours,
+    // Frontier Siege's Khans/Dragons) — plain buttons still fit.
+    controls = (
+      <div className="controls">
+        <span>{game.nameOf(creatureTypeChoiceAction.source)} — choose one</span>
         {creatureTypeChoiceAction.options.map((t) => (
           <button
             key={t}
@@ -2644,6 +2655,19 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
             eligible: zoneChoiceAction.eligible,
             onConfirm: confirmZoneChoice,
           }}
+        />
+      ) : null}
+
+      {mode === 'choose-creature-type' && creatureTypeChoiceAction?.catalog ? (
+        <CreatureTypePicker
+          // Remount per decision, so a previous search doesn't carry over.
+          key={creatureTypeChoiceAction.source}
+          sourceName={game.nameOf(creatureTypeChoiceAction.source)}
+          options={creatureTypeChoiceAction.options}
+          suggested={creatureTypeChoiceAction.suggested}
+          onPick={(creatureType) =>
+            game.dispatch({ type: 'choose-creature-type', player: seat, creatureType })
+          }
         />
       ) : null}
 
