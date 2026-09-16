@@ -212,7 +212,7 @@ export interface PickableDeck {
 }
 
 /** Every deck the seat-picker's popup can offer: this browser's saved decks,
- * then the four starters — in that order, since a saved deck is more likely
+ * then the starter decks — in that order, since a saved deck is more likely
  * to be what someone actually wants to bring than a generic starter. */
 export function listPickableDecks(): readonly PickableDeck[] {
   return [

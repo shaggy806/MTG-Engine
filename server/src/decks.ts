@@ -3,9 +3,9 @@
  * own (see `PendingRoom.claimSeat`'s `deck` param, and `addBot`, which never
  * brings its own) — up to four seats, sliced down to however many players a
  * room asks for. The actual card lists live in `engine`'s `SAMPLE_DECKS`
- * (shared with the client's deck builder, which offers the same four as
- * ready-made "starter decks"); this just pairs them with this server's fixed
- * seat identities.
+ * (shared with the client's deck builder, which offers all of them as
+ * ready-made "starter decks"); this just pairs the first four with this
+ * server's fixed seat identities.
  */
 
 import { SAMPLE_DECKS, asPlayerId } from "engine";

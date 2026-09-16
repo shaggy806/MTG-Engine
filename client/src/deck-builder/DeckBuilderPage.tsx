@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { SAMPLE_DECKS } from 'engine'
+import { SAMPLE_DECKS, createDefaultRegistry, validateCommanderDeck } from 'engine'
+import type { PreconSubstitution } from 'engine'
 import type { DeckFormatReport, ImportDeckLine, ImportedCardReport } from '../net/protocol.ts'
 import {
   createDeck,
@@ -16,6 +17,8 @@ import {
 import type { SavedDeck } from './decks.ts'
 import { DeckEditor } from './DeckEditor.tsx'
 import './deck-builder.css'
+
+const registry = createDefaultRegistry()
 
 // Same host/port convention as useNetworkGame's SERVER_URL, but http(s) for
 // this one-off request/response endpoint rather than the room's WebSocket.
@@ -191,6 +194,8 @@ export function DeckBuilderPage() {
             name={selectedStarter.name}
             commander={selectedStarter.commander}
             cardList={selectedStarter.cards}
+            description={selectedStarter.description}
+            substitutions={selectedStarter.substitutions}
             isActive={isActive({ kind: 'starter', index: starterIndex })}
             onUseAsIs={() => markActive({ kind: 'starter', index: starterIndex })}
             onDuplicate={() => {
@@ -447,6 +452,8 @@ function StarterViewer({
   name,
   commander,
   cardList,
+  description,
+  substitutions = [],
   isActive,
   onUseAsIs,
   onDuplicate,
@@ -454,6 +461,8 @@ function StarterViewer({
   readonly name: string
   readonly commander?: string
   readonly cardList: readonly string[]
+  readonly description?: string
+  readonly substitutions?: readonly PreconSubstitution[]
   readonly isActive: boolean
   readonly onUseAsIs: () => void
   readonly onDuplicate: () => void
@@ -463,6 +472,14 @@ function StarterViewer({
     for (const c of cardList) m.set(c, (m.get(c) ?? 0) + 1)
     return [...m.entries()].sort((a, b) => a[0].localeCompare(b[0]))
   }, [cardList])
+
+  const legal = useMemo(
+    () =>
+      commander !== undefined &&
+      validateCommanderDeck({ commanders: [commander], cards: cardList, size: 100 }, registry).legal,
+    [commander, cardList],
+  )
+  const substitutedIn = useMemo(() => new Set(substitutions.map((s) => s.substitute)), [substitutions])
 
   return (
     <div className="db-editor">
@@ -482,10 +499,30 @@ function StarterViewer({
           Commander: <strong>{commander}</strong>
         </p>
       ) : null}
-      <p className="muted">{cardList.length} cards (not Commander-legal — a themed showcase deck)</p>
+      {description ? <p>{description}</p> : null}
+      <p className="muted">
+        {cardList.length + (commander ? 1 : 0)} cards
+        {legal ? ' · Commander-legal' : ' · not Commander-legal'}
+      </p>
+      {substitutions.length > 0 ? (
+        <details className="db-substitutions">
+          <summary>
+            {substitutions.length} stand-in{substitutions.length === 1 ? '' : 's'} for cards the
+            engine doesn't support yet
+          </summary>
+          <ul>
+            {substitutions.map((s) => (
+              <li key={s.original}>
+                <strong>{s.substitute}</strong> plays as <em>{s.original}</em>
+                <span className="muted"> — {s.reason}</span>
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
       <ul className="db-readonly-list">
         {counts.map(([name, n]) => (
-          <li key={name}>
+          <li key={name} className={substitutedIn.has(name) ? 'db-stand-in' : undefined}>
             {n > 1 ? `${n}× ` : ''}
             {name}
           </li>

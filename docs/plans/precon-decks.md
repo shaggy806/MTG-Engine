@@ -1,7 +1,10 @@
 # Real precon decks for the bots
 
-Status: **in progress** — replacing `engine/src/sample-decks.ts`'s four hand-curated 60-card
-lists with the five 2022 **Starter Commander Decks** (MTGJSON set code `SCD`), faithfully.
+Status: **shipped, with substitutions** (2026-09-16) — `engine/src/sample-decks.ts` is now the
+five 2022 **Starter Commander Decks** (MTGJSON set code `SCD`), replacing the four hand-curated
+60-card lists. 451 of the 495 non-commander slots are the printed cards; the other 44 are
+unimplemented cards played by hand-picked stand-ins, listed under
+[Substitutions](#substitutions) below.
 
 ## Why
 
@@ -108,3 +111,129 @@ Every card is a real Magic card with its real Oracle behaviour, or it isn't adde
 that can't be authored faithfully stays on the blocked list above and its slot is left for
 the engine work that unblocks it — never silently approximated. `card:verify` covers the
 structural half; the behavioural half is on review.
+
+## Substitutions
+
+The "author every card" plan above stopped at 44 cards short: the long tail (planeswalkers with
+unusual abilities, "each opponent chooses" effects, storage and provenance lands, curses that
+trigger on someone else's attack) was each a feature for one card. Rather than hold the decks back,
+each missing card plays as a stand-in until it's authored.
+
+**How it's recorded.** Each deck in `sample-decks.ts` keeps its `printed` list exactly as printed,
+plus a `substitutions` table of `{ original, substitute, reason }`. `cards` — what's actually
+played — is `printed` with those swaps applied. The printed list is never edited, so it stays the
+record of what the real deck is.
+
+**How each stand-in was picked.** By hand, not with `suggestReplacement`, which ignores colour
+identity and singleton (see `card-replacer.md`). Every substitute:
+
+- is inside the commander's colour identity,
+- isn't already in that deck (singleton), and
+- fills the original's role (planeswalker, sweeper, flier, token maker, utility land…) at a similar
+  mana value, leaning toward precon power level over the strongest available card.
+
+**Reverting one.** Once an original is implemented, delete its entry from that deck's
+`substitutions` table — nothing else changes. `engine/src/test/sample-decks.test.ts` enforces this:
+it fails for any substitution whose original is now registered, and checks every deck is a legal
+100-card Commander deck of implemented cards with exactly its table's swaps applied.
+
+The table below mirrors `sample-decks.ts` at the time of the swap; the code is authoritative.
+
+### Draconic Destruction — Atarka, World Render (6)
+
+| printed card | plays as | why |
+|---|---|---|
+| Sarkhan, the Dragonspeaker | Garruk Wildspeaker | Green planeswalker that makes creatures and has an overrun finisher. |
+| Foe-Razer Regent | Old Gnawbone | Seven-mana green flying Dragon. |
+| Savage Ventmaw | Lathliss, Dragon Queen | Six-mana flying Dragon. |
+| Loaming Shaman | Scavenging Ooze | Cheap green creature that interacts with graveyards. |
+| Haven of the Spirit Dragon | Kessig Wolf Run | Utility land that taps for colorless. |
+| Path of Ancestry | Sheltered Thicket | Enters-tapped land that makes the deck's colours. |
+
+### Chaos Incarnate — Kardur, Doomscourge (20)
+
+| printed card | plays as | why |
+|---|---|---|
+| Deadly Tempest | Damnation | Destroy-all-creatures sorcery. |
+| Dredge the Mire | Victimize | Reanimation sorcery. |
+| Ob Nixilis Reignited | Ob Nixilis, the Fallen | Same-cost black Ob Nixilis that drains life; the only implemented black-red planeswalker is a three-mana Chandra. |
+| Profane Command | Kolaghan's Command | Modal black-red Command with a recursion mode. |
+| Reign of the Pit | Fleshbag Marauder | Each player sacrifices a creature. |
+| Scythe Specter | Hypnotic Specter | Flying Specter that makes opponents discard. |
+| Sepulchral Primordial | Overseer of the Damned | Seven-mana black top-end with an enters-the-battlefield payoff. |
+| Soul Shatter | Diabolic Edict | Instant-speed edict. |
+| Chaos Warp | Infernal Grasp | Cheap instant removal. |
+| Combustible Gearhulk | Demanding Dragon | Punisher creature: the opponent picks the lesser evil. |
+| Fiery Confluence | Chain Reaction | Four-mana red sweeper. |
+| Sunbird's Invocation | Phyrexian Arena | Card-advantage enchantment. |
+| Wild Ricochet | Act of Treason | Uses an opponent's resources against them. |
+| Wildfire Devils | Cinder Elemental | Four-mana red creature that turns into damage. |
+| Spiteful Visions | Greed | Four-mana card-draw enchantment paid for in life. |
+| Coveted Jewel | Hedron Archive | Mana rock that cashes in for cards. |
+| Syphon Mind | Blightning | Makes opponents discard. |
+| Explosion of Riches | Fireball | Top-end damage spell aimed at opponents. |
+| Molten Slagheap | Sulfurous Springs | Land that makes both colours. |
+| Myriad Landscape | Evolving Wilds | Sacrifice-to-fetch basic land. |
+
+### First Flight — Isperia, Supreme Judge (7)
+
+| printed card | plays as | why |
+|---|---|---|
+| Cartographer's Hawk | Baithook Angler | Two-drop that comes back as a flier. |
+| Gideon Jura | Ajani, Caller of the Pride | White planeswalker; its -3 grants flying. |
+| Angler Turtle | Serra Angel | Large creature, and a flier, which Isperia rewards. |
+| Bident of Thassa | Behold the Multiverse | Four-mana blue card draw. |
+| Diluvian Primordial | Steel Hellkite | Large flying finisher. |
+| Moorland Haunt | Blinkmoth Nexus | Utility land that makes a flier. |
+| Jubilant Skybonder | Thieving Magpie | Blue flier that draws cards. |
+
+### Token Triumph — Emmara, Soul of the Accord (3)
+
+| printed card | plays as | why |
+|---|---|---|
+| Champion of Lambholt | Hanged Executioner | Three-mana creature that goes wide. |
+| Trostani Discordant | Glorious Anthem | The anthem half of Trostani. |
+| Curse of Bounty | Raise the Alarm | Two-mana token maker. |
+
+### Grave Danger — Gisa and Geralf (8)
+
+| printed card | plays as | why |
+|---|---|---|
+| Liliana, Untouched by Death | Mortivore | Four-mana black card that grows with graveyards; no blue-black planeswalker is implemented. |
+| Necromantic Selection | Damnation | Destroy-all-creatures sorcery. |
+| Scourge of Nel Toth | Rakshasa Debaser | Six-mana black finisher that returns creatures from graveyards to the battlefield. |
+| Unbreathing Horde | Vampire Nighthawk | Three-mana black creature. |
+| Havengul Lich | Bloodgift Demon | Five-mana value creature. |
+| Grimoire of the Dead | Slate of Ancestry | Four-mana late-game artifact. |
+| Curse of Disturbance | Phyrexian Arena | Three-mana black enchantment. |
+| Syphon Flesh | Diabolic Edict | Makes an opponent sacrifice a creature. |
+
+## Bugs the precons found
+
+Playing the finished decks against each other — random-vs-random and bot-vs-bot
+(`HeuristicBotController`, which fills every bot seat in a live room) at 2, 3 and 4 players —
+turned up five bugs the old sample decks never exercised. Each would have thrown out of `dispatch`
+or frozen a room. Three were in the bot:
+
+- **Goad.** The bot sent every attacker at one defender, so a creature goaded by Kardur was sent at
+  its goader when another defender was legal (rule 701.38b). It now picks per attacker from
+  `LegalAction.defendersFor`.
+- **Alternative costs.** `castExtras` never echoed `altCost`, so Sephara's "tap four fliers" variant
+  was sent as a cast at the printed cost (the random fuzzer's controller shared the bug).
+- **Equip {0}.** With Lightning Greaves the bot re-equipped between two creatures forever. It now
+  leaves attached equipment alone, and caps any one ability at four activations per turn as a
+  backstop against other free loops.
+
+And two in the engine:
+
+- **A granted ability outliving its grant** (rule 113.7a). Presence of Gond grants "{T}: create an
+  Elf Warrior"; activate it, kill the creature in response, and the Aura goes too. The ability on
+  the stack was looked up by index into the creature's *current* abilities, found nothing, and
+  crashed. Each granted ability now records where it came from (`GrantedAbilityRef` in `state.ts`)
+  when it's activated or triggers, and resolves from that.
+- **A blocker removed from combat** (rule 506.4). Checking for a first-strike damage step read an
+  attacker's raw `blockedBy`, so a token blocker exiled before damage (which no longer exists)
+  crashed it, and a first-strike blocker that had left still earned a first-strike step. It now
+  reads only blockers still on the battlefield, as the rest of combat damage already did.
+
+Regression tests: `heuristic-bot.test.ts` (the three bot bugs) and `left-play-lki.test.ts`.
