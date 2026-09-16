@@ -6004,6 +6004,7 @@ export class Game {
       },
       playersInScope: (who) => this.scopedPlayers(controller, who),
       discardHand: (player) => this.discardWholeHand(player),
+      manaValueOf: (target) => this.manaValueOfTarget(target),
       gainLife: (player, amount) => this.changeLife(player, amount),
       loseLife: (player, amount) => this.changeLife(player, -amount),
       addMana: (player, mana, amount) => this.addMana(player, mana, amount),
@@ -7554,6 +7555,25 @@ export class Game {
    * discards their hand, then draws seven" resolve in one pass instead of
    * stalling on each opponent in turn.
    */
+  /**
+   * The mana value of whatever `target` points at — see the
+   * `{ manaValueOf }` {@link EffectAmount}.
+   *
+   * Deliberately reads the *printed* card (through `printedCardName`, so a
+   * copy reports what it copies) rather than anything zone-dependent: every
+   * card that asks this destroys the permanent first and then reads it, so
+   * by the time this runs the object is in a graveyard. That's rule 608.2h,
+   * last known information.
+   */
+  private manaValueOfTarget(target: TargetRef): number {
+    if (target.kind !== "object") return 0;
+    const object = this.state.objects[target.object];
+    if (object === undefined) return 0;
+    const name = printedCardName(object);
+    if (!this.registry.has(name)) return 0;
+    return manaValue(parseManaCost(this.registry.get(name).manaCost));
+  }
+
   private discardWholeHand(player: PlayerId): void {
     if (this.state.players[player] === undefined) return;
     const all = [...this.state.zones.perPlayer[player].hand];

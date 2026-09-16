@@ -231,13 +231,18 @@ ability does on resolution. A `target:` field is an **index into `targets[]`**
 number, `"x"` (the cast `{X}`), `{ countOf: CardFilter }` — a live count of
 battlefield permanents matching the filter, from the effect's controller's
 view (Scourge of Valkas: `{ countOf: { subtype: "Dragon", controlledBy: "you" } }`;
-Craterhoof: `{ countOf: { type: "creature", controlledBy: "you" } }`) — or
+Craterhoof: `{ countOf: { type: "creature", controlledBy: "you" } }`);
+`{ manaValueOf: ref }` — the mana value of whatever a target slot (or
+`"source"` / `"trigger-object"`) points at, read off the printed card so it
+still answers after that permanent has left the battlefield (rule 608.2h, last
+known information — Feed the Swarm destroys the permanent and *then* reads it,
+and `0` for a player target); or
 `{ triggerValue: true }` — a number the firing event supplied to a **triggered
 ability**: the entering / attacking creature's power (Terror of the Peaks:
 `damage`), or the combat damage a creature dealt a player (Old Gnawbone:
 `create-token` `count`). `0` outside a triggered-ability resolution. An
 `EffectAmount` is accepted by `damage` / `damage-all` / `mill` / `discard` /
-`draw` / `prevent-damage` `amount`, `modify-pt` / `modify-pt-all`
+`draw` / `lose-life` / `prevent-damage` `amount`, `modify-pt` / `modify-pt-all`
 `power`/`toughness`, and `create-token` `count`.
 
 ### Damage / life / cards
@@ -369,7 +374,8 @@ than the chooser), `"creature-or-player"`,
 `"permanent"`, `"nonland-permanent"`, `"nonland-permanent-an-opponent-controls"`,
 `"land"`, `"artifact"`, `"artifact-an-opponent-controls"`, `"artifact-or-enchantment"`,
 `"artifact-enchantment-or-nonbasic-land-an-opponent-controls"`,
-`"creature-or-enchantment"`, `"attacking-or-blocking-creature"`, `"spell"`,
+`"creature-or-enchantment"`, `"enchantment"`,
+`"creature-or-enchantment-an-opponent-controls"`, `"attacking-or-blocking-creature"`, `"spell"`,
 `"creature-spell"`, `"noncreature-spell"`, `"instant-or-sorcery-spell"`,
 `"instant-or-sorcery-in-your-graveyard"`.
 

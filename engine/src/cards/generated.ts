@@ -24,6 +24,7 @@ import _poolArtificialEvolution from "./pool/artificial-evolution.js";
 import _poolAshnodsAltar from "./pool/ashnods-altar.js";
 import _poolAtarkaWorldRender from "./pool/atarka-world-render.js";
 import _poolAtraxaPraetorsVoice from "./pool/atraxa-praetors-voice.js";
+import _poolAuraMutation from "./pool/aura-mutation.js";
 import _poolAustereCommand from "./pool/austere-command.js";
 import _poolAyaraFirstOfLocthwain from "./pool/ayara-first-of-locthwain.js";
 import _poolBadlands from "./pool/badlands.js";
@@ -117,6 +118,7 @@ import _poolEvolvingWilds from "./pool/evolving-wilds.js";
 import _poolFaithlessLooting from "./pool/faithless-looting.js";
 import _poolFanaticOfRhonas from "./pool/fanatic-of-rhonas.js";
 import _poolFarseek from "./pool/farseek.js";
+import _poolFeedTheSwarm from "./pool/feed-the-swarm.js";
 import _poolFencingAce from "./pool/fencing-ace.js";
 import _poolFertileFootsteps from "./pool/fertile-footsteps.js";
 import _poolFesteringThicket from "./pool/festering-thicket.js";
@@ -163,6 +165,7 @@ import _poolHeroicIntervention from "./pool/heroic-intervention.js";
 import _poolHillGiant from "./pool/hill-giant.js";
 import _poolHinterlandHarbor from "./pool/hinterland-harbor.js";
 import _poolHistoryOfBenalia from "./pool/history-of-benalia.js";
+import _poolHoardSmelterDragon from "./pool/hoard-smelter-dragon.js";
 import _poolHolyStrength from "./pool/holy-strength.js";
 import _poolHookHauntDrifter from "./pool/hook-haunt-drifter.js";
 import _poolHourOfReckoning from "./pool/hour-of-reckoning.js";
@@ -435,6 +438,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAshnodsAltar,
   _poolAtarkaWorldRender,
   _poolAtraxaPraetorsVoice,
+  _poolAuraMutation,
   _poolAustereCommand,
   _poolAyaraFirstOfLocthwain,
   _poolBadlands,
@@ -528,6 +532,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolFaithlessLooting,
   _poolFanaticOfRhonas,
   _poolFarseek,
+  _poolFeedTheSwarm,
   _poolFencingAce,
   _poolFertileFootsteps,
   _poolFesteringThicket,
@@ -574,6 +579,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolHillGiant,
   _poolHinterlandHarbor,
   _poolHistoryOfBenalia,
+  _poolHoardSmelterDragon,
   _poolHolyStrength,
   _poolHookHauntDrifter,
   _poolHourOfReckoning,

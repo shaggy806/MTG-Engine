@@ -29,6 +29,10 @@ export type TargetSpec =
   | "artifact-an-opponent-controls"
   | "artifact-or-enchantment"
   | "creature-or-enchantment"
+  /** A bare enchantment (Aura Mutation: "target enchantment"). */
+  | "enchantment"
+  /** A creature or enchantment an opponent controls (Feed the Swarm). */
+  | "creature-or-enchantment-an-opponent-controls"
   /** A nonland permanent an opponent controls (Cyclonic Rift's unkicked
    * mode: "target nonland permanent you don't control"). */
   | "nonland-permanent-an-opponent-controls"

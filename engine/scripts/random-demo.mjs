@@ -35,6 +35,7 @@ const deck = (entries) =>
 // Both decks get a mana base that can actually cast their own spells —
 // otherwise one side just sits there and the fuzz only exercises one player.
 const deckA = deck([
+  ["Aura Mutation", 1],
   ["Forest", 9],
   ["Tranquil Thicket", 2],
   ["Mishra's Factory", 2],
@@ -173,6 +174,8 @@ const deckA = deck([
 // exercises one side. One or two copies of each mechanic is enough coverage.
 const deckB = deck([
   ["Stormfist Crusader", 1],
+  ["Feed the Swarm", 1],
+  ["Hoard-Smelter Dragon", 1],
   ["Dragon Mage", 1],
   ["Bloodgift Demon", 1],
   ["Mountain", 4],

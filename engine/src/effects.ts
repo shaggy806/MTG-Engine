@@ -34,7 +34,19 @@ export type EffectAmount =
    * damage to a player" trigger, the damage dealt (Old Gnawbone — "create that
    * many Treasure tokens"). Snapshotted when the trigger is detected; `0`
    * outside a triggered-ability resolution. */
-  | { readonly triggerValue: true };
+  | { readonly triggerValue: true }
+  /**
+   * The mana value of whatever a target slot (or `"source"` /
+   * `"trigger-object"`) points at — Feed the Swarm's "you lose life equal to
+   * that permanent's mana value", Hoard-Smelter Dragon, Aura Mutation.
+   *
+   * Read off the object's printed card, so it still answers correctly after
+   * the permanent has left the battlefield (rule 608.2h — last known
+   * information). That matters because every card printed this way destroys
+   * the permanent *first* and then reads its mana value. `0` for a player
+   * target or an object that no longer exists at all.
+   */
+  | { readonly manaValueOf: EffectTargetRef };
 
 /** @deprecated Use {@link CardFilter} directly — kept as an alias so existing
  * `look-and-choose` / `matchesZoneChoiceFilter` call sites still type-check. */
@@ -112,9 +124,11 @@ export type EffectSpec =
       readonly who?: PlayerScope;
     }
   | {
-      /** Life loss (Zulaport Cutthroat: "each opponent loses 1 life"). */
+      /** Life loss (Zulaport Cutthroat: "each opponent loses 1 life"). An
+       * `EffectAmount` so it can scale — Feed the Swarm loses life equal to
+       * the destroyed permanent's mana value. */
       readonly kind: "lose-life";
-      readonly amount: number;
+      readonly amount: EffectAmount;
       readonly who?: PlayerScope;
       /** A single *targeted* player instead of a scope (Ob Nixilis, the
        * Fallen: "target player loses 3 life") — a target-slot index holding
@@ -617,6 +631,10 @@ export interface EffectApi {
    * Tannuk: "deals 1 damage to each opponent" — needed-cards P16). */
   dealDamageScoped(who: PlayerScope, amount: number): void;
   draw(player: PlayerId, count: number): void;
+  /** The mana value of the card behind `target`, from its printed cost — see
+   * the `{ manaValueOf }` {@link EffectAmount}. `0` for a player target or an
+   * object that no longer exists. */
+  manaValueOf(target: TargetRef): number;
   /** Every player a `PlayerScope` names, in APNAP order and skipping anyone
    * who has already lost. The shared scope resolution behind `draw`'s `who`,
    * `discard-hand`, and anything else that acts on a scope one player at a
@@ -873,6 +891,10 @@ export function amountValue(amount: EffectAmount, ctx: ResolutionContext): numbe
   if (amount === "x") return ctx.x;
   if (typeof amount === "number") return amount;
   if ("triggerValue" in amount) return ctx.triggerValue;
+  if ("manaValueOf" in amount) {
+    const ref = resolveEffectTarget(amount.manaValueOf, ctx);
+    return ref === undefined ? 0 : ctx.manaValueOf(ref);
+  }
   return ctx.countMatching(amount.countOf);
 }
 
@@ -936,13 +958,14 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       else ctx.changeLifeScoped(spec.who, spec.amount);
       return;
     case "lose-life": {
+      const life = amountValue(spec.amount, ctx);
       if (spec.target !== undefined) {
         const ref = ctx.targets[spec.target];
-        if (ref?.kind === "player") ctx.loseLife(ref.player, spec.amount);
+        if (ref?.kind === "player") ctx.loseLife(ref.player, life);
         return;
       }
-      if (spec.who === undefined || spec.who === "you") ctx.loseLife(ctx.controller, spec.amount);
-      else ctx.changeLifeScoped(spec.who, -spec.amount);
+      if (spec.who === undefined || spec.who === "you") ctx.loseLife(ctx.controller, life);
+      else ctx.changeLifeScoped(spec.who, -life);
       return;
     }
     case "tap": {
