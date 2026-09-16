@@ -2195,6 +2195,47 @@
 .played-card-fly .card-tile:disabled {
   opacity: 1;
 }
+/* A card being drawn: a small cardback out of that player's library pile and
+   into their hand — the near edge of their own cell in the table grid, which
+   is the bottom of it for you and the top for a seat across the table.
+   Both ends are offsets from screen centre, measured off the live DOM and set
+   inline by AnimationLayer (see its drawFlight), so this needs no idea which
+   grid shape is on screen. Purely a caption on the action: it costs the game
+   no time at all (see animationSchedule's PACED). */
+.drawn-card-fly {
+  position: absolute;
+  /* Small — a hand gaining a card is a minor beat, not the "here is what got
+     played" one the card-fly overlay is for — but sized from the viewport
+     rather than the --card-w token: this layer is portalled to <body>, so the
+     board's own card sizing isn't reliably in scope here. */
+  width: clamp(46px, 4.2vw, 82px);
+  /* 0.52s matches AnimationLayer.tsx's own DRAWN_CARD_DURATION_MS. */
+  animation: drawn-card-fly 0.52s cubic-bezier(0.3, 0, 0.35, 1) forwards;
+}
+.drawn-card-fly .card-back {
+  width: 100%;
+  /* overrides .card-back's own --card-w-derived height, for the same reason */
+  min-height: 0;
+  aspect-ratio: 5 / 7;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
+}
+@keyframes drawn-card-fly {
+  0% {
+    transform: translate(var(--draw-from-x, 0px), var(--draw-from-y, 0px)) scale(0.5);
+    opacity: 0;
+  }
+  22% {
+    opacity: 1;
+  }
+  78% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--draw-to-x, 0px), var(--draw-to-y, 0px)) scale(0.85);
+    opacity: 0;
+  }
+}
+
 @keyframes played-card-fly {
   0% {
     transform: translate(var(--fly-x, 0px), var(--fly-y, 45vh)) scale(0.35);

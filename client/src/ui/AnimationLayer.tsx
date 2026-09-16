@@ -17,6 +17,7 @@ import type { SeatStatus } from '../net/protocol.ts'
 import {
   CARD_STEP_MS,
   DEATH_STEP_MS,
+  DRAW_STEP_MS,
   PHASE_STEP_MS,
   TURN_STEP_MS,
 } from '../game/animationSchedule.ts'
@@ -43,6 +44,7 @@ const PLAYED_CARD_DURATION_MS = CARD_STEP_MS
 const TURN_BANNER_DURATION_MS = TURN_STEP_MS
 const PHASE_BANNER_DURATION_MS = PHASE_STEP_MS
 const DEATH_DURATION_MS = DEATH_STEP_MS
+const DRAWN_CARD_DURATION_MS = DRAW_STEP_MS
 
 /** How far the banner queue may fall behind the game before it starts
  * dropping the oldest. */
@@ -87,6 +89,50 @@ function flyOrigin(player: PlayerId, seat: PlayerId): { x: number; y: number } {
   return {
     x: r.left + r.width / 2 - window.innerWidth / 2,
     y: r.top + r.height / 2 - window.innerHeight / 2,
+  }
+}
+
+interface DrawnCard {
+  readonly key: string
+  /** Start and end of the flight, each an offset in px from the centre of the
+   * viewport — the owner's library pile, and the edge of their cell where
+   * their hand sits. Fed to the CSS keyframes as `--draw-*`. */
+  readonly fromX: number
+  readonly fromY: number
+  readonly toX: number
+  readonly toY: number
+}
+
+/**
+ * Where a drawn card flies: out of `player`'s library pile and into their
+ * hand — the near edge of their cell in the table grid, which is the bottom
+ * for you (where your own tray lives) and the top for a seat across the
+ * table. Measured off the live DOM so both grid shapes work without this
+ * knowing which is on screen; `null` if either end can't be found, in which
+ * case the draw simply isn't animated.
+ */
+function drawFlight(
+  player: PlayerId,
+): { fromX: number; fromY: number; toX: number; toY: number } | null {
+  const pile = document.querySelector<HTMLElement>(
+    `[data-library-of="${CSS.escape(player)}"]`,
+  )
+  const panel = document.querySelector<HTMLElement>(`[data-player-id="${CSS.escape(player)}"]`)
+  const cell = panel?.closest<HTMLElement>('.quadrant-cell')
+  if (!pile || !cell) return null
+
+  const cx = window.innerWidth / 2
+  const cy = window.innerHeight / 2
+  const p = pile.getBoundingClientRect()
+  const c = cell.getBoundingClientRect()
+  // Top half of the table means a seat facing us, so their hand reads as
+  // being off the top of their own cell; ours is off the bottom of it.
+  const topRow = c.top + c.height / 2 < cy
+  return {
+    fromX: p.left + p.width / 2 - cx,
+    fromY: p.top + p.height / 2 - cy,
+    toX: c.left + c.width / 2 - cx,
+    toY: (topRow ? c.top : c.bottom) - cy,
   }
 }
 
@@ -264,6 +310,7 @@ export function AnimationLayer({
   readonly seats?: readonly SeatStatus[]
 }) {
   const [playedCards, setPlayedCards] = useState<readonly PlayedCard[]>([])
+  const [drawnCards, setDrawnCards] = useState<readonly DrawnCard[]>([])
   const [activeBanner, setActiveBanner] = useState<Banner | null>(null)
   const bannerQueueRef = useRef<Banner[]>([])
   const bannerTimerRef = useRef<number | null>(null)
@@ -326,6 +373,14 @@ export function AnimationLayer({
         runHit(ev.source, ev.target)
       } else if (ev.type === 'permanent-left-battlefield') {
         runDeath(ev.object)
+      } else if (ev.type === 'card-drawn') {
+        const flight = drawFlight(ev.player)
+        if (!flight) return
+        const key = `draw-${ev.seq}`
+        setDrawnCards((cur) => [...cur, { key, ...flight }])
+        window.setTimeout(() => {
+          setDrawnCards((cur) => cur.filter((c) => c.key !== key))
+        }, DRAWN_CARD_DURATION_MS)
       } else if (ev.type === 'turn-began') {
         enqueueBanner({
           key: `turn-${ev.seq}`,
@@ -347,7 +402,7 @@ export function AnimationLayer({
     })
   }, [bus])
 
-  if (playedCards.length === 0 && !activeBanner) return null
+  if (playedCards.length === 0 && drawnCards.length === 0 && !activeBanner) return null
 
   return createPortal(
     <div className="anim-layer">
@@ -360,6 +415,22 @@ export function AnimationLayer({
           }
         >
           <CardTile obj={c.obj} layout="art-first" />
+        </div>
+      ))}
+      {drawnCards.map((c) => (
+        <div
+          key={c.key}
+          className="drawn-card-fly"
+          style={
+            {
+              '--draw-from-x': `${c.fromX}px`,
+              '--draw-from-y': `${c.fromY}px`,
+              '--draw-to-x': `${c.toX}px`,
+              '--draw-to-y': `${c.toY}px`,
+            } as CSSProperties
+          }
+        >
+          <div className="card-back" />
         </div>
       ))}
       {activeBanner ? (

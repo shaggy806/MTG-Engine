@@ -353,6 +353,11 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
   // One bus per screen, carrying each frame's cues from playback across to
   // the overlay layer (they're siblings — see AnimationLayer's own comment).
   const [bus] = useState(() => new AnimationBus())
+  // Lives here rather than in `Table`, which remounts every frame: playing a
+  // card would otherwise drop the hand tray shut under a cursor still resting
+  // on it. Held in one object so `Table`'s prop identity is stable.
+  const [handRaised, setHandRaised] = useState(false)
+  const hand = useMemo(() => ({ handRaised, setHandRaised }), [handRaised])
   // Called unconditionally (before the loading-guard below) per the rules of
   // hooks. `ackFrame` is what lets the server pace its bots against these
   // animations rather than racing ahead of them.
@@ -416,6 +421,7 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
         // the animation showing how the game got there. The server holds its
         // bots to the same rule — see `ackFrame`.
         actions={shown.busy ? EMPTY_ACTIONS : shown.actions}
+        hand={hand}
       />
 
       {showHistory ? (
@@ -445,18 +451,26 @@ interface TableProps {
   readonly seat: PlayerId
   readonly opponents: readonly PlayerId[]
   readonly game: NetworkGame
-  /** `useDelayedView`'s held-back list, matching the held-back `view` above
+  /** `usePlayback`'s held-back list, matching the held-back `view` above
    * — never `game.actions` directly, which is already ahead of what's drawn
    * on screen (see GameScreen's own comment). */
   readonly actions: readonly LegalAction[]
+  /** The peekable hand tray's raised state, owned by `GameScreen` so it
+   * survives this component's per-frame remount. */
+  readonly hand: {
+    readonly handRaised: boolean
+    readonly setHandRaised: (raised: boolean) => void
+  }
 }
 
 /**
- * Everything interactive. Keyed on the parent's delayed revision, so every
- * in-progress selection resets in step with the board the player can see,
- * not with every raw network push (see useDelayedView).
+ * Everything interactive. Keyed on the parent's played-back revision, so
+ * every in-progress selection resets in step with the board the player can
+ * see, not with every raw network push (see usePlayback). State that should
+ * *not* reset per frame — the hand tray being raised — lives in `GameScreen`
+ * and arrives through props.
  */
-function Table({ view, seat, opponents, game, actions }: TableProps) {
+function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
 
   const [targeting, setTargeting] = useState<Targeting | null>(null)
   // Whether the collapsed hand tray (priority mode only -- see .hand-strip's
@@ -464,7 +478,12 @@ function Table({ view, seat, opponents, game, actions }: TableProps) {
   // (a small .hand-trigger vs. the whole peekable strip) means raising it
   // needs less precision than keeping it raised does, so idle mouse movement
   // doesn't summon it but browsing it tolerates real cursor drift.
-  const [handRaised, setHandRaised] = useState(false)
+  //
+  // Owned by `GameScreen`, not by this component: `Table` remounts on every
+  // frame it's keyed on, and a local `useState` here dropped the hand back
+  // into its tray the instant you played a card -- out from under a cursor
+  // that was still sitting on it, mid-reach for the next one.
+  const { handRaised, setHandRaised } = hand
   // Measured (not guessed) hand-row layout, recomputed whenever the row's
   // real rendered width changes (viewport resize, peekable<->in-flow mode
   // switch) or the hand's card count changes -- see HAND_CARD_GAP's comment.
@@ -1451,7 +1470,10 @@ function Table({ view, seat, opponents, game, actions }: TableProps) {
         </div>
         <div className="side-zone-section">
           <div className="side-zone-label">Library ({librarySize})</div>
-          <div className="side-zone-cards">
+          {/* `data-library-of` is what the draw animation flies a cardback
+              out of — an anchor that survives the top card being revealed
+              (which swaps the pile below for a real tile). */}
+          <div className="side-zone-cards" data-library-of={pid}>
             {topObj ? (
               tileFor(topObj, pid, [topObj.id])
             ) : librarySize > 0 ? (

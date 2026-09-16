@@ -25,6 +25,16 @@ export const HIT_STEP_MS = 720
 export const DEATH_STEP_MS = 420
 export const TURN_STEP_MS = 1300
 export const PHASE_STEP_MS = 700
+/** A cardback travelling from a library to its owner's hand. */
+export const DRAW_STEP_MS = 520
+/** How far apart a run of draws in one frame is dealt out, so an opening
+ * hand or a "draw three" arrives as cards rather than a single clump. Does
+ * not hold the game up — see `PACED`. */
+const DRAW_STAGGER_MS = 110
+/** Beyond this many draws in one frame, stop animating them: past a handful
+ * it's a blizzard of cardbacks nobody is counting, and a mulligan redraw can
+ * produce a whole opening hand at once. */
+const MAX_DRAWN_PER_FRAME = 5
 
 /**
  * A ceiling on one frame. The server's pacing keeps frames small, so this is
@@ -61,7 +71,7 @@ export interface EventSchedule {
   readonly endPhase: Phase
 }
 
-type SlotKind = 'card' | 'hit' | 'death' | 'turn' | 'phase'
+type SlotKind = 'card' | 'hit' | 'death' | 'draw' | 'turn' | 'phase'
 
 /**
  * Which animations the game actually waits for. A card being played, a
@@ -93,6 +103,9 @@ function slotFor(ev: GameEvent, phase: { current: Phase }): Slot | null {
   }
   if (ev.type === 'permanent-left-battlefield') {
     return { event: ev, kind: 'death', duration: DEATH_STEP_MS }
+  }
+  if (ev.type === 'card-drawn') {
+    return { event: ev, kind: 'draw', duration: DRAW_STEP_MS }
   }
   if (ev.type === 'turn-began') {
     phase.current = 'beginning'
@@ -139,12 +152,20 @@ export function scheduleEvents(
   // death-length each — the board is showing them all go at the same moment,
   // because they did.
   let sharedDeathOffset: number | null = null
+  let drawsSoFar = 0
   for (const slot of kept) {
     // Past the ceiling an event is simply not animated — the phase tracking
     // above has still been advanced, so the next frame's banners stay right.
     if (cumulative >= MAX_FRAME_MS) continue
     if (slot.kind === 'death' && sharedDeathOffset !== null) {
       items.push({ event: slot.event, offset: sharedDeathOffset })
+      continue
+    }
+    if (slot.kind === 'draw') {
+      // Dealt out one after another without the game waiting on any of them.
+      if (drawsSoFar >= MAX_DRAWN_PER_FRAME) continue
+      items.push({ event: slot.event, offset: cumulative + drawsSoFar * DRAW_STAGGER_MS })
+      drawsSoFar += 1
       continue
     }
     items.push({ event: slot.event, offset: cumulative })
