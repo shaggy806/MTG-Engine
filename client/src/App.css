@@ -2100,12 +2100,23 @@
   justify-content: center;
 }
 
-/* A card being cast/played zooms up center-screen and settles back down,
-   Hearthstone-style -- not flown from/to the exact hand/board DOM position,
-   since Table remounts wholesale on every revision (see AnimationLayer.tsx's
-   own comment) and there's no stable "before" element to tween from. */
+/* A card being cast/played flies out of its owner's cell in the table grid,
+   dominates the middle of the screen, then shrinks back toward that cell as
+   it fades -- so which side of the table a play came from is readable at a
+   glance, which is the whole point of animating it. --fly-x/--fly-y are the
+   offset from screen centre to that cell's centre, measured off the live DOM
+   and set inline by AnimationLayer (see its flyOrigin); the fallback here is
+   straight up from the bottom, for a card whose cell isn't on screen. It
+   isn't tweened from the exact hand/board element, since Table remounts
+   wholesale on every frame and there's no stable "before" node to start at. */
 .played-card-fly {
   position: absolute;
+  /* Name, duration and fill all have to sit on the element that actually
+     moves -- they were split across this wrapper and .card-tile below, which
+     left the wrapper animating for 0s and the card with no keyframes at all,
+     so the overlay simply sat there at full opacity and vanished.
+     1.8s matches AnimationLayer.tsx's own PLAYED_CARD_DURATION_MS. */
+  animation: played-card-fly 1.8s ease-out forwards;
   /* Double the ordinary card size -- this is the "here is what just got
      played" beat, so it wants to dominate the screen -- capped against
      viewport height as well (a card box is 1.4x its own width, and the two
@@ -2126,10 +2137,6 @@
    zone viewers are untouched. */
 .played-card-fly .card-tile {
   --ct-scale: calc(var(--card-w) / var(--card-w-max));
-  /* matches AnimationLayer.tsx's own PLAYED_CARD_DURATION_MS */
-  animation-duration: 1.8s;
-  animation-timing-function: ease-out;
-  animation-fill-mode: forwards;
 }
 /* The global `button:disabled { opacity: 0.4 }` (index.css) otherwise caps
    this card's own opacity no matter what the keyframes below say, since
@@ -2139,45 +2146,27 @@
 .played-card-fly .card-tile:disabled {
   opacity: 1;
 }
-.played-card-fly.from-bottom {
-  animation-name: played-card-from-bottom;
-}
-.played-card-fly.from-top {
-  animation-name: played-card-from-top;
-}
-@keyframes played-card-from-bottom {
+@keyframes played-card-fly {
   0% {
-    transform: translateY(48vh) scale(0.5);
+    transform: translate(var(--fly-x, 0px), var(--fly-y, 45vh)) scale(0.35);
     opacity: 0;
   }
   18% {
-    transform: translateY(0) scale(1.08);
+    transform: translate(0, 0) scale(1.08);
     opacity: 1;
   }
   72% {
-    transform: translateY(0) scale(1.08);
+    transform: translate(0, 0) scale(1.08);
     opacity: 1;
   }
+  /* Back toward where it came from rather than a fixed nudge -- it reads as
+     the card going onto that player's own board. */
   100% {
-    transform: translateY(-8vh) scale(0.75);
-    opacity: 0;
-  }
-}
-@keyframes played-card-from-top {
-  0% {
-    transform: translateY(-48vh) scale(0.5);
-    opacity: 0;
-  }
-  18% {
-    transform: translateY(0) scale(1.08);
-    opacity: 1;
-  }
-  72% {
-    transform: translateY(0) scale(1.08);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(8vh) scale(0.75);
+    transform: translate(
+        calc(var(--fly-x, 0px) * 0.4),
+        calc(var(--fly-y, 45vh) * 0.4)
+      )
+      scale(0.6);
     opacity: 0;
   }
 }

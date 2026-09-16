@@ -121,6 +121,9 @@ export function usePlayback(
       schedule.items.map((i) => ({ event: i.event, view: next.view, delay: i.offset })),
     )
 
+    // `totalMs` counts only the animations the game waits for (see
+    // animationSchedule's PACED), so a frame carrying nothing but banners
+    // lands at once and the banners play over the board that follows it.
     const show = (): void => {
       timerRef.current = null
       playingRef.current = false

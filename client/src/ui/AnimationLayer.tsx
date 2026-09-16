@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import type { CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
 import type {
   GameEvent,
@@ -37,6 +38,10 @@ const PLAYED_CARD_DURATION_MS = CARD_STEP_MS
 const TURN_BANNER_DURATION_MS = TURN_STEP_MS
 const PHASE_BANNER_DURATION_MS = PHASE_STEP_MS
 
+/** How far the banner queue may fall behind the game before it starts
+ * dropping the oldest. */
+const MAX_QUEUED_BANNERS = 3
+
 const PHASE_LABEL: Record<Phase, string> = {
   // "beginning" (untap/upkeep/draw) always opens with turn-began, which
   // already gets its own (bigger) banner — a second one half a second later
@@ -52,7 +57,31 @@ const PHASE_LABEL: Record<Phase, string> = {
 interface PlayedCard {
   readonly key: string
   readonly obj: VisibleObject
-  readonly fromTop: boolean
+  /** Where the card flies in from, as an offset in px from the centre of the
+   * viewport to the centre of its owner's cell in the table grid — so a card
+   * comes off the side of the screen belonging to whoever played it. Fed to
+   * the CSS keyframes as `--fly-x`/`--fly-y`. */
+  readonly originX: number
+  readonly originY: number
+}
+
+/** The centre of `player`'s cell in the table grid, relative to the centre of
+ * the viewport. Measured off the live DOM rather than derived from the seat
+ * layout, so the 2-player (stacked) and 3-4 player (2x2) grids both work
+ * without this knowing which is on screen. Falls back to straight up from the
+ * bottom (your own cards) or down from the top (everyone else's) if the cell
+ * can't be found — mid-remount, say. */
+function flyOrigin(player: PlayerId, seat: PlayerId): { x: number; y: number } {
+  const panel = document.querySelector<HTMLElement>(
+    `[data-player-id="${CSS.escape(player)}"]`,
+  )
+  const cell = panel?.closest<HTMLElement>('.quadrant-cell') ?? panel
+  if (!cell) return { x: 0, y: player === seat ? window.innerHeight * 0.45 : -window.innerHeight * 0.45 }
+  const r = cell.getBoundingClientRect()
+  return {
+    x: r.left + r.width / 2 - window.innerWidth / 2,
+    y: r.top + r.height / 2 - window.innerHeight / 2,
+  }
 }
 
 interface Banner {
@@ -193,6 +222,13 @@ export function AnimationLayer({
     }
     const enqueueBanner = (b: Banner) => {
       bannerQueueRef.current.push(b)
+      // Banners are captions: they hold nothing up (see animationSchedule's
+      // PACED), which means the game can outrun this queue. Keep only the
+      // most recent few, so a backlog gets dropped rather than narrating a
+      // turn that finished several turns ago.
+      if (bannerQueueRef.current.length > MAX_QUEUED_BANNERS) {
+        bannerQueueRef.current.splice(0, bannerQueueRef.current.length - MAX_QUEUED_BANNERS)
+      }
       advanceBannerQueue()
     }
 
@@ -201,7 +237,8 @@ export function AnimationLayer({
         const obj = view.objects[ev.object]
         if (!obj) return
         const key = `card-${ev.seq}`
-        setPlayedCards((cur) => [...cur, { key, obj, fromTop: ev.player !== seatRef.current }])
+        const origin = flyOrigin(ev.player, seatRef.current)
+        setPlayedCards((cur) => [...cur, { key, obj, originX: origin.x, originY: origin.y }])
         window.setTimeout(() => {
           setPlayedCards((cur) => cur.filter((c) => c.key !== key))
         }, PLAYED_CARD_DURATION_MS)
@@ -233,7 +270,13 @@ export function AnimationLayer({
   return createPortal(
     <div className="anim-layer">
       {playedCards.map((c) => (
-        <div key={c.key} className={`played-card-fly ${c.fromTop ? 'from-top' : 'from-bottom'}`}>
+        <div
+          key={c.key}
+          className="played-card-fly"
+          style={
+            { '--fly-x': `${c.originX}px`, '--fly-y': `${c.originY}px` } as CSSProperties
+          }
+        >
           <CardTile obj={c.obj} layout="art-first" />
         </div>
       ))}
