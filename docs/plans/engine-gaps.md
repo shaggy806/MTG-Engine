@@ -71,11 +71,30 @@ reveal", and declining is never beneficial except as hidden-information manageme
 the engine doesn't model anywhere. It reveals automatically when it can, and that is
 recorded as a deliberate simplification rather than left to look like an oversight.
 
-### Phase B — the target system (~17 cards)
+### Phase B — the target system — **done**
 
-The two biggest unlocks, and the reason this phase is its own thing: both touch
+The two biggest unlocks, and the reason this phase was its own thing: both touch
 `target.ts` / `targeting.ts` / `castSpell` / `activateAbility` / `legalActions`, and doing
-them together avoids threading the same call sites twice.
+them together avoided threading the same call sites twice.
+
+Cards authored: Withered Wretch, Scavenging Ooze, Cemetery Reaper, Return to Nature,
+Primal Might, Hate Mirage, Ajani Caller of the Pride.
+
+Two engine bugs surfaced that no card asked for, both of the same "`legalActions` offers
+what `dispatch` refuses" family the fuzzer exists to catch:
+
+- **Convoke.** A convoke-only-affordable spell is proved castable with a greedy allocation
+  that may pay *coloured* pips with matching creatures, but the `LegalAction` carried only
+  `{ candidates, maxGeneric }` — so a driver tapping those same creatures for `"generic"`
+  could fail to cover the cost. The action now carries the proven allocation as
+  `convoke.proof`.
+- **Unfillable required slots.** `legalActions` never checked target availability, so it
+  offered spells that couldn't be cast. Now it checks, and skips optional slots while doing
+  it.
+
+Three cards remain blocked on named causes rather than being approximated: Gravespawn
+Sovereign (tapping *other* permanents as an ability cost), Rishkar (a `CardFilter` can't
+ask "has a counter on it"), Haven of the Spirit Dragon (mana provenance, phase F).
 
 **B1 — target a card in a graveyard.** Today's only graveyard-targeting spec is the narrow
 `"instant-or-sorcery-in-your-graveyard"`. Needs a general family (`"card-in-a-graveyard"`,
