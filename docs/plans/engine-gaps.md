@@ -120,12 +120,30 @@ Rishkar, Sylvan Reclamation, Profane Command.
 Touches the client too — the targeting UI in `App.tsx` needs a "done / skip" affordance —
 so it is the one phase with a browser-verification step at both table sizes.
 
-### Phase C — granted and new triggers (5 cards)
+### Phase C — granted and new triggers — **done**
 
 | gap | cards |
 |---|---|
 | grant a triggered ability (statically, and until end of turn) | Tyrant's Familiar, Hunter's Prowess, Hunter's Insight |
-| "becomes the target of a spell/ability an opponent controls" trigger | Thunderbreak Regent, Tectonic Giant |
+| "becomes the target of a spell/ability an opponent controls" trigger | Thunderbreak Regent, ~~Tectonic Giant~~ |
+
+Four of the five authored. **Tectonic Giant** stays blocked on its *other* half
+(impulse draw, phase E) — the trigger it needed now exists.
+
+Two things worth carrying forward:
+
+- **Indexing is the hard part of granting a triggered ability**, not the grant.
+  `PendingTrigger.abilityIndex` and the stack object both carry an index into the ability
+  list, so granted abilities append *after* printed ones and all four by-index readers
+  (`detectTriggers`, `stackAbilityOf`, the intervening-if recheck, `placeTrigger`) had to
+  move onto one `effectiveTriggered` list. Missing one fires a granted ability and resolves
+  a different one.
+- **"Defending player" is not "an opponent"** at a 3-4 player table, which is the format
+  these decks are for. Tyrant's Familiar got a real
+  `"creature-defending-player-controls"` spec rather than the two-player-only
+  approximation, which meant giving `TargetSource` the source's own id.
+
+Lieutenant needed no feature at all, as the triage predicted.
 
 ### Phase D — the ten named mechanics (18 cards)
 
