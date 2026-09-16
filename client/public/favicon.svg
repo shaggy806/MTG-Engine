@@ -12,9 +12,9 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   width="2666"
-   height="2666"
-   viewBox="0 0 2666 2666"
+   width="2810"
+   height="2810"
+   viewBox="-106 -75 2810 2810"
    sodipodi:docname="Draclroborous.svg"
    inkscape:export-filename="C:\Users\craig\Pictures\SVG\Draclroborous.png"
    inkscape:export-xdpi="90"
@@ -55,14 +55,40 @@
        Chrome's dark tab strip (#202124); but no single flat colour serves
        both strips, since the app's gold on Chrome's *light* strip (#dee1e6)
        is only about 1.7:1. A dark plate with the gold mark on top reads on
-       either one, and in a bookmarks bar. -->
-  <rect
+       either one, and in a bookmarks bar.
+
+       A circle rather than a rounded square: at 16px a corner radius has
+       only two or three pixels to describe itself, so it resolves as four
+       ragged corners rather than as a shape. A circle degrades cleanly,
+       and it suits an ouroboros.
+
+       Centred so the mark sits evenly in it, which is neither the centre of
+       the artwork's bounding box nor the centre of the ring's hole. The box
+       is thrown off by the head and crest jutting out past the ring; the
+       hole is thrown off by the ring's own varying thickness, thin at the
+       tail and thick through the body, which puts the middle of the
+       enclosed space off the middle of the outer edge. Anchoring on the
+       hole left the ring 17 units tighter to the rim on the east than the
+       west, about 7% of the radius, and read as right heavy.
+
+       (1299, 1330) is instead the centre that minimises the furthest
+       distance to any ink, so no side of the mark crowds the rim before
+       another. The radius clears that furthest ink by 10%, and the viewBox
+       is exactly this circle's bounds, so the plate is full bleed rather
+       than clipped square by the canvas.
+
+       Vertically the mark is even by geometry, 23.1px of clearance above
+       against 22.9px below at a 256px radius, but not by mass: 54% of the
+       ink sits below centre, because the crest is thin line work while the
+       body is solid. That is a property of the drawing, not of this
+       framing, and it is left uncorrected on the grounds that two
+       concentric circles is the stronger visual cue here. If the artwork is
+       ever redrawn, re-derive cx/cy/r rather than nudging them by eye. -->
+  <circle
      id="favicon-plate"
-     x="0"
-     y="0"
-     width="2666"
-     height="2666"
-     rx="420"
+     cx="1299"
+     cy="1330"
+     r="1405"
      style="fill:#141a1f" />
   <path
      style="fill:#cda653"
