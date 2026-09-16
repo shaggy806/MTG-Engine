@@ -60,7 +60,7 @@ function targetCombos(
 }
 
 /**
- * The cast-time extras beyond targets. `kicked` / `overload` / `free` are
+ * The cast-time extras beyond targets. `kicked` / `overload` / `free` / `altCost` are
  * echoed back (the engine enumerates each variant as its own `LegalAction`),
  * while a sacrifice cost is a real choice we settle deterministically.
  */
@@ -68,6 +68,7 @@ function castExtras(legal: CastSpellLegal): {
   kicked?: boolean;
   overload?: boolean;
   free?: boolean;
+  altCost?: boolean;
   sacrifice?: ObjectId;
   convoke?: ConvokePayment[];
 } {
@@ -77,6 +78,7 @@ function castExtras(legal: CastSpellLegal): {
     ...(legal.kicked === true ? { kicked: true } : {}),
     ...(legal.overload === true ? { overload: true } : {}),
     ...(legal.free === true ? { free: true } : {}),
+    ...(legal.altCost === true ? { altCost: true } : {}),
     // The last choice rather than the first: `castSpellActions` may only be
     // offering this variant at all because the *most* expendable permanent
     // can pay, and the list is ordered oldest-first.

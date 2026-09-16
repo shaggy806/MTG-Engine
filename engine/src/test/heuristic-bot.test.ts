@@ -144,3 +144,90 @@ describe("HeuristicBotController", () => {
     expect(game.state.result.over).toBe(true);
   });
 });
+
+// Found by playing the precon starter decks (sample-decks.ts) bot-vs-bot: each
+// of these either threw out of `dispatch` or never left a main phase.
+describe("HeuristicBotController — per-card legality", () => {
+  const viewOf = (game: Game, player: PlayerId) => ({
+    state: game.state,
+    player,
+    legalActions: () => game.legalActions(player),
+  });
+
+  const plainGame = (players: readonly PlayerId[], land = "Mountain") =>
+    Game.create({
+      seed: 1,
+      shuffle: false,
+      rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
+      decks: players.map((player) => ({ player, cards: Array<string>(40).fill(land) })),
+    });
+
+  it("sends a goaded attacker at someone other than its goader", () => {
+    const game = plainGame([A, B, C]);
+    game.advanceUntil((s) => s.priority.holder === B && s.turn.step === "precombat-main");
+    const bears = game.debugSpawn("Grizzly Bears", B, "battlefield");
+    game.state.objects[bears].summoningSick = false;
+    game.debugApplyEffect(A, { kind: "goad", target: 0 }, [{ kind: "player", player: B }]);
+    // The goader is also the most tempting target, which is what the bot
+    // used to send every attacker at.
+    game.state.players[A].life = 1;
+
+    game.advanceUntil((s) => s.awaiting?.kind === "attackers" || s.result.over);
+    const attackers = new HeuristicBotController(B).declareAttackers(viewOf(game, B));
+    expect(attackers).toEqual([{ attacker: bears, defender: C }]);
+    expect(() =>
+      game.dispatch({ type: "declare-attackers", player: B, attackers }),
+    ).not.toThrow();
+  });
+
+  it("casts Sephara for its alternative cost when that's the variant offered", () => {
+    const game = plainGame([A, B]);
+    game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+    const plains = game.debugSpawn("Plains", A, "battlefield");
+    game.state.objects[plains].tapped = false;
+    for (let i = 0; i < 4; i += 1) {
+      const angel = game.debugSpawn("Serra Angel", A, "battlefield");
+      game.state.objects[angel].summoningSick = false;
+    }
+    const sephara = game.debugSpawn("Sephara, Sky's Blade", A, "hand");
+
+    const bot = new HeuristicBotController(A);
+    // Land drops come first; play them all out to reach the cast.
+    for (let i = 0; i < 20; i += 1) {
+      const action = bot.act(viewOf(game, A));
+      if (action.type === "cast-spell") {
+        expect(action.card).toBe(sephara);
+        expect(action.altCost).toBe(true);
+        expect(() => game.dispatch(action)).not.toThrow();
+        return;
+      }
+      game.dispatch(action);
+    }
+    throw new Error("the bot never cast Sephara");
+  });
+
+  it("doesn't shuffle a free Equip back and forth forever", () => {
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
+      controllers: { [A]: new HeuristicBotController(A), [B]: new AutomaticController(B) },
+      decks: [A, B].map((player) => ({ player, cards: Array<string>(40).fill("Mountain") })),
+    });
+    game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+    for (let i = 0; i < 2; i += 1) {
+      const bear = game.debugSpawn("Grizzly Bears", A, "battlefield");
+      game.state.objects[bear].summoningSick = false;
+    }
+    const greaves = game.debugSpawn("Lightning Greaves", A, "battlefield");
+    const turn = game.state.turn.number;
+
+    // Before the fix this exceeded `Game.advance`'s tick budget and threw.
+    game.advanceUntil((s) => s.turn.number > turn || s.result.over);
+    const equips = game.state.eventLog.filter(
+      (e) => e.type === "ability-activated" && e.source === greaves,
+    );
+    expect(equips).toHaveLength(1);
+    expect(game.state.objects[greaves].attachedTo).not.toBeNull();
+  });
+});

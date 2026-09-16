@@ -823,6 +823,7 @@ function castExtras(
   kicked?: boolean;
   overload?: boolean;
   free?: boolean;
+  altCost?: boolean;
   sacrifice?: ObjectId;
   convoke?: ConvokePayment[];
 } {
@@ -832,6 +833,10 @@ function castExtras(
     ...(legal.kicked === true ? { kicked: true } : {}),
     ...(legal.overload === true ? { overload: true } : {}),
     ...(legal.free === true ? { free: true } : {}),
+    // Sephara's alternative cost is its own variant too. Dropping the flag
+    // turns it into a cast at the printed cost, which the variant was never
+    // offered as affordable at.
+    ...(legal.altCost === true ? { altCost: true } : {}),
     ...(sac !== undefined && sac.choices.length > 0
       ? { sacrifice: sac.choices[pickIndex(sac.choices.length)] }
       : {}),
@@ -1131,8 +1136,17 @@ type DeclareBlockersLegal = Extract<LegalAction, { kind: "declare-blockers" }>;
  * bots" plan and `heuristic-bot.test.ts` for known limitations (no combat
  * math beyond power/toughness, no block prediction before attacking).
  */
+/** How many times `HeuristicBotController` will activate one ability of one
+ * permanent in a single turn. A backstop, not a strategy: an ability with no
+ * real cost (Equip {0}) can otherwise be activated forever, and a bot that
+ * never passes priority hangs the game it's in. */
+const MAX_ACTIVATIONS_PER_TURN = 4;
+
 export class HeuristicBotController extends AutomaticController {
   private readonly registry: CardRegistry;
+  /** `source:abilityIndex` -> activations so far, for `activationTurn`. */
+  private activations = new Map<string, number>();
+  private activationTurn = -1;
 
   constructor(playerId: PlayerId, registry: CardRegistry = createDefaultRegistry()) {
     super(playerId);
@@ -1212,6 +1226,20 @@ export class HeuristicBotController extends AutomaticController {
     return ability !== undefined && isManaAbility(ability);
   }
 
+  /**
+   * Equipment that's already on one of this bot's creatures: moving it to
+   * another gains nothing this policy can see, and with Equip {0} (Lightning
+   * Greaves) it's free, so the bot shuffled it between two creatures forever
+   * and the game never left that main phase.
+   */
+  private isPointlessReattach(state: GameState, legal: ActivateAbilityLegal): boolean {
+    if (!this.registry.has(legal.cardName)) return false;
+    const ability = this.registry.get(legal.cardName).activated?.[legal.abilityIndex];
+    if (ability?.effect?.kind !== "attach") return false;
+    const on = state.objects[legal.source]?.attachedTo;
+    return on !== null && on !== undefined;
+  }
+
   private toActivateAbility(legal: ActivateAbilityLegal): Action {
     const player = this.playerId;
     const sac = legal.sacrifice;
@@ -1264,11 +1292,22 @@ export class HeuristicBotController extends AutomaticController {
       return this.toCastSpell(best);
     }
 
+    if (view.state.turn.number !== this.activationTurn) {
+      this.activationTurn = view.state.turn.number;
+      this.activations.clear();
+    }
     const ability = options.find(
       (o): o is ActivateAbilityLegal =>
-        o.kind === "activate-ability" && !this.isManaOnlyAbility(o),
+        o.kind === "activate-ability" &&
+        !this.isManaOnlyAbility(o) &&
+        !this.isPointlessReattach(view.state, o) &&
+        (this.activations.get(`${o.source}:${o.abilityIndex}`) ?? 0) < MAX_ACTIVATIONS_PER_TURN,
     );
-    if (ability !== undefined) return this.toActivateAbility(ability);
+    if (ability !== undefined) {
+      const key = `${ability.source}:${ability.abilityIndex}`;
+      this.activations.set(key, (this.activations.get(key) ?? 0) + 1);
+      return this.toActivateAbility(ability);
+    }
 
     return passFor(player);
   }
@@ -1287,12 +1326,19 @@ export class HeuristicBotController extends AutomaticController {
       .find((o): o is DeclareAttackersLegal => o.kind === "declare-attackers");
     if (legal === undefined || legal.defenders.length === 0) return [];
     const state = view.state;
-    const defender = [...legal.defenders].sort(
-      (a, b) => this.defenderValue(state, a) - this.defenderValue(state, b),
-    )[0];
+    const byValue = (a: PlayerId | ObjectId, b: PlayerId | ObjectId) =>
+      this.defenderValue(state, a) - this.defenderValue(state, b);
+    // Each attacker picks from its *own* legal defenders: a goaded creature
+    // must attack someone other than its goader when it can (rule 701.38b),
+    // and a creature under Vow of Duty can't attack the Vow's controller.
+    // One shared target for everyone is rejected by `dispatch` the moment
+    // either applies.
     return legal.eligible
       .filter((id) => computeCharacteristics(state, this.registry, id).power > 0)
-      .map((attacker) => ({ attacker, defender }));
+      .flatMap((attacker) => {
+        const defender = [...(legal.defendersFor[attacker] ?? [])].sort(byValue)[0];
+        return defender === undefined ? [] : [{ attacker, defender }];
+      });
   }
 
   declareBlockers(view: ControllerView): readonly BlockerDeclaration[] {
