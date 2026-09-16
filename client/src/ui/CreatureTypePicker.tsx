@@ -11,6 +11,10 @@ export interface CreatureTypePickerProps {
    * the chooser's library. */
   readonly suggested: readonly string[]
   readonly onPick: (creatureType: string) => void
+  /** Hidden so the board can be seen ("View board"); stays mounted, so the
+   * search survives. The owner renders the way back. */
+  readonly collapsed: boolean
+  readonly onCollapse: () => void
 }
 
 /**
@@ -36,7 +40,7 @@ function rank(options: readonly string[], query: string): readonly string[] {
  * chips, then a search box over the whole catalog.
  *
  * A mandatory decision, so there's no close button — but it can be collapsed
- * to a pill to look at the board first, since which type to name (Crippling
+ * to look at the board first, since which type to name (Crippling
  * Fear sparing it, Distant Melody drawing off it) usually depends on what's in
  * play.
  */
@@ -45,10 +49,11 @@ export function CreatureTypePicker({
   options,
   suggested,
   onPick,
+  collapsed,
+  onCollapse,
 }: CreatureTypePickerProps) {
   const [query, setQuery] = useState('')
   const [active, setActive] = useState(0)
-  const [collapsed, setCollapsed] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
 
@@ -64,17 +69,7 @@ export function CreatureTypePicker({
     el?.scrollIntoView({ block: 'nearest' })
   }, [active])
 
-  if (collapsed) {
-    return (
-      <button
-        type="button"
-        className="ctype-pill"
-        onClick={() => setCollapsed(false)}
-      >
-        {sourceName} — choose a creature type ▸
-      </button>
-    )
-  }
+  if (collapsed) return null
 
   const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'ArrowDown') {
@@ -95,7 +90,7 @@ export function CreatureTypePicker({
       <div className="zone-viewer-box ctype-box" role="dialog" aria-label="Choose a creature type">
         <div className="zone-viewer-head">
           <h2>{sourceName} — choose a creature type</h2>
-          <button type="button" onClick={() => setCollapsed(true)}>
+          <button type="button" onClick={onCollapse}>
             View board
           </button>
         </div>

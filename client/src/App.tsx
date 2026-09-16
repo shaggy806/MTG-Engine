@@ -501,6 +501,12 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     readonly title: string
     readonly ids: readonly ObjectId[]
   } | null>(null)
+  // A forced-decision popup (choose-from-zone, scry/surveil, the creature-type
+  // picker) hidden via its "View board" button so the board can be read before
+  // answering. The way back is a "Show choices" button in the decision strip.
+  // Table remounts per frame, but no frame arrives while the game waits on
+  // this seat's answer, so this outlives exactly the decision it belongs to.
+  const [decisionCollapsed, setDecisionCollapsed] = useState(false)
 
   // --- classify the legal actions ------------------------------------
   const landByCard = useMemo(() => {
@@ -1685,6 +1691,11 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     controls = (
       <div className="controls">
         <span>{game.nameOf(creatureTypeChoiceAction.source)} — choosing a creature type</span>
+        {decisionCollapsed ? (
+          <button type="button" onClick={() => setDecisionCollapsed(false)}>
+            Show choices
+          </button>
+        ) : null}
       </div>
     )
   } else if (mode === 'choose-creature-type' && creatureTypeChoiceAction) {
@@ -2136,16 +2147,28 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   } else if (mode === 'choose-from-zone' && zoneChoiceAction) {
     controls = (
       <div className="controls">
-        <span className="muted">Look at the popup to choose</span>
+        <span className="muted">
+          {decisionCollapsed ? 'Choosing from a set of cards' : 'Look at the popup to choose'}
+        </span>
+        {decisionCollapsed ? (
+          <button type="button" onClick={() => setDecisionCollapsed(false)}>
+            Show choices
+          </button>
+        ) : null}
       </div>
     )
   } else if (mode === 'scry' && scryAction) {
     controls = (
       <div className="controls">
         <span className="muted">
-          {scryAction.mode === 'surveil' ? 'Surveil' : 'Scry'} — pick cards in the popup to
+          {scryAction.mode === 'surveil' ? 'Surveil' : 'Scry'} — pick cards to
           move {scryAction.mode === 'surveil' ? 'to your graveyard' : 'to the bottom'}
         </span>
+        {decisionCollapsed ? (
+          <button type="button" onClick={() => setDecisionCollapsed(false)}>
+            Show choices
+          </button>
+        ) : null}
       </div>
     )
   } else if (mode === 'assign-combat-damage' && assignDamageAction) {
@@ -2655,6 +2678,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
             eligible: zoneChoiceAction.eligible,
             onConfirm: confirmZoneChoice,
           }}
+          collapsed={decisionCollapsed}
+          onCollapse={() => setDecisionCollapsed(true)}
         />
       ) : null}
 
@@ -2668,6 +2693,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           onPick={(creatureType) =>
             game.dispatch({ type: 'choose-creature-type', player: seat, creatureType })
           }
+          collapsed={decisionCollapsed}
+          onCollapse={() => setDecisionCollapsed(true)}
         />
       ) : null}
 
@@ -2686,6 +2713,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
             eligible: scryAction.cards,
             onConfirm: confirmScry,
           }}
+          collapsed={decisionCollapsed}
+          onCollapse={() => setDecisionCollapsed(true)}
         />
       ) : null}
     </div>

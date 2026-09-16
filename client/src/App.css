@@ -2174,6 +2174,11 @@
 .zone-viewer-head h2 {
   font-size: 16px;
 }
+.zone-viewer-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 .zone-viewer-footer {
   display: flex;
   justify-content: flex-end;
@@ -2479,16 +2484,4 @@
 .ctype-result--active {
   border-color: var(--accent);
   background: var(--accent-bg);
-}
-/* The collapsed form: a pill in the decision layer, clear of the topbar, that
-   restores the picker. Mandatory decision, so it never disappears entirely. */
-.ctype-pill {
-  position: fixed;
-  top: clamp(44px, 7vh, 64px);
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 130;
-  border-color: var(--accent);
-  background: var(--panel);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }

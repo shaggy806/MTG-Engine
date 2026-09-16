@@ -31,14 +31,32 @@ export interface ZoneViewerProps {
     readonly eligible: readonly ObjectId[]
     readonly onConfirm: (chosen: readonly ObjectId[]) => void
   }
+  /** Selection mode only: hidden so the board can be seen ("View board").
+   * The component stays mounted, so picks made so far survive; the owner
+   * renders the way back (the decision strip's "Show choices"). */
+  readonly collapsed?: boolean
+  readonly onCollapse?: () => void
 }
 
 /**
  * A look at a set of cards — read-only for browsing a whole zone (graveyard/
  * exile today), or selectable for a bounded "choose from these" decision
  * (library-look/graveyard-search effects), so both share one component.
+ *
+ * A selection is a forced decision, so it has no close button — but it can be
+ * collapsed ("View board") to check the board before choosing, the same
+ * escape hatch `CreatureTypePicker` has.
  */
-export function ZoneViewer({ title, ids, resolve, onClose, selection, castable }: ZoneViewerProps) {
+export function ZoneViewer({
+  title,
+  ids,
+  resolve,
+  onClose,
+  selection,
+  castable,
+  collapsed = false,
+  onCollapse,
+}: ZoneViewerProps) {
   const [picked, setPicked] = useState<readonly ObjectId[]>([])
 
   const toggle = (id: ObjectId) => {
@@ -53,6 +71,8 @@ export function ZoneViewer({ title, ids, resolve, onClose, selection, castable }
   const canConfirm =
     selection !== undefined && picked.length >= selection.min && picked.length <= selection.max
 
+  if (selection && collapsed) return null
+
   return (
     <div className="zone-viewer-overlay" onClick={selection ? undefined : onClose}>
       <div
@@ -66,12 +86,19 @@ export function ZoneViewer({ title, ids, resolve, onClose, selection, castable }
             {title} ({ids.length})
           </h2>
           {selection ? (
-            <span className="muted">
-              choose {selection.min === selection.max
-                ? selection.min
-                : `${selection.min}-${selection.max}`}
-              {' '}
-              ({picked.length} picked)
+            <span className="zone-viewer-head-actions">
+              <span className="muted">
+                choose {selection.min === selection.max
+                  ? selection.min
+                  : `${selection.min}-${selection.max}`}
+                {' '}
+                ({picked.length} picked)
+              </span>
+              {onCollapse ? (
+                <button type="button" onClick={onCollapse}>
+                  View board
+                </button>
+              ) : null}
             </span>
           ) : (
             <button type="button" onClick={onClose}>
