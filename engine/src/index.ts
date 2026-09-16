@@ -27,3 +27,4 @@ export * from "./view.js";
 export * from "./game.js";
 export * from "./auto-settle.js";
 export * from "./sandbox.js";
+export * from "./bot/index.js";

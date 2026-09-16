@@ -1,0 +1,78 @@
+/**
+ * "What would the board look like if I did this?"
+ *
+ * The engine makes this nearly free: `GameState` is one plain
+ * `structuredClone`-able tree, `Game.fromSnapshot` rebuilds a working `Game`
+ * from one, and `dispatch` is the only writer — so a candidate move can be
+ * played out against a throwaway copy with no risk to the real game and no
+ * per-card special-casing. Measured at roughly 0.3ms per candidate mid-game.
+ *
+ * Two things here are load-bearing and easy to get wrong:
+ *
+ * 1. **Every seat in the simulation gets an `AutomaticController`.**
+ *    `Game.tick()` invokes `controllers[holder].act()`, so a simulation that
+ *    inherited the searching bot's own controller would recurse forever. The
+ *    stand-ins also do the useful work of passing priority, which is what
+ *    drains the stack.
+ *
+ * 2. **The horizon has to be past the stack.** Dispatching `cast-spell`
+ *    leaves the spell *on the stack* with nothing resolved, so scoring there
+ *    reads every spell as "one fewer card in hand" and the bot never casts
+ *    anything. See `docs/plans/smarter-bots.md`.
+ */
+
+import { Game } from "../game.js";
+import type { Action } from "../actions.js";
+import type { CardRegistry } from "../cards.js";
+import type { GameState } from "../state.js";
+
+/**
+ * How far past the candidate action to run before scoring.
+ *
+ * - `"stack"` — until the stack is empty, i.e. the action and everything it
+ *   put on the stack has resolved. Cheap, and enough to see what a spell did.
+ * - `"turn"` — until the turn number changes. Puts every candidate, including
+ *   `pass-priority`, on a common footing so they can be compared directly
+ *   instead of against a "better than doing nothing" threshold. 2-3x dearer.
+ */
+export type Horizon = "stack" | "turn";
+
+/** A hard ceiling on one rollout, so a pathological line can't stall a room. */
+const MAX_STEPS = 400;
+
+/**
+ * Play `action` against a copy of `state` and return the resulting state, or
+ * `null` if the engine refused it.
+ *
+ * A refusal is expected, not exceptional: `legalActions` enumerates a *shape*
+ * ("cast this, here are the legal targets"), and a specific concrete filling
+ * of that shape can still be illegal. The caller just skips the candidate.
+ */
+export function simulateAction(
+  state: GameState,
+  registry: CardRegistry,
+  action: Action,
+  horizon: Horizon,
+): GameState | null {
+  // The event log is roughly half the bytes of a mid-game state and nothing
+  // downstream of here reads it — dropping it before the clone takes the copy
+  // from ~0.46ms to ~0.27ms.
+  const seed: GameState = { ...state, eventLog: [] };
+  const startingTurn = state.turn.number;
+
+  try {
+    const sim = Game.fromSnapshot(seed, { registry });
+    sim.dispatch(action);
+    let steps = 0;
+    sim.advanceUntil((s) => {
+      steps += 1;
+      if (steps > MAX_STEPS) return true;
+      return horizon === "stack"
+        ? s.zones.shared.stack.length === 0
+        : s.turn.number !== startingTurn;
+    });
+    return sim.state;
+  } catch {
+    return null;
+  }
+}

@@ -33,7 +33,9 @@
     "play:keywords": "tsc && node scripts/keywords-demo.mjs",
     "play:tokens": "tsc && node scripts/tokens-demo.mjs",
     "play:attachments": "tsc && node scripts/attachments-demo.mjs",
-    "play:random": "tsc && node scripts/random-demo.mjs"
+    "play:random": "tsc && node scripts/random-demo.mjs",
+    "bot:bench": "node scripts/tune-bot.mjs bench",
+    "bot:tune": "node scripts/tune-bot.mjs tune"
   },
   "keywords": [],
   "author": "",
