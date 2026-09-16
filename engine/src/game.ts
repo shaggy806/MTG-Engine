@@ -48,6 +48,7 @@ import type { ControllerView, PlayerController } from "./controller.js";
 import { applyEffectSpec, isCountScalableEffect } from "./effects.js";
 import type {
   EffectSpec,
+  UnlessOption,
   ModeOption,
   PlayerScope,
   PtDuration,
@@ -5977,7 +5978,9 @@ export class Game {
         return (
           event.type === "attacker-declared" &&
           this.matchesWho(spec.who, event.attacker, self) &&
-          this.triggerFilterOk(spec.filter, event.attacker, self)
+          this.triggerFilterOk(spec.filter, event.attacker, self) &&
+          (spec.attackingYou !== true ||
+            this.defendingPlayerOf(event.defender) === self.controller)
         );
       case "attacks-alone":
         return (
@@ -6380,6 +6383,8 @@ export class Game {
         this.addCounter(target, counter, amount),
       amass: (amount, creatureType) => this.amass(controller, amount, creatureType),
       populate: () => this.populate(controller),
+      unless: (chooser, options, otherwise) =>
+        this.beginUnless(source, controller, x, targets, triggerObject, chooser, options, otherwise),
       powerOf: (target) =>
         target.kind === "object" && this.state.objects[target.object] !== undefined
           ? computeCharacteristics(this.state, this.registry, target.object).power
@@ -6721,6 +6726,91 @@ export class Game {
    * tokens of different sizes, and no precon produces that; recorded in
    * AUTHORING §15 alongside `proliferate`'s similar simplification.
    */
+  /**
+   * A punisher clause — see the `"unless"` {@link EffectSpec}.
+   *
+   * Raised as an ordinary `choose-modes` decision, but belonging to the
+   * *chooser* rather than the effect's controller, which is the whole point.
+   * Each option becomes one mode; the mode's own effect performs the
+   * non-mana payments (a mana one rides on the decision's `cost`), and
+   * declining runs `otherwise`.
+   *
+   * Options the chooser can't take aren't offered at all, so "couldn't" and
+   * "wouldn't" both land on `otherwise` — the printed cards make no
+   * distinction either.
+   */
+  private beginUnless(
+    source: ObjectId,
+    controller: PlayerId,
+    x: number,
+    targets: ResolvedTargets,
+    triggerObject: ObjectId | undefined,
+    chooser: number | "trigger-controller",
+    options: readonly UnlessOption[],
+    otherwise: EffectSpec,
+  ): void {
+    const decide =
+      chooser === "trigger-controller"
+        ? (triggerObject !== undefined
+            ? this.state.objects[triggerObject]?.controller
+            : undefined)
+        : (() => {
+            const ref = targets[chooser];
+            return ref?.kind === "player" ? ref.player : undefined;
+          })();
+
+    const applyOtherwise = (): void => {
+      applyEffectSpec(otherwise, this.makeResolutionContext(source, controller, targets, x));
+    };
+    if (decide === undefined || this.state.players[decide]?.hasLost === true) {
+      applyOtherwise();
+      return;
+    }
+
+    // Only offer what they can actually take.
+    const available = options.filter((option) => {
+      if ("pay" in option) return this.payMana(decide, parseManaCost(option.pay)) !== null;
+      if ("payLife" in option) return this.state.players[decide].life > option.payLife;
+      return this.eligibleSacrifices(decide, option.sacrifice).length > 0;
+    });
+    if (available.length === 0) {
+      applyOtherwise();
+      return;
+    }
+
+    const manaOption = available.find((o): o is Extract<UnlessOption, { pay: string }> =>
+      "pay" in o,
+    );
+    const modes = available.map((option) => ({
+      text: option.text,
+      effect:
+        "payLife" in option
+          ? ({ kind: "lose-life", amount: option.payLife, who: "you" } as EffectSpec)
+          : "sacrifice" in option
+            ? ({
+                kind: "sacrifice",
+                who: "you",
+                filter: option.sacrifice,
+                count: 1,
+              } as EffectSpec)
+            // The mana option's payment rides on the decision's own `cost`,
+            // so its mode has nothing left to do.
+            : ({ kind: "sequence", effects: [] } as EffectSpec),
+    }));
+
+    this.beginModesChoice(
+      source,
+      decide,
+      x,
+      0,
+      1,
+      modes,
+      otherwise,
+      targets,
+      manaOption?.pay,
+    );
+  }
+
   private populate(controller: PlayerId): void {
     let best: ObjectId | undefined;
     let bestPower = -Infinity;

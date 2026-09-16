@@ -363,6 +363,17 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
   Fallen); `else` only when it was declined ("If you didn't, …", or an
   "unless" cost framed as the decline branch — Springheart Nantuko, The
   Gitrog Monster's upkeep). needed-cards P19.
+- **`unless { chooser, options, otherwise }`** — a *punisher* clause, where
+  **someone else** decides whether to pay and `otherwise` happens only if they
+  don't (Demanding Dragon, Indulgent Tormentor, Kazuul). `chooser` is a
+  target-slot index holding a player, or `"trigger-controller"` (the
+  controller of the permanent whose event fired the trigger). Each
+  `UnlessOption` is `{ pay }` (mana), `{ payLife }` or `{ sacrifice }` plus a
+  `text` label; at most one mana option, since that payment rides on the
+  decision itself. Options the chooser can't take aren't offered, so
+  "couldn't" and "wouldn't" both land on `otherwise` — which is what the
+  printed cards do too. This is the difference from `may`: the decision is
+  raised for the chooser, not the effect's controller.
 - **`conditional { condition: StaticCondition, then, else? }`** — apply `then`
   if `condition` holds at resolution (evaluated from the source's controller's
   view — same `{ controls, your-turn, threshold, metalcraft }` union as a
@@ -558,7 +569,7 @@ triggered: [
 | `becomes-tapped` | `who`, `filter?` | a permanent became tapped (rule 701.21a — City of Brass). Fires for every tapping: a mana ability, a cost that taps it, an opponent's tap effect. Not the same as `add-mana`'s `painToController`, which only charges the mana-ability path. |
 | `leaves-battlefield` | `who` | a permanent leaves for **any** zone |
 | `gains-life` / `loses-life` | `who` | a player's life changes (`who` = whose) |
-| `attacks` | `who`, `filter?` | a creature is declared as an attacker (`filter` narrows which one — Utvara Hellkite / Atarka, World Render: "a Dragon you control") |
+| `attacks` | `who`, `filter?`, `attackingYou?` | a creature is declared as an attacker (`filter` narrows which one — Utvara Hellkite / Atarka, World Render: "a Dragon you control"). `attackingYou` fires only when the attack is aimed at this permanent's controller (Kazuul's "if you're the defending player") — which also covers "a creature an opponent controls", since nobody can attack themselves. |
 | `attacks-alone` | `who` | Exalted (needed-cards P15) — a creature you control attacked alone this combat; the lone attacker isn't a target, read it via `ResolutionContext.triggerObject` / `EffectTargetRef: "trigger-object"` |
 | `sacrifice` | `who` | a player sacrifices a permanent (Korvold, Mayhem Devil — `who` = who sacrificed) |
 | `deals-combat-damage-to-player` | `who` | auto-fills the first target slot with the damaged player |

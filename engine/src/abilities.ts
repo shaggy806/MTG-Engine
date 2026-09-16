@@ -179,6 +179,15 @@ export type TriggerSpec =
       /** Narrow which attacker counts (Utvara Hellkite / Atarka, World
        * Render: "a Dragon you control"). needed-cards P11. */
       readonly filter?: CardFilter;
+      /**
+       * Only when the attack is aimed at *this* permanent's controller —
+       * Kazuul's "if you're the defending player".
+       *
+       * This also covers "a creature an opponent controls", the other half of
+       * that card's wording: nobody can attack themselves, so an attacker
+       * pointed at you is necessarily an opponent's.
+       */
+      readonly attackingYou?: boolean;
     }
   | {
       /** Exalted (rule 702.111a — needed-cards P15): a creature you control

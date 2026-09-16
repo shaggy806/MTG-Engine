@@ -61,6 +61,12 @@ export type EffectAmount =
    * "double the power of target creature" is a `modify-pt` that adds this. */
   | { readonly powerOf: EffectTargetRef };
 
+/** One way out of an `"unless"` clause. Exactly one field is set. */
+export type UnlessOption =
+  | { readonly pay: string; readonly text: string }
+  | { readonly payLife: number; readonly text: string }
+  | { readonly sacrifice: CardFilter; readonly text: string };
+
 /** @deprecated Use {@link CardFilter} directly — kept as an alias so existing
  * `look-and-choose` / `matchesZoneChoiceFilter` call sites still type-check. */
 export type ZoneChoiceFilter = CardFilter;
@@ -672,6 +678,30 @@ export type EffectSpec =
       readonly else?: EffectSpec;
     }
   | {
+      /**
+       * A "punisher" clause — *someone else* chooses whether to pay, and the
+       * effect only happens if they don't. "…deals 5 damage to target
+       * opponent **unless that player sacrifices a creature of their
+       * choice**" (Demanding Dragon), "…**unless that creature's controller
+       * pays {3}**" (Kazuul), "draw a card **unless target opponent
+       * sacrifices a creature or pays 3 life**" (Indulgent Tormentor).
+       *
+       * The decision belongs to `chooser`, not to the effect's controller —
+       * which is what makes this its own shape rather than a `may`. Options
+       * the chooser can't take aren't offered, so "couldn't" and "wouldn't"
+       * both land on `otherwise`.
+       */
+      readonly kind: "unless";
+      /** Who decides: a target-slot index holding a player, or the controller
+       * of the permanent whose event fired this trigger (Kazuul's attacker). */
+      readonly chooser: number | "trigger-controller";
+      /** What they may do to avoid `otherwise`. At most one mana option, since
+       * the mana cost rides on the decision itself. */
+      readonly options: readonly UnlessOption[];
+      /** What happens if they take none of the options. */
+      readonly otherwise: EffectSpec;
+    }
+  | {
       /** Scry `amount` (rule 701.18) — look at the top N, put any number on
        * the bottom, keep the rest on top. `then` (Preordain: draw a card) is
        * applied after. */
@@ -856,6 +886,12 @@ export interface EffectApi {
   doublePtAll(filter: CardFilter, duration: PtDuration): void;
   /** See the `"grant-player-hexproof"` {@link EffectSpec}. */
   grantPlayerHexproof(who: PlayerScope): void;
+  /** See the `"unless"` {@link EffectSpec}. */
+  unless(
+    chooser: number | "trigger-controller",
+    options: readonly UnlessOption[],
+    otherwise: EffectSpec,
+  ): void;
   /** See the `"populate"` {@link EffectSpec}. */
   populate(): void;
   /** See the `"amass"` {@link EffectSpec}. */
@@ -1440,6 +1476,9 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       );
       return;
     }
+    case "unless":
+      ctx.unless(spec.chooser, spec.options, spec.otherwise);
+      return;
     case "scry":
       ctx.scry(spec.amount, false, spec.then);
       return;

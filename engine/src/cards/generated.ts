@@ -97,6 +97,7 @@ import _poolDeadlyDispute from "./pool/deadly-dispute.js";
 import _poolDeadlyRollick from "./pool/deadly-rollick.js";
 import _poolDeathcapGlade from "./pool/deathcap-glade.js";
 import _poolDefenseOfTheHeart from "./pool/defense-of-the-heart.js";
+import _poolDemandingDragon from "./pool/demanding-dragon.js";
 import _poolDemonicTutor from "./pool/demonic-tutor.js";
 import _poolDesertedBeach from "./pool/deserted-beach.js";
 import _poolDiabolicEdict from "./pool/diabolic-edict.js";
@@ -191,6 +192,7 @@ import _poolHuntersProwess from "./pool/hunters-prowess.js";
 import _poolHypnoticSpecter from "./pool/hypnotic-specter.js";
 import _poolIcetillExplorer from "./pool/icetill-explorer.js";
 import _poolIgnobleHierarch from "./pool/ignoble-hierarch.js";
+import _poolIndulgentTormentor from "./pool/indulgent-tormentor.js";
 import _poolInfernalGrasp from "./pool/infernal-grasp.js";
 import _poolInvisibleStalker from "./pool/invisible-stalker.js";
 import _poolIridescentVinelasher from "./pool/iridescent-vinelasher.js";
@@ -204,6 +206,7 @@ import _poolKarnsBastion from "./pool/karns-bastion.js";
 import _poolKarplusanForest from "./pool/karplusan-forest.js";
 import _poolKazanduMammoth from "./pool/kazandu-mammoth.js";
 import _poolKazanduValley from "./pool/kazandu-valley.js";
+import _poolKazuulTyrantOfTheCliffs from "./pool/kazuul-tyrant-of-the-cliffs.js";
 import _poolKessigWolfRun from "./pool/kessig-wolf-run.js";
 import _poolKioraBehemothBeckoner from "./pool/kiora-behemoth-beckoner.js";
 import _poolKirdApe from "./pool/kird-ape.js";
@@ -456,6 +459,7 @@ import _tokensInsectToken from "./tokens/insect-token.js";
 import _tokensKnightToken from "./tokens/knight-token.js";
 import _tokensLifelinkSoldierToken from "./tokens/lifelink-soldier-token.js";
 import _tokensMoloidToken from "./tokens/moloid-token.js";
+import _tokensOgreToken from "./tokens/ogre-token.js";
 import _tokensPhyrexianWurmDeathtouch from "./tokens/phyrexian-wurm-deathtouch.js";
 import _tokensPhyrexianWurmLifelink from "./tokens/phyrexian-wurm-lifelink.js";
 import _tokensSaprolingToken from "./tokens/saproling-token.js";
@@ -560,6 +564,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolDeadlyRollick,
   _poolDeathcapGlade,
   _poolDefenseOfTheHeart,
+  _poolDemandingDragon,
   _poolDemonicTutor,
   _poolDesertedBeach,
   _poolDiabolicEdict,
@@ -654,6 +659,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolHypnoticSpecter,
   _poolIcetillExplorer,
   _poolIgnobleHierarch,
+  _poolIndulgentTormentor,
   _poolInfernalGrasp,
   _poolInvisibleStalker,
   _poolIridescentVinelasher,
@@ -667,6 +673,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolKarplusanForest,
   _poolKazanduMammoth,
   _poolKazanduValley,
+  _poolKazuulTyrantOfTheCliffs,
   _poolKessigWolfRun,
   _poolKioraBehemothBeckoner,
   _poolKirdApe,
@@ -925,6 +932,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensKnightToken,
   _tokensLifelinkSoldierToken,
   _tokensMoloidToken,
+  _tokensOgreToken,
   _tokensPhyrexianWurmDeathtouch,
   _tokensPhyrexianWurmLifelink,
   _tokensSaprolingToken,
