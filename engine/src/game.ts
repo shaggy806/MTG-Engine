@@ -2312,8 +2312,11 @@ export class Game {
       if (object.controller !== active) continue;
       // Summoning sickness wears off as the controller's turn begins.
       object.summoningSick = false;
-      // A loyalty ability may be activated again (rule 606.3).
+      // A loyalty ability may be activated again (rule 606.3), and so may a
+      // once-each-turn ability (602.5g).
       object.loyaltyActivatedThisTurn = false;
+      object.abilitiesUsedThisTurn = [];
+      object.combatDamagedPlayersThisTurn = [];
       if (object.tapped) {
         object.tapped = false;
         this.emit({ type: "permanent-untapped", object: id });
@@ -3298,10 +3301,19 @@ export class Game {
     // All combat damage in a pass is dealt simultaneously.
     for (const { source, target, amount } of assignments) {
       const dealt = this.dealDamage(source, target, amount, true);
-      if (dealt > 0 && target.kind === "player" && this.state.objects[source].isCommander) {
-        const controller = this.state.objects[source].controller;
-        const taken = this.state.players[target.player].commanderDamageTaken;
-        taken[controller] = (taken[controller] ?? 0) + dealt;
+      if (dealt > 0 && target.kind === "player") {
+        const attacker = this.state.objects[source];
+        if (attacker.isCommander) {
+          const taken = this.state.players[target.player].commanderDamageTaken;
+          taken[attacker.controller] = (taken[attacker.controller] ?? 0) + dealt;
+        }
+        // Steel Hellkite's "whose controller was dealt combat damage by this
+        // creature this turn" — recorded per source, not globally, since the
+        // question is about one specific permanent.
+        const damaged = attacker.combatDamagedPlayersThisTurn ?? [];
+        if (!damaged.includes(target.player)) {
+          attacker.combatDamagedPlayersThisTurn = [...damaged, target.player];
+        }
       }
     }
   }
@@ -4496,6 +4508,14 @@ export class Game {
     ) {
       return `${def.name}'s ability's activation condition isn't met`;
     }
+    // "Activate only once each turn" (rule 602.5g) — applies to any ability,
+    // not just a loyalty one, so it is checked before the loyalty block.
+    if (
+      ability.oncePerTurn === true &&
+      (source.abilitiesUsedThisTurn ?? []).includes(abilityIndex)
+    ) {
+      return `${def.name}'s ability has already been activated this turn`;
+    }
     if (ability.loyaltyCost !== undefined) {
       // Loyalty ability (rule 606): sorcery-speed, once per permanent per turn,
       // and a "minus" ability needs that many loyalty counters to spend.
@@ -4653,6 +4673,14 @@ export class Game {
     }
     if (ability.cost.payEnergy !== undefined) {
       this.changeEnergy(player, -ability.cost.payEnergy);
+    }
+    if (ability.oncePerTurn === true) {
+      // Rule 602.5g — recorded per ability index, so a permanent with two
+      // once-each-turn abilities limits each of them separately.
+      source.abilitiesUsedThisTurn = [
+        ...(source.abilitiesUsedThisTurn ?? []),
+        abilityIndex,
+      ];
     }
     if (ability.loyaltyCost !== undefined) {
       source.counters.loyalty = (source.counters.loyalty ?? 0) + ability.loyaltyCost;
@@ -6021,7 +6049,13 @@ export class Game {
       tapPermanent: (target) => this.setTapped(target, true),
       untapPermanent: (target) => this.setTapped(target, false),
       destroyPermanent: (target) => this.destroyByEffect(target),
-      destroyAll: (filter) => this.destroyAllByEffect(controller, filter),
+      destroyAll: (filter, onlyDamaged) =>
+        this.destroyAllByEffect(
+          controller,
+          filter,
+          onlyDamaged === true ? source : undefined,
+          x,
+        ),
       returnToHandAll: (filter) => this.returnToHandAllByEffect(controller, filter),
       damageAll: (filter, amount) => this.damageAllByEffect(source, controller, filter, amount),
       creaturesDamageControllers: (filter, amount) =>
@@ -6979,9 +7013,27 @@ export class Game {
    * The victims are queued so a commander's 903.9a choice can pause the wipe
    * without dropping the rest — `drainPendingDestruction` (run inside the
    * `prepareForPriority` fixpoint) works through the queue. */
-  private destroyAllByEffect(you: PlayerId, filter: CardFilter): void {
+  private destroyAllByEffect(
+    you: PlayerId,
+    filter: CardFilter,
+    damagedBy?: ObjectId,
+    x = 0,
+  ): void {
+    // Steel Hellkite: only permanents controlled by a player this source hit
+    // in combat this turn. Read off the source rather than a filter clause,
+    // because it's a fact about the source.
+    const damagedPlayers =
+      damagedBy === undefined
+        ? null
+        : (this.state.objects[damagedBy]?.combatDamagedPlayersThisTurn ?? []);
     for (const id of [...this.state.zones.shared.battlefield]) {
-      if (matchesFilter(this.state, this.registry, id, filter, { you })) {
+      if (
+        damagedPlayers !== null &&
+        !damagedPlayers.includes(this.state.objects[id].controller)
+      ) {
+        continue;
+      }
+      if (matchesFilter(this.state, this.registry, id, filter, { you, x })) {
         this.state.pendingDestruction.push(id);
       }
     }

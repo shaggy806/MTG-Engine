@@ -98,6 +98,10 @@ export interface ActivatedAbility {
    * ability that doesn't exile itself would need a separate flag.
    */
   readonly zone?: "hand" | "graveyard";
+  /** "Activate only once each turn" (rule 602.5g — Steel Hellkite). Tracked
+   * per ability index on `GameObject.abilitiesUsedThisTurn`, so a permanent
+   * with two such abilities limits each separately. */
+  readonly oncePerTurn?: boolean;
   /** A live cost reduction printed on the ability itself, mirroring
    * `CardDefinition.selfCostReduction` for a spell — the Kamigawa Channel
    * lands' "This ability costs {1} less to activate for each legendary

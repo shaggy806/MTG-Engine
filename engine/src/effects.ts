@@ -150,6 +150,11 @@ export type EffectSpec =
        * downstream. */
       readonly kind: "destroy-all";
       readonly filter: CardFilter;
+      /** Narrow to permanents whose *controller* was dealt combat damage by
+       * this effect's source this turn — Steel Hellkite. Not a `CardFilter`
+       * clause because it's a fact about the source, not about the permanent
+       * being matched. */
+      readonly onlyControllersDamagedBySource?: boolean;
     }
   | {
       /** Deal `amount` damage to every battlefield permanent matching `filter`
@@ -655,8 +660,10 @@ export interface EffectApi {
   tapPermanent(target: TargetRef): void;
   untapPermanent(target: TargetRef): void;
   destroyPermanent(target: TargetRef): void;
-  /** Destroy every battlefield permanent matching `filter`. */
-  destroyAll(filter: CardFilter): void;
+  /** Destroy every battlefield permanent matching `filter`. With
+   * `onlyControllersDamagedBySource`, restricted to those whose controller
+   * this effect's source dealt combat damage to this turn. */
+  destroyAll(filter: CardFilter, onlyControllersDamagedBySource?: boolean): void;
   /** Return every battlefield permanent matching `filter` to its owner's hand. */
   returnToHandAll(filter: CardFilter): void;
   /** Deal `amount` damage to every battlefield permanent matching `filter`. */
@@ -984,7 +991,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       return;
     }
     case "destroy-all":
-      ctx.destroyAll(spec.filter);
+      ctx.destroyAll(spec.filter, spec.onlyControllersDamagedBySource);
       return;
     case "return-to-hand-all":
       ctx.returnToHandAll(spec.filter);

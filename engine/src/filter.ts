@@ -25,26 +25,33 @@ import type { ObjectId, PlayerId } from "./primitives.js";
 import { printedCardName } from "./state.js";
 import type { GameState } from "./state.js";
 
-/** A numeric comparison clause, e.g. `{ op: "lte", n: 2 }` = "≤ 2". */
+/**
+ * A numeric comparison clause, e.g. `{ op: "lte", n: 2 }` = "≤ 2".
+ *
+ * `n: "x"` reads the `{X}` chosen for the spell or ability that's applying
+ * the filter (Steel Hellkite: "each nonland permanent with mana value X").
+ * It needs `FilterContext.x`; without one it compares against 0.
+ */
 export interface NumCompare {
   readonly op: "eq" | "ne" | "lt" | "lte" | "gt" | "gte";
-  readonly n: number;
+  readonly n: number | "x";
 }
 
-export function compareNum(value: number, cmp: NumCompare): boolean {
+export function compareNum(value: number, cmp: NumCompare, x = 0): boolean {
+  const n = cmp.n === "x" ? x : cmp.n;
   switch (cmp.op) {
     case "eq":
-      return value === cmp.n;
+      return value === n;
     case "ne":
-      return value !== cmp.n;
+      return value !== n;
     case "lt":
-      return value < cmp.n;
+      return value < n;
     case "lte":
-      return value <= cmp.n;
+      return value <= n;
     case "gt":
-      return value > cmp.n;
+      return value > n;
     case "gte":
-      return value >= cmp.n;
+      return value >= n;
     default:
       return false;
   }
@@ -97,6 +104,9 @@ export interface CardFilter {
 export interface FilterContext {
   /** Whose perspective `"you"` / `"opponent"` are evaluated from. */
   readonly you: PlayerId;
+  /** The `{X}` of the spell or ability applying this filter, for a
+   * `NumCompare` written as `{ n: "x" }`. Defaults to 0. */
+  readonly x?: number;
 }
 
 /** Does object `id` satisfy every clause of `filter`? */
@@ -162,7 +172,11 @@ export function matchesFilter(
 
   if (
     filter.manaValue !== undefined &&
-    !compareNum(manaValue(parseManaCost(registry.get(printedCardName(object)).manaCost)), filter.manaValue)
+    !compareNum(
+      manaValue(parseManaCost(registry.get(printedCardName(object)).manaCost)),
+      filter.manaValue,
+      ctx.x,
+    )
   ) {
     return false;
   }
@@ -183,8 +197,8 @@ export function matchesFilter(
     filter.notKeyword !== undefined
   ) {
     const c = computeCharacteristics(state, registry, id);
-    if (filter.power !== undefined && !compareNum(c.power, filter.power)) return false;
-    if (filter.toughness !== undefined && !compareNum(c.toughness, filter.toughness)) {
+    if (filter.power !== undefined && !compareNum(c.power, filter.power, ctx.x)) return false;
+    if (filter.toughness !== undefined && !compareNum(c.toughness, filter.toughness, ctx.x)) {
       return false;
     }
     if (filter.keyword !== undefined && !c.keywords.has(filter.keyword)) return false;

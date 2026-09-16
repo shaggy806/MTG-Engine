@@ -47,6 +47,21 @@ export interface GameObject {
    * (rule 606.3 — at most one per turn). Reset in the controller's untap step.
    */
   loyaltyActivatedThisTurn: boolean;
+  /**
+   * Indices of this permanent's activated abilities marked
+   * `oncePerTurn` that have already been used this turn (rule 602.5g —
+   * "Activate only once each turn", Steel Hellkite). Reset in the
+   * controller's untap step alongside `loyaltyActivatedThisTurn`.
+   */
+  abilitiesUsedThisTurn?: number[];
+  /**
+   * Players this permanent has dealt combat damage to this turn — Steel
+   * Hellkite's "whose controller was dealt combat damage by this creature
+   * this turn". Reset at the start of each turn, and by `moveObject` like
+   * every other per-permanent flag: a creature that left and came back is a
+   * new object and has damaged nobody.
+   */
+  combatDamagedPlayersThisTurn?: PlayerId[];
   /** Chosen targets while this is a spell/ability on the stack; `null` otherwise. */
   targets: TargetRef[] | null;
   /** True when a temporary control-change effect (Act of Treason) controls this

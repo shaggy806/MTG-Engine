@@ -301,6 +301,7 @@ import _poolSoulWarden from "./pool/soul-warden.js";
 import _poolSplendidReclamation from "./pool/splendid-reclamation.js";
 import _poolStarfieldVocalist from "./pool/starfield-vocalist.js";
 import _poolSteamVents from "./pool/steam-vents.js";
+import _poolSteelHellkite from "./pool/steel-hellkite.js";
 import _poolStompingGround from "./pool/stomping-ground.js";
 import _poolStormcarvedCoast from "./pool/stormcarved-coast.js";
 import _poolStormfistCrusader from "./pool/stormfist-crusader.js";
@@ -720,6 +721,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSplendidReclamation,
   _poolStarfieldVocalist,
   _poolSteamVents,
+  _poolSteelHellkite,
   _poolStompingGround,
   _poolStormcarvedCoast,
   _poolStormfistCrusader,

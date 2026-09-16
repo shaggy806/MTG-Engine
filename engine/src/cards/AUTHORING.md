@@ -351,6 +351,13 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 `modal` / `may` / `look-and-choose` must be the whole effect or the **last**
 step of a `sequence`.
 
+A `CardFilter` numeric clause may be written `{ op: "eq", n: "x" }` to compare
+against the `{X}` of the spell or ability applying it (Steel Hellkite: "each
+nonland permanent with mana value X"). `destroy-all` also takes
+`onlyControllersDamagedBySource`, narrowing to permanents whose *controller*
+this effect's source dealt combat damage to this turn — a fact about the
+source, so it isn't a `CardFilter` clause.
+
 `CardFilter` (used by the mass / tutor effects) is a predicate over an object's
 *computed* characteristics — `{ type, types, notTypes, typesAnyOf, subtype,
 subtypes, supertype, name, colors, notColors, colorless, manaValue, power,
@@ -450,6 +457,10 @@ planning — see §15.
   `otherOnly` (§9); there is still no generic "not this object" exclusion
   for a *triggered* ability's or spell's targets, or for a `resolve`
   script's own target choices — see §15.
+- `oncePerTurn: true` — "Activate only once each turn" (rule 602.5g — Steel
+  Hellkite). Recorded per ability index on `GameObject.abilitiesUsedThisTurn`,
+  so a permanent with two such abilities limits each separately, and reset in
+  the controller's untap step.
 - `condition: StaticCondition` — "Activate only if …" (rule 602.5, Fanatic of
   Rhonas's Ferocious: "{T}: Add {G}{G}{G}{G}. Activate only if you control a
   creature with power 4 or greater"). Mirrors `StaticAbility`/
