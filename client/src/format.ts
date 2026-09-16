@@ -34,6 +34,10 @@ const NOISY_EVENTS: ReadonlySet<GameEvent['type']> = new Set([
   'ability-resolved',
   'flashback-grant-expired',
   'time-counter-removed',
+  // One per targeted object on every targeted spell — bookkeeping for
+  // "becomes the target of" triggers, and the spell's own line already
+  // names its targets.
+  'object-targeted',
 ])
 
 /** Whether `event` only shows up in the history's detailed mode. */
@@ -163,6 +167,8 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       }`
     case 'ability-resolved':
       return `${name(event.source)}'s ability resolves`
+    case 'object-targeted':
+      return `${name(event.object)} becomes the target of ${name(event.source)} (${event.by})`
     case 'ability-triggered':
       return `${name(event.source)}'s trigger goes on the stack (${event.controller})`
     case 'trigger-removed':

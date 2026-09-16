@@ -245,6 +245,23 @@ export type GameEvent =
       readonly player: PlayerId;
       readonly onStack: boolean;
     })
+  | (Base & {
+      /**
+       * One object was chosen as a target of a spell or ability — emitted once
+       * per targeted object as it goes on the stack, which is what a
+       * "becomes the target of" trigger watches (Thunderbreak Regent).
+       *
+       * Separate from `spell-cast`'s `targets` list because the trigger is
+       * about *one* object and needs `by` (whose spell it was) as its own
+       * target, and because an activated ability's targets weren't reported
+       * at all.
+       */
+      readonly type: "object-targeted";
+      readonly object: ObjectId;
+      readonly by: PlayerId;
+      readonly source: ObjectId;
+      readonly bySpell: boolean;
+    })
   | (Base & { readonly type: "ability-resolved"; readonly source: ObjectId })
   | (Base & {
       readonly type: "ability-triggered";

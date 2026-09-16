@@ -179,6 +179,8 @@ import _poolHoardSmelterDragon from "./pool/hoard-smelter-dragon.js";
 import _poolHolyStrength from "./pool/holy-strength.js";
 import _poolHookHauntDrifter from "./pool/hook-haunt-drifter.js";
 import _poolHourOfReckoning from "./pool/hour-of-reckoning.js";
+import _poolHuntersInsight from "./pool/hunters-insight.js";
+import _poolHuntersProwess from "./pool/hunters-prowess.js";
 import _poolHypnoticSpecter from "./pool/hypnotic-specter.js";
 import _poolIcetillExplorer from "./pool/icetill-explorer.js";
 import _poolIgnobleHierarch from "./pool/ignoble-hierarch.js";
@@ -364,6 +366,7 @@ import _poolThornOfTheBlackRose from "./pool/thorn-of-the-black-rose.js";
 import _poolThranDynamo from "./pool/thran-dynamo.js";
 import _poolThreaten from "./pool/threaten.js";
 import _poolThreeVisits from "./pool/three-visits.js";
+import _poolThunderbreakRegent from "./pool/thunderbreak-regent.js";
 import _poolTimeWarp from "./pool/time-warp.js";
 import _poolTirelessProvisioner from "./pool/tireless-provisioner.js";
 import _poolTomeScour from "./pool/tome-scour.js";
@@ -375,6 +378,7 @@ import _poolTurbulentFen from "./pool/turbulent-fen.js";
 import _poolTurnToFrog from "./pool/turn-to-frog.js";
 import _poolTwincast from "./pool/twincast.js";
 import _poolTyphoidRats from "./pool/typhoid-rats.js";
+import _poolTyrantsFamiliar from "./pool/tyrants-familiar.js";
 import _poolUndergroundMortuary from "./pool/underground-mortuary.js";
 import _poolUndergroundRiver from "./pool/underground-river.js";
 import _poolUndergroundSea from "./pool/underground-sea.js";
@@ -613,6 +617,8 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolHolyStrength,
   _poolHookHauntDrifter,
   _poolHourOfReckoning,
+  _poolHuntersInsight,
+  _poolHuntersProwess,
   _poolHypnoticSpecter,
   _poolIcetillExplorer,
   _poolIgnobleHierarch,
@@ -798,6 +804,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolThranDynamo,
   _poolThreaten,
   _poolThreeVisits,
+  _poolThunderbreakRegent,
   _poolTimeWarp,
   _poolTirelessProvisioner,
   _poolTomeScour,
@@ -809,6 +816,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTurnToFrog,
   _poolTwincast,
   _poolTyphoidRats,
+  _poolTyrantsFamiliar,
   _poolUndergroundMortuary,
   _poolUndergroundRiver,
   _poolUndergroundSea,

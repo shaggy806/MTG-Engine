@@ -177,6 +177,18 @@ export interface StaticAbility {
    * consults these on top of a permanent's printed `activated`, appended after
    * them so printed-ability indices stay stable. */
   readonly grantsActivated?: readonly ActivatedAbility[];
+  /**
+   * Triggered abilities this static grants to every object it `affects` —
+   * Tyrant's Familiar's Lieutenant clause, "… and has 'Whenever this creature
+   * attacks, it deals 7 damage to target creature defending player
+   * controls.'"
+   *
+   * The mirror of `grantsActivated` in layer 6: `detectTriggers` consults
+   * these on top of a permanent's printed `triggered`, appended after them so
+   * a printed ability's index — which `PendingTrigger.abilityIndex` and the
+   * stack object both carry — stays stable.
+   */
+  readonly grantsTriggered?: readonly TriggeredAbility[];
   /** Combat restrictions imposed on the affected objects (Pacifism, Juggernaut). */
   readonly restrictions?: readonly CombatRestriction[];
   /** A permission (rule 305.9 / 118.9) — while this permanent is on the

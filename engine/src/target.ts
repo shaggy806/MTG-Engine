@@ -40,6 +40,16 @@ export type TargetSpec =
   /** A creature currently attacking or blocking (Eiganjo, Seat of the
    * Empire's Channel — "target attacking or blocking creature"). */
   | "attacking-or-blocking-creature"
+  /**
+   * A creature controlled by the player *this ability's source is attacking*
+   * — Tyrant's Familiar's "target creature defending player controls".
+   *
+   * Needs `TargetSource.object` to know which creature is attacking, and so
+   * only means anything on an ability whose source is an attacker. In a
+   * two-player game this coincides with "a creature an opponent controls";
+   * at a 3-4 player table it does not, which is why it isn't spelled that way.
+   */
+  | "creature-defending-player-controls"
   /** An artifact, enchantment, or nonbasic land an opponent controls
    * (Boseiju, Who Endures's Channel). */
   | "artifact-enchantment-or-nonbasic-land-an-opponent-controls"

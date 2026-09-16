@@ -290,6 +290,7 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 | `modify-pt` | `target`, `power`, `toughness`, `duration` | `duration: "end-of-turn" \| "permanent"` |
 | `modify-pt-all` | `filter`, `power`, `toughness`, `duration` | Overrun |
 | `grant-keyword` | `target`, `keyword`, `duration` | |
+| `grant-triggered` | `target`, `ability`, `duration` | "gains 'Whenever this creature deals combat damage to a player, draw that many cards'" (Hunter's Prowess, Hunter's Insight). Rides on the target's own modifiers, so `"end-of-turn"` expires with every other until-end-of-turn modifier. The ongoing equivalent is `StaticAbility.grantsTriggered` (§10). |
 | `grant-keyword-all` | `filter`, `keyword`, `duration` | Overrun's trample |
 | `add-counter` | `target`, `counter` (string), `amount` | `counter: "+1/+1"` etc. |
 | `double-counters-all` | `filter`, `counterKind` | Kalonian Hydra / Bristly Bill — doubles each matching permanent's own current count of that counter kind (routes through `add-counter`'s own logic, so Doubling Season's replacement still composes on top: 3x, not 4x) |
@@ -383,7 +384,8 @@ than the chooser), `"creature-or-player"`,
 `"land"`, `"artifact"`, `"artifact-an-opponent-controls"`, `"artifact-or-enchantment"`,
 `"artifact-enchantment-or-nonbasic-land-an-opponent-controls"`,
 `"creature-or-enchantment"`, `"enchantment"`,
-`"creature-or-enchantment-an-opponent-controls"`, `"attacking-or-blocking-creature"`, `"spell"`,
+`"creature-or-enchantment-an-opponent-controls"`, `"attacking-or-blocking-creature"`, `"creature-defending-player-controls"`,
+`"spell"`,
 `"creature-spell"`, `"noncreature-spell"`, `"instant-or-sorcery-spell"`,
 `"instant-or-sorcery-in-your-graveyard"`.
 
@@ -530,6 +532,7 @@ triggered: [
 | --- | --- | --- |
 | `enters-battlefield` | `who`, `filter?`, `otherOnly?` | a permanent enters |
 | `dies` | `who`, `filter?`, `otherOnly?` | a permanent → graveyard from the battlefield, **however it got there** (rule 700.4) — destroyed, sacrificed, the legend rule, a Saga completing. A commander redirected to the command zone by 903.9a doesn't die. |
+| `becomes-target` | `who`, `filter?`, `byOpponentOnly?` | a permanent was chosen as a target of a spell or ability (rule 115.7 — Thunderbreak Regent). Fires as the spell/ability goes on the stack, so it triggers even if that spell is countered or later fizzles. The *player* who targeted it auto-fills the first target slot, the way `deals-combat-damage-to-player` fills it with the damaged player. |
 | `becomes-tapped` | `who`, `filter?` | a permanent became tapped (rule 701.21a — City of Brass). Fires for every tapping: a mana ability, a cost that taps it, an opponent's tap effect. Not the same as `add-mana`'s `painToController`, which only charges the mana-ability path. |
 | `leaves-battlefield` | `who` | a permanent leaves for **any** zone |
 | `gains-life` / `loses-life` | `who` | a player's life changes (`who` = whose) |
@@ -602,6 +605,12 @@ static: [
 - `grantKeywords: [...]` — layer 6 keyword grant.
 - `grantsActivated: [...]` — give the affected permanents these activated
   abilities (Chromatic Lantern, Cryptolith Rite).
+- `grantsTriggered: [...]` — the same in layer 6 for *triggered* abilities
+  (Tyrant's Familiar's Lieutenant clause). Appended after the permanent's
+  printed `triggered`, so a printed ability's index — which the pending
+  trigger and the stack object both carry — never shifts. The one-shot
+  "gains '[trigger]' until end of turn" equivalent is the `grant-triggered`
+  *effect* (§6).
 - `setBasePtFromCount: { countOf, plusPower, plusToughness }` — a layer-7b CDA
   (`"self"` only). `countOf`: `"cards-in-all-graveyards" \|
   "creature-cards-in-all-graveyards" \| "lands-you-control"`. (Mortivore.)
@@ -868,11 +877,12 @@ different card, or extend the engine (see `ROADMAP.md`).
 - No **"a card was put into a graveyard from anywhere"** trigger — `dies` only
   covers a permanent's battlefield → graveyard move (The Gitrog Monster's "a
   land card goes to a graveyard from anywhere, draw a card") (needed-cards P18).
-- No **temporary, this-turn-only ability grant** to a filtered class of
-  permanents you don't control the printing of (Rain of Filth: "lands you
-  control gain 'Sacrifice: Add {B}' until end of turn") — `grantsActivated` is
-  a permanent static's ongoing grant, not a one-shot resolution effect
-  (needed-cards P18).
+- No **temporary, this-turn-only *activated*-ability grant** to a filtered
+  class of permanents (Rain of Filth: "lands you control gain 'Sacrifice: Add
+  {B}' until end of turn") — `grantsActivated` is a permanent static's ongoing
+  grant, not a one-shot resolution effect (needed-cards P18). The *triggered*
+  equivalent does exist, for a single target: the `grant-triggered` effect
+  (§6).
 - No **"choose a mode as this enters, then behave permanently as that mode"**
   primitive (Frontier Siege, Frostcliff Siege) — distinct from
   `chooseCreatureTypeOnEnter`, which only feeds a cost-matching check, not a

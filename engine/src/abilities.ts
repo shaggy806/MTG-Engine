@@ -149,6 +149,26 @@ export type TriggerSpec =
       readonly who: TriggerWho;
     }
   | {
+      /**
+       * A permanent became the target of a spell or ability (rule 115.7 /
+       * 603.2) — Thunderbreak Regent's "Whenever a Dragon you control becomes
+       * the target of a spell or ability an opponent controls".
+       *
+       * The triggering *player* (whoever targeted it) fills the ability's
+       * first target slot automatically, the same way
+       * `deals-combat-damage-to-player` fills it with the damaged player.
+       */
+      readonly on: "becomes-target";
+      readonly who: TriggerWho;
+      /** Narrow which targeted permanent counts (Thunderbreak Regent: "a
+       * Dragon you control"). */
+      readonly filter?: CardFilter;
+      /** Only when the spell or ability belongs to an opponent of this
+       * permanent's controller — which is how every printed card of this
+       * shape words it. */
+      readonly byOpponentOnly?: boolean;
+    }
+  | {
       readonly on: "attacks";
       readonly who: TriggerWho;
       /** Narrow which attacker counts (Utvara Hellkite / Atarka, World

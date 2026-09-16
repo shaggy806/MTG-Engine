@@ -108,6 +108,8 @@ export const makeFormatter = (game) => {
         }`;
       case "ability-resolved":
         return `${name(e.source)}'s ability resolves`;
+      case "object-targeted":
+        return `${name(e.object)} becomes the target of ${name(e.source)} (${e.by})`;
       case "ability-triggered":
         return `${name(e.source)}'s trigger goes on the stack (${e.controller})`;
       case "trigger-removed":

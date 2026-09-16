@@ -7,6 +7,7 @@
  */
 
 import type { CastVia } from "./actions.js";
+import type { TriggeredAbility } from "./abilities.js";
 import type { CardType, Keyword, StaticAbility } from "./cards.js";
 import type { EffectSpec } from "./effects.js";
 import type { CardFilter } from "./filter.js";
@@ -266,6 +267,11 @@ export interface PtModifier {
    * it. Applied after a CDA, before counters (7c) and +N/+N bonuses (7d);
    * the latest such modifier wins. */
   setPt?: [number, number];
+  /** Layer 6 — triggered abilities this modifier grants, for a one-shot
+   * "gains '[trigger]' until end of turn" (Hunter's Prowess, Hunter's
+   * Insight). The ongoing, static equivalent is
+   * `StaticAbility.grantsTriggered`. */
+  grantsTriggered?: TriggeredAbility[];
   untilEndOfTurn: boolean;
 }
 

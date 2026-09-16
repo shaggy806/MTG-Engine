@@ -8,6 +8,7 @@
  * into the spell's or ability's chosen targets, or the literal `"source"`.
  */
 
+import type { TriggeredAbility } from "./abilities.js";
 import type { CardType, Keyword, StaticAbility, StaticCondition } from "./cards.js";
 import type { CardFilter } from "./filter.js";
 import type { Color, ManaType } from "./mana.js";
@@ -384,6 +385,21 @@ export type EffectSpec =
        * (ROADMAP Phase 6b). */
       readonly kind: "grant-flashback";
       readonly target: number;
+    }
+  | {
+      /**
+       * Give a permanent a triggered ability — "gains 'Whenever this creature
+       * deals combat damage to a player, draw that many cards'" (Hunter's
+       * Prowess, Hunter's Insight).
+       *
+       * The one-shot counterpart of `StaticAbility.grantsTriggered`: it rides
+       * on the target's own modifiers, so an `"end-of-turn"` grant expires
+       * with every other until-end-of-turn modifier.
+       */
+      readonly kind: "grant-triggered";
+      readonly target: EffectTargetRef;
+      readonly ability: TriggeredAbility;
+      readonly duration: PtDuration;
     }
   | {
       /** The effect's controller takes an extra turn after this one (Time
@@ -771,6 +787,12 @@ export interface EffectApi {
   /** Proliferate — see the `"proliferate"` {@link EffectSpec}. */
   proliferate(): void;
   grantKeyword(target: TargetRef, keyword: Keyword, duration: PtDuration): void;
+  /** See the `"grant-triggered"` {@link EffectSpec}. */
+  grantTriggered(
+    target: TargetRef,
+    ability: TriggeredAbility,
+    duration: PtDuration,
+  ): void;
   /** The effect's controller takes an extra turn after this one (Time Warp). */
   takeExtraTurn(): void;
   /** Storm — copy the spell `sourceId` for each earlier spell its controller
@@ -1187,6 +1209,11 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       if (target !== undefined) {
         ctx.grantKeyword(target, spec.keyword, spec.duration);
       }
+      return;
+    }
+    case "grant-triggered": {
+      const target = resolveEffectTarget(spec.target, ctx);
+      if (target !== undefined) ctx.grantTriggered(target, spec.ability, spec.duration);
       return;
     }
     case "take-extra-turn":

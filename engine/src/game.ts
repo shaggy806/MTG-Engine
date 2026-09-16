@@ -13,6 +13,7 @@ import type {
   ActivatedAbility,
   SacrificeCost,
   StackAbility,
+  TriggeredAbility,
   TriggerSpec,
   TriggerWho,
 } from "./abilities.js";
@@ -146,6 +147,13 @@ interface GrantSource {
   readonly source: GameObject;
   readonly ability: StaticAbility;
   readonly abilities: readonly ActivatedAbility[];
+}
+
+/** The `grantsTriggered` counterpart of {@link GrantSource}. */
+interface TriggeredGrantSource {
+  readonly source: GameObject;
+  readonly ability: StaticAbility;
+  readonly abilities: readonly TriggeredAbility[];
 }
 
 /** Every multiset of size `amount` drawn from `colors` (order-independent,
@@ -1223,7 +1231,9 @@ export class Game {
     // types — no protection or DEBT clause matches).
     if (this.state.objects[id] === undefined) return { colors: new Set(), types: [] };
     const c = computeCharacteristics(this.state, this.registry, id);
-    return { colors: c.colors, types: c.types };
+    // `object` is carried so a spec can ask about the source itself — see
+    // `"creature-defending-player-controls"`.
+    return { colors: c.colors, types: c.types, object: id };
   }
 
   // --- token stacking (engine resource safety, not a rule) ------------
@@ -3749,6 +3759,9 @@ export class Game {
       spellsThisTurn: this.state.players[owner].spellsCastThisTurn,
       via,
     });
+    // A free cast (cascade, suspend) targets like any other — the trigger
+    // is about being targeted, not about how the spell was paid for.
+    this.announceTargeted(targets, owner, cardId, true);
   }
 
   /** Cast a suspended card whose last time counter just came off (rule
@@ -4389,6 +4402,7 @@ export class Game {
       spellsThisTurn: this.state.players[player].spellsCastThisTurn,
       ...(via !== undefined ? { via } : {}),
     });
+    this.announceTargeted(targets, player, cardId, true);
     if (sortedModes !== undefined) {
       this.emit({ type: "modes-chosen", source: cardId, modes: [...sortedModes] });
     }
@@ -4434,6 +4448,64 @@ export class Game {
    * made the scan quadratic. Computing it once per loop and passing it down
    * makes those callers linear.
    */
+  /**
+   * Static abilities currently granting *triggered* abilities — the
+   * `grantsTriggered` mirror of {@link activatedGrantSources}.
+   */
+  private triggeredGrantSources(): TriggeredGrantSource[] {
+    const out: TriggeredGrantSource[] = [];
+    for (const id of this.state.zones.shared.battlefield) {
+      const source = this.state.objects[id];
+      if (source === undefined || hasLostAbilities(source)) continue;
+      for (const ability of this.registry.get(printedCardName(source)).static) {
+        if (ability.grantsTriggered !== undefined) {
+          out.push({ source, ability, abilities: ability.grantsTriggered });
+        }
+      }
+    }
+    return out;
+  }
+
+  /**
+   * `objectId`'s printed `triggered` abilities plus any currently granted to
+   * it — by a `grantsTriggered` static (Tyrant's Familiar's Lieutenant
+   * clause) or by a one-shot `PtModifier.grantsTriggered` (Hunter's Prowess).
+   *
+   * Printed first, then granted, so `PendingTrigger.abilityIndex` into a
+   * printed ability never shifts. Everything that reads a triggered ability
+   * by index — `detectTriggers`, `stackAbilityOf`, the intervening-if
+   * recheck, `placeTrigger` — must go through here, or a granted ability
+   * fires and then resolves as the wrong (or a missing) ability.
+   */
+  private effectiveTriggered(
+    objectId: ObjectId,
+    grantors?: readonly TriggeredGrantSource[],
+  ): readonly TriggeredAbility[] {
+    const target = this.state.objects[objectId];
+    if (target === undefined) return [];
+    const printed = this.registry.get(printedCardName(target)).triggered;
+    if (hasLostAbilities(target)) return [];
+    const granted: TriggeredAbility[] = [];
+    // A one-shot grant rides on the object's own modifiers, so it works off
+    // the battlefield too (a creature that died still has the modifier until
+    // `moveObject` clears it).
+    for (const modifier of target.modifiers) {
+      if (modifier.grantsTriggered !== undefined) granted.push(...modifier.grantsTriggered);
+    }
+    if (target.zone === "battlefield") {
+      const sources = grantors ?? this.triggeredGrantSources();
+      const grants: { ts: number; abilities: readonly TriggeredAbility[] }[] = [];
+      for (const { source, ability, abilities } of sources) {
+        if (!staticAffects(this.registry, ability.affects, source, target)) continue;
+        if (!this.staticActive(source, ability)) continue;
+        grants.push({ ts: source.timestamp, abilities });
+      }
+      grants.sort((a, b) => a.ts - b.ts);
+      for (const g of grants) granted.push(...g.abilities);
+    }
+    return granted.length === 0 ? printed : [...printed, ...granted];
+  }
+
   private activatedGrantSources(): GrantSource[] {
     const out: GrantSource[] = [];
     for (const id of this.state.zones.shared.battlefield) {
@@ -4806,7 +4878,32 @@ export class Game {
       player,
       onStack: true,
     });
+    this.announceTargeted(targets, player, sourceId, false);
     this.afterPlayerAction(player);
+  }
+
+  /**
+   * Announce each *object* a spell or ability just targeted, for a
+   * "becomes the target of" trigger (rule 115.7 — Thunderbreak Regent).
+   *
+   * Emitted as the spell or ability goes on the stack, which is when targets
+   * are chosen and locked in (601.2c / 602.2b), not when it resolves — the
+   * trigger fires even if the spell is later countered or fizzles. Player
+   * targets aren't announced: nothing in the pool triggers on a *player*
+   * being targeted, and the events would be pure noise in the log.
+   */
+  private announceTargeted(
+    targets: ResolvedTargets,
+    by: PlayerId,
+    source: ObjectId,
+    bySpell: boolean,
+  ): void {
+    for (const target of targets) {
+      if (target === undefined || target.kind !== "object") continue;
+      const object = this.state.objects[target.object];
+      if (object === undefined || object.zone !== "battlefield") continue;
+      this.emit({ type: "object-targeted", object: target.object, by, source, bySpell });
+    }
   }
 
   private mintAbilityObject(
@@ -5530,7 +5627,15 @@ export class Game {
   private stackAbilityOf(object: GameObject): StackAbility {
     const def = this.registry.get(printedCardName(object));
     const index = object.abilityIndex ?? 0;
-    if (object.abilityKind === "triggered") return def.triggered[index];
+    if (object.abilityKind === "triggered") {
+      // The source may still be around with a granted ability at this index.
+      const src = object.sourceObjectId;
+      if (src !== null && this.state.objects[src] !== undefined) {
+        const eff = this.effectiveTriggered(src)[index];
+        if (eff !== undefined) return eff;
+      }
+      return def.triggered[index];
+    }
     if (object.abilityKind === "chapter") return (def.chapters ?? [])[index];
     // An activated ability's source may still be on the battlefield with a
     // granted ability at this index (rule 608.2b — last-known info); fall back
@@ -5552,9 +5657,12 @@ export class Game {
     // Intervening-if, second check (rule 603.4): a triggered ability whose
     // condition is no longer true is removed from the stack and does nothing.
     if (object.abilityKind === "triggered") {
-      const condition = this.registry.get(printedCardName(object)).triggered[
-        object.abilityIndex ?? 0
-      ]?.condition;
+      const conditionSource = object.sourceObjectId;
+      const condition = (
+        conditionSource !== null && this.state.objects[conditionSource] !== undefined
+          ? this.effectiveTriggered(conditionSource)
+          : this.registry.get(printedCardName(object)).triggered
+      )[object.abilityIndex ?? 0]?.condition;
       if (!this.interveningIfMet(condition, this.state.objects[source] ?? object)) {
         this.removeAbilityFromStack(id);
         this.emit({
@@ -5626,6 +5734,9 @@ export class Game {
 
   /** Scan for triggered abilities that just fired and queue them. */
   private detectTriggers(event: GameEvent): void {
+    // Computed once per event rather than per candidate — `effectiveTriggered`
+    // would otherwise rescan the battlefield for every permanent on it.
+    const triggerGrantors = this.triggeredGrantSources();
     const candidates = new Set<ObjectId>(this.state.zones.shared.battlefield);
     if (event.type === "permanent-destroyed") candidates.add(event.object);
     if (event.type === "permanent-left-battlefield") candidates.add(event.object);
@@ -5636,7 +5747,7 @@ export class Game {
       const object = this.state.objects[id];
       if (object === undefined) continue;
       if (hasLostAbilities(object)) continue; // layer 6 — no triggered abilities
-      const abilities = this.registry.get(printedCardName(object)).triggered;
+      const abilities = this.effectiveTriggered(id, triggerGrantors);
       abilities.forEach((ability, index) => {
         if (
           this.triggerMatches(ability.trigger, event, object) &&
@@ -5647,7 +5758,12 @@ export class Game {
             event.type === "damage-dealt" &&
             event.target.kind === "player"
               ? [event.target]
-              : undefined;
+              : // "… deals 3 damage to that player" — the player whose spell
+                // or ability did the targeting.
+                ability.trigger.on === "becomes-target" &&
+                  event.type === "object-targeted"
+                ? [{ kind: "player" as const, player: event.by }]
+                : undefined;
           // A numeric quantity the triggering event supplies, snapshotted now —
           // for an `EffectAmount` `{ triggerValue: true }`: the entering /
           // attacking creature's power (Terror of the Peaks), or the combat
@@ -5662,7 +5778,9 @@ export class Game {
               ? event.object
               : event.type === "attacker-declared" || event.type === "attacked-alone"
                 ? event.attacker
-                : undefined;
+                : event.type === "object-targeted"
+                  ? event.object
+                  : undefined;
           const powerOfId =
             event.type === "permanent-entered-battlefield"
               ? event.object
@@ -5769,6 +5887,15 @@ export class Game {
         return (
           event.type === "permanent-left-battlefield" &&
           this.matchesWho(spec.who, event.object, self)
+        );
+      case "becomes-target":
+        return (
+          event.type === "object-targeted" &&
+          this.matchesWho(spec.who, event.object, self) &&
+          this.triggerFilterOk(spec.filter, event.object, self) &&
+          // "… an opponent controls" — relative to whoever controls the
+          // permanent that's watching, not to the targeted object.
+          (spec.byOpponentOnly !== true || event.by !== self.controller)
         );
       case "attacks":
         return (
@@ -5949,7 +6076,9 @@ export class Game {
     const def = this.registry.get(trigger.cardName);
     const ability = trigger.chapter
       ? (def.chapters ?? [])[trigger.abilityIndex]
-      : def.triggered[trigger.abilityIndex];
+      : (this.state.objects[trigger.sourceObjectId] !== undefined
+          ? this.effectiveTriggered(trigger.sourceObjectId)
+          : def.triggered)[trigger.abilityIndex];
 
     const triggerSource = this.state.objects[trigger.sourceObjectId] !== undefined
       ? this.permanentSource(trigger.sourceObjectId)
@@ -6161,6 +6290,8 @@ export class Game {
       proliferate: () => this.proliferateAll(),
       grantKeyword: (target, keyword, duration) =>
         this.grantKeyword(target, keyword, duration),
+      grantTriggered: (target, ability, duration) =>
+        this.grantTriggered(target, ability, duration),
       takeExtraTurn: () => {
         this.state.extraTurns.push(controller);
         this.emit({ type: "extra-turn-queued", player: controller });
@@ -6846,6 +6977,28 @@ export class Game {
       const current = this.state.objects[id].counters[counterKind] ?? 0;
       if (current > 0) this.addCounter({ kind: "object", object: id }, counterKind, current);
     }
+  }
+
+  /** Attach a triggered ability to one permanent — see the
+   * `"grant-triggered"` {@link EffectSpec}. The ability rides on a modifier,
+   * so an `"end-of-turn"` grant expires with the rest of them and
+   * `effectiveTriggered` picks it up in the meantime. */
+  private grantTriggered(
+    target: TargetRef,
+    ability: TriggeredAbility,
+    duration: PtDuration,
+  ): void {
+    if (target.kind !== "object") return;
+    const id = this.splitOneFromStack(target.object);
+    const object = this.state.objects[id];
+    if (object === undefined || object.zone !== "battlefield") return;
+    object.modifiers.push({
+      power: 0,
+      toughness: 0,
+      keywords: [],
+      grantsTriggered: [ability],
+      untilEndOfTurn: duration === "end-of-turn",
+    });
   }
 
   private grantKeywordAll(

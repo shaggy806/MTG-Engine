@@ -14,6 +14,10 @@ import type { TargetRef, TargetSpec } from "./target.js";
 export interface TargetSource {
   readonly colors: ReadonlySet<Color> | readonly Color[];
   readonly types: readonly CardType[];
+  /** The permanent the spell/ability comes from, when there is one. Only
+   * `"creature-defending-player-controls"` reads it — it has to know which
+   * creature is attacking to know who the defending player is. */
+  readonly object?: ObjectId;
 }
 
 /** Does `target`'s protection (rule 702.16) stop `source` from affecting it? */
@@ -208,6 +212,22 @@ export function isLegalTarget(
           (t) => t.includes("creature") || t.includes("enchantment"),
         )
       );
+    case "creature-defending-player-controls": {
+      if (ref.kind !== "object" || source?.object === undefined) return false;
+      const attacker = state.objects[source.object];
+      const defending = attacker?.attacking;
+      if (defending === null || defending === undefined) return false;
+      // `attacking` is a player, or a planeswalker that player controls.
+      const defender =
+        state.players[defending as PlayerId] !== undefined
+          ? (defending as PlayerId)
+          : state.objects[defending as ObjectId]?.controller;
+      if (defender === undefined) return false;
+      return (
+        isLivingCreature(state, registry, ref.object) &&
+        state.objects[ref.object].controller === defender
+      );
+    }
     case "attacking-or-blocking-creature":
       return (
         ref.kind === "object" &&
