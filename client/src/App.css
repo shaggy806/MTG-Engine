@@ -539,12 +539,29 @@
   height: clamp(50px, 7vh, 70px);
   pointer-events: auto;
 }
+/* In the collapsed tray the "Hand" caption is pure overhead: it was eating
+   the whole sliver that was meant to show the cards, so the peek showed a
+   label and nothing else. The cards are self-evidently the hand. */
+.hand-strip.peekable .hand h3 {
+  display: none;
+}
+.hand-strip.peekable .hand {
+  margin-top: 0;
+  padding-top: 0;
+}
 .hand-strip.peekable .hand-strip-inner {
   width: 100%;
   pointer-events: auto;
-  /* only a sliver -- roughly the hand title + a card's own name/cost bar --
-     stays visible above the bottom edge until raised */
-  translate: 0 calc(100% - clamp(40px, 5vh, 56px));
+  /* Show the top 20% of a card face, so the peek reads as a hand of cards
+     you could reach for rather than a strip of chrome. Derived from the card
+     itself (a tile is `--card-w` wide and 1.4x that tall, see .card-tile) and
+     not a fixed px sliver: the old `clamp(40px, 5vh, 56px)` was measured
+     against the header above, so once that was the only thing in the budget
+     no card was visible at all. `.hand-cards`' own 16px padding-top sits
+     above the tiles, so it's part of what has to be cleared. The fan's outer
+     cards droop, so they show a little less than the centre one. */
+  --hand-peek: calc(16px + var(--card-w) * 1.4 * 0.2);
+  translate: 0 calc(100% - var(--hand-peek));
   transition: translate 0.18s cubic-bezier(0.2, 0.8, 0.3, 1);
 }
 .hand-strip.peekable.raised .hand-strip-inner,
@@ -917,6 +934,38 @@
   letter-spacing: 0.05em;
   color: var(--muted);
   margin-bottom: 4px;
+}
+/* Title row + the concise/detailed switch. Sticky so the switch stays
+   reachable in a long scrolled log (.event-log is the scroll box). */
+.event-log-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--panel);
+  padding-bottom: 2px;
+}
+.event-log-toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--muted);
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 4px;
+}
+.event-log-toggle input {
+  margin: 0;
+  cursor: pointer;
+}
+.event-log-empty {
+  font-size: 11px;
+  color: var(--muted-dim);
+  margin: 4px 0 0;
 }
 /* a floating overlay (Arena-style: it only exists while something's on the
    stack, not a permanent panel) pinned above board content but below modal

@@ -8,6 +8,39 @@ import type { SeatStatus } from './net/protocol.ts'
 
 export type NameOf = (id: ObjectId) => string
 
+/**
+ * Bookkeeping the engine has to record but nobody reads back: priority going
+ * round the table, every step boundary, mana entering and leaving a pool,
+ * lands tapping to pay for it, damage being wiped at end of turn. A full log
+ * is most of this by volume — a single turn against three bots runs to
+ * dozens of lines before anything happens — so the history opens without
+ * them and offers them behind a toggle for when something needs debugging.
+ *
+ * The test is deliberately "is this an implementation detail", not "is this
+ * unimportant": anything a player could point at and ask "when did that
+ * happen?" stays in the default view.
+ */
+const NOISY_EVENTS: ReadonlySet<GameEvent['type']> = new Set([
+  'priority-received',
+  'priority-passed',
+  'step-began',
+  'mana-added',
+  'permanent-tapped',
+  'permanent-untapped',
+  'damage-cleared',
+  'library-shuffled',
+  'pt-modifier-expired',
+  'trigger-removed',
+  'ability-resolved',
+  'flashback-grant-expired',
+  'time-counter-removed',
+])
+
+/** Whether `event` only shows up in the history's detailed mode. */
+export function isDetailOnlyEvent(event: GameEvent): boolean {
+  return NOISY_EVENTS.has(event.type)
+}
+
 export function describeTarget(ref: TargetRef, nameOf: NameOf): string {
   return ref.kind === 'player' ? ref.player : nameOf(ref.object)
 }
