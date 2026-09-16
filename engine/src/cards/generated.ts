@@ -272,6 +272,7 @@ import _poolRoguesPassage from "./pool/rogues-passage.js";
 import _poolRootboundCrag from "./pool/rootbound-crag.js";
 import _poolRubyMedallion from "./pool/ruby-medallion.js";
 import _poolRumblingBaloth from "./pool/rumbling-baloth.js";
+import _poolRunehornHellkite from "./pool/runehorn-hellkite.js";
 import _poolRydiaSummonerOfMist from "./pool/rydia-summoner-of-mist.js";
 import _poolSabotender from "./pool/sabotender.js";
 import _poolSacredFoundry from "./pool/sacred-foundry.js";
@@ -690,6 +691,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolRootboundCrag,
   _poolRubyMedallion,
   _poolRumblingBaloth,
+  _poolRunehornHellkite,
   _poolRydiaSummonerOfMist,
   _poolSabotender,
   _poolSacredFoundry,

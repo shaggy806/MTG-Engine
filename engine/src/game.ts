@@ -942,7 +942,7 @@ export class Game {
                 maxX: this.maxAffordableAbilityX(
                   player,
                   ability.cost.mana,
-                  ability.cost.tap || ability.zone === "hand" ? undefined : source,
+                  ability.cost.tap || ability.zone !== undefined ? undefined : source,
                   ability.cost.tap ? source : undefined,
                 ),
               },
@@ -960,12 +960,17 @@ export class Game {
       );
     }
 
-    // Channel (rule 702.51a) — activated from hand, not the battlefield.
-    for (const card of this.state.zones.perPlayer[player].hand) {
-      const def = this.registry.get(this.state.objects[card].cardName);
-      this.effectiveActivated(card).forEach((ability, index) => {
-        if (ability.zone === "hand") pushActivateAbility(card, def.name, ability, index);
-      });
+    // Abilities activated from a zone other than the battlefield: Channel
+    // from hand (rule 702.51a), and the "exile this card from your graveyard"
+    // shape. Both pay by moving the source out of that zone — see
+    // `ActivatedAbility.zone`.
+    for (const zone of ["hand", "graveyard"] as const) {
+      for (const card of this.state.zones.perPlayer[player][zone]) {
+        const def = this.registry.get(this.state.objects[card].cardName);
+        this.effectiveActivated(card).forEach((ability, index) => {
+          if (ability.zone === zone) pushActivateAbility(card, def.name, ability, index);
+        });
+      }
     }
 
     return out;
@@ -4462,10 +4467,10 @@ export class Game {
     if (ability === undefined) {
       return `${def.name} has no ability #${abilityIndex}`;
     }
-    if (ability.zone === "hand") {
-      // Channel (rule 702.51a) — activatable only from hand, never as a
-      // permanent's ability.
-      if (source.zone !== "hand") return "that card is not in hand";
+    if (ability.zone !== undefined) {
+      // Channel (702.51a) from hand, or an "exile this from your graveyard"
+      // ability — activatable only from that zone, never as a permanent's.
+      if (source.zone !== ability.zone) return `that card is not in ${ability.zone}`;
       if (source.owner !== player) return `${player} does not own that card`;
     } else {
       if (source.zone !== "battlefield") {
@@ -4624,7 +4629,7 @@ export class Game {
     const payment = this.payMana(
       player,
       manaCost,
-      ability.cost.tap || ability.zone === "hand" ? undefined : sourceId,
+      ability.cost.tap || ability.zone !== undefined ? undefined : sourceId,
       ability.cost.tap ? sourceId : undefined,
     );
     if (payment === null) {
@@ -4673,6 +4678,11 @@ export class Game {
       // unconditional part of the cost, paid alongside the mana above.
       this.moveObject(sourceId, "graveyard");
       this.emit({ type: "cards-discarded", player, objects: [sourceId] });
+    } else if (ability.zone === "graveyard") {
+      // The graveyard equivalent — "Exile this card from your graveyard" is
+      // likewise part of the cost, so it happens now rather than on
+      // resolution, and stands even if the ability is countered.
+      this.moveObject(sourceId, "exile");
     }
 
     if (isManaAbility(ability)) {

@@ -178,6 +178,7 @@ const deckB = deck([
   ["Stormfist Crusader", 1],
   ["Feed the Swarm", 1],
   ["Foreboding Ruins", 1],
+  ["Runehorn Hellkite", 1],
   ["Hoard-Smelter Dragon", 1],
   ["Dragon Mage", 1],
   ["Bloodgift Demon", 1],

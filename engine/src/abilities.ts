@@ -81,12 +81,23 @@ export interface ActivatedAbility {
    * from `Game.manaSources()`'s auto-payment scan while the condition is
    * false, not just from manual activation. needed-cards P19. */
   readonly condition?: StaticCondition;
-  /** Activatable only from hand, never from the battlefield — a Channel
-   * ability (rule 702.51a): "Channel — [cost], Discard this card: [effect]".
-   * Discarding the card is an implicit, unconditional part of the cost
-   * (there's no `{T}` and nothing to sacrifice); the ability still goes on
-   * the stack like any other activated ability. */
-  readonly zone?: "hand";
+  /**
+   * Activatable from a zone other than the battlefield. The card leaving that
+   * zone is an implicit, unconditional part of the cost (there's no `{T}` and
+   * nothing to sacrifice), and the ability still goes on the stack like any
+   * other activated ability.
+   *
+   * - `"hand"` — a Channel ability (rule 702.51a): "Channel — [cost], Discard
+   *   this card: [effect]". Pays by **discarding** the source.
+   * - `"graveyard"` — Runehorn Hellkite's "{5}{R}, Exile this card from your
+   *   graveyard: …", and the shape Encore is built on. Pays by **exiling**
+   *   the source.
+   *
+   * Which zone-change the cost is, is fixed per zone rather than configurable,
+   * because that's what every printed card in the pool does. A graveyard
+   * ability that doesn't exile itself would need a separate flag.
+   */
+  readonly zone?: "hand" | "graveyard";
   /** A live cost reduction printed on the ability itself, mirroring
    * `CardDefinition.selfCostReduction` for a spell — the Kamigawa Channel
    * lands' "This ability costs {1} less to activate for each legendary

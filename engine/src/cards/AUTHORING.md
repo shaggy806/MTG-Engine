@@ -457,12 +457,20 @@ planning — see §15.
   controller's perspective. A gated *mana* ability is also excluded from
   `manaSources()`'s auto-payment scan while the condition is false, not just
   from manual activation. needed-cards P19.
-- `zone: "hand"` — **Channel** (rule 702.51a — Boseiju, Who Endures):
-  activatable only while the card is in hand, never as a permanent's ability.
-  Discarding the source card is an implicit, unconditional part of the cost
-  (no separate `sacrifice`/flag needed) — the ability still goes on the stack
-  like any other activated ability. `legalActions` scans hand cards for these
-  the same way it scans the battlefield for ordinary ones.
+- `zone: "hand" | "graveyard"` — activatable only from that zone, never as a
+  permanent's ability, with the card *leaving* that zone an implicit,
+  unconditional part of the cost (no separate `sacrifice`/flag needed). The
+  ability still goes on the stack like any other. `legalActions` scans both
+  zones the same way it scans the battlefield.
+  - `"hand"` is **Channel** (rule 702.51a — Boseiju, Who Endures), and
+    **discards** the source.
+  - `"graveyard"` is "Exile this card from your graveyard: …" (Runehorn
+    Hellkite), and **exiles** it. Because it's a cost, the exile happens on
+    activation and stands even if the ability is countered.
+
+  Which zone-change pays the cost is fixed per zone rather than configurable,
+  matching every printed card in the pool; a graveyard ability that doesn't
+  exile itself would need a separate flag.
 - `costReduction: { reduceGeneric }` — a live-count discount printed on the
   ability itself (mirrors `CardDefinition.selfCostReduction`, but for an
   activated ability's own cost) — the Kamigawa Channel lands' "This ability
