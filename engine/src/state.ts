@@ -297,6 +297,10 @@ export interface GameObject {
   sourceObjectId: ObjectId | null;
   /** For an ability object: index into the source's `activated`/`triggered` list. */
   abilityIndex: number | null;
+  /** For an ability object whose ability was *granted* rather than printed:
+   * where it came from, so it still resolves once the grant is gone (see
+   * {@link GrantedAbilityRef}). Absent for a printed ability. */
+  grantedAbility?: GrantedAbilityRef;
   /** Counters on this object, e.g. `{ "+1/+1": 2 }`. Cleared on any zone change. */
   counters: Record<string, number>;
   /** Temporary modifiers (P/T and/or granted keywords). `untilEndOfTurn` ones expire in cleanup. */
@@ -381,6 +385,29 @@ export interface PtModifier {
   untilEndOfTurn: boolean;
 }
 
+/**
+ * Where a granted ability came from — a `grantsActivated` / `grantsTriggered`
+ * static (Presence of Gond, Staggering Insight), or a one-shot modifier's
+ * `grantsTriggered` (Hunter's Prowess).
+ *
+ * An ability on the stack exists independently of its source (rule 113.7a),
+ * but a granted one can't be found again by index once the grant ends: the
+ * Aura that granted it goes to the graveyard alongside the creature it was on,
+ * and the index now points past the end of the creature's printed abilities.
+ * Recorded when the ability is activated or triggers, and read back instead of
+ * re-deriving it.
+ */
+export type GrantedAbilityRef =
+  | {
+      readonly kind: "static";
+      /** The granting card's printed name, and where in its definition. */
+      readonly cardName: string;
+      readonly staticIndex: number;
+      readonly list: "activated" | "triggered";
+      readonly index: number;
+    }
+  | { readonly kind: "modifier"; readonly ability: TriggeredAbility };
+
 /** A triggered ability waiting to be put on the stack (rule 603.3). */
 export interface PendingTrigger {
   readonly sourceObjectId: ObjectId;
@@ -406,6 +433,8 @@ export interface PendingTrigger {
   /** True for a Saga chapter ability (rule 714) — `abilityIndex` indexes
    * `def.chapters` rather than `def.triggered`. ROADMAP Phase 10. */
   readonly chapter?: boolean;
+  /** Set when the ability was granted — see {@link GrantedAbilityRef}. */
+  readonly grantedAbility?: GrantedAbilityRef;
 }
 
 export interface PlayerState {
@@ -867,6 +896,8 @@ export interface GameState {
     readonly triggerValue?: number;
     /** See {@link PendingTrigger.triggerObject}. */
     readonly triggerObject?: ObjectId;
+    /** See {@link PendingTrigger.grantedAbility}. */
+    readonly grantedAbility?: GrantedAbilityRef;
   } | null;
   /**
    * A suspended spell coming off suspend, parked while its controller chooses

@@ -78,6 +78,7 @@ import type {
   CombatDamageState,
   GameObject,
   GameRules,
+  GrantedAbilityRef,
   GameState,
   MulliganHandState,
   PreventionShield,
@@ -152,6 +153,8 @@ const GENERIC_SPEND_ORDER = ["C", "W", "U", "B", "R", "G"] as const;
 interface GrantSource {
   readonly source: GameObject;
   readonly ability: StaticAbility;
+  /** `ability`'s index in the source's printed `static` list. */
+  readonly staticIndex: number;
   readonly abilities: readonly ActivatedAbility[];
 }
 
@@ -159,6 +162,7 @@ interface GrantSource {
 interface TriggeredGrantSource {
   readonly source: GameObject;
   readonly ability: StaticAbility;
+  readonly staticIndex: number;
   readonly abilities: readonly TriggeredAbility[];
 }
 
@@ -2213,6 +2217,8 @@ export class Game {
         targets,
         trig.triggerValue,
         trig.triggerObject,
+        undefined,
+        trig.grantedAbility,
       );
     } else if (cast !== null) {
       this.state.pendingTargetedCast = null;
@@ -3639,7 +3645,10 @@ export class Game {
   private combatFirstStrikeInPlay(): boolean {
     for (const attackerId of this.currentAttackers()) {
       if (this.striker(attackerId)) return true;
-      for (const blockerId of this.state.objects[attackerId].blockedBy) {
+      // Only blockers still in combat (rule 506.4): one that has left the
+      // battlefield doesn't earn a first-strike step, and a token one no
+      // longer exists at all.
+      for (const blockerId of this.liveBlockersOf(attackerId)) {
         if (this.striker(blockerId)) return true;
       }
     }
@@ -4925,11 +4934,11 @@ export class Game {
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
       if (source === undefined || hasLostAbilities(source)) continue;
-      for (const ability of this.registry.get(printedCardName(source)).static) {
+      this.registry.get(printedCardName(source)).static.forEach((ability, staticIndex) => {
         if (ability.grantsTriggered !== undefined) {
-          out.push({ source, ability, abilities: ability.grantsTriggered });
+          out.push({ source, ability, staticIndex, abilities: ability.grantsTriggered });
         }
-      }
+      });
     }
     return out;
   }
@@ -4949,27 +4958,50 @@ export class Game {
     objectId: ObjectId,
     grantors?: readonly TriggeredGrantSource[],
   ): readonly TriggeredAbility[] {
+    return this.effectiveTriggeredEntries(objectId, grantors).map((e) => e.ability);
+  }
+
+  /** {@link effectiveTriggered}, with each granted ability's
+   * {@link GrantedAbilityRef} alongside it (absent for a printed one). */
+  private effectiveTriggeredEntries(
+    objectId: ObjectId,
+    grantors?: readonly TriggeredGrantSource[],
+  ): readonly { readonly ability: TriggeredAbility; readonly ref?: GrantedAbilityRef }[] {
     const target = this.state.objects[objectId];
     if (target === undefined) return [];
-    const printed = this.registry.get(printedCardName(target)).triggered;
     if (hasLostAbilities(target)) return [];
-    const granted: TriggeredAbility[] = [];
+    const printed = this.registry
+      .get(printedCardName(target))
+      .triggered.map((ability) => ({ ability }));
+    const granted: { ability: TriggeredAbility; ref: GrantedAbilityRef }[] = [];
     // A one-shot grant rides on the object's own modifiers, so it works off
     // the battlefield too (a creature that died still has the modifier until
     // `moveObject` clears it).
     for (const modifier of target.modifiers) {
-      if (modifier.grantsTriggered !== undefined) granted.push(...modifier.grantsTriggered);
+      for (const ability of modifier.grantsTriggered ?? []) {
+        granted.push({ ability, ref: { kind: "modifier", ability } });
+      }
     }
     if (target.zone === "battlefield") {
       const sources = grantors ?? this.triggeredGrantSources();
-      const grants: { ts: number; abilities: readonly TriggeredAbility[] }[] = [];
-      for (const { source, ability, abilities } of sources) {
+      const grants: {
+        ts: number;
+        entries: { ability: TriggeredAbility; ref: GrantedAbilityRef }[];
+      }[] = [];
+      for (const { source, ability, staticIndex, abilities } of sources) {
         if (!staticAffects(this.registry, ability.affects, source, target)) continue;
         if (!this.staticActive(source, ability)) continue;
-        grants.push({ ts: source.timestamp, abilities });
+        const cardName = printedCardName(source);
+        grants.push({
+          ts: source.timestamp,
+          entries: abilities.map((grantedAbility, index) => ({
+            ability: grantedAbility,
+            ref: { kind: "static", cardName, staticIndex, list: "triggered", index },
+          })),
+        });
       }
       grants.sort((a, b) => a.ts - b.ts);
-      for (const g of grants) granted.push(...g.abilities);
+      for (const g of grants) granted.push(...g.entries);
     }
     return granted.length === 0 ? printed : [...printed, ...granted];
   }
@@ -4979,11 +5011,11 @@ export class Game {
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
       if (source === undefined || hasLostAbilities(source)) continue;
-      for (const ability of this.registry.get(printedCardName(source)).static) {
+      this.registry.get(printedCardName(source)).static.forEach((ability, staticIndex) => {
         if (ability.grantsActivated !== undefined) {
-          out.push({ source, ability, abilities: ability.grantsActivated });
+          out.push({ source, ability, staticIndex, abilities: ability.grantsActivated });
         }
-      }
+      });
     }
     return out;
   }
@@ -5001,19 +5033,59 @@ export class Game {
     objectId: ObjectId,
     grantors?: readonly GrantSource[],
   ): readonly ActivatedAbility[] {
+    return this.grantedActivatedEntries(objectId, grantors).map((e) => e.ability);
+  }
+
+  /** {@link grantedActivated}, with each ability's {@link GrantedAbilityRef}. */
+  private grantedActivatedEntries(
+    objectId: ObjectId,
+    grantors?: readonly GrantSource[],
+  ): readonly { readonly ability: ActivatedAbility; readonly ref: GrantedAbilityRef }[] {
     const target = this.state.objects[objectId];
     if (target === undefined || target.zone !== "battlefield") return [];
     if (hasLostAbilities(target)) return [];
     const sources = grantors ?? this.activatedGrantSources();
     if (sources.length === 0) return []; // nothing grants anything — the norm
-    const grants: { ts: number; abilities: readonly ActivatedAbility[] }[] = [];
-    for (const { source, ability, abilities } of sources) {
+    const grants: {
+      ts: number;
+      entries: { ability: ActivatedAbility; ref: GrantedAbilityRef }[];
+    }[] = [];
+    for (const { source, ability, staticIndex, abilities } of sources) {
       if (!staticAffects(this.registry, ability.affects, source, target)) continue;
       if (!this.staticActive(source, ability)) continue;
-      grants.push({ ts: source.timestamp, abilities });
+      const cardName = printedCardName(source);
+      grants.push({
+        ts: source.timestamp,
+        entries: abilities.map((grantedAbility, index) => ({
+          ability: grantedAbility,
+          ref: { kind: "static", cardName, staticIndex, list: "activated", index },
+        })),
+      });
     }
     grants.sort((a, b) => a.ts - b.ts);
-    return grants.flatMap((g) => g.abilities);
+    return grants.flatMap((g) => g.entries);
+  }
+
+  /** Where `sourceId`'s activated ability at `abilityIndex` was granted from,
+   * or `undefined` for a printed one. Read *before* paying costs, which may
+   * move the source and end the grant. */
+  private activatedRefFor(sourceId: ObjectId, abilityIndex: number): GrantedAbilityRef | undefined {
+    const printed = this.registry.get(printedCardName(this.state.objects[sourceId])).activated.length;
+    if (abilityIndex < printed) return undefined;
+    return this.grantedActivatedEntries(sourceId)[abilityIndex - printed]?.ref;
+  }
+
+  /** The ability a {@link GrantedAbilityRef} names — plain registry data, so it
+   * doesn't matter whether the grant still exists. */
+  private abilityFromRef(
+    ref: GrantedAbilityRef,
+  ): ActivatedAbility | TriggeredAbility | undefined {
+    if (ref.kind === "modifier") return ref.ability;
+    if (!this.registry.has(ref.cardName)) return undefined;
+    const granting = this.registry.get(ref.cardName).static[ref.staticIndex];
+    return ref.list === "activated"
+      ? granting?.grantsActivated?.[ref.index]
+      : granting?.grantsTriggered?.[ref.index];
   }
 
   /** `objectId`'s printed `activated` abilities plus any currently granted to
@@ -5214,6 +5286,9 @@ export class Game {
     const source = this.state.objects[sourceId];
     const def = this.registry.get(printedCardName(source));
     const ability = this.effectiveActivated(sourceId)[abilityIndex];
+    // Captured now: a cost below (sacrificing the creature an Aura grants
+    // this to) can end the grant before the ability is on the stack.
+    const grantedAbility = this.activatedRefFor(sourceId, abilityIndex);
 
     const badTarget = this.whyTargetsInvalid(
       ability.targets,
@@ -5374,6 +5449,7 @@ export class Game {
       targets,
     );
     if (chosenX > 0) this.state.objects[abilityId].xValue = chosenX;
+    if (grantedAbility !== undefined) this.state.objects[abilityId].grantedAbility = grantedAbility;
     this.emit({
       type: "ability-activated",
       source: sourceId,
@@ -6302,6 +6378,12 @@ export class Game {
   }
 
   private stackAbilityOf(object: GameObject): StackAbility {
+    // A granted ability resolves as what was granted, whether or not the
+    // grant (or its source) is still around — rule 113.7a.
+    if (object.grantedAbility !== undefined) {
+      const granted = this.abilityFromRef(object.grantedAbility);
+      if (granted !== undefined) return granted;
+    }
     const def = this.registry.get(printedCardName(object));
     const index = object.abilityIndex ?? 0;
     if (object.abilityKind === "triggered") {
@@ -6334,12 +6416,7 @@ export class Game {
     // Intervening-if, second check (rule 603.4): a triggered ability whose
     // condition is no longer true is removed from the stack and does nothing.
     if (object.abilityKind === "triggered") {
-      const conditionSource = object.sourceObjectId;
-      const condition = (
-        conditionSource !== null && this.state.objects[conditionSource] !== undefined
-          ? this.effectiveTriggered(conditionSource)
-          : this.registry.get(printedCardName(object)).triggered
-      )[object.abilityIndex ?? 0]?.condition;
+      const condition = (ability as TriggeredAbility).condition;
       if (!this.interveningIfMet(condition, this.state.objects[source] ?? object)) {
         this.removeAbilityFromStack(id);
         this.emit({
@@ -6424,8 +6501,8 @@ export class Game {
       const object = this.state.objects[id];
       if (object === undefined) continue;
       if (hasLostAbilities(object)) continue; // layer 6 — no triggered abilities
-      const abilities = this.effectiveTriggered(id, triggerGrantors);
-      abilities.forEach((ability, index) => {
+      const entries = this.effectiveTriggeredEntries(id, triggerGrantors);
+      entries.forEach(({ ability, ref }, index) => {
         if (
           this.triggerMatches(ability.trigger, event, object) &&
           this.interveningIfMet(ability.condition, object)
@@ -6505,6 +6582,7 @@ export class Game {
             ...(autoTargets ? { autoTargets } : {}),
             ...(triggerValue !== undefined ? { triggerValue } : {}),
             ...(triggerObject !== undefined ? { triggerObject } : {}),
+            ...(ref !== undefined ? { grantedAbility: ref } : {}),
           };
           // A stacked source's ability really fires once per creature it
           // stands for (rule 603.3d); likewise a compacted batch-entry event
@@ -6827,13 +6905,20 @@ export class Game {
     readonly triggerObject?: ObjectId;
     readonly multiplier?: number;
     readonly chapter?: boolean;
+    readonly grantedAbility?: GrantedAbilityRef;
   }): "done" | "paused" {
     const def = this.registry.get(trigger.cardName);
-    const ability = trigger.chapter
-      ? (def.chapters ?? [])[trigger.abilityIndex]
-      : (this.state.objects[trigger.sourceObjectId] !== undefined
-          ? this.effectiveTriggered(trigger.sourceObjectId)
-          : def.triggered)[trigger.abilityIndex];
+    const granted =
+      trigger.grantedAbility !== undefined
+        ? (this.abilityFromRef(trigger.grantedAbility) as TriggeredAbility | undefined)
+        : undefined;
+    const ability =
+      granted ??
+      (trigger.chapter
+        ? (def.chapters ?? [])[trigger.abilityIndex]
+        : (this.state.objects[trigger.sourceObjectId] !== undefined
+            ? this.effectiveTriggered(trigger.sourceObjectId)
+            : def.triggered)[trigger.abilityIndex]);
 
     const triggerSource = this.state.objects[trigger.sourceObjectId] !== undefined
       ? this.permanentSource(trigger.sourceObjectId)
@@ -6881,6 +6966,7 @@ export class Game {
         trigger.triggerValue,
         trigger.triggerObject,
         trigger.multiplier,
+        trigger.grantedAbility,
       );
       return "done";
     }
@@ -6897,6 +6983,9 @@ export class Game {
         : {}),
       ...(trigger.triggerObject !== undefined
         ? { triggerObject: trigger.triggerObject }
+        : {}),
+      ...(trigger.grantedAbility !== undefined
+        ? { grantedAbility: trigger.grantedAbility }
         : {}),
     };
     this.state.awaiting = {
@@ -6920,8 +7009,9 @@ export class Game {
     triggerValue?: number,
     triggerObject?: ObjectId,
     multiplier?: number,
+    grantedAbility?: GrantedAbilityRef,
   ): void {
-    this.mintAbilityObject(
+    const abilityId = this.mintAbilityObject(
       sourceId,
       cardName,
       controller,
@@ -6932,6 +7022,7 @@ export class Game {
       triggerObject,
       multiplier,
     );
+    if (grantedAbility !== undefined) this.state.objects[abilityId].grantedAbility = grantedAbility;
     this.emit({ type: "ability-triggered", source: sourceId, controller });
   }
 
