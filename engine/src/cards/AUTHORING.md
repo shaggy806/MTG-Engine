@@ -249,7 +249,8 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 | `creatures-damage-controllers` | `filter`, `amount` | Rakdos Charm — "each creature deals 1 damage to its controller"; the reverse direction from `damage-all` (each matching permanent is its own source, hitting its own controller, not the caster). needed-cards P20 |
 | `gain-life` | `amount`, `who?` | Healing Salve |
 | `lose-life` | `amount`, `who?` \| `target?` | Zulaport Cutthroat (`who`); Ob Nixilis, the Fallen — "target player loses 3 life" (`target`, a target-slot index — mutually exclusive with `who`, needed-cards P19) |
-| `draw` | `amount` | Divination (controller draws) |
+| `draw` | `amount`, `who?`, `target?` | Divination (controller draws); Stormfist Crusader (`who: "each-player"`); Bloodgift Demon (`target`, a player slot). `target` wins if both are set. |
+| `discard-hand` | `who` | Dragon Mage — "each player discards their hand". A whole hand at once with nothing to choose, so unlike `discard` it never raises a decision, which is what lets "discards their hand, **then** draws seven" resolve in one pass. |
 | `discard` | `target` (slot \| `"you"`), `amount` | Mind Rot / Faithless Looting |
 | `mill` | `target` (slot \| `"you"`), `amount` | Tome Scour / Aftermath Analyst (`"you"`) |
 
@@ -761,10 +762,10 @@ different card, or extend the engine (see `ROADMAP.md`).
   / hand; `escape` / `flashback` / `disturb` cover self-recursion of the spell
   itself; `StaticAbility.playFromGraveyard` (Ramunap Excavator) lets you *play*
   matching cards from your graveyard.
-- `modify-pt` / `draw` / `discard` / `tap` targeting **another player** by
-  scope — `draw` is always the controller; `discard`/`mill` take a
-  target-player slot (or `"you"`) but there's no "each opponent draws/mills"
-  form.
+- `modify-pt` / `tap` targeting **another player** by scope, and `mill` by
+  scope — `discard`/`mill` take a target-player slot (or `"you"`) but there's
+  no "each opponent mills" form. (`draw` *does* now take both a `who` scope
+  and a `target` slot, and `discard-hand` takes a scope — see §6.)
 - Reordering the cards you keep on top after a scry.
 - Multi-destination tutors (Cultivate's "one to battlefield, one to hand").
   Sakura-Tribe Elder turned out *not* to need this when checked against real
