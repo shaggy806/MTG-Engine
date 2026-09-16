@@ -941,10 +941,13 @@ export class RandomController extends AutomaticController {
           player,
           attackers: legal.eligible
             .filter(() => this.random() < 0.6)
-            .map((attacker) => ({
-              attacker,
-              defender: legal.defenders[this.pickIndex(legal.defenders.length)],
-            })),
+            .flatMap((attacker) => {
+              // Per-attacker, not the union: a goaded creature may not be
+              // sent at its goader while anyone else is available.
+              const options = legal.defendersFor[attacker] ?? [];
+              if (options.length === 0) return [];
+              return [{ attacker, defender: options[this.pickIndex(options.length)] }];
+            }),
         };
       case "declare-blockers": {
         const chosen = new Map<ObjectId, ObjectId>(); // blocker -> attacker

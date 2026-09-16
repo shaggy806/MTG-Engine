@@ -150,3 +150,64 @@ describe("encore", () => {
     expect(game.state.zones.shared.battlefield).not.toContain(token);
   });
 });
+
+describe("goad and legalActions", () => {
+  it("never offers a goaded creature its goader while anyone else is legal", () => {
+    const game = makeGame([A, B, C]);
+    game.advanceUntil((s) => s.priority.holder === B && s.turn.step === "precombat-main");
+    const theirs = game.debugSpawn("Grizzly Bears", B, "battlefield");
+    game.state.objects[theirs].summoningSick = false;
+    game.debugApplyEffect(A, { kind: "goad", target: 0 }, [{ kind: "player", player: B }]);
+
+    game.advanceUntil((s) => s.awaiting?.kind === "attackers" || s.result.over);
+    const legal = game.legalActions(B).find((a) => a.kind === "declare-attackers");
+    expect(legal).toBeDefined();
+    if (legal === undefined || legal.kind !== "declare-attackers") return;
+
+    // The union still lists A — someone else's creature could attack them.
+    expect(legal.defenders).toContain(A);
+    // But *this* attacker may only be sent at C.
+    expect(legal.defendersFor[theirs]).toEqual([C]);
+  });
+
+  it("offers the goader once there is nobody else", () => {
+    const game = makeGame();
+    game.advanceUntil((s) => s.priority.holder === B && s.turn.step === "precombat-main");
+    const theirs = game.debugSpawn("Grizzly Bears", B, "battlefield");
+    game.state.objects[theirs].summoningSick = false;
+    game.debugApplyEffect(A, { kind: "goad", target: 0 }, [{ kind: "player", player: B }]);
+
+    game.advanceUntil((s) => s.awaiting?.kind === "attackers" || s.result.over);
+    const legal = game.legalActions(B).find((a) => a.kind === "declare-attackers");
+    if (legal === undefined || legal.kind !== "declare-attackers") return;
+    // Two-player: the "someone else" clause can't be satisfied, so A is legal.
+    expect(legal.defendersFor[theirs]).toContain(A);
+  });
+
+  it("agrees with what dispatch will accept", () => {
+    // The fuzzer's repro: `legalActions` enumerated defenders with
+    // `whyCannotAttack` alone, which doesn't know about goad, so a caller
+    // picking uniformly from `defenders` built declarations dispatch refused.
+    const game = makeGame([A, B, C]);
+    game.advanceUntil((s) => s.priority.holder === B && s.turn.step === "precombat-main");
+    const theirs = game.debugSpawn("Grizzly Bears", B, "battlefield");
+    game.state.objects[theirs].summoningSick = false;
+    game.debugApplyEffect(A, { kind: "goad", target: 0 }, [{ kind: "player", player: B }]);
+
+    game.advanceUntil((s) => s.awaiting?.kind === "attackers" || s.result.over);
+    const legal = game.legalActions(B).find((a) => a.kind === "declare-attackers");
+    if (legal === undefined || legal.kind !== "declare-attackers") return;
+
+    // One declaration is enough to prove the agreement: the only offered
+    // defender is the one dispatch accepts, and the old code would have
+    // offered A as well.
+    expect(legal.defendersFor[theirs]).toEqual([C]);
+    expect(() =>
+      game.dispatch({
+        type: "declare-attackers",
+        player: B,
+        attackers: [{ attacker: theirs, defender: legal.defendersFor[theirs][0] }],
+      }),
+    ).not.toThrow();
+  });
+});

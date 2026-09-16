@@ -38,6 +38,10 @@ const NOISY_EVENTS: ReadonlySet<GameEvent['type']> = new Set([
   // "becomes the target of" triggers, and the spell's own line already
   // names its targets.
   'object-targeted',
+  // The whole-declaration summary, for "whenever you attack with N or more
+  // creatures" — every attacker already has its own `attacker-declared` line.
+  'attackers-declared',
+  'attacked-alone',
 ])
 
 /** Whether `event` only shows up in the history's detailed mode. */
@@ -195,6 +199,10 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${name(event.object)}: text "${event.from}" → "${event.to}"`
     case 'attacker-declared':
       return `${name(event.attacker)} attacks ${name(event.defender as ObjectId)}`
+    case 'attackers-declared':
+      return `${event.player} attacks with ${event.attackers.length}`
+    case 'attacked-alone':
+      return `${name(event.attacker)} attacked alone`
     case 'loyalty-changed':
       return `${name(event.object)} ${signed(event.delta)} loyalty (now ${event.loyalty})`
     case 'blocker-declared':

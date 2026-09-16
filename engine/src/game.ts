@@ -643,13 +643,21 @@ export class Game {
       if (!mayAct) return [];
       if (awaiting.kind === "attackers") {
         const defenders = this.legalDefenders(player);
+        const defendersFor: Record<ObjectId, readonly (PlayerId | ObjectId)[]> = {};
+        for (const id of this.state.zones.shared.battlefield) {
+          const legal = defenders.filter(
+            (defender) =>
+              this.whyCannotAttack(player, id, defender) === null &&
+              !this.goadForbidsDefender(player, id, defender),
+          );
+          if (legal.length > 0) defendersFor[id] = legal;
+        }
         return [
           {
             kind: "declare-attackers",
             defenders,
-            eligible: this.state.zones.shared.battlefield.filter((id) =>
-              defenders.some((defender) => this.whyCannotAttack(player, id, defender) === null),
-            ),
+            defendersFor,
+            eligible: Object.keys(defendersFor) as ObjectId[],
           },
         ];
       }
@@ -3053,20 +3061,36 @@ export class Game {
       // requirement only bites when some other defender was actually legal,
       // so a goaded creature with nowhere else to go may still attack its
       // goader.
-      const goadedBy = this.state.objects[attacker].goadedBy ?? [];
-      if (goadedBy.includes(this.defendingPlayerOf(defender))) {
-        const elsewhere = this.legalDefenders(player).some(
-          (d) =>
-            !goadedBy.includes(this.defendingPlayerOf(d)) &&
-            this.whyCannotAttack(player, attacker, d) === null,
-        );
-        if (elsewhere) {
-          const name = this.creatureDef(attacker)?.name ?? attacker;
-          return `${name} is goaded and must attack someone else if able`;
-        }
+      if (this.goadForbidsDefender(player, attacker, defender)) {
+        const name = this.creatureDef(attacker)?.name ?? attacker;
+        return `${name} is goaded and must attack someone else if able`;
       }
     }
     return null;
+  }
+
+  /**
+   * Goad (rule 701.38b) — "attacks a player other than you if able". The
+   * requirement only bites when some *other* defender was actually legal, so
+   * a goaded creature with nowhere else to go may still attack its goader.
+   *
+   * Shared between `whyCannotDeclareAttackers` and `legalActions`: enumerating
+   * defenders without it is what let the fuzzer propose a declaration that
+   * `dispatch` then refused.
+   */
+  private goadForbidsDefender(
+    player: PlayerId,
+    attacker: ObjectId,
+    defender: PlayerId | ObjectId,
+  ): boolean {
+    const goadedBy = this.state.objects[attacker]?.goadedBy ?? [];
+    if (goadedBy.length === 0) return false;
+    if (!goadedBy.includes(this.defendingPlayerOf(defender))) return false;
+    return this.legalDefenders(player).some(
+      (d) =>
+        !goadedBy.includes(this.defendingPlayerOf(d)) &&
+        this.whyCannotAttack(player, attacker, d) === null,
+    );
   }
 
   private whyCannotDeclareBlockers(

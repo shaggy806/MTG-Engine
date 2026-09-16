@@ -438,10 +438,23 @@ export type LegalAction =
   | {
       readonly kind: "declare-attackers";
       readonly eligible: readonly ObjectId[];
-      /** Every legal defender an attacker can be declared against — each
-       * non-eliminated opponent, plus every planeswalker those opponents
-       * control (a planeswalker's id, not a player id). */
+      /** The union of every attacker's legal defenders — each non-eliminated
+       * opponent, plus every planeswalker those opponents control (a
+       * planeswalker's id, not a player id). Enough to decide who can be
+       * attacked *at all*; use `defendersFor` to build a real declaration. */
       readonly defenders: readonly (PlayerId | ObjectId)[];
+      /**
+       * Legal defenders **per attacker**, keyed by attacker id.
+       *
+       * Not every eligible attacker may be sent at every defender: a goaded
+       * creature has to attack someone other than its goader when it can
+       * (rule 701.38b). `defenders` alone can't say that, and a caller that
+       * picks from it uniformly — the fuzzer, or a UI letting you drag an
+       * attacker onto any player — builds declarations `dispatch` rejects.
+       */
+      readonly defendersFor: Readonly<
+        Record<ObjectId, readonly (PlayerId | ObjectId)[]>
+      >;
     }
   | {
       readonly kind: "declare-blockers";

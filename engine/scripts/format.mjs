@@ -136,6 +136,10 @@ export const makeFormatter = (game) => {
         return `${name(e.object)}: text "${e.from}" → "${e.to}"`;
       case "attacker-declared":
         return `${name(e.attacker)} attacks ${name(e.defender)}`;
+      case "attackers-declared":
+        return `${e.player} attacks with ${e.attackers.length}`;
+      case "attacked-alone":
+        return `${name(e.attacker)} attacked alone`;
       case "loyalty-changed":
         return `${name(e.object)} ${e.delta >= 0 ? "+" : ""}${e.delta} loyalty (now ${e.loyalty})`;
       case "blocker-declared":

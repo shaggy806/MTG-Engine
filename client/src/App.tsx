@@ -555,6 +555,16 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   const attackAction = actions.find(
     (a): a is AttackAction => a.kind === 'declare-attackers',
   )
+  // Which defenders *this* attacker may legally be sent at. Not the same as
+  // `attackAction.defenders`, which is the union across every attacker: a
+  // goaded creature has to attack someone other than its goader when it can
+  // (rule 701.38b), and picking from the union builds a declaration the
+  // server rejects.
+  const defendersFor = useCallback(
+    (attacker: ObjectId): readonly (PlayerId | ObjectId)[] =>
+      attackAction?.defendersFor[attacker] ?? [],
+    [attackAction],
+  )
   const blockAction = actions.find(
     (a): a is BlockAction => a.kind === 'declare-blockers',
   )
@@ -996,13 +1006,14 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         if (
           attackFocus &&
           id !== attackFocus &&
-          attackAction.defenders.includes(id)
+          defendersFor(attackFocus).includes(id)
         ) {
           setAttackAssignments((cur) => ({ ...cur, [attackFocus]: id }))
           return
         }
         if (!attackAction.eligible.includes(id)) return
-        const hasMultipleDefenders = attackAction.defenders.length > 1
+        const myDefenders = defendersFor(id)
+        const hasMultipleDefenders = myDefenders.length > 1
         if (attackAssignments[id] !== undefined) {
           if (!hasMultipleDefenders || attackFocus === id) {
             setAttackAssignments((cur) => {
@@ -1018,7 +1029,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           }
           return
         }
-        setAttackAssignments((cur) => ({ ...cur, [id]: attackAction.defenders[0] }))
+        setAttackAssignments((cur) => ({ ...cur, [id]: myDefenders[0] }))
         setAttackFocus(hasMultipleDefenders ? id : null)
         return
       }
@@ -1084,13 +1095,14 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       pickTarget,
       sacrificeAction,
       activeTargeting,
+      defendersFor,
     ],
   )
 
   const clickPlayerTarget = useCallback(
     (pid: PlayerId) => {
       if (mode === 'attackers' && attackFocus && attackAction) {
-        if (attackAction.defenders.includes(pid)) {
+        if (defendersFor(attackFocus).includes(pid)) {
           setAttackAssignments((cur) => ({ ...cur, [attackFocus]: pid }))
           setAttackFocus(null)
         }
@@ -1102,7 +1114,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         pickTarget({ kind: 'player', player: pid })
       }
     },
-    [attackAction, attackFocus, mode, pickTarget, activeTargeting],
+    [attackAction, attackFocus, mode, pickTarget, activeTargeting, defendersFor],
   )
 
   const confirmAttackers = useCallback(() => {
@@ -1203,7 +1215,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
 
   const playerIsTargetable = (pid: PlayerId): boolean => {
     if (mode === 'attackers' && attackFocus && attackAction) {
-      return attackAction.defenders.includes(pid)
+      return defendersFor(attackFocus).includes(pid)
     }
     return (
       mode === 'targeting' &&
@@ -1246,7 +1258,9 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       // An opponent's planeswalker is a legal defender: highlight it while an
       // attacker is focused so it can be clicked as the attack target.
       const isDefenderPw =
-        attackAction.defenders.includes(id) && Boolean(view.objects[id])
+        attackFocus !== null &&
+        defendersFor(attackFocus).includes(id) &&
+        Boolean(view.objects[id])
       highlight =
         attackAction.eligible.includes(id) ||
         (attackFocus !== null && isDefenderPw)
