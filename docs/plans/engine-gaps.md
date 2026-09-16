@@ -244,3 +244,57 @@ That is a decision to take when the phase is reached, not now.
   authoring contract and a stale entry there costs more than the feature saves.
 - A card that can't be done faithfully stays unauthored and is recorded here. No silent
   approximations; `precon-decks.md` says why.
+
+---
+
+## Phase G — Draconic Destruction (done)
+
+The first precon authored end to end: **33 missing cards down to 5**. 26 went in on today's
+vocabulary plus five small additions, and Mordant Dragon fell out of two genuine engine bugs
+rather than a missing feature.
+
+| addition | card | note |
+|---|---|---|
+| `tap-all { filter }` | Thundermaw Hellkite | the mirror of `untap-all`; `tap` only takes one chosen target |
+| `damage-all { exceptSource }` | Harbinger of the Hunt | "each **other** creature with flying" — a `CardFilter` describes the permanent matched, not its relationship to the damage source |
+| `EffectAmount` `{ countOf, times }`, and `gain-life.amount` widened to an `EffectAmount` | Shamanic Revelation | "4 life **for each** creature … with power 4 or greater" |
+| `TargetSpec` `{ kind: "permanent", whose?, filter }` and `"player-or-planeswalker"` | Clan Defiance | "creature with/without flying" is the shape the string literals stopped covering; "target player or planeswalker" includes *you*, which `"opponent-or-planeswalker"` does not |
+| `StaticCondition` `self-kicked` (+ `GameObject.enteredKicked`) | Verix Bladewing | a permanent spell's kicker rider is an ETB trigger, so it fires after `kicked` has died with the stack object |
+| `tapLand` helper | Shivan Oasis, Timber Gorge, Kazandu Refuge, Rugged Highlands | the enters-tapped / gain-1-life common-land cycle |
+
+### Two pre-existing bugs Mordant Dragon exposed
+
+Both were latent: no card in the pool combined these features, so nothing had failed yet.
+
+1. **A `deals-combat-damage-to-player` trigger auto-filled target slot 0 with the damaged
+   player unconditionally.** Mordant Dragon targets "**target creature** that player
+   controls", so the auto-fill was illegal and the whole trigger was dropped for "no legal
+   targets". Now the auto is only supplied when slot 0 would accept it — a slot that takes
+   it today still gets it, so nothing that works changes.
+2. **`may` inside a triggered ability lost the trigger's context.** The decision suspends
+   resolution and the modes are applied later from `AwaitingDecision`, which carried `x` and
+   `targets` but not `triggerValue`/`triggerObject`. "Deal **that much** damage" read 0 and
+   silently did nothing. Both now ride on the decision.
+
+### Still blocked — five cards
+
+| card | why |
+|---|---|
+| Haven of the Spirit Dragon | mana provenance ("spend this mana only to cast a Dragon") |
+| Savage Ventmaw | mana provenance ("you don't lose this mana as steps and phases end") |
+| Path of Ancestry | mana provenance — scry when *that mana* is spent on a matching creature spell |
+| Loaming Shaman | "any number of target cards" — a variable target *count* |
+| Foe-Razer Regent | a `fights` trigger, plus a delayed "at the beginning of the next end step" |
+
+Path of Ancestry joins the phase-F mana-provenance group, which is now three cards rather
+than two — still short of justifying provenance tracking through `ManaPool` and the
+auto-payer. Note that the *identity* half of its mana ability is not the blocker: `arcane-signet.ts`
+already models "any color in your commander's color identity" as plain `"any-color"`, which
+is exact for any deck that passes `validateCommanderDeck`. The scry rider is the blocker.
+
+**Sarkhan, the Dragonspeaker** is two-thirds authorable today (the +1 is an `animate` on
+self, the −3 a plain damage effect) but its ultimate makes an emblem with two *triggered*
+abilities, and `create-emblem` carries only a `StaticAbility`. Emblems live in
+`GameState.emblems` rather than as `GameObject`s, so `detectTriggers` cannot see them.
+That is a real, recurring gap — planeswalker ultimates are the main source of emblems and
+most of them trigger — but it is a feature, not a card, and is not in this phase.

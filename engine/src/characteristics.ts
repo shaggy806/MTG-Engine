@@ -149,6 +149,11 @@ function evalStaticCondition(
       );
     case "chosen-on-enter":
       return source.chosenOnEnter === condition.value;
+    case "self-kicked":
+      // On the battlefield it's `enteredKicked` (the stack flag is cleared by
+      // the move that put the permanent here); `kicked` still answers for a
+      // source that is itself on the stack.
+      return source.enteredKicked === true || source.kicked === true;
     case "creature-died-this-turn":
       return state.creaturesDiedThisTurn > 0;
     case "opponent-lost-life-this-turn":

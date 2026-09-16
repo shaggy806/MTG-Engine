@@ -6597,7 +6597,8 @@ export class Game {
           x,
         ),
       returnToHandAll: (filter) => this.returnToHandAllByEffect(controller, filter),
-      damageAll: (filter, amount) => this.damageAllByEffect(source, controller, filter, amount),
+      damageAll: (filter, amount, exceptSource) =>
+        this.damageAllByEffect(source, controller, filter, amount, exceptSource === true),
       creaturesDamageControllers: (filter, amount) =>
         this.creaturesDamageControllersByEffect(controller, filter, amount),
       sacrificePermanents: (who, filter, count, exceptId) =>
@@ -6718,6 +6719,15 @@ export class Game {
           if (object.tapped) {
             object.tapped = false;
             this.emit({ type: "permanent-untapped", object: id });
+          }
+        }
+      },
+      tapAll: (filter) => {
+        for (const id of this.battlefieldMatching(controller, filter)) {
+          const object = this.state.objects[id];
+          if (!object.tapped) {
+            object.tapped = true;
+            this.emit({ type: "permanent-tapped", object: id });
           }
         }
       },
@@ -8072,9 +8082,11 @@ export class Game {
     you: PlayerId,
     filter: CardFilter,
     amount: number,
+    exceptSource = false,
   ): void {
     if (amount <= 0) return;
     for (const id of [...this.state.zones.shared.battlefield]) {
+      if (exceptSource && id === source) continue;
       if (matchesFilter(this.state, this.registry, id, filter, { you })) {
         this.dealDamage(source, { kind: "object", object: id }, amount);
       }
@@ -9381,6 +9393,13 @@ export class Game {
       return;
     }
 
+    // A permanent spell that was kicked has to remember it across this one
+    // move: `kicked` dies with the stack object (below), but the rider it
+    // paid for is an ETB trigger that only fires once the permanent is
+    // already here (Verix Bladewing). Cleared like any other zone-scoped
+    // flag on the *next* move, so a Verix that dies and returns is unkicked.
+    const enteringKicked = object.zone === "stack" && to === "battlefield" && object.kicked === true;
+
     const from = this.zoneList(object.zone, object.owner);
     const index = from.indexOf(id);
     if (index >= 0) from.splice(index, 1);
@@ -9419,6 +9438,7 @@ export class Game {
     // paid as it was cast (P8) both end with the stack.
     object.chosenModes = undefined;
     object.kicked = undefined;
+    object.enteredKicked = enteringKicked;
     object.overloaded = undefined;
     // The adventure "may cast the creature from exile" permission (rule 715.3)
     // ends when the card changes zones. `resolveTopOfStack` re-sets it *after*

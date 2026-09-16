@@ -29,7 +29,13 @@ export type PtDuration = "end-of-turn" | "permanent";
 export type EffectAmount =
   | number
   | "x"
-  | { readonly countOf: CardFilter }
+  | {
+      readonly countOf: CardFilter;
+      /** Multiply the count (Shamanic Revelation: "you gain **4 life for
+       * each** creature you control with power 4 or greater"). Defaults to 1,
+       * which is the plain "one per" every other user of `countOf` wants. */
+      readonly times?: number;
+    }
   /** A numeric quantity the triggering event supplies (ROADMAP P4b): the power
    * of the entering creature (Terror of the Peaks) or, for a "deals combat
    * damage to a player" trigger, the damage dealt (Old Gnawbone — "create that
@@ -151,7 +157,10 @@ export type EffectSpec =
     }
   | {
       readonly kind: "gain-life";
-      readonly amount: number;
+      /** An `EffectAmount` so it can scale off the board — Shamanic
+       * Revelation's "4 life for each creature you control with power 4 or
+       * greater" is a `{ countOf, times: 4 }`. */
+      readonly amount: EffectAmount;
       /** Who gains — the effect's controller (default), or a scope. */
       readonly who?: PlayerScope;
     }
@@ -195,6 +204,11 @@ export type EffectSpec =
       readonly kind: "damage-all";
       readonly filter: CardFilter;
       readonly amount: EffectAmount;
+      /** Spare the effect's own source — "each **other** creature with
+       * flying" (Harbinger of the Hunt). A `CardFilter` can't say this: it
+       * describes the permanent being matched, not its relationship to the
+       * thing dealing the damage. */
+      readonly exceptSource?: boolean;
     }
   | {
       /** Every permanent matching `filter` deals `amount` damage to its own
@@ -516,6 +530,14 @@ export type EffectSpec =
       /** Untap every battlefield permanent matching `filter` (Aggravated
        * Assault: `{ type: "creature", controlledBy: "you" }`). */
       readonly kind: "untap-all";
+      readonly filter: CardFilter;
+    }
+  | {
+      /** Tap every battlefield permanent matching `filter` — Thundermaw
+       * Hellkite's "Tap those creatures", which follows a `damage-all` over
+       * the same filter. The mirror of `untap-all`; `tap` only ever takes a
+       * single chosen target. */
+      readonly kind: "tap-all";
       readonly filter: CardFilter;
     }
   | {
@@ -897,7 +919,7 @@ export interface EffectApi {
   /** Return every battlefield permanent matching `filter` to its owner's hand. */
   returnToHandAll(filter: CardFilter): void;
   /** Deal `amount` damage to every battlefield permanent matching `filter`. */
-  damageAll(filter: CardFilter, amount: number): void;
+  damageAll(filter: CardFilter, amount: number, exceptSource?: boolean): void;
   /** Every battlefield permanent matching `filter` deals `amount` damage to
    * its own controller — see the `"creatures-damage-controllers"`
    * {@link EffectSpec}. */
@@ -1023,6 +1045,7 @@ export interface EffectApi {
   additionalCombat(): void;
   /** Untap every battlefield permanent matching `filter`. */
   untapAll(filter: CardFilter): void;
+  tapAll(filter: CardFilter): void;
   /** `target` becomes a creature — see the `"animate"` {@link EffectSpec}. */
   animate(
     target: TargetRef,
@@ -1194,7 +1217,7 @@ export function amountValue(amount: EffectAmount, ctx: ResolutionContext): numbe
     const ref = resolveEffectTarget(amount.manaValueOf, ctx);
     return ref === undefined ? 0 : ctx.manaValueOf(ref);
   }
-  return ctx.countMatching(amount.countOf);
+  return ctx.countMatching(amount.countOf) * (amount.times ?? 1);
 }
 
 /** Imperative escape hatch for a spell or ability the vocab can't express. */
@@ -1259,10 +1282,12 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     case "discard-hand":
       for (const player of ctx.playersInScope(spec.who)) ctx.discardHand(player);
       return;
-    case "gain-life":
-      if (spec.who === undefined || spec.who === "you") ctx.gainLife(ctx.controller, spec.amount);
-      else ctx.changeLifeScoped(spec.who, spec.amount);
+    case "gain-life": {
+      const gained = amountValue(spec.amount, ctx);
+      if (spec.who === undefined || spec.who === "you") ctx.gainLife(ctx.controller, gained);
+      else ctx.changeLifeScoped(spec.who, gained);
       return;
+    }
     case "lose-life": {
       const life = amountValue(spec.amount, ctx);
       if (spec.target !== undefined) {
@@ -1296,7 +1321,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       ctx.returnToHandAll(spec.filter);
       return;
     case "damage-all":
-      ctx.damageAll(spec.filter, amountValue(spec.amount, ctx));
+      ctx.damageAll(spec.filter, amountValue(spec.amount, ctx), spec.exceptSource === true);
       return;
     case "creatures-damage-controllers":
       ctx.creaturesDamageControllers(spec.filter, amountValue(spec.amount, ctx));
@@ -1483,6 +1508,9 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       return;
     case "untap-all":
       ctx.untapAll(spec.filter);
+      return;
+    case "tap-all":
+      ctx.tapAll(spec.filter);
       return;
     case "animate": {
       const target = resolveEffectTarget(spec.target, ctx);

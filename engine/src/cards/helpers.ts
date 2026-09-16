@@ -152,6 +152,46 @@ export const revealLand = (
   });
 };
 
+/**
+ * A "tap land" — enters tapped, taps for either of two colours (Shivan Oasis,
+ * Timber Gorge). `gainLife` adds the "when this enters, you gain 1 life"
+ * clause of the common-land life cycle (Kazandu Refuge, Rugged Highlands).
+ *
+ * Deliberately *not* typed with its two basic land types: these are plain
+ * nonbasic lands, so they don't switch on a check land the way a shock or
+ * dual land does.
+ */
+export const tapLand = (
+  name: string,
+  landTypes: readonly [string, string],
+  gainLife = false,
+): CardDefinition => {
+  const colors = landTypes
+    .map((t) => BASIC_LAND_MANA[t])
+    .filter((c): c is Color => c !== undefined);
+  return defineCard({
+    name,
+    types: ["land"],
+    text:
+      `${name} enters tapped.\n` +
+      (gainLife ? `When ${name} enters, you gain 1 life.\n` : "") +
+      `{T}: Add ${colors.map((c) => `{${c}}`).join(" or ")}.`,
+    static: [entersTappedStatic(name)],
+    triggered: gainLife
+      ? [
+          {
+            trigger: { on: "enters-battlefield", who: "self" },
+            targets: [],
+            effect: { kind: "gain-life", amount: 1 },
+            resolve: null,
+            text: `When ${name} enters, you gain 1 life.`,
+          },
+        ]
+      : [],
+    activated: colors.map((c) => manaTapAbility(c)),
+  });
+};
+
 const NUM_WORD: Readonly<Record<number, string>> = { 2: "two", 3: "three", 4: "four" };
 
 /**

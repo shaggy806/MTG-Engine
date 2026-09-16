@@ -33,6 +33,12 @@ export interface GameObject {
   zone: ZoneType;
   tapped: boolean;
   damageMarked: number;
+  /**
+   * This permanent's spell was cast kicked — the one piece of `kicked` that
+   * survives the stack-to-battlefield move, for a permanent whose kicker
+   * rider is an ETB trigger (Verix Bladewing). See `moveObject`.
+   */
+  enteredKicked?: boolean;
   /** True once dealt damage by a deathtouch source this turn (rule 704.5h). Cleared with `damageMarked`. */
   markedByDeathtouch: boolean;
   /** Turn number this object last entered the battlefield; `null` otherwise. */

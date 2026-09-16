@@ -261,9 +261,9 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 | kind | fields | example |
 | --- | --- | --- |
 | `damage` | `amount`, `target` | Lightning Bolt |
-| `damage-all` | `filter`, `amount` | Pyroclasm |
+| `damage-all` | `filter`, `amount`, `exceptSource?` | Pyroclasm. `exceptSource` spares the source itself — Harbinger of the Hunt's "each **other** creature with flying", which a `CardFilter` can't say (it describes the permanent matched, not its relationship to the damage source). |
 | `creatures-damage-controllers` | `filter`, `amount` | Rakdos Charm — "each creature deals 1 damage to its controller"; the reverse direction from `damage-all` (each matching permanent is its own source, hitting its own controller, not the caster). needed-cards P20 |
-| `gain-life` | `amount`, `who?` | Healing Salve |
+| `gain-life` | `amount` (an `EffectAmount`), `who?` | Healing Salve; Shamanic Revelation's "4 life for each creature you control with power 4 or greater" is `{ countOf: …, times: 4 }` |
 | `lose-life` | `amount`, `who?` \| `target?` | Zulaport Cutthroat (`who`); Ob Nixilis, the Fallen — "target player loses 3 life" (`target`, a target-slot index — mutually exclusive with `who`, needed-cards P19) |
 | `draw` | `amount`, `who?`, `target?` | Divination (controller draws); Stormfist Crusader (`who: "each-player"`); Bloodgift Demon (`target`, a player slot). `target` wins if both are set. |
 | `discard-hand` | `who` | Dragon Mage — "each player discards their hand". A whole hand at once with nothing to choose, so unlike `discard` it never raises a decision, which is what lets "discards their hand, **then** draws seven" resolve in one pass. |
@@ -279,6 +279,7 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 | kind | fields | example |
 | --- | --- | --- |
 | `tap` | `target` (index only) | |
+| `tap-all` | `filter` | Thundermaw Hellkite's "Tap those creatures" — the mirror of `untap-all`. `tap` only ever takes one chosen target. |
 | `untap` | `target: EffectTargetRef` — an index, `"source"`, or `"trigger-object"` | Amulet of Vigor: `target: "trigger-object"` untaps the permanent whose entering fired the trigger, with no target slot at all |
 | `destroy` | `target` | Doom Blade |
 | `destroy-all` | `filter` | Wrath of God |
@@ -444,7 +445,12 @@ than the chooser), `"creature-or-player"`, `"opponent-or-planeswalker"`,
 `"creature-or-enchantment-an-opponent-controls"`, `"attacking-or-blocking-creature"`, `"creature-defending-player-controls"`,
 `"spell"`,
 `"creature-spell"`, `"noncreature-spell"`, `"instant-or-sorcery-spell"`,
-`"instant-or-sorcery-in-your-graveyard"`.
+`"instant-or-sorcery-in-your-graveyard"`, `"player-or-planeswalker"`.
+
+`"player-or-planeswalker"` reaches **any** player, yourself included (Clan
+Defiance); `"opponent-or-planeswalker"` is the narrower printed wording
+(Theater of Horrors). They are not synonyms — don't reach for the opponent-only
+one just because it's there.
 
 A slot may be made **optional** by wrapping it:
 `{ kind: "optional", of: TargetSpec }` — "up to one target creature" (Ajani,
@@ -457,12 +463,19 @@ already guards for (that's how an out-of-range index reads). Only *required*
 slots gate castability (rule 601.2c), and the client offers a **Skip** button
 for an optional one.
 
-One spec is **structured** rather than a string —
-`{ kind: "card-in-graveyard", whose?: "any" | "you" | "opponent", filter?: CardFilter }`
-(Withered Wretch, Cemetery Reaper, Return to Nature's third mode). Every other
-spec names a shape of permanent on the battlefield, a small enumerable set;
-graveyard targeting varies on both *whose* graveyard and an arbitrary card
-filter, which wouldn't converge as literals. `whose` defaults to `"any"`, and
+Two specs are **structured** rather than strings, for the shapes the literals
+stopped covering:
+
+- `{ kind: "permanent", whose?: "any" | "you" | "opponent", filter: CardFilter }`
+  — a battlefield permanent matching an arbitrary filter. "Target creature
+  with flying" / "without flying" (Clan Defiance), "target Dragon you
+  control", "target creature with power 4 or greater". **Prefer a string
+  literal when one fits** — it reads better and most of the pool uses them;
+  reach for this when spelling the shape as a literal wouldn't be reused.
+- `{ kind: "card-in-graveyard", whose?: "any" | "you" | "opponent" | "defending-player", filter?: CardFilter }`
+  — a card in a graveyard (Withered Wretch, Cemetery Reaper, Return to
+  Nature's third mode). Graveyard targeting varies on both *whose* graveyard
+  and an arbitrary card filter, which wouldn't converge as literals. `whose` defaults to `"any"`, and
 `filter` matches printed characteristics (layer effects don't reach a
 graveyard). `describeTargetSpec(spec)` renders any spec as a UI label.
 
@@ -736,6 +749,15 @@ clause (section 9):
 - `{ kind: "creature-died-this-turn" }` — Liliana's Devotee. Reads the
   turn-scoped `GameState.creaturesDiedThisTurn`, counted in `moveObject`
   while the dying permanent's types are still readable.
+- `{ kind: "self-kicked" }` — the ability's own source was cast **kicked**
+  (Verix Bladewing: "When this enters, *if it was kicked*, …"). A permanent
+  spell's kicker rider can't live in `CardDefinition.kicker` the way an
+  instant's does, because it resolves once the permanent is already on the
+  battlefield; it's an ETB trigger with this as its intervening-if (rule
+  603.4). `GameObject.kicked` dies with the stack object, so `moveObject`
+  carries the one bit across to `enteredKicked`, cleared like any other
+  zone-scoped flag on the *next* move — a Verix that dies and returns is
+  unkicked.
 - `{ kind: "self-counters", counter?, compare }` — how many counters the
   ability's **own source** has. Reads last-known information once the source
   has left the battlefield (rule 603.10), which is the only way Undying's "if
@@ -848,7 +870,9 @@ activated: [{
 each of the big repeating shapes, and a new member of a cycle should use it
 rather than being spelled out: `shockLand`, `fetchLand`, `checkLandStatic`,
 `enterTappedUnlessLands`, `painLand`, `trikeland`, `talisman` (a pain land's
-ability set on a `{2}` artifact), `basicLand`. `blood-crypt.ts` is the whole
+ability set on a `{2}` artifact), `tapLand` (enters tapped, taps for two
+colours — Timber Gorge; pass `true` for the gain-1-life variant, Kazandu
+Refuge), `revealLand`, `basicLand`. `blood-crypt.ts` is the whole
 file: `export default shockLand("Blood Crypt", ["Swamp", "Mountain"]);`
 
 **{X} burn** (`fireball.ts` / `blaze.ts`): `manaCost: "{X}{R}"`, `targets:
@@ -942,7 +966,20 @@ different card, or extend the engine (see `ROADMAP.md`).
   of mana was later spent on — "if that mana is spent on a Dragon spell, it
   gains haste" (Carnelian Orb of Dragonkind) and "spend this mana only to cast
   a Dragon spell" (Haven of the Spirit Dragon, Temple of the Dragon Queen,
-  Path of Ancestry) are both unmodeled (needed-cards P18).
+  Path of Ancestry) are both unmodeled (needed-cards P18). The related
+  "**you don't lose this mana** as steps and phases end" (Savage Ventmaw) is
+  unmodeled for the same reason. Note that the *identity* clause alone is not
+  a blocker: "one mana of any color in your commander's color identity" is
+  modelled as plain `"any-color"` (`arcane-signet.ts`, `commanders-sphere.ts`),
+  which is exact for any deck that passes `validateCommanderDeck` — every card
+  the mana could be spent on is already inside that identity.
+- **An emblem can only carry a `StaticAbility`.** `create-emblem` takes
+  `static?`, and emblems live in `GameState.emblems` rather than as
+  `GameObject`s, so `detectTriggers` — which scans battlefield permanents —
+  can't see them. An emblem with a *triggered* ability (Sarkhan, the
+  Dragonspeaker's ultimate: "At the beginning of your draw step, draw two
+  additional cards") is therefore unauthorable. This is the common shape for
+  planeswalker ultimates, so it's a real gap rather than a one-card one.
 - **`add-mana`'s cost-attached mana lands remain unmodeled.** The `{ oneOf }`
   combination form (needed-cards P20, §8) covers "any combination of these
   colours" for an ability with no mana in its own *cost* (Orcish Lumberjack).

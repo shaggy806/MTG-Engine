@@ -195,6 +195,16 @@ export type StaticCondition =
    */
   | { readonly kind: "target"; readonly index: number; readonly filter: CardFilter }
   /**
+   * Was the ability's own source cast with its kicker paid? — Verix
+   * Bladewing's "When this enters, **if it was kicked**, …".
+   *
+   * A *permanent* spell's kicker rider can't live in `CardDefinition.kicker`
+   * the way an instant's does: the rider resolves after the permanent is
+   * already on the battlefield, so it's an ETB trigger with an intervening-if
+   * (rule 603.4) reading the `kicked` flag the cast left on the object.
+   */
+  | { readonly kind: "self-kicked" }
+  /**
    * How many counters the ability's own source has — Undying's "**if it had
    * no +1/+1 counters on it**".
    *

@@ -101,8 +101,18 @@ export function isLegalTarget(
   if (typeof spec === "object" && spec.kind === "optional") {
     return isLegalTarget(state, registry, spec.of, ref, forPlayer, source);
   }
-  // The one structured spec — a card in a graveyard (see `TargetSpec`).
-  // Handled ahead of the string switch rather than inside it.
+  // A filtered battlefield permanent (see `TargetSpec`). Like the graveyard
+  // spec below, handled ahead of the string switch rather than inside it.
+  if (typeof spec === "object" && spec.kind === "permanent") {
+    if (ref.kind !== "object") return false;
+    const object = state.objects[ref.object];
+    if (object === undefined || object.zone !== "battlefield") return false;
+    const whose = spec.whose ?? "any";
+    if (whose === "you" && object.controller !== forPlayer) return false;
+    if (whose === "opponent" && object.controller === forPlayer) return false;
+    return matchesFilter(state, registry, ref.object, spec.filter, { you: forPlayer });
+  }
+  // The structured graveyard spec.
   if (typeof spec === "object") {
     if (ref.kind !== "object") return false;
     const object = state.objects[ref.object];
@@ -291,6 +301,14 @@ export function isLegalTarget(
     case "opponent-or-planeswalker":
       return (
         (isLivingPlayer(state, ref) && ref.kind === "player" && ref.player !== forPlayer) ||
+        (ref.kind === "object" &&
+          isPermanentOfType(state, registry, ref.object, (t) => t.includes("planeswalker")))
+      );
+    case "player-or-planeswalker":
+      // "**any** player" — including yourself (Clan Defiance). The narrower
+      // `opponent-or-planeswalker` above is a different printed wording.
+      return (
+        isLivingPlayer(state, ref) ||
         (ref.kind === "object" &&
           isPermanentOfType(state, registry, ref.object, (t) => t.includes("planeswalker")))
       );

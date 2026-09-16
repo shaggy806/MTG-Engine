@@ -24,6 +24,10 @@ export type TargetSpec =
   /** An opponent, or any planeswalker (Theater of Horrors' "target opponent
    * or planeswalker"). */
   | "opponent-or-planeswalker"
+  /** *Any* player — yourself included — or any planeswalker (Clan Defiance's
+   * "target player or planeswalker"). A different printed wording from
+   * `opponent-or-planeswalker`, not a synonym. */
+  | "player-or-planeswalker"
   | "permanent"
   | "nonland-permanent"
   | "land"
@@ -66,8 +70,25 @@ export type TargetSpec =
    * (Snapcaster Mage — ROADMAP Phase 6b). */
   | "instant-or-sorcery-in-your-graveyard"
   /**
-   * A card in a graveyard — the general form, and the only structured
-   * (non-string) `TargetSpec`.
+   * A permanent on the battlefield matching an arbitrary `CardFilter` — the
+   * general form, for the shapes that aren't worth their own literal.
+   *
+   * "Target creature with flying" / "without flying" (Clan Defiance), "target
+   * Dragon you control", "target creature with power 4 or greater": these
+   * multiply combinatorially, the way graveyard targeting does, so the string
+   * literals above stop converging. The literals stay for the common shapes —
+   * they read better at the call site and most of the pool already uses them.
+   *
+   * `whose` defaults to `"any"`.
+   */
+  | {
+      readonly kind: "permanent";
+      readonly whose?: "any" | "you" | "opponent";
+      readonly filter: CardFilter;
+    }
+  /**
+   * A card in a graveyard — the general form for a graveyard the way
+   * `permanent` is for the battlefield.
    *
    * Every other spec is a string literal because the set of "permanent on the
    * battlefield" shapes is small and enumerable. Graveyard targeting isn't:
@@ -136,6 +157,12 @@ export function isOptionalSpec(spec: TargetSpec): boolean {
 export function describeTargetSpec(spec: TargetSpec | string): string {
   if (typeof spec === "string") return spec;
   if (spec.kind === "optional") return `${describeTargetSpec(spec.of)} (optional)`;
+  if (spec.kind === "permanent") {
+    const noun = spec.filter.type ?? spec.filter.subtype ?? "permanent";
+    if (spec.whose === "you") return `${noun} you control`;
+    if (spec.whose === "opponent") return `${noun} an opponent controls`;
+    return noun;
+  }
   const whose =
     spec.whose === "you"
       ? "your graveyard"
