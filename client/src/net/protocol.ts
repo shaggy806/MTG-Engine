@@ -87,6 +87,24 @@ export type ClientMessage =
       readonly deck: WireDeck
     }
   | {
+      /** Adds one more seat to a room that hasn't started yet — the seat
+       * board's "Add seat" tile. How big the table is used to be answered on
+       * the landing page, before anyone had seen a seat; it's asked here
+       * instead, where the seats are visible and a wrong guess costs one
+       * click. Rejected once the table is full (four seats). */
+      readonly type: 'add-seat'
+      readonly roomId: string
+    }
+  | {
+      /** Drops a seat from a room that hasn't started yet. Rejected below two
+       * seats, and for a seat a human has claimed — that player leaving is
+       * theirs to do. An open or bot-filled seat is fair game for anyone in
+       * the room, same as `add-bot` filling one. */
+      readonly type: 'remove-seat'
+      readonly roomId: string
+      readonly seat: PlayerId
+    }
+  | {
       /** Toggles the caller's own already-claimed seat between ready and
        * not — the "Ready"/"Un-ready" button once a deck's already locked in.
        * Only valid before the room's game exists. */

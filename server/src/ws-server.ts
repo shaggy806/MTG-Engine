@@ -252,6 +252,30 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
           }
           return;
         }
+        case "add-seat":
+        case "remove-seat": {
+          // Sizing the table is a waiting-room decision by construction —
+          // once there's a `Game`, its turn order is dealt and fixed.
+          const room = requirePendingRoom(manager, message.roomId);
+          try {
+            if (message.type === "add-seat") room.addSeat();
+            else room.removeSeat(message.seat);
+          } catch (err) {
+            send(ws, {
+              type: "error",
+              message: err instanceof Error ? err.message : String(err),
+            });
+            return;
+          }
+          broadcastPending(room);
+          // Same as `add-bot` above: whoever resized the table may not hold a
+          // seat here yet, so they aren't in `connectedSeats()` and the
+          // broadcast above never reaches them.
+          if (room.seatOf(connection) === null) {
+            send(ws, { type: "room-joined", roomId: room.id, seats: room.seatStatuses() });
+          }
+          return;
+        }
         case "set-ready": {
           const room = requirePendingRoom(manager, message.roomId);
           try {

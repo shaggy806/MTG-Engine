@@ -49,7 +49,11 @@ export type ClientMessage =
   | {
       readonly type: "create-room";
       readonly seed?: number;
-      /** How many seats the room should have (2-4). Defaults to 2. */
+      /** How many seats the room should open with (2-4). Defaults to 2, which
+       * is what the client sends — the table is sized on the seat board now
+       * (`add-seat`/`remove-seat`), where you can see what a seat is. Kept as
+       * a parameter for scripts and tests that want a 3-4 player room in one
+       * step. */
       readonly players?: number;
     }
   | { readonly type: "join-room"; readonly roomId: string }
@@ -96,6 +100,25 @@ export type ClientMessage =
       readonly roomId: string;
       readonly seat: PlayerId;
       readonly deck: WireDeck;
+    }
+  | {
+      /** Adds one more seat to a room that hasn't started yet — the seat
+       * board's "Add seat" tile. How big the table is used to be answered on
+       * the landing page, before anyone had seen a seat; it's asked here
+       * instead, where the seats are visible and a wrong guess costs one
+       * click to fix. Rejected once the table is full (four seats). Anyone in
+       * the room may do this, same as `add-bot`. */
+      readonly type: "add-seat";
+      readonly roomId: string;
+    }
+  | {
+      /** Drops a seat from a room that hasn't started yet. Rejected below two
+       * seats, and for a seat a human has claimed — that player leaving is
+       * theirs to do. An open or bot-filled seat is fair game for anyone in
+       * the room, on the same reasoning as `add-bot` filling one. */
+      readonly type: "remove-seat";
+      readonly roomId: string;
+      readonly seat: PlayerId;
     }
   | {
       /** Toggles the caller's own already-claimed seat between ready and not

@@ -39,6 +39,12 @@ interface PendingSeat {
 
 const MAX_DISPLAY_NAME_LENGTH = 20;
 
+/** A table is 2-4 seats: `SEATS` caps the top (four named seats, in seating
+ * order) and Magic needs an opponent. Both ends are enforced by
+ * `addSeat`/`removeSeat` rather than only by the client's own buttons, since
+ * anyone in the room can send either message. */
+const MIN_SEATS = 2;
+
 /** Every card the registry knows, built once. */
 const REGISTRY = createDefaultRegistry();
 
@@ -73,6 +79,24 @@ function assertDeckIsBuildable(deck: PendingDeck): void {
   );
 }
 
+/** Where a seat sits in the printed seating order (`SEATS`), which is the
+ * turn order a promoted room ends up with — see `toGameConfig`. */
+function seatOrder(player: PlayerId): number {
+  return SEATS.findIndex((s) => s.id === player);
+}
+
+function emptySeat(player: PlayerId): PendingSeat {
+  return {
+    player,
+    clientToken: null,
+    connection: null,
+    displayName: null,
+    isBot: false,
+    deck: null,
+    ready: false,
+  };
+}
+
 /** Config a `PendingRoom` needs up front — everything `GameConfig` wants
  * except `decks` (unknown until every seat is filled) and `startingPlayer`
  * (picked at promotion time instead of creation time, since "the highroll"
@@ -89,15 +113,7 @@ export class PendingRoom {
   constructor(id: string, players: number, config: PendingGameConfig) {
     this.id = id;
     this.config = config;
-    this.seats = SEATS.slice(0, players).map((s) => ({
-      player: s.id,
-      clientToken: null,
-      connection: null,
-      displayName: null,
-      isBot: false,
-      deck: null,
-      ready: false,
-    }));
+    this.seats = SEATS.slice(0, players).map((s) => emptySeat(s.id));
     this.lastActivityAt = Date.now();
   }
 
@@ -171,6 +187,36 @@ export class PendingRoom {
       seat.deck = this.fallbackDeck(player);
     }
     if (ready !== undefined) seat.ready = ready;
+    this.lastActivityAt = Date.now();
+  }
+
+  /**
+   * Adds one more seat, taking the first of `SEATS` not already at the table
+   * and keeping the seats in `SEATS` order afterwards — so turn order is
+   * always the printed seating order however the table was assembled, and
+   * dropping the third seat of four then adding one back gives the same table
+   * it started from rather than a reshuffled one. Returns the new seat.
+   */
+  addSeat(): PlayerId {
+    const taken = new Set(this.seats.map((s) => s.player));
+    const next = SEATS.find((s) => !taken.has(s.id));
+    if (next === undefined) throw new Error(`a table seats at most ${SEATS.length}`);
+    this.seats.push(emptySeat(next.id));
+    this.seats.sort((a, b) => seatOrder(a.player) - seatOrder(b.player));
+    this.lastActivityAt = Date.now();
+    return next.id;
+  }
+
+  /** Drops a seat. A seat a human holds is never pulled out from under them
+   * — leaving is that player's own call — but an open or bot-filled one may
+   * be removed by anyone in the room, on the same reasoning that lets anyone
+   * fill one with `addBot`. */
+  removeSeat(player: PlayerId): void {
+    const index = this.seats.findIndex((s) => s.player === player);
+    if (index === -1) throw new Error(`no such seat: ${player}`);
+    if (this.seats.length <= MIN_SEATS) throw new Error(`a game needs at least ${MIN_SEATS} seats`);
+    if (this.seats[index].clientToken !== null) throw new Error(`seat ${player} is claimed by a player`);
+    this.seats.splice(index, 1);
     this.lastActivityAt = Date.now();
   }
 

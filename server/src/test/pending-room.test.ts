@@ -63,6 +63,43 @@ describe("PendingRoom", () => {
     );
   });
 
+  it("addSeat grows the table to four and no further", () => {
+    const room = pendingRoom();
+    expect(room.addSeat()).toBe(SEATS[2].id);
+    expect(room.addSeat()).toBe(SEATS[3].id);
+    expect(room.seatStatuses().map((s) => s.player)).toEqual(SEATS.map((s) => s.id));
+    expect(() => room.addSeat()).toThrow("seats at most");
+  });
+
+  it("removeSeat shrinks the table to two and no further", () => {
+    const room = pendingRoom(4);
+    room.removeSeat(SEATS[3].id);
+    room.removeSeat(SEATS[2].id);
+    expect(room.seatStatuses().map((s) => s.player)).toEqual([ALICE, BOB]);
+    expect(() => room.removeSeat(BOB)).toThrow("at least 2 seats");
+  });
+
+  it("removeSeat drops a bot's seat but never one a player is sitting in", () => {
+    const room = pendingRoom(3);
+    room.claimSeat(ALICE, "alice-token", { send: () => {} });
+    room.addBot(SEATS[2].id);
+    expect(() => room.removeSeat(ALICE)).toThrow("claimed by a player");
+    room.removeSeat(SEATS[2].id);
+    expect(room.seatStatuses().map((s) => s.player)).toEqual([ALICE, BOB]);
+    expect(room.botSeats()).toEqual([]);
+  });
+
+  it("a seat dropped and re-added leaves the table in printed seating order", () => {
+    const room = pendingRoom(4);
+    room.removeSeat(SEATS[2].id);
+    room.addSeat();
+    // Not [A, B, D, C] — turn order comes straight off this array, so the
+    // order a table was assembled in must not leak into who plays when.
+    expect(room.seatStatuses().map((s) => s.player)).toEqual(SEATS.map((s) => s.id));
+    for (const seat of SEATS) room.addBot(seat.id);
+    expect(room.toGameConfig().decks.map((d) => d.player)).toEqual(SEATS.map((s) => s.id));
+  });
+
   it("addBot fills a seat with its positional starter deck and rejects a claimed seat", () => {
     const room = pendingRoom();
     room.addBot(BOB);

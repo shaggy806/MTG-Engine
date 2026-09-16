@@ -331,6 +331,82 @@ describe("room server (end to end over WebSocket)", () => {
     expect(joined.seats).toHaveLength(4);
   });
 
+  it("sizes the table from the seat board: add-seat and remove-seat, refreshing a watcher who holds no seat", async () => {
+    const ws = await openSocket();
+    const next = messageQueue(ws);
+    ws.send(JSON.stringify({ type: "create-room" }));
+    const created = await next();
+    if (created.type !== "room-created") throw new Error("unreachable");
+    const roomId = created.roomId;
+    ws.send(JSON.stringify({ type: "join-room", roomId }));
+    await next();
+
+    // This connection has claimed nothing, so it isn't in `connectedSeats()`
+    // and only the direct refresh reaches it — the case that made `add-bot`
+    // need the same follow-up send.
+    ws.send(JSON.stringify({ type: "add-seat", roomId }));
+    const grown = await next();
+    if (grown.type !== "room-joined") throw new Error("unreachable");
+    expect(grown.seats.map((s) => s.player)).toEqual([ALICE, BOB, CAROL]);
+
+    ws.send(JSON.stringify({ type: "remove-seat", roomId, seat: CAROL }));
+    const shrunk = await next();
+    if (shrunk.type !== "room-joined") throw new Error("unreachable");
+    expect(shrunk.seats.map((s) => s.player)).toEqual([ALICE, BOB]);
+  });
+
+  it("refuses to drop a seat below two, or one a player is sitting in", async () => {
+    const ws = await openSocket();
+    const next = messageQueue(ws);
+    ws.send(JSON.stringify({ type: "create-room", players: 3 }));
+    const created = await next();
+    if (created.type !== "room-created") throw new Error("unreachable");
+    const roomId = created.roomId;
+    ws.send(JSON.stringify({ type: "claim-seat", roomId, seat: ALICE, clientToken: "alice" }));
+    await next();
+
+    ws.send(JSON.stringify({ type: "remove-seat", roomId, seat: ALICE }));
+    const claimedErr = await next();
+    expect(claimedErr.type).toBe("error");
+
+    ws.send(JSON.stringify({ type: "remove-seat", roomId, seat: CAROL }));
+    await next();
+    ws.send(JSON.stringify({ type: "remove-seat", roomId, seat: BOB }));
+    const floorErr = await next();
+    expect(floorErr.type).toBe("error");
+    if (floorErr.type !== "error") throw new Error("unreachable");
+    expect(floorErr.message).toMatch(/at least 2 seats/);
+  });
+
+  it("rejects resizing a table once the game has started", async () => {
+    const ws = await openSocket();
+    const next = messageQueue(ws);
+    ws.send(JSON.stringify({ type: "create-room" }));
+    const created = await next();
+    if (created.type !== "room-created") throw new Error("unreachable");
+    const roomId = created.roomId;
+    ws.send(JSON.stringify({ type: "claim-seat", roomId, seat: ALICE, clientToken: "alice", ready: true }));
+    await next();
+    ws.send(JSON.stringify({ type: "add-bot", roomId, seat: BOB }));
+    await next();
+    ws.send(JSON.stringify({ type: "start-game", roomId }));
+    let message = await next();
+    while (message.type !== "state") message = await next();
+
+    // Asked from a second connection holding no seat: a live room keeps
+    // publishing frames to its *seated* players as the bot plays on, so
+    // asking from Alice's socket would race the reply against those.
+    const watcher = await openSocket();
+    const watcherNext = messageQueue(watcher);
+    watcher.send(JSON.stringify({ type: "join-room", roomId }));
+    await watcherNext();
+    watcher.send(JSON.stringify({ type: "add-seat", roomId }));
+    const err = await watcherNext();
+    expect(err.type).toBe("error");
+    if (err.type !== "error") throw new Error("unreachable");
+    expect(err.message).toMatch(/already started/);
+  });
+
   it("rate-limits a connection that sends a flood of messages", async () => {
     const ws = await openSocket();
     const nextMsg = messageQueue(ws);
