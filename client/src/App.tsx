@@ -2615,6 +2615,9 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
             ),
             label: (id) => {
               const c = castByCard.get(id)
+              // Most routes read fine as their own name ("flashback", "escape");
+              // a permission granted by another permanent doesn't.
+              if (c?.via === 'graveyard-permission') return 'Cast from graveyard'
               if (c?.via) return `Cast (${c.via})`
               if (landByCard.has(id)) return 'Play land'
               return 'Cast'

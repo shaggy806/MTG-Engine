@@ -229,6 +229,7 @@ const deckB = deck([
   ["Camaraderie", 1],
   ["Citanul Hierophants", 1],
   ["Nullmage Shepherd", 1],
+  ["Gisa and Geralf", 1],
   ["Thought Vessel", 1],
   ["Gravitational Shift", 1],
   ["Condemn", 1],

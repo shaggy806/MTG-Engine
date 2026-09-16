@@ -937,6 +937,21 @@ export class Game {
       );
     }
 
+    // A graveyard-cast permission granted by a permanent (Gisa and Geralf).
+    // Offered once per card however many permanents could grant it; the
+    // first one found pays for it when the spell is cast.
+    for (const card of this.state.zones.perPlayer[player].graveyard) {
+      if (this.graveyardCastGrantor(player, card) === null) continue;
+      const def = this.registry.get(this.state.objects[card].cardName);
+      if (def.types.includes("land")) continue; // "cast", not "play"
+      out.push(
+        ...this.castSpellActions(player, card, def.name, def, {
+          via: "graveyard-permission",
+          costString: def.manaCost,
+        }),
+      );
+    }
+
     // Adventure (rule 715.3) — a card exiled by its adventure resolving may be
     // cast as its creature half (face 0) from exile.
     for (const card of this.state.zones.shared.exile) {
@@ -2557,6 +2572,7 @@ export class Game {
       // once-each-turn ability (602.5g).
       object.loyaltyActivatedThisTurn = false;
       object.abilitiesUsedThisTurn = [];
+      object.graveyardCastUsedThisTurn = false;
       object.combatDamagedPlayersThisTurn = [];
       object.attackedThisTurn = false;
       if (object.tapped) {
@@ -4465,6 +4481,10 @@ export class Game {
       if (!this.impulsePlayable(player, cardId)) {
         return `${def.name} is not playable from exile by ${player}`;
       }
+    } else if (via === "graveyard-permission") {
+      if (this.graveyardCastGrantor(player, cardId) === null) {
+        return `${player} has no permission to cast ${def.name} from their graveyard`;
+      }
     } else if (
       !this.state.zones.perPlayer[player].hand.includes(cardId) &&
       !this.isCastableCommander(player, cardId)
@@ -4694,6 +4714,18 @@ export class Game {
 
     // Storm (rule 702.40a) counts spells cast *before* this one, by any player.
     const stormCount = this.state.spellsCastThisTurn;
+
+    // Spend a once-per-turn graveyard permission *before* the card leaves the
+    // graveyard, while the grantor lookup can still see it there.
+    if (via === "graveyard-permission") {
+      const grantor = this.graveyardCastGrantor(player, cardId);
+      if (grantor !== null) {
+        const ability = this.graveyardCastAbility(grantor);
+        if (ability?.oncePerTurn === true) {
+          this.state.objects[grantor].graveyardCastUsedThisTurn = true;
+        }
+      }
+    }
 
     // Commit: move to the stack, pay, announce.
     this.moveObject(cardId, "stack");
@@ -7547,6 +7579,47 @@ export class Game {
    * moment the turn number moves; `exiledWith` keeps it alive only while that
    * permanent is still on the battlefield (Theater of Horrors).
    */
+  /** A permanent's `castFromGraveyard` permission, if its printed statics
+   * carry one and it hasn't lost its abilities. */
+  private graveyardCastAbility(
+    id: ObjectId,
+  ): NonNullable<StaticAbility["castFromGraveyard"]> | undefined {
+    const object = this.state.objects[id];
+    if (object === undefined || hasLostAbilities(object)) return undefined;
+    for (const ability of this.registry.get(printedCardName(object)).static) {
+      if (ability.castFromGraveyard !== undefined) return ability.castFromGraveyard;
+    }
+    return undefined;
+  }
+
+  /**
+   * The permanent letting `player` cast `card` from their graveyard right now,
+   * or `null` — see `StaticAbility.castFromGraveyard`. Checks the card is in
+   * *that player's* graveyard, matches the filter, and that the grantor's
+   * once-per-turn and your-turn gates are still open.
+   */
+  private graveyardCastGrantor(player: PlayerId, card: ObjectId): ObjectId | null {
+    const object = this.state.objects[card];
+    if (object === undefined || object.zone !== "graveyard" || object.owner !== player) {
+      return null;
+    }
+    for (const id of this.state.zones.shared.battlefield) {
+      const grantor = this.state.objects[id];
+      if (grantor.controller !== player) continue;
+      const permission = this.graveyardCastAbility(id);
+      if (permission === undefined) continue;
+      if (permission.yourTurnOnly === true && this.activePlayer !== player) continue;
+      if (permission.oncePerTurn === true && grantor.graveyardCastUsedThisTurn === true) {
+        continue;
+      }
+      if (!matchesFilter(this.state, this.registry, card, permission.filter, { you: player })) {
+        continue;
+      }
+      return id;
+    }
+    return null;
+  }
+
   private impulsePlayable(player: PlayerId, card: ObjectId): boolean {
     const object = this.state.objects[card];
     const impulse = object?.impulse;

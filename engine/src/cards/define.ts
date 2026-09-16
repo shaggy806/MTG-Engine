@@ -289,6 +289,22 @@ export interface StaticAbility {
    * stack object both carry — stays stable.
    */
   readonly grantsTriggered?: readonly TriggeredAbility[];
+  /**
+   * A permission to cast spells from your **graveyard**, for their normal
+   * cost — Gisa and Geralf's "Once during each of your turns, you may cast a
+   * Zombie creature spell from your graveyard".
+   *
+   * `filter` is matched against the graveyard card's printed
+   * characteristics. `oncePerTurn` limits the permanent to one such cast per
+   * turn, and `yourTurnOnly` to casting during your own turn; the Gisa and
+   * Geralf wording ("once during each of your turns") needs both. The
+   * permission belongs to the permanent, so it ends the moment that leaves.
+   */
+  readonly castFromGraveyard?: {
+    readonly filter: CardFilter;
+    readonly oncePerTurn?: boolean;
+    readonly yourTurnOnly?: boolean;
+  };
   /** "You have no maximum hand size" (Thought Vessel, Reliquary Tower). A
    * property of the *controller*, not of anything this ability `affects`, so
    * it's read straight off the battlefield at cleanup rather than through the

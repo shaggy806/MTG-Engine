@@ -38,7 +38,12 @@ export type CastVia =
   | "cascade"
   /** "Impulse draw" (Dream Pillager, Tectonic Giant, Theater of Horrors) — a
    * card exiled face-up with permission to play it, for its normal cost. */
-  | "impulse";
+  | "impulse"
+  /** Cast from your graveyard for its normal cost, under a permission a
+   * permanent you control grants (Gisa and Geralf: "you may cast a Zombie
+   * creature spell from your graveyard"). Unlike flashback, nothing exiles
+   * it afterwards — a countered one goes back to the graveyard. */
+  | "graveyard-permission";
 
 export interface AttackerDeclaration {
   readonly attacker: ObjectId;

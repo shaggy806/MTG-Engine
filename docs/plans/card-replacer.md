@@ -78,3 +78,24 @@ room created → waiting room → promoted → opening hand matches the imported
   automatically; swapping it for something else means editing the resulting deck normally.
 - Multiple commanders (Partner) are parsed from the section header, but the deck builder's own
   editor only supports one commander slot (same limitation the deck builder itself already has).
+
+## Weaknesses found in use (2026-09-16) — input for a future rework
+
+The user intends to substantially improve the replacer later; not scheduled yet. Recorded here
+because they surfaced concretely while choosing substitutions for the five Starter Commander
+Decks, and the second one is **not** covered by the non-goals above.
+
+1. **Colour identity is ignored** (a known v1 non-goal, now with a live example):
+   `Sarkhan, the Dragonspeaker` (mono-red, in a Gruul deck) → `Elspeth, Sun's Champion`
+   (white). The suggestion is off-identity for the deck it would land in.
+2. **Singleton is ignored, and it's not a listed non-goal.** `Trostani Discordant` →
+   `Maja, Bretagard Protector` — a card *already in the same decklist*. The suggester scores
+   against the whole pool with no notion of what the destination deck already holds, so it can
+   propose a duplicate that `validateCommanderDeck` then rejects.
+
+Both stem from the same design choice: `suggestReplacement({ manaCost, typeLine })` sees only the
+missing card, never the deck. A rework would most naturally take the destination deck (its
+commander's identity and its current contents) as input and filter before scoring, rather than
+leaving both to surface afterwards as legality violations.
+
+Because of this, the precon substitutions were hand-picked rather than generated.

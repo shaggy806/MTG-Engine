@@ -54,6 +54,10 @@ export interface GameObject {
    * `moveObject` clears zone-scoped state on the way.
    */
   exiledBy?: ObjectId;
+  /** This permanent's `castFromGraveyard` permission has been used this turn
+   * (Gisa and Geralf's "once during each of your turns"). Reset with the
+   * other once-per-turn flags as its controller's turn begins. */
+  graveyardCastUsedThisTurn?: boolean;
   /** True once dealt damage by a deathtouch source this turn (rule 704.5h). Cleared with `damageMarked`. */
   markedByDeathtouch: boolean;
   /** Turn number this object last entered the battlefield; `null` otherwise. */
