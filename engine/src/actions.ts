@@ -550,6 +550,19 @@ export type LegalAction =
       readonly kind: "choose-creature-type";
       readonly source: ObjectId;
       readonly options: readonly string[];
+      /** `options` is the full creature-type catalog (a search picker), not a
+       * short fixed menu (buttons). See `AwaitingDecision`. */
+      readonly catalog: boolean;
+      /**
+       * The creature types most represented among the chooser's own cards
+       * (hand, library, graveyard, command zone) and everything on the
+       * battlefield, most common first. Empty for a non-catalog menu.
+       *
+       * Only ever computed here, in `legalActions` for the deciding player:
+       * it reads their library, so putting it on shared game state would
+       * tell opponents what's in their deck.
+       */
+      readonly suggested: readonly string[];
     }
   | {
       readonly kind: "choose-modes";

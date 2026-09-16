@@ -45,7 +45,12 @@ import {
 import type { Characteristics } from "./characteristics.js";
 import { AutomaticController } from "./controller.js";
 import type { ControllerView, PlayerController } from "./controller.js";
-import { applyEffectSpec, isCountScalableEffect } from "./effects.js";
+import { CREATURE_TYPES } from "./creature-types.js";
+import {
+  applyEffectSpec,
+  isCountScalableEffect,
+  substituteChosenCreatureType,
+} from "./effects.js";
 import type {
   EffectSpec,
   UnlessOption,
@@ -259,14 +264,10 @@ const CHANGEABLE_CREATURE_TYPES: readonly string[] = [
   "Spirit", "Elemental", "Frog", "Insect", "Angel", "Wall",
 ];
 
-/** The creature types Urza's Incubator (needed-cards P14) offers "as this
- * enters, choose a creature type" — a short curated menu (rule 700.11 puts no
- * bound on the real card), weighted toward subtypes the pool actually casts
- * as creature spells so the cost reduction is exercised by the fuzzer. */
-const INCUBATOR_CREATURE_TYPES: readonly string[] = [
-  "Dragon", "Elf", "Goblin", "Human", "Wurm", "Elemental",
-  "Bear", "Zombie", "Spirit", "Beast",
-];
+const CREATURE_TYPE_SET: ReadonlySet<string> = new Set(CREATURE_TYPES);
+
+/** How many suggested creature types a catalog choice offers up front. */
+const SUGGESTED_CREATURE_TYPES = 8;
 
 export class Game {
   readonly state: GameState;
@@ -750,7 +751,13 @@ export class Game {
       }
       if (awaiting.kind === "choose-creature-type") {
         return [
-          { kind: "choose-creature-type", source: awaiting.source, options: [...awaiting.options] },
+          {
+            kind: "choose-creature-type",
+            source: awaiting.source,
+            options: [...awaiting.options],
+            catalog: awaiting.catalog,
+            suggested: awaiting.catalog ? this.suggestedCreatureTypes(player) : [],
+          },
         ];
       }
       if (awaiting.kind === "choose-modes") {
@@ -1931,19 +1938,64 @@ export class Game {
     return null;
   }
 
-  /** "As this enters, choose a creature type" (Urza's Incubator — needed-cards
-   * P14). Always a real choice — `INCUBATOR_CREATURE_TYPES` is never empty. */
+  /**
+   * Raise a `choose-creature-type` decision. With no `options` it's a real
+   * creature-type choice over the whole catalog (rule 205.3m); with `options`
+   * it's a short fixed menu (Heraldic Banner's colours). `resume` carries a
+   * resolving spell's `then`, targets and X — see the
+   * `"choose-creature-type"` effect.
+   */
   private beginCreatureTypeChoice(
     sourceId: ObjectId,
     controller: PlayerId,
-    options: readonly string[] = INCUBATOR_CREATURE_TYPES,
+    options?: readonly string[],
+    resume?: { then: EffectSpec; targets: ResolvedTargets; x: number },
   ): void {
     this.state.awaiting = {
       kind: "choose-creature-type",
       player: controller,
       source: sourceId,
-      options,
+      options: options ?? CREATURE_TYPES,
+      catalog: options === undefined,
+      ...(resume !== undefined ? resume : {}),
     };
+  }
+
+  /**
+   * The creature types most represented among `player`'s own cards and the
+   * whole battlefield, most common first (ties alphabetical). What a catalog
+   * choice suggests up front — see `LegalAction`'s `suggested`.
+   *
+   * Counts each card once per creature type it has. Off the battlefield that's
+   * its printed types; on it, the computed ones, so an animated or
+   * type-changed permanent counts as what it currently is.
+   */
+  private suggestedCreatureTypes(player: PlayerId): string[] {
+    const counts = new Map<string, number>();
+    const tally = (types: readonly string[]): void => {
+      for (const t of types) {
+        if (CREATURE_TYPE_SET.has(t)) counts.set(t, (counts.get(t) ?? 0) + 1);
+      }
+    };
+    const own = this.state.zones.perPlayer[player];
+    for (const id of [...own.hand, ...own.library, ...own.graveyard]) {
+      const def = this.registry.get(printedCardName(this.state.objects[id]));
+      if (def.types.includes("creature")) tally(def.subtypes);
+    }
+    for (const id of this.state.zones.shared.command) {
+      const object = this.state.objects[id];
+      if (object.owner !== player) continue;
+      const def = this.registry.get(printedCardName(object));
+      if (def.types.includes("creature")) tally(def.subtypes);
+    }
+    for (const id of this.state.zones.shared.battlefield) {
+      const c = computeCharacteristics(this.state, this.registry, id);
+      if (c.types.includes("creature")) tally(c.subtypes);
+    }
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .slice(0, SUGGESTED_CREATURE_TYPES)
+      .map(([t]) => t);
   }
 
   /** Answers a pending `choose-creature-type` decision. */
@@ -1954,20 +2006,36 @@ export class Game {
     if (awaiting === null || awaiting.kind !== "choose-creature-type") {
       throw new Error("unreachable: whyCannotCreatureTypeChoice should have caught this");
     }
-    const source = this.state.objects[awaiting.source];
-    // The same decision serves both "choose a creature type" (Urza's
-    // Incubator, which feeds a cost check) and the general "as this enters,
-    // choose …" (Heraldic Banner, Frontier Siege). Record it in both places
-    // so each reader finds it where it expects.
-    source.chosenCreatureType = creatureType;
-    source.chosenOnEnter = creatureType;
     this.emit({
       type: "creature-type-chosen",
       object: awaiting.source,
       creatureType,
     });
     this.state.awaiting = null;
-    this.prepareForPriority(this.activePlayer);
+
+    if (awaiting.then !== undefined) {
+      // A resolving spell or ability ("choose a creature type, then …"):
+      // finish its resolution with the answer substituted in.
+      applyEffectSpec(
+        substituteChosenCreatureType(awaiting.then, creatureType),
+        this.makeResolutionContext(
+          awaiting.source,
+          player,
+          awaiting.targets ?? [],
+          awaiting.x ?? 0,
+        ),
+      );
+    } else {
+      // A permanent entering. The same decision serves both "choose a
+      // creature type" (Urza's Incubator, which feeds a cost check) and the
+      // general "as this enters, choose …" (Heraldic Banner, Frontier
+      // Siege). Record it in both places so each reader finds it where it
+      // expects.
+      const source = this.state.objects[awaiting.source];
+      source.chosenCreatureType = creatureType;
+      source.chosenOnEnter = creatureType;
+    }
+    if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
   }
 
   private whyCannotCreatureTypeChoice(player: PlayerId, creatureType: string): string | null {
@@ -6954,6 +7022,8 @@ export class Game {
       returnToHand: (target) => this.returnToHandByEffect(target),
       exileObject: (target, untilSourceLeaves) =>
         this.exileByEffect(target, untilSourceLeaves === true ? source : undefined),
+      chooseCreatureType: (then) =>
+        this.beginCreatureTypeChoice(source, controller, undefined, { then, targets, x }),
       returnExiledBySource: () => {
         // A token exiled this way ceased to exist (rule 111.7) and never
         // comes back; anything that moved on from exile in the meantime is

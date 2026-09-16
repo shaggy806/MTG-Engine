@@ -625,13 +625,29 @@ export type AwaitingDecision =
       readonly options: readonly ObjectId[];
     }
   | {
-      /** "As this enters, choose a creature type" (Urza's Incubator — needed-cards
-       * P14). `source`'s `chosenCreatureType` is set once answered; a
-       * `CardDefinition.costModification` reads it back. */
+      /**
+       * Choose one of `options`. Two quite different uses share this shape:
+       *
+       * - A **creature type** (`catalog: true`, `options` is every creature
+       *   type — rule 205.3m). Either as a permanent enters (Urza's
+       *   Incubator: `source`'s `chosenCreatureType` is set) or as a spell
+       *   resolves (Crippling Fear: `then` is applied with the answer
+       *   substituted in, against `targets` and `x`).
+       * - A **short fixed menu** (`catalog: false`) for "as this enters,
+       *   choose …" — Heraldic Banner's colours, Frontier Siege's
+       *   Khans/Dragons. Recorded on `source.chosenOnEnter`.
+       *
+       * `catalog` is what lets a client offer a searchable picker for the one
+       * and plain buttons for the other.
+       */
       readonly kind: "choose-creature-type";
       readonly player: PlayerId;
       readonly source: ObjectId;
       readonly options: readonly string[];
+      readonly catalog: boolean;
+      readonly then?: EffectSpec;
+      readonly targets?: ResolvedTargets;
+      readonly x?: number;
     }
   | {
       /** A text-changing spell is resolving (Artificial Evolution); its

@@ -432,6 +432,19 @@ exist (rule 111.7), so neither comes back.
   "couldn't" and "wouldn't" both land on `otherwise` — which is what the
   printed cards do too. This is the difference from `may`: the decision is
   raised for the chooser, not the effect's controller.
+- **`choose-creature-type { then }`** — "Choose a creature type. [then …]"
+  as a spell resolves (rule 205.3m — Crippling Fear, Distant Melody). The
+  controller picks from the full catalog (`engine/src/creature-types.ts`,
+  regenerated from Scryfall by `npm run gen:creature-types -w engine`), and
+  every string exactly equal to `CHOSEN_CREATURE_TYPE` (from `helpers.ts`)
+  anywhere inside `then` is replaced by the chosen type before `then` applies
+  with the spell's own targets and `x` — so write
+  `filter: { type: "creature", notSubtypes: [CHOSEN_CREATURE_TYPE] }` or
+  `count: { countOf: { controlledBy: "you", subtype: CHOSEN_CREATURE_TYPE } }`.
+  The decision carries `catalog: true`, which the client renders as a search
+  popup with the chooser's most common creature types as suggestions. A
+  *permanent* that remembers its type is `chooseCreatureTypeOnEnter` instead
+  (Urza's Incubator), not this.
 - **`conditional { condition: StaticCondition, then, else? }`** — apply `then`
   if `condition` holds at resolution (evaluated from the source's controller's
   view — same `{ controls, your-turn, threshold, metalcraft }` union as a

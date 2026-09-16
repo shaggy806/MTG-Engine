@@ -147,6 +147,9 @@ export interface PlayerController {
     view: ControllerView,
     source: ObjectId,
     options: readonly string[],
+    /** The chooser's most relevant creature types, most common first — empty
+     * for a short fixed menu. See `LegalAction`'s `suggested`. */
+    suggested: readonly string[],
   ): string;
   /**
    * A modal spell/ability is resolving (rule 700.2), or a "you may" clause
@@ -334,7 +337,12 @@ function answerAwaited(
     return {
       type: "choose-creature-type",
       player,
-      creatureType: controller.chooseCreatureType(view, awaiting.source, awaiting.options),
+      creatureType: controller.chooseCreatureType(
+        view,
+        awaiting.source,
+        awaiting.options,
+        suggestedCreatureTypesIn(view),
+      ),
     };
   }
   if (awaiting.kind === "choose-modes") {
@@ -386,6 +394,17 @@ function answerAwaited(
 }
 
 /** Always passes priority, never attacks or blocks; discards from the front. */
+/** The `suggested` creature types on a pending `choose-creature-type` decision,
+ * read off the chooser's own legal actions (the only place they exist). */
+function suggestedCreatureTypesIn(view: ControllerView): readonly string[] {
+  const legal = view
+    .legalActions()
+    .find((a): a is Extract<LegalAction, { kind: "choose-creature-type" }> =>
+      a.kind === "choose-creature-type",
+    );
+  return legal?.suggested ?? [];
+}
+
 export class AutomaticController implements PlayerController {
   readonly playerId: PlayerId;
 
@@ -488,8 +507,12 @@ export class AutomaticController implements PlayerController {
     _view: ControllerView,
     _source: ObjectId,
     options: readonly string[],
+    suggested: readonly string[],
   ): string {
-    return options[0];
+    // The most common type among your own cards and the board. `options[0]`
+    // alone would be "Advisor" out of the alphabetical catalog — which for
+    // Crippling Fear means shrinking every one of your own creatures.
+    return suggested[0] ?? options[0];
   }
 
   chooseModes(
@@ -1043,7 +1066,13 @@ export class RandomController extends AutomaticController {
         return { type: "choose-text", player, from, to };
       }
       case "choose-creature-type": {
-        const creatureType = legal.options[this.pickIndex(legal.options.length)];
+        // Mostly a suggested type, so a choice keyed to it (Urza's Incubator's
+        // cost reduction, Distant Melody's draw) actually gets exercised —
+        // out of 350 types a uniform pick almost never names one that
+        // matters. Still sometimes anything at all, to keep that path fuzzed.
+        const pool =
+          legal.suggested.length > 0 && this.random() < 0.8 ? legal.suggested : legal.options;
+        const creatureType = pool[this.pickIndex(pool.length)];
         return { type: "choose-creature-type", player, creatureType };
       }
       case "choose-modes": {

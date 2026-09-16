@@ -117,6 +117,7 @@ import _poolContentiousPlan from "./pool/contentious-plan.js";
 import _poolCounterspell from "./pool/counterspell.js";
 import _poolCraterhoofBehemoth from "./pool/craterhoof-behemoth.js";
 import _poolCrawWurm from "./pool/craw-wurm.js";
+import _poolCripplingFear from "./pool/crippling-fear.js";
 import _poolCropRotation from "./pool/crop-rotation.js";
 import _poolCrucibleOfFire from "./pool/crucible-of-fire.js";
 import _poolCruelRevival from "./pool/cruel-revival.js";
@@ -148,6 +149,7 @@ import _poolDimirSignet from "./pool/dimir-signet.js";
 import _poolDiregrafCaptain from "./pool/diregraf-captain.js";
 import _poolDisenchant from "./pool/disenchant.js";
 import _poolDismalBackwater from "./pool/dismal-backwater.js";
+import _poolDistantMelody from "./pool/distant-melody.js";
 import _poolDoomBlade from "./pool/doom-blade.js";
 import _poolDoublingSeason from "./pool/doubling-season.js";
 import _poolDraconicDisciple from "./pool/draconic-disciple.js";
@@ -782,6 +784,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolCounterspell,
   _poolCraterhoofBehemoth,
   _poolCrawWurm,
+  _poolCripplingFear,
   _poolCropRotation,
   _poolCrucibleOfFire,
   _poolCruelRevival,
@@ -813,6 +816,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolDiregrafCaptain,
   _poolDisenchant,
   _poolDismalBackwater,
+  _poolDistantMelody,
   _poolDoomBlade,
   _poolDoublingSeason,
   _poolDraconicDisciple,

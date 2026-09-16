@@ -247,6 +247,8 @@ const deckB = deck([
   ["Idol of Oblivion", 1],
   ["Laboratory Drudge", 1],
   ["Vow of Duty", 1],
+  ["Crippling Fear", 1],
+  ["Distant Melody", 1],
   ["Thought Vessel", 1],
   ["Gravitational Shift", 1],
   ["Condemn", 1],

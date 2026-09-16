@@ -8,6 +8,11 @@ import type { ActivatedAbility } from "../abilities.js";
 import type { Color, ManaType } from "../mana.js";
 import { defineCard, type CardDefinition, type StaticAbility } from "./define.js";
 
+/** The placeholder for "the chosen creature type" inside a
+ * `choose-creature-type` effect's `then` — re-exported here because card files
+ * import only from `define` and `helpers`. */
+export { CHOSEN_CREATURE_TYPE } from "../effects.js";
+
 /** The `{T}: Add {C}` ability every mana-producing basic land has. */
 export const manaTapAbility = (mana: Color): ActivatedAbility => ({
   cost: { mana: null, tap: true },

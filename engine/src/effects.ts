@@ -102,6 +102,32 @@ export type UnlessOption =
  * `look-and-choose` / `matchesZoneChoiceFilter` call sites still type-check. */
 export type ZoneChoiceFilter = CardFilter;
 
+/**
+ * The placeholder a `choose-creature-type` effect's `then` uses for the type
+ * that ends up chosen — e.g. `{ notSubtypes: [CHOSEN_CREATURE_TYPE] }` for
+ * Crippling Fear's "creatures that aren't of the chosen type". Substituted
+ * into `then` by value (see `substituteChosenCreatureType`) before it applies.
+ */
+export const CHOSEN_CREATURE_TYPE = "$chosen";
+
+/**
+ * A copy of `spec` with every string exactly equal to `CHOSEN_CREATURE_TYPE`
+ * replaced by `creatureType`. `EffectSpec` is plain data, so a structural walk
+ * reaches every filter, subtype list and nested effect without the individual
+ * effects needing to know a choice is involved.
+ */
+export function substituteChosenCreatureType(spec: EffectSpec, creatureType: string): EffectSpec {
+  const walk = (value: unknown): unknown => {
+    if (value === CHOSEN_CREATURE_TYPE) return creatureType;
+    if (Array.isArray(value)) return value.map(walk);
+    if (value !== null && typeof value === "object") {
+      return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, walk(v)]));
+    }
+    return value;
+  };
+  return walk(spec) as EffectSpec;
+}
+
 /** Which players an "each" / mass effect reaches. */
 export type PlayerScope =
   | "each-player"
@@ -341,6 +367,21 @@ export type EffectSpec =
        * way the printed card behaves.
        */
       readonly untilSourceLeaves?: boolean;
+    }
+  | {
+      /**
+       * "Choose a creature type", then do `then` with it — as a spell or
+       * ability *resolves* (Crippling Fear, Distant Melody), as opposed to
+       * `CardDefinition.chooseCreatureTypeOnEnter`, which asks as a permanent
+       * enters.
+       *
+       * Raises a `choose-creature-type` decision over every creature type
+       * (rule 205.3m); resolution resumes from the decision once it's
+       * answered, with `CHOSEN_CREATURE_TYPE` substituted into `then`. The
+       * enclosing ability's targets and X carry across.
+       */
+      readonly kind: "choose-creature-type";
+      readonly then: EffectSpec;
     }
   | {
       /** Return everything this effect's source exiled with
@@ -1063,6 +1104,8 @@ export interface EffectApi {
   exileObject(target: TargetRef, untilSourceLeaves?: boolean): void;
   /** See the `"return-exiled-by-source"` {@link EffectSpec}. */
   returnExiledBySource(): void;
+  /** See the `"choose-creature-type"` {@link EffectSpec}. */
+  chooseCreatureType(then: EffectSpec): void;
   /** Exile every card in `target`'s graveyard (a player — Bojuka Bog). */
   exileGraveyard(target: TargetRef): void;
   /** Exile `target`, then immediately return it to the battlefield under its
@@ -1553,6 +1596,9 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     }
     case "return-exiled-by-source":
       ctx.returnExiledBySource();
+      return;
+    case "choose-creature-type":
+      ctx.chooseCreatureType(spec.then);
       return;
     case "put-onto-battlefield": {
       const target = resolveEffectTarget(spec.target, ctx);
