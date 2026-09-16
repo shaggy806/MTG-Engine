@@ -64,6 +64,7 @@ const MAX_REPORTED_UNKNOWN = 5;
  * browser's `localStorage` outlives any card the pool later renames or drops.
  */
 function assertDeckIsBuildable(deck: PendingDeck): void {
+  assertPrintingsAreSafe(deck);
   const unknown = [
     ...new Set(
       [...deck.cards, ...(deck.commander === undefined ? [] : [deck.commander])].filter(
@@ -77,6 +78,31 @@ function assertDeckIsBuildable(deck: PendingDeck): void {
   throw new Error(
     `deck contains ${unknown.length} card(s) this server doesn't know: ${shown}${rest}`,
   );
+}
+
+/** A Scryfall card id — the only thing a `printings` entry may be. */
+const SCRYFALL_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * A deck's chosen printings end up as `VisibleObject.art` in *every* seat's
+ * view, and the client turns that into an `<img src>` — so a value here is a
+ * URL this server hands other people's browsers to fetch. `resolveArtUrl`
+ * accepts a bare id, a Scryfall page/API link, *or* any other absolute URL
+ * used verbatim, which would let one player point a table's card art at a
+ * host they control and collect everyone's IP address from it.
+ *
+ * So only the narrowest form is accepted over the wire: a bare Scryfall card
+ * id, which is what the deck builder's picker stores anyway. A card's own
+ * `CardDefinition.art` can still be any of the richer shapes — that's
+ * authored in this repo, not sent by a client.
+ */
+function assertPrintingsAreSafe(deck: PendingDeck): void {
+  if (deck.printings === undefined) return;
+  for (const [name, id] of Object.entries(deck.printings)) {
+    if (typeof id !== "string" || !SCRYFALL_ID_RE.test(id)) {
+      throw new Error(`deck has an invalid printing for "${name}" — expected a Scryfall card id`);
+    }
+  }
 }
 
 /** Where a seat sits in the printed seating order (`SEATS`), which is the
@@ -128,7 +154,17 @@ export class PendingRoom {
       online: s.connection !== null,
       displayName: s.displayName,
       isBot: s.isBot,
-      deck: s.deck === null ? null : { name: s.deck.name ?? "Custom deck", commander: s.deck.commander ?? null },
+      deck:
+        s.deck === null
+          ? null
+          : {
+              name: s.deck.name ?? "Custom deck",
+              commander: s.deck.commander ?? null,
+              commanderPrinting:
+                s.deck.commander === undefined
+                  ? null
+                  : (s.deck.printings?.[s.deck.commander] ?? null),
+            },
       ready: s.isBot || s.ready,
     }));
   }
@@ -293,7 +329,12 @@ export class PendingRoom {
   toGameConfig(): GameConfig {
     const decks: DeckList[] = this.seats.map((s) => {
       if (s.deck === null) throw new Error(`seat ${s.player} has no deck yet`);
-      return { player: s.player, cards: s.deck.cards, commander: s.deck.commander };
+      return {
+        player: s.player,
+        cards: s.deck.cards,
+        commander: s.deck.commander,
+        printings: s.deck.printings,
+      };
     });
     const startingPlayer = this.seats[Math.floor(Math.random() * this.seats.length)].player;
     return { ...this.config, decks, startingPlayer };

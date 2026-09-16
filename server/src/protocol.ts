@@ -13,6 +13,12 @@ export interface WireDeck {
   readonly cards: readonly string[];
   readonly commander?: string;
   readonly name?: string;
+  /** Which printing of each card this deck brings, keyed by card name — a
+   * Scryfall card id (or any reference `CardDefinition.art` accepts). Purely
+   * cosmetic; it rides through to `DeckList.printings` so every device in
+   * the room draws the art its owner chose. Absent for a deck built before
+   * the picker existed, or one that never left a card's default printing. */
+  readonly printings?: Readonly<Record<string, string>>;
 }
 
 export interface SeatStatus {
@@ -35,7 +41,14 @@ export interface SeatStatus {
    * `isBot`, both of which always resolve a deck immediately). Always `null`
    * once the room is promoted to a real `Room`; nothing needs it once the
    * game itself is visible. */
-  readonly deck: { readonly name: string; readonly commander: string | null } | null;
+  readonly deck: {
+    readonly name: string;
+    readonly commander: string | null;
+    /** Which printing this deck brings for its commander, if it isn't the
+     * default — just the one card, since the seat board only ever draws the
+     * commander. The whole map travels with the deck itself. */
+    readonly commanderPrinting: string | null;
+  } | null;
   /** This seat has signaled it's ready to start (`set-ready`) — a bot seat
    * is always ready, since there's no human decision to wait on. The room
    * only promotes once every seat is ready (`start-game`), not the instant

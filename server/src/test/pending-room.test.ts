@@ -40,6 +40,42 @@ describe("PendingRoom", () => {
     expect(aliceDeck?.commander).toBe("Ureni of the Unwritten");
   });
 
+  it("carries a deck's chosen printings through to its DeckList and seat status", () => {
+    const id = "3d3f4e6a-1c5d-4f8b-9a2e-7b1c0d5e6f70";
+    const room = pendingRoom();
+    room.claimSeat(ALICE, "alice-token", { send: () => {} }, undefined, {
+      cards: ["Forest", "Sol Ring"],
+      commander: "Ureni of the Unwritten",
+      printings: { "Sol Ring": id, "Ureni of the Unwritten": id },
+    });
+    room.claimSeat(BOB, "bob-token", { send: () => {} });
+
+    expect(room.toGameConfig().decks.find((d) => d.player === ALICE)?.printings).toEqual({
+      "Sol Ring": id,
+      "Ureni of the Unwritten": id,
+    });
+    // Only the commander's printing rides on the seat status — that's the
+    // one card the seat board draws.
+    expect(room.seatStatuses().find((s) => s.player === ALICE)?.deck?.commanderPrinting).toBe(id);
+    expect(room.seatStatuses().find((s) => s.player === BOB)?.deck?.commanderPrinting).toBeNull();
+  });
+
+  // A printing ends up as `VisibleObject.art` in every seat's view, which
+  // the client turns into an <img src> — so anything but a Scryfall card id
+  // would let one player point the whole table's card art at a host they
+  // control. See `assertPrintingsAreSafe`.
+  it("refuses a printing that isn't a bare Scryfall card id", () => {
+    const room = pendingRoom();
+    for (const bad of ["https://evil.example/pixel.png", "not-a-uuid", ""]) {
+      expect(() =>
+        room.claimSeat(ALICE, "alice-token", { send: () => {} }, undefined, {
+          cards: ["Forest"],
+          printings: { Forest: bad },
+        }),
+      ).toThrow("invalid printing");
+    }
+  });
+
   it("the same token reclaims a seat (e.g. a page refresh) without re-defaulting the deck", () => {
     const room = pendingRoom();
     const conn1 = { send: () => {} };
@@ -105,7 +141,11 @@ describe("PendingRoom", () => {
     room.addBot(BOB);
     const bobStatus = room.seatStatuses().find((s) => s.player === BOB);
     expect(bobStatus?.isBot).toBe(true);
-    expect(bobStatus?.deck).toEqual({ name: SEATS[1].name, commander: SEATS[1].commander ?? null });
+    expect(bobStatus?.deck).toEqual({
+      name: SEATS[1].name,
+      commander: SEATS[1].commander ?? null,
+      commanderPrinting: null,
+    });
     expect(() => room.addBot(BOB)).toThrow("already has a bot");
 
     room.claimSeat(ALICE, "alice-token", { send: () => {} });
@@ -121,6 +161,7 @@ describe("PendingRoom", () => {
     expect(room.seatStatuses().find((s) => s.player === BOB)?.deck).toEqual({
       name: "My Deck",
       commander: "Ureni of the Unwritten",
+      commanderPrinting: null,
     });
     room.claimSeat(ALICE, "alice-token", { send: () => {} });
     expect(room.toGameConfig().decks.find((d) => d.player === BOB)?.cards).toEqual(["Forest", "Forest"]);
@@ -133,6 +174,7 @@ describe("PendingRoom", () => {
     expect(room.seatStatuses().find((s) => s.player === BOB)?.deck).toEqual({
       name: "Mono-Black",
       commander: "Ayara, First of Locthwain",
+      commanderPrinting: null,
     });
 
     room.claimSeat(ALICE, "alice-token", { send: () => {} });

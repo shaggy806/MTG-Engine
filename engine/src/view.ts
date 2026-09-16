@@ -11,6 +11,7 @@
  */
 
 import type { CardRegistry, CardType, CombatRestriction, Keyword } from "./cards.js";
+import { isCardFront } from "./cards/classify.js";
 import { computeCharacteristics } from "./characteristics.js";
 import type { GameEvent } from "./events.js";
 import type { Color, ManaPool } from "./mana.js";
@@ -170,8 +171,19 @@ function visible(
   id: ObjectId,
 ): VisibleObject {
   const object = state.objects[id];
-  const def = registry.get(printedCardName(object));
+  const printedName = printedCardName(object);
+  const def = registry.get(printedName);
   const computed = computeCharacteristics(state, registry, id);
+  // The printing this card's *owner* brought (see `PlayerState.printings`)
+  // stands in for the pool's default illustration. Only for a face a
+  // printing reference can actually address: a Scryfall card id resolves to
+  // the whole card, which serves its *front* image, so applying an owner's
+  // chosen printing to a turned-over back face would show the wrong face
+  // rather than a different printing of the right one. A back face keeps
+  // the definition's own pinned art.
+  const printing = isCardFront(def)
+    ? state.players[object.owner]?.printings[printedName]
+    : undefined;
   // Computed, not printed — a man-land currently animated (layer 4) is a
   // creature and should carry a P/T; a land again next turn and it won't.
   const isCreature = computed.types.includes("creature");
@@ -198,7 +210,7 @@ function visible(
     copyOf: object.copyOf,
     faceName: faceName(object),
     faces: object.faces === undefined ? null : [...object.faces],
-    art: def.art,
+    art: printing ?? def.art,
     owner: object.owner,
     controller: object.controller,
     zone: object.zone,

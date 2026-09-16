@@ -104,7 +104,7 @@ describe("room server (end to end over WebSocket)", () => {
         isBot: false,
         // Claimed with no explicit deck — falls back to ALICE's positional
         // starter deck (see `PendingRoom.claimSeat`).
-        deck: { name: SEATS[0].name, commander: SEATS[0].commander ?? null },
+        deck: { name: SEATS[0].name, commander: SEATS[0].commander ?? null, commanderPrinting: null },
         ready: false,
       },
       { player: BOB, claimed: false, online: false, displayName: null, isBot: false, deck: null, ready: false },
@@ -460,7 +460,7 @@ describe("room server (end to end over WebSocket)", () => {
       online: false,
       displayName: null,
       isBot: true,
-      deck: { name: SEATS[1].name, commander: SEATS[1].commander ?? null },
+      deck: { name: SEATS[1].name, commander: SEATS[1].commander ?? null, commanderPrinting: null },
       ready: true,
     });
   });

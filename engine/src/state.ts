@@ -309,6 +309,20 @@ export interface PlayerState {
    * player resource, not tied to any permanent; spent by a `payEnergy` ability
    * cost, gained by a `get-energy` effect. */
   energy: number;
+  /**
+   * Which printing of each card this player brought, keyed by card name — a
+   * Scryfall reference in the same shapes {@link CardDefinition.art} accepts
+   * (see `DeckList.printings`). Purely cosmetic: nothing in the rules engine
+   * reads it, and `viewFor` is the only consumer, handing it to the client
+   * in place of the definition's own `art`.
+   *
+   * It lives on the player rather than on each `GameObject` because it's a
+   * fact about the physical cards someone owns, not about any game state —
+   * so it survives every zone change, copy and control change for free,
+   * where a per-object field would have to be threaded through `moveObject`
+   * (which deliberately resets per-object state) without being reset.
+   */
+  printings: Record<string, string>;
 }
 
 export interface GameRules {
@@ -782,6 +796,7 @@ export function createPlayerState(id: PlayerId, rules: GameRules): PlayerState {
     commanderDamageTaken: {},
     spellsCastThisTurn: 0,
     energy: 0,
+    printings: {},
   };
 }
 

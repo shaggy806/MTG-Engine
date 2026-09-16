@@ -94,6 +94,16 @@ export interface DeckList {
   /** One or two commanders (Partner / "Choose a Background" — rule 702.124 /
    * ROADMAP Phase 9). Takes precedence over `commander` when set. */
   readonly commanders?: readonly string[];
+  /**
+   * Which printing this player's copy of each card is, keyed by card name —
+   * a Scryfall reference in any of the shapes {@link CardDefinition.art}
+   * accepts (a bare card UUID is what the deck builder stores). Entirely
+   * cosmetic; the rules engine never reads it, it's carried through to
+   * `viewFor` so every device in the room draws the card its owner brought
+   * rather than the pool's default illustration. A name with no entry falls
+   * back to the definition's own `art`.
+   */
+  readonly printings?: Readonly<Record<string, string>>;
 }
 
 export interface GameConfig {
@@ -1481,9 +1491,12 @@ export class Game {
     shuffleLibrary: boolean,
     mulligans: boolean,
   ): void {
-    for (const { player, cards, commander, commanders } of decks) {
+    for (const { player, cards, commander, commanders, printings } of decks) {
       const commanderNames = commanders ?? (commander !== undefined ? [commander] : []);
       this.state.players[player] = createPlayerState(player, this.state.rules);
+      // Copied, not aliased: `GameState` has to stay a self-contained,
+      // `structuredClone`-able tree, and a caller's object is neither.
+      this.state.players[player].printings = { ...printings };
       this.state.zones.perPlayer[player] = {
         library: [],
         hand: [],
