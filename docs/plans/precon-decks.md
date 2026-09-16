@@ -84,6 +84,11 @@ Ordered by how many cards each unblocks — the first two are worth doing on the
 
 Doing just **optional targets** and **graveyard-card targets** unblocks 29 of the 60.
 
+**Refined in `docs/plans/engine-gaps.md`**, which is the implementation plan for these and
+corrects two over-broad rows above: "up to N" inside a *search* is already expressible
+(`search-library` takes `min`/`max`), and Lieutenant is already expressible
+(`CardFilter.isCommander`). That moves four cards out of "blocked" before any code.
+
 ## Order of work
 
 1. **Engine features**, biggest-unlock first, each with its own test — optional targets,
