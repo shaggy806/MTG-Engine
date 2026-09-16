@@ -205,6 +205,7 @@ const deckB = deck([
   ["Dream Pillager", 1],
   ["Geode Rager", 1],
   ["Rakshasa Debaser", 1],
+  ["Archfiend of Depravity", 1],
   ["Tectonic Giant", 1],
   ["Theater of Horrors", 1],
   ["Kazuul, Tyrant of the Cliffs", 1],
@@ -360,6 +361,7 @@ const deckB = deck([
 // the 903.9a "ask before the move" replacement path.
 const deckC = deck([
   ["Eternal Skylord", 1],
+  ["Deep Analysis", 1],
   ["Vela the Night-Clad", 1],
   ["Migratory Route", 1],
   ["Kangee's Lieutenant", 1],

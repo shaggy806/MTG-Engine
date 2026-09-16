@@ -445,7 +445,13 @@ export interface CardDefinition {
    * owner's graveyard for `cost` instead of its mana cost; a spell so cast is
    * exiled instead of going anywhere else from the stack. `null` for a card
    * without flashback. */
-  readonly flashback: { readonly cost: string } | null;
+  readonly flashback: {
+    readonly cost: string;
+    /** Life paid alongside the mana — Deep Analysis's "Flashback—{1}{U}, Pay
+     * 3 life". Part of the cost, so it's paid as the spell is cast and stands
+     * even if the spell is countered. */
+    readonly payLife?: number;
+  } | null;
   /** Foretell (rule 702.144 — ROADMAP Phase 6b) — during your turn you may pay
    * `{2}` to exile this card from your hand face-down; on a later turn you may
    * cast it from exile for `cost`. `null` for a card without foretell. */
@@ -576,7 +582,7 @@ interface CardDraft {
   copyOnEnter?: { readonly filter: "creature" };
   chooseCreatureTypeOnEnter?: boolean;
   loyalty?: number;
-  flashback?: { readonly cost: string };
+  flashback?: { readonly cost: string; readonly payLife?: number };
   foretell?: { readonly cost: string };
   suspend?: { readonly n: number; readonly cost: string };
   cycling?: { readonly cost: string; readonly search?: CardFilter };

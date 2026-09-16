@@ -118,7 +118,16 @@ export interface ActivatedAbility {
 }
 
 /** Who the triggering object must be relative to the ability's source. */
-export type TriggerWho = "self" | "you-control" | "any" | "you";
+export type TriggerWho =
+  | "self"
+  | "you-control"
+  | "any"
+  | "you"
+  /** An opponent of this permanent's controller. Only meaningful where the
+   * subject is a *player* — a `step-begins` trigger's "each opponent's end
+   * step" (Archfiend of Depravity), which fires once per opponent's turn
+   * rather than once per opponent. */
+  | "opponent";
 
 export type TriggerSpec =
   | {
@@ -231,6 +240,10 @@ export type TriggerSpec =
       readonly who: TriggerWho;
       readonly filter?: CardFilter;
     }
+  /** `who: "you"` fires only on your own step, `"opponent"` only on an
+   * opponent's (Archfiend of Depravity's "at the beginning of **each
+   * opponent's** end step" — once per opponent's turn, not once per
+   * opponent), `"any"` on everyone's. */
   | { readonly on: "step-begins"; readonly step: Step; readonly who: TriggerWho }
   | {
       /** A spell was cast. `who` is relative to the caster: `"you"` = this

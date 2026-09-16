@@ -72,7 +72,13 @@ export type UnlessOption =
 export type ZoneChoiceFilter = CardFilter;
 
 /** Which players an "each" / mass effect reaches. */
-export type PlayerScope = "each-player" | "each-opponent" | "you";
+export type PlayerScope =
+  | "each-player"
+  | "each-opponent"
+  | "you"
+  /** Whoever's turn it is — "that player" in a trigger that fires on someone
+   * else's step (Archfiend of Depravity). */
+  | "active-player";
 
 /** A declarative effect. Grows as milestones add vocabulary. */
 export type EffectSpec =
@@ -703,6 +709,21 @@ export type EffectSpec =
     }
   | {
       /**
+       * "That player chooses up to `keep` creatures they control, then
+       * sacrifices the rest" (Archfiend of Depravity) — the inverse of
+       * `sacrifice`, which names how many to *give up* rather than how many
+       * to keep.
+       *
+       * The choice belongs to each affected player, and is raised only when
+       * they control more than `keep` matching permanents.
+       */
+      readonly kind: "sacrifice-all-but";
+      readonly who: PlayerScope;
+      readonly keep: number;
+      readonly filter: CardFilter;
+    }
+  | {
+      /**
        * Encore (rule 702.140) — "For each opponent, create a token copy of
        * this card that attacks that opponent this turn if able. They gain
        * haste. Sacrifice them at the beginning of the next end step."
@@ -934,6 +955,8 @@ export interface EffectApi {
   doublePtAll(filter: CardFilter, duration: PtDuration): void;
   /** See the `"grant-player-hexproof"` {@link EffectSpec}. */
   grantPlayerHexproof(who: PlayerScope): void;
+  /** See the `"sacrifice-all-but"` {@link EffectSpec}. */
+  sacrificeAllBut(player: PlayerId, keep: number, filter: CardFilter): void;
   /** See the `"encore"` {@link EffectSpec}. */
   encore(): void;
   /** See the `"goad"` {@link EffectSpec}. */
@@ -1539,6 +1562,11 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       );
       return;
     }
+    case "sacrifice-all-but":
+      for (const player of ctx.playersInScope(spec.who)) {
+        ctx.sacrificeAllBut(player, spec.keep, spec.filter);
+      }
+      return;
     case "encore":
       ctx.encore();
       return;

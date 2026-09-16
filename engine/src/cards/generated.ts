@@ -20,6 +20,7 @@ import _poolAncientTomb from "./pool/ancient-tomb.js";
 import _poolAngelicEdict from "./pool/angelic-edict.js";
 import _poolAnguishedUnmaking from "./pool/anguished-unmaking.js";
 import _poolArcaneSignet from "./pool/arcane-signet.js";
+import _poolArchfiendOfDepravity from "./pool/archfiend-of-depravity.js";
 import _poolArdentRecruit from "./pool/ardent-recruit.js";
 import _poolAridMesa from "./pool/arid-mesa.js";
 import _poolArtificialEvolution from "./pool/artificial-evolution.js";
@@ -96,6 +97,7 @@ import _poolDawnOfHope from "./pool/dawn-of-hope.js";
 import _poolDeadlyDispute from "./pool/deadly-dispute.js";
 import _poolDeadlyRollick from "./pool/deadly-rollick.js";
 import _poolDeathcapGlade from "./pool/deathcap-glade.js";
+import _poolDeepAnalysis from "./pool/deep-analysis.js";
 import _poolDefenseOfTheHeart from "./pool/defense-of-the-heart.js";
 import _poolDemandingDragon from "./pool/demanding-dragon.js";
 import _poolDemonicTutor from "./pool/demonic-tutor.js";
@@ -493,6 +495,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAngelicEdict,
   _poolAnguishedUnmaking,
   _poolArcaneSignet,
+  _poolArchfiendOfDepravity,
   _poolArdentRecruit,
   _poolAridMesa,
   _poolArtificialEvolution,
@@ -569,6 +572,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolDeadlyDispute,
   _poolDeadlyRollick,
   _poolDeathcapGlade,
+  _poolDeepAnalysis,
   _poolDefenseOfTheHeart,
   _poolDemandingDragon,
   _poolDemonicTutor,

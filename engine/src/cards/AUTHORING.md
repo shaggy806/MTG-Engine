@@ -161,7 +161,7 @@ from the same link.
 | `freeCastIf` | `{ condition: StaticCondition }` | a conditional free-cast permission printed on the spell itself (the CMM commander-precon cycle — Fierce Guardianship: "If you control a commander, you may cast this spell without paying its mana cost."). Unlike `overload`, targets/effect are completely unchanged — only the cost differs, and it's *in addition to* the normal cast, not instead of it. `legalActions` offers the card twice whenever the condition is currently met. |
 | `convoke` | `boolean` | **Convoke** (rule 702.51 — Chord of Calling, Hour of Reckoning). A pure payment-*method* choice made as the spell is cast (`Action.convoke: ConvokePayment[]`, each `{ creature, pays: "generic" \| Color }`) — tap untapped creatures instead of mana for part of the cost. Doesn't change the printed cost, targets, or effect; not enumerated as a second `cast-spell` variant — the one `LegalAction` carries `convoke: { candidates, maxGeneric }` (every untapped creature the caster controls) instead. |
 | `selfCostReduction` | `{ condition: StaticCondition, reduceGeneric }` | a reduction printed on the spell itself, gated on board state (rule 601.2f — Ferocious, Finale of Devastation: "if you control a creature with power 4 or greater, this spell costs {2} less"). Unlike a `StaticAbility.costModification` (a permanent reducing *other* spells) this is evaluated for the card being cast, from whatever zone — no permanent has to be on the battlefield granting it. `reduceGeneric` accepts a live count too (`{ countOf: CardFilter }` — Blasphemous Act: "{1} less for each creature on the battlefield", `{ type: "creature" }` with no `controlledBy` counts every player's). `condition` is mandatory; a reduction with no real "if" clause uses `{ kind: "controls", filter: {}, atLeast: 0 }` (trivially always true). needed-cards P10, P19. |
-| `flashback` | `{ cost }` | cast from graveyard, then exiled (rule 702.34) |
+| `flashback` | `{ cost, payLife? }` | cast from graveyard, then exiled (rule 702.34). `payLife` is part of the cost (Deep Analysis's "Flashback—{1}{U}, Pay 3 life"), so it gates castability and is paid as the spell is cast. |
 | `foretell` | `{ cost }` | pay `{2}` to exile face-down, cast later for `cost` |
 | `escape` | `{ cost, exileCount }` | cast from graveyard + exile N other graveyard cards |
 | `suspend` | `{ n, cost }` | exile with N time counters; cast free at 0 with haste |
@@ -269,8 +269,9 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 | `discard` | `target` (slot \| `"you"`), `amount` | Mind Rot / Faithless Looting |
 | `mill` | `target` (slot \| `"you"`), `amount` | Tome Scour / Aftermath Analyst (`"you"`) |
 
-`who?` is a `PlayerScope`: `"each-player" \| "each-opponent" \| "you"` (default
-= the effect's controller).
+`who?` is a `PlayerScope`: `"each-player" \| "each-opponent" \| "you" \|
+"active-player"` (default = the effect's controller). `"active-player"` is
+"that player" in a trigger that fires on someone else's step.
 
 ### Movement / removal
 
@@ -288,6 +289,7 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 | `return-to-hand-all` | `filter` | Cyclonic Rift, overloaded — mirrors `destroy-all` |
 | `return-from-graveyard` | `filter`, `destination: "battlefield" \| "hand"`, `count: number \| "all"`, `enterTapped?` | Splendid Reclamation (from *your* graveyard; a `number` less than the match count raises a `choose-from-zone`) |
 | `counter` | `target` (a spell) | Counterspell |
+| `sacrifice-all-but` | `who`, `keep`, `filter` | "chooses up to N they control, then sacrifices the rest" (Archfiend of Depravity) — the inverse of `sacrifice`, which names how many to give up. Raised only when they're over the limit. |
 | `sacrifice` | `who`, `filter`, `count`, `exceptSource?` | Diabolic Edict (`who: "target"`), Fleshbag Marauder (`who: "each-player"`), Korvold (`who: "you"`, `exceptSource: true` = "another") |
 | `sacrifice-source` | `then?` | Defense of the Heart — "Sacrifice ~. **If you do,** …"; no choice, and `then` only applies if the source was still there to sacrifice |
 | `fight` | `a`, `b`, `oneSided?` | Prey Upon / Rabid Bite |
@@ -604,7 +606,10 @@ triggered: [
 | `predicate` | `match: (event) => boolean` | escape hatch — match the raw `GameEvent` |
 
 **`who: TriggerWho`** = `"self"` (this permanent) / `"you-control"` / `"you"`
-(this permanent's controller did it) / `"any"`.
+(this permanent's controller did it) / `"opponent"` / `"any"`. `"opponent"`
+is only meaningful where the subject is a *player* — a `step-begins`
+trigger's "each opponent's end step" (Archfiend of Depravity), which fires
+once per opponent's **turn**, not once per opponent.
 
 `otherOnly: true` — "another …", i.e. the source permanent doesn't count.
 

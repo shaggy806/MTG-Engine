@@ -4279,6 +4279,12 @@ export class Game {
       if (!this.state.zones.perPlayer[player].graveyard.includes(cardId)) {
         return `${def.name} is not in ${player}'s graveyard`;
       }
+      // "Flashback—{1}{U}, Pay 3 life" (Deep Analysis) — part of the cost, so
+      // it gates castability the same way the mana does.
+      const life = def.flashback?.payLife;
+      if (life !== undefined && this.state.players[player].life <= life) {
+        return `${player} cannot pay ${life} life for ${def.name}'s flashback`;
+      }
     } else if (via === "escape") {
       if (def.escape === null) return `${def.name} does not have escape`;
       if (!this.state.zones.perPlayer[player].graveyard.includes(cardId)) {
@@ -4543,6 +4549,11 @@ export class Game {
     if (kicked) object.kicked = true;
     if (overload) object.overloaded = true;
     this.executePayment(player, payment);
+    // "Flashback—{cost}, Pay N life" (Deep Analysis) — part of the cost, paid
+    // as the spell is cast.
+    if (via === "flashback" && def.flashback?.payLife !== undefined) {
+      this.changeLife(player, -def.flashback.payLife);
+    }
     // The additional sacrifice (rule 601.2f/h) is paid *after* mana, so the
     // land being sacrificed can still be tapped for the spell's own cost first
     // (601.2g — mana abilities are activated before costs are paid; Crop
@@ -6112,7 +6123,11 @@ export class Game {
         return (
           event.type === "step-began" &&
           event.step === spec.step &&
-          (spec.who !== "you" || this.activePlayer === self.controller)
+          (spec.who === "any" ||
+            (spec.who === "you" && this.activePlayer === self.controller) ||
+            // "Each opponent's end step" — the step belongs to an opponent,
+            // so it fires once on each of their turns.
+            (spec.who === "opponent" && this.activePlayer !== self.controller))
         );
       case "cast-spell": {
         if (event.type !== "spell-cast") return false;
@@ -6179,7 +6194,9 @@ export class Game {
     player: PlayerId,
     self: GameObject,
   ): boolean {
-    return who === "any" || self.controller === player;
+    if (who === "any") return true;
+    if (who === "opponent") return self.controller !== player;
+    return self.controller === player;
   }
 
   private matchesWho(
@@ -6481,6 +6498,20 @@ export class Game {
       amass: (amount, creatureType) => this.amass(controller, amount, creatureType),
       populate: () => this.populate(controller),
       encore: () => this.encore(controller, source),
+      sacrificeAllBut: (player, keep, filter) => {
+        // "Chooses up to N they control, then sacrifices the rest" — the
+        // existing sacrifice queue already asks the right player; it just
+        // needs the count expressed the other way round.
+        const eligible = this.eligibleSacrifices(player, filter);
+        const total = eligible.reduce(
+          (n, id) => n + (this.state.objects[id].stackCount ?? 1),
+          0,
+        );
+        const give = total - keep;
+        if (give > 0) {
+          this.state.pendingSacrifices.push({ player, filter, count: give });
+        }
+      },
       goadCreaturesOf: (player) => {
         for (const id of this.state.zones.shared.battlefield) {
           const object = this.state.objects[id];
@@ -8673,6 +8704,12 @@ export class Game {
    * any resulting triggers stack in turn order. */
   private scopedPlayers(controller: PlayerId, who: PlayerScope): PlayerId[] {
     if (who === "you") return [controller];
+    // "That player", in a trigger that fires on someone else's step.
+    if (who === "active-player") {
+      return this.state.players[this.activePlayer]?.hasLost === true
+        ? []
+        : [this.activePlayer];
+    }
     const active = this.state.turnOrder.indexOf(this.activePlayer);
     const rotated = [
       ...this.state.turnOrder.slice(active),
