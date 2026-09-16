@@ -1789,8 +1789,7 @@
   }
 }
 
-/* ability menu + controls */
-.ability-menu,
+/* controls */
 .controls {
   display: flex;
   align-items: center;
@@ -1802,11 +1801,80 @@
   border: 1px solid var(--border);
   border-radius: 8px;
 }
-.ability-menu {
-  border-color: var(--warn);
-}
 .controls strong {
   font-size: 15px;
+}
+
+/* ===== a permanent's activated abilities, beside the permanent =====
+
+   Portalled to <body> and placed from JS (see AbilityMenu.tsx) for the same
+   reasons .mini-tile-popover is: .quadrant-body is a scroll box *and* a size
+   container, so neither an absolutely-positioned child nor a fixed one can
+   escape it. Above the hover popover in the stack (z-index 125): opening a
+   menu means the pointer is still over the tile that opened it, so both are
+   on screen at once and this is the one being used.
+
+   Width is derived from --card-w rather than a fixed px guess, and capped
+   against the viewport so a wordy ability (Aggravated Assault's whole
+   sentence) doesn't push the menu off a narrow screen. Kept near a card's
+   own width deliberately: it hangs beside a tile on a board full of them,
+   so anything wider reads as a panel dropped over the board rather than as
+   that tile's own menu — a long ability wraps to another line instead. */
+.ability-menu {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 135;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: max-content;
+  min-width: calc(var(--card-w) * 0.95);
+  max-width: min(80vw, calc(var(--card-w) * 1.6));
+  padding: 5px;
+  background: var(--panel);
+  border: 1px solid var(--warn);
+  border-radius: 9px;
+  box-shadow: 0 12px 30px rgb(0 0 0 / 0.55);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.1s ease;
+}
+/* added once JS has measured the menu and knows where to put it — until then
+   it renders invisible for a single layout pass */
+.ability-menu.placed {
+  opacity: 1;
+  visibility: visible;
+}
+.ability-menu-title {
+  padding: 3px 7px 5px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--warn);
+  /* A long card name wraps rather than stretching the menu past its cap. */
+  overflow-wrap: anywhere;
+}
+.ability-menu button {
+  /* Rules text, so it reads left-aligned and wraps like text — not the
+     centered single line a button defaults to. */
+  text-align: left;
+  font-size: 12.5px;
+  line-height: 1.35;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: var(--panel-2);
+  overflow-wrap: anywhere;
+}
+.ability-menu button:hover:not(:disabled) {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ability-menu {
+    transition: none;
+  }
 }
 
 /* Mulligan is the one forced decision that blocks the whole table (every

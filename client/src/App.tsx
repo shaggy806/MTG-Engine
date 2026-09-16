@@ -24,6 +24,7 @@ import { PlayerPanel } from './ui/PlayerPanel.tsx'
 import { CardTile } from './ui/CardTile.tsx'
 import { MiniTile } from './ui/MiniTile.tsx'
 import { CommanderTile } from './ui/CommanderTile.tsx'
+import { AbilityMenu } from './ui/AbilityMenu.tsx'
 import { Stack } from './ui/Stack.tsx'
 import { EventLog } from './ui/EventLog.tsx'
 import { ZoneViewer } from './ui/ZoneViewer.tsx'
@@ -2452,22 +2453,12 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
 
   const renderHandAndControls = () => (
     <>
-      {selectedAbilities.length > 0 ? (
-        <div className="ability-menu">
-          <span>{game.nameOf(selectedSource as ObjectId)}:</span>
-          {selectedAbilities.map((ab) => (
-            <button
-              key={ab.abilityIndex}
-              type="button"
-              onClick={() => clickAbility(ab)}
-            >
-              {ab.text || `ability ${ab.abilityIndex}`}
-            </button>
-          ))}
-        </div>
-      ) : null}
+      {/* An activated ability's menu used to dock here, a whole screen away
+          from the permanent it belonged to; it's a popover beside the tile
+          now (see `AbilityMenu`, rendered near the other floating overlays
+          below).
 
-      {/* priority mode's controls (Pass/Pass Turn/Auto-pass/Skip-mana) render
+          priority mode's controls (Pass/Pass Turn/Auto-pass/Skip-mana) render
           in a fixed bottom-right bar instead (see .priority-actions below),
           mulligan's Keep/Mulligan choice (with the hand itself) renders as
           its own centered popup (see .mulligan-modal below), and every mode
@@ -2550,6 +2541,27 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       ) : peekable ? (
         <div className="decision-banner">{controls}</div>
       ) : null}
+
+      {/* The selected permanent's activated abilities, beside the permanent
+          itself rather than in a bar at the bottom of the screen. Picking
+          one hands off to `clickAbility` (targeting, an {X} prompt, a
+          sacrifice choice), so the menu closes either way. */}
+      {selectedSource !== null && selectedAbilities.length > 0 ? (
+        <AbilityMenu
+          source={selectedSource}
+          title={game.nameOf(selectedSource)}
+          items={selectedAbilities.map((ab) => ({
+            key: String(ab.abilityIndex),
+            label: ab.text || `Ability ${ab.abilityIndex + 1}`,
+            onSelect: () => {
+              setSelectedSource(null)
+              clickAbility(ab)
+            },
+          }))}
+          onClose={() => setSelectedSource(null)}
+        />
+      ) : null}
+
       {renderMulliganModal()}
       {/* moved here (from GameScreen, a sibling of Table) so it can reuse
           Table's own targeting state/handlers -- a spell on the stack is
