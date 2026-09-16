@@ -359,3 +359,54 @@ avoid circular payment planning. A Signet is net-neutral in count but converts
 colour, so the planner would have to consider spending generic to gain
 coloured. That is a real change to `planManaPayment`, not a vocabulary
 addition, and it deserves its own phase.
+
+---
+
+## Phase I — the bulk pass (52 cards)
+
+Triaged all four remaining decks in one go rather than deck by deck (the
+`.scratch/triage.mjs` dump), which made the shape of the work obvious: a large
+fraction of what was left is ordinary Magic that today's vocabulary already
+covers, and the genuinely-blocked cards cluster into a dozen named causes.
+
+Authored 52 cards for three additions:
+
+| addition | card |
+|---|---|
+| `toControllerOfTarget` on `gain-life` and `lose-life`, matching the field `damage` already had | Swords to Plowshares, Undermine |
+| `EffectAmount` `{ countPlayers: PlayerScope }` | Inspired Sphinx |
+| (no engine change) `AffectSpec.withKeyword`, added in phase E for Sephara, turns out to be the shape most of First Flight is built on | Favorable Winds, Empyrean Eagle, Thunderclap Wyvern |
+
+Thirteen of the 52 are the enters-tapped land cycle, one line each on
+`tapLand` / `revealLand`.
+
+### Where the five decks stand
+
+| deck | missing |
+|---|---|
+| Draconic Destruction | 6 |
+| Grave Danger | 22 |
+| Chaos Incarnate | 23 |
+| Token Triumph | 34 |
+| First Flight | 37 |
+
+122 left, from 286 at the start. What remains is concentrated in the causes
+listed under phase H plus a few more the wider triage surfaced:
+
+- **"Exile until this leaves the battlefield"** (Banishing Light, Conclave
+  Tribunal) — an O-Ring, which needs a linked pair of one-shot effects.
+- **"Whenever this is dealt damage"** (Brash Taunter, Hornet Nest).
+- **"Whenever you attack with N or more creatures"** (Overwhelming Instinct,
+  Tide Skimmer).
+- **Curses** — an Aura that enchants a *player* (Curse of Bounty, Curse of
+  Disturbance).
+- **Devotion** (Gray Merchant of Asphodel).
+- **"Creatures that died under your control this turn"** (Liliana's Standard
+  Bearer) — a per-player turn counter; `creaturesDiedThisTurn` is global.
+- **An `AffectSpec` scope covering *all* creatures**, not just yours
+  (Gravitational Shift).
+- **"Choose a creature type" on a spell's resolution** (Crippling Fear,
+  Distant Melody) — `chooseOnEnter` only covers permanents entering.
+
+The Signets remain the single highest-value item, for the reason given under
+phase H.

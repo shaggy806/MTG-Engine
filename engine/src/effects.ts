@@ -65,7 +65,11 @@ export type EffectAmount =
   | { readonly countInGraveyard: CardFilter }
   /** The *current* power of whatever a target slot points at — Unleash Fury's
    * "double the power of target creature" is a `modify-pt` that adds this. */
-  | { readonly powerOf: EffectTargetRef };
+  | { readonly powerOf: EffectTargetRef }
+  /** How many players a `PlayerScope` covers — Inspired Sphinx's "draw cards
+   * equal to **the number of opponents you have**". Counts living players, so
+   * it shrinks as a multiplayer game does. */
+  | { readonly countPlayers: PlayerScope };
 
 /** One way out of an `"unless"` clause. Exactly one field is set. */
 export type UnlessOption =
@@ -178,6 +182,11 @@ export type EffectSpec =
       readonly amount: EffectAmount;
       /** Who gains — the effect's controller (default), or a scope. */
       readonly who?: PlayerScope;
+      /** The *controller* of whatever a target slot points at — Swords to
+       * Plowshares' "**its controller** gains life equal to its power". Same
+       * shape as `damage`'s field of the same name; see that one for the
+       * last-known-information caveat. */
+      readonly toControllerOfTarget?: number;
     }
   | {
       /** Life loss (Zulaport Cutthroat: "each opponent loses 1 life"). An
@@ -190,6 +199,10 @@ export type EffectSpec =
        * Fallen: "target player loses 3 life") — a target-slot index holding
        * a player. Mutually exclusive with `who`. needed-cards P19. */
       readonly target?: number;
+      /** The *controller* of whatever a target slot points at — Undermine's
+       * "**its controller** loses 3 life", where the target is the countered
+       * spell. Same shape as `damage`/`gain-life`'s field of the same name. */
+      readonly toControllerOfTarget?: number;
     }
   | { readonly kind: "tap"; readonly target: number }
   | {
@@ -1239,6 +1252,7 @@ export function amountValue(amount: EffectAmount, ctx: ResolutionContext): numbe
   if ("triggerValue" in amount) return ctx.triggerValue;
   if ("lifeTotal" in amount) return ctx.lifeTotalOf(ctx.controller);
   if ("countInGraveyard" in amount) return ctx.countInGraveyard(amount.countInGraveyard);
+  if ("countPlayers" in amount) return ctx.playersInScope(amount.countPlayers).length;
   if ("powerOf" in amount) {
     const ref = resolveEffectTarget(amount.powerOf, ctx);
     return ref === undefined ? 0 : ctx.powerOf(ref);
@@ -1322,12 +1336,24 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       return;
     case "gain-life": {
       const gained = amountValue(spec.amount, ctx);
+      if (spec.toControllerOfTarget !== undefined) {
+        const of = ctx.targets[spec.toControllerOfTarget];
+        const who = of === undefined ? undefined : ctx.controllerOf(of);
+        if (who !== undefined) ctx.gainLife(who, gained);
+        return;
+      }
       if (spec.who === undefined || spec.who === "you") ctx.gainLife(ctx.controller, gained);
       else ctx.changeLifeScoped(spec.who, gained);
       return;
     }
     case "lose-life": {
       const life = amountValue(spec.amount, ctx);
+      if (spec.toControllerOfTarget !== undefined) {
+        const of = ctx.targets[spec.toControllerOfTarget];
+        const who = of === undefined ? undefined : ctx.controllerOf(of);
+        if (who !== undefined) ctx.loseLife(who, life);
+        return;
+      }
       if (spec.target !== undefined) {
         const ref = ctx.targets[spec.target];
         if (ref?.kind === "player") ctx.loseLife(ref.player, life);
