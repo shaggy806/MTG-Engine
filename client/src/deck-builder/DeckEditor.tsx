@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { DragEvent, MouseEvent } from 'react'
 import type { CardDefinition } from 'engine'
-import { BUILTIN_CARDS, createDefaultRegistry, validateCommanderDeck } from 'engine'
+import { BUILTIN_CARDS, createDefaultRegistry, isDeckableCard, validateCommanderDeck } from 'engine'
 import { Symbols } from '../ui/Symbols.tsx'
 import { CardHoverPreview } from '../ui/CardHoverPreview.tsx'
 import type { HoverTarget } from '../ui/CardHoverPreview.tsx'
@@ -19,9 +19,17 @@ const TYPE_FILTERS = [
 
 const DECK_SIZE = 100
 
-const cards = [...BUILTIN_CARDS].sort((a, b) => a.name.localeCompare(b.name))
+/** The buildable pool. Tokens and back faces are registered definitions but
+ * neither is a decklist entry — a token isn't a card at all (rule 111.1),
+ * and a double-faced card is listed under its front face (rule 712.3) — so
+ * they're filtered out here rather than offered and then rejected by
+ * `validateCommanderDeck`. */
+const cards = BUILTIN_CARDS.filter(isDeckableCard).sort((a, b) => a.name.localeCompare(b.name))
 const registry = createDefaultRegistry()
-const byName = new Map(cards.map((c) => [c.name, c]))
+/** Every definition, including the ones the pool hides: a deck saved before
+ * this filter existed can still name one, and such a row has to render (and
+ * be removable) rather than showing up as an unknown card. */
+const byName = new Map(BUILTIN_CARDS.map((c) => [c.name, c]))
 
 const isCommanderEligible = (def: CardDefinition): boolean =>
   def.supertypes.includes('legendary') &&

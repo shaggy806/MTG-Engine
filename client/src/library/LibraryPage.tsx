@@ -1,9 +1,8 @@
-import { useMemo, useState } from 'react'
-import type { CardDefinition } from 'engine'
-import { BUILTIN_CARDS } from 'engine'
-import { CardTile } from '../ui/CardTile.tsx'
-import { resolveArtUrl } from '../ui/art.ts'
-import { defToVisible } from '../ui/defToVisible.ts'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import type { CardDefinition, CardType, Color } from 'engine'
+import { BUILTIN_CARDS, isCardFront, isTokenCard, manaValue, parseManaCost } from 'engine'
+import { CardImage } from '../ui/CardImage.tsx'
+import { Symbols } from '../ui/Symbols.tsx'
 import './library.css'
 
 const TYPE_FILTERS = [
@@ -16,7 +15,112 @@ const TYPE_FILTERS = [
   'land',
 ] as const
 
-const cards = [...BUILTIN_CARDS].sort((a, b) => a.name.localeCompare(b.name))
+/** WUBRG plus a colourless bucket, in the order every Magic UI prints them. */
+const COLOR_FILTERS = ['W', 'U', 'B', 'R', 'G', 'C'] as const
+type ColorFilter = (typeof COLOR_FILTERS)[number]
+
+const COLOR_NAME: Record<ColorFilter, string> = {
+  W: 'White',
+  U: 'Blue',
+  B: 'Black',
+  R: 'Red',
+  G: 'Green',
+  C: 'Colourless',
+}
+
+const SORTS = ['name', 'mana', 'color', 'type'] as const
+type Sort = (typeof SORTS)[number]
+
+const SORT_LABEL: Record<Sort, string> = {
+  name: 'Name',
+  mana: 'Mana value',
+  color: 'Colour',
+  type: 'Type',
+}
+
+/** Sort buckets — the order a decklist or a Scryfall "type" sort reads in. */
+const TYPE_ORDER: readonly CardType[] = [
+  'creature',
+  'planeswalker',
+  'instant',
+  'sorcery',
+  'artifact',
+  'enchantment',
+  'battle',
+  'land',
+]
+
+const BY_NAME = new Map(BUILTIN_CARDS.map((c) => [c.name, c]))
+
+/**
+ * One row of the gallery: a card, precomputed for search and sorting. Built
+ * once at module scope — the pool is fixed for the life of the page, so
+ * re-deriving a lowercased haystack and a mana value per keystroke across
+ * 400 cards would be pure waste.
+ */
+interface Entry {
+  readonly def: CardDefinition
+  /** The card's other face, if it has one — a transform back, an MDFC's
+   * second face, or an adventure's spell half. Its text is searchable and it
+   * shows up in the detail panel; `flippable` says whether it's also a
+   * separate *image* (an adventure prints both halves on one face). */
+  readonly other: CardDefinition | null
+  readonly flippable: boolean
+  readonly isToken: boolean
+  readonly haystack: string
+  readonly mv: number
+  readonly colorRank: number
+  readonly typeRank: number
+  readonly colorKeys: readonly ColorFilter[]
+}
+
+function colorRankOf(colors: readonly Color[]): number {
+  if (colors.length === 0) return 6
+  if (colors.length > 1) return 5
+  return ['W', 'U', 'B', 'R', 'G'].indexOf(colors[0])
+}
+
+function typeLineOf(def: CardDefinition): string {
+  const left = [...def.supertypes, ...def.types].join(' ')
+  return def.subtypes.length > 0 ? `${left} — ${def.subtypes.join(' ')}` : left
+}
+
+function buildEntry(def: CardDefinition): Entry {
+  const otherName = def.faces && def.faces.length > 1 ? def.faces[1] : null
+  const other = otherName === null ? null : (BY_NAME.get(otherName) ?? null)
+  return {
+    def,
+    other,
+    // An adventure's two halves share one printed face, so there's nothing to
+    // flip *to* — unlike a transforming DFC or an MDFC, which have a real
+    // back-face image.
+    flippable: other !== null && !def.adventure,
+    isToken: isTokenCard(def),
+    haystack: [def.name, typeLineOf(def), def.text, other?.name, other?.text]
+      .filter(Boolean)
+      .join(' \n ')
+      .toLowerCase(),
+    mv: manaValue(parseManaCost(def.manaCost)),
+    colorRank: colorRankOf(def.colors),
+    typeRank: Math.min(
+      ...def.types.map((t) => {
+        const i = TYPE_ORDER.indexOf(t)
+        return i === -1 ? TYPE_ORDER.length : i
+      }),
+    ),
+    colorKeys: def.colors.length === 0 ? ['C'] : (def.colors as readonly ColorFilter[]),
+  }
+}
+
+// One entry per *card*, not per registered definition: a back face is the
+// same physical card as its front (rule 712.3), so it appears in the gallery
+// only as that front's flip side — exactly how Scryfall lists one result per
+// card. Tokens are built too, but hidden unless asked for.
+const ENTRIES: readonly Entry[] = BUILTIN_CARDS.filter(isCardFront)
+  .map(buildEntry)
+  .sort((a, b) => a.def.name.localeCompare(b.def.name))
+
+const CARD_COUNT = ENTRIES.filter((e) => !e.isToken).length
 
 // Same `?card=Name` deep-link convention the card lab uses (see
 // `client/src/lab/CardLab.tsx`'s cardParam/setCardParam) so a specific card
@@ -24,125 +128,404 @@ const cards = [...BUILTIN_CARDS].sort((a, b) => a.name.localeCompare(b.name))
 function cardParam(): string | null {
   return new URL(window.location.href).searchParams.get('card')
 }
-function setCardParam(name: string): void {
+function setCardParam(name: string | null): void {
   const url = new URL(window.location.href)
-  url.searchParams.set('card', name)
+  if (name === null) url.searchParams.delete('card')
+  else url.searchParams.set('card', name)
   window.history.replaceState(null, '', url)
 }
 
 /**
  * The public, read-only card library — every card the engine implements,
- * searchable and browsable, with no room/seat/WebSocket involved at all (see
- * `main.tsx`'s path-based branch, which renders this instead of `<App/>`
- * without ever calling `useNetworkGame`). Deliberately a trimmed-down sibling
- * of the dev-only card lab (`client/src/lab/`): same data (`BUILTIN_CARDS`)
- * and the same `CardTile` rendering, but no "Structure" (raw internal JSON)
- * or "Sandbox" (solo test game) tabs — those are card-authoring tools, not
- * something a player browsing the pool needs.
+ * browsable as a grid of real card faces, with no room/seat/WebSocket
+ * involved at all (see `main.tsx`'s path-based branch, which renders this
+ * instead of `<App/>` without ever calling `useNetworkGame`).
+ *
+ * Modelled on a Scryfall search result: a sticky search/filter bar over a
+ * responsive grid of whole printed card images (`CardImage`, not the
+ * engine's own `CardTile` — nothing here is a game object, so there's no
+ * live state to overlay and the real face is both nicer and cheaper), with
+ * a card's own page as an overlay rather than a permanent side pane.
+ *
+ * Tokens are in the pool but are not cards (rule 111.1) — they're excluded
+ * by default and only appear behind the "Tokens" toggle, so browsing the
+ * library shows you things you could actually put in a deck.
  */
 export function LibraryPage() {
   const [query, setQuery] = useState('')
-  const [typeFilter, setTypeFilter] = useState<string | null>(null)
-  const [selectedName, setSelectedName] = useState<string>(
-    () => cardParam() ?? cards[0]?.name ?? '',
-  )
-  const [fullImage, setFullImage] = useState(false)
+  const [typeFilter, setTypeFilter] = useState<CardType | null>(null)
+  const [colorFilter, setColorFilter] = useState<readonly ColorFilter[]>([])
+  const [sort, setSort] = useState<Sort>('name')
+  const [showTokens, setShowTokens] = useState(() => {
+    // A deep link straight to a token shouldn't land on an empty gallery.
+    const param = cardParam()
+    const def = param === null ? undefined : BY_NAME.get(param)
+    return def !== undefined && isTokenCard(def)
+  })
+  const [selectedName, setSelectedName] = useState<string | null>(() => {
+    const param = cardParam()
+    return param !== null && BY_NAME.has(param) ? param : null
+  })
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    return cards.filter((c) => {
-      if (typeFilter && !c.types.includes(typeFilter as CardDefinition['types'][number])) {
-        return false
-      }
-      if (!q) return true
-      return (
-        c.name.toLowerCase().includes(q) ||
-        c.text.toLowerCase().includes(q) ||
-        c.subtypes.some((s) => s.toLowerCase().includes(q))
-      )
+    const rows = ENTRIES.filter((e) => {
+      if (e.isToken && !showTokens) return false
+      if (typeFilter !== null && !e.def.types.includes(typeFilter)) return false
+      if (colorFilter.length > 0 && !e.colorKeys.some((c) => colorFilter.includes(c))) return false
+      return q === '' || e.haystack.includes(q)
     })
-  }, [query, typeFilter])
+    const byName = (a: Entry, b: Entry) => a.def.name.localeCompare(b.def.name)
+    if (sort === 'name') return rows
+    return [...rows].sort((a, b) => {
+      const key =
+        sort === 'mana'
+          ? a.mv - b.mv
+          : sort === 'color'
+            ? a.colorRank - b.colorRank
+            : a.typeRank - b.typeRank
+      return key !== 0 ? key : byName(a, b)
+    })
+  }, [query, typeFilter, colorFilter, sort, showTokens])
 
-  const def = cards.find((c) => c.name === selectedName) ?? cards[0]
+  const selected = selectedName === null ? null : (BY_NAME.get(selectedName) ?? null)
 
-  const select = (name: string) => {
+  const select = useCallback((name: string | null) => {
     setSelectedName(name)
     setCardParam(name)
-  }
+  }, [])
+
+  // Where the open card sits in the *current* result list, so the overlay's
+  // arrows walk the same order the grid shows. -1 when a filter (or a deep
+  // link) means the open card isn't in the list at all — the arrows hide
+  // rather than jumping somewhere unrelated.
+  const selectedIndex = useMemo(
+    () => (selectedName === null ? -1 : filtered.findIndex((e) => e.def.name === selectedName)),
+    [filtered, selectedName],
+  )
+
+  const step = useCallback(
+    (delta: number) => {
+      if (selectedIndex === -1) return
+      const next = filtered[selectedIndex + delta]
+      if (next) select(next.def.name)
+    },
+    [filtered, selectedIndex, select],
+  )
+
+  const toggleColor = (c: ColorFilter) =>
+    setColorFilter((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]))
+
+  const anyFilter =
+    query !== '' || typeFilter !== null || colorFilter.length > 0 || sort !== 'name' || showTokens
 
   return (
     <div className="lib-page">
-      <aside className="lib-list">
-        <a className="link-button lib-back" href="/">
-          ← Back
-        </a>
-        <h1>Card Library</h1>
-        <input
-          className="lib-search"
-          placeholder={`Search ${cards.length} cards…`}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        <div className="lib-type-filters">
-          <button
-            type="button"
-            className={typeFilter === null ? 'selected' : undefined}
-            onClick={() => setTypeFilter(null)}
-          >
-            all
-          </button>
-          {TYPE_FILTERS.map((t) => (
+      <header className="lib-header">
+        <div className="lib-header-top">
+          <a className="link-button lib-back" href="/">
+            ← Back
+          </a>
+          <h1>Card Library</h1>
+          <input
+            className="lib-search"
+            type="search"
+            placeholder={`Search ${CARD_COUNT} cards by name, type or rules text…`}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+
+        <div className="lib-filters">
+          <div className="lib-chipset" role="group" aria-label="Card type">
             <button
-              key={t}
               type="button"
-              className={typeFilter === t ? 'selected' : undefined}
-              onClick={() => setTypeFilter(typeFilter === t ? null : t)}
+              className={typeFilter === null ? 'selected' : undefined}
+              onClick={() => setTypeFilter(null)}
             >
-              {t}
+              All
             </button>
+            {TYPE_FILTERS.map((t) => (
+              <button
+                key={t}
+                type="button"
+                className={typeFilter === t ? 'selected' : undefined}
+                onClick={() => setTypeFilter(typeFilter === t ? null : t)}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+
+          <div className="lib-colors" role="group" aria-label="Colour">
+            {COLOR_FILTERS.map((c) => (
+              <button
+                key={c}
+                type="button"
+                title={COLOR_NAME[c]}
+                aria-label={COLOR_NAME[c]}
+                aria-pressed={colorFilter.includes(c)}
+                className={`lib-color-pip${colorFilter.includes(c) ? ' selected' : ''}`}
+                onClick={() => toggleColor(c)}
+              >
+                <Symbols text={`{${c}}`} />
+              </button>
+            ))}
+          </div>
+
+          <label className="lib-sort">
+            Sort
+            <select value={sort} onChange={(e) => setSort(e.target.value as Sort)}>
+              {SORTS.map((s) => (
+                <option key={s} value={s}>
+                  {SORT_LABEL[s]}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="lib-toggle" title="Tokens aren't cards — they can't go in a deck">
+            <input
+              type="checkbox"
+              checked={showTokens}
+              onChange={(e) => setShowTokens(e.target.checked)}
+            />
+            Tokens
+          </label>
+
+          {anyFilter ? (
+            <button
+              type="button"
+              className="lib-clear"
+              onClick={() => {
+                setQuery('')
+                setTypeFilter(null)
+                setColorFilter([])
+                setSort('name')
+                setShowTokens(false)
+              }}
+            >
+              Clear
+            </button>
+          ) : null}
+        </div>
+      </header>
+
+      <main className="lib-results">
+        <p className="lib-count muted mono">
+          {filtered.length} {filtered.length === 1 ? 'card' : 'cards'}
+        </p>
+        {filtered.length === 0 ? (
+          <p className="lib-empty muted">
+            No cards match. The pool is {CARD_COUNT} implemented cards — try a shorter search.
+          </p>
+        ) : (
+          <div className="lib-grid">
+            {filtered.map((e) => (
+              <GridCard key={e.def.name} entry={e} onOpen={() => select(e.def.name)} />
+            ))}
+          </div>
+        )}
+      </main>
+
+      {selected ? (
+        <CardOverlay
+          // Keyed by card, so walking to the next one with the arrows starts
+          // it fresh (front face up) rather than carrying a flip across.
+          key={selected.name}
+          entry={ENTRIES.find((e) => e.def.name === selected.name) ?? buildEntry(selected)}
+          onClose={() => select(null)}
+          onPrev={selectedIndex > 0 ? () => step(-1) : null}
+          onNext={
+            selectedIndex !== -1 && selectedIndex < filtered.length - 1 ? () => step(1) : null
+          }
+        />
+      ) : null}
+    </div>
+  )
+}
+
+/** One result in the grid: the card face, and — for a two-faced card — a
+ * corner button that turns it over in place, the same affordance Scryfall
+ * puts on a double-faced search result. */
+function GridCard({ entry, onOpen }: { readonly entry: Entry; readonly onOpen: () => void }) {
+  const [flipped, setFlipped] = useState(false)
+  const shown = flipped && entry.other ? entry.other : entry.def
+
+  return (
+    <div className="lib-card">
+      <button type="button" className="lib-card-open" onClick={onOpen} title={entry.def.name}>
+        <CardImage def={shown} />
+        <span className="lib-card-caption">{shown.name}</span>
+      </button>
+      {entry.flippable ? (
+        <button
+          type="button"
+          className="lib-flip"
+          title={`Turn over — ${(flipped ? entry.def : entry.other!).name}`}
+          aria-label="Turn this card over"
+          onClick={() => setFlipped((f) => !f)}
+        >
+          ⇄
+        </button>
+      ) : null}
+      {entry.isToken ? <span className="lib-token-badge">token</span> : null}
+    </div>
+  )
+}
+
+/** A card's own page, as an overlay over the grid rather than a route —
+ * the gallery keeps its scroll position and filters, which is most of why
+ * you'd open a card in the first place. */
+function CardOverlay({
+  entry,
+  onClose,
+  onPrev,
+  onNext,
+}: {
+  readonly entry: Entry
+  readonly onClose: () => void
+  readonly onPrev: (() => void) | null
+  readonly onNext: (() => void) | null
+}) {
+  const [flipped, setFlipped] = useState(false)
+  const shown = flipped && entry.other ? entry.other : entry.def
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+      else if (e.key === 'ArrowLeft') onPrev?.()
+      else if (e.key === 'ArrowRight') onNext?.()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose, onPrev, onNext])
+
+  return (
+    <div
+      className="lib-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label={entry.def.name}
+      onClick={onClose}
+    >
+      <div className="lib-overlay-box" onClick={(e) => e.stopPropagation()}>
+        <button type="button" className="lib-overlay-close" onClick={onClose} aria-label="Close">
+          ×
+        </button>
+
+        <div className="lib-overlay-art">
+          <CardImage def={shown} version="large" />
+          {entry.flippable ? (
+            <button type="button" className="lib-overlay-flip" onClick={() => setFlipped((f) => !f)}>
+              ⇄ {(flipped ? entry.def : entry.other!).name}
+            </button>
+          ) : null}
+        </div>
+
+        <div className="lib-overlay-text">
+          <div className="lib-overlay-title">
+            <h2>{entry.def.name}</h2>
+            {entry.def.manaCost ? <Symbols text={entry.def.manaCost} /> : null}
+          </div>
+          <FaceText def={entry.def} />
+          {entry.other ? (
+            <>
+              <div className="lib-face-divider">
+                <span>{entry.def.adventure ? 'Adventure' : 'Back face'}</span>
+              </div>
+              <div className="lib-overlay-title">
+                <h2>{entry.other.name}</h2>
+                {entry.other.manaCost ? <Symbols text={entry.other.manaCost} /> : null}
+              </div>
+              <FaceText def={entry.other} />
+            </>
+          ) : null}
+          <MechanicChips def={entry.def} isToken={entry.isToken} />
+
+          {onPrev || onNext ? (
+            <div className="lib-overlay-nav">
+              <button type="button" onClick={() => onPrev?.()} disabled={onPrev === null}>
+                ‹ Previous
+              </button>
+              <button type="button" onClick={() => onNext?.()} disabled={onNext === null}>
+                Next ›
+              </button>
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/** Type line, rules text and P/T for one printed face. */
+function FaceText({ def }: { readonly def: CardDefinition }) {
+  return (
+    <>
+      <p className="lib-typeline">{typeLineOf(def)}</p>
+      {def.text ? (
+        <div className="lib-rules">
+          {def.text.split('\n').map((line, i) => (
+            <p key={i}>
+              <Symbols text={line} />
+            </p>
           ))}
         </div>
-        <ul>
-          {filtered.map((c) => (
-            <li key={c.name}>
-              <button
-                type="button"
-                className={c.name === def?.name ? 'selected' : undefined}
-                onClick={() => select(c.name)}
-              >
-                {c.name}
-              </button>
-            </li>
-          ))}
-          {filtered.length === 0 ? <li className="muted lib-empty">No cards match</li> : null}
-        </ul>
-      </aside>
+      ) : (
+        <p className="muted lib-rules">No rules text.</p>
+      )}
+      {def.power !== null && def.toughness !== null ? (
+        <p className="lib-pt mono">
+          {def.power} / {def.toughness}
+        </p>
+      ) : null}
+      {def.loyalty !== null ? <p className="lib-pt mono">Loyalty {def.loyalty}</p> : null}
+    </>
+  )
+}
 
-      <main className="lib-detail">
-        {def ? (
-          <>
-            <label className="lib-toggle">
-              <input
-                type="checkbox"
-                checked={fullImage}
-                onChange={(e) => setFullImage(e.target.checked)}
-              />
-              full card image
-            </label>
-            {fullImage ? (
-              <img
-                className="lib-full-card"
-                src={resolveArtUrl(def.art, def.name, 'normal')}
-                alt={def.name}
-              />
-            ) : (
-              <div className="lib-tile-frame">
-                <CardTile obj={defToVisible(def)} />
-              </div>
-            )}
-          </>
-        ) : null}
-      </main>
+/**
+ * The engine-shaped mechanics a card carries, as plain player-facing labels.
+ * Deliberately *not* the card lab's `describeCardFeatures` readout, which
+ * names internal `EffectSpec`/`TriggerSpec` kinds — useful when authoring a
+ * card, noise to someone browsing the pool.
+ */
+function MechanicChips({ def, isToken }: { readonly def: CardDefinition; readonly isToken: boolean }) {
+  const chips: string[] = []
+  if (isToken) chips.push('token — not a card')
+  if (def.supertypes.includes('legendary') && (def.types.includes('creature') || def.types.includes('planeswalker'))) {
+    chips.push('can be your commander')
+  }
+  if (def.flashback) chips.push(`flashback ${def.flashback.cost}`)
+  if (def.escape) chips.push(`escape ${def.escape.cost}`)
+  if (def.foretell) chips.push(`foretell ${def.foretell.cost}`)
+  if (def.suspend) chips.push(`suspend ${def.suspend.n} — ${def.suspend.cost}`)
+  if (def.cycling) chips.push(`cycling ${def.cycling.cost}`)
+  if (def.kicker) chips.push(`kicker ${def.kicker.cost}`)
+  if (def.overload) chips.push(`overload ${def.overload.cost}`)
+  if (def.disturb) chips.push(`disturb ${def.disturb.cost}`)
+  if (def.convoke) chips.push('convoke')
+  if (def.adventure) chips.push('adventure')
+  else if (def.transform) chips.push('transforms')
+  else if (def.faces && def.faces.length > 1) chips.push('modal double-faced')
+  if (def.chapters) chips.push(`saga — ${def.chapters.length} chapters`)
+  if (def.castModal) chips.push('modal')
+  if (def.cantBeCountered) chips.push("can't be countered")
+  if (def.activated.length > 0) {
+    chips.push(`${def.activated.length} activated abilit${def.activated.length === 1 ? 'y' : 'ies'}`)
+  }
+  if (def.triggered.length > 0) {
+    chips.push(`${def.triggered.length} triggered abilit${def.triggered.length === 1 ? 'y' : 'ies'}`)
+  }
+  if (chips.length === 0) return null
+  return (
+    <div className="lib-chips">
+      {chips.map((c) => (
+        <span key={c} className="lib-chip">
+          <Symbols text={c} />
+        </span>
+      ))}
     </div>
   )
 }

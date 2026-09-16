@@ -1,0 +1,117 @@
+/* Styles for `CardImage` — the only stylesheet imported by a component
+   rather than by a page. `CardTile`'s rules live in App.css because they
+   were only ever the game table's; this one ships wherever the component
+   does (the library gallery today, anything else later), so it travels with
+   it instead of being copied into each consumer's own file. */
+
+.card-image {
+  display: block;
+  position: relative;
+  width: 100%;
+  /* The fallback face below sizes every part of itself off the card box, so
+     one set of rules reads correctly at grid size and at detail size alike.
+     It has to be declared here rather than on the fallback itself: container
+     units resolve against an *ancestor* container, never the element that
+     declares one. */
+  container-type: size;
+  /* A Magic card is 63x88mm — 5:7 is that to within a hair, and it's the
+     ratio Scryfall's own grid boxes use. */
+  aspect-ratio: 5 / 7;
+  /* Proportional, not a fixed px: a card's corner radius is a fraction of
+     its size, so a grid card and a blown-up detail card both look right. */
+  border-radius: 4.75% / 3.4%;
+  overflow: hidden;
+  background: var(--panel-2);
+}
+
+.card-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-image.placeholder {
+  border: 1px solid var(--border);
+}
+
+/* Art is still on its way — a bare pulse, since swapping text for the real
+   face a moment later would just flash. */
+.card-image-shimmer {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(105deg, var(--panel-2) 40%, var(--panel) 50%, var(--panel-2) 60%);
+  background-size: 300% 100%;
+  animation: card-image-shimmer 1.4s linear infinite;
+}
+
+@keyframes card-image-shimmer {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+
+/* The lookup failed or there's no printing to look up (every token) — draw
+   the card out of its own printed characteristics instead of leaving a hole. */
+.card-image-fallback {
+  display: flex;
+  flex-direction: column;
+  gap: 2cqh;
+  width: 100%;
+  height: 100%;
+  padding: 6cqw;
+  font-size: 5.5cqw;
+  line-height: 1.3;
+  background: linear-gradient(160deg, var(--panel) 0%, var(--panel-2) 100%);
+}
+
+.cif-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4cqw;
+  font-weight: 600;
+}
+
+.cif-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.cif-type {
+  color: var(--muted);
+  font-size: 0.85em;
+  overflow-wrap: anywhere;
+  /* `types`/`subtypes` are stored lowercase; a card prints them capitalised. */
+  text-transform: capitalize;
+}
+
+.cif-text {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 0.85em;
+  border-top: 1px solid var(--border);
+  padding-top: 2cqh;
+  white-space: pre-line;
+}
+
+.cif-pt {
+  align-self: flex-end;
+  font-weight: 700;
+}
+
+/* Pips inside a fallback scale with the card box like everything else here
+   — at their own fixed 13px they stood taller than the title line they sit
+   on at grid size. */
+.card-image-fallback .pip {
+  width: 1.05em;
+  height: 1.05em;
+  font-size: 0.72em;
+  vertical-align: -0.15em;
+}

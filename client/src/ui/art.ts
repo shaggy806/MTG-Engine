@@ -288,6 +288,16 @@ function withImageParams(base: string, version: ArtVersion): string {
   return `${base}?format=image&version=${version}`
 }
 
+/** A direct Scryfall CDN file — `cards.scryfall.io/{version}/{front|back}/…`.
+ * The version is the first path segment, so a stored `art_crop` link can be
+ * re-pointed at any other size rather than only ever serving the crop it was
+ * pasted as. That matters for the DFC back faces, which are the only cards
+ * whose `art` is a direct file (a back face has no by-name lookup of its
+ * own): without this the library's flip showed a cropped illustration where
+ * every other card showed a full card face. */
+const CDN_FILE_RE =
+  /^(https?:\/\/cards\.scryfall\.io\/)(small|normal|large|png|art_crop|border_crop)(\/.+)$/i
+
 /**
  * Wraps a resolved art URL as a CSS `url()` value, for `background-image`.
  *
@@ -335,7 +345,14 @@ export function resolveArtUrl(
     return withImageParams(`https://api.scryfall.com/cards/${api[1]}`, version)
   }
 
-  // A direct image URL (cards.scryfall.io/…) or anything else — use as given.
+  // A direct Scryfall CDN file — re-point it at the requested size (a `png`
+  // has a different extension, so that one is left as stored).
+  const cdn = CDN_FILE_RE.exec(trimmed)
+  if (cdn && version !== 'png' && cdn[2].toLowerCase() !== 'png') {
+    return `${cdn[1]}${version}${cdn[3]}`
+  }
+
+  // Any other direct image URL — use as given.
   if (/^https?:\/\//i.test(trimmed)) return trimmed
 
   // Unrecognised — safest to fall back rather than emit a broken <img src>.
