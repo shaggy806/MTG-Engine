@@ -167,6 +167,11 @@ export interface ImportedCardReport {
    * substitute in for this one — `null` when `implemented`, or when
    * nothing in the pool shares even this card's primary type. */
   readonly suggestedReplacement: string | null
+  /** The Scryfall card id of the printing the pasted line named, so an
+   * imported deck keeps the art it was exported with. Only ever set for an
+   * `implemented` card — a substituted one is a different card, whose art
+   * this printing says nothing about. */
+  readonly printingId: string | null
 }
 
 /** Mirrors `engine`'s `DeckValidationResult` (plus the guessed/explicit

@@ -37,6 +37,8 @@ export interface ImportReport {
   readonly asIs: number
   readonly substituted: readonly { readonly from: string; readonly to: string }[]
   readonly dropped: readonly string[]
+  /** How many cards kept the specific printing the pasted list named. */
+  readonly printings: number
 }
 
 export function DeckBuilderPage() {
@@ -296,12 +298,17 @@ function ImportPanel({
         const finalCards: string[] = []
         const substituted: { from: string; to: string }[] = []
         const dropped: string[] = []
+        // Which printing each kept card arrived with, from the pasted list's
+        // own `(SET) number` suffixes — only ever present for a card kept
+        // as-is, since a substitution is a different card entirely.
+        const printings: Record<string, string> = {}
         let commander: string | undefined
 
         for (const c of cardReports) {
           let resolvedName: string | null = null
           if (c.implemented) {
             resolvedName = c.name
+            if (c.printingId !== null) printings[c.name] = c.printingId
           } else if (c.suggestedReplacement) {
             resolvedName = c.suggestedReplacement
             substituted.push({ from: c.name, to: c.suggestedReplacement })
@@ -320,12 +327,14 @@ function ImportPanel({
           commander ? `Imported: ${commander}` : 'Imported deck',
           finalCards,
           commander,
+          printings,
         )
         onImported(deck, {
           total: cardReports.length,
           asIs: cardReports.length - substituted.length - dropped.length,
           substituted,
           dropped,
+          printings: Object.keys(printings).length,
         })
       })
       .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
@@ -412,6 +421,7 @@ function ImportReportBanner({
         <strong>
           Imported {report.total} card{report.total === 1 ? '' : 's'} — {report.asIs} as-is,{' '}
           {report.substituted.length} substituted, {report.dropped.length} dropped
+          {report.printings > 0 ? `, ${report.printings} keeping their printing` : ''}
         </strong>
         <button type="button" onClick={onDismiss}>
           Dismiss

@@ -86,8 +86,17 @@ export function createDeckFromImport(
   name: string,
   cards: readonly string[],
   commander?: string,
+  printings?: Readonly<Record<string, string>>,
 ): SavedDeck {
-  const deck: SavedDeck = { id: newId(), name, cards, commander }
+  const deck: SavedDeck = {
+    id: newId(),
+    name,
+    cards,
+    commander,
+    // Omitted entirely when the pasted list carried no printing suffixes, so
+    // an imported deck looks like any other hand-built one.
+    ...(printings && Object.keys(printings).length > 0 ? { printings } : {}),
+  }
   writeDecks([...readDecks(), deck])
   setActive({ kind: 'saved', id: deck.id })
   return deck

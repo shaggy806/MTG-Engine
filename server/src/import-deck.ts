@@ -10,14 +10,30 @@
  * text (from Scryfall) so a human can review feasibility — this module
  * never invents a feasibility verdict beyond "is it already implemented,
  * yes or no".
+ *
+ * The printing suffix is kept rather than discarded: an implemented card
+ * that named one is resolved to that printing's Scryfall card id, so an
+ * imported deck arrives wearing the art it was exported with (see
+ * `SavedDeck.printings` and `DeckList.printings`).
  */
 
 import { suggestReplacement, validateCommanderDeck } from "engine";
 import type { CardDefinition, CardRegistry, DeckValidationResult } from "engine";
 
+/** The `(SET) collector-number` suffix a decklist line can carry, naming one
+ * specific printing of a card. */
+export interface PrintingRef {
+  readonly set: string;
+  readonly collectorNumber: string;
+}
+
 export interface DecklistEntry {
   readonly name: string;
   readonly count: number;
+  /** The printing the pasted line named, when it named one. Resolved to a
+   * Scryfall card id by {@link evaluateDecklist} so an imported deck keeps
+   * the art it was exported with. */
+  readonly printing?: PrintingRef;
 }
 
 export interface ParsedDecklist {
@@ -32,15 +48,19 @@ export interface ParsedDecklist {
 }
 
 const LINE_PATTERN = /^(\d+)\s+(.+)$/;
-// Strips a trailing "(SET) collector-number [*F*|*E*|...]" printing suffix,
+// Splits a trailing "(SET) collector-number [*F*|*E*|...]" printing suffix,
 // if present, off the remainder of a decklist line. Collector numbers vary
 // in shape ("160", "CMM-997", "105p") so it's matched as one non-whitespace
 // token rather than digits-only.
-const PRINTING_SUFFIX_PATTERN = /^(.*?)\s+\([A-Za-z0-9]{2,6}\)\s+\S+(?:\s+\*[A-Za-z]+\*)?$/;
+const PRINTING_SUFFIX_PATTERN = /^(.*?)\s+\(([A-Za-z0-9]{2,6})\)\s+(\S+)(?:\s+\*[A-Za-z]+\*)?$/;
 
-function stripPrintingSuffix(rest: string): string {
+function splitPrintingSuffix(rest: string): { name: string; printing?: PrintingRef } {
   const match = PRINTING_SUFFIX_PATTERN.exec(rest);
-  return match !== null ? match[1].trim() : rest;
+  if (match === null) return { name: rest };
+  return {
+    name: match[1].trim(),
+    printing: { set: match[2].toLowerCase(), collectorNumber: match[3] },
+  };
 }
 
 /** Parses decklist lines, merging duplicate names (e.g. a commander also
@@ -52,6 +72,9 @@ function stripPrintingSuffix(rest: string): string {
  * line, whichever comes first. */
 export function parseDecklistText(text: string): ParsedDecklist {
   const counts = new Map<string, number>();
+  // One printing per name — the first line that names one wins, since a deck
+  // brings a single art per card (see `SavedDeck.printings`).
+  const printings = new Map<string, PrintingRef>();
   const commanders: string[] = [];
   let inCommanderSection = false;
   for (const rawLine of text.split(/\r?\n/)) {
@@ -66,12 +89,17 @@ export function parseDecklistText(text: string): ParsedDecklist {
       inCommanderSection = /^commanders?$/i.test(line);
       continue;
     }
-    const name = stripPrintingSuffix(match[2].trim());
+    const { name, printing } = splitPrintingSuffix(match[2].trim());
     counts.set(name, (counts.get(name) ?? 0) + Number(match[1]));
+    if (printing !== undefined && !printings.has(name)) printings.set(name, printing);
     if (inCommanderSection) commanders.push(name);
   }
   return {
-    entries: [...counts.entries()].map(([name, count]) => ({ name, count })),
+    entries: [...counts.entries()].map(([name, count]) => ({
+      name,
+      count,
+      ...(printings.has(name) ? { printing: printings.get(name)! } : {}),
+    })),
     commanders,
   };
 }
@@ -83,6 +111,9 @@ export interface ScryfallCardSummary {
 }
 
 interface ScryfallCardPayload {
+  readonly id?: string;
+  readonly set?: string;
+  readonly collector_number?: string;
   readonly name?: string;
   readonly mana_cost?: string;
   readonly type_line?: string;
@@ -156,15 +187,19 @@ interface CollectionPayload {
   readonly data?: readonly ScryfallCardPayload[];
 }
 
-/** One `/cards/collection` request for up to `COLLECTION_BATCH_SIZE` names,
- * retried once if Scryfall asked us to back off (HTTP 429). Returns the
- * cards it found, indexed by every name they answer to; anything absent
- * simply wasn't found. A network error yields an empty map rather than
- * throwing, so one bad batch can't sink the rest of the import. */
-async function fetchCollectionBatch(
-  names: readonly string[],
-): Promise<Map<string, ScryfallCardSummary>> {
-  const found = new Map<string, ScryfallCardSummary>();
+/** A `/cards/collection` identifier — either form Scryfall accepts. */
+type Identifier = { name: string } | { set: string; collector_number: string };
+
+/** One `/cards/collection` POST for up to `COLLECTION_BATCH_SIZE`
+ * identifiers, retried once if Scryfall asked us to back off (HTTP 429).
+ * Returns the raw cards it found — Scryfall doesn't echo which identifier
+ * produced which card, so matching them back is the caller's job. A network
+ * error yields nothing rather than throwing, so one bad batch can't sink the
+ * rest of the import. */
+async function postCollection(
+  identifiers: readonly Identifier[],
+): Promise<readonly ScryfallCardPayload[]> {
+  let cards: readonly ScryfallCardPayload[] = [];
   const attempt = async (): Promise<number | null> => {
     await throttle();
     const res = await fetch("https://api.scryfall.com/cards/collection", {
@@ -173,7 +208,7 @@ async function fetchCollectionBatch(
         "Content-Type": "application/json",
         "User-Agent": "MTG-Engine-DeckImport/1.0",
       },
-      body: JSON.stringify({ identifiers: names.map((name) => ({ name })) }),
+      body: JSON.stringify({ identifiers }),
     });
     if (res.status === 429) {
       const retryAfter = Number(res.headers.get("retry-after"));
@@ -181,10 +216,7 @@ async function fetchCollectionBatch(
     }
     if (!res.ok) return null;
     const payload = (await res.json()) as CollectionPayload;
-    for (const card of payload.data ?? []) {
-      const summary = summarize(card);
-      for (const key of responseKeys(card)) found.set(key, summary);
-    }
+    cards = payload.data ?? [];
     return null;
   };
 
@@ -195,13 +227,14 @@ async function fetchCollectionBatch(
       await attempt();
     }
   } catch {
-    return found;
+    return cards;
   }
-  return found;
+  return cards;
 }
 
 /** Splits `names` across as many `/cards/collection` requests as it takes,
- * calling `onBatch` with the running count of names covered after each. */
+ * calling `onBatch` with the running count of names covered after each.
+ * Results are indexed by every name the returned card answers to. */
 async function fetchCollection(
   names: readonly string[],
   onBatch?: (covered: number, lastName: string) => void,
@@ -209,8 +242,10 @@ async function fetchCollection(
   const found = new Map<string, ScryfallCardSummary>();
   for (let i = 0; i < names.length; i += COLLECTION_BATCH_SIZE) {
     const slice = names.slice(i, i + COLLECTION_BATCH_SIZE);
-    const batch = await fetchCollectionBatch(slice);
-    for (const [key, summary] of batch) found.set(key, summary);
+    for (const card of await postCollection(slice.map((name) => ({ name })))) {
+      const summary = summarize(card);
+      for (const key of responseKeys(card)) found.set(key, summary);
+    }
     onBatch?.(i + slice.length, slice[slice.length - 1]);
   }
   return found;
@@ -297,6 +332,64 @@ export async function lookupScryfall(name: string): Promise<ScryfallCardSummary 
   return (await lookupScryfallMany([name])).get(name) ?? null;
 }
 
+/** `(SET) number` → the Scryfall card id, or `null` for a pair that doesn't
+ * resolve. Cached for the life of the process, misses included. */
+const printingCache = new Map<string, string | null>();
+
+const printingKey = (p: PrintingRef): string =>
+  `${p.set.toLowerCase()}/${p.collectorNumber.toLowerCase()}`;
+
+/**
+ * Turns each entry's `(SET) collector-number` suffix into the Scryfall card
+ * id of that exact printing, so an imported deck keeps the art it was
+ * exported with (`SavedDeck.printings`).
+ *
+ * Batched through the same `/cards/collection` endpoint as the name lookups
+ * — a hundred-card export with printing suffixes costs two extra round-trips,
+ * not a hundred. Scryfall doesn't say which identifier produced which card,
+ * so results are matched back by `set`/`collector_number`, which is exact
+ * (unlike the name matching `fetchCollection` has to do).
+ *
+ * A returned card whose name doesn't match the entry's is discarded: a
+ * decklist with a stale or mistyped collector number would otherwise pin a
+ * completely different card's art onto this one.
+ */
+export async function lookupPrintingIds(
+  entries: readonly DecklistEntry[],
+  onProgress?: (covered: number, lastName: string | null) => void,
+): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  const pending: DecklistEntry[] = [];
+  for (const entry of entries) {
+    if (entry.printing === undefined) continue;
+    const cached = printingCache.get(printingKey(entry.printing));
+    if (cached === undefined) pending.push(entry);
+    else if (cached !== null) out.set(entry.name, cached);
+  }
+
+  for (let i = 0; i < pending.length; i += COLLECTION_BATCH_SIZE) {
+    const slice = pending.slice(i, i + COLLECTION_BATCH_SIZE);
+    const byPrinting = new Map<string, ScryfallCardPayload>();
+    for (const card of await postCollection(
+      slice.map((e) => ({ set: e.printing!.set, collector_number: e.printing!.collectorNumber })),
+    )) {
+      if (card.set !== undefined && card.collector_number !== undefined) {
+        byPrinting.set(printingKey({ set: card.set, collectorNumber: card.collector_number }), card);
+      }
+    }
+    for (const entry of slice) {
+      const key = printingKey(entry.printing!);
+      const card = byPrinting.get(key);
+      const matches = card !== undefined && responseKeys(card).includes(nameKey(entry.name));
+      const id = matches && card.id !== undefined ? card.id : null;
+      printingCache.set(key, id);
+      if (id !== null) out.set(entry.name, id);
+    }
+    onProgress?.(i + slice.length, slice[slice.length - 1].name);
+  }
+  return out;
+}
+
 function localTypeLine(def: CardDefinition): string {
   const front = [...def.supertypes, ...def.types].join(" ");
   return def.subtypes.length > 0 ? `${front} — ${def.subtypes.join(" ")}` : front;
@@ -317,6 +410,12 @@ export interface CardReportEntry extends DecklistEntry {
    * *type line and mana cost*, not its rules text — a similarity pick, not
    * a claim that the two cards play the same. */
   readonly suggestedReplacement: string | null;
+  /** The Scryfall card id of the printing this decklist line named, when it
+   * named one that resolves. Only ever filled for an `implemented` card — an
+   * unimplemented one is either dropped or stood in for by a *different*
+   * card, and neither keeps this one's art. `null` for a plain `1 Sol Ring`
+   * line, or a printing Scryfall doesn't have. */
+  readonly printingId: string | null;
 }
 
 /** Called as the audit advances, so a caller streaming it to a client can
@@ -344,14 +443,22 @@ export async function evaluateDecklist(
 ): Promise<CardReportEntry[]> {
   const total = entries.length;
   const unimplemented = entries.filter((e) => !registry.has(e.name));
-  // Everything the registry already has is free; report it before the
-  // network work starts so the bar reflects what's actually left to do.
-  const localCount = total - unimplemented.length;
-  if (localCount > 0) onProgress?.({ done: localCount, total, name: null });
+  // Implemented cards resolve from the local registry — except the ones
+  // naming a specific printing, which cost a lookup of their own. Counting
+  // those with the network work rather than with the free ones is what keeps
+  // the bar honest; every entry is still counted exactly once.
+  const printed = entries.filter((e) => registry.has(e.name) && e.printing !== undefined);
+  const free = entries.length - unimplemented.length - printed.length;
+  if (free > 0) onProgress?.({ done: free, total, name: null });
+
+  const printingIds = await lookupPrintingIds(printed, (covered, lastName) =>
+    onProgress?.({ done: free + covered, total, name: lastName }),
+  );
+  const beforeNames = free + printed.length;
 
   const scryfallByName = await lookupScryfallMany(
     unimplemented.map((e) => e.name),
-    (done, lastName) => onProgress?.({ done: localCount + done, total, name: lastName }),
+    (done, lastName) => onProgress?.({ done: beforeNames + done, total, name: lastName }),
   );
   // Nothing above fires when every name came from the process cache, and the
   // variant rounds deliberately don't report, so close the bar out here.
@@ -368,6 +475,7 @@ export async function evaluateDecklist(
         typeLine: localTypeLine(def),
         oracleText: def.text,
         suggestedReplacement: null,
+        printingId: printingIds.get(entry.name) ?? null,
       };
     }
     const scryfall = scryfallByName.get(entry.name) ?? null;
@@ -382,6 +490,7 @@ export async function evaluateDecklist(
         scryfall !== null
           ? suggestReplacement({ manaCost: scryfall.manaCost, typeLine: scryfall.typeLine })
           : null,
+      printingId: null,
     };
   });
 }

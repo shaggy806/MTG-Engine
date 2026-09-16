@@ -16,7 +16,7 @@ describe("parseDecklistText", () => {
     );
   });
 
-  it("strips a '(SET) collector-number' printing suffix, including foil/etched markers", () => {
+  it("splits a '(SET) collector-number' printing suffix off, including foil/etched markers", () => {
     const { entries } = parseDecklistText(
       [
         "1 Ureni of the Unwritten (TDC) 9 *F*",
@@ -28,18 +28,43 @@ describe("parseDecklistText", () => {
     );
     expect(entries).toEqual(
       expect.arrayContaining([
-        { name: "Ureni of the Unwritten", count: 1 },
-        { name: "Forest", count: 5 },
-        { name: "Frontier Bivouac", count: 1 },
-        { name: "Dracogenesis", count: 1 },
-        { name: "Miirym, Sentinel Wyrm", count: 1 },
+        { name: "Ureni of the Unwritten", count: 1, printing: { set: "tdc", collectorNumber: "9" } },
+        { name: "Forest", count: 5, printing: { set: "stx", collectorNumber: "374" } },
+        {
+          name: "Frontier Bivouac",
+          count: 1,
+          printing: { set: "plst", collectorNumber: "CMM-997" },
+        },
+        { name: "Dracogenesis", count: 1, printing: { set: "ptdm", collectorNumber: "105p" } },
+        {
+          name: "Miirym, Sentinel Wyrm",
+          count: 1,
+          printing: { set: "clb", collectorNumber: "542" },
+        },
       ]),
     );
   });
 
-  it("keeps a split-card name with its printing suffix stripped", () => {
+  it("leaves a line with no printing suffix carrying no printing at all", () => {
+    expect(parseDecklistText("1 Sol Ring").entries).toEqual([{ name: "Sol Ring", count: 1 }]);
+  });
+
+  it("takes the first printing named for a card that appears more than once", () => {
+    const { entries } = parseDecklistText("1 Sol Ring (SLD) 2683\n1 Sol Ring (C21) 263");
+    expect(entries).toEqual([
+      { name: "Sol Ring", count: 2, printing: { set: "sld", collectorNumber: "2683" } },
+    ]);
+  });
+
+  it("keeps a split-card name with its printing suffix split off", () => {
     const { entries } = parseDecklistText("1 Marang River Regent / Coil and Catch (TDM) 378");
-    expect(entries).toEqual([{ name: "Marang River Regent / Coil and Catch", count: 1 }]);
+    expect(entries).toEqual([
+      {
+        name: "Marang River Regent / Coil and Catch",
+        count: 1,
+        printing: { set: "tdm", collectorNumber: "378" },
+      },
+    ]);
   });
 
   it("merges duplicate names and skips blank lines / comments / non-matching lines", () => {
@@ -80,14 +105,24 @@ describe("parseDecklistText", () => {
 
 /** Stands in for Scryfall's `POST /cards/collection`: answers with whichever
  * of `cards` the batch actually asked for, the way the real endpoint does
- * (found cards in `data`, everything else simply absent). */
+ * (found cards in `data`, everything else simply absent). Both identifier
+ * shapes are honoured — by name, and by `set`/`collector_number` for a card
+ * whose stub carries them. */
 function stubCollection(cards: Record<string, Record<string, unknown>>) {
+  const bySetNumber = new Map<string, Record<string, unknown>>();
+  for (const card of Object.values(cards)) {
+    if (typeof card.set === "string" && typeof card.collector_number === "string") {
+      bySetNumber.set(`${card.set}/${card.collector_number}`, card);
+    }
+  }
   const fetchMock = vi.fn(async (_url: string, init?: { body?: string }) => {
     const { identifiers } = JSON.parse(init?.body ?? "{}") as {
-      identifiers?: { name: string }[];
+      identifiers?: ({ name: string } | { set: string; collector_number: string })[];
     };
     const data = (identifiers ?? [])
-      .map((id) => cards[id.name])
+      .map((id) =>
+        "name" in id ? cards[id.name] : bySetNumber.get(`${id.set}/${id.collector_number}`),
+      )
       .filter((c): c is Record<string, unknown> => c !== undefined);
     return { ok: true, status: 200, json: async () => ({ data }) };
   });
@@ -252,6 +287,111 @@ describe("evaluateDecklist", () => {
     expect(result.implemented).toBe(false);
     expect(result.found).toBe(false);
     expect(result.suggestedReplacement).toBeNull();
+  });
+
+  it("resolves an implemented card's printing suffix to that printing's card id", async () => {
+    const fetchMock = stubCollection({
+      "Sol Ring": { id: "aaaa1111-0000-0000-0000-000000000001", name: "Sol Ring", set: "p01", collector_number: "11" },
+    });
+
+    const [result] = await evaluateDecklist(
+      [{ name: "Sol Ring", count: 1, printing: { set: "p01", collectorNumber: "11" } }],
+      registry,
+    );
+
+    expect(result.implemented).toBe(true);
+    expect(result.printingId).toBe("aaaa1111-0000-0000-0000-000000000001");
+    // One batch, by set/number — not a name lookup, and not one call per card.
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(JSON.parse((fetchMock.mock.calls[0][1] as { body: string }).body)).toEqual({
+      identifiers: [{ set: "p01", collector_number: "11" }],
+    });
+  });
+
+  it("leaves printingId null for a line with no printing suffix, and makes no call for it", async () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
+
+    const [result] = await evaluateDecklist([{ name: "Lightning Bolt", count: 1 }], registry);
+
+    expect(result.printingId).toBeNull();
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  // A stale or mistyped collector number resolves to some *other* card, and
+  // pinning its art onto this one would be worse than no printing at all.
+  it("discards a printing whose card isn't the one the line named", async () => {
+    stubCollection({
+      "Some Other Card": {
+        id: "aaaa1111-0000-0000-0000-000000000002",
+        name: "Some Other Card",
+        set: "p02",
+        collector_number: "22",
+      },
+    });
+
+    const [result] = await evaluateDecklist(
+      [{ name: "Sol Ring", count: 1, printing: { set: "p02", collectorNumber: "22" } }],
+      registry,
+    );
+
+    expect(result.printingId).toBeNull();
+  });
+
+  it("doesn't resolve a printing for an unimplemented card", async () => {
+    // A name no earlier test has looked up — `lookupScryfallMany`'s cache is
+    // process-wide, so a repeat would make no call at all and prove nothing.
+    const fetchMock = stubCollection({
+      "Thought Vessel": {
+        id: "aaaa1111-0000-0000-0000-000000000003",
+        name: "Thought Vessel",
+        mana_cost: "{2}",
+        type_line: "Artifact",
+        oracle_text: "",
+        set: "p03",
+        collector_number: "33",
+      },
+    });
+
+    const [result] = await evaluateDecklist(
+      [{ name: "Thought Vessel", count: 1, printing: { set: "p03", collectorNumber: "33" } }],
+      registry,
+    );
+
+    // It's about to be swapped for a different card, whose art this printing
+    // says nothing about — so only the name lookup happens.
+    expect(result.implemented).toBe(false);
+    expect(result.printingId).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(JSON.parse((fetchMock.mock.calls[0][1] as { body: string }).body)).toEqual({
+      identifiers: [{ name: "Thought Vessel" }],
+    });
+  });
+
+  it("counts every entry exactly once across both lookup passes", async () => {
+    stubCollection({
+      "Arcane Signet": { id: "aaaa1111-0000-0000-0000-000000000004", name: "Arcane Signet", set: "p04", collector_number: "44" },
+      "Chromatic Orrery": {
+        name: "Chromatic Orrery",
+        mana_cost: "{7}",
+        type_line: "Legendary Artifact",
+        oracle_text: "",
+      },
+    });
+
+    const seen: { done: number; total: number }[] = [];
+    await evaluateDecklist(
+      [
+        { name: "Lightning Bolt", count: 1 }, // free — local registry
+        { name: "Arcane Signet", count: 1, printing: { set: "p04", collectorNumber: "44" } },
+        { name: "Chromatic Orrery", count: 1 }, // unimplemented — name lookup
+      ],
+      registry,
+      ({ done, total }) => seen.push({ done, total }),
+    );
+
+    expect(seen.every((p) => p.total === 3 && p.done <= 3)).toBe(true);
+    expect(seen.map((p) => p.done)).toEqual([1, 2, 3, 3]);
   });
 });
 
