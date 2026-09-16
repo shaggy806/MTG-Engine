@@ -73,6 +73,9 @@ export interface CardFilter {
   /** Must have AT LEAST ONE of these subtypes — an OR (Farseek: "a Plains,
    * Island, Swamp, or Mountain card"; a checkland's "a Mountain or a Forest"). */
   readonly subtypes?: readonly string[];
+  /** Must have NONE of these subtypes — Cruel Revival's "target **non-Zombie**
+   * creature", Crippling Fear's "creatures that aren't of the chosen type". */
+  readonly notSubtypes?: readonly string[];
   /** Must have this supertype (`"legendary"`, `"basic"`, …). */
   readonly supertype?: Supertype;
   /** Exact true printed card name. */
@@ -149,12 +152,22 @@ export function matchesFilter(
   if (filter.typesAnyOf !== undefined && !filter.typesAnyOf.some((t) => types.includes(t))) {
     return false;
   }
-  if (filter.subtype !== undefined || filter.subtypes !== undefined) {
+  if (
+    filter.subtype !== undefined ||
+    filter.subtypes !== undefined ||
+    filter.notSubtypes !== undefined
+  ) {
     const subtypes = effectiveSubtypes(registry, object);
     if (filter.subtype !== undefined && !subtypes.includes(filter.subtype)) return false;
     if (
       filter.subtypes !== undefined &&
       !filter.subtypes.some((s) => subtypes.includes(s))
+    ) {
+      return false;
+    }
+    if (
+      filter.notSubtypes !== undefined &&
+      filter.notSubtypes.some((s) => subtypes.includes(s))
     ) {
       return false;
     }

@@ -3177,6 +3177,13 @@ export class Game {
     if (allAttackers.length === 1) {
       this.emit({ type: "attacked-alone", attacker: allAttackers[0] });
     }
+    if (allAttackers.length > 0) {
+      this.emit({
+        type: "attackers-declared",
+        player: this.activePlayer,
+        attackers: [...allAttackers],
+      });
+    }
 
     this.state.awaiting = null;
     this.prepareForPriority(this.activePlayer);
@@ -5331,6 +5338,12 @@ export class Game {
         ) {
           continue;
         }
+        // "Tap an untapped creature you control" as part of the cost
+        // (Jaspera Sentinel, Holdout Settlement). `useManaSource` taps only
+        // the source, so offering these to the auto-payer would hand out the
+        // mana without paying for it — strictly better than the printed card.
+        // They stay activatable by hand; see AUTHORING §15.
+        if (ability.cost.tapOthers !== undefined) continue;
         // A mana ability whose own activation cost contains mana is a
         // "converter" (a Signet, a filter land). Only a purely *generic* cost
         // is admitted: a coloured one would be circular, needing the colour to
@@ -6280,7 +6293,8 @@ export class Game {
           const triggerValue =
             powerOfId !== undefined && this.state.objects[powerOfId] !== undefined
               ? computeCharacteristics(this.state, this.registry, powerOfId).power
-              : ability.trigger.on === "deals-combat-damage-to-player" &&
+              : (ability.trigger.on === "deals-combat-damage-to-player" ||
+                    ability.trigger.on === "dealt-damage") &&
                   event.type === "damage-dealt"
                 ? event.amount
                 : undefined;
@@ -6416,8 +6430,32 @@ export class Game {
           event.type === "damage-dealt" &&
           event.combat &&
           event.target.kind === "player" &&
-          this.matchesWho(spec.who, event.source, self)
+          this.matchesWho(spec.who, event.source, self) &&
+          this.triggerFilterOk(spec.filter, event.source, self)
         );
+      case "dealt-damage":
+        return (
+          event.type === "damage-dealt" &&
+          event.target.kind === "object" &&
+          this.matchesWho(spec.who, event.target.object, self)
+        );
+      case "discards":
+        return (
+          event.type === "cards-discarded" &&
+          event.objects.length > 0 &&
+          (spec.who === "any" ||
+            (spec.who === "you" && event.player === self.controller) ||
+            (spec.who === "opponent" && event.player !== self.controller))
+        );
+      case "attack-with": {
+        if (event.type !== "attackers-declared") return false;
+        if (spec.who === "you" && event.player !== self.controller) return false;
+        if (spec.who === "opponent" && event.player === self.controller) return false;
+        const counted = event.attackers.filter((id) =>
+          this.triggerFilterOk(spec.filter, id, self),
+        );
+        return counted.length >= spec.atLeast;
+      }
       case "becomes-tapped":
         return (
           event.type === "permanent-tapped" &&
@@ -6770,7 +6808,20 @@ export class Game {
         this.sacrificeByEffect(controller, who, filter, count, exceptId),
       sacrificeSource: () => this.sacrificeSourceByEffect(source),
       returnToHand: (target) => this.returnToHandByEffect(target),
-      exileObject: (target) => this.exileByEffect(target),
+      exileObject: (target, untilSourceLeaves) =>
+        this.exileByEffect(target, untilSourceLeaves === true ? source : undefined),
+      returnExiledBySource: () => {
+        // A token exiled this way ceased to exist (rule 111.7) and never
+        // comes back; anything that moved on from exile in the meantime is
+        // no longer linked, because `moveObject` cleared the mark.
+        for (const id of [...this.state.zones.shared.exile]) {
+          const object = this.state.objects[id];
+          if (object?.exiledBy !== source || object.isToken) continue;
+          object.exiledBy = undefined;
+          this.moveObject(id, "battlefield");
+          this.emit({ type: "permanent-entered-battlefield", object: id });
+        }
+      },
       putOntoBattlefield: (target, underYourControl, enterTapped, withCounters) =>
         this.putOntoBattlefieldByEffect(
           target,
@@ -6905,7 +6956,7 @@ export class Game {
       },
       animate: (target, opts) => this.animate(target, opts),
       changeText: (target) => this.beginTextChoice(controller, source, target),
-      createToken: (token, count, who) => {
+      createToken: (token, count, who, tapped) => {
         let tokenController = controller;
         if (who === "target-controller") {
           const ref = targets[0];
@@ -6918,7 +6969,7 @@ export class Game {
             tokenController = this.state.objects[ref.object].controller;
           }
         }
-        this.createTokens(tokenController, token, count);
+        this.createTokens(tokenController, token, count, tapped);
       },
       controllerOf: (ref) =>
         ref.kind === "player" ? ref.player : this.state.objects[ref.object]?.controller,
@@ -7489,11 +7540,16 @@ export class Game {
     });
   }
 
-  private createTokens(controller: PlayerId, tokenName: string, count: number): void {
+  private createTokens(
+    controller: PlayerId,
+    tokenName: string,
+    count: number,
+    tapped = false,
+  ): void {
     this.registry.get(tokenName); // validate the token is a known definition
     // Doubling Season / Parallel Lives (rule 614): "twice that many instead".
     const total = count * this.tokenCreationMultiplier(controller);
-    this.mintTokenBatch(controller, tokenName, null, total, [], false, false, false);
+    this.mintTokenBatch(controller, tokenName, null, total, [], false, false, false, tapped);
   }
 
   /** Create `count` token(s) that are copies of the permanent `ofId` (rule
@@ -7581,6 +7637,7 @@ export class Game {
     exileAtEndStep: boolean,
     notLegendary: boolean,
     copied: boolean,
+    tapped = false,
   ): void {
     if (total <= 0) return;
     const printedName = copyOf ?? cardName;
@@ -7593,12 +7650,18 @@ export class Game {
           modifiers,
           exileAtEndStep,
           notLegendary,
+          false,
+          tapped,
         );
         if (copied) this.emit({ type: "permanent-copied", object: id, copyOf: printedName });
         this.emit({ type: "permanent-entered-battlefield", object: id });
       }
     };
-    if (!this.isStackableTokenName(printedName)) {
+    // Tokens that enter *tapped* are never stacked: `findMergeableStack` has
+    // no notion of tapped-ness, so they'd fold into an untapped stack and come
+    // out untapped. Thirteen real objects (Army of the Damned) is well inside
+    // what the battlefield handles.
+    if (tapped || !this.isStackableTokenName(printedName)) {
       mintIndividually();
       return;
     }
@@ -7650,6 +7713,7 @@ export class Game {
     exileAtEndStep: boolean,
     notLegendary: boolean,
     skipBattlefield = false,
+    tapped = false,
   ): ObjectId {
     const id = this.mintObjectId();
     this.state.objects[id] = {
@@ -7658,7 +7722,7 @@ export class Game {
       owner: controller,
       controller,
       zone: "battlefield",
-      tapped: false,
+      tapped,
       damageMarked: 0,
       markedByDeathtouch: false,
       enteredBattlefieldOnTurn: this.state.turn.number,
@@ -7686,7 +7750,10 @@ export class Game {
       ...(notLegendary ? { notLegendary: true } : {}),
     };
     const entering = this.entersBattlefieldReplacement(id);
-    this.state.objects[id].tapped = entering.tapped;
+    // Either source of "enters tapped" is enough: the token's own replacement
+    // (a Treasure-like) or the effect that created it ("create thirteen
+    // **tapped** Zombie tokens").
+    this.state.objects[id].tapped = entering.tapped || tapped;
     for (const c of entering.counters) {
       this.state.objects[id].counters[c.kind] =
         (this.state.objects[id].counters[c.kind] ?? 0) + c.amount;
@@ -8511,7 +8578,7 @@ export class Game {
     this.emit({ type: "permanent-entered-battlefield", object: target.object });
   }
 
-  private exileByEffect(target: TargetRef): void {
+  private exileByEffect(target: TargetRef, exiledBy?: ObjectId): void {
     if (target.kind !== "object") return;
     const id = this.splitOneFromStack(target.object);
     const object = this.state.objects[id];
@@ -8522,6 +8589,11 @@ export class Game {
     if (object.zone !== "battlefield" && object.zone !== "graveyard") return;
     const wasPermanent = object.zone === "battlefield";
     this.moveObject(id, "exile");
+    // After the move: `moveObject` clears zone-scoped state on the way out,
+    // and this link has to survive until the O-Ring itself leaves.
+    if (exiledBy !== undefined && this.state.objects[id]?.zone === "exile") {
+      this.state.objects[id].exiledBy = exiledBy;
+    }
     if (this.state.awaiting !== null) return;
     // The event is about a permanent leaving the battlefield; a graveyard
     // card being exiled isn't one, and the log formatters read it that way.
@@ -9619,6 +9691,11 @@ export class Game {
     object.chosenModes = undefined;
     object.kicked = undefined;
     object.enteredKicked = enteringKicked;
+    // The O-Ring link (rule 720.2) dies with any move: a card that leaves
+    // exile some other way is no longer the one the Banishing Light took, so
+    // nothing comes back when the Light does. `exileByEffect` sets this
+    // *after* its own move, so an exile doesn't clear its own mark.
+    object.exiledBy = undefined;
     object.overloaded = undefined;
     // The adventure "may cast the creature from exile" permission (rule 715.3)
     // ends when the card changes zones. `resolveTopOfStack` re-sets it *after*

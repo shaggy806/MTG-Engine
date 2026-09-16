@@ -301,6 +301,24 @@ export type EffectSpec =
       /** Put a target permanent into exile. */
       readonly kind: "exile";
       readonly target: number;
+      /**
+       * Exile **until this source leaves the battlefield** — an "O-Ring"
+       * (Banishing Light, Conclave Tribunal). Rule 720.2: one ability that
+       * exiles and sets up a linked delayed trigger, so the card carries a
+       * second `leaves-battlefield` ability running `return-exiled-by-source`.
+       *
+       * Marks `GameObject.exiledBy` with the source's id, which is what links
+       * the two halves. If the source leaves before the exile happens, or the
+       * exiled card moves on to somewhere else, nothing comes back — the same
+       * way the printed card behaves.
+       */
+      readonly untilSourceLeaves?: boolean;
+    }
+  | {
+      /** Return everything this effect's source exiled with
+       * `exile { untilSourceLeaves }`, to the battlefield under its owner's
+       * control. The other half of an O-Ring. */
+      readonly kind: "return-exiled-by-source";
     }
   | {
       /**
@@ -613,6 +631,10 @@ export type EffectSpec =
        * countered spell's controller). Rule 111.11 — for a destroyed /
        * countered target this is its last-known controller. */
       readonly who?: "you" | "target-controller";
+      /** The tokens enter **tapped** (Army of the Damned, Necrotic Hex,
+       * Overseer of the Damned). These are never folded into a token stack —
+       * see `mintTokenBatch`. */
+      readonly tapped?: boolean;
     }
   | {
       /** Create `count` token(s) that are copies of a permanent (rule 707.10 —
@@ -986,7 +1008,9 @@ export interface EffectApi {
    * gate on a `sacrifice-source` effect's `then`. */
   sacrificeSource(): boolean;
   returnToHand(target: TargetRef): void;
-  exileObject(target: TargetRef): void;
+  exileObject(target: TargetRef, untilSourceLeaves?: boolean): void;
+  /** See the `"return-exiled-by-source"` {@link EffectSpec}. */
+  returnExiledBySource(): void;
   /** Exile every card in `target`'s graveyard (a player — Bojuka Bog). */
   exileGraveyard(target: TargetRef): void;
   /** Exile `target`, then immediately return it to the battlefield under its
@@ -1118,6 +1142,7 @@ export interface EffectApi {
     token: string,
     count: number,
     who?: "you" | "target-controller",
+    tapped?: boolean,
   ): void;
   /** Create `count` token(s) that are copies of the permanent `of` — see the
    * `"create-token-copy"` {@link EffectSpec}. */
@@ -1440,9 +1465,12 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     }
     case "exile": {
       const target = ctx.targets[spec.target];
-      if (target !== undefined) ctx.exileObject(target);
+      if (target !== undefined) ctx.exileObject(target, spec.untilSourceLeaves === true);
       return;
     }
+    case "return-exiled-by-source":
+      ctx.returnExiledBySource();
+      return;
     case "put-onto-battlefield": {
       const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) {
@@ -1607,7 +1635,12 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       return;
     }
     case "create-token":
-      ctx.createToken(spec.token, amountValue(spec.count, ctx) * ctx.stackMultiplier, spec.who);
+      ctx.createToken(
+        spec.token,
+        amountValue(spec.count, ctx) * ctx.stackMultiplier,
+        spec.who,
+        spec.tapped === true,
+      );
       return;
     case "create-token-copy": {
       let of: ObjectId | undefined;

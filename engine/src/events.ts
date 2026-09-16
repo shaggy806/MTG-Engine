@@ -331,6 +331,15 @@ export type GameEvent =
       /** Exactly one creature was declared as an attacker this combat (rule
        * 702.111a — Exalted, needed-cards P15). Emitted once, after every
        * `attacker-declared` event for the same declaration. */
+      /** The whole attack declaration, once it's known — for "whenever you
+       * attack with N or more creatures" (Overwhelming Instinct, Tide
+       * Skimmer), which can't be read off the per-attacker events. Emitted
+       * for the same reason `attacked-alone` is. */
+      readonly type: "attackers-declared";
+      readonly player: PlayerId;
+      readonly attackers: readonly ObjectId[];
+    })
+  | (Base & {
       readonly type: "attacked-alone";
       readonly attacker: ObjectId;
     })

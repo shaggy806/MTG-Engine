@@ -283,7 +283,8 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 | `untap` | `target: EffectTargetRef` — an index, `"source"`, or `"trigger-object"` | Amulet of Vigor: `target: "trigger-object"` untaps the permanent whose entering fired the trigger, with no target slot at all |
 | `destroy` | `target` | Doom Blade |
 | `destroy-all` | `filter` | Wrath of God |
-| `exile` | `target` | Angelic Edict. Works on a card in a **graveyard** as well as a permanent (Withered Wretch). |
+| `exile` | `target`, `untilSourceLeaves?` | Angelic Edict. Works on a card in a **graveyard** as well as a permanent (Withered Wretch). `untilSourceLeaves` is an "O-Ring" (Banishing Light, Conclave Tribunal) — see below. |
+| `return-exiled-by-source` | — | The other half of an O-Ring: returns everything this source exiled, to the battlefield under its **owner's** control. |
 | `put-onto-battlefield` | `target` (an `EffectTargetRef`, so `"trigger-object"` works — Undying returns *itself*), `underYourControl?`, `enterTapped?`, `withCounters?` | Reanimation that names one card, from anyone's graveyard — as opposed to `return-from-graveyard`'s filter over your own. `underYourControl` makes controller diverge from owner, so the card still goes back to its **owner's** graveyard when it dies. |
 | `exile-graveyard` | `target` (a player slot, or `"you"`) | Bojuka Bog — exiles that player's whole graveyard at once (rule 406; the cards in it are never individually targeted) |
 | `flicker` | `target` | Essence Flux — exiles `target`, then immediately returns it to the battlefield under its owner's control (rule 400.7 — a brand-new object; a token exiled this way never comes back) |
@@ -320,7 +321,7 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 
 | kind | fields |
 | --- | --- |
-| `create-token` | `token` (a registry name), `count`, `who?: "you" \| "target-controller"` (Beast Within — under `targets[0]`'s controller) |
+| `create-token` | `token` (a registry name), `count`, `who?: "you" \| "target-controller"` (Beast Within — under `targets[0]`'s controller), `tapped?` (Army of the Damned — "create thirteen **tapped** … tokens"; a tapped batch is never folded into a token stack, since a stack carries one `tapped` flag for all of it) |
 | `create-token-copy` | `of: "source" \| "trigger-object" \| slot`, `count`, `gainsHaste?`, `exileAtEndStep?`, `notLegendary?`, `basePt?: [p, t]`, `who?: "you"` — a token that's a copy of a permanent, under *its* controller by default; `who: "you"` puts it under the effect's controller instead, which is what a card copying something an **opponent** controls means (Hate Mirage). `"trigger-object"` = the permanent whose entering/attacking fired the trigger (Miirym); a slot = a target (Saw in Half). |
 | `attach` | `target` (Equip-style) |
 | `transform` | `target` (`"source"` \| slot) |
@@ -345,6 +346,15 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 `become-monarch { who? }`, `get-energy { amount, who? }`,
 `create-emblem { text, static? }`, `prevent-all-combat-damage` (Fog),
 `prevent-damage { target, amount, combatOnly? }` (Healing Salve).
+
+**An O-Ring** ("exile target … until ~ leaves the battlefield") is rule 720.2:
+*one* printed ability that exiles and sets up a linked delayed trigger. Author
+it as the two halves the rule describes — an `enters-battlefield` trigger with
+`exile { untilSourceLeaves: true }`, and a `leaves-battlefield` trigger with
+`return-exiled-by-source`. The link rides on `GameObject.exiledBy`, which
+`moveObject` clears on any zone change: a card that leaves exile some other way
+is no longer the one this permanent took, and a token that was exiled ceased to
+exist (rule 111.7), so neither comes back.
 
 ### Combinators
 
@@ -448,7 +458,13 @@ than the chooser), `"creature-or-player"`, `"opponent-or-planeswalker"`,
 `"creature-or-enchantment-an-opponent-controls"`, `"attacking-or-blocking-creature"`, `"creature-defending-player-controls"`,
 `"spell"`,
 `"creature-spell"`, `"noncreature-spell"`, `"instant-or-sorcery-spell"`,
-`"instant-or-sorcery-in-your-graveyard"`, `"player-or-planeswalker"`.
+`"instant-or-sorcery-in-your-graveyard"`, `"player-or-planeswalker"`,
+`"creature-attacking-you"`.
+
+`"creature-attacking-you"` is "attacking **you** or a planeswalker you control"
+(Soul Snare) — narrower than `"attacking-or-blocking-creature"`, and the
+difference only shows at a 3-4 player table, where someone else's attacker
+isn't your problem.
 
 `"player-or-planeswalker"` reaches **any** player, yourself included (Clan
 Defiance); `"opponent-or-planeswalker"` is the narrower printed wording
@@ -623,6 +639,10 @@ triggered: [
 | `deals-combat-damage-to-player` | `who` | auto-fills the first target slot with the damaged player |
 | `transforms` | `who`, `intoFront?`, `filter?` | a DFC turns over |
 | `step-begins` | `step`, `who` | the start of a step (`"upkeep"` etc.) |
+| `discards` | `who` | "whenever an opponent discards a card" (Sangromancer). Fires once per *discard event*, not once per card — see §15. |
+| `dealt-damage` | `who` | the receiving end — "whenever this creature **is dealt damage**" (Brash Taunter, Hornet Nest). Combat and non-combat alike; `{ triggerValue: true }` is how much. |
+| `attack-with` | `who`, `atLeast`, `filter?` | "whenever you attack with three or more creatures" (Overwhelming Instinct, Tide Skimmer). Fires once per declaration, off the whole attacker list — an `attacks` trigger fires per attacker and can't count them. |
+| `deals-combat-damage-to-player` | `who`, `filter?` | `filter` narrows on the *damaging creature* — Sharding Sphinx's "whenever an **artifact** creature you control deals combat damage to a player". The first target slot is auto-filled with the damaged player, but only if that slot can hold one. |
 | `cast-spell` | `who`, `noncreatureOnly?`, `firstEachTurn?`, `filter?` | a spell is cast. `who: "opponent"` is anyone but this permanent's controller (Kaervek the Merciless); `filter` narrows on the *spell* — `{ typesAnyOf: ["instant", "sorcery"] }` for Guttersnipe. `noncreatureOnly` predates `filter` and stays, because prowess is printed as its own word. `trigger-object` is the spell, so `{ manaValueOf: "trigger-object" }` reads its mana value. |
 | `this-cast` | — | the spell carrying this ability is cast (cascade, storm) |
 | `predicate` | `match: (event) => boolean` | escape hatch — match the raw `GameEvent` |
@@ -998,9 +1018,18 @@ different card, or extend the engine (see `ROADMAP.md`).
   genuinely circular — you'd need the colour to make the colour — and so does
   an `{X}` one, since nothing is resolving during payment planning. Selvala,
   Heart of the Wilds is still blocked, on its output rather than its cost.
-- **Tapping *other* permanents as an ability cost** (Gravespawn Sovereign:
-  "Tap five untapped Zombies you control"). `AbilityCost.tap` taps the source
-  only.
+- **A `discards` trigger fires once per discard *event*, not once per card.**
+  `cards-discarded` carries the whole batch, and the engine matches the event.
+  A card printed as "whenever an opponent discards a card, you may gain 3 life"
+  (Sangromancer) should trigger once per card; the divergence only shows on a
+  multi-card discard (Mind Rot), and it undercounts rather than over.
+- **A *mana* ability with a `tapOthers` cost is invisible to the auto-payer**
+  (Jaspera Sentinel, Holdout Settlement: "{T}, Tap an untapped creature you
+  control: Add one mana of any color"). `useManaSource` taps only the source,
+  so offering these to `manaSources()` would hand out the mana without paying
+  for it — strictly better than the printed card. They're excluded there and
+  stay activatable by hand, which floats the mana; the effect is that the card
+  is inert during auto-payment rather than wrong.
 - **No "put card(s) from hand onto the battlefield" effect** — every mass
   cheat-into-play effect (`search-library`, `look-and-choose`) sources from a
   library or graveyard, never a hand (Last March of the Ents, Spelunking,

@@ -245,8 +245,55 @@ export type TriggerSpec =
     }
   | {
       /** This creature dealt combat damage to a player. The ability's first
-       * target slot (if any) is auto-filled with that player. */
+       * target slot (if any) is auto-filled with that player, when the slot
+       * can hold one. */
       readonly on: "deals-combat-damage-to-player";
+      readonly who: TriggerWho;
+      /** A filter on the creature that dealt the damage — Sharding Sphinx's
+       * "whenever an **artifact** creature you control deals combat damage to
+       * a player". */
+      readonly filter?: CardFilter;
+    }
+  | {
+      /**
+       * A player discarded one or more cards — Sangromancer's "whenever an
+       * opponent discards a card".
+       *
+       * Fires **once per discard event**, not once per card: `cards-discarded`
+       * carries the whole batch, and a card printed this way ("whenever an
+       * opponent discards a card, you may gain 3 life") would in the real
+       * rules trigger once per card. The divergence only shows on a
+       * multi-card discard; recorded in AUTHORING §15.
+       */
+      readonly on: "discards";
+      readonly who: TriggerWho;
+    }
+  | {
+      /**
+       * A player declared an attack with at least `atLeast` creatures matching
+       * `filter` — Overwhelming Instinct's "whenever you attack with three or
+       * more creatures", Tide Skimmer's "two or more creatures with flying".
+       *
+       * Fires once per declaration, off the whole attacker list, which is why
+       * it can't be spelled as an `attacks` trigger: that one fires per
+       * attacker and can't see how many there are in total.
+       */
+      readonly on: "attack-with";
+      readonly who: TriggerWho;
+      readonly atLeast: number;
+      readonly filter?: CardFilter;
+    }
+  | {
+      /**
+       * This permanent *was dealt* damage — the receiving end, as opposed to
+       * `deals-combat-damage-to-player`'s dealing end (Brash Taunter, Hornet
+       * Nest). Combat and non-combat damage alike, which is the whole point
+       * of the cards that carry it.
+       *
+       * `{ triggerValue: true }` is how much was dealt ("it deals **that
+       * much** damage", "create **that many** tokens").
+       */
+      readonly on: "dealt-damage";
       readonly who: TriggerWho;
     }
   | {

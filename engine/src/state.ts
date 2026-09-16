@@ -47,6 +47,13 @@ export interface GameObject {
    * matched. See `lastKnownCounters`, which exists for the same reason.
    */
   wasAttacking?: boolean;
+  /**
+   * This card is in exile because of an "exile until ~ leaves the
+   * battlefield" ability, and this is the id of the permanent that did it
+   * (rule 720.2 — Banishing Light). Set *after* the move to exile, since
+   * `moveObject` clears zone-scoped state on the way.
+   */
+  exiledBy?: ObjectId;
   /** True once dealt damage by a deathtouch source this turn (rule 704.5h). Cleared with `damageMarked`. */
   markedByDeathtouch: boolean;
   /** Turn number this object last entered the battlefield; `null` otherwise. */

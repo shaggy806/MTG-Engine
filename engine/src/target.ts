@@ -47,6 +47,10 @@ export type TargetSpec =
   /** A creature currently attacking or blocking (Eiganjo, Seat of the
    * Empire's Channel — "target attacking or blocking creature"). */
   | "attacking-or-blocking-creature"
+  /** A creature attacking *the targeting player* or a planeswalker they
+   * control (Soul Snare). Narrower than `attacking-or-blocking-creature`:
+   * at a 3-4 player table someone else's attacker is not your problem. */
+  | "creature-attacking-you"
   /**
    * A creature controlled by the player *this ability's source is attacking*
    * — Tyrant's Familiar's "target creature defending player controls".

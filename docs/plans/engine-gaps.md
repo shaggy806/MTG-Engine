@@ -465,3 +465,57 @@ via a `signet` helper) and ~25 more cards, plus `modify-pt-all { exceptSource }`
 attacking creatures you control with flying", which is itself one.
 
 101 of the original 286 cards remain.
+
+---
+
+## Phase K — the third pass (44 cards)
+
+286 → 66. Additions, each tied to the cards that wanted it:
+
+| addition | cards |
+|---|---|
+| `create-token { tapped }` | Army of the Damned, Necrotic Hex, Overseer of the Damned |
+| `CardFilter.notSubtypes` | Cruel Revival |
+| `filter` on a `deals-combat-damage-to-player` trigger | Sharding Sphinx |
+| `TargetSpec` `"creature-attacking-you"` | Soul Snare |
+| `dealt-damage` trigger (the receiving end, with `triggerValue` = the amount) | Brash Taunter, Hornet Nest |
+| `attack-with { atLeast, filter? }` trigger, off a new `attackers-declared` event | Overwhelming Instinct, Tide Skimmer |
+| `exile { untilSourceLeaves }` + `return-exiled-by-source` + `GameObject.exiledBy` | Banishing Light, Conclave Tribunal |
+| `discards { who }` trigger | Sangromancer |
+
+Three things worth recording about *how* these landed:
+
+**Tapped tokens are never stacked.** A token stack carries one `tapped` flag
+for the whole stack and `findMergeableStack` has no notion of tapped-ness, so
+a tapped batch would fold into an untapped stack and come out untapped.
+Army of the Damned makes thirteen real objects, which is well inside what the
+battlefield handles.
+
+**`attack-with` needed a new event.** "Whenever you attack with three or more
+creatures" can't be read off `attacker-declared`, which fires per attacker —
+the same reason `attacked-alone` exists. `attackers-declared` is emitted once,
+with the whole list, after the declaration is known.
+
+**The O-Ring is rule 720.2's two halves, not one bespoke effect.** The card
+carries an `enters-battlefield` trigger that exiles with `untilSourceLeaves`
+and a `leaves-battlefield` trigger that returns what it took. `moveObject`
+clears `exiledBy` on any zone change, so a card that leaves exile some other
+way is no longer linked, and a token never comes back (rule 111.7).
+
+### One limitation this pass added rather than removed
+
+A **mana ability with a `tapOthers` cost** (Jaspera Sentinel, Holdout
+Settlement) is excluded from `manaSources()`. `useManaSource` taps only the
+source, so offering these to the auto-payer would hand out the mana without
+paying for it — strictly better than the printed card. They stay activatable by
+hand, which floats the mana; the card is inert during auto-payment rather than
+wrong. Fixing it properly is the same shape as the converter work in phase J,
+with creatures instead of mana.
+
+A second, smaller divergence: a `discards` trigger fires once per discard
+*event* rather than once per card, because `cards-discarded` carries the whole
+batch. It only shows on a multi-card discard, and it undercounts rather than
+over.
+
+Also dropped: **Distant Melody** and **Crippling Fear** want "choose a creature
+type" as a *spell* resolves. `chooseOnEnter` only covers permanents entering.

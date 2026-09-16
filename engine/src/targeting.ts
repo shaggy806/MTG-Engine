@@ -248,6 +248,16 @@ export function isLegalTarget(
         state.objects[ref.object].controller === defender
       );
     }
+    case "creature-attacking-you": {
+      if (ref.kind !== "object" || !isLivingCreature(state, registry, ref.object)) return false;
+      const attacking = state.objects[ref.object].attacking;
+      if (attacking === null || attacking === undefined) return false;
+      // `attacking` is a player, or a planeswalker that player controls.
+      return (
+        attacking === forPlayer ||
+        state.objects[attacking as ObjectId]?.controller === forPlayer
+      );
+    }
     case "attacking-or-blocking-creature":
       return (
         ref.kind === "object" &&
