@@ -353,11 +353,16 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
   (mode choice happens at cast time). A mode's effect *can* reference the
   enclosing ability's own already-chosen targets (`target: 0`, same as
   anywhere else) — needed-cards P19.
-- **`may { effect, prompt, then?, else? }`** — "You may [effect]". One
-  optional mode; same targeting rule as `modal`. `then` applies only when
-  `effect` was chosen ("If you do, …" — Ob Nixilis, the Fallen); `else` only
-  when it was declined ("If you didn't, …", or an "unless" cost framed as the
-  decline branch — Springheart Nantuko, The Gitrog Monster's upkeep). needed-cards P19.
+- **`may { effect, prompt, cost?, then?, else? }`** — "You may [effect]". One
+  optional mode; same targeting rule as `modal`. `cost` is a mana cost to say
+  yes ("you may pay {B}. If you do, draw a card" — Nihil Spellbomb): the
+  choice is only *offered* when it's payable, so being unable to pay and
+  declining both land on `else`, and the mana is spent as the choice is
+  answered (re-checked then, since the board can move in between). `then`
+  applies only when `effect` was chosen ("If you do, …" — Ob Nixilis, the
+  Fallen); `else` only when it was declined ("If you didn't, …", or an
+  "unless" cost framed as the decline branch — Springheart Nantuko, The
+  Gitrog Monster's upkeep). needed-cards P19.
 - **`conditional { condition: StaticCondition, then, else? }`** — apply `then`
   if `condition` holds at resolution (evaluated from the source's controller's
   view — same `{ controls, your-turn, threshold, metalcraft }` union as a
@@ -679,6 +684,9 @@ clause (section 9):
 - `{ kind: "your-turn" }`
 - `{ kind: "threshold" }` — 7+ cards in your graveyard.
 - `{ kind: "metalcraft" }` — 3+ artifacts.
+- `{ kind: "creature-died-this-turn" }` — Liliana's Devotee. Reads the
+  turn-scoped `GameState.creaturesDiedThisTurn`, counted in `moveObject`
+  while the dying permanent's types are still readable.
 - `{ kind: "self-counters", counter?, compare }` — how many counters the
   ability's **own source** has. Reads last-known information once the source
   has left the battlefield (rule 603.10), which is the only way Undying's "if
