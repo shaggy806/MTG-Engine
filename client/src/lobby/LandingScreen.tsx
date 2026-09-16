@@ -11,11 +11,17 @@ import './landing.css'
 const ROOM_CODE_LENGTH = 5
 const ROOM_CODE_CHARS = /[^ABCDEFGHJKLMNPQRSTUVWXYZ23456789]/g
 
-/** One card's art, blurred and dimmed behind the title — this is the only
- * place a first-time visitor learns the app is about Magic before they've
- * clicked anything. Purely decorative: `.landing-hero` paints a gradient
- * underneath, so a failed image load costs nothing. */
-const HERO_CARD = "Atraxa, Praetors' Voice"
+/**
+ * One card's art, blurred and dimmed behind the title. Purely decorative —
+ * `.landing-hero` paints its own gradient underneath, so a failed load costs
+ * nothing.
+ *
+ * Deliberately *not* required to be in the pool: `resolveArtUrl` falls back
+ * to Scryfall's by-name lookup when there's no `CardDefinition` to read an
+ * `art` field from, which is why this can name any real card rather than
+ * only an implemented one.
+ */
+const HERO_CARD = 'The Ur-Dragon'
 
 /**
  * What a friend actually pastes: a bare code, or the whole room URL out of
@@ -66,15 +72,21 @@ export function LandingScreen({
     if (code.length === ROOM_CODE_LENGTH) game.joinRoom(code)
   }
 
-  const heroDef = findCardDef(HERO_CARD)
-  const heroArt = heroDef ? resolveArtUrl(heroDef.art, heroDef.name, 'art_crop') : null
+  // Not gated on `findCardDef` finding anything — see HERO_CARD.
+  const heroArt = resolveArtUrl(findCardDef(HERO_CARD)?.art, HERO_CARD, 'art_crop')
 
   return (
     <div className="landing">
+      {/* A zoomed-in crop of the top-100-commanders tile, drifting diagonally
+          behind everything. Two elements, not one: the outer holds the angle
+          and clips, the inner does the moving — see landing.css for why the
+          loop can't just translate the outer. */}
+      <div className="landing-backdrop" aria-hidden="true">
+        <div className="landing-backdrop-layer" />
+      </div>
+
       <header className="landing-hero">
-        {heroArt ? (
-          <div className="landing-hero-art" style={{ backgroundImage: cssUrl(heroArt) }} aria-hidden="true" />
-        ) : null}
+        <div className="landing-hero-art" style={{ backgroundImage: cssUrl(heroArt) }} aria-hidden="true" />
         <div className="landing-hero-text">
           <h1 className="landing-title">MTG Engine</h1>
           <p className="landing-tagline">

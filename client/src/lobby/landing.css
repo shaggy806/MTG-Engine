@@ -21,12 +21,112 @@
      panels above them, and the "or" rule runs down the centre of the same
      channel the gap below it opens. */
   --landing-split: clamp(24px, 2.6vw, 38px);
+  /* How wide one full repeat of the commander tile is drawn — i.e. the zoom.
+     The tile is a 10-wide grid, so 300vw puts about three cards across the
+     screen. Clamped at the top so a very wide monitor doesn't upscale the
+     source past the point where even the baked-in blur hides it, and at the
+     bottom so a phone stays zoomed in rather than showing the whole grid. */
+  --backdrop-tile: clamp(1400px, 300vw, 4200px);
+  --backdrop-angle: -14deg;
+  /* One full tile of travel. ~23px/s at a 1366px viewport: present, but not
+     something you catch yourself watching. */
+  --backdrop-period: 180s;
   padding: clamp(18px, 4vh, 54px) clamp(16px, 4vw, 40px);
   overflow-y: auto;
+  position: relative;
+  /* Keeps the backdrop's negative z-index inside this subtree, where it
+     paints above .landing's own background and below everything else. */
+  isolation: isolate;
   background-color: var(--bg);
   /* the same felt sheen the table itself uses (see App.css's .app), so the
      front door and the game look like one product */
   background-image: radial-gradient(ellipse at 50% -10%, #1a232b 0%, transparent 62%);
+}
+
+/*
+ * The drifting backdrop. Split across two elements on purpose.
+ *
+ * The obvious single-element version — one rotated layer with a repeating
+ * background, translated by one tile — loops seamlessly but drags its own
+ * edge into view, because translating the element moves its boundary along
+ * with its content. Animating `background-position` instead keeps the
+ * element still, but that repaints a full-screen layer every frame.
+ *
+ * So: the outer element holds the angle, the opacity and a clip, and never
+ * moves. The inner is one whole tile wider than it, and slides exactly one
+ * tile left — which lands on an identical repeat (seamless) while its
+ * trailing edge only ever reaches the outer's edge, never past it. Only a
+ * transform animates, so the whole thing stays on the compositor.
+ *
+ * The blur is baked into the image rather than applied here as a `filter`.
+ * That is not just about the per-frame cost of blurring a layer this size:
+ * blur removes exactly the high-frequency detail that costs bytes, so the
+ * same 2048px export went from 1278KB to 263KB by being blurred first. The
+ * file that ships is 1536px wide and 152KB, from a 241MB source.
+ */
+.landing-backdrop {
+  /*
+   * Oversized so the rotated rectangle still covers all four corners of the
+   * viewport. Rotating the viewport into this element's frame needs
+   * w·cosθ + h·sinθ across and w·sinθ + h·cosθ down, so the margin one axis
+   * needs is driven by the *other* axis's length — which is why a flat
+   * percentage of each axis (the obvious `inset: -30%`) is wrong: it held at
+   * 16:9 and failed on a wide, short window, where the height needed is
+   * dominated by the width. Adding half of the opposite axis satisfies both
+   * for any aspect ratio and any |angle| up to 30° (where sinθ hits 0.5),
+   * and at 16:9 it's actually a slightly smaller layer than 160% was.
+   */
+  --backdrop-w: calc(100vw + 50vh);
+  --backdrop-h: calc(100vh + 50vw);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: var(--backdrop-w);
+  height: var(--backdrop-h);
+  /* Centred with margins rather than a translate, so the centring can't be
+     entangled with the rotation in the transform list. */
+  margin-left: calc(var(--backdrop-w) / -2);
+  margin-top: calc(var(--backdrop-h) / -2);
+  z-index: -1;
+  overflow: hidden;
+  transform: rotate(var(--backdrop-angle));
+  opacity: 0.24;
+  pointer-events: none;
+}
+.landing-backdrop-layer {
+  position: absolute;
+  inset: 0;
+  /* Over-constrained on purpose — `width` wins and `right` is dropped, so
+     this runs one full tile past the clip on the trailing side. */
+  width: calc(100% + var(--backdrop-tile));
+  background-image: url('/menu-backdrop.webp');
+  background-repeat: repeat;
+  background-size: var(--backdrop-tile) auto;
+  animation: landing-backdrop-drift var(--backdrop-period) linear infinite;
+  /* Deliberately no `will-change: transform`. This element is a full tile
+     wider than the viewport-sized frame above it — around 5800x1450 at
+     1366x768 — and pinning a layer that size into the compositor for the
+     whole life of the page is the case the property is explicitly warned
+     against. A running CSS transform animation gets promoted on its own
+     anyway, for exactly as long as it needs to be. */
+}
+@keyframes landing-backdrop-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    /* Exactly one tile: the background repeats with that period, so the last
+       frame is pixel-identical to the first and the loop can't be seen. The
+       travel is horizontal in this element's own frame; the rotation on the
+       parent is what turns it into a diagonal on screen. */
+    transform: translate3d(calc(-1 * var(--backdrop-tile)), 0, 0);
+  }
+}
+/* Still shows the art, just holds it still. */
+@media (prefers-reduced-motion: reduce) {
+  .landing-backdrop-layer {
+    animation: none;
+  }
 }
 
 /* Every block shares one measure, so the hero, the two action panels and the
@@ -38,6 +138,8 @@
   width: min(880px, 100%);
 }
 
+/* Opaque, so this one card reads as itself against the drifting grid of a
+   hundred others behind it rather than blending into them. */
 .landing-hero {
   position: relative;
   overflow: hidden;
@@ -55,9 +157,13 @@
   position: absolute;
   inset: 0;
   background-size: cover;
-  background-position: center 38%;
-  opacity: 0.34;
-  filter: blur(2px) saturate(0.85);
+  /* Near the top on purpose. This panel is far wider than it is tall (about
+     4:1 against the art's 1.37:1), so `cover` only ever shows a third of the
+     image's height — and the Ur-Dragon's head sits in the top quarter of the
+     crop, which a centred band misses completely. */
+  background-position: center 6%;
+  opacity: 0.5;
+  filter: blur(1.5px) saturate(0.9);
   -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.95), transparent 86%);
   mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.95), transparent 86%);
 }
