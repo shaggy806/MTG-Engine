@@ -471,8 +471,36 @@
      two 39.2cqh-tall slots plus room for the labels and gaps, and the
      min() keeps a tall quadrant from inflating the rail past a normal
      card. Every card-shaped box in here reads --card-w, so nothing else
-     needs its own rule. */
-  --card-w: min(var(--card-w-max), 28cqh);
+     needs its own rule. The cap is set against the *commander* slot alone
+     (roughly twice --card-w tall, plus its label), since the library below
+     it squashes to whatever is left — see the rule further down. */
+  --card-w: min(var(--card-w-max), 32cqh);
+}
+/* The rail runs the full height of the quadrant, so its seat-coloured
+   divider runs down the whole board rather than stopping wherever the two
+   cards happen to end. */
+.quadrant-body .board-with-sidezone {
+  min-height: 100%;
+  align-items: stretch;
+}
+/* The library keeps its place under the commander and gives up height
+   instead: it's a face-down pile with a count on it, so a squat box says
+   everything a full-height one does, while the commander is a card you
+   actually read. Stacking two full card slots plus their labels needs about
+   twice a card's height, which at 768px tall didn't fit at all — a 286px
+   rail in a 269px quadrant, with the library count clipped off the bottom
+   edge of every cell, and that overflow was what made the boards scroll. */
+.quadrant-body .side-zone .side-zone-section:last-child,
+.quadrant-body .side-zone .side-zone-section:last-child .side-zone-cards {
+  flex: 1;
+  min-height: 0;
+}
+.quadrant-body .side-zone .card-back {
+  /* replaces .card-back's own --card-w-derived height: the pile stretches to
+     whatever the commander above it leaves, down to a floor that keeps the
+     count badge legible. */
+  min-height: 52px;
+  height: 100%;
 }
 /* your hand + ability menu + priority/attack/block controls, in their own
    full-width strip below the quadrant grid (closer to how Arena keeps your
