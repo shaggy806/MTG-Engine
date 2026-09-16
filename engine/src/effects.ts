@@ -66,6 +66,24 @@ export type EffectAmount =
   /** The *current* power of whatever a target slot points at — Unleash Fury's
    * "double the power of target creature" is a `modify-pt` that adds this. */
   | { readonly powerOf: EffectTargetRef }
+  /** Your **devotion** to a colour (rule 700.5): every mana symbol of that
+   * colour in the mana costs of permanents you control, hybrid pips included.
+   * Gray Merchant of Asphodel's "each opponent loses X life, where X is your
+   * devotion to black". */
+  | { readonly devotionTo: Color }
+  /** How many creatures died under the effect controller's control this turn
+   * — Liliana's Standard Bearer. Reads `PlayerState.creaturesDiedThisTurn`. */
+  | { readonly creaturesDiedThisTurn: true }
+  /** The product of several amounts — Gray Merchant of Asphodel gains "life
+   * equal to the life lost this way", which is its devotion to black times
+   * the number of opponents who lost that much. Composes, so it stays out of
+   * the individual amount shapes. */
+  | { readonly product: readonly EffectAmount[] }
+  /** How many opponents control *fewer* permanents matching `filter` than the
+   * effect's controller does — Voice of Many's "draw a card for each opponent
+   * who controls fewer creatures than you". A comparison per player, which no
+   * single `CardFilter` can express. */
+  | { readonly opponentsControllingFewer: CardFilter }
   /** How many players a `PlayerScope` covers — Inspired Sphinx's "draw cards
    * equal to **the number of opponents you have**". Counts living players, so
    * it shrinks as a multiplayer game does. */
@@ -423,6 +441,11 @@ export type EffectSpec =
        * for the same reason: a `CardFilter` describes the permanent matched,
        * not its relationship to the source. */
       readonly exceptSource?: boolean;
+      /** Scope the filter to a *targeted* player's permanents — Great Oak
+       * Guardian's "creatures **target player** controls get +2/+2". A
+       * `CardFilter`'s `controlledBy` only knows "you" and "opponent", which
+       * can't name one seat at a 3-4 player table. */
+      readonly controlledByTarget?: number;
     }
   | {
       /** Double each matching permanent's *current* power and toughness
@@ -583,6 +606,9 @@ export type EffectSpec =
        * Assault: `{ type: "creature", controlledBy: "you" }`). */
       readonly kind: "untap-all";
       readonly filter: CardFilter;
+      /** As on `modify-pt-all` — "untap them" after pumping a targeted
+       * player's creatures (Great Oak Guardian). */
+      readonly controlledByTarget?: number;
     }
   | {
       /** Tap every battlefield permanent matching `filter` — Thundermaw
@@ -896,6 +922,13 @@ export type EffectSpec =
        * finds (Cultivate: "put one onto the battlefield tapped and the other
        * into your hand"). Omit when every find goes to `destination`. */
       readonly restDestination?: "hand" | "battlefield";
+      /**
+       * Whose library is searched — the effect's controller by default, or
+       * the controller of a target slot (Path to Exile: "**its controller**
+       * may search their library for a basic land card"). The search is
+       * always optional for someone else, which `min: 0` already expresses.
+       */
+      readonly who?: { readonly controllerOfTarget: number };
     }
   | {
       /** Reveal `count` cards from the top of the controller's library (or
@@ -962,6 +995,12 @@ export interface EffectApi {
    * control names its owner here; the two coincide for everything else.
    */
   controllerOf(ref: TargetRef): PlayerId | undefined;
+  /** See the `{ devotionTo }` {@link EffectAmount}. */
+  devotionTo(color: Color): number;
+  /** See the `{ opponentsControllingFewer }` {@link EffectAmount}. */
+  opponentsControllingFewer(filter: CardFilter): number;
+  /** See the `{ creaturesDiedThisTurn }` {@link EffectAmount}. */
+  creaturesDiedThisTurn(): number;
   powerOf(target: TargetRef): number;
   /** Every player a `PlayerScope` names, in APNAP order and skipping anyone
    * who has already lost. The shared scope resolution behind `draw`'s `who`,
@@ -1054,6 +1093,7 @@ export interface EffectApi {
     toughness: number,
     duration: PtDuration,
     exceptSource?: boolean,
+    scopeTo?: PlayerId,
   ): void;
   /** Grant `keyword` to every battlefield permanent matching `filter`. */
   grantKeywordAll(filter: CardFilter, keyword: Keyword, duration: PtDuration): void;
@@ -1118,7 +1158,7 @@ export interface EffectApi {
    * Assault). */
   additionalCombat(): void;
   /** Untap every battlefield permanent matching `filter`. */
-  untapAll(filter: CardFilter): void;
+  untapAll(filter: CardFilter, scopeTo?: PlayerId): void;
   tapAll(filter: CardFilter): void;
   /** `target` becomes a creature — see the `"animate"` {@link EffectSpec}. */
   animate(
@@ -1203,6 +1243,7 @@ export interface EffectApi {
   ): void;
   /** See the `"search-library"` {@link EffectSpec}. */
   searchLibrary(
+    player: PlayerId | null,
     filter: CardFilter,
     destination: "hand" | "battlefield",
     min: number,
@@ -1284,7 +1325,15 @@ export function amountValue(amount: EffectAmount, ctx: ResolutionContext): numbe
   if ("triggerValue" in amount) return ctx.triggerValue;
   if ("lifeTotal" in amount) return ctx.lifeTotalOf(ctx.controller);
   if ("countInGraveyard" in amount) return ctx.countInGraveyard(amount.countInGraveyard);
+  if ("product" in amount) {
+    return amount.product.reduce<number>((n, a) => n * amountValue(a, ctx), 1);
+  }
   if ("countPlayers" in amount) return ctx.playersInScope(amount.countPlayers).length;
+  if ("opponentsControllingFewer" in amount) {
+    return ctx.opponentsControllingFewer(amount.opponentsControllingFewer);
+  }
+  if ("devotionTo" in amount) return ctx.devotionTo(amount.devotionTo);
+  if ("creaturesDiedThisTurn" in amount) return ctx.creaturesDiedThisTurn();
   if ("powerOf" in amount) {
     const ref = resolveEffectTarget(amount.powerOf, ctx);
     return ref === undefined ? 0 : ctx.powerOf(ref);
@@ -1294,6 +1343,18 @@ export function amountValue(amount: EffectAmount, ctx: ResolutionContext): numbe
     return ref === undefined ? 0 : ctx.manaValueOf(ref);
   }
   return ctx.countMatching(amount.countOf) * (amount.times ?? 1);
+}
+
+/** The player a `controlledByTarget` slot points at, or `undefined` when the
+ * effect isn't scoped to one — in which case the mass effect keeps reading
+ * `controlledBy` from the effect's own controller, as it always has. */
+function scopedController(
+  slot: number | undefined,
+  ctx: ResolutionContext,
+): PlayerId | undefined {
+  if (slot === undefined) return undefined;
+  const ref = ctx.targets[slot];
+  return ref === undefined ? undefined : ctx.controllerOf(ref);
 }
 
 /** Imperative escape hatch for a spell or ability the vocab can't express. */
@@ -1544,6 +1605,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
         amountValue(spec.toughness, ctx),
         spec.duration,
         spec.exceptSource === true,
+        scopedController(spec.controlledByTarget, ctx),
       );
       return;
     case "double-pt-all":
@@ -1607,7 +1669,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       ctx.additionalCombat();
       return;
     case "untap-all":
-      ctx.untapAll(spec.filter);
+      ctx.untapAll(spec.filter, scopedController(spec.controlledByTarget, ctx));
       return;
     case "tap-all":
       ctx.tapAll(spec.filter);
@@ -1748,8 +1810,18 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     case "surveil":
       ctx.scry(spec.amount, true, spec.then);
       return;
-    case "search-library":
+    case "search-library": {
+      let searcher: PlayerId | null = null;
+      if (spec.who !== undefined) {
+        const of = ctx.targets[spec.who.controllerOfTarget];
+        // A target that has already gone (Path to Exile exiles first) still
+        // names its last-known controller; nothing at all means no search.
+        const who = of === undefined ? undefined : ctx.controllerOf(of);
+        if (who === undefined) return;
+        searcher = who;
+      }
       ctx.searchLibrary(
+        searcher,
         spec.filter,
         spec.destination,
         spec.min,
@@ -1758,6 +1830,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
         spec.restDestination,
       );
       return;
+    }
     case "look-and-choose":
       ctx.lookAndChoose(
         spec.zone,

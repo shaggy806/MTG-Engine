@@ -303,7 +303,7 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 | kind | fields | notes |
 | --- | --- | --- |
 | `modify-pt` | `target`, `power`, `toughness`, `duration` | `duration: "end-of-turn" \| "permanent"` |
-| `modify-pt-all` | `filter`, `power`, `toughness`, `duration` | Overrun |
+| `modify-pt-all` | `filter`, `power`, `toughness`, `duration`, `exceptSource?`, `controlledByTarget?` | Overrun. `exceptSource` spares the source ("**other** attacking creatures you control with flying" — Steel-Plume Marshal, itself one). `controlledByTarget` scopes to a *targeted seat* (Great Oak Guardian), which a `CardFilter`'s `controlledBy` can't name — it only knows "you" and "opponent". |
 | `grant-keyword` | `target`, `keyword`, `duration` | |
 | `grant-triggered` | `target`, `ability`, `duration` | "gains 'Whenever this creature deals combat damage to a player, draw that many cards'" (Hunter's Prowess, Hunter's Insight). Rides on the target's own modifiers, so `"end-of-turn"` expires with every other until-end-of-turn modifier. The ongoing equivalent is `StaticAbility.grantsTriggered` (§10). |
 | `grant-keyword-all` | `filter`, `keyword`, `duration` | Overrun's trample |
@@ -331,14 +331,14 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 
 | kind | fields | example |
 | --- | --- | --- |
-| `search-library` | `filter`, `destination: "hand" \| "battlefield"`, `min`, `max`, `enterTapped?`, `restDestination?` | Demonic Tutor, Rampant Growth. `max` is an `EffectAmount`, so "up to X basic lands, where X is the number of tapped creatures you control" is a `countOf` (Harvest Season). `restDestination` sends every *chosen* card after the first somewhere else — Cultivate's "put one onto the battlefield tapped and the other into your hand" (distinct from `leftover`, which is about cards **not** chosen). |
+| `search-library` | `who?: { controllerOfTarget }` (Path to Exile — *its controller* searches), `filter`, `destination: "hand" \| "battlefield"`, `min`, `max`, `enterTapped?`, `restDestination?` | Demonic Tutor, Rampant Growth. `max` is an `EffectAmount`, so "up to X basic lands, where X is the number of tapped creatures you control" is a `countOf` (Harvest Season). `restDestination` sends every *chosen* card after the first somewhere else — Cultivate's "put one onto the battlefield tapped and the other into your hand" (distinct from `leftover`, which is about cards **not** chosen). |
 | `scry` | `amount`, `then?` | Preordain (`then: { kind: "draw", amount: 1 }`) |
 | `surveil` | `amount`, `then?` | Consider |
 | `look-and-choose` | `zone`, `count?`, `min`, `max`, `destination`, `leftover: "bottom-random" \| "stay" \| "hand"`, `filter?` | Ureni of the Unwritten; Genesis Ultimatum uses `leftover: "hand"` — every non-chosen looked-at card goes to hand, regardless of `filter` (needed-cards P19) |
 
 ### Turn structure / cast-triggered
 
-`take-extra-turn`, `additional-combat`, `untap-all { filter }`, `storm`,
+`take-extra-turn`, `additional-combat`, `untap-all { filter, controlledByTarget? }`, `storm`,
 `cascade`, `copy-spell { target }`.
 
 ### Format extras
@@ -521,15 +521,18 @@ activated: [
 ```
 
 **`AbilityCost`** (`abilities.ts`): `{ mana?, tap?, sacrifice?, payLife?,
-removeCounter?, payEnergy? }`.
+removeCounter?, payEnergy?, discardHand?, tapOthers? }`.
 
 - `mana`: a cost string (`"{2}"`) or `null`. May contain `{X}`.
 - `tap: true` adds `{T}`.
 - `sacrifice: "self"` ("Sacrifice this: …"), `"creature-you-control"`, or
   `{ filter: CardFilter }` (Zuran Orb — "Sacrifice a land"). The last two make
   the player pick (a `sacrifice` choice on the `activate-ability` LegalAction).
-- `payLife: 2`, `payEnergy: 3`, `removeCounter: { kind: "+1/+1", count: 1 }` —
-  all paid automatically (no decision).
+- `payLife: 2`, `payEnergy: 3`, `removeCounter: { kind: "+1/+1", count: 1 }`,
+  `discardHand: true` — all paid automatically (no decision). `discardHand` is
+  Slate of Ancestry's "Discard your hand"; being a *cost* is what makes its
+  "draw a card for each creature you control" a refill rather than a wash, and
+  an empty hand is a legal payment, so it never gates activation.
 - `tapOthers: { count, filter, includeSelf? }` — tap *other* permanents you
   control (Gravespawn Sovereign's "Tap five untapped Zombies you control"), as
   opposed to `tap`, which taps the source. `includeSelf` lets the source be

@@ -230,8 +230,10 @@ import _poolGodlessShrine from "./pool/godless-shrine.js";
 import _poolGrapeshot from "./pool/grapeshot.js";
 import _poolGravePact from "./pool/grave-pact.js";
 import _poolGravespawnSovereign from "./pool/gravespawn-sovereign.js";
+import _poolGrayMerchantOfAsphodel from "./pool/gray-merchant-of-asphodel.js";
 import _poolGraypeltRefuge from "./pool/graypelt-refuge.js";
 import _poolGreatFurnace from "./pool/great-furnace.js";
+import _poolGreatOakGuardian from "./pool/great-oak-guardian.js";
 import _poolGreed from "./pool/greed.js";
 import _poolGrizzlyBears from "./pool/grizzly-bears.js";
 import _poolGutShot from "./pool/gut-shot.js";
@@ -303,6 +305,7 @@ import _poolLightningBolt from "./pool/lightning-bolt.js";
 import _poolLightningGreaves from "./pool/lightning-greaves.js";
 import _poolLilianasDevotee from "./pool/lilianas-devotee.js";
 import _poolLilianasMastery from "./pool/lilianas-mastery.js";
+import _poolLilianasStandardBearer from "./pool/lilianas-standard-bearer.js";
 import _poolLlanowarElves from "./pool/llanowar-elves.js";
 import _poolLlanowarWastes from "./pool/llanowar-wastes.js";
 import _poolLongtuskCub from "./pool/longtusk-cub.js";
@@ -367,6 +370,7 @@ import _poolOverrun from "./pool/overrun.js";
 import _poolOverseerOfTheDamned from "./pool/overseer-of-the-damned.js";
 import _poolOverwhelmingInstinct from "./pool/overwhelming-instinct.js";
 import _poolPacifism from "./pool/pacifism.js";
+import _poolPathToExile from "./pool/path-to-exile.js";
 import _poolPearlMedallion from "./pool/pearl-medallion.js";
 import _poolPhyrexianArena from "./pool/phyrexian-arena.js";
 import _poolPhyrexianTower from "./pool/phyrexian-tower.js";
@@ -452,6 +456,7 @@ import _poolSinisterSabotage from "./pool/sinister-sabotage.js";
 import _poolSkyDiamond from "./pool/sky-diamond.js";
 import _poolSkyscanner from "./pool/skyscanner.js";
 import _poolSkyshroudClaim from "./pool/skyshroud-claim.js";
+import _poolSlateOfAncestry from "./pool/slate-of-ancestry.js";
 import _poolSmolderingMarsh from "./pool/smoldering-marsh.js";
 import _poolSnapcasterMage from "./pool/snapcaster-mage.js";
 import _poolSolRing from "./pool/sol-ring.js";
@@ -583,6 +588,7 @@ import _poolVillageRites from "./pool/village-rites.js";
 import _poolVisceraSeer from "./pool/viscera-seer.js";
 import _poolVituGhaziTheCityTree from "./pool/vitu-ghazi-the-city-tree.js";
 import _poolVizierOfTheScorpion from "./pool/vizier-of-the-scorpion.js";
+import _poolVoiceOfMany from "./pool/voice-of-many.js";
 import _poolVolcanicIsland from "./pool/volcanic-island.js";
 import _poolVoltCharge from "./pool/volt-charge.js";
 import _poolWalkingBallista from "./pool/walking-ballista.js";
@@ -874,8 +880,10 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolGrapeshot,
   _poolGravePact,
   _poolGravespawnSovereign,
+  _poolGrayMerchantOfAsphodel,
   _poolGraypeltRefuge,
   _poolGreatFurnace,
+  _poolGreatOakGuardian,
   _poolGreed,
   _poolGrizzlyBears,
   _poolGutShot,
@@ -947,6 +955,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolLightningGreaves,
   _poolLilianasDevotee,
   _poolLilianasMastery,
+  _poolLilianasStandardBearer,
   _poolLlanowarElves,
   _poolLlanowarWastes,
   _poolLongtuskCub,
@@ -1011,6 +1020,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolOverseerOfTheDamned,
   _poolOverwhelmingInstinct,
   _poolPacifism,
+  _poolPathToExile,
   _poolPearlMedallion,
   _poolPhyrexianArena,
   _poolPhyrexianTower,
@@ -1096,6 +1106,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSkyDiamond,
   _poolSkyscanner,
   _poolSkyshroudClaim,
+  _poolSlateOfAncestry,
   _poolSmolderingMarsh,
   _poolSnapcasterMage,
   _poolSolRing,
@@ -1227,6 +1238,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolVisceraSeer,
   _poolVituGhaziTheCityTree,
   _poolVizierOfTheScorpion,
+  _poolVoiceOfMany,
   _poolVolcanicIsland,
   _poolVoltCharge,
   _poolWalkingBallista,

@@ -21,6 +21,13 @@ export default defineCard({
     reduceGeneric: 2,
   },
   resolve: (ctx) => {
-    ctx.searchLibrary({ type: "creature", manaValue: { op: "lte", n: ctx.x } }, "battlefield", 0, 1, false);
+    ctx.searchLibrary(
+      null,
+      { type: "creature", manaValue: { op: "lte", n: ctx.x } },
+      "battlefield",
+      0,
+      1,
+      false,
+    );
   },
 });

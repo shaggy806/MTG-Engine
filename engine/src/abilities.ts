@@ -44,6 +44,11 @@ export interface AbilityCost {
   /** Energy counters to pay ({E} — rule 122 / ROADMAP Phase 10; automatic,
    * like `payLife`). */
   readonly payEnergy?: number;
+  /** Discard your whole hand as part of the cost (Slate of Ancestry: "{4},
+   * {T}, Discard your hand: Draw a card for each creature you control").
+   * Nothing to choose, so it's automatic like `payLife` — the empty hand is
+   * a legal payment, which is why this never gates activation. */
+  readonly discardHand?: boolean;
   /**
    * Tap *other* permanents you control as part of the cost — Gravespawn
    * Sovereign's "Tap five untapped Zombies you control". Distinct from

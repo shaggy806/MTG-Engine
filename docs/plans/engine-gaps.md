@@ -519,3 +519,46 @@ over.
 
 Also dropped: **Distant Melody** and **Crippling Fear** want "choose a creature
 type" as a *spell* resolves. `chooseOnEnter` only covers permanents entering.
+
+---
+
+## Phase L — the fourth pass
+
+286 → 59. Six more additions:
+
+| addition | card |
+|---|---|
+| `search-library { who: { controllerOfTarget } }` | Path to Exile |
+| `EffectAmount` `{ devotionTo }` (rule 700.5) and `{ product }` | Gray Merchant of Asphodel |
+| `PlayerState.creaturesDiedThisTurn` — the per-player counterpart of the global one | Liliana's Standard Bearer |
+| `AbilityCost.discardHand` | Slate of Ancestry |
+| `modify-pt-all` / `untap-all` `{ controlledByTarget }` | Great Oak Guardian |
+| `EffectAmount` `{ opponentsControllingFewer }` | Voice of Many |
+
+Two of these are worth naming as *shapes* rather than one-offs:
+
+- **`{ product: [...] }`** is how compound amounts compose without every
+  individual amount growing a multiplier. Gray Merchant's "life equal to the
+  life lost this way" is devotion × opponents, and neither factor is static.
+- **`controlledByTarget`** names a *seat*. A `CardFilter`'s `controlledBy`
+  only distinguishes "you" from "opponent", which is enough in a duel and not
+  enough at a four-player table — "creatures **target player** controls" has
+  to point at one of three opponents.
+
+### What the 59 still want
+
+Unchanged from the phase-H/K lists, minus what's been done. The largest
+remaining groups:
+
+- **Choose a creature type as a spell resolves** — Crippling Fear, Distant
+  Melody. `chooseOnEnter` only covers permanents entering.
+- **Curses** — an Aura that enchants a *player* (Curse of Bounty, Curse of
+  Disturbance).
+- **Cast-from-a-graveyard permissions** — Gisa and Geralf, Havengul Lich,
+  Liliana Untouched by Death, Scourge of Nel Toth.
+- **Superlatives over a set** ("greatest mana value among …") — Soul Shatter,
+  Scythe Specter.
+- **Counting what an effect just did, per player** — Deadly Tempest, Syphon
+  Flesh, Syphon Mind, Reign of the Pit.
+- **Randomness** — Explosion of Riches, Wildfire Devils.
+- **Triggered emblems** — Ob Nixilis Reignited (and Sarkhan, from phase G).

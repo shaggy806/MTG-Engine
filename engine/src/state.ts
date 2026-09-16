@@ -433,6 +433,12 @@ export interface PlayerState {
   /** True once this player has lost life this turn — Theater of Horrors's
    * "if an opponent lost life this turn". Reset in `beginTurn`. */
   lostLifeThisTurn: boolean;
+  /** How many creatures died **under this player's control** this turn —
+   * Liliana's Standard Bearer's "draw X cards, where X is the number of
+   * creatures that died under your control this turn". The per-player
+   * counterpart of `GameState.creaturesDiedThisTurn`, which is global. Reset
+   * with it at cleanup. */
+  creaturesDiedThisTurn: number;
   /** Energy counters this player has (rule 122 / {E} — ROADMAP Phase 10). A
    * player resource, not tied to any permanent; spent by a `payEnergy` ability
    * cost, gained by a `get-energy` effect. */
@@ -960,6 +966,7 @@ export function createPlayerState(id: PlayerId, rules: GameRules): PlayerState {
     commanderDamageTaken: {},
     spellsCastThisTurn: 0,
     lostLifeThisTurn: false,
+    creaturesDiedThisTurn: 0,
     energy: 0,
     printings: {},
   };

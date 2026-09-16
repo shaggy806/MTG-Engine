@@ -2347,6 +2347,7 @@ export class Game {
       this.state.players[player].landsPlayedThisTurn = 0;
       this.state.players[player].spellsCastThisTurn = 0;
       this.state.players[player].lostLifeThisTurn = false;
+      this.state.players[player].creaturesDiedThisTurn = 0;
     }
     // Day → night if the previous turn's player cast no spells (726.3);
     // night → day if they cast two or more (726.4). Only once it's day or night.
@@ -5139,6 +5140,10 @@ export class Game {
     if (ability.cost.payEnergy !== undefined) {
       this.changeEnergy(player, -ability.cost.payEnergy);
     }
+    // Paid *before* the ability resolves, which is what makes Slate of
+    // Ancestry's "discard your hand, then draw a card for each creature"
+    // work out as a refill rather than a discard of what it drew.
+    if (ability.cost.discardHand === true) this.discardWholeHand(player);
     if (ability.oncePerTurn === true || ability.boast === true) {
       // Rule 602.5g — recorded per ability index, so a permanent with two
       // once-each-turn abilities limits each of them separately.
@@ -5836,6 +5841,30 @@ export class Game {
       throw new Error(`mana pool underflow paying a converter's own cost (${mana})`);
     }
     pool[mana] -= 1;
+  }
+
+  /**
+   * Devotion to `color` (rule 700.5): every mana symbol of that colour in the
+   * mana costs of permanents `player` controls. A hybrid pip counts for each
+   * colour it contains, and `{X}` / generic count for nothing.
+   *
+   * Read off the *printed* mana cost — that's what the rule says, and a
+   * permanent on the battlefield has no cost to modify anyway.
+   */
+  private devotionTo(player: PlayerId, color: Color): number {
+    let total = 0;
+    for (const id of this.state.zones.shared.battlefield) {
+      const object = this.state.objects[id];
+      if (object.controller !== player) continue;
+      const def = this.registry.get(printedCardName(object));
+      if (def.manaCost === null) continue;
+      const cost = parseManaCost(def.manaCost);
+      total += cost.colored[color];
+      for (const pip of cost.hybrid) {
+        if (pip.some((o) => o.kind === "color" && o.color === color)) total += 1;
+      }
+    }
+    return total;
   }
 
   private addMana(
@@ -6850,9 +6879,9 @@ export class Game {
       discardCards: (target, amount) => this.discardByEffect(target, amount),
       modifyPt: (target, power, toughness, duration) =>
         this.modifyPt(target, power, toughness, duration),
-      modifyPtAll: (filter, power, toughness, duration, exceptSource) =>
+      modifyPtAll: (filter, power, toughness, duration, exceptSource, scopeTo) =>
         this.modifyPtAll(
-          controller,
+          scopeTo ?? controller,
           filter,
           power,
           toughness,
@@ -6936,8 +6965,8 @@ export class Game {
         this.state.extraCombats += 1;
         this.emit({ type: "additional-combat-queued", player: controller });
       },
-      untapAll: (filter) => {
-        for (const id of this.battlefieldMatching(controller, filter)) {
+      untapAll: (filter, scopeTo) => {
+        for (const id of this.battlefieldMatching(scopeTo ?? controller, filter)) {
           const object = this.state.objects[id];
           if (object.tapped) {
             object.tapped = false;
@@ -6973,6 +7002,18 @@ export class Game {
       },
       controllerOf: (ref) =>
         ref.kind === "player" ? ref.player : this.state.objects[ref.object]?.controller,
+      devotionTo: (color) => this.devotionTo(controller, color),
+      opponentsControllingFewer: (filter) => {
+        const mine = this.battlefieldMatching(controller, filter).length;
+        return this.state.turnOrder.filter(
+          (p) =>
+            p !== controller &&
+            !this.state.players[p].hasLost &&
+            this.battlefieldMatching(p, filter).length < mine,
+        ).length;
+      },
+      creaturesDiedThisTurn: () =>
+        this.state.players[controller]?.creaturesDiedThisTurn ?? 0,
       createTokenCopy: (of, count, opts) => this.createTokenCopy(of, count, opts),
       conditionMet: (condition) => {
         // "If that land is a Mountain" — a question about the object that
@@ -7037,9 +7078,9 @@ export class Game {
           triggerObject,
         ),
       changeLifeScoped: (who, delta) => this.changeLifeScoped(controller, who, delta),
-      searchLibrary: (filter, destination, min, max, enterTapped, restDestination) =>
+      searchLibrary: (player, filter, destination, min, max, enterTapped, restDestination) =>
         this.beginLibrarySearch(
-          controller,
+          player ?? controller,
           filter,
           destination,
           min,
@@ -9598,6 +9639,10 @@ export class Game {
         computeCharacteristics(this.state, this.registry, id).types.includes("creature")
       ) {
         this.state.creaturesDiedThisTurn += 1;
+        // Per-player as well: "under **your** control" reads the controller
+        // it had on the way out, before `moveObject` reverts it to the owner.
+        const under = this.state.players[object.controller];
+        if (under !== undefined) under.creaturesDiedThisTurn += 1;
       }
     }
 
