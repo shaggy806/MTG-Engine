@@ -476,14 +476,15 @@ export class Room {
           this.dispatchForBot(bot);
           continue;
         }
-        if (this.botAction(bot).type === "pass-priority") {
-          // Nothing on a board changes because a bot declined to act, so
-          // there's nothing to pace: taking a frame (and a think-time beat)
-          // per pass would spend most of a turn showing nothing happening.
-          // Whatever the pass lets through — a spell resolving, the turn
-          // moving on — lands in the next frame and is paced there.
-          this.game.dispatch({ type: "pass-priority", player: bot });
-          this.lastActivityAt = Date.now();
+        if (this.game.isDeadForMana(bot) || this.botAction(bot).type === "pass-priority") {
+          // Nothing here a spectator could watch: passing priority, or
+          // tapping for mana that casting would have tapped anyway. Spending
+          // a frame and a think-time beat on these is worse than pointless —
+          // it puts dead time *between* a spell being cast and that spell
+          // resolving, which is exactly the gap that makes a creature seem to
+          // appear well after its own play animation finished. Whatever the
+          // move lets through lands in the next frame and is paced there.
+          this.dispatchForBot(bot);
           continue;
         }
         // Show the board this bot is about to act on, then let the clients

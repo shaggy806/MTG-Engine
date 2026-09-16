@@ -14,6 +14,7 @@ import type {
   ConvokePayment,
   LegalAction,
 } from "./actions.js";
+import { isManaAbility } from "./abilities.js";
 import { computeCharacteristics } from "./characteristics.js";
 import { CardRegistry, createDefaultRegistry } from "./cards.js";
 import { manaValue, parseManaCost } from "./mana.js";
@@ -1072,9 +1073,10 @@ type DeclareBlockersLegal = Extract<LegalAction, { kind: "declare-blockers" }>;
 /**
  * A basic heuristic opponent for live rooms (not the random-vs-random
  * fuzzer's `RandomController`): each priority window, plays a land if it
- * can, else casts the highest-mana-value affordable spell, else activates
- * an ability, else passes — repeated calls to `act` greedily spend a turn's
- * resources with no lookahead. Attacks with everything that can, aimed at
+ * can, else casts the highest-mana-value affordable spell, else activates a
+ * non-mana ability, else passes — repeated calls to `act` greedily spend a
+ * turn's resources with no lookahead. (Mana abilities are deliberately never
+ * activated on their own; see `isManaOnlyAbility`.) Attacks with everything that can, aimed at
  * whichever defender has the least life/loyalty; blocks favorable trades
  * first, then chump-blocks against lethal damage. Every other decision
  * (targeting, modes, sacrifice, scry, mulligan, ...) falls back to
@@ -1143,6 +1145,27 @@ export class HeuristicBotController extends AutomaticController {
     };
   }
 
+  /**
+   * Is this option just "tap something for mana"? Casting auto-pays (see
+   * `Game.payMana`), so floating mana ahead of a spell gains this bot
+   * nothing and actively costs it: the pool empties at the end of the step,
+   * and the source it tapped is no longer available to pay for anything
+   * else. It also reads as a move to anyone watching — a land flipping
+   * sideways for no reason, between a spell being cast and that spell
+   * resolving — which is worse than useless once bot moves are paced out one
+   * at a time (see `server/src/room.ts`).
+   *
+   * Read off the printed definition rather than the live ability list (which
+   * only `Game` can resolve): a granted ability can shift `abilityIndex`, and
+   * the miss just means this bot activates something it might have skipped,
+   * which is the behaviour it had anyway.
+   */
+  private isManaOnlyAbility(legal: ActivateAbilityLegal): boolean {
+    if (!this.registry.has(legal.cardName)) return false;
+    const ability = this.registry.get(legal.cardName).activated?.[legal.abilityIndex];
+    return ability !== undefined && isManaAbility(ability);
+  }
+
   private toActivateAbility(legal: ActivateAbilityLegal): Action {
     const player = this.playerId;
     const sac = legal.sacrifice;
@@ -1177,7 +1200,10 @@ export class HeuristicBotController extends AutomaticController {
       return this.toCastSpell(best);
     }
 
-    const ability = options.find((o): o is ActivateAbilityLegal => o.kind === "activate-ability");
+    const ability = options.find(
+      (o): o is ActivateAbilityLegal =>
+        o.kind === "activate-ability" && !this.isManaOnlyAbility(o),
+    );
     if (ability !== undefined) return this.toActivateAbility(ability);
 
     return passFor(player);

@@ -81,6 +81,45 @@ describe("HeuristicBotController", () => {
     expect(battlefield.some((name) => name !== "Forest")).toBe(true);
   });
 
+  it("never taps a land just to float mana", () => {
+    // Casting auto-pays, so floating mana ahead of a spell gains this bot
+    // nothing and strands the source — and, once bot moves are paced out one
+    // at a time for the client, it shows up as a land flipping sideways for
+    // no reason between a spell being cast and that spell resolving.
+    const game = Game.create({
+      seed: 3,
+      mulligans: true,
+      controllers: { [A]: new HeuristicBotController(A), [B]: new HeuristicBotController(B) },
+      decks: seatsFor([A, B]),
+    });
+    game.advanceUntil((s) => s.turn.number >= 8);
+
+    // A land is only ever tapped as part of paying for something, so no
+    // ability-activated event should name one.
+    const lands = new Set(
+      Object.values(game.state.objects)
+        .filter((o) => o.cardName === "Forest")
+        .map((o) => o.id),
+    );
+    const floated = game.state.eventLog.filter(
+      (e) => e.type === "ability-activated" && lands.has(e.source),
+    );
+    expect(floated).toEqual([]);
+  });
+
+  it("still casts the spells that mana pays for", () => {
+    // The guard above must not have made the bot passive: it should still be
+    // spending its lands via casts.
+    const game = Game.create({
+      seed: 3,
+      mulligans: true,
+      controllers: { [A]: new HeuristicBotController(A), [B]: new HeuristicBotController(B) },
+      decks: seatsFor([A, B]),
+    });
+    game.advanceUntil((s) => s.turn.number >= 8);
+    expect(game.state.eventLog.some((e) => e.type === "spell-cast")).toBe(true);
+  });
+
   it("plays a full 3-player game without throwing or hanging", () => {
     const players = [A, B, C];
     const game = Game.create({
