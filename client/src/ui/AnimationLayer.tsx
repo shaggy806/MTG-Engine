@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { ObjectId, Phase, PlayerView, PlayerId, TargetRef, VisibleObject } from 'engine'
-import { phaseOfStep } from 'engine'
 import { CardTile } from './CardTile.tsx'
 import { playerLabel, seatClassOf } from '../format.ts'
 import type { SeatClass } from '../format.ts'
 import type { SeatStatus } from '../net/protocol.ts'
-import { scheduleEvents } from '../game/animationSchedule.ts'
+import { CARD_STEP_MS, PHASE_STEP_MS, TURN_STEP_MS } from '../game/animationSchedule.ts'
+import { subscribeAnimations } from '../game/animationQueue.ts'
 
 /** How far an attacker visually lunges toward what it's hitting, in px — a
  * fixed jab distance rather than a fraction of the real gap between the two
@@ -20,13 +20,15 @@ const LUNGE_DURATION_MS = 380
  * attacker actually arrives, not before or after. */
 const LUNGE_IMPACT_FRACTION = 0.4
 const HIT_REACTION_DURATION_MS = 320
-/** Matches animationSchedule.ts's own CARD_STEP_MS — the card's visible
- * lifetime and the pacing slot it reserves are the same length, so the next
- * scheduled animation picks up right as this one finishes rather than
- * leaving a gap or cutting it off early. */
-const PLAYED_CARD_DURATION_MS = 1800
-const TURN_BANNER_DURATION_MS = 1700
-const PHASE_BANNER_DURATION_MS = 1150
+/** Each overlay's visible lifetime *is* the pacing slot its event reserves
+ * on the shared timeline (see animationSchedule.ts), so the next scheduled
+ * animation picks up right as this one finishes rather than leaving a gap,
+ * cutting it off early, or — the banner queue's old failure mode — falling
+ * further behind the board with every turn. The matching CSS
+ * `animation-duration`s in App.css are written to the same numbers. */
+const PLAYED_CARD_DURATION_MS = CARD_STEP_MS
+const TURN_BANNER_DURATION_MS = TURN_STEP_MS
+const PHASE_BANNER_DURATION_MS = PHASE_STEP_MS
 
 const PHASE_LABEL: Record<Phase, string> = {
   // "beginning" (untap/upkeep/draw) always opens with turn-began, which
@@ -129,11 +131,12 @@ function runHit(source: ObjectId, target: TargetRef): void {
  * cast/played, an attacker hitting whatever it deals combat damage to, and
  * Hearthstone-style turn/phase banners. Deliberately a sibling of `<Table>`
  * in `GameScreen`, not something inside it: `Table` remounts wholesale on
- * every revision it's keyed on, which would reset the "which events have I
- * already animated" bookkeeping below on every single dispatch. It reacts to
- * the raw `view` (unlike `Table`, which renders `useDelayedView`'s held-back
- * one) — it needs new events, and the objects they reference, the instant
- * they exist.
+ * every revision it's keyed on, which would tear down every in-flight
+ * animation on every single dispatch. It reads the raw `view` (unlike
+ * `Table`, which renders `useDelayedView`'s held-back one) — it needs the
+ * objects new events reference the instant they exist — but *when* each
+ * animation fires comes from the shared queue in `animationQueue.ts`, the
+ * same one the board's own hold is computed from.
  *
  * Every visual here is additive (a portalled overlay, or a `.animate()` call
  * on an existing node) — nothing here ever affects `view`/game state, and a
@@ -148,10 +151,6 @@ export function AnimationLayer({
   readonly seat: PlayerId
   readonly seats?: readonly SeatStatus[]
 }) {
-  // Starts at the current length, not 0 — a fresh mount (joining a game
-  // already in progress) must never replay its entire history.
-  const prevLenRef = useRef(view.events.length)
-  const lastPhaseRef = useRef<Phase>(phaseOfStep(view.turn.step))
   const [playedCards, setPlayedCards] = useState<readonly PlayedCard[]>([])
   const [activeBanner, setActiveBanner] = useState<Banner | null>(null)
   const bannerQueueRef = useRef<Banner[]>([])
@@ -164,12 +163,13 @@ export function AnimationLayer({
     [],
   )
 
+  // Re-subscribed on every `view` so the cue handler below closes over the
+  // view the cues were published *from* — `useDelayedView` enqueues in
+  // `GameScreen`'s own effect, which React runs after this child one on the
+  // same commit, so the fresh closure is always in place first. Looking the
+  // object up in a later view instead would miss anything that has since
+  // left the zone it was played into.
   useEffect(() => {
-    const from = prevLenRef.current
-    const events = view.events
-    prevLenRef.current = events.length
-    if (from >= events.length) return
-
     const advanceBannerQueue = () => {
       if (bannerTimerRef.current !== null) return
       const next = bannerQueueRef.current.shift()
@@ -189,40 +189,41 @@ export function AnimationLayer({
       advanceBannerQueue()
     }
 
-    // Same schedule `useDelayedView` computes the board's hold from (see its
-    // own comment) — staggering each event's animation across that hold
-    // instead of firing every one the instant the batch arrives is what
-    // makes a busy bot turn read as "several things happened in a row"
-    // rather than one instant flip with a pile of animations on top of it.
-    const schedule = scheduleEvents(events.slice(from), lastPhaseRef.current)
-    lastPhaseRef.current = schedule.endPhase
-
-    for (const { event: ev, offset } of schedule.items) {
-      window.setTimeout(() => {
-        if (ev.type === 'spell-cast' || ev.type === 'land-played') {
-          const obj = view.objects[ev.object]
-          if (!obj) return
-          const key = `card-${ev.seq}`
-          setPlayedCards((cur) => [...cur, { key, obj, fromTop: ev.player !== seat }])
-          window.setTimeout(() => {
-            setPlayedCards((cur) => cur.filter((c) => c.key !== key))
-          }, PLAYED_CARD_DURATION_MS)
-        } else if (ev.type === 'damage-dealt' && ev.combat) {
-          runHit(ev.source, ev.target)
-        } else if (ev.type === 'turn-began') {
-          enqueueBanner({
-            key: `turn-${ev.seq}`,
-            kind: 'turn',
-            text: `${playerLabel(ev.activePlayer, seats)}'s Turn${ev.extra ? ' (extra)' : ''}`,
-            seatClass: seatClassOf(view.turnOrder, ev.activePlayer),
-          })
-        } else if (ev.type === 'step-began') {
-          const text = PHASE_LABEL[ev.phase]
-          if (!text) return
-          enqueueBanner({ key: `phase-${ev.seq}`, kind: 'phase', text, seatClass: null })
-        }
-      }, offset)
-    }
+    // Cues come from the same queue `useDelayedView` holds the board back
+    // on (see animationQueue.ts), so every animation plays over the board
+    // picture it actually belongs to, and a push arriving mid-sequence
+    // queues up behind it instead of landing on top of it.
+    // In-flight timers are deliberately *not* cleared on cleanup: this
+    // effect re-runs on every push, and a cue already waiting on the
+    // timeline belongs to the previous push's board picture, not this one.
+    return subscribeAnimations((cues) => {
+      for (const { event: ev, delay } of cues) {
+        window.setTimeout(() => {
+          if (ev.type === 'spell-cast' || ev.type === 'land-played') {
+            const obj = view.objects[ev.object]
+            if (!obj) return
+            const key = `card-${ev.seq}`
+            setPlayedCards((cur) => [...cur, { key, obj, fromTop: ev.player !== seat }])
+            window.setTimeout(() => {
+              setPlayedCards((cur) => cur.filter((c) => c.key !== key))
+            }, PLAYED_CARD_DURATION_MS)
+          } else if (ev.type === 'damage-dealt' && ev.combat) {
+            runHit(ev.source, ev.target)
+          } else if (ev.type === 'turn-began') {
+            enqueueBanner({
+              key: `turn-${ev.seq}`,
+              kind: 'turn',
+              text: `${playerLabel(ev.activePlayer, seats)}'s Turn${ev.extra ? ' (extra)' : ''}`,
+              seatClass: seatClassOf(view.turnOrder, ev.activePlayer),
+            })
+          } else if (ev.type === 'step-began') {
+            const text = PHASE_LABEL[ev.phase]
+            if (!text) return
+            enqueueBanner({ key: `phase-${ev.seq}`, kind: 'phase', text, seatClass: null })
+          }
+        }, delay)
+      }
+    })
   }, [view, seat, seats])
 
   if (playedCards.length === 0 && !activeBanner) return null

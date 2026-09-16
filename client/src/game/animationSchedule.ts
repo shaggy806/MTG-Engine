@@ -2,25 +2,35 @@ import type { GameEvent, Phase } from 'engine'
 
 /**
  * How much real time each kind of animate-worthy event reserves for itself
- * in the pacing timeline below — shared by `useDelayedView` (which holds
- * `Table` back for the batch's total) and `AnimationLayer` (which schedules
- * each individual animation at its own offset within that total), so a bot
- * turn that plays three creatures and swings twice reads as five separate
- * things happening in sequence rather than one instant board flip with five
- * animations firing on top of each other. Kept in one place so the two never
- * disagree about timing.
+ * in the pacing timeline below. These are the single source of truth for
+ * *both* the pacing slot an event claims here and the on-screen lifetime of
+ * the overlay that plays in it (`AnimationLayer` imports them for its own
+ * overlay timeouts, and the matching CSS `animation-duration`s in App.css
+ * are written to the same numbers) — an overlay that outlived its slot used
+ * to leave the banner queue lagging further behind the board with every
+ * turn, so the two must not drift.
+ *
+ * `animationQueue.ts` chains each push's schedule onto the tail of the
+ * previous one, so a bot that plays a land, casts a creature and passes the
+ * turn in three separate server pushes reads as three things happening in a
+ * row rather than three overlapping animations over an already-finished
+ * board.
  */
-const CARD_STEP_MS = 1800
-const HIT_STEP_MS = 650
-const TURN_STEP_MS = 900
-const PHASE_STEP_MS = 500
-/** A hard ceiling on the total, regardless of how many animate-worthy events
- * are in one batch (a bot dumping its whole hand, say) — long enough to read
- * as "several things happened," never so long the game feels stuck. Events
- * past the ceiling still get their own overlay/hit animation (scheduled at
- * the ceiling, so they cluster near the end rather than firing individually
- * beyond it), just without their own extra pacing slot. */
-const MAX_TOTAL_MS = 6000
+export const CARD_STEP_MS = 1800
+/** Covers LUNGE_DURATION_MS + the hit reaction that starts partway through
+ * it (see AnimationLayer), so the next animation doesn't start on top of a
+ * creature still shaking. */
+export const HIT_STEP_MS = 720
+export const TURN_STEP_MS = 1300
+export const PHASE_STEP_MS = 700
+/** A ceiling on a *single batch's* total, regardless of how many
+ * animate-worthy events it carries (a bot dumping its whole hand in one
+ * push, say). Events past the ceiling still get their own overlay/hit
+ * animation (scheduled at the ceiling, so they cluster near the end rather
+ * than firing individually beyond it), just without their own extra pacing
+ * slot. The queue's own backlog ceiling is separate — see
+ * `MAX_BACKLOG_MS` in animationQueue.ts. */
+const MAX_TOTAL_MS = 9000
 
 export interface ScheduledEvent {
   readonly event: GameEvent

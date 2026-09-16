@@ -2013,7 +2013,8 @@
 .tp-banner.tp-turn {
   font-size: clamp(1.1rem, 2.4vw, 1.8rem);
   color: var(--accent);
-  animation-duration: 1.7s;
+  /* matches AnimationLayer.tsx's TURN_BANNER_DURATION_MS (= TURN_STEP_MS) */
+  animation-duration: 1.3s;
 }
 .tp-banner.tp-turn.seat-a {
   color: var(--seat-a);
@@ -2034,7 +2035,8 @@
 .tp-banner.tp-phase {
   font-size: clamp(0.9rem, 1.8vw, 1.3rem);
   color: var(--text);
-  animation-duration: 1.15s;
+  /* matches AnimationLayer.tsx's PHASE_BANNER_DURATION_MS (= PHASE_STEP_MS) */
+  animation-duration: 0.7s;
 }
 @keyframes tp-banner-pop {
   0% {
