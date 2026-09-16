@@ -1952,6 +1952,8 @@ export class Game {
     onDecline?: EffectSpec,
     targets: ResolvedTargets = [],
     cost?: string,
+    triggerValue = 0,
+    triggerObject?: ObjectId,
   ): void {
     // "You may pay {B}" — an unpayable cost isn't a choice at all, so skip
     // straight to the decline branch rather than offering something the
@@ -1965,7 +1967,10 @@ export class Game {
         : { ...costParsed, generic: costParsed.generic, x: 0 };
     if (baseline !== null && this.payMana(controller, baseline) === null) {
       if (onDecline !== undefined) {
-        applyEffectSpec(onDecline, this.makeResolutionContext(source, controller, targets, x));
+        applyEffectSpec(
+          onDecline,
+          this.makeResolutionContext(source, controller, targets, x, triggerValue, triggerObject),
+        );
       }
       return;
     }
@@ -1978,6 +1983,8 @@ export class Game {
       modes: modes.map((m) => ({ text: m.text, effect: m.effect })),
       x,
       targets,
+      ...(triggerValue !== 0 ? { triggerValue } : {}),
+      ...(triggerObject !== undefined ? { triggerObject } : {}),
       ...(onDecline !== undefined ? { onDecline } : {}),
       ...(cost !== undefined ? { cost } : {}),
     };
@@ -1997,7 +2004,7 @@ export class Game {
       throw new Error("unreachable: whyCannotChooseModes should have caught this");
     }
 
-    const { source, modes, x, onDecline, targets, cost } = awaiting;
+    const { source, modes, x, onDecline, targets, cost, triggerValue, triggerObject } = awaiting;
     this.state.awaiting = null;
 
     // Pay for the choice before applying it. The cost was checked as
@@ -2024,7 +2031,14 @@ export class Game {
     // The X paid for the choice is what the mode's effect reads (Flameblast
     // Dragon's "it deals X damage"), overriding the ability's own X, which is
     // 0 on a trigger.
-    const context = this.makeResolutionContext(source, player, targets, chosenX > 0 ? chosenX : x);
+    const context = this.makeResolutionContext(
+      source,
+      player,
+      targets,
+      chosenX > 0 ? chosenX : x,
+      triggerValue ?? 0,
+      triggerObject,
+    );
     for (const i of ordered) applyEffectSpec(modes[i].effect, context);
     if (ordered.length === 0 && onDecline !== undefined) {
       applyEffectSpec(onDecline, context);
@@ -6052,17 +6066,36 @@ export class Game {
           this.triggerMatches(ability.trigger, event, object) &&
           this.interveningIfMet(ability.condition, object)
         ) {
-          const autoTargets =
+          const autoCandidate: TargetRef | undefined =
             ability.trigger.on === "deals-combat-damage-to-player" &&
             event.type === "damage-dealt" &&
             event.target.kind === "player"
-              ? [event.target]
+              ? event.target
               : // "… deals 3 damage to that player" — the player whose spell
                 // or ability did the targeting.
                 ability.trigger.on === "becomes-target" &&
                   event.type === "object-targeted"
-                ? [{ kind: "player" as const, player: event.by }]
+                ? { kind: "player" as const, player: event.by }
                 : undefined;
+          // Only hand the event-determined player to slot 0 if that slot can
+          // actually hold a player. A saboteur trigger that targets "**target
+          // creature** that player controls" (Mordant Dragon) was handed the
+          // player instead, and the whole trigger was then dropped for "no
+          // legal targets". A slot that would have accepted the auto still
+          // gets it, so no card that works today changes.
+          const autoTargets =
+            autoCandidate === undefined ||
+            (ability.targets[0] !== undefined &&
+              !isLegalTarget(
+                this.state,
+                this.registry,
+                ability.targets[0],
+                autoCandidate,
+                object.controller,
+                this.permanentSource(id),
+              ))
+              ? undefined
+              : [autoCandidate];
           // A numeric quantity the triggering event supplies, snapshotted now —
           // for an `EffectAmount` `{ triggerValue: true }`: the entering /
           // attacking creature's power (Terror of the Peaks), or the combat
@@ -6765,6 +6798,8 @@ export class Game {
           onDecline,
           targets,
           cost,
+          triggerValue,
+          triggerObject,
         ),
       changeLifeScoped: (who, delta) => this.changeLifeScoped(controller, who, delta),
       searchLibrary: (filter, destination, min, max, enterTapped, restDestination) =>

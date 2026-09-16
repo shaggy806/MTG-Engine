@@ -649,6 +649,18 @@ export type AwaitingDecision =
       readonly modes: readonly { readonly text: string; readonly effect: EffectSpec }[];
       /** `{X}` from the resolving spell/ability, forwarded to the modes. */
       readonly x: number;
+      /**
+       * The triggering event's numeric value and object, forwarded to the
+       * modes the same way `x` and `targets` are.
+       *
+       * A `may` inside a triggered ability *suspends* resolution — the modes
+       * are applied later, from this record, with a freshly built resolution
+       * context. Without these, an `EffectAmount` `{ triggerValue: true }`
+       * read 0 and a `trigger-object` condition read nothing: "you may have
+       * it deal **that much** damage" silently dealt none.
+       */
+      readonly triggerValue?: number;
+      readonly triggerObject?: ObjectId;
       /** A `may` effect's `else` — applied instead when zero modes are
        * chosen. `undefined` for an ordinary `modal` effect (declining a
        * modal spell/ability entirely isn't a legal answer, so it never
