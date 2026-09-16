@@ -113,7 +113,14 @@ export type EffectSpec =
        * `amount` of `oneOf[0]`, same simplification as "any-color" defaulting
        * to white. needed-cards P20. */
       readonly kind: "add-mana";
-      readonly mana: ManaType | "any-color" | { readonly oneOf: readonly ManaType[] };
+      /** `"chosen"` is the colour this permanent's controller named as it
+       * entered (Heraldic Banner's "{T}: Add one mana of the chosen color") —
+       * see `GameObject.chosenOnEnter`. */
+      readonly mana:
+        | ManaType
+        | "any-color"
+        | "chosen"
+        | { readonly oneOf: readonly ManaType[] };
       readonly amount: number;
       /** Damage this mana ability deals to its controller when it's used (a
        * painland's coloured tap — Karplusan Forest: "{T}: Add {R} or {G}.
@@ -227,8 +234,11 @@ export type EffectSpec =
        * to the other (rule 701.12). With `oneSided`, only `a` deals to `b`
        * (Rabid Bite). */
       readonly kind: "fight";
-      readonly a: number;
-      readonly b: number;
+      /** `EffectTargetRef`s, so `"trigger-object"` works — Frontier Siege's
+       * "you may have **it** fight target creature", where "it" is the
+       * creature that just entered rather than a chosen target. */
+      readonly a: EffectTargetRef;
+      readonly b: EffectTargetRef;
       readonly oneSided?: boolean;
     }
   | {
@@ -959,6 +969,9 @@ export interface EffectApi {
   sacrificeAllBut(player: PlayerId, keep: number, filter: CardFilter): void;
   /** See the `"encore"` {@link EffectSpec}. */
   encore(): void;
+  /** The colour this effect's source named as it entered, or `undefined` —
+   * see `GameObject.chosenOnEnter` and `add-mana`'s `"chosen"`. */
+  chosenColorOfSource(): ManaType | undefined;
   /** See the `"goad"` {@link EffectSpec}. */
   goadCreaturesOf(player: PlayerId): void;
   /** See the `"impulse-exile"` {@link EffectSpec}. */
@@ -1216,7 +1229,14 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       return;
     }
     case "add-mana":
-      ctx.addMana(ctx.controller, spec.mana, spec.amount);
+      ctx.addMana(
+        ctx.controller,
+        // "The chosen color" — resolved against the source permanent; falls
+        // back to the payer's choice if the label isn't a colour (it always
+        // is on the cards that use this).
+        spec.mana === "chosen" ? (ctx.chosenColorOfSource() ?? "any-color") : spec.mana,
+        spec.amount,
+      );
       if (spec.painToController !== undefined && spec.painToController > 0) {
         ctx.dealDamage(
           { kind: "player", player: ctx.controller },
@@ -1302,8 +1322,8 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       return;
     }
     case "fight": {
-      const a = ctx.targets[spec.a];
-      const b = ctx.targets[spec.b];
+      const a = resolveEffectTarget(spec.a, ctx);
+      const b = resolveEffectTarget(spec.b, ctx);
       if (a !== undefined && b !== undefined) ctx.fight(a, b, spec.oneSided === true);
       return;
     }

@@ -149,6 +149,7 @@ import _poolForest from "./pool/forest.js";
 import _poolFortifiedVillage from "./pool/fortified-village.js";
 import _poolFoundryInspector from "./pool/foundry-inspector.js";
 import _poolFrontierBivouac from "./pool/frontier-bivouac.js";
+import _poolFrontierSiege from "./pool/frontier-siege.js";
 import _poolFumeSpitter from "./pool/fume-spitter.js";
 import _poolFyndhornElves from "./pool/fyndhorn-elves.js";
 import _poolGameTrail from "./pool/game-trail.js";
@@ -183,6 +184,7 @@ import _poolHarvesttideAssailant from "./pool/harvesttide-assailant.js";
 import _poolHarvesttideInfiltrator from "./pool/harvesttide-infiltrator.js";
 import _poolHateMirage from "./pool/hate-mirage.js";
 import _poolHauntedRidge from "./pool/haunted-ridge.js";
+import _poolHeraldicBanner from "./pool/heraldic-banner.js";
 import _poolHeroicIntervention from "./pool/heroic-intervention.js";
 import _poolHillGiant from "./pool/hill-giant.js";
 import _poolHinterlandHarbor from "./pool/hinterland-harbor.js";
@@ -624,6 +626,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolFortifiedVillage,
   _poolFoundryInspector,
   _poolFrontierBivouac,
+  _poolFrontierSiege,
   _poolFumeSpitter,
   _poolFyndhornElves,
   _poolGameTrail,
@@ -658,6 +661,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolHarvesttideInfiltrator,
   _poolHateMirage,
   _poolHauntedRidge,
+  _poolHeraldicBanner,
   _poolHeroicIntervention,
   _poolHillGiant,
   _poolHinterlandHarbor,

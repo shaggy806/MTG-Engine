@@ -46,6 +46,8 @@ const deckA = deck([
   ["Hunter's Insight", 1],
   ["Return to Nature", 1],
   ["Harvest Season", 1],
+  ["Heraldic Banner", 1],
+  ["Frontier Siege", 1],
   ["Nissa's Expedition", 1],
   ["Burnished Hart", 1],
   ["Fortified Village", 1],

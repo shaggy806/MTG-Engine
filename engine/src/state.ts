@@ -138,6 +138,16 @@ export interface GameObject {
    * one). Absent for a permanent with no such choice; cleared on any zone
    * change (a fresh entry chooses again). */
   chosenCreatureType?: string | null;
+  /**
+   * The word chosen as this permanent entered, for "as this enters, choose a
+   * colour / choose Khans or Dragons" (Heraldic Banner, Frontier Siege).
+   *
+   * Separate from `chosenCreatureType`, which feeds a cost-matching check and
+   * nothing else; this one is read by static abilities, mana abilities and
+   * trigger conditions, so it stays a bare label the card's own text
+   * interprets.
+   */
+  chosenOnEnter?: string | null;
   /** The faces of a multi-face card (rule 712 — ROADMAP Phase 10), by name,
    * front first — copied from `CardDefinition.faces` when the object is
    * created. Absent for a single-faced card. */

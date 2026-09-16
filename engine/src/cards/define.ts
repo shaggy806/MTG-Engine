@@ -88,6 +88,10 @@ export type AffectSpec =
        * (Eternal Skylord). Like `withCounter`, answerable from the object
        * alone, which is why it's a flag here rather than a `CardFilter`. */
       readonly tokenOnly?: boolean;
+      /** Only creatures whose colours include the source's `chosenOnEnter`
+       * colour — Heraldic Banner's "creatures you control **of the chosen
+       * color**". */
+      readonly chosenColorOnly?: boolean;
     }
   /** Every land the source's controller controls (Chromatic Lantern). */
   | { readonly scope: "lands-you-control" }
@@ -152,6 +156,9 @@ export type StaticCondition =
   /** A creature died this turn (Liliana's Devotee). Reads the turn-scoped
    * `GameState.creaturesDiedThisTurn`. */
   | { readonly kind: "creature-died-this-turn" }
+  /** The source's `chosenOnEnter` label equals `value` — Frontier Siege's
+   * "Khans" / "Dragons" halves. */
+  | { readonly kind: "chosen-on-enter"; readonly value: string }
   /** An opponent of the source's controller has lost life this turn (Theater
    * of Horrors). Reads the per-player `lostLifeThisTurn` flag. */
   | { readonly kind: "opponent-lost-life-this-turn" }
@@ -437,6 +444,13 @@ export interface CardDefinition {
    * P14). The permanent's `chosenCreatureType` is set once its controller
    * answers; a `costModification.matchesChosenCreatureType` reads it back. */
   readonly chooseCreatureTypeOnEnter: boolean;
+  /**
+   * "As this permanent enters, choose …" (rule 614.1c) — Heraldic Banner
+   * ("choose a color"), Frontier Siege ("choose Khans or Dragons"). The
+   * answer lands on `GameObject.chosenOnEnter`, which the card's own statics,
+   * mana abilities and trigger conditions then read.
+   */
+  readonly chooseOnEnter: readonly string[] | null;
   /** Starting loyalty for a planeswalker (rule 306.5b — it enters with this
    * many loyalty counters). `null` for a non-planeswalker. `defineCard`
    * synthesizes the enters-with-counters replacement from this. */
@@ -581,6 +595,7 @@ interface CardDraft {
   controlEnchanted?: boolean;
   copyOnEnter?: { readonly filter: "creature" };
   chooseCreatureTypeOnEnter?: boolean;
+  chooseOnEnter?: readonly string[];
   loyalty?: number;
   flashback?: { readonly cost: string; readonly payLife?: number };
   foretell?: { readonly cost: string };
@@ -644,6 +659,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     controlEnchanted: draft.controlEnchanted ?? false,
     copyOnEnter: draft.copyOnEnter ?? null,
     chooseCreatureTypeOnEnter: draft.chooseCreatureTypeOnEnter ?? false,
+    chooseOnEnter: draft.chooseOnEnter ?? null,
     loyalty,
     flashback: draft.flashback ?? null,
     foretell: draft.foretell ?? null,

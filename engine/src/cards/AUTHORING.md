@@ -967,10 +967,11 @@ different card, or extend the engine (see `ROADMAP.md`).
   grant, not a one-shot resolution effect (needed-cards P18). The *triggered*
   equivalent does exist, for a single target: the `grant-triggered` effect
   (§6).
-- No **"choose a mode as this enters, then behave permanently as that mode"**
-  primitive (Frontier Siege, Frostcliff Siege) — distinct from
-  `chooseCreatureTypeOnEnter`, which only feeds a cost-matching check, not a
-  whole alternate ability set (needed-cards P18).
+- **"As this enters, choose …" only fires when the permanent is *cast*.**
+  Both `chooseCreatureTypeOnEnter` and `chooseOnEnter` hang off the
+  permanent-spell resolution path, so a copy, a reanimation or a
+  `debugSpawn` never raises the choice and the permanent behaves as though
+  nothing was chosen.
 - **Bestow** (rule 702.103 — Springheart Nantuko), **Eternalize** (rule
   702.129 — Fanatic of Rhonas), **retrace** (rule 702.83 — Six), **riot**
   (rule 702.152 — Rhythm of the Wild), **Hideaway** (rule 702.104 — Mosswort

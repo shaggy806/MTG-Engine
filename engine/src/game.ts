@@ -1866,12 +1866,16 @@ export class Game {
 
   /** "As this enters, choose a creature type" (Urza's Incubator — needed-cards
    * P14). Always a real choice — `INCUBATOR_CREATURE_TYPES` is never empty. */
-  private beginCreatureTypeChoice(sourceId: ObjectId, controller: PlayerId): void {
+  private beginCreatureTypeChoice(
+    sourceId: ObjectId,
+    controller: PlayerId,
+    options: readonly string[] = INCUBATOR_CREATURE_TYPES,
+  ): void {
     this.state.awaiting = {
       kind: "choose-creature-type",
       player: controller,
       source: sourceId,
-      options: INCUBATOR_CREATURE_TYPES,
+      options,
     };
   }
 
@@ -1884,7 +1888,12 @@ export class Game {
       throw new Error("unreachable: whyCannotCreatureTypeChoice should have caught this");
     }
     const source = this.state.objects[awaiting.source];
+    // The same decision serves both "choose a creature type" (Urza's
+    // Incubator, which feeds a cost check) and the general "as this enters,
+    // choose …" (Heraldic Banner, Frontier Siege). Record it in both places
+    // so each reader finds it where it expects.
     source.chosenCreatureType = creatureType;
+    source.chosenOnEnter = creatureType;
     this.emit({
       type: "creature-type-chosen",
       object: awaiting.source,
@@ -5204,7 +5213,15 @@ export class Game {
         }
         const pain = ability.effect.painToController ?? 0;
         const lifeCost = ability.cost.payLife ?? 0;
-        const mana = ability.effect.mana;
+        // "Add one mana of the chosen color" resolves to whatever this
+        // permanent's controller named as it entered; before that choice is
+        // answered it produces nothing.
+        const chosen = object.chosenOnEnter;
+        const mana =
+          ability.effect.mana === "chosen"
+            ? (MANA_TYPES.includes(chosen as ManaType) ? (chosen as ManaType) : null)
+            : ability.effect.mana;
+        if (mana === null) continue;
         const candidates: ManaOption[] =
           mana === "any-color"
             ? [{ fixed: [], anyColor: ability.effect.amount, pain, lifeCost }]
@@ -5789,6 +5806,9 @@ export class Game {
       }
       if (def.copyOnEnter !== null) this.beginCopyChoice(id, object.controller);
       if (def.chooseCreatureTypeOnEnter) this.beginCreatureTypeChoice(id, object.controller);
+      else if (def.chooseOnEnter !== null) {
+        this.beginCreatureTypeChoice(id, object.controller, def.chooseOnEnter);
+      }
     } else if (
       // Adventure (rule 715.3) — the adventure half (face 1) resolving exiles
       // the card with a "you may cast the creature later" permission, instead
@@ -6498,6 +6518,10 @@ export class Game {
       amass: (amount, creatureType) => this.amass(controller, amount, creatureType),
       populate: () => this.populate(controller),
       encore: () => this.encore(controller, source),
+      chosenColorOfSource: () => {
+        const chosen = this.state.objects[source]?.chosenOnEnter;
+        return MANA_TYPES.includes(chosen as ManaType) ? (chosen as ManaType) : undefined;
+      },
       sacrificeAllBut: (player, keep, filter) => {
         // "Chooses up to N they control, then sacrifices the rest" — the
         // existing sacrifice queue already asks the right player; it just

@@ -147,6 +147,8 @@ function evalStaticCondition(
           );
         }).length >= condition.atLeast
       );
+    case "chosen-on-enter":
+      return source.chosenOnEnter === condition.value;
     case "creature-died-this-turn":
       return state.creaturesDiedThisTurn > 0;
     case "opponent-lost-life-this-turn":
@@ -328,6 +330,11 @@ export function staticAffects(
   if (target.controller !== source.controller) return false;
   if (!isPrintedCreature(registry, target)) return false;
   if (affects.tokenOnly === true && target.isToken !== true) return false;
+  if (affects.chosenColorOnly === true) {
+    const chosen = source.chosenOnEnter;
+    if (chosen == null) return false;
+    if (!effectiveColors(registry, target).has(chosen as Color)) return false;
+  }
   if (affects.withCounter !== undefined) {
     const kind = affects.withCounter.kind;
     const held =
