@@ -105,9 +105,87 @@ interface ScryfallCollectionResponse {
 }
 
 /** name/flavor_name (lowercased) -> that printing's image URLs. Populated
- * only via `queueArtLookup`'s batched fetch; never cleared (art doesn't
- * change mid-session, and a redeploy reloads the page). */
+ * via `queueArtLookup`'s batched fetch, and seeded from `localStorage` at
+ * load (see `loadPersistedImages`); never cleared mid-session. */
 const imageCache = new Map<string, ScryfallImageUris>()
+
+/**
+ * The lookup cache outlives the page. Every visit used to start empty, so
+ * opening the card library meant re-asking Scryfall for every card's image
+ * URLs — several `/cards/collection` round-trips — before a single face could
+ * render, even though the images themselves were already in the browser's
+ * HTTP cache. Only the name → URL mapping is stored (a few hundred bytes a
+ * card); the image bytes stay the browser's business.
+ *
+ * Entries expire after `PERSIST_TTL_MS` so a re-scanned or re-pointed image
+ * is picked up eventually, and the store is capped at `PERSIST_MAX_ENTRIES`
+ * (oldest dropped) so a long history of imports can't grow it without bound.
+ * Storage that's blocked, full or corrupt just means a cold start, as before.
+ */
+const PERSIST_KEY = 'mtg-engine:art-cache:v1'
+const PERSIST_TTL_MS = 14 * 24 * 60 * 60 * 1000
+const PERSIST_MAX_ENTRIES = 4000
+const PERSIST_DEBOUNCE_MS = 1000
+/** The versions any caller asks `resolveArtUrl` for — the rest aren't worth
+ * the storage. */
+const PERSISTED_VERSIONS = ['art_crop', 'normal', 'large', 'png'] as const
+
+interface PersistedImages {
+  readonly savedAt: number
+  /** key -> [savedAt, image URLs] */
+  readonly entries: Readonly<Record<string, readonly [number, ScryfallImageUris]>>
+}
+
+/** When each cached key was fetched (or restored), for expiry on save. */
+const imageSavedAt = new Map<string, number>()
+let persistTimer: ReturnType<typeof setTimeout> | null = null
+
+function loadPersistedImages(): void {
+  try {
+    const raw = window.localStorage.getItem(PERSIST_KEY)
+    if (!raw) return
+    const stored = JSON.parse(raw) as PersistedImages
+    const cutoff = Date.now() - PERSIST_TTL_MS
+    for (const [key, [savedAt, images]] of Object.entries(stored.entries ?? {})) {
+      if (savedAt < cutoff || imageCache.has(key)) continue
+      imageCache.set(key, images)
+      imageSavedAt.set(key, savedAt)
+    }
+  } catch {
+    // Unreadable or blocked: start cold.
+  }
+}
+
+function persistImagesSoon(): void {
+  if (persistTimer !== null) return
+  persistTimer = setTimeout(() => {
+    persistTimer = null
+    try {
+      const cutoff = Date.now() - PERSIST_TTL_MS
+      const live = [...imageSavedAt]
+        .filter(([, savedAt]) => savedAt >= cutoff)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, PERSIST_MAX_ENTRIES)
+      const entries: Record<string, readonly [number, ScryfallImageUris]> = {}
+      for (const [key, savedAt] of live) {
+        const images = imageCache.get(key)
+        if (!images) continue
+        const slim: Record<string, string> = {}
+        for (const v of PERSISTED_VERSIONS) {
+          const url = images[v]
+          if (url) slim[v] = url
+        }
+        entries[key] = [savedAt, slim]
+      }
+      const payload: PersistedImages = { savedAt: Date.now(), entries }
+      window.localStorage.setItem(PERSIST_KEY, JSON.stringify(payload))
+    } catch {
+      // Full or blocked storage — the in-memory cache still serves this visit.
+    }
+  }, PERSIST_DEBOUNCE_MS)
+}
+
+if (typeof window !== 'undefined') loadPersistedImages()
 const pendingNames = new Set<string>()
 const pendingKeys = new Set<string>()
 const inFlightKeys = new Set<string>()
@@ -147,7 +225,10 @@ export function getArtCacheVersion(): number {
 function storeImages(name: string | undefined, images: ScryfallImageUris | undefined): void {
   if (!name || !images) return
   const key = name.toLowerCase()
-  if (!imageCache.has(key)) imageCache.set(key, images)
+  if (!imageCache.has(key)) {
+    imageCache.set(key, images)
+    imageSavedAt.set(key, Date.now())
+  }
 }
 
 function applyCard(card: ScryfallCollectionCard): void {
@@ -236,7 +317,10 @@ async function flushPending(): Promise<void> {
     // the rest of the session.
     if (failed) retryOrGiveUp(chunk)
   }
-  if (changed) notify()
+  if (changed) {
+    notify()
+    persistImagesSoon()
+  }
 }
 
 function scheduleFlush(): void {
