@@ -2,7 +2,8 @@
 
 Status: **in progress** — the search bot, evaluation, benchmark and tuner exist
 (`engine/src/bot/`, `engine/scripts/tune-bot.mjs`) but live rooms still seat the v1 bot. Phase 0
-(a benchmark that measures the game rooms actually play) is done; see "Work plan" for the rest.
+(a benchmark that measures the game rooms actually play) and Phase 1 (the evaluation's feature
+set) are done; see "Work plan" for the rest.
 
 This is the design record for replacing
 `HeuristicBotController`'s greedy "highest mana value wins" policy with a one-ply search:
@@ -262,6 +263,34 @@ Agreed 2026-09-16. Each phase is measured with `bot:bench` before and after.
 6. **Ship.** `Room.addBot` seats `EvalBotController` once it passes the gauntlet at both two
    and four players, passes every scenario test, and its worst-case decision time fits the
    think pause. From then on rooms record bot game results (see below).
+
+### Phase 1 notes: the features, and what the defaults cost
+
+Done. `evaluate.ts` now carries every term in the list above except poison, which the engine
+doesn't model; summoning sickness is deliberately absent, because the evaluation runs at the
+end of a turn and sickness always wears off before its controller could next attack.
+`untappedCreatures` (blockers left home) stands in for it. Each term has an isolating unit
+test in `eval-bot.test.ts`. `bot:bench --weights '{...}'` overrides any weights for a run, and
+the tuner's mutation can now switch a zero weight on (and a vanishing one off).
+
+Adding the terms at hand-picked defaults was neutral at two players (65.8%) and cost ten
+points at four (36.0% -> 26.0%). Ablations, 200 four-player games each on identical seeds:
+
+| run | result |
+|---|---|
+| all new terms off | 36.0% (72W-128L — identical to before the rewrite, so the refactor is exact) |
+| board terms only: evasion, keywords, permanent mana value, loyalty, counters | 38.0% |
+| resource terms only: commander damage/tax, graveyard, energy, monarch, emblems | 34.0% |
+| hand mana value, untapped mana/creatures, land cap only | 28.0% |
+| any one of those off, everything else on | 27.0–28.0% |
+| hand mana value and untapped mana off, `extraLands` 2.5 (**shipped**) | 32.5% |
+
+The culprits share one failure: they make *spending* look bad. A sorcery cast from hand gives
+up its `handManaValue` with nothing on the board to replace it; every land tapped costs
+`untappedMana`; and with `extraLands` (1) below `hand` (2), a land drop past the cap scored as a
+loss, so the bot stopped playing lands in exactly the long games where it needs them. The
+shipped defaults switch the first two off and put `extraLands` above `hand`. The remaining gap
+to 36% is inside the noise, and closing it by hand is what the tuner is for.
 
 ### Not just beating v1
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { EvalBotController } from "../bot/eval-bot.js";
 import { DEFAULT_WEIGHTS, evaluateState } from "../bot/evaluate.js";
+import type { EvalWeights } from "../bot/evaluate.js";
 import { candidateActions } from "../bot/candidates.js";
 import { createDefaultRegistry } from "../cards.js";
 import type { PlayerController } from "../controller.js";
@@ -171,6 +172,145 @@ describe("evaluateState", () => {
     expect(evaluateState(game.state, registry, A, DEFAULT_WEIGHTS)).toBeLessThan(
       positional - 1000,
     );
+  });
+});
+
+describe("evaluateState features", () => {
+  // Every weight zero but the ones named, and no opponent term unless asked
+  // for: each test then reads exactly one feature off the score.
+  const ZERO = Object.fromEntries(
+    Object.keys(DEFAULT_WEIGHTS).map((k) => [k, 0]),
+  ) as unknown as EvalWeights;
+  const only = (weights: Partial<EvalWeights>): EvalWeights => ({ ...ZERO, ...weights });
+
+  const atFirstPriority = (players: readonly PlayerId[] = [A, B]): Game => {
+    const game = Game.create({ seed: 2, registry, decks: seatsFor(players) });
+    game.advanceUntil((s) => s.priority.holder !== null);
+    return game;
+  };
+
+  /** The score change `mutate` causes under `weights`, from A's seat. */
+  const delta = (
+    weights: Partial<EvalWeights>,
+    mutate: (game: Game) => void,
+    players?: readonly PlayerId[],
+  ): number => {
+    const game = atFirstPriority(players);
+    const w = only(weights);
+    const before = evaluateState(game.state, registry, A, w);
+    mutate(game);
+    return evaluateState(game.state, registry, A, w) - before;
+  };
+
+  it("subtracts the most damage taken from any one commander", () => {
+    expect(
+      delta({ commanderDamage: 1 }, (g) => {
+        g.state.players[A].commanderDamageTaken = { x: 7, y: 3 } as never;
+      }),
+    ).toBe(-7);
+  });
+
+  it("values the mana value of nonland cards in my hand, and never an opponent's", () => {
+    expect(delta({ handManaValue: 1 }, (g) => void g.debugSpawn("Craw Wurm", A, "hand"))).toBe(6);
+    expect(delta({ handManaValue: 1 }, (g) => void g.debugSpawn("Forest", A, "hand"))).toBe(0);
+    expect(
+      delta({ handManaValue: 1, opponent: 1 }, (g) => void g.debugSpawn("Craw Wurm", B, "hand")),
+    ).toBe(0);
+  });
+
+  it("counts evasive power", () => {
+    expect(delta({ evasivePower: 1 }, (g) => void g.debugSpawn("Serra Angel", A))).toBe(4);
+    expect(delta({ evasivePower: 1 }, (g) => void g.debugSpawn("Grizzly Bears", A))).toBe(0);
+  });
+
+  it("counts combat keywords, but not evasion", () => {
+    // Serra Angel: flying (evasion, not counted here) and vigilance.
+    expect(delta({ combatKeywords: 1 }, (g) => void g.debugSpawn("Serra Angel", A))).toBe(1);
+    expect(delta({ combatKeywords: 1 }, (g) => void g.debugSpawn("Typhoid Rats", A))).toBe(1);
+  });
+
+  it("counts untapped creatures as blockers", () => {
+    expect(delta({ untappedCreatures: 1 }, (g) => void g.debugSpawn("Grizzly Bears", A))).toBe(1);
+    expect(
+      delta({ untappedCreatures: 1 }, (g) => void g.debugSpawn("Grizzly Bears", A, "battlefield", { tapped: true })),
+    ).toBe(0);
+  });
+
+  it("pays full value for lands up to the cap and less after it", () => {
+    expect(
+      delta({ lands: 1, landCap: 2, extraLands: 0.5 }, (g) => {
+        for (let i = 0; i < 4; i += 1) g.debugSpawn("Forest", A);
+      }),
+    ).toBe(3);
+  });
+
+  it("counts untapped mana sources", () => {
+    expect(delta({ untappedMana: 1 }, (g) => void g.debugSpawn("Forest", A))).toBe(1);
+    expect(delta({ untappedMana: 1 }, (g) => void g.debugSpawn("Sol Ring", A))).toBe(1);
+    expect(
+      delta({ untappedMana: 1 }, (g) => void g.debugSpawn("Forest", A, "battlefield", { tapped: true })),
+    ).toBe(0);
+  });
+
+  it("counts other permanents and the mana value of nonland permanents", () => {
+    expect(delta({ otherPermanents: 1 }, (g) => void g.debugSpawn("Mind Stone", A))).toBe(1);
+    expect(delta({ otherPermanents: 1 }, (g) => void g.debugSpawn("Grizzly Bears", A))).toBe(0);
+    expect(delta({ permanentManaValue: 1 }, (g) => void g.debugSpawn("Mind Stone", A))).toBe(2);
+    expect(delta({ permanentManaValue: 1 }, (g) => void g.debugSpawn("Forest", A))).toBe(0);
+  });
+
+  it("counts planeswalker loyalty", () => {
+    expect(
+      delta({ loyalty: 1 }, (g) => {
+        const garruk = g.debugSpawn("Garruk Wildspeaker", A);
+        g.state.objects[garruk].counters.loyalty = 5;
+      }),
+    ).toBe(5);
+  });
+
+  it("counts counters no other feature already covers", () => {
+    expect(
+      delta({ counters: 1 }, (g) => {
+        const stone = g.debugSpawn("Mind Stone", A);
+        g.state.objects[stone].counters.charge = 2;
+        g.state.objects[stone].counters["+1/+1"] = 3;
+      }),
+    ).toBe(2);
+  });
+
+  it("counts graveyard cards that can still be cast", () => {
+    expect(delta({ graveyardCastable: 1 }, (g) => void g.debugSpawn("Deep Analysis", A, "graveyard"))).toBe(1);
+    expect(delta({ graveyardCastable: 1 }, (g) => void g.debugSpawn("Grizzly Bears", A, "graveyard"))).toBe(0);
+  });
+
+  it("counts energy, the monarchy and emblems", () => {
+    expect(delta({ energy: 1 }, (g) => void (g.state.players[A].energy = 4))).toBe(4);
+    expect(delta({ monarch: 1 }, (g) => void (g.state.monarch = A))).toBe(1);
+    expect(
+      delta({ emblems: 1 }, (g) => {
+        g.state.emblems.push({ id: "e", owner: A, text: "", timestamp: 0, static: null });
+      }),
+    ).toBe(1);
+  });
+
+  it("subtracts commander tax", () => {
+    expect(
+      delta({ commanderTax: 1 }, (g) => void (g.state.players[A].commanderCastCounts = { X: 2 })),
+    ).toBe(-2);
+  });
+
+  it("scores a drawn game between a win and a loss", () => {
+    const game = atFirstPriority();
+    game.state.result = { over: true, winner: null, reason: "test" };
+    expect(evaluateState(game.state, registry, A, DEFAULT_WEIGHTS)).toBe(0);
+  });
+
+  it("counts every opponent, not just the strongest", () => {
+    // Carol losing ground doesn't change who the strongest opponent is, so
+    // only the other-opponents term can see it.
+    expect(
+      delta({ life: 1, opponent: 1, otherOpponents: 1 }, (g) => void (g.state.players[C].life -= 5), [A, B, C]),
+    ).toBe(5);
   });
 });
 

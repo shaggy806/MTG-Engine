@@ -12,7 +12,10 @@
 //
 // Flags: --games N (rounded up to a multiple of --players, so every deck
 // seating is played from every seat), --players 2-4, --horizon stack|turn,
-// --workers N, --timeout SECONDS (per game, default 300), --json PATH.
+// --workers N, --timeout SECONDS (per game, default 300), --json PATH,
+// --weights JSON (overrides merged onto DEFAULT_WEIGHTS — the vector `bench`
+// measures and `tune` starts from; e.g. --weights '{"handManaValue":0}' to
+// ablate one term).
 //
 // `bench` measures one weight vector against the v1 `HeuristicBotController`.
 // `tune` runs a (1+1) evolution strategy over the weight vector, playing each
@@ -49,6 +52,10 @@ const timeoutMs = Number(flag("timeout", "300")) * 1000;
 const jsonOut = flag("json", null);
 const workers = Math.max(1, Math.min(Number(flag("workers", String(os.cpus().length - 2))), os.cpus().length));
 const even = 1 / players;
+const baseWeights = { ...DEFAULT_WEIGHTS, ...JSON.parse(flag("weights", "{}")) };
+for (const key of Object.keys(baseWeights)) {
+  if (!(key in DEFAULT_WEIGHTS)) throw new Error(`--weights: unknown weight "${key}"`);
+}
 
 /**
  * Run `games` seeds across the worker pool and resolve the per-game results.
@@ -163,15 +170,27 @@ function report(results) {
 }
 
 const WEIGHT_KEYS = Object.keys(DEFAULT_WEIGHTS);
+const overridden = JSON.stringify(baseWeights) !== JSON.stringify(DEFAULT_WEIGHTS);
 
-/** Log-normal-ish jitter on a random subset — keeps every weight positive and
+/** Weights below this are "off": a multiplicative step can't move them
+ * meaningfully, so a mutation switches them on at a random small value
+ * instead — and a weight that shrinks under it switches off. Without this a
+ * term that starts at zero could never be tried. */
+const OFF_BELOW = 0.02;
+
+/** Log-normal jitter on a random subset — keeps every weight non-negative and
  * scales the step to the weight's own magnitude. */
 function mutate(weights, rng, strength = 0.35) {
   const next = { ...weights };
   const touched = 1 + Math.floor(rng() * 3);
   for (let i = 0; i < touched; i += 1) {
     const key = WEIGHT_KEYS[Math.floor(rng() * WEIGHT_KEYS.length)];
-    next[key] = Math.max(0.01, weights[key] * Math.exp((rng() * 2 - 1) * strength));
+    if (weights[key] < OFF_BELOW) {
+      next[key] = 0.1 + rng() * 0.9;
+      continue;
+    }
+    const stepped = weights[key] * Math.exp((rng() * 2 - 1) * strength);
+    next[key] = stepped < OFF_BELOW ? 0 : stepped;
   }
   return next;
 }
@@ -193,16 +212,17 @@ console.log(
 );
 
 if (mode === "bench") {
-  const results = await runMatch(DEFAULT_WEIGHTS);
+  if (overridden) console.log(`weights: ${flag("weights", "{}")}`);
+  const results = await runMatch(baseWeights);
   const summary = summarise(results);
   console.log(`v2 vs v1: ${fmt(summary)}   (${elapsed()})`);
   report(results);
   if (jsonOut) {
-    writeFileSync(jsonOut, JSON.stringify({ weights: DEFAULT_WEIGHTS, players, summary, results }, null, 2));
+    writeFileSync(jsonOut, JSON.stringify({ weights: baseWeights, players, summary, results }, null, 2));
   }
 } else {
   const rng = mulberry32(0xc0ffee);
-  let incumbent = { ...DEFAULT_WEIGHTS };
+  let incumbent = { ...baseWeights };
 
   // The candidate plays the *incumbent* directly, not a third party. Scoring
   // both against v1 and comparing the two numbers is far less sensitive: each
