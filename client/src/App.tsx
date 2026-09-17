@@ -1425,7 +1425,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
    * not which zone the card is actually sitting in). Rendered compactly
    * (name/cost/stats, full card on hover) rather than as a full `CardTile`
    * — see `CommanderTile`. */
-  const commandZoneTile = (obj: VisibleObject) => {
+  const commandZoneTile = (obj: VisibleObject, compact = false) => {
     const castable = mode === 'priority' && castByCard.has(obj.id)
     const commanderTax =
       2 * (view.players[obj.owner]?.commanderCastCounts?.[obj.cardName] ?? 0)
@@ -1436,6 +1436,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         highlight={castable}
         extraGenericCost={commanderTax}
         onClick={castable ? () => clickHandCard(obj.id) : undefined}
+        compact={compact}
       />
     )
   }
@@ -1449,12 +1450,19 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     return (
       <div className={`side-zone ${seatClassOf(view.turnOrder, pid)}`}>
         <div className="side-zone-section">
-          <div className="side-zone-label">Command</div>
-          <div className="side-zone-cards">
+          <div className="side-zone-label">
+            Command{commandIds.length > 1 ? ` (${commandIds.length})` : ''}
+          </div>
+          {/* Partners (rule 702.124) share the one slot: every commander but
+              the last is just its name banner, stacked on the last one's full
+              tile. The rail is a single card wide and height-capped, so two
+              full tiles would push the library off the bottom of the
+              quadrant. Hovering or clicking a banner works as on a full tile. */}
+          <div className={`side-zone-cards${commandIds.length > 1 ? ' command-stack' : ''}`}>
             {commandIds.length > 0 ? (
-              commandIds.map((id) => {
+              commandIds.map((id, i) => {
                 const obj = view.objects[id]
-                return obj ? commandZoneTile(obj) : null
+                return obj ? commandZoneTile(obj, i < commandIds.length - 1) : null
               })
             ) : (
               <div className="card-slot-empty" title="empty command zone" />
@@ -2309,6 +2317,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       key={pid}
       info={view.players[pid]}
       seatClass={seatClassOf(view.turnOrder, pid)}
+      seatClassOf={(player) => seatClassOf(view.turnOrder, player)}
       isActive={view.activePlayer === pid}
       hasPriority={view.priority.holder === pid}
       online={onlineOf(pid)}

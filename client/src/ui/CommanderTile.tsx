@@ -25,6 +25,10 @@ export interface CommanderTileProps {
    * them, so the printed cost stays legible. */
   readonly extraGenericCost?: number
   readonly onClick?: () => void
+  /** Just the name banner (and tax), for the back one of two Partners
+   * sharing the command slot — see `.command-stack` in App.css. Hover and
+   * click work the same as on a full tile. */
+  readonly compact?: boolean
 }
 
 /**
@@ -44,6 +48,7 @@ export function CommanderTile({
   highlight = false,
   extraGenericCost = 0,
   onClick,
+  compact = false,
 }: CommanderTileProps) {
   const { wrapRef, popoverRef, open, handlers } = useHoverPopover(obj)
   const clickable = Boolean(onClick) && highlight
@@ -66,14 +71,21 @@ export function CommanderTile({
     <div className="commander-tile-wrap" ref={wrapRef} {...handlers}>
       <button
         type="button"
-        className={`commander-tile${highlight ? ' highlight' : ''}${clickable ? ' clickable' : ''}`}
+        className={`commander-tile${highlight ? ' highlight' : ''}${clickable ? ' clickable' : ''}${compact ? ' compact' : ''}`}
         onClick={clickable ? onClick : undefined}
         disabled={!clickable}
       >
         {/* name banner above the art, matching the board's own MiniTile */}
         <span className="cmdt-name" title={face}>
           {face}
+          {compact && extraGenericCost > 0 ? (
+            <span className="ct-tax" title="commander tax">
+              {' '}+{extraGenericCost}
+            </span>
+          ) : null}
         </span>
+        {compact ? null : (
+          <>
         <span className={`cmdt-art tint-${tint}`}>
           {!pending && !artFailed ? (
             <img src={artSrc} alt="" loading="lazy" onError={() => recordArtFailure(artSrc)} />
@@ -98,6 +110,8 @@ export function CommanderTile({
             </span>
           ) : null}
         </span>
+          </>
+        )}
       </button>
 
       {open

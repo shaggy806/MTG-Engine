@@ -91,7 +91,7 @@ import { isLegalTarget, legalTargets, protectionBlocks } from "./targeting.js";
 import type { TargetSource } from "./targeting.js";
 import { PHASE_OF_STEP, isMainPhase, nextStep, stepUsesPriority } from "./turn.js";
 import type { Step } from "./turn.js";
-import { viewFor } from "./view.js";
+import { COMMANDER_DAMAGE_LETHAL, viewFor } from "./view.js";
 import type { PlayerView, ViewOptions } from "./view.js";
 
 export interface DeckList {
@@ -257,7 +257,7 @@ interface ManaPayment {
   readonly resolved: ManaCost;
 }
 /** Combat damage from the same commander at or above this total is a loss (rule 903.10a). */
-const COMMANDER_DAMAGE_THRESHOLD = 21;
+const COMMANDER_DAMAGE_THRESHOLD = COMMANDER_DAMAGE_LETHAL;
 
 /** The creature types Artificial Evolution (layer 3 text-change) offers as
  * the old / new word — the ones the card pool actually cares about, so the
@@ -3763,7 +3763,7 @@ export class Game {
         const attacker = this.state.objects[source];
         if (attacker.isCommander) {
           const taken = this.state.players[target.player].commanderDamageTaken;
-          taken[attacker.controller] = (taken[attacker.controller] ?? 0) + dealt;
+          taken[attacker.id] = (taken[attacker.id] ?? 0) + dealt;
         }
         // Steel Hellkite's "whose controller was dealt combat damage by this
         // creature this turn" — recorded per source, not globally, since the
@@ -9625,7 +9625,9 @@ export class Game {
             ([, amount]) => amount >= COMMANDER_DAMAGE_THRESHOLD,
           );
           if (lethal !== undefined) {
-            reason = `took ${COMMANDER_DAMAGE_THRESHOLD}+ combat damage from ${lethal[0]}'s commander`;
+            const commander = this.state.objects[lethal[0] as ObjectId];
+            const name = commander === undefined ? "a commander" : printedCardName(commander);
+            reason = `took ${COMMANDER_DAMAGE_THRESHOLD}+ combat damage from commander ${name}`;
           }
         }
         if (reason !== null) {

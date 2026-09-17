@@ -37,8 +37,10 @@ export interface PublicPlayerInfo {
   readonly maxHandSize: number;
   readonly hasLost: boolean;
   readonly lossReason: string | null;
-  /** Combat damage taken from each opponent's commander so far this game. */
-  readonly commanderDamageTaken: Readonly<Record<PlayerId, number>>;
+  /** Combat damage this player has taken from each commander so far, one
+   * entry per commander that has dealt any (rule 903.10a — 21 from one
+   * commander loses the game). */
+  readonly commanderDamageTaken: readonly CommanderDamage[];
   /** Times this player has cast each commander (by name) from the command
    * zone — each adds {2} generic to that commander's cost next time (rule
    * 903.8). */
@@ -46,6 +48,21 @@ export interface PublicPlayerInfo {
   /** Energy counters this player has ({E} — rule 122 / ROADMAP Phase 10). */
   readonly energy: number;
 }
+
+/** Combat damage one commander has dealt one player. */
+export interface CommanderDamage {
+  readonly commander: ObjectId;
+  /** The commander's name — also given for a commander that isn't visible to
+   * this viewer right now (tucked into a library, say). */
+  readonly name: string;
+  readonly owner: PlayerId;
+  /** Its owner's chosen printing, as on `VisibleObject.art`. */
+  readonly art: string | null;
+  readonly amount: number;
+}
+
+/** The damage needed from one commander to lose (rule 903.10a). */
+export const COMMANDER_DAMAGE_LETHAL = 21;
 
 export interface VisibleObject {
   readonly id: ObjectId;
@@ -312,7 +329,20 @@ export function viewFor(
       maxHandSize: playerState.maxHandSize,
       hasLost: playerState.hasLost,
       lossReason: playerState.lossReason,
-      commanderDamageTaken: { ...playerState.commanderDamageTaken },
+      commanderDamageTaken: Object.entries(playerState.commanderDamageTaken)
+        .filter(([id, amount]) => amount > 0 && state.objects[id as ObjectId] !== undefined)
+        .map(([id, amount]): CommanderDamage => {
+          const commander = state.objects[id as ObjectId];
+          const name = printedCardName(commander);
+          const def = registry.get(name);
+          return {
+            commander: id as ObjectId,
+            name: def.faces?.[0] ?? name,
+            owner: commander.owner,
+            art: state.players[commander.owner]?.printings[def.faces?.[0] ?? name] ?? def.art,
+            amount,
+          };
+        }),
       commanderCastCounts: { ...playerState.commanderCastCounts },
       energy: playerState.energy,
     };

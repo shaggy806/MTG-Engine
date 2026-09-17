@@ -407,9 +407,48 @@ describe("commander damage", () => {
 
     game.advanceUntil((s) => s.result.over || s.turn.number > 1);
 
-    expect(game.state.players[B].commanderDamageTaken[A]).toBeGreaterThanOrEqual(21);
+    expect(game.state.players[B].commanderDamageTaken[id]).toBeGreaterThanOrEqual(21);
     expect(game.state.players[B].life).toBeGreaterThan(0);
     expect(game.state.players[B].hasLost).toBe(true);
     expect(game.state.players[B].lossReason).toMatch(/commander/);
+  });
+
+  it("counts each commander separately — two Partners at 11 apiece is not a loss", () => {
+    const attacker = new ScriptedController(A);
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      registry,
+      rules: { startingLife: 30 },
+      controllers: { [A]: attacker },
+      decks: [
+        { player: A, cards: pad([]) },
+        { player: B, cards: pad([]) },
+      ],
+    });
+    game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+    // Two different names, or the legend rule would take one.
+    const names = ["Test Commander", "Test Commander (Triggers)"];
+    const partners = names.map((name) => {
+      const id = game.debugSpawn(name, A, "battlefield");
+      const object = game.state.objects[id];
+      object.isCommander = true;
+      object.summoningSick = false;
+      object.counters["+1/+1"] = 9; // an 11/11
+      return id;
+    });
+    attacker.declareAttackersFn = () => partners.map((id) => ({ attacker: id, defender: B }));
+
+    game.advanceUntil((s) => s.result.over || s.turn.number > 1);
+
+    // 22 commander damage in all, but 21 from neither one (rule 903.10a).
+    expect(partners.map((id) => game.state.players[B].commanderDamageTaken[id])).toEqual([11, 11]);
+    expect(game.state.players[B].hasLost).toBe(false);
+    expect(game.state.players[B].life).toBe(8);
+
+    const shown = game.viewFor(B).players[B].commanderDamageTaken;
+    expect(shown.map((d) => [d.commander, d.name, d.owner, d.amount])).toEqual(
+      partners.map((id, i) => [id, names[i], A, 11]),
+    );
   });
 });

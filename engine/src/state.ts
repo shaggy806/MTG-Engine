@@ -455,10 +455,16 @@ export interface PlayerState {
    * time (rule 903.8 — the tax is per-commander, so Partner pairs are tracked
    * separately). */
   commanderCastCounts: Record<string, number>;
-  /** Cumulative combat damage taken from each opponent's commander since the
-   * game began, keyed by that commander's controller. 21+ from the same
-   * commander is a loss (rule 903.10a / SBA 704.5m). */
-  commanderDamageTaken: Record<PlayerId, number>;
+  /** Cumulative combat damage taken from each commander since the game
+   * began, keyed by that commander's object id. 21+ from the same commander
+   * is a loss (rule 903.10a / SBA 704.5m).
+   *
+   * Per *commander*, not per opponent: two Partner commanders are counted
+   * separately, and damage from a commander someone else has taken control
+   * of still counts toward that same commander — the rule is about the card,
+   * not who's attacking with it. A commander keeps its object id through
+   * every zone change, so the count follows it to the command zone and back. */
+  commanderDamageTaken: Record<ObjectId, number>;
   /** Spells *this player* has cast this turn — read by "your first spell each
    * turn" triggers. (Storm counts *all* players' spells — see
    * `GameState.spellsCastThisTurn`.) Reset in `beginTurn`. ROADMAP Phase 8. */
