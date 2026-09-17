@@ -11,11 +11,53 @@
 // fitted `EvalWeights` as JSON, ready for `bot:bench --weights`),
 // --allow-negative (lift the non-negativity constraint — see below).
 //
-// ## The model
+// ## Two models, because there are two kinds of training data
 //
-// `P(this seat wins) = sigmoid(w . x)`, where `x` is the sign-folded difference
-// vector `evaluateState` already computes — so `w` *is* an `EvalWeights`, in
-// log-odds-per-unit-of-feature, and needs no translation to be used.
+// **Positions** (`bot:harvest`): `P(this seat wins) = sigmoid(w . x)`, where `x`
+// is the sign-folded difference vector `evaluateState` already computes — so `w`
+// *is* an `EvalWeights`, in log-odds-per-unit-of-feature, and needs no
+// translation to be used.
+//
+// **Pairs** (`bot:harvest --pairs`, then `bot:fit --pairs`): two sibling moves
+// from one decision point, each played out `n` times, with win counts `wA` and
+// `wB`. The target is the *log-odds difference* between the two siblings,
+//
+//     y = logit((wA + 0.5) / (n + 1)) - logit((wB + 0.5) / (n + 1))
+//
+// regressed on `x = xA - xB` by weighted least squares. Three things this buys
+// over collapsing the pair to "A won":
+//
+// - It keeps the magnitude. A 20-to-4 split and an 11-to-10 split are very
+//   different claims about how much the move mattered.
+// - The half-counts are the Haldane correction, which keeps a 20-0 sweep finite
+//   instead of infinite.
+// - Rows are weighted by inverse variance, `1/Var(y)` with
+//   `Var(logit p̂) ≈ 1/(n p q)`, so a pair whose rates are near 0 or 1 — where
+//   the log-odds estimate is at its noisiest — counts for less.
+//
+// Everything downstream is shared: the same standardization, the same prior
+// shrinkage, the same non-negativity projection, the same land-drop invariant.
+// Only the loss differs, and only by whether `w . x` passes through a sigmoid.
+//
+// ## The two are complementary, and that isn't a compromise
+//
+// Cancelling the confound also cancels the *signal* for any feature the move
+// doesn't move. Measured on a pair harvest: `life`, `library`, `commanderDamage`
+// and `loyalty` are reported "never observed", because two candidate moves at
+// one decision point usually leave all four identical and the difference vector
+// is zero there. Pairs can say what a *move* is worth and are structurally
+// silent on what a *state* is worth; positions are the reverse, and their
+// silence is the noisier kind, since they answer confidently and wrongly.
+//
+// So the intended pipeline runs both, and the prior machinery already composes
+// them with no extra mechanism:
+//
+//   bot:fit                       --in positions.ndjson --out base.json
+//   bot:fit --pairs --prior-file base.json --in pairs.ndjson --out final.json
+//
+// Positions set every term; pairs then correct the ones moves actually
+// influence, and leave the rest at the position fit's value. Terms neither can
+// speak to fall back to the hand-picked vector, which is where they started.
 //
 // **No intercept.** At two players the rows come in symmetric pairs (both
 // seats of the same position, labelled 1 and 0), so an even position has to
@@ -161,8 +203,16 @@ const lr = Number(flag("lr", "0.05"));
 const holdout = Number(flag("holdout", "0.2"));
 const out = flag("out", null);
 const nonneg = !args.includes("--allow-negative");
+const pairsMode = args.includes("--pairs");
 const usePrior = flag("prior", "baseline") !== "zero";
 const priorL2 = Number(flag("prior-l2", "0.02"));
+// What to shrink toward, and what an unfitted term falls back to. Defaults to
+// the hand-picked vector; a pairs fit normally points this at the position
+// fit's output instead — see "The two are complementary" above.
+const priorFile = flag("prior-file", null);
+const BASE = priorFile === null
+  ? DEFAULT_WEIGHTS
+  : { ...DEFAULT_WEIGHTS, ...JSON.parse(readFileSync(priorFile, "utf8")) };
 const D = FEATURE_KEYS.length;
 
 // ---------------------------------------------------------------- load
@@ -171,34 +221,53 @@ const games = readFileSync(input, "utf8")
   .split("\n")
   .filter((line) => line.length > 0)
   .map((line) => JSON.parse(line))
-  .filter((g) => g.error === undefined && g.positions.length > 0);
+  .filter((g) => g.error === undefined && (pairsMode ? g.pairs.length > 0 : g.positions.length > 0));
 
 if (games.length === 0) throw new Error(`no usable games in ${input}`);
+
+const logit = (p) => Math.log(p / (1 - p));
 
 /** Rows, as flat parallel arrays — 100k objects would be a lot of pointer
  * chasing for what is ultimately a matrix. */
 function build(subset) {
-  const n = subset.reduce((sum, g) => sum + g.positions.length * 2, 0);
-  const x = new Float64Array(n * D);
-  const y = new Float64Array(n);
-  const w = new Float64Array(n);
+  const rows = subset.reduce((sum, g) => sum + (pairsMode ? g.pairs.length : g.positions.length * 2), 0);
+  const x = new Float64Array(rows * D);
+  const y = new Float64Array(rows);
+  const w = new Float64Array(rows);
   let i = 0;
   for (const g of subset) {
-    // Every game weighs the same, however long it ran.
-    const perRow = 1 / (g.positions.length * 2);
-    for (const [rowA, rowB] of g.positions) {
-      for (const [row, label] of [
-        [rowA, g.label],
-        [rowB, 1 - g.label],
-      ]) {
-        for (let d = 0; d < D; d += 1) x[i * D + d] = row[d];
-        y[i] = label;
-        w[i] = perRow;
+    if (pairsMode) {
+      const n = g.playouts;
+      for (const pair of g.pairs) {
+        // Haldane correction: a 20-0 sweep is a finite piece of evidence, not
+        // an infinite one.
+        const pA = (pair.winsA + 0.5) / (n + 1);
+        const pB = (pair.winsB + 0.5) / (n + 1);
+        for (let d = 0; d < D; d += 1) x[i * D + d] = pair.xA[d] - pair.xB[d];
+        y[i] = logit(pA) - logit(pB);
+        // Inverse variance. A rate near 0 or 1 is where a log-odds estimate is
+        // noisiest, so those pairs speak more quietly.
+        const variance = 1 / (n * pA * (1 - pA)) + 1 / (n * pB * (1 - pB));
+        w[i] = 1 / variance;
         i += 1;
+      }
+    } else {
+      // Every game weighs the same, however long it ran.
+      const perRow = 1 / (g.positions.length * 2);
+      for (const [rowA, rowB] of g.positions) {
+        for (const [row, label] of [
+          [rowA, g.label],
+          [rowB, 1 - g.label],
+        ]) {
+          for (let d = 0; d < D; d += 1) x[i * D + d] = row[d];
+          y[i] = label;
+          w[i] = perRow;
+          i += 1;
+        }
       }
     }
   }
-  return { x, y, w, n };
+  return { x, y, w, n: rows };
 }
 
 // Split by *game*, never by row: two rows from the same game are near
@@ -209,7 +278,7 @@ const train = build(games.slice(0, cut));
 const test = build(games.slice(cut));
 
 console.log(
-  `${games.length} games (${train.n} train rows, ${test.n} holdout rows), ` +
+  `${games.length} games (${train.n} train rows, ${test.n} holdout rows), ${pairsMode ? "pairs" : "positions"}, ` +
     `${D} features, l2=${l2}, epochs=${epochs}`,
 );
 
@@ -268,11 +337,16 @@ function fit(prior = null, lambda = l2) {
     for (let i = 0; i < train.n; i += 1) {
       let z = 0;
       for (let d = 0; d < D; d += 1) z += w[d] * (train.x[i * D + d] / scale[d]);
-      const p = sigmoid(z);
-      const r = train.w[i] * (p - train.y[i]);
-      for (let d = 0; d < D; d += 1) grad[d] += r * (train.x[i * D + d] / scale[d]);
+      // Squared error on a log-odds difference for pairs, log loss on a 0/1
+      // outcome for positions. The gradient has the same shape either way —
+      // residual times feature — which is why one loop serves both.
+      const p = pairsMode ? z : sigmoid(z);
       const yi = train.y[i];
-      loss -= train.w[i] * (yi * Math.log(p + 1e-12) + (1 - yi) * Math.log(1 - p + 1e-12));
+      const r = train.w[i] * (p - yi);
+      for (let d = 0; d < D; d += 1) grad[d] += r * (train.x[i * D + d] / scale[d]);
+      loss += pairsMode
+        ? train.w[i] * (p - yi) * (p - yi)
+        : -train.w[i] * (yi * Math.log(p + 1e-12) + (1 - yi) * Math.log(1 - p + 1e-12));
     }
     for (let d = 0; d < D; d += 1) {
       const g = grad[d] / totalWeight + lambda * (w[d] - (prior === null ? 0 : prior[d]));
@@ -300,18 +374,44 @@ const lifeIndex = FEATURE_KEYS.indexOf("life");
 // vector has to be expressed in before it can be shrunk toward.
 let standardized = fit();
 
-if (usePrior) {
-  const lifeLogOdds = Math.abs(standardized[lifeIndex] / scale[lifeIndex]);
-  if (lifeLogOdds < 1e-12) throw new Error("first pass gave `life` no weight; can't scale the prior");
-  const prior = new Float64Array(D);
+/**
+ * Log-odds per unit of the prior's scale — the exchange rate between the two,
+ * and the whole reason for the first pass.
+ *
+ * In positions mode `life` alone would do, since the prior is normalised to
+ * `life = 1`. In pairs mode it won't: `life` is one of the features two sibling
+ * moves almost always leave identical, so it is never observed and the first
+ * pass gives it no weight at all. The rate is therefore taken as the
+ * least-squares scale that best maps the prior onto the first pass across
+ * *every* feature — which reduces to exactly `life`'s ratio when `life` is the
+ * only thing that varies, and stays defined when it isn't.
+ */
+function exchangeRate(raw1) {
+  let num = 0;
+  let den = 0;
   for (const [d, key] of FEATURE_KEYS.entries()) {
-    prior[d] = DEFAULT_WEIGHTS[key] * lifeLogOdds * scale[d];
+    num += BASE[key] * raw1[d];
+    den += BASE[key] * BASE[key];
   }
-  console.log(`  pass 2: shrinking toward the hand-picked vector, prior-l2=${priorL2}`);
+  return den > 1e-12 ? Math.abs(num / den) : 0;
+}
+
+let rate = 1;
+if (usePrior) {
+  const raw1 = FEATURE_KEYS.map((_, d) => standardized[d] / scale[d]);
+  rate = exchangeRate(raw1);
+  if (rate < 1e-12) throw new Error("first pass found no signal at all; can't scale the prior");
+  const prior = new Float64Array(D);
+  for (const [d, key] of FEATURE_KEYS.entries()) prior[d] = BASE[key] * rate * scale[d];
+  console.log(`  pass 2: shrinking toward the prior (rate ${rate.toFixed(4)}), prior-l2=${priorL2}`);
   standardized = fit(prior, priorL2);
 }
 
-/** Weighted accuracy and log loss on a held-out set of games. */
+/**
+ * Held-out performance. For positions that's the share of seats whose winner it
+ * calls correctly; for pairs it's the share of sibling comparisons it ranks the
+ * right way round — which is the only thing the search actually needs it to do.
+ */
 function evaluateFit(set, w) {
   if (set.n === 0) return null;
   let correct = 0;
@@ -320,13 +420,22 @@ function evaluateFit(set, w) {
   for (let i = 0; i < set.n; i += 1) {
     let z = 0;
     for (let d = 0; d < D; d += 1) z += w[d] * (set.x[i * D + d] / scale[d]);
-    const p = sigmoid(z);
     const yi = set.y[i];
-    if ((p >= 0.5 ? 1 : 0) === Math.round(yi)) correct += set.w[i];
-    loss -= set.w[i] * (yi * Math.log(p + 1e-12) + (1 - yi) * Math.log(1 - p + 1e-12));
-    weight += set.w[i];
+    if (pairsMode) {
+      // A tie in the playouts has no right answer to get right, so it's not
+      // counted either way.
+      if (yi !== 0 && Math.sign(z) === Math.sign(yi)) correct += set.w[i];
+      if (yi !== 0) weight += set.w[i];
+      loss += set.w[i] * (z - yi) * (z - yi);
+    } else {
+      const p = sigmoid(z);
+      if ((p >= 0.5 ? 1 : 0) === Math.round(yi)) correct += set.w[i];
+      loss -= set.w[i] * (yi * Math.log(p + 1e-12) + (1 - yi) * Math.log(1 - p + 1e-12));
+      weight += set.w[i];
+    }
   }
-  return { accuracy: correct / weight, loss: loss / weight };
+  const total = set.w.reduce((a, b) => a + b, 0);
+  return { accuracy: weight > 0 ? correct / weight : 0, loss: loss / total };
 }
 
 const trainFit = evaluateFit(train, standardized);
@@ -345,12 +454,20 @@ const raw = FEATURE_KEYS.map((_, d) => standardized[d] / scale[d]);
 // hand-picked one has used, which keeps it readable side by side with the
 // champions — and keeps the absolute sentinels in `evaluate.ts` (a won game at
 // 1e6, a dead player at -1e4) as dominant as they were designed to be.
-const norm = Math.abs(raw[lifeIndex]) > 1e-12 ? Math.abs(raw[lifeIndex]) : 1;
+// The same exchange rate the prior was scaled by, undone — which puts the
+// output back on the prior's scale, so an unfitted term carried through from
+// `BASE` and a fitted one beside it mean the same thing. With no prior in play
+// there's nothing to agree with, so `life` sets the scale as before.
+const norm = usePrior
+  ? rate
+  : Math.abs(raw[lifeIndex]) > 1e-12
+    ? Math.abs(raw[lifeIndex])
+    : 1;
 
 /** Linear terms whose *fitted* value is thrown away — see the note above. */
 const PRIOR_ONLY = ["commanderTax", "untappedMana"];
 
-const fitted = { ...DEFAULT_WEIGHTS };
+const fitted = { ...BASE };
 for (const [d, key] of FEATURE_KEYS.entries()) {
   if (constant.includes(key) || PRIOR_ONLY.includes(key)) continue;
   fitted[key] = Number((raw[d] / norm).toFixed(4));
@@ -385,7 +502,7 @@ if (negative.length > 0) {
 
 console.log("\nfitted weights (life normalised to 1; unfitted terms carried through):");
 for (const key of FEATURE_KEYS) {
-  const before = DEFAULT_WEIGHTS[key];
+  const before = BASE[key];
   const after = fitted[key];
   const arrow = after > before ? "up" : after < before ? "down" : "same";
   console.log(`  ${key.padEnd(20)} ${String(before).padStart(8)} -> ${String(after).padStart(8)}  ${arrow}`);
