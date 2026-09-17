@@ -8,6 +8,7 @@
 //   npm run bot:bench -w engine                    # v2 vs v1, default weights
 //   npm run bot:bench -w engine -- --games 400
 //   npm run bot:bench -w engine -- --players 4
+//   npm run bot:bench -w engine -- --opponent gauntlet    # one match per member
 //   npm run bot:tune  -w engine -- --games 200 --iterations 40
 //
 // Flags: --games N (rounded up to a multiple of --players, so every deck
@@ -17,12 +18,18 @@
 // --workers N, --timeout SECONDS (per game, default 300), --json PATH,
 // --weights JSON (overrides merged onto DEFAULT_WEIGHTS — the vector `bench`
 // measures and `tune` starts from; e.g. --weights '{"handManaValue":0}' to
-// ablate one term).
+// ablate one term), --opponent v1|<champion id>|gauntlet|mixed (bench only),
+// --gauntlet-games N (0 turns the tune's gauntlet veto off), --mixed/--no-mixed
+// (tune only; mixed tables default on above two players).
 //
-// `bench` measures one weight vector against the v1 `HeuristicBotController`.
-// `tune` runs a (1+1) evolution strategy over the weight vector, playing each
-// mutation against the incumbent (every other seat) and keeping it only when
-// the whole confidence interval sits above an even share.
+// `bench` measures one weight vector against a chosen opponent — by default the
+// v1 `HeuristicBotController`.
+//
+// `tune` runs a (1+1) evolution strategy over the weight vector: each mutation
+// plays the incumbent and is kept only when the whole confidence interval sits
+// above an even share *and* it doesn't regress against any gauntlet member.
+// Head-to-head is the primary signal; the gauntlet is a veto — see
+// `engine/src/bot/champions/` for what's in it and why it can't just be v1.
 //
 // "Even" is 1/players, not 50%: at a four-player table the candidate is one
 // seat against three, and a bot exactly as strong as its opponents wins a
@@ -36,7 +43,7 @@ import { Worker } from "node:worker_threads";
 import { fileURLToPath } from "node:url";
 import { writeFileSync } from "node:fs";
 
-import { DEFAULT_WEIGHTS } from "../dist/index.js";
+import { CHAMPIONS, DEFAULT_WEIGHTS, championById } from "../dist/index.js";
 
 const WORKER = fileURLToPath(new URL("./tune-bot-worker.mjs", import.meta.url));
 
@@ -56,23 +63,40 @@ const timeoutMs = Number(flag("timeout", "300")) * 1000;
 const jsonOut = flag("json", null);
 const workers = Math.max(1, Math.min(Number(flag("workers", String(os.cpus().length - 2))), os.cpus().length));
 const even = 1 / players;
+const opponentArg = flag("opponent", "v1");
+const gauntletGames = Math.ceil(Number(flag("gauntlet-games", String(games))) / players) * players;
+// A mixed table is only a thing above two players — with one opponent seat
+// there's nothing to mix.
+const mixed = players > 2 && !args.includes("--no-mixed");
 const baseWeights = { ...DEFAULT_WEIGHTS, ...JSON.parse(flag("weights", "{}")) };
 for (const key of Object.keys(baseWeights)) {
   if (!(key in DEFAULT_WEIGHTS)) throw new Error(`--weights: unknown weight "${key}"`);
 }
 
+/** The v1 `HeuristicBotController`, as an opponent spec. `weights: null` is
+ * what the worker reads as "not an `EvalBotController`". */
+const V1 = { id: "v1", weights: null };
+const asOpponent = (champion) => ({ id: champion.id, weights: champion.weights });
+
+/** Every frozen opponent a candidate is measured against, v1 included. */
+const GAUNTLET = [V1, ...CHAMPIONS.map(asOpponent)];
+
 /**
- * Run `games` seeds across the worker pool and resolve the per-game results.
- * With `opponentWeights` the match is between two weight vectors; without,
- * it's against the v1 `HeuristicBotController`.
+ * Run `count` seeds across the worker pool and resolve the per-game results.
+ * `opponents` fills every seat the candidate isn't in, round-robin — one spec
+ * for a straight match, several for a mixed table.
  *
  * A game that overruns `timeoutMs` has its worker killed and replaced, and is
  * recorded as an error: a runaway loop inside one engine tick never yields, so
  * nothing in the worker itself can stop it, and without this one stuck game
  * silently stalls the whole run.
  */
-function runMatch(weights, seedOffset = 0, opponentWeights = null) {
+function runMatch(weights, opponents, seedOffset = 0, count = games) {
   return new Promise((resolve) => {
+    if (count === 0) {
+      resolve([]);
+      return;
+    }
     const results = [];
     let next = 0;
 
@@ -84,11 +108,11 @@ function runMatch(weights, seedOffset = 0, opponentWeights = null) {
       const finish = (result) => {
         clearTimeout(timer);
         results.push(result);
-        if (results.length === games) resolve(results);
+        if (results.length === count) resolve(results);
       };
 
       const pump = () => {
-        if (next >= games) {
+        if (next >= count) {
           worker.terminate();
           return;
         }
@@ -100,7 +124,7 @@ function runMatch(weights, seedOffset = 0, opponentWeights = null) {
           finish({ seed, error: `timed out after ${timeoutMs / 1000}s` });
           spawn();
         }, timeoutMs);
-        worker.postMessage({ seed, weights, opponentWeights, players, horizon, rollout, botOptions });
+        worker.postMessage({ seed, weights, opponents, players, horizon, rollout, botOptions });
       };
 
       worker.on("message", (result) => {
@@ -115,7 +139,7 @@ function runMatch(weights, seedOffset = 0, opponentWeights = null) {
       pump();
     };
 
-    for (let i = 0; i < Math.min(workers, games); i += 1) spawn();
+    for (let i = 0; i < Math.min(workers, count); i += 1) spawn();
   });
 }
 
@@ -160,6 +184,22 @@ function report(results) {
   for (const [name, d] of [...byDeck].sort()) {
     console.log(`    ${name.padEnd(28)} ${String(d.wins).padStart(4)}/${String(d.n).padEnd(4)} ${pct(d.wins / d.n)}`);
   }
+  // Only interesting on a mixed table, where which opponents sat down varies
+  // block to block.
+  const byTable = new Map();
+  for (const r of played) {
+    const key = [...(r.opponents ?? [])].sort().join("+");
+    const d = byTable.get(key) ?? { wins: 0, n: 0 };
+    d.n += 1;
+    if (r.outcome === "win") d.wins += 1;
+    byTable.set(key, d);
+  }
+  if (byTable.size > 1) {
+    console.log("  table:");
+    for (const [key, d] of [...byTable].sort()) {
+      console.log(`    ${key.padEnd(28)} ${String(d.wins).padStart(4)}/${String(d.n).padEnd(4)} ${pct(d.wins / d.n)}`);
+    }
+  }
   if (played.length > 0) {
     const mean = (f) => played.reduce((sum, r) => sum + f(r), 0) / played.length;
     const worst = played.reduce((a, r) => (r.maxDecisionMs > a.maxDecisionMs ? r : a));
@@ -176,25 +216,35 @@ function report(results) {
 const WEIGHT_KEYS = Object.keys(DEFAULT_WEIGHTS);
 const overridden = JSON.stringify(baseWeights) !== JSON.stringify(DEFAULT_WEIGHTS);
 
-/** Weights below this are "off": a multiplicative step can't move them
- * meaningfully, so a mutation switches them on at a random small value
- * instead — and a weight that shrinks under it switches off. Without this a
- * term that starts at zero could never be tried. */
+/** Weights whose magnitude is below this are "off": a multiplicative step
+ * can't move them meaningfully, so a mutation switches them on at a random
+ * small value of either sign instead — and a weight that shrinks under it
+ * switches off. Without this a term that starts at zero could never be tried. */
 const OFF_BELOW = 0.02;
 
-/** Log-normal jitter on a random subset — keeps every weight non-negative and
- * scales the step to the weight's own magnitude. */
+/**
+ * Log-normal jitter on a random subset: the step scales with the weight's own
+ * magnitude, and multiplying by a positive factor preserves its sign.
+ *
+ * Sign matters now that weights can be *fitted* rather than hand-picked
+ * (`fit-weights.mjs`). The hand-written vectors are all positive by
+ * convention — costs are subtracted rather than carrying a negative weight —
+ * but a regression is free to report that a feature genuinely predicts losing,
+ * and a mutation must not quietly flip that back.
+ */
 function mutate(weights, rng, strength = 0.35) {
   const next = { ...weights };
   const touched = 1 + Math.floor(rng() * 3);
   for (let i = 0; i < touched; i += 1) {
     const key = WEIGHT_KEYS[Math.floor(rng() * WEIGHT_KEYS.length)];
-    if (weights[key] < OFF_BELOW) {
-      next[key] = 0.1 + rng() * 0.9;
+    if (Math.abs(weights[key]) < OFF_BELOW) {
+      // Switching a dormant term back on: try both directions, since a zero
+      // carries no sign to preserve.
+      next[key] = (0.1 + rng() * 0.9) * (rng() < 0.5 ? -1 : 1);
       continue;
     }
     const stepped = weights[key] * Math.exp((rng() * 2 - 1) * strength);
-    next[key] = stepped < OFF_BELOW ? 0 : stepped;
+    next[key] = Math.abs(stepped) < OFF_BELOW ? 0 : stepped;
   }
   return next;
 }
@@ -209,6 +259,35 @@ function mulberry32(seed) {
   };
 }
 
+/**
+ * Play `weights` against every gauntlet member in turn, one straight match
+ * each, and return `{id: summary}`. Seeds are offset per member so no two
+ * members are measured on the same shuffles within a round.
+ */
+async function runGauntlet(weights, seedOffset, count) {
+  const profile = {};
+  for (const [i, member] of GAUNTLET.entries()) {
+    profile[member.id] = summarise(await runMatch(weights, [member], seedOffset + i * count, count));
+  }
+  return profile;
+}
+
+/**
+ * The veto. A candidate that beats the incumbent head to head is still rejected
+ * if it has clearly got *worse* against anyone in the pool — "clearly" meaning
+ * its whole interval sits below what the incumbent scored against that member,
+ * so ordinary sampling noise can't trip it. Without this the search is free to
+ * trade general strength for whatever beats the one opponent it's scored on.
+ */
+function regressions(candidateProfile, incumbentProfile) {
+  return GAUNTLET.map((m) => m.id).filter(
+    (id) => incumbentProfile[id] !== undefined && candidateProfile[id].high < incumbentProfile[id].rate,
+  );
+}
+
+const profileLine = (profile) =>
+  GAUNTLET.map((m) => `${m.id} ${pct(profile[m.id].rate)}`).join("  ");
+
 const startedAt = Date.now();
 const elapsed = () => `${((Date.now() - startedAt) / 1000).toFixed(1)}s`;
 console.log(
@@ -217,12 +296,25 @@ console.log(
 
 if (mode === "bench") {
   if (overridden) console.log(`weights: ${flag("weights", "{}")}`);
-  const results = await runMatch(baseWeights);
-  const summary = summarise(results);
-  console.log(`v2 vs v1: ${fmt(summary)}   (${elapsed()})`);
-  report(results);
-  if (jsonOut) {
-    writeFileSync(jsonOut, JSON.stringify({ weights: baseWeights, players, summary, results }, null, 2));
+
+  if (opponentArg === "gauntlet") {
+    const profile = await runGauntlet(baseWeights, 0, games);
+    for (const member of GAUNTLET) {
+      console.log(`vs ${member.id.padEnd(22)} ${fmt(profile[member.id])}   (${elapsed()})`);
+    }
+    if (jsonOut) writeFileSync(jsonOut, JSON.stringify({ weights: baseWeights, players, profile }, null, 2));
+  } else {
+    // `mixed` seats one of each gauntlet member; anything else is a straight
+    // match against that one opponent.
+    const opponents =
+      opponentArg === "mixed" ? GAUNTLET : [opponentArg === "v1" ? V1 : asOpponent(championById(opponentArg))];
+    const results = await runMatch(baseWeights, opponents);
+    const summary = summarise(results);
+    console.log(`v2 vs ${opponents.map((o) => o.id).join("+")}: ${fmt(summary)}   (${elapsed()})`);
+    report(results);
+    if (jsonOut) {
+      writeFileSync(jsonOut, JSON.stringify({ weights: baseWeights, players, summary, results }, null, 2));
+    }
   }
 } else {
   const rng = mulberry32(0xc0ffee);
@@ -235,26 +327,62 @@ if (mode === "bench") {
   // and in practice nothing ever does — an earlier revision of this script
   // rejected all 14 mutations it tried for exactly that reason. Head-to-head
   // asks the question once instead of twice.
-  console.log(`incumbent vs v1, for reference: ${fmt(summarise(await runMatch(incumbent)))}`);
-  const history = [{ iteration: 0, weights: incumbent }];
+  //
+  // Above two players the other seats are a *mix* — incumbent, v1, a hand-set
+  // style — rather than three copies of the incumbent, which is both closer to
+  // a real pod and one fewer policy for the candidate to learn to farm. The
+  // incumbent still takes the first seat, so it's the opponent that's always
+  // present.
+  // Exactly one spec per opponent seat. Handing the worker a longer list would
+  // rotate the incumbent out of some blocks entirely, and the incumbent being
+  // at every table is what makes this the primary signal.
+  const opponentsFor = (weights) => {
+    const incumbentSpec = { id: "incumbent", weights };
+    return mixed ? [incumbentSpec, ...GAUNTLET].slice(0, players - 1) : [incumbentSpec];
+  };
+
+  // The gauntlet profile the veto compares against. Measured once here, and
+  // thereafter inherited from whichever candidate was accepted — that
+  // candidate's own numbers are already in hand, so an acceptance costs one
+  // gauntlet sweep rather than two.
+  let profile = gauntletGames > 0 ? await runGauntlet(incumbent, 0, gauntletGames) : {};
+  if (gauntletGames > 0) console.log(`incumbent gauntlet: ${profileLine(profile)}   (${elapsed()})`);
+
+  const history = [{ iteration: 0, weights: incumbent, profile }];
+  // Seeds every match ever played in this run draws from, bumped as it goes, so
+  // no two matches share shuffles and no winner is one that merely memorised a
+  // lucky set of them.
+  let seedCursor = GAUNTLET.length * gauntletGames;
 
   for (let i = 1; i <= iterations; i += 1) {
     const candidate = mutate(incumbent, rng);
-    // A fresh seed block each iteration, so a winner can't be one that merely
-    // memorised a lucky set of shuffles.
-    const summary = summarise(await runMatch(candidate, i * games, incumbent));
-    // Accept only when the whole interval sits above an even share: the
-    // candidate has to be better than the incumbent, not merely luckier.
-    const accepted = summary.low > even;
-    if (accepted) incumbent = candidate;
-    console.log(
-      `  ${String(i).padStart(3)}: vs incumbent ${fmt(summary)} ${accepted ? "ACCEPT" : "reject"}   (${elapsed()})`,
-    );
+    const summary = summarise(await runMatch(candidate, opponentsFor(incumbent), seedCursor));
+    seedCursor += games;
+    // Beat the incumbent first: the whole interval above an even share, so the
+    // candidate has to be better rather than merely luckier.
+    const beatsIncumbent = summary.low > even;
+
+    let candidateProfile = null;
+    let regressed = [];
+    if (beatsIncumbent && gauntletGames > 0) {
+      candidateProfile = await runGauntlet(candidate, seedCursor, gauntletGames);
+      seedCursor += GAUNTLET.length * gauntletGames;
+      regressed = regressions(candidateProfile, profile);
+    }
+    const accepted = beatsIncumbent && regressed.length === 0;
+    if (accepted) {
+      incumbent = candidate;
+      if (candidateProfile !== null) profile = candidateProfile;
+    }
+
+    const verdict = accepted ? "ACCEPT" : regressed.length > 0 ? `VETO (${regressed.join(", ")})` : "reject";
+    console.log(`  ${String(i).padStart(3)}: vs incumbent ${fmt(summary)} ${verdict}   (${elapsed()})`);
+    if (candidateProfile !== null) console.log(`       gauntlet: ${profileLine(candidateProfile)}`);
     for (const e of summary.errors) console.log(`       ERROR seed ${e.seed}: ${e.error}`);
-    history.push({ iteration: i, weights: candidate, summary, accepted });
-    if (jsonOut) writeFileSync(jsonOut, JSON.stringify({ best: incumbent, players, history }, null, 2));
+    history.push({ iteration: i, weights: candidate, summary, profile: candidateProfile, regressed, accepted });
+    if (jsonOut) writeFileSync(jsonOut, JSON.stringify({ best: incumbent, players, profile, history }, null, 2));
   }
 
-  console.log(`\nfinal vs v1: ${fmt(summarise(await runMatch(incumbent)))}`);
+  console.log(`\nfinal vs v1: ${fmt(summarise(await runMatch(incumbent, [V1], seedCursor)))}`);
   console.log(JSON.stringify(incumbent, null, 2));
 }
