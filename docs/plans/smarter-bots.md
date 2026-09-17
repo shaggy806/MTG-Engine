@@ -246,7 +246,7 @@ winner from a mid-game position, and produced a vector that plays badly. Among i
 | `extraLands` | **-4.64** | twelve lands out means a long game, and long games are usually the loser's |
 | `library` | **-2.14** | cards you still have are cards you never got to draw |
 | `commanderTax` | **+9.36** (subtracted) | a commander cast four times is a commander that died four times |
-| `counters` | **-2.75** | — |
+| `counters` | **-2.75** | no story at all — which is its own warning about reading these |
 
 Each is *true about positions* and *wrong about actions*. The distinction matters because a
 weight is applied to exactly the choices those features describe: at `extraLands -4.64` against
@@ -270,6 +270,125 @@ and was refused" is the shortlist of terms needing a scenario test or a rethink.
 "attacks when it is safe to" — and no win rate, against any opponent, would have said so. The
 first two scenarios were written *because* the coefficients predicted them; the third was a
 surprise. Both new scenarios pass on the shipped defaults.
+
+### Three more guards, and what each one cost to find
+
+Non-negativity alone wasn't enough. The constrained fit on the full 4000 games (168,574
+positions, **72.0% holdout accuracy**, holdout ≥ train so nothing is overfitted) still failed the
+gate. Each fix below rests on evidence *independent of the gate* — a structural argument or an
+earlier measurement — because "the gate went red" is a reason to look, not a reason to exclude.
+
+**1. Shrink toward the prior, not toward zero.** The L2 penalty now pulls each coefficient toward
+the hand-picked value: ordinary ridge with a non-zero prior mean, saying exactly the right thing
+here — the hand-picked vector holds causal knowledge the data can't see, so move away from it
+only where the data insists. `--prior-l2` is the dial. It needs two passes, because a logistic
+fit is in log-odds while the hand-picked vector is normalised to `life = 1` and an evaluation's
+overall scale is free; the first pass exists only to learn the exchange rate. At `--prior-l2
+0.02` this alone fixed "attacks when it is safe to" (the fit had `untappedCreatures` at 3.1 — a
+creature that stayed home is one that wasn't forced to trade — so holding a blocker back
+outscored attacking).
+
+**2. `commanderTax` and `untappedMana` are excluded outright** (`PRIOR_ONLY`), fitted value
+discarded and the hand-set one kept.
+
+- `commanderTax` resisted even hard shrinkage (6.7 at `--prior-l2 0.08`). It isn't a description
+  of a position — it counts how many times the commander has already *died*. And the cost it
+  stands for is already charged where costs are charged: `Game.castingCostOf` folds the tax into
+  the real mana cost (rule 903.8), so the spell is already unaffordable exactly when it should
+  be. The evaluation term double-counts it, and unlike the mana cost it charges *every turn,
+  forever* rather than once at cast time. This one is a bug in the feature, found by the fit.
+- `untappedMana` the fit wanted at 1.66, up from a deliberate 0. At that value tapping seven
+  lands costs 11.6 — more than a recast commander is worth — and the bot stops spending mana.
+  Phase 1 already measured this term at a *sixteenth* of the fitted value, costing eight points
+  of win rate at four players. The fit rediscovering it is confirmation, not news.
+  `handManaValue` is the other half of that pair, and non-negativity already pins it to zero.
+
+**3. The land-drop invariant, now enforced instead of commented.** A land drop scores
+`lands - hand` (or `extraLands - hand` past the cap), so both land terms must stay above `hand`
+or developing is a loss — which `evaluate.ts` has said in a comment since Phase 1 and nothing
+checked. Non-negativity structurally cannot catch it: it bounds one coefficient at a time and
+this is a *relationship between two*. With `extraLands` pinned at 0 against a fitted `hand` of
+3.6, a land drop past the cap still scored -3.6. It was masked until fix 2 landed, because
+`untappedMana` at 1.66 had been paying for the land drop by accident. The repair raises a short
+land term to `hand` times the hand-picked vector's own `extraLands`-to-`hand` ratio, so the
+margin is the prior speaking rather than a number invented in the fitter.
+
+With all three, the fitted vector passes **9/9** scenarios.
+
+### What the fitted vector actually measured
+
+400 games against each gauntlet member, two players. The baseline's own row against
+`baseline-2026-09-17` is a self-match and should read 50% — it measured 48.3%, which is the
+noise floor of this bench: about ±2.5 points.
+
+| opponent | baseline | position-fitted |
+|---|---|---|
+| v1 | 69.5% | **70.8%** |
+| baseline-2026-09-17 | 48.3% *(self-match)* | **54.3%** [49.4, 59.1] |
+| aggressive | 54.3% | **59.0%** |
+| defensive | 53.8% | **61.3%** |
+| ramp | 39.8% | **43.5%** |
+
+Better against every member, so the gauntlet veto is clean — but head-to-head is 54.3% with the
+interval touching 50%, which does **not** clear the acceptance rule. It is a plausible
+improvement, not a demonstrated one. The honest reading is that a position fit with three
+hand-built corrections lands about where the hand-picked vector already was.
+
+**The result worth acting on is `ramp`.** It beats both bots by six to ten points, and it's a
+hand-set style nobody tuned: `landCap` 12 against the shipped 7, real weight on `untappedMana`
+and `permanentManaValue`. That is a direct contradiction of the Phase 1 ablation *and* of the
+`untappedMana` exclusion above, and both can be true — Phase 1 measured turning the term on
+inside an otherwise unchanged vector, while `ramp` changes the whole mana valuation together.
+Worth its own bench before any more fitting.
+
+### Sibling pairs: the right idea, and why it isn't working yet
+
+The confound above has a structural fix. Rather than labelling a *position* with the game's
+outcome, stop at a decision point, take two of the concrete actions available there, and label
+which one led somewhere better. Both continuations descend from the same position, so everything
+about how far along the game is cancels in the difference, and what's left is what the two moves
+did. `bot:harvest --pairs` and `bot:fit --pairs` implement it: Bradley-Terry over the log-odds
+difference of two sibling win rates, reusing the same standardization, prior and constraints.
+
+**It is a working prototype and not yet a usable training set.** Three findings, each a trap:
+
+1. **One playout per sibling yields nothing.** Over one game's 342 decision points, 236 offered a
+   real choice and **3** ended with the siblings leading to different winners — 1.3%. A single
+   move rarely decides a whole game, which is true of real Magic too.
+2. **Reseeding the PRNG doesn't randomise a playout.** By mid-game the libraries are already
+   ordered, so every future draw is fixed in the snapshot and twenty "randomised" playouts return
+   twenty identical games. The variance has to come from reshuffling the libraries — which is
+   also the better question, since it averages over what neither player can see.
+3. **Common random numbers are mandatory, and they reveal the real problem.** Comparing siblings
+   on *different* shuffles measures which drew better: on that data the shipped evaluator
+   appeared to rank pairs correctly 13% of the time, which is an artefact, not a finding. Sharing
+   the shuffles fixes it — and then **60 of 63 pairs come out exactly tied.** Given the same deck
+   order, one move almost never changes who wins a full v1 playout.
+
+The horizon is the culprit: a move's effect is measurable over two or three turns and is drowned
+by twenty turns of v1's own noisy decisions. `--playout-turns N` truncates the rollout and scores
+the leaf with the current evaluation, TD-style, which helps — at three turns, 9 of 78 pairs are
+distinguishable rather than 3 of 63, and the evaluator agrees with them 67% of the time — but a
+12% yield still isn't enough to fit on. Next to try: a longer truncation, more pairs per game,
+and filtering decision points to ones whose candidates actually differ.
+
+**Pairs and positions are complementary, which the prior machinery already composes.** Cancelling
+the confound also cancels the signal for any feature a move doesn't move: on pair data `life`,
+`library`, `commanderDamage` and `loyalty` are reported "never observed", because two candidate
+moves usually leave all four identical. Pairs say what a *move* is worth and are structurally
+silent on what a *state* is worth; positions are the reverse, and their silence is the worse
+kind, since they answer confidently and wrongly. So the intended pipeline is
+`bot:fit` for the base, then `bot:fit --pairs --prior-file base.json` to correct the terms moves
+actually influence, leaving the rest where the position fit put them.
+
+**And this is the answer to "should the evaluation be a neural network".** The infrastructure
+built here — the feature split, the harvest, the gauntlet, the scenario gate — is what a network
+would need and is model-agnostic. But the three confounds fought above are *not* a linear-model
+problem; they're a training-signal problem, and a network trained on the same outcome-labelled
+positions inherits every one of them while removing the interpretable coefficient that made each
+one diagnosable. The cost argument is fine (a 29→32→1 MLP is ~1-2µs against feature extraction's
+tens of µs, so essentially free next to what an evaluation already spends). The bottleneck is
+the labels. Fix those first; a network is worth adding after, not instead.
 
 **Negative weights remain representable.** `mutate` in `tune-bot.mjs` was made sign-preserving so
 a hand-set or ES-discovered negative can't be silently flipped back.
