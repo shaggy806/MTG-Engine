@@ -4,31 +4,35 @@
  * score the result, and take the best.
  *
  * It extends {@link HeuristicBotController} rather than replacing it, so every
- * `awaiting` decision — targeting a trigger, modes, sacrifices, scry,
- * mulligan, and both combat declarations — keeps the v1 answer. Only the
- * priority choice is searched. That keeps this a reviewable delta over a bot
- * that already plays whole games, and it's also the honest division: attacks
- * are declared *before* blocks, so a one-ply evaluation of "declare attackers"
- * sees only that its creatures are now tapped and scores it negative. Combat
- * needs its own treatment (simulate through the block step), which is the next
- * piece of work rather than something this class can do by accident.
+ * other `awaiting` decision — targeting a trigger, modes, sacrifices, scry,
+ * mulligan — keeps the v1 answer.
  *
- * Costs about 0.5–1.7ms per decision against the 350ms `BOT_MIN_THINK_MS` the
- * room already waits out for client animations, so the search is invisible at
- * runtime. See `docs/plans/smarter-bots.md` for the measurements and for why
- * the evaluation's feature list is shaped the way it is.
+ * Combat is searched separately, because one-ply is blind to it: attacks are
+ * declared *before* blocks, so the state right after "declare attackers" shows
+ * only tapped creatures. Attacks and blocks are built one pair at a time, each
+ * candidate simulated through blocks and damage (`simulateCombat`), and never
+ * enumerated — a ten-creature board against three opponents has about a
+ * million attack declarations. Two checks frame every attack (see
+ * `combat-math.ts`): swing with everything when that's lethal through the
+ * best blocks, and never leave too little home to survive the crackback.
+ *
+ * See `docs/plans/smarter-bots.md` for the measurements and for why the
+ * evaluation's feature list is shaped the way it is.
  */
 
-import type { Action } from "../actions.js";
+import type { Action, AttackerDeclaration, BlockerDeclaration, LegalAction } from "../actions.js";
 import type { CardRegistry } from "../cards.js";
 import { createDefaultRegistry } from "../cards.js";
 import { HeuristicBotController } from "../controller.js";
 import type { ControllerView } from "../controller.js";
-import type { PlayerId } from "../primitives.js";
+import type { ObjectId, PlayerId } from "../primitives.js";
+import type { GameState } from "../state.js";
 import { candidateActions } from "./candidates.js";
+import { canBlock, combatCreatures, crackback, damageThrough, isLethal } from "./combat-math.js";
+import type { CombatCreature } from "./combat-math.js";
 import { DEFAULT_WEIGHTS, evaluateState } from "./evaluate.js";
 import type { EvalWeights } from "./evaluate.js";
-import { simulateAction } from "./simulate.js";
+import { simulateAction, simulateCombat } from "./simulate.js";
 import type { Horizon } from "./simulate.js";
 
 export interface EvalBotOptions {
@@ -38,12 +42,75 @@ export interface EvalBotOptions {
    * Ceiling on simulations per decision. The action space is small in
    * practice (median 2 concrete actions per window, 99th percentile around 9),
    * but a wide four-player board has been measured at 211 — this bounds the
-   * worst case at roughly 60ms rather than letting it grow with the board.
+   * worst case rather than letting it grow with the board. Attack and block
+   * declarations get the same budget each.
    */
   readonly maxSimulations?: number;
 }
 
 const DEFAULT_MAX_SIMULATIONS = 200;
+
+type DeclareAttackersLegal = Extract<LegalAction, { kind: "declare-attackers" }>;
+type DeclareBlockersLegal = Extract<LegalAction, { kind: "declare-blockers" }>;
+
+/** An attack that would leave us dead to the crackback scores below every safe
+ * one, while still ordering the unsafe ones among themselves. */
+const UNSAFE = -1e8;
+
+/** Menace blocker pairs tried per attacker — pairs are quadratic in the
+ * blockers, and the first few cover what matters. */
+const MAX_MENACE_PAIRS = 6;
+
+/**
+ * Moves simulated per round of a combat climb. A combat simulation is far
+ * dearer than a priority one — it runs blocks, damage and every trigger on
+ * what is often the widest board of the game — and a four-player block with
+ * 19 attackers and 5 blockers took 4s simulating every pair. Moves are ranked
+ * by cheap arithmetic first and only the most promising are simulated.
+ */
+const MOVES_PER_ROUND = 8;
+
+/** What a creature is worth to the evaluation, roughly: its creature, power
+ * and toughness terms. Only used to rank moves, never to choose one. */
+const creatureValue = (c: CombatCreature, w: EvalWeights): number =>
+  w.creatures + w.power * Math.max(0, c.power) + w.toughness * Math.max(0, c.toughness);
+
+/**
+ * Greedy local search: from `start`, repeatedly simulate the most promising
+ * neighbours (by `estimate`) and move to the best one that beats where we are,
+ * until none does or `budget` simulations are spent. Returns the best
+ * declaration found and its score.
+ */
+function hillClimb<T>(
+  start: readonly T[],
+  neighbours: (current: readonly T[]) => { next: T[]; estimate: number }[],
+  score: (declaration: readonly T[]) => number | null,
+  budget: number,
+): [T[], number] {
+  let current = [...start];
+  let currentScore = score(current) ?? -Infinity;
+  let left = budget - 1;
+  while (left > 0) {
+    const ranked = neighbours(current)
+      .sort((a, b) => b.estimate - a.estimate)
+      .slice(0, MOVES_PER_ROUND);
+    let step: T[] | null = null;
+    let stepScore = currentScore;
+    for (const { next } of ranked) {
+      if (left <= 0) break;
+      left -= 1;
+      const value = score(next);
+      if (value !== null && value > stepScore) {
+        step = next;
+        stepScore = value;
+      }
+    }
+    if (step === null) break;
+    current = step;
+    currentScore = stepScore;
+  }
+  return [current, currentScore];
+}
 
 export class EvalBotController extends HeuristicBotController {
   private readonly cards: CardRegistry;
@@ -65,8 +132,9 @@ export class EvalBotController extends HeuristicBotController {
 
   act(view: ControllerView): Action {
     const inherited = super.act(view);
-    // Anything the engine is explicitly waiting on keeps the v1 answer —
-    // `super.act` has already routed it through `answerAwaited`.
+    // Anything the engine is explicitly waiting on keeps the inherited answer
+    // — `super.act` has already routed it through `answerAwaited`, which calls
+    // back into this class's own `declareAttackers`/`declareBlockers`.
     if (view.state.awaiting !== null) return inherited;
 
     const player = this.playerId;
@@ -99,6 +167,223 @@ export class EvalBotController extends HeuristicBotController {
       }
     }
     return best;
+  }
+
+  // --- combat -------------------------------------------------------------
+
+  declareAttackers(view: ControllerView): readonly AttackerDeclaration[] {
+    const legal = view
+      .legalActions()
+      .find((o): o is DeclareAttackersLegal => o.kind === "declare-attackers");
+    const fallback = super.declareAttackers(view);
+    if (legal === undefined || legal.eligible.length === 0 || legal.defenders.length === 0) {
+      return fallback;
+    }
+    const state = view.state;
+    const me = this.playerId;
+    const w = this.weights;
+
+    // If the crackback kills us even when we hold everything back, holding
+    // back buys nothing: drop the constraint and race.
+    const deadAnyway = this.crackbackLethal(state);
+
+    const alpha = this.alphaStrike(state, legal, deadAnyway);
+    if (alpha !== null) return alpha;
+
+    const score = (attackers: readonly AttackerDeclaration[]): number | null => {
+      const after = simulateCombat(state, this.cards, {
+        type: "declare-attackers",
+        player: me,
+        attackers,
+      });
+      if (after === null) return null;
+      const value = evaluateState(after, this.cards, me, w);
+      if (after.result.over || deadAnyway) return value;
+      return this.crackbackLethal(after) ? UNSAFE + value : value;
+    };
+
+    const mine = new Map(combatCreatures(state, this.cards, me, false).map((c) => [c.id, c]));
+    const blockersOf = new Map<PlayerId, CombatCreature[]>();
+    const defendingPlayer = (defender: PlayerId | ObjectId): PlayerId =>
+      state.players[defender as PlayerId] !== undefined
+        ? (defender as PlayerId)
+        : state.objects[defender as ObjectId].controller;
+    const blockersFor = (player: PlayerId): CombatCreature[] => {
+      let list = blockersOf.get(player);
+      if (list === undefined) {
+        list = combatCreatures(state, this.cards, player, true);
+        blockersOf.set(player, list);
+      }
+      return list;
+    };
+
+    // Cheap arithmetic to decide which moves are worth a simulation: the
+    // damage it would deal, less the attacker if something there can block
+    // and kill it.
+    const estimate = (d: AttackerDeclaration): number => {
+      const attacker = mine.get(d.attacker);
+      if (attacker === undefined) return -Infinity;
+      const blockers = blockersFor(defendingPlayer(d.defender)).filter((b) => canBlock(b, attacker));
+      const dies = blockers.some(
+        (b) => b.power >= attacker.toughness || b.keywords.has("deathtouch"),
+      );
+      const unblocked = blockers.length === 0 ? attacker.power * w.life : 0;
+      return unblocked + attacker.power - (dies ? creatureValue(attacker, w) : 0);
+    };
+
+    // Built one attacker at a time, keeping each only if it improves the
+    // simulated result — then compared against v1's all-out swing, which
+    // catches attacks that only work together.
+    const [built, builtScore] = hillClimb<AttackerDeclaration>(
+      [],
+      (current) =>
+        legal.eligible
+          .filter((id) => (mine.get(id)?.power ?? 0) > 0)
+          .filter((id) => !current.some((d) => d.attacker === id))
+          .flatMap((attacker) =>
+            (legal.defendersFor[attacker] ?? []).map((defender) => {
+              const move = { attacker, defender };
+              return { next: [...current, move], estimate: estimate(move) };
+            }),
+          ),
+      score,
+      this.maxSimulations,
+    );
+    const fallbackScore = fallback.length > 0 ? score(fallback) : null;
+    return fallbackScore !== null && fallbackScore > builtScore ? fallback : built;
+  }
+
+  declareBlockers(view: ControllerView): readonly BlockerDeclaration[] {
+    const legal = view
+      .legalActions()
+      .find((o): o is DeclareBlockersLegal => o.kind === "declare-blockers");
+    const fallback = super.declareBlockers(view);
+    if (legal === undefined || legal.eligible.length === 0) return fallback;
+    const state = view.state;
+    const me = this.playerId;
+    const w = this.weights;
+
+    const score = (blocks: readonly BlockerDeclaration[]): number | null => {
+      const after = simulateCombat(state, this.cards, {
+        type: "declare-blockers",
+        player: me,
+        blocks,
+      });
+      return after === null ? null : evaluateState(after, this.cards, me, w);
+    };
+
+    const creatures = new Map<ObjectId, CombatCreature>();
+    for (const player of state.turnOrder) {
+      for (const c of combatCreatures(state, this.cards, player, false)) creatures.set(c.id, c);
+    }
+    const kills = (x: CombatCreature, y: CombatCreature): boolean =>
+      x.power >= y.toughness || x.keywords.has("deathtouch");
+
+    // Cheap arithmetic to decide which moves are worth a simulation: the damage
+    // a block stops, plus the attacker if the blockers kill it, less each
+    // blocker the attacker kills.
+    const estimate = (move: readonly BlockerDeclaration[]): number => {
+      const attacker = creatures.get(move[0].attacker);
+      const blockers = move.map((b) => creatures.get(b.blocker));
+      if (attacker === undefined || blockers.some((b) => b === undefined)) return -Infinity;
+      const damage = attacker.power * (attacker.keywords.has("double-strike") ? 2 : 1);
+      const toughness = blockers.reduce((sum, b) => sum + (b?.toughness ?? 0), 0);
+      const stopped = attacker.keywords.has("trample") ? Math.min(damage, toughness) : damage;
+      const power = blockers.reduce((sum, b) => sum + (b?.power ?? 0), 0);
+      let value = stopped * w.life;
+      if (power >= attacker.toughness || blockers.some((b) => b?.keywords.has("deathtouch"))) {
+        value += creatureValue(attacker, w);
+      }
+      for (const b of blockers) if (b !== undefined && kills(attacker, b)) value -= creatureValue(b, w);
+      return value;
+    };
+
+    // A move adds one blocker — or, against menace, two at once, since one
+    // alone is illegal — or takes one block back, so a climb that starts from
+    // v1's blocks can undo a chump it didn't need.
+    const neighbours = (current: readonly BlockerDeclaration[]) => {
+      const out: { next: BlockerDeclaration[]; estimate: number }[] = [];
+      const used = new Set(current.map((b) => b.blocker));
+      const free = legal.eligible.filter((e) => !used.has(e.blocker));
+      for (const entry of free) {
+        for (const attacker of entry.canBlock) {
+          if (legal.menaceAttackers.includes(attacker)) continue;
+          const move = [{ blocker: entry.blocker, attacker }];
+          out.push({ next: [...current, ...move], estimate: estimate(move) });
+        }
+      }
+      for (const attacker of legal.menaceAttackers) {
+        const able = free.filter((e) => e.canBlock.includes(attacker));
+        let pairs = 0;
+        for (let i = 0; i < able.length && pairs < MAX_MENACE_PAIRS; i += 1) {
+          for (let j = i + 1; j < able.length && pairs < MAX_MENACE_PAIRS; j += 1) {
+            const move = [
+              { blocker: able[i].blocker, attacker },
+              { blocker: able[j].blocker, attacker },
+            ];
+            out.push({ next: [...current, ...move], estimate: estimate(move) });
+            pairs += 1;
+          }
+        }
+      }
+      for (const attacker of new Set(current.map((b) => b.attacker))) {
+        const move = current.filter((b) => b.attacker === attacker);
+        out.push({
+          next: current.filter((b) => b.attacker !== attacker),
+          estimate: -estimate(move),
+        });
+      }
+      return out;
+    };
+
+    // Starting from v1's blocks matters: v1 already chump-blocks when facing
+    // lethal, a position a one-blocker-at-a-time climb from nothing can't get
+    // out of when no single chump is enough by itself.
+    const [best] = hillClimb(fallback, neighbours, score, this.maxSimulations);
+    return best;
+  }
+
+  /**
+   * Swing with everything at an opponent when that's lethal through their
+   * best blocks. At a multiplayer table killing one player doesn't end the
+   * game, so the swing still has to leave us alive to everyone else's
+   * crackback.
+   */
+  private alphaStrike(
+    state: GameState,
+    legal: DeclareAttackersLegal,
+    deadAnyway: boolean,
+  ): AttackerDeclaration[] | null {
+    const me = this.playerId;
+    const mine = combatCreatures(state, this.cards, me, false).filter(
+      (c, i, all) =>
+        all.findIndex((m) => m.id === c.id) === i && c.power > 0 && legal.eligible.includes(c.id),
+    );
+    const living = state.turnOrder.filter((p) => p !== me && !state.players[p].hasLost);
+    for (const defender of living) {
+      if (!legal.defenders.includes(defender)) continue;
+      const attackers = mine.filter((c) => (legal.defendersFor[c.id] ?? []).includes(defender));
+      if (attackers.length === 0) continue;
+      const blockers = combatCreatures(state, this.cards, defender, true);
+      if (!isLethal(state, defender, damageThrough(attackers, blockers))) continue;
+
+      const declaration = attackers.map((c) => ({ attacker: c.id, defender }));
+      if (living.length === 1 || deadAnyway) return declaration;
+      const after = simulateCombat(state, this.cards, {
+        type: "declare-attackers",
+        player: me,
+        attackers: declaration,
+      });
+      if (after !== null && !this.crackbackLethal(after)) return declaration;
+    }
+    return null;
+  }
+
+  /** Would every opponent swinging at us before we untap again be lethal,
+   * keeping `crackbackMargin` life in reserve? */
+  private crackbackLethal(state: GameState): boolean {
+    const through = crackback(state, this.cards, this.playerId, this.weights.crackbackParanoia);
+    return isLethal(state, this.playerId, through, -this.weights.crackbackMargin);
   }
 
   /** `null` when the engine refused this concrete filling of a legal shape. */

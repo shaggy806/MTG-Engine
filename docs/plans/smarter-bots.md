@@ -2,8 +2,8 @@
 
 Status: **in progress** — the search bot, evaluation, benchmark and tuner exist
 (`engine/src/bot/`, `engine/scripts/tune-bot.mjs`) but live rooms still seat the v1 bot. Phase 0
-(a benchmark that measures the game rooms actually play) and Phase 1 (the evaluation's feature
-set) are done; see "Work plan" for the rest.
+(a benchmark that measures the game rooms actually play), Phase 1 (the evaluation's feature
+set) and Phase 2 (combat) are done; see "Work plan" for the rest.
 
 This is the design record for replacing
 `HeuristicBotController`'s greedy "highest mana value wins" policy with a one-ply search:
@@ -291,6 +291,38 @@ up its `handManaValue` with nothing on the board to replace it; every land tappe
 loss, so the bot stopped playing lands in exactly the long games where it needs them. The
 shipped defaults switch the first two off and put `extraLands` above `hand`. The remaining gap
 to 36% is inside the noise, and closing it by hand is what the tuner is for.
+
+### Phase 2 notes: combat as built
+
+Done, following "Combat: the alpha strike and crackback" below, with these specifics:
+
+- **Combat simulations** (`simulateCombat`) play a declaration through blocks and damage
+  with every seat a `CombatRolloutController` — v1's answer to any decision, a pass at every
+  priority window. The priority search's stand-ins still never block (Phase 3).
+- **Attacks** climb from no attack, one attacker/defender pair at a time, scored by the
+  evaluation *after* the simulated combat; the result is compared with v1's all-out swing.
+  Crackback is read off that post-combat state, so the creatures the combat is expected to
+  kill are already gone from both sides.
+- **Blocks** climb from v1's blocks (which already chump when facing lethal) with moves that
+  add a blocker, add a menace pair, or take a block back.
+- **Only the promising moves are simulated.** A four-player block with 19 attackers and 5
+  blockers took 4.2s simulating every pair from two starting points. Moves are now ranked by
+  cheap arithmetic (damage stopped or dealt, creatures killed) and the top 8 per round
+  simulated: 198ms on that position, with no measurable strength change.
+- **Alpha at a multiplayer table** still has to survive the remaining opponents' crackback,
+  since killing one player doesn't end the game.
+- `crackbackParanoia` (0.5) and `crackbackMargin` (2 life) live on `EvalWeights` so the tuner
+  can move them.
+
+| | before | combat |
+|---|---|---|
+| 2 players, 400 games | 66.3% | **69.5%** [64.8, 73.8] |
+| 4 players, 200 games | 32.5% | **48.2%** [41.4, 55.2] vs 25% even |
+
+**Known, for Phase 6:** four-player games can reach 200+ permanents (seed 35 reached 224),
+where a single end-of-turn priority rollout costs ~400ms and a decision with ten candidates
+takes 4s. That game overruns the bench's 300s timeout. It's the priority search's rollout cost
+on an enormous board, not combat, and it's what the think-time budget has to solve.
 
 ### Not just beating v1
 

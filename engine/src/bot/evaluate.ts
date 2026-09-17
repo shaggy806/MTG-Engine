@@ -110,6 +110,17 @@ export interface EvalWeights {
   /** How much the *average* of every other living opponent subtracts. Zero
    * at a two-player table, where there's no one else. */
   readonly otherOpponents: number;
+  /**
+   * Not evaluation terms: the attack builder's crackback check
+   * (`combat-math.ts`). How much of each opponent's all-out swing to expect
+   * at us, beyond the next player's, which always counts in full — 1 means
+   * everyone attacks us, 0 ignores all but the next player.
+   */
+  readonly crackbackParanoia: number;
+  /** Life kept in reserve against crackback: an attack is unsafe once what
+   * could come back gets within this much of lethal. Stands in for the
+   * tricks, hasty creatures and removal the arithmetic doesn't model. */
+  readonly crackbackMargin: number;
 }
 
 export const DEFAULT_WEIGHTS: EvalWeights = {
@@ -151,6 +162,8 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   commanderTax: 0.5,
   opponent: 1,
   otherOpponents: 0.25,
+  crackbackParanoia: 0.5,
+  crackbackMargin: 2,
 };
 
 /** A decisive result dwarfs every positional term, so a lethal line always

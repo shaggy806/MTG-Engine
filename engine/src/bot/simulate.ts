@@ -24,6 +24,9 @@
 import { Game } from "../game.js";
 import type { Action } from "../actions.js";
 import type { CardRegistry } from "../cards.js";
+import { HeuristicBotController } from "../controller.js";
+import type { ControllerView, PlayerController } from "../controller.js";
+import type { PlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
 
 /**
@@ -70,6 +73,61 @@ export function simulateAction(
       return horizon === "stack"
         ? s.zones.shared.stack.length === 0
         : s.turn.number !== startingTurn;
+    });
+    return sim.state;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The stand-in for every seat in a *combat* simulation: v1's answer to
+ * anything the engine is waiting on — above all, how to block — and a pass at
+ * every priority window. The priority search's stand-ins never block
+ * (`AutomaticController`), which would make every attack look free. Never a
+ * searching bot, or the simulation would recurse.
+ */
+export class CombatRolloutController extends HeuristicBotController {
+  act(view: ControllerView): Action {
+    if (view.state.awaiting !== null) return super.act(view);
+    return { type: "pass-priority", player: this.playerId };
+  }
+}
+
+const COMBAT_STEPS: ReadonlySet<string> = new Set([
+  "declare-attackers",
+  "declare-blockers",
+  "combat-damage",
+]);
+
+/**
+ * Play a `declare-attackers` or `declare-blockers` action against a copy of
+ * `state` through the end of combat — blocks and damage included, every seat
+ * answering as v1 would — and return the state after it, or `null` if the
+ * engine refused the declaration.
+ */
+export function simulateCombat(
+  state: GameState,
+  registry: CardRegistry,
+  action: Action,
+): GameState | null {
+  const seed: GameState = { ...state, eventLog: [] };
+  const controllers: Record<PlayerId, PlayerController> = {};
+  for (const player of state.turnOrder) {
+    controllers[player] = new CombatRolloutController(player, registry);
+  }
+  const startingTurn = state.turn.number;
+  try {
+    const sim = Game.fromSnapshot(seed, { registry, controllers });
+    sim.dispatch(action);
+    let steps = 0;
+    sim.advanceUntil((s) => {
+      steps += 1;
+      return (
+        steps > MAX_STEPS ||
+        s.turn.number !== startingTurn ||
+        (!COMBAT_STEPS.has(s.turn.step) && s.zones.shared.stack.length === 0)
+      );
     });
     return sim.state;
   } catch {
