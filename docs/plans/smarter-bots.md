@@ -4,7 +4,9 @@ Status: **in progress** — the search bot, evaluation, benchmark and tuner exis
 (`engine/src/bot/`, `engine/scripts/tune-bot.mjs`) but live rooms still seat the v1 bot. Phase 0
 (a benchmark that measures the game rooms actually play), Phase 1 (the evaluation's feature
 set), Phase 2 (combat), Phase 3 (rollout policy) and Phase 4 (decisions mid-resolution) are
-done; see "Work plan" for the rest.
+done. Phase 5 (tuning) is in progress and has **changed method** — the weights are fitted by
+logistic regression over harvested self-play positions rather than searched by evolution
+strategy; see "Fitting the weights from self-play" below. See "Work plan" for the rest.
 
 This is the design record for replacing
 `HeuristicBotController`'s greedy "highest mana value wins" policy with a one-ply search:
@@ -100,12 +102,19 @@ is far below the noise floor (see "Tuning"), and the fragility it deletes is rea
 
 ### `engine/src/bot/` (new)
 
+- **`features.ts`** — `FEATURE_KEYS` and `playerFeatures(state, registry, player, isMe,
+  landCap)`: one player's raw, *unweighted* feature vector. Two things that bit the prototype
+  and are worth stating: `Characteristics.types` is a lowercase string **array**
+  (`"creature"`, `"land"`), not a `Set` and not capitalized; and `GameObject.stackCount` means
+  one object can stand for twenty creatures (see `CLAUDE.md`'s "Token stacking"), so every
+  per-object contribution multiplies by it. Split out of `evaluate.ts` so the weights can be
+  fitted — see "Fitting the weights from self-play".
 - **`evaluate.ts`** — `EvalWeights` and `evaluateState(state, registry, me, weights)`, pure
-  and synchronous over a `GameState`. Two things that bit the prototype and are worth
-  stating: `Characteristics.types` is a lowercase string **array** (`"creature"`,
-  `"land"`), not a `Set` and not capitalized; and `GameObject.stackCount` means one object
-  can stand for twenty creatures (see `CLAUDE.md`'s "Token stacking"), so every per-object
-  contribution multiplies by it.
+  and synchronous over a `GameState`; a dot product over `features.ts`, aggregated across the
+  table as yours minus your opponents'.
+- **`scenarios.ts`** — opponent-independent positions with a known right answer, parameterised
+  by a weight vector. See "Not just beating v1", guard 3.
+- **`champions/`** — frozen weight vectors, each spelled out in full. See guard 1.
 - **`candidates.ts`** — `LegalAction` → the concrete `Action`s it stands for, with a cap on
   the per-slot target cross-product. Largely a generalization of what
   `HeuristicBotController.toCastSpell` / `castExtras` already do, except enumerating where
@@ -181,6 +190,99 @@ Two ways to overfit, both real here:
 Don't grid-search the weight vector — it has ~10 dimensions. Use CMA-ES or a (1+1)
 evolution strategy against the fixed benchmark first, then consider population self-play
 with Elo once a single strong configuration exists.
+
+## Fitting the weights from self-play (Phase 5)
+
+The (1+1)-ES above is the method this plan was written with, and measuring it against what it
+costs is what changed the plan. **Each iteration buys one accept/reject bit for 200 games** —
+two minutes at two players, thirteen at four. Thirty iterations is thirty bits with which to fit
+a two-dozen-dimensional vector, which is why the hand-picked defaults were never convincingly
+improved on. A better optimizer over the same signal (CMA-ES) is worth maybe 2-3x, not the
+order of magnitude the problem needs.
+
+**The same games already contain far more information than that.** Every position a game passes
+through is a labelled example the moment the game ends — this seat went on to win, or it didn't.
+One 20-turn game yields ~20 of them instead of a fraction of a bit, and a few thousand games is
+~150k labelled positions. A logistic regression over those reads the weights straight off, as
+log-odds contributions to winning. The games are the only real cost, and they're games the ES
+would have played anyway.
+
+- **`engine/src/bot/features.ts`** — the split that makes any of this possible. `evaluate.ts`
+  used to compute a feature and multiply it by its weight in one expression, which is fine for
+  scoring and useless for fitting. `playerFeatures(...)` now returns the raw, unweighted vector
+  and `evaluateState` is a dot product over it. The refactor is exact: identical games on
+  identical seeds before and after.
+- **`scripts/harvest-positions.mjs`** (`bot:harvest`) — self-play games, sampling a position at
+  every **turn boundary**, which is deliberately the same place the search scores a candidate
+  under `--horizon turn`. Fitting on the distribution the evaluator is actually asked about is
+  most of the point. Each position emits *both* seats' vectors, labelled 1 and 0, which makes
+  the fit symmetric: any bias from the starting player always sitting in seat 0 cancels between
+  the pair. The pair is not simply `x` and `-x` — `handManaValue` is gated on `isMe`, so each
+  seat's vector is computed properly rather than negated.
+- **`scripts/fit-weights.mjs`** (`bot:fit`) — no-intercept L2 logistic regression,
+  `P(win) = sigmoid(w·x)` over the same sign-folded difference vector `evaluateState` takes, so
+  a fitted coefficient drops into `EvalWeights` untranslated. Columns are scaled (not centred —
+  centring without an intercept changes the model, and the pairing already puts every mean near
+  zero) so one L2 penalty means the same thing across features that differ by two orders of
+  magnitude. **Each game carries equal weight regardless of length**: a 60-turn grind is not
+  three times as informative as a 20-turn game, its positions are near-duplicates of each other.
+  Holdout is split by *game*, never by row, for the same reason. The output is normalised to
+  `life = 1`, which keeps it readable beside the hand-picked vectors and keeps `evaluate.ts`'s
+  absolute sentinels (a won game at 1e6, a dead player at -1e4) as dominant as designed.
+
+**What is not fitted.** Five weights aren't coefficients and a linear fit can say nothing about
+them: `landCap` is a threshold *inside* a feature, `opponent`/`otherOpponents` are how a bigger
+table is aggregated above this layer, and `crackbackParanoia`/`crackbackMargin` are knobs on the
+attack builder's combat arithmetic. They stay hand-set, or the ES's job. The fit is also run at
+**two players only**, where "the opponent" is unambiguous.
+
+### Correlation is not action value — the finding that shaped the fit
+
+The first unconstrained run, on 1600 games, reached **70% holdout accuracy** at predicting the
+winner from a mid-game position, and produced a vector that plays badly. Among its coefficients:
+
+| term | fitted | what it's really saying |
+|---|---|---|
+| `extraLands` | **-4.64** | twelve lands out means a long game, and long games are usually the loser's |
+| `library` | **-2.14** | cards you still have are cards you never got to draw |
+| `commanderTax` | **+9.36** (subtracted) | a commander cast four times is a commander that died four times |
+| `counters` | **-2.75** | — |
+
+Each is *true about positions* and *wrong about actions*. The distinction matters because a
+weight is applied to exactly the choices those features describe: at `extraLands -4.64` against
+`hand +2.51`, a land drop past the cap scores **-7.15** and the bot stops making land drops — the
+same catatonic failure of finding 1, arriving by a completely new route.
+
+The reason a one-ply search is *mostly* insulated is that it compares **sibling** states from one
+decision point, where the "how far along, and how badly" part of a feature is near-identical
+across siblings and cancels. What doesn't cancel is the part the action itself moves, and that's
+precisely the causal direction a regression on outcomes cannot see.
+
+So the fit is **constrained non-negative**, as projected gradient (clamped after each Adam step,
+so the other coefficients adapt around the constraint rather than being truncated at the end).
+That constraint is exactly the domain knowledge the all-positive `EvalWeights` convention already
+encoded. A feature that ends pinned at zero is reported, because "the data wanted this negative
+and was refused" is the shortlist of terms needing a scenario test or a rethink.
+`--allow-negative` lifts it, for looking at what the data actually says.
+
+**The scenario gate is what caught this**, and it's the argument for guard 3 in a sentence: that
+70%-accurate vector fails "plays a land past the land cap", "recasts a taxed commander" and
+"attacks when it is safe to" — and no win rate, against any opponent, would have said so. The
+first two scenarios were written *because* the coefficients predicted them; the third was a
+surprise. Both new scenarios pass on the shipped defaults.
+
+**Negative weights remain representable.** `mutate` in `tune-bot.mjs` was made sign-preserving so
+a hand-set or ES-discovered negative can't be silently flipped back.
+
+**The known bias**, stated so nobody mistakes it for rigour: the positions are generated by the
+policy being fitted, so this is one round of approximate policy iteration, not a clean supervised
+problem. Positions inside one game are also correlated, which means the fit's own confidence
+numbers are optimistic. Neither matters much because **nothing is decided by the fit's own
+numbers** — a fitted vector still has to beat the incumbent head to head, clear the gauntlet, and
+pass every scenario. Iterating (fit, play, refit) is the intended use.
+
+The ES is not deleted. It keeps the five unfittable weights, and it's the natural way to polish a
+fitted vector afterwards.
 
 ## Decks
 
@@ -259,8 +361,10 @@ Agreed 2026-09-16. Each phase is measured with `bot:bench` before and after.
    priority decision ever sees combat damage. Give them the v1 combat decisions.
 4. **Other decisions.** Trigger targets, sacrifices, modes and scry through the same
    simulation, instead of the inherited v1 answers.
-5. **Tune.** (1+1)-ES at two players, validated at four, on held-out seeds and seatings —
-   scored against a gauntlet of opponents, never v1 alone (see "Not just beating v1").
+5. **Tune.** Fit the weights by logistic regression over harvested self-play positions at two
+   players, then validate at four on held-out seeds and seatings — scored against a gauntlet
+   of opponents, never v1 alone (see "Not just beating v1" and "Fitting the weights from
+   self-play"). The (1+1)-ES keeps the five weights a linear fit can't speak to.
 6. **Ship.** `Room.addBot` seats `EvalBotController` once it passes the gauntlet at both two
    and four players, passes every scenario test, and its worst-case decision time fits the
    think pause. From then on rooms record bot game results (see below).
@@ -387,25 +491,46 @@ show it in the numbers.
 A tuner optimizes exactly what it's scored on. Scored only against v1 it will find whatever
 v1 is bad at — v1 attacks with everything and never holds back blockers, so a vector that
 punishes that would look superb and could be worse against anything else, including itself
-and people. Four guards, cheapest first:
+and people. Four guards, cheapest first. **1-3 are built**; 4 waits on Phase 6.
 
 1. **A gauntlet, not a benchmark.** Fitness is the result against a pool of frozen opponents:
    v1, every weight vector that has ever been accepted or shipped (each checked in under
    `engine/src/bot/champions/` with its date and bench numbers), and a few deliberately
-   different *styles* — hand-set aggressive, defensive and ramp-heavy vectors — so no single
+   different *styles* — hand-set `aggressive`, `defensive` and `ramp` vectors — so no single
    opponent's weaknesses dominate. A candidate is accepted only if it beats the incumbent head
    to head **and** doesn't regress against any gauntlet member (no member where its interval
-   sits wholly below its previous result). Head-to-head against the incumbent stays the
-   primary signal; the gauntlet is the veto.
+   sits wholly below the incumbent's own result against that member). Head-to-head stays the
+   primary signal; the gauntlet is the veto. The veto profile is measured once for the starting
+   incumbent and thereafter inherited from whichever candidate was accepted — that candidate's
+   numbers are already in hand, so an acceptance costs one gauntlet sweep rather than two.
+   `bot:bench --opponent gauntlet` runs the same sweep on its own.
+
+   Each champion writes out the **whole** `EvalWeights` literally rather than spreading
+   `DEFAULT_WEIGHTS` and overriding a few keys. A gauntlet member whose weights drift when the
+   defaults change isn't a fixed point to measure against, and every bench number recorded
+   against it would silently become a lie. Adding a weight is meant to break compilation there:
+   the right value for a term a champion predates is a judgement call, not something to inherit.
 2. **Mixed tables.** At four players the candidate sits with a mix — incumbent, v1, an older
    champion — rather than three copies of one opponent, which is closer to a real pod and
-   stops it learning to farm one policy.
-3. **Scenario tests that don't depend on any opponent.** Hand-built positions with a known
-   right answer: take lethal when it's on board, don't swing into lethal crackback, don't chump
-   when not facing lethal, remove the biggest threat rather than the smallest, don't tap mana
-   for nothing. These encode correct play directly, so a vector that's "winning" by
-   exploiting a benchmark but fails them is rejected. They grow every time a live game
-   shows a bad play.
+   stops it learning to farm one policy. The list is exactly one spec per opponent seat, and the
+   incumbent always takes one of them: a longer list would rotate the incumbent out of some
+   blocks entirely, and its being at every table is what makes this the primary signal. The list
+   rotates once per *block*, never inside one, so a block still holds everything but the
+   measured seat constant.
+3. **Scenario tests that don't depend on any opponent** (`engine/src/bot/scenarios.ts`,
+   `bot:scenarios`, and `test/eval-bot-scenarios.test.ts` against the shipped defaults).
+   Hand-built positions with a known right answer: play a land, play a land *past the land cap*,
+   remove the biggest threat rather than the smallest, don't tap mana for nothing, recast a
+   taxed commander, take lethal when it's on board, don't swing into a lethal crackback, *do*
+   swing when it's safe, chump-block only against lethal. They're parameterised by a weight
+   vector, so the same suite gates a candidate.
+
+   This is the one measurement that can't be gamed by exploiting whatever the benchmark
+   opponents are bad at, and it matters far more now that weights are fitted rather than
+   hand-picked: a regression will happily find a coefficient that *predicts* winning for a
+   reason that has nothing to do with causing it. The suite isn't vacuous — the `aggressive`
+   champion fails the crackback scenario, which is exactly what that style is for. They grow
+   every time a live game shows a bad play.
 4. **Real players are the ground truth.** Once shipped, rooms append one line per finished
    game with a bot in it — bot version and weights id, seat count, which seats were human,
    winner, turns — to a server-side log. That's the only measure of "good against people",
@@ -476,6 +601,13 @@ bot-vs-v1 run to completion at 2/3/4 players, which makes this a third fuzz targ
 alongside `random-demo.mjs` and the v1 bot's own test. Plus direct unit tests on the
 evaluation, written as the regressions they guard: a land drop must not score negative, and
 removal aimed at the biggest creature must beat the same spell aimed at the smallest.
+
+`eval-bot-combat.test.ts` covers the combat arithmetic and the decisions mid-resolution.
+
+`eval-bot-scenarios.test.ts` runs the opponent-independent suite in `bot/scenarios.ts` against
+the shipped defaults, and guards the gauntlet's own invariants: every champion carries every
+weight literally, ids are unique and dated, no two champions are the same vector, and
+`FEATURE_KEYS` names exactly the linear terms of `EvalWeights` and no others.
 
 ## Deferred
 

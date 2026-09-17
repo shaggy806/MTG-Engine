@@ -36,7 +36,10 @@
     "play:attachments": "tsc && node scripts/attachments-demo.mjs",
     "play:random": "tsc && node scripts/random-demo.mjs",
     "bot:bench": "node scripts/tune-bot.mjs bench",
-    "bot:tune": "node scripts/tune-bot.mjs tune"
+    "bot:tune": "node scripts/tune-bot.mjs tune",
+    "bot:harvest": "node scripts/harvest-positions.mjs",
+    "bot:fit": "node scripts/fit-weights.mjs",
+    "bot:scenarios": "node scripts/check-scenarios.mjs"
   },
   "keywords": [],
   "author": "",
