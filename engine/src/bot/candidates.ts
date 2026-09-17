@@ -28,7 +28,7 @@ export const MAX_TARGET_COMBOS = 8;
  * the later slots rather than starving the first one, and capped at `limit`.
  * A slot with no legal target yields nothing — the action isn't playable.
  */
-function targetCombos(
+export function targetCombos(
   optionLists: readonly (readonly TargetRef[])[],
   limit: number,
   specs: readonly TargetSpec[] = [],

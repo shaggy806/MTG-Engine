@@ -3,9 +3,11 @@
  * actions available, play each one out against a throwaway copy of the game,
  * score the result, and take the best.
  *
- * It extends {@link HeuristicBotController} rather than replacing it, so every
- * other `awaiting` decision — targeting a trigger, modes, sacrifices, scry,
- * mulligan — keeps the v1 answer.
+ * It extends {@link HeuristicBotController} rather than replacing it. Decisions
+ * the engine waits on mid-resolution — a trigger's targets, modes, "you may",
+ * sacrifices, discards, tutors, scry — are searched the same way as priority
+ * moves (`decisions.ts`), with v1's answer as the candidate to beat; the few
+ * that aren't searched (mulligans, combat damage order) keep it outright.
  *
  * Combat is searched separately, because one-ply is blind to it: attacks are
  * declared *before* blocks, so the state right after "declare attackers" shows
@@ -24,15 +26,17 @@ import type { Action, AttackerDeclaration, BlockerDeclaration, LegalAction } fro
 import type { CardRegistry } from "../cards.js";
 import { createDefaultRegistry } from "../cards.js";
 import { HeuristicBotController } from "../controller.js";
-import type { ControllerView } from "../controller.js";
+import type { ControllerView, PlayerController } from "../controller.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
+import { manaValue, parseManaCost } from "../mana.js";
 import { candidateActions } from "./candidates.js";
+import { decisionCandidates } from "./decisions.js";
 import { canBlock, combatCreatures, crackback, damageThrough, isLethal } from "./combat-math.js";
 import type { CombatCreature } from "./combat-math.js";
 import { DEFAULT_WEIGHTS, evaluateState } from "./evaluate.js";
 import type { EvalWeights } from "./evaluate.js";
-import { simulateAction, simulateCombat } from "./simulate.js";
+import { CombatRolloutController, simulateAction, simulateCombat } from "./simulate.js";
 import type { Horizon, RolloutPolicy } from "./simulate.js";
 
 export interface EvalBotOptions {
@@ -41,6 +45,14 @@ export interface EvalBotOptions {
   /** How the other seats (and our own, after the candidate move) play a
    * priority rollout out. See `RolloutPolicy`. */
   readonly rollout?: RolloutPolicy;
+  /**
+   * Whether priority rollouts search our own decisions one level deep too
+   * (a {@link DecisionRolloutController} in our seat), rather than taking
+   * v1's answers. Without it, casting a creature whose "enters" trigger says
+   * "you may" is scored as if we'd decline. Decisions the engine actually
+   * asks us are always searched this way.
+   */
+  readonly rolloutDecisions?: boolean;
   /**
    * Ceiling on simulations per decision. The action space is small in
    * practice (median 2 concrete actions per window, 99th percentile around 9),
@@ -115,11 +127,144 @@ function hillClimb<T>(
   return [current, currentScore];
 }
 
+/**
+ * Rollouts one top-level decision may spend, and — separately — what every one
+ * of those rollouts may spend on decisions *inside* it. Both are small because
+ * they multiply: Windreader Sphinx ("whenever a creature with flying attacks,
+ * you may draw a card") on a board of flyers raised a "you may" per attacker,
+ * each rollout contained the rest of them, and with a 200-rollout budget and
+ * 16 per nested decision one of those answers took 11.5s. Two nested rollouts
+ * is exactly enough to accept or decline a "you may", the case the nesting is
+ * for; Flameblast Dragon (a target, then "you may pay {X}{R}") still took
+ * 4.9s on a four-player board at 16 and 4.
+ */
+const DECISION_ROLLOUTS = 12;
+const NESTED_DECISION_ROLLOUTS = 2;
+
+/** A shared, spendable count of rollouts. */
+interface Budget {
+  left: number;
+}
+
+/**
+ * The best answer to the decision pending in `view`, by playing each candidate
+ * out to `horizon` and scoring it. Ties keep `inherited` — v1's answer — so a
+ * search only ever changes an answer it can see is better.
+ *
+ * `selfFor` plays our own seat in each rollout (a fresh one per candidate, so
+ * every candidate gets the same nested budget). At the top level it's a
+ * {@link DecisionRolloutController}, so a decision that leads straight into
+ * another is judged by what we'd really answer next: a trigger's target is
+ * worth nothing if the "you may" after it is declined, which is exactly what
+ * v1 would do.
+ */
+function bestDecision(
+  view: ControllerView,
+  inherited: Action,
+  cards: CardRegistry,
+  weights: EvalWeights,
+  horizon: Horizon,
+  rollout: RolloutPolicy,
+  budget: Budget,
+  selfFor?: () => PlayerController,
+): Action {
+  const me = view.player;
+  if (inherited.player !== me || budget.left <= 1) return inherited;
+  const legal = view.legalActions().find((l) => l.kind !== "pass-priority");
+  const candidates =
+    legal === undefined
+      ? null
+      : decisionCandidates(legal, me, (ids) => byManaValue(view.state, cards, ids));
+  if (candidates === null || candidates.length === 0) return inherited;
+
+  const score = (action: Action): number | null => {
+    budget.left -= 1;
+    const after = simulateAction(view.state, cards, action, horizon, rollout, selfFor?.());
+    return after === null ? null : evaluateState(after, cards, me, weights);
+  };
+  let best = inherited;
+  let bestScore = score(inherited) ?? -Infinity;
+  const seen = JSON.stringify(inherited);
+  for (const candidate of candidates) {
+    if (budget.left <= 0) break;
+    if (JSON.stringify(candidate) === seen) continue;
+    const value = score(candidate);
+    if (value !== null && value > bestScore) {
+      best = candidate;
+      bestScore = value;
+    }
+  }
+  return best;
+}
+
+/** Highest mana value first — the order a capped tutor or discard search
+ * tries cards in, so the cap cuts the least likely picks. */
+function byManaValue(state: GameState, cards: CardRegistry, ids: readonly ObjectId[]): ObjectId[] {
+  const mv = (id: ObjectId): number => {
+    const name = state.objects[id]?.cardName;
+    return name !== undefined && cards.has(name)
+      ? manaValue(parseManaCost(cards.get(name).manaCost))
+      : 0;
+  };
+  return [...ids].sort((a, b) => mv(b) - mv(a));
+}
+
+/**
+ * Our own seat inside a decision's rollout: passes priority, fights combat
+ * the way the rollout policy says, and searches any further decision one
+ * level deep — with plain v1 answers beneath that, so it can't recurse — out
+ * of one small budget for the whole rollout.
+ */
+class DecisionRolloutController extends CombatRolloutController {
+  private readonly cards: CardRegistry;
+  private readonly weights: EvalWeights;
+  private readonly horizon: Horizon;
+  private readonly rollout: RolloutPolicy;
+  private readonly budget: Budget = { left: NESTED_DECISION_ROLLOUTS };
+
+  constructor(
+    playerId: PlayerId,
+    cards: CardRegistry,
+    weights: EvalWeights,
+    horizon: Horizon,
+    rollout: RolloutPolicy,
+  ) {
+    super(playerId, cards);
+    this.cards = cards;
+    this.weights = weights;
+    this.horizon = horizon;
+    this.rollout = rollout;
+  }
+
+  act(view: ControllerView): Action {
+    const inherited = super.act(view);
+    if (view.state.awaiting === null) return inherited;
+    return bestDecision(
+      view,
+      inherited,
+      this.cards,
+      this.weights,
+      this.horizon,
+      this.rollout,
+      this.budget,
+    );
+  }
+
+  declareAttackers(view: ControllerView): readonly AttackerDeclaration[] {
+    return this.rollout === "combat" ? super.declareAttackers(view) : [];
+  }
+
+  declareBlockers(view: ControllerView): readonly BlockerDeclaration[] {
+    return this.rollout === "passive" ? [] : super.declareBlockers(view);
+  }
+}
+
 export class EvalBotController extends HeuristicBotController {
   private readonly cards: CardRegistry;
   readonly weights: EvalWeights;
   private readonly horizon: Horizon;
   private readonly rollout: RolloutPolicy;
+  private readonly rolloutDecisions: boolean;
   private readonly maxSimulations: number;
 
   constructor(
@@ -132,15 +277,16 @@ export class EvalBotController extends HeuristicBotController {
     this.weights = options.weights ?? DEFAULT_WEIGHTS;
     this.horizon = options.horizon ?? "turn";
     this.rollout = options.rollout ?? "combat";
+    this.rolloutDecisions = options.rolloutDecisions ?? false;
     this.maxSimulations = options.maxSimulations ?? DEFAULT_MAX_SIMULATIONS;
   }
 
   act(view: ControllerView): Action {
     const inherited = super.act(view);
-    // Anything the engine is explicitly waiting on keeps the inherited answer
-    // — `super.act` has already routed it through `answerAwaited`, which calls
-    // back into this class's own `declareAttackers`/`declareBlockers`.
-    if (view.state.awaiting !== null) return inherited;
+    // `super.act` has already routed anything the engine is waiting on
+    // through `answerAwaited`, which calls back into this class's own
+    // `declareAttackers`/`declareBlockers`. The rest are searched here.
+    if (view.state.awaiting !== null) return this.decide(view, inherited);
 
     const player = this.playerId;
     const pass: Action = { type: "pass-priority", player };
@@ -172,6 +318,33 @@ export class EvalBotController extends HeuristicBotController {
       }
     }
     return best;
+  }
+
+  /**
+   * Answer a pending decision: every candidate answer played out like a
+   * priority move, v1's (`inherited`) the one to beat.
+   */
+  private decide(view: ControllerView, inherited: Action): Action {
+    return bestDecision(
+      view,
+      inherited,
+      this.cards,
+      this.weights,
+      this.horizon,
+      this.rollout,
+      { left: Math.min(DECISION_ROLLOUTS, this.maxSimulations) },
+      () => this.selfInRollouts(),
+    );
+  }
+
+  private selfInRollouts(): DecisionRolloutController {
+    return new DecisionRolloutController(
+      this.playerId,
+      this.cards,
+      this.weights,
+      this.horizon,
+      this.rollout,
+    );
   }
 
   // --- combat -------------------------------------------------------------
@@ -393,7 +566,14 @@ export class EvalBotController extends HeuristicBotController {
 
   /** `null` when the engine refused this concrete filling of a legal shape. */
   private score(view: ControllerView, action: Action): number | null {
-    const after = simulateAction(view.state, this.cards, action, this.horizon, this.rollout);
+    const after = simulateAction(
+      view.state,
+      this.cards,
+      action,
+      this.horizon,
+      this.rollout,
+      this.rolloutDecisions ? this.selfInRollouts() : undefined,
+    );
     if (after === null) return null;
     return evaluateState(after, this.cards, this.playerId, this.weights);
   }

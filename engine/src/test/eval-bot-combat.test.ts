@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { EvalBotController } from "../bot/eval-bot.js";
 import { canBlock, damageThrough, isLethal } from "../bot/combat-math.js";
 import { simulateAction } from "../bot/simulate.js";
+import { combinations, decisionCandidates } from "../bot/decisions.js";
 import type { CombatCreature } from "../bot/combat-math.js";
 import { createDefaultRegistry } from "../cards.js";
 import type { Keyword } from "../cards/define.js";
@@ -189,5 +190,57 @@ describe("rollout policies", () => {
     expect(lifeAfterPass("combat")).toBe(14);
     // Our own seat holds back; only opponents attack.
     expect(lifeAfterPass("defensive")).toBe(20);
+  });
+});
+
+describe("decisions mid-resolution", () => {
+  it("enumerates combinations in order, capped", () => {
+    expect(combinations([1, 2, 3], 2, 10)).toEqual([
+      [1, 2],
+      [1, 3],
+      [2, 3],
+    ]);
+    expect(combinations([1, 2, 3, 4], 2, 2)).toHaveLength(2);
+    expect(combinations([1, 2], 3, 10)).toEqual([]);
+  });
+
+  it("offers declining an optional mode and every scry split", () => {
+    const modes = decisionCandidates(
+      { kind: "choose-modes", source: "s" as never, minModes: 0, maxModes: 1, modeTexts: ["x"] },
+      A,
+    );
+    expect(modes?.map((m) => (m.type === "choose-modes" ? m.modes : null))).toEqual([[], [0]]);
+    const scry = decisionCandidates(
+      { kind: "scry", mode: "scry", cards: ["a", "b"] as never },
+      A,
+    );
+    expect(scry).toHaveLength(4);
+    // Mulligans aren't searched.
+    expect(decisionCandidates({ kind: "mulligan", count: 0 }, A)).toBeNull();
+  });
+
+  it("aims a trigger at the opponent's best creature and takes the \"you may\"", () => {
+    // Overseer of the Damned: "When it enters, you may destroy target
+    // creature." v1 takes the first legal target and declines every "you may".
+    const game = Game.create({
+      seed: 3,
+      registry,
+      controllers: { [A]: new EvalBotController(A, registry) },
+      decks: [deckFor(A), deckFor(B)],
+    });
+    game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+    const bear = game.debugSpawn("Grizzly Bears", A, "battlefield", { summoningSick: false });
+    const smallest = game.debugSpawn("Grizzly Bears", B, "battlefield", { summoningSick: false });
+    const biggest = game.debugSpawn("Craw Wurm", B, "battlefield", { summoningSick: false });
+    game.debugSpawn("Overseer of the Damned", A, "battlefield", { announceEntry: true });
+
+    // The trigger is only put on the stack the next time anyone would get
+    // priority, so run to the next step rather than to "stack empty".
+    game.advanceUntil((s) => s.turn.step === "begin-combat");
+    const onBattlefield = (id: string) =>
+      game.state.zones.shared.battlefield.includes(id as never);
+    expect(onBattlefield(biggest)).toBe(false);
+    expect(onBattlefield(smallest)).toBe(true);
+    expect(onBattlefield(bear)).toBe(true);
   });
 });

@@ -3,7 +3,8 @@
 Status: **in progress** — the search bot, evaluation, benchmark and tuner exist
 (`engine/src/bot/`, `engine/scripts/tune-bot.mjs`) but live rooms still seat the v1 bot. Phase 0
 (a benchmark that measures the game rooms actually play), Phase 1 (the evaluation's feature
-set), Phase 2 (combat) and Phase 3 (rollout policy) are done; see "Work plan" for the rest.
+set), Phase 2 (combat), Phase 3 (rollout policy) and Phase 4 (decisions mid-resolution) are
+done; see "Work plan" for the rest.
 
 This is the design record for replacing
 `HeuristicBotController`'s greedy "highest mana value wins" policy with a one-ply search:
@@ -343,6 +344,43 @@ measurable time. `combat` is the default because it's the right model — a crea
 before combat now visibly attacks in the rollout, and a decision on an opponent's turn sees
 their attack coming — and it has the best four-player point estimate, not because the bench
 proves it better. It's a real knob for the tuner to revisit, alongside the weights.
+
+### Phase 4 notes: decisions mid-resolution
+
+Done. v1's answers to the decisions the engine asks mid-resolution were placeholders: the first
+legal target (its own creature, often), decline every "you may", take the minimum from a tutor
+(nothing, for "up to"), sacrifice whatever's listed first, never scry a card away.
+`bot/decisions.ts` now generates the candidate answers — trigger targets, modes and "you may"
+(with `{X}` at its maximum or zero), sacrifices, discards, choosing from a zone, scry/surveil,
+clone choices, shock-land life, the commander zone replacement — and `EvalBotController` plays
+each out like a priority move, v1's answer the one to beat and the winner of ties. Mulligans,
+combat damage order and assignment, naming a creature type and changing text keep v1's answer.
+
+- **One level of lookahead.** A trigger's target is worthless if the "you may" after it is
+  declined, and in the rollout v1 declines. So our own seat in a decision's rollout is a
+  `DecisionRolloutController`, which searches any further decision itself (with plain v1
+  beneath it). Without this the Overseer of the Damned test chose its own bear.
+- **Budgets multiply, so they're small.** Windreader Sphinx ("whenever a creature with flying
+  attacks, you may draw") on a board of flyers raised a decision per attacker, each rollout
+  containing the rest; at the priority search's budget one answer took 11.5s. A decision now
+  gets 12 rollouts, and each of those 2 for anything nested (exactly a "you may"'s yes and no).
+  Capped lists are tried most promising first: a tutor's highest mana value, a sacrifice's or
+  discard's lowest.
+- **Not in priority rollouts by default.** `rolloutDecisions` puts the same controller in our
+  seat for *priority* rollouts too, so casting an "enters, you may…" creature is scored as if
+  we'd accept. It measured 70.5% / 53.5% against 69.5% / 53.0% without, at 75% more time and
+  two four-player timeouts, so it's off.
+
+| | 2 players, 400 games | 4 players, 200 games |
+|---|---|---|
+| Phase 3 | 70.3% | 51.5% |
+| **Phase 4** | 69.5% [64.8, 73.8] | 52.0% [45.1, 58.8] |
+
+No measurable change against v1 — which is the benchmark's blind spot rather than proof the
+work is idle: v1 makes the same placeholder choices, and the positions where they matter
+(a removal trigger, a tutor, an edict) are a small share of a game. The scenario tests are
+what hold this phase to account. A gauntlet opponent that answers these well is what would
+show it in the numbers.
 
 ### Not just beating v1
 

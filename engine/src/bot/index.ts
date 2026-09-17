@@ -4,4 +4,5 @@ export * from "./evaluate.js";
 export * from "./candidates.js";
 export * from "./simulate.js";
 export * from "./combat-math.js";
+export * from "./decisions.js";
 export * from "./eval-bot.js";

@@ -66,7 +66,7 @@ function seatingFor(players, block) {
   return seatings[block % seatings.length];
 }
 
-parentPort.on("message", ({ seed, weights, opponentWeights, players, horizon, rollout }) => {
+parentPort.on("message", ({ seed, weights, opponentWeights, players, horizon, rollout, botOptions }) => {
   const seats = SEATS.slice(0, players);
   const game0 = seed - 1;
   const seating = seatingFor(players, Math.floor(game0 / players));
@@ -77,9 +77,10 @@ parentPort.on("message", ({ seed, weights, opponentWeights, players, horizon, ro
   const controllers = {};
   for (const seat of seats) {
     if (seat === candidateSeat) {
-      controllers[seat] = new EvalBotController(seat, registry, { weights, horizon, rollout });
+      controllers[seat] = new EvalBotController(seat, registry, { ...botOptions, weights, horizon, rollout });
     } else if (opponentWeights !== undefined && opponentWeights !== null) {
       controllers[seat] = new EvalBotController(seat, registry, {
+        ...botOptions,
         weights: opponentWeights,
         horizon,
         rollout,

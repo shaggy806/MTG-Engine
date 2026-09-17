@@ -72,6 +72,7 @@ export function simulateAction(
   action: Action,
   horizon: Horizon,
   policy: RolloutPolicy = "passive",
+  self?: PlayerController,
 ): GameState | null {
   // The event log is roughly half the bytes of a mid-game state and nothing
   // downstream of here reads it — dropping it before the clone takes the copy
@@ -82,7 +83,7 @@ export function simulateAction(
   try {
     const sim = Game.fromSnapshot(seed, {
       registry,
-      controllers: rolloutControllers(state, registry, action.player, policy),
+      controllers: rolloutControllers(state, registry, action.player, policy, self),
     });
     sim.dispatch(action);
     let steps = 0;
@@ -155,7 +156,7 @@ export function simulateCombat(
 }
 
 /** Holds back from attacking; otherwise v1's answers, like its parent. */
-class DefendingRolloutController extends CombatRolloutController {
+export class DefendingRolloutController extends CombatRolloutController {
   declareAttackers(): readonly [] {
     return [];
   }
@@ -166,8 +167,10 @@ function rolloutControllers(
   registry: CardRegistry,
   me: PlayerId,
   policy: RolloutPolicy,
+  self: PlayerController | undefined,
 ): Record<PlayerId, PlayerController> | undefined {
-  if (policy === "passive") return undefined; // `fromSnapshot` fills in AutomaticController
+  // `fromSnapshot` fills any seat left out with an AutomaticController.
+  if (policy === "passive") return self === undefined ? undefined : { [me]: self };
   const controllers: Record<PlayerId, PlayerController> = {};
   for (const player of state.turnOrder) {
     controllers[player] =
@@ -175,5 +178,6 @@ function rolloutControllers(
         ? new DefendingRolloutController(player, registry)
         : new CombatRolloutController(player, registry);
   }
+  if (self !== undefined) controllers[me] = self;
   return controllers;
 }
