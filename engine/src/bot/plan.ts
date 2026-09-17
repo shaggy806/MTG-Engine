@@ -52,9 +52,23 @@ export type TurnPlan = readonly Action[];
 
 export interface PlanSearchOptions {
   readonly weights?: EvalWeights;
-  /** Player turns of rollout past the planned turn. Defaults to
-   * `turnOrder.length + 1` — far enough to come back round to ourselves, so the
-   * plan, every opponent's answer and our follow-up all sit inside it. */
+  /**
+   * Player turns of rollout past the planned turn. Defaults to
+   * `turnOrder.length` — **exactly one lap of the table**, so the leaf always
+   * lands at the start of our own turn.
+   *
+   * A whole lap rather than a lap-and-a-bit, because *where in the turn cycle
+   * the leaf sits changes what the evaluation sees*, and inconsistently. Our
+   * creatures are tapped on the turn we attacked and untapped after our untap
+   * step, so a leaf on an opponent's turn charges us for having attacked. That
+   * is not hypothetical: with a fitted `untappedCreatures` of 2.0, recasting a
+   * commander scored **+11.0** at depths 1 and 2, **-0.3** at depth 3, and
+   * **+1.7** at depths 4-6 — the sign of the decision flipped purely on where
+   * the rollout happened to stop.
+   *
+   * Landing on our own turn every time removes the parity, and it is cheaper
+   * than the old default into the bargain.
+   */
   readonly depth?: number;
   /** Sampled worlds per plan. Every plan is scored against the *same* ones. */
   readonly worlds?: number;
@@ -436,7 +450,7 @@ export function searchTurnPlan(
   options: PlanSearchOptions = {},
 ): PlanSearchResult {
   const weights = options.weights ?? DEFAULT_WEIGHTS;
-  const depth = options.depth ?? state.turnOrder.length + 1;
+  const depth = options.depth ?? state.turnOrder.length;
   const worldCount = options.worlds ?? DEFAULT_WORLDS;
   const maxEvaluations = options.maxEvaluations ?? DEFAULT_MAX_EVALUATIONS;
   const until =

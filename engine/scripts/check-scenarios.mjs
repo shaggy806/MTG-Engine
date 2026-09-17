@@ -44,7 +44,10 @@ const label = champion ?? weightsFile ?? "current defaults";
 const bot = flag("bot", "v2");
 const makeBot = (player, registry, w) =>
   bot === "v3"
-    ? new PlanBotController(player, registry, { weights: w, worlds: 3, depth: 3 })
+    // Depth is left at its default — one lap of the table — because which
+    // point of the turn cycle the leaf lands on changes what the evaluation
+    // sees, and pinning it here would gate the bot on a setting it never plays.
+    ? new PlanBotController(player, registry, { weights: w })
     : new EvalBotController(player, registry, { weights: w });
 console.log(`scenarios: ${label} (bot ${bot})`);
 

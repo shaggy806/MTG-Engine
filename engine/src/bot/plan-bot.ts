@@ -48,8 +48,9 @@ import { searchTurnPlan } from "./plan.js";
 import type { TurnPlan } from "./plan.js";
 
 export interface PlanBotOptions extends EvalBotOptions {
-  /** Player turns of rollout past the planned turn. Defaults to one full lap of
-   * the table, so our own follow-up turn is inside the horizon. */
+  /** Player turns of rollout past the planned turn. Defaults to exactly one
+   * lap of the table, so the leaf always lands at the start of our own turn —
+   * see `PlanSearchOptions.depth` for why the parity matters. */
   readonly depth?: number;
   /** Sampled worlds per plan. */
   readonly worlds?: number;
