@@ -21,6 +21,8 @@ import {
 } from './decks.ts'
 import type { SavedDeck } from './decks.ts'
 import { DeckEditor } from './DeckEditor.tsx'
+import { ReplacementReview } from './ReplacementReview.tsx'
+import { CONFIDENCE_LABEL } from './replacement-labels.ts'
 import './deck-builder.css'
 
 const registry = createDefaultRegistry()
@@ -66,6 +68,8 @@ export function DeckBuilderPage() {
   })
   const [importing, setImporting] = useState(false)
   const [importReport, setImportReport] = useState<ImportReport | null>(null)
+  /** The stand-in review popup, open over the freshly imported deck. */
+  const [reviewing, setReviewing] = useState(false)
 
   const refreshDecks = () => setDecks(listDecks())
   const markActive = (ref: NonNullable<Selection>) => {
@@ -76,6 +80,7 @@ export function DeckBuilderPage() {
   // it belongs to, so it never shows up next to an unrelated deck.
   const selectDeck = (sel: Selection) => {
     setImportReport(null)
+    setReviewing(false)
     setSelection(sel)
   }
 
@@ -96,6 +101,39 @@ export function DeckBuilderPage() {
   // `client/src/lobby/DeckPickerModal.tsx`.
   const roomId = new URLSearchParams(window.location.search).get('room')
   const backHref = roomId ? `/?room=${roomId}` : '/'
+
+  /** Puts `to` in the deck in place of `from`'s current stand-in — from the
+   * review popup. */
+  const swapStandIn = (from: string, to: string) => {
+    if (!importReport || !selectedDeck) return
+    const current = importReport.substituted.find((s) => s.from === from)
+    if (!current || current.to === to) return
+    // Never a card the deck already holds — the picker disables
+    // those, but the rule belongs here too.
+    if (selectedDeck.commander === to || selectedDeck.cards.includes(to)) return
+    // Exactly this card's one slot: the commander if that's what
+    // it stood in for, otherwise the first copy in the 99.
+    // Replacing every copy by name broke singleton the moment
+    // two originals shared a first choice somewhere down the
+    // list and one was swapped back.
+    const isCommander = selectedDeck.commander === current.to
+    const slot = isCommander ? -1 : selectedDeck.cards.indexOf(current.to)
+    if (!isCommander && slot === -1) return
+    saveDeck({
+      ...selectedDeck,
+      cards: isCommander
+        ? selectedDeck.cards
+        : selectedDeck.cards.map((n, i) => (i === slot ? to : n)),
+      commander: isCommander ? to : selectedDeck.commander,
+    })
+    refreshDecks()
+    setImportReport({
+      ...importReport,
+      substituted: importReport.substituted.map((s) =>
+        s.from === from ? { ...s, to } : s,
+      ),
+    })
+  }
 
   return (
     <div className="db-page">
@@ -173,6 +211,10 @@ export function DeckBuilderPage() {
               setActiveRefState(getActiveRef())
               setSelection({ kind: 'saved', id: deck.id })
               setImportReport(report)
+              // Straight into choosing stand-ins, card by card — they were
+              // filled with each card's first suggestion so the deck is
+              // playable either way.
+              setReviewing(report.substituted.some((s) => s.options.length > 1))
               setImporting(false)
             }}
           />
@@ -181,37 +223,16 @@ export function DeckBuilderPage() {
             {importReport ? (
               <ImportReportBanner
                 report={importReport}
-                deckCards={[...selectedDeck.cards, ...(selectedDeck.commander ? [selectedDeck.commander] : [])]}
                 onDismiss={() => setImportReport(null)}
-                onSwap={(from, to) => {
-                  const current = importReport.substituted.find((s) => s.from === from)
-                  if (!current || current.to === to) return
-                  // Never a card the deck already holds — the picker disables
-                  // those, but the rule belongs here too.
-                  if (selectedDeck.commander === to || selectedDeck.cards.includes(to)) return
-                  // Exactly this card's one slot: the commander if that's what
-                  // it stood in for, otherwise the first copy in the 99.
-                  // Replacing every copy by name broke singleton the moment
-                  // two originals shared a first choice somewhere down the
-                  // list and one was swapped back.
-                  const isCommander = selectedDeck.commander === current.to
-                  const slot = isCommander ? -1 : selectedDeck.cards.indexOf(current.to)
-                  if (!isCommander && slot === -1) return
-                  saveDeck({
-                    ...selectedDeck,
-                    cards: isCommander
-                      ? selectedDeck.cards
-                      : selectedDeck.cards.map((n, i) => (i === slot ? to : n)),
-                    commander: isCommander ? to : selectedDeck.commander,
-                  })
-                  refreshDecks()
-                  setImportReport({
-                    ...importReport,
-                    substituted: importReport.substituted.map((s) =>
-                      s.from === from ? { ...s, to } : s,
-                    ),
-                  })
-                }}
+                onReview={() => setReviewing(true)}
+              />
+            ) : null}
+            {importReport && reviewing ? (
+              <ReplacementReview
+                substitutions={importReport.substituted.filter((s) => s.options.length > 0)}
+                deckCards={[...selectedDeck.cards, ...(selectedDeck.commander ? [selectedDeck.commander] : [])]}
+                onChoose={swapStandIn}
+                onClose={() => setReviewing(false)}
               />
             ) : null}
             <DeckEditor
@@ -459,29 +480,16 @@ function ImportProgressBar({ progress }: { readonly progress: ImportProgress | n
   )
 }
 
-const CONFIDENCE_LABEL: Record<ReplacementOption['confidence'], string> = {
-  high: 'Close match',
-  medium: 'Partial match',
-  low: 'Loose match',
-}
-
-/** A tag slug as a phrase: "removal-creature" → "removal creature". */
-const tagLabel = (slug: string): string => slug.replace(/-/g, ' ')
-
 function ImportReportBanner({
   report,
-  deckCards,
   onDismiss,
-  onSwap,
+  onReview,
 }: {
   readonly report: ImportReport
-  /** Everything the deck holds now, so a stand-in already in it (which would
-   * break singleton) can't be picked for another card. */
-  readonly deckCards: readonly string[]
   readonly onDismiss: () => void
-  readonly onSwap: (from: string, to: string) => void
+  /** Opens the card-by-card stand-in review. */
+  readonly onReview: () => void
 }) {
-  const inDeck = new Set(deckCards)
   return (
     <div className="db-import-report">
       <div className="db-import-report-head">
@@ -490,9 +498,16 @@ function ImportReportBanner({
           {report.substituted.length} substituted, {report.dropped.length} dropped
           {report.printings > 0 ? `, ${report.printings} keeping their printing` : ''}
         </strong>
-        <button type="button" onClick={onDismiss}>
-          Dismiss
-        </button>
+        <span className="db-import-report-actions">
+          {report.substituted.some((s) => s.options.length > 1) ? (
+            <button type="button" onClick={onReview}>
+              Review stand-ins
+            </button>
+          ) : null}
+          <button type="button" onClick={onDismiss}>
+            Dismiss
+          </button>
+        </span>
       </div>
       {report.substituted.length > 0 ? (
         <ul className="db-import-report-list">
@@ -502,37 +517,13 @@ function ImportReportBanner({
               <li key={s.from} className="db-import-sub">
                 <span className="db-import-sub-from">{s.from}</span>
                 <span aria-hidden="true">→</span>
-                {s.options.length > 1 ? (
-                  <select
-                    value={s.to}
-                    aria-label={`Stand-in for ${s.from}`}
-                    onChange={(e) => onSwap(s.from, e.target.value)}
-                  >
-                    {s.options.map((o) => (
-                      <option
-                        key={o.name}
-                        value={o.name}
-                        // Already in the deck as something else — picking it
-                        // would put two copies in a singleton deck.
-                        disabled={o.name !== s.to && inDeck.has(o.name)}
-                      >
-                        {o.name}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <strong>{s.to}</strong>
-                )}
+                <strong>{s.to}</strong>
                 {chosen ? (
                   <span className={`db-match db-match-${chosen.confidence}`}>
                     {CONFIDENCE_LABEL[chosen.confidence]}
                   </span>
                 ) : null}
-                {chosen && chosen.sharedTags.length > 0 ? (
-                  <span className="muted db-import-sub-tags">
-                    both: {chosen.sharedTags.slice(0, 3).map(tagLabel).join(', ')}
-                  </span>
-                ) : null}
+
               </li>
             )
           })}

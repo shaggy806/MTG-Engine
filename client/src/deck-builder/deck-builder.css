@@ -376,12 +376,197 @@
   gap: 4px 8px;
   padding: 3px 0;
 }
-.db-import-sub select {
-  font-size: 13px;
-  padding: 1px 4px;
+.db-import-report-actions {
+  display: flex;
+  gap: 6px;
 }
-.db-import-sub-tags {
+
+/* --- the stand-in review popup (ReplacementReview.tsx) --------------------
+   The card being replaced on the left, its suggested stand-ins on the right,
+   all as real card faces. Card width comes off the viewport's *height* as
+   well as its width, so four cards in a row still fit a short screen. */
+.rr-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2vh 2vw;
+  background: rgba(10, 12, 16, 0.85);
+}
+.rr-box {
+  --rr-card-w: min(18vw, calc(52vh * 5 / 7));
+  display: flex;
+  flex-direction: column;
+  gap: 1.5vh;
+  width: min(1240px, 96vw);
+  max-height: 96vh;
+  overflow: auto;
+  padding: 2vh 2vw;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.rr-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.rr-head h2 {
+  margin: 0;
+  font-size: 18px;
+}
+.rr-body {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2vw;
+}
+.rr-original,
+.rr-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rr-original {
+  width: var(--rr-card-w);
+  flex: none;
+}
+.rr-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.rr-name {
+  font-weight: 600;
+  font-size: 13px;
+}
+.rr-arrow {
+  align-self: center;
+  font-size: 28px;
+  color: var(--muted);
+}
+.rr-option-row {
+  display: flex;
+  gap: 1.2vw;
+}
+.rr-option {
+  width: var(--rr-card-w);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+  text-align: left;
+  background: none;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.rr-option:hover:not(:disabled) {
+  border-color: var(--border);
+}
+.rr-option.chosen {
+  border-color: var(--good);
+  background: rgba(95, 174, 124, 0.08);
+}
+.rr-option.blocked {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.rr-option:disabled {
+  opacity: 0.45;
+}
+.rr-option-card {
+  position: relative;
+  display: block;
+}
+.rr-flag {
+  margin-left: auto;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: #10131a;
+  background: var(--good);
+}
+.rr-flag.blocked {
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+}
+.rr-option-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.rr-key {
+  font-size: 11px;
+  min-width: 16px;
+  text-align: center;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+.rr-tags {
   font-size: 12px;
+  color: var(--muted);
+}
+.rr-placeholder {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  padding: 8px;
+  text-align: center;
+  font-size: 13px;
+}
+.rr-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.rr-primary {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.rr-dots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+}
+.rr-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border-radius: 50%;
+  border: none;
+  background: var(--border);
+}
+.rr-dot.current {
+  background: var(--accent);
+}
+
+@media (max-width: 700px) {
+  .rr-box {
+    --rr-card-w: 40vw;
+  }
+  .rr-body {
+    flex-direction: column;
+    align-items: center;
+  }
+  .rr-arrow {
+    rotate: 90deg;
+  }
+  .rr-option-row {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 }
 .db-match {
   font-size: 11px;
