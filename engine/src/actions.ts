@@ -434,6 +434,10 @@ export type LegalAction =
       /** Present for a planeswalker loyalty ability — the loyalty counters it
        * adds (negative = removes), so a UI can label it "+1" / "−3". */
       readonly loyalty?: number;
+      /** Set when this is a mana ability (rule 605.1a), printed or granted —
+       * Citanul Hierophants' "{T}: Add {G}" on every creature included, which
+       * a lookup of the source's printed abilities can't see. */
+      readonly manaAbility?: true;
       /** Set when the ability's cost contains `{X}` (ROADMAP Phase 11 EG-3).
        * `maxX` is the largest value of X this player could currently pay for
        * (0 when only X=0 is affordable). The driver must include `xValue` in

@@ -84,6 +84,11 @@ export class EvalBotController extends HeuristicBotController {
     let budget = this.maxSimulations;
 
     for (const legal of view.legalActions()) {
+      // Mana abilities are never worth a simulation: casting auto-pays, so
+      // tapping for mana on its own gains nothing the evaluation could see,
+      // and on a wide board they're nearly every candidate there is — 27 of
+      // 30 on one 38-permanent board, which made a single decision a 2s search.
+      if (legal.kind === "activate-ability" && this.isManaOnlyAbility(legal)) continue;
       for (const action of candidateActions(legal, player)) {
         if (budget <= 0) return best;
         budget -= 1;

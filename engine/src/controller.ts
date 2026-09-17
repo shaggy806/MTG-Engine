@@ -15,7 +15,6 @@ import type {
   ConvokePayment,
   LegalAction,
 } from "./actions.js";
-import { isManaAbility } from "./abilities.js";
 import { computeCharacteristics } from "./characteristics.js";
 import { CardRegistry, createDefaultRegistry } from "./cards.js";
 import { manaValue, parseManaCost } from "./mana.js";
@@ -1215,15 +1214,12 @@ export class HeuristicBotController extends AutomaticController {
    * resolving — which is worse than useless once bot moves are paced out one
    * at a time (see `server/src/room.ts`).
    *
-   * Read off the printed definition rather than the live ability list (which
-   * only `Game` can resolve): a granted ability can shift `abilityIndex`, and
-   * the miss just means this bot activates something it might have skipped,
-   * which is the behaviour it had anyway.
+   * Read off the legal action rather than the source's printed abilities:
+   * only `Game` can resolve a *granted* one, and those can be most of a
+   * board — Citanul Hierophants gives every creature "{T}: Add {G}".
    */
-  private isManaOnlyAbility(legal: ActivateAbilityLegal): boolean {
-    if (!this.registry.has(legal.cardName)) return false;
-    const ability = this.registry.get(legal.cardName).activated?.[legal.abilityIndex];
-    return ability !== undefined && isManaAbility(ability);
+  protected isManaOnlyAbility(legal: ActivateAbilityLegal): boolean {
+    return legal.manaAbility === true;
   }
 
   /**

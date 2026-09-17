@@ -1036,6 +1036,7 @@ export class Game {
           ? { sacrifice: { choices: this.sacrificeCandidates(player, source, ability) } }
           : {}),
         ...(ability.loyaltyCost !== undefined ? { loyalty: ability.loyaltyCost } : {}),
+        ...(isManaAbility(ability) ? { manaAbility: true as const } : {}),
         ...(parseManaCost(ability.cost.mana).x > 0
           ? {
               xCost: {

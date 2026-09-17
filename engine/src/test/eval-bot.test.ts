@@ -198,6 +198,22 @@ describe("candidateActions", () => {
     for (const action of actions) expect(action.type).toBe("cast-spell");
   });
 
+  it("flags mana abilities on the legal action, granted ones included", () => {
+    // A bot can't read a granted ability off the printed card, and on a
+    // Citanul Hierophants board those are every creature's — the search spent
+    // nearly all its time simulating them before this flag existed.
+    const game = Game.create({ seed: 4, registry, decks: seatsFor([A, B]) });
+    game.advanceUntil((s) => s.priority.holder === A);
+    game.debugSpawn("Citanul Hierophants", A, "battlefield", { summoningSick: false });
+    const bears = game.debugSpawn("Grizzly Bears", A, "battlefield", { summoningSick: false });
+
+    const granted = game
+      .legalActions(A)
+      .find((a) => a.kind === "activate-ability" && a.source === bears);
+    expect(granted).toBeDefined();
+    expect(granted?.kind === "activate-ability" && granted.manaAbility).toBe(true);
+  });
+
   it("returns nothing for combat declarations, which must stay constructive", () => {
     // Attacker subsets are (defenders + 1) ^ creatures — a ten-creature board
     // against three opponents is about a million. These must never be
