@@ -33,11 +33,14 @@ import type { CombatCreature } from "./combat-math.js";
 import { DEFAULT_WEIGHTS, evaluateState } from "./evaluate.js";
 import type { EvalWeights } from "./evaluate.js";
 import { simulateAction, simulateCombat } from "./simulate.js";
-import type { Horizon } from "./simulate.js";
+import type { Horizon, RolloutPolicy } from "./simulate.js";
 
 export interface EvalBotOptions {
   readonly weights?: EvalWeights;
   readonly horizon?: Horizon;
+  /** How the other seats (and our own, after the candidate move) play a
+   * priority rollout out. See `RolloutPolicy`. */
+  readonly rollout?: RolloutPolicy;
   /**
    * Ceiling on simulations per decision. The action space is small in
    * practice (median 2 concrete actions per window, 99th percentile around 9),
@@ -116,6 +119,7 @@ export class EvalBotController extends HeuristicBotController {
   private readonly cards: CardRegistry;
   readonly weights: EvalWeights;
   private readonly horizon: Horizon;
+  private readonly rollout: RolloutPolicy;
   private readonly maxSimulations: number;
 
   constructor(
@@ -127,6 +131,7 @@ export class EvalBotController extends HeuristicBotController {
     this.cards = registry;
     this.weights = options.weights ?? DEFAULT_WEIGHTS;
     this.horizon = options.horizon ?? "turn";
+    this.rollout = options.rollout ?? "combat";
     this.maxSimulations = options.maxSimulations ?? DEFAULT_MAX_SIMULATIONS;
   }
 
@@ -388,7 +393,7 @@ export class EvalBotController extends HeuristicBotController {
 
   /** `null` when the engine refused this concrete filling of a legal shape. */
   private score(view: ControllerView, action: Action): number | null {
-    const after = simulateAction(view.state, this.cards, action, this.horizon);
+    const after = simulateAction(view.state, this.cards, action, this.horizon, this.rollout);
     if (after === null) return null;
     return evaluateState(after, this.cards, this.playerId, this.weights);
   }

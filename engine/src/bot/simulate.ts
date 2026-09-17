@@ -9,11 +9,11 @@
  *
  * Two things here are load-bearing and easy to get wrong:
  *
- * 1. **Every seat in the simulation gets an `AutomaticController`.**
+ * 1. **Every seat in the simulation gets a non-searching stand-in.**
  *    `Game.tick()` invokes `controllers[holder].act()`, so a simulation that
  *    inherited the searching bot's own controller would recurse forever. The
  *    stand-ins also do the useful work of passing priority, which is what
- *    drains the stack.
+ *    drains the stack. Which stand-in is the `RolloutPolicy`.
  *
  * 2. **The horizon has to be past the stack.** Dispatching `cast-spell`
  *    leaves the spell *on the stack* with nothing resolved, so scoring there
@@ -40,6 +40,21 @@ import type { GameState } from "../state.js";
  */
 export type Horizon = "stack" | "turn";
 
+/**
+ * How the stand-in seats play a priority rollout out.
+ *
+ * - `"passive"` — `AutomaticController` everywhere: pass, never attack, never
+ *   block. Cheapest, but no rollout ever contains combat, so casting a
+ *   creature before combat looks the same as after it, and a decision on an
+ *   opponent's turn never sees their attack coming.
+ * - `"combat"` — `CombatRolloutController` everywhere: still pass at every
+ *   priority window, but attack and block as v1 does.
+ * - `"defensive"` — v1's blocks everywhere, but only opponents attack; our
+ *   own seat never does. v1 swings with everything, which is a poor stand-in
+ *   for the bot's own, far more careful attacks.
+ */
+export type RolloutPolicy = "passive" | "combat" | "defensive";
+
 /** A hard ceiling on one rollout, so a pathological line can't stall a room. */
 const MAX_STEPS = 400;
 
@@ -56,6 +71,7 @@ export function simulateAction(
   registry: CardRegistry,
   action: Action,
   horizon: Horizon,
+  policy: RolloutPolicy = "passive",
 ): GameState | null {
   // The event log is roughly half the bytes of a mid-game state and nothing
   // downstream of here reads it — dropping it before the clone takes the copy
@@ -64,7 +80,10 @@ export function simulateAction(
   const startingTurn = state.turn.number;
 
   try {
-    const sim = Game.fromSnapshot(seed, { registry });
+    const sim = Game.fromSnapshot(seed, {
+      registry,
+      controllers: rolloutControllers(state, registry, action.player, policy),
+    });
     sim.dispatch(action);
     let steps = 0;
     sim.advanceUntil((s) => {
@@ -133,4 +152,28 @@ export function simulateCombat(
   } catch {
     return null;
   }
+}
+
+/** Holds back from attacking; otherwise v1's answers, like its parent. */
+class DefendingRolloutController extends CombatRolloutController {
+  declareAttackers(): readonly [] {
+    return [];
+  }
+}
+
+function rolloutControllers(
+  state: GameState,
+  registry: CardRegistry,
+  me: PlayerId,
+  policy: RolloutPolicy,
+): Record<PlayerId, PlayerController> | undefined {
+  if (policy === "passive") return undefined; // `fromSnapshot` fills in AutomaticController
+  const controllers: Record<PlayerId, PlayerController> = {};
+  for (const player of state.turnOrder) {
+    controllers[player] =
+      policy === "defensive" && player === me
+        ? new DefendingRolloutController(player, registry)
+        : new CombatRolloutController(player, registry);
+  }
+  return controllers;
 }

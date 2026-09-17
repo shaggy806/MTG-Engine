@@ -12,6 +12,7 @@
 //
 // Flags: --games N (rounded up to a multiple of --players, so every deck
 // seating is played from every seat), --players 2-4, --horizon stack|turn,
+// --rollout passive|combat|defensive (see `RolloutPolicy`; default: the bot's own),
 // --workers N, --timeout SECONDS (per game, default 300), --json PATH,
 // --weights JSON (overrides merged onto DEFAULT_WEIGHTS — the vector `bench`
 // measures and `tune` starts from; e.g. --weights '{"handManaValue":0}' to
@@ -47,6 +48,7 @@ const mode = args[0] === "tune" ? "tune" : "bench";
 const players = Math.min(4, Math.max(2, Number(flag("players", "2"))));
 const games = Math.ceil(Number(flag("games", "200")) / players) * players;
 const horizon = flag("horizon", "turn");
+const rollout = flag("rollout", undefined);
 const iterations = Number(flag("iterations", "30"));
 const timeoutMs = Number(flag("timeout", "300")) * 1000;
 const jsonOut = flag("json", null);
@@ -96,7 +98,7 @@ function runMatch(weights, seedOffset = 0, opponentWeights = null) {
           finish({ seed, error: `timed out after ${timeoutMs / 1000}s` });
           spawn();
         }, timeoutMs);
-        worker.postMessage({ seed, weights, opponentWeights, players, horizon });
+        worker.postMessage({ seed, weights, opponentWeights, players, horizon, rollout });
       };
 
       worker.on("message", (result) => {
@@ -208,7 +210,7 @@ function mulberry32(seed) {
 const startedAt = Date.now();
 const elapsed = () => `${((Date.now() - startedAt) / 1000).toFixed(1)}s`;
 console.log(
-  `${mode}: ${games} games/config, ${players} players, horizon=${horizon}, ${workers} workers`,
+  `${mode}: ${games} games/config, ${players} players, horizon=${horizon}, rollout=${rollout ?? "default"}, ${workers} workers`,
 );
 
 if (mode === "bench") {

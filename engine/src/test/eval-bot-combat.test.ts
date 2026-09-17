@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { EvalBotController } from "../bot/eval-bot.js";
 import { canBlock, damageThrough, isLethal } from "../bot/combat-math.js";
+import { simulateAction } from "../bot/simulate.js";
 import type { CombatCreature } from "../bot/combat-math.js";
 import { createDefaultRegistry } from "../cards.js";
 import type { Keyword } from "../cards/define.js";
@@ -161,5 +162,32 @@ describe("EvalBotController combat", () => {
       });
     expect(bot().declareBlockers(viewOf(board(40), A))).toHaveLength(0);
     expect(bot().declareBlockers(viewOf(board(5), A))).toHaveLength(1);
+  });
+});
+
+describe("rollout policies", () => {
+  /** Bob's life after Alice passes her precombat main with a Craw Wurm out,
+   * rolled to the end of her turn under `policy`. */
+  const lifeAfterPass = (policy: "passive" | "combat" | "defensive"): number => {
+    const game = Game.create({ seed: 3, registry, decks: [deckFor(A), deckFor(B)] });
+    game.advanceUntil((s) => s.priority.holder !== null);
+    game.debugSpawn("Craw Wurm", A, "battlefield", { summoningSick: false });
+    game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+    const after = simulateAction(
+      game.state,
+      registry,
+      { type: "pass-priority", player: A },
+      "turn",
+      policy,
+    );
+    expect(after).not.toBeNull();
+    return after?.players[B].life ?? 0;
+  };
+
+  it("only plays combat out under the combat policy", () => {
+    expect(lifeAfterPass("passive")).toBe(20);
+    expect(lifeAfterPass("combat")).toBe(14);
+    // Our own seat holds back; only opponents attack.
+    expect(lifeAfterPass("defensive")).toBe(20);
   });
 });

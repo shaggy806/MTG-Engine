@@ -3,7 +3,7 @@
 Status: **in progress** — the search bot, evaluation, benchmark and tuner exist
 (`engine/src/bot/`, `engine/scripts/tune-bot.mjs`) but live rooms still seat the v1 bot. Phase 0
 (a benchmark that measures the game rooms actually play), Phase 1 (the evaluation's feature
-set) and Phase 2 (combat) are done; see "Work plan" for the rest.
+set), Phase 2 (combat) and Phase 3 (rollout policy) are done; see "Work plan" for the rest.
 
 This is the design record for replacing
 `HeuristicBotController`'s greedy "highest mana value wins" policy with a one-ply search:
@@ -323,6 +323,26 @@ Done, following "Combat: the alpha strike and crackback" below, with these speci
 where a single end-of-turn priority rollout costs ~400ms and a decision with ten candidates
 takes 4s. That game overruns the bench's 300s timeout. It's the priority search's rollout cost
 on an enormous board, not combat, and it's what the think-time budget has to solve.
+
+### Phase 3 notes: the rollout policy
+
+Done. `simulateAction` takes a `RolloutPolicy` (`EvalBotOptions.rollout`, `bot:bench
+--rollout`): `passive` (the old `AutomaticController` stand-ins — never attack or block),
+`combat` (every seat attacks and blocks as v1 does, still passing at every priority window),
+or `defensive` (v1's blocks everywhere, but our own seat never attacks, since v1's all-out
+swing is a poor stand-in for the bot's own attacks).
+
+| policy | 2 players, 400 games | 4 players, 200 games |
+|---|---|---|
+| passive | 69.5% | 48.2% |
+| **combat** (default) | 70.3% [65.6, 74.5] | **51.5%** [44.6, 58.3] |
+| defensive | 70.5% [65.9, 74.8] | 50.0% [43.1, 56.9] |
+
+None of the three is distinguishable from the others at this sample size, and none costs
+measurable time. `combat` is the default because it's the right model — a creature cast
+before combat now visibly attacks in the rollout, and a decision on an opponent's turn sees
+their attack coming — and it has the best four-player point estimate, not because the bench
+proves it better. It's a real knob for the tuner to revisit, alongside the weights.
 
 ### Not just beating v1
 
