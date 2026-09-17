@@ -32,15 +32,11 @@
  * between — is.
  */
 
-import { isManaAbility } from "../abilities.js";
-import { computeCharacteristics } from "../characteristics.js";
-import type { Characteristics } from "../characteristics.js";
 import type { CardRegistry } from "../cards.js";
-import type { Keyword } from "../cards/define.js";
-import { manaValue, parseManaCost } from "../mana.js";
 import type { PlayerId } from "../primitives.js";
-import { printedCardName } from "../state.js";
-import type { GameObject, GameState } from "../state.js";
+import type { GameState } from "../state.js";
+import { FEATURE_KEYS, featureSign, playerFeatures } from "./features.js";
+import type { PlayerFeatures } from "./features.js";
 
 /**
  * Per-feature multipliers. Tuned offline against a gauntlet of opponents
@@ -177,60 +173,13 @@ const DRAW = 0;
 /** Someone who has already lost contributes nothing an opponent needs to fear. */
 const DEAD = -1e4;
 
-const EVASION: readonly Keyword[] = [
-  "flying",
-  "menace",
-  "trample",
-  "fear",
-  "intimidate",
-  "unblockable",
-];
-
-const COMBAT_KEYWORDS: readonly Keyword[] = [
-  "first-strike",
-  "double-strike",
-  "deathtouch",
-  "lifelink",
-  "vigilance",
-  "indestructible",
-  "hexproof",
-  "shroud",
-];
-
-/** Counter kinds another feature already accounts for, or that measure
- * progress rather than value. */
-const UNSCORED_COUNTERS: ReadonlySet<string> = new Set([
-  "+1/+1",
-  "-1/-1",
-  "loyalty",
-  "lore",
-  "time",
-]);
-
-function manaValueOf(registry: CardRegistry, name: string): number {
-  return registry.has(name) ? manaValue(parseManaCost(registry.get(name).manaCost)) : 0;
+/** The weighted sum of one player's features, signs folded in — the only place
+ * an `EvalWeights` and a `PlayerFeatures` meet. */
+export function scoreFeatures(features: PlayerFeatures, weights: EvalWeights): number {
+  let total = 0;
+  for (const key of FEATURE_KEYS) total += weights[key] * featureSign(key) * features[key];
+  return total;
 }
-
-function hasTapManaAbility(registry: CardRegistry, object: GameObject): boolean {
-  const name = printedCardName(object);
-  if (!registry.has(name)) return false;
-  return (registry.get(name).activated ?? []).some((a) => a.cost.tap && isManaAbility(a));
-}
-
-function castableFromGraveyard(registry: CardRegistry, object: GameObject): boolean {
-  if (object.grantedFlashback) return true;
-  if (!registry.has(object.cardName)) return false;
-  const def = registry.get(object.cardName);
-  return (
-    def.flashback !== null ||
-    def.escape !== null ||
-    def.disturb !== null ||
-    (def.activated ?? []).some((a) => a.zone === "graveyard")
-  );
-}
-
-const count = (c: Characteristics, keywords: readonly Keyword[]): number =>
-  keywords.filter((k) => c.keywords.has(k)).length;
 
 function scorePlayer(
   state: GameState,
@@ -241,96 +190,7 @@ function scorePlayer(
 ): number {
   const p = state.players[player];
   if (p === undefined || p.hasLost) return DEAD;
-  const zones = state.zones.perPlayer[player];
-
-  let creatures = 0;
-  let power = 0;
-  let toughness = 0;
-  let evasivePower = 0;
-  let combatKeywords = 0;
-  let untappedCreatures = 0;
-  let lands = 0;
-  let untappedMana = 0;
-  let otherPermanents = 0;
-  let permanentManaValue = 0;
-  let loyalty = 0;
-  let counters = 0;
-
-  for (const id of state.zones.shared.battlefield) {
-    const object = state.objects[id];
-    if (object === undefined || object.controller !== player) continue;
-    // One object can stand in for many token copies — see "Token stacking" in
-    // CLAUDE.md. A stack of twenty Saprolings is twenty creatures, not one.
-    const n = object.stackCount ?? 1;
-    const c = computeCharacteristics(state, registry, id);
-    const isCreature = c.types.includes("creature");
-    const isLand = c.types.includes("land");
-
-    if (isCreature) {
-      creatures += n;
-      power += c.power * n;
-      toughness += c.toughness * n;
-      if (count(c, EVASION) > 0) evasivePower += c.power * n;
-      combatKeywords += count(c, COMBAT_KEYWORDS) * n;
-      if (!object.tapped && !c.restrictions.has("cant-block")) untappedCreatures += n;
-    }
-    if (isLand) lands += n;
-    else permanentManaValue += manaValueOf(registry, printedCardName(object)) * n;
-    if (!isLand && !isCreature) otherPermanents += n;
-    if (!object.tapped && hasTapManaAbility(registry, object)) untappedMana += n;
-    if (c.types.includes("planeswalker")) loyalty += (object.counters.loyalty ?? 0) * n;
-    for (const [kind, amount] of Object.entries(object.counters)) {
-      if (!UNSCORED_COUNTERS.has(kind)) counters += amount * n;
-    }
-  }
-
-  let handManaValue = 0;
-  if (isMe) {
-    for (const id of zones.hand) {
-      const object = state.objects[id];
-      if (object === undefined || !registry.has(object.cardName)) continue;
-      const def = registry.get(object.cardName);
-      if (!def.types.includes("land")) handManaValue += manaValueOf(registry, def.name);
-    }
-  }
-
-  let graveyardCastable = 0;
-  for (const id of zones.graveyard) {
-    const object = state.objects[id];
-    if (object !== undefined && castableFromGraveyard(registry, object)) graveyardCastable += 1;
-  }
-
-  const commanderDamage = Math.max(0, ...Object.values(p.commanderDamageTaken));
-  const commanderTax = Object.values(p.commanderCastCounts).reduce((a, b) => a + b, 0);
-  const emblems = state.emblems.filter((e) => e.owner === player).length;
-  const cap = Math.max(0, weights.landCap);
-
-  return (
-    weights.life * p.life -
-    weights.commanderDamage * commanderDamage +
-    weights.hand * zones.hand.length +
-    weights.handManaValue * handManaValue +
-    weights.creatures * creatures +
-    weights.power * power +
-    weights.toughness * toughness +
-    weights.evasivePower * evasivePower +
-    weights.combatKeywords * combatKeywords +
-    weights.untappedCreatures * untappedCreatures +
-    weights.lands * Math.min(lands, cap) +
-    weights.extraLands * Math.max(0, lands - cap) +
-    weights.untappedMana * untappedMana +
-    weights.otherPermanents * otherPermanents +
-    weights.permanentManaValue * permanentManaValue +
-    weights.loyalty * loyalty +
-    weights.counters * counters +
-    weights.library * zones.library.length +
-    weights.graveyard * zones.graveyard.length +
-    weights.graveyardCastable * graveyardCastable +
-    weights.energy * p.energy +
-    weights.monarch * (state.monarch === player ? 1 : 0) +
-    weights.emblems * emblems -
-    weights.commanderTax * commanderTax
-  );
+  return scoreFeatures(playerFeatures(state, registry, player, isMe, weights.landCap), weights);
 }
 
 /**
