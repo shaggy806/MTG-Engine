@@ -52,8 +52,29 @@ export type Horizon = "stack" | "turn";
  * - `"defensive"` — v1's blocks everywhere, but only opponents attack; our
  *   own seat never does. v1 swings with everything, which is a poor stand-in
  *   for the bot's own, far more careful attacks.
+ * - `"playing"` — **v3's policy**: every seat plays its whole turn as v1 does,
+ *   casting and activating rather than only fighting combat. The three above
+ *   all pass at every priority window for *every* seat including our own, so a
+ *   candidate is scored as "I do this, and then nobody does anything else all
+ *   turn" — mana is never spent, cards in hand are inert, and nothing can be
+ *   valued for what it enables. Measured: eight untapped Forests and two
+ *   creatures in hand, rolled to end of turn, leaves an empty board under all
+ *   three, and a board with both creatures under this one, for 1.7x the cost
+ *   (1.26ms to 2.18ms). See `docs/plans/bot-v3-search.md`.
  */
-export type RolloutPolicy = "passive" | "combat" | "defensive";
+export type RolloutPolicy = "passive" | "combat" | "defensive" | "playing";
+
+/**
+ * How far past the candidate action a v3 rollout runs, counted in *player
+ * turns* rather than rounds.
+ *
+ * `players + 1` is the meaningful default: far enough to come back round to
+ * ourselves, so a play, every opponent's answer, and our own follow-up all sit
+ * inside the horizon. At two players that is the three turns v3 is named for.
+ */
+export interface Depth {
+  readonly turns: number;
+}
 
 /** A hard ceiling on one rollout, so a pathological line can't stall a room. */
 const MAX_STEPS = 400;
@@ -162,6 +183,58 @@ export class DefendingRolloutController extends CombatRolloutController {
   }
 }
 
+/**
+ * Plain v1, playing its whole turn — the v3 rollout stand-in.
+ *
+ * It exists as a named class rather than using `HeuristicBotController`
+ * directly so the policy table reads uniformly, and so there is one place to
+ * hang the warning: this is the only stand-in that *acts*, and therefore the
+ * only one whose own mistakes end up inside the measurement. Three turns of v1
+ * making mediocre decisions can drown the thing being measured, which is
+ * exactly what killed v2's sibling-pair labels. Averaging over sampled worlds
+ * is the mitigation; if it isn't enough, a better rollout policy is the fix,
+ * not more samples.
+ */
+export class PlayingRolloutController extends HeuristicBotController {}
+
+/**
+ * Play `action` against a copy of `state` and run `depth.turns` player turns of
+ * `policy` past it, returning the resulting state — v3's rollout.
+ *
+ * The caller is expected to hand in an already-determinized `state` (see
+ * `determinize.ts`) and to reuse the same sampled worlds across every candidate
+ * at one decision.
+ */
+export function simulateTurns(
+  state: GameState,
+  registry: CardRegistry,
+  action: Action,
+  depth: Depth,
+  policy: RolloutPolicy = "playing",
+  self?: PlayerController,
+): GameState | null {
+  const seed: GameState = { ...state, eventLog: [] };
+  const until = state.turn.number + Math.max(1, depth.turns);
+  try {
+    const sim = Game.fromSnapshot(seed, {
+      registry,
+      controllers: rolloutControllers(state, registry, action.player, policy, self),
+    });
+    sim.dispatch(action);
+    let steps = 0;
+    sim.advanceUntil((s) => {
+      steps += 1;
+      // A deeper rollout runs many more ticks than a one-turn one, so the step
+      // ceiling scales with the depth rather than staying at `MAX_STEPS` and
+      // silently truncating every rollout at the same place.
+      return steps > MAX_STEPS * depth.turns || s.turn.number >= until;
+    });
+    return sim.state;
+  } catch {
+    return null;
+  }
+}
+
 function rolloutControllers(
   state: GameState,
   registry: CardRegistry,
@@ -174,9 +247,11 @@ function rolloutControllers(
   const controllers: Record<PlayerId, PlayerController> = {};
   for (const player of state.turnOrder) {
     controllers[player] =
-      policy === "defensive" && player === me
-        ? new DefendingRolloutController(player, registry)
-        : new CombatRolloutController(player, registry);
+      policy === "playing"
+        ? new PlayingRolloutController(player, registry)
+        : policy === "defensive" && player === me
+          ? new DefendingRolloutController(player, registry)
+          : new CombatRolloutController(player, registry);
   }
   if (self !== undefined) controllers[me] = self;
   return controllers;

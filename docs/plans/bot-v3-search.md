@@ -60,9 +60,13 @@ worse one.
 
 ## The architecture
 
-**Depth-limited rollout evaluation over sampled worlds.** For each candidate action: sample `K`
-plausible completions of the hidden information, play each forward `D` turns under a policy,
-evaluate the leaf, average. Take the best average.
+**Turn-plan search, evaluated by depth-limited rollouts over sampled worlds.** The bot builds a
+plan for its whole turn, scores it by playing it out and then rolling `D` turns of policy past it
+across `K` sampled completions of the hidden information, and hill-climbs to a better plan.
+
+*(The first draft of this document said "for each candidate action" rather than "for each plan".
+That was measured wrong within the hour — see "The tie trap is fatal to one-ply" below. The
+rollout and determinization machinery is unchanged; what changed is what gets searched.)*
 
 That one change does most of what the Phase 7 feature list was invented to do:
 
@@ -117,16 +121,77 @@ twenty turns of v1. Determinization averaging is the mitigation and it needs *me
 assuming — if `K` has to be large for the signal to clear the noise, the cost multiplies and a
 better rollout policy becomes the cheaper fix.
 
-### What the baseline is, and the tie trap
+### The tie trap is fatal to one-ply, and this is the measurement
 
-Once a rollout completes the turn, **`pass` stops meaning "do nothing"** — it means "let the
-policy play my turn". A decent policy then ties with or beats most single actions, and since ties
-are skipped, the bot would pass its whole turn while the rollout showed it playing. This is the
-same defect that let v2 decline land drops when `extraLands == hand`, one level up.
+The first draft of this document predicted that under a completing rollout `pass` would stop
+meaning "do nothing" and start meaning "let the policy play my turn", so a decent policy would
+tie with most single actions. The fix proposed was to make v1's action the baseline instead of
+`pass`.
 
-So the baseline is **v1's own action**, not `pass`, and ties go to v1. A search that finds nothing
-better plays v1's move, which is also the degradation floor the live time budget already relies
-on.
+**That was far too mild.** Measured at a real turn-8 position (11 candidates, depth 3, `playing`
+policy, one sampled world), the end states are not merely close — they are *identical*:
+
+```
+  IDENTICAL  pass-priority
+  differs    cast-spell obj-128
+  IDENTICAL  cast-spell obj-154
+  IDENTICAL  play-land obj-169
+  IDENTICAL  activate-ability obj-132 #0
+  IDENTICAL  activate-ability obj-132 #1
+  IDENTICAL  activate-ability obj-165 #0
+  IDENTICAL  activate-ability obj-165 #1
+  IDENTICAL  activate-ability obj-167 #0
+  differs    activate-ability obj-167 #1
+  differs    activate-ability obj-167 #2
+```
+
+Eight of eleven candidates produce the same battlefield, the same hand size and the same life
+totals. Scores: seven at exactly -21.1, two at -22.1, one at -22.3.
+
+The reason is structural, and obvious in hindsight: **within one turn the order of most plays
+does not matter, and a greedy policy plays the whole affordable set regardless of which action
+you force first.** So forcing an action changes nothing the policy wasn't going to do anyway. The
+only candidates that separate are the ones v1 *wouldn't* take, and they separate by being worse.
+
+A completing rollout therefore does not fix one-ply search; it **empties it**. The search
+degenerates to "avoid the three moves the policy rejects". And the opposite extreme — v2's
+passing rollout — is uninformative in the mirror-image way, since nothing is ever spent. Neither
+end of the dial works, which means the dial is the wrong control.
+
+### The correction: the turn is the unit of decision, not the priority window
+
+The information the search needs is not "which action first" — it is **which set of plays to make
+this turn**, with their targets, plus the attack. Delegating that set to a policy and searching
+the ordering searches the part that doesn't matter.
+
+So the bot should construct a **turn plan**: the sequence of actions it intends to take this
+turn. A plan is scored by playing it out and then handing to the policy for the opponents' turns
+and our later ones, `D` turns deep, averaged over the sampled worlds. The search is a hill-climb
+over plans — add a play, drop a play, swap a target, change the attack — which is exactly the
+shape the combat builder already uses and for the same reason: the space is far too large to
+enumerate and greedy-incremental is close enough.
+
+Every decision that actually matters becomes visible under this model:
+
+- **Which subset**, when mana won't stretch to everything — two plans, different contents.
+- **Targets** — two plans, same play, different target.
+- **Holding up mana** — the plan that deliberately omits a play, which is finally expressible.
+- **Sequencing**, where it genuinely matters (a cost reducer before the thing it reduces).
+- **Combat**, folded into the plan rather than searched separately.
+
+It is also *cheaper*. A plan is searched once per turn rather than at every priority window: a
+hill-climb of 10–20 plan evaluations, times `K` worlds, times ~6ms is roughly 0.6–1.2s **per
+turn**, against v2's per-window cost repeated a dozen times a turn.
+
+The engine calls `act()` once per priority window, so the controller plans at the first window of
+its turn and then executes the plan action by action — replanning when the state diverges from
+what the plan assumed, which is what an opponent responding looks like. Plan-and-execute with
+replanning is a standard shape and it is also, not coincidentally, what a human does: look at the
+hand and board, decide the turn, play it out.
+
+**Baseline and ties** still matter under this model, but they get easier: the baseline is v1's
+whole turn (the plan the policy would have produced), and a searched plan has to beat it. Ties go
+to v1.
 
 ### Budget
 
@@ -141,6 +206,8 @@ first.
 
 | Question | Starting answer | How it gets settled |
 |---|---|---|
+| How is a plan represented and replanned? | A list of actions, re-derived whenever the state diverges from what the plan assumed | The first thing to build; the replanning trigger is the fiddly part |
+| What plan moves does the hill-climb make? | add a play, drop a play, swap a target, change the attack | Mirror the combat builder, which already works |
 | `K`, the number of sampled worlds | 5 | Sweep 1/3/5/10; watch decision variance and win rate together |
 | `D`, the depth | `players + 1` | Sweep 2/3/5; expect a noise ceiling |
 | Rollout policy | v1 everywhere | Compare against a greedy-evaluation policy once one exists |
@@ -155,6 +222,10 @@ Each step is measured before the next starts, because the whole lesson of v2 is 
 steps compound into a design nobody can debug.
 
 1. **Determinization + `D`-turn rollouts**, behind a flag, defaults unchanged. Measure cost.
+   *(Done. `determinize.ts`, `simulate.ts`'s `playing` policy and `simulateTurns`, and
+   `bot:rollout-cost`. A depth-3 rollout is 5–11ms depending on board size, so a plan hill-climb
+   at K=5 costs roughly a second per turn. The same measurement is what exposed the tie trap.)*
+1b. **Turn-plan search**, replacing the per-window candidate search.
 2. **Re-run `bot:audit` and the gauntlet.** Card prices will move; some Phase 7 features may stop
    being necessary and others may appear. *Do not touch the feature set before this.*
 3. **Re-derive the feature set** from the new audit.

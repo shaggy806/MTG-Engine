@@ -1,6 +1,7 @@
 /** The searching bot (v2) — see `docs/plans/smarter-bots.md`. */
 
 export * from "./features.js";
+export * from "./determinize.js";
 export * from "./evaluate.js";
 export * from "./candidates.js";
 export * from "./simulate.js";

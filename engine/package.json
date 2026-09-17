@@ -40,7 +40,8 @@
     "bot:harvest": "node scripts/harvest-positions.mjs",
     "bot:fit": "node scripts/fit-weights.mjs",
     "bot:scenarios": "node scripts/check-scenarios.mjs",
-    "bot:audit": "node scripts/audit-evaluation.mjs"
+    "bot:audit": "node scripts/audit-evaluation.mjs",
+    "bot:rollout-cost": "node scripts/rollout-cost.mjs"
   },
   "keywords": [],
   "author": "",
