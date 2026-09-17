@@ -109,7 +109,7 @@ inside the horizon. At two players that is the 3 turns this design is named for.
 Open: whether depth should shorten as the board grows (rollout cost scales with board size), and
 whether the last turn should be truncated at end-of-turn rather than played fully.
 
-### Rollout policy
+### Rollout policy — now the binding constraint
 
 v1 (`HeuristicBotController`) for every seat, as v2's `combat` policy already does — except that
 our own seat now *plays* rather than passing.
@@ -117,9 +117,20 @@ our own seat now *plays* rather than passing.
 The honest risk, stated up front: **deeper rollouts mean more policy noise.** Three turns of v1
 making mediocre decisions can drown the thing being measured. This is exactly what killed v2's
 sibling-pair labels, where 60 of 63 pairs came out tied because a single move rarely survives
-twenty turns of v1. Determinization averaging is the mitigation and it needs *measuring*, not
-assuming — if `K` has to be large for the signal to clear the noise, the cost multiplies and a
-better rollout policy becomes the cheaper fix.
+twenty turns of v1.
+
+**Confirmed, on the first position inspected.** Casting a Stormfist Crusader scored 21 points
+worse than not casting it. Reading the end states (`bot:plan` prints them, which is why it
+exists) the line is: the Crusader is cast, v1 attacks it into a board with a 2/2 and an anthem,
+it dies, and its symmetric "each player draws" trigger has meanwhile given the opponent a card.
+The 21 points are real *given that rollout*, and the rollout is v1 misplaying. A competent player
+holds the 2/1 back as a blocker.
+
+So the search's ceiling is now the policy's competence, and that is a different problem from the
+one v2 had. Two ways out, in order of cost: a better rollout policy (a greedy-evaluation player
+rather than v1), or more sampled worlds so policy variance averages out — which does *not* help
+here, because this is policy **bias**, not variance. Averaging cannot fix a policy that is
+reliably wrong in the same direction, which is the argument for fixing the policy first.
 
 ### The tie trap is fatal to one-ply, and this is the measurement
 
@@ -225,7 +236,10 @@ steps compound into a design nobody can debug.
    *(Done. `determinize.ts`, `simulate.ts`'s `playing` policy and `simulateTurns`, and
    `bot:rollout-cost`. A depth-3 rollout is 5–11ms depending on board size, so a plan hill-climb
    at K=5 costs roughly a second per turn. The same measurement is what exposed the tie trap.)*
-1b. **Turn-plan search**, replacing the per-window candidate search.
+1b. **Turn-plan search**, replacing the per-window candidate search. *(Built: `plan.ts`,
+   `bot:plan`. It separates where per-action search collapsed — an empty plan, a land plan and a
+   land-plus-spell plan score -8.4, -2.3 and -23.1 on the position where eight of eleven actions
+   had been identical. Not yet wired into a controller.)*
 2. **Re-run `bot:audit` and the gauntlet.** Card prices will move; some Phase 7 features may stop
    being necessary and others may appear. *Do not touch the feature set before this.*
 3. **Re-derive the feature set** from the new audit.
