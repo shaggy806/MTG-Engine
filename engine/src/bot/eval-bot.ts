@@ -61,7 +61,50 @@ export interface EvalBotOptions {
    * declarations get the same budget each.
    */
   readonly maxSimulations?: number;
+  /**
+   * Wall-clock ceiling on one decision, in milliseconds. **Off by default**,
+   * and that default is deliberate.
+   *
+   * Counting simulations does not bound time, because a simulation's cost
+   * grows with the board: on a four-player board of 200+ permanents a single
+   * end-of-turn rollout costs ~400ms, so ten candidates is 4s and the
+   * 200-simulation ceiling is over a minute. Measured worst cases were 2s at
+   * two players and 14s at four, against a room's 350ms think pause.
+   *
+   * A clock fixes that, at the cost of the engine's determinism guarantee —
+   * same seed plus same controllers no longer replays identically, because a
+   * busier machine searches less. So it stays off for tests, the fuzzer and
+   * the tuner, which need reproducibility, and `Room.addBot` turns it on for
+   * live play, where a bounded response matters more than a reproducible one.
+   *
+   * When it expires the search returns the best candidate found *so far*, and
+   * candidates are ordered so that "so far" is worth something: passing and
+   * v1's own choice are scored first, so an early cutoff degrades to v1-quality
+   * play rather than to whatever happened to be enumerated first.
+   */
+  readonly timeBudgetMs?: number;
 }
+
+/**
+ * What a search may still spend: simulations, and time.
+ *
+ * `until` is a `Date.now()` stamp rather than `performance.now()` — this module
+ * is bundled into the client as well as run in the server, and millisecond
+ * resolution is ample for a budget measured in hundreds of them.
+ */
+interface SearchBudget {
+  left: number;
+  readonly until: number;
+}
+
+const spent = (budget: SearchBudget): boolean =>
+  budget.left <= 0 || (budget.until !== Infinity && Date.now() >= budget.until);
+
+/** Structural equality, for spotting v1's chosen action among the enumerated
+ * candidates. An `Action` is a plain JSON-able record whose keys are built in
+ * a fixed order by `candidateActions`, so comparing serialisations is exact
+ * here and far simpler than a per-variant comparison. */
+const sameAction = (a: Action, b: Action): boolean => JSON.stringify(a) === JSON.stringify(b);
 
 const DEFAULT_MAX_SIMULATIONS = 200;
 
@@ -100,20 +143,20 @@ function hillClimb<T>(
   start: readonly T[],
   neighbours: (current: readonly T[]) => { next: T[]; estimate: number }[],
   score: (declaration: readonly T[]) => number | null,
-  budget: number,
+  budget: SearchBudget,
 ): [T[], number] {
   let current = [...start];
+  budget.left -= 1;
   let currentScore = score(current) ?? -Infinity;
-  let left = budget - 1;
-  while (left > 0) {
+  while (!spent(budget)) {
     const ranked = neighbours(current)
       .sort((a, b) => b.estimate - a.estimate)
       .slice(0, MOVES_PER_ROUND);
     let step: T[] | null = null;
     let stepScore = currentScore;
     for (const { next } of ranked) {
-      if (left <= 0) break;
-      left -= 1;
+      if (spent(budget)) break;
+      budget.left -= 1;
       const value = score(next);
       if (value !== null && value > stepScore) {
         step = next;
@@ -141,11 +184,6 @@ function hillClimb<T>(
 const DECISION_ROLLOUTS = 12;
 const NESTED_DECISION_ROLLOUTS = 2;
 
-/** A shared, spendable count of rollouts. */
-interface Budget {
-  left: number;
-}
-
 /**
  * The best answer to the decision pending in `view`, by playing each candidate
  * out to `horizon` and scoring it. Ties keep `inherited` — v1's answer — so a
@@ -165,11 +203,11 @@ function bestDecision(
   weights: EvalWeights,
   horizon: Horizon,
   rollout: RolloutPolicy,
-  budget: Budget,
+  budget: SearchBudget,
   selfFor?: () => PlayerController,
 ): Action {
   const me = view.player;
-  if (inherited.player !== me || budget.left <= 1) return inherited;
+  if (inherited.player !== me || budget.left <= 1 || spent(budget)) return inherited;
   const legal = view.legalActions().find((l) => l.kind !== "pass-priority");
   const candidates =
     legal === undefined
@@ -186,7 +224,7 @@ function bestDecision(
   let bestScore = score(inherited) ?? -Infinity;
   const seen = JSON.stringify(inherited);
   for (const candidate of candidates) {
-    if (budget.left <= 0) break;
+    if (spent(budget)) break;
     if (JSON.stringify(candidate) === seen) continue;
     const value = score(candidate);
     if (value !== null && value > bestScore) {
@@ -220,7 +258,7 @@ class DecisionRolloutController extends CombatRolloutController {
   private readonly weights: EvalWeights;
   private readonly horizon: Horizon;
   private readonly rollout: RolloutPolicy;
-  private readonly budget: Budget = { left: NESTED_DECISION_ROLLOUTS };
+  private readonly budget: SearchBudget = { left: NESTED_DECISION_ROLLOUTS, until: Infinity };
 
   constructor(
     playerId: PlayerId,
@@ -266,6 +304,7 @@ export class EvalBotController extends HeuristicBotController {
   private readonly rollout: RolloutPolicy;
   private readonly rolloutDecisions: boolean;
   private readonly maxSimulations: number;
+  private readonly timeBudgetMs: number;
 
   constructor(
     playerId: PlayerId,
@@ -279,6 +318,7 @@ export class EvalBotController extends HeuristicBotController {
     this.rollout = options.rollout ?? "combat";
     this.rolloutDecisions = options.rolloutDecisions ?? false;
     this.maxSimulations = options.maxSimulations ?? DEFAULT_MAX_SIMULATIONS;
+    this.timeBudgetMs = options.timeBudgetMs ?? Infinity;
   }
 
   act(view: ControllerView): Action {
@@ -295,29 +335,54 @@ export class EvalBotController extends HeuristicBotController {
     // Scoring against "is this better than the current state" instead would
     // make the bot inactive-by-default and turn the zero point into an extra
     // implicit weight — a land drop sits almost exactly on it.
+    const budget = this.budget();
     let best: Action = pass;
     // Passing is always legal at a priority window, so a `null` here means the
     // simulation itself fell over; treat it as "no baseline" rather than
     // letting it veto every alternative.
+    budget.left -= 1;
     let bestScore = this.score(view, pass) ?? -Infinity;
-    let budget = this.maxSimulations;
 
+    const candidates: Action[] = [];
     for (const legal of view.legalActions()) {
       // Mana abilities are never worth a simulation: casting auto-pays, so
       // tapping for mana on its own gains nothing the evaluation could see,
       // and on a wide board they're nearly every candidate there is — 27 of
       // 30 on one 38-permanent board, which made a single decision a 2s search.
       if (legal.kind === "activate-ability" && this.isManaOnlyAbility(legal)) continue;
-      for (const action of candidateActions(legal, player)) {
-        if (budget <= 0) return best;
-        budget -= 1;
-        const score = this.score(view, action);
-        if (score === null || score <= bestScore) continue;
-        bestScore = score;
-        best = action;
-      }
+      candidates.push(...candidateActions(legal, player));
+    }
+
+    // v1's own pick goes first, because under a wall-clock budget the search
+    // may not reach the end of this list — and what it has scored by then is
+    // what it plays. Enumeration order is an accident of `legalActions`, so
+    // without this an early cutoff would leave the bot choosing between
+    // passing and whichever card happened to be enumerated first. Scoring v1's
+    // choice first makes the floor "v1's move, or passing, whichever actually
+    // measured better", which is a policy worth degrading to.
+    const inheritedFirst = candidates.findIndex((a) => sameAction(a, inherited));
+    if (inheritedFirst > 0) {
+      const [preferred] = candidates.splice(inheritedFirst, 1);
+      candidates.unshift(preferred);
+    }
+
+    for (const action of candidates) {
+      if (spent(budget)) break;
+      budget.left -= 1;
+      const score = this.score(view, action);
+      if (score === null || score <= bestScore) continue;
+      bestScore = score;
+      best = action;
     }
     return best;
+  }
+
+  /** A fresh budget for one decision. */
+  private budget(left: number = this.maxSimulations): SearchBudget {
+    return {
+      left,
+      until: this.timeBudgetMs === Infinity ? Infinity : Date.now() + this.timeBudgetMs,
+    };
   }
 
   /**
@@ -332,7 +397,7 @@ export class EvalBotController extends HeuristicBotController {
       this.weights,
       this.horizon,
       this.rollout,
-      { left: Math.min(DECISION_ROLLOUTS, this.maxSimulations) },
+      this.budget(Math.min(DECISION_ROLLOUTS, this.maxSimulations)),
       () => this.selfInRollouts(),
     );
   }
@@ -425,7 +490,7 @@ export class EvalBotController extends HeuristicBotController {
             }),
           ),
       score,
-      this.maxSimulations,
+      this.budget(),
     );
     const fallbackScore = fallback.length > 0 ? score(fallback) : null;
     return fallbackScore !== null && fallbackScore > builtScore ? fallback : built;
@@ -517,7 +582,7 @@ export class EvalBotController extends HeuristicBotController {
     // Starting from v1's blocks matters: v1 already chump-blocks when facing
     // lethal, a position a one-blocker-at-a-time climb from nothing can't get
     // out of when no single chump is enough by itself.
-    const [best] = hillClimb(fallback, neighbours, score, this.maxSimulations);
+    const [best] = hillClimb(fallback, neighbours, score, this.budget());
     return best;
   }
 

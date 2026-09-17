@@ -28,7 +28,7 @@
  * push at the end — which is what tests and scripts drive rooms with.
  */
 
-import { Game, HeuristicBotController, actionPlayer, activePlayerOf, isSettled } from "engine";
+import { EvalBotController, Game, actionPlayer, activePlayerOf, isSettled } from "engine";
 import type { Action, AwaitingDecision, ControllerView, GameState, PlayerController, PlayerId } from "engine";
 import { HostRole } from "./host.js";
 import type { BotSpeed, SeatStatus, ServerMessage, WireDeck } from "./protocol.js";
@@ -81,6 +81,23 @@ const FRAME_ACK_TIMEOUT_MS = 6_000;
  * moves with nothing animatable in them (passing priority round a table,
  * say) still reads as separate moves rather than one blur. */
 const BOT_MIN_THINK_MS = 350;
+/**
+ * How long a bot may spend deciding one move.
+ *
+ * The v2 bot searches by simulating candidate moves, and a simulation's cost
+ * grows with the board — on a wide four-player board a single rollout is
+ * ~400ms, and worst-case decisions were measured at 2s (two players) and 14s
+ * (four) before this existed. Its own `maxSimulations` ceiling counts
+ * simulations, which bounds *work* and not *time*.
+ *
+ * Set a shade under `BOT_MIN_THINK_MS` so a bot's thinking disappears inside
+ * the pause the room is already taking for animations: search and pause run
+ * concurrently, so as long as the search finishes first it costs nothing
+ * visible. The search returns its best candidate so far when the budget runs
+ * out, having scored passing and v1's own choice first, so an expired search
+ * degrades to v1-quality play rather than to nothing.
+ */
+const BOT_DECISION_BUDGET_MS = 300;
 /**
  * The host's bot speed, as a pause *after* every client has finished showing
  * a bot's move and before the next one. On top of the animation wait rather
@@ -244,7 +261,7 @@ export class Room {
     this.lastActivityAt = Date.now();
   }
 
-  /** Fills `player`'s seat with a basic heuristic bot instead of a human
+  /** Fills `player`'s seat with a searching bot instead of a human
    * connection — rejects a seat already claimed by a human or already
    * bot-controlled. Settles immediately afterward: the bot may already be
    * up to act (e.g. the mulligan phase, before any human has joined).
@@ -256,7 +273,14 @@ export class Room {
     const seat = this.seatFor(player);
     if (seat.clientToken !== null) throw new Error(`seat ${player} is already claimed`);
     if (this.bots.has(player)) throw new Error(`seat ${player} already has a bot`);
-    this.bots.set(player, new HeuristicBotController(player));
+    // v2, the one-ply searching bot (`docs/plans/smarter-bots.md`). v1's
+    // `HeuristicBotController` is still its base class and its fallback for
+    // every decision the search doesn't improve on, so this is a strict
+    // upgrade rather than a different bot. `timeBudgetMs` is what makes it
+    // safe to seat: see `BOT_DECISION_BUDGET_MS`.
+    this.bots.set(player, new EvalBotController(player, undefined, {
+      timeBudgetMs: BOT_DECISION_BUDGET_MS,
+    }));
     this.lastActivityAt = Date.now();
     this.settle();
   }

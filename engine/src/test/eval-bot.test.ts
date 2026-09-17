@@ -5,7 +5,7 @@ import { DEFAULT_WEIGHTS, evaluateState } from "../bot/evaluate.js";
 import type { EvalWeights } from "../bot/evaluate.js";
 import { candidateActions } from "../bot/candidates.js";
 import { createDefaultRegistry } from "../cards.js";
-import type { PlayerController } from "../controller.js";
+import type { ControllerView, PlayerController } from "../controller.js";
 import { HeuristicBotController } from "../controller.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
@@ -120,6 +120,58 @@ describe("EvalBotController", () => {
       registry.get(game.state.objects[id].cardName).types.includes("land"),
     );
     expect(lands.length).toBeGreaterThan(0);
+  }, GAME_TIMEOUT_MS);
+});
+
+describe("the decision time budget", () => {
+  // `maxSimulations` bounds *work*, not *time* — a rollout on a wide
+  // four-player board costs ~400ms, so the 200-simulation ceiling is over a
+  // minute. `timeBudgetMs` is what makes the bot safe to seat in a live room
+  // (`Room.addBot`), and what it must guarantee is not speed but *graceful
+  // degradation*: an expired search still returns a legal, sensible move.
+  const atMain = (): Game => {
+    const game = Game.create({ seed: 4, registry, decks: seatsFor([A, B]) });
+    game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+    return game;
+  };
+
+  const viewOf = (game: Game): ControllerView => ({
+    state: game.state,
+    player: A,
+    legalActions: () => game.legalActions(A),
+  });
+
+  it("still returns a move the engine accepts when the budget is already spent", () => {
+    const game = atMain();
+    // A deadline in the past: every `spent()` check fails immediately, so the
+    // search gets no candidate scored beyond its first.
+    const action = new EvalBotController(A, registry, { timeBudgetMs: 0 }).act(viewOf(game));
+    expect(() => game.dispatch(action)).not.toThrow();
+  });
+
+  it("degrades to passing or v1's own choice, not to an arbitrary candidate", () => {
+    // The ordering guarantee: `pass` and v1's pick are scored first, so
+    // whatever "best so far" holds when the clock runs out is one of those
+    // two. Without it an early cutoff would leave the bot playing whichever
+    // card `legalActions` happened to enumerate first.
+    const game = atMain();
+    const view = viewOf(game);
+    const v1 = new HeuristicBotController(A, registry).act(view);
+    const rushed = new EvalBotController(A, registry, { timeBudgetMs: 0 }).act(view);
+    expect([JSON.stringify(v1), JSON.stringify({ type: "pass-priority", player: A })]).toContain(
+      JSON.stringify(rushed),
+    );
+  });
+
+  it("is off by default, so seeded replays stay deterministic", () => {
+    // The engine's determinism guarantee (same seed + same controllers =>
+    // identical replay) can't survive a wall clock, since a busier machine
+    // searches less. Tests, the fuzzer and the tuner all depend on it, so the
+    // budget is opt-in and only `Room.addBot` opts in.
+    const once = playOut([A, B], evalBots([A, B]), 8).state;
+    const twice = playOut([A, B], evalBots([A, B]), 8).state;
+    expect(twice.turn.number).toBe(once.turn.number);
+    expect(twice.eventLog.length).toBe(once.eventLog.length);
   }, GAME_TIMEOUT_MS);
 });
 

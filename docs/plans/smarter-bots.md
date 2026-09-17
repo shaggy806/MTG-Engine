@@ -488,6 +488,32 @@ Agreed 2026-09-16. Each phase is measured with `bot:bench` before and after.
    and four players, passes every scenario test, and its worst-case decision time fits the
    think pause. From then on rooms record bot game results (see below).
 
+### Phase 6 notes: the decision time budget
+
+The thing that kept the bot out of live rooms was never its strength — it was that
+`maxSimulations` bounds **work, not time**. A simulation's cost grows with the board: on a
+four-player board of 200+ permanents one end-of-turn rollout is ~400ms, so ten candidates is 4s
+and the 200-simulation ceiling is over a minute. Measured worst cases were 2s at two players and
+14s at four, against a room's 350ms think pause.
+
+`EvalBotOptions.timeBudgetMs` is a wall-clock ceiling on one decision, threaded through the
+priority search, the combat hill-climb and the mid-resolution decision search as a shared
+`SearchBudget { left, until }`. Three things about it are deliberate:
+
+- **Off by default.** A clock breaks the engine's determinism guarantee — same seed plus same
+  controllers no longer replays identically, because a busier machine searches less. The tests,
+  the fuzzer and the tuner all depend on that, so the budget is opt-in and only `Room.addBot`
+  opts in. `bot:bench --bot-options '{"timeBudgetMs":300}'` measures it when wanted.
+- **Candidate order is what makes it safe.** An expired search plays the best candidate found
+  *so far*, so what gets scored first decides how it degrades. `pass` is scored first (it was
+  already the baseline) and then v1's own pick, which is pulled to the front of the enumerated
+  list. The floor is therefore "passing or v1's move, whichever actually measured better" —
+  a policy worth degrading to — rather than whichever card `legalActions` happened to emit
+  first. Without that reordering an expired search would have been *worse* than v1.
+- **300ms, a shade under `BOT_MIN_THINK_MS`.** The room already pauses 350ms after each bot
+  action so clients can animate it, and the search runs inside that pause, so a search that
+  finishes first costs nothing visible.
+
 ### Phase 1 notes: the features, and what the defaults cost
 
 Done. `evaluate.ts` now carries every term in the list above except poison, which the engine
