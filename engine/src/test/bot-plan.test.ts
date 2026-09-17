@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest";
 import { canDeterminize, determinize, sampleWorlds } from "../bot/determinize.js";
 import { rolloutPlan, scorePlan, searchTurnPlan } from "../bot/plan.js";
 import { DEFAULT_WEIGHTS } from "../bot/evaluate.js";
+import { PlanBotController } from "../bot/plan-bot.js";
 import { createDefaultRegistry } from "../cards.js";
+import { HeuristicBotController } from "../controller.js";
 import { Game } from "../game.js";
 import { createRng } from "../primitives.js";
 import { asPlayerId } from "../primitives.js";
@@ -11,6 +13,8 @@ import type { PlayerId } from "../primitives.js";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
+const C = asPlayerId("carol");
+const D = asPlayerId("dave");
 
 const registry = createDefaultRegistry();
 
@@ -89,6 +93,71 @@ describe("determinization", () => {
     const twice = sampleWorlds(game.state, A, 3).map((w) => JSON.stringify(w.zones.perPlayer[B].hand));
     expect(twice).toEqual(once);
   });
+});
+
+describe("PlanBotController", () => {
+  // The same job `eval-bot.test.ts` does for v2 and `heuristic-bot.test.ts` for
+  // v1: a fuzz target. The planner dispatches concrete fillings of every
+  // legal-action shape and replays plans built in one sampled world against
+  // another, so anything `legalActions` offers that `dispatch` refuses — or any
+  // plan that survives into a state where it is illegal — surfaces here.
+  //
+  // Settings are deliberately small: this is checking that whole games run, not
+  // how well they are played, and `bot:bench --bot v3` is where strength gets
+  // measured.
+  const fast = { worlds: 1, depth: 2, planBudgetMs: 200 };
+
+  const playOut = (players: readonly PlayerId[], seed: number): Game => {
+    const game = Game.create({
+      seed,
+      mulligans: true,
+      registry,
+      controllers: Object.fromEntries(
+        players.map((p) => [p, new PlanBotController(p, registry, fast)]),
+      ),
+      decks: players.map((player) => ({ player, cards: deck() })),
+    });
+    game.advance();
+    return game;
+  };
+
+  const TIMEOUT = 180_000;
+
+  it("plays a full 2-player game against itself", () => {
+    expect(playOut([A, B], 1).isOver).toBe(true);
+  }, TIMEOUT);
+
+  it("plays a full 4-player game against itself", () => {
+    expect(playOut([A, B, C, D], 7).isOver).toBe(true);
+  }, TIMEOUT);
+
+  it("plays against v1 at a 3-player table", () => {
+    const game = Game.create({
+      seed: 11,
+      mulligans: true,
+      registry,
+      controllers: {
+        [A]: new PlanBotController(A, registry, fast),
+        [B]: new HeuristicBotController(B, registry),
+        [C]: new PlanBotController(C, registry, fast),
+      },
+      decks: [A, B, C].map((player) => ({ player, cards: deck() })),
+    });
+    game.advance();
+    expect(game.isOver).toBe(true);
+  }, TIMEOUT);
+
+  it("develops a board rather than passing its turns away", () => {
+    // The regression that cost 0-4 against v1: plans were built in the upkeep,
+    // where nothing is castable, so every plan came out empty — and an empty
+    // plan means "pass the whole turn". A bot that does nothing still finishes
+    // a game, so the fuzz tests above would not have caught it.
+    const game = playOut([A, B], 5);
+    const lands = game.state.zones.shared.battlefield.filter((id) =>
+      registry.get(game.state.objects[id].cardName).types.includes("land"),
+    );
+    expect(lands.length).toBeGreaterThan(0);
+  }, TIMEOUT);
 });
 
 describe("turn plans", () => {
