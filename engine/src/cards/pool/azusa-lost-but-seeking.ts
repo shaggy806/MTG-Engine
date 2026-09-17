@@ -1,8 +1,11 @@
 import { defineCard } from "../define.js";
 
 // needed-cards P16. New: StaticAbility.extraLandsPerTurn.
+// Once registered as "Princess Sarah", its Final Fantasy: Through the Ages
+// flavor name — but decklists, EDHREC and Scryfall's exact-name lookup all
+// use the Oracle name, so the card has to be registered under it.
 export default defineCard({
-  name: "Princess Sarah",
+  name: "Azusa, Lost but Seeking",
   manaCost: "{2}{G}",
   colors: ["G"],
   supertypes: ["legendary"],

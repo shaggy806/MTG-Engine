@@ -378,7 +378,7 @@ export interface StaticAbility {
     readonly plusToughness: number;
   };
   /** Additional land drops per turn for this permanent's controller (rule
-   * 305.2c-adjacent — needed-cards P16, Princess Sarah / Icetill Explorer).
+   * 305.2c-adjacent — needed-cards P16, Azusa, Lost but Seeking / Icetill Explorer).
    * `affects` is ignored — folded into the controller's land-drop budget. */
   readonly extraLandsPerTurn?: number;
   /** Panharmonicon-style doubling (needed-cards P15 — Starfield Vocalist:

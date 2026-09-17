@@ -139,7 +139,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [x] 1 Oracle of Mul Daya
 [+] 1 Orcish Lumberjack                (P20 — new `add-mana` `{ oneOf }` combination-mana form. The filtered-sacrifice cost still disqualifies it from `isManaAbility`, so it uses the stack rather than resolving instantly as a true mana ability — documented in the card file)
 [+] 1 Overgrown Tomb
-[+] 1 Princess Sarah                   (P16 — new extraLandsPerTurn static)
+[+] 1 Azusa, Lost but Seeking          (P16 — new extraLandsPerTurn static; listed as its flavor name Princess Sarah)
 [ ] 1 Rain of Filth                    FEATURE: "sacrifice a land: add {B}" granted to every land you control, until end of turn (ritual) — a temporary ability grant to a filtered class of permanents; only a permanent static can grant abilities today
 [+] 1 Rakdos Charm                     (P20 — modes 1/2 already worked via `castModal`; new "creatures-damage-controllers" effect for mode 3, a mass reflexive damage effect distinct from `damage-all`)
 [+] 1 Ramunap Excavator

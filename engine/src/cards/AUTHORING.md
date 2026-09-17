@@ -810,7 +810,7 @@ static: [
   play. Distinct from `revealsOwnLibraryTop` (the "play with the top card
   revealed" half, which only affects `viewFor`).
 - `extraLandsPerTurn: number` — additional land drops per turn for this
-  permanent's controller (Oracle of Mul Daya, Princess Sarah — needed-cards
+  permanent's controller (Oracle of Mul Daya, Azusa, Lost but Seeking — needed-cards
   P16). `affects` is ignored.
 - `doubleEntryTriggers: { filter? }` — Panharmonicon-style doubling (needed-cards
   P15 — Starfield Vocalist): if a permanent entering causes a triggered ability

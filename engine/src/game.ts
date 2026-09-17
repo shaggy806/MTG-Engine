@@ -3888,7 +3888,7 @@ export class Game {
   }
 
   /** The base land-drop limit plus any `extraLandsPerTurn` statics `player`
-   * controls (Princess Sarah, Icetill Explorer — needed-cards P16). */
+   * controls (Azusa, Lost but Seeking, Icetill Explorer — needed-cards P16). */
   private maxLandsFor(player: PlayerId): number {
     let extra = 0;
     for (const id of this.state.zones.shared.battlefield) {

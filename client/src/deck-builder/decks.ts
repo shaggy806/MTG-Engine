@@ -48,9 +48,38 @@ function newId(): string {
 function readDecks(): SavedDeck[] {
   try {
     const raw = window.localStorage.getItem(DECKS_KEY)
-    return raw ? (JSON.parse(raw) as SavedDeck[]) : []
+    return raw ? (JSON.parse(raw) as SavedDeck[]).map(renameCards) : []
   } catch {
     return []
+  }
+}
+
+/** Cards the pool once registered under another name — a deck saved before
+ * the rename would otherwise hold a name the server no longer knows, and be
+ * refused when brought to a table. */
+const RENAMED_CARDS: Readonly<Record<string, string>> = {
+  // Its Final Fantasy flavor name; decklists use the Oracle name.
+  'Princess Sarah': 'Azusa, Lost but Seeking',
+}
+
+function renameCards(deck: SavedDeck): SavedDeck {
+  const renamed = (name: string) => RENAMED_CARDS[name] ?? name
+  const touched =
+    deck.cards.some((n) => n in RENAMED_CARDS) ||
+    (deck.commander !== undefined && deck.commander in RENAMED_CARDS) ||
+    Object.keys(deck.printings ?? {}).some((n) => n in RENAMED_CARDS)
+  if (!touched) return deck
+  return {
+    ...deck,
+    cards: deck.cards.map(renamed),
+    commander: deck.commander === undefined ? undefined : renamed(deck.commander),
+    ...(deck.printings
+      ? {
+          printings: Object.fromEntries(
+            Object.entries(deck.printings).map(([name, id]) => [renamed(name), id]),
+          ),
+        }
+      : {}),
   }
 }
 

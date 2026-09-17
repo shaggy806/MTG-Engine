@@ -1,5 +1,5 @@
 /**
- * Extra land drops per turn (needed-cards P16 — Princess Sarah / Icetill
+ * Extra land drops per turn (needed-cards P16 — Azusa, Lost but Seeking / Icetill
  * Explorer). New: `StaticAbility.extraLandsPerTurn`, folded into
  * `Game.maxLandsFor` on top of the global `GameRules.maxLandsPerTurn`.
  */
@@ -50,11 +50,11 @@ const spawn = (game: Game, cardName: string, controller: PlayerId): ObjectId => 
 const toPrecombat = (s: GameState): boolean =>
   s.turn.number === 1 && s.turn.step === "precombat-main";
 
-describe("Princess Sarah — two additional land drops", () => {
+describe("Azusa, Lost but Seeking — two additional land drops", () => {
   it("allows three lands in one turn instead of one", () => {
     const game = mkGame(["Forest", "Forest", "Forest"]);
     game.advanceUntil(toPrecombat);
-    spawn(game, "Princess Sarah", A);
+    spawn(game, "Azusa, Lost but Seeking", A);
     const forests = game.handOf(A).filter((id) => game.state.objects[id].cardName === "Forest");
 
     for (const id of forests) {

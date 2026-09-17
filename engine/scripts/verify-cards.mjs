@@ -147,8 +147,9 @@ function sameSet(a, b) {
 
 /** Every name a face/card could legitimately be looked up under — its real
  * name and its Universes Beyond `flavor_name` (Azusa, Lost but Seeking /
- * "Princess Sarah" — our registry uses whichever name is actually printed
- * on the card, which for a crossover card is the flavor name). */
+ * "Princess Sarah"). Pool cards are registered under the Oracle name, which
+ * is what decklists use, but a crossover card authored under its flavor name
+ * should still be found rather than reported missing. */
 function namesOf(faceOrCard) {
   return [faceOrCard.name, faceOrCard.flavor_name].filter((n) => n !== undefined);
 }

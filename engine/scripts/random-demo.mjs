@@ -123,7 +123,7 @@ const deckA = deck([
   ["Ramunap Excavator", 1],
   ["Tireless Provisioner", 1],
   ["Lotus Cobra", 1],
-  ["Princess Sarah", 1],
+  ["Azusa, Lost but Seeking", 1],
   ["Icetill Explorer", 1],
   ["Sabotender", 1],
   ["Tannuk, Memorial Ensign", 1],

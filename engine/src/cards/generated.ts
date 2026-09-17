@@ -40,6 +40,7 @@ import _poolAvacynsPilgrim from "./pool/avacyns-pilgrim.js";
 import _poolAvenGagglemaster from "./pool/aven-gagglemaster.js";
 import _poolAyaraFirstOfLocthwain from "./pool/ayara-first-of-locthwain.js";
 import _poolAzoriusSignet from "./pool/azorius-signet.js";
+import _poolAzusaLostButSeeking from "./pool/azusa-lost-but-seeking.js";
 import _poolBadlands from "./pool/badlands.js";
 import _poolBaithookAngler from "./pool/baithook-angler.js";
 import _poolBanishingLight from "./pool/banishing-light.js";
@@ -397,7 +398,6 @@ import _poolPreordain from "./pool/preordain.js";
 import _poolPresenceOfGond from "./pool/presence-of-gond.js";
 import _poolPreyUpon from "./pool/prey-upon.js";
 import _poolPrimalMight from "./pool/primal-might.js";
-import _poolPrincessSarah from "./pool/princess-sarah.js";
 import _poolProdigalSorcerer from "./pool/prodigal-sorcerer.js";
 import _poolProsperousInnkeeper from "./pool/prosperous-innkeeper.js";
 import _poolProvokeTheTrolls from "./pool/provoke-the-trolls.js";
@@ -707,6 +707,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAvenGagglemaster,
   _poolAyaraFirstOfLocthwain,
   _poolAzoriusSignet,
+  _poolAzusaLostButSeeking,
   _poolBadlands,
   _poolBaithookAngler,
   _poolBanishingLight,
@@ -1064,7 +1065,6 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolPresenceOfGond,
   _poolPreyUpon,
   _poolPrimalMight,
-  _poolPrincessSarah,
   _poolProdigalSorcerer,
   _poolProsperousInnkeeper,
   _poolProvokeTheTrolls,

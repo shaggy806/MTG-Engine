@@ -322,7 +322,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   323  Darkwater Catacombs                      {0}              Land
 [ ]   324  Entomb                                   {B}              Instant
 [ ]   325  Harmonize                                {2}{G}{G}        Sorcery
-[ ]   326  Azusa, Lost but Seeking                  {2}{G}           Legendary Creature — Human Monk
+[x]   326  Azusa, Lost but Seeking                  {2}{G}           Legendary Creature — Human Monk
 [x]   327  Rakdos Charm                             {B}{R}           Instant
 [x]   328  Lotus Cobra                              {1}{G}           Creature — Snake
 [ ]   329  Reclamation Sage                         {2}{G}           Creature — Elf Shaman
