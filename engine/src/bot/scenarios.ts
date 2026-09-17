@@ -28,7 +28,7 @@
 import type { Action } from "../actions.js";
 import type { CardRegistry } from "../cards.js";
 import { createDefaultRegistry } from "../cards.js";
-import type { ControllerView } from "../controller.js";
+import type { ControllerView, PlayerController } from "../controller.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
@@ -42,11 +42,25 @@ export interface ScenarioResult {
   readonly detail: string;
 }
 
+/**
+ * Builds the bot under test. Defaults to v2's `EvalBotController`; v3's
+ * `PlanBotController` is passed in by `bot:scenarios --bot v3`.
+ *
+ * The scenarios are deliberately architecture-agnostic — they assert what the
+ * bot *does*, never how it decided — so the same suite gates every version, and
+ * a new search has to earn the same correctness bar as the one it replaces.
+ */
+export type BotFactory = (
+  player: PlayerId,
+  registry: CardRegistry,
+  weights: EvalWeights,
+) => PlayerController;
+
 export interface BotScenario {
   readonly name: string;
   /** The rule being asserted, in one line. */
   readonly rule: string;
-  run(weights: EvalWeights, registry: CardRegistry): ScenarioResult;
+  run(weights: EvalWeights, registry: CardRegistry, makeBot: BotFactory): ScenarioResult;
 }
 
 const A = asPlayerId("alice");
@@ -74,7 +88,7 @@ function mainPhase(setup: (game: Game) => void, registry: CardRegistry): Game {
   return game;
 }
 
-const botFor = (weights: EvalWeights, registry: CardRegistry, player: PlayerId = A) =>
+const evalBotFactory: BotFactory = (player, registry, weights) =>
   new EvalBotController(player, registry, { weights });
 
 const describeAction = (action: Action): string => JSON.stringify(action);
@@ -83,7 +97,7 @@ const SCENARIOS: readonly BotScenario[] = [
   {
     name: "plays a land",
     rule: "A land drop costs a card and must still be worth making, or the bot never develops.",
-    run(weights, registry) {
+    run(weights, registry, makeBot) {
       // The founding regression: under the naive feature set a land drop is one
       // fewer card in hand and nothing else, so it scores negative and the bot
       // passes every turn for the whole game. Measured, before any of this
@@ -92,7 +106,7 @@ const SCENARIOS: readonly BotScenario[] = [
       const game = mainPhase((g) => {
         g.debugSpawn("Forest", A, "hand");
       }, registry);
-      const action = botFor(weights, registry).act(viewOf(game, A));
+      const action = makeBot(A, registry, weights).act(viewOf(game, A));
       return {
         passed: action.type === "play-land",
         detail: `played ${describeAction(action)}`,
@@ -102,7 +116,7 @@ const SCENARIOS: readonly BotScenario[] = [
   {
     name: "plays a land past the land cap",
     rule: "Lands beyond `landCap` are worth less, never negative — a flooded board still develops.",
-    run(weights, registry) {
+    run(weights, registry, makeBot) {
       // The trap a *fitted* vector walks into. Sitting on twelve lands is
       // strongly associated with losing, because it's usually a game that went
       // long for someone who was behind — so an unconstrained regression reads
@@ -115,7 +129,7 @@ const SCENARIOS: readonly BotScenario[] = [
         for (let i = 0; i < 12; i += 1) g.debugSpawn("Forest", A, "battlefield");
         g.debugSpawn("Forest", A, "hand");
       }, registry);
-      const action = botFor(weights, registry).act(viewOf(game, A));
+      const action = makeBot(A, registry, weights).act(viewOf(game, A));
       return {
         passed: action.type === "play-land",
         detail: `on 12 lands, chose ${describeAction(action)}`,
@@ -125,7 +139,7 @@ const SCENARIOS: readonly BotScenario[] = [
   {
     name: "removal takes the biggest threat",
     rule: "Given one removal spell and two targets, the bigger creature is the one that dies.",
-    run(weights, registry) {
+    run(weights, registry, makeBot) {
       let big: ObjectId | null = null;
       let small: ObjectId | null = null;
       const game = mainPhase((g) => {
@@ -140,7 +154,7 @@ const SCENARIOS: readonly BotScenario[] = [
         big = g.debugSpawn("Craw Wurm", B, "battlefield", { summoningSick: false });
       }, registry);
 
-      const action = botFor(weights, registry).act(viewOf(game, A));
+      const action = makeBot(A, registry, weights).act(viewOf(game, A));
       if (action.type !== "cast-spell") {
         return { passed: false, detail: `did not cast removal: ${describeAction(action)}` };
       }
@@ -155,7 +169,7 @@ const SCENARIOS: readonly BotScenario[] = [
   {
     name: "does not tap mana for nothing",
     rule: "With nothing to cast, floating mana gains nothing and strands the source.",
-    run(weights, registry) {
+    run(weights, registry, makeBot) {
       // v1 learned this the hard way and `candidates.ts` filters mana abilities
       // out of the search for it: casting auto-pays, so activating one on its
       // own can only lose you the source — and in a live room it reads as a
@@ -169,7 +183,7 @@ const SCENARIOS: readonly BotScenario[] = [
         // without ever testing what it claims to.
         g.state.zones.perPlayer[A].hand = [];
       }, registry);
-      const action = botFor(weights, registry).act(viewOf(game, A));
+      const action = makeBot(A, registry, weights).act(viewOf(game, A));
       return {
         passed: action.type !== "activate-ability",
         detail: `chose ${describeAction(action)}`,
@@ -179,7 +193,7 @@ const SCENARIOS: readonly BotScenario[] = [
   {
     name: "recasts a taxed commander",
     rule: "Commander tax makes the next cast dearer; it doesn't make casting wrong.",
-    run(weights, registry) {
+    run(weights, registry, makeBot) {
       // The other trap a fitted vector walks into. A commander that has been
       // cast four times is a commander that has *died* four times, so a high
       // tax is strongly associated with losing — and `commanderTax` is a
@@ -204,7 +218,7 @@ const SCENARIOS: readonly BotScenario[] = [
       // single action can't tell those apart, so the alternative is removed.
       game.state.zones.perPlayer[A].hand = [];
 
-      const action = botFor(weights, registry).act(viewOf(game, A));
+      const action = makeBot(A, registry, weights).act(viewOf(game, A));
       return {
         passed: action.type === "cast-spell",
         detail: `at {4} of tax with 8 lands, chose ${describeAction(action)}`,
@@ -214,7 +228,7 @@ const SCENARIOS: readonly BotScenario[] = [
   {
     name: "takes lethal on board",
     rule: "A swing that wins the game outranks every positional term.",
-    run(weights, registry) {
+    run(weights, registry, makeBot) {
       const game = mainPhase((g) => {
         for (let i = 0; i < 3; i += 1) {
           g.debugSpawn("Craw Wurm", A, "battlefield", { summoningSick: false });
@@ -225,7 +239,7 @@ const SCENARIOS: readonly BotScenario[] = [
       game.advanceUntil((s) => s.awaiting?.kind === "attackers" && s.awaiting.player === A);
       // Three 6/4s into one blocker: 12 damage gets through however Bob blocks,
       // which is exactly lethal.
-      const attackers = botFor(weights, registry).declareAttackers(viewOf(game, A));
+      const attackers = makeBot(A, registry, weights).declareAttackers(viewOf(game, A));
       return {
         passed: attackers.length === 3,
         detail: `attacked with ${attackers.length} of 3`,
@@ -235,7 +249,7 @@ const SCENARIOS: readonly BotScenario[] = [
   {
     name: "does not swing into a lethal crackback",
     rule: "Two free damage isn't worth dying to the swing back.",
-    run(weights, registry) {
+    run(weights, registry, makeBot) {
       const game = mainPhase((g) => {
         g.debugSpawn("Grizzly Bears", A, "battlefield", { summoningSick: false });
         // Tapped, so it can't block the bear — but it untaps for Bob's turn.
@@ -244,7 +258,7 @@ const SCENARIOS: readonly BotScenario[] = [
         g.state.players[A].life = 5;
       }, registry);
       game.advanceUntil((s) => s.awaiting?.kind === "attackers" && s.awaiting.player === A);
-      const attackers = botFor(weights, registry).declareAttackers(viewOf(game, A));
+      const attackers = makeBot(A, registry, weights).declareAttackers(viewOf(game, A));
       return {
         passed: attackers.length === 0,
         detail: `attacked with ${attackers.length} at 5 life into a 4/4`,
@@ -254,14 +268,14 @@ const SCENARIOS: readonly BotScenario[] = [
   {
     name: "attacks when it is safe to",
     rule: "The crackback check must not make the bot passive — the mirror of the test above.",
-    run(weights, registry) {
+    run(weights, registry, makeBot) {
       const game = mainPhase((g) => {
         g.debugSpawn("Grizzly Bears", A, "battlefield", { summoningSick: false });
         g.debugSpawn("Rumbling Baloth", B, "battlefield", { summoningSick: false, tapped: true });
         g.state.players[A].life = 40;
       }, registry);
       game.advanceUntil((s) => s.awaiting?.kind === "attackers" && s.awaiting.player === A);
-      const attackers = botFor(weights, registry).declareAttackers(viewOf(game, A));
+      const attackers = makeBot(A, registry, weights).declareAttackers(viewOf(game, A));
       return {
         passed: attackers.length === 1,
         detail: `attacked with ${attackers.length} at 40 life`,
@@ -271,14 +285,14 @@ const SCENARIOS: readonly BotScenario[] = [
   {
     name: "chump-blocks only against lethal",
     rule: "Throwing a creature under an attacker is right facing death and wrong otherwise.",
-    run(weights, registry) {
+    run(weights, registry, makeBot) {
       const blockers = (life: number): number => {
         const game = Game.create({
           seed: 3,
           registry,
           // v1 in the other seat swings with everything, which is what we need
           // to be facing.
-          controllers: { [B]: botFor(DEFAULT_WEIGHTS, registry, B) },
+          controllers: { [B]: evalBotFactory(B, registry, DEFAULT_WEIGHTS) },
           decks: [forestDeck(A), forestDeck(B)],
         });
         game.advanceUntil((s) => s.priority.holder !== null);
@@ -286,7 +300,7 @@ const SCENARIOS: readonly BotScenario[] = [
         game.debugSpawn("Craw Wurm", B, "battlefield", { summoningSick: false });
         game.state.players[A].life = life;
         game.advanceUntil((s) => s.awaiting?.kind === "blockers" && s.awaiting.player === A);
-        return botFor(weights, registry).declareBlockers(viewOf(game, A)).length;
+        return makeBot(A, registry, weights).declareBlockers(viewOf(game, A)).length;
       };
       const healthy = blockers(40);
       const dying = blockers(5);
@@ -312,10 +326,11 @@ export interface ScenarioReport {
 export function runScenarios(
   weights: EvalWeights = DEFAULT_WEIGHTS,
   registry: CardRegistry = createDefaultRegistry(),
+  makeBot: BotFactory = evalBotFactory,
 ): ScenarioReport[] {
   return SCENARIOS.map((scenario) => {
     try {
-      const { passed, detail } = scenario.run(weights, registry);
+      const { passed, detail } = scenario.run(weights, registry, makeBot);
       return { name: scenario.name, rule: scenario.rule, passed, detail };
     } catch (error) {
       return {

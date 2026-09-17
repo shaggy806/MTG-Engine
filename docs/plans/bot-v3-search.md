@@ -237,9 +237,31 @@ steps compound into a design nobody can debug.
    `bot:rollout-cost`. A depth-3 rollout is 5–11ms depending on board size, so a plan hill-climb
    at K=5 costs roughly a second per turn. The same measurement is what exposed the tie trap.)*
 1b. **Turn-plan search**, replacing the per-window candidate search. *(Built: `plan.ts`,
-   `bot:plan`. It separates where per-action search collapsed — an empty plan, a land plan and a
-   land-plus-spell plan score -8.4, -2.3 and -23.1 on the position where eight of eleven actions
-   had been identical. Not yet wired into a controller.)*
+   `plan-bot.ts`, `bot:plan`, `bot:bench --bot v3`, `bot:scenarios --bot v3`. It separates where
+   per-action search collapsed — an empty plan, a land plan and a land-plus-spell plan score
+   -8.4, -2.3 and -23.1 on the position where eight of eleven actions had been identical. Passes
+   9/9 scenarios and benches 73.8% [69.2, 77.8] against v1, to v2's 72.0% — ahead on the point
+   estimate, overlapping intervals, so **not yet a demonstrated improvement**. Live rooms still
+   play v2.)*
+
+   Three bugs found on the way, each worth remembering because none showed up as a crash:
+
+   - **Planning at the wrong window.** The first priority window of our own turn is in the
+     *upkeep*, where sorcery speed isn't available and nothing is castable, so the plan came out
+     empty — and an empty plan means "pass the whole turn". The bot lost 0-4 against v1 while
+     finishing games in half a second, because it was doing nothing at all. Plans are built in a
+     main phase.
+   - **Append-only neighbours.** The climb could add a play but never change one, so with v1's
+     plan as the seed the bot was stuck with v1's targets. It scored "kill the 6/4" at -8.1 and
+     "kill the 2/2" at -24.1 and then played the 2/2 kill, because swapping wasn't a move it
+     could make. `planNeighbours` now appends, swaps and drops.
+   - **A threshold applied between candidates.** `MIN_GAIN` was folded into the running
+     comparison, so a neighbour 0.6 better than the incumbent beat a later one 0.9 better. It is
+     now applied once, against the incumbent, after the best neighbour is picked.
+
+1c. **A planning time budget.** Swap-and-drop neighbours are `|plan| x |frontier|` per round, and
+   the worst decision measured **87 seconds** (game time went 6.0s to 19.0s). `planBudgetMs`
+   exists and is off by default; it has to be on, and sized, before v3 can be seated.
 2. **Re-run `bot:audit` and the gauntlet.** Card prices will move; some Phase 7 features may stop
    being necessary and others may appear. *Do not touch the feature set before this.*
 3. **Re-derive the feature set** from the new audit.

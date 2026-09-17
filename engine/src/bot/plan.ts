@@ -107,10 +107,16 @@ function planCandidates(view: ControllerView, me: PlayerId): Action[] {
  * runs out — that's the frontier the climb extends from, and capturing it here
  * is far cheaper and more exact than re-deriving the state afterwards.
  */
-class PlanController extends HeuristicBotController {
+export class PlanController extends HeuristicBotController {
   private index = 0;
   /** Candidates at the point the plan was exhausted, or null if it never was. */
   frontier: Action[] | null = null;
+  /** Planned actions played, and planned actions found illegal and dropped.
+   * The second is the divergence rate — how often reality departs from the
+   * sampled world the plan was built in — and it decides whether replanning
+   * mid-turn is worth building. */
+  executed = 0;
+  skipped = 0;
 
   private readonly plan: TurnPlan;
   private readonly planTurn: number;
@@ -142,7 +148,11 @@ class PlanController extends HeuristicBotController {
       // A planned action can stop being legal — the plan was built on one
       // sampled world and this is another, or an opponent responded. Skip it
       // rather than letting `dispatch` throw and lose the whole rollout.
-      if (planCandidates(view, this.playerId).some((a) => sameAction(a, next))) return next;
+      if (planCandidates(view, this.playerId).some((a) => sameAction(a, next))) {
+        this.executed += 1;
+        return next;
+      }
+      this.skipped += 1;
     }
 
     if (this.captureFrontier && this.frontier === null) {
@@ -289,6 +299,52 @@ function frontierAfter(
   return self.frontier ?? [];
 }
 
+/**
+ * One step's worth of neighbouring plans: append a play, swap one out for a
+ * different play available at that point, or drop one.
+ *
+ * **Append alone is not enough**, and the bug that proved it is worth keeping
+ * in mind. The climb is seeded with v1's plan; v1 aims removal at the first
+ * legal target, which was a 2/2 standing next to a 6/4. With only `append`
+ * available, the better target was unreachable — the Murder was already in the
+ * plan and nothing could change *which* creature it killed, so the search
+ * stopped on the worse of two plans it had correctly scored (-24.1 against
+ * -8.1). Swapping is what makes targets searchable at all.
+ *
+ * Dropping matters for the mirror reason: it is how the climb walks back a play
+ * that v1 wanted and the rollouts say is a mistake.
+ *
+ * The frontier for position `i` is computed from the plan *prefix* before it,
+ * because what's available at that point depends on everything played earlier.
+ */
+function planNeighbours(
+  state: GameState,
+  registry: CardRegistry,
+  me: PlayerId,
+  plan: TurnPlan,
+  planTurn: number,
+): TurnPlan[] {
+  const out: TurnPlan[] = [];
+  const seen = new Set<string>([JSON.stringify(plan)]);
+  const add = (candidate: TurnPlan): void => {
+    const key = JSON.stringify(candidate);
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push(candidate);
+  };
+
+  for (const action of frontierAfter(state, registry, me, plan, planTurn)) {
+    add([...plan, action]);
+  }
+  for (let i = 0; i < plan.length; i += 1) {
+    add([...plan.slice(0, i), ...plan.slice(i + 1)]);
+    for (const action of frontierAfter(state, registry, me, plan.slice(0, i), planTurn)) {
+      add([...plan.slice(0, i), action, ...plan.slice(i + 1)]);
+    }
+  }
+  return out;
+}
+
 /** What v1 would do with this turn — the plan the climb has to beat. */
 function heuristicPlan(
   state: GameState,
@@ -380,21 +436,29 @@ export function searchTurnPlan(
   }
 
   while (!spent()) {
-    const frontier = frontierAfter(state, registry, me, best, planTurn);
-    if (frontier.length === 0) break;
+    const neighbours = planNeighbours(state, registry, me, best, planTurn);
+    if (neighbours.length === 0) break;
 
+    // Pick the best neighbour on raw score, *then* apply the threshold once.
+    // Folding `MIN_GAIN` into the running comparison instead makes the climb
+    // order-dependent — an action 0.6 better than the incumbent would beat a
+    // later one 0.9 better, because the later one had to clear the earlier
+    // one's score *plus* the margin. That cost the "removal takes the biggest
+    // threat" scenario: whichever target the frontier happened to list first
+    // won.
     let stepPlan: TurnPlan | null = null;
-    let stepScore = bestScore;
-    for (const action of frontier) {
+    let stepScore = -Infinity;
+    for (const candidate of neighbours) {
       if (spent()) break;
-      const candidate = [...best, action];
       const value = score(candidate);
-      if (value > stepScore + MIN_GAIN) {
+      if (value > stepScore) {
         stepPlan = candidate;
         stepScore = value;
       }
     }
-    if (stepPlan === null) break;
+    // The threshold is about "is doing this worth anything at all", which is a
+    // question about the incumbent, not about the other neighbours.
+    if (stepPlan === null || stepScore <= bestScore + MIN_GAIN) break;
     best = stepPlan;
     bestScore = stepScore;
     keptHeuristic = false;

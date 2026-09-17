@@ -64,6 +64,9 @@ const jsonOut = flag("json", null);
 const workers = Math.max(1, Math.min(Number(flag("workers", String(os.cpus().length - 2))), os.cpus().length));
 const even = 1 / players;
 const opponentArg = flag("opponent", "v1");
+// Which searching bot the *candidate* is. `v2` is the per-window search that
+// live rooms play; `v3` is the turn planner (`docs/plans/bot-v3-search.md`).
+const bot = flag("bot", "v2");
 const gauntletGames = Math.ceil(Number(flag("gauntlet-games", String(games))) / players) * players;
 // A mixed table is only a thing above two players — with one opponent seat
 // there's nothing to mix.
@@ -124,7 +127,7 @@ function runMatch(weights, opponents, seedOffset = 0, count = games) {
           finish({ seed, error: `timed out after ${timeoutMs / 1000}s` });
           spawn();
         }, timeoutMs);
-        worker.postMessage({ seed, weights, opponents, players, horizon, rollout, botOptions });
+        worker.postMessage({ seed, weights, opponents, players, horizon, rollout, botOptions, bot });
       };
 
       worker.on("message", (result) => {
@@ -291,7 +294,7 @@ const profileLine = (profile) =>
 const startedAt = Date.now();
 const elapsed = () => `${((Date.now() - startedAt) / 1000).toFixed(1)}s`;
 console.log(
-  `${mode}: ${games} games/config, ${players} players, horizon=${horizon}, rollout=${rollout ?? "default"}, options=${JSON.stringify(botOptions)}, ${workers} workers`,
+  `${mode}: ${games} games/config, ${players} players, bot=${bot}, horizon=${horizon}, rollout=${rollout ?? "default"}, options=${JSON.stringify(botOptions)}, ${workers} workers`,
 );
 
 if (mode === "bench") {

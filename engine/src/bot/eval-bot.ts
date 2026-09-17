@@ -298,7 +298,9 @@ class DecisionRolloutController extends CombatRolloutController {
 }
 
 export class EvalBotController extends HeuristicBotController {
-  private readonly cards: CardRegistry;
+  /** Protected so the v3 `PlanBotController` can reach it; every other field
+   * here stays private. */
+  protected readonly cards: CardRegistry;
   readonly weights: EvalWeights;
   private readonly horizon: Horizon;
   private readonly rollout: RolloutPolicy;

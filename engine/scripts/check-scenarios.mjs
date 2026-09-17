@@ -13,7 +13,14 @@
 
 import { readFileSync } from "node:fs";
 
-import { DEFAULT_WEIGHTS, championById, createDefaultRegistry, runScenarios } from "../dist/index.js";
+import {
+  DEFAULT_WEIGHTS,
+  EvalBotController,
+  PlanBotController,
+  championById,
+  createDefaultRegistry,
+  runScenarios,
+} from "../dist/index.js";
 
 const args = process.argv.slice(2);
 const flag = (name, fallback) => {
@@ -31,9 +38,17 @@ for (const key of Object.keys(weights)) {
 }
 
 const label = champion ?? weightsFile ?? "current defaults";
-console.log(`scenarios: ${label}`);
+// The suite asserts what the bot *does*, never how it decided, so the same
+// positions gate every architecture — a new search earns the same correctness
+// bar as the one it replaces.
+const bot = flag("bot", "v2");
+const makeBot = (player, registry, w) =>
+  bot === "v3"
+    ? new PlanBotController(player, registry, { weights: w, worlds: 3, depth: 3 })
+    : new EvalBotController(player, registry, { weights: w });
+console.log(`scenarios: ${label} (bot ${bot})`);
 
-const reports = runScenarios(weights, createDefaultRegistry());
+const reports = runScenarios(weights, createDefaultRegistry(), makeBot);
 for (const r of reports) {
   console.log(`  ${r.passed ? "PASS" : "FAIL"}  ${r.name.padEnd(36)} ${r.passed ? "" : `(${r.detail})`}`);
   if (!r.passed) console.log(`        rule: ${r.rule}`);

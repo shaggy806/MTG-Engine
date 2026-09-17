@@ -3,6 +3,7 @@
 export * from "./features.js";
 export * from "./determinize.js";
 export * from "./plan.js";
+export * from "./plan-bot.js";
 export * from "./evaluate.js";
 export * from "./candidates.js";
 export * from "./simulate.js";

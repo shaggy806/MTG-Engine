@@ -19,6 +19,7 @@ import {
   EvalBotController,
   Game,
   HeuristicBotController,
+  PlanBotController,
   createDefaultRegistry,
 } from "../dist/index.js";
 import { tableFor } from "./bot-seating.mjs";
@@ -27,7 +28,13 @@ import { tableFor } from "./bot-seating.mjs";
 // rebuilding it per game dwarfs the game itself.
 const registry = createDefaultRegistry();
 
-parentPort.on("message", ({ seed, weights, opponents, players, horizon, rollout, botOptions }) => {
+/** Which searching bot to build: v2's per-window search or v3's turn planner. */
+const botFor = (kind, seat, opts) =>
+  kind === "v3"
+    ? new PlanBotController(seat, registry, opts)
+    : new EvalBotController(seat, registry, opts);
+
+parentPort.on("message", ({ seed, weights, opponents, players, horizon, rollout, botOptions, bot }) => {
   const { seats, block, measuredSeat: candidateSeat, decks } = tableFor(seed, players);
 
   // Opponents are dealt round-robin to the seats the candidate isn't in, in
@@ -41,7 +48,7 @@ parentPort.on("message", ({ seed, weights, opponents, players, horizon, rollout,
   let taken = block;
   for (const seat of seats) {
     if (seat === candidateSeat) {
-      controllers[seat] = new EvalBotController(seat, registry, { ...botOptions, weights, horizon, rollout });
+      controllers[seat] = botFor(bot, seat, { ...botOptions, weights, horizon, rollout });
       continue;
     }
     const spec = opponents[taken % opponents.length];
@@ -50,7 +57,7 @@ parentPort.on("message", ({ seed, weights, opponents, players, horizon, rollout,
     controllers[seat] =
       spec.weights === null
         ? new HeuristicBotController(seat, registry)
-        : new EvalBotController(seat, registry, { ...botOptions, weights: spec.weights, horizon, rollout });
+        : botFor(spec.bot ?? "v2", seat, { ...botOptions, weights: spec.weights, horizon, rollout });
   }
 
   // Time the candidate's own decisions: the search has to fit inside the
