@@ -1,6 +1,9 @@
 # Engine gaps blocking the precon decks
 
-Status: **in progress** — the implementation plan for the engine work that
+Status: **paused (2026-09-16)** — phases A–M are done; the 44 precon cards still unauthored play as
+hand-picked stand-ins instead (see `precon-decks.md`'s Substitutions section, which is also the list
+of what's left). Resume from there, deleting each substitution as its card lands. This was the
+implementation plan for the engine work that
 `docs/plans/precon-decks.md` found blocking 60 of the 286 cards in the five 2022 Starter
 Commander Decks. Each phase ends with the cards it unblocks being authorable, so progress
 is measurable in cards rather than in features.

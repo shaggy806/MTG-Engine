@@ -20,14 +20,18 @@ others, and what each is for:
 - **`engine/src/cards/neededCards-features.md`** — the plan of record for *new* engine work: an
   EDH-popularity-driven backlog (from `top-commander-cards.txt`/`top-commander-cards-flagged.txt`,
   the top 2000 Commander cards by EDHREC rank cross-referenced against the pool) ranking features
-  by how many real cards each would unblock, plus a compact P0–P20 index. The pool is 280+ cards.
+  by how many real cards each would unblock, plus a compact P0–P20 index. The pool is ~630 real
+  cards (`npm run card:verify -w engine` prints the current count).
 - **`engine/src/cards/AUTHORING.md`** — the hand-authoring guide for adding a card. Read before
   authoring.
 - **`DEPLOYMENT.md`** — the tobyens.com production hosting/update runbook.
-- **`docs/plans/*.md`** — design records for four shipped client/server features (bots,
-  card-library page, deck builder, card replacer). Each says *why* its architecture is shaped the
-  way it is; all four are marked implemented and are not living documentation. A fifth feature
-  from that program — server-side deck save/share — is still unscoped.
+- **`docs/plans/*.md`** — design records, each saying *why* its piece is shaped the way it is; a
+  `Status:` line at the top of each says where it stands, and none is living documentation.
+  Shipped: `basic-bots` (v1 bot), `card-library-page`, `deck-builder`, `card-replacer` (reworked
+  onto Scryfall Tagger oracle tags), `precon-decks` (the five starter decks and their stand-ins).
+  `engine-gaps` records the engine work that unblocked most of the precons, paused with the rest
+  substituted. `smarter-bots` (v2, one-ply search) is **in progress**. Server-side deck save/share
+  is still unscoped.
 - **`client/BOARD_REDESIGN_PLAN.md`** — the board-overhaul record: the mockup URL, the settled
   design rules, and the two known gaps. All 18 phases shipped.
 
