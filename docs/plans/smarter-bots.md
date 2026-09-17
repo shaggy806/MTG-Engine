@@ -1,12 +1,20 @@
 # Smarter bots (v2 — one-ply search over a tuned evaluation)
 
-Status: **in progress** — the search bot, evaluation, benchmark and tuner exist
-(`engine/src/bot/`, `engine/scripts/tune-bot.mjs`) but live rooms still seat the v1 bot. Phase 0
+Status: **shipped, and its search architecture is superseded.** `Room.addBot` seats
+`EvalBotController`, so this is what live rooms play. But the one-ply search and the evaluation
+built on it are replaced by `bot-v3-search.md`, which also records which of the decisions below
+were measured wrong and have to be undone — read that before changing how the bot picks actions.
+Phases 0-6 below are done; the Phase 7 feature list is **superseded**, because most of it exists
+to price potential that v3's rollouts simulate directly.
+
+The search bot, evaluation, benchmark and tuner are in
+`engine/src/bot/` and `engine/scripts/tune-bot.mjs`. Phase 0
 (a benchmark that measures the game rooms actually play), Phase 1 (the evaluation's feature
 set), Phase 2 (combat), Phase 3 (rollout policy) and Phase 4 (decisions mid-resolution) are
-done. Phase 5 (tuning) is in progress and has **changed method** — the weights are fitted by
-logistic regression over harvested self-play positions rather than searched by evolution
-strategy; see "Fitting the weights from self-play" below. See "Work plan" for the rest.
+done. Phase 5 (tuning) **changed method** partway — the weights are fitted by logistic regression
+over harvested self-play positions rather than searched by an evolution strategy; see "Fitting
+the weights from self-play" below. Phase 6 (the decision time budget) is done and is what made
+seating the bot safe.
 
 This is the design record for replacing
 `HeuristicBotController`'s greedy "highest mana value wins" policy with a one-ply search:

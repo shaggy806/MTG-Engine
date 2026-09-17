@@ -30,7 +30,7 @@ others, and what each is for:
   Shipped: `basic-bots` (v1 bot), `card-library-page`, `deck-builder`, `card-replacer` (reworked
   onto Scryfall Tagger oracle tags), `precon-decks` (the five starter decks and their stand-ins).
   `engine-gaps` records the engine work that unblocked most of the precons, paused with the rest
-  substituted. `smarter-bots` (v2, one-ply search) is **in progress**. Server-side deck save/share
+  substituted. `smarter-bots` (v2, one-ply search) is **in progress** and its search architecture is superseded by `bot-v3-search` (rollout search over sampled worlds — **design, not started**; read it before changing how the bot picks actions). Server-side deck save/share
   is still unscoped.
 - **`client/BOARD_REDESIGN_PLAN.md`** — the board-overhaul record: the mockup URL, the settled
   design rules, and the two known gaps. All 18 phases shipped.
