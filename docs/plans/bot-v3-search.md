@@ -219,13 +219,80 @@ first.
 |---|---|---|
 | How is a plan represented and replanned? | A list of actions, re-derived whenever the state diverges from what the plan assumed | The first thing to build; the replanning trigger is the fiddly part |
 | What plan moves does the hill-climb make? | add a play, drop a play, swap a target, change the attack | Mirror the combat builder, which already works |
-| `K`, the number of sampled worlds | 5 | Sweep 1/3/5/10; watch decision variance and win rate together |
-| `D`, the depth | `players + 1` | Sweep 2/3/5; expect a noise ceiling |
+| `K`, the number of sampled worlds | **3 — settled, see below** | Swept |
+| `D`, the depth | **`players + 1` — settled, see below** | Swept |
 | Rollout policy | v1 everywhere | Compare against a greedy-evaluation policy once one exists |
 | Does the evaluator stay linear? | Yes, for now | **Re-run `bot:audit` after the rollout change.** Several current prices are rollout artifacts, and the feature list must be re-derived from the new numbers, not the old ones |
 | Fixed-depth or MCTS? | Fixed-depth first | MCTS needs rollouts and determinization as substrate; this builds both. Revisit once they exist and are measured |
 | What replaces v1 as benchmark? | The shipped v2 vector, plus the gauntlet | Champions already exist for this |
 | Deck population | Widen beyond the five precons | The deck builder and a 630-card pool can generate more |
+
+## The sweep, and what the rollout is actually worth
+
+### Worlds and depth: a clean negative result
+
+400 games each at two players, 1.5s budget, one axis at a time from (3 worlds, depth 3):
+
+| worlds | depth | vs v1 | game | worst turn |
+|---|---|---|---|---|
+| 1 | 3 | 69.7% [65.0, 74.0] | 5.9s | 1.9s |
+| 3 | 3 | 71.5% [66.9, 75.7] | 10.0s | 6.6s |
+| 5 | 3 | 70.4% [65.8, 74.7] | 11.4s | 7.0s |
+| 8 | 3 | 67.2% [62.4, 71.6] | 12.7s | 4.8s |
+| 3 | 2 | 71.5% [66.9, 75.7] | 8.1s | 3.4s |
+| 3 | 5 | 67.2% [62.4, 71.6] | 11.9s | 13.0s |
+
+**Every interval overlaps every other.** Neither knob measurably changes strength anywhere in this
+range, so both are chosen on cost: `worlds` drops from 5 to 3, and depth stays at `players + 1`
+on the principle that a full lap of the table is the meaningful horizon, since the data has no
+opinion.
+
+The weak trend is worth reading, though. More worlds *and* more depth both drift **downward**,
+and the reason is that the budget is fixed: precision per plan is bought with plans explored, and
+exploring more plans looks like the better trade. That also disposes of the "scale worlds down on
+huge boards" idea from the open questions — the cheapest setting is already the best one
+measured, so there is nothing to scale down to.
+
+### What the rollout prices that the evaluation couldn't
+
+`bot:audit --rollout` prices a card two ways: by the static evaluation, and by playing the next
+few turns out. The gap between the columns is the enablement a static score structurally cannot
+see.
+
+| card | static | rollout |
+|---|---|---|
+| **Sol Ring** | 1.00 | **9.00** |
+| **Arcane Signet** | 1.50 | **9.50** |
+| **Thran Dynamo** | 2.50 | **12.00** |
+| Forest | 4.50 | 12.50 |
+| Solemn Simulacrum | 9.00 | 12.50 |
+| Llanowar Elves | 5.50 | 7.00 |
+| Grizzly Bears | 8.00 | 11.50 |
+| Phyrexian Arena | 2.00 | 2.95 |
+| Mind Stone | 1.50 | 2.00 |
+| Lightning Greaves | 1.50 | 2.00 |
+| Craw Wurm | 20.00 | 31.50 |
+
+**The mana gap is closed, and by the architecture rather than by a feature.** A Sol Ring goes from
+a twentieth of a vanilla 6/4 to comparable with a Forest, which is what it is: a land that isn't a
+land. No `manaProduction` term was needed, which retires most of the Phase 7 feature list exactly
+as this plan predicted.
+
+**Colour came free too.** Mind Stone prices at 2.00 against Arcane Signet's 9.50, and both are
+2-mana rocks — the difference is that Mind Stone makes `{C}`, which cannot cast the `{1}{G}`
+creatures in the audit's hand. The rollout sees mana *colour* requirements, which the feature set
+has no term for at all and which the audit had listed as gap 9.
+
+Two gaps survive, and they are now cleanly separated:
+
+- **`power` is far too high.** A vanilla Craw Wurm at 31.50 is still three times a Sol Ring. That
+  is a *weights* problem, not an architecture one — and `ramp`, which halves `power`, has been
+  saying so since it beat everything at two players. It is now fixable by tuning, because the
+  search no longer distorts what tuning would measure.
+- **Card-advantage engines are still mispriced.** Phyrexian Arena at 2.95 is a quarter of a
+  Grizzly Bears, because a depth-3 rollout sees one or two of its upkeep triggers and `hand` pays
+  2 a card. This is the one Phase 7 feature that survives the rework — or it wants more depth,
+  which the sweep says costs strength.
 
 ## Sequencing
 

@@ -76,7 +76,21 @@ export interface PlanSearchOptions {
   readonly timeBudgetMs?: number;
 }
 
-const DEFAULT_WORLDS = 5;
+/**
+ * Sampled worlds per plan.
+ *
+ * Swept against win rate at 1, 3, 5 and 8 (400 games each, two players, 1.5s
+ * budget): 69.7%, 71.5%, 70.4%, 67.2% — every interval overlapping every other,
+ * so **nothing in this range measurably changes strength**. Cost is not flat
+ * though, so 3 is the cheapest point that isn't at the bottom of the range: 5
+ * bought nothing for 14% more time per game and 8 was slower and no better.
+ *
+ * The trend that *is* visible, weakly, is worth knowing: more worlds and more
+ * depth both drift **downward**, because the time budget is fixed. Spending it
+ * on precision per plan means exploring fewer plans, and exploring more plans
+ * appears to be the better trade.
+ */
+const DEFAULT_WORLDS = 3;
 const DEFAULT_MAX_EVALUATIONS = 120;
 
 /** A rollout may not run forever; scaled by depth so a deep one isn't
