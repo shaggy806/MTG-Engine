@@ -188,6 +188,12 @@ const SCENARIOS: readonly BotScenario[] = [
       // {2}{G} plus {4} of tax, with a land to spare.
       for (let i = 0; i < 8; i += 1) game.debugSpawn("Forest", A, "battlefield");
       game.state.players[A].commanderCastCounts = { "Azusa, Lost but Seeking": 2 } as never;
+      // Empty the hand, or the scenario has a false positive: with a land
+      // still holdable this turn, playing it *first* and casting the commander
+      // after is correct sequencing rather than a refusal to cast, and a
+      // land-hungry vector picks it for the right reason. Asserting on a
+      // single action can't tell those apart, so the alternative is removed.
+      game.state.zones.perPlayer[A].hand = [];
 
       const action = botFor(weights, registry).act(viewOf(game, A));
       return {
