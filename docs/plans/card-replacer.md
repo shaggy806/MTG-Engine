@@ -99,3 +99,78 @@ commander's identity and its current contents) as input and filter before scorin
 leaving both to surface afterwards as legality violations.
 
 Because of this, the precon substitutions were hand-picked rather than generated.
+
+## Exploration: Scryfall Tagger oracle tags (2026-09-16)
+
+Goal from the user: stand-ins that **mimic the original's role**, not just its type line and cost —
+using Scryfall Tagger's community "oracle tags" (`removal-creature`, `sweeper`, `tutor-land-basic`,
+`repeatable-card-advantage`, …) as the functional signal. Prototype scripts live in the git-ignored
+`.scratch/tagger/` (`fetch-tags.mjs`, `score.mjs`); nothing here is shipped.
+
+### Getting the data
+
+- **The official API can search *by* tag but can't list a card's tags.** `q=otag:removal` (alias
+  `oracletag:`) works on `api.scryfall.com/cards/search`; card objects carry no tag field, and bulk
+  data has none.
+- **A card's tags are only exposed by Tagger's own GraphQL endpoint** (`tagger.scryfall.com/graphql`,
+  `cardBySet(set, number) { taggings { tag { slug type ancestorTags } } }`), which needs a CSRF token
+  scraped from a Tagger page. It is undocumented and not part of Scryfall's API. The prototype used it
+  once, politely (~660 requests at ~1/s, cached), and a shipped feature should not depend on it.
+- **Tags form a hierarchy**: each tag lists its ancestors (`sweeper-one-sided` → `sweeper`,
+  `removal`). The public catalog (`scryfall.com/docs/tagger-tags`) is a flat list of **5,361** oracle
+  tags, **1,762** of them `cycle-*` bookkeeping. Tagger's `category` flag only marks umbrella tags; it
+  does not separate functional tags from trivia.
+- Across the 658 cards fetched (the whole pool plus the 44 precon originals): **6.3 oracle tags per
+  card** on average, **1,017** distinct tags, **442** of them on a single card.
+
+### Prototype and result
+
+For each of the 44 precon substitutions: candidates are pool cards inside the commander's identity
+and not already in the deck. Score = 0.6 × tag similarity (IDF-weighted cosine; a tag implied only by
+an ancestor counts half) + 0.25 × primary-type match + 0.15 × mana-value closeness. Compared against
+the hand picks in `sample-decks.ts`:
+
+| | hand pick ranked #1 | top 3 | top 10 |
+|---|---|---|---|
+| raw tags | 11/44 | 18/44 | 33/44 |
+| non-functional tags filtered | 11/44 | 17/44 | 31/44 |
+
+Agreement with the hand picks is only a rough yardstick (several tag picks are arguably better — Bident
+of Thassa → Thieving Magpie over Behold the Multiverse). What the per-card output shows:
+
+- **Strong where the tags name the job.** Myriad Landscape → Evolving Wilds / Terramorphic Expanse
+  (tag similarity 0.77); Scythe Specter → Hypnotic Specter; Soul Shatter and Syphon Flesh → Diabolic
+  Edict; Combustible Gearhulk → Demanding Dragon (both `punisher` + `opponent-chooses`); Coveted Jewel →
+  Hedron Archive; Dredge the Mire → Victimize; Deadly Tempest → Chain Reaction / Damnation.
+- **Trivia tags pollute it.** `alliteration`, `hellbending`, `fun-ruling`, `personal-text`,
+  `eponymous-planeswalker`, `cycle-*`, `typal-*`, and their ancestors (`card-names`, `type-errata`) are
+  rare, so IDF weights them heavily. A hand-built denylist of ~60 such roots removed the obvious false
+  matches but didn't move the numbers much — the remaining misses are structural.
+- **Shared mechanic, different role.** Scourge of Nel Toth (7-mana 6/6 flier) → Baithook Angler
+  (2-mana 2/1), because both are `castable-from-graveyard`; Savage Ventmaw (6-mana Dragon) → Lotus Cobra
+  (both add mana). Tags describe *what a card does*, not *what slot it fills* — a big evasive finisher
+  isn't tagged as one.
+- **Sparse tagging.** Angler Turtle has one functional tag (`force-attacker`); Jubilant Skybonder's are
+  mostly trivia. With no tag overlap the score falls back to type and cost, i.e. today's replacer.
+- **No close match in the pool.** Sunbird's Invocation, Wild Ricochet, Wildfire Devils, Diluvian
+  Primordial: every candidate's tag similarity is under ~0.2. That low score is itself useful — it is
+  exactly when a person should be shown options rather than a silent pick.
+- **Power level is invisible** to all of it (Reign of the Pit → Necrotic Hex).
+
+### Recommended design, if pursued
+
+1. **Take the destination deck as input** — commander identity and current contents — and filter
+   before scoring. Needed regardless of tags; it's the two weaknesses above.
+2. **Curate a tag allowlist rather than a denylist.** A few hundred functional tags (removal, sweeper,
+   edict, counterspell, tutor, ramp, draw engine, recursion, reanimation, tokens, anthem, evasion,
+   protection, sacrifice outlet, punisher, …), each also covering its descendants. That's the "which
+   tags" question, answered once, and it keeps trivia out by construction.
+3. **Build the index from the official API only, offline.** For each allowlisted tag, page through
+   `oracletag:<tag>` and record which cards carry it. That yields tags for *every* card — including
+   whatever someone imports — without the undocumented endpoint. Checked in (or cached server-side) and
+   regenerated occasionally, like `creature-types.ts`. Cost scales with the allowlist; broad tags like
+   `removal` run to many pages, so it's a minutes-long one-off job, not a per-import call.
+4. **Score function and slot together.** Tags for function; for creatures, add body (P/T, evasion
+   keywords) and a steeper mana-value penalty so a finisher stays a finisher.
+5. **Report confidence and alternatives.** Offer the top 3 with their shared tags ("both: sweeper,
+   removal-destroy"), and flag low tag similarity instead of silently substituting.
