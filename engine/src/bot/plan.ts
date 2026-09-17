@@ -60,8 +60,19 @@ export interface PlanSearchOptions {
   readonly worlds?: number;
   /** Ceiling on plan evaluations for one turn. */
   readonly maxEvaluations?: number;
-  /** Wall-clock ceiling for one turn's search, in milliseconds. Off by
-   * default, so tests and the fuzzer keep replaying identically. */
+  /**
+   * Wall-clock ceiling for one turn's search, in milliseconds. Off by default,
+   * so tests and the fuzzer keep replaying identically.
+   *
+   * It is a *backstop*, not the main control. Counting evaluations bounds work
+   * and not time, because a rollout's cost grows with the board — the same
+   * trap v2 hit — so on a wide board a fixed evaluation budget runs for a
+   * minute and a half. But a stopwatch alone is no better: it would stop the
+   * search mid-round, which on a wide board means after a handful of the
+   * hundred-odd neighbours a round offers. Both are needed, and what makes the
+   * pair work is the neighbour *ordering* in {@link planNeighbours}, so that
+   * whatever the budget does reach is the part worth reaching.
+   */
   readonly timeBudgetMs?: number;
 }
 
@@ -323,6 +334,7 @@ function planNeighbours(
   me: PlayerId,
   plan: TurnPlan,
   planTurn: number,
+  spent: () => boolean,
 ): TurnPlan[] {
   const out: TurnPlan[] = [];
   const seen = new Set<string>([JSON.stringify(plan)]);
@@ -333,14 +345,27 @@ function planNeighbours(
     out.push(candidate);
   };
 
+  // **Order matters, because the budget cuts the tail.** A round's neighbours
+  // are `|plan| x |frontier|`, which on a wide board is far more than the
+  // budget will pay for, so whatever is evaluated first is what the search
+  // effectively considers. Appends come first: growing the plan is what builds
+  // a turn, and an unevaluated append is a play simply not made. Swaps follow,
+  // earliest position first, since a change at the front of the turn moves
+  // everything after it. Drops come last — walking a play back matters, but
+  // only once there is something to walk back.
   for (const action of frontierAfter(state, registry, me, plan, planTurn)) {
     add([...plan, action]);
   }
-  for (let i = 0; i < plan.length; i += 1) {
-    add([...plan.slice(0, i), ...plan.slice(i + 1)]);
+  // Each `frontierAfter` is itself a simulation, so generating a round's
+  // neighbours is real work and has to respect the budget too — on a long plan
+  // it is one turn replayed per position, before a single plan has been scored.
+  for (let i = 0; i < plan.length && !spent(); i += 1) {
     for (const action of frontierAfter(state, registry, me, plan.slice(0, i), planTurn)) {
       add([...plan.slice(0, i), action, ...plan.slice(i + 1)]);
     }
+  }
+  for (let i = 0; i < plan.length; i += 1) {
+    add([...plan.slice(0, i), ...plan.slice(i + 1)]);
   }
   return out;
 }
@@ -412,10 +437,33 @@ export function searchTurnPlan(
   }
 
   let evaluations = 0;
-  const spent = (): boolean => evaluations >= maxEvaluations || Date.now() >= until;
+  let evaluationMs = 0;
+  /**
+   * Stop when there isn't time for a *whole* evaluation, not when time has
+   * already run out.
+   *
+   * A plan evaluation is `worlds` rollouts, and on a wide board that is
+   * seconds — so a budget checked only after the fact overshoots by a whole
+   * evaluation, which measured 6.5s against a 1.5s budget. Predicting from the
+   * running mean cost keeps the overshoot to the variance in one evaluation
+   * rather than its whole length.
+   *
+   * Aborting *inside* an evaluation would be tighter still and is wrong: a plan
+   * scored on one sampled world is not comparable with a plan scored on three,
+   * and the whole search depends on every plan seeing the same worlds.
+   */
+  const spent = (): boolean => {
+    if (evaluations >= maxEvaluations) return true;
+    if (until === Infinity) return false;
+    const expected = evaluations === 0 ? 0 : evaluationMs / evaluations;
+    return Date.now() + expected >= until;
+  };
   const score = (plan: TurnPlan): number => {
+    const started = Date.now();
     evaluations += 1;
-    return scorePlan(worlds, registry, me, plan, planTurn, depth, weights);
+    const value = scorePlan(worlds, registry, me, plan, planTurn, depth, weights);
+    evaluationMs += Date.now() - started;
+    return value;
   };
 
   let best: TurnPlan = [];
@@ -427,16 +475,27 @@ export function searchTurnPlan(
   // line whose parts are only worth taking together.
   const v1Plan = heuristicPlan(state, registry, me, planTurn);
   if (v1Plan.length > 0) {
-    const v1Score = score(v1Plan);
-    if (v1Score >= bestScore) {
+    if (spent()) {
+      // Out of budget before v1's plan could even be scored — which happens on
+      // the widest boards, where a single evaluation is seconds. Take it
+      // *unscored* rather than keeping the empty plan: an empty plan means
+      // "pass the whole turn", so degrading to it would turn a slow board into
+      // a skipped turn. Falling back to a competent default is the same choice
+      // made everywhere else here, and v1's turn is exactly that.
       best = v1Plan;
-      bestScore = v1Score;
       keptHeuristic = true;
+    } else {
+      const v1Score = score(v1Plan);
+      if (v1Score >= bestScore) {
+        best = v1Plan;
+        bestScore = v1Score;
+        keptHeuristic = true;
+      }
     }
   }
 
   while (!spent()) {
-    const neighbours = planNeighbours(state, registry, me, best, planTurn);
+    const neighbours = planNeighbours(state, registry, me, best, planTurn, spent);
     if (neighbours.length === 0) break;
 
     // Pick the best neighbour on raw score, *then* apply the threshold once.

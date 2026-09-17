@@ -259,9 +259,35 @@ steps compound into a design nobody can debug.
      comparison, so a neighbour 0.6 better than the incumbent beat a later one 0.9 better. It is
      now applied once, against the incumbent, after the best neighbour is picked.
 
-1c. **A planning time budget.** Swap-and-drop neighbours are `|plan| x |frontier|` per round, and
-   the worst decision measured **87 seconds** (game time went 6.0s to 19.0s). `planBudgetMs`
-   exists and is off by default; it has to be on, and sized, before v3 can be seated.
+1c. **A planning time budget.** *(Done.)* Swap-and-drop neighbours are `|plan| x |frontier|` per
+   round, and the worst planned turn measured **87 seconds**. Now **6.4s worst, 38ms mean**, with
+   no strength cost — four runs across the change land at 71.8-73.8%, all inside each other's
+   intervals — and a 400-game bench halved, 526s to 254s.
+
+   Four things were needed, and the budget itself was only one of them:
+
+   - **`planBudgetMs` defaults on** (1.5s), unlike v2's `timeBudgetMs`, because what it prevents
+     is not a slow game but an unusable one. Unit tests pass `Infinity` where exact replays
+     matter more than a bounded turn.
+   - **Neighbour ordering carries the budget's weight.** A round offers far more neighbours than
+     the budget will pay for, so whatever is evaluated first is what the search actually
+     considers: appends (an unevaluated append is a play simply not made), then swaps earliest
+     position first, then drops.
+   - **The stop is predictive, not reactive.** Stopping when time has run out overshoots by a
+     whole evaluation, which is `worlds` rollouts and on a wide board is seconds — measured 6.5s
+     against a 1.5s budget. It now stops when there isn't time for a *whole* evaluation, judged
+     from the running mean. Aborting *inside* one would be tighter and is wrong: a plan scored on
+     one sampled world isn't comparable with a plan scored on three, and the search depends on
+     every plan seeing the same worlds.
+   - **Degradation is to v1's turn, never to passing.** When the budget is gone before v1's plan
+     can even be scored, that plan is adopted *unscored*. Keeping the empty plan instead would
+     mean passing the whole turn, so a slow board would become a skipped turn — the same
+     catatonic failure in new clothes. Verified down to a 0ms budget.
+
+   **The remaining floor is one unconditional evaluation.** Scoring the empty plan has to happen
+   to have a baseline at all, and on the widest boards that alone is ~6s. Bounding it needs
+   `worlds` or `depth` to scale with board size, which is already an open question above rather
+   than a new one.
 2. **Re-run `bot:audit` and the gauntlet.** Card prices will move; some Phase 7 features may stop
    being necessary and others may appear. *Do not touch the feature set before this.*
 3. **Re-derive the feature set** from the new audit.

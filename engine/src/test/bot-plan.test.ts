@@ -166,6 +166,23 @@ describe("turn plans", () => {
     expect(result.keptHeuristic).toBe(true);
   });
 
+  it("degrades to v1's turn under a spent budget, never to passing", () => {
+    // The trap: an empty plan means "pass the whole turn", so a search that
+    // runs out of budget before it can score anything must not simply return
+    // where it started. On the widest boards a single evaluation is seconds,
+    // which is exactly when this fires — and turning a slow board into a
+    // skipped turn would be far worse than being slow.
+    for (const timeBudgetMs of [0, 1]) {
+      const game = planningPosition();
+      const result = searchTurnPlan(game.state, registry, A, { worlds: 3, depth: 3, timeBudgetMs });
+      expect(result.plan.length, `budget ${timeBudgetMs}ms`).toBeGreaterThan(0);
+      expect(result.keptHeuristic).toBe(true);
+      for (const action of result.plan) {
+        expect(() => game.dispatch(action), JSON.stringify(action)).not.toThrow();
+      }
+    }
+  });
+
   it("respects its evaluation budget", () => {
     const game = planningPosition();
     const result = searchTurnPlan(game.state, registry, A, {

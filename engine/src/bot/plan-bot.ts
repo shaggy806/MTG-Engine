@@ -55,11 +55,39 @@ export interface PlanBotOptions extends EvalBotOptions {
   readonly worlds?: number;
   /** Ceiling on plan evaluations for one turn. */
   readonly maxEvaluations?: number;
-  /** Wall-clock ceiling on one turn's planning. Separate from
-   * `timeBudgetMs`, which bounds a single v2-style decision: planning happens
-   * once a turn and is allowed to cost more than one window's search. */
+  /**
+   * Wall-clock ceiling on one turn's planning, in milliseconds.
+   *
+   * Separate from `timeBudgetMs`, which bounds a single v2-style decision.
+   * Planning happens *once a turn* rather than at every priority window, so it
+   * can afford to cost more than one window's search and still make a turn
+   * cheaper overall.
+   *
+   * Unlike `timeBudgetMs` this defaults **on**, at
+   * {@link DEFAULT_PLAN_BUDGET_MS}, because the failure it prevents is not a
+   * slow game but an unusable one: unbounded, the worst planned turn measured
+   * **87 seconds**. Pass `Infinity` where exact replays matter more than a
+   * bounded turn — the unit tests do.
+   */
   readonly planBudgetMs?: number;
 }
+
+/**
+ * How long one turn's planning may take by default.
+ *
+ * Sized against what the search actually costs rather than against a UI pause:
+ * a depth-3 rollout is 5-11ms depending on board size, three sampled worlds
+ * make a plan evaluation 15-35ms, and a round of neighbours on a normal board
+ * is a dozen or two of those. A second and a half covers several full rounds on
+ * an ordinary board and degrades to a partial first round on a huge one, which
+ * is the right shape: the neighbour ordering puts appends first, so a truncated
+ * search still builds a turn rather than returning nothing.
+ *
+ * The live room's own pacing is a separate concern and much more generous —
+ * one plan per turn against a 350ms pause *per bot action*, of which a turn has
+ * several.
+ */
+export const DEFAULT_PLAN_BUDGET_MS = 1_500;
 
 export class PlanBotController extends EvalBotController {
   private readonly planOptions: PlanBotOptions;
@@ -121,7 +149,7 @@ export class PlanBotController extends EvalBotController {
       depth: this.planOptions.depth,
       worlds: this.planOptions.worlds,
       maxEvaluations: this.planOptions.maxEvaluations,
-      timeBudgetMs: this.planOptions.planBudgetMs,
+      timeBudgetMs: this.planOptions.planBudgetMs ?? DEFAULT_PLAN_BUDGET_MS,
     });
     this.plan = result.plan;
     this.plannedTurn = state.turn.number;
