@@ -383,8 +383,13 @@
 
 /* --- the stand-in review popup (ReplacementReview.tsx) --------------------
    The card being replaced on the left, its suggested stand-ins on the right,
-   all as real card faces. Card width comes off the viewport's *height* as
-   well as its width, so four cards in a row still fit a short screen. */
+   all as real card faces. Four cards and their gaps have to fit one row, so
+   the card width is a fraction of *the box* (`cqw`, against `.rr-box` as an
+   inline-size container) rather than of the viewport: the box stops growing
+   at its max width and the viewport doesn't, so a `vw` card width pushed the
+   row out through the sides of the dialog on any window past ~1500px — a
+   maximized one. Capped against the viewport's *height* too, so the row
+   still fits a short screen. */
 .rr-overlay {
   position: fixed;
   inset: 0;
@@ -396,11 +401,12 @@
   background: rgba(10, 12, 16, 0.85);
 }
 .rr-box {
-  --rr-card-w: min(18vw, calc(52vh * 5 / 7));
+  container-type: inline-size;
+  --rr-card-w: min(21cqw, calc(52vh * 5 / 7));
   display: flex;
   flex-direction: column;
   gap: 1.5vh;
-  width: min(1240px, 96vw);
+  width: min(1480px, 96vw);
   max-height: 96vh;
   overflow: auto;
   padding: 2vh 2vw;
@@ -422,7 +428,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  gap: 2vw;
+  gap: 2cqw;
 }
 .rr-original,
 .rr-options {
@@ -451,7 +457,7 @@
 }
 .rr-option-row {
   display: flex;
-  gap: 1.2vw;
+  gap: 1.2cqw;
 }
 .rr-option {
   width: var(--rr-card-w);
