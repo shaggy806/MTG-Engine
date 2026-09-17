@@ -34,7 +34,7 @@ import { candidateActions } from "./candidates.js";
 import { decisionCandidates } from "./decisions.js";
 import { canBlock, combatCreatures, crackback, damageThrough, isLethal } from "./combat-math.js";
 import type { CombatCreature } from "./combat-math.js";
-import { DEFAULT_WEIGHTS, evaluateState } from "./evaluate.js";
+import { DEFAULT_WEIGHTS, evaluateState, normalizeWeights } from "./evaluate.js";
 import type { EvalWeights } from "./evaluate.js";
 import { CombatRolloutController, simulateAction, simulateCombat } from "./simulate.js";
 import type { Horizon, RolloutPolicy } from "./simulate.js";
@@ -313,7 +313,10 @@ export class EvalBotController extends HeuristicBotController {
   ) {
     super(playerId, registry);
     this.cards = registry;
-    this.weights = options.weights ?? DEFAULT_WEIGHTS;
+    // Every vector the bot ever runs on goes through this, so the land-drop
+    // invariant holds for hand-written champions and tuner mutations alike
+    // rather than depending on each of them to get it right.
+    this.weights = normalizeWeights(options.weights ?? DEFAULT_WEIGHTS);
     this.horizon = options.horizon ?? "turn";
     this.rollout = options.rollout ?? "combat";
     this.rolloutDecisions = options.rolloutDecisions ?? false;
@@ -351,6 +354,35 @@ export class EvalBotController extends HeuristicBotController {
       // 30 on one 38-permanent board, which made a single decision a 2s search.
       if (legal.kind === "activate-ability" && this.isManaOnlyAbility(legal)) continue;
       candidates.push(...candidateActions(legal, player));
+    }
+
+    // **A land drop is not weighed against passing.** Playing a land costs
+    // nothing but the card, doesn't use the turn, and leaves another priority
+    // window to spend afterwards, so declining one is never right — and the
+    // evaluation gets it wrong far too easily, because `hand` prices a land in
+    // hand like any other card (see `normalizeWeights`). v1 has always played
+    // a land first; the search must not be a way to lose that.
+    //
+    // *Which* land is a real decision, though, so several are still searched
+    // against each other — just never against doing nothing. A land drop
+    // carrying a `face` is excluded: that's an MDFC, where taking the land
+    // side means giving up a spell, which is exactly the trade the search is
+    // for.
+    const lands = candidates.filter((a) => a.type === "play-land" && a.face === undefined);
+    if (lands.length === 1) return lands[0];
+    if (lands.length > 1) {
+      let bestLand = lands[0];
+      let bestLandScore = -Infinity;
+      for (const land of lands) {
+        if (spent(budget)) break;
+        budget.left -= 1;
+        const score = this.score(view, land);
+        if (score !== null && score > bestLandScore) {
+          bestLandScore = score;
+          bestLand = land;
+        }
+      }
+      return bestLand;
     }
 
     // v1's own pick goes first, because under a wall-clock budget the search

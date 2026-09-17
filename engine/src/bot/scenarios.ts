@@ -130,6 +130,11 @@ const SCENARIOS: readonly BotScenario[] = [
       let small: ObjectId | null = null;
       const game = mainPhase((g) => {
         for (let i = 0; i < 3; i += 1) g.debugSpawn("Swamp", A, "battlefield");
+        // Removal is the *only* thing in hand. Left with a land as well, the
+        // bot plays the land first — correct sequencing rather than a refusal
+        // to cast, and indistinguishable from one if the test only looks at a
+        // single action. Same trap as the commander scenario below.
+        g.state.zones.perPlayer[A].hand = [];
         g.debugSpawn("Murder", A, "hand");
         small = g.debugSpawn("Grizzly Bears", B, "battlefield", { summoningSick: false });
         big = g.debugSpawn("Craw Wurm", B, "battlefield", { summoningSick: false });
@@ -159,6 +164,10 @@ const SCENARIOS: readonly BotScenario[] = [
       const game = mainPhase((g) => {
         for (let i = 0; i < 4; i += 1) g.debugSpawn("Forest", A, "battlefield");
         g.debugSpawn("Sol Ring", A, "battlefield");
+        // An empty hand, so passing is genuinely the only thing left to do.
+        // With a land still in hand the bot plays it and the assertion passes
+        // without ever testing what it claims to.
+        g.state.zones.perPlayer[A].hand = [];
       }, registry);
       const action = botFor(weights, registry).act(viewOf(game, A));
       return {

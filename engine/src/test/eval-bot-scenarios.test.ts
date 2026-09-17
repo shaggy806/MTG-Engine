@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import { BOT_SCENARIOS, runScenarios } from "../bot/scenarios.js";
 import { CHAMPIONS } from "../bot/champions/index.js";
-import { DEFAULT_WEIGHTS } from "../bot/evaluate.js";
+import { DEFAULT_WEIGHTS, normalizeWeights } from "../bot/evaluate.js";
+import type { EvalWeights } from "../bot/evaluate.js";
 import { FEATURE_KEYS } from "../bot/features.js";
 import { createDefaultRegistry } from "../cards.js";
 
@@ -56,6 +57,42 @@ describe("champions", () => {
     // dominate. Two members with the same vector are one member.
     const seen = new Set(CHAMPIONS.map((c) => JSON.stringify(c.weights)));
     expect(seen.size).toBe(CHAMPIONS.length);
+  });
+});
+
+describe("the land-drop invariant", () => {
+  // A land in hand must never be worth more than a land on the battlefield.
+  // Three of the four checked-in champions had `extraLands` *exactly* equal to
+  // `hand`, which scores a land drop past the cap at zero — and since the
+  // priority search scores passing first and skips ties, an exactly-even land
+  // drop is declined. They only played lands at all because a basic land
+  // happens to add `untappedMana` too, which is luck rather than design.
+  it("raises both land terms above `hand`, whatever vector it is given", () => {
+    const broken: EvalWeights = { ...DEFAULT_WEIGHTS, hand: 4, lands: 1, extraLands: 0 };
+    const fixed = normalizeWeights(broken);
+    expect(fixed.lands).toBeGreaterThan(fixed.hand);
+    expect(fixed.extraLands).toBeGreaterThan(fixed.hand);
+  });
+
+  it("leaves a vector that already satisfies it untouched", () => {
+    expect(normalizeWeights(DEFAULT_WEIGHTS)).toBe(DEFAULT_WEIGHTS);
+  });
+
+  it("holds for every champion, since the controller normalizes on construction", () => {
+    for (const champion of CHAMPIONS) {
+      const w = normalizeWeights(champion.weights);
+      expect(w.lands, `${champion.id}.lands`).toBeGreaterThan(w.hand);
+      expect(w.extraLands, `${champion.id}.extraLands`).toBeGreaterThan(w.hand);
+    }
+  });
+
+  it("plays a land rather than passing even under a vector that scores it at zero", () => {
+    // The end-to-end version: a vector where a land drop is worth exactly
+    // nothing must still make the drop, because the search no longer weighs a
+    // land against passing at all.
+    const flat: EvalWeights = { ...DEFAULT_WEIGHTS, hand: 2, lands: 2, extraLands: 2 };
+    const [report] = runScenarios(flat, registry).filter((r) => r.name.startsWith("plays a land"));
+    expect(report.passed, report.detail).toBe(true);
   });
 });
 

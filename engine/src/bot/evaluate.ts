@@ -162,6 +162,38 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   crackbackMargin: 2,
 };
 
+/**
+ * Force the one inequality the feature set can't express on its own: **a land
+ * in hand is never worth more than a land on the battlefield.**
+ *
+ * Playing a land moves a card from hand to the battlefield, so it scores
+ * `lands - hand` (or `extraLands - hand` past the cap). Below zero the bot
+ * stops developing, which is the catatonic failure this whole evaluation was
+ * designed around; *at* zero it is just as bad, because the priority search
+ * scores passing first and skips ties, so an exactly-even land drop is
+ * declined. Three of the four checked-in champions had `extraLands` exactly
+ * equal to `hand`, and only survived because a basic land happens to add
+ * `untappedMana` too — luck, not design.
+ *
+ * The root cause is that `hand` prices every card the same, so a land in hand
+ * is credited like a bomb. Splitting lands out of `hand` would be the deeper
+ * fix; until then this guarantees the sign, for hand-written vectors, fitted
+ * ones and tuner mutations alike, rather than leaving each to get it right.
+ *
+ * `LAND_DROP_MARGIN` keeps it a strict gain rather than a tie.
+ */
+export const LAND_DROP_MARGIN = 1.25;
+
+export function normalizeWeights(weights: EvalWeights): EvalWeights {
+  const floor = weights.hand * LAND_DROP_MARGIN;
+  if (weights.lands >= floor && weights.extraLands >= floor) return weights;
+  return {
+    ...weights,
+    lands: Math.max(weights.lands, floor),
+    extraLands: Math.max(weights.extraLands, floor),
+  };
+}
+
 /** A decisive result dwarfs every positional term, so a lethal line always
  * beats a merely good one. */
 const WIN = 1e6;
