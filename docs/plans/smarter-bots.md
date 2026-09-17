@@ -1,6 +1,10 @@
 # Smarter bots (v2 — one-ply search over a tuned evaluation)
 
-Status: **in progress** — this is the design record for replacing
+Status: **in progress** — the search bot, evaluation, benchmark and tuner exist
+(`engine/src/bot/`, `engine/scripts/tune-bot.mjs`) but live rooms still seat the v1 bot. Phase 0
+(a benchmark that measures the game rooms actually play) is done; see "Work plan" for the rest.
+
+This is the design record for replacing
 `HeuristicBotController`'s greedy "highest mana value wins" policy with a one-ply search:
 enumerate the concrete actions available right now, simulate each against a throwaway copy
 of the game, score the resulting state with a weighted linear evaluation, and take the best.
@@ -30,8 +34,9 @@ settle, with no risk to the real game and no per-card special-casing. Measured o
 
 `server/src/room.ts` already holds every bot action behind `BOT_MIN_THINK_MS` (350ms) so
 the clients can play their animations. A 1.7ms search disappears inside a pause the server
-is already taking on purpose — roughly 200x headroom. Runtime cost is a non-issue; the
-only real budget is the tuner's, and that one is allowed to be expensive.
+is already taking on purpose — roughly 200x headroom. (These numbers are from the original
+60-card decks. On real Commander boards they no longer hold — see "Measuring the game rooms
+actually play".)
 
 Monte-Carlo rollouts and ISMCTS are the strictly stronger family and are deliberately
 deferred — see "Deferred" at the bottom. One-ply has by far the best strength-per-unit-of-
@@ -158,10 +163,11 @@ The thing to respect is the **noise floor**. 30 games is ±5 wins of pure varian
 makes the 16W–14L rows above statistically indistinguishable from a coin flip. Budget
 400–1000 games per configuration to resolve a 55% win rate from 50%.
 
-`engine/scripts/tune-bot.mjs` (not shipped): a `worker_threads` pool, one game per task,
-seats alternated so the play/draw advantage cancels, several deck pairings, and a JSON log
-so runs resume. A `bench` mode reports candidate vs current `HeuristicBotController` with a
-confidence interval, so a run can't be read as signal when it's noise.
+`engine/scripts/tune-bot.mjs` (`bot:bench` / `bot:tune`): a `worker_threads` pool, one game
+per task, seats rotated within blocks so play/draw order and deck strength cancel (see
+"Measuring the game rooms actually play"), and a `--json` log of every iteration. A `bench`
+mode reports candidate vs `HeuristicBotController` with a confidence interval, so a run can't
+be read as signal when it's noise. Resuming an interrupted tune isn't implemented.
 
 Two ways to overfit, both real here:
 
@@ -176,11 +182,173 @@ with Elo once a single strong configuration exists.
 
 ## Decks
 
-The tuner is only as meaningful as the games it measures, and `SAMPLE_DECKS` was explicitly
+The tuner is only as meaningful as the games it measures, and `SAMPLE_DECKS` was originally
 not format-legal: 60 cards instead of 100, colour identity ignored, and curated to exercise
-engine features rather than to play a game of Magic. Tuning against those would optimize
-for a format that doesn't exist. Replacing them with legal, coherent Commander decks is
-therefore a **prerequisite** for the tuning work, not a follow-up — tracked separately.
+engine features rather than to play a game of Magic. That prerequisite is met — `SAMPLE_DECKS`
+is now the five 2022 Starter Commander Decks (`docs/plans/precon-decks.md`).
+
+## Measuring the game rooms actually play (Phase 0 — done)
+
+The first benchmark measured a game nobody plays, which a tuner would have happily optimized
+for. What changed, and why each one mattered:
+
+- **Rules.** Benchmark games ran at 20 life with no mulligan phase; rooms play 40 life, the
+  free first mulligan and a real mulligan decision. `COMMANDER_RULES` (engine `state.ts`) is
+  now the one definition, read by both `ws-server.ts` and the worker. Life total alone moves
+  the `life` weight's whole scale.
+- **Deck pairings.** Seat *i* always got deck *i*, so every two-player game ever measured was
+  the same two decks. Seeds now come in blocks of `players` games; a block fixes one seating
+  from a shuffle of every ordering of distinct decks, and the candidate takes each seat once
+  within it, so deck strength and play/draw order both cancel. `--games` rounds up to a
+  multiple of `--players` to keep blocks whole, and the report breaks results down by the
+  candidate's deck.
+- **What "even" means.** The tuner accepted a mutation when its interval cleared 50%, which at
+  four players (one candidate against three incumbents, even = 25%) would reject everything.
+  The bar is now `1/players`, draws count as a `1/players` share rather than being dropped,
+  and the interval is Wilson rather than Wald (Wald misbehaves near 25%).
+- **Failures.** Errors were counted and discarded. Each is now reported with its seed so it
+  can be replayed, and a game that overruns `--timeout` (default 300s) has its worker killed
+  and replaced — a runaway loop inside one tick can't be stopped from inside the worker, and
+  would otherwise stall the run silently.
+- **Think time.** The report carries the candidate's mean and worst decision time and the
+  seed of the worst, because the room's think pause is a budget the worst case has to fit.
+
+**Baseline under these conditions** (default weights, `--horizon turn`, 18 workers on a
+20-core machine, 2026-09-16):
+
+| | v2 vs v1 | even | game | decision avg / worst |
+|---|---|---|---|---|
+| 2 players, 400 games | **66.3%** [61.5, 70.7] | 50% | 19.5 turns, 9.5s | 37ms / 1.95s |
+| 4 players, 200 games | **36.7%** [30.3, 43.6] | 25% | 43.9 turns, 66s | 125ms / 14.0s |
+
+The same bot measured 52.3% +/-4.9% at two players on the old 60-card, 20-life setup, so the
+move to real Commander games alone changed the answer. Per deck the candidate ranged from
+55% (Chaos Incarnate) to 76% (Grave Danger) at two players. One four-player game (seed 104)
+hit the 300s timeout; replayed alone it isn't a hang but a 56-turn game that took 9 minutes,
+with an 80-permanent board where mana taps were ~45 of every ~48 search candidates.
+
+**The search is no longer cheap.** The "Why one-ply" timings above were taken on 60-card
+decks; on 100-card Commander boards the worst decision is 2s at two players and 14s at four,
+against a 350ms think pause, and a 200-game four-player bench takes 13 minutes. Tuning at
+four players isn't practical until that comes down (Phase 1's mana-ability fix is the first
+step), and Phase 6 now has a real time budget to meet rather than a formality.
+
+## Work plan
+
+Agreed 2026-09-16. Each phase is measured with `bot:bench` before and after.
+
+1. **Evaluation features.** First, stop searching mana abilities: `candidates.ts` expands
+   every land's `{T}: Add` into a candidate and rolls each to end of turn, which v1 already
+   learned gains nothing (casting auto-pays). On a 38-permanent board 27 of 30 candidates were
+   mana taps, and one upkeep decision took ~2s against a 350ms think pause (2-player seed
+   102). Then add every term the current vector is blind to: commander damage
+   taken, planeswalker loyalty, counters beyond P/T (poison isn't modeled by the engine), keywords/evasion,
+   what the hand actually holds rather than just its size, mana value on the battlefield,
+   untapped mana and tapped/summoning-sick creatures, graveyard value (flashback, escape…),
+   energy, the monarch, emblems, commander tax, the threat from *every* opponent rather than
+   only the strongest, a draw scored as a draw (today it scores as a loss), and diminishing
+   returns on lands. Also untangle the double counting (a land is `lands` + `permanents`).
+   Every term stays a flat weight so the tuner can move it, with a unit test per term.
+2. **Combat.** Attackers built greedy-incrementally — add the attacker/defender pair that most
+   improves the evaluation, simulated through blocks (opponent blocking with the v1 rule) and
+   damage — and blocks the same way. Never enumerated. Two checks frame every attack
+   declaration (see "Combat: the alpha strike and crackback" below).
+3. **Rollout policy.** The simulation's stand-in controllers never attack or block, so no
+   priority decision ever sees combat damage. Give them the v1 combat decisions.
+4. **Other decisions.** Trigger targets, sacrifices, modes and scry through the same
+   simulation, instead of the inherited v1 answers.
+5. **Tune.** (1+1)-ES at two players, validated at four, on held-out seeds and seatings —
+   scored against a gauntlet of opponents, never v1 alone (see "Not just beating v1").
+6. **Ship.** `Room.addBot` seats `EvalBotController` once it passes the gauntlet at both two
+   and four players, passes every scenario test, and its worst-case decision time fits the
+   think pause. From then on rooms record bot game results (see below).
+
+### Not just beating v1
+
+A tuner optimizes exactly what it's scored on. Scored only against v1 it will find whatever
+v1 is bad at — v1 attacks with everything and never holds back blockers, so a vector that
+punishes that would look superb and could be worse against anything else, including itself
+and people. Four guards, cheapest first:
+
+1. **A gauntlet, not a benchmark.** Fitness is the result against a pool of frozen opponents:
+   v1, every weight vector that has ever been accepted or shipped (each checked in under
+   `engine/src/bot/champions/` with its date and bench numbers), and a few deliberately
+   different *styles* — hand-set aggressive, defensive and ramp-heavy vectors — so no single
+   opponent's weaknesses dominate. A candidate is accepted only if it beats the incumbent head
+   to head **and** doesn't regress against any gauntlet member (no member where its interval
+   sits wholly below its previous result). Head-to-head against the incumbent stays the
+   primary signal; the gauntlet is the veto.
+2. **Mixed tables.** At four players the candidate sits with a mix — incumbent, v1, an older
+   champion — rather than three copies of one opponent, which is closer to a real pod and
+   stops it learning to farm one policy.
+3. **Scenario tests that don't depend on any opponent.** Hand-built positions with a known
+   right answer: take lethal when it's on board, don't swing into lethal crackback, don't chump
+   when not facing lethal, remove the biggest threat rather than the smallest, don't tap mana
+   for nothing. These encode correct play directly, so a vector that's "winning" by
+   exploiting a benchmark but fails them is rejected. They grow every time a live game
+   shows a bad play.
+4. **Real players are the ground truth.** Once shipped, rooms append one line per finished
+   game with a bot in it — bot version and weights id, seat count, which seats were human,
+   winner, turns — to a server-side log. That's the only measure of "good against people",
+   and it's what decides whether a tuning run that won in self-play actually shipped an
+   improvement. An Elo ladder across champions (and eventually humans) is built from the
+   same records.
+
+One more reason the cheat matters here: a bot that reads hands and library order will look
+stronger against bots than it plays against people, because it never has to guess. Anything
+tuned while cheating should be re-benched once the honest version exists.
+
+### Combat: the alpha strike and crackback
+
+Two questions a one-ply evaluation can't answer on its own, because both are about a turn
+that hasn't happened yet: *can I win right now by swinging with everything*, and *if I swing,
+do I die on the way back*. Both are answered by a small, pure combat calculator
+(`bot/combat-math.ts`) over computed characteristics — not by engine rollouts, which would
+cost a full opponent turn per candidate attack set, and whose stand-in controllers don't
+attack anyway (Phase 3).
+
+**The calculator.** `damageThrough(attackers, blockers, defenderLife)` is the least damage an
+attack is guaranteed to deal when the defender blocks as well as they can: each blocker is
+assigned to the attacker it stops the most damage from, where a blocker stops an attacker's
+whole power, or only its toughness's worth against trample. Legality comes from the same
+places `legalActions` gets it — flying/reach, menace (two blockers or none), "can't block",
+must-be-blocked — and first strike/deathtouch only matter for who survives, not how much gets
+through. Greedy over attackers by power is close to exact at the board sizes that come up; a
+small assignment solve is the fallback if measurements say otherwise. Commander damage is
+tracked per commander alongside life (21, rule 903.10a), since a commander connecting can be
+lethal while the life total isn't.
+
+**1. The alpha check, always first.** Before building an attack incrementally, score the
+full swing — every eligible creature, each at the defender it can threaten most — against
+that defender's best blocks. If the guaranteed damage is lethal (life, or 21 commander damage
+from one commander), declare it and skip everything else: a won game outranks every positional
+term. In multiplayer this is per defender, and "lethal" means eliminating that player.
+
+**2. Crackback, as a constraint on everything else.** For a candidate attack set, work out
+our defence on the turns before we untap: the creatures that *didn't* attack, plus attackers
+with vigilance, minus whatever the combat itself is expected to kill. Then run the calculator
+the other way — each opponent swinging every creature they'll have untapped (all of them, less
+their own losses from our attack) at us, into those blockers. If the damage that gets through
+is lethal, the attack set is rejected, however good it scores. Attackers are pulled back
+cheapest-to-keep-home first (the ones whose blocks stop the most damage) until the crackback is
+survivable, and whatever's left is what the incremental builder works from.
+
+Two escape hatches keep this from making the bot passive:
+
+- **Already dead.** If the crackback is lethal even with no attack at all, holding back buys
+  nothing — the constraint is dropped and the bot races.
+- **Winning the race.** If the alpha check says we win now, crackback never runs.
+
+**Multiplayer.** Assuming every opponent attacks us is paranoid at a four-player table — they
+have each other to attack. The crackback sum is over opponents, each weighted by a tunable
+`crackbackParanoia` (1 = everyone swings at us; 0 = ignore anyone but the next player), and it
+counts only opponents whose turn comes before ours. That weight goes to the tuner with the
+rest.
+
+**Deliberately not modeled (yet):** instant-speed tricks, haste creatures still in hand, and
+removal on our blockers. The bot can see the hands (see "Known: the bot cheats"), but leaning
+on that makes combat worse the day the cheat is removed; a flat `crackbackMargin` of life to
+keep in reserve is the honest stand-in, and is tuned too.
 
 ## Tests
 

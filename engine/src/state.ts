@@ -528,6 +528,17 @@ export const DEFAULT_RULES: GameRules = {
   freeFirstMulligan: false,
 };
 
+/**
+ * The rules a live Commander room plays under (rule 903.7: 40 starting life),
+ * shared so the server's rooms and the bot benchmark (`scripts/tune-bot.mjs`)
+ * can't drift apart — weights tuned at 20 life are tuned for a game nobody
+ * plays.
+ */
+export const COMMANDER_RULES: Partial<GameRules> = {
+  startingLife: 40,
+  freeFirstMulligan: true,
+};
+
 export interface TurnState {
   number: number;
   activePlayerIndex: number;

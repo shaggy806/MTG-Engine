@@ -7,6 +7,7 @@
 
 import type { IncomingMessage } from "node:http";
 import type { WebSocket, WebSocketServer } from "ws";
+import { COMMANDER_RULES } from "engine";
 import type { RoomManager } from "./room-manager.js";
 import type { Room, Connection } from "./room.js";
 import { PendingRoom } from "./pending-room.js";
@@ -190,7 +191,7 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
             {
               seed,
               mulligans: true,
-              rules: { startingLife: 40, freeFirstMulligan: true },
+              rules: COMMANDER_RULES,
             },
             message.hostToken,
           );
