@@ -67,6 +67,73 @@
 //
 // `--allow-negative` lifts it, for looking at what the data actually says.
 //
+// ## Shrinking toward the hand-picked vector, not toward zero
+//
+// Non-negativity is a blunt instrument: it stops a coefficient inverting, but
+// not from being far too large in the right direction. The constrained fit on
+// 4000 games still produced `commanderTax 10.5` (a commander recast four times
+// is one that died four times) and `untappedCreatures 3.1` (a creature that
+// stayed home is one that wasn't forced to trade) — both the same confound,
+// and between them they made the bot refuse to recast its commander and refuse
+// to attack a board it could safely attack.
+//
+// So the L2 penalty pulls each coefficient toward the *hand-picked* value
+// rather than toward zero. That's ordinary ridge with a non-zero prior mean,
+// and here it says exactly the right thing: the hand-picked vector encodes
+// causal knowledge the data cannot see, so move away from it only where the
+// data insists. `--prior-l2` is the dial between trusting the human and
+// trusting the data, and `--prior zero` restores plain ridge.
+//
+// It needs two passes, because the prior and the fit live on different scales:
+// a logistic fit is in log-odds and the hand-picked vector is normalised to
+// `life = 1`, and the overall scale of an evaluation is free. So the first pass
+// (prior zero) exists only to learn what `life` is worth in log-odds, and the
+// second shrinks toward the hand-picked vector rescaled by that. Both passes
+// take seconds.
+//
+// ## Two terms are excluded outright
+//
+// `PRIOR_ONLY` below. The bar for putting a term there is evidence *independent
+// of the scenario gate* that its fitted direction is confounded — a structural
+// argument or an earlier measurement — never "the gate went red".
+//
+// **`commanderTax`.** Even shrunk hard toward the hand-picked 0.5 the fit kept
+// pulling it to 6.7, and the bot kept refusing to recast its commander. The
+// regression is reporting something true that the *feature* gets wrong: it
+// isn't a description of the position, it counts how many times the commander
+// has already died, which is about as pure a symptom of losing as the state
+// carries. And the cost it stands for is already charged where costs are
+// charged — `Game.castingCostOf` folds the tax into the real mana cost (rule
+// 903.8), so the spell is already unaffordable exactly when it should be.
+// Scoring it again double-counts it, and unlike the mana cost the evaluation's
+// copy is charged *every turn, forever*, not once at cast time.
+//
+// **`untappedMana`.** The fit wants it at 1.66, up from a deliberate 0. At that
+// value tapping seven lands costs 11.6 — more than a recast commander is worth —
+// and the bot stops spending mana at all. Untapped mana at end of turn is the
+// mana of someone who was comfortable, so it predicts winning beautifully and
+// causes nothing. This one doesn't rest on argument alone: Phase 1 measured it,
+// at a sixteenth of the fitted value, costing eight points of win rate at four
+// players (36% -> 28%, with `handManaValue`, in the ablation table above). The
+// fit rediscovering it is confirmation, not news. `handManaValue` is the other
+// half of that pair and the non-negativity constraint already pins it to zero.
+//
+// ## The land-drop invariant
+//
+// Non-negativity is a bound on one coefficient at a time, and the failure it
+// can't see is a *relationship* between two. A land drop moves a card from hand
+// to the battlefield, so it scores `lands - hand` (or `extraLands - hand` past
+// the cap). Both land terms must therefore stay above `hand`, or a land drop is
+// a loss and the bot stops developing — which `evaluate.ts` has said in a
+// comment since Phase 1 and nothing enforced.
+//
+// It bites here because the fit reads `extraLands` as strongly negative, the
+// constraint pins it at 0, and 0 is not enough: against a fitted `hand` of 3.6,
+// a land drop past the cap still scores -3.6. So after fitting, a land term
+// short of `hand` is raised to it, keeping the hand-picked vector's own
+// `extraLands`-to-`hand` ratio rather than inventing a margin. Both repairs are
+// reported.
+//
 // ## What is and isn't fitted
 //
 // Only the terms the score is linear in (`FEATURE_KEYS`). `landCap` is a
@@ -94,6 +161,8 @@ const lr = Number(flag("lr", "0.05"));
 const holdout = Number(flag("holdout", "0.2"));
 const out = flag("out", null);
 const nonneg = !args.includes("--allow-negative");
+const usePrior = flag("prior", "baseline") !== "zero";
+const priorL2 = Number(flag("prior-l2", "0.02"));
 const D = FEATURE_KEYS.length;
 
 // ---------------------------------------------------------------- load
@@ -174,9 +243,14 @@ if (constant.length > 0) {
 
 const sigmoid = (z) => 1 / (1 + Math.exp(-z));
 
-/** Full-batch Adam. The design matrix is a few MB and fits in cache; batching
- * would buy nothing and cost reproducibility. */
-function fit() {
+/**
+ * Full-batch Adam. The design matrix is a few MB and fits in cache; batching
+ * would buy nothing and cost reproducibility.
+ *
+ * `prior` (in standardized space) is what the L2 penalty pulls toward, and
+ * `lambda` is how hard. A zero prior is plain ridge.
+ */
+function fit(prior = null, lambda = l2) {
   const w = new Float64Array(D);
   const m = new Float64Array(D);
   const v = new Float64Array(D);
@@ -201,7 +275,7 @@ function fit() {
       loss -= train.w[i] * (yi * Math.log(p + 1e-12) + (1 - yi) * Math.log(1 - p + 1e-12));
     }
     for (let d = 0; d < D; d += 1) {
-      const g = grad[d] / totalWeight + l2 * w[d];
+      const g = grad[d] / totalWeight + lambda * (w[d] - (prior === null ? 0 : prior[d]));
       m[d] = b1 * m[d] + (1 - b1) * g;
       v[d] = b2 * v[d] + (1 - b2) * g * g;
       const mh = m[d] / (1 - Math.pow(b1, epoch));
@@ -219,7 +293,23 @@ function fit() {
   return w;
 }
 
-const standardized = fit();
+const lifeIndex = FEATURE_KEYS.indexOf("life");
+
+// Pass one: plain ridge, whose only job (when a prior is in play) is to say
+// what `life` is worth in log-odds, since that's the scale the hand-picked
+// vector has to be expressed in before it can be shrunk toward.
+let standardized = fit();
+
+if (usePrior) {
+  const lifeLogOdds = Math.abs(standardized[lifeIndex] / scale[lifeIndex]);
+  if (lifeLogOdds < 1e-12) throw new Error("first pass gave `life` no weight; can't scale the prior");
+  const prior = new Float64Array(D);
+  for (const [d, key] of FEATURE_KEYS.entries()) {
+    prior[d] = DEFAULT_WEIGHTS[key] * lifeLogOdds * scale[d];
+  }
+  console.log(`  pass 2: shrinking toward the hand-picked vector, prior-l2=${priorL2}`);
+  standardized = fit(prior, priorL2);
+}
 
 /** Weighted accuracy and log loss on a held-out set of games. */
 function evaluateFit(set, w) {
@@ -255,13 +345,28 @@ const raw = FEATURE_KEYS.map((_, d) => standardized[d] / scale[d]);
 // hand-picked one has used, which keeps it readable side by side with the
 // champions — and keeps the absolute sentinels in `evaluate.ts` (a won game at
 // 1e6, a dead player at -1e4) as dominant as they were designed to be.
-const lifeIndex = FEATURE_KEYS.indexOf("life");
 const norm = Math.abs(raw[lifeIndex]) > 1e-12 ? Math.abs(raw[lifeIndex]) : 1;
+
+/** Linear terms whose *fitted* value is thrown away — see the note above. */
+const PRIOR_ONLY = ["commanderTax", "untappedMana"];
 
 const fitted = { ...DEFAULT_WEIGHTS };
 for (const [d, key] of FEATURE_KEYS.entries()) {
-  if (constant.includes(key)) continue;
+  if (constant.includes(key) || PRIOR_ONLY.includes(key)) continue;
   fitted[key] = Number((raw[d] / norm).toFixed(4));
+}
+console.log(`  excluded, hand-set value kept: ${PRIOR_ONLY.join(", ")}`);
+
+// The land-drop invariant — see the note above. The margin comes from the
+// hand-picked vector's own ratio, so it's the prior speaking rather than a
+// number invented here.
+const margin = DEFAULT_WEIGHTS.extraLands / DEFAULT_WEIGHTS.hand;
+for (const key of ["lands", "extraLands"]) {
+  const floor = Number((fitted.hand * margin).toFixed(4));
+  if (fitted[key] < floor) {
+    console.log(`  ${key} ${fitted[key]} is below hand ${fitted.hand} — raised to ${floor} (a land drop must gain)`);
+    fitted[key] = floor;
+  }
 }
 
 // A feature pinned at zero is one the data wanted negative and the constraint
