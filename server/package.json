@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "smoke": "tsc && node scripts/smoke.mjs"
+    "smoke": "tsc && node scripts/smoke.mjs",
+    "gen:oracle-tags": "node scripts/gen-oracle-tags.mjs"
   },
   "dependencies": {
     "engine": "*",

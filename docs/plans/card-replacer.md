@@ -1,6 +1,6 @@
 # Card replacer (import a decklist, auto-substitute what's missing)
 
-Status: **implemented** — see `engine/src/card-replacer.ts`, `server/src/import-deck.ts`'s
+Status: **implemented, reworked 2026-09-16** to match on Scryfall Tagger oracle tags and the destination deck (see the last section) — see `engine/src/card-replacer.ts`, `server/src/import-deck.ts`'s
 `suggestedReplacement` field and commander-section-aware `parseDecklistText`, and the deck
 builder's new import panel (`client/src/deck-builder/DeckBuilderPage.tsx`). This file is the
 design record kept for future reference, not living documentation — see `CLAUDE.md` for current
@@ -174,3 +174,50 @@ of Thassa → Thieving Magpie over Behold the Multiverse). What the per-card out
    keywords) and a steeper mana-value penalty so a finisher stays a finisher.
 5. **Report confidence and alternatives.** Offer the top 3 with their shared tags ("both: sweeper,
    removal-destroy"), and flag low tag similarity instead of silently substituting.
+
+## Implemented: tag-aware, deck-aware replacer (2026-09-16)
+
+The recommended design above, built:
+
+- **Allowlist** — `server/data/oracle-tags/allowlist.txt`, 261 functional tags grouped by role
+  (removal, interaction, protection, card advantage, mana, lands, graveyard, tokens, combat,
+  sacrifice/life, copying/stealing). Editable; the generator refuses a slug that isn't on Scryfall's
+  public tag list, since search answers an unknown tag exactly like an empty one (and some tags shown on
+  Tagger — `create-token`, `token-generator` — aren't searchable at all).
+- **Index** — `server/data/oracle-tags/index.json` (~200 KB), built by
+  `npm run gen:oracle-tags -w server` from one paged `oracletag:<slug> legal:commander` search per tag:
+  29,534 of 31,830 Commander-legal cards carry at least one allowlisted tag. Official API only.
+  Slow — ~2 s a page, 1,102 requests, most of an hour — so it's checked in and regenerated when the
+  allowlist changes, not per import. A parent tag's search includes its children, so listing both a
+  broad tag and its specific children gives graded credit without storing the hierarchy.
+- **Scoring** (`engine/src/card-replacer.ts`, `suggestReplacements`) — IDF-weighted cosine over shared
+  tags; type, mana value and (creatures) P/T plus combat keywords. When the original has tags they
+  lead (0.6 of a noncreature's score, 0.5 of a creature's). Mana value also scales the whole score
+  (×0.7 at three or more apart), and a card of a different primary type needs tag similarity ≥ 0.5
+  and ranks ×0.8 — both set from the evaluation below, where their absence let a 7-mana flier be
+  replaced by a 2-drop sharing a graveyard mechanic, and sorceries by creatures and trinkets.
+- **Deck-aware** (`server/src/import-deck.ts`) — suggestions stay inside the commander's identity
+  (from Scryfall's `color_identity` when the commander itself is unimplemented), never repeat a card
+  the list has or another card's first choice, and a commander's stand-in is a legal commander.
+- **Client** — each substitution in the import report has a picker over the top three (a card already
+  in the deck is disabled, and the swap handler refuses it too), a match-strength badge
+  (Close / Partial / Loose from tag similarity ≥ 0.45 / ≥ 0.2 / less, or Loose when the original has
+  no tags) and the tags the two share.
+
+### Result on the five precons
+
+The 44 substitutions again, now through the shipped code with the real index, deck-aware:
+
+| | hand pick is #1 | hand pick in top 3 | first choice confidence (high / medium / low) |
+|---|---|---|---|
+| shipped scoring | 10/44 | 18/44 | 14 / 15 / 14 |
+
+Agreement with the hand picks stays a weak yardstick; reading the picks is the real check. Clear role
+matches: Myriad Landscape → Evolving Wilds (0.88), Sepulchral Primordial → Gravespawn Sovereign, Soul
+Shatter → Diabolic Edict, Coveted Jewel → Hedron Archive, Syphon Mind → Mind Rot, Haven of the Spirit
+Dragon → Buried Ruin, Scourge of Nel Toth → Inspired Sphinx, Savage Ventmaw → Lathliss, Foe-Razer
+Regent → Old Gnawbone. The low-confidence first choices are the cards nothing in the pool does
+(Sunbird's Invocation, Wild Ricochet, Curse of Bounty, Angler Turtle, Havengul Lich) — which is what
+the badge is for. Remaining judgement calls rather than errors: Necromantic Selection → Rakshasa
+Debaser (both put opponents' creatures onto your battlefield) over Damnation; Ob Nixilis Reignited →
+Greed (the draw half) with no black-red planeswalker to offer.

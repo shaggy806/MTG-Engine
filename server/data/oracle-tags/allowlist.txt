@@ -1,0 +1,304 @@
+# Scryfall Tagger oracle tags the card replacer compares cards on.
+#
+# One tag slug per line; `#` starts a comment. Only tags that describe what a
+# card DOES belong here: its role in a deck. Tagger also carries tags about a
+# card's name, art, printing history, set design or rules trivia
+# ("alliteration", "cycle-*", "typal-*", "type-errata", "fun-ruling"), and those
+# are left out on purpose: they're rare, so they'd dominate a similarity score
+# that weights rare tags heavily, and they say nothing about what a stand-in
+# should do.
+#
+# A search on a parent tag also returns cards tagged with its children
+# (oracletag:removal includes everything under removal-creature), so a broad
+# tag and its specific children can both be listed: two cards that are both
+# "removal" share a little, two that are both "removal-exile" share more. Rare
+# tags count for more than common ones automatically (see card-replacer.ts).
+#
+# After editing: `npm run gen:oracle-tags -w server` rebuilds index.json from
+# Scryfall's public search API (a few minutes; see the script). The script
+# refuses a slug missing from Scryfall's public tag list
+# (scryfall.com/docs/tagger-tags): search can't tell an unknown tag from one no
+# card carries, and some tags shown on Tagger aren't searchable.
+
+# --- removal -----------------------------------------------------------------
+removal
+spot-removal
+multi-removal
+repeatable-removal
+removal-creature
+removal-artifact
+removal-enchantment
+removal-planeswalker
+removal-land
+removal-nonland
+removal-permanent
+removal-token
+removal-destroy
+removal-exile
+removal-bounce
+removal-burn
+removal-fight
+removal-bite
+removal-sacrifice
+removal-toughness
+removal-tuck
+edict
+mutual-sacrifice
+swap-removal
+disenchant-naturalize
+sweeper
+sweeper-one-sided
+sweeper-graveyard
+hate-wide
+hate-high-mv
+hate-high-pt
+hate-attacker
+hate-flying
+hate-graveyard
+hate-artifact
+pinger
+burn
+burn-creature
+burn-player
+burn-player-each
+burn-any
+burn-planeswalker
+
+# --- counterspells and interaction ---------------------------------------------
+counterspell
+counterspell-creature
+counterspell-noncreature
+counterspell-soft
+counterspell-free
+hand-disruption
+discard
+bounce
+tap-outlet
+fog
+pseudo-fog
+damage-prevention
+combat-trick
+combat-manipulation
+lure
+force-attacker
+pillowfort
+tax
+cost-increaser
+hatebear
+
+# --- protection ----------------------------------------------------------------
+protection
+protects-all
+protects-creature
+protects-permanent
+gives-hexproof
+gives-indestructible
+gives-shroud
+gives-protection
+cheat-death
+regenerates-self
+regenerates-other
+
+# --- card advantage and selection -----------------------------------------------
+card-advantage
+repeatable-card-advantage
+draw
+pure-draw
+burst-draw
+repeatable-draw
+repeatable-pure-draw
+draw-engine
+cantrip
+life-for-cards
+wheel
+loot
+rummage
+discard-outlet
+impulsive-draw
+repeatable-impulsive-draw
+library-manipulation
+top-deck-manipulation
+peek
+scry
+surveil
+tutor
+tutor-creature
+tutor-artifact
+tutor-enchantment
+tutor-instant
+tutor-sorcery
+tutor-planeswalker
+tutor-card
+tutor-to-hand
+tutor-to-battlefield
+tutor-land
+tutor-land-basic
+
+# --- mana ----------------------------------------------------------------------
+ramp
+mana-producer
+mana-rock
+utility-mana-rock
+mana-dork
+mana-filter
+adds-multiple-mana
+ritual
+repeatable-treasures
+synergy-treasure
+land-ramp
+multi-land-ramp
+extra-land
+play-additional-land
+cost-reducer
+cost-reducer-creature
+cost-reducer-noncreature
+cost-reducer-artifact
+cost-reducer-instant-sorcery
+mana-sink
+bottomless-mana-sink
+mana-doubler
+untapper
+untapper-creature
+untapper-land
+untapper-artifact
+
+# --- lands (what kind of land a land is) ----------------------------------------
+utility-land
+dual-land
+rainbow-land
+fetchland
+tapland
+conditional-tapland
+painland
+shockland
+gainland
+creatureland
+sacrifice-outlet-land
+recursion-land
+reanimate-land
+lands-matter
+landfall
+land-count-matters
+
+# --- recursion and the graveyard ------------------------------------------------
+recursion
+recursion-creature
+recursion-any
+recursion-self
+regrowth
+regrowth-creature
+regrowth-any
+reanimate
+reanimate-creature
+reanimate-from-any
+reanimate-from-opponent
+reanimate-self
+mass-reanimation
+castable-from-graveyard
+gives-castable-from-graveyard
+castable-from-exile
+mill
+mill-self
+mill-opponent
+graveyard-fuel
+cards-in-graveyard-matter
+
+# --- tokens, bodies and go-wide -------------------------------------------------
+repeatable-token-generator
+repeatable-creature-tokens
+repeatable-artifact-tokens
+multiple-bodies
+token-doubler
+token-increaser
+synergy-token
+synergy-token-creature
+creature-count-matters
+anthem
+keyword-anthem
+power-boost-to-all
+toughness-boost-to-all
+overrun
+gives-pp-counters
+gives-pp-counters-to-all
+gains-pp-counters
+repeatable-pp-counters
+counters-matter
+pp-counters-matter
+counter-doubler
+pseudo-proliferate
+repeatable-proliferate
+enters-in-company
+
+# --- combat --------------------------------------------------------------------
+evasion
+gives-evasion
+gives-flying
+gives-trample
+gives-haste
+gives-unblockable
+gives-menace
+gives-double-strike
+gives-lifelink
+gives-deathtouch
+synergy-flying
+attack-trigger
+attacking-matters
+attacking-matters-self
+saboteur
+extra-combat
+power-matters
+scales-with-power
+damage-doubler
+firebreathing
+animate
+animate-self
+
+# --- sacrifice, death and life --------------------------------------------------
+sacrifice-outlet
+sacrifice-outlet-creature
+free-sacrifice-outlet
+repeatable-sacrifice-outlet
+death-trigger
+death-trigger-opponent
+blood-artist-ability
+drain-life
+opponent-loses-life
+group-slug
+punisher
+opponent-chooses
+lifegain
+repeatable-lifegain
+lifegain-matters
+soul-warden-ability
+life-payment
+martyr
+
+# --- copying, stealing, and bending the rules -----------------------------------
+copy
+copy-spell
+copy-creature
+copy-permanent
+clone
+flicker
+blink
+theft
+theft-creature
+theft-cast
+threaten
+free-cast-another
+cheat-into-play
+cast-trigger
+cast-trigger-you
+extra-turn
+synergy-noncreature
+synergy-instant
+synergy-sorcery
+synergy-artifact
+synergy-planeswalker
+synergy-legendary
+synergy-commander
+commander-matters
+planeswalker-support
+modal
+symmetrical
+group-hug

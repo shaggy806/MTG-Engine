@@ -17,8 +17,15 @@
  * `SavedDeck.printings` and `DeckList.printings`).
  */
 
-import { suggestReplacement, validateCommanderDeck } from "engine";
-import type { CardDefinition, CardRegistry, DeckValidationResult } from "engine";
+import { colorIdentityOf, suggestReplacements, validateCommanderDeck } from "engine";
+import type {
+  CardDefinition,
+  CardRegistry,
+  Color,
+  DeckValidationResult,
+  OracleTagIndex,
+  ReplacementConfidence,
+} from "engine";
 
 /** The `(SET) collector-number` suffix a decklist line can carry, naming one
  * specific printing of a card. */
@@ -108,6 +115,13 @@ export interface ScryfallCardSummary {
   readonly manaCost: string | null;
   readonly typeLine: string;
   readonly oracleText: string;
+  /** Front face's, for a creature; what the replacer compares bodies on. */
+  readonly power: string | null;
+  readonly toughness: string | null;
+  readonly keywords: readonly string[];
+  /** Rule 903.4, as Scryfall computes it — how an *unimplemented* commander
+   * still tells the replacer which colours its deck may use. */
+  readonly colorIdentity: readonly Color[];
 }
 
 interface ScryfallCardPayload {
@@ -118,11 +132,17 @@ interface ScryfallCardPayload {
   readonly mana_cost?: string;
   readonly type_line?: string;
   readonly oracle_text?: string;
+  readonly power?: string;
+  readonly toughness?: string;
+  readonly keywords?: readonly string[];
+  readonly color_identity?: readonly string[];
   readonly card_faces?: readonly {
     readonly name?: string;
     readonly mana_cost?: string;
     readonly type_line?: string;
     readonly oracle_text?: string;
+    readonly power?: string;
+    readonly toughness?: string;
   }[];
 }
 
@@ -161,6 +181,12 @@ function summarize(data: ScryfallCardPayload): ScryfallCardSummary {
         .map((f) => f.oracle_text ?? "")
         .filter((t) => t !== "")
         .join("\n//\n"),
+    power: data.power ?? face?.power ?? null,
+    toughness: data.toughness ?? face?.toughness ?? null,
+    keywords: data.keywords ?? [],
+    colorIdentity: (data.color_identity ?? []).filter((c): c is Color =>
+      ["W", "U", "B", "R", "G"].includes(c),
+    ),
   };
 }
 
@@ -395,6 +421,17 @@ function localTypeLine(def: CardDefinition): string {
   return def.subtypes.length > 0 ? `${front} — ${def.subtypes.join(" ")}` : front;
 }
 
+/** One suggested stand-in for an unimplemented card — see `engine`'s
+ * `suggestReplacements`. */
+export interface ReplacementOption {
+  readonly name: string;
+  /** How well it covers what the original does, judged on shared oracle tags
+   * (`"low"` when the original has none to go on). */
+  readonly confidence: ReplacementConfidence;
+  /** Oracle tags both cards carry, most telling first. */
+  readonly sharedTags: readonly string[];
+}
+
 export interface CardReportEntry extends DecklistEntry {
   /** Already has a matching `CardDefinition` in the engine's registry. */
   readonly implemented: boolean;
@@ -403,13 +440,15 @@ export interface CardReportEntry extends DecklistEntry {
   readonly manaCost: string | null;
   readonly typeLine: string;
   readonly oracleText: string;
-  /** An already-implemented card the client's deck builder can substitute
-   * in for this one — `null` when `implemented` (nothing to replace) or
-   * when nothing in the pool shares even this card's primary type (see
-   * `engine`'s `suggestReplacement`). Only ever computed from Scryfall's
-   * *type line and mana cost*, not its rules text — a similarity pick, not
-   * a claim that the two cards play the same. */
+  /** The stand-in the import uses for this card: `replacements[0]`, or
+   * `null` when `implemented` (nothing to replace) or nothing is a sensible
+   * match. */
   readonly suggestedReplacement: string | null;
+  /** Up to three stand-ins, best first, for the deck builder to offer as
+   * alternatives. Chosen for *this* deck: inside its commander's colour
+   * identity, never a card the list already has, and never another card's
+   * first choice — so taking every first choice can't break singleton. */
+  readonly replacements: readonly ReplacementOption[];
   /** The Scryfall card id of the printing this decklist line named, when it
    * named one that resolves. Only ever filled for an `implemented` card — an
    * unimplemented one is either dropped or stood in for by a *different*
@@ -436,10 +475,20 @@ export type EvaluateProgress = (progress: {
  * than a hundred throttled ones — so its real characteristics can be
  * reviewed, and matched against the pool for a stand-in the deck builder's
  * import flow can use. */
+export interface EvaluateOptions {
+  /** The pasted list's "Commander" section, if it had one — otherwise the
+   * commander is guessed the same way `formatCheck` does. */
+  readonly commanders?: readonly string[];
+  /** Oracle tags for matching stand-ins on role (`loadOracleTagIndex`).
+   * Without them, stand-ins are matched on type, cost and body only. */
+  readonly tags?: OracleTagIndex | null;
+}
+
 export async function evaluateDecklist(
   entries: readonly DecklistEntry[],
   registry: CardRegistry,
   onProgress?: EvaluateProgress,
+  options: EvaluateOptions = {},
 ): Promise<CardReportEntry[]> {
   const total = entries.length;
   const unimplemented = entries.filter((e) => !registry.has(e.name));
@@ -464,6 +513,8 @@ export async function evaluateDecklist(
   // variant rounds deliberately don't report, so close the bar out here.
   onProgress?.({ done: total, total, name: null });
 
+  const replacements = chooseReplacements(entries, registry, scryfallByName, options);
+
   return entries.map((entry): CardReportEntry => {
     if (registry.has(entry.name)) {
       const def = registry.get(entry.name);
@@ -475,10 +526,12 @@ export async function evaluateDecklist(
         typeLine: localTypeLine(def),
         oracleText: def.text,
         suggestedReplacement: null,
+        replacements: [],
         printingId: printingIds.get(entry.name) ?? null,
       };
     }
     const scryfall = scryfallByName.get(entry.name) ?? null;
+    const options = replacements.get(entry.name) ?? [];
     return {
       ...entry,
       implemented: false,
@@ -486,13 +539,93 @@ export async function evaluateDecklist(
       manaCost: scryfall?.manaCost ?? null,
       typeLine: scryfall?.typeLine ?? "",
       oracleText: scryfall?.oracleText ?? "",
-      suggestedReplacement:
-        scryfall !== null
-          ? suggestReplacement({ manaCost: scryfall.manaCost, typeLine: scryfall.typeLine })
-          : null,
+      suggestedReplacement: options[0]?.name ?? null,
+      replacements: options,
       printingId: null,
     };
   });
+}
+
+/** The pasted list's commanders: its "Commander" section when it had one,
+ * otherwise the first implemented legendary creature or planeswalker. */
+function commandersOf(
+  entries: readonly DecklistEntry[],
+  registry: CardRegistry,
+  explicit: readonly string[],
+): readonly string[] {
+  if (explicit.length > 0) return explicit;
+  const guess = entries.find((e) => {
+    if (!registry.has(e.name)) return false;
+    const def = registry.get(e.name);
+    return (
+      def.supertypes.includes("legendary") &&
+      (def.types.includes("creature") || def.types.includes("planeswalker"))
+    );
+  });
+  return guess === undefined ? [] : [guess.name];
+}
+
+/**
+ * Stand-ins for every unimplemented card, chosen for this deck. The commander
+ * goes first (its colour identity is what everything else must fit), then the
+ * rest in list order, each card's first choice joining the deck's contents so
+ * the next card can't be given it too.
+ */
+function chooseReplacements(
+  entries: readonly DecklistEntry[],
+  registry: CardRegistry,
+  scryfallByName: ReadonlyMap<string, ScryfallCardSummary | null>,
+  options: EvaluateOptions,
+): Map<string, readonly ReplacementOption[]> {
+  const commanders = commandersOf(entries, registry, options.commanders ?? []);
+  // The deck's identity, when every commander's is known — otherwise no
+  // colour filter, rather than a wrong one.
+  let identity: Set<Color> | null = commanders.length > 0 ? new Set() : null;
+  for (const name of commanders) {
+    const colors = registry.has(name)
+      ? [...colorIdentityOf(registry.get(name))]
+      : scryfallByName.get(name)?.colorIdentity;
+    if (colors === undefined || identity === null) {
+      identity = null;
+      continue;
+    }
+    for (const c of colors) identity.add(c);
+  }
+
+  const inDeck = new Set(entries.filter((e) => registry.has(e.name)).map((e) => e.name));
+  const isCommander = new Set(commanders);
+  const order = [...entries].sort(
+    (a, b) => Number(isCommander.has(b.name)) - Number(isCommander.has(a.name)),
+  );
+
+  const out = new Map<string, readonly ReplacementOption[]>();
+  for (const entry of order) {
+    if (registry.has(entry.name) || out.has(entry.name)) continue;
+    const scryfall = scryfallByName.get(entry.name) ?? null;
+    if (scryfall === null) continue;
+    const suggestions = suggestReplacements(
+      {
+        name: entry.name,
+        manaCost: scryfall.manaCost,
+        typeLine: scryfall.typeLine,
+        power: scryfall.power,
+        toughness: scryfall.toughness,
+        keywords: scryfall.keywords,
+      },
+      {
+        ...(identity !== null ? { identity } : {}),
+        exclude: inDeck,
+        forCommander: isCommander.has(entry.name),
+        ...(options.tags ? { tags: options.tags } : {}),
+      },
+    );
+    out.set(
+      entry.name,
+      suggestions.map(({ name, confidence, sharedTags }) => ({ name, confidence, sharedTags })),
+    );
+    if (suggestions.length > 0) inDeck.add(suggestions[0].name);
+  }
+  return out;
 }
 
 /**

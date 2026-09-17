@@ -1,23 +1,30 @@
 /**
- * Suggests an already-implemented card to stand in for one the engine
- * doesn't have yet, for the client's decklist-import flow (paste a
- * decklist, get a deck you can actually play today). Pure and synchronous —
- * scores every `BUILTIN_CARDS` entry against the *unimplemented* card's own
- * Scryfall-reported type line and mana cost (the only data available for a
- * card with no `CardDefinition`), and returns the closest match's name.
+ * Suggests already-implemented cards to stand in for one the engine doesn't
+ * have yet, for the client's decklist-import flow (paste a decklist, get a
+ * deck you can actually play today). Pure and synchronous: every
+ * `BUILTIN_CARDS` entry is scored against what's known about the
+ * *unimplemented* card — its Scryfall type line, mana cost, body and keywords
+ * — and, when an {@link OracleTagIndex} is supplied, the Scryfall Tagger
+ * oracle tags both cards carry, which is what lets a stand-in fill the
+ * original's *role* rather than just its shape. The design record, including
+ * how the tags were chosen and how well this does on the five precon decks,
+ * is `docs/plans/card-replacer.md`.
  *
- * Deliberately simple, and deliberately *not* a rules computation: "colour"
- * here is read straight off the target's own mana-cost pips, not a full
- * rule-903.4 colour-identity fold (that needs a `CardDefinition` to walk its
- * rules text, which an unimplemented card doesn't have). A suggestion that
- * ends up outside some deck's commander identity still surfaces as an
- * ordinary violation in `validateCommanderDeck`'s legality panel, the same
- * as any manually-added off-colour card — nothing is silently wrong, this
- * just isn't pre-filtered against a particular deck's identity.
+ * Deliberately a similarity judgement, not a rules computation. When the
+ * caller says which deck the stand-in is for (`identity`, `exclude`), the
+ * suggestions stay inside that commander's colour identity and never repeat
+ * a card the deck already has; without that context colour is only a nudge,
+ * and a suggestion can still surface later as an ordinary violation in
+ * `validateCommanderDeck`.
+ *
+ * The engine does no I/O, so the tag data isn't loaded here: the server
+ * builds an index from its generated file and passes it in
+ * (`server/src/oracle-tags.ts`).
  */
 
 import { BUILTIN_CARDS, isDeckableCard } from "./cards.js";
-import type { CardType } from "./cards/define.js";
+import type { CardDefinition, CardType } from "./cards/define.js";
+import { colorIdentityOf, withinIdentity } from "./identity.js";
 import { COLORS, manaValue, parseManaCost } from "./mana.js";
 import type { Color, ManaCost } from "./mana.js";
 
@@ -57,8 +64,8 @@ export function parseTypeLine(line: string): ParsedTypeLine {
 }
 
 /** Every colour with at least one pip in `cost`, including colour options
- * inside a hybrid/twobrid/Phyrexian pip — a permissive reading, since this
- * is only ever used as a similarity proxy, not a legality computation. */
+ * inside a hybrid/twobrid/Phyrexian pip — a permissive reading, used only as
+ * a similarity nudge when no deck identity is known. */
 function colorsOf(cost: ManaCost): ReadonlySet<Color> {
   const colors = new Set<Color>();
   for (const c of COLORS) if (cost.colored[c] > 0) colors.add(c);
@@ -70,66 +77,317 @@ function colorsOf(cost: ManaCost): ReadonlySet<Color> {
   return colors;
 }
 
+// --- oracle tags -------------------------------------------------------------
+
+/**
+ * Which Scryfall Tagger oracle tags cards carry — a curated subset describing
+ * what cards *do* (see `server/data/oracle-tags/allowlist.txt`) — and how
+ * common each is across all Commander-legal cards. A rare shared tag says far
+ * more about two cards than a common one.
+ */
+export interface OracleTagIndex {
+  /** The tags `name` carries (front-face name, as decklists write it), or
+   * `undefined` when the index has never heard of the card. A known card
+   * with no allowlisted tags gives `[]`. */
+  tagsOf(name: string): readonly string[] | undefined;
+  /** How many cards carry `tag`. */
+  frequency(tag: string): number;
+  /** How many cards the frequencies are counted over. */
+  readonly cardCount: number;
+}
+
+/** The shape `server/scripts/gen-oracle-tags.mjs` writes. */
+export interface OracleTagIndexData {
+  readonly legalCardCount: number;
+  readonly tags: readonly string[];
+  /** Card name → indices into `tags`. A card carrying none is absent. */
+  readonly cards: Readonly<Record<string, readonly number[]>>;
+}
+
+/** Builds an {@link OracleTagIndex} over the generator's output. A card
+ * missing from `data.cards` carries no allowlisted tag, which is different
+ * from a card the index doesn't know — but the generated data can't tell the
+ * two apart, so both read as `[]`. */
+export function createOracleTagIndex(data: OracleTagIndexData): OracleTagIndex {
+  const frequencies = new Map<string, number>();
+  for (const indices of Object.values(data.cards)) {
+    for (const i of indices) {
+      const tag = data.tags[i];
+      frequencies.set(tag, (frequencies.get(tag) ?? 0) + 1);
+    }
+  }
+  return {
+    tagsOf: (name) => (data.cards[name] ?? []).map((i) => data.tags[i]),
+    frequency: (tag) => frequencies.get(tag) ?? 0,
+    cardCount: data.legalCardCount,
+  };
+}
+
+/** Inverse document frequency: rare tags weigh more. Floored so even the
+ * most common tag still counts for something. */
+function tagWeight(index: OracleTagIndex, tag: string): number {
+  return Math.max(0.2, Math.log(index.cardCount / (index.frequency(tag) + 1)));
+}
+
+/** Weighted cosine similarity of two tag sets, in [0, 1], plus the tags they
+ * share, rarest first. */
+function tagSimilarity(
+  index: OracleTagIndex,
+  a: readonly string[],
+  b: readonly string[],
+): { readonly similarity: number; readonly shared: readonly string[] } {
+  if (a.length === 0 || b.length === 0) return { similarity: 0, shared: [] };
+  const inB = new Set(b);
+  let dot = 0;
+  let normA = 0;
+  let normB = 0;
+  const shared: string[] = [];
+  for (const tag of a) {
+    const w = tagWeight(index, tag) ** 2;
+    normA += w;
+    if (inB.has(tag)) {
+      dot += w;
+      shared.push(tag);
+    }
+  }
+  for (const tag of b) normB += tagWeight(index, tag) ** 2;
+  shared.sort((x, y) => index.frequency(x) - index.frequency(y) || (x < y ? -1 : 1));
+  return { similarity: dot / Math.sqrt(normA * normB), shared };
+}
+
+// --- scoring -------------------------------------------------------------------
+
 export interface ReplacementTarget {
-  /** Scryfall's `mana_cost` field — the same `"{2}{G}{G}"`-style notation
-   * `parseManaCost` already parses for implemented cards. */
+  /** The card's name — used only to look its tags up. */
+  readonly name?: string;
+  /** Scryfall's `mana_cost` — the same `"{2}{G}{G}"` notation `parseManaCost`
+   * reads for implemented cards. */
   readonly manaCost: string | null;
-  /** Scryfall's `type_line` field. */
+  /** Scryfall's `type_line`. */
   readonly typeLine: string;
+  /** Scryfall's `power`/`toughness` strings, for a creature ("*" is ignored). */
+  readonly power?: string | null;
+  readonly toughness?: string | null;
+  /** Scryfall's `keywords` ("Flying", "First strike", …). */
+  readonly keywords?: readonly string[];
+}
+
+export interface ReplacementContext {
+  /** The destination deck's commander colour identity. When given, only
+   * cards inside it are suggested. */
+  readonly identity?: ReadonlySet<Color> | readonly Color[];
+  /** Cards the destination deck already has (or has been given as other
+   * stand-ins) — never suggested, so a suggestion can't break singleton. */
+  readonly exclude?: Iterable<string>;
+  /** The card is the deck's commander: only a card that can be one is
+   * suggested. */
+  readonly forCommander?: boolean;
+  /** Oracle tags, for matching on role. Without them only type, cost, body
+   * and colour are compared, and every suggestion is `"low"` confidence. */
+  readonly tags?: OracleTagIndex;
+  /** How many suggestions to return. Defaults to 3. */
+  readonly limit?: number;
 }
 
 /**
- * The closest `BUILTIN_CARDS` entry to `target`, or `null` if nothing
- * shares even its primary type (a creature only ever matches a creature, a
- * land only a land, etc. — swapping in the wrong permanent/spell shape
- * would be a worse suggestion than none). Ties broken by name for a
- * deterministic result.
+ * How much the suggestion can be trusted to do the original's job:
+ * `"high"` shares much of what the original does, `"medium"` some of it,
+ * `"low"` little or nothing — a card of the same shape and cost at best.
  */
-export function suggestReplacement(target: ReplacementTarget): string | null {
+export type ReplacementConfidence = "high" | "medium" | "low";
+
+export interface ReplacementSuggestion {
+  readonly name: string;
+  readonly confidence: ReplacementConfidence;
+  /** Oracle tags the two cards share, rarest (most telling) first. */
+  readonly sharedTags: readonly string[];
+  /** The combined score in [0, 1], for ordering. */
+  readonly score: number;
+}
+
+/** Tag similarity at which a suggestion is a confident role match. */
+const HIGH_CONFIDENCE = 0.45;
+const MEDIUM_CONFIDENCE = 0.2;
+/** Tag similarity that lets a card of a *different* primary type through the
+ * type gate (a card-drawing artifact for a card-drawing creature) — lower
+ * than this, a different card type is a worse suggestion than none. Set from
+ * the precon evaluation: at 0.35 a sorcery sweeper was being replaced by a
+ * reanimating creature and a flier by a land-fetching trinket. */
+const CROSS_TYPE_SIMILARITY = 0.5;
+/** And even then a different card type ranks below a same-type card doing
+ * much the same job. */
+const CROSS_TYPE_FACTOR = 0.8;
+
+/** Keywords worth matching on a creature's body: the ones that decide what it
+ * does in combat. */
+const COMBAT_KEYWORDS: ReadonlySet<string> = new Set([
+  "flying",
+  "reach",
+  "trample",
+  "menace",
+  "haste",
+  "vigilance",
+  "first-strike",
+  "double-strike",
+  "deathtouch",
+  "lifelink",
+  "indestructible",
+  "hexproof",
+  "unblockable",
+  "defender",
+]);
+
+const normalizeKeyword = (k: string): string => k.trim().toLowerCase().replace(/\s+/g, "-");
+
+const isSpell = (types: ReadonlySet<string>): boolean => types.has("instant") || types.has("sorcery");
+
+function typeScore(target: ReadonlySet<string>, candidate: ReadonlySet<string>): number {
+  let shared = 0;
+  for (const t of target) if (candidate.has(t)) shared += 1;
+  if (shared === 0) return isSpell(target) && isSpell(candidate) ? 0.6 : 0;
+  return shared / Math.max(target.size, candidate.size);
+}
+
+/** Mana value closeness: 1 for equal, nothing by three apart. Steeper than a
+ * naive distance on purpose — a seven-drop finisher replaced by a two-drop
+ * that happens to share a mechanic is the failure this guards against. */
+const manaValueScore = (a: number, b: number): number => Math.max(0, 1 - Math.abs(a - b) / 3);
+
+function parseStat(value: string | null | undefined): number | null {
+  if (value === null || value === undefined) return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+/** For two creatures: how alike their bodies are (size, and combat keywords). */
+function bodyScore(target: ReplacementTarget, def: CardDefinition): number {
+  const power = parseStat(target.power);
+  const toughness = parseStat(target.toughness);
+  let size = 0.5;
+  if (power !== null && toughness !== null && def.power !== null && def.toughness !== null) {
+    const gap = Math.abs(power - def.power) + Math.abs(toughness - def.toughness);
+    size = Math.max(0, 1 - gap / 8);
+  }
+  const want = new Set((target.keywords ?? []).map(normalizeKeyword).filter((k) => COMBAT_KEYWORDS.has(k)));
+  const have = new Set<string>(def.keywords.filter((k) => COMBAT_KEYWORDS.has(k)));
+  let keywords = 1;
+  if (want.size > 0 || have.size > 0) {
+    let both = 0;
+    for (const k of want) if (have.has(k)) both += 1;
+    keywords = both / new Set([...want, ...have]).size;
+  }
+  return 0.6 * size + 0.4 * keywords;
+}
+
+function canBeCommander(def: CardDefinition): boolean {
+  return (
+    def.supertypes.includes("legendary") &&
+    (def.types.includes("creature") || def.types.includes("planeswalker"))
+  );
+}
+
+function confidenceOf(similarity: number, targetHasTags: boolean): ReplacementConfidence {
+  if (!targetHasTags) return "low";
+  if (similarity >= HIGH_CONFIDENCE) return "high";
+  if (similarity >= MEDIUM_CONFIDENCE) return "medium";
+  return "low";
+}
+
+/**
+ * The implemented cards most like `target`, best first — at most
+ * `context.limit` (3) of them, and none at all when nothing is a sensible
+ * stand-in.
+ *
+ * A candidate must share a primary card type with the target (instant and
+ * sorcery count as one), unless their oracle tags say they do much the same
+ * thing; a land only ever stands in for a land. Among those, the score is
+ * mostly the tags when the target has any — what the card does — and then
+ * card type, mana value, and for creatures, body. Ties go to the name, so the
+ * result is deterministic.
+ */
+export function suggestReplacements(
+  target: ReplacementTarget,
+  context: ReplacementContext = {},
+): ReplacementSuggestion[] {
   const targetLine = parseTypeLine(target.typeLine);
-  if (targetLine.types.length === 0) return null;
+  if (targetLine.types.length === 0) return [];
+  const targetTypes = new Set(targetLine.types);
   const targetCost = parseManaCost(target.manaCost);
   const targetMV = manaValue(targetCost);
   const targetColors = colorsOf(targetCost);
   const targetSubtypes = new Set(targetLine.subtypes.map((s) => s.toLowerCase()));
+  const identity = context.identity === undefined ? null : new Set(context.identity);
+  const exclude = new Set(context.exclude ?? []);
+  const index = context.tags;
+  const targetTags =
+    index !== undefined && target.name !== undefined ? (index.tagsOf(target.name) ?? []) : [];
+  const hasTags = targetTags.length > 0;
+  const limit = context.limit ?? 3;
 
-  const targetTypes = new Set(targetLine.types);
-
-  let bestName: string | null = null;
-  let bestScore = Infinity;
+  const scored: ReplacementSuggestion[] = [];
   for (const def of BUILTIN_CARDS) {
     // Tokens and back faces are registered definitions but not decklist
-    // entries (see `cards/classify.ts`) — never worth suggesting.
-    if (!isDeckableCard(def)) continue;
+    // entries (see `cards/classify.ts`); basics are never missing.
+    if (!isDeckableCard(def) || def.supertypes.includes("basic")) continue;
+    if (exclude.has(def.name) || def.name === target.name) continue;
+    if (context.forCommander === true && !canBeCommander(def)) continue;
+    if (identity !== null && !withinIdentity(colorIdentityOf(def), identity)) continue;
+
     const defTypes = new Set<string>(def.types);
-    let sharedTypes = 0;
-    for (const t of targetTypes) if (defTypes.has(t)) sharedTypes += 1;
-    if (sharedTypes === 0) continue; // hard filter: no overlap in primary type at all
+    // A land fills a land slot and nothing else does.
+    if (targetTypes.has("land") !== defTypes.has("land")) continue;
 
-    const defMV = manaValue(parseManaCost(def.manaCost));
-    const mvPenalty = Math.abs(defMV - targetMV);
+    const types = typeScore(targetTypes, defTypes);
+    const { similarity, shared } =
+      hasTags && index !== undefined
+        ? tagSimilarity(index, targetTags, index.tagsOf(def.name) ?? [])
+        : { similarity: 0, shared: [] as readonly string[] };
+    if (types === 0 && similarity < CROSS_TYPE_SIMILARITY) continue;
 
-    const defColors = new Set<Color>(def.colors);
-    let colorOverlap = 0;
-    for (const c of targetColors) if (defColors.has(c)) colorOverlap += 1;
-    const colorPenalty = Math.max(targetColors.size, defColors.size) - colorOverlap;
+    const mv = manaValueScore(targetMV, manaValue(parseManaCost(def.manaCost)));
+    const creatures = targetTypes.has("creature") && defTypes.has("creature");
+    const body = creatures ? bodyScore(target, def) : 0;
+    const subtype = def.subtypes.some((s) => targetSubtypes.has(s.toLowerCase())) ? 1 : 0;
 
-    // Extra types on either side that aren't shared — e.g. a plain Artifact
-    // target should prefer a plain artifact over an artifact *creature* at
-    // the same mana value, and vice versa.
-    const typeMismatchPenalty = targetTypes.size - sharedTypes + (defTypes.size - sharedTypes);
-
-    const sharesSubtype = def.subtypes.some((s) => targetSubtypes.has(s.toLowerCase()));
-
-    // Lower is better; mana-value distance dominates, type-shape and colour
-    // mismatches are smaller nudges, a shared subtype is a tiebreaker bonus.
-    const score =
-      mvPenalty * 2 + typeMismatchPenalty * 1.5 + colorPenalty - (sharesSubtype ? 0.5 : 0);
-
-    if (score < bestScore || (score === bestScore && bestName !== null && def.name < bestName)) {
-      bestScore = score;
-      bestName = def.name;
+    let score: number;
+    if (hasTags) {
+      // When the original has tags, tags lead: a card sharing none of them
+      // shouldn't outrank one doing the job just by matching type and cost.
+      score = creatures
+        ? 0.5 * similarity + 0.1 * types + 0.2 * mv + 0.2 * body
+        : 0.6 * similarity + 0.15 * types + 0.25 * mv;
+    } else {
+      score = creatures
+        ? 0.3 * types + 0.4 * mv + 0.3 * body
+        : 0.45 * types + 0.55 * mv;
     }
+    // Mana value scales the whole score as well as being a term in it: a
+    // strong tag match at four mana apart (a seven-drop finisher and a
+    // two-drop that happen to share a mechanic) must not outrank a closer
+    // card doing a similar job.
+    score *= 0.7 + 0.3 * mv;
+    if (types === 0) score *= CROSS_TYPE_FACTOR;
+    // Small nudges: a shared creature type, and — only when no deck identity
+    // filtered colours already — sharing the original's colours.
+    score += 0.03 * subtype;
+    if (identity === null && targetColors.size > 0) {
+      let overlap = 0;
+      for (const c of def.colors) if (targetColors.has(c)) overlap += 1;
+      score += 0.05 * (overlap / Math.max(targetColors.size, def.colors.length));
+    }
+
+    scored.push({ name: def.name, confidence: confidenceOf(similarity, hasTags), sharedTags: shared, score });
   }
-  return bestName;
+
+  scored.sort((a, b) => b.score - a.score || (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+  return scored.slice(0, limit);
+}
+
+/** The single best stand-in for `target`, or `null` — see
+ * {@link suggestReplacements}. */
+export function suggestReplacement(
+  target: ReplacementTarget,
+  context: ReplacementContext = {},
+): string | null {
+  return suggestReplacements(target, { ...context, limit: 1 })[0]?.name ?? null;
 }

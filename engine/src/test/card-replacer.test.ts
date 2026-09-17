@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { parseTypeLine, suggestReplacement } from "../card-replacer.js";
+import {
+  createOracleTagIndex,
+  parseTypeLine,
+  suggestReplacement,
+  suggestReplacements,
+} from "../card-replacer.js";
+import { colorIdentityOf, withinIdentity } from "../identity.js";
 import { createDefaultRegistry } from "../cards.js";
 import { manaValue, parseManaCost } from "../mana.js";
 
@@ -78,5 +84,99 @@ describe("suggestReplacement", () => {
     const first = suggestReplacement(target);
     const second = suggestReplacement(target);
     expect(first).toBe(second);
+  });
+});
+
+describe("suggestReplacements — for a particular deck", () => {
+  // A hand-built index in the generator's shape: a handful of real cards and
+  // the tags they really carry, plus enough stand-ins for all the other
+  // removal in Magic that "removal" is as common as it really is and "edict"
+  // as rare — similarity weighs rare tags more, so the proportions matter.
+  const TAGS = ["removal", "removal-creature", "edict", "sweeper", "card-advantage", "tutor-land-basic"];
+  const tag = (...names: string[]) => names.map((n) => TAGS.indexOf(n));
+  const otherRemoval = Object.fromEntries(
+    Array.from({ length: 5000 }, (_, i) => [`Other removal ${i}`, tag("removal", "removal-creature")]),
+  );
+  const index = createOracleTagIndex({
+    legalCardCount: 30000,
+    tags: TAGS,
+    cards: {
+      ...otherRemoval,
+      "Soul Shatter": tag("removal", "removal-creature", "edict"),
+      "Diabolic Edict": tag("removal", "removal-creature", "edict"),
+      "Doom Blade": tag("removal", "removal-creature"),
+      "Murder": tag("removal", "removal-creature"),
+      "Infernal Grasp": tag("removal", "removal-creature"),
+      "Night's Whisper": tag("card-advantage"),
+      "Sign in Blood": tag("card-advantage"),
+      "Myriad Landscape": tag("tutor-land-basic"),
+      "Evolving Wilds": tag("tutor-land-basic"),
+      "Terramorphic Expanse": tag("tutor-land-basic"),
+    },
+  });
+  const soulShatter = { name: "Soul Shatter", manaCost: "{2}{B}", typeLine: "Instant" };
+
+  it("keeps every suggestion inside the deck's colour identity", () => {
+    const identity = new Set(["W"] as const);
+    const suggestions = suggestReplacements(
+      { manaCost: "{1}{B}", typeLine: "Instant" },
+      { identity, limit: 10 },
+    );
+    expect(suggestions.length).toBeGreaterThan(0);
+    for (const s of suggestions) {
+      expect(withinIdentity(colorIdentityOf(registry.get(s.name)), identity)).toBe(true);
+    }
+  });
+
+  it("never suggests a card the deck already has", () => {
+    const first = suggestReplacements(soulShatter, { tags: index })[0].name;
+    const next = suggestReplacements(soulShatter, { tags: index, exclude: [first] });
+    expect(next.map((s) => s.name)).not.toContain(first);
+  });
+
+  it("only offers a card that can be a commander for the commander slot", () => {
+    const suggestions = suggestReplacements(
+      { manaCost: "{3}{B}{R}", typeLine: "Legendary Creature — Demon", power: "5", toughness: "5" },
+      { forCommander: true, limit: 10 },
+    );
+    expect(suggestions.length).toBeGreaterThan(0);
+    for (const s of suggestions) {
+      const def = registry.get(s.name);
+      expect(def.supertypes).toContain("legendary");
+    }
+  });
+
+  it("prefers the card that does the same job, and says what they share", () => {
+    const [best] = suggestReplacements(soulShatter, { tags: index, identity: ["B"] });
+    // Among black instants at a similar cost, the edict is the one that
+    // removes a creature the way Soul Shatter does.
+    expect(best.name).toBe("Diabolic Edict");
+    expect(best.sharedTags[0]).toBe("edict");
+    expect(best.confidence).toBe("high");
+  });
+
+  it("matches a land on what it fetches", () => {
+    const [best] = suggestReplacements(
+      { name: "Myriad Landscape", manaCost: null, typeLine: "Land" },
+      { tags: index },
+    );
+    expect(["Evolving Wilds", "Terramorphic Expanse"]).toContain(best.name);
+    expect(best.sharedTags).toEqual(["tutor-land-basic"]);
+  });
+
+  it("is low confidence when there are no tags to go on", () => {
+    const suggestions = suggestReplacements(soulShatter, { identity: ["B"] });
+    expect(suggestions.length).toBeGreaterThan(0);
+    expect(suggestions.every((s) => s.confidence === "low" && s.sharedTags.length === 0)).toBe(true);
+  });
+
+  it("doesn't cross a card type unless the tags say the job is the same", () => {
+    // A tagless black sorcery never gets a creature.
+    for (const s of suggestReplacements(
+      { manaCost: "{2}{B}", typeLine: "Sorcery" },
+      { identity: ["B"], limit: 10 },
+    )) {
+      expect(registry.get(s.name).types).not.toContain("creature");
+    }
   });
 });

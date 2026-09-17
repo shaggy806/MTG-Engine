@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, afterEach } from "vitest";
-import { createDefaultRegistry } from "engine";
+import { colorIdentityOf, createDefaultRegistry, withinIdentity } from "engine";
 import { evaluateDecklist, formatCheck, parseDecklistText } from "../import-deck.js";
 
 const registry = createDefaultRegistry();
@@ -133,6 +133,65 @@ function stubCollection(cards: Record<string, Record<string, unknown>>) {
 describe("evaluateDecklist", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+  });
+
+  it("chooses stand-ins for this deck: its identity, no repeats, a commander for the commander", async () => {
+    // Names no other test looks up — the Scryfall cache is process-wide.
+    stubCollection({
+      "Trostani Discordant": {
+        name: "Trostani Discordant",
+        mana_cost: "{3}{G}{W}",
+        type_line: "Legendary Creature — Dryad",
+        power: "1",
+        toughness: "4",
+        color_identity: ["G", "W"],
+      },
+      "Tireless Tracker": {
+        name: "Tireless Tracker",
+        mana_cost: "{2}{G}",
+        type_line: "Creature — Human Scout",
+        power: "3",
+        toughness: "2",
+        color_identity: ["G"],
+      },
+      "Wood Elves": {
+        name: "Wood Elves",
+        mana_cost: "{2}{G}",
+        type_line: "Creature — Elf Scout",
+        power: "1",
+        toughness: "1",
+        color_identity: ["G"],
+      },
+    });
+
+    const cards = await evaluateDecklist(
+      [
+        { name: "Trostani Discordant", count: 1 },
+        { name: "Llanowar Elves", count: 1 },
+        { name: "Tireless Tracker", count: 1 },
+        { name: "Wood Elves", count: 1 },
+      ],
+      registry,
+      undefined,
+      { commanders: ["Trostani Discordant"] },
+    );
+    const byName = new Map(cards.map((c) => [c.name, c]));
+
+    // The commander is unimplemented, so its identity comes from Scryfall.
+    const identity = new Set(["G", "W"] as const);
+    for (const c of cards) {
+      for (const option of c.replacements) {
+        expect(withinIdentity(colorIdentityOf(registry.get(option.name)), identity)).toBe(true);
+        expect(option.name).not.toBe("Llanowar Elves");
+      }
+    }
+    const commanderPick = registry.get(byName.get("Trostani Discordant")!.suggestedReplacement!);
+    expect(commanderPick.supertypes).toContain("legendary");
+
+    // Two same-shaped cards never get the same first choice.
+    const firsts = cards.map((c) => c.suggestedReplacement).filter((n) => n !== null);
+    expect(new Set(firsts).size).toBe(firsts.length);
+    expect(byName.get("Tireless Tracker")!.replacements.length).toBeGreaterThan(0);
   });
 
   it("reports an implemented card straight from the local registry, no network call", async () => {

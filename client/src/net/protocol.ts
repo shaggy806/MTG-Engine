@@ -168,6 +168,17 @@ export type ClientMessage =
       readonly seq: number
     }
 
+/** Mirrors `server/src/import-deck.ts`'s `ReplacementOption`: one suggested
+ * stand-in for a card the engine doesn't implement. */
+export interface ReplacementOption {
+  readonly name: string
+  /** How well it covers what the original does, judged on shared Scryfall
+   * Tagger oracle tags — `'low'` when there was nothing to go on. */
+  readonly confidence: 'high' | 'medium' | 'low'
+  /** Oracle tags both cards carry, most telling first. */
+  readonly sharedTags: readonly string[]
+}
+
 /** Mirrors `server/src/import-deck.ts`'s `CardReportEntry` — the response
  * shape of the plain HTTP `POST /import-deck` endpoint (not part of the
  * room-based WebSocket protocol above, since it's a stateless, non-room
@@ -182,10 +193,13 @@ export interface ImportedCardReport {
   readonly manaCost: string | null
   readonly typeLine: string
   readonly oracleText: string
-  /** An already-implemented card the deck builder's import flow can
-   * substitute in for this one — `null` when `implemented`, or when
-   * nothing in the pool shares even this card's primary type. */
+  /** The stand-in the import uses — `replacements[0]`, or `null` when
+   * `implemented` or nothing is a sensible match. */
   readonly suggestedReplacement: string | null
+  /** Up to three stand-ins, best first, chosen for this deck: inside its
+   * commander's colour identity, never a card it already has, and never
+   * another card's first choice. */
+  readonly replacements: readonly ReplacementOption[]
   /** The Scryfall card id of the printing the pasted line named, so an
    * imported deck keeps the art it was exported with. Only ever set for an
    * `implemented` card — a substituted one is a different card, whose art

@@ -2,7 +2,12 @@ import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { SAMPLE_DECKS, createDefaultRegistry, validateCommanderDeck } from 'engine'
 import type { PreconSubstitution } from 'engine'
-import type { DeckFormatReport, ImportDeckLine, ImportedCardReport } from '../net/protocol.ts'
+import type {
+  DeckFormatReport,
+  ImportDeckLine,
+  ImportedCardReport,
+  ReplacementOption,
+} from '../net/protocol.ts'
 import {
   createDeck,
   createDeckFromImport,
@@ -35,10 +40,18 @@ type Selection = { readonly kind: 'saved'; readonly id: string } | { readonly ki
 
 /** What the import panel hands back once it's resolved a pasted decklist
  * into a real, saved deck — shown once, above the editor, then dismissed. */
+export interface ImportSubstitution {
+  readonly from: string
+  /** The stand-in currently in the deck. */
+  readonly to: string
+  /** Every stand-in the server suggested, best first — `to` is one of them. */
+  readonly options: readonly ReplacementOption[]
+}
+
 export interface ImportReport {
   readonly total: number
   readonly asIs: number
-  readonly substituted: readonly { readonly from: string; readonly to: string }[]
+  readonly substituted: readonly ImportSubstitution[]
   readonly dropped: readonly string[]
   /** How many cards kept the specific printing the pasted list named. */
   readonly printings: number
@@ -166,7 +179,40 @@ export function DeckBuilderPage() {
         ) : selectedDeck ? (
           <>
             {importReport ? (
-              <ImportReportBanner report={importReport} onDismiss={() => setImportReport(null)} />
+              <ImportReportBanner
+                report={importReport}
+                deckCards={[...selectedDeck.cards, ...(selectedDeck.commander ? [selectedDeck.commander] : [])]}
+                onDismiss={() => setImportReport(null)}
+                onSwap={(from, to) => {
+                  const current = importReport.substituted.find((s) => s.from === from)
+                  if (!current || current.to === to) return
+                  // Never a card the deck already holds — the picker disables
+                  // those, but the rule belongs here too.
+                  if (selectedDeck.commander === to || selectedDeck.cards.includes(to)) return
+                  // Exactly this card's one slot: the commander if that's what
+                  // it stood in for, otherwise the first copy in the 99.
+                  // Replacing every copy by name broke singleton the moment
+                  // two originals shared a first choice somewhere down the
+                  // list and one was swapped back.
+                  const isCommander = selectedDeck.commander === current.to
+                  const slot = isCommander ? -1 : selectedDeck.cards.indexOf(current.to)
+                  if (!isCommander && slot === -1) return
+                  saveDeck({
+                    ...selectedDeck,
+                    cards: isCommander
+                      ? selectedDeck.cards
+                      : selectedDeck.cards.map((n, i) => (i === slot ? to : n)),
+                    commander: isCommander ? to : selectedDeck.commander,
+                  })
+                  refreshDecks()
+                  setImportReport({
+                    ...importReport,
+                    substituted: importReport.substituted.map((s) =>
+                      s.from === from ? { ...s, to } : s,
+                    ),
+                  })
+                }}
+              />
             ) : null}
             <DeckEditor
               deck={selectedDeck}
@@ -301,7 +347,7 @@ function ImportPanel({
         const commanderName = format?.commander ?? null
 
         const finalCards: string[] = []
-        const substituted: { from: string; to: string }[] = []
+        const substituted: ImportSubstitution[] = []
         const dropped: string[] = []
         // Which printing each kept card arrived with, from the pasted list's
         // own `(SET) number` suffixes — only ever present for a card kept
@@ -316,7 +362,7 @@ function ImportPanel({
             if (c.printingId !== null) printings[c.name] = c.printingId
           } else if (c.suggestedReplacement) {
             resolvedName = c.suggestedReplacement
-            substituted.push({ from: c.name, to: c.suggestedReplacement })
+            substituted.push({ from: c.name, to: c.suggestedReplacement, options: c.replacements })
           } else {
             dropped.push(c.name)
             continue
@@ -413,13 +459,29 @@ function ImportProgressBar({ progress }: { readonly progress: ImportProgress | n
   )
 }
 
+const CONFIDENCE_LABEL: Record<ReplacementOption['confidence'], string> = {
+  high: 'Close match',
+  medium: 'Partial match',
+  low: 'Loose match',
+}
+
+/** A tag slug as a phrase: "removal-creature" → "removal creature". */
+const tagLabel = (slug: string): string => slug.replace(/-/g, ' ')
+
 function ImportReportBanner({
   report,
+  deckCards,
   onDismiss,
+  onSwap,
 }: {
   readonly report: ImportReport
+  /** Everything the deck holds now, so a stand-in already in it (which would
+   * break singleton) can't be picked for another card. */
+  readonly deckCards: readonly string[]
   readonly onDismiss: () => void
+  readonly onSwap: (from: string, to: string) => void
 }) {
+  const inDeck = new Set(deckCards)
   return (
     <div className="db-import-report">
       <div className="db-import-report-head">
@@ -434,11 +496,46 @@ function ImportReportBanner({
       </div>
       {report.substituted.length > 0 ? (
         <ul className="db-import-report-list">
-          {report.substituted.map((s, i) => (
-            <li key={i}>
-              {s.from} → <strong>{s.to}</strong>
-            </li>
-          ))}
+          {report.substituted.map((s) => {
+            const chosen = s.options.find((o) => o.name === s.to)
+            return (
+              <li key={s.from} className="db-import-sub">
+                <span className="db-import-sub-from">{s.from}</span>
+                <span aria-hidden="true">→</span>
+                {s.options.length > 1 ? (
+                  <select
+                    value={s.to}
+                    aria-label={`Stand-in for ${s.from}`}
+                    onChange={(e) => onSwap(s.from, e.target.value)}
+                  >
+                    {s.options.map((o) => (
+                      <option
+                        key={o.name}
+                        value={o.name}
+                        // Already in the deck as something else — picking it
+                        // would put two copies in a singleton deck.
+                        disabled={o.name !== s.to && inDeck.has(o.name)}
+                      >
+                        {o.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <strong>{s.to}</strong>
+                )}
+                {chosen ? (
+                  <span className={`db-match db-match-${chosen.confidence}`}>
+                    {CONFIDENCE_LABEL[chosen.confidence]}
+                  </span>
+                ) : null}
+                {chosen && chosen.sharedTags.length > 0 ? (
+                  <span className="muted db-import-sub-tags">
+                    both: {chosen.sharedTags.slice(0, 3).map(tagLabel).join(', ')}
+                  </span>
+                ) : null}
+              </li>
+            )
+          })}
         </ul>
       ) : null}
       {report.dropped.length > 0 ? (

@@ -4,6 +4,7 @@ import { createDefaultRegistry } from "engine";
 import { RoomManager } from "./room-manager.js";
 import { attachRoomServer } from "./ws-server.js";
 import { evaluateDecklist, formatCheck, parseDecklistText } from "./import-deck.js";
+import { loadOracleTagIndex } from "./oracle-tags.js";
 
 const port = Number(process.env.PORT ?? 4000);
 // "*" is fine for local/LAN dev; set CLIENT_ORIGIN to the real site once
@@ -53,8 +54,11 @@ const httpServer = createServer((req, res) => {
           streaming = true;
           write({ type: "progress", done: 0, total: entries.length, name: null });
 
-          const cards = await evaluateDecklist(entries, registry, (p) =>
-            write({ type: "progress", ...p }),
+          const cards = await evaluateDecklist(
+            entries,
+            registry,
+            (p) => write({ type: "progress", ...p }),
+            { commanders, tags: loadOracleTagIndex() },
           );
           const format = formatCheck(entries, registry, commanders);
           write({ type: "result", cards, format });
