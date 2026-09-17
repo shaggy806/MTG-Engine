@@ -39,7 +39,8 @@
     "bot:tune": "node scripts/tune-bot.mjs tune",
     "bot:harvest": "node scripts/harvest-positions.mjs",
     "bot:fit": "node scripts/fit-weights.mjs",
-    "bot:scenarios": "node scripts/check-scenarios.mjs"
+    "bot:scenarios": "node scripts/check-scenarios.mjs",
+    "bot:audit": "node scripts/audit-evaluation.mjs"
   },
   "keywords": [],
   "author": "",

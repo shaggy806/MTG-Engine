@@ -403,6 +403,84 @@ pass every scenario. Iterating (fit, play, refit) is the intended use.
 The ES is not deleted. It keeps the five unfittable weights, and it's the natural way to polish a
 fitted vector afterwards.
 
+## The evaluation audit (before Phase 7)
+
+Prompted by a simple question — *why* is `ramp` so much better? — and by the answer being
+uncomfortable. `bot:audit` prices a permanent by spawning it on a fixed board and printing the
+change in score, and checks whether the model bends where the game bends. Under the shipped
+defaults:
+
+| card | worth |
+|---|---|
+| Craw Wurm (vanilla 6/4) | **20.00** |
+| Solemn Simulacrum | 9.00 |
+| Grizzly Bears (vanilla 2/2) | 8.00 |
+| Llanowar Elves | 5.50 |
+| Forest | 4.50 |
+| Thran Dynamo | 2.50 |
+| **Phyrexian Arena** (a card every turn, forever) | **2.00** |
+| Arcane Signet / Mind Stone | 1.50 |
+| Lightning Greaves | 1.50 |
+| **Sol Ring** | **1.00** |
+
+The evaluation believes a vanilla 6/4 is **twenty times** a Sol Ring and **ten times** a
+Phyrexian Arena. In a format where Sol Ring is banned-adjacent and a vanilla 6/4 is unplayable
+filler, that is not a tuning error; it is the model being unable to represent the game. It also
+explains `ramp` without any appeal to subtlety: `ramp` halves `power` and switches `untappedMana`
+on, which is the only term that notices a rock exists.
+
+**This is why tuning stalled.** A weight scales a curve; it cannot bend one, and it cannot
+invent a feature that isn't there. Both the (1+1)-ES and the regression were searching a space
+that does not contain a good evaluation.
+
+### Gaps, in the order they're worth fixing
+
+**Non-linear where the game is non-linear** — no weight can fix these.
+
+1. **Mana.** The 2nd land is worth 4.50 and the 12th 2.50, a ratio of 1.8; it should be closer
+   to 6. A one-mana dork on turn one is +50% of turn-two mana, and the same dork on turn nine is
+   +11%. Marginal value proportional to the fractional gain is exactly `log(m)`, which also
+   deletes `landCap` and `extraLands` — two weights and a threshold measured as doing nothing
+   (landCap 7, 9 and 12 benched identically).
+2. **Life.** Losing 5 at 8 life scores exactly the same as losing 5 at 40 — ratio **1.00**. The
+   bot cannot tell "healthy" from "one swing from dead" except through the terminal loss term.
+3. **Library.** Milling 10 off 12 cards scores the same as off 52 — ratio **1.00**.
+
+**Features that do not exist at all.**
+
+4. **Non-land mana.** `lands` filters on the land type, so rocks and dorks are generic
+   permanents. This is the Sol Ring line above, and the single largest error found.
+5. **Recurring card advantage.** Phyrexian Arena is priced as a 2-mana enchantment. Nothing
+   distinguishes an engine from a vanilla permanent of the same cost, in the format where card
+   advantage decides most long games.
+6. **The commander itself.** No `isCommander` term: a commander on the battlefield is scored as
+   an ordinary creature, despite being the one card always available and a 21-damage clock.
+7. **Commander damage dealt.** `commanderDamage` counts damage *taken* only, so progress toward
+   our own commander kill is invisible.
+8. **Haste.** In neither `EVASION` nor `COMBAT_KEYWORDS`, so it is worth exactly zero.
+9. **Colour and fixing.** No colour awareness anywhere; a five-colour deck's Command Tower is a
+   Forest.
+10. **Tempo.** No turn number, so "early" and "late" are the same to it.
+
+### Phase 7: the rework
+
+Agreed after the audit. The order is by measured impact, and each step keeps the scenario gate
+and a bench at two *and* four players — `ramp` is dominant at two (78.8% vs v1) and exactly
+average at four (25.0% against 25% even), which is a standing warning that a two-player result
+is not a result.
+
+1. **Mana as one concave feature.** `manaProduction` — everything that makes mana, lands, rocks
+   and dorks alike — scored through `log(1 + m)`, replacing `lands`, `landCap`, `extraLands`.
+   `manaHeldUp` stays linear and separate, since holding up instant-speed interaction is a
+   genuinely different thing from having a big mana base.
+2. **Concave life and library**, for the same reason and by the same method.
+3. **Card advantage**, as a term for permanents with a recurring draw trigger.
+4. **The commander**: a term for having it on the battlefield, and one for commander damage
+   dealt.
+5. **Haste**, into the keyword list.
+6. Re-fit, re-gate, re-bench. Colour/fixing and tempo stay deferred — both are real, both are
+   much harder, and neither is likely to be worth a point of win rate next to the above.
+
 ## Decks
 
 The tuner is only as meaningful as the games it measures, and `SAMPLE_DECKS` was originally
