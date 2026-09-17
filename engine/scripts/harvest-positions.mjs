@@ -65,6 +65,9 @@ const WORKER = fileURLToPath(
   new URL(pairsMode ? "./harvest-pairs-worker.mjs" : "./harvest-worker.mjs", import.meta.url),
 );
 const pairsPerGame = Number(flag("pairs-per-game", "3"));
+// Which searching bot generates the positions. Fitting weights for v3 on
+// positions v2 walked into would be fitting to the wrong distribution.
+const bot = flag("bot", "v2");
 const playoutsPerSide = Number(flag("playouts", "20"));
 const playoutTurns = Number(flag("playout-turns", "0"));
 
@@ -141,6 +144,7 @@ await new Promise((resolve) => {
         horizon,
         rollout,
         botOptions,
+        bot,
         // In positions mode this caps how many turn boundaries are sampled. In
         // pairs mode it caps which *decisions* the reservoir can see, and a
         // low cap would confine every sample to the opening — reservoir
