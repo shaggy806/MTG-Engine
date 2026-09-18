@@ -391,3 +391,177 @@ export function suggestReplacement(
 ): string | null {
   return suggestReplacements(target, { ...context, limit: 1 })[0]?.name ?? null;
 }
+
+/**
+ * How many candidates each target contributes to the assignment below. Three
+ * is what the UI shows; the assignment wants more room than that to trade with,
+ * and the cost of a deeper list is nil — `suggestReplacements` already scores
+ * every implemented card and then throws all but the top few away.
+ */
+const ASSIGNMENT_POOL = 12;
+
+export interface ReplacementAssignment {
+  /** The unimplemented card being stood in for — `ReplacementTarget.name`. */
+  readonly target: string;
+  /** The stand-in it was given, or `null` when nothing suitable was left. */
+  readonly choice: ReplacementSuggestion | null;
+  /** Its own ranked alternatives, best first, for the UI to offer. The first
+   * of these is *not* necessarily `choice` — that's the whole point. */
+  readonly options: readonly ReplacementSuggestion[];
+}
+
+/**
+ * Choose stand-ins for several missing cards at once, maximising how good the
+ * set is **overall** rather than letting each card grab its own favourite.
+ *
+ * ## Why a joint choice and not a loop
+ *
+ * Singleton means one card can only stand in once, so the choices compete. Take
+ * them one at a time and the result depends on decklist order: whichever card
+ * is considered first claims the shared candidate, and the other is left with
+ * whatever remains.
+ *
+ * The classic case, with a stand-in that suits two missing cards:
+ *
+ * | | best | second best |
+ * |---|---|---|
+ * | missing A | shared card, 0.55 | 0.25 |
+ * | missing B | shared card, 0.60 | 0.40 |
+ *
+ * First-come-first-served gives the shared card to whoever is earlier. Giving
+ * it to B — the card that likes it *more* — totals 0.60 + 0.25 = 0.85. Giving
+ * it to A totals 0.55 + 0.40 = **0.95**, because B had somewhere decent to go
+ * and A did not. The card that should win a contested stand-in is the one with
+ * the most to lose, not the one with the highest score.
+ *
+ * ## What it actually does
+ *
+ * That is the *assignment problem*, and it is solved exactly rather than by the
+ * regret rule the example suggests — regret-greedy gets this case right and
+ * still loses on longer chains, where taking a card from A pushes B onto C's
+ * choice and so on. {@link solveAssignment} is the Hungarian algorithm, which
+ * is optimal and, at deck sizes, free: a hundred missing cards against a few
+ * hundred candidates is microseconds.
+ *
+ * Each target keeps its own ranked `options` for the UI, so a person can still
+ * override — what changes is only which one is taken by default.
+ */
+export function assignReplacements(
+  targets: readonly ReplacementTarget[],
+  context: ReplacementContext = {},
+): ReplacementAssignment[] {
+  const options = targets.map((target) =>
+    suggestReplacements(target, { ...context, limit: ASSIGNMENT_POOL }),
+  );
+
+  // One column per distinct candidate anyone suggested.
+  const columns: string[] = [];
+  const columnOf = new Map<string, number>();
+  for (const list of options) {
+    for (const s of list) {
+      if (columnOf.has(s.name)) continue;
+      columnOf.set(s.name, columns.length);
+      columns.push(s.name);
+    }
+  }
+
+  const n = targets.length;
+  const m = columns.length;
+  const name = (i: number): string => targets[i].name ?? "";
+  if (n === 0 || m === 0) {
+    return targets.map((_, i) => ({ target: name(i), choice: null, options: options[i] }));
+  }
+
+  // Minimise cost, so a better match is a *lower* number. A candidate this
+  // target never suggested gets a cost worse than any real match rather than
+  // Infinity: the solver needs every row to have somewhere to go, and pairings
+  // it was forced into are discarded afterwards.
+  const UNSUGGESTED = 1;
+  const cost: number[][] = [];
+  const scoreOf: Map<number, number>[] = [];
+  for (let i = 0; i < n; i += 1) {
+    const row = new Array<number>(m).fill(UNSUGGESTED);
+    const scores = new Map<number, number>();
+    for (const s of options[i]) {
+      const j = columnOf.get(s.name) as number;
+      row[j] = -s.score;
+      scores.set(j, s.score);
+    }
+    cost.push(row);
+    scoreOf.push(scores);
+  }
+
+  const assignment = solveAssignment(cost, n, m);
+  return targets.map((_, i) => {
+    const j = assignment[i];
+    // `-1` is an unmatched row (more targets than candidates); a column this
+    // target never suggested is a forced pairing and no better than nothing.
+    const chosen = j >= 0 && scoreOf[i].has(j) ? columns[j] : null;
+    return {
+      target: name(i),
+      choice: chosen === null ? null : (options[i].find((s) => s.name === chosen) ?? null),
+      options: options[i],
+    };
+  });
+}
+
+/**
+ * Hungarian algorithm (Kuhn-Munkres, shortest-augmenting-path form): the
+ * minimum-cost way to give each of `n` rows a distinct column, `n <= m`.
+ * Returns the column per row, or -1 where a row got none.
+ *
+ * The 1-indexed arrays and the `0` sentinel column are the standard shape of
+ * this algorithm rather than an accident; `p[0]` carries the row currently
+ * being augmented. Runs in O(n^2 m), which for a decklist is nothing.
+ */
+function solveAssignment(cost: readonly (readonly number[])[], n: number, m: number): number[] {
+  const result = new Array<number>(n).fill(-1);
+  if (n > m) return result;
+
+  const u = new Array<number>(n + 1).fill(0);
+  const v = new Array<number>(m + 1).fill(0);
+  const p = new Array<number>(m + 1).fill(0);
+  const way = new Array<number>(m + 1).fill(0);
+
+  for (let i = 1; i <= n; i += 1) {
+    p[0] = i;
+    let j0 = 0;
+    const minv = new Array<number>(m + 1).fill(Infinity);
+    const used = new Array<boolean>(m + 1).fill(false);
+    do {
+      used[j0] = true;
+      const i0 = p[j0];
+      let delta = Infinity;
+      let j1 = 0;
+      for (let j = 1; j <= m; j += 1) {
+        if (used[j]) continue;
+        const cur = cost[i0 - 1][j - 1] - u[i0] - v[j];
+        if (cur < minv[j]) {
+          minv[j] = cur;
+          way[j] = j0;
+        }
+        if (minv[j] < delta) {
+          delta = minv[j];
+          j1 = j;
+        }
+      }
+      for (let j = 0; j <= m; j += 1) {
+        if (used[j]) {
+          u[p[j]] += delta;
+          v[j] -= delta;
+        } else {
+          minv[j] -= delta;
+        }
+      }
+      j0 = j1;
+    } while (p[j0] !== 0);
+    do {
+      const j1 = way[j0];
+      p[j0] = p[j1];
+      j0 = j1;
+    } while (j0 !== 0);
+  }
+
+  for (let j = 1; j <= m; j += 1) if (p[j] > 0) result[p[j] - 1] = j - 1;
+  return result;
+}

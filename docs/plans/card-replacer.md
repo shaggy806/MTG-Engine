@@ -11,6 +11,41 @@ and the deck builder shipped first — see their own design docs). The user's fr
 the deck builder but with the import feature implemented and an automatic replacer of any cards
 that haven't yet been implemented."
 
+## Stand-ins are chosen jointly, not one at a time
+
+Singleton means a card can only stand in once, so when two missing cards suit the same
+replacement they are competing for it. The original implementation walked the decklist and let
+each card claim its own favourite, marking it used — which makes the result depend on **decklist
+order**, and picks the wrong winner whenever the contested card matters more to the loser.
+
+The case, with one stand-in that suits two missing cards:
+
+| | best | second best |
+|---|---|---|
+| missing A | shared card, 0.55 | 0.25 |
+| missing B | shared card, 0.60 | 0.40 |
+
+First-come-first-served gives the shared card to whoever appears earlier. Giving it to **B** — the
+card that scores it higher — totals 0.60 + 0.25 = 0.85. Giving it to **A** totals 0.55 + 0.40 =
+**0.95**, because B had somewhere decent to go and A did not. *The card that should win a
+contested stand-in is the one with the most to lose, not the one with the highest score.*
+
+`assignReplacements` in `engine/src/card-replacer.ts` solves this as what it is — the assignment
+problem — with the Hungarian algorithm over a cost matrix of every target against every candidate
+anyone suggested. Exact rather than the regret heuristic the example above suggests, because
+regret-greedy gets this two-card case right and still loses on longer chains, where taking a card
+from A pushes B onto C's choice and so on. At deck sizes it is free: a hundred missing cards
+against a few hundred candidates is microseconds, and `suggestReplacements` already scores every
+implemented card and throws all but the top few away, so the deeper candidate lists the assignment
+needs cost nothing.
+
+Commanders are assigned as a separate group, since their candidates are restricted to cards that
+can legally be one and the two pools barely overlap.
+
+Each target keeps its own ranked alternatives for the deck builder to offer, with the *chosen*
+stand-in moved to the front — it is deliberately not always the highest-scoring one, which is the
+entire point, so it cannot be assumed to be there already.
+
 ## Key architectural finding
 
 `/import-deck` (`server/src/import-deck.ts`) was explicitly a **feasibility report only** — paste

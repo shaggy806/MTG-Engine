@@ -17,7 +17,7 @@
  * `SavedDeck.printings` and `DeckList.printings`).
  */
 
-import { colorIdentityOf, suggestReplacements, validateCommanderDeck } from "engine";
+import { assignReplacements, colorIdentityOf, validateCommanderDeck } from "engine";
 import type {
   CardDefinition,
   CardRegistry,
@@ -598,32 +598,66 @@ function chooseReplacements(
     (a, b) => Number(isCommander.has(b.name)) - Number(isCommander.has(a.name)),
   );
 
+  // Commanders and everything else are assigned separately, because a
+  // commander's candidates are restricted to cards that can legally be one and
+  // the two pools barely overlap. Within each group the choice is joint.
   const out = new Map<string, readonly ReplacementOption[]>();
+  const seen = new Set<string>();
+  const pending: { entry: (typeof order)[number]; commander: boolean }[] = [];
   for (const entry of order) {
-    if (registry.has(entry.name) || out.has(entry.name)) continue;
-    const scryfall = scryfallByName.get(entry.name) ?? null;
-    if (scryfall === null) continue;
-    const suggestions = suggestReplacements(
-      {
+    if (registry.has(entry.name) || seen.has(entry.name)) continue;
+    // A name can be *present* in the map with a null value — Scryfall was
+    // asked and didn't recognise it — so presence is not enough.
+    if ((scryfallByName.get(entry.name) ?? null) === null) continue;
+    seen.add(entry.name);
+    pending.push({ entry, commander: isCommander.has(entry.name) });
+  }
+
+  for (const commander of [true, false]) {
+    const group = pending.filter((x) => x.commander === commander);
+    if (group.length === 0) continue;
+    const targets = group.map(({ entry }) => {
+      const scryfall = scryfallByName.get(entry.name) as NonNullable<
+        ReturnType<typeof scryfallByName.get>
+      >;
+      return {
         name: entry.name,
         manaCost: scryfall.manaCost,
         typeLine: scryfall.typeLine,
         power: scryfall.power,
         toughness: scryfall.toughness,
         keywords: scryfall.keywords,
-      },
-      {
-        ...(identity !== null ? { identity } : {}),
-        exclude: inDeck,
-        forCommander: isCommander.has(entry.name),
-        ...(options.tags ? { tags: options.tags } : {}),
-      },
-    );
-    out.set(
-      entry.name,
-      suggestions.map(({ name, confidence, sharedTags }) => ({ name, confidence, sharedTags })),
-    );
-    if (suggestions.length > 0) inDeck.add(suggestions[0].name);
+      };
+    });
+
+    // **Assigned jointly, not one at a time.** Singleton means a stand-in can
+    // only be used once, so the choices compete — and taking them in decklist
+    // order hands a contested card to whichever line happened to come first.
+    // `assignReplacements` maximises the total instead, which gives a shared
+    // stand-in to the card whose alternatives are worst rather than to the one
+    // that merely scores highest. See its doc comment for the worked example.
+    const assigned = assignReplacements(targets, {
+      ...(identity !== null ? { identity } : {}),
+      exclude: inDeck,
+      forCommander: commander,
+      ...(options.tags ? { tags: options.tags } : {}),
+    });
+
+    for (const [i, a] of assigned.entries()) {
+      // `choice` leads, because it is what the import takes; the rest follow as
+      // the alternatives the deck builder offers. The chosen one is not always
+      // the highest-scoring, which is the whole point, so it has to be moved to
+      // the front rather than assumed to be there.
+      const ranked = [
+        ...(a.choice ? [a.choice] : []),
+        ...a.options.filter((s) => s.name !== a.choice?.name),
+      ];
+      out.set(
+        group[i].entry.name,
+        ranked.map(({ name, confidence, sharedTags }) => ({ name, confidence, sharedTags })),
+      );
+      if (a.choice !== null) inDeck.add(a.choice.name);
+    }
   }
   return out;
 }
