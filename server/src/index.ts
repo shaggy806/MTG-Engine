@@ -5,6 +5,7 @@ import { RoomManager } from "./room-manager.js";
 import { attachRoomServer } from "./ws-server.js";
 import { evaluateDecklist, formatCheck, parseDecklistText } from "./import-deck.js";
 import { loadOracleTagIndex } from "./oracle-tags.js";
+import { startStatusServer } from "./status.js";
 
 const port = Number(process.env.PORT ?? 4000);
 // "*" is fine for local/LAN dev; set CLIENT_ORIGIN to the real site once
@@ -13,6 +14,14 @@ const port = Number(process.env.PORT ?? 4000);
 const clientOrigin = process.env.CLIENT_ORIGIN ?? "*";
 const manager = new RoomManager();
 const registry = createDefaultRegistry();
+
+// An operator endpoint for `curl` over SSH, bound to loopback on a port the
+// Cloudflare tunnel does not forward. It carries room codes, which are join
+// credentials, so it must never share the public port — and a loopback *check*
+// on that port would be worthless anyway, since `cloudflared` makes every
+// public request arrive from 127.0.0.1. See `status.ts`.
+const statusPort = Number(process.env.STATUS_PORT ?? 4010);
+startStatusServer(manager, statusPort);
 
 const IDLE_ROOM_MS = 2 * 60 * 60 * 1000;
 const REAP_INTERVAL_MS = 15 * 60 * 1000;
@@ -100,4 +109,5 @@ attachRoomServer(wss, manager);
 
 httpServer.listen(port, () => {
   console.log(`MTG-Engine room server listening on ws://localhost:${port}`);
+  console.log(`status (loopback only): curl localhost:${statusPort}/status`);
 });

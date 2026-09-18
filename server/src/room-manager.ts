@@ -19,6 +19,20 @@ function randomRoomId(): string {
 
 export class RoomManager {
   private readonly rooms = new Map<string, Room | PendingRoom>();
+  private created = 0;
+
+  /** Rooms created since the process started, including ones long since
+   * reaped — the live count alone can't tell a quiet server from a restarted
+   * one. Reported by the operator status endpoint. */
+  get roomsCreated(): number {
+    return this.created;
+  }
+
+  /** Every live room, promoted or not. For reporting only: callers must not
+   * mutate what they get back. */
+  all(): (Room | PendingRoom)[] {
+    return [...this.rooms.values()];
+  }
 
   /**
    * Called whenever any promoted room publishes a frame — the transport
@@ -38,6 +52,7 @@ export class RoomManager {
     while (this.rooms.has(id)) id = randomRoomId();
     const room = new PendingRoom(id, players, config, hostToken);
     this.rooms.set(id, room);
+    this.created += 1;
     return room;
   }
 

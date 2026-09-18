@@ -172,6 +172,55 @@ need restarting for an ordinary code change — only `mtg-server` actually chang
 reboot` does *not* deploy new code** — it just restarts whatever's already built on disk; always
 run `./deploy.sh` instead.
 
+## Checking on it (SSH)
+
+The server carries an operator endpoint on **127.0.0.1:4010** (`STATUS_PORT` to move it). It is
+plain text, meant to be read with `curl` once you are on the box:
+
+```
+curl localhost:4010/status        # the table below
+curl localhost:4010/status.json   # the same, for scripting
+curl localhost:4010/healthz       # just a 200, for a monitor
+```
+
+```
+MTG-Engine server
+  uptime   3h 12m    pid 8123    node v24.20.0
+  memory   rss 210 MB, heap 88 MB
+  rooms    3 live — 1 waiting, 2 playing, 0 finished   (47 created since start)
+  seats    2 human online, 4 bot
+
+  ROOM   STAGE     SEATS                     TURN   STEP              IDLE
+  K4M2P  playing   Toby,bot,bot,bot          T14    precombat-main    8s
+  QX7BD  playing   Toby,Sam*                 T6     declare-attackers 3m
+  AYJBW  waiting   open,open                 —      —                 12m
+```
+
+A `*` after a name is a seat that is claimed but currently disconnected — the usual sign
+somebody closed a tab mid-game. `created since start` distinguishes a genuinely quiet server
+from one that restarted five minutes ago, which is the first thing worth knowing after an
+incident.
+
+### Why it is a second listener, and not a route on :4000
+
+**A room code is a join credential** — anyone who knows one can walk into that game. Port 4000 is
+published to the open internet by the tunnel (`ws.tobyens.com`), so a status page there would
+hand every room code to anyone who asked.
+
+Checking the caller's address on :4000 would not help either: `cloudflared` connects to
+`http://localhost:4000`, so **every public request already arrives from 127.0.0.1** and a loopback
+check would pass for the whole internet. Binding a separate listener to loopback on a port the
+tunnel's ingress list does not mention is what actually makes it private. Do not add it to that
+ingress list.
+
+Other things worth knowing while logged in:
+
+```
+sudo systemctl status mtg-server      # up? how long? last exit?
+sudo journalctl -u mtg-server -n 100  # recent logs, including reaped-room lines
+sudo journalctl -u mtg-server -f      # follow
+```
+
 ## Operational odds and ends
 
 - **BIOS power-loss recovery**: set to "restore last state" / "power on" in the box's BIOS/UEFI
