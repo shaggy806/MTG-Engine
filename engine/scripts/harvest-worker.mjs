@@ -37,6 +37,7 @@ import {
   createDefaultRegistry,
   featureSign,
   playerFeatures,
+  scoreFeatures,
 } from "../dist/index.js";
 import { tableFor } from "./bot-seating.mjs";
 
@@ -44,11 +45,38 @@ const registry = createDefaultRegistry();
 
 const SIGNS = FEATURE_KEYS.map((k) => featureSign(k));
 
-/** `me`'s position relative to `them`, as the design vector for a fit. */
-function difference(state, me, them, landCap) {
+/**
+ * `me`'s position relative to the rest of the table, as the design vector for a
+ * fit — the same quantity `evaluateState` reduces to a number.
+ *
+ * At two players that is simply `mine - theirs`. At more it has to reproduce
+ * the *aggregation* the evaluation uses: the strongest opponent at full weight
+ * and the average of the rest at `otherOpponents`. Fitting the per-feature
+ * weights on a plain two-player difference and then running them at four was
+ * fitting a game nobody plays, which is the same error the Phase 0 benchmark
+ * made and had to be corrected for.
+ *
+ * Which opponent is "strongest" depends on the weights being fitted, which is
+ * circular. It is resolved the way the bot itself resolves it: score the
+ * opponents with the *current* weights and take that ordering. Approximate, and
+ * the same approximation the policy is making while it plays.
+ */
+function difference(state, me, weights, landCap) {
   const mine = playerFeatures(state, registry, me, true, landCap);
-  const theirs = playerFeatures(state, registry, them, false, landCap);
-  return FEATURE_KEYS.map((k, i) => SIGNS[i] * (mine[k] - theirs[k]));
+  const others = state.turnOrder
+    .filter((p) => p !== me && !state.players[p].hasLost)
+    .map((p) => playerFeatures(state, registry, p, false, landCap))
+    .map((f) => ({ f, score: scoreFeatures(f, weights) }))
+    .sort((a, b) => b.score - a.score);
+
+  if (others.length === 0) return FEATURE_KEYS.map((k, i) => SIGNS[i] * mine[k]);
+  const [strongest, ...rest] = others;
+  return FEATURE_KEYS.map((k, i) => {
+    const restMean =
+      rest.length > 0 ? rest.reduce((sum, o) => sum + o.f[k], 0) / rest.length : 0;
+    const theirs = weights.opponent * strongest.f[k] + weights.otherOpponents * restMean;
+    return SIGNS[i] * (mine[k] - theirs);
+  });
 }
 
 /** v2's per-window search or v3's turn planner. The positions harvested should
@@ -59,13 +87,10 @@ const botFor = (kind, seat, opts) =>
     ? new PlanBotController(seat, registry, opts)
     : new EvalBotController(seat, registry, opts);
 
-parentPort.on("message", ({ seed, weights, opponentWeights, horizon, rollout, botOptions, maxTurns, bot }) => {
-  // Two players only: the difference vector is only well defined against a
-  // single opponent, and `opponent`/`otherOpponents` — how a bigger table is
-  // aggregated — are above this layer and not part of the fit.
-  const players = 2;
+parentPort.on("message", ({ seed, weights, opponentWeights, horizon, rollout, botOptions, maxTurns, bot, players }) => {
+  const w = weights ?? DEFAULT_WEIGHTS;
   const { seats, decks } = tableFor(seed, players);
-  const landCap = (weights ?? DEFAULT_WEIGHTS).landCap;
+  const landCap = w.landCap;
 
   const controllers = {};
   for (const [i, seat] of seats.entries()) {
@@ -92,32 +117,32 @@ parentPort.on("message", ({ seed, weights, opponentWeights, horizon, rollout, bo
       })),
     });
 
-    const [a, b] = seats;
+    // Every seat's view of every sampled position. At two players that is the
+    // symmetric pair this used to emit; at four it is four rows, of which
+    // exactly one is labelled a win.
     const positions = [];
     let turn = game.state.turn.number;
     while (!game.state.result.over && positions.length < maxTurns) {
       game.advanceUntil((s) => s.turn.number !== turn);
       if (game.state.result.over) break;
       turn = game.state.turn.number;
-      positions.push([
-        difference(game.state, a, b, landCap),
-        difference(game.state, b, a, landCap),
-      ]);
+      positions.push(seats.map((seat) => difference(game.state, seat, w, landCap)));
     }
     // Whatever's left after the sampling cap still has to be played out, or
     // the rows have no label.
     if (!game.state.result.over) game.advance();
 
     const winner = game.winner;
-    // `label` belongs to the first vector of each pair (seat `a`'s); the
-    // second carries `1 - label`. A draw (rule 104.4a) is half a win for both.
-    const label = winner === null ? 0.5 : winner === a ? 1 : 0;
+    // A draw (rule 104.4a) is an equal share for everyone still standing.
+    const labels = seats.map((seat) =>
+      winner === null ? 1 / players : winner === seat ? 1 : 0,
+    );
     parentPort.postMessage({
       seed,
-      label,
+      players,
+      labels,
       turns: game.state.turn.number,
-      deckA: decks[0].name,
-      deckB: decks[1].name,
+      decks: decks.map((d) => d.name),
       positions,
     });
   } catch (error) {

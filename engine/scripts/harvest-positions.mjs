@@ -71,7 +71,10 @@ const bot = flag("bot", "v2");
 const playoutsPerSide = Number(flag("playouts", "20"));
 const playoutTurns = Number(flag("playout-turns", "0"));
 
-const games = Math.ceil(Number(flag("games", "1000")) / 2) * 2;
+// Four by default, like the bench: Commander is a four-player game, and
+// weights fitted on two-player positions are fitted on a format nobody plays.
+const players = pairsMode ? 2 : Math.min(4, Math.max(2, Number(flag("players", "4"))));
+const games = Math.ceil(Number(flag("games", "1000")) / players) * players;
 const out = flag("out", "data/positions.ndjson");
 const timeoutMs = Number(flag("timeout", "300")) * 1000;
 const seedOffset = Number(flag("seed-offset", "0"));
@@ -107,7 +110,9 @@ await new Promise((resolve) => {
       errors += 1;
       console.error(`  ERROR seed ${result.seed}: ${result.error}`);
     } else {
-      rows += pairsMode ? result.pairs.length : result.positions.length * 2;
+      rows += pairsMode
+        ? result.pairs.length
+        : result.positions.length * result.positions[0].length;
       sink.write(`${JSON.stringify(result)}\n`);
     }
     if (done % 50 === 0 || done === games) {
@@ -145,6 +150,7 @@ await new Promise((resolve) => {
         rollout,
         botOptions,
         bot,
+        players,
         // In positions mode this caps how many turn boundaries are sampled. In
         // pairs mode it caps which *decisions* the reservoir can see, and a
         // low cap would confine every sample to the opening — reservoir

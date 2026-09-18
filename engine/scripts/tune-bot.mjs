@@ -5,9 +5,9 @@
 // a 55% win rate from 50% needs several hundred games per configuration —
 // hence the worker pool.
 //
-//   npm run bot:bench -w engine                    # v2 vs v1, default weights
+//   npm run bot:bench -w engine                    # v2 vs v1, four players
 //   npm run bot:bench -w engine -- --games 400
-//   npm run bot:bench -w engine -- --players 4
+//   npm run bot:bench -w engine -- --players 2     # cheaper, but not the format
 //   npm run bot:bench -w engine -- --opponent gauntlet    # one match per member
 //   npm run bot:tune  -w engine -- --games 200 --iterations 40
 //
@@ -53,7 +53,13 @@ const flag = (name, fallback) => {
   return i >= 0 && args[i + 1] !== undefined ? args[i + 1] : fallback;
 };
 const mode = args[0] === "tune" ? "tune" : "bench";
-const players = Math.min(4, Math.max(2, Number(flag("players", "2"))));
+// **Four by default, because Commander is a four-player game.** Two-player
+// benches are cheaper and were the default for most of this project's life,
+// which quietly biased every result toward a format nobody plays: `ramp`
+// measured 78.8% at two players and exactly average at four, and v3's whole
+// architecture rework came out neutral at two and was never checked at four
+// until late. Pass `--players 2` deliberately when a cheap signal is wanted.
+const players = Math.min(4, Math.max(2, Number(flag("players", "4"))));
 const games = Math.ceil(Number(flag("games", "200")) / players) * players;
 const horizon = flag("horizon", "turn");
 const rollout = flag("rollout", undefined);

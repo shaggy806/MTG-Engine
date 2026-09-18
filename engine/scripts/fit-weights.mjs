@@ -59,10 +59,17 @@
 // influence, and leave the rest at the position fit's value. Terms neither can
 // speak to fall back to the hand-picked vector, which is where they started.
 //
-// **No intercept.** At two players the rows come in symmetric pairs (both
-// seats of the same position, labelled 1 and 0), so an even position has to
-// score 0. An intercept would be fitted to zero anyway, and leaving it out
-// makes that a property of the model rather than a coincidence of the data.
+// **An intercept, fitted and then discarded.** At two players the rows come in
+// symmetric pairs (both seats of one position, labelled 1 and 0), so an even
+// position has to score 0 and an intercept would fit to zero anyway. At four it
+// must not: exactly one seat in four wins, so the base rate is 25% and a
+// model forced through sigmoid(0) = 50% would have to bend the feature weights
+// to absorb the offset. Fitting an intercept gives it somewhere honest to go.
+//
+// It is then left out of the exported `EvalWeights`, because the evaluation
+// only ever *compares* positions and a constant cancels. It is reported
+// instead, as a calibration check: at four players it should land near
+// logit(0.25) = -1.1, and if it doesn't, something about the data is wrong.
 //
 // **Standardized, not centered.** Each column is divided by its own standard
 // deviation before fitting, because the raw features differ by two orders of
@@ -230,7 +237,10 @@ const logit = (p) => Math.log(p / (1 - p));
 /** Rows, as flat parallel arrays — 100k objects would be a lot of pointer
  * chasing for what is ultimately a matrix. */
 function build(subset) {
-  const rows = subset.reduce((sum, g) => sum + (pairsMode ? g.pairs.length : g.positions.length * 2), 0);
+  const rows = subset.reduce(
+    (sum, g) => sum + (pairsMode ? g.pairs.length : g.positions.length * g.positions[0].length),
+    0,
+  );
   const x = new Float64Array(rows * D);
   const y = new Float64Array(rows);
   const w = new Float64Array(rows);
@@ -252,15 +262,14 @@ function build(subset) {
         i += 1;
       }
     } else {
-      // Every game weighs the same, however long it ran.
-      const perRow = 1 / (g.positions.length * 2);
-      for (const [rowA, rowB] of g.positions) {
-        for (const [row, label] of [
-          [rowA, g.label],
-          [rowB, 1 - g.label],
-        ]) {
+      // Every game weighs the same, however long it ran and however many seats
+      // it had.
+      const seatRows = g.positions[0].length;
+      const perRow = 1 / (g.positions.length * seatRows);
+      for (const seatViews of g.positions) {
+        for (const [seat, row] of seatViews.entries()) {
           for (let d = 0; d < D; d += 1) x[i * D + d] = row[d];
-          y[i] = label;
+          y[i] = g.labels[seat];
           w[i] = perRow;
           i += 1;
         }
@@ -320,10 +329,12 @@ const sigmoid = (z) => 1 / (1 + Math.exp(-z));
  * `lambda` is how hard. A zero prior is plain ridge.
  */
 function fit(prior = null, lambda = l2) {
-  const w = new Float64Array(D);
-  const m = new Float64Array(D);
-  const v = new Float64Array(D);
-  const grad = new Float64Array(D);
+  // One extra slot on the end for the intercept: its "feature" is always 1, it
+  // is never penalised toward a prior, and it is not part of `FEATURE_KEYS`.
+  const w = new Float64Array(D + 1);
+  const m = new Float64Array(D + 1);
+  const v = new Float64Array(D + 1);
+  const grad = new Float64Array(D + 1);
   const b1 = 0.9;
   const b2 = 0.999;
   const eps = 1e-8;
@@ -335,7 +346,7 @@ function fit(prior = null, lambda = l2) {
     grad.fill(0);
     let loss = 0;
     for (let i = 0; i < train.n; i += 1) {
-      let z = 0;
+      let z = w[D];
       for (let d = 0; d < D; d += 1) z += w[d] * (train.x[i * D + d] / scale[d]);
       // Squared error on a log-odds difference for pairs, log loss on a 0/1
       // outcome for positions. The gradient has the same shape either way —
@@ -344,11 +355,23 @@ function fit(prior = null, lambda = l2) {
       const yi = train.y[i];
       const r = train.w[i] * (p - yi);
       for (let d = 0; d < D; d += 1) grad[d] += r * (train.x[i * D + d] / scale[d]);
+      grad[D] += r;
       loss += pairsMode
         ? train.w[i] * (p - yi) * (p - yi)
         : -train.w[i] * (yi * Math.log(p + 1e-12) + (1 - yi) * Math.log(1 - p + 1e-12));
     }
-    for (let d = 0; d < D; d += 1) {
+    for (let d = 0; d <= D; d += 1) {
+      // The intercept is unpenalised and unconstrained — it carries the base
+      // win rate, which at four players is 25% and has nothing to do with any
+      // feature being good or bad.
+      if (d === D) {
+        const g0 = grad[D] / totalWeight;
+        m[D] = b1 * m[D] + (1 - b1) * g0;
+        v[D] = b2 * v[D] + (1 - b2) * g0 * g0;
+        w[D] -= (lr * (m[D] / (1 - Math.pow(b1, epoch)))) /
+          (Math.sqrt(v[D] / (1 - Math.pow(b2, epoch))) + eps);
+        continue;
+      }
       const g = grad[d] / totalWeight + lambda * (w[d] - (prior === null ? 0 : prior[d]));
       m[d] = b1 * m[d] + (1 - b1) * g;
       v[d] = b2 * v[d] + (1 - b2) * g * g;
@@ -418,7 +441,7 @@ function evaluateFit(set, w) {
   let loss = 0;
   let weight = 0;
   for (let i = 0; i < set.n; i += 1) {
-    let z = 0;
+    let z = w[D];
     for (let d = 0; d < D; d += 1) z += w[d] * (set.x[i * D + d] / scale[d]);
     const yi = set.y[i];
     if (pairsMode) {
@@ -437,6 +460,15 @@ function evaluateFit(set, w) {
   const total = set.w.reduce((a, b) => a + b, 0);
   return { accuracy: weight > 0 ? correct / weight : 0, loss: loss / total };
 }
+
+// The intercept is a calibration check, not a weight: at N players an even
+// position should score logit(1/N), so four players wants about -1.10 and two
+// wants 0. A long way off means the data is not what it claims to be.
+const seats = games[0]?.players ?? 2;
+console.log(
+  `  intercept ${standardized[D].toFixed(3)}  (expected about ` +
+    `${Math.log((1 / seats) / (1 - 1 / seats)).toFixed(2)} at ${seats} players)`,
+);
 
 const trainFit = evaluateFit(train, standardized);
 const testFit = evaluateFit(test, standardized);
