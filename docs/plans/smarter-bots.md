@@ -433,6 +433,22 @@ The only source that ever disagreed was the position fit, which *raised* it to 2
 the source already known to be confounded, since a big board predicts winning without being
 caused by valuing power highly.
 
+### And the bot is good, which 24% does not say
+
+A win rate against the gauntlet is a rate against *the champions*, and it is easy to misread. In
+the same mixed pod, `ramp` — the strongest vector anyone has produced — also scores **25.0%**
+[19.5, 31.5]. The pod is four comparable bots, so 25% is the designed midpoint of that field and
+not a pass mark; `power: 0.5` brings the shipped defaults level with `ramp` at four players.
+
+The absolute measure is against a weak field, and it had never been run at four players:
+
+| | four players, vs three v1 bots (even 25%) |
+|---|---|
+| `power: 0.5` | **52.1%** [43.2, 60.9] |
+
+More than twice the even share. Both numbers are true and they say different things — the bot
+plays the game well, and it is roughly level with its own best variants.
+
 **Why this took so long to find** is the part worth keeping. Every number in this document above
 this section came from two-player benches, because they are cheap. At two players a big creature
 really is most of the game; at four, a 6/4 that attacks into three opponents' blockers is a much

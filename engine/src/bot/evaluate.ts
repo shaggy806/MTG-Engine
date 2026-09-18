@@ -133,7 +133,22 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   // (0.5) gave them, so the first measurement of the new vector starts from
   // the same valuation of a creature and a land drop.
   creatures: 2.5,
-  power: 1.5,
+  // Swept at **four players** — the format — 200 games per value against the
+  // same mixed pod: 1.5 scored 18.2%, 1.0 22.6%, 0.75 23.1%, 0.5 **24.0%**,
+  // 0.25 23.1%, against an even share of 25%. A clean peak at 0.5, worth +5.8
+  // points over the 1.5 this shipped with since Phase 1, and cheaper per game.
+  //
+  // Two other things had been saying so for a while. `bot:audit --rollout`
+  // priced a vanilla Craw Wurm at 31.50 against a Sol Ring's 9.00, which is
+  // this weight at 1.5 doing exactly that. And `ramp`, the hand-written style
+  // that beat every tuned vector, halves it. The only source that disagreed was
+  // the position fit, which raised it to 2.03 — and a big board predicts
+  // winning without being caused by valuing power highly.
+  //
+  // It hid for so long because every earlier measurement was two-player, where
+  // a big creature really is most of the game. At four, a 6/4 attacking into
+  // three opponents' blockers is a far worse deal than 1.5 claims.
+  power: 0.5,
   toughness: 0.5,
   evasivePower: 0.5,
   combatKeywords: 0.5,
