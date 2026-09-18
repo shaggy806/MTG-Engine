@@ -411,6 +411,34 @@ pass every scenario. Iterating (fit, play, refit) is the intended use.
 The ES is not deleted. It keeps the five unfittable weights, and it's the natural way to polish a
 fitted vector afterwards.
 
+## `power` was badly wrong, and four-player benching is what showed it
+
+Measured at **four players** — the format — on a mixed pod, 200 games each, every
+configuration against the same field so differences are attributable to the weight:
+
+| `power` | win rate (even 25%) | game |
+|---|---|---|
+| **1.5** (shipped since Phase 1) | 18.2% [13.5, 24.2] | 77.1s |
+| 1.0 | 22.6% [17.4, 28.9] | 71.8s |
+| 0.75 | 23.1% [17.8, 29.4] | 70.4s |
+| 0.5 | **24.0%** [18.6, 30.4] | 69.5s |
+
+**+5.8 points, monotonic, and games get cheaper on the way.** Any single pair of these
+overlaps; four points in strict order is a far stronger statement than one comparison, and it
+independently confirms two things that were already saying it. The rollout audit priced a vanilla
+Craw Wurm at 31.50 against a Sol Ring's 9.00, which is `power` at 1.5 doing that; and `ramp`, the
+hand-written style that beat every tuned vector, halves `power`.
+
+The only source that ever disagreed was the position fit, which *raised* it to 2.03 — and that is
+the source already known to be confounded, since a big board predicts winning without being
+caused by valuing power highly.
+
+**Why this took so long to find** is the part worth keeping. Every number in this document above
+this section came from two-player benches, because they are cheap. At two players a big creature
+really is most of the game; at four, a 6/4 that attacks into three opponents' blockers is a much
+worse deal than the weight says. `ramp` measured 78.8% at two players and exactly average at
+four, and nobody chased it. The format is four players and the benchmark now defaults to it.
+
 ## The evaluation audit (before Phase 7)
 
 Prompted by a simple question — *why* is `ramp` so much better? — and by the answer being
