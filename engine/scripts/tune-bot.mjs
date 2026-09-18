@@ -82,6 +82,10 @@ for (const key of Object.keys(baseWeights)) {
   if (!(key in DEFAULT_WEIGHTS)) throw new Error(`--weights: unknown weight "${key}"`);
 }
 
+/** Games between progress lines — about eight per match whatever its size, so
+ * a long run is followed without being drowned. */
+const PROGRESS_EVERY = Math.max(10, Math.round(games / 8));
+
 /** The v1 `HeuristicBotController`, as an opponent spec. `weights: null` is
  * what the worker reads as "not an `EvalBotController`". */
 const V1 = { id: "v1", weights: null };
@@ -108,6 +112,30 @@ function runMatch(weights, opponents, seedOffset = 0, count = games) {
     }
     const results = [];
     let next = 0;
+    const matchStartedAt = Date.now();
+
+    /**
+     * A line every `PROGRESS_EVERY` games, because a four-player match is
+     * fifteen minutes of total silence otherwise — the pool knows exactly how
+     * many games are back, it just never said so, and "is it working or
+     * wedged?" was only answerable by watching the process's CPU time.
+     *
+     * The running win rate is deliberately included: a config that is going to
+     * come out badly is usually obvious a third of the way in, and that is
+     * worth knowing before spending the other ten minutes.
+     */
+    const report = () => {
+      const done = results.length;
+      if (done % PROGRESS_EVERY !== 0 || done === count) return;
+      const secs = (Date.now() - matchStartedAt) / 1000;
+      const played = results.filter((r) => r.error === undefined);
+      const wins = played.filter((r) => r.outcome === "win").length;
+      const eta = (secs / done) * (count - done);
+      console.log(
+        `    ${done}/${count} games, ${pct(wins / Math.max(1, played.length))} so far, ` +
+          `${secs.toFixed(0)}s elapsed, ~${eta.toFixed(0)}s left`,
+      );
+    };
 
     const spawn = () => {
       const worker = new Worker(WORKER);
@@ -117,6 +145,7 @@ function runMatch(weights, opponents, seedOffset = 0, count = games) {
       const finish = (result) => {
         clearTimeout(timer);
         results.push(result);
+        report();
         if (results.length === count) resolve(results);
       };
 
