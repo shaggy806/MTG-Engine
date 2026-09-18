@@ -147,8 +147,28 @@ export function DeckEditor({
   }
   const removeAll = (cardName: string) =>
     onChange({ ...deck, cards: deck.cards.filter((c) => c !== cardName) })
-  const toggleCommander = (cardName: string) =>
-    onChange({ ...deck, commander: deck.commander === cardName ? undefined : cardName })
+  /**
+   * Move a card into the command zone, or out of it.
+   *
+   * Promoting a card **takes one copy out of the 99**, which is not a nicety:
+   * the commander is stored beside `cards` rather than in it, so a card that is
+   * both would be two copies of itself and break singleton the moment it was
+   * promoted. That was reachable before this — starring a pool card already in
+   * the deck did exactly that — and it becomes the common case now the button
+   * sits on the deck rows themselves.
+   *
+   * Demoting leaves the card out of the 99, matching what "Clear commander"
+   * has always done: the slot empties and you pick again.
+   */
+  const toggleCommander = (cardName: string) => {
+    if (deck.commander === cardName) {
+      onChange({ ...deck, commander: undefined })
+      return
+    }
+    const at = deck.cards.indexOf(cardName)
+    const cards = at === -1 ? deck.cards : [...deck.cards.slice(0, at), ...deck.cards.slice(at + 1)]
+    onChange({ ...deck, commander: cardName, cards })
+  }
 
   /** Records (or clears) which printing this deck brings for one card.
    * `null` drops the entry entirely rather than storing a sentinel, so a
@@ -450,6 +470,18 @@ export function DeckEditor({
                           { label: 'Add another', onSelect: () => addCard(row.name) },
                           { label: 'Remove one', onSelect: () => removeCard(row.name) },
                           { label: 'Remove all copies', onSelect: () => removeAll(row.name) },
+                          // Promoting from here matters most right after an
+                          // import: a decklist that didn't label its commander
+                          // gets one guessed, and fixing that meant hunting the
+                          // right card down in the pool.
+                          ...(row.def !== undefined && isCommanderEligible(row.def)
+                            ? [
+                                {
+                                  label: 'Make commander',
+                                  onSelect: () => toggleCommander(row.name),
+                                },
+                              ]
+                            : []),
                         ])}
                       >
                         <span className="db-count mono">{row.n}</span>
@@ -461,6 +493,15 @@ export function DeckEditor({
                         ) : null}
                         {row.def?.manaCost ? <Symbols text={row.def.manaCost} /> : null}
                         <span className="db-card-row-spacer" />
+                        {row.def !== undefined && isCommanderEligible(row.def) ? (
+                          <button
+                            type="button"
+                            title="Make this the deck's commander"
+                            onClick={() => toggleCommander(row.name)}
+                          >
+                            ☆
+                          </button>
+                        ) : null}
                         <button type="button" title="Remove one" onClick={() => removeCard(row.name)}>
                           −
                         </button>

@@ -5,6 +5,58 @@ import { evaluateDecklist, formatCheck, parseDecklistText } from "../import-deck
 const registry = createDefaultRegistry();
 
 describe("parseDecklistText", () => {
+  // Moxfield's real export has no "Commander" header — it puts the commander
+  // last, alone, after a blank line. Before this was recognised the commander
+  // was left to be guessed, and the guess (first legendary in the list) picks
+  // whichever legend sits earliest in the 99.
+  const list = (...lines: string[]): string => lines.join("\n");
+
+  it("reads Moxfield's trailing commander line", () => {
+    const { commanders, commanderSource } = parseDecklistText(
+      list("1 Sol Ring (LTC) 284", "1 Grizzly Bears", "1 Forest", "", "1 Azusa, Lost but Seeking (CHK) 225"),
+    );
+    expect(commanders).toEqual(["Azusa, Lost but Seeking"]);
+    expect(commanderSource).toBe("trailing");
+  });
+
+  it("reads a trailing partner pair", () => {
+    const { commanders, commanderSource } = parseDecklistText(
+      list("1 Sol Ring", "1 Forest", "", "1 Bruse Tarl, Boorish Herder", "1 Kydele, Chosen of Kruphix"),
+    );
+    expect(commanders).toHaveLength(2);
+    expect(commanderSource).toBe("trailing");
+  });
+
+  it("still prefers an explicit Commander header over the trailing block", () => {
+    const { commanders, commanderSource } = parseDecklistText(
+      list("Commander", "1 Azusa, Lost but Seeking", "", "1 Sol Ring", "", "1 Forest"),
+    );
+    expect(commanders).toEqual(["Azusa, Lost but Seeking"]);
+    expect(commanderSource).toBe("section");
+  });
+
+  it("does not mistake a long trailing block for a command zone", () => {
+    // A list that simply ends with a group of cards is not naming a commander,
+    // and a lands block at the end is the commonest shape there is.
+    const { commanders, commanderSource } = parseDecklistText(
+      list("1 Sol Ring", "", "1 Forest", "1 Island", "1 Plains"),
+    );
+    expect(commanders).toEqual([]);
+    expect(commanderSource).toBeNull();
+  });
+
+  it("does not mistake a trailing multiple for a commander", () => {
+    const { commanders, commanderSource } = parseDecklistText(list("1 Sol Ring", "", "30 Forest"));
+    expect(commanders).toEqual([]);
+    expect(commanderSource).toBeNull();
+  });
+
+  it("leaves a single-block list to the guess", () => {
+    const { commanders, commanderSource } = parseDecklistText(list("1 Sol Ring", "1 Forest"));
+    expect(commanders).toEqual([]);
+    expect(commanderSource).toBeNull();
+  });
+
   it("parses plain 'N Card Name' lines", () => {
     const { entries } = parseDecklistText("1 Sol Ring\n1 Ureni of the Unwritten\n\n1 Forest");
     expect(entries).toEqual(

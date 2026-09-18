@@ -45,14 +45,32 @@ export interface DecklistEntry {
 
 export interface ParsedDecklist {
   readonly entries: readonly DecklistEntry[];
-  /** Card name(s) that appeared directly under an explicit "Commander"
-   * section header (Moxfield's export format, among others, marks the
-   * commander this way rather than leaving it to be guessed). Empty when
-   * the pasted text has no such header — `formatCheck` falls back to its
-   * own guess in that case. Still included among `entries` too, so the
-   * commander gets an ordinary feasibility row like any other card. */
+  /**
+   * Card name(s) the list identifies as its commander(s), still included among
+   * `entries` too so the commander gets an ordinary feasibility row.
+   *
+   * Two shapes are recognised, and {@link commanderSource} says which was
+   * used, because they deserve different amounts of trust.
+   */
   readonly commanders: readonly string[];
+  /**
+   * How {@link commanders} was determined.
+   *
+   * - `"section"` — an explicit `Commander` header. Unambiguous, and taken at
+   *   face value even if the card isn't implemented.
+   * - `"trailing"` — **Moxfield's actual export puts the commander last**, one
+   *   card alone after a blank line, with no header at all. That structure is
+   *   strong evidence, but it is still an inference, so `formatCheck` drops it
+   *   if the card turns out to be one it can see is not a legal commander.
+   * - `null` — neither; the commander is guessed.
+   */
+  readonly commanderSource: "section" | "trailing" | null;
 }
+
+/** Cards a trailing block may hold and still read as a commander line — one,
+ * or two for a partner pair. More than that is the tail of a decklist, not a
+ * command zone. */
+const MAX_TRAILING_COMMANDERS = 2;
 
 const LINE_PATTERN = /^(\d+)\s+(.+)$/;
 // Splits a trailing "(SET) collector-number [*F*|*E*|...]" printing suffix,
@@ -84,24 +102,59 @@ export function parseDecklistText(text: string): ParsedDecklist {
   const printings = new Map<string, PrintingRef>();
   const commanders: string[] = [];
   let inCommanderSection = false;
+  // Blank-line-separated runs of card lines. Moxfield writes the commander as
+  // the last of these, alone and unlabelled, so the structure is the only clue
+  // there is.
+  const blocks: { name: string; count: number }[][] = [];
+  let block: { name: string; count: number }[] = [];
+  const endBlock = (): void => {
+    if (block.length > 0) blocks.push(block);
+    block = [];
+  };
+
   for (const rawLine of text.split(/\r?\n/)) {
     const line = rawLine.trim();
     if (line === "") {
       inCommanderSection = false;
+      endBlock();
       continue;
     }
     if (line.startsWith("//")) continue;
     const match = LINE_PATTERN.exec(line);
     if (match === null) {
       inCommanderSection = /^commanders?$/i.test(line);
+      // A header starts a new block as surely as a blank line does.
+      endBlock();
       continue;
     }
     const { name, printing } = splitPrintingSuffix(match[2].trim());
     counts.set(name, (counts.get(name) ?? 0) + Number(match[1]));
     if (printing !== undefined && !printings.has(name)) printings.set(name, printing);
     if (inCommanderSection) commanders.push(name);
+    block.push({ name, count: Number(match[1]) });
   }
+  endBlock();
+
+  // **Moxfield puts the commander at the end, not the beginning**: a lone card
+  // after a blank line, with no header at all. Without this the commander is
+  // left to be guessed, and the guess — the first legendary creature in the
+  // list — picks whichever legend happens to sit earliest in the 99, which for
+  // most decks is the wrong card entirely.
+  //
+  // It is an inference from structure rather than a label, so it is marked as
+  // one: `formatCheck` drops it if the card turns out to be one it can see is
+  // not a legal commander.
+  let commanderSource: "section" | "trailing" | null = commanders.length > 0 ? "section" : null;
+  if (commanderSource === null && blocks.length > 1) {
+    const last = blocks[blocks.length - 1];
+    if (last.length <= MAX_TRAILING_COMMANDERS && last.every((e) => e.count === 1)) {
+      commanders.push(...last.map((e) => e.name));
+      commanderSource = "trailing";
+    }
+  }
+
   return {
+    commanderSource,
     entries: [...counts.entries()].map(([name, count]) => ({
       name,
       count,
@@ -680,22 +733,36 @@ export function formatCheck(
   entries: readonly DecklistEntry[],
   registry: CardRegistry,
   explicitCommanders: readonly string[] = [],
+  /** How `explicitCommanders` was arrived at. A `"trailing"` commander is an
+   * inference from Moxfield's layout rather than a label, so it is dropped if
+   * the registry can see it is not a legal commander; a `"section"` one is
+   * taken at face value, including when it isn't implemented, so the report can
+   * say so rather than silently naming a different card. */
+  commanderSource: "section" | "trailing" | null = "section",
 ): DeckValidationResult & { readonly commander: string | null } {
   const flat: string[] = [];
   for (const e of entries) {
     for (let i = 0; i < e.count; i += 1) flat.push(e.name);
   }
-  const commander =
-    explicitCommanders[0] ??
-    flat.find((n) => {
-      if (!registry.has(n)) return false;
-      const def = registry.get(n);
-      return (
-        def.supertypes.includes("legendary") &&
-        (def.types.includes("creature") || def.types.includes("planeswalker"))
-      );
-    }) ??
-    null;
+  const canCommand = (n: string): boolean => {
+    if (!registry.has(n)) return false;
+    const def = registry.get(n);
+    return (
+      def.supertypes.includes("legendary") &&
+      (def.types.includes("creature") || def.types.includes("planeswalker"))
+    );
+  };
+  // An inferred commander has to survive a check the registry can actually
+  // make. An unimplemented one passes by default — nothing here can tell
+  // whether it is legal, and the structure said it was the commander.
+  const claimed = explicitCommanders[0];
+  const trusted =
+    claimed === undefined
+      ? undefined
+      : commanderSource === "trailing" && registry.has(claimed) && !canCommand(claimed)
+        ? undefined
+        : claimed;
+  const commander = trusted ?? flat.find(canCommand) ?? null;
 
   const rest = commander === null ? flat : flat.filter((n, i) => !(n === commander && i === flat.indexOf(commander)));
   const result = validateCommanderDeck(

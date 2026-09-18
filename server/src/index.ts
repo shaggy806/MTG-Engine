@@ -41,7 +41,7 @@ const httpServer = createServer((req, res) => {
         try {
           const { text } = JSON.parse(body) as { text?: string };
           if (typeof text !== "string") throw new Error("missing 'text' field");
-          const { entries, commanders } = parseDecklistText(text);
+          const { entries, commanders, commanderSource } = parseDecklistText(text);
 
           res.writeHead(200, {
             "Content-Type": "application/x-ndjson",
@@ -60,7 +60,7 @@ const httpServer = createServer((req, res) => {
             (p) => write({ type: "progress", ...p }),
             { commanders, tags: loadOracleTagIndex() },
           );
-          const format = formatCheck(entries, registry, commanders);
+          const format = formatCheck(entries, registry, commanders, commanderSource);
           write({ type: "result", cards, format });
           res.end();
         } catch (err) {
