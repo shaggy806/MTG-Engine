@@ -630,6 +630,9 @@ export type AwaitingDecision =
       /** A library-search result that enters the battlefield does so tapped
        * (Rampant Growth). Only meaningful with `destination: "battlefield"`. */
       readonly enterTapped?: boolean;
+      /** The chosen cards are shown to every player ("search your library for
+       * an artifact card, **reveal it**, …" — Enlightened Tutor). */
+      readonly reveal?: boolean;
       /** Where every *chosen* card after the first goes, when a tutor splits
        * its finds across two zones (Cultivate: "put one onto the battlefield
        * tapped and the other into your hand"). Absent means every chosen card
@@ -980,6 +983,17 @@ export interface GameState {
   turn: TurnState;
   priority: PriorityState;
   result: GameResult;
+  /**
+   * Cards revealed to all players this turn (rule 701.16), so `viewFor` can
+   * put their identity in *every* seat's view — a reveal is momentary, but a
+   * client only ever sees whole frames, so the identity has to outlive the
+   * instant or the event names a card nobody can draw.
+   *
+   * Turn-scoped, cleared as the next turn begins: a card revealed and then
+   * drawn on the same turn stays visible, which is right (everyone did just
+   * see it), while one revealed and drawn later does not.
+   */
+  revealedThisTurn: ObjectId[];
   /** A declaration the engine is waiting for, or `null`. */
   awaiting: AwaitingDecision | null;
   /**

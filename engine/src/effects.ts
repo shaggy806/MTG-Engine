@@ -1034,6 +1034,10 @@ export type EffectSpec =
       readonly max: EffectAmount;
       /** Put battlefield-bound cards in tapped (Rampant Growth). */
       readonly enterTapped?: boolean;
+      /** "…, **reveal it**, …" (Enlightened Tutor, Kodama's Reach): show the
+       * find to every player (rule 701.16). Off by default — a plain "search
+       * your library for a card" (Vampiric Tutor) reveals nothing. */
+      readonly reveal?: boolean;
       /** Where chosen cards after the first go, for a tutor that splits its
        * finds (Cultivate: "put one onto the battlefield tapped and the other
        * into your hand"). Omit when every find goes to `destination`. */
@@ -1386,6 +1390,7 @@ export interface EffectApi {
     max: number,
     enterTapped: boolean,
     restDestination?: "hand" | "battlefield",
+    reveal?: boolean,
   ): void;
   /** See the `"look-and-choose"` {@link EffectSpec}. */
   lookAndChoose(
@@ -2002,6 +2007,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
         amountValue(spec.max, ctx),
         spec.enterTapped === true,
         spec.restDestination,
+        spec.reveal === true,
       );
       return;
     }

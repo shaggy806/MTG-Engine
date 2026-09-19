@@ -12,5 +12,7 @@ export default defineCard({
     destination: "library-top",
     min: 0,
     max: 1,
+    // "… reveal it …" — Vampiric Tutor pointedly does not.
+    reveal: true,
   },
 });

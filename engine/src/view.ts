@@ -360,6 +360,11 @@ function viewForUncached(
   if (state.awaiting?.kind === "scry" && state.awaiting.player === viewer) {
     visibleIds.push(...state.awaiting.cards);
   }
+  // A real reveal (rule 701.16) is to *everyone*, which is the whole point —
+  // this is the only path that puts a card another player owns, and that is
+  // sitting in a hidden zone, into your view. Turn-scoped, so it stops being
+  // a window into their hand once the turn is over (see `revealedThisTurn`).
+  visibleIds.push(...state.revealedThisTurn);
 
   for (const player of state.turnOrder) {
     const zones = state.zones.perPlayer[player];

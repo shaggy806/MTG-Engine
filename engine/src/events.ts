@@ -143,6 +143,20 @@ export type GameEvent =
       readonly objects: readonly ObjectId[];
     })
   | (Base & {
+      /**
+       * Cards shown to every player (rule 701.16) — a tutor's "reveal it".
+       * The identity crosses the wire because `revealedThisTurn` keeps those
+       * ids visible in everyone's `PlayerView` until cleanup; without that a
+       * client would receive an event naming cards it can't render.
+       */
+      readonly type: "cards-revealed";
+      readonly player: PlayerId;
+      readonly objects: readonly ObjectId[];
+      /** Where they were revealed from — the caption reads better for it
+       * ("revealed from their library"). */
+      readonly from: "library" | "hand" | "graveyard";
+    })
+  | (Base & {
       readonly type: "cards-chosen-from-zone";
       readonly player: PlayerId;
       readonly objects: readonly ObjectId[];

@@ -379,6 +379,7 @@ export class Game {
       priority: { active: false, holder: null, passed: [] },
       result: { over: false, winner: null, reason: null },
       awaiting: null,
+      revealedThisTurn: [],
       decisionSource: null,
       delayedTriggers: [],
       pendingBlockerOrders: [],
@@ -2512,6 +2513,10 @@ export class Game {
     this.state.preventAllCombatDamage = false;
     this.state.hexproofPlayers = [];
     this.state.creaturesDiedThisTurn = 0;
+    // A reveal is public knowledge for as long as anyone could have acted on
+    // it; past the turn it stops being rendered rather than lingering as a
+    // permanent window into a hand.
+    this.state.revealedThisTurn = [];
     this.state.preventionShields = [];
     this.state.extraCombats = 0;
     this.state.spellsCastThisTurn = 0;
@@ -2852,6 +2857,12 @@ export class Game {
 
     const chosenSet = new Set(chosen);
     const leftover = awaiting.ids.filter((id) => !chosenSet.has(id));
+
+    // "…, reveal it, …" — before anything moves, so the event names the cards
+    // where every player just saw them.
+    if (awaiting.reveal === true && chosen.length > 0) {
+      this.revealCards(player, chosen, "library");
+    }
 
     // A split tutor (Cultivate) sends the first find to `destination` and the
     // rest to `restDestination`; with no `restDestination` they all go to the
@@ -7571,7 +7582,16 @@ export class Game {
           triggerObject,
         ),
       changeLifeScoped: (who, delta) => this.changeLifeScoped(controller, who, delta),
-      searchLibrary: (player, filter, destination, min, max, enterTapped, restDestination) =>
+      searchLibrary: (
+        player,
+        filter,
+        destination,
+        min,
+        max,
+        enterTapped,
+        restDestination,
+        reveal,
+      ) =>
         this.beginLibrarySearch(
           player ?? controller,
           filter,
@@ -7580,6 +7600,7 @@ export class Game {
           max,
           enterTapped,
           restDestination,
+          reveal === true,
         ),
       scry: (amount, surveil, then) =>
         this.beginScry(source, controller, x, amount, surveil ? "surveil" : "scry", then ?? null),
@@ -7642,6 +7663,7 @@ export class Game {
     max: number,
     enterTapped: boolean,
     restDestination?: "hand" | "battlefield",
+    reveal = false,
   ): void {
     const eligible = this.state.zones.perPlayer[player].library.filter((id) =>
       matchesFilter(this.state, this.registry, id, filter, { you: player }),
@@ -7657,6 +7679,7 @@ export class Game {
       leftover: "shuffle",
       ...(enterTapped && destination === "battlefield" ? { enterTapped: true } : {}),
       ...(restDestination !== undefined ? { restDestination } : {}),
+      ...(reveal ? { reveal: true } : {}),
     };
   }
 
@@ -9293,6 +9316,30 @@ export class Game {
         object.attachedTo = null;
       }
     }
+  }
+
+  /**
+   * Show `ids` to every player (rule 701.16) and record that it happened.
+   *
+   * The record is what makes the reveal real: `viewFor` reads
+   * `revealedThisTurn` to put these cards' identities in *every* seat's view,
+   * so the `cards-revealed` event names cards each client can actually draw.
+   * Without it the event would arrive describing objects only its owner can
+   * see, and every other seat would render a face-down back.
+   */
+  private revealCards(
+    player: PlayerId,
+    ids: readonly ObjectId[],
+    from: "library" | "hand" | "graveyard",
+  ): void {
+    const real = ids.filter((id) => this.state.objects[id] !== undefined);
+    if (real.length === 0) return;
+    for (const id of real) {
+      if (!this.state.revealedThisTurn.includes(id)) {
+        this.state.revealedThisTurn.push(id);
+      }
+    }
+    this.emit({ type: "cards-revealed", player, objects: [...real], from });
   }
 
   // --- delayed triggered abilities (rule 603.7) ------------------
