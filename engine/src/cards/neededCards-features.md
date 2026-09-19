@@ -107,7 +107,7 @@ Oracle text needs each:
 | --- | --- | --- |
 | **delayed triggered abilities** (rule 603.7) | 31 | **DONE** |
 | **put a card on top of a library** | 18 | **DONE** |
-| put a card from your hand onto the battlefield | 20 | TODO — extend `choose-from-zone` to `zone: "hand"`. Growth Spiral (#234), Ghalta, Stoneforge Mystic, Last March of the Ents |
+| **put a card from your hand onto the battlefield** | 20 | **DONE** |
 | additional cost that isn't a sacrifice (discard / pay X life) | 11 | TODO — Toxic Deluge (#66), Thrill of Possibility, Big Score |
 | more `StaticCondition` kinds (delirium / morbid / raid / spectacle) | 10 | TODO — cheap per-condition, worth doing as one batch |
 | unbounded targeting ("any number of target …") | 11 | TODO — a real change to fixed-arity `TargetSpec[]` |
@@ -141,6 +141,26 @@ Crystal, Voice of Victory). It reuses Encore's per-object flag.
 Shipped: **Whip of Erebos** (#713), **Arcane Denial** (#53), **Kiki-Jiki,
 Mirror Breaker** (#1247), and the clause Chandra, Acolyte of Flame had been
 dropping. `delayed-triggers.test.ts`.
+
+### Put a card from your hand onto the battlefield — DONE (20 cards unblocked)
+
+`look-and-choose`'s `zone` gained `"hand"`, which turned out to be the whole
+feature — the decision, the filter, the optional-ness (`min: 0`) and the
+"leave the rest alone" (`leftover: "stay"`) were all already there, and
+`enterTapped` came along for Terrain Generator. It bypasses the land-drop
+rule for free, which is correct: putting a land onto the battlefield is not
+playing one.
+
+Shipped: **Growth Spiral** (#234), **Ghalta, Stampede Tyrant** (#1072),
+**Terrain Generator** (#1887), **Eureka Moment** (#1992).
+`put-from-hand.test.ts`.
+
+**Sneak Attack** (#1498) and **Last March of the Ents** (#980) stay blocked,
+on the same thing: the *chosen* card isn't a target, so nothing downstream can
+say "that creature gains haste" or "sacrifice it at the next end step" about
+it. A `then` on `look-and-choose`, applied against whatever was chosen, is the
+missing piece and would unblock both plus Spelunking and Kodama of the East
+Tree.
 
 ### Put a card on top of a library — DONE (18 cards unblocked)
 
