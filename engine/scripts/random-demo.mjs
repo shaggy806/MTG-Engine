@@ -202,6 +202,12 @@ const deckA = deck([
 // and plays its threats — a bloated deck just stalls out and the fuzz only
 // exercises one side. One or two copies of each mechanic is enough coverage.
 const deckB = deck([
+  // EDH-backlog: delayed triggered abilities + tutor-to-top.
+  ["Whip of Erebos", 1],
+  ["Vampiric Tutor", 1],
+  ["Imperial Seal", 1],
+  ["Mortuary Mire", 1],
+  ["Kiki-Jiki, Mirror Breaker", 1],
   ["Stormfist Crusader", 1],
   ["Feed the Swarm", 1],
   ["Foreboding Ruins", 1],
@@ -555,6 +561,12 @@ const deckB = deck([
 // commander (a `leaves-battlefield` + `dies` trigger) so the fuzzer exercises
 // the 903.9a "ask before the move" replacement path.
 const deckC = deck([
+  // EDH-backlog: delayed triggered abilities + tutor-to-top.
+  ["Arcane Denial", 1],
+  ["Mystical Tutor", 1],
+  ["Enlightened Tutor", 1],
+  ["Academy Ruins", 1],
+  ["Hall of Heliod's Generosity", 1],
   ["Eternal Skylord", 1],
   ["Deep Analysis", 1],
   ["Vela the Night-Clad", 1],

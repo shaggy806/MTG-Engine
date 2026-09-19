@@ -5,6 +5,7 @@ import type { CardDefinition } from "./define.js";
 
 import _poolAbrade from "./pool/abrade.js";
 import _poolAbsorb from "./pool/absorb.js";
+import _poolAcademyRuins from "./pool/academy-ruins.js";
 import _poolActOfTreason from "./pool/act-of-treason.js";
 import _poolAdarkarWastes from "./pool/adarkar-wastes.js";
 import _poolAetherize from "./pool/aetherize.js";
@@ -23,6 +24,7 @@ import _poolAncientDen from "./pool/ancient-den.js";
 import _poolAncientTomb from "./pool/ancient-tomb.js";
 import _poolAngelicEdict from "./pool/angelic-edict.js";
 import _poolAnguishedUnmaking from "./pool/anguished-unmaking.js";
+import _poolArcaneDenial from "./pool/arcane-denial.js";
 import _poolArcaneSignet from "./pool/arcane-signet.js";
 import _poolArchfiendOfDepravity from "./pool/archfiend-of-depravity.js";
 import _poolArchonOfRedemption from "./pool/archon-of-redemption.js";
@@ -178,6 +180,7 @@ import _poolEmeriaAngel from "./pool/emeria-angel.js";
 import _poolEmmaraSoulOfTheAccord from "./pool/emmara-soul-of-the-accord.js";
 import _poolEmpyreanEagle from "./pool/empyrean-eagle.js";
 import _poolEncroachingDragonstorm from "./pool/encroaching-dragonstorm.js";
+import _poolEnlightenedTutor from "./pool/enlightened-tutor.js";
 import _poolEnterTheGodEternals from "./pool/enter-the-god-eternals.js";
 import _poolEssenceFlux from "./pool/essence-flux.js";
 import _poolEssenceScatter from "./pool/essence-scatter.js";
@@ -246,6 +249,7 @@ import _poolGreed from "./pool/greed.js";
 import _poolGrizzlyBears from "./pool/grizzly-bears.js";
 import _poolGutShot from "./pool/gut-shot.js";
 import _poolGuttersnipe from "./pool/guttersnipe.js";
+import _poolHallOfHeliodsGenerosity from "./pool/hall-of-heliods-generosity.js";
 import _poolHallowedFountain from "./pool/hallowed-fountain.js";
 import _poolHangedExecutioner from "./pool/hanged-executioner.js";
 import _poolHarbingerOfTheHunt from "./pool/harbinger-of-the-hunt.js";
@@ -275,6 +279,7 @@ import _poolHypnoticSpecter from "./pool/hypnotic-specter.js";
 import _poolIcetillExplorer from "./pool/icetill-explorer.js";
 import _poolIdolOfOblivion from "./pool/idol-of-oblivion.js";
 import _poolIgnobleHierarch from "./pool/ignoble-hierarch.js";
+import _poolImperialSeal from "./pool/imperial-seal.js";
 import _poolIndulgentTormentor from "./pool/indulgent-tormentor.js";
 import _poolInfernalGrasp from "./pool/infernal-grasp.js";
 import _poolInspiredSphinx from "./pool/inspired-sphinx.js";
@@ -303,6 +308,7 @@ import _poolKazanduRefuge from "./pool/kazandu-refuge.js";
 import _poolKazanduValley from "./pool/kazandu-valley.js";
 import _poolKazuulTyrantOfTheCliffs from "./pool/kazuul-tyrant-of-the-cliffs.js";
 import _poolKessigWolfRun from "./pool/kessig-wolf-run.js";
+import _poolKikiJikiMirrorBreaker from "./pool/kiki-jiki-mirror-breaker.js";
 import _poolKioraBehemothBeckoner from "./pool/kiora-behemoth-beckoner.js";
 import _poolKirdApe from "./pool/kird-ape.js";
 import _poolKolaghansCommand from "./pool/kolaghans-command.js";
@@ -356,9 +362,11 @@ import _poolMoleManMoloidMaster from "./pool/mole-man-moloid-master.js";
 import _poolMonasterySwiftspear from "./pool/monastery-swiftspear.js";
 import _poolMordantDragon from "./pool/mordant-dragon.js";
 import _poolMortivore from "./pool/mortivore.js";
+import _poolMortuaryMire from "./pool/mortuary-mire.js";
 import _poolMountain from "./pool/mountain.js";
 import _poolMudbuttonTorchrunner from "./pool/mudbutton-torchrunner.js";
 import _poolMurder from "./pool/murder.js";
+import _poolMysticalTutor from "./pool/mystical-tutor.js";
 import _poolNaturalize from "./pool/naturalize.js";
 import _poolNaturesLore from "./pool/natures-lore.js";
 import _poolNecroticHex from "./pool/necrotic-hex.js";
@@ -588,6 +596,7 @@ import _poolUtvaraHellkite from "./pool/utvara-hellkite.js";
 import _poolValorInAkros from "./pool/valor-in-akros.js";
 import _poolVampireNighthawk from "./pool/vampire-nighthawk.js";
 import _poolVampiricRites from "./pool/vampiric-rites.js";
+import _poolVampiricTutor from "./pool/vampiric-tutor.js";
 import _poolVandalblast from "./pool/vandalblast.js";
 import _poolVaultOfWhispers from "./pool/vault-of-whispers.js";
 import _poolVelaTheNightClad from "./pool/vela-the-night-clad.js";
@@ -611,6 +620,7 @@ import _poolWardenOfEvosIsle from "./pool/warden-of-evos-isle.js";
 import _poolWateryGrave from "./pool/watery-grave.js";
 import _poolWayfarersBauble from "./pool/wayfarers-bauble.js";
 import _poolWerebear from "./pool/werebear.js";
+import _poolWhipOfErebos from "./pool/whip-of-erebos.js";
 import _poolWhiteKnight from "./pool/white-knight.js";
 import _poolWhiteSunsZenith from "./pool/white-suns-zenith.js";
 import _poolWillOfTheSultai from "./pool/will-of-the-sultai.js";
@@ -672,6 +682,7 @@ import _tokensZombieToken from "./tokens/zombie-token.js";
 export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAbrade,
   _poolAbsorb,
+  _poolAcademyRuins,
   _poolActOfTreason,
   _poolAdarkarWastes,
   _poolAetherize,
@@ -690,6 +701,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAncientTomb,
   _poolAngelicEdict,
   _poolAnguishedUnmaking,
+  _poolArcaneDenial,
   _poolArcaneSignet,
   _poolArchfiendOfDepravity,
   _poolArchonOfRedemption,
@@ -845,6 +857,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolEmmaraSoulOfTheAccord,
   _poolEmpyreanEagle,
   _poolEncroachingDragonstorm,
+  _poolEnlightenedTutor,
   _poolEnterTheGodEternals,
   _poolEssenceFlux,
   _poolEssenceScatter,
@@ -913,6 +926,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolGrizzlyBears,
   _poolGutShot,
   _poolGuttersnipe,
+  _poolHallOfHeliodsGenerosity,
   _poolHallowedFountain,
   _poolHangedExecutioner,
   _poolHarbingerOfTheHunt,
@@ -942,6 +956,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolIcetillExplorer,
   _poolIdolOfOblivion,
   _poolIgnobleHierarch,
+  _poolImperialSeal,
   _poolIndulgentTormentor,
   _poolInfernalGrasp,
   _poolInspiredSphinx,
@@ -970,6 +985,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolKazanduValley,
   _poolKazuulTyrantOfTheCliffs,
   _poolKessigWolfRun,
+  _poolKikiJikiMirrorBreaker,
   _poolKioraBehemothBeckoner,
   _poolKirdApe,
   _poolKolaghansCommand,
@@ -1023,9 +1039,11 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolMonasterySwiftspear,
   _poolMordantDragon,
   _poolMortivore,
+  _poolMortuaryMire,
   _poolMountain,
   _poolMudbuttonTorchrunner,
   _poolMurder,
+  _poolMysticalTutor,
   _poolNaturalize,
   _poolNaturesLore,
   _poolNecroticHex,
@@ -1255,6 +1273,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolValorInAkros,
   _poolVampireNighthawk,
   _poolVampiricRites,
+  _poolVampiricTutor,
   _poolVandalblast,
   _poolVaultOfWhispers,
   _poolVelaTheNightClad,
@@ -1278,6 +1297,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolWateryGrave,
   _poolWayfarersBauble,
   _poolWerebear,
+  _poolWhipOfErebos,
   _poolWhiteKnight,
   _poolWhiteSunsZenith,
   _poolWillOfTheSultai,

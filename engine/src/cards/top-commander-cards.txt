@@ -1,5 +1,5 @@
 Top 2000 Commander cards by EDHREC popularity (fetched 2026-09-13)
-329 already implemented / 1671 missing (marks refreshed 2026-09-19)
+339 already implemented / 1661 missing (marks refreshed 2026-09-19)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -49,7 +49,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]    50  Watery Grave                             {0}              Land — Island Swamp
 [x]    51  Commander's Sphere                       {3}              Artifact
 [x]    52  Marsh Flats                              {0}              Land
-[ ]    53  Arcane Denial                            {1}{U}           Instant
+[x]    53  Arcane Denial                            {1}{U}           Instant
 [x]    54  Cyclonic Rift                            {1}{U}           Instant
 [ ]    55  Reanimate                                {B}              Sorcery
 [x]    56  Negate                                   {1}{U}           Instant
@@ -109,7 +109,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   110  Woodland Cemetery                        {0}              Land
 [ ]   111  Cavern of Souls                          {0}              Land
 [x]   112  Sakura-Tribe Elder                       {1}{G}           Creature — Snake Shaman
-[ ]   113  Vampiric Tutor                           {B}              Instant
+[x]   113  Vampiric Tutor                           {B}              Instant
 [ ]   114  Propaganda                               {2}{U}           Enchantment
 [x]   115  Eternal Witness                          {1}{G}{G}        Creature — Human Shaman
 [x]   116  Shivan Reef                              {0}              Land
@@ -119,7 +119,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   120  Lotus Petal                              {0}              Artifact
 [x]   121  Battlefield Forge                        {0}              Land
 [ ]   122  Assassin's Trophy                        {B}{G}           Instant
-[ ]   123  Enlightened Tutor                        {W}              Instant
+[x]   123  Enlightened Tutor                        {W}              Instant
 [x]   124  Wayfarer's Bauble                        {1}              Artifact
 [x]   125  Caves of Koilos                          {0}              Land
 [x]   126  Talisman of Creativity                   {2}              Artifact
@@ -156,7 +156,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   157  Windfall                                 {2}{U}           Sorcery
 [x]   158  Lightning Bolt                           {R}              Instant
 [x]   159  Dimir Signet                             {2}              Artifact
-[ ]   160  Mystical Tutor                           {U}              Instant
+[x]   160  Mystical Tutor                           {U}              Instant
 [ ]   161  Luxury Suite                             {0}              Land
 [ ]   162  Ghostly Prison                           {2}{W}           Enchantment
 [ ]   163  Nykthos, Shrine to Nyx                   {0}              Legendary Land
@@ -416,7 +416,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   417  Mystic Forge                             {4}              Artifact
 [ ]   418  Etherium Sculptor                        {1}{U}           Artifact Creature — Vedalken Artificer
 [ ]   419  Shineshadow Snarl                        {0}              Land
-[ ]   420  Hall of Heliod's Generosity              {0}              Legendary Land
+[x]   420  Hall of Heliod's Generosity              {0}              Legendary Land
 [ ]   421  Undercity Sewers                         {0}              Land — Island Swamp
 [x]   422  Bayou                                    {0}              Land — Swamp Forest
 [ ]   423  Izzet Boilerworks                        {0}              Land
@@ -458,7 +458,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   459  Goblin Bombardment                       {1}{R}           Enchantment
 [ ]   460  Living Death                             {3}{B}{B}        Sorcery
 [ ]   461  Ghalta, Primal Hunger                    {10}{G}{G}       Legendary Creature — Elder Dinosaur
-[ ]   462  Academy Ruins                            {0}              Legendary Land
+[x]   462  Academy Ruins                            {0}              Legendary Land
 [ ]   463  Mental Misstep                           {U/P}            Instant
 [ ]   464  Disciple of Freyalise // Garden of Freyalise {6}              Creature — Elf Druid // Land
 [ ]   465  Azorius Chancery                         {0}              Land
@@ -518,7 +518,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   519  Terror of the Peaks                      {3}{R}{R}        Creature — Dragon
 [ ]   520  Blasphemous Edict                        {3}{B}{B}        Sorcery
 [ ]   521  Chord of Calling                         {X}{G}{G}{G}     Instant
-[ ]   522  Imperial Seal                            {B}              Sorcery
+[x]   522  Imperial Seal                            {B}              Sorcery
 [ ]   523  Gitaxian Probe                           {U/P}            Sorcery
 [ ]   524  Strip Mine                               {0}              Land
 [ ]   525  Culling the Weak                         {B}              Instant
@@ -688,7 +688,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   689  Meticulous Archive                       {0}              Land — Plains Island
 [ ]   690  Archivist of Oghma                       {1}{W}           Creature — Halfling Cleric
 [ ]   691  Ancient Greenwarden                      {4}{G}{G}        Creature — Elemental
-[ ]   692  Mortuary Mire                            {0}              Land
+[x]   692  Mortuary Mire                            {0}              Land
 [ ]   693  Charcoal Diamond                         {2}              Artifact
 [ ]   694  Muddle the Mixture                       {U}{U}           Instant
 [x]   695  Aggravated Assault                       {2}{R}           Enchantment
@@ -706,7 +706,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   707  Fact or Fiction                          {3}{U}           Instant
 [ ]   708  Sundering Eruption // Volcanic Fissure   {3}              Sorcery // Land
 [ ]   709  Castle Ardenvale                         {0}              Land
-[ ]   710  Whip of Erebos                           {2}{B}{B}        Legendary Enchantment Artifact
+[x]   710  Whip of Erebos                           {2}{B}{B}        Legendary Enchantment Artifact
 [ ]   711  The Earth Crystal                        {2}{G}{G}        Legendary Artifact
 [x]   712  Vernal Fen                               {0}              Land — Swamp Forest
 [ ]   713  Fire Diamond                             {2}              Artifact
@@ -1238,7 +1238,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1244  Clever Impersonator                      {2}{U}{U}        Creature — Shapeshifter
 [ ]  1245  Waste Not                                {1}{B}           Enchantment
 [ ]  1246  Secure the Wastes                        {X}{W}           Instant
-[ ]  1247  Kiki-Jiki, Mirror Breaker                {2}{R}{R}{R}     Legendary Creature — Goblin Shaman
+[x]  1247  Kiki-Jiki, Mirror Breaker                {2}{R}{R}{R}     Legendary Creature — Goblin Shaman
 [ ]  1248  Shark Typhoon                            {5}{U}           Enchantment
 [ ]  1249  Slayers' Stronghold                      {0}              Land
 [ ]  1250  Vorinclex, Monstrous Raider              {4}{G}{G}        Legendary Creature — Phyrexian Praetor
