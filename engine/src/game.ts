@@ -7604,8 +7604,18 @@ export class Game {
         ),
       scry: (amount, surveil, then) =>
         this.beginScry(source, controller, x, amount, surveil ? "surveil" : "scry", then ?? null),
-      lookAndChoose: (zone, count, min, max, destination, leftover, filter) =>
-        this.beginZoneChoice(controller, zone, count, min, max, destination, leftover, filter),
+      lookAndChoose: (zone, count, min, max, destination, leftover, filter, enterTapped) =>
+        this.beginZoneChoice(
+          controller,
+          zone,
+          count,
+          min,
+          max,
+          destination,
+          leftover,
+          filter,
+          enterTapped === true,
+        ),
     };
   }
 
@@ -7624,15 +7634,18 @@ export class Game {
   /** See the `"look-and-choose"` {@link EffectSpec}. */
   private beginZoneChoice(
     player: PlayerId,
-    zone: "library" | "graveyard",
+    zone: "library" | "graveyard" | "hand",
     count: number | undefined,
     min: number,
     max: number,
     destination: "battlefield" | "hand",
     leftover: "bottom-random" | "stay" | "hand",
     filter: ZoneChoiceFilter | undefined,
+    enterTapped = false,
   ): void {
     const zoneCards = this.state.zones.perPlayer[player][zone];
+    // Only a library is looked at `count` deep; a graveyard is public and a
+    // hand is the chooser's own, so both offer everything in them.
     const ids = zone === "library" ? zoneCards.slice(0, count ?? 0) : [...zoneCards];
     // A filter (e.g. "only a Dragon card") narrows what's *choosable*, never
     // what's *revealed* — the player still looks at everything either way,
@@ -7648,6 +7661,7 @@ export class Game {
       max: Math.min(max, eligible.length),
       destination,
       leftover,
+      ...(enterTapped && destination === "battlefield" ? { enterTapped: true } : {}),
     };
   }
 

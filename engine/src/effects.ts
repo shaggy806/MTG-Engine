@@ -1059,11 +1059,18 @@ export type EffectSpec =
        * controller's own `choose-from-zone` action before granting anyone
        * priority again. */
       readonly kind: "look-and-choose";
-      readonly zone: "library" | "graveyard";
+      /** `"hand"` is the "you may put a land card **from your hand** onto the
+       * battlefield" family (Growth Spiral, Ghalta) — nothing is revealed
+       * there, the chooser is looking at their own hand, and `leftover` is
+       * always `"stay"` because the cards not chosen simply stay in it. */
+      readonly zone: "library" | "graveyard" | "hand";
       readonly count?: number;
       readonly min: number;
       readonly max: number;
       readonly destination: "battlefield" | "hand";
+      /** Chosen cards bound for the battlefield enter **tapped** (Terrain
+       * Generator). */
+      readonly enterTapped?: boolean;
       /** `"hand"` (needed-cards P19 — Genesis Ultimatum: "…and the rest into
        * your hand") puts every non-chosen looked-at card into the chooser's
        * hand, regardless of `filter`. */
@@ -1394,13 +1401,14 @@ export interface EffectApi {
   ): void;
   /** See the `"look-and-choose"` {@link EffectSpec}. */
   lookAndChoose(
-    zone: "library" | "graveyard",
+    zone: "library" | "graveyard" | "hand",
     count: number | undefined,
     min: number,
     max: number,
     destination: "battlefield" | "hand",
     leftover: "bottom-random" | "stay" | "hand",
     filter: ZoneChoiceFilter | undefined,
+    enterTapped?: boolean,
   ): void;
 }
 
@@ -2020,6 +2028,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
         spec.destination,
         spec.leftover,
         spec.filter,
+        spec.enterTapped === true,
       );
       return;
     default:
