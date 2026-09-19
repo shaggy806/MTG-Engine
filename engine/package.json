@@ -44,7 +44,8 @@
     "bot:scenarios": "node scripts/check-scenarios.mjs",
     "bot:audit": "node scripts/audit-evaluation.mjs",
     "bot:rollout-cost": "node scripts/rollout-cost.mjs",
-    "bot:plan": "node scripts/inspect-plan.mjs"
+    "bot:plan": "node scripts/inspect-plan.mjs",
+    "bot:census": "node scripts/plan-census.mjs"
   },
   "keywords": [],
   "author": "",

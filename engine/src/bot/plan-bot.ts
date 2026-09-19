@@ -90,6 +90,26 @@ export interface PlanBotOptions extends EvalBotOptions {
  */
 export const DEFAULT_PLAN_BUDGET_MS = 1_500;
 
+/**
+ * What one turn's plan search cost and what it got for it.
+ *
+ * Diagnostics only — {@link PlanBotController} never reads its own; it exists
+ * because "did v3 actually plan this turn, or hand it to v2?" is not
+ * answerable from the outside. A turn can reach v2 four different ways (see
+ * `act`), and only one of them is a *failure*. `bot:census` reports them.
+ */
+export interface PlanSearchAudit {
+  readonly turn: number;
+  readonly ms: number;
+  readonly evaluations: number;
+  /** The search ran but found nothing better than v1's plan. */
+  readonly keptHeuristic: boolean;
+  readonly planLength: number;
+  /** The search never got off the ground (`evaluations === 0`), so the whole
+   * turn falls through to v2. */
+  readonly failed: boolean;
+}
+
 export class PlanBotController extends EvalBotController {
   private readonly planOptions: PlanBotOptions;
   private plan: TurnPlan = [];
@@ -99,6 +119,8 @@ export class PlanBotController extends EvalBotController {
   /** Set when the search couldn't run at all — a position that can't be safely
    * resampled — so the turn falls back to v2 rather than to passing. */
   private planFailed = false;
+  /** The most recent plan search, for `bot:census`. Written, never read. */
+  lastSearch: PlanSearchAudit | null = null;
 
   constructor(
     playerId: PlayerId,
@@ -145,6 +167,7 @@ export class PlanBotController extends EvalBotController {
 
   private buildPlan(view: ControllerView): void {
     const state = view.state;
+    const startedAt = Date.now();
     const result = searchTurnPlan(state, this.cards, this.playerId, {
       weights: this.weights,
       depth: this.planOptions.depth,
@@ -160,6 +183,14 @@ export class PlanBotController extends EvalBotController {
     // searched is a real choice — hold everything — and must not be confused
     // with a failure.
     this.planFailed = result.evaluations === 0;
+    this.lastSearch = {
+      turn: state.turn.number,
+      ms: Date.now() - startedAt,
+      evaluations: result.evaluations,
+      keptHeuristic: result.keptHeuristic,
+      planLength: result.plan.length,
+      failed: this.planFailed,
+    };
   }
 
   /** Whether the engine would accept `action` right now. A planned action can

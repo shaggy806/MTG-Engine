@@ -34,6 +34,34 @@ the **tie trap** below, and exactly what an evaluation fitted against a rollout 
 anything would be expected to get wrong. Fix it with the re-audit and re-fit in **Sequencing**,
 not with a special case for lands.
 
+## How much of a turn v3 actually decides (`npm run bot:census -w engine`)
+
+"v3 played the turn" hides four different things, and only one of them is v3. Across whole games,
+counting each of the bot's own turns by what the plan search did with it:
+
+| table / budget | planned | kept v1's | empty | failed |
+|---|---|---|---|---|
+| 2 players, 1s | 35.2% | 54.9% | 9.9% | 0.0% |
+| 4 players, 1s | 28.3% | 58.4% | 11.5% | 1.8% |
+| 4 players, 4s | 40.0% | 51.2% | 8.1% | 0.6% |
+
+*planned* = the search beat v1's plan; *kept v1's* = it ran and found nothing better; *empty* = it
+chose to do nothing (this is the "bot passed a whole turn" people notice); *failed* = it never got
+off the ground and v2 took the turn. So **about 60% of turns are played exactly as v1 would play
+them**, and the outright failure the fallback was built for is rare.
+
+**The budget is the binding constraint at four players, and the cliff is around turn 11** (the
+third or fourth round). Median search time by turn at 4p/1s: ~160ms through turn 6, ~600ms by turn
+10, then pinned at 950-990ms from turn 11 for the rest of the game — while median evaluations fall
+from ~18 to ~3-6 as the board widens and each one costs more. Raising the ceiling to 4s converts
+that back: "planned" goes 28.3% → 40.0%, better than the 2-player number, and the median settles at
+~1.25s rather than pinning, so the *cost* is ~1.25s even though the *ceiling* is 4s.
+
+Worth being careful about what that buys. More planned turns is not yet the same as better play —
+the evaluation deciding them is the un-refitted one, which is the whole point of **Sequencing**
+below. The census is a measure of how often the search is the thing choosing, not of whether it
+chooses well.
+
 ## The two measurements that decide this design
 
 **1. A rollout never casts anything.** Every v2 rollout policy — `passive`, `combat`,
