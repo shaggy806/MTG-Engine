@@ -202,7 +202,15 @@ export type EffectSpec =
         | ManaType
         | "any-color"
         | "chosen"
-        | { readonly oneOf: readonly ManaType[] };
+        | { readonly oneOf: readonly ManaType[] }
+        /**
+         * "…of any color that a land an opponent controls could produce"
+         * (Exotic Orchard, Fellwar Stone). A `oneOf` whose list is read off
+         * the board rather than printed, so it shrinks and grows with what
+         * the opponents actually have out — and is empty, producing nothing
+         * at all, when they have no coloured lands.
+         */
+        | { readonly producedBy: "opponents-lands" };
       /** An `EffectAmount` so a ritual can scale off the board — Mana Geyser's
        * "{R} for each tapped land your opponents control". A mana *ability*
        * should keep this a plain number: `manaSources()` reports what each
@@ -1077,7 +1085,10 @@ export type EffectSpec =
       readonly count?: number;
       readonly min: number;
       readonly max: number;
-      readonly destination: "battlefield" | "hand";
+      /** `"library-top"` with `zone: "hand"` is Brainstorm's "put two cards
+       * from your hand on top of your library" — the chosen cards go back on
+       * the deck rather than anywhere visible. */
+      readonly destination: "battlefield" | "hand" | "library-top";
       /** Chosen cards bound for the battlefield enter **tapped** (Terrain
        * Generator). */
       readonly enterTapped?: boolean;
@@ -1166,7 +1177,11 @@ export interface EffectApi {
   changeLifeScoped(who: PlayerScope, delta: number): void;
   addMana(
     player: PlayerId,
-    mana: ManaType | "any-color" | { readonly oneOf: readonly ManaType[] },
+    mana:
+      | ManaType
+      | "any-color"
+      | { readonly oneOf: readonly ManaType[] }
+      | { readonly producedBy: "opponents-lands" },
     amount: number,
   ): void;
   tapPermanent(target: TargetRef): void;
@@ -1428,7 +1443,7 @@ export interface EffectApi {
     count: number | undefined,
     min: number,
     max: number,
-    destination: "battlefield" | "hand",
+    destination: "battlefield" | "hand" | "library-top",
     leftover: "bottom-random" | "stay" | "hand",
     filter: ZoneChoiceFilter | undefined,
     enterTapped?: boolean,

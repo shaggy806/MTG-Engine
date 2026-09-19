@@ -196,7 +196,12 @@ interface TriggeredGrantSource {
  * cards, and it keeps a five-colour source from producing 126 menu entries for
  * a rider nothing prints.
  */
-function standaloneManaChoices(ability: ActivatedAbility): ManaType[][] | null {
+function standaloneManaChoices(
+  ability: ActivatedAbility,
+  /** The concrete colours a `oneOf`/`producedBy` names right now — resolved
+   * by the caller, which has the board; see `Game.manaOneOf`. */
+  oneOf: (mana: { oneOf?: readonly ManaType[]; producedBy?: string }) => readonly ManaType[],
+): ManaType[][] | null {
   const effect = ability.effect;
   if (effect === null || effect.kind !== "add-mana") return null;
   if (typeof effect.amount !== "number" || effect.amount < 1) return null;
@@ -204,7 +209,7 @@ function standaloneManaChoices(ability: ActivatedAbility): ManaType[][] | null {
   if (mana === "any-color") {
     return COLORS.map((c) => Array<ManaType>(effect.amount as number).fill(c));
   }
-  if (typeof mana === "object") return manaCombinations(mana.oneOf, effect.amount);
+  if (typeof mana === "object") return manaCombinations(oneOf(mana), effect.amount);
   return null;
 }
 
@@ -1127,7 +1132,9 @@ export class Game {
         // its own is a real choice rather than whatever the engine's default
         // happened to be. Paying a *cost* never comes through here — the mana
         // planner picks the colour it needs (see `manaSources`).
-        const choices = standaloneManaChoices(ability);
+        const choices = standaloneManaChoices(ability, (m) =>
+          this.manaOneOf(m as Parameters<typeof this.manaOneOf>[0], player),
+        );
         if (choices === null) {
           pushActivateAbility(source, printedCardName(object), ability, index);
           return;
@@ -5852,7 +5859,7 @@ export class Game {
           mana === "any-color"
             ? [{ fixed: [], anyColor: manaAmount, pain, lifeCost, genericCost }]
             : typeof mana === "object"
-              ? manaCombinations(mana.oneOf, manaAmount).map((fixed) => ({
+              ? manaCombinations(this.manaOneOf(mana, player), manaAmount).map((fixed) => ({
                   fixed,
                   anyColor: 0,
                   pain,
@@ -6615,6 +6622,38 @@ export class Game {
     }
   }
 
+  /**
+   * The concrete colours an `add-mana` `oneOf` names. A `{ producedBy }` list
+   * is read off the board instead of being printed (Exotic Orchard, Fellwar
+   * Stone: "any color that a land an opponent controls could produce"), so it
+   * has to be resolved wherever the spec is read — the payment planner, the
+   * standalone-activation menu and `addMana` itself.
+   */
+  private manaOneOf(
+    mana: { readonly oneOf: readonly ManaType[] } | { readonly producedBy: "opponents-lands" },
+    player: PlayerId,
+  ): readonly ManaType[] {
+    if ("oneOf" in mana) return mana.oneOf;
+    const colors = new Set<ManaType>();
+    for (const id of this.state.zones.shared.battlefield) {
+      const object = this.state.objects[id];
+      if (object === undefined || object.controller === player) continue;
+      const def = this.registry.get(printedCardName(object));
+      if (!def.types.includes("land")) continue;
+      // What it could produce, read off its own mana abilities — so a dual
+      // land offers both of its colours and a Wastes offers none.
+      for (const ability of def.activated) {
+        const effect = ability.effect;
+        if (effect === null || effect.kind !== "add-mana") continue;
+        const m = effect.mana;
+        if (m === "any-color") for (const c of COLORS) colors.add(c);
+        else if (typeof m === "string" && m !== "chosen" && m !== "C") colors.add(m);
+        else if (typeof m === "object" && "oneOf" in m) for (const c of m.oneOf) colors.add(c);
+      }
+    }
+    return [...colors];
+  }
+
   private stackAbilityOf(object: GameObject): StackAbility {
     // A delayed triggered ability isn't an ability of any card, so there is
     // nothing to look up by index — it carries its own effect (rule 603.7).
@@ -7345,7 +7384,14 @@ export class Game {
       },
       gainLife: (player, amount) => this.changeLife(player, amount),
       loseLife: (player, amount) => this.changeLife(player, -amount),
-      addMana: (player, mana, amount) => this.addMana(player, mana, amount),
+      addMana: (player, mana, amount) =>
+        this.addMana(
+          player,
+          typeof mana === "object" && "producedBy" in mana
+            ? { oneOf: this.manaOneOf(mana, player) }
+            : mana,
+          amount,
+        ),
       tapPermanent: (target) => this.setTapped(target, true),
       untapPermanent: (target) => this.setTapped(target, false),
       destroyPermanent: (target) => this.destroyByEffect(target),
@@ -7703,7 +7749,7 @@ export class Game {
     count: number | undefined,
     min: number,
     max: number,
-    destination: "battlefield" | "hand",
+    destination: "battlefield" | "hand" | "library-top",
     leftover: "bottom-random" | "stay" | "hand",
     filter: ZoneChoiceFilter | undefined,
     enterTapped = false,

@@ -294,6 +294,11 @@ export function isLegalTarget(
       const t = registry.get(state.objects[ref.object].cardName).types;
       return t.includes("instant") || t.includes("sorcery");
     }
+    case "enchantment-instant-or-sorcery-spell": {
+      if (ref.kind !== "object" || !isSpellOnStack(state, ref.object)) return false;
+      const t = registry.get(state.objects[ref.object].cardName).types;
+      return t.includes("enchantment") || t.includes("instant") || t.includes("sorcery");
+    }
     case "instant-or-sorcery-in-your-graveyard": {
       if (ref.kind !== "object") return false;
       const object = state.objects[ref.object];
