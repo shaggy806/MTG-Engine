@@ -814,6 +814,45 @@ export type AwaitingDecision =
 /** The zones a commander can be moved to that offer the 903.9a choice. */
 export type CommanderReplacementZone = "graveyard" | "exile" | "hand" | "library";
 
+/**
+ * What caused the decision on {@link GameState.awaiting} — the resolving
+ * spell or the permanent whose ability is resolving. Carries `cardName`
+ * alongside the id because the object is often no longer anywhere the
+ * deciding player can see it by the time they answer: a sorcery that ordered
+ * a sacrifice has already gone to its controller's graveyard, and an ability
+ * object is deleted off the stack the moment it finishes resolving.
+ */
+export interface DecisionSource {
+  readonly object: ObjectId;
+  readonly cardName: string;
+}
+
+/**
+ * Whether a decision's source is worth showing the deciding player at all.
+ *
+ * Combat declarations, the cleanup-step discard and the mulligan aren't
+ * caused by any one card, and the commander-replacement prompt names its own
+ * commander already — for those, `decisionSource` is whatever resolved last
+ * and must not be presented as the cause.
+ */
+export function decisionHasSource(awaiting: AwaitingDecision): boolean {
+  switch (awaiting.kind) {
+    case "attackers":
+    case "blockers":
+    case "order-blockers":
+    case "assign-combat-damage":
+    case "mulligan":
+    case "commander-replacement":
+      return false;
+    case "discard":
+      // The cleanup-step discard is the turn's own bookkeeping; a Mind Rot
+      // discard has a card behind it.
+      return awaiting.fromEffect === true;
+    default:
+      return true;
+  }
+}
+
 /** A one-shot damage-prevention shield (Healing Salve — ROADMAP Phase 11 EG-6). */
 export interface PreventionShield {
   /** The player or object it protects. */
@@ -877,6 +916,20 @@ export interface GameState {
   result: GameResult;
   /** A declaration the engine is waiting for, or `null`. */
   awaiting: AwaitingDecision | null;
+  /**
+   * The spell or permanent whose resolution raised `awaiting` — what a client
+   * shows the deciding player so a forced sacrifice or discard isn't a prompt
+   * out of nowhere. Only meaningful while `awaiting` is set *and*
+   * {@link decisionHasSource} accepts it; cleared whenever priority is handed
+   * off with nothing pending.
+   *
+   * It is tracked separately from the decision itself because the two are
+   * raised in different places: the resolving object is known at the top of
+   * `resolveTopOfStack`/`resolveAbility`, while the decision can surface
+   * several layers down inside an effect (or, for a sacrifice effect, a whole
+   * fixpoint iteration later, out of `pendingSacrifices`).
+   */
+  decisionSource: DecisionSource | null;
   /**
    * Attackers with multiple blockers still awaiting a damage-assignment order
    * from the attacking player. Drained one `order-blockers` action at a time.
@@ -944,6 +997,11 @@ export interface GameState {
     readonly count: number;
     /** A permanent to exclude — "sacrifice **another** permanent" (Korvold). */
     readonly exceptId?: ObjectId;
+    /** What ordered the sacrifice, carried across the deferral so the
+     * decision can still say where it came from — see {@link
+     * GameState.decisionSource}. The spell has usually left the stack by the
+     * time the prompt is raised. */
+    readonly source?: DecisionSource;
   }[];
   /**
    * Specific permanents (chosen, or auto-selected when there was no choice)

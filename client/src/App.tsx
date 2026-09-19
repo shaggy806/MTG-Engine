@@ -13,6 +13,7 @@ import type {
 import { describeTargetSpec, isOptionalSpec } from 'engine'
 import { useNetworkGame } from './net/useNetworkGame.ts'
 import type { NetworkGame } from './net/useNetworkGame.ts'
+import { stackShowsSomething } from './game/decisionSource.ts'
 import { computeBoardEntries } from './game/board.ts'
 import type { BoardEntry } from './game/board.ts'
 import { usePlayback } from './game/usePlayback.ts'
@@ -1858,6 +1859,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     controls = (
       <div className="controls">
         <span>
+          {view.decisionSource ? `${view.decisionSource.cardName}: ` : ''}
           Sacrifice {sacrificeAction.count} — {sacrificePicks.length}/
           {sacrificeAction.count} chosen
         </span>
@@ -2149,7 +2151,9 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       <div className="controls">
         <span>
           {fromEffect
-            ? `Discard ${discardAction.count} card${discardAction.count === 1 ? '' : 's'}`
+            ? `${view.decisionSource ? `${view.decisionSource.cardName}: ` : ''}Discard ${
+                discardAction.count
+              } card${discardAction.count === 1 ? '' : 's'}`
             : 'Discard to hand size'}{' '}
           — {discardPicks.length}/{discardAction.count}
         </span>
@@ -2645,7 +2649,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           just another legal-target object (e.g. a counterspell targeting
           "spell"), the same architecture tileFor already uses for
           battlefield permanents. */}
-      {view.zones.stack.length > 0 ? (
+      {stackShowsSomething(view) ? (
         <Stack
           view={view}
           targetSlot={targetSlot}

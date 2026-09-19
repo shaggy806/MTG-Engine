@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import type { ObjectId, PlayerView, TargetRef } from 'engine'
+import { decisionGhostOf } from '../game/decisionSource.ts'
 import { describeTarget } from '../format.ts'
 import { CardTile } from './CardTile.tsx'
 
@@ -46,12 +47,19 @@ export interface StackProps {
  * outward from there — and casting/resolving animates via each entry's own
  * `top`/`right`/`transform`/`opacity` transition (see .stack-entry), not a
  * re-mount, since React keys these by object id and reuses the same DOM
- * node across a stack-size change. The caller only mounts this when the
- * stack is non-empty (Arena-style: it isn't a permanent panel, it just
- * appears when something's happening).
+ * node across a stack-size change. The caller only mounts this when there's
+ * something to draw (`stackShowsSomething`) — Arena-style, it isn't a
+ * permanent panel, it just appears when something's happening.
  */
 export function Stack({ view, targetSlot = [], pickedIds, onTargetClick }: StackProps) {
-  const ids = [...view.zones.stack].reverse() // ids[0] = top of stack = depth 0
+  // The card that caused the decision you're being asked, when it isn't
+  // already on the stack. A sacrifice or discard effect raises its prompt
+  // *after* the spell that ordered it has finished resolving and gone to a
+  // graveyard, so without this a forced choice arrives with nothing on screen
+  // explaining it. It rides at depth 0 -- where whatever you're responding to
+  // always sits -- and isn't a real stack object, so it's never targetable.
+  const ghost = decisionGhostOf(view)
+  const ids = [...(ghost ? [ghost] : []), ...[...view.zones.stack].reverse()]
   const N = ids.length
   const nameOf = (id: ObjectId): string => view.objects[id]?.cardName ?? id
   const tgt = (ref: TargetRef): string => describeTarget(ref, nameOf)
@@ -88,16 +96,18 @@ export function Stack({ view, targetSlot = [], pickedIds, onTargetClick }: Stack
             '--st-opacity': opacity,
             '--st-z': N - depth,
           } as CSSProperties
-          const label =
-            obj.kind === 'ability'
+          const isGhost = id === ghost
+          const label = isGhost
+            ? 'prompted by'
+            : obj.kind === 'ability'
               ? `${obj.sourceObjectId ? nameOf(obj.sourceObjectId) : obj.cardName}'s ability`
               : obj.isCopy
                 ? `copy of ${obj.cardName}`
                 : null
-          const targetable = isTargetable(id)
+          const targetable = !isGhost && isTargetable(id)
           return (
             <div
-              className={`stack-entry${isTop ? ' is-top' : ''}`}
+              className={`stack-entry${isTop ? ' is-top' : ''}${isGhost ? ' is-prompt' : ''}`}
               key={id}
               style={style}
             >
@@ -106,10 +116,10 @@ export function Stack({ view, targetSlot = [], pickedIds, onTargetClick }: Stack
                 obj={obj}
                 badge={obj.isCopy ? 'copy' : undefined}
                 highlight={targetable}
-                selected={pickedIds?.has(id) ?? false}
-                onClick={onTargetClick ? () => onTargetClick(id) : undefined}
+                selected={!isGhost && (pickedIds?.has(id) ?? false)}
+                onClick={!isGhost && onTargetClick ? () => onTargetClick(id) : undefined}
               />
-              {obj.targets && obj.targets.length > 0 ? (
+              {!isGhost && obj.targets && obj.targets.length > 0 ? (
                 <div className="stack-targets">
                   {'→ '}
                   {obj.targets.map(tgt).join(', ')}

@@ -1233,6 +1233,26 @@
     animation: none;
   }
 }
+/* The card that *caused* the decision you're answering, when it isn't on the
+   stack any more (an edict's sacrifice is asked after the edict has resolved
+   into a graveyard -- see Stack.tsx's `decisionGhostOf`). It sits at depth 0
+   like anything else being responded to, but swaps the stack's warm glow for
+   a cool one so it doesn't read as a spell still waiting to resolve, and
+   isn't clickable. */
+.stack-entry.is-prompt .card-tile,
+.stack-entry.is-prompt.is-top .card-tile {
+  border-color: rgba(122, 184, 255, 0.8);
+  box-shadow:
+    0 0 0 2px rgba(122, 184, 255, 0.45),
+    0 0 18px 3px rgba(80, 150, 235, 0.4),
+    0 8px 24px rgba(0, 0, 0, 0.55);
+  animation: none;
+}
+.stack-entry.is-prompt .stack-entry-label {
+  color: rgba(150, 200, 255, 0.95);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
 /* Read a buried card at full size without resolving everything in front of
    it: hovering (or focusing, for keyboard/touch -- a targetable entry is a
    real focusable button, see CardTile's `clickable`) any entry cancels its

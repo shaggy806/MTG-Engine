@@ -17,13 +17,14 @@ import type { Color, ManaPool } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type {
   AwaitingDecision,
+  DecisionSource,
   GameResult,
   GameState,
   PriorityState,
   TurnState,
   ZoneType,
 } from "./state.js";
-import { activePlayerOf, faceName, printedCardName } from "./state.js";
+import { activePlayerOf, decisionHasSource, faceName, printedCardName } from "./state.js";
 import type { TargetRef } from "./target.js";
 
 export interface PublicPlayerInfo {
@@ -154,6 +155,19 @@ export interface PlayerView {
   readonly turn: TurnState;
   readonly priority: PriorityState;
   readonly awaiting: AwaitingDecision | null;
+  /**
+   * The card behind `awaiting` — what a client shows so a forced sacrifice or
+   * discard isn't a prompt out of nowhere. `null` when nothing is pending, or
+   * when the decision isn't any one card's doing (combat declarations, the
+   * cleanup discard, the mulligan).
+   *
+   * The named object is usually in `objects` (a resolved sorcery is in its
+   * controller's graveyard, an ability's source is still on the battlefield),
+   * but not always — a spell that exiled itself, or a face-down foretold card
+   * — so `cardName` stands on its own and a client must tolerate a missing
+   * `objects[object]`.
+   */
+  readonly decisionSource: DecisionSource | null;
   readonly result: GameResult;
   readonly players: Readonly<Record<PlayerId, PublicPlayerInfo>>;
   readonly objects: Readonly<Record<ObjectId, VisibleObject>>;
@@ -185,6 +199,27 @@ export interface PlayerView {
 export interface ViewOptions {
   /** Reveal every hand (for a hot-seat spectator or debugging). */
   readonly revealAll?: boolean;
+}
+
+/**
+ * The card behind the pending decision — see `PlayerView.decisionSource`.
+ *
+ * A decision variant that names its own `source` is preferred over
+ * `state.decisionSource`: it's exact, and it's still right for the decisions
+ * raised outside a resolution (a shock land's "pay 2 life?" is asked as the
+ * land enters, not as anything resolves).
+ */
+function decisionSourceFor(state: GameState): DecisionSource | null {
+  const awaiting = state.awaiting;
+  if (awaiting === null || !decisionHasSource(awaiting)) return null;
+  const own = "source" in awaiting ? awaiting.source : undefined;
+  if (own !== undefined) {
+    const object = state.objects[own];
+    if (object !== undefined) {
+      return { object: own, cardName: printedCardName(object) };
+    }
+  }
+  return state.decisionSource;
 }
 
 function visible(
@@ -394,6 +429,7 @@ function viewForUncached(
     turn: { ...state.turn },
     priority: { ...state.priority, passed: [...state.priority.passed] },
     awaiting: state.awaiting,
+    decisionSource: decisionSourceFor(state),
     result: { ...state.result },
     players,
     objects,

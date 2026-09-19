@@ -354,6 +354,7 @@ export class Game {
       priority: { active: false, holder: null, passed: [] },
       result: { over: false, winner: null, reason: null },
       awaiting: null,
+      decisionSource: null,
       pendingBlockerOrders: [],
       pendingBlockerDeclarations: [],
       pendingTriggers: [],
@@ -2575,6 +2576,9 @@ export class Game {
       }
       if (!this.placePendingTriggers()) break;
     }
+    // Nothing is waiting on anyone, so whatever resolved last is no longer
+    // the reason for anything — see `GameState.decisionSource`.
+    this.state.decisionSource = null;
     this.grantPriority(player);
   }
 
@@ -6278,6 +6282,23 @@ export class Game {
 
   // --- the stack -----------------------------------------------
 
+  /**
+   * Run `resolve` with `state.decisionSource` pointing at whatever is
+   * resolving, so a decision raised anywhere inside it can say what caused it
+   * (see {@link GameState.decisionSource}). A resolution that ends with
+   * nothing awaiting leaves no source behind.
+   */
+  private withDecisionSource(source: ObjectId, resolve: () => void): void {
+    const object = this.state.objects[source];
+    this.state.decisionSource =
+      object === undefined ? null : { object: source, cardName: printedCardName(object) };
+    try {
+      resolve();
+    } finally {
+      if (this.state.awaiting === null) this.state.decisionSource = null;
+    }
+  }
+
   private resolveTopOfStack(): void {
     const stack = this.state.zones.shared.stack;
     const id = stack[stack.length - 1];
@@ -6331,58 +6352,60 @@ export class Game {
       return;
     }
 
-    if (object.chosenModes !== undefined && def.castModal !== null) {
-      // A targeted modal spell (rule 700.2 — ROADMAP Phase 11 EG-2): apply each
-      // chosen mode with its own slice of `targets`; skip a mode whose targets
-      // are now illegal (608.2b); the spell "fizzles" only if every mode does.
-      let offset = 0;
-      let anyApplied = false;
-      for (const mi of object.chosenModes) {
-        const mode = def.castModal.modes[mi];
-        const specs = mode?.targets ?? [];
-        const slice = targets.slice(offset, offset + specs.length);
-        offset += specs.length;
-        const ok =
-          mode !== undefined &&
-          specs.every(
-            (spec, i) =>
-              slice[i] !== undefined &&
-              isLegalTarget(this.state, this.registry, spec, slice[i], object.controller, this.cardSource(def)),
+    this.withDecisionSource(id, () => {
+      if (object.chosenModes !== undefined && def.castModal !== null) {
+        // A targeted modal spell (rule 700.2 — ROADMAP Phase 11 EG-2): apply each
+        // chosen mode with its own slice of `targets`; skip a mode whose targets
+        // are now illegal (608.2b); the spell "fizzles" only if every mode does.
+        let offset = 0;
+        let anyApplied = false;
+        for (const mi of object.chosenModes) {
+          const mode = def.castModal.modes[mi];
+          const specs = mode?.targets ?? [];
+          const slice = targets.slice(offset, offset + specs.length);
+          offset += specs.length;
+          const ok =
+            mode !== undefined &&
+            specs.every(
+              (spec, i) =>
+                slice[i] !== undefined &&
+                isLegalTarget(this.state, this.registry, spec, slice[i], object.controller, this.cardSource(def)),
+            );
+          if (!ok || mode === undefined) continue;
+          applyEffectSpec(
+            mode.effect,
+            this.makeResolutionContext(id, object.controller, slice, object.xValue ?? 0),
           );
-        if (!ok || mode === undefined) continue;
-        applyEffectSpec(
-          mode.effect,
-          this.makeResolutionContext(id, object.controller, slice, object.xValue ?? 0),
+          anyApplied = true;
+        }
+        if (!anyApplied) {
+          this.emit({ type: "spell-fizzled", object: id, reason: "all chosen modes have illegal targets" });
+        }
+      } else {
+        const context = this.makeResolutionContext(
+          id,
+          object.controller,
+          targets,
+          object.xValue ?? 0,
         );
-        anyApplied = true;
+        // Overload (rule 702.126) and kicker (rule 702.33) each replace the
+        // ordinary effect "instead" when chosen; overload takes priority since
+        // no card has both.
+        const altEffect =
+          object.overloaded === true
+            ? (def.overload?.effect ?? null)
+            : object.kicked === true
+              ? (def.kicker?.effect ?? null)
+              : null;
+        if (altEffect !== null) {
+          applyEffectSpec(altEffect, context);
+        } else if (def.resolve !== null) {
+          def.resolve(context);
+        } else if (def.effect !== null) {
+          applyEffectSpec(def.effect, context);
+        }
       }
-      if (!anyApplied) {
-        this.emit({ type: "spell-fizzled", object: id, reason: "all chosen modes have illegal targets" });
-      }
-    } else {
-      const context = this.makeResolutionContext(
-        id,
-        object.controller,
-        targets,
-        object.xValue ?? 0,
-      );
-      // Overload (rule 702.126) and kicker (rule 702.33) each replace the
-      // ordinary effect "instead" when chosen; overload takes priority since
-      // no card has both.
-      const altEffect =
-        object.overloaded === true
-          ? (def.overload?.effect ?? null)
-          : object.kicked === true
-            ? (def.kicker?.effect ?? null)
-            : null;
-      if (altEffect !== null) {
-        applyEffectSpec(altEffect, context);
-      } else if (def.resolve !== null) {
-        def.resolve(context);
-      } else if (def.effect !== null) {
-        applyEffectSpec(def.effect, context);
-      }
-    }
+    });
     this.emit({ type: "spell-resolved", object: id });
 
     // A copy of a spell (rule 707.10c) ceases to exist instead of moving to
@@ -6531,11 +6554,13 @@ export class Game {
       object.triggerObject,
       object.stackMultiplier ?? 1,
     );
-    if (ability.resolve !== null) {
-      ability.resolve(context);
-    } else if (ability.effect !== null) {
-      applyEffectSpec(ability.effect, context);
-    }
+    this.withDecisionSource(source, () => {
+      if (ability.resolve !== null) {
+        ability.resolve(context);
+      } else if (ability.effect !== null) {
+        applyEffectSpec(ability.effect, context);
+      }
+    });
     this.emit({ type: "ability-resolved", source });
     this.removeAbilityFromStack(id);
   }
@@ -7260,7 +7285,13 @@ export class Game {
         );
         const give = total - keep;
         if (give > 0) {
-          this.state.pendingSacrifices.push({ player, filter, count: give });
+          const from = this.state.decisionSource;
+          this.state.pendingSacrifices.push({
+            player,
+            filter,
+            count: give,
+            ...(from !== null ? { source: from } : {}),
+          });
         }
       },
       goadCreaturesOf: (player) => {
@@ -8846,6 +8877,10 @@ export class Game {
                 (who === "each-player" || p !== controller),
             );
     }
+    // The prompt is raised a whole fixpoint iteration later, by which time the
+    // edict has left the stack — carry what ordered it along so the player
+    // being asked can still be told why (see `GameState.decisionSource`).
+    const source = this.state.decisionSource;
     for (const player of players) {
       if (this.eligibleSacrifices(player, filter, exceptId).length > 0) {
         this.state.pendingSacrifices.push({
@@ -8853,6 +8888,7 @@ export class Game {
           filter,
           count,
           ...(exceptId !== undefined ? { exceptId } : {}),
+          ...(source !== null ? { source } : {}),
         });
       }
     }
@@ -8926,6 +8962,7 @@ export class Game {
         count: next.count,
         eligible,
       };
+      this.state.decisionSource = next.source ?? null;
       this.state.pendingSacrifices = this.state.pendingSacrifices.slice(1);
       return;
     }
