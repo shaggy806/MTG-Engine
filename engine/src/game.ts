@@ -86,6 +86,8 @@ import {
 } from "./state.js";
 import type {
   AwaitingDecision,
+  DelayedTrigger,
+  DelayedTriggerTiming,
   CombatDamageState,
   GameObject,
   GameRules,
@@ -378,6 +380,7 @@ export class Game {
       result: { over: false, winner: null, reason: null },
       awaiting: null,
       decisionSource: null,
+      delayedTriggers: [],
       pendingBlockerOrders: [],
       pendingBlockerDeclarations: [],
       pendingTriggers: [],
@@ -1452,6 +1455,7 @@ export class Game {
         o.damageMarked === 0 &&
         !o.markedByDeathtouch &&
         (o.exileAtEndStep ?? false) === (rep.exileAtEndStep ?? false) &&
+        (o.sacrificeAtEndStep ?? false) === (rep.sacrificeAtEndStep ?? false) &&
         (o.notLegendary ?? false) === (rep.notLegendary ?? false) &&
         JSON.stringify(o.counters) === repCounters &&
         JSON.stringify(o.modifiers) === repModifiers
@@ -2560,6 +2564,11 @@ export class Game {
     this.state.priority.passed = [];
     this.emit({ type: "step-began", step, phase: PHASE_OF_STEP[step] });
 
+    // Delayed triggered abilities waiting on this step (rule 603.7). Before
+    // the turn-based actions, so an "at the beginning of the end step" ability
+    // is on the stack when that step's priority window opens.
+    this.fireDelayedTriggers(step);
+
     this.performTurnBasedActions(step);
 
     // A turn-based action may have asked a player for a declaration; that
@@ -2861,6 +2870,9 @@ export class Game {
         index === 0 || awaiting.restDestination === undefined
           ? awaiting.destination
           : awaiting.restDestination;
+      // A tutor-to-top's find is put on top *after* the search's shuffle
+      // (below) — moving it now would only have it shuffled back in.
+      if (to === "library-top") return;
       this.moveObject(id, to);
       if (to === "battlefield") {
         if (awaiting.enterTapped) this.state.objects[id].tapped = true;
@@ -2883,6 +2895,13 @@ export class Game {
     }
     // leftover === "stay": nothing to do — those cards were only ever looked
     // at, never removed from wherever they already were.
+
+    // Now the shuffle has happened, the tutor's find goes on top (rule
+    // 701.19j — "shuffle, *then* put that card on top"). Last chosen first,
+    // so a multi-card find ends up in the order it was chosen.
+    if (awaiting.destination === "library-top") {
+      for (const id of [...chosen].reverse()) this.putOnLibrary(id, "top");
+    }
 
     this.emit({ type: "cards-chosen-from-zone", player, objects: [...chosen] });
     this.state.awaiting = null;
@@ -6534,6 +6553,12 @@ export class Game {
   }
 
   private stackAbilityOf(object: GameObject): StackAbility {
+    // A delayed triggered ability isn't an ability of any card, so there is
+    // nothing to look up by index — it carries its own effect (rule 603.7).
+    const delayed = object.delayedTrigger;
+    if (delayed !== undefined) {
+      return { targets: [], effect: delayed.effect, resolve: null };
+    }
     // A granted ability resolves as what was granted, whether or not the
     // grant (or its source) is still around — rule 113.7a.
     if (object.grantedAbility !== undefined) {
@@ -7310,6 +7335,11 @@ export class Game {
       },
       flicker: (target, thenCounters) => this.flickerByEffect(target, thenCounters),
       grantFlashback: (target) => this.grantFlashbackByEffect(target),
+      putOnLibrary: (target, position) => {
+        if (target.kind === "object") this.putOnLibrary(target.object, position);
+      },
+      delayTrigger: (at, effect, text, delayedController) =>
+        this.createDelayedTrigger(source, delayedController, at, effect, text, targets),
       fight: (a, b, oneSided) => this.fightCreatures(a, b, oneSided),
       counterSpell: (target) => this.counterSpellByEffect(target),
       gainControl: (target, untilEndOfTurn) =>
@@ -7448,7 +7478,7 @@ export class Game {
       },
       animate: (target, opts) => this.animate(target, opts),
       changeText: (target) => this.beginTextChoice(controller, source, target),
-      createToken: (token, count, who, tapped) => {
+      createToken: (token, count, who, tapped, sacrificeAtEndStep) => {
         let tokenController = controller;
         if (who === "target-controller") {
           const ref = targets[0];
@@ -7461,7 +7491,7 @@ export class Game {
             tokenController = this.state.objects[ref.object].controller;
           }
         }
-        this.createTokens(tokenController, token, count, tapped);
+        this.createTokens(tokenController, token, count, tapped, sacrificeAtEndStep);
       },
       controllerOf: (ref) =>
         ref.kind === "player" ? ref.player : this.state.objects[ref.object]?.controller,
@@ -7607,7 +7637,7 @@ export class Game {
   private beginLibrarySearch(
     player: PlayerId,
     filter: CardFilter,
-    destination: "hand" | "battlefield",
+    destination: "hand" | "battlefield" | "library-top",
     min: number,
     max: number,
     enterTapped: boolean,
@@ -8102,11 +8132,23 @@ export class Game {
     tokenName: string,
     count: number,
     tapped = false,
+    sacrificeAtEndStep = false,
   ): void {
     this.registry.get(tokenName); // validate the token is a known definition
     // Doubling Season / Parallel Lives (rule 614): "twice that many instead".
     const total = count * this.tokenCreationMultiplier(controller);
-    this.mintTokenBatch(controller, tokenName, null, total, [], false, false, false, tapped);
+    this.mintTokenBatch(
+      controller,
+      tokenName,
+      null,
+      total,
+      [],
+      false,
+      false,
+      false,
+      tapped,
+      sacrificeAtEndStep,
+    );
   }
 
   /** Create `count` token(s) that are copies of the permanent `ofId` (rule
@@ -8122,6 +8164,7 @@ export class Game {
     opts: {
       gainsHaste: boolean;
       exileAtEndStep: boolean;
+      sacrificeAtEndStep?: boolean;
       notLegendary: boolean;
       basePt?: readonly [number, number];
       under?: PlayerId;
@@ -8161,6 +8204,8 @@ export class Game {
       opts.exileAtEndStep,
       opts.notLegendary,
       true,
+      false,
+      opts.sacrificeAtEndStep === true,
     );
   }
 
@@ -8195,6 +8240,7 @@ export class Game {
     notLegendary: boolean,
     copied: boolean,
     tapped = false,
+    sacrificeAtEndStep = false,
   ): void {
     if (total <= 0) return;
     this.state.players[controller].createdTokenThisTurn = true;
@@ -8210,6 +8256,7 @@ export class Game {
           notLegendary,
           false,
           tapped,
+          sacrificeAtEndStep,
         );
         if (copied) this.emit({ type: "permanent-copied", object: id, copyOf: printedName });
         this.emit({ type: "permanent-entered-battlefield", object: id });
@@ -8230,7 +8277,9 @@ export class Game {
       modifiers,
       exileAtEndStep,
       notLegendary,
-      true,
+      true, // skipBattlefield — the representative is only ever compared
+      tapped,
+      sacrificeAtEndStep,
     );
     const existing = this.findMergeableStack(repId, controller);
     delete this.state.objects[repId]; // the representative never really "exists" on its own
@@ -8251,6 +8300,9 @@ export class Game {
         modifiers,
         exileAtEndStep,
         notLegendary,
+        false,
+        tapped,
+        sacrificeAtEndStep,
       );
       this.state.objects[id].stackCount = total;
       finalId = id;
@@ -8272,6 +8324,7 @@ export class Game {
     notLegendary: boolean,
     skipBattlefield = false,
     tapped = false,
+    sacrificeAtEndStep = false,
   ): ObjectId {
     const id = this.mintObjectId();
     this.state.objects[id] = {
@@ -8299,6 +8352,7 @@ export class Game {
       modifiers,
       timestamp: 0,
       isToken: true,
+      ...(sacrificeAtEndStep ? { sacrificeAtEndStep: true } : {}),
       attachedTo: null,
       isCommander: false,
       xValue: null,
@@ -9238,6 +9292,138 @@ export class Game {
       } else {
         object.attachedTo = null;
       }
+    }
+  }
+
+  // --- delayed triggered abilities (rule 603.7) ------------------
+
+  /** Record a delayed triggered ability — see the `delayed-trigger` effect. */
+  private createDelayedTrigger(
+    source: ObjectId,
+    controller: PlayerId,
+    at: DelayedTriggerTiming,
+    effect: EffectSpec,
+    text: string,
+    targets: ResolvedTargets,
+  ): void {
+    const object = this.state.objects[source];
+    this.state.delayedTriggers.push({
+      id: `delayed-${this.state.nextObjectSeq++}`,
+      controller,
+      at,
+      createdOnTurn: this.state.turn.number,
+      createdDuringEndStep:
+        this.state.turn.step === "end" || this.state.turn.step === "cleanup",
+      source,
+      sourceName: object === undefined ? "a spell" : printedCardName(object),
+      // Captured by value: the ability chooses no new targets when it fires
+      // (rule 603.7d), and the effect that set it up is long gone by then.
+      targets: [...targets],
+      effect,
+      text,
+    });
+    this.emit({ type: "delayed-trigger-created", source, controller, text });
+  }
+
+  /**
+   * Whether `trigger` fires as `step` begins on the active player's turn.
+   *
+   * "The next end step" can't mean one already in progress, which is what
+   * `createdOnTurn` guards: an effect resolving *during* an end step waits for
+   * the following turn's. The "your next ..." timings additionally wait for
+   * their own controller's turn.
+   */
+  private delayedTriggerFires(trigger: DelayedTrigger, step: Step): boolean {
+    const active = this.activePlayer;
+    const laterTurn = this.state.turn.number > trigger.createdOnTurn;
+    // This turn's end step still counts, unless the trigger was created
+    // during it (or in cleanup) — then "the next end step" is next turn's.
+    const endStepOk = laterTurn || !trigger.createdDuringEndStep;
+    switch (trigger.at) {
+      case "next-end-step":
+        return step === "end" && endStepOk;
+      case "your-next-end-step":
+        return step === "end" && endStepOk && active === trigger.controller;
+      // An upkeep is over by the time anything could create one of these, so
+      // the next `enterStep("upkeep")` is always a later turn's.
+      case "next-upkeep":
+        return step === "upkeep" && laterTurn;
+      case "your-next-upkeep":
+        return step === "upkeep" && laterTurn && active === trigger.controller;
+      case "your-next-main-phase":
+        // Simplification: "your next main phase" is read as your next turn's
+        // *precombat* main, so a trigger created during its own controller's
+        // precombat main waits a turn rather than firing postcombat. Mana
+        // Drain, the only card that says this, is cast on someone else's turn.
+        return step === "precombat-main" && laterTurn && active === trigger.controller;
+    }
+  }
+
+  /**
+   * Put every delayed trigger that fires at the start of `step` onto the
+   * stack, in APNAP order (rule 603.3b). Called from `enterStep`, since a
+   * delayed ability belongs to no permanent and so is invisible to
+   * `detectTriggers`.
+   */
+  private fireDelayedTriggers(step: Step): void {
+    if (this.state.delayedTriggers.length === 0) return;
+    const firing = this.state.delayedTriggers.filter((t) =>
+      this.delayedTriggerFires(t, step),
+    );
+    if (firing.length === 0) return;
+    this.state.delayedTriggers = this.state.delayedTriggers.filter(
+      (t) => !firing.includes(t),
+    );
+    const order = this.apnapOrder();
+    for (const trigger of [...firing].sort(
+      (a, b) => order.indexOf(a.controller) - order.indexOf(b.controller),
+    )) {
+      const id = this.mintAbilityObject(
+        trigger.source,
+        trigger.sourceName,
+        trigger.controller,
+        "triggered",
+        0,
+        trigger.targets,
+      );
+      // What `stackAbilityOf` resolves from: the ability has no index into any
+      // card's `triggered` list, because it isn't an ability of a card.
+      this.state.objects[id].delayedTrigger = trigger;
+      this.emit({
+        type: "ability-triggered",
+        source: trigger.source,
+        controller: trigger.controller,
+      });
+    }
+  }
+
+  /** Active player first, then the rest in turn order (rule 101.4). */
+  private apnapOrder(): PlayerId[] {
+    const at = this.state.turnOrder.indexOf(this.activePlayer);
+    return [...this.state.turnOrder.slice(at), ...this.state.turnOrder.slice(0, at)];
+  }
+
+  /**
+   * Put `id` on top of / on the bottom of its **owner's** library — the
+   * `put-on-library` effect and a tutor-to-top's find.
+   *
+   * A library's array is drawn from index 0, and `moveObject` always appends,
+   * so "bottom" is the plain move and "top" needs the card hoisted to the
+   * front afterwards. A card already in that library (a tutor's find never
+   * left it) is only reordered, never moved, so nothing treats it as a zone
+   * change.
+   */
+  private putOnLibrary(id: ObjectId, position: "top" | "bottom"): void {
+    const object = this.state.objects[id];
+    if (object === undefined) return;
+    if (object.zone !== "library") this.moveObject(id, "library");
+    if (this.state.objects[id]?.zone !== "library") return; // a replacement took it
+    if (position === "bottom") return;
+    const library = this.state.zones.perPlayer[object.owner].library;
+    const index = library.indexOf(id);
+    if (index > 0) {
+      library.splice(index, 1);
+      library.unshift(id);
     }
   }
 

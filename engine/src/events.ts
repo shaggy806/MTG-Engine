@@ -269,6 +269,14 @@ export type GameEvent =
       readonly controller: PlayerId;
     })
   | (Base & {
+      /** A delayed triggered ability was set up (rule 603.7) — it fires at
+       * some later step, not now. */
+      readonly type: "delayed-trigger-created";
+      readonly source: ObjectId;
+      readonly controller: PlayerId;
+      readonly text: string;
+    })
+  | (Base & {
       readonly type: "trigger-removed";
       readonly source: ObjectId;
       readonly reason: string;

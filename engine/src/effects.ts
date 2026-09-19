@@ -13,6 +13,7 @@ import type { CardType, Keyword, StaticAbility, StaticCondition } from "./cards.
 import type { CardFilter } from "./filter.js";
 import type { Color, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
+import type { DelayedTriggerTiming } from "./state.js";
 import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
 
 /** `"trigger-object"` reads `ResolutionContext.triggerObject` (needed-cards
@@ -477,6 +478,42 @@ export type EffectSpec =
       readonly enterTapped?: boolean;
     }
   | {
+      /**
+       * Set up a delayed triggered ability (rule 603.7) — "at the beginning of
+       * the next end step, <do this>". Whip of Erebos's "exile it at the
+       * beginning of the next end step", Arcane Denial's upkeep draws.
+       *
+       * `effect` is applied when it fires, against the targets the *creating*
+       * effect had (rule 603.7d — a delayed ability chooses no new targets),
+       * so it refers to them by slot index like any other effect and
+       * `"source"` still means the card that set it up.
+       */
+      readonly kind: "delayed-trigger";
+      readonly at: DelayedTriggerTiming;
+      readonly effect: EffectSpec;
+      /** Text for the log and the stack. */
+      readonly text: string;
+      /** Who controls it when it fires — the effect's own controller by
+       * default, or the controller of a target slot (Arcane Denial hands its
+       * "may draw two cards" to the player whose spell was countered). */
+      readonly controller?: { readonly controllerOfTarget: number };
+    }
+  | {
+      /**
+       * Put a targeted card on top of (or on the bottom of) its owner's
+       * library — Academy Ruins, Mortuary Mire, Hall of Heliod's Generosity,
+       * all of which recur a graveyard card by putting it back on the deck
+       * rather than into a hand.
+       *
+       * Distinct from `return-from-graveyard`, which is filter-driven and
+       * only reaches the effect's own controller's graveyard: this takes a
+       * chosen target, so the card and its owner are whatever was targeted.
+       */
+      readonly kind: "put-on-library";
+      readonly target: number;
+      readonly position: "top" | "bottom";
+    }
+  | {
       /** Target player discards `amount` cards (their choice, unless it's the
        * effect's own controller). Discards their whole hand if it's smaller.
        * `target: "you"` = the effect's controller, with no target slot
@@ -728,6 +765,10 @@ export type EffectSpec =
        * Overseer of the Damned). These are never folded into a token stack —
        * see `mintTokenBatch`. */
       readonly tapped?: boolean;
+      /** "Sacrifice them at the beginning of the next end step" (Chandra,
+       * Acolyte of Flame). Sacrificed rather than exiled, so dies-triggers
+       * see them go — the same per-object flag Encore uses. */
+      readonly sacrificeAtEndStep?: boolean;
     }
   | {
       /** Create `count` token(s) that are copies of a permanent (rule 707.10 —
@@ -744,6 +785,10 @@ export type EffectSpec =
       readonly gainsHaste?: boolean;
       /** Exile the token copies at the beginning of the next end step (Miirym). */
       readonly exileAtEndStep?: boolean;
+      /** *Sacrifice* them at the beginning of the next end step instead
+       * (Kiki-Jiki, Mirror Breaker) — the difference is whether dies-triggers
+       * see them go. */
+      readonly sacrificeAtEndStep?: boolean;
       /** The copies are not legendary (Miirym — "except it's not legendary"). */
       readonly notLegendary?: boolean;
       /** Who the token enters under. Default is the *copied* permanent's own
@@ -977,7 +1022,11 @@ export type EffectSpec =
        * decision listing only the matching cards. */
       readonly kind: "search-library";
       readonly filter: CardFilter;
-      readonly destination: "hand" | "battlefield";
+      /** `"library-top"` is the tutor-to-top family (Vampiric Tutor, Mystical
+       * Tutor): the find never leaves the library, it is just moved to the top
+       * *after* the shuffle the search itself causes (rule 701.19j — the
+       * shuffle comes first, or the card wouldn't stay on top). */
+      readonly destination: "hand" | "battlefield" | "library-top";
       readonly min: number;
       /** An `EffectAmount` so a tutor can find "up to X" where X is a live
        * count — Harvest Season's "up to X basic land cards, where X is the
@@ -1120,6 +1169,17 @@ export interface EffectApi {
   exileObject(target: TargetRef, untilSourceLeaves?: boolean): void;
   /** See the `"return-exiled-by-source"` {@link EffectSpec}. */
   returnExiledBySource(): void;
+  /** Put `target` on top of / on the bottom of its owner's library — see the
+   * `"put-on-library"` {@link EffectSpec}. */
+  putOnLibrary(target: TargetRef, position: "top" | "bottom"): void;
+  /** Set up a delayed triggered ability — see the `"delayed-trigger"`
+   * {@link EffectSpec}. `controller` is who will control it when it fires. */
+  delayTrigger(
+    at: DelayedTriggerTiming,
+    effect: EffectSpec,
+    text: string,
+    controller: PlayerId,
+  ): void;
   /** See the `"choose-creature-type"` {@link EffectSpec}. */
   chooseCreatureType(then: EffectSpec): void;
   /** Exile every card in `target`'s graveyard (a player — Bojuka Bog). */
@@ -1255,6 +1315,7 @@ export interface EffectApi {
     count: number,
     who?: "you" | "target-controller",
     tapped?: boolean,
+    sacrificeAtEndStep?: boolean,
   ): void;
   /** Create `count` token(s) that are copies of the permanent `of` — see the
    * `"create-token-copy"` {@link EffectSpec}. */
@@ -1266,6 +1327,9 @@ export interface EffectApi {
       readonly under?: PlayerId;
       gainsHaste: boolean;
       exileAtEndStep: boolean;
+      /** "Sacrifice it at the beginning of the next end step" (Kiki-Jiki) —
+       * sacrificed rather than exiled, so dies-triggers see it go. */
+      sacrificeAtEndStep?: boolean;
       notLegendary: boolean;
       basePt?: readonly [number, number];
     },
@@ -1317,7 +1381,7 @@ export interface EffectApi {
   searchLibrary(
     player: PlayerId | null,
     filter: CardFilter,
-    destination: "hand" | "battlefield",
+    destination: "hand" | "battlefield" | "library-top",
     min: number,
     max: number,
     enterTapped: boolean,
@@ -1660,6 +1724,24 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       if (target !== undefined) ctx.mill(target, amountValue(spec.amount, ctx));
       return;
     }
+    case "delayed-trigger": {
+      let controller = ctx.controller;
+      if (spec.controller !== undefined) {
+        const of = ctx.targets[spec.controller.controllerOfTarget];
+        // The target may already be gone (Arcane Denial counters first);
+        // `controllerOf` reads last-known information for exactly this.
+        const who = of === undefined ? undefined : ctx.controllerOf(of);
+        if (who === undefined) return;
+        controller = who;
+      }
+      ctx.delayTrigger(spec.at, spec.effect, spec.text, controller);
+      return;
+    }
+    case "put-on-library": {
+      const target = ctx.targets[spec.target];
+      if (target !== undefined) ctx.putOnLibrary(target, spec.position);
+      return;
+    }
     case "return-from-graveyard":
       ctx.returnFromGraveyard(
         spec.filter,
@@ -1792,6 +1874,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
         amountValue(spec.count, ctx) * ctx.stackMultiplier,
         spec.who,
         spec.tapped === true,
+        spec.sacrificeAtEndStep === true,
       );
       return;
     case "create-token-copy": {
@@ -1805,6 +1888,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       if (of !== undefined) {
         ctx.createTokenCopy(of, spec.count * ctx.stackMultiplier, {
           gainsHaste: spec.gainsHaste ?? false,
+          sacrificeAtEndStep: spec.sacrificeAtEndStep ?? false,
           exileAtEndStep: spec.exileAtEndStep ?? false,
           notLegendary: spec.notLegendary ?? false,
           under: spec.who === "you" ? ctx.controller : undefined,

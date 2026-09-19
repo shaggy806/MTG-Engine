@@ -144,6 +144,13 @@ export interface GameObject {
    * new object and has damaged nobody.
    */
   combatDamagedPlayersThisTurn?: PlayerId[];
+  /**
+   * This stack object is a delayed triggered ability that has fired (rule
+   * 603.7) — the whole record, because there is no card ability for
+   * `stackAbilityOf` to look up by index. Only ever set on an `"ability"`
+   * object on the stack.
+   */
+  delayedTrigger?: DelayedTrigger;
   /** Chosen targets while this is a spell/ability on the stack; `null` otherwise. */
   /** A hole (`undefined`) marks an optional target slot the caster chose to
    * leave empty — see `ResolvedTargets`. */
@@ -606,7 +613,10 @@ export type AwaitingDecision =
       readonly eligible: readonly ObjectId[];
       readonly min: number;
       readonly max: number;
-      readonly destination: "battlefield" | "hand" | "exile-playable";
+      /** `"library-top"` — a tutor-to-top (Vampiric Tutor): the chosen cards
+       * never leave the library, they are moved to the top after the search's
+       * own shuffle. */
+      readonly destination: "battlefield" | "hand" | "exile-playable" | "library-top";
       /** For `destination: "exile-playable"` — the impulse permission to
        * stamp on the chosen cards, which stay in exile either way
        * (Tectonic Giant: "exile the top two, choose one of them"). */
@@ -811,6 +821,62 @@ export type AwaitingDecision =
       readonly trample: boolean;
     };
 
+/**
+ * When a delayed triggered ability fires (rule 603.7).
+ *
+ * "Next" always means the next such step to *begin*, never one already in
+ * progress — an effect that resolves during an end step and says "at the
+ * beginning of the next end step" waits for the following turn's.
+ */
+export type DelayedTriggerTiming =
+  /** The next end step, whoever's turn it is — the common one ("sacrifice it
+   * at the beginning of the next end step"). */
+  | "next-end-step"
+  /** The next upkeep, whoever's turn it is (Arcane Denial, Mishra's Bauble:
+   * "at the beginning of the next turn's upkeep"). */
+  | "next-upkeep"
+  /** Your own next upkeep / end step / precombat main phase — these wait for
+   * the ability's *controller* to be the active player (Mana Drain's "at the
+   * beginning of your next main phase"). */
+  | "your-next-upkeep"
+  | "your-next-end-step"
+  | "your-next-main-phase";
+
+/**
+ * A delayed triggered ability (rule 603.7): created by a resolving spell or
+ * ability, waiting on one future step, then gone. It isn't an ability *of* any
+ * permanent — it exists on its own here, which is exactly why `detectTriggers`
+ * (a scan over battlefield permanents) can't see it and `enterStep` fires it
+ * directly.
+ */
+export interface DelayedTrigger {
+  readonly id: string;
+  /** Who controls it when it fires (rule 603.7d). Usually whoever created it,
+   * but not always — Arcane Denial's draw belongs to the countered spell's
+   * controller. */
+  readonly controller: PlayerId;
+  readonly at: DelayedTriggerTiming;
+  /** The turn it was created on, so "the next end step" can't mean one the
+   * game is already in. */
+  readonly createdOnTurn: number;
+  /** Created during that turn's end step (or cleanup) — so "the next end
+   * step" means the *following* turn's, not the one it was made in. */
+  readonly createdDuringEndStep: boolean;
+  /** The object whose ability this is — `ctx.source` on resolution, and what
+   * the log names it after. May well have left the battlefield by then; that
+   * is normal and fine (rule 603.7e). */
+  readonly source: ObjectId;
+  readonly sourceName: string;
+  /**
+   * Targets captured when it was created. A delayed ability doesn't choose
+   * new targets (rule 603.7d), so these are fixed here and `effect` refers to
+   * them by slot index exactly like any other effect.
+   */
+  readonly targets: ResolvedTargets;
+  readonly effect: EffectSpec;
+  readonly text: string;
+}
+
 /** The zones a commander can be moved to that offer the 903.9a choice. */
 export type CommanderReplacementZone = "graveyard" | "exile" | "hand" | "library";
 
@@ -916,6 +982,13 @@ export interface GameState {
   result: GameResult;
   /** A declaration the engine is waiting for, or `null`. */
   awaiting: AwaitingDecision | null;
+  /**
+   * Delayed triggered abilities still waiting to fire (rule 603.7) — see
+   * {@link DelayedTrigger}. Drained by `enterStep`, which is the only place
+   * that can see them: they belong to no permanent, so the `detectTriggers`
+   * battlefield scan never matches one.
+   */
+  delayedTriggers: DelayedTrigger[];
   /**
    * The spell or permanent whose resolution raised `awaiting` — what a client
    * shows the deciding player so a forced sacrifice or discard isn't a prompt
