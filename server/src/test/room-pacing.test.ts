@@ -7,6 +7,7 @@
 
 import { describe, expect, it } from "vitest";
 import { Game, HeuristicBotController, autoSettle } from "engine";
+import type { Action, ControllerView, PlayerController, PlayerId } from "engine";
 import { Room } from "../room.js";
 import type { Connection, RoomTimers } from "../room.js";
 import type { BotSpeed, ServerMessage } from "../protocol.js";
@@ -78,7 +79,11 @@ function watcher(room: () => Room, ackAll: boolean) {
  * exactly that, which broke the land-drop assertion below without anything
  * being wrong with the pacing.
  */
-function makePacedRoom(ackAll: boolean, botSpeed: BotSpeed = "fast") {
+function makePacedRoom(
+  ackAll: boolean,
+  botSpeed: BotSpeed = "fast",
+  botController: ((player: PlayerId) => PlayerController) | undefined = undefined,
+) {
   const clock = fakeClock();
   const forests = Array<string>(40).fill("Forest");
   const game = Game.create({
@@ -94,7 +99,7 @@ function makePacedRoom(ackAll: boolean, botSpeed: BotSpeed = "fast") {
   const alice = watcher(() => room, ackAll);
   room = new Room("PACE1", game, {
     timers: clock.timers,
-    botController: (player) => new HeuristicBotController(player),
+    botController: botController ?? ((player) => new HeuristicBotController(player)),
     // No pause after a move is shown, so these tests are about the ack gate
     // alone; the pause itself has its own tests below.
     botSpeed,
@@ -188,6 +193,58 @@ describe("Room pacing (realtime)", () => {
     const seqs = alice.frames.map((f) => f.seq);
     expect(seqs).toEqual([...seqs].sort((a, b) => a - b));
     expect(new Set(seqs).size).toBe(seqs.length);
+  });
+
+  /**
+   * A bot with one-shot state: it has exactly one land drop in it, and every
+   * `act` call spends a step whether or not the caller uses the answer.
+   *
+   * That is the shape of v3's turn plan (`PlanBotController` walks an index
+   * through a planned turn) and, more mildly, of v1's per-turn activation
+   * counter. Standing in for them here keeps the test cheap and keeps it
+   * about the room rather than about any particular bot.
+   */
+  class OneShotBot extends HeuristicBotController {
+    calls = 0;
+
+    private spent = false;
+
+    act(view: ControllerView): Action {
+      this.calls += 1;
+      if (view.state.awaiting !== null) return super.act(view);
+      const land = view.legalActions().find((l) => l.kind === "play-land");
+      if (land !== undefined && !this.spent) {
+        this.spent = true;
+        return { type: "play-land", player: this.playerId, card: land.card };
+      }
+      return { type: "pass-priority", player: this.playerId };
+    }
+  }
+
+  it("asks a bot for its move once, rather than once to probe and again to play", () => {
+    const bots: OneShotBot[] = [];
+    const { room, clock, alice } = makePacedRoom(true, "fast", (player) => {
+      const bot = new OneShotBot(player);
+      bots.push(bot);
+      return bot;
+    });
+    room.addBot(BOB);
+    room.start();
+    room.requestPassTurn(alice.connection);
+
+    const botLands = (): number =>
+      room.game.state.zones.shared.battlefield.filter(
+        (id) => room.game.state.objects[id].controller === BOB,
+      ).length;
+    for (let i = 0; i < 8 && botLands() === 0; i += 1) clock.advance(400);
+
+    // The room used to ask once to decide whether the move was worth pacing
+    // and again when it was time to make it, so this bot's only land drop was
+    // spent on the throwaway question and the table never saw it. For v3 that
+    // ate a planned turn two entries at a time until the plan ran out and the
+    // bot passed every turn for the rest of the game.
+    expect(botLands()).toBe(1);
+    expect(bots).toHaveLength(1);
   });
 
   it("spends no frame on a bot simply passing priority", () => {

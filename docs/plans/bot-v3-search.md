@@ -15,7 +15,10 @@ weight could fix.
 ## Measured after seating it: v3 skips about one land drop in eight
 
 Playing v3 in a real `Room` against a seat that only passes, ten games of two players over the
-five precons, counting every priority window where a land drop was legal:
+five precons, counting every priority window where a land drop was legal. Measured under
+`pacing: "immediate"`, which is the one that isolates the *search* — a separate room bug was
+asking every bot for its move twice and eating v3's plan two entries at a time, and these numbers
+are unchanged by fixing it:
 
 | bot | land played | passed with a land in hand |
 |---|---|---|

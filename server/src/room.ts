@@ -485,10 +485,19 @@ export class Room {
     return holder !== null && this.bots.has(holder) ? holder : null;
   }
 
-  /** What `seat`'s bot would do right now. Read-only — asked once to decide
-   * whether the move is worth pacing, then again when it's actually time to
-   * make it, so a move is never computed against one board and played onto
-   * another. */
+  /**
+   * What `seat`'s bot would do right now.
+   *
+   * **Asking costs something, and asking twice is a bug.** `act` is a
+   * controller's decision entry point, not a pure function of the board:
+   * v1 counts activations in it, v3 walks a turn plan through it, and both
+   * advance that state whether or not the caller uses the answer. This used
+   * to be asked once to decide whether the move was worth pacing and again
+   * when it was time to make it — which quietly consumed v3's plan two
+   * entries at a time until it ran out and passed every turn for the rest of
+   * the game, and double-counted v1's per-turn activation cap. `settle` now
+   * asks once and carries the answer (see the `eventSeq` check there).
+   */
   private botAction(seat: PlayerId): Action {
     const bot = this.bots.get(seat);
     if (bot === undefined) throw new Error(`no bot on seat ${seat}`);
@@ -588,7 +597,10 @@ export class Room {
           this.dispatchForBot(bot);
           continue;
         }
-        if (this.game.isDeadForMana(bot) || this.botAction(bot).type === "pass-priority") {
+        // Asked exactly once for this move, then carried through the wait —
+        // see `botAction` for what asking twice cost.
+        const move = this.botAction(bot);
+        if (this.game.isDeadForMana(bot) || move.type === "pass-priority") {
           // Nothing here a spectator could watch: passing priority, or
           // tapping for mana that casting would have tapped anyway. Spending
           // a frame and a think-time beat on these is worse than pointless —
@@ -596,18 +608,32 @@ export class Room {
           // resolving, which is exactly the gap that makes a creature seem to
           // appear well after its own play animation finished. Whatever the
           // move lets through lands in the next frame and is paced there.
-          this.dispatchForBot(bot);
+          //
+          // `isDeadForMana` short-circuits before `move` is read, but the bot
+          // has already been asked either way, so dispatching `move` rather
+          // than asking again is both correct and free.
+          this.game.dispatch(move);
+          this.lastActivityAt = Date.now();
           continue;
         }
         // Show the board this bot is about to act on, then let the clients
         // finish playing it before the bot touches anything.
+        const decidedAt = this.game.state.eventSeq;
         this.publish();
         this.holdForClients(() => {
-          // The game may have moved on while we waited (a human answering
-          // the other half of a parallel mulligan, say), so the move is
-          // re-derived here rather than replayed from before the wait.
+          // The game may have moved on while we waited (a human answering the
+          // other half of a parallel mulligan, say). If it did, the move was
+          // decided against a board that no longer exists and has to be
+          // re-derived; if it didn't — the overwhelmingly common case — the
+          // answer we already have is the right one, and asking again would
+          // advance the bot's own state a second time.
           const stillUp = this.currentBotActor();
-          if (stillUp !== null) this.dispatchForBot(stillUp);
+          if (stillUp === bot && this.game.state.eventSeq === decidedAt) {
+            this.game.dispatch(move);
+            this.lastActivityAt = Date.now();
+          } else if (stillUp !== null) {
+            this.dispatchForBot(stillUp);
+          }
           this.settle();
         });
         return;
