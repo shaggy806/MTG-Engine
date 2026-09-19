@@ -339,8 +339,15 @@
      only override the generic dimmed-disabled-button look. */
   opacity: 1;
 }
+/* The floating mana pool, one pip per mana (PlayerPanel's `manaString`). The
+   pips carry their own colour, so this sets no text colour of its own — only
+   the count prefix a large pool falls back to needs one. */
 .pp-mana {
+  display: flex;
+  align-items: center;
+  gap: 1px;
   font-family: ui-monospace, Consolas, monospace;
+  font-size: 12px;
   color: var(--warn);
 }
 .pp-lost {

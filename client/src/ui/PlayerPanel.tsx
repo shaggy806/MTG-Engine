@@ -3,6 +3,7 @@ import { playerLabel } from '../format.ts'
 import type { SeatClass } from '../format.ts'
 import type { SeatStatus } from '../net/protocol.ts'
 import { CommanderDamageChip } from './CommanderDamageChip.tsx'
+import { Symbols } from './Symbols.tsx'
 
 export interface PlayerPanelProps {
   readonly info: PublicPlayerInfo
@@ -33,12 +34,24 @@ export interface PlayerPanelProps {
   readonly onTargetClick?: () => void
 }
 
+/** Past this many of one colour the pool stops repeating pips and writes the
+ * count instead, so a ritual's worth of mana doesn't run off the panel. */
+const MAX_REPEATED_PIPS = 5
+
+/**
+ * The floating mana pool as a `Symbols` string — one pip per mana, so it reads
+ * like a mana cost ("{G}{G}{R}"), falling back to a count plus a single pip
+ * once there's too much of one colour to spell out.
+ */
 const manaString = (pool: ManaPool): string => {
   const order: (keyof ManaPool)[] = ['W', 'U', 'B', 'R', 'G', 'C']
-  const parts = order
+  return order
     .filter((k) => (pool[k] ?? 0) > 0)
-    .map((k) => `${pool[k]}{${k}}`)
-  return parts.join(' ')
+    .map((k) => {
+      const n = pool[k]
+      return n > MAX_REPEATED_PIPS ? `${n}{${k}}` : `{${k}}`.repeat(n)
+    })
+    .join('')
 }
 
 export function PlayerPanel({
@@ -143,7 +156,11 @@ export function PlayerPanel({
           lands {info.landsPlayedThisTurn}/{1}
         </span>
       </div>
-      {mana ? <div className="pp-mana">{mana}</div> : null}
+      {mana ? (
+        <div className="pp-mana" title="Mana pool">
+          <Symbols text={mana} />
+        </div>
+      ) : null}
       {info.energy > 0 ? (
         <div className="pp-energy" title="Energy counters ({E} — rule 122)">
           ⚡ {info.energy}
