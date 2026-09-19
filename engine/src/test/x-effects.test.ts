@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { computeCharacteristics } from "../characteristics.js";
 import { ScriptedController } from "../controller.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
@@ -41,9 +42,11 @@ describe("Kessig Wolf Run — {X} activated ability pumps power", () => {
   it("gives target creature +X/+0 until end of turn", () => {
     const { game } = mkGame(["Kessig Wolf Run"]);
     game.advanceUntil(toPrecombat);
-    game.debugSpawn("Kessig Wolf Run", A, "battlefield"); // enters tapped, but debugSpawn skips that
+    game.debugSpawn("Kessig Wolf Run", A, "battlefield");
     const bear = game.debugSpawn("Grizzly Bears", A, "battlefield");
-    for (let i = 0; i < 5; i += 1) game.debugSpawn("Mountain", A, "battlefield");
+    // {X}{R}{G} needs both colours plus whatever X costs.
+    for (let i = 0; i < 4; i += 1) game.debugSpawn("Mountain", A, "battlefield");
+    for (let i = 0; i < 4; i += 1) game.debugSpawn("Forest", A, "battlefield");
     const land = game.battlefield.find(
       (id) => game.state.objects[id].cardName === "Kessig Wolf Run",
     )!;
@@ -62,6 +65,9 @@ describe("Kessig Wolf Run — {X} activated ability pumps power", () => {
     expect(game.state.objects[bear].modifiers).toContainEqual(
       expect.objectContaining({ power: 3, toughness: 0 }),
     );
+    expect(
+      computeCharacteristics(game.state, game.registry, bear).keywords,
+    ).toContain("trample");
   });
 });
 

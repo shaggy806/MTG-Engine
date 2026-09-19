@@ -58,12 +58,13 @@ describe("activated-ability {X} affordability", () => {
     const game = makeGame();
     game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
 
-    // Kessig Wolf Run's ability costs `{X}{1}{R}, {T}`. With three Mountains
-    // untapped the fixed part eats two of them, leaving X = 1. The Wolf Run
-    // taps for the {T} so its own `{T}: Add {C}` can't help — counting it is
-    // exactly the bug, and would advertise X = 2.
+    // Kessig Wolf Run's ability costs `{X}{R}{G}, {T}`. With two Mountains and
+    // a Forest untapped the fixed part eats two of them, leaving X = 1. The
+    // Wolf Run taps for the {T} so its own `{T}: Add {C}` can't help —
+    // counting it is exactly the bug, and would advertise X = 2.
     spawnUntapped(game, "Kessig Wolf Run");
-    for (let i = 0; i < 3; i += 1) spawnUntapped(game, "Mountain");
+    for (let i = 0; i < 2; i += 1) spawnUntapped(game, "Mountain");
+    spawnUntapped(game, "Forest");
     game.debugSpawn("Grizzly Bears", A, "battlefield");
 
     const legal = findWolfRunPump(game);
@@ -80,6 +81,7 @@ describe("activated-ability {X} affordability", () => {
     game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
     spawnUntapped(game, "Kessig Wolf Run");
     for (let i = 0; i < 5; i += 1) spawnUntapped(game, "Mountain");
+    for (let i = 0; i < 3; i += 1) spawnUntapped(game, "Forest");
     const creature = game.debugSpawn("Grizzly Bears", A, "battlefield");
 
     const legal = findWolfRunPump(game);

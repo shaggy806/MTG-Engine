@@ -242,14 +242,19 @@ describe("fixed multi-color mana sources (P0)", () => {
     expect(two.state.objects[two.debugSpawn("Cinder Glade", A)]?.tapped).toBe(false);
   });
 
-  it("Rockfall Vale — untapped past two other lands, dealing 1 damage", () => {
+  it("a slow land (Rockfall Vale) — tapped until you control two other lands", () => {
+    const one = makeGame([]);
+    one.debugSpawn("Forest", A);
+    expect(one.state.objects[one.debugSpawn("Rockfall Vale", A)]?.tapped).toBe(true);
+
     const game = makeGame([]);
     game.debugSpawn("Forest", A);
     game.debugSpawn("Mountain", A);
     const life0 = game.state.players[A].life;
     const id = game.debugSpawn("Rockfall Vale", A);
     expect(game.state.objects[id]?.tapped).toBe(false);
-    expect(game.state.players[A].life).toBe(life0 - 1);
+    // It is a slow land, not a pain land — coming in untapped costs nothing.
+    expect(game.state.players[A].life).toBe(life0);
   });
 
   it("a trikeland pays for any of its three colors, 1 life each", () => {
