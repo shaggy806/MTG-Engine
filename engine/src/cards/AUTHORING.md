@@ -309,12 +309,47 @@ multiplier (Gray Merchant's "life equal to the life lost this way" is devotion
 | `return-to-hand` | `target` | Unsummon |
 | `return-to-hand-all` | `filter` | Cyclonic Rift, overloaded — mirrors `destroy-all` |
 | `return-from-graveyard` | `filter`, `destination: "battlefield" \| "hand"`, `count: number \| "all"`, `enterTapped?` | Splendid Reclamation (from *your* graveyard; a `number` less than the match count raises a `choose-from-zone`) |
+| `put-on-library` | `target`, `position: "top" \| "bottom"` | Academy Ruins, Mortuary Mire — puts one **targeted** card on its owner's deck. Pair it with a `card-in-graveyard` target for the graveyard-recursion lands; unlike `return-from-graveyard` it is target-driven, so it reaches any graveyard. |
+| `delayed-trigger` | `at`, `effect`, `text`, `controller?` | Whip of Erebos's "exile it at the beginning of the next end step", Arcane Denial's upkeep draws. Rule 603.7 — see below. |
 | `counter` | `target` (a spell) | Counterspell |
 | `sacrifice-all-but` | `who`, `keep`, `filter` | "chooses up to N they control, then sacrifices the rest" (Archfiend of Depravity) — the inverse of `sacrifice`, which names how many to give up. Raised only when they're over the limit. |
 | `sacrifice` | `who`, `filter`, `count`, `exceptSource?` | Diabolic Edict (`who: "target"`), Fleshbag Marauder (`who: "each-player"`), Korvold (`who: "you"`, `exceptSource: true` = "another") |
 | `sacrifice-source` | `then?` | Defense of the Heart — "Sacrifice ~. **If you do,** …"; no choice, and `then` only applies if the source was still there to sacrifice |
 | `fight` | `a`, `b`, `oneSided?` | Prey Upon / Rabid Bite |
 | `gain-control` | `target`, `untilEndOfTurn` | Act of Treason |
+
+#### Delayed triggered abilities (`delayed-trigger`)
+
+"At the beginning of the next end step, exile it" is not part of the effect
+that says it — it is a separate ability that fires later (rule 603.7). Set one
+up with a `delayed-trigger` effect:
+
+```ts
+{
+  kind: "delayed-trigger",
+  at: "next-end-step",
+  effect: { kind: "exile", target: 0 },
+  text: "Exile the creature Whip of Erebos returned.",
+}
+```
+
+`at` is one of `next-end-step`, `your-next-end-step`, `next-upkeep`,
+`your-next-upkeep`, `your-next-main-phase`. "Next" never means a step already
+in progress: an ability created *during* an end step waits for the following
+turn's.
+
+The delayed ability chooses no new targets (rule 603.7d) — it carries forward
+the targets the creating effect had, so `target: 0` inside it means the same
+object the spell or ability was already pointed at, and `"source"` still means
+the card that set it up. Neither has to still be around when it fires.
+
+`controller` (`{ controllerOfTarget: n }`) hands the ability to someone else —
+Arcane Denial's "**its controller** may draw up to two cards".
+
+For the common "create a token, then get rid of it at end of turn" shape, use
+`create-token` / `create-token-copy`'s `sacrificeAtEndStep` (Kiki-Jiki,
+Chandra, Acolyte of Flame) or `exileAtEndStep` (Miirym) instead — the delayed
+ability would have no way to name a token that didn't exist when it was set up.
 
 ### P/T, counters, keywords
 
@@ -1041,11 +1076,16 @@ different card, or extend the engine (see `ROADMAP.md`).
 
 **No vocabulary for:**
 
-- Returning a card from **another player's** graveyard, or to the library, as
-  an effect. `return-from-graveyard` covers *your own* graveyard → battlefield
-  / hand; `escape` / `flashback` / `disturb` cover self-recursion of the spell
-  itself; `StaticAbility.playFromGraveyard` (Ramunap Excavator) lets you *play*
-  matching cards from your graveyard.
+- Returning a card from **another player's** graveyard to a hand.
+  `return-from-graveyard` covers *your own* graveyard → battlefield / hand;
+  `escape` / `flashback` / `disturb` cover self-recursion of the spell itself;
+  `StaticAbility.playFromGraveyard` (Ramunap Excavator) lets you *play*
+  matching cards from your graveyard. Reaching **any** graveyard is fine for a
+  *targeted* effect — the `card-in-graveyard` target spec plus
+  `put-onto-battlefield` (Reanimate's shape) or `put-on-library`.
+  Putting a card **on top of / on the bottom of a library** is the
+  `put-on-library` effect (Academy Ruins) and `search-library`'s
+  `destination: "library-top"` (Vampiric Tutor).
 - `modify-pt` / `tap` targeting **another player** by scope, and `mill` by
   scope — `discard`/`mill` take a target-player slot (or `"you"`) but there's
   no "each opponent mills" form. (`draw` *does* now take both a `who` scope

@@ -90,8 +90,82 @@ one at a time.
    Oracle text. Chord of Calling (`{X}` + convoke) and client UI are follow-up
    work — see the table above.
 
-**Tier 1 is complete.** Work down Tier 2 opportunistically next, and treat Tier 3 as "revisit if the
-card count grows," not a queue.
+**Tier 1 is complete.**
+
+---
+
+## Tier 1b — the primitives the keyword screen missed
+
+Re-measured against a fresh top-2000 pull once the `[x]` marks were fixed
+(they had been badly stale — 111 reported, 329 real). The result overturned
+this file's Tier 2 ordering: the biggest blockers are not named keywords at
+all, they are small, unglamorous *primitives* that a keyword screen can't see
+because no keyword names them. Counting unimplemented top-2000 cards whose
+Oracle text needs each:
+
+| feature | cards blocked | status |
+| --- | --- | --- |
+| **delayed triggered abilities** (rule 603.7) | 31 | **DONE** |
+| **put a card on top of a library** | 18 | **DONE** |
+| put a card from your hand onto the battlefield | 20 | TODO — extend `choose-from-zone` to `zone: "hand"`. Growth Spiral (#234), Ghalta, Stoneforge Mystic, Last March of the Ents |
+| additional cost that isn't a sacrifice (discard / pay X life) | 11 | TODO — Toxic Deluge (#66), Thrill of Possibility, Big Score |
+| more `StaticCondition` kinds (delirium / morbid / raid / spectacle) | 10 | TODO — cheap per-condition, worth doing as one batch |
+| unbounded targeting ("any number of target …") | 11 | TODO — a real change to fixed-arity `TargetSpec[]` |
+
+For comparison, the Tier 2 keywords below block 4-9 cards each. Measure before
+picking the next one: `node scripts/top-commander-cards.mjs --count 2000 --out
+<throwaway> --cache-json <path>` gives current Oracle text for the whole list
+without touching the checked-in snapshot.
+
+### Delayed triggered abilities — DONE (31 cards unblocked)
+
+`GameState.delayedTriggers` + a `delayed-trigger` effect. A delayed ability
+belongs to no permanent, which is exactly why `detectTriggers` (a scan over
+battlefield permanents) can't see it — `enterStep` fires them instead, minting
+a stack object that carries the whole `DelayedTrigger` record because there is
+no card ability for `stackAbilityOf` to find by index.
+
+It chooses no new targets (rule 603.7d), so it carries forward the targets the
+creating effect had and refers to them by slot exactly like any other effect —
+which is what let `delayed-trigger` reuse the entire effect vocabulary for
+free. `controller: { controllerOfTarget }` hands the ability to someone else
+(Arcane Denial's "**its controller** may draw up to two cards"), which is the
+only part that needed anything new.
+
+Separately, `create-token` / `create-token-copy` gained `sacrificeAtEndStep`
+alongside the existing `exileAtEndStep`: a delayed ability can't name a token
+that didn't exist when it was set up, and "sacrifice them at the beginning of
+the next end step" is a whole family of its own (Kiki-Jiki, Chandra, The Fire
+Crystal, Voice of Victory). It reuses Encore's per-object flag.
+
+Shipped: **Whip of Erebos** (#713), **Arcane Denial** (#53), **Kiki-Jiki,
+Mirror Breaker** (#1247), and the clause Chandra, Acolyte of Flame had been
+dropping. `delayed-triggers.test.ts`.
+
+### Put a card on top of a library — DONE (18 cards unblocked)
+
+Two shapes, one primitive. `search-library`'s `destination` gained
+`"library-top"` for the tutor-to-top family, and a new `put-on-library
+{ target, position }` effect covers the targeted graveyard-to-deck lands.
+
+The ordering is the whole trick and is easy to get backwards: the find is put
+on top *after* the search's own shuffle (rule 701.19j), so `applyZoneChoice`
+deliberately skips the move in its per-card loop and places the chosen cards
+once the shuffle has run.
+
+Shipped: **Vampiric Tutor** (#113), **Enlightened Tutor** (#123), **Mystical
+Tutor** (#160), **Imperial Seal** (#526), **Academy Ruins** (#462), **Mortuary
+Mire** (#694), **Hall of Heliod's Generosity** (#422). `library-top.test.ts`.
+
+Note `card-in-graveyard` + `put-onto-battlefield` already covered targeted
+reanimation from *any* graveyard (Gravespawn Sovereign's shape) — the 36 cards
+that look blocked on it are merely unauthored, not blocked. Reanimate itself
+needs only an `EffectAmount` that reads a target's mana value.
+
+---
+
+Work down Tier 1b next, then Tier 2 opportunistically; treat Tier 3 as
+"revisit if the card count grows," not a queue.
 
 ### E1 — the first bulk-authoring pass (53 cards, no new feature needed)
 
