@@ -388,7 +388,7 @@ ability would have no way to name a token that didn't exist when it was set up.
 | `search-library` | `who?: { controllerOfTarget }` (Path to Exile — *its controller* searches), `filter`, `destination: "hand" \| "battlefield"`, `min`, `max`, `enterTapped?`, `restDestination?` | Demonic Tutor, Rampant Growth. `max` is an `EffectAmount`, so "up to X basic lands, where X is the number of tapped creatures you control" is a `countOf` (Harvest Season). `restDestination` sends every *chosen* card after the first somewhere else — Cultivate's "put one onto the battlefield tapped and the other into your hand" (distinct from `leftover`, which is about cards **not** chosen). |
 | `scry` | `amount`, `then?` | Preordain (`then: { kind: "draw", amount: 1 }`) |
 | `surveil` | `amount`, `then?` | Consider |
-| `look-and-choose` | `zone: "library" \| "graveyard" \| "hand"`, `count?`, `min`, `max`, `destination`, `leftover: "bottom-random" \| "stay" \| "hand"`, `filter?`, `enterTapped?` | Ureni of the Unwritten; Genesis Ultimatum uses `leftover: "hand"` — every non-chosen looked-at card goes to hand, regardless of `filter` (needed-cards P19). **`zone: "hand"`** is the "you may put a land card from your hand onto the battlefield" family (Growth Spiral, Ghalta, Terrain Generator): `min: 0` is the "you may", `leftover: "stay"` leaves the rest of the hand alone, and it bypasses the land-drop rule because putting a land onto the battlefield is not *playing* one. |
+| `look-and-choose` | `zone: "library" \| "graveyard" \| "hand"`, `count?`, `min`, `max`, `destination`, `leftover: "bottom-random" \| "stay" \| "hand"`, `filter?`, `enterTapped?` | Ureni of the Unwritten; Genesis Ultimatum uses `leftover: "hand"` — every non-chosen looked-at card goes to hand, regardless of `filter` (needed-cards P19). **`zone: "hand"`** is the "you may put a land card from your hand onto the battlefield" family (Growth Spiral, Ghalta, Terrain Generator): `min: 0` is the "you may", `leftover: "stay"` leaves the rest of the hand alone, and it bypasses the land-drop rule because putting a land onto the battlefield is not *playing* one. **`then`** is applied once the choice is answered, with the **chosen cards as its targets** — the only way to say anything about a card that was chosen rather than targeted (Sneak Attack's "that creature gains haste"). |
 
 ### Turn structure / cast-triggered
 
@@ -1184,10 +1184,12 @@ different card, or extend the engine (see `ROADMAP.md`).
   full "the words X become Y".
 - **Protection** is `{ colors, types }` only — not "protection from
   [full filter]" (e.g. "from Dragons", "from everything").
-- **Conditional statics / intervening-ifs** are limited to the five
-  `StaticCondition` kinds (`controls` / `opponent-controls` / `your-turn` /
-  `threshold` / `metalcraft`). Other "as long as …" / "if …" clauses aren't
-  expressible.
+- **Conditional statics / intervening-ifs** are limited to the
+  `StaticCondition` kinds the union lists (`controls` / `opponent-controls` /
+  `your-turn` / `threshold` / `delirium` / `metalcraft` / … — read the type).
+  Other "as long as …" / "if …" clauses aren't expressible; Coven (three or
+  more creatures with different powers) and Raid (you attacked this turn) are
+  the two the EDH backlog currently wants.
 - **Replacement ordering** — if two replacements would apply to one event
   there's no `choose-replacement-order`; the pool has no such case. No damage
   **redirection** to a third object (Harm's Way).

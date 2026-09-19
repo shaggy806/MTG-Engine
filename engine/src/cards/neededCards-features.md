@@ -108,8 +108,8 @@ Oracle text needs each:
 | **delayed triggered abilities** (rule 603.7) | 31 | **DONE** |
 | **put a card on top of a library** | 18 | **DONE** |
 | **put a card from your hand onto the battlefield** | 20 | **DONE** |
-| **additional cost that isn't a sacrifice** (discard / pay life) | 11 | **DONE** for fixed amounts; "pay **X** life" (Toxic Deluge #66) and "A **or** B" (Bitter Triumph #840) still open |
-| more `StaticCondition` kinds (delirium / morbid / raid / spectacle) | 10 | TODO — cheap per-condition, worth doing as one batch |
+| **additional cost that isn't a sacrifice** (discard / pay life / pay X life) | 11 | **DONE**; "A **or** B" (Bitter Triumph #840) still open |
+| more `StaticCondition` kinds | 10 | **Mostly done** — `delirium` added; morbid and threshold turned out to exist already. Coven and Raid still open, and neither has a card the rest of whose text is expressible |
 | unbounded targeting ("any number of target …") | 11 | TODO — a real change to fixed-arity `TargetSpec[]` |
 
 For comparison, the Tier 2 keywords below block 4-9 cards each. Measure before
@@ -159,11 +159,14 @@ Spoils** (#762), **Cathartic Reunion** (#1099), plus **Culling the Weak**
 (#524) and **Corrupted Conviction** (#599), whose sacrifice cost had been
 expressible all along and simply wasn't authored. `additional-costs.test.ts`.
 
-Still open, and each a different shape: **Toxic Deluge** (#66) needs a cost
-whose amount the *caster* picks ("pay X life"), which is an `{X}` paid in
-something other than mana — `maxAffordableX` is mana-only today. **Bitter
-Triumph** (#840) and **Demand Answers** (#414) need a *choice* between two
-costs. **Plumb the Forbidden** needs an optional, repeatable one.
+**`payLifeX`** then covered **Toxic Deluge** (#66): an `{X}` spell whose mana
+cost contains no `{X}` at all. `xCost.maxX` becomes the caster's life total
+rather than what their lands can pay, and `ctx.x` reads the chosen value like
+any other X — so the only genuinely new part was where the ceiling comes from.
+
+Still open, and each a different shape: **Bitter Triumph** (#840) and **Demand
+Answers** (#414) need a *choice* between two costs; **Plumb the Forbidden**
+needs an optional, repeatable one.
 
 ### Put a card from your hand onto the battlefield — DONE (20 cards unblocked)
 
@@ -178,12 +181,16 @@ Shipped: **Growth Spiral** (#234), **Ghalta, Stampede Tyrant** (#1072),
 **Terrain Generator** (#1887), **Eureka Moment** (#1992).
 `put-from-hand.test.ts`.
 
-**Sneak Attack** (#1498) and **Last March of the Ents** (#980) stay blocked,
-on the same thing: the *chosen* card isn't a target, so nothing downstream can
-say "that creature gains haste" or "sacrifice it at the next end step" about
-it. A `then` on `look-and-choose`, applied against whatever was chosen, is the
-missing piece and would unblock both plus Spelunking and Kodama of the East
-Tree.
+That missing piece — a `then` on `look-and-choose`, applied with the *chosen*
+cards as its targets — is now built, along with a `sacrifice-target` effect
+for naming one permanent rather than raising an edict. Together with delayed
+triggers they make **Sneak Attack** (#1498) exact: put a creature from hand
+onto the battlefield, give *that* creature haste, sacrifice *it* at the next
+end step. Three features that were each useless alone.
+
+**Last March of the Ents** (#980) still needs an `EffectAmount` for "the
+greatest toughness among creatures you control" (a max, not a count), and
+**Spelunking** a replacement making your lands enter untapped.
 
 ### Put a card on top of a library — DONE (18 cards unblocked)
 
