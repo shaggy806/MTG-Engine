@@ -124,7 +124,7 @@ describe("Magmaquake — X damage to each non-flying creature and each planeswal
   });
 });
 
-describe("Finale of Devastation — tutors a creature onto the battlefield, Ferocious reduces its cost", () => {
+describe("Finale of Devastation — tutors a creature onto the battlefield", () => {
   it("finds a creature with mana value X or less and puts it onto the battlefield", () => {
     const { game, a } = mkGame(
       ["Finale of Devastation", ...Array(6).fill("Plains")],
@@ -155,24 +155,25 @@ describe("Finale of Devastation — tutors a creature onto the battlefield, Fero
     ).toBe(false);
   });
 
-  it("costs {2} less with a power-4+ creature already in play (Ferocious)", () => {
-    const { game } = mkGame(["Finale of Devastation"], ["Grizzly Bears"]);
+  it("at X of 10 or more, creatures you control get +X/+X and gain haste", () => {
+    const { game, a } = mkGame(["Finale of Devastation", ...Array(6).fill("Plains")], ["Plains"]);
     game.advanceUntil(toPrecombat);
-    game.debugSpawn("Craw Wurm", A, "battlefield"); // 6/4
-    for (let i = 0; i < 2; i += 1) game.debugSpawn("Forest", A, "battlefield");
+    for (let i = 0; i < 12; i += 1) game.debugSpawn("Forest", A, "battlefield");
+    const bear = game.debugSpawn("Grizzly Bears", A, "battlefield");
+    a.chooseFromZoneFn = (_v, eligible, _min, max) => eligible.slice(0, max);
 
-    // {X}{G}{G} with X=1 costs 1 generic + {G}{G} = 3 mana normally — only 2
-    // Forests are in play, so this only goes through with Ferocious's {2} off.
-    const card = named(game, game.handOf(A), "Finale of Devastation");
     game.dispatch({
       type: "cast-spell",
       player: A,
-      card,
+      card: named(game, game.handOf(A), "Finale of Devastation"),
       targets: [],
-      xValue: 1,
+      xValue: 10,
     });
     game.advanceUntil(quiet);
 
-    expect(game.handOf(A)).not.toContain(card);
+    const c = computeCharacteristics(game.state, game.registry, bear);
+    expect([c.power, c.toughness]).toEqual([12, 12]);
+    expect(c.keywords).toContain("haste");
   });
+
 });

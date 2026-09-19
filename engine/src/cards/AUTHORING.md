@@ -968,7 +968,7 @@ activated: [{
 **A whole land/rock cycle** — `cards/helpers.ts` has a one-line constructor for
 each of the big repeating shapes, and a new member of a cycle should use it
 rather than being spelled out: `shockLand`, `fetchLand`, `checkLandStatic`,
-`enterTappedUnlessLands`, `painLand`, `trikeland`, `talisman` (a pain land's
+`enterTappedUnlessLands`, `painLand`, `sacrificeFetchLand`, `talisman` (a pain land's
 ability set on a `{2}` artifact), `signet` (a `{2}` artifact with "{1}, {T}:
 Add [two colours]" — see the converter note in §15), `tapLand` (enters tapped,
 taps for two colours — Timber Gorge; pass `true` for the gain-1-life variant,

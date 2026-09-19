@@ -6419,8 +6419,15 @@ export class Game {
     }
 
     if (this.isPermanentSpell(def)) {
+      const escapedWith = object.castVia === "escape" ? def.escape?.counters : undefined;
       this.moveObject(id, "battlefield");
       object.targets = null;
+      // "This creature escapes with a +1/+1 counter on it" — before the
+      // enters-battlefield event, so an ETB trigger reads the counter the
+      // permanent genuinely arrived with (rule 614.1c).
+      if (escapedWith !== undefined && this.state.objects[id]?.zone === "battlefield") {
+        this.addCounter({ kind: "object", object: id }, escapedWith.kind, escapedWith.amount);
+      }
       this.emit({ type: "permanent-entered-battlefield", object: id });
       if (def.subtypes.includes("Aura")) {
         const enchantTarget = targets[0];

@@ -257,12 +257,11 @@ describe("fixed multi-color mana sources (P0)", () => {
     expect(game.state.players[A].life).toBe(life0);
   });
 
-  it("a trikeland pays for any of its three colors, 1 life each", () => {
+  it("a pay-life mana source funds any colour, 1 life each", () => {
     const game = makeGame([]);
-    const id = game.debugSpawn("Riveteers Overlook", A); // {B}/{R}/{G}, Pay 1 life
+    const id = game.debugSpawn("Mana Confluence", A); // any colour, Pay 1 life
     game.state.objects[id]!.tapped = false;
-    for (const c of ["{B}", "{R}", "{G}"]) expect(canPay(game, c)).toBe(true);
-    expect(canPay(game, "{W}")).toBe(false);
+    for (const c of ["{W}", "{U}", "{B}", "{R}", "{G}"]) expect(canPay(game, c)).toBe(true);
 
     const life0 = game.state.players[A].life;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

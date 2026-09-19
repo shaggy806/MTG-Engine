@@ -12,10 +12,13 @@ export default defineCard({
   manaCost: "{2}{R}",
   colors: ["R"],
   types: ["enchantment"],
-  text: "{3}{R}{R}: Untap all creatures you control. After this main phase, there is an additional combat phase followed by an additional main phase.",
+  text:
+    "{3}{R}{R}: Untap all creatures you control. After this main phase, there is an " +
+    "additional combat phase followed by an additional main phase. Activate only as a sorcery.",
   activated: [
     {
       cost: { mana: "{3}{R}{R}", tap: false },
+      sorcerySpeed: true,
       targets: [],
       effect: {
         kind: "sequence",
@@ -25,7 +28,9 @@ export default defineCard({
         ],
       },
       resolve: null,
-      text: "{3}{R}{R}: Untap all creatures you control. Additional combat phase after this main phase.",
+      text:
+        "{3}{R}{R}: Untap all creatures you control. Additional combat phase after this " +
+        "main phase. Activate only as a sorcery.",
     },
   ],
 });

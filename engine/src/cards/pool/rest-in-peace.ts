@@ -5,14 +5,23 @@ export default defineCard({
   manaCost: "{1}{W}",
   colors: ["W"],
   types: ["enchantment"],
-  // The printed card also exiles all cards already in graveyards as it enters;
-  // that mass-exile clause waits on Phase 2's effect scopes.
-  text: "If a card would be put into a graveyard from anywhere, exile it instead.",
+  text:
+    "When Rest in Peace enters, exile all graveyards.\n" +
+    "If a card or token would be put into a graveyard from anywhere, exile it instead.",
+  triggered: [
+    {
+      trigger: { on: "enters-battlefield", who: "self" },
+      targets: [],
+      effect: { kind: "exile-graveyard", target: "each-player" },
+      resolve: null,
+      text: "When Rest in Peace enters, exile all graveyards.",
+    },
+  ],
   static: [
     {
       affects: { scope: "self" },
       replacement: { event: "would-be-put-into-graveyard", instead: "exile" },
-      text: "If a card would be put into a graveyard from anywhere, exile it instead.",
+      text: "If a card or token would be put into a graveyard from anywhere, exile it instead.",
     },
   ],
 });

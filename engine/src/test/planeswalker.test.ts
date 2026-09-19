@@ -184,22 +184,49 @@ describe("loyalty abilities", () => {
     ).toBe(false);
   });
 
-  it("Chandra's [+0] deals 2 damage to any target", () => {
+  it("Chandra's [0] puts a loyalty counter on each red planeswalker you control", () => {
     const { game } = makeGame();
     game.advanceUntil(toPrecombat);
     const chandra = spawn(game, "Chandra, Acolyte of Flame", A, { counters: { loyalty: 4 } });
-    const bear = spawn(game, "Grizzly Bears", B);
-    const plusZero = loyaltyAbility(game, chandra, 0);
+    // A green planeswalker of yours and a red one an opponent controls are
+    // both outside "each red planeswalker you control".
+    const garruk = spawn(game, "Garruk Wildspeaker", A, { counters: { loyalty: 3 } });
+    const theirs = spawn(game, "Chandra, Acolyte of Flame", B, { counters: { loyalty: 4 } });
+
+    // Index 0 is the ability itself; both of Chandra's cost 0 loyalty, so
+    // `loyaltyAbility(…, 0)` can't tell them apart.
     game.dispatch({
       type: "activate-ability",
       player: A,
       source: chandra,
-      abilityIndex: plusZero.kind === "activate-ability" ? plusZero.abilityIndex : 0,
-      targets: [{ kind: "object", object: bear }],
+      abilityIndex: 0,
+      targets: [],
     });
     game.advanceUntil(settled);
-    expect(game.state.objects[chandra].counters.loyalty).toBe(4);
-    expect(game.state.objects[bear].zone).toBe("graveyard");
+
+    // She pays 0 and is herself a red planeswalker you control, so she nets +1.
+    expect(game.state.objects[chandra].counters.loyalty).toBe(5);
+    expect(game.state.objects[garruk].counters.loyalty).toBe(3);
+    expect(game.state.objects[theirs].counters.loyalty).toBe(4);
+  });
+
+  it("Chandra's other [0] makes two hasty Elementals", () => {
+    const { game } = makeGame();
+    game.advanceUntil(toPrecombat);
+    const chandra = spawn(game, "Chandra, Acolyte of Flame", A, { counters: { loyalty: 4 } });
+    game.dispatch({
+      type: "activate-ability",
+      player: A,
+      source: chandra,
+      abilityIndex: 1,
+      targets: [],
+    });
+    game.advanceUntil(settled);
+
+    const tokens = game.battlefield.filter(
+      (id) => game.state.objects[id].cardName === "Elemental Token",
+    );
+    expect(tokens).toHaveLength(2);
   });
 });
 

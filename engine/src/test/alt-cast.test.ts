@@ -263,14 +263,14 @@ describe("Escape — Underworld Rage-Hound", () => {
     game.state.zones.perPlayer[A].graveyard.push(id);
   };
 
-  it("casts from the graveyard for the escape cost, exiling two other cards", () => {
+  it("casts from the graveyard for the escape cost, exiling three other cards", () => {
     const game = mkGame(["Underworld Rage-Hound"]);
     game.advanceUntil(atFirstMain);
-    playN(game, "Mountain", 3);
+    playN(game, "Mountain", 4);
     const rage = cardNamed(game, game.handOf(A), "Underworld Rage-Hound");
     const fillers = [...game.handOf(A)]
       .filter((i) => game.state.objects[i].cardName === "Mountain")
-      .slice(0, 2);
+      .slice(0, 3);
 
     // No escape yet — nothing in the graveyard.
     toGraveyard(game, rage);
@@ -287,5 +287,7 @@ describe("Escape — Underworld Rage-Hound", () => {
     expect(game.eventsOfType("escape-cost-paid").some((e) => e.object === rage)).toBe(true);
     expect(game.state.objects[rage].zone).toBe("battlefield");
     for (const id of fillers) expect(game.state.zones.shared.exile).toContain(id);
+    // "This creature escapes with a +1/+1 counter on it."
+    expect(game.state.objects[rage].counters["+1/+1"]).toBe(1);
   });
 });

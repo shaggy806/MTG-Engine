@@ -422,10 +422,11 @@ export type EffectSpec =
     }
   | {
       /** Exile every card in a target *player's* graveyard (rule 406 — Bojuka
-       * Bog). `target` is a target-slot index holding a player, or `"you"` for
-       * the effect's own controller with no slot. needed-cards P8. */
+       * Bog). `target` is a target-slot index holding a player, `"you"` for
+       * the effect's own controller with no slot, or `"each-player"` for every
+       * graveyard at once (Rest in Peace). needed-cards P8. */
       readonly kind: "exile-graveyard";
-      readonly target: number | "you";
+      readonly target: number | "you" | "each-player";
     }
   | {
       /** Exile a target permanent, then immediately return it to the
@@ -1628,6 +1629,12 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       return;
     }
     case "exile-graveyard": {
+      if (spec.target === "each-player") {
+        for (const player of ctx.playersInScope("each-player")) {
+          ctx.exileGraveyard({ kind: "player", player });
+        }
+        return;
+      }
       const target =
         spec.target === "you"
           ? ({ kind: "player", player: ctx.controller } as const)

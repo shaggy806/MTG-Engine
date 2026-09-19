@@ -249,31 +249,6 @@ export const enterTappedUnlessLands = (
 });
 
 /**
- * A "tri-land pain land" (the SNC "-Courtyard" / "-Overlook" cycle): enters
- * tapped, "{T}, Pay 1 life: Add one of three colours". Each colour is a
- * mana ability with a `payLife: 1` cost (auto-paid by the mana planner).
- */
-export const trikeland = (
-  name: string,
-  colors: readonly [Color, Color, Color],
-): CardDefinition =>
-  defineCard({
-    name,
-    types: ["land"],
-    text:
-      `${name} enters the battlefield tapped.\n` +
-      `{T}, Pay 1 life: Add {${colors[0]}}, {${colors[1]}}, or {${colors[2]}}.`,
-    static: [entersTappedStatic(name)],
-    activated: colors.map((c) => ({
-      cost: { mana: null, tap: true, payLife: 1 },
-      targets: [],
-      effect: { kind: "add-mana" as const, mana: c, amount: 1 },
-      resolve: null,
-      text: `{T}, Pay 1 life: Add {${c}}.`,
-    })),
-  });
-
-/**
  * A "{T}, Pay 1 life, Sacrifice ~: Search your library for a [type-A] or
  * [type-B] card, put it onto the battlefield, then shuffle" fetch land
  * (Wooded Foothills, Bloodstained Mire, Verdant Catacombs).
@@ -299,6 +274,61 @@ export const fetchLand = (
           destination: "battlefield",
           min: 0,
           max: 1,
+        },
+        resolve: null,
+        text,
+      },
+    ],
+  });
+};
+
+/**
+ * The Streets-of-New-Capenna tri-land fetch cycle (Cabaretti Courtyard,
+ * Riveteers Overlook, …): "When this land enters, sacrifice it. When you do,
+ * search your library for a basic [A], [B], or [C] card, put it onto the
+ * battlefield tapped, then shuffle and you gain 1 life."
+ *
+ * Unlike {@link fetchLand} it is a *trigger*, not an activated ability — the
+ * land never taps for mana itself and never sits on the battlefield, so it has
+ * no mana abilities at all. The "when you do" reflexive trigger is the
+ * `sacrifice-source` effect's `then`, which only runs if the sacrifice
+ * actually happened.
+ */
+export const sacrificeFetchLand = (
+  name: string,
+  landTypes: readonly [string, string, string],
+): CardDefinition => {
+  const text =
+    `When ${name} enters, sacrifice it. When you do, search your library for a basic ` +
+    `${landTypes[0]}, ${landTypes[1]}, or ${landTypes[2]} card, put it onto the ` +
+    `battlefield tapped, then shuffle and you gain 1 life.`;
+  return defineCard({
+    name,
+    types: ["land"],
+    text,
+    triggered: [
+      {
+        trigger: { on: "enters-battlefield", who: "self" },
+        targets: [],
+        effect: {
+          kind: "sacrifice-source",
+          then: {
+            kind: "sequence",
+            effects: [
+              {
+                kind: "search-library",
+                filter: { type: "land", supertype: "basic", subtypes: landTypes },
+                destination: "battlefield",
+                // "Search … for a basic land card" is mandatory on the printed
+                // card, but a whiff has to be legal, and `min: 0` is how the
+                // engine expresses "take one if there is one".
+                min: 0,
+                max: 1,
+                enterTapped: true,
+              },
+              { kind: "gain-life", amount: 1 },
+            ],
+          },
         },
         resolve: null,
         text,
