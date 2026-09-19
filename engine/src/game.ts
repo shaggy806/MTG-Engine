@@ -183,6 +183,29 @@ interface TriggeredGrantSource {
  * `[R,R,G]`, `[R,G,G]`, `[G,G,G]`. Small by construction (a handful of
  * colours, a handful of mana), so no need to worry about blowup. needed-cards
  * P20 — `add-mana`'s `{ oneOf }` mana form. */
+/**
+ * The distinct outputs of activating `ability` on its own, when it's a mana
+ * ability whose colour isn't fixed — `null` for every other ability, which is
+ * the overwhelmingly common case.
+ *
+ * "Any combination of" (a short `oneOf` list) is enumerated exhaustively. "One
+ * mana of any color" is enumerated as one option *per colour*, all `amount`
+ * units the same: that's exactly right for the "N mana of any one color"
+ * cards, and it keeps a five-colour source from producing 126 menu entries for
+ * a rider nothing prints.
+ */
+function standaloneManaChoices(ability: ActivatedAbility): ManaType[][] | null {
+  const effect = ability.effect;
+  if (effect === null || effect.kind !== "add-mana") return null;
+  if (typeof effect.amount !== "number" || effect.amount < 1) return null;
+  const mana = effect.mana;
+  if (mana === "any-color") {
+    return COLORS.map((c) => Array<ManaType>(effect.amount as number).fill(c));
+  }
+  if (typeof mana === "object") return manaCombinations(mana.oneOf, effect.amount);
+  return null;
+}
+
 function manaCombinations(colors: readonly ManaType[], amount: number): ManaType[][] {
   if (amount === 0) return [[]];
   const [first, ...rest] = colors;
@@ -514,6 +537,7 @@ export class Game {
           normalizeTargets(action.targets),
           action.sacrifice,
           action.xValue ?? 0,
+          action.manaColors,
         );
         break;
       case "declare-attackers":
@@ -1047,6 +1071,7 @@ export class Game {
       cardName: string,
       ability: ActivatedAbility,
       index: number,
+      manaColors?: readonly ManaType[],
     ): void => {
       if (this.whyCannotActivateAbility(player, source, index) !== null) return;
       out.push({
@@ -1054,7 +1079,11 @@ export class Game {
         source,
         abilityIndex: index,
         cardName,
-        text: ability.text,
+        text:
+          manaColors === undefined
+            ? ability.text
+            : `${ability.text} (add ${manaColors.map((m) => `{${m}}`).join("")})`,
+        ...(manaColors !== undefined ? { manaColors } : {}),
         targetSpecs: ability.targets,
         targetOptions: this.targetOptionsFor(
           ability.targets,
@@ -1088,9 +1117,21 @@ export class Game {
     for (const source of this.state.zones.shared.battlefield) {
       const object = this.state.objects[source];
       if (object.controller !== player) continue;
-      this.effectiveActivated(source, abilityGrantors).forEach((ability, index) =>
-        pushActivateAbility(source, printedCardName(object), ability, index),
-      );
+      this.effectiveActivated(source, abilityGrantors).forEach((ability, index) => {
+        // "Add one mana of any color" (Command Tower) is one ability with
+        // several outcomes; enumerate it once per outcome so activating it on
+        // its own is a real choice rather than whatever the engine's default
+        // happened to be. Paying a *cost* never comes through here — the mana
+        // planner picks the colour it needs (see `manaSources`).
+        const choices = standaloneManaChoices(ability);
+        if (choices === null) {
+          pushActivateAbility(source, printedCardName(object), ability, index);
+          return;
+        }
+        for (const choice of choices) {
+          pushActivateAbility(source, printedCardName(object), ability, index, choice);
+        }
+      });
     }
 
     // Abilities activated from a zone other than the battlefield: Channel
@@ -5336,6 +5377,7 @@ export class Game {
     targets: ResolvedTargets,
     sacrifice?: ObjectId,
     xValue = 0,
+    manaColors?: readonly ManaType[],
   ): void {
     const why = this.whyCannotActivateAbility(player, sourceId, abilityIndex);
     if (why !== null) throw new Error(why);
@@ -5482,7 +5524,28 @@ export class Game {
 
     if (isManaAbility(ability)) {
       // Mana abilities resolve immediately and never use the stack.
-      const context = this.makeResolutionContext(sourceId, player, [], chosenX);
+      const base = this.makeResolutionContext(sourceId, player, [], chosenX);
+      // The colour(s) the activating player picked for an "any color" / "any
+      // combination of" ability — see `standaloneManaChoices`. Only the
+      // unfixed part of the output is redirected, so a source that makes a
+      // concrete mana alongside a choice still makes its concrete mana.
+      const context =
+        manaColors === undefined
+          ? base
+          : {
+              ...base,
+              addMana: (
+                p: PlayerId,
+                mana: ManaType | "any-color" | { readonly oneOf: readonly ManaType[] },
+                amount: number,
+              ): void => {
+                if (mana !== "any-color" && typeof mana !== "object") {
+                  base.addMana(p, mana, amount);
+                  return;
+                }
+                for (const type of manaColors) base.addMana(p, type, 1);
+              },
+            };
       if (ability.effect !== null) applyEffectSpec(ability.effect, context);
       this.emit({
         type: "ability-activated",

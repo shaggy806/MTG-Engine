@@ -1,0 +1,93 @@
+/**
+ * Activating an "add one mana of any color" ability on its own (Command
+ * Tower). Paying a *cost* never comes through here — the mana planner picks
+ * the colour it needs — but a player tapping the land by hand used to get
+ * white whatever they wanted.
+ */
+import { describe, expect, it } from "vitest";
+
+import { Game } from "../game.js";
+import { asPlayerId } from "../primitives.js";
+import type { ManaType } from "../mana.js";
+import type { GameState } from "../state.js";
+
+const A = asPlayerId("alice");
+const B = asPlayerId("bob");
+
+const mkGame = () =>
+  Game.create({
+    seed: 1,
+    shuffle: false,
+    rules: { skipFirstDraw: false, maxLandsPerTurn: 99 },
+    decks: [
+      { player: A, cards: Array(40).fill("Forest") },
+      { player: B, cards: Array(40).fill("Forest") },
+    ],
+  });
+
+const atMain = (s: GameState): boolean =>
+  s.turn.step === "precombat-main" && s.priority.holder === A;
+
+describe("choosing the colour of an 'any color' mana ability", () => {
+  it("offers Command Tower once per colour", () => {
+    const game = mkGame();
+    game.advanceUntil(atMain);
+    const tower = game.debugSpawn("Command Tower", A, "battlefield");
+
+    const options = game
+      .legalActions(A)
+      .filter((a) => a.kind === "activate-ability" && a.source === tower);
+    expect(options).toHaveLength(5);
+    expect(
+      options.map((a) => (a.kind === "activate-ability" ? a.manaColors : undefined)),
+    ).toEqual([["W"], ["U"], ["B"], ["R"], ["G"]]);
+  });
+
+  it("adds the colour that was chosen, not white", () => {
+    for (const color of ["U", "B", "R", "G"] as const satisfies readonly ManaType[]) {
+      const game = mkGame();
+      game.advanceUntil(atMain);
+      const tower = game.debugSpawn("Command Tower", A, "battlefield");
+
+      game.dispatch({
+        type: "activate-ability",
+        player: A,
+        source: tower,
+        abilityIndex: 0,
+        targets: [],
+        manaColors: [color],
+      });
+
+      expect(game.state.players[A].manaPool[color]).toBe(1);
+      expect(game.state.players[A].manaPool.W).toBe(0);
+    }
+  });
+
+  it("still defaults when no colour is named — a driver that doesn't ask", () => {
+    const game = mkGame();
+    game.advanceUntil(atMain);
+    const tower = game.debugSpawn("Command Tower", A, "battlefield");
+
+    game.dispatch({
+      type: "activate-ability",
+      player: A,
+      source: tower,
+      abilityIndex: 0,
+      targets: [],
+    });
+
+    expect(game.state.players[A].manaPool.W).toBe(1);
+  });
+
+  it("leaves a fixed-colour ability alone — one option, no colour list", () => {
+    const game = mkGame();
+    game.advanceUntil(atMain);
+    const forest = game.debugSpawn("Forest", A, "battlefield");
+
+    const options = game
+      .legalActions(A)
+      .filter((a) => a.kind === "activate-ability" && a.source === forest);
+    expect(options).toHaveLength(1);
+    expect(options[0].kind === "activate-ability" && options[0].manaColors).toBeUndefined();
+  });
+});

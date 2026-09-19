@@ -6,7 +6,7 @@
  * the engine through the same entry point.
  */
 
-import type { Color } from "./mana.js";
+import type { Color, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { TargetRef, TargetSpec } from "./target.js";
 
@@ -150,6 +150,13 @@ export type Action =
        * ignored otherwise. Folded into the generic portion when paid and
        * stamped on the ability object so `ctx.x` reads it. */
       readonly xValue?: number;
+      /** The colour(s) chosen for a mana ability that produces "one mana of
+       * any color" / "N mana in any combination of …" — one entry per mana
+       * produced. Only meaningful when activating such an ability on its own;
+       * a mana ability activated *to pay a cost* is planned by the engine and
+       * never carries this. Omitting it keeps the old fixed default (white, or
+       * the first listed colour). */
+      readonly manaColors?: readonly ManaType[];
     }
   | {
       readonly type: "declare-attackers";
@@ -438,6 +445,12 @@ export type LegalAction =
        * Citanul Hierophants' "{T}: Add {G}" on every creature included, which
        * a lookup of the source's printed abilities can't see. */
       readonly manaAbility?: true;
+      /** The mana this variant of an "any color" / "any combination" mana
+       * ability would produce — see the `activate-ability` action's
+       * `manaColors`. Such an ability is enumerated once per choice, so a
+       * client can offer them as separate menu entries; absent for an ability
+       * whose output is fixed. */
+      readonly manaColors?: readonly ManaType[];
       /** Set when the ability's cost contains `{X}` (ROADMAP Phase 11 EG-3).
        * `maxX` is the largest value of X this player could currently pay for
        * (0 when only X=0 is affordable). The driver must include `xValue` in

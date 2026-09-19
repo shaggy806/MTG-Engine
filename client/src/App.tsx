@@ -3,6 +3,7 @@ import type { CSSProperties, ReactNode } from 'react'
 import type {
   CastVia,
   LegalAction,
+  ManaType,
   ObjectId,
   PlayerId,
   PlayerView,
@@ -160,6 +161,9 @@ interface Targeting {
   /** Casting this for free under a `CardDefinition.freeCastIf` permission
    * instead of paying the mana cost. Targets are unchanged. */
   readonly free?: boolean
+  /** The colour(s) picked for an "add one mana of any color" ability. The
+   * engine lists one action per colour, so this just echoes which one. */
+  readonly manaColors?: readonly ManaType[]
 }
 
 /**
@@ -749,6 +753,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         | 'kicked'
         | 'overload'
         | 'free'
+        | 'manaColors'
       >,
       targets: readonly (TargetRef | null)[],
     ) => {
@@ -778,6 +783,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
                 targets: [...targets],
                 ...(t.sacrifice !== undefined ? { sacrifice: t.sacrifice } : {}),
                 ...(t.xValue !== undefined ? { xValue: t.xValue } : {}),
+                ...(t.manaColors !== undefined ? { manaColors: t.manaColors } : {}),
               },
       )
     },
@@ -917,6 +923,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         specs: ab.targetSpecs,
         options: ab.targetOptions,
         ...(sacrifice !== undefined ? { sacrifice } : {}),
+        ...(ab.manaColors !== undefined ? { manaColors: ab.manaColors } : {}),
       })
     },
     [beginTargeting],
@@ -2632,7 +2639,10 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           source={selectedSource}
           title={game.nameOf(selectedSource)}
           items={selectedAbilities.map((ab) => ({
-            key: String(ab.abilityIndex),
+            // An "add one mana of any color" ability is listed once per
+            // colour, all sharing an index -- the colours are what tell them
+            // apart, so they belong in the key too.
+            key: `${ab.abilityIndex}:${ab.manaColors?.join('') ?? ''}`,
             label: ab.text || `Ability ${ab.abilityIndex + 1}`,
             onSelect: () => {
               setSelectedSource(null)
