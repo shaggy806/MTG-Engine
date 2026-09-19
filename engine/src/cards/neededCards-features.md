@@ -110,7 +110,7 @@ Oracle text needs each:
 | **put a card from your hand onto the battlefield** | 20 | **DONE** |
 | **additional cost that isn't a sacrifice** (discard / pay life / pay X life) | 11 | **DONE**; "A **or** B" (Bitter Triumph #840) still open |
 | more `StaticCondition` kinds | 10 | **Mostly done** — `delirium` added; morbid and threshold turned out to exist already. Coven and Raid still open, and neither has a card the rest of whose text is expressible |
-| unbounded targeting ("any number of target …") | 11 | TODO — a real change to fixed-arity `TargetSpec[]` |
+| unbounded targeting ("any number of target …") | 11 | **Deliberately deferred** — see below |
 
 For comparison, the Tier 2 keywords below block 4-9 cards each. Measure before
 picking the next one: `node scripts/top-commander-cards.mjs --count 2000 --out
@@ -141,6 +141,61 @@ Crystal, Voice of Victory). It reuses Encore's per-object flag.
 Shipped: **Whip of Erebos** (#713), **Arcane Denial** (#53), **Kiki-Jiki,
 Mirror Breaker** (#1247), and the clause Chandra, Acolyte of Flame had been
 dropping. `delayed-triggers.test.ts`.
+
+### Unbounded targeting — scoped, and deliberately not built
+
+The headline count is misleading. Of the 11 cards, only four are unblocked by
+variable-arity targeting *alone* — Mindbreak Trap (#544), Eerie Interlude
+(#971), Priest of Forgotten Gods (#1396), Deepglow Skate (#1829). The rest are
+blocked on something else regardless: phasing (Clever Concealment), a d20 roll
+(Ancient Brass Dragon), Strive (Twinflame, Call the Coppercoats), divided
+damage (Shatterskull Smashing), or a constraint *relating chosen cards to each
+other* (Agadeem's Awakening — explicitly unsupported, see the limitations list).
+
+Against that, it is the most invasive change available. Every effect addresses
+targets by fixed slot index (`target: 0`), `ResolvedTargets` is a flat array
+with one entry per declared spec, and `effectiveTargetSpecs` is re-derived **at
+resolution** for the fizzle check — so a slot count that depends on the board
+would desynchronise between cast and resolution, which is precisely when the
+board has changed. Expanding "any number" into N optional slots at enumeration
+time has the same problem from the other end.
+
+Four cards is not worth that. Revisit if the count grows, or alongside Strive
+(which needs a per-target cost and would want the same machinery).
+
+The same effort instead bought twelve cards, six of them in the top 80 — see
+below.
+
+### The top-80 cluster — DONE
+
+Measured after the marks were fixed, by reading the highest-ranked
+unimplemented cards rather than bucketing by keyword. Three needed **no engine
+work at all**, which is the recurring lesson of this whole exercise:
+
+- **Reliquary Tower** (#10) — `noMaxHandSize` shipped with Thought Vessel.
+- **Reanimate** (#54) — `manaValueOf` already reads a target's printed mana
+  value as last-known information, which is exactly what "lose life equal to
+  that card's mana value" needs after the card has moved.
+- **Rhystic Study** (#44) — the `unless` punisher effect and its
+  `chooser: "trigger-controller"` already existed; a `cast-spell` trigger
+  carries the spell, whose controller is the caster.
+
+Three small features covered the rest:
+
+- **`add-mana`'s `{ producedBy: "opponents-lands" }`** — a `oneOf` whose list
+  is read off the board rather than printed, resolved in all three places a
+  mana spec is read (the payment planner, the standalone-activation menu, and
+  `addMana`). **Exotic Orchard** (#9), **Fellwar Stone** (#17).
+- **`look-and-choose` destination `"library-top"`** — **Brainstorm** (#72).
+- **A `enchantment-instant-or-sorcery-spell` target spec** — **Swan Song**
+  (#68), plus a 2/2 blue Bird token, since the existing Bird is a 1/1 white one.
+
+**Urborg, Tomb of Yawgmoth** (#73) and **Yavimaya, Cradle of Growth** (#77)
+were scoped and dropped: "each land is a Swamp" needs a *static from another
+permanent* to add a subtype, but `effectiveSubtypes` is deliberately given no
+`GameState` so that `staticAffects` can call it without recursing. Making land
+subtypes board-dependent touches check-lands, `landProduces` and every
+`subtype` filter clause. Real work, not a quick win.
 
 ### Additional costs beyond a sacrifice — DONE for fixed amounts
 

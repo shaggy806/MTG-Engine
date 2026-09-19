@@ -259,16 +259,22 @@ describe("evaluateDecklist", () => {
   });
 
   it("looks up an unimplemented card on Scryfall and reports it as not implemented", async () => {
+    // A deliberately fictional name. The Scryfall response is stubbed, so the
+    // name only has to be one the registry lacks — and naming a *real* card
+    // here is a time bomb: this test used to say "Fellwar Stone" and broke the
+    // day it was authored. The pool is real-cards-only, so a made-up name can
+    // never become implemented.
+    const MISSING = "Nonexistent Mana Rock";
     stubCollection({
-      "Fellwar Stone": {
-        name: "Fellwar Stone",
+      [MISSING]: {
+        name: MISSING,
         mana_cost: "{2}",
         type_line: "Artifact",
         oracle_text: "{T}: Add one mana of any color that a land you control could produce.",
       },
     });
 
-    const [result] = await evaluateDecklist([{ name: "Fellwar Stone", count: 1 }], registry);
+    const [result] = await evaluateDecklist([{ name: MISSING, count: 1 }], registry);
 
     expect(result.implemented).toBe(false);
     expect(result.found).toBe(true);
