@@ -57,6 +57,7 @@ import {
 } from "./effects.js";
 import type {
   EffectSpec,
+  FlickerCounters,
   UnlessOption,
   ModeOption,
   PlayerScope,
@@ -360,6 +361,7 @@ export class Game {
       pendingTargetedCast: null,
       pendingSuspendedCasts: [],
       deferredCommanderMove: null,
+      pendingFlickerReturn: null,
       pendingDestruction: [],
       pendingSacrifices: [],
       pendingSacrificeVictims: [],
@@ -1879,6 +1881,18 @@ export class Game {
       toCommandZone,
       from: intendedZone,
     });
+
+    // A blink (Essence Flux) whose exile half raised this choice: finish it if
+    // the card really did end up in exile. Choosing the command zone instead
+    // takes the card somewhere the blink can't reach, so it just stays there.
+    const blink = this.state.pendingFlickerReturn;
+    if (blink !== null && blink.object === commander) {
+      this.state.pendingFlickerReturn = null;
+      if (this.state.objects[commander]?.zone === "exile") {
+        this.emit({ type: "permanent-exiled", object: commander });
+        this.completeFlickerReturn(commander, blink.counters);
+      }
+    }
 
     this.prepareForPriority(this.activePlayer);
   }
@@ -7199,7 +7213,7 @@ export class Game {
           this.moveObject(id, "exile");
         }
       },
-      flicker: (target) => this.flickerByEffect(target),
+      flicker: (target, thenCounters) => this.flickerByEffect(target, thenCounters),
       grantFlashback: (target) => this.grantFlashbackByEffect(target),
       fight: (a, b, oneSided) => this.fightCreatures(a, b, oneSided),
       counterSpell: (target) => this.counterSpellByEffect(target),
@@ -9046,27 +9060,59 @@ export class Game {
   /** "Blink": exile a permanent, then immediately return it to the
    * battlefield under its owner's control (rule 400.7 — needed-cards P9). A
    * token exiled this way ceases to exist (rule 111.7) and is never brought
-   * back; a commander's 903.9a command-zone choice, raised as it leaves,
-   * takes priority over the return. */
-  private flickerByEffect(target: TargetRef): void {
+   * back.
+   *
+   * A commander's 903.9a choice is raised by the exile half and has to be
+   * answered first; the return is parked in `pendingFlickerReturn` and
+   * finished by `applyCommanderChoice` — declining the command zone leaves
+   * the card in exile, which is exactly where the blink expects to find it.
+   */
+  private flickerByEffect(target: TargetRef, thenCounters?: FlickerCounters): void {
     if (target.kind !== "object") return;
     const id = this.splitOneFromStack(target.object);
     const object = this.state.objects[id];
     if (object === undefined || object.zone !== "battlefield") return;
     const isToken = object.isToken;
     this.moveObject(id, "exile");
-    if (this.state.awaiting !== null) return;
+    if (this.state.awaiting !== null) {
+      // A commander's 903.9a choice (the only way `moveObject` defers here).
+      // A token never gets one — it ceases to exist — so nothing to park.
+      if (!isToken) {
+        this.state.pendingFlickerReturn = {
+          object: id,
+          ...(thenCounters !== undefined ? { counters: thenCounters } : {}),
+        };
+      }
+      return;
+    }
     if (this.state.objects[id]?.zone !== "exile") return;
     this.emit({ type: "permanent-exiled", object: id });
+    if (isToken) return;
+    this.completeFlickerReturn(id, thenCounters);
+  }
+
+  /** The return half of a blink: bring `id` back from exile, having already
+   * confirmed that's where it is. Shared by the ordinary path and the one
+   * that had to wait on a commander's 903.9a choice. */
+  private completeFlickerReturn(id: ObjectId, counters?: FlickerCounters): void {
     // Rule 400.7: the object returning to the battlefield is brand new, so
     // nothing that was attached to the *old* object stays attached — unlike
     // an ordinary exile, `id` comes straight back here before a state-based
     // action ever gets a chance to notice it left, so its old attachments
     // won't have fallen off on their own (704.5n).
     this.detachFrom(id);
-    if (isToken) return;
     this.moveObject(id, "battlefield");
     this.emit({ type: "permanent-entered-battlefield", object: id });
+    if (counters === undefined) return;
+    if (this.state.objects[id]?.zone !== "battlefield") return;
+    const matches =
+      counters.onlyIf === undefined ||
+      matchesFilter(this.state, this.registry, id, counters.onlyIf, {
+        you: this.state.objects[id].controller,
+      });
+    if (matches) {
+      this.addCounter({ kind: "object", object: id }, counters.kind, counters.amount);
+    }
   }
 
   /** Detach every Aura/Equipment pointed at `id` (rule 704.5n): an Aura goes

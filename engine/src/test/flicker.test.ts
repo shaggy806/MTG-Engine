@@ -75,6 +75,29 @@ describe("Essence Flux — exile a creature you control, then return it fresh", 
     expect(game.state.objects[aura].zone).toBe("graveyard");
   });
 
+  it("puts a +1/+1 counter on the returning creature only if it's a Spirit", () => {
+    for (const [name, expected] of [
+      ["Remorseful Cleric", 1],
+      ["Grizzly Bears", undefined],
+    ] as const) {
+      const { game } = mkGame(["Essence Flux", "Island"]);
+      game.advanceUntil(toPrecombat);
+      const creature = game.debugSpawn(name, A, "battlefield");
+      game.debugSpawn("Island", A, "battlefield");
+
+      game.dispatch({
+        type: "cast-spell",
+        player: A,
+        card: game.handOf(A).find((id) => game.state.objects[id].cardName === "Essence Flux")!,
+        targets: [{ kind: "object", object: creature }],
+      });
+      game.advanceUntil(quiet);
+
+      expect(game.state.objects[creature].zone).toBe("battlefield");
+      expect(game.state.objects[creature].counters["+1/+1"]).toBe(expected);
+    }
+  });
+
   it("a flickered token ceases to exist instead of returning", () => {
     const { game } = mkGame(["Essence Flux", "Island"]);
     game.advanceUntil(toPrecombat);
@@ -92,5 +115,44 @@ describe("Essence Flux — exile a creature you control, then return it fresh", 
 
     expect(game.battlefield).not.toContain(token);
     expect(game.state.objects[token]).toBeUndefined();
+  });
+});
+
+describe("Essence Flux on a commander — the 903.9a choice interrupts the blink", () => {
+  /** Flicker `A`'s commander and answer the command-zone question with
+   * `toCommandZone`. Returns the commander's id and the game. */
+  const flickerCommander = (toCommandZone: boolean) => {
+    const { game } = mkGame(["Essence Flux", "Island"]);
+    game.advanceUntil(toPrecombat);
+    // A Spirit Dragon, so the +1/+1 counter clause is in play too.
+    const commander = game.debugSpawn("Ureni of the Unwritten", A, "battlefield");
+    game.state.objects[commander].isCommander = true;
+    game.debugSpawn("Island", A, "battlefield");
+
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: game.handOf(A).find((id) => game.state.objects[id].cardName === "Essence Flux")!,
+      targets: [{ kind: "object", object: commander }],
+    });
+    game.advanceUntil((s) => s.awaiting?.kind === "commander-replacement");
+    expect(game.state.awaiting).toMatchObject({ commander, intendedZone: "exile" });
+
+    game.dispatch({ type: "commander-replacement", player: A, toCommandZone });
+    game.advanceUntil(quiet);
+    return { game, commander };
+  };
+
+  it("declining the command zone lets the blink finish — it comes back to the battlefield", () => {
+    const { game, commander } = flickerCommander(false);
+    expect(game.state.objects[commander].zone).toBe("battlefield");
+    expect(game.state.objects[commander].counters["+1/+1"]).toBe(1);
+    expect(game.state.pendingFlickerReturn).toBeNull();
+  });
+
+  it("choosing the command zone takes it out of the blink's reach", () => {
+    const { game, commander } = flickerCommander(true);
+    expect(game.state.objects[commander].zone).toBe("command");
+    expect(game.state.pendingFlickerReturn).toBeNull();
   });
 });

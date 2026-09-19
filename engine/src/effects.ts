@@ -20,6 +20,19 @@ import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
  * a target or the ability's own source). */
 export type EffectTargetRef = number | "source" | "trigger-object";
 export type PtDuration = "end-of-turn" | "permanent";
+
+/**
+ * Counters a blinked permanent gets as it comes back — Essence Flux's "If
+ * it's a Spirit, put a +1/+1 counter on it". `onlyIf` is checked against the
+ * *returned* permanent, which is a new object (rule 400.7) wearing its
+ * printed characteristics with none of the type or ability changes the old
+ * one was carrying.
+ */
+export interface FlickerCounters {
+  readonly kind: string;
+  readonly amount: number;
+  readonly onlyIf?: CardFilter;
+}
 /** A numeric amount in an effect: a literal, `"x"` for the value chosen for
  * `{X}` when the spell/ability was put on the stack (`ResolutionContext.x`),
  * or a live count of battlefield permanents matching a filter, evaluated from
@@ -423,6 +436,8 @@ export type EffectSpec =
        * and never returns (rule 111.7 / 704.5d). needed-cards P9 — Essence Flux. */
       readonly kind: "flicker";
       readonly target: number;
+      /** See {@link FlickerCounters} — Essence Flux's Spirit clause. */
+      readonly thenCounters?: FlickerCounters;
     }
   | {
       /** Counter a target spell on the stack — it moves to its owner's
@@ -1110,7 +1125,7 @@ export interface EffectApi {
   exileGraveyard(target: TargetRef): void;
   /** Exile `target`, then immediately return it to the battlefield under its
    * owner's control — see the `"flicker"` {@link EffectSpec}. */
-  flicker(target: TargetRef): void;
+  flicker(target: TargetRef, thenCounters?: FlickerCounters): void;
   /** Grant flashback to `target` (an instant/sorcery card in a graveyard) for
    * the rest of the turn, at a flashback cost equal to its mana cost
    * (Snapcaster Mage). */
@@ -1622,7 +1637,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     }
     case "flicker": {
       const target = ctx.targets[spec.target];
-      if (target !== undefined) ctx.flicker(target);
+      if (target !== undefined) ctx.flicker(target, spec.thenCounters);
       return;
     }
     case "grant-flashback": {

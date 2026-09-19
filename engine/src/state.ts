@@ -9,7 +9,7 @@
 import type { CastVia } from "./actions.js";
 import type { TriggeredAbility } from "./abilities.js";
 import type { CardType, Keyword, StaticAbility, StaticCondition } from "./cards.js";
-import type { EffectSpec } from "./effects.js";
+import type { EffectSpec, FlickerCounters } from "./effects.js";
 import type { CardFilter } from "./filter.js";
 import type { Color, ManaPool } from "./mana.js";
 import { emptyPool } from "./mana.js";
@@ -964,6 +964,21 @@ export interface GameState {
     readonly commander: ObjectId;
     /** Where it would have gone had 903.9a not applied. */
     readonly intendedZone: CommanderReplacementZone;
+  } | null;
+  /**
+   * A "blink" (the `flicker` effect) whose exile half raised a commander's
+   * 903.9a choice, parked until that choice is answered — without this the
+   * whole effect was abandoned there, and a flickered commander whose owner
+   * declined the command zone stayed in exile forever.
+   *
+   * `applyCommanderChoice` completes it: the card is returned only if the
+   * choice actually left it in exile. `null` when no blink is waiting.
+   */
+  pendingFlickerReturn: {
+    readonly object: ObjectId;
+    /** Counters the returning permanent gets — the `flicker` effect's
+     * `thenCounters`, carried across the pause. */
+    readonly counters?: FlickerCounters;
   } | null;
   /** True while a Fog-style effect has prevented all combat damage this turn
    * (rule 614 replacement, but turn-scoped with no permanent to hang it on).
