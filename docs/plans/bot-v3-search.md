@@ -1,6 +1,9 @@
 # Bot v3 — rollout search over sampled worlds
 
-Status: **design, not started.** Nothing here is built. It supersedes the search architecture in
+Status: **built and seated.** The search, the determinizer and `PlanBotController` are all in
+`engine/src/bot/`, and `Room.addBot` seats v3 in live rooms. The **Sequencing** steps from
+"Re-run `bot:audit`" onwards are still outstanding — the evaluation has not been re-fitted for a
+search that now actually casts things, which is the likeliest cause of the measurement below. It supersedes the search architecture in
 `docs/plans/smarter-bots.md` (v2, one-ply + linear evaluation), which stays as the record of how
 we got here and why several of its decisions have to be undone.
 
@@ -8,6 +11,25 @@ This document exists because v2's tuning stalled, twice, for the same reason: **
 could not represent the strategy we were trying to tune it into.** Writing it before touching
 code is deliberate — two rounds of weight tuning were spent compensating for defects that no
 weight could fix.
+
+## Measured after seating it: v3 skips about one land drop in eight
+
+Playing v3 in a real `Room` against a seat that only passes, ten games of two players over the
+five precons, counting every priority window where a land drop was legal:
+
+| bot | land played | passed with a land in hand |
+|---|---|---|
+| v2 | 43 | 0 |
+| v3 | 42 | 6 |
+
+So roughly 12% of v3's land drops are declined outright, and what a person sees across the table
+is an occasional turn where the bot does nothing at all. It is *not* the catatonia of the early
+prototype — v3 develops a board and attacks harder than v2 over the same games — and it is not
+the budget either: the same six recur unchanged at a 6s plan budget as at 1s. It is the search
+concluding that holding the land is worth as much as playing it, which is exactly the shape of
+the **tie trap** below, and exactly what an evaluation fitted against a rollout that never cast
+anything would be expected to get wrong. Fix it with the re-audit and re-fit in **Sequencing**,
+not with a special case for lands.
 
 ## The two measurements that decide this design
 

@@ -28,7 +28,7 @@
  * push at the end — which is what tests and scripts drive rooms with.
  */
 
-import { EvalBotController, Game, actionPlayer, activePlayerOf, isSettled } from "engine";
+import { Game, PlanBotController, actionPlayer, activePlayerOf, isSettled } from "engine";
 import type { Action, AwaitingDecision, ControllerView, GameState, PlayerController, PlayerId } from "engine";
 import { HostRole } from "./host.js";
 import type { BotSpeed, SeatStatus, ServerMessage, WireDeck } from "./protocol.js";
@@ -99,6 +99,23 @@ const BOT_MIN_THINK_MS = 350;
  */
 const BOT_DECISION_BUDGET_MS = 300;
 /**
+ * How long a bot may spend planning one of its own turns.
+ *
+ * Deliberately much larger than `BOT_DECISION_BUDGET_MS`, because it buys
+ * something different: v3 plans **once per turn** rather than once per priority
+ * window, and a turn has several windows. Unbounded, the worst planned turn
+ * measured 87 seconds (see `PlanBotOptions.planBudgetMs`).
+ *
+ * Unlike the per-decision budget this one doesn't disappear inside the
+ * animation pause — it lands as a single hitch at the bot's first main phase,
+ * and it blocks the whole process while it runs, so every other room on this
+ * server waits too. A second is the compromise: the neighbour ordering puts
+ * appends first, so a search cut short still returns a turn's worth of plays
+ * rather than nothing, and a partial plan degrades to v1's turn rather than to
+ * passing.
+ */
+const BOT_PLAN_BUDGET_MS = 1_000;
+/**
  * The host's bot speed, as a pause *after* every client has finished showing
  * a bot's move and before the next one. On top of the animation wait rather
  * than instead of it: a card play already holds the table for its whole
@@ -149,7 +166,34 @@ export interface RoomOptions {
   /** The waiting room's host role, carried across promotion. */
   readonly host?: HostRole;
   readonly botSpeed?: BotSpeed;
+  /**
+   * What `addBot` seats, overriding {@link DEFAULT_BOT}.
+   *
+   * For the pacing tests, which are about the frame/ack machinery and not
+   * about how well anything plays: pinning the bot keeps them from breaking
+   * every time a smarter one ships. That isn't hypothetical — v3 plans a whole
+   * turn and will correctly decline to play a land on a deck where no land
+   * could ever be spent, which is exactly the deck those tests use.
+   */
+  readonly botController?: (player: PlayerId) => PlayerController;
 }
+
+/**
+ * The bot a live room seats: v3, the turn-planning bot
+ * (`docs/plans/bot-v3-search.md`).
+ *
+ * Each bot is a strict delta over the one before it — v3 replaces priority
+ * windows on its own turn with a planned turn, and falls back to v2's
+ * per-window search (and through that to v1's policy) everywhere else — so
+ * seating the newest is an upgrade rather than a swap. The two budgets bound
+ * the two halves of that: see {@link BOT_DECISION_BUDGET_MS} and
+ * {@link BOT_PLAN_BUDGET_MS}.
+ */
+const DEFAULT_BOT = (player: PlayerId): PlayerController =>
+  new PlanBotController(player, undefined, {
+    timeBudgetMs: BOT_DECISION_BUDGET_MS,
+    planBudgetMs: BOT_PLAN_BUDGET_MS,
+  });
 
 /** A bot move parked until the clients have finished showing the frame it
  * will act on. */
@@ -174,6 +218,7 @@ export class Room {
   onUpdate: (room: Room) => void;
   private readonly pacing: "realtime" | "immediate";
   private readonly timers: RoomTimers;
+  private readonly makeBot: (player: PlayerId) => PlayerController;
   private seq = 0;
   private gate: FrameGate | null = null;
   readonly host: HostRole;
@@ -187,6 +232,7 @@ export class Room {
     this.onUpdate = options.onUpdate ?? (() => {});
     this.pacing = options.pacing ?? "realtime";
     this.timers = options.timers ?? realTimers;
+    this.makeBot = options.botController ?? DEFAULT_BOT;
     this.seats = game.state.turnOrder.map((player) => ({
       player,
       clientToken: null,
@@ -273,14 +319,7 @@ export class Room {
     const seat = this.seatFor(player);
     if (seat.clientToken !== null) throw new Error(`seat ${player} is already claimed`);
     if (this.bots.has(player)) throw new Error(`seat ${player} already has a bot`);
-    // v2, the one-ply searching bot (`docs/plans/smarter-bots.md`). v1's
-    // `HeuristicBotController` is still its base class and its fallback for
-    // every decision the search doesn't improve on, so this is a strict
-    // upgrade rather than a different bot. `timeBudgetMs` is what makes it
-    // safe to seat: see `BOT_DECISION_BUDGET_MS`.
-    this.bots.set(player, new EvalBotController(player, undefined, {
-      timeBudgetMs: BOT_DECISION_BUDGET_MS,
-    }));
+    this.bots.set(player, this.makeBot(player));
     this.lastActivityAt = Date.now();
     this.settle();
   }

@@ -6,7 +6,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { Game, autoSettle } from "engine";
+import { Game, HeuristicBotController, autoSettle } from "engine";
 import { Room } from "../room.js";
 import type { Connection, RoomTimers } from "../room.js";
 import type { BotSpeed, ServerMessage } from "../protocol.js";
@@ -64,9 +64,20 @@ function watcher(room: () => Room, ackAll: boolean) {
   return { frames, connection };
 }
 
-/** All-Forest decks: nothing is ever castable, so a bot's turn is a
- * predictable string of land drops and passes rather than whatever a shuffle
- * happens to deal. */
+/**
+ * All-Forest decks: nothing is ever castable, so a bot's turn is a predictable
+ * string of land drops and passes rather than whatever a shuffle happens to
+ * deal.
+ *
+ * That determinism is also why these rooms pin their bot to v1 rather than
+ * taking whatever `Room` ships (`RoomOptions.botController`). Everything below
+ * is about the frame/ack machinery — that a bot action costs a frame, that the
+ * frame is held until the clients catch up — and none of it is about how well
+ * the bot plays. A searching bot is entitled to look at this deck, notice that
+ * no land it plays could ever be spent on anything, and pass the turn; v3 does
+ * exactly that, which broke the land-drop assertion below without anything
+ * being wrong with the pacing.
+ */
 function makePacedRoom(ackAll: boolean, botSpeed: BotSpeed = "fast") {
   const clock = fakeClock();
   const forests = Array<string>(40).fill("Forest");
@@ -83,6 +94,7 @@ function makePacedRoom(ackAll: boolean, botSpeed: BotSpeed = "fast") {
   const alice = watcher(() => room, ackAll);
   room = new Room("PACE1", game, {
     timers: clock.timers,
+    botController: (player) => new HeuristicBotController(player),
     // No pause after a move is shown, so these tests are about the ack gate
     // alone; the pause itself has its own tests below.
     botSpeed,
