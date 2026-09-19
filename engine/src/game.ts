@@ -1357,7 +1357,11 @@ export class Game {
           : {}),
         ...(parseManaCost(cost).x > 0
           ? { xCost: { maxX: this.maxAffordableX(player, card, def, cost, face ?? 0) } }
-          : {}),
+          : def.additionalCost?.payLifeX === true
+            ? // "Pay X life" — the ceiling is what you have, not what your
+              // lands can make (rule 118.4: any amount of life you have).
+              { xCost: { maxX: this.state.players[player].life } }
+            : {}),
       });
     }
     return out;
@@ -2916,6 +2920,23 @@ export class Game {
 
     this.emit({ type: "cards-chosen-from-zone", player, objects: [...chosen] });
     this.state.awaiting = null;
+
+    // "…, then that creature gains haste" — applied with the chosen cards as
+    // its targets, since they were never targets of the spell itself. Nothing
+    // chosen means nothing to say it about.
+    const then = awaiting.then;
+    if (then !== undefined && chosen.length > 0) {
+      applyEffectSpec(
+        then,
+        this.makeResolutionContext(
+          awaiting.thenSource ?? asObjectId("choose-from-zone-source"),
+          player,
+          chosen.map((id) => ({ kind: "object", object: id }) as const),
+          awaiting.thenX ?? 0,
+        ),
+      );
+    }
+
     this.prepareForPriority(this.activePlayer);
   }
 
@@ -4877,7 +4898,8 @@ export class Game {
     if (object.faces !== undefined) object.face = face;
     const def = this.registry.get(printedCardName(object));
     const costString = this.castCostString(cardId, via, face, kicked, overload, free, altCost);
-    const hasX = parseManaCost(costString).x > 0;
+    const hasX =
+      parseManaCost(costString).x > 0 || def.additionalCost?.payLifeX === true;
     const chosenX = hasX ? Math.max(0, Math.floor(xValue)) : 0;
 
     if (def.castModal !== null && modes === undefined) {
@@ -5025,6 +5047,9 @@ export class Game {
     // hand it is discarding from.
     if (def.additionalCost?.payLife !== undefined) {
       this.changeLife(player, -def.additionalCost.payLife);
+    }
+    if (def.additionalCost?.payLifeX === true && chosenX > 0) {
+      this.changeLife(player, -chosenX);
     }
     if (def.additionalCost?.discard !== undefined) {
       this.discardByEffect({ kind: "player", player }, def.additionalCost.discard);
@@ -7339,6 +7364,18 @@ export class Game {
       sacrificePermanents: (who, filter, count, exceptId) =>
         this.sacrificeByEffect(controller, who, filter, count, exceptId),
       sacrificeSource: () => this.sacrificeSourceByEffect(source),
+      sacrificeTarget: (target) => {
+        if (target.kind !== "object") return;
+        const id = this.splitOneFromStack(target.object);
+        const object = this.state.objects[id];
+        if (object === undefined || object.zone !== "battlefield") return;
+        const owner = object.owner;
+        this.moveObject(id, "graveyard");
+        // A commander's 903.9a choice defers the move; the sacrifice event
+        // would then be a lie, so only announce a completed one.
+        if (this.state.awaiting !== null) return;
+        this.emit({ type: "permanent-sacrificed", object: id, player: owner });
+      },
       returnToHand: (target) => this.returnToHandByEffect(target),
       exileObject: (target, untilSourceLeaves) =>
         this.exileByEffect(target, untilSourceLeaves === true ? source : undefined),
@@ -7631,7 +7668,7 @@ export class Game {
         ),
       scry: (amount, surveil, then) =>
         this.beginScry(source, controller, x, amount, surveil ? "surveil" : "scry", then ?? null),
-      lookAndChoose: (zone, count, min, max, destination, leftover, filter, enterTapped) =>
+      lookAndChoose: (zone, count, min, max, destination, leftover, filter, enterTapped, then) =>
         this.beginZoneChoice(
           controller,
           zone,
@@ -7642,6 +7679,7 @@ export class Game {
           leftover,
           filter,
           enterTapped === true,
+          then === undefined ? undefined : { effect: then, source, x },
         ),
     };
   }
@@ -7669,6 +7707,7 @@ export class Game {
     leftover: "bottom-random" | "stay" | "hand",
     filter: ZoneChoiceFilter | undefined,
     enterTapped = false,
+    then?: { effect: EffectSpec; source: ObjectId; x: number },
   ): void {
     const zoneCards = this.state.zones.perPlayer[player][zone];
     // Only a library is looked at `count` deep; a graveyard is public and a
@@ -7689,6 +7728,7 @@ export class Game {
       destination,
       leftover,
       ...(enterTapped && destination === "battlefield" ? { enterTapped: true } : {}),
+      ...(then !== undefined ? { then: then.effect, thenSource: then.source, thenX: then.x } : {}),
     };
   }
 

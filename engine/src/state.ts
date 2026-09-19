@@ -633,6 +633,13 @@ export type AwaitingDecision =
       /** The chosen cards are shown to every player ("search your library for
        * an artifact card, **reveal it**, …" — Enlightened Tutor). */
       readonly reveal?: boolean;
+      /** Applied once the choice is answered, with the chosen cards as its
+       * targets — see the `look-and-choose` effect's `then`. `thenSource` and
+       * `thenX` rebuild the resolution context, since the spell that set this
+       * up has finished resolving by then. */
+      readonly then?: EffectSpec;
+      readonly thenSource?: ObjectId;
+      readonly thenX?: number;
       /** Where every *chosen* card after the first goes, when a tutor splits
        * its finds across two zones (Cultivate: "put one onto the battlefield
        * tapped and the other into your hand"). Absent means every chosen card

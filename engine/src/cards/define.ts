@@ -177,6 +177,11 @@ export type StaticCondition =
   | { readonly kind: "your-turn" }
   /** Threshold (rule 702.27) — seven or more cards in your graveyard. */
   | { readonly kind: "threshold" }
+  /** Delirium (rule 702.120) — four or more *card types* among the cards in
+   * your graveyard. Counts distinct types, not cards: one artifact creature
+   * is two of the four. A card's printed types are what count — layer
+   * effects don't reach a graveyard. */
+  | { readonly kind: "delirium" }
   /** Metalcraft (rule 702.44) — you control three or more artifacts. */
   | { readonly kind: "metalcraft" }
   /** A creature died this turn (Liliana's Devotee). Reads the turn-scoped
@@ -449,12 +454,19 @@ export interface CardDefinition {
    * always pay life they have, down to 0 — paying below it is what's illegal
    * (rule 118.4), so this gates castability on `life >= payLife`.
    *
+   * `payLifeX`: "…, pay **X** life" (Toxic Deluge), where X is the caster's
+   * own choice. It makes the spell an `{X}` spell without an `{X}` in its
+   * mana cost: `xCost.maxX` becomes the caster's life total rather than what
+   * their lands can pay, `ctx.x` reads the chosen value as usual, and the
+   * life is paid as the spell is cast.
+   *
    * More than one may be set, and all of them are paid.
    */
   readonly additionalCost: {
     readonly sacrifice?: CardFilter;
     readonly discard?: number;
     readonly payLife?: number;
+    readonly payLifeX?: boolean;
   } | null;
   /**
    * Kicker (rule 702.33 — needed-cards P8): an **optional** additional cost
@@ -707,6 +719,7 @@ interface CardDraft {
     readonly sacrifice?: CardFilter;
     readonly discard?: number;
     readonly payLife?: number;
+    readonly payLifeX?: boolean;
   };
   kicker?: {
     readonly cost: string;

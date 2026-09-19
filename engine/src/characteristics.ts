@@ -201,6 +201,17 @@ function evalStaticCondition(
       return state.turnOrder[state.turn.activePlayerIndex] === you;
     case "threshold":
       return state.zones.perPlayer[you].graveyard.length >= 7;
+    case "delirium": {
+      // Distinct card *types*, not cards — one artifact creature is two of
+      // the four. Printed types: layer effects don't reach a graveyard.
+      const types = new Set<string>();
+      for (const id of state.zones.perPlayer[you].graveyard) {
+        const object = state.objects[id];
+        if (object === undefined) continue;
+        for (const t of registry.get(printedCardName(object)).types) types.add(t);
+      }
+      return types.size >= 4;
+    }
     case "metalcraft":
       return (
         state.zones.shared.battlefield.filter((id) => {

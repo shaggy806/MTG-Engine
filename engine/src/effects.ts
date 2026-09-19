@@ -331,6 +331,16 @@ export type EffectSpec =
       readonly exceptSource?: boolean;
     }
   | {
+      /**
+       * Sacrifice one named permanent — "**sacrifice the creature** at the
+       * beginning of the next end step" (Sneak Attack). Unlike `sacrifice`,
+       * which is an edict its victim's controller answers, this one already
+       * knows which permanent, so there is no decision at all.
+       */
+      readonly kind: "sacrifice-target";
+      readonly target: EffectTargetRef;
+    }
+  | {
       /** Sacrifice the permanent this effect's own source is (Defense of the
        * Heart: "sacrifice ~. If you do, …"). No choice and no decision — rule
        * 701.17. `then` is the "if you do" tail: applied only when the
@@ -1079,6 +1089,16 @@ export type EffectSpec =
        * Unwritten: only a Dragon card). Everything is still revealed either
        * way — omit for "any of them". */
       readonly filter?: ZoneChoiceFilter;
+      /**
+       * Applied once the choice is made, with the **chosen cards** as its
+       * targets — `target: 0` is the first one taken. Sneak Attack's "that
+       * creature gains haste. Sacrifice it at the beginning of the next end
+       * step" is the shape: the card put onto the battlefield isn't a target
+       * of the spell, so nothing downstream could otherwise refer to it.
+       *
+       * Skipped entirely when nothing was chosen.
+       */
+      readonly then?: EffectSpec;
     };
 
 /** One selectable mode of a `modal` effect (rule 700.2) or a `castModal` card
@@ -1180,6 +1200,9 @@ export interface EffectApi {
   exileObject(target: TargetRef, untilSourceLeaves?: boolean): void;
   /** See the `"return-exiled-by-source"` {@link EffectSpec}. */
   returnExiledBySource(): void;
+  /** Sacrifice one named permanent — see the `"sacrifice-target"`
+   * {@link EffectSpec}. */
+  sacrificeTarget(target: TargetRef): void;
   /** Put `target` on top of / on the bottom of its owner's library — see the
    * `"put-on-library"` {@link EffectSpec}. */
   putOnLibrary(target: TargetRef, position: "top" | "bottom"): void;
@@ -1409,6 +1432,7 @@ export interface EffectApi {
     leftover: "bottom-random" | "stay" | "hand",
     filter: ZoneChoiceFilter | undefined,
     enterTapped?: boolean,
+    then?: EffectSpec,
   ): void;
 }
 
@@ -1750,6 +1774,18 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       ctx.delayTrigger(spec.at, spec.effect, spec.text, controller);
       return;
     }
+    case "sacrifice-target": {
+      const target =
+        spec.target === "source"
+          ? ({ kind: "object", object: ctx.source } as const)
+          : spec.target === "trigger-object"
+            ? ctx.triggerObject === undefined
+              ? undefined
+              : ({ kind: "object", object: ctx.triggerObject } as const)
+            : ctx.targets[spec.target];
+      if (target !== undefined) ctx.sacrificeTarget(target);
+      return;
+    }
     case "put-on-library": {
       const target = ctx.targets[spec.target];
       if (target !== undefined) ctx.putOnLibrary(target, spec.position);
@@ -2029,6 +2065,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
         spec.leftover,
         spec.filter,
         spec.enterTapped === true,
+        spec.then,
       );
       return;
     default:
