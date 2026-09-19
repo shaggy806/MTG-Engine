@@ -47,6 +47,12 @@ const deck = (entries) =>
 // Both decks get a mana base that can actually cast their own spells —
 // otherwise one side just sits there and the fuzz only exercises one player.
 const deckA = deck([
+  // EDH-backlog: put-a-card-from-hand-onto-the-battlefield.
+  ["Growth Spiral", 1],
+  ["Eureka Moment", 1],
+  ["Ghalta, Stampede Tyrant", 1],
+  ["Terrain Generator", 1],
+  ["Kodama's Reach", 1],
   ["Aura Mutation", 1],
   ["Cultivate", 1],
   ["Scavenging Ooze", 1],
@@ -203,6 +209,8 @@ const deckA = deck([
 // exercises one side. One or two copies of each mechanic is enough coverage.
 const deckB = deck([
   // EDH-backlog: delayed triggered abilities + tutor-to-top.
+  ["Assassin's Trophy", 1],
+  ["Unearth", 1],
   ["Whip of Erebos", 1],
   ["Vampiric Tutor", 1],
   ["Imperial Seal", 1],
@@ -562,6 +570,8 @@ const deckB = deck([
 // the 903.9a "ask before the move" replacement path.
 const deckC = deck([
   // EDH-backlog: delayed triggered abilities + tutor-to-top.
+  ["Sun Titan", 1],
+  ["Frantic Search", 1],
   ["Arcane Denial", 1],
   ["Mystical Tutor", 1],
   ["Enlightened Tutor", 1],

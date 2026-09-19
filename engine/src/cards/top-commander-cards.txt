@@ -1,5 +1,5 @@
 Top 2000 Commander cards by EDHREC popularity (fetched 2026-09-13)
-339 already implemented / 1661 missing (marks refreshed 2026-09-19)
+348 already implemented / 1652 missing (marks refreshed 2026-09-19)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -33,7 +33,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]    34  Birds of Paradise                        {G}              Creature — Bird
 [x]    35  An Offer You Can't Refuse                {U}              Instant
 [x]    36  Polluted Delta                           {0}              Land
-[ ]    37  Kodama's Reach                           {2}{G}           Sorcery — Arcane
+[x]    37  Kodama's Reach                           {2}{G}           Sorcery — Arcane
 [x]    38  Solemn Simulacrum                        {4}              Artifact Creature — Golem
 [x]    39  Flooded Strand                           {0}              Land
 [ ]    40  Skullclamp                               {1}              Artifact — Equipment
@@ -96,7 +96,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]    97  Faithless Looting                        {R}              Sorcery
 [x]    98  Hinterland Harbor                        {0}              Land
 [ ]    99  Mystic Remora                            {U}              Enchantment
-[ ]   100  Frantic Search                           {2}{U}           Instant
+[x]   100  Frantic Search                           {2}{U}           Instant
 [x]   101  Vandalblast                              {R}              Sorcery
 [x]   102  Phyrexian Arena                          {1}{B}{B}        Enchantment
 [x]   103  Elvish Mystic                            {G}              Creature — Elf Druid
@@ -118,7 +118,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   119  Mana Confluence                          {0}              Land
 [x]   120  Lotus Petal                              {0}              Artifact
 [x]   121  Battlefield Forge                        {0}              Land
-[ ]   122  Assassin's Trophy                        {B}{G}           Instant
+[x]   122  Assassin's Trophy                        {B}{G}           Instant
 [x]   123  Enlightened Tutor                        {W}              Instant
 [x]   124  Wayfarer's Bauble                        {1}              Artifact
 [x]   125  Caves of Koilos                          {0}              Land
@@ -228,7 +228,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   229  The Great Henge                          {7}{G}{G}        Legendary Artifact
 [x]   230  Shipwreck Marsh                          {0}              Land
 [x]   231  Sign in Blood                            {B}{B}           Sorcery
-[ ]   232  Growth Spiral                            {G}{U}           Instant
+[x]   232  Growth Spiral                            {G}{U}           Instant
 [ ]   233  Explore                                  {1}{G}           Sorcery
 [x]   234  Brushland                                {0}              Land
 [x]   235  Zulaport Cutthroat                       {1}{B}           Creature — Human Rogue Ally
@@ -302,7 +302,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   303  Craterhoof Behemoth                      {5}{G}{G}{G}     Creature — Beast
 [ ]   304  The Ozolith                              {1}              Legendary Artifact
 [ ]   305  Dryad of the Ilysian Grove               {2}{G}           Enchantment Creature — Nymph Dryad
-[ ]   306  Sun Titan                                {4}{W}{W}        Creature — Giant
+[x]   306  Sun Titan                                {4}{W}{W}        Creature — Giant
 [ ]   307  Flusterstorm                             {U}              Instant
 [ ]   308  Seething Song                            {2}{R}           Instant
 [x]   309  Finale of Devastation                    {X}{G}{G}        Sorcery
@@ -945,7 +945,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   949  Phyrexian Reclamation                    {B}              Enchantment
 [ ]   950  Archmage of Runes                        {3}{U}{U}        Creature — Giant Wizard
 [ ]   951  Evendo, Waking Haven                     {0}              Land — Planet
-[ ]   952  Unearth                                  {B}              Sorcery
+[x]   952  Unearth                                  {B}              Sorcery
 [ ]   953  Cruel Celebrant                          {W}{B}           Creature — Vampire
 [ ]   954  The Soul Stone                           {1}{B}           Legendary Artifact — Infinity Stone
 [ ]   955  Monument to Endurance                    {3}              Artifact
@@ -1066,7 +1066,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1070  Fertile Ground                           {1}{G}           Enchantment — Aura
 [ ]  1071  Jhoira, Weatherlight Captain             {2}{U}{R}        Legendary Creature — Human Artificer
 [ ]  1072  K'rrik, Son of Yawgmoth                  {4}{B/P}{B/P}{B/P} Legendary Creature — Phyrexian Horror Minion
-[ ]  1073  Ghalta, Stampede Tyrant                  {5}{G}{G}{G}     Legendary Creature — Elder Dinosaur
+[x]  1073  Ghalta, Stampede Tyrant                  {5}{G}{G}{G}     Legendary Creature — Elder Dinosaur
 [x]  1074  Lathliss, Dragon Queen                   {4}{R}{R}        Legendary Creature — Dragon
 [ ]  1075  Selesnya Signet                          {2}              Artifact
 [ ]  1076  Three Steps Ahead                        {U}              Instant
@@ -1880,7 +1880,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1887  Wedding Ring                             {2}{W}{W}        Artifact
 [ ]  1888  Harvester of Souls                       {4}{B}{B}        Creature — Demon
 [ ]  1889  Bronze Guardian                          {4}{W}           Artifact Creature — Golem
-[ ]  1890  Terrain Generator                        {0}              Land
+[x]  1890  Terrain Generator                        {0}              Land
 [ ]  1891  Colossal Grave-Reaver                    {6}{B}{G}        Creature — Dragon
 [ ]  1892  Temple Bell                              {3}              Artifact
 [ ]  1893  Hellkite Courser                         {4}{R}{R}        Creature — Dragon
@@ -1979,7 +1979,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1986  Power Depot                              {0}              Artifact Land
 [ ]  1987  Adaptive Omnitool                        {2}              Artifact — Equipment
 [ ]  1988  Inkmoth Nexus                            {0}              Land
-[ ]  1989  Eureka Moment                            {2}{G}{U}        Instant
+[x]  1989  Eureka Moment                            {2}{G}{U}        Instant
 [x]  1990  Lord of the Accursed                     {2}{B}           Creature — Zombie
 [ ]  1991  Venser's Journal                         {5}              Artifact — Book
 [ ]  1992  Falkenrath Noble                         {3}{B}           Creature — Vampire Noble
