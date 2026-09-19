@@ -348,3 +348,119 @@ describe("exile-graveyard — Bojuka Bog", () => {
     expect(game.state.objects[bog].tapped).toBe(true);
   });
 });
+
+/**
+ * The non-sacrifice forms: `additionalCost.discard` / `.payLife`. Same
+ * cost-not-effect semantics as the sacrifice above — paid as the spell is
+ * cast, and being unable to pay makes it uncastable rather than a fizzle.
+ */
+describe("discard as an additional cost", () => {
+  const mountains = (game: Game, n: number): ObjectId[] =>
+    game
+      .handOf(A)
+      .filter((id) => game.state.objects[id].cardName === "Forest")
+      .slice(0, n);
+
+  it("Thrill of Possibility discards one and draws two — a net +1 card", () => {
+    const { game, a } = mkGame(["Thrill of Possibility"]);
+    game.advanceUntil(toPrecombat);
+    game.debugSpawn("Mountain", A, "battlefield");
+    game.debugSpawn("Mountain", A, "battlefield");
+    a.chooseDiscardsFn = () => mountains(game, 1);
+
+    const before = game.handOf(A).length;
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Thrill of Possibility"),
+      targets: [],
+    });
+    game.advanceUntil(quiet);
+
+    // −1 the spell itself, −1 discarded, +2 drawn.
+    expect(game.handOf(A).length).toBe(before);
+    expect(game.state.zones.perPlayer[A].graveyard).toHaveLength(2);
+  });
+
+  it("is paid while the spell is still on the stack, not on resolution", () => {
+    const { game, a } = mkGame(["Thrill of Possibility"]);
+    game.advanceUntil(toPrecombat);
+    game.debugSpawn("Mountain", A, "battlefield");
+    game.debugSpawn("Mountain", A, "battlefield");
+    a.chooseDiscardsFn = () => mountains(game, 1);
+
+    const spell = named(game, game.handOf(A), "Thrill of Possibility");
+    game.dispatch({ type: "cast-spell", player: A, card: spell, targets: [] });
+    game.advanceUntil((s) => s.awaiting === null);
+
+    // Already discarded with the spell unresolved — which is what makes the
+    // cost survive the spell being countered.
+    expect(game.state.zones.perPlayer[A].graveyard).toHaveLength(1);
+    expect(game.state.zones.shared.stack).toContain(spell);
+  });
+
+  it("can't be cast with too few cards — and can't discard itself to pay", () => {
+    const { game } = mkGame(["Thrill of Possibility"]);
+    game.advanceUntil(toPrecombat);
+    game.debugSpawn("Mountain", A, "battlefield");
+    game.debugSpawn("Mountain", A, "battlefield");
+    const spell = named(game, game.handOf(A), "Thrill of Possibility");
+    // Empty the hand apart from the spell. Straight at the zone arrays on
+    // purpose: there's no "move this card" helper, and a discard *effect*
+    // would be the very thing under test.
+    const hand = game.state.zones.perPlayer[A].hand;
+    for (const id of [...hand]) {
+      if (id === spell) continue;
+      hand.splice(hand.indexOf(id), 1);
+      game.state.objects[id].zone = "graveyard";
+      game.state.zones.perPlayer[A].graveyard.push(id);
+    }
+
+    expect(castActionsFor(game, A, "Thrill of Possibility")).toHaveLength(0);
+    expect(() =>
+      game.dispatch({ type: "cast-spell", player: A, card: spell, targets: [] }),
+    ).toThrow(/too few cards/);
+  });
+
+  it("Cathartic Reunion needs two", () => {
+    const { game, a } = mkGame(["Cathartic Reunion"]);
+    game.advanceUntil(toPrecombat);
+    game.debugSpawn("Mountain", A, "battlefield");
+    game.debugSpawn("Mountain", A, "battlefield");
+    a.chooseDiscardsFn = (_v, n) => mountains(game, n);
+
+    const before = game.handOf(A).length;
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Cathartic Reunion"),
+      targets: [],
+    });
+    game.advanceUntil(quiet);
+
+    // −1 the spell, −2 discarded, +3 drawn.
+    expect(game.handOf(A).length).toBe(before);
+    expect(game.state.zones.perPlayer[A].graveyard).toHaveLength(3);
+  });
+});
+
+describe("Culling the Weak — a sacrifice cost that was expressible all along", () => {
+  it("eats a creature for {B}{B}{B}{B}", () => {
+    const { game } = mkGame(["Culling the Weak"]);
+    game.advanceUntil(toPrecombat);
+    game.debugSpawn("Swamp", A, "battlefield");
+    const bear = game.debugSpawn("Grizzly Bears", A, "battlefield");
+
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Culling the Weak"),
+      targets: [],
+      sacrifice: bear,
+    });
+    game.advanceUntil((s) => s.zones.shared.stack.length === 0);
+
+    expect(game.state.objects[bear].zone).toBe("graveyard");
+    expect(game.state.players[A].manaPool.B).toBe(4);
+  });
+});

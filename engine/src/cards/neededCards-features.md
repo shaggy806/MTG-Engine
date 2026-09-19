@@ -108,7 +108,7 @@ Oracle text needs each:
 | **delayed triggered abilities** (rule 603.7) | 31 | **DONE** |
 | **put a card on top of a library** | 18 | **DONE** |
 | **put a card from your hand onto the battlefield** | 20 | **DONE** |
-| additional cost that isn't a sacrifice (discard / pay X life) | 11 | TODO — Toxic Deluge (#66), Thrill of Possibility, Big Score |
+| **additional cost that isn't a sacrifice** (discard / pay life) | 11 | **DONE** for fixed amounts; "pay **X** life" (Toxic Deluge #66) and "A **or** B" (Bitter Triumph #840) still open |
 | more `StaticCondition` kinds (delirium / morbid / raid / spectacle) | 10 | TODO — cheap per-condition, worth doing as one batch |
 | unbounded targeting ("any number of target …") | 11 | TODO — a real change to fixed-arity `TargetSpec[]` |
 
@@ -141,6 +141,29 @@ Crystal, Voice of Victory). It reuses Encore's per-object flag.
 Shipped: **Whip of Erebos** (#713), **Arcane Denial** (#53), **Kiki-Jiki,
 Mirror Breaker** (#1247), and the clause Chandra, Acolyte of Flame had been
 dropping. `delayed-triggers.test.ts`.
+
+### Additional costs beyond a sacrifice — DONE for fixed amounts
+
+`CardDefinition.additionalCost` went from `{ sacrifice }` to
+`{ sacrifice?, discard?, payLife? }`, any combination of which is paid as the
+spell is cast. Both new forms gate *castability* rather than fizzling on
+resolution, which is the whole difference between a cost and an effect: too
+small a hand, or too little life, and the spell simply isn't offered.
+
+Two details worth keeping: the discard is raised after the spell is already on
+the stack, so it can't be discarded to pay for its own cost (rule 601.2h), and
+it happens at cast time, so it stands even if the spell is later countered.
+
+Shipped: **Thrill of Possibility** (#211), **Big Score** (#138), **Seize the
+Spoils** (#762), **Cathartic Reunion** (#1099), plus **Culling the Weak**
+(#524) and **Corrupted Conviction** (#599), whose sacrifice cost had been
+expressible all along and simply wasn't authored. `additional-costs.test.ts`.
+
+Still open, and each a different shape: **Toxic Deluge** (#66) needs a cost
+whose amount the *caster* picks ("pay X life"), which is an `{X}` paid in
+something other than mana — `maxAffordableX` is mana-only today. **Bitter
+Triumph** (#840) and **Demand Answers** (#414) need a *choice* between two
+costs. **Plumb the Forbidden** needs an optional, repeatable one.
 
 ### Put a card from your hand onto the battlefield — DONE (20 cards unblocked)
 

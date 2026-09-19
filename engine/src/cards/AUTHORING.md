@@ -1206,10 +1206,12 @@ different card, or extend the engine (see `ROADMAP.md`).
   `GameState`, so it can't do the layer fold — a creature that has the keyword
   only from another effect is missed (Sephara's "other creatures you control
   with flying").
-- **Additional costs** are a sacrifice only (`additionalCost.sacrifice`) — no
-  "discard a card", "pay N life", "exile a creature from your graveyard" form
-  yet, and only one such cost per card. **Kicker** is a single optional cost
-  (no multikicker, no two different kickers on one card).
+- **Additional costs** are `sacrifice` (a `CardFilter`), `discard` (a count)
+  and `payLife` (a count) — several may be set and all are paid. Not yet: a
+  *choice* between two of them ("discard a card **or** pay 3 life" — Bitter
+  Triumph), an "exile a card from your graveyard" form, or a cost whose
+  amount the caster picks ("pay X life" — Toxic Deluge). **Kicker** is a
+  single optional cost (no multikicker, no two different kickers on one card).
 
 **Not modeled at all:** phasing, Battles, dungeons / the Initiative / the Ring,
 banding, "day/night"-independent double-faced tokens, a static ability that

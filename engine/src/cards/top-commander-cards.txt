@@ -1,5 +1,5 @@
 Top 2000 Commander cards by EDHREC popularity (fetched 2026-09-13)
-348 already implemented / 1652 missing (marks refreshed 2026-09-19)
+354 already implemented / 1646 missing (marks refreshed 2026-09-19)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -134,7 +134,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   135  Talisman of Hierarchy                    {2}              Artifact
 [x]   136  Yavimaya Coast                           {0}              Land
 [x]   137  Llanowar Wastes                          {0}              Land
-[ ]   138  Big Score                                {3}{R}           Instant
+[x]   138  Big Score                                {3}{R}           Instant
 [x]   139  Talisman of Progress                     {2}              Artifact
 [x]   140  Blood Artist                             {1}{B}           Creature — Vampire
 [ ]   141  War Room                                 {0}              Land
@@ -207,7 +207,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   208  Karn's Bastion                           {0}              Land
 [ ]   209  Professional Face-Breaker                {2}{R}           Creature — Human Warrior
 [ ]   210  Bountiful Promenade                      {0}              Land
-[ ]   211  Thrill of Possibility                    {1}{R}           Instant
+[x]   211  Thrill of Possibility                    {1}{R}           Instant
 [ ]   212  Wild Growth                              {G}              Enchantment — Aura
 [ ]   213  Beast Whisperer                          {2}{G}{G}        Creature — Elf Druid
 [x]   214  Crop Rotation                            {G}              Instant
@@ -521,7 +521,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   522  Imperial Seal                            {B}              Sorcery
 [ ]   523  Gitaxian Probe                           {U/P}            Sorcery
 [ ]   524  Strip Mine                               {0}              Land
-[ ]   525  Culling the Weak                         {B}              Instant
+[x]   525  Culling the Weak                         {B}              Instant
 [ ]   526  Ziatora's Proving Ground                 {0}              Land — Swamp Mountain Forest
 [ ]   527  Necroblossom Snarl                       {0}              Land
 [ ]   528  Veil of Summer                           {G}              Instant
@@ -593,7 +593,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   594  Selfless Spirit                          {1}{W}           Creature — Spirit Cleric
 [ ]   595  Mulldrifter                              {4}{U}           Creature — Elemental
 [ ]   596  Strionic Resonator                       {2}              Artifact
-[ ]   597  Corrupted Conviction                     {B}              Instant
+[x]   597  Corrupted Conviction                     {B}              Instant
 [ ]   598  Gloomlake Verge                          {0}              Land
 [ ]   599  Puresteel Paladin                        {W}{W}           Creature — Human Knight
 [ ]   600  Crucible of Worlds                       {3}              Artifact
@@ -764,7 +764,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   766  Elegant Parlor                           {0}              Land — Mountain Plains
 [ ]   767  Priest of Titania                        {1}{G}           Creature — Elf Druid
 [ ]   768  Mossborn Hydra                           {2}{G}           Creature — Elemental Hydra
-[ ]   769  Seize the Spoils                         {2}{R}           Sorcery
+[x]   769  Seize the Spoils                         {2}{R}           Sorcery
 [ ]   770  Avacyn, Angel of Hope                    {5}{W}{W}{W}     Legendary Creature — Angel
 [ ]   771  Eladamri's Call                          {G}{W}           Instant
 [ ]   772  Noble Hierarch                           {G}              Creature — Human Druid
@@ -1088,7 +1088,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1092  Shared Roots                             {1}{G}           Sorcery — Lesson
 [ ]  1093  Ugin, the Ineffable                      {6}              Legendary Planeswalker — Ugin
 [x]  1094  Tranquil Cove                            {0}              Land
-[ ]  1095  Cathartic Reunion                        {1}{R}           Sorcery
+[x]  1095  Cathartic Reunion                        {1}{R}           Sorcery
 [ ]  1096  Muldrotha, the Gravetide                 {3}{B}{G}{U}     Legendary Creature — Elemental Avatar
 [ ]  1097  Not Dead After All                       {B}              Instant
 [ ]  1098  Genji Glove                              {5}              Artifact — Equipment

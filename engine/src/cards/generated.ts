@@ -53,6 +53,7 @@ import _poolBayou from "./pool/bayou.js";
 import _poolBeanstalkGiant from "./pool/beanstalk-giant.js";
 import _poolBeastWithin from "./pool/beast-within.js";
 import _poolBeholdTheMultiverse from "./pool/behold-the-multiverse.js";
+import _poolBigScore from "./pool/big-score.js";
 import _poolBirdsOfParadise from "./pool/birds-of-paradise.js";
 import _poolBlackChocobo from "./pool/black-chocobo.js";
 import _poolBlasphemousAct from "./pool/blasphemous-act.js";
@@ -87,6 +88,7 @@ import _poolCabarettiCourtyard from "./pool/cabaretti-courtyard.js";
 import _poolCamaraderie from "./pool/camaraderie.js";
 import _poolCanopyVista from "./pool/canopy-vista.js";
 import _poolCarnageTyrant from "./pool/carnage-tyrant.js";
+import _poolCatharticReunion from "./pool/cathartic-reunion.js";
 import _poolCavesOfKoilos from "./pool/caves-of-koilos.js";
 import _poolCemeteryReaper from "./pool/cemetery-reaper.js";
 import _poolChainReaction from "./pool/chain-reaction.js";
@@ -118,6 +120,7 @@ import _poolConclaveTribunal from "./pool/conclave-tribunal.js";
 import _poolCondemn from "./pool/condemn.js";
 import _poolConsider from "./pool/consider.js";
 import _poolContentiousPlan from "./pool/contentious-plan.js";
+import _poolCorruptedConviction from "./pool/corrupted-conviction.js";
 import _poolCounterspell from "./pool/counterspell.js";
 import _poolCraterhoofBehemoth from "./pool/craterhoof-behemoth.js";
 import _poolCrawWurm from "./pool/craw-wurm.js";
@@ -127,6 +130,7 @@ import _poolCrucibleOfFire from "./pool/crucible-of-fire.js";
 import _poolCruelRevival from "./pool/cruel-revival.js";
 import _poolCrushContraband from "./pool/crush-contraband.js";
 import _poolCryptolithRite from "./pool/cryptolith-rite.js";
+import _poolCullingTheWeak from "./pool/culling-the-weak.js";
 import _poolCultivate from "./pool/cultivate.js";
 import _poolCyclonicRift from "./pool/cyclonic-rift.js";
 import _poolDamn from "./pool/damn.js";
@@ -462,6 +466,7 @@ import _poolScourgeOfValkas from "./pool/scourge-of-valkas.js";
 import _poolScrubland from "./pool/scrubland.js";
 import _poolScuteSwarm from "./pool/scute-swarm.js";
 import _poolSeatOfTheSynod from "./pool/seat-of-the-synod.js";
+import _poolSeizeTheSpoils from "./pool/seize-the-spoils.js";
 import _poolSejiriRefuge from "./pool/sejiri-refuge.js";
 import _poolSelesnyaEvangel from "./pool/selesnya-evangel.js";
 import _poolSelesnyaGuildmage from "./pool/selesnya-guildmage.js";
@@ -563,6 +568,7 @@ import _poolThoughtVessel from "./pool/thought-vessel.js";
 import _poolThranDynamo from "./pool/thran-dynamo.js";
 import _poolThreaten from "./pool/threaten.js";
 import _poolThreeVisits from "./pool/three-visits.js";
+import _poolThrillOfPossibility from "./pool/thrill-of-possibility.js";
 import _poolThunderbreakRegent from "./pool/thunderbreak-regent.js";
 import _poolThunderclapWyvern from "./pool/thunderclap-wyvern.js";
 import _poolThunderfootBaloth from "./pool/thunderfoot-baloth.js";
@@ -739,6 +745,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBeanstalkGiant,
   _poolBeastWithin,
   _poolBeholdTheMultiverse,
+  _poolBigScore,
   _poolBirdsOfParadise,
   _poolBlackChocobo,
   _poolBlasphemousAct,
@@ -773,6 +780,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolCamaraderie,
   _poolCanopyVista,
   _poolCarnageTyrant,
+  _poolCatharticReunion,
   _poolCavesOfKoilos,
   _poolCemeteryReaper,
   _poolChainReaction,
@@ -804,6 +812,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolCondemn,
   _poolConsider,
   _poolContentiousPlan,
+  _poolCorruptedConviction,
   _poolCounterspell,
   _poolCraterhoofBehemoth,
   _poolCrawWurm,
@@ -813,6 +822,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolCruelRevival,
   _poolCrushContraband,
   _poolCryptolithRite,
+  _poolCullingTheWeak,
   _poolCultivate,
   _poolCyclonicRift,
   _poolDamn,
@@ -1148,6 +1158,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolScrubland,
   _poolScuteSwarm,
   _poolSeatOfTheSynod,
+  _poolSeizeTheSpoils,
   _poolSejiriRefuge,
   _poolSelesnyaEvangel,
   _poolSelesnyaGuildmage,
@@ -1249,6 +1260,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolThranDynamo,
   _poolThreaten,
   _poolThreeVisits,
+  _poolThrillOfPossibility,
   _poolThunderbreakRegent,
   _poolThunderclapWyvern,
   _poolThunderfootBaloth,

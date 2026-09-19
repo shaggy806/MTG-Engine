@@ -208,6 +208,13 @@ const deckA = deck([
 // and plays its threats — a bloated deck just stalls out and the fuzz only
 // exercises one side. One or two copies of each mechanic is enough coverage.
 const deckB = deck([
+  // EDH-backlog: additional costs that aren't a sacrifice.
+  ["Thrill of Possibility", 1],
+  ["Cathartic Reunion", 1],
+  ["Seize the Spoils", 1],
+  ["Big Score", 1],
+  ["Culling the Weak", 1],
+  ["Corrupted Conviction", 1],
   // EDH-backlog: delayed triggered abilities + tutor-to-top.
   ["Assassin's Trophy", 1],
   ["Unearth", 1],
