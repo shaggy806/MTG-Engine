@@ -19,6 +19,7 @@
     "gen:creature-types": "node scripts/gen-creature-types.mjs",
     "card:lookup": "node scripts/scryfall-lookup.mjs",
     "card:verify": "npm run build && node scripts/verify-cards.mjs",
+    "card:text": "npm run build && node scripts/verify-cards.mjs --text",
     "prebuild": "node scripts/gen-cards.mjs",
     "build": "tsc",
     "pretypecheck": "node scripts/gen-cards.mjs",

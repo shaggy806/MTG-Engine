@@ -5,17 +5,26 @@
 // comparable printed characteristics. Tokens (cards/tokens/) are skipped:
 // their names aren't unique/canonical on Scryfall.
 //
-// `--text` additionally audits the *line structure* of each card's rules text
-// against Scryfall's `oracle_text` — the client renders `text` verbatim
-// (white-space: pre-line), so a card whose text is missing a newline escape
-// runs two abilities together on one line.
-// Opt-in, because a pile of differences are expected and correct:
-// the client draws the keyword line from `keywords` rather than `text`, a
-// typed dual land needs an explicit "{T}: Add" line Scryfall leaves implicit
-// in the type line, and a card with an unmodeled ability is missing that
-// ability's line on purpose. Read the output, don't count it.
+// `--text` additionally audits each card's rules text *clause by clause*
+// against Scryfall's `oracle_text`: every sentence of the real card is matched
+// to its closest sentence in ours, and anything with no close counterpart is
+// reported as MISSING (a clause the pool dropped — Essence Flux's "If it's a
+// Spirit, put a +1/+1 counter on it" was found this way) or EXTRA (a clause
+// ours has that the real card doesn't).
 //
-// Usage: node scripts/verify-cards.mjs [--json out.json] [--limit N] [--start N] [--text]
+// This is a **review list, not a pass/fail gate**, and it can't be otherwise:
+// the pool paraphrases freely, drops reminder text, and deliberately omits
+// abilities the engine doesn't model yet. A reported clause means "a human
+// should look at this card", so read the output rather than counting it.
+// Keyword-only lines are skipped when the keywords are on `def.keywords`
+// (the client renders those from the keyword list, not from `text`).
+//
+// `--lines` is the older, narrower check: it compares only the *number* of
+// text lines, because the client renders `text` verbatim (white-space:
+// pre-line) and a card missing a newline escape runs two abilities together.
+//
+// Usage: node scripts/verify-cards.mjs [--json out.json] [--limit N] [--start N]
+//                                      [--text [--similar]] [--lines]
 
 import { readdirSync } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -34,6 +43,11 @@ const jsonOut = flag("json", null);
 const limit = Number(flag("limit", Infinity));
 const start = Number(flag("start", 0));
 const checkText = args.includes("--text");
+const checkLines = args.includes("--lines");
+// Clauses that matched something, but only loosely — usually a legitimate
+// paraphrase, occasionally a real difference. Off by default; they'd bury the
+// clauses that matched nothing at all.
+const showSimilar = args.includes("--similar");
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -204,6 +218,153 @@ function textLines(s) {
     .filter((line) => !/^\(.*\)$/.test(line));
 }
 
+// --- clause-level rules-text audit (`--text`) --------------------------------
+
+/** Every keyword ability that can legitimately appear as a bare line of rules
+ * text. A Scryfall line made only of these, each of them on `def.keywords`, is
+ * already being rendered by the client from the keyword list and isn't a text
+ * discrepancy. Lower-cased; a parameterised keyword ("ward {2}", "annihilator
+ * 2") is matched by its first word. */
+const BARE_KEYWORD_LINE = /^[a-z' ]+(\s\{?[0-9wubrgxc/]+\}?)?$/;
+
+/**
+ * Split a rules-text block into the clauses a reader would call separate
+ * statements: one per line, then one per sentence within a line. An activated
+ * or triggered ability stays whole — the cost/trigger and its effect are one
+ * statement, and splitting on the colon or comma would match everything
+ * against everything.
+ */
+function clausesOf(text) {
+  const out = [];
+  for (const rawLine of (text ?? "").split("\n")) {
+    const line = stripReminders(rawLine).trim();
+    if (line.length === 0) continue;
+    // Sentence boundary: a period/exclamation/question mark followed by
+    // whitespace and a capital (or a `{`, for "… deal 2 damage. {T}: …").
+    for (const piece of line.split(/(?<=[.!?])\s+(?=[A-Z{])/)) {
+      const clause = piece.trim();
+      if (clause.length > 0) out.push(clause);
+    }
+  }
+  return out;
+}
+
+/** Drop parenthesised reminder text (rule 207.2) wherever it appears. */
+function stripReminders(s) {
+  return s.replace(/\([^)]*\)/g, " ");
+}
+
+/**
+ * A clause reduced to the words that carry its meaning. The pool paraphrases,
+ * keeps a card's own name where Scryfall now says "this creature", and writes
+ * numbers either way — so the card's name, the self-reference phrasings and
+ * punctuation are all normalised away before two clauses are compared.
+ */
+function clauseTokens(clause, cardName) {
+  const firstWord = cardName.split(/[\s,]+/)[0] ?? cardName;
+  let s = ` ${clause.toLowerCase()} `;
+  for (const name of [cardName.toLowerCase(), firstWord.toLowerCase()]) {
+    if (name.length > 2) s = s.split(name).join(" ~ ");
+  }
+  s = s.replace(
+    /\bthis (creature|permanent|card|spell|land|artifact|enchantment|planeswalker|token)\b/g,
+    " ~ ",
+  );
+  s = s.replace(/\bit\b/g, " ~ ");
+  // Mana and tap symbols survive as single tokens; everything else that isn't
+  // a word character, a digit or a P/T sign goes.
+  s = s.replace(/\{([^}]*)\}/g, (_m, inner) => ` {${inner}} `);
+  s = s.replace(/[^a-z0-9{}+/~-]+/g, " ");
+  return s.split(" ").filter((w) => w.length > 0 && w !== "~");
+}
+
+/** Dice coefficient over the two token *sets* — 1.0 for the same words in any
+ * order, 0 for none in common. Robust to the reordering a paraphrase does,
+ * which a straight string compare is not. */
+function similarity(a, b) {
+  if (a.length === 0 || b.length === 0) return a.length === b.length ? 1 : 0;
+  const sa = new Set(a);
+  const sb = new Set(b);
+  let shared = 0;
+  for (const w of sa) if (sb.has(w)) shared += 1;
+  return (2 * shared) / (sa.size + sb.size);
+}
+
+const MATCHED = 0.72; // close enough to be the same clause
+const RELATED = 0.4; // recognisably about the same thing, worth a look
+
+/** A Scryfall line that's purely keyword abilities the def already declares —
+ * the client renders those from `keywords`, not from `text`. */
+function isCoveredKeywordLine(clause, keywords) {
+  const lower = clause.toLowerCase().replace(/\.$/, "");
+  if (!BARE_KEYWORD_LINE.test(lower)) return false;
+  const declared = new Set((keywords ?? []).map((k) => String(k).toLowerCase()));
+  const parts = lower.split(/,\s*/).map((p) => p.trim()).filter((p) => p.length > 0);
+  if (parts.length === 0) return false;
+  return parts.every((p) => declared.has(p) || declared.has(p.split(" ")[0]));
+}
+
+const BASIC_LAND_TYPES = new Set(["Plains", "Island", "Swamp", "Mountain", "Forest"]);
+
+/**
+ * A "{T}: Add …" line on a land with a basic land type. Scryfall leaves that
+ * ability out of `oracle_text` because the type line already grants it
+ * (rule 305.6), but the pool has to spell it out — so it is always an EXTRA
+ * clause and never a real difference.
+ */
+function isImpliedLandManaAbility(clause, def) {
+  if (!/^\{t\}:\s*add\b/i.test(clause)) return false;
+  return (def.subtypes ?? []).some((s) => BASIC_LAND_TYPES.has(s));
+}
+
+/**
+ * Match every clause of the real card against ours and report what didn't
+ * land. Returns `{ missing, extra, similar }`, each a list of
+ * `{ clause, best, score }`.
+ */
+function compareText(def, face) {
+  const theirs = clausesOf(face.oracle_text);
+  const ours = clausesOf(def.text);
+  if (theirs.length === 0) return { missing: [], extra: [], similar: [] };
+
+  const theirTokens = theirs.map((c) => clauseTokens(c, def.name));
+  const ourTokens = ours.map((c) => clauseTokens(c, def.name));
+
+  const best = (tokens, pool) => {
+    let score = 0;
+    let at = -1;
+    pool.forEach((other, i) => {
+      const s = similarity(tokens, other);
+      if (s > score) {
+        score = s;
+        at = i;
+      }
+    });
+    return { score, at };
+  };
+
+  const missing = [];
+  const similar = [];
+  theirs.forEach((clause, i) => {
+    if (isCoveredKeywordLine(clause, def.keywords)) return;
+    const { score, at } = best(theirTokens[i], ourTokens);
+    if (score >= MATCHED) return;
+    const entry = { clause, best: at >= 0 && score >= RELATED ? ours[at] : null, score };
+    if (score >= RELATED) similar.push(entry);
+    else missing.push(entry);
+  });
+
+  const extra = [];
+  ours.forEach((clause, i) => {
+    if (isCoveredKeywordLine(clause, def.keywords)) return;
+    if (isImpliedLandManaAbility(clause, def)) return;
+    const { score } = best(ourTokens[i], theirTokens);
+    if (score < RELATED) extra.push({ clause, best: null, score });
+  });
+
+  return { missing, extra, similar };
+}
+
 function compare(def, card) {
   const face = faceFor(card, def.name);
   const issues = [];
@@ -252,7 +413,7 @@ function compare(def, card) {
   // break the printed card doesn't have.
   const ourLines = textLines(def.text);
   const theirLines = textLines(face.oracle_text);
-  if (checkText && theirLines.length > 0 && ourLines.length > 0 && ourLines.length !== theirLines.length) {
+  if (checkLines && theirLines.length > 0 && ourLines.length > 0 && ourLines.length !== theirLines.length) {
     issues.push(
       `text lines: ours=${ourLines.length} scryfall=${theirLines.length}` +
         `\n      ours:     ${ourLines.map((l) => l.slice(0, 60)).join(" | ")}` +
@@ -261,6 +422,32 @@ function compare(def, card) {
   }
 
   return issues;
+}
+
+/** The `--text` report: cards worst first (most unmatched clauses), each
+ * listing what the real card says that ours doesn't, and vice versa. */
+function reportText(reports, checked) {
+  const weight = (r) => r.missing.length * 2 + r.extra.length;
+  const sorted = [...reports].sort((a, b) => weight(b) - weight(a) || a.name.localeCompare(b.name));
+  const trim = (s) => (s.length > 150 ? `${s.slice(0, 147)}...` : s);
+
+  console.log(`\n=== rules text (${sorted.length} of ${checked} cards differ) ===\n`);
+  for (const r of sorted) {
+    console.log(`${r.name} (${r.file})`);
+    for (const m of r.missing) console.log(`  MISSING  ${trim(m.clause)}`);
+    for (const e of r.extra) console.log(`  EXTRA    ${trim(e.clause)}`);
+    if (showSimilar) {
+      for (const s of r.similar) {
+        console.log(`  REWORDED ${trim(s.clause)}`);
+        console.log(`           ours: ${trim(s.best ?? "")}`);
+      }
+    }
+    console.log("");
+  }
+  const missing = sorted.reduce((n, r) => n + r.missing.length, 0);
+  const extra = sorted.reduce((n, r) => n + r.extra.length, 0);
+  console.log(`${missing} clause(s) the real card has and ours doesn't, ${extra} the other way round.`);
+  console.log("Expect false positives: the pool paraphrases, and omits unmodeled abilities on purpose.");
 }
 
 function chunk(arr, size) {
@@ -311,6 +498,7 @@ async function main() {
   let checked = 0;
   let mismatched = 0;
   let notFound = 0;
+  const textReports = [];
 
   for (const { file, def } of entries) {
     const card = byName.get(def.name.toLowerCase());
@@ -323,19 +511,29 @@ async function main() {
     }
     checked += 1;
     const issues = compare(def, card);
+    const text = checkText ? compareText(def, faceFor(card, def.name)) : null;
     if (issues.length > 0) {
       mismatched += 1;
-      results.push({ name: def.name, file, status: "mismatch", issues });
       console.log(`✗ ${def.name} (${file})`);
       for (const issue of issues) console.log(`    ${issue}`);
-    } else {
-      results.push({ name: def.name, file, status: "ok" });
     }
+    if (text !== null && (text.missing.length > 0 || text.extra.length > 0 || (showSimilar && text.similar.length > 0))) {
+      textReports.push({ name: def.name, file, ...text });
+    }
+    results.push({
+      name: def.name,
+      file,
+      status: issues.length > 0 ? "mismatch" : "ok",
+      ...(issues.length > 0 ? { issues } : {}),
+      ...(text !== null ? { text } : {}),
+    });
   }
 
   console.log(
     `\n${checked} checked, ${mismatched} mismatched, ${notFound} not found on Scryfall (out of ${entries.length} cards)`,
   );
+
+  if (checkText) reportText(textReports, checked);
 
   if (jsonOut !== null) {
     writeFileSync(jsonOut, JSON.stringify(results, null, 2), "utf8");
