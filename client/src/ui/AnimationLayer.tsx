@@ -19,6 +19,7 @@ import {
   DEATH_STEP_MS,
   DRAW_STEP_MS,
   PHASE_STEP_MS,
+  REVEAL_STEP_MS,
   TURN_STEP_MS,
 } from '../game/animationSchedule.ts'
 import type { AnimationBus } from '../game/animationBus.ts'
@@ -60,6 +61,15 @@ const PHASE_LABEL: Record<Phase, string> = {
   combat: 'Combat',
   'postcombat-main': 'Main Phase',
   ending: 'End Phase',
+}
+
+/** Cards someone showed the table (rule 701.16). Held up briefly and then
+ * gone — the History log keeps the permanent record, so this never has to be
+ * dismissed and never blocks anyone. */
+interface Reveal {
+  readonly key: string
+  readonly caption: string
+  readonly cards: readonly VisibleObject[]
 }
 
 interface PlayedCard {
@@ -309,6 +319,7 @@ export function AnimationLayer({
   readonly seat: PlayerId
   readonly seats?: readonly SeatStatus[]
 }) {
+  const [reveals, setReveals] = useState<readonly Reveal[]>([])
   const [playedCards, setPlayedCards] = useState<readonly PlayedCard[]>([])
   const [drawnCards, setDrawnCards] = useState<readonly DrawnCard[]>([])
   const [activeBanner, setActiveBanner] = useState<Banner | null>(null)
@@ -373,6 +384,20 @@ export function AnimationLayer({
         runHit(ev.source, ev.target)
       } else if (ev.type === 'permanent-left-battlefield') {
         runDeath(ev.object)
+      } else if (ev.type === 'cards-revealed') {
+        const cards = ev.objects
+          .map((id) => view.objects[id])
+          .filter((o): o is VisibleObject => o !== undefined)
+        if (cards.length === 0) return
+        const key = `reveal-${ev.seq}`
+        const who = playerLabel(ev.player, seatsRef.current)
+        setReveals((cur) => [
+          ...cur,
+          { key, caption: `${who} reveals from their ${ev.from}`, cards },
+        ])
+        window.setTimeout(() => {
+          setReveals((cur) => cur.filter((r) => r.key !== key))
+        }, REVEAL_STEP_MS)
       } else if (ev.type === 'card-drawn') {
         const flight = drawFlight(ev.player)
         if (!flight) return
@@ -402,7 +427,14 @@ export function AnimationLayer({
     })
   }, [bus])
 
-  if (playedCards.length === 0 && drawnCards.length === 0 && !activeBanner) return null
+  if (
+    playedCards.length === 0 &&
+    drawnCards.length === 0 &&
+    reveals.length === 0 &&
+    !activeBanner
+  ) {
+    return null
+  }
 
   return createPortal(
     <div className="anim-layer">
@@ -431,6 +463,16 @@ export function AnimationLayer({
           }
         >
           <div className="card-back" />
+        </div>
+      ))}
+      {reveals.map((r) => (
+        <div key={r.key} className="reveal-show">
+          <div className="reveal-caption">{r.caption}</div>
+          <div className="reveal-cards">
+            {r.cards.map((obj) => (
+              <CardTile key={obj.id} obj={obj} layout="art-first" />
+            ))}
+          </div>
         </div>
       ))}
       {activeBanner ? (

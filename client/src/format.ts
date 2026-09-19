@@ -111,6 +111,8 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${event.player} draws from an empty library!`
     case 'cards-discarded':
       return `${event.player} discards ${event.objects.map(name).join(', ')}`
+    case 'cards-revealed':
+      return `${event.player} reveals ${event.objects.map(name).join(', ')} from their ${event.from}`
     case 'cards-chosen-from-zone':
       return event.objects.length > 0
         ? `${event.player} takes ${event.objects.map(name).join(', ')}`

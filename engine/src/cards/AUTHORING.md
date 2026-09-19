@@ -309,6 +309,7 @@ multiplier (Gray Merchant's "life equal to the life lost this way" is devotion
 | `return-to-hand` | `target` | Unsummon |
 | `return-to-hand-all` | `filter` | Cyclonic Rift, overloaded — mirrors `destroy-all` |
 | `return-from-graveyard` | `filter`, `destination: "battlefield" \| "hand"`, `count: number \| "all"`, `enterTapped?` | Splendid Reclamation (from *your* graveyard; a `number` less than the match count raises a `choose-from-zone`) |
+| `search-library` … `reveal?` | — | "…, **reveal it**, …" (Enlightened Tutor, Mystical Tutor): shows the find to every player, rule 701.16. Off by default — a plain "search your library for a card" (Vampiric Tutor) reveals nothing, and the difference is printed on the cards. |
 | `put-on-library` | `target`, `position: "top" \| "bottom"` | Academy Ruins, Mortuary Mire — puts one **targeted** card on its owner's deck. Pair it with a `card-in-graveyard` target for the graveyard-recursion lands; unlike `return-from-graveyard` it is target-driven, so it reaches any graveyard. |
 | `delayed-trigger` | `at`, `effect`, `text`, `controller?` | Whip of Erebos's "exile it at the beginning of the next end step", Arcane Denial's upkeep draws. Rule 603.7 — see below. |
 | `counter` | `target` (a spell) | Counterspell |

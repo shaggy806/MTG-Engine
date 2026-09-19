@@ -2396,6 +2396,84 @@
   justify-content: center;
 }
 
+/* Cards someone revealed to the table (rule 701.16 — a tutor's "reveal it").
+   Held up near the top of the screen rather than centred, so it never covers
+   the card a play animation is showing in the middle, and it is
+   `pointer-events: none` like everything else in this layer: it fades on its
+   own and is never dismissed. The History log keeps the permanent record, so
+   missing it costs nothing — which is exactly why it isn't a modal.
+   Rendered after the play/draw overlays so that on the rare frame where a
+   reveal and a cast animation are both up, the reveal — the one carrying
+   information somebody else needs — is the one on top.
+   2.6s matches animationSchedule.ts's REVEAL_STEP_MS. */
+.reveal-show {
+  position: absolute;
+  top: clamp(56px, 11vh, 120px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  animation: reveal-show 2.6s ease-out forwards;
+}
+.reveal-caption {
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--warn);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
+}
+.reveal-cards {
+  display: flex;
+  gap: 8px;
+}
+.reveal-cards .card-tile {
+  /* Bigger than a board card so it can actually be read across the table,
+     but smaller than the play animation's — this is information, not a beat.
+     Capped against viewport height for the usual reason (a card box is 1.4x
+     its width and the two axes scale independently). */
+  --card-w: min(calc(var(--card-w-max) * 1.4), 26vh);
+  --ct-scale: calc(var(--card-w) / var(--card-w-max));
+  width: var(--card-w);
+  border-color: rgba(255, 190, 70, 0.8);
+  box-shadow:
+    0 0 0 2px rgba(255, 190, 70, 0.45),
+    0 10px 30px rgba(0, 0, 0, 0.6);
+}
+/* CardTile renders as a <button>; index.css's global `button:disabled` would
+   otherwise cap opacity at 0.4 and fight the keyframes. */
+.reveal-cards .card-tile:disabled {
+  opacity: 1;
+}
+@keyframes reveal-show {
+  0% {
+    opacity: 0;
+    transform: translateY(-14px) scale(0.92);
+  }
+  10%,
+  80% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.97);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal-show {
+    animation: reveal-fade 2.6s linear forwards;
+  }
+  @keyframes reveal-fade {
+    0%,
+    80% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+}
+
 /* A card being cast/played flies out of its owner's cell in the table grid,
    dominates the middle of the screen, then shrinks back toward that cell as
    it fades -- so which side of the table a play came from is readable at a

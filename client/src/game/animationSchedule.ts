@@ -27,6 +27,10 @@ export const TURN_STEP_MS = 1300
 export const PHASE_STEP_MS = 700
 /** A cardback travelling from a library to its owner's hand. */
 export const DRAW_STEP_MS = 520
+/** How long a revealed card is held up for everyone to read. Longer than a
+ * banner because there's a card face to actually take in, and unpaced — the
+ * information is already in the History log, so nobody has to catch it. */
+export const REVEAL_STEP_MS = 2600
 /** How far apart a run of draws in one frame is dealt out, so an opening
  * hand or a "draw three" arrives as cards rather than a single clump. Does
  * not hold the game up — see `PACED`. */
@@ -71,7 +75,7 @@ export interface EventSchedule {
   readonly endPhase: Phase
 }
 
-type SlotKind = 'card' | 'hit' | 'death' | 'draw' | 'turn' | 'phase'
+type SlotKind = 'card' | 'hit' | 'death' | 'draw' | 'turn' | 'phase' | 'reveal'
 
 /**
  * Which animations the game actually waits for. A card being played, a
@@ -106,6 +110,9 @@ function slotFor(ev: GameEvent, phase: { current: Phase }): Slot | null {
   }
   if (ev.type === 'card-drawn') {
     return { event: ev, kind: 'draw', duration: DRAW_STEP_MS }
+  }
+  if (ev.type === 'cards-revealed') {
+    return { event: ev, kind: 'reveal', duration: REVEAL_STEP_MS }
   }
   if (ev.type === 'turn-began') {
     phase.current = 'beginning'
