@@ -46,6 +46,7 @@
 import { createRng, shuffle } from "../primitives.js";
 import type { PlayerId, Rng } from "../primitives.js";
 import type { GameState } from "../state.js";
+import { cloneGameState } from "../state.js";
 
 /**
  * A copy of `state` with the zones `me` cannot see resampled: every opponent's
@@ -63,7 +64,7 @@ import type { GameState } from "../state.js";
  * empty stack, and {@link canDeterminize} is the check.
  */
 export function determinize(state: GameState, me: PlayerId, rng: Rng): GameState {
-  const next = structuredClone({ ...state, eventLog: [] });
+  const next = cloneGameState({ ...state, eventLog: [] });
   for (const player of next.turnOrder) {
     const zones = next.zones.perPlayer[player];
     if (player === me) {

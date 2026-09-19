@@ -1049,6 +1049,33 @@ export function createPlayerState(id: PlayerId, rules: GameRules): PlayerState {
   };
 }
 
+/**
+ * Deep-copy a `GameState` — a drop-in replacement for `structuredClone`,
+ * several times faster because it can assume what `GameState` guarantees: a
+ * plain tree of objects, arrays and primitives (no class instances, `Map`/
+ * `Set`, `Date`, typed arrays, cycles or functions). Bot search clones a
+ * whole state per simulated candidate (and, for v3, per sampled world), so
+ * this is directly on the "how many candidates fit in the decision budget"
+ * path.
+ */
+export function cloneGameState(state: GameState): GameState {
+  return clonePlainTree(state) as GameState;
+}
+
+function clonePlainTree(value: unknown): unknown {
+  if (value === null || typeof value !== "object") return value;
+  if (Array.isArray(value)) {
+    const out = new Array(value.length);
+    for (let i = 0; i < value.length; i += 1) out[i] = clonePlainTree(value[i]);
+    return out;
+  }
+  const out: Record<string, unknown> = {};
+  for (const key in value) {
+    out[key] = clonePlainTree((value as Record<string, unknown>)[key]);
+  }
+  return out;
+}
+
 // --- selectors -------------------------------------------------------------
 
 /** The name of the face of a multi-face card that is currently up (rule 712) —
