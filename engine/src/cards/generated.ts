@@ -84,6 +84,7 @@ import _poolBruseTarlBoorishHerder from "./pool/bruse-tarl-boorish-herder.js";
 import _poolBrushland from "./pool/brushland.js";
 import _poolBuriedRuin from "./pool/buried-ruin.js";
 import _poolBurnishedHart from "./pool/burnished-hart.js";
+import _poolCabalRitual from "./pool/cabal-ritual.js";
 import _poolCabarettiCourtyard from "./pool/cabaretti-courtyard.js";
 import _poolCamaraderie from "./pool/camaraderie.js";
 import _poolCanopyVista from "./pool/canopy-vista.js";
@@ -167,6 +168,7 @@ import _poolDragonkinBerserker from "./pool/dragonkin-berserker.js";
 import _poolDragonlordsServant from "./pool/dragonlords-servant.js";
 import _poolDragonmasterOutcast from "./pool/dragonmaster-outcast.js";
 import _poolDragonsHoard from "./pool/dragons-hoard.js";
+import _poolDragonsRageChanneler from "./pool/dragons-rage-channeler.js";
 import _poolDragonskullSummit from "./pool/dragonskull-summit.js";
 import _poolDragonspeakerShaman from "./pool/dragonspeaker-shaman.js";
 import _poolDrakusethMawOfFlames from "./pool/drakuseth-maw-of-flames.js";
@@ -490,6 +492,7 @@ import _poolSkyshroudClaim from "./pool/skyshroud-claim.js";
 import _poolSlateOfAncestry from "./pool/slate-of-ancestry.js";
 import _poolSmolderingMarsh from "./pool/smoldering-marsh.js";
 import _poolSnapcasterMage from "./pool/snapcaster-mage.js";
+import _poolSneakAttack from "./pool/sneak-attack.js";
 import _poolSolRing from "./pool/sol-ring.js";
 import _poolSolemnSimulacrum from "./pool/solemn-simulacrum.js";
 import _poolSoulSnare from "./pool/soul-snare.js";
@@ -580,6 +583,8 @@ import _poolTimeWipe from "./pool/time-wipe.js";
 import _poolTirelessProvisioner from "./pool/tireless-provisioner.js";
 import _poolTitanHunter from "./pool/titan-hunter.js";
 import _poolTomeScour from "./pool/tome-scour.js";
+import _poolToxicDeluge from "./pool/toxic-deluge.js";
+import _poolTragicSlip from "./pool/tragic-slip.js";
 import _poolTranquilCove from "./pool/tranquil-cove.js";
 import _poolTranquilExpanse from "./pool/tranquil-expanse.js";
 import _poolTranquilThicket from "./pool/tranquil-thicket.js";
@@ -776,6 +781,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBrushland,
   _poolBuriedRuin,
   _poolBurnishedHart,
+  _poolCabalRitual,
   _poolCabarettiCourtyard,
   _poolCamaraderie,
   _poolCanopyVista,
@@ -859,6 +865,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolDragonlordsServant,
   _poolDragonmasterOutcast,
   _poolDragonsHoard,
+  _poolDragonsRageChanneler,
   _poolDragonskullSummit,
   _poolDragonspeakerShaman,
   _poolDrakusethMawOfFlames,
@@ -1182,6 +1189,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSlateOfAncestry,
   _poolSmolderingMarsh,
   _poolSnapcasterMage,
+  _poolSneakAttack,
   _poolSolRing,
   _poolSolemnSimulacrum,
   _poolSoulSnare,
@@ -1272,6 +1280,8 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTirelessProvisioner,
   _poolTitanHunter,
   _poolTomeScour,
+  _poolToxicDeluge,
+  _poolTragicSlip,
   _poolTranquilCove,
   _poolTranquilExpanse,
   _poolTranquilThicket,

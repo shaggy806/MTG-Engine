@@ -7,6 +7,7 @@
  */
 import { describe, expect, it } from "vitest";
 
+import { computeCharacteristics } from "../characteristics.js";
 import { ScriptedController } from "../controller.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
@@ -156,5 +157,60 @@ describe("Terrain Generator", () => {
 
     expect(game.state.objects[island].zone).toBe("battlefield");
     expect(game.state.objects[island].tapped).toBe(true);
+  });
+});
+
+/**
+ * `look-and-choose`'s `then`, which is what lets anything downstream refer to
+ * the card that was *chosen* — it was never a target of the spell, so before
+ * this there was no way to say "that creature gains haste" about it.
+ */
+describe("Sneak Attack", () => {
+  it("cheats a creature in hasty, then sacrifices it at the next end step", () => {
+    const { game, a } = mkGame([]);
+    game.advanceUntil(toPrecombat);
+    const sneak = game.debugSpawn("Sneak Attack", A, "battlefield");
+    game.debugSpawn("Mountain", A, "battlefield");
+    const wurm = game.debugSpawn("Craw Wurm", A, "hand");
+    a.chooseFromZoneFn = (_v, eligible) => eligible.filter((id) => id === wurm);
+
+    game.dispatch({
+      type: "activate-ability",
+      player: A,
+      source: sneak,
+      abilityIndex: 0,
+      targets: [],
+    });
+    game.advanceUntil(quiet);
+
+    expect(game.state.objects[wurm].zone).toBe("battlefield");
+    expect([
+      ...computeCharacteristics(game.state, game.registry, wurm).keywords,
+    ]).toContain("haste");
+    expect(game.state.delayedTriggers).toHaveLength(1);
+
+    game.advanceUntil((s) => s.turn.number === 2);
+    expect(game.state.objects[wurm].zone).toBe("graveyard");
+    expect(game.state.delayedTriggers).toHaveLength(0);
+  });
+
+  it("declining the choice sets up no delayed sacrifice", () => {
+    const { game, a } = mkGame([]);
+    game.advanceUntil(toPrecombat);
+    const sneak = game.debugSpawn("Sneak Attack", A, "battlefield");
+    game.debugSpawn("Mountain", A, "battlefield");
+    game.debugSpawn("Craw Wurm", A, "hand");
+    a.chooseFromZoneFn = () => [];
+
+    game.dispatch({
+      type: "activate-ability",
+      player: A,
+      source: sneak,
+      abilityIndex: 0,
+      targets: [],
+    });
+    game.advanceUntil(quiet);
+
+    expect(game.state.delayedTriggers).toHaveLength(0);
   });
 });

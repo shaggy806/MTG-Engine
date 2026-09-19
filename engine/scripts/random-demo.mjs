@@ -48,6 +48,7 @@ const deck = (entries) =>
 // otherwise one side just sits there and the fuzz only exercises one player.
 const deckA = deck([
   // EDH-backlog: put-a-card-from-hand-onto-the-battlefield.
+  ["Sneak Attack", 1],
   ["Growth Spiral", 1],
   ["Eureka Moment", 1],
   ["Ghalta, Stampede Tyrant", 1],
@@ -208,7 +209,11 @@ const deckA = deck([
 // and plays its threats — a bloated deck just stalls out and the fuzz only
 // exercises one side. One or two copies of each mechanic is enough coverage.
 const deckB = deck([
-  // EDH-backlog: additional costs that aren't a sacrifice.
+  // EDH-backlog: additional costs, delirium/threshold/morbid, X-paid-in-life.
+  ["Toxic Deluge", 1],
+  ["Cabal Ritual", 1],
+  ["Tragic Slip", 1],
+  ["Dragon's Rage Channeler", 1],
   ["Thrill of Possibility", 1],
   ["Cathartic Reunion", 1],
   ["Seize the Spoils", 1],

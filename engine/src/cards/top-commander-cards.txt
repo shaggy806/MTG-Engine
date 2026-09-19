@@ -1,5 +1,5 @@
 Top 2000 Commander cards by EDHREC popularity (fetched 2026-09-13)
-354 already implemented / 1646 missing (marks refreshed 2026-09-19)
+359 already implemented / 1641 missing (marks refreshed 2026-09-19)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -62,7 +62,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]    63  Hallowed Fountain                        {0}              Land — Plains Island
 [x]    64  Steam Vents                              {0}              Land — Island Mountain
 [ ]    65  Smothering Tithe                         {3}{W}           Enchantment
-[ ]    66  Toxic Deluge                             {2}{B}           Sorcery
+[x]    66  Toxic Deluge                             {2}{B}           Sorcery
 [x]    67  Ancient Tomb                             {0}              Land
 [ ]    68  Swan Song                                {U}              Instant
 [x]    69  Blood Crypt                              {0}              Land — Swamp Mountain
@@ -443,7 +443,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   444  Unnatural Growth                         {1}{G}{G}{G}{G}  Enchantment
 [ ]   445  Ohran Frostfang                          {3}{G}{G}        Snow Creature — Snake
 [ ]   446  Gaea's Cradle                            {0}              Legendary Land
-[ ]   447  Cabal Ritual                             {1}{B}           Instant
+[x]   447  Cabal Ritual                             {1}{B}           Instant
 [x]   448  Plateau                                  {0}              Land — Mountain Plains
 [ ]   449  Entish Restoration                       {2}{G}           Instant
 [x]   450  Temple of Malice                         {0}              Land
@@ -865,7 +865,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   869  Breach the Multiverse                    {5}{B}{B}        Sorcery
 [ ]   870  City on Fire                             {5}{R}{R}{R}     Enchantment
 [ ]   871  Mystic Gate                              {0}              Land
-[ ]   872  Tragic Slip                              {B}              Instant
+[x]   872  Tragic Slip                              {B}              Instant
 [ ]   873  Beseech the Mirror                       {1}{B}{B}{B}     Sorcery
 [x]   874  Splendid Reclamation                     {3}{G}           Sorcery
 [ ]   875  Riverpyre Verge                          {0}              Land
@@ -1488,7 +1488,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1495  Prosperous Innkeeper                     {1}{G}           Creature — Halfling Citizen
 [ ]  1496  Blood Moon                               {2}{R}           Enchantment
 [ ]  1497  Patriarch's Bidding                      {3}{B}{B}        Sorcery
-[ ]  1498  Sneak Attack                             {3}{R}           Enchantment
+[x]  1498  Sneak Attack                             {3}{R}           Enchantment
 [ ]  1499  Twitching Doll                           {1}{G}           Artifact Creature — Spider Toy
 [ ]  1500  Obscuring Haze                           {2}{G}           Instant
 [ ]  1501  Heliod's Intervention                    {X}{W}{W}        Instant
@@ -1812,7 +1812,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1819  Tannuk, Memorial Ensign                  {1}{R}{G}        Legendary Creature — Kavu Pilot
 [ ]  1820  Song of the Dryads                       {2}{G}           Enchantment — Aura
 [ ]  1821  Disallow                                 {1}{U}{U}        Instant
-[ ]  1822  Dragon's Rage Channeler                  {R}              Creature — Human Shaman
+[x]  1822  Dragon's Rage Channeler                  {R}              Creature — Human Shaman
 [ ]  1823  Mana Reflection                          {4}{G}{G}        Enchantment
 [ ]  1824  Jarad, Golgari Lich Lord                 {B}{B}{G}{G}     Legendary Creature — Zombie Elf
 [ ]  1825  Juri, Master of the Revue                {B}{R}           Legendary Creature — Human Shaman
