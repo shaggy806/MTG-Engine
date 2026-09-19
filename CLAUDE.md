@@ -21,7 +21,9 @@ others, and what each is for:
   EDH-popularity-driven backlog (from `top-commander-cards.txt`/`top-commander-cards-flagged.txt`,
   the top 2000 Commander cards by EDHREC rank cross-referenced against the pool) ranking features
   by how many real cards each would unblock, plus a compact P0–P20 index. The pool is ~630 real
-  cards (`npm run card:verify -w engine` prints the current count).
+  cards (`npm run card:verify -w engine` prints the current count). The `[x]` marks in
+  `top-commander-cards.txt` are refreshed by `npm run cards:mark -w engine`, which re-marks
+  the file in place against the built pool rather than re-fetching the ranking.
 - **`engine/src/cards/AUTHORING.md`** — the hand-authoring guide for adding a card. Read before
   authoring.
 - **`DEPLOYMENT.md`** — the tobyens.com production hosting/update runbook.

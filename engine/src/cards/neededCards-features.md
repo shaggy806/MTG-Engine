@@ -15,6 +15,11 @@ against the current vocabulary. Two workstreams have fed it:
    engine doesn't have yet. This section ranks those features by how many
    flagged cards each would unblock.
 
+   **Refresh the `[x]` marks with `npm run cards:mark -w engine`** after
+   authoring. That re-marks in place against the current pool and leaves the
+   EDHREC ranking snapshot alone, so this file's correspondence with it holds;
+   a full re-fetch would move the roster underneath it.
+
 Read `cards/AUTHORING.md` before authoring any card; it's the field-by-field
 reference. This file is a priority list, not a how-to.
 
@@ -96,11 +101,11 @@ vocabulary — and authored them in bulk. 53 cards, all verified against Scryfal
 by `card:verify`.
 
 **A tooling correction first.** `top-commander-cards.txt`'s `[x]`/`[ ]` marks
-are produced by regexing `name: "…"` out of each `pool/` file, so every card
+were produced by regexing `name: "…"` out of each `pool/` file, so every card
 built by a `helpers.ts` constructor (`shockLand("Blood Crypt", …)` — the whole
 file) was falsely reported missing. Ten already-implemented lands were listed as
-unauthored. Re-derive the real set from `BUILTIN_CARDS`, not from the file's
-marks, until `scripts/top-commander-cards.mjs` learns to read the helper calls.
+unauthored. *(Fixed since: the script reads `POOL_CARDS` out of the built
+`dist/`, and `--refresh` re-marks the file in place.)*
 
 Shipped:
 

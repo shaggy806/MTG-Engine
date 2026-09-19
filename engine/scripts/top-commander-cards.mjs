@@ -6,13 +6,20 @@
 //
 // Usage:
 //   node scripts/top-commander-cards.mjs [--count 500] [--out path] [--include-basics]
+//   node scripts/top-commander-cards.mjs --refresh          # re-mark in place
 //
 // Output is a text file in the same [x]/[+]/[ ] style as `neededCards.txt`:
 // one line per card, ranked by EDHREC popularity, marked [x] if a card of
 // that name already exists under `cards/pool/`.
+//
+// `--refresh` touches no network: it rewrites only the [x]/[ ] marks of the
+// existing file against the pool as it stands now, leaving the EDHREC ranking
+// snapshot — and so its correspondence with `neededCards-features.md` —
+// exactly as fetched. That is what you want after authoring cards; re-fetch
+// only when the ranking itself should move.
 
-import { readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { readFileSync, writeFileSync } from "node:fs";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
 
 const USER_AGENT = "MTG-Engine-CardAuthoring/1.0";
@@ -45,12 +52,13 @@ async function scryfallFetch(url) {
 }
 
 function parseArgs(argv) {
-  const opts = { count: 500, out: null, includeBasics: false, cacheJson: null };
+  const opts = { count: 500, out: null, includeBasics: false, cacheJson: null, refresh: false };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === "--count") opts.count = Number(argv[++i]);
     else if (arg === "--out") opts.out = argv[++i];
     else if (arg === "--include-basics") opts.includeBasics = true;
+    else if (arg === "--refresh") opts.refresh = true;
     else if (arg === "--query") opts.query = argv[++i];
     else if (arg === "--cache-json") opts.cacheJson = argv[++i];
   }
@@ -82,18 +90,68 @@ async function fetchTopCommanderCards(count, { includeBasics = false, query } = 
   return cards;
 }
 
-function loadImplementedNames(poolDir) {
+/**
+ * Every card name the pool implements, read from the **built** definitions
+ * rather than by regexing the source.
+ *
+ * Regexing `name: "…"` out of each file used to miss every card built by a
+ * `helpers.ts` constructor — `shockLand("Blood Crypt", …)` is a whole file
+ * with no `name:` key in it — so ten already-implemented lands were reported
+ * unauthored. `POOL_CARDS` has no such blind spot; the cost is that
+ * `engine/dist` has to be built first, which the npm script takes care of.
+ */
+async function loadImplementedNames() {
+  const dist = fileURLToPath(new URL("../dist/cards/generated.js", import.meta.url));
+  let mod;
+  try {
+    mod = await import(pathToFileURL(dist).href);
+  } catch {
+    console.error(`Could not load ${dist} — run \`npm run build -w engine\` first.`);
+    process.exit(1);
+  }
   const names = new Set();
-  for (const file of readdirSync(poolDir)) {
-    if (!file.endsWith(".ts")) continue;
-    const text = readFileSync(path.join(poolDir, file), "utf8");
-    // Top-level `name: "..."` (the card's own name) plus any `faces: [{ name: "..." }]`
-    // entries, so both sides of an MDFC/transform card count as implemented.
-    for (const match of text.matchAll(/\bname:\s*"([^"]+)"/g)) {
-      names.add(match[1]);
-    }
+  for (const def of mod.POOL_CARDS) {
+    names.add(def.name);
+    // A multi-face card is listed under either face's name, so both count.
+    for (const face of def.faces ?? []) names.add(face);
   }
   return names;
+}
+
+/** The card name on one line of an existing list file — see `formatLine`. */
+function nameOfLine(line) {
+  // The name is `padEnd(40)` from column 11; a longer name overflows the field
+  // and is then separated from the mana cost by the single literal space.
+  const rest = line.slice(11);
+  if (rest.length <= 40 || rest[40] === " ") return rest.slice(0, 40).trim();
+  return rest.split(/\s{2,}| (?=\{)/)[0].trim();
+}
+
+/**
+ * `--refresh`: rewrite only the marks of an existing list, leaving its ranking
+ * snapshot byte-for-byte alone.
+ */
+async function refresh(outPath) {
+  const implementedNames = await loadImplementedNames();
+  const lines = readFileSync(outPath, "utf8").split("\n");
+  let implemented = 0;
+  let total = 0;
+  const marked = lines.map((line) => {
+    if (!/^\[.\] /.test(line)) return line;
+    total += 1;
+    const has = implementedNames.has(nameOfLine(line));
+    if (has) implemented += 1;
+    return `${has ? "[x]" : "[ ]"}${line.slice(3)}`;
+  });
+  // The file's own summary line has to move with the marks.
+  const summary = marked.findIndex((l) => / already implemented \/ /.test(l));
+  if (summary >= 0) {
+    marked[summary] =
+      `${implemented} already implemented / ${total - implemented} missing ` +
+      `(marks refreshed ${new Date().toISOString().slice(0, 10)})`;
+  }
+  writeFileSync(outPath, marked.join("\n"), "utf8");
+  console.error(`Refreshed ${outPath}: ${implemented}/${total} implemented.`);
 }
 
 function formatLine(card, implemented) {
@@ -105,14 +163,18 @@ function formatLine(card, implemented) {
 
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
-  if (!Number.isFinite(opts.count) || opts.count <= 0) {
+  if (!opts.refresh && (!Number.isFinite(opts.count) || opts.count <= 0)) {
     console.error("--count must be a positive number");
     process.exit(1);
   }
 
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
-  const poolDir = path.join(__dirname, "..", "src", "cards", "pool");
   const outPath = opts.out ?? path.join(__dirname, "..", "src", "cards", "top-commander-cards.txt");
+
+  if (opts.refresh) {
+    await refresh(outPath);
+    return;
+  }
 
   console.error(`Fetching top ${opts.count} Commander-popular cards from Scryfall...`);
   const cards = await fetchTopCommanderCards(opts.count, {
@@ -121,7 +183,7 @@ async function main() {
   });
   console.error(`Fetched ${cards.length} cards.`);
 
-  const implementedNames = loadImplementedNames(poolDir);
+  const implementedNames = await loadImplementedNames();
   console.error(`Found ${implementedNames.size} implemented card names in cards/pool/.`);
 
   let implementedCount = 0;
