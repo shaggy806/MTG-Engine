@@ -37,7 +37,7 @@
  */
 
 import { isManaAbility } from "../abilities.js";
-import { computeCharacteristics } from "../characteristics.js";
+import { computeCharacteristics, withComputedCache } from "../characteristics.js";
 import type { Characteristics } from "../characteristics.js";
 import type { CardRegistry } from "../cards.js";
 import type { Keyword } from "../cards/define.js";
@@ -152,6 +152,20 @@ const count = (c: Characteristics, keywords: readonly Keyword[]): number =>
  * `extraLands`; it's a hyperparameter of the encoding, not a coefficient.
  */
 export function playerFeatures(
+  state: GameState,
+  registry: CardRegistry,
+  player: PlayerId,
+  isMe: boolean,
+  landCap: number,
+): PlayerFeatures {
+  // Pure read over one simulated state — cache the characteristics folds for
+  // the scan (a no-op when a caller already holds a region open).
+  return withComputedCache(() =>
+    playerFeaturesUncached(state, registry, player, isMe, landCap),
+  );
+}
+
+function playerFeaturesUncached(
   state: GameState,
   registry: CardRegistry,
   player: PlayerId,

@@ -11,7 +11,7 @@
  */
 
 import type { CardRegistry, CardType, CombatRestriction, Keyword } from "./cards.js";
-import { computeCharacteristics } from "./characteristics.js";
+import { computeCharacteristics, withComputedCache } from "./characteristics.js";
 import type { GameEvent } from "./events.js";
 import type { Color, ManaPool } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
@@ -280,6 +280,17 @@ function visible(
 }
 
 export function viewFor(
+  state: GameState,
+  registry: CardRegistry,
+  viewer: PlayerId,
+  options: ViewOptions = {},
+): PlayerView {
+  // A pure read over one settled state, computing characteristics for every
+  // visible object — cache them for the duration.
+  return withComputedCache(() => viewForUncached(state, registry, viewer, options));
+}
+
+function viewForUncached(
   state: GameState,
   registry: CardRegistry,
   viewer: PlayerId,

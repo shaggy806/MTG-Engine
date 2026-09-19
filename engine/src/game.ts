@@ -37,10 +37,14 @@ import type {
 } from "./cards.js";
 import {
   computeCharacteristics,
+  computedCacheMemo,
   effectiveSubtypes,
   hasLostAbilities,
+  invalidateComputedCache,
   staticAffects,
   staticConditionMet,
+  suspendComputedCache,
+  withComputedCache,
 } from "./characteristics.js";
 import type { Characteristics } from "./characteristics.js";
 import { AutomaticController } from "./controller.js";
@@ -72,7 +76,13 @@ import { COLORS, MANA_TYPES, emptyPool, manaValue, parseManaCost, poolTotal } fr
 import type { Color, ManaCost, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId, Rng } from "./primitives.js";
 import { asObjectId, createRng, shuffle } from "./primitives.js";
-import { DEFAULT_RULES, activePlayerOf, createPlayerState, printedCardName } from "./state.js";
+import {
+  DEFAULT_RULES,
+  activePlayerOf,
+  cloneGameState,
+  createPlayerState,
+  printedCardName,
+} from "./state.js";
 import type {
   AwaitingDecision,
   CombatDamageState,
@@ -273,6 +283,14 @@ const CREATURE_TYPE_SET: ReadonlySet<string> = new Set(CREATURE_TYPES);
 /** How many suggested creature types a catalog choice offers up front. */
 const SUGGESTED_CREATURE_TYPES = 8;
 
+/** Shared empty result for `effectiveTriggeredEntries`' common no-triggers
+ * case, so the per-event battlefield scan allocates nothing for a plain land
+ * or vanilla creature. */
+const EMPTY_TRIGGERED_ENTRIES: readonly {
+  readonly ability: TriggeredAbility;
+  readonly ref?: GrantedAbilityRef;
+}[] = [];
+
 export class Game {
   readonly state: GameState;
   private readonly registry: CardRegistry;
@@ -368,7 +386,7 @@ export class Game {
   }
 
   static fromSnapshot(snapshot: GameState, env: SnapshotEnv = {}): Game {
-    const state = structuredClone(snapshot);
+    const state = cloneGameState(snapshot);
     const registry = env.registry ?? createDefaultRegistry();
     const controllers: Record<PlayerId, PlayerController> = {};
     for (const player of state.turnOrder) {
@@ -440,7 +458,7 @@ export class Game {
 
   /** Deep copy of the current state, suitable for {@link Game.fromSnapshot}. */
   snapshot(): GameState {
-    return structuredClone(this.state);
+    return cloneGameState(this.state);
   }
 
   /** A redacted, self-contained snapshot from one player's seat. */
@@ -635,6 +653,15 @@ export class Game {
 
   /** Everything `player` may legally do right now. */
   legalActions(player: PlayerId): LegalAction[] {
+    // Pure enumeration over one settled state — the engine's hottest read
+    // path (per candidate spell it replans mana, recomputes characteristics,
+    // rechecks conditions). One cache region covers the whole call; the only
+    // mutation reachable from inside (`withFace`'s temporary face flip)
+    // invalidates as it flips.
+    return withComputedCache(() => this.legalActionsUncached(player));
+  }
+
+  private legalActionsUncached(player: PlayerId): LegalAction[] {
     if (this.state.result.over) return [];
 
     const awaiting = this.state.awaiting;
@@ -3836,10 +3863,12 @@ export class Game {
     }
     const saved = object.face;
     object.face = face;
+    invalidateComputedCache();
     try {
       return fn();
     } finally {
       object.face = saved;
+      invalidateComputedCache();
     }
   }
 
@@ -4969,11 +4998,20 @@ export class Game {
     grantors?: readonly TriggeredGrantSource[],
   ): readonly { readonly ability: TriggeredAbility; readonly ref?: GrantedAbilityRef }[] {
     const target = this.state.objects[objectId];
-    if (target === undefined) return [];
-    if (hasLostAbilities(target)) return [];
-    const printed = this.registry
-      .get(printedCardName(target))
-      .triggered.map((ability) => ({ ability }));
+    if (target === undefined) return EMPTY_TRIGGERED_ENTRIES;
+    if (hasLostAbilities(target)) return EMPTY_TRIGGERED_ENTRIES;
+    const printedAbilities = this.registry.get(printedCardName(target)).triggered;
+    // The common case — a land, a vanilla creature — has nothing printed, no
+    // modifiers and no grantors to consult: skip the allocations below. This
+    // runs for every battlefield permanent on every emitted event.
+    if (
+      printedAbilities.length === 0 &&
+      target.modifiers.length === 0 &&
+      (grantors !== undefined && grantors.length === 0)
+    ) {
+      return EMPTY_TRIGGERED_ENTRIES;
+    }
+    const printed = printedAbilities.map((ability) => ({ ability }));
     const granted: { ability: TriggeredAbility; ref: GrantedAbilityRef }[] = [];
     // A one-shot grant rides on the object's own modifiers, so it works off
     // the battlefield too (a creature that died still has the modifier until
@@ -5560,6 +5598,16 @@ export class Game {
    * `planManaPayment` makes that choice per cost.
    */
   private manaSources(player: PlayerId): ManaSource[] {
+    // Recomputed for every `planManaPayment` call — which `legalActions` makes
+    // once per castable-candidate variant (and several times per hybrid pip).
+    // The list is a pure function of the state and the planner treats it
+    // read-only, so within a cache region it's computed once per player.
+    return computedCacheMemo(`manaSources:${player}`, () =>
+      this.manaSourcesUncached(player),
+    );
+  }
+
+  private manaSourcesUncached(player: PlayerId): ManaSource[] {
     const out: ManaSource[] = [];
     // Computed once for the whole scan — see `activatedGrantSources`.
     const grantors = this.activatedGrantSources();
@@ -6489,6 +6537,14 @@ export class Game {
 
   /** Scan for triggered abilities that just fired and queue them. */
   private detectTriggers(event: GameEvent): void {
+    // Pure scan over one event (the only write is pushing pending triggers,
+    // which nothing cached reads) — worth a region of its own because it runs
+    // on *every* emitted event, right after `emit` invalidated whatever a
+    // surrounding region held.
+    withComputedCache(() => this.detectTriggersUncached(event));
+  }
+
+  private detectTriggersUncached(event: GameEvent): void {
     // Computed once per event rather than per candidate — `effectiveTriggered`
     // would otherwise rescan the battlefield for every permanent on it.
     const triggerGrantors = this.triggeredGrantSources();
@@ -9092,6 +9148,7 @@ export class Game {
         object.summoningSick = true;
         object.attacking = null;
         object.blocking = null;
+        invalidateComputedCache();
         this.emit({
           type: "control-changed",
           object: id,
@@ -9599,6 +9656,14 @@ export class Game {
   // --- state-based actions -----------------------------------
 
   private runStateBasedActions(): void {
+    // Each sweep reads every battlefield permanent's characteristics several
+    // times; cache them for the sweep. Mutations along the way keep it
+    // honest: `moveObject` suspends the cache, `emit` and `recomputeControl`
+    // invalidate, and the direct field writes below invalidate by hand.
+    withComputedCache(() => this.runStateBasedActionsUncached());
+  }
+
+  private runStateBasedActionsUncached(): void {
     let changed = true;
     while (changed) {
       // A replacement raised a decision mid-sweep (a commander about to leave
@@ -9703,6 +9768,7 @@ export class Game {
           });
         } else {
           object.attachedTo = null;
+          invalidateComputedCache();
         }
         changed = true;
       }
@@ -9757,13 +9823,20 @@ export class Game {
       }
 
       // A token that isn't on the battlefield ceases to exist (rule 111.7/704.5d).
-      for (const id of Object.keys(this.state.objects) as ObjectId[]) {
+      // `for…in` rather than `Object.keys`: this sweep visits every object in
+      // the game on every pass, and deleting the *current* key mid-iteration
+      // is well-defined.
+      for (const key in this.state.objects) {
+        const id = key as ObjectId;
         const object = this.state.objects[id];
         if (!object.isToken || object.zone === "battlefield") continue;
         const zone = this.zoneList(object.zone, object.owner);
         const index = zone.indexOf(id);
         if (index >= 0) zone.splice(index, 1);
         delete this.state.objects[id];
+        // No emit for this one, and a graveyard's length feeds CDAs
+        // (`cards-in-all-graveyards`) — invalidate by hand.
+        invalidateComputedCache();
         changed = true;
       }
     }
@@ -9968,6 +10041,13 @@ export class Game {
   }
 
   private moveObject(id: ObjectId, to: ZoneType): void {
+    // Zone moves interleave reads and writes too finely for point
+    // invalidation — run with the computed-value cache off (and cleared on
+    // the way out). See `suspendComputedCache`.
+    suspendComputedCache(() => this.moveObjectUncached(id, to));
+  }
+
+  private moveObjectUncached(id: ObjectId, to: ZoneType): void {
     const object = this.state.objects[id];
     const leavingBattlefield = object.zone === "battlefield" && to !== "battlefield";
     // Snapshot before anything clears them — a dies-trigger's "if it had no
@@ -10190,6 +10270,10 @@ export class Game {
     this.state.eventSeq += 1;
     const full = { ...event, seq } as GameEvent;
     this.state.eventLog.push(full);
+    // Every consequential state change announces itself here, so this is the
+    // broad safety net for the computed-value cache: whatever just changed,
+    // `detectTriggers` and everything after it read fresh values.
+    invalidateComputedCache();
     this.detectTriggers(full);
   }
 }

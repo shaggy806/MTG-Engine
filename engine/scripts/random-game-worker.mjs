@@ -9,7 +9,12 @@
 
 import { parentPort, workerData } from "node:worker_threads";
 
-import { Game, RandomController, createRng } from "../dist/index.js";
+import { Game, RandomController, createRng, setComputedCacheCheck } from "../dist/index.js";
+
+// MTG_CACHE_CHECK=1 turns every computed-cache hit into a recompute +
+// deep-compare that throws on divergence — the empirical verification that
+// every mutation inside a cache region invalidates (see characteristics.ts).
+if (process.env.MTG_CACHE_CHECK) setComputedCacheCheck(true);
 
 const { seats } = workerData;
 

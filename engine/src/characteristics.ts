@@ -25,6 +25,7 @@ import type {
   CombatRestriction,
   CountSpec,
   Keyword,
+  StaticAbility,
   StaticCondition,
 } from "./cards.js";
 import { compareNum, matchesFilter } from "./filter.js";
@@ -43,6 +44,105 @@ import type { GameObject, GameState } from "./state.js";
  * Transient computation scaffolding — never part of `GameState`.
  */
 const conditionInProgress = new Set<ObjectId>();
+
+/**
+ * A scoped memo for computed values that are pure functions of the current
+ * `GameState` — {@link computeCharacteristics} results, the
+ * {@link contributingStaticSources} battlefield pre-scan, and (via
+ * {@link computedCacheMemo}) `Game`-side derivations like the mana-source
+ * list. Purely a performance mechanism: with no region active every read
+ * computes fresh, exactly as before.
+ *
+ * **Soundness contract**: a region ({@link withComputedCache}) may only wrap
+ * code that does not change any input these computations read — or that calls
+ * {@link invalidateComputedCache} at every point where it does (`Game`'s
+ * `moveObject`, `recomputeControl`, `withFace`, …). A region never spans more
+ * than one `Game`/state, and nesting reuses the outer region's cache.
+ *
+ * Values computed *during* a static-condition evaluation are deliberately
+ * never cached (and the cache is not consulted): `conditionInProgress`'s
+ * re-entrancy guard makes those reads conservative rather than true (see
+ * above), and serving or storing them would change observable behaviour.
+ *
+ * `setComputedCacheCheck(true)` turns every cache hit into a recompute +
+ * deep-compare that throws on divergence — the fuzzer runs with it to verify
+ * the invalidation contract empirically (`MTG_CACHE_CHECK=1`).
+ */
+interface ComputedCache {
+  chars: Map<ObjectId, Characteristics>;
+  staticSources: readonly ContributingStatic[] | null;
+  misc: Map<string, unknown>;
+}
+
+let activeCache: ComputedCache | null = null;
+/** The one reusable cache box — regions open and close far too often (every
+ * `legalActions` / SBA sweep / event) to allocate fresh Maps each time. */
+const pooledCache: ComputedCache = {
+  chars: new Map(),
+  staticSources: null,
+  misc: new Map(),
+};
+let cacheCheck = false;
+
+/** Enable/disable the differential self-check on every cache hit (slow —
+ * fuzzing/debugging only). */
+export function setComputedCacheCheck(on: boolean): void {
+  cacheCheck = on;
+}
+
+/** Run `fn` with a computed-value cache active (see {@link ComputedCache} for
+ * the soundness contract). Nested calls share the outermost region's cache. */
+export function withComputedCache<T>(fn: () => T): T {
+  if (activeCache !== null) return fn();
+  pooledCache.chars.clear();
+  pooledCache.staticSources = null;
+  pooledCache.misc.clear();
+  activeCache = pooledCache;
+  try {
+    return fn();
+  } finally {
+    activeCache = null;
+  }
+}
+
+/** Drop everything the active cache holds. Called by every state mutation that
+ * can run inside a cache region; a no-op when none is active. */
+export function invalidateComputedCache(): void {
+  if (activeCache === null) return;
+  activeCache.chars.clear();
+  activeCache.staticSources = null;
+  activeCache.misc.clear();
+}
+
+/**
+ * Run `fn` with no cache region active, then restore the suspended region
+ * *cleared*. For mutation-heavy code whose reads and writes interleave too
+ * finely for point invalidation (`Game.moveObject`): inside, every read
+ * computes fresh exactly as it did before caching existed; a nested
+ * {@link withComputedCache} (an `emit` → `detectTriggers` mid-move) opens its
+ * own consistent region.
+ */
+export function suspendComputedCache<T>(fn: () => T): T {
+  const saved = activeCache;
+  activeCache = null;
+  try {
+    return fn();
+  } finally {
+    activeCache = saved;
+    invalidateComputedCache();
+  }
+}
+
+/** Memoize an arbitrary state-derived value in the active cache region under
+ * `key` — used by `Game` for its mana-source list. Computes fresh when no
+ * region is active or a condition evaluation is in progress. */
+export function computedCacheMemo<T>(key: string, compute: () => T): T {
+  if (activeCache === null || conditionInProgress.size > 0) return compute();
+  if (activeCache.misc.has(key)) return activeCache.misc.get(key) as T;
+  const value = compute();
+  activeCache.misc.set(key, value);
+  return value;
+}
 
 /** Options for {@link staticConditionMet}. */
 export interface ConditionOptions {
@@ -400,13 +500,32 @@ interface AppliedEffect {
   readonly protection: { colors?: readonly Color[]; types?: readonly CardType[] } | null;
 }
 
-/** Continuous effects from battlefield permanents that apply to `target`. */
-function collectStaticEffects(
+/** One battlefield static that *can* contribute P/T / keywords / restrictions
+ * / protection to some permanent — the target-independent half of
+ * {@link collectStaticEffects}'s scan, cacheable per region. */
+interface ContributingStatic {
+  readonly source: GameObject;
+  readonly ability: StaticAbility;
+}
+
+/**
+ * Every battlefield static that could modify *any* permanent, in battlefield
+ * order. The scan (battlefield × each permanent's static list, with the
+ * layer-6 ability-loss check) used to run once per **target** inside
+ * {@link collectStaticEffects}, making every characteristics read O(board);
+ * on most boards almost nothing contributes, so the shared pre-scan collapses
+ * that to a short (usually empty) list matched per target. Memoized in the
+ * active cache region; per-target matching and condition evaluation stay
+ * live, exactly as before.
+ */
+function contributingStaticSources(
   state: GameState,
   registry: CardRegistry,
-  target: GameObject,
-): AppliedEffect[] {
-  const out: AppliedEffect[] = [];
+): readonly ContributingStatic[] {
+  if (activeCache !== null && activeCache.staticSources !== null) {
+    return activeCache.staticSources;
+  }
+  const out: ContributingStatic[] = [];
   for (const sourceId of state.zones.shared.battlefield) {
     const source = state.objects[sourceId];
     if (hasLostAbilities(source)) continue; // layer 6 — its statics don't function
@@ -423,6 +542,23 @@ function collectStaticEffects(
       ) {
         continue;
       }
+      out.push({ source, ability });
+    }
+  }
+  if (activeCache !== null) activeCache.staticSources = out;
+  return out;
+}
+
+/** Continuous effects from battlefield permanents that apply to `target`. */
+function collectStaticEffects(
+  state: GameState,
+  registry: CardRegistry,
+  target: GameObject,
+): AppliedEffect[] {
+  const out: AppliedEffect[] = [];
+  const sources = contributingStaticSources(state, registry);
+  {
+    for (const { source, ability } of sources) {
       if (!staticAffects(registry, ability.affects, source, target)) continue;
       // "As long as …" gate (rule 604.3 — ROADMAP Phase 11 EG-3). Checked
       // *after* `staticAffects` so a static that can't reach `target` never
@@ -502,6 +638,56 @@ function collectStaticEffects(
 }
 
 export function computeCharacteristics(
+  state: GameState,
+  registry: CardRegistry,
+  id: ObjectId,
+): Characteristics {
+  // Cache only outside condition evaluation — a value computed while any
+  // static condition is in progress may be the re-entrancy guard's
+  // conservative answer, not the true one (see `conditionInProgress`).
+  if (activeCache !== null && conditionInProgress.size === 0) {
+    const hit = activeCache.chars.get(id);
+    if (hit !== undefined) {
+      if (cacheCheck) assertSameCharacteristics(hit, computeCharacteristicsUncached(state, registry, id), id);
+      return hit;
+    }
+    const value = computeCharacteristicsUncached(state, registry, id);
+    activeCache.chars.set(id, value);
+    return value;
+  }
+  return computeCharacteristicsUncached(state, registry, id);
+}
+
+/** Throw if a cached {@link Characteristics} diverges from a fresh compute —
+ * the {@link setComputedCacheCheck} self-check. */
+function assertSameCharacteristics(
+  cached: Characteristics,
+  fresh: Characteristics,
+  id: ObjectId,
+): void {
+  const show = (c: Characteristics): string =>
+    JSON.stringify({
+      power: c.power,
+      toughness: c.toughness,
+      keywords: [...c.keywords].sort(),
+      types: [...c.types].sort(),
+      subtypes: [...c.subtypes].sort(),
+      colors: [...c.colors].sort(),
+      controller: c.controller,
+      restrictions: [...c.restrictions].sort(),
+      protColors: [...c.protectionFrom.colors].sort(),
+      protTypes: [...c.protectionFrom.types].sort(),
+    });
+  const a = show(cached);
+  const b = show(fresh);
+  if (a !== b) {
+    throw new Error(
+      `computed-cache divergence for ${id}: cached ${a} vs fresh ${b} — a mutation inside a cache region is missing an invalidateComputedCache() call`,
+    );
+  }
+}
+
+function computeCharacteristicsUncached(
   state: GameState,
   registry: CardRegistry,
   id: ObjectId,
