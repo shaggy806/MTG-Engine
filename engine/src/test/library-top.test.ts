@@ -181,3 +181,35 @@ describe("Mortuary Mire — an optional graveyard-to-top on entry", () => {
     expect(topOfLibrary(game)).toBe("Grizzly Bears");
   });
 });
+
+describe("Brainstorm — hand to the top of the library", () => {
+  it("draws three, then puts two back on top", () => {
+    const { game, a } = mkGame(["Brainstorm", "Island"], ["Craw Wurm", "Grizzly Bears"]);
+    game.advanceUntil(toPrecombat);
+    game.debugSpawn("Island", A, "battlefield");
+    const hand0 = game.handOf(A).length;
+    // Put back the two most distinctive cards, so the top of the library is
+    // checkable by name.
+    a.chooseFromZoneFn = (_v, eligible) =>
+      eligible
+        .filter((id) =>
+          ["Craw Wurm", "Grizzly Bears"].includes(game.state.objects[id].cardName),
+        )
+        .slice(0, 2);
+
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: handCard(game, "Brainstorm"),
+      targets: [],
+    });
+    game.advanceUntil(quiet);
+
+    // −1 the spell, +3 drawn, −2 put back.
+    expect(game.handOf(A).length).toBe(hand0);
+    const top2 = game.state.zones.perPlayer[A].library
+      .slice(0, 2)
+      .map((id) => game.state.objects[id].cardName);
+    expect(top2.sort()).toEqual(["Craw Wurm", "Grizzly Bears"]);
+  });
+});

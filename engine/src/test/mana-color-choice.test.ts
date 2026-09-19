@@ -9,6 +9,7 @@ import { describe, expect, it } from "vitest";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ManaType } from "../mana.js";
+import type { ObjectId } from "../primitives.js";
 import type { GameState } from "../state.js";
 
 const A = asPlayerId("alice");
@@ -89,5 +90,55 @@ describe("choosing the colour of an 'any color' mana ability", () => {
       .filter((a) => a.kind === "activate-ability" && a.source === forest);
     expect(options).toHaveLength(1);
     expect(options[0].kind === "activate-ability" && options[0].manaColors).toBeUndefined();
+  });
+});
+
+/**
+ * "…of any color that a land an opponent controls could produce" — a `oneOf`
+ * whose list is read off the board instead of being printed, so it changes as
+ * the opponents' lands do.
+ */
+describe("mana derived from the opponents' lands", () => {
+  const withOpponentLands = (...lands: readonly string[]) => {
+    const game = mkGame();
+    game.advanceUntil(atMain);
+    const orchard = game.debugSpawn("Exotic Orchard", A, "battlefield");
+    for (const name of lands) game.debugSpawn(name, B, "battlefield");
+    return { game, orchard };
+  };
+  const colorsOffered = (game: Game, orchard: ObjectId) =>
+    game
+      .legalActions(A)
+      .filter((x) => x.kind === "activate-ability" && x.source === orchard)
+      .flatMap((x) => (x.kind === "activate-ability" ? (x.manaColors ?? []) : []));
+
+  it("produces nothing at all when the opponents have no coloured lands", () => {
+    const { game, orchard } = withOpponentLands();
+    expect(colorsOffered(game, orchard)).toEqual([]);
+  });
+
+  it("offers exactly the colours those lands could make", () => {
+    const { game, orchard } = withOpponentLands("Forest", "Island");
+    expect([...colorsOffered(game, orchard)].sort()).toEqual(["G", "U"]);
+  });
+
+  it("follows the board — a land arriving widens it", () => {
+    const { game, orchard } = withOpponentLands("Forest");
+    expect(colorsOffered(game, orchard)).toEqual(["G"]);
+    game.debugSpawn("Mountain", B, "battlefield");
+    expect([...colorsOffered(game, orchard)].sort()).toEqual(["G", "R"]);
+  });
+
+  it("adds the colour chosen off that list", () => {
+    const { game, orchard } = withOpponentLands("Forest", "Island");
+    game.dispatch({
+      type: "activate-ability",
+      player: A,
+      source: orchard,
+      abilityIndex: 0,
+      targets: [],
+      manaColors: ["U"],
+    });
+    expect(game.state.players[A].manaPool.U).toBe(1);
   });
 });

@@ -76,6 +76,7 @@ import _poolBonesplitter from "./pool/bonesplitter.js";
 import _poolBoomerang from "./pool/boomerang.js";
 import _poolBoseijuWhoEndures from "./pool/boseiju-who-endures.js";
 import _poolBountifulLandscape from "./pool/bountiful-landscape.js";
+import _poolBrainstorm from "./pool/brainstorm.js";
 import _poolBrashTaunter from "./pool/brash-taunter.js";
 import _poolBreathOfMalfegor from "./pool/breath-of-malfegor.js";
 import _poolBreedingPool from "./pool/breeding-pool.js";
@@ -196,6 +197,7 @@ import _poolEternalWitness from "./pool/eternal-witness.js";
 import _poolEurekaMoment from "./pool/eureka-moment.js";
 import _poolEverWatchingThreshold from "./pool/ever-watching-threshold.js";
 import _poolEvolvingWilds from "./pool/evolving-wilds.js";
+import _poolExoticOrchard from "./pool/exotic-orchard.js";
 import _poolFaerieFormation from "./pool/faerie-formation.js";
 import _poolFaithlessLooting from "./pool/faithless-looting.js";
 import _poolFanaticOfRhonas from "./pool/fanatic-of-rhonas.js";
@@ -204,6 +206,7 @@ import _poolFarseek from "./pool/farseek.js";
 import _poolFavorableWinds from "./pool/favorable-winds.js";
 import _poolFeedTheSwarm from "./pool/feed-the-swarm.js";
 import _poolFelidarRetreat from "./pool/felidar-retreat.js";
+import _poolFellwarStone from "./pool/fellwar-stone.js";
 import _poolFencingAce from "./pool/fencing-ace.js";
 import _poolFertileFootsteps from "./pool/fertile-footsteps.js";
 import _poolFesteringThicket from "./pool/festering-thicket.js";
@@ -436,11 +439,14 @@ import _poolRapaciousDragon from "./pool/rapacious-dragon.js";
 import _poolRapidHybridization from "./pool/rapid-hybridization.js";
 import _poolRaucousTheater from "./pool/raucous-theater.js";
 import _poolReadTheBones from "./pool/read-the-bones.js";
+import _poolReanimate from "./pool/reanimate.js";
 import _poolReclamationSage from "./pool/reclamation-sage.js";
 import _poolRegrowth from "./pool/regrowth.js";
+import _poolReliquaryTower from "./pool/reliquary-tower.js";
 import _poolRemorsefulCleric from "./pool/remorseful-cleric.js";
 import _poolRestInPeace from "./pool/rest-in-peace.js";
 import _poolReturnToNature from "./pool/return-to-nature.js";
+import _poolRhysticStudy from "./pool/rhystic-study.js";
 import _poolRiftBolt from "./pool/rift-bolt.js";
 import _poolRishkarPeemaRenegade from "./pool/rishkar-peema-renegade.js";
 import _poolRiveteersOverlook from "./pool/riveteers-overlook.js";
@@ -523,6 +529,7 @@ import _poolSundownPass from "./pool/sundown-pass.js";
 import _poolSunkenHollow from "./pool/sunken-hollow.js";
 import _poolSunpetalGrove from "./pool/sunpetal-grove.js";
 import _poolSwamp from "./pool/swamp.js";
+import _poolSwanSong from "./pool/swan-song.js";
 import _poolSwelteringSuns from "./pool/sweltering-suns.js";
 import _poolSwiftfootBoots from "./pool/swiftfoot-boots.js";
 import _poolSwordsToPlowshares from "./pool/swords-to-plowshares.js";
@@ -664,6 +671,7 @@ import _tokensArmyToken from "./tokens/army-token.js";
 import _tokensBeastToken33 from "./tokens/beast-token-3-3.js";
 import _tokensBeastToken from "./tokens/beast-token.js";
 import _tokensBirdToken from "./tokens/bird-token.js";
+import _tokensBlueBirdToken from "./tokens/blue-bird-token.js";
 import _tokensCatBeastToken from "./tokens/cat-beast-token.js";
 import _tokensCatBirdToken from "./tokens/cat-bird-token.js";
 import _tokensCatToken from "./tokens/cat-token.js";
@@ -773,6 +781,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBoomerang,
   _poolBoseijuWhoEndures,
   _poolBountifulLandscape,
+  _poolBrainstorm,
   _poolBrashTaunter,
   _poolBreathOfMalfegor,
   _poolBreedingPool,
@@ -893,6 +902,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolEurekaMoment,
   _poolEverWatchingThreshold,
   _poolEvolvingWilds,
+  _poolExoticOrchard,
   _poolFaerieFormation,
   _poolFaithlessLooting,
   _poolFanaticOfRhonas,
@@ -901,6 +911,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolFavorableWinds,
   _poolFeedTheSwarm,
   _poolFelidarRetreat,
+  _poolFellwarStone,
   _poolFencingAce,
   _poolFertileFootsteps,
   _poolFesteringThicket,
@@ -1133,11 +1144,14 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolRapidHybridization,
   _poolRaucousTheater,
   _poolReadTheBones,
+  _poolReanimate,
   _poolReclamationSage,
   _poolRegrowth,
+  _poolReliquaryTower,
   _poolRemorsefulCleric,
   _poolRestInPeace,
   _poolReturnToNature,
+  _poolRhysticStudy,
   _poolRiftBolt,
   _poolRishkarPeemaRenegade,
   _poolRiveteersOverlook,
@@ -1220,6 +1234,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSunkenHollow,
   _poolSunpetalGrove,
   _poolSwamp,
+  _poolSwanSong,
   _poolSwelteringSuns,
   _poolSwiftfootBoots,
   _poolSwordsToPlowshares,
@@ -1367,6 +1382,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensBeastToken33,
   _tokensBeastToken,
   _tokensBirdToken,
+  _tokensBlueBirdToken,
   _tokensCatBeastToken,
   _tokensCatBirdToken,
   _tokensCatToken,

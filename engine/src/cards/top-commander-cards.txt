@@ -1,19 +1,19 @@
 Top 2000 Commander cards by EDHREC popularity (fetched 2026-09-13)
-359 already implemented / 1641 missing (marks refreshed 2026-09-19)
+366 already implemented / 1634 missing (marks refreshed 2026-09-19)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
 [x]     2  Command Tower                            {0}              Land
 [x]     3  Arcane Signet                            {2}              Artifact
-[ ]     9  Exotic Orchard                           {0}              Land
-[ ]    10  Reliquary Tower                          {0}              Land
+[x]     9  Exotic Orchard                           {0}              Land
+[x]    10  Reliquary Tower                          {0}              Land
 [x]    11  Swords to Plowshares                     {W}              Instant
 [x]    12  Swiftfoot Boots                          {2}              Artifact — Equipment
 [x]    13  Lightning Greaves                        {2}              Artifact — Equipment
 [ ]    14  Path of Ancestry                         {0}              Land
 [x]    15  Path to Exile                            {W}              Instant
 [x]    16  Counterspell                             {U}{U}           Instant
-[ ]    17  Fellwar Stone                            {2}              Artifact
+[x]    17  Fellwar Stone                            {2}              Artifact
 [x]    18  Rogue's Passage                          {0}              Land
 [x]    19  Evolving Wilds                           {0}              Land
 [x]    20  Cultivate                                {2}{G}           Sorcery
@@ -40,7 +40,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]    41  Three Visits                             {1}{G}           Sorcery
 [x]    42  Misty Rainforest                         {0}              Land
 [x]    43  Bloodstained Mire                        {0}              Land
-[ ]    44  Rhystic Study                            {2}{U}           Enchantment
+[x]    44  Rhystic Study                            {2}{U}           Enchantment
 [x]    45  Windswept Heath                          {0}              Land
 [ ]    46  Fabled Passage                           {0}              Land
 [x]    47  Wooded Foothills                         {0}              Land
@@ -51,7 +51,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]    52  Marsh Flats                              {0}              Land
 [x]    53  Arcane Denial                            {1}{U}           Instant
 [x]    54  Cyclonic Rift                            {1}{U}           Instant
-[ ]    55  Reanimate                                {B}              Sorcery
+[x]    55  Reanimate                                {B}              Sorcery
 [x]    56  Negate                                   {1}{U}           Instant
 [x]    57  Arid Mesa                                {0}              Land
 [x]    58  Llanowar Elves                           {G}              Creature — Elf Druid
@@ -64,11 +64,11 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]    65  Smothering Tithe                         {3}{W}           Enchantment
 [x]    66  Toxic Deluge                             {2}{B}           Sorcery
 [x]    67  Ancient Tomb                             {0}              Land
-[ ]    68  Swan Song                                {U}              Instant
+[x]    68  Swan Song                                {U}              Instant
 [x]    69  Blood Crypt                              {0}              Land — Swamp Mountain
 [x]    70  Stomping Ground                          {0}              Land — Mountain Forest
 [x]    71  Overgrown Tomb                           {0}              Land — Swamp Forest
-[ ]    72  Brainstorm                               {U}              Instant
+[x]    72  Brainstorm                               {U}              Instant
 [ ]    73  Urborg, Tomb of Yawgmoth                 {0}              Legendary Land
 [x]    74  Sacred Foundry                           {0}              Land — Mountain Plains
 [ ]    75  Deflecting Swat                          {2}{R}           Instant

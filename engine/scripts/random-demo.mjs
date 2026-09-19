@@ -47,6 +47,10 @@ const deck = (entries) =>
 // Both decks get a mana base that can actually cast their own spells —
 // otherwise one side just sits there and the fuzz only exercises one player.
 const deckA = deck([
+  // EDH-backlog: derived mana colours, hand-to-library-top, punisher.
+  ["Exotic Orchard", 1],
+  ["Fellwar Stone", 1],
+  ["Reliquary Tower", 1],
   // EDH-backlog: put-a-card-from-hand-onto-the-battlefield.
   ["Sneak Attack", 1],
   ["Growth Spiral", 1],
@@ -210,6 +214,7 @@ const deckA = deck([
 // exercises one side. One or two copies of each mechanic is enough coverage.
 const deckB = deck([
   // EDH-backlog: additional costs, delirium/threshold/morbid, X-paid-in-life.
+  ["Reanimate", 1],
   ["Toxic Deluge", 1],
   ["Cabal Ritual", 1],
   ["Tragic Slip", 1],
@@ -581,6 +586,10 @@ const deckB = deck([
 // commander (a `leaves-battlefield` + `dies` trigger) so the fuzzer exercises
 // the 903.9a "ask before the move" replacement path.
 const deckC = deck([
+  // EDH-backlog: derived mana colours, hand-to-library-top, punisher.
+  ["Brainstorm", 1],
+  ["Swan Song", 1],
+  ["Rhystic Study", 1],
   // EDH-backlog: delayed triggered abilities + tutor-to-top.
   ["Sun Titan", 1],
   ["Frantic Search", 1],
