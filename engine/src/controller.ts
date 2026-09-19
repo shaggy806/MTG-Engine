@@ -17,6 +17,7 @@ import type {
 } from "./actions.js";
 import { computeCharacteristics } from "./characteristics.js";
 import { CardRegistry, createDefaultRegistry } from "./cards.js";
+import { chooseBottomOfHand, shouldMulligan } from "./bot/mulligan.js";
 import { manaValue, parseManaCost } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameObject, GameState } from "./state.js";
@@ -1268,6 +1269,26 @@ export class HeuristicBotController extends AutomaticController {
     max: number,
   ): readonly ObjectId[] {
     return eligible.slice(0, Math.max(min, Math.min(max, eligible.length)));
+  }
+
+  /**
+   * Keep or throw back the opening hand — see `bot/mulligan.ts` for the policy
+   * and, in particular, for how it decides that going down a card is worth it.
+   * `AutomaticController` keeps everything, including a one-lander.
+   */
+  mulligan(view: ControllerView, count: number): boolean {
+    const hand = view.state.zones.perPlayer[this.playerId].hand.map(
+      (id) => view.state.objects[id],
+    );
+    return shouldMulligan(hand, this.registry, count, view.state.rules);
+  }
+
+  /** Surplus lands, then the most expensive spells — see `chooseBottomOfHand`. */
+  chooseBottomOfLibrary(
+    hand: readonly GameObject[],
+    count: number,
+  ): readonly ObjectId[] {
+    return chooseBottomOfHand(hand, this.registry, count);
   }
 
   act(view: ControllerView): Action {
