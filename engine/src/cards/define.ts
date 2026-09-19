@@ -434,12 +434,28 @@ export interface CardDefinition {
    * cast, so it happens even if the spell is later countered, and the spell
    * can't be cast at all if it can't be paid. `null` for none. needed-cards P8.
    *
-   * `sacrifice` is the only form so far: "As an additional cost to cast this
-   * spell, sacrifice a land" (Harrow, Crop Rotation). The caster picks which
-   * matching permanent, as a `sacrifice` on the `cast-spell` action — the same
-   * shape an activated ability's `AbilityCost.sacrifice: { filter }` uses.
+   * `sacrifice`: "As an additional cost to cast this spell, sacrifice a land"
+   * (Harrow, Crop Rotation). The caster picks which matching permanent, as a
+   * `sacrifice` on the `cast-spell` action — the same shape an activated
+   * ability's `AbilityCost.sacrifice: { filter }` uses.
+   *
+   * `discard`: "…, discard a card" (Thrill of Possibility, Cathartic Reunion).
+   * Paid as the spell is cast, so — unlike a `discard` *effect* — it happens
+   * even if the spell is countered, and a hand too small to pay makes the
+   * spell uncastable. Which cards go is the caster's choice, raised as the
+   * ordinary `discard` decision once the spell is on the stack.
+   *
+   * `payLife`: "…, pay 3 life" (Bitter Triumph's second half). A player may
+   * always pay life they have, down to 0 — paying below it is what's illegal
+   * (rule 118.4), so this gates castability on `life >= payLife`.
+   *
+   * More than one may be set, and all of them are paid.
    */
-  readonly additionalCost: { readonly sacrifice: CardFilter } | null;
+  readonly additionalCost: {
+    readonly sacrifice?: CardFilter;
+    readonly discard?: number;
+    readonly payLife?: number;
+  } | null;
   /**
    * Kicker (rule 702.33 — needed-cards P8): an **optional** additional cost
    * announced as the spell is cast (601.2b), before targets are chosen, that
@@ -687,7 +703,11 @@ interface CardDraft {
     readonly maxModes: number;
     readonly modes: readonly ModeOption[];
   };
-  additionalCost?: { readonly sacrifice: CardFilter };
+  additionalCost?: {
+    readonly sacrifice?: CardFilter;
+    readonly discard?: number;
+    readonly payLife?: number;
+  };
   kicker?: {
     readonly cost: string;
     readonly targets?: readonly TargetSpec[];

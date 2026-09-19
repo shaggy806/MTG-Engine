@@ -4730,12 +4730,28 @@ export class Game {
     // An additional sacrifice cost (rule 601.2f) must be payable, and — once
     // the driver has named one — that permanent must actually qualify.
     if (def.additionalCost !== null) {
-      const candidates = this.additionalCostSacrifices(player, def);
-      if (candidates.length === 0) {
-        return `${player} has nothing to sacrifice to cast ${def.name}`;
+      if (def.additionalCost.sacrifice !== undefined) {
+        const candidates = this.additionalCostSacrifices(player, def);
+        if (candidates.length === 0) {
+          return `${player} has nothing to sacrifice to cast ${def.name}`;
+        }
+        if (sacrifice !== undefined && !candidates.includes(sacrifice)) {
+          return `that permanent cannot pay ${def.name}'s additional cost`;
+        }
       }
-      if (sacrifice !== undefined && !candidates.includes(sacrifice)) {
-        return `that permanent cannot pay ${def.name}'s additional cost`;
+      const discard = def.additionalCost.discard;
+      if (discard !== undefined) {
+        // The spell itself is still in hand while this is checked, and it
+        // can't discard itself to pay its own cost (rule 601.2h).
+        const others = this.state.zones.perPlayer[player].hand.filter((id) => id !== cardId);
+        if (others.length < discard) {
+          return `${player} has too few cards in hand to cast ${def.name}`;
+        }
+      }
+      const payLife = def.additionalCost.payLife;
+      // Rule 118.4 — a player may pay any life they have, down to 0.
+      if (payLife !== undefined && this.state.players[player].life < payLife) {
+        return `${player} has too little life to cast ${def.name}`;
       }
     }
     // A non-modal spell's target legality is checked up front; a modal spell's
@@ -4873,7 +4889,7 @@ export class Game {
     // An additional sacrifice cost the driver didn't name (only one candidate,
     // or a driver that doesn't care): take the first eligible permanent.
     const sacrificeVictim =
-      def.additionalCost === null
+      def.additionalCost?.sacrifice === undefined
         ? undefined
         : (sacrifice ?? this.additionalCostSacrifices(player, def)[0]);
 
@@ -5001,6 +5017,17 @@ export class Game {
     this.announceTargeted(targets, player, cardId, true);
     if (sortedModes !== undefined) {
       this.emit({ type: "modes-chosen", source: cardId, modes: [...sortedModes] });
+    }
+    // The rest of the additional cost (rule 601.2f-h). Paid as the spell is
+    // cast, so — like the sacrifice above — it stands even if the spell is
+    // later countered, and after the announcement so the log reads "casts X,
+    // discards Y" and the spell is already on the stack rather than in the
+    // hand it is discarding from.
+    if (def.additionalCost?.payLife !== undefined) {
+      this.changeLife(player, -def.additionalCost.payLife);
+    }
+    if (def.additionalCost?.discard !== undefined) {
+      this.discardByEffect({ kind: "player", player }, def.additionalCost.discard);
     }
     this.afterPlayerAction(player);
   }
