@@ -19,4 +19,5 @@ export * from "./cards/define.js";
 export * from "./cards/helpers.js";
 export * from "./cards/registry.js";
 export * from "./cards/classify.js";
+export * from "./cards/edhrec-rank.js";
 export { BUILTIN_CARDS, POOL_CARDS, TOKEN_CARDS } from "./cards/generated.js";

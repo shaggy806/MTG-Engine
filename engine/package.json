@@ -16,6 +16,7 @@
   ],
   "scripts": {
     "gen:cards": "node scripts/gen-cards.mjs",
+    "gen:edhrec-rank": "node scripts/gen-edhrec-rank.mjs",
     "gen:creature-types": "node scripts/gen-creature-types.mjs",
     "card:lookup": "node scripts/scryfall-lookup.mjs",
     "card:verify": "npm run build && node scripts/verify-cards.mjs",

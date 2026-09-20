@@ -920,3 +920,24 @@
   align-self: center;
   font-size: 12px;
 }
+
+/* Pool pages. The pool list is a scroll box inside a fixed-height pane, so the
+   pager sits below it as a flex row that doesn't scroll away — reaching page 2
+   shouldn't require scrolling to the bottom of page 1. */
+.db-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 6px 0 2px;
+  flex: 0 0 auto;
+}
+
+.db-pager button {
+  min-width: 40px;
+}
+
+.db-pager button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}

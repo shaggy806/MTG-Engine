@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { CardDefinition, CardType, Color } from 'engine'
-import { BUILTIN_CARDS, isCardFront, isTokenCard, manaValue, parseManaCost } from 'engine'
+import {
+  BUILTIN_CARDS,
+  edhrecRankOf,
+  isCardFront,
+  isTokenCard,
+  manaValue,
+  parseManaCost,
+} from 'engine'
 import { CardImage } from '../ui/CardImage.tsx'
 import { Symbols } from '../ui/Symbols.tsx'
 import './library.css'
@@ -28,15 +35,27 @@ const COLOR_NAME: Record<ColorFilter, string> = {
   C: 'Colourless',
 }
 
-const SORTS = ['name', 'mana', 'color', 'type'] as const
+const SORTS = ['name', 'edhrec', 'mana', 'color', 'type'] as const
 type Sort = (typeof SORTS)[number]
 
 const SORT_LABEL: Record<Sort, string> = {
   name: 'Name',
+  edhrec: 'Popularity',
   mana: 'Mana value',
   color: 'Colour',
   type: 'Type',
 }
+
+/**
+ * How many cards one page of the gallery shows.
+ *
+ * The grid used to render every match at once, which was fine at a few hundred
+ * cards and will not be: each result is a DOM subtree with its own image, and
+ * the pool is meant to grow into the thousands. `loading="lazy"` already keeps
+ * the *images* off the wire until they scroll into view, but it does nothing
+ * about the node count, which is what actually costs layout time.
+ */
+const PAGE_SIZE = 60
 
 /** Sort buckets — the order a decklist or a Scryfall "type" sort reads in. */
 const TYPE_ORDER: readonly CardType[] = [
@@ -69,6 +88,11 @@ interface Entry {
   readonly isToken: boolean
   readonly haystack: string
   readonly mv: number
+  /** EDHREC rank, or `Infinity` when the card is unranked — basics, and
+   * anything too new for EDHREC to have an entry. Precomputed as a number so
+   * the sort comparator stays a subtraction and unranked cards fall last
+   * without a special case. */
+  readonly edhrec: number
   readonly colorRank: number
   readonly typeRank: number
   readonly colorKeys: readonly ColorFilter[]
@@ -101,6 +125,7 @@ function buildEntry(def: CardDefinition): Entry {
       .join(' \n ')
       .toLowerCase(),
     mv: manaValue(parseManaCost(def.manaCost)),
+    edhrec: edhrecRankOf(def.name) ?? Infinity,
     colorRank: colorRankOf(def.colors),
     typeRank: Math.min(
       ...def.types.map((t) => {
@@ -183,10 +208,34 @@ export function LibraryPage() {
           ? a.mv - b.mv
           : sort === 'color'
             ? a.colorRank - b.colorRank
-            : a.typeRank - b.typeRank
+            : sort === 'edhrec'
+              ? a.edhrec - b.edhrec
+              : a.typeRank - b.typeRank
       return key !== 0 ? key : byName(a, b)
     })
   }, [query, typeFilter, colorFilter, sort, showTokens])
+
+  const [page, setPage] = useState(0)
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  // Any change to the result set puts you back on page one: staying on page 7
+  // of a search that now has two pages shows an empty grid, and the count
+  // above it would say otherwise.
+  //
+  // Adjusted *during render* off a signature of the filters rather than in an
+  // effect. An effect would commit the stale page first and then immediately
+  // re-render (which `react/set-state-in-effect` flags); this is React's
+  // documented "adjust state when a prop changes" pattern and repaints once.
+  const filterKey = `${query}|${typeFilter ?? ''}|${[...colorFilter].sort().join(',')}|${sort}|${showTokens}`
+  const [pagedFor, setPagedFor] = useState(filterKey)
+  if (pagedFor !== filterKey) {
+    setPagedFor(filterKey)
+    setPage(0)
+  }
+  const safePage = Math.min(page, pageCount - 1)
+  const pageRows = useMemo(
+    () => filtered.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE),
+    [filtered, safePage],
+  )
 
   const selected = selectedName === null ? null : (BY_NAME.get(selectedName) ?? null)
 
@@ -207,8 +256,15 @@ export function LibraryPage() {
   const step = useCallback(
     (delta: number) => {
       if (selectedIndex === -1) return
-      const next = filtered[selectedIndex + delta]
-      if (next) select(next.def.name)
+      const at = selectedIndex + delta
+      const next = filtered[at]
+      if (!next) return
+      select(next.def.name)
+      // The overlay's arrows walk the whole result set, not the page, so
+      // stepping across a boundary has to carry the grid with it — otherwise
+      // closing the overlay lands you on a page that doesn't contain the card
+      // you were just looking at.
+      setPage(Math.floor(at / PAGE_SIZE))
     },
     [filtered, selectedIndex, select],
   )
@@ -314,17 +370,39 @@ export function LibraryPage() {
       <main className="lib-results">
         <p className="lib-count muted mono">
           {filtered.length} {filtered.length === 1 ? 'card' : 'cards'}
+          {pageCount > 1
+            ? ` — showing ${safePage * PAGE_SIZE + 1}-${Math.min(filtered.length, (safePage + 1) * PAGE_SIZE)}`
+            : ''}
         </p>
         {filtered.length === 0 ? (
           <p className="lib-empty muted">
             No cards match. The pool is {CARD_COUNT} implemented cards — try a shorter search.
           </p>
         ) : (
-          <div className="lib-grid">
-            {filtered.map((e) => (
-              <GridCard key={e.def.name} entry={e} onOpen={() => select(e.def.name)} />
-            ))}
-          </div>
+          <>
+            <div className="lib-grid">
+              {pageRows.map((e) => (
+                <GridCard key={e.def.name} entry={e} onOpen={() => select(e.def.name)} />
+              ))}
+            </div>
+            {pageCount > 1 ? (
+              <nav className="lib-pager" aria-label="Pages">
+                <button type="button" onClick={() => setPage(safePage - 1)} disabled={safePage === 0}>
+                  ← Previous
+                </button>
+                <span className="muted mono">
+                  Page {safePage + 1} of {pageCount}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPage(safePage + 1)}
+                  disabled={safePage >= pageCount - 1}
+                >
+                  Next →
+                </button>
+              </nav>
+            ) : null}
+          </>
         )}
       </main>
 

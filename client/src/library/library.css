@@ -142,6 +142,28 @@
   font-size: 12px;
 }
 
+/* Page controls under the grid. The gallery pages rather than rendering every
+   match, so this is the only way to reach the rest of a large result set —
+   it sits in the flow under the grid rather than floating, so it can't cover
+   a card on a short viewport. */
+.lib-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(10px, 2vw, 22px);
+  margin: clamp(16px, 2.5vw, 28px) 0 8px;
+  flex-wrap: wrap;
+}
+
+.lib-pager button {
+  min-width: 108px;
+}
+
+.lib-pager button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 .lib-empty {
   padding: 40px 0;
   text-align: center;

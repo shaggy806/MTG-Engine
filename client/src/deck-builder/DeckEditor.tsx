@@ -89,6 +89,12 @@ export function DeckEditor({
     return m
   }, [deck.cards])
 
+  /** Rows of the pool list shown at once. Larger than the library's page
+   * because a row here is text rather than a card image, so it costs far less
+   * per entry — but the list still can't render a pool heading for thousands
+   * of cards all at once. */
+  const POOL_PAGE_SIZE = 100
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
     return cards.filter((c) => {
@@ -101,6 +107,22 @@ export function DeckEditor({
       )
     })
   }, [query, typeFilter])
+
+  const [poolPage, setPoolPage] = useState(0)
+  const poolPageCount = Math.max(1, Math.ceil(filtered.length / POOL_PAGE_SIZE))
+  // Reset to the first page during render whenever the search changes — see
+  // the same pattern (and why it isn't an effect) in `LibraryPage`.
+  const poolKey = `${query}|${typeFilter ?? ''}`
+  const [pagedFor, setPagedFor] = useState(poolKey)
+  if (pagedFor !== poolKey) {
+    setPagedFor(poolKey)
+    setPoolPage(0)
+  }
+  const poolPageSafe = Math.min(poolPage, poolPageCount - 1)
+  const poolRows = useMemo(
+    () => filtered.slice(poolPageSafe * POOL_PAGE_SIZE, (poolPageSafe + 1) * POOL_PAGE_SIZE),
+    [filtered, poolPageSafe],
+  )
 
   /** The deck's own contents, grouped and alphabetised — plus any name the
    * registry doesn't have, which is what a deck saved before a card was
@@ -337,7 +359,7 @@ export function DeckEditor({
           </div>
 
           <ul className="db-card-list">
-            {filtered.map((c) => {
+            {poolRows.map((c) => {
               const n = counts.get(c.name) ?? 0
               const isThisCommander = deck.commander === c.name
               return (
@@ -397,6 +419,27 @@ export function DeckEditor({
               )
             })}
           </ul>
+          {poolPageCount > 1 ? (
+            <nav className="db-pager" aria-label="Card pool pages">
+              <button
+                type="button"
+                onClick={() => setPoolPage(poolPageSafe - 1)}
+                disabled={poolPageSafe === 0}
+              >
+                ←
+              </button>
+              <span className="muted mono">
+                {poolPageSafe + 1}/{poolPageCount}
+              </span>
+              <button
+                type="button"
+                onClick={() => setPoolPage(poolPageSafe + 1)}
+                disabled={poolPageSafe >= poolPageCount - 1}
+              >
+                →
+              </button>
+            </nav>
+          ) : null}
         </section>
 
         <section
