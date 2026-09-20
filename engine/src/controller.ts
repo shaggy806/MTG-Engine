@@ -1433,9 +1433,54 @@ export class HeuristicBotController extends AutomaticController {
     return legal.eligible
       .filter((id) => computeCharacteristics(state, this.registry, id).power > 0)
       .flatMap((attacker) => {
-        const defender = [...(legal.defendersFor[attacker] ?? [])].sort(byValue)[0];
-        return defender === undefined ? [] : [{ attacker, defender }];
+        const options = [...(legal.defendersFor[attacker] ?? [])].sort(byValue);
+        if (options.length === 0) return [];
+        // Prefer a defender who can't eat this creature for free. Sorting on
+        // life alone sent a 2/2 commander headlong into an untapped 6/4 while
+        // an opponent with an empty board sat next to it — reported from a
+        // real game. Life still breaks ties, so the old behaviour survives
+        // wherever nobody can punish the attack.
+        const safe = options.filter((d) => !this.wouldDieAttacking(state, attacker, d));
+        if (safe.length > 0) return [{ attacker, defender: safe[0] }];
+        // Everyone can kill it. Attacking anyway just hands over a creature,
+        // so this one stays home — v1 used to swing regardless.
+        return [];
       });
+  }
+
+  /**
+   * Would `attacker` die if it attacked `defender`, assuming the defender
+   * blocks with whatever kills it?
+   *
+   * Deliberately crude — it asks only whether *some* untapped creature the
+   * defending player controls can deal lethal damage to the attacker, and
+   * ignores evasion, multi-blocks and trades the defender might not want.
+   * v2's `combat-math.ts` does the real arithmetic; this exists so that v1,
+   * which is also v2's fallback and the first candidate v2 scores, stops
+   * making the obviously losing attack.
+   */
+  private wouldDieAttacking(
+    state: GameState,
+    attacker: ObjectId,
+    defender: PlayerId | ObjectId,
+  ): boolean {
+    const me = computeCharacteristics(state, this.registry, attacker);
+    // A planeswalker doesn't block; its controller's creatures do.
+    const defendingPlayer =
+      state.players[defender as PlayerId] !== undefined
+        ? (defender as PlayerId)
+        : state.objects[defender as ObjectId]?.controller;
+    if (defendingPlayer === undefined) return false;
+    return state.zones.shared.battlefield.some((id) => {
+      const object = state.objects[id];
+      if (object === undefined || object.controller !== defendingPlayer || object.tapped) {
+        return false;
+      }
+      const it = computeCharacteristics(state, this.registry, id);
+      if (!it.types.includes("creature")) return false;
+      if (it.restrictions.has("cant-block")) return false;
+      return it.power >= me.toughness || it.keywords.has("deathtouch");
+    });
   }
 
   declareBlockers(view: ControllerView): readonly BlockerDeclaration[] {

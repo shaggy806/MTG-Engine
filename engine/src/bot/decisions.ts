@@ -124,12 +124,20 @@ export function decisionCandidates(
       }));
     case "pay-life-for-untapped":
       return [true, false].map((pay) => ({ type: "pay-life-for-untapped", player, pay }));
-    case "commander-replacement":
-      return [true, false].map((toCommandZone) => ({
-        type: "commander-replacement",
-        player,
-        toCommandZone,
-      }));
+    // `commander-replacement` is deliberately **not** searched, and keeps
+    // v1's answer (the command zone).
+    //
+    // The evaluation has no term for the command zone — `features.ts` never
+    // looks at that zone — while `graveyard` is worth 0.05 a card. So letting
+    // the commander die scored a hair *better* than saving it, every time,
+    // and the bot fed its commander to the graveyard on the first removal
+    // spell it saw. A rollout can't rescue that either: the commander is only
+    // worth something once recast, which is past the horizon.
+    //
+    // Searching a decision the evaluation cannot price is worse than not
+    // searching it, which is the same reason mulligans and combat damage
+    // order are absent. Revisit if a "commander available to recast" feature
+    // is ever added and fitted.
     default:
       return null;
   }
