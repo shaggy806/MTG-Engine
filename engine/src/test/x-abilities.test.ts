@@ -5,6 +5,7 @@ import { Game } from "../game.js";
 import { asObjectId, asPlayerId } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
+import { poolCounts } from "../mana.js";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
@@ -175,7 +176,7 @@ describe("conditional static abilities", () => {
 
     // The mana ability is unaffected by threshold.
     game.dispatch({ type: "activate-ability", player: A, source: bear, abilityIndex: 0 });
-    expect(game.state.players[A].manaPool.G).toBe(1);
+    expect(poolCounts(game.state.players[A].manaPool).G).toBe(1);
   });
 
   it("Ardent Recruit — metalcraft +1/+1 at 3+ artifacts", () => {

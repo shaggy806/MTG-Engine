@@ -1164,17 +1164,29 @@ Delete an entry in the same commit as the feature that retires it.
   among any number of targets". The slot *count* is still fixed by the
   declared `TargetSpec[]`. ("Up to N" *is* expressible — N slots marked
   `{ kind: "optional", of: spec }`, see §7.)
-- **Mana provenance / restricted spend.** No effect tracks what a specific unit
-  of mana was later spent on — "if that mana is spent on a Dragon spell, it
-  gains haste" (Carnelian Orb of Dragonkind) and "spend this mana only to cast
-  a Dragon spell" (Haven of the Spirit Dragon, Temple of the Dragon Queen,
-  Path of Ancestry) are both unmodeled (needed-cards P18). The related
-  "**you don't lose this mana** as steps and phases end" (Savage Ventmaw) is
-  unmodeled for the same reason. Note that the *identity* clause alone is not
-  a blocker: "one mana of any color in your commander's color identity" is
-  modelled as plain `"any-color"` (`arcane-signet.ts`, `commanders-sphere.ts`),
-  which is exact for any deck that passes `validateCommanderDeck` — every card
-  the mana could be spent on is already inside that identity.
+- ~~**Mana provenance / restricted spend.**~~ **Built.** The mana pool is a
+  list of tagged `ManaUnit`s, so a unit remembers where it came from. An
+  `add-mana` effect stamps three optional things on what it produces:
+  - `spendOnly: { spell?, abilityOf?, chosenType?, uncounterable?, text }` —
+    "Spend this mana only to cast a creature spell of the chosen type"
+    (Cavern of Souls, Unclaimed Territory, Secluded Courtyard, Ancient
+    Ziggurat). `chosenType` folds in the type named as the permanent entered;
+    `abilityOf` adds the "…or activate an ability of" half;
+    `uncounterable` is Cavern's "and that spell can't be countered", which
+    is a property of the spell the mana paid for rather than of the land.
+  - `whenSpent: { spell?, effect, text }` — "When that mana is spent to cast
+    …" (Path of Ancestry). `spell: "shares-type-with-commander"` resolves
+    against the controller's commanders at activation time. It fires as a
+    real triggered ability, so it resolves *above* the spell it paid for.
+  - `persists: true` — "you don't lose this mana as steps and phases end"
+    (Savage Ventmaw). Still emptied at cleanup.
+
+  Note the *identity* clause alone was never a blocker: "one mana of any
+  color in your commander's color identity" is modelled as plain
+  `"any-color"` (`arcane-signet.ts`, `commanders-sphere.ts`, and now
+  `path-of-ancestry.ts`), which is exact for any deck that passes
+  `validateCommanderDeck` — every card the mana could be spent on is already
+  inside that identity. `mana-provenance.test.ts`.
 - **An emblem can only carry a `StaticAbility`.** `create-emblem` takes
   `static?`, and emblems live in `GameState.emblems` rather than as
   `GameObject`s, so `detectTriggers` — which scans battlefield permanents —
@@ -1223,11 +1235,13 @@ Delete an entry in the same commit as the feature that retires it.
   grant, not a one-shot resolution effect (needed-cards P18). The *triggered*
   equivalent does exist, for a single target: the `grant-triggered` effect
   (§6).
-- **"As this enters, choose …" only fires when the permanent is *cast*.**
-  Both `chooseCreatureTypeOnEnter` and `chooseOnEnter` hang off the
-  permanent-spell resolution path, so a copy, a reanimation or a
-  `debugSpawn` never raises the choice and the permanent behaves as though
-  nothing was chosen.
+- **"As this enters, choose …" only fires when the permanent is *cast or
+  played*.** `chooseCreatureTypeOnEnter` / `chooseOnEnter` hang off those two
+  paths, so a copy, a reanimation or a `debugSpawn` never raises the choice
+  and the permanent behaves as though nothing was chosen. (The *played* half
+  was added for Cavern of Souls and friends — a land is played, not cast, so
+  every one of them used to enter with no type named and its restricted mana
+  could pay for nothing.)
 - **Bestow** (rule 702.103 — Springheart Nantuko), **Eternalize** (rule
   702.129 — Fanatic of Rhonas), **retrace** (rule 702.83 — Six), **riot**
   (rule 702.152 — Rhythm of the Wild), **Hideaway** (rule 702.104 — Mosswort

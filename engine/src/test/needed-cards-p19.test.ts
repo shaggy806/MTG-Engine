@@ -20,6 +20,7 @@ import { Game } from "../game.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import { asPlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
+import { poolCounts } from "../mana.js";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
@@ -152,6 +153,6 @@ describe("Fanatic of Rhonas", () => {
 
     game.debugSpawn("Craw Wurm", A); // 6/4
     game.dispatch({ type: "activate-ability", player: A, source: fanatic, abilityIndex: 1 });
-    expect(game.state.players[A].manaPool.G).toBe(4);
+    expect(poolCounts(game.state.players[A].manaPool).G).toBe(4);
   });
 });

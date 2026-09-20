@@ -14,6 +14,7 @@ import type { CardRegistry, CardType, CombatRestriction, Keyword } from "./cards
 import { computeCharacteristics, withComputedCache } from "./characteristics.js";
 import type { GameEvent } from "./events.js";
 import type { Color, ManaPool } from "./mana.js";
+import { poolCounts } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type {
   AwaitingDecision,
@@ -372,7 +373,7 @@ function viewForUncached(
     players[player] = {
       id: player,
       life: playerState.life,
-      manaPool: { ...playerState.manaPool },
+      manaPool: poolCounts(playerState.manaPool),
       handSize: zones.hand.length,
       librarySize: zones.library.length,
       graveyardSize: zones.graveyard.length,

@@ -15,6 +15,7 @@ import { describe, expect, it } from "vitest";
 
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
+import { poolCounts } from "../mana.js";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
@@ -189,7 +190,7 @@ describe("a Signet as a mana source", () => {
     ).not.toThrow();
 
     // Nothing floating: five mana produced, five spent.
-    const pool = game.state.players[A].manaPool;
+    const pool = poolCounts(game.state.players[A].manaPool);
     expect(Object.values(pool).reduce((n, v) => n + (v ?? 0), 0)).toBe(0);
   });
 });

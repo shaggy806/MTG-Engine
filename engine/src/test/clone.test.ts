@@ -5,6 +5,7 @@ import { Game } from "../game.js";
 import { asObjectId, asPlayerId } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
+import { poolCounts } from "../mana.js";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
@@ -139,7 +140,7 @@ describe("Clone (layer 1 — copy)", () => {
       .find((x) => x.kind === "activate-ability" && x.source === clone);
     expect(ability?.kind).toBe("activate-ability");
     game.dispatch({ type: "activate-ability", player: A, source: clone, abilityIndex: 0 });
-    expect(game.state.players[A].manaPool.G).toBe(1);
+    expect(poolCounts(game.state.players[A].manaPool).G).toBe(1);
   });
 
   it("copying nothing leaves it a 0/0 that dies to a state-based action", () => {

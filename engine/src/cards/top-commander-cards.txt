@@ -1,5 +1,5 @@
 Top 2000 Commander cards by EDHREC popularity (fetched 2026-09-13)
-441 already implemented / 1559 missing (marks refreshed 2026-09-20)
+445 already implemented / 1555 missing (marks refreshed 2026-09-20)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -10,7 +10,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]    11  Swords to Plowshares                     {W}              Instant
 [x]    12  Swiftfoot Boots                          {2}              Artifact — Equipment
 [x]    13  Lightning Greaves                        {2}              Artifact — Equipment
-[ ]    14  Path of Ancestry                         {0}              Land
+[x]    14  Path of Ancestry                         {0}              Land
 [x]    15  Path to Exile                            {W}              Instant
 [x]    16  Counterspell                             {U}{U}           Instant
 [x]    17  Fellwar Stone                            {2}              Artifact
@@ -107,7 +107,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   108  Drowned Catacomb                         {0}              Land
 [ ]   109  Teferi's Protection                      {2}{W}           Instant
 [x]   110  Woodland Cemetery                        {0}              Land
-[ ]   111  Cavern of Souls                          {0}              Land
+[x]   111  Cavern of Souls                          {0}              Land
 [x]   112  Sakura-Tribe Elder                       {1}{G}           Creature — Snake Shaman
 [x]   113  Vampiric Tutor                           {B}              Instant
 [ ]   114  Propaganda                               {2}{U}           Enchantment
@@ -215,7 +215,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   216  Azorius Signet                           {2}              Artifact
 [ ]   217  Rhythm of the Wild                       {1}{R}{G}        Enchantment
 [x]   218  Opt                                      {U}              Instant
-[ ]   219  Secluded Courtyard                       {0}              Land
+[x]   219  Secluded Courtyard                       {0}              Land
 [x]   220  Preordain                                {U}              Sorcery
 [x]   221  Ornithopter of Paradise                  {2}              Artifact Creature — Thopter
 [x]   222  Karplusan Forest                         {0}              Land
@@ -243,7 +243,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   244  Takenuma, Abandoned Mire                 {0}              Legendary Land
 [x]   245  Gray Merchant of Asphodel                {3}{B}{B}        Creature — Zombie
 [ ]   246  Mox Diamond                              {0}              Artifact
-[ ]   247  Unclaimed Territory                      {0}              Land
+[x]   247  Unclaimed Territory                      {0}              Land
 [x]   248  Harrow                                   {2}{G}           Instant
 [x]   249  Boros Signet                             {2}              Artifact
 [ ]   250  Grand Abolisher                          {W}{W}           Creature — Human Cleric

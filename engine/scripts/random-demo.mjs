@@ -138,6 +138,13 @@ const deckA = deck([
   ["Thran Dynamo", 1],
   ["Emerald Medallion", 1],
   ["Karn's Bastion", 1],
+  // Mana provenance: restricted spend, a spend rider, and the "can't be
+  // countered" clause that rides on Cavern's mana.
+  ["Cavern of Souls", 1],
+  ["Unclaimed Territory", 1],
+  ["Secluded Courtyard", 1],
+  ["Ancient Ziggurat", 1],
+  ["Path of Ancestry", 1],
   ["Tree of Tales", 1],
   ["Temple of Plenty", 1],
   ["Overgrown Farmland", 1],

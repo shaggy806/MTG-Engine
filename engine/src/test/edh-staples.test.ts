@@ -22,6 +22,7 @@ import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
+import { poolCounts } from "../mana.js";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
@@ -147,7 +148,7 @@ describe("Ancient Tomb", () => {
     settle(game);
 
     expect(lifeOf(game, A)).toBe(18);
-    expect(game.state.players[A].manaPool.C).toBe(2);
+    expect(poolCounts(game.state.players[A].manaPool).C).toBe(2);
   });
 });
 
@@ -157,14 +158,14 @@ describe("Talisman of Dominance", () => {
     const t1 = painless.debugSpawn("Talisman of Dominance", A);
     activate(painless, A, t1, "Add {C}");
     settle(painless);
-    expect(painless.state.players[A].manaPool.C).toBe(1);
+    expect(poolCounts(painless.state.players[A].manaPool).C).toBe(1);
     expect(lifeOf(painless, A)).toBe(20);
 
     const painful = makeGame();
     const t2 = painful.debugSpawn("Talisman of Dominance", A);
     activate(painful, A, t2, "Add {U}");
     settle(painful);
-    expect(painful.state.players[A].manaPool.U).toBe(1);
+    expect(poolCounts(painful.state.players[A].manaPool).U).toBe(1);
     expect(lifeOf(painful, A)).toBe(19);
   });
 });
@@ -293,7 +294,7 @@ describe("Temple of the False God", () => {
 
     activate(game, A, temple, "Add {C}{C}");
     settle(game);
-    expect(game.state.players[A].manaPool.C).toBe(2);
+    expect(poolCounts(game.state.players[A].manaPool).C).toBe(2);
   });
 });
 

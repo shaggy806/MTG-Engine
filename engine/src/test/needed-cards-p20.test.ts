@@ -15,6 +15,7 @@ import { Game } from "../game.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import { asPlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
+import { poolCounts } from "../mana.js";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
@@ -127,7 +128,7 @@ describe("Orcish Lumberjack", () => {
     });
     game.advanceUntil(settled);
 
-    expect(game.state.players[A].manaPool.R).toBe(3);
+    expect(poolCounts(game.state.players[A].manaPool).R).toBe(3);
     expect(game.battlefield.filter((id) => game.state.objects[id].cardName === "Forest")).toHaveLength(0);
   });
 });

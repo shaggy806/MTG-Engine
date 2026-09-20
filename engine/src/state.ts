@@ -11,8 +11,7 @@ import type { TriggeredAbility } from "./abilities.js";
 import type { CardType, Keyword, StaticAbility, StaticCondition } from "./cards.js";
 import type { EffectSpec, FlickerCounters } from "./effects.js";
 import type { CardFilter } from "./filter.js";
-import type { Color, ManaPool } from "./mana.js";
-import { emptyPool } from "./mana.js";
+import type { Color, ManaUnit } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameEvent } from "./events.js";
 import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
@@ -155,6 +154,14 @@ export interface GameObject {
   /** A hole (`undefined`) marks an optional target slot the caster chose to
    * leave empty — see `ResolvedTargets`. */
   targets: (TargetRef | undefined)[] | null;
+  /**
+   * This spell can't be countered because of *how it was paid for* — Cavern
+   * of Souls' "and that spell can't be countered". Distinct from
+   * `CardDefinition.cantBeCountered`, which is printed on the spell itself;
+   * this is a property one particular casting picked up from the mana.
+   * Cleared by `moveObject` with every other per-object flag.
+   */
+  uncounterable?: boolean;
   /** True when a temporary control-change effect (Act of Treason) controls this
    * permanent — cleanup reverts `controller` to `owner`. Cleared by
    * `moveObject` on any zone change. */
@@ -442,12 +449,33 @@ export interface PendingTrigger {
   readonly chapter?: boolean;
   /** Set when the ability was granted — see {@link GrantedAbilityRef}. */
   readonly grantedAbility?: GrantedAbilityRef;
+  /**
+   * A whole ability record rather than an index into a card's `triggered`
+   * list — a mana-spend rider (Path of Ancestry), which is an ability of no
+   * card's ability list at all: it rides on a unit of mana. Carried the same
+   * way `GameObject.delayedTrigger` carries one, and placed by the same
+   * minting code, so it resolves through the existing path.
+   *
+   * It queues here rather than going straight onto the stack because the
+   * mana is spent *during* casting, before this engine has moved the card to
+   * the stack. Minting immediately would put the rider underneath the spell
+   * and resolve it second; queueing lets `prepareForPriority` place it when
+   * a player would next get priority, which is both rule 603.3b and the
+   * right order.
+   */
+  readonly delayed?: DelayedTrigger;
 }
 
 export interface PlayerState {
   readonly id: PlayerId;
   life: number;
-  manaPool: ManaPool;
+  /** Mana floating in this player's pool, as individual units rather than a
+   * count per colour — a unit may be restricted in what it pays for, may
+   * survive the end of a step, or may carry a rider that fires when it's
+   * spent, and none of that survives being added up. `poolCounts` gives the
+   * totals. Usually empty: the engine auto-pays, so mana is normally made and
+   * spent without ever landing here. */
+  manaPool: ManaUnit[];
   maxHandSize: number;
   landsPlayedThisTurn: number;
   hasLost: boolean;
@@ -1226,7 +1254,7 @@ export function createPlayerState(id: PlayerId, rules: GameRules): PlayerState {
   return {
     id,
     life: rules.startingLife,
-    manaPool: emptyPool(),
+    manaPool: [],
     maxHandSize: rules.maxHandSize,
     landsPlayedThisTurn: 0,
     hasLost: false,

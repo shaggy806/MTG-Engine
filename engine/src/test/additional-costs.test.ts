@@ -17,6 +17,7 @@ import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId } from "../primitives.js";
 import type { GameState } from "../state.js";
+import { poolCounts } from "../mana.js";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
@@ -461,6 +462,6 @@ describe("Culling the Weak — a sacrifice cost that was expressible all along",
     game.advanceUntil((s) => s.zones.shared.stack.length === 0);
 
     expect(game.state.objects[bear].zone).toBe("graveyard");
-    expect(game.state.players[A].manaPool.B).toBe(4);
+    expect(poolCounts(game.state.players[A].manaPool).B).toBe(4);
   });
 });

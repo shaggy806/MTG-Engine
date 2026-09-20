@@ -17,6 +17,7 @@ import { Game } from "../game.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import { asPlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
+import { poolCounts } from "../mana.js";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
@@ -143,6 +144,6 @@ describe("Lotus Field", () => {
     game.state.objects[field]!.tapped = false;
 
     game.dispatch({ type: "activate-ability", player: A, source: field, abilityIndex: 0 });
-    expect(game.state.players[A].manaPool.W).toBe(3);
+    expect(poolCounts(game.state.players[A].manaPool).W).toBe(3);
   });
 });

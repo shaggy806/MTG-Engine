@@ -11,6 +11,7 @@ import { asPlayerId } from "../primitives.js";
 import type { ManaType } from "../mana.js";
 import type { ObjectId } from "../primitives.js";
 import type { GameState } from "../state.js";
+import { poolCounts } from "../mana.js";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
@@ -59,8 +60,8 @@ describe("choosing the colour of an 'any color' mana ability", () => {
         manaColors: [color],
       });
 
-      expect(game.state.players[A].manaPool[color]).toBe(1);
-      expect(game.state.players[A].manaPool.W).toBe(0);
+      expect(poolCounts(game.state.players[A].manaPool)[color]).toBe(1);
+      expect(poolCounts(game.state.players[A].manaPool).W).toBe(0);
     }
   });
 
@@ -77,7 +78,7 @@ describe("choosing the colour of an 'any color' mana ability", () => {
       targets: [],
     });
 
-    expect(game.state.players[A].manaPool.W).toBe(1);
+    expect(poolCounts(game.state.players[A].manaPool).W).toBe(1);
   });
 
   it("leaves a fixed-colour ability alone — one option, no colour list", () => {
@@ -139,6 +140,6 @@ describe("mana derived from the opponents' lands", () => {
       targets: [],
       manaColors: ["U"],
     });
-    expect(game.state.players[A].manaPool.U).toBe(1);
+    expect(poolCounts(game.state.players[A].manaPool).U).toBe(1);
   });
 });

@@ -7,6 +7,7 @@ import { poolTotal } from "../mana.js";
 import { asObjectId, asPlayerId } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
+import { poolCounts } from "../mana.js";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
@@ -125,7 +126,7 @@ describe("casting a creature", () => {
 
     game.advanceUntil(stackEmpty);
     expect(game.state.objects[bears].zone).toBe("battlefield");
-    expect(poolTotal(game.state.players[A].manaPool)).toBe(0);
+    expect(poolTotal(poolCounts(game.state.players[A].manaPool))).toBe(0);
     expect(
       game.battlefield
         .filter((id) => game.state.objects[id].cardName === "Forest")

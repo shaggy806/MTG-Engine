@@ -16,6 +16,7 @@ import { describe, expect, it } from "vitest";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { PlayerId } from "../primitives.js";
+import { poolCounts } from "../mana.js";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
@@ -149,7 +150,7 @@ describe("Mana Geyser", () => {
     const card = game.debugSpawn("Mana Geyser", A, "hand");
     game.dispatch({ type: "cast-spell", player: A, card, targets: [] });
     settle(game);
-    expect(game.state.players[A].manaPool.R).toBe(3);
+    expect(poolCounts(game.state.players[A].manaPool).R).toBe(3);
   });
 });
 

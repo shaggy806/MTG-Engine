@@ -7,6 +7,7 @@ import type { GameConfig } from "../game.js";
 import { asObjectId, asPlayerId } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
+import { poolCounts } from "../mana.js";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
@@ -180,7 +181,7 @@ describe("mana abilities", () => {
       source: forest,
       abilityIndex: 0,
     });
-    expect(game.state.players[A].manaPool.G).toBe(1);
+    expect(poolCounts(game.state.players[A].manaPool).G).toBe(1);
     expect(game.state.objects[forest].tapped).toBe(true);
     expect(game.stack).toHaveLength(0);
     expect(

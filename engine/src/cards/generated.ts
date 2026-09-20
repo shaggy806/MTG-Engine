@@ -22,6 +22,7 @@ import _poolAnOfferYouCantRefuse from "./pool/an-offer-you-cant-refuse.js";
 import _poolAnafenzaTheForemost from "./pool/anafenza-the-foremost.js";
 import _poolAncientDen from "./pool/ancient-den.js";
 import _poolAncientTomb from "./pool/ancient-tomb.js";
+import _poolAncientZiggurat from "./pool/ancient-ziggurat.js";
 import _poolAngelicEdict from "./pool/angelic-edict.js";
 import _poolAnguishedUnmaking from "./pool/anguished-unmaking.js";
 import _poolArcaneDenial from "./pool/arcane-denial.js";
@@ -98,6 +99,7 @@ import _poolCamaraderie from "./pool/camaraderie.js";
 import _poolCanopyVista from "./pool/canopy-vista.js";
 import _poolCarnageTyrant from "./pool/carnage-tyrant.js";
 import _poolCatharticReunion from "./pool/cathartic-reunion.js";
+import _poolCavernOfSouls from "./pool/cavern-of-souls.js";
 import _poolCavesOfKoilos from "./pool/caves-of-koilos.js";
 import _poolCemeteryReaper from "./pool/cemetery-reaper.js";
 import _poolChainReaction from "./pool/chain-reaction.js";
@@ -446,6 +448,7 @@ import _poolOverrun from "./pool/overrun.js";
 import _poolOverseerOfTheDamned from "./pool/overseer-of-the-damned.js";
 import _poolOverwhelmingInstinct from "./pool/overwhelming-instinct.js";
 import _poolPacifism from "./pool/pacifism.js";
+import _poolPathOfAncestry from "./pool/path-of-ancestry.js";
 import _poolPathToExile from "./pool/path-to-exile.js";
 import _poolPearlMedallion from "./pool/pearl-medallion.js";
 import _poolPhyrexianArena from "./pool/phyrexian-arena.js";
@@ -526,6 +529,7 @@ import _poolScuteSwarm from "./pool/scute-swarm.js";
 import _poolSeaOfClouds from "./pool/sea-of-clouds.js";
 import _poolSeasideCitadel from "./pool/seaside-citadel.js";
 import _poolSeatOfTheSynod from "./pool/seat-of-the-synod.js";
+import _poolSecludedCourtyard from "./pool/secluded-courtyard.js";
 import _poolSeethingSong from "./pool/seething-song.js";
 import _poolSeizeTheSpoils from "./pool/seize-the-spoils.js";
 import _poolSejiriRefuge from "./pool/sejiri-refuge.js";
@@ -670,6 +674,7 @@ import _poolTurnToFrog from "./pool/turn-to-frog.js";
 import _poolTwincast from "./pool/twincast.js";
 import _poolTyphoidRats from "./pool/typhoid-rats.js";
 import _poolTyrantsFamiliar from "./pool/tyrants-familiar.js";
+import _poolUnclaimedTerritory from "./pool/unclaimed-territory.js";
 import _poolUndeadAugur from "./pool/undead-augur.js";
 import _poolUndergroundMortuary from "./pool/underground-mortuary.js";
 import _poolUndergroundRiver from "./pool/underground-river.js";
@@ -802,6 +807,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAnafenzaTheForemost,
   _poolAncientDen,
   _poolAncientTomb,
+  _poolAncientZiggurat,
   _poolAngelicEdict,
   _poolAnguishedUnmaking,
   _poolArcaneDenial,
@@ -878,6 +884,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolCanopyVista,
   _poolCarnageTyrant,
   _poolCatharticReunion,
+  _poolCavernOfSouls,
   _poolCavesOfKoilos,
   _poolCemeteryReaper,
   _poolChainReaction,
@@ -1226,6 +1233,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolOverseerOfTheDamned,
   _poolOverwhelmingInstinct,
   _poolPacifism,
+  _poolPathOfAncestry,
   _poolPathToExile,
   _poolPearlMedallion,
   _poolPhyrexianArena,
@@ -1306,6 +1314,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSeaOfClouds,
   _poolSeasideCitadel,
   _poolSeatOfTheSynod,
+  _poolSecludedCourtyard,
   _poolSeethingSong,
   _poolSeizeTheSpoils,
   _poolSejiriRefuge,
@@ -1450,6 +1459,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTwincast,
   _poolTyphoidRats,
   _poolTyrantsFamiliar,
+  _poolUnclaimedTerritory,
   _poolUndeadAugur,
   _poolUndergroundMortuary,
   _poolUndergroundRiver,

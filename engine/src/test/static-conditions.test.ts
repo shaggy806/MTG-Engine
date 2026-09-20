@@ -13,6 +13,7 @@ import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId } from "../primitives.js";
 import type { GameState } from "../state.js";
+import { poolCounts } from "../mana.js";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
@@ -141,11 +142,11 @@ describe("morbid and threshold on newly-authored cards", () => {
       targets: [],
     });
     game.advanceUntil((s) => s.zones.shared.stack.length === 0);
-    expect(game.state.players[A].manaPool.B).toBe(3);
+    expect(poolCounts(game.state.players[A].manaPool).B).toBe(3);
 
     // Seven cards in the graveyard turns threshold on.
     for (let i = 0; i < 7; i += 1) game.debugSpawn("Swamp", A, "graveyard");
-    game.state.players[A].manaPool.B = 0;
+    game.state.players[A].manaPool = [];
     game.dispatch({
       type: "cast-spell",
       player: A,
@@ -153,7 +154,7 @@ describe("morbid and threshold on newly-authored cards", () => {
       targets: [],
     });
     game.advanceUntil((s) => s.zones.shared.stack.length === 0);
-    expect(game.state.players[A].manaPool.B).toBe(5);
+    expect(poolCounts(game.state.players[A].manaPool).B).toBe(5);
   });
 });
 

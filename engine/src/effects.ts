@@ -23,6 +23,27 @@ export type EffectTargetRef = number | "source" | "trigger-object";
 export type PtDuration = "end-of-turn" | "permanent";
 
 /**
+ * A "spend this mana only to …" clause on a mana ability (rule 106.6b).
+ *
+ * `spell` is the ordinary case: only spells matching this filter. `abilityOf`
+ * adds "…or activate abilities of [X]" (Eldrazi Temple, Castle Garenbrig).
+ * `chosenType` means the filter's subtype comes from the source's own
+ * `chosenCreatureType`, named as it entered rather than printed (Cavern of
+ * Souls, Unclaimed Territory, Secluded Courtyard) — it is resolved at
+ * activation time and folded into `spell`.
+ */
+export interface ManaSpendOnly {
+  readonly spell?: CardFilter;
+  readonly abilityOf?: CardFilter;
+  readonly chosenType?: boolean;
+  /** "…and that spell can't be countered" (Cavern of Souls, Delighted
+   * Halfling). A property of the spell this mana pays for, not of the land. */
+  readonly uncounterable?: boolean;
+  /** The card's own wording, for the log and the mana display. */
+  readonly text: string;
+}
+
+/**
  * Counters a blinked permanent gets as it comes back — Essence Flux's "If
  * it's a Spirit, put a +1/+1 counter on it". `onlyIf` is checked against the
  * *returned* permanent, which is a new object (rule 400.7) wearing its
@@ -221,6 +242,28 @@ export type EffectSpec =
        * Karplusan Forest deals 1 damage to you."). The auto-payer prefers a
        * painless option and only reaches for this when it must. */
       readonly painToController?: number;
+      /**
+       * "Spend this mana only to cast a creature spell of the chosen type"
+       * (Cavern of Souls, Unclaimed Territory) and its relatives — rule
+       * 106.6b. The restriction rides on each unit produced, so it survives
+       * the mana sitting in the pool, and the payment planner also refuses to
+       * tap this source for a purpose the restriction forbids.
+       *
+       * `"chosen-creature-type"` reads `GameObject.chosenCreatureType` off
+       * the source at activation time, since that is named as the permanent
+       * enters rather than printed.
+       */
+      readonly spendOnly?: ManaSpendOnly;
+      /** "When that mana is spent to cast …, [effect]" — Path of Ancestry's
+       * scry. Rides on each unit produced and fires as it is spent. */
+      readonly whenSpent?: {
+        readonly spell?: CardFilter | "shares-type-with-commander";
+        readonly effect: EffectSpec;
+        readonly text: string;
+      };
+      /** "You don't lose this mana as steps and phases end" (Savage
+       * Ventmaw). Still emptied at cleanup. */
+      readonly persists?: boolean;
     }
   | {
       readonly kind: "draw";
@@ -1190,6 +1233,12 @@ export interface EffectApi {
       | { readonly oneOf: readonly ManaType[] }
       | { readonly producedBy: "opponents-lands" },
     amount: number,
+    /** The whole `add-mana` spec, so the engine can stamp this mana's
+     * provenance (a spend restriction, a spend rider, a "doesn't empty"
+     * permission) on the units it makes. Needed here as well as in the
+     * payment planner: activating a mana ability *by hand* floats the mana,
+     * and that is exactly where an untagged pool loses the restriction. */
+    spec?: Extract<EffectSpec, { kind: "add-mana" }>,
   ): void;
   tapPermanent(target: TargetRef): void;
   untapPermanent(target: TargetRef): void;
@@ -1603,6 +1652,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
         // is on the cards that use this).
         spec.mana === "chosen" ? (ctx.chosenColorOfSource() ?? "any-color") : spec.mana,
         amountValue(spec.amount, ctx),
+        spec,
       );
       if (spec.painToController !== undefined && spec.painToController > 0) {
         ctx.dealDamage(

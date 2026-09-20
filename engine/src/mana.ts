@@ -1,5 +1,11 @@
 /** Colors, mana, and mana costs. */
 
+// Type-only, so nothing here participates in a runtime cycle — `filter.ts`
+// and `effects.ts` both import this module for real.
+import type { EffectSpec } from "./effects.js";
+import type { CardFilter } from "./filter.js";
+import type { ObjectId } from "./primitives.js";
+
 export type Color = "W" | "U" | "B" | "R" | "G";
 
 /** A concrete unit of mana: one of the five colors, or colorless (`C`). */
@@ -14,6 +20,80 @@ export const emptyPool = (): ManaPool => ({ W: 0, U: 0, B: 0, R: 0, G: 0, C: 0 }
 
 export const poolTotal = (pool: ManaPool): number =>
   MANA_TYPES.reduce((sum, type) => sum + pool[type], 0);
+
+/**
+ * What a restricted unit of mana may be spent on (rule 106.6b) — "Spend this
+ * mana only to cast a creature spell of the chosen type" and its relatives.
+ *
+ * Both clauses are optional and at least one must be set; a unit whose
+ * restriction permits neither the spell nor the ability in front of it simply
+ * can't pay for it. `text` is for the log and the mana display, and is the
+ * card's own wording.
+ */
+export interface ManaRestriction {
+  /** Spells this mana may be cast with (Ancient Ziggurat: any creature
+   * spell). Matched against the card being cast, which is still in its
+   * pre-cast zone at payment time — so this reads printed characteristics,
+   * which is what "a creature spell" means. */
+  readonly spell?: CardFilter;
+  /** Permanents whose *activated abilities* this mana may also pay for
+   * (Eldrazi Temple, Castle Garenbrig: "…or activate abilities of Eldrazi").
+   * Absent means the mana is for casting only. */
+  readonly abilityOf?: CardFilter;
+  readonly text: string;
+}
+
+/**
+ * One unit of mana sitting in a player's pool (rule 106.4).
+ *
+ * The pool is a **list of units** rather than a count per colour, because
+ * three printed things need to know about one *particular* unit of mana and
+ * not just how much there is: a restriction on what it may be spent on, a
+ * rider that fires when it is spent (Path of Ancestry), and mana that
+ * survives the end of a step (Savage Ventmaw). A count can carry none of
+ * those. {@link poolCounts} rebuilds the old view for everything that only
+ * wants totals.
+ *
+ * In practice the pool is empty almost all the time — the engine auto-pays,
+ * so mana is usually made and spent inside one operation and never lands
+ * here. It lands here when a player activates a mana ability by hand, and
+ * that is exactly the path where an untagged pool would lose the restriction
+ * and let Cavern of Souls' mana pay for anything.
+ */
+export interface ManaUnit {
+  readonly type: ManaType;
+  readonly restriction?: ManaRestriction;
+  /** "You don't lose this mana as steps and phases end" (Savage Ventmaw).
+   * Still emptied at cleanup — the permission is for the turn, not forever. */
+  readonly persists?: boolean;
+  /** "…and that spell can't be countered" (Cavern of Souls, Delighted
+   * Halfling) — a property the *spell* gains by being paid for with this
+   * mana, so it can't live on the land's own card definition. */
+  readonly uncounterable?: boolean;
+  /** Fires when this unit is spent — Path of Ancestry's "When that mana is
+   * spent to cast a creature spell that shares a creature type with your
+   * commander, scry 1". Carried as plain data so it survives a snapshot. */
+  readonly onSpend?: ManaSpendRider;
+}
+
+/** A triggered ability that fires when one unit of mana is spent on a
+ * matching spell (rule 106.12 / 603.2e). */
+export interface ManaSpendRider {
+  /** The permanent that made the mana — `ctx.source` when the rider fires. */
+  readonly source: ObjectId;
+  readonly sourceName: string;
+  /** Only fires if the spell paid for matches. Absent means any spell. */
+  readonly spell?: CardFilter;
+  readonly effect: EffectSpec;
+  readonly text: string;
+}
+
+/** Totals per mana type — the count view of a pool of units. */
+export const poolCounts = (units: readonly ManaUnit[]): ManaPool => {
+  const pool = emptyPool();
+  for (const unit of units) pool[unit.type] += 1;
+  return pool;
+};
 
 /** One way to pay a single hybrid / twobrid / Phyrexian pip (rule 107.4e–g).
  * A pip is a list of these alternatives; paying it means satisfying any one. */

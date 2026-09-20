@@ -179,11 +179,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
         "Kessig Wolf Run",
         "Utility land that taps for colorless.",
       ),
-      sub(
-        "Path of Ancestry",
-        "Sheltered Thicket",
-        "Enters-tapped land that makes the deck's colours.",
-      ),
     ],
   }),
   precon({

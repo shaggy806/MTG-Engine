@@ -474,7 +474,33 @@ Retrace, riot and Prototype gate **nothing** in the top 2000 — they are in §1
 because a card in the pool wanted them, not because the backlog does. Leave
 them.
 
-### Next feature: mana provenance (21 cards, four of them top-250)
+### Mana provenance — DONE (21 cards unblocked, four of them top-250)
+
+Built as designed below, in one pass. Shipped: **Path of Ancestry** (#14),
+**Cavern of Souls** (#111), **Secluded Courtyard** (#219), **Unclaimed
+Territory** (#247), **Ancient Ziggurat**. `mana-provenance.test.ts`, and the
+authoring vocabulary is AUTHORING §15's "Mana provenance" entry.
+
+Three things the plan didn't anticipate, all found by writing the tests and
+running the fuzzer rather than by reading the code:
+
+1. **"As this enters, choose a creature type" never fired for a land.** It
+   hung off the permanent-*spell* resolution path, and a land is played, not
+   cast — so all three chosen-type lands entered with no type named and their
+   restricted mana could pay for nothing. `applyEnterChoices` is now shared by
+   both paths.
+2. **A hand-activated mana ability didn't tag its mana.** The payment planner
+   tagged what it produced, but `applyEffectSpec`'s `add-mana` didn't — and
+   floating mana is precisely the case the tagged pool exists for.
+3. **The generic-spend type choice underflowed** when a restricted unit this
+   payment couldn't touch was floating: picking the pip's colour by "is there
+   a unit of this type" selected that unit's colour and then failed to take
+   it. It has to choose over what is actually spendable. The fuzzer hit this
+   on 115 of 150 seeds; there is now a regression test.
+
+The original scoping follows, unchanged.
+
+### The design: mana provenance (21 cards, four of them top-250)
 
 The single highest-value gap, and three printed shapes over one underlying
 change:

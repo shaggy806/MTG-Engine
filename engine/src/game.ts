@@ -73,8 +73,15 @@ import type {
   GameEventInput,
   GameEventType,
 } from "./events.js";
-import { COLORS, MANA_TYPES, emptyPool, manaValue, parseManaCost, poolTotal } from "./mana.js";
-import type { Color, ManaCost, ManaType } from "./mana.js";
+import { COLORS, MANA_TYPES, manaValue, parseManaCost, poolCounts, poolTotal } from "./mana.js";
+import type {
+  Color,
+  ManaCost,
+  ManaRestriction,
+  ManaSpendRider,
+  ManaType,
+  ManaUnit,
+} from "./mana.js";
 import type { ObjectId, PlayerId, Rng } from "./primitives.js";
 import { asObjectId, createRng, shuffle } from "./primitives.js";
 import {
@@ -250,6 +257,19 @@ interface ManaOption {
    * orders it after them.
    */
   readonly genericCost: number;
+  /**
+   * The provenance stamped on every unit this activation makes — a spend
+   * restriction, a spend rider, a "doesn't empty" permission (rule 106.6b /
+   * 106.12). Resolved here rather than at spend time because the pieces that
+   * aren't printed (the creature type named as the permanent entered, the
+   * commander's types) are read off the board, and the board is what this is
+   * looking at.
+   *
+   * The planner reads `tag.restriction` to avoid tapping a source whose mana
+   * couldn't pay for the thing being paid for — otherwise it would produce
+   * mana and then be refused it.
+   */
+  readonly tag?: Omit<ManaUnit, "type">;
 }
 
 /** One of `player`'s permanents that can produce mana right now. `options` is
@@ -286,6 +306,9 @@ interface ManaPlanStep {
    * `{1}` eats an Island's `{U}`.
    */
   readonly spends: readonly ManaType[];
+  /** The provenance to stamp on the mana this step makes — see
+   * {@link ManaOption.tag}. */
+  readonly tag?: Omit<ManaUnit, "type">;
 }
 
 /** A fully-worked-out way to pay a cost: which sources to tap ({@link
@@ -296,7 +319,31 @@ interface ManaPayment {
   readonly steps: readonly ManaPlanStep[];
   readonly life: number;
   readonly resolved: ManaCost;
+  /** What this payment is for, so restricted mana knows whether it may pay
+   * (rule 106.6b) and a spend rider knows what it was spent on. Carried on
+   * the payment rather than passed to {@link Game.executePayment} separately,
+   * so no caller has to remember to thread it twice. */
+  readonly purpose: ManaPurpose;
 }
+
+/**
+ * What a mana payment is being made for — the thing a restriction like
+ * "spend this mana only to cast a creature spell" is tested against.
+ *
+ * `null` means "no particular spell or ability" (a ward tax probe, a cost
+ * check with nothing concrete behind it). Restricted mana never pays for
+ * that: there is no printed restriction that a nameless payment satisfies,
+ * and treating unknown as permitted is the failure mode where the
+ * restriction quietly does nothing.
+ */
+type ManaPurpose =
+  /** A spell being cast. `card` is still in its pre-cast zone at payment
+   * time, so a filter over it reads printed characteristics — which is
+   * exactly what "a creature spell" means. */
+  | { readonly kind: "cast"; readonly card: ObjectId }
+  /** An activated ability of `source` being paid for. */
+  | { readonly kind: "ability"; readonly source: ObjectId }
+  | null;
 /** Combat damage from the same commander at or above this total is a loss (rule 903.10a). */
 const COMMANDER_DAMAGE_THRESHOLD = COMMANDER_DAMAGE_LETHAL;
 
@@ -2580,8 +2627,17 @@ export class Game {
 
   private enterStep(step: Step): void {
     this.state.turn.step = step;
+    // Mana empties as each step and phase ends (rule 500.4), except units
+    // whose source said otherwise — Savage Ventmaw's "you don't lose this
+    // mana as steps and phases end". That permission is for the turn only, so
+    // cleanup takes it away with everything else.
+    const keepPersistent = step !== "cleanup";
     for (const player of this.state.turnOrder) {
-      this.state.players[player].manaPool = emptyPool();
+      const pool = this.state.players[player].manaPool;
+      const kept = keepPersistent ? pool.filter((unit) => unit.persists === true) : [];
+      if (kept.length !== pool.length) {
+        this.state.players[player].manaPool = kept;
+      }
     }
     this.state.priority.active = false;
     this.state.priority.holder = null;
@@ -4099,7 +4155,30 @@ export class Game {
     playerState.landsPlayedThisTurn += 1;
     this.emit({ type: "land-played", player, object: cardId });
     this.emit({ type: "permanent-entered-battlefield", object: cardId });
+    // A land is *played*, not cast, so it never went through the spell
+    // resolution path where this used to live — and every "as this land
+    // enters, choose a creature type" card (Cavern of Souls, Unclaimed
+    // Territory, Secluded Courtyard) is a land. Without this they entered
+    // with no type chosen and their restricted mana could pay for nothing.
+    this.applyEnterChoices(cardId, player, this.registry.get(printedCardName(this.state.objects[cardId])));
     this.afterPlayerAction(player);
+  }
+
+  /**
+   * Raise an "as this enters, choose …" decision (rule 614.1c), shared by the
+   * two ways a permanent can arrive under its own steam: a permanent spell
+   * resolving, and a land being played.
+   *
+   * Still not reached by a permanent that arrives some *other* way — a copy,
+   * a reanimation, `debugSpawn` — which stays an AUTHORING §15 limitation.
+   * Nothing in the pool needs that yet; every card with this clause is either
+   * cast or played.
+   */
+  private applyEnterChoices(id: ObjectId, controller: PlayerId, def: CardDefinition): void {
+    if (def.chooseCreatureTypeOnEnter) this.beginCreatureTypeChoice(id, controller);
+    else if (def.chooseOnEnter !== null) {
+      this.beginCreatureTypeChoice(id, controller, def.chooseOnEnter);
+    }
   }
 
   /** Why `player` cannot suspend `cardId` from hand right now (rule 702.62 —
@@ -4523,11 +4602,19 @@ export class Game {
       this.manaSources(player).reduce(
         (n, s) => n + Game.sourceCapacity(s),
         0,
-      ) + MANA_TYPES.reduce((n, t) => n + pool[t], 0);
+      ) + pool.length;
     return this.withFace(cardId, face, () => {
       let best = 0;
       for (let k = 1; k <= cap; k += 1) {
-        if (this.payMana(player, this.castingCostOf(player, cardId, def, k, costString)) === null) {
+        if (
+          this.payMana(
+            player,
+            this.castingCostOf(player, cardId, def, k, costString),
+            undefined,
+            undefined,
+            { kind: "cast", card: cardId },
+          ) === null
+        ) {
           break;
         }
         best = k;
@@ -4561,7 +4648,7 @@ export class Game {
     const pool = this.state.players[player].manaPool;
     const cap =
       this.manaSources(player).reduce((n, s) => n + Game.sourceCapacity(s), 0) +
-      MANA_TYPES.reduce((n, t) => n + pool[t], 0);
+      pool.length;
     let best = 0;
     for (let k = 1; k <= cap; k += 1) {
       const cost: ManaCost = {
@@ -4827,7 +4914,7 @@ export class Game {
     }
     const cost =
       convoke !== undefined && convoke.length > 0 ? this.reduceCostByConvoke(baseCost, convoke) : baseCost;
-    if (this.payMana(player, cost) === null) {
+    if (this.payMana(player, cost, undefined, undefined, { kind: "cast", card: cardId }) === null) {
       return `${player} cannot pay the cost of ${def.name}`;
     }
     return null;
@@ -4952,7 +5039,10 @@ export class Game {
       convoke !== undefined && convoke.length > 0
         ? this.reduceCostByConvoke(fullCost, convoke)
         : fullCost;
-    const payment = this.payMana(player, cost);
+    const payment = this.payMana(player, cost, undefined, undefined, {
+      kind: "cast",
+      card: cardId,
+    });
     if (payment === null) {
       throw new Error(`${player} cannot pay the cost of ${def.name}`);
     }
@@ -5436,6 +5526,7 @@ export class Game {
         // Matches `activateAbility`'s own payment below: a source being tapped
         // to pay `{T}` isn't available to pay the mana half as well.
         ability.cost.tap ? sourceId : undefined,
+        { kind: "ability", source: sourceId },
       ) === null
     ) {
       return `${player} cannot pay for ${def.name}'s ability`;
@@ -5542,6 +5633,7 @@ export class Game {
       manaCost,
       ability.cost.tap || ability.zone !== undefined ? undefined : sourceId,
       ability.cost.tap ? sourceId : undefined,
+      { kind: "ability", source: sourceId },
     );
     if (payment === null) {
       throw new Error(`${player} cannot pay for ${def.name}'s ability`);
@@ -5808,7 +5900,10 @@ export class Game {
       // mixes a tap-only and a sacrifice mana ability on one permanent.
       let sacrificeSelf = false;
       const key = (o: ManaOption): string =>
-        `${[...o.fixed].sort().join(",")}|${o.anyColor}|${o.pain}|${o.lifeCost}|${o.genericCost}`;
+        `${[...o.fixed].sort().join(",")}|${o.anyColor}|${o.pain}|${o.lifeCost}|${o.genericCost}` +
+        // Two options that make the same mana are still different options if
+        // one of them is restricted.
+        `|${o.tag === undefined ? "" : JSON.stringify(o.tag)}`;
       for (const ability of this.effectiveActivated(id, grantors)) {
         if (
           !isManaAbility(ability) ||
@@ -5870,9 +5965,11 @@ export class Game {
         // A converter that doesn't produce more than it costs is never worth
         // offering, and admitting one would let the planner loop.
         if (genericCost >= manaAmount) continue;
+        const tagOf = this.manaTagFor(object, ability.effect);
+        const tag = tagOf === undefined ? {} : { tag: tagOf };
         const candidates: ManaOption[] =
           mana === "any-color"
-            ? [{ fixed: [], anyColor: manaAmount, pain, lifeCost, genericCost }]
+            ? [{ fixed: [], anyColor: manaAmount, pain, lifeCost, genericCost, ...tag }]
             : typeof mana === "object"
               ? manaCombinations(this.manaOneOf(mana, player), manaAmount).map((fixed) => ({
                   fixed,
@@ -5880,6 +5977,7 @@ export class Game {
                   pain,
                   lifeCost,
                   genericCost,
+                  ...tag,
                 }))
               : [
                   {
@@ -5888,6 +5986,7 @@ export class Game {
                     pain,
                     lifeCost,
                     genericCost,
+                    ...tag,
                   },
                 ];
         for (const option of candidates) {
@@ -5958,12 +6057,13 @@ export class Game {
     cost: ManaCost,
     avoid?: ObjectId,
     exclude?: ObjectId,
+    purpose: ManaPurpose = null,
   ): ManaPayment | null {
-    const resolved = this.resolveHybridCost(player, cost, avoid, exclude);
+    const resolved = this.resolveHybridCost(player, cost, avoid, exclude, purpose);
     if (resolved === null) return null;
-    const steps = this.planManaPayment(player, resolved.concrete, avoid, exclude);
+    const steps = this.planManaPayment(player, resolved.concrete, avoid, exclude, purpose);
     if (steps === null) return null;
-    return { steps, life: resolved.life, resolved: resolved.concrete };
+    return { steps, life: resolved.life, resolved: resolved.concrete, purpose };
   }
 
   /** Carry out a {@link payMana} result: tap/sacrifice each planned source and
@@ -5971,7 +6071,7 @@ export class Game {
    * Phyrexian life. */
   private executePayment(player: PlayerId, payment: ManaPayment): void {
     for (const step of payment.steps) this.useManaSource(step);
-    this.spendFromPool(player, payment.resolved);
+    this.spendFromPool(player, payment.resolved, payment.purpose);
     if (payment.life > 0) this.changeLife(player, -payment.life);
   }
 
@@ -5991,6 +6091,7 @@ export class Game {
     cost: ManaCost,
     avoid: ObjectId | undefined,
     exclude?: ObjectId,
+    purpose: ManaPurpose = null,
   ): { concrete: ManaCost; life: number } | null {
     if (cost.hybrid.length === 0) return { concrete: cost, life: 0 };
 
@@ -6011,7 +6112,7 @@ export class Game {
         const nextColored = { ...concrete.colored };
         nextColored[option.color] += 1;
         const trial: ManaCost = { ...concrete, colored: nextColored };
-        if (this.planManaPayment(player, trial, avoid, exclude) !== null) {
+        if (this.planManaPayment(player, trial, avoid, exclude, purpose) !== null) {
           chosen = trial;
           break;
         }
@@ -6020,7 +6121,7 @@ export class Game {
         for (const option of pip) {
           if (option.kind !== "generic") continue;
           const trial: ManaCost = { ...concrete, generic: concrete.generic + option.amount };
-          if (this.planManaPayment(player, trial, avoid, exclude) !== null) {
+          if (this.planManaPayment(player, trial, avoid, exclude, purpose) !== null) {
             chosen = trial;
             break;
           }
@@ -6054,8 +6155,18 @@ export class Game {
     cost: ManaCost,
     avoid?: ObjectId,
     exclude?: ObjectId,
+    purpose: ManaPurpose = null,
   ): ManaPlanStep[] | null {
-    const pool = this.state.players[player].manaPool;
+    // Floating mana this payment is actually allowed to use. Restricted
+    // units that can't pay for `purpose` are invisible here, so the planner
+    // taps as though they weren't there rather than planning around mana it
+    // will then be refused — and `spendFromPool` applies the same filter, so
+    // the plan and the spend can't disagree.
+    const pool = poolCounts(
+      this.state.players[player].manaPool.filter((unit) =>
+        this.manaUnitCanPay(player, unit, purpose),
+      ),
+    );
 
     const need: Record<ManaType, number> = { W: 0, U: 0, B: 0, R: 0, G: 0, C: 0 };
     for (const color of COLORS) {
@@ -6081,8 +6192,22 @@ export class Game {
       ...s,
       options: s.options.filter((o) => o.pain + o.lifeCost < currentLife),
     });
+    // Drop options whose mana couldn't pay for what's being paid for (rule
+    // 106.6b). Done at the *option* level rather than the source level
+    // because a card can offer both — Plaza of Heroes taps for {C} freely and
+    // for a colour only toward a legendary spell — and dropping the whole
+    // permanent would lose the unrestricted half.
+    const usableOptions = (s: ManaSource): ManaSource => ({
+      ...s,
+      options: s.options.filter(
+        (o) =>
+          o.tag?.restriction === undefined ||
+          this.manaUnitCanPay(player, { type: "C", ...o.tag }, purpose),
+      ),
+    });
     const all = this.manaSources(player)
       .map(affordableOptions)
+      .map(usableOptions)
       .filter((s) => s.options.length > 0 && s.id !== exclude);
     // A converter (a Signet) is only reached once the plain sources are
     // exhausted: it costs mana someone else has to make, and on a board with
@@ -6107,6 +6232,7 @@ export class Game {
       /** For a converter, the exact mana taken from other sources to pay its
        * own cost — spent back verbatim by `useManaSource`. */
       readonly spends: ManaType[];
+      readonly tag?: Omit<ManaUnit, "type">;
     }
     // Colours this cost still wants, for `coverGenericFrom`'s preference.
     const wantedColors = new Set<ManaType>(
@@ -6151,6 +6277,7 @@ export class Game {
         lifeCost: opt.lifeCost,
         genericCost: opt.genericCost,
         spends: [],
+        ...(opt.tag !== undefined ? { tag: opt.tag } : {}),
       };
       tapped.push(t);
       return t;
@@ -6282,6 +6409,7 @@ export class Game {
         ...t.freeFixed,
         ...Array.from<ManaType>({ length: t.freeAny }).fill("C"),
       ],
+      ...(t.tag !== undefined ? { tag: t.tag } : {}),
     }));
   }
 
@@ -6294,7 +6422,7 @@ export class Game {
     // — the plan orders its funding sources ahead of it, and names the exact
     // units they contributed.
     for (const m of step.spends) this.removeMana(player, m);
-    for (const m of step.mana) this.addMana(player, m, 1);
+    for (const m of step.mana) this.addMana(player, m, 1, step.tag);
     if (step.sacrifice) {
       this.moveObject(step.source, "graveyard");
       this.emit({ type: "permanent-sacrificed", object: step.source, player: object.owner });
@@ -6309,13 +6437,19 @@ export class Game {
   }
 
   /** Take one specific unit of mana back out of `player`'s pool — the other
-   * half of `addMana`, used by a converter paying its own activation cost. */
+   * half of `addMana`, used by a converter paying its own activation cost.
+   * Takes an *unrestricted* unit: a converter's cost isn't the spell the
+   * restriction was about, and `planManaPayment` funds converters from plain
+   * sources anyway. */
   private removeMana(player: PlayerId, mana: ManaType): void {
     const pool = this.state.players[player].manaPool;
-    if ((pool[mana] ?? 0) <= 0) {
+    const index = pool.findIndex(
+      (unit) => unit.type === mana && unit.restriction === undefined,
+    );
+    if (index < 0) {
       throw new Error(`mana pool underflow paying a converter's own cost (${mana})`);
     }
-    pool[mana] -= 1;
+    pool.splice(index, 1);
   }
 
   /**
@@ -6346,37 +6480,243 @@ export class Game {
     player: PlayerId,
     mana: ManaType | "any-color" | { readonly oneOf: readonly ManaType[] },
     amount: number,
+    /** The provenance the producing ability stamps on every unit it makes —
+     * a spend restriction, a rider, a "doesn't empty" permission. */
+    tag?: Omit<ManaUnit, "type">,
   ): void {
     // A standalone "add one mana of any colour"/"any combination of [...]"
     // (not paying a cost) just makes white / all of the first listed colour —
     // the planner resolves the colour(s) itself when it's a payment (P20).
     const concrete: ManaType =
       mana === "any-color" ? "W" : typeof mana === "object" ? mana.oneOf[0] : mana;
-    this.state.players[player].manaPool[concrete] += amount;
+    const pool = this.state.players[player].manaPool;
+    for (let i = 0; i < amount; i += 1) pool.push({ type: concrete, ...tag });
     this.emit({ type: "mana-added", player, mana: concrete, amount });
   }
 
-  private spendFromPool(player: PlayerId, cost: ManaCost): void {
+  /**
+   * Deduct `cost` from `player`'s pool, choosing *which* units pay it.
+   *
+   * With every unit interchangeable this was subtraction. Restricted mana
+   * makes it a small matching: a unit may only pay if its restriction admits
+   * `purpose`, and among the units that can, the **restricted ones go
+   * first**. That ordering is the whole trick and it is use-it-or-lose-it
+   * reasoning, not a preference — an unrestricted unit can pay for anything
+   * later in the same cost, so spending it on a pip a restricted unit could
+   * have covered can strand the restricted one and fail a payment that was
+   * affordable. Greedy is enough here because legality is a per-unit
+   * predicate against a single purpose and same-type pips are
+   * interchangeable, so there is nothing for a smarter search to find.
+   *
+   * Each unit spent fires its `onSpend` rider (Path of Ancestry).
+   */
+  private spendFromPool(player: PlayerId, cost: ManaCost, purpose: ManaPurpose = null): void {
     const pool = this.state.players[player].manaPool;
-    pool.C -= cost.colorless;
-    if (pool.C < 0) {
-      throw new Error("mana pool underflow paying a {C} cost");
-    }
+    const spent: ManaUnit[] = [];
+
+    /** Whether a restricted unit of `type` may pay for `purpose` right now. */
+    const hasUsableRestricted = (type: ManaType): boolean =>
+      pool.some(
+        (unit) =>
+          unit.type === type &&
+          unit.restriction !== undefined &&
+          this.manaUnitCanPay(player, unit, purpose),
+      );
+
+    /** Index of a unit of `type` this payment may spend, restricted first, or
+     * `-1`. Restricted mana that can't pay for `purpose` is not a candidate
+     * at all — it is simply not available to this payment. */
+    const indexOf = (type: ManaType): number => {
+      const restricted = pool.findIndex(
+        (unit) =>
+          unit.type === type &&
+          unit.restriction !== undefined &&
+          this.manaUnitCanPay(player, unit, purpose),
+      );
+      if (restricted >= 0) return restricted;
+      return pool.findIndex((unit) => unit.type === type && unit.restriction === undefined);
+    };
+
+    const take = (type: ManaType, what: string): void => {
+      const index = indexOf(type);
+      if (index < 0) throw new Error(`mana pool underflow paying ${what}`);
+      spent.push(pool[index]);
+      pool.splice(index, 1);
+    };
+
+    for (let i = 0; i < cost.colorless; i += 1) take("C", "a {C} cost");
     for (const color of COLORS) {
-      pool[color] -= cost.colored[color];
-      if (pool[color] < 0) {
-        throw new Error("mana pool underflow paying a colored cost");
+      for (let i = 0; i < cost.colored[color]; i += 1) take(color, "a colored cost");
+    }
+    for (let i = 0; i < cost.generic; i += 1) {
+      // Generic is the flexible half, so it's where a restricted unit is most
+      // likely to find a home — look for one first, then fall back to any
+      // type this payment can actually take.
+      //
+      // The fallback has to ask `indexOf`, not merely "is there a unit of
+      // this type". Asking the weaker question picks a colour whose only
+      // units are restricted and unusable, and then `take` throws on mana
+      // that was never available — which is exactly what the fuzzer hit on a
+      // board with a hand-activated Unclaimed Territory floating.
+      const type =
+        GENERIC_SPEND_ORDER.find(hasUsableRestricted) ??
+        GENERIC_SPEND_ORDER.find((t) => indexOf(t) >= 0);
+      if (type === undefined) throw new Error("mana pool underflow paying a generic cost");
+      take(type, "a generic cost");
+    }
+
+    // "…and that spell can't be countered" (Cavern of Souls) — a property the
+    // *spell* picks up from the mana that paid for it, so it is stamped on
+    // the object here rather than living on the land's definition.
+    if (purpose !== null && purpose.kind === "cast" && spent.some((u) => u.uncounterable)) {
+      const spell = this.state.objects[purpose.card];
+      if (spell !== undefined) spell.uncounterable = true;
+    }
+    for (const unit of spent) this.fireManaSpendRider(unit, purpose);
+  }
+
+  /**
+   * Whether one floating unit of mana may pay for `purpose` (rule 106.6b).
+   *
+   * Unrestricted mana always may. Restricted mana never pays for a purpose
+   * the engine can't name: a nameless payment satisfies no printed
+   * restriction, and the alternative — treating unknown as permitted — is
+   * the failure mode where the restriction silently does nothing.
+   */
+  /**
+   * The provenance a mana ability stamps on the units it makes, or
+   * `undefined` for the ordinary unrestricted case.
+   *
+   * Built here, against the live board, because the parts that matter most
+   * aren't printed: `chosenType` reads the creature type named as the
+   * permanent entered (Cavern of Souls), and `shares-type-with-commander`
+   * reads the controller's commanders (Path of Ancestry). Both are fixed as
+   * the ability is activated, which is when this runs.
+   */
+  private manaTagFor(
+    object: GameObject,
+    effect: Extract<EffectSpec, { kind: "add-mana" }>,
+  ): Omit<ManaUnit, "type"> | undefined {
+    const { spendOnly, whenSpent, persists } = effect;
+    if (spendOnly === undefined && whenSpent === undefined && persists !== true) return undefined;
+
+    const tag: {
+      restriction?: ManaRestriction;
+      onSpend?: ManaSpendRider;
+      persists?: boolean;
+      uncounterable?: boolean;
+    } = {};
+
+    if (spendOnly !== undefined) {
+      let { spell, abilityOf } = spendOnly;
+      if (spendOnly.chosenType === true) {
+        // No type named yet (the permanent is mid-entry, or the choice was
+        // never answered) — the mana can pay for nothing, which is the safe
+        // reading and matches a Cavern with no type chosen. The sentinel is a
+        // subtype no card has.
+        const chosen = object.chosenCreatureType ?? " none";
+        if (spell !== undefined) spell = { ...spell, subtype: chosen };
+        if (abilityOf !== undefined) abilityOf = { ...abilityOf, subtype: chosen };
+      }
+      tag.restriction = {
+        ...(spell !== undefined ? { spell } : {}),
+        ...(abilityOf !== undefined ? { abilityOf } : {}),
+        text: spendOnly.text,
+      };
+      if (spendOnly.uncounterable === true) tag.uncounterable = true;
+    }
+
+    if (whenSpent !== undefined) {
+      const spell =
+        whenSpent.spell === "shares-type-with-commander"
+          ? { type: "creature" as const, subtypes: this.commanderCreatureTypes(object.controller) }
+          : whenSpent.spell;
+      tag.onSpend = {
+        source: object.id,
+        sourceName: printedCardName(object),
+        ...(spell !== undefined ? { spell } : {}),
+        effect: whenSpent.effect,
+        text: whenSpent.text,
+      };
+    }
+
+    if (persists === true) tag.persists = true;
+    return tag;
+  }
+
+  /** Every creature type across `player`'s commanders, wherever they are —
+   * Path of Ancestry's "shares a creature type with your commander". */
+  private commanderCreatureTypes(player: PlayerId): string[] {
+    const types = new Set<string>();
+    for (const id of Object.keys(this.state.objects) as ObjectId[]) {
+      const object = this.state.objects[id];
+      if (!object.isCommander || object.owner !== player) continue;
+      for (const subtype of this.registry.get(printedCardName(object)).subtypes) {
+        types.add(subtype);
       }
     }
-    let generic = cost.generic;
-    for (const type of GENERIC_SPEND_ORDER) {
-      const spend = Math.min(generic, pool[type]);
-      pool[type] -= spend;
-      generic -= spend;
+    // An empty list would match nothing, which is right: no commander, no
+    // shared type. A sentinel isn't needed — `subtypes: []` fails every card.
+    return [...types];
+  }
+
+  private manaUnitCanPay(player: PlayerId, unit: ManaUnit, purpose: ManaPurpose): boolean {
+    const restriction = unit.restriction;
+    if (restriction === undefined) return true;
+    if (purpose === null) return false;
+    const [filter, subject] =
+      purpose.kind === "cast"
+        ? [restriction.spell, purpose.card]
+        : [restriction.abilityOf, purpose.source];
+    if (filter === undefined) return false;
+    return matchesFilter(this.state, this.registry, subject, filter, { you: player });
+  }
+
+  /**
+   * Put a unit's `onSpend` rider on the stack (Path of Ancestry's "When that
+   * mana is spent to cast a creature spell that shares a creature type with
+   * your commander, scry 1").
+   *
+   * It is a triggered ability, so it goes on the stack above the spell it
+   * paid for and resolves first (rule 603.2) — which is right, and is why
+   * this can't just apply the effect inline.
+   */
+  private fireManaSpendRider(unit: ManaUnit, purpose: ManaPurpose): void {
+    const rider = unit.onSpend;
+    if (rider === undefined || purpose === null || purpose.kind !== "cast") return;
+    const controller = this.state.objects[rider.source]?.controller;
+    if (controller === undefined) return;
+    if (
+      rider.spell !== undefined &&
+      !matchesFilter(this.state, this.registry, purpose.card, rider.spell, { you: controller })
+    ) {
+      return;
     }
-    if (generic > 0) {
-      throw new Error("mana pool underflow paying a generic cost");
-    }
+    this.state.pendingTriggers.push({
+      sourceObjectId: rider.source,
+      cardName: rider.sourceName,
+      abilityIndex: 0,
+      controller,
+      delayed: {
+        id: `mana-rider-${this.state.nextObjectSeq}`,
+        controller,
+        // Never actually consulted — this record goes on the stack directly
+        // rather than waiting on a step — but the shape is shared with real
+        // delayed triggers, so it gets honest values.
+        at: "next-end-step",
+        createdOnTurn: this.state.turn.number,
+        createdDuringEndStep: false,
+        source: rider.source,
+        sourceName: rider.sourceName,
+        // The spell the mana paid for, so an effect can refer to it as
+        // `target: 0` (Arena of Glory's "that creature gains haste"). It is
+        // on the stack by the time this resolves, which is why the rider
+        // can't be placed until then.
+        targets: [{ kind: "object", object: purpose.card }],
+        effect: rider.effect,
+        text: rider.text,
+      },
+    });
   }
 
   // --- priority -------------------------------------------------
@@ -6608,10 +6948,7 @@ export class Game {
         }
       }
       if (def.copyOnEnter !== null) this.beginCopyChoice(id, object.controller);
-      if (def.chooseCreatureTypeOnEnter) this.beginCreatureTypeChoice(id, object.controller);
-      else if (def.chooseOnEnter !== null) {
-        this.beginCreatureTypeChoice(id, object.controller, def.chooseOnEnter);
-      }
+      this.applyEnterChoices(id, object.controller, def);
     } else if (
       // Adventure (rule 715.3) — the adventure half (face 1) resolving exiles
       // the card with a "you may cast the creature later" permission, instead
@@ -7214,7 +7551,28 @@ export class Game {
     readonly multiplier?: number;
     readonly chapter?: boolean;
     readonly grantedAbility?: GrantedAbilityRef;
+    readonly delayed?: DelayedTrigger;
   }): "done" | "paused" {
+    // A self-contained ability record (a mana-spend rider) has no card
+    // ability to look up — mint it carrying its own record, exactly as
+    // `fireDelayedTriggers` does for a delayed ability.
+    if (trigger.delayed !== undefined) {
+      const id = this.mintAbilityObject(
+        trigger.delayed.source,
+        trigger.delayed.sourceName,
+        trigger.controller,
+        "triggered",
+        0,
+        trigger.delayed.targets,
+      );
+      this.state.objects[id].delayedTrigger = trigger.delayed;
+      this.emit({
+        type: "ability-triggered",
+        source: trigger.delayed.source,
+        controller: trigger.controller,
+      });
+      return "done";
+    }
     const def = this.registry.get(trigger.cardName);
     const granted =
       trigger.grantedAbility !== undefined
@@ -7399,13 +7757,17 @@ export class Game {
       },
       gainLife: (player, amount) => this.changeLife(player, amount),
       loseLife: (player, amount) => this.changeLife(player, -amount),
-      addMana: (player, mana, amount) =>
+      addMana: (player, mana, amount, spec) =>
         this.addMana(
           player,
           typeof mana === "object" && "producedBy" in mana
             ? { oneOf: this.manaOneOf(mana, player) }
             : mana,
           amount,
+          // The source is the permanent whose ability this is, which is what
+          // `manaTagFor` reads the chosen creature type and the commander's
+          // types off.
+          spec === undefined ? undefined : this.manaTagFor(this.state.objects[source], spec),
         ),
       tapPermanent: (target) => this.setTapped(target, true),
       untapPermanent: (target) => this.setTapped(target, false),
@@ -9886,8 +10248,9 @@ export class Game {
     const object = this.state.objects[id];
     if (object === undefined || object.zone !== "stack") return false;
     if (
-      object.kind === "card" &&
-      this.registry.get(printedCardName(object)).cantBeCountered
+      object.uncounterable === true ||
+      (object.kind === "card" &&
+        this.registry.get(printedCardName(object)).cantBeCountered)
     ) {
       this.emit({ type: "counter-failed", object: id });
       return false;
@@ -10783,6 +11146,9 @@ export class Game {
     // paid as it was cast (P8) both end with the stack.
     object.chosenModes = undefined;
     object.kicked = undefined;
+    // "That spell can't be countered" was about this casting, so it ends when
+    // the spell leaves the stack (Cavern of Souls).
+    object.uncounterable = undefined;
     object.enteredKicked = enteringKicked;
     // The O-Ring link (rule 720.2) dies with any move: a card that leaves
     // exile some other way is no longer the one the Banishing Light took, so

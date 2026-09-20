@@ -5,6 +5,7 @@ import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId } from "../primitives.js";
 import type { GameState } from "../state.js";
+import { poolCounts } from "../mana.js";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
@@ -71,8 +72,8 @@ describe("Lotus Cobra — landfall add one mana of any color", () => {
     game.dispatch({ type: "choose-modes", player: A, modes: [3] }); // Add {R}
     game.advanceUntil(quiet);
 
-    expect(game.state.players[A].manaPool.R).toBe(1);
-    expect(game.state.players[A].manaPool.G).toBe(0);
+    expect(poolCounts(game.state.players[A].manaPool).R).toBe(1);
+    expect(poolCounts(game.state.players[A].manaPool).G).toBe(0);
   });
 });
 
