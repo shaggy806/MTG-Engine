@@ -47,6 +47,13 @@ const deck = (entries) =>
 // Both decks get a mana base that can actually cast their own spells —
 // otherwise one side just sits there and the fuzz only exercises one player.
 const deckA = deck([
+  // EDH-backlog bulk pass 5: Snarl reveal-lands and Karoo bounce lands (new:
+  // the `land-you-control` target spec).
+  ["Vineglimmer Snarl", 1],
+  ["Frostboil Snarl", 1],
+  ["Simic Growth Chamber", 1],
+  ["Izzet Boilerworks", 1],
+  ["Gruul Turf", 1],
   // EDH-backlog bulk pass 4: Triomes, and the cards two new primitives
   // unblocked (a `graveyard` tutor destination; the artifact-or-creature and
   // nonartifact-creature target specs).
@@ -247,6 +254,12 @@ const deckA = deck([
 // and plays its threats — a bloated deck just stalls out and the fuzz only
 // exercises one side. One or two copies of each mechanic is enough coverage.
 const deckB = deck([
+  // EDH-backlog bulk pass 5 (the rest — see deckA).
+  ["Necroblossom Snarl", 1],
+  ["Shineshadow Snarl", 1],
+  ["Rakdos Carnarium", 1],
+  ["Golgari Rot Farm", 1],
+  ["Orzhov Basilica", 1],
   // EDH-backlog bulk pass 4 (the rest — see deckA).
   ["Savai Triome", 1],
   ["Indatha Triome", 1],

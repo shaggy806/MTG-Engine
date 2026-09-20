@@ -31,6 +31,12 @@ export type TargetSpec =
   | "permanent"
   | "nonland-permanent"
   | "land"
+  /** A land whose controller is the one choosing — the Karoo lands' "return a
+   * land you control to its owner's hand". Modelled as a target because the
+   * engine has no "choose a permanent you control" for a return; the
+   * divergence (targeting vs choosing) only shows on a land with hexproof or
+   * shroud, of which the pool has none. */
+  | "land-you-control"
   | "artifact"
   /** An artifact an opponent controls (Vandalblast: "target artifact you
    * don't control"). */

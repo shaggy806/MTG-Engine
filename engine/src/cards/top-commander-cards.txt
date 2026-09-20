@@ -1,5 +1,5 @@
 Top 2000 Commander cards by EDHREC popularity (fetched 2026-09-13)
-426 already implemented / 1574 missing (marks refreshed 2026-09-20)
+441 already implemented / 1559 missing (marks refreshed 2026-09-20)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -309,7 +309,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   310  Phyrexian Altar                          {3}              Artifact
 [ ]   311  Shadowspear                              {1}              Legendary Artifact — Equipment
 [ ]   312  Phyrexian Metamorph                      {3}{U/P}         Artifact Creature — Phyrexian Shapeshifter
-[ ]   313  Simic Growth Chamber                     {0}              Land
+[x]   313  Simic Growth Chamber                     {0}              Land
 [x]   314  Temple of Triumph                        {0}              Land
 [x]   315  Urza's Incubator                         {3}              Artifact
 [x]   316  Decanter of Endless Water                {3}              Artifact
@@ -328,15 +328,15 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   329  Reclamation Sage                         {2}{G}           Creature — Elf Shaman
 [x]   330  Temple of Mystery                        {0}              Land
 [x]   331  Whispersilk Cloak                        {3}              Artifact — Equipment
-[ ]   332  Golgari Rot Farm                         {0}              Land
+[x]   332  Golgari Rot Farm                         {0}              Land
 [ ]   333  Bastion of Remembrance                   {2}{B}           Enchantment
-[ ]   334  Frostboil Snarl                          {0}              Land
+[x]   334  Frostboil Snarl                          {0}              Land
 [ ]   335  Authority of the Consuls                 {W}              Enchantment
 [x]   336  Putrefy                                  {1}{B}{G}        Instant
 [ ]   337  Fetid Heath                              {0}              Land
 [x]   338  Port Town                                {0}              Land
 [x]   339  Volcanic Island                          {0}              Land — Island Mountain
-[ ]   340  Furycalm Snarl                           {0}              Land
+[x]   340  Furycalm Snarl                           {0}              Land
 [ ]   341  Sevinne's Reclamation                    {2}{W}           Sorcery
 [ ]   342  Kindred Discovery                        {3}{U}{U}        Enchantment
 [x]   343  Fortified Village                        {0}              Land
@@ -365,7 +365,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   366  Anointed Procession                      {3}{W}           Enchantment
 [ ]   367  Land Tax                                 {W}              Enchantment
 [x]   368  Shamanic Revelation                      {3}{G}{G}        Sorcery
-[ ]   369  Dimir Aqueduct                           {0}              Land
+[x]   369  Dimir Aqueduct                           {0}              Land
 [ ]   370  Branching Evolution                      {2}{G}           Enchantment
 [ ]   371  Arena of Glory                           {0}              Land
 [ ]   372  Goldspan Dragon                          {3}{R}{R}        Creature — Dragon
@@ -405,7 +405,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   406  Silence                                  {W}              Instant
 [ ]   407  Lotho, Corrupt Shirriff                  {W}{B}           Legendary Creature — Halfling Rogue
 [ ]   408  Parallel Lives                           {3}{G}           Enchantment
-[ ]   409  Orzhov Basilica                          {0}              Land
+[x]   409  Orzhov Basilica                          {0}              Land
 [x]   410  Fanatic of Rhonas                        {1}{G}           Creature — Snake Druid
 [ ]   411  Selvala, Heart of the Wilds              {1}{G}{G}        Legendary Creature — Elf Scout
 [x]   412  Gilded Lotus                             {5}              Artifact
@@ -415,11 +415,11 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   416  Warren Soultrader                        {2}{B}           Creature — Zombie Goblin Wizard
 [ ]   417  Mystic Forge                             {4}              Artifact
 [x]   418  Etherium Sculptor                        {1}{U}           Artifact Creature — Vedalken Artificer
-[ ]   419  Shineshadow Snarl                        {0}              Land
+[x]   419  Shineshadow Snarl                        {0}              Land
 [x]   420  Hall of Heliod's Generosity              {0}              Legendary Land
 [ ]   421  Undercity Sewers                         {0}              Land — Island Swamp
 [x]   422  Bayou                                    {0}              Land — Swamp Forest
-[ ]   423  Izzet Boilerworks                        {0}              Land
+[x]   423  Izzet Boilerworks                        {0}              Land
 [ ]   424  Welcoming Vampire                        {2}{W}           Creature — Vampire
 [x]   425  Raffine's Tower                          {0}              Land — Plains Island Swamp
 [ ]   426  Mondrak, Glory Dominus                   {2}{W}{W}        Legendary Creature — Phyrexian Horror
@@ -449,7 +449,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   450  Temple of Malice                         {0}              Land
 [ ]   451  Urza's Cave                              {0}              Land — Urza's Cave
 [x]   452  Pearl Medallion                          {2}              Artifact
-[ ]   453  Gruul Turf                               {0}              Land
+[x]   453  Gruul Turf                               {0}              Land
 [ ]   454  Cursed Mirror                            {2}{R}           Artifact
 [ ]   455  Dispatch                                 {W}              Instant
 [x]   456  Savannah                                 {0}              Land — Forest Plains
@@ -461,7 +461,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   462  Academy Ruins                            {0}              Legendary Land
 [ ]   463  Mental Misstep                           {U/P}            Instant
 [ ]   464  Disciple of Freyalise // Garden of Freyalise {6}              Creature — Elf Druid // Land
-[ ]   465  Azorius Chancery                         {0}              Land
+[x]   465  Azorius Chancery                         {0}              Land
 [ ]   466  Vault of the Archangel                   {0}              Land
 [ ]   467  Treasure Vault                           {0}              Artifact Land
 [x]   468  Xander's Lounge                          {0}              Land — Island Swamp Mountain
@@ -490,7 +490,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   491  Burnished Hart                           {3}              Artifact Creature — Elk
 [ ]   492  Adeline, Resplendent Cathar              {1}{W}{W}        Legendary Creature — Human Knight
 [ ]   493  Birgi, God of Storytelling // Harnfel, Horn of Bounty {3}              Legendary Creature — God // Legendary Artifact
-[ ]   494  Boros Garrison                           {0}              Land
+[x]   494  Boros Garrison                           {0}              Land
 [ ]   495  Tainted Peak                             {0}              Land
 [ ]   496  Vito, Thorn of the Dusk Rose             {2}{B}           Legendary Creature — Vampire Cleric
 [x]   497  Talisman of Resilience                   {2}              Artifact
@@ -500,7 +500,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   501  Rise of the Dark Realms                  {7}{B}{B}        Sorcery
 [ ]   502  Blind Obedience                          {1}{W}           Enchantment
 [x]   503  Oracle of Mul Daya                       {3}{G}           Creature — Elf Shaman
-[ ]   504  Rakdos Carnarium                         {0}              Land
+[x]   504  Rakdos Carnarium                         {0}              Land
 [ ]   505  Sanguine Bond                            {3}{B}{B}        Enchantment
 [x]   506  Sandsteppe Citadel                       {0}              Land
 [ ]   507  Mother of Runes                          {W}              Creature — Human Cleric
@@ -523,7 +523,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   524  Strip Mine                               {0}              Land
 [x]   525  Culling the Weak                         {B}              Instant
 [x]   526  Ziatora's Proving Ground                 {0}              Land — Swamp Mountain Forest
-[ ]   527  Necroblossom Snarl                       {0}              Land
+[x]   527  Necroblossom Snarl                       {0}              Land
 [ ]   528  Veil of Summer                           {G}              Instant
 [ ]   529  Voice of Victory                         {1}{W}           Creature — Human Bard
 [ ]   530  Crypt Ghast                              {3}{B}           Creature — Spirit
@@ -537,7 +537,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   538  Relic of Legends                         {3}              Artifact
 [ ]   539  Emergence Zone                           {0}              Land
 [ ]   540  The Reaver Cleaver                       {2}{R}           Legendary Artifact — Equipment
-[ ]   541  Vineglimmer Snarl                        {0}              Land
+[x]   541  Vineglimmer Snarl                        {0}              Land
 [ ]   542  Sword of Feast and Famine                {3}              Artifact — Equipment
 [ ]   543  Green Sun's Zenith                       {X}{G}           Sorcery
 [ ]   544  Mindbreak Trap                           {2}{U}{U}        Instant — Trap
@@ -568,7 +568,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   569  Wheel of Fortune                         {2}{R}           Sorcery
 [ ]   570  Champion of Lambholt                     {1}{G}{G}        Creature — Human Warrior
 [ ]   571  Redirect Lightning                       {R}              Instant — Lesson
-[ ]   572  Selesnya Sanctuary                       {0}              Land
+[x]   572  Selesnya Sanctuary                       {0}              Land
 [ ]   573  Opposition Agent                         {2}{B}           Creature — Human Rogue
 [ ]   574  Mortify                                  {1}{W}{B}        Instant
 [ ]   575  Talon Gates of Madara                    {0}              Land — Gate

@@ -158,6 +158,12 @@ export function isLegalTarget(
         isLivingCreature(state, registry, ref.object) &&
         state.objects[ref.object].controller === forPlayer
       );
+    case "land-you-control":
+      return (
+        ref.kind === "object" &&
+        isPermanentOfType(state, registry, ref.object, (t) => t.includes("land")) &&
+        state.objects[ref.object].controller === forPlayer
+      );
     case "creature-an-opponent-controls":
       return (
         ref.kind === "object" &&

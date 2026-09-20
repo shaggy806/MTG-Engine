@@ -310,6 +310,51 @@ export const filterLand = (
  * derived from the types for exactly that reason, rather than passed in and
  * allowed to disagree with them.
  */
+/**
+ * A "Karoo" / bounce land (Azorius Chancery, Gruul Turf, ...): enters tapped,
+ * returns a land you control to your hand as it enters, and taps for two mana
+ * of its two colours at once.
+ *
+ * Ten cards on one template. The bounce is a *choice* on the printed card and
+ * a target here (`land-you-control`), because the engine has no "choose a
+ * permanent you control" for a return; see that spec for why the difference
+ * doesn't bite. The land may return itself, which is what the printed card
+ * does when it is your only one.
+ */
+export const karooLand = (
+  name: string,
+  colors: readonly [Color, Color],
+): CardDefinition =>
+  defineCard({
+    name,
+    types: ["land"],
+    text:
+      `${name} enters tapped.
+` +
+      `When ${name} enters, return a land you control to its owner's hand.
+` +
+      `{T}: Add {${colors[0]}}{${colors[1]}}.`,
+    static: [entersTappedStatic(name)],
+    triggered: [
+      {
+        trigger: { on: "enters-battlefield", who: "self" },
+        targets: ["land-you-control"],
+        effect: { kind: "return-to-hand", target: 0 },
+        resolve: null,
+        text: `When ${name} enters, return a land you control to its owner's hand.`,
+      },
+    ],
+    activated: [
+      {
+        cost: { mana: null, tap: true },
+        targets: [],
+        effect: { kind: "add-mana", mana: { oneOf: colors }, amount: 2 },
+        resolve: null,
+        text: `{T}: Add {${colors[0]}}{${colors[1]}}.`,
+      },
+    ],
+  });
+
 export const triomeLand = (
   name: string,
   landTypes: readonly [string, string, string],
