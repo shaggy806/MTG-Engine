@@ -5,6 +5,7 @@ import { defineCard } from "../define.js";
 // its own.)
 export default defineCard({
   name: "3/3 Beast Token",
+  art: "62facbb8-1a83-4731-b515-0f7759ee8c3b",
   colors: ["G"],
   types: ["creature"],
   subtypes: ["Beast"],

@@ -4,6 +4,7 @@ import { defineCard } from "../define.js";
  * Nest's token. Distinct from the plain `Insect Token`, which has neither. */
 export default defineCard({
   name: "Insect Token (Flying, Deathtouch)",
+  art: "e17b804f-4dca-4101-ba8f-b732504ac488",
   colors: ["G"],
   types: ["creature"],
   subtypes: ["Insect"],

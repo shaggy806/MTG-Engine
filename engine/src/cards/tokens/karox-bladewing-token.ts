@@ -7,6 +7,7 @@ import { defineCard } from "../define.js";
  */
 export default defineCard({
   name: "Karox Bladewing",
+  art: "37316fc0-83cc-4f53-afc3-6f3235776239",
   colors: ["R"],
   supertypes: ["legendary"],
   types: ["creature"],

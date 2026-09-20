@@ -5,6 +5,7 @@ import { defineCard } from "../define.js";
  * its own). */
 export default defineCard({
   name: "6/6 Dragon Token",
+  art: "af8209b4-f9db-4fff-b379-86f19669a82f",
   colors: ["R"],
   types: ["creature"],
   subtypes: ["Dragon"],

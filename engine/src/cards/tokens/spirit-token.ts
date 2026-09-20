@@ -4,6 +4,7 @@ import { defineCard } from "../define.js";
  * token. */
 export default defineCard({
   name: "Spirit Token",
+  art: "6bee4081-5d74-4cc2-ba2f-887bc8799513",
   colors: ["W"],
   types: ["creature"],
   subtypes: ["Spirit"],

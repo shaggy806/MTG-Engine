@@ -4,6 +4,7 @@ import { defineCard } from "../define.js";
  * half. */
 export default defineCard({
   name: "Zombie Knight Token",
+  art: "1b514e92-dbb1-4d58-92b4-6347de53a90b",
   colors: ["B"],
   types: ["creature"],
   subtypes: ["Zombie", "Knight"],
