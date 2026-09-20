@@ -10,7 +10,7 @@ import { Game, HeuristicBotController, autoSettle } from "engine";
 import type { Action, ControllerView, PlayerController, PlayerId } from "engine";
 import { Room } from "../room.js";
 import type { Connection, RoomTimers } from "../room.js";
-import type { BotSpeed, ServerMessage } from "../protocol.js";
+import type { BotSpeed, ServerMessage } from "protocol";
 import { ALICE, BOB } from "../decks.js";
 
 /** A hand-cranked clock — `advance(ms)` fires whatever is due, so a test can

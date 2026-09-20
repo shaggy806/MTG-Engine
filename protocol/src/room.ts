@@ -1,6 +1,13 @@
 /**
- * The wire protocol between a client device and the room server. Every
- * message is JSON over one WebSocket per connection.
+ * The room protocol: every message a client device and the room server send
+ * each other, as JSON over one WebSocket per connection.
+ *
+ * This is the contract itself, imported by both sides rather than restated
+ * on each. It used to be two hand-synced copies (`server/src/protocol.ts`
+ * and `client/src/net/protocol.ts`) on the reasoning that a Node package and
+ * a browser bundle can't share a module — but nothing here survives
+ * compilation, so there was never anything to share *at runtime* to begin
+ * with, and both workspaces already depend on `engine`.
  */
 
 import type { Action, LegalAction, PlayerId, PlayerView } from "engine";

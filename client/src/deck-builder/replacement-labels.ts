@@ -1,4 +1,4 @@
-import type { ReplacementOption } from '../net/protocol.ts'
+import type { ReplacementOption } from 'protocol'
 
 /** How a stand-in's match strength reads — the server's confidence, from
  * how many of the original's oracle tags the two share. */

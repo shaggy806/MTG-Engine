@@ -4,7 +4,7 @@
  */
 
 import type { GameEvent, ObjectId, PlayerId, Step, TargetRef } from 'engine'
-import type { SeatStatus } from './net/protocol.ts'
+import type { SeatStatus } from 'protocol'
 
 export type NameOf = (id: ObjectId) => string
 

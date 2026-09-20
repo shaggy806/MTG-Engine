@@ -9,7 +9,7 @@ import { WebSocket, WebSocketServer } from "ws";
 import { RoomManager } from "../room-manager.js";
 import { Room } from "../room.js";
 import { attachRoomServer } from "../ws-server.js";
-import type { ServerMessage } from "../protocol.js";
+import type { ServerMessage } from "protocol";
 import { ALICE, BOB, CAROL, DAVE, SEATS } from "../decks.js";
 
 function nextMessage(ws: WebSocket): Promise<ServerMessage> {

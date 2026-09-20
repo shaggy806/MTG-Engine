@@ -20,7 +20,7 @@ import { createDefaultRegistry } from "engine";
 import type { DeckList, GameConfig, PlayerId } from "engine";
 import type { Connection } from "./room.js";
 import { HostRole } from "./host.js";
-import type { BotSpeed, SeatStatus, WireDeck } from "./protocol.js";
+import type { BotSpeed, SeatStatus, WireDeck } from "protocol";
 import { SEATS } from "./decks.js";
 
 export type PendingDeck = WireDeck;

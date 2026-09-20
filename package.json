@@ -6,6 +6,7 @@
   "private": true,
   "workspaces": [
     "engine",
+    "protocol",
     "server",
     "client"
   ],

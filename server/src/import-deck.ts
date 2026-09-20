@@ -22,17 +22,18 @@ import type {
   CardDefinition,
   CardRegistry,
   Color,
-  DeckValidationResult,
   OracleTagIndex,
-  ReplacementConfidence,
 } from "engine";
+import type {
+  DeckFormatReport,
+  ImportedCardReport,
+  PrintingRef,
+  ReplacementOption,
+} from "protocol";
 
-/** The `(SET) collector-number` suffix a decklist line can carry, naming one
- * specific printing of a card. */
-export interface PrintingRef {
-  readonly set: string;
-  readonly collectorNumber: string;
-}
+/** Re-exported so this module stays the single import site for everything
+ * the decklist audit produces, wire shapes included. */
+export type { PrintingRef, ReplacementOption };
 
 export interface DecklistEntry {
   readonly name: string;
@@ -474,41 +475,10 @@ function localTypeLine(def: CardDefinition): string {
   return def.subtypes.length > 0 ? `${front} — ${def.subtypes.join(" ")}` : front;
 }
 
-/** One suggested stand-in for an unimplemented card — see `engine`'s
- * `suggestReplacements`. */
-export interface ReplacementOption {
-  readonly name: string;
-  /** How well it covers what the original does, judged on shared oracle tags
-   * (`"low"` when the original has none to go on). */
-  readonly confidence: ReplacementConfidence;
-  /** Oracle tags both cards carry, most telling first. */
-  readonly sharedTags: readonly string[];
-}
-
-export interface CardReportEntry extends DecklistEntry {
-  /** Already has a matching `CardDefinition` in the engine's registry. */
-  readonly implemented: boolean;
-  /** Whether any characteristics data (local or Scryfall) was found to show. */
-  readonly found: boolean;
-  readonly manaCost: string | null;
-  readonly typeLine: string;
-  readonly oracleText: string;
-  /** The stand-in the import uses for this card: `replacements[0]`, or
-   * `null` when `implemented` (nothing to replace) or nothing is a sensible
-   * match. */
-  readonly suggestedReplacement: string | null;
-  /** Up to three stand-ins, best first, for the deck builder to offer as
-   * alternatives. Chosen for *this* deck: inside its commander's colour
-   * identity, never a card the list already has, and never another card's
-   * first choice — so taking every first choice can't break singleton. */
-  readonly replacements: readonly ReplacementOption[];
-  /** The Scryfall card id of the printing this decklist line named, when it
-   * named one that resolves. Only ever filled for an `implemented` card — an
-   * unimplemented one is either dropped or stood in for by a *different*
-   * card, and neither keeps this one's art. `null` for a plain `1 Sol Ring`
-   * line, or a printing Scryfall doesn't have. */
-  readonly printingId: string | null;
-}
+/** What the audit produces per card — the wire shape itself (`protocol`'s
+ * {@link ImportedCardReport}), aliased under the name this module has always
+ * used for it. Every field is documented there. */
+export type CardReportEntry = ImportedCardReport;
 
 /** Called as the audit advances, so a caller streaming it to a client can
  * show real progress. Granularity follows the work: cards the engine already
@@ -739,7 +709,7 @@ export function formatCheck(
    * taken at face value, including when it isn't implemented, so the report can
    * say so rather than silently naming a different card. */
   commanderSource: "section" | "trailing" | null = "section",
-): DeckValidationResult & { readonly commander: string | null } {
+): DeckFormatReport {
   const flat: string[] = [];
   for (const e of entries) {
     for (let i = 0; i < e.count; i += 1) flat.push(e.name);

@@ -11,7 +11,7 @@ import { COMMANDER_RULES } from "engine";
 import type { RoomManager } from "./room-manager.js";
 import type { Room, Connection } from "./room.js";
 import { PendingRoom } from "./pending-room.js";
-import type { ClientMessage, ServerMessage } from "./protocol.js";
+import type { ClientMessage, ServerMessage } from "protocol";
 
 const RATE_LIMIT_WINDOW_MS = 5_000;
 const RATE_LIMIT_MAX_MESSAGES = 40;

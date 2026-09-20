@@ -7,7 +7,7 @@ import type {
   ImportDeckLine,
   ImportedCardReport,
   ReplacementOption,
-} from '../net/protocol.ts'
+} from 'protocol'
 import {
   createDeck,
   createDeckFromImport,

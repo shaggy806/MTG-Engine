@@ -1,4 +1,4 @@
-import type { BotSpeed } from '../net/protocol.ts'
+import type { BotSpeed } from 'protocol'
 
 const SPEEDS: readonly { readonly speed: BotSpeed; readonly label: string }[] = [
   { speed: 'slow', label: 'Slow' },

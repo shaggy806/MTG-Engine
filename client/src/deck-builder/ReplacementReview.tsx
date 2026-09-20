@@ -10,7 +10,7 @@ import {
   resolveArtUrl,
   subscribeArtCache,
 } from '../ui/art.ts'
-import type { ReplacementOption } from '../net/protocol.ts'
+import type { ReplacementOption } from 'protocol'
 import { CONFIDENCE_LABEL, tagLabel } from './replacement-labels.ts'
 import '../ui/card-image.css'
 

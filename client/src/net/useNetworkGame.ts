@@ -15,7 +15,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Action, LegalAction, ObjectId, PlayerId, PlayerView } from 'engine'
 import type { Frame } from '../game/usePlayback.ts'
-import type { BotSpeed, ClientMessage, SeatStatus, ServerMessage, WireDeck } from './protocol.ts'
+import type { BotSpeed, ClientMessage, SeatStatus, ServerMessage, WireDeck } from 'protocol'
 
 const SERVER_URL =
   (import.meta.env.VITE_SERVER_URL as string | undefined) ??

@@ -1,6 +1,6 @@
 import type { PlayerView } from 'engine'
 import { STEP_LABEL, playerLabel, seatClassOf } from '../format.ts'
-import type { SeatStatus } from '../net/protocol.ts'
+import type { SeatStatus } from 'protocol'
 
 /**
  * A large, unambiguous "whose turn, what phase" readout — the compact

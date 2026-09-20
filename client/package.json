@@ -15,7 +15,8 @@
   "dependencies": {
     "engine": "*",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "protocol": "*"
   },
   "devDependencies": {
     "@types/react": "^19.2.18",

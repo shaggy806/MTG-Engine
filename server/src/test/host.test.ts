@@ -9,7 +9,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { WebSocket, WebSocketServer } from "ws";
 import { RoomManager } from "../room-manager.js";
 import { attachRoomServer } from "../ws-server.js";
-import type { ServerMessage } from "../protocol.js";
+import type { ServerMessage } from "protocol";
 import { ALICE, BOB } from "../decks.js";
 
 /** Buffers every message from `ws`, so back-to-back server sends aren't lost. */

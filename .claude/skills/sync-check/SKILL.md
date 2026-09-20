@@ -52,7 +52,7 @@ if [ -n "$UPSTREAM" ]; then
 fi
 
 echo "--- build freshness ---"
-for w in engine server; do
+for w in engine protocol server; do
   s=$(find "$w/src" -name '*.ts' -not -name '*.test.ts' -printf '%T@\n' 2>/dev/null | sort -rn | head -1)
   d=$(find "$w/dist" -name '*.js' -printf '%T@\n' 2>/dev/null | sort -rn | head -1)
   if [ -z "$d" ]; then echo "$w/dist: MISSING"
@@ -80,8 +80,8 @@ Always surface, when present:
 - **Stashes.** They are invisible to the other machine and easy to forget about.
 - **No upstream.** The branch has never been pushed; work here exists nowhere else.
 - **Stale/missing `dist`.** After pulling, `client` will not typecheck against an old
-  `engine/dist`. Recommend `npm run build` (engine → server → client, in that order).
-  Note `engine/dist` and `server/dist` are gitignored, so they are *always* stale on a
+  `engine/dist`. Recommend `npm run build` (engine → protocol → server → client, in that order).
+  Note every `dist/` is gitignored, so they are *always* stale on a
   machine that just pulled — this is expected, not a problem, but it does need a build.
 
 ## Acting on it

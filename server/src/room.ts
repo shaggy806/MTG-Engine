@@ -31,7 +31,7 @@
 import { EvalBotController, Game, actionPlayer, activePlayerOf, isSettled } from "engine";
 import type { Action, AwaitingDecision, ControllerView, GameState, PlayerController, PlayerId } from "engine";
 import { HostRole } from "./host.js";
-import type { BotSpeed, SeatStatus, ServerMessage, WireDeck } from "./protocol.js";
+import type { BotSpeed, SeatStatus, ServerMessage, WireDeck } from "protocol";
 
 export interface Connection {
   readonly send: (message: ServerMessage) => void;

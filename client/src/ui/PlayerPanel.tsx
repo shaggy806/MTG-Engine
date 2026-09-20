@@ -1,7 +1,7 @@
 import type { ManaPool, PlayerId, PublicPlayerInfo } from 'engine'
 import { playerLabel } from '../format.ts'
 import type { SeatClass } from '../format.ts'
-import type { SeatStatus } from '../net/protocol.ts'
+import type { SeatStatus } from 'protocol'
 import { CommanderDamageChip } from './CommanderDamageChip.tsx'
 import { Symbols } from './Symbols.tsx'
 

@@ -13,7 +13,7 @@ import type {
 import { CardTile } from './CardTile.tsx'
 import { playerLabel, seatClassOf } from '../format.ts'
 import type { SeatClass } from '../format.ts'
-import type { SeatStatus } from '../net/protocol.ts'
+import type { SeatStatus } from 'protocol'
 import {
   CARD_STEP_MS,
   DEATH_STEP_MS,

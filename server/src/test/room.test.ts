@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Game, autoSettle } from "engine";
 import type { ObjectId } from "engine";
-import type { ServerMessage } from "../protocol.js";
+import type { ServerMessage } from "protocol";
 import { Room } from "../room.js";
 import { ALICE, BOB, DECKS } from "../decks.js";
 
