@@ -263,6 +263,56 @@ const NUM_WORD: Readonly<Record<number, string>> = { 2: "two", 3: "three", 4: "f
  * / other lands]" — Cinder Glade ("two or more basic lands"), Rockfall Vale
  * ("two or more other lands", + a `painIfUntapped` on the card).
  */
+/**
+ * A "tri-land" (Arcane Sanctum, Nomad Outpost, Savage Lands, …): an untyped
+ * land that enters tapped and taps for any one of three colours.
+ *
+ * Two cycles of five share this shape exactly. Untyped on purpose — unlike
+ * {@link tapLand} these carry no basic land types, so nothing else keys off
+ * them (a check land doesn't see one as a Swamp).
+ */
+/**
+ * An Odyssey "filter land" (Darkwater Catacombs, Skycloud Expanse, …):
+ * "{1}, {T}: Add [two colours]".
+ *
+ * The same economics as a {@link signet} — net +1 mana and colour-fixing, paid
+ * for with generic — so it reaches the auto-payer the same way, as a
+ * "converter" the planner funds from ordinary sources and orders last. Not to
+ * be confused with the Shadowmoor filter lands (Flooded Grove), whose
+ * activation cost is a *hybrid* pip.
+ */
+export const filterLand = (
+  name: string,
+  colors: readonly [Color, Color],
+): CardDefinition =>
+  defineCard({
+    name,
+    types: ["land"],
+    text: `{1}, {T}: Add {${colors[0]}}{${colors[1]}}.`,
+    activated: [
+      {
+        cost: { mana: "{1}", tap: true },
+        targets: [],
+        effect: { kind: "add-mana", mana: { oneOf: colors }, amount: 2 },
+        resolve: null,
+        text: `{1}, {T}: Add {${colors[0]}}{${colors[1]}}.`,
+      },
+    ],
+  });
+
+export const triLand = (
+  name: string,
+  colors: readonly [Color, Color, Color],
+): CardDefinition =>
+  defineCard({
+    name,
+    types: ["land"],
+    text: `${name} enters tapped.
+{T}: Add {${colors[0]}}, {${colors[1]}}, or {${colors[2]}}.`,
+    static: [entersTappedStatic(name)],
+    activated: colors.map((c) => manaTapAbility(c)),
+  });
+
 export const enterTappedUnlessLands = (
   name: string,
   atLeast: number,

@@ -47,6 +47,15 @@ const deck = (entries) =>
 // Both decks get a mana base that can actually cast their own spells —
 // otherwise one side just sits there and the fuzz only exercises one player.
 const deckA = deck([
+  // EDH-backlog bulk pass 3: tri-lands, Odyssey filter lands, and simple
+  // artifacts/creatures.
+  ["Arcane Sanctum", 1],
+  ["Seaside Citadel", 1],
+  ["Darkwater Catacombs", 1],
+  ["Sungrass Prairie", 1],
+  ["Gilded Lotus", 1],
+  ["Evolution Sage", 1],
+  ["Snakeskin Veil", 1],
   // EDH-backlog bulk pass 2: Battlebond lands (new: the `opponent-count`
   // static condition). The fuzzer runs 2-4 players, so both sides of the
   // "two or more opponents" check get exercised.
@@ -230,6 +239,15 @@ const deckA = deck([
 // and plays its threats — a bloated deck just stalls out and the fuzz only
 // exercises one side. One or two copies of each mechanic is enough coverage.
 const deckB = deck([
+  // EDH-backlog bulk pass 3 (the rest — see deckA).
+  ["Crumbling Necropolis", 1],
+  ["Nomad Outpost", 1],
+  ["Skycloud Expanse", 1],
+  ["Shadowblood Ridge", 1],
+  ["Baleful Strix", 1],
+  ["Etherium Sculptor", 1],
+  ["Decanter of Endless Water", 1],
+  ["Nature's Claim", 1],
   // EDH-backlog bulk pass 2 (the rest of the Battlebond cycle).
   ["Luxury Suite", 1],
   ["Bountiful Promenade", 1],
