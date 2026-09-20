@@ -258,6 +258,13 @@ function evalStaticCondition(
           );
         }).length >= condition.atLeast
       );
+    case "opponent-count":
+      // Counted live: a table that has shrunk to a duel no longer has "two or
+      // more opponents", and an eliminated player is not one.
+      return (
+        state.turnOrder.filter((p) => p !== you && !state.players[p].hasLost).length >=
+        condition.atLeast
+      );
     case "chosen-on-enter":
       return source.chosenOnEnter === condition.value;
     case "self-kicked":

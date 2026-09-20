@@ -77,6 +77,7 @@ import _poolBoomerang from "./pool/boomerang.js";
 import _poolBorosSignet from "./pool/boros-signet.js";
 import _poolBoseijuWhoEndures from "./pool/boseiju-who-endures.js";
 import _poolBountifulLandscape from "./pool/bountiful-landscape.js";
+import _poolBountifulPromenade from "./pool/bountiful-promenade.js";
 import _poolBrainstorm from "./pool/brainstorm.js";
 import _poolBrashTaunter from "./pool/brash-taunter.js";
 import _poolBreathOfMalfegor from "./pool/breath-of-malfegor.js";
@@ -359,6 +360,7 @@ import _poolLotusPetal from "./pool/lotus-petal.js";
 import _poolLoyalGuardian from "./pool/loyal-guardian.js";
 import _poolLoyalSubordinate from "./pool/loyal-subordinate.js";
 import _poolLure from "./pool/lure.js";
+import _poolLuxurySuite from "./pool/luxury-suite.js";
 import _poolMagmaquake from "./pool/magmaquake.js";
 import _poolMagmaticForce from "./pool/magmatic-force.js";
 import _poolMajaBretagardProtector from "./pool/maja-bretagard-protector.js";
@@ -383,6 +385,7 @@ import _poolMistyRainforest from "./pool/misty-rainforest.js";
 import _poolMoleManMoloidMaster from "./pool/mole-man-moloid-master.js";
 import _poolMonasterySwiftspear from "./pool/monastery-swiftspear.js";
 import _poolMordantDragon from "./pool/mordant-dragon.js";
+import _poolMorphicPool from "./pool/morphic-pool.js";
 import _poolMortivore from "./pool/mortivore.js";
 import _poolMortuaryMire from "./pool/mortuary-mire.js";
 import _poolMountain from "./pool/mountain.js";
@@ -450,6 +453,7 @@ import _poolReadTheBones from "./pool/read-the-bones.js";
 import _poolReanimate from "./pool/reanimate.js";
 import _poolReclamationSage from "./pool/reclamation-sage.js";
 import _poolRegrowth from "./pool/regrowth.js";
+import _poolRejuvenatingSprings from "./pool/rejuvenating-springs.js";
 import _poolReliquaryTower from "./pool/reliquary-tower.js";
 import _poolRemorsefulCleric from "./pool/remorseful-cleric.js";
 import _poolRestInPeace from "./pool/rest-in-peace.js";
@@ -481,6 +485,7 @@ import _poolScavengingOoze from "./pool/scavenging-ooze.js";
 import _poolScourgeOfValkas from "./pool/scourge-of-valkas.js";
 import _poolScrubland from "./pool/scrubland.js";
 import _poolScuteSwarm from "./pool/scute-swarm.js";
+import _poolSeaOfClouds from "./pool/sea-of-clouds.js";
 import _poolSeatOfTheSynod from "./pool/seat-of-the-synod.js";
 import _poolSeethingSong from "./pool/seething-song.js";
 import _poolSeizeTheSpoils from "./pool/seize-the-spoils.js";
@@ -515,8 +520,10 @@ import _poolSolemnSimulacrum from "./pool/solemn-simulacrum.js";
 import _poolSoulSnare from "./pool/soul-snare.js";
 import _poolSoulWarden from "./pool/soul-warden.js";
 import _poolSparkReaper from "./pool/spark-reaper.js";
+import _poolSpectatorSeating from "./pool/spectator-seating.js";
 import _poolSphinxOfEnlightenment from "./pool/sphinx-of-enlightenment.js";
 import _poolSphinxsRevelation from "./pool/sphinxs-revelation.js";
+import _poolSpireGarden from "./pool/spire-garden.js";
 import _poolSpitFlame from "./pool/spit-flame.js";
 import _poolSplendidReclamation from "./pool/splendid-reclamation.js";
 import _poolSporemound from "./pool/sporemound.js";
@@ -603,6 +610,7 @@ import _poolTitanHunter from "./pool/titan-hunter.js";
 import _poolTomeScour from "./pool/tome-scour.js";
 import _poolToxicDeluge from "./pool/toxic-deluge.js";
 import _poolTragicSlip from "./pool/tragic-slip.js";
+import _poolTrainingCenter from "./pool/training-center.js";
 import _poolTranquilCove from "./pool/tranquil-cove.js";
 import _poolTranquilExpanse from "./pool/tranquil-expanse.js";
 import _poolTranquilThicket from "./pool/tranquil-thicket.js";
@@ -619,6 +627,7 @@ import _poolUndeadAugur from "./pool/undead-augur.js";
 import _poolUndergroundMortuary from "./pool/underground-mortuary.js";
 import _poolUndergroundRiver from "./pool/underground-river.js";
 import _poolUndergroundSea from "./pool/underground-sea.js";
+import _poolUndergrowthStadium from "./pool/undergrowth-stadium.js";
 import _poolUndermine from "./pool/undermine.js";
 import _poolUnderworldRageHound from "./pool/underworld-rage-hound.js";
 import _poolUnearth from "./pool/unearth.js";
@@ -636,6 +645,7 @@ import _poolVampireNighthawk from "./pool/vampire-nighthawk.js";
 import _poolVampiricRites from "./pool/vampiric-rites.js";
 import _poolVampiricTutor from "./pool/vampiric-tutor.js";
 import _poolVandalblast from "./pool/vandalblast.js";
+import _poolVaultOfChampions from "./pool/vault-of-champions.js";
 import _poolVaultOfWhispers from "./pool/vault-of-whispers.js";
 import _poolVelaTheNightClad from "./pool/vela-the-night-clad.js";
 import _poolVengefulDead from "./pool/vengeful-dead.js";
@@ -796,6 +806,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBorosSignet,
   _poolBoseijuWhoEndures,
   _poolBountifulLandscape,
+  _poolBountifulPromenade,
   _poolBrainstorm,
   _poolBrashTaunter,
   _poolBreathOfMalfegor,
@@ -1078,6 +1089,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolLoyalGuardian,
   _poolLoyalSubordinate,
   _poolLure,
+  _poolLuxurySuite,
   _poolMagmaquake,
   _poolMagmaticForce,
   _poolMajaBretagardProtector,
@@ -1102,6 +1114,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolMoleManMoloidMaster,
   _poolMonasterySwiftspear,
   _poolMordantDragon,
+  _poolMorphicPool,
   _poolMortivore,
   _poolMortuaryMire,
   _poolMountain,
@@ -1169,6 +1182,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolReanimate,
   _poolReclamationSage,
   _poolRegrowth,
+  _poolRejuvenatingSprings,
   _poolReliquaryTower,
   _poolRemorsefulCleric,
   _poolRestInPeace,
@@ -1200,6 +1214,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolScourgeOfValkas,
   _poolScrubland,
   _poolScuteSwarm,
+  _poolSeaOfClouds,
   _poolSeatOfTheSynod,
   _poolSeethingSong,
   _poolSeizeTheSpoils,
@@ -1234,8 +1249,10 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSoulSnare,
   _poolSoulWarden,
   _poolSparkReaper,
+  _poolSpectatorSeating,
   _poolSphinxOfEnlightenment,
   _poolSphinxsRevelation,
+  _poolSpireGarden,
   _poolSpitFlame,
   _poolSplendidReclamation,
   _poolSporemound,
@@ -1322,6 +1339,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTomeScour,
   _poolToxicDeluge,
   _poolTragicSlip,
+  _poolTrainingCenter,
   _poolTranquilCove,
   _poolTranquilExpanse,
   _poolTranquilThicket,
@@ -1338,6 +1356,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolUndergroundMortuary,
   _poolUndergroundRiver,
   _poolUndergroundSea,
+  _poolUndergrowthStadium,
   _poolUndermine,
   _poolUnderworldRageHound,
   _poolUnearth,
@@ -1355,6 +1374,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolVampiricRites,
   _poolVampiricTutor,
   _poolVandalblast,
+  _poolVaultOfChampions,
   _poolVaultOfWhispers,
   _poolVelaTheNightClad,
   _poolVengefulDead,

@@ -47,6 +47,14 @@ const deck = (entries) =>
 // Both decks get a mana base that can actually cast their own spells —
 // otherwise one side just sits there and the fuzz only exercises one player.
 const deckA = deck([
+  // EDH-backlog bulk pass 2: Battlebond lands (new: the `opponent-count`
+  // static condition). The fuzzer runs 2-4 players, so both sides of the
+  // "two or more opponents" check get exercised.
+  ["Morphic Pool", 1],
+  ["Sea of Clouds", 1],
+  ["Spire Garden", 1],
+  ["Training Center", 1],
+  ["Rejuvenating Springs", 1],
   // EDH-backlog bulk pass 1: the guild Signets, and the simple shapes that
   // needed no new vocabulary.
   ["Izzet Signet", 1],
@@ -222,6 +230,12 @@ const deckA = deck([
 // and plays its threats — a bloated deck just stalls out and the fuzz only
 // exercises one side. One or two copies of each mechanic is enough coverage.
 const deckB = deck([
+  // EDH-backlog bulk pass 2 (the rest of the Battlebond cycle).
+  ["Luxury Suite", 1],
+  ["Bountiful Promenade", 1],
+  ["Vault of Champions", 1],
+  ["Undergrowth Stadium", 1],
+  ["Spectator Seating", 1],
   // EDH-backlog bulk pass 1 (the rest — see deckA).
   ["Orzhov Signet", 1],
   ["Golgari Signet", 1],

@@ -222,6 +222,40 @@ export const signet = (name: string, colors: readonly [Color, Color]): CardDefin
     ],
   });
 
+/**
+ * A "Battlebond land" (Morphic Pool, Sea of Clouds, Training Center, …): a
+ * two-colour land that "enters tapped unless you have two or more opponents".
+ *
+ * Ten cards on one template, and the only reason they weren't authorable is
+ * that nothing could ask how many opponents you had — hence the
+ * `opponent-count` {@link StaticCondition}. In a Commander pod the condition
+ * is usually true, which is the point of the cycle: these are untapped duals
+ * in multiplayer and tapped ones in a duel.
+ */
+export const battlebondLand = (
+  name: string,
+  colors: readonly [Color, Color],
+): CardDefinition =>
+  defineCard({
+    name,
+    types: ["land"],
+    text:
+      `${name} enters tapped unless you have two or more opponents.
+` +
+      `{T}: Add {${colors[0]}} or {${colors[1]}}.`,
+    static: [
+      {
+        affects: { scope: "self" },
+        replacement: {
+          event: "enters-battlefield",
+          tappedUnless: { kind: "opponent-count", atLeast: 2 },
+        },
+        text: `${name} enters tapped unless you have two or more opponents.`,
+      },
+    ],
+    activated: colors.map((c) => manaTapAbility(c)),
+  });
+
 const NUM_WORD: Readonly<Record<number, string>> = { 2: "two", 3: "three", 4: "four" };
 
 /**

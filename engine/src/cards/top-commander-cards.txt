@@ -1,5 +1,5 @@
 Top 2000 Commander cards by EDHREC popularity (fetched 2026-09-13)
-380 already implemented / 1620 missing (marks refreshed 2026-09-20)
+390 already implemented / 1610 missing (marks refreshed 2026-09-20)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -138,8 +138,8 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   139  Talisman of Progress                     {2}              Artifact
 [x]   140  Blood Artist                             {1}{B}           Creature — Vampire
 [ ]   141  War Room                                 {0}              Land
-[ ]   142  Morphic Pool                             {0}              Land
-[ ]   143  Rejuvenating Springs                     {0}              Land
+[x]   142  Morphic Pool                             {0}              Land
+[x]   143  Rejuvenating Springs                     {0}              Land
 [ ]   144  Ponder                                   {U}              Sorcery
 [x]   145  Abrade                                   {1}{R}           Instant
 [x]   146  Underground River                        {0}              Land
@@ -150,28 +150,28 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   151  Delighted Halfling                       {G}              Creature — Halfling Citizen
 [ ]   152  Herald's Horn                            {3}              Artifact
 [x]   153  Talisman of Conviction                   {2}              Artifact
-[ ]   154  Training Center                          {0}              Land
+[x]   154  Training Center                          {0}              Land
 [x]   155  Pongify                                  {U}              Instant
 [x]   156  Anguished Unmaking                       {1}{W}{B}        Instant
 [ ]   157  Windfall                                 {2}{U}           Sorcery
 [x]   158  Lightning Bolt                           {R}              Instant
 [x]   159  Dimir Signet                             {2}              Artifact
 [x]   160  Mystical Tutor                           {U}              Instant
-[ ]   161  Luxury Suite                             {0}              Land
+[x]   161  Luxury Suite                             {0}              Land
 [ ]   162  Ghostly Prison                           {2}{W}           Enchantment
 [ ]   163  Nykthos, Shrine to Nyx                   {0}              Legendary Land
-[ ]   164  Sea of Clouds                            {0}              Land
+[x]   164  Sea of Clouds                            {0}              Land
 [x]   165  Worldly Tutor                            {G}              Instant
 [x]   166  Rakdos Signet                            {2}              Artifact
-[ ]   167  Spectator Seating                        {0}              Land
+[x]   167  Spectator Seating                        {0}              Land
 [x]   168  Austere Command                          {4}{W}{W}        Sorcery
 [ ]   169  Sink into Stupor // Soporific Springs    {3}              Instant // Land
-[ ]   170  Vault of Champions                       {0}              Land
+[x]   170  Vault of Champions                       {0}              Land
 [ ]   171  Reflecting Pool                          {0}              Land
 [x]   172  Izzet Signet                             {2}              Artifact
 [ ]   173  Farewell                                 {4}{W}{W}        Sorcery
 [ ]   174  Mystic Sanctuary                         {0}              Land — Island
-[ ]   175  Undergrowth Stadium                      {0}              Land
+[x]   175  Undergrowth Stadium                      {0}              Land
 [x]   176  Dreamroot Cascade                        {0}              Land
 [ ]   177  Three Tree City                          {0}              Legendary Land
 [ ]   178  Return of the Wildspeaker                {4}{G}           Instant
@@ -184,7 +184,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   185  Hardened Scales                          {G}              Enchantment
 [x]   186  Orzhov Signet                            {2}              Artifact
 [x]   187  Stormcarved Coast                        {0}              Land
-[ ]   188  Spire Garden                             {0}              Land
+[x]   188  Spire Garden                             {0}              Land
 [ ]   189  Akroma's Will                            {3}{W}           Instant
 [x]   190  Doubling Season                          {4}{G}           Enchantment
 [x]   191  Idol of Oblivion                         {2}              Artifact
@@ -206,7 +206,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   207  Rapid Hybridization                      {U}              Instant
 [x]   208  Karn's Bastion                           {0}              Land
 [ ]   209  Professional Face-Breaker                {2}{R}           Creature — Human Warrior
-[ ]   210  Bountiful Promenade                      {0}              Land
+[x]   210  Bountiful Promenade                      {0}              Land
 [x]   211  Thrill of Possibility                    {1}{R}           Instant
 [ ]   212  Wild Growth                              {G}              Enchantment — Aura
 [ ]   213  Beast Whisperer                          {2}{G}{G}        Creature — Elf Druid

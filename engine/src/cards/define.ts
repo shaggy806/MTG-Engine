@@ -173,6 +173,15 @@ export type StaticCondition =
       readonly filter: CardFilter;
       readonly atLeast: number;
     }
+  /**
+   * You have at least `atLeast` opponents still in the game — the Battlebond
+   * cycle's "unless you have two or more opponents" (Morphic Pool, Sea of
+   * Clouds, ...), which is a check on the *table* rather than on any board.
+   *
+   * Players who have lost don't count, so a four-player game that has become
+   * a duel stops satisfying it, which is what the printed card says.
+   */
+  | { readonly kind: "opponent-count"; readonly atLeast: number }
   /** It's your turn. */
   | { readonly kind: "your-turn" }
   /** Threshold (rule 702.27) — seven or more cards in your graveyard. */
