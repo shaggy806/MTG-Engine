@@ -6,6 +6,7 @@ the engine's coverage currently stops.
 Audience: someone adding files by hand under `engine/src/cards/pool/`. Every
 card is one file, one `defineCard({...})` call, one `export default`.
 
+- [0. Rule zero: faithful, or not at all](#0-rule-zero-faithful-or-not-at-all)
 - [1. Quick start](#1-quick-start)
 - [2. The `art` field](#2-the-art-field)
 - [3. Card anatomy — every field](#3-card-anatomy--every-field)
@@ -22,6 +23,60 @@ card is one file, one `defineCard({...})` call, one `export default`.
 - [14. Preview your card (`npm run lab`)](#14-preview-your-card-npm-run-lab)
 - [15. Current engine limitations](#15-current-engine-limitations)
 - [16. Testing a new card](#16-testing-a-new-card)
+
+---
+
+## 0. Rule zero: faithful, or not at all
+
+**Never add a card the engine cannot run faithfully.** If any part of the
+printed card can't be expressed — an ability that would have to be dropped, a
+mode that would have to be cut, a number that would have to be hardcoded, a
+choice that would have to be made *for* the player in a way that can change
+the outcome — then **don't author the card at all**.
+
+A missing card costs nothing. The deck importer offers a stand-in for it, the
+report names it, and the player knows exactly what they did and didn't get. A
+card that is *present but weaker than its printing* is a lie the game tells at
+the table, and nothing downstream catches it: `card:verify` checks the stat
+block and not the text, the fuzzer checks for crashes and not for fidelity,
+and `card:text` (§16) only catches a whole clause going missing — never a
+clause that's present but wrong. The player finds out when the card doesn't do
+what it says, and by then they don't know which of the other 700 to trust.
+
+There is no "close enough" tier and no scale of importance. A dropped
+graveyard half on a tutor and a dropped keyword on a vanilla creature are the
+same defect.
+
+When the card you want is blocked, the options are, in order:
+
+1. **Author a different card.** The backlog is over 1,500 deep; something else
+   is unblocked right now.
+2. **Build the missing primitive, then the card.** This is how most of the
+   pool got here. `neededCards-features.md` ranks features by how many real
+   cards each unblocks — add yours to that ranking rather than working around
+   it.
+3. **Leave it out**, and note what blocked it. Not shipping a card costs
+   nothing but the card.
+
+Three things are **not** fidelity violations, and the rest of this guide leans
+on the distinction:
+
+- **Paraphrasing the `text` field** while the behaviour is exact. `text` is
+  what the client prints; what the engine runs is the structured fields. Keep
+  `text` close to Oracle anyway — `card:text` reads it, so a paraphrase costs
+  you that check.
+- **Reminder text**, and a keyword line the client already renders from
+  `keywords`.
+- **A choice the card itself cannot distinguish** — picking between two
+  candidates that are identical in every respect the card cares about. The
+  moment they differ in a way a player could reasonably have a view on, it is
+  a violation, whatever the field is called. (This is a much narrower licence
+  than it sounds: see `proliferate` in §15, which hid a real one for a long
+  time behind exactly this wording.)
+
+If you are unsure whether something counts, it counts. §15 is the list of what
+the engine can't yet express; §16 is the checks, none of which is a substitute
+for reading the Oracle text next to your card file.
 
 ---
 
@@ -1072,8 +1127,14 @@ still needs `npm run gen:cards -w engine` first.
 
 ## 15. Current engine limitations
 
-If a card needs something here, it can't be authored faithfully yet — pick a
-different card, or extend the engine (see `ROADMAP.md`).
+If a card needs something here, it can't be authored faithfully yet, so by
+**rule zero (§0) it isn't authored at all** — pick a different card, or build
+the primitive first (`neededCards-features.md` ranks them by blocked-card
+count; `ROADMAP.md` has the architecture constraints).
+
+Keep this list honest in both directions. A **stale** entry is worse than a
+real one: it makes authors skip cards that have been authorable for months.
+Delete an entry in the same commit as the feature that retires it.
 
 **No vocabulary for:**
 
@@ -1144,10 +1205,9 @@ different card, or extend the engine (see `ROADMAP.md`).
   for it — strictly better than the printed card. They're excluded there and
   stay activatable by hand, which floats the mana; the effect is that the card
   is inert during auto-payment rather than wrong.
-- **No "put card(s) from hand onto the battlefield" effect** — every mass
-  cheat-into-play effect (`search-library`, `look-and-choose`) sources from a
-  library or graveyard, never a hand (Last March of the Ents, Spelunking,
-  Broodcaller Scourge) (needed-cards P18).
+- **Regeneration** (rule 701.15) — no shield, no `"{B}: Regenerate"` cost, no
+  replacement of a destruction. Mortivore is in the pool without its
+  regeneration ability and shouldn't be (see "Known exceptions" below).
 - **`EffectSpec.sacrifice.count` is a fixed `number`**, not an `EffectAmount` —
   can't sacrifice "X" of something where X is the spell's own chosen value
   (Nahiri's Lithoforming) (needed-cards P18).
@@ -1197,12 +1257,23 @@ different card, or extend the engine (see `ROADMAP.md`).
   cast-time only).
 - **Snow** mana is treated as generic — no snow permanents / snow-mana
   requirements.
-- **`proliferate`** always proliferates everything eligible (no "choose any
-  number"), **`populate`** copies the largest creature token you control
-  rather than letting you pick, and **`tapOthers` / `alternativeCost`** tap
-  the first eligible permanents rather than asking which. All are *choice*
-  simplifications rather than outcome ones, and each only bites when the
-  candidates differ in some way the card itself doesn't care about.
+- **`proliferate` is wrong, not merely simplified.** Rule 701.27 is "choose
+  *any number* of permanents and/or players with counters on them";
+  `Game.proliferateAll` adds a counter to **every permanent on the
+  battlefield**, opponents' included. So Atraxa grows the opponent's creatures
+  and tops up their planeswalkers every end step, which is not a lesser
+  version of the card — it's a different and sometimes actively bad one. This
+  entry used to be filed below as a harmless choice simplification; it is
+  not, and the five pool cards that proliferate (Atraxa, Contentious Plan,
+  Evolution Sage, Karn's Bastion, Volt Charge) are wrong until it takes a
+  real multi-select decision.
+- **`populate`** copies the largest creature token you control rather than
+  letting you pick, and **`tapOthers` / `alternativeCost`** tap the first
+  eligible permanents rather than asking which. These *are* choice
+  simplifications: they bite only when the candidates differ in some way the
+  card itself doesn't care about. Under §0 that licence is narrow — check the
+  claim against the actual pool rather than assuming it, which is the check
+  the `proliferate` entry above never got.
 - **`AffectSpec.withKeyword` matches printed keywords only.** `staticAffects`
   runs on every characteristics read and is deliberately given no
   `GameState`, so it can't do the layer fold — a creature that has the keyword
@@ -1220,10 +1291,48 @@ banding, "day/night"-independent double-faced tokens, a static ability that
 makes a planeswalker a creature (Gideon), ability-dependency ordering (rule
 613.8), companions / backgrounds.
 
+### Known exceptions already in the pool
+
+Rule zero (§0) was written on **2026-09-20**, after 739 cards were already in.
+These are the cards that predate it and don't meet it — every one either loses
+a printed ability or runs a wrong one. They are **debt, not precedent**: each
+is a card to fix or to delete, and no new card joins this list.
+
+`npm run card:text -w engine` is the live ledger for the first kind (a whole
+clause gone missing). It found 13 of 739 on the day the rule landed:
+
+| card | what's missing | blocked on |
+| --- | --- | --- |
+| **Saw in Half** | tokens are hardcoded `1/1` instead of **half the destroyed creature's P/T, rounded up**; the file's own `text` invents a clause the card doesn't have | an `EffectAmount` reading a target's power/toughness |
+| **Finale of Devastation** | the "and/or **graveyard**" half of the search | `search-library` searching two zones |
+| **Fireball** | "costs {1} more for each target beyond the first" — authored as single-target | unbounded targeting (deliberately scoped out) |
+| **Mortivore** | `{B}: Regenerate this creature` | regeneration |
+| **Chandra, Acolyte of Flame** | the whole −2 loyalty ability | cast-from-graveyard as a targeted effect |
+| **Rydia, Summoner of Mist** | the whole Summon activated ability | Saga reanimation + `{X}` in an activated cost's target filter |
+| **Whip of Erebos** | "if it would leave the battlefield, exile it instead" | a leaves-the-battlefield replacement on a granted token |
+| **Will of the Sultai** | "if you control a commander … choose both instead" | a commander-conditional mode count |
+| **Tannuk, Memorial Ensign** | "if this is the second time this ability has resolved this turn" | a per-turn resolution counter |
+| **Combat Thresher** | Prototype | Prototype |
+| **Fanatic of Rhonas** | Eternalize | Eternalize |
+| **Iridescent Vinelasher** | Offspring | Offspring |
+| **Starfield Vocalist** | Warp | Warp |
+
+Plus the five `proliferate` cards above, which `card:text` cannot see because
+their text is right and their *behaviour* isn't.
+
+That last point is the ledger's limit, and Saw in Half is the proof: the audit
+flagged four trailing words of it ("Round up each time") while the substantive
+error — two 1/1s where the card makes two half-size copies — sat inside a
+clause the matcher scored as close enough. **`card:text` catches a dropped
+clause; nothing catches a wrong one but reading the card.**
+
 ---
 
 ## 16. Testing a new card
 
+- **Read the Oracle text beside the finished file**, clause by clause, and
+  confirm each one is expressed. This is the only check that catches a clause
+  that's present but *wrong* (§0, §15) — every tool below is blind to it.
 - **Fuzz it.** Add the name to one of the decks in
   `engine/scripts/random-demo.mjs`, then `npm run play:random -w engine --
   --games 300`. If `legalActions` ever offers something `dispatch` refuses,

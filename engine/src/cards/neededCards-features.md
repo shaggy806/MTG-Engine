@@ -435,6 +435,102 @@ Saga.
 
 ---
 
+## The limitation ledger — every §15 gap, ranked by blocked cards
+
+Measured 2026-09-20, the day AUTHORING §0 ("faithful, or not at all") landed.
+One Scryfall oracle-text search per limitation in AUTHORING §15, joined
+against the *unimplemented* entries of `top-commander-cards.txt`. Read each
+number as an **upper bound on what that one gap gates**: a hit may be blocked
+on something else as well, and the searches are textual.
+
+The point of the table is that §15 is not a flat list. Two entries gate 40
+cards between them and the bottom half gates one or none — so "is this
+limitation reasonable to keep?" has a different answer per row, and until now
+nothing in the repo distinguished them.
+
+| limitation | blocked | best rank | ≤100 | ≤500 |
+| --- | ---: | ---: | ---: | ---: |
+| **mana provenance** (all three shapes) | 21 | **14** | 1 | 7 |
+| **protection from [filter]** | 19 | **92** | 1 | 4 |
+| unbounded targeting *(scoped out on purpose — see above)* | 9 | 544 | 0 | 0 |
+| regeneration | 7 | 705 | 0 | 0 |
+| Station | 7 | 951 | 0 | 0 |
+| "put into a graveyard from anywhere" trigger | 5 | 259 | 0 | 1 |
+| "as this enters" on a non-cast permanent | 5 | 132 | 0 | 1 |
+| discard-a-card as an ability cost | 5 | 834 | 0 | 0 |
+| damage doubling (a replacement) | 4 | 794 | 0 | 0 |
+| another player's graveyard → hand | 4 | 620 | 0 | 0 |
+| Hideaway | 3 | 195 | 0 | 1 |
+| Offspring | 3 | 793 | 0 | 0 |
+| Warp | 3 | 1387 | 0 | 0 |
+| phasing | 3 | 575 | 0 | 0 |
+| snow sources | 3 | 445 | 0 | 1 |
+| multikicker | 2 | 254 | 0 | 1 |
+| plays-a-land trigger | 1 | 899 | 0 | 0 |
+| Bestow / Eternalize / Coven / Raid | 1 each | 697+ | 0 | 0 |
+| retrace / riot / Prototype | **0** | — | 0 | 0 |
+
+Retrace, riot and Prototype gate **nothing** in the top 2000 — they are in §15
+because a card in the pool wanted them, not because the backlog does. Leave
+them.
+
+### Next feature: mana provenance (21 cards, four of them top-250)
+
+The single highest-value gap, and three printed shapes over one underlying
+change:
+
+- **restricted spend** — "Spend this mana only to cast a creature spell of the
+  chosen type" (Cavern of Souls #111, Secluded Courtyard #219, Unclaimed
+  Territory #247, Plaza of Heroes #485, Castle Garenbrig #722, Haven of the
+  Spirit Dragon #1149, Eldrazi Temple #1718, Delighted Halfling #151, …)
+- **a rider on spend** — "When that mana is spent to cast a creature spell
+  that shares a creature type with your commander, scry 1" (**Path of Ancestry
+  #14**, Arena of Glory #371)
+- **pool persistence** — "You don't lose this mana as steps and phases end"
+  (Savage Ventmaw #1670, Ashling #1552, Electro #1314)
+
+All three need the same thing: **the mana pool stops being a count and becomes
+a list of tagged units.** `PlayerState.manaPool: Record<ManaType, number>`
+becomes `readonly ManaUnit[]`, where a unit is `{ type, restriction?,
+onSpend?, persists? }` — still plain `structuredClone`-able data, and the
+count form is reconstructed by a selector for the view and the planner. That
+is the whole feature; the three shapes are three optional fields on the unit.
+
+The work, in dependency order:
+
+1. **Represent it.** `manaPool` → a list; a `poolCounts()` selector for the
+   ~8 read sites (`game.ts` ×6, `view.ts`, the client's mana display).
+   `poolTotal` becomes `length`.
+2. **Spend it correctly.** `spendFromPool` stops being a subtraction and
+   becomes a small matching: each pip must be paid by a unit legal for *this*
+   spell, and restricted units go first (use-it-or-lose-it) so an unrestricted
+   one isn't wasted on a pip the restricted one could have covered. Greedy is
+   provably enough here — legality is a per-unit predicate against a single
+   spell, and same-type pips are interchangeable.
+3. **Thread the context.** `payMana` → `planManaPayment` → `chooseOption`
+   need to know what is being paid for, so the planner doesn't tap Haven for a
+   non-Dragon. A `ManaLegality` argument (`{kind:"cast", def} | {kind:"ability",
+   source} | null`) through ~10 call sites, mechanical. **Watch `canAfford` /
+   `isDeadForMana` (`game.ts:4513`, `:4553`)** — they estimate capacity for
+   the bot and the auto-passer, and ignoring restrictions there over-estimates,
+   which shows up as a bot trying to cast what it can't pay for.
+4. **Persistence** is then one line: the step/phase `emptyPool()` at
+   `game.ts:2576` drops only units without `persists`, and cleanup drops all.
+5. **The rider** falls out of step 2: `spendFromPool` now knows which unit
+   paid for what, so it emits a `mana-spent` event carrying the tag and the
+   spell, and `detectTriggers` handles it like any other. Path of Ancestry's
+   scry goes on the stack above the spell, which is correct (rule 603.2).
+
+Roughly a day, most of it in steps 1–3, and it is the kind of change that is
+much cheaper now than after another thousand cards. **Protection-from-filter
+(19 cards) is the cheaper second pick** — `protection: {colors, types}`
+widening to a `CardFilter` reaches Mother of Runes, Giver of Runes, Spirit
+Mantle and the whole Sword cycle without new machinery. Note its top two,
+The One Ring (#92) and Teferi's Protection (#109), are *not* in that discount:
+both give protection to a **player**, and Teferi's also needs phasing.
+
+---
+
 ## Completed: `neededCards.txt` passes (P0-P20)
 
 Two curated precon decks (a fixed-dual-land manabase deck, a

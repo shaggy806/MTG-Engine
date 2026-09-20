@@ -1,7 +1,9 @@
 import { defineCard } from "../define.js";
 
-/** Regenerate (rule 701.16) isn't modeled — the "{B}: Regenerate this
- * creature" activated ability is dropped. */
+/** Regenerate (rule 701.15 — 701.16 is Reveal) isn't modeled, so the "{B}:
+ * Regenerate this creature" activated ability is dropped. That makes this
+ * card one of AUTHORING §15's "Known exceptions": it predates rule zero (§0)
+ * and would not be authorable today. Fix it or drop it; don't copy it. */
 export default defineCard({
   name: "Mortivore",
   manaCost: "{2}{B}{B}",
