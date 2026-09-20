@@ -177,8 +177,26 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   // battlefield, so below it every land past the cap scores as a loss and the
   // bot stops making land drops in exactly the long games that need them.
   extraLands: 2.5,
+  // Stays at 0. Raising it is tempting and backwards: it counts *your own*
+  // untapped sources, so casting a two-drop taps two lands (-2) and gains at
+  // most one source, making every spell look like a loss. Measured: Talisman
+  // of Impulse went from -0.50 to -1.50 against passing at `untappedMana: 1`.
+  // This is the "reads as a cost the moment the resource is spent" trap the
+  // comment on `handManaValue` above describes.
   untappedMana: 0,
-  otherPermanents: 0.5,
+  // **Must not sit below `hand`.** A noncreature permanent was worth
+  // `otherPermanents` + `permanentManaValue` (0.5/mv) on the battlefield
+  // against `hand` (2.0) in hand, so *casting* one cost the bot points:
+  // Sol Ring scored -1.00 against passing, a Talisman -0.50, a three-mana
+  // rock exactly 0.00 — and ties go to passing. The artifact-heavy Rakdos
+  // precon declined 82% of the early plays it could have made, which is the
+  // "bot does nothing but land-pass" people actually see.
+  //
+  // The invariant is the same one `extraLands` has against `hand`, and for
+  // the same reason: a card you have *deployed* cannot be worth less than the
+  // card sitting in your hand, or the evaluation will refuse to deploy it.
+  // Kept just under `creatures` (2.5) — a Sol Ring is not a body.
+  otherPermanents: 2,
   permanentManaValue: 0.5,
   loyalty: 1,
   counters: 0.5,
