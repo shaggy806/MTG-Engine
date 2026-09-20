@@ -73,7 +73,7 @@ import type {
   GameEventInput,
   GameEventType,
 } from "./events.js";
-import { COLORS, MANA_TYPES, manaValue, parseManaCost, poolCounts, poolTotal } from "./mana.js";
+import { COLORS, MANA_TYPES, manaValue, parseManaCost } from "./mana.js";
 import type {
   Color,
   ManaCost,
@@ -82,6 +82,15 @@ import type {
   ManaType,
   ManaUnit,
 } from "./mana.js";
+import { manaCombinations, planPayment, standaloneManaChoices } from "./mana-payment.js";
+import type {
+  ManaOption,
+  ManaPayment,
+  ManaPlanStep,
+  ManaPlanningView,
+  ManaPurpose,
+  ManaSource,
+} from "./mana-payment.js";
 import type { ObjectId, PlayerId, Rng } from "./primitives.js";
 import { asObjectId, createRng, shuffle } from "./primitives.js";
 import {
@@ -186,164 +195,6 @@ interface TriggeredGrantSource {
   readonly abilities: readonly TriggeredAbility[];
 }
 
-/** Every multiset of size `amount` drawn from `colors` (order-independent,
- * "combinations with repetition") — Orcish Lumberjack's "three mana in any
- * combination of {R} and/or {G}" over `["R", "G"]`/`3` yields `[R,R,R]`,
- * `[R,R,G]`, `[R,G,G]`, `[G,G,G]`. Small by construction (a handful of
- * colours, a handful of mana), so no need to worry about blowup. needed-cards
- * P20 — `add-mana`'s `{ oneOf }` mana form. */
-/**
- * The distinct outputs of activating `ability` on its own, when it's a mana
- * ability whose colour isn't fixed — `null` for every other ability, which is
- * the overwhelmingly common case.
- *
- * "Any combination of" (a short `oneOf` list) is enumerated exhaustively. "One
- * mana of any color" is enumerated as one option *per colour*, all `amount`
- * units the same: that's exactly right for the "N mana of any one color"
- * cards, and it keeps a five-colour source from producing 126 menu entries for
- * a rider nothing prints.
- */
-function standaloneManaChoices(
-  ability: ActivatedAbility,
-  /** The concrete colours a `oneOf`/`producedBy` names right now — resolved
-   * by the caller, which has the board; see `Game.manaOneOf`. */
-  oneOf: (mana: { oneOf?: readonly ManaType[]; producedBy?: string }) => readonly ManaType[],
-): ManaType[][] | null {
-  const effect = ability.effect;
-  if (effect === null || effect.kind !== "add-mana") return null;
-  if (typeof effect.amount !== "number" || effect.amount < 1) return null;
-  const mana = effect.mana;
-  if (mana === "any-color") {
-    return COLORS.map((c) => Array<ManaType>(effect.amount as number).fill(c));
-  }
-  if (typeof mana === "object") return manaCombinations(oneOf(mana), effect.amount);
-  return null;
-}
-
-function manaCombinations(colors: readonly ManaType[], amount: number): ManaType[][] {
-  if (amount === 0) return [[]];
-  const [first, ...rest] = colors;
-  if (first === undefined) return [];
-  if (rest.length === 0) return [Array<ManaType>(amount).fill(first)];
-  const out: ManaType[][] = [];
-  for (let useFirst = amount; useFirst >= 0; useFirst -= 1) {
-    for (const tail of manaCombinations(rest, amount - useFirst)) {
-      out.push([...Array<ManaType>(useFirst).fill(first), ...tail]);
-    }
-  }
-  return out;
-}
-
-/** One possible output of a single mana-ability activation: `fixed` is the
- * concrete mana it makes, `anyColor` is how many "one mana of any colour"
- * units it adds on top (Arcane Signet, Command Tower, Treasure). `pain` is the
- * damage the source deals to its controller when this option is used (a
- * painland's coloured option — Karplusan Forest); `lifeCost` is a `Pay N life`
- * on the ability's cost (a trikeland); both 0 for the ordinary case. */
-interface ManaOption {
-  readonly fixed: readonly ManaType[];
-  readonly anyColor: number;
-  readonly pain: number;
-  readonly lifeCost: number;
-  /**
-   * Generic mana this activation *costs* — a Signet's "{1}, {T}: Add {B}{R}",
-   * a filter land's "{1}, {T}: Add {G}{G}, {G}{U}, or {U}{U}".
-   *
-   * These are "converter" sources: net-positive in count but colour-fixing,
-   * and unlike everything else here they can't pay for themselves. Only a
-   * purely *generic* activation cost is admitted — a coloured one would be
-   * genuinely circular (you'd need the colour to make the colour). See
-   * `planManaPayment`, which funds a converter from plain sources only and
-   * orders it after them.
-   */
-  readonly genericCost: number;
-  /**
-   * The provenance stamped on every unit this activation makes — a spend
-   * restriction, a spend rider, a "doesn't empty" permission (rule 106.6b /
-   * 106.12). Resolved here rather than at spend time because the pieces that
-   * aren't printed (the creature type named as the permanent entered, the
-   * commander's types) are read off the board, and the board is what this is
-   * looking at.
-   *
-   * The planner reads `tag.restriction` to avoid tapping a source whose mana
-   * couldn't pay for the thing being paid for — otherwise it would produce
-   * mana and then be refused it.
-   */
-  readonly tag?: Omit<ManaUnit, "type">;
-}
-
-/** One of `player`'s permanents that can produce mana right now. `options` is
- * the set of alternative single-activation outputs — one tap picks one of them
- * (rule 605.1a): a basic land has one option, a dual land offers "{R}" or
- * "{G}", a Chromatic-Lantern'd basic offers its own colour or "any colour".
- * `sacrificeSelf` = using it sacrifices the source (Treasure) rather than
- * tapping it. */
-interface ManaSource {
-  readonly id: ObjectId;
-  readonly isLand: boolean;
-  readonly options: readonly ManaOption[];
-  readonly sacrificeSelf: boolean;
-}
-
-/** One entry of a mana-payment plan: activate `source`, adding the concrete
- * `mana` list to the pool; `sacrifice` if it's a Treasure-style ability;
- * `pain` damage / `lifeCost` life paid by the controller (a painland's or
- * trikeland's coloured tap). */
-interface ManaPlanStep {
-  readonly source: ObjectId;
-  readonly mana: readonly ManaType[];
-  readonly sacrifice: boolean;
-  readonly pain: number;
-  readonly lifeCost: number;
-  /**
-   * The exact mana this step spends from the pool before adding its own — a
-   * Signet's `{1}`, resolved at planning time to the specific unit the plan
-   * took from another source. Empty for every ordinary source.
-   *
-   * Spelled out rather than left as "one generic" because a colour-blind
-   * deduction can consume a colour the spell still needs: two Islands, two
-   * Swamps and an Azorius Signet paying `{3}{W}{U}` underflow if the Signet's
-   * `{1}` eats an Island's `{U}`.
-   */
-  readonly spends: readonly ManaType[];
-  /** The provenance to stamp on the mana this step makes — see
-   * {@link ManaOption.tag}. */
-  readonly tag?: Omit<ManaUnit, "type">;
-}
-
-/** A fully-worked-out way to pay a cost: which sources to tap ({@link
- * ManaPlanStep}), how much life to pay for Phyrexian pips, and the cost with
- * every hybrid pip resolved to a concrete colour / generic amount — which is
- * what {@link Game.spendFromPool} actually deducts. */
-interface ManaPayment {
-  readonly steps: readonly ManaPlanStep[];
-  readonly life: number;
-  readonly resolved: ManaCost;
-  /** What this payment is for, so restricted mana knows whether it may pay
-   * (rule 106.6b) and a spend rider knows what it was spent on. Carried on
-   * the payment rather than passed to {@link Game.executePayment} separately,
-   * so no caller has to remember to thread it twice. */
-  readonly purpose: ManaPurpose;
-}
-
-/**
- * What a mana payment is being made for — the thing a restriction like
- * "spend this mana only to cast a creature spell" is tested against.
- *
- * `null` means "no particular spell or ability" (a ward tax probe, a cost
- * check with nothing concrete behind it). Restricted mana never pays for
- * that: there is no printed restriction that a nameless payment satisfies,
- * and treating unknown as permitted is the failure mode where the
- * restriction quietly does nothing.
- */
-type ManaPurpose =
-  /** A spell being cast. `card` is still in its pre-cast zone at payment
-   * time, so a filter over it reads printed characteristics — which is
-   * exactly what "a creature spell" means. */
-  | { readonly kind: "cast"; readonly card: ObjectId }
-  /** An activated ability of `source` being paid for. */
-  | { readonly kind: "ability"; readonly source: ObjectId }
-  | null;
 /** Combat damage from the same commander at or above this total is a loss (rule 903.10a). */
 const COMMANDER_DAMAGE_THRESHOLD = COMMANDER_DAMAGE_LETHAL;
 
@@ -6059,11 +5910,20 @@ export class Game {
     exclude?: ObjectId,
     purpose: ManaPurpose = null,
   ): ManaPayment | null {
-    const resolved = this.resolveHybridCost(player, cost, avoid, exclude, purpose);
-    if (resolved === null) return null;
-    const steps = this.planManaPayment(player, resolved.concrete, avoid, exclude, purpose);
-    if (steps === null) return null;
-    return { steps, life: resolved.life, resolved: resolved.concrete, purpose };
+    return planPayment(this.manaPlanningView(player, purpose), cost, purpose, avoid, exclude);
+  }
+
+  /** The four facts {@link planPayment} may read off the board (see
+   * {@link ManaPlanningView}). `sources` is resolved here, once per payment,
+   * rather than inside the planner, where a hybrid cost used to re-ask for it
+   * once per pip it tried. */
+  private manaPlanningView(player: PlayerId, purpose: ManaPurpose): ManaPlanningView {
+    return {
+      pool: this.state.players[player].manaPool,
+      life: this.state.players[player].life,
+      sources: this.manaSources(player),
+      canPay: (unit) => this.manaUnitCanPay(player, unit, purpose),
+    };
   }
 
   /** Carry out a {@link payMana} result: tap/sacrifice each planned source and
@@ -6073,344 +5933,6 @@ export class Game {
     for (const step of payment.steps) this.useManaSource(step);
     this.spendFromPool(player, payment.resolved, payment.purpose);
     if (payment.life > 0) this.changeLife(player, -payment.life);
-  }
-
-  /**
-   * Resolve every hybrid / twobrid / Phyrexian pip in `cost` to a concrete
-   * payment, returning the pip-free cost plus the life owed for Phyrexian pips
-   * (or `null` if a pip can't be paid at all). Greedy and auto-pilot: for each
-   * pip, prefer a coloured half the player can still afford, then the twobrid
-   * `{2}`, then paying 2 life — and never take yourself below 1 life. Each
-   * tentative choice is re-checked against the running total with
-   * {@link planManaPayment}; since that planner is itself greedy, a cost that
-   * needs genuine cross-pip coordination (`{W/U}{W/U}` off one W source and one
-   * U source) can still misresolve, but ordinary hybrid costs are fine.
-   */
-  private resolveHybridCost(
-    player: PlayerId,
-    cost: ManaCost,
-    avoid: ObjectId | undefined,
-    exclude?: ObjectId,
-    purpose: ManaPurpose = null,
-  ): { concrete: ManaCost; life: number } | null {
-    if (cost.hybrid.length === 0) return { concrete: cost, life: 0 };
-
-    let concrete: ManaCost = {
-      generic: cost.generic,
-      colored: { ...cost.colored },
-      colorless: cost.colorless,
-      x: 0,
-      hybrid: [],
-    };
-    let life = 0;
-    const startingLife = this.state.players[player].life;
-
-    for (const pip of cost.hybrid) {
-      let chosen: ManaCost | null = null;
-      for (const option of pip) {
-        if (option.kind !== "color") continue;
-        const nextColored = { ...concrete.colored };
-        nextColored[option.color] += 1;
-        const trial: ManaCost = { ...concrete, colored: nextColored };
-        if (this.planManaPayment(player, trial, avoid, exclude, purpose) !== null) {
-          chosen = trial;
-          break;
-        }
-      }
-      if (chosen === null) {
-        for (const option of pip) {
-          if (option.kind !== "generic") continue;
-          const trial: ManaCost = { ...concrete, generic: concrete.generic + option.amount };
-          if (this.planManaPayment(player, trial, avoid, exclude, purpose) !== null) {
-            chosen = trial;
-            break;
-          }
-        }
-      }
-      if (chosen !== null) {
-        concrete = chosen;
-        continue;
-      }
-      if (pip.some((o) => o.kind === "phyrexian") && startingLife - life - 2 >= 1) {
-        life += 2;
-        continue;
-      }
-      return null;
-    }
-    return { concrete, life };
-  }
-
-  /**
-   * How `player` would pay `cost` from mana sources, or `null` if they can't.
-   * `cost.hybrid` is ignored here — {@link resolveHybridCost} lowers hybrid
-   * pips to concrete colour / generic needs before this runs.
-   * Existing floating mana is spent first; then colored pips, then `{C}` pips,
-   * then generic are covered in turn, tapping a fresh source only when the
-   * already-tapped ones can't. A source that makes more than one mana (Sol
-   * Ring) or "any colour" (Signet, Treasure) has its surplus applied to later
-   * needs before another source is touched.
-   */
-  private planManaPayment(
-    player: PlayerId,
-    cost: ManaCost,
-    avoid?: ObjectId,
-    exclude?: ObjectId,
-    purpose: ManaPurpose = null,
-  ): ManaPlanStep[] | null {
-    // Floating mana this payment is actually allowed to use. Restricted
-    // units that can't pay for `purpose` are invisible here, so the planner
-    // taps as though they weren't there rather than planning around mana it
-    // will then be refused — and `spendFromPool` applies the same filter, so
-    // the plan and the spend can't disagree.
-    const pool = poolCounts(
-      this.state.players[player].manaPool.filter((unit) =>
-        this.manaUnitCanPay(player, unit, purpose),
-      ),
-    );
-
-    const need: Record<ManaType, number> = { W: 0, U: 0, B: 0, R: 0, G: 0, C: 0 };
-    for (const color of COLORS) {
-      need[color] = Math.max(0, cost.colored[color] - pool[color]);
-    }
-    need.C = Math.max(0, cost.colorless - pool.C);
-    const poolUsedForSpecific =
-      COLORS.reduce((sum, c) => sum + Math.min(cost.colored[c], pool[c]), 0) +
-      Math.min(cost.colorless, pool.C);
-    let genericNeed = Math.max(0, cost.generic - (poolTotal(pool) - poolUsedForSpecific));
-
-    // `avoid` (the permanent whose ability is being activated) goes last, so a
-    // man-land paying its own `{1}: becomes a creature` cost taps something
-    // else and stays free to attack — but still taps itself if nothing else
-    // can cover the cost.
-    // The auto-payer won't spend life it can't safely afford (a painland /
-    // trikeland option whose toll would drop it to 0 or below) — a human's
-    // casts are auto-paid too, and "kill yourself to cast a spell" is never
-    // the intent. Consistent with `resolveHybridCost`'s Phyrexian "never
-    // below 1 life" rule.
-    const currentLife = this.state.players[player].life;
-    const affordableOptions = (s: ManaSource): ManaSource => ({
-      ...s,
-      options: s.options.filter((o) => o.pain + o.lifeCost < currentLife),
-    });
-    // Drop options whose mana couldn't pay for what's being paid for (rule
-    // 106.6b). Done at the *option* level rather than the source level
-    // because a card can offer both — Plaza of Heroes taps for {C} freely and
-    // for a colour only toward a legendary spell — and dropping the whole
-    // permanent would lose the unrestricted half.
-    const usableOptions = (s: ManaSource): ManaSource => ({
-      ...s,
-      options: s.options.filter(
-        (o) =>
-          o.tag?.restriction === undefined ||
-          this.manaUnitCanPay(player, { type: "C", ...o.tag }, purpose),
-      ),
-    });
-    const all = this.manaSources(player)
-      .map(affordableOptions)
-      .map(usableOptions)
-      .filter((s) => s.options.length > 0 && s.id !== exclude);
-    // A converter (a Signet) is only reached once the plain sources are
-    // exhausted: it costs mana someone else has to make, and on a board with
-    // none of them nothing below behaves any differently than it did before
-    // converters existed.
-    const isConverter = (s: ManaSource): boolean =>
-      s.options.every((o) => o.genericCost > 0);
-    const ordered =
-      avoid === undefined
-        ? all
-        : [...all.filter((s) => s.id !== avoid), ...all.filter((s) => s.id === avoid)];
-    const sources = [...ordered.filter((s) => !isConverter(s)), ...ordered.filter(isConverter)];
-
-    interface Tapped {
-      readonly src: ManaSource;
-      readonly produced: ManaType[];
-      readonly freeFixed: ManaType[];
-      freeAny: number;
-      readonly pain: number;
-      readonly lifeCost: number;
-      readonly genericCost: number;
-      /** For a converter, the exact mana taken from other sources to pay its
-       * own cost — spent back verbatim by `useManaSource`. */
-      readonly spends: ManaType[];
-      readonly tag?: Omit<ManaUnit, "type">;
-    }
-    // Colours this cost still wants, for `coverGenericFrom`'s preference.
-    const wantedColors = new Set<ManaType>(
-      (["W", "U", "B", "R", "G", "C"] as const).filter((m) => need[m] > 0),
-    );
-    const tapped: Tapped[] = [];
-    const isTapped = (id: ObjectId): boolean => tapped.some((t) => t.src.id === id);
-    // Which of a source's alternative outputs to commit to as it's tapped:
-    // for a specific need, an option that makes that colour directly, else an
-    // "any colour" one; for a generic need (or no match), the richest option,
-    // spending the fewest "any colour" units so they stay available for a
-    // later coloured need. A free option always beats an equally-useful one
-    // that costs life (a painland taps for `{C}` for free before it hurts).
-    const lifeToll = (o: ManaOption): number => o.pain + o.lifeCost;
-    const chooseOption = (src: ManaSource, want: ManaType | null): ManaOption => {
-      const free = (pred: (o: ManaOption) => boolean): ManaOption | undefined =>
-        src.options.find((o) => lifeToll(o) === 0 && pred(o)) ??
-        src.options.find((o) => pred(o));
-      if (want !== null) {
-        const exact = free((o) => o.fixed.includes(want));
-        if (exact !== undefined) return exact;
-        if (want !== "C") {
-          const any = free((o) => o.anyColor > 0);
-          if (any !== undefined) return any;
-        }
-      }
-      return [...src.options].sort(
-        (a, b) =>
-          lifeToll(a) - lifeToll(b) ||
-          b.fixed.length + b.anyColor - (a.fixed.length + a.anyColor) ||
-          a.anyColor - b.anyColor,
-      )[0];
-    };
-    const open = (src: ManaSource, want: ManaType | null): Tapped => {
-      const opt = chooseOption(src, want);
-      const t: Tapped = {
-        src,
-        produced: [],
-        freeFixed: [...opt.fixed],
-        freeAny: opt.anyColor,
-        pain: opt.pain,
-        lifeCost: opt.lifeCost,
-        genericCost: opt.genericCost,
-        spends: [],
-        ...(opt.tag !== undefined ? { tag: opt.tag } : {}),
-      };
-      tapped.push(t);
-      return t;
-    };
-
-    /**
-     * Open `src` only if its activation cost can be met — for an ordinary
-     * source that's free, for a converter it means covering `genericCost`
-     * generic from *other* sources first (never from itself, and never from
-     * another converter, which is what keeps this from recursing).
-     *
-     * On failure the tentative entry is rolled back, so a converter the board
-     * can't fund leaves no trace and the caller simply moves on.
-     */
-    const openFunded = (src: ManaSource, want: ManaType | null): Tapped | null => {
-      const mark = tapped.length;
-      const t = open(src, want);
-      for (let i = 0; i < t.genericCost; i += 1) {
-        const m = coverGenericFrom(src.id);
-        if (m === null) {
-          tapped.length = mark;
-          return null;
-        }
-        t.spends.push(m);
-      }
-      return t;
-    };
-    const takeSpecific = (t: Tapped, m: ManaType): boolean => {
-      const i = t.freeFixed.indexOf(m);
-      if (i >= 0) {
-        t.freeFixed.splice(i, 1);
-        t.produced.push(m);
-        return true;
-      }
-      if (m !== "C" && t.freeAny > 0) {
-        t.freeAny -= 1;
-        t.produced.push(m);
-        return true;
-      }
-      return false;
-    };
-    /** Take one generic from `t`, returning *which* mana type it turned out
-     * to be — a converter has to spend exactly that back, not "one generic",
-     * or it can eat a colour the cost still needs. */
-    const takeGeneric = (t: Tapped): ManaType | null => {
-      if (t.freeFixed.length > 0) {
-        const m = t.freeFixed.shift() as ManaType;
-        t.produced.push(m);
-        return m;
-      }
-      if (t.freeAny > 0) {
-        t.freeAny -= 1;
-        t.produced.push("C");
-        return "C";
-      }
-      return null;
-    };
-    const coverSpecific = (m: ManaType): boolean => {
-      for (const t of tapped) if (takeSpecific(t, m)) return true;
-      const canMake = (s: ManaSource): boolean =>
-        s.options.some((o) => o.fixed.includes(m) || (m !== "C" && o.anyColor > 0));
-      for (const next of sources) {
-        if (isTapped(next.id) || !canMake(next)) continue;
-        const t = openFunded(next, m);
-        if (t !== null && takeSpecific(t, m)) return true;
-      }
-      return false;
-    };
-    /**
-     * Cover one generic, never drawing on `exclude` or on another converter —
-     * this is what funds a converter's own cost.
-     *
-     * Spends a source that can't make any colour this cost still wants before
-     * one that can: the whole point of tapping a Signet is that the board is
-     * short on a colour, and funding it with the one land that made that
-     * colour defeats the exercise (two Islands and a Signet paying
-     * `{W}{U}{U}` — fund from a Swamp, not from an Island).
-     */
-    const coverGenericFrom = (exclude: ObjectId): ManaType | null => {
-      const eligible = (t: Tapped): boolean => t.src.id !== exclude && t.spends.length === 0;
-      const dull = (src: ManaSource): boolean =>
-        src.options.every(
-          (o) => o.anyColor === 0 && !o.fixed.some((m) => wantedColors.has(m)),
-        );
-      for (const t of tapped) {
-        if (!eligible(t) || !dull(t.src)) continue;
-        const m = takeGeneric(t);
-        if (m !== null) return m;
-      }
-      for (const t of tapped) {
-        if (!eligible(t)) continue;
-        const m = takeGeneric(t);
-        if (m !== null) return m;
-      }
-      const free = sources.filter(
-        (s) => !isTapped(s.id) && s.id !== exclude && !isConverter(s),
-      );
-      const next = free.find(dull) ?? free[0];
-      return next === undefined ? null : takeGeneric(open(next, null));
-    };
-    const coverGeneric = (): boolean => {
-      for (const t of tapped) if (takeGeneric(t) !== null) return true;
-      for (const next of sources) {
-        if (isTapped(next.id)) continue;
-        const t = openFunded(next, null);
-        if (t !== null && takeGeneric(t) !== null) return true;
-      }
-      return false;
-    };
-
-    for (const color of COLORS) {
-      for (let i = 0; i < need[color]; i += 1) if (!coverSpecific(color)) return null;
-    }
-    for (let i = 0; i < need.C; i += 1) if (!coverSpecific("C")) return null;
-    for (let i = 0; i < genericNeed; i += 1) if (!coverGeneric()) return null;
-
-    // Converters last: each spends from the pool, and everything funding it
-    // is an ordinary source, so putting them after the rest is enough to
-    // guarantee the mana is there when `useManaSource` runs.
-    const steps = [...tapped].sort((a, b) => a.spends.length - b.spends.length);
-    return steps.map((t) => ({
-      source: t.src.id,
-      sacrifice: t.src.sacrificeSelf,
-      pain: t.pain,
-      lifeCost: t.lifeCost,
-      spends: [...t.spends],
-      mana: [
-        ...t.produced,
-        ...t.freeFixed,
-        ...Array.from<ManaType>({ length: t.freeAny }).fill("C"),
-      ],
-      ...(t.tag !== undefined ? { tag: t.tag } : {}),
-    }));
   }
 
   /** Carry out one {@link ManaPlanStep}: tap (or sacrifice) the source, add its
