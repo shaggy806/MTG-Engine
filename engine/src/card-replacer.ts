@@ -393,12 +393,26 @@ export function suggestReplacement(
 }
 
 /**
- * How many candidates each target contributes to the assignment below. Three
- * is what the UI shows; the assignment wants more room than that to trade with,
- * and the cost of a deeper list is nil — `suggestReplacements` already scores
- * every implemented card and then throws all but the top few away.
+ * How many candidates each target contributes to the assignment below. The
+ * assignment wants more room than the UI shows to trade with, and the cost of
+ * a deeper list is nil — `suggestReplacements` already scores every
+ * implemented card and then throws all but the top few away.
+ *
+ * This is the *search* width, not the *display* width: it must not reach the
+ * UI. It did once, and the review popup laid twelve card images in a row
+ * inside a box that fit three, shoving the card being replaced off the left
+ * edge of the screen. {@link UI_OPTIONS} is what comes back.
  */
 const ASSIGNMENT_POOL = 12;
+
+/**
+ * How many alternatives {@link assignReplacements} hands back per target.
+ *
+ * The assigned `choice` is always among them even when it ranks below the cap
+ * — it is the card the deck will actually contain, so a list that left it out
+ * would be offering alternatives to something it never showed.
+ */
+const UI_OPTIONS = 3;
 
 export interface ReplacementAssignment {
   /** The unimplemented card being stood in for — `ReplacementTarget.name`. */
@@ -497,11 +511,18 @@ export function assignReplacements(
     // `-1` is an unmatched row (more targets than candidates); a column this
     // target never suggested is a forced pairing and no better than nothing.
     const chosen = j >= 0 && scoreOf[i].has(j) ? columns[j] : null;
-    return {
-      target: name(i),
-      choice: chosen === null ? null : (options[i].find((s) => s.name === chosen) ?? null),
-      options: options[i],
-    };
+    const ranked = options[i];
+    const choice = chosen === null ? null : (ranked.find((s) => s.name === chosen) ?? null);
+    // Narrow the search pool to what the UI offers, keeping the assignment's
+    // own pick: it can rank below the cap precisely because the assignment
+    // trades favourites away, and dropping it here would show a list of
+    // alternatives that excluded the one actually taken.
+    const shown = ranked.slice(0, UI_OPTIONS);
+    if (choice !== null && !shown.some((s) => s.name === choice.name)) {
+      if (shown.length < UI_OPTIONS) shown.push(choice);
+      else shown[UI_OPTIONS - 1] = choice;
+    }
+    return { target: name(i), choice, options: shown };
   });
 }
 

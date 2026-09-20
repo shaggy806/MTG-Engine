@@ -17,6 +17,40 @@ const target = (name: string, manaCost: string, typeLine: string, pt?: [string, 
 });
 
 describe("assignReplacements", () => {
+  it("hands back only as many alternatives as the UI shows", () => {
+    // The assignment searches a deeper pool than it displays. That width once
+    // reached the deck builder's review popup, which laid every candidate out
+    // as a card image in one row and pushed the card being replaced off the
+    // left edge of the screen.
+    const targets = [
+      target("Alpha", "{2}{G}", "Creature — Beast", ["3", "3"]),
+      target("Beta", "{1}{U}", "Instant"),
+      target("Gamma", "{3}{W}", "Enchantment"),
+    ];
+    for (const assigned of assignReplacements(targets, {})) {
+      expect(assigned.options.length, assigned.target).toBeLessThanOrEqual(3);
+    }
+  });
+
+  it("keeps the card it actually chose among the alternatives it offers", () => {
+    // The chosen stand-in can rank below the display cap — that is exactly
+    // what the joint assignment does when it trades a favourite away — so
+    // capping naively would offer alternatives to a card it never showed.
+    const targets = [
+      target("Alpha", "{2}{G}", "Creature — Beast", ["3", "3"]),
+      target("Beta", "{2}{G}", "Creature — Beast", ["3", "3"]),
+      target("Gamma", "{2}{G}", "Creature — Beast", ["3", "3"]),
+      target("Delta", "{2}{G}", "Creature — Beast", ["3", "3"]),
+    ];
+    for (const assigned of assignReplacements(targets, {})) {
+      if (assigned.choice === null) continue;
+      expect(
+        assigned.options.map((o) => o.name),
+        `${assigned.target} -> ${assigned.choice.name}`,
+      ).toContain(assigned.choice.name);
+    }
+  });
+
   it("gives every target a distinct stand-in", () => {
     // Singleton is the whole reason the choices compete: one card cannot stand
     // in twice.

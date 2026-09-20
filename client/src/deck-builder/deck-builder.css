@@ -436,6 +436,14 @@
   flex-direction: column;
   gap: 8px;
 }
+/* A flex child defaults to `min-width: auto`, so it refuses to shrink below
+   its content and an over-wide options row pushes its siblings out of the box
+   instead of being clipped — with `justify-content: center` on `.rr-body`
+   that shoved the card being replaced clean off the left edge of the screen.
+   The same footgun as `minmax(0, 1fr)` in grid (see CLAUDE.md's UI rules). */
+.rr-options {
+  min-width: 0;
+}
 .rr-original {
   width: var(--rr-card-w);
   flex: none;
@@ -458,6 +466,11 @@
 .rr-option-row {
   display: flex;
   gap: 1.2cqw;
+  /* Belt and braces with the cap in `assignReplacements`: if a future change
+     ever offers more stand-ins than fit, they scroll here rather than
+     escaping the dialog. */
+  max-width: 100%;
+  overflow-x: auto;
 }
 .rr-option {
   width: var(--rr-card-w);
