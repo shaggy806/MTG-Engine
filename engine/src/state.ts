@@ -616,7 +616,7 @@ export type AwaitingDecision =
       /** `"library-top"` — a tutor-to-top (Vampiric Tutor): the chosen cards
        * never leave the library, they are moved to the top after the search's
        * own shuffle. */
-      readonly destination: "battlefield" | "hand" | "exile-playable" | "library-top";
+      readonly destination: "battlefield" | "hand" | "exile-playable" | "library-top" | "graveyard";
       /** For `destination: "exile-playable"` — the impulse permission to
        * stamp on the chosen cards, which stay in exile either way
        * (Tectonic Giant: "exile the top two, choose one of them"). */

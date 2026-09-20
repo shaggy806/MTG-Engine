@@ -1,5 +1,5 @@
 Top 2000 Commander cards by EDHREC popularity (fetched 2026-09-13)
-411 already implemented / 1589 missing (marks refreshed 2026-09-20)
+426 already implemented / 1574 missing (marks refreshed 2026-09-20)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -221,7 +221,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   222  Karplusan Forest                         {0}              Land
 [ ]   223  Animate Dead                             {1}{B}           Enchantment — Aura
 [x]   224  Terminate                                {B}{R}           Instant
-[ ]   225  Pitiless Plunderer                       {3}{B}           Creature — Human Pirate
+[x]   225  Pitiless Plunderer                       {3}{B}           Creature — Human Pirate
 [x]   226  Rockfall Vale                            {0}              Land
 [ ]   227  Mirkwood Bats                            {3}{B}           Creature — Bat
 [ ]   228  Sensei's Divining Top                    {1}              Artifact
@@ -320,7 +320,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   321  Guardian Project                         {3}{G}           Enchantment
 [x]   322  Temple of Enlightenment                  {0}              Land
 [x]   323  Darkwater Catacombs                      {0}              Land
-[ ]   324  Entomb                                   {B}              Instant
+[x]   324  Entomb                                   {B}              Instant
 [x]   325  Harmonize                                {2}{G}{G}        Sorcery
 [x]   326  Azusa, Lost but Seeking                  {2}{G}           Legendary Creature — Human Monk
 [x]   327  Rakdos Charm                             {B}{R}           Instant
@@ -332,7 +332,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   333  Bastion of Remembrance                   {2}{B}           Enchantment
 [ ]   334  Frostboil Snarl                          {0}              Land
 [ ]   335  Authority of the Consuls                 {W}              Enchantment
-[ ]   336  Putrefy                                  {1}{B}{G}        Instant
+[x]   336  Putrefy                                  {1}{B}{G}        Instant
 [ ]   337  Fetid Heath                              {0}              Land
 [x]   338  Port Town                                {0}              Land
 [x]   339  Volcanic Island                          {0}              Land — Island Mountain
@@ -352,14 +352,14 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   353  Temple of Deceit                         {0}              Land
 [x]   354  Tundra                                   {0}              Land — Plains Island
 [ ]   355  Dawn's Truce                             {1}{W}           Instant
-[ ]   356  Buried Alive                             {2}{B}           Sorcery
+[x]   356  Buried Alive                             {2}{B}           Sorcery
 [ ]   357  Twilight Mire                            {0}              Land
-[ ]   358  Ketria Triome                            {0}              Land — Forest Island Mountain
+[x]   358  Ketria Triome                            {0}              Land — Forest Island Mountain
 [ ]   359  Shifting Woodland                        {0}              Land
 [x]   360  Baleful Strix                            {U}{B}           Artifact Creature — Bird
 [x]   361  Crumbling Necropolis                     {0}              Land
 [x]   362  Sapphire Medallion                       {2}              Artifact
-[ ]   363  Jetmir's Garden                          {0}              Land — Mountain Forest Plains
+[x]   363  Jetmir's Garden                          {0}              Land — Mountain Forest Plains
 [x]   364  Temple of Malady                         {0}              Land
 [ ]   365  Pact of Negation                         {0}              Instant
 [ ]   366  Anointed Procession                      {3}{W}           Enchantment
@@ -371,7 +371,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   372  Goldspan Dragon                          {3}{R}{R}        Creature — Dragon
 [ ]   373  Aetherflux Reservoir                     {4}              Artifact
 [x]   374  Nomad Outpost                            {0}              Land
-[ ]   375  Go for the Throat                        {1}{B}           Instant
+[x]   375  Go for the Throat                        {1}{B}           Instant
 [x]   376  Consider                                 {U}              Instant
 [ ]   377  Vanquisher's Banner                      {5}              Artifact
 [x]   378  Mystic Monastery                         {0}              Land
@@ -395,8 +395,8 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   396  Spark Double                             {3}{U}           Creature — Illusion
 [ ]   397  Demolition Field                         {0}              Land
 [x]   398  Frontier Bivouac                         {0}              Land
-[ ]   399  Spara's Headquarters                     {0}              Land — Forest Plains Island
-[ ]   400  Zagoth Triome                            {0}              Land — Swamp Forest Island
+[x]   399  Spara's Headquarters                     {0}              Land — Forest Plains Island
+[x]   400  Zagoth Triome                            {0}              Land — Swamp Forest Island
 [ ]   401  Kami of Whispered Hopes                  {2}{G}           Creature — Spirit
 [x]   402  Guttersnipe                              {2}{R}           Creature — Goblin Shaman
 [x]   403  Kessig Wolf Run                          {0}              Land
@@ -421,7 +421,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   422  Bayou                                    {0}              Land — Swamp Forest
 [ ]   423  Izzet Boilerworks                        {0}              Land
 [ ]   424  Welcoming Vampire                        {2}{W}           Creature — Vampire
-[ ]   425  Raffine's Tower                          {0}              Land — Plains Island Swamp
+[x]   425  Raffine's Tower                          {0}              Land — Plains Island Swamp
 [ ]   426  Mondrak, Glory Dominus                   {2}{W}{W}        Legendary Creature — Phyrexian Horror
 [ ]   427  Enduring Vitality                        {1}{G}{G}        Enchantment Creature — Elk Glimmer
 [x]   428  Shadowblood Ridge                        {0}              Land
@@ -464,7 +464,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   465  Azorius Chancery                         {0}              Land
 [ ]   466  Vault of the Archangel                   {0}              Land
 [ ]   467  Treasure Vault                           {0}              Artifact Land
-[ ]   468  Xander's Lounge                          {0}              Land — Island Swamp Mountain
+[x]   468  Xander's Lounge                          {0}              Land — Island Swamp Mountain
 [ ]   469  Pyroblast                                {R}              Instant
 [ ]   470  Conjurer's Closet                        {5}              Artifact
 [ ]   471  Fabricate                                {2}{U}           Sorcery
@@ -474,7 +474,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   475  Underground Mortuary                     {0}              Land — Swamp Forest
 [ ]   476  Accursed Marauder                        {1}{B}           Creature — Zombie Warrior
 [ ]   477  Chandra's Ignition                       {3}{R}{R}        Sorcery
-[ ]   478  Indatha Triome                           {0}              Land — Plains Swamp Forest
+[x]   478  Indatha Triome                           {0}              Land — Plains Swamp Forest
 [ ]   479  Commander's Plate                        {1}              Artifact — Equipment
 [x]   480  Ramunap Excavator                        {2}{G}           Creature — Snake Cleric
 [x]   481  Read the Bones                           {2}{B}           Sorcery
@@ -483,7 +483,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   484  Diabolic Tutor                           {2}{B}{B}        Sorcery
 [ ]   485  Plaza of Heroes                          {0}              Land
 [ ]   486  Field of the Dead                        {0}              Land
-[ ]   487  Raugrin Triome                           {0}              Land — Island Mountain Plains
+[x]   487  Raugrin Triome                           {0}              Land — Island Mountain Plains
 [x]   488  Soul Warden                              {W}              Creature — Human Cleric
 [ ]   489  Maskwood Nexus                           {4}              Artifact
 [x]   490  Ancient Den                              {0}              Artifact Land
@@ -494,7 +494,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   495  Tainted Peak                             {0}              Land
 [ ]   496  Vito, Thorn of the Dusk Rose             {2}{B}           Legendary Creature — Vampire Cleric
 [x]   497  Talisman of Resilience                   {2}              Artifact
-[ ]   498  Savai Triome                             {0}              Land — Mountain Plains Swamp
+[x]   498  Savai Triome                             {0}              Land — Mountain Plains Swamp
 [x]   499  Temple of Plenty                         {0}              Land
 [ ]   500  Faeburrow Elder                          {1}{G}{W}        Creature — Treefolk Druid
 [ ]   501  Rise of the Dark Realms                  {7}{B}{B}        Sorcery
@@ -522,7 +522,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   523  Gitaxian Probe                           {U/P}            Sorcery
 [ ]   524  Strip Mine                               {0}              Land
 [x]   525  Culling the Weak                         {B}              Instant
-[ ]   526  Ziatora's Proving Ground                 {0}              Land — Swamp Mountain Forest
+[x]   526  Ziatora's Proving Ground                 {0}              Land — Swamp Mountain Forest
 [ ]   527  Necroblossom Snarl                       {0}              Land
 [ ]   528  Veil of Summer                           {G}              Instant
 [ ]   529  Voice of Victory                         {1}{W}           Creature — Human Bard

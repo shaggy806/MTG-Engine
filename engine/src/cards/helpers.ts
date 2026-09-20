@@ -300,6 +300,35 @@ export const filterLand = (
     ],
   });
 
+/**
+ * A "Triome" (Raugrin Triome, Jetmir's Garden, …): a *typed* tri-land that
+ * enters tapped and has cycling {3}.
+ *
+ * Unlike {@link triLand} these carry all three basic land types, so they feed
+ * everything that keys off a type — a check land sees one as a Swamp, and
+ * `landProduces` reads a colour straight off the subtype. The colours are
+ * derived from the types for exactly that reason, rather than passed in and
+ * allowed to disagree with them.
+ */
+export const triomeLand = (
+  name: string,
+  landTypes: readonly [string, string, string],
+): CardDefinition => {
+  const colors = landTypes
+    .map((t) => BASIC_LAND_MANA[t])
+    .filter((c): c is Color => c !== undefined);
+  return defineCard({
+    name,
+    types: ["land"],
+    subtypes: [...landTypes],
+    text: `${name} enters tapped.
+Cycling {3}`,
+    static: [entersTappedStatic(name)],
+    cycling: { cost: "{3}" },
+    activated: colors.map((c) => manaTapAbility(c)),
+  });
+};
+
 export const triLand = (
   name: string,
   colors: readonly [Color, Color, Color],

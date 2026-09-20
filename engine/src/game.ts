@@ -7749,7 +7749,7 @@ export class Game {
     count: number | undefined,
     min: number,
     max: number,
-    destination: "battlefield" | "hand" | "library-top",
+    destination: "battlefield" | "hand" | "library-top" | "graveyard",
     leftover: "bottom-random" | "stay" | "hand",
     filter: ZoneChoiceFilter | undefined,
     enterTapped = false,
@@ -7785,7 +7785,7 @@ export class Game {
   private beginLibrarySearch(
     player: PlayerId,
     filter: CardFilter,
-    destination: "hand" | "battlefield" | "library-top",
+    destination: "hand" | "battlefield" | "library-top" | "graveyard",
     min: number,
     max: number,
     enterTapped: boolean,

@@ -47,6 +47,14 @@ const deck = (entries) =>
 // Both decks get a mana base that can actually cast their own spells —
 // otherwise one side just sits there and the fuzz only exercises one player.
 const deckA = deck([
+  // EDH-backlog bulk pass 4: Triomes, and the cards two new primitives
+  // unblocked (a `graveyard` tutor destination; the artifact-or-creature and
+  // nonartifact-creature target specs).
+  ["Ketria Triome", 1],
+  ["Zagoth Triome", 1],
+  ["Raugrin Triome", 1],
+  ["Buried Alive", 1],
+  ["Putrefy", 1],
   // EDH-backlog bulk pass 3: tri-lands, Odyssey filter lands, and simple
   // artifacts/creatures.
   ["Arcane Sanctum", 1],
@@ -239,6 +247,13 @@ const deckA = deck([
 // and plays its threats — a bloated deck just stalls out and the fuzz only
 // exercises one side. One or two copies of each mechanic is enough coverage.
 const deckB = deck([
+  // EDH-backlog bulk pass 4 (the rest — see deckA).
+  ["Savai Triome", 1],
+  ["Indatha Triome", 1],
+  ["Raffine's Tower", 1],
+  ["Entomb", 1],
+  ["Go for the Throat", 1],
+  ["Pitiless Plunderer", 1],
   // EDH-backlog bulk pass 3 (the rest — see deckA).
   ["Crumbling Necropolis", 1],
   ["Nomad Outpost", 1],

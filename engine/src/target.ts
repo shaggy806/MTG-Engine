@@ -37,6 +37,11 @@ export type TargetSpec =
   | "artifact-an-opponent-controls"
   | "artifact-or-enchantment"
   | "creature-or-enchantment"
+  /** Putrefy, Bedevil — a single slot that takes either type. */
+  | "artifact-or-creature"
+  /** Go for the Throat. "Nonartifact" is a restriction on the creature, not a
+   * second type, so it can't be expressed by the pair above. */
+  | "nonartifact-creature"
   /** A bare enchantment (Aura Mutation: "target enchantment"). */
   | "enchantment"
   /** A creature or enchantment an opponent controls (Feed the Swarm). */

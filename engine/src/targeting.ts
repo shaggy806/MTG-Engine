@@ -222,6 +222,26 @@ export function isLegalTarget(
           (t) => t.includes("artifact") || t.includes("enchantment"),
         )
       );
+    case "artifact-or-creature":
+      return (
+        ref.kind === "object" &&
+        isPermanentOfType(
+          state,
+          registry,
+          ref.object,
+          (t) => t.includes("artifact") || t.includes("creature"),
+        )
+      );
+    case "nonartifact-creature":
+      return (
+        ref.kind === "object" &&
+        isPermanentOfType(
+          state,
+          registry,
+          ref.object,
+          (t) => t.includes("creature") && !t.includes("artifact"),
+        )
+      );
     case "creature-or-enchantment":
       return (
         ref.kind === "object" &&

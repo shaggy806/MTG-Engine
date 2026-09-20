@@ -1044,7 +1044,7 @@ export type EffectSpec =
        * Tutor): the find never leaves the library, it is just moved to the top
        * *after* the shuffle the search itself causes (rule 701.19j — the
        * shuffle comes first, or the card wouldn't stay on top). */
-      readonly destination: "hand" | "battlefield" | "library-top";
+      readonly destination: "hand" | "battlefield" | "library-top" | "graveyard";
       readonly min: number;
       /** An `EffectAmount` so a tutor can find "up to X" where X is a live
        * count — Harvest Season's "up to X basic land cards, where X is the
@@ -1430,7 +1430,7 @@ export interface EffectApi {
   searchLibrary(
     player: PlayerId | null,
     filter: CardFilter,
-    destination: "hand" | "battlefield" | "library-top",
+    destination: "hand" | "battlefield" | "library-top" | "graveyard",
     min: number,
     max: number,
     enterTapped: boolean,
@@ -1443,7 +1443,7 @@ export interface EffectApi {
     count: number | undefined,
     min: number,
     max: number,
-    destination: "battlefield" | "hand" | "library-top",
+    destination: "battlefield" | "hand" | "library-top" | "graveyard",
     leftover: "bottom-random" | "stay" | "hand",
     filter: ZoneChoiceFilter | undefined,
     enterTapped?: boolean,
