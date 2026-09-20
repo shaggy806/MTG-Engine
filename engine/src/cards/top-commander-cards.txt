@@ -1,5 +1,5 @@
 Top 2000 Commander cards by EDHREC popularity (fetched 2026-09-13)
-366 already implemented / 1634 missing (marks refreshed 2026-09-19)
+380 already implemented / 1620 missing (marks refreshed 2026-09-20)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -161,14 +161,14 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   162  Ghostly Prison                           {2}{W}           Enchantment
 [ ]   163  Nykthos, Shrine to Nyx                   {0}              Legendary Land
 [ ]   164  Sea of Clouds                            {0}              Land
-[ ]   165  Worldly Tutor                            {G}              Instant
+[x]   165  Worldly Tutor                            {G}              Instant
 [x]   166  Rakdos Signet                            {2}              Artifact
 [ ]   167  Spectator Seating                        {0}              Land
 [x]   168  Austere Command                          {4}{W}{W}        Sorcery
 [ ]   169  Sink into Stupor // Soporific Springs    {3}              Instant // Land
 [ ]   170  Vault of Champions                       {0}              Land
 [ ]   171  Reflecting Pool                          {0}              Land
-[ ]   172  Izzet Signet                             {2}              Artifact
+[x]   172  Izzet Signet                             {2}              Artifact
 [ ]   173  Farewell                                 {4}{W}{W}        Sorcery
 [ ]   174  Mystic Sanctuary                         {0}              Land — Island
 [ ]   175  Undergrowth Stadium                      {0}              Land
@@ -182,7 +182,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   183  Command Beacon                           {0}              Land
 [x]   184  Tireless Provisioner                     {2}{G}           Creature — Elf Scout
 [ ]   185  Hardened Scales                          {G}              Enchantment
-[ ]   186  Orzhov Signet                            {2}              Artifact
+[x]   186  Orzhov Signet                            {2}              Artifact
 [x]   187  Stormcarved Coast                        {0}              Land
 [ ]   188  Spire Garden                             {0}              Land
 [ ]   189  Akroma's Will                            {3}{W}           Instant
@@ -193,7 +193,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   194  Buried Ruin                              {0}              Land
 [ ]   195  Mosswort Bridge                          {0}              Land
 [ ]   196  Cabal Coffers                            {0}              Land
-[ ]   197  Impact Tremors                           {1}{R}           Enchantment
+[x]   197  Impact Tremors                           {1}{R}           Enchantment
 [x]   198  Phyrexian Tower                          {0}              Legendary Land
 [ ]   199  Fell the Profane // Fell Mire            {4}              Instant // Land
 [ ]   200  Patchwork Banner                         {3}              Artifact
@@ -235,7 +235,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   236  Sword of the Animist                     {2}              Legendary Artifact — Equipment
 [ ]   237  Mithril Coat                             {3}              Legendary Artifact — Equipment
 [x]   238  Scute Swarm                              {2}{G}           Creature — Insect
-[ ]   239  Dovin's Veto                             {W}{U}           Instant
+[x]   239  Dovin's Veto                             {W}{U}           Instant
 [ ]   240  Malakir Rebirth // Malakir Mire          {1}              Instant // Land
 [ ]   241  Gamble                                   {R}              Sorcery
 [ ]   242  Mox Opal                                 {0}              Legendary Artifact
@@ -245,7 +245,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   246  Mox Diamond                              {0}              Artifact
 [ ]   247  Unclaimed Territory                      {0}              Land
 [x]   248  Harrow                                   {2}{G}           Instant
-[ ]   249  Boros Signet                             {2}              Artifact
+[x]   249  Boros Signet                             {2}              Artifact
 [ ]   250  Grand Abolisher                          {W}{W}           Creature — Human Cleric
 [ ]   251  Morbid Opportunist                       {2}{B}           Creature — Human Rogue
 [x]   252  Foundry Inspector                        {3}              Artifact Creature — Construct
@@ -260,7 +260,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   261  Infernal Grasp                           {1}{B}           Instant
 [ ]   262  Academy Manufactor                       {3}              Artifact Creature — Assembly-Worker
 [x]   263  Sundown Pass                             {0}              Land
-[ ]   264  Withering Torment                        {2}{B}           Instant
+[x]   264  Withering Torment                        {2}{B}           Instant
 [ ]   265  Untimely Malfunction                     {1}{R}           Instant
 [ ]   266  Force of Negation                        {1}{U}{U}        Instant
 [ ]   267  Panharmonicon                            {4}              Artifact
@@ -297,14 +297,14 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   298  Temple of Silence                        {0}              Land
 [x]   299  Skyshroud Claim                          {3}{G}           Sorcery
 [ ]   300  Scavenger Grounds                        {0}              Land — Desert
-[ ]   301  Exploration                              {G}              Enchantment
+[x]   301  Exploration                              {G}              Enchantment
 [ ]   302  Flooded Grove                            {0}              Land
 [x]   303  Craterhoof Behemoth                      {5}{G}{G}{G}     Creature — Beast
 [ ]   304  The Ozolith                              {1}              Legendary Artifact
 [ ]   305  Dryad of the Ilysian Grove               {2}{G}           Enchantment Creature — Nymph Dryad
 [x]   306  Sun Titan                                {4}{W}{W}        Creature — Giant
 [ ]   307  Flusterstorm                             {U}              Instant
-[ ]   308  Seething Song                            {2}{R}           Instant
+[x]   308  Seething Song                            {2}{R}           Instant
 [x]   309  Finale of Devastation                    {X}{G}{G}        Sorcery
 [ ]   310  Phyrexian Altar                          {3}              Artifact
 [ ]   311  Shadowspear                              {1}              Legendary Artifact — Equipment
@@ -327,7 +327,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   328  Lotus Cobra                              {1}{G}           Creature — Snake
 [x]   329  Reclamation Sage                         {2}{G}           Creature — Elf Shaman
 [x]   330  Temple of Mystery                        {0}              Land
-[ ]   331  Whispersilk Cloak                        {3}              Artifact — Equipment
+[x]   331  Whispersilk Cloak                        {3}              Artifact — Equipment
 [ ]   332  Golgari Rot Farm                         {0}              Land
 [ ]   333  Bastion of Remembrance                   {2}{B}           Enchantment
 [ ]   334  Frostboil Snarl                          {0}              Land
@@ -610,7 +610,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   611  Cloud Key                                {3}              Artifact
 [x]   612  Vault of Whispers                        {0}              Artifact Land
 [ ]   613  Carrion Feeder                           {B}              Creature — Zombie
-[ ]   614  Simic Signet                             {2}              Artifact
+[x]   614  Simic Signet                             {2}              Artifact
 [ ]   615  Elas il-Kor, Sadistic Pilgrim            {W}{B}           Legendary Creature — Phyrexian Kor Cleric
 [ ]   616  Shizo, Death's Storehouse                {0}              Legendary Land
 [ ]   617  Bitterblossom                            {1}{B}           Kindred Enchantment — Faerie
@@ -702,7 +702,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   703  Chain Reaction                           {2}{R}{R}        Sorcery
 [ ]   704  Kindred Dominance                        {5}{B}{B}        Sorcery
 [ ]   705  Snuff Out                                {3}{B}           Instant
-[ ]   706  Golgari Signet                           {2}              Artifact
+[x]   706  Golgari Signet                           {2}              Artifact
 [ ]   707  Fact or Fiction                          {3}{U}           Instant
 [ ]   708  Sundering Eruption // Volcanic Fissure   {3}              Sorcery // Land
 [ ]   709  Castle Ardenvale                         {0}              Land
@@ -809,7 +809,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   813  Terrasymbiosis                           {2}{G}           Enchantment
 [x]   814  Fleshbag Marauder                        {2}{B}           Creature — Zombie Warrior
 [ ]   815  Enduring Curiosity                       {2}{U}{U}        Enchantment Creature — Cat Glimmer
-[ ]   816  Gruul Signet                             {2}              Artifact
+[x]   816  Gruul Signet                             {2}              Artifact
 [ ]   817  Sunscorched Divide                       {0}              Land
 [ ]   818  Bleachbone Verge                         {0}              Land
 [ ]   819  The World Tree                           {0}              Land
@@ -1068,7 +1068,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1072  K'rrik, Son of Yawgmoth                  {4}{B/P}{B/P}{B/P} Legendary Creature — Phyrexian Horror Minion
 [x]  1073  Ghalta, Stampede Tyrant                  {5}{G}{G}{G}     Legendary Creature — Elder Dinosaur
 [x]  1074  Lathliss, Dragon Queen                   {4}{R}{R}        Legendary Creature — Dragon
-[ ]  1075  Selesnya Signet                          {2}              Artifact
+[x]  1075  Selesnya Signet                          {2}              Artifact
 [ ]  1076  Three Steps Ahead                        {U}              Instant
 [ ]  1077  Door of Destinies                        {4}              Artifact
 [x]  1078  Blossoming Sands                         {0}              Land

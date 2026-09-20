@@ -47,6 +47,15 @@ const deck = (entries) =>
 // Both decks get a mana base that can actually cast their own spells —
 // otherwise one side just sits there and the fuzz only exercises one player.
 const deckA = deck([
+  // EDH-backlog bulk pass 1: the guild Signets, and the simple shapes that
+  // needed no new vocabulary.
+  ["Izzet Signet", 1],
+  ["Gruul Signet", 1],
+  ["Simic Signet", 1],
+  ["Exploration", 1],
+  ["Seething Song", 1],
+  ["Worldly Tutor", 1],
+  ["Impact Tremors", 1],
   // EDH-backlog: derived mana colours, hand-to-library-top, punisher.
   ["Exotic Orchard", 1],
   ["Fellwar Stone", 1],
@@ -213,6 +222,14 @@ const deckA = deck([
 // and plays its threats — a bloated deck just stalls out and the fuzz only
 // exercises one side. One or two copies of each mechanic is enough coverage.
 const deckB = deck([
+  // EDH-backlog bulk pass 1 (the rest — see deckA).
+  ["Orzhov Signet", 1],
+  ["Golgari Signet", 1],
+  ["Boros Signet", 1],
+  ["Selesnya Signet", 1],
+  ["Withering Torment", 1],
+  ["Dovin's Veto", 1],
+  ["Whispersilk Cloak", 1],
   // EDH-backlog: additional costs, delirium/threshold/morbid, X-paid-in-life.
   ["Reanimate", 1],
   ["Toxic Deluge", 1],
