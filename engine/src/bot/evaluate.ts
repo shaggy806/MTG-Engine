@@ -48,6 +48,14 @@ import type { PlayerFeatures } from "./features.js";
  */
 export interface EvalWeights {
   readonly life: number;
+  /**
+   * Subtracted: how far below `LIFE_DANGER_AT` this player's life has fallen —
+   * the bend that linear `life` structurally cannot make. See the constant in
+   * `features.ts` for why it's a separate additive term rather than a
+   * transform of `life`; at 0 the evaluation is exactly what it was before it
+   * existed.
+   */
+  readonly lifeDanger: number;
   /** Subtracted: the most combat damage taken from any one commander — 21
    * of it loses the game however much life is left (rule 903.10a). */
   readonly commanderDamage: number;
@@ -90,6 +98,11 @@ export interface EvalWeights {
    * and the bookkeeping kinds lore and time — charge, oil, experience… */
   readonly counters: number;
   readonly library: number;
+  /** Subtracted: how far below `LIBRARY_DANGER_AT` this library has fallen.
+   * The mirror of `lifeDanger`, and for the same reason — drawing from an
+   * empty library loses the game (rule 104.3c), which linear `library` prices
+   * the same as losing a card off the top of a full one. */
+  readonly libraryDanger: number;
   readonly graveyard: number;
   /** Graveyard cards that can be cast or activated from there: flashback
    * (printed or granted), escape, disturb, graveyard-zone abilities. */
@@ -121,6 +134,11 @@ export interface EvalWeights {
 
 export const DEFAULT_WEIGHTS: EvalWeights = {
   life: 1,
+  // Starts at 0 so this ships as a strict no-op, to be swept the way `power`
+  // was (four players, 200 games a value, against the mixed pod) rather than
+  // guessed at. A nonzero value here is the only thing that makes losing five
+  // life at 8 score worse than losing five at 40.
+  lifeDanger: 0,
   commanderDamage: 2,
   hand: 2,
   // Off to start, like `untappedMana` below. Each reads as a cost the moment a
@@ -165,6 +183,8 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   loyalty: 1,
   counters: 0.5,
   library: 0.05,
+  // Zero for the same reason as `lifeDanger`: a strict no-op until swept.
+  libraryDanger: 0,
   graveyard: 0.05,
   graveyardCastable: 1,
   energy: 0.3,

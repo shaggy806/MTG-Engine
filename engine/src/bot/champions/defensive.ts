@@ -15,6 +15,9 @@ export const DEFENSIVE: Champion = {
   note: "hand-set style: survive first — life/toughness/blockers up, paranoid about the crackback",
   weights: {
     life: 2,
+    // Frozen with the gauntlet: 0 keeps this champion exactly what it was
+    // before `lifeDanger`/`libraryDanger` existed.
+    lifeDanger: 0,
     commanderDamage: 3,
     hand: 2.5,
     handManaValue: 0,
@@ -33,6 +36,7 @@ export const DEFENSIVE: Champion = {
     loyalty: 1.25,
     counters: 0.5,
     library: 0.1,
+    libraryDanger: 0,
     graveyard: 0.05,
     graveyardCastable: 1,
     energy: 0.3,

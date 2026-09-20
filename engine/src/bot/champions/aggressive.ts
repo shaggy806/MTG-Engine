@@ -18,6 +18,9 @@ export const AGGRESSIVE: Champion = {
   note: "hand-set style: race, don't durdle — power/evasion up, life and crackback caution down",
   weights: {
     life: 0.4,
+    // Frozen with the gauntlet: 0 keeps this champion exactly what it was
+    // before `lifeDanger`/`libraryDanger` existed.
+    lifeDanger: 0,
     commanderDamage: 1,
     hand: 1.5,
     handManaValue: 0,
@@ -36,6 +39,7 @@ export const AGGRESSIVE: Champion = {
     loyalty: 0.75,
     counters: 0.5,
     library: 0.02,
+    libraryDanger: 0,
     graveyard: 0.05,
     graveyardCastable: 0.75,
     energy: 0.3,

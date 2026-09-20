@@ -14,6 +14,9 @@ export const BASELINE_2026_09_17: Champion = {
   note: "hand-picked Phase 1-4 defaults; 69.5% at 2p / 52.0% at 4p vs v1",
   weights: {
     life: 1,
+    // Frozen with the gauntlet: 0 keeps this champion exactly what it was
+    // before `lifeDanger`/`libraryDanger` existed.
+    lifeDanger: 0,
     commanderDamage: 2,
     hand: 2,
     handManaValue: 0,
@@ -32,6 +35,7 @@ export const BASELINE_2026_09_17: Champion = {
     loyalty: 1,
     counters: 0.5,
     library: 0.05,
+    libraryDanger: 0,
     graveyard: 0.05,
     graveyardCastable: 1,
     energy: 0.3,

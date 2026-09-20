@@ -50,6 +50,7 @@ import type { GameObject, GameState } from "../state.js";
  * load-bearing: `featureVector` and the fitted-weight files index by it. */
 export const FEATURE_KEYS = [
   "life",
+  "lifeDanger",
   "commanderDamage",
   "hand",
   "handManaValue",
@@ -67,6 +68,7 @@ export const FEATURE_KEYS = [
   "loyalty",
   "counters",
   "library",
+  "libraryDanger",
   "graveyard",
   "graveyardCastable",
   "energy",
@@ -80,7 +82,41 @@ export type PlayerFeatures = Readonly<Record<FeatureKey, number>>;
 
 /** Features the score subtracts: a cost, held as a positive magnitude under a
  * positive weight. */
-const SUBTRACTED: ReadonlySet<string> = new Set(["commanderDamage", "commanderTax"]);
+const SUBTRACTED: ReadonlySet<string> = new Set([
+  "commanderDamage",
+  "commanderTax",
+  "lifeDanger",
+  "libraryDanger",
+]);
+
+/**
+ * Where life stops being a resource and starts being the game.
+ *
+ * `life` is linear, and `bot:audit`'s curve check has always said so: losing
+ * five at 8 life and at 40 score identically, ratio 1.00. No weight fixes
+ * that — a weight scales a curve, it cannot bend one — so the bend has to be
+ * a feature.
+ *
+ * It's expressed as *distance below a threshold* rather than as a transform of
+ * `life` (a `sqrt`, say) for one property worth more than elegance: the term is
+ * strictly additive, so `lifeDanger: 0` reproduces the old evaluation exactly.
+ * A new feature that can't regress the old one is a much easier thing to
+ * measure, and the sweep can say "zero was right" without anything else having
+ * moved.
+ *
+ * 15 of Commander's 40, i.e. the point at which one more good attack is
+ * plausibly lethal.
+ */
+const LIFE_DANGER_AT = 15;
+
+/**
+ * Where a library stops being a resource and starts being a clock.
+ *
+ * Same shape and same reasoning as {@link LIFE_DANGER_AT}: milling ten off a
+ * 12-card library and off a 52-card one score identically today (ratio 1.00),
+ * and drawing from an empty library loses the game outright (rule 104.3c).
+ */
+const LIBRARY_DANGER_AT = 15;
 
 export const featureSign = (key: FeatureKey): number => (SUBTRACTED.has(key) ? -1 : 1);
 
@@ -236,6 +272,7 @@ function playerFeaturesUncached(
 
   return {
     life: p.life,
+    lifeDanger: Math.max(0, LIFE_DANGER_AT - p.life),
     commanderDamage: Math.max(0, ...Object.values(p.commanderDamageTaken)),
     hand: zones.hand.length,
     handManaValue,
@@ -253,6 +290,7 @@ function playerFeaturesUncached(
     loyalty,
     counters,
     library: zones.library.length,
+    libraryDanger: Math.max(0, LIBRARY_DANGER_AT - zones.library.length),
     graveyard: zones.graveyard.length,
     graveyardCastable,
     energy: p.energy,

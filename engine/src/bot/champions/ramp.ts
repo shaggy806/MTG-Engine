@@ -17,6 +17,9 @@ export const RAMP: Champion = {
   note: "hand-set style: mana and big permanents over a curve — high land cap, values untapped mana",
   weights: {
     life: 1.25,
+    // Frozen with the gauntlet: 0 keeps this champion exactly what it was
+    // before `lifeDanger`/`libraryDanger` existed.
+    lifeDanger: 0,
     commanderDamage: 2,
     hand: 2,
     handManaValue: 0.3,
@@ -35,6 +38,7 @@ export const RAMP: Champion = {
     loyalty: 1,
     counters: 0.5,
     library: 0.05,
+    libraryDanger: 0,
     graveyard: 0.05,
     graveyardCastable: 1,
     energy: 0.3,
