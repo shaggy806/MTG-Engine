@@ -3449,6 +3449,13 @@ export class Game {
         object.attackedThisTurn = true;
         if (!this.objHasKeyword(id, "vigilance")) {
           object.tapped = true;
+          // Attacking *taps* the creature, so a "becomes tapped" trigger
+          // (rule 701.21a) fires here exactly as it would for a cost or for
+          // convoke — Emmara, Soul of the Accord makes its Soldier when it
+          // attacks. This was setting the flag without announcing it, so
+          // those triggers silently never fired on the commonest way a
+          // creature gets tapped.
+          this.emit({ type: "permanent-tapped", object: id });
         }
         this.emit({ type: "attacker-declared", attacker: id, defender });
         allAttackers.push(id);

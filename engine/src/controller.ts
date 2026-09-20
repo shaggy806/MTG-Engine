@@ -19,6 +19,7 @@ import { computeCharacteristics } from "./characteristics.js";
 import { CardRegistry, createDefaultRegistry } from "./cards.js";
 import { chooseBottomOfHand, shouldMulligan } from "./bot/mulligan.js";
 import { manaValue, parseManaCost } from "./mana.js";
+import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameObject, GameState } from "./state.js";
 import { isOptionalSpec } from "./target.js";
@@ -1158,6 +1159,85 @@ export class HeuristicBotController extends AutomaticController {
     return manaValue(parseManaCost(this.registry.get(cardName).manaCost));
   }
 
+  /** Every colour this card can tap for, read off its printed mana abilities
+   * (a dual reports both). Empty for a land that makes only colourless. */
+  private colorsProducedBy(cardName: string): readonly Color[] {
+    if (!this.registry.has(cardName)) return [];
+    const out: Color[] = [];
+    for (const ability of this.registry.get(cardName).activated) {
+      const effect = ability.effect;
+      if (effect === null || effect.kind !== "add-mana") continue;
+      const mana = effect.mana;
+      if (typeof mana === "string") {
+        if (mana === "any-color") return ["W", "U", "B", "R", "G"];
+        if (mana !== "C" && mana !== "chosen") out.push(mana as Color);
+      } else if ("oneOf" in mana) {
+        for (const m of mana.oneOf) if (m !== "C") out.push(m as Color);
+      }
+    }
+    return out;
+  }
+
+  /**
+   * Which land to play when several are legal.
+   *
+   * This used to be `options.find(...)` — the first land the enumeration
+   * happened to list — which is how a Selesnya deck holding two Plains and a
+   * Forest lays both Plains and then cannot cast its own {G}{W} commander on
+   * turn two. Nothing downstream rescues it either: v2 scores each land drop
+   * by simulating it, but the evaluation has no notion of *colour
+   * availability*, so every land scores alike and the tie-break picks the
+   * first again.
+   *
+   * So the choice is made here, on the one thing that actually distinguishes
+   * them: how many coloured pips in hand a land unlocks that no land already
+   * on the battlefield can pay. Ties keep enumeration order, which keeps the
+   * bot deterministic.
+   */
+  private bestLand(state: GameState, lands: readonly PlayLandLegal[]): PlayLandLegal {
+    if (lands.length === 1) return lands[0];
+    const me = this.playerId;
+
+    const have = new Set<Color>();
+    for (const id of state.zones.shared.battlefield) {
+      const object = state.objects[id];
+      if (object === undefined || object.controller !== me) continue;
+      for (const c of this.colorsProducedBy(object.cardName)) have.add(c);
+    }
+
+    // What the hand is actually asking for, pip by pip — a card wanting
+    // {G}{G} counts green twice, so a second source of it still reads as
+    // wanted.
+    const want = new Map<Color, number>();
+    for (const id of state.zones.perPlayer[me].hand) {
+      const object = state.objects[id];
+      if (object === undefined || !this.registry.has(object.cardName)) continue;
+      const cost = this.registry.get(object.cardName).manaCost;
+      if (cost === null) continue;
+      for (const [color, n] of Object.entries(parseManaCost(cost).colored)) {
+        if (n > 0) want.set(color as Color, (want.get(color as Color) ?? 0) + n);
+      }
+    }
+
+    let best = lands[0];
+    let bestScore = -1;
+    for (const land of lands) {
+      let score = 0;
+      for (const color of new Set(this.colorsProducedBy(land.cardName))) {
+        const wanted = want.get(color) ?? 0;
+        if (wanted === 0) continue;
+        // A colour already covered is worth far less than a new one, but not
+        // nothing — a second source still helps cast {G}{G}.
+        score += have.has(color) ? wanted : wanted * 10 + 100;
+      }
+      if (score > bestScore) {
+        bestScore = score;
+        best = land;
+      }
+    }
+    return best;
+  }
+
   private toPlayLand(legal: PlayLandLegal): Action {
     return {
       type: "play-land",
@@ -1298,8 +1378,8 @@ export class HeuristicBotController extends AutomaticController {
     const player = this.playerId;
     const options = view.legalActions();
 
-    const land = options.find((o): o is PlayLandLegal => o.kind === "play-land");
-    if (land !== undefined) return this.toPlayLand(land);
+    const lands = options.filter((o): o is PlayLandLegal => o.kind === "play-land");
+    if (lands.length > 0) return this.toPlayLand(this.bestLand(view.state, lands));
 
     const spells = options.filter((o): o is CastSpellLegal => o.kind === "cast-spell");
     if (spells.length > 0) {
