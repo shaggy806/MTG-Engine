@@ -28,7 +28,7 @@
  * push at the end — which is what tests and scripts drive rooms with.
  */
 
-import { Game, PlanBotController, actionPlayer, activePlayerOf, isSettled } from "engine";
+import { EvalBotController, Game, actionPlayer, activePlayerOf, isSettled } from "engine";
 import type { Action, AwaitingDecision, ControllerView, GameState, PlayerController, PlayerId } from "engine";
 import { HostRole } from "./host.js";
 import type { BotSpeed, SeatStatus, ServerMessage, WireDeck } from "./protocol.js";
@@ -114,7 +114,7 @@ const BOT_DECISION_BUDGET_MS = 300;
  * rather than nothing, and a partial plan degrades to v1's turn rather than to
  * passing.
  */
-const BOT_PLAN_BUDGET_MS = 1_000;
+export const BOT_PLAN_BUDGET_MS = 1_000;
 /**
  * The host's bot speed, as a pause *after* every client has finished showing
  * a bot's move and before the next one. On top of the animation wait rather
@@ -179,20 +179,33 @@ export interface RoomOptions {
 }
 
 /**
- * The bot a live room seats: v3, the turn-planning bot
- * (`docs/plans/bot-v3-search.md`).
+ * The bot a live room seats: **v2**, the one-ply searching bot
+ * (`docs/plans/smarter-bots.md`).
  *
- * Each bot is a strict delta over the one before it — v3 replaces priority
- * windows on its own turn with a planned turn, and falls back to v2's
- * per-window search (and through that to v1's policy) everywhere else — so
- * seating the newest is an upgrade rather than a swap. The two budgets bound
- * the two halves of that: see {@link BOT_DECISION_BUDGET_MS} and
- * {@link BOT_PLAN_BUDGET_MS}.
+ * v3 was seated here briefly on the argument that it is a strict delta over
+ * v2 — it replaces priority windows on its own turn with a planned turn and
+ * falls back to v2 everywhere else, so it cannot be worse. Both halves of that
+ * turned out to be wrong, and the order in which they were found is the
+ * lesson:
+ *
+ * - "Falls back to v2" was false in a live room. `settle` asked each bot for
+ *   its move twice, which ate v3's plan two entries at a time until it passed
+ *   every turn for the rest of the game (see `botAction`). Fixed, but it took
+ *   a player reporting that the bots never played a land.
+ * - Once it was working, it lost. Benched at four players against the mixed
+ *   pod, 400 games each on shipped weights: **v2 27.9% [23.7, 32.5], v3 21.9%
+ *   [18.1, 26.2]**, against an even share of 25%. Six points, p ~ 0.05, and v3
+ *   is the only one of the two below par. v2 is also about 35% cheaper per
+ *   game.
+ *
+ * v3 stays built and reachable through {@link RoomOptions.botController}; what
+ * it needs before it is seated again is the evaluation work in
+ * `docs/plans/bot-v3-search.md`, not another architectural argument.
+ * {@link BOT_PLAN_BUDGET_MS} is kept for whoever seats it next.
  */
 const DEFAULT_BOT = (player: PlayerId): PlayerController =>
-  new PlanBotController(player, undefined, {
+  new EvalBotController(player, undefined, {
     timeBudgetMs: BOT_DECISION_BUDGET_MS,
-    planBudgetMs: BOT_PLAN_BUDGET_MS,
   });
 
 /** A bot move parked until the clients have finished showing the frame it

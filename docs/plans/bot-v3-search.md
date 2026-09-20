@@ -1,7 +1,8 @@
 # Bot v3 — rollout search over sampled worlds
 
-Status: **built and seated.** The search, the determinizer and `PlanBotController` are all in
-`engine/src/bot/`, and `Room.addBot` seats v3 in live rooms. The **Sequencing** steps from
+Status: **built, benched, and not seated.** The search, the determinizer and `PlanBotController` are all in
+`engine/src/bot/`. It was seated in live rooms briefly and **reverted**: benched at the table
+size the site actually plays, it loses to v2 (see below). The **Sequencing** steps from
 "Re-run `bot:audit`" onwards are still outstanding — the evaluation has not been re-fitted for a
 search that now actually casts things, which is the likeliest cause of the measurement below. It supersedes the search architecture in
 `docs/plans/smarter-bots.md` (v2, one-ply + linear evaluation), which stays as the record of how
@@ -33,6 +34,53 @@ concluding that holding the land is worth as much as playing it, which is exactl
 the **tie trap** below, and exactly what an evaluation fitted against a rollout that never cast
 anything would be expected to get wrong. Fix it with the re-audit and re-fit in **Sequencing**,
 not with a special case for lands.
+
+## v2 vs v3 at four players, and why v3 was unseated
+
+The comparison that should have gated seating v3, and wasn't run until after a player reported
+the bots doing nothing. Four players, the mixed pod (v1 plus the four champion vectors, all on
+v2's per-window search), 400 games each, same seeds, 900s per-game timeout, shipped weights:
+
+| bot | win rate | vs even 25% | wall clock |
+|---|---|---|---|
+| **v2, defaults** | **27.9% [23.7, 32.5]** | +2.9 | 1387s |
+| v3, `untappedMana` 1.0 | 24.9% [20.9, 29.3] | -0.1 | 2129s |
+| v3, `untappedMana` 2.0 | 22.8% [18.9, 27.2] | -2.2 | 2160s |
+| v3, defaults | 21.9% [18.1, 26.2] | -3.1 | 2123s |
+
+Six points between the two defaults, 1.97 standard errors on n=399 each (p ~ 0.05) — marginal on
+its own, but v2 is above an even share and v3 is below it, the gap was stable across the whole
+run, and v2 costs 35% less wall clock per game. **`Room.addBot` seats v2 again.** v3 stays
+reachable through `RoomOptions.botController`; what it needs before it is seated again is the
+evaluation work in *Sequencing*, not another architectural argument for why it must be better.
+
+Two lessons worth keeping separate:
+
+- **The earlier v1 benchmark flattered it.** 73.8% vs v1 against v2's 72.0% looked like parity.
+  Against a pod containing v2 itself, at four players, it is not parity. This is exactly the
+  "widen the measurement setup" item in *Sequencing* step 5, and it should have come before
+  seating rather than after.
+- **"Strict delta over v2, therefore no worse" is not a safety argument.** It was false in the
+  live room for a mechanical reason nobody had tested (the room asked each bot for its move
+  twice, eating v3's plan; see `server/src/room.ts`'s `botAction`), and it was false on the
+  merits once that was fixed.
+
+## The `untappedMana` sweep, and what it did and didn't settle
+
+`untappedMana` and `handManaValue` are the two weights *Sequencing* marks "void, not overturned":
+both were zeroed on a Phase 1 ablation measured inside a rollout that never spent mana. Swept the
+way `power` was (four players, mixed pod, 400 games a value), `untappedMana` peaks at 1.0 — the
+table above. The fall-off at 2.0 matches the mechanism: past some weight, the mana tapped to cast
+a spell costs more than the spell puts on the board, which is how `handManaValue` earned its zero
+in the first place.
+
+**This is weak evidence and is recorded as such.** +3.0 up and -2.1 down are both inside
+overlapping intervals; resolving three points cleanly needs ~2000 games an arm, hours per value.
+Three independent things point the same way — `bot:audit --rollout` (Sol Ring 1.00 static against
+7.00 rollout, the largest gap in the table), the "void" note itself, and the bench peak — and
+none of them is decisive. The weight is **left at 0** rather than shipped on a sub-noise result;
+what would settle it is measuring it on **v2**, which is the bot actually seated, since the
+static evaluation is shared.
 
 ## How much of a turn v3 actually decides (`npm run bot:census -w engine`)
 
