@@ -67,6 +67,10 @@ export function decisionCandidates(
    * cards first, sacrifices and discards the cheapest. Defaults to the order
    * offered. */
   order: (ids: readonly ObjectId[]) => readonly ObjectId[] = (ids) => ids,
+  /** Who controls an object — only the `proliferate` branch needs it, which
+   * is entirely about whose permanent gets the counter. Without it that
+   * branch degrades to "all or nothing", never to a wrong answer. */
+  controllerOf: (id: ObjectId) => PlayerId | undefined = () => undefined,
 ): Action[] | null {
   const limit = MAX_DECISION_CANDIDATES;
   switch (legal.kind) {
@@ -124,6 +128,24 @@ export function decisionCandidates(
       }));
     case "pay-life-for-untapped":
       return [true, false].map((pay) => ({ type: "pay-life-for-untapped", player, pay }));
+    case "proliferate": {
+      // Not the 2^n subsets: proliferate is worth searching precisely because
+      // whose permanent gets the counter matters, and the interesting cut is
+      // "mine" vs "everything" vs "nothing". Anything finer is a rollout
+      // spent distinguishing two of your own creatures.
+      const mine = legal.eligible.filter((t) =>
+        t.kind === "player" ? t.player === player : controllerOf(t.object) === player,
+      );
+      const seen = new Set<string>();
+      return [mine, legal.eligible, []]
+        .filter((chosen) => {
+          const key = chosen.map((t) => (t.kind === "player" ? t.player : t.object)).join(",");
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        })
+        .map((chosen) => ({ type: "proliferate", player, chosen }));
+    }
     // `commander-replacement` is deliberately **not** searched, and keeps
     // v1's answer (the command zone).
     //

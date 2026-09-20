@@ -659,11 +659,18 @@ export type EffectSpec =
       readonly creatureType: string;
     }
   | {
-      /** Proliferate (rule 701.27): every permanent that already has any
-       * counter gets one more of each kind it has. This engine always
-       * proliferates *everything* eligible rather than modeling the
-       * "choose any number" clause. */
+      /**
+       * Proliferate (rule 701.27): choose any number of permanents and/or
+       * players with counters on them, then give each another counter of each
+       * kind already there. Raises a `proliferate` decision — the choice is
+       * the card, and choosing nothing is legal.
+       */
       readonly kind: "proliferate";
+      /** Applied once the choice is answered — Contentious Plan's
+       * "Proliferate. Draw a card." A `sequence` can't express this: it runs
+       * every step synchronously, so the draw would happen *before* the
+       * choice came back. Same shape and same reason as `scry`'s `then`. */
+      readonly then?: EffectSpec;
     }
   | {
       readonly kind: "grant-keyword";
@@ -1318,7 +1325,7 @@ export interface EffectApi {
   doubleCountersAll(filter: CardFilter, counterKind: string): void;
   addCounter(target: TargetRef, counter: string, amount: number): void;
   /** Proliferate — see the `"proliferate"` {@link EffectSpec}. */
-  proliferate(): void;
+  proliferate(then: EffectSpec | null): void;
   grantKeyword(target: TargetRef, keyword: Keyword, duration: PtDuration): void;
   /** See the `"grant-triggered"` {@link EffectSpec}. */
   grantTriggered(
@@ -1873,7 +1880,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       return;
     }
     case "proliferate":
-      ctx.proliferate();
+      ctx.proliferate(spec.then ?? null);
       return;
     case "grant-keyword": {
       const target = resolveEffectTarget(spec.target, ctx);

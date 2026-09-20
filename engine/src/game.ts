@@ -597,6 +597,9 @@ export class Game {
       case "sacrifice":
         this.applySacrifice(action.player, action.permanents);
         break;
+      case "proliferate":
+        this.applyProliferate(action.player, action.chosen);
+        break;
       case "scry":
         this.applyScry(action.player, action.away);
         break;
@@ -680,6 +683,8 @@ export class Game {
         return this.whyCannotAssignCombatDamage(action.player, action.assignment);
       case "sacrifice":
         return this.whyCannotSacrifice(action.player, action.permanents);
+      case "proliferate":
+        return this.whyCannotProliferate(action.player, action.chosen);
       case "scry":
         return this.whyCannotScry(action.player, action.away);
       default:
@@ -854,6 +859,9 @@ export class Game {
             eligible: [...awaiting.eligible],
           },
         ];
+      }
+      if (awaiting.kind === "proliferate") {
+        return [{ kind: "proliferate", eligible: [...awaiting.eligible] }];
       }
       if (awaiting.kind === "scry") {
         return [{ kind: "scry", mode: awaiting.mode, cards: [...awaiting.cards] }];
@@ -7563,7 +7571,7 @@ export class Game {
           this.addCounter({ kind: "object", object: id }, counter, amount);
         }
       },
-      proliferate: () => this.proliferateAll(),
+      proliferate: (then) => this.beginProliferate(source, controller, x, then),
       grantKeyword: (target, keyword, duration) =>
         this.grantKeyword(target, keyword, duration),
       grantTriggered: (target, ability, duration) =>
@@ -8977,19 +8985,111 @@ export class Game {
     this.emit({ type: "counter-added", object: id, counter, amount: total });
   }
 
-  /** Proliferate (rule 701.27), simplified: every battlefield permanent that
-   * already has a counter gets one more of each kind it has. The "choose any
-   * number" clause isn't modeled — it proliferates everything. */
-  private proliferateAll(): void {
-    for (const id of [...this.state.zones.shared.battlefield]) {
+  /**
+   * Everything that could be proliferated right now (rule 701.27a): every
+   * battlefield permanent carrying at least one counter, in battlefield
+   * order, then every player holding energy counters.
+   *
+   * Energy is genuinely in scope — rule 122 makes it a counter a player has,
+   * and proliferate reaches those as well as permanents. It's the only
+   * player-borne counter this engine has (no poison), so the player half of
+   * the list is usually empty.
+   */
+  private proliferateTargets(): TargetRef[] {
+    const out: TargetRef[] = [];
+    for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
+      if (Object.values(object.counters).some((n) => n > 0)) {
+        out.push({ kind: "object", object: id });
+      }
+    }
+    for (const player of this.state.turnOrder) {
+      if (this.state.players[player].energy > 0) out.push({ kind: "player", player });
+    }
+    return out;
+  }
+
+  /**
+   * Proliferate (rule 701.27) — see the `"proliferate"` {@link EffectSpec}.
+   *
+   * Raises a decision rather than acting, because "choose **any number** of
+   * permanents and/or players" is the card. This used to add a counter to
+   * every permanent on the battlefield, so Atraxa grew the opponents' board
+   * and refilled their planeswalkers every end step; that isn't a weaker
+   * version of proliferate, it's a sometimes-harmful different one.
+   *
+   * Nothing eligible means no choice worth asking about, so `then` runs
+   * straight away — the same shortcut `beginScry` takes on an empty library.
+   */
+  private beginProliferate(source: ObjectId, player: PlayerId, x: number, then: EffectSpec | null): void {
+    const eligible = this.proliferateTargets();
+    if (eligible.length === 0) {
+      if (then !== null) {
+        applyEffectSpec(then, this.makeResolutionContext(source, player, [], x));
+      }
+      return;
+    }
+    this.state.awaiting = { kind: "proliferate", player, eligible, then, source, x };
+  }
+
+  /** Answers a pending `proliferate` decision. */
+  private applyProliferate(player: PlayerId, chosen: readonly TargetRef[]): void {
+    const why = this.whyCannotProliferate(player, chosen);
+    if (why !== null) throw new Error(why);
+    const awaiting = this.state.awaiting;
+    if (awaiting === null || awaiting.kind !== "proliferate") {
+      throw new Error("unreachable: whyCannotProliferate should have caught this");
+    }
+    const { then, source, x } = awaiting;
+    this.state.awaiting = null;
+
+    for (const target of chosen) {
+      if (target.kind === "player") {
+        // Energy is the only counter a player can hold here; one more of the
+        // kind already there means one more energy.
+        this.changeEnergy(target.player, 1);
+        continue;
+      }
+      const object = this.state.objects[target.object];
+      // Re-checked rather than trusted: the choice was made against the board
+      // as it was when the decision went up, and a permanent can leave in
+      // between (a sacrifice the same effect queued, say).
+      if (object === undefined || object.zone !== "battlefield") continue;
       for (const kind of Object.keys(object.counters)) {
         if (object.counters[kind] > 0) {
           object.counters[kind] += 1;
-          this.emit({ type: "counter-added", object: id, counter: kind, amount: 1 });
+          this.emit({ type: "counter-added", object: target.object, counter: kind, amount: 1 });
         }
       }
     }
+    this.emit({ type: "proliferated", player, count: chosen.length });
+
+    if (then !== null) {
+      applyEffectSpec(then, this.makeResolutionContext(source, player, [], x));
+    }
+    if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
+  }
+
+  private whyCannotProliferate(
+    player: PlayerId,
+    chosen: readonly TargetRef[],
+  ): string | null {
+    const awaiting = this.state.awaiting;
+    if (awaiting === null || awaiting.kind !== "proliferate" || awaiting.player !== player) {
+      return `${player} is not being asked to proliferate`;
+    }
+    const key = (t: TargetRef): string =>
+      t.kind === "player" ? `p:${t.player}` : `o:${t.object}`;
+    const eligible = new Set(awaiting.eligible.map(key));
+    const seen = new Set<string>();
+    for (const target of chosen) {
+      const k = key(target);
+      if (!eligible.has(k)) return `${k} has no counters to proliferate`;
+      if (seen.has(k)) return `${player} chose ${k} twice`;
+      seen.add(k);
+    }
+    // No length check on purpose: zero is a legal answer (rule 701.27a).
+    return null;
   }
 
   private setTapped(target: TargetRef, tapped: boolean): void {

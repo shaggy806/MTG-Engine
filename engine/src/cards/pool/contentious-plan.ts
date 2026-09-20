@@ -6,8 +6,8 @@ export default defineCard({
   colors: ["U"],
   types: ["sorcery"],
   text: "Proliferate.\nDraw a card.",
-  effect: {
-    kind: "sequence",
-    effects: [{ kind: "proliferate" }, { kind: "draw", amount: 1 }],
-  },
+  // The draw is proliferate's `then`, not the second step of a `sequence`: a
+  // sequence runs synchronously, so the card would draw before the "choose
+  // any number" decision came back.
+  effect: { kind: "proliferate", then: { kind: "draw", amount: 1 } },
 });

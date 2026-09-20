@@ -76,6 +76,10 @@ export const makeFormatter = (game) => {
         return `${e.player} ${e.mode}s ${e.looked} (${e.movedAway} ${
           e.mode === "surveil" ? "to graveyard" : "to bottom"
         })`;
+      case "proliferated":
+        return e.count > 0
+          ? `${e.player} proliferates (${e.count})`
+          : `${e.player} proliferates nothing`;
       case "damage-cleared":
         return `${e.objects.length} permanent(s)`;
       case "land-played":

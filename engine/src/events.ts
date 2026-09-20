@@ -176,6 +176,15 @@ export type GameEvent =
       readonly movedAway: number;
     })
   | (Base & {
+      /** A proliferate resolved (rule 701.27): `count` permanents and/or
+       * players were chosen. The individual `counter-added` events come
+       * first; this one marks what caused them, and records a choice of
+       * *none* — which is legal, and otherwise leaves no trace at all. */
+      readonly type: "proliferated";
+      readonly player: PlayerId;
+      readonly count: number;
+    })
+  | (Base & {
       readonly type: "damage-cleared";
       readonly objects: readonly ObjectId[];
     })

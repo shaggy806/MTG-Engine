@@ -183,6 +183,15 @@ export interface PlayerController {
     cards: readonly ObjectId[],
     mode: "scry" | "surveil",
   ): readonly ObjectId[];
+  /**
+   * Proliferate (rule 701.27): return any subset of `eligible` — permanents
+   * and/or players with counters — to give another counter of each kind they
+   * already have. The empty subset is a legal answer.
+   */
+  chooseProliferate(
+    view: ControllerView,
+    eligible: readonly TargetRef[],
+  ): readonly TargetRef[];
 }
 
 const passFor = (player: PlayerId): Action => ({
@@ -384,6 +393,13 @@ function answerAwaited(
       ),
     };
   }
+  if (awaiting.kind === "proliferate") {
+    return {
+      type: "proliferate",
+      player,
+      chosen: controller.chooseProliferate(view, awaiting.eligible),
+    };
+  }
   const hand = view.state.zones.perPlayer[player].hand.map(
     (id) => view.state.objects[id],
   );
@@ -543,6 +559,35 @@ export class AutomaticController implements PlayerController {
     // Keep everything on top — the conservative do-nothing choice.
     return [];
   }
+
+  chooseProliferate(
+    view: ControllerView,
+    eligible: readonly TargetRef[],
+  ): readonly TargetRef[] {
+    return ownedProliferateTargets(view, eligible);
+  }
+}
+
+/**
+ * The default proliferate answer for every non-scripted controller: everything
+ * *you* control, plus yourself.
+ *
+ * Deliberately never an opponent's permanent. Adding a counter to something
+ * you don't control is the move the old proliferate-everything code made for
+ * you, and it ranges from pointless (growing their creature) to losing
+ * (refilling their planeswalker). Skipping one of your own that happens to
+ * carry a bad counter is the remaining imprecision, and it is the safe
+ * direction — a searching bot can do better by scoring the subsets.
+ */
+function ownedProliferateTargets(
+  view: ControllerView,
+  eligible: readonly TargetRef[],
+): readonly TargetRef[] {
+  return eligible.filter((target) =>
+    target.kind === "player"
+      ? target.player === view.player
+      : view.state.objects[target.object]?.controller === view.player,
+  );
 }
 
 /** A queued action, optionally gated on a condition being true. */
@@ -616,6 +661,10 @@ type ScryChooser = (
   cards: readonly ObjectId[],
   mode: "scry" | "surveil",
 ) => readonly ObjectId[];
+type ProliferateChooser = (
+  view: ControllerView,
+  eligible: readonly TargetRef[],
+) => readonly TargetRef[];
 type DamageAssigner = (
   view: ControllerView,
   assignment: {
@@ -658,6 +707,12 @@ export class ScriptedController implements PlayerController {
     Array.from({ length: minModes }, (_unused, i) => i);
   chooseSacrificesFn: SacrificeChooser = (_view, eligible, count) => eligible.slice(0, count);
   chooseScryFn: ScryChooser = () => [];
+
+  /** Defaults to the same "everything you control" answer the other
+   * controllers give, so a script only overrides it when the test is actually
+   * about the choice. */
+  chooseProliferateFn: ProliferateChooser = (view, eligible) =>
+    ownedProliferateTargets(view, eligible);
 
   constructor(playerId: PlayerId, script: readonly ScriptEntry[] = []) {
     this.playerId = playerId;
@@ -808,6 +863,13 @@ export class ScriptedController implements PlayerController {
     mode: "scry" | "surveil",
   ): readonly ObjectId[] {
     return this.chooseScryFn(view, cards, mode);
+  }
+
+  chooseProliferate(
+    view: ControllerView,
+    eligible: readonly TargetRef[],
+  ): readonly TargetRef[] {
+    return this.chooseProliferateFn(view, eligible);
   }
 }
 
@@ -1104,6 +1166,15 @@ export class RandomController extends AutomaticController {
         const away = legal.cards.filter(() => this.random() < 0.5);
         return { type: "scry", player, away };
       }
+      case "proliferate":
+        // A random subset, empty included — "any number" has no count to hit,
+        // so this is the one decision where the fuzzer should regularly
+        // answer with nothing at all.
+        return {
+          type: "proliferate",
+          player,
+          chosen: legal.eligible.filter(() => this.random() < 0.5),
+        };
       case "choose-targets":
         return {
           type: "choose-targets",

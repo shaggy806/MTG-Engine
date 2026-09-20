@@ -123,6 +123,10 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${event.player} ${event.mode}s ${event.looked} (${event.movedAway} ${
         event.mode === 'surveil' ? 'to graveyard' : 'to bottom'
       })`
+    case 'proliferated':
+      return event.count > 0
+        ? `${playerLabel(event.player)} proliferates (${event.count})`
+        : `${playerLabel(event.player)} proliferates nothing`
     case 'damage-cleared':
       return `damage cleared from ${event.objects.length} permanent(s)`
     case 'land-played':

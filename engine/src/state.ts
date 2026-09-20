@@ -753,6 +753,34 @@ export type AwaitingDecision =
       readonly eligible: readonly ObjectId[];
     }
   | {
+      /**
+       * Proliferate (rule 701.27): `player` chooses **any number** of
+       * permanents and/or players that have counters on them, and each chosen
+       * one gets another counter of each kind already there.
+       *
+       * "Any number" is the whole decision and the reason this is a decision
+       * at all. The engine used to proliferate every permanent on the
+       * battlefield, which grew opponents' creatures and topped up their
+       * planeswalkers — not a simplification of the card but a different and
+       * often worse one. Choosing nothing is a legal answer.
+       *
+       * `eligible` is everything with at least one counter *right now*,
+       * permanents in battlefield order followed by any player holding energy
+       * counters (rule 122 — energy is a counter a player has, and
+       * proliferate does reach it).
+       */
+      readonly kind: "proliferate";
+      readonly player: PlayerId;
+      readonly eligible: readonly TargetRef[];
+      /** Applied once answered — Contentious Plan's "Proliferate. Draw a
+       * card." `source`/`x` rebuild the resolution context, exactly as
+       * `scry`'s `then` does, because the spell that set this up has finished
+       * resolving by the time the choice comes back. */
+      readonly then: EffectSpec | null;
+      readonly source: ObjectId;
+      readonly x: number;
+    }
+  | {
       /** A modal spell/ability is resolving (rule 700.2), or a "you may"
        * clause (rule 601.3e). The controller picks between `minModes` and
        * `maxModes` distinct modes; their effects apply after. */

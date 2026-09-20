@@ -127,9 +127,14 @@ type TextChoiceAction = Extract<LegalAction, { kind: 'choose-text' }>
 type CreatureTypeChoiceAction = Extract<LegalAction, { kind: 'choose-creature-type' }>
 type ModesChoiceAction = Extract<LegalAction, { kind: 'choose-modes' }>
 type SacrificeAction = Extract<LegalAction, { kind: 'sacrifice' }>
+type ProliferateAction = Extract<LegalAction, { kind: 'proliferate' }>
 type ScryAction = Extract<LegalAction, { kind: 'scry' }>
 type AssignDamageAction = Extract<LegalAction, { kind: 'assign-combat-damage' }>
 type ChooseTargetsAction = Extract<LegalAction, { kind: 'choose-targets' }>
+
+/** Whether one board permanent is a legal proliferate choice right now. */
+const eligibleToProliferate = (action: ProliferateAction, id: ObjectId): boolean =>
+  action.eligible.some((t) => t.kind === 'object' && t.object === id)
 
 interface Targeting {
   readonly kind: 'cast' | 'activate' | 'choose-targets'
@@ -194,6 +199,7 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
   'choose-targets': 'choose targets',
   'assign-combat-damage': 'assign combat damage',
   sacrifice: 'choose what to sacrifice',
+  proliferate: 'choose what to proliferate',
   scry: 'scry',
 }
 
@@ -512,6 +518,10 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   const [textFrom, setTextFrom] = useState<string | null>(null)
   const [modePicks, setModePicks] = useState<readonly number[]>([])
   const [sacrificePicks, setSacrificePicks] = useState<readonly ObjectId[]>([])
+  // Proliferate picks are `TargetRef`s, not ids: rule 701.27 lets you choose
+  // players as well as permanents (energy counters are the only player-borne
+  // counter here, so the player half is usually empty).
+  const [proliferatePicks, setProliferatePicks] = useState<readonly TargetRef[]>([])
   const [zoneView, setZoneView] = useState<{
     readonly title: string
     readonly ids: readonly ObjectId[]
@@ -626,6 +636,9 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   const sacrificeAction = actions.find(
     (a): a is SacrificeAction => a.kind === 'sacrifice',
   )
+  const proliferateAction = actions.find(
+    (a): a is ProliferateAction => a.kind === 'proliferate',
+  )
   const scryAction = actions.find((a): a is ScryAction => a.kind === 'scry')
   const assignDamageAction = actions.find(
     (a): a is AssignDamageAction => a.kind === 'assign-combat-damage',
@@ -674,6 +687,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     | 'choose-creature-type'
     | 'choose-modes'
     | 'sacrifice'
+    | 'proliferate'
     | 'scry'
     | 'choose-x'
     | 'choose-cast-modes'
@@ -696,6 +710,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           ? 'choose-modes'
         : sacrificeAction
           ? 'sacrifice'
+        : proliferateAction
+          ? 'proliferate'
         : scryAction
           ? 'scry'
         : assignDamageAction
@@ -1076,6 +1092,18 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         )
         return
       }
+      if (mode === 'proliferate' && proliferateAction) {
+        if (!eligibleToProliferate(proliferateAction, id)) return
+        // A plain toggle, with no cap: "any number" has no count to enforce,
+        // which is the one thing that makes this different from every other
+        // multi-select decision on the board.
+        setProliferatePicks((cur) =>
+          cur.some((t) => t.kind === 'object' && t.object === id)
+            ? cur.filter((t) => !(t.kind === 'object' && t.object === id))
+            : [...cur, { kind: 'object', object: id }],
+        )
+        return
+      }
       if (mode === 'blockers' && blockAction) {
         const entry = blockAction.eligible.find((e) => e.blocker === id)
         if (entry) {
@@ -1119,6 +1147,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       pickIdForClick,
       pickTarget,
       sacrificeAction,
+      proliferateAction,
       activeTargeting,
       defendersFor,
     ],
@@ -1309,6 +1338,10 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     } else if (mode === 'sacrifice' && sacrificeAction) {
       highlight = sacrificeAction.eligible.includes(id) && !sacrificePicks.includes(id)
       selected = sacrificePicks.includes(id)
+    } else if (mode === 'proliferate' && proliferateAction) {
+      const picked = proliferatePicks.some((t) => t.kind === 'object' && t.object === id)
+      highlight = eligibleToProliferate(proliferateAction, id) && !picked
+      selected = picked
     } else if (mode === 'priority' && ownerSeat === seat) {
       activatable = ids.some((i) => abilitiesBySource.has(i))
       selected = selectedSource !== null && ids.includes(selectedSource)
@@ -1875,6 +1908,67 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           disabled={sacrificePicks.length !== sacrificeAction.count}
           onClick={() =>
             game.dispatch({ type: 'sacrifice', player: seat, permanents: [...sacrificePicks] })
+          }
+        >
+          Confirm
+        </button>
+      </div>
+    )
+  } else if (mode === 'proliferate' && proliferateAction) {
+    const players = proliferateAction.eligible.filter((t) => t.kind === 'player')
+    const mine = proliferateAction.eligible.filter((t) =>
+      t.kind === 'player' ? t.player === seat : view.objects[t.object]?.controller === seat,
+    )
+    controls = (
+      <div className="controls">
+        <span>
+          {view.decisionSource ? `${view.decisionSource.cardName}: ` : ''}
+          Proliferate — {proliferatePicks.length} chosen
+        </span>
+        {/* Atraxa asks this every end step, and the answer is nearly always
+            "everything of mine" — so that has to be one click, not five. */}
+        <button type="button" onClick={() => setProliferatePicks(mine)}>
+          All mine
+        </button>
+        <button
+          type="button"
+          disabled={proliferatePicks.length === 0}
+          onClick={() => setProliferatePicks([])}
+        >
+          Clear
+        </button>
+        {players.map((t) => {
+          const player = t.kind === 'player' ? t.player : seat
+          const picked = proliferatePicks.some(
+            (p) => p.kind === 'player' && p.player === player,
+          )
+          return (
+            <button
+              key={player}
+              type="button"
+              className={picked ? 'selected' : undefined}
+              onClick={() =>
+                setProliferatePicks((cur) =>
+                  picked
+                    ? cur.filter((p) => !(p.kind === 'player' && p.player === player))
+                    : [...cur, { kind: 'player', player }],
+                )
+              }
+            >
+              {picked ? '✓ ' : ''}
+              {playerLabel(player)}&apos;s energy
+            </button>
+          )
+        })}
+        {/* Never disabled: choosing nothing is a legal answer (rule 701.27a). */}
+        <button
+          type="button"
+          onClick={() =>
+            game.dispatch({
+              type: 'proliferate',
+              player: seat,
+              chosen: [...proliferatePicks],
+            })
           }
         >
           Confirm

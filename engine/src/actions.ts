@@ -276,6 +276,15 @@ export type Action =
       readonly permanents: readonly ObjectId[];
     }
   | {
+      /** Answers a pending `proliferate` decision (rule 701.27): the
+       * permanents and/or players to give another counter of each kind they
+       * already have. Any subset of `awaiting.eligible`, **including the
+       * empty one** — "any number" includes none. */
+      readonly type: "proliferate";
+      readonly player: PlayerId;
+      readonly chosen: readonly TargetRef[];
+    }
+  | {
       /** Answers a pending `scry` / `surveil` decision: the looked-at cards to
        * move away from the top — to the bottom of the library (scry) or the
        * graveyard (surveil). The rest stay on top in their current order. */
@@ -599,6 +608,12 @@ export type LegalAction =
       readonly count: number;
       /** Permanents this player controls that could be sacrificed. */
       readonly eligible: readonly ObjectId[];
+    }
+  | {
+      /** Proliferate (rule 701.27) — choose any number of `eligible`,
+       * including none. No `count`: that is the point of the card. */
+      readonly kind: "proliferate";
+      readonly eligible: readonly TargetRef[];
     }
   | {
       readonly kind: "scry";

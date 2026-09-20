@@ -212,7 +212,12 @@ function bestDecision(
   const candidates =
     legal === undefined
       ? null
-      : decisionCandidates(legal, me, (ids) => byManaValue(view.state, cards, ids));
+      : decisionCandidates(
+          legal,
+          me,
+          (ids) => byManaValue(view.state, cards, ids),
+          (id) => view.state.objects[id]?.controller,
+        );
   if (candidates === null || candidates.length === 0) return inherited;
 
   const score = (action: Action): number | null => {

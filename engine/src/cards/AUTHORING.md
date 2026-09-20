@@ -1257,23 +1257,16 @@ Delete an entry in the same commit as the feature that retires it.
   cast-time only).
 - **Snow** mana is treated as generic — no snow permanents / snow-mana
   requirements.
-- **`proliferate` is wrong, not merely simplified.** Rule 701.27 is "choose
-  *any number* of permanents and/or players with counters on them";
-  `Game.proliferateAll` adds a counter to **every permanent on the
-  battlefield**, opponents' included. So Atraxa grows the opponent's creatures
-  and tops up their planeswalkers every end step, which is not a lesser
-  version of the card — it's a different and sometimes actively bad one. This
-  entry used to be filed below as a harmless choice simplification; it is
-  not, and the five pool cards that proliferate (Atraxa, Contentious Plan,
-  Evolution Sage, Karn's Bastion, Volt Charge) are wrong until it takes a
-  real multi-select decision.
 - **`populate`** copies the largest creature token you control rather than
   letting you pick, and **`tapOthers` / `alternativeCost`** tap the first
   eligible permanents rather than asking which. These *are* choice
   simplifications: they bite only when the candidates differ in some way the
   card itself doesn't care about. Under §0 that licence is narrow — check the
-  claim against the actual pool rather than assuming it, which is the check
-  the `proliferate` entry above never got.
+  claim against the actual pool rather than assuming it. `proliferate` sat in
+  this bullet until it was checked, and it did not belong: it added a counter
+  to *every* permanent on the battlefield, opponents' included, so Atraxa grew
+  their creatures and topped up their planeswalkers every end step. It now
+  raises a real "choose any number" decision (`proliferate.test.ts`).
 - **`AffectSpec.withKeyword` matches printed keywords only.** `staticAffects`
   runs on every characteristics read and is deliberately given no
   `GameState`, so it can't do the layer fold — a creature that has the keyword
@@ -1317,8 +1310,9 @@ clause gone missing). It found 13 of 739 on the day the rule landed:
 | **Iridescent Vinelasher** | Offspring | Offspring |
 | **Starfield Vocalist** | Warp | Warp |
 
-Plus the five `proliferate` cards above, which `card:text` cannot see because
-their text is right and their *behaviour* isn't.
+The five `proliferate` cards were a fourteenth entry of exactly the kind
+`card:text` cannot see — their text was right and their *behaviour* wasn't —
+and have since been fixed rather than listed.
 
 That last point is the ledger's limit, and Saw in Half is the proof: the audit
 flagged four trailing words of it ("Round up each time") while the substantive
