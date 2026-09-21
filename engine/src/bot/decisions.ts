@@ -49,7 +49,7 @@ export function decisionCandidates(
   const limit = MAX_DECISION_CANDIDATES;
   const decision = decisionForOffer(legal);
   if (decision !== undefined) {
-    return decision.candidates?.(legal, player, limit) ?? null;
+    return decision.candidates?.(legal, player, limit, { order, controllerOf }) ?? null;
   }
   switch (legal.kind) {
     case "choose-targets":

@@ -34,6 +34,7 @@ import type { CardRegistry } from "../cards.js";
 import type { ControllerView, PlayerController } from "../controller.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import type { AwaitingDecision, GameState } from "../state.js";
+import type { TargetRef } from "../target.js";
 
 /** One of the 17 decisions the rules can stop and ask a player for. */
 export type DecisionKind = AwaitingDecision["kind"];
@@ -150,6 +151,7 @@ export interface DecisionHost {
   readonly applyPayLifeForUntapped: (player: PlayerId, pay: boolean) => void;
   readonly applyCopyChoice: (player: PlayerId, copy: ObjectId | null) => void;
   readonly applyTextChoice: (player: PlayerId, from: string, to: string) => void;
+  readonly applyProliferate: (player: PlayerId, chosen: readonly TargetRef[]) => void;
   readonly applyScry: (player: PlayerId, away: readonly ObjectId[]) => void;
 }
 
@@ -224,7 +226,30 @@ export interface DecisionModule<K extends DecisionKind = DecisionKind> {
    * these are emitted, so a reordering shifts every `bot:bench` number and
    * silently re-points the frozen champions in `bot/champions/`.
    */
-  readonly candidates?: (legal: LegalAction, player: PlayerId, limit: number) => Action[];
+  readonly candidates?: (
+    legal: LegalAction,
+    player: PlayerId,
+    limit: number,
+    helpers: CandidateHelpers,
+  ) => Action[];
+}
+
+/**
+ * The two capabilities `bot/decisions.ts` already threads into its candidate
+ * enumeration, passed on to a module's {@link DecisionModule.candidates}.
+ *
+ * Neither can be read off `DecisionReadCtx`: `order` is the *bot's* opinion
+ * of which cards are most valuable, and `controllerOf` is resolved against
+ * the simulated board a rollout is standing on, not the live one.
+ */
+export interface CandidateHelpers {
+  /** Most valuable first, for where a list is capped: tutors try the best
+   * cards first, sacrifices and discards the cheapest. */
+  readonly order: (ids: readonly ObjectId[]) => readonly ObjectId[];
+  /** Who controls an object; `undefined` when the caller didn't supply it.
+   * Only `proliferate` needs it, and without it that branch degrades to
+   * "all or nothing", never to a wrong answer. */
+  readonly controllerOf: (id: ObjectId) => PlayerId | undefined;
 }
 
 /** A module of unknown kind, as the registry stores them. */

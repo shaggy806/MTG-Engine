@@ -18,6 +18,12 @@ const ALICE = "alice" as PlayerId;
  * silently falling behind.
  */
 const FIXTURES: Partial<Record<DecisionKind, AwaitingDecision>> = {
+  proliferate: {
+    kind: "proliferate",
+    player: ALICE,
+    eligible: [{ kind: "object", object: asObjectId("obj-1") }],
+    source: asObjectId("obj-2"),
+  },
   "choose-text": {
     kind: "choose-text",
     player: ALICE,

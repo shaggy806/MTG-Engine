@@ -364,13 +364,6 @@ function answerAwaited(
       ),
     };
   }
-  if (awaiting.kind === "proliferate") {
-    return {
-      type: "proliferate",
-      player,
-      chosen: controller.chooseProliferate(view, awaiting.eligible),
-    };
-  }
   if (awaiting.kind === "discard") {
     const hand = view.state.zones.perPlayer[player].hand.map(
       (id) => view.state.objects[id],

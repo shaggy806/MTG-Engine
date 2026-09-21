@@ -23,6 +23,7 @@ import type { AwaitingDecision } from "../state.js";
 import { payLifeForUntapped } from "./pay-life-for-untapped.js";
 import { chooseCopy } from "./choose-copy.js";
 import { chooseText } from "./choose-text.js";
+import { proliferate } from "./proliferate.js";
 import { scry } from "./scry.js";
 
 export { defineDecision } from "./define.js";
@@ -32,6 +33,7 @@ export const DECISIONS: Partial<Record<DecisionKind, AnyDecisionModule>> = {
   "pay-life-for-untapped": payLifeForUntapped,
   "choose-copy": chooseCopy,
   "choose-text": chooseText,
+  proliferate,
   scry,
 };
 

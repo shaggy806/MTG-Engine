@@ -73,6 +73,7 @@ import type { ControllerView, PlayerController } from "./controller.js";
 import type { DecisionHost, DecisionReadCtx } from "./decisions/contract.js";
 import { decisionFor, decisionForAction, mayActOn } from "./decisions/registry.js";
 import { chooseCopy } from "./decisions/choose-copy.js";
+import { proliferate } from "./decisions/proliferate.js";
 import { CHANGEABLE_CREATURE_TYPES, chooseText } from "./decisions/choose-text.js";
 import { payLifeForUntapped } from "./decisions/pay-life-for-untapped.js";
 import { scry } from "./decisions/scry.js";
@@ -271,6 +272,7 @@ export class Game {
       applyPayLifeForUntapped: (player, pay) => this.applyPayLifeForUntapped(player, pay),
       applyCopyChoice: (player, copy) => this.applyCopyChoice(player, copy),
       applyTextChoice: (player, from, to) => this.applyTextChoice(player, from, to),
+      applyProliferate: (player, chosen) => this.applyProliferate(player, chosen),
       applyScry: (player, away) => this.applyScry(player, away),
     };
   }
@@ -538,9 +540,6 @@ export class Game {
       case "sacrifice":
         this.applySacrifice(action.player, action.permanents);
         break;
-      case "proliferate":
-        this.applyProliferate(action.player, action.chosen);
-        break;
       default:
         throw new Error(
           `unhandled action: ${(action as { type: string }).type}`,
@@ -619,8 +618,6 @@ export class Game {
         return this.whyCannotAssignCombatDamage(action.player, action.assignment);
       case "sacrifice":
         return this.whyCannotSacrifice(action.player, action.permanents);
-      case "proliferate":
-        return this.whyCannotProliferate(action.player, action.chosen);
       default:
         return `unknown action: ${(action as { type: string }).type}`;
     }
@@ -768,9 +765,6 @@ export class Game {
             eligible: [...awaiting.eligible],
           },
         ];
-      }
-      if (awaiting.kind === "proliferate") {
-        return [{ kind: "proliferate", eligible: [...awaiting.eligible] }];
       }
       if (awaiting.kind === "choose-targets") {
         return [
@@ -8765,26 +8759,17 @@ export class Game {
     if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
   }
 
+  /** Kept because `applyProliferate` validates before applying and throws;
+   * the rules live in `decisions/proliferate.ts`. */
   private whyCannotProliferate(
     player: PlayerId,
     chosen: readonly TargetRef[],
   ): string | null {
-    const awaiting = this.state.awaiting;
-    if (awaiting === null || awaiting.kind !== "proliferate" || awaiting.player !== player) {
-      return `${player} is not being asked to proliferate`;
-    }
-    const key = (t: TargetRef): string =>
-      t.kind === "player" ? `p:${t.player}` : `o:${t.object}`;
-    const eligible = new Set(awaiting.eligible.map(key));
-    const seen = new Set<string>();
-    for (const target of chosen) {
-      const k = key(target);
-      if (!eligible.has(k)) return `${k} has no counters to proliferate`;
-      if (seen.has(k)) return `${player} chose ${k} twice`;
-      seen.add(k);
-    }
-    // No length check on purpose: zero is a legal answer (rule 701.27a).
-    return null;
+    return proliferate.whyCannot(
+      this.decisionCtx,
+      { type: "proliferate", player, chosen },
+      player,
+    );
   }
 
   private setTapped(target: TargetRef, tapped: boolean): void {
