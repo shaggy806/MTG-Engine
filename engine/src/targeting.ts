@@ -1,13 +1,14 @@
 /** Legality checks for spell / ability targets. */
 
-import type { CardRegistry, CardType } from "./cards.js";
+import type { CardDefinition, CardRegistry, CardType } from "./cards.js";
 import { computeCharacteristics } from "./characteristics.js";
 import { matchesFilter } from "./filter.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { printedCardName } from "./state.js";
 import type { GameState } from "./state.js";
-import type { TargetRef, TargetSpec } from "./target.js";
+import { isOptionalSpec } from "./target.js";
+import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
 
 /** The colour/type identity of whatever is targeting / damaging / blocking —
  * a spell (its printed colours/types) or a permanent (its computed ones). */
@@ -431,4 +432,47 @@ export function permanentSource(
   // `object` is carried so a spec can ask about the source itself — see
   // `"creature-defending-player-controls"`.
   return { colors: c.colors, types: c.types, object: id };
+}
+
+/** The colour/type identity of a card that isn't on the battlefield — a spell
+ * on the stack, or one being cast. Its printed characteristics are the whole
+ * story, which is what makes this the two-line sibling of
+ * {@link permanentSource}. */
+export function cardSource(def: CardDefinition): TargetSource {
+  return { colors: def.colors, types: def.types };
+}
+
+/**
+ * Why `chosen` isn't a valid filling of `specs`, or `null` if it is.
+ *
+ * The one place that decides a **hole** is allowed: a slot declared
+ * `{ kind: "optional" }` ("up to one target creature") may be left empty,
+ * every other slot must be filled with a currently-legal target, and the
+ * arity must match either way — "up to two" is two optional slots, not a
+ * variable count, so the shape of `targets` always mirrors the spec list
+ * and each effect's `target:` index stays a fixed position.
+ */
+export function invalidTargetReason(
+  state: GameState,
+  registry: CardRegistry,
+  specs: readonly TargetSpec[],
+  chosen: ResolvedTargets,
+  player: PlayerId,
+  name: string,
+  source?: TargetSource,
+): string | null {
+  if (chosen.length !== specs.length) {
+    return `${name} takes ${specs.length} target(s), got ${chosen.length}`;
+  }
+  for (let i = 0; i < specs.length; i += 1) {
+    const ref = chosen[i];
+    if (ref === undefined) {
+      if (isOptionalSpec(specs[i])) continue;
+      return `${name} needs a target for slot ${i}`;
+    }
+    if (!isLegalTarget(state, registry, specs[i], ref, player, source)) {
+      return `illegal target for ${name}`;
+    }
+  }
+  return null;
 }

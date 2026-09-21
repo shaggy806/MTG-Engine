@@ -137,7 +137,14 @@ import type {
 } from "./state.js";
 import { describeTargetSpec, isOptionalSpec, normalizeTargets } from "./target.js";
 import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
-import { isLegalTarget, legalTargets, permanentSource, protectionBlocks } from "./targeting.js";
+import {
+  cardSource,
+  invalidTargetReason,
+  isLegalTarget,
+  legalTargets,
+  permanentSource,
+  protectionBlocks,
+} from "./targeting.js";
 import type { TargetSource } from "./targeting.js";
 import { PHASE_OF_STEP, isMainPhase, nextStep, stepUsesPriority } from "./turn.js";
 import type { Step } from "./turn.js";
@@ -1124,7 +1131,7 @@ export class Game {
 
   /** The colour/type identity of a card (its printed values). */
   private cardSource(def: CardDefinition): TargetSource {
-    return { colors: def.colors, types: def.types };
+    return cardSource(def);
   }
 
   /** The `castModal` descriptor for a `cast-spell` `LegalAction` (ROADMAP
@@ -2264,20 +2271,32 @@ export class Game {
     name: string,
     source?: TargetSource,
   ): string | null {
-    if (chosen.length !== specs.length) {
-      return `${name} takes ${specs.length} target(s), got ${chosen.length}`;
+    return invalidTargetReason(
+      this.state,
+      this.registry,
+      specs,
+      chosen,
+      player,
+      name,
+      source,
+    );
+  }
+
+  /**
+   * The {@link TargetSource} behind a parked `choose-targets` decision.
+   *
+   * A pending *cast* is still a card, so its printed characteristics are what
+   * protection and DEBT clauses read; a pending trigger's source is a
+   * permanent, and may already have left the battlefield (rule 608.2b), in
+   * which case there is no source at all.
+   */
+  private targetSourceForPending(source: ObjectId): TargetSource | undefined {
+    if (this.state.pendingTargetedCast !== null) {
+      return cardSource(this.registry.get(this.state.objects[source].cardName));
     }
-    for (let i = 0; i < specs.length; i += 1) {
-      const ref = chosen[i];
-      if (ref === undefined) {
-        if (isOptionalSpec(specs[i])) continue;
-        return `${name} needs a target for slot ${i}`;
-      }
-      if (!isLegalTarget(this.state, this.registry, specs[i], ref, player, source)) {
-        return `illegal target for ${name}`;
-      }
-    }
-    return null;
+    return this.state.objects[source] !== undefined
+      ? permanentSource(this.state, this.registry, source)
+      : undefined;
   }
 
   private whyCannotChooseTargets(
@@ -2288,12 +2307,7 @@ export class Game {
     if (awaiting === null || awaiting.kind !== "choose-targets" || awaiting.player !== player) {
       return `${player} is not being asked to choose targets`;
     }
-    const src =
-      this.state.pendingTargetedCast !== null
-        ? this.cardSource(this.registry.get(this.state.objects[awaiting.source].cardName))
-        : this.state.objects[awaiting.source] !== undefined
-          ? this.permanentSource(awaiting.source)
-          : undefined;
+    const src = this.targetSourceForPending(awaiting.source);
     const why = this.whyTargetsInvalid(
       awaiting.specs,
       chosen,
