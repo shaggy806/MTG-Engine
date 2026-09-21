@@ -147,4 +147,78 @@ describe("PlayerView.decisionSource", () => {
     game.advanceUntil((s) => s.awaiting?.kind === "attackers");
     expect(game.viewFor(A).decisionSource).toBeNull();
   });
+
+  /**
+   * The three decisions raised *outside* a resolution.
+   *
+   * `state.decisionSource` is only set by `Game.withDecisionSource`, which
+   * wraps resolving a spell or an ability. A decision raised while an action
+   * is being taken — paying a cost, cycling a card — ran outside all of that,
+   * and `choose-from-zone`, `discard` and `sacrifice` carry no `source` field
+   * of their own to fall back on, so the prompt named nothing (or whatever was
+   * left over). Each of these fails without its fix in `game.ts`.
+   */
+  describe("decisions raised outside a resolution", () => {
+    it("names the cycled card behind a landcycling search", () => {
+      const game = mkGame(["Migratory Route"]);
+      game.advanceUntil(toPrecombat);
+      for (let i = 0; i < 2; i += 1) spawn(game, "Swamp", A);
+      const route = handCard(game, A, "Migratory Route");
+
+      game.dispatch({ type: "cycle", player: A, card: route });
+      expect(game.state.awaiting?.kind).toBe("choose-from-zone");
+
+      // Cycling discards the card as part of its cost, so — as with the edict
+      // — the card naming the decision is already in the graveyard.
+      expect(game.state.objects[route].zone).toBe("graveyard");
+      expect(game.viewFor(A).decisionSource).toEqual({
+        object: route,
+        cardName: "Migratory Route",
+      });
+    });
+
+    it("names the spell whose additional cost is the discard", () => {
+      const game = mkGame(["Thrill of Possibility", "Grizzly Bears", "Raging Goblin"]);
+      game.advanceUntil(toPrecombat);
+      for (let i = 0; i < 2; i += 1) spawn(game, "Mountain", A);
+      const thrill = handCard(game, A, "Thrill of Possibility");
+
+      game.dispatch({ type: "cast-spell", player: A, card: thrill, targets: [] });
+      expect(game.state.awaiting?.kind).toBe("discard");
+
+      // Asked while the spell is still on the stack, not as it resolves.
+      expect(game.state.objects[thrill].zone).toBe("stack");
+      expect(game.viewFor(A).decisionSource).toEqual({
+        object: thrill,
+        cardName: "Thrill of Possibility",
+      });
+    });
+  });
+
+  it("names the spell doing the renaming, not the creature renamed", () => {
+    const game = mkGame(["Artificial Evolution"]);
+    game.advanceUntil(toPrecombat);
+    const bears = spawn(game, "Grizzly Bears", A);
+    spawn(game, "Island", A);
+    const evolution = handCard(game, A, "Artificial Evolution");
+
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: evolution,
+      targets: [{ kind: "object", object: bears }],
+    });
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-text");
+
+    // `choose-text` is the one kind carrying both: `target` is the creature
+    // being renamed, `source` is the spell asking. They used to be the same
+    // id, so the prompt answered "why am I being asked about Grizzly Bears?"
+    // with "Grizzly Bears".
+    expect(game.viewFor(A).decisionSource).toEqual({
+      object: evolution,
+      cardName: "Artificial Evolution",
+    });
+    const awaiting = game.state.awaiting;
+    expect(awaiting?.kind === "choose-text" && awaiting.target).toBe(bears);
+  });
 });

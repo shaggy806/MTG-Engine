@@ -3450,11 +3450,19 @@ export class Game {
     this.executePayment(player, payment);
     this.moveObject(cardId, "graveyard");
     this.emit({ type: "card-cycled", player, object: cardId });
-    if (cycling.search !== undefined) {
+    const cyclingSearch = cycling.search;
+    if (cyclingSearch !== undefined) {
       // Landcycling / typecycling (702.29f): a library search instead of the
       // draw. `min: 0` so an empty library isn't a hard failure, matching
       // every other tutor in the pool.
-      this.beginLibrarySearch(player, cycling.search, "hand", 0, 1, false);
+      //
+      // Attributed to the cycled card, which is already in the graveyard by
+      // now — `withDecisionSource` still resolves its name from the object,
+      // which is exactly why `DecisionSource` carries `cardName` rather than
+      // leaving the client to look the object up.
+      this.withDecisionSource(cardId, () => {
+        this.beginLibrarySearch(player, cyclingSearch, "hand", 0, 1, false);
+      });
     } else {
       this.drawCard(player);
     }
@@ -4383,8 +4391,15 @@ export class Game {
     if (def.additionalCost?.payLifeX === true && chosenX > 0) {
       this.changeLife(player, -chosenX);
     }
-    if (def.additionalCost?.discard !== undefined) {
-      this.discardByEffect({ kind: "player", player }, def.additionalCost.discard);
+    const costDiscard = def.additionalCost?.discard;
+    if (costDiscard !== undefined) {
+      // Attributed to the spell being cast. A `discard` decision carries no
+      // `source` of its own, so it reads `state.decisionSource` — which only
+      // `withDecisionSource` sets, and only around a *resolution*. Without
+      // this wrap the prompt named whatever resolved last.
+      this.withDecisionSource(cardId, () => {
+        this.discardByEffect({ kind: "player", player }, costDiscard);
+      });
     }
     this.afterPlayerAction(player);
   }
@@ -8152,7 +8167,7 @@ export class Game {
    * the word to replace. Nothing to replace ⇒ the effect does nothing. */
   private beginTextChoice(
     player: PlayerId,
-    _source: ObjectId,
+    source: ObjectId,
     target: TargetRef,
   ): void {
     if (target.kind !== "object") return;
@@ -8166,7 +8181,10 @@ export class Game {
     this.state.awaiting = {
       kind: "choose-text",
       player,
-      source: id,
+      // The spell asking (Artificial Evolution), not the creature being
+      // renamed — that is `target`. These were both `id`, so the prompt named
+      // the creature as the reason it was being asked about the creature.
+      source,
       target: id,
       fromOptions,
       // The new type can't be Wall (rule text), nor a word already present.
