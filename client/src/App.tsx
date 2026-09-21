@@ -11,7 +11,13 @@ import type {
   TargetSpec,
   VisibleObject,
 } from 'engine'
-import { blockingViolations, describeTargetSpec, isOptionalSpec } from 'engine'
+import {
+  blockingViolations,
+  damageAssignmentViolations,
+  describeTargetSpec,
+  isOptionalSpec,
+  standardAssignment,
+} from 'engine'
 import { useNetworkGame } from './net/useNetworkGame.ts'
 import type { NetworkGame } from './net/useNetworkGame.ts'
 import { stackShowsSomething } from './game/decisionSource.ts'
@@ -2329,30 +2335,16 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       </div>
     )
   } else if (mode === 'assign-combat-damage' && assignDamageAction) {
-    // Default: lethal down the blocker order, remainder to the last blocker
-    // (or, with trample, left to trample over).
-    const dflt: number[] = []
-    let rem = assignDamageAction.power
-    assignDamageAction.blockers.forEach((_b, i) => {
-      const last = !assignDamageAction.trample && i === assignDamageAction.blockers.length - 1
-      const amt = last ? rem : Math.min(rem, assignDamageAction.lethal[i])
-      rem -= amt
-      dflt.push(amt)
-    })
+    // Lethal down the blocker order, remainder to the last blocker (or, with
+    // trample, over to the defender) — from the engine, which uses the same
+    // function when nobody is asked.
+    const dflt = standardAssignment(assignDamageAction)
     const picks = damagePicks ?? dflt
     const total = picks.reduce((s, n) => s + n, 0)
     const over = assignDamageAction.power - total
-    const valid =
-      over >= 0 &&
-      (over === 0 || assignDamageAction.trample) &&
-      picks.every((n, i) => {
-        if (n === 0 && over === 0) return true
-        return assignDamageAction.blockers.every(
-          (_b, j) => j >= i || picks[j] >= assignDamageAction.lethal[j],
-        )
-      }) &&
-      (over === 0 ||
-        picks.every((n, j) => n >= assignDamageAction.lethal[j]))
+    // Rule 510.1c, from the engine. Its `whyCannot` runs the same function on
+    // the same offer, so a split this button enables is one the server takes.
+    const valid = damageAssignmentViolations(assignDamageAction, picks) === null
     controls = (
       <div className="controls">
         <span>
