@@ -18,6 +18,11 @@ const ALICE = "alice" as PlayerId;
  * silently falling behind.
  */
 const FIXTURES: Partial<Record<DecisionKind, AwaitingDecision>> = {
+  mulligan: {
+    kind: "mulligan",
+    player: ALICE,
+    hands: { [ALICE]: { step: "decide", taken: 0 } },
+  },
   "commander-replacement": {
     kind: "commander-replacement",
     player: ALICE,

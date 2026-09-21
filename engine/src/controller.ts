@@ -279,30 +279,6 @@ function answerAwaited(
       }),
     };
   }
-  if (awaiting.kind === "mulligan") {
-    const hand = awaiting.hands[player];
-    if (hand.step === "bottom") {
-      const held = view.state.zones.perPlayer[player].hand.map(
-        (id) => view.state.objects[id],
-      );
-      // The traditional Commander rule waives the first mulligan's bottoming
-      // (GameRules.freeFirstMulligan), so what's owed here can be less than
-      // `hand.taken` — mirror Game.mulliganCardsOwed rather than assuming
-      // London mulligan's usual taken === owed.
-      const free = view.state.rules.freeFirstMulligan ? 1 : 0;
-      const owed = Math.max(0, hand.taken - free);
-      return {
-        type: "put-on-bottom",
-        player,
-        cards: controller.chooseBottomOfLibrary(held, owed),
-      };
-    }
-    return {
-      type: "mulligan",
-      player,
-      keep: !controller.mulligan(view, hand.taken),
-    };
-  }
   if (awaiting.kind === "choose-targets") {
     return {
       type: "choose-targets",

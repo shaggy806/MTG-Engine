@@ -73,6 +73,8 @@ import type { ControllerView, PlayerController } from "./controller.js";
 import type { DecisionHost, DecisionReadCtx } from "./decisions/contract.js";
 import { decisionFor, decisionForAction, mayActOn } from "./decisions/registry.js";
 import { chooseCopy } from "./decisions/choose-copy.js";
+import { mulligan } from "./decisions/mulligan.js";
+import { mulliganCardsOwed } from "./decisions/shared/mulligan-math.js";
 import { commanderReplacement } from "./decisions/commander-replacement.js";
 import { discard } from "./decisions/discard.js";
 import { sacrifice } from "./decisions/sacrifice.js";
@@ -287,6 +289,8 @@ export class Game {
       applySacrifice: (player, ps) => this.applySacrifice(player, ps),
       applyDiscard: (player, cards) => this.applyDiscard(player, cards),
       applyCommanderChoice: (player, toCz) => this.applyCommanderChoice(player, toCz),
+      applyMulligan: (player, keep) => this.applyMulligan(player, keep),
+      applyPutOnBottom: (player, cards) => this.applyPutOnBottom(player, cards),
       applyScry: (player, away) => this.applyScry(player, away),
     };
   }
@@ -524,12 +528,6 @@ export class Game {
       case "order-blockers":
         this.applyBlockerOrder(action.player, action.attacker, action.order);
         break;
-      case "mulligan":
-        this.applyMulligan(action.player, action.keep);
-        break;
-      case "put-on-bottom":
-        this.applyPutOnBottom(action.player, action.cards);
-        break;
       case "choose-targets":
         this.applyChooseTargets(action.player, normalizeTargets(action.targets));
         break;
@@ -594,10 +592,6 @@ export class Game {
           action.attacker,
           action.order,
         );
-      case "mulligan":
-        return this.whyCannotMulligan(action.player);
-      case "put-on-bottom":
-        return this.whyCannotPutOnBottom(action.player, action.cards);
       case "choose-targets":
         return this.whyCannotChooseTargets(action.player, normalizeTargets(action.targets));
       case "assign-combat-damage":
@@ -678,18 +672,6 @@ export class Game {
             blockers: [...this.state.objects[awaiting.attacker].blockedBy],
           },
         ];
-      }
-      if (awaiting.kind === "mulligan") {
-        const hand = awaiting.hands[player];
-        return hand.step === "decide"
-          ? [{ kind: "mulligan", count: hand.taken }]
-          : [
-              {
-                kind: "put-on-bottom",
-                count: this.mulliganCardsOwed(hand.taken),
-                from: [...this.state.zones.perPlayer[player].hand],
-              },
-            ];
       }
       if (awaiting.kind === "choose-targets") {
         return [
@@ -1671,20 +1653,13 @@ export class Game {
    * bottom of their library on keeping (rule 103.4, or the traditional
    * Commander waiver on the first one — `GameRules.freeFirstMulligan`). */
   private mulliganCardsOwed(taken: number): number {
-    const free = this.state.rules.freeFirstMulligan ? 1 : 0;
-    return Math.max(0, taken - free);
+    return mulliganCardsOwed(taken, this.state.rules.freeFirstMulligan);
   }
 
+  /** Kept because the matching apply validates before applying and throws;
+   * the rules live in `decisions/mulligan.ts`. */
   private whyCannotMulligan(player: PlayerId): string | null {
-    const awaiting = this.state.awaiting;
-    if (
-      awaiting === null ||
-      awaiting.kind !== "mulligan" ||
-      awaiting.hands[player]?.step !== "decide"
-    ) {
-      return `${player} is not being asked about a mulligan`;
-    }
-    return null;
+    return mulligan.whyCannot(this.decisionCtx, { type: "mulligan", player, keep: false }, player);
   }
 
   private applyPutOnBottom(player: PlayerId, cards: readonly ObjectId[]): void {
@@ -1702,30 +1677,13 @@ export class Game {
     this.advanceMulliganPhase(hands);
   }
 
+  /** Kept because the matching apply validates before applying and throws;
+   * the rules live in `decisions/mulligan.ts`. */
   private whyCannotPutOnBottom(
     player: PlayerId,
     cards: readonly ObjectId[],
   ): string | null {
-    const awaiting = this.state.awaiting;
-    if (
-      awaiting === null ||
-      awaiting.kind !== "mulligan" ||
-      awaiting.hands[player]?.step !== "bottom"
-    ) {
-      return `${player} is not being asked to put cards on the bottom of their library`;
-    }
-    const owed = this.mulliganCardsOwed(awaiting.hands[player].taken);
-    if (cards.length !== owed) {
-      return `${player} must put exactly ${owed} card(s) on the bottom, chose ${cards.length}`;
-    }
-    if (new Set(cards).size !== cards.length) {
-      return `${player} chose the same card twice`;
-    }
-    const hand = new Set(this.state.zones.perPlayer[player].hand);
-    for (const id of cards) {
-      if (!hand.has(id)) return `${player} tried to put ${id} on the bottom, not in hand`;
-    }
-    return null;
+    return mulligan.whyCannot(this.decisionCtx, { type: "put-on-bottom", player, cards }, player);
   }
 
   /**

@@ -168,6 +168,8 @@ export interface DecisionHost {
   readonly applySacrifice: (player: PlayerId, permanents: readonly ObjectId[]) => void;
   readonly applyDiscard: (player: PlayerId, cards: readonly ObjectId[]) => void;
   readonly applyCommanderChoice: (player: PlayerId, toCommandZone: boolean) => void;
+  readonly applyMulligan: (player: PlayerId, keep: boolean) => void;
+  readonly applyPutOnBottom: (player: PlayerId, cards: readonly ObjectId[]) => void;
   readonly applyScry: (player: PlayerId, away: readonly ObjectId[]) => void;
 }
 

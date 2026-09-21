@@ -30,6 +30,7 @@ import { chooseFromZone } from "./choose-from-zone.js";
 import { sacrifice } from "./sacrifice.js";
 import { discard } from "./discard.js";
 import { commanderReplacement } from "./commander-replacement.js";
+import { mulligan } from "./mulligan.js";
 import { scry } from "./scry.js";
 
 export { defineDecision } from "./define.js";
@@ -46,6 +47,7 @@ export const DECISIONS: Partial<Record<DecisionKind, AnyDecisionModule>> = {
   sacrifice,
   discard,
   "commander-replacement": commanderReplacement,
+  mulligan,
   scry,
 };
 
@@ -81,19 +83,19 @@ export function decisionForOffer(legal: LegalAction): AnyDecisionModule | undefi
 /**
  * Whether `player` may answer the pending decision.
  *
- * The default is `awaiting.player === player`. `mulligan` is the one
- * override, because that phase is parallel — every player still in `hands`
- * may act at once. That rule was written out by hand in three places
- * (`Game.legalActions`, `controller.ts`'s `answerAwaited`, and
- * `server/src/room.ts`'s bot driver); this is the one copy, and the three
- * were verbatim-identical, so routing them here cannot change behaviour.
+ * The default is `awaiting.player === player`, and `decisions/mulligan.ts`
+ * is the one module that overrides it — that phase is parallel, so every
+ * player still in `hands` may act at once.
+ *
+ * The rule had been written out by hand in three places (`Game.legalActions`,
+ * `controller.ts`'s `answerAwaited`, and `server/src/room.ts`'s bot driver),
+ * all verbatim-identical. Two are now this function; the third goes when the
+ * room stops synthesising its own answers.
  */
 export function mayActOn(awaiting: AwaitingDecision, player: PlayerId): boolean {
   const module = DECISIONS[awaiting.kind];
   if (module?.mayAct !== undefined) {
     return module.mayAct(awaiting as never, player);
   }
-  return awaiting.kind === "mulligan"
-    ? awaiting.hands[player] !== undefined
-    : awaiting.player === player;
+  return awaiting.player === player;
 }

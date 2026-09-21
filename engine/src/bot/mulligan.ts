@@ -48,6 +48,7 @@
  */
 
 import { isManaAbility } from "../abilities.js";
+import { mulliganCardsOwed } from "../decisions/shared/mulligan-math.js";
 import type { CardDefinition, CardRegistry } from "../cards.js";
 import type { EffectSpec } from "../effects.js";
 import type { CardFilter } from "../filter.js";
@@ -218,15 +219,13 @@ export function scoreOpeningHand(
 }
 
 /** How many cards a player who keeps now would hold, after paying what the
- * mulligans so far owe to the bottom of the library. Mirrors
- * `Game.mulliganCardsOwed`, including the Commander free first mulligan. */
+ * mulligans so far owe to the bottom of the library. */
 export function keptHandSize(
   taken: number,
   openingHandSize: number,
   freeFirstMulligan: boolean,
 ): number {
-  const owed = Math.max(0, taken - (freeFirstMulligan ? 1 : 0));
-  return Math.max(0, openingHandSize - owed);
+  return Math.max(0, openingHandSize - mulliganCardsOwed(taken, freeFirstMulligan));
 }
 
 /**
