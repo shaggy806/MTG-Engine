@@ -17,8 +17,12 @@
  * offer and no board, can run precisely the same check to decide whether its
  * Confirm button is enabled.
  *
- * Returns *which* rule was broken and by whom rather than a message, because
- * the engine names creatures from its registry and the client from its view.
+ * Returns *which* rules were broken and by whom rather than a message,
+ * because the engine names creatures from its registry and the client from
+ * its view — and returns **all** of them rather than the first, because the
+ * engine only needs to report one but the client tells the player about every
+ * offending creature at once. A first-violation-only signature would have
+ * made the shared version worse than the copy it replaced.
  */
 
 import type { BlockerDeclaration, LegalAction } from "../actions.js";
@@ -35,22 +39,23 @@ export type BlockingViolation =
   | { readonly kind: "must-be-blocked"; readonly blocker: ObjectId };
 
 /**
- * The first set-level rule `blocks` breaks against `offer`, or `null`.
+ * Every set-level rule `blocks` breaks against `offer`, menace first.
  *
- * Menace is checked before Lure, which is the order the engine has always
- * used and therefore the order its messages come out in.
+ * The engine reports `[0]`, which preserves the order its messages have
+ * always come out in; the client lists them all.
  */
 export function blockingViolations(
   blocks: readonly BlockerDeclaration[],
   offer: BlockOffer,
-): BlockingViolation | null {
+): BlockingViolation[] {
+  const out: BlockingViolation[] = [];
   const perAttacker = new Map<ObjectId, number>();
   for (const { attacker } of blocks) {
     perAttacker.set(attacker, (perAttacker.get(attacker) ?? 0) + 1);
   }
   for (const [attacker, count] of perAttacker) {
     if (count === 1 && offer.menaceAttackers.includes(attacker)) {
-      return { kind: "menace", attacker };
+      out.push({ kind: "menace", attacker });
     }
   }
 
@@ -65,9 +70,9 @@ export function blockingViolations(
     for (const entry of offer.eligible) {
       if (blockingAMust.has(entry.blocker)) continue;
       if (entry.canBlock.some((a) => offer.mustBlock.includes(a))) {
-        return { kind: "must-be-blocked", blocker: entry.blocker };
+        out.push({ kind: "must-be-blocked", blocker: entry.blocker });
       }
     }
   }
-  return null;
+  return out;
 }

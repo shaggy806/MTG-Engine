@@ -170,6 +170,32 @@ describe("goad and legalActions", () => {
     expect(legal.defendersFor[theirs]).toEqual([C]);
   });
 
+  it("the union's first defender can be illegal for a given attacker", () => {
+    // Why `defendersFor` exists, stated as a fact rather than a comment.
+    // A UI that fills in "attack with everything" by handing every eligible
+    // creature `defenders[0]` builds a declaration the engine refuses — which
+    // is precisely the bug the client's attack-with-all button had.
+    const game = makeGame([A, B, C]);
+    game.advanceUntil((s) => s.priority.holder === B && s.turn.step === "precombat-main");
+    const theirs = game.debugSpawn("Grizzly Bears", B, "battlefield");
+    game.state.objects[theirs].summoningSick = false;
+    game.debugApplyEffect(A, { kind: "goad", target: 0 }, [{ kind: "player", player: B }]);
+
+    game.advanceUntil((s) => s.awaiting?.kind === "attackers" || s.result.over);
+    const legal = game.legalActions(B).find((a) => a.kind === "declare-attackers");
+    if (legal === undefined || legal.kind !== "declare-attackers") return;
+
+    const union = legal.defenders[0];
+    expect(legal.defendersFor[theirs]).not.toContain(union);
+    expect(() =>
+      game.dispatch({
+        type: "declare-attackers",
+        player: B,
+        attackers: [{ attacker: theirs, defender: union }],
+      }),
+    ).toThrow();
+  });
+
   it("offers the goader once there is nobody else", () => {
     const game = makeGame();
     game.advanceUntil((s) => s.priority.holder === B && s.turn.step === "precombat-main");

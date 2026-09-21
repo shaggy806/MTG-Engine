@@ -85,8 +85,10 @@ export const blockers = defineDecision({
       if (why !== null) return why;
     }
 
-    const violation = blockingViolations(action.blocks, blockersOffer(ctx, player));
-    if (violation === null) return null;
+    // `[0]` keeps the engine reporting one reason, in the order it always
+    // has; the client shows the whole list.
+    const violation = blockingViolations(action.blocks, blockersOffer(ctx, player))[0];
+    if (violation === undefined) return null;
     return violation.kind === "menace"
       ? `${name(violation.attacker)} has menace and must be blocked by two or more creatures`
       : `${name(violation.blocker)} must block (a "must be blocked" attacker)`;
