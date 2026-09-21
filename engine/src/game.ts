@@ -73,6 +73,7 @@ import type { ControllerView, PlayerController } from "./controller.js";
 import type { DecisionHost, DecisionReadCtx } from "./decisions/contract.js";
 import { decisionFor, decisionForAction, mayActOn } from "./decisions/registry.js";
 import { chooseCopy } from "./decisions/choose-copy.js";
+import { CHANGEABLE_CREATURE_TYPES, chooseText } from "./decisions/choose-text.js";
 import { payLifeForUntapped } from "./decisions/pay-life-for-untapped.js";
 import { scry } from "./decisions/scry.js";
 import { CREATURE_TYPES } from "./creature-types.js";
@@ -231,15 +232,6 @@ interface TriggeredGrantSource {
 /** Combat damage from the same commander at or above this total is a loss (rule 903.10a). */
 const COMMANDER_DAMAGE_THRESHOLD = COMMANDER_DAMAGE_LETHAL;
 
-/** The creature types Artificial Evolution (layer 3 text-change) offers as
- * the old / new word — the ones the card pool actually cares about, so the
- * choice stays a short menu. "Wall" is deliberately excluded as a *new* type
- * (the card forbids it) — see `beginTextChoice`. */
-const CHANGEABLE_CREATURE_TYPES: readonly string[] = [
-  "Goblin", "Elf", "Bear", "Zombie", "Vampire", "Bird",
-  "Spirit", "Elemental", "Frog", "Insect", "Angel", "Wall",
-];
-
 const CREATURE_TYPE_SET: ReadonlySet<string> = new Set(CREATURE_TYPES);
 
 /** How many suggested creature types a catalog choice offers up front. */
@@ -278,6 +270,7 @@ export class Game {
     this.decisionHost = {
       applyPayLifeForUntapped: (player, pay) => this.applyPayLifeForUntapped(player, pay),
       applyCopyChoice: (player, copy) => this.applyCopyChoice(player, copy),
+      applyTextChoice: (player, from, to) => this.applyTextChoice(player, from, to),
       applyScry: (player, away) => this.applyScry(player, away),
     };
   }
@@ -530,9 +523,6 @@ export class Game {
       case "commander-replacement":
         this.applyCommanderChoice(action.player, action.toCommandZone);
         break;
-      case "choose-text":
-        this.applyTextChoice(action.player, action.from, action.to);
-        break;
       case "choose-creature-type":
         this.applyCreatureTypeChoice(action.player, action.creatureType);
         break;
@@ -619,8 +609,6 @@ export class Game {
         return this.whyCannotPutOnBottom(action.player, action.cards);
       case "commander-replacement":
         return this.whyCannotCommanderChoice(action.player);
-      case "choose-text":
-        return this.whyCannotTextChoice(action.player, action.from, action.to);
       case "choose-creature-type":
         return this.whyCannotCreatureTypeChoice(action.player, action.creatureType);
       case "choose-modes":
@@ -739,17 +727,6 @@ export class Game {
             kind: "commander-replacement",
             commander: awaiting.commander,
             intendedZone: awaiting.intendedZone,
-          },
-        ];
-      }
-      if (awaiting.kind === "choose-text") {
-        return [
-          {
-            kind: "choose-text",
-            source: awaiting.source,
-            target: awaiting.target,
-            fromOptions: [...awaiting.fromOptions],
-            toOptions: [...awaiting.toOptions],
           },
         ];
       }
@@ -8677,22 +8654,18 @@ export class Game {
     this.prepareForPriority(this.activePlayer);
   }
 
+  /** Kept because `applyTextChoice` validates before applying and throws;
+   * the rules live in `decisions/choose-text.ts`. */
   private whyCannotTextChoice(
     player: PlayerId,
     from: string,
     to: string,
   ): string | null {
-    const awaiting = this.state.awaiting;
-    if (awaiting === null || awaiting.kind !== "choose-text" || awaiting.player !== player) {
-      return `${player} is not being asked to change any text`;
-    }
-    if (!awaiting.fromOptions.includes(from)) {
-      return `${from} is not a creature type on that permanent`;
-    }
-    if (!awaiting.toOptions.includes(to)) {
-      return `${to} is not an allowed new creature type`;
-    }
-    return null;
+    return chooseText.whyCannot(
+      this.decisionCtx,
+      { type: "choose-text", player, from, to },
+      player,
+    );
   }
 
   private addCounter(target: TargetRef, counter: string, amount: number): void {

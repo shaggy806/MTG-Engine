@@ -321,14 +321,6 @@ function answerAwaited(
       ),
     };
   }
-  if (awaiting.kind === "choose-text") {
-    const [from, to] = controller.chooseText(
-      view,
-      awaiting.fromOptions,
-      awaiting.toOptions,
-    );
-    return { type: "choose-text", player, from, to };
-  }
   if (awaiting.kind === "choose-creature-type") {
     return {
       type: "choose-creature-type",

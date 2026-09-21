@@ -149,6 +149,7 @@ export interface DecisionReadCtx {
 export interface DecisionHost {
   readonly applyPayLifeForUntapped: (player: PlayerId, pay: boolean) => void;
   readonly applyCopyChoice: (player: PlayerId, copy: ObjectId | null) => void;
+  readonly applyTextChoice: (player: PlayerId, from: string, to: string) => void;
   readonly applyScry: (player: PlayerId, away: readonly ObjectId[]) => void;
 }
 
