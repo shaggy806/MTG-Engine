@@ -96,8 +96,6 @@ export function decisionCandidates(
         player,
         copy,
       }));
-    case "pay-life-for-untapped":
-      return [true, false].map((pay) => ({ type: "pay-life-for-untapped", player, pay }));
     case "proliferate": {
       // Not the 2^n subsets: proliferate is worth searching precisely because
       // whose permanent gets the counter matters, and the interesting cut is

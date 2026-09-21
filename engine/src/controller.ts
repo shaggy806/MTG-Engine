@@ -321,13 +321,6 @@ function answerAwaited(
       ),
     };
   }
-  if (awaiting.kind === "pay-life-for-untapped") {
-    return {
-      type: "pay-life-for-untapped",
-      player,
-      pay: controller.payLifeForUntapped(view, awaiting.source, awaiting.life),
-    };
-  }
   if (awaiting.kind === "choose-copy") {
     return {
       type: "choose-copy",

@@ -72,6 +72,7 @@ import { AutomaticController } from "./controller.js";
 import type { ControllerView, PlayerController } from "./controller.js";
 import type { DecisionHost, DecisionReadCtx } from "./decisions/contract.js";
 import { decisionFor, decisionForAction, mayActOn } from "./decisions/registry.js";
+import { payLifeForUntapped } from "./decisions/pay-life-for-untapped.js";
 import { scry } from "./decisions/scry.js";
 import { CREATURE_TYPES } from "./creature-types.js";
 import {
@@ -274,6 +275,7 @@ export class Game {
     // switch transposed, not a new seam.
     this.decisionCtx = { state: this.state, registry: this.registry };
     this.decisionHost = {
+      applyPayLifeForUntapped: (player, pay) => this.applyPayLifeForUntapped(player, pay),
       applyScry: (player, away) => this.applyScry(player, away),
     };
   }
@@ -526,9 +528,6 @@ export class Game {
       case "commander-replacement":
         this.applyCommanderChoice(action.player, action.toCommandZone);
         break;
-      case "pay-life-for-untapped":
-        this.applyPayLifeForUntapped(action.player, action.pay);
-        break;
       case "choose-copy":
         this.applyCopyChoice(action.player, action.copy);
         break;
@@ -621,8 +620,6 @@ export class Game {
         return this.whyCannotPutOnBottom(action.player, action.cards);
       case "commander-replacement":
         return this.whyCannotCommanderChoice(action.player);
-      case "pay-life-for-untapped":
-        return this.whyCannotPayLifeForUntapped(action.player);
       case "choose-copy":
         return this.whyCannotCopyChoice(action.player, action.copy);
       case "choose-text":
@@ -746,11 +743,6 @@ export class Game {
             commander: awaiting.commander,
             intendedZone: awaiting.intendedZone,
           },
-        ];
-      }
-      if (awaiting.kind === "pay-life-for-untapped") {
-        return [
-          { kind: "pay-life-for-untapped", source: awaiting.source, life: awaiting.life },
         ];
       }
       if (awaiting.kind === "choose-copy") {
@@ -1923,16 +1915,14 @@ export class Game {
     return null;
   }
 
+  /** Kept because `applyPayLifeForUntapped` validates before applying and
+   * throws; the rule itself lives in `decisions/pay-life-for-untapped.ts`. */
   private whyCannotPayLifeForUntapped(player: PlayerId): string | null {
-    const awaiting = this.state.awaiting;
-    if (
-      awaiting === null ||
-      awaiting.kind !== "pay-life-for-untapped" ||
-      awaiting.player !== player
-    ) {
-      return `${player} is not being asked about a shock land`;
-    }
-    return null;
+    return payLifeForUntapped.whyCannot(
+      this.decisionCtx,
+      { type: "pay-life-for-untapped", player, pay: false },
+      player,
+    );
   }
 
   /** Answer a `pay-life-for-untapped` decision (a shock land — rule 614.13). */

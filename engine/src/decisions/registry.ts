@@ -20,12 +20,14 @@ import { DECISION_ACTIONS } from "./contract.js";
 import type { AnyDecisionModule, DecisionKind } from "./contract.js";
 import type { PlayerId } from "../primitives.js";
 import type { AwaitingDecision } from "../state.js";
+import { payLifeForUntapped } from "./pay-life-for-untapped.js";
 import { scry } from "./scry.js";
 
 export { defineDecision } from "./define.js";
 
 /** Every migrated decision kind. */
 export const DECISIONS: Partial<Record<DecisionKind, AnyDecisionModule>> = {
+  "pay-life-for-untapped": payLifeForUntapped,
   scry,
 };
 

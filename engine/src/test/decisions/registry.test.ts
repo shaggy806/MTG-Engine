@@ -18,6 +18,12 @@ const ALICE = "alice" as PlayerId;
  * silently falling behind.
  */
 const FIXTURES: Partial<Record<DecisionKind, AwaitingDecision>> = {
+  "pay-life-for-untapped": {
+    kind: "pay-life-for-untapped",
+    player: ALICE,
+    source: asObjectId("obj-1"),
+    life: 2,
+  },
   scry: {
     kind: "scry",
     player: ALICE,

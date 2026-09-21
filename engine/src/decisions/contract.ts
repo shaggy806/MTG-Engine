@@ -147,6 +147,7 @@ export interface DecisionReadCtx {
  * exactly which apply it started routing.
  */
 export interface DecisionHost {
+  readonly applyPayLifeForUntapped: (player: PlayerId, pay: boolean) => void;
   readonly applyScry: (player: PlayerId, away: readonly ObjectId[]) => void;
 }
 
