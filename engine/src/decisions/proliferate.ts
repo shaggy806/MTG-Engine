@@ -80,4 +80,13 @@ export const proliferate = defineDecision({
       })
       .map((chosen) => ({ type: "proliferate", player, chosen }));
   },
+
+  // A random subset, empty included — "any number" has no count to hit, so
+  // this is the one decision where the fuzzer should regularly answer with
+  // nothing at all.
+  randomAnswer: (legal, player, rng): Action => ({
+    type: "proliferate",
+    player,
+    chosen: legal.eligible.filter(() => rng.random() < 0.5),
+  }),
 });

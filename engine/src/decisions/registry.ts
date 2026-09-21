@@ -16,7 +16,7 @@
 
 import type { Action, LegalAction } from "../actions.js";
 import { DECISION_ACTIONS } from "./contract.js";
-import type { AnyDecisionModule, DecisionKind } from "./contract.js";
+import type { AnyDecisionModule, DecisionKind, RandomSource } from "./contract.js";
 import type { PlayerId } from "../primitives.js";
 import type { AwaitingDecision } from "../state.js";
 import { payLifeForUntapped } from "./pay-life-for-untapped.js";
@@ -113,6 +113,27 @@ export function decisionForAction(action: Action): AnyDecisionModule | undefined
 export function decisionForOffer(legal: LegalAction): AnyDecisionModule | undefined {
   const kind = KIND_OF_ACTION.get(legal.kind);
   return kind === undefined ? undefined : DECISIONS[kind];
+}
+
+/**
+ * A uniformly-random legal answer to `legal`, or `null` when it is not a
+ * decision offer at all (`cast-spell`, `play-land`, `pass-priority` — the
+ * priority actions `RandomController` still builds itself).
+ *
+ * The `as never` is the same erasure `autoAnswerFor` and `decisionHasSource`
+ * take, and for the same reason: `DECISIONS[kind]` cannot be known to be the
+ * module for *that* kind, so the narrowed `OfferOf<K>` parameter has to be
+ * re-widened at the one call site. `registry.test.ts`'s `DECISIONS[k].kind === k`
+ * assertion is what makes it sound.
+ */
+export function randomAnswerFor(
+  legal: LegalAction,
+  player: PlayerId,
+  rng: RandomSource,
+): Action | null {
+  const module = decisionForOffer(legal);
+  if (module?.randomAnswer === undefined) return null;
+  return module.randomAnswer(legal as never, player, rng);
 }
 
 /**

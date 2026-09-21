@@ -33,6 +33,7 @@ import type {
   Action,
   AttackerDeclaration,
   BlockerDeclaration,
+  ChosenTargets,
   LegalAction,
 } from "../actions.js";
 import type { CardRegistry } from "../cards.js";
@@ -40,13 +41,28 @@ import type { ControllerView, PlayerController } from "../controller.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import type { AwaitingDecision, GameState } from "../state.js";
 import type { ResolvedTargets } from "../target.js";
-import type { TargetRef } from "../target.js";
+import type { TargetRef, TargetSpec } from "../target.js";
 
 /** One of the 17 decisions the rules can stop and ask a player for. */
 export type DecisionKind = AwaitingDecision["kind"];
 
 /** The `AwaitingDecision` variant belonging to kind `K`. */
 export type AwaitingOf<K extends DecisionKind> = Extract<AwaitingDecision, { kind: K }>;
+
+/**
+ * The `LegalAction` variant(s) kind `K` offers, read off {@link DECISION_OFFERS}.
+ *
+ * The offer-side counterpart of {@link AwaitingOf}, and it earns its keep on
+ * {@link DecisionModule.randomAnswer}: that member is handed an offer and must
+ * build an answer from it, so narrowing it here means no module needs a
+ * runtime `if (legal.kind !== …)` guard for a case the table already rules
+ * out. `mulligan` is the one kind where this stays a union — it offers both
+ * `mulligan` and `put-on-bottom` — and its module switches on the two.
+ */
+export type OfferOf<K extends DecisionKind> = Extract<
+  LegalAction,
+  { kind: (typeof DECISION_OFFERS)[K][number] }
+>;
 
 /**
  * Which `Action` type(s) answer each decision kind.
@@ -279,6 +295,57 @@ export interface DecisionModule<K extends DecisionKind = DecisionKind> {
     limit: number,
     helpers: CandidateHelpers,
   ) => Action[];
+
+  /**
+   * A uniformly-random legal answer — one arm of `RandomController.toAction`.
+   *
+   * The fuzzer's arm, not the bot's: {@link candidates} enumerates answers
+   * worth *searching*, this one picks a single answer worth *trying*, and
+   * several kinds deliberately weight it (a 0.6 coin flip per attacker, a 0.2
+   * mulligan cap so a fuzz game can't mulligan forever) rather than sampling
+   * uniformly from what is legal. Those weights are tuned for coverage and
+   * termination; they are not a policy and nothing plays by them.
+   *
+   * **Present on all 17 kinds**, unlike `candidates` — a decision the fuzzer
+   * cannot answer is a decision it deadlocks on, so there is no judgement call
+   * about whether a kind is worth having one.
+   *
+   * Changing the order or number of `rng` calls in here changes every fuzzer
+   * seed's trajectory; see {@link RandomSource}.
+   */
+  readonly randomAnswer?: (
+    legal: OfferOf<K>,
+    player: PlayerId,
+    rng: RandomSource,
+  ) => Action;
+}
+
+/**
+ * The randomness a {@link DecisionModule.randomAnswer} draws on — the three
+ * private helpers `RandomController` used to answer every decision with,
+ * handed over as an interface so the arms could move out of it.
+ *
+ * **Every method here is load-bearing for replay identity.** The fuzzer's
+ * same-seed-replays-identically guarantee rests on the exact *sequence* of
+ * calls made against one stream, so an arm that draws a number it did not draw
+ * before — or draws the same numbers in a different order — silently re-points
+ * every seed in `play:random` without failing a test. That is why `pickTargets`
+ * is here rather than being re-implemented per module out of `pickIndex`: it
+ * skips an optional slot on a `random() < 0.25` roll *before* indexing, and a
+ * module that rebuilt it would almost certainly draw in the other order.
+ */
+export interface RandomSource {
+  /** A float in `[0, 1)`. */
+  readonly random: () => number;
+  /** A uniform index into a list of `length`, clamped so `random()` returning
+   * exactly 1 can't run off the end. Draws exactly one number. */
+  readonly pickIndex: (length: number) => number;
+  /** A random target per slot, a hole for a slot with no options, and an
+   * optional slot skipped at random so both branches get fuzzed. */
+  readonly pickTargets: (
+    options: readonly (readonly TargetRef[])[],
+    specs?: readonly TargetSpec[],
+  ) => ChosenTargets;
 }
 
 /**

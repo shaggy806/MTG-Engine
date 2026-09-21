@@ -71,4 +71,17 @@ export const orderBlockers = defineDecision({
   // lethal-in-order split it produces the standard result, and the
   // permutations of a blocker list are a combinatorial trap for a decision
   // whose outcomes a rollout can barely tell apart.
+
+  // A Fisher-Yates shuffle of the declared order: every permutation is legal,
+  // so the fuzzer takes them uniformly rather than favouring the default.
+  randomAnswer: (legal, player, rng): Action => {
+    const order = [...legal.blockers];
+    for (let i = order.length - 1; i > 0; i -= 1) {
+      const j = rng.pickIndex(i + 1);
+      const tmp = order[i];
+      order[i] = order[j];
+      order[j] = tmp;
+    }
+    return { type: "order-blockers", player, attacker: legal.attacker, order };
+  },
 });

@@ -77,4 +77,12 @@ export const commanderReplacement = defineDecision({
   //   searching it, which is the same reason mulligans and combat damage
   //   order are absent. Revisit if a "commander available to recast" feature
   //   is ever added and fitted.
+
+  // Heavily biased towards the command zone, which is what a real game almost
+  // always chooses — but not unanimous, so the graveyard branch stays fuzzed.
+  randomAnswer: (_legal, player, rng): Action => ({
+    type: "commander-replacement",
+    player,
+    toCommandZone: rng.random() < 0.85,
+  }),
 });

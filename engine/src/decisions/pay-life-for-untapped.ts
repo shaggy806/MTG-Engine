@@ -62,4 +62,12 @@ export const payLifeForUntapped = defineDecision({
     if (legal.kind !== "pay-life-for-untapped") return [];
     return [true, false].map((pay) => ({ type: "pay-life-for-untapped", player, pay }));
   },
+
+  // Biased towards paying, so the fuzzer mostly plays on an untapped board
+  // rather than stalling itself out on shocklands.
+  randomAnswer: (_legal, player, rng): Action => ({
+    type: "pay-life-for-untapped",
+    player,
+    pay: rng.random() < 0.7,
+  }),
 });

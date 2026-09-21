@@ -102,4 +102,15 @@ export const chooseModes = defineDecision({
       ),
     );
   },
+
+  randomAnswer: (legal, player, rng): Action => {
+    const count =
+      legal.minModes + Math.floor(rng.random() * (legal.maxModes - legal.minModes + 1));
+    const pool = legal.modeTexts.map((_text, i) => i);
+    const modes: number[] = [];
+    for (let i = 0; i < count && pool.length > 0; i += 1) {
+      modes.push(pool.splice(rng.pickIndex(pool.length), 1)[0]);
+    }
+    return { type: "choose-modes", player, modes };
+  },
 });

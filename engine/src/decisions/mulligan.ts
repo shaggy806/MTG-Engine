@@ -16,6 +16,7 @@
  */
 
 import type { Action, LegalAction } from "../actions.js";
+import type { ObjectId } from "../primitives.js";
 import { defineDecision } from "./define.js";
 import { exactCount, noDuplicates, subsetOf } from "./shared/picks.js";
 import { mulliganCardsOwed } from "./shared/mulligan-math.js";
@@ -111,4 +112,20 @@ export const mulligan = defineDecision({
   // mulligan decisions. A rollout to the end of a turn means nothing before
   // the game has started, so the opening hand is scored by `bot/mulligan.ts`
   // instead, which all three bots share through v1.
+
+  // The one kind answering two offers, so this switches where the others
+  // destructure. `put-on-bottom` drains a pool the way `discard` does;
+  // `mulligan` is capped at four so a fuzz game can't mulligan forever.
+  randomAnswer: (legal, player, rng): Action => {
+    if (legal.kind === "put-on-bottom") {
+      const pool = [...legal.from];
+      const cards: ObjectId[] = [];
+      for (let i = 0; i < legal.count && pool.length > 0; i += 1) {
+        cards.push(pool.splice(rng.pickIndex(pool.length), 1)[0]);
+      }
+      return { type: "put-on-bottom", player, cards };
+    }
+    const takeMulligan = legal.count < 4 && rng.random() < 0.2;
+    return { type: "mulligan", player, keep: !takeMulligan };
+  },
 });

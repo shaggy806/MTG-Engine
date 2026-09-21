@@ -178,6 +178,19 @@ describe("decision registry", () => {
     }
   });
 
+  it("gives every kind a randomAnswer", () => {
+    // `randomAnswer` is optional on the contract (`candidates` is genuinely
+    // absent on six kinds, so the member can't be required), which means a
+    // kind that forgets one fails *silently*: `randomAnswerFor` returns null,
+    // `RandomController` falls through to its `default`, and the fuzzer
+    // answers a pending decision with `pass-priority` — rejected, so the game
+    // stalls on that decision forever rather than erroring anywhere useful.
+    // Unlike `candidates`, there is no kind where skipping it is a choice.
+    for (const kind of Object.keys(DECISIONS) as DecisionKind[]) {
+      expect(DECISIONS[kind].randomAnswer, `${kind} has no randomAnswer`).toBeDefined();
+    }
+  });
+
   it("answers hasSource for every kind, and conditionally for discard", () => {
     for (const kind of Object.keys(DECISIONS) as DecisionKind[]) {
       const fixture = FIXTURES[kind];

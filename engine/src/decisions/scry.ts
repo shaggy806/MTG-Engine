@@ -65,4 +65,10 @@ export const scry = defineDecision({
         : [[], [...cards], ...cards.map((card) => [card])];
     return subsets.map((away) => ({ type: "scry", player, away }));
   },
+
+  randomAnswer: (legal, player, rng): Action => ({
+    type: "scry",
+    player,
+    away: legal.cards.filter(() => rng.random() < 0.5),
+  }),
 });

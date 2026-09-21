@@ -15,7 +15,7 @@
  * offer already carries `menaceAttackers`, `mustBlock` and `eligible`.
  */
 
-import type { Action, LegalAction } from "../actions.js";
+import type { Action, BlockerDeclaration, LegalAction } from "../actions.js";
 import { blockingViolations } from "../combat/blocking.js";
 import {
   creatureDef,
@@ -111,4 +111,33 @@ export const blockers = defineDecision({
   // the predicate, and re-pointing them at `blockingViolations` would mean
   // rewriting them — which would move every fuzzer seed and every
   // `bot:bench` number for no gain.
+
+  // The policy the comment above describes, moved verbatim: it builds a
+  // declaration and then drops what the set-level rules forbid, rather than
+  // consulting `blockingViolations`. Deliberate — see that comment.
+  randomAnswer: (legal, player, rng): Action => {
+    const chosen = new Map<ObjectId, ObjectId>(); // blocker -> attacker
+    for (const entry of legal.eligible) {
+      // Lure (rule 509.1c): a creature able to block a must-be-blocked
+      // attacker must block one of them; otherwise a coin flip.
+      const mustOptions = entry.canBlock.filter((a) => legal.mustBlock.includes(a));
+      if (mustOptions.length > 0) {
+        chosen.set(entry.blocker, mustOptions[rng.pickIndex(mustOptions.length)]);
+      } else if (rng.random() < 0.5) {
+        chosen.set(entry.blocker, entry.canBlock[rng.pickIndex(entry.canBlock.length)]);
+      }
+    }
+    let blocks: BlockerDeclaration[] = [...chosen].map(([blocker, attacker]) => ({
+      blocker,
+      attacker,
+    }));
+    // A menace attacker must be blocked by 0 or 2+ creatures; drop lone blocks
+    // (must-be-blocked menace attackers are excluded from `mustBlock`).
+    blocks = blocks.filter(
+      (b) =>
+        !legal.menaceAttackers.includes(b.attacker) ||
+        blocks.filter((x) => x.attacker === b.attacker).length >= 2,
+    );
+    return { type: "declare-blockers", player, blocks };
+  },
 });

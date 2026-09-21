@@ -79,4 +79,10 @@ export const chooseText = defineDecision({
   // rollout sees the difference between one renamed creature type and
   // another, so every candidate scores the same and the search only costs
   // time. An empty slot here is a measured finding, not an unfinished TODO.
+
+  randomAnswer: (legal, player, rng): Action => {
+    const from = legal.fromOptions[rng.pickIndex(legal.fromOptions.length)];
+    const to = legal.toOptions[rng.pickIndex(legal.toOptions.length)];
+    return { type: "choose-text", player, from, to };
+  },
 });

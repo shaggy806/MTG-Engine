@@ -103,4 +103,10 @@ export const chooseTargets = defineDecision({
       targets,
     }));
   },
+
+  randomAnswer: (legal, player, rng): Action => ({
+    type: "choose-targets",
+    player,
+    targets: rng.pickTargets(legal.options, legal.specs),
+  }),
 });

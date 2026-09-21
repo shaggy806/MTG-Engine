@@ -17,7 +17,7 @@
  */
 
 import type { Action, LegalAction } from "../actions.js";
-import { damageAssignmentViolations } from "../combat/damage.js";
+import { damageAssignmentViolations, standardAssignment } from "../combat/damage.js";
 import { defineDecision } from "./define.js";
 
 export const assignCombatDamage = defineDecision({
@@ -73,4 +73,15 @@ export const assignCombatDamage = defineDecision({
   // already the right answer in almost every position, and the alternatives
   // (overkilling one blocker to save another) are distinctions a rollout
   // cannot price. Same measured opt-out as `order-blockers`.
+
+  randomAnswer: (legal, player, rng): Action => {
+    // Start from the standard split, then sometimes pile extra onto a blocker
+    // instead of trampling / dumping on the last — still legal.
+    const assignment = standardAssignment(legal);
+    const spare = legal.power - assignment.reduce((sum, n) => sum + n, 0);
+    if (spare > 0 && assignment.length > 0 && rng.random() < 0.5) {
+      assignment[rng.pickIndex(assignment.length)] += spare;
+    }
+    return { type: "assign-combat-damage", player, assignment };
+  },
 });

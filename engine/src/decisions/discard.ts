@@ -18,6 +18,7 @@
  */
 
 import type { Action, LegalAction } from "../actions.js";
+import type { ObjectId } from "../primitives.js";
 import { defineDecision } from "./define.js";
 import { exactCount, noDuplicates, subsetOf } from "./shared/picks.js";
 import { combinations } from "./shared/subsets.js";
@@ -83,5 +84,14 @@ export const discard = defineDecision({
     return combinations([...helpers.order(legal.from)].reverse(), legal.count, limit).map(
       (cards) => ({ type: "discard", player, cards }),
     );
+  },
+
+  randomAnswer: (legal, player, rng): Action => {
+    const pool = [...legal.from];
+    const cards: ObjectId[] = [];
+    for (let i = 0; i < legal.count && pool.length > 0; i += 1) {
+      cards.push(pool.splice(rng.pickIndex(pool.length), 1)[0]);
+    }
+    return { type: "discard", player, cards };
   },
 });

@@ -140,4 +140,17 @@ export const chooseCreatureType = defineDecision({
   // candidates: deliberately absent — no rollout sees the difference between
   // one named creature type and another, so every candidate scores the same
   // and searching only costs time. Same measured opt-out as `choose-text`.
+
+  randomAnswer: (legal, player, rng): Action => {
+    // Mostly a suggested type, so a choice keyed to it (Urza's Incubator's
+    // cost reduction, Distant Melody's draw) actually gets exercised — out of
+    // 350 types a uniform pick almost never names one that matters. Still
+    // sometimes anything at all, to keep that path fuzzed. As in
+    // `choose-copy`, the `&&` short-circuits and no suggestions means no
+    // random draw here; that call count is load-bearing.
+    const pool =
+      legal.suggested.length > 0 && rng.random() < 0.8 ? legal.suggested : legal.options;
+    const creatureType = pool[rng.pickIndex(pool.length)];
+    return { type: "choose-creature-type", player, creatureType };
+  },
 });

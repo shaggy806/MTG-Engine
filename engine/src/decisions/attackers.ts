@@ -108,4 +108,22 @@ export const attackers = defineDecision({
   // `bot/eval-bot.ts`, because the subsets of a wide board are a
   // combinatorial trap and the useful cuts are structural rather than
   // arbitrary.
+
+  randomAnswer: (legal, player, rng): Action => ({
+    type: "declare-attackers",
+    player,
+    // The `filter` runs to completion before the `flatMap` starts, so every
+    // eligible creature's coin flip is drawn before any defender is picked.
+    // Fusing the two into one pass would interleave those draws and re-point
+    // every seed, which is why this stays two passes.
+    attackers: legal.eligible
+      .filter(() => rng.random() < 0.6)
+      .flatMap((attacker) => {
+        // Per-attacker, not the union: a goaded creature may not be
+        // sent at its goader while anyone else is available.
+        const options = legal.defendersFor[attacker] ?? [];
+        if (options.length === 0) return [];
+        return [{ attacker, defender: options[rng.pickIndex(options.length)] }];
+      }),
+  }),
 });

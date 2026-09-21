@@ -16,7 +16,8 @@ import type {
   LegalAction,
 } from "./actions.js";
 import { standardAssignment } from "./combat/damage.js";
-import { decisionFor, mayActOn } from "./decisions/registry.js";
+import { decisionFor, mayActOn, randomAnswerFor } from "./decisions/registry.js";
+import type { RandomSource } from "./decisions/contract.js";
 import { computeCharacteristics } from "./characteristics.js";
 import { CardRegistry, createDefaultRegistry } from "./cards.js";
 import { chooseBottomOfHand, shouldMulligan } from "./bot/mulligan.js";
@@ -782,8 +783,27 @@ export class RandomController extends AutomaticController {
     });
   }
 
+  /**
+   * The `RandomSource` the decision modules answer through — this controller's
+   * three private helpers, exposed as an interface.
+   *
+   * Arrow properties rather than bound methods so `this.random` is read at
+   * *call* time: the field is assigned in the constructor, after class field
+   * initialisers have run.
+   */
+  private readonly rng: RandomSource = {
+    random: () => this.random(),
+    pickIndex: (length) => this.pickIndex(length),
+    pickTargets: (options, specs) => this.pickTargets(options, specs),
+  };
+
   private toAction(legal: LegalAction): Action {
     const player = this.playerId;
+    // Every decision kind answers itself, in `decisions/<kind>.ts`. What is
+    // left here is the priority actions, which answer no `AwaitingDecision`
+    // and so have no module to live in.
+    const answer = randomAnswerFor(legal, player, this.rng);
+    if (answer !== null) return answer;
     switch (legal.kind) {
       case "play-land":
         return {
@@ -855,161 +875,6 @@ export class RandomController extends AutomaticController {
             : {}),
         };
       }
-      case "declare-attackers":
-        return {
-          type: "declare-attackers",
-          player,
-          attackers: legal.eligible
-            .filter(() => this.random() < 0.6)
-            .flatMap((attacker) => {
-              // Per-attacker, not the union: a goaded creature may not be
-              // sent at its goader while anyone else is available.
-              const options = legal.defendersFor[attacker] ?? [];
-              if (options.length === 0) return [];
-              return [{ attacker, defender: options[this.pickIndex(options.length)] }];
-            }),
-        };
-      case "declare-blockers": {
-        const chosen = new Map<ObjectId, ObjectId>(); // blocker -> attacker
-        for (const entry of legal.eligible) {
-          // Lure (rule 509.1c): a creature able to block a must-be-blocked
-          // attacker must block one of them; otherwise a coin flip.
-          const mustOptions = entry.canBlock.filter((a) => legal.mustBlock.includes(a));
-          if (mustOptions.length > 0) {
-            chosen.set(entry.blocker, mustOptions[this.pickIndex(mustOptions.length)]);
-          } else if (this.random() < 0.5) {
-            chosen.set(entry.blocker, entry.canBlock[this.pickIndex(entry.canBlock.length)]);
-          }
-        }
-        let blocks: BlockerDeclaration[] = [...chosen].map(([blocker, attacker]) => ({
-          blocker,
-          attacker,
-        }));
-        // A menace attacker must be blocked by 0 or 2+ creatures; drop lone blocks
-        // (must-be-blocked menace attackers are excluded from `mustBlock`).
-        blocks = blocks.filter(
-          (b) =>
-            !legal.menaceAttackers.includes(b.attacker) ||
-            blocks.filter((x) => x.attacker === b.attacker).length >= 2,
-        );
-        return { type: "declare-blockers", player, blocks };
-      }
-      case "order-blockers": {
-        const order = [...legal.blockers];
-        for (let i = order.length - 1; i > 0; i -= 1) {
-          const j = this.pickIndex(i + 1);
-          const tmp = order[i];
-          order[i] = order[j];
-          order[j] = tmp;
-        }
-        return { type: "order-blockers", player, attacker: legal.attacker, order };
-      }
-      case "assign-combat-damage": {
-        // Start from the standard split, then sometimes pile extra onto a
-        // blocker instead of trampling / dumping on the last — still legal.
-        const assignment = standardDamageAssignment(legal);
-        const spare =
-          legal.power - assignment.reduce((sum, n) => sum + n, 0);
-        if (spare > 0 && assignment.length > 0 && this.random() < 0.5) {
-          assignment[this.pickIndex(assignment.length)] += spare;
-        }
-        return { type: "assign-combat-damage", player, assignment };
-      }
-      case "discard": {
-        const pool = [...legal.from];
-        const cards: ObjectId[] = [];
-        for (let i = 0; i < legal.count && pool.length > 0; i += 1) {
-          cards.push(pool.splice(this.pickIndex(pool.length), 1)[0]);
-        }
-        return { type: "discard", player, cards };
-      }
-      case "choose-from-zone": {
-        const pool = [...legal.eligible];
-        const n = legal.min + Math.floor(this.random() * (legal.max - legal.min + 1));
-        const chosen: ObjectId[] = [];
-        for (let i = 0; i < n && pool.length > 0; i += 1) {
-          chosen.push(pool.splice(this.pickIndex(pool.length), 1)[0]);
-        }
-        return { type: "choose-from-zone", player, chosen };
-      }
-      case "mulligan": {
-        // Capped so a fuzz game can't mulligan forever.
-        const takeMulligan = legal.count < 4 && this.random() < 0.2;
-        return { type: "mulligan", player, keep: !takeMulligan };
-      }
-      case "put-on-bottom": {
-        const pool = [...legal.from];
-        const cards: ObjectId[] = [];
-        for (let i = 0; i < legal.count && pool.length > 0; i += 1) {
-          cards.push(pool.splice(this.pickIndex(pool.length), 1)[0]);
-        }
-        return { type: "put-on-bottom", player, cards };
-      }
-      case "commander-replacement":
-        return { type: "commander-replacement", player, toCommandZone: this.random() < 0.85 };
-      case "pay-life-for-untapped":
-        return { type: "pay-life-for-untapped", player, pay: this.random() < 0.7 };
-      case "choose-copy": {
-        // Usually copy the biggest thing; sometimes copy nothing.
-        const copy =
-          legal.options.length > 0 && this.random() < 0.9
-            ? legal.options[this.pickIndex(legal.options.length)]
-            : null;
-        return { type: "choose-copy", player, copy };
-      }
-      case "choose-text": {
-        const from = legal.fromOptions[this.pickIndex(legal.fromOptions.length)];
-        const to = legal.toOptions[this.pickIndex(legal.toOptions.length)];
-        return { type: "choose-text", player, from, to };
-      }
-      case "choose-creature-type": {
-        // Mostly a suggested type, so a choice keyed to it (Urza's Incubator's
-        // cost reduction, Distant Melody's draw) actually gets exercised —
-        // out of 350 types a uniform pick almost never names one that
-        // matters. Still sometimes anything at all, to keep that path fuzzed.
-        const pool =
-          legal.suggested.length > 0 && this.random() < 0.8 ? legal.suggested : legal.options;
-        const creatureType = pool[this.pickIndex(pool.length)];
-        return { type: "choose-creature-type", player, creatureType };
-      }
-      case "choose-modes": {
-        const count =
-          legal.minModes +
-          Math.floor(this.random() * (legal.maxModes - legal.minModes + 1));
-        const pool = legal.modeTexts.map((_text, i) => i);
-        const modes: number[] = [];
-        for (let i = 0; i < count && pool.length > 0; i += 1) {
-          modes.push(pool.splice(this.pickIndex(pool.length), 1)[0]);
-        }
-        return { type: "choose-modes", player, modes };
-      }
-      case "sacrifice": {
-        const pool = [...legal.eligible];
-        const permanents: ObjectId[] = [];
-        for (let i = 0; i < legal.count && pool.length > 0; i += 1) {
-          permanents.push(pool.splice(this.pickIndex(pool.length), 1)[0]);
-        }
-        return { type: "sacrifice", player, permanents };
-      }
-      case "scry": {
-        const away = legal.cards.filter(() => this.random() < 0.5);
-        return { type: "scry", player, away };
-      }
-      case "proliferate":
-        // A random subset, empty included — "any number" has no count to hit,
-        // so this is the one decision where the fuzzer should regularly
-        // answer with nothing at all.
-        return {
-          type: "proliferate",
-          player,
-          chosen: legal.eligible.filter(() => this.random() < 0.5),
-        };
-      case "choose-targets":
-        return {
-          type: "choose-targets",
-          player,
-          targets: this.pickTargets(legal.options, legal.specs),
-        };
       default:
         return passFor(player);
     }

@@ -70,4 +70,16 @@ export const chooseCopy = defineDecision({
     const options: (ObjectId | null)[] = [...legal.options, null];
     return options.slice(0, limit).map((copy) => ({ type: "choose-copy", player, copy }));
   },
+
+  randomAnswer: (legal, player, rng): Action => {
+    // Usually copy the biggest thing; sometimes copy nothing. The `&&`
+    // short-circuits, so an empty `options` draws **no** random number at all
+    // — preserved deliberately, because the draw count is part of the seed
+    // trajectory every `play:random` replay depends on.
+    const copy =
+      legal.options.length > 0 && rng.random() < 0.9
+        ? legal.options[rng.pickIndex(legal.options.length)]
+        : null;
+    return { type: "choose-copy", player, copy };
+  },
 });

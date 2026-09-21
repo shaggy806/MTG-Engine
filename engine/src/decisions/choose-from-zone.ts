@@ -20,6 +20,7 @@
  */
 
 import type { Action, LegalAction } from "../actions.js";
+import type { ObjectId } from "../primitives.js";
 import { defineDecision } from "./define.js";
 import { noDuplicates, subsetOf, withinRange } from "./shared/picks.js";
 import { subsetsBetween } from "./shared/subsets.js";
@@ -97,5 +98,18 @@ export const chooseFromZone = defineDecision({
     return subsetsBetween(helpers.order(legal.eligible), legal.min, legal.max, limit).map(
       (chosen) => ({ type: "choose-from-zone", player, chosen }),
     );
+  },
+
+  randomAnswer: (legal, player, rng): Action => {
+    const pool = [...legal.eligible];
+    // How many to take is drawn with a bare `random()`, not `pickIndex` —
+    // a different call shape from the draining loop below it, and one the
+    // seed trajectory depends on keeping.
+    const n = legal.min + Math.floor(rng.random() * (legal.max - legal.min + 1));
+    const chosen: ObjectId[] = [];
+    for (let i = 0; i < n && pool.length > 0; i += 1) {
+      chosen.push(pool.splice(rng.pickIndex(pool.length), 1)[0]);
+    }
+    return { type: "choose-from-zone", player, chosen };
   },
 });

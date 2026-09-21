@@ -16,6 +16,7 @@
  */
 
 import type { Action, LegalAction } from "../actions.js";
+import type { ObjectId } from "../primitives.js";
 import { defineDecision } from "./define.js";
 import { exactCount, noDuplicates, subsetOf } from "./shared/picks.js";
 import { combinations } from "./shared/subsets.js";
@@ -72,5 +73,14 @@ export const sacrifice = defineDecision({
     return combinations([...helpers.order(legal.eligible)].reverse(), legal.count, limit).map(
       (permanents) => ({ type: "sacrifice", player, permanents }),
     );
+  },
+
+  randomAnswer: (legal, player, rng): Action => {
+    const pool = [...legal.eligible];
+    const permanents: ObjectId[] = [];
+    for (let i = 0; i < legal.count && pool.length > 0; i += 1) {
+      permanents.push(pool.splice(rng.pickIndex(pool.length), 1)[0]);
+    }
+    return { type: "sacrifice", player, permanents };
   },
 });
