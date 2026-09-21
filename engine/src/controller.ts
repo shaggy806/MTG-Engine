@@ -303,17 +303,6 @@ function answerAwaited(
       keep: !controller.mulligan(view, hand.taken),
     };
   }
-  if (awaiting.kind === "commander-replacement") {
-    return {
-      type: "commander-replacement",
-      player,
-      toCommandZone: controller.commanderReplacement(
-        view,
-        awaiting.commander,
-        awaiting.intendedZone,
-      ),
-    };
-  }
   if (awaiting.kind === "choose-targets") {
     return {
       type: "choose-targets",

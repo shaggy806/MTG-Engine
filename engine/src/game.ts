@@ -73,6 +73,7 @@ import type { ControllerView, PlayerController } from "./controller.js";
 import type { DecisionHost, DecisionReadCtx } from "./decisions/contract.js";
 import { decisionFor, decisionForAction, mayActOn } from "./decisions/registry.js";
 import { chooseCopy } from "./decisions/choose-copy.js";
+import { commanderReplacement } from "./decisions/commander-replacement.js";
 import { discard } from "./decisions/discard.js";
 import { sacrifice } from "./decisions/sacrifice.js";
 import { chooseFromZone } from "./decisions/choose-from-zone.js";
@@ -285,6 +286,7 @@ export class Game {
       applyChooseFromZone: (player, chosen) => this.applyChooseFromZone(player, chosen),
       applySacrifice: (player, ps) => this.applySacrifice(player, ps),
       applyDiscard: (player, cards) => this.applyDiscard(player, cards),
+      applyCommanderChoice: (player, toCz) => this.applyCommanderChoice(player, toCz),
       applyScry: (player, away) => this.applyScry(player, away),
     };
   }
@@ -528,9 +530,6 @@ export class Game {
       case "put-on-bottom":
         this.applyPutOnBottom(action.player, action.cards);
         break;
-      case "commander-replacement":
-        this.applyCommanderChoice(action.player, action.toCommandZone);
-        break;
       case "choose-targets":
         this.applyChooseTargets(action.player, normalizeTargets(action.targets));
         break;
@@ -599,8 +598,6 @@ export class Game {
         return this.whyCannotMulligan(action.player);
       case "put-on-bottom":
         return this.whyCannotPutOnBottom(action.player, action.cards);
-      case "commander-replacement":
-        return this.whyCannotCommanderChoice(action.player);
       case "choose-targets":
         return this.whyCannotChooseTargets(action.player, normalizeTargets(action.targets));
       case "assign-combat-damage":
@@ -693,15 +690,6 @@ export class Game {
                 from: [...this.state.zones.perPlayer[player].hand],
               },
             ];
-      }
-      if (awaiting.kind === "commander-replacement") {
-        return [
-          {
-            kind: "commander-replacement",
-            commander: awaiting.commander,
-            intendedZone: awaiting.intendedZone,
-          },
-        ];
       }
       if (awaiting.kind === "choose-targets") {
         return [
@@ -1794,16 +1782,14 @@ export class Game {
     this.prepareForPriority(this.activePlayer);
   }
 
+  /** Kept because `applyCommanderChoice` validates before applying and
+   * throws; the rule lives in `decisions/commander-replacement.ts`. */
   private whyCannotCommanderChoice(player: PlayerId): string | null {
-    const awaiting = this.state.awaiting;
-    if (
-      awaiting === null ||
-      awaiting.kind !== "commander-replacement" ||
-      awaiting.player !== player
-    ) {
-      return `${player} is not being asked about a commander replacement`;
-    }
-    return null;
+    return commanderReplacement.whyCannot(
+      this.decisionCtx,
+      { type: "commander-replacement", player, toCommandZone: false },
+      player,
+    );
   }
 
   /** Kept because `applyPayLifeForUntapped` validates before applying and

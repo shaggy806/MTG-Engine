@@ -29,6 +29,7 @@ import { chooseModes } from "./choose-modes.js";
 import { chooseFromZone } from "./choose-from-zone.js";
 import { sacrifice } from "./sacrifice.js";
 import { discard } from "./discard.js";
+import { commanderReplacement } from "./commander-replacement.js";
 import { scry } from "./scry.js";
 
 export { defineDecision } from "./define.js";
@@ -44,6 +45,7 @@ export const DECISIONS: Partial<Record<DecisionKind, AnyDecisionModule>> = {
   "choose-from-zone": chooseFromZone,
   sacrifice,
   discard,
+  "commander-replacement": commanderReplacement,
   scry,
 };
 
