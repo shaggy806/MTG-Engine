@@ -219,9 +219,53 @@ Clone is in deck B, but the decision only raises when a Clone resolves with
 another creature already on the battlefield. Its three offers in the replay set
 are hand-built for that reason, and the fuzzer is not evidence about that arm.
 
-## Not done
+## The `decisionSource` bugs (fixed after the fact)
 
-- **Four `decisionSource` bugs** the survey surfaced, all pre-existing and all
-  out of scope here: landcycling's `choose-from-zone` and the cast-time
-  additional-cost `discard` both attribute themselves to whatever resolved
-  last, and `choose-text` names the target creature rather than the spell.
+The survey's "four `decisionSource` bugs" turned out to be **three**; the list
+named three and counted four, and no fourth site exists. All three are fixed.
+
+The root cause is one gap. `state.decisionSource` is set only by
+`withDecisionSource`, which wraps *resolving* a spell or ability, and three
+kinds — `choose-from-zone`, `discard` and `sacrifice` — carry no `source`
+field on their `AwaitingDecision` to fall back on. So a decision raised while
+an **action** is being taken had no attribution at all. The observed symptom
+was usually `null` rather than a stale name: `withDecisionSource`'s `finally`
+and `prepareForPriority` both clear the field, so there is often nothing left
+over to inherit.
+
+- **Landcycling** (`cycleCard`) and **a spell whose additional cost is a
+  discard** (`castSpell`) now raise inside `withDecisionSource`. In both the
+  card has already left the hand when the prompt appears — graveyard, or the
+  stack — which is why `DecisionSource` carries `cardName` rather than leaving
+  the client to resolve the object.
+- **`choose-text`** was a different mistake: it is the one kind carrying both
+  a `source` and a `target`, and `beginTextChoice` took the spell as a
+  parameter, ignored it, and set both to the creature. Artificial Evolution
+  answered "why am I being asked about Grizzly Bears?" with "Grizzly Bears".
+  Safe to fix because nothing read that field — `applyTextChoice` uses
+  `awaiting.target`, and so does the client's prompt.
+
+`sacrifice` shares the structural gap but has no reachable bad path: an edict
+always resolves, so the ambient source is right. Giving those three kinds a
+`source` field of their own would close the class properly; it is insurance
+rather than a fix, and it touches every raise site (`choose-from-zone` alone
+has four).
+
+Three tests in `decision-source.test.ts`, each confirmed to fail without the
+change.
+
+### A trap next to it
+
+`game.ts` contains a **literal NUL byte** — the `"\0none"` sentinel at the
+`chosenCreatureType` fallback, written as a raw byte rather than the escape.
+It makes **git and grep treat the engine's largest file as binary**, which is
+why a plain `grep` over it silently reports "Binary file matches" and finds
+nothing; use `grep -a`.
+
+Do not "just fix" it. With `core.autocrlf=true` and no `.gitattributes`, the
+NUL is the only reason git stores that file verbatim: making it text lets git
+normalise CRLF to LF on checkin, which rewrites all ~10,100 lines in one
+commit and takes `git blame` with it. Verified — the diff is 20,270 lines,
+and `--ignore-cr-at-eol` shows the 32 that are real. Fixing it properly means
+deciding the repo's line-ending policy first (every other `.ts` blob is
+stored CRLF), not editing the byte.
