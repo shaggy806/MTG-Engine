@@ -86,6 +86,10 @@ export interface CardFilter {
   readonly notColors?: readonly Color[];
   /** Must be colourless. */
   readonly colorless?: boolean;
+  /** Must be multicoloured — two or more colours (rule 105.4). `false` matches
+   * mono-coloured *and* colourless, which is what "nonmulticolored" means.
+   * Not expressible as `colors`, which asks for specific ones. */
+  readonly multicolored?: boolean;
   readonly manaValue?: NumCompare;
   /**
    * How many counters of a given kind are on the object — Rishkar's "each
@@ -186,7 +190,8 @@ export function matchesFilter(
   if (
     filter.colors !== undefined ||
     filter.notColors !== undefined ||
-    filter.colorless === true
+    filter.colorless === true ||
+    filter.multicolored !== undefined
   ) {
     const colors = effectiveColors(registry, object);
     if (filter.colors !== undefined && !filter.colors.every((col) => colors.has(col))) {
@@ -196,6 +201,9 @@ export function matchesFilter(
       return false;
     }
     if (filter.colorless === true && colors.size > 0) return false;
+    if (filter.multicolored !== undefined && colors.size >= 2 !== filter.multicolored) {
+      return false;
+    }
   }
 
   if (filter.blocking !== undefined && (object.blocking !== null) !== filter.blocking) {

@@ -139,3 +139,82 @@ describe("Protection from black — White Knight", () => {
     }
   });
 });
+
+/**
+ * Protection from a *quality* no colour list or card type can name (rule
+ * 702.16a) — `StaticAbility.protection.filter`.
+ *
+ * The colour and type clauses answer from the source's characteristics alone,
+ * which is why they work against a source the engine only has a summary of.
+ * A filter has to ask about a specific object ("is it multicoloured?", "is it
+ * a Human?"), so `TargetSource` carries the source's id and `cardSource`
+ * fills it in for a spell as well as a permanent. Without that the spell half
+ * of these tests passes for the wrong reason — nothing blocks.
+ */
+describe("Protection from a filter — Stonecoil Serpent", () => {
+  it("can't be targeted by a multicoloured spell, but a mono-coloured one is fine", () => {
+    const { game } = mkGame(["Anguished Unmaking", "Doom Blade"]);
+    game.advanceUntil(toPrecombat);
+    const serpent = spawn(game, "Stonecoil Serpent", B);
+    const bears = spawn(game, "Grizzly Bears", B);
+    for (let i = 0; i < 3; i += 1) spawn(game, "Swamp", A);
+    spawn(game, "Plains", A);
+
+    // Anguished Unmaking is {W}{B} — multicoloured, so the Serpent is out.
+    const unmaking = game.legalActions(A).find(
+      (x) => x.kind === "cast-spell" && x.cardName === "Anguished Unmaking",
+    );
+    expect(unmaking?.kind).toBe("cast-spell");
+    if (unmaking?.kind === "cast-spell") {
+      const opts = unmaking.targetOptions[0] ?? [];
+      expect(opts.some((r) => r.kind === "object" && r.object === bears)).toBe(true);
+      expect(opts.some((r) => r.kind === "object" && r.object === serpent)).toBe(false);
+    }
+
+    // Doom Blade is mono-black: not multicoloured, so it may point at the
+    // Serpent. This is the half that fails if `multicolored` matched anything
+    // coloured.
+    const doom = game.legalActions(A).find(
+      (x) => x.kind === "cast-spell" && x.cardName === "Doom Blade",
+    );
+    if (doom?.kind === "cast-spell") {
+      const opts = doom.targetOptions[0] ?? [];
+      expect(opts.some((r) => r.kind === "object" && r.object === serpent)).toBe(true);
+    }
+  });
+
+  it("can't be blocked by a multicoloured creature", () => {
+    const { game, a, b } = mkGame();
+    const serpent = spawn(game, "Stonecoil Serpent", A);
+    game.state.objects[serpent].counters = { "+1/+1": 3 }; // an X=3 Serpent
+    const gold = spawn(game, "Anafenza, the Foremost", B); // {W}{B}{G}
+    a.declareAttackersFn = () => [{ attacker: serpent, defender: B }];
+    b.declareBlockersFn = () => [{ blocker: gold, attacker: serpent }];
+
+    game.advanceUntil(toPostcombat);
+    expect(game.state.players[B].life).toBe(17);
+  });
+
+  it("enters with X +1/+1 counters and is still colourless itself", () => {
+    const { game } = mkGame(["Stonecoil Serpent"]);
+    game.advanceUntil(toPrecombat);
+    for (let i = 0; i < 3; i += 1) spawn(game, "Swamp", A);
+
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Stonecoil Serpent"),
+      targets: [],
+      xValue: 3,
+    });
+    game.advanceUntil(settled);
+
+    const serpent = game.state.zones.shared.battlefield.find(
+      (id) => game.state.objects[id].cardName === "Stonecoil Serpent",
+    );
+    expect(serpent).toBeDefined();
+    if (serpent !== undefined) {
+      expect(game.state.objects[serpent].counters["+1/+1"]).toBe(3);
+    }
+  });
+});

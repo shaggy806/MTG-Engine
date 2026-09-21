@@ -909,8 +909,8 @@ export class Game {
   }
 
   /** The colour/type identity of a card (its printed values). */
-  private cardSource(def: CardDefinition): TargetSource {
-    return cardSource(def);
+  private cardSource(def: CardDefinition, object?: ObjectId): TargetSource {
+    return cardSource(def, object);
   }
 
   /** The `castModal` descriptor for a `cast-spell` `LegalAction` (ROADMAP
@@ -921,6 +921,7 @@ export class Game {
   private castModalDescriptor(
     def: CardDefinition,
     player: PlayerId,
+    card: ObjectId,
   ): Pick<Extract<LegalAction, { kind: "cast-spell" }>, "castModal"> {
     if (def.castModal === null) return {};
     return {
@@ -933,7 +934,7 @@ export class Game {
           targetOptions: this.targetOptionsFor(
             m.targets ?? [],
             player,
-            this.cardSource(def),
+            this.cardSource(def, card),
           ),
         })),
       },
@@ -1018,7 +1019,7 @@ export class Game {
       }
       if (!castable) continue;
       const specs = this.effectiveTargetSpecs(def, undefined, kicked, overload);
-      const options = this.targetOptionsFor(specs, player, this.cardSource(def));
+      const options = this.targetOptionsFor(specs, player, this.cardSource(def, card));
       // Rule 601.2c — a spell can't be cast without a legal target for every
       // slot that demands one. An *optional* slot ("up to one target
       // creature") with nothing to point at is simply skipped, so it never
@@ -1048,7 +1049,7 @@ export class Game {
         targetOptions: options,
         ...(via !== undefined ? { via } : {}),
         ...(face !== undefined ? { face } : {}),
-        ...this.castModalDescriptor(def, player),
+        ...this.castModalDescriptor(def, player, card),
         ...(sacrifices.length > 0 ? { sacrifice: { choices: sacrifices } } : {}),
         ...(kicked && def.kicker !== null
           ? { kicked: true, kickerCost: def.kicker.cost }
@@ -3578,7 +3579,7 @@ export class Game {
 
     const optionsPerSlot: TargetRef[][] = [];
     for (const spec of def.targets) {
-      const options = legalTargets(this.state, this.registry, spec, owner, this.cardSource(def));
+      const options = legalTargets(this.state, this.registry, spec, owner, this.cardSource(def, cardId));
       if (options.length === 0) return false;
       optionsPerSlot.push([...options]);
     }
@@ -4121,7 +4122,8 @@ export class Game {
       // the slots that require one).
       if (isOptionalSpec(spec)) continue;
       if (
-        legalTargets(this.state, this.registry, spec, player, this.cardSource(def)).length === 0
+        legalTargets(this.state, this.registry, spec, player, this.cardSource(def, cardId))
+          .length === 0
       ) {
         return `${def.name} has no legal ${describeTargetSpec(spec)} target`;
       }
@@ -4257,7 +4259,7 @@ export class Game {
       targets,
       player,
       def.name,
-      this.cardSource(def),
+      this.cardSource(def, cardId),
     );
     if (badTarget !== null) throw new Error(badTarget);
 
@@ -5736,7 +5738,7 @@ export class Game {
     );
     if (
       castSpecs.length > 0 &&
-      !this.anyTargetLegal(castSpecs, targets, object.controller, this.cardSource(def))
+      !this.anyTargetLegal(castSpecs, targets, object.controller, this.cardSource(def, id))
     ) {
       object.targets = null;
       this.emit({
@@ -5782,7 +5784,7 @@ export class Game {
             specs.every(
               (spec, i) =>
                 slice[i] !== undefined &&
-                isLegalTarget(this.state, this.registry, spec, slice[i], object.controller, this.cardSource(def)),
+                isLegalTarget(this.state, this.registry, spec, slice[i], object.controller, this.cardSource(def, id)),
             );
           if (!ok || mode === undefined) continue;
           applyEffectSpec(

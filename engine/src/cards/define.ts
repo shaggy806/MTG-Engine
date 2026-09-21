@@ -356,10 +356,24 @@ export interface StaticAbility {
   readonly playFromLibraryTop?: CardFilter;
   /** Protection (rule 702.16) — the affected object can't be targeted,
    * blocked, enchanted/equipped, or damaged by a source whose colour or type
-   * matches (White Knight: `{ colors: ["B"] }`). */
+   * matches (White Knight: `{ colors: ["B"] }`).
+   *
+   * The three clauses are **ORed**, because each is a separate quality:
+   * "protection from black and from green" is two protections, not one
+   * compound one. `filter` covers the qualities a colour or a card type
+   * can't name — a subtype (Yawgmoth: `{ filter: { subtype: "Human" } }`),
+   * multicoloured (Stonecoil Serpent), colourless — and, since a `CardFilter`
+   * with no clauses matches everything, `{ filter: {} }` is "protection from
+   * everything" (rule 702.16e).
+   *
+   * A `filter` is only evaluated when the engine knows *which object* the
+   * source is. That is always true of a permanent and of a spell on the
+   * stack; where it isn't, the colour and type clauses still apply and the
+   * filter conservatively doesn't block. See `protectionBlocks`. */
   readonly protection?: {
     readonly colors?: readonly Color[];
     readonly types?: readonly CardType[];
+    readonly filter?: CardFilter;
   };
   /** Ward (rule 702.21) — an opponent targeting this permanent (`affects:
    * "self"`) must pay this or their spell/ability is countered. Applied at the

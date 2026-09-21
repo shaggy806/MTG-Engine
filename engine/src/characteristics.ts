@@ -29,6 +29,7 @@ import type {
   StaticCondition,
 } from "./cards.js";
 import { compareNum, matchesFilter } from "./filter.js";
+import type { CardFilter } from "./filter.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { printedCardName } from "./state.js";
@@ -322,11 +323,15 @@ export interface Characteristics {
   /** Combat restrictions from static abilities (Pacifism, Juggernaut). */
   readonly restrictions: ReadonlySet<CombatRestriction>;
   /** Protection (rule 702.16): the union of every "protection from …" clause
-   * — a source with any of these colours or types can't target / block /
-   * enchant / damage this object. */
+   * — a source matching any of these colours, types or filters can't target /
+   * block / enchant / damage this object. */
   readonly protectionFrom: {
     readonly colors: ReadonlySet<Color>;
     readonly types: ReadonlySet<CardType>;
+    /** Qualities no colour or card type can name — a subtype, multicoloured,
+     * or (an empty filter) everything. Evaluated only against a source the
+     * engine can identify as an object; see `protectionBlocks`. */
+    readonly filters: readonly CardFilter[];
   };
 }
 
@@ -515,7 +520,11 @@ interface AppliedEffect {
   readonly toughness: number;
   readonly keywords: readonly Keyword[];
   readonly restrictions: readonly CombatRestriction[];
-  readonly protection: { colors?: readonly Color[]; types?: readonly CardType[] } | null;
+  readonly protection: {
+    colors?: readonly Color[];
+    types?: readonly CardType[];
+    filter?: CardFilter;
+  } | null;
 }
 
 /** One battlefield static that *can* contribute P/T / keywords / restrictions
@@ -695,6 +704,9 @@ function assertSameCharacteristics(
       restrictions: [...c.restrictions].sort(),
       protColors: [...c.protectionFrom.colors].sort(),
       protTypes: [...c.protectionFrom.types].sort(),
+      // Serialised whole: a filter is a plain object, and two of them
+      // differing is exactly the divergence this check exists to catch.
+      protFilters: c.protectionFrom.filters.map((f) => JSON.stringify(f)).sort(),
     });
   const a = show(cached);
   const b = show(fresh);
@@ -751,12 +763,14 @@ function computeCharacteristicsUncached(
   const restrictions = new Set<CombatRestriction>();
   const protColors = new Set<Color>();
   const protTypes = new Set<CardType>();
+  const protFilters: CardFilter[] = [];
   for (const effect of staticEffects) {
     for (const keyword of effect.keywords) keywords.add(keyword);
     for (const r of effect.restrictions) restrictions.add(r);
     if (effect.protection) {
       for (const c of effect.protection.colors ?? []) protColors.add(c);
       for (const t of effect.protection.types ?? []) protTypes.add(t);
+      if (effect.protection.filter !== undefined) protFilters.push(effect.protection.filter);
     }
   }
   for (const modifier of object.modifiers) {
@@ -824,7 +838,7 @@ function computeCharacteristicsUncached(
     colors,
     controller: object.controller,
     restrictions,
-    protectionFrom: { colors: protColors, types: protTypes },
+    protectionFrom: { colors: protColors, types: protTypes, filters: protFilters },
   };
 }
 

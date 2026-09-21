@@ -31,9 +31,26 @@ export function protectionBlocks(
   const object = state.objects[target];
   if (object === undefined || object.zone !== "battlefield") return false;
   const prot = computeCharacteristics(state, registry, target).protectionFrom;
-  if (prot.colors.size === 0 && prot.types.size === 0) return false;
+  if (prot.colors.size === 0 && prot.types.size === 0 && prot.filters.length === 0) return false;
   for (const c of source.colors) if (prot.colors.has(c)) return true;
   for (const t of source.types) if (prot.types.has(t)) return true;
+  // A quality no colour or card type can name — a subtype, multicoloured, or
+  // (an empty filter) everything. `matchesFilter` needs a real object, which
+  // rules out a source the caller could only describe by its characteristics;
+  // `source.object` is set wherever one exists, which is every permanent and
+  // every spell on the stack. Without it the colour/type clauses above have
+  // already had their say and this conservatively doesn't block, rather than
+  // guessing from a summary that cannot answer "is it a Human?".
+  if (prot.filters.length > 0 && source.object !== undefined) {
+    const from = source.object;
+    if (
+      prot.filters.some((filter) =>
+        matchesFilter(state, registry, from, filter, { you: object.controller }),
+      )
+    ) {
+      return true;
+    }
+  }
   return false;
 }
 
@@ -438,8 +455,17 @@ export function permanentSource(
  * on the stack, or one being cast. Its printed characteristics are the whole
  * story, which is what makes this the two-line sibling of
  * {@link permanentSource}. */
-export function cardSource(def: CardDefinition): TargetSource {
-  return { colors: def.colors, types: def.types };
+export function cardSource(def: CardDefinition, object?: ObjectId): TargetSource {
+  return {
+    colors: def.colors,
+    types: def.types,
+    // Carried when the caller knows which object the card *is* — a spell on
+    // the stack, or a card being cast. Only filter-based protection reads it
+    // (see `protectionBlocks`): "protection from multicolored" has to ask
+    // about the spell itself, and printed colours alone can't answer it once
+    // something has changed them.
+    ...(object !== undefined ? { object } : {}),
+  };
 }
 
 /**

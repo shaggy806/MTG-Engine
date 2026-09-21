@@ -39,7 +39,7 @@ import { targetCombos } from "./shared/target-combos.js";
  */
 function sourceForPending(ctx: DecisionReadCtx, source: ObjectId): TargetSource | undefined {
   if (ctx.state.pendingTargetedCast !== null) {
-    return cardSource(ctx.registry.get(ctx.state.objects[source].cardName));
+    return cardSource(ctx.registry.get(ctx.state.objects[source].cardName), source);
   }
   return ctx.state.objects[source] !== undefined
     ? permanentSource(ctx.state, ctx.registry, source)

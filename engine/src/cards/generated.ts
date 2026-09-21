@@ -574,6 +574,7 @@ import _poolSpectatorSeating from "./pool/spectator-seating.js";
 import _poolSphinxOfEnlightenment from "./pool/sphinx-of-enlightenment.js";
 import _poolSphinxsRevelation from "./pool/sphinxs-revelation.js";
 import _poolSpireGarden from "./pool/spire-garden.js";
+import _poolSpiritMantle from "./pool/spirit-mantle.js";
 import _poolSpitFlame from "./pool/spit-flame.js";
 import _poolSplendidReclamation from "./pool/splendid-reclamation.js";
 import _poolSporemound from "./pool/sporemound.js";
@@ -584,6 +585,7 @@ import _poolSteelHellkite from "./pool/steel-hellkite.js";
 import _poolSteelPlumeMarshal from "./pool/steel-plume-marshal.js";
 import _poolStensiaBloodhall from "./pool/stensia-bloodhall.js";
 import _poolStompingGround from "./pool/stomping-ground.js";
+import _poolStonecoilSerpent from "./pool/stonecoil-serpent.js";
 import _poolStormHerd from "./pool/storm-herd.js";
 import _poolStormcarvedCoast from "./pool/stormcarved-coast.js";
 import _poolStormfistCrusader from "./pool/stormfist-crusader.js";
@@ -1359,6 +1361,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSphinxOfEnlightenment,
   _poolSphinxsRevelation,
   _poolSpireGarden,
+  _poolSpiritMantle,
   _poolSpitFlame,
   _poolSplendidReclamation,
   _poolSporemound,
@@ -1369,6 +1372,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSteelPlumeMarshal,
   _poolStensiaBloodhall,
   _poolStompingGround,
+  _poolStonecoilSerpent,
   _poolStormHerd,
   _poolStormcarvedCoast,
   _poolStormfistCrusader,
