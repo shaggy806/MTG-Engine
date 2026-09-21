@@ -1,0 +1,73 @@
+/**
+ * What a Clone-style permanent copies as it enters (rule 707).
+ *
+ * `null` is a real answer — "copy nothing" — and leaves the permanent as its
+ * own printed self, which for a vanilla Clone means a 0/0 that dies to a
+ * state-based action immediately.
+ *
+ * Worth knowing about the raise, which stays on `Game`: this is the one kind
+ * that can *begin without pausing*. `beginCopyChoice` returns early when
+ * there is nothing on the battlefield to copy, leaving `awaiting` untouched
+ * rather than raising a decision with an empty option list — pinned by
+ * `clone.test.ts`'s "with no creatures to copy, it never pauses and just
+ * dies".
+ */
+
+import type { Action, LegalAction } from "../actions.js";
+import type { ObjectId } from "../primitives.js";
+import { defineDecision } from "./define.js";
+import { subsetOf } from "./shared/picks.js";
+
+export const chooseCopy = defineDecision({
+  kind: "choose-copy",
+
+  // The entering clone is the source, and the prompt names it.
+  hasSource: true,
+
+  legal: (_ctx, awaiting): LegalAction[] => [
+    { kind: "choose-copy", source: awaiting.source, options: [...awaiting.options] },
+  ],
+
+  whyCannot: (ctx, action, player): string | null => {
+    if (action.type !== "choose-copy") return `${player} is not being asked what to copy`;
+    const awaiting = ctx.state.awaiting;
+    if (awaiting === null || awaiting.kind !== "choose-copy" || awaiting.player !== player) {
+      return `${player} is not being asked what to copy`;
+    }
+    // `null` means "copy nothing", which is always available; only a named
+    // permanent has to have been offered.
+    if (action.copy === null) return null;
+    return subsetOf(
+      [action.copy],
+      awaiting.options,
+      (id) => `${id} is not one of the permanents that may be copied`,
+    );
+  },
+
+  apply: (host, action): void => {
+    if (action.type !== "choose-copy") return;
+    host.applyCopyChoice(action.player, action.copy);
+  },
+
+  ask: (controller, view, awaiting, player): Action => ({
+    type: "choose-copy",
+    player,
+    copy: controller.chooseCopy(view, awaiting.source, awaiting.options),
+  }),
+
+  /**
+   * Every option, plus "copy nothing", capped.
+   *
+   * The cap is applied to the concatenated list **after** appending `null`,
+   * which is deliberately preserved rather than tidied: on a board wider than
+   * `MAX_DECISION_CANDIDATES` creatures the "copy nothing" candidate is the
+   * one that falls off the end. That is the behaviour every recorded
+   * `bot:bench` number was measured against, and this branch takes no
+   * `order()` re-ranking either, so the options arrive in battlefield order.
+   */
+  candidates: (legal, player, limit): Action[] => {
+    if (legal.kind !== "choose-copy") return [];
+    const options: (ObjectId | null)[] = [...legal.options, null];
+    return options.slice(0, limit).map((copy) => ({ type: "choose-copy", player, copy }));
+  },
+});

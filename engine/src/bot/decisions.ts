@@ -90,12 +90,6 @@ export function decisionCandidates(
         player,
         chosen,
       }));
-    case "choose-copy":
-      return [...legal.options, null].slice(0, limit).map((copy) => ({
-        type: "choose-copy",
-        player,
-        copy,
-      }));
     case "proliferate": {
       // Not the 2^n subsets: proliferate is worth searching precisely because
       // whose permanent gets the counter matters, and the interesting cut is

@@ -72,6 +72,7 @@ import { AutomaticController } from "./controller.js";
 import type { ControllerView, PlayerController } from "./controller.js";
 import type { DecisionHost, DecisionReadCtx } from "./decisions/contract.js";
 import { decisionFor, decisionForAction, mayActOn } from "./decisions/registry.js";
+import { chooseCopy } from "./decisions/choose-copy.js";
 import { payLifeForUntapped } from "./decisions/pay-life-for-untapped.js";
 import { scry } from "./decisions/scry.js";
 import { CREATURE_TYPES } from "./creature-types.js";
@@ -276,6 +277,7 @@ export class Game {
     this.decisionCtx = { state: this.state, registry: this.registry };
     this.decisionHost = {
       applyPayLifeForUntapped: (player, pay) => this.applyPayLifeForUntapped(player, pay),
+      applyCopyChoice: (player, copy) => this.applyCopyChoice(player, copy),
       applyScry: (player, away) => this.applyScry(player, away),
     };
   }
@@ -528,9 +530,6 @@ export class Game {
       case "commander-replacement":
         this.applyCommanderChoice(action.player, action.toCommandZone);
         break;
-      case "choose-copy":
-        this.applyCopyChoice(action.player, action.copy);
-        break;
       case "choose-text":
         this.applyTextChoice(action.player, action.from, action.to);
         break;
@@ -620,8 +619,6 @@ export class Game {
         return this.whyCannotPutOnBottom(action.player, action.cards);
       case "commander-replacement":
         return this.whyCannotCommanderChoice(action.player);
-      case "choose-copy":
-        return this.whyCannotCopyChoice(action.player, action.copy);
       case "choose-text":
         return this.whyCannotTextChoice(action.player, action.from, action.to);
       case "choose-creature-type":
@@ -743,11 +740,6 @@ export class Game {
             commander: awaiting.commander,
             intendedZone: awaiting.intendedZone,
           },
-        ];
-      }
-      if (awaiting.kind === "choose-copy") {
-        return [
-          { kind: "choose-copy", source: awaiting.source, options: [...awaiting.options] },
         ];
       }
       if (awaiting.kind === "choose-text") {
@@ -1977,15 +1969,10 @@ export class Game {
     this.prepareForPriority(this.activePlayer);
   }
 
+  /** Kept because `applyCopyChoice` validates before applying and throws;
+   * the rule itself lives in `decisions/choose-copy.ts`. */
   private whyCannotCopyChoice(player: PlayerId, copy: ObjectId | null): string | null {
-    const awaiting = this.state.awaiting;
-    if (awaiting === null || awaiting.kind !== "choose-copy" || awaiting.player !== player) {
-      return `${player} is not being asked what to copy`;
-    }
-    if (copy !== null && !awaiting.options.includes(copy)) {
-      return `${copy} is not one of the permanents that may be copied`;
-    }
-    return null;
+    return chooseCopy.whyCannot(this.decisionCtx, { type: "choose-copy", player, copy }, player);
   }
 
   /**

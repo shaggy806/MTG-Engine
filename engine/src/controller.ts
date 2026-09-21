@@ -321,13 +321,6 @@ function answerAwaited(
       ),
     };
   }
-  if (awaiting.kind === "choose-copy") {
-    return {
-      type: "choose-copy",
-      player,
-      copy: controller.chooseCopy(view, awaiting.source, awaiting.options),
-    };
-  }
   if (awaiting.kind === "choose-text") {
     const [from, to] = controller.chooseText(
       view,
