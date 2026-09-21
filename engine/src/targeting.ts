@@ -410,3 +410,25 @@ export function legalTargets(
   }
   return out;
 }
+
+/**
+ * The colour/type identity of a permanent (its computed values), as a
+ * {@link TargetSource}.
+ *
+ * The source may be gone by the time an ability it put on the stack resolves
+ * (rule 608.2b — e.g. a creature Saw-in-Half'd, or a Miirym copy exiled at
+ * end step, in response to its own trigger). We don't retain last-known
+ * characteristics, so degrade to a neutral source (no colours / types — no
+ * protection or DEBT clause matches).
+ */
+export function permanentSource(
+  state: GameState,
+  registry: CardRegistry,
+  id: ObjectId,
+): TargetSource {
+  if (state.objects[id] === undefined) return { colors: new Set(), types: [] };
+  const c = computeCharacteristics(state, registry, id);
+  // `object` is carried so a spec can ask about the source itself — see
+  // `"creature-defending-player-controls"`.
+  return { colors: c.colors, types: c.types, object: id };
+}

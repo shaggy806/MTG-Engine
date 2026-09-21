@@ -828,5 +828,31 @@ function computeCharacteristicsUncached(
   };
 }
 
+/**
+ * Combat restrictions on `id` from static abilities (Pacifism, Juggernaut).
+ *
+ * A one-field read of {@link computeCharacteristics}, as a free function so
+ * the combat predicates can be lifted out of `Game` without dragging `this`
+ * along — see `combat/eligibility.ts`.
+ */
+export function restrictionsOf(
+  state: GameState,
+  registry: CardRegistry,
+  id: ObjectId,
+): ReadonlySet<CombatRestriction> {
+  return computeCharacteristics(state, registry, id).restrictions;
+}
+
+/** Whether `id` currently has `keyword`, counting every layer-6 grant and
+ * ability-loss. The free-function counterpart of {@link restrictionsOf}. */
+export function objHasKeyword(
+  state: GameState,
+  registry: CardRegistry,
+  id: ObjectId,
+  keyword: Keyword,
+): boolean {
+  return computeCharacteristics(state, registry, id).keywords.has(keyword);
+}
+
 /** @deprecated Use {@link computeCharacteristics}. */
 export const characteristicsOf = computeCharacteristics;

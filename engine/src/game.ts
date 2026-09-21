@@ -38,6 +38,8 @@ import type {
 import {
   computeCharacteristics,
   computedCacheMemo,
+  objHasKeyword,
+  restrictionsOf,
   effectiveSubtypes,
   hasLostAbilities,
   invalidateComputedCache,
@@ -116,7 +118,7 @@ import type {
 } from "./state.js";
 import { describeTargetSpec, isOptionalSpec, normalizeTargets } from "./target.js";
 import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
-import { isLegalTarget, legalTargets, protectionBlocks } from "./targeting.js";
+import { isLegalTarget, legalTargets, permanentSource, protectionBlocks } from "./targeting.js";
 import type { TargetSource } from "./targeting.js";
 import { PHASE_OF_STEP, isMainPhase, nextStep, stepUsesPriority } from "./turn.js";
 import type { Step } from "./turn.js";
@@ -378,15 +380,15 @@ export class Game {
     return computeCharacteristics(this.state, this.registry, id);
   }
 
-  /** Combat restrictions on `id` from static abilities (Pacifism, Juggernaut). */
+  /** Combat restrictions on `id` from static abilities (Pacifism, Juggernaut).
+   * Delegates to `characteristics.ts`, which is where the combat predicates
+   * reach for it without a `Game`. */
   private restrictionsOf(id: ObjectId): ReadonlySet<CombatRestriction> {
-    return computeCharacteristics(this.state, this.registry, id).restrictions;
+    return restrictionsOf(this.state, this.registry, id);
   }
 
   private objHasKeyword(id: ObjectId, keyword: Keyword): boolean {
-    return computeCharacteristics(this.state, this.registry, id).keywords.has(
-      keyword,
-    );
+    return objHasKeyword(this.state, this.registry, id, keyword);
   }
 
   /** Deep copy of the current state, suitable for {@link Game.fromSnapshot}. */
@@ -1319,18 +1321,10 @@ export class Game {
     return out;
   }
 
-  /** The colour/type identity of a permanent (its computed values). */
+  /** The colour/type identity of a permanent (its computed values).
+   * Delegates to `targeting.ts`, which owns {@link TargetSource}. */
   private permanentSource(id: ObjectId): TargetSource {
-    // The source may be gone by the time an ability it put on the stack
-    // resolves (rule 608.2b — e.g. a creature Saw-in-Half'd, or a Miirym copy
-    // exiled at end step, in response to its own trigger). We don't retain
-    // last-known characteristics, so degrade to a neutral source (no colours /
-    // types — no protection or DEBT clause matches).
-    if (this.state.objects[id] === undefined) return { colors: new Set(), types: [] };
-    const c = computeCharacteristics(this.state, this.registry, id);
-    // `object` is carried so a spec can ask about the source itself — see
-    // `"creature-defending-player-controls"`.
-    return { colors: c.colors, types: c.types, object: id };
+    return permanentSource(this.state, this.registry, id);
   }
 
   // --- token stacking (engine resource safety, not a rule) ------------
