@@ -25,10 +25,10 @@ import { combinations } from "./shared/subsets.js";
 export const discard = defineDecision({
   kind: "discard",
 
-  // Overridden per decision by `decisionHasSource`: a cleanup-step discard is
-  // the turn's own bookkeeping, a Mind Rot discard has a card behind it. This
-  // constant is the "an effect caused it" case; see `state.ts`.
-  hasSource: true,
+  // The one kind where this genuinely varies: the cleanup-step hand-size
+  // trim is the turn's own bookkeeping with no card behind it, while a
+  // discard an effect caused has one.
+  hasSource: (awaiting) => awaiting.fromEffect === true,
 
   legal: (ctx, awaiting, player): LegalAction[] => [
     {

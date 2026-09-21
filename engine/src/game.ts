@@ -473,10 +473,9 @@ export class Game {
 
   dispatch(action: Action): readonly GameEvent[] {
     const from = this.state.eventLog.length;
-    // A migrated decision kind applies through its module, which calls the
-    // same `apply*` this switch used to call directly. Everything else —
-    // every priority action, and every kind not yet migrated — falls through
-    // to the arms below.
+    // A decision applies through its module, which calls the same `apply*`
+    // this switch used to call directly. What is left below is the seven
+    // priority actions — the things a player does when nothing is pending.
     const decision = decisionForAction(action);
     if (decision !== undefined) {
       decision.apply(this.decisionHost, action);
@@ -594,22 +593,10 @@ export class Game {
 
     const awaiting = this.state.awaiting;
     if (awaiting !== null) {
-      // The mulligan phase is parallel — any player still in `hands` may act,
-      // not just `awaiting.player`. Every other decision is single-player.
+      // `mayActOn` is single-player for every kind but `mulligan`, whose
+      // phase is parallel — any player still in `hands` may act.
       if (!mayActOn(awaiting, player)) return [];
-      const decision = decisionFor(awaiting.kind);
-      if (decision !== undefined) {
-        return decision.legal(this.decisionCtx, awaiting as never, player);
-      }
-      // `discard` used to be this chain's implicit fallthrough, which is what
-      // made the build fail when an `AwaitingDecision` variant was added —
-      // accidentally, and several hundred lines from the mistake. That job now
-      // belongs to `DECISION_ACTIONS`, which is total and checked at the
-      // table. Reaching here means a kind is neither migrated nor handled
-      // above, which is a bug rather than a state.
-      throw new Error(
-        `no decision module or legacy arm for "${(awaiting as { kind: string }).kind}"`,
-      );
+      return decisionFor(awaiting.kind).legal(this.decisionCtx, awaiting as never, player);
     }
 
     if (this.state.priority.holder !== player) return [];

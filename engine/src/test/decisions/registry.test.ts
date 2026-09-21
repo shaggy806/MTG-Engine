@@ -2,20 +2,22 @@ import { describe, expect, it } from "vitest";
 
 import { DECISION_ACTIONS, DECISION_OFFERS } from "../../decisions/contract.js";
 import type { DecisionKind } from "../../decisions/contract.js";
-import { DECISIONS, decisionForAction, decisionForOffer } from "../../decisions/registry.js";
+import {
+  DECISIONS,
+  decisionForAction,
+  decisionForOffer,
+  decisionHasSource,
+} from "../../decisions/registry.js";
 import { asObjectId } from "../../primitives.js";
 import type { PlayerId } from "../../primitives.js";
-import { decisionHasSource } from "../../state.js";
 import type { AwaitingDecision } from "../../state.js";
 
 const ALICE = "alice" as PlayerId;
 
 /**
- * A minimal `AwaitingDecision` per migrated kind, so the module's declared
- * `hasSource` can be checked against `state.ts`'s `decisionHasSource` — the
- * copy the registry takes over in the closing step. Grows one entry per
- * migration; the "every registered kind has a fixture" test is what stops it
- * silently falling behind.
+ * A minimal `AwaitingDecision` per kind, so each module can be exercised
+ * without standing up a game. The "every kind has a fixture" test is what
+ * stops this falling behind the registry.
  */
 const FIXTURES: Partial<Record<DecisionKind, AwaitingDecision>> = {
   "choose-targets": {
@@ -167,16 +169,27 @@ describe("decision registry", () => {
     expect(decisionForOffer({ kind: "pass-priority" })).toBeUndefined();
   });
 
-  it("agrees with state.ts about which decisions name a source", () => {
-    // Temporary: `decisionHasSource` becomes a re-export from the registry in
-    // the closing step, at which point the two cannot disagree and this goes.
+  it("covers all seventeen kinds, with a fixture for each", () => {
+    // The table is total now, so a missing module fails the build. This is
+    // the check that the fixtures below don't fall behind it.
+    expect(Object.keys(DECISIONS)).toHaveLength(17);
+    for (const kind of Object.keys(DECISIONS) as DecisionKind[]) {
+      expect(FIXTURES[kind], `no FIXTURES entry for "${kind}"`).toBeDefined();
+    }
+  });
+
+  it("answers hasSource for every kind, and conditionally for discard", () => {
     for (const kind of Object.keys(DECISIONS) as DecisionKind[]) {
       const fixture = FIXTURES[kind];
-      expect(fixture, `no FIXTURES entry for the newly migrated "${kind}"`).toBeDefined();
       if (fixture === undefined) continue;
-      expect(DECISIONS[kind]?.hasSource, `${kind} disagrees on hasSource`).toBe(
-        decisionHasSource(fixture),
-      );
+      expect(typeof decisionHasSource(fixture), `${kind} hasSource`).toBe("boolean");
     }
+    // Discard is the one kind whose answer depends on the decision rather
+    // than the kind: a cleanup-step trim has no card behind it, an
+    // effect-caused discard does.
+    expect(
+      decisionHasSource({ kind: "discard", player: ALICE, count: 1, fromEffect: true }),
+    ).toBe(true);
+    expect(decisionHasSource({ kind: "discard", player: ALICE, count: 1 })).toBe(false);
   });
 });

@@ -959,31 +959,6 @@ export interface DecisionSource {
   readonly cardName: string;
 }
 
-/**
- * Whether a decision's source is worth showing the deciding player at all.
- *
- * Combat declarations, the cleanup-step discard and the mulligan aren't
- * caused by any one card, and the commander-replacement prompt names its own
- * commander already — for those, `decisionSource` is whatever resolved last
- * and must not be presented as the cause.
- */
-export function decisionHasSource(awaiting: AwaitingDecision): boolean {
-  switch (awaiting.kind) {
-    case "attackers":
-    case "blockers":
-    case "order-blockers":
-    case "assign-combat-damage":
-    case "mulligan":
-    case "commander-replacement":
-      return false;
-    case "discard":
-      // The cleanup-step discard is the turn's own bookkeeping; a Mind Rot
-      // discard has a card behind it.
-      return awaiting.fromEffect === true;
-    default:
-      return true;
-  }
-}
 
 /** A one-shot damage-prevention shield (Healing Salve — ROADMAP Phase 11 EG-6). */
 export interface PreventionShield {
@@ -1070,7 +1045,7 @@ export interface GameState {
    * The spell or permanent whose resolution raised `awaiting` — what a client
    * shows the deciding player so a forced sacrifice or discard isn't a prompt
    * out of nowhere. Only meaningful while `awaiting` is set *and*
-   * {@link decisionHasSource} accepts it; cleared whenever priority is handed
+   * `decisions/registry.ts`'s `decisionHasSource` accepts it; cleared whenever priority is handed
    * off with nothing pending.
    *
    * It is tracked separately from the decision itself because the two are

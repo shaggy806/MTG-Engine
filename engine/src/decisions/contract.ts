@@ -198,11 +198,18 @@ export interface DecisionModule<K extends DecisionKind = DecisionKind> {
    * check standing in for a correlation TypeScript cannot express. */
   readonly kind: K;
 
-  /** Whether this decision names a card as its source, for
-   * `PlayerView.decisionSource`. A decision the rules raise rather than a
-   * card does (declaring blockers) answers `false`. Mirrors `state.ts`'s
-   * `decisionHasSource`, which the registry takes over in the closing step. */
-  readonly hasSource: boolean;
+  /**
+   * Whether this decision names a card as its source, for
+   * `PlayerView.decisionSource` — a decision the rules raise rather than a
+   * card does (declaring blockers) answers `false`.
+   *
+   * A predicate rather than a constant for `discard`, the one kind where it
+   * genuinely varies: the cleanup-step hand-size trim is the turn's own
+   * bookkeeping, while a Mind Rot discard has a card behind it. This used to
+   * be a second switch over every kind in `state.ts`; the registry reads it
+   * from here now.
+   */
+  readonly hasSource: boolean | ((awaiting: AwaitingOf<K>) => boolean);
 
   /** Whether `player` may answer right now. Omitted means the default,
    * `awaiting.player === player`; only `mulligan` overrides it, because that

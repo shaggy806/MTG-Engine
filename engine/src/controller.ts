@@ -241,22 +241,10 @@ function answerAwaited(
   const awaiting = view.state.awaiting;
   if (awaiting === null) return null;
   const player = controller.playerId;
-  // The mulligan phase is parallel — this controller may act if it's still in
-  // `hands`, not only when it's the `awaiting.player` pointer. That rule
-  // lives in the registry now; this was one of three verbatim copies.
+  // `mayActOn` is single-player for every kind but `mulligan`, whose phase
+  // is parallel — this controller may act while it is still in `hands`.
   if (!mayActOn(awaiting, player)) return null;
-
-  const decision = decisionFor(awaiting.kind);
-  if (decision !== undefined) {
-    return decision.ask(controller, view, awaiting as never, player);
-  }
-
-  // `discard` was this chain's implicit fallthrough too. Totality is
-  // `DECISION_ACTIONS`' job now; getting here means a kind is neither
-  // migrated nor handled above.
-  throw new Error(
-    `no decision module or legacy arm for "${(awaiting as { kind: string }).kind}"`,
-  );
+  return decisionFor(awaiting.kind).ask(controller, view, awaiting as never, player);
 }
 
 /** Always passes priority, never attacks or blocks; discards from the front. */

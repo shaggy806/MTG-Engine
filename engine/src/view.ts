@@ -25,7 +25,8 @@ import type {
   TurnState,
   ZoneType,
 } from "./state.js";
-import { activePlayerOf, decisionHasSource, faceName, printedCardName } from "./state.js";
+import { decisionHasSource } from "./decisions/registry.js";
+import { activePlayerOf, faceName, printedCardName } from "./state.js";
 import type { TargetRef } from "./target.js";
 
 export interface PublicPlayerInfo {

@@ -1,18 +1,17 @@
 /**
  * The decision registry: one module per `AwaitingDecision` kind, and the
- * lookups the five dispatch chains use to reach them.
+ * lookups the engine's dispatch paths use to reach them.
  *
- * **Partial, on purpose, while the migration runs.** {@link DECISIONS} is a
- * `Partial` record: each of the five chains checks the registry first and
- * falls through to its existing if-chain when a kind has no module yet. That
- * is what lets one kind migrate per commit with the build green throughout.
- * The closing step drops `Partial`, at which point the fallthroughs are dead
- * code and are deleted.
+ * **Total.** {@link DECISIONS} is a plain `Record`, so adding an
+ * `AwaitingDecision` variant without writing its module fails the build here,
+ * at the table, rather than several hundred lines away in whichever if-chain
+ * happened to be the fallthrough. That was the whole point of the exercise:
+ * before it, the canary was `discard` accidentally being the last arm of two
+ * separate chains, and the error was a missing `count` property.
  *
- * Until then the totality guarantee lives in `contract.ts`'s
- * {@link DECISION_ACTIONS}/{@link DECISION_OFFERS}, which are already total —
- * so adding an `AwaitingDecision` variant fails the build at the tables even
- * though the module table would tolerate it.
+ * Adding a decision kind is now: write `decisions/<kind>.ts`, add it here,
+ * add its action to {@link DECISION_ACTIONS} and its offer to
+ * {@link DECISION_OFFERS}. The compiler names each one you forget.
  */
 
 import type { Action, LegalAction } from "../actions.js";
@@ -40,8 +39,8 @@ import { scry } from "./scry.js";
 
 export { defineDecision } from "./define.js";
 
-/** Every migrated decision kind. */
-export const DECISIONS: Partial<Record<DecisionKind, AnyDecisionModule>> = {
+/** Every decision kind. Total — see the header. */
+export const DECISIONS: Record<DecisionKind, AnyDecisionModule> = {
   "pay-life-for-untapped": payLifeForUntapped,
   "choose-copy": chooseCopy,
   "choose-text": chooseText,
@@ -61,10 +60,24 @@ export const DECISIONS: Partial<Record<DecisionKind, AnyDecisionModule>> = {
   scry,
 };
 
-/** The module for `kind`, or `undefined` while it is still on the legacy
- * chain. */
-export function decisionFor(kind: DecisionKind): AnyDecisionModule | undefined {
+/** The module for `kind`. Total, so this cannot fail. */
+export function decisionFor(kind: DecisionKind): AnyDecisionModule {
   return DECISIONS[kind];
+}
+
+/**
+ * Whether the pending decision names a card as its source — what
+ * `PlayerView.decisionSource` is gated on.
+ *
+ * Was a second switch over every kind in `state.ts`, which is exactly the
+ * kind of per-kind knowledge this registry exists to hold once. Lives here
+ * rather than being re-exported from `state.ts` because a decision module
+ * imports values from `state.ts`, and the reverse import would close a real
+ * ESM cycle.
+ */
+export function decisionHasSource(awaiting: AwaitingDecision): boolean {
+  const { hasSource } = DECISIONS[awaiting.kind];
+  return typeof hasSource === "function" ? hasSource(awaiting as never) : hasSource;
 }
 
 /** Reverse of {@link DECISION_ACTIONS}: which kind an incoming action answers.
@@ -103,9 +116,6 @@ export function decisionForOffer(legal: LegalAction): AnyDecisionModule | undefi
  * room stops synthesising its own answers.
  */
 export function mayActOn(awaiting: AwaitingDecision, player: PlayerId): boolean {
-  const module = DECISIONS[awaiting.kind];
-  if (module?.mayAct !== undefined) {
-    return module.mayAct(awaiting as never, player);
-  }
-  return awaiting.player === player;
+  const { mayAct } = DECISIONS[awaiting.kind];
+  return mayAct === undefined ? awaiting.player === player : mayAct(awaiting as never, player);
 }
