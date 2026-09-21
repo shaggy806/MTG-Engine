@@ -164,6 +164,7 @@ export interface DecisionHost {
   readonly applyProliferate: (player: PlayerId, chosen: readonly TargetRef[]) => void;
   readonly applyCreatureTypeChoice: (player: PlayerId, creatureType: string) => void;
   readonly applyModesChoice: (player: PlayerId, modes: readonly number[], xValue?: number) => void;
+  readonly applyChooseFromZone: (player: PlayerId, chosen: readonly ObjectId[]) => void;
   readonly applyScry: (player: PlayerId, away: readonly ObjectId[]) => void;
 }
 

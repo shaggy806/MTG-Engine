@@ -70,12 +70,6 @@ export function decisionCandidates(
         player,
         cards,
       }));
-    case "choose-from-zone":
-      return subsetsBetween(order(legal.eligible), legal.min, legal.max, limit).map((chosen) => ({
-        type: "choose-from-zone",
-        player,
-        chosen,
-      }));
     case "proliferate": {
       // Not the 2^n subsets: proliferate is worth searching precisely because
       // whose permanent gets the counter matters, and the interesting cut is

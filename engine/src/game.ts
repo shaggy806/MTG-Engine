@@ -73,6 +73,7 @@ import type { ControllerView, PlayerController } from "./controller.js";
 import type { DecisionHost, DecisionReadCtx } from "./decisions/contract.js";
 import { decisionFor, decisionForAction, mayActOn } from "./decisions/registry.js";
 import { chooseCopy } from "./decisions/choose-copy.js";
+import { chooseFromZone } from "./decisions/choose-from-zone.js";
 import { chooseModes } from "./decisions/choose-modes.js";
 import { chooseCreatureType } from "./decisions/choose-creature-type.js";
 import { proliferate } from "./decisions/proliferate.js";
@@ -279,6 +280,7 @@ export class Game {
       applyProliferate: (player, chosen) => this.applyProliferate(player, chosen),
       applyCreatureTypeChoice: (player, t) => this.applyCreatureTypeChoice(player, t),
       applyModesChoice: (player, modes, x) => this.applyModesChoice(player, modes, x),
+      applyChooseFromZone: (player, chosen) => this.applyChooseFromZone(player, chosen),
       applyScry: (player, away) => this.applyScry(player, away),
     };
   }
@@ -519,9 +521,6 @@ export class Game {
       case "discard":
         this.applyDiscard(action.player, action.cards);
         break;
-      case "choose-from-zone":
-        this.applyChooseFromZone(action.player, action.chosen);
-        break;
       case "mulligan":
         this.applyMulligan(action.player, action.keep);
         break;
@@ -600,8 +599,6 @@ export class Game {
         );
       case "discard":
         return this.whyCannotDiscard(action.player, action.cards);
-      case "choose-from-zone":
-        return this.whyCannotChooseFromZone(action.player, action.chosen);
       case "mulligan":
         return this.whyCannotMulligan(action.player);
       case "put-on-bottom":
@@ -688,17 +685,6 @@ export class Game {
             kind: "order-blockers",
             attacker: awaiting.attacker,
             blockers: [...this.state.objects[awaiting.attacker].blockedBy],
-          },
-        ];
-      }
-      if (awaiting.kind === "choose-from-zone") {
-        return [
-          {
-            kind: "choose-from-zone",
-            ids: [...awaiting.ids],
-            eligible: [...awaiting.eligible],
-            min: awaiting.min,
-            max: awaiting.max,
           },
         ];
       }
@@ -2779,29 +2765,17 @@ export class Game {
     this.prepareForPriority(this.activePlayer);
   }
 
+  /** Kept because `applyChooseFromZone` validates before applying and
+   * throws; the rules live in `decisions/choose-from-zone.ts`. */
   private whyCannotChooseFromZone(
     player: PlayerId,
     chosen: readonly ObjectId[],
   ): string | null {
-    const awaiting = this.state.awaiting;
-    if (
-      awaiting === null ||
-      awaiting.kind !== "choose-from-zone" ||
-      awaiting.player !== player
-    ) {
-      return `${player} is not being asked to choose from a zone`;
-    }
-    if (new Set(chosen).size !== chosen.length) {
-      return `${player} chose the same card twice`;
-    }
-    if (chosen.length < awaiting.min || chosen.length > awaiting.max) {
-      return `${player} must choose between ${awaiting.min} and ${awaiting.max} card(s), chose ${chosen.length}`;
-    }
-    const eligible = new Set(awaiting.eligible);
-    for (const id of chosen) {
-      if (!eligible.has(id)) return `${player} chose ${id}, not an eligible candidate`;
-    }
-    return null;
+    return chooseFromZone.whyCannot(
+      this.decisionCtx,
+      { type: "choose-from-zone", player, chosen },
+      player,
+    );
   }
 
   private finishCleanup(): void {

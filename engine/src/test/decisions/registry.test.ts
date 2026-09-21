@@ -18,6 +18,22 @@ const ALICE = "alice" as PlayerId;
  * silently falling behind.
  */
 const FIXTURES: Partial<Record<DecisionKind, AwaitingDecision>> = {
+  "choose-from-zone": {
+    kind: "choose-from-zone",
+    player: ALICE,
+    zone: "library",
+    ids: [asObjectId("obj-1")],
+    eligible: [asObjectId("obj-1")],
+    min: 0,
+    max: 1,
+    destination: "hand",
+    rest: "library-bottom",
+    shuffle: false,
+    reveal: false,
+    then: null,
+    source: asObjectId("obj-2"),
+    x: 0,
+  },
   "choose-modes": {
     kind: "choose-modes",
     player: ALICE,

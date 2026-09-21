@@ -26,6 +26,7 @@ import { chooseText } from "./choose-text.js";
 import { proliferate } from "./proliferate.js";
 import { chooseCreatureType } from "./choose-creature-type.js";
 import { chooseModes } from "./choose-modes.js";
+import { chooseFromZone } from "./choose-from-zone.js";
 import { scry } from "./scry.js";
 
 export { defineDecision } from "./define.js";
@@ -38,6 +39,7 @@ export const DECISIONS: Partial<Record<DecisionKind, AnyDecisionModule>> = {
   proliferate,
   "choose-creature-type": chooseCreatureType,
   "choose-modes": chooseModes,
+  "choose-from-zone": chooseFromZone,
   scry,
 };
 

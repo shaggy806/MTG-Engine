@@ -279,13 +279,6 @@ function answerAwaited(
       }),
     };
   }
-  if (awaiting.kind === "choose-from-zone") {
-    return {
-      type: "choose-from-zone",
-      player,
-      chosen: controller.chooseFromZone(view, awaiting.eligible, awaiting.min, awaiting.max),
-    };
-  }
   if (awaiting.kind === "mulligan") {
     const hand = awaiting.hands[player];
     if (hand.step === "bottom") {
