@@ -257,28 +257,6 @@ function answerAwaited(
   if (awaiting.kind === "blockers") {
     return { type: "declare-blockers", player, blocks: controller.declareBlockers(view) };
   }
-  if (awaiting.kind === "order-blockers") {
-    const blockers = view.state.objects[awaiting.attacker].blockedBy;
-    return {
-      type: "order-blockers",
-      player,
-      attacker: awaiting.attacker,
-      order: controller.orderBlockers(view, awaiting.attacker, [...blockers]),
-    };
-  }
-  if (awaiting.kind === "assign-combat-damage") {
-    return {
-      type: "assign-combat-damage",
-      player,
-      assignment: controller.assignCombatDamage(view, {
-        attacker: awaiting.attacker,
-        blockers: awaiting.blockers,
-        power: awaiting.power,
-        lethal: awaiting.lethal,
-        trample: awaiting.trample,
-      }),
-    };
-  }
   if (awaiting.kind === "choose-targets") {
     return {
       type: "choose-targets",

@@ -18,6 +18,20 @@ const ALICE = "alice" as PlayerId;
  * silently falling behind.
  */
 const FIXTURES: Partial<Record<DecisionKind, AwaitingDecision>> = {
+  "order-blockers": {
+    kind: "order-blockers",
+    player: ALICE,
+    attacker: asObjectId("obj-1"),
+  },
+  "assign-combat-damage": {
+    kind: "assign-combat-damage",
+    player: ALICE,
+    attacker: asObjectId("obj-1"),
+    blockers: [asObjectId("obj-2")],
+    power: 2,
+    lethal: [2],
+    trample: false,
+  },
   mulligan: {
     kind: "mulligan",
     player: ALICE,

@@ -31,6 +31,8 @@ import { sacrifice } from "./sacrifice.js";
 import { discard } from "./discard.js";
 import { commanderReplacement } from "./commander-replacement.js";
 import { mulligan } from "./mulligan.js";
+import { orderBlockers } from "./order-blockers.js";
+import { assignCombatDamage } from "./assign-combat-damage.js";
 import { scry } from "./scry.js";
 
 export { defineDecision } from "./define.js";
@@ -48,6 +50,8 @@ export const DECISIONS: Partial<Record<DecisionKind, AnyDecisionModule>> = {
   discard,
   "commander-replacement": commanderReplacement,
   mulligan,
+  "order-blockers": orderBlockers,
+  "assign-combat-damage": assignCombatDamage,
   scry,
 };
 

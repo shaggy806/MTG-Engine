@@ -28,7 +28,6 @@ import type {
 } from "./actions.js";
 import {
   autoAssignForAttacker,
-  damageAssignmentViolations,
   lethalFor,
   liveBlockersOf,
   needsDamageAssignmentChoice,
@@ -72,7 +71,9 @@ import { AutomaticController } from "./controller.js";
 import type { ControllerView, PlayerController } from "./controller.js";
 import type { DecisionHost, DecisionReadCtx } from "./decisions/contract.js";
 import { decisionFor, decisionForAction, mayActOn } from "./decisions/registry.js";
+import { assignCombatDamage } from "./decisions/assign-combat-damage.js";
 import { chooseCopy } from "./decisions/choose-copy.js";
+import { orderBlockers } from "./decisions/order-blockers.js";
 import { mulligan } from "./decisions/mulligan.js";
 import { mulliganCardsOwed } from "./decisions/shared/mulligan-math.js";
 import { commanderReplacement } from "./decisions/commander-replacement.js";
@@ -291,6 +292,8 @@ export class Game {
       applyCommanderChoice: (player, toCz) => this.applyCommanderChoice(player, toCz),
       applyMulligan: (player, keep) => this.applyMulligan(player, keep),
       applyPutOnBottom: (player, cards) => this.applyPutOnBottom(player, cards),
+      applyBlockerOrder: (p, a, o) => this.applyBlockerOrder(p, a, o),
+      applyAssignCombatDamage: (p, a) => this.applyAssignCombatDamage(p, a),
       applyScry: (player, away) => this.applyScry(player, away),
     };
   }
@@ -525,14 +528,8 @@ export class Game {
       case "declare-blockers":
         this.applyBlockerDeclarations(action.player, action.blocks);
         break;
-      case "order-blockers":
-        this.applyBlockerOrder(action.player, action.attacker, action.order);
-        break;
       case "choose-targets":
         this.applyChooseTargets(action.player, normalizeTargets(action.targets));
-        break;
-      case "assign-combat-damage":
-        this.applyAssignCombatDamage(action.player, action.assignment);
         break;
       default:
         throw new Error(
@@ -586,16 +583,8 @@ export class Game {
         return this.whyCannotDeclareAttackers(action.player, action.attackers);
       case "declare-blockers":
         return this.whyCannotDeclareBlockers(action.player, action.blocks);
-      case "order-blockers":
-        return this.whyCannotOrderBlockers(
-          action.player,
-          action.attacker,
-          action.order,
-        );
       case "choose-targets":
         return this.whyCannotChooseTargets(action.player, normalizeTargets(action.targets));
-      case "assign-combat-damage":
-        return this.whyCannotAssignCombatDamage(action.player, action.assignment);
       default:
         return `unknown action: ${(action as { type: string }).type}`;
     }
@@ -664,15 +653,6 @@ export class Game {
         );
         return [{ kind: "declare-blockers", eligible, menaceAttackers, mustBlock }];
       }
-      if (awaiting.kind === "order-blockers") {
-        return [
-          {
-            kind: "order-blockers",
-            attacker: awaiting.attacker,
-            blockers: [...this.state.objects[awaiting.attacker].blockedBy],
-          },
-        ];
-      }
       if (awaiting.kind === "choose-targets") {
         return [
           {
@@ -681,18 +661,6 @@ export class Game {
             cardName: awaiting.cardName,
             specs: [...awaiting.specs],
             options: awaiting.options.map((o) => [...o]),
-          },
-        ];
-      }
-      if (awaiting.kind === "assign-combat-damage") {
-        return [
-          {
-            kind: "assign-combat-damage",
-            attacker: awaiting.attacker,
-            blockers: [...awaiting.blockers],
-            power: awaiting.power,
-            lethal: [...awaiting.lethal],
-            trample: awaiting.trample,
           },
         ];
       }
@@ -3129,29 +3097,14 @@ export class Game {
     this.grantPriority(this.activePlayer);
   }
 
+  /** Kept because the matching apply validates before applying and throws;
+   * the rules live in `decisions/`. */
   private whyCannotOrderBlockers(
     player: PlayerId,
     attacker: ObjectId,
     order: readonly ObjectId[],
   ): string | null {
-    const awaiting = this.state.awaiting;
-    if (
-      awaiting === null ||
-      awaiting.kind !== "order-blockers" ||
-      awaiting.player !== player
-    ) {
-      return `${player} is not being asked to order blockers`;
-    }
-    if (awaiting.attacker !== attacker) {
-      return `expected an order for ${awaiting.attacker}, got ${attacker}`;
-    }
-    const current = this.state.objects[attacker]?.blockedBy ?? [];
-    const valid =
-      order.length === current.length &&
-      new Set(order).size === order.length &&
-      order.every((id) => current.includes(id));
-    if (!valid) return "blocker order must be a permutation of the blockers";
-    return null;
+    return orderBlockers.whyCannot(this.decisionCtx, { type: "order-blockers", player, attacker, order }, player);
   }
 
   private applyBlockerOrder(
@@ -3252,19 +3205,13 @@ export class Game {
     this.applyCombatDamageSubPass();
   }
 
+  /** Kept because the matching apply validates before applying and throws;
+   * the rules live in `decisions/`. */
   private whyCannotAssignCombatDamage(
     player: PlayerId,
     assignment: readonly number[],
   ): string | null {
-    const awaiting = this.state.awaiting;
-    if (
-      awaiting === null ||
-      awaiting.kind !== "assign-combat-damage" ||
-      awaiting.player !== player
-    ) {
-      return `${player} is not being asked to assign combat damage`;
-    }
-    return damageAssignmentViolations(awaiting, assignment);
+    return assignCombatDamage.whyCannot(this.decisionCtx, { type: "assign-combat-damage", player, assignment }, player);
   }
 
   private applyAssignCombatDamage(
