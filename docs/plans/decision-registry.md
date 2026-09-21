@@ -1,8 +1,7 @@
 # The decision registry
 
-Status: **shipped** (steps 1–17 of 19). Step 18 (the client PR) is written and
-parked on the `client-attack-fix` branch pending a browser check; step 19
-(`RandomController`'s arms) is optional and not started.
+Status: **shipped** (steps 1–18 of 19). Step 19 (`RandomController`'s arms) is
+optional and not started.
 
 ## The problem
 
@@ -132,13 +131,31 @@ One methodological note: the first attempt at a comparison checked out only
 `contract.ts`, failed to compile, and produced an empty "before" — reported as
 a divergence that wasn't one. Comparisons after that use a full-tree checkout.
 
+## Step 18: the client
+
+Fixes a live bug and drops one re-derivation. **"Attack with all"** sent every
+creature at `attackAction.defenders[0]`, the union across attackers, so a
+goaded creature was sent at its goader and the server refused the whole
+declaration (`⚠ Grizzly Bears is goaded and must attack someone else if able`);
+it now uses each creature's own `defendersFor` and skips one with nowhere
+legal to go. The **block Confirm button** re-derived menace and Lure by hand;
+it now calls the engine's `blockingViolations` against the same offer, so the
+button and the validator cannot disagree.
+
+Checked in a browser at 1366x768: with the old code, three goaded creatures in
+a 3-player room reproduce the rejection; with the fix they go to the
+non-goader and the attack lands. A 2-player room, where the goader is the only
+defender, still attacks it. Menace on the block bar: one blocker on a menace
+attacker shows the warning and disables Block, a second enables it. Lure was
+not exercised in the browser (no Lure card to hand); it is the same function.
+
+An earlier version of this step lived on a `client-attack-fix` branch that was
+never pushed, so it was redone from the description here rather than
+recovered. The plan described it as replacing three re-derivations; only these
+two turned up in `App.tsx`, so if the branch surfaces it may hold a third.
+
 ## Not done
 
-- **Step 18**, the client PR, on branch `client-attack-fix`: fixes a live bug
-  (attack-with-all picked from the union of defenders, which a goaded creature
-  makes illegal — pinned by a test in `goad-encore.test.ts`) and replaces three
-  re-derivations with the engine's own functions. Needs a browser check in both
-  a 2-player and a 3–4 player room at ~768px before it is pushed.
 - **Step 19**, migrating `RandomController.toAction`'s 17 arms. The riskiest
   cheap thing in the plan: the fuzzer's replay identity depends on the exact
   sequence of `random()`/`pickIndex()` calls, so a reordered call inside a
