@@ -29,6 +29,7 @@
  */
 
 import { EvalBotController, Game, actionPlayer, activePlayerOf, isSettled } from "engine";
+import { autoAnswerFor } from "engine";
 import type { Action, AwaitingDecision, ControllerView, GameState, PlayerController, PlayerId } from "engine";
 import { HostRole } from "./host.js";
 import type { BotSpeed, SeatStatus, ServerMessage, WireDeck } from "protocol";
@@ -556,8 +557,12 @@ export class Room {
       const seat = this.seatFor(s.awaiting.player);
       const wasActive = seat.autoPassUntil !== null;
       const justCleared = this.clearAutoPassIfDone(seat, s);
-      if (s.awaiting.kind === "attackers" && wasActive && !justCleared) {
-        this.game.dispatch({ type: "declare-attackers", player: seat.player, attackers: [] });
+      // Whether this seat's auto-pass is still running is room policy; what
+      // a skippable decision's answer *is* belongs to the decision, so the
+      // room asks rather than restating it. Only `attackers` answers.
+      const skip = wasActive && !justCleared ? autoAnswerFor(s.awaiting, seat.player) : null;
+      if (skip !== null) {
+        this.game.dispatch(skip);
         return true;
       }
       return false; // a real decision, or this seat's auto-pass just ran out

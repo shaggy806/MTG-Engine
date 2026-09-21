@@ -93,6 +93,15 @@ export const attackers = defineDecision({
     attackers: controller.declareAttackers(view),
   }),
 
+  /** Attacking is optional (rule 508.1a), so declaring nothing is always
+   * legal — which makes it the safe answer for a seat that is skipping its
+   * own windows. The room used to spell this out itself. */
+  autoAnswer: (_awaiting, player): Action => ({
+    type: "declare-attackers",
+    player,
+    attackers: [],
+  }),
+
   // candidates: deliberately absent from `decisionCandidates`. Combat is not
   // enumerated as a decision at all — the searching bots build an attack one
   // attacker/defender pair at a time in `bot/combat-math.ts` and

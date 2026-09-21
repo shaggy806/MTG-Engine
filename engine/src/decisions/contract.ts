@@ -249,6 +249,17 @@ export interface DecisionModule<K extends DecisionKind = DecisionKind> {
   ) => Action;
 
   /**
+   * The answer to give when nobody is going to be asked — a seat running an
+   * auto-pass, a headless driver, anything skipping this decision.
+   *
+   * Only `attackers` has one: "declare no attackers" is the trivially safe
+   * answer, and a seat that has opted out of its own priority windows should
+   * not be stopped by the attack step. Every other kind either has no safe
+   * default or is a decision the player asked for.
+   */
+  readonly autoAnswer?: (awaiting: AwaitingOf<K>, player: PlayerId) => Action;
+
+  /**
    * Candidate answers for the searching bots, best-effort and capped.
    *
    * **Absent on purpose for six kinds**, each of which carries its reason as a

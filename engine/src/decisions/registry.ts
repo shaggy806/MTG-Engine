@@ -66,6 +66,18 @@ export function decisionFor(kind: DecisionKind): AnyDecisionModule {
 }
 
 /**
+ * The answer to give when nobody will be asked, or `null` when this kind has
+ * no safe default and something has to stop and ask.
+ *
+ * Only `attackers` answers — see its module. Exists so a driver skipping a
+ * seat's windows doesn't have to know which decisions are skippable.
+ */
+export function autoAnswerFor(awaiting: AwaitingDecision, player: PlayerId): Action | null {
+  const { autoAnswer } = DECISIONS[awaiting.kind];
+  return autoAnswer === undefined ? null : autoAnswer(awaiting as never, player);
+}
+
+/**
  * Whether the pending decision names a card as its source — what
  * `PlayerView.decisionSource` is gated on.
  *
