@@ -18,6 +18,16 @@ const ALICE = "alice" as PlayerId;
  * silently falling behind.
  */
 const FIXTURES: Partial<Record<DecisionKind, AwaitingDecision>> = {
+  "choose-modes": {
+    kind: "choose-modes",
+    player: ALICE,
+    source: asObjectId("obj-1"),
+    modes: [{ text: "Draw a card", effect: null }],
+    minModes: 1,
+    maxModes: 1,
+    targets: [],
+    x: 0,
+  },
   "choose-creature-type": {
     kind: "choose-creature-type",
     player: ALICE,

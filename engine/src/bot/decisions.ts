@@ -58,20 +58,6 @@ export function decisionCandidates(
         player,
         targets,
       }));
-    case "choose-modes": {
-      const indices = legal.modeTexts.map((_, i) => i);
-      const xValues = legal.xCost === undefined ? [undefined] : [legal.xCost.maxX, 0];
-      return subsetsBetween(indices, legal.minModes, legal.maxModes, limit).flatMap((modes) =>
-        xValues.map(
-          (xValue): Action => ({
-            type: "choose-modes",
-            player,
-            modes,
-            ...(xValue !== undefined ? { xValue } : {}),
-          }),
-        ),
-      );
-    }
     case "sacrifice":
       return combinations([...order(legal.eligible)].reverse(), legal.count, limit).map((permanents) => ({
         type: "sacrifice",

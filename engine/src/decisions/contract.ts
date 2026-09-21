@@ -135,6 +135,16 @@ export const DECISION_OFFERS = {
 export interface DecisionReadCtx {
   readonly state: Readonly<GameState>;
   readonly registry: CardRegistry;
+  /**
+   * The largest `{X}` `player` could currently pay for an activated
+   * ability's cost, or 0 when the cost has no `{X}`.
+   *
+   * A capability rather than something a module computes, because it runs the
+   * mana solver over the live board — it plans a real payment for each
+   * candidate X until one fails. `choose-modes` needs it to advertise how
+   * large an "you may pay {X}{R}" mode's X may be.
+   */
+  readonly maxAffordableAbilityX: (player: PlayerId, manaString: string | null) => number;
 }
 
 /**
@@ -153,6 +163,7 @@ export interface DecisionHost {
   readonly applyTextChoice: (player: PlayerId, from: string, to: string) => void;
   readonly applyProliferate: (player: PlayerId, chosen: readonly TargetRef[]) => void;
   readonly applyCreatureTypeChoice: (player: PlayerId, creatureType: string) => void;
+  readonly applyModesChoice: (player: PlayerId, modes: readonly number[], xValue?: number) => void;
   readonly applyScry: (player: PlayerId, away: readonly ObjectId[]) => void;
 }
 

@@ -73,6 +73,7 @@ import type { ControllerView, PlayerController } from "./controller.js";
 import type { DecisionHost, DecisionReadCtx } from "./decisions/contract.js";
 import { decisionFor, decisionForAction, mayActOn } from "./decisions/registry.js";
 import { chooseCopy } from "./decisions/choose-copy.js";
+import { chooseModes } from "./decisions/choose-modes.js";
 import { chooseCreatureType } from "./decisions/choose-creature-type.js";
 import { proliferate } from "./decisions/proliferate.js";
 import { CHANGEABLE_CREATURE_TYPES, chooseText } from "./decisions/choose-text.js";
@@ -266,13 +267,18 @@ export class Game {
     // replaced, so one object stays current. `decisionHost` binds the very
     // `apply*` methods `dispatch` already called — the interface is that
     // switch transposed, not a new seam.
-    this.decisionCtx = { state: this.state, registry: this.registry };
+    this.decisionCtx = {
+      state: this.state,
+      registry: this.registry,
+      maxAffordableAbilityX: (player, cost) => this.maxAffordableAbilityX(player, cost),
+    };
     this.decisionHost = {
       applyPayLifeForUntapped: (player, pay) => this.applyPayLifeForUntapped(player, pay),
       applyCopyChoice: (player, copy) => this.applyCopyChoice(player, copy),
       applyTextChoice: (player, from, to) => this.applyTextChoice(player, from, to),
       applyProliferate: (player, chosen) => this.applyProliferate(player, chosen),
       applyCreatureTypeChoice: (player, t) => this.applyCreatureTypeChoice(player, t),
+      applyModesChoice: (player, modes, x) => this.applyModesChoice(player, modes, x),
       applyScry: (player, away) => this.applyScry(player, away),
     };
   }
@@ -525,9 +531,6 @@ export class Game {
       case "commander-replacement":
         this.applyCommanderChoice(action.player, action.toCommandZone);
         break;
-      case "choose-modes":
-        this.applyModesChoice(action.player, action.modes, action.xValue);
-        break;
       case "choose-targets":
         this.applyChooseTargets(action.player, normalizeTargets(action.targets));
         break;
@@ -605,8 +608,6 @@ export class Game {
         return this.whyCannotPutOnBottom(action.player, action.cards);
       case "commander-replacement":
         return this.whyCannotCommanderChoice(action.player);
-      case "choose-modes":
-        return this.whyCannotChooseModes(action.player, action.modes);
       case "choose-targets":
         return this.whyCannotChooseTargets(action.player, normalizeTargets(action.targets));
       case "assign-combat-damage":
@@ -719,25 +720,6 @@ export class Game {
             kind: "commander-replacement",
             commander: awaiting.commander,
             intendedZone: awaiting.intendedZone,
-          },
-        ];
-      }
-      if (awaiting.kind === "choose-modes") {
-        return [
-          {
-            kind: "choose-modes",
-            source: awaiting.source,
-            minModes: awaiting.minModes,
-            maxModes: awaiting.maxModes,
-            modeTexts: awaiting.modes.map((m) => m.text),
-            // "You may pay {X}{R}" — tell the driver how large X may be.
-            ...(awaiting.cost !== undefined && parseManaCost(awaiting.cost).x > 0
-              ? {
-                  xCost: {
-                    maxX: this.maxAffordableAbilityX(awaiting.player, awaiting.cost),
-                  },
-                }
-              : {}),
           },
         ];
       }
@@ -2113,30 +2095,17 @@ export class Game {
     if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
   }
 
+  /** Kept because `applyModesChoice` validates before applying and throws;
+   * the rules live in `decisions/choose-modes.ts`. */
   private whyCannotChooseModes(
     player: PlayerId,
     modeIndices: readonly number[],
   ): string | null {
-    const awaiting = this.state.awaiting;
-    if (
-      awaiting === null ||
-      awaiting.kind !== "choose-modes" ||
-      awaiting.player !== player
-    ) {
-      return `${player} is not being asked to choose modes`;
-    }
-    if (new Set(modeIndices).size !== modeIndices.length) {
-      return `${player} chose the same mode twice`;
-    }
-    if (modeIndices.length < awaiting.minModes || modeIndices.length > awaiting.maxModes) {
-      return `${player} must choose between ${awaiting.minModes} and ${awaiting.maxModes} mode(s), chose ${modeIndices.length}`;
-    }
-    for (const i of modeIndices) {
-      if (i < 0 || i >= awaiting.modes.length || !Number.isInteger(i)) {
-        return `${i} is not a valid mode index`;
-      }
-    }
-    return null;
+    return chooseModes.whyCannot(
+      this.decisionCtx,
+      { type: "choose-modes", player, modes: modeIndices },
+      player,
+    );
   }
 
   /** Answers a pending `choose-targets` decision (ROADMAP Phase 11 EG-1) — a

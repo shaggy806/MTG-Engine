@@ -321,18 +321,6 @@ function answerAwaited(
       ),
     };
   }
-  if (awaiting.kind === "choose-modes") {
-    return {
-      type: "choose-modes",
-      player,
-      modes: controller.chooseModes(
-        view,
-        awaiting.minModes,
-        awaiting.maxModes,
-        awaiting.modes.map((m) => m.text),
-      ),
-    };
-  }
   if (awaiting.kind === "sacrifice") {
     return {
       type: "sacrifice",
