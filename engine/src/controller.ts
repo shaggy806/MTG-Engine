@@ -251,12 +251,6 @@ function answerAwaited(
     return decision.ask(controller, view, awaiting as never, player);
   }
 
-  if (awaiting.kind === "attackers") {
-    return { type: "declare-attackers", player, attackers: controller.declareAttackers(view) };
-  }
-  if (awaiting.kind === "blockers") {
-    return { type: "declare-blockers", player, blocks: controller.declareBlockers(view) };
-  }
   if (awaiting.kind === "choose-targets") {
     return {
       type: "choose-targets",

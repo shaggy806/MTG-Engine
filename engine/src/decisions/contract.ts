@@ -29,7 +29,12 @@
  * what keeps the pair harmless.
  */
 
-import type { Action, LegalAction } from "../actions.js";
+import type {
+  Action,
+  AttackerDeclaration,
+  BlockerDeclaration,
+  LegalAction,
+} from "../actions.js";
 import type { CardRegistry } from "../cards.js";
 import type { ControllerView, PlayerController } from "../controller.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
@@ -172,6 +177,8 @@ export interface DecisionHost {
   readonly applyPutOnBottom: (player: PlayerId, cards: readonly ObjectId[]) => void;
   readonly applyBlockerOrder: (player: PlayerId, attacker: ObjectId, order: readonly ObjectId[]) => void;
   readonly applyAssignCombatDamage: (player: PlayerId, assignment: readonly number[]) => void;
+  readonly applyAttackerDeclarations: (player: PlayerId, declarations: readonly AttackerDeclaration[]) => void;
+  readonly applyBlockerDeclarations: (player: PlayerId, blocks: readonly BlockerDeclaration[]) => void;
   readonly applyScry: (player: PlayerId, away: readonly ObjectId[]) => void;
 }
 

@@ -35,9 +35,7 @@ import {
 import {
   creatureDef,
   currentAttackers,
-  defendersForAttacker,
   defendingPlayerOf,
-  goadForbidsDefender,
   hasSummoningSickness,
   isPlaneswalkerTarget,
   legalDefenders,
@@ -72,6 +70,8 @@ import type { ControllerView, PlayerController } from "./controller.js";
 import type { DecisionHost, DecisionReadCtx } from "./decisions/contract.js";
 import { decisionFor, decisionForAction, mayActOn } from "./decisions/registry.js";
 import { assignCombatDamage } from "./decisions/assign-combat-damage.js";
+import { attackers } from "./decisions/attackers.js";
+import { blockers } from "./decisions/blockers.js";
 import { chooseCopy } from "./decisions/choose-copy.js";
 import { orderBlockers } from "./decisions/order-blockers.js";
 import { mulligan } from "./decisions/mulligan.js";
@@ -294,6 +294,8 @@ export class Game {
       applyPutOnBottom: (player, cards) => this.applyPutOnBottom(player, cards),
       applyBlockerOrder: (p, a, o) => this.applyBlockerOrder(p, a, o),
       applyAssignCombatDamage: (p, a) => this.applyAssignCombatDamage(p, a),
+      applyAttackerDeclarations: (p, d) => this.applyAttackerDeclarations(p, d),
+      applyBlockerDeclarations: (p, b) => this.applyBlockerDeclarations(p, b),
       applyScry: (player, away) => this.applyScry(player, away),
     };
   }
@@ -522,12 +524,6 @@ export class Game {
           action.manaColors,
         );
         break;
-      case "declare-attackers":
-        this.applyAttackerDeclarations(action.player, action.attackers);
-        break;
-      case "declare-blockers":
-        this.applyBlockerDeclarations(action.player, action.blocks);
-        break;
       case "choose-targets":
         this.applyChooseTargets(action.player, normalizeTargets(action.targets));
         break;
@@ -579,10 +575,6 @@ export class Game {
           action.source,
           action.abilityIndex,
         );
-      case "declare-attackers":
-        return this.whyCannotDeclareAttackers(action.player, action.attackers);
-      case "declare-blockers":
-        return this.whyCannotDeclareBlockers(action.player, action.blocks);
       case "choose-targets":
         return this.whyCannotChooseTargets(action.player, normalizeTargets(action.targets));
       default:
@@ -611,47 +603,6 @@ export class Game {
       const decision = decisionFor(awaiting.kind);
       if (decision !== undefined) {
         return decision.legal(this.decisionCtx, awaiting as never, player);
-      }
-      if (awaiting.kind === "attackers") {
-        const defenders = this.legalDefenders(player);
-        const defendersFor: Record<ObjectId, readonly (PlayerId | ObjectId)[]> = {};
-        for (const id of this.state.zones.shared.battlefield) {
-          const legal = defendersForAttacker(this.state, this.registry, player, id);
-          if (legal.length > 0) defendersFor[id] = legal;
-        }
-        return [
-          {
-            kind: "declare-attackers",
-            defenders,
-            defendersFor,
-            eligible: Object.keys(defendersFor) as ObjectId[],
-          },
-        ];
-      }
-      if (awaiting.kind === "blockers") {
-        const attackers = this.currentAttackers().filter((id) => {
-          const attacking = this.state.objects[id].attacking;
-          return attacking !== null && this.defendingPlayerOf(attacking) === player;
-        });
-        const eligible = this.state.zones.shared.battlefield
-          .filter((id) => this.state.objects[id].controller === player)
-          .map((blocker) => ({
-            blocker,
-            canBlock: attackers.filter(
-              (attacker) => this.whyCannotBlock(player, blocker, attacker) === null,
-            ),
-          }))
-          .filter((entry) => entry.canBlock.length > 0);
-        const menaceAttackers = attackers.filter((id) =>
-          this.objHasKeyword(id, "menace"),
-        );
-        // Attackers this defender's able creatures are *forced* to block
-        // (Lure — rule 509.1c); menace ones excluded (see whyCannotDeclareBlockers).
-        const mustBlock = attackers.filter(
-          (id) =>
-            this.restrictionsOf(id).has("must-be-blocked") && !this.objHasKeyword(id, "menace"),
-        );
-        return [{ kind: "declare-blockers", eligible, menaceAttackers, mustBlock }];
       }
       if (awaiting.kind === "choose-targets") {
         return [
@@ -2837,112 +2788,23 @@ export class Game {
     return whyCannotBlock(this.state, this.registry, player, blockerId, attackerId);
   }
 
+  /** Kept because the matching apply validates before applying and throws;
+   * the rules live in `decisions/`. */
   private whyCannotDeclareAttackers(
     player: PlayerId,
     declarations: readonly AttackerDeclaration[],
   ): string | null {
-    const awaiting = this.state.awaiting;
-    if (
-      awaiting === null ||
-      awaiting.kind !== "attackers" ||
-      awaiting.player !== player
-    ) {
-      return `${player} is not being asked to declare attackers`;
-    }
-    const seen = new Set<ObjectId>();
-    for (const { attacker, defender } of declarations) {
-      if (seen.has(attacker)) {
-        return `${attacker} was declared as an attacker twice`;
-      }
-      seen.add(attacker);
-      const why = this.whyCannotAttack(player, attacker, defender);
-      if (why !== null) return why;
-      // Goad (rule 701.38b) — "attacks a player other than you if able". The
-      // requirement only bites when some other defender was actually legal,
-      // so a goaded creature with nowhere else to go may still attack its
-      // goader.
-      if (this.goadForbidsDefender(player, attacker, defender)) {
-        const name = this.creatureDef(attacker)?.name ?? attacker;
-        return `${name} is goaded and must attack someone else if able`;
-      }
-    }
-    return null;
+    return attackers.whyCannot(this.decisionCtx, { type: "declare-attackers", player, attackers: declarations }, player);
   }
 
-  /**
-   * Goad (rule 701.38b) — "attacks a player other than you if able". The
-   * requirement only bites when some *other* defender was actually legal, so
-   * a goaded creature with nowhere else to go may still attack its goader.
-   *
-   * Shared between `whyCannotDeclareAttackers` and `legalActions`: enumerating
-   * defenders without it is what let the fuzzer propose a declaration that
-   * `dispatch` then refused.
-   */
-  private goadForbidsDefender(
-    player: PlayerId,
-    attacker: ObjectId,
-    defender: PlayerId | ObjectId,
-  ): boolean {
-    return goadForbidsDefender(this.state, this.registry, player, attacker, defender);
-  }
 
+  /** Kept because the matching apply validates before applying and throws;
+   * the rules live in `decisions/`. */
   private whyCannotDeclareBlockers(
     player: PlayerId,
     blocks: readonly BlockerDeclaration[],
   ): string | null {
-    const awaiting = this.state.awaiting;
-    if (
-      awaiting === null ||
-      awaiting.kind !== "blockers" ||
-      awaiting.player !== player
-    ) {
-      return `${player} is not being asked to declare blockers`;
-    }
-    const seen = new Set<ObjectId>();
-    const blockerCount = new Map<ObjectId, number>();
-    for (const { blocker, attacker } of blocks) {
-      if (seen.has(blocker)) {
-        const def = this.creatureDef(blocker);
-        return `${def?.name ?? blocker} is already blocking`;
-      }
-      seen.add(blocker);
-      const why = this.whyCannotBlock(player, blocker, attacker);
-      if (why !== null) return why;
-      blockerCount.set(attacker, (blockerCount.get(attacker) ?? 0) + 1);
-    }
-    for (const [attacker, count] of blockerCount) {
-      if (count === 1 && this.objHasKeyword(attacker, "menace")) {
-        const def = this.creatureDef(attacker);
-        return `${def?.name ?? attacker} has menace and must be blocked by two or more creatures`;
-      }
-    }
-
-    // "Must be blocked" (Lure — rule 509.1c): every creature this defender
-    // controls that's able to block a must-be-blocked attacker must block one
-    // of them. (A must-be-blocked attacker with menace isn't forced — a lone
-    // creature isn't "able" to block it; that combination is left unmodeled.)
-    const mustBeBlocked = this.currentAttackers().filter((id) => {
-      const attacking = this.state.objects[id].attacking;
-      return (
-        this.restrictionsOf(id).has("must-be-blocked") &&
-        !this.objHasKeyword(id, "menace") &&
-        attacking !== null &&
-        this.defendingPlayerOf(attacking) === player
-      );
-    });
-    if (mustBeBlocked.length > 0) {
-      const blockingAMust = new Set(
-        blocks.filter((b) => mustBeBlocked.includes(b.attacker)).map((b) => b.blocker),
-      );
-      for (const id of this.state.zones.shared.battlefield) {
-        if (this.state.objects[id].controller !== player || blockingAMust.has(id)) continue;
-        if (mustBeBlocked.some((a) => this.whyCannotBlock(player, id, a) === null)) {
-          const def = this.creatureDef(id);
-          return `${def?.name ?? id} must block (a "must be blocked" attacker)`;
-        }
-      }
-    }
-    return null;
+    return blockers.whyCannot(this.decisionCtx, { type: "declare-blockers", player, blocks }, player);
   }
 
   private applyAttackerDeclarations(
