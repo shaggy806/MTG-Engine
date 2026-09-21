@@ -73,6 +73,7 @@ import type { ControllerView, PlayerController } from "./controller.js";
 import type { DecisionHost, DecisionReadCtx } from "./decisions/contract.js";
 import { decisionFor, decisionForAction, mayActOn } from "./decisions/registry.js";
 import { chooseCopy } from "./decisions/choose-copy.js";
+import { discard } from "./decisions/discard.js";
 import { sacrifice } from "./decisions/sacrifice.js";
 import { chooseFromZone } from "./decisions/choose-from-zone.js";
 import { chooseModes } from "./decisions/choose-modes.js";
@@ -283,6 +284,7 @@ export class Game {
       applyModesChoice: (player, modes, x) => this.applyModesChoice(player, modes, x),
       applyChooseFromZone: (player, chosen) => this.applyChooseFromZone(player, chosen),
       applySacrifice: (player, ps) => this.applySacrifice(player, ps),
+      applyDiscard: (player, cards) => this.applyDiscard(player, cards),
       applyScry: (player, away) => this.applyScry(player, away),
     };
   }
@@ -520,9 +522,6 @@ export class Game {
       case "order-blockers":
         this.applyBlockerOrder(action.player, action.attacker, action.order);
         break;
-      case "discard":
-        this.applyDiscard(action.player, action.cards);
-        break;
       case "mulligan":
         this.applyMulligan(action.player, action.keep);
         break;
@@ -596,8 +595,6 @@ export class Game {
           action.attacker,
           action.order,
         );
-      case "discard":
-        return this.whyCannotDiscard(action.player, action.cards);
       case "mulligan":
         return this.whyCannotMulligan(action.player);
       case "put-on-bottom":
@@ -726,15 +723,6 @@ export class Game {
             power: awaiting.power,
             lethal: [...awaiting.lethal],
             trample: awaiting.trample,
-          },
-        ];
-      }
-      if (awaiting.kind === "discard") {
-        return [
-          {
-            kind: "discard",
-            count: awaiting.count,
-            from: [...this.state.zones.perPlayer[player].hand],
           },
         ];
       }
@@ -2637,29 +2625,13 @@ export class Game {
     this.endStep();
   }
 
+  /** Kept because `applyDiscard` validates before applying and throws; the
+   * rules live in `decisions/discard.ts`. */
   private whyCannotDiscard(
     player: PlayerId,
     cards: readonly ObjectId[],
   ): string | null {
-    const awaiting = this.state.awaiting;
-    if (
-      awaiting === null ||
-      awaiting.kind !== "discard" ||
-      awaiting.player !== player
-    ) {
-      return `${player} is not being asked to discard`;
-    }
-    if (cards.length !== awaiting.count) {
-      return `${player} must discard exactly ${awaiting.count} card(s), chose ${cards.length}`;
-    }
-    if (new Set(cards).size !== cards.length) {
-      return `${player} chose the same card twice to discard`;
-    }
-    const hand = new Set(this.state.zones.perPlayer[player].hand);
-    for (const id of cards) {
-      if (!hand.has(id)) return `${player} tried to discard ${id}, not in hand`;
-    }
-    return null;
+    return discard.whyCannot(this.decisionCtx, { type: "discard", player, cards }, player);
   }
 
   /** Answers a pending `"choose-from-zone"` decision (see `beginZoneChoice`). */

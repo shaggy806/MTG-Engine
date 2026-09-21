@@ -166,6 +166,7 @@ export interface DecisionHost {
   readonly applyModesChoice: (player: PlayerId, modes: readonly number[], xValue?: number) => void;
   readonly applyChooseFromZone: (player: PlayerId, chosen: readonly ObjectId[]) => void;
   readonly applySacrifice: (player: PlayerId, permanents: readonly ObjectId[]) => void;
+  readonly applyDiscard: (player: PlayerId, cards: readonly ObjectId[]) => void;
   readonly applyScry: (player: PlayerId, away: readonly ObjectId[]) => void;
 }
 

@@ -58,12 +58,6 @@ export function decisionCandidates(
         player,
         targets,
       }));
-    case "discard":
-      return combinations([...order(legal.from)].reverse(), legal.count, limit).map((cards) => ({
-        type: "discard",
-        player,
-        cards,
-      }));
     case "proliferate": {
       // Not the 2^n subsets: proliferate is worth searching precisely because
       // whose permanent gets the counter matters, and the interesting cut is

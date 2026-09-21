@@ -326,16 +326,6 @@ function answerAwaited(
       ),
     };
   }
-  if (awaiting.kind === "discard") {
-    const hand = view.state.zones.perPlayer[player].hand.map(
-      (id) => view.state.objects[id],
-    );
-    return {
-      type: "discard",
-      player,
-      cards: controller.chooseDiscards(hand, awaiting.count),
-    };
-  }
   // `discard` was this chain's implicit fallthrough too. Totality is
   // `DECISION_ACTIONS`' job now; getting here means a kind is neither
   // migrated nor handled above.

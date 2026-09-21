@@ -28,6 +28,7 @@ import { chooseCreatureType } from "./choose-creature-type.js";
 import { chooseModes } from "./choose-modes.js";
 import { chooseFromZone } from "./choose-from-zone.js";
 import { sacrifice } from "./sacrifice.js";
+import { discard } from "./discard.js";
 import { scry } from "./scry.js";
 
 export { defineDecision } from "./define.js";
@@ -42,6 +43,7 @@ export const DECISIONS: Partial<Record<DecisionKind, AnyDecisionModule>> = {
   "choose-modes": chooseModes,
   "choose-from-zone": chooseFromZone,
   sacrifice,
+  discard,
   scry,
 };
 

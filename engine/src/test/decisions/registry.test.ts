@@ -18,6 +18,9 @@ const ALICE = "alice" as PlayerId;
  * silently falling behind.
  */
 const FIXTURES: Partial<Record<DecisionKind, AwaitingDecision>> = {
+  // fromEffect: true — the module's constant `hasSource` is the
+  // effect-caused case; a cleanup-step trim has no card behind it.
+  discard: { kind: "discard", player: ALICE, count: 1, fromEffect: true },
   sacrifice: {
     kind: "sacrifice",
     player: ALICE,
