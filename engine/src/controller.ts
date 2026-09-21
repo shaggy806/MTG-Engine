@@ -314,13 +314,6 @@ function answerAwaited(
       ),
     };
   }
-  if (awaiting.kind === "sacrifice") {
-    return {
-      type: "sacrifice",
-      player,
-      permanents: controller.chooseSacrifices(view, awaiting.eligible, awaiting.count),
-    };
-  }
   if (awaiting.kind === "choose-targets") {
     return {
       type: "choose-targets",

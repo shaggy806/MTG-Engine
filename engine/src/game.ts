@@ -73,6 +73,7 @@ import type { ControllerView, PlayerController } from "./controller.js";
 import type { DecisionHost, DecisionReadCtx } from "./decisions/contract.js";
 import { decisionFor, decisionForAction, mayActOn } from "./decisions/registry.js";
 import { chooseCopy } from "./decisions/choose-copy.js";
+import { sacrifice } from "./decisions/sacrifice.js";
 import { chooseFromZone } from "./decisions/choose-from-zone.js";
 import { chooseModes } from "./decisions/choose-modes.js";
 import { chooseCreatureType } from "./decisions/choose-creature-type.js";
@@ -281,6 +282,7 @@ export class Game {
       applyCreatureTypeChoice: (player, t) => this.applyCreatureTypeChoice(player, t),
       applyModesChoice: (player, modes, x) => this.applyModesChoice(player, modes, x),
       applyChooseFromZone: (player, chosen) => this.applyChooseFromZone(player, chosen),
+      applySacrifice: (player, ps) => this.applySacrifice(player, ps),
       applyScry: (player, away) => this.applyScry(player, away),
     };
   }
@@ -536,9 +538,6 @@ export class Game {
       case "assign-combat-damage":
         this.applyAssignCombatDamage(action.player, action.assignment);
         break;
-      case "sacrifice":
-        this.applySacrifice(action.player, action.permanents);
-        break;
       default:
         throw new Error(
           `unhandled action: ${(action as { type: string }).type}`,
@@ -609,8 +608,6 @@ export class Game {
         return this.whyCannotChooseTargets(action.player, normalizeTargets(action.targets));
       case "assign-combat-damage":
         return this.whyCannotAssignCombatDamage(action.player, action.assignment);
-      case "sacrifice":
-        return this.whyCannotSacrifice(action.player, action.permanents);
       default:
         return `unknown action: ${(action as { type: string }).type}`;
     }
@@ -706,15 +703,6 @@ export class Game {
             kind: "commander-replacement",
             commander: awaiting.commander,
             intendedZone: awaiting.intendedZone,
-          },
-        ];
-      }
-      if (awaiting.kind === "sacrifice") {
-        return [
-          {
-            kind: "sacrifice",
-            count: awaiting.count,
-            eligible: [...awaiting.eligible],
           },
         ];
       }
@@ -8944,25 +8932,17 @@ export class Game {
     this.prepareForPriority(this.activePlayer);
   }
 
+  /** Kept because `applySacrifice` validates before applying and throws;
+   * the rules live in `decisions/sacrifice.ts`. */
   private whyCannotSacrifice(
     player: PlayerId,
     permanents: readonly ObjectId[],
   ): string | null {
-    const awaiting = this.state.awaiting;
-    if (awaiting === null || awaiting.kind !== "sacrifice" || awaiting.player !== player) {
-      return `${player} is not being asked to sacrifice`;
-    }
-    if (new Set(permanents).size !== permanents.length) {
-      return `${player} chose the same permanent twice`;
-    }
-    if (permanents.length !== awaiting.count) {
-      return `${player} must sacrifice exactly ${awaiting.count}, chose ${permanents.length}`;
-    }
-    const eligible = new Set(awaiting.eligible);
-    for (const id of permanents) {
-      if (!eligible.has(id)) return `${id} is not an eligible sacrifice`;
-    }
-    return null;
+    return sacrifice.whyCannot(
+      this.decisionCtx,
+      { type: "sacrifice", player, permanents },
+      player,
+    );
   }
 
   private returnToHandByEffect(target: TargetRef): void {

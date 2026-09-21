@@ -58,12 +58,6 @@ export function decisionCandidates(
         player,
         targets,
       }));
-    case "sacrifice":
-      return combinations([...order(legal.eligible)].reverse(), legal.count, limit).map((permanents) => ({
-        type: "sacrifice",
-        player,
-        permanents,
-      }));
     case "discard":
       return combinations([...order(legal.from)].reverse(), legal.count, limit).map((cards) => ({
         type: "discard",
