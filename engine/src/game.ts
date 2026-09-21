@@ -26,6 +26,18 @@ import type {
   ConvokePayment,
   LegalAction,
 } from "./actions.js";
+import {
+  creatureDef,
+  currentAttackers,
+  defendersForAttacker,
+  defendingPlayerOf,
+  goadForbidsDefender,
+  hasSummoningSickness,
+  isPlaneswalkerTarget,
+  legalDefenders,
+  whyCannotAttack,
+  whyCannotBlock,
+} from "./combat/eligibility.js";
 import { CardRegistry, createDefaultRegistry } from "./cards.js";
 import type {
   CardDefinition,
@@ -618,11 +630,7 @@ export class Game {
         const defenders = this.legalDefenders(player);
         const defendersFor: Record<ObjectId, readonly (PlayerId | ObjectId)[]> = {};
         for (const id of this.state.zones.shared.battlefield) {
-          const legal = defenders.filter(
-            (defender) =>
-              this.whyCannotAttack(player, id, defender) === null &&
-              !this.goadForbidsDefender(player, id, defender),
-          );
+          const legal = defendersForAttacker(this.state, this.registry, player, id);
           if (legal.length > 0) defendersFor[id] = legal;
         }
         return [
@@ -2947,64 +2955,35 @@ export class Game {
 
   // --- combat -----------------------------------------------------
 
-  /** Every player `attacker` could legally declare an attack against. */
-  /** Everything the active player's attackers may be declared against: each
-   * non-eliminated opponent, plus every planeswalker those opponents control
-   * (rule 508.1). A planeswalker is identified by its `ObjectId`. */
+  /** Everything the active player's attackers may be declared against (rule
+   * 508.1). Delegates to `combat/eligibility.ts`. */
   private legalDefenders(attacker: PlayerId): (PlayerId | ObjectId)[] {
-    const opponents = this.state.turnOrder.filter(
-      (player) => player !== attacker && !this.state.players[player].hasLost,
-    );
-    const planeswalkers = this.state.zones.shared.battlefield.filter((id) => {
-      const object = this.state.objects[id];
-      return (
-        opponents.includes(object.controller) &&
-        computeCharacteristics(this.state, this.registry, id).types.includes("planeswalker")
-      );
-    });
-    return [...opponents, ...planeswalkers];
+    return legalDefenders(this.state, this.registry, attacker);
   }
 
   /** True if an attack target `id` is a planeswalker (an `ObjectId`) rather
    * than a player. */
   private isPlaneswalkerTarget(id: PlayerId | ObjectId): id is ObjectId {
-    return this.state.objects[id as ObjectId] !== undefined;
+    return isPlaneswalkerTarget(this.state, id);
   }
 
   /** The player who defends against an attack aimed at `target` — the target
    * itself if it's a player, or the controller of an attacked planeswalker. */
   private defendingPlayerOf(target: PlayerId | ObjectId): PlayerId {
-    return this.isPlaneswalkerTarget(target)
-      ? this.state.objects[target].controller
-      : (target as PlayerId);
+    return defendingPlayerOf(this.state, target);
   }
 
   /** Battlefield creatures currently declared as attackers. */
   private currentAttackers(): ObjectId[] {
-    return this.state.zones.shared.battlefield.filter(
-      (id) => this.state.objects[id].attacking != null,
-    );
+    return currentAttackers(this.state);
   }
 
   private creatureDef(id: ObjectId): CardDefinition | null {
-    const object = this.state.objects[id];
-    if (object === undefined || object.zone !== "battlefield") return null;
-    const def = this.registry.get(printedCardName(object));
-    // Printed OR currently a creature by a layer-4 type-change (a man-land
-    // animated this turn). The returned def is still the printed one — it's
-    // used for the permanent's name and ability list, while its live P/T /
-    // keywords come from `computeCharacteristics`.
-    if (def.types.includes("creature")) return def;
-    return computeCharacteristics(this.state, this.registry, id).types.includes("creature")
-      ? def
-      : null;
+    return creatureDef(this.state, this.registry, id);
   }
 
   private hasSummoningSickness(object: GameObject): boolean {
-    // A permanent cast from suspend "has haste" until it leaves the
-    // battlefield (rule 702.62e) — it's never summoning sick.
-    if (object.hastyUntilItLeaves) return false;
-    return object.summoningSick;
+    return hasSummoningSickness(object);
   }
 
   /**
@@ -3077,117 +3056,24 @@ export class Game {
     }
   }
 
+  /** Why `creatureId` may not be declared attacking `target`, or `null`.
+   * Delegates to `combat/eligibility.ts`. */
   private whyCannotAttack(
     player: PlayerId,
     creatureId: ObjectId,
     target: PlayerId | ObjectId,
   ): string | null {
-    const object = this.state.objects[creatureId];
-    const def = this.creatureDef(creatureId);
-    if (object === undefined || def === null) {
-      return `${creatureId} is not a creature on the battlefield`;
-    }
-    if (object.controller !== player) {
-      return `${def.name} is not controlled by the active player`;
-    }
-    if (object.tapped) return `${def.name} is tapped and cannot attack`;
-    if (this.objHasKeyword(creatureId, "defender")) {
-      return `${def.name} has defender and cannot attack`;
-    }
-    if (this.restrictionsOf(creatureId).has("cant-attack")) {
-      return `${def.name} can't attack`;
-    }
-    if (
-      this.hasSummoningSickness(object) &&
-      !this.objHasKeyword(creatureId, "haste")
-    ) {
-      return `${def.name} has summoning sickness`;
-    }
-    if (!this.legalDefenders(player).includes(target)) {
-      return this.isPlaneswalkerTarget(target)
-        ? `${def.name} can't attack that planeswalker`
-        : "attackers can only attack an opponent who hasn't already lost";
-    }
-    // "Can't attack you or planeswalkers you control" (Vow of Duty) — "you"
-    // is the controller of whatever is attached, not of the creature.
-    const defendingPlayer = this.defendingPlayerOf(target);
-    for (const id of this.state.zones.shared.battlefield) {
-      const attached = this.state.objects[id];
-      if (attached.attachedTo !== creatureId || hasLostAbilities(attached)) continue;
-      if (attached.controller !== defendingPlayer) continue;
-      const forbids = this.registry
-        .get(printedCardName(attached))
-        .static.some((ability) => ability.cantAttackController === true);
-      if (forbids) return `${def.name} can't attack ${defendingPlayer}`;
-    }
-    return null;
+    return whyCannotAttack(this.state, this.registry, player, creatureId, target);
   }
 
+  /** Why `blockerId` may not block `attackerId`, or `null`. Delegates to
+   * `combat/eligibility.ts`. */
   private whyCannotBlock(
     player: PlayerId,
     blockerId: ObjectId,
     attackerId: ObjectId,
   ): string | null {
-    const blocker = this.state.objects[blockerId];
-    const blockerDef = this.creatureDef(blockerId);
-    if (blocker === undefined || blockerDef === null) {
-      return `${blockerId} is not a creature on the battlefield`;
-    }
-    if (blocker.controller !== player) {
-      return `${blockerDef.name} is not controlled by the defender`;
-    }
-    if (blocker.tapped) return `${blockerDef.name} is tapped and cannot block`;
-    if (this.restrictionsOf(blockerId).has("cant-block")) {
-      return `${blockerDef.name} can't block`;
-    }
-
-    const attacker = this.state.objects[attackerId];
-    if (attacker === undefined || attacker.attacking === null) {
-      return `${attackerId} is not attacking`;
-    }
-    if (this.objHasKeyword(attackerId, "unblockable")) {
-      const attackerDef = this.registry.get(printedCardName(attacker));
-      return `${blockerDef.name} can't block ${attackerDef.name} (can't be blocked)`;
-    }
-    // Protection (rule 702.16) — can't be blocked by a matching creature.
-    if (protectionBlocks(this.state, this.registry, attackerId, this.permanentSource(blockerId))) {
-      const attackerDef = this.registry.get(printedCardName(attacker));
-      return `${blockerDef.name} can't block ${attackerDef.name} (protection)`;
-    }
-    if (this.defendingPlayerOf(attacker.attacking) !== player) {
-      const attackerDef = this.registry.get(printedCardName(attacker));
-      return `${blockerDef.name} can't block ${attackerDef.name} — it isn't attacking ${player}`;
-    }
-    // Fear (702.36) / Intimidate (702.13) — blockable only by an artifact
-    // creature, plus black creatures (fear) or colour-sharers (intimidate).
-    const fear = this.objHasKeyword(attackerId, "fear");
-    const intimidate = this.objHasKeyword(attackerId, "intimidate");
-    if (fear || intimidate) {
-      const blockerChars = computeCharacteristics(this.state, this.registry, blockerId);
-      let ok = blockerChars.types.includes("artifact");
-      if (!ok && fear) ok = blockerChars.colors.has("B");
-      if (!ok && intimidate) {
-        const attackerColors = computeCharacteristics(this.state, this.registry, attackerId).colors;
-        // A colourless attacker shares no colour with anything, so only an
-        // artifact creature can block it.
-        for (const color of attackerColors) {
-          if (blockerChars.colors.has(color)) ok = true;
-        }
-      }
-      if (!ok) {
-        const attackerDef = this.registry.get(printedCardName(attacker));
-        return `${blockerDef.name} can't block ${attackerDef.name} (${fear ? "fear" : "intimidate"})`;
-      }
-    }
-    if (
-      this.objHasKeyword(attackerId, "flying") &&
-      !this.objHasKeyword(blockerId, "flying") &&
-      !this.objHasKeyword(blockerId, "reach")
-    ) {
-      const attackerDef = this.registry.get(printedCardName(attacker));
-      return `${blockerDef.name} can't block ${attackerDef.name} (flying)`;
-    }
-    return null;
+    return whyCannotBlock(this.state, this.registry, player, blockerId, attackerId);
   }
 
   private whyCannotDeclareAttackers(
@@ -3236,14 +3122,7 @@ export class Game {
     attacker: ObjectId,
     defender: PlayerId | ObjectId,
   ): boolean {
-    const goadedBy = this.state.objects[attacker]?.goadedBy ?? [];
-    if (goadedBy.length === 0) return false;
-    if (!goadedBy.includes(this.defendingPlayerOf(defender))) return false;
-    return this.legalDefenders(player).some(
-      (d) =>
-        !goadedBy.includes(this.defendingPlayerOf(d)) &&
-        this.whyCannotAttack(player, attacker, d) === null,
-    );
+    return goadForbidsDefender(this.state, this.registry, player, attacker, defender);
   }
 
   private whyCannotDeclareBlockers(
