@@ -18,43 +18,17 @@
 
 import type { Action, LegalAction } from "../actions.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
+import { decisionForOffer } from "../decisions/registry.js";
+import { combinations, subsetsBetween } from "../decisions/shared/subsets.js";
 import { targetCombos } from "./candidates.js";
+
+// Re-exported from their new home so `bot/candidates.ts` and
+// `eval-bot-combat.test.ts` import exactly what they imported before. A
+// decision module cannot reach into `bot/`, which is why they moved.
+export { combinations, subsetsBetween };
 
 /** Per-decision ceiling on candidate answers. */
 export const MAX_DECISION_CANDIDATES = 32;
-
-/** Scry/surveil looks at most this many cards exhaustively (2^n subsets). */
-const MAX_SCRY_EXHAUSTIVE = 5;
-
-/** Every `k`-element subset of `items`, in order, stopping at `limit`. */
-export function combinations<T>(items: readonly T[], k: number, limit: number): T[][] {
-  const out: T[][] = [];
-  const pick = (start: number, chosen: T[]): void => {
-    if (out.length >= limit) return;
-    if (chosen.length === k) {
-      out.push([...chosen]);
-      return;
-    }
-    for (let i = start; i <= items.length - (k - chosen.length); i += 1) {
-      chosen.push(items[i]);
-      pick(i + 1, chosen);
-      chosen.pop();
-      if (out.length >= limit) return;
-    }
-  };
-  if (k >= 0 && k <= items.length) pick(0, []);
-  return out;
-}
-
-/** Subsets of size `min`..`max`, smallest first, stopping at `limit`. */
-function subsetsBetween<T>(items: readonly T[], min: number, max: number, limit: number): T[][] {
-  const out: T[][] = [];
-  for (let k = Math.max(0, min); k <= Math.min(max, items.length); k += 1) {
-    out.push(...combinations(items, k, limit - out.length));
-    if (out.length >= limit) break;
-  }
-  return out;
-}
 
 /**
  * Candidate answers to the pending decision `legal` describes, for `player`,
@@ -73,6 +47,10 @@ export function decisionCandidates(
   controllerOf: (id: ObjectId) => PlayerId | undefined = () => undefined,
 ): Action[] | null {
   const limit = MAX_DECISION_CANDIDATES;
+  const decision = decisionForOffer(legal);
+  if (decision !== undefined) {
+    return decision.candidates?.(legal, player, limit) ?? null;
+  }
   switch (legal.kind) {
     case "choose-targets":
       return targetCombos(legal.options, limit, legal.specs).map((targets) => ({
@@ -112,14 +90,6 @@ export function decisionCandidates(
         player,
         chosen,
       }));
-    case "scry": {
-      const cards = legal.cards;
-      const subsets: ObjectId[][] =
-        cards.length <= MAX_SCRY_EXHAUSTIVE
-          ? subsetsBetween(cards, 0, cards.length, limit)
-          : [[], [...cards], ...cards.map((card) => [card])];
-      return subsets.map((away) => ({ type: "scry", player, away }));
-    }
     case "choose-copy":
       return [...legal.options, null].slice(0, limit).map((copy) => ({
         type: "choose-copy",

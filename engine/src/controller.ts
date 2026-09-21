@@ -16,6 +16,7 @@ import type {
   LegalAction,
 } from "./actions.js";
 import { standardAssignment } from "./combat/damage.js";
+import { decisionFor, mayActOn } from "./decisions/registry.js";
 import { computeCharacteristics } from "./characteristics.js";
 import { CardRegistry, createDefaultRegistry } from "./cards.js";
 import { chooseBottomOfHand, shouldMulligan } from "./bot/mulligan.js";
@@ -241,12 +242,14 @@ function answerAwaited(
   if (awaiting === null) return null;
   const player = controller.playerId;
   // The mulligan phase is parallel — this controller may act if it's still in
-  // `hands`, not only when it's the `awaiting.player` pointer.
-  const mayAct =
-    awaiting.kind === "mulligan"
-      ? awaiting.hands[player] !== undefined
-      : awaiting.player === player;
-  if (!mayAct) return null;
+  // `hands`, not only when it's the `awaiting.player` pointer. That rule
+  // lives in the registry now; this was one of three verbatim copies.
+  if (!mayActOn(awaiting, player)) return null;
+
+  const decision = decisionFor(awaiting.kind);
+  if (decision !== undefined) {
+    return decision.ask(controller, view, awaiting as never, player);
+  }
 
   if (awaiting.kind === "attackers") {
     return { type: "declare-attackers", player, attackers: controller.declareAttackers(view) };
@@ -371,13 +374,6 @@ function answerAwaited(
       permanents: controller.chooseSacrifices(view, awaiting.eligible, awaiting.count),
     };
   }
-  if (awaiting.kind === "scry") {
-    return {
-      type: "scry",
-      player,
-      away: controller.chooseScry(view, awaiting.cards, awaiting.mode),
-    };
-  }
   if (awaiting.kind === "choose-targets") {
     return {
       type: "choose-targets",
@@ -397,14 +393,22 @@ function answerAwaited(
       chosen: controller.chooseProliferate(view, awaiting.eligible),
     };
   }
-  const hand = view.state.zones.perPlayer[player].hand.map(
-    (id) => view.state.objects[id],
+  if (awaiting.kind === "discard") {
+    const hand = view.state.zones.perPlayer[player].hand.map(
+      (id) => view.state.objects[id],
+    );
+    return {
+      type: "discard",
+      player,
+      cards: controller.chooseDiscards(hand, awaiting.count),
+    };
+  }
+  // `discard` was this chain's implicit fallthrough too. Totality is
+  // `DECISION_ACTIONS`' job now; getting here means a kind is neither
+  // migrated nor handled above.
+  throw new Error(
+    `no decision module or legacy arm for "${(awaiting as { kind: string }).kind}"`,
   );
-  return {
-    type: "discard",
-    player,
-    cards: controller.chooseDiscards(hand, awaiting.count),
-  };
 }
 
 /** Always passes priority, never attacks or blocks; discards from the front. */

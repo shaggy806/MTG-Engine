@@ -9,19 +9,21 @@
  * for one (`answerAwaited`), and enumerate candidates for the bot
  * (`bot/decisions.ts`). A module gathers one kind's five arms into one file.
  *
- * **What it does not own: applying.** `apply` is a one-line call through
- * {@link DecisionHost}, which is `Game.dispatch`'s existing switch transposed
- * into an interface — every one of its decision arms is already a one-line
- * delegate. Not a single `apply*` body moves, so the load-bearing statement
- * orderings inside them (the `attacker-declared` → `attackers-declared` emit
- * order, reveal-before-move in `applyChooseFromZone`, the
- * `deferredCommanderMove` latch) are untouched, and `Game` stays the only
+ * **What it does not own: the applying itself.** {@link DecisionModule.apply}
+ * is a one-line call through {@link DecisionHost}, which is `Game.dispatch`'s
+ * existing switch transposed into an interface — every one of its decision
+ * arms is already a one-line delegate to an `apply*` method. Not a single
+ * `apply*` body moves, so the load-bearing statement orderings inside them
+ * (the `attacker-declared` → `attackers-declared` emit order,
+ * reveal-before-move in `applyChooseFromZone`, the `deferredCommanderMove`
+ * latch, and the difference between `applyScry`'s guarded resume and
+ * `applyChooseFromZone`'s bare one) are untouched, and `Game` remains the only
  * writer of `GameState`.
  *
  * **Import direction.** Nothing under `decisions/` may import `game.js`, and
  * anything it needs from `controller.js` must be imported with `import type`
- * — `controller.js` will import the registry as a *value*, so a value import
- * back the other way makes a real ESM cycle whose symptom is
+ * — `controller.js` imports the registry as a *value*, so a value import back
+ * the other way makes a real ESM cycle whose symptom is
  * `TypeError: undefined is not a function` at module init rather than a build
  * failure. `verbatimModuleSyntax` erases the type-only direction, which is
  * what keeps the pair harmless.
@@ -29,11 +31,15 @@
 
 import type { Action, LegalAction } from "../actions.js";
 import type { CardRegistry } from "../cards.js";
-import type { PlayerId } from "../primitives.js";
+import type { ControllerView, PlayerController } from "../controller.js";
+import type { ObjectId, PlayerId } from "../primitives.js";
 import type { AwaitingDecision, GameState } from "../state.js";
 
 /** One of the 17 decisions the rules can stop and ask a player for. */
 export type DecisionKind = AwaitingDecision["kind"];
+
+/** The `AwaitingDecision` variant belonging to kind `K`. */
+export type AwaitingOf<K extends DecisionKind> = Extract<AwaitingDecision, { kind: K }>;
 
 /**
  * Which `Action` type(s) answer each decision kind.
@@ -131,29 +137,91 @@ export interface DecisionReadCtx {
 }
 
 /**
- * Applying an answer — `Game.dispatch`'s decision arms, transposed.
+ * Applying an answer: `Game.dispatch`'s decision arms, transposed into an
+ * interface.
  *
- * Every method here is already a one-line delegate in `dispatch`, so this
- * interface is a restatement of what exists rather than a new seam. `Game`
- * implements it by binding its own `apply*` methods; nothing else may.
+ * Every member is one of `Game`'s existing `apply*` methods, named
+ * identically so the correspondence is greppable, and `Game` satisfies this
+ * by binding them. Nothing else implements it. It grows one member per
+ * migrated kind rather than arriving complete, so each step's diff shows
+ * exactly which apply it started routing.
  */
 export interface DecisionHost {
-  readonly apply: (action: Action) => void;
+  readonly applyScry: (player: PlayerId, away: readonly ObjectId[]) => void;
 }
 
-/** One decision kind's whole answer half. */
+/**
+ * One decision kind's whole answer half.
+ *
+ * Every member is a *move* of code that exists today, not a new abstraction:
+ * `legal` is one arm of `legalActions`' awaiting block, `whyCannot` is one
+ * `Game.whyCannot*` body, `apply` is one arm of `dispatch`, `ask` is one arm
+ * of `answerAwaited`, `candidates` is one arm of `decisionCandidates`.
+ */
 export interface DecisionModule<K extends DecisionKind = DecisionKind> {
   /** The kind this module answers. Pinned as a literal at every definition
-   * site so the registry can assert `DECISIONS[k].kind === k`. */
+   * site so the registry can assert `DECISIONS[k].kind === k` — the runtime
+   * check standing in for a correlation TypeScript cannot express. */
   readonly kind: K;
-  /** Whether `player` may answer right now. Defaults to
-   * `awaiting.player === player`; only `mulligan` overrides it, because that
-   * phase is parallel and every player still in `hands` may act. */
-  readonly mayAct?: (awaiting: Extract<AwaitingDecision, { kind: K }>, player: PlayerId) => boolean;
+
   /** Whether this decision names a card as its source, for
    * `PlayerView.decisionSource`. A decision the rules raise rather than a
-   * card does (declaring blockers) answers `false`. */
+   * card does (declaring blockers) answers `false`. Mirrors `state.ts`'s
+   * `decisionHasSource`, which the registry takes over in the closing step. */
   readonly hasSource: boolean;
+
+  /** Whether `player` may answer right now. Omitted means the default,
+   * `awaiting.player === player`; only `mulligan` overrides it, because that
+   * phase is parallel and every player still in `hands` may act. */
+  readonly mayAct?: (awaiting: AwaitingOf<K>, player: PlayerId) => boolean;
+
+  /** What `legalActions` offers while this decision is pending. Must be
+   * **pure**: it runs inside a `withComputedCache` region. */
+  readonly legal: (
+    ctx: DecisionReadCtx,
+    awaiting: AwaitingOf<K>,
+    player: PlayerId,
+  ) => LegalAction[];
+
+  /**
+   * Why `action` is not a legal answer, or `null`.
+   *
+   * Takes the whole `Action` rather than a pre-narrowed payload, and owns its
+   * own "is not being asked to …" guard, deliberately. That wording is
+   * asserted by `seam.test.ts` and `zone-choice.test.ts` on a cross-kind
+   * dispatch, and it travels verbatim to the client as the red error banner.
+   * Hoisting the guard into the dispatcher would collapse 17 messages into
+   * one generic one and break both.
+   */
+  readonly whyCannot: (ctx: DecisionReadCtx, action: Action, player: PlayerId) => string | null;
+
+  /** Carry the answer out, by calling the matching `apply*` on the host. One
+   * line; the body stays on `Game`. */
+  readonly apply: (host: DecisionHost, action: Action) => void;
+
+  /** Ask a controller for an answer — one arm of `answerAwaited`. */
+  readonly ask: (
+    controller: PlayerController,
+    view: ControllerView,
+    awaiting: AwaitingOf<K>,
+    player: PlayerId,
+  ) => Action;
+
+  /**
+   * Candidate answers for the searching bots, best-effort and capped.
+   *
+   * **Absent on purpose for six kinds**, each of which carries its reason as a
+   * comment where the field would be. An empty slot here is a measured
+   * finding, not an unfinished TODO — searching `commander-replacement`, for
+   * one, made the bot feed its commander to the first removal spell, because
+   * `features.ts` has no command-zone term while a graveyard card is worth
+   * 0.05.
+   *
+   * Order is load-bearing: `Game.fromSnapshot` rollouts replay in the order
+   * these are emitted, so a reordering shifts every `bot:bench` number and
+   * silently re-points the frozen champions in `bot/champions/`.
+   */
+  readonly candidates?: (legal: LegalAction, player: PlayerId, limit: number) => Action[];
 }
 
 /** A module of unknown kind, as the registry stores them. */

@@ -70,6 +70,9 @@ import {
 import type { Characteristics } from "./characteristics.js";
 import { AutomaticController } from "./controller.js";
 import type { ControllerView, PlayerController } from "./controller.js";
+import type { DecisionHost, DecisionReadCtx } from "./decisions/contract.js";
+import { decisionFor, decisionForAction, mayActOn } from "./decisions/registry.js";
+import { scry } from "./decisions/scry.js";
 import { CREATURE_TYPES } from "./creature-types.js";
 import {
   applyEffectSpec,
@@ -264,7 +267,22 @@ export class Game {
     this.registry = registry;
     this.controllers = controllers;
     this.rng = rng;
+    // Built here rather than per call: `state` and `registry` are fixed for
+    // the life of a `Game`, and `state` is mutated in place rather than
+    // replaced, so one object stays current. `decisionHost` binds the very
+    // `apply*` methods `dispatch` already called — the interface is that
+    // switch transposed, not a new seam.
+    this.decisionCtx = { state: this.state, registry: this.registry };
+    this.decisionHost = {
+      applyScry: (player, away) => this.applyScry(player, away),
+    };
   }
+
+  /** What a decision module may read. See `decisions/contract.ts`. */
+  private readonly decisionCtx: DecisionReadCtx;
+
+  /** What a decision module may do — `Game`'s own `apply*` methods, bound. */
+  private readonly decisionHost: DecisionHost;
 
   static create(config: GameConfig): Game {
     if (config.decks.length < 2 || config.decks.length > 4) {
@@ -431,6 +449,15 @@ export class Game {
 
   dispatch(action: Action): readonly GameEvent[] {
     const from = this.state.eventLog.length;
+    // A migrated decision kind applies through its module, which calls the
+    // same `apply*` this switch used to call directly. Everything else —
+    // every priority action, and every kind not yet migrated — falls through
+    // to the arms below.
+    const decision = decisionForAction(action);
+    if (decision !== undefined) {
+      decision.apply(this.decisionHost, action);
+      return this.state.eventLog.slice(from);
+    }
     switch (action.type) {
       case "pass-priority":
         this.passPriority(action.player);
@@ -526,9 +553,6 @@ export class Game {
       case "proliferate":
         this.applyProliferate(action.player, action.chosen);
         break;
-      case "scry":
-        this.applyScry(action.player, action.away);
-        break;
       default:
         throw new Error(
           `unhandled action: ${(action as { type: string }).type}`,
@@ -539,6 +563,10 @@ export class Game {
 
   /** Why `action` cannot be dispatched right now, or `null` if it can. */
   canDispatch(action: Action): string | null {
+    const decision = decisionForAction(action);
+    if (decision !== undefined) {
+      return decision.whyCannot(this.decisionCtx, action, actionPlayer(action));
+    }
     switch (action.type) {
       case "pass-priority":
         if (this.state.awaiting !== null) return "a declaration is pending";
@@ -611,8 +639,6 @@ export class Game {
         return this.whyCannotSacrifice(action.player, action.permanents);
       case "proliferate":
         return this.whyCannotProliferate(action.player, action.chosen);
-      case "scry":
-        return this.whyCannotScry(action.player, action.away);
       default:
         return `unknown action: ${(action as { type: string }).type}`;
     }
@@ -635,11 +661,11 @@ export class Game {
     if (awaiting !== null) {
       // The mulligan phase is parallel — any player still in `hands` may act,
       // not just `awaiting.player`. Every other decision is single-player.
-      const mayAct =
-        awaiting.kind === "mulligan"
-          ? awaiting.hands[player] !== undefined
-          : awaiting.player === player;
-      if (!mayAct) return [];
+      if (!mayActOn(awaiting, player)) return [];
+      const decision = decisionFor(awaiting.kind);
+      if (decision !== undefined) {
+        return decision.legal(this.decisionCtx, awaiting as never, player);
+      }
       if (awaiting.kind === "attackers") {
         const defenders = this.legalDefenders(player);
         const defendersFor: Record<ObjectId, readonly (PlayerId | ObjectId)[]> = {};
@@ -785,9 +811,6 @@ export class Game {
       if (awaiting.kind === "proliferate") {
         return [{ kind: "proliferate", eligible: [...awaiting.eligible] }];
       }
-      if (awaiting.kind === "scry") {
-        return [{ kind: "scry", mode: awaiting.mode, cards: [...awaiting.cards] }];
-      }
       if (awaiting.kind === "choose-targets") {
         return [
           {
@@ -811,13 +834,24 @@ export class Game {
           },
         ];
       }
-      return [
-        {
-          kind: "discard",
-          count: awaiting.count,
-          from: [...this.state.zones.perPlayer[player].hand],
-        },
-      ];
+      if (awaiting.kind === "discard") {
+        return [
+          {
+            kind: "discard",
+            count: awaiting.count,
+            from: [...this.state.zones.perPlayer[player].hand],
+          },
+        ];
+      }
+      // `discard` used to be this chain's implicit fallthrough, which is what
+      // made the build fail when an `AwaitingDecision` variant was added —
+      // accidentally, and several hundred lines from the mistake. That job now
+      // belongs to `DECISION_ACTIONS`, which is total and checked at the
+      // table. Reaching here means a kind is neither migrated nor handled
+      // above, which is a bug rather than a state.
+      throw new Error(
+        `no decision module or legacy arm for "${(awaiting as { kind: string }).kind}"`,
+      );
     }
 
     if (this.state.priority.holder !== player) return [];
@@ -7604,19 +7638,10 @@ export class Game {
     if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
   }
 
+  /** Kept because `applyScry` validates before applying and throws; the
+   * rules themselves live in `decisions/scry.ts`. */
   private whyCannotScry(player: PlayerId, away: readonly ObjectId[]): string | null {
-    const awaiting = this.state.awaiting;
-    if (awaiting === null || awaiting.kind !== "scry" || awaiting.player !== player) {
-      return `${player} is not being asked to scry`;
-    }
-    if (new Set(away).size !== away.length) {
-      return `${player} chose the same card twice`;
-    }
-    const looked = new Set(awaiting.cards);
-    for (const id of away) {
-      if (!looked.has(id)) return `${id} was not among the cards looked at`;
-    }
-    return null;
+    return scry.whyCannot(this.decisionCtx, { type: "scry", player, away }, player);
   }
 
   /** Create `count` copies of the named token, controlled by `controller` (rule 111). */
