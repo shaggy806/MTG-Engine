@@ -20,7 +20,6 @@ import type { Action, LegalAction } from "../actions.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import { decisionForOffer } from "../decisions/registry.js";
 import { combinations, subsetsBetween } from "../decisions/shared/subsets.js";
-import { targetCombos } from "./candidates.js";
 
 // Re-exported from their new home so `bot/candidates.ts` and
 // `eval-bot-combat.test.ts` import exactly what they imported before. A
@@ -52,30 +51,6 @@ export function decisionCandidates(
     return decision.candidates?.(legal, player, limit, { order, controllerOf }) ?? null;
   }
   switch (legal.kind) {
-    case "choose-targets":
-      return targetCombos(legal.options, limit, legal.specs).map((targets) => ({
-        type: "choose-targets",
-        player,
-        targets,
-      }));
-    case "proliferate": {
-      // Not the 2^n subsets: proliferate is worth searching precisely because
-      // whose permanent gets the counter matters, and the interesting cut is
-      // "mine" vs "everything" vs "nothing". Anything finer is a rollout
-      // spent distinguishing two of your own creatures.
-      const mine = legal.eligible.filter((t) =>
-        t.kind === "player" ? t.player === player : controllerOf(t.object) === player,
-      );
-      const seen = new Set<string>();
-      return [mine, legal.eligible, []]
-        .filter((chosen) => {
-          const key = chosen.map((t) => (t.kind === "player" ? t.player : t.object)).join(",");
-          if (seen.has(key)) return false;
-          seen.add(key);
-          return true;
-        })
-        .map((chosen) => ({ type: "proliferate", player, chosen }));
-    }
     // `commander-replacement` is deliberately **not** searched, and keeps
     // v1's answer (the command zone).
     //

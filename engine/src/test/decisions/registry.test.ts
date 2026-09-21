@@ -18,6 +18,14 @@ const ALICE = "alice" as PlayerId;
  * silently falling behind.
  */
 const FIXTURES: Partial<Record<DecisionKind, AwaitingDecision>> = {
+  "choose-targets": {
+    kind: "choose-targets",
+    player: ALICE,
+    source: asObjectId("obj-1"),
+    cardName: "Shock",
+    specs: ["any-target"],
+    options: [[]],
+  },
   attackers: { kind: "attackers", player: ALICE },
   blockers: { kind: "blockers", player: ALICE },
   "order-blockers": {

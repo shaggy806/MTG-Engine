@@ -71,6 +71,7 @@ import type { DecisionHost, DecisionReadCtx } from "./decisions/contract.js";
 import { decisionFor, decisionForAction, mayActOn } from "./decisions/registry.js";
 import { assignCombatDamage } from "./decisions/assign-combat-damage.js";
 import { attackers } from "./decisions/attackers.js";
+import { chooseTargets } from "./decisions/choose-targets.js";
 import { blockers } from "./decisions/blockers.js";
 import { chooseCopy } from "./decisions/choose-copy.js";
 import { orderBlockers } from "./decisions/order-blockers.js";
@@ -296,6 +297,7 @@ export class Game {
       applyAssignCombatDamage: (p, a) => this.applyAssignCombatDamage(p, a),
       applyAttackerDeclarations: (p, d) => this.applyAttackerDeclarations(p, d),
       applyBlockerDeclarations: (p, b) => this.applyBlockerDeclarations(p, b),
+      applyChooseTargets: (p, t) => this.applyChooseTargets(p, t),
       applyScry: (player, away) => this.applyScry(player, away),
     };
   }
@@ -524,9 +526,6 @@ export class Game {
           action.manaColors,
         );
         break;
-      case "choose-targets":
-        this.applyChooseTargets(action.player, normalizeTargets(action.targets));
-        break;
       default:
         throw new Error(
           `unhandled action: ${(action as { type: string }).type}`,
@@ -575,8 +574,6 @@ export class Game {
           action.source,
           action.abilityIndex,
         );
-      case "choose-targets":
-        return this.whyCannotChooseTargets(action.player, normalizeTargets(action.targets));
       default:
         return `unknown action: ${(action as { type: string }).type}`;
     }
@@ -603,17 +600,6 @@ export class Game {
       const decision = decisionFor(awaiting.kind);
       if (decision !== undefined) {
         return decision.legal(this.decisionCtx, awaiting as never, player);
-      }
-      if (awaiting.kind === "choose-targets") {
-        return [
-          {
-            kind: "choose-targets",
-            source: awaiting.source,
-            cardName: awaiting.cardName,
-            specs: [...awaiting.specs],
-            options: awaiting.options.map((o) => [...o]),
-          },
-        ];
       }
       // `discard` used to be this chain's implicit fallthrough, which is what
       // made the build fail when an `AwaitingDecision` variant was added —
@@ -2001,41 +1987,20 @@ export class Game {
     );
   }
 
-  /**
-   * The {@link TargetSource} behind a parked `choose-targets` decision.
-   *
-   * A pending *cast* is still a card, so its printed characteristics are what
-   * protection and DEBT clauses read; a pending trigger's source is a
-   * permanent, and may already have left the battlefield (rule 608.2b), in
-   * which case there is no source at all.
-   */
-  private targetSourceForPending(source: ObjectId): TargetSource | undefined {
-    if (this.state.pendingTargetedCast !== null) {
-      return cardSource(this.registry.get(this.state.objects[source].cardName));
-    }
-    return this.state.objects[source] !== undefined
-      ? permanentSource(this.state, this.registry, source)
-      : undefined;
-  }
 
+  /** Kept because `applyChooseTargets` validates before applying and
+   * throws; the rules live in `decisions/choose-targets.ts`. */
   private whyCannotChooseTargets(
     player: PlayerId,
     chosen: ResolvedTargets,
   ): string | null {
-    const awaiting = this.state.awaiting;
-    if (awaiting === null || awaiting.kind !== "choose-targets" || awaiting.player !== player) {
-      return `${player} is not being asked to choose targets`;
-    }
-    const src = this.targetSourceForPending(awaiting.source);
-    const why = this.whyTargetsInvalid(
-      awaiting.specs,
-      chosen,
+    return chooseTargets.whyCannot(
+      this.decisionCtx,
+      // `chosen` is already normalised; `normalizeTargets` is idempotent, so
+      // handing the module the action shape it expects costs nothing.
+      { type: "choose-targets", player, targets: chosen.map((ref) => ref ?? null) },
       player,
-      awaiting.cardName,
-      src,
     );
-    if (why !== null) return why;
-    return null;
   }
 
   private mintObjectId(): ObjectId {

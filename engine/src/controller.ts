@@ -251,18 +251,6 @@ function answerAwaited(
     return decision.ask(controller, view, awaiting as never, player);
   }
 
-  if (awaiting.kind === "choose-targets") {
-    return {
-      type: "choose-targets",
-      player,
-      targets: controller.chooseTargets(
-        view,
-        awaiting.cardName,
-        awaiting.specs,
-        awaiting.options,
-      ),
-    };
-  }
   // `discard` was this chain's implicit fallthrough too. Totality is
   // `DECISION_ACTIONS`' job now; getting here means a kind is neither
   // migrated nor handled above.

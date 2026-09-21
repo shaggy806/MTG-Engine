@@ -39,6 +39,7 @@ import type { CardRegistry } from "../cards.js";
 import type { ControllerView, PlayerController } from "../controller.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import type { AwaitingDecision, GameState } from "../state.js";
+import type { ResolvedTargets } from "../target.js";
 import type { TargetRef } from "../target.js";
 
 /** One of the 17 decisions the rules can stop and ask a player for. */
@@ -179,6 +180,7 @@ export interface DecisionHost {
   readonly applyAssignCombatDamage: (player: PlayerId, assignment: readonly number[]) => void;
   readonly applyAttackerDeclarations: (player: PlayerId, declarations: readonly AttackerDeclaration[]) => void;
   readonly applyBlockerDeclarations: (player: PlayerId, blocks: readonly BlockerDeclaration[]) => void;
+  readonly applyChooseTargets: (player: PlayerId, targets: ResolvedTargets) => void;
   readonly applyScry: (player: PlayerId, away: readonly ObjectId[]) => void;
 }
 

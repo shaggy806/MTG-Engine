@@ -35,6 +35,7 @@ import { orderBlockers } from "./order-blockers.js";
 import { assignCombatDamage } from "./assign-combat-damage.js";
 import { attackers } from "./attackers.js";
 import { blockers } from "./blockers.js";
+import { chooseTargets } from "./choose-targets.js";
 import { scry } from "./scry.js";
 
 export { defineDecision } from "./define.js";
@@ -56,6 +57,7 @@ export const DECISIONS: Partial<Record<DecisionKind, AnyDecisionModule>> = {
   "assign-combat-damage": assignCombatDamage,
   attackers,
   blockers,
+  "choose-targets": chooseTargets,
   scry,
 };
 
