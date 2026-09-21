@@ -73,6 +73,7 @@ import type { ControllerView, PlayerController } from "./controller.js";
 import type { DecisionHost, DecisionReadCtx } from "./decisions/contract.js";
 import { decisionFor, decisionForAction, mayActOn } from "./decisions/registry.js";
 import { chooseCopy } from "./decisions/choose-copy.js";
+import { chooseCreatureType } from "./decisions/choose-creature-type.js";
 import { proliferate } from "./decisions/proliferate.js";
 import { CHANGEABLE_CREATURE_TYPES, chooseText } from "./decisions/choose-text.js";
 import { payLifeForUntapped } from "./decisions/pay-life-for-untapped.js";
@@ -233,10 +234,8 @@ interface TriggeredGrantSource {
 /** Combat damage from the same commander at or above this total is a loss (rule 903.10a). */
 const COMMANDER_DAMAGE_THRESHOLD = COMMANDER_DAMAGE_LETHAL;
 
-const CREATURE_TYPE_SET: ReadonlySet<string> = new Set(CREATURE_TYPES);
 
 /** How many suggested creature types a catalog choice offers up front. */
-const SUGGESTED_CREATURE_TYPES = 8;
 
 /** Shared empty result for `effectiveTriggeredEntries`' common no-triggers
  * case, so the per-event battlefield scan allocates nothing for a plain land
@@ -273,6 +272,7 @@ export class Game {
       applyCopyChoice: (player, copy) => this.applyCopyChoice(player, copy),
       applyTextChoice: (player, from, to) => this.applyTextChoice(player, from, to),
       applyProliferate: (player, chosen) => this.applyProliferate(player, chosen),
+      applyCreatureTypeChoice: (player, t) => this.applyCreatureTypeChoice(player, t),
       applyScry: (player, away) => this.applyScry(player, away),
     };
   }
@@ -525,9 +525,6 @@ export class Game {
       case "commander-replacement":
         this.applyCommanderChoice(action.player, action.toCommandZone);
         break;
-      case "choose-creature-type":
-        this.applyCreatureTypeChoice(action.player, action.creatureType);
-        break;
       case "choose-modes":
         this.applyModesChoice(action.player, action.modes, action.xValue);
         break;
@@ -608,8 +605,6 @@ export class Game {
         return this.whyCannotPutOnBottom(action.player, action.cards);
       case "commander-replacement":
         return this.whyCannotCommanderChoice(action.player);
-      case "choose-creature-type":
-        return this.whyCannotCreatureTypeChoice(action.player, action.creatureType);
       case "choose-modes":
         return this.whyCannotChooseModes(action.player, action.modes);
       case "choose-targets":
@@ -724,17 +719,6 @@ export class Game {
             kind: "commander-replacement",
             commander: awaiting.commander,
             intendedZone: awaiting.intendedZone,
-          },
-        ];
-      }
-      if (awaiting.kind === "choose-creature-type") {
-        return [
-          {
-            kind: "choose-creature-type",
-            source: awaiting.source,
-            options: [...awaiting.options],
-            catalog: awaiting.catalog,
-            suggested: awaiting.catalog ? this.suggestedCreatureTypes(player) : [],
           },
         ];
       }
@@ -1969,42 +1953,6 @@ export class Game {
     };
   }
 
-  /**
-   * The creature types most represented among `player`'s own cards and the
-   * whole battlefield, most common first (ties alphabetical). What a catalog
-   * choice suggests up front — see `LegalAction`'s `suggested`.
-   *
-   * Counts each card once per creature type it has. Off the battlefield that's
-   * its printed types; on it, the computed ones, so an animated or
-   * type-changed permanent counts as what it currently is.
-   */
-  private suggestedCreatureTypes(player: PlayerId): string[] {
-    const counts = new Map<string, number>();
-    const tally = (types: readonly string[]): void => {
-      for (const t of types) {
-        if (CREATURE_TYPE_SET.has(t)) counts.set(t, (counts.get(t) ?? 0) + 1);
-      }
-    };
-    const own = this.state.zones.perPlayer[player];
-    for (const id of [...own.hand, ...own.library, ...own.graveyard]) {
-      const def = this.registry.get(printedCardName(this.state.objects[id]));
-      if (def.types.includes("creature")) tally(def.subtypes);
-    }
-    for (const id of this.state.zones.shared.command) {
-      const object = this.state.objects[id];
-      if (object.owner !== player) continue;
-      const def = this.registry.get(printedCardName(object));
-      if (def.types.includes("creature")) tally(def.subtypes);
-    }
-    for (const id of this.state.zones.shared.battlefield) {
-      const c = computeCharacteristics(this.state, this.registry, id);
-      if (c.types.includes("creature")) tally(c.subtypes);
-    }
-    return [...counts.entries()]
-      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-      .slice(0, SUGGESTED_CREATURE_TYPES)
-      .map(([t]) => t);
-  }
 
   /** Answers a pending `choose-creature-type` decision. */
   private applyCreatureTypeChoice(player: PlayerId, creatureType: string): void {
@@ -2046,19 +1994,14 @@ export class Game {
     if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
   }
 
+  /** Kept because `applyCreatureTypeChoice` validates before applying and
+   * throws; the rule lives in `decisions/choose-creature-type.ts`. */
   private whyCannotCreatureTypeChoice(player: PlayerId, creatureType: string): string | null {
-    const awaiting = this.state.awaiting;
-    if (
-      awaiting === null ||
-      awaiting.kind !== "choose-creature-type" ||
-      awaiting.player !== player
-    ) {
-      return `${player} is not being asked to choose a creature type`;
-    }
-    if (!awaiting.options.includes(creatureType)) {
-      return `${creatureType} is not one of the offered creature types`;
-    }
-    return null;
+    return chooseCreatureType.whyCannot(
+      this.decisionCtx,
+      { type: "choose-creature-type", player, creatureType },
+      player,
+    );
   }
 
   /** Raise a `choose-modes` decision (a modal spell/ability, or a "you may"

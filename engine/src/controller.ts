@@ -321,18 +321,6 @@ function answerAwaited(
       ),
     };
   }
-  if (awaiting.kind === "choose-creature-type") {
-    return {
-      type: "choose-creature-type",
-      player,
-      creatureType: controller.chooseCreatureType(
-        view,
-        awaiting.source,
-        awaiting.options,
-        suggestedCreatureTypesIn(view),
-      ),
-    };
-  }
   if (awaiting.kind === "choose-modes") {
     return {
       type: "choose-modes",
@@ -385,14 +373,6 @@ function answerAwaited(
 /** Always passes priority, never attacks or blocks; discards from the front. */
 /** The `suggested` creature types on a pending `choose-creature-type` decision,
  * read off the chooser's own legal actions (the only place they exist). */
-function suggestedCreatureTypesIn(view: ControllerView): readonly string[] {
-  const legal = view
-    .legalActions()
-    .find((a): a is Extract<LegalAction, { kind: "choose-creature-type" }> =>
-      a.kind === "choose-creature-type",
-    );
-  return legal?.suggested ?? [];
-}
 
 export class AutomaticController implements PlayerController {
   readonly playerId: PlayerId;

@@ -18,6 +18,13 @@ const ALICE = "alice" as PlayerId;
  * silently falling behind.
  */
 const FIXTURES: Partial<Record<DecisionKind, AwaitingDecision>> = {
+  "choose-creature-type": {
+    kind: "choose-creature-type",
+    player: ALICE,
+    source: asObjectId("obj-1"),
+    options: ["Goblin"],
+    catalog: false,
+  },
   proliferate: {
     kind: "proliferate",
     player: ALICE,

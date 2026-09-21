@@ -152,6 +152,7 @@ export interface DecisionHost {
   readonly applyCopyChoice: (player: PlayerId, copy: ObjectId | null) => void;
   readonly applyTextChoice: (player: PlayerId, from: string, to: string) => void;
   readonly applyProliferate: (player: PlayerId, chosen: readonly TargetRef[]) => void;
+  readonly applyCreatureTypeChoice: (player: PlayerId, creatureType: string) => void;
   readonly applyScry: (player: PlayerId, away: readonly ObjectId[]) => void;
 }
 
