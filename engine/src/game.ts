@@ -27,6 +27,13 @@ import type {
   LegalAction,
 } from "./actions.js";
 import {
+  autoAssignForAttacker,
+  damageAssignmentViolations,
+  lethalFor,
+  liveBlockersOf,
+  needsDamageAssignmentChoice,
+} from "./combat/damage.js";
+import {
   creatureDef,
   currentAttackers,
   defendersForAttacker,
@@ -3418,52 +3425,25 @@ export class Game {
 
   /** The blockers of `attackerId` still on the battlefield, in assignment order. */
   private liveBlockersOf(attackerId: ObjectId): ObjectId[] {
-    return this.state.objects[attackerId].blockedBy.filter(
-      (id) => this.state.objects[id]?.zone === "battlefield",
-    );
+    return liveBlockersOf(this.state, attackerId);
   }
 
   private lethalFor(attackerId: ObjectId, blockerId: ObjectId): number {
-    if (this.objHasKeyword(attackerId, "deathtouch")) return 1;
-    const marked = this.state.objects[blockerId].damageMarked;
-    const toughness = computeCharacteristics(this.state, this.registry, blockerId).toughness;
-    return Math.max(0, toughness - marked);
+    return lethalFor(this.state, this.registry, attackerId, blockerId);
   }
 
   /** Whether the attacking player has a real choice in how `attackerId` (a
    * blocked attacker) divides its combat damage — 2+ live blockers with slack,
    * or trample with room past the blockers' lethal. */
   private needsDamageAssignmentChoice(attackerId: ObjectId): boolean {
-    const live = this.liveBlockersOf(attackerId);
-    if (live.length === 0) return false;
-    const power = computeCharacteristics(this.state, this.registry, attackerId).power;
-    if (power <= 0) return false;
-    const trample = this.objHasKeyword(attackerId, "trample");
-    if (live.length === 1 && !trample) return false;
-    // Damage that's rigidly forced: lethal to each blocker except (without
-    // trample) the last, which just takes the remainder.
-    let forced = 0;
-    live.forEach((blockerId, index) => {
-      if (!trample && index === live.length - 1) return;
-      forced += this.lethalFor(attackerId, blockerId);
-    });
-    return power > forced;
+    return needsDamageAssignmentChoice(this.state, this.registry, attackerId);
   }
 
   /** The standard auto-assignment for `attackerId`'s combat damage this
    * sub-pass: lethal down the blocker order, remainder to the last blocker
    * (or trampled over). One entry per live blocker. */
   private autoAssignForAttacker(attackerId: ObjectId): number[] {
-    const live = this.liveBlockersOf(attackerId);
-    const trample = this.objHasKeyword(attackerId, "trample");
-    let remaining = computeCharacteristics(this.state, this.registry, attackerId).power;
-    return live.map((blockerId, index) => {
-      const lethal = this.lethalFor(attackerId, blockerId);
-      const isLastAndNoTrample = !trample && index === live.length - 1;
-      const amount = isLastAndNoTrample ? remaining : Math.min(remaining, lethal);
-      remaining -= amount;
-      return amount;
-    });
+    return autoAssignForAttacker(this.state, this.registry, attackerId);
   }
 
   private promptNextDamageAssignment(): void {
@@ -3498,38 +3478,7 @@ export class Game {
     ) {
       return `${player} is not being asked to assign combat damage`;
     }
-    const { blockers, power, lethal, trample } = awaiting;
-    if (assignment.length !== blockers.length) {
-      return `expected an amount for each of ${blockers.length} blocker(s), got ${assignment.length}`;
-    }
-    if (assignment.some((n) => !Number.isInteger(n) || n < 0)) {
-      return "combat damage assignments must be non-negative whole numbers";
-    }
-    const total = assignment.reduce((sum, n) => sum + n, 0);
-    const over = power - total;
-    if (over < 0) return "assigned more than the attacker's power";
-    if (over > 0 && !trample) {
-      return "only a trampling attacker can assign combat damage to the defending player";
-    }
-    // Rule 510.1c: an amount may be assigned to a blocker (or trampled over)
-    // only once every *earlier* blocker has at least lethal.
-    for (let i = 0; i < blockers.length; i += 1) {
-      const laterAssigned = assignment[i] > 0;
-      if (!laterAssigned && over === 0) continue;
-      for (let j = 0; j < i; j += 1) {
-        if (assignment[j] < lethal[j]) {
-          return "each earlier blocker must be assigned lethal damage first";
-        }
-      }
-    }
-    if (over > 0) {
-      for (let j = 0; j < blockers.length; j += 1) {
-        if (assignment[j] < lethal[j]) {
-          return "every blocker must be assigned lethal damage before trampling over";
-        }
-      }
-    }
-    return null;
+    return damageAssignmentViolations(awaiting, assignment);
   }
 
   private applyAssignCombatDamage(

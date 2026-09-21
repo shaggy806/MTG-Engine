@@ -15,6 +15,7 @@ import type {
   ConvokePayment,
   LegalAction,
 } from "./actions.js";
+import { standardAssignment } from "./combat/damage.js";
 import { computeCharacteristics } from "./characteristics.js";
 import { CardRegistry, createDefaultRegistry } from "./cards.js";
 import { chooseBottomOfHand, shouldMulligan } from "./bot/mulligan.js";
@@ -216,21 +217,17 @@ const firstOfEach = (
   legalOptions: readonly (readonly TargetRef[])[],
 ): ChosenTargets => legalOptions.map((options) => options[0] ?? null);
 
-/** The standard combat-damage assignment: lethal down the blocker order, the
- * remainder to the last blocker (or, with trample, over to the defender). */
-export const standardDamageAssignment = (a: {
-  readonly power: number;
-  readonly lethal: readonly number[];
-  readonly trample: boolean;
-}): number[] => {
-  let remaining = a.power;
-  return a.lethal.map((lethal, index) => {
-    const isLastAndNoTrample = !a.trample && index === a.lethal.length - 1;
-    const amount = isLastAndNoTrample ? remaining : Math.min(remaining, lethal);
-    remaining -= amount;
-    return amount;
-  });
-};
+/**
+ * The standard combat-damage assignment: lethal down the blocker order, the
+ * remainder to the last blocker (or, with trample, over to the defender).
+ *
+ * Kept under this name because it is on the engine's public seam
+ * (`export * from "./controller.js"`). The implementation moved to
+ * `combat/damage.ts`, which `Game.autoAssignForAttacker` now shares — the two
+ * had byte-identical loops, so a rules fix to either would have disagreed
+ * with the other.
+ */
+export const standardDamageAssignment = standardAssignment;
 
 /**
  * Answer whatever the engine is waiting on, or `null` if it isn't waiting.
