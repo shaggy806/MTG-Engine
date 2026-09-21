@@ -11,7 +11,7 @@ import type {
   TargetSpec,
   VisibleObject,
 } from 'engine'
-import { describeTargetSpec, isOptionalSpec } from 'engine'
+import { blockingViolations, describeTargetSpec, isOptionalSpec } from 'engine'
 import { useNetworkGame } from './net/useNetworkGame.ts'
 import type { NetworkGame } from './net/useNetworkGame.ts'
 import { stackShowsSomething } from './game/decisionSource.ts'
@@ -2133,7 +2133,13 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     )
   } else if (mode === 'attackers' && attackAction) {
     const assignedCount = Object.keys(attackAssignments).length
-    const allSelected = assignedCount === attackAction.eligible.length
+    // Each attacker goes at a defender *it* may attack (`defendersFor`), never
+    // the union's first entry: a goaded creature can't be sent at its goader
+    // when anyone else is legal (rule 701.38b), and the server rejects it.
+    const attackableAll = attackAction.eligible.filter(
+      (id) => defendersFor(id).length > 0,
+    )
+    const allSelected = assignedCount >= attackableAll.length
     controls = (
       <div className="controls">
         <span>
@@ -2144,12 +2150,10 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         </span>
         <button
           type="button"
-          disabled={attackAction.eligible.length === 0 || allSelected}
+          disabled={attackableAll.length === 0 || allSelected}
           onClick={() => {
             setAttackAssignments(
-              Object.fromEntries(
-                attackAction.eligible.map((id) => [id, attackAction.defenders[0]]),
-              ),
+              Object.fromEntries(attackableAll.map((id) => [id, defendersFor(id)[0]])),
             )
             setAttackFocus(null)
           }}
@@ -2193,22 +2197,19 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     )
   } else if (mode === 'blockers' && blockAction) {
     const n = Object.keys(blockAssign).length
-    const counts = new Map<ObjectId, number>()
-    for (const attacker of Object.values(blockAssign)) {
-      counts.set(attacker, (counts.get(attacker) ?? 0) + 1)
-    }
-    const loneMenace = blockAction.menaceAttackers.filter(
-      (id) => counts.get(id) === 1,
+    // The set-level rules (menace, Lure) are the engine's own check against
+    // this same offer, so Confirm can't disagree with the validator.
+    const violations = blockingViolations(
+      Object.entries(blockAssign).map(([blocker, attacker]) => ({
+        blocker: blocker as ObjectId,
+        attacker,
+      })),
+      blockAction,
     )
-    // Lure (rule 509.1c): a creature able to block a must-be-blocked attacker
-    // must be assigned to one of them.
-    const unforcedBlockers = blockAction.eligible
-      .filter(
-        (e) =>
-          e.canBlock.some((a) => blockAction.mustBlock.includes(a)) &&
-          !blockAction.mustBlock.includes(blockAssign[e.blocker]),
-      )
-      .map((e) => e.blocker)
+    const loneMenace = violations.flatMap((v) => (v.kind === 'menace' ? [v.attacker] : []))
+    const unforcedBlockers = violations.flatMap((v) =>
+      v.kind === 'must-be-blocked' ? [v.blocker] : [],
+    )
     controls = (
       <div className="controls">
         <span>
