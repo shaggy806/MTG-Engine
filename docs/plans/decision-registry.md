@@ -1,7 +1,6 @@
 # The decision registry
 
-Status: **shipped** (steps 1–18 of 19). Step 19 (`RandomController`'s arms) is
-optional and not started.
+Status: **shipped**, all 19 steps.
 
 ## The problem
 
@@ -60,12 +59,15 @@ add. The five chains after:
 | `decisionCandidates` | ~100 lines | 3 lines |
 | `dispatch` | 25 arms | 7 priority arms |
 | `canDispatch` | 25 arms | 7 priority arms |
+| `RandomController.toAction` | 24 arms | 6 priority arms |
 
-`game.ts`: 10,787 → 10,126 lines.
+`game.ts`: 10,787 → 10,126 lines. `controller.ts`: 1,451 → 1,316.
 
 ## Adding a decision kind
 
-1. Write `decisions/<kind>.ts` with `defineDecision({ … })`.
+1. Write `decisions/<kind>.ts` with `defineDecision({ … })`, including a
+   `randomAnswer` — optional on the contract, but the fuzzer stalls on a kind
+   that has none, so `registry.test.ts` requires one.
 2. Register it in `decisions/registry.ts`.
 3. Add its action to `DECISION_ACTIONS` and its offer to `DECISION_OFFERS` in
    `decisions/contract.ts`.
@@ -154,13 +156,71 @@ never pushed, so it was redone from the description here rather than
 recovered. The plan described it as replacing three re-derivations; only these
 two turned up in `App.tsx`, so if the branch surfaces it may hold a third.
 
+## Step 19: RandomController
+
+The last chain. All 18 decision offers (17 kinds; `mulligan` answers two) left
+`RandomController.toAction` for a `randomAnswer` on their own module, reached
+through `randomAnswerFor`. What remains in the controller is the six priority
+arms, which answer no `AwaitingDecision` and so have no module to live in:
+`toAction` goes from 24 arms to 6, and `controller.ts` from 1451 lines to 1316.
+
+Two things made it safe to do in one pass rather than the one-kind-per-commit
+the plan called for:
+
+- **`RandomSource`**, the contract's new seam: the controller's `random`,
+  `pickIndex` and `pickTargets` handed over as an interface. `pickTargets` is
+  on it deliberately — it rolls `random() < 0.25` to skip an optional slot
+  *before* indexing, and a module rebuilding it out of `pickIndex` would
+  almost certainly draw in the other order.
+- **`OfferOf<K>`**, the offer-side `AwaitingOf<K>`, read off `DECISION_OFFERS`.
+  It narrows `randomAnswer`'s parameter to the kind's own offer, so no module
+  needed a runtime `if (legal.kind !== …)` guard and no arm grew a branch it
+  did not have before.
+
+The bodies then moved verbatim. Three of them have a call count that varies
+with their input, and each is now commented where it sits, because they are
+exactly what a tidy-up would break: `choose-copy` and `choose-creature-type`
+short-circuit an `&&` and draw *no* number when the left side is false, and
+`attackers` runs its `filter` to completion before its `flatMap` starts, so
+every coin flip is drawn before any defender is picked.
+
+`randomAnswer` is optional on the contract, since `candidates` genuinely is
+absent on six kinds and the two share a shape. That makes a forgotten one fail
+silently — `randomAnswerFor` returns null, the controller falls through to
+`default`, and the fuzzer answers a pending decision with `pass-priority`,
+which is rejected, so the game stalls rather than erroring anywhere useful.
+`registry.test.ts` asserts every kind has one.
+
+### How it was verified
+
+The plan's warning was that a reordered call "changes every seed's trajectory
+without failing anything", so the check had to be seed identity, not a passing
+suite. Two harnesses, both first shown able to *fail*: with `0.6` changed to
+`0.61` in one arm, the first reported 590 mismatches and the second 88 of 360
+games differing.
+
+- **Whole-game identity.** 360 fuzzer games (120 seeds x 2, 3 and 4 players),
+  fingerprinted by a hash of the **entire event log** rather than the
+  winner/turns/events triple the earlier steps compared — three moved arms
+  could agree on that triple by coincidence, not on the log. All 360
+  byte-identical, and the per-kind decision counts identical with them.
+- **Per-arm identity, including draw counts.** 2069 real `LegalAction`s
+  harvested from those games, replayed through the old and new controller in
+  the same order, each driving its own copy of one seeded stream: 82,760
+  answers over 40 seeds, all identical. Sharing a stream across the sequence
+  is what makes this stronger than comparing single answers — an arm drawing
+  one number more or fewer desynchronises and every later answer diverges.
+
+Full engine (1139) and server (141) suites pass, plus `play:random` at 2
+players under `MTG_CACHE_CHECK=1` and at 4 players.
+
+One coverage gap worth recording: `choose-copy` **never fired in 360 games**.
+Clone is in deck B, but the decision only raises when a Clone resolves with
+another creature already on the battlefield. Its three offers in the replay set
+are hand-built for that reason, and the fuzzer is not evidence about that arm.
+
 ## Not done
 
-- **Step 19**, migrating `RandomController.toAction`'s 17 arms. The riskiest
-  cheap thing in the plan: the fuzzer's replay identity depends on the exact
-  sequence of `random()`/`pickIndex()` calls, so a reordered call inside a
-  moved arm changes every seed's trajectory without failing anything. Attempt
-  one kind per commit and revert any that produces a seed diff.
 - **Four `decisionSource` bugs** the survey surfaced, all pre-existing and all
   out of scope here: landcycling's `choose-from-zone` and the cast-time
   additional-cost `discard` both attribute themselves to whatever resolved
