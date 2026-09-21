@@ -262,14 +262,27 @@ function stripReminders(s) {
  */
 function clauseTokens(clause, cardName) {
   const firstWord = cardName.split(/[\s,]+/)[0] ?? cardName;
+  // Scryfall's current templating refers to a legendary by its short name
+  // ("Bruse Tarl" for "Bruse Tarl, Boorish Herder"), so the part before the
+  // comma has to normalise away too, or every such card reads as different.
+  const shortName = cardName.split(",")[0] ?? cardName;
   let s = ` ${clause.toLowerCase()} `;
-  for (const name of [cardName.toLowerCase(), firstWord.toLowerCase()]) {
+  // Longest first: replacing the first word first would strand the rest of
+  // the full name behind as tokens of its own.
+  const names = [cardName, shortName, firstWord]
+    .map((n) => n.toLowerCase())
+    .sort((a, b) => b.length - a.length);
+  for (const name of names) {
     if (name.length > 2) s = s.split(name).join(" ~ ");
   }
   s = s.replace(
-    /\bthis (creature|permanent|card|spell|land|artifact|enchantment|planeswalker|token)\b/g,
+    /\bthis (creature|permanent|card|spell|land|artifact|enchantment|planeswalker|token|aura|equipment|saga)\b/g,
     " ~ ",
   );
+  // A loyalty cost: Scryfall writes a real minus sign, the pool writes
+  // "[-N]". The same ability, and without this every planeswalker reports
+  // its own loyalty numbers as dropped content.
+  s = s.replace(/\u2212/g, "-").replace(/[[\]]/g, " ");
   s = s.replace(/\bit\b/g, " ~ ");
   // Mana and tap symbols survive as single tokens; everything else that isn't
   // a word character, a digit or a P/T sign goes.
@@ -318,6 +331,35 @@ function isImpliedLandManaAbility(clause, def) {
 }
 
 /**
+ * Words whose absence from our clause says nothing -- articles, prepositions
+ * and the connective tissue a paraphrase drops freely. Everything else counts
+ * as content: a noun, a number, a mana symbol, a zone, a qualifier.
+ */
+const FILLER = new Set([
+  "a", "an", "the", "of", "to", "for", "with", "and", "or", "then", "that",
+  "this", "is", "are", "be", "been", "as", "at", "by", "on", "in", "into",
+  "from", "up", "may", "you", "your", "its", "their", "it", "them", "if",
+  "when", "whenever", "each", "all", "one", "target", "s", "other",
+]);
+
+/**
+ * The content words the real clause has that ours doesn't.
+ *
+ * Deliberately asymmetric: extra words on our side are a paraphrase being
+ * wordier, which is harmless, while missing ones are behaviour the card does
+ * not have. "your" and "any" are filler on their own, but "commander" and
+ * "identity" are not -- which is what catches Command Tower.
+ */
+function significantDropped(theirTokens, ourTokens) {
+  const ours = new Set(ourTokens);
+  const out = [];
+  for (const w of new Set(theirTokens)) {
+    if (!ours.has(w) && !FILLER.has(w)) out.push(w);
+  }
+  return out;
+}
+
+/**
  * Match every clause of the real card against ours and report what didn't
  * land. Returns `{ missing, extra, similar }`, each a list of
  * `{ clause, best, score }`.
@@ -325,7 +367,7 @@ function isImpliedLandManaAbility(clause, def) {
 function compareText(def, face) {
   const theirs = clausesOf(face.oracle_text);
   const ours = clausesOf(def.text);
-  if (theirs.length === 0) return { missing: [], extra: [], similar: [] };
+  if (theirs.length === 0) return { missing: [], extra: [], similar: [], partial: [] };
 
   const theirTokens = theirs.map((c) => clauseTokens(c, def.name));
   const ourTokens = ours.map((c) => clauseTokens(c, def.name));
@@ -345,10 +387,24 @@ function compareText(def, face) {
 
   const missing = [];
   const similar = [];
+  const partial = [];
   theirs.forEach((clause, i) => {
     if (isCoveredKeywordLine(clause, def.keywords)) return;
     const { score, at } = best(theirTokens[i], ourTokens);
-    if (score >= MATCHED) return;
+    if (score >= MATCHED) {
+      // Matched -- but a high Dice score still allows our clause to be the
+      // real one with words *removed*, which is a wrong card rather than a
+      // paraphrase. Command Tower scored 0.78 while dropping "in your
+      // commander's color identity", so it never appeared in this report at
+      // all. Report the content words the real clause has that ours doesn't
+      // and let a human judge; this is the blind spot AUTHORING SS16 warns
+      // about, made visible.
+      if (at >= 0) {
+        const dropped = significantDropped(theirTokens[i], ourTokens[at]);
+        if (dropped.length > 0) partial.push({ clause, best: ours[at], score, dropped });
+      }
+      return;
+    }
     const entry = { clause, best: at >= 0 && score >= RELATED ? ours[at] : null, score };
     if (score >= RELATED) similar.push(entry);
     else missing.push(entry);
@@ -362,7 +418,7 @@ function compareText(def, face) {
     if (score < RELATED) extra.push({ clause, best: null, score });
   });
 
-  return { missing, extra, similar };
+  return { missing, extra, similar, partial };
 }
 
 function compare(def, card) {
@@ -427,7 +483,7 @@ function compare(def, card) {
 /** The `--text` report: cards worst first (most unmatched clauses), each
  * listing what the real card says that ours doesn't, and vice versa. */
 function reportText(reports, checked) {
-  const weight = (r) => r.missing.length * 2 + r.extra.length;
+  const weight = (r) => r.missing.length * 2 + r.partial.length * 2 + r.extra.length;
   const sorted = [...reports].sort((a, b) => weight(b) - weight(a) || a.name.localeCompare(b.name));
   const trim = (s) => (s.length > 150 ? `${s.slice(0, 147)}...` : s);
 
@@ -435,6 +491,11 @@ function reportText(reports, checked) {
   for (const r of sorted) {
     console.log(`${r.name} (${r.file})`);
     for (const m of r.missing) console.log(`  MISSING  ${trim(m.clause)}`);
+    for (const p of r.partial) {
+      console.log(`  PARTIAL  ${trim(p.clause)}`);
+      console.log(`           ours: ${trim(p.best ?? "")}`);
+      console.log(`           dropped: ${p.dropped.join(", ")}`);
+    }
     for (const e of r.extra) console.log(`  EXTRA    ${trim(e.clause)}`);
     if (showSimilar) {
       for (const s of r.similar) {
@@ -446,7 +507,9 @@ function reportText(reports, checked) {
   }
   const missing = sorted.reduce((n, r) => n + r.missing.length, 0);
   const extra = sorted.reduce((n, r) => n + r.extra.length, 0);
+  const partial = sorted.reduce((n, r) => n + r.partial.length, 0);
   console.log(`${missing} clause(s) the real card has and ours doesn't, ${extra} the other way round.`);
+  console.log(`${partial} clause(s) matched but dropped content words (PARTIAL) -- read every one.`);
   console.log("Expect false positives: the pool paraphrases, and omits unmodeled abilities on purpose.");
 }
 
@@ -517,7 +580,13 @@ async function main() {
       console.log(`✗ ${def.name} (${file})`);
       for (const issue of issues) console.log(`    ${issue}`);
     }
-    if (text !== null && (text.missing.length > 0 || text.extra.length > 0 || (showSimilar && text.similar.length > 0))) {
+    if (
+      text !== null &&
+      (text.missing.length > 0 ||
+        text.extra.length > 0 ||
+        text.partial.length > 0 ||
+        (showSimilar && text.similar.length > 0))
+    ) {
       textReports.push({ name: def.name, file, ...text });
     }
     results.push({
