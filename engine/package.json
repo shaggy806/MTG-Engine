@@ -23,6 +23,8 @@
     "card:verify": "npm run build && node scripts/verify-cards.mjs",
     "card:text": "npm run build && node scripts/verify-cards.mjs --text",
     "cards:mark": "npm run build && node scripts/top-commander-cards.mjs --refresh",
+    "cmdrs:top": "npm run build && node scripts/top-commanders.mjs",
+    "cmdrs:mark": "npm run build && node scripts/top-commanders.mjs --refresh",
     "prebuild": "node scripts/gen-cards.mjs",
     "build": "tsc",
     "pretypecheck": "node scripts/gen-cards.mjs",

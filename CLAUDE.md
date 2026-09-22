@@ -20,10 +20,16 @@ others, and what each is for:
 - **`engine/src/cards/neededCards-features.md`** — the plan of record for *new* engine work: an
   EDH-popularity-driven backlog (from `top-commander-cards.txt`/`top-commander-cards-flagged.txt`,
   the top 2000 Commander cards by EDHREC rank cross-referenced against the pool) ranking features
-  by how many real cards each would unblock, plus a compact P0–P20 index. The pool is ~630 real
+  by how many real cards each would unblock, plus a compact P0–P20 index. The pool is ~746 real
   cards (`npm run card:verify -w engine` prints the current count). The `[x]` marks in
   `top-commander-cards.txt` are refreshed by `npm run cards:mark -w engine`, which re-marks
   the file in place against the built pool rather than re-fetching the ranking.
+  **Its top section is the current priority: the commander gap.** Only 12 of the 500
+  most-played *commanders* are implemented, so an imported decklist almost always has its
+  commander substituted — the one card the deck exists for. That is a separate population from
+  the card backlog and needs its own list (`top-commanders.txt`, `npm run cmdrs:top` /
+  `cmdrs:mark -w engine`): ranking commanders by *card* popularity misses 53 of the top 100,
+  because a commander is a singleton played almost nowhere but its own deck.
 - **`engine/src/cards/AUTHORING.md`** — the hand-authoring guide for adding a card. Read before
   authoring.
 - **`DEPLOYMENT.md`** — the tobyens.com production hosting/update runbook.
