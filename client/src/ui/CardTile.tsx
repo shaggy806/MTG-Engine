@@ -31,6 +31,11 @@ export interface CardTileProps {
   readonly order?: number | null
   /** How many identical permanents this tile stands in for (a land stack). */
   readonly stackCount?: number | null
+  /** The seat-colour class of whoever this permanent is attacking, or null.
+   * The tile is outlined in it, because the `⚔ <name>` badge is small,
+   * overlaid on art and regularly unreadable — colour survives at tile size
+   * where four characters of text do not. */
+  readonly attackSeat?: string | null
   /** 'title' (default): a name+cost bar above the art, like a real card's
    * frame -- used everywhere except the hand. 'art-first': cost pips
    * overlaid on the art itself, with the name below it instead -- the
@@ -115,6 +120,7 @@ export function CardTile({
   extraGenericCost = 0,
   order = null,
   stackCount = null,
+  attackSeat = null,
   layout = 'title',
   onClick,
 }: CardTileProps) {
@@ -237,6 +243,7 @@ export function CardTile({
     selected ? 'selected' : '',
     activatable ? 'activatable' : '',
     dimmed ? 'dimmed' : '',
+    attackSeat ? `attacking-at ${attackSeat}` : '',
     clickable ? 'clickable' : '',
   ]
     .filter(Boolean)

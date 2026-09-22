@@ -281,11 +281,40 @@ function CenteredScreen({
   )
 }
 
+/** How long an error sits on screen before clearing itself. Long enough to
+ * read a sentence twice; short enough that a rejected click doesn't leave a
+ * red bar over the board for the rest of the turn. */
+const ERROR_LINGER_MS = 6000
+
+/**
+ * A rejected action, as a toast floating over the board rather than a bar in
+ * the layout.
+ *
+ * It used to take its own row in normal flow, which meant every refused click
+ * shoved the whole table down a line and left the message there until someone
+ * clicked it. Now it hovers above everything, fades out on its own after
+ * {@link ERROR_LINGER_MS}, and is still dismissible by clicking it.
+ *
+ * The timer is keyed on the message *and* a counter so that the same error
+ * twice in a row restarts the clock rather than inheriting the first one's
+ * remaining time.
+ */
 function ErrorLine({ game }: { readonly game: NetworkGame }) {
-  if (!game.error) return null
+  const { error, clearError } = game
+  useEffect(() => {
+    if (!error) return
+    const t = window.setTimeout(clearError, ERROR_LINGER_MS)
+    return () => window.clearTimeout(t)
+  }, [error, clearError])
+  if (!error) return null
   return (
-    <div className="error-banner" onClick={game.clearError} role="alert">
-      ⚠ {game.error}
+    <div
+      className="error-toast"
+      onClick={clearError}
+      role="alert"
+      title="Click to dismiss"
+    >
+      ⚠ {error}
     </div>
   )
 }
@@ -531,7 +560,22 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   const [attackAssignments, setAttackAssignments] = useState<
     Record<string, PlayerId | ObjectId>
   >({})
-  const [attackFocus, setAttackFocus] = useState<ObjectId | null>(null)
+  /**
+   * Attackers picked but not yet pointed at anyone — the pending group.
+   *
+   * Declaring an attack is two facts, not one: *which* creatures attack, and
+   * *who each one attacks*. At two players the second is free (there is one
+   * opponent), which is why this used to be a single focused attacker and a
+   * one-button "attack with all". At three or four it is the whole decision,
+   * and a button that sends every creature at `defendersFor(id)[0]` is
+   * picking an opponent for you at random.
+   *
+   * So: click creatures to build this group, click a player or planeswalker
+   * to send the group there. A creature with only one legal defender skips
+   * the group entirely and is assigned on click, which keeps a two-player
+   * board at one click per attacker exactly as before.
+   */
+  const [attackPicks, setAttackPicks] = useState<readonly ObjectId[]>([])
   const [blockAssign, setBlockAssign] = useState<Record<string, ObjectId>>({})
   const [blockFocus, setBlockFocus] = useState<ObjectId | null>(null)
   const [orderPicks, setOrderPicks] = useState<readonly ObjectId[]>([])
@@ -623,6 +667,41 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     (attacker: ObjectId): readonly (PlayerId | ObjectId)[] =>
       attackAction?.defendersFor[attacker] ?? [],
     [attackAction],
+  )
+  /**
+   * May the pending group be pointed at this defender?
+   *
+   * **All of them or none** — a defender every selected creature may legally
+   * attack. Assigning just the ones that can and leaving the rest behind
+   * would quietly split an attack the player thought they were sending one
+   * way, which is the same silent split the old "Attack with all" button
+   * caused by sending each creature at its own `defendersFor(id)[0]`.
+   *
+   * The check is **per attacker, never off the offer's `defenders` union** —
+   * that union says who may be attacked *at all*, and a declaration built
+   * from it is one the engine refuses (both `actions.ts` and
+   * `decisions/attackers.ts` warn about exactly this, and a refusal surfaces
+   * as a red error banner rather than a partial attack). Goad (rule 701.38b)
+   * and Vow of Duty are what make the legal set differ per creature.
+   */
+  const canSendPicksAt = useCallback(
+    (defender: PlayerId | ObjectId): boolean =>
+      attackPicks.length > 0 &&
+      attackPicks.every((p) => defendersFor(p).includes(defender)),
+    [attackPicks, defendersFor],
+  )
+  const sendPicksAt = useCallback(
+    (defender: PlayerId | ObjectId) => {
+      if (!canSendPicksAt(defender)) return
+      // Two plain updaters rather than one nested inside the other: a
+      // `setState` updater has to stay pure (see the note on `setTargeting`).
+      setAttackAssignments((cur) => ({
+        ...cur,
+        ...Object.fromEntries(attackPicks.map((p) => [p, defender])),
+      }))
+      setAttackPicks([])
+    },
+    [attackPicks, canSendPicksAt],
   )
   const blockAction = actions.find(
     (a): a is BlockAction => a.kind === 'declare-blockers',
@@ -1069,36 +1148,34 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         return
       }
       if (mode === 'attackers' && attackAction) {
-        // Clicking an opponent's planeswalker while an attacker is focused
-        // redirects that attacker at it (mirrors the click-a-panel flow).
-        if (
-          attackFocus &&
-          id !== attackFocus &&
-          defendersFor(attackFocus).includes(id)
-        ) {
-          setAttackAssignments((cur) => ({ ...cur, [attackFocus]: id }))
+        // An opponent's planeswalker is a defender, not an attacker, so a
+        // click on one sends the pending group at it (the same thing
+        // clicking a seat panel does).
+        if (!attackAction.eligible.includes(id)) {
+          sendPicksAt(id)
           return
         }
-        if (!attackAction.eligible.includes(id)) return
-        const myDefenders = defendersFor(id)
-        const hasMultipleDefenders = myDefenders.length > 1
         if (attackAssignments[id] !== undefined) {
-          if (!hasMultipleDefenders || attackFocus === id) {
-            setAttackAssignments((cur) => {
-              const next = { ...cur }
-              delete next[id]
-              return next
-            })
-            setAttackFocus(null)
-          } else {
-            // Assigned but not the focused one — refocus it so the next
-            // opponent-panel click can redirect it.
-            setAttackFocus(id)
-          }
+          // Already pointed at someone — take it back out of the attack.
+          setAttackAssignments((cur) => {
+            const next = { ...cur }
+            delete next[id]
+            return next
+          })
           return
         }
-        setAttackAssignments((cur) => ({ ...cur, [id]: myDefenders[0] }))
-        setAttackFocus(hasMultipleDefenders ? id : null)
+        const myDefenders = defendersFor(id)
+        // No choice to make, so don't make the player make one: a creature
+        // with exactly one legal defender is assigned outright. That is what
+        // keeps a two-player board at one click per attacker, and it also
+        // covers a goaded creature whose goader is its only legal target.
+        if (myDefenders.length === 1) {
+          setAttackAssignments((cur) => ({ ...cur, [id]: myDefenders[0] }))
+          return
+        }
+        setAttackPicks((cur) =>
+          cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id],
+        )
         return
       }
       if (mode === 'order-blockers' && orderAction) {
@@ -1172,7 +1249,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       abilitiesBySource,
       attackAction,
       attackAssignments,
-      attackFocus,
+      sendPicksAt,
       blockAction,
       blockAssign,
       blockFocus,
@@ -1189,11 +1266,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
 
   const clickPlayerTarget = useCallback(
     (pid: PlayerId) => {
-      if (mode === 'attackers' && attackFocus && attackAction) {
-        if (defendersFor(attackFocus).includes(pid)) {
-          setAttackAssignments((cur) => ({ ...cur, [attackFocus]: pid }))
-          setAttackFocus(null)
-        }
+      if (mode === 'attackers' && attackAction) {
+        sendPicksAt(pid)
         return
       }
       if (mode !== 'targeting' || !activeTargeting) return
@@ -1202,7 +1276,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         pickTarget({ kind: 'player', player: pid })
       }
     },
-    [attackAction, attackFocus, mode, pickTarget, activeTargeting, defendersFor],
+    [attackAction, mode, pickTarget, activeTargeting, sendPicksAt],
   )
 
   const confirmAttackers = useCallback(() => {
@@ -1295,6 +1369,21 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       .filter((r) => r?.kind === 'object')
       .map((r) => (r?.kind === 'object' ? r.object : '')),
   )
+  /**
+   * The seat-colour class of whoever an attack is aimed at — the defending
+   * player, or the controller of the defending planeswalker. Drives the
+   * attacking tile's outline, which is the readable half of "who is this
+   * creature hitting": the ⚔ badge is four characters over art, at a tile
+   * size where that is regularly illegible.
+   */
+  const attackSeatClass = (t: PlayerId | ObjectId): string | null => {
+    const pw = view.objects[t as ObjectId]
+    const pid = pw ? pw.controller : (t as PlayerId)
+    // Turn-order position, not table position — the same rule every other
+    // seat colour in the client follows, so the outline matches the panel.
+    return view.turnOrder.includes(pid) ? seatClassOf(view.turnOrder, pid) : null
+  }
+
   /** Label for an attack target — a player, or an opponent's planeswalker. */
   const attackTargetLabel = (t: PlayerId | ObjectId): string =>
     view.objects[t as ObjectId]
@@ -1302,8 +1391,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       : playerLabel(t as PlayerId, game.seats)
 
   const playerIsTargetable = (pid: PlayerId): boolean => {
-    if (mode === 'attackers' && attackFocus && attackAction) {
-      return defendersFor(attackFocus).includes(pid)
+    if (mode === 'attackers' && attackAction) {
+      return canSendPicksAt(pid)
     }
     return (
       mode === 'targeting' &&
@@ -1323,6 +1412,11 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     let activatable = false
     let badge: string | null = null
     let order: number | null = null
+    // Both halves of "is this attacking someone": a declaration this seat is
+    // still building (`attackAssignments`, mine only) and an attack already
+    // on the board (`obj.attacking`, which every seat sees).
+    const aimedAt = attackAssignments[id] ?? obj.attacking ?? null
+    const attackSeat = aimedAt === null ? null : attackSeatClass(aimedAt)
 
     if (obj.attacking) badge = `⚔ ${attackTargetLabel(obj.attacking)}`
     else if (obj.blocking) badge = `\u{1F6E1} ${game.nameOf(obj.blocking)}`
@@ -1343,20 +1437,17 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       )
       selected = ids.some((i) => pickedObjKeys.has(i))
     } else if (mode === 'attackers' && attackAction) {
-      // An opponent's planeswalker is a legal defender: highlight it while an
-      // attacker is focused so it can be clicked as the attack target.
-      const isDefenderPw =
-        attackFocus !== null &&
-        defendersFor(attackFocus).includes(id) &&
-        Boolean(view.objects[id])
-      highlight =
-        attackAction.eligible.includes(id) ||
-        (attackFocus !== null && isDefenderPw)
+      // An opponent's planeswalker is a legal defender: highlight it once a
+      // group is waiting, so it can be clicked as the attack target.
+      const isDefenderPw = Boolean(view.objects[id]) && canSendPicksAt(id)
+      const picked = attackPicks.includes(id)
+      highlight = (attackAction.eligible.includes(id) && !picked) || isDefenderPw
       const assignedTo = attackAssignments[id]
-      selected = assignedTo !== undefined
-      if (assignedTo) {
-        badge = `⚔ ${attackTargetLabel(assignedTo)}${attackFocus === id ? ' ?' : ''}`
-      }
+      selected = assignedTo !== undefined || picked
+      if (assignedTo) badge = `⚔ ${attackTargetLabel(assignedTo)}`
+      // A selected-but-unpointed attacker is a distinct state from an
+      // assigned one, and the board has to say which is which.
+      else if (picked) badge = '⚔ ?'
     } else if (mode === 'blockers' && blockAction) {
       const isBlocker = blockAction.eligible.some((e) => e.blocker === id)
       const assignedTo = blockAssign[id]
@@ -1397,6 +1488,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           badge={badge}
           order={order}
           stackCount={opts.stackCount ?? null}
+          attackSeat={attackSeat}
           onClick={() => clickPermanent(ids)}
         />
       )
@@ -1411,6 +1503,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         badge={badge}
         order={order}
         stackCount={opts.stackCount ?? null}
+        attackSeat={attackSeat}
         onClick={() => clickPermanent(ids)}
       />
     )
@@ -2172,37 +2265,44 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     )
   } else if (mode === 'attackers' && attackAction) {
     const assignedCount = Object.keys(attackAssignments).length
-    // Each attacker goes at a defender *it* may attack (`defendersFor`), never
-    // the union's first entry: a goaded creature can't be sent at its goader
-    // when anyone else is legal (rule 701.38b), and the server rejects it.
-    const attackableAll = attackAction.eligible.filter(
-      (id) => defendersFor(id).length > 0,
+    // Everything not already pointed at someone, and not already waiting.
+    const unpicked = attackAction.eligible.filter(
+      (id) => attackAssignments[id] === undefined && !attackPicks.includes(id),
     )
-    const allSelected = assignedCount >= attackableAll.length
+    // Where the current group could be sent: a defender every one of them may
+    // legally attack. Empty means the selection has no common target — a
+    // goaded creature mixed in with ordinary ones does this — and the player
+    // has to narrow it rather than have the attack split for them.
+    const groupTargets =
+      attackPicks.length === 0
+        ? []
+        : (attackAction.defenders ?? []).filter((d) => canSendPicksAt(d))
     controls = (
       <div className="controls">
         <span>
-          Declare attackers — {assignedCount} selected
-          {attackFocus
-            ? ` · pick a player or planeswalker for ${game.nameOf(attackFocus)}`
+          Declare attackers — {assignedCount} attacking
+          {attackPicks.length > 0 ? `, ${attackPicks.length} selected` : ''}
+          {attackPicks.length > 0
+            ? groupTargets.length > 0
+              ? ' · click who they attack'
+              : ' · no one legal for all of them — narrow the selection'
             : ''}
         </span>
-        <button
-          type="button"
-          disabled={attackableAll.length === 0 || allSelected}
-          onClick={() => {
-            setAttackAssignments(
-              Object.fromEntries(attackableAll.map((id) => [id, defendersFor(id)[0]])),
-            )
-            setAttackFocus(null)
-          }}
-        >
-          Attack with all
-        </button>
+        {unpicked.length > 0 ? (
+          <button
+            type="button"
+            onClick={() => setAttackPicks((cur) => [...cur, ...unpicked])}
+          >
+            Select all
+          </button>
+        ) : null}
+        {attackPicks.length > 0 ? (
+          <button type="button" onClick={() => setAttackPicks([])}>
+            Clear
+          </button>
+        ) : null}
         <button type="button" onClick={confirmAttackers}>
-          {assignedCount === 0
-            ? 'No attacks'
-            : `Attack with ${assignedCount}`}
+          {assignedCount === 0 ? 'No attacks' : `Attack with ${assignedCount}`}
         </button>
       </div>
     )

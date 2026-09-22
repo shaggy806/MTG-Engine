@@ -182,16 +182,61 @@
   color: var(--seat-d);
 }
 
-.error-banner {
-  margin: 6px 0;
-  padding: 6px 10px;
+/* A rejected action, as a toast over the board rather than a row in it.
+
+   As an in-flow bar this pushed the whole table down a line the moment
+   anything was refused, and stayed there until clicked -- so a mis-click
+   cost you a strip of board for the rest of the turn. Fixed and near the
+   top, centered, above the quadrants but below the decision prompt and the
+   ability menu (z-index 130 vs 120/125): an error is worth interrupting for,
+   but never worth burying the controls that fix it.
+
+   It clears itself after ERROR_LINGER_MS (see App.tsx) and is still
+   dismissible by clicking it. `pointer-events` stays on so the click works,
+   but nothing else here is interactive, and it is narrow enough to leave the
+   board either side of it reachable. */
+.error-toast {
+  position: fixed;
+  top: clamp(10px, 1.6vh, 18px);
+  left: 50%;
+  translate: -50% 0;
+  z-index: 130;
+  max-width: min(92vw, 560px);
+  padding: 8px 14px;
   text-align: center;
   font-weight: 600;
   color: var(--bad);
-  background: rgba(239, 111, 111, 0.12);
+  background: color-mix(in srgb, var(--panel) 92%, var(--bad));
   border: 1px solid var(--bad);
   border-radius: 8px;
   cursor: pointer;
+  box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.6);
+  /* In, then hold, then out. The 5.5s delay plus the 500ms fade is exactly
+     ERROR_LINGER_MS (6000) in App.tsx, which is what actually removes the
+     node -- keep the two in step, or the toast either blinks out mid-fade or
+     sits around invisible after it. */
+  animation: error-toast-in 140ms ease-out, error-toast-out 500ms ease-in 5.5s both;
+}
+@keyframes error-toast-in {
+  from {
+    opacity: 0;
+    translate: -50% -8px;
+  }
+  to {
+    opacity: 1;
+    translate: -50% 0;
+  }
+}
+@keyframes error-toast-out {
+  to {
+    opacity: 0;
+    translate: -50% -8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .error-toast {
+    animation: none;
+  }
 }
 
 .highroll-banner {
@@ -748,28 +793,83 @@
 
 /* Every mode's decision controls except priority (its own .priority-actions
    corner) and discard/put-on-bottom (inline with the hand -- see App.tsx's
-   `peekable`) float here instead: fixed and centered, near the top where
-   the turn/phase info already draws the eye, so it's just as attention-
-   grabbing as the old inline placement without taking any height away from
-   .quadrant-grid -- docking it inline used to force the whole hand-strip out
-   of its peekable/fixed tray and into normal flow every time a declare-
-   attackers/blockers, sacrifice, scry, etc. decision came up, which starved
+   `peekable`) float here instead.
+
+   It sits in the **bottom-right corner, in the same place .priority-actions
+   puts the Pass row**, and stacks its prompt directly above its own buttons.
+   It used to be centered near the top, on the theory that the turn/phase
+   info already drew the eye there; in play that put the sentence telling you
+   what you were being asked at the opposite corner of the screen from the
+   buttons answering it, so you read one place and clicked another. The two
+   never collide, because a decision mode and priority mode are mutually
+   exclusive -- while a decision is up, the Pass row isn't rendered at all.
+
+   Still `position: fixed`, which is the load-bearing part: docking these
+   controls inline used to force the whole hand-strip out of its
+   peekable/fixed tray and into normal flow every time a declare-attackers /
+   blockers / sacrifice / scry decision came up, which starved
    .quadrant-body of height and made recomputeBoardMiniW crush the board's
-   own mini tiles to compensate. */
+   own mini tiles to compensate. Don't grow --bottom-band to clear a taller
+   prompt either -- that reaches the same failure by the other road. */
 .decision-banner {
   position: fixed;
-  top: clamp(44px, 6vh, 56px);
-  left: 50%;
-  translate: -50% 0;
+  right: clamp(10px, 1.4vw, 18px);
+  bottom: clamp(12px, 2vh, 20px);
   z-index: 120;
-  width: min(94vw, 900px);
+  /* Shrink-to-fit with .priority-actions' own ceiling, rather than the old
+     fixed 900px: a wide prompt wraps to more rows here, and rows grow
+     *upward* out of the reserved bottom band across the bottom-right seat's
+     rail, so the panel should never be wider than its content needs. */
+  width: max-content;
+  max-width: min(92vw, 560px);
   pointer-events: none;
 }
 .decision-banner .controls {
   margin-top: 0;
-  justify-content: center;
+  /* The prompt gets its own row above the buttons, which stay side by side
+     on the row below -- `.controls` is already `flex-wrap: wrap`, so a
+     full-basis first child is all it takes. `flex-direction: column` would
+     have worked too and is wrong: it puts every button on its own line, and
+     height here grows *upward* over the board. */
+  justify-content: flex-end;
   pointer-events: auto;
   box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.55);
+  /* A decision is the one thing on screen that cannot be ignored -- nothing
+     advances until it is answered -- so the panel pulses rather than just
+     sitting there. Deliberately a slow glow and not a hard blink: this is
+     every decision of every turn of a Commander game, and it has to survive
+     being looked at for a while. It also loops rather than running a fixed
+     number of times, because Table remounts on every frame (keyed on
+     `shown.revision`) and a finite animation would restart its burst each
+     time the board updated underneath it. */
+  animation: decision-pulse 1.9s ease-in-out infinite;
+}
+/* The prompt sentence takes a whole row to itself, pushing the buttons onto
+   the next one. Left-aligned, since several wrap to two or three lines
+   (declare blockers with menace/Lure text, assign-combat-damage's row per
+   blocker). */
+.decision-banner .controls > span:first-child {
+  flex: 0 0 100%;
+  text-align: left;
+}
+@keyframes decision-pulse {
+  0%,
+  100% {
+    border-color: var(--border);
+    box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.55);
+  }
+  50% {
+    border-color: var(--accent);
+    box-shadow:
+      0 10px 30px -8px rgba(0, 0, 0, 0.55),
+      0 0 0 2px color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .decision-banner .controls {
+    animation: none;
+    border-color: var(--accent);
+  }
 }
 
 .board {
@@ -2895,4 +2995,39 @@
   padding: 1px 7px;
   font-size: 11px;
   vertical-align: middle;
+}
+
+/* ===== who is this creature attacking =====
+
+   An attacking permanent is outlined in its *defender's* seat colour, the
+   same colour that seat's panel and divider already use. The `⚔ <name>`
+   badge it replaces is four characters laid over art at mini-tile size,
+   which is regularly unreadable — and at a four-player table "who is this
+   hitting" is the whole question combat asks.
+
+   Colour alone would be a problem if it were the only signal, so the badge
+   stays: this is a second, louder channel for the same fact, not a
+   replacement for it. `outline` rather than `border`, so no tile changes
+   size when an attack is declared, and it wins over .selected's own ring by
+   sitting outside it. */
+.card-tile.attacking-at,
+.mini-tile.attacking-at {
+  outline: 2px solid var(--attack-seat);
+  outline-offset: 1px;
+}
+.card-tile.attacking-at.seat-a,
+.mini-tile.attacking-at.seat-a {
+  --attack-seat: var(--seat-a);
+}
+.card-tile.attacking-at.seat-b,
+.mini-tile.attacking-at.seat-b {
+  --attack-seat: var(--seat-b);
+}
+.card-tile.attacking-at.seat-c,
+.mini-tile.attacking-at.seat-c {
+  --attack-seat: var(--seat-c);
+}
+.card-tile.attacking-at.seat-d,
+.mini-tile.attacking-at.seat-d {
+  --attack-seat: var(--seat-d);
 }

@@ -27,6 +27,11 @@ export interface MiniTileProps {
   readonly extraGenericCost?: number
   readonly order?: number | null
   readonly stackCount?: number | null
+  /** The seat-colour class of whoever this permanent is attacking, or null.
+   * The tile is outlined in it, because the `⚔ <name>` badge is small,
+   * overlaid on art and regularly unreadable — colour survives at tile size
+   * where four characters of text do not. */
+  readonly attackSeat?: string | null
   readonly onClick?: () => void
 }
 
@@ -75,6 +80,7 @@ export function MiniTile({
   extraGenericCost = 0,
   order = null,
   stackCount = null,
+  attackSeat = null,
   onClick,
 }: MiniTileProps) {
   const face = obj.copyOf ?? obj.faceName ?? obj.cardName
@@ -102,6 +108,7 @@ export function MiniTile({
     selected ? 'selected' : '',
     activatable ? 'activatable' : '',
     dimmed ? 'dimmed' : '',
+    attackSeat ? `attacking-at ${attackSeat}` : '',
     clickable ? 'clickable' : '',
   ]
     .filter(Boolean)
