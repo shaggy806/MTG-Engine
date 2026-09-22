@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import type { LegalAction } from "../actions.js";
+import { createDefaultRegistry } from "../cards.js";
 import { ScriptedController } from "../controller.js";
+import { matchesFilter } from "../filter.js";
 import { Game } from "../game.js";
 import { asObjectId, asPlayerId } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
@@ -248,6 +250,53 @@ describe("loss conditions with more than two players", () => {
     game.advanceUntil((s) => s.result.over);
 
     expect(game.state.result.winner).toBe(A);
+  });
+
+  it("never gives an eliminated player another turn", () => {
+    const { game } = makeThreePlayerGame();
+    game.state.players[B].life = 0;
+    game.advanceUntil((s) => s.players[B].hasLost);
+
+    // Play on for a while and record who actually gets turns.
+    const seen = new Set<string>();
+    const until = game.state.turn.number + 6;
+    game.advanceUntil((s) => {
+      seen.add(s.turnOrder[s.turn.activePlayerIndex]);
+      return s.turn.number >= until || s.result.over;
+    });
+
+    expect(seen.has(B)).toBe(false);
+    expect(seen.has(A) || seen.has(C)).toBe(true);
+  });
+
+  /**
+   * An eliminated player's permanents stay on the battlefield so the others
+   * can still see what they had, but stop taking part in the game.
+   *
+   * **This is a deliberate deviation from rule 800.4a**, which removes a
+   * departing player's objects from the game outright. It is a UI choice, not
+   * an oversight: the board stays readable. The functional half is what these
+   * assertions pin.
+   */
+  it("leaves a dead player's permanents visible but inert", () => {
+    const { game } = makeThreePlayerGame();
+    const theirs = spawn(game, "Grizzly Bears", B);
+    const mine = spawn(game, "Grizzly Bears", A);
+    game.state.players[B].life = 0;
+    game.advanceUntil((s) => s.players[B].hasLost);
+
+    // Still on the battlefield, so a client can still draw it.
+    expect(game.state.objects[theirs]).toBeDefined();
+    expect(game.state.zones.shared.battlefield).toContain(theirs);
+
+    // But it is not a creature anything can find: a count of every creature
+    // on the board sees only the living player's.
+    const registry = createDefaultRegistry();
+    const creatures = game.state.zones.shared.battlefield.filter((id) =>
+      matchesFilter(game.state, registry, id, { type: "creature" }, { you: A }),
+    );
+    expect(creatures).toContain(mine);
+    expect(creatures).not.toContain(theirs);
   });
 });
 

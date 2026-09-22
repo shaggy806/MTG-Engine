@@ -2141,8 +2141,19 @@ export class Game {
     } else {
       this.state.turn.isExtra = false;
       if (this.state.turn.number > 1) {
-        this.state.turn.activePlayerIndex =
-          (this.state.turn.activePlayerIndex + 1) % this.state.turnOrder.length;
+        // Skip anyone who has left the game (rule 800.4). Without this an
+        // eliminated player kept taking turns: untapping, drawing and holding
+        // priority in a game they are no longer in.
+        const order = this.state.turnOrder;
+        let index = this.state.turn.activePlayerIndex;
+        for (let step = 1; step <= order.length; step += 1) {
+          const candidate = (this.state.turn.activePlayerIndex + step) % order.length;
+          if (!this.state.players[order[candidate]].hasLost) {
+            index = candidate;
+            break;
+          }
+        }
+        this.state.turn.activePlayerIndex = index;
       }
     }
     for (const player of this.state.turnOrder) {
@@ -6054,6 +6065,10 @@ export class Game {
       const object = this.state.objects[id];
       if (object === undefined) continue;
       if (hasLostAbilities(object)) continue; // layer 6 — no triggered abilities
+      // An eliminated player's permanents are left on the board to be seen,
+      // not to keep playing: their triggers stop firing. They leave play rather
+      // than view — see the note in `matchesFilter`.
+      if (this.state.players[object.controller]?.hasLost === true) continue;
       const entries = this.effectiveTriggeredEntries(id, triggerGrantors);
       entries.forEach(({ ability, ref }, index) => {
         if (

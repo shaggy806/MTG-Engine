@@ -556,6 +556,11 @@ function contributingStaticSources(
   for (const sourceId of state.zones.shared.battlefield) {
     const source = state.objects[sourceId];
     if (hasLostAbilities(source)) continue; // layer 6 — its statics don't function
+    // An eliminated player's permanents stay on the board to be looked at but
+    // stop affecting the game — so their anthems and lords stop applying too.
+    // See the note in `matchesFilter`: they leave play, not view — rule
+    // 800.4a would have removed them from the game entirely.
+    if (state.players[source.controller]?.hasLost === true) continue;
     for (const ability of registry.get(printedCardName(source)).static) {
       // Only P/T-bonus / keyword-grant / restriction statics contribute here.
       // A static that is purely a replacement (rule 614 — "enters tapped") or

@@ -142,6 +142,18 @@ export function matchesFilter(
   const object = state.objects[id];
   if (object === undefined) return false;
 
+  // A permanent whose controller has left the game takes no further part in
+  // it: nothing counts it, targets it, or sweeps it up.
+  //
+  // Rule 800.4a removes a departing player's objects from the game. Here they
+  // leave *play* but stay on the board, which is what happens at a real
+  // table — an eliminated player's battlefield sits there for everyone to
+  // read. Functionally they are gone, which is the half the rules are about;
+  // the client tints the quadrant so nobody mistakes them for live.
+  if (object.zone === "battlefield" && state.players[object.controller]?.hasLost === true) {
+    return false;
+  }
+
   // Types, subtypes and colours are self-contained (layers 4 / 3 / 5 come only
   // from the object's own modifiers), so they're answered without the layer
   // fold. Only `keyword` / `power` / `toughness` need external statics — and
