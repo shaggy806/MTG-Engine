@@ -2052,20 +2052,33 @@
   display: block;
 }
 /* (the tint-* fallbacks themselves are shared — see .tint-W above) */
+/* A permanent's keywords as Arena's own ability icons (the Mana font -- see
+   ui/abilityIcons.ts), one dark disc each down the art's corner. Sized off
+   the tile, since a board's tiles grow and shrink with the room it has: an
+   80px tile gets 13px discs, and the floor keeps them clear of illegible on
+   a crowded board's smallest tiles. A column that runs out of art wraps
+   into a second one beside it rather than disappearing off the bottom --
+   Atraxa alone has four, five with a lord granting one -- and the top-right
+   corner stays free for the attack badge. */
 .mt-kw {
+  --kw-size: clamp(11px, calc(var(--mini-w) * 0.16), 18px);
   position: absolute;
   top: 2px;
   left: 2px;
   display: flex;
   flex-direction: column;
+  flex-wrap: wrap;
+  max-height: calc(100% - 4px);
   gap: 1px;
 }
 .mt-kw span {
-  width: 11px;
-  height: 11px;
+  width: var(--kw-size);
+  height: var(--kw-size);
   display: grid;
   place-items: center;
-  font-size: 7.5px;
+  font-family: 'Mana';
+  font-size: calc(var(--kw-size) * 0.72);
+  line-height: 1;
   color: #fff;
   background: rgba(10, 12, 16, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.15);

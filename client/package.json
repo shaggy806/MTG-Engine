@@ -14,9 +14,10 @@
   },
   "dependencies": {
     "engine": "*",
+    "mana-font": "1.18.0",
+    "protocol": "*",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "protocol": "*"
+    "react-dom": "^19.2.8"
   },
   "devDependencies": {
     "@types/react": "^19.2.18",

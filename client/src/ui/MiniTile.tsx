@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react'
 import { createPortal } from 'react-dom'
 import type { VisibleObject } from 'engine'
 import { CardTile } from './CardTile.tsx'
+import { KEYWORD_GLYPH, keywordLabel } from './abilityIcons.ts'
 import { useHoverPopover } from './useHoverPopover.ts'
 import { costColor } from './symbols.ts'
 import { manaSymbolUrl } from './mana.ts'
@@ -33,27 +34,6 @@ export interface MiniTileProps {
    * where four characters of text do not. */
   readonly attackSeat?: string | null
   readonly onClick?: () => void
-}
-
-/** A single glyph per keyword, shown as a small dot stack on the tile itself
- * — the full word is still in the hover/focus popover's keyword line
- * (`CardTile`'s own rendering), this is just enough to recognize at a
- * glance which keywords a permanent has without reading it. */
-const KEYWORD_ICON: Record<string, string> = {
-  flying: '✈',
-  trample: '▲',
-  deathtouch: '☠',
-  lifelink: '♥',
-  menace: '⚔',
-  vigilance: '◎',
-  haste: '⚡',
-  reach: '↟',
-  'first-strike': '1',
-  'double-strike': '2',
-  indestructible: '◆',
-  hexproof: '⛨',
-  flash: '✦',
-  defender: '⛔',
 }
 
 /**
@@ -151,10 +131,15 @@ export function MiniTile({
             ) : null}
           </span>
 
+          {/* One icon per keyword, stacked in the art's corner — enough to
+              recognize at a glance which keywords a permanent has; the words
+              themselves are in the hover card's keyword line. */}
           {obj.keywords.length > 0 ? (
             <span className="mt-kw">
               {obj.keywords.map((k) => (
-                <span key={k}>{KEYWORD_ICON[k] ?? '•'}</span>
+                <span key={k} role="img" aria-label={keywordLabel(k)}>
+                  {KEYWORD_GLYPH[k]}
+                </span>
               ))}
             </span>
           ) : null}
