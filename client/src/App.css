@@ -1235,9 +1235,44 @@
     transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1),
     opacity 0.28s ease;
 }
+/* Arriving on the stack. Something being *put* on the stack used to appear
+   fully formed at its final slot -- the depth transition below only animates
+   entries that were already there being pushed back, so the new card itself
+   was the one thing that never moved.
+
+   Animated on `translate` and `scale`, which are their own properties in
+   modern CSS and so compose with the `transform: rotate() scale()` above
+   instead of overwriting it. Animating `transform` here would fight both
+   that declaration and the transition on it, and animating `opacity` would
+   fight `var(--st-opacity)` and strand a deep card at full brightness once
+   the animation ended.
+
+   It only ever runs on a genuinely new entry: `Stack` is a sibling of
+   `<Table>` so it does not remount per frame, and React keys entries by
+   object id, so an existing card being pushed deeper keeps its DOM node and
+   transitions rather than re-animating. */
+.stack-entry {
+  /* 0.45s rather than the 0.3s this started at, which read as a flinch: the
+     point of the beat is that you notice something arrived. Deliberately a
+     shade longer than the 0.38s depth transition below, so when a new card
+     pushes the pile back the arrival is the slower of the two motions and
+     the eye follows it rather than the shuffle behind it. */
+  animation: stack-arrive 0.45s cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+@keyframes stack-arrive {
+  from {
+    translate: 18px -26px;
+    scale: 1.14;
+  }
+  to {
+    translate: 0 0;
+    scale: 1;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .stack-entry {
     transition: none;
+    animation: none;
   }
 }
 /* Every card on the stack gets a warm outline so "something is on the stack"
