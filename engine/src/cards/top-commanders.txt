@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-33 already implemented / 467 missing
+36 already implemented / 464 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -31,7 +31,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   25  Hearthhull, the Worldseed                      31352 decks  {1}{B}{R}{G}     Legendary Artifact — Spacecraft
 [ ]   26  Kefka, Court Mage                              31209 decks  {2}{U}{B}{R}     Legendary Creature — Human Wizard // Legendary Creature — Avatar Wizard
 [ ]   27  Valgavoth, Harrower of Souls                   30711 decks  {2}{B}{R}        Legendary Creature — Elder Demon
-[ ]   28  Isshin, Two Heavens as One                     30593 decks  {R}{W}{B}        Legendary Creature — Human Samurai
+[x]   28  Isshin, Two Heavens as One                     30593 decks  {R}{W}{B}        Legendary Creature — Human Samurai
 [ ]   29  Sephiroth, Fabled SOLDIER                      30424 decks  {2}{B}           Legendary Creature — Human Avatar Soldier // Legendary Creature — Angel Nightmare Avatar
 [ ]   30  Baylen, the Haymaker                           29839 decks  {R}{G}{W}        Legendary Creature — Rabbit Warrior
 [x]   31  Miirym, Sentinel Wyrm                          28532 decks  {3}{G}{U}{R}     Legendary Creature — Dragon Spirit
@@ -349,7 +349,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  343  Maelstrom Wanderer                              8102 decks  {5}{G}{U}{R}     Legendary Creature — Elemental
 [ ]  344  Sen Triplets                                    8043 decks  {2}{W}{U}{B}     Legendary Artifact Creature — Human Wizard
 [ ]  345  Xavier Sal, Infested Captain                    8040 decks  {B}{G}{U}        Legendary Creature — Human Fungus Pirate
-[ ]  346  Elesh Norn, Mother of Machines                  8031 decks  {4}{W}           Legendary Creature — Phyrexian Praetor
+[x]  346  Elesh Norn, Mother of Machines                  8031 decks  {4}{W}           Legendary Creature — Phyrexian Praetor
 [ ]  347  Tuvasa the Sunlit                               8030 decks  {G}{W}{U}        Legendary Creature — Merfolk Shaman
 [ ]  348  Grist, the Hunger Tide                          8023 decks  {1}{B}{G}        Legendary Planeswalker — Grist
 [ ]  349  Kellan, the Kid                                 8017 decks  {G}{W}{U}        Legendary Creature — Human Faerie Rogue
@@ -498,7 +498,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  492  Bruse Tarl, Boorish Herder                      6147 decks  {2}{R}{W}        Legendary Creature — Human Ally
 [ ]  493  Syr Konrad, the Grim                            6138 decks  {3}{B}{B}        Legendary Creature — Human Knight
 [ ]  494  Anzrag, the Quake-Mole                          6113 decks  {2}{R}{G}        Legendary Creature — Mole God
-[ ]  495  Felix Five-Boots                                6111 decks  {2}{B}{G}{U}     Legendary Creature — Ooze Rogue
+[x]  495  Felix Five-Boots                                6111 decks  {2}{B}{G}{U}     Legendary Creature — Ooze Rogue
 [ ]  496  Gilanra, Caller of Wirewood                     6097 decks  {2}{G}           Legendary Creature — Elf Druid
 [ ]  497  Imoti, Celebrant of Bounty                      6033 decks  {3}{G}{U}        Legendary Creature — Snake Druid
 [ ]  498  Hapatra, Vizier of Poisons                      6032 decks  {B}{G}           Legendary Creature — Human Cleric

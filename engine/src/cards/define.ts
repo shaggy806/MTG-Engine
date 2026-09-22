@@ -500,6 +500,34 @@ export interface StaticAbility {
    * `affects` is ignored — this only ever doubles its own controller's
    * `enters-battlefield` triggers. */
   readonly doubleEntryTriggers?: { readonly filter?: CardFilter };
+  /**
+   * "If [something happening] causes a triggered ability of a permanent you
+   * control to trigger, that ability triggers an additional time" — any
+   * trigger that event causes, not just one kind. `cause` names the event:
+   *
+   * - `"enters"`: a permanent entering (Yarok, the Desecrated; Elesh Norn,
+   *   Mother of Machines). `filter` narrows the entering permanent.
+   * - `"attacks"`: a creature attacking (Isshin, Two Heavens as One). Covers
+   *   per-attacker triggers and "whenever you attack" ones alike. Leave
+   *   `filter` off for Isshin: a whole-declaration event has no one attacker
+   *   to test.
+   * - `"combat-damage-to-player"`: a creature dealing combat damage to a
+   *   player (Felix Five-Boots). `filter` narrows the damage source.
+   *
+   * Only its controller's triggers. Stacks with `doubleEntryTriggers` and with
+   * itself (two sources, three times).
+   */
+  readonly doubleTriggers?: {
+    readonly cause: "enters" | "attacks" | "combat-damage-to-player";
+    readonly filter?: CardFilter;
+  };
+  /**
+   * "Permanents entering don't cause abilities of permanents your opponents
+   * control to trigger" (Elesh Norn, Mother of Machines; Torpor Orb is the
+   * `"everyone"` version). Suppresses every trigger an entering permanent
+   * would cause for the named permanents' controllers.
+   */
+  readonly suppressEntryTriggers?: "opponents" | "everyone";
   readonly text: string;
 }
 

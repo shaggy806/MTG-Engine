@@ -1,5 +1,5 @@
 Top 2000 Commander cards by EDHREC popularity (fetched 2026-09-13)
-453 already implemented / 1547 missing (marks refreshed 2026-09-22)
+455 already implemented / 1545 missing (marks refreshed 2026-09-22)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -1030,7 +1030,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1034  Inexorable Tide                          {3}{U}{U}        Enchantment
 [ ]  1035  Steelshaper's Gift                       {W}              Sorcery
 [ ]  1036  Wear // Tear                             {1}{R} // {W}    Instant // Instant
-[ ]  1037  Elesh Norn, Mother of Machines           {4}{W}           Legendary Creature — Phyrexian Praetor
+[x]  1037  Elesh Norn, Mother of Machines           {4}{W}           Legendary Creature — Phyrexian Praetor
 [ ]  1038  Heliod, Sun-Crowned                      {2}{W}           Legendary Enchantment Creature — God
 [ ]  1039  Oketra's Monument                        {3}              Legendary Artifact
 [ ]  1040  Wayward Swordtooth                       {2}{G}           Creature — Dinosaur
@@ -1457,7 +1457,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1464  Kessig Flamebreather                     {1}{R}           Creature — Human Shaman
 [ ]  1465  Secluded Steppe                          {0}              Land
 [ ]  1466  Ishgard, the Holy See // Faith & Grief   {3}{W}{W}        Land — Town // Sorcery — Adventure
-[ ]  1467  Isshin, Two Heavens as One               {R}{W}{B}        Legendary Creature — Human Samurai
+[x]  1467  Isshin, Two Heavens as One               {R}{W}{B}        Legendary Creature — Human Samurai
 [ ]  1468  Triskaidekaphile                         {1}{U}           Creature — Human Wizard
 [ ]  1469  No Mercy                                 {2}{B}{B}        Enchantment
 [ ]  1470  Concordant Crossroads                    {G}              World Enchantment

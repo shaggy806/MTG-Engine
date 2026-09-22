@@ -11,7 +11,9 @@ import type { ObjectId, PlayerId } from "../primitives.js";
  * `hand-size` condition (Flubs, the Fool), a counted, revealing
  * `look-and-choose` (Gishath, Sun's Avatar), and cost reductions that scale
  * with counters on the source or cards in your graveyard (Animar, Soul of
- * Elements; Karador, Ghost Chieftain).
+ * Elements; Karador, Ghost Chieftain), and statics that make triggers fire an
+ * additional time or not at all (Isshin; Elesh Norn, Mother of Machines;
+ * Felix Five-Boots).
  */
 
 const [A, B] = ["alice", "bob"].map(asPlayerId);
@@ -48,6 +50,16 @@ function settle(game: Game): void {
         player: awaiting.player,
         cards: game.state.zones.perPlayer[awaiting.player].hand.slice(0, awaiting.count),
       });
+      continue;
+    }
+    // Queued triggers go on the stack at the next priority, which can mean
+    // passing out of a step: nobody attacks or blocks on the way.
+    if (awaiting?.kind === "attackers") {
+      game.dispatch({ type: "declare-attackers", player: awaiting.player, attackers: [] });
+      continue;
+    }
+    if (awaiting?.kind === "blockers") {
+      game.dispatch({ type: "declare-blockers", player: awaiting.player, blocks: [] });
       continue;
     }
     if (awaiting !== null) throw new Error(`unexpected ${awaiting.kind}`);
@@ -282,5 +294,46 @@ describe("Karador, Ghost Chieftain", () => {
     settle(game);
     expect(game.state.objects[first].zone).toBe("battlefield");
     expect(castable(game, second)).toBe(false);
+  });
+});
+
+describe("triggers that trigger an additional time", () => {
+  it("Isshin: an attack trigger fires twice", () => {
+    const game = table();
+    spawn(game, "Isshin, Two Heavens as One", A);
+    const arabella = spawn(game, "Arabella, Abandoned Doll", A);
+    game.advanceUntil((s) => s.awaiting?.kind === "attackers");
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: arabella, defender: B }] });
+    game.advanceUntil((s) => s.turn.step === "declare-blockers");
+    // Arabella: X damage to each opponent and X life, X = your creatures with
+    // power 2 or less (just her) — twice.
+    expect(game.state.players[B].life).toBe(20 - 2);
+    expect(game.state.players[A].life).toBe(20 + 2);
+  });
+
+  it("Elesh Norn: yours trigger twice when a permanent enters, an opponent's not at all", () => {
+    const game = table();
+    spawn(game, "Soul Warden", A);
+    spawn(game, "Soul Warden", B);
+    game.debugSpawn("Elesh Norn, Mother of Machines", A, "battlefield", { announceEntry: true });
+    settle(game);
+    // Norn's own entry counts for both halves.
+    expect(game.state.players[A].life).toBe(20 + 2);
+    expect(game.state.players[B].life).toBe(20);
+    // A creature entering under the opponent's control still doubles yours.
+    game.debugSpawn("Grizzly Bears", B, "battlefield", { announceEntry: true });
+    settle(game);
+    expect(game.state.players[A].life).toBe(20 + 4);
+    expect(game.state.players[B].life).toBe(20);
+  });
+
+  it("Felix Five-Boots: a combat-damage trigger fires twice, a lifelink gain trigger doesn't", () => {
+    const game = table();
+    spawn(game, "Felix Five-Boots", A);
+    const cub = spawn(game, "Longtusk Cub", A);
+    game.advanceUntil((s) => s.awaiting?.kind === "attackers");
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: cub, defender: B }] });
+    game.advanceUntil((s) => s.turn.step === "postcombat-main");
+    expect(game.state.players[A].energy).toBe(4);
   });
 });

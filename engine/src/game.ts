@@ -1269,6 +1269,17 @@ export class Game {
   static readonly MAX_EFFECT_INSTANCES = 1000;
 
   /**
+   * The most separate objects one kind of token is woken into when its tokens
+   * are granted an activated ability (Cryptolith Rite's "{T}: Add"). Small on
+   * purpose: tapping them one at a time is what the grant needs, but every
+   * separate object is another permanent every mana plan and every scan walks.
+   * A Scute Swarm copying itself under Cryptolith Rite reached 290 permanents
+   * and about 35 seconds a turn before this was bounded. Past the bound they
+   * stay stacked and tap as one, the lesser wrong.
+   */
+  private static readonly MAX_WOKEN_TOKENS = 16;
+
+  /**
    * Expand a compacted stack into separate ordinary objects and return them —
    * `[id]` unchanged when it isn't a stack. Combat needs this (as opposed to
    * `splitOneFromStack`'s "peel off one"): a stack's shared `power` can't
@@ -1333,6 +1344,26 @@ export class Game {
    * `STACK_ORIGIN_THRESHOLD` strong. Two Soldier tokens from Raise the Alarm
    * stay two tiles on the board, exactly as before.
    */
+  /** How many *separate* (unstacked) token objects share `token`'s printed
+   * name and controller — the bound on waking tokens that were granted an
+   * activated ability. */
+  private separateTokenCount(token: GameObject): number {
+    const name = printedCardName(token);
+    let n = 0;
+    for (const id of this.state.zones.shared.battlefield) {
+      const o = this.state.objects[id];
+      if (
+        o.isToken &&
+        (o.stackCount ?? 1) === 1 &&
+        o.controller === token.controller &&
+        printedCardName(o) === name
+      ) {
+        n += 1;
+      }
+    }
+    return n;
+  }
+
   private recompactTokens(): void {
     if (
       this.state.awaiting !== null ||
@@ -1359,8 +1390,12 @@ export class Game {
         o.markedByDeathtouch ||
         !this.isStackableTokenName(printedCardName(o)) ||
         // A vanilla token that's been *granted* an activated ability
-        // (Cryptolith Rite) has to be tapped one at a time.
-        this.effectiveActivated(id).length > 0
+        // (Cryptolith Rite) has to be tapped one at a time — until there are
+        // more of them than MAX_MATERIALIZED, where resource safety wins and
+        // they fold back like any other (a Scute Swarm under Cryptolith Rite
+        // otherwise grew the board past 290 objects and crawled).
+        (this.effectiveActivated(id).length > 0 &&
+          this.separateTokenCount(o) <= Game.MAX_WOKEN_TOKENS)
       ) {
         continue;
       }
@@ -3956,6 +3991,55 @@ export class Game {
   /** How many active `doubleEntryTriggers` statics `controller` has that
    * apply to `enteringId` entering (Panharmonicon-style — needed-cards P15).
    * Two such statics make an ETB trigger fire three times total (1 + 2). */
+  /** How many `doubleTriggers` statics `controller` has whose cause is
+   * `event` — each makes a trigger that event causes fire once more. */
+  private causeTriggerDoublers(controller: PlayerId, event: GameEvent): number {
+    const subject = (cause: "enters" | "attacks" | "combat-damage-to-player"): ObjectId | null | undefined => {
+      if (cause === "enters") {
+        return event.type === "permanent-entered-battlefield" ? event.object : undefined;
+      }
+      if (cause === "attacks") {
+        if (event.type === "attacker-declared" || event.type === "attacked-alone") return event.attacker;
+        return event.type === "attackers-declared" ? null : undefined;
+      }
+      return event.type === "damage-dealt" && event.combat && event.target.kind === "player"
+        ? event.source
+        : undefined;
+    };
+    let count = 0;
+    for (const id of this.state.zones.shared.battlefield) {
+      const source = this.state.objects[id];
+      if (source.controller !== controller || hasLostAbilities(source)) continue;
+      for (const ability of this.registry.get(printedCardName(source)).static) {
+        const d = ability.doubleTriggers;
+        if (d === undefined || !this.staticActive(source, ability)) continue;
+        const who = subject(d.cause);
+        if (who === undefined) continue;
+        if (d.filter !== undefined) {
+          if (who === null) continue;
+          if (!matchesFilter(this.state, this.registry, who, d.filter, { you: controller })) continue;
+        }
+        count += 1;
+      }
+    }
+    return count;
+  }
+
+  /** Whether an entering permanent is barred from causing `controller`'s
+   * triggers (Elesh Norn, Mother of Machines; Torpor Orb). */
+  private entryTriggersSuppressed(controller: PlayerId): boolean {
+    for (const id of this.state.zones.shared.battlefield) {
+      const source = this.state.objects[id];
+      if (hasLostAbilities(source)) continue;
+      for (const ability of this.registry.get(printedCardName(source)).static) {
+        const s = ability.suppressEntryTriggers;
+        if (s === undefined || !this.staticActive(source, ability)) continue;
+        if (s === "everyone" || source.controller !== controller) return true;
+      }
+    }
+    return false;
+  }
+
   private entryTriggerDoublers(controller: PlayerId, enteringId: ObjectId): number {
     let count = 0;
     for (const id of this.state.zones.shared.battlefield) {
@@ -6371,7 +6455,13 @@ export class Game {
         if (onlyEminence && ability.fromCommandZone !== true) return;
         if (
           this.triggerMatches(ability.trigger, event, object) &&
-          this.interveningIfMet(ability.condition, object)
+          this.interveningIfMet(ability.condition, object) &&
+          // Elesh Norn, Mother of Machines / Torpor Orb: an entering
+          // permanent causes none of this controller's triggers.
+          !(
+            event.type === "permanent-entered-battlefield" &&
+            this.entryTriggersSuppressed(object.controller)
+          )
         ) {
           const autoCandidate: TargetRef | undefined =
             ability.trigger.on === "deals-combat-damage-to-player" &&
@@ -6472,10 +6562,10 @@ export class Game {
           // this ETB trigger fire one additional time (two doublers = fires
           // three times total).
           const entryDoublers =
-            ability.trigger.on === "enters-battlefield" &&
+            (ability.trigger.on === "enters-battlefield" &&
             event.type === "permanent-entered-battlefield"
               ? this.entryTriggerDoublers(object.controller, event.object)
-              : 0;
+              : 0) + this.causeTriggerDoublers(object.controller, event);
           // A compacted stack that left play is that many permanents leaving,
           // each its own event: Zulaport Cutthroat drains once per Goblin in
           // a stack a wrath kills. The stack's own abilities already scale by
@@ -10050,14 +10140,16 @@ export class Game {
       // since each one's cost has to be paid (tapped) on its own. A static
       // that grants one (Cryptolith Rite's "{T}: Add one mana") wakes the
       // stack up into real objects. Before this, eight Goblins under
-      // Cryptolith Rite made one mana, and tapping it tapped all eight. A
-      // stack too big to wake whole (past
-      // MAX_MATERIALIZED — only a runaway generator gets there) is left as
-      // it is; waking it a hundred at a time would loop here until it had
-      // minted every object stacking exists to avoid.
+      // Cryptolith Rite made one mana, and tapping it tapped all eight.
+      // Bounded by MAX_WOKEN_TOKENS: past that a token kind stays stacked
+      // (and recompaction folds it back), or a self-copier like Scute Swarm
+      // under Cryptolith Rite mints every object stacking exists to avoid.
       for (const id of [...this.state.zones.shared.battlefield]) {
         const count = this.state.objects[id]?.stackCount ?? 1;
-        if (count <= 1 || count > Game.MAX_MATERIALIZED) continue;
+        if (count <= 1) continue;
+        // Only while this token kind's separate objects stay within
+        // MAX_MATERIALIZED, the same bound recompaction folds back past.
+        if (this.separateTokenCount(this.state.objects[id]) + count > Game.MAX_WOKEN_TOKENS) continue;
         if (this.effectiveActivated(id).length === 0) continue;
         this.materializeStack(id);
         invalidateComputedCache();

@@ -199,6 +199,7 @@ import _poolDrumhunter from "./pool/drumhunter.js";
 import _poolEdgarMarkov from "./pool/edgar-markov.js";
 import _poolEiganjoSeatOfTheEmpire from "./pool/eiganjo-seat-of-the-empire.js";
 import _poolElementalBond from "./pool/elemental-bond.js";
+import _poolEleshNornMotherOfMachines from "./pool/elesh-norn-mother-of-machines.js";
 import _poolElfhamePalace from "./pool/elfhame-palace.js";
 import _poolElspethSunsChampion from "./pool/elspeth-suns-champion.js";
 import _poolElvishMystic from "./pool/elvish-mystic.js";
@@ -230,6 +231,7 @@ import _poolFarseek from "./pool/farseek.js";
 import _poolFavorableWinds from "./pool/favorable-winds.js";
 import _poolFeedTheSwarm from "./pool/feed-the-swarm.js";
 import _poolFelidarRetreat from "./pool/felidar-retreat.js";
+import _poolFelixFiveBoots from "./pool/felix-five-boots.js";
 import _poolFellwarStone from "./pool/fellwar-stone.js";
 import _poolFencingAce from "./pool/fencing-ace.js";
 import _poolFertileFootsteps from "./pool/fertile-footsteps.js";
@@ -338,6 +340,7 @@ import _poolIridescentVinelasher from "./pool/iridescent-vinelasher.js";
 import _poolIsland from "./pool/island.js";
 import _poolIsolatedChapel from "./pool/isolated-chapel.js";
 import _poolIsperiaSupremeJudge from "./pool/isperia-supreme-judge.js";
+import _poolIsshinTwoHeavensAsOne from "./pool/isshin-two-heavens-as-one.js";
 import _poolIzzetBoilerworks from "./pool/izzet-boilerworks.js";
 import _poolIzzetSignet from "./pool/izzet-signet.js";
 import _poolJadeMage from "./pool/jade-mage.js";
@@ -1013,6 +1016,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolEdgarMarkov,
   _poolEiganjoSeatOfTheEmpire,
   _poolElementalBond,
+  _poolEleshNornMotherOfMachines,
   _poolElfhamePalace,
   _poolElspethSunsChampion,
   _poolElvishMystic,
@@ -1044,6 +1048,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolFavorableWinds,
   _poolFeedTheSwarm,
   _poolFelidarRetreat,
+  _poolFelixFiveBoots,
   _poolFellwarStone,
   _poolFencingAce,
   _poolFertileFootsteps,
@@ -1152,6 +1157,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolIsland,
   _poolIsolatedChapel,
   _poolIsperiaSupremeJudge,
+  _poolIsshinTwoHeavensAsOne,
   _poolIzzetBoilerworks,
   _poolIzzetSignet,
   _poolJadeMage,
