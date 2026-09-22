@@ -2035,6 +2035,20 @@
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
   outline: none;
 }
+/* A selected tile stays visibly selected while the pointer is on it. The
+   hover lift above replaces its gold ring with a drop shadow, and index.css's
+   `button:hover:not(:disabled)` -- which outranks a two-class rule -- turns
+   its border blue, so a creature you'd just picked looked unpicked until the
+   mouse moved off it. Both come back here, with the lift's shadow under the
+   ring. */
+.mini-tile.selected.clickable:hover,
+.mini-tile.selected.clickable:focus-visible,
+.card-tile.selected.clickable:hover {
+  border-color: var(--warn);
+  box-shadow:
+    0 0 0 2px rgba(231, 192, 91, 0.35),
+    0 6px 14px rgba(0, 0, 0, 0.4);
+}
 .mini-tile.dimmed {
   opacity: 0.4;
 }
@@ -3047,4 +3061,30 @@
 .card-tile.attacking-at.seat-d,
 .mini-tile.attacking-at.seat-d {
   --attack-seat: var(--seat-d);
+}
+/* While a declaration is still being built, an attacker that has already
+   been pointed at someone is also .selected, and .selected's gold ring is
+   close enough to seat-b's orange that "sent at Bob" and "picked, not sent
+   anywhere yet" looked the same -- only the badge told them apart. The
+   seat colour takes over the whole ring instead, so gold only ever means
+   "waiting to be sent". */
+.card-tile.attacking-at.selected,
+.mini-tile.attacking-at.selected {
+  border-color: var(--attack-seat);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--attack-seat) 35%, transparent);
+}
+/* None of it drops out on hover either: the hover lift turns a mini tile's
+   outline off and swaps its ring for a drop shadow (.mini-tile.clickable
+   :hover), and the selected-while-hovered rule would put the gold back. */
+.mini-tile.attacking-at.clickable:hover,
+.mini-tile.attacking-at.clickable:focus-visible {
+  outline: 2px solid var(--attack-seat);
+}
+.card-tile.attacking-at.selected.clickable:hover,
+.mini-tile.attacking-at.selected.clickable:hover,
+.mini-tile.attacking-at.selected.clickable:focus-visible {
+  border-color: var(--attack-seat);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--attack-seat) 35%, transparent),
+    0 6px 14px rgba(0, 0, 0, 0.4);
 }
