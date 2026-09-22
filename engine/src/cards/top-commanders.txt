@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-12 already implemented / 488 missing
+18 already implemented / 482 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -26,7 +26,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   20  Toph, the First Metalbender                    32837 decks  {1}{R}{G}{W}     Legendary Creature — Human Warrior Ally
 [ ]   21  Nekusar, the Mindrazer                         32372 decks  {2}{U}{B}{R}     Legendary Creature — Zombie Wizard
 [ ]   22  Yuriko, the Tiger's Shadow                     32047 decks  {1}{U}{B}        Legendary Creature — Human Ninja
-[ ]   23  Kenrith, the Returned King                     31620 decks  {4}{W}           Legendary Creature — Human Noble
+[x]   23  Kenrith, the Returned King                     31620 decks  {4}{W}           Legendary Creature — Human Noble
 [ ]   24  Cloud, Ex-SOLDIER                              31517 decks  {2}{R}{G}{W}     Legendary Creature — Human Soldier Mercenary
 [ ]   25  Hearthhull, the Worldseed                      31352 decks  {1}{B}{R}{G}     Legendary Artifact — Spacecraft
 [ ]   26  Kefka, Court Mage                              31209 decks  {2}{U}{B}{R}     Legendary Creature — Human Wizard // Legendary Creature — Avatar Wizard

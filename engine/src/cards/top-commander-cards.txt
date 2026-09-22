@@ -1,5 +1,5 @@
 Top 2000 Commander cards by EDHREC popularity (fetched 2026-09-13)
-445 already implemented / 1555 missing (marks refreshed 2026-09-20)
+450 already implemented / 1550 missing (marks refreshed 2026-09-22)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -411,7 +411,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   412  Gilded Lotus                             {5}              Artifact
 [ ]   413  Minas Tirith                             {0}              Legendary Land
 [ ]   414  Despark                                  {W}{B}           Instant
-[ ]   415  Demand Answers                           {1}{R}           Instant
+[x]   415  Demand Answers                           {1}{R}           Instant
 [ ]   416  Warren Soultrader                        {2}{B}           Creature — Zombie Goblin Wizard
 [ ]   417  Mystic Forge                             {4}              Artifact
 [x]   418  Etherium Sculptor                        {1}{U}           Artifact Creature — Vedalken Artificer
@@ -834,7 +834,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   838  Delney, Streetwise Lookout               {2}{W}           Legendary Creature — Human Scout
 [ ]   839  Curse of the Swine                       {X}{U}{U}        Sorcery
 [ ]   840  Urza's Tower                             {0}              Land — Urza's Tower
-[ ]   841  Bitter Triumph                           {1}{B}           Instant
+[x]   841  Bitter Triumph                           {1}{B}           Instant
 [ ]   842  Kodama of the West Tree                  {2}{G}           Legendary Creature — Spirit
 [ ]   843  Bloodthirsty Conqueror                   {3}{B}{B}        Creature — Vampire Knight
 [x]   844  Murder                                   {1}{B}{B}        Instant
@@ -1080,7 +1080,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1084  Thornwood Falls                          {0}              Land
 [ ]  1085  Thriving Heath                           {0}              Land
 [ ]  1086  Marvin, Murderous Mimic                  {2}              Legendary Artifact Creature — Toy
-[ ]  1087  Krenko, Mob Boss                         {2}{R}{R}        Legendary Creature — Goblin Warrior
+[x]  1087  Krenko, Mob Boss                         {2}{R}{R}        Legendary Creature — Goblin Warrior
 [ ]  1088  Ethereal Armor                           {W}              Enchantment — Aura
 [ ]  1089  Stoneforge Mystic                        {1}{W}           Creature — Kor Artificer
 [ ]  1090  Jace, Wielder of Mysteries               {1}{U}{U}{U}     Legendary Planeswalker — Jace
@@ -1507,7 +1507,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1514  Gratuitous Violence                      {2}{R}{R}{R}     Enchantment
 [ ]  1515  Metastatic Evangel                       {1}{W}           Creature — Phyrexian Human Cleric
 [ ]  1516  Guide of Souls                           {W}              Creature — Human Cleric
-[ ]  1517  Stonecoil Serpent                        {X}              Artifact Creature — Snake
+[x]  1517  Stonecoil Serpent                        {X}              Artifact Creature — Snake
 [ ]  1518  Izzet Charm                              {U}{R}           Instant
 [ ]  1519  Final Fortune                            {R}{R}           Instant
 [ ]  1520  Disciple of Bolas                        {3}{B}           Creature — Human Wizard
@@ -1689,7 +1689,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1696  Stridehangar Automaton                   {3}              Artifact Creature — Construct
 [ ]  1697  Shigeki, Jukai Visionary                 {1}{G}           Legendary Enchantment Creature — Snake Druid
 [x]  1698  Hornet Queen                             {4}{G}{G}{G}     Creature — Insect
-[ ]  1699  Spirit Mantle                            {1}{W}           Enchantment — Aura
+[x]  1699  Spirit Mantle                            {1}{W}           Enchantment — Aura
 [ ]  1700  Oversold Cemetery                        {1}{B}           Enchantment
 [ ]  1701  Mirror Box                               {3}              Artifact
 [ ]  1702  Profane Tutor                            {0}              Sorcery
