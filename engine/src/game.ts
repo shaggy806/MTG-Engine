@@ -58,6 +58,7 @@ import {
   objHasKeyword,
   restrictionsOf,
   effectiveSubtypes,
+  effectiveTypes,
   hasLostAbilities,
   invalidateComputedCache,
   staticAffects,
@@ -5549,10 +5550,17 @@ export class Game {
   }
 
   /** True if `object` is a summoning-sick creature (so its `{T}` costs can't be paid). */
+  /** Rule 302.6: a creature's own {T}/{Q} abilities wait until it has been
+   * under its controller's control since their most recent turn began — unless
+   * it has haste (702.10c), exactly as for attacking. "Creature" is what it is
+   * *now*: an animated man-land is one, a Vehicle that isn't crewed isn't.
+   * Haste used to be ignored here, so Krenko, Mob Boss under Lightning
+   * Greaves could attack the turn he arrived but not tap for Goblins. */
   private tapAbilityBlockedBySickness(object: GameObject): boolean {
     return (
-      this.registry.get(printedCardName(object)).types.includes("creature") &&
-      this.hasSummoningSickness(object)
+      effectiveTypes(this.registry, object).includes("creature") &&
+      this.hasSummoningSickness(object) &&
+      !this.objHasKeyword(object.id, "haste")
     );
   }
 
@@ -7897,9 +7905,10 @@ export class Game {
         (spec.includeSelf === true || id !== sourceId) &&
         object.controller === player &&
         !object.tapped &&
-        // A creature that's only just arrived can't be tapped for a cost
-        // (rule 302.6), the same rule that gates its own `{T}` abilities.
-        !this.tapAbilityBlockedBySickness(object) &&
+        // No summoning-sickness check: rule 302.6 only covers {T}/{Q} in a
+        // creature's *own* activation cost. "Tap an untapped creature you
+        // control" can tap one that just arrived, the source included, which
+        // is how Heritage Druid taps three Elves cast this turn.
         matchesFilter(this.state, this.registry, id, spec.filter, { you: player })
       );
     });
