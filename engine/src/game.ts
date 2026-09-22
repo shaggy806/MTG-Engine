@@ -3786,12 +3786,20 @@ export class Game {
    * 601.2f). Positive = costs more. */
   private costModificationFor(cardId: ObjectId): number {
     let delta = 0;
-    for (const id of this.state.zones.shared.battlefield) {
+    // The command zone joins the scan for Eminence's static form (The
+    // Ur-Dragon), and contributes only the abilities marked for it.
+    const sources = [
+      ...this.state.zones.shared.battlefield,
+      ...this.state.zones.shared.command,
+    ];
+    for (const id of sources) {
       const source = this.state.objects[id];
-      if (hasLostAbilities(source)) continue;
+      if (source === undefined || hasLostAbilities(source)) continue;
+      const onlyEminence = source.zone === "command";
       for (const ability of this.registry.get(printedCardName(source)).static) {
         const mod = ability.costModification;
         if (mod === undefined) continue;
+        if (onlyEminence && ability.fromCommandZone !== true) continue;
         if (!this.staticActive(source, ability)) continue;
         // Urza's Incubator (needed-cards P14): the filter also requires the
         // spell's subtype to match this permanent's own ETB choice — nothing
@@ -6186,21 +6194,51 @@ export class Game {
     // would otherwise rescan the battlefield for every permanent on it.
     const triggerGrantors = this.triggeredGrantSources();
     const candidates = new Set<ObjectId>(this.state.zones.shared.battlefield);
-    if (event.type === "permanent-destroyed") candidates.add(event.object);
-    if (event.type === "permanent-left-battlefield") candidates.add(event.object);
-    // A spell's own `this-cast` trigger (cascade, storm) lives on the card on
-    // the stack, not a permanent.
-    if (event.type === "spell-cast") candidates.add(event.object);
+    // Eminence (rule 702.106): a card in the command zone whose triggered
+    // ability says it functions there. Added to the same scan rather than
+    // given one of its own, so ordering, APNAP and the intervening-if check
+    // are the battlefield's and cannot drift from it.
+    //
+    // Tracked separately from `candidates` because "is in the command zone"
+    // is not the same question as "may only contribute Eminence". A commander
+    // that just went to the command zone under 903.9a is *also* the subject
+    // of a `permanent-left-battlefield` event, and its own
+    // leaves-battlefield trigger must still fire — keying the restriction on
+    // the object's current zone silently suppressed that, which
+    // `commander.test.ts` caught.
+    const eminenceOnly = new Set<ObjectId>();
+    for (const id of this.state.zones.shared.command) {
+      candidates.add(id);
+      eminenceOnly.add(id);
+    }
+    // The object an event is *about* contributes all of its abilities,
+    // wherever it has ended up.
+    const subject =
+      event.type === "permanent-destroyed" ||
+      event.type === "permanent-left-battlefield" ||
+      // A spell's own `this-cast` trigger (cascade, storm) lives on the card
+      // on the stack, not a permanent.
+      event.type === "spell-cast"
+        ? event.object
+        : null;
+    if (subject !== null) {
+      candidates.add(subject);
+      eminenceOnly.delete(subject);
+    }
     for (const id of candidates) {
       const object = this.state.objects[id];
       if (object === undefined) continue;
       if (hasLostAbilities(object)) continue; // layer 6 — no triggered abilities
+      // A command-zone source contributes *only* its `fromCommandZone`
+      // abilities — Edgar Markov's attack trigger must not fire from there.
+      const onlyEminence = eminenceOnly.has(id);
       // An eliminated player's permanents are left on the board to be seen,
       // not to keep playing: their triggers stop firing. They leave play rather
       // than view — see the note in `matchesFilter`.
       if (this.state.players[object.controller]?.hasLost === true) continue;
       const entries = this.effectiveTriggeredEntries(id, triggerGrantors);
       entries.forEach(({ ability, ref }, index) => {
+        if (onlyEminence && ability.fromCommandZone !== true) return;
         if (
           this.triggerMatches(ability.trigger, event, object) &&
           this.interveningIfMet(ability.condition, object)
@@ -6471,6 +6509,7 @@ export class Game {
           // card written that way type-checked and silently never fired.
           (spec.who === "opponent" && event.player !== self.controller);
         if (!casterMatches) return false;
+        if (spec.otherOnly === true && event.object === self.id) return false;
         if (spec.firstEachTurn && event.spellsThisTurn !== 1) return false;
         if (!this.triggerFilterOk(spec.filter, event.object, self)) return false;
         if (spec.noncreatureOnly) {

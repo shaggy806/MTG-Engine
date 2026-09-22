@@ -193,6 +193,7 @@ import _poolDreamPillager from "./pool/dream-pillager.js";
 import _poolDreamrootCascade from "./pool/dreamroot-cascade.js";
 import _poolDrownedCatacomb from "./pool/drowned-catacomb.js";
 import _poolDrumhunter from "./pool/drumhunter.js";
+import _poolEdgarMarkov from "./pool/edgar-markov.js";
 import _poolEiganjoSeatOfTheEmpire from "./pool/eiganjo-seat-of-the-empire.js";
 import _poolElementalBond from "./pool/elemental-bond.js";
 import _poolElfhamePalace from "./pool/elfhame-palace.js";
@@ -790,6 +791,7 @@ import _tokensSoldierToken from "./tokens/soldier-token.js";
 import _tokensSpiritToken from "./tokens/spirit-token.js";
 import _tokensThopterToken from "./tokens/thopter-token.js";
 import _tokensTreasureToken from "./tokens/treasure-token.js";
+import _tokensVampireToken11 from "./tokens/vampire-token-1-1.js";
 import _tokensVampireToken from "./tokens/vampire-token.js";
 import _tokensZombieKnightToken from "./tokens/zombie-knight-token.js";
 import _tokensZombieToken from "./tokens/zombie-token.js";
@@ -986,6 +988,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolDreamrootCascade,
   _poolDrownedCatacomb,
   _poolDrumhunter,
+  _poolEdgarMarkov,
   _poolEiganjoSeatOfTheEmpire,
   _poolElementalBond,
   _poolElfhamePalace,
@@ -1589,6 +1592,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensSpiritToken,
   _tokensThopterToken,
   _tokensTreasureToken,
+  _tokensVampireToken11,
   _tokensVampireToken,
   _tokensZombieKnightToken,
   _tokensZombieToken,

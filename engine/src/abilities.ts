@@ -341,6 +341,13 @@ export type TriggerSpec =
        * caster's first spell of the turn. */
       readonly on: "cast-spell";
       readonly who: TriggerWho;
+      /**
+       * "…another Vampire spell" (Edgar Markov) — the source's own cast
+       * doesn't count. Needed because the card on the stack is itself in the
+       * trigger scan (that is how cascade and storm see their own cast), so
+       * without this Edgar's Eminence fires as Edgar is cast.
+       */
+      readonly otherOnly?: boolean;
       readonly noncreatureOnly?: boolean;
       readonly firstEachTurn?: boolean;
       /**
@@ -361,6 +368,21 @@ export type TriggerSpec =
   | { readonly on: "predicate"; readonly match: (event: GameEvent) => boolean };
 
 export interface TriggeredAbility {
+  /**
+   * Eminence (rule 702.106) — this ability functions while its card is in the
+   * **command zone**, not only on the battlefield (Edgar Markov: "whenever
+   * you cast another Vampire spell, if Edgar Markov is in the command zone or
+   * on the battlefield, …").
+   *
+   * Per *ability*, not per card, and that is the whole point: Edgar's first
+   * strike, haste and attack trigger do nothing from the command zone. Only
+   * the one clause that says so is marked.
+   *
+   * The engine's trigger scan and static scan both walk the battlefield, so
+   * a marked ability adds its card to those scans from the command zone and
+   * an unmarked one on the same card still doesn't appear.
+   */
+  readonly fromCommandZone?: boolean;
   readonly trigger: TriggerSpec;
   readonly targets: readonly TargetSpec[];
   readonly effect: EffectSpec | null;

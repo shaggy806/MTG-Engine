@@ -324,6 +324,19 @@ export type StaticCondition =
  */
 export interface StaticAbility {
   readonly affects: AffectSpec;
+  /**
+   * Eminence (rule 702.106) — this static functions while its card is in the
+   * **command zone** as well as on the battlefield (The Ur-Dragon: "as long
+   * as The Ur-Dragon is in the command zone or on the battlefield, other
+   * Dragon spells you cast cost {1} less").
+   *
+   * Per ability, mirroring `TriggeredAbility.fromCommandZone`: a card's other
+   * statics still need it on the battlefield. Only the `costModification`
+   * scan honours it so far, which is the shape Eminence actually prints —
+   * a command-zone card has no characteristics to hand out, so the layer
+   * fold has nothing to do with it.
+   */
+  readonly fromCommandZone?: boolean;
   /** A condition gating this static (rule 604.3 — "as long as …"). When
    * present and false, the static contributes nothing. Re-evaluated on every
    * characteristics read, so it's live. ROADMAP Phase 11 EG-3. */
