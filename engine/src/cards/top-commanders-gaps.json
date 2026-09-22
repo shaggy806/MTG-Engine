@@ -1,7 +1,9 @@
 {
  "generated": "2026-09-22",
  "source": "Per-commander triage of every unimplemented top-commanders.txt entry (AI agents reading Oracle text + rulings against the engine), normalized onto one feature vocabulary. See neededCards-features.md, 'The commander gap'.",
- "built": [],
+ "built": [
+  "trigger:plays-land"
+ ],
  "features": {
   "bug:as-enters-choices-any-entry": {
    "size": "medium",
@@ -176,7 +178,7 @@
   "condition:player-state-thresholds": {
    "size": "small",
    "ui": false,
-   "description": "Numeric StaticConditions on player and game state: N or more cards in hand, N or more life, at most half your starting life, N or more cards in exile, and 'you are the monarch'."
+   "description": "Numeric StaticConditions on the rest of player and game state: N or more life, at most half your starting life, N or more cards in exile. Built so far: 'N or more cards in hand' and 'you are the monarch'."
   },
   "condition:source-state": {
    "size": "small",
@@ -216,7 +218,7 @@
   "cost:cost-modification-extensions": {
    "size": "medium",
    "ui": false,
-   "description": "Extensions to costModification and selfCostReduction: a reduction that scales with a general amount (counters on the source, turn stats, graveyard counts), one that applies only to the first matching spell each turn, one that depends on the chosen targets, one that removes a coloured pip, and one that reduces the generic half of a twobrid pip."
+   "description": "Cost modifications that depend on more than a count: only the first matching spell each turn, the chosen targets, removing a coloured pip, reducing the generic half of a twobrid pip. Built so far: a reduction that scales with a general amount (counters on the source, a filtered count, graveyard size)."
   },
   "cost:mana-ability-complex-costs": {
    "size": "medium",
@@ -1061,7 +1063,7 @@
   "static:trigger-count-modifiers": {
    "size": "medium",
    "ui": false,
-   "description": "Statics that change how often triggers fire. Generalise the entry-trigger doubler to any trigger kind, filtered by event or source (cast or copy, combat damage, damage to your creatures, power 2 or less, Allies, the source and its Equipment). Also stop entry triggers entirely (Torpor Orb)."
+   "description": "More causes for the trigger doubler: a cast or a copy, damage dealt to your creatures, a source of power 2 or less, a creature type, a source and its Equipment. Built so far: doubleTriggers over entering, attacking and combat damage to a player, and suppressEntryTriggers (Elesh Norn, Torpor Orb)."
   },
   "trigger:activates-ability": {
    "size": "small",
@@ -1156,7 +1158,7 @@
   "trigger:nth-each-turn": {
    "size": "small",
    "ui": false,
-   "description": "Nth-event-this-turn trigger fields: your first [filter] spell each turn (first matching, not first overall), your second spell each turn, and the Nth card you draw each turn."
+   "description": "The Nth card you draw each turn. Built so far: nthEachTurn on cast-spell triggers (your first matching spell each turn, your second spell each turn)."
   },
   "trigger:opponents-lose-exactly-n-life": {
    "size": "medium",
@@ -1227,6 +1229,16 @@
    "size": "medium",
    "ui": false,
    "description": "Who can see what, in viewFor and revealedThisTurn: a card exiled face down that only the exiler may look at, 'plays with their hand revealed', 'look at the top card of your library any time' (owner only), and effects that reveal cards to every player (look-and-choose's 'reveal', 'you may reveal that card')."
+  },
+  "decision:trigger-order": {
+   "size": "medium",
+   "ui": true,
+   "description": "The controller orders their own simultaneous triggers going on the stack (rule 603.3b). Today the engine picks an order for them, which decides the outcome whenever two copies of an entry trigger interact (Yarok doubling a fetch, Tifa Lockhart's two halves)."
+  },
+  "keyword:affinity": {
+   "size": "small",
+   "ui": false,
+   "description": "Affinity for a card type or filter (rule 702.41): the spell costs {1} less for each matching permanent. A cost reduction that scales with a count already exists; this is the printed keyword, which also has to be grantable to other spells."
   }
  },
  "commanders": [
@@ -1542,7 +1554,10 @@
   {
    "rank": 45,
    "name": "Aragorn, the Uniter",
-   "needs": []
+   "needs": [
+    "decision:library-ordering"
+   ],
+   "note": "Authored, then dropped by its review over this."
   },
   {
    "rank": 46,
@@ -1890,7 +1905,10 @@
   {
    "rank": 90,
    "name": "Kilo, Apogee Mind",
-   "needs": []
+   "needs": [
+    "decision:choose-tap-costs"
+   ],
+   "note": "Authored, then dropped by its review over this."
   },
   {
    "rank": 91,
@@ -2070,7 +2088,11 @@
   {
    "rank": 116,
    "name": "Witherbloom, the Balancer",
-   "needs": []
+   "needs": [
+    "keyword:affinity",
+    "static:grant-abilities-to-spells"
+   ],
+   "note": "Authored, then dropped by its review over this."
   },
   {
    "rank": 117,
@@ -2203,7 +2225,10 @@
   {
    "rank": 134,
    "name": "Tifa Lockhart",
-   "needs": []
+   "needs": [
+    "decision:trigger-order"
+   ],
+   "note": "Authored, then dropped by its review over this."
   },
   {
    "rank": 135,
@@ -2545,7 +2570,10 @@
   {
    "rank": 175,
    "name": "Yarok, the Desecrated",
-   "needs": []
+   "needs": [
+    "decision:trigger-order"
+   ],
+   "note": "Authored, then dropped by its review over this."
   },
   {
    "rank": 176,
@@ -2634,7 +2662,10 @@
   {
    "rank": 186,
    "name": "Blech, Loafing Pest",
-   "needs": []
+   "needs": [
+    "bug:simultaneous-damage-batching"
+   ],
+   "note": "Authored, then dropped by its review over this."
   },
   {
    "rank": 187,
@@ -2914,7 +2945,10 @@
   {
    "rank": 219,
    "name": "Sokka, Tenacious Tactician",
-   "needs": []
+   "needs": [
+    "bug:static-scope-computed-types"
+   ],
+   "note": "Authored, then dropped by its review over this."
   },
   {
    "rank": 220,
@@ -3296,7 +3330,10 @@
   {
    "rank": 263,
    "name": "Bria, Riptide Rogue",
-   "needs": []
+   "needs": [
+    "bug:static-scope-computed-types"
+   ],
+   "note": "Authored, then dropped by its review over this."
   },
   {
    "rank": 264,
@@ -5229,5 +5266,6 @@
    "name": "Magnus the Red",
    "needs": []
   }
- ]
+ ],
+ "builtNote": "Features fully shipped since the triage. A feature only partly shipped stays listed, with what remains folded into its description — see the 'Built so far' notes."
 }

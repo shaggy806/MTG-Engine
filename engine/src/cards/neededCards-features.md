@@ -27,7 +27,7 @@ reference. This file is a priority list, not a how-to.
 
 ## The commander gap — the current authoring priority
 
-**30 of the 500 most-played commanders are implemented** (up from 12 on
+**41 of the 500 most-played commanders are implemented** (up from 12 on
 2026-09-21). Almost any real decklist someone imports still has its commander
 substituted, which replaces the one card the deck is built around.
 
@@ -131,15 +131,29 @@ The most-needed features that need client UI, which have to wait for a
 session that can check the client in a browser:
 `decision:ward-payment` (18), `decision:copy-new-targets` (12), `effect:may-sacrifice-then` (12), `decision:choose-permanent` (11), `effect:enter-attacking` (10), `decision:free-cast-choices` (10), `effect:attach-extensions` (10), `effect:cast-during-resolution` (10).
 
-Already built from this list (2026-09-22): the `draws` trigger and the
-`"trigger-controller"` scope (Nekusar, Niv-Mizzet, Temmet, Sheoldred,
-Queza); `monarch` and `hand-size` conditions, `nthEachTurn` on cast triggers
-and the `plays-land` trigger (Queen Marchesa, Kraum, Flubs); a counted,
-revealing `look-and-choose` (Gishath). Along the way, fixes the triage and
-reviews turned up: token stacks counted as one creature (Krenko made two
-Goblins forever), haste not lifting summoning sickness for {T} abilities,
-"target creature" ignoring animated man-lands, and a commander's 903.9a
-choice being skipped for the rest of a game.
+Already built from this list (2026-09-22), each with the commanders it
+unblocked: the `draws` trigger and the `"trigger-controller"` scope (Nekusar,
+Niv-Mizzet, Temmet, Sheoldred, Queza); `monarch` and `hand-size` conditions,
+`nthEachTurn` on cast triggers and the `plays-land` trigger (Queen Marchesa,
+Kraum, Flubs); a counted, revealing `look-and-choose` (Gishath); cost
+reductions that scale with any amount (Animar, Karador); and
+`doubleTriggers` / `suppressEntryTriggers` (Isshin, Elesh Norn, Felix
+Five-Boots). Eight more needed nothing new: Kenrith, Arabella, Urtet, Voja,
+Aesi, Rin and Seri, Marrow-Gnawer, Sythis, Ishai and Shroofus.
+
+Fixes the triage and the reviews turned up along the way: token stacks
+counted as one creature (Krenko made two Goblins forever), haste not lifting
+summoning sickness for {T} abilities, "target creature" ignoring animated
+man-lands, "any target" unable to reach a planeswalker, and a commander's
+903.9a choice being skipped for the rest of a game.
+
+Five commanders were authored and then **dropped** by their reviews, each
+naming the gap: Rin and Seri (since fixed), Tifa Lockhart and Yarok (the
+engine orders simultaneous triggers for the player), Blech (one lifelink
+source damaging several things counts as several life gains), Sokka (a
+prowess pump can land on the wrong token of a stack), and Kilo (a
+tap-a-creature cost still picks the creature). Aragorn, the Uniter needs
+scry to let the player order the cards kept.
 
 ### Suggested order
 
