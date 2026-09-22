@@ -12,7 +12,7 @@
  * escape hatch). Vanilla permanents need neither.
  */
 
-import type { ActivatedAbility, TriggeredAbility } from "../abilities.js";
+import type { ActivatedAbility, CostReductionAmount, TriggeredAbility } from "../abilities.js";
 import type { EffectSpec, ModeOption, SpellResolver } from "../effects.js";
 import type { CardFilter, NumCompare } from "../filter.js";
 import type { Color } from "../mana.js";
@@ -473,7 +473,7 @@ export interface StaticAbility {
      * filter, evaluated with this static's controller as "you" (Temur
      * Battlecrier: "{1} less for each creature you control with power 4 or
      * greater" — needed-cards P16). */
-    readonly reduceGeneric?: number | { readonly countOf: CardFilter };
+    readonly reduceGeneric?: CostReductionAmount;
     readonly increaseGeneric?: number;
     /** Also require the spell's subtype to match this permanent's own
      * `chosenCreatureType` (Urza's Incubator: "creature spells of the chosen
@@ -669,7 +669,7 @@ export interface CardDefinition {
    */
   readonly selfCostReduction: {
     readonly condition: StaticCondition;
-    readonly reduceGeneric: number | { readonly countOf: CardFilter };
+    readonly reduceGeneric: CostReductionAmount;
   } | null;
   /** Declarative resolution effect, or `null`. */
   readonly effect: EffectSpec | null;
@@ -860,7 +860,7 @@ interface CardDraft {
   convoke?: boolean;
   selfCostReduction?: {
     readonly condition: StaticCondition;
-    readonly reduceGeneric: number | { readonly countOf: CardFilter };
+    readonly reduceGeneric: CostReductionAmount;
   };
   effect?: EffectSpec;
   resolve?: SpellResolver;

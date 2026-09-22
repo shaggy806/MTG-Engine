@@ -26,6 +26,7 @@ import _poolAncientTomb from "./pool/ancient-tomb.js";
 import _poolAncientZiggurat from "./pool/ancient-ziggurat.js";
 import _poolAngelicEdict from "./pool/angelic-edict.js";
 import _poolAnguishedUnmaking from "./pool/anguished-unmaking.js";
+import _poolAnimarSoulOfElements from "./pool/animar-soul-of-elements.js";
 import _poolArabellaAbandonedDoll from "./pool/arabella-abandoned-doll.js";
 import _poolArcaneDenial from "./pool/arcane-denial.js";
 import _poolArcaneSanctum from "./pool/arcane-sanctum.js";
@@ -352,6 +353,7 @@ import _poolKaervekTheMerciless from "./pool/kaervek-the-merciless.js";
 import _poolKalonianHydra from "./pool/kalonian-hydra.js";
 import _poolKangeeSkyWarden from "./pool/kangee-sky-warden.js";
 import _poolKangeesLieutenant from "./pool/kangees-lieutenant.js";
+import _poolKaradorGhostChieftain from "./pool/karador-ghost-chieftain.js";
 import _poolKarametrasFavor from "./pool/karametras-favor.js";
 import _poolKardurDoomscourge from "./pool/kardur-doomscourge.js";
 import _poolKarnsBastion from "./pool/karns-bastion.js";
@@ -838,6 +840,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAncientZiggurat,
   _poolAngelicEdict,
   _poolAnguishedUnmaking,
+  _poolAnimarSoulOfElements,
   _poolArabellaAbandonedDoll,
   _poolArcaneDenial,
   _poolArcaneSanctum,
@@ -1164,6 +1167,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolKalonianHydra,
   _poolKangeeSkyWarden,
   _poolKangeesLieutenant,
+  _poolKaradorGhostChieftain,
   _poolKarametrasFavor,
   _poolKardurDoomscourge,
   _poolKarnsBastion,

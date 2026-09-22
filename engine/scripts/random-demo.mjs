@@ -330,6 +330,8 @@ const deckB = deck([
   ["Kraum, Ludevic's Opus", 1],
   ["Flubs, the Fool", 1],
   ["Gishath, Sun's Avatar", 1],
+  ["Animar, Soul of Elements", 1],
+  ["Karador, Ghost Chieftain", 1],
   ["Demand Answers", 1],
   ["Cathartic Reunion", 1],
   ["Seize the Spoils", 1],

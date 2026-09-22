@@ -8,8 +8,10 @@ import type { ObjectId, PlayerId } from "../primitives.js";
  * Small features off the top-commanders triage, each with the commander that
  * needed it: the `monarch` condition (Queen Marchesa), `nthEachTurn` on a cast
  * trigger (Kraum, Ludevic's Opus), the `plays-land` trigger plus the
- * `hand-size` condition (Flubs, the Fool), and a counted, revealing
- * `look-and-choose` (Gishath, Sun's Avatar).
+ * `hand-size` condition (Flubs, the Fool), a counted, revealing
+ * `look-and-choose` (Gishath, Sun's Avatar), and cost reductions that scale
+ * with counters on the source or cards in your graveyard (Animar, Soul of
+ * Elements; Karador, Ghost Chieftain).
  */
 
 const [A, B] = ["alice", "bob"].map(asPlayerId);
@@ -204,5 +206,81 @@ describe("Gishath, Sun's Avatar", () => {
     expect(game.state.objects[carnage].zone).toBe("battlefield");
     expect(game.state.objects[bears].zone).toBe("library");
     expect(game.state.players[B].life).toBe(20 - 7);
+  });
+});
+
+function castable(game: Game, card: ObjectId): boolean {
+  return game.legalActions(A).some((a) => a.kind === "cast-spell" && a.card === card);
+}
+
+describe("Animar, Soul of Elements", () => {
+  it("each creature spell you cast adds a counter, and each counter takes {1} off the next", () => {
+    const game = table();
+    const animar = spawn(game, "Animar, Soul of Elements", A);
+    for (const land of ["Forest", "Forest"]) spawn(game, land, A);
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: game.debugSpawn("Grizzly Bears", A, "hand"),
+      targets: [],
+    });
+    settle(game);
+    expect(game.state.objects[animar].counters["+1/+1"]).toBe(1);
+
+    // Colossal Dreadmaw is {4}{G}{G}; one counter and two untapped Forests
+    // aren't enough, two counters and four lands are.
+    game.state.objects[animar].counters["+1/+1"] = 2;
+    for (const land of ["Forest", "Forest", "Mountain", "Mountain"]) spawn(game, land, A);
+    const dreadmaw = game.debugSpawn("Colossal Dreadmaw", A, "hand");
+    expect(castable(game, dreadmaw)).toBe(true);
+    game.state.objects[animar].counters["+1/+1"] = 1;
+    expect(castable(game, dreadmaw)).toBe(false);
+  });
+
+  it("its own cast doesn't count, and it has protection from white", () => {
+    const game = table();
+    for (const land of ["Forest", "Island", "Mountain"]) spawn(game, land, A);
+    const animar = game.debugSpawn("Animar, Soul of Elements", A, "hand");
+    game.dispatch({ type: "cast-spell", player: A, card: animar, targets: [] });
+    settle(game);
+    expect(game.state.objects[animar].zone).toBe("battlefield");
+    expect(game.state.objects[animar].counters["+1/+1"] ?? 0).toBe(0);
+
+    spawn(game, "Plains", B);
+    const path = game.debugSpawn("Path to Exile", B, "hand");
+    const offer = game.legalActions(B).find((a) => a.kind === "cast-spell" && a.card === path);
+    const options = offer?.kind === "cast-spell" ? offer.targetOptions[0] : [];
+    expect(options).not.toContainEqual({ kind: "object", object: animar });
+  });
+});
+
+describe("Karador, Ghost Chieftain", () => {
+  it("costs {1} less for each creature card in your graveyard", () => {
+    const game = table();
+    for (const land of ["Plains", "Swamp", "Forest"]) spawn(game, land, A);
+    const karador = game.debugSpawn("Karador, Ghost Chieftain", A, "hand");
+    expect(castable(game, karador)).toBe(false);
+    for (let i = 0; i < 5; i += 1) game.debugSpawn("Grizzly Bears", A, "graveyard");
+    expect(castable(game, karador)).toBe(true);
+  });
+
+  it("lets you cast one creature spell from your graveyard each of your turns", () => {
+    const game = table();
+    spawn(game, "Karador, Ghost Chieftain", A);
+    for (let i = 0; i < 4; i += 1) spawn(game, "Forest", A);
+    const first = game.debugSpawn("Grizzly Bears", A, "graveyard");
+    const second = game.debugSpawn("Grizzly Bears", A, "graveyard");
+    const offer = game.legalActions(A).find((a) => a.kind === "cast-spell" && a.card === first);
+    if (offer?.kind !== "cast-spell") throw new Error("not offered from the graveyard");
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: first,
+      targets: [],
+      ...(offer.via !== undefined ? { via: offer.via } : {}),
+    });
+    settle(game);
+    expect(game.state.objects[first].zone).toBe("battlefield");
+    expect(castable(game, second)).toBe(false);
   });
 });

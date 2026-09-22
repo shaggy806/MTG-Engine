@@ -142,9 +142,27 @@ export interface ActivatedAbility {
    * creature you control." Unlike `selfCostReduction` there's no gating
    * `condition`; every card needing one so far applies unconditionally. */
   readonly costReduction?: {
-    readonly reduceGeneric: number | { readonly countOf: CardFilter };
+    readonly reduceGeneric: CostReductionAmount;
   };
 }
+
+/**
+ * How much generic mana a cost reduction takes off: a fixed number, or a live
+ * count read as the cost is determined.
+ *
+ * - `countOf`: permanents matching a filter (Blasphemous Act's creatures on
+ *   the battlefield). Token stacks count as every token in them.
+ * - `countersOnSource`: counters of one kind on the permanent doing the
+ *   reducing (Animar, Soul of Elements: "{1} less for each +1/+1 counter on
+ *   Animar").
+ * - `cardsInGraveyard`: cards in *your* graveyard matching a filter (Karador,
+ *   Ghost Chieftain: "{1} less for each creature card in your graveyard").
+ */
+export type CostReductionAmount =
+  | number
+  | { readonly countOf: CardFilter }
+  | { readonly countersOnSource: string }
+  | { readonly cardsInGraveyard: CardFilter };
 
 /** Who the triggering object must be relative to the ability's source. */
 export type TriggerWho =

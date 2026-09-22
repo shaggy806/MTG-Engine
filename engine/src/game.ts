@@ -11,6 +11,7 @@
 import { isManaAbility } from "./abilities.js";
 import type {
   ActivatedAbility,
+  CostReductionAmount,
   SacrificeCost,
   StackAbility,
   TriggeredAbility,
@@ -3838,11 +3839,7 @@ export class Game {
       def.selfCostReduction !== null &&
       staticConditionMet(this.state, this.registry, this.state.objects[cardId], def.selfCostReduction.condition)
     ) {
-      const { reduceGeneric } = def.selfCostReduction;
-      generic -=
-        typeof reduceGeneric === "number"
-          ? reduceGeneric
-          : this.countBattlefieldMatching(player, reduceGeneric.countOf);
+      generic -= this.costReductionAmount(def.selfCostReduction.reduceGeneric, player, cardId);
     }
     return {
       colored: base.colored,
@@ -3948,9 +3945,7 @@ export class Game {
         const reduceGeneric =
           mod.reduceGeneric === undefined
             ? 0
-            : typeof mod.reduceGeneric === "number"
-              ? mod.reduceGeneric
-              : this.countBattlefieldMatching(source.controller, mod.reduceGeneric.countOf);
+            : this.costReductionAmount(mod.reduceGeneric, source.controller, source.id);
         delta += mod.increaseGeneric ?? 0;
         delta -= reduceGeneric;
       }
@@ -4928,11 +4923,7 @@ export class Game {
     const chosenX = hasX ? Math.max(0, Math.floor(xValue)) : 0;
     let generic = parsed.generic + parsed.x * chosenX;
     if (ability.costReduction !== undefined) {
-      const { reduceGeneric } = ability.costReduction;
-      generic -=
-        typeof reduceGeneric === "number"
-          ? reduceGeneric
-          : this.countBattlefieldMatching(player, reduceGeneric.countOf);
+      generic -= this.costReductionAmount(ability.costReduction.reduceGeneric, player);
     }
     return {
       cost: {
@@ -8394,6 +8385,24 @@ export class Game {
    * few folded into a stack. */
   private countBattlefieldMatching(you: PlayerId, filter: CardFilter): number {
     return permanentCount(this.state, this.battlefieldMatching(you, filter));
+  }
+
+  /** The generic mana a `CostReductionAmount` takes off, for `player`, with
+   * `sourceId` the object doing the reducing (for `countersOnSource`). */
+  private costReductionAmount(
+    amount: CostReductionAmount,
+    player: PlayerId,
+    sourceId?: ObjectId,
+  ): number {
+    if (typeof amount === "number") return amount;
+    if ("countOf" in amount) return this.countBattlefieldMatching(player, amount.countOf);
+    if ("countersOnSource" in amount) {
+      if (sourceId === undefined) return 0;
+      return this.state.objects[sourceId]?.counters[amount.countersOnSource] ?? 0;
+    }
+    return this.state.zones.perPlayer[player].graveyard.filter((id) =>
+      matchesFilter(this.state, this.registry, id, amount.cardsInGraveyard, { you: player }),
+    ).length;
   }
 
   private modifyPtAll(
