@@ -337,6 +337,7 @@ import _poolInfernalGrasp from "./pool/infernal-grasp.js";
 import _poolInspiredSphinx from "./pool/inspired-sphinx.js";
 import _poolInvisibleStalker from "./pool/invisible-stalker.js";
 import _poolIridescentVinelasher from "./pool/iridescent-vinelasher.js";
+import _poolIshaiOjutaiDragonspeaker from "./pool/ishai-ojutai-dragonspeaker.js";
 import _poolIsland from "./pool/island.js";
 import _poolIsolatedChapel from "./pool/isolated-chapel.js";
 import _poolIsperiaSupremeJudge from "./pool/isperia-supreme-judge.js";
@@ -409,6 +410,7 @@ import _poolManaConfluence from "./pool/mana-confluence.js";
 import _poolManaGeyser from "./pool/mana-geyser.js";
 import _poolManifoldKey from "./pool/manifold-key.js";
 import _poolMarchOfTheMultitudes from "./pool/march-of-the-multitudes.js";
+import _poolMarrowGnawer from "./pool/marrow-gnawer.js";
 import _poolMarshFlats from "./pool/marsh-flats.js";
 import _poolMeanderingRiver from "./pool/meandering-river.js";
 import _poolMendingHands from "./pool/mending-hands.js";
@@ -517,6 +519,7 @@ import _poolRestInPeace from "./pool/rest-in-peace.js";
 import _poolReturnToNature from "./pool/return-to-nature.js";
 import _poolRhysticStudy from "./pool/rhystic-study.js";
 import _poolRiftBolt from "./pool/rift-bolt.js";
+import _poolRinAndSeriInseparable from "./pool/rin-and-seri-inseparable.js";
 import _poolRishkarPeemaRenegade from "./pool/rishkar-peema-renegade.js";
 import _poolRiveteersOverlook from "./pool/riveteers-overlook.js";
 import _poolRockfallVale from "./pool/rockfall-vale.js";
@@ -569,6 +572,7 @@ import _poolShineshadowSnarl from "./pool/shineshadow-snarl.js";
 import _poolShipwreckMarsh from "./pool/shipwreck-marsh.js";
 import _poolShivanOasis from "./pool/shivan-oasis.js";
 import _poolShivanReef from "./pool/shivan-reef.js";
+import _poolShroofusSproutsire from "./pool/shroofus-sproutsire.js";
 import _poolSidequestRaiseAChocobo from "./pool/sidequest-raise-a-chocobo.js";
 import _poolSignInBlood from "./pool/sign-in-blood.js";
 import _poolSimicCharm from "./pool/simic-charm.js";
@@ -627,6 +631,7 @@ import _poolSwiftfootBoots from "./pool/swiftfoot-boots.js";
 import _poolSwordsToPlowshares from "./pool/swords-to-plowshares.js";
 import _poolSylvanReclamation from "./pool/sylvan-reclamation.js";
 import _poolSylvanSafekeeper from "./pool/sylvan-safekeeper.js";
+import _poolSythisHarvestsHand from "./pool/sythis-harvests-hand.js";
 import _poolTaiga from "./pool/taiga.js";
 import _poolTakenumaAbandonedMire from "./pool/takenuma-abandoned-mire.js";
 import _poolTalismanOfConviction from "./pool/talisman-of-conviction.js";
@@ -795,6 +800,7 @@ import _tokensFaerieToken from "./tokens/faerie-token.js";
 import _tokensFoodToken from "./tokens/food-token.js";
 import _tokensFrogLizardToken from "./tokens/frog-lizard-token.js";
 import _tokensGoblinToken from "./tokens/goblin-token.js";
+import _tokensGreenCatToken11 from "./tokens/green-cat-token-1-1.js";
 import _tokensHornetToken from "./tokens/hornet-token.js";
 import _tokensHumanToken from "./tokens/human-token.js";
 import _tokensHumanWarriorToken from "./tokens/human-warrior-token.js";
@@ -808,6 +814,7 @@ import _tokensOgreToken from "./tokens/ogre-token.js";
 import _tokensPegasusToken from "./tokens/pegasus-token.js";
 import _tokensPhyrexianWurmDeathtouch from "./tokens/phyrexian-wurm-deathtouch.js";
 import _tokensPhyrexianWurmLifelink from "./tokens/phyrexian-wurm-lifelink.js";
+import _tokensRatToken from "./tokens/rat-token.js";
 import _tokensSaprolingToken from "./tokens/saproling-token.js";
 import _tokensSoldierToken from "./tokens/soldier-token.js";
 import _tokensSpiritToken from "./tokens/spirit-token.js";
@@ -815,6 +822,7 @@ import _tokensThopterToken from "./tokens/thopter-token.js";
 import _tokensTreasureToken from "./tokens/treasure-token.js";
 import _tokensVampireToken11 from "./tokens/vampire-token-1-1.js";
 import _tokensVampireToken from "./tokens/vampire-token.js";
+import _tokensWhiteDogToken11 from "./tokens/white-dog-token-1-1.js";
 import _tokensZombieKnightToken from "./tokens/zombie-knight-token.js";
 import _tokensZombieToken from "./tokens/zombie-token.js";
 
@@ -1154,6 +1162,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolInspiredSphinx,
   _poolInvisibleStalker,
   _poolIridescentVinelasher,
+  _poolIshaiOjutaiDragonspeaker,
   _poolIsland,
   _poolIsolatedChapel,
   _poolIsperiaSupremeJudge,
@@ -1226,6 +1235,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolManaGeyser,
   _poolManifoldKey,
   _poolMarchOfTheMultitudes,
+  _poolMarrowGnawer,
   _poolMarshFlats,
   _poolMeanderingRiver,
   _poolMendingHands,
@@ -1334,6 +1344,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolReturnToNature,
   _poolRhysticStudy,
   _poolRiftBolt,
+  _poolRinAndSeriInseparable,
   _poolRishkarPeemaRenegade,
   _poolRiveteersOverlook,
   _poolRockfallVale,
@@ -1386,6 +1397,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolShipwreckMarsh,
   _poolShivanOasis,
   _poolShivanReef,
+  _poolShroofusSproutsire,
   _poolSidequestRaiseAChocobo,
   _poolSignInBlood,
   _poolSimicCharm,
@@ -1444,6 +1456,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSwordsToPlowshares,
   _poolSylvanReclamation,
   _poolSylvanSafekeeper,
+  _poolSythisHarvestsHand,
   _poolTaiga,
   _poolTakenumaAbandonedMire,
   _poolTalismanOfConviction,
@@ -1618,6 +1631,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensFoodToken,
   _tokensFrogLizardToken,
   _tokensGoblinToken,
+  _tokensGreenCatToken11,
   _tokensHornetToken,
   _tokensHumanToken,
   _tokensHumanWarriorToken,
@@ -1631,6 +1645,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensPegasusToken,
   _tokensPhyrexianWurmDeathtouch,
   _tokensPhyrexianWurmLifelink,
+  _tokensRatToken,
   _tokensSaprolingToken,
   _tokensSoldierToken,
   _tokensSpiritToken,
@@ -1638,6 +1653,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensTreasureToken,
   _tokensVampireToken11,
   _tokensVampireToken,
+  _tokensWhiteDogToken11,
   _tokensZombieKnightToken,
   _tokensZombieToken,
 ];
