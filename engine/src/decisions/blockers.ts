@@ -38,12 +38,16 @@ function blockersOffer(
   });
   const eligible = ctx.state.zones.shared.battlefield
     .filter((id) => ctx.state.objects[id].controller === player)
-    .map((blocker) => ({
-      blocker,
-      canBlock: attacking.filter(
-        (attacker) => whyCannotBlock(ctx.state, ctx.registry, player, blocker, attacker) === null,
-      ),
-    }))
+    .map((blocker) => {
+      const copies = ctx.state.objects[blocker].stackCount ?? 1;
+      return {
+        blocker,
+        canBlock: attacking.filter(
+          (attacker) => whyCannotBlock(ctx.state, ctx.registry, player, blocker, attacker) === null,
+        ),
+        ...(copies > 1 ? { copies } : {}),
+      };
+    })
     .filter((entry) => entry.canBlock.length > 0);
   const menaceAttackers = attacking.filter((id) =>
     objHasKeyword(ctx.state, ctx.registry, id, "menace"),

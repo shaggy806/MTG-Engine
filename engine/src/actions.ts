@@ -505,6 +505,10 @@ export type LegalAction =
       readonly eligible: readonly {
         readonly blocker: ObjectId;
         readonly canBlock: readonly ObjectId[];
+        /** How many creatures this entry is: a compacted token stack blocks
+         * as every token in it (it's woken up into that many on
+         * declaration). Absent for an ordinary one-creature permanent. */
+        readonly copies?: number;
       }[];
       /** Attackers with menace: block them with 0 or 2+ creatures, never 1. */
       readonly menaceAttackers: readonly ObjectId[];

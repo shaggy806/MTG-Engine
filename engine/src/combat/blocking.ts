@@ -49,9 +49,12 @@ export function blockingViolations(
   offer: BlockOffer,
 ): BlockingViolation[] {
   const out: BlockingViolation[] = [];
+  // Creatures, not declarations: a token stack assigned to an attacker is
+  // every token in it, so a stack of eight satisfies menace on its own.
+  const copies = new Map(offer.eligible.map((e) => [e.blocker, e.copies ?? 1]));
   const perAttacker = new Map<ObjectId, number>();
-  for (const { attacker } of blocks) {
-    perAttacker.set(attacker, (perAttacker.get(attacker) ?? 0) + 1);
+  for (const { blocker, attacker } of blocks) {
+    perAttacker.set(attacker, (perAttacker.get(attacker) ?? 0) + (copies.get(blocker) ?? 1));
   }
   for (const [attacker, count] of perAttacker) {
     if (count === 1 && offer.menaceAttackers.includes(attacker)) {

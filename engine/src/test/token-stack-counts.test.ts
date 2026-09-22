@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { blockingViolations } from "../combat/blocking.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
@@ -232,5 +233,102 @@ describe("per-unit effects stay bounded however big a stack gets", () => {
       count: { countOf: { type: "creature", controlledBy: "you" } },
     });
     expect(tokens(game, "Treasure Token")).toBe(Game.MAX_EFFECT_INSTANCES);
+  });
+});
+
+describe("an effect on each permanent reaches every token in a stack", () => {
+  it("a watcher triggers once per token when a stack dies (Pitiless Plunderer)", () => {
+    const game = table();
+    spawn(game, "Pitiless Plunderer", A);
+    stackOf(game, "Goblin Token", A, 9);
+    for (let i = 0; i < 2; i += 1) spawn(game, "Mountain", A);
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: game.debugSpawn("Pyroclasm", A, "hand"),
+      targets: [],
+    });
+    resolveStack(game);
+    expect(tokens(game, "Goblin Token")).toBe(0);
+    expect(tokens(game, "Treasure Token")).toBe(9);
+  });
+
+  it("an overloaded Cyclonic Rift returns the whole stack", () => {
+    const game = table();
+    stackOf(game, "Goblin Token", B, 9);
+    game.debugApplyEffect(A, { kind: "return-to-hand-all", filter: { controlledBy: "opponent" } });
+    expect(tokens(game, "Goblin Token")).toBe(0);
+  });
+
+  it("a counter on each creature lands on every token", () => {
+    const game = table();
+    const stack = stackOf(game, "Goblin Token", A, 9);
+    game.debugApplyEffect(A, {
+      kind: "add-counter-all",
+      filter: { type: "creature", controlledBy: "you" },
+      counter: "+1/+1",
+      amount: 1,
+    });
+    expect(tokens(game, "Goblin Token")).toBe(9);
+    expect(game.state.objects[stack].stackCount).toBe(9);
+    expect(game.viewFor(A).objects[stack]?.power).toBe(2);
+  });
+
+  it("each creature deals damage to its controller: a stack is that many sources", () => {
+    const game = table();
+    stackOf(game, "Goblin Token", B, 9);
+    game.debugApplyEffect(A, {
+      kind: "creatures-damage-controllers",
+      filter: { type: "creature" },
+      amount: 1,
+    });
+    expect(game.state.players[B].life).toBe(20 - 9);
+  });
+
+  it("a stack satisfies menace on its own", () => {
+    const offer = {
+      kind: "declare-blockers" as const,
+      eligible: [{ blocker: "stack" as ObjectId, canBlock: ["brute" as ObjectId], copies: 8 }],
+      menaceAttackers: ["brute" as ObjectId],
+      mustBlock: [],
+    };
+    expect(
+      blockingViolations([{ blocker: "stack" as ObjectId, attacker: "brute" as ObjectId }], offer),
+    ).toEqual([]);
+  });
+
+  it("Demand Answers sacrifices the artifact its caster names, one token of a stack", () => {
+    const game = table();
+    const thopters = stackOf(game, "Thopter Token", A, 9);
+    for (let i = 0; i < 2; i += 1) spawn(game, "Mountain", A);
+    const card = game.debugSpawn("Demand Answers", A, "hand");
+    const offer = game
+      .legalActions(A)
+      .find((a) => a.kind === "cast-spell" && a.card === card && a.costOption === 0);
+    expect(offer?.kind === "cast-spell" && offer.sacrifice?.choices).toContain(thopters);
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card,
+      targets: [],
+      costOption: 0,
+      sacrifice: thopters,
+    });
+    expect(tokens(game, "Thopter Token")).toBe(8);
+  });
+
+  it("tokens granted an activated ability are woken into separate objects (Cryptolith Rite)", () => {
+    const game = table();
+    stackOf(game, "Goblin Token", A, 8);
+    spawn(game, "Cryptolith Rite", A);
+    // Both players pass, the step ends, and the next priority window runs
+    // state-based actions.
+    game.dispatch({ type: "pass-priority", player: A });
+    game.dispatch({ type: "pass-priority", player: B });
+    const goblins = game.state.zones.shared.battlefield.filter(
+      (id) => game.state.objects[id].cardName === "Goblin Token",
+    );
+    expect(goblins).toHaveLength(8);
+    expect(goblins.every((id) => (game.state.objects[id].stackCount ?? 1) === 1)).toBe(true);
   });
 });

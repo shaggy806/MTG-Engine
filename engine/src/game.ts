@@ -1071,7 +1071,7 @@ export class Game {
           : kicked && def.kicker !== null && costString !== null
             ? costString + def.kicker.cost
             : costString;
-      const sacrifices = this.additionalCostSacrifices(player, def);
+      const sacrifices = this.additionalCostSacrifices(player, def, costOption);
       out.push({
         kind: "cast-spell",
         card,
@@ -1355,7 +1355,10 @@ export class Game {
         o.blocking !== null ||
         o.damageMarked !== 0 ||
         o.markedByDeathtouch ||
-        !this.isStackableTokenName(printedCardName(o))
+        !this.isStackableTokenName(printedCardName(o)) ||
+        // A vanilla token that's been *granted* an activated ability
+        // (Cryptolith Rite) has to be tapped one at a time.
+        this.effectiveActivated(id).length > 0
       ) {
         continue;
       }
@@ -4131,8 +4134,19 @@ export class Game {
    * {@link CardDefinition.additionalCost} (rule 601.2f — Harrow "sacrifice a
    * land"). `[]` when the card has no such cost. needed-cards P8.
    */
-  private additionalCostSacrifices(player: PlayerId, def: CardDefinition): ObjectId[] {
-    const filter = def.additionalCost?.sacrifice;
+  /** What may pay a spell's additional sacrifice: its fixed "as an additional
+   * cost, sacrifice …", or the sacrifice in the branch `costOption` names of
+   * a choice of additional costs (Demand Answers' "sacrifice an artifact").
+   * Offered to the driver either way — which permanent goes is the player's
+   * call, never the first one found. */
+  private additionalCostSacrifices(
+    player: PlayerId,
+    def: CardDefinition,
+    costOption?: number,
+  ): ObjectId[] {
+    const filter =
+      def.additionalCost?.sacrifice ??
+      (costOption === undefined ? undefined : def.additionalCost?.options?.[costOption]?.sacrifice);
     if (filter === undefined) return [];
     return this.state.zones.shared.battlefield.filter(
       (id) =>
@@ -4281,8 +4295,11 @@ export class Game {
     // An additional sacrifice cost (rule 601.2f) must be payable, and — once
     // the driver has named one — that permanent must actually qualify.
     if (def.additionalCost !== null) {
-      if (def.additionalCost.sacrifice !== undefined) {
-        const candidates = this.additionalCostSacrifices(player, def);
+      const sacrificesInCost =
+        def.additionalCost.sacrifice !== undefined ||
+        (costOption !== undefined && def.additionalCost.options?.[costOption]?.sacrifice !== undefined);
+      if (sacrificesInCost) {
+        const candidates = this.additionalCostSacrifices(player, def, costOption);
         if (candidates.length === 0) {
           return `${player} has nothing to sacrifice to cast ${def.name}`;
         }
@@ -4452,10 +4469,9 @@ export class Game {
     const targetSpecs = this.effectiveTargetSpecs(def, sortedModes, kicked, overload);
     // An additional sacrifice cost the driver didn't name (only one candidate,
     // or a driver that doesn't care): take the first eligible permanent.
+    const sacrificeCandidates = this.additionalCostSacrifices(player, def, costOption);
     const sacrificeVictim =
-      def.additionalCost?.sacrifice === undefined
-        ? undefined
-        : (sacrifice ?? this.additionalCostSacrifices(player, def)[0]);
+      sacrificeCandidates.length === 0 ? undefined : (sacrifice ?? sacrificeCandidates[0]);
 
     const badTarget = this.whyTargetsInvalid(
       targetSpecs,
@@ -4606,19 +4622,9 @@ export class Game {
     if (chosenOption?.payLife !== undefined) {
       this.changeLife(player, -chosenOption.payLife);
     }
-    if (chosenOption?.sacrifice !== undefined) {
-      const filter = chosenOption.sacrifice;
-      const victim = this.state.zones.shared.battlefield.find(
-        (id) =>
-          this.state.objects[id]?.controller === player &&
-          matchesFilter(this.state, this.registry, id, filter, { you: player }),
-      );
-      if (victim !== undefined) {
-        const owner = this.state.objects[victim].owner;
-        this.moveObject(victim, "graveyard");
-        this.emit({ type: "permanent-sacrificed", object: victim, player: owner });
-      }
-    }
+    // A branch's sacrifice was paid above with the fixed one: it's the same
+    // cost paid the same way, one member peeled off a token stack rather than
+    // the whole stack, and the victim the driver named.
     if (chosenOption?.discard !== undefined) {
       this.withDecisionSource(cardId, () => {
         this.discardByEffect({ kind: "player", player }, chosenOption.discard as number);
@@ -6467,8 +6473,20 @@ export class Game {
             event.type === "permanent-entered-battlefield"
               ? this.entryTriggerDoublers(object.controller, event.object)
               : 0;
+          // A compacted stack that left play is that many permanents leaving,
+          // each its own event: Zulaport Cutthroat drains once per Goblin in
+          // a stack a wrath kills. The stack's own abilities already scale by
+          // `object.stackCount` just below, so it isn't counted twice.
+          const departed =
+            (event.type === "permanent-left-battlefield" ||
+              event.type === "permanent-destroyed" ||
+              event.type === "permanent-sacrificed") &&
+            event.object !== id
+              ? (this.state.objects[event.object]?.stackCount ?? 1)
+              : 1;
           const multiplier =
             (object.stackCount ?? 1) *
+            departed *
             (event.type === "permanent-entered-battlefield" ? (event.count ?? 1) : 1) *
             (1 + entryDoublers);
           if (multiplier <= 1) {
@@ -7187,7 +7205,7 @@ export class Game {
         // Snapshot first — `addCounter` can kill a permanent (a -1/-1 counter)
         // and mutate the battlefield array underneath the loop.
         for (const id of this.battlefieldMatching(controller, filter)) {
-          this.addCounter({ kind: "object", object: id }, counter, amount);
+          this.addCounter({ kind: "object", object: id }, counter, amount, false);
         }
       },
       proliferate: (then) => this.beginProliferate(source, controller, x, then),
@@ -8384,7 +8402,7 @@ export class Game {
   private doubleCountersAll(you: PlayerId, filter: CardFilter, counterKind: string): void {
     for (const id of this.battlefieldMatching(you, filter)) {
       const current = this.state.objects[id].counters[counterKind] ?? 0;
-      if (current > 0) this.addCounter({ kind: "object", object: id }, counterKind, current);
+      if (current > 0) this.addCounter({ kind: "object", object: id }, counterKind, current, false);
     }
   }
 
@@ -8591,9 +8609,12 @@ export class Game {
     );
   }
 
-  private addCounter(target: TargetRef, counter: string, amount: number): void {
+  /** `split: false` (a counters-on-*each* effect) changes a compacted token
+   * stack uniformly; the default singles one member out, for anything that
+   * names one permanent. */
+  private addCounter(target: TargetRef, counter: string, amount: number, split = true): void {
     if (target.kind !== "object") return;
-    const id = this.splitOneFromStack(target.object);
+    const id = split ? this.splitOneFromStack(target.object) : target.object;
     const object = this.state.objects[id];
     if (object === undefined || object.zone !== "battlefield") return;
     // Doubling Season (rule 614): "twice that many counters instead" — only
@@ -8782,7 +8803,7 @@ export class Game {
   private returnToHandAllByEffect(you: PlayerId, filter: CardFilter): void {
     // Snapshot: `returnToHandByEffect` mutates the battlefield array as it goes.
     for (const id of this.battlefieldMatching(you, filter)) {
-      this.returnToHandByEffect({ kind: "object", object: id });
+      this.returnToHandByEffect({ kind: "object", object: id }, false);
     }
   }
 
@@ -8827,7 +8848,11 @@ export class Game {
     for (const id of [...this.state.zones.shared.battlefield]) {
       if (matchesFilter(this.state, this.registry, id, filter, { you })) {
         const controller = this.state.objects[id]?.controller;
-        if (controller !== undefined) {
+        if (controller === undefined) continue;
+        // Each creature is its own source (lifelink, prevention), so a token
+        // stack deals its damage once per token in it.
+        const sources = Math.min(this.state.objects[id].stackCount ?? 1, Game.MAX_EFFECT_INSTANCES);
+        for (let i = 0; i < sources; i += 1) {
           this.dealDamage(id, { kind: "player", player: controller }, amount);
         }
       }
@@ -9000,9 +9025,11 @@ export class Game {
     );
   }
 
-  private returnToHandByEffect(target: TargetRef): void {
+  /** `split: false` (a return-*all*) moves a compacted token stack whole —
+   * every token in it goes, not one; the default singles one member out. */
+  private returnToHandByEffect(target: TargetRef, split = true): void {
     if (target.kind !== "object") return;
-    const id = this.splitOneFromStack(target.object);
+    const id = split ? this.splitOneFromStack(target.object) : target.object;
     const object = this.state.objects[id];
     if (object === undefined || object.zone !== "battlefield") return;
     // A token would just be swept by SBAs; a commander may be redirected to
@@ -9972,6 +9999,25 @@ export class Game {
         this.moveObject(id, "graveyard");
         if (this.state.awaiting !== null) return; // deferred 903.9a choice
         this.emit({ type: "permanent-destroyed", object: id, reason: "0 loyalty" });
+        changed = true;
+      }
+
+      // Not a rule — the other half of token stacking's safety contract: a
+      // stack stands in for tokens only while none of them can be activated,
+      // since each one's cost has to be paid (tapped) on its own. A static
+      // that grants one (Cryptolith Rite's "{T}: Add one mana") wakes the
+      // stack up into real objects. Before this, eight Goblins under
+      // Cryptolith Rite made one mana, and tapping it tapped all eight. A
+      // stack too big to wake whole (past
+      // MAX_MATERIALIZED — only a runaway generator gets there) is left as
+      // it is; waking it a hundred at a time would loop here until it had
+      // minted every object stacking exists to avoid.
+      for (const id of [...this.state.zones.shared.battlefield]) {
+        const count = this.state.objects[id]?.stackCount ?? 1;
+        if (count <= 1 || count > Game.MAX_MATERIALIZED) continue;
+        if (this.effectiveActivated(id).length === 0) continue;
+        this.materializeStack(id);
+        invalidateComputedCache();
         changed = true;
       }
 
