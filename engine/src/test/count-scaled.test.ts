@@ -87,3 +87,62 @@ describe("Craterhoof Behemoth — +X/+X where X = creatures you control", () => 
     expect(hoof.keywords.has("trample")).toBe(true);
   });
 });
+
+describe("Krenko, Mob Boss — tokens = number of Goblins you control", () => {
+  const goblins = (game: Game): number =>
+    game.battlefield.filter(
+      (id) =>
+        game.state.objects[id].controller === A &&
+        game.characteristics(id).subtypes.includes("Goblin"),
+    ).length;
+
+  it("doubles the Goblin count on each activation", () => {
+    const { game } = mkGame([]);
+    game.advanceUntil(toPrecombat);
+    const krenko = game.debugSpawn("Krenko, Mob Boss", A, "battlefield");
+    game.state.objects[krenko].summoningSick = false;
+
+    // Krenko counts himself, so the first tap makes exactly one token.
+    expect(goblins(game)).toBe(1);
+    game.dispatch({
+      type: "activate-ability",
+      player: A,
+      source: krenko,
+      abilityIndex: 0,
+      targets: [],
+    });
+    game.advanceUntil(quiet);
+    expect(goblins(game)).toBe(2);
+
+    // The tokens count too, which is the card: each activation doubles.
+    game.advanceUntil((s) => s.turn.number === 3 && s.turn.step === "precombat-main");
+    game.dispatch({
+      type: "activate-ability",
+      player: A,
+      source: krenko,
+      abilityIndex: 0,
+      targets: [],
+    });
+    game.advanceUntil(quiet);
+    expect(goblins(game)).toBe(4);
+  });
+
+  it("counts only Goblins its controller has", () => {
+    const { game } = mkGame([]);
+    game.advanceUntil(toPrecombat);
+    const krenko = game.debugSpawn("Krenko, Mob Boss", A, "battlefield");
+    game.state.objects[krenko].summoningSick = false;
+    // An opponent's Goblin must not inflate the count.
+    game.debugSpawn("Raging Goblin", B, "battlefield");
+
+    game.dispatch({
+      type: "activate-ability",
+      player: A,
+      source: krenko,
+      abilityIndex: 0,
+      targets: [],
+    });
+    game.advanceUntil(quiet);
+    expect(goblins(game)).toBe(2);
+  });
+});

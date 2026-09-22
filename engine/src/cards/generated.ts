@@ -363,6 +363,7 @@ import _poolKirdApe from "./pool/kird-ape.js";
 import _poolKodamasReach from "./pool/kodamas-reach.js";
 import _poolKolaghansCommand from "./pool/kolaghans-command.js";
 import _poolKorvoldFaeCursedKing from "./pool/korvold-fae-cursed-king.js";
+import _poolKrenkoMobBoss from "./pool/krenko-mob-boss.js";
 import _poolLaboratoryDrudge from "./pool/laboratory-drudge.js";
 import _poolLathlissDragonQueen from "./pool/lathliss-dragon-queen.js";
 import _poolLazotepPlating from "./pool/lazotep-plating.js";
@@ -503,6 +504,7 @@ import _poolRiftBolt from "./pool/rift-bolt.js";
 import _poolRishkarPeemaRenegade from "./pool/rishkar-peema-renegade.js";
 import _poolRiveteersOverlook from "./pool/riveteers-overlook.js";
 import _poolRockfallVale from "./pool/rockfall-vale.js";
+import _poolRograkhSonOfRohgahh from "./pool/rograkh-son-of-rohgahh.js";
 import _poolRoguesPassage from "./pool/rogues-passage.js";
 import _poolRootbornDefenses from "./pool/rootborn-defenses.js";
 import _poolRootboundCrag from "./pool/rootbound-crag.js";
@@ -769,6 +771,7 @@ import _tokensElfWarriorToken from "./tokens/elf-warrior-token.js";
 import _tokensFaerieToken from "./tokens/faerie-token.js";
 import _tokensFoodToken from "./tokens/food-token.js";
 import _tokensFrogLizardToken from "./tokens/frog-lizard-token.js";
+import _tokensGoblinToken from "./tokens/goblin-token.js";
 import _tokensHornetToken from "./tokens/hornet-token.js";
 import _tokensHumanToken from "./tokens/human-token.js";
 import _tokensHumanWarriorToken from "./tokens/human-warrior-token.js";
@@ -1152,6 +1155,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolKodamasReach,
   _poolKolaghansCommand,
   _poolKorvoldFaeCursedKing,
+  _poolKrenkoMobBoss,
   _poolLaboratoryDrudge,
   _poolLathlissDragonQueen,
   _poolLazotepPlating,
@@ -1292,6 +1296,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolRishkarPeemaRenegade,
   _poolRiveteersOverlook,
   _poolRockfallVale,
+  _poolRograkhSonOfRohgahh,
   _poolRoguesPassage,
   _poolRootbornDefenses,
   _poolRootboundCrag,
@@ -1564,6 +1569,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensFaerieToken,
   _tokensFoodToken,
   _tokensFrogLizardToken,
+  _tokensGoblinToken,
   _tokensHornetToken,
   _tokensHumanToken,
   _tokensHumanWarriorToken,

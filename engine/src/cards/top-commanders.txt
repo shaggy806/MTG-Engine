@@ -9,12 +9,12 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]    3  The Ur-Dragon                                  50954 decks  {4}{W}{U}{B}{R}{G} Legendary Creature — Dragon Avatar
 [x]    4  Atraxa, Praetors' Voice                        44799 decks  {G}{W}{U}{B}     Legendary Creature — Phyrexian Angel Horror
 [ ]    5  Tymna the Weaver                               44433 decks  {1}{W}{B}        Legendary Creature — Human Cleric
-[ ]    6  Krenko, Mob Boss                               44161 decks  {2}{R}{R}        Legendary Creature — Goblin Warrior
+[x]    6  Krenko, Mob Boss                               44161 decks  {2}{R}{R}        Legendary Creature — Goblin Warrior
 [ ]    7  Thrasios, Triton Hero                          43075 decks  {G}{U}           Legendary Creature — Merfolk Wizard
 [ ]    8  Vivi Ornitier                                  40728 decks  {1}{U}{R}        Legendary Creature — Wizard
 [ ]    9  Sauron, the Dark Lord                          39908 decks  {3}{U}{B}{R}     Legendary Creature — Avatar Horror
 [ ]   10  Kaalia of the Vast                             39741 decks  {1}{R}{W}{B}     Legendary Creature — Human Cleric
-[ ]   11  Rograkh, Son of Rohgahh                        38866 decks  {0}              Legendary Creature — Kobold Warrior
+[x]   11  Rograkh, Son of Rohgahh                        38866 decks  {0}              Legendary Creature — Kobold Warrior
 [ ]   12  Teval, the Balanced Scale                      38826 decks  {1}{B}{G}{U}     Legendary Creature — Spirit Dragon
 [ ]   13  Fire Lord Azula                                37711 decks  {1}{U}{B}{R}     Legendary Creature — Human Noble
 [ ]   14  Ms. Bumbleflower                               36979 decks  {1}{G}{W}{U}     Legendary Creature — Rabbit Citizen

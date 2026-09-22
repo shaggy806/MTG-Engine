@@ -308,6 +308,12 @@ const deckB = deck([
   // checks that whichever branch `legalActions` offered is one `dispatch`
   // accepts.
   ["Bitter Triumph", 1],
+  // The first commanders authored off top-commanders.txt. Krenko is here
+  // deliberately: his token count doubles every activation, which is the
+  // self-replicating shape that motivated token stacking in the first
+  // place, so the fuzzer should be the thing that finds it if it blows up.
+  ["Krenko, Mob Boss", 1],
+  ["Rograkh, Son of Rohgahh", 1],
   ["Demand Answers", 1],
   ["Cathartic Reunion", 1],
   ["Seize the Spoils", 1],
