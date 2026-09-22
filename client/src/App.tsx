@@ -2592,7 +2592,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           // or a kickable spell's kicked / unkicked casts (P8).
           const multiFace = faceOpts.length > 1
           return (
-            <div key={id} className="hand-card" style={fanStyle}>
+            <div key={id} className="hand-card" data-obj-id={id} style={fanStyle}>
               <CardTile
                 obj={obj}
                 highlight={highlight || Boolean(suspend) || Boolean(foretell) || Boolean(cycle)}

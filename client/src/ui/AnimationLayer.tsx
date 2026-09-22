@@ -89,6 +89,33 @@ interface PlayedCard {
  * without this knowing which is on screen. Falls back to straight up from the
  * bottom (your own cards) or down from the top (everyone else's) if the cell
  * can't be found — mid-remount, say. */
+/**
+ * Where a card *being played* should fly out of.
+ *
+ * Its own place in the hand fan when it is still there, which is what makes
+ * the exit read as the card lifting off rather than vanishing. This works
+ * because the cue fires while `usePlayback` is still showing the frame
+ * *before* the play — the card is on screen at this instant and gone a
+ * moment later, which is also why the position has to be measured now
+ * rather than looked up when the animation ends.
+ *
+ * `null` when the card was never in this seat's hand (an opponent's play, or
+ * a cast from the command zone or a graveyard), leaving {@link flyOrigin}'s
+ * cell-centre as the fallback.
+ */
+function handOrigin(object: ObjectId): { x: number; y: number } | null {
+  const el = document.querySelector<HTMLElement>(
+    `.hand-cards [data-obj-id="${CSS.escape(object)}"]`,
+  )
+  if (el === null) return null
+  const r = el.getBoundingClientRect()
+  if (r.width === 0 && r.height === 0) return null
+  return {
+    x: r.left + r.width / 2 - window.innerWidth / 2,
+    y: r.top + r.height / 2 - window.innerHeight / 2,
+  }
+}
+
 function flyOrigin(player: PlayerId, seat: PlayerId): { x: number; y: number } {
   const panel = document.querySelector<HTMLElement>(
     `[data-player-id="${CSS.escape(player)}"]`,
@@ -375,7 +402,7 @@ export function AnimationLayer({
         const obj = view.objects[ev.object]
         if (!obj) return
         const key = `card-${ev.seq}`
-        const origin = flyOrigin(ev.player, seatRef.current)
+        const origin = handOrigin(ev.object) ?? flyOrigin(ev.player, seatRef.current)
         setPlayedCards((cur) => [...cur, { key, obj, originX: origin.x, originY: origin.y }])
         window.setTimeout(() => {
           setPlayedCards((cur) => cur.filter((c) => c.key !== key))
