@@ -1194,9 +1194,15 @@
      off the bottom of a short one otherwise. */
   --card-w: min(calc(var(--card-w-max) * 1.5), 28vh);
   position: fixed;
-  /* the bottom cap is derived from the (enlarged) card above rather than a
-     fixed 230px, so growing --card-w here can't push the pile off-screen */
-  top: clamp(96px, 50vh, calc(100vh - var(--card-w) * 1.95));
+  /* Vertically centred on the right edge. `50vh` alone anchored the *top* of
+     the pile at the middle, so the card itself hung into the lower-right
+     corner and read as "bottom right" -- half a card height (a card box is
+     1.4x its width, so 0.7x) comes back off to centre the top-of-stack card
+     on the viewport's middle. Deeper entries still stagger downward from
+     there, which is why the cap below is what keeps a tall pile on screen;
+     it is derived from the (enlarged) card rather than a fixed 230px, so
+     raising --card-w here can't push the pile off the bottom. */
+  top: clamp(96px, calc(50vh - var(--card-w) * 0.7), calc(100vh - var(--card-w) * 1.95));
   right: clamp(14px, 2vw, 26px);
   z-index: 20;
   pointer-events: none;
