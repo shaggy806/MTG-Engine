@@ -61,7 +61,7 @@ const HAND_FAN_STEP_Y = 5.2
 // stop reading as a fan at all. These caps bound the *total sweep*, not each
 // card's own rotation, so a large hand compresses its per-card step instead
 // of blowing past a sane maximum -- same "shrink only once actually needed"
-// shape as HAND_CARD_GAP's overlap floor and recomputeBoardMiniW below.
+// shape as HAND_CARD_GAP's overlap floor below.
 const HAND_FAN_MAX_ROT_DEG = 32
 const HAND_FAN_MAX_LIFT_PX = 38
 
@@ -82,28 +82,15 @@ const HAND_OVERLAP_FLOOR = 0.82
 // point at which it stops being worth hiding.
 const HAND_GRID_THRESHOLD = 12
 
-// Battlefield tiles get a real max size (index.css's --mini-w) and wrap to
-// as many rows as they need at that size -- multiple rows of creatures is
-// normal and fine, same as a physical table. Only once even that wrapping
-// overflows a board's own scrollable area (.quadrant-body) do tiles shrink
-// below the ceiling, and only as far as it takes to fit again (see
-// recomputeBoardMiniW below) -- shrinking is the fallback for a genuinely
-// crowded board, not the default response to "more than fits one row."
-// --mini-w's own clamp() bounds are duplicated here (rather than measured,
-// unlike the hand's own shrink-to-fit) because the natural size only
-// depends on viewport width, not on any container this component would
-// need to render first to read from; keep these in sync if that token's
-// clamp() in index.css ever changes.
-const MINI_W_FLOOR = 56
-const MINI_W_VW_PERCENT = 7.2
-const MINI_W_CEILING = 130
-// Below this, a tile stops shrinking further and the board's own scroll
+// Battlefield tiles are sized to the board they sit on: as wide as that
+// board's share of its quadrant allows, wrapping to as many rows as that
+// width needs (multiple rows of creatures is normal, same as a physical
+// table), so a sparse board's permanents grow into the room they have and a
+// crowded one's shrink. See recomputeBoardMiniW below. The ceiling is a card
+// in hand's own width, and lives in App.css's `.board` rule rather than here.
+// Below this floor a tile stops shrinking and the board's own scroll
 // (already there regardless -- .quadrant-body's overflow-y:auto) takes over.
 const MINI_SHRINK_FLOOR = 40
-const MINI_SHRINK_STEP = 6
-
-const naturalMiniW = (): number =>
-  Math.min(MINI_W_CEILING, Math.max(MINI_W_FLOOR, window.innerWidth * (MINI_W_VW_PERCENT / 100)))
 
 // A stable reference (not `[]` inline at each use) so passing it as `Table`'s
 // `actions` prop while `useDelayedView` reports `busy` doesn't itself count
@@ -526,8 +513,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   const handRowRef = useRef<HTMLDivElement>(null)
   const [handCardGap, setHandCardGap] = useState(HAND_CARD_GAP)
   // Per-player board elements (keyed by seat, since up to 4 boards each need
-  // independent handling) that need their tile size shrunk below --mini-w's
-  // ceiling once wrapping alone overflows their board's own scrollable area.
+  // independent handling), each with its tiles sized to fill the height its
+  // quadrant gives it.
   // A Map + shared observers rather than one ref/effect per player, since
   // `renderBoard` runs in a loop/JSX map and hooks can't be called
   // conditionally or a variable number of times per render. See
@@ -1707,43 +1694,68 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     return () => observer.disconnect()
   }, [handIds.length])
 
-  /** Wraps at --mini-w's own ceiling first (multiple rows of creatures is
-   * normal, not something to avoid) -- only shrinks `boardEl`'s tiles below
-   * that ceiling once wrapping alone still overflows its board's own
-   * scrollable area (`.quadrant-body`'s `overflow-y:auto`), and only as far
-   * as it takes to stop overflowing (or the floor). Resets to the ceiling
-   * and re-measures from there every time, rather than nudging up/down from
-   * wherever it last landed, so it also grows back once the board isn't
-   * crowded any more (a creature dying, say). Mirrors CardTile.tsx's own
-   * shrink-to-fit loop (measure, step, re-measure) for the same reason: a
-   * single ratio-based guess over/undershoots because reflowed wrap counts
-   * don't scale linearly with tile size. */
+  /** Sizes `boardEl`'s tiles to the largest width at which its rows still fit
+   * the height its quadrant gives it (`.quadrant-body`'s content box),
+   * wrapping to however many rows that width needs. A sparse board's tiles
+   * grow into the room they have; a crowded one's shrink, down to
+   * MINI_SHRINK_FLOOR, past which the board scrolls instead. App.css's
+   * `.board` rule caps the result at a card in hand's width, so a lone land
+   * on an empty board doesn't balloon to fill it.
+   *
+   * A binary search over the width, rather than a step loop or a ratio-based
+   * guess: reflowed wrap counts don't scale linearly with tile size, but a
+   * wider tile never makes the rows any shorter, so "does it fit at w" is
+   * monotonic. That's about a dozen layouts per board, and cheap ones --
+   * `.quadrant-body` is a size container, so nothing outside it relayouts.
+   * Re-searched from scratch every time rather than nudged from wherever it
+   * last landed, so a board grows back as soon as it has room again (a
+   * creature dying, say). */
   const recomputeBoardMiniW = (boardEl: HTMLDivElement) => {
     const scrollArea = boardEl.closest<HTMLElement>('.quadrant-body')
-    if (!scrollArea) return
-    // The board's *own* height against the space the quadrant gives it --
-    // not .quadrant-body's total overflow, which also counts the command/
-    // library rail sitting beside it in the same scroll box. Measuring the
-    // whole box meant a rail too tall for the quadrant (which is what it is
-    // on any monitor shorter than 1440p -- see .quadrant-body .side-zone in
-    // App.css) read as "this board is overflowing", so the loop below
-    // ratcheted every tile to MINI_SHRINK_FLOOR and still couldn't clear an
-    // overflow the board was never causing. offsetHeight, not
+    const first = boardEl.firstElementChild
+    const last = boardEl.lastElementChild
+    if (
+      !scrollArea ||
+      !(first instanceof HTMLElement) ||
+      !(last instanceof HTMLElement)
+    ) {
+      return
+    }
+    const area = getComputedStyle(scrollArea)
+    const available =
+      scrollArea.clientHeight - parseFloat(area.paddingTop) - parseFloat(area.paddingBottom)
+    const own = getComputedStyle(boardEl)
+    const chrome =
+      parseFloat(own.paddingTop) +
+      parseFloat(own.paddingBottom) +
+      parseFloat(own.borderTopWidth) +
+      parseFloat(own.borderBottomWidth)
+    // The rows' own extent, not the board's box. The board is stretched to
+    // its quadrant's full height (`.quadrant-body .board-with-sidezone`), so
+    // its box is as tall as the command/library rail beside it however small
+    // the tiles get -- measuring that is what pinned every board at the
+    // floor, since a rail a few pixels taller than its quadrant read as a
+    // board that no tile size could ever fit. offsetTop/offsetHeight, not
     // getBoundingClientRect: a tapped tile's rotation is visual overflow,
     // which mustn't count as the board needing less room.
-    const padding = getComputedStyle(scrollArea)
-    const available =
-      scrollArea.clientHeight -
-      parseFloat(padding.paddingTop) -
-      parseFloat(padding.paddingBottom)
-    boardEl.style.removeProperty('--mini-w')
-    if (boardEl.offsetHeight <= available) return
-    let miniW = naturalMiniW()
-    boardEl.style.setProperty('--mini-w', `${miniW}px`)
-    while (boardEl.offsetHeight > available && miniW > MINI_SHRINK_FLOOR) {
-      miniW = Math.max(MINI_SHRINK_FLOOR, miniW - MINI_SHRINK_STEP)
-      boardEl.style.setProperty('--mini-w', `${miniW}px`)
+    const fits = (width: number): boolean => {
+      boardEl.style.setProperty('--mini-w-fit', `${width}px`)
+      return last.offsetTop + last.offsetHeight - first.offsetTop + chrome <= available
     }
+    // A tile is never wider than its board, and past App.css's cap every
+    // width lays out the same, so this bound only has to be big enough.
+    let lo = MINI_SHRINK_FLOOR
+    let hi = Math.max(lo, boardEl.clientWidth)
+    // Crowded even at the floor: leave it there and let the board scroll.
+    if (!fits(lo)) return
+    if (fits(hi)) return
+    while (hi - lo > 1) {
+      const mid = Math.floor((lo + hi) / 2)
+      if (fits(mid)) lo = mid
+      else hi = mid
+    }
+    // The last probe may have been a miss; settle on the widest fit.
+    fits(lo)
   }
   // Two triggers to recompute a board: its scrollable area resizing (window
   // resize, a layout change) and its own tile count changing (a permanent

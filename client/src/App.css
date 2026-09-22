@@ -873,12 +873,20 @@
 }
 
 .board {
+  /* How wide this board's tiles are. App.tsx's `recomputeBoardMiniW` writes
+     --mini-w-fit onto the board: the widest a tile can be with the board's
+     rows still fitting the height its quadrant gives it. So a sparse board's
+     permanents grow into the room they have, and a crowded one's shrink.
+     Capped at a card in hand's own width -- a permanent never draws bigger
+     than the card it is, and a lone land on an empty board shouldn't swell
+     to fill the space. Until that first measurement, a board starts at the
+     cap. */
+  --mini-w: min(var(--mini-w-fit, var(--card-w-max)), var(--card-w-max));
   /* A mini tile is a name banner over a 4:3 art box (see .mt-banner /
      .mt-body), so its height is no longer just --mini-w * 0.75. Both tokens
-     are declared *here*, on the same element `recomputeBoardMiniW` writes
-     its inline --mini-w to, so they re-resolve against that override rather
-     than against :root's untouched value -- a custom property declared on
-     :root would substitute :root's --mini-w once and inherit the frozen
+     are declared *here*, on the same element --mini-w is, so they
+     re-resolve against each board's own width -- a custom property declared
+     on :root would substitute :root's value once and inherit the frozen
      result down. */
   --mt-banner-h: clamp(11px, calc(var(--mini-w) * 0.19), 18px);
   --mini-h: calc(var(--mini-w) * 0.75 + var(--mt-banner-h));
@@ -2033,9 +2041,9 @@
   opacity: 1;
 }
 /* the tile's name strip -- see MiniTile.tsx. Sized off --mini-w so it
-   shrinks in step with a crowded board's tiles (recomputeBoardMiniW), with a
-   floor that keeps it legible and a ceiling that keeps it from dominating a
-   full-size tile. */
+   scales with its board's tiles (recomputeBoardMiniW), with a floor that
+   keeps it legible and a ceiling that keeps it from dominating a full-size
+   tile. */
 .mt-banner {
   flex: none;
   display: block;
