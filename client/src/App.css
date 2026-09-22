@@ -1587,6 +1587,20 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* A card shown in order to be read -- the hover card, the stack -- wraps a
+   long name onto another line instead of cutting it off ("Chandra, Ac...").
+   Making the card bigger doesn't fix that by itself: every font on a card
+   scales with it (--ct-scale), so a 1.5x card's name is cut at exactly the
+   same letter. The cost stays top-right, level with the first line. */
+.mini-tile-popover .ct-title,
+.stack-entry .ct-title {
+  align-items: flex-start;
+}
+.mini-tile-popover .ct-name,
+.stack-entry .ct-name {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 .ct-cost {
   display: flex;
   align-items: center;
@@ -1855,17 +1869,19 @@
   border-radius: 3px;
   padding: 0 3px;
 }
+/* Sits in the art box's top-left corner (CardTile renders it inside .ct-art),
+   scaled with the card like everything else on its face. */
 .card-badge {
   position: absolute;
-  top: 24px;
-  left: 4px;
-  max-width: calc(100% - 8px);
-  font-size: 9px;
+  top: calc(4px * var(--ct-scale, 1));
+  left: calc(4px * var(--ct-scale, 1));
+  max-width: calc(100% - 8px * var(--ct-scale, 1));
+  font-size: calc(9px * var(--ct-scale, 1));
   font-weight: 700;
   color: #0b0e14;
   background: var(--warn);
   border-radius: 3px;
-  padding: 0 4px;
+  padding: 0 calc(4px * var(--ct-scale, 1));
 }
 .card-order {
   position: absolute;
@@ -2107,6 +2123,19 @@
    .stack-entry/.zone-viewer-cards below. */
 .mini-tile-popover .card-tile:disabled {
   opacity: 1;
+}
+/* Hovering a tile means you want to read that card, so it comes up at the
+   stack card's size -- half again an ordinary card, capped against viewport
+   height the same way -- rather than at hand size. --ct-scale grows the face
+   with the box: without it an enlarged card is a normal-size face floating
+   in an oversized frame (see .played-card-fly). The popover is placed from
+   JS and clamped inside the viewport, so the bigger card still never runs
+   off screen. */
+.mini-tile-popover {
+  --card-w: min(calc(var(--card-w-max) * 1.5), 28vh);
+}
+.mini-tile-popover .card-tile {
+  --ct-scale: calc(var(--card-w) / var(--card-w-max));
 }
 @media (prefers-reduced-motion: reduce) {
   .mini-tile-popover {

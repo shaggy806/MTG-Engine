@@ -273,6 +273,11 @@ export function CardTile({
           />
         ) : null}
         {artFirst && costNode ? <span className="ct-cost-overlay">{costNode}</span> : null}
+        {/* In the art box rather than at a fixed offset from the card's top,
+            which assumed a one-line title: a long name wraps where a card
+            is shown to be read (the hover card, the stack), and the badge
+            used to land on its second line. */}
+        {badge ? <span className="card-badge">{badge}</span> : null}
       </span>
 
       {artFirst ? <span className="ct-name-row">{nameNode}</span> : null}
@@ -321,7 +326,6 @@ export function CardTile({
       {obj.summoningSick && isCreature ? (
         <span className="card-flag sick">sick</span>
       ) : null}
-      {badge ? <span className="card-badge">{badge}</span> : null}
       {obj.tapped && TAP_ICON_URL ? (
         <img className="tap-icon" src={TAP_ICON_URL} alt="" />
       ) : null}
