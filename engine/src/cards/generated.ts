@@ -59,6 +59,7 @@ import _poolBeastWithin from "./pool/beast-within.js";
 import _poolBeholdTheMultiverse from "./pool/behold-the-multiverse.js";
 import _poolBigScore from "./pool/big-score.js";
 import _poolBirdsOfParadise from "./pool/birds-of-paradise.js";
+import _poolBitterTriumph from "./pool/bitter-triumph.js";
 import _poolBlackChocobo from "./pool/black-chocobo.js";
 import _poolBlasphemousAct from "./pool/blasphemous-act.js";
 import _poolBlaze from "./pool/blaze.js";
@@ -159,6 +160,7 @@ import _poolDeathcapGlade from "./pool/deathcap-glade.js";
 import _poolDecanterOfEndlessWater from "./pool/decanter-of-endless-water.js";
 import _poolDeepAnalysis from "./pool/deep-analysis.js";
 import _poolDefenseOfTheHeart from "./pool/defense-of-the-heart.js";
+import _poolDemandAnswers from "./pool/demand-answers.js";
 import _poolDemandingDragon from "./pool/demanding-dragon.js";
 import _poolDemonicTutor from "./pool/demonic-tutor.js";
 import _poolDesertedBeach from "./pool/deserted-beach.js";
@@ -846,6 +848,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBeholdTheMultiverse,
   _poolBigScore,
   _poolBirdsOfParadise,
+  _poolBitterTriumph,
   _poolBlackChocobo,
   _poolBlasphemousAct,
   _poolBlaze,
@@ -946,6 +949,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolDecanterOfEndlessWater,
   _poolDeepAnalysis,
   _poolDefenseOfTheHeart,
+  _poolDemandAnswers,
   _poolDemandingDragon,
   _poolDemonicTutor,
   _poolDesertedBeach,

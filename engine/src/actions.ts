@@ -130,6 +130,11 @@ export type Action =
        * variant, like `free`, whose mana cost is replaced and which taps
        * creatures as part of the cost. The driver echoes it back. */
       readonly altCost?: boolean;
+      /** Which branch of a choice of additional costs is being paid — an
+       * index into `CardDefinition.additionalCost.options` (Bitter Triumph:
+       * 0 to discard, 1 to pay 3 life). Echoed back from the `LegalAction`
+       * variant the driver picked; required when the card has options. */
+      readonly costOption?: number;
       /** Creatures tapped to help pay a convoke cost (rule 702.51), each
        * with its chosen contribution. Only meaningful for a card with
        * `CardDefinition.convoke`. */
@@ -406,6 +411,14 @@ export type LegalAction =
        * variant, like `free`, whose mana cost is replaced and which taps
        * creatures as part of the cost. The driver echoes it back. */
       readonly altCost?: boolean;
+      /** One branch of a choice of additional costs (Bitter Triumph's
+       * "discard a card or pay 3 life"). The card is enumerated once per
+       * affordable branch, the way a kickable spell is enumerated kicked and
+       * unkicked, so the choice is made by picking a variant rather than by
+       * answering a decision mid-cast. `costOptionText` is that branch's
+       * label, for the button. */
+      readonly costOption?: number;
+      readonly costOptionText?: string;
       /** A convokable spell (rule 702.51): every untapped creature the
        * player controls is a legal convoke payer. The driver builds a
        * `ConvokePayment[]` (which candidates, and what each pays) and echoes

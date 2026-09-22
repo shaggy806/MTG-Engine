@@ -717,6 +717,7 @@ function castExtras(
   overload?: boolean;
   free?: boolean;
   altCost?: boolean;
+  costOption?: number;
   sacrifice?: ObjectId;
   convoke?: ConvokePayment[];
 } {
@@ -730,6 +731,10 @@ function castExtras(
     // turns it into a cast at the printed cost, which the variant was never
     // offered as affordable at.
     ...(legal.altCost === true ? { altCost: true } : {}),
+    // A chosen branch of a choice of additional costs. Echoed back like the
+    // flags above, and for the same reason: each branch is its own variant,
+    // and a cast that names none is refused outright.
+    ...(legal.costOption !== undefined ? { costOption: legal.costOption } : {}),
     ...(sac !== undefined && sac.choices.length > 0
       ? { sacrifice: sac.choices[pickIndex(sac.choices.length)] }
       : {}),

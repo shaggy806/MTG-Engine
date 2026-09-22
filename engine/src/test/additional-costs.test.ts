@@ -465,3 +465,114 @@ describe("Culling the Weak — a sacrifice cost that was expressible all along",
     expect(poolCounts(game.state.players[A].manaPool).B).toBe(4);
   });
 });
+
+/**
+ * A **choice** between two whole costs (rule 601.2b) — `additionalCost.options`.
+ *
+ * Distinct from a cost whose filter spans two types: Deadly Dispute's
+ * "sacrifice an artifact or creature" is one cost with a `typesAnyOf` filter
+ * and needed none of this. The difference is whether the two halves are the
+ * same *kind* of payment.
+ *
+ * Each branch is enumerated as its own castable variant, the way kicker is,
+ * so these tests read the offers as well as the results.
+ */
+describe("a choice of additional costs", () => {
+  const castOffers = (game: Game, name: string) =>
+    game
+      .legalActions(A)
+      .filter((x) => x.kind === "cast-spell" && x.cardName === name);
+
+  it("offers Bitter Triumph once per branch, each labelled", () => {
+    const { game } = mkGame(["Bitter Triumph", "Grizzly Bears"]);
+    game.advanceUntil(toPrecombat);
+    game.debugSpawn("Swamp", A, "battlefield");
+    game.debugSpawn("Swamp", A, "battlefield");
+    game.debugSpawn("Grizzly Bears", B, "battlefield");
+
+    const offers = castOffers(game, "Bitter Triumph");
+    expect(offers).toHaveLength(2);
+    expect(
+      offers.map((o) => (o.kind === "cast-spell" ? o.costOptionText : null)).sort(),
+    ).toEqual(["Discard a card", "Pay 3 life"]);
+  });
+
+  it("pays the branch the caster picked — life, not a card", () => {
+    const { game } = mkGame(["Bitter Triumph", "Grizzly Bears"]);
+    game.advanceUntil(toPrecombat);
+    game.debugSpawn("Swamp", A, "battlefield");
+    game.debugSpawn("Swamp", A, "battlefield");
+    const victim = game.debugSpawn("Grizzly Bears", B, "battlefield");
+    const life = game.state.players[A].life;
+    const hand = game.handOf(A).length;
+
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Bitter Triumph"),
+      targets: [{ kind: "object", object: victim }],
+      costOption: 1, // pay 3 life
+    });
+    game.advanceUntil(quiet);
+
+    expect(game.state.players[A].life).toBe(life - 3);
+    // Only the spell itself left hand — nothing was discarded.
+    expect(game.handOf(A).length).toBe(hand - 1);
+    expect(game.state.objects[victim].zone).toBe("graveyard");
+  });
+
+  it("refuses a cast that names no branch, or one that doesn't exist", () => {
+    const { game } = mkGame(["Bitter Triumph", "Grizzly Bears"]);
+    game.advanceUntil(toPrecombat);
+    game.debugSpawn("Swamp", A, "battlefield");
+    game.debugSpawn("Swamp", A, "battlefield");
+    const victim = game.debugSpawn("Grizzly Bears", B, "battlefield");
+    const card = named(game, game.handOf(A), "Bitter Triumph");
+    const targets = [{ kind: "object" as const, object: victim }];
+
+    expect(() => game.dispatch({ type: "cast-spell", player: A, card, targets })).toThrow(
+      /needs one of its additional costs chosen/,
+    );
+    expect(() =>
+      game.dispatch({ type: "cast-spell", player: A, card, targets, costOption: 7 }),
+    ).toThrow(/no such additional cost/);
+  });
+
+  it("drops a branch the caster can't pay, keeping the other", () => {
+    const { game } = mkGame(["Bitter Triumph", "Grizzly Bears"]);
+    game.advanceUntil(toPrecombat);
+    game.debugSpawn("Swamp", A, "battlefield");
+    game.debugSpawn("Swamp", A, "battlefield");
+    game.debugSpawn("Grizzly Bears", B, "battlefield");
+    // Too little life for the 3-life branch; the discard branch still stands.
+    game.state.players[A].life = 2;
+
+    const offers = castOffers(game, "Bitter Triumph");
+    expect(offers).toHaveLength(1);
+    expect(offers[0].kind === "cast-spell" ? offers[0].costOptionText : null).toBe(
+      "Discard a card",
+    );
+  });
+
+  it("Demand Answers sacrifices an artifact for one branch, discards for the other", () => {
+    const { game } = mkGame(["Demand Answers", "Grizzly Bears"]);
+    game.advanceUntil(toPrecombat);
+    game.debugSpawn("Mountain", A, "battlefield");
+    game.debugSpawn("Mountain", A, "battlefield");
+    const rock = game.debugSpawn("Sol Ring", A, "battlefield");
+    const hand = game.handOf(A).length;
+
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Demand Answers"),
+      targets: [],
+      costOption: 0, // sacrifice an artifact
+    });
+    game.advanceUntil(quiet);
+
+    expect(game.state.objects[rock].zone).toBe("graveyard");
+    // −1 the spell, +2 drawn, nothing discarded.
+    expect(game.handOf(A).length).toBe(hand + 1);
+  });
+});

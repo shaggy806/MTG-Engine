@@ -304,6 +304,11 @@ const deckB = deck([
   ["Tragic Slip", 1],
   ["Dragon's Rage Channeler", 1],
   ["Thrill of Possibility", 1],
+  // A choice of additional costs: two variants per cast, so the fuzzer
+  // checks that whichever branch `legalActions` offered is one `dispatch`
+  // accepts.
+  ["Bitter Triumph", 1],
+  ["Demand Answers", 1],
   ["Cathartic Reunion", 1],
   ["Seize the Spoils", 1],
   ["Big Score", 1],

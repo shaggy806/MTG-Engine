@@ -37,6 +37,7 @@ function castExtras(legal: CastSpellLegal): {
   overload?: boolean;
   free?: boolean;
   altCost?: boolean;
+  costOption?: number;
   sacrifice?: ObjectId;
   convoke?: ConvokePayment[];
 } {
@@ -47,6 +48,9 @@ function castExtras(legal: CastSpellLegal): {
     ...(legal.overload === true ? { overload: true } : {}),
     ...(legal.free === true ? { free: true } : {}),
     ...(legal.altCost === true ? { altCost: true } : {}),
+    // Each branch of a choice of additional costs is its own variant, so the
+    // chosen one has to be echoed back or the cast is refused.
+    ...(legal.costOption !== undefined ? { costOption: legal.costOption } : {}),
     // The last choice rather than the first: `castSpellActions` may only be
     // offering this variant at all because the *most* expendable permanent
     // can pay, and the list is ordered oldest-first.

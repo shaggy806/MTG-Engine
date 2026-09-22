@@ -294,9 +294,22 @@ cost contains no `{X}` at all. `xCost.maxX` becomes the caster's life total
 rather than what their lands can pay, and `ctx.x` reads the chosen value like
 any other X — so the only genuinely new part was where the ceiling comes from.
 
-Still open, and each a different shape: **Bitter Triumph** (#840) and **Demand
-Answers** (#414) need a *choice* between two costs; **Plumb the Forbidden**
-needs an optional, repeatable one.
+**A choice between two costs — DONE.** `additionalCost.options` takes a list
+of whole costs of which exactly one is paid, each enumerated as its own
+castable variant the way kicker is, so the caster chooses by picking a
+`cast-spell` rather than by answering a decision mid-cast. Shipped **Bitter
+Triumph** (#839) and **Demand Answers** (#414); `additional-costs.test.ts`.
+
+Measured first, because the feature sounded more general than it is: only
+six cards in the top 2000 have an `or` in an additional-cost clause, and
+three of those are something else. **Deadly Dispute** (#130) was never
+blocked — "sacrifice an artifact or creature" is one cost with a `typesAnyOf`
+filter, not a choice. **Redirect Lightning** (#558) needs the choice *and* a
+change-the-target effect, which isn't modeled, so it stays out under §0.
+
+Still open: **Plumb the Forbidden** (#1154) and **Dargo, the Shipwrecker**
+need an *optional, repeatable* cost ("sacrifice one or more creatures"),
+which is a different shape again — a count the caster picks, not a branch.
 
 ### Put a card from your hand onto the battlefield — DONE (20 cards unblocked)
 

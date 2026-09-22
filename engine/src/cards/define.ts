@@ -31,6 +31,28 @@ export type CardType =
 
 export type Supertype = "basic" | "legendary" | "snow" | "world";
 
+/**
+ * One branch of a choice of additional costs (rule 601.2b) — see
+ * `CardDefinition.additionalCost.options`.
+ *
+ * Exactly one field is set per option in every card authored so far, but
+ * nothing depends on that: an option with two fields is paid in full, and is
+ * how "discard a card **and** pay 2 life or …" would be written.
+ *
+ * `mana` is extra generic/coloured mana folded onto the printed cost, the
+ * same mechanism kicker uses (Redirect Lightning: "pay 5 life or pay {2}").
+ * It is a cost *increase*, not a replacement.
+ */
+export interface AdditionalCostOption {
+  /** What this option is called in the UI ("Pay 3 life"). Shown on the
+   * variant's button, so it has to read as an imperative on its own. */
+  readonly text: string;
+  readonly sacrifice?: CardFilter;
+  readonly discard?: number;
+  readonly payLife?: number;
+  readonly mana?: string;
+}
+
 export type Keyword =
   | "flying"
   | "reach"
@@ -490,6 +512,21 @@ export interface CardDefinition {
     readonly discard?: number;
     readonly payLife?: number;
     readonly payLifeX?: boolean;
+    /**
+     * A **choice** between whole costs, of which the caster pays exactly one
+     * (Bitter Triumph: "discard a card **or** pay 3 life").
+     *
+     * Distinct from a cost whose *filter* happens to span two types — Deadly
+     * Dispute's "sacrifice an artifact or creature" is one cost with a
+     * `typesAnyOf` filter and was expressible all along. The difference is
+     * whether the two halves are the same *kind* of payment.
+     *
+     * Each option is enumerated as its own castable variant, the way kicker
+     * and overload are, so the choice is made by picking which `cast-spell`
+     * to send rather than by a decision raised mid-cast. The fields beside
+     * this one are paid as well, on top of whichever option is chosen.
+     */
+    readonly options?: readonly AdditionalCostOption[];
   } | null;
   /**
    * Kicker (rule 702.33 — needed-cards P8): an **optional** additional cost
@@ -743,6 +780,7 @@ interface CardDraft {
     readonly discard?: number;
     readonly payLife?: number;
     readonly payLifeX?: boolean;
+    readonly options?: readonly AdditionalCostOption[];
   };
   kicker?: {
     readonly cost: string;

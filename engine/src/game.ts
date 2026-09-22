@@ -44,6 +44,7 @@ import {
 } from "./combat/eligibility.js";
 import { CardRegistry, createDefaultRegistry } from "./cards.js";
 import type {
+  AdditionalCostOption,
   CardDefinition,
   CardType,
   CombatRestriction,
@@ -512,6 +513,7 @@ export class Game {
           action.free === true,
           action.convoke,
           action.altCost === true,
+          action.costOption,
         );
         break;
       case "activate-ability":
@@ -566,6 +568,7 @@ export class Game {
           action.free === true,
           action.convoke,
           action.altCost === true,
+          action.costOption,
         );
       case "activate-ability":
         return this.whyCannotActivateAbility(
@@ -966,6 +969,7 @@ export class Game {
       overload: boolean;
       free: boolean;
       altCost?: boolean;
+      costOption?: number;
     }[] = [{ kicked: false, overload: false, free: false }];
     if (def.kicker !== null) variants.push({ kicked: true, overload: false, free: false });
     // Overload (rule 702.126) and a conditional free-cast permission (Fierce
@@ -976,7 +980,19 @@ export class Game {
     if (def.alternativeCost !== null) {
       variants.push({ kicked: false, overload: false, free: false, altCost: true });
     }
-    for (const { kicked, overload, free, altCost } of variants) {
+    // A choice of additional costs (rule 601.2b) multiplies through whatever
+    // variants already exist: each is castable by paying either branch, and
+    // the driver picks one by picking a `LegalAction`. Every card in the pool
+    // with `options` has no kicker or overload, so this is a product of one.
+    const costOptions = def.additionalCost?.options;
+    if (costOptions !== undefined && costOptions.length > 0) {
+      const crossed = variants.flatMap((variant) =>
+        costOptions.map((_option, index) => ({ ...variant, costOption: index })),
+      );
+      variants.length = 0;
+      variants.push(...crossed);
+    }
+    for (const { kicked, overload, free, altCost, costOption } of variants) {
       let castable =
         this.whyCannotCastSpell(
           player,
@@ -990,6 +1006,7 @@ export class Game {
           free,
           undefined,
           altCost === true,
+          costOption,
         ) === null;
       // Convoke (rule 702.51): not affordable with mana alone doesn't mean
       // not castable — check again assuming every untapped creature helps,
@@ -1059,6 +1076,9 @@ export class Game {
           : {}),
         ...(free ? { free: true } : {}),
         ...(altCost === true ? { altCost: true } : {}),
+        ...(costOption !== undefined && costOptions !== undefined
+          ? { costOption, costOptionText: costOptions[costOption].text }
+          : {}),
         ...(def.convoke
           ? (() => {
               const candidates = this.convokeCandidates(player);
@@ -3913,6 +3933,7 @@ export class Game {
     overload = false,
     free = false,
     altCost = false,
+    costOption?: number,
   ): string | null {
     const def = this.faceDef(cardId, face);
     // An alternative cost (Sephara) replaces the mana cost entirely, like
@@ -3937,10 +3958,20 @@ export class Game {
               ? (this.frontFaceDef(cardId).disturb?.cost ?? null)
               : // Adventure (rule 715) — the creature is cast for its own cost.
                 def.manaCost;
+    // A chosen additional-cost branch that is paid in mana (Redirect
+    // Lightning's "or pay {2}") concatenates the same way kicker does, and
+    // for the same reason — an additional cost adds to what's being paid.
+    // Applied before kicker only because the concatenation is commutative;
+    // `parseManaCost` is order-independent.
+    const optionMana =
+      costOption === undefined
+        ? undefined
+        : def.additionalCost?.options?.[costOption]?.mana;
+    const withOption = base === null || optionMana === undefined ? base : base + optionMana;
     // Kicker (rule 702.33) is an additional cost, so it just concatenates onto
     // whatever cost is being paid — `parseManaCost` is order-independent.
-    if (!kicked || def.kicker === null || base === null) return base;
-    return base + def.kicker.cost;
+    if (!kicked || def.kicker === null || withOption === null) return withOption;
+    return withOption + def.kicker.cost;
   }
 
   /** The concrete target specs of a spell — its own, the kicked ones if it was
@@ -4003,6 +4034,7 @@ export class Game {
     free = false,
     convoke?: readonly ConvokePayment[],
     altCost = false,
+    costOption?: number,
   ): string | null {
     const blocked = this.whyCannotAct(player);
     if (blocked !== null) return blocked;
@@ -4088,6 +4120,21 @@ export class Game {
     if (def.castModal !== null && modes !== undefined) {
       const bad = this.whyCannotChooseCastModes(def.castModal, modes);
       if (bad !== null) return `${def.name}: ${bad}`;
+    }
+    // A choice of additional costs: the driver must name a branch, and the
+    // branch it named has to be one this player could actually pay. Checked
+    // before the fixed additional costs below, which are paid on top of it.
+    const options = def.additionalCost?.options;
+    if (options !== undefined && options.length > 0) {
+      if (costOption === undefined) {
+        return `${def.name} needs one of its additional costs chosen`;
+      }
+      const option = options[costOption];
+      if (option === undefined) return `${def.name} has no such additional cost`;
+      const unpayable = this.whyCostOptionUnpayable(player, cardId, def, option);
+      if (unpayable !== null) return unpayable;
+    } else if (costOption !== undefined) {
+      return `${def.name} has no choice of additional cost`;
     }
     if (kicked && def.kicker === null) return `${def.name} has no kicker`;
     if (overload && def.overload === null) return `${def.name} has no overload cost`;
@@ -4226,6 +4273,7 @@ export class Game {
     free = false,
     convoke?: readonly ConvokePayment[],
     altCost = false,
+    costOption?: number,
   ): void {
     const why = this.whyCannotCastSpell(
       player,
@@ -4239,6 +4287,7 @@ export class Game {
       free,
       convoke,
       altCost,
+      costOption,
     );
     if (why !== null) throw new Error(why);
 
@@ -4247,7 +4296,16 @@ export class Game {
     // the chosen face for the rest of this method and while on the stack.
     if (object.faces !== undefined) object.face = face;
     const def = this.registry.get(printedCardName(object));
-    const costString = this.castCostString(cardId, via, face, kicked, overload, free, altCost);
+    const costString = this.castCostString(
+      cardId,
+      via,
+      face,
+      kicked,
+      overload,
+      free,
+      altCost,
+      costOption,
+    );
     const hasX =
       parseManaCost(costString).x > 0 || def.additionalCost?.payLifeX === true;
     const chosenX = hasX ? Math.max(0, Math.floor(xValue)) : 0;
@@ -4404,6 +4462,34 @@ export class Game {
     if (def.additionalCost?.payLifeX === true && chosenX > 0) {
       this.changeLife(player, -chosenX);
     }
+    // The chosen branch of a choice of additional costs, paid here with the
+    // fixed ones — after the announcement, so the log reads "casts X,
+    // discards Y", and at cast time, so it stands even if X is countered.
+    // A `mana` branch needs nothing: it was folded into `costString` and is
+    // already paid.
+    const chosenOption =
+      costOption === undefined ? undefined : def.additionalCost?.options?.[costOption];
+    if (chosenOption?.payLife !== undefined) {
+      this.changeLife(player, -chosenOption.payLife);
+    }
+    if (chosenOption?.sacrifice !== undefined) {
+      const filter = chosenOption.sacrifice;
+      const victim = this.state.zones.shared.battlefield.find(
+        (id) =>
+          this.state.objects[id]?.controller === player &&
+          matchesFilter(this.state, this.registry, id, filter, { you: player }),
+      );
+      if (victim !== undefined) {
+        const owner = this.state.objects[victim].owner;
+        this.moveObject(victim, "graveyard");
+        this.emit({ type: "permanent-sacrificed", object: victim, player: owner });
+      }
+    }
+    if (chosenOption?.discard !== undefined) {
+      this.withDecisionSource(cardId, () => {
+        this.discardByEffect({ kind: "player", player }, chosenOption.discard as number);
+      });
+    }
     const costDiscard = def.additionalCost?.discard;
     if (costDiscard !== undefined) {
       // Attributed to the spell being cast. A `discard` decision carries no
@@ -4415,6 +4501,48 @@ export class Game {
       });
     }
     this.afterPlayerAction(player);
+  }
+
+  /**
+   * Why `player` can't pay this branch of a choice of additional costs, or
+   * `null`.
+   *
+   * The `mana` branch isn't checked here: it was folded onto the cast's mana
+   * cost by `castCostString`, so the ordinary affordability check has
+   * already covered it. What's left are the branches paid out of something
+   * other than the mana pool.
+   */
+  private whyCostOptionUnpayable(
+    player: PlayerId,
+    cardId: ObjectId,
+    def: CardDefinition,
+    option: AdditionalCostOption,
+  ): string | null {
+    if (option.discard !== undefined) {
+      // Rule 601.2h — the spell is still in hand while this is checked and
+      // can't discard itself to pay its own cost.
+      const others = this.state.zones.perPlayer[player].hand.filter((id) => id !== cardId);
+      if (others.length < option.discard) {
+        return `${player} has too few cards in hand to ${option.text.toLowerCase()} for ${def.name}`;
+      }
+    }
+    // Rule 118.4 — a player may pay any life they have, down to 0, so this
+    // only refuses paying *more* life than they hold.
+    if (option.payLife !== undefined && this.state.players[player].life < option.payLife) {
+      return `${player} has too little life to ${option.text.toLowerCase()} for ${def.name}`;
+    }
+    if (option.sacrifice !== undefined) {
+      const filter = option.sacrifice;
+      const candidates = this.state.zones.shared.battlefield.filter(
+        (id) =>
+          this.state.objects[id]?.controller === player &&
+          matchesFilter(this.state, this.registry, id, filter, { you: player }),
+      );
+      if (candidates.length === 0) {
+        return `${player} has nothing to sacrifice to cast ${def.name}`;
+      }
+    }
+    return null;
   }
 
   /** Permanents `player` could sacrifice to pay `ability`'s sacrifice cost.
