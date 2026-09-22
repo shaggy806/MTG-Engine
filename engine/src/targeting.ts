@@ -376,6 +376,15 @@ export function isLegalTarget(
       );
     // `any-target` deliberately falls through — keep them adjacent.
     case "any-target":
+      // Rule 115.4: a creature, a player, a planeswalker or a battle.
+      // Battles aren't modeled; the rest are. `dealDamage` already takes
+      // loyalty off a planeswalker it damages.
+      return (
+        isLivingPlayer(state, ref) ||
+        (ref.kind === "object" &&
+          (isLivingCreature(state, registry, ref.object) ||
+            isPermanentOfType(state, registry, ref.object, (t) => t.includes("planeswalker"))))
+      );
     case "creature-or-player":
       return (
         isLivingPlayer(state, ref) ||

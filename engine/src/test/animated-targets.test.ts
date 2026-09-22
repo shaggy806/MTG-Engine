@@ -60,3 +60,29 @@ describe("permanent-type targets read current types", () => {
     expect(game.state.objects[factory].zone).toBe("graveyard");
   });
 });
+
+describe("\"any target\" (rule 115.4)", () => {
+  it("offers a planeswalker as well as creatures and players, and damages its loyalty", () => {
+    const game = table();
+    const garruk = game.debugSpawn("Garruk Wildspeaker", B, "battlefield");
+    spawn(game, "Grizzly Bears", B);
+    spawn(game, "Mountain", A);
+    const bolt = game.debugSpawn("Lightning Bolt", A, "hand");
+    const offer = game.legalActions(A).find((a) => a.kind === "cast-spell" && a.card === bolt);
+    const options = offer?.kind === "cast-spell" ? offer.targetOptions[0] : [];
+    expect(options).toContainEqual({ kind: "object", object: garruk });
+    expect(options).toContainEqual({ kind: "player", player: B });
+
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: bolt,
+      targets: [{ kind: "object", object: garruk }],
+    });
+    game.dispatch({ type: "pass-priority", player: A });
+    game.dispatch({ type: "pass-priority", player: B });
+    // 3 loyalty, 3 damage: it dies, and the move clears its counters.
+    expect(game.state.objects[garruk].zone).toBe("graveyard");
+    expect(game.events.some((e) => e.type === "loyalty-changed" && e.object === garruk && e.delta === -3)).toBe(true);
+  });
+});
