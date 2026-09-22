@@ -260,6 +260,10 @@ export class Game {
   private readonly registry: CardRegistry;
   private readonly controllers: Record<PlayerId, PlayerController>;
   private readonly rng: Rng;
+  /** The commander whose 903.9a choice `applyCommanderChoice` is carrying out
+   * right now — the one move of it `moveObject` must not defer again. Not
+   * game state: it only ever spans that one synchronous call. */
+  private completingCommanderMove: ObjectId | null = null;
 
   private constructor(
     state: GameState,
@@ -363,6 +367,7 @@ export class Game {
       pendingTargetedCast: null,
       pendingSuspendedCasts: [],
       deferredCommanderMove: null,
+      pendingCommanderMoves: [],
       pendingFlickerReturn: null,
       pendingDestruction: [],
       pendingSacrifices: [],
@@ -1625,8 +1630,14 @@ export class Game {
     const { commander, intendedZone } = deferred;
     this.state.awaiting = null;
     const destination = toCommandZone ? "command" : intendedZone;
-    // `deferredCommanderMove` is still set here, so `moveObject` won't re-defer.
-    this.moveObject(commander, destination);
+    // This is the move the choice was about, so `moveObject` mustn't defer it
+    // again.
+    this.completingCommanderMove = commander;
+    try {
+      this.moveObject(commander, destination);
+    } finally {
+      this.completingCommanderMove = null;
+    }
     this.state.deferredCommanderMove = null;
 
     if (!toCommandZone && intendedZone === "graveyard") {
@@ -1659,6 +1670,45 @@ export class Game {
     }
 
     this.prepareForPriority(this.activePlayer);
+  }
+
+  /**
+   * Puts the next owed 903.9a choice on `awaiting`, if nothing else is there.
+   *
+   * First a deferred choice whose question was overwritten: Path to Exile
+   * defers its commander's exile, then carries straight on into "its
+   * controller may search", whose own decision replaces the question. The
+   * move is still owed once the search is answered, and asking again is what
+   * stops it being lost — before this, the commander never left and
+   * `deferredCommanderMove` stayed set for the rest of the game, so every
+   * later commander moved without its owner being asked at all.
+   *
+   * Then whatever queued behind it in `pendingCommanderMoves`. An entry whose
+   * commander has since left the battlefield some other way is dropped, so a
+   * stale one can never wedge the queue.
+   */
+  private raiseNextCommanderChoice(): void {
+    const state = this.state;
+    if (state.awaiting !== null) return;
+    const stillHere = (id: ObjectId): boolean => state.objects[id]?.zone === "battlefield";
+    for (;;) {
+      if (state.deferredCommanderMove === null) {
+        const next = state.pendingCommanderMoves.shift();
+        if (next === undefined) return;
+        state.deferredCommanderMove = next;
+      }
+      const { commander, intendedZone } = state.deferredCommanderMove;
+      if (stillHere(commander)) {
+        state.awaiting = {
+          kind: "commander-replacement",
+          player: state.objects[commander].owner,
+          commander,
+          intendedZone,
+        };
+        return;
+      }
+      state.deferredCommanderMove = null;
+    }
   }
 
   /** Kept because `applyCommanderChoice` validates before applying and
@@ -2267,6 +2317,9 @@ export class Game {
       if (guard > 1000) {
         throw new Error("prepareForPriority did not settle; likely an engine bug");
       }
+      // Before the SBAs, so a commander still waiting on the battlefield for
+      // its 903.9a choice is asked about rather than swept up by them.
+      this.raiseNextCommanderChoice();
       this.runStateBasedActions();
       if (this.state.result.over) return;
       // An SBA / replacement raised a decision (e.g. a commander about to
@@ -10239,20 +10292,39 @@ export class Game {
     // zone instead. Ask *before* moving (this is a replacement effect, rule
     // 614), so a "dies" trigger never fires unless it truly lands in a
     // graveyard. The move is deferred to `applyCommanderChoice`.
+    //
+    // The choice is never skipped. When it can't be asked right now — another
+    // decision is on `awaiting`, or another commander's is already being
+    // asked — the commander waits on the battlefield in
+    // `pendingCommanderMoves` and `prepareForPriority` asks in turn. Either
+    // way `awaiting` is set when this returns, which is how every caller
+    // tells that the move didn't happen.
     if (
       leavingBattlefield &&
       object.isCommander &&
       (to === "graveyard" || to === "exile" || to === "hand" || to === "library") &&
-      this.state.deferredCommanderMove === null &&
-      this.state.awaiting === null
+      this.completingCommanderMove !== id
     ) {
-      this.state.deferredCommanderMove = { commander: id, intendedZone: to };
-      this.state.awaiting = {
-        kind: "commander-replacement",
-        player: object.owner,
-        commander: id,
-        intendedZone: to,
-      };
+      const state = this.state;
+      const alreadyLeaving =
+        state.deferredCommanderMove?.commander === id ||
+        state.pendingCommanderMoves.some((m) => m.commander === id);
+      if (alreadyLeaving) {
+        // Already on its way out, and it went wherever its first move sent
+        // it; a second event reaching it before it's asked (an SBA, say)
+        // doesn't redirect it.
+      } else if (state.deferredCommanderMove === null && state.awaiting === null) {
+        state.deferredCommanderMove = { commander: id, intendedZone: to };
+        state.awaiting = {
+          kind: "commander-replacement",
+          player: object.owner,
+          commander: id,
+          intendedZone: to,
+        };
+      } else {
+        state.pendingCommanderMoves.push({ commander: id, intendedZone: to });
+      }
+      this.raiseNextCommanderChoice();
       return;
     }
 

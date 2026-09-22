@@ -111,8 +111,12 @@ export function simulateAction(
     sim.advanceUntil((s) => {
       steps += 1;
       if (steps > MAX_STEPS) return true;
+      // "stack" also waits out any decision the resolution left open: an
+      // overloaded Cyclonic Rift has resolved with the stack empty while its
+      // bounced commanders still sit on the battlefield, waiting on their
+      // owners' 903.9a answers.
       return horizon === "stack"
-        ? s.zones.shared.stack.length === 0
+        ? s.zones.shared.stack.length === 0 && s.awaiting === null
         : s.turn.number !== startingTurn;
     });
     return sim.state;

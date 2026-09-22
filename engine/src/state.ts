@@ -1158,17 +1158,35 @@ export interface GameState {
   /**
    * A commander that is *about to* be put into a hidden zone from the
    * battlefield and whose owner is being asked whether to send it to the
-   * command zone instead (rule 903.9a — a replacement effect). While this is
-   * set the corresponding `commander-replacement` decision is on
-   * `awaiting`; `moveObject` has NOT moved the commander yet, so a "dies"
-   * trigger never sees it in the graveyard. `applyCommanderChoice` completes
-   * the move. `null` when no such choice is pending.
+   * command zone instead (rule 903.9a — a replacement effect). `moveObject`
+   * has NOT moved the commander yet, so a "dies" trigger never sees it in the
+   * graveyard. `applyCommanderChoice` completes the move. `null` when no such
+   * choice is pending.
+   *
+   * The `commander-replacement` decision is normally on `awaiting` while this
+   * is set, but not always: a later step of the same resolution can raise a
+   * decision of its own over it (Path to Exile's "may search"). The question
+   * is asked again once that one is answered — `raiseNextCommanderChoice`.
    */
   deferredCommanderMove: {
     readonly commander: ObjectId;
     /** Where it would have gone had 903.9a not applied. */
     readonly intendedZone: CommanderReplacementZone;
   } | null;
+  /**
+   * Commanders that tried to leave the battlefield while their owner's 903.9a
+   * choice couldn't be asked yet — another decision was on `awaiting`, or
+   * another commander's choice was already being asked. Each stays on the
+   * battlefield, exactly like the one on `deferredCommanderMove`, until
+   * `prepareForPriority` asks about it in turn.
+   *
+   * Without this the move went ahead unasked: an overloaded Cyclonic Rift
+   * asked about the first opponent's commander and bounced the rest silently.
+   */
+  pendingCommanderMoves: {
+    readonly commander: ObjectId;
+    readonly intendedZone: CommanderReplacementZone;
+  }[];
   /**
    * A "blink" (the `flicker` effect) whose exile half raised a commander's
    * 903.9a choice, parked until that choice is answered — without this the
