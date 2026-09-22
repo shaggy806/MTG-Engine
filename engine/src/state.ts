@@ -506,7 +506,28 @@ export interface PlayerState {
   spellsCastThisTurn: number;
   /** True once this player has lost life this turn — Theater of Horrors's
    * "if an opponent lost life this turn". Reset in `beginTurn`. */
-  lostLifeThisTurn: boolean;
+  /**
+   * How much life this player has **lost** this turn, as an amount.
+   *
+   * Was a boolean, which answered "did an opponent lose life?" (Theater of
+   * Horrors, Rakdos) but not "did a player lose 4 or more?" — Y'shtola, the
+   * most-played commander in the format, and Bloodchief Ascension both need
+   * the number. `> 0` is the old boolean.
+   *
+   * Counts life *lost*, which is not the same as damage taken: a drain, a
+   * cost paid and combat damage all land here, and prevention means nothing
+   * arrives. Reset in `beginTurn`.
+   */
+  lifeLostThisTurn: number;
+  /** How much life this player has **gained** this turn (The Gaffer,
+   * Resplendent Angel, Lathiel: "if you gained N or more life this turn").
+   * Reset in `beginTurn`. */
+  lifeGainedThisTurn: number;
+  /** How many cards this player has drawn this turn (Kydele's "{T}: Add {C}
+   * for each card you've drawn this turn", Fists of Flame). Counts the draw
+   * itself, not cards put into hand another way — a tutor to hand is not a
+   * draw. Reset in `beginTurn`. */
+  cardsDrawnThisTurn: number;
   /** How many creatures died **under this player's control** this turn —
    * Liliana's Standard Bearer's "draw X cards, where X is the number of
    * creatures that died under your control this turn". The per-player
@@ -1238,7 +1259,9 @@ export function createPlayerState(id: PlayerId, rules: GameRules): PlayerState {
     commanderCastCounts: {},
     commanderDamageTaken: {},
     spellsCastThisTurn: 0,
-    lostLifeThisTurn: false,
+    lifeLostThisTurn: 0,
+  lifeGainedThisTurn: 0,
+  cardsDrawnThisTurn: 0,
     creaturesDiedThisTurn: 0,
     createdTokenThisTurn: false,
     usedGraveyardThisTurn: false,

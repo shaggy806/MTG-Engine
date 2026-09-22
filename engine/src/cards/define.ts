@@ -161,6 +161,26 @@ export type CountSpec =
   | "lands-you-control";
 
 /**
+ * A per-player running total the engine keeps for the current turn, readable
+ * by a card as a condition ({@link StaticCondition}) or an amount
+ * (`EffectAmount`'s `turnStat`).
+ *
+ * Deliberately a short list. These are the three the pool actually needs,
+ * measured against the top 2000 cards and the top 500 commanders rather than
+ * guessed: about ten cards each for the two life totals and three for draws.
+ * Two candidates were dropped on the same evidence — "damage dealt this
+ * turn" had no real users once the regex false-positives were read, and
+ * "permanents that entered this turn" is a *per-object* question already
+ * answered by `GameObject.enteredBattlefieldOnTurn`, not a count.
+ *
+ * Spells cast, creatures died and lands played are also tracked per turn,
+ * but as their own `PlayerState` fields with their own conditions, and are
+ * not folded in here: ~60 call sites read them, and moving those would be a
+ * large mechanical change for no behaviour.
+ */
+export type TurnStat = "life-lost" | "life-gained" | "cards-drawn";
+
+/**
  * A condition gating a static ability (rule 604.3 — "as long as …"). Evaluated
  * live every time characteristics are recomputed, from the perspective of the
  * static's own permanent (its controller is "you"). When false, the static
@@ -215,6 +235,23 @@ export type StaticCondition =
   | { readonly kind: "delirium" }
   /** Metalcraft (rule 702.44) — you control three or more artifacts. */
   | { readonly kind: "metalcraft" }
+  /**
+   * A per-turn running total reached `atLeast` (Y'shtola: "if a player lost
+   * 4 or more life this turn"; The Gaffer: "if you gained 3 or more life
+   * this turn"; Bloodchief Ascension: "if an opponent lost 2 or more").
+   *
+   * `who` is what the printed wording turns on, and getting it wrong
+   * silently changes the card: **any-player** includes you (Y'shtola),
+   * **opponent** is satisfied by any single opponent counted on their own
+   * (not the sum), and **you** is only your own total. `atLeast: 1` is the
+   * plain "lost life this turn".
+   */
+  | {
+      readonly kind: "turn-stat";
+      readonly stat: TurnStat;
+      readonly who: "you" | "opponent" | "any-player";
+      readonly atLeast: number;
+    }
   /** A creature died this turn (Liliana's Devotee). Reads the turn-scoped
    * `GameState.creaturesDiedThisTurn`. */
   | { readonly kind: "creature-died-this-turn" }
@@ -231,7 +268,7 @@ export type StaticCondition =
    * "Khans" / "Dragons" halves. */
   | { readonly kind: "chosen-on-enter"; readonly value: string }
   /** An opponent of the source's controller has lost life this turn (Theater
-   * of Horrors). Reads the per-player `lostLifeThisTurn` flag. */
+   * of Horrors). Reads the per-player `lifeLostThisTurn` amount as `> 0`. */
   | { readonly kind: "opponent-lost-life-this-turn" }
   /**
    * The object whose event fired the *triggered ability* currently resolving

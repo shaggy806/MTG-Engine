@@ -27,6 +27,7 @@ import type {
   Keyword,
   StaticAbility,
   StaticCondition,
+  TurnStat,
 } from "./cards.js";
 import { compareNum, matchesFilter } from "./filter.js";
 import type { CardFilter } from "./filter.js";
@@ -288,8 +289,20 @@ function evalStaticCondition(
       return !evalStaticCondition(state, registry, source, condition.of, opts);
     case "opponent-lost-life-this-turn":
       return state.turnOrder.some(
-        (p) => p !== you && state.players[p].lostLifeThisTurn,
+        (p) => p !== you && state.players[p].lifeLostThisTurn > 0,
       );
+    case "turn-stat": {
+      // Per player, never summed: "an opponent lost 4 or more life this
+      // turn" is satisfied by one opponent reaching 4, not by two reaching
+      // 2 apiece. `any-player` includes `you` (Y'shtola).
+      const seats =
+        condition.who === "you"
+          ? [you]
+          : condition.who === "opponent"
+            ? state.turnOrder.filter((p) => p !== you)
+            : state.turnOrder;
+      return seats.some((p) => turnStatOf(state, p, condition.stat) >= condition.atLeast);
+    }
     case "self-counters": {
       // Last-known information once the source has left the battlefield
       // (603.10) — `moveObject` clears `counters`, so a dies-trigger asking
@@ -336,6 +349,25 @@ export interface Characteristics {
 }
 
 /** True if this permanent has lost its own abilities (layer 6 — Turn to Frog). */
+/**
+ * One player's running total for `stat` this turn.
+ *
+ * The single place these fields are read by name, so a card never depends
+ * on which `PlayerState` field backs which stat.
+ */
+export function turnStatOf(state: GameState, player: PlayerId, stat: TurnStat): number {
+  const seat = state.players[player];
+  if (seat === undefined) return 0;
+  switch (stat) {
+    case "life-lost":
+      return seat.lifeLostThisTurn;
+    case "life-gained":
+      return seat.lifeGainedThisTurn;
+    case "cards-drawn":
+      return seat.cardsDrawnThisTurn;
+  }
+}
+
 export function hasLostAbilities(object: GameObject): boolean {
   return object.modifiers.some((m) => m.loseAbilities === true);
 }

@@ -747,6 +747,7 @@ import _poolWrathOfGod from "./pool/wrath-of-god.js";
 import _poolWurmcoilEngine from "./pool/wurmcoil-engine.js";
 import _poolXandersLounge from "./pool/xanders-lounge.js";
 import _poolYavimayaCoast from "./pool/yavimaya-coast.js";
+import _poolYshtolaNightsBlessed from "./pool/yshtola-nights-blessed.js";
 import _poolZagothTriome from "./pool/zagoth-triome.js";
 import _poolZiatorasProvingGround from "./pool/ziatoras-proving-ground.js";
 import _poolZombieApocalypse from "./pool/zombie-apocalypse.js";
@@ -1539,6 +1540,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolWurmcoilEngine,
   _poolXandersLounge,
   _poolYavimayaCoast,
+  _poolYshtolaNightsBlessed,
   _poolZagothTriome,
   _poolZiatorasProvingGround,
   _poolZombieApocalypse,

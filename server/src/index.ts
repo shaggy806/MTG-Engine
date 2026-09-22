@@ -23,7 +23,7 @@ const registry = createDefaultRegistry();
 const statusPort = Number(process.env.STATUS_PORT ?? 4010);
 startStatusServer(manager, statusPort);
 
-const IDLE_ROOM_MS = 2 * 60 * 60 * 1000;
+const IDLE_ROOM_MS = 30 * 60 * 1000;
 const REAP_INTERVAL_MS = 15 * 60 * 1000;
 setInterval(() => {
   const reaped = manager.reapIdle(IDLE_ROOM_MS);

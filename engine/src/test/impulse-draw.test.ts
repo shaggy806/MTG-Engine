@@ -185,7 +185,7 @@ describe("Theater of Horrors — a gated permission", () => {
 
     // Drain the opponent and the gate opens.
     game.debugApplyEffect(A, { kind: "lose-life", amount: 1, who: "each-opponent" });
-    expect(game.state.players[B].lostLifeThisTurn).toBe(true);
+    expect(game.state.players[B].lifeLostThisTurn).toBeGreaterThan(0);
     expect(
       game.legalActions(A).some((a) => a.kind === "cast-spell" && a.via === "impulse"),
     ).toBe(true);

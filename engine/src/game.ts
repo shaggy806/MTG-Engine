@@ -2179,7 +2179,9 @@ export class Game {
     for (const player of this.state.turnOrder) {
       this.state.players[player].landsPlayedThisTurn = 0;
       this.state.players[player].spellsCastThisTurn = 0;
-      this.state.players[player].lostLifeThisTurn = false;
+      this.state.players[player].lifeLostThisTurn = 0;
+      this.state.players[player].lifeGainedThisTurn = 0;
+      this.state.players[player].cardsDrawnThisTurn = 0;
       this.state.players[player].creaturesDiedThisTurn = 0;
       this.state.players[player].createdTokenThisTurn = false;
       this.state.players[player].usedGraveyardThisTurn = false;
@@ -9588,9 +9590,11 @@ export class Game {
   private changeLife(player: PlayerId, delta: number): void {
     const playerState = this.state.players[player];
     playerState.life += delta;
-    // "If an opponent lost life this turn" (Theater of Horrors) — recorded
-    // here so it catches every path, damage and drain alike.
-    if (delta < 0) playerState.lostLifeThisTurn = true;
+    // Recorded here so every path counts — damage, a drain, a cost paid.
+    // Amounts rather than flags: "lost life this turn" is `> 0`, but
+    // "lost 4 or more life this turn" (Y'shtola) needs the number.
+    if (delta < 0) playerState.lifeLostThisTurn += -delta;
+    else if (delta > 0) playerState.lifeGainedThisTurn += delta;
     this.emit({
       type: "life-changed",
       player,
@@ -9911,6 +9915,9 @@ export class Game {
     }
     const id = library[0];
     this.moveObject(id, "hand");
+    // Counted on the *raw* draw, so every draw path counts it once and
+    // nothing that merely puts a card in hand (a tutor) does.
+    this.state.players[player].cardsDrawnThisTurn += 1;
     this.emit({ type: "card-drawn", player, object: id });
   }
 
