@@ -152,8 +152,12 @@ async function refresh(out) {
     if (has) marked += 1;
     return `[${has ? "x" : " "}]${line.slice(3)}`;
   });
-  writeFileSync(out, next.join("\n"));
   const total = lines.filter((l) => /^\[[ x]\] /.test(l)).length;
+  // The summary line too, as `top-commander-cards.mjs --refresh` does —
+  // otherwise it keeps the count from the day the ranking was fetched.
+  const summary = next.findIndex((l) => / already implemented \/ /.test(l));
+  if (summary >= 0) next[summary] = `${marked} already implemented / ${total - marked} missing`;
+  writeFileSync(out, next.join("\n"));
   console.error(`Re-marked ${out}: ${marked}/${total} implemented.`);
 }
 

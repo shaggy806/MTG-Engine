@@ -24,3 +24,6 @@ scratch.*
 scratch-*
 *.scratch.*
 .scratch/
+
+# Claude Code agent worktrees (isolated checkouts for parallel card authoring)
+.claude/worktrees/
