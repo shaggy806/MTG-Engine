@@ -282,20 +282,21 @@ const ERROR_LINGER_MS = 6000
  * clicked it. Now it hovers above everything, fades out on its own after
  * {@link ERROR_LINGER_MS}, and is still dismissible by clicking it.
  *
- * The timer is keyed on the message *and* a counter so that the same error
- * twice in a row restarts the clock rather than inheriting the first one's
- * remaining time.
+ * The timer and the node are both keyed on `errorSeq` as well as the
+ * message, so the same error twice in a row restarts the clock and replays
+ * the fade, rather than inheriting whatever the first one had left.
  */
 function ErrorLine({ game }: { readonly game: NetworkGame }) {
-  const { error, clearError } = game
+  const { error, errorSeq, clearError } = game
   useEffect(() => {
     if (!error) return
     const t = window.setTimeout(clearError, ERROR_LINGER_MS)
     return () => window.clearTimeout(t)
-  }, [error, clearError])
+  }, [error, errorSeq, clearError])
   if (!error) return null
   return (
     <div
+      key={errorSeq}
       className="error-toast"
       onClick={clearError}
       role="alert"

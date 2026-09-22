@@ -129,6 +129,11 @@ export interface NetworkGame {
    * differs (see `App`'s `disconnected` branch). */
   readonly everConnected: boolean
   readonly error: string | null
+  /** Bumped by every error that arrives, including a repeat of the one
+   * already showing. `error` alone can't tell a second identical refusal
+   * from the first (setting the same string doesn't even re-render), so the
+   * toast keys on this to restart its clock and its fade. */
+  readonly errorSeq: number
   readonly roomId: string | null
   readonly seats: readonly SeatStatus[]
   readonly seat: PlayerId | null
@@ -234,6 +239,7 @@ export function useNetworkGame(): NetworkGame {
   const [status, setStatus] = useState<ConnectionStatus>('connecting')
   const [everConnected, setEverConnected] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [errorSeq, setErrorSeq] = useState(0)
   const [roomId, setRoomId] = useState<string | null>(null)
   const [seats, setSeats] = useState<readonly SeatStatus[]>([])
   const [seat, setSeat] = useState<PlayerId | null>(null)
@@ -361,6 +367,7 @@ export function useNetworkGame(): NetworkGame {
             return
           }
           setError(message.message)
+          setErrorSeq((n) => n + 1)
           if (!isPlayingRef.current) {
             // A rejected seat claim — drop the unconfirmed claim and any stored
             // token for it, so nothing (an auto-reclaim included) retries it in
@@ -388,6 +395,7 @@ export function useNetworkGame(): NetworkGame {
     ws.onerror = () => {
       if (!isCurrent()) return
       setError('Could not reach the room server.')
+      setErrorSeq((n) => n + 1)
     }
   }, [send])
 
@@ -578,6 +586,7 @@ export function useNetworkGame(): NetworkGame {
     status,
     everConnected,
     error,
+    errorSeq,
     roomId,
     seats,
     seat,

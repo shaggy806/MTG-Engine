@@ -187,9 +187,14 @@
    As an in-flow bar this pushed the whole table down a line the moment
    anything was refused, and stayed there until clicked -- so a mis-click
    cost you a strip of board for the rest of the turn. Fixed and near the
-   top, centered, above the quadrants but below the decision prompt and the
-   ability menu (z-index 130 vs 120/125): an error is worth interrupting for,
-   but never worth burying the controls that fix it.
+   top, centered, and above everything else on screen -- the decision panel
+   (120), the zone viewer and history (130), the ability menu (135), the
+   mulligan popup (200) and even the animation layer (10001). A refusal is
+   the answer to the click you just made, wherever you made it: at 130 it
+   used to tie with the zone viewer, which comes later in the DOM, so an
+   error during a scry or a tutor was drawn underneath the choice that
+   caused it. It's small, top-centre and gone in six seconds, so sitting on
+   top costs nothing.
 
    It clears itself after ERROR_LINGER_MS (see App.tsx) and is still
    dismissible by clicking it. `pointer-events` stays on so the click works,
@@ -200,7 +205,7 @@
   top: clamp(10px, 1.6vh, 18px);
   left: 50%;
   translate: -50% 0;
-  z-index: 130;
+  z-index: 10002;
   max-width: min(92vw, 560px);
   padding: 8px 14px;
   text-align: center;
