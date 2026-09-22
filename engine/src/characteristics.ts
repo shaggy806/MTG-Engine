@@ -210,6 +210,17 @@ function evalStaticCondition(
   switch (condition.kind) {
     case "your-turn":
       return state.turnOrder[state.turn.activePlayerIndex] === you;
+    case "monarch":
+      return condition.who === "you"
+        ? state.monarch === you
+        : state.monarch !== null && state.monarch !== you;
+    case "hand-size": {
+      const n = state.zones.perPlayer[you].hand.length;
+      return (
+        (condition.atMost === undefined || n <= condition.atMost) &&
+        (condition.atLeast === undefined || n >= condition.atLeast)
+      );
+    }
     case "threshold":
       return state.zones.perPlayer[you].graveyard.length >= 7;
     case "delirium": {

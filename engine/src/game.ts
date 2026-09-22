@@ -6582,6 +6582,8 @@ export class Game {
         );
       case "draws":
         return event.type === "card-drawn" && this.matchesWhoPlayer(spec.who, event.player, self);
+      case "plays-land":
+        return event.type === "land-played" && this.matchesWhoPlayer(spec.who, event.player, self);
       case "leaves-battlefield":
         return (
           event.type === "permanent-left-battlefield" &&
@@ -6699,6 +6701,7 @@ export class Game {
         if (!casterMatches) return false;
         if (spec.otherOnly === true && event.object === self.id) return false;
         if (spec.firstEachTurn && event.spellsThisTurn !== 1) return false;
+        if (spec.nthEachTurn !== undefined && event.spellsThisTurn !== spec.nthEachTurn) return false;
         if (!this.triggerFilterOk(spec.filter, event.object, self)) return false;
         if (spec.noncreatureOnly) {
           const castObject = this.state.objects[event.object];

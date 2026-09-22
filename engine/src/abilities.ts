@@ -193,6 +193,17 @@ export type TriggerSpec =
     }
   | {
       /**
+       * A player **played** a land (Flubs, the Fool; Burgeoning; Fastbond) —
+       * the special action of rule 305.1, off `land-played`. Not landfall: a
+       * land put onto the battlefield by an effect wasn't played (116.2a),
+       * which is exactly the difference from an `enters-battlefield` trigger
+       * filtered to lands.
+       */
+      readonly on: "plays-land";
+      readonly who: TriggerWho;
+    }
+  | {
+      /**
        * A player drew a card (Nekusar, the Mindrazer; Niv-Mizzet, Parun;
        * Consecrated Sphinx; Smothering Tithe). `who` is who drew.
        *
@@ -392,6 +403,10 @@ export type TriggerSpec =
       readonly otherOnly?: boolean;
       readonly noncreatureOnly?: boolean;
       readonly firstEachTurn?: boolean;
+      /** The caster's Nth spell this turn — Kraum, Ludevic's Opus's "casts
+       * their second spell each turn" is `nthEachTurn: 2`. The general form
+       * of `firstEachTurn`. */
+      readonly nthEachTurn?: number;
       /**
        * A filter on the *spell* (Guttersnipe, Thermo-Alchemist: "whenever you
        * cast an instant or sorcery spell"). The general form of

@@ -242,6 +242,7 @@ import _poolFlameblastDragon from "./pool/flameblast-dragon.js";
 import _poolFlawlessManeuver from "./pool/flawless-maneuver.js";
 import _poolFleshbagMarauder from "./pool/fleshbag-marauder.js";
 import _poolFloodedStrand from "./pool/flooded-strand.js";
+import _poolFlubsTheFool from "./pool/flubs-the-fool.js";
 import _poolFog from "./pool/fog.js";
 import _poolForebodingRuins from "./pool/foreboding-ruins.js";
 import _poolForest from "./pool/forest.js";
@@ -367,6 +368,7 @@ import _poolKirdApe from "./pool/kird-ape.js";
 import _poolKodamasReach from "./pool/kodamas-reach.js";
 import _poolKolaghansCommand from "./pool/kolaghans-command.js";
 import _poolKorvoldFaeCursedKing from "./pool/korvold-fae-cursed-king.js";
+import _poolKraumLudevicsOpus from "./pool/kraum-ludevics-opus.js";
 import _poolKrenkoMobBoss from "./pool/krenko-mob-boss.js";
 import _poolLaboratoryDrudge from "./pool/laboratory-drudge.js";
 import _poolLathlissDragonQueen from "./pool/lathliss-dragon-queen.js";
@@ -480,6 +482,7 @@ import _poolProsperousInnkeeper from "./pool/prosperous-innkeeper.js";
 import _poolProvokeTheTrolls from "./pool/provoke-the-trolls.js";
 import _poolPutrefy from "./pool/putrefy.js";
 import _poolPyroclasm from "./pool/pyroclasm.js";
+import _poolQueenMarchesa from "./pool/queen-marchesa.js";
 import _poolQuezaAugurOfAgonies from "./pool/queza-augur-of-agonies.js";
 import _poolRabidBite from "./pool/rabid-bite.js";
 import _poolRaffinesTower from "./pool/raffines-tower.js";
@@ -767,6 +770,7 @@ import _poolZulaportCutthroat from "./pool/zulaport-cutthroat.js";
 import _poolZuranOrb from "./pool/zuran-orb.js";
 import _tokensApeToken from "./tokens/ape-token.js";
 import _tokensArmyToken from "./tokens/army-token.js";
+import _tokensAssassinToken from "./tokens/assassin-token.js";
 import _tokensBeastToken33 from "./tokens/beast-token-3-3.js";
 import _tokensBeastToken from "./tokens/beast-token.js";
 import _tokensBirdToken from "./tokens/bird-token.js";
@@ -1049,6 +1053,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolFlawlessManeuver,
   _poolFleshbagMarauder,
   _poolFloodedStrand,
+  _poolFlubsTheFool,
   _poolFog,
   _poolForebodingRuins,
   _poolForest,
@@ -1174,6 +1179,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolKodamasReach,
   _poolKolaghansCommand,
   _poolKorvoldFaeCursedKing,
+  _poolKraumLudevicsOpus,
   _poolKrenkoMobBoss,
   _poolLaboratoryDrudge,
   _poolLathlissDragonQueen,
@@ -1287,6 +1293,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolProvokeTheTrolls,
   _poolPutrefy,
   _poolPyroclasm,
+  _poolQueenMarchesa,
   _poolQuezaAugurOfAgonies,
   _poolRabidBite,
   _poolRaffinesTower,
@@ -1580,6 +1587,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
 export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensApeToken,
   _tokensArmyToken,
+  _tokensAssassinToken,
   _tokensBeastToken33,
   _tokensBeastToken,
   _tokensBirdToken,

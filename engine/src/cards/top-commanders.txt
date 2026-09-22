@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-27 already implemented / 473 missing
+30 already implemented / 470 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -53,7 +53,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   47  Ygra, Eater of All                             22997 decks  {3}{B}{G}        Legendary Creature — Elemental Cat
 [ ]   48  The Necrobloom                                 22928 decks  {1}{W}{B}{G}     Legendary Creature — Plant
 [ ]   49  Mr. House, President and CEO                   22846 decks  {R}{W}{B}        Legendary Artifact Creature — Human
-[ ]   50  Flubs, the Fool                                22839 decks  {G}{U}{R}        Legendary Creature — Frog Scout
+[x]   50  Flubs, the Fool                                22839 decks  {G}{U}{R}        Legendary Creature — Frog Scout
 [ ]   51  Caesar, Legion's Emperor                       22746 decks  {1}{R}{W}{B}     Legendary Creature — Human Soldier
 [x]   52  Arabella, Abandoned Doll                       22645 decks  {R}{W}           Legendary Artifact Creature — Toy
 [ ]   53  Breya, Etherium Shaper                         22511 decks  {W}{U}{B}{R}     Legendary Artifact Creature — Human
@@ -76,7 +76,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   70  Go-Shintai of Life's Origin                    20615 decks  {3}{G}           Legendary Enchantment Creature — Shrine
 [ ]   71  Urza, Lord High Artificer                      20594 decks  {2}{U}{U}        Legendary Creature — Human Artificer
 [ ]   72  Felothar the Steadfast                         20517 decks  {1}{W}{B}{G}     Legendary Creature — Human Warrior
-[ ]   73  Queen Marchesa                                 20464 decks  {1}{R}{W}{B}     Legendary Creature — Human Assassin
+[x]   73  Queen Marchesa                                 20464 decks  {1}{R}{W}{B}     Legendary Creature — Human Assassin
 [ ]   74  K'rrik, Son of Yawgmoth                        20441 decks  {4}{B/P}{B/P}{B/P} Legendary Creature — Phyrexian Horror Minion
 [ ]   75  The Wandering Minstrel                         20422 decks  {G}{U}           Legendary Creature — Human Bard
 [ ]   76  Malcolm, Keen-Eyed Navigator                   20313 decks  {2}{U}           Legendary Creature — Siren Pirate
@@ -112,7 +112,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  106  Obeka, Splitter of Seconds                     17786 decks  {1}{U}{B}{R}     Legendary Creature — Ogre Warlock
 [ ]  107  Silas Renn, Seeker Adept                       17784 decks  {1}{U}{B}        Legendary Artifact Creature — Human
 [ ]  108  High Perfect Morcant                           17751 decks  {2}{B}{G}        Legendary Creature — Elf Noble
-[ ]  109  Kraum, Ludevic's Opus                          17741 decks  {3}{U}{R}        Legendary Creature — Zombie Horror
+[x]  109  Kraum, Ludevic's Opus                          17741 decks  {3}{U}{R}        Legendary Creature — Zombie Horror
 [ ]  110  Marneus Calgar                                 17703 decks  {2}{W}{U}{B}     Legendary Creature — Astartes Warrior
 [ ]  111  Atraxa, Grand Unifier                          17614 decks  {3}{G}{W}{U}{B}  Legendary Creature — Phyrexian Angel
 [ ]  112  Deadpool, Trading Card                         17208 decks  {2}{B}{R}        Legendary Creature — Mutant Mercenary Hero

@@ -226,6 +226,12 @@ export type StaticCondition =
   | { readonly kind: "opponent-count"; readonly atLeast: number }
   /** It's your turn. */
   | { readonly kind: "your-turn" }
+  /** Who is the monarch (rule 720): you, or any opponent (Queen Marchesa's
+   * "if an opponent is the monarch"). False while nobody is. */
+  | { readonly kind: "monarch"; readonly who: "you" | "opponent" }
+  /** How many cards are in your hand, inclusive bounds (Flubs, the Fool: "if
+   * you have no cards in hand" is `atMost: 0`; hellbent the same). */
+  | { readonly kind: "hand-size"; readonly atMost?: number; readonly atLeast?: number }
   /** Threshold (rule 702.27) — seven or more cards in your graveyard. */
   | { readonly kind: "threshold" }
   /** Delirium (rule 702.120) — four or more *card types* among the cards in
