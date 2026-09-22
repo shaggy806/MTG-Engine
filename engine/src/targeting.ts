@@ -1,7 +1,7 @@
 /** Legality checks for spell / ability targets. */
 
 import type { CardDefinition, CardRegistry, CardType } from "./cards.js";
-import { computeCharacteristics } from "./characteristics.js";
+import { computeCharacteristics, effectiveTypes } from "./characteristics.js";
 import { matchesFilter } from "./filter.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
@@ -61,7 +61,9 @@ function isLivingCreature(
 ): boolean {
   const object = state.objects[id];
   if (object === undefined || object.zone !== "battlefield") return false;
-  return registry.get(printedCardName(object)).types.includes("creature");
+  // Current types, not printed (rule 109.2): an animated Mishra's Factory or
+  // a crewed Vehicle is a creature, and "target creature" can pick it.
+  return effectiveTypes(registry, object).includes("creature");
 }
 
 /** A spell (a card, not an ability) currently on the stack. */
@@ -70,7 +72,7 @@ function isSpellOnStack(state: GameState, id: ObjectId): boolean {
   return object !== undefined && object.zone === "stack" && object.kind === "card";
 }
 
-/** A permanent on the battlefield whose printed types include any of `types`. */
+/** A permanent on the battlefield whose current types satisfy `predicate`. */
 function isPermanentOfType(
   state: GameState,
   registry: CardRegistry,
@@ -79,7 +81,7 @@ function isPermanentOfType(
 ): boolean {
   const object = state.objects[id];
   if (object === undefined || object.zone !== "battlefield") return false;
-  return predicate(registry.get(printedCardName(object)).types);
+  return predicate(effectiveTypes(registry, object));
 }
 
 function isLivingPlayer(state: GameState, ref: TargetRef): boolean {
@@ -316,8 +318,9 @@ export function isLegalTarget(
         return false;
       }
       const def = registry.get(printedCardName(object));
-      if (def.types.includes("artifact") || def.types.includes("enchantment")) return true;
-      return def.types.includes("land") && !def.supertypes.includes("basic");
+      const types = effectiveTypes(registry, object);
+      if (types.includes("artifact") || types.includes("enchantment")) return true;
+      return types.includes("land") && !def.supertypes.includes("basic");
     }
     case "spell":
       return ref.kind === "object" && isSpellOnStack(state, ref.object);
