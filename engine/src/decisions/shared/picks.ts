@@ -19,6 +19,28 @@ export function noDuplicates<T>(picked: readonly T[], message: string): string |
   return new Set(picked).size === picked.length ? null : message;
 }
 
+/**
+ * The same, but an entry standing for several interchangeable permanents may
+ * be named once per permanent — a compacted token stack is one id in an offer
+ * and picking three of its nine Goblins is that id three times. `copies`
+ * gives an entry's size; anything absent from it counts as one, so on a board
+ * with no stacks this is exactly {@link noDuplicates}.
+ */
+export function withinCopies<T extends string>(
+  picked: readonly T[],
+  copies: Readonly<Record<string, number>> | undefined,
+  message: (over: T, limit: number) => string,
+): string | null {
+  const used = new Map<T, number>();
+  for (const item of picked) {
+    const n = (used.get(item) ?? 0) + 1;
+    const limit = copies?.[item] ?? 1;
+    if (n > limit) return message(item, limit);
+    used.set(item, n);
+  }
+  return null;
+}
+
 /** Every pick must have been on offer. `message` is called with the first
  * stray one, so the caller decides how to name it. */
 export function subsetOf<T>(

@@ -17,18 +17,60 @@
 
 import type { Action, LegalAction } from "../actions.js";
 import type { ObjectId } from "../primitives.js";
+import type { DecisionReadCtx } from "./contract.js";
 import { defineDecision } from "./define.js";
-import { exactCount, noDuplicates, subsetOf } from "./shared/picks.js";
+import { exactCount, subsetOf, withinCopies } from "./shared/picks.js";
 import { combinations } from "./shared/subsets.js";
+
+/**
+ * How many permanents each eligible entry stands for, for the entries that
+ * stand for more than one — a compacted token stack (see CLAUDE.md, "Token
+ * stacking"). Empty on any board without one, which is nearly all of them.
+ */
+function stackSizes(
+  ctx: DecisionReadCtx,
+  eligible: readonly ObjectId[],
+): Record<ObjectId, number> {
+  const copies: Record<ObjectId, number> = {};
+  for (const id of eligible) {
+    const n = ctx.state.objects[id]?.stackCount ?? 1;
+    if (n > 1) copies[id] = n;
+  }
+  return copies;
+}
+
+/** The eligible entries expanded one per permanent they stand for, capped at
+ * `count` repeats since no answer ever needs more. This is the list an answer
+ * is really chosen from. */
+function expand(eligible: readonly ObjectId[], copies: Readonly<Record<ObjectId, number>>, count: number): ObjectId[] {
+  const pool: ObjectId[] = [];
+  for (const id of eligible) {
+    for (let i = 0; i < Math.min(copies[id] ?? 1, count); i += 1) pool.push(id);
+  }
+  return pool;
+}
 
 export const sacrifice = defineDecision({
   kind: "sacrifice",
 
   hasSource: true,
 
-  legal: (_ctx, awaiting): LegalAction[] => [
-    { kind: "sacrifice", count: awaiting.count, eligible: [...awaiting.eligible] },
-  ],
+  legal: (ctx, awaiting): LegalAction[] => {
+    // A compacted token stack is one eligible entry standing for every token
+    // in it. Say how many, so an answer may name it that many times: without
+    // this, "sacrifice three" against nine Goblins in one stack offered one
+    // entry, no answer of three distinct ids existed, and the game stalled.
+    const copies = stackSizes(ctx, awaiting.eligible);
+    const entries = Object.keys(copies).length;
+    return [
+      {
+        kind: "sacrifice",
+        count: awaiting.count,
+        eligible: [...awaiting.eligible],
+        ...(entries > 0 ? { copies } : {}),
+      },
+    ];
+  },
 
   whyCannot: (ctx, action, player): string | null => {
     if (action.type !== "sacrifice") return `${player} is not being asked to sacrifice`;
@@ -38,7 +80,14 @@ export const sacrifice = defineDecision({
     }
     const picked = action.permanents;
     return (
-      noDuplicates(picked, `${player} chose the same permanent twice`) ??
+      withinCopies(
+        picked,
+        stackSizes(ctx, awaiting.eligible),
+        (id, limit) =>
+          limit === 1
+            ? `${player} chose the same permanent twice`
+            : `${player} chose ${id} more than the ${limit} it stands for`,
+      ) ??
       exactCount(
         picked,
         awaiting.count,
@@ -70,13 +119,25 @@ export const sacrifice = defineDecision({
    */
   candidates: (legal, player, limit, helpers): Action[] => {
     if (legal.kind !== "sacrifice") return [];
-    return combinations([...helpers.order(legal.eligible)].reverse(), legal.count, limit).map(
-      (permanents) => ({ type: "sacrifice", player, permanents }),
-    );
+    // `order` ranks the distinct entries; a stack's repeats then sit together
+    // in the expanded pool, so the combinations stay cheapest-first.
+    const ranked = [...helpers.order(legal.eligible)].reverse();
+    const pool = expand(ranked, legal.copies ?? {}, legal.count);
+    const seen = new Set<string>();
+    const out: Action[] = [];
+    for (const permanents of combinations(pool, legal.count, limit)) {
+      // Two members of one stack are interchangeable, so combinations over the
+      // expanded pool repeat themselves; key on the multiset, not the list.
+      const key = [...permanents].sort().join(",");
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ type: "sacrifice", player, permanents });
+    }
+    return out;
   },
 
   randomAnswer: (legal, player, rng): Action => {
-    const pool = [...legal.eligible];
+    const pool = expand(legal.eligible, legal.copies ?? {}, legal.count);
     const permanents: ObjectId[] = [];
     for (let i = 0; i < legal.count && pool.length > 0; i += 1) {
       permanents.push(pool.splice(rng.pickIndex(pool.length), 1)[0]);

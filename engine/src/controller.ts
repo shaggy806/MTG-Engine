@@ -37,6 +37,28 @@ export interface ControllerView {
   legalActions(): readonly LegalAction[];
 }
 
+/**
+ * The first `count` permanents from `eligible`, taking a compacted token
+ * stack as many times as it has tokens (CLAUDE.md, "Token stacking"). An
+ * `eligible` list is one entry per *object*, so a plain `slice(0, count)`
+ * returns too few whenever a stack is on the board — and too few is not a
+ * legal answer, which is how "sacrifice three" against nine stacked Goblins
+ * used to stall the game outright.
+ */
+export function takeSacrifices(
+  view: ControllerView,
+  eligible: readonly ObjectId[],
+  count: number,
+): readonly ObjectId[] {
+  const picked: ObjectId[] = [];
+  for (const id of eligible) {
+    const copies = view.state.objects[id]?.stackCount ?? 1;
+    for (let i = 0; i < copies && picked.length < count; i += 1) picked.push(id);
+    if (picked.length >= count) break;
+  }
+  return picked;
+}
+
 export interface PlayerController {
   readonly playerId: PlayerId;
   /** Called whenever this player holds priority. Return an action to take. */
@@ -374,11 +396,11 @@ export class AutomaticController implements PlayerController {
   }
 
   chooseSacrifices(
-    _view: ControllerView,
+    view: ControllerView,
     eligible: readonly ObjectId[],
     count: number,
   ): readonly ObjectId[] {
-    return eligible.slice(0, count);
+    return takeSacrifices(view, eligible, count);
   }
 
   chooseScry(
@@ -535,7 +557,8 @@ export class ScriptedController implements PlayerController {
   chooseCreatureTypeFn: CreatureTypeChooser = (_view, _source, options) => options[0];
   chooseModesFn: ModesChooser = (_view, minModes) =>
     Array.from({ length: minModes }, (_unused, i) => i);
-  chooseSacrificesFn: SacrificeChooser = (_view, eligible, count) => eligible.slice(0, count);
+  chooseSacrificesFn: SacrificeChooser = (view, eligible, count) =>
+    takeSacrifices(view, eligible, count);
   chooseScryFn: ScryChooser = () => [];
 
   /** Defaults to the same "everything you control" answer the other

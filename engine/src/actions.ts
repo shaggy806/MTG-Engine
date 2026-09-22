@@ -625,6 +625,18 @@ export type LegalAction =
       readonly count: number;
       /** Permanents this player controls that could be sacrificed. */
       readonly eligible: readonly ObjectId[];
+      /**
+       * How many permanents an entry stands for, where that is more than one:
+       * a compacted token stack is a single id here, and naming it *n* times
+       * in the answer sacrifices *n* of its tokens (the engine peels one off
+       * per occurrence). Only stacks appear, so this is absent on an ordinary
+       * board.
+       *
+       * Without it, "sacrifice three" with nine Goblins compacted into one
+       * stack offered one entry against a count of three and **no answer was
+       * accepted at all** — the game stalled there.
+       */
+      readonly copies?: Readonly<Record<ObjectId, number>>;
     }
   | {
       /** Proliferate (rule 701.27) — choose any number of `eligible`,
