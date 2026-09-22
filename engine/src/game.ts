@@ -467,7 +467,15 @@ export class Game {
 
   /** A redacted, self-contained snapshot from one player's seat. */
   viewFor(player: PlayerId, options: ViewOptions = {}): PlayerView {
-    return viewFor(this.state, this.registry, player, options);
+    return viewFor(this.state, this.registry, player, {
+      // What each of this seat's castable cards really costs, so the client
+      // stops showing Blasphemous Act at {8}{R} while it is castable for
+      // {R}. A capability rather than logic `viewFor` duplicates: working it
+      // out needs commander tax and the battlefield's cost-modification
+      // statics, neither of which it can see.
+      effectiveCost: (cardId) => this.displayCostOf(player, cardId),
+      ...options,
+    });
   }
 
   // --- driving the game ------------------------------------------------
@@ -3779,6 +3787,51 @@ export class Game {
       ability.condition === undefined ||
       staticConditionMet(this.state, this.registry, source, ability.condition)
     );
+  }
+
+  /**
+   * `cardId`'s printed mana cost with its generic portion rewritten to what
+   * `player` would actually pay, or `null` when nothing has changed it.
+   *
+   * Only the generic number is rewritten, and that is exact rather than a
+   * simplification: commander tax, `costModification` and
+   * `selfCostReduction` all adjust the generic portion and nothing else, so
+   * re-serialising a parsed `ManaCost` would risk getting a hybrid or
+   * Phyrexian pip wrong for no gain.
+   *
+   * `{0}` is dropped when the cost has other pips, because "{R}" is how a
+   * fully-reduced Blasphemous Act reads -- but kept when it is the whole
+   * cost, since a free spell still has to show something.
+   */
+  private displayCostOf(player: PlayerId, cardId: ObjectId): string | null {
+    const object = this.state.objects[cardId];
+    if (object === undefined) return null;
+    const def = this.registry.get(printedCardName(object));
+    const printed = def.manaCost;
+    if (printed === null) return null;
+    const base = parseManaCost(printed);
+    // An {X} cost's generic is chosen at cast time, so there is no single
+    // number to show and the printed cost is already the honest answer.
+    if (base.x > 0) return null;
+    // Commander tax is deliberately **excluded**: the client already draws
+    // it as its own "+N" badge beside the cost, and folding it in here would
+    // show the same mana twice.
+    const tax = this.isCastableCommander(player, cardId)
+      ? this.commanderTax(player, cardId)
+      : 0;
+    const withTax = this.castingCostOf(player, cardId, def, 0, printed);
+    const actualGeneric = Math.max(0, withTax.generic - tax);
+    if (actualGeneric === base.generic) return null;
+    const actual = { generic: actualGeneric };
+
+    const GENERIC = /\{(\d+)\}/;
+    if (actual.generic === 0) {
+      const withoutGeneric = printed.replace(GENERIC, "");
+      return withoutGeneric.length > 0 ? withoutGeneric : "{0}";
+    }
+    return base.generic > 0
+      ? printed.replace(GENERIC, "{" + String(actual.generic) + "}")
+      : "{" + String(actual.generic) + "}" + printed;
   }
 
   /** Net generic-mana adjustment to `cardId`'s cost from `costModification`

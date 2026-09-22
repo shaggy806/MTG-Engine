@@ -93,6 +93,23 @@ export interface VisibleObject {
   readonly controller: PlayerId;
   readonly zone: ZoneType;
   readonly manaCost: string | null;
+  /**
+   * What this card *actually* costs right now, when that differs from the
+   * printed `manaCost` — Blasphemous Act at {1}{R} with nine creatures out,
+   * a commander carrying tax, a spell being taxed by Thalia.
+   *
+   * Absent when nothing has changed the cost, so a client can render
+   * `manaCost` and only reach for this when it's there. Only ever set for
+   * cards in the **viewer's own** hand or command zone: it's the cost *they*
+   * would pay, and computing it for another seat's cards would be both
+   * meaningless and a small information leak.
+   *
+   * Only the generic portion is rewritten, because that is the only part any
+   * cost modification touches — which keeps this exact rather than a
+   * re-serialisation of a parsed cost that could get hybrid or Phyrexian
+   * pips wrong.
+   */
+  readonly effectiveManaCost?: string;
   readonly text: string;
   readonly types: readonly CardType[];
   readonly subtypes: readonly string[];
@@ -201,6 +218,14 @@ export interface PlayerView {
 export interface ViewOptions {
   /** Reveal every hand (for a hot-seat spectator or debugging). */
   readonly revealAll?: boolean;
+  /**
+   * What `cardId` costs the viewer right now, or `null` when it is the
+   * printed cost. Supplied by `Game.viewFor`, because working it out needs
+   * commander tax and the battlefield's cost-modification statics — a
+   * capability handed in rather than logic duplicated here, the same shape
+   * `DecisionReadCtx` and `ManaPlanningView` use.
+   */
+  readonly effectiveCost?: (cardId: ObjectId) => string | null;
 }
 
 /**
@@ -422,9 +447,20 @@ function viewForUncached(
   }
 
   const objects: Record<ObjectId, VisibleObject> = {};
+  // The viewer's own castable-from zones. A modified cost is only meaningful
+  // (and only theirs to know) for cards they could actually cast.
+  const ownCastable = new Set<ObjectId>([
+    ...state.zones.perPlayer[viewer].hand,
+    ...state.zones.shared.command.filter((id) => state.objects[id]?.owner === viewer),
+  ]);
   for (const id of visibleIds) {
     if (state.objects[id] !== undefined) {
-      objects[id] = visible(state, registry, id);
+      const base = visible(state, registry, id);
+      const cost =
+        options.effectiveCost !== undefined && ownCastable.has(id)
+          ? options.effectiveCost(id)
+          : null;
+      objects[id] = cost === null ? base : { ...base, effectiveManaCost: cost };
     }
   }
 

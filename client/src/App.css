@@ -1490,6 +1490,15 @@
   gap: 2px;
   flex-shrink: 0;
 }
+/* The cost is currently cheaper (or dearer) than printed -- a cost-reduction
+   static like Blasphemous Act's, or a tax like Thalia's. Marked rather than
+   left silent, so a number that disagrees with the printed card reads as
+   deliberate; the printed cost is in the tooltip. */
+.ct-cost.reduced {
+  border-radius: 4px;
+  outline: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  outline-offset: 1px;
+}
 .ct-tax {
   font-size: calc(9px * var(--ct-scale, 1));
   font-weight: 700;

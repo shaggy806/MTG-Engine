@@ -206,9 +206,21 @@ export function CardTile({
       ) : null}
     </span>
   )
+  // What it costs *now*, when the engine says that differs from the printed
+  // cost (Blasphemous Act at {R} with nine creatures out). The printed cost
+  // stays reachable as the tooltip rather than being shown struck through:
+  // the tile is small, and the number you have to pay is the one that
+  // matters at a glance. Commander tax is not in here — it has its own
+  // badge, just below.
+  const shownCost = obj.effectiveManaCost ?? obj.manaCost
   const costNode = obj.manaCost ? (
-    <span className="ct-cost">
-      <Symbols text={obj.manaCost} />
+    <span
+      className={`ct-cost${obj.effectiveManaCost !== undefined ? ' reduced' : ''}`}
+      title={
+        obj.effectiveManaCost !== undefined ? `Printed cost ${obj.manaCost}` : undefined
+      }
+    >
+      <Symbols text={shownCost ?? ''} />
       {extraGenericCost > 0 ? (
         <span className="ct-tax" title="Commander tax">
           +{extraGenericCost}
