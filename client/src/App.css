@@ -2826,3 +2826,73 @@
   border-color: var(--accent);
   background: var(--accent-bg);
 }
+
+/* --- the whole hand, as a grid ----------------------------------------- */
+/* For a hand too big to pick out of the fan. The fan is still the primary
+   way to read your hand; this is the escape hatch once the per-card sliver
+   gets too thin to aim at (see App.tsx's HAND_GRID_THRESHOLD for the
+   measured numbers). */
+.hand-grid-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(10px, 2vh, 28px) clamp(10px, 2vw, 28px);
+  background: rgba(6, 9, 12, 0.82);
+  backdrop-filter: blur(3px);
+}
+.hand-grid-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(1500px, 96vw);
+  max-height: 94vh;
+  padding: 10px 12px 14px;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  background: var(--panel);
+  /* The grid is the part that scrolls, not the box: the close button stays
+     reachable however many cards there are. */
+  overflow: hidden;
+}
+.hand-grid-head {
+  display: flex;
+  justify-content: flex-end;
+  flex: none;
+}
+/* The one real difference from the fan: wrapping, and a positive gap. Cards
+   keep their own width rather than being squeezed, so a 30-card hand becomes
+   several rows of full-size targets instead of one row of 24px slivers. */
+.hand-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 10px;
+  overflow-y: auto;
+  padding: 4px;
+}
+/* Undo the fan's absolute stacking games — in the grid each card is just a
+   card, and `.hand-card`'s z-index/hover-grow would otherwise make a
+   neighbour jump over the one being read. */
+.hand-grid .hand-card {
+  z-index: auto;
+}
+.hand-grid .hand-card .card-tile,
+.hand-grid .hand-card:hover .card-tile,
+.hand-grid .hand-card:focus-within .card-tile {
+  rotate: 0deg;
+  translate: 0 0;
+  scale: 1;
+}
+
+/* The way in, on the hand's own header. Only rendered past the threshold, so
+   it never clutters an ordinary hand. */
+.hand-grid-open {
+  margin-left: 8px;
+  padding: 1px 7px;
+  font-size: 11px;
+  vertical-align: middle;
+}

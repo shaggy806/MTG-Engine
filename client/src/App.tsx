@@ -69,6 +69,13 @@ const HAND_FAN_MAX_LIFT_PX = 38
 const HAND_CARD_GAP = 8
 const HAND_OVERLAP_FLOOR = 0.82
 
+// Past this many cards the fan stops being a way to pick one. Measured at
+// 1366x768: 32 cards leaves each one a 24px sliver of its 122px width, and
+// hovering to check a card scales it 1.65x over the neighbour you were
+// aiming at. The grid ("All cards") is always available; this is only the
+// point at which it stops being worth hiding.
+const HAND_GRID_THRESHOLD = 12
+
 // Battlefield tiles get a real max size (index.css's --mini-w) and wrap to
 // as many rows as they need at that size -- multiple rows of creatures is
 // normal and fine, same as a physical table. Only once even that wrapping
@@ -330,7 +337,15 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
   // card would otherwise drop the hand tray shut under a cursor still resting
   // on it. Held in one object so `Table`'s prop identity is stable.
   const [handRaised, setHandRaised] = useState(false)
-  const hand = useMemo(() => ({ handRaised, setHandRaised }), [handRaised])
+  // The full-hand grid. Lives up here for exactly the reason `handRaised`
+  // does: `Table` remounts every frame, so grid state held down there would
+  // close itself the moment anything happened — including the card you just
+  // played from inside it.
+  const [handGrid, setHandGrid] = useState(false)
+  const hand = useMemo(
+    () => ({ handRaised, setHandRaised, handGrid, setHandGrid }),
+    [handRaised, handGrid],
+  )
   // Called unconditionally (before the loading-guard below) per the rules of
   // hooks. `ackFrame` is what lets the server pace its bots against these
   // animations rather than racing ahead of them.
@@ -442,6 +457,10 @@ interface TableProps {
   readonly hand: {
     readonly handRaised: boolean
     readonly setHandRaised: (raised: boolean) => void
+    /** Whether the whole hand is open as a wrapped grid — the way to pick a
+     * card out of a hand too big to fan (see `HAND_GRID_THRESHOLD`). */
+    readonly handGrid: boolean
+    readonly setHandGrid: (open: boolean) => void
   }
 }
 
@@ -465,7 +484,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   // frame it's keyed on, and a local `useState` here dropped the hand back
   // into its tray the instant you played a card -- out from under a cursor
   // that was still sitting on it, mid-reach for the next one.
-  const { handRaised, setHandRaised } = hand
+  const { handRaised, setHandRaised, handGrid, setHandGrid } = hand
   // Measured (not guessed) hand-row layout, recomputed whenever the row's
   // real rendered width changes (viewport resize, peekable<->in-flow mode
   // switch) or the hand's card count changes -- see HAND_CARD_GAP's comment.
@@ -2526,7 +2545,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
    * actively raised/browsing. Shared between `renderHandAndControls` (every
    * mode except mulligan, which shows it inside its own popup instead --
    * see `renderMulliganModal`) so the hand only has one render path. */
-  const renderHand = () => {
+  const renderHand = (layout: 'fan' | 'grid' = 'fan') => {
+    const grid = layout === 'grid'
     // Only ever compresses the per-card step below the tuned default above
     // (never exceeds it), so an ordinary-sized hand renders identically to
     // before -- see HAND_FAN_MAX_ROT_DEG/HAND_FAN_MAX_LIFT_PX's comment.
@@ -2543,8 +2563,18 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     <div className="hand">
       <h3>
         {playerLabel(seat, game.seats)}'s hand ({handIds.length})
+        {!grid && handIds.length > HAND_GRID_THRESHOLD ? (
+          <button
+            type="button"
+            className="hand-grid-open"
+            onClick={() => setHandGrid(true)}
+            title="Show every card at full size — the fan gets too tight to pick from"
+          >
+            All cards
+          </button>
+        ) : null}
       </h3>
-      <div className="hand-cards" ref={handRowRef}>
+      <div className={grid ? 'hand-grid' : 'hand-cards'} ref={grid ? undefined : handRowRef}>
         {handIds.map((id, i) => {
           const obj = view.objects[id]
           if (!obj) return null
@@ -2572,6 +2602,11 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
             // even negative, gap) instead. See HAND_CARD_GAP's comment.
             marginLeft: i === 0 ? 0 : `${handCardGap}px`,
           } as CSSProperties
+          // The grid exists to undo exactly what the fan does, so it takes
+          // none of it: no rotation, no lift, no stacking order and — the
+          // one that matters — no negative margin. Every card gets its own
+          // full width and is a full-size click target.
+          const slotStyle: CSSProperties = grid ? {} : fanStyle
           let highlight = false
           let selected = false
           if (mode === 'discard') {
@@ -2592,7 +2627,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           // or a kickable spell's kicked / unkicked casts (P8).
           const multiFace = faceOpts.length > 1
           return (
-            <div key={id} className="hand-card" data-obj-id={id} style={fanStyle}>
+            <div key={id} className="hand-card" data-obj-id={id} style={slotStyle}>
               <CardTile
                 obj={obj}
                 highlight={highlight || Boolean(suspend) || Boolean(foretell) || Boolean(cycle)}
@@ -2774,6 +2809,32 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           pickedIds={pickedObjKeys}
           onTargetClick={(id) => clickPermanent([id])}
         />
+      ) : null}
+
+      {/* The whole hand at full size, for a hand too big to pick out of the
+          fan. Deliberately the *same* card renderer the fan uses, so every
+          action a card has there — cast, play, a second face, Foretell,
+          Suspend, Cycle — comes along unchanged; only the layout differs. */}
+      {handGrid ? (
+        <div
+          className="hand-grid-overlay"
+          role="dialog"
+          aria-label="Your hand"
+          onClick={(e) => {
+            // Click the backdrop to close, but not a click that landed on a
+            // card: playing one from in here shouldn't also dismiss it.
+            if (e.target === e.currentTarget) setHandGrid(false)
+          }}
+        >
+          <div className="hand-grid-box">
+            <div className="hand-grid-head">
+              <button type="button" onClick={() => setHandGrid(false)}>
+                Close
+              </button>
+            </div>
+            {renderHand('grid')}
+          </div>
+        </div>
       ) : null}
 
       {zoneView ? (
