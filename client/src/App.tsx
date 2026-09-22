@@ -2694,7 +2694,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
             <div
               className={`quadrant-cell ${pid === seat ? 'self' : ''} ${
                 view.activePlayer === pid ? 'active-turn' : ''
-              }`}
+              } ${view.players[pid]?.hasLost ? 'eliminated' : ''}`}
               key={pid}
             >
               <div className="quadrant-head">{renderPlayerPanel(pid)}</div>

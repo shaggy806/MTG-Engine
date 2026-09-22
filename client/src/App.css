@@ -314,6 +314,13 @@
   font-size: 22px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+  /* Pinned to the right edge of the header, always. The commander-damage
+     chips used to carry this `auto` margin, so they absorbed the free space
+     and pushed the life total across with them — the number jumped from the
+     left of the panel to the right the moment a commander first connected.
+     Moving the `auto` here pins the number instead, and the chips fall back
+     beside the name, reading as the per-player badges they are. */
+  margin-left: auto;
 }
 .pp-zones {
   display: flex;
@@ -350,9 +357,14 @@
   font-size: 12px;
   color: var(--warn);
 }
+/* The one line saying a seat is out. It has to carry that on its own — the
+   tint says "something is different here", this says what. */
 .pp-lost {
   color: var(--bad);
   font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 /* Commander damage taken, one chip per commander (CommanderDamageChip.tsx),
    in the header row beside the life total rather than a row of its own —
@@ -361,7 +373,6 @@
   display: inline-flex;
   align-self: center;
   gap: 4px;
-  margin-left: auto;
 }
 .cmdr-dmg {
   display: inline-flex;
@@ -473,6 +484,37 @@
   box-shadow:
     inset 0 0 0 1px var(--gold),
     0 0 22px -6px rgba(205, 166, 83, 0.35);
+}
+/* An eliminated player. Their board and hand stay on screen deliberately —
+   the engine leaves the permanents there, inert, the way a dead player's
+   battlefield sits on a real table — so this has to read as "out" at a
+   glance without hiding anything.
+
+   The tint is an ::after overlay rather than a background, so it covers the
+   tiles rather than sitting behind them, and `pointer-events: none` keeps the
+   board scrollable and hoverable underneath. `filter` on the cell itself
+   would make it the containing block for any `position: fixed` descendant,
+   which is why the desaturation goes on the *contents* instead: the board's
+   hover popovers are portalled out to <body>, but the ones inside the cell
+   must not start resolving against it. */
+.quadrant-cell.eliminated {
+  position: relative;
+  border-color: color-mix(in srgb, var(--bad) 55%, var(--border-soft));
+}
+/* The *board* greys out, not the whole cell. Dimming the head too stacked
+   with `.player-panel.lost`'s own 0.6 and left the "why they're out" line at
+   about a third opacity — unreadable, which is the opposite of the point. */
+.quadrant-cell.eliminated > .quadrant-body {
+  filter: grayscale(0.85);
+  opacity: 0.5;
+}
+.quadrant-cell.eliminated::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bad) 12%, transparent);
+  pointer-events: none;
 }
 .quadrant-blank {
   min-height: 50px;

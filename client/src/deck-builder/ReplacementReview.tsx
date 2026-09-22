@@ -56,16 +56,27 @@ export function ReplacementReview({
 
   const available = (name: string) => name === current.to || !inDeck.has(name)
 
+  /**
+   * The best three options you can actually take.
+   *
+   * The engine hands over more than three (see `UI_OPTIONS`) precisely so
+   * this can filter. Showing a fixed three meant the 2nd and 3rd slots were
+   * often greyed-out cards already in the deck — a row of choices that
+   * weren't choices. The currently-chosen card is always kept, even if it is
+   * "in the deck", because it is in the deck *as this card's stand-in*.
+   */
+  const shown = current.options.filter((o) => available(o.name)).slice(0, 3)
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
       else if (e.key === 'ArrowRight') setIndex((i) => Math.min(i + 1, count - 1))
       else if (e.key === 'ArrowLeft') setIndex((i) => Math.max(i - 1, 0))
       else if (/^[1-9]$/.test(e.key)) {
-        const option = current.options[Number(e.key) - 1]
-        if (option && (option.name === current.to || !inDeck.has(option.name))) {
-          onChoose(current.from, option.name)
-        }
+        // `shown` is already filtered to what can be taken, so a number key
+        // can't land on a blocked card.
+        const option = shown[Number(e.key) - 1]
+        if (option) onChoose(current.from, option.name)
       }
     }
     window.addEventListener('keydown', onKey)
@@ -100,25 +111,23 @@ export function ReplacementReview({
 
           <section className="rr-options">
             <span className="rr-label">
-              {current.options.length === 0
+              {shown.length === 0
                 ? 'Nothing in the pool is close enough'
-                : current.options.every((o) => o.confidence === 'low')
+                : shown.every((o) => o.confidence === 'low')
                   ? 'Nothing does quite the same job — the nearest cards'
                   : 'Pick one'}
             </span>
             <div className="rr-option-row">
-              {current.options.map((option, i) => {
+              {shown.map((option, i) => {
                 const def = findCardDef(option.name)
                 const chosen = option.name === current.to
-                const blocked = !available(option.name)
                 return (
                   <button
                     key={option.name}
                     type="button"
-                    className={`rr-option${chosen ? ' chosen' : ''}${blocked ? ' blocked' : ''}`}
-                    disabled={blocked}
+                    className={`rr-option${chosen ? ' chosen' : ''}`}
                     aria-pressed={chosen}
-                    title={blocked ? `${option.name} is already in this deck` : option.name}
+                    title={option.name}
                     onClick={() => onChoose(current.from, option.name)}
                   >
                     <span className="rr-option-card">
@@ -130,7 +139,6 @@ export function ReplacementReview({
                         {CONFIDENCE_LABEL[option.confidence]}
                       </span>
                       {chosen ? <span className="rr-flag">✓ In deck</span> : null}
-                      {blocked ? <span className="rr-flag blocked">Already in deck</span> : null}
                     </span>
                     {option.sharedTags.length > 0 ? (
                       <span className="rr-tags">

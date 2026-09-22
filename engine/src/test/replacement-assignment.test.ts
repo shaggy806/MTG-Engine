@@ -17,18 +17,25 @@ const target = (name: string, manaCost: string, typeLine: string, pt?: [string, 
 });
 
 describe("assignReplacements", () => {
-  it("hands back only as many alternatives as the UI shows", () => {
-    // The assignment searches a deeper pool than it displays. That width once
-    // reached the deck builder's review popup, which laid every candidate out
-    // as a card image in one row and pushed the card being replaced off the
-    // left edge of the screen.
+  it("hands back a short list of alternatives, not the whole search pool", () => {
+    // The assignment searches a deeper pool (`ASSIGNMENT_POOL`, 12) than it
+    // hands back. That width once reached the deck builder's review popup,
+    // which laid every candidate out as a card image in one row and pushed
+    // the card being replaced off the left edge of the screen.
+    //
+    // The cap is 8 rather than the 3 the popup draws, and the surplus is
+    // deliberate: the popup shows the best three still *available*, and
+    // availability shrinks as you pick — every choice puts a card in the deck
+    // and singleton rules it out for every later target. With exactly three
+    // it could only grey them out. Narrowing to three is the popup's job
+    // (`ReplacementReview`'s `shown`), so the original hazard stays fixed.
     const targets = [
       target("Alpha", "{2}{G}", "Creature — Beast", ["3", "3"]),
       target("Beta", "{1}{U}", "Instant"),
       target("Gamma", "{3}{W}", "Enchantment"),
     ];
     for (const assigned of assignReplacements(targets, {})) {
-      expect(assigned.options.length, assigned.target).toBeLessThanOrEqual(3);
+      expect(assigned.options.length, assigned.target).toBeLessThanOrEqual(8);
     }
   });
 

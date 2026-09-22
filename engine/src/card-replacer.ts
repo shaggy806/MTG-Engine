@@ -411,8 +411,15 @@ const ASSIGNMENT_POOL = 12;
  * The assigned `choice` is always among them even when it ranks below the cap
  * — it is the card the deck will actually contain, so a list that left it out
  * would be offering alternatives to something it never showed.
+ *
+ * **More than the review popup shows.** It displays the best three that are
+ * still *available*, and availability changes while you review: every pick
+ * puts a card in the deck, and singleton then rules it out for every later
+ * target. Handing over exactly three meant the popup could only grey them
+ * out, offering a row of options you couldn't take. The surplus is what it
+ * reaches for instead.
  */
-const UI_OPTIONS = 3;
+const UI_OPTIONS = 8;
 
 export interface ReplacementAssignment {
   /** The unimplemented card being stood in for — `ReplacementTarget.name`. */

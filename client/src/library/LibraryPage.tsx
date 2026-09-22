@@ -237,6 +237,23 @@ export function LibraryPage() {
     [filtered, safePage],
   )
 
+  /**
+   * Turn the page *and* go back to the top of it.
+   *
+   * The pager sits under the grid, so clicking it left you where you were —
+   * scrolled to the bottom, looking at the last row of the new page. A page
+   * turn should start at the first card, the way following a link to a new
+   * page would.
+   *
+   * `auto` rather than `smooth`: the whole grid has already been replaced, so
+   * animating a scroll over cards that aren't the ones you were looking at
+   * only delays showing the ones you asked for.
+   */
+  const goToPage = (next: number) => {
+    setPage(next)
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }
+
   const selected = selectedName === null ? null : (BY_NAME.get(selectedName) ?? null)
 
   const select = useCallback((name: string | null) => {
@@ -387,7 +404,7 @@ export function LibraryPage() {
             </div>
             {pageCount > 1 ? (
               <nav className="lib-pager" aria-label="Pages">
-                <button type="button" onClick={() => setPage(safePage - 1)} disabled={safePage === 0}>
+                <button type="button" onClick={() => goToPage(safePage - 1)} disabled={safePage === 0}>
                   ← Previous
                 </button>
                 <span className="muted mono">
@@ -395,7 +412,7 @@ export function LibraryPage() {
                 </span>
                 <button
                   type="button"
-                  onClick={() => setPage(safePage + 1)}
+                  onClick={() => goToPage(safePage + 1)}
                   disabled={safePage >= pageCount - 1}
                 >
                   Next →
