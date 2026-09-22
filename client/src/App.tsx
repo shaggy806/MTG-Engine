@@ -537,6 +537,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   const [textFrom, setTextFrom] = useState<string | null>(null)
   const [modePicks, setModePicks] = useState<readonly number[]>([])
   const [sacrificePicks, setSacrificePicks] = useState<readonly ObjectId[]>([])
+  /** The token stack whose "how many of these?" menu is open, if any. */
+  const [stackMenu, setStackMenu] = useState<ObjectId | null>(null)
   // Proliferate picks are `TargetRef`s, not ids: rule 701.27 lets you choose
   // players as well as permanents (energy counters are the only player-borne
   // counter here, so the player half is usually empty).
@@ -1102,6 +1104,13 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       }
       if (mode === 'sacrifice' && sacrificeAction) {
         if (!sacrificeAction.eligible.includes(id)) return
+        // A compacted token stack is one tile standing for several tokens, so
+        // how many of it to give up is a choice, not a toggle — it gets the
+        // count menu instead.
+        if ((sacrificeAction.copies?.[id] ?? 1) > 1) {
+          setStackMenu((cur) => (cur === id ? null : id))
+          return
+        }
         setSacrificePicks((cur) =>
           cur.includes(id)
             ? cur.filter((x) => x !== id)
@@ -1355,8 +1364,13 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       selected = Boolean(assignedTo) || blockFocus === id
       if (assignedTo) badge = `\u{1F6E1} ${game.nameOf(assignedTo)}`
     } else if (mode === 'sacrifice' && sacrificeAction) {
-      highlight = sacrificeAction.eligible.includes(id) && !sacrificePicks.includes(id)
-      selected = sacrificePicks.includes(id)
+      const taken = sacrificePicks.filter((x) => x === id).length
+      const of = sacrificeAction.copies?.[id] ?? 1
+      highlight = sacrificeAction.eligible.includes(id) && taken === 0
+      selected = taken > 0
+      // A stack gives up some of itself, so the tile has to say how many —
+      // "selected" alone can't tell three of nine from nine of nine.
+      if (of > 1 && taken > 0) badge = `☠ ${taken}/${of}`
     } else if (mode === 'proliferate' && proliferateAction) {
       const picked = proliferatePicks.some((t) => t.kind === 'object' && t.object === id)
       highlight = eligibleToProliferate(proliferateAction, id) && !picked
@@ -2487,6 +2501,47 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
    * every other mode uses) rather than separately below it, so the whole
    * decision -- what's in your hand and whether to keep it -- lives in one
    * place instead of split across a banner and a strip. */
+  /**
+   * "How many of these?" for a compacted token stack — the same menu shape a
+   * permanent's activated abilities get, hung off the same tile, because the
+   * question is the same kind of question: this one tile can do more than one
+   * thing and you have to say which.
+   *
+   * A stack is a single entry in the offer standing for `copies` permanents
+   * (see the engine's `sacrifice` LegalAction), and the answer names it once
+   * per token given up. Without this the tile could only be picked or not,
+   * and a demand for three against a stack of nine had no answer the Confirm
+   * button would ever accept.
+   */
+  const renderStackCountMenu = () => {
+    if (mode !== 'sacrifice' || !sacrificeAction || stackMenu === null) return null
+    const of = sacrificeAction.copies?.[stackMenu] ?? 1
+    const taken = sacrificePicks.filter((x) => x === stackMenu).length
+    // What this stack could be raised to: everything not already promised to
+    // some *other* entry, capped at the stack's own size.
+    const most = Math.min(of, sacrificeAction.count - (sacrificePicks.length - taken))
+    const setTo = (n: number) => {
+      setSacrificePicks((cur) => [
+        ...cur.filter((x) => x !== stackMenu),
+        ...Array<ObjectId>(n).fill(stackMenu),
+      ])
+      setStackMenu(null)
+    }
+    return (
+      <AbilityMenu
+        source={stackMenu}
+        title={`${game.nameOf(stackMenu)} ×${of}`}
+        ariaLabel="How many to sacrifice"
+        items={Array.from({ length: most + 1 }, (_unused, n) => ({
+          key: String(n),
+          label: n === 0 ? 'None' : `Sacrifice ${n}`,
+          onSelect: () => setTo(n),
+        }))}
+        onClose={() => setStackMenu(null)}
+      />
+    )
+  }
+
   const renderMulliganModal = () => {
     if (mode !== 'mulligan' || !mulliganAction) return null
     return (
@@ -2795,6 +2850,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           onClose={() => setSelectedSource(null)}
         />
       ) : null}
+
+      {renderStackCountMenu()}
 
       {renderMulliganModal()}
       {/* moved here (from GameScreen, a sibling of Table) so it can reuse

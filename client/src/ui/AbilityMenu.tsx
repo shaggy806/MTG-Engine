@@ -41,12 +41,17 @@ export function AbilityMenu({
   source,
   title,
   items,
+  ariaLabel,
   onClose,
 }: {
   readonly source: ObjectId
   /** The permanent's name, as the menu's heading. */
   readonly title: string
   readonly items: readonly AbilityMenuItem[]
+  /** What this menu is for, if not a permanent's abilities — the placement
+   * and dismissal here suit any short menu hung off a tile, and the count
+   * picker for a token stack is the second one. */
+  readonly ariaLabel?: string
   readonly onClose: () => void
 }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -123,7 +128,12 @@ export function AbilityMenu({
   }, [onClose, source])
 
   return createPortal(
-    <div className="ability-menu" ref={ref} role="menu" aria-label={`${title} abilities`}>
+    <div
+      className="ability-menu"
+      ref={ref}
+      role="menu"
+      aria-label={ariaLabel ?? `${title} abilities`}
+    >
       <div className="ability-menu-title">{title}</div>
       {items.map((item) => (
         <button key={item.key} type="button" role="menuitem" onClick={item.onSelect}>

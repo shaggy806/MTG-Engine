@@ -1,9 +1,10 @@
 # Choosing some of a token stack
 
-**Status:** proposed (2026-09-22). Requested by the user: "when we need to
+**Status:** in progress (2026-09-22). Requested by the user: "when we need to
 select multiple creatures out of a token stack, can we get a menu to do so?
-Similar to how we activate abilities". Nothing here is built yet. The
-counting and whole-stack fixes it builds on are done (see below).
+Similar to how we activate abilities". **Sacrifice is built**, engine and
+client, and checked live in the browser; convoke, tap costs and combat are
+not. The counting and whole-stack fixes it builds on are done (see below).
 
 ## Background
 
@@ -30,8 +31,8 @@ Found by the review of the counting fix (a sweep by code and by card):
 
 | Site | What happens now |
 |---|---|
-| Sacrifice N (`promptNextSacrifice` → `sacrifice` decision): Necrotic Hex, Fleshbag Marauder with N > 1 | The offer lists the stack once while `count` demands more picks than there are entries, **so no answer is accepted and the game stalls.** The worst of these. |
-| "Choose up to N, sacrifice the rest" (`sacrificeAllBut`): Archfiend of Depravity | The same decision; the player can't say "keep two of the stack". |
+| ~~Sacrifice N (`promptNextSacrifice` → `sacrifice` decision): Necrotic Hex, Fleshbag Marauder with N > 1~~ | **Built.** The offer used to list the stack once while `count` demanded more picks than there were entries, so no answer was accepted and the game stalled. |
+| ~~"Choose up to N, sacrifice the rest" (`sacrificeAllBut`): Archfiend of Depravity~~ | **Built**, as the same decision. |
 | Declare attackers / blockers (`materializeStack`) | A stack always attacks or blocks as a whole (up to `MAX_MATERIALIZED`). It can't hold some back or split them across attackers. |
 | Convoke (`convokeCandidates`) | A stack is one candidate, so it can pay for one pip. Hour of Reckoning convoked by a player with 14 Soldier tokens gets one. |
 | "Tap N untapped creatures" alternative costs (`tapOthersCandidates`) | Counted and tapped as objects, and picked for the player (`.slice(0, count)`), which is also an AUTHORING §0 problem. |
@@ -60,6 +61,29 @@ step with the validator for free.
 **Order.** Sacrifice first, since it's the only one that can stall a game.
 Then convoke and tap costs (both money-on-the-table). Then attack and block
 splitting, which is the most UI.
+
+## What sacrifice actually shipped
+
+Close to the proposal, with one simplification worth recording. The offer
+carries `copies` as a *map* (`Record<ObjectId, number>`) beside the existing
+`eligible: ObjectId[]`, rather than turning `eligible` into a list of
+records: the map is absent entirely on a board with no stack, so every
+existing reader, validator and bot path is untouched, where reshaping
+`eligible` would have churned all of them for a case that almost never
+arises.
+
+The client reuses `AbilityMenu` outright rather than growing a second
+portalled, JS-placed, edge-flipping menu — the user asked for something
+"similar to how we activate abilities", and the honest way to be similar to
+it is to *be* it. The menu lists `None` and `Sacrifice 1..n`, where `n` is
+the stack's size capped by what is still owed, so it can never offer an
+answer the validator would refuse. The tile badges `☠ 2/9` while chosen,
+because "selected" alone cannot tell three of nine from nine of nine.
+
+Three answerers needed the same fix as the validator, and are easy to miss:
+the bot's candidate enumeration, the fuzzer's random answer, and the
+controllers' own `chooseSacrifices`, whose `eligible.slice(0, count)`
+returned an answer too short to be legal.
 
 ## Not in scope
 
