@@ -1350,6 +1350,20 @@
   color: var(--muted);
   text-align: right;
 }
+/* A card name inside a log line. Bold so a sentence full of names is
+   scannable, and `help` + a native tooltip because "what does this card
+   actually do" is the reason to hover one — the tooltip carries its cost,
+   type line and rules text. Native rather than a portalled popover: the log
+   is itself a scroll box inside a popup, which is exactly the nesting that
+   made the board's hover preview need a portal, and a name is not worth
+   that. */
+.event-log .ev-card {
+  font-weight: 700;
+  color: var(--text);
+  cursor: help;
+  text-decoration: underline dotted color-mix(in srgb, var(--muted) 60%, transparent);
+  text-underline-offset: 2px;
+}
 .event-log .ev-game-ended .ev-text,
 .event-log .ev-player-lost .ev-text {
   color: var(--bad);
