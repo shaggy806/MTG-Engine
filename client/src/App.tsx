@@ -1584,9 +1584,9 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
    * — it's castable like a hand card instead, via the same `castByCard`
    * map and `clickHandCard` dispatch (which only ever consults that map,
    * not which zone the card is actually sitting in). Rendered compactly
-   * (name/cost/stats, full card on hover) rather than as a full `CardTile`
+   * (art and cost, the full card on hover) rather than as a full `CardTile`
    * — see `CommanderTile`. */
-  const commandZoneTile = (obj: VisibleObject, compact = false) => {
+  const commandZoneTile = (obj: VisibleObject, paired = false) => {
     const castable = mode === 'priority' && castByCard.has(obj.id)
     const commanderTax =
       2 * (view.players[obj.owner]?.commanderCastCounts?.[obj.cardName] ?? 0)
@@ -1597,7 +1597,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         highlight={castable}
         extraGenericCost={commanderTax}
         onClick={castable ? () => clickHandCard(obj.id) : undefined}
-        compact={compact}
+        paired={paired}
       />
     )
   }
@@ -1614,16 +1614,15 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           <div className="side-zone-label">
             Command{commandIds.length > 1 ? ` (${commandIds.length})` : ''}
           </div>
-          {/* Partners (rule 702.124) share the one slot: every commander but
-              the last is just its name banner, stacked on the last one's full
-              tile. The rail is a single card wide and height-capped, so two
-              full tiles would push the library off the bottom of the
-              quadrant. Hovering or clicking a banner works as on a full tile. */}
+          {/* Partners (rule 702.124) share the one slot as tiles of their
+              own, each with a shorter art box so both fit: the rail is a
+              single card wide and height-capped, and two full-height tiles
+              would push the library off the bottom of the quadrant. */}
           <div className={`side-zone-cards${commandIds.length > 1 ? ' command-stack' : ''}`}>
             {commandIds.length > 0 ? (
-              commandIds.map((id, i) => {
+              commandIds.map((id) => {
                 const obj = view.objects[id]
-                return obj ? commandZoneTile(obj, i < commandIds.length - 1) : null
+                return obj ? commandZoneTile(obj, commandIds.length > 1) : null
               })
             ) : (
               <div className="card-slot-empty" title="empty command zone" />

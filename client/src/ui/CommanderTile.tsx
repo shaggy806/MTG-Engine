@@ -25,20 +25,26 @@ export interface CommanderTileProps {
    * them, so the printed cost stays legible. */
   readonly extraGenericCost?: number
   readonly onClick?: () => void
-  /** Just the name banner (and tax), for the back one of two Partners
-   * sharing the command slot — see `.command-stack` in App.css. Hover and
-   * click work the same as on a full tile. */
-  readonly compact?: boolean
+  /** One of two Partners sharing the command slot: the same tile with a
+   * shorter art box, so both fit — see `.command-stack` in App.css. */
+  readonly paired?: boolean
 }
 
 /**
- * A commander in the command zone reduced to its art plus the three things
- * worth knowing at a glance — name, mana cost (tax included), and P/T or
- * loyalty — with the full `CardTile` on hover, the same trade `MiniTile`
- * makes for the battlefield. The command/library rail is the narrowest
- * column on the board and is height-capped against its quadrant (see
- * `--card-w` in App.css), so a full card face there was both the least
- * readable card on screen and the one taking the most room from the board.
+ * A commander in the command zone reduced to its art and the one thing worth
+ * knowing at a glance, its mana cost (tax included), with the full
+ * `CardTile` on hover: the same trade `MiniTile` makes for the battlefield.
+ * The command/library rail is the narrowest column on the board and is
+ * height-capped against its quadrant (see `--card-w` in App.css), so a full
+ * card face there was both the least readable card on screen and the one
+ * taking the most room from the board.
+ *
+ * Name and P/T went too, and are on the hover card. The name, clamped into a
+ * rail a few pips wide, was rarely readable, and the two together were
+ * enough to overflow the rail on a short screen. Worse, they left no room
+ * for a second commander's art: two Partners had to share one tile, the back
+ * one reduced to a banner that read more like a rendering glitch than a
+ * commander. Without them, each Partner gets a tile of its own.
  *
  * The popover is portalled and JS-placed via `useHoverPopover` — see there
  * for why a CSS-revealed child can't escape the quadrant's scroll box.
@@ -48,11 +54,10 @@ export function CommanderTile({
   highlight = false,
   extraGenericCost = 0,
   onClick,
-  compact = false,
+  paired = false,
 }: CommanderTileProps) {
   const { wrapRef, popoverRef, open, handlers } = useHoverPopover(obj)
   const clickable = Boolean(onClick) && highlight
-  const isCreature = obj.power !== null && obj.toughness !== null
 
   const face = obj.copyOf ?? obj.faceName ?? obj.cardName
   useSyncExternalStore(subscribeArtCache, getArtCacheVersion, getArtCacheVersion)
@@ -71,47 +76,26 @@ export function CommanderTile({
     <div className="commander-tile-wrap" ref={wrapRef} {...handlers}>
       <button
         type="button"
-        className={`commander-tile${highlight ? ' highlight' : ''}${clickable ? ' clickable' : ''}${compact ? ' compact' : ''}`}
+        className={`commander-tile${highlight ? ' highlight' : ''}${clickable ? ' clickable' : ''}${paired ? ' paired' : ''}`}
         onClick={clickable ? onClick : undefined}
         disabled={!clickable}
+        // Nothing on the tile spells the name any more, so this is what a
+        // screen reader announces for it.
+        aria-label={face}
       >
-        {/* name banner above the art, matching the board's own MiniTile */}
-        <span className="cmdt-name" title={face}>
-          {face}
-          {compact && extraGenericCost > 0 ? (
-            <span className="ct-tax" title="commander tax">
-              {' '}+{extraGenericCost}
-            </span>
-          ) : null}
-        </span>
-        {compact ? null : (
-          <>
         <span className={`cmdt-art tint-${tint}`}>
           {!pending && !artFailed ? (
             <img src={artSrc} alt="" loading="lazy" onError={() => recordArtFailure(artSrc)} />
           ) : null}
         </span>
-        <span className="cmdt-row">
-          <span className="cmdt-cost">
-            <Symbols text={obj.manaCost} />
-            {extraGenericCost > 0 ? (
-              <span className="ct-tax" title="commander tax">
-                +{extraGenericCost}
-              </span>
-            ) : null}
-          </span>
-          {isCreature ? (
-            <span className="cmdt-pt">
-              {obj.power}/{obj.toughness}
-            </span>
-          ) : obj.loyalty !== null ? (
-            <span className="cmdt-pt" title="Loyalty">
-              {obj.loyalty}
+        <span className="cmdt-cost">
+          <Symbols text={obj.manaCost} />
+          {extraGenericCost > 0 ? (
+            <span className="ct-tax" title="commander tax">
+              +{extraGenericCost}
             </span>
           ) : null}
         </span>
-          </>
-        )}
       </button>
 
       {open

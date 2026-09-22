@@ -1042,27 +1042,14 @@
   flex-wrap: wrap;
   gap: 6px;
 }
-/* Two Partner commanders in one card-wide slot: the first as a name banner
-   tucked onto the top of the second's full tile, like the edge of a card
-   peeking out from behind another. */
+/* Two Partner commanders in one card-wide slot: a tile each, with a gap
+   between them so they read as two cards rather than one tile drawn wrong.
+   Each gets a shorter art box (.commander-tile.paired) so both fit above the
+   library. */
 .side-zone-cards.command-stack {
   flex-direction: column;
   flex-wrap: nowrap;
-  gap: 0;
-}
-.commander-tile.compact {
-  padding: 0;
-  border-bottom: none;
-  border-radius: 8px 8px 0 0;
-}
-.commander-tile.compact .cmdt-name {
-  border-bottom: none;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-}
-.side-zone-cards.command-stack > .commander-tile-wrap:last-child .commander-tile {
-  border-radius: 0 0 8px 8px;
-  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.5);
+  gap: 4px;
 }
 .side-zone-empty {
   color: var(--muted);
@@ -1070,18 +1057,19 @@
 }
 /* an empty command zone slot — an outline, not a face-down card, since
    there's nothing there at all (unlike the library, which always has one).
-   Sized to a CommanderTile, not a full card, since that's what fills it. */
+   Sized to a CommanderTile, not a full card, since that's what fills it:
+   the art box plus the cost row beneath it. */
 .card-slot-empty {
   width: var(--card-w);
-  min-height: calc(var(--card-w) * 0.6 + 58px);
+  min-height: calc(var(--card-w) * 0.6 + 22px);
   border: 1px dashed var(--border);
   border-radius: 8px;
 }
 
-/* A commander in the command zone, reduced to name + cost + stats, with the
-   full card face on hover (see CommanderTile.tsx). Card-width so it lines up
-   with the library below it, but a fraction of a card's height — the rail is
-   the narrowest column on the board and the tightest on vertical space. */
+/* A commander in the command zone, reduced to its art and cost, with the full
+   card face on hover (see CommanderTile.tsx). Card-width so it lines up with
+   the library below it, but a fraction of a card's height — the rail is the
+   narrowest column on the board and the tightest on vertical space. */
 .commander-tile-wrap {
   position: relative;
   display: block;
@@ -1118,9 +1106,6 @@
   object-position: center 22%;
   display: block;
 }
-.cmdt-row {
-  margin: 0 6px;
-}
 .commander-tile.highlight {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px var(--accent-bg);
@@ -1136,49 +1121,19 @@
 .commander-tile:disabled {
   opacity: 1;
 }
-/* a name banner above the art, the same shape .mt-banner gives a board tile
-   — up to three lines rather than one, since a legendary name is long and
-   the rail is the narrowest column on screen ("Atraxa, Praetors' Voice"
-   wraps to three at a 4-player quadrant's rail width) */
-.cmdt-name {
-  flex: none;
-  padding: 3px 6px;
-  background: #2b303c;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.45);
-  font-weight: 700;
-  font-size: 11px;
-  line-height: 1.2;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
-  overflow: hidden;
-}
-.cmdt-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px;
-}
 .cmdt-cost {
   display: flex;
   align-items: center;
   gap: 2px;
   min-width: 0;
+  margin: 0 6px;
   flex-wrap: wrap;
 }
-/* In a 3-4 player quadrant the rail is only a few pips wide. Sharing a row
-   with the P/T badge, the cost wrapped one pip per line — Isperia's five
-   pips made her tile five rows tall, and every rail overflowed its quadrant
-   at 768px (worse with two Partners stacked). There the cost gets a row of
-   its own, pips shrinking to fit rather than wrapping, and P/T sits under
-   it on the right. */
-.quadrant-body .cmdt-row {
-  flex-wrap: wrap;
-  row-gap: 2px;
-}
+/* In a 3-4 player quadrant the rail is only a few pips wide, so the cost
+   stays on one line with its pips shrinking to fit. Wrapping put one pip per
+   line (Isperia's five pips made her tile five rows tall), and every rail
+   overflowed its quadrant at 768px. */
 .quadrant-body .cmdt-cost {
-  flex: 1 0 100%;
   flex-wrap: nowrap;
   gap: 1px;
   overflow: hidden;
@@ -1189,40 +1144,16 @@
   width: 11px;
   height: 11px;
 }
-.quadrant-body .cmdt-pt {
-  margin-left: auto;
+/* Two Partners are two tiles where there's room for about one and a half;
+   a shorter art box and tighter spacing each is what fits both above the
+   library on a short quadrant (measured at a 583px-tall viewport, where the
+   rail is 165px). */
+.commander-tile.paired {
+  gap: 3px;
+  padding-bottom: 3px;
 }
-/* Same pressure on the name: two lines in a quadrant (the full name is on
-   hover), and a Partner's banner stacked above the other tile gets one. */
-/* The explicit max-height is what actually stops the clamp: inside the
-   stretched flex column a clamped -webkit-box still grew into a sliver of the
-   next line. */
-.quadrant-body .cmdt-name {
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  max-height: calc(2 * 1.2em + 6px);
-}
-.quadrant-body .commander-tile.compact .cmdt-name {
-  -webkit-line-clamp: 1;
-  line-clamp: 1;
-  padding: 2px 6px;
-  max-height: calc(1.2em + 4px);
-}
-/* Two Partners are a banner taller than one commander, which is exactly the
-   margin a 768px quadrant doesn't have; the front one's art gives it back. */
-.quadrant-body .command-stack .cmdt-art {
+.commander-tile.paired .cmdt-art {
   height: calc(var(--card-w) * 0.35);
-}
-.cmdt-pt {
-  flex-shrink: 0;
-  padding: 0 5px 1px;
-  font-size: 12px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  color: #f4f4f4;
-  background: #1a1d25;
-  border: 1px solid var(--border);
-  border-radius: 6px 2px 6px 2px;
 }
 /* face-down library placeholder — CSS-only, no image, so it can never 404 */
 .card-back {
