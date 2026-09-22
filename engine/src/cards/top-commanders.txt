@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-23 already implemented / 477 missing
+27 already implemented / 473 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -55,7 +55,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   49  Mr. House, President and CEO                   22846 decks  {R}{W}{B}        Legendary Artifact Creature — Human
 [ ]   50  Flubs, the Fool                                22839 decks  {G}{U}{R}        Legendary Creature — Frog Scout
 [ ]   51  Caesar, Legion's Emperor                       22746 decks  {1}{R}{W}{B}     Legendary Creature — Human Soldier
-[ ]   52  Arabella, Abandoned Doll                       22645 decks  {R}{W}           Legendary Artifact Creature — Toy
+[x]   52  Arabella, Abandoned Doll                       22645 decks  {R}{W}           Legendary Artifact Creature — Toy
 [ ]   53  Breya, Etherium Shaper                         22511 decks  {W}{U}{B}{R}     Legendary Artifact Creature — Human
 [ ]   54  Wilhelt, the Rotcleaver                        22477 decks  {2}{U}{B}        Legendary Creature — Zombie Warrior
 [ ]   55  Maralen, Fae Ascendant                         22471 decks  {2}{B}{G}{U}     Legendary Creature — Elf Faerie Noble
@@ -101,8 +101,8 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   95  Omnath, Locus of Creation                      18632 decks  {R}{G}{W}{U}     Legendary Creature — Elemental
 [ ]   96  Norman Osborn                                  18576 decks  {1}{U}           Legendary Creature — Human Scientist Villain // Legendary Creature — Goblin Human Villain
 [ ]   97  Captain N'ghathrod                             18527 decks  {3}{U}{B}        Legendary Creature — Horror Pirate
-[ ]   98  Urtet, Remnant of Memnarch                     18526 decks  {3}              Legendary Artifact Creature — Myr
-[ ]   99  Voja, Jaws of the Conclave                     18497 decks  {2}{R}{G}{W}     Legendary Creature — Wolf
+[x]   98  Urtet, Remnant of Memnarch                     18526 decks  {3}              Legendary Artifact Creature — Myr
+[x]   99  Voja, Jaws of the Conclave                     18497 decks  {2}{R}{G}{W}     Legendary Creature — Wolf
 [ ]  100  Hope Estheim                                   18200 decks  {W}{U}           Legendary Creature — Human Wizard
 [ ]  101  Magda, Brazen Outlaw                           17938 decks  {1}{R}           Legendary Creature — Dwarf Berserker
 [ ]  102  Ezio Auditore da Firenze                       17857 decks  {1}{B}           Legendary Creature — Human Assassin
@@ -118,7 +118,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  112  Deadpool, Trading Card                         17208 decks  {2}{B}{R}        Legendary Creature — Mutant Mercenary Hero
 [ ]  113  Aminatou, Veil Piercer                         17186 decks  {1}{W}{U}{B}     Legendary Creature — Human Wizard
 [ ]  114  Etali, Primal Conqueror                        17174 decks  {5}{R}{R}        Legendary Creature — Elder Dinosaur // Legendary Creature — Phyrexian Elder Dinosaur
-[ ]  115  Aesi, Tyrant of Gyre Strait                    17143 decks  {4}{G}{U}        Legendary Creature — Serpent
+[x]  115  Aesi, Tyrant of Gyre Strait                    17143 decks  {4}{G}{U}        Legendary Creature — Serpent
 [ ]  116  Witherbloom, the Balancer                      17139 decks  {6}{B}{G}        Legendary Creature — Elder Dragon
 [ ]  117  Zur the Enchanter                              17114 decks  {1}{W}{U}{B}     Legendary Creature — Human Wizard
 [ ]  118  Urza, Chief Artificer                          17039 decks  {3}{W}{U}{B}     Legendary Creature — Human Artificer

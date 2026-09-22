@@ -8,6 +8,7 @@ import _poolAbsorb from "./pool/absorb.js";
 import _poolAcademyRuins from "./pool/academy-ruins.js";
 import _poolActOfTreason from "./pool/act-of-treason.js";
 import _poolAdarkarWastes from "./pool/adarkar-wastes.js";
+import _poolAesiTyrantOfGyreStrait from "./pool/aesi-tyrant-of-gyre-strait.js";
 import _poolAetherize from "./pool/aetherize.js";
 import _poolAftermathAnalyst from "./pool/aftermath-analyst.js";
 import _poolAggravatedAssault from "./pool/aggravated-assault.js";
@@ -25,6 +26,7 @@ import _poolAncientTomb from "./pool/ancient-tomb.js";
 import _poolAncientZiggurat from "./pool/ancient-ziggurat.js";
 import _poolAngelicEdict from "./pool/angelic-edict.js";
 import _poolAnguishedUnmaking from "./pool/anguished-unmaking.js";
+import _poolArabellaAbandonedDoll from "./pool/arabella-abandoned-doll.js";
 import _poolArcaneDenial from "./pool/arcane-denial.js";
 import _poolArcaneSanctum from "./pool/arcane-sanctum.js";
 import _poolArcaneSignet from "./pool/arcane-signet.js";
@@ -704,6 +706,7 @@ import _poolUnstableObelisk from "./pool/unstable-obelisk.js";
 import _poolUnsummon from "./pool/unsummon.js";
 import _poolUrborgVolcano from "./pool/urborg-volcano.js";
 import _poolUreniOfTheUnwritten from "./pool/ureni-of-the-unwritten.js";
+import _poolUrtetRemnantOfMemnarch from "./pool/urtet-remnant-of-memnarch.js";
 import _poolUrzasIncubator from "./pool/urzas-incubator.js";
 import _poolUtvaraHellkite from "./pool/utvara-hellkite.js";
 import _poolValorInAkros from "./pool/valor-in-akros.js";
@@ -726,6 +729,7 @@ import _poolVisceraSeer from "./pool/viscera-seer.js";
 import _poolVituGhaziTheCityTree from "./pool/vitu-ghazi-the-city-tree.js";
 import _poolVizierOfTheScorpion from "./pool/vizier-of-the-scorpion.js";
 import _poolVoiceOfMany from "./pool/voice-of-many.js";
+import _poolVojaJawsOfTheConclave from "./pool/voja-jaws-of-the-conclave.js";
 import _poolVolcanicIsland from "./pool/volcanic-island.js";
 import _poolVoltCharge from "./pool/volt-charge.js";
 import _poolVowOfDuty from "./pool/vow-of-duty.js";
@@ -789,6 +793,7 @@ import _tokensKaroxBladewingToken from "./tokens/karox-bladewing-token.js";
 import _tokensKnightToken from "./tokens/knight-token.js";
 import _tokensLifelinkSoldierToken from "./tokens/lifelink-soldier-token.js";
 import _tokensMoloidToken from "./tokens/moloid-token.js";
+import _tokensMyrToken from "./tokens/myr-token.js";
 import _tokensOgreToken from "./tokens/ogre-token.js";
 import _tokensPegasusToken from "./tokens/pegasus-token.js";
 import _tokensPhyrexianWurmDeathtouch from "./tokens/phyrexian-wurm-deathtouch.js";
@@ -810,6 +815,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAcademyRuins,
   _poolActOfTreason,
   _poolAdarkarWastes,
+  _poolAesiTyrantOfGyreStrait,
   _poolAetherize,
   _poolAftermathAnalyst,
   _poolAggravatedAssault,
@@ -827,6 +833,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAncientZiggurat,
   _poolAngelicEdict,
   _poolAnguishedUnmaking,
+  _poolArabellaAbandonedDoll,
   _poolArcaneDenial,
   _poolArcaneSanctum,
   _poolArcaneSignet,
@@ -1506,6 +1513,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolUnsummon,
   _poolUrborgVolcano,
   _poolUreniOfTheUnwritten,
+  _poolUrtetRemnantOfMemnarch,
   _poolUrzasIncubator,
   _poolUtvaraHellkite,
   _poolValorInAkros,
@@ -1528,6 +1536,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolVituGhaziTheCityTree,
   _poolVizierOfTheScorpion,
   _poolVoiceOfMany,
+  _poolVojaJawsOfTheConclave,
   _poolVolcanicIsland,
   _poolVoltCharge,
   _poolVowOfDuty,
@@ -1597,6 +1606,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensKnightToken,
   _tokensLifelinkSoldierToken,
   _tokensMoloidToken,
+  _tokensMyrToken,
   _tokensOgreToken,
   _tokensPegasusToken,
   _tokensPhyrexianWurmDeathtouch,

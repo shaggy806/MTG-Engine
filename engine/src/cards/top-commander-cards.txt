@@ -1,5 +1,5 @@
 Top 2000 Commander cards by EDHREC popularity (fetched 2026-09-13)
-452 already implemented / 1548 missing (marks refreshed 2026-09-22)
+453 already implemented / 1547 missing (marks refreshed 2026-09-22)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -824,7 +824,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   828  Wonder                                   {3}{U}           Creature — Incarnation
 [x]   829  Elspeth, Sun's Champion                  {4}{W}{W}        Legendary Planeswalker — Elspeth
 [ ]   830  Sigarda's Aid                            {W}              Enchantment
-[ ]   831  Aesi, Tyrant of Gyre Strait              {4}{G}{U}        Legendary Creature — Serpent
+[x]   831  Aesi, Tyrant of Gyre Strait              {4}{G}{U}        Legendary Creature — Serpent
 [ ]   832  Ledger Shredder                          {1}{U}           Creature — Bird Advisor
 [ ]   833  Soul's Attendant                         {W}              Creature — Human Cleric
 [ ]   834  Yawgmoth, Thran Physician                {2}{B}{B}        Legendary Creature — Human Cleric
