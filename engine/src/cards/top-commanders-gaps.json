@@ -1,0 +1,5233 @@
+{
+ "generated": "2026-09-22",
+ "source": "Per-commander triage of every unimplemented top-commanders.txt entry (AI agents reading Oracle text + rulings against the engine), normalized onto one feature vocabulary. See neededCards-features.md, 'The commander gap'.",
+ "built": [],
+ "features": {
+  "bug:as-enters-choices-any-entry": {
+   "size": "medium",
+   "ui": false,
+   "description": "Make chooseOnEnter and copyOnEnter real as-enters replacements, applied on every entry (reanimate, flicker, token copy) and before the enters-the-battlefield event, so ETB triggers see the copied or chosen permanent."
+  },
+  "bug:cda-all-zones": {
+   "size": "small",
+   "ui": false,
+   "description": "CDA fixes: setBasePtFromCount works in every zone (rule 604.3), which matters for a commander in the command zone and for hand and graveyard filters, and it accepts a CardFilter count ('the number of Islands you control')."
+  },
+  "bug:color-identity-back-face": {
+   "size": "small",
+   "ui": false,
+   "description": "colorIdentityOf should scan every face of a multi-face card, not just the definition it's given (the front). Deck validation and the card replacer both call it with the front face."
+  },
+  "bug:commander-903-9a-current-rules": {
+   "size": "medium",
+   "ui": false,
+   "description": "Model current rule 903.9a: a commander goes to the graveyard or exile, dies triggers and sacrifice events fire, and then its owner may move it to the command zone as a state-based action. This replaces the pre-move replacement and fixes the edict path, which skips permanent-sacrificed."
+  },
+  "bug:commander-eligibility-vehicles": {
+   "size": "small",
+   "ui": false,
+   "description": "Deck validation admits a legendary Vehicle or Spacecraft with printed power and toughness as a commander (current Commander rules), not only legendary creatures and planeswalkers."
+  },
+  "bug:control-effect-timestamps": {
+   "size": "small",
+   "ui": false,
+   "description": "Layer-2 control effects apply in timestamp order. Today a control-granting Aura always beats controlledByEffect, which carries no timestamp."
+  },
+  "bug:counter-annihilation": {
+   "size": "small",
+   "ui": false,
+   "description": "The state-based action for rule 704.5q: +1/+1 and -1/-1 counters on the same permanent are removed in pairs."
+  },
+  "bug:double-strike-between-damage-steps": {
+   "size": "small",
+   "ui": false,
+   "description": "Record which combatants had first strike or double strike when the first-strike damage step began. Losing or gaining first strike between the two steps then follows rule 510.4."
+  },
+  "bug:lki-leaves-battlefield-triggers": {
+   "size": "medium",
+   "ui": false,
+   "description": "Dies and leaves-the-battlefield triggers look back in time (rule 603.10a). Take a last-known snapshot before moveObject clears the object: computed types, subtypes, counters, controller, keywords and granted triggers. Match trigger filters, 'you control' and granted dies triggers against that snapshot."
+  },
+  "bug:lki-object-reads": {
+   "size": "medium",
+   "ui": false,
+   "description": "When a resolving ability reads an object that has left the battlefield, it uses last-known information (rule 608.2h). This covers powerOf/toughnessOf of the source, trigger object or target, 'that creature's controller', and the source's keywords (lifelink) for damage it dealt. It includes tokens that were deleted."
+  },
+  "bug:lore-counters-fire-chapters": {
+   "size": "small",
+   "ui": false,
+   "description": "Lore counters added by an effect or by proliferate trigger the Saga's chapter abilities (rule 714.2c). Today only the chapter step and entering add them through addLoreCounter."
+  },
+  "bug:mana-any-one-color": {
+   "size": "small",
+   "ui": false,
+   "description": "'Add N mana of any one colour' is auto-paid as N independently coloured units (a Gilded Lotus pays {G}{W}). Emit one fixed option per colour instead."
+  },
+  "bug:modal-modes-on-cast": {
+   "size": "medium",
+   "ui": false,
+   "description": "Non-targeted modal spells choose their modes on cast (rule 700.2a), not at resolution, so anything that reads the spell on the stack sees them."
+  },
+  "bug:player-leaves-game-cleanup": {
+   "size": "medium",
+   "ui": false,
+   "description": "Rule 800.4a: when a player leaves the game, control effects they held end, stolen permanents (commanders included) return to their previous controllers, and their objects leave."
+  },
+  "bug:saga-completion-sacrifice": {
+   "size": "small",
+   "ui": false,
+   "description": "A completed Saga is sacrificed (rule 714.4), so the SBA should emit permanent-sacrificed and sacrifice triggers should see it."
+  },
+  "bug:sequence-suspends-on-decision": {
+   "size": "medium",
+   "ui": false,
+   "description": "A sequence suspends when a step raises a decision (discard, sacrifice, look-and-choose) and resumes with the later steps after the answer. Today the later steps (draws) resolve before the player chooses."
+  },
+  "bug:simultaneous-damage-batching": {
+   "size": "small",
+   "ui": false,
+   "description": "Simultaneous damage from several sources counts as one event where the rules say so: an enrage-style dealt-damage trigger fires once per batch, and lifelink gains once per source rather than once per recipient."
+  },
+  "bug:simultaneous-zone-moves": {
+   "size": "large",
+   "ui": false,
+   "description": "Move permanents simultaneously in mass destruction, SBA deaths and 'return X and Y' effects, so leaves-the-battlefield triggers and replacements look back at the whole group (rule 603.10a)."
+  },
+  "bug:static-scope-computed-keywords": {
+   "size": "small",
+   "ui": false,
+   "description": "AffectSpec.withKeyword reads computed layer-6 keywords (flying from an Aura, Equipment or grant-keyword) for a layer-7 P/T grant, not printed keywords."
+  },
+  "bug:static-scope-computed-types": {
+   "size": "small",
+   "ui": false,
+   "description": "staticAffects' creature scopes (creatures-you-control, all-creatures, emblems, land creatures) gate on printed types through isPrintedCreature. They should read computed layer-4 types, so animated lands and crewed Vehicles get anthems and keyword grants."
+  },
+  "bug:token-stack-fixes": {
+   "size": "small",
+   "ui": false,
+   "description": "Token-stack fixes: a stacked token whose static counts 'each other [type]' skips only itself, not its whole stack, and a tap, sacrifice or convoke cost can use part of a stack."
+  },
+  "bug:transform-fixes": {
+   "size": "small",
+   "ui": false,
+   "description": "Transform fixes: a permanent entering transformed applies its back face's enters replacements, and a delayed trigger transforms a permanent only if it hasn't transformed since (rule 701.28f)."
+  },
+  "bug:x-value-propagation": {
+   "size": "small",
+   "ui": false,
+   "description": "X carries through: a spell's mana value on the stack includes its chosen X (rule 202.3e) in manaValueOfTarget and filters, and an ETB trigger that refers to X uses the X its source was cast with (rule 107.3m)."
+  },
+  "bug:zone-change-object-identity": {
+   "size": "medium",
+   "ui": false,
+   "description": "Rule 400.7: an object that changes zones becomes a new object. Delayed triggers, 'return it' effects, trigger-object references and sources stop tracking a card that left and came back. put-onto-battlefield requires the card to still be in its expected zone, and an 'until the source leaves' exile does nothing if the source has already left (rule 610.3c)."
+  },
+  "condition:cast-spell-targets": {
+   "size": "medium",
+   "ui": false,
+   "description": "A cast-spell trigger clause or condition on the spell's chosen targets: it targets a creature you control, it targets only this permanent, it targets a single creature, it still has a legal permanent or player target."
+  },
+  "condition:count-excluding-source": {
+   "size": "small",
+   "ui": false,
+   "description": "'Other' / 'each other' everywhere: excludeSelf on countOf amounts and on the controls condition (also excluding a target), and exceptSource on add-counter-all and grant-keyword-all."
+  },
+  "condition:defending-player-life-rank": {
+   "size": "small",
+   "ui": false,
+   "description": "Attack-trigger conditions on how the defending player's life compares with the other opponents: dethrone (most life or tied, players only) and 'not the lowest life'."
+  },
+  "condition:devotion": {
+   "size": "small",
+   "ui": false,
+   "description": "A devotion StaticCondition, including devotion to two colours with a hybrid pip counted once."
+  },
+  "condition:entry-provenance": {
+   "size": "medium",
+   "ui": false,
+   "description": "Record how and from where a permanent entered, and let conditions and triggers read it: 'if it was cast' (from any zone, command zone included), 'enters from exile' or 'came from a graveyard', and 'not put onto the battlefield by this ability'."
+  },
+  "condition:filter-attachments": {
+   "size": "small",
+   "ui": false,
+   "description": "CardFilter clauses about attachments: equipped, enchanted, enchanted by an Aura you control, and modified (has a counter, is equipped, or is enchanted by an Aura you control). Also a 'source is equipped' condition. Used by attack, combat-damage and cast triggers."
+  },
+  "condition:filter-card-property-clauses": {
+   "size": "medium",
+   "ui": false,
+   "description": "Small CardFilter clauses about a card's own properties: two or more card types, has or lacks abilities, base P/T (after layer 7b), {X} in its mana cost, the number of coloured mana symbols, has a mana ability (granted ones included, also as an AffectSpec narrowing), and a name different from every [filter] you control."
+  },
+  "condition:filter-combinators": {
+   "size": "small",
+   "ui": false,
+   "description": "CardFilter boolean combinators: anyOf (historic, 'artifact or Artificer', 'black and/or red', 'flash or haste', 'MV or power equal to N') and negated clauses (notSupertype for 'nonlegendary' and 'nonbasic', notName)."
+  },
+  "condition:filter-dynamic-compare": {
+   "size": "small",
+   "ui": false,
+   "description": "NumCompare.n reads an EffectAmount when evaluated: the trigger object's mana value or power, the source's current power, the sacrificed MV + 1, the trigger value, or the object's own power ('toughness greater than its power'). It is re-evaluated at resolution."
+  },
+  "condition:filter-this-turn-history": {
+   "size": "small",
+   "ui": false,
+   "description": "CardFilter clauses on an object's history this turn: enteredThisTurn (from enteredBattlefieldOnTurn) and attackedThisTurn. attackedThisTurn also has to be cleared on a zone change, since it goes stale today."
+  },
+  "condition:player-state-thresholds": {
+   "size": "small",
+   "ui": false,
+   "description": "Numeric StaticConditions on player and game state: N or more cards in hand, N or more life, at most half your starting life, N or more cards in exile, and 'you are the monarch'."
+  },
+  "condition:source-state": {
+   "size": "small",
+   "ui": false,
+   "description": "Intervening-if conditions on the ability's source, checked when it triggers and again on resolution: it's attacking, it's tapped, it's still on the battlefield (the same object), or it's in the command zone or on the battlefield (eminence)."
+  },
+  "condition:top-card-of-library": {
+   "size": "small",
+   "ui": false,
+   "description": "A condition on the top card of a library (revealed to every player) that a conditional can branch on: 'reveal the top card; if it's a land card, put it onto the battlefield tapped, otherwise draw a card', where the else branch is a real draw."
+  },
+  "condition:turn-structure": {
+   "size": "small",
+   "ui": false,
+   "description": "Conditions on where the turn is: the current step or phase ('only during combat', 'during your end step'). A per-turn count of combat and main phases backs 'the first combat phase this turn' and 'your second main phase', which is only the first postcombat main."
+  },
+  "cost:ability-cost-modification": {
+   "size": "small",
+   "ui": false,
+   "description": "A static that changes the activation cost of other permanents' activated abilities matching a filter ('Activated abilities of Foods you control cost {1} less to activate'), read in the activation cost path and in legalActions' affordability."
+  },
+  "cost:choose-cards-as-cost": {
+   "size": "medium",
+   "ui": true,
+   "description": "Activation costs paid with cards the player chooses: discard N cards, or exile N [filter] cards from your graveyard."
+  },
+  "cost:colorless-hybrid-mana": {
+   "size": "small",
+   "ui": false,
+   "description": "Colourless-hybrid mana symbols ({C/W} and the like): parsing, mana value, colour, and payment in planManaPayment."
+  },
+  "cost:commander-tax-as-life": {
+   "size": "small",
+   "ui": false,
+   "description": "A CardDefinition field that turns commander tax into life (2 life per earlier cast) instead of {2} generic mana."
+  },
+  "cost:cost-modification-extensions": {
+   "size": "medium",
+   "ui": false,
+   "description": "Extensions to costModification and selfCostReduction: a reduction that scales with a general amount (counters on the source, turn stats, graveyard counts), one that applies only to the first matching spell each turn, one that depends on the chosen targets, one that removes a coloured pip, and one that reduces the generic half of a twobrid pip."
+  },
+  "cost:mana-ability-complex-costs": {
+   "size": "medium",
+   "ui": false,
+   "description": "Mana abilities whose cost is more than {T}: a coloured-mana cost, removing counters, sacrificing a filtered permanent, or tapping other permanents. They stay mana abilities (no stack), and the auto-payer can use them or knowingly skip them."
+  },
+  "cost:mana-spending-rules": {
+   "size": "medium",
+   "ui": false,
+   "description": "Rules for what mana may pay for: 'spend mana as though it were mana of any colour/type' for particular spells (in the planner and spendFromPool), and deny-list restrictions ('can't be spent to cast nonartifact spells')."
+  },
+  "cost:may-cost-non-mana": {
+   "size": "small",
+   "ui": false,
+   "description": "The may effect's optional cost supports energy, life plus mana, and a variable energy amount, and is offered only when fully payable."
+  },
+  "cost:pay-life-for-pips": {
+   "size": "small",
+   "ui": false,
+   "description": "A static that lets its controller pay 2 life instead of each {B} (or other coloured) pip in any cost (K'rrik), threaded through Game.payMana/planPayment. The player's choice between life and mana is decision:manual-payment-choices."
+  },
+  "cost:remove-counters-from-chosen": {
+   "size": "small",
+   "ui": true,
+   "description": "A removeCounter cost paid from a chosen permanent other than the source, or N counters spread across several creatures you control, carried on the activate-ability action."
+  },
+  "cost:sacrifice-multiple": {
+   "size": "medium",
+   "ui": true,
+   "description": "Sacrifice N permanents, or any number of them, as a cost with a filter and a chosen set. Covers 'sacrifice six Blood tokens' and 'you may sacrifice any number of creatures; each reduces the cost by {2}'."
+  },
+  "cost:unattach-equipment": {
+   "size": "small",
+   "ui": true,
+   "description": "An 'Unattach an Equipment from this' activation cost (rule 701.3d): the player chooses which attached Equipment, the cost is unpayable with none attached, and the effect can read that Equipment's mana value."
+  },
+  "decision:choose-from-zone-extensions": {
+   "size": "medium",
+   "ui": true,
+   "description": "Extensions to choose-from-zone: pick across several zones at once (hand or graveyard, all graveyards), apply constraints to the whole selection (different names, four or more card types among them), and let a chooser other than the zone's owner pick ('an opponent chooses a card from your hand')."
+  },
+  "decision:choose-number": {
+   "size": "small",
+   "ui": true,
+   "description": "A resolution-time choice of a number in a range ('put up to three lore counters on it')."
+  },
+  "decision:choose-permanent": {
+   "size": "medium",
+   "ui": true,
+   "description": "An untargeted resolution-time choice of one or more permanents matching a filter, made by a named player: populate's token, amass's Army, 'put counters on a creature you control', 'exile any number of other nonland permanents you control', and one of a spell's targets to copy."
+  },
+  "decision:choose-player": {
+   "size": "medium",
+   "ui": true,
+   "description": "An untargeted 'choose a player' or 'choose an opponent', at resolution or as the permanent enters (several choices must differ), plus a 'chosen player' PlayerScope that draw, counters and create-token can route to."
+  },
+  "decision:choose-tap-costs": {
+   "size": "medium",
+   "ui": true,
+   "description": "The player chooses which permanents pay a tap-others cost (today the engine taps the first eligible ones), including 'tap any number with total power N or more' and 'tap X untapped permanents' with X chosen."
+  },
+  "decision:copy-new-targets": {
+   "size": "medium",
+   "ui": true,
+   "description": "'You may choose new targets for the copy': raise choose-targets for each copy (storm, Twincast, copy triggers), with the original's targets as the default."
+  },
+  "decision:discard-any-number": {
+   "size": "small",
+   "ui": true,
+   "description": "Discard any number of cards (0 up to hand size, optionally filtered) as a real discard, including an as-enters discard that decides the counters the permanent enters with."
+  },
+  "decision:free-cast-choices": {
+   "size": "medium",
+   "ui": true,
+   "description": "castCardWithoutPaying (cascade, suspend) gets the full cast. The 'you may' can be declined, targets are chosen rather than set to the first option, and modes, the MDFC face, kicker and mandatory additional costs are all offered. Cost increases still apply."
+  },
+  "decision:legend-rule-choice": {
+   "size": "small",
+   "ui": true,
+   "description": "The legend rule asks the controller which same-named legendary permanent to keep, instead of always keeping the oldest."
+  },
+  "decision:library-ordering": {
+   "size": "medium",
+   "ui": true,
+   "description": "The player orders cards they put on top or bottom of the library: scry's kept cards, and 'the rest on the bottom in any order'."
+  },
+  "decision:manual-payment-choices": {
+   "size": "medium",
+   "ui": true,
+   "description": "Let the payer steer mana payment: pay from sources rather than floating mana, and choose mana or 2 life for each Phyrexian pip, instead of the auto-payer deciding."
+  },
+  "decision:variable-target-count": {
+   "size": "medium",
+   "ui": true,
+   "description": "A target slot with a variable number of targets ('any number of target …', or 'up to X' with X from kicks or an amount), with optional constraints across the whole set ('total power 10 or less'). This touches TargetSpec, legalActions' per-slot options, the choose-targets validator and the client picker."
+  },
+  "decision:ward-payment": {
+   "size": "medium",
+   "ui": true,
+   "description": "Ward as a real triggered ability when the object becomes a target. The targeting player chooses whether to pay, and a non-mana ward cost (discard a card) needs its own choice."
+  },
+  "effect:add-mana-extensions": {
+   "size": "medium",
+   "ui": true,
+   "description": "Extensions to add-mana: the player chooses the colour split when mana is added outside cost payment, exactly one of each of several colours ({B}{R}{G}), colours taken from a referenced card, and 'each player adds'."
+  },
+  "effect:add-subtype": {
+   "size": "small",
+   "ui": false,
+   "description": "A one-shot layer-4 type or subtype addition to targets or returned objects, for a duration or permanently, without touching P/T."
+  },
+  "effect:additional-combat-after-this-phase": {
+   "size": "small",
+   "ui": false,
+   "description": "An additional combat phase that follows this combat directly, with or without an extra main phase, rather than looping back after postcombat main."
+  },
+  "effect:additional-upkeep-steps": {
+   "size": "medium",
+   "ui": false,
+   "description": "'You get that many additional upkeep steps after this phase': extra beginning phases (untap and draw skipped) inserted after the current combat, with upkeep triggers firing in each (rules 500.8 and 500.10)."
+  },
+  "effect:amount-aggregate": {
+   "size": "small",
+   "ui": false,
+   "description": "Sum and max aggregates over matching objects: total power or toughness of creatures you control (a token stack counts N times), the greatest power or mana value among a filter or an attack batch, and 'greater than each other creature's power'. Used in conditions, CDAs, P/T bonuses and cost reductions."
+  },
+  "effect:amount-counters-on-object": {
+   "size": "small",
+   "ui": false,
+   "description": "An EffectAmount for the counters on an object (all kinds, or one kind) on the source, trigger object or a target. It falls back to last-known counters once the object has left. Also an intervening-if for 'if it had counters on it'."
+  },
+  "effect:amount-fields-dynamic": {
+   "size": "medium",
+   "ui": false,
+   "description": "Let fixed-number fields take an EffectAmount evaluated at resolution or entry: scry N, look-and-choose max, modal maxModes, animate's P/T, an X/X token's base P/T (layer 7b), and the enters-with-counters amount (a live count, or another card's power)."
+  },
+  "effect:amount-new-variants": {
+   "size": "small",
+   "ui": false,
+   "description": "Small new EffectAmounts: differences floored at 0 (defending hand size minus yours, the larger of power and toughness minus the smaller), the number of colours of a referenced object, and the distinct card types among cards in your graveyard or all graveyards (also as a CDA count)."
+  },
+  "effect:amount-turn-stat": {
+   "size": "small",
+   "ui": false,
+   "description": "EffectAmounts that read turn stats: your life lost, gained or cards drawn this turn, the total across opponents, and the number of players or opponents who lost life this turn."
+  },
+  "effect:attach-extensions": {
+   "size": "medium",
+   "ui": true,
+   "description": "Aura and Equipment attachment beyond 'attach the source': an Aura put onto the battlefield without being cast attaches to a chosen or named legal object (rule 303.4f), including Aura tokens and token copies of a creature's attachments. Also attach chosen Equipment or Auras (any number) to a creature, and check legality (the enchant restriction, Equipment only on creatures)."
+  },
+  "effect:become-copy": {
+   "size": "medium",
+   "ui": false,
+   "description": "Existing permanents matching a filter become copies of an object (a layer-1 copyOf override) for a duration, or permanently."
+  },
+  "effect:cast-and-activate-restrictions": {
+   "size": "medium",
+   "ui": false,
+   "description": "Casting and activation rules checked in whyCannotCast, whyCannotActivate and legalActions: prohibitions (a player can't cast or activate this turn, a permanent's abilities can't be activated, opponents can't cast spells or can't during your turn, you can't cast permanent spells, split second), 'cast spells as though they had flash', and a card's own castOnlyIf restriction from any zone."
+  },
+  "effect:cast-during-resolution": {
+   "size": "medium",
+   "ui": true,
+   "description": "Casting during resolution: cast a chosen matching card from hand, from the top X of the library, or the card just exiled, without paying its mana cost or for an alternative cost such as discarding a card. Also copy a card and cast the copy for free."
+  },
+  "effect:choices-by-other-players": {
+   "size": "medium",
+   "ui": false,
+   "description": "Choices that belong to players other than the controller, in APNAP order: a 'may' answered by the active player or the entering creature's controller, 'each player may', tempting offer, villainous choice, and 'unless' punishers. The punishers can be asked of each opponent in turn, can have the controller as chooser, and can offer 'or discard a card'."
+  },
+  "effect:control-change-extensions": {
+   "size": "medium",
+   "ui": false,
+   "description": "Control changes beyond 'you gain control of target': give control to another player (donate, the active player, put a card onto the battlefield under a target player's control), mass filter-driven gain control, and rotating control around the table."
+  },
+  "effect:copy-ability": {
+   "size": "medium",
+   "ui": false,
+   "description": "Copy an activated or triggered ability on the stack, keeping its X value."
+  },
+  "effect:copy-exceptions": {
+   "size": "large",
+   "ui": false,
+   "description": "Copy effects with exceptions, stored as copiable values (rule 707.9b): add or override card types, subtypes and colours, set base P/T, grant abilities, and 'except it has this card's other abilities' (Sakashima). Copies of those copies inherit the exceptions."
+  },
+  "effect:copy-permanent-spell": {
+   "size": "medium",
+   "ui": false,
+   "description": "Copy a permanent spell. The copy resolves into a token (rule 707.10f), keeping X."
+  },
+  "effect:copy-spell-extensions": {
+   "size": "medium",
+   "ui": false,
+   "description": "Extensions to copy-spell: copy the triggering spell (not only a target), still copy it from last-known information after it leaves the stack, keep the original's cast choices (modes, kicked, overload), and retarget as the effect says (one copy per other legal target, or target the source instead)."
+  },
+  "effect:create-token-with-counters": {
+   "size": "small",
+   "ui": false,
+   "description": "create-token puts N counters of a kind on each token actually created (a 0/0 Hydra with X +1/+1 counters), with N read from an amount and such tokens never stack-compacted."
+  },
+  "effect:created-tokens-gain-keyword-eot": {
+   "size": "small",
+   "ui": false,
+   "description": "Tokens an effect just created gain a keyword (haste) until end of turn. create-token has no such option, and create-token-copy's gainsHaste is permanent."
+  },
+  "effect:delayed-trigger-extensions": {
+   "size": "medium",
+   "ui": false,
+   "description": "Delayed triggers keyed to an event rather than a step ('when that creature dies this turn', 'whenever it deals combat damage this turn', 'when you next cast a creature spell this turn'), and delayed triggers that capture the trigger object or the tokens just created."
+  },
+  "effect:divide-among-targets": {
+   "size": "medium",
+   "ui": true,
+   "description": "Divide or distribute an amount (damage or counters) among the chosen targets, at least one each. The split is announced as the spell or ability goes on the stack (rule 601.2d)."
+  },
+  "effect:double-counters-each-kind": {
+   "size": "small",
+   "ui": false,
+   "description": "Double every kind of counter on one object (the trigger object), not one kind across a filter."
+  },
+  "effect:duration-extensions": {
+   "size": "small",
+   "ui": false,
+   "description": "New modifier durations: 'until your next turn', and 'for as long as it has a [kind] counter on it' for P/T and type grants."
+  },
+  "effect:emblem-triggered-abilities": {
+   "size": "medium",
+   "ui": false,
+   "description": "Emblems that carry triggered abilities: create-emblem takes a TriggeredAbility, detectTriggers scans emblems, and a sourceless emblem trigger can choose targets."
+  },
+  "effect:end-the-turn": {
+   "size": "medium",
+   "ui": false,
+   "description": "End the turn (rule 723.1): exile everything on the stack, remove creatures from combat and go to cleanup. Cleanup gets priority when something triggers there, followed by another cleanup (rule 514.3a)."
+  },
+  "effect:enter-attacking": {
+   "size": "medium",
+   "ui": true,
+   "description": "Put a card or create tokens (copies included) onto the battlefield tapped and attacking. Its controller chooses which player or planeswalker it attacks (rule 508.4)."
+  },
+  "effect:exchange-text-boxes": {
+   "size": "large",
+   "ui": false,
+   "description": "Exchange two permanents' text boxes: a layer-3 per-object 'rules text comes from X' redirect that every ability, keyword, static and text read honours."
+  },
+  "effect:exile-library-all-but-bottom": {
+   "size": "small",
+   "ui": false,
+   "description": "Exile all but the bottom card of target player's library."
+  },
+  "effect:exile-with-counters": {
+   "size": "small",
+   "ui": false,
+   "description": "The exile effect accepts the trigger object (a card in a graveyard, only if it's still there, with 'if you do' gated on it), and named counters (croak, kick, fetch, stash) go on cards in exile, including cards an effect just exiled."
+  },
+  "effect:flicker-generalized": {
+   "size": "small",
+   "ui": false,
+   "description": "Flicker the ability's own source, flicker several targets at once and return them together, and link a delayed return to the exile."
+  },
+  "effect:impulse-exile-other-libraries": {
+   "size": "medium",
+   "ui": false,
+   "description": "Exile the top card of other players' libraries (a target player, the damaged player, each opponent, each player), face down where required. The play permission goes to the controller, or each player plays their own card."
+  },
+  "effect:look-and-choose-leftover": {
+   "size": "small",
+   "ui": false,
+   "description": "More look-and-choose leftover destinations: into the graveyard, or a destination decided by a condition checked after the chosen card is placed."
+  },
+  "effect:look-and-choose-second-pick": {
+   "size": "small",
+   "ui": false,
+   "description": "A second choice stage over the looked-at cards left after the first pick ('you may put one into your hand, then put any number of land cards from among them onto the battlefield tapped and the rest into your graveyard')."
+  },
+  "effect:lose-game": {
+   "size": "small",
+   "ui": false,
+   "description": "A 'target player loses the game' effect routed through the existing elimination path."
+  },
+  "effect:mana-ability-dynamic-amount": {
+   "size": "medium",
+   "ui": false,
+   "description": "Mana abilities whose output is a live amount (power, a count, devotion, or X chosen in any colour combination): manaSources and standaloneManaChoices size it without a resolution context and enumerate colour splits."
+  },
+  "effect:mana-ability-side-effects": {
+   "size": "medium",
+   "ui": false,
+   "description": "Mana abilities with non-mana side effects that still never use the stack: a rider effect (a delayed trigger or counter) on the ability itself, and triggered mana abilities ('whenever you tap [a permanent] for mana', rule 605.1b). The auto-payer accounts for both."
+  },
+  "effect:may-sacrifice-then": {
+   "size": "medium",
+   "ui": true,
+   "description": "'You may sacrifice [N] [filter]. If you do, [effect]': offered only when enough matching permanents exist, the player chooses which (or declines), and the tail runs only after the sacrifice has actually happened."
+  },
+  "effect:missing-tokens": {
+   "size": "small",
+   "ui": false,
+   "description": "Token definitions the pool lacks, and the investigate effect: a Clue token ('{2}, Sacrifice: Draw a card') and a 1/1 black-green Insect, for example."
+  },
+  "effect:modal-ability-targeted-modes": {
+   "size": "medium",
+   "ui": true,
+   "description": "Modal triggered and activated abilities whose modes carry their own targets, with modes chosen as the ability goes on the stack (rule 700.2), the way castModal works for spells."
+  },
+  "effect:modifier-grants-activated": {
+   "size": "small",
+   "ui": false,
+   "description": "A one-shot PtModifier can grant activated abilities, a mana ability included, which manaSources, legalActions and activateAbility then see."
+  },
+  "effect:move-counter": {
+   "size": "small",
+   "ui": true,
+   "description": "Move a counter from one object to another (a removal, then a put-onto). When the source has several counter kinds, the player chooses which one."
+  },
+  "effect:player-scope-extensions": {
+   "size": "medium",
+   "ui": false,
+   "description": "More player scopes: players named by the triggering event (defending player, damaged player, active player, the trigger object's controller, each opponent other than that player), each player or each opponent for mill, discard and create-token, CardFilter controlledBy active player, and per-player amounts (each opponent loses half their life)."
+  },
+  "effect:put-commanders-onto-battlefield": {
+   "size": "small",
+   "ui": false,
+   "description": "Put all commanders from the command zone onto the battlefield under your control, whoever owns them."
+  },
+  "effect:put-onto-battlefield-options": {
+   "size": "small",
+   "ui": false,
+   "description": "Options on putting a card onto the battlefield: transformed (face 1), from flicker, exile or a graveyard, and return-from-graveyard's withCounters (a finality counter, for example)."
+  },
+  "effect:random-choice": {
+   "size": "small",
+   "ui": false,
+   "description": "Seeded random choices at resolution: a random opponent bound into a slot, or a random matching card from your graveyard."
+  },
+  "effect:reflexive-trigger": {
+   "size": "medium",
+   "ui": false,
+   "description": "Real reflexive triggers (rule 603.12): after an optional payment or action ('when you do'), a new triggered ability goes on the stack and chooses its targets and modes then."
+  },
+  "effect:regenerate": {
+   "size": "medium",
+   "ui": false,
+   "description": "Regeneration (rule 701.15): a turn-scoped shield that replaces destruction by tapping the permanent, removing it from combat and removing damage."
+  },
+  "effect:repeat-process": {
+   "size": "small",
+   "ui": false,
+   "description": "Loop an effect block while a condition on the card just moved holds ('if it's a land, repeat this process'), stopping when the library or graveyard runs out."
+  },
+  "effect:return-to-hand-extensions": {
+   "size": "small",
+   "ui": false,
+   "description": "return-to-hand from non-battlefield zones (a graveyard card, the source, the trigger object, now or on a delayed trigger), and returning a spell from the stack to its owner's hand (not a counter)."
+  },
+  "effect:reveal-until": {
+   "size": "medium",
+   "ui": false,
+   "description": "A generalised cascade loop: reveal or exile cards from the top of a target player's library until one matches a filter (or a dynamic MV bound). The hit goes to a destination or a follow-up, and the rest are exiled, put on the bottom in random order, or kept exiled."
+  },
+  "effect:sacrificed-object-lki": {
+   "size": "medium",
+   "ui": false,
+   "description": "Snapshot the permanent sacrificed to pay a cost, or by a preceding step, and expose its last-known power, mana value, types, subtypes and isCommander. These feed amounts (the Fling family), conditions ('if it was a commander' or 'a Hamster') and dynamic filters ('shares a card type with it')."
+  },
+  "effect:shuffle-library": {
+   "size": "small",
+   "ui": false,
+   "description": "A standalone 'shuffle your library' effect step ('Shuffle your library, then exile the top card')."
+  },
+  "effect:target-other-than-source": {
+   "size": "medium",
+   "ui": false,
+   "description": "An 'another / other target' exclusion for triggered as well as activated abilities: drop the source (or an earlier slot's pick, or the triggering player) from a slot's options. Split it from the 'sacrifice another' cost flag, which otherOnly controls too today."
+  },
+  "effect:target-spec-additions": {
+   "size": "small",
+   "ui": false,
+   "description": "New TargetSpecs: 'target opponent whose turn it is', and spells restricted by controller ('target instant or sorcery spell you control')."
+  },
+  "effect:temporary-player-effect": {
+   "size": "medium",
+   "ui": false,
+   "description": "A resolving effect installs a player-level continuous effect with a duration (end of turn, or until your next turn), like an emblem that expires: a cost reduction for matching spells, a replacement effect, or 'cast spells from your hand without paying their mana costs this turn'."
+  },
+  "effect:this-way-results": {
+   "size": "medium",
+   "ui": false,
+   "description": "The resolution context records what earlier steps actually did: cards discarded, milled, exiled, drawn or moved, and whether an optional action happened. That backs 'for each card … this way' amounts, 'if a land was discarded or milled this way' conditions, a real 'if you do', and follow-ups that choose or copy among the cards just moved."
+  },
+  "effect:token-copy-last-known-info": {
+   "size": "small",
+   "ui": false,
+   "description": "create-token-copy of an object that has left the battlefield (a dead creature, a dying Clone) uses its last-known copiable values, including copyOf and face. Today it reads the object in its new zone, or nothing if it was deleted."
+  },
+  "effect:token-copy-options": {
+   "size": "small",
+   "ui": false,
+   "description": "create-token-copy options: 'tapped', as create-token has, and one copy for each object in the triggering batch ('for each of them, create a token that's a copy of it'), token stacks included."
+  },
+  "keyword:airbend": {
+   "size": "small",
+   "ui": false,
+   "description": "Airbend: exile the permanent or spell, and its owner may cast it from exile for {2}."
+  },
+  "keyword:annihilator": {
+   "size": "small",
+   "ui": false,
+   "description": "Annihilator N (rule 702.86): a parameterised, grantable keyword with an attack trigger that makes the defending player sacrifice N permanents."
+  },
+  "keyword:blight": {
+   "size": "small",
+   "ui": true,
+   "description": "Blight N: a player chooses a creature they control and puts N -1/-1 counters on it, as an effect ('each opponent blights 1', queued per player like pendingSacrifices) and as a cost (Ward-Blight). A player with no creature can't blight."
+  },
+  "keyword:blitz": {
+   "size": "medium",
+   "ui": false,
+   "description": "Blitz: an alternative-cost cast variant; a blitzed permanent has haste and 'when this dies, draw a card', and is sacrificed at the next end step. Includes a static granting blitz to matching creature spells."
+  },
+  "keyword:bloodthirst": {
+   "size": "small",
+   "ui": false,
+   "description": "Bloodthirst: enter with counters if an opponent was dealt damage this turn, with the amount read from a stat."
+  },
+  "keyword:casualty": {
+   "size": "medium",
+   "ui": false,
+   "description": "Casualty N (rule 702.153): an optional additional cost to sacrifice a creature with power N or greater, offered as a cast variant. If it was paid, a cast trigger copies the spell."
+  },
+  "keyword:changeling": {
+   "size": "small",
+   "ui": false,
+   "description": "'Is every creature type' (changeling) and 'every land type': a marker that matches every type of that kind, in every zone, for filters, lords and effectiveSubtypes."
+  },
+  "keyword:connive": {
+   "size": "medium",
+   "ui": false,
+   "description": "Connive N (rule 701.50): draw N, discard N, then put a +1/+1 counter on the creature for each nonland card discarded."
+  },
+  "keyword:crew": {
+   "size": "medium",
+   "ui": true,
+   "description": "Vehicles and crew N: tap any number of untapped creatures with total power N or more (a chosen cost) to make the Vehicle an artifact creature until end of turn."
+  },
+  "keyword:decayed": {
+   "size": "small",
+   "ui": false,
+   "description": "Decayed (rule 702.147): can't block, and when it attacks, sacrifice it at end of combat (an end-of-combat delayed trigger). As a real keyword, 'if it didn't have decayed' can check it."
+  },
+  "keyword:delve": {
+   "size": "medium",
+   "ui": true,
+   "description": "Delve: while casting, exile any number of cards from your graveyard to pay generic mana."
+  },
+  "keyword:devoid": {
+   "size": "small",
+   "ui": false,
+   "description": "Devoid (rule 702.114): a colour-setting characteristic that makes the object colourless in every zone (layer 5)."
+  },
+  "keyword:discover": {
+   "size": "medium",
+   "ui": true,
+   "description": "Discover N (rule 701.57): exile from the top until a nonland card with MV N or less, then cast it free or put it into your hand. The rest go to the bottom in random order."
+  },
+  "keyword:dredge": {
+   "size": "large",
+   "ui": true,
+   "description": "Dredge N (rule 702.52): an optional per-draw replacement (mill N and return this card instead of drawing) when the library holds at least N cards. Every draw site, including multi-card draws, has to pause for the choice and resume."
+  },
+  "keyword:earthbend": {
+   "size": "small",
+   "ui": false,
+   "description": "Earthbend N: target land you control becomes a 0/0 haste creature that's still a land and gets N +1/+1 counters, with the return clause when it dies or is exiled."
+  },
+  "keyword:evoke": {
+   "size": "medium",
+   "ui": false,
+   "description": "Evoke (rule 702.74): an alternative cost offered as a cast variant, plus the 'when it enters, if it was evoked, sacrifice it' trigger. Granting evoke to other spells is static:grant-to-cards-outside-battlefield."
+  },
+  "keyword:exhaust": {
+   "size": "small",
+   "ui": false,
+   "description": "Exhaust: an activated ability that can be activated only once while the object exists."
+  },
+  "keyword:explore": {
+   "size": "medium",
+   "ui": true,
+   "description": "Explore (rule 701.44): reveal the top card; a land goes to hand, otherwise put a +1/+1 counter on the explorer and its controller chooses to keep the card on top or put it into the graveyard. Emits an explores event. 'Each [creature] explores' lets the controller choose the order."
+  },
+  "keyword:firebending": {
+   "size": "small",
+   "ui": false,
+   "description": "Firebending N: an attack trigger that adds N {R}, and the mana lasts until end of combat."
+  },
+  "keyword:freerunning": {
+   "size": "medium",
+   "ui": false,
+   "description": "Freerunning (rule 702.173): a per-player turn flag set when an Assassin or a commander deals combat damage to a player, and an alternative cost offered as a cast variant while it's set."
+  },
+  "keyword:landwalk": {
+   "size": "small",
+   "ui": false,
+   "description": "Landwalk (rule 702.14): can't be blocked while the defending player controls a land of that type."
+  },
+  "keyword:manifest-dread": {
+   "size": "medium",
+   "ui": true,
+   "description": "Manifest dread (rule 701.62): look at the top two cards, put one onto the battlefield face down as a 2/2 and the other into the graveyard. Needs mechanic:face-down."
+  },
+  "keyword:mayhem": {
+   "size": "medium",
+   "ui": false,
+   "description": "Mayhem: a per-card 'discarded this turn' marker plus a graveyard cast permission for the mayhem cost, gated on that marker."
+  },
+  "keyword:melee": {
+   "size": "small",
+   "ui": false,
+   "description": "Melee: when this attacks, it gets +1/+1 for each opponent attacked this combat. Needs a count of distinct attacked opponents."
+  },
+  "keyword:miracle": {
+   "size": "medium",
+   "ui": true,
+   "description": "Miracle (rule 702.94): track the first card each player draws each turn, offer to reveal it, and let its controller cast it for the miracle cost."
+  },
+  "keyword:mobilize": {
+   "size": "small",
+   "ui": false,
+   "description": "Mobilize N: when this attacks, create N tapped and attacking 1/1 red Warriors and sacrifice them at the next end step. Builds on effect:enter-attacking."
+  },
+  "keyword:multikicker": {
+   "size": "medium",
+   "ui": true,
+   "description": "Multikicker: a repeatable kicker whose number of payments is chosen at cast and read as an amount."
+  },
+  "keyword:ninjutsu": {
+   "size": "medium",
+   "ui": true,
+   "description": "Ninjutsu: an activated ability from hand once blockers are declared. Pay its cost and return an unblocked attacker you control, and the ninja enters tapped and attacking."
+  },
+  "keyword:offspring": {
+   "size": "medium",
+   "ui": false,
+   "description": "Offspring: an optional additional cost with a 'paid' bit carried onto the permanent, and the linked ETB 'if its offspring cost was paid, create a 1/1 token copy of it'. Includes a static that grants offspring to creature spells you cast."
+  },
+  "keyword:saddle": {
+   "size": "medium",
+   "ui": true,
+   "description": "Saddle N (rule 702.171): a sorcery-speed tap-creatures-with-total-power cost that marks the creature saddled until end of turn, and records which creatures saddled it this turn."
+  },
+  "keyword:toxic": {
+   "size": "small",
+   "ui": false,
+   "description": "Toxic N (rule 702.164): a cumulative, parameterised keyword that gives poison counters on combat damage to a player. Needs mechanic:player-counters (poison)."
+  },
+  "keyword:warp": {
+   "size": "medium",
+   "ui": false,
+   "description": "Warp (rule 702.185): an alternative cost from hand. At the next end step the permanent is exiled, and its owner may cast it from exile later."
+  },
+  "keyword:waterbend": {
+   "size": "medium",
+   "ui": true,
+   "description": "Waterbend: a cost-payment method that taps untapped artifacts and creatures you control to pay generic mana (like convoke or improvise), with the player choosing what to tap."
+  },
+  "keyword:web-slinging": {
+   "size": "medium",
+   "ui": true,
+   "description": "Web-slinging: an alternative cost that pays mana and returns a tapped creature you control to hand, with a choice of which creature."
+  },
+  "mechanic:clash": {
+   "size": "medium",
+   "ui": true,
+   "description": "Clash: both players reveal their top card and each chooses top or bottom for their own card, and there is a 'whenever you win a clash' trigger."
+  },
+  "mechanic:coin-flip": {
+   "size": "medium",
+   "ui": false,
+   "description": "Seeded coin flips: win and lose branches, 'flip until you lose', a log event, and a 'whenever a player wins a coin flip' trigger."
+  },
+  "mechanic:commander-pairing": {
+   "size": "small",
+   "ui": false,
+   "description": "Deck validation for two commanders: both need Partner, 'Partner with [name]' pairs only with that card, Friends forever and Character select pair only within their variant, and 'Choose a Background' pairs with a legendary Background enchantment."
+  },
+  "mechanic:curses": {
+   "size": "large",
+   "ui": true,
+   "description": "Auras that enchant a player (Curses): attachedTo can hold a player, a 'target permanent or player' spec, an enchanted-player scope, returning a Curse attached to a player, and moving a Curse to a chosen opponent."
+  },
+  "mechanic:dice-rolling": {
+   "size": "medium",
+   "ui": false,
+   "description": "Dice rolling (rule 706) on the seeded Rng: a roll effect, a die-rolled event, and a 'whenever you roll N or higher' trigger that fires once per die."
+  },
+  "mechanic:dungeon": {
+   "size": "large",
+   "ui": true,
+   "description": "Venture into the dungeon: the dungeon cards and their room abilities, branching choices, dungeon completion, and a 'whenever you complete a dungeon' trigger."
+  },
+  "mechanic:face-down": {
+   "size": "large",
+   "ui": true,
+   "description": "Face-down permanents (rule 708): a characteristic-less 2/2, identity hidden per viewer, turning face up (special action, cost, triggers, 'you may turn a permanent face up'), 'enters face down' triggers, leaving play, and a noted card name on a face-down permanent (Magar). Shared by manifest, morph, disguise and cloak."
+  },
+  "mechanic:goad-extensions": {
+   "size": "medium",
+   "ui": false,
+   "description": "Goad beyond 'every creature a player controls': a target creature, creatures matching a filter, goad for the rest of the game, static goad while the source remains, and a CardFilter 'goaded' clause that reads last-known state on death."
+  },
+  "mechanic:incubate": {
+   "size": "medium",
+   "ui": false,
+   "description": "Double-faced tokens, and incubate N: an Incubator artifact token with N +1/+1 counters and '{2}: Transform', whose back face is a 0/0 Phyrexian artifact creature."
+  },
+  "mechanic:keyword-counters": {
+   "size": "small",
+   "ui": false,
+   "description": "Keyword counters (rule 122.1b): flying, lifelink, vigilance and other counters grant that keyword in layer 6 while present."
+  },
+  "mechanic:mdfc-transform": {
+   "size": "small",
+   "ui": false,
+   "description": "Per the 2025 rules change, a modal DFC whose other face has a permanent type can transform. isTransformingDfc and transformPermanent should allow it."
+  },
+  "mechanic:mutate": {
+   "size": "large",
+   "ui": true,
+   "description": "Mutate (rule 702.140): an alternative cost targeting a non-Human creature you own, and merged permanents (the top card's characteristics plus every card's abilities), with mutate triggers."
+  },
+  "mechanic:player-counters": {
+   "size": "medium",
+   "ui": false,
+   "description": "Player counter kinds beyond energy: experience counters (a get effect, an EffectAmount, a P/T bonus that reads them) and poison counters (the 10-poison SBA loss, 'corrupted' conditions). Both need events, view and client display, and proliferate over players who have them."
+  },
+  "mechanic:rad-counters": {
+   "size": "medium",
+   "ui": false,
+   "description": "Rad counters: a player counter kind plus its inherent trigger at the beginning of that player's precombat main phase (mill that many; for each nonland card milled, lose 1 life and remove a rad counter). Builds on mechanic:player-counters."
+  },
+  "mechanic:role-tokens": {
+   "size": "medium",
+   "ui": false,
+   "description": "Role tokens: the Role subtype and the SBA that, when a player controls two or more Roles on the same permanent, puts all but the newest into the graveyard."
+  },
+  "mechanic:rooms": {
+   "size": "large",
+   "ui": true,
+   "description": "Rooms (rule 709.5): split enchantments with two doors, each cast separately, a locked or unlocked state per door, and 'unlock a door' as a special action and as an effect."
+  },
+  "mechanic:speed": {
+   "size": "medium",
+   "ui": false,
+   "description": "Start your engines! (rule 702.179): PlayerState.speed starts at 1, rises at most once per turn when an opponent loses life, caps at 4, and max-speed abilities read it."
+  },
+  "mechanic:station": {
+   "size": "medium",
+   "ui": true,
+   "description": "Station (rule 702.184) and Spacecraft: a sorcery-speed ability that taps another creature you control and puts charge counters equal to its power, with station thresholds."
+  },
+  "mechanic:suspect": {
+   "size": "small",
+   "ui": false,
+   "description": "Suspect (rule 701.60): a permanent designation that grants menace and 'can't block' until it leaves or is unsuspected."
+  },
+  "mechanic:suspend-and-time-counters": {
+   "size": "medium",
+   "ui": true,
+   "description": "Suspend and time-counter follow-ups: time travel (rule 701.56, choose add, remove or neither for each suspended card and time-counter permanent), granting suspend with N time counters, and a suspend cast that fires whenever the last time counter comes off."
+  },
+  "mechanic:the-ring": {
+   "size": "large",
+   "ui": true,
+   "description": "The Ring tempts you (rule 701.52): the Ring emblem's four cumulative levels, choosing a Ring-bearer, the temptation count, a 'whenever the Ring tempts you' trigger, and protection from Ring-bearers."
+  },
+  "mechanic:voting": {
+   "size": "medium",
+   "ui": true,
+   "description": "Voting: each player votes for one named option in turn order, starting with the controller. Tally the votes, and let 'vote an additional time' statics add optional extra votes."
+  },
+  "replacement:as-transforms": {
+   "size": "small",
+   "ui": false,
+   "description": "'As this creature transforms into [face], ...' applied as part of the transform itself (replacement-timed), not as a respondable transforms trigger, and not when the permanent enters already transformed."
+  },
+  "replacement:copy-on-enter-options": {
+   "size": "small",
+   "ui": false,
+   "description": "Widen copyOnEnter: a filter narrower than any creature ('another creature you control'), and entering as a copy of a card in exile or a graveyard."
+  },
+  "replacement:damage-modification": {
+   "size": "medium",
+   "ui": false,
+   "description": "Damage replacements beyond the global doubler: multipliers scoped by source or recipient, +N damage, and static prevention with a follow-up (prevent damage to opponents and mill that many, prevent damage to this permanent and add counters instead)."
+  },
+  "replacement:enters-modifier-via-permission": {
+   "size": "small",
+   "ui": false,
+   "description": "A permanent played or cast through a granted permission enters tapped or with a counter (finality)."
+  },
+  "replacement:exile-instead": {
+   "size": "small",
+   "ui": false,
+   "description": "Exile-instead replacements: finality counters, 'if it would leave the battlefield, exile it instead of putting it anywhere else', and a dies-only form that doesn't catch discard or mill."
+  },
+  "replacement:mana-pool-emptying": {
+   "size": "medium",
+   "ui": false,
+   "description": "Hooks at the single pool-emptying site: unspent mana becomes another colour (or colourless) and stays, mana of a colour persists, and mana burn."
+  },
+  "replacement:new-event-replacements": {
+   "size": "medium",
+   "ui": false,
+   "description": "New ReplacementSpec event kinds: 'if you would draw a card, draw N instead' (conditional), a would-mill multiplier scoped to opponents, and life gain ('gain that much plus N', 'opponents can't gain life')."
+  },
+  "replacement:spell-exiled-as-it-resolves": {
+   "size": "small",
+   "ui": false,
+   "description": "Mark a specific spell so it is exiled instead of going to the graveyard as it resolves (cast through a permission, or chosen by a trigger), with optional follow-up handling."
+  },
+  "replacement:token-creation-additive": {
+   "size": "medium",
+   "ui": false,
+   "description": "An additive token replacement (rule 614.1a): 'those tokens plus that many [token] are created instead'. The extra tokens inherit the creating effect's riders (tapped, attacking, haste, end-step sacrifice) but not the original tokens' abilities, and the replacement doesn't apply to its own tokens."
+  },
+  "stat:mana-spent-to-cast": {
+   "size": "small",
+   "ui": false,
+   "description": "Record on the spell how much mana was actually spent to cast it (0 for free casts) and whether any of it came from an artifact. Expose this as an amount and as a cast-trigger condition."
+  },
+  "stat:milled-this-turn": {
+   "size": "small",
+   "ui": false,
+   "description": "A per-card marker for 'put into a graveyard from a library this turn'."
+  },
+  "stat:object-damage-history": {
+   "size": "medium",
+   "ui": false,
+   "description": "A per-object, turn-scoped record of damage: which sources damaged it (with last-known subtypes and controllers), whether it dealt damage to another creature this turn, and whether it was dealt excess damage (rule 120.4a). It backs 'dies after being dealt damage this turn by a [filter]' and 'is dealt excess damage'."
+  },
+  "stat:per-ability-turn-counters": {
+   "size": "small",
+   "ui": false,
+   "description": "Per-object, per-ability counters that reset each turn: 'this ability triggers only once each turn', 'do this only once each turn', and 'if this is the first time this ability has resolved this turn'."
+  },
+  "stat:spells-cast-this-turn-record": {
+   "size": "medium",
+   "ui": false,
+   "description": "A per-player, per-turn record of each spell cast: its types, subtypes and mana value, with X included. It backs conditions such as 'you've cast an instant or sorcery this turn', 'a creature and a noncreature spell', 'three or more spells', and 'an {X} spell already this turn'."
+  },
+  "stat:turn-event-tallies": {
+   "size": "medium",
+   "ui": false,
+   "description": "Per-player, per-turn tallies of game events, with conditions and amounts over them: you attacked this turn (raid), creatures died under your control (with last-known subtypes for a filter), permanents entered under your control, permanents sacrificed, creatures exiled (keyed by controller), permanent cards put into your graveyard (descend), and damage taken or noncombat damage dealt by red sources."
+  },
+  "static:affect-scope-by-filter": {
+   "size": "medium",
+   "ui": false,
+   "description": "Generalise AffectSpec beyond its fixed scopes to a CardFilter-driven scope: all permanents or artifacts you control, creatures you don't control or an opponent's, commanders you own, creatures you control but don't own, card-type and subtype any-of narrowing, counters on any permanent. wardOf also reads ward granted to other permanents."
+  },
+  "static:basic-land-type-mana": {
+   "size": "medium",
+   "ui": false,
+   "description": "Rules 305.6 and 305.7: a land with a basic land type has that type's intrinsic mana ability, including a type it gained."
+  },
+  "static:cant-be-sacrificed": {
+   "size": "small",
+   "ui": false,
+   "description": "A per-object 'can't be sacrificed' that edicts, sacrifice costs and effects respect."
+  },
+  "static:combat-damage-by-toughness": {
+   "size": "medium",
+   "ui": false,
+   "description": "Statics under which creatures assign combat damage equal to their toughness rather than their power, read wherever combat damage is sized (standard assignment, the assign-combat-damage offer, trample, unblocked damage, bot combat math), plus 'can attack as though it didn't have defender'."
+  },
+  "static:combat-restriction-extensions": {
+   "size": "medium",
+   "ui": false,
+   "description": "More combat restrictions: one-shot 'can't block this turn' (on a creature, or as a turn-wide rule), 'can't be blocked by [filter]' and 'can block only [filter]', must be blocked if able (at least one blocker), can't attack its owner, and attack only the nearest opponent in a chosen direction."
+  },
+  "static:counters-persist-across-zones": {
+   "size": "small",
+   "ui": false,
+   "description": "Let a card keep its counters when it changes zones, instead of moveObject always clearing them."
+  },
+  "static:enters-replacement-for-others": {
+   "size": "medium",
+   "ui": false,
+   "description": "Enters-battlefield replacements applied to other permanents: opponents' matching permanents enter tapped, and other creatures you control enter with N extra +1/+1 counters, with N read when they enter."
+  },
+  "static:gain-abilities-from-graveyard": {
+   "size": "medium",
+   "ui": false,
+   "description": "The Necrotic Ooze shape: the source has the activated abilities (mana abilities included) of every matching card in graveyards."
+  },
+  "static:grant-abilities-to-spells": {
+   "size": "medium",
+   "ui": false,
+   "description": "Statics and turn-scoped effects that grant keywords or abilities to spells you cast (cascade, split second, lifelink, deathtouch), read on the stack and at cast time. dealDamage honours a spell's granted keywords."
+  },
+  "static:grant-to-cards-outside-battlefield": {
+   "size": "medium",
+   "ui": false,
+   "description": "Statics that grant abilities to cards outside the battlefield: ninjutsu, miracle, warp, web-slinging or an alternative cost to matching cards in hand or spells you cast, and flashback or escape to matching cards in your graveyard."
+  },
+  "static:grant-types-to-others": {
+   "size": "medium",
+   "ui": false,
+   "description": "Layer-4 statics that add types or subtypes to other permanents. effectiveTypes and effectiveSubtypes, matchesFilter and staticAffects then have to read external grants."
+  },
+  "static:legend-rule-exemptions": {
+   "size": "small",
+   "ui": false,
+   "description": "Ways out of the legend rule: a static that turns it off for its controller's permanents, and 'isn't legendary if it's a token'."
+  },
+  "static:mana-pool-reads": {
+   "size": "small",
+   "ui": false,
+   "description": "Conditions and P/T bonuses that read the controller's unspent mana pool live ('N or more unspent mana', '+1/+1 for each unspent {G}'). The computed cache must be invalidated whenever the pool changes."
+  },
+  "static:max-hand-size": {
+   "size": "small",
+   "ui": false,
+   "description": "Statics that set a maximum hand size, for the controller ('eleven') or for opponents, read in the cleanup discard."
+  },
+  "static:pt-per-amount": {
+   "size": "small",
+   "ui": false,
+   "description": "grantPtPerCount counts things other than battlefield permanents: counters on the affected object itself, and cards in exile."
+  },
+  "static:self-type-changes": {
+   "size": "medium",
+   "ui": false,
+   "description": "Conditional layer-4 changes to a permanent's own types: remove a card type ('isn't a creature' unless devotion is high enough), and add types while it's off the battlefield ('as long as it isn't on the battlefield, it's a 1/1 Insect creature')."
+  },
+  "static:set-base-pt-others": {
+   "size": "medium",
+   "ui": false,
+   "description": "Layer-7b base P/T sets on other permanents: a static that sets base P/T or base toughness only, and one-shot mass effects over a filter that animate every match or set its base P/T until end of turn."
+  },
+  "static:trigger-count-modifiers": {
+   "size": "medium",
+   "ui": false,
+   "description": "Statics that change how often triggers fire. Generalise the entry-trigger doubler to any trigger kind, filtered by event or source (cast or copy, combat damage, damage to your creatures, power 2 or less, Allies, the source and its Equipment). Also stop entry triggers entirely (Torpor Orb)."
+  },
+  "trigger:activates-ability": {
+   "size": "small",
+   "ui": false,
+   "description": "A 'whenever a player activates an ability' trigger with filters, for example '{X} in its activation cost'."
+  },
+  "trigger:becomes-target-fixes": {
+   "size": "small",
+   "ui": false,
+   "description": "The becomes-target trigger gets a spell-only flag, and object-targeted is emitted once per object, not once per target slot."
+  },
+  "trigger:bends": {
+   "size": "small",
+   "ui": false,
+   "description": "A 'whenever you waterbend, earthbend, firebend, or airbend' trigger, plus a per-turn record of which bending kinds a player has done ('if you've done all four this turn')."
+  },
+  "trigger:cards-exiled-batch": {
+   "size": "small",
+   "ui": false,
+   "description": "A batched 'one or more cards are put into exile from graveyards and/or the battlefield' trigger."
+  },
+  "trigger:cast-or-play-origin-zone": {
+   "size": "small",
+   "ui": false,
+   "description": "Record the zone a spell was cast from, or a land played from, on the spell-cast and land-played events. Cast triggers can then filter on 'from your hand', 'not from your hand' or 'from exile', and 'play a card from exile' includes lands."
+  },
+  "trigger:cast-spell-clauses": {
+   "size": "small",
+   "ui": false,
+   "description": "Cast-trigger clauses: modal spells only, with the number of modes chosen as the trigger value, and 'shares no creature type with your creatures or creature cards in your graveyard'."
+  },
+  "trigger:combat-damage-batch": {
+   "size": "medium",
+   "ui": false,
+   "description": "Batched 'one or more creatures [you control / matching a filter] deal combat damage to a player / to your opponents'. It fires once per damaged player per combat-damage sub-pass, with the batch available."
+  },
+  "trigger:combat-trigger-extensions": {
+   "size": "medium",
+   "ui": false,
+   "description": "Combat-trigger vocabulary: 'becomes blocked', 'whenever a player attacks one of your opponents', otherOnly on the attacks and combat-damage triggers, and the trigger object set for blocker-declared and combat damage-dealt events."
+  },
+  "trigger:commit-crime": {
+   "size": "medium",
+   "ui": false,
+   "description": "Crimes: targeting an opponent, their permanents or their graveyard cards with a spell, ability or trigger commits a crime, and 'whenever you commit a crime' triggers on it."
+  },
+  "trigger:copies-spell": {
+   "size": "small",
+   "ui": false,
+   "description": "A trigger on the spell-copied event ('whenever you copy an instant or sorcery spell', magecraft's 'or copy')."
+  },
+  "trigger:counters-put": {
+   "size": "small",
+   "ui": false,
+   "description": "A 'whenever one or more counters are put on [filter]' trigger that supplies the amount."
+  },
+  "trigger:damage-trigger-extensions": {
+   "size": "medium",
+   "ui": false,
+   "description": "Damage-trigger vocabulary: source-side triggers (deals damage to a creature, a source you control deals noncombat damage to an opponent, a spell deals damage to its own target), a filter on dealt-damage, and damage whose source is the trigger object ('it deals damage')."
+  },
+  "trigger:destroyed": {
+   "size": "small",
+   "ui": false,
+   "description": "An 'is destroyed' trigger, distinct from dies (a sacrifice or an SBA isn't a destroy)."
+  },
+  "trigger:discards-extensions": {
+   "size": "small",
+   "ui": false,
+   "description": "The discards trigger gains a card filter, can fire once per card with a trigger object, can supply the count as a trigger value, and records the cause (an opponent's spell or ability) for cards that trigger from the graveyard."
+  },
+  "trigger:enters-batch": {
+   "size": "medium",
+   "ui": false,
+   "description": "'Whenever one or more other creatures you control enter': fires once per simultaneous group of entries."
+  },
+  "trigger:leaves-battlefield-filter": {
+   "size": "small",
+   "ui": false,
+   "description": "The leaves-battlefield trigger gains a filter and otherOnly (checked against last-known info), and narrowing by destination zone."
+  },
+  "trigger:leaves-graveyard": {
+   "size": "medium",
+   "ui": false,
+   "description": "A batched 'one or more cards leave your graveyard' trigger, once per simultaneous move."
+  },
+  "trigger:life-change-amount": {
+   "size": "small",
+   "ui": false,
+   "description": "The loses-life and gains-life triggers supply the amount lost or gained as the trigger value, so 'you draw that many cards' can read it."
+  },
+  "trigger:nth-each-turn": {
+   "size": "small",
+   "ui": false,
+   "description": "Nth-event-this-turn trigger fields: your first [filter] spell each turn (first matching, not first overall), your second spell each turn, and the Nth card you draw each turn."
+  },
+  "trigger:opponents-lose-exactly-n-life": {
+   "size": "medium",
+   "ui": false,
+   "description": "A batched 'one or more opponents each lose exactly N life' trigger, grouping life loss by simultaneous event."
+  },
+  "trigger:plays-land": {
+   "size": "small",
+   "ui": false,
+   "description": "A 'whenever you play a land' trigger, distinct from a land entering."
+  },
+  "trigger:put-into-graveyard": {
+   "size": "medium",
+   "ui": false,
+   "description": "Batched 'one or more [filter] cards are put into your graveyard' triggers: from anywhere (dies, mill, discard, countered spell), and from your library specifically."
+  },
+  "trigger:sacrifice-filter": {
+   "size": "small",
+   "ui": false,
+   "description": "The sacrifice trigger takes a filter ('nontoken', a type), and permanent-sacrificed sets the trigger object."
+  },
+  "trigger:saga-final-chapter": {
+   "size": "small",
+   "ui": false,
+   "description": "An event when a chapter ability resolves, carrying whether it was the final chapter, and a trigger on it."
+  },
+  "trigger:surveils": {
+   "size": "small",
+   "ui": false,
+   "description": "A 'whenever you surveil' trigger off the existing scried/surveil event."
+  },
+  "trigger:you-tap-opponent-creature": {
+   "size": "small",
+   "ui": false,
+   "description": "permanent-tapped records who did the tapping, backing 'whenever you tap an untapped creature an opponent controls'."
+  },
+  "zone:activated-ability-zones": {
+   "size": "small",
+   "ui": false,
+   "description": "Activated abilities from other zones: from the command zone (legalActions offers them), and a graveyard ability that doesn't exile its own source."
+  },
+  "zone:cast-cards-you-dont-own": {
+   "size": "medium",
+   "ui": false,
+   "description": "Casting a card you don't own (from an opponent's hand or from exile) makes the caster control the spell and the permanent it becomes. Today moveObject resets controller to owner. Add owner-relative cost modification ('spells you cast but don't own') and a turn-scoped permission to cast from an opponent's hand."
+  },
+  "zone:cast-from-library-top": {
+   "size": "medium",
+   "ui": false,
+   "description": "A static permission to cast matching spells from the top of your library. It needs a new cast zone in castSpell, whyCannotCast and legalActions, plus the top card revealed."
+  },
+  "zone:graveyard-cast-permissions": {
+   "size": "medium",
+   "ui": false,
+   "description": "Graveyard cast permissions: a one-shot 'you may play target card from your graveyard this turn', permissions that reach any player's graveyard, and a permission that adds an extra cost (pay 3 life), with a choice of grantor when several apply."
+  },
+  "zone:impulse-permission-options": {
+   "size": "medium",
+   "ui": false,
+   "description": "Options on impulse (play-from-exile) permissions: cast without paying the mana cost, a CardFilter for which cards may be cast, and new durations (until your next end step, for as long as it remains exiled)."
+  },
+  "zone:play-from-exile-with-counter": {
+   "size": "medium",
+   "ui": false,
+   "description": "A static permission to play lands and cast spells from exile, limited to cards with a given counter (stash, fetch) or cards you exiled, optionally only on your turn."
+  },
+  "zone:visibility-extensions": {
+   "size": "medium",
+   "ui": false,
+   "description": "Who can see what, in viewFor and revealedThisTurn: a card exiled face down that only the exiler may look at, 'plays with their hand revealed', 'look at the top card of your library any time' (owner only), and effects that reveal cards to every player (look-and-choose's 'reveal', 'you may reveal that card')."
+  }
+ },
+ "commanders": [
+  {
+   "rank": 5,
+   "name": "Tymna the Weaver",
+   "needs": [
+    "cost:may-cost-non-mana",
+    "stat:turn-event-tallies"
+   ]
+  },
+  {
+   "rank": 7,
+   "name": "Thrasios, Triton Hero",
+   "needs": [
+    "condition:top-card-of-library"
+   ]
+  },
+  {
+   "rank": 8,
+   "name": "Vivi Ornitier",
+   "needs": [
+    "effect:mana-ability-dynamic-amount"
+   ]
+  },
+  {
+   "rank": 9,
+   "name": "Sauron, the Dark Lord",
+   "needs": [
+    "decision:ward-payment",
+    "mechanic:the-ring"
+   ]
+  },
+  {
+   "rank": 10,
+   "name": "Kaalia of the Vast",
+   "needs": [
+    "effect:enter-attacking",
+    "effect:player-scope-extensions",
+    "trigger:combat-trigger-extensions"
+   ]
+  },
+  {
+   "rank": 12,
+   "name": "Teval, the Balanced Scale",
+   "needs": [
+    "trigger:leaves-graveyard"
+   ]
+  },
+  {
+   "rank": 13,
+   "name": "Fire Lord Azula",
+   "needs": [
+    "condition:source-state",
+    "decision:copy-new-targets",
+    "effect:copy-permanent-spell",
+    "effect:copy-spell-extensions",
+    "keyword:firebending"
+   ]
+  },
+  {
+   "rank": 14,
+   "name": "Ms. Bumbleflower",
+   "needs": [
+    "stat:per-ability-turn-counters"
+   ]
+  },
+  {
+   "rank": 15,
+   "name": "Pantlaza, Sun-Favored",
+   "needs": [
+    "bug:lki-object-reads",
+    "keyword:discover",
+    "stat:per-ability-turn-counters"
+   ]
+  },
+  {
+   "rank": 16,
+   "name": "Lathril, Blade of the Elves",
+   "needs": [
+    "bug:token-stack-fixes",
+    "decision:choose-tap-costs"
+   ]
+  },
+  {
+   "rank": 17,
+   "name": "Giada, Font of Hope",
+   "needs": [
+    "static:enters-replacement-for-others"
+   ]
+  },
+  {
+   "rank": 18,
+   "name": "The Wise Mothman",
+   "needs": [
+    "decision:variable-target-count",
+    "mechanic:player-counters",
+    "mechanic:rad-counters",
+    "trigger:put-into-graveyard"
+   ]
+  },
+  {
+   "rank": 19,
+   "name": "Jodah, the Unifier",
+   "needs": [
+    "bug:x-value-propagation",
+    "decision:free-cast-choices",
+    "effect:reveal-until",
+    "static:affect-scope-by-filter",
+    "trigger:cast-or-play-origin-zone"
+   ]
+  },
+  {
+   "rank": 20,
+   "name": "Toph, the First Metalbender",
+   "needs": [
+    "keyword:earthbend",
+    "static:affect-scope-by-filter",
+    "static:grant-types-to-others"
+   ]
+  },
+  {
+   "rank": 22,
+   "name": "Yuriko, the Tiger's Shadow",
+   "needs": [
+    "effect:enter-attacking",
+    "keyword:ninjutsu",
+    "zone:activated-ability-zones",
+    "zone:visibility-extensions"
+   ]
+  },
+  {
+   "rank": 24,
+   "name": "Cloud, Ex-SOLDIER",
+   "needs": [
+    "bug:lki-object-reads",
+    "condition:filter-attachments",
+    "effect:attach-extensions"
+   ]
+  },
+  {
+   "rank": 25,
+   "name": "Hearthhull, the Worldseed",
+   "needs": [
+    "bug:commander-eligibility-vehicles",
+    "effect:temporary-player-effect",
+    "mechanic:station",
+    "trigger:sacrifice-filter"
+   ]
+  },
+  {
+   "rank": 26,
+   "name": "Kefka, Court Mage // Kefka, Ruler of Ruin",
+   "needs": [
+    "bug:sequence-suspends-on-decision",
+    "effect:player-scope-extensions",
+    "effect:this-way-results",
+    "trigger:life-change-amount"
+   ]
+  },
+  {
+   "rank": 27,
+   "name": "Valgavoth, Harrower of Souls",
+   "needs": [
+    "decision:ward-payment",
+    "trigger:nth-each-turn"
+   ]
+  },
+  {
+   "rank": 28,
+   "name": "Isshin, Two Heavens as One",
+   "needs": [
+    "static:trigger-count-modifiers"
+   ]
+  },
+  {
+   "rank": 29,
+   "name": "Sephiroth, Fabled SOLDIER // Sephiroth, One-Winged Angel",
+   "needs": [
+    "bug:simultaneous-zone-moves",
+    "effect:emblem-triggered-abilities",
+    "effect:may-sacrifice-then",
+    "effect:this-way-results",
+    "replacement:as-transforms",
+    "stat:per-ability-turn-counters"
+   ]
+  },
+  {
+   "rank": 30,
+   "name": "Baylen, the Haymaker",
+   "needs": [
+    "bug:token-stack-fixes",
+    "cost:mana-ability-complex-costs",
+    "decision:choose-tap-costs"
+   ]
+  },
+  {
+   "rank": 32,
+   "name": "Chatterfang, Squirrel General",
+   "needs": [
+    "bug:token-stack-fixes",
+    "cost:sacrifice-multiple",
+    "effect:missing-tokens",
+    "keyword:landwalk",
+    "replacement:token-creation-additive"
+   ]
+  },
+  {
+   "rank": 33,
+   "name": "Ulalek, Fused Atrocity",
+   "needs": [
+    "cost:colorless-hybrid-mana",
+    "decision:copy-new-targets",
+    "effect:copy-ability",
+    "effect:copy-permanent-spell",
+    "effect:copy-spell-extensions",
+    "keyword:devoid"
+   ]
+  },
+  {
+   "rank": 34,
+   "name": "Frodo, Adventurous Hobbit",
+   "needs": [
+    "mechanic:commander-pairing",
+    "mechanic:the-ring"
+   ]
+  },
+  {
+   "rank": 35,
+   "name": "Sam, Loyal Attendant",
+   "needs": [
+    "cost:ability-cost-modification",
+    "mechanic:commander-pairing"
+   ]
+  },
+  {
+   "rank": 36,
+   "name": "Hashaton, Scarab's Fist",
+   "needs": [
+    "effect:copy-exceptions",
+    "effect:token-copy-last-known-info",
+    "effect:token-copy-options",
+    "trigger:discards-extensions"
+   ]
+  },
+  {
+   "rank": 37,
+   "name": "Ashling, the Limitless",
+   "needs": [
+    "effect:created-tokens-gain-keyword-eot",
+    "effect:delayed-trigger-extensions",
+    "effect:token-copy-last-known-info",
+    "keyword:evoke",
+    "static:grant-to-cards-outside-battlefield",
+    "trigger:sacrifice-filter"
+   ]
+  },
+  {
+   "rank": 38,
+   "name": "Bello, Bard of the Brambles",
+   "needs": [
+    "bug:static-scope-computed-types",
+    "static:affect-scope-by-filter",
+    "static:grant-types-to-others",
+    "static:set-base-pt-others"
+   ]
+  },
+  {
+   "rank": 39,
+   "name": "Esika, God of the Tree",
+   "needs": [
+    "bug:color-identity-back-face",
+    "effect:reveal-until",
+    "static:affect-scope-by-filter"
+   ]
+  },
+  {
+   "rank": 40,
+   "name": "Hakbal of the Surging Soul",
+   "needs": [
+    "effect:this-way-results",
+    "keyword:explore"
+   ]
+  },
+  {
+   "rank": 41,
+   "name": "Muldrotha, the Gravetide",
+   "needs": [
+    "zone:graveyard-cast-permissions"
+   ]
+  },
+  {
+   "rank": 42,
+   "name": "Rin and Seri, Inseparable",
+   "needs": []
+  },
+  {
+   "rank": 43,
+   "name": "Glarb, Calamity's Augur",
+   "needs": [
+    "bug:x-value-propagation",
+    "zone:cast-from-library-top",
+    "zone:visibility-extensions"
+   ]
+  },
+  {
+   "rank": 44,
+   "name": "Animar, Soul of Elements",
+   "needs": [
+    "cost:cost-modification-extensions"
+   ]
+  },
+  {
+   "rank": 45,
+   "name": "Aragorn, the Uniter",
+   "needs": []
+  },
+  {
+   "rank": 46,
+   "name": "Arcades, the Strategist",
+   "needs": [
+    "static:combat-damage-by-toughness"
+   ]
+  },
+  {
+   "rank": 47,
+   "name": "Ygra, Eater of All",
+   "needs": [
+    "bug:lki-leaves-battlefield-triggers",
+    "decision:ward-payment",
+    "static:grant-types-to-others"
+   ]
+  },
+  {
+   "rank": 48,
+   "name": "The Necrobloom",
+   "needs": [
+    "effect:amount-new-variants",
+    "keyword:dredge",
+    "static:grant-to-cards-outside-battlefield"
+   ]
+  },
+  {
+   "rank": 49,
+   "name": "Mr. House, President and CEO",
+   "needs": [
+    "decision:manual-payment-choices",
+    "mechanic:dice-rolling",
+    "stat:mana-spent-to-cast"
+   ]
+  },
+  {
+   "rank": 51,
+   "name": "Caesar, Legion's Emperor",
+   "needs": [
+    "effect:enter-attacking",
+    "effect:may-sacrifice-then",
+    "effect:modal-ability-targeted-modes",
+    "effect:reflexive-trigger"
+   ]
+  },
+  {
+   "rank": 53,
+   "name": "Breya, Etherium Shaper",
+   "needs": [
+    "cost:sacrifice-multiple",
+    "effect:modal-ability-targeted-modes"
+   ]
+  },
+  {
+   "rank": 54,
+   "name": "Wilhelt, the Rotcleaver",
+   "needs": [
+    "bug:lki-leaves-battlefield-triggers",
+    "effect:may-sacrifice-then",
+    "keyword:decayed"
+   ]
+  },
+  {
+   "rank": 55,
+   "name": "Maralen, Fae Ascendant",
+   "needs": [
+    "condition:filter-dynamic-compare",
+    "effect:impulse-exile-other-libraries",
+    "zone:cast-cards-you-dont-own",
+    "zone:impulse-permission-options"
+   ]
+  },
+  {
+   "rank": 56,
+   "name": "Oloro, Ageless Ascetic",
+   "needs": [
+    "bug:simultaneous-damage-batching",
+    "condition:source-state"
+   ]
+  },
+  {
+   "rank": 57,
+   "name": "Meren of Clan Nel Toth",
+   "needs": [
+    "bug:simultaneous-zone-moves",
+    "condition:filter-dynamic-compare",
+    "mechanic:player-counters"
+   ]
+  },
+  {
+   "rank": 58,
+   "name": "Kuja, Genome Sorcerer",
+   "needs": [
+    "replacement:damage-modification"
+   ]
+  },
+  {
+   "rank": 60,
+   "name": "Kinnan, Bonder Prodigy",
+   "needs": [
+    "effect:add-mana-extensions",
+    "effect:mana-ability-side-effects"
+   ]
+  },
+  {
+   "rank": 61,
+   "name": "Teysa Karlov",
+   "needs": [
+    "bug:lki-leaves-battlefield-triggers",
+    "bug:simultaneous-zone-moves",
+    "static:trigger-count-modifiers"
+   ]
+  },
+  {
+   "rank": 63,
+   "name": "Zhulodok, Void Gorger",
+   "needs": [
+    "decision:free-cast-choices",
+    "static:grant-abilities-to-spells",
+    "trigger:cast-or-play-origin-zone"
+   ]
+  },
+  {
+   "rank": 64,
+   "name": "Tom Bombadil",
+   "needs": [
+    "effect:amount-aggregate",
+    "effect:reveal-until",
+    "stat:per-ability-turn-counters",
+    "trigger:saga-final-chapter"
+   ]
+  },
+  {
+   "rank": 65,
+   "name": "Tidus, Yuna's Guardian",
+   "needs": [
+    "effect:move-counter",
+    "effect:target-other-than-source",
+    "stat:per-ability-turn-counters",
+    "trigger:combat-damage-batch"
+   ]
+  },
+  {
+   "rank": 66,
+   "name": "Atla Palani, Nest Tender",
+   "needs": [
+    "bug:simultaneous-zone-moves",
+    "effect:reveal-until"
+   ]
+  },
+  {
+   "rank": 68,
+   "name": "Shorikai, Genesis Engine",
+   "needs": [
+    "bug:commander-eligibility-vehicles",
+    "keyword:crew"
+   ]
+  },
+  {
+   "rank": 69,
+   "name": "Zurgo Stormrender",
+   "needs": [
+    "bug:lki-object-reads",
+    "bug:simultaneous-zone-moves",
+    "effect:enter-attacking",
+    "keyword:mobilize",
+    "trigger:leaves-battlefield-filter"
+   ]
+  },
+  {
+   "rank": 70,
+   "name": "Go-Shintai of Life's Origin",
+   "needs": [
+    "bug:as-enters-choices-any-entry",
+    "effect:attach-extensions"
+   ]
+  },
+  {
+   "rank": 71,
+   "name": "Urza, Lord High Artificer",
+   "needs": [
+    "cost:mana-ability-complex-costs",
+    "decision:choose-tap-costs",
+    "effect:shuffle-library",
+    "zone:impulse-permission-options"
+   ]
+  },
+  {
+   "rank": 72,
+   "name": "Felothar the Steadfast",
+   "needs": [
+    "effect:sacrificed-object-lki",
+    "static:combat-damage-by-toughness"
+   ]
+  },
+  {
+   "rank": 74,
+   "name": "K'rrik, Son of Yawgmoth",
+   "needs": [
+    "cost:pay-life-for-pips",
+    "decision:manual-payment-choices"
+   ]
+  },
+  {
+   "rank": 75,
+   "name": "The Wandering Minstrel",
+   "needs": [
+    "static:enters-replacement-for-others"
+   ]
+  },
+  {
+   "rank": 76,
+   "name": "Malcolm, Keen-Eyed Navigator",
+   "needs": [
+    "trigger:combat-damage-batch",
+    "trigger:damage-trigger-extensions"
+   ]
+  },
+  {
+   "rank": 77,
+   "name": "Avatar Aang",
+   "needs": [
+    "cost:cost-modification-extensions",
+    "keyword:airbend",
+    "keyword:earthbend",
+    "keyword:firebending",
+    "keyword:waterbend",
+    "trigger:bends"
+   ]
+  },
+  {
+   "rank": 78,
+   "name": "Helga, Skittish Seer",
+   "needs": [
+    "bug:mana-any-one-color",
+    "bug:x-value-propagation",
+    "condition:filter-card-property-clauses",
+    "condition:filter-combinators",
+    "effect:mana-ability-dynamic-amount"
+   ]
+  },
+  {
+   "rank": 79,
+   "name": "Zaxara, the Exemplary",
+   "needs": [
+    "bug:mana-any-one-color",
+    "bug:x-value-propagation",
+    "condition:filter-card-property-clauses",
+    "effect:create-token-with-counters"
+   ]
+  },
+  {
+   "rank": 80,
+   "name": "Choco, Seeker of Paradise",
+   "needs": [
+    "effect:amount-fields-dynamic",
+    "effect:look-and-choose-leftover",
+    "effect:look-and-choose-second-pick"
+   ]
+  },
+  {
+   "rank": 81,
+   "name": "Ghyrson Starn, Kelermorph",
+   "needs": [
+    "effect:player-scope-extensions",
+    "trigger:damage-trigger-extensions"
+   ]
+  },
+  {
+   "rank": 82,
+   "name": "Xyris, the Writhing Storm",
+   "needs": [
+    "trigger:nth-each-turn"
+   ]
+  },
+  {
+   "rank": 83,
+   "name": "Kotis, the Fangkeeper",
+   "needs": [
+    "condition:filter-dynamic-compare",
+    "decision:free-cast-choices",
+    "effect:cast-during-resolution",
+    "effect:impulse-exile-other-libraries",
+    "zone:cast-cards-you-dont-own"
+   ]
+  },
+  {
+   "rank": 84,
+   "name": "The First Sliver",
+   "needs": [
+    "decision:free-cast-choices",
+    "static:grant-abilities-to-spells"
+   ]
+  },
+  {
+   "rank": 85,
+   "name": "Terra, Herald of Hope",
+   "needs": [
+    "effect:reflexive-trigger"
+   ]
+  },
+  {
+   "rank": 86,
+   "name": "Terra, Magical Adept // Esper Terra",
+   "needs": [
+    "bug:lore-counters-fire-chapters",
+    "condition:filter-combinators",
+    "decision:choose-number",
+    "effect:delayed-trigger-extensions",
+    "effect:flicker-generalized",
+    "effect:put-onto-battlefield-options",
+    "effect:this-way-results"
+   ]
+  },
+  {
+   "rank": 87,
+   "name": "Betor, Ancestor's Voice",
+   "needs": [
+    "condition:filter-dynamic-compare",
+    "effect:amount-turn-stat",
+    "effect:target-other-than-source"
+   ]
+  },
+  {
+   "rank": 88,
+   "name": "Auntie Ool, Cursewretch",
+   "needs": [
+    "bug:counter-annihilation",
+    "decision:ward-payment",
+    "effect:player-scope-extensions",
+    "keyword:blight",
+    "trigger:counters-put"
+   ]
+  },
+  {
+   "rank": 89,
+   "name": "Sisay, Weatherlight Captain",
+   "needs": [
+    "bug:lki-object-reads",
+    "condition:filter-dynamic-compare",
+    "effect:amount-new-variants",
+    "static:pt-per-amount"
+   ]
+  },
+  {
+   "rank": 90,
+   "name": "Kilo, Apogee Mind",
+   "needs": []
+  },
+  {
+   "rank": 91,
+   "name": "Eriette of the Charmed Apple",
+   "needs": [
+    "condition:filter-attachments",
+    "static:combat-restriction-extensions"
+   ]
+  },
+  {
+   "rank": 92,
+   "name": "Henzie \"Toolbox\" Torre",
+   "needs": [
+    "cost:cost-modification-extensions",
+    "keyword:blitz",
+    "static:grant-to-cards-outside-battlefield"
+   ]
+  },
+  {
+   "rank": 93,
+   "name": "Ragost, Deft Gastronaut",
+   "needs": [
+    "static:affect-scope-by-filter",
+    "static:grant-types-to-others"
+   ]
+  },
+  {
+   "rank": 94,
+   "name": "Vial Smasher the Fierce",
+   "needs": [
+    "bug:x-value-propagation",
+    "decision:choose-permanent",
+    "effect:random-choice"
+   ]
+  },
+  {
+   "rank": 95,
+   "name": "Omnath, Locus of Creation",
+   "needs": [
+    "stat:per-ability-turn-counters"
+   ]
+  },
+  {
+   "rank": 96,
+   "name": "Norman Osborn",
+   "needs": [
+    "cost:cost-modification-extensions",
+    "keyword:connive",
+    "keyword:mayhem",
+    "mechanic:mdfc-transform",
+    "static:grant-to-cards-outside-battlefield"
+   ]
+  },
+  {
+   "rank": 97,
+   "name": "Captain N'ghathrod",
+   "needs": [
+    "stat:milled-this-turn"
+   ]
+  },
+  {
+   "rank": 100,
+   "name": "Hope Estheim",
+   "needs": [
+    "effect:amount-turn-stat",
+    "effect:player-scope-extensions"
+   ]
+  },
+  {
+   "rank": 101,
+   "name": "Magda, Brazen Outlaw",
+   "needs": [
+    "condition:filter-combinators",
+    "cost:sacrifice-multiple"
+   ]
+  },
+  {
+   "rank": 102,
+   "name": "Ezio Auditore da Firenze",
+   "needs": [
+    "condition:player-state-thresholds",
+    "effect:lose-game",
+    "effect:reflexive-trigger",
+    "keyword:freerunning",
+    "static:grant-to-cards-outside-battlefield"
+   ]
+  },
+  {
+   "rank": 103,
+   "name": "Alela, Cunning Conqueror",
+   "needs": [
+    "effect:target-spec-additions",
+    "mechanic:goad-extensions",
+    "trigger:combat-damage-batch"
+   ]
+  },
+  {
+   "rank": 104,
+   "name": "Zinnia, Valley's Voice",
+   "needs": [
+    "condition:filter-card-property-clauses",
+    "keyword:offspring",
+    "static:grant-to-cards-outside-battlefield"
+   ]
+  },
+  {
+   "rank": 105,
+   "name": "Sidar Jabari of Zhalfir",
+   "needs": [
+    "condition:source-state"
+   ]
+  },
+  {
+   "rank": 106,
+   "name": "Obeka, Splitter of Seconds",
+   "needs": [
+    "effect:additional-upkeep-steps"
+   ]
+  },
+  {
+   "rank": 107,
+   "name": "Silas Renn, Seeker Adept",
+   "needs": [
+    "zone:graveyard-cast-permissions"
+   ]
+  },
+  {
+   "rank": 108,
+   "name": "High Perfect Morcant",
+   "needs": [
+    "decision:choose-tap-costs",
+    "keyword:blight"
+   ]
+  },
+  {
+   "rank": 110,
+   "name": "Marneus Calgar",
+   "needs": [
+    "trigger:enters-batch"
+   ]
+  },
+  {
+   "rank": 111,
+   "name": "Atraxa, Grand Unifier",
+   "needs": [
+    "decision:choose-from-zone-extensions",
+    "zone:visibility-extensions"
+   ]
+  },
+  {
+   "rank": 112,
+   "name": "Deadpool, Trading Card",
+   "needs": [
+    "bug:as-enters-choices-any-entry",
+    "effect:exchange-text-boxes"
+   ]
+  },
+  {
+   "rank": 113,
+   "name": "Aminatou, Veil Piercer",
+   "needs": [
+    "keyword:miracle",
+    "static:grant-to-cards-outside-battlefield"
+   ]
+  },
+  {
+   "rank": 114,
+   "name": "Etali, Primal Conqueror",
+   "needs": [
+    "decision:free-cast-choices",
+    "effect:cast-during-resolution",
+    "effect:reveal-until",
+    "mechanic:player-counters",
+    "zone:cast-cards-you-dont-own"
+   ]
+  },
+  {
+   "rank": 116,
+   "name": "Witherbloom, the Balancer",
+   "needs": []
+  },
+  {
+   "rank": 117,
+   "name": "Zur the Enchanter",
+   "needs": [
+    "effect:attach-extensions"
+   ]
+  },
+  {
+   "rank": 118,
+   "name": "Urza, Chief Artificer",
+   "needs": [
+    "bug:static-scope-computed-types",
+    "static:affect-scope-by-filter"
+   ]
+  },
+  {
+   "rank": 119,
+   "name": "Alela, Artful Provocateur",
+   "needs": [
+    "bug:static-scope-computed-keywords",
+    "bug:static-scope-computed-types"
+   ]
+  },
+  {
+   "rank": 120,
+   "name": "Mendicant Core, Guidelight",
+   "needs": [
+    "bug:cda-all-zones",
+    "effect:copy-permanent-spell",
+    "effect:copy-spell-extensions",
+    "mechanic:speed"
+   ]
+  },
+  {
+   "rank": 121,
+   "name": "Galadriel, Light of Valinor",
+   "needs": [
+    "effect:modal-ability-targeted-modes",
+    "stat:per-ability-turn-counters"
+   ]
+  },
+  {
+   "rank": 122,
+   "name": "Jin Sakai, Ghost of Tsushima",
+   "needs": [
+    "effect:modal-ability-targeted-modes",
+    "trigger:combat-trigger-extensions"
+   ]
+  },
+  {
+   "rank": 123,
+   "name": "Storm, Force of Nature",
+   "needs": [
+    "decision:copy-new-targets",
+    "static:grant-abilities-to-spells"
+   ]
+  },
+  {
+   "rank": 124,
+   "name": "Yoshimaru, Ever Faithful",
+   "needs": []
+  },
+  {
+   "rank": 125,
+   "name": "Morophon, the Boundless",
+   "needs": [
+    "bug:as-enters-choices-any-entry",
+    "cost:cost-modification-extensions",
+    "keyword:changeling",
+    "static:affect-scope-by-filter"
+   ]
+  },
+  {
+   "rank": 126,
+   "name": "Fynn, the Fangbearer",
+   "needs": [
+    "mechanic:player-counters"
+   ]
+  },
+  {
+   "rank": 127,
+   "name": "Captain America, First Avenger",
+   "needs": [
+    "cost:unattach-equipment",
+    "effect:attach-extensions",
+    "effect:divide-among-targets"
+   ]
+  },
+  {
+   "rank": 128,
+   "name": "Kynaios and Tiro of Meletis",
+   "needs": [
+    "effect:choices-by-other-players",
+    "effect:this-way-results"
+   ]
+  },
+  {
+   "rank": 129,
+   "name": "Tovolar, Dire Overlord",
+   "needs": [
+    "decision:choose-permanent"
+   ]
+  },
+  {
+   "rank": 130,
+   "name": "Zimone, Mystery Unraveler",
+   "needs": [
+    "keyword:manifest-dread",
+    "mechanic:face-down",
+    "stat:per-ability-turn-counters"
+   ]
+  },
+  {
+   "rank": 132,
+   "name": "Zada, Hedron Grinder",
+   "needs": [
+    "condition:cast-spell-targets",
+    "effect:copy-spell-extensions"
+   ]
+  },
+  {
+   "rank": 133,
+   "name": "Be'lakor, the Dark Master",
+   "needs": [
+    "bug:lki-object-reads",
+    "trigger:damage-trigger-extensions"
+   ]
+  },
+  {
+   "rank": 134,
+   "name": "Tifa Lockhart",
+   "needs": []
+  },
+  {
+   "rank": 135,
+   "name": "Leonardo, the Balance",
+   "needs": [
+    "mechanic:commander-pairing",
+    "stat:per-ability-turn-counters"
+   ]
+  },
+  {
+   "rank": 136,
+   "name": "Marina Vendrell",
+   "needs": [
+    "mechanic:rooms",
+    "zone:visibility-extensions"
+   ]
+  },
+  {
+   "rank": 137,
+   "name": "Éowyn, Shieldmaiden",
+   "needs": [
+    "stat:turn-event-tallies"
+   ]
+  },
+  {
+   "rank": 138,
+   "name": "Magus Lucea Kane",
+   "needs": [
+    "condition:filter-card-property-clauses",
+    "decision:copy-new-targets",
+    "effect:copy-ability",
+    "effect:copy-permanent-spell",
+    "effect:delayed-trigger-extensions",
+    "effect:mana-ability-side-effects",
+    "trigger:activates-ability"
+   ]
+  },
+  {
+   "rank": 139,
+   "name": "Brago, King Eternal",
+   "needs": [
+    "decision:variable-target-count",
+    "effect:flicker-generalized"
+   ]
+  },
+  {
+   "rank": 140,
+   "name": "Lord of the Nazgûl",
+   "needs": [
+    "mechanic:the-ring",
+    "static:set-base-pt-others"
+   ]
+  },
+  {
+   "rank": 141,
+   "name": "Iroh, Grand Lotus",
+   "needs": [
+    "keyword:firebending",
+    "static:grant-to-cards-outside-battlefield"
+   ]
+  },
+  {
+   "rank": 142,
+   "name": "Satya, Aetherflux Genius",
+   "needs": [
+    "cost:may-cost-non-mana",
+    "effect:delayed-trigger-extensions",
+    "effect:enter-attacking",
+    "effect:target-other-than-source"
+   ]
+  },
+  {
+   "rank": 143,
+   "name": "Lightning, Army of One",
+   "needs": [
+    "effect:temporary-player-effect",
+    "replacement:damage-modification"
+   ]
+  },
+  {
+   "rank": 144,
+   "name": "Kibo, Uktabi Prince",
+   "needs": [
+    "effect:mana-ability-side-effects",
+    "effect:player-scope-extensions"
+   ]
+  },
+  {
+   "rank": 145,
+   "name": "Satoru Umezawa",
+   "needs": [
+    "decision:library-ordering",
+    "keyword:ninjutsu",
+    "stat:per-ability-turn-counters",
+    "static:grant-to-cards-outside-battlefield",
+    "trigger:activates-ability"
+   ]
+  },
+  {
+   "rank": 146,
+   "name": "Eshki, Temur's Roar",
+   "needs": [
+    "bug:cda-all-zones",
+    "bug:lki-object-reads",
+    "bug:zone-change-object-identity"
+   ]
+  },
+  {
+   "rank": 147,
+   "name": "Inalla, Archmage Ritualist",
+   "needs": [
+    "bug:zone-change-object-identity",
+    "condition:source-state",
+    "decision:choose-tap-costs",
+    "effect:token-copy-last-known-info"
+   ]
+  },
+  {
+   "rank": 148,
+   "name": "Prosper, Tome-Bound",
+   "needs": [
+    "trigger:cast-or-play-origin-zone"
+   ]
+  },
+  {
+   "rank": 149,
+   "name": "Omnath, Locus of All",
+   "needs": [
+    "condition:filter-card-property-clauses",
+    "effect:add-mana-extensions",
+    "replacement:mana-pool-emptying",
+    "zone:visibility-extensions"
+   ]
+  },
+  {
+   "rank": 150,
+   "name": "Marrow-Gnawer",
+   "needs": []
+  },
+  {
+   "rank": 151,
+   "name": "Kykar, Wind's Fury",
+   "needs": [
+    "cost:mana-ability-complex-costs"
+   ]
+  },
+  {
+   "rank": 152,
+   "name": "The Scarab God",
+   "needs": [
+    "bug:zone-change-object-identity",
+    "decision:library-ordering",
+    "effect:amount-fields-dynamic",
+    "effect:copy-exceptions",
+    "effect:return-to-hand-extensions"
+   ]
+  },
+  {
+   "rank": 153,
+   "name": "Eluge, the Shoreless Sea",
+   "needs": [
+    "bug:cda-all-zones",
+    "cost:cost-modification-extensions",
+    "effect:add-subtype",
+    "effect:duration-extensions",
+    "stat:spells-cast-this-turn-record",
+    "static:basic-land-type-mana"
+   ]
+  },
+  {
+   "rank": 154,
+   "name": "Winota, Joiner of Forces",
+   "needs": [
+    "effect:enter-attacking"
+   ]
+  },
+  {
+   "rank": 155,
+   "name": "Sythis, Harvest's Hand",
+   "needs": []
+  },
+  {
+   "rank": 156,
+   "name": "Marchesa, the Black Rose",
+   "needs": [
+    "bug:lki-leaves-battlefield-triggers",
+    "bug:zone-change-object-identity",
+    "condition:defending-player-life-rank",
+    "effect:delayed-trigger-extensions"
+   ]
+  },
+  {
+   "rank": 157,
+   "name": "Najeela, the Blade-Blossom",
+   "needs": [
+    "condition:turn-structure",
+    "effect:additional-combat-after-this-phase",
+    "effect:enter-attacking",
+    "effect:player-scope-extensions"
+   ]
+  },
+  {
+   "rank": 158,
+   "name": "Grand Arbiter Augustin IV",
+   "needs": [
+    "decision:free-cast-choices"
+   ]
+  },
+  {
+   "rank": 160,
+   "name": "Tiamat",
+   "needs": [
+    "condition:entry-provenance",
+    "condition:filter-combinators",
+    "decision:choose-from-zone-extensions"
+   ]
+  },
+  {
+   "rank": 161,
+   "name": "Cosmic Spider-Man",
+   "needs": [
+    "condition:count-excluding-source"
+   ]
+  },
+  {
+   "rank": 162,
+   "name": "Azlask, the Swelling Scourge",
+   "needs": [
+    "keyword:annihilator",
+    "mechanic:player-counters"
+   ]
+  },
+  {
+   "rank": 163,
+   "name": "Ishai, Ojutai Dragonspeaker",
+   "needs": []
+  },
+  {
+   "rank": 164,
+   "name": "Shelob, Child of Ungoliant",
+   "needs": [
+    "decision:ward-payment",
+    "effect:copy-exceptions",
+    "effect:token-copy-last-known-info",
+    "stat:object-damage-history",
+    "static:affect-scope-by-filter"
+   ]
+  },
+  {
+   "rank": 165,
+   "name": "Inspirit, Flagship Vessel",
+   "needs": [
+    "decision:choose-tap-costs",
+    "effect:target-other-than-source",
+    "mechanic:station",
+    "static:affect-scope-by-filter"
+   ]
+  },
+  {
+   "rank": 166,
+   "name": "Feather, the Redeemed",
+   "needs": [
+    "condition:cast-spell-targets",
+    "replacement:spell-exiled-as-it-resolves"
+   ]
+  },
+  {
+   "rank": 167,
+   "name": "Rocco, Street Chef",
+   "needs": [
+    "effect:impulse-exile-other-libraries",
+    "trigger:cast-or-play-origin-zone",
+    "zone:impulse-permission-options"
+   ]
+  },
+  {
+   "rank": 168,
+   "name": "Atreus, Impulsive Son",
+   "needs": [
+    "mechanic:commander-pairing",
+    "mechanic:player-counters"
+   ]
+  },
+  {
+   "rank": 169,
+   "name": "Kratos, Stoic Father",
+   "needs": [
+    "mechanic:commander-pairing",
+    "mechanic:player-counters"
+   ]
+  },
+  {
+   "rank": 170,
+   "name": "Sakashima of a Thousand Faces",
+   "needs": [
+    "bug:as-enters-choices-any-entry",
+    "effect:copy-exceptions",
+    "replacement:copy-on-enter-options",
+    "static:legend-rule-exemptions"
+   ]
+  },
+  {
+   "rank": 171,
+   "name": "Anikthea, Hand of Erebos",
+   "needs": [
+    "effect:copy-exceptions",
+    "static:affect-scope-by-filter"
+   ]
+  },
+  {
+   "rank": 172,
+   "name": "Fire Lord Zuko",
+   "needs": [
+    "condition:entry-provenance",
+    "keyword:firebending",
+    "trigger:cast-or-play-origin-zone"
+   ]
+  },
+  {
+   "rank": 173,
+   "name": "Rendmaw, Creaking Nest",
+   "needs": [
+    "condition:filter-card-property-clauses",
+    "effect:player-scope-extensions",
+    "mechanic:goad-extensions",
+    "trigger:plays-land"
+   ]
+  },
+  {
+   "rank": 174,
+   "name": "Omo, Queen of Vesuva",
+   "needs": [
+    "keyword:changeling",
+    "static:affect-scope-by-filter",
+    "static:basic-land-type-mana",
+    "static:grant-types-to-others"
+   ]
+  },
+  {
+   "rank": 175,
+   "name": "Yarok, the Desecrated",
+   "needs": []
+  },
+  {
+   "rank": 176,
+   "name": "Edward Kenway",
+   "needs": [
+    "effect:impulse-exile-other-libraries",
+    "zone:cast-cards-you-dont-own",
+    "zone:impulse-permission-options",
+    "zone:visibility-extensions"
+   ]
+  },
+  {
+   "rank": 177,
+   "name": "Doran, Besieged by Time",
+   "needs": [
+    "condition:filter-dynamic-compare",
+    "effect:amount-new-variants",
+    "trigger:combat-trigger-extensions"
+   ]
+  },
+  {
+   "rank": 178,
+   "name": "Liesa, Shroud of Dusk",
+   "needs": [
+    "cost:commander-tax-as-life"
+   ]
+  },
+  {
+   "rank": 179,
+   "name": "Dr. Eggman",
+   "needs": [
+    "effect:choices-by-other-players"
+   ]
+  },
+  {
+   "rank": 180,
+   "name": "Ramos, Dragon Engine",
+   "needs": [
+    "cost:mana-ability-complex-costs",
+    "effect:amount-new-variants"
+   ]
+  },
+  {
+   "rank": 181,
+   "name": "Tivit, Seller of Secrets",
+   "needs": [
+    "decision:ward-payment",
+    "effect:missing-tokens",
+    "mechanic:voting"
+   ]
+  },
+  {
+   "rank": 182,
+   "name": "Shroofus Sproutsire",
+   "needs": []
+  },
+  {
+   "rank": 183,
+   "name": "Jon Irenicus, Shattered One",
+   "needs": [
+    "effect:control-change-extensions",
+    "mechanic:goad-extensions",
+    "static:cant-be-sacrificed"
+   ]
+  },
+  {
+   "rank": 184,
+   "name": "Wolverine, Best There Is",
+   "needs": [
+    "effect:regenerate",
+    "replacement:damage-modification",
+    "stat:object-damage-history"
+   ]
+  },
+  {
+   "rank": 185,
+   "name": "Vren, the Relentless",
+   "needs": [
+    "bug:simultaneous-zone-moves",
+    "bug:token-stack-fixes",
+    "decision:ward-payment",
+    "replacement:exile-instead",
+    "stat:turn-event-tallies"
+   ]
+  },
+  {
+   "rank": 186,
+   "name": "Blech, Loafing Pest",
+   "needs": []
+  },
+  {
+   "rank": 187,
+   "name": "Sefris of the Hidden Ways",
+   "needs": [
+    "mechanic:dungeon",
+    "stat:per-ability-turn-counters",
+    "trigger:put-into-graveyard"
+   ]
+  },
+  {
+   "rank": 188,
+   "name": "The Mindskinner",
+   "needs": [
+    "effect:player-scope-extensions",
+    "replacement:damage-modification"
+   ]
+  },
+  {
+   "rank": 189,
+   "name": "Tergrid, God of Fright",
+   "needs": [
+    "bug:zone-change-object-identity",
+    "effect:choices-by-other-players",
+    "trigger:discards-extensions",
+    "trigger:sacrifice-filter"
+   ]
+  },
+  {
+   "rank": 190,
+   "name": "Ardenn, Intrepid Archaeologist",
+   "needs": [
+    "effect:attach-extensions",
+    "mechanic:curses"
+   ]
+  },
+  {
+   "rank": 191,
+   "name": "Yurlok of Scorch Thrash",
+   "needs": [
+    "effect:add-mana-extensions",
+    "replacement:mana-pool-emptying"
+   ]
+  },
+  {
+   "rank": 192,
+   "name": "Golbez, Crystal Collector",
+   "needs": [
+    "effect:return-to-hand-extensions"
+   ]
+  },
+  {
+   "rank": 193,
+   "name": "Hylda of the Icy Crown",
+   "needs": [
+    "decision:library-ordering",
+    "effect:reflexive-trigger",
+    "trigger:you-tap-opponent-creature"
+   ]
+  },
+  {
+   "rank": 194,
+   "name": "Disa the Restless",
+   "needs": [
+    "effect:amount-new-variants",
+    "trigger:combat-damage-batch",
+    "trigger:put-into-graveyard"
+   ]
+  },
+  {
+   "rank": 195,
+   "name": "Wick, the Whorled Mind",
+   "needs": [
+    "decision:choose-permanent",
+    "effect:sacrificed-object-lki"
+   ]
+  },
+  {
+   "rank": 196,
+   "name": "Zedruu the Greathearted",
+   "needs": [
+    "effect:control-change-extensions"
+   ]
+  },
+  {
+   "rank": 197,
+   "name": "Light-Paws, Emperor's Voice",
+   "needs": [
+    "condition:entry-provenance",
+    "condition:filter-card-property-clauses",
+    "condition:filter-dynamic-compare",
+    "effect:attach-extensions"
+   ]
+  },
+  {
+   "rank": 198,
+   "name": "Hazel of the Rootbloom",
+   "needs": [
+    "bug:token-stack-fixes",
+    "cost:mana-ability-complex-costs",
+    "decision:choose-tap-costs",
+    "effect:mana-ability-dynamic-amount"
+   ]
+  },
+  {
+   "rank": 199,
+   "name": "Stella Lee, Wild Card",
+   "needs": [
+    "decision:copy-new-targets",
+    "effect:copy-spell-extensions",
+    "effect:target-spec-additions",
+    "stat:spells-cast-this-turn-record",
+    "trigger:nth-each-turn"
+   ]
+  },
+  {
+   "rank": 200,
+   "name": "Anti-Venom, Horrifying Healer",
+   "needs": [
+    "condition:entry-provenance",
+    "replacement:damage-modification"
+   ]
+  },
+  {
+   "rank": 201,
+   "name": "Judith, Carnage Connoisseur",
+   "needs": [
+    "static:grant-abilities-to-spells"
+   ]
+  },
+  {
+   "rank": 203,
+   "name": "Celes, Rune Knight",
+   "needs": [
+    "bug:sequence-suspends-on-decision",
+    "condition:entry-provenance",
+    "decision:discard-any-number",
+    "effect:this-way-results",
+    "trigger:enters-batch"
+   ]
+  },
+  {
+   "rank": 204,
+   "name": "Sonic the Hedgehog",
+   "needs": [
+    "condition:filter-combinators",
+    "trigger:damage-trigger-extensions"
+   ]
+  },
+  {
+   "rank": 205,
+   "name": "Varina, Lich Queen",
+   "needs": [
+    "cost:choose-cards-as-cost"
+   ]
+  },
+  {
+   "rank": 206,
+   "name": "Kona, Rescue Beastie",
+   "needs": [
+    "condition:source-state",
+    "condition:turn-structure",
+    "effect:attach-extensions"
+   ]
+  },
+  {
+   "rank": 207,
+   "name": "Captain Howler, Sea Scourge",
+   "needs": [
+    "decision:ward-payment",
+    "effect:delayed-trigger-extensions",
+    "trigger:discards-extensions"
+   ]
+  },
+  {
+   "rank": 208,
+   "name": "Thalia and The Gitrog Monster",
+   "needs": [
+    "bug:sequence-suspends-on-decision",
+    "condition:filter-combinators",
+    "static:enters-replacement-for-others"
+   ]
+  },
+  {
+   "rank": 209,
+   "name": "Shadow the Hedgehog",
+   "needs": [
+    "bug:lki-leaves-battlefield-triggers",
+    "condition:filter-combinators",
+    "effect:cast-and-activate-restrictions",
+    "stat:mana-spent-to-cast",
+    "static:grant-abilities-to-spells"
+   ]
+  },
+  {
+   "rank": 210,
+   "name": "Derevi, Empyrial Tactician",
+   "needs": [
+    "zone:activated-ability-zones"
+   ]
+  },
+  {
+   "rank": 211,
+   "name": "Indoraptor, the Perfect Hybrid",
+   "needs": [
+    "bug:lki-object-reads",
+    "bug:simultaneous-damage-batching",
+    "effect:random-choice",
+    "keyword:bloodthirst",
+    "stat:turn-event-tallies"
+   ]
+  },
+  {
+   "rank": 212,
+   "name": "Arahbo, Roar of the World",
+   "needs": [
+    "condition:source-state",
+    "effect:target-other-than-source",
+    "trigger:combat-trigger-extensions"
+   ]
+  },
+  {
+   "rank": 213,
+   "name": "The Jolly Balloon Man",
+   "needs": [
+    "effect:copy-exceptions"
+   ]
+  },
+  {
+   "rank": 214,
+   "name": "Ovika, Enigma Goliath",
+   "needs": [
+    "bug:x-value-propagation",
+    "decision:ward-payment",
+    "effect:created-tokens-gain-keyword-eot"
+   ]
+  },
+  {
+   "rank": 215,
+   "name": "Yuna, Grand Summoner",
+   "needs": [
+    "bug:lki-leaves-battlefield-triggers",
+    "effect:amount-counters-on-object",
+    "effect:delayed-trigger-extensions",
+    "effect:mana-ability-side-effects"
+   ]
+  },
+  {
+   "rank": 216,
+   "name": "Umbris, Fear Manifest",
+   "needs": [
+    "effect:reveal-until",
+    "static:pt-per-amount"
+   ]
+  },
+  {
+   "rank": 217,
+   "name": "Alania, Divergent Storm",
+   "needs": [
+    "decision:copy-new-targets",
+    "effect:copy-permanent-spell",
+    "effect:copy-spell-extensions",
+    "stat:spells-cast-this-turn-record",
+    "trigger:nth-each-turn"
+   ]
+  },
+  {
+   "rank": 218,
+   "name": "Saruman, the White Hand",
+   "needs": [
+    "bug:x-value-propagation",
+    "decision:choose-permanent",
+    "decision:ward-payment",
+    "static:affect-scope-by-filter"
+   ]
+  },
+  {
+   "rank": 219,
+   "name": "Sokka, Tenacious Tactician",
+   "needs": []
+  },
+  {
+   "rank": 220,
+   "name": "Reyhan, Last of the Abzan",
+   "needs": [
+    "bug:lki-leaves-battlefield-triggers",
+    "effect:amount-counters-on-object",
+    "trigger:leaves-battlefield-filter"
+   ]
+  },
+  {
+   "rank": 221,
+   "name": "Michelangelo, the Heart",
+   "needs": [
+    "condition:turn-structure",
+    "mechanic:commander-pairing",
+    "stat:turn-event-tallies"
+   ]
+  },
+  {
+   "rank": 222,
+   "name": "Gonti, Canny Acquisitor",
+   "needs": [
+    "cost:mana-spending-rules",
+    "effect:impulse-exile-other-libraries",
+    "trigger:combat-damage-batch",
+    "zone:cast-cards-you-dont-own",
+    "zone:impulse-permission-options",
+    "zone:visibility-extensions"
+   ]
+  },
+  {
+   "rank": 223,
+   "name": "Orvar, the All-Form",
+   "needs": [
+    "condition:cast-spell-targets",
+    "decision:choose-permanent",
+    "keyword:changeling",
+    "trigger:discards-extensions"
+   ]
+  },
+  {
+   "rank": 224,
+   "name": "Veyran, Voice of Duality",
+   "needs": [
+    "static:trigger-count-modifiers",
+    "trigger:copies-spell"
+   ]
+  },
+  {
+   "rank": 225,
+   "name": "Tinybones, Bauble Burglar",
+   "needs": [
+    "cost:mana-spending-rules",
+    "effect:exile-with-counters",
+    "effect:player-scope-extensions",
+    "trigger:discards-extensions",
+    "zone:cast-cards-you-dont-own",
+    "zone:play-from-exile-with-counter"
+   ]
+  },
+  {
+   "rank": 226,
+   "name": "Dina, Essence Brewer",
+   "needs": [
+    "bug:commander-903-9a-current-rules",
+    "effect:sacrificed-object-lki",
+    "effect:target-other-than-source",
+    "stat:per-ability-turn-counters",
+    "trigger:sacrifice-filter"
+   ]
+  },
+  {
+   "rank": 227,
+   "name": "Child of Alara",
+   "needs": [
+    "bug:commander-903-9a-current-rules"
+   ]
+  },
+  {
+   "rank": 228,
+   "name": "Dihada, Binder of Wills",
+   "needs": [
+    "effect:control-change-extensions",
+    "effect:duration-extensions",
+    "effect:look-and-choose-leftover",
+    "effect:this-way-results",
+    "zone:visibility-extensions"
+   ]
+  },
+  {
+   "rank": 229,
+   "name": "Sliver Overlord",
+   "needs": [
+    "bug:control-effect-timestamps"
+   ]
+  },
+  {
+   "rank": 230,
+   "name": "Silverquill, the Disputant",
+   "needs": [
+    "decision:copy-new-targets",
+    "keyword:casualty",
+    "static:grant-abilities-to-spells"
+   ]
+  },
+  {
+   "rank": 232,
+   "name": "Zimone, Infinite Analyst",
+   "needs": [
+    "condition:filter-card-property-clauses",
+    "cost:cost-modification-extensions",
+    "stat:spells-cast-this-turn-record",
+    "trigger:nth-each-turn"
+   ]
+  },
+  {
+   "rank": 233,
+   "name": "Ziatora, the Incinerator",
+   "needs": [
+    "bug:commander-903-9a-current-rules",
+    "effect:may-sacrifice-then",
+    "effect:reflexive-trigger",
+    "effect:sacrificed-object-lki"
+   ]
+  },
+  {
+   "rank": 234,
+   "name": "Killian, Decisive Mentor",
+   "needs": [
+    "condition:filter-attachments",
+    "mechanic:goad-extensions"
+   ]
+  },
+  {
+   "rank": 235,
+   "name": "Ob Nixilis, Captive Kingpin",
+   "needs": [
+    "trigger:opponents-lose-exactly-n-life",
+    "zone:impulse-permission-options"
+   ]
+  },
+  {
+   "rank": 236,
+   "name": "Lorehold, the Historian",
+   "needs": [
+    "effect:this-way-results",
+    "keyword:miracle",
+    "static:grant-to-cards-outside-battlefield"
+   ]
+  },
+  {
+   "rank": 237,
+   "name": "Clavileño, First of the Blessed",
+   "needs": [
+    "bug:lki-leaves-battlefield-triggers",
+    "effect:add-subtype"
+   ]
+  },
+  {
+   "rank": 238,
+   "name": "Narset, Enlightened Exile",
+   "needs": [
+    "condition:filter-dynamic-compare",
+    "effect:cast-during-resolution",
+    "effect:copy-permanent-spell"
+   ]
+  },
+  {
+   "rank": 239,
+   "name": "Krark, the Thumbless",
+   "needs": [
+    "decision:copy-new-targets",
+    "effect:copy-spell-extensions",
+    "effect:return-to-hand-extensions",
+    "mechanic:coin-flip"
+   ]
+  },
+  {
+   "rank": 240,
+   "name": "Rakdos, Lord of Riots",
+   "needs": [
+    "cost:cost-modification-extensions",
+    "effect:amount-turn-stat",
+    "effect:cast-and-activate-restrictions"
+   ]
+  },
+  {
+   "rank": 241,
+   "name": "Infinite Guideline Station",
+   "needs": [
+    "decision:choose-tap-costs",
+    "mechanic:station"
+   ]
+  },
+  {
+   "rank": 242,
+   "name": "Niko, Light of Hope",
+   "needs": [
+    "bug:zone-change-object-identity",
+    "condition:filter-combinators",
+    "effect:become-copy"
+   ]
+  },
+  {
+   "rank": 243,
+   "name": "Ketramose, the New Dawn",
+   "needs": [
+    "condition:player-state-thresholds",
+    "trigger:cards-exiled-batch"
+   ]
+  },
+  {
+   "rank": 244,
+   "name": "Prismari, the Inspiration",
+   "needs": [
+    "decision:copy-new-targets",
+    "decision:ward-payment",
+    "static:grant-abilities-to-spells"
+   ]
+  },
+  {
+   "rank": 245,
+   "name": "Ojer Axonil, Deepest Might",
+   "needs": [
+    "effect:put-onto-battlefield-options",
+    "replacement:damage-modification",
+    "stat:turn-event-tallies"
+   ]
+  },
+  {
+   "rank": 246,
+   "name": "Trostani, Selesnya's Voice",
+   "needs": [
+    "bug:lki-object-reads",
+    "decision:choose-permanent"
+   ]
+  },
+  {
+   "rank": 247,
+   "name": "Volo, Guide to Monsters",
+   "needs": [
+    "effect:copy-permanent-spell",
+    "effect:copy-spell-extensions",
+    "trigger:cast-spell-clauses"
+   ]
+  },
+  {
+   "rank": 248,
+   "name": "Kastral, the Windcrested",
+   "needs": [
+    "decision:choose-from-zone-extensions",
+    "effect:put-onto-battlefield-options",
+    "replacement:exile-instead",
+    "trigger:combat-damage-batch"
+   ]
+  },
+  {
+   "rank": 249,
+   "name": "Saheeli, Radiant Creator",
+   "needs": [
+    "condition:filter-combinators",
+    "cost:may-cost-non-mana",
+    "effect:copy-exceptions",
+    "effect:reflexive-trigger"
+   ]
+  },
+  {
+   "rank": 250,
+   "name": "Raffine, Scheming Seer",
+   "needs": [
+    "decision:ward-payment",
+    "keyword:connive"
+   ]
+  },
+  {
+   "rank": 251,
+   "name": "Yidris, Maelstrom Wielder",
+   "needs": [
+    "decision:free-cast-choices",
+    "static:grant-abilities-to-spells",
+    "trigger:cast-or-play-origin-zone"
+   ]
+  },
+  {
+   "rank": 252,
+   "name": "Vihaan, Goldwaker",
+   "needs": [
+    "bug:static-scope-computed-types",
+    "static:affect-scope-by-filter",
+    "static:set-base-pt-others"
+   ]
+  },
+  {
+   "rank": 253,
+   "name": "Tannuk, Steadfast Second",
+   "needs": [
+    "bug:static-scope-computed-types",
+    "condition:filter-combinators",
+    "keyword:warp",
+    "static:grant-to-cards-outside-battlefield"
+   ]
+  },
+  {
+   "rank": 254,
+   "name": "Gev, Scaled Scorch",
+   "needs": [
+    "decision:ward-payment",
+    "effect:amount-turn-stat",
+    "static:enters-replacement-for-others"
+   ]
+  },
+  {
+   "rank": 255,
+   "name": "Kediss, Emberclaw Familiar",
+   "needs": [
+    "effect:player-scope-extensions",
+    "mechanic:commander-pairing",
+    "trigger:damage-trigger-extensions"
+   ]
+  },
+  {
+   "rank": 256,
+   "name": "Lord Windgrace",
+   "needs": [
+    "bug:sequence-suspends-on-decision",
+    "effect:this-way-results",
+    "keyword:landwalk"
+   ]
+  },
+  {
+   "rank": 257,
+   "name": "The Gitrog Monster",
+   "needs": [
+    "effect:choices-by-other-players",
+    "trigger:put-into-graveyard"
+   ]
+  },
+  {
+   "rank": 258,
+   "name": "Okaun, Eye of Chaos",
+   "needs": [
+    "mechanic:coin-flip",
+    "mechanic:commander-pairing"
+   ]
+  },
+  {
+   "rank": 259,
+   "name": "Zndrsplt, Eye of Wisdom",
+   "needs": [
+    "mechanic:coin-flip",
+    "mechanic:commander-pairing"
+   ]
+  },
+  {
+   "rank": 260,
+   "name": "Katara, the Fearless",
+   "needs": [
+    "bug:lki-leaves-battlefield-triggers",
+    "static:trigger-count-modifiers"
+   ]
+  },
+  {
+   "rank": 261,
+   "name": "Betor, Kin to All",
+   "needs": [
+    "effect:amount-aggregate",
+    "effect:player-scope-extensions"
+   ]
+  },
+  {
+   "rank": 262,
+   "name": "Doctor Doom, King of Latveria",
+   "needs": [
+    "keyword:connive",
+    "trigger:discards-extensions"
+   ]
+  },
+  {
+   "rank": 263,
+   "name": "Bria, Riptide Rogue",
+   "needs": []
+  },
+  {
+   "rank": 264,
+   "name": "Jetmir, Nexus of Revels",
+   "needs": [
+    "bug:double-strike-between-damage-steps"
+   ]
+  },
+  {
+   "rank": 265,
+   "name": "Aloy, Savior of Meridian",
+   "needs": [
+    "effect:amount-aggregate",
+    "keyword:discover"
+   ]
+  },
+  {
+   "rank": 266,
+   "name": "Eddie Brock",
+   "needs": [
+    "condition:filter-dynamic-compare",
+    "effect:may-sacrifice-then",
+    "effect:sacrificed-object-lki",
+    "mechanic:mdfc-transform"
+   ]
+  },
+  {
+   "rank": 267,
+   "name": "Shiko and Narset, Unified",
+   "needs": [
+    "condition:cast-spell-targets",
+    "decision:copy-new-targets",
+    "effect:copy-permanent-spell",
+    "effect:copy-spell-extensions",
+    "trigger:nth-each-turn"
+   ]
+  },
+  {
+   "rank": 268,
+   "name": "Nicol Bolas, the Ravager",
+   "needs": [
+    "bug:transform-fixes",
+    "effect:exile-library-all-but-bottom",
+    "effect:flicker-generalized",
+    "effect:player-scope-extensions",
+    "effect:put-onto-battlefield-options"
+   ]
+  },
+  {
+   "rank": 269,
+   "name": "Quintorius, History Chaser",
+   "needs": [
+    "bug:sequence-suspends-on-decision",
+    "trigger:leaves-graveyard"
+   ]
+  },
+  {
+   "rank": 270,
+   "name": "Rocco, Cabaretti Caterer",
+   "needs": [
+    "bug:x-value-propagation",
+    "condition:entry-provenance"
+   ]
+  },
+  {
+   "rank": 271,
+   "name": "Omnath, Locus of Mana",
+   "needs": [
+    "replacement:mana-pool-emptying",
+    "static:mana-pool-reads"
+   ]
+  },
+  {
+   "rank": 272,
+   "name": "Chulane, Teller of Tales",
+   "needs": []
+  },
+  {
+   "rank": 273,
+   "name": "Shilgengar, Sire of Famine",
+   "needs": [
+    "cost:choose-cards-as-cost",
+    "cost:sacrifice-multiple",
+    "effect:add-subtype",
+    "effect:missing-tokens",
+    "effect:put-onto-battlefield-options",
+    "effect:sacrificed-object-lki",
+    "replacement:exile-instead"
+   ]
+  },
+  {
+   "rank": 274,
+   "name": "Shalai and Hallar",
+   "needs": [
+    "trigger:counters-put"
+   ]
+  },
+  {
+   "rank": 275,
+   "name": "Kudo, King Among Bears",
+   "needs": [
+    "bug:static-scope-computed-types",
+    "static:grant-types-to-others",
+    "static:set-base-pt-others"
+   ]
+  },
+  {
+   "rank": 276,
+   "name": "Roxanne, Starfall Savant",
+   "needs": [
+    "effect:mana-ability-side-effects"
+   ]
+  },
+  {
+   "rank": 277,
+   "name": "Dina, Soul Steeper",
+   "needs": [
+    "effect:sacrificed-object-lki"
+   ]
+  },
+  {
+   "rank": 278,
+   "name": "Jodah, Archmage Eternal",
+   "needs": [
+    "static:grant-to-cards-outside-battlefield"
+   ]
+  },
+  {
+   "rank": 279,
+   "name": "Skullbriar, the Walking Grave",
+   "needs": [
+    "static:counters-persist-across-zones"
+   ]
+  },
+  {
+   "rank": 281,
+   "name": "Tatyova, Benthic Druid",
+   "needs": []
+  },
+  {
+   "rank": 282,
+   "name": "Kratos, God of War",
+   "needs": [
+    "bug:static-scope-computed-types",
+    "condition:filter-this-turn-history",
+    "effect:player-scope-extensions"
+   ]
+  },
+  {
+   "rank": 283,
+   "name": "Iron Man, Titan of Innovation",
+   "needs": [
+    "condition:filter-dynamic-compare",
+    "effect:may-sacrifice-then",
+    "effect:sacrificed-object-lki"
+   ]
+  },
+  {
+   "rank": 284,
+   "name": "Thranduil, the Elvenking",
+   "needs": [
+    "static:gain-abilities-from-graveyard"
+   ]
+  },
+  {
+   "rank": 285,
+   "name": "Mirko, Obsessive Theorist",
+   "needs": [
+    "condition:filter-dynamic-compare",
+    "replacement:exile-instead",
+    "trigger:surveils"
+   ]
+  },
+  {
+   "rank": 286,
+   "name": "Rowan, Scion of War",
+   "needs": [
+    "condition:filter-combinators",
+    "effect:amount-turn-stat",
+    "effect:temporary-player-effect"
+   ]
+  },
+  {
+   "rank": 287,
+   "name": "The Mycotyrant",
+   "needs": [
+    "bug:cda-all-zones",
+    "effect:amount-turn-stat",
+    "stat:turn-event-tallies"
+   ]
+  },
+  {
+   "rank": 288,
+   "name": "Wernog, Rider's Chaplain",
+   "needs": [
+    "effect:choices-by-other-players",
+    "effect:missing-tokens",
+    "mechanic:commander-pairing"
+   ]
+  },
+  {
+   "rank": 289,
+   "name": "Hazezon, Shaper of Sand",
+   "needs": [
+    "keyword:landwalk"
+   ]
+  },
+  {
+   "rank": 290,
+   "name": "Tayam, Luminous Enigma",
+   "needs": [
+    "cost:remove-counters-from-chosen",
+    "mechanic:keyword-counters",
+    "static:enters-replacement-for-others"
+   ]
+  },
+  {
+   "rank": 291,
+   "name": "Brenard, Ginger Sculptor",
+   "needs": [
+    "bug:static-scope-computed-types",
+    "effect:copy-exceptions",
+    "effect:exile-with-counters",
+    "effect:token-copy-last-known-info",
+    "static:affect-scope-by-filter"
+   ]
+  },
+  {
+   "rank": 292,
+   "name": "Reaper King",
+   "needs": [
+    "cost:cost-modification-extensions"
+   ]
+  },
+  {
+   "rank": 293,
+   "name": "Phenax, God of Deception",
+   "needs": [
+    "bug:lki-object-reads",
+    "bug:static-scope-computed-types",
+    "condition:devotion",
+    "static:self-type-changes"
+   ]
+  },
+  {
+   "rank": 294,
+   "name": "Indominus Rex, Alpha",
+   "needs": [
+    "bug:as-enters-choices-any-entry",
+    "decision:discard-any-number",
+    "effect:amount-counters-on-object",
+    "mechanic:keyword-counters"
+   ]
+  },
+  {
+   "rank": 296,
+   "name": "Elsha, Threefold Master",
+   "needs": []
+  },
+  {
+   "rank": 297,
+   "name": "Gargos, Vicious Watcher",
+   "needs": [
+    "trigger:becomes-target-fixes"
+   ]
+  },
+  {
+   "rank": 298,
+   "name": "Noctis, Prince of Lucis",
+   "needs": [
+    "replacement:enters-modifier-via-permission",
+    "replacement:exile-instead",
+    "zone:graveyard-cast-permissions"
+   ]
+  },
+  {
+   "rank": 299,
+   "name": "Syr Gwyn, Hero of Ashvale",
+   "needs": [
+    "condition:filter-attachments",
+    "static:affect-scope-by-filter"
+   ]
+  },
+  {
+   "rank": 300,
+   "name": "Athreos, God of Passage",
+   "needs": [
+    "bug:lki-leaves-battlefield-triggers",
+    "condition:devotion",
+    "effect:return-to-hand-extensions",
+    "static:self-type-changes"
+   ]
+  },
+  {
+   "rank": 301,
+   "name": "Coram, the Undertaker",
+   "needs": [
+    "effect:amount-aggregate",
+    "effect:player-scope-extensions",
+    "stat:milled-this-turn",
+    "zone:cast-cards-you-dont-own",
+    "zone:graveyard-cast-permissions"
+   ]
+  },
+  {
+   "rank": 302,
+   "name": "Marvo, Deep Operative",
+   "needs": [
+    "effect:cast-during-resolution",
+    "mechanic:clash"
+   ]
+  },
+  {
+   "rank": 303,
+   "name": "Norin the Wary",
+   "needs": [
+    "effect:flicker-generalized"
+   ]
+  },
+  {
+   "rank": 304,
+   "name": "Finneas, Ace Archer",
+   "needs": [
+    "condition:count-excluding-source",
+    "effect:amount-aggregate"
+   ]
+  },
+  {
+   "rank": 305,
+   "name": "The Infamous Cruelclaw",
+   "needs": [
+    "effect:cast-during-resolution",
+    "effect:reveal-until"
+   ]
+  },
+  {
+   "rank": 306,
+   "name": "Toxrill, the Corrosive",
+   "needs": [
+    "bug:lki-leaves-battlefield-triggers",
+    "static:affect-scope-by-filter",
+    "static:pt-per-amount"
+   ]
+  },
+  {
+   "rank": 307,
+   "name": "Arna Kennerüd, Skycaptain",
+   "needs": [
+    "condition:filter-attachments",
+    "decision:ward-payment",
+    "effect:attach-extensions",
+    "effect:double-counters-each-kind"
+   ]
+  },
+  {
+   "rank": 308,
+   "name": "Raggadragga, Goreguts Boss",
+   "needs": [
+    "condition:filter-card-property-clauses",
+    "stat:mana-spent-to-cast"
+   ]
+  },
+  {
+   "rank": 309,
+   "name": "Minsc & Boo, Timeless Heroes",
+   "needs": [
+    "condition:filter-combinators",
+    "decision:legend-rule-choice",
+    "effect:reflexive-trigger",
+    "effect:sacrificed-object-lki"
+   ]
+  },
+  {
+   "rank": 310,
+   "name": "Ghalta, Primal Hunger",
+   "needs": [
+    "cost:cost-modification-extensions",
+    "effect:amount-aggregate"
+   ]
+  },
+  {
+   "rank": 311,
+   "name": "Dogmeat, Ever Loyal",
+   "needs": [
+    "condition:filter-attachments"
+   ]
+  },
+  {
+   "rank": 312,
+   "name": "Alexios, Deimos of Kosmos",
+   "needs": [
+    "effect:control-change-extensions",
+    "static:cant-be-sacrificed",
+    "static:combat-restriction-extensions"
+   ]
+  },
+  {
+   "rank": 313,
+   "name": "The Master of Keys",
+   "needs": [
+    "bug:x-value-propagation",
+    "static:grant-to-cards-outside-battlefield"
+   ]
+  },
+  {
+   "rank": 314,
+   "name": "Myrel, Shield of Argive",
+   "needs": [
+    "effect:cast-and-activate-restrictions"
+   ]
+  },
+  {
+   "rank": 315,
+   "name": "Omnath, Locus of Rage",
+   "needs": [
+    "bug:commander-903-9a-current-rules",
+    "bug:lki-leaves-battlefield-triggers",
+    "bug:simultaneous-zone-moves"
+   ]
+  },
+  {
+   "rank": 316,
+   "name": "Codie, Vociferous Codex",
+   "needs": [
+    "effect:cast-and-activate-restrictions",
+    "effect:delayed-trigger-extensions",
+    "effect:mana-ability-side-effects",
+    "effect:reveal-until",
+    "zone:impulse-permission-options"
+   ]
+  },
+  {
+   "rank": 317,
+   "name": "Goro-Goro and Satoru",
+   "needs": [
+    "condition:filter-this-turn-history",
+    "trigger:combat-damage-batch"
+   ]
+  },
+  {
+   "rank": 318,
+   "name": "Kalamax, the Stormsire",
+   "needs": [
+    "condition:source-state",
+    "decision:copy-new-targets",
+    "effect:copy-spell-extensions",
+    "trigger:copies-spell",
+    "trigger:nth-each-turn"
+   ]
+  },
+  {
+   "rank": 319,
+   "name": "Slimefoot and Squee",
+   "needs": [
+    "bug:simultaneous-zone-moves",
+    "bug:zone-change-object-identity",
+    "zone:activated-ability-zones"
+   ]
+  },
+  {
+   "rank": 320,
+   "name": "Adrix and Nev, Twincasters",
+   "needs": []
+  },
+  {
+   "rank": 321,
+   "name": "Lumra, Bellow of the Woods",
+   "needs": [
+    "bug:cda-all-zones"
+   ]
+  },
+  {
+   "rank": 322,
+   "name": "Obeka, Brute Chronologist",
+   "needs": [
+    "effect:choices-by-other-players",
+    "effect:end-the-turn"
+   ]
+  },
+  {
+   "rank": 323,
+   "name": "Winter, Misanthropic Guide",
+   "needs": [
+    "effect:amount-new-variants",
+    "static:max-hand-size"
+   ]
+  },
+  {
+   "rank": 324,
+   "name": "Ikra Shidiqi, the Usurper",
+   "needs": [
+    "bug:lki-object-reads",
+    "trigger:combat-trigger-extensions"
+   ]
+  },
+  {
+   "rank": 325,
+   "name": "Elas il-Kor, Sadistic Pilgrim",
+   "needs": [
+    "bug:lki-leaves-battlefield-triggers"
+   ]
+  },
+  {
+   "rank": 326,
+   "name": "Brimaz, Blight of Oreskos",
+   "needs": [
+    "bug:x-value-propagation",
+    "condition:filter-combinators",
+    "mechanic:incubate",
+    "stat:turn-event-tallies"
+   ]
+  },
+  {
+   "rank": 327,
+   "name": "Kess, Dissident Mage",
+   "needs": [
+    "replacement:spell-exiled-as-it-resolves"
+   ]
+  },
+  {
+   "rank": 328,
+   "name": "Xenagos, God of Revels",
+   "needs": [
+    "condition:devotion",
+    "effect:target-other-than-source",
+    "static:self-type-changes"
+   ]
+  },
+  {
+   "rank": 329,
+   "name": "Cloud, Midgar Mercenary",
+   "needs": [
+    "condition:filter-attachments",
+    "static:trigger-count-modifiers"
+   ]
+  },
+  {
+   "rank": 330,
+   "name": "Braids, Arisen Nightmare",
+   "needs": [
+    "effect:choices-by-other-players",
+    "effect:may-sacrifice-then",
+    "effect:sacrificed-object-lki"
+   ]
+  },
+  {
+   "rank": 331,
+   "name": "Haldan, Avid Arcanist",
+   "needs": [
+    "cost:mana-spending-rules",
+    "mechanic:commander-pairing",
+    "zone:play-from-exile-with-counter"
+   ]
+  },
+  {
+   "rank": 332,
+   "name": "Pako, Arcane Retriever",
+   "needs": [
+    "effect:exile-with-counters",
+    "effect:impulse-exile-other-libraries",
+    "effect:this-way-results",
+    "mechanic:commander-pairing"
+   ]
+  },
+  {
+   "rank": 333,
+   "name": "Clement, the Worrywort",
+   "needs": [
+    "condition:filter-dynamic-compare"
+   ]
+  },
+  {
+   "rank": 334,
+   "name": "Szarel, Genesis Shepherd",
+   "needs": [
+    "bug:lki-object-reads",
+    "effect:target-other-than-source",
+    "trigger:sacrifice-filter"
+   ]
+  },
+  {
+   "rank": 335,
+   "name": "Strefan, Maurer Progenitor",
+   "needs": [
+    "cost:choose-cards-as-cost",
+    "effect:amount-turn-stat",
+    "effect:enter-attacking",
+    "effect:may-sacrifice-then",
+    "effect:missing-tokens"
+   ]
+  },
+  {
+   "rank": 336,
+   "name": "Neriv, Heart of the Storm",
+   "needs": [
+    "condition:filter-this-turn-history",
+    "replacement:damage-modification"
+   ]
+  },
+  {
+   "rank": 337,
+   "name": "Marwyn, the Nurturer",
+   "needs": [
+    "effect:mana-ability-dynamic-amount"
+   ]
+  },
+  {
+   "rank": 338,
+   "name": "Ghave, Guru of Spores",
+   "needs": [
+    "cost:remove-counters-from-chosen"
+   ]
+  },
+  {
+   "rank": 339,
+   "name": "Vnwxt, Verbose Host",
+   "needs": [
+    "mechanic:speed",
+    "replacement:new-event-replacements"
+   ]
+  },
+  {
+   "rank": 340,
+   "name": "Saskia the Unyielding",
+   "needs": [
+    "bug:as-enters-choices-any-entry",
+    "bug:lki-object-reads",
+    "decision:choose-player",
+    "trigger:combat-trigger-extensions",
+    "trigger:damage-trigger-extensions"
+   ]
+  },
+  {
+   "rank": 341,
+   "name": "Imotekh the Stormlord",
+   "needs": [
+    "effect:target-other-than-source",
+    "trigger:leaves-graveyard"
+   ]
+  },
+  {
+   "rank": 342,
+   "name": "Talion, the Kindly Lord",
+   "needs": [
+    "bug:as-enters-choices-any-entry",
+    "bug:x-value-propagation",
+    "condition:filter-combinators"
+   ]
+  },
+  {
+   "rank": 343,
+   "name": "Maelstrom Wanderer",
+   "needs": [
+    "decision:free-cast-choices"
+   ]
+  },
+  {
+   "rank": 344,
+   "name": "Sen Triplets",
+   "needs": [
+    "effect:cast-and-activate-restrictions",
+    "zone:cast-cards-you-dont-own",
+    "zone:visibility-extensions"
+   ]
+  },
+  {
+   "rank": 345,
+   "name": "Xavier Sal, Infested Captain",
+   "needs": [
+    "cost:remove-counters-from-chosen",
+    "decision:choose-permanent"
+   ]
+  },
+  {
+   "rank": 346,
+   "name": "Elesh Norn, Mother of Machines",
+   "needs": [
+    "static:trigger-count-modifiers"
+   ]
+  },
+  {
+   "rank": 347,
+   "name": "Tuvasa the Sunlit",
+   "needs": [
+    "trigger:nth-each-turn"
+   ]
+  },
+  {
+   "rank": 348,
+   "name": "Grist, the Hunger Tide",
+   "needs": [
+    "effect:missing-tokens",
+    "effect:reflexive-trigger",
+    "effect:repeat-process",
+    "effect:this-way-results",
+    "static:self-type-changes"
+   ]
+  },
+  {
+   "rank": 349,
+   "name": "Kellan, the Kid",
+   "needs": [
+    "condition:filter-dynamic-compare",
+    "effect:cast-during-resolution",
+    "effect:this-way-results",
+    "trigger:cast-or-play-origin-zone"
+   ]
+  },
+  {
+   "rank": 350,
+   "name": "Squall, SeeD Mercenary",
+   "needs": []
+  },
+  {
+   "rank": 351,
+   "name": "Morska, Undersea Sleuth",
+   "needs": [
+    "effect:missing-tokens",
+    "trigger:nth-each-turn"
+   ]
+  },
+  {
+   "rank": 353,
+   "name": "Niv-Mizzet, Visionary",
+   "needs": [
+    "trigger:damage-trigger-extensions"
+   ]
+  },
+  {
+   "rank": 354,
+   "name": "Mishra, Eminent One",
+   "needs": [
+    "effect:copy-exceptions",
+    "effect:created-tokens-gain-keyword-eot"
+   ]
+  },
+  {
+   "rank": 355,
+   "name": "Shirei, Shizo's Caretaker",
+   "needs": [
+    "bug:lki-leaves-battlefield-triggers",
+    "bug:zone-change-object-identity",
+    "condition:source-state",
+    "effect:delayed-trigger-extensions"
+   ]
+  },
+  {
+   "rank": 356,
+   "name": "Myrkul, Lord of Bones",
+   "needs": [
+    "bug:lki-leaves-battlefield-triggers",
+    "bug:zone-change-object-identity",
+    "condition:player-state-thresholds",
+    "effect:copy-exceptions",
+    "effect:exile-with-counters"
+   ]
+  },
+  {
+   "rank": 357,
+   "name": "Ellivere of the Wild Court",
+   "needs": [
+    "condition:filter-attachments",
+    "effect:attach-extensions",
+    "effect:target-other-than-source",
+    "mechanic:role-tokens"
+   ]
+  },
+  {
+   "rank": 358,
+   "name": "Koma, Cosmos Serpent",
+   "needs": [
+    "effect:cast-and-activate-restrictions",
+    "effect:modal-ability-targeted-modes",
+    "effect:target-other-than-source"
+   ]
+  },
+  {
+   "rank": 359,
+   "name": "Kodama of the East Tree",
+   "needs": [
+    "condition:entry-provenance",
+    "condition:filter-dynamic-compare"
+   ]
+  },
+  {
+   "rank": 360,
+   "name": "Ozai, the Phoenix King",
+   "needs": [
+    "decision:manual-payment-choices",
+    "keyword:firebending",
+    "replacement:mana-pool-emptying",
+    "static:mana-pool-reads"
+   ]
+  },
+  {
+   "rank": 361,
+   "name": "Zoraline, Cosmos Caller",
+   "needs": [
+    "cost:may-cost-non-mana",
+    "effect:reflexive-trigger",
+    "replacement:exile-instead"
+   ]
+  },
+  {
+   "rank": 362,
+   "name": "Sidisi, Brood Tyrant",
+   "needs": [
+    "trigger:put-into-graveyard"
+   ]
+  },
+  {
+   "rank": 363,
+   "name": "Gluntch, the Bestower",
+   "needs": [
+    "decision:choose-permanent",
+    "decision:choose-player"
+   ]
+  },
+  {
+   "rank": 365,
+   "name": "Admiral Brass, Unsinkable",
+   "needs": [
+    "replacement:exile-instead"
+   ]
+  },
+  {
+   "rank": 366,
+   "name": "The Gitrog, Ravenous Ride",
+   "needs": [
+    "decision:choose-tap-costs",
+    "effect:amount-fields-dynamic",
+    "effect:may-sacrifice-then",
+    "effect:sacrificed-object-lki",
+    "keyword:saddle"
+   ]
+  },
+  {
+   "rank": 367,
+   "name": "Breena, the Demagogue",
+   "needs": [
+    "condition:defending-player-life-rank",
+    "decision:choose-permanent",
+    "trigger:combat-trigger-extensions"
+   ]
+  },
+  {
+   "rank": 368,
+   "name": "Kadena, Slinking Sorcerer",
+   "needs": [
+    "cost:cost-modification-extensions",
+    "mechanic:face-down"
+   ]
+  },
+  {
+   "rank": 369,
+   "name": "Sméagol, Helpful Guide",
+   "needs": [
+    "effect:reveal-until",
+    "mechanic:the-ring",
+    "stat:turn-event-tallies"
+   ]
+  },
+  {
+   "rank": 370,
+   "name": "The Unbeatable Squirrel Girl",
+   "needs": []
+  },
+  {
+   "rank": 371,
+   "name": "Ultima, Origin of Oblivion",
+   "needs": [
+    "effect:duration-extensions",
+    "effect:mana-ability-side-effects",
+    "effect:modifier-grants-activated"
+   ]
+  },
+  {
+   "rank": 372,
+   "name": "Yuma, Proud Protector",
+   "needs": [
+    "cost:cost-modification-extensions",
+    "effect:may-sacrifice-then",
+    "trigger:put-into-graveyard"
+   ]
+  },
+  {
+   "rank": 373,
+   "name": "Lathiel, the Bounteous Dawn",
+   "needs": [
+    "decision:variable-target-count",
+    "effect:amount-turn-stat",
+    "effect:divide-among-targets",
+    "effect:target-other-than-source"
+   ]
+  },
+  {
+   "rank": 374,
+   "name": "Extus, Oriq Overlord",
+   "needs": [
+    "condition:filter-combinators",
+    "cost:sacrifice-multiple",
+    "trigger:copies-spell"
+   ]
+  },
+  {
+   "rank": 375,
+   "name": "Tifa, Martial Artist",
+   "needs": [
+    "condition:turn-structure",
+    "effect:additional-combat-after-this-phase",
+    "keyword:melee",
+    "trigger:combat-damage-batch"
+   ]
+  },
+  {
+   "rank": 377,
+   "name": "Nethroi, Apex of Death",
+   "needs": [
+    "decision:variable-target-count",
+    "mechanic:mutate"
+   ]
+  },
+  {
+   "rank": 378,
+   "name": "Lynde, Cheerful Tormentor",
+   "needs": [
+    "effect:delayed-trigger-extensions",
+    "mechanic:curses"
+   ]
+  },
+  {
+   "rank": 379,
+   "name": "Commodore Guff",
+   "needs": [
+    "effect:target-other-than-source"
+   ]
+  },
+  {
+   "rank": 380,
+   "name": "Bruce Banner",
+   "needs": [
+    "bug:simultaneous-damage-batching",
+    "condition:source-state",
+    "effect:additional-combat-after-this-phase",
+    "mechanic:mdfc-transform"
+   ]
+  },
+  {
+   "rank": 381,
+   "name": "The Tenth Doctor",
+   "needs": [
+    "decision:free-cast-choices",
+    "effect:reveal-until",
+    "mechanic:suspend-and-time-counters"
+   ]
+  },
+  {
+   "rank": 382,
+   "name": "Bruvac the Grandiloquent",
+   "needs": [
+    "replacement:new-event-replacements"
+   ]
+  },
+  {
+   "rank": 383,
+   "name": "Sigarda, Font of Blessings",
+   "needs": [
+    "static:affect-scope-by-filter",
+    "zone:cast-from-library-top",
+    "zone:visibility-extensions"
+   ]
+  },
+  {
+   "rank": 384,
+   "name": "Thantis, the Warweaver",
+   "needs": [
+    "bug:static-scope-computed-types"
+   ]
+  },
+  {
+   "rank": 385,
+   "name": "The Lord of Pain",
+   "needs": [
+    "bug:x-value-propagation",
+    "effect:target-other-than-source",
+    "replacement:new-event-replacements"
+   ]
+  },
+  {
+   "rank": 386,
+   "name": "Ayula, Queen Among Bears",
+   "needs": [
+    "effect:modal-ability-targeted-modes"
+   ]
+  },
+  {
+   "rank": 387,
+   "name": "Evereth, Viceroy of Plunder",
+   "needs": [
+    "bug:lki-object-reads",
+    "effect:reflexive-trigger",
+    "effect:sacrificed-object-lki"
+   ]
+  },
+  {
+   "rank": 388,
+   "name": "Slinza, the Spiked Stampede",
+   "needs": [
+    "effect:reflexive-trigger",
+    "static:enters-replacement-for-others"
+   ]
+  },
+  {
+   "rank": 389,
+   "name": "Ezuri, Claw of Progress",
+   "needs": [
+    "effect:target-other-than-source",
+    "mechanic:player-counters"
+   ]
+  },
+  {
+   "rank": 390,
+   "name": "Bilbo, Birthday Celebrant",
+   "needs": [
+    "bug:simultaneous-damage-batching",
+    "condition:player-state-thresholds",
+    "replacement:new-event-replacements"
+   ]
+  },
+  {
+   "rank": 391,
+   "name": "The Beamtown Bullies",
+   "needs": [
+    "condition:filter-combinators",
+    "effect:control-change-extensions",
+    "effect:target-spec-additions",
+    "mechanic:goad-extensions"
+   ]
+  },
+  {
+   "rank": 392,
+   "name": "Pramikon, Sky Rampart",
+   "needs": [
+    "bug:as-enters-choices-any-entry",
+    "static:combat-restriction-extensions"
+   ]
+  },
+  {
+   "rank": 393,
+   "name": "Tony Stark",
+   "needs": [
+    "effect:attach-extensions",
+    "mechanic:mdfc-transform",
+    "zone:visibility-extensions"
+   ]
+  },
+  {
+   "rank": 394,
+   "name": "Kiora, Sovereign of the Deep",
+   "needs": [
+    "condition:filter-dynamic-compare",
+    "effect:cast-during-resolution",
+    "trigger:cast-or-play-origin-zone"
+   ]
+  },
+  {
+   "rank": 396,
+   "name": "Clive, Ifrit's Dominant",
+   "needs": [
+    "effect:flicker-generalized",
+    "effect:put-onto-battlefield-options",
+    "effect:target-other-than-source"
+   ]
+  },
+  {
+   "rank": 397,
+   "name": "Raph & Mikey, Troublemakers",
+   "needs": [
+    "effect:enter-attacking",
+    "effect:reveal-until"
+   ]
+  },
+  {
+   "rank": 399,
+   "name": "Laughing Jasper Flint",
+   "needs": [
+    "cost:mana-spending-rules",
+    "effect:impulse-exile-other-libraries",
+    "static:affect-scope-by-filter",
+    "static:grant-types-to-others"
+   ]
+  },
+  {
+   "rank": 400,
+   "name": "Zurgo, Thunder's Decree",
+   "needs": [
+    "condition:turn-structure",
+    "effect:enter-attacking",
+    "keyword:mobilize",
+    "static:cant-be-sacrificed"
+   ]
+  },
+  {
+   "rank": 401,
+   "name": "Ardbert, Warrior of Darkness",
+   "needs": []
+  },
+  {
+   "rank": 402,
+   "name": "Millicent, Restless Revenant",
+   "needs": [
+    "trigger:combat-trigger-extensions"
+   ]
+  },
+  {
+   "rank": 403,
+   "name": "Mabel, Heir to Cragflame",
+   "needs": []
+  },
+  {
+   "rank": 404,
+   "name": "Grolnok, the Omnivore",
+   "needs": [
+    "effect:exile-with-counters",
+    "trigger:put-into-graveyard",
+    "zone:play-from-exile-with-counter"
+   ]
+  },
+  {
+   "rank": 405,
+   "name": "Dargo, the Shipwrecker",
+   "needs": [
+    "cost:cost-modification-extensions",
+    "cost:sacrifice-multiple",
+    "stat:turn-event-tallies"
+   ]
+  },
+  {
+   "rank": 406,
+   "name": "Winter, Cynical Opportunist",
+   "needs": [
+    "decision:choose-from-zone-extensions",
+    "effect:this-way-results",
+    "replacement:exile-instead"
+   ]
+  },
+  {
+   "rank": 407,
+   "name": "Jasmine Boreal of the Seven",
+   "needs": [
+    "condition:filter-card-property-clauses",
+    "effect:add-mana-extensions",
+    "static:combat-restriction-extensions"
+   ]
+  },
+  {
+   "rank": 408,
+   "name": "Jhoira, Weatherlight Captain",
+   "needs": [
+    "condition:filter-combinators"
+   ]
+  },
+  {
+   "rank": 409,
+   "name": "Yawgmoth, Thran Physician",
+   "needs": [
+    "bug:counter-annihilation",
+    "cost:choose-cards-as-cost",
+    "effect:target-other-than-source"
+   ]
+  },
+  {
+   "rank": 410,
+   "name": "Maarika, Brutal Gladiator",
+   "needs": [
+    "bug:lki-object-reads",
+    "stat:object-damage-history",
+    "static:combat-restriction-extensions",
+    "trigger:damage-trigger-extensions"
+   ]
+  },
+  {
+   "rank": 411,
+   "name": "Anowon, the Ruin Thief",
+   "needs": [
+    "effect:this-way-results",
+    "trigger:combat-damage-batch"
+   ]
+  },
+  {
+   "rank": 412,
+   "name": "Hei Bai, Forest Guardian",
+   "needs": [
+    "effect:reveal-until",
+    "static:combat-restriction-extensions"
+   ]
+  },
+  {
+   "rank": 413,
+   "name": "Kwain, Itinerant Meddler",
+   "needs": [
+    "effect:choices-by-other-players",
+    "effect:this-way-results"
+   ]
+  },
+  {
+   "rank": 414,
+   "name": "Astarion, the Decadent",
+   "needs": [
+    "effect:amount-turn-stat",
+    "effect:modal-ability-targeted-modes"
+   ]
+  },
+  {
+   "rank": 415,
+   "name": "Chishiro, the Shattered Blade",
+   "needs": [
+    "condition:filter-attachments"
+   ]
+  },
+  {
+   "rank": 416,
+   "name": "Jenova, Ancient Calamity",
+   "needs": [
+    "bug:lki-leaves-battlefield-triggers",
+    "bug:lki-object-reads",
+    "effect:add-subtype",
+    "effect:target-other-than-source"
+   ]
+  },
+  {
+   "rank": 417,
+   "name": "Raised by Giants",
+   "needs": [
+    "mechanic:commander-pairing",
+    "static:affect-scope-by-filter",
+    "static:grant-types-to-others",
+    "static:set-base-pt-others"
+   ]
+  },
+  {
+   "rank": 418,
+   "name": "The Mimeoplasm",
+   "needs": [
+    "bug:as-enters-choices-any-entry",
+    "decision:choose-from-zone-extensions",
+    "effect:amount-fields-dynamic",
+    "replacement:copy-on-enter-options"
+   ]
+  },
+  {
+   "rank": 419,
+   "name": "Ral, Monsoon Mage",
+   "needs": [
+    "bug:transform-fixes",
+    "condition:count-excluding-source",
+    "effect:amount-fields-dynamic",
+    "effect:divide-among-targets",
+    "effect:flicker-generalized",
+    "effect:put-onto-battlefield-options",
+    "effect:temporary-player-effect",
+    "mechanic:coin-flip",
+    "stat:spells-cast-this-turn-record",
+    "zone:impulse-permission-options"
+   ]
+  },
+  {
+   "rank": 420,
+   "name": "Duskana, the Rage Mother",
+   "needs": [
+    "condition:filter-card-property-clauses"
+   ]
+  },
+  {
+   "rank": 421,
+   "name": "Hinata, Dawn-Crowned",
+   "needs": [
+    "cost:cost-modification-extensions"
+   ]
+  },
+  {
+   "rank": 422,
+   "name": "Talrand, Sky Summoner",
+   "needs": []
+  },
+  {
+   "rank": 423,
+   "name": "Ognis, the Dragon's Lash",
+   "needs": []
+  },
+  {
+   "rank": 424,
+   "name": "Marisi, Breaker of the Coil",
+   "needs": [
+    "condition:turn-structure",
+    "effect:cast-and-activate-restrictions",
+    "effect:player-scope-extensions"
+   ]
+  },
+  {
+   "rank": 425,
+   "name": "Prossh, Skyraider of Kher",
+   "needs": [
+    "stat:mana-spent-to-cast"
+   ]
+  },
+  {
+   "rank": 426,
+   "name": "Juri, Master of the Revue",
+   "needs": [
+    "bug:lki-object-reads"
+   ]
+  },
+  {
+   "rank": 427,
+   "name": "Wayta, Trainer Prodigy",
+   "needs": [
+    "cost:cost-modification-extensions",
+    "effect:target-other-than-source",
+    "static:trigger-count-modifiers"
+   ]
+  },
+  {
+   "rank": 428,
+   "name": "Ixhel, Scion of Atraxa",
+   "needs": [
+    "cost:mana-spending-rules",
+    "effect:impulse-exile-other-libraries",
+    "keyword:toxic",
+    "mechanic:player-counters",
+    "zone:impulse-permission-options",
+    "zone:visibility-extensions"
+   ]
+  },
+  {
+   "rank": 429,
+   "name": "Elenda, the Dusk Rose",
+   "needs": [
+    "bug:lki-object-reads"
+   ]
+  },
+  {
+   "rank": 430,
+   "name": "Karlach, Fury of Avernus",
+   "needs": [
+    "condition:turn-structure",
+    "effect:additional-combat-after-this-phase",
+    "mechanic:commander-pairing"
+   ]
+  },
+  {
+   "rank": 431,
+   "name": "Brigid, Clachan's Heart",
+   "needs": [
+    "condition:count-excluding-source",
+    "effect:mana-ability-dynamic-amount"
+   ]
+  },
+  {
+   "rank": 432,
+   "name": "Karumonix, the Rat King",
+   "needs": [
+    "keyword:toxic",
+    "mechanic:player-counters",
+    "zone:visibility-extensions"
+   ]
+  },
+  {
+   "rank": 433,
+   "name": "Nahiri, Forged in Fury",
+   "needs": [
+    "condition:filter-attachments",
+    "zone:impulse-permission-options"
+   ]
+  },
+  {
+   "rank": 434,
+   "name": "Zimone and Dina",
+   "needs": [
+    "bug:sequence-suspends-on-decision",
+    "trigger:nth-each-turn"
+   ]
+  },
+  {
+   "rank": 435,
+   "name": "Aminatou, the Fateshifter",
+   "needs": [
+    "bug:player-leaves-game-cleanup",
+    "effect:control-change-extensions"
+   ]
+  },
+  {
+   "rank": 436,
+   "name": "The Locust God",
+   "needs": [
+    "bug:zone-change-object-identity",
+    "effect:return-to-hand-extensions"
+   ]
+  },
+  {
+   "rank": 437,
+   "name": "Ruric Thar, the Unbowed",
+   "needs": []
+  },
+  {
+   "rank": 438,
+   "name": "Baeloth Barrityl, Entertainer",
+   "needs": [
+    "condition:filter-dynamic-compare",
+    "mechanic:commander-pairing",
+    "mechanic:goad-extensions"
+   ]
+  },
+  {
+   "rank": 439,
+   "name": "Rootha, Mastering the Moment",
+   "needs": [
+    "effect:amount-fields-dynamic",
+    "stat:spells-cast-this-turn-record"
+   ]
+  },
+  {
+   "rank": 440,
+   "name": "Ivy, Gleeful Spellthief",
+   "needs": [
+    "condition:cast-spell-targets",
+    "effect:copy-permanent-spell",
+    "effect:copy-spell-extensions"
+   ]
+  },
+  {
+   "rank": 441,
+   "name": "Don Andres, the Renegade",
+   "needs": [
+    "static:affect-scope-by-filter",
+    "static:grant-types-to-others"
+   ]
+  },
+  {
+   "rank": 442,
+   "name": "Zethi, Arcane Blademaster",
+   "needs": [
+    "decision:variable-target-count",
+    "effect:cast-during-resolution",
+    "effect:exile-with-counters",
+    "keyword:multikicker"
+   ]
+  },
+  {
+   "rank": 443,
+   "name": "Emry, Lurker of the Loch",
+   "needs": [
+    "zone:graveyard-cast-permissions"
+   ]
+  },
+  {
+   "rank": 444,
+   "name": "Kambal, Profiteering Mayor",
+   "needs": [
+    "effect:token-copy-options",
+    "stat:per-ability-turn-counters",
+    "trigger:enters-batch"
+   ]
+  },
+  {
+   "rank": 445,
+   "name": "Brudiclad, Telchor Engineer",
+   "needs": [
+    "decision:choose-permanent",
+    "effect:become-copy"
+   ]
+  },
+  {
+   "rank": 446,
+   "name": "Magar of the Magic Strings",
+   "needs": [
+    "effect:cast-during-resolution",
+    "mechanic:face-down",
+    "replacement:exile-instead"
+   ]
+  },
+  {
+   "rank": 447,
+   "name": "Ravos, Soultender",
+   "needs": []
+  },
+  {
+   "rank": 448,
+   "name": "Thorin, King of Durin's Folk",
+   "needs": []
+  },
+  {
+   "rank": 449,
+   "name": "Narci, Fable Singer",
+   "needs": [
+    "bug:saga-completion-sacrifice",
+    "trigger:sacrifice-filter",
+    "trigger:saga-final-chapter"
+   ]
+  },
+  {
+   "rank": 450,
+   "name": "Karador, Ghost Chieftain",
+   "needs": [
+    "cost:cost-modification-extensions"
+   ]
+  },
+  {
+   "rank": 451,
+   "name": "Eshki Dragonclaw",
+   "needs": [
+    "stat:spells-cast-this-turn-record"
+   ]
+  },
+  {
+   "rank": 452,
+   "name": "Zur, Eternal Schemer",
+   "needs": [
+    "bug:static-scope-computed-types",
+    "effect:amount-fields-dynamic",
+    "static:affect-scope-by-filter"
+   ]
+  },
+  {
+   "rank": 453,
+   "name": "Abaddon the Despoiler",
+   "needs": [
+    "condition:filter-dynamic-compare",
+    "effect:amount-turn-stat",
+    "static:grant-abilities-to-spells",
+    "trigger:cast-or-play-origin-zone"
+   ]
+  },
+  {
+   "rank": 454,
+   "name": "Imodane, the Pyrohammer",
+   "needs": [
+    "condition:cast-spell-targets",
+    "trigger:damage-trigger-extensions"
+   ]
+  },
+  {
+   "rank": 455,
+   "name": "Marchesa, Dealer of Death",
+   "needs": [
+    "effect:look-and-choose-leftover",
+    "trigger:commit-crime"
+   ]
+  },
+  {
+   "rank": 456,
+   "name": "Karametra, God of Harvests",
+   "needs": [
+    "bug:static-scope-computed-types",
+    "condition:devotion",
+    "static:self-type-changes"
+   ]
+  },
+  {
+   "rank": 457,
+   "name": "Delney, Streetwise Lookout",
+   "needs": [
+    "static:combat-restriction-extensions",
+    "static:trigger-count-modifiers"
+   ]
+  },
+  {
+   "rank": 458,
+   "name": "Yusri, Fortune's Flame",
+   "needs": [
+    "effect:temporary-player-effect",
+    "mechanic:coin-flip"
+   ]
+  },
+  {
+   "rank": 459,
+   "name": "Greasefang, Okiba Boss",
+   "needs": [
+    "bug:zone-change-object-identity",
+    "keyword:crew"
+   ]
+  },
+  {
+   "rank": 460,
+   "name": "Maha, Its Feathers Night",
+   "needs": [
+    "decision:ward-payment",
+    "static:affect-scope-by-filter",
+    "static:set-base-pt-others"
+   ]
+  },
+  {
+   "rank": 461,
+   "name": "Jaws, Relentless Predator",
+   "needs": [
+    "cost:choose-cards-as-cost",
+    "effect:missing-tokens",
+    "trigger:destroyed",
+    "trigger:sacrifice-filter"
+   ]
+  },
+  {
+   "rank": 462,
+   "name": "Dr. Madison Li",
+   "needs": []
+  },
+  {
+   "rank": 463,
+   "name": "Kydele, Chosen of Kruphix",
+   "needs": [
+    "effect:amount-turn-stat",
+    "effect:mana-ability-dynamic-amount"
+   ]
+  },
+  {
+   "rank": 464,
+   "name": "Aang, at the Crossroads",
+   "needs": [
+    "bug:static-scope-computed-types",
+    "bug:transform-fixes",
+    "bug:zone-change-object-identity",
+    "keyword:earthbend",
+    "trigger:leaves-battlefield-filter"
+   ]
+  },
+  {
+   "rank": 465,
+   "name": "Peter Parker",
+   "needs": [
+    "keyword:web-slinging",
+    "mechanic:mdfc-transform",
+    "static:grant-to-cards-outside-battlefield"
+   ]
+  },
+  {
+   "rank": 466,
+   "name": "Aragorn, King of Gondor",
+   "needs": [
+    "condition:player-state-thresholds",
+    "static:combat-restriction-extensions"
+   ]
+  },
+  {
+   "rank": 467,
+   "name": "Sorin of House Markov",
+   "needs": [
+    "bug:transform-fixes",
+    "condition:count-excluding-source",
+    "effect:add-subtype",
+    "effect:amount-turn-stat",
+    "effect:flicker-generalized",
+    "effect:put-onto-battlefield-options",
+    "mechanic:keyword-counters"
+   ]
+  },
+  {
+   "rank": 468,
+   "name": "Felothar, Dawn of the Abzan",
+   "needs": [
+    "effect:may-sacrifice-then"
+   ]
+  },
+  {
+   "rank": 469,
+   "name": "Heliod, the Radiant Dawn",
+   "needs": [
+    "cost:cost-modification-extensions",
+    "decision:manual-payment-choices",
+    "effect:amount-turn-stat",
+    "effect:cast-and-activate-restrictions"
+   ]
+  },
+  {
+   "rank": 470,
+   "name": "Riku of Many Paths",
+   "needs": [
+    "bug:modal-modes-on-cast",
+    "effect:amount-fields-dynamic",
+    "trigger:cast-spell-clauses"
+   ]
+  },
+  {
+   "rank": 471,
+   "name": "Tasigur, the Golden Fang",
+   "needs": [
+    "decision:choose-from-zone-extensions",
+    "decision:choose-player",
+    "keyword:delve"
+   ]
+  },
+  {
+   "rank": 472,
+   "name": "Sin, Spira's Punishment",
+   "needs": [
+    "effect:random-choice",
+    "effect:repeat-process",
+    "effect:this-way-results",
+    "effect:token-copy-options"
+   ]
+  },
+  {
+   "rank": 473,
+   "name": "Mr. Foxglove",
+   "needs": [
+    "effect:amount-new-variants",
+    "effect:this-way-results"
+   ]
+  },
+  {
+   "rank": 474,
+   "name": "Slimefoot, the Stowaway",
+   "needs": [
+    "bug:lki-leaves-battlefield-triggers"
+   ]
+  },
+  {
+   "rank": 475,
+   "name": "The Emperor of Palamecia",
+   "needs": [
+    "stat:mana-spent-to-cast"
+   ]
+  },
+  {
+   "rank": 476,
+   "name": "Karn, Legacy Reforged",
+   "needs": [
+    "cost:mana-spending-rules",
+    "effect:amount-aggregate"
+   ]
+  },
+  {
+   "rank": 477,
+   "name": "Cecily, Haunted Mage",
+   "needs": [
+    "condition:player-state-thresholds",
+    "effect:cast-during-resolution",
+    "mechanic:commander-pairing",
+    "static:max-hand-size"
+   ]
+  },
+  {
+   "rank": 478,
+   "name": "Nelly Borca, Impulsive Accuser",
+   "needs": [
+    "effect:player-scope-extensions",
+    "mechanic:goad-extensions",
+    "mechanic:suspect",
+    "trigger:combat-damage-batch"
+   ]
+  },
+  {
+   "rank": 479,
+   "name": "Minn, Wily Illusionist",
+   "needs": [
+    "bug:lki-leaves-battlefield-triggers",
+    "bug:lki-object-reads",
+    "condition:filter-dynamic-compare",
+    "trigger:nth-each-turn"
+   ]
+  },
+  {
+   "rank": 480,
+   "name": "Teval, Arbiter of Virtue",
+   "needs": [
+    "bug:x-value-propagation",
+    "keyword:delve",
+    "static:grant-abilities-to-spells"
+   ]
+  },
+  {
+   "rank": 481,
+   "name": "Anhelo, the Painter",
+   "needs": [
+    "decision:copy-new-targets",
+    "keyword:casualty",
+    "stat:spells-cast-this-turn-record",
+    "static:grant-abilities-to-spells"
+   ]
+  },
+  {
+   "rank": 482,
+   "name": "Selvala, Heart of the Wilds",
+   "needs": [
+    "bug:lki-object-reads",
+    "effect:add-mana-extensions",
+    "effect:amount-aggregate",
+    "effect:choices-by-other-players",
+    "effect:mana-ability-dynamic-amount"
+   ]
+  },
+  {
+   "rank": 483,
+   "name": "Wilson, Refined Grizzly",
+   "needs": [
+    "decision:ward-payment",
+    "mechanic:commander-pairing"
+   ]
+  },
+  {
+   "rank": 484,
+   "name": "Tevesh Szat, Doom of Fools",
+   "needs": [
+    "bug:player-leaves-game-cleanup",
+    "effect:control-change-extensions",
+    "effect:may-sacrifice-then",
+    "effect:put-commanders-onto-battlefield",
+    "effect:sacrificed-object-lki"
+   ]
+  },
+  {
+   "rank": 485,
+   "name": "Aeve, Progenitor Ooze",
+   "needs": [
+    "condition:count-excluding-source",
+    "effect:amount-fields-dynamic",
+    "effect:copy-permanent-spell",
+    "static:legend-rule-exemptions"
+   ]
+  },
+  {
+   "rank": 486,
+   "name": "Narset, Enlightened Master",
+   "needs": [
+    "zone:impulse-permission-options"
+   ]
+  },
+  {
+   "rank": 487,
+   "name": "Ratadrabik of Urborg",
+   "needs": [
+    "bug:lki-leaves-battlefield-triggers",
+    "decision:ward-payment",
+    "effect:copy-exceptions",
+    "effect:token-copy-last-known-info"
+   ]
+  },
+  {
+   "rank": 488,
+   "name": "Nine-Fingers Keene",
+   "needs": [
+    "decision:ward-payment",
+    "effect:look-and-choose-leftover"
+   ]
+  },
+  {
+   "rank": 489,
+   "name": "Loot, the Pathfinder",
+   "needs": [
+    "cost:mana-ability-complex-costs",
+    "keyword:exhaust"
+   ]
+  },
+  {
+   "rank": 490,
+   "name": "Kelsien, the Plague",
+   "needs": [
+    "effect:delayed-trigger-extensions",
+    "mechanic:player-counters"
+   ]
+  },
+  {
+   "rank": 491,
+   "name": "Abdel Adrian, Gorion's Ward",
+   "needs": [
+    "bug:zone-change-object-identity",
+    "decision:choose-permanent",
+    "effect:this-way-results",
+    "mechanic:commander-pairing"
+   ]
+  },
+  {
+   "rank": 493,
+   "name": "Syr Konrad, the Grim",
+   "needs": [
+    "effect:player-scope-extensions",
+    "trigger:leaves-graveyard",
+    "trigger:put-into-graveyard"
+   ]
+  },
+  {
+   "rank": 494,
+   "name": "Anzrag, the Quake-Mole",
+   "needs": [
+    "effect:additional-combat-after-this-phase",
+    "static:combat-restriction-extensions",
+    "trigger:combat-trigger-extensions"
+   ]
+  },
+  {
+   "rank": 495,
+   "name": "Felix Five-Boots",
+   "needs": [
+    "static:trigger-count-modifiers"
+   ]
+  },
+  {
+   "rank": 496,
+   "name": "Gilanra, Caller of Wirewood",
+   "needs": [
+    "bug:x-value-propagation"
+   ]
+  },
+  {
+   "rank": 497,
+   "name": "Imoti, Celebrant of Bounty",
+   "needs": [
+    "bug:x-value-propagation",
+    "decision:free-cast-choices",
+    "static:grant-abilities-to-spells"
+   ]
+  },
+  {
+   "rank": 498,
+   "name": "Hapatra, Vizier of Poisons",
+   "needs": [
+    "trigger:counters-put"
+   ]
+  },
+  {
+   "rank": 499,
+   "name": "Jorn, God of Winter",
+   "needs": [
+    "bug:color-identity-back-face",
+    "replacement:enters-modifier-via-permission",
+    "zone:graveyard-cast-permissions"
+   ]
+  },
+  {
+   "rank": 500,
+   "name": "Magnus the Red",
+   "needs": []
+  }
+ ]
+}

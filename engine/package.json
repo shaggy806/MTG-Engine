@@ -25,6 +25,7 @@
     "cards:mark": "npm run build && node scripts/top-commander-cards.mjs --refresh",
     "cmdrs:top": "npm run build && node scripts/top-commanders.mjs",
     "cmdrs:mark": "npm run build && node scripts/top-commanders.mjs --refresh",
+    "cmdrs:gaps": "node scripts/commander-gaps.mjs",
     "prebuild": "node scripts/gen-cards.mjs",
     "build": "tsc",
     "pretypecheck": "node scripts/gen-cards.mjs",

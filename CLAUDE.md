@@ -24,6 +24,10 @@ others, and what each is for:
   cards (`npm run card:verify -w engine` prints the current count). The `[x]` marks in
   `top-commander-cards.txt` are refreshed by `npm run cards:mark -w engine`, which re-marks
   the file in place against the built pool rather than re-fetching the ranking.
+  **The commander backlog is measured, not screened**: `top-commanders-gaps.json` maps every unimplemented
+  top-500 commander to the engine features it needs (a per-card triage, normalized onto one ~245-feature
+  vocabulary), and `npm run cmdrs:gaps -w engine` ranks those features, both by commanders blocked and as a greedy
+  engine-only build order. Add a feature's key to the JSON's `built` array when it lands.
   **Its top section is the current priority: the commander gap.** Only 12 of the 500
   most-played *commanders* are implemented, so an imported decklist almost always has its
   commander substituted — the one card the deck exists for. That is a separate population from

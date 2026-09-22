@@ -27,11 +27,9 @@ reference. This file is a priority list, not a how-to.
 
 ## The commander gap — the current authoring priority
 
-**12 of the 500 most-played commanders are implemented. 2.4%.** For
-comparison the pool covers 22% of the top 2000 *cards*. Almost any real
-decklist someone imports therefore has its commander substituted, which
-replaces the one card the deck is built around and makes the import close to
-pointless.
+**30 of the 500 most-played commanders are implemented** (up from 12 on
+2026-09-21). Almost any real decklist someone imports still has its commander
+substituted, which replaces the one card the deck is built around.
 
 ### Why the pool missed them
 
@@ -67,38 +65,93 @@ files under a joined "A // B" name that looks exactly like a double-faced
 card, are told apart by asking Scryfall (a DFC resolves, a pair doesn't) and
 credited to each half.
 
-### What it will take: authoring, not engine work
+### What it takes — measured, not screened
 
-A keyword screen over all 488 unimplemented entries finds a known-unmodelled
-mechanic in only **16** of them:
+The first version of this section read a keyword screen as "authoring, not
+engine work". **That was wrong.** On 2026-09-22 every unimplemented entry was
+triaged individually. One agent per eight commanders read each card's Oracle
+text and rulings against the engine, and named clause by clause what it
+would need. The ad-hoc gap names were then normalized onto one vocabulary of
+245 engine features. The result is checked in as
+**`top-commanders-gaps.json`** (commander → features, feature → size / needs
+client UI / what to build). **`npm run cmdrs:gaps -w engine`** re-ranks it,
+leaving out commanders already marked implemented and features listed in its
+`built` array. So record a feature there when it lands, and the numbers stay
+current.
 
-| gap | commanders blocked |
-| --- | ---: |
-| Backgrounds ("Choose a Background") | 4 |
-| dungeons / Initiative / the Ring | 3 |
-| Station / Spacecraft | 3 |
-| protection from [filter] | 3 |
-| discard as an ability cost | 3 |
-| "put into a graveyard from anywhere" trigger | 1 |
+Of the 469 still missing when the snapshot was taken:
 
-**Do not read that as "472 are ready to author".** This repo has already
-learned that a keyword screen is the wrong instrument — it is exactly how the
-Tier 1b ordering below came to be overturned, when the real blockers turned
-out to be small unglamorous primitives that no keyword names. The honest
-reading is narrower: *no single named mechanic is gating the commander pool*,
-so this is a volume problem, and the gaps will surface one card at a time as
-authoring proceeds. Add each one here as it does.
+| features still needed | 0 | 1 | 2 | 3 | 4 | 5+ |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| commanders | 29 | 85 | 124 | 112 | 71 | 48 |
 
-Two of the six above are already the top of the limitation ledger
-(protection-from-filter is partly built; discard-as-an-ability-cost is
-unstarted and also blocks Yawgmoth), so they are worth doing regardless.
+- **~94% need engine work, but it's a long tail of small primitives, not a
+  few big mechanics.** No feature blocks more than 22 of them, and even the
+  most common rarely block one alone. The blockers are unglamorous: a static
+  scope that takes a filter, last-known information, "another target",
+  dynamic comparisons in filters, per-turn counters. This is the Tier 1b
+  lesson again, at the scale of the whole commander list.
+- **29 need nothing new** (buildable today): 42 Rin and Seri, Inseparable, 45 Aragorn, the Uniter, 90 Kilo, Apogee Mind, 116 Witherbloom, the Balancer, 124 Yoshimaru, Ever Faithful, 134 Tifa Lockhart, 150 Marrow-Gnawer, 155 Sythis, Harvest's Hand, 163 Ishai, Ojutai Dragonspeaker, 175 Yarok, the Desecrated, 182 Shroofus Sproutsire, 186 Blech, Loafing Pest, 219 Sokka, Tenacious Tactician, 263 Bria, Riptide Rogue, 272 Chulane, Teller of Tales, 281 Tatyova, Benthic Druid, 296 Elsha, Threefold Master, 320 Adrix and Nev, Twincasters, 350 Squall, SeeD Mercenary, 370 The Unbeatable Squirrel Girl, 401 Ardbert, Warrior of Darkness, 403 Mabel, Heir to Cragflame, 422 Talrand, Sky Summoner, 423 Ognis, the Dragon's Lash, 437 Ruric Thar, the Unbowed, 447 Ravos, Soultender, 448 Thorin, King of Durin's Folk, 462 Dr. Madison Li, 500 Magnus the Red.
+  Kilo and Aragorn, the Uniter are exceptions the triage missed: both were
+  tried and dropped. Kilo's tap-a-creature cost is still picked for the
+  player; Aragorn needs scry to let the player order the kept cards.
+- **Greedy engine-only order.** Repeatedly build the feature that fully
+  unblocks the most commanders per unit of effort (small 1, medium 3,
+  large 10), leaving out anything that needs client UI. That unblocks about
+  **75 commanders with 40 features**, most of them small. `cmdrs:gaps` prints
+  the current order.
+
+The 20 features the most commanders need (`sole` = the only thing blocking
+that many; `UI` = needs a new player choice the client must render):
+
+| feature | needed by | sole | size | UI | what to build |
+| --- | ---: | ---: | --- | --- | --- |
+| `static:affect-scope-by-filter` | 22 | 0 | medium |  | Generalise AffectSpec beyond its fixed scopes to a CardFilter-driven scope: all permanents or artifacts you control, creatures you don't control or an opponent's, commanders you own, creatures you control but don't own, card-type and subtype any-of narrowing, counters on any permanent. wardOf also reads ward granted to other permanents. |
+| `bug:lki-object-reads` | 19 | 2 | medium |  | When a resolving ability reads an object that has left the battlefield, it uses last-known information (rule 608.2h). This covers powerOf/toughnessOf of the source, trigger object or target, 'that creature's controller', and the source's keywords (lifelink) for damage it dealt. It includes tokens that were deleted. |
+| `bug:lki-leaves-battlefield-triggers` | 19 | 2 | medium |  | Dies and leaves-the-battlefield triggers look back in time (rule 603.10a). Take a last-known snapshot before moveObject clears the object: computed types, subtypes, counters, controller, keywords and granted triggers. Match trigger filters, 'you control' and granted dies triggers against that snapshot. |
+| `effect:target-other-than-source` | 19 | 1 | medium |  | An 'another / other target' exclusion for triggered as well as activated abilities: drop the source (or an earlier slot's pick, or the triggering player) from a slot's options. Split it from the 'sacrifice another' cost flag, which otherOnly controls too today. |
+| `decision:ward-payment` | 18 | 0 | medium | yes | Ward as a real triggered ability when the object becomes a target. The targeting player chooses whether to pay, and a non-mana ward cost (discard a card) needs its own choice. |
+| `effect:player-scope-extensions` | 18 | 0 | medium |  | More player scopes: players named by the triggering event (defending player, damaged player, active player, the trigger object's controller, each opponent other than that player), each player or each opponent for mill, discard and create-token, CardFilter controlledBy active player, and per-player amounts (each opponent loses half their life). |
+| `effect:this-way-results` | 18 | 0 | medium |  | The resolution context records what earlier steps actually did: cards discarded, milled, exiled, drawn or moved, and whether an optional action happened. That backs 'for each card … this way' amounts, 'if a land was discarded or milled this way' conditions, a real 'if you do', and follow-ups that choose or copy among the cards just moved. |
+| `mechanic:commander-pairing` | 18 | 0 | small |  | Deck validation for two commanders: both need Partner, 'Partner with [name]' pairs only with that card, Friends forever and Character select pair only within their variant, and 'Choose a Background' pairs with a legendary Background enchantment. |
+| `condition:filter-dynamic-compare` | 18 | 1 | small |  | NumCompare.n reads an EffectAmount when evaluated: the trigger object's mana value or power, the source's current power, the sacrificed MV + 1, the trigger value, or the object's own power ('toughness greater than its power'). It is re-evaluated at resolution. |
+| `cost:cost-modification-extensions` | 17 | 4 | medium |  | Extensions to costModification and selfCostReduction: a reduction that scales with a general amount (counters on the source, turn stats, graveyard counts), one that applies only to the first matching spell each turn, one that depends on the chosen targets, one that removes a coloured pip, and one that reduces the generic half of a twobrid pip. |
+| `condition:filter-combinators` | 17 | 1 | small |  | CardFilter boolean combinators: anyOf (historic, 'artifact or Artificer', 'black and/or red', 'flash or haste', 'MV or power equal to N') and negated clauses (notSupertype for 'nonlegendary' and 'nonbasic', notName). |
+| `bug:x-value-propagation` | 15 | 1 | small |  | X carries through: a spell's mana value on the stack includes its chosen X (rule 202.3e) in manaValueOfTarget and filters, and an ETB trigger that refers to X uses the X its source was cast with (rule 107.3m). |
+| `static:grant-to-cards-outside-battlefield` | 14 | 1 | medium |  | Statics that grant abilities to cards outside the battlefield: ninjutsu, miracle, warp, web-slinging or an alternative cost to matching cards in hand or spells you cast, and flashback or escape to matching cards in your graveyard. |
+| `stat:per-ability-turn-counters` | 13 | 2 | small |  | Per-object, per-ability counters that reset each turn: 'this ability triggers only once each turn', 'do this only once each turn', and 'if this is the first time this ability has resolved this turn'. |
+| `zone:visibility-extensions` | 13 | 0 | medium |  | Who can see what, in viewFor and revealedThisTurn: a card exiled face down that only the exiler may look at, 'plays with their hand revealed', 'look at the top card of your library any time' (owner only), and effects that reveal cards to every player (look-and-choose's 'reveal', 'you may reveal that card'). |
+| `bug:static-scope-computed-types` | 13 | 1 | small |  | staticAffects' creature scopes (creatures-you-control, all-creatures, emblems, land creatures) gate on printed types through isPrintedCreature. They should read computed layer-4 types, so animated lands and crewed Vehicles get anthems and keyword grants. |
+| `effect:sacrificed-object-lki` | 13 | 1 | medium |  | Snapshot the permanent sacrificed to pay a cost, or by a preceding step, and expose its last-known power, mana value, types, subtypes and isCommander. These feed amounts (the Fling family), conditions ('if it was a commander' or 'a Hamster') and dynamic filters ('shares a card type with it'). |
+| `effect:amount-turn-stat` | 13 | 0 | small |  | EffectAmounts that read turn stats: your life lost, gained or cards drawn this turn, the total across opponents, and the number of players or opponents who lost life this turn. |
+| `bug:zone-change-object-identity` | 13 | 0 | medium |  | Rule 400.7: an object that changes zones becomes a new object. Delayed triggers, 'return it' effects, trigger-object references and sources stop tracking a card that left and came back. put-onto-battlefield requires the card to still be in its expected zone, and an 'until the source leaves' exile does nothing if the source has already left (rule 610.3c). |
+| `decision:copy-new-targets` | 12 | 0 | medium | yes | 'You may choose new targets for the copy': raise choose-targets for each copy (storm, Twincast, copy triggers), with the original's targets as the default. |
+
+The most-needed features that need client UI, which have to wait for a
+session that can check the client in a browser:
+`decision:ward-payment` (18), `decision:copy-new-targets` (12), `effect:may-sacrifice-then` (12), `decision:choose-permanent` (11), `effect:enter-attacking` (10), `decision:free-cast-choices` (10), `effect:attach-extensions` (10), `effect:cast-during-resolution` (10).
+
+Already built from this list (2026-09-22): the `draws` trigger and the
+`"trigger-controller"` scope (Nekusar, Niv-Mizzet, Temmet, Sheoldred,
+Queza); `monarch` and `hand-size` conditions, `nthEachTurn` on cast triggers
+and the `plays-land` trigger (Queen Marchesa, Kraum, Flubs); a counted,
+revealing `look-and-choose` (Gishath). Along the way, fixes the triage and
+reviews turned up: token stacks counted as one creature (Krenko made two
+Goblins forever), haste not lifting summoning sickness for {T} abilities,
+"target creature" ignoring animated man-lands, and a commander's 903.9a
+choice being skipped for the rest of a game.
 
 ### Suggested order
 
-Straight down `top-commanders.txt`. It is already sorted by exactly the thing
-that matters — how likely an imported deck is to be built around that card —
-and unlike the card backlog there is no need to re-rank by feature impact,
-because almost no feature is gating it.
+1. **Author the ones that need nothing** (the list above), each with an
+   adversarial rules review. That is how Kenrith, Arabella, Urtet, Voja and
+   Aesi landed.
+2. **Build down `cmdrs:gaps`' engine-only order**, authoring each
+   commander a feature unblocks in the same commit.
+3. **Then the UI-bound features.** Ward payment, choosing new targets for a
+   copy, "may sacrifice — when you do", choosing a permanent, and entering
+   attacking with a chosen defender each need a new decision the client
+   renders. See also `docs/plans/token-stack-choices.md`.
 
 ## Next: EDH-popularity feature backlog
 
