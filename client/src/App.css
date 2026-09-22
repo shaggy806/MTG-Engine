@@ -569,10 +569,14 @@
   border-bottom: 1px solid var(--border-soft);
 }
 /* the frame + head divider above already provide the box this used to draw
-   for itself -- strip its own so there's exactly one border per quadrant */
+   for itself -- strip its own so there's exactly one border per quadrant.
+   The top corners keep the frame's own curve (its 8px radius, less the 1px
+   border it sits inside): the panel still draws the priority ring (an inset
+   shadow) and the attack-target outline, and on a square box both used to
+   poke their corners out past the frame's rounded ones. */
 .quadrant-head .player-panel {
   border: none;
-  border-radius: 0;
+  border-radius: 7px 7px 0 0;
   background: none;
   padding: 6px 9px;
 }
