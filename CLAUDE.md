@@ -95,8 +95,8 @@ abilities are ever stacked (`Game.isStackableTokenName`). `Game.splitOneFromStac
 into an ordinary object the instant anything singles it out (targeted effects, a chosen
 sacrifice); `Game.materializeStack` expands a whole stack into real objects for combat (capped at
 `MAX_MATERIALIZED` = 100 — attacking/blocking are optional, so declaring a legal subset is
-allowed); `recompactTokens` (end of cleanup) folds untouched tokens back into stacks. See
-`token-stacking.test.ts` and `random-demo.mjs` for the original repro.
+allowed); `recompactTokens` (end of cleanup) folds untouched tokens back into stacks. **Anything that counts permanents counts a stack as every token in it** — `permanentCount` (`state.ts`), behind `countOf`, cost reductions, "controls N or more" conditions, count-scaled P/T and the died-this-turn count; counting objects instead had Krenko, Mob Boss making two Goblins forever. Because that makes counts of a million reachable, loops that mint one real thing per unit (individually made tokens, mana units, unscalable trigger copies) stop at `Game.MAX_EFFECT_INSTANCES` (1000), and a draw loop stops at the first empty-library draw. See
+`token-stacking.test.ts`, `token-stack-counts.test.ts` and `random-demo.mjs` for the original repro.
 
 ### File map
 

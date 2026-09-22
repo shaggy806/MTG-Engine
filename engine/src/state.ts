@@ -1333,6 +1333,21 @@ export const faceName = (object: GameObject): string => {
 export const printedCardName = (object: GameObject): string =>
   object.copyOf ?? faceName(object);
 
+/**
+ * How many permanents `ids` stand for: a compacted token stack is every token
+ * in it (`GameObject.stackCount`), not one object. Anything that counts
+ * permanents — "for each Goblin you control", "three or more artifacts" — has
+ * to count this way, or a board of stacked tokens reads as a handful.
+ *
+ * One known gap: an "other"/"another" count leaves out its source object
+ * whole, so a stacked token whose *own* ability counts "each other X" misses
+ * its stack-mates. Asking whether they match would mean asking whether the
+ * source matches, which can recurse into that same ability. No stackable
+ * token has such an ability today.
+ */
+export const permanentCount = (state: GameState, ids: readonly ObjectId[]): number =>
+  ids.reduce((n, id) => n + (state.objects[id]?.stackCount ?? 1), 0);
+
 export const activePlayerOf = (state: GameState): PlayerId =>
   state.turnOrder[state.turn.activePlayerIndex];
 

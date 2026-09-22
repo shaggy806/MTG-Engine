@@ -33,7 +33,7 @@ export default defineCard({
       replacement: {
         event: "would-be-put-into-graveyard",
         instead: "exile",
-        filter: { type: "creature", ownedBy: "opponent" },
+        filter: { type: "creature", ownedBy: "opponent", token: false },
       },
       text: "If a creature card an opponent owns would be put into a graveyard from anywhere, exile it instead.",
     },

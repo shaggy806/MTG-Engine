@@ -137,6 +137,7 @@ import {
   activePlayerOf,
   cloneGameState,
   createPlayerState,
+  permanentCount,
   printedCardName,
 } from "./state.js";
 import type {
@@ -1249,6 +1250,21 @@ export class Game {
    * thing that passes it, and it passes it by orders of magnitude.
    */
   private static readonly MAX_MATERIALIZED = 100;
+
+  /**
+   * The most separate things one effect makes, one at a time, where each is a
+   * real object or queued item: individually minted tokens (the kinds that
+   * never stack, like Treasures), mana units in a pool, and per-instance
+   * copies of a trigger that can't be scaled into one. Engine resource
+   * safety, not a rule, in the same spirit as {@link MAX_MATERIALIZED}.
+   *
+   * Counting a token stack as the tokens in it is what makes this reachable:
+   * Krenko, Mob Boss doubles his Goblins, so twenty activations put a million
+   * of them in one cheap stack, and "a Treasure for each creature" or "{G}
+   * for each creature" would then mint a million objects inside one
+   * synchronous dispatch. No human game gets near the cap.
+   */
+  static readonly MAX_EFFECT_INSTANCES = 1000;
 
   /**
    * Expand a compacted stack into separate ordinary objects and return them —
@@ -3822,7 +3838,7 @@ export class Game {
       generic -=
         typeof reduceGeneric === "number"
           ? reduceGeneric
-          : this.battlefieldMatching(player, reduceGeneric.countOf).length;
+          : this.countBattlefieldMatching(player, reduceGeneric.countOf);
     }
     return {
       colored: base.colored,
@@ -3930,7 +3946,7 @@ export class Game {
             ? 0
             : typeof mod.reduceGeneric === "number"
               ? mod.reduceGeneric
-              : this.battlefieldMatching(source.controller, mod.reduceGeneric.countOf).length;
+              : this.countBattlefieldMatching(source.controller, mod.reduceGeneric.countOf);
         delta += mod.increaseGeneric ?? 0;
         delta -= reduceGeneric;
       }
@@ -4909,7 +4925,7 @@ export class Game {
       generic -=
         typeof reduceGeneric === "number"
           ? reduceGeneric
-          : this.battlefieldMatching(player, reduceGeneric.countOf).length;
+          : this.countBattlefieldMatching(player, reduceGeneric.countOf);
     }
     return {
       cost: {
@@ -5655,8 +5671,9 @@ export class Game {
     const concrete: ManaType =
       mana === "any-color" ? "W" : typeof mana === "object" ? mana.oneOf[0] : mana;
     const pool = this.state.players[player].manaPool;
-    for (let i = 0; i < amount; i += 1) pool.push({ type: concrete, ...tag });
-    this.emit({ type: "mana-added", player, mana: concrete, amount });
+    const units = Math.min(amount, Game.MAX_EFFECT_INSTANCES);
+    for (let i = 0; i < units; i += 1) pool.push({ type: concrete, ...tag });
+    this.emit({ type: "mana-added", player, mana: concrete, amount: units });
   }
 
   /**
@@ -6463,7 +6480,8 @@ export class Game {
           ) {
             this.state.pendingTriggers.push({ ...base, multiplier });
           } else {
-            for (let i = 0; i < multiplier; i += 1) this.state.pendingTriggers.push(base);
+            const copies = Math.min(multiplier, Game.MAX_EFFECT_INSTANCES);
+            for (let i = 0; i < copies; i += 1) this.state.pendingTriggers.push(base);
           }
         }
       });
@@ -6970,7 +6988,16 @@ export class Game {
         }
       },
       draw: (player, count) => {
-        for (let i = 0; i < count; i += 1) this.drawCard(player);
+        for (let i = 0; i < count; i += 1) {
+          // Once a draw finds the library empty, every later one in the same
+          // effect is the same failed draw again (rule 704.5b only needs one).
+          // Stopping keeps "draw a card for each creature" over a big token
+          // stack from emitting millions of identical events.
+          const from = this.drawRedirectFor(player) ?? player;
+          const empty = this.state.zones.perPlayer[from].library.length === 0;
+          this.drawCard(player);
+          if (empty) break;
+        }
       },
       playersInScope: (who) => this.scopedPlayers(controller, who),
       discardHand: (player) => this.discardWholeHand(player),
@@ -7073,7 +7100,7 @@ export class Game {
       gainControl: (target, untilEndOfTurn) =>
         this.gainControlByEffect(controller, target, untilEndOfTurn),
       mill: (target, amount) => this.millByEffect(target, amount),
-      countMatching: (filter) => this.battlefieldMatching(controller, filter).length,
+      countMatching: (filter) => this.countBattlefieldMatching(controller, filter),
       returnFromGraveyard: (filter, destination, count, enterTapped) =>
         this.returnFromGraveyardByEffect(controller, filter, destination, count, enterTapped),
       discardCards: (target, amount) => this.discardByEffect(target, amount),
@@ -7225,12 +7252,12 @@ export class Game {
         ref.kind === "player" ? ref.player : this.state.objects[ref.object]?.controller,
       devotionTo: (color) => this.devotionTo(controller, color),
       opponentsControllingFewer: (filter) => {
-        const mine = this.battlefieldMatching(controller, filter).length;
+        const mine = this.countBattlefieldMatching(controller, filter);
         return this.state.turnOrder.filter(
           (p) =>
             p !== controller &&
             !this.state.players[p].hasLost &&
-            this.battlefieldMatching(p, filter).length < mine,
+            this.countBattlefieldMatching(p, filter) < mine,
         ).length;
       },
       creaturesDiedThisTurn: () =>
@@ -7994,7 +8021,7 @@ export class Game {
     this.state.players[controller].createdTokenThisTurn = true;
     const printedName = copyOf ?? cardName;
     const mintIndividually = (): void => {
-      for (let i = 0; i < total; i += 1) {
+      for (let i = 0; i < Math.min(total, Game.MAX_EFFECT_INSTANCES); i += 1) {
         const id = this.mintFreshTokenObject(
           controller,
           cardName,
@@ -8319,6 +8346,15 @@ export class Game {
     return this.state.zones.shared.battlefield.filter((id) =>
       matchesFilter(this.state, this.registry, id, filter, { you }),
     );
+  }
+
+  /** How many permanents match `filter` — not how many objects: a compacted
+   * token stack counts once per token in it (`GameObject.stackCount`). Every
+   * "for each Goblin you control" goes through here; counting objects instead
+   * had Krenko, Mob Boss making two tokens a turn forever once his first
+   * few folded into a stack. */
+  private countBattlefieldMatching(you: PlayerId, filter: CardFilter): number {
+    return permanentCount(this.state, this.battlefieldMatching(you, filter));
   }
 
   private modifyPtAll(
@@ -10250,28 +10286,15 @@ export class Game {
       // Doomscourge): the reset below clears `attacking` before the
       // dies-trigger is ever matched, so the answer has to be kept.
       object.wasAttacking = object.attacking !== null;
-      // "If a creature died this turn" (rule 700.4 — a creature going to a
-      // graveyard from the battlefield), counted while its types are still
-      // readable.
-      if (
-        to === "graveyard" &&
-        computeCharacteristics(this.state, this.registry, id).types.includes("creature")
-      ) {
-        this.state.creaturesDiedThisTurn += 1;
-        // Per-player as well: "under **your** control" reads the controller
-        // it had on the way out, before `moveObject` reverts it to the owner.
-        const under = this.state.players[object.controller];
-        if (under !== undefined) under.creaturesDiedThisTurn += 1;
-      }
     }
 
-    // Rest in Peace (rule 614): a *card* that would be put into a graveyard is
-    // exiled instead. Tokens are exempt — they'd cease to exist either way.
-    if (
-      to === "graveyard" &&
-      !object.isToken &&
-      this.graveyardIsReplacedWithExile(id)
-    ) {
+    // Rest in Peace (rule 614): whatever would be put into a graveyard is
+    // exiled instead. Whether that includes tokens is the card's wording, so
+    // it's the replacement's filter that says: Rest in Peace's "a card or
+    // token" has none, Anafenza's "creature card" excludes them. A token
+    // exiled this way never dies, which "whenever a creature dies" and the
+    // died-this-turn count both see.
+    if (to === "graveyard" && this.graveyardIsReplacedWithExile(id)) {
       to = "exile";
       this.emit({ type: "graveyard-replaced-with-exile", object: id });
     }
@@ -10326,6 +10349,25 @@ export class Game {
       }
       this.raiseNextCommanderChoice();
       return;
+    }
+
+    // "If a creature died this turn" (rule 700.4 — a creature going to a
+    // graveyard from the battlefield). Counted here, after every redirect, so
+    // only a death that really happens counts: not a Rest in Peace exile, and
+    // a commander once, when its owner's answer lets it through — the deferral
+    // above used to count it as well. Its types are still readable, and a
+    // compacted token stack is that many creatures dying.
+    if (
+      leavingBattlefield &&
+      to === "graveyard" &&
+      computeCharacteristics(this.state, this.registry, id).types.includes("creature")
+    ) {
+      const died = object.stackCount ?? 1;
+      this.state.creaturesDiedThisTurn += died;
+      // Per-player as well: "under **your** control" reads the controller
+      // it had on the way out, before this move reverts it to the owner.
+      const under = this.state.players[object.controller];
+      if (under !== undefined) under.creaturesDiedThisTurn += died;
     }
 
     // A permanent spell that was kicked has to remember it across this one

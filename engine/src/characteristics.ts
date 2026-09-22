@@ -33,7 +33,7 @@ import { compareNum, matchesFilter } from "./filter.js";
 import type { CardFilter } from "./filter.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
-import { printedCardName } from "./state.js";
+import { permanentCount, printedCardName } from "./state.js";
 import type { GameObject, GameState } from "./state.js";
 
 /**
@@ -198,6 +198,15 @@ function evalStaticCondition(
   const you = source.controller;
   const skipsSelf = (id: ObjectId): boolean =>
     opts.includeSelf !== true && id === source.id;
+  // Counts are of permanents, not objects (`permanentCount`). The source is
+  // skipped *before* its filter is asked, never matched and subtracted:
+  // asking whether the source matches can mean folding its characteristics,
+  // which evaluates this very condition again.
+  const countWhere = (keep: (id: ObjectId) => boolean): number =>
+    permanentCount(
+      state,
+      state.zones.shared.battlefield.filter((id) => !skipsSelf(id) && keep(id)),
+    );
   switch (condition.kind) {
     case "your-turn":
       return state.turnOrder[state.turn.activePlayerIndex] === you;
@@ -216,23 +225,18 @@ function evalStaticCondition(
     }
     case "metalcraft":
       return (
-        state.zones.shared.battlefield.filter((id) => {
+        countWhere((id) => {
           const o = state.objects[id];
-          return (
-            !skipsSelf(id) &&
-            o.controller === you &&
-            effectiveTypes(registry, o).includes("artifact")
-          );
-        }).length >= 3
+          return o.controller === you && effectiveTypes(registry, o).includes("artifact");
+        }) >= 3
       );
     case "controls":
       return (
-        state.zones.shared.battlefield.filter(
+        countWhere(
           (id) =>
-            !skipsSelf(id) &&
             state.objects[id].controller === you &&
             matchesFilter(state, registry, id, condition.filter, { you }),
-        ).length >= condition.atLeast
+        ) >= condition.atLeast
       );
     case "opponent-controls":
       // "an opponent controls three or more creatures" — one opponent must
@@ -241,24 +245,22 @@ function evalStaticCondition(
         (p) =>
           p !== you &&
           !state.players[p].hasLost &&
-          state.zones.shared.battlefield.filter(
+          countWhere(
             (id) =>
-              !skipsSelf(id) &&
               state.objects[id].controller === p &&
               matchesFilter(state, registry, id, condition.filter, { you: p }),
-          ).length >= condition.atLeast,
+          ) >= condition.atLeast,
       );
     case "opponents-control-total":
       return (
-        state.zones.shared.battlefield.filter((id) => {
+        countWhere((id) => {
           const controller = state.objects[id].controller;
           return (
-            !skipsSelf(id) &&
             controller !== you &&
             !state.players[controller].hasLost &&
             matchesFilter(state, registry, id, condition.filter, { you: controller })
           );
-        }).length >= condition.atLeast
+        }) >= condition.atLeast
       );
     case "opponent-count":
       // Counted live: a table that has shrunk to a duel no longer has "two or
@@ -460,10 +462,13 @@ function countValue(
         0,
       );
     case "lands-you-control":
-      return state.zones.shared.battlefield.filter((id) => {
-        const o = state.objects[id];
-        return o.controller === controller && registry.get(o.cardName).types.includes("land");
-      }).length;
+      return permanentCount(
+        state,
+        state.zones.shared.battlefield.filter((id) => {
+          const o = state.objects[id];
+          return o.controller === controller && registry.get(o.cardName).types.includes("land");
+        }),
+      );
     default:
       return 0;
   }
@@ -649,11 +654,17 @@ function collectStaticEffects(
               )
             : filter === undefined
               ? 0
-              : state.zones.shared.battlefield.filter(
-                  (id) =>
-                    !(per.excludeSelf === true && id === source.id) &&
-                    matchesFilter(state, registry, id, filter, { you: source.controller }),
-                ).length;
+              : // Skipping the source before `matchesFilter` is what keeps
+                // Skycat Sovereign ("each *other* creature with flying") from
+                // folding its own characteristics to answer its own bonus.
+                permanentCount(
+                  state,
+                  state.zones.shared.battlefield.filter(
+                    (id) =>
+                      !(per.excludeSelf === true && id === source.id) &&
+                      matchesFilter(state, registry, id, filter, { you: source.controller }),
+                  ),
+                );
         scaledPower = n * per.pt[0];
         scaledToughness = n * per.pt[1];
       }

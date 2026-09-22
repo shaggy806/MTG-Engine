@@ -1,8 +1,9 @@
 # Commander replacement (rule 903.9a)
 
-**Status:** the choice is never skipped any more (2026-09-22). Seven older bugs
+**Status:** the choice is never skipped any more (2026-09-22). Six older bugs
 found alongside the fix are still open and listed at the end; none of them
-loses the choice itself.
+loses the choice itself. (A seventh, the double death count, was fixed with
+the token-stack counting change.)
 
 ## How it's shaped
 
@@ -75,14 +76,6 @@ alone. It's a rules change with its own consequences, not a bug fix.
 A review of the fix turned these up. Each reproduces identically on the code
 before it.
 
-- **Death counted twice.** `creaturesDiedThisTurn` is incremented at the top of
-  `moveObjectUncached`, before the 903.9a branch and the Rest in Peace and
-  flashback/disturb redirects. A commander is counted when deferred and again
-  when completed: Murder on a commander, declined, counts 2, so Liliana's
-  Standard Bearer draws 2. Chosen for the command zone, it counts 1 where the
-  engine's own model says 0. Murder under Rest in Peace counts an exile as a
-  death (Tragic Slip's morbid). Fix: count only when a creature really reaches
-  a graveyard, after every redirect.
 - **O-Ring loses its link.** Banishing Light or Conclave Tribunal on a
   commander whose owner declines the command zone: `exileByEffect` only sets
   `exiledBy` if the card is already in exile, and it isn't yet, so when the
