@@ -646,6 +646,7 @@ import _poolTerrainGenerator from "./pool/terrain-generator.js";
 import _poolTerramorphicExpanse from "./pool/terramorphic-expanse.js";
 import _poolTerrorOfThePeaks from "./pool/terror-of-the-peaks.js";
 import _poolThaliaGuardianOfThraben from "./pool/thalia-guardian-of-thraben.js";
+import _poolTheUrDragon from "./pool/the-ur-dragon.js";
 import _poolTheaterOfHorrors from "./pool/theater-of-horrors.js";
 import _poolThermoAlchemist from "./pool/thermo-alchemist.js";
 import _poolThievingMagpie from "./pool/thieving-magpie.js";
@@ -1441,6 +1442,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTerramorphicExpanse,
   _poolTerrorOfThePeaks,
   _poolThaliaGuardianOfThraben,
+  _poolTheUrDragon,
   _poolTheaterOfHorrors,
   _poolThermoAlchemist,
   _poolThievingMagpie,

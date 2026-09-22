@@ -212,6 +212,32 @@ export type TriggerSpec =
       readonly byOpponentOnly?: boolean;
     }
   | {
+      /**
+       * A **batched** attack trigger: "whenever one or more Dragons you
+       * control attack" (The Ur-Dragon). Fires **once** per declaration
+       * however many creatures matched, and supplies that count as the
+       * trigger value, so "draw that many cards" is
+       * `{ amount: { triggerValue: true } }`.
+       *
+       * Distinct from `attacks`, which fires once *per attacker* — the two
+       * are not interchangeable and a card written with the wrong one either
+       * over-triggers or loses its count. Hooks the `attackers-declared`
+       * event, which is emitted once with the whole list, rather than the
+       * per-attacker `attacker-declared`.
+       *
+       * The batched shape is a family, not a one-off: 28 of the 484
+       * unimplemented top-500 commanders have a "whenever one or more …"
+       * clause, across attacking, entering, being milled, dealing combat
+       * damage and leaving a graveyard. This is the first of those event
+       * types; the rest are the same idea against a different event.
+       */
+      readonly on: "attacks-batch";
+      readonly who: TriggerWho;
+      /** Narrow which attackers count toward the batch (Ur-Dragon: Dragons
+       * you control). A declaration with no match doesn't fire at all. */
+      readonly filter?: CardFilter;
+    }
+  | {
       readonly on: "attacks";
       readonly who: TriggerWho;
       /** Narrow which attacker counts (Utvara Hellkite / Atarka, World

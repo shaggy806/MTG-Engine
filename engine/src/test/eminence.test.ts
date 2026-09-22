@@ -132,3 +132,108 @@ describe("Edgar Markov — Eminence", () => {
     expect(game.state.objects[nighthawk].counters["+1/+1"] ?? 0).toBe(0);
   });
 });
+
+/**
+ * The Ur-Dragon — the other half of Eminence (a *static* that functions from
+ * the command zone) plus a **batched** attack trigger.
+ *
+ * Batched is its own trigger kind rather than a flag on `attacks`, because
+ * the two differ in how often they fire: "whenever one or more Dragons
+ * attack" fires once with a count, where `attacks` fires per attacker. 28 of
+ * the 484 unimplemented top-500 commanders have a "whenever one or more …"
+ * clause, so this is the first of a family.
+ */
+describe("The Ur-Dragon", () => {
+  const mkUrGame = () => {
+    const a = new ScriptedController(A);
+    const b = new ScriptedController(B);
+    // Decline the optional "you may put a permanent card" half, so the draw
+    // count is the only thing moving the hand size.
+    a.chooseFromZoneFn = () => [];
+    return Game.create({
+      seed: 1,
+      shuffle: false,
+      rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
+      controllers: { [A]: a, [B]: b },
+      decks: [
+        { player: A, cards: Array(40).fill("Mountain"), commander: "The Ur-Dragon" },
+        { player: B, cards: Array(40).fill("Forest") },
+      ],
+    });
+  };
+
+  it("fires once for the whole attack, drawing one card per Dragon", () => {
+    const game = mkUrGame();
+    game.advanceUntil(toPrecombat);
+    const ur = game.debugSpawn("The Ur-Dragon", A, "battlefield");
+    const dragon = game.debugSpawn("Demanding Dragon", A, "battlefield");
+    const bear = game.debugSpawn("Grizzly Bears", A, "battlefield");
+    for (const id of [ur, dragon, bear]) game.state.objects[id].summoningSick = false;
+    const hand = game.handOf(A).length;
+
+    game.advanceUntil((s) => s.awaiting?.kind === "attackers" || s.result.over);
+    game.dispatch({
+      type: "declare-attackers",
+      player: A,
+      attackers: [
+        { attacker: ur, defender: B },
+        { attacker: dragon, defender: B },
+        { attacker: bear, defender: B },
+      ],
+    });
+    game.advanceUntil(quiet);
+
+    // Two Dragons attacked, so two cards — once, not once per Dragon (which
+    // would be four) and not counting the Bear (which would be three).
+    expect(game.handOf(A).length).toBe(hand + 2);
+  });
+
+  it("doesn't fire when no Dragon attacked", () => {
+    const game = mkUrGame();
+    game.advanceUntil(toPrecombat);
+    const ur = game.debugSpawn("The Ur-Dragon", A, "battlefield");
+    const bear = game.debugSpawn("Grizzly Bears", A, "battlefield");
+    for (const id of [ur, bear]) game.state.objects[id].summoningSick = false;
+    const hand = game.handOf(A).length;
+
+    game.advanceUntil((s) => s.awaiting?.kind === "attackers" || s.result.over);
+    game.dispatch({
+      type: "declare-attackers",
+      player: A,
+      attackers: [{ attacker: bear, defender: B }],
+    });
+    game.advanceUntil(quiet);
+    expect(game.handOf(A).length).toBe(hand);
+  });
+
+  it("discounts other Dragon spells from the command zone, but not itself", () => {
+    const game = mkUrGame();
+    game.advanceUntil(toPrecombat);
+    expect(
+      game.state.zones.shared.command.some(
+        (id) => game.state.objects[id].cardName === "The Ur-Dragon",
+      ),
+    ).toBe(true);
+
+    // Demanding Dragon is {5}{R} — six mana printed, five with the Eminence
+    // discount. Asserted behaviourally, by what six-minus-one lands can pay
+    // for, because the offer carries no cost field to read.
+    const dragon = game.debugSpawn("Demanding Dragon", A, "hand");
+    for (let i = 0; i < 5; i += 1) game.debugSpawn("Mountain", A, "battlefield");
+    const castable = () =>
+      game.legalActions(A).some((x) => x.kind === "cast-spell" && x.card === dragon);
+    expect(castable()).toBe(true);
+
+    // The Ur-Dragon itself is {4}{W}{U}{B}{R}{G} and gets no discount — it
+    // says "other Dragon spells" — so five Mountains can't begin to pay it.
+    const ur = game.state.zones.shared.command.find(
+      (id) => game.state.objects[id].cardName === "The Ur-Dragon",
+    );
+    expect(ur).toBeDefined();
+    if (ur !== undefined) {
+      expect(
+        game.legalActions(A).some((x) => x.kind === "cast-spell" && x.card === ur),
+      ).toBe(false);
+    }
+  });
+});

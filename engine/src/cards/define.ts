@@ -458,6 +458,11 @@ export interface StaticAbility {
    * `applies` says what it hits. */
   readonly costModification?: {
     readonly applies: CardFilter;
+    /** "**Other** Dragon spells you cast cost {1} less" (The Ur-Dragon) —
+     * the source's own card doesn't get its own discount. Matters most for
+     * an Eminence cost-reduction, which is live while the card is in the
+     * command zone and so would otherwise discount casting itself. */
+    readonly otherOnly?: boolean;
     /** A fixed amount, or a live count of battlefield permanents matching a
      * filter, evaluated with this static's controller as "you" (Temur
      * Battlecrier: "{1} less for each creature you control with power 4 or

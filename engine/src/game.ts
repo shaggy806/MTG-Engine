@@ -3800,6 +3800,8 @@ export class Game {
         const mod = ability.costModification;
         if (mod === undefined) continue;
         if (onlyEminence && ability.fromCommandZone !== true) continue;
+        // "Other … spells": never discount the source's own card.
+        if (mod.otherOnly === true && cardId === id) continue;
         if (!this.staticActive(source, ability)) continue;
         // Urza's Incubator (needed-cards P14): the filter also requires the
         // spell's subtype to match this permanent's own ETB choice — nothing
@@ -6309,7 +6311,12 @@ export class Game {
                     ability.trigger.on === "dealt-damage") &&
                   event.type === "damage-dealt"
                 ? event.amount
-                : undefined;
+                : // A batched attack trigger's value is *how many* matched,
+                  // which is what "draw that many cards" reads.
+                  ability.trigger.on === "attacks-batch" &&
+                    event.type === "attackers-declared"
+                  ? this.batchedAttackers(ability.trigger, event.attackers, object).length
+                  : undefined;
           const base = {
             sourceObjectId: id,
             cardName: printedCardName(object),
@@ -6355,6 +6362,25 @@ export class Game {
         }
       });
     }
+  }
+
+  /**
+   * Which of a declaration's attackers count toward a batched attack trigger.
+   *
+   * Shared by the match and the count so the two can't disagree — a trigger
+   * that fired on three Dragons must draw three cards, and computing the two
+   * separately is how that kind of bug happens.
+   */
+  private batchedAttackers(
+    spec: Extract<TriggerSpec, { on: "attacks-batch" }>,
+    attackers: readonly ObjectId[],
+    self: GameObject,
+  ): readonly ObjectId[] {
+    return attackers.filter(
+      (attacker) =>
+        this.state.objects[attacker] !== undefined &&
+        this.triggerFilterOk(spec.filter, attacker, self),
+    );
   }
 
   private triggerMatches(
@@ -6421,6 +6447,12 @@ export class Game {
           this.triggerFilterOk(spec.filter, event.attacker, self) &&
           (spec.attackingYou !== true ||
             this.defendingPlayerOf(event.defender) === self.controller)
+        );
+      case "attacks-batch":
+        return (
+          event.type === "attackers-declared" &&
+          this.matchesWhoPlayer(spec.who, event.player, self) &&
+          this.batchedAttackers(spec, event.attackers, self).length > 0
         );
       case "attacks-alone":
         return (

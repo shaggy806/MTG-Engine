@@ -6,7 +6,7 @@ top-commander-cards.txt ranks and which badly misorders commanders.
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]    1  Y'shtola, Night's Blessed                      54591 decks  {1}{W}{U}{B}     Legendary Creature — Cat Warlock
 [x]    2  Edgar Markov                                   50990 decks  {3}{R}{W}{B}     Legendary Creature — Vampire Knight
-[ ]    3  The Ur-Dragon                                  50954 decks  {4}{W}{U}{B}{R}{G} Legendary Creature — Dragon Avatar
+[x]    3  The Ur-Dragon                                  50954 decks  {4}{W}{U}{B}{R}{G} Legendary Creature — Dragon Avatar
 [x]    4  Atraxa, Praetors' Voice                        44799 decks  {G}{W}{U}{B}     Legendary Creature — Phyrexian Angel Horror
 [ ]    5  Tymna the Weaver                               44433 decks  {1}{W}{B}        Legendary Creature — Human Cleric
 [x]    6  Krenko, Mob Boss                               44161 decks  {2}{R}{R}        Legendary Creature — Goblin Warrior
