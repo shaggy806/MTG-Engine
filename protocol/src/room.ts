@@ -215,6 +215,27 @@ export type ClientMessage =
       readonly roomId: string;
     }
   | {
+       /**
+        * Pass this seat's priority repeatedly until the stack has drained —
+        * a trigger-heavy turn otherwise asks for priority between every
+        * object on it.
+        *
+        * **One-shot, not a mode**, which is what separates it from the three
+        * above: it arms, the stack empties, and it disarms itself. Nothing is
+        * remembered for the next stack.
+        *
+        * It stops the moment anything real happens rather than only when the
+        * stack is empty — this seat being asked for a decision, an opponent
+        * casting or activating into the window, a permanent this seat owns
+        * leaving the battlefield, or anything of this seat's becoming a
+        * target. It only ever passes *this* seat's priority; other seats
+        * still pass their own, so on a table of humans it drains only as
+        * fast as everyone else lets it.
+        */
+      readonly type: "resolve-all";
+      readonly roomId: string;
+    }
+  | {
       /**
        * "I have finished showing frame `seq`" — sent once this client has
        * played out that push's animations and put its board on screen. The

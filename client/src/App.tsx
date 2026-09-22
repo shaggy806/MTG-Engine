@@ -2383,6 +2383,19 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         <button type="button" onClick={pass} disabled={!canPass}>
           Pass (space)
         </button>
+        {/* Only while something is actually on the stack: with an empty one
+            there is nothing to resolve, and the button would read as a
+            second, vaguer "Pass". */}
+        {view.zones.stack.length > 0 ? (
+          <button
+            type="button"
+            onClick={game.resolveAll}
+            disabled={!canPass}
+            title="Keep passing until the stack has resolved — stops if anything needs you"
+          >
+            Resolve stack ({view.zones.stack.length})
+          </button>
+        ) : null}
         <button type="button" onClick={game.passTurn} disabled={!canPassTurn}>
           Pass Turn
         </button>

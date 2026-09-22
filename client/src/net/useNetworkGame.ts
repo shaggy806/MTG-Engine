@@ -200,6 +200,10 @@ export interface NetworkGame {
    * only legal thing to do is tap for mana. Off by default (manually passing
    * with mana up is how you bluff having an instant). */
   toggleManaSkip: () => void
+  /** One-shot: pass my priority until the stack has drained. Stops as soon
+   * as anything real happens — a decision for me, an opponent acting, or
+   * something of mine being targeted or leaving the battlefield. */
+  resolveAll: () => void
   nameOf: (id: ObjectId) => string
   clearError: () => void
   reconnect: () => void
@@ -534,6 +538,12 @@ export function useNetworkGame(): NetworkGame {
     send({ type: 'toggle-mana-skip', roomId: id })
   }, [send])
 
+  const resolveAll = useCallback(() => {
+    const id = roomIdRef.current
+    if (id === null) return
+    send({ type: 'resolve-all', roomId: id })
+  }, [send])
+
   const nameOf = useCallback(
     (id: ObjectId): string => {
       const o = view?.objects[id]
@@ -595,6 +605,7 @@ export function useNetworkGame(): NetworkGame {
     passTurn,
     autoPass,
     toggleManaSkip,
+    resolveAll,
     nameOf,
     clearError,
     reconnect,

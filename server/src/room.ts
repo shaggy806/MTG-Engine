@@ -62,6 +62,17 @@ interface Seat {
    * an instant — this is opt-in for players who don't care about that.
    */
   skipManaOnly: boolean;
+  /**
+   * A one-shot "resolve all": pass this seat's priority until the stack has
+   * drained. Unlike {@link autoPassUntil} it remembers nothing past the
+   * stack it was armed for, and unlike {@link skipManaOnly} it isn't a
+   * preference — it is a single request that disarms itself.
+   *
+   * Holds the event-log length at the moment it was armed, which is the
+   * whole stopping rule: everything that counts as "something real happened"
+   * is an event, so the check is a scan of what has been emitted since.
+   */
+  resolveAllFrom: number | null;
   /** The claimer's chosen name, or `null` to fall back to the seat's own
    * label ("Alice", "Bob", ...). */
   displayName: string | null;
@@ -253,6 +264,7 @@ export class Room {
       connection: null,
       autoPassUntil: null,
       skipManaOnly: false,
+      resolveAllFrom: null,
       displayName: null,
       ackedSeq: 0,
       acksFrames: false,
@@ -476,6 +488,72 @@ export class Room {
   }
 
   /**
+   * "Resolve all": pass `connection`'s seat's priority until the stack has
+   * drained. A one-shot, so calling it again simply re-arms it.
+   *
+   * Arming it is all this does — the work happens in
+   * {@link autoAdvanceHumanSeat}, which is already the one place that
+   * decides whether a human seat's window passes itself. Doing it here
+   * instead would mean a second loop that resolves the stack without the
+   * frame gate, and bot moves would stop being paced.
+   */
+  requestResolveAll(connection: Connection): void {
+    const player = this.seatOf(connection);
+    if (player === null) throw new Error("claim a seat before acting");
+    // Nothing on the stack: there is nothing to resolve, and arming would
+    // silently pass this seat's next real window.
+    if (this.game.state.zones.shared.stack.length === 0) return;
+    this.seatFor(player).resolveAllFrom = this.game.events.length;
+    this.settle();
+  }
+
+  /**
+   * Why `seat`'s resolve-all should stop, or `null` to keep going.
+   *
+   * Everything that counts as "something real" is an event, so this is a
+   * scan of what has been emitted since it was armed. Deliberately generous
+   * about stopping: the cost of stopping early is one extra click, and the
+   * cost of not stopping is resolving past something the player wanted to
+   * respond to.
+   */
+  private resolveAllStop(seat: Seat, state: GameState): string | null {
+    const from = seat.resolveAllFrom;
+    if (from === null) return null;
+    if (state.zones.shared.stack.length === 0) return "stack empty";
+    for (const event of this.game.events.slice(from)) {
+      // An opponent acting into the window. Their *own* triggers going on the
+      // stack are not this: a trigger is `ability-triggered`, and only a
+      // deliberate cast or activation reaches here.
+      if (event.type === "spell-cast" && event.player !== seat.player) {
+        return "an opponent cast a spell";
+      }
+      if (event.type === "ability-activated" && event.player !== seat.player) {
+        return "an opponent activated an ability";
+      }
+      // Something of this seat's is being pointed at, by anyone but them.
+      if (
+        event.type === "object-targeted" &&
+        event.by !== seat.player &&
+        state.objects[event.object]?.owner === seat.player
+      ) {
+        return "something you control became a target";
+      }
+      // ...or has left the battlefield. `owner` rather than `controller`,
+      // because `moveObject` has already reset control to the owner by the
+      // time this event is read — which also means a permanent this seat had
+      // *stolen* leaving doesn't stop it. Acceptable: the card wasn't theirs.
+      if (
+        event.type === "permanent-left-battlefield" &&
+        state.objects[event.object]?.owner === seat.player
+      ) {
+        return "a permanent you own left the battlefield";
+      }
+      if (event.type === "player-lost") return "a player lost";
+    }
+    return null;
+  }
+
+  /**
    * The bot seat (if any) that still owes a decision for `awaiting` right
    * now. Mulligan is answered in parallel (`awaiting.hands`, not a single
    * `awaiting.player` pointer — every seat still in `hands` may act) so it's
@@ -565,6 +643,10 @@ export class Room {
         this.game.dispatch(skip);
         return true;
       }
+      // A decision owed by the resolving seat is exactly what "stops on
+      // anything real" means, so a pending resolve-all ends here rather than
+      // surviving to pass the window after it.
+      seat.resolveAllFrom = null;
       return false; // a real decision, or this seat's auto-pass just ran out
     }
 
@@ -577,7 +659,18 @@ export class Room {
     const legal = this.game.legalActions(holder);
     const forcedPass = legal.length === 1 && legal[0].kind === "pass-priority";
     const manaOnlyAndSkipping = seat.skipManaOnly && this.game.isDeadForMana(holder);
-    if (forcedPass || manaOnlyAndSkipping || (wasActive && !justCleared)) {
+
+    // A one-shot resolve-all: keep passing while the stack drains, and
+    // disarm the moment anything real happens (including the stack running
+    // out, which is the successful ending).
+    let resolvingStack = false;
+    if (seat.resolveAllFrom !== null) {
+      const stop = this.resolveAllStop(seat, s);
+      if (stop === null) resolvingStack = true;
+      else seat.resolveAllFrom = null;
+    }
+
+    if (forcedPass || manaOnlyAndSkipping || resolvingStack || (wasActive && !justCleared)) {
       this.game.dispatch({ type: "pass-priority", player: holder });
       return true;
     }

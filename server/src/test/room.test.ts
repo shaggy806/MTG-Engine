@@ -353,6 +353,90 @@ describe("Room", () => {
     expect(() => room.claimSeat(ALICE, "token-b", stranger)).toThrow(/already claimed/);
   });
 
+  describe("resolve all", () => {
+    /** Several spells on the stack at once, in a room whose seats have real
+     * choices.
+     *
+     * `makeRoom`, not `makeSparseRoom`: with all-Forest decks every window
+     * is a forced pass, so the stack drains on its own and a test built on
+     * it passes whether or not resolve-all does anything. That mistake was
+     * made once here already. `debugSpawn` puts the spells straight on the
+     * stack, the only way to get a deterministic depth.
+     */
+    function stackedRoom(depth: number): Room {
+      const room = makeRoom();
+      const active = room.game.activePlayer;
+      // The seat needs a real instant-speed option, or every window while the
+      // stack is up is a *forced* pass and the stack drains on its own —
+      // making the test pass whether or not resolve-all does anything. (It
+      // did exactly that on the first attempt.) With the stack non-empty a
+      // land or a sorcery isn't castable, so a one-mana instant plus the
+      // Forest to pay for it is the smallest thing that keeps the choice
+      // real. Fog does nothing if it somehow resolves.
+      room.game.debugSpawn("Forest", active, "battlefield");
+      room.game.debugSpawn("Fog", active, "hand");
+      for (let i = 0; i < depth; i += 1) {
+        room.game.debugSpawn("Ambition's Cost", ALICE, "stack");
+      }
+      return room;
+    }
+
+    it("rejects a connection that hasn't claimed a seat", () => {
+      const room = makeRoom();
+      const { connection } = fakeConnection();
+      expect(() => room.requestResolveAll(connection)).toThrow(/claim a seat/);
+    });
+
+    it("does nothing with an empty stack, rather than arming for the next one", () => {
+      const room = makeRoom();
+      const { connection } = fakeConnection();
+      const active = room.game.activePlayer;
+      room.claimSeat(active, "token", connection);
+      expect(room.game.state.zones.shared.stack).toHaveLength(0);
+
+      room.requestResolveAll(connection);
+      // Arming here would have silently passed the next real window; the
+      // seat should still be holding one.
+      expect(room.game.state.priority.holder).not.toBeNull();
+    });
+
+    it("drains a whole stack from one request, where settling alone does not", () => {
+      const room = stackedRoom(3);
+      const { connection: aliceConn } = fakeConnection();
+      const { connection: bobConn } = fakeConnection();
+      room.claimSeat(ALICE, "alice-token", aliceConn);
+      room.claimSeat(BOB, "bob-token", bobConn);
+      const conn = room.game.activePlayer === ALICE ? aliceConn : bobConn;
+      expect(room.game.state.zones.shared.stack).toHaveLength(3);
+
+      // The control: a settle that isn't a resolve-all leaves the stack
+      // alone, because these seats have real choices and don't auto-pass.
+      room.toggleSkipManaOnly(conn);
+      expect(room.game.state.zones.shared.stack).toHaveLength(3);
+
+      room.requestResolveAll(conn);
+      expect(room.game.state.zones.shared.stack).toHaveLength(0);
+    });
+
+    it("is one-shot — it does not survive the stack it was armed for", () => {
+      const room = stackedRoom(2);
+      const { connection: aliceConn } = fakeConnection();
+      const { connection: bobConn } = fakeConnection();
+      room.claimSeat(ALICE, "alice-token", aliceConn);
+      room.claimSeat(BOB, "bob-token", bobConn);
+      const conn = room.game.activePlayer === ALICE ? aliceConn : bobConn;
+
+      room.requestResolveAll(conn);
+      expect(room.game.state.zones.shared.stack).toHaveLength(0);
+
+      // A fresh stack, and a settle that is not a resolve-all: the flag
+      // disarmed when the first stack emptied, so this one stays put.
+      room.game.debugSpawn("Ambition's Cost", ALICE, "stack");
+      room.toggleSkipManaOnly(conn);
+      expect(room.game.state.zones.shared.stack).toHaveLength(1);
+    });
+  });
+
   describe("bot seats", () => {
     it("reports a bot seat as such, and never claimed/online", () => {
       const room = makeRoom();

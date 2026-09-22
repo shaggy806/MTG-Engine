@@ -361,6 +361,10 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
           requireActiveRoom(manager, message.roomId).toggleSkipManaOnly(connection);
           return;
         }
+        case "resolve-all": {
+          requireActiveRoom(manager, message.roomId).requestResolveAll(connection);
+          return;
+        }
         case "ack": {
           // Purely a pacing signal, and one the client sends on its own
           // schedule — a stale room id here means the game is over or the
