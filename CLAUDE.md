@@ -40,7 +40,9 @@ others, and what each is for:
 - **`docs/plans/*.md`** — design records, each saying *why* its piece is shaped the way it is; a
   `Status:` line at the top of each says where it stands, and none is living documentation.
   Shipped: `basic-bots` (v1 bot), `card-library-page`, `deck-builder`, `card-replacer` (reworked
-  onto Scryfall Tagger oracle tags), `precon-decks` (the five starter decks and their stand-ins), `resolve-all-stack` (the one-shot "resolve the whole stack" button).
+  onto Scryfall Tagger oracle tags), `precon-decks` (the five starter decks and their stand-ins), `resolve-all-stack` (the one-shot "resolve the whole stack" button),
+  `auto-pass-interruptions` (the shared "something real happened" scan that
+  stops both it and auto-pass).
   `engine-gaps` records the engine work that unblocked most of the precons, paused with the rest
   substituted. `smarter-bots` (v2, one-ply search) is **in progress** and its search architecture is superseded by `bot-v3-search` (rollout search over sampled worlds — **built, benched, and deliberately not seated**: it loses to v2 by six points at four players, and the evaluation re-fit is outstanding; read it before changing how the bot picks actions). `token-stack-choices` (**proposed**) designs picking some members of a token stack (sacrifice N, convoke, tap costs, splitting attackers), the last stack gap after the counting and whole-stack fixes. `commander-replacement` records how rule 903.9a is asked (never skipped: queued when it can't be asked yet, re-asked when overwritten) and the related bugs still open. Server-side deck save/share
   is still unscoped.

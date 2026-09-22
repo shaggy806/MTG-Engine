@@ -437,6 +437,148 @@ describe("Room", () => {
     });
   });
 
+  describe("auto-pass interruptions", () => {
+    /**
+     * A claimed all-Forest room, plus a Forest on the battlefield for
+     * whichever seats are named — which is what makes a window *real*.
+     *
+     * Without one, every window in these decks is a forced pass and the game
+     * fast-forwards itself whether or not auto-pass (or its interruption)
+     * does anything: the same trap `docs/plans/resolve-all-stack.md` records
+     * for resolve-all. A Forest on the battlefield offers "tap for mana",
+     * which is a legal action the seat has to decline for itself.
+     */
+    function interruptibleRoom(...withMana: readonly ("alice" | "bob")[]) {
+      const room = makeSparseRoom();
+      const { connection: aliceConn } = fakeConnection();
+      const { connection: bobConn } = fakeConnection();
+      room.claimSeat(ALICE, "alice-token", aliceConn);
+      room.claimSeat(BOB, "bob-token", bobConn);
+      expect(room.game.activePlayer).toBe(ALICE);
+      if (withMana.includes("alice")) room.game.debugSpawn("Forest", ALICE, "battlefield");
+      if (withMana.includes("bob")) room.game.debugSpawn("Forest", BOB, "battlefield");
+      return { room, aliceConn, bobConn };
+    }
+
+    /** Alice's own Forest + a one-mana instant, so she can act into Bob's
+     * auto-passing window the way an opponent actually would. */
+    function giveAliceAnInstant(room: Room): ObjectId {
+      room.game.debugSpawn("Forest", ALICE, "battlefield");
+      return room.game.debugSpawn("Fog", ALICE, "hand");
+    }
+
+    it("disarms a seat's auto-pass when an opponent casts a spell", () => {
+      const { room, aliceConn, bobConn } = interruptibleRoom("bob");
+      const fog = giveAliceAnInstant(room);
+
+      room.requestAutoPass(bobConn);
+      expect(room.isAutoPassing(BOB)).toBe(true);
+
+      room.dispatch(aliceConn, { type: "cast-spell", player: ALICE, card: fog });
+
+      // Alice's own window after casting is a forced pass (a land needs an
+      // empty stack, and her Forest paid for the Fog), so the settle carries
+      // straight on to Bob — whose auto-pass should have stopped dead rather
+      // than resolving the Fog for him.
+      expect(room.game.state.zones.shared.stack).toHaveLength(1);
+      expect(room.game.state.priority.holder).toBe(BOB);
+      expect(room.isAutoPassing(BOB)).toBe(false);
+    });
+
+    it("still passes an interrupted window whose only legal action is passing", () => {
+      // Bob has nothing on the battlefield, so his window against the Fog is
+      // a *forced* pass: there is nothing to respond with, and stopping him
+      // there would be a dead click.
+      const { room, aliceConn, bobConn } = interruptibleRoom();
+      const fog = giveAliceAnInstant(room);
+
+      room.requestAutoPass(bobConn);
+      room.dispatch(aliceConn, { type: "cast-spell", player: ALICE, card: fog });
+
+      expect(room.game.state.zones.shared.stack).toHaveLength(0);
+      // The scan still fired, so the standing auto-pass is spent — it just
+      // didn't hold up a window that was going to pass itself anyway.
+      expect(room.isAutoPassing(BOB)).toBe(false);
+    });
+
+    it("still passes an interrupted mana-only window for a seat that skips those", () => {
+      // The other early disjunct. This is the spell test above with one line
+      // added — Bob has the same Forest, so his window is mana-only rather
+      // than *forced* — and it comes out the other way round: opting into
+      // skipping those windows is a standing preference an interruption
+      // doesn't take back.
+      const { room, aliceConn, bobConn } = interruptibleRoom("bob");
+      const fog = giveAliceAnInstant(room);
+
+      room.toggleSkipManaOnly(bobConn);
+      room.requestAutoPass(bobConn);
+      room.dispatch(aliceConn, { type: "cast-spell", player: ALICE, card: fog });
+
+      expect(room.game.state.zones.shared.stack).toHaveLength(0);
+    });
+
+    it("carries a seat through an opponent's turn when nothing real happens", () => {
+      // The control for the two tests above: Bob's windows are real (he has a
+      // Forest), so if the scan fired on ordinary turn traffic — steps going
+      // by, a land being played, priority going round — he'd stop here.
+      const { room, aliceConn, bobConn } = interruptibleRoom("bob");
+      const startTurn = room.game.state.turn.number;
+
+      room.requestAutoPass(bobConn);
+
+      const forest = namedCard(room, room.game.handOf(ALICE), "Forest");
+      room.dispatch(aliceConn, { type: "play-land", player: ALICE, card: forest });
+      expect(room.isAutoPassing(BOB)).toBe(true);
+
+      room.requestPassTurn(aliceConn);
+
+      expect(room.game.state.turn.number).toBeGreaterThan(startTurn);
+      expect(room.game.activePlayer).toBe(BOB);
+    });
+
+    it("disarms auto-pass for a seat that's being attacked and can't block", () => {
+      // The case the `declare-blockers` decision doesn't already cover: a
+      // defender with no eligible blocker is skipped and never asked, so
+      // without this the attack would go straight through an auto-passing
+      // seat's priority into damage.
+      const { room, aliceConn, bobConn } = interruptibleRoom("bob");
+      const bears = room.game.debugSpawn("Grizzly Bears", ALICE, "battlefield", {
+        summoningSick: false,
+      });
+
+      room.requestAutoPass(bobConn);
+      const lifeBefore = room.game.state.players[BOB].life;
+
+      // Walk Alice to her declare-attackers decision. Bob auto-passes his own
+      // windows along the way, which is the point — nothing so far is real.
+      for (let i = 0; i < 20 && room.game.state.awaiting === null; i += 1) {
+        if (room.game.state.priority.holder !== ALICE) break;
+        room.dispatch(aliceConn, { type: "pass-priority", player: ALICE });
+      }
+      const awaiting = room.game.state.awaiting;
+      if (awaiting === null || awaiting.kind !== "attackers") {
+        throw new Error(`expected Alice's attackers decision, got ${awaiting?.kind ?? "none"}`);
+      }
+      expect(room.isAutoPassing(BOB)).toBe(true);
+
+      room.dispatch(aliceConn, {
+        type: "declare-attackers",
+        player: ALICE,
+        attackers: [{ attacker: bears, defender: BOB }],
+      });
+
+      // Bob has no creature, so he is never asked to declare blockers...
+      expect(room.game.state.awaiting).toBeNull();
+      // ...and the attack itself is what has to stop him, in the very window
+      // it opened (still the declare-attackers step, not one window later)
+      // and well before damage.
+      expect(room.isAutoPassing(BOB)).toBe(false);
+      expect(room.game.state.priority.holder).toBe(BOB);
+      expect(room.game.state.turn.step).toBe("declare-attackers");
+      expect(room.game.state.players[BOB].life).toBe(lifeBefore);
+    });
+  });
+
   describe("bot seats", () => {
     it("reports a bot seat as such, and never claimed/online", () => {
       const room = makeRoom();

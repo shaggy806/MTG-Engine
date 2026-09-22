@@ -30,7 +30,15 @@
 
 import { EvalBotController, Game, actionPlayer, activePlayerOf, isSettled } from "engine";
 import { autoAnswerFor } from "engine";
-import type { Action, AwaitingDecision, ControllerView, GameState, PlayerController, PlayerId } from "engine";
+import type {
+  Action,
+  AwaitingDecision,
+  ControllerView,
+  GameState,
+  ObjectId,
+  PlayerController,
+  PlayerId,
+} from "engine";
 import { HostRole } from "./host.js";
 import type { BotSpeed, SeatStatus, ServerMessage, WireDeck } from "protocol";
 
@@ -54,6 +62,13 @@ interface Seat {
   clientToken: string | null;
   connection: Connection | null;
   autoPassUntil: AutoPassUntil | null;
+  /**
+   * The event-log length at the moment {@link autoPassUntil} was armed — the
+   * same trick {@link resolveAllFrom} uses, and for the same reason: "has
+   * anything happened that I'd want to respond to?" is a scan of what has
+   * been emitted since. `null` exactly when `autoPassUntil` is.
+   */
+  autoPassFrom: number | null;
   /**
    * A standing preference (not a one-shot fast-forward): when set, this
    * seat's priority windows where the only thing to do is tap for mana are
@@ -263,6 +278,7 @@ export class Room {
       clientToken: null,
       connection: null,
       autoPassUntil: null,
+      autoPassFrom: null,
       skipManaOnly: false,
       resolveAllFrom: null,
       displayName: null,
@@ -440,12 +456,16 @@ export class Room {
    * Marks `connection`'s seat to auto-pass its own priority windows for the
    * rest of the current turn (never another seat's), stopping early if this
    * seat is asked for a real decision — including the turn's own `end` step,
-   * which is a real priority window like any other, not a special stop.
+   * which is a real priority window like any other, not a special stop — or
+   * if something happens that they'd want to respond to (see
+   * {@link interruptSince}).
    */
   requestPassTurn(connection: Connection): void {
     const player = this.seatOf(connection);
     if (player === null) throw new Error("claim a seat before acting");
-    this.seatFor(player).autoPassUntil = { kind: "rest-of-turn" };
+    const seat = this.seatFor(player);
+    seat.autoPassUntil = { kind: "rest-of-turn" };
+    seat.autoPassFrom = this.game.events.length;
     this.settle();
   }
 
@@ -459,10 +479,11 @@ export class Room {
     const player = this.seatOf(connection);
     if (player === null) throw new Error("claim a seat before acting");
     const seat = this.seatFor(player);
-    seat.autoPassUntil =
-      seat.autoPassUntil !== null
-        ? null
-        : { kind: "next-own-turn", afterTurn: this.game.state.turn.number };
+    const cancelling = seat.autoPassUntil !== null;
+    seat.autoPassUntil = cancelling
+      ? null
+      : { kind: "next-own-turn", afterTurn: this.game.state.turn.number };
+    seat.autoPassFrom = cancelling ? null : this.game.events.length;
     this.settle();
   }
 
@@ -508,18 +529,32 @@ export class Room {
   }
 
   /**
-   * Why `seat`'s resolve-all should stop, or `null` to keep going.
-   *
-   * Everything that counts as "something real" is an event, so this is a
-   * scan of what has been emitted since it was armed. Deliberately generous
-   * about stopping: the cost of stopping early is one extra click, and the
-   * cost of not stopping is resolving past something the player wanted to
-   * respond to.
+   * Why `seat`'s resolve-all should stop, or `null` to keep going: the shared
+   * "anything real happened" scan, plus resolve-all's own successful ending —
+   * the stack running out, which is what it was armed to wait for.
    */
   private resolveAllStop(seat: Seat, state: GameState): string | null {
     const from = seat.resolveAllFrom;
     if (from === null) return null;
     if (state.zones.shared.stack.length === 0) return "stack empty";
+    return this.interruptSince(seat, state, from);
+  }
+
+  /**
+   * Why a seat's standing fast-forward should stop, or `null` to carry on.
+   *
+   * Everything that counts as "something real" is an event, so this is a scan
+   * of what has been emitted since the fast-forward was armed. Deliberately
+   * generous about stopping: the cost of stopping early is one extra click,
+   * and the cost of not stopping is passing by something the player wanted to
+   * respond to.
+   *
+   * Shared by the two features that pass a human seat's priority for it —
+   * "resolve all" (a one-shot, which adds the stack emptying as its ending)
+   * and auto-pass (which has its own turn-boundary ending). One rule, so the
+   * two can't drift apart.
+   */
+  private interruptSince(seat: Seat, state: GameState, from: number): string | null {
     for (const event of this.game.events.slice(from)) {
       // An opponent acting into the window. Their *own* triggers going on the
       // stack are not this: a trigger is `ability-triggered`, and only a
@@ -549,6 +584,22 @@ export class Room {
         return "a permanent you own left the battlefield";
       }
       if (event.type === "player-lost") return "a player lost";
+      // An attacker pointed at this seat, or at a planeswalker it controls.
+      // Mostly redundant: being attacked normally raises a `declare-blockers`
+      // decision for the defender, which stops a fast-forward on its own. It
+      // matters for the defender who has *no* eligible blocker — they are
+      // skipped and never asked (`promptNextBlockerDeclaration`), and they
+      // are precisely the seat with the most reason to want a window before
+      // damage. `controller`, not `owner`: the planeswalker being attacked is
+      // still on the battlefield, so control is live and is what rule 506.2
+      // means by the defending player.
+      if (event.type === "attacker-declared") {
+        const defender = event.defender;
+        if (defender === seat.player) return "you are being attacked";
+        if (state.objects[defender as ObjectId]?.controller === seat.player) {
+          return "a planeswalker you control is being attacked";
+        }
+      }
     }
     return null;
   }
@@ -617,7 +668,10 @@ export class Room {
       until.kind === "rest-of-turn"
         ? !isMyTurnNow
         : isMyTurnNow && state.turn.number > until.afterTurn;
-    if (done) seat.autoPassUntil = null;
+    if (done) {
+      seat.autoPassUntil = null;
+      seat.autoPassFrom = null;
+    }
     return done;
   }
 
@@ -670,7 +724,33 @@ export class Room {
       else seat.resolveAllFrom = null;
     }
 
-    if (forcedPass || manaOnlyAndSkipping || resolvingStack || (wasActive && !justCleared)) {
+    // Auto-pass stops on the same "something real happened" scan — an
+    // opponent casting into it, or an attack aimed here. Disarmed outright
+    // rather than suspended for one window: the player re-arms it themselves,
+    // the same one-shot-recovery shape resolve-all has, so the fast-forward
+    // can't silently take back over the moment they've responded.
+    let interrupted = false;
+    if (wasActive && !justCleared && seat.autoPassFrom !== null) {
+      if (this.interruptSince(seat, s, seat.autoPassFrom) !== null) {
+        interrupted = true;
+        seat.autoPassUntil = null;
+        seat.autoPassFrom = null;
+      }
+    }
+
+    if (
+      forcedPass ||
+      manaOnlyAndSkipping ||
+      resolvingStack ||
+      // `interrupted` guards this disjunct **and only this one**, which is the
+      // non-obvious part. A window whose only legal action is passing — or,
+      // for a seat that opted in, tapping for mana — has nothing to respond
+      // *with*, so stopping the player there would buy them no decision and
+      // turn every opponent spell into a dead click. Being interrupted still
+      // disarms auto-pass above; it just doesn't hold up a window that was
+      // going to pass itself anyway.
+      (wasActive && !justCleared && !interrupted)
+    ) {
       this.game.dispatch({ type: "pass-priority", player: holder });
       return true;
     }

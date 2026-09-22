@@ -42,7 +42,7 @@ cost of stopping early is one extra click; the cost of not stopping is
 resolving past something you wanted to respond to.
 
 Everything that counts is an event, so the check is a scan of the log since
-arming (`Room.resolveAllStop`):
+arming (`Room.resolveAllStop`, now over the shared `interruptSince`):
 
 - this seat is asked for a decision (handled where `awaiting` is read);
 - an **opponent** casts a spell or activates an ability — their own *triggers*
@@ -52,6 +52,9 @@ arming (`Room.resolveAllStop`):
 - a permanent this seat **owns** leaves the battlefield;
 - a player loses;
 - the stack empties, which is the successful ending.
+
+That list, minus the stack-empty ending and plus an attack aimed at this
+seat, is now shared with auto-pass — see `auto-pass-interruptions.md`.
 
 `owner`, not `controller`, in the last two: `moveObject` has already reset
 control to the owner by the time the event is read. The side effect is that a
