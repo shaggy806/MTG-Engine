@@ -179,7 +179,7 @@ describe("conditional static abilities", () => {
     expect(poolCounts(game.state.players[A].manaPool).G).toBe(1);
   });
 
-  it("Ardent Recruit — metalcraft +1/+1 at 3+ artifacts", () => {
+  it("Ardent Recruit — metalcraft +2/+2 at 3+ artifacts", () => {
     const { game } = mkGame();
     game.advanceUntil(toPrecombat);
     const recruit = spawn(game, "Ardent Recruit", A);
@@ -188,8 +188,8 @@ describe("conditional static abilities", () => {
     expect(game.characteristics(recruit).power).toBe(1);
 
     spawn(game, "Bonesplitter", A); // 3rd artifact
-    expect(game.characteristics(recruit).power).toBe(2);
-    expect(game.characteristics(recruit).toughness).toBe(2);
+    expect(game.characteristics(recruit).power).toBe(3);
+    expect(game.characteristics(recruit).toughness).toBe(3);
   });
 });
 

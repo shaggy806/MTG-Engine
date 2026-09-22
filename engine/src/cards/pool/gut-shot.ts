@@ -5,7 +5,7 @@ export default defineCard({
   manaCost: "{R/P}",
   colors: ["R"],
   types: ["instant"],
-  text: "({R/P} can be paid with either {R} or 2 life.)\nGut Shot deals 1 damage to target creature.",
-  targets: ["creature"],
+  text: "({R/P} can be paid with either {R} or 2 life.)\nGut Shot deals 1 damage to any target.",
+  targets: ["any-target"],
   effect: { kind: "damage", amount: 1, target: 0 },
 });

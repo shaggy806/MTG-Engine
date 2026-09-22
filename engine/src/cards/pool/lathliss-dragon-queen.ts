@@ -13,7 +13,7 @@ export default defineCard({
   text:
     "Flying\n" +
     "Whenever another nontoken Dragon you control enters, create a 5/5 red Dragon creature token with flying.\n" +
-    "{2}{R}: Dragons you control get +1/+0 until end of turn.",
+    "{1}{R}: Dragons you control get +1/+0 until end of turn.",
   triggered: [
     {
       trigger: {
@@ -30,7 +30,7 @@ export default defineCard({
   ],
   activated: [
     {
-      cost: { mana: "{2}{R}", tap: false },
+      cost: { mana: "{1}{R}", tap: false },
       targets: [],
       effect: {
         kind: "modify-pt-all",
@@ -40,7 +40,7 @@ export default defineCard({
         duration: "end-of-turn",
       },
       resolve: null,
-      text: "{2}{R}: Dragons you control get +1/+0 until end of turn.",
+      text: "{1}{R}: Dragons you control get +1/+0 until end of turn.",
     },
   ],
 });

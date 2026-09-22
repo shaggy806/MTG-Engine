@@ -5,7 +5,9 @@ export default defineCard({
   manaCost: "{U}",
   colors: ["U"],
   types: ["instant"],
-  text: "Exile target creature you control, then return that card to the battlefield under your control. If it's a Spirit, put a +1/+1 counter on it.",
+  text:
+    "Exile target creature you control, then return that card to the battlefield " +
+    "under its owner's control. If it's a Spirit, put a +1/+1 counter on it.",
   targets: ["creature-you-control"],
   // The Spirit check reads the *returned* permanent (rule 400.7 — a new
   // object), which is what `thenCounters.onlyIf` is evaluated against.

@@ -12,13 +12,13 @@ export default defineCard({
   subtypes: ["Human", "Soldier"],
   power: 1,
   toughness: 1,
-  text: "Metalcraft — Ardent Recruit gets +1/+1 as long as you control three or more artifacts.",
+  text: "Metalcraft — Ardent Recruit gets +2/+2 as long as you control three or more artifacts.",
   static: [
     {
       affects: { scope: "self" },
       condition: { kind: "metalcraft" },
-      grantPt: [1, 1],
-      text: "Metalcraft — Ardent Recruit gets +1/+1 as long as you control three or more artifacts.",
+      grantPt: [2, 2],
+      text: "Metalcraft — Ardent Recruit gets +2/+2 as long as you control three or more artifacts.",
     },
   ],
 });

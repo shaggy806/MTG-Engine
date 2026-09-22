@@ -86,7 +86,7 @@ const settled = (s: GameState): boolean =>
   s.zones.shared.stack.length === 0 && s.awaiting === null;
 
 describe("Turn to Frog (layers 4/5/6/7b)", () => {
-  it("becomes a 0/1 blue Frog with no abilities", () => {
+  it("becomes a blue Frog with base P/T 1/1 and no abilities", () => {
     const { game } = makeGame(["Turn to Frog"]);
     game.advanceUntil(atFirstMain);
     giveLands(game, A, 2);
@@ -101,7 +101,7 @@ describe("Turn to Frog (layers 4/5/6/7b)", () => {
     game.advanceUntil(settled);
 
     const c = game.characteristics(hawk);
-    expect(c.power).toBe(0);
+    expect(c.power).toBe(1);
     expect(c.toughness).toBe(1);
     expect(c.subtypes).toEqual(["Frog"]);
     expect([...c.colors]).toEqual(["U"]);

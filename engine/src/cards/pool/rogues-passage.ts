@@ -8,7 +8,7 @@ import { defineCard } from "../define.js";
 export default defineCard({
   name: "Rogue's Passage",
   types: ["land"],
-  text: "{T}: Add {C}.\n{5}, {T}: Target creature can't be blocked this turn.",
+  text: "{T}: Add {C}.\n{4}, {T}: Target creature can't be blocked this turn.",
   activated: [
     {
       cost: { mana: null, tap: true },
@@ -18,11 +18,11 @@ export default defineCard({
       text: "{T}: Add {C}.",
     },
     {
-      cost: { mana: "{5}", tap: true },
+      cost: { mana: "{4}", tap: true },
       targets: ["creature"],
       effect: { kind: "grant-keyword", target: 0, keyword: "unblockable", duration: "end-of-turn" },
       resolve: null,
-      text: "{5}, {T}: Target creature can't be blocked this turn.",
+      text: "{4}, {T}: Target creature can't be blocked this turn.",
     },
   ],
 });

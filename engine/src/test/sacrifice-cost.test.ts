@@ -71,8 +71,10 @@ describe("Zuran Orb — sacrifice a land as an activated-ability cost", () => {
   });
 });
 
-describe("Sylvan Safekeeper — sac a land to grant hexproof", () => {
-  it("makes a creature you control untargetable by an opponent", () => {
+describe("Sylvan Safekeeper — sac a land to grant shroud", () => {
+  // Shroud, not hexproof: the printed card says shroud, and the difference
+  // is that it stops the creature's own controller targeting it too.
+  it("makes a creature you control untargetable", () => {
     const { game } = mkGame([]);
     game.advanceUntil(toPrecombat);
     game.debugSpawn("Sylvan Safekeeper", A, "battlefield");
@@ -90,7 +92,8 @@ describe("Sylvan Safekeeper — sac a land to grant hexproof", () => {
     game.advanceUntil(quiet);
 
     expect(game.state.objects[land].zone).toBe("graveyard");
-    expect(game.characteristics(bear).keywords.has("hexproof")).toBe(true);
+    expect(game.characteristics(bear).keywords.has("shroud")).toBe(true);
+    expect(game.characteristics(bear).keywords.has("hexproof")).toBe(false);
   });
 });
 
