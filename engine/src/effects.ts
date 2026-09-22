@@ -1137,7 +1137,14 @@ export type EffectSpec =
        * there, the chooser is looking at their own hand, and `leftover` is
        * always `"stay"` because the cards not chosen simply stay in it. */
       readonly zone: "library" | "graveyard" | "hand";
-      readonly count?: number;
+      /** How deep into a library to look. An amount, so it can be read at
+       * resolution: Gishath, Sun's Avatar's "reveal **that many** cards" is
+       * `{ triggerValue: true }`, the combat damage it dealt. */
+      readonly count?: EffectAmount;
+      /** The looked-at library cards are **revealed** to every player (rule
+       * 701.16), not just seen by the chooser: Gishath's "reveal that many
+       * cards". */
+      readonly reveal?: boolean;
       readonly min: number;
       readonly max: number;
       /** `"library-top"` with `zone: "hand"` is Brainstorm's "put two cards
@@ -1509,6 +1516,7 @@ export interface EffectApi {
     filter: ZoneChoiceFilter | undefined,
     enterTapped?: boolean,
     then?: EffectSpec,
+    reveal?: boolean,
   ): void;
 }
 
@@ -2135,7 +2143,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     case "look-and-choose":
       ctx.lookAndChoose(
         spec.zone,
-        spec.count,
+        spec.count === undefined ? undefined : amountValue(spec.count, ctx),
         spec.min,
         spec.max,
         spec.destination,
@@ -2143,6 +2151,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
         spec.filter,
         spec.enterTapped === true,
         spec.then,
+        spec.reveal === true,
       );
       return;
     default:

@@ -270,6 +270,7 @@ import _poolGiantGrowth from "./pool/giant-growth.js";
 import _poolGiantSpider from "./pool/giant-spider.js";
 import _poolGildedLotus from "./pool/gilded-lotus.js";
 import _poolGisaAndGeralf from "./pool/gisa-and-geralf.js";
+import _poolGishathSunsAvatar from "./pool/gishath-suns-avatar.js";
 import _poolGlacialFortress from "./pool/glacial-fortress.js";
 import _poolGladecoverScout from "./pool/gladecover-scout.js";
 import _poolGleamingOverseer from "./pool/gleaming-overseer.js";
@@ -1081,6 +1082,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolGiantSpider,
   _poolGildedLotus,
   _poolGisaAndGeralf,
+  _poolGishathSunsAvatar,
   _poolGlacialFortress,
   _poolGladecoverScout,
   _poolGleamingOverseer,

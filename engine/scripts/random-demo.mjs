@@ -329,6 +329,7 @@ const deckB = deck([
   ["Queen Marchesa", 1],
   ["Kraum, Ludevic's Opus", 1],
   ["Flubs, the Fool", 1],
+  ["Gishath, Sun's Avatar", 1],
   ["Demand Answers", 1],
   ["Cathartic Reunion", 1],
   ["Seize the Spoils", 1],

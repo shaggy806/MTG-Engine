@@ -7383,7 +7383,7 @@ export class Game {
         ),
       scry: (amount, surveil, then) =>
         this.beginScry(source, controller, x, amount, surveil ? "surveil" : "scry", then ?? null),
-      lookAndChoose: (zone, count, min, max, destination, leftover, filter, enterTapped, then) =>
+      lookAndChoose: (zone, count, min, max, destination, leftover, filter, enterTapped, then, reveal) =>
         this.beginZoneChoice(
           controller,
           zone,
@@ -7395,6 +7395,7 @@ export class Game {
           filter,
           enterTapped === true,
           then === undefined ? undefined : { effect: then, source, x },
+          reveal === true,
         ),
     };
   }
@@ -7423,11 +7424,13 @@ export class Game {
     filter: ZoneChoiceFilter | undefined,
     enterTapped = false,
     then?: { effect: EffectSpec; source: ObjectId; x: number },
+    reveal = false,
   ): void {
     const zoneCards = this.state.zones.perPlayer[player][zone];
     // Only a library is looked at `count` deep; a graveyard is public and a
     // hand is the chooser's own, so both offer everything in them.
     const ids = zone === "library" ? zoneCards.slice(0, count ?? 0) : [...zoneCards];
+    if (reveal && zone === "library") this.revealCards(player, ids, "library");
     // A filter (e.g. "only a Dragon card") narrows what's *choosable*, never
     // what's *revealed* — the player still looks at everything either way,
     // and naturally ends up unable to choose anything if nothing matches

@@ -5,10 +5,11 @@ import { asPlayerId } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 
 /**
- * Three small features off the top-commanders triage, each with the commander
- * that needed it: the `monarch` condition (Queen Marchesa), `nthEachTurn` on a
- * cast trigger (Kraum, Ludevic's Opus), and the `plays-land` trigger plus the
- * `hand-size` condition (Flubs, the Fool).
+ * Small features off the top-commanders triage, each with the commander that
+ * needed it: the `monarch` condition (Queen Marchesa), `nthEachTurn` on a cast
+ * trigger (Kraum, Ludevic's Opus), the `plays-land` trigger plus the
+ * `hand-size` condition (Flubs, the Fool), and a counted, revealing
+ * `look-and-choose` (Gishath, Sun's Avatar).
  */
 
 const [A, B] = ["alice", "bob"].map(asPlayerId);
@@ -172,5 +173,36 @@ describe("Flubs, the Fool", () => {
     game.debugSpawn("Mountain", A, "battlefield", { announceEntry: true });
     settle(game);
     expect(hand(game, A).length).toBe(before);
+  });
+});
+
+describe("Gishath, Sun's Avatar", () => {
+  it("reveals as many cards as it dealt and puts any Dinosaurs among them onto the battlefield", () => {
+    const game = table();
+    const gishath = spawn(game, "Gishath, Sun's Avatar", A);
+    // Seven cards on top: two Dinosaurs among five that aren't.
+    const library = game.state.zones.perPlayer[A].library;
+    const dreadmaw = game.debugSpawn("Colossal Dreadmaw", A, "library");
+    const bears = game.debugSpawn("Grizzly Bears", A, "library");
+    const carnage = game.debugSpawn("Carnage Tyrant", A, "library");
+    const top = [dreadmaw, bears, carnage];
+    game.state.zones.perPlayer[A].library = [...top, ...library.filter((id) => !top.includes(id))];
+    const revealed = game.state.zones.perPlayer[A].library.slice(0, 7);
+
+    game.advanceUntil((s) => s.awaiting?.kind === "attackers");
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: gishath, defender: B }] });
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-from-zone");
+    const awaiting = game.state.awaiting;
+    if (awaiting?.kind !== "choose-from-zone") throw new Error("no choice");
+    expect(awaiting.ids).toEqual(revealed);
+    expect([...awaiting.eligible].sort()).toEqual([dreadmaw, carnage].sort());
+    // Revealed to every player, not just seen by Gishath's controller.
+    for (const id of revealed) expect(game.state.revealedThisTurn).toContain(id);
+
+    game.dispatch({ type: "choose-from-zone", player: A, chosen: [dreadmaw, carnage] });
+    expect(game.state.objects[dreadmaw].zone).toBe("battlefield");
+    expect(game.state.objects[carnage].zone).toBe("battlefield");
+    expect(game.state.objects[bears].zone).toBe("library");
+    expect(game.state.players[B].life).toBe(20 - 7);
   });
 });
