@@ -8244,7 +8244,13 @@ export class Game {
       sourceObjectId: null,
       abilityIndex: null,
       counters: {},
-      modifiers,
+      // **Copied, not aliased.** `createTokens` hands one `modifiers` array
+      // to a whole batch, so storing the reference made every token of a
+      // batch share one `PtModifier[]` — a Giant Growth on one of Raise the
+      // Alarm's two Soldiers pumped both of them, and each new modifier
+      // pushed onto one was seen by all. Same per-object copy
+      // `splitOneFromStack` makes when it peels a token off a stack.
+      modifiers: modifiers.map((m) => ({ ...m })),
       timestamp: 0,
       isToken: true,
       ...(sacrificeAtEndStep ? { sacrificeAtEndStep: true } : {}),
