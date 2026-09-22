@@ -6,7 +6,7 @@ import type { ObjectId, PlayerId } from "../primitives.js";
 
 /**
  * "Whenever … draws a card" (`TriggerSpec` `draws`), and "that player" as the
- * `"trigger-controller"` scope: Nekusar, the Mindrazer and Niv-Mizzet, Parun.
+ * `"trigger-controller"` scope: Nekusar, Niv-Mizzet, Temmet, Sheoldred, Queza.
  */
 
 const [A, B] = ["alice", "bob"].map(asPlayerId);
@@ -40,6 +40,14 @@ function settle(game: Game, aim: PlayerId): void {
         type: "choose-targets",
         player: awaiting.player,
         targets: [{ kind: "player", player: aim }],
+      });
+      continue;
+    }
+    if (awaiting?.kind === "discard") {
+      game.dispatch({
+        type: "discard",
+        player: awaiting.player,
+        cards: game.state.zones.perPlayer[awaiting.player].hand.slice(0, awaiting.count),
       });
       continue;
     }
@@ -130,5 +138,55 @@ describe("Niv-Mizzet, Parun", () => {
     game.debugApplyEffect(B, { kind: "draw", amount: 2 });
     expect(game.state.pendingTriggers).toHaveLength(0);
     expect(game.state.awaiting).toBeNull();
+  });
+});
+
+describe("Sheoldred, the Apocalypse", () => {
+  it("you gain 2 per card you draw; an opponent loses 2 per card they draw", () => {
+    const game = table(A);
+    spawn(game, "Sheoldred, the Apocalypse", A);
+    game.debugApplyEffect(A, { kind: "draw", amount: 2 });
+    game.debugApplyEffect(B, { kind: "draw", amount: 1 });
+    settle(game, B);
+    expect(game.state.players[A].life).toBe(20 + 4);
+    expect(game.state.players[B].life).toBe(20 - 2);
+  });
+});
+
+describe("Queza, Augur of Agonies", () => {
+  it("each card you draw drains a target opponent for 1", () => {
+    const game = table(A);
+    spawn(game, "Queza, Augur of Agonies", A);
+    game.debugApplyEffect(A, { kind: "draw", amount: 2 });
+    settle(game, B);
+    expect(game.state.players[B].life).toBe(20 - 2);
+    expect(game.state.players[A].life).toBe(20 + 2);
+  });
+});
+
+describe("Temmet, Naktamun's Will", () => {
+  it("each card you draw pumps your Zombies until end of turn", () => {
+    const game = table(A);
+    const temmet = spawn(game, "Temmet, Naktamun's Will", A);
+    game.debugApplyEffect(A, { kind: "draw", amount: 2 });
+    settle(game, B);
+    expect(game.viewFor(A).objects[temmet]?.power).toBe(6);
+  });
+
+  it("attacking loots: draw then discard, and the draw pumps", () => {
+    const game = table(A);
+    const temmet = spawn(game, "Temmet, Naktamun's Will", A);
+    game.advanceUntil((s) => s.awaiting?.kind === "attackers");
+    const handBefore = hand(game, A);
+    const yardBefore = game.state.zones.perPlayer[A].graveyard.length;
+    game.dispatch({
+      type: "declare-attackers",
+      player: A,
+      attackers: [{ attacker: temmet, defender: B }],
+    });
+    settle(game, B);
+    expect(hand(game, A)).toBe(handBefore);
+    expect(game.state.zones.perPlayer[A].graveyard.length).toBe(yardBefore + 1);
+    expect(game.viewFor(A).objects[temmet]?.power).toBe(5);
   });
 });

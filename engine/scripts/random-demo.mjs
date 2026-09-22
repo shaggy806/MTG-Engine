@@ -319,6 +319,9 @@ const deckB = deck([
   // (after Krenko's doubling) that can snowball.
   ["Nekusar, the Mindrazer", 1],
   ["Niv-Mizzet, Parun", 1],
+  ["Sheoldred, the Apocalypse", 1],
+  ["Queza, Augur of Agonies", 1],
+  ["Temmet, Naktamun's Will", 1],
   ["Demand Answers", 1],
   ["Cathartic Reunion", 1],
   ["Seize the Spoils", 1],

@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-20 already implemented / 480 missing
+23 already implemented / 477 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -162,7 +162,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  156  Marchesa, the Black Rose                       14071 decks  {1}{U}{B}{R}     Legendary Creature — Human Wizard
 [ ]  157  Najeela, the Blade-Blossom                     14034 decks  {2}{R}           Legendary Creature — Human Warrior
 [ ]  158  Grand Arbiter Augustin IV                      14006 decks  {2}{W}{U}        Legendary Creature — Human Advisor
-[ ]  159  Temmet, Naktamun's Will                        13931 decks  {2}{W}{U}{B}     Legendary Creature — Zombie Wizard
+[x]  159  Temmet, Naktamun's Will                        13931 decks  {2}{W}{U}{B}     Legendary Creature — Zombie Wizard
 [ ]  160  Tiamat                                         13863 decks  {2}{W}{U}{B}{R}{G} Legendary Creature — Dragon God
 [ ]  161  Cosmic Spider-Man                              13825 decks  {W}{U}{B}{R}{G}  Legendary Creature — Spider Human Hero
 [ ]  162  Azlask, the Swelling Scourge                   13822 decks  {3}              Legendary Creature — Eldrazi
@@ -205,7 +205,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  199  Stella Lee, Wild Card                          12366 decks  {1}{U}{R}        Legendary Creature — Human Rogue
 [ ]  200  Anti-Venom, Horrifying Healer                  12251 decks  {W}{W}{W}{W}{W}  Legendary Creature — Symbiote Hero
 [ ]  201  Judith, Carnage Connoisseur                    12173 decks  {3}{B}{R}        Legendary Creature — Human Shaman
-[ ]  202  Sheoldred, the Apocalypse                      12116 decks  {2}{B}{B}        Legendary Creature — Phyrexian Praetor
+[x]  202  Sheoldred, the Apocalypse                      12116 decks  {2}{B}{B}        Legendary Creature — Phyrexian Praetor
 [ ]  203  Celes, Rune Knight                             12104 decks  {1}{R}{W}{B}     Legendary Creature — Human Wizard Knight
 [ ]  204  Sonic the Hedgehog                             12031 decks  {1}{U}{R}{W}     Legendary Creature — Hedgehog Warrior
 [ ]  205  Varina, Lich Queen                             11960 decks  {1}{W}{U}{B}     Legendary Creature — Zombie Wizard
@@ -283,7 +283,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  277  Dina, Soul Steeper                              9457 decks  {B}{G}           Legendary Creature — Dryad Druid
 [ ]  278  Jodah, Archmage Eternal                         9447 decks  {1}{U}{R}{W}     Legendary Creature — Human Wizard
 [ ]  279  Skullbriar, the Walking Grave                   9443 decks  {B}{G}           Legendary Creature — Zombie Elemental
-[ ]  280  Queza, Augur of Agonies                         9409 decks  {1}{W}{U}{B}     Legendary Creature — Octopus Advisor
+[x]  280  Queza, Augur of Agonies                         9409 decks  {1}{W}{U}{B}     Legendary Creature — Octopus Advisor
 [ ]  281  Tatyova, Benthic Druid                          9394 decks  {3}{G}{U}        Legendary Creature — Merfolk Druid
 [ ]  282  Kratos, God of War                              9391 decks  {R}{R}{R}        Legendary Creature — God Warrior
 [ ]  283  Iron Man, Titan of Innovation                   9372 decks  {3}{U}{R}        Legendary Artifact Creature — Human Hero

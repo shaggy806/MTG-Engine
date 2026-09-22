@@ -478,6 +478,7 @@ import _poolProsperousInnkeeper from "./pool/prosperous-innkeeper.js";
 import _poolProvokeTheTrolls from "./pool/provoke-the-trolls.js";
 import _poolPutrefy from "./pool/putrefy.js";
 import _poolPyroclasm from "./pool/pyroclasm.js";
+import _poolQuezaAugurOfAgonies from "./pool/queza-augur-of-agonies.js";
 import _poolRabidBite from "./pool/rabid-bite.js";
 import _poolRaffinesTower from "./pool/raffines-tower.js";
 import _poolRagingGoblin from "./pool/raging-goblin.js";
@@ -552,6 +553,7 @@ import _poolShamanicRevelation from "./pool/shamanic-revelation.js";
 import _poolShardingSphinx from "./pool/sharding-sphinx.js";
 import _poolShatteredSanctum from "./pool/shattered-sanctum.js";
 import _poolShelteredThicket from "./pool/sheltered-thicket.js";
+import _poolSheoldredTheApocalypse from "./pool/sheoldred-the-apocalypse.js";
 import _poolShineshadowSnarl from "./pool/shineshadow-snarl.js";
 import _poolShipwreckMarsh from "./pool/shipwreck-marsh.js";
 import _poolShivanOasis from "./pool/shivan-oasis.js";
@@ -630,6 +632,7 @@ import _poolTanaTheBloodsower from "./pool/tana-the-bloodsower.js";
 import _poolTannukMemorialEnsign from "./pool/tannuk-memorial-ensign.js";
 import _poolTearAsunder from "./pool/tear-asunder.js";
 import _poolTectonicGiant from "./pool/tectonic-giant.js";
+import _poolTemmetNaktamunsWill from "./pool/temmet-naktamuns-will.js";
 import _poolTempleGarden from "./pool/temple-garden.js";
 import _poolTempleOfAbandon from "./pool/temple-of-abandon.js";
 import _poolTempleOfDeceit from "./pool/temple-of-deceit.js";
@@ -1277,6 +1280,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolProvokeTheTrolls,
   _poolPutrefy,
   _poolPyroclasm,
+  _poolQuezaAugurOfAgonies,
   _poolRabidBite,
   _poolRaffinesTower,
   _poolRagingGoblin,
@@ -1351,6 +1355,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolShardingSphinx,
   _poolShatteredSanctum,
   _poolShelteredThicket,
+  _poolSheoldredTheApocalypse,
   _poolShineshadowSnarl,
   _poolShipwreckMarsh,
   _poolShivanOasis,
@@ -1429,6 +1434,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTannukMemorialEnsign,
   _poolTearAsunder,
   _poolTectonicGiant,
+  _poolTemmetNaktamunsWill,
   _poolTempleGarden,
   _poolTempleOfAbandon,
   _poolTempleOfDeceit,
