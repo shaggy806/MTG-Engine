@@ -6426,7 +6426,11 @@ export class Game {
                     // this.
                     event.type === "spell-cast"
                     ? event.object
-                    : undefined;
+                    : // The card drawn: its controller is who drew it, the
+                      // "that player" of a `draws` trigger.
+                      event.type === "card-drawn"
+                      ? event.object
+                      : undefined;
           const powerOfId =
             event.type === "permanent-entered-battlefield"
               ? event.object
@@ -6568,6 +6572,8 @@ export class Game {
           event.delta < 0 &&
           this.matchesWhoPlayer(spec.who, event.player, self)
         );
+      case "draws":
+        return event.type === "card-drawn" && this.matchesWhoPlayer(spec.who, event.player, self);
       case "leaves-battlefield":
         return (
           event.type === "permanent-left-battlefield" &&
@@ -7001,7 +7007,7 @@ export class Game {
       stackMultiplier,
       dealDamage: (target, amount) => this.dealDamage(source, this.splitTargetRef(target), amount),
       dealDamageScoped: (who, amount) => {
-        for (const p of this.scopedPlayers(controller, who)) {
+        for (const p of this.scopedPlayers(controller, who, triggerObject)) {
           this.dealDamage(source, { kind: "player", player: p }, amount);
         }
       },
@@ -7017,7 +7023,7 @@ export class Game {
           if (empty) break;
         }
       },
-      playersInScope: (who) => this.scopedPlayers(controller, who),
+      playersInScope: (who) => this.scopedPlayers(controller, who, triggerObject),
       discardHand: (player) => this.discardWholeHand(player),
       manaValueOf: (target) => this.manaValueOfTarget(target),
       lifeTotalOf: (player) => this.state.players[player]?.life ?? 0,
@@ -7214,7 +7220,7 @@ export class Game {
       grantTriggered: (target, ability, duration) =>
         this.grantTriggered(target, ability, duration),
       grantPlayerHexproof: (who) => {
-        for (const player of this.scopedPlayers(controller, who)) {
+        for (const player of this.scopedPlayers(controller, who, triggerObject)) {
           if (!this.state.hexproofPlayers.includes(player)) {
             this.state.hexproofPlayers.push(player);
           }
@@ -7309,12 +7315,12 @@ export class Game {
       },
       setDayNight: (value) => this.setDayNight(value),
       becomeMonarch: (who) => {
-        for (const p of this.scopedPlayers(controller, who ?? "you")) {
+        for (const p of this.scopedPlayers(controller, who ?? "you", triggerObject)) {
           this.setMonarch(p, "effect");
         }
       },
       getEnergy: (amount, who) => {
-        for (const p of this.scopedPlayers(controller, who ?? "you")) {
+        for (const p of this.scopedPlayers(controller, who ?? "you", triggerObject)) {
           this.changeEnergy(p, amount);
         }
       },
@@ -7343,7 +7349,7 @@ export class Game {
           triggerValue,
           triggerObject,
         ),
-      changeLifeScoped: (who, delta) => this.changeLifeScoped(controller, who, delta),
+      changeLifeScoped: (who, delta) => this.changeLifeScoped(controller, who, delta, triggerObject),
       searchLibrary: (
         player,
         filter,
@@ -9845,8 +9851,16 @@ export class Game {
 
   /** The players a `PlayerScope` names, APNAP-ordered (active player first) so
    * any resulting triggers stack in turn order. */
-  private scopedPlayers(controller: PlayerId, who: PlayerScope): PlayerId[] {
+  private scopedPlayers(
+    controller: PlayerId,
+    who: PlayerScope,
+    triggerObject?: ObjectId,
+  ): PlayerId[] {
     if (who === "you") return [controller];
+    if (who === "trigger-controller") {
+      const p = triggerObject === undefined ? undefined : this.state.objects[triggerObject]?.controller;
+      return p === undefined || this.state.players[p]?.hasLost === true ? [] : [p];
+    }
     // "That player", in a trigger that fires on someone else's step.
     if (who === "active-player") {
       return this.state.players[this.activePlayer]?.hasLost === true
@@ -9867,9 +9881,14 @@ export class Game {
 
   /** Change life for a whole `PlayerScope` (a `gain-life` / `lose-life` effect
    * with `who`), APNAP-ordered so any resulting triggers stack in turn order. */
-  private changeLifeScoped(controller: PlayerId, who: PlayerScope, delta: number): void {
+  private changeLifeScoped(
+    controller: PlayerId,
+    who: PlayerScope,
+    delta: number,
+    triggerObject?: ObjectId,
+  ): void {
     if (delta === 0) return;
-    for (const p of this.scopedPlayers(controller, who)) this.changeLife(p, delta);
+    for (const p of this.scopedPlayers(controller, who, triggerObject)) this.changeLife(p, delta);
   }
 
   /** Add (or spend, when negative) energy counters for `player` — rule 122. */

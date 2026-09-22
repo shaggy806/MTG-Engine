@@ -430,9 +430,11 @@ import _poolNaturesLore from "./pool/natures-lore.js";
 import _poolNecroblossomSnarl from "./pool/necroblossom-snarl.js";
 import _poolNecroticHex from "./pool/necrotic-hex.js";
 import _poolNegate from "./pool/negate.js";
+import _poolNekusarTheMindrazer from "./pool/nekusar-the-mindrazer.js";
 import _poolNightsWhisper from "./pool/nights-whisper.js";
 import _poolNihilSpellbomb from "./pool/nihil-spellbomb.js";
 import _poolNissasExpedition from "./pool/nissas-expedition.js";
+import _poolNivMizzetParun from "./pool/niv-mizzet-parun.js";
 import _poolNomadOutpost from "./pool/nomad-outpost.js";
 import _poolNotionThief from "./pool/notion-thief.js";
 import _poolNullmageShepherd from "./pool/nullmage-shepherd.js";
@@ -1227,9 +1229,11 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolNecroblossomSnarl,
   _poolNecroticHex,
   _poolNegate,
+  _poolNekusarTheMindrazer,
   _poolNightsWhisper,
   _poolNihilSpellbomb,
   _poolNissasExpedition,
+  _poolNivMizzetParun,
   _poolNomadOutpost,
   _poolNotionThief,
   _poolNullmageShepherd,

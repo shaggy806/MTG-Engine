@@ -193,6 +193,22 @@ export type TriggerSpec =
     }
   | {
       /**
+       * A player drew a card (Nekusar, the Mindrazer; Niv-Mizzet, Parun;
+       * Consecrated Sphinx; Smothering Tithe). `who` is who drew.
+       *
+       * Fires **once per card**, off `card-drawn`, so "draw three" triggers
+       * three times, as the printed "whenever … draws a card" does. A draw
+       * from an empty library draws nothing and doesn't fire it. The drawn
+       * card is the trigger object, so "that player" is the
+       * `"trigger-controller"` player scope (Nekusar: "deals 1 damage to that
+       * player") — not a target, and not slot 0, which stays the ability's
+       * own (Niv-Mizzet, Parun: "1 damage to any target").
+       */
+      readonly on: "draws";
+      readonly who: TriggerWho;
+    }
+  | {
+      /**
        * A permanent became the target of a spell or ability (rule 115.7 /
        * 603.2) — Thunderbreak Regent's "Whenever a Dragon you control becomes
        * the target of a spell or ability an opponent controls".

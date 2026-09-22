@@ -170,7 +170,12 @@ export type PlayerScope =
   | "you"
   /** Whoever's turn it is — "that player" in a trigger that fires on someone
    * else's step (Archfiend of Depravity). */
-  | "active-player";
+  | "active-player"
+  /** The controller of the object behind the trigger — "that player" when
+   * the event is about something they did: the player who drew the card
+   * (Nekusar, the Mindrazer), the player who cast the spell. Not a target,
+   * so a hexproof player is still reached. */
+  | "trigger-controller";
 
 /** A declarative effect. Grows as milestones add vocabulary. */
 export type EffectSpec =

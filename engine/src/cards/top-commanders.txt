@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-18 already implemented / 482 missing
+20 already implemented / 480 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -24,7 +24,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   18  The Wise Mothman                               33672 decks  {1}{B}{G}{U}     Legendary Creature — Insect Mutant
 [ ]   19  Jodah, the Unifier                             33117 decks  {W}{U}{B}{R}{G}  Legendary Creature — Human Wizard
 [ ]   20  Toph, the First Metalbender                    32837 decks  {1}{R}{G}{W}     Legendary Creature — Human Warrior Ally
-[ ]   21  Nekusar, the Mindrazer                         32372 decks  {2}{U}{B}{R}     Legendary Creature — Zombie Wizard
+[x]   21  Nekusar, the Mindrazer                         32372 decks  {2}{U}{B}{R}     Legendary Creature — Zombie Wizard
 [ ]   22  Yuriko, the Tiger's Shadow                     32047 decks  {1}{U}{B}        Legendary Creature — Human Ninja
 [x]   23  Kenrith, the Returned King                     31620 decks  {4}{W}           Legendary Creature — Human Noble
 [ ]   24  Cloud, Ex-SOLDIER                              31517 decks  {2}{R}{G}{W}     Legendary Creature — Human Soldier Mercenary
@@ -134,7 +134,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  128  Kynaios and Tiro of Meletis                    15854 decks  {R}{G}{W}{U}     Legendary Creature — Human Soldier
 [ ]  129  Tovolar, Dire Overlord                         15803 decks  {1}{R}{G}        Legendary Creature — Human Werewolf // Legendary Creature — Werewolf
 [ ]  130  Zimone, Mystery Unraveler                      15788 decks  {2}{G}{U}        Legendary Creature — Human Wizard
-[ ]  131  Niv-Mizzet, Parun                              15769 decks  {U}{U}{U}{R}{R}{R} Legendary Creature — Dragon Wizard
+[x]  131  Niv-Mizzet, Parun                              15769 decks  {U}{U}{U}{R}{R}{R} Legendary Creature — Dragon Wizard
 [ ]  132  Zada, Hedron Grinder                           15692 decks  {3}{R}           Legendary Creature — Goblin Ally
 [ ]  133  Be'lakor, the Dark Master                      15648 decks  {3}{U}{B}{R}     Legendary Creature — Demon Noble
 [ ]  134  Tifa Lockhart                                  15467 decks  {1}{G}           Legendary Creature — Human Monk

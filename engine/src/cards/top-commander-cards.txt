@@ -1,5 +1,5 @@
 Top 2000 Commander cards by EDHREC popularity (fetched 2026-09-13)
-450 already implemented / 1550 missing (marks refreshed 2026-09-22)
+451 already implemented / 1549 missing (marks refreshed 2026-09-22)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -775,7 +775,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   777  Sylvan Safekeeper                        {G}              Creature — Human Wizard
 [ ]   778  Springbloom Druid                        {2}{G}           Creature — Elf Druid
 [ ]   780  Collective Resistance                    {1}{G}           Instant
-[ ]   781  Niv-Mizzet, Parun                        {U}{U}{U}{R}{R}{R} Legendary Creature — Dragon Wizard
+[x]   781  Niv-Mizzet, Parun                        {U}{U}{U}{R}{R}{R} Legendary Creature — Dragon Wizard
 [ ]   782  Jungle Hollow                            {0}              Land
 [ ]   783  Cloudshift                               {W}              Instant
 [ ]   784  Brain Freeze                             {1}{U}           Instant

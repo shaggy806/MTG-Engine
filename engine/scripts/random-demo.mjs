@@ -314,6 +314,11 @@ const deckB = deck([
   // place, so the fuzzer should be the thing that finds it if it blows up.
   ["Krenko, Mob Boss", 1],
   ["Rograkh, Son of Rohgahh", 1],
+  ["Kenrith, the Returned King", 1],
+  // `draws` triggers: every card drawn is a trigger, which is the other shape
+  // (after Krenko's doubling) that can snowball.
+  ["Nekusar, the Mindrazer", 1],
+  ["Niv-Mizzet, Parun", 1],
   ["Demand Answers", 1],
   ["Cathartic Reunion", 1],
   ["Seize the Spoils", 1],
