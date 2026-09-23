@@ -436,7 +436,13 @@ describe("declarations as actions", () => {
     game.advanceUntil((s) => s.awaiting?.kind === "assign-combat-damage");
     const legal = game.legalActions(A);
     expect(kinds(legal)).toEqual(["assign-combat-damage"]);
-    expect(legal[0]).toMatchObject({ attacker: giant, blockers: [bear1, bear2], power: 3, lethal: [2, 2] });
+    expect(legal[0]).toMatchObject({
+      attacker: giant,
+      blockers: [bear1, bear2],
+      power: 3,
+      lethal: [2, 2],
+      indestructible: [false, false],
+    });
     expect(game.legalActions(B)).toEqual([]);
 
     // All but 1 on the second-declared bear: refused before Foundations.

@@ -79,14 +79,20 @@ export interface DamageAssignmentOffer {
   readonly power: number;
   readonly lethal: readonly number[];
   readonly trample: boolean;
+  /** Which blockers lethal damage won't destroy, in the same order. Trample
+   * still needs lethal on them first (702.19b); they just don't die of it.
+   * Absent means none of them. */
+  readonly indestructible?: readonly boolean[];
 }
 
 /**
  * The standard combat-damage assignment: kill as many blockers as possible,
- * the ones needing least first (ties in declaration order). Whatever is left
- * tramples over if every blocker got lethal, and otherwise goes on the
- * cheapest blocker still short of it — or, with every blocker dead and no
- * trample, on the last one killed.
+ * the ones needing least first (ties in declaration order). Indestructible
+ * blockers come after all the rest, since lethal damage on one kills nothing:
+ * they get it only once everything that can die has, which is what trampling
+ * over needs. Whatever is left tramples over if every blocker got lethal, and
+ * otherwise goes on the cheapest blocker still short of it — or, with every
+ * blocker dead and no trample, on the last one killed.
  *
  * **The one copy.** `Game` reaches it through {@link autoAssignForAttacker}
  * when nobody is asked; every controller reaches it directly as its default
@@ -94,9 +100,12 @@ export interface DamageAssignmentOffer {
  */
 export function standardAssignment(offer: DamageAssignmentOffer): number[] {
   const { power, lethal, trample } = offer;
+  const survives = (index: number): number => (offer.indestructible?.[index] ? 1 : 0);
   const amounts = lethal.map(() => 0);
   if (lethal.length === 0) return amounts;
-  const cheapestFirst = lethal.map((_, index) => index).sort((a, b) => lethal[a] - lethal[b] || a - b);
+  const cheapestFirst = lethal
+    .map((_, index) => index)
+    .sort((a, b) => survives(a) - survives(b) || lethal[a] - lethal[b] || a - b);
   let remaining = power;
   let killed = 0;
   for (const index of cheapestFirst) {
@@ -124,6 +133,7 @@ export function autoAssignForAttacker(
     power: computeCharacteristics(state, registry, attackerId).power,
     lethal: live.map((blockerId) => lethalFor(state, registry, attackerId, blockerId)),
     trample: objHasKeyword(state, registry, attackerId, "trample"),
+    indestructible: live.map((blockerId) => objHasKeyword(state, registry, blockerId, "indestructible")),
   });
 }
 

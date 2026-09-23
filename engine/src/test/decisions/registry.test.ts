@@ -38,6 +38,7 @@ const FIXTURES: Partial<Record<DecisionKind, AwaitingDecision>> = {
     power: 2,
     lethal: [2],
     trample: false,
+    indestructible: [false],
   },
   mulligan: {
     kind: "mulligan",

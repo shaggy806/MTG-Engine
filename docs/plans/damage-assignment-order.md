@@ -128,7 +128,10 @@ engine has 16 decision kinds.
   over if every blocker got lethal, and otherwise goes on the cheapest blocker
   still short of it, or, with every blocker dead and no trample, on the last
   one killed. It's the auto-assignment, every controller's default answer, and
-  the client's starting split.
+  the client's starting split. Indestructible blockers are sorted after all
+  the others, since lethal damage on one kills nothing. They still get lethal
+  when everything else has it, which is what trampling over needs. The offer
+  carries `indestructible` per blocker for this.
 - **Bots (step 6): not searched yet.** `assign-combat-damage` still has no
   `candidates`, but its comment now says why: which blocker dies is a real
   choice, and one a static score can price, but a searched split hasn't been

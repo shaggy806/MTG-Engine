@@ -141,10 +141,10 @@ export function lethalCount(
 /** The blockers lethal damage won't kill, by their index in the offer:
  * indestructible ones. Trample still needs lethal on them first; they just
  * don't die of it, so the bar mustn't draw them as dying. */
-export function survivorsOf(offer: AssignDamageOffer, view: PlayerView): ReadonlySet<number> {
+export function survivorsOf(offer: AssignDamageOffer): ReadonlySet<number> {
   const out = new Set<number>()
-  offer.blockers.forEach((id, i) => {
-    if (view.objects[id]?.keywords.includes('indestructible')) out.add(i)
+  offer.indestructible.forEach((survives, i) => {
+    if (survives) out.add(i)
   })
   return out
 }

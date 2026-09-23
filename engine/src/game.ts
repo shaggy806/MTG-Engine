@@ -3158,6 +3158,7 @@ export class Game {
         power: computeCharacteristics(this.state, this.registry, attackerId).power,
         lethal: blockers.map((b) => this.lethalFor(attackerId, b)),
         trample: this.objHasKeyword(attackerId, "trample"),
+        indestructible: blockers.map((b) => this.objHasKeyword(b, "indestructible")),
       };
       return;
     }

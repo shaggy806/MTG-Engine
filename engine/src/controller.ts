@@ -16,6 +16,7 @@ import type {
   LegalAction,
 } from "./actions.js";
 import { standardAssignment } from "./combat/damage.js";
+import type { DamageAssignmentOffer } from "./combat/damage.js";
 import { decisionFor, mayActOn, randomAnswerFor } from "./decisions/registry.js";
 import type { RandomSource } from "./decisions/contract.js";
 import { computeCharacteristics } from "./characteristics.js";
@@ -86,6 +87,7 @@ export interface PlayerController {
       readonly power: number;
       readonly lethal: readonly number[];
       readonly trample: boolean;
+      readonly indestructible: readonly boolean[];
     },
   ): readonly number[];
   /**
@@ -292,10 +294,7 @@ export class AutomaticController implements PlayerController {
     return [];
   }
 
-  assignCombatDamage(
-    _view: ControllerView,
-    a: { readonly power: number; readonly lethal: readonly number[]; readonly trample: boolean },
-  ): readonly number[] {
+  assignCombatDamage(_view: ControllerView, a: DamageAssignmentOffer): readonly number[] {
     return standardDamageAssignment(a);
   }
 
@@ -504,6 +503,7 @@ type DamageAssigner = (
     readonly power: number;
     readonly lethal: readonly number[];
     readonly trample: boolean;
+    readonly indestructible: readonly boolean[];
   },
 ) => readonly number[];
 
@@ -593,6 +593,7 @@ export class ScriptedController implements PlayerController {
       readonly power: number;
       readonly lethal: readonly number[];
       readonly trample: boolean;
+      readonly indestructible: readonly boolean[];
     },
   ): readonly number[] {
     return this.assignCombatDamageFn(view, a);

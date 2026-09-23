@@ -73,6 +73,22 @@ describe("standardAssignment", () => {
     expect(standardAssignment(offer(4, [2, 3], true))).toEqual([2, 2]);
   });
 
+  // Lethal damage kills nothing indestructible (Darksteel Myr, 0/1).
+  const withMyr = (power: number, trample: boolean) => ({
+    ...offer(power, [1, 2], trample),
+    indestructible: [true, false],
+  });
+
+  it("spends damage on an indestructible blocker last", () => {
+    // Cheapest first alone would put 1 on each and kill nothing.
+    expect(standardAssignment(withMyr(2, false))).toEqual([0, 2]);
+  });
+
+  it("still gives an indestructible blocker lethal when that lets damage trample over", () => {
+    expect(standardAssignment(withMyr(4, true))).toEqual([1, 2]);
+    expect(standardAssignment(withMyr(2, true))).toEqual([0, 2]);
+  });
+
   it("is always a legal answer", () => {
     const cases = [
       offer(4, [3, 2, 2], false),
@@ -81,6 +97,9 @@ describe("standardAssignment", () => {
       offer(2, [0, 3], false),
       offer(3, [5], true),
       offer(6, [2], false),
+      withMyr(2, false),
+      withMyr(5, false),
+      withMyr(4, true),
     ];
     for (const each of cases) {
       expect(damageAssignmentViolations(each, standardAssignment(each))).toBeNull();

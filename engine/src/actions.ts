@@ -514,14 +514,17 @@ export type LegalAction =
       /** A blocked attacker's controller assigns its combat damage (rule
        * 510.1c — ROADMAP Phase 11 EG-4a). Answer with one amount per blocker
        * in `blockers` order; `power − sum` (0 unless `trample`) tramples over
-       * to the defender. `lethal[i]` is the minimum for `blockers[i]` before a
-       * later blocker or the defender may be assigned any. */
+       * to the defender. `lethal[i]` is lethal damage to `blockers[i]`: any
+       * division is legal, but every blocker needs its lethal before any
+       * damage tramples over (702.19b). `indestructible[i]` says lethal damage
+       * won't destroy it. */
       readonly kind: "assign-combat-damage";
       readonly attacker: ObjectId;
       readonly blockers: readonly ObjectId[];
       readonly power: number;
       readonly lethal: readonly number[];
       readonly trample: boolean;
+      readonly indestructible: readonly boolean[];
     }
   | {
       readonly kind: "discard";

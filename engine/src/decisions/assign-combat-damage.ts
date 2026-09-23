@@ -36,6 +36,7 @@ export const assignCombatDamage = defineDecision({
       power: awaiting.power,
       lethal: [...awaiting.lethal],
       trample: awaiting.trample,
+      indestructible: [...awaiting.indestructible],
     },
   ],
 
@@ -68,6 +69,7 @@ export const assignCombatDamage = defineDecision({
       power: awaiting.power,
       lethal: awaiting.lethal,
       trample: awaiting.trample,
+      indestructible: awaiting.indestructible,
     }),
   }),
 

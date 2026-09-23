@@ -938,11 +938,14 @@ export type AwaitingDecision =
       readonly attacker: ObjectId;
       readonly blockers: readonly ObjectId[];
       readonly power: number;
-      /** Lethal-damage threshold per blocker (toughness − damage already
-       * marked, or 1 for a deathtouch source): each must get at least this
-       * before a later blocker or the defender is assigned any. */
+      /** Lethal damage per blocker (toughness − damage already marked, or 1
+       * from a deathtouch source). Any division is legal; every blocker must
+       * have its lethal before any damage tramples over (702.19b). */
       readonly lethal: readonly number[];
       readonly trample: boolean;
+      /** Per blocker: lethal damage won't destroy it. The default split
+       * (`standardAssignment`) spends damage on these last. */
+      readonly indestructible: readonly boolean[];
     };
 
 /**

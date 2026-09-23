@@ -783,8 +783,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     [damageIndex],
   )
   const damageSurvivors = useMemo(
-    () => (assignDamageAction ? survivorsOf(assignDamageAction, view) : new Set<number>()),
-    [assignDamageAction, view],
+    () => (assignDamageAction ? survivorsOf(assignDamageAction) : new Set<number>()),
+    [assignDamageAction],
   )
   const chooseTargetsAction = actions.find(
     (a): a is ChooseTargetsAction => a.kind === 'choose-targets',
