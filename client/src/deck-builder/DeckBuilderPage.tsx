@@ -238,7 +238,12 @@ export function DeckBuilderPage() {
                 onClose={() => setReviewing(false)}
               />
             ) : null}
+            {/* Keyed by deck, so switching decks starts the editor over —
+                its name field is local state seeded from the deck, and kept
+                the last deck's name, which leaving the field then saved
+                onto this one. */}
             <DeckEditor
+              key={selectedDeck.id}
               deck={selectedDeck}
               isActive={isActive({ kind: 'saved', id: selectedDeck.id })}
               onChange={(next) => {
