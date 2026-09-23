@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import { createDefaultRegistry, defineCard } from "../cards.js";
+import { ScriptedController } from "../controller.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId } from "../primitives.js";
+import { printedCardName } from "../state.js";
 import type { GameState } from "../state.js";
 
 const A = asPlayerId("alice");
@@ -24,7 +26,17 @@ const TEST_LEGEND = defineCard({
   power: 1,
   toughness: 1,
 });
-const registry = createDefaultRegistry().register(TEST_LEGEND);
+const OTHER_LEGEND = defineCard({
+  name: "Other Legend",
+  manaCost: "{G}",
+  colors: ["G"],
+  supertypes: ["legendary"],
+  types: ["creature"],
+  subtypes: ["Elf"],
+  power: 2,
+  toughness: 2,
+});
+const registry = createDefaultRegistry().register(TEST_LEGEND).register(OTHER_LEGEND);
 
 const atFirstMain = (s: GameState): boolean => s.turn.step === "precombat-main";
 const stackEmpty = (s: GameState): boolean => s.zones.shared.stack.length === 0;
@@ -163,5 +175,66 @@ describe("the legend rule (704.5j)", () => {
         (id) => game.state.objects[id].cardName === "Test Legend",
       ),
     ).toHaveLength(2);
+  });
+
+  describe("a copy has the name of what it copies (rule 707.2)", () => {
+    /** Alice holds Clones and four Islands to cast each with; `copyChoices`
+     * are what each Clone copies, in cast order. */
+    function cloneGame(copyChoices: ObjectId[]): { game: Game; cast: () => ObjectId } {
+      const alice = new ScriptedController(A);
+      alice.chooseCopyFn = () => copyChoices.shift() ?? null;
+      const game = Game.create({
+        seed: 1,
+        shuffle: false,
+        registry,
+        controllers: { [A]: alice, [B]: new ScriptedController(B) },
+        decks: [
+          { player: A, cards: pad([]) },
+          { player: B, cards: pad([]) },
+        ],
+      });
+      game.advanceUntil(atFirstMain);
+      const cast = (): ObjectId => {
+        for (let i = 0; i < 4; i += 1) game.debugSpawn("Island", A);
+        const clone = game.debugSpawn("Clone", A, "hand");
+        game.dispatch({ type: "cast-spell", player: A, card: clone, targets: [] });
+        game.advanceUntil((s) => stackEmpty(s) && s.awaiting === null);
+        return clone;
+      };
+      return { game, cast };
+    }
+    const legendsOf = (game: Game, name: string): ObjectId[] =>
+      game.state.zones.shared.battlefield.filter(
+        (id) =>
+          game.state.objects[id].controller === A &&
+          printedCardName(game.state.objects[id]) === name,
+      );
+
+    it("a Clone of your own legend is put into the graveyard by the legend rule", () => {
+      const copies: ObjectId[] = [];
+      const { game, cast } = cloneGame(copies);
+      const original = game.debugSpawn("Test Legend", A);
+      copies.push(original);
+
+      const clone = cast();
+
+      expect(legendsOf(game, "Test Legend")).toEqual([original]);
+      expect(game.state.objects[clone].zone).toBe("graveyard");
+      expect(
+        game.events.find((e) => e.type === "permanent-destroyed" && e.object === clone),
+      ).toMatchObject({ reason: "legend rule" });
+    });
+
+    it("Clones of two different legends both stay", () => {
+      const copies: ObjectId[] = [];
+      const { game, cast } = cloneGame(copies);
+      copies.push(game.debugSpawn("Test Legend", B), game.debugSpawn("Other Legend", B));
+
+      const first = cast();
+      const second = cast();
+
+      expect(legendsOf(game, "Test Legend")).toEqual([first]);
+      expect(legendsOf(game, "Other Legend")).toEqual([second]);
+    });
   });
 });

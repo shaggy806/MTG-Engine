@@ -10491,13 +10491,16 @@ export class Game {
       // The legend rule (704.5j): a player controlling 2+ legendary
       // permanents with the same name keeps only one. No player choice is
       // modeled — the copy they've controlled longest (lowest timestamp)
-      // survives and the rest go to the graveyard.
+      // survives and the rest go to the graveyard. The name is the one the
+      // permanent has now: a Clone of Krenko is a second Krenko (rule 707.2),
+      // not a Clone, and a transformed card has its back face's name.
       const legendaryGroups = new Map<string, ObjectId[]>();
       for (const id of this.state.zones.shared.battlefield) {
         const object = this.state.objects[id];
         if (object.notLegendary === true) continue; // Miirym's copies (P5b)
-        if (!this.registry.get(printedCardName(object)).supertypes.includes("legendary")) continue;
-        const key = `${object.controller} ${object.cardName}`;
+        const name = printedCardName(object);
+        if (!this.registry.get(name).supertypes.includes("legendary")) continue;
+        const key = `${object.controller} ${name}`;
         const group = legendaryGroups.get(key);
         if (group) group.push(id);
         else legendaryGroups.set(key, [id]);
