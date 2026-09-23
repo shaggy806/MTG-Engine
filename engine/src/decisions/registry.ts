@@ -30,7 +30,6 @@ import { sacrifice } from "./sacrifice.js";
 import { discard } from "./discard.js";
 import { commanderReplacement } from "./commander-replacement.js";
 import { mulligan } from "./mulligan.js";
-import { orderBlockers } from "./order-blockers.js";
 import { assignCombatDamage } from "./assign-combat-damage.js";
 import { attackers } from "./attackers.js";
 import { blockers } from "./blockers.js";
@@ -52,7 +51,6 @@ export const DECISIONS: Record<DecisionKind, AnyDecisionModule> = {
   discard,
   "commander-replacement": commanderReplacement,
   mulligan,
-  "order-blockers": orderBlockers,
   "assign-combat-damage": assignCombatDamage,
   attackers,
   blockers,

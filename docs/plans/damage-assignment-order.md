@@ -1,9 +1,10 @@
 # Combat damage without a damage assignment order
 
-**Status:** proposed (2026-09-22), not started. Documented at the user's
-request so the engine work can be picked up later: "Document the need to
-update damage assignment but don't do anything more." The engine still runs
-the pre-2024 rules described below.
+**Status:** implemented (2026-09-23). First documented at the user's request
+without building it ("Document the need to update damage assignment but don't
+do anything more"), then built once they gave the go-ahead, with the default
+split suggested in step 4. "What the engine does today" below describes the
+engine *before* the change; "As built" at the end says what shipped.
 
 ## The rules now
 
@@ -36,7 +37,7 @@ order from the game. Checked against the Comprehensive Rules effective
 Sources: [Foundations Update Bulletin](https://magic.wizards.com/en/news/announcements/foundations-update-bulletin);
 [Comprehensive Rules](https://magic.wizards.com/en/rules) (TXT, 2026-09-25).
 
-## What the engine does today
+## What the engine did before
 
 It implements the old rules end to end:
 
@@ -116,3 +117,28 @@ draw sequence, so every seed replays differently afterwards (CLAUDE.md,
   case doesn't arise. It becomes a real split once such a card is authored.
 - **Trample over planeswalkers (702.19c).** Not modeled, and no pool card
   has it.
+
+## As built
+
+Steps 1–5, 7 and 8 went in as written; `order-blockers` is gone and the
+engine has 16 decision kinds.
+
+- **Default split** (`standardAssignment`): kill as many blockers as possible,
+  the ones needing least first, ties in declaration order. The rest tramples
+  over if every blocker got lethal, and otherwise goes on the cheapest blocker
+  still short of it, or, with every blocker dead and no trample, on the last
+  one killed. It's the auto-assignment, every controller's default answer, and
+  the client's starting split.
+- **Bots (step 6): not searched yet.** `assign-combat-damage` still has no
+  `candidates`, but its comment now says why: which blocker dies is a real
+  choice, and one a static score can price, but a searched split hasn't been
+  benched against the default, and emitted candidates re-point every
+  `bot:bench` number.
+- **Fuzzer.** Half the time `randomAnswer` now deals the power out one point
+  at a time to random blockers, so it exercises splits the old rule refused;
+  the other half starts from the default as before.
+- **Tests.** `damage-assignment.test.ts` covers the validator and the default
+  directly; `combat.test.ts` adds a free split with no trample and a
+  first-strike-damaged blocker needing only the rest; `combat-depth.test.ts`
+  now accepts a split the old rule refused and still rejects trampling over
+  short of lethal; `seam.test.ts` walks priority after blocks, then the split.

@@ -174,13 +174,6 @@ export type Action =
       readonly blocks: readonly BlockerDeclaration[];
     }
   | {
-      readonly type: "order-blockers";
-      readonly player: PlayerId;
-      readonly attacker: ObjectId;
-      /** The blockers of `attacker`, in damage-assignment order. */
-      readonly order: readonly ObjectId[];
-    }
-  | {
       readonly type: "discard";
       readonly player: PlayerId;
       readonly cards: readonly ObjectId[];
@@ -516,12 +509,6 @@ export type LegalAction =
        * this defender controls that's able to block one of these must block a
        * must-be-blocked attacker. Menace ones are excluded. */
       readonly mustBlock: readonly ObjectId[];
-    }
-  | {
-      readonly kind: "order-blockers";
-      readonly attacker: ObjectId;
-      /** The blockers to order; the current order is the default. */
-      readonly blockers: readonly ObjectId[];
     }
   | {
       /** A blocked attacker's controller assigns its combat damage (rule

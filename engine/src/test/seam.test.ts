@@ -424,51 +424,41 @@ describe("declarations as actions", () => {
     return { game, giant, bear1, bear2 };
   };
 
-  it("asks the attacking player to order multiple blockers", () => {
-    const { game, giant, bear1, bear2 } = doubleBlock();
-    const awaiting = game.state.awaiting;
-    expect(awaiting?.kind).toBe("order-blockers");
-    expect(awaiting?.player).toBe(A);
-    expect(awaiting?.kind === "order-blockers" && awaiting.attacker).toBe(giant);
-
-    const legal = game.legalActions(A);
-    expect(kinds(legal)).toEqual(["order-blockers"]);
-    expect(legal[0].kind === "order-blockers" && legal[0].blockers).toEqual([
-      bear1,
-      bear2,
-    ]);
-    expect(game.legalActions(B)).toEqual([]);
+  it("asks for no blocker order: the active player gets priority after blocks (rule 509.2)", () => {
+    const { game } = doubleBlock();
+    expect(game.state.awaiting).toBeNull();
+    expect(game.state.priority.holder).toBe(A);
+    expect(kinds(game.legalActions(A))).toContain("pass-priority");
   });
 
-  it("assigns combat damage down the chosen blocker order", () => {
+  it("offers a double-blocked attacker's damage as a free split among its blockers", () => {
     const { game, giant, bear1, bear2 } = doubleBlock();
-    game.dispatch({
-      type: "order-blockers",
-      player: A,
-      attacker: giant,
-      order: [bear2, bear1], // reverse of declaration order
-    });
-    expect(game.state.awaiting).toBeNull();
+    game.advanceUntil((s) => s.awaiting?.kind === "assign-combat-damage");
+    const legal = game.legalActions(A);
+    expect(kinds(legal)).toEqual(["assign-combat-damage"]);
+    expect(legal[0]).toMatchObject({ attacker: giant, blockers: [bear1, bear2], power: 3, lethal: [2, 2] });
+    expect(game.legalActions(B)).toEqual([]);
 
+    // All but 1 on the second-declared bear: refused before Foundations.
+    game.dispatch({ type: "assign-combat-damage", player: A, assignment: [1, 2] });
     game.advanceUntil((s) => s.turn.step === "postcombat-main");
-    expect(game.state.objects[bear2].zone).toBe("graveyard"); // took 2 first
-    expect(game.state.objects[bear1].damageMarked).toBe(1); // took the last 1
+    expect(game.state.objects[bear2].zone).toBe("graveyard");
+    expect(game.state.objects[bear1].damageMarked).toBe(1);
     expect(game.state.objects[bear1].zone).toBe("battlefield");
   });
 
-  it("rejects a blocker order that is not a permutation", () => {
-    const { game, giant, bear1 } = doubleBlock();
+  it("rejects a split that doesn't add up to the attacker's power", () => {
+    const { game } = doubleBlock();
+    game.advanceUntil((s) => s.awaiting?.kind === "assign-combat-damage");
     expect(() =>
-      game.dispatch({
-        type: "order-blockers",
-        player: A,
-        attacker: giant,
-        order: [bear1],
-      }),
-    ).toThrow(/permutation/);
+      game.dispatch({ type: "assign-combat-damage", player: A, assignment: [1, 1] }),
+    ).toThrow(/trampling attacker/);
     expect(() =>
-      game.dispatch({ type: "pass-priority", player: A }),
-    ).toThrow(/declaration is pending/);
+      game.dispatch({ type: "assign-combat-damage", player: A, assignment: [2, 2] }),
+    ).toThrow(/more than the attacker's power/);
+    expect(() => game.dispatch({ type: "pass-priority", player: A })).toThrow(
+      /declaration is pending/,
+    );
   });
 });
 

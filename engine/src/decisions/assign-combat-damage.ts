@@ -1,6 +1,8 @@
 /**
  * Splitting a blocked attacker's combat damage among its blockers — rule
- * 510.1c, the "lethal to each earlier blocker first" rule.
+ * 510.1c. Since *Foundations* there is no damage assignment order: any
+ * division among the blockers is legal, and only trample needs lethal on each
+ * before any goes over (702.19b).
  *
  * The narrowest read of any decision in the engine: the validator looks at
  * `state.awaiting` and nothing else. Everything it needs — how much power
@@ -69,14 +71,27 @@ export const assignCombatDamage = defineDecision({
     }),
   }),
 
-  // candidates: deliberately not searched — v1's lethal-in-order split is
-  // already the right answer in almost every position, and the alternatives
-  // (overkilling one blocker to save another) are distinctions a rollout
-  // cannot price. Same measured opt-out as `order-blockers`.
+  // candidates: not searched yet. This opted out when damage had to go
+  // lethal-in-order, which left almost nothing to choose. Now that any split
+  // is legal, which blocker dies is a real choice, and one a static score can
+  // price (it sees what's left on the board), but the default
+  // (`standardAssignment`: kill as many as possible, cheapest first) hasn't
+  // been benched against a searched one. Measure before adding it: emitted
+  // candidates re-point every `bot:bench` number.
 
   randomAnswer: (legal, player, rng): Action => {
-    // Start from the standard split, then sometimes pile extra onto a blocker
-    // instead of trampling / dumping on the last — still legal.
+    // Any division among the blockers is legal (510.1c), so half the time deal
+    // the power out a point at a time to random blockers; it always sums to
+    // the power, so nothing tramples over.
+    if (legal.blockers.length > 0 && rng.random() < 0.5) {
+      const assignment = legal.blockers.map(() => 0);
+      for (let i = 0; i < legal.power; i += 1) {
+        assignment[rng.pickIndex(assignment.length)] += 1;
+      }
+      return { type: "assign-combat-damage", player, assignment };
+    }
+    // Otherwise start from the standard split, then sometimes pile extra onto
+    // a blocker instead of trampling it over — still legal.
     const assignment = standardAssignment(legal);
     const spare = legal.power - assignment.reduce((sum, n) => sum + n, 0);
     if (spare > 0 && assignment.length > 0 && rng.random() < 0.5) {

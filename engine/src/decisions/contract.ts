@@ -82,7 +82,6 @@ export type OfferOf<K extends DecisionKind> = Extract<
 export const DECISION_ACTIONS = {
   attackers: ["declare-attackers"],
   blockers: ["declare-blockers"],
-  "order-blockers": ["order-blockers"],
   "assign-combat-damage": ["assign-combat-damage"],
   discard: ["discard"],
   "choose-from-zone": ["choose-from-zone"],
@@ -112,7 +111,6 @@ export const DECISION_ACTIONS = {
 export const DECISION_OFFERS = {
   attackers: ["declare-attackers"],
   blockers: ["declare-blockers"],
-  "order-blockers": ["order-blockers"],
   "assign-combat-damage": ["assign-combat-damage"],
   discard: ["discard"],
   "choose-from-zone": ["choose-from-zone"],
@@ -192,7 +190,6 @@ export interface DecisionHost {
   readonly applyCommanderChoice: (player: PlayerId, toCommandZone: boolean) => void;
   readonly applyMulligan: (player: PlayerId, keep: boolean) => void;
   readonly applyPutOnBottom: (player: PlayerId, cards: readonly ObjectId[]) => void;
-  readonly applyBlockerOrder: (player: PlayerId, attacker: ObjectId, order: readonly ObjectId[]) => void;
   readonly applyAssignCombatDamage: (player: PlayerId, assignment: readonly number[]) => void;
   readonly applyAttackerDeclarations: (player: PlayerId, declarations: readonly AttackerDeclaration[]) => void;
   readonly applyBlockerDeclarations: (player: PlayerId, blocks: readonly BlockerDeclaration[]) => void;
@@ -278,7 +275,7 @@ export interface DecisionModule<K extends DecisionKind = DecisionKind> {
   /**
    * Candidate answers for the searching bots, best-effort and capped.
    *
-   * **Absent on purpose for six kinds**, each of which carries its reason as a
+   * **Absent on purpose for seven kinds**, each of which carries its reason as a
    * comment where the field would be. An empty slot here is a measured
    * finding, not an unfinished TODO — searching `commander-replacement`, for
    * one, made the bot feed its commander to the first removal spell, because

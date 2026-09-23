@@ -198,7 +198,7 @@ export type ClientMessage =
       /**
        * Auto-pass this seat's own priority windows for the rest of the
        * current turn — never another seat's. Stops early if this seat is
-       * asked for a real decision (blockers/discard/order-blockers).
+       * asked for a real decision (blockers, a discard, a damage split).
        */
       readonly type: "pass-turn";
       readonly roomId: string;

@@ -115,7 +115,6 @@ type CycleAction = Extract<LegalAction, { kind: 'cycle' }>
 type AbilityAction = Extract<LegalAction, { kind: 'activate-ability' }>
 type AttackAction = Extract<LegalAction, { kind: 'declare-attackers' }>
 type BlockAction = Extract<LegalAction, { kind: 'declare-blockers' }>
-type OrderAction = Extract<LegalAction, { kind: 'order-blockers' }>
 type DiscardAction = Extract<LegalAction, { kind: 'discard' }>
 type ZoneChoiceAction = Extract<LegalAction, { kind: 'choose-from-zone' }>
 type MulliganAction = Extract<LegalAction, { kind: 'mulligan' }>
@@ -173,7 +172,7 @@ interface Targeting {
 
 /**
  * Whoever the engine is actually waiting on right now — a pending
- * declaration (attackers/blockers/discard/order-blockers) if there is one,
+ * declaration (attackers/blockers/discard/...) if there is one,
  * else the current priority holder. NOT the same as "my seat": each device
  * only ever represents one seat, so unlike the old hot-seat client, "my
  * seat" and "whoever must act" are frequently different players.
@@ -187,7 +186,6 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
   attackers: 'declare attackers',
   blockers: 'declare blockers',
   discard: 'discard',
-  'order-blockers': 'order blockers',
   'choose-from-zone': 'look at cards',
   mulligan: 'decide on a mulligan',
   'commander-replacement': 'decide where their commander goes',
@@ -578,11 +576,10 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   const [attackPicks, setAttackPicks] = useState<readonly ObjectId[]>([])
   const [blockAssign, setBlockAssign] = useState<Record<string, ObjectId>>({})
   const [blockFocus, setBlockFocus] = useState<ObjectId | null>(null)
-  const [orderPicks, setOrderPicks] = useState<readonly ObjectId[]>([])
   const [discardPicks, setDiscardPicks] = useState<readonly ObjectId[]>([])
   const [bottomPicks, setBottomPicks] = useState<readonly ObjectId[]>([])
   // Per-blocker combat-damage amounts (EG-4a), null until the player edits one
-  // (falls back to the lethal-down-the-line default when confirmed unedited).
+  // (falls back to the engine's standard split when confirmed unedited).
   const [damagePicks, setDamagePicks] = useState<readonly number[] | null>(null)
   const [textFrom, setTextFrom] = useState<string | null>(null)
   const [modePicks, setModePicks] = useState<readonly number[]>([])
@@ -706,9 +703,6 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   const blockAction = actions.find(
     (a): a is BlockAction => a.kind === 'declare-blockers',
   )
-  const orderAction = actions.find(
-    (a): a is OrderAction => a.kind === 'order-blockers',
-  )
   const discardAction = actions.find(
     (a): a is DiscardAction => a.kind === 'discard',
   )
@@ -780,7 +774,6 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
 
   const mode:
     | 'discard'
-    | 'order-blockers'
     | 'attackers'
     | 'blockers'
     | 'choose-from-zone'
@@ -826,8 +819,6 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           ? 'put-on-bottom'
       : discardAction
         ? 'discard'
-        : orderAction
-          ? 'order-blockers'
           : attackAction
             ? 'attackers'
             : blockAction
@@ -1178,13 +1169,6 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         )
         return
       }
-      if (mode === 'order-blockers' && orderAction) {
-        if (!orderAction.blockers.includes(id)) return
-        setOrderPicks((cur) =>
-          cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id],
-        )
-        return
-      }
       if (mode === 'sacrifice' && sacrificeAction) {
         if (!sacrificeAction.eligible.includes(id)) return
         // A compacted token stack is one tile standing for several tokens, so
@@ -1254,7 +1238,6 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       blockAssign,
       blockFocus,
       mode,
-      orderAction,
       pickIdForClick,
       pickTarget,
       sacrificeAction,
@@ -1301,19 +1284,6 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     })
   }, [blockAssign, game, seat])
 
-  const confirmOrder = useCallback(
-    (order: readonly ObjectId[]) => {
-      if (!orderAction) return
-      game.dispatch({
-        type: 'order-blockers',
-        player: seat,
-        attacker: orderAction.attacker,
-        order: [...order],
-      })
-    },
-    [game, orderAction, seat],
-  )
-
   const confirmDiscard = useCallback(() => {
     game.dispatch({ type: 'discard', player: seat, cards: [...discardPicks] })
   }, [discardPicks, game, seat])
@@ -1353,7 +1323,6 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         setTargeting(null)
         setSelectedSource(null)
         setBlockFocus(null)
-        setOrderPicks([])
       }
     }
     window.addEventListener('keydown', onKey)
@@ -1422,16 +1391,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     else if (obj.blocking) badge = `\u{1F6E1} ${game.nameOf(obj.blocking)}`
     else if (obj.isCommander) badge = 'Commander'
 
-    if (mode === 'order-blockers' && orderAction) {
-      if (id === orderAction.attacker) {
-        badge = `${orderPicks.length}/${orderAction.blockers.length} ordered`
-      } else if (orderAction.blockers.includes(id)) {
-        const at = orderPicks.indexOf(id)
-        highlight = at === -1
-        selected = at !== -1
-        order = at === -1 ? null : at + 1
-      }
-    } else if (mode === 'targeting') {
+    if (mode === 'targeting') {
       highlight = ids.some((i) =>
         targetSlot.some((o) => o.kind === 'object' && o.object === i),
       )
@@ -2330,34 +2290,6 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         </button>
       </div>
     )
-  } else if (mode === 'order-blockers' && orderAction) {
-    const total = orderAction.blockers.length
-    controls = (
-      <div className="controls">
-        <span>
-          Order {game.nameOf(orderAction.attacker)}'s blockers — click them in
-          the order they take damage ({orderPicks.length}/{total})
-        </span>
-        <button
-          type="button"
-          onClick={() => confirmOrder(orderAction.blockers)}
-        >
-          Keep default order
-        </button>
-        <button
-          type="button"
-          disabled={orderPicks.length !== total}
-          onClick={() => confirmOrder(orderPicks)}
-        >
-          Confirm order
-        </button>
-        {orderPicks.length > 0 ? (
-          <button type="button" onClick={() => setOrderPicks([])}>
-            Reset
-          </button>
-        ) : null}
-      </div>
-    )
   } else if (mode === 'blockers' && blockAction) {
     const n = Object.keys(blockAssign).length
     // The set-level rules (menace, Lure) are the engine's own check against
@@ -2459,9 +2391,11 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       </div>
     )
   } else if (mode === 'assign-combat-damage' && assignDamageAction) {
-    // Lethal down the blocker order, remainder to the last blocker (or, with
-    // trample, over to the defender) — from the engine, which uses the same
-    // function when nobody is asked.
+    // Kill as many blockers as possible, the cheapest first, then trample the
+    // rest over or leave it on a blocker — from the engine, which uses the
+    // same function when nobody is asked. Any split is legal (no damage
+    // assignment order since Foundations); only trampling over needs lethal
+    // on every blocker.
     const dflt = standardAssignment(assignDamageAction)
     const picks = damagePicks ?? dflt
     const total = picks.reduce((s, n) => s + n, 0)

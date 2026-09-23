@@ -66,7 +66,6 @@ bob.declareBlockersFn = () => [
   { blocker: rats, attacker: wurm },
   { blocker: bear2, attacker: wurm },
 ];
-alice.orderBlockersFn = () => [rats, bear2];
 
 game.advanceUntil(
   (s) => s.turn.number === 1 && s.turn.step === "postcombat-main",

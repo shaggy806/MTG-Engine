@@ -683,12 +683,6 @@ export type AwaitingDecision =
       readonly fromEffect?: boolean;
     }
   | {
-      readonly kind: "order-blockers";
-      readonly player: PlayerId;
-      /** The attacker whose blockers are being ordered for damage assignment. */
-      readonly attacker: ObjectId;
-    }
-  | {
       readonly kind: "choose-from-zone";
       readonly player: PlayerId;
       /** Candidates already revealed to `player`, in their original zone order. */
@@ -1132,11 +1126,6 @@ export interface GameState {
    * fixpoint iteration later, out of `pendingSacrifices`).
    */
   decisionSource: DecisionSource | null;
-  /**
-   * Attackers with multiple blockers still awaiting a damage-assignment order
-   * from the attacking player. Drained one `order-blockers` action at a time.
-   */
-  pendingBlockerOrders: ObjectId[];
   /**
    * Defending players (3+ player games can have more than one) still owed a
    * "declare-blockers" turn this combat, in the order they'll be asked.

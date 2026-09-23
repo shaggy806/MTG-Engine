@@ -45,7 +45,6 @@ bob.declareBlockersFn = () => [
   { blocker: bear1, attacker: giant },
   { blocker: bear2, attacker: giant },
 ];
-alice.orderBlockersFn = () => [bear1, bear2];
 
 game.advanceUntil((s) => s.turn.number === 1 && s.turn.step === "postcombat-main");
 

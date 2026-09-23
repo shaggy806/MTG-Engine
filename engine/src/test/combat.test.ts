@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { ScriptedController } from "../controller.js";
+import { ScriptedController, standardDamageAssignment } from "../controller.js";
 import { Game } from "../game.js";
 import { asObjectId, asPlayerId } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
@@ -175,7 +175,7 @@ describe("blocking", () => {
     expect(game.state.objects[giant].damageMarked).toBe(0);
   });
 
-  it("auto-assigns minimum lethal damage down the blocker order", () => {
+  it("by default kills as many blockers as it can, the first declared on a tie", () => {
     const { game, a, b } = makeGame();
     const giant = spawn(game, "Hill Giant", A); // 3/3
     const bear1 = spawn(game, "Grizzly Bears", B); // 2/2
@@ -185,7 +185,6 @@ describe("blocking", () => {
       { blocker: bear1, attacker: giant },
       { blocker: bear2, attacker: giant },
     ];
-    a.orderBlockersFn = () => [bear1, bear2];
 
     game.advanceUntil(toPostcombat);
 
@@ -346,7 +345,7 @@ describe("combat keywords", () => {
     expect(game.state.players[B].life).toBe(16); // 20 - (6 - 2)
   });
 
-  it("trample assigns lethal to each blocker before the player", () => {
+  it("trample assigns lethal to every blocker before the player", () => {
     const { game, a, b } = makeGame();
     const wurm = spawn(game, "Craw Wurm", A); // 6/4 trample
     const bear = spawn(game, "Grizzly Bears", B); // 2/2
@@ -356,12 +355,56 @@ describe("combat keywords", () => {
       { blocker: bear, attacker: wurm },
       { blocker: giant, attacker: wurm },
     ];
-    a.orderBlockersFn = () => [bear, giant];
 
     game.advanceUntil(toPostcombat);
     expect(zone(game, bear)).toBe("graveyard");
     expect(zone(game, giant)).toBe("graveyard");
     expect(game.state.players[B].life).toBe(19); // 20 - (6 - 2 - 3)
+  });
+
+  it("without trample, any split among the blockers is legal (rule 510.1c)", () => {
+    const { game, a, b } = makeGame();
+    const baloth = spawn(game, "Rumbling Baloth", A); // 4/4
+    const bear1 = spawn(game, "Grizzly Bears", B); // 2/2
+    const bear2 = spawn(game, "Grizzly Bears", B); // 2/2
+    a.declareAttackersFn = () => [{ attacker: baloth, defender: B }];
+    b.declareBlockersFn = () => [
+      { blocker: bear1, attacker: baloth },
+      { blocker: bear2, attacker: baloth },
+    ];
+    // Short of lethal on the first-declared blocker: refused before Foundations.
+    a.assignCombatDamageFn = () => [1, 3];
+
+    game.advanceUntil(toPostcombat);
+    expect(zone(game, bear1)).toBe("battlefield");
+    expect(game.state.objects[bear1].damageMarked).toBe(1);
+    expect(zone(game, bear2)).toBe("graveyard");
+  });
+
+  it("a blocker already dealt first-strike damage needs only the rest in the regular step", () => {
+    const { game, a, b } = makeGame();
+    const giant = spawn(game, "Hill Giant", A); // 3/3
+    game.state.objects[giant].modifiers.push({
+      power: 0,
+      toughness: 0,
+      keywords: ["double-strike", "trample"],
+      untilEndOfTurn: false,
+    });
+    const baloth = spawn(game, "Rumbling Baloth", B); // 4/4
+    a.declareAttackersFn = () => [{ attacker: giant, defender: B }];
+    b.declareBlockersFn = () => [{ blocker: baloth, attacker: giant }];
+    const offered: number[][] = [];
+    a.assignCombatDamageFn = (_view, offer) => {
+      offered.push([...offer.lethal]);
+      return standardDamageAssignment(offer);
+    };
+
+    game.advanceUntil(toPostcombat);
+    // First strike: 3 is short of the Baloth's 4, so there's nothing to
+    // choose and it all goes on it. Regular: 1 more is lethal, 2 go over.
+    expect(offered).toEqual([[1]]);
+    expect(zone(game, baloth)).toBe("graveyard");
+    expect(game.state.players[B].life).toBe(18);
   });
 
   it("deathtouch lets a trampler assign just 1 to each blocker", () => {
@@ -381,7 +424,6 @@ describe("combat keywords", () => {
       { blocker: bear, attacker: rats },
       { blocker: giant, attacker: rats },
     ];
-    a.orderBlockersFn = () => [bear, giant];
 
     game.advanceUntil(toPostcombat);
     expect(zone(game, bear)).toBe("graveyard");
@@ -444,7 +486,6 @@ describe("combat keywords", () => {
       { blocker: bear1, attacker: brute },
       { blocker: bear2, attacker: brute },
     ];
-    a.orderBlockersFn = () => [bear1, bear2];
 
     game.advanceUntil(toPostcombat);
     expect(zone(game, brute)).toBe("graveyard"); // 4 damage from two bears
