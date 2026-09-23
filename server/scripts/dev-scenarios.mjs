@@ -220,4 +220,26 @@ export default {
     },
     bots: { bob: {} },
   },
+
+  TAPCS: {
+    about:
+      "2p. Costs that tap other permanents, for picking what to tap: Selesnya Evangel taps one " +
+      "creature (an Angel, the Elves, or one of a stack of nine Zombie tokens), and Sephara's " +
+      "alternative cost in hand taps four of five fliers. The Elves are the only creature that " +
+      "makes mana, so they're offered to tap only while a land can pay Evangel's {1}.",
+    players: ["alice", "bob"],
+    lands: { alice: 5, bob: 5 },
+    battlefield: {
+      alice: [
+        "Selesnya Evangel", "Llanowar Elves",
+        "Serra Angel", "Serra Angel", "Serra Angel", "Serra Angel", "Serra Angel",
+      ],
+    },
+    hand: { alice: ["Sephara, Sky's Blade"] },
+    setup(game) {
+      // Real tokens, made the way a card makes them: nine compact into one stack.
+      game.debugApplyEffect("alice", { kind: "create-token", token: "Zombie Token", count: 9 });
+    },
+    bots: { bob: {} },
+  },
 };

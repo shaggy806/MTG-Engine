@@ -14,6 +14,7 @@ import type {
   ChosenTargets,
   ConvokePayment,
   LegalAction,
+  TapCostOffer,
 } from "./actions.js";
 import { obeyingLure } from "./combat/blocking.js";
 import { standardAssignment } from "./combat/damage.js";
@@ -704,6 +705,24 @@ export class ScriptedController implements PlayerController {
  * actions, so it's just echoed back) and a choice of which permanent pays an
  * additional sacrifice cost (rule 601.2f — Harrow). needed-cards P8.
  */
+/**
+ * `count` of a tap cost's choices at random, a stack's id once per token
+ * picked — the fuzzer's answer to a `tapCost` offer. Every token of a stack
+ * is its own draw, so picking three of a stack of nine is as likely as
+ * picking any three separate creatures.
+ */
+function randomTapPicks(offer: TapCostOffer, pickIndex: (n: number) => number): ObjectId[] {
+  const pool: ObjectId[] = [];
+  for (const id of offer.choices) {
+    for (let i = 0; i < (offer.copies?.[id] ?? 1); i += 1) pool.push(id);
+  }
+  const picked: ObjectId[] = [];
+  for (let i = 0; i < offer.count && pool.length > 0; i += 1) {
+    picked.push(pool.splice(pickIndex(pool.length), 1)[0]);
+  }
+  return picked;
+}
+
 function castExtras(
   legal: Extract<LegalAction, { kind: "cast-spell" }>,
   pickIndex: (n: number) => number,
@@ -844,6 +863,9 @@ export class RandomController extends AutomaticController {
             ...(legal.via !== undefined ? { via: legal.via } : {}),
             ...(legal.face !== undefined ? { face: legal.face } : {}),
             ...castExtras(legal, (n) => this.pickIndex(n)),
+            ...(legal.tapCost !== undefined
+              ? { tap: randomTapPicks(legal.tapCost, (n) => this.pickIndex(n)) }
+              : {}),
           };
         }
         return {
@@ -857,6 +879,9 @@ export class RandomController extends AutomaticController {
           ...(legal.via !== undefined ? { via: legal.via } : {}),
           ...(legal.face !== undefined ? { face: legal.face } : {}),
           ...castExtras(legal, (n) => this.pickIndex(n)),
+          ...(legal.tapCost !== undefined
+            ? { tap: randomTapPicks(legal.tapCost, (n) => this.pickIndex(n)) }
+            : {}),
         };
       }
       case "activate-ability": {
@@ -872,6 +897,9 @@ export class RandomController extends AutomaticController {
             : {}),
           ...(legal.xCost !== undefined
             ? { xValue: this.pickIndex(legal.xCost.maxX + 1) }
+            : {}),
+          ...(legal.tapCost !== undefined
+            ? { tap: randomTapPicks(legal.tapCost, (n) => this.pickIndex(n)) }
             : {}),
         };
       }

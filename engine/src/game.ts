@@ -26,6 +26,7 @@ import type {
   CastVia,
   ConvokePayment,
   LegalAction,
+  TapCostOffer,
 } from "./actions.js";
 import {
   autoAssignForAttacker,
@@ -265,6 +266,27 @@ function autoSlotsOf(slots: readonly object[]): number[] {
     if ("auto" in slot) out.push(i);
   });
   return out;
+}
+
+/**
+ * How one payment treats particular mana sources: `withheld` ones are being
+ * tapped for another part of the same cost and can't pay (rule 602.2a — no
+ * longer untapped); `last` ones are tried only after everything else, so a
+ * permanent the player may yet choose to tap for that other part is spared
+ * whenever it can be.
+ */
+interface ManaSourceArrangement {
+  readonly last?: ReadonlySet<ObjectId>;
+  readonly withheld?: ReadonlySet<ObjectId>;
+}
+
+function arrangeManaSources(
+  sources: readonly ManaSource[],
+  { last, withheld }: ManaSourceArrangement,
+): ManaSource[] {
+  const kept = withheld === undefined ? [...sources] : sources.filter((s) => !withheld.has(s.id));
+  if (last === undefined) return kept;
+  return [...kept.filter((s) => !last.has(s.id)), ...kept.filter((s) => last.has(s.id))];
 }
 
 export class Game {
@@ -543,6 +565,7 @@ export class Game {
           action.convoke,
           action.altCost === true,
           action.costOption,
+          action.tap,
         );
         break;
       case "activate-ability":
@@ -554,6 +577,7 @@ export class Game {
           action.sacrifice,
           action.xValue ?? 0,
           action.manaColors,
+          action.tap,
         );
         break;
       default:
@@ -598,12 +622,14 @@ export class Game {
           action.convoke,
           action.altCost === true,
           action.costOption,
+          action.tap,
         );
       case "activate-ability":
         return this.whyCannotActivateAbility(
           action.player,
           action.source,
           action.abilityIndex,
+          action.tap,
         );
       default:
         return `unknown action: ${(action as { type: string }).type}`;
@@ -844,6 +870,10 @@ export class Game {
         ...(ability.cost.sacrifice !== undefined && ability.cost.sacrifice !== "self"
           ? { sacrifice: { choices: this.sacrificeCandidates(player, source, ability) } }
           : {}),
+        ...(() => {
+          const tapCost = this.abilityTapCostOffer(player, source, ability);
+          return tapCost === null ? {} : { tapCost };
+        })(),
         ...(ability.loyaltyCost !== undefined ? { loyalty: ability.loyaltyCost } : {}),
         ...(isManaAbility(ability) ? { manaAbility: true as const } : {}),
         ...(parseManaCost(ability.cost.mana).x > 0
@@ -1104,7 +1134,12 @@ export class Game {
           ? { overload: true, overloadCost: def.overload.cost }
           : {}),
         ...(free ? { free: true } : {}),
-        ...(altCost === true ? { altCost: true } : {}),
+        ...(altCost === true
+          ? (() => {
+              const tapCost = this.altCostTapOffer(player, card, via, face ?? 0);
+              return tapCost === null ? { altCost: true } : { altCost: true, tapCost };
+            })()
+          : {}),
         ...(costOption !== undefined && costOptions !== undefined
           ? { costOption, costOptionText: costOptions[costOption].text }
           : {}),
@@ -4310,6 +4345,7 @@ export class Game {
     convoke?: readonly ConvokePayment[],
     altCost = false,
     costOption?: number,
+    tap?: readonly ObjectId[],
   ): string | null {
     const blocked = this.whyCannotAct(player);
     if (blocked !== null) return blocked;
@@ -4377,10 +4413,9 @@ export class Game {
       const alt = def.alternativeCost;
       if (alt === null) return `${def.name} has no alternative cost`;
       if (
-        this.tapOthersCandidates(player, cardId, {
-          ...alt.tapCreatures,
-          includeSelf: false,
-        }).length < alt.tapCreatures.count
+        this.tapCapacity(
+          this.tapOthersCandidates(player, cardId, { ...alt.tapCreatures, includeSelf: false }),
+        ) < alt.tapCreatures.count
       ) {
         return `${def.name}'s alternative cost needs ${alt.tapCreatures.count} untapped creatures`;
       }
@@ -4480,7 +4515,25 @@ export class Game {
     }
     const cost =
       convoke !== undefined && convoke.length > 0 ? this.reduceCostByConvoke(baseCost, convoke) : baseCost;
-    if (this.payMana(player, cost, undefined, undefined, { kind: "cast", card: cardId }) === null) {
+    const purpose: ManaPurpose = { kind: "cast", card: cardId };
+    if (altCost && def.alternativeCost !== null) {
+      // The tap half is checked against the same mana — see `tapCostOffer`.
+      const offer = this.tapCostOffer(
+        player,
+        cardId,
+        { ...def.alternativeCost.tapCreatures, includeSelf: false },
+        cost,
+        undefined,
+        undefined,
+        purpose,
+      );
+      if (offer === null) return `${player} cannot pay the cost of ${def.name}`;
+      if (this.tapCapacity(offer.choices) < offer.count) {
+        return `${def.name}'s alternative cost needs ${offer.count} untapped creatures`;
+      }
+      return tap === undefined ? null : this.whyTapChoiceIsWrong(def.name, offer, tap);
+    }
+    if (this.payMana(player, cost, undefined, undefined, purpose) === null) {
       return `${player} cannot pay the cost of ${def.name}`;
     }
     return null;
@@ -4552,6 +4605,7 @@ export class Game {
     convoke?: readonly ConvokePayment[],
     altCost = false,
     costOption?: number,
+    tap?: readonly ObjectId[],
   ): void {
     const why = this.whyCannotCastSpell(
       player,
@@ -4566,6 +4620,7 @@ export class Game {
       convoke,
       altCost,
       costOption,
+      tap,
     );
     if (why !== null) throw new Error(why);
 
@@ -4615,10 +4670,32 @@ export class Game {
       convoke !== undefined && convoke.length > 0
         ? this.reduceCostByConvoke(fullCost, convoke)
         : fullCost;
-    const payment = this.payMana(player, cost, undefined, undefined, {
-      kind: "cast",
-      card: cardId,
-    });
+    // Sephara's alternative cost taps creatures as well: picked (or checked)
+    // here, before anything is paid, and kept out of the mana plan — see
+    // `tapCostOffer`.
+    let tapPicked: ObjectId[] = [];
+    let manaArrangement: ManaSourceArrangement | undefined;
+    if (altCost && def.alternativeCost !== null) {
+      const spec = { ...def.alternativeCost.tapCreatures, includeSelf: false };
+      const offer = this.tapCostOffer(player, cardId, spec, cost, undefined, undefined, {
+        kind: "cast",
+        card: cardId,
+      });
+      if (offer === null) throw new Error(`${player} cannot pay the cost of ${def.name}`);
+      tapPicked = this.tapCostPicks(def.name, offer, tap);
+      manaArrangement = {
+        last: new Set(this.tapOthersCandidates(player, cardId, spec)),
+        withheld: new Set(tapPicked),
+      };
+    }
+    const payment = this.payMana(
+      player,
+      cost,
+      undefined,
+      undefined,
+      { kind: "cast", card: cardId },
+      manaArrangement,
+    );
     if (payment === null) {
       throw new Error(`${player} cannot pay the cost of ${def.name}`);
     }
@@ -4685,17 +4762,7 @@ export class Game {
     object.manaSpent = manaValue(payment.resolved);
     // Sephara's "tap four untapped creatures you control with flying" — the
     // other half of its alternative cost, paid as the spell is cast.
-    if (altCost && def.alternativeCost !== null) {
-      const alt = def.alternativeCost;
-      const victims = this.tapOthersCandidates(player, cardId, {
-        ...alt.tapCreatures,
-        includeSelf: false,
-      }).slice(0, alt.tapCreatures.count);
-      for (const id of victims) {
-        this.state.objects[id].tapped = true;
-        this.emit({ type: "permanent-tapped", object: id });
-      }
-    }
+    this.payTapCost(tapPicked);
     // "Flashback—{cost}, Pay N life" (Deep Analysis) — part of the cost, paid
     // as the spell is cast.
     if (via === "flashback" && def.flashback?.payLife !== undefined) {
@@ -5080,6 +5147,7 @@ export class Game {
     player: PlayerId,
     sourceId: ObjectId,
     abilityIndex: number,
+    tap?: readonly ObjectId[],
   ): string | null {
     const blocked = this.whyCannotAct(player);
     if (blocked !== null) return blocked;
@@ -5165,7 +5233,18 @@ export class Game {
         return `${def.name}'s ability has no legal ${describeTargetSpec(spec)} target`;
       }
     }
-    if (
+    if (ability.cost.tapOthers !== undefined) {
+      // The tap half is checked against the same mana — see `tapCostOffer`.
+      const offer = this.abilityTapCostOffer(player, sourceId, ability);
+      if (offer === null) return `${player} cannot pay for ${def.name}'s ability`;
+      if (this.tapCapacity(offer.choices) < offer.count) {
+        return `${def.name}'s ability needs ${offer.count} untapped permanents to tap`;
+      }
+      if (tap !== undefined) {
+        const wrong = this.whyTapChoiceIsWrong(`${def.name}'s ability`, offer, tap);
+        if (wrong !== null) return wrong;
+      }
+    } else if (
       this.payMana(
         player,
         this.activatedAbilityManaCost(player, ability).cost,
@@ -5183,13 +5262,6 @@ export class Game {
       this.sacrificeCandidates(player, sourceId, ability).length === 0
     ) {
       return `${player} has nothing to sacrifice for ${def.name}'s ability`;
-    }
-    if (
-      ability.cost.tapOthers !== undefined &&
-      this.tapOthersCandidates(player, sourceId, ability.cost.tapOthers).length <
-        ability.cost.tapOthers.count
-    ) {
-      return `${def.name}'s ability needs ${ability.cost.tapOthers.count} untapped permanents to tap`;
     }
     if (
       ability.cost.payLife !== undefined &&
@@ -5220,8 +5292,9 @@ export class Game {
     sacrifice?: ObjectId,
     xValue = 0,
     manaColors?: readonly ManaType[],
+    tap?: readonly ObjectId[],
   ): void {
-    const why = this.whyCannotActivateAbility(player, sourceId, abilityIndex);
+    const why = this.whyCannotActivateAbility(player, sourceId, abilityIndex, tap);
     if (why !== null) throw new Error(why);
 
     const source = this.state.objects[sourceId];
@@ -5275,12 +5348,34 @@ export class Game {
     // alone unless there's no other way to pay (it may want to attack, or hold
     // up its own `{T}` ability). A hand-zone (Channel) source is never a mana
     // source to begin with.
+    // "Tap five untapped Zombies you control": picked (or checked) before
+    // anything is paid, and kept out of the mana plan — see `tapCostOffer`.
+    let tapPicked: ObjectId[] = [];
+    let manaArrangement: ManaSourceArrangement | undefined;
+    if (ability.cost.tapOthers !== undefined) {
+      const offer = this.tapCostOffer(
+        player,
+        sourceId,
+        ability.cost.tapOthers,
+        manaCost,
+        ability.cost.tap || ability.zone !== undefined ? undefined : sourceId,
+        ability.cost.tap ? sourceId : undefined,
+        { kind: "ability", source: sourceId },
+      );
+      if (offer === null) throw new Error(`${player} cannot pay for ${def.name}'s ability`);
+      tapPicked = this.tapCostPicks(`${def.name}'s ability`, offer, tap);
+      manaArrangement = {
+        last: new Set(this.tapOthersCandidates(player, sourceId, ability.cost.tapOthers)),
+        withheld: new Set(tapPicked),
+      };
+    }
     const payment = this.payMana(
       player,
       manaCost,
       ability.cost.tap || ability.zone !== undefined ? undefined : sourceId,
       ability.cost.tap ? sourceId : undefined,
       { kind: "ability", source: sourceId },
+      manaArrangement,
     );
     if (payment === null) {
       throw new Error(`${player} cannot pay for ${def.name}'s ability`);
@@ -5291,17 +5386,8 @@ export class Game {
       source.tapped = true;
       this.emit({ type: "permanent-tapped", object: sourceId });
     }
-    if (ability.cost.tapOthers !== undefined) {
-      // "Tap five untapped Zombies you control" — see `AbilityCost.tapOthers`.
-      const victims = this.tapOthersCandidates(player, sourceId, ability.cost.tapOthers).slice(
-        0,
-        ability.cost.tapOthers.count,
-      );
-      for (const id of victims) {
-        this.state.objects[id].tapped = true;
-        this.emit({ type: "permanent-tapped", object: id });
-      }
-    }
+    // "Tap five untapped Zombies you control" — see `AbilityCost.tapOthers`.
+    this.payTapCost(tapPicked);
     this.executePayment(player, payment);
     if (ability.cost.payLife !== undefined) {
       this.changeLife(player, -ability.cost.payLife);
@@ -5714,19 +5800,31 @@ export class Game {
     avoid?: ObjectId,
     exclude?: ObjectId,
     purpose: ManaPurpose = null,
+    arrange?: ManaSourceArrangement,
   ): ManaPayment | null {
-    return planPayment(this.manaPlanningView(player, purpose), cost, purpose, avoid, exclude);
+    return planPayment(
+      this.manaPlanningView(player, purpose, arrange),
+      cost,
+      purpose,
+      avoid,
+      exclude,
+    );
   }
 
   /** The four facts {@link planPayment} may read off the board (see
    * {@link ManaPlanningView}). `sources` is resolved here, once per payment,
    * rather than inside the planner, where a hybrid cost used to re-ask for it
    * once per pip it tried. */
-  private manaPlanningView(player: PlayerId, purpose: ManaPurpose): ManaPlanningView {
+  private manaPlanningView(
+    player: PlayerId,
+    purpose: ManaPurpose,
+    arrange?: ManaSourceArrangement,
+  ): ManaPlanningView {
+    const sources = this.manaSources(player);
     return {
       pool: this.state.players[player].manaPool,
       life: this.state.players[player].life,
-      sources: this.manaSources(player),
+      sources: arrange === undefined ? sources : arrangeManaSources(sources, arrange),
       canPay: (unit) => this.manaUnitCanPay(player, unit, purpose),
     };
   }
@@ -8209,6 +8307,162 @@ export class Game {
         matchesFilter(this.state, this.registry, id, spec.filter, { you: player })
       );
     });
+  }
+
+  /** How many permanents `ids` stand for — a compacted token stack counts as
+   * every token in it, so a stack of ten Zombies pays "tap five Zombies". */
+  private tapCapacity(ids: readonly ObjectId[]): number {
+    let n = 0;
+    for (const id of ids) n += this.state.objects[id]?.stackCount ?? 1;
+    return n;
+  }
+
+  /**
+   * The offer for a "tap N untapped … you control" cost, given the mana the
+   * same activation or cast pays: see {@link TapCostOffer}. The mana is
+   * planned with every candidate tried last, and whatever the plan still taps
+   * is left out of `choices`, so any `count` of them leaves the mana payable.
+   * `null` when the mana can't be paid at all.
+   */
+  private tapCostOffer(
+    player: PlayerId,
+    sourceId: ObjectId,
+    spec: { readonly count: number; readonly filter: CardFilter; readonly includeSelf?: boolean },
+    manaCost: ManaCost,
+    avoid: ObjectId | undefined,
+    exclude: ObjectId | undefined,
+    purpose: ManaPurpose,
+  ): TapCostOffer | null {
+    const candidates = this.tapOthersCandidates(player, sourceId, spec);
+    const plan = this.payMana(player, manaCost, avoid, exclude, purpose, {
+      last: new Set(candidates),
+    });
+    if (plan === null) return null;
+    const used = new Set(plan.steps.map((step) => step.source));
+    const choices = candidates.filter((id) => !used.has(id));
+    const copies: Record<ObjectId, number> = {};
+    for (const id of choices) {
+      const n = this.state.objects[id].stackCount ?? 1;
+      if (n > 1) copies[id] = n;
+    }
+    return {
+      count: spec.count,
+      choices,
+      ...(Object.keys(copies).length > 0 ? { copies } : {}),
+    };
+  }
+
+  /** {@link tapCostOffer} for an activated ability's `tapOthers`, with its
+   * mana paid the way `activateAbility` pays it (X at 0). `null` when the
+   * ability has no such cost or its mana can't be paid. */
+  private abilityTapCostOffer(
+    player: PlayerId,
+    sourceId: ObjectId,
+    ability: ActivatedAbility,
+  ): TapCostOffer | null {
+    if (ability.cost.tapOthers === undefined) return null;
+    return this.tapCostOffer(
+      player,
+      sourceId,
+      ability.cost.tapOthers,
+      this.activatedAbilityManaCost(player, ability).cost,
+      ability.cost.tap || ability.zone !== undefined ? undefined : sourceId,
+      ability.cost.tap ? sourceId : undefined,
+      { kind: "ability", source: sourceId },
+    );
+  }
+
+  /** {@link tapCostOffer} for casting `cardId` for its alternative cost
+   * (Sephara) — the cost {@link whyCannotCastSpell} checks it against. */
+  private altCostTapOffer(
+    player: PlayerId,
+    cardId: ObjectId,
+    via: CastVia | undefined,
+    face: number,
+  ): TapCostOffer | null {
+    const def = this.faceDef(cardId, face);
+    if (def.alternativeCost === null) return null;
+    const cost = this.withFace(cardId, face, () =>
+      this.castingCostOf(
+        player,
+        cardId,
+        def,
+        0,
+        this.castCostString(cardId, via, face, false, false, false, true),
+      ),
+    );
+    return this.tapCostOffer(
+      player,
+      cardId,
+      { ...def.alternativeCost.tapCreatures, includeSelf: false },
+      cost,
+      undefined,
+      undefined,
+      { kind: "cast", card: cardId },
+    );
+  }
+
+  /** Why `tap` doesn't answer `offer` — exactly `count` picks, each one of
+   * `choices`, a stack named no more times than it has tokens — or `null`. */
+  private whyTapChoiceIsWrong(
+    what: string,
+    offer: TapCostOffer,
+    tap: readonly ObjectId[],
+  ): string | null {
+    if (tap.length !== offer.count) {
+      return `${what} taps ${offer.count} permanent(s), not ${tap.length}`;
+    }
+    const named = new Map<ObjectId, number>();
+    for (const id of tap) {
+      const name = this.state.objects[id]?.cardName ?? id;
+      if (!offer.choices.includes(id)) return `${what} can't tap ${name} for its cost`;
+      const times = (named.get(id) ?? 0) + 1;
+      if (times > (offer.copies?.[id] ?? 1)) {
+        return `${what} names ${name} more times than there are to tap`;
+      }
+      named.set(id, times);
+    }
+    return null;
+  }
+
+  /**
+   * What a tap cost taps, one id per permanent (a stack's once per token):
+   * `tap` as the driver chose it, or for a driver that didn't choose, the
+   * summoning-sick choices first — they couldn't attack this turn anyway —
+   * then the rest in battlefield order.
+   */
+  private tapCostPicks(
+    what: string,
+    offer: TapCostOffer,
+    tap: readonly ObjectId[] | undefined,
+  ): ObjectId[] {
+    if (tap !== undefined) {
+      const wrong = this.whyTapChoiceIsWrong(what, offer, tap);
+      if (wrong !== null) throw new Error(wrong);
+      return [...tap];
+    }
+    const sick = (id: ObjectId): boolean => this.state.objects[id]?.summoningSick === true;
+    const order = [...offer.choices.filter(sick), ...offer.choices.filter((id) => !sick(id))];
+    const picked: ObjectId[] = [];
+    for (const id of order) {
+      for (let i = 0; i < (offer.copies?.[id] ?? 1) && picked.length < offer.count; i += 1) {
+        picked.push(id);
+      }
+    }
+    if (picked.length < offer.count) {
+      throw new Error(`${what} needs ${offer.count} untapped permanents to tap`);
+    }
+    return picked;
+  }
+
+  /** Taps what {@link tapCostPicks} chose, peeling one token off a stack for
+   * each time its id appears. */
+  private payTapCost(picked: readonly ObjectId[]): void {
+    for (const chosen of picked) {
+      const id = this.splitOneFromStack(chosen);
+      this.state.objects[id].tapped = true;
+      this.emit({ type: "permanent-tapped", object: id });
+    }
   }
 
   private populate(controller: PlayerId): void {

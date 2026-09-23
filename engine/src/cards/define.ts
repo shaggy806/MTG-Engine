@@ -716,8 +716,8 @@ export interface CardDefinition {
    *
    * Offered as a second `cast-spell` variant (`altCost: true`), the same
    * "one entry per playable variant" shape `kicked` / `overload` / `free`
-   * use. The engine taps the first eligible creatures rather than asking —
-   * see AUTHORING §15.
+   * use, whose `tapCost` offers the creatures to tap; the caster picks them
+   * (`tap` on the action).
    */
   readonly alternativeCost: {
     readonly mana: string;

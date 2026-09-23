@@ -214,7 +214,7 @@ from the same link.
 | `additionalCost.options` | `AdditionalCostOption[]` | a **choice** of whole costs, exactly one paid (Bitter Triumph: "discard a card or pay 3 life"; Demand Answers: "sacrifice an artifact or discard a card"). Each option takes a `text` label plus any of `discard` / `payLife` / `sacrifice` / `mana`, and is enumerated as its own castable variant — so the caster chooses by picking a `cast-spell`, not by answering a decision. **Not for a cost whose *filter* spans two types**: Deadly Dispute's "sacrifice an artifact or creature" is one cost with `typesAnyOf` and needs none of this. |
 | `kicker` | `{ cost, targets?, effect? }` | **kicker** (rule 702.33 — Tear Asunder). `cost` is folded onto the printed cost; `targets` / `effect` replace the unkicked ones when kicked. `legalActions` offers the card twice, kicked and unkicked. |
 | `overload` | `{ cost, effect }` | **Overload** (rule 702.126 — Cyclonic Rift). An alternative cost that *replaces* the mana cost entirely (unlike kicker's additive cost) and takes **no targets** — `effect` is the whole "each ..." version of the card (typically a `-all` `EffectSpec`, e.g. `return-to-hand-all`/`destroy-all`), applied with the printed `targets`/`effect` untouched for the ordinary cast. `legalActions` offers the card twice. |
-| `alternativeCost` | `{ mana, tapCreatures: { count, filter } }` | an alternative cost that replaces the mana cost *and* taps permanents (rule 601.2b — Sephara's "pay {W} and tap four untapped creatures you control with flying rather than pay this spell's mana cost"). Offered as a second `cast-spell` variant (`altCost: true`), the same shape `kicked`/`overload`/`free` use. |
+| `alternativeCost` | `{ mana, tapCreatures: { count, filter } }` | an alternative cost that replaces the mana cost *and* taps permanents (rule 601.2b — Sephara's "pay {W} and tap four untapped creatures you control with flying rather than pay this spell's mana cost"). Offered as a second `cast-spell` variant (`altCost: true`), the same shape `kicked`/`overload`/`free` use; the caster picks what it taps, as for `tapOthers`. |
 | `freeCastIf` | `{ condition: StaticCondition }` | a conditional free-cast permission printed on the spell itself (the CMM commander-precon cycle — Fierce Guardianship: "If you control a commander, you may cast this spell without paying its mana cost."). Unlike `overload`, targets/effect are completely unchanged — only the cost differs, and it's *in addition to* the normal cast, not instead of it. `legalActions` offers the card twice whenever the condition is currently met. |
 | `convoke` | `boolean` | **Convoke** (rule 702.51 — Chord of Calling, Hour of Reckoning). A pure payment-*method* choice made as the spell is cast (`Action.convoke: ConvokePayment[]`, each `{ creature, pays: "generic" \| Color }`) — tap untapped creatures instead of mana for part of the cost. Doesn't change the printed cost, targets, or effect; not enumerated as a second `cast-spell` variant — the one `LegalAction` carries `convoke: { candidates, maxGeneric }` (every untapped creature the caster controls) instead. |
 | `selfCostReduction` | `{ condition: StaticCondition, reduceGeneric }` | a reduction printed on the spell itself, gated on board state (rule 601.2f — Ferocious, Finale of Devastation: "if you control a creature with power 4 or greater, this spell costs {2} less"). Unlike a `StaticAbility.costModification` (a permanent reducing *other* spells) this is evaluated for the card being cast, from whatever zone — no permanent has to be on the battlefield granting it. `reduceGeneric` accepts a live count too (`{ countOf: CardFilter }` — Blasphemous Act: "{1} less for each creature on the battlefield", `{ type: "creature" }` with no `controlledBy` counts every player's). `condition` is mandatory; a reduction with no real "if" clause uses `{ kind: "controls", filter: {}, atLeast: 0 }` (trivially always true). needed-cards P10, P19. |
@@ -693,7 +693,9 @@ removeCounter?, payEnergy?, discardHand?, tapOthers? }`.
   control (Gravespawn Sovereign's "Tap five untapped Zombies you control"), as
   opposed to `tap`, which taps the source. `includeSelf` lets the source be
   one of them, which it can be when the ability has no `{T}` of its own. The
-  engine taps the first eligible ones rather than asking — see §15.
+  player picks which (`tapCost` on the offer, `tap` on the action), a token
+  stack paying token by token; one creature never pays both this and the
+  mana half of the same cost.
 
 **Mana abilities** (`isManaAbility`): a `{T}: Add …` ability with no targets,
 no `resolve`, an `add-mana` effect, and no life/counter/energy/non-self
@@ -1333,15 +1335,17 @@ Delete an entry in the same commit as the feature that retires it.
 - **Snow** mana is treated as generic — no snow permanents / snow-mana
   requirements.
 - **`populate`** copies the largest creature token you control rather than
-  letting you pick, and **`tapOthers` / `alternativeCost`** tap the first
-  eligible permanents rather than asking which. These *are* choice
-  simplifications: they bite only when the candidates differ in some way the
-  card itself doesn't care about. Under §0 that licence is narrow — check the
-  claim against the actual pool rather than assuming it. `proliferate` sat in
-  this bullet until it was checked, and it did not belong: it added a counter
-  to *every* permanent on the battlefield, opponents' included, so Atraxa grew
-  their creatures and topped up their planeswalkers every end step. It now
-  raises a real "choose any number" decision (`proliferate.test.ts`).
+  letting you pick. That *is* a choice simplification: it bites only when the
+  candidates differ in some way the card itself doesn't care about. Under §0
+  that licence is narrow — check the claim against the actual pool rather
+  than assuming it. `proliferate` sat in this bullet until it was checked, and
+  it did not belong: it added a counter to *every* permanent on the
+  battlefield, opponents' included, so Atraxa grew their creatures and topped
+  up their planeswalkers every end step. It now raises a real "choose any
+  number" decision (`proliferate.test.ts`). Nor did **`tapOthers` /
+  `alternativeCost`**, which tapped the first eligible permanents: which
+  creatures a cost taps decides which can attack or block this turn. The
+  player picks them now (`tap-cost-choices.test.ts`).
 - **`AffectSpec.withKeyword` matches printed keywords only.** `staticAffects`
   runs on every characteristics read and is deliberately given no
   `GameState`, so it can't do the layer fold — a creature that has the keyword
