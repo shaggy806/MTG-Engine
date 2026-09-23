@@ -6396,7 +6396,8 @@ export class Game {
     // condition is no longer true is removed from the stack and does nothing.
     if (object.abilityKind === "triggered") {
       const condition = (ability as TriggeredAbility).condition;
-      if (!this.interveningIfMet(condition, this.state.objects[source] ?? object)) {
+      const sourceObject = this.state.objects[source] ?? object;
+      if (!this.interveningIfMet(condition, sourceObject, object.sourceTimestamp)) {
         this.removeAbilityFromStack(id);
         this.emit({
           type: "spell-fizzled",
@@ -6956,13 +6957,18 @@ export class Game {
    * *static* ability's condition, the source counts toward its own board scan.
    * needed-cards P7.
    */
+  /** `sourceTimestamp` is the one the ability recorded when it triggered,
+   * given on resolution so "if ~ is still on the battlefield" can tell the
+   * same permanent from one that left and came back (`source-zone`). */
   private interveningIfMet(
     condition: StaticCondition | undefined,
     source: GameObject,
+    sourceTimestamp?: number,
   ): boolean {
     if (condition === undefined) return true;
     return staticConditionMet(this.state, this.registry, source, condition, {
       includeSelf: true,
+      ...(sourceTimestamp !== undefined ? { sourceTimestamp } : {}),
     });
   }
 

@@ -7,7 +7,9 @@ import { defineCard } from "../define.js";
 //
 // `fromCommandZone` is on that one ability only. First strike, haste and the
 // attack trigger do nothing from the command zone, which is exactly why the
-// flag is per-ability rather than per-card.
+// flag is per-ability rather than per-card. Its "if Edgar Markov is in the
+// command zone or on the battlefield" is a real intervening-if: cast Edgar in
+// response and the token never comes.
 const EMINENCE_TEXT =
   "Eminence — Whenever you cast another Vampire spell, if Edgar Markov is in the command " +
   "zone or on the battlefield, create a 1/1 black Vampire creature token.";
@@ -28,6 +30,7 @@ export default defineCard({
   triggered: [
     {
       fromCommandZone: true,
+      condition: { kind: "source-zone", zones: ["command", "battlefield"], sameObject: true },
       // `otherOnly` is load-bearing: the card on the stack is itself in the
       // trigger scan (that is how cascade sees its own cast), so without it
       // Edgar's Eminence would fire as Edgar is cast — he is a Vampire spell.

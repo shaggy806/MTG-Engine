@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { createDefaultRegistry, defineCard } from "../cards.js";
+import type { Keyword } from "../cards.js";
 import { ScriptedController, standardDamageAssignment } from "../controller.js";
 import { Game } from "../game.js";
 import { asObjectId, asPlayerId } from "../primitives.js";
@@ -490,6 +492,80 @@ describe("combat keywords", () => {
     game.advanceUntil(toPostcombat);
     expect(zone(game, brute)).toBe("graveyard"); // 4 damage from two bears
     expect(game.state.players[B].life).toBe(20);
+  });
+
+  describe("landwalk (rule 702.14)", () => {
+    const walker = (game: Game, keyword: Keyword, controller = A): ObjectId => {
+      const bear = spawn(game, "Grizzly Bears", controller); // 2/2
+      game.state.objects[bear].modifiers.push({
+        power: 0,
+        toughness: 0,
+        keywords: [keyword],
+        untilEndOfTurn: false,
+      });
+      return bear;
+    };
+
+    it("can't be blocked while the defending player controls a Forest", () => {
+      const { game, a, b } = makeGame();
+      const bear = walker(game, "forestwalk");
+      // A second attacker, so bob is still asked to block at all.
+      const giant = spawn(game, "Hill Giant", A);
+      const blocker = spawn(game, "Grizzly Bears", B);
+      spawn(game, "Forest", B);
+      a.declareAttackersFn = () => [
+        { attacker: bear, defender: B },
+        { attacker: giant, defender: B },
+      ];
+      b.declareBlockersFn = () => [{ blocker, attacker: bear }];
+      expect(() => game.advanceUntil(toPostcombat)).toThrow(/forestwalk/);
+    });
+
+    it("is blocked as usual when only the attacking player has the land", () => {
+      const { game, a, b } = makeGame();
+      const bear = walker(game, "forestwalk");
+      spawn(game, "Forest", A);
+      const blocker = spawn(game, "Grizzly Bears", B);
+      a.declareAttackersFn = () => [{ attacker: bear, defender: B }];
+      b.declareBlockersFn = () => [{ blocker, attacker: bear }];
+
+      game.advanceUntil(toPostcombat);
+      expect(zone(game, bear)).toBe("graveyard");
+      expect(zone(game, blocker)).toBe("graveyard");
+    });
+
+    it("walks the land type, not the land's name (desertwalk)", () => {
+      const desert = defineCard({
+        name: "Test Desert",
+        manaCost: "",
+        colors: [],
+        types: ["land"],
+        subtypes: ["Desert"],
+      });
+      const a = new ScriptedController(A);
+      const b = new ScriptedController(B);
+      const game = Game.create({
+        seed: 1,
+        shuffle: false,
+        registry: createDefaultRegistry().register(desert),
+        rules: { skipFirstDraw: false },
+        controllers: { [A]: a, [B]: b },
+        decks: [
+          { player: A, cards: pad([]) },
+          { player: B, cards: pad([]) },
+        ],
+      });
+      const bear = walker(game, "desertwalk");
+      spawn(game, "Test Desert", B);
+      const blocker = spawn(game, "Grizzly Bears", B);
+      a.declareAttackersFn = () => [{ attacker: bear, defender: B }];
+      // Bob would block if asked, and with nothing else to block, he isn't.
+      b.declareBlockersFn = () => [{ blocker, attacker: bear }];
+
+      game.advanceUntil(toPostcombat);
+      expect(game.state.players[B].life).toBe(18);
+      expect(zone(game, blocker)).toBe("battlefield");
+    });
   });
 
   it("menace lets the attacker through unblocked", () => {

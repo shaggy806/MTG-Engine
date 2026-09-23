@@ -9,7 +9,9 @@
   "condition:top-card-of-library",
   "trigger:nth-each-turn",
   "trigger:counters-put",
-  "trigger:life-change-amount"
+  "trigger:life-change-amount",
+  "condition:source-state",
+  "keyword:landwalk"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
