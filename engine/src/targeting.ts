@@ -99,12 +99,22 @@ export function isLegalTarget(
   ref: TargetRef,
   forPlayer: PlayerId,
   source?: TargetSource,
+  opts: {
+    /** The slot was filled by the triggering event, not chosen: a saboteur's
+     * "that player" (Hypnotic Specter). Nothing is *targeting* it, so
+     * hexproof, shroud and protection don't apply — only whether the slot
+     * can hold it at all. */
+    readonly notTargeted?: boolean;
+  } = {},
 ): boolean {
+  const targeted = opts.notTargeted !== true;
   // Hexproof (rule 702.11): a permanent with hexproof can't be the target of
   // spells or abilities an opponent of its controller controls. Shroud (rule
   // 702.18 — needed-cards P15) is the same, but blocks *everyone*, including
   // its own controller.
-  if (ref.kind === "object") {
+  if (!targeted) {
+    // Nothing to check here; fall through to the shape of the slot.
+  } else if (ref.kind === "object") {
     const object = state.objects[ref.object];
     if (object !== undefined && object.zone === "battlefield") {
       const keywords = computeCharacteristics(state, registry, ref.object).keywords;
@@ -127,7 +137,7 @@ export function isLegalTarget(
   // An optional slot accepts exactly what its inner spec accepts; whether it
   // may be left *empty* is a question for the caller, not for a given ref.
   if (typeof spec === "object" && spec.kind === "optional") {
-    return isLegalTarget(state, registry, spec.of, ref, forPlayer, source);
+    return isLegalTarget(state, registry, spec.of, ref, forPlayer, source, opts);
   }
   // A filtered battlefield permanent (see `TargetSpec`). Like the graveyard
   // spec below, handled ahead of the string switch rather than inside it.

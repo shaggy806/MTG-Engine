@@ -258,6 +258,16 @@ const EMPTY_TRIGGERED_ENTRIES: readonly {
   readonly ref?: GrantedAbilityRef;
 }[] = [];
 
+/** The indices of a trigger's slots the triggering event filled (see
+ * `GameObject.autoTargetSlots`). */
+function autoSlotsOf(slots: readonly object[]): number[] {
+  const out: number[] = [];
+  slots.forEach((slot, i) => {
+    if ("auto" in slot) out.push(i);
+  });
+  return out;
+}
+
 export class Game {
   readonly state: GameState;
   private readonly registry: CardRegistry;
@@ -2068,6 +2078,7 @@ export class Game {
         trig.triggerObject,
         undefined,
         trig.grantedAbility,
+        autoSlotsOf(trig.slots),
       );
     } else if (cast !== null) {
       this.state.pendingTargetedCast = null;
@@ -2297,6 +2308,8 @@ export class Game {
       this.state.players[player].lifeLostThisTurn = 0;
       this.state.players[player].lifeGainedThisTurn = 0;
       this.state.players[player].cardsDrawnThisTurn = 0;
+      this.state.players[player].drewInDrawStepThisTurn = false;
+      this.state.players[player].spellsCastThisTurnIds = [];
       this.state.players[player].creaturesDiedThisTurn = 0;
       this.state.players[player].createdTokenThisTurn = false;
       this.state.players[player].usedGraveyardThisTurn = false;
@@ -3771,6 +3784,7 @@ export class Game {
     object.stormCount = stormCount;
     if (grantHaste) object.hastyUntilItLeaves = true;
     this.state.players[owner].spellsCastThisTurn += 1;
+    (this.state.players[owner].spellsCastThisTurnIds ??= []).push(cardId);
     this.state.spellsCastThisTurn += 1;
     this.emit({
       type: "spell-cast",
@@ -4667,6 +4681,7 @@ export class Game {
       counts[name] = (counts[name] ?? 0) + 1;
     }
     this.state.players[player].spellsCastThisTurn += 1;
+    (this.state.players[player].spellsCastThisTurnIds ??= []).push(cardId);
     this.state.spellsCastThisTurn += 1;
 
     this.emit({
@@ -6343,6 +6358,7 @@ export class Game {
         targets,
         object.controller,
         this.permanentSource(source),
+        object.autoTargetSlots,
       )
     ) {
       this.removeAbilityFromStack(id);
@@ -6518,6 +6534,7 @@ export class Game {
                 autoCandidate,
                 object.controller,
                 this.permanentSource(id),
+                { notTargeted: true },
               ))
               ? undefined
               : [autoCandidate];
@@ -6690,7 +6707,12 @@ export class Game {
           this.matchesWhoPlayer(spec.who, event.player, self)
         );
       case "draws":
-        return event.type === "card-drawn" && this.matchesWhoPlayer(spec.who, event.player, self);
+        return (
+          event.type === "card-drawn" &&
+          this.matchesWhoPlayer(spec.who, event.player, self) &&
+          (spec.nthEachTurn === undefined || event.nthThisTurn === spec.nthEachTurn) &&
+          (spec.exceptFirstInDrawStep !== true || event.firstInDrawStep !== true)
+        );
       case "plays-land":
         return event.type === "land-played" && this.matchesWhoPlayer(spec.who, event.player, self);
       case "leaves-battlefield":
@@ -6809,9 +6831,21 @@ export class Game {
           (spec.who === "opponent" && event.player !== self.controller);
         if (!casterMatches) return false;
         if (spec.otherOnly === true && event.object === self.id) return false;
-        if (spec.firstEachTurn && event.spellsThisTurn !== 1) return false;
-        if (spec.nthEachTurn !== undefined && event.spellsThisTurn !== spec.nthEachTurn) return false;
         if (!this.triggerFilterOk(spec.filter, event.object, self)) return false;
+        const nth = spec.firstEachTurn === true ? 1 : spec.nthEachTurn;
+        if (nth !== undefined) {
+          // With a filter the count is of matching spells: "your first
+          // enchantment spell each turn" can be your third spell. Earlier
+          // spells are asked the same question as this one.
+          const filter = spec.filter;
+          const count =
+            filter === undefined
+              ? event.spellsThisTurn
+              : (this.state.players[event.player]?.spellsCastThisTurnIds ?? []).filter((id) =>
+                  matchesFilter(this.state, this.registry, id, filter, { you: self.controller }),
+                ).length;
+          if (count !== nth) return false;
+        }
         if (spec.noncreatureOnly) {
           const castObject = this.state.objects[event.object];
           if (
@@ -6990,7 +7024,11 @@ export class Game {
     for (let i = 0; i < ability.targets.length; i += 1) {
       const spec = ability.targets[i];
       if (auto[i] !== undefined) {
-        if (!isLegalTarget(this.state, this.registry, spec, auto[i], trigger.controller, triggerSource)) {
+        if (
+          !isLegalTarget(this.state, this.registry, spec, auto[i], trigger.controller, triggerSource, {
+            notTargeted: true,
+          })
+        ) {
           this.emit({ type: "trigger-removed", source: trigger.sourceObjectId, reason: "no legal targets" });
           return "done";
         }
@@ -7025,6 +7063,7 @@ export class Game {
         trigger.triggerObject,
         trigger.multiplier,
         trigger.grantedAbility,
+        autoSlotsOf(slots),
       );
       return "done";
     }
@@ -7068,6 +7107,7 @@ export class Game {
     triggerObject?: ObjectId,
     multiplier?: number,
     grantedAbility?: GrantedAbilityRef,
+    autoTargetSlots: readonly number[] = [],
   ): void {
     const abilityId = this.mintAbilityObject(
       sourceId,
@@ -7081,19 +7121,28 @@ export class Game {
       multiplier,
     );
     if (grantedAbility !== undefined) this.state.objects[abilityId].grantedAbility = grantedAbility;
+    if (autoTargetSlots.length > 0) {
+      this.state.objects[abilityId].autoTargetSlots = [...autoTargetSlots];
+    }
     this.emit({ type: "ability-triggered", source: sourceId, controller });
   }
 
+  /** `autoSlots` are slots the triggering event filled rather than a player
+   * choosing (see `GameObject.autoTargetSlots`): still checked for shape, but
+   * not as targets. */
   private anyTargetLegal(
     specs: readonly TargetSpec[],
     targets: ResolvedTargets,
     forPlayer: PlayerId,
     source?: TargetSource,
+    autoSlots: readonly number[] = [],
   ): boolean {
     return specs.some(
       (spec, i) =>
         targets[i] !== undefined &&
-        isLegalTarget(this.state, this.registry, spec, targets[i], forPlayer, source),
+        isLegalTarget(this.state, this.registry, spec, targets[i], forPlayer, source, {
+          notTargeted: autoSlots.includes(i),
+        }),
     );
   }
 
@@ -10370,8 +10419,22 @@ export class Game {
     this.moveObject(id, "hand");
     // Counted on the *raw* draw, so every draw path counts it once and
     // nothing that merely puts a card in hand (a tutor) does.
-    this.state.players[player].cardsDrawnThisTurn += 1;
-    this.emit({ type: "card-drawn", player, object: id });
+    const seat = this.state.players[player];
+    seat.cardsDrawnThisTurn += 1;
+    // The first card a player draws in their own draw step, whether it's the
+    // turn-based draw or not (a skipped first draw leaves the next one first).
+    const firstInDrawStep =
+      this.state.turn.step === "draw" &&
+      player === this.activePlayer &&
+      seat.drewInDrawStepThisTurn !== true;
+    if (firstInDrawStep) seat.drewInDrawStepThisTurn = true;
+    this.emit({
+      type: "card-drawn",
+      player,
+      object: id,
+      nthThisTurn: seat.cardsDrawnThisTurn,
+      ...(firstInDrawStep ? { firstInDrawStep: true } : {}),
+    });
   }
 
   /**

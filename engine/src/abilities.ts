@@ -235,6 +235,13 @@ export type TriggerSpec =
        */
       readonly on: "draws";
       readonly who: TriggerWho;
+      /** Only their Nth card of the turn — "whenever you draw your second
+       * card each turn". */
+      readonly nthEachTurn?: number;
+      /** Not the first card they draw in their own draw step — Xyris, the
+       * Writhing Storm's "except the first one they draw in each of their
+       * draw steps". A draw in someone else's draw step still counts. */
+      readonly exceptFirstInDrawStep?: boolean;
     }
   | {
       /**
@@ -409,7 +416,10 @@ export type TriggerSpec =
        * permanent's controller cast it, `"opponent"` = anyone else did
        * (Kaervek the Merciless). `noncreatureOnly` narrows to a noncreature
        * spell (prowess, rule 702.108). `firstEachTurn` narrows to the
-       * caster's first spell of the turn. */
+       * caster's first spell of the turn — or, with a `filter`, their first
+       * *matching* spell ("your first enchantment spell each turn"), which
+       * needn't be the first spell they cast. `nthEachTurn` counts the same
+       * way. */
       readonly on: "cast-spell";
       readonly who: TriggerWho;
       /**

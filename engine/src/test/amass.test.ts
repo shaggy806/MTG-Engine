@@ -11,6 +11,7 @@
 import { describe, expect, it } from "vitest";
 
 import { createDefaultRegistry } from "../cards.js";
+import { ScriptedController } from "../controller.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import { isLegalTarget } from "../targeting.js";
@@ -136,6 +137,30 @@ describe("Lazotep Plating — player hexproof", () => {
     expect(legal(A, alice)).toBe(true);
     expect(legal(A, bob)).toBe(true);
     expect(game.state.hexproofPlayers.includes(B)).toBe(false);
+  });
+
+  it("doesn't stop a trigger that names the player without targeting them", () => {
+    // Hypnotic Specter's "that player discards a card" is filled in by the
+    // combat damage, not chosen: hexproof has nothing to stop.
+    const a = new ScriptedController(A);
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      rules: { skipFirstDraw: false, maxLandsPerTurn: 99 },
+      controllers: { [A]: a, [B]: new ScriptedController(B) },
+      decks: [
+        { player: A, cards: Array<string>(40).fill("Island") },
+        { player: B, cards: Array<string>(40).fill("Island") },
+      ],
+    });
+    game.advanceUntil((s) => s.turn.number === 1 && s.turn.step === "precombat-main");
+    const specter = game.debugSpawn("Hypnotic Specter", A, "battlefield", { summoningSick: false });
+    a.declareAttackersFn = () => [{ attacker: specter, defender: B }];
+    game.debugApplyEffect(B, { kind: "grant-player-hexproof", who: "you" });
+    const hand = game.handOf(B).length;
+    game.advanceUntil((s) => s.turn.step === "postcombat-main" && s.zones.shared.stack.length === 0 && s.awaiting === null);
+    expect(game.state.players[B].life).toBe(18);
+    expect(game.handOf(B).length).toBe(hand - 1);
   });
 
   it("wears off as a new turn begins", () => {

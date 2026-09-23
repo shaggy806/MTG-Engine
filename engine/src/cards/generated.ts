@@ -725,6 +725,7 @@ import _poolTrueConviction from "./pool/true-conviction.js";
 import _poolTundra from "./pool/tundra.js";
 import _poolTurbulentFen from "./pool/turbulent-fen.js";
 import _poolTurnToFrog from "./pool/turn-to-frog.js";
+import _poolTuvasaTheSunlit from "./pool/tuvasa-the-sunlit.js";
 import _poolTwincast from "./pool/twincast.js";
 import _poolTyphoidRats from "./pool/typhoid-rats.js";
 import _poolTyrantsFamiliar from "./pool/tyrants-familiar.js";
@@ -796,6 +797,7 @@ import _poolWornPowerstone from "./pool/worn-powerstone.js";
 import _poolWrathOfGod from "./pool/wrath-of-god.js";
 import _poolWurmcoilEngine from "./pool/wurmcoil-engine.js";
 import _poolXandersLounge from "./pool/xanders-lounge.js";
+import _poolXyrisTheWrithingStorm from "./pool/xyris-the-writhing-storm.js";
 import _poolYavimayaCoast from "./pool/yavimaya-coast.js";
 import _poolYoshimaru from "./pool/yoshimaru.js";
 import _poolYshtolaNightsBlessed from "./pool/yshtola-nights-blessed.js";
@@ -847,6 +849,7 @@ import _tokensPhyrexianWurmLifelink from "./tokens/phyrexian-wurm-lifelink.js";
 import _tokensRatToken from "./tokens/rat-token.js";
 import _tokensRedSpiritTokenMenace from "./tokens/red-spirit-token-menace.js";
 import _tokensSaprolingToken from "./tokens/saproling-token.js";
+import _tokensSnakeToken from "./tokens/snake-token.js";
 import _tokensSoldierToken from "./tokens/soldier-token.js";
 import _tokensSpawnToken from "./tokens/spawn-token.js";
 import _tokensSpiritToken from "./tokens/spirit-token.js";
@@ -1583,6 +1586,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTundra,
   _poolTurbulentFen,
   _poolTurnToFrog,
+  _poolTuvasaTheSunlit,
   _poolTwincast,
   _poolTyphoidRats,
   _poolTyrantsFamiliar,
@@ -1654,6 +1658,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolWrathOfGod,
   _poolWurmcoilEngine,
   _poolXandersLounge,
+  _poolXyrisTheWrithingStorm,
   _poolYavimayaCoast,
   _poolYoshimaru,
   _poolYshtolaNightsBlessed,
@@ -1711,6 +1716,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensRatToken,
   _tokensRedSpiritTokenMenace,
   _tokensSaprolingToken,
+  _tokensSnakeToken,
   _tokensSoldierToken,
   _tokensSpawnToken,
   _tokensSpiritToken,

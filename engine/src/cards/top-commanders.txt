@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-66 already implemented / 434 missing
+68 already implemented / 432 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -85,7 +85,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   79  Zaxara, the Exemplary                          20130 decks  {1}{B}{G}{U}     Legendary Creature — Nightmare Hydra
 [ ]   80  Choco, Seeker of Paradise                      19996 decks  {1}{G}{W}{U}     Legendary Creature — Bird
 [ ]   81  Ghyrson Starn, Kelermorph                      19886 decks  {1}{U}{R}        Legendary Creature — Tyranid Human
-[ ]   82  Xyris, the Writhing Storm                      19765 decks  {2}{G}{U}{R}     Legendary Creature — Snake Leviathan
+[x]   82  Xyris, the Writhing Storm                      19765 decks  {2}{G}{U}{R}     Legendary Creature — Snake Leviathan
 [ ]   83  Kotis, the Fangkeeper                          19750 decks  {1}{B}{G}{U}     Legendary Creature — Zombie Warrior
 [ ]   84  The First Sliver                               19750 decks  {W}{U}{B}{R}{G}  Legendary Creature — Sliver
 [ ]   85  Terra, Herald of Hope                          19707 decks  {R}{W}{B}        Legendary Creature — Human Wizard Warrior
@@ -350,7 +350,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  344  Sen Triplets                                    8043 decks  {2}{W}{U}{B}     Legendary Artifact Creature — Human Wizard
 [ ]  345  Xavier Sal, Infested Captain                    8040 decks  {B}{G}{U}        Legendary Creature — Human Fungus Pirate
 [x]  346  Elesh Norn, Mother of Machines                  8031 decks  {4}{W}           Legendary Creature — Phyrexian Praetor
-[ ]  347  Tuvasa the Sunlit                               8030 decks  {G}{W}{U}        Legendary Creature — Merfolk Shaman
+[x]  347  Tuvasa the Sunlit                               8030 decks  {G}{W}{U}        Legendary Creature — Merfolk Shaman
 [ ]  348  Grist, the Hunger Tide                          8023 decks  {1}{B}{G}        Legendary Planeswalker — Grist
 [ ]  349  Kellan, the Kid                                 8017 decks  {G}{W}{U}        Legendary Creature — Human Faerie Rogue
 [x]  350  Squall, SeeD Mercenary                          8000 decks  {2}{W}{B}        Legendary Creature — Human Knight Mercenary

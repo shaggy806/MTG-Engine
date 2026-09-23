@@ -6,7 +6,8 @@
   "bug:static-scope-computed-types",
   "condition:filter-attachments",
   "condition:filter-combinators",
-  "condition:top-card-of-library"
+  "condition:top-card-of-library",
+  "trigger:nth-each-turn"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

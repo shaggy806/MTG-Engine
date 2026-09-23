@@ -132,6 +132,12 @@ export type GameEvent =
       readonly type: "card-drawn";
       readonly player: PlayerId;
       readonly object: ObjectId;
+      /** Which card of the turn this is for that player — `2` for their
+       * second draw ("whenever you draw your second card each turn"). */
+      readonly nthThisTurn?: number;
+      /** The first card they drew in their own draw step (Xyris's "except
+       * the first one they draw in each of their draw steps"). */
+      readonly firstInDrawStep?: true;
     })
   | (Base & {
       readonly type: "draw-from-empty-library";

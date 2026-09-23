@@ -311,6 +311,12 @@ export interface GameObject {
   sourceObjectId: ObjectId | null;
   /** For an ability object: index into the source's `activated`/`triggered` list. */
   abilityIndex: number | null;
+  /** For a triggered ability object: the target slots its triggering event
+   * filled rather than its controller choosing — a saboteur's "that player"
+   * (Hypnotic Specter's discard). Those aren't targets (rule 115.1), so
+   * hexproof and protection don't stop them; resolution still checks that
+   * the slot can hold what's in it. */
+  autoTargetSlots?: number[];
   /** For an ability object: its source's `timestamp` when the ability was put
    * on the stack. A permanent that leaves and returns gets a new timestamp,
    * which is how "the Nth time this ability has resolved this turn" tells the
@@ -533,6 +539,15 @@ export interface PlayerState {
    * itself, not cards put into hand another way — a tutor to hand is not a
    * draw. Reset in `beginTurn`. */
   cardsDrawnThisTurn: number;
+  /** Whether this player has drawn a card during their own draw step this
+   * turn — so the next one isn't "the first one they draw in each of their
+   * draw steps" (Xyris, the Writhing Storm; Orcish Bowmasters). Reset in
+   * `beginTurn`. Optional so an older snapshot still loads. */
+  drewInDrawStepThisTurn?: boolean;
+  /** The spells this player has cast this turn, in order, for "your first
+   * enchantment spell each turn" (Tuvasa): a cast trigger with a `filter`
+   * counts first/Nth among the ones that match. Reset in `beginTurn`. */
+  spellsCastThisTurnIds?: ObjectId[];
   /** How many creatures died **under this player's control** this turn —
    * Liliana's Standard Bearer's "draw X cards, where X is the number of
    * creatures that died under your control this turn". The per-player

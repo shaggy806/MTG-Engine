@@ -816,6 +816,8 @@ const deckC = deck([
   ["Thrasios, Triton Hero", 1],
   ["Dr. Madison Li", 1],
   ["Magnus the Red", 1],
+  ["Xyris, the Writhing Storm", 1],
+  ["Tuvasa the Sunlit", 1],
   ["Bonesplitter", 1],
   ["Holy Strength", 1],
 ]);
