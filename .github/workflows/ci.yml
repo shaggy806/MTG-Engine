@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # In workspace order: server and client resolve engine and protocol
+      # through their built dist/, so everything below needs this first.
+      - run: npm run build
+      # The engine's prebuild regenerates cards/generated.ts; a diff here
+      # means a card was added without committing the regenerated barrel.
+      - name: Generated files are committed
+        run: git diff --exit-code
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      # The fuzzer: random play until legalActions offers something dispatch
+      # refuses, or a game runs away. Exits non-zero naming the seed.
+      - name: Fuzz, 2 players
+        run: node engine/scripts/random-demo.mjs --games 30
+      - name: Fuzz, 4 players
+        run: node engine/scripts/random-demo.mjs --games 8 --players 4
