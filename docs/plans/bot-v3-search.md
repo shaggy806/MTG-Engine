@@ -462,7 +462,9 @@ steps compound into a design nobody can debug.
 4. **Re-fit**, with the all-positive constraint gone and `handManaValue`/`untappedMana`
    re-measured from scratch.
 5. **Widen the measurement setup** — more decks, v2 as benchmark, 2p and 4p always reported
-   together.
+   together. The shipped v2 vector is now a champion, so "v2 as benchmark" is
+   `bot:bench -- --bot v3 --opponent shipped-2026-09-23`, and `--checkpoint` lets a
+   long four-player bench survive being interrupted and resume.
 6. **Decide on MCTS**, with rollouts and determinization already in hand.
 
 ## What gets deleted
