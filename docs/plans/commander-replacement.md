@@ -1,9 +1,9 @@
 # Commander replacement (rule 903.9a)
 
-**Status:** the choice is never skipped any more (2026-09-22). Six older bugs
-found alongside the fix are still open and listed at the end; none of them
-loses the choice itself. (A seventh, the double death count, was fixed with
-the token-stack counting change.)
+**Status:** the choice is never skipped any more (2026-09-22). The six older
+bugs found alongside the fix are all fixed since (2026-09-23), and listed at
+the end; none of them lost the choice itself. (A seventh, the double death
+count, was fixed with the token-stack counting change.)
 
 ## How it's shaped
 
@@ -71,43 +71,51 @@ Changing to the post-2020 rule (903.9a as a state-based action for graveyard
 and exile, so "dies" triggers do fire for a commander) was considered and left
 alone. It's a rules change with its own consequences, not a bug fix.
 
-## Still open (older than the fix, verified on the old code)
+## Fixed since
 
-A review of the fix turned these up. Each reproduces identically on the code
-before it.
+A review of the fix turned these up, each reproducing identically on the code
+before it. `commander-replacement-bugs.test.ts` covers the first four.
 
-- **O-Ring loses its link.** Banishing Light or Conclave Tribunal on a
-  commander whose owner declines the command zone: `exileByEffect` only sets
-  `exiledBy` if the card is already in exile, and it isn't yet, so when the
-  O-Ring leaves, the commander stays exiled forever. Carry the link across the
-  deferral the way `pendingFlickerReturn` carries a blink.
-- **A sacrificed commander isn't "sacrificed".** On the edict path
+- **The O-Ring lost its link.** Banishing Light or Conclave Tribunal on a
+  commander whose owner declined the command zone: `exileByEffect` only set
+  `exiledBy` once the card was in exile, which it wasn't yet, so when the
+  O-Ring left, the commander stayed exiled for good. The link now waits on the
+  deferred move (`exiledBy` on `deferredCommanderMove` /
+  `pendingCommanderMoves`, via `linkDeferredExile`), and `applyCommanderChoice`
+  sets it if the card really goes to exile.
+- **A sacrificed commander wasn't "sacrificed".** On the edict path
   (`drainPendingSacrificeVictims`) and in `sacrificeTarget`, a commander's
-  deferral returns before `permanent-sacrificed` is emitted, and
-  `applyCommanderChoice` never emits it, so Korvold misses it either way the
-  owner answers (rule 701.21a). The cost paths emit it at once, so the two
-  disagree.
-- **Fetch into a shock land is free.** `applyChooseFromZone` moves the chosen
-  cards before it clears `awaiting`, so `moveObject`'s shock-land offer (which
-  requires `awaiting === null`) is skipped, *and* so is its enter-tapped
-  default. Polluted Delta for Watery Grave: untapped, no 2 life. Hits every
-  `fetchLand()`, Nature's Lore, Three Visits, Skyshroud Claim, Crop Rotation
-  and others. Same class of bug as the one fixed here: a decision that can't
-  be asked is dropped instead of queued.
-- **Cleanup discard asks on the next turn.** `applyDiscard`'s cleanup branch
-  calls `endStep()` without checking whether the post-discard SBAs raised
-  anything, so a commander dying there (Giant Growth wearing off Rograkh with a
-  -1/-1 counter) is asked about in the next player's untap step. That
-  player then holds priority there, which rule 502.4 forbids. Nothing is lost.
-- **Log events after a deferral.** Callers test `awaiting !== null` to mean
-  "my move was deferred", which is also true when *another* decision is
-  pending. So every permanent after the first commander in a Rift loses its
-  `permanent-returned-to-hand`, and likewise `permanent-exiled` and
-  `permanent-sacrificed` elsewhere. It only affects the history log: no trigger
-  reads those events. The cure is for `moveObject` to report whether it moved.
-- **"Sacrifice N" against a token stack can't be answered.** Unrelated to
-  commanders, but found by the same fuzzing. Necrotic Hex makes each player
-  sacrifice six creatures, and the offer lists a compacted token stack as one
-  eligible object while still demanding six picks. Seven goblins in one stack
-  plus Krenko: `eligible` has two ids, `count` is 6, and every answer is
-  refused. In a live game that stalls whoever has to sacrifice.
+  deferral returned before `permanent-sacrificed` was emitted, so Korvold
+  missed it either way the owner answered (rule 701.21a), while the cost paths
+  emitted it at once. All paths now announce the sacrifice when it happens.
+  "Dies" is read off `permanent-left-battlefield`, which only the move itself
+  emits, so a commander that goes to the command zone still doesn't die.
+- **The cleanup discard asked on the next turn.** `applyDiscard`'s cleanup
+  branch called `endStep()` without checking whether the post-discard SBAs had
+  raised anything, so a commander dying there (Giant Growth wearing off
+  Rograkh with a -1/-1 counter) was asked about in the next player's untap
+  step, where nobody may hold priority (rule 502.4). It now hands that
+  decision's player priority in the cleanup step (514.3a), the way the normal
+  path through `tick` already did.
+- **Log events after a deferral.** Callers read `awaiting !== null` as "my move
+  was deferred", which is also true when *another* decision is pending, so
+  every permanent an overloaded Rift bounced after a commander lost its
+  `permanent-returned-to-hand` (and likewise `permanent-exiled`,
+  `permanent-destroyed`, `saga-completed` elsewhere). `moveObject` now returns
+  whether it moved, and every caller that asked the question reads that. It
+  also stops `flickerByEffect` parking an ordinary permanent as if its exile had
+  been deferred when someone else's decision happened to be pending.
+- **Fetch into a shock land was free.** `applyChooseFromZone` moved the chosen
+  cards before it cleared `awaiting`, so `moveObject`'s shock-land offer (which
+  required `awaiting === null`) was skipped, *and* so was its enter-tapped
+  default: Polluted Delta for Watery Grave came in untapped for no life. The
+  land now always enters tapped, and an offer that can't be asked yet waits in
+  `pendingPayLifeForUntapped` until `prepareForPriority` raises it
+  (`raiseNextPayLifeOffer`), one land at a time, so Skyshroud Claim finding two
+  shock lands asks about each. Tests in `dual-lands.test.ts`.
+- **"Sacrifice N" against a token stack couldn't be answered** (fixed by
+  "Engine: sacrifice several tokens out of one stack"). Unrelated to
+  commanders, but found by the same fuzzing: Necrotic Hex listed a compacted
+  stack as one eligible object while demanding six picks, so every answer was
+  refused. An answer may now name a stack once per token it stands for.
+  Tests in `sacrifice-from-stack.test.ts`.
