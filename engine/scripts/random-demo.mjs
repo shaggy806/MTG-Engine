@@ -814,6 +814,8 @@ const deckC = deck([
   ["Chishiro, the Shattered Blade", 1],
   ["Jhoira, Weatherlight Captain", 1],
   ["Thrasios, Triton Hero", 1],
+  ["Dr. Madison Li", 1],
+  ["Magnus the Red", 1],
   ["Bonesplitter", 1],
   ["Holy Strength", 1],
 ]);

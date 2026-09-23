@@ -187,6 +187,7 @@ import _poolDogmeatEverLoyal from "./pool/dogmeat-ever-loyal.js";
 import _poolDoomBlade from "./pool/doom-blade.js";
 import _poolDoublingSeason from "./pool/doubling-season.js";
 import _poolDovinsVeto from "./pool/dovins-veto.js";
+import _poolDrMadisonLi from "./pool/dr-madison-li.js";
 import _poolDraconicDisciple from "./pool/draconic-disciple.js";
 import _poolDragonMage from "./pool/dragon-mage.js";
 import _poolDragonTempest from "./pool/dragon-tempest.js";
@@ -413,6 +414,7 @@ import _poolLuxurySuite from "./pool/luxury-suite.js";
 import _poolMabel from "./pool/mabel.js";
 import _poolMagmaquake from "./pool/magmaquake.js";
 import _poolMagmaticForce from "./pool/magmatic-force.js";
+import _poolMagnusTheRed from "./pool/magnus-the-red.js";
 import _poolMajaBretagardProtector from "./pool/maja-bretagard-protector.js";
 import _poolManOWar from "./pool/man-o-war.js";
 import _poolManaConfluence from "./pool/mana-confluence.js";
@@ -846,6 +848,7 @@ import _tokensRatToken from "./tokens/rat-token.js";
 import _tokensRedSpiritTokenMenace from "./tokens/red-spirit-token-menace.js";
 import _tokensSaprolingToken from "./tokens/saproling-token.js";
 import _tokensSoldierToken from "./tokens/soldier-token.js";
+import _tokensSpawnToken from "./tokens/spawn-token.js";
 import _tokensSpiritToken from "./tokens/spirit-token.js";
 import _tokensSquirrelToken from "./tokens/squirrel-token.js";
 import _tokensThopterToken from "./tokens/thopter-token.js";
@@ -1042,6 +1045,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolDoomBlade,
   _poolDoublingSeason,
   _poolDovinsVeto,
+  _poolDrMadisonLi,
   _poolDraconicDisciple,
   _poolDragonMage,
   _poolDragonTempest,
@@ -1268,6 +1272,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolMabel,
   _poolMagmaquake,
   _poolMagmaticForce,
+  _poolMagnusTheRed,
   _poolMajaBretagardProtector,
   _poolManOWar,
   _poolManaConfluence,
@@ -1707,6 +1712,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensRedSpiritTokenMenace,
   _tokensSaprolingToken,
   _tokensSoldierToken,
+  _tokensSpawnToken,
   _tokensSpiritToken,
   _tokensSquirrelToken,
   _tokensThopterToken,
