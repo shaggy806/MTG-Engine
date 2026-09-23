@@ -916,7 +916,10 @@ anthem, the keyword grant and the granted trigger like any other creature.
   "cards-in-your-hand"`. (Mortivore, Psychosis Crawler.) It applies in every
   zone (rule 604.3), so the card has that size in a library or graveyard too.
 - `restrictions: [...]` — `"cant-attack" \| "cant-block" \| "must-attack" \|
-  "must-be-blocked"` (Pacifism, Juggernaut, Lure).
+  "must-be-blocked"` (Pacifism, Juggernaut, Lure). `"must-be-blocked"` is
+  Lure's "all creatures able to block it do so"; on an attacker with menace it
+  forces blocks only in pairs, as many as can be made (rule 509.1c —
+  `combat/blocking.ts`'s `lurePlan`).
 - `protection: { colors?, types? }` — rule 702.16 (White Knight: `{ colors:
   ["B"] }`).
 - `ward: { mana?, payLife? }` — `"self"` only; an opponent targeting this must

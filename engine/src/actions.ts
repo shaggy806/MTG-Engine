@@ -512,9 +512,11 @@ export type LegalAction =
       }[];
       /** Attackers with menace: block them with 0 or 2+ creatures, never 1. */
       readonly menaceAttackers: readonly ObjectId[];
-      /** Attackers that must be blocked (Lure — rule 509.1c): every creature
-       * this defender controls that's able to block one of these must block a
-       * must-be-blocked attacker. Menace ones are excluded. */
+      /** Attackers that must be blocked (Lure — rule 509.1c): as many of this
+       * defender's creatures as can be must block one of these. With no menace
+       * among them, that's every creature able to block one; one with menace
+       * forces blocks only in pairs. `combat/blocking.ts`'s `lurePlan` works
+       * out how many. */
       readonly mustBlock: readonly ObjectId[];
     }
   | {
