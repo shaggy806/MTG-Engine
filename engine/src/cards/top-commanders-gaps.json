@@ -115,7 +115,7 @@
   "bug:token-stack-fixes": {
    "size": "small",
    "ui": false,
-   "description": "Token-stack fixes: a stacked token whose static counts 'each other [type]' skips only itself, not its whole stack, and a tap, sacrifice or convoke cost can use part of a stack."
+   "description": "Token-stack fixes: a stacked token whose static counts 'each other [type]' skips only itself, not its whole stack, and a tap, sacrifice or convoke cost can use part of a stack. Built so far: a sacrifice or a tap cost can use part of a stack."
   },
   "bug:transform-fixes": {
    "size": "small",
@@ -285,7 +285,7 @@
   "decision:choose-tap-costs": {
    "size": "medium",
    "ui": true,
-   "description": "The player chooses which permanents pay a tap-others cost (today the engine taps the first eligible ones), including 'tap any number with total power N or more' and 'tap X untapped permanents' with X chosen."
+   "description": "The player chooses which permanents pay a tap-others cost, including 'tap any number with total power N or more' and 'tap X untapped permanents' with X chosen. Built so far: a fixed-count tap cost (an ability's tapOthers, Sephara's alternative cost) is the player's choice, a token stack can pay part of itself, and the permanents tapped can't also pay the cost's mana."
   },
   "decision:copy-new-targets": {
    "size": "medium",
