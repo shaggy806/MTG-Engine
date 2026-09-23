@@ -95,7 +95,7 @@ class ScriptedBot extends HeuristicBotController {
     return battlefield
       .filter((id) => {
         const o = s.objects[id];
-        return o?.controller === this.playerId && o.cardName === rule.with && !o.tapped;
+        return o?.controller === this.playerId && [rule.with].flat().includes(o.cardName) && !o.tapped;
       })
       .map((blocker) => ({ blocker, attacker: target }));
   }

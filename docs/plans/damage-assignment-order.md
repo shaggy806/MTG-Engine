@@ -142,3 +142,13 @@ engine has 16 decision kinds.
   first-strike-damaged blocker needing only the rest; `combat-depth.test.ts`
   now accepts a split the old rule refused and still rejects trampling over
   short of lethal; `seam.test.ts` walks priority after blocks, then the split.
+- **The damage bar at scale** (added after step 5). Step 5 kept one number
+  input per blocker, which a crowd outgrows: a token stack blocks as one
+  creature per token, so twenty Goblins made twenty-three rows, 413px of
+  panel over a 768px-tall screen. The bar now has one row per group of
+  interchangeable blockers, with a `−`/`+` stepper and a typed total, in a
+  list that scrolls. The board takes clicks for the same choice, and each
+  blocker's tile shows its damage. Clicking the one creature you want dead
+  moves damage onto it from wherever that kills least, so the default's
+  cheapest-first kills don't have to be undone by hand first. The engine's
+  answer and validator are unchanged. See `client/src/game/damageAssignment.ts`.

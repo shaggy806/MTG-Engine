@@ -855,11 +855,63 @@
 }
 /* The prompt sentence takes a whole row to itself, pushing the buttons onto
    the next one. Left-aligned, since several wrap to two or three lines
-   (declare blockers with menace/Lure text, assign-combat-damage's row per
-   blocker). */
+   (declare blockers with menace/Lure text, for one). */
 .decision-banner .controls > span:first-child {
   flex: 0 0 100%;
   text-align: left;
+}
+/* assign-combat-damage: a row per group of interchangeable blockers (see
+   game/damageAssignment.ts), in a list that scrolls rather than grows. This
+   panel grows *upward* over the board, and with a token stack blocking it
+   used to be one row per token, taller than the quadrant under it; the board
+   itself takes clicks for the same choice, so a scrolled-away row is never
+   the only way to reach a blocker. The rows are `display: contents`, so every
+   row's cells sit on one shared grid and the steppers line up. */
+.damage-rows {
+  flex: 0 0 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto minmax(2.6em, auto);
+  align-items: center;
+  gap: 4px 6px;
+  max-height: min(26vh, 11em);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+}
+/* An always-drawn thumb, as on .quadrant-body: an overlay scrollbar that
+   only appears on hover gives no sign there are more rows below. */
+.damage-rows::-webkit-scrollbar {
+  width: 6px;
+}
+.damage-rows::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+.damage-row {
+  display: contents;
+}
+.damage-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.damage-name .muted {
+  font-size: 0.85em;
+}
+.damage-rows input {
+  width: 3.2em;
+}
+.damage-step {
+  padding: 2px 8px;
+  line-height: 1.2;
+}
+.damage-dead {
+  color: var(--warn);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.damage-short {
+  color: var(--warn);
 }
 @keyframes decision-pulse {
   0%,
