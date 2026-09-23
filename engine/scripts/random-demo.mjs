@@ -810,6 +810,12 @@ const deckC = deck([
   ["Thantis, the Warweaver", 1],
   ["Omnath, Locus of Creation", 1],
   ["Ms. Bumbleflower", 1],
+  ["Dogmeat, Ever Loyal", 1],
+  ["Chishiro, the Shattered Blade", 1],
+  ["Jhoira, Weatherlight Captain", 1],
+  ["Thrasios, Triton Hero", 1],
+  ["Bonesplitter", 1],
+  ["Holy Strength", 1],
 ]);
 
 // All four seats' decks/commanders, in seating order — sliced down to

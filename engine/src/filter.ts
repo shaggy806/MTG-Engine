@@ -121,6 +121,28 @@ export interface CardFilter {
   /** Is (or isn't) a commander (rule 903.3) — Fierce Guardianship's "if you
    * control a commander" gate. */
   readonly isCommander?: boolean;
+  /** Must NOT have this supertype — "nonlegendary", "nonbasic". */
+  readonly notSupertype?: Supertype;
+  /** Must NOT be this card — "a card not named …". */
+  readonly notName?: string;
+  /** Has an Equipment attached to it, whoever controls the Equipment (rule
+   * 301.5). */
+  readonly equipped?: boolean;
+  /** Has an Aura attached to it, whoever controls the Aura (rule 303.4). */
+  readonly enchanted?: boolean;
+  /**
+   * Is **modified** (rule 700.9): has a counter of any kind on it, is
+   * equipped, or is enchanted by an Aura its *own controller* controls
+   * (Chishiro, the Shattered Blade). An opponent's Aura doesn't count; an
+   * opponent's Equipment does.
+   */
+  readonly modified?: boolean;
+  /**
+   * At least one of these filters must match, as well as every other clause
+   * here — the "or" a flat clause list can't say: historic ("artifact,
+   * legendary, or Saga"), "enchanted or equipped", "black and/or red".
+   */
+  readonly anyOf?: readonly CardFilter[];
 }
 
 export interface FilterContext {
@@ -129,6 +151,29 @@ export interface FilterContext {
   /** The `{X}` of the spell or ability applying this filter, for a
    * `NumCompare` written as `{ n: "x" }`. Defaults to 0. */
   readonly x?: number;
+}
+
+/** What is attached to `id` on the battlefield, for the attachment clauses.
+ * Attachments leave with the permanent, so off the battlefield it's none. */
+function attachmentsOf(
+  state: GameState,
+  registry: CardRegistry,
+  id: ObjectId,
+): { equipped: boolean; enchanted: boolean; enchantedByController: boolean } {
+  const out = { equipped: false, enchanted: false, enchantedByController: false };
+  const host = state.objects[id];
+  if (host === undefined || host.zone !== "battlefield") return out;
+  for (const other of state.zones.shared.battlefield) {
+    const o = state.objects[other];
+    if (o === undefined || o.attachedTo !== id) continue;
+    const subtypes = effectiveSubtypes(registry, o);
+    if (subtypes.includes("Equipment")) out.equipped = true;
+    if (subtypes.includes("Aura")) {
+      out.enchanted = true;
+      if (o.controller === host.controller) out.enchantedByController = true;
+    }
+  }
+  return out;
 }
 
 /** Does object `id` satisfy every clause of `filter`? */
@@ -197,7 +242,14 @@ export function matchesFilter(
   ) {
     return false;
   }
+  if (
+    filter.notSupertype !== undefined &&
+    registry.get(printedCardName(object)).supertypes.includes(filter.notSupertype)
+  ) {
+    return false;
+  }
   if (filter.name !== undefined && printedCardName(object) !== filter.name) return false;
+  if (filter.notName !== undefined && printedCardName(object) === filter.notName) return false;
 
   if (
     filter.colors !== undefined ||
@@ -252,6 +304,28 @@ export function matchesFilter(
   if (filter.tapped !== undefined && object.tapped !== filter.tapped) return false;
   if (filter.token !== undefined && object.isToken !== filter.token) return false;
   if (filter.isCommander !== undefined && object.isCommander !== filter.isCommander) return false;
+  if (
+    filter.equipped !== undefined ||
+    filter.enchanted !== undefined ||
+    filter.modified !== undefined
+  ) {
+    const attached = attachmentsOf(state, registry, id);
+    if (filter.equipped !== undefined && attached.equipped !== filter.equipped) return false;
+    if (filter.enchanted !== undefined && attached.enchanted !== filter.enchanted) return false;
+    if (filter.modified !== undefined) {
+      const modified =
+        Object.values(object.counters).some((n) => (n ?? 0) > 0) ||
+        attached.equipped ||
+        attached.enchantedByController;
+      if (modified !== filter.modified) return false;
+    }
+  }
+  if (
+    filter.anyOf !== undefined &&
+    !filter.anyOf.some((each) => matchesFilter(state, registry, id, each, ctx))
+  ) {
+    return false;
+  }
 
   // Only these four need the layer fold (external anthems / keyword grants).
   if (

@@ -1082,6 +1082,24 @@ export type EffectSpec =
       readonly then?: EffectSpec;
     }
   | {
+      /**
+       * Reveal the top card of your library to every player (rule 701.16),
+       * then apply `then` with **that card as target 0** — the same way
+       * `look-and-choose`'s `then` sees the cards it chose. Thrasios, Triton
+       * Hero: "reveal the top card of your library. If it's a land card, put
+       * it onto the battlefield tapped. Otherwise, draw a card" is a
+       * `conditional` on `{ kind: "target", index: 0, filter: { type: "land" } }`
+       * inside `then`.
+       *
+       * The card stays where it is; only `then` moves it. With an empty
+       * library nothing is revealed and `then` runs with no target, so a
+       * target condition reads false and an "otherwise, draw" draws (and
+       * fails) as the card says.
+       */
+      readonly kind: "reveal-top";
+      readonly then: EffectSpec;
+    }
+  | {
       /** Surveil `amount` (rule 701.43) — look at the top N, put any number
        * into the graveyard, keep the rest on top. `then` applied after. */
       readonly kind: "surveil";
@@ -1505,6 +1523,8 @@ export interface EffectApi {
     restDestination?: "hand" | "battlefield",
     reveal?: boolean,
   ): void;
+  /** See the `"reveal-top"` {@link EffectSpec}. */
+  revealTop(then: EffectSpec): void;
   /** See the `"look-and-choose"` {@link EffectSpec}. */
   lookAndChoose(
     zone: "library" | "graveyard" | "hand",
@@ -2118,6 +2138,9 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       return;
     case "scry":
       ctx.scry(spec.amount, false, spec.then);
+      return;
+    case "reveal-top":
+      ctx.revealTop(spec.then);
       return;
     case "surveil":
       ctx.scry(spec.amount, true, spec.then);

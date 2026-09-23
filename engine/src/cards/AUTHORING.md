@@ -443,6 +443,7 @@ ability would have no way to name a token that didn't exist when it was set up.
 | --- | --- | --- |
 | `search-library` | `who?: { controllerOfTarget }` (Path to Exile — *its controller* searches), `filter`, `destination: "hand" \| "battlefield"`, `min`, `max`, `enterTapped?`, `restDestination?` | Demonic Tutor, Rampant Growth. `max` is an `EffectAmount`, so "up to X basic lands, where X is the number of tapped creatures you control" is a `countOf` (Harvest Season). `restDestination` sends every *chosen* card after the first somewhere else — Cultivate's "put one onto the battlefield tapped and the other into your hand" (distinct from `leftover`, which is about cards **not** chosen). |
 | `scry` | `amount`, `then?` | Preordain (`then: { kind: "draw", amount: 1 }`) |
+| `reveal-top` | `then` | "Reveal the top card of your library. If it's a land card, put it onto the battlefield tapped. Otherwise, draw a card" (Thrasios). Reveals to every player, then applies `then` with **that card as target 0**, so a `{ kind: "target", index: 0, filter }` condition and a `put-onto-battlefield { target: 0 }` both reach it. The card doesn't move unless `then` moves it. |
 | `surveil` | `amount`, `then?` | Consider |
 | `look-and-choose` | `zone: "library" \| "graveyard" \| "hand"`, `count?`, `min`, `max`, `destination`, `leftover: "bottom-random" \| "stay" \| "hand"`, `filter?`, `enterTapped?` | Ureni of the Unwritten; Genesis Ultimatum uses `leftover: "hand"` — every non-chosen looked-at card goes to hand, regardless of `filter` (needed-cards P19). **`zone: "hand"`** is the "you may put a land card from your hand onto the battlefield" family (Growth Spiral, Ghalta, Terrain Generator): `min: 0` is the "you may", `leftover: "stay"` leaves the rest of the hand alone, and it bypasses the land-drop rule because putting a land onto the battlefield is not *playing* one. **`then`** is applied once the choice is answered, with the **chosen cards as its targets** — the only way to say anything about a card that was chosen rather than targeted (Sneak Attack's "that creature gains haste"). |
 
@@ -555,9 +556,15 @@ source, so it isn't a `CardFilter` clause.
 
 `CardFilter` (used by the mass / tutor effects) is a predicate over an object's
 *computed* characteristics — `{ type, types, notTypes, typesAnyOf, subtype,
-subtypes, supertype, name, colors, notColors, colorless, manaValue, power,
-toughness, counters, controlledBy, ownedBy, keyword, notKeyword, tapped, token,
-isCommander }`, every present clause ANDed. `attacking` asks whether the permanent is currently attacking (Kangee's
+subtypes, supertype, notSupertype, name, notName, colors, notColors, colorless,
+manaValue, power, toughness, counters, controlledBy, ownedBy, keyword,
+notKeyword, tapped, token, isCommander, equipped, enchanted, modified, anyOf }`,
+every present clause ANDed. `anyOf: CardFilter[]` is the "or": at least one of
+them has to match as well (historic is `anyOf: [{ type: "artifact" },
+{ supertype: "legendary" }, { subtype: "Saga" }]`; Dogmeat's "enchanted or
+equipped" is two). `equipped` / `enchanted` ask whether an Equipment / Aura is
+attached, whoever controls it; `modified` is rule 700.9 — a counter, an
+Equipment, or an Aura controlled by the permanent's *own* controller. `attacking` asks whether the permanent is currently attacking (Kangee's
 Lieutenant). `subtypes`/`typesAnyOf` are an OR
 within themselves (Farseek: "a Plains, Island, Swamp, or Mountain card";
 Takenuma's Channel: "a creature or planeswalker card"). Numeric fields take
@@ -969,6 +976,9 @@ clause (section 9):
   "If that land is a Mountain, it deals 2 damage instead"). Only meaningful
   inside a triggered ability's `conditional` effect; always false on a static,
   which has no triggering object.
+- `{ kind: "source", filter }` — the ability's own source matches `filter`:
+  "as long as ~ is equipped" (`{ equipped: true }`), "if ~ is attacking",
+  "if ~ is tapped". Read wherever the source is now.
 - `{ kind: "resolved-this-turn", n }` — "if this is the **Nth time this
   ability has resolved this turn**" (Omnath, Locus of Creation; Tannuk; Ms.
   Bumbleflower). `n` counts the resolution in progress, so the first is `1`.

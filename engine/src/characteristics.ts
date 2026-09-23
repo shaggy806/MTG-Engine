@@ -280,6 +280,8 @@ function evalStaticCondition(
         state.turnOrder.filter((p) => p !== you && !state.players[p].hasLost).length >=
         condition.atLeast
       );
+    case "source":
+      return matchesFilter(state, registry, source.id, condition.filter, { you });
     case "chosen-on-enter":
       return source.chosenOnEnter === condition.value;
     case "self-kicked":

@@ -112,6 +112,7 @@ import _poolCemeteryReaper from "./pool/cemetery-reaper.js";
 import _poolChainReaction from "./pool/chain-reaction.js";
 import _poolChampionOfThePerished from "./pool/champion-of-the-perished.js";
 import _poolChandraAcolyteOfFlame from "./pool/chandra-acolyte-of-flame.js";
+import _poolChishiroTheShatteredBlade from "./pool/chishiro-the-shattered-blade.js";
 import _poolChokedEstuary from "./pool/choked-estuary.js";
 import _poolChromaticLantern from "./pool/chromatic-lantern.js";
 import _poolChulane from "./pool/chulane.js";
@@ -182,6 +183,7 @@ import _poolDiregrafCaptain from "./pool/diregraf-captain.js";
 import _poolDisenchant from "./pool/disenchant.js";
 import _poolDismalBackwater from "./pool/dismal-backwater.js";
 import _poolDistantMelody from "./pool/distant-melody.js";
+import _poolDogmeatEverLoyal from "./pool/dogmeat-ever-loyal.js";
 import _poolDoomBlade from "./pool/doom-blade.js";
 import _poolDoublingSeason from "./pool/doubling-season.js";
 import _poolDovinsVeto from "./pool/dovins-veto.js";
@@ -353,6 +355,7 @@ import _poolJadeMage from "./pool/jade-mage.js";
 import _poolJasperaSentinel from "./pool/jaspera-sentinel.js";
 import _poolJetMedallion from "./pool/jet-medallion.js";
 import _poolJetmirsGarden from "./pool/jetmirs-garden.js";
+import _poolJhoiraWeatherlightCaptain from "./pool/jhoira-weatherlight-captain.js";
 import _poolJosuVessLichKnight from "./pool/josu-vess-lich-knight.js";
 import _poolJuggernaut from "./pool/juggernaut.js";
 import _poolJump from "./pool/jump.js";
@@ -693,6 +696,7 @@ import _poolThorin from "./pool/thorin.js";
 import _poolThornOfTheBlackRose from "./pool/thorn-of-the-black-rose.js";
 import _poolThoughtVessel from "./pool/thought-vessel.js";
 import _poolThranDynamo from "./pool/thran-dynamo.js";
+import _poolThrasiosTritonHero from "./pool/thrasios-triton-hero.js";
 import _poolThreaten from "./pool/threaten.js";
 import _poolThreeVisits from "./pool/three-visits.js";
 import _poolThrillOfPossibility from "./pool/thrill-of-possibility.js";
@@ -827,6 +831,7 @@ import _tokensHornetToken from "./tokens/hornet-token.js";
 import _tokensHumanToken from "./tokens/human-token.js";
 import _tokensHumanWarriorToken from "./tokens/human-warrior-token.js";
 import _tokensInsectToken from "./tokens/insect-token.js";
+import _tokensJunkToken from "./tokens/junk-token.js";
 import _tokensKaroxBladewingToken from "./tokens/karox-bladewing-token.js";
 import _tokensKnightToken from "./tokens/knight-token.js";
 import _tokensLifelinkSoldierToken from "./tokens/lifelink-soldier-token.js";
@@ -838,6 +843,7 @@ import _tokensPegasusToken from "./tokens/pegasus-token.js";
 import _tokensPhyrexianWurmDeathtouch from "./tokens/phyrexian-wurm-deathtouch.js";
 import _tokensPhyrexianWurmLifelink from "./tokens/phyrexian-wurm-lifelink.js";
 import _tokensRatToken from "./tokens/rat-token.js";
+import _tokensRedSpiritTokenMenace from "./tokens/red-spirit-token-menace.js";
 import _tokensSaprolingToken from "./tokens/saproling-token.js";
 import _tokensSoldierToken from "./tokens/soldier-token.js";
 import _tokensSpiritToken from "./tokens/spirit-token.js";
@@ -961,6 +967,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolChainReaction,
   _poolChampionOfThePerished,
   _poolChandraAcolyteOfFlame,
+  _poolChishiroTheShatteredBlade,
   _poolChokedEstuary,
   _poolChromaticLantern,
   _poolChulane,
@@ -1031,6 +1038,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolDisenchant,
   _poolDismalBackwater,
   _poolDistantMelody,
+  _poolDogmeatEverLoyal,
   _poolDoomBlade,
   _poolDoublingSeason,
   _poolDovinsVeto,
@@ -1202,6 +1210,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolJasperaSentinel,
   _poolJetMedallion,
   _poolJetmirsGarden,
+  _poolJhoiraWeatherlightCaptain,
   _poolJosuVessLichKnight,
   _poolJuggernaut,
   _poolJump,
@@ -1542,6 +1551,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolThornOfTheBlackRose,
   _poolThoughtVessel,
   _poolThranDynamo,
+  _poolThrasiosTritonHero,
   _poolThreaten,
   _poolThreeVisits,
   _poolThrillOfPossibility,
@@ -1682,6 +1692,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensHumanToken,
   _tokensHumanWarriorToken,
   _tokensInsectToken,
+  _tokensJunkToken,
   _tokensKaroxBladewingToken,
   _tokensKnightToken,
   _tokensLifelinkSoldierToken,
@@ -1693,6 +1704,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensPhyrexianWurmDeathtouch,
   _tokensPhyrexianWurmLifelink,
   _tokensRatToken,
+  _tokensRedSpiritTokenMenace,
   _tokensSaprolingToken,
   _tokensSoldierToken,
   _tokensSpiritToken,

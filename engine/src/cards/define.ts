@@ -311,6 +311,13 @@ export type StaticCondition =
    */
   | { readonly kind: "resolved-this-turn"; readonly n: number }
   /**
+   * The ability's own source matches `filter` — "as long as ~ is equipped",
+   * "if ~ is attacking", "if ~ is tapped". Evaluated wherever the source is,
+   * so an intervening-if asked after it left the battlefield sees it off the
+   * battlefield (not equipped, not attacking).
+   */
+  | { readonly kind: "source"; readonly filter: CardFilter }
+  /**
    * Was the ability's own source cast with its kicker paid? — Verix
    * Bladewing's "When this enters, **if it was kicked**, …".
    *

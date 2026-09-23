@@ -7500,6 +7500,23 @@ export class Game {
         ),
       scry: (amount, surveil, then) =>
         this.beginScry(source, controller, x, amount, surveil ? "surveil" : "scry", then ?? null),
+      revealTop: (then) => {
+        const top = this.state.zones.perPlayer[controller].library[0];
+        if (top !== undefined) this.revealCards(controller, [top], "library");
+        applyEffectSpec(
+          then,
+          this.makeResolutionContext(
+            source,
+            controller,
+            top === undefined ? [] : [{ kind: "object", object: top }],
+            x,
+            triggerValue,
+            triggerObject,
+            stackMultiplier,
+            resolutionCount,
+          ),
+        );
+      },
       lookAndChoose: (zone, count, min, max, destination, leftover, filter, enterTapped, then, reveal) =>
         this.beginZoneChoice(
           controller,

@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-60 already implemented / 440 missing
+64 already implemented / 436 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -10,7 +10,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]    4  Atraxa, Praetors' Voice                        44799 decks  {G}{W}{U}{B}     Legendary Creature — Phyrexian Angel Horror
 [ ]    5  Tymna the Weaver                               44433 decks  {1}{W}{B}        Legendary Creature — Human Cleric
 [x]    6  Krenko, Mob Boss                               44161 decks  {2}{R}{R}        Legendary Creature — Goblin Warrior
-[ ]    7  Thrasios, Triton Hero                          43075 decks  {G}{U}           Legendary Creature — Merfolk Wizard
+[x]    7  Thrasios, Triton Hero                          43075 decks  {G}{U}           Legendary Creature — Merfolk Wizard
 [ ]    8  Vivi Ornitier                                  40728 decks  {1}{U}{R}        Legendary Creature — Wizard
 [ ]    9  Sauron, the Dark Lord                          39908 decks  {3}{U}{B}{R}     Legendary Creature — Avatar Horror
 [ ]   10  Kaalia of the Vast                             39741 decks  {1}{R}{W}{B}     Legendary Creature — Human Cleric
@@ -314,7 +314,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  308  Raggadragga, Goreguts Boss                      8971 decks  {2}{R}{G}        Legendary Creature — Human Boar
 [ ]  309  Minsc & Boo, Timeless Heroes                    8968 decks  {2}{R}{G}        Legendary Planeswalker — Minsc
 [ ]  310  Ghalta, Primal Hunger                           8956 decks  {10}{G}{G}       Legendary Creature — Elder Dinosaur
-[ ]  311  Dogmeat, Ever Loyal                             8944 decks  {R}{G}{W}        Legendary Creature — Dog
+[x]  311  Dogmeat, Ever Loyal                             8944 decks  {R}{G}{W}        Legendary Creature — Dog
 [ ]  312  Alexios, Deimos of Kosmos                       8932 decks  {3}{R}           Legendary Creature — Human Berserker
 [ ]  313  The Master of Keys                              8902 decks  {X}{W}{U}{B}     Legendary Enchantment Creature — Horror
 [ ]  314  Myrel, Shield of Argive                         8893 decks  {3}{W}           Legendary Creature — Human Soldier
@@ -411,14 +411,14 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  405  Dargo, the Shipwrecker                          7192 decks  {6}{R}           Legendary Creature — Giant Pirate
 [ ]  406  Winter, Cynical Opportunist                     7190 decks  {2}{B}{G}        Legendary Creature — Human Warlock
 [ ]  407  Jasmine Boreal of the Seven                     7179 decks  {1}{G}{W}        Legendary Creature — Human Druid
-[ ]  408  Jhoira, Weatherlight Captain                    7178 decks  {2}{U}{R}        Legendary Creature — Human Artificer
+[x]  408  Jhoira, Weatherlight Captain                    7178 decks  {2}{U}{R}        Legendary Creature — Human Artificer
 [ ]  409  Yawgmoth, Thran Physician                       7176 decks  {2}{B}{B}        Legendary Creature — Human Cleric
 [ ]  410  Maarika, Brutal Gladiator                       7164 decks  {2}{B}{R}{G}     Legendary Creature — Human Warrior
 [ ]  411  Anowon, the Ruin Thief                          7111 decks  {2}{U}{B}        Legendary Creature — Vampire Rogue
 [ ]  412  Hei Bai, Forest Guardian                        7082 decks  {3}{G}           Legendary Creature — Bear Spirit
 [ ]  413  Kwain, Itinerant Meddler                        7068 decks  {W}{U}           Legendary Creature — Rabbit Wizard
 [ ]  414  Astarion, the Decadent                          7064 decks  {4}{W}{B}        Legendary Creature — Vampire Elf Rogue
-[ ]  415  Chishiro, the Shattered Blade                   7060 decks  {2}{R}{G}        Legendary Creature — Snake Samurai
+[x]  415  Chishiro, the Shattered Blade                   7060 decks  {2}{R}{G}        Legendary Creature — Snake Samurai
 [ ]  416  Jenova, Ancient Calamity                        7056 decks  {2}{B}{G}        Legendary Creature — Alien
 [ ]  417  Raised by Giants                                7033 decks  {5}{G}           Legendary Enchantment — Background
 [ ]  418  The Mimeoplasm                                  7024 decks  {2}{B}{G}{U}     Legendary Creature — Ooze

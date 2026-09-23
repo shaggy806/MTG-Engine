@@ -3,7 +3,10 @@
  "source": "Per-commander triage of every unimplemented top-commanders.txt entry (AI agents reading Oracle text + rulings against the engine), normalized onto one feature vocabulary. See neededCards-features.md, 'The commander gap'.",
  "built": [
   "trigger:plays-land",
-  "bug:static-scope-computed-types"
+  "bug:static-scope-computed-types",
+  "condition:filter-attachments",
+  "condition:filter-combinators",
+  "condition:top-card-of-library"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
@@ -184,7 +187,7 @@
   "condition:source-state": {
    "size": "small",
    "ui": false,
-   "description": "Intervening-if conditions on the ability's source, checked when it triggers and again on resolution: it's attacking, it's tapped, it's still on the battlefield (the same object), or it's in the command zone or on the battlefield (eminence)."
+   "description": "Intervening-if conditions on the ability's source, checked when it triggers and again on resolution: it's still on the battlefield (the same object), or it's in the command zone or on the battlefield (eminence). Built so far: the source condition ({ kind: 'source', filter }), which covers 'it's attacking' and 'it's tapped'."
   },
   "condition:top-card-of-library": {
    "size": "small",
