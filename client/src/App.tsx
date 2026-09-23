@@ -2542,12 +2542,16 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           type="button"
           onClick={game.autoPass}
           title={
-            game.autoPassing
-              ? 'Stop passing automatically'
-              : 'Pass automatically until my own turn comes round again'
+            game.autoPassPaused
+              ? 'Paused so you can respond — resumes by itself once the stack is clear. Click to turn it off.'
+              : game.autoPassing
+                ? 'Stop passing automatically'
+                : 'Pass automatically until my own turn comes round again'
           }
         >
-          {game.autoPassing ? 'Stop auto-pass' : 'Auto-pass'}
+          {/* Paused is still on: say so, or a button that reads "Stop
+              auto-pass" while the game waits on you looks like it broke. */}
+          {game.autoPassPaused ? 'Auto-pass paused' : game.autoPassing ? 'Stop auto-pass' : 'Auto-pass'}
         </button>
         <button
           type="button"

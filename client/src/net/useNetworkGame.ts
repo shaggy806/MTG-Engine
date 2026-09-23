@@ -150,8 +150,11 @@ export interface NetworkGame {
    * card names) rather than for rendering the table. */
   readonly view: PlayerView | null
   readonly actions: readonly LegalAction[]
-  /** Whether *my* seat currently has an auto-pass in effect. */
+  /** Whether *my* seat currently has an auto-pass in effect, paused or not. */
   readonly autoPassing: boolean
+  /** Whether that auto-pass is paused while something I'd want to respond
+   * to plays out. It resumes by itself once the stack is clear. */
+  readonly autoPassPaused: boolean
   /** Whether *my* seat is currently skipping mana-only priority windows. */
   readonly skipManaOnly: boolean
   /** Whether this client runs the room: sizes the table, fills bot seats,
@@ -245,6 +248,7 @@ export function useNetworkGame(): NetworkGame {
   const [seat, setSeat] = useState<PlayerId | null>(null)
   const [frame, setFrame] = useState<Frame | null>(null)
   const [autoPassing, setAutoPassing] = useState(false)
+  const [autoPassPaused, setAutoPassPaused] = useState(false)
   const [skipManaOnly, setSkipManaOnly] = useState(false)
   const [isHost, setIsHost] = useState(false)
   const [botSpeed, setBotSpeedState] = useState<BotSpeed>('normal')
@@ -349,6 +353,7 @@ export function useNetworkGame(): NetworkGame {
           setSeat(message.seat)
           setFrame({ seq: message.seq, view: message.view, actions: message.actions })
           setAutoPassing(message.autoPassing)
+          setAutoPassPaused(message.autoPassPaused)
           setSkipManaOnly(message.skipManaOnly)
           setIsHost(message.isHost)
           setBotSpeedState(message.botSpeed)
@@ -595,6 +600,7 @@ export function useNetworkGame(): NetworkGame {
     view,
     actions,
     autoPassing,
+    autoPassPaused,
     skipManaOnly,
     isHost,
     botSpeed,

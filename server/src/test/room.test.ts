@@ -467,7 +467,7 @@ describe("Room", () => {
       return room.game.debugSpawn("Fog", ALICE, "hand");
     }
 
-    it("disarms a seat's auto-pass when an opponent casts a spell", () => {
+    it("pauses a seat's auto-pass when an opponent casts a spell", () => {
       const { room, aliceConn, bobConn } = interruptibleRoom("bob");
       const fog = giveAliceAnInstant(room);
 
@@ -478,11 +478,72 @@ describe("Room", () => {
 
       // Alice's own window after casting is a forced pass (a land needs an
       // empty stack, and her Forest paid for the Fog), so the settle carries
-      // straight on to Bob — whose auto-pass should have stopped dead rather
-      // than resolving the Fog for him.
+      // straight on to Bob — whose auto-pass should have stopped rather than
+      // resolving the Fog for him. Paused, not switched off: it's still armed.
       expect(room.game.state.zones.shared.stack).toHaveLength(1);
       expect(room.game.state.priority.holder).toBe(BOB);
-      expect(room.isAutoPassing(BOB)).toBe(false);
+      expect(room.isAutoPassing(BOB)).toBe(true);
+      expect(room.isAutoPassPaused(BOB)).toBe(true);
+    });
+
+    it("resumes a paused auto-pass by itself once the stack is clear", () => {
+      const { room, aliceConn, bobConn } = interruptibleRoom("bob");
+      const fog = giveAliceAnInstant(room);
+      room.requestAutoPass(bobConn);
+      room.dispatch(aliceConn, { type: "cast-spell", player: ALICE, card: fog });
+      const stepAtCast = room.game.state.turn.step;
+
+      // Bob lets the Fog resolve, and the window after it is Alice's.
+      room.dispatch(bobConn, { type: "pass-priority", player: BOB });
+      expect(room.game.state.zones.shared.stack).toHaveLength(0);
+      expect(room.game.state.priority.holder).toBe(ALICE);
+      expect(room.isAutoPassPaused(BOB)).toBe(true);
+
+      // Alice passes too, and priority comes to Bob with the stack empty:
+      // that window is the one the pause was waiting for, so auto-pass
+      // resumes and passes it for him rather than stopping there.
+      room.dispatch(aliceConn, { type: "pass-priority", player: ALICE });
+      expect(room.isAutoPassPaused(BOB)).toBe(false);
+      expect(room.isAutoPassing(BOB)).toBe(true);
+      expect(room.game.state.priority.holder).toBe(ALICE);
+      expect(room.game.state.turn.step).not.toBe(stepAtCast);
+    });
+
+    it("doesn't pause again for what the interrupting spell made you do", () => {
+      // An edict: Bob is paused by the cast, lets it resolve, and sacrifices
+      // his Bears to it. That sacrifice is "a permanent you own left the
+      // battlefield" — but it happened inside the pause, as the answer to the
+      // very spell he was stopped for, so it mustn't stop him a second time.
+      const { room, aliceConn, bobConn } = interruptibleRoom("bob");
+      // Two, so the sacrifice is a real choice: with one, the engine takes it
+      // without asking, and the decision this is about never comes up.
+      const bears = room.game.debugSpawn("Grizzly Bears", BOB, "battlefield");
+      room.game.debugSpawn("Grizzly Bears", BOB, "battlefield");
+      room.game.debugSpawn("Swamp", ALICE, "battlefield");
+      room.game.debugSpawn("Forest", ALICE, "battlefield");
+      const edict = room.game.debugSpawn("Diabolic Edict", ALICE, "hand");
+
+      room.requestAutoPass(bobConn);
+      room.dispatch(aliceConn, {
+        type: "cast-spell",
+        player: ALICE,
+        card: edict,
+        targets: [{ kind: "player", player: BOB }],
+      });
+      expect(room.isAutoPassPaused(BOB)).toBe(true);
+
+      room.dispatch(bobConn, { type: "pass-priority", player: BOB });
+      expect(room.game.state.awaiting?.kind).toBe("sacrifice");
+      room.dispatch(bobConn, { type: "sacrifice", player: BOB, permanents: [bears] });
+      expect(room.game.state.objects[bears].zone).toBe("graveyard");
+
+      // Alice's window after it resolved; then Bob's, with the stack empty,
+      // is where auto-pass resumes and passes for him.
+      if (room.game.state.priority.holder === ALICE) {
+        room.dispatch(aliceConn, { type: "pass-priority", player: ALICE });
+      }
+      expect(room.isAutoPassPaused(BOB)).toBe(false);
+      expect(room.game.state.priority.holder).not.toBe(BOB);
     });
 
     it("still passes an interrupted window whose only legal action is passing", () => {
@@ -496,9 +557,9 @@ describe("Room", () => {
       room.dispatch(aliceConn, { type: "cast-spell", player: ALICE, card: fog });
 
       expect(room.game.state.zones.shared.stack).toHaveLength(0);
-      // The scan still fired, so the standing auto-pass is spent — it just
-      // didn't hold up a window that was going to pass itself anyway.
-      expect(room.isAutoPassing(BOB)).toBe(false);
+      // The interruption didn't hold up a window that was going to pass
+      // itself anyway, and it didn't cost Bob his auto-pass either.
+      expect(room.isAutoPassing(BOB)).toBe(true);
     });
 
     it("still passes an interrupted mana-only window for a seat that skips those", () => {
@@ -536,7 +597,7 @@ describe("Room", () => {
       expect(room.game.activePlayer).toBe(BOB);
     });
 
-    it("disarms auto-pass for a seat that's being attacked and can't block", () => {
+    it("pauses auto-pass for a seat that's being attacked and can't block", () => {
       // The case the `declare-blockers` decision doesn't already cover: a
       // defender with no eligible blocker is skipped and never asked, so
       // without this the attack would go straight through an auto-passing
@@ -572,10 +633,27 @@ describe("Room", () => {
       // ...and the attack itself is what has to stop him, in the very window
       // it opened (still the declare-attackers step, not one window later)
       // and well before damage.
-      expect(room.isAutoPassing(BOB)).toBe(false);
+      expect(room.isAutoPassPaused(BOB)).toBe(true);
       expect(room.game.state.priority.holder).toBe(BOB);
       expect(room.game.state.turn.step).toBe("declare-attackers");
       expect(room.game.state.players[BOB].life).toBe(lifeBefore);
+
+      // The room looks at this window again whenever anything settles it —
+      // here Alice changing a setting. The stack is already empty, so only
+      // "not the window it paused in" keeps that from resuming auto-pass and
+      // passing the very window the attack earned.
+      room.toggleSkipManaOnly(aliceConn);
+      expect(room.isAutoPassPaused(BOB)).toBe(true);
+      expect(room.game.state.priority.holder).toBe(BOB);
+      expect(room.game.state.turn.step).toBe("declare-attackers");
+
+      // Once Bob has had that window and passed it, auto-pass picks back up
+      // on its own: the stack never filled, so his next window with it empty
+      // resumes it, and he's carried on through the damage.
+      room.dispatch(bobConn, { type: "pass-priority", player: BOB });
+      expect(room.isAutoPassPaused(BOB)).toBe(false);
+      expect(room.isAutoPassing(BOB)).toBe(true);
+      expect(room.game.state.players[BOB].life).toBe(lifeBefore - 2);
     });
   });
 

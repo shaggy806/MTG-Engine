@@ -1,7 +1,9 @@
 # Auto-pass interruptions
 
-Status: **built** (2026-09-22), server-side only — in the tree, not yet
-committed. Follows on from `resolve-all-stack.md`.
+Status: **built** (2026-09-22). Follows on from `resolve-all-stack.md`.
+Revised the same day: an interruption now **pauses** auto-pass until the
+stack is clear instead of switching it off (see "Paused until the stack is
+clear" below). The client shows the pause on the button.
 
 ## The ask
 
@@ -57,17 +59,48 @@ It is set by both `requestPassTurn` and `requestAutoPass`, and cleared
 wherever `autoPassUntil` is: cancelling, the turn boundary, and the new
 interruption.
 
-## Disarmed, not suspended
+## Paused until the stack is clear
 
-When the scan fires, `autoPassUntil` goes to `null` and the player re-arms it
-themselves — the same one-shot-recovery shape resolve-all has. Suspending it
-for a single window would hand the player one frame of control and then take
-it straight back, which is worse than not stopping at all: you would answer
-the spell and immediately lose the turn again.
+> "Autopass should still stay on after we temporarily disable it from an
+> opponent casting a spell or something similar. Once the stack is clear
+> again it should be re-enabled."
 
-Nothing crosses the wire for this. `autoPassing: room.isAutoPassing(seat)`
-already rides on every `state` frame, so the client's indicator un-highlights
-on the next push with no protocol change and no client change at all.
+The first version disarmed auto-pass outright when the scan fired
+(`autoPassUntil` to `null`), so the player had to re-arm it after every
+opponent spell for the rest of the turn. The argument for that was against
+the wrong alternative. Suspending it for a *single window* would hand back
+one frame of control and then take it straight back, and you would answer the
+spell and immediately lose the turn again. Pausing until the **stack is
+clear** has neither problem: the seat keeps its windows for as long as the
+interruption is still playing out, and gets its auto-pass back when it's over.
+
+So the scan now sets `Seat.autoPassPausedAt` (the event-log length at the
+moment) and leaves `autoPassUntil` armed. `resumeAutoPassIfClear` picks it
+back up at the seat's first **priority window** after that with an empty
+stack. Two details carry the whole design:
+
+- **"After", not "at".** An attack pauses auto-pass with the stack already
+  empty, so resuming in the window it paused in would pass the very window
+  the attack earned. "After" is "any event since", which a pass always is.
+  This only shows when the room re-evaluates the same window without the seat
+  acting (another seat changing a setting, a reconnect, an ack); the attack
+  test does exactly that.
+- **Priority windows only, never a decision.** A decision owed while paused
+  is usually the interruption's own consequence, like an edict's sacrifice,
+  which is asked once the edict has left the stack. Resuming there restarted
+  the scan before the answer, and the Bears the seat then sacrificed counted
+  as "a permanent you own left the battlefield" and paused it all over again.
+  Found live in the browser. The unit test for it only reproduced once the
+  seat had *two* creatures: with one, the engine takes the sacrifice without
+  asking, and the decision never comes up.
+
+On resume the scan restarts from that point, so nothing that happened during
+the pause can trip it again. Clicking the button while paused switches
+auto-pass off, as it does while running.
+
+The wire carries the pause as `autoPassPaused` beside `autoPassing`. The
+client's button reads "Auto-pass paused" rather than "Stop auto-pass", since
+a button claiming to be passing while the game waits on you looks broken.
 
 ## The part that is easy to get wrong
 
@@ -84,21 +117,27 @@ A window whose only legal action is passing — or, for a seat that opted into
 respond *with*. Stopping the player there buys them no decision, so guarding
 the whole condition would have turned every opponent spell into a dead click
 on an empty window, several times over as priority went round. The scan still
-fires and still disarms auto-pass in those windows; it just doesn't hold up a
+fires and still pauses auto-pass in those windows; it just doesn't hold up a
 window that was going to pass itself anyway.
 
 That asymmetry is what the tests are mostly about. `server/src/test/room.test.ts`
-covers: an opponent's spell disarming auto-pass with the spell still on the
-stack; a forced-pass window and a mana-only window passing *through* the same
-interruption; an ordinary opponent's turn still being carried all the way
-(the control — it passes with the feature switched off, which is its job); and
-an attack against a seat with no possible blocker stopping it in the very
-window the attack opened, before combat damage.
+covers: an opponent's spell pausing auto-pass with the spell still on the
+stack, and auto-pass resuming by itself once it has resolved; an edict's
+sacrifice not pausing it a second time; a forced-pass window and a mana-only
+window passing *through* the same interruption; an ordinary opponent's turn
+still being carried all the way (the control — it passes with the feature
+switched off, which is its job); and an attack against a seat with no possible
+blocker stopping it in the very window the attack opened, before combat
+damage. That window has to survive the room re-settling it, and auto-pass then
+resumes once the seat passes it.
 
 Each was checked by mutation, because the room's fast-forward machinery makes
 a vacuous test very easy to write (see `resolve-all-stack.md`'s "A trap worth
-recording"). Deleting the feature fails three of the five; moving the
-`!interrupted` guard out to cover every disjunct fails the other two. The test
+recording"). Deleting the feature fails three of the original five; moving the
+`!interrupted` guard out to cover every disjunct fails the other two. For the
+pause: disabling the resume fails both resume tests. Dropping the "after, not
+at" check fails the attack test. The edict test failed against the version
+that resumed inside decisions. The test
 rooms give a seat a Forest on the battlefield for the same reason: without one,
 every window in an all-Forest deck is a forced pass and the game fast-forwards
 itself whether or not any of this works.

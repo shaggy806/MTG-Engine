@@ -279,8 +279,13 @@ export type ServerMessage =
       readonly view: PlayerView;
       readonly actions: readonly LegalAction[];
       readonly seats: readonly SeatStatus[];
-      /** Whether *this* seat currently has an auto-pass in effect. */
+      /** Whether *this* seat currently has an auto-pass in effect, paused or
+       * not. */
       readonly autoPassing: boolean;
+      /** Whether that auto-pass is paused: something the seat would want to
+       * respond to happened, so its windows are its own until the stack is
+       * clear again, when auto-pass resumes by itself. */
+      readonly autoPassPaused: boolean;
       /** Whether *this* seat is currently skipping mana-only priority windows. */
       readonly skipManaOnly: boolean;
       /** Whether *this* connection holds the host role. */

@@ -70,6 +70,16 @@ interface Seat {
    */
   autoPassFrom: number | null;
   /**
+   * Set while an armed auto-pass is paused because something real
+   * interrupted it (see {@link interruptSince}): the event-log length at that
+   * moment. While set, this seat's windows are its own again, so it can
+   * respond. The auto-pass itself stays armed, and it resumes by itself at the
+   * seat's first window *after* the pause where the stack is empty. That is
+   * when whatever interrupted it has finished (the spell resolved, the
+   * attack had its window). `null` whenever auto-pass is running or off.
+   */
+  autoPassPausedAt: number | null;
+  /**
    * A standing preference (not a one-shot fast-forward): when set, this
    * seat's priority windows where the only thing to do is tap for mana are
    * skipped automatically, same as a window with no options at all. Off by
@@ -279,6 +289,7 @@ export class Room {
       connection: null,
       autoPassUntil: null,
       autoPassFrom: null,
+      autoPassPausedAt: null,
       skipManaOnly: false,
       resolveAllFrom: null,
       displayName: null,
@@ -456,9 +467,9 @@ export class Room {
    * Marks `connection`'s seat to auto-pass its own priority windows for the
    * rest of the current turn (never another seat's), stopping early if this
    * seat is asked for a real decision — including the turn's own `end` step,
-   * which is a real priority window like any other, not a special stop — or
-   * if something happens that they'd want to respond to (see
-   * {@link interruptSince}).
+   * which is a real priority window like any other, not a special stop. If
+   * something happens that they'd want to respond to (see
+   * {@link interruptSince}), it pauses until the stack is clear again.
    */
   requestPassTurn(connection: Connection): void {
     const player = this.seatOf(connection);
@@ -466,14 +477,16 @@ export class Room {
     const seat = this.seatFor(player);
     seat.autoPassUntil = { kind: "rest-of-turn" };
     seat.autoPassFrom = this.game.events.length;
+    seat.autoPassPausedAt = null;
     this.settle();
   }
 
   /**
    * Toggles `connection`'s seat auto-passing its own priority windows clean
    * through an opponent's turn too, stopping only once it's this seat's own
-   * turn again (or a real decision comes up). A second call while already
-   * active cancels it instead of re-arming it.
+   * turn again (or a real decision comes up), and pausing while something it
+   * would want to respond to plays out. A second call while already armed,
+   * paused or not, cancels it instead of re-arming it.
    */
   requestAutoPass(connection: Connection): void {
     const player = this.seatOf(connection);
@@ -484,11 +497,19 @@ export class Room {
       ? null
       : { kind: "next-own-turn", afterTurn: this.game.state.turn.number };
     seat.autoPassFrom = cancelling ? null : this.game.events.length;
+    seat.autoPassPausedAt = null;
     this.settle();
   }
 
+  /** Whether `player` has an auto-pass armed, paused or not. */
   isAutoPassing(player: PlayerId): boolean {
     return this.seatFor(player).autoPassUntil !== null;
+  }
+
+  /** Whether `player`'s armed auto-pass is paused while an interruption plays
+   * out (see {@link Seat.autoPassPausedAt}). */
+  isAutoPassPaused(player: PlayerId): boolean {
+    return this.seatFor(player).autoPassPausedAt !== null;
   }
 
   /**
@@ -671,8 +692,35 @@ export class Room {
     if (done) {
       seat.autoPassUntil = null;
       seat.autoPassFrom = null;
+      seat.autoPassPausedAt = null;
     }
     return done;
+  }
+
+  /**
+   * Resumes `seat`'s paused auto-pass once the stack is clear, at a priority
+   * window *after* the one it paused in. Not the same window: an attack
+   * pauses it with the stack already empty, and resuming there would pass the
+   * very window the attack earned. "After" is "anything has happened since",
+   * which a pass by this seat always is. The scan restarts from here, so
+   * nothing that happened during the pause (the interruption itself, or what
+   * the seat did in answer to it) can pause it again. Called only from the
+   * priority branch of `autoAdvanceHumanSeat`, never from a decision; see the
+   * note there.
+   */
+  private resumeAutoPassIfClear(seat: Seat, state: GameState): void {
+    const pausedAt = seat.autoPassPausedAt;
+    if (pausedAt === null) return;
+    if (state.zones.shared.stack.length > 0) return;
+    if (this.game.events.length <= pausedAt) return;
+    seat.autoPassPausedAt = null;
+    seat.autoPassFrom = this.game.events.length;
+  }
+
+  /** Is `seat`'s auto-pass armed and actually passing — not off, and not
+   * paused for an interruption? */
+  private autoPassRunning(seat: Seat): boolean {
+    return seat.autoPassUntil !== null && seat.autoPassPausedAt === null;
   }
 
   /**
@@ -687,7 +735,12 @@ export class Room {
   private autoAdvanceHumanSeat(s: GameState): boolean {
     if (s.awaiting !== null) {
       const seat = this.seatFor(s.awaiting.player);
-      const wasActive = seat.autoPassUntil !== null;
+      // No resuming here, only at a priority window. A decision owed while
+      // paused is usually the interruption's own consequence (an edict's
+      // sacrifice, asked once the edict has left the stack). Resuming before
+      // it would restart the scan ahead of the answer, and the permanent the
+      // seat then sacrifices would pause it all over again.
+      const wasActive = this.autoPassRunning(seat);
       const justCleared = this.clearAutoPassIfDone(seat, s);
       // Whether this seat's auto-pass is still running is room policy; what
       // a skippable decision's answer *is* belongs to the decision, so the
@@ -707,7 +760,8 @@ export class Room {
     const holder = s.priority.holder;
     if (holder === null) return false;
     const seat = this.seatFor(holder);
-    const wasActive = seat.autoPassUntil !== null;
+    this.resumeAutoPassIfClear(seat, s);
+    const wasActive = this.autoPassRunning(seat);
     const justCleared = this.clearAutoPassIfDone(seat, s);
 
     const legal = this.game.legalActions(holder);
@@ -725,16 +779,19 @@ export class Room {
     }
 
     // Auto-pass stops on the same "something real happened" scan — an
-    // opponent casting into it, or an attack aimed here. Disarmed outright
-    // rather than suspended for one window: the player re-arms it themselves,
-    // the same one-shot-recovery shape resolve-all has, so the fast-forward
-    // can't silently take back over the moment they've responded.
+    // opponent casting into it, or an attack aimed here — but only *pauses*:
+    // it stays armed, the seat gets its windows back to respond in, and
+    // `resumeAutoPassIfClear` picks it back up once the stack is empty again.
+    // It used to disarm outright, which left the player re-arming it after
+    // every opponent spell for the rest of the turn. Pausing for a single
+    // window would be worse than either (you'd answer the spell and lose the
+    // turn straight back), which is why the pause lasts until the stack
+    // clears and not one window.
     let interrupted = false;
     if (wasActive && !justCleared && seat.autoPassFrom !== null) {
       if (this.interruptSince(seat, s, seat.autoPassFrom) !== null) {
         interrupted = true;
-        seat.autoPassUntil = null;
-        seat.autoPassFrom = null;
+        seat.autoPassPausedAt = this.game.events.length;
       }
     }
 
@@ -747,7 +804,7 @@ export class Room {
       // for a seat that opted in, tapping for mana — has nothing to respond
       // *with*, so stopping the player there would buy them no decision and
       // turn every opponent spell into a dead click. Being interrupted still
-      // disarms auto-pass above; it just doesn't hold up a window that was
+      // pauses auto-pass above; it just doesn't hold up a window that was
       // going to pass itself anyway.
       (wasActive && !justCleared && !interrupted)
     ) {

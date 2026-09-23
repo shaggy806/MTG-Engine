@@ -46,6 +46,7 @@ function broadcast(room: Room): void {
       actions: room.game.legalActions(seat),
       seats,
       autoPassing: room.isAutoPassing(seat),
+      autoPassPaused: room.isAutoPassPaused(seat),
       skipManaOnly: room.isSkippingManaOnly(seat),
       isHost: room.isHost(connection),
       botSpeed: room.botSpeed,
