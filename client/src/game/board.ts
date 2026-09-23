@@ -6,12 +6,12 @@
  *  - Auras/Equipment pulled out of their own bucket and nested under whatever
  *    they're attached to, wherever that host ends up;
  *  - otherwise-identical lands, or identical *token* copies of a nonland
- *    permanent (same name, tapped state, power/toughness, summoning
- *    sickness, same controller, no counters, nothing attached) collapsed
- *    into one stack with a count. Nonland stacking is token-only — a
- *    same-named nontoken permanent (rare, but real, e.g. two cast copies of
- *    a card that allows it) stays its own tile rather than folding into a
- *    stack that implies "these are interchangeable".
+ *    permanent (the same in everything the view shows — see `tileKey` — with
+ *    no counters and nothing attached) collapsed into one stack with a count.
+ *    Nonland stacking is token-only — a same-named nontoken permanent (rare,
+ *    but real, e.g. two cast copies of a card that allows it) stays its own
+ *    tile rather than folding into a stack that implies "these are
+ *    interchangeable".
  */
 
 import type { ObjectId, PlayerId, PlayerView, VisibleObject } from 'engine'
@@ -19,8 +19,15 @@ import type { ObjectId, PlayerId, PlayerView, VisibleObject } from 'engine'
 export type Bucket = 'land' | 'creature' | 'planeswalker' | 'artifact' | 'enchantment'
 
 export interface BoardEntry {
-  /** All object ids this tile represents — length > 1 only for a land stack. */
+  /** All object ids this tile represents — more than one when identical
+   * lands or tokens fold together. */
   readonly ids: readonly ObjectId[]
+  /** How many permanents the tile stands for: one per id, except that an id
+   * may itself be one of the engine's compacted token stacks, which counts as
+   * every token in it (`VisibleObject.stackCount`). Both happen on one tile:
+   * a token split off a stack (a pump, a sacrifice choice) goes back to being
+   * identical to the rest once whatever singled it out wears off. */
+  readonly count: number
   /** Representative object to render (a land stack's members are identical). */
   readonly sample: VisibleObject
   readonly bucket: Bucket
@@ -42,6 +49,20 @@ export function bucketOf(obj: VisibleObject): Bucket {
 
 const isEmpty = (counters: Readonly<Record<string, number>>): boolean =>
   Object.keys(counters).length === 0
+
+/**
+ * Everything a tile could show about `obj`, as one string — every field of
+ * the view except its `id` and its `stackCount`, the two that differ between
+ * interchangeable copies. Permanents fold into one tile only when this
+ * matches, because the tile draws just one of them: folding on a few fields
+ * (it used to be name, tapped, P/T and summoning sickness) put a Cat that
+ * Jump had given flying under the tile of the Cats that hadn't, drawn without
+ * its flying.
+ */
+function tileKey(obj: VisibleObject): string {
+  const { id: _id, stackCount: _stackCount, ...shown } = obj
+  return JSON.stringify(shown)
+}
 
 /** All battlefield entries for `pid`'s board, bucketed and stacked. */
 export function computeBoardEntries(
@@ -67,6 +88,7 @@ export function computeBoardEntries(
 
   interface Building {
     ids: ObjectId[]
+    count: number
     sample: VisibleObject
     bucket: Bucket
     attachments: readonly VisibleObject[]
@@ -83,16 +105,18 @@ export function computeBoardEntries(
       (bucket === 'land'
         ? obj.power === null // a man-land animated to a creature stands alone
         : obj.isToken) // real (nontoken) permanents never fold into a stack
+    const count = obj.stackCount ?? 1
     if (stackable) {
-      const key = `${obj.cardName}|${obj.tapped}|${obj.power}|${obj.toughness}|${obj.summoningSick}`
+      const key = tileKey(obj)
       const idx = stackIndex.get(key)
       if (idx !== undefined) {
         entries[idx].ids.push(obj.id)
+        entries[idx].count += count
         continue
       }
       stackIndex.set(key, entries.length)
     }
-    entries.push({ ids: [obj.id], sample: obj, bucket, attachments })
+    entries.push({ ids: [obj.id], count, sample: obj, bucket, attachments })
   }
   return entries
 }

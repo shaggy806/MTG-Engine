@@ -168,6 +168,38 @@ export default {
     },
   },
 
+  STACK: {
+    about:
+      "2p. Token makers in alice's hand, to cast for real: debugSpawn only ever makes nontoken " +
+      "objects, so it can't show how the board folds tokens. White Sun's Zenith for 8 or more " +
+      "is one engine stack (stackCount), Raise the Alarm's two Soldiers are two objects the board " +
+      "folds into one tile, and Jump on one Cat splits it off the stack with flying.",
+    players: ["alice", "bob"],
+    lands: { alice: 30, bob: 5 },
+    hand: { alice: ["White Sun's Zenith", "Raise the Alarm", "Jump"] },
+    bots: { bob: {} },
+  },
+
+  LURES: {
+    about:
+      "2p. Bob attacks alice with a Lure-enchanted Hill Giant and a Grizzly Bears. Every " +
+      "creature of alice's able to block the Giant has to, so the block bar holds Block " +
+      "until Serra Angel and both Grizzly Bears are on it; her Craw Wurm is tapped, so it " +
+      "isn't able to and is exempt.",
+    players: ["alice", "bob"],
+    lands: { alice: 5, bob: 5 },
+    battlefield: {
+      alice: ["Grizzly Bears", "Grizzly Bears", "Serra Angel", "Craw Wurm"],
+      bob: ["Hill Giant", "Grizzly Bears", "Lure"],
+    },
+    setup(game, ids) {
+      const [giant, , lure] = ids.bob;
+      game.state.objects[lure].attachedTo = giant;
+      game.state.objects[ids.alice[3]].tapped = true;
+    },
+    bots: { bob: { attack: "alice" } },
+  },
+
   KWALL: {
     about:
       "2p. One permanent per keyword the pool uses, and all five pool planeswalkers, " +

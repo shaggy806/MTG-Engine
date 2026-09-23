@@ -255,7 +255,7 @@ export function Sandbox({ cardName }: { readonly cardName: string }) {
     }
   }
 
-  const renderTile = (obj: VisibleObject, ids: readonly ObjectId[] = [obj.id]) => {
+  const renderTile = (obj: VisibleObject, ids: readonly ObjectId[] = [obj.id], count = ids.length) => {
     const abs = !awaiting && !targeting ? abilitiesBySource.get(obj.id) : undefined
     return (
       <div className="board-entry" key={obj.id}>
@@ -264,7 +264,7 @@ export function Sandbox({ cardName }: { readonly cardName: string }) {
           highlight={targeting ? targetableObj(obj.id) : Boolean(sacrifice?.eligible.includes(obj.id))}
           selected={pickedObj.has(obj.id) || picks.includes(obj.id)}
           activatable={Boolean(abs && abs.length > 0)}
-          stackCount={ids.length > 1 ? ids.length : null}
+          stackCount={count > 1 ? count : null}
           onClick={() => clickTile(obj)}
         />
         {abs && abs.length > 1 ? (
@@ -290,7 +290,7 @@ export function Sandbox({ cardName }: { readonly cardName: string }) {
       <div className={`lab-board ${pid === YOU ? 'you' : 'foe'}`}>
         {rows.map((row, i) => (
           <div className="board-row-cards" key={i}>
-            {row.map((e) => renderTile(e.sample, e.ids))}
+            {row.map((e) => renderTile(e.sample, e.ids, e.count))}
           </div>
         ))}
       </div>

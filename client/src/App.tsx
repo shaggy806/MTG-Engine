@@ -1548,11 +1548,10 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         {list.map((entry) => (
           <div className="board-entry" key={entry.ids[0]}>
             {tileFor(entry.sample, pid, entry.ids, {
-              // Two independent kinds of "one tile, many permanents": several
-              // identical lands collapsed here in the client, and the engine's
-              // own token compaction (`VisibleObject.stackCount`). Only one is
-              // ever > 1 for a given tile, so the larger is the true count.
-              stackCount: Math.max(entry.ids.length, entry.sample.stackCount ?? 1),
+              // Identical permanents folded here in the client, each of which
+              // may itself be one of the engine's compacted token stacks —
+              // see `BoardEntry.count`.
+              stackCount: entry.count,
               mini: true,
             })}
             {entry.attachments.length > 0 ? (
