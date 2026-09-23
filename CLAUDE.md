@@ -259,6 +259,8 @@ Run from the repo root unless noted. Workspace scripts: `npm run <script> -w eng
 ## Git workflow
 
 - **Standing authorization to commit and push**: once a feature is working (build/lint/typecheck/tests clean, and — for anything UI-visible — checked live in the browser), commit it and push to `origin/main` without asking first each time. Split unrelated work into separate, logically-scoped commits the way the existing history does (see `git log`), rather than one giant commit. This still doesn't cover force-push, history rewrites, or pushing something you haven't actually verified — those still warrant asking.
+- **CI** (`.github/workflows/ci.yml`) runs on every pull request and every push to `main`: `npm ci`, the full build, a check that the build left no generated file uncommitted (the engine's prebuild rewrites `cards/generated.ts`), typecheck, lint, both test suites, and a short 2- and 4-player fuzzer pass.
+- **Cloud sessions** (Claude Code on the web) start from a bare clone with no `node_modules`, and push to a `claude/…` branch rather than `main`. `.claude/hooks/session-start.mjs`, registered as a SessionStart hook in `.claude/settings.json`, installs dependencies and builds engine, protocol and server before the session starts. It's Node rather than bash because a CRLF checkout breaks a shell script, and it does nothing outside a cloud session.
 
 ## Toolchain notes
 
