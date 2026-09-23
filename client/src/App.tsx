@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import type {
+  Action,
   CastVia,
   LegalAction,
   ManaType,
   ObjectId,
   PlayerId,
   PlayerView,
+  TapCostOffer,
   TargetRef,
   TargetSpec,
   VisibleObject,
@@ -107,7 +109,18 @@ const castExtras = (cast: CastAction) => ({
   ...(cast.kicked === true ? { kicked: true } : {}),
   ...(cast.overload === true ? { overload: true } : {}),
   ...(cast.free === true ? { free: true } : {}),
+  // Each is a variant of its own too: without the flag the engine reads the
+  // cast as the ordinary one (Sephara at its full cost), and a choice of
+  // additional costs that names no branch is refused outright.
+  ...(cast.altCost === true ? { altCost: true } : {}),
+  ...(cast.costOption !== undefined ? { costOption: cast.costOption } : {}),
+  ...(cast.tapCost !== undefined ? { tapCost: cast.tapCost } : {}),
 })
+
+/** Every permanent a tap-cost offer stands for, a stack's id once per token
+ * — the whole offer, for when there's exactly as much as the cost needs. */
+const allTapChoices = (offer: TapCostOffer): ObjectId[] =>
+  offer.choices.flatMap((id) => Array<ObjectId>(offer.copies?.[id] ?? 1).fill(id))
 type LandAction = Extract<LegalAction, { kind: 'play-land' }>
 type SuspendAction = Extract<LegalAction, { kind: 'suspend' }>
 type ForetellAction = Extract<LegalAction, { kind: 'foretell' }>
@@ -169,6 +182,15 @@ interface Targeting {
   /** The colour(s) picked for an "add one mana of any color" ability. The
    * engine lists one action per colour, so this just echoes which one. */
   readonly manaColors?: readonly ManaType[]
+  /** Casting for the card's alternative cost (Sephara) — its own variant,
+   * echoed back like `kicked`. */
+  readonly altCost?: boolean
+  /** The branch of a choice of additional costs this variant pays (Bitter
+   * Triumph's "discard a card or pay 3 life"), echoed back. */
+  readonly costOption?: number
+  /** A "tap N untapped … you control" cost still to pick for, once the
+   * targets are in — see `pendingTap`. */
+  readonly tapCost?: TapCostOffer
 }
 
 /**
@@ -587,6 +609,14 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   const [textFrom, setTextFrom] = useState<string | null>(null)
   const [modePicks, setModePicks] = useState<readonly number[]>([])
   const [sacrificePicks, setSacrificePicks] = useState<readonly ObjectId[]>([])
+  /** A cast or activation whose targets are in, waiting on which permanents
+   * its "tap N untapped … you control" cost taps (rule 601.2h — costs are
+   * paid last). `picks` names a stack once per token. */
+  const [pendingTap, setPendingTap] = useState<{
+    readonly action: Action
+    readonly offer: TapCostOffer
+    readonly picks: readonly ObjectId[]
+  } | null>(null)
   /** The token stack whose "how many of these?" menu is open, if any. */
   const [stackMenu, setStackMenu] = useState<ObjectId | null>(null)
   // Proliferate picks are `TargetRef`s, not ids: rule 701.27 lets you choose
@@ -798,6 +828,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     | 'choose-x'
     | 'choose-cast-modes'
     | 'choose-sacrifice'
+    | 'choose-tap'
     | 'assign-combat-damage'
     | 'targeting'
     | 'priority' = mulliganAction
@@ -840,6 +871,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
                   ? 'choose-x'
                   : pendingSac
                     ? 'choose-sacrifice'
+                    : pendingTap
+                      ? 'choose-tap'
                     : activeTargeting
                       ? 'targeting'
                       : 'priority'
@@ -876,10 +909,13 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         | 'overload'
         | 'free'
         | 'manaColors'
+        | 'altCost'
+        | 'costOption'
+        | 'tapCost'
       >,
       targets: readonly (TargetRef | null)[],
     ) => {
-      game.dispatch(
+      const action: Action =
         t.kind === 'choose-targets'
           ? { type: 'choose-targets', player: seat, targets: [...targets] }
           : t.kind === 'cast'
@@ -895,6 +931,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
                 ...(t.kicked === true ? { kicked: true } : {}),
                 ...(t.overload === true ? { overload: true } : {}),
                 ...(t.free === true ? { free: true } : {}),
+                ...(t.altCost === true ? { altCost: true } : {}),
+                ...(t.costOption !== undefined ? { costOption: t.costOption } : {}),
                 ...(t.sacrifice !== undefined ? { sacrifice: t.sacrifice } : {}),
               }
             : {
@@ -906,8 +944,19 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
                 ...(t.sacrifice !== undefined ? { sacrifice: t.sacrifice } : {}),
                 ...(t.xValue !== undefined ? { xValue: t.xValue } : {}),
                 ...(t.manaColors !== undefined ? { manaColors: t.manaColors } : {}),
-              },
-      )
+              }
+      const offer = t.tapCost
+      if (offer === undefined || action.type === 'choose-targets') {
+        game.dispatch(action)
+        return
+      }
+      // Exactly as much as the cost needs leaves nothing to choose.
+      const every = allTapChoices(offer)
+      if (every.length === offer.count) {
+        game.dispatch({ ...action, tap: every })
+        return
+      }
+      setPendingTap({ action, offer, picks: [] })
     },
     [game, seat],
   )
@@ -1019,6 +1068,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         specs: action.targetSpecs,
         options: action.targetOptions,
         xValue: value,
+        ...(action.tapCost !== undefined ? { tapCost: action.tapCost } : {}),
       })
       return
     }
@@ -1046,6 +1096,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         options: ab.targetOptions,
         ...(sacrifice !== undefined ? { sacrifice } : {}),
         ...(ab.manaColors !== undefined ? { manaColors: ab.manaColors } : {}),
+        ...(ab.tapCost !== undefined ? { tapCost: ab.tapCost } : {}),
       })
     },
     [beginTargeting],
@@ -1132,9 +1183,16 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         )
         if (found) return found
       }
+      // A tile standing for several identical permanents: take a member not
+      // already picked, so a second click picks the next one rather than
+      // un-picking the first.
+      if (mode === 'choose-tap' && pendingTap) {
+        const fresh = ids.find((i) => !pendingTap.picks.includes(i))
+        if (fresh !== undefined) return fresh
+      }
       return ids[0]
     },
-    [mode, activeTargeting],
+    [mode, activeTargeting, pendingTap],
   )
 
   const clickPermanent = useCallback(
@@ -1182,6 +1240,27 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         if (!orderAction.blockers.includes(id)) return
         setOrderPicks((cur) =>
           cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id],
+        )
+        return
+      }
+      if (mode === 'choose-tap' && pendingTap) {
+        const { offer } = pendingTap
+        if (!offer.choices.includes(id)) return
+        if ((offer.copies?.[id] ?? 1) > 1) {
+          setStackMenu((cur) => (cur === id ? null : id))
+          return
+        }
+        setPendingTap((cur) =>
+          cur === null
+            ? cur
+            : {
+                ...cur,
+                picks: cur.picks.includes(id)
+                  ? cur.picks.filter((x) => x !== id)
+                  : cur.picks.length >= offer.count
+                    ? [...cur.picks.slice(1), id]
+                    : [...cur.picks, id],
+              },
         )
         return
       }
@@ -1258,6 +1337,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       pickIdForClick,
       pickTarget,
       sacrificeAction,
+      pendingTap,
       proliferateAction,
       activeTargeting,
       defendersFor,
@@ -1460,6 +1540,16 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       highlight = isBlocker || focusedCanHit
       selected = Boolean(assignedTo) || blockFocus === id
       if (assignedTo) badge = `\u{1F6E1} ${game.nameOf(assignedTo)}`
+    } else if (mode === 'choose-tap' && pendingTap) {
+      // Over every permanent the tile stands for: several identical ones
+      // folded together, or one of the engine's token stacks.
+      const { offer, picks } = pendingTap
+      const members = ids.filter((i) => offer.choices.includes(i))
+      const taken = picks.filter((x) => members.includes(x)).length
+      const of = members.reduce((n, i) => n + (offer.copies?.[i] ?? 1), 0)
+      highlight = of > taken
+      selected = taken > 0
+      if (of > 1 && taken > 0) badge = `↷ ${taken}/${of}`
     } else if (mode === 'sacrifice' && sacrificeAction) {
       const taken = sacrificePicks.filter((x) => x === id).length
       const of = sacrificeAction.copies?.[id] ?? 1
@@ -2051,6 +2141,32 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         </button>
       </div>
     )
+  } else if (mode === 'choose-tap' && pendingTap) {
+    const { action, offer, picks } = pendingTap
+    const what =
+      action.type === 'cast-spell' || action.type === 'activate-ability'
+        ? game.nameOf(action.type === 'cast-spell' ? action.card : action.source)
+        : ''
+    controls = (
+      <div className="controls">
+        <span>
+          {what}: tap {offer.count} — {picks.length}/{offer.count} chosen
+        </span>
+        <button
+          type="button"
+          disabled={picks.length !== offer.count}
+          onClick={() => {
+            setPendingTap(null)
+            game.dispatch({ ...action, tap: [...picks] } as Action)
+          }}
+        >
+          Confirm
+        </button>
+        <button type="button" onClick={() => setPendingTap(null)}>
+          Cancel
+        </button>
+      </div>
+    )
   } else if (mode === 'sacrifice' && sacrificeAction) {
     controls = (
       <div className="controls">
@@ -2634,27 +2750,45 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
    * button would ever accept.
    */
   const renderStackCountMenu = () => {
-    if (mode !== 'sacrifice' || !sacrificeAction || stackMenu === null) return null
-    const of = sacrificeAction.copies?.[stackMenu] ?? 1
-    const taken = sacrificePicks.filter((x) => x === stackMenu).length
+    if (stackMenu === null) return null
+    // The same menu answers two questions: how many of a stack to sacrifice,
+    // and how many of it to tap for a cost.
+    const pick =
+      mode === 'sacrifice' && sacrificeAction
+        ? {
+            verb: 'Sacrifice',
+            count: sacrificeAction.count,
+            of: sacrificeAction.copies?.[stackMenu] ?? 1,
+            picks: sacrificePicks,
+            set: (next: readonly ObjectId[]) => setSacrificePicks(next),
+          }
+        : mode === 'choose-tap' && pendingTap
+          ? {
+              verb: 'Tap',
+              count: pendingTap.offer.count,
+              of: pendingTap.offer.copies?.[stackMenu] ?? 1,
+              picks: pendingTap.picks,
+              set: (next: readonly ObjectId[]) =>
+                setPendingTap((cur) => (cur === null ? cur : { ...cur, picks: next })),
+            }
+          : null
+    if (pick === null) return null
+    const taken = pick.picks.filter((x) => x === stackMenu).length
     // What this stack could be raised to: everything not already promised to
     // some *other* entry, capped at the stack's own size.
-    const most = Math.min(of, sacrificeAction.count - (sacrificePicks.length - taken))
+    const most = Math.min(pick.of, pick.count - (pick.picks.length - taken))
     const setTo = (n: number) => {
-      setSacrificePicks((cur) => [
-        ...cur.filter((x) => x !== stackMenu),
-        ...Array<ObjectId>(n).fill(stackMenu),
-      ])
+      pick.set([...pick.picks.filter((x) => x !== stackMenu), ...Array<ObjectId>(n).fill(stackMenu)])
       setStackMenu(null)
     }
     return (
       <AbilityMenu
         source={stackMenu}
-        title={`${game.nameOf(stackMenu)} ×${of}`}
-        ariaLabel="How many to sacrifice"
+        title={`${game.nameOf(stackMenu)} ×${pick.of}`}
+        ariaLabel={`How many to ${pick.verb.toLowerCase()}`}
         items={Array.from({ length: most + 1 }, (_unused, n) => ({
           key: String(n),
-          label: n === 0 ? 'None' : `Sacrifice ${n}`,
+          label: n === 0 ? 'None' : `${pick.verb} ${n}`,
           onSelect: () => setTo(n),
         }))}
         onClose={() => setStackMenu(null)}
@@ -2821,6 +2955,10 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
                         ? ` (overload ${a.overloadCost ?? ''})`
                         : ''}
                       {a.kind === 'cast-spell' && a.free ? ' (free)' : ''}
+                      {a.kind === 'cast-spell' && a.altCost ? ' (alternative cost)' : ''}
+                      {a.kind === 'cast-spell' && a.costOptionText
+                        ? ` (${a.costOptionText})`
+                        : ''}
                     </button>
                   ))
                 : null}

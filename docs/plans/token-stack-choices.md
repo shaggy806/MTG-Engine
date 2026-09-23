@@ -3,8 +3,8 @@
 **Status:** in progress (2026-09-22). Requested by the user: "when we need to
 select multiple creatures out of a token stack, can we get a menu to do so?
 Similar to how we activate abilities". **Sacrifice is built**, engine and
-client, and checked live in the browser; convoke, tap costs and combat are
-not. The counting and whole-stack fixes it builds on are done (see below).
+client, and checked live in the browser, and so are **tap costs**; convoke
+and combat are not. The counting and whole-stack fixes it builds on are done (see below).
 
 ## Background
 
@@ -35,7 +35,7 @@ Found by the review of the counting fix (a sweep by code and by card):
 | ~~"Choose up to N, sacrifice the rest" (`sacrificeAllBut`): Archfiend of Depravity~~ | **Built**, as the same decision. |
 | Declare attackers / blockers (`materializeStack`) | A stack always attacks or blocks as a whole (up to `MAX_MATERIALIZED`). It can't hold some back or split them across attackers. |
 | Convoke (`convokeCandidates`) | A stack is one candidate, so it can pay for one pip. Hour of Reckoning convoked by a player with 14 Soldier tokens gets one. |
-| "Tap N untapped creatures" alternative costs (`tapOthersCandidates`) | Counted and tapped as objects, and picked for the player (`.slice(0, count)`), which is also an AUTHORING §0 problem. |
+| ~~"Tap N untapped creatures" costs (`tapOthersCandidates`): Gravespawn Sovereign, Selesnya Evangel, Sephara's alternative cost~~ | **Built.** They were counted and tapped as objects, and picked for the player (`.slice(0, count)`), which was also an AUTHORING §0 problem. |
 | Proliferate (`proliferateTargets`) | A stack is one entry and gets the counter on every member. Harmless for the player, since you'd normally want all of them, but not a choice. |
 
 ## Proposal
@@ -84,6 +84,37 @@ Three answerers needed the same fix as the validator, and are easy to miss:
 the bot's candidate enumeration, the fuzzer's random answer, and the
 controllers' own `chooseSacrifices`, whose `eligible.slice(0, count)`
 returned an answer too short to be legal.
+
+## What tap costs shipped
+
+The same shape as sacrifice. The offer is `tapCost: { count, choices, copies? }`
+on the `activate-ability` offer, and on Sephara's `altCost` `cast-spell`
+variant. The answer is `tap: ObjectId[]` on the action, naming a stack once per
+token. The engine peels one token off per occurrence as it pays.
+
+Two things came up that the proposal didn't anticipate:
+
+- **One creature was paying both halves of a cost.** Selesnya Evangel's
+  "{1}, {T}, Tap an untapped creature you control" with Llanowar Elves as
+  the only other creature had the auto-payer tap the Elves for the {1}, then
+  tapped them again for the cost. Now the mana is planned with every tap
+  candidate tried last, and whatever the plan still has to tap is left out of
+  `choices`. So any `count` of the choices leaves the mana payable, and the
+  player can pick freely. At payment the picks are withheld from the mana
+  plan outright (`ManaSourceArrangement` in `game.ts`).
+- **The client never sent `altCost` or `costOption`.** Sephara's
+  alternative-cost variant went out as an ordinary cast, and Bitter Triumph's
+  two cost branches were both refused for naming none. Both are now echoed,
+  with the variant named on its button.
+
+The client asks after targets, since rule 601.2h pays costs last. It reuses the
+sacrifice decision's count menu, "Tap 1..n", for a stack. A tile standing for
+several identical permanents gives up its members one click at a time. A cost
+with exactly as many candidates as it needs asks nothing.
+
+A driver that doesn't pick (the bots, scripts) gets the summoning-sick
+candidates first, since they couldn't attack this turn anyway. The fuzzer
+picks at random.
 
 ## Not in scope
 
