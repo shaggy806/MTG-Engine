@@ -20,7 +20,14 @@
 // measures and `tune` starts from; e.g. --weights '{"handManaValue":0}' to
 // ablate one term), --opponent v1|<champion id>|gauntlet|mixed (bench only),
 // --gauntlet-games N (0 turns the tune's gauntlet veto off), --mixed/--no-mixed
-// (tune only; mixed tables default on above two players).
+// (tune only; mixed tables default on above two players), --seed-offset N
+// (bench: start after N seeds, rounded up to a multiple of --players, so a long
+// bench can be split into chunks run separately), --checkpoint PATH (bench
+// against one opponent or a mixed pod: append each game's result to PATH as it
+// finishes, and resume from it — rerun the same command after an interruption).
+//
+// A long bench in a container that can be reclaimed mid-run (a cloud session):
+//   npm run bot:bench -w engine -- --games 400 --checkpoint bench-4p.ndjson
 //
 // `bench` measures one weight vector against a chosen opponent — by default the
 // v1 `HeuristicBotController`.
@@ -41,7 +48,7 @@
 import os from "node:os";
 import { Worker } from "node:worker_threads";
 import { fileURLToPath } from "node:url";
-import { writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 
 import { CHAMPIONS, DEFAULT_WEIGHTS, championById } from "../dist/index.js";
 
@@ -74,6 +81,10 @@ const opponentArg = flag("opponent", "v1");
 // live rooms play; `v3` is the turn planner (`docs/plans/bot-v3-search.md`).
 const bot = flag("bot", "v2");
 const gauntletGames = Math.ceil(Number(flag("gauntlet-games", String(games))) / players) * players;
+// Rounded like `games`, so a chunk keeps every seating block whole
+// (`bot-seating.mjs`: one seating per block of `players` seeds).
+const seedOffset = Math.ceil(Number(flag("seed-offset", "0")) / players) * players;
+const checkpoint = flag("checkpoint", null);
 // A mixed table is only a thing above two players — with one opponent seat
 // there's nothing to mix.
 const mixed = players > 2 && !args.includes("--no-mixed");
@@ -104,9 +115,14 @@ const GAUNTLET = [V1, ...CHAMPIONS.map(asOpponent)];
  * nothing in the worker itself can stop it, and without this one stuck game
  * silently stalls the whole run.
  */
-function runMatch(weights, opponents, seedOffset = 0, count = games) {
+function runMatch(weights, opponents, seedOffset = 0, count = games, { skip, onResult } = {}) {
+  // The seeds still to play: `skip` holds the ones a checkpoint already has.
+  const seeds = [];
+  for (let k = 1; k <= count; k += 1) {
+    if (skip === undefined || !skip.has(seedOffset + k)) seeds.push(seedOffset + k);
+  }
   return new Promise((resolve) => {
-    if (count === 0) {
+    if (seeds.length === 0) {
       resolve([]);
       return;
     }
@@ -126,13 +142,13 @@ function runMatch(weights, opponents, seedOffset = 0, count = games) {
      */
     const report = () => {
       const done = results.length;
-      if (done % PROGRESS_EVERY !== 0 || done === count) return;
+      if (done % PROGRESS_EVERY !== 0 || done === seeds.length) return;
       const secs = (Date.now() - matchStartedAt) / 1000;
       const played = results.filter((r) => r.error === undefined);
       const wins = played.filter((r) => r.outcome === "win").length;
-      const eta = (secs / done) * (count - done);
+      const eta = (secs / done) * (seeds.length - done);
       console.log(
-        `    ${done}/${count} games, ${pct(wins / Math.max(1, played.length))} so far, ` +
+        `    ${done}/${seeds.length} games, ${pct(wins / Math.max(1, played.length))} so far, ` +
           `${secs.toFixed(0)}s elapsed, ~${eta.toFixed(0)}s left`,
       );
     };
@@ -145,16 +161,17 @@ function runMatch(weights, opponents, seedOffset = 0, count = games) {
       const finish = (result) => {
         clearTimeout(timer);
         results.push(result);
+        onResult?.(result);
         report();
-        if (results.length === count) resolve(results);
+        if (results.length === seeds.length) resolve(results);
       };
 
       const pump = () => {
-        if (next >= count) {
+        if (next >= seeds.length) {
           worker.terminate();
           return;
         }
-        seed = seedOffset + next + 1;
+        seed = seeds[next];
         next += 1;
         timer = setTimeout(() => {
           worker.removeAllListeners();
@@ -177,8 +194,45 @@ function runMatch(weights, opponents, seedOffset = 0, count = games) {
       pump();
     };
 
-    for (let i = 0; i < Math.min(workers, count); i += 1) spawn();
+    for (let i = 0; i < Math.min(workers, seeds.length); i += 1) spawn();
   });
+}
+
+/**
+ * The games a previous run of this same bench already recorded in `path`, so
+ * an interrupted run resumes where it stopped. The first line is the bench's
+ * configuration; every line after it is one game's result, appended as it
+ * finished. A game that errored (a timeout, a crashed worker) is played again,
+ * a line cut short by the process dying mid-write is ignored, and a file
+ * written under a different configuration is refused rather than mixed in.
+ *
+ * The header leaves out `--games` and `--seed-offset` on purpose: the file is
+ * a pool of results for one configuration, keyed by seed, so a 200-game bench
+ * can be extended to 400 and chunks can share one file. Each run reads only
+ * the seeds in its own range.
+ */
+function loadCheckpoint(path, config) {
+  const header = JSON.stringify({ checkpoint: 1, ...config });
+  if (!existsSync(path)) {
+    writeFileSync(path, `${header}\n`);
+    return [];
+  }
+  const [first, ...lines] = readFileSync(path, "utf8")
+    .split("\n")
+    .filter((line) => line.trim() !== "");
+  if (first !== header) {
+    throw new Error(`--checkpoint ${path} was written by a different bench configuration; use a new file`);
+  }
+  const bySeed = new Map();
+  for (const line of lines) {
+    try {
+      const result = JSON.parse(line);
+      if (result.error === undefined) bySeed.set(result.seed, result);
+    } catch {
+      // The last line of a run that was killed while writing it.
+    }
+  }
+  return [...bySeed.values()];
 }
 
 /** Wilson score interval — unlike the Wald interval it stays honest near 0
@@ -336,7 +390,8 @@ if (mode === "bench") {
   if (overridden) console.log(`weights: ${flag("weights", "{}")}`);
 
   if (opponentArg === "gauntlet") {
-    const profile = await runGauntlet(baseWeights, 0, games);
+    if (checkpoint !== null) console.log("--checkpoint isn't supported with --opponent gauntlet; ignoring it");
+    const profile = await runGauntlet(baseWeights, seedOffset, games);
     for (const member of GAUNTLET) {
       console.log(`vs ${member.id.padEnd(22)} ${fmt(profile[member.id])}   (${elapsed()})`);
     }
@@ -346,9 +401,29 @@ if (mode === "bench") {
     // match against that one opponent.
     const opponents =
       opponentArg === "mixed" ? GAUNTLET : [opponentArg === "v1" ? V1 : asOpponent(championById(opponentArg))];
-    const results = await runMatch(baseWeights, opponents);
+    let recorded = [];
+    let onResult;
+    if (checkpoint !== null) {
+      const config = {
+        weights: baseWeights,
+        opponents: opponents.map((o) => o.id),
+        players,
+        bot,
+        horizon,
+        rollout: rollout ?? null,
+        botOptions,
+      };
+      recorded = loadCheckpoint(checkpoint, config).filter(
+        (r) => r.seed > seedOffset && r.seed <= seedOffset + games,
+      );
+      if (recorded.length > 0) console.log(`checkpoint: ${recorded.length}/${games} games already played`);
+      onResult = (result) => appendFileSync(checkpoint, `${JSON.stringify(result)}\n`);
+    }
+    const skip = new Set(recorded.map((r) => r.seed));
+    const played = await runMatch(baseWeights, opponents, seedOffset, games, { skip, onResult });
+    const results = [...recorded, ...played].sort((x, y) => x.seed - y.seed);
     const summary = summarise(results);
-    console.log(`v2 vs ${opponents.map((o) => o.id).join("+")}: ${fmt(summary)}   (${elapsed()})`);
+    console.log(`${bot} vs ${opponents.map((o) => o.id).join("+")}: ${fmt(summary)}   (${elapsed()})`);
     report(results);
     if (jsonOut) {
       writeFileSync(jsonOut, JSON.stringify({ weights: baseWeights, players, summary, results }, null, 2));
