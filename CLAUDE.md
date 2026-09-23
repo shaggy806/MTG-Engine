@@ -44,7 +44,7 @@ others, and what each is for:
   `auto-pass-interruptions` (the shared "something real happened" scan that
   stops both it and auto-pass).
   `engine-gaps` records the engine work that unblocked most of the precons, paused with the rest
-  substituted. `smarter-bots` (v2, one-ply search) is **in progress** and its search architecture is superseded by `bot-v3-search` (rollout search over sampled worlds — **built, benched, and deliberately not seated**: it loses to v2 by six points at four players, and the evaluation re-fit is outstanding; read it before changing how the bot picks actions). `token-stack-choices` (**proposed**) designs picking some members of a token stack (sacrifice N, convoke, tap costs, splitting attackers), the last stack gap after the counting and whole-stack fixes. `commander-replacement` records how rule 903.9a is asked (never skipped: queued when it can't be asked yet, re-asked when overwritten) and the older bugs found alongside it, all since fixed. `damage-assignment-order` (**implemented**) records that Foundations removed damage assignment order, so a blocked creature's damage is divided freely among its blockers (trample still needs lethal on each first), and how the engine dropped its `order-blockers` decision and lethal-in-order validator for it. Server-side deck save/share
+  substituted. `smarter-bots` (v2, one-ply search) is **in progress** and its search architecture is superseded by `bot-v3-search` (rollout search over sampled worlds — **built, benched, and deliberately not seated**: it loses to v2 by six points at four players, and the evaluation re-fit is outstanding; read it before changing how the bot picks actions). `token-stack-choices` (**in progress**) designs picking some members of a token stack, the last stack gap after the counting and whole-stack fixes: sacrifice N, tap costs and convoke are built; splitting a stack across attackers or blockers, and choosing which of a stack proliferate touches, are not. `commander-replacement` records how rule 903.9a is asked (never skipped: queued when it can't be asked yet, re-asked when overwritten) and the older bugs found alongside it, all since fixed. `damage-assignment-order` (**implemented**) records that Foundations removed damage assignment order, so a blocked creature's damage is divided freely among its blockers (trample still needs lethal on each first), and how the engine dropped its `order-blockers` decision and lethal-in-order validator for it. Server-side deck save/share
   is still unscoped.
 - **`client/BOARD_REDESIGN_PLAN.md`** — the board-overhaul record: the mockup URL, the settled
   design rules, and the known gaps. All 18 phases shipped.
@@ -86,10 +86,12 @@ playable right now with per-slot target options; `viewFor(player)` produces a re
 self-contained snapshot for one seat.
 
 **Not modeled** (see ROADMAP for the full deferred list): Battles, phasing, dungeons/Initiative/
-Ring, banding, Backgrounds/Companion, multi-replacement ordering (`choose-replacement-order`),
-damage redirection to a third object, dependency ordering between static effects, a player choice
-on which same-named legendary permanent the legend rule keeps (deterministic — oldest survives),
-full text-change beyond a single creature-type word, snow *sources* (snow mana is generic today).
+Ring, banding, Backgrounds/Companion and the other commander pairings past plain Partner (Partner
+with, Friends forever, Character select, Father & son — `mechanic:commander-pairing` in the
+commander gap tracker), multi-replacement ordering (`choose-replacement-order`), damage redirection
+to a third object, dependency ordering between static effects, a player choice on which same-named
+legendary permanent the legend rule keeps (deterministic — oldest survives), full text-change beyond
+a single creature-type word, snow *sources* (snow mana is generic today).
 
 **Token stacking** (an engine resource-safety mechanism, not a rule — added after the fuzzer hung
 on a self-replicating-token card): `GameObject.stackCount` lets one object stand in for many

@@ -32,7 +32,7 @@
   "bug:commander-903-9a-current-rules": {
    "size": "medium",
    "ui": false,
-   "description": "Model current rule 903.9a: a commander goes to the graveyard or exile, dies triggers and sacrifice events fire, and then its owner may move it to the command zone as a state-based action. This replaces the pre-move replacement and fixes the edict path, which skips permanent-sacrificed."
+   "description": "Model current rule 903.9a: a commander goes to the graveyard or exile, dies triggers and sacrifice events fire, and then its owner may move it to the command zone as a state-based action. This replaces the pre-move replacement effect. (The edict path's missing permanent-sacrificed event, once listed here, is fixed: every sacrifice path announces it.)"
   },
   "bug:commander-eligibility-vehicles": {
    "size": "small",
@@ -812,7 +812,7 @@
   "mechanic:commander-pairing": {
    "size": "small",
    "ui": false,
-   "description": "Deck validation for two commanders: both need Partner, 'Partner with [name]' pairs only with that card, Friends forever and Character select pair only within their variant, and 'Choose a Background' pairs with a legendary Background enchantment."
+   "description": "Deck validation for two commanders: both need Partner, 'Partner with [name]' pairs only with that card, Friends forever, Character select and Father & son pair only within their variant, and 'Choose a Background' pairs with a legendary Background enchantment. Built so far: plain Partner, which the deck validator checks (canPairCommanders) and which travels as a pair from the deck builder through the room server to the table."
   },
   "mechanic:curses": {
    "size": "large",
