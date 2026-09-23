@@ -16,7 +16,7 @@
  */
 
 import type { Action, BlockerDeclaration, LegalAction } from "../actions.js";
-import { blockingViolations } from "../combat/blocking.js";
+import { blockingViolations, obeyingLure } from "../combat/blocking.js";
 import {
   creatureDef,
   currentAttackers,
@@ -52,13 +52,11 @@ function blockersOffer(
   const menaceAttackers = attacking.filter((id) =>
     objHasKeyword(ctx.state, ctx.registry, id, "menace"),
   );
-  // Attackers this defender's able creatures are *forced* to block (Lure —
-  // rule 509.1c); menace ones excluded, since a lone creature isn't "able" to
-  // block one and that combination is left unmodeled.
-  const mustBlock = attacking.filter(
-    (id) =>
-      restrictionsOf(ctx.state, ctx.registry, id).has("must-be-blocked") &&
-      !objHasKeyword(ctx.state, ctx.registry, id, "menace"),
+  // Attackers this defender's creatures are *forced* to block (Lure — rule
+  // 509.1c). One with menace too is forced only in pairs; `blockingViolations`
+  // works out how many blocks that comes to.
+  const mustBlock = attacking.filter((id) =>
+    restrictionsOf(ctx.state, ctx.registry, id).has("must-be-blocked"),
   );
   return { kind: "declare-blockers", eligible, menaceAttackers, mustBlock };
 }
@@ -118,13 +116,17 @@ export const blockers = defineDecision({
 
   // The policy the comment above describes, moved verbatim: it builds a
   // declaration and then drops what the set-level rules forbid, rather than
-  // consulting `blockingViolations`. Deliberate — see that comment.
+  // consulting `blockingViolations`. Deliberate — see that comment. Only a
+  // Lured attacker with menace, which forces blocks in pairs, is left to
+  // `obeyingLure`, which consults no randomness.
   randomAnswer: (legal, player, rng): Action => {
     const chosen = new Map<ObjectId, ObjectId>(); // blocker -> attacker
     for (const entry of legal.eligible) {
       // Lure (rule 509.1c): a creature able to block a must-be-blocked
       // attacker must block one of them; otherwise a coin flip.
-      const mustOptions = entry.canBlock.filter((a) => legal.mustBlock.includes(a));
+      const mustOptions = entry.canBlock.filter(
+        (a) => legal.mustBlock.includes(a) && !legal.menaceAttackers.includes(a),
+      );
       if (mustOptions.length > 0) {
         chosen.set(entry.blocker, mustOptions[rng.pickIndex(mustOptions.length)]);
       } else if (rng.random() < 0.5) {
@@ -135,13 +137,12 @@ export const blockers = defineDecision({
       blocker,
       attacker,
     }));
-    // A menace attacker must be blocked by 0 or 2+ creatures; drop lone blocks
-    // (must-be-blocked menace attackers are excluded from `mustBlock`).
+    // A menace attacker must be blocked by 0 or 2+ creatures; drop lone blocks.
     blocks = blocks.filter(
       (b) =>
         !legal.menaceAttackers.includes(b.attacker) ||
         blocks.filter((x) => x.attacker === b.attacker).length >= 2,
     );
-    return { type: "declare-blockers", player, blocks };
+    return { type: "declare-blockers", player, blocks: obeyingLure(blocks, legal) };
   },
 });

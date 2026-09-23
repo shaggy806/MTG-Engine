@@ -15,6 +15,7 @@ import type {
   ConvokePayment,
   LegalAction,
 } from "./actions.js";
+import { obeyingLure } from "./combat/blocking.js";
 import { standardAssignment } from "./combat/damage.js";
 import type { DamageAssignmentOffer } from "./combat/damage.js";
 import { decisionFor, mayActOn, randomAnswerFor } from "./decisions/registry.js";
@@ -1260,9 +1261,12 @@ export class HeuristicBotController extends AutomaticController {
     const used = new Set<ObjectId>();
 
     // Lure (rule 509.1c): a creature able to block a must-be-blocked
-    // attacker must block one of them.
+    // attacker must block one of them. One with menace forces blocks only in
+    // pairs, which `obeyingLure` sorts out at the end.
     for (const entry of legal.eligible) {
-      const mustOptions = entry.canBlock.filter((a) => legal.mustBlock.includes(a));
+      const mustOptions = entry.canBlock.filter(
+        (a) => legal.mustBlock.includes(a) && !legal.menaceAttackers.includes(a),
+      );
       if (mustOptions.length > 0) {
         chosen.set(entry.blocker, mustOptions[0]);
         used.add(entry.blocker);
@@ -1310,6 +1314,6 @@ export class HeuristicBotController extends AutomaticController {
         !legal.menaceAttackers.includes(b.attacker) ||
         blocks.filter((x) => x.attacker === b.attacker).length >= 2,
     );
-    return blocks;
+    return obeyingLure(blocks, legal);
   }
 }
