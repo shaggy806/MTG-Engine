@@ -279,6 +279,12 @@ creatures) and `intimidate` (702.13 — artifact creatures and/or creatures
 sharing a colour with it; a colourless attacker with intimidate is blockable
 only by artifact creatures).
 
+**Landwalk** (rule 702.14): `plainswalk`, `islandwalk`, `swampwalk`,
+`mountainwalk`, `forestwalk`, `desertwalk` — can't be blocked as long as the
+defending player controls a land of that *type* (a Breeding Pool is a Forest).
+One keyword per land type a card prints; a new type is a new keyword, added to
+`LANDWALK` in `combat/eligibility.ts` and to the client's `KEYWORD_GLYPH`.
+
 **Day/Night:** `daybound` / `nightbound` — the two faces of a modern werewolf;
 `Game.setDayNight` transforms them with the cycle.
 

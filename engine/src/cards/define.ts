@@ -81,6 +81,16 @@ export type Keyword =
   /** Intimidate (rule 702.13) — blockable only by artifact creatures and/or
    * creatures sharing a colour with it (Vela the Night-Clad). */
   | "intimidate"
+  /** Landwalk (rule 702.14) — can't be blocked as long as the defending
+   * player controls a land of that type. One keyword per land type a card
+   * prints: the five basic types, and Desert (Hazezon, Shaper of Sand). The
+   * rule lives in `combat/eligibility.ts`'s `LANDWALK`. */
+  | "plainswalk"
+  | "islandwalk"
+  | "swampwalk"
+  | "mountainwalk"
+  | "forestwalk"
+  | "desertwalk"
   /** Daybound (rule 702.145 — ROADMAP Phase 10b): the front face of a modern
    * werewolf. As it becomes night, daybound permanents transform to their
    * nightbound back face; a daybound permanent enters transformed if it's

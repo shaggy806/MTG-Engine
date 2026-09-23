@@ -52,6 +52,15 @@ export const KEYWORD_GLYPH: Record<Keyword, string> = {
   unblockable: '', // ms-ability-duels-unblockable
   fear: '', // ms-ability-duels-fear
   intimidate: '', // ms-ability-duels-intimidate
+  // Landwalk: Arena's own icons for the five basic types. Desert has none
+  // anywhere in the font, and landwalk is conditional unblockability, so
+  // desertwalk borrows the Duels icon for that.
+  plainswalk: '', // ms-ability-plainswalk
+  islandwalk: '', // ms-ability-islandwalk
+  swampwalk: '', // ms-ability-swampwalk
+  mountainwalk: '', // ms-ability-mountainwalk
+  forestwalk: '', // ms-ability-forestwalk
+  desertwalk: '', // ms-ability-duels-unblockable
   // The sun and moon printed in a day/night card's own frame, which tell the
   // two faces apart; Arena's single daybound/nightbound icon doesn't.
   daybound: '', // ms-dfc-day

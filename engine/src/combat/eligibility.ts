@@ -15,7 +15,7 @@
  * `dealCombatDamage`) are untouched.
  */
 
-import type { CardDefinition, CardRegistry } from "../cards.js";
+import type { CardDefinition, CardRegistry, Keyword } from "../cards.js";
 import {
   computeCharacteristics,
   hasLostAbilities,
@@ -23,9 +23,43 @@ import {
   restrictionsOf,
 } from "../characteristics.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
+import { matchesFilter } from "../filter.js";
 import { printedCardName } from "../state.js";
 import type { GameObject, GameState } from "../state.js";
 import { permanentSource, protectionBlocks } from "../targeting.js";
+
+/** Each landwalk keyword and the land type it walks (rule 702.14). */
+export const LANDWALK: ReadonlyArray<readonly [Keyword, string]> = [
+  ["plainswalk", "Plains"],
+  ["islandwalk", "Island"],
+  ["swampwalk", "Swamp"],
+  ["mountainwalk", "Mountain"],
+  ["forestwalk", "Forest"],
+  ["desertwalk", "Desert"],
+];
+
+/** The land types among the lands `player` controls — what a landwalker
+ * attacking them is checked against. */
+export function landTypesControlledBy(
+  state: GameState,
+  registry: CardRegistry,
+  player: PlayerId,
+): Set<string> {
+  const types = new Set<string>();
+  for (const [, landType] of LANDWALK) {
+    const controls = state.zones.shared.battlefield.some((id) =>
+      matchesFilter(
+        state,
+        registry,
+        id,
+        { type: "land", subtype: landType, controlledBy: "you" },
+        { you: player },
+      ),
+    );
+    if (controls) types.add(landType);
+  }
+  return types;
+}
 
 /** Everything the active player's attackers may be declared against: each
  * non-eliminated opponent, plus every planeswalker those opponents control
@@ -206,6 +240,17 @@ export function whyCannotBlock(
     if (!ok) {
       const attackerDef = registry.get(printedCardName(attacker));
       return `${blockerDef.name} can't block ${attackerDef.name} (${fear ? "fear" : "intimidate"})`;
+    }
+  }
+  // Landwalk (rule 702.14c): unblockable as long as the defending player —
+  // the one declaring this block — controls a land of that type.
+  const walked = LANDWALK.filter(([keyword]) => objHasKeyword(state, registry, attackerId, keyword));
+  if (walked.length > 0) {
+    const lands = landTypesControlledBy(state, registry, player);
+    const walk = walked.find(([, landType]) => lands.has(landType));
+    if (walk !== undefined) {
+      const attackerDef = registry.get(printedCardName(attacker));
+      return `${blockerDef.name} can't block ${attackerDef.name} (${walk[0]})`;
     }
   }
   if (

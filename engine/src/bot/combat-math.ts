@@ -20,6 +20,7 @@
 import type { CardType, Keyword } from "../cards/define.js";
 import type { Color } from "../mana.js";
 import { computeCharacteristics } from "../characteristics.js";
+import { LANDWALK, landTypesControlledBy } from "../combat/eligibility.js";
 import type { CardRegistry } from "../cards.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
@@ -38,6 +39,9 @@ export interface CombatCreature {
   readonly canBlock: boolean;
   readonly canAttack: boolean;
   readonly isCommander: boolean;
+  /** Land types its controller controls, which a landwalker attacking them
+   * can't be blocked past (rule 702.14). */
+  readonly controllerLands: ReadonlySet<string>;
 }
 
 /** A token stack is expanded to at most this many copies — enough for any
@@ -55,6 +59,7 @@ export function combatCreatures(
   untappedOnly: boolean,
 ): CombatCreature[] {
   const out: CombatCreature[] = [];
+  const controllerLands = landTypesControlledBy(state, registry, player);
   for (const id of state.zones.shared.battlefield) {
     const object = state.objects[id];
     if (object === undefined || object.controller !== player) continue;
@@ -74,6 +79,7 @@ export function combatCreatures(
       canAttack:
         !c.keywords.has("defender") && !c.restrictions.has("cant-attack") && c.power > 0,
       isCommander: object.isCommander,
+      controllerLands,
     };
     const copies = Math.min(object.stackCount ?? 1, MAX_COPIES);
     for (let i = 0; i < copies; i += 1) out.push(creature);
@@ -97,6 +103,9 @@ export function canBlock(blocker: CombatCreature, attacker: CombatCreature): boo
   }
   if (a.has("flying") && !blocker.keywords.has("flying") && !blocker.keywords.has("reach")) {
     return false;
+  }
+  for (const [keyword, landType] of LANDWALK) {
+    if (a.has(keyword) && blocker.controllerLands.has(landType)) return false;
   }
   return true;
 }

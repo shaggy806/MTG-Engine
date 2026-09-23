@@ -235,6 +235,12 @@ const COMBAT_KEYWORDS: ReadonlySet<string> = new Set([
   "hexproof",
   "unblockable",
   "defender",
+  "plainswalk",
+  "islandwalk",
+  "swampwalk",
+  "mountainwalk",
+  "forestwalk",
+  "desertwalk",
 ]);
 
 const normalizeKeyword = (k: string): string => k.trim().toLowerCase().replace(/\s+/g, "-");
