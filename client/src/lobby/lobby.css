@@ -189,6 +189,21 @@
   display: flex;
 }
 
+/* A Partner pair splits a commander art box (the seat board's or the deck
+   picker's) down the middle, one commander each. The gap shows the box's own
+   background as a seam between them. */
+.commander-art-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 2px;
+  overflow: hidden;
+}
+.commander-art-half {
+  background-color: var(--panel-2);
+  background-size: cover;
+  background-position: center 30%;
+}
+
 .seat-deck-name {
   width: 100%;
   font-size: 13px;

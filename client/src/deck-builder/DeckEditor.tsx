@@ -1,7 +1,14 @@
 import { useCallback, useMemo, useState } from 'react'
 import type { DragEvent, MouseEvent } from 'react'
 import type { CardDefinition } from 'engine'
-import { BUILTIN_CARDS, createDefaultRegistry, isDeckableCard, validateCommanderDeck } from 'engine'
+import {
+  BUILTIN_CARDS,
+  canPairCommanders,
+  createDefaultRegistry,
+  hasPartner,
+  isDeckableCard,
+  validateCommanderDeck,
+} from 'engine'
 import { Symbols } from '../ui/Symbols.tsx'
 import { CardHoverPreview } from '../ui/CardHoverPreview.tsx'
 import type { HoverTarget } from '../ui/CardHoverPreview.tsx'
@@ -37,6 +44,19 @@ const byName = new Map(BUILTIN_CARDS.map((c) => [c.name, c]))
 const isCommanderEligible = (def: CardDefinition): boolean =>
   def.supertypes.includes('legendary') &&
   (def.types.includes('creature') || def.types.includes('planeswalker'))
+
+/**
+ * A deck's commanders once `cardName` is starred. Starring a commander again
+ * demotes it. Otherwise the card joins a commander it can partner with (rule
+ * 702.124c) — keeping, out of a full pair, the first one that can — and
+ * partnering with none of them it replaces them, which is what starring a
+ * second legend always did.
+ */
+function toggledCommanders(commanders: readonly string[], cardName: string): readonly string[] {
+  if (commanders.includes(cardName)) return commanders.filter((n) => n !== cardName)
+  const partner = commanders.find((n) => canPairCommanders(registry, n, cardName))
+  return partner === undefined ? [cardName] : [partner, cardName]
+}
 
 /** The drag payload — a bare card name is all the deck pane needs. */
 const DRAG_MIME = 'application/x-mtg-card'
@@ -146,19 +166,16 @@ export function DeckEditor({
   const unknownNames = useMemo(() => {
     const names = new Set<string>()
     for (const c of deck.cards) if (!byName.has(c)) names.add(c)
-    if (deck.commander !== undefined && !byName.has(deck.commander)) names.add(deck.commander)
+    for (const c of deck.commanders) if (!byName.has(c)) names.add(c)
     return [...names]
-  }, [deck.cards, deck.commander])
+  }, [deck.cards, deck.commanders])
 
-  const totalCount = deck.cards.length + (deck.commander ? 1 : 0)
+  const totalCount = deck.cards.length + deck.commanders.length
 
   const legality = useMemo(
     () =>
-      validateCommanderDeck(
-        { commanders: deck.commander ? [deck.commander] : [], cards: deck.cards, size: DECK_SIZE },
-        registry,
-      ),
-    [deck.commander, deck.cards],
+      validateCommanderDeck({ commanders: deck.commanders, cards: deck.cards, size: DECK_SIZE }, registry),
+    [deck.commanders, deck.cards],
   )
 
   const addCard = (cardName: string) => onChange({ ...deck, cards: [...deck.cards, cardName] })
@@ -180,16 +197,29 @@ export function DeckEditor({
    * sits on the deck rows themselves.
    *
    * Demoting leaves the card out of the 99, matching what "Clear commander"
-   * has always done: the slot empties and you pick again.
+   * has always done: the slot empties and you pick again. So does a
+   * commander that a newly starred card replaces. See `toggledCommanders`
+   * for which one that is.
    */
   const toggleCommander = (cardName: string) => {
-    if (deck.commander === cardName) {
-      onChange({ ...deck, commander: undefined })
+    const commanders = toggledCommanders(deck.commanders, cardName)
+    if (deck.commanders.includes(cardName)) {
+      onChange({ ...deck, commanders })
       return
     }
     const at = deck.cards.indexOf(cardName)
     const cards = at === -1 ? deck.cards : [...deck.cards.slice(0, at), ...deck.cards.slice(at + 1)]
-    onChange({ ...deck, commander: cardName, cards })
+    onChange({ ...deck, commanders, cards })
+  }
+
+  /** What starring `cardName` would do, for its button's tooltip and its
+   * menu item — pairing and replacing look the same until they happen. */
+  const commanderAction = (cardName: string): string => {
+    if (deck.commanders.includes(cardName)) return 'Clear commander'
+    const next = toggledCommanders(deck.commanders, cardName)
+    const replaced = deck.commanders.filter((n) => !next.includes(n))
+    const replacing = replaced.length === 0 ? '' : ` (replacing ${replaced.join(' and ')})`
+    return next.length === 2 ? `Pair with ${next[0]} as a second commander${replacing}` : `Make commander${replacing}`
   }
 
   /** Records (or clears) which printing this deck brings for one card.
@@ -316,7 +346,7 @@ export function DeckEditor({
                     onChange({
                       ...deck,
                       cards: deck.cards.filter((c) => c !== n),
-                      commander: deck.commander === n ? undefined : deck.commander,
+                      commanders: deck.commanders.filter((c) => c !== n),
                     })
                   }
                 >
@@ -361,7 +391,7 @@ export function DeckEditor({
           <ul className="db-card-list">
             {poolRows.map((c) => {
               const n = counts.get(c.name) ?? 0
-              const isThisCommander = deck.commander === c.name
+              const isThisCommander = deck.commanders.includes(c.name)
               return (
                 <li
                   key={c.name}
@@ -383,7 +413,7 @@ export function DeckEditor({
                     ...(isCommanderEligible(c)
                       ? [
                           {
-                            label: isThisCommander ? 'Clear commander' : 'Make commander',
+                            label: commanderAction(c.name),
                             onSelect: () => toggleCommander(c.name),
                           },
                         ]
@@ -404,7 +434,7 @@ export function DeckEditor({
                   {isCommanderEligible(c) ? (
                     <button
                       type="button"
-                      title="Make this the deck's commander"
+                      title={commanderAction(c.name)}
                       className={isThisCommander ? 'selected' : undefined}
                       onClick={() => toggleCommander(c.name)}
                     >
@@ -460,35 +490,40 @@ export function DeckEditor({
             </span>
           </header>
 
-          <div
-            className="db-commander-slot"
-            {...hoverProps(byName.get(deck.commander ?? ''))}
-            {...menuProps(
-              byName.get(deck.commander ?? ''),
-              deck.commander === undefined
-                ? []
-                : [{ label: 'Clear commander', onSelect: () => toggleCommander(deck.commander!) }],
-            )}
-          >
-            {deck.commander ? (
-              <>
+          <div className="db-commander-slots">
+            {deck.commanders.map((commander) => (
+              <div
+                key={commander}
+                className="db-commander-slot"
+                {...hoverProps(byName.get(commander))}
+                {...menuProps(byName.get(commander), [
+                  { label: 'Clear commander', onSelect: () => toggleCommander(commander) },
+                ])}
+              >
                 <span className="muted">Commander</span>
-                <span className="db-card-name">{deck.commander}</span>
-                {deck.printings?.[deck.commander] ? (
+                <span className="db-card-name">{commander}</span>
+                {deck.printings?.[commander] ? (
                   <span className="db-printing-mark" title="Custom printing">
                     ◆
                   </span>
                 ) : null}
                 <span className="db-card-row-spacer" />
-                <button type="button" title="Clear commander" onClick={() => toggleCommander(deck.commander!)}>
+                <button type="button" title="Clear commander" onClick={() => toggleCommander(commander)}>
                   −
                 </button>
-              </>
-            ) : (
-              <span className="muted">
-                No commander — pick a legendary creature or planeswalker with ☆
-              </span>
-            )}
+              </div>
+            ))}
+            {deck.commanders.length === 0 ? (
+              <div className="db-commander-slot">
+                <span className="muted">
+                  No commander — pick a legendary creature or planeswalker with ☆
+                </span>
+              </div>
+            ) : deck.commanders.length === 1 && hasPartner(registry, deck.commanders[0]) ? (
+              <p className="db-commander-hint muted">
+                {deck.commanders[0]} has Partner — ☆ another commander with Partner to add a second.
+              </p>
+            ) : null}
           </div>
 
           {deck.cards.length === 0 ? (
@@ -520,7 +555,7 @@ export function DeckEditor({
                           ...(row.def !== undefined && isCommanderEligible(row.def)
                             ? [
                                 {
-                                  label: 'Make commander',
+                                  label: commanderAction(row.name),
                                   onSelect: () => toggleCommander(row.name),
                                 },
                               ]
@@ -539,7 +574,7 @@ export function DeckEditor({
                         {row.def !== undefined && isCommanderEligible(row.def) ? (
                           <button
                             type="button"
-                            title="Make this the deck's commander"
+                            title={commanderAction(row.name)}
                             onClick={() => toggleCommander(row.name)}
                           >
                             ☆

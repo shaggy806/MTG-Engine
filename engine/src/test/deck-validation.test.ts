@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { validateCommanderDeck } from "../deck-validation.js";
+import { canPairCommanders, commandersOf, validateCommanderDeck } from "../deck-validation.js";
 import { createDefaultRegistry } from "../cards.js";
 
 const reg = createDefaultRegistry();
@@ -96,5 +96,42 @@ describe("validateCommanderDeck", () => {
         (v) => v.includes("Harvesttide Assailant") && v.includes("Harvesttide Infiltrator"),
       ),
     ).toBe(true);
+  });
+});
+
+describe("two commanders (Partner, rule 702.124c)", () => {
+  // Thrasios is GU and Tana RG, so Forests fit both.
+  const deckOf = (commanders: readonly string[]) =>
+    validateCommanderDeck({ commanders, cards: Array<string>(98).fill("Forest"), size: 100 }, reg);
+
+  it("pairs two commanders that both have Partner", () => {
+    expect(deckOf(["Thrasios, Triton Hero", "Tana, the Bloodsower"]).violations).toEqual([]);
+    expect(canPairCommanders(reg, "Thrasios, Triton Hero", "Tana, the Bloodsower")).toBe(true);
+  });
+
+  // It used to be enough for either one to have it, which made Thrasios the
+  // partner of any legend at all.
+  it("won't pair a Partner commander with one that lacks it", () => {
+    const r = deckOf(["Thrasios, Triton Hero", "Atraxa, Praetors' Voice"]);
+    expect(r.legal).toBe(false);
+    expect(r.violations).toContain(
+      `"Thrasios, Triton Hero" and "Atraxa, Praetors' Voice" can't be paired: both commanders need Partner`,
+    );
+    expect(canPairCommanders(reg, "Atraxa, Praetors' Voice", "Thrasios, Triton Hero")).toBe(false);
+  });
+
+  it("doesn't guess whether an unimplemented commander has Partner", () => {
+    const r = deckOf(["Thrasios, Triton Hero", "Some Made Up Partner"]);
+    expect(r.violations).toEqual([`commander "Some Made Up Partner" is not implemented`]);
+  });
+});
+
+describe("commandersOf", () => {
+  it("reads `commanders` first, then the single `commander`, then nothing", () => {
+    expect(commandersOf({ commanders: ["A", "B"], commander: "C" })).toEqual(["A", "B"]);
+    expect(commandersOf({ commander: "C" })).toEqual(["C"]);
+    expect(commandersOf({})).toEqual([]);
+    // An empty list is a deck with no commander, not a missing field.
+    expect(commandersOf({ commanders: [], commander: "C" })).toEqual([]);
   });
 });

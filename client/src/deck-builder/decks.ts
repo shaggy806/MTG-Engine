@@ -12,12 +12,19 @@
  * starter deck as-is shouldn't require duplicating it into "my decks" first.
  */
 
-import { SAMPLE_DECKS } from 'engine'
+import { SAMPLE_DECKS, commandersOf } from 'engine'
+import type { SeatCommander } from 'protocol'
 
 export interface SavedDeck {
   readonly id: string;
   readonly name: string;
-  readonly commander?: string;
+  /**
+   * None, one, or two: a Partner pair, or a commander and its Background
+   * (rule 903.3c). Stored beside `cards` rather than in it, as the wire and
+   * the engine both have it. A deck saved before pairs existed has a single
+   * `commander` instead, which `readDecks` turns into this.
+   */
+  readonly commanders: readonly string[];
   readonly cards: readonly string[];
   /**
    * Which printing of a card this deck brings, keyed by card name → Scryfall
@@ -48,10 +55,22 @@ function newId(): string {
 function readDecks(): SavedDeck[] {
   try {
     const raw = window.localStorage.getItem(DECKS_KEY)
-    return raw ? (JSON.parse(raw) as SavedDeck[]).map(renameCards) : []
+    return raw ? (JSON.parse(raw) as StoredDeck[]).map(fromStorage).map(renameCards) : []
   } catch {
     return []
   }
+}
+
+/** A deck as some version of this file wrote it: before Partner pairs, a
+ * lone optional `commander` rather than a `commanders` list. */
+type StoredDeck = Omit<SavedDeck, 'commanders'> & {
+  readonly commanders?: readonly string[]
+  readonly commander?: string
+}
+
+function fromStorage(stored: StoredDeck): SavedDeck {
+  const { commander: _legacy, ...rest } = stored
+  return { ...rest, commanders: commandersOf(stored) }
 }
 
 /** Cards the pool once registered under another name — a deck saved before
@@ -66,13 +85,13 @@ function renameCards(deck: SavedDeck): SavedDeck {
   const renamed = (name: string) => RENAMED_CARDS[name] ?? name
   const touched =
     deck.cards.some((n) => n in RENAMED_CARDS) ||
-    (deck.commander !== undefined && deck.commander in RENAMED_CARDS) ||
+    deck.commanders.some((n) => n in RENAMED_CARDS) ||
     Object.keys(deck.printings ?? {}).some((n) => n in RENAMED_CARDS)
   if (!touched) return deck
   return {
     ...deck,
     cards: deck.cards.map(renamed),
-    commander: deck.commander === undefined ? undefined : renamed(deck.commander),
+    commanders: deck.commanders.map(renamed),
     ...(deck.printings
       ? {
           printings: Object.fromEntries(
@@ -101,7 +120,7 @@ export function getDeck(id: string): SavedDeck | null {
 
 /** Creates a new, empty deck (no commander, no cards) and makes it active. */
 export function createDeck(name: string): SavedDeck {
-  const deck: SavedDeck = { id: newId(), name, cards: [] }
+  const deck: SavedDeck = { id: newId(), name, commanders: [], cards: [] }
   writeDecks([...readDecks(), deck])
   setActive({ kind: 'saved', id: deck.id })
   return deck
@@ -114,14 +133,14 @@ export function createDeck(name: string): SavedDeck {
 export function createDeckFromImport(
   name: string,
   cards: readonly string[],
-  commander?: string,
+  commanders: readonly string[] = [],
   printings?: Readonly<Record<string, string>>,
 ): SavedDeck {
   const deck: SavedDeck = {
     id: newId(),
     name,
     cards,
-    commander,
+    commanders,
     // Omitted entirely when the pasted list carried no printing suffixes, so
     // an imported deck looks like any other hand-built one.
     ...(printings && Object.keys(printings).length > 0 ? { printings } : {}),
@@ -162,7 +181,7 @@ export function duplicateStarter(index: number): SavedDeck | null {
   const copy: SavedDeck = {
     id: newId(),
     name: `${source.name} (copy)`,
-    commander: source.commander,
+    commanders: commandersOf(source),
     cards: source.cards,
   }
   writeDecks([...readDecks(), copy])
@@ -187,20 +206,33 @@ export function setActive(ref: ActiveRef | null): void {
   }
 }
 
+/** What a deck brings to a table, whether it's a saved deck or a starter. */
+export interface DeckContents {
+  readonly name: string
+  readonly commanders: readonly string[]
+  readonly cards: readonly string[]
+  readonly printings?: Readonly<Record<string, string>>
+}
+
+/** A deck's commanders with the printing it brings for each — what the
+ * lobby draws, and the shape `SeatStatus` carries for someone else's seat. */
+export function commanderPrintings(deck: DeckContents): readonly SeatCommander[] {
+  return deck.commanders.map((name) => ({ name, printing: deck.printings?.[name] ?? null }))
+}
+
+function starterContents(index: number): DeckContents | null {
+  const deck = SAMPLE_DECKS[index]
+  if (deck === undefined) return null
+  return { name: deck.name, commanders: commandersOf(deck), cards: deck.cards }
+}
+
 /** The active deck's display name + card data, regardless of whether it's a
  * saved deck or a starter — `null` when nothing's active or the active
  * reference no longer resolves (a deleted saved deck). */
-export function getActiveDeck():
-  | {
-      readonly name: string
-      readonly commander?: string
-      readonly cards: readonly string[]
-      readonly printings?: Readonly<Record<string, string>>
-    }
-  | null {
+export function getActiveDeck(): DeckContents | null {
   const ref = getActiveRef()
   if (ref === null) return null
-  if (ref.kind === 'starter') return SAMPLE_DECKS[ref.index] ?? null
+  if (ref.kind === 'starter') return starterContents(ref.index)
   return getDeck(ref.id)
 }
 
@@ -211,7 +243,7 @@ export function getActiveDeck():
 export function getActivePayload():
   | {
       readonly cards: readonly string[]
-      readonly commander?: string
+      readonly commanders: readonly string[]
       readonly name: string
       readonly printings?: Readonly<Record<string, string>>
     }
@@ -220,7 +252,7 @@ export function getActivePayload():
   if (deck === null || deck.cards.length === 0) return undefined
   return {
     cards: deck.cards,
-    commander: deck.commander,
+    commanders: deck.commanders,
     name: deck.name,
     printings: deck.printings,
   }
@@ -231,13 +263,9 @@ export function getActivePayload():
  * stable for React lists; `ref` is what selecting it should persist as
  * "active" (a saved deck only — picking a starter for someone *else's* seat,
  * a bot, shouldn't change what *you'd* bring if you later join yourself). */
-export interface PickableDeck {
+export interface PickableDeck extends DeckContents {
   readonly key: string
   readonly ref: ActiveRef | null
-  readonly name: string
-  readonly commander?: string
-  readonly cards: readonly string[]
-  readonly printings?: Readonly<Record<string, string>>
 }
 
 /** Every deck the seat-picker's popup can offer: this browser's saved decks,
@@ -249,7 +277,7 @@ export function listPickableDecks(): readonly PickableDeck[] {
       key: `saved:${d.id}`,
       ref: { kind: 'saved', id: d.id } as ActiveRef,
       name: d.name,
-      commander: d.commander,
+      commanders: d.commanders,
       cards: d.cards,
       printings: d.printings,
     })),
@@ -257,7 +285,7 @@ export function listPickableDecks(): readonly PickableDeck[] {
       key: `starter:${i}`,
       ref: { kind: 'starter', index: i } as ActiveRef,
       name: d.name,
-      commander: d.commander,
+      commanders: commandersOf(d),
       cards: d.cards,
     })),
   ]

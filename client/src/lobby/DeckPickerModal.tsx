@@ -1,7 +1,6 @@
-import { findCardDef } from '../ui/defToVisible.ts'
-import { cssUrl, resolveArtUrl } from '../ui/art.ts'
-import { listPickableDecks } from '../deck-builder/decks.ts'
+import { commanderPrintings, listPickableDecks } from '../deck-builder/decks.ts'
 import type { PickableDeck } from '../deck-builder/decks.ts'
+import { CommanderArt } from './CommanderArt.tsx'
 import './lobby.css'
 
 /**
@@ -77,24 +76,17 @@ function DeckPickerRow({
   readonly deck: PickableDeck
   readonly onPick: (deck: PickableDeck) => void
 }) {
-  const commanderDef = deck.commander ? findCardDef(deck.commander) : null
-  // The deck's own chosen printing for its commander, so the row previews
-  // the art that will actually hit the table (see `SavedDeck.printings`).
-  const printing = deck.commander ? deck.printings?.[deck.commander] : undefined
-  const artUrl = commanderDef
-    ? resolveArtUrl(printing ?? commanderDef.art, commanderDef.name)
-    : null
-
   return (
     <button type="button" className="deck-picker-row" onClick={() => onPick(deck)}>
-      <span
-        className={`deck-picker-row-art${artUrl ? '' : ' deck-picker-row-art-blank'}`}
-        style={artUrl ? { backgroundImage: cssUrl(artUrl) } : undefined}
+      <CommanderArt
+        commanders={commanderPrintings(deck)}
+        className="deck-picker-row-art"
+        blankClass="deck-picker-row-art-blank"
       />
       <span className="deck-picker-row-text">
         <span className="deck-picker-row-name">{deck.name}</span>
-        {deck.commander ? (
-          <span className="deck-picker-row-commander">{deck.commander}</span>
+        {deck.commanders.length > 0 ? (
+          <span className="deck-picker-row-commander">{deck.commanders.join(' & ')}</span>
         ) : (
           <span className="deck-picker-row-commander muted">{deck.cards.length} cards</span>
         )}

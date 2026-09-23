@@ -18,6 +18,11 @@ import type { Action, LegalAction, PlayerId, PlayerView } from "engine";
  * keys off it. */
 export interface WireDeck {
   readonly cards: readonly string[];
+  /** One or two commanders: two for a Partner pair, or a commander and its
+   * Background (rule 903.3c). Takes precedence over `commander`. */
+  readonly commanders?: readonly string[];
+  /** The single commander a client from before two-commander decks sends.
+   * Read only when `commanders` is absent — `engine`'s `commandersOf`. */
   readonly commander?: string;
   readonly name?: string;
   /** Which printing of each card this deck brings, keyed by card name — a
@@ -26,6 +31,12 @@ export interface WireDeck {
    * the room draws the art its owner chose. Absent for a deck built before
    * the picker existed, or one that never left a card's default printing. */
   readonly printings?: Readonly<Record<string, string>>;
+}
+
+/** A commander as the seat board shows it. */
+export interface SeatCommander {
+  readonly name: string;
+  readonly printing: string | null;
 }
 
 export interface SeatStatus {
@@ -50,11 +61,11 @@ export interface SeatStatus {
    * game itself is visible. */
   readonly deck: {
     readonly name: string;
-    readonly commander: string | null;
-    /** Which printing this deck brings for its commander, if it isn't the
-     * default — just the one card, since the seat board only ever draws the
-     * commander. The whole map travels with the deck itself. */
-    readonly commanderPrinting: string | null;
+    /** Its commanders — none, one, or a Partner pair — each with the printing
+     * the deck brings for it, if that isn't the default. Only the commanders,
+     * since they're all the seat board draws; the whole printings map travels
+     * with the deck itself. */
+    readonly commanders: readonly SeatCommander[];
   } | null;
   /** This seat has signaled it's ready to start (`set-ready`) — a bot seat
    * is always ready, since there's no human decision to wait on. The room

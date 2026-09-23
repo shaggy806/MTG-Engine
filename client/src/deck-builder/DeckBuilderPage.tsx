@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { SAMPLE_DECKS, createDefaultRegistry, validateCommanderDeck } from 'engine'
+import { SAMPLE_DECKS, commandersOf, createDefaultRegistry, validateCommanderDeck } from 'engine'
 import type { PreconSubstitution } from 'engine'
 import type {
   DeckFormatReport,
@@ -110,13 +110,14 @@ export function DeckBuilderPage() {
     if (!current || current.to === to) return
     // Never a card the deck already holds — the picker disables
     // those, but the rule belongs here too.
-    if (selectedDeck.commander === to || selectedDeck.cards.includes(to)) return
-    // Exactly this card's one slot: the commander if that's what
+    if (selectedDeck.commanders.includes(to) || selectedDeck.cards.includes(to)) return
+    // Exactly this card's one slot: a commander if that's what
     // it stood in for, otherwise the first copy in the 99.
     // Replacing every copy by name broke singleton the moment
     // two originals shared a first choice somewhere down the
     // list and one was swapped back.
-    const isCommander = selectedDeck.commander === current.to
+    const commanderSlot = selectedDeck.commanders.indexOf(current.to)
+    const isCommander = commanderSlot !== -1
     const slot = isCommander ? -1 : selectedDeck.cards.indexOf(current.to)
     if (!isCommander && slot === -1) return
     saveDeck({
@@ -124,7 +125,9 @@ export function DeckBuilderPage() {
       cards: isCommander
         ? selectedDeck.cards
         : selectedDeck.cards.map((n, i) => (i === slot ? to : n)),
-      commander: isCommander ? to : selectedDeck.commander,
+      commanders: isCommander
+        ? selectedDeck.commanders.map((n, i) => (i === commanderSlot ? to : n))
+        : selectedDeck.commanders,
     })
     refreshDecks()
     setImportReport({
@@ -230,12 +233,17 @@ export function DeckBuilderPage() {
             {importReport && reviewing ? (
               <ReplacementReview
                 substitutions={importReport.substituted.filter((s) => s.options.length > 0)}
-                deckCards={[...selectedDeck.cards, ...(selectedDeck.commander ? [selectedDeck.commander] : [])]}
+                deckCards={[...selectedDeck.cards, ...selectedDeck.commanders]}
                 onChoose={swapStandIn}
                 onClose={() => setReviewing(false)}
               />
             ) : null}
+            {/* Keyed by deck, so switching decks starts the editor over —
+                its name field is local state seeded from the deck, and kept
+                the last deck's name, which leaving the field then saved
+                onto this one. */}
             <DeckEditor
+              key={selectedDeck.id}
               deck={selectedDeck}
               isActive={isActive({ kind: 'saved', id: selectedDeck.id })}
               onChange={(next) => {
@@ -259,7 +267,7 @@ export function DeckBuilderPage() {
         ) : selectedStarter && starterIndex !== null ? (
           <StarterViewer
             name={selectedStarter.name}
-            commander={selectedStarter.commander}
+            commanders={commandersOf(selectedStarter)}
             cardList={selectedStarter.cards}
             description={selectedStarter.description}
             substitutions={selectedStarter.substitutions}
@@ -365,7 +373,7 @@ function ImportPanel({
     setError(null)
     importDecklist(text, setProgress)
       .then(({ cards: cardReports, format }) => {
-        const commanderName = format?.commander ?? null
+        const commanderNames = format?.commanders ?? []
 
         const finalCards: string[] = []
         const substituted: ImportSubstitution[] = []
@@ -374,7 +382,9 @@ function ImportPanel({
         // own `(SET) number` suffixes — only ever present for a card kept
         // as-is, since a substitution is a different card entirely.
         const printings: Record<string, string> = {}
-        let commander: string | undefined
+        // What each of the list's commanders resolved to, kept apart from
+        // the loop's order so a pair stays in the order the list gave it.
+        const commanderAs = new Map<string, string>()
 
         for (const c of cardReports) {
           let resolvedName: string | null = null
@@ -388,17 +398,21 @@ function ImportPanel({
             dropped.push(c.name)
             continue
           }
-          if (c.name === commanderName) {
-            commander = resolvedName
+          if (commanderNames.includes(c.name)) {
+            commanderAs.set(c.name, resolvedName)
           } else {
             for (let i = 0; i < c.count; i += 1) finalCards.push(resolvedName)
           }
         }
+        const commanders = commanderNames.flatMap((n) => {
+          const as = commanderAs.get(n)
+          return as === undefined ? [] : [as]
+        })
 
         const deck = createDeckFromImport(
-          commander ? `Imported: ${commander}` : 'Imported deck',
+          commanders.length > 0 ? `Imported: ${commanders.join(' & ')}` : 'Imported deck',
           finalCards,
-          commander,
+          commanders,
           printings,
         )
         onImported(deck, {
@@ -538,7 +552,7 @@ function ImportReportBanner({
 
 function StarterViewer({
   name,
-  commander,
+  commanders,
   cardList,
   description,
   substitutions = [],
@@ -547,7 +561,7 @@ function StarterViewer({
   onDuplicate,
 }: {
   readonly name: string
-  readonly commander?: string
+  readonly commanders: readonly string[]
   readonly cardList: readonly string[]
   readonly description?: string
   readonly substitutions?: readonly PreconSubstitution[]
@@ -563,9 +577,9 @@ function StarterViewer({
 
   const legal = useMemo(
     () =>
-      commander !== undefined &&
-      validateCommanderDeck({ commanders: [commander], cards: cardList, size: 100 }, registry).legal,
-    [commander, cardList],
+      commanders.length > 0 &&
+      validateCommanderDeck({ commanders, cards: cardList, size: 100 }, registry).legal,
+    [commanders, cardList],
   )
   const substitutedIn = useMemo(() => new Set(substitutions.map((s) => s.substitute)), [substitutions])
 
@@ -582,14 +596,20 @@ function StarterViewer({
           </button>
         </div>
       </div>
-      {commander ? (
+      {commanders.length > 0 ? (
         <p className="muted">
-          Commander: <strong>{commander}</strong>
+          {commanders.length === 1 ? 'Commander' : 'Commanders'}:{' '}
+          {commanders.map((c, i) => (
+            <span key={c}>
+              {i > 0 ? ' & ' : null}
+              <strong>{c}</strong>
+            </span>
+          ))}
         </p>
       ) : null}
       {description ? <p>{description}</p> : null}
       <p className="muted">
-        {cardList.length + (commander ? 1 : 0)} cards
+        {cardList.length + commanders.length} cards
         {legal ? ' · Commander-legal' : ' · not Commander-legal'}
       </p>
       {substitutions.length > 0 ? (

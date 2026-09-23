@@ -16,7 +16,7 @@
  * null-checks through `Room`'s entire API for no benefit.
  */
 
-import { createDefaultRegistry } from "engine";
+import { commandersOf, createDefaultRegistry } from "engine";
 import type { DeckList, GameConfig, PlayerId } from "engine";
 import type { Connection } from "./room.js";
 import { HostRole } from "./host.js";
@@ -66,12 +66,14 @@ const MAX_REPORTED_UNKNOWN = 5;
  */
 function assertDeckIsBuildable(deck: PendingDeck): void {
   assertPrintingsAreSafe(deck);
+  const commanders = commandersOf(deck);
+  // A game has room for one commander, or two (rule 903.3c); more would reach
+  // `Game.create` and fail there, at promotion, for the whole table.
+  if (commanders.length > 2) {
+    throw new Error(`a deck has at most two commanders, this one names ${commanders.length}`);
+  }
   const unknown = [
-    ...new Set(
-      [...deck.cards, ...(deck.commander === undefined ? [] : [deck.commander])].filter(
-        (name) => !REGISTRY.has(name),
-      ),
-    ),
+    ...new Set([...deck.cards, ...commanders].filter((name) => !REGISTRY.has(name))),
   ];
   if (unknown.length === 0) return;
   const shown = unknown.slice(0, MAX_REPORTED_UNKNOWN).join(", ");
@@ -164,11 +166,10 @@ export class PendingRoom {
           ? null
           : {
               name: s.deck.name ?? "Custom deck",
-              commander: s.deck.commander ?? null,
-              commanderPrinting:
-                s.deck.commander === undefined
-                  ? null
-                  : (s.deck.printings?.[s.deck.commander] ?? null),
+              commanders: commandersOf(s.deck).map((name) => ({
+                name,
+                printing: s.deck?.printings?.[name] ?? null,
+              })),
             },
       ready: s.isBot || s.ready,
       isHost: s.connection !== null && s.connection === this.hostConnection(),
@@ -377,7 +378,7 @@ export class PendingRoom {
       return {
         player: s.player,
         cards: s.deck.cards,
-        commander: s.deck.commander,
+        commanders: commandersOf(s.deck),
         printings: s.deck.printings,
       };
     });

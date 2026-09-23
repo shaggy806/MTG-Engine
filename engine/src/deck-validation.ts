@@ -50,6 +50,39 @@ export const BASIC_LANDS: ReadonlySet<string> = new Set([
 ]);
 
 /**
+ * A deck's commanders, whichever field names them: `commanders` if set, else
+ * the lone `commander`. The precedence `DeckList` documents, and the one a
+ * wire deck from a client that predates two-commander decks relies on.
+ */
+export function commandersOf(deck: {
+  readonly commanders?: readonly string[];
+  readonly commander?: string;
+}): readonly string[] {
+  if (deck.commanders !== undefined) return deck.commanders;
+  return deck.commander === undefined ? [] : [deck.commander];
+}
+
+/**
+ * Whether `a` and `b` may be one deck's two commanders: both have to have
+ * Partner (rule 702.124c) — one having it isn't enough. The check
+ * {@link validateCommanderDeck} applies, shared so the deck builder's
+ * commander toggle makes the same call.
+ *
+ * Partner is read off the rules text, since there's no `partner` keyword, and
+ * only plain Partner is modeled: "Partner with [name]" reads as plain Partner
+ * (so it pairs more widely than it should), while Friends forever,
+ * Backgrounds and Doctor's companion don't pair at all yet.
+ */
+export function canPairCommanders(registry: CardRegistry, a: string, b: string): boolean {
+  return hasPartner(registry, a) && hasPartner(registry, b);
+}
+
+/** Whether `name` has Partner, as {@link canPairCommanders} reads it. */
+export function hasPartner(registry: CardRegistry, name: string): boolean {
+  return registry.has(name) && /\bpartner\b/i.test(registry.get(name).text);
+}
+
+/**
  * Why `name` can't be a decklist entry at all, or `null` if it can. Tokens
  * aren't cards (rule 111.1), and a multi-face card is deck-listed under its
  * front face only (rule 712.3) — both are registered definitions, so without
@@ -91,13 +124,16 @@ export function validateCommanderDeck(
     }
     for (const c of colorIdentityOf(def)) commanderIdentity.add(c);
   }
-  if (deck.commanders.length === 2) {
-    const anyPartner = deck.commanders.some(
-      (n) => registry.has(n) && /\bpartner\b/i.test(registry.get(n).text),
-    );
-    if (!anyPartner) {
-      violations.push("two commanders require Partner (or a Background)");
-    }
+  // An unimplemented commander is already a violation above, and whether it
+  // has Partner is exactly what the registry can't say.
+  const [first, second] = deck.commanders;
+  if (
+    deck.commanders.length === 2 &&
+    registry.has(first) &&
+    registry.has(second) &&
+    !canPairCommanders(registry, first, second)
+  ) {
+    violations.push(`"${first}" and "${second}" can't be paired: both commanders need Partner`);
   }
 
   // --- the 99 ----------------------------------------------------------

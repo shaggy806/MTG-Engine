@@ -17,7 +17,7 @@
  * `SavedDeck.printings` and `DeckList.printings`).
  */
 
-import { assignReplacements, colorIdentityOf, validateCommanderDeck } from "engine";
+import { assignReplacements, canPairCommanders, colorIdentityOf, validateCommanderDeck } from "engine";
 import type {
   CardDefinition,
   CardRegistry,
@@ -725,19 +725,35 @@ export function formatCheck(
   // An inferred commander has to survive a check the registry can actually
   // make. An unimplemented one passes by default — nothing here can tell
   // whether it is legal, and the structure said it was the commander.
-  const claimed = explicitCommanders[0];
-  const trusted =
-    claimed === undefined
-      ? undefined
-      : commanderSource === "trailing" && registry.has(claimed) && !canCommand(claimed)
-        ? undefined
-        : claimed;
-  const commander = trusted ?? flat.find(canCommand) ?? null;
-
-  const rest = commander === null ? flat : flat.filter((n, i) => !(n === commander && i === flat.indexOf(commander)));
-  const result = validateCommanderDeck(
-    { commanders: commander ? [commander] : [], cards: rest, size: 100 },
-    registry,
+  const trusted = explicitCommanders.filter(
+    (claimed) => !(commanderSource === "trailing" && registry.has(claimed) && !canCommand(claimed)),
   );
-  return { ...result, commander };
+  // Two commanders (a Partner pair) when the list says so: a `Commander`
+  // section is taken at face value, as for one, and the report says if the
+  // pair isn't legal; Moxfield's trailing block is only an inference, so its
+  // two cards are read as a pair unless the registry can see they aren't one
+  // (an unimplemented card passes, as a lone commander does above).
+  const pair =
+    trusted.length >= 2 &&
+    (commanderSource === "section" ||
+      !registry.has(trusted[0]) ||
+      !registry.has(trusted[1]) ||
+      canPairCommanders(registry, trusted[0], trusted[1]));
+  const guessed = flat.find(canCommand);
+  const commanders: string[] = pair
+    ? trusted.slice(0, 2)
+    : trusted.length > 0
+      ? [trusted[0]]
+      : guessed !== undefined
+        ? [guessed]
+        : [];
+
+  // One copy of each commander leaves the 99.
+  const rest = [...flat];
+  for (const commander of commanders) {
+    const at = rest.indexOf(commander);
+    if (at !== -1) rest.splice(at, 1);
+  }
+  const result = validateCommanderDeck({ commanders, cards: rest, size: 100 }, registry);
+  return { ...result, commanders };
 }

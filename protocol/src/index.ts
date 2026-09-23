@@ -14,6 +14,7 @@
 export type {
   BotSpeed,
   ClientMessage,
+  SeatCommander,
   SeatStatus,
   ServerMessage,
   WireDeck,

@@ -675,6 +675,13 @@
   border-radius: 8px;
 }
 
+/* The command zone: one slot, or two for a Partner pair — held closer
+   together than the pane's own gap so a pair reads as one zone. */
+.db-commander-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 .db-commander-slot {
   display: flex;
   align-items: center;
@@ -684,6 +691,11 @@
   border-radius: 8px;
   background: var(--panel);
   font-size: 13px;
+}
+.db-commander-hint {
+  margin: 0;
+  padding: 0 10px;
+  font-size: 12px;
 }
 
 .db-deck-list,
