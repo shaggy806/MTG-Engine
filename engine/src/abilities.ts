@@ -59,11 +59,10 @@ export interface AbilityCost {
    * Sovereign's "Tap five untapped Zombies you control". Distinct from
    * `tap`, which taps the source itself.
    *
-   * The engine taps the first eligible ones rather than asking. The rules
-   * give the controller the choice; it only matters when the candidates
-   * differ in some other way (one has its own tap ability), and no card in
-   * the pool creates that situation — recorded in AUTHORING §15 alongside
-   * `populate`'s similar compromise.
+   * The controller picks which (`tap` on the `activate-ability` action,
+   * offered as `tapCost`), because it matters: a creature tapped for the cost
+   * can't attack or block this turn. A driver that doesn't choose gets the
+   * summoning-sick ones first — they couldn't attack anyway.
    */
   readonly tapOthers?: {
     readonly count: number;

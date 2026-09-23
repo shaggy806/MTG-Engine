@@ -56,6 +56,25 @@ export interface BlockerDeclaration {
   readonly attacker: ObjectId;
 }
 
+/**
+ * A "tap N untapped … you control" cost's offer (an ability's
+ * `AbilityCost.tapOthers`, or Sephara's alternative cost): the driver taps
+ * exactly `count` of `choices` and echoes them back as the action's `tap`.
+ *
+ * A compacted token stack is one id here, and naming it *n* times taps *n* of
+ * its tokens; `copies` says how many it has, and lists only stacks, so it's
+ * absent on an ordinary board — the same shape as the `sacrifice` decision's.
+ *
+ * `choices` leaves out any permanent the mana half of the same cost has to
+ * tap: one creature can't pay both, since it's no longer untapped. Any
+ * `count` of what's left can be tapped with the mana still payable.
+ */
+export interface TapCostOffer {
+  readonly count: number;
+  readonly choices: readonly ObjectId[];
+  readonly copies?: Readonly<Record<ObjectId, number>>;
+}
+
 export type Action =
   | { readonly type: "pass-priority"; readonly player: PlayerId }
   | {
@@ -139,6 +158,10 @@ export type Action =
        * with its chosen contribution. Only meaningful for a card with
        * `CardDefinition.convoke`. */
       readonly convoke?: readonly ConvokePayment[];
+      /** What an `altCost` cast taps (Sephara's "tap four untapped creatures
+       * you control with flying"), picked from the variant's `tapCost` offer.
+       * Omitted, the engine picks for a driver that doesn't choose. */
+      readonly tap?: readonly ObjectId[];
     }
   | {
       readonly type: "activate-ability";
@@ -150,6 +173,11 @@ export type Action =
        * `"creature-you-control"` sacrifice. Ignored for a `"self"` sacrifice
        * (the source is always what's sacrificed) or no sacrifice. */
       readonly sacrifice?: ObjectId;
+      /** What the cost's "tap N untapped … you control" taps
+       * (`AbilityCost.tapOthers` — Gravespawn Sovereign's five Zombies),
+       * picked from the offer's `tapCost`. Omitted, the engine picks for a
+       * driver that doesn't choose. */
+      readonly tap?: readonly ObjectId[];
       /** The chosen value for `{X}` in the ability's mana cost (ROADMAP Phase
        * 11 EG-3). Required (and only meaningful) when the cost contains `{X}`;
        * ignored otherwise. Folded into the generic portion when paid and
@@ -411,6 +439,9 @@ export type LegalAction =
        * variant, like `free`, whose mana cost is replaced and which taps
        * creatures as part of the cost. The driver echoes it back. */
       readonly altCost?: boolean;
+      /** What the `altCost` variant may tap, and how many — see
+       * {@link TapCostOffer}. */
+      readonly tapCost?: TapCostOffer;
       /** One branch of a choice of additional costs (Bitter Triumph's
        * "discard a card or pay 3 life"). The card is enumerated once per
        * affordable branch, the way a kickable spell is enumerated kicked and
@@ -460,6 +491,9 @@ export type LegalAction =
        * `choices` is every permanent that could be sacrificed to pay it. A
        * `"self"` sacrifice is implicit (no field) — the source is always used. */
       readonly sacrifice?: { readonly choices: readonly ObjectId[] };
+      /** Present when the cost taps other permanents ("Tap five untapped
+       * Zombies you control") — see {@link TapCostOffer}. */
+      readonly tapCost?: TapCostOffer;
       /** Present for a planeswalker loyalty ability — the loyalty counters it
        * adds (negative = removes), so a UI can label it "+1" / "−3". */
       readonly loyalty?: number;
