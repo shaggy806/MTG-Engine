@@ -1699,7 +1699,7 @@ export class Game {
       throw new Error("unreachable: whyCannotCommanderChoice should have caught this");
     }
 
-    const { commander, intendedZone } = deferred;
+    const { commander, intendedZone, exiledBy } = deferred;
     this.state.awaiting = null;
     const destination = toCommandZone ? "command" : intendedZone;
     // This is the move the choice was about, so `moveObject` mustn't defer it
@@ -1711,6 +1711,10 @@ export class Game {
       this.completingCommanderMove = null;
     }
     this.state.deferredCommanderMove = null;
+    // Banishing Light's link, which couldn't be set while the move waited.
+    if (exiledBy !== undefined && this.state.objects[commander]?.zone === "exile") {
+      this.state.objects[commander].exiledBy = exiledBy;
+    }
 
     if (!toCommandZone && intendedZone === "graveyard") {
       // It really was put into a graveyard from the battlefield — a "dies"
@@ -2660,6 +2664,18 @@ export class Game {
     this.state.priority.passed = [];
     this.runStateBasedActions();
     if (this.state.result.over) return;
+    // An SBA can raise a decision here: a commander left at 0 toughness once
+    // its Giant Growth wears off owes its owner the 903.9a choice. It's asked
+    // now, and the active player then gets priority in this cleanup step
+    // (rule 514.3a), as the normal path through `tick` does. Moving on would
+    // ask it in the next player's untap step, where nobody may hold priority
+    // (rule 502.4). (The cast: TS keeps the `= null` narrowing from above
+    // across the call that may have set it.)
+    const raised = this.state.awaiting as AwaitingDecision | null;
+    if (raised !== null) {
+      this.grantPriority(raised.player);
+      return;
+    }
     this.endStep();
   }
 
@@ -7403,9 +7419,10 @@ export class Game {
         if (object === undefined || object.zone !== "battlefield") return;
         const owner = object.owner;
         this.moveObject(id, "graveyard");
-        // A commander's 903.9a choice defers the move; the sacrifice event
-        // would then be a lie, so only announce a completed one.
-        if (this.state.awaiting !== null) return;
+        // Sacrificed even if a commander's 903.9a choice deferred the move,
+        // and even if it ends up in the command zone (rule 701.21a), just as
+        // the cost paths announce it. "Dies" is read off the move itself
+        // (`permanent-left-battlefield`), so a commander never falsely dies.
         this.emit({ type: "permanent-sacrificed", object: id, player: owner });
       },
       returnToHand: (target) => this.returnToHandByEffect(target),
@@ -9372,9 +9389,10 @@ export class Game {
       this.state.pendingSacrificeVictims = this.state.pendingSacrificeVictims.slice(1);
       const object = this.state.objects[next.object];
       if (object === undefined || object.zone !== "battlefield") continue;
-      this.moveObject(next.object, "graveyard");
-      if (this.state.awaiting !== null) return; // commander 903.9a deferred
+      const moved = this.moveObject(next.object, "graveyard");
+      // Sacrificed either way (rule 701.21a) — see `sacrificeTarget`.
       this.emit({ type: "permanent-sacrificed", object: next.object, player: next.player });
+      if (!moved) return; // a commander's 903.9a choice is asked first
     }
   }
 
@@ -9415,8 +9433,7 @@ export class Game {
     // A token would just be swept by SBAs; a commander may be redirected to
     // the command zone via a deferred 903.9a choice — both handled downstream.
     const owner = object.owner;
-    this.moveObject(id, "hand");
-    if (this.state.awaiting !== null) return;
+    if (!this.moveObject(id, "hand")) return;
     this.emit({ type: "permanent-returned-to-hand", object: id, owner });
   }
 
@@ -9471,16 +9488,35 @@ export class Game {
     if (object === undefined) return;
     if (object.zone !== "battlefield" && object.zone !== "graveyard") return;
     const wasPermanent = object.zone === "battlefield";
-    this.moveObject(id, "exile");
+    if (!this.moveObject(id, "exile")) {
+      // A commander's 903.9a choice deferred the move. The O-Ring's link
+      // waits with it, for `applyCommanderChoice` to set if the card really
+      // goes to exile — without it, the commander stayed exiled for good once
+      // the O-Ring left.
+      if (exiledBy !== undefined) this.linkDeferredExile(id, exiledBy);
+      return;
+    }
     // After the move: `moveObject` clears zone-scoped state on the way out,
     // and this link has to survive until the O-Ring itself leaves.
     if (exiledBy !== undefined && this.state.objects[id]?.zone === "exile") {
       this.state.objects[id].exiledBy = exiledBy;
     }
-    if (this.state.awaiting !== null) return;
     // The event is about a permanent leaving the battlefield; a graveyard
     // card being exiled isn't one, and the log formatters read it that way.
     if (wasPermanent) this.emit({ type: "permanent-exiled", object: id });
+  }
+
+  /** Carry an O-Ring's "until this leaves" link on a commander's deferred
+   * move to exile (`exileByEffect`) — wherever that move is waiting. */
+  private linkDeferredExile(commander: ObjectId, exiledBy: ObjectId): void {
+    const state = this.state;
+    if (state.deferredCommanderMove?.commander === commander) {
+      state.deferredCommanderMove = { ...state.deferredCommanderMove, exiledBy };
+      return;
+    }
+    state.pendingCommanderMoves = state.pendingCommanderMoves.map((move) =>
+      move.commander === commander ? { ...move, exiledBy } : move,
+    );
   }
 
   /** "Blink": exile a permanent, then immediately return it to the
@@ -9499,9 +9535,8 @@ export class Game {
     const object = this.state.objects[id];
     if (object === undefined || object.zone !== "battlefield") return;
     const isToken = object.isToken;
-    this.moveObject(id, "exile");
-    if (this.state.awaiting !== null) {
-      // A commander's 903.9a choice (the only way `moveObject` defers here).
+    if (!this.moveObject(id, "exile")) {
+      // A commander's 903.9a choice (the only way `moveObject` defers).
       // A token never gets one — it ceases to exist — so nothing to park.
       if (!isToken) {
         this.state.pendingFlickerReturn = {
@@ -10466,8 +10501,7 @@ export class Game {
           continue;
         }
         if ((object.counters.loyalty ?? 0) > 0) continue;
-        this.moveObject(id, "graveyard");
-        if (this.state.awaiting !== null) return; // deferred 903.9a choice
+        if (!this.moveObject(id, "graveyard")) return; // deferred 903.9a choice
         this.emit({ type: "permanent-destroyed", object: id, reason: "0 loyalty" });
         changed = true;
       }
@@ -10541,8 +10575,7 @@ export class Game {
         );
         for (const id of group) {
           if (id === survivor) continue;
-          this.moveObject(id, "graveyard");
-          if (this.state.awaiting !== null) return; // deferred 903.9a choice
+          if (!this.moveObject(id, "graveyard")) return; // deferred 903.9a choice
           this.emit({ type: "permanent-destroyed", object: id, reason: "legend rule" });
         }
         changed = true;
@@ -10561,8 +10594,7 @@ export class Game {
           this.state.zones.shared.stack.some((sid) => this.state.objects[sid]?.sourceObjectId === id) ||
           this.state.pendingTriggers.some((t) => t.sourceObjectId === id);
         if (busy) continue;
-        this.moveObject(id, "graveyard");
-        if (this.state.awaiting !== null) return;
+        if (!this.moveObject(id, "graveyard")) return; // deferred 903.9a choice
         this.emit({ type: "saga-completed", object: id });
         changed = true;
       }
@@ -10802,14 +10834,21 @@ export class Game {
     return false;
   }
 
-  private moveObject(id: ObjectId, to: ZoneType): void {
+  /**
+   * Moves `id` to `to`, and says whether it did: `false` means a commander's
+   * 903.9a choice deferred the move (below), so the caller mustn't announce
+   * it. That has to come from here, not from `awaiting` — a decision there
+   * may be someone else's, and reading it that way dropped the log events of
+   * every permanent an overloaded Cyclonic Rift bounced after a commander.
+   */
+  private moveObject(id: ObjectId, to: ZoneType): boolean {
     // Zone moves interleave reads and writes too finely for point
     // invalidation — run with the computed-value cache off (and cleared on
     // the way out). See `suspendComputedCache`.
-    suspendComputedCache(() => this.moveObjectUncached(id, to));
+    return suspendComputedCache(() => this.moveObjectUncached(id, to));
   }
 
-  private moveObjectUncached(id: ObjectId, to: ZoneType): void {
+  private moveObjectUncached(id: ObjectId, to: ZoneType): boolean {
     const object = this.state.objects[id];
     const leavingBattlefield = object.zone === "battlefield" && to !== "battlefield";
     // Snapshot before anything clears them — a dies-trigger's "if it had no
@@ -10855,8 +10894,7 @@ export class Game {
     // decision is on `awaiting`, or another commander's is already being
     // asked — the commander waits on the battlefield in
     // `pendingCommanderMoves` and `prepareForPriority` asks in turn. Either
-    // way `awaiting` is set when this returns, which is how every caller
-    // tells that the move didn't happen.
+    // way the move didn't happen, and this returns `false` to say so.
     if (
       leavingBattlefield &&
       object.isCommander &&
@@ -10883,7 +10921,7 @@ export class Game {
         state.pendingCommanderMoves.push({ commander: id, intendedZone: to });
       }
       this.raiseNextCommanderChoice();
-      return;
+      return false;
     }
 
     // "If a creature died this turn" (rule 700.4 — a creature going to a
@@ -11072,6 +11110,7 @@ export class Game {
     ) {
       this.emit({ type: "permanent-left-battlefield", object: id, toZone: to });
     }
+    return true;
   }
 
   private zoneList(zone: ZoneType, owner: PlayerId): ObjectId[] {

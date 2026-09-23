@@ -1228,6 +1228,9 @@ export interface GameState {
     readonly commander: ObjectId;
     /** Where it would have gone had 903.9a not applied. */
     readonly intendedZone: CommanderReplacementZone;
+    /** The O-Ring (Banishing Light) exiling it "until this leaves", whose link
+     * `applyCommanderChoice` sets if the card does go to exile. */
+    readonly exiledBy?: ObjectId;
   } | null;
   /**
    * Commanders that tried to leave the battlefield while their owner's 903.9a
@@ -1242,6 +1245,7 @@ export interface GameState {
   pendingCommanderMoves: {
     readonly commander: ObjectId;
     readonly intendedZone: CommanderReplacementZone;
+    readonly exiledBy?: ObjectId;
   }[];
   /**
    * Shock lands ("you may pay 2 life; if you don't, it enters tapped" — rule
