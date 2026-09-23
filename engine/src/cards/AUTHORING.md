@@ -969,6 +969,13 @@ clause (section 9):
   "If that land is a Mountain, it deals 2 damage instead"). Only meaningful
   inside a triggered ability's `conditional` effect; always false on a static,
   which has no triggering object.
+- `{ kind: "resolved-this-turn", n }` — "if this is the **Nth time this
+  ability has resolved this turn**" (Omnath, Locus of Creation; Tannuk; Ms.
+  Bumbleflower). `n` counts the resolution in progress, so the first is `1`.
+  The count is per ability of one object and restarts each turn; a permanent
+  that leaves and returns is a new object with a fresh count, and an ability
+  that fizzled never resolved, so it doesn't count. Only meaningful inside the
+  ability's own `conditional` effect (a `not` around it works too).
 
 **`replacement?`** (`ReplacementSpec`, `replacements.ts`) — a replacement effect
 *is* a static ability:
@@ -1324,7 +1331,6 @@ clause gone missing). It found 13 of 739 on the day the rule landed:
 | **Rydia, Summoner of Mist** | the whole Summon activated ability | Saga reanimation + `{X}` in an activated cost's target filter |
 | **Whip of Erebos** | "if it would leave the battlefield, exile it instead" | a leaves-the-battlefield replacement on a granted token |
 | **Will of the Sultai** | "if you control a commander … choose both instead" | a commander-conditional mode count |
-| **Tannuk, Memorial Ensign** | "if this is the second time this ability has resolved this turn" | a per-turn resolution counter |
 | **Combat Thresher** | Prototype | Prototype |
 | **Fanatic of Rhonas** | Eternalize | Eternalize |
 | **Iridescent Vinelasher** | Offspring | Offspring |

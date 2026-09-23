@@ -964,7 +964,7 @@
   "stat:per-ability-turn-counters": {
    "size": "small",
    "ui": false,
-   "description": "Per-object, per-ability counters that reset each turn: 'this ability triggers only once each turn', 'do this only once each turn', and 'if this is the first time this ability has resolved this turn'."
+   "description": "Per-object, per-ability counters that reset each turn: 'this ability triggers only once each turn' and 'do this only once each turn'. Built so far: 'if this is the Nth time this ability has resolved this turn' (the resolved-this-turn condition)."
   },
   "stat:spells-cast-this-turn-record": {
    "size": "medium",

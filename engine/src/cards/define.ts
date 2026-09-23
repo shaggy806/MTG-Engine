@@ -299,6 +299,18 @@ export type StaticCondition =
    */
   | { readonly kind: "target"; readonly index: number; readonly filter: CardFilter }
   /**
+   * "If this is the **Nth time this ability has resolved this turn**" (Omnath,
+   * Locus of Creation; Ms. Bumbleflower; Tannuk). `n` counts the resolution
+   * in progress, so a first resolution is `1`. The count belongs to one
+   * ability of one object: a permanent that leaves and comes back is a new
+   * object with a fresh count (rule 400.7), and an ability that's countered
+   * or fizzles never resolved. See `Game.recordAbilityResolution`.
+   *
+   * Like `trigger-object`, only meaningful inside a `conditional` effect of
+   * the ability itself; always false on a static ability.
+   */
+  | { readonly kind: "resolved-this-turn"; readonly n: number }
+  /**
    * Was the ability's own source cast with its kicker paid? — Verix
    * Bladewing's "When this enters, **if it was kicked**, …".
    *

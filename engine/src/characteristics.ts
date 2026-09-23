@@ -330,10 +330,11 @@ function evalStaticCondition(
     }
     case "target":
     case "trigger-object":
-      // A static ability has neither a triggering object nor chosen targets —
-      // both kinds are only meaningful inside a `conditional` effect, where
-      // the resolution context answers them instead (see `Game`'s
-      // `conditionMet`).
+    case "resolved-this-turn":
+      // A static ability has no triggering object, no chosen targets and no
+      // resolution in progress — these kinds are only meaningful inside a
+      // `conditional` effect, where the resolution context answers them
+      // instead (see `Game`'s `conditionMet`).
       return false;
   }
 }

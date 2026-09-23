@@ -808,6 +808,8 @@ const deckC = deck([
   ["Sokka, Tenacious Tactician", 1],
   ["Bria, Riptide Rogue", 1],
   ["Thantis, the Warweaver", 1],
+  ["Omnath, Locus of Creation", 1],
+  ["Ms. Bumbleflower", 1],
 ]);
 
 // All four seats' decks/commanders, in seating order — sliced down to

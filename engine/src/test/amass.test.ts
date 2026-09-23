@@ -10,8 +10,10 @@
 
 import { describe, expect, it } from "vitest";
 
+import { createDefaultRegistry } from "../cards.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
+import { isLegalTarget } from "../targeting.js";
 import type { ObjectId } from "../primitives.js";
 
 const A = asPlayerId("alice");
@@ -125,9 +127,14 @@ describe("Lazotep Plating — player hexproof", () => {
     game.debugApplyEffect(A, { kind: "grant-player-hexproof", who: "you" });
 
     expect(game.state.hexproofPlayers).toContain(A);
-    // B can't point anything at A any more.
-    const fromB = game.legalActions(B);
-    expect(fromB).toBeDefined();
+    const alice = { kind: "player" as const, player: A };
+    const bob = { kind: "player" as const, player: B };
+    const legal = (who: typeof A, ref: typeof alice) =>
+      isLegalTarget(game.state, createDefaultRegistry(), "player", ref, who);
+    // B can't point anything at A any more; A still can, and B is untouched.
+    expect(legal(B, alice)).toBe(false);
+    expect(legal(A, alice)).toBe(true);
+    expect(legal(A, bob)).toBe(true);
     expect(game.state.hexproofPlayers.includes(B)).toBe(false);
   });
 

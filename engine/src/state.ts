@@ -311,6 +311,11 @@ export interface GameObject {
   sourceObjectId: ObjectId | null;
   /** For an ability object: index into the source's `activated`/`triggered` list. */
   abilityIndex: number | null;
+  /** For an ability object: its source's `timestamp` when the ability was put
+   * on the stack. A permanent that leaves and returns gets a new timestamp,
+   * which is how "the Nth time this ability has resolved this turn" tells the
+   * two objects apart (see `GameState.abilityResolutionsThisTurn`). */
+  sourceTimestamp?: number;
   /** For an ability object whose ability was *granted* rather than printed:
    * where it came from, so it still resolves once the grant is gone (see
    * {@link GrantedAbilityRef}). Absent for a printed ability. */
@@ -1053,6 +1058,16 @@ export interface GameState {
    * see it), while one revealed and drawn later does not.
    */
   revealedThisTurn: ObjectId[];
+  /**
+   * How many times each ability has resolved this turn, for "if this is the
+   * Nth time this ability has resolved this turn" (`StaticCondition`
+   * `resolved-this-turn`). Keyed by source object, that object's timestamp
+   * and which of its abilities, so a permanent that left and came back
+   * starts again (rule 400.7) while an ability still on the stack from the
+   * old one keeps counting against it. Turn-scoped, cleared as a turn
+   * begins. Optional so an older snapshot still loads.
+   */
+  abilityResolutionsThisTurn?: Record<string, number>;
   /** A declaration the engine is waiting for, or `null`. */
   awaiting: AwaitingDecision | null;
   /**

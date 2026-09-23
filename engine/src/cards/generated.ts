@@ -438,6 +438,7 @@ import _poolMortivore from "./pool/mortivore.js";
 import _poolMortuaryMire from "./pool/mortuary-mire.js";
 import _poolMossfireValley from "./pool/mossfire-valley.js";
 import _poolMountain from "./pool/mountain.js";
+import _poolMsBumbleflower from "./pool/ms-bumbleflower.js";
 import _poolMudbuttonTorchrunner from "./pool/mudbutton-torchrunner.js";
 import _poolMurder from "./pool/murder.js";
 import _poolMysticMonastery from "./pool/mystic-monastery.js";
@@ -459,6 +460,7 @@ import _poolNullmageShepherd from "./pool/nullmage-shepherd.js";
 import _poolObNixilisTheFallen from "./pool/ob-nixilis-the-fallen.js";
 import _poolOgnis from "./pool/ognis.js";
 import _poolOldGnawbone from "./pool/old-gnawbone.js";
+import _poolOmnathLocusOfCreation from "./pool/omnath-locus-of-creation.js";
 import _poolOpenTheGraves from "./pool/open-the-graves.js";
 import _poolOpt from "./pool/opt.js";
 import _poolOpulentPalace from "./pool/opulent-palace.js";
@@ -1285,6 +1287,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolMortuaryMire,
   _poolMossfireValley,
   _poolMountain,
+  _poolMsBumbleflower,
   _poolMudbuttonTorchrunner,
   _poolMurder,
   _poolMysticMonastery,
@@ -1306,6 +1309,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolObNixilisTheFallen,
   _poolOgnis,
   _poolOldGnawbone,
+  _poolOmnathLocusOfCreation,
   _poolOpenTheGraves,
   _poolOpt,
   _poolOpulentPalace,

@@ -2263,6 +2263,7 @@ export class Game {
     // it; past the turn it stops being rendered rather than lingering as a
     // permanent window into a hand.
     this.state.revealedThisTurn = [];
+    this.state.abilityResolutionsThisTurn = {};
     this.state.preventionShields = [];
     this.state.extraCombats = 0;
     this.state.spellsCastThisTurn = 0;
@@ -5425,6 +5426,7 @@ export class Game {
       abilityKind,
       sourceObjectId: sourceId,
       abilityIndex,
+      sourceTimestamp: this.state.objects[sourceId]?.timestamp ?? 0,
       counters: {},
       modifiers: [],
       timestamp: 0,
@@ -6373,6 +6375,7 @@ export class Game {
       object.triggerValue ?? 0,
       object.triggerObject,
       object.stackMultiplier ?? 1,
+      this.recordAbilityResolution(object),
     );
     this.withDecisionSource(source, () => {
       if (ability.resolve !== null) {
@@ -6383,6 +6386,31 @@ export class Game {
     });
     this.emit({ type: "ability-resolved", source });
     this.removeAbilityFromStack(id);
+  }
+
+  /**
+   * Count one more resolution of the ability `object` stands for this turn,
+   * and return the new count ("if this is the second time this ability has
+   * resolved this turn" reads `2` during the second). Called only once an
+   * ability is actually resolving: one that fizzled or was countered by ward
+   * never resolved, and doesn't count.
+   *
+   * The key is the source object, the timestamp it had when the ability went
+   * on the stack, and which of its abilities this is — a granted one by where
+   * it was granted from, since its index among the source's abilities can
+   * shift as grants come and go.
+   */
+  private recordAbilityResolution(object: GameObject): number {
+    if (object.delayedTrigger !== undefined) return 0;
+    const granted = object.grantedAbility;
+    const which =
+      granted?.kind === "static"
+        ? `static:${granted.cardName}:${granted.staticIndex}:${granted.list}:${granted.index}`
+        : `${object.abilityKind}:${object.abilityIndex ?? 0}`;
+    const key = `${object.sourceObjectId ?? object.id}@${object.sourceTimestamp ?? 0}#${which}`;
+    const counts = (this.state.abilityResolutionsThisTurn ??= {});
+    counts[key] = (counts[key] ?? 0) + 1;
+    return counts[key];
   }
 
   private removeAbilityFromStack(id: ObjectId): void {
@@ -7088,7 +7116,34 @@ export class Game {
     triggerValue = 0,
     triggerObject?: ObjectId,
     stackMultiplier = 1,
+    resolutionCount = 0,
   ): ResolutionContext {
+    const conditionMet = (condition: StaticCondition): boolean => {
+      // "If that land is a Mountain" — a question about the object that
+      // fired this trigger, which only the resolution context knows, so it
+      // is answered here rather than in `staticConditionMet` (a static
+      // ability has no triggering object at all). The same goes for the
+      // chosen targets and for which resolution of the ability this is.
+      if (condition.kind === "target") {
+        const ref = targets[condition.index];
+        if (ref === undefined || ref.kind !== "object") return false;
+        return matchesFilter(this.state, this.registry, ref.object, condition.filter, {
+          you: controller,
+        });
+      }
+      if (condition.kind === "trigger-object") {
+        if (triggerObject === undefined) return false;
+        return matchesFilter(this.state, this.registry, triggerObject, condition.filter, {
+          you: controller,
+        });
+      }
+      if (condition.kind === "resolved-this-turn") return resolutionCount === condition.n;
+      // Recursing keeps the context-only kinds above answerable under a
+      // `not`, which `staticConditionMet` alone would read as always false.
+      if (condition.kind === "not") return !conditionMet(condition.of);
+      const src = this.state.objects[source];
+      return src !== undefined && staticConditionMet(this.state, this.registry, src, condition);
+    };
     return {
       controller,
       source,
@@ -7097,6 +7152,7 @@ export class Game {
       triggerValue,
       triggerObject,
       stackMultiplier,
+      resolutionCount,
       dealDamage: (target, amount) => this.dealDamage(source, this.splitTargetRef(target), amount),
       dealDamageScoped: (who, amount) => {
         for (const p of this.scopedPlayers(controller, who, triggerObject)) {
@@ -7379,27 +7435,7 @@ export class Game {
       creaturesDiedThisTurn: () =>
         this.state.players[controller]?.creaturesDiedThisTurn ?? 0,
       createTokenCopy: (of, count, opts) => this.createTokenCopy(of, count, opts),
-      conditionMet: (condition) => {
-        // "If that land is a Mountain" — a question about the object that
-        // fired this trigger, which only the resolution context knows, so it
-        // is answered here rather than in `staticConditionMet` (a static
-        // ability has no triggering object at all).
-        if (condition.kind === "target") {
-          const ref = targets[condition.index];
-          if (ref === undefined || ref.kind !== "object") return false;
-          return matchesFilter(this.state, this.registry, ref.object, condition.filter, {
-            you: controller,
-          });
-        }
-        if (condition.kind === "trigger-object") {
-          if (triggerObject === undefined) return false;
-          return matchesFilter(this.state, this.registry, triggerObject, condition.filter, {
-            you: controller,
-          });
-        }
-        const src = this.state.objects[source];
-        return src !== undefined && staticConditionMet(this.state, this.registry, src, condition);
-      },
+      conditionMet,
       attach: (target) => this.attachPermanent(source, target),
       transform: (target) => {
         const t = this.splitTargetRef(target);

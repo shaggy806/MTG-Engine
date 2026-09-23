@@ -115,6 +115,14 @@ export function isLegalTarget(
     if (source !== undefined && protectionBlocks(state, registry, ref.object, source)) {
       return false;
     }
+  } else if (
+    // A player with hexproof (Lazotep Plating's "you … gain hexproof") can't
+    // be the target of spells or abilities their opponents control, which at
+    // a multiplayer table is everyone else (rule 702.11d).
+    ref.player !== forPlayer &&
+    state.hexproofPlayers?.includes(ref.player) === true
+  ) {
+    return false;
   }
   // An optional slot accepts exactly what its inner spec accepts; whether it
   // may be left *empty* is a question for the caller, not for a given ref.

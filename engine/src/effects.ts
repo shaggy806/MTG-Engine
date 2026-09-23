@@ -1544,6 +1544,10 @@ export interface ResolutionContext extends EffectApi {
    * `create-token` / `create-token-copy` read it (the only effect kinds
    * proven safe to multiply). Pure engine resource-safety optimization. */
   readonly stackMultiplier: number;
+  /** Which resolution of this ability this turn is in progress — `1` the
+   * first time — for `StaticCondition` `resolved-this-turn`. `0` for a spell,
+   * which is not an ability. */
+  readonly resolutionCount?: number;
 }
 
 /** Effect kinds safe to fire once with their count/amount multiplied by a
