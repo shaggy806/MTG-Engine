@@ -200,12 +200,16 @@ export type TriggerSpec =
       readonly who: TriggerWho;
     }
   | {
-      /** A player gained life (Ajani's Pridemate). `who` is whose life. */
+      /** A player gained life (Ajani's Pridemate). `who` is whose life.
+       * `{ triggerValue: true }` is how much ("that much" — Sanguine Bond).
+       * Once per life-gain event: lifelink damage one source deals to several
+       * things at once is one event. */
       readonly on: "gains-life";
       readonly who: TriggerWho;
     }
   | {
-      /** A player lost life. `who` is whose life. */
+      /** A player lost life. `who` is whose life, `{ triggerValue: true }`
+       * how much (Exquisite Blood). */
       readonly on: "loses-life";
       readonly who: TriggerWho;
     }

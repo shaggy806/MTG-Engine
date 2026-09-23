@@ -23,7 +23,7 @@ import type { Color } from "./mana.js";
 import { manaValue, parseManaCost } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { printedCardName } from "./state.js";
-import type { GameState } from "./state.js";
+import type { GameObject, GameState } from "./state.js";
 
 /**
  * A numeric comparison clause, e.g. `{ op: "lte", n: 2 }` = "≤ 2".
@@ -180,6 +180,22 @@ function attachmentsOf(
   return out;
 }
 
+/**
+ * The mana cost an object's mana value is read from: the face that's up,
+ * except that a transforming double-faced permanent with its back face up
+ * uses its **front** face's (rule 712.8e — a flipped Bloodline Keeper is
+ * still mana value 4, though Lord of Lineage prints no cost). A modal DFC's
+ * back face is a card face you cast or play, and uses its own.
+ */
+export function printedManaCost(registry: CardRegistry, object: GameObject): string | null {
+  const def = registry.get(printedCardName(object));
+  const front = def.faces?.[0];
+  if (def.transform === true && front !== undefined && front !== def.name && registry.has(front)) {
+    return registry.get(front).manaCost;
+  }
+  return def.manaCost;
+}
+
 /** Does object `id` satisfy every clause of `filter`? */
 export function matchesFilter(
   state: GameState,
@@ -290,15 +306,13 @@ export function matchesFilter(
       : (object.counters[filter.counters.kind] ?? 0);
     if (!compareNum(held, filter.counters.compare, ctx.x)) return false;
   }
-  if (
-    filter.manaValue !== undefined &&
-    !compareNum(
-      manaValue(parseManaCost(registry.get(printedCardName(object)).manaCost)),
-      filter.manaValue,
-      ctx.x,
-    )
-  ) {
-    return false;
+  if (filter.manaValue !== undefined) {
+    // On the stack, {X} counts as the value chosen for it (rule 202.3e) — a
+    // Fireball cast for 5 is a mana value 6 spell. Everywhere else it's 0.
+    const cost = parseManaCost(printedManaCost(registry, object));
+    const mv =
+      manaValue(cost) + (object.zone === "stack" ? cost.x * Math.max(0, object.xValue ?? 0) : 0);
+    if (!compareNum(mv, filter.manaValue, ctx.x)) return false;
   }
   if (filter.manaSpent !== undefined && !compareNum(object.manaSpent ?? 0, filter.manaSpent, ctx.x)) {
     return false;

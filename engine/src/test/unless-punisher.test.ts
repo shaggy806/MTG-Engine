@@ -76,6 +76,30 @@ describe("unless — the decision belongs to the other player", () => {
     expect(game.state.players[B].life).toBe(lifeBefore - 5);
   });
 
+  it("the punishment is still its controller's effect when the chooser declines", () => {
+    // "…unless that player pays {1}": the chooser could pay, and won't.
+    const game = makeGame();
+    game.advanceUntil((s) => s.priority.holder === A);
+    game.debugSpawn("Mountain", B, "battlefield");
+    const [aHand, bHand] = [game.handOf(A).length, game.handOf(B).length];
+
+    game.debugApplyEffect(
+      A,
+      {
+        kind: "unless",
+        chooser: 0,
+        options: [{ pay: "{1}", text: "Pay {1}" }],
+        otherwise: { kind: "draw", amount: 1 },
+      },
+      [{ kind: "player", player: B }],
+    );
+    expect(game.state.awaiting?.player).toBe(B);
+    game.dispatch({ type: "choose-modes", player: B, modes: [] });
+
+    expect(game.handOf(A).length).toBe(aHand + 1);
+    expect(game.handOf(B).length).toBe(bHand);
+  });
+
   it("punishes without asking when the chooser has nothing to give", () => {
     const game = makeGame();
     game.advanceUntil((s) => s.priority.holder === A);
@@ -182,6 +206,18 @@ describe("Kazuul — the attacker's controller decides", () => {
     const game = attackInto(0);
     expect(game.state.awaiting?.kind).not.toBe("choose-modes");
     expect(ogresOf(game)).toBe(1);
+  });
+
+  it("an attacker who could pay but declines gives Kazuul's controller the Ogre", () => {
+    const game = attackInto(3);
+    game.dispatch({ type: "choose-modes", player: A, modes: [] });
+    game.advanceUntil((s) => s.awaiting?.kind === "blockers" || s.result.over);
+    const ogres = game.state.zones.shared.battlefield.filter(
+      (id) => game.state.objects[id].cardName === "Ogre Token",
+    );
+    expect(ogres).toHaveLength(1);
+    // The punishment is Kazuul's effect, not the attacker's.
+    expect(game.state.objects[ogres[0]].controller).toBe(B);
   });
 
   it("makes no Ogre when the attacker pays", () => {

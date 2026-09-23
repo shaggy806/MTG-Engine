@@ -6,9 +6,8 @@ import { defineCard } from "../define.js";
  * resolves through the trigger's object — a `cast-spell` trigger carries the
  * spell, whose controller is the player who cast it.
  *
- * Simplification: the printed "**you may** draw a card unless…" folds into the
- * `unless` itself, so an unpaid trigger always draws rather than offering its
- * controller a second, pointless decision.
+ * What happens if they don't pay is still Rhystic Study's controller's
+ * effect, so the "you may draw" is asked of them, not of the caster.
  */
 export default defineCard({
   name: "Rhystic Study",
@@ -24,7 +23,7 @@ export default defineCard({
         kind: "unless",
         chooser: "trigger-controller",
         options: [{ pay: "{1}", text: "Pay {1}" }],
-        otherwise: { kind: "draw", amount: 1 },
+        otherwise: { kind: "may", prompt: "Draw a card?", effect: { kind: "draw", amount: 1 } },
       },
       resolve: null,
       text: "Whenever an opponent casts a spell, you may draw a card unless that player pays {1}.",

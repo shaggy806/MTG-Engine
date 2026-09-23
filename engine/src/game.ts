@@ -106,7 +106,7 @@ import type {
   ResolutionContext,
   ZoneChoiceFilter,
 } from "./effects.js";
-import { matchesFilter } from "./filter.js";
+import { matchesFilter, printedManaCost } from "./filter.js";
 import type { CardFilter } from "./filter.js";
 import type {
   EventOfType,
@@ -277,6 +277,11 @@ export class Game {
    * right now — the one move of it `moveObject` must not defer again. Not
    * game state: it only ever spans that one synchronous call. */
   private completingCommanderMove: ObjectId | null = null;
+
+  /** Lifelink life gain owed per source while simultaneous damage is being
+   * dealt (see {@link withDamageBatch}). Not game state: it only ever spans
+   * one synchronous call. */
+  private lifelinkBatch: Map<ObjectId, { controller: PlayerId; amount: number }> | null = null;
 
   private constructor(
     state: GameState,
@@ -1944,6 +1949,9 @@ export class Game {
     cost?: string,
     triggerValue = 0,
     triggerObject?: ObjectId,
+    /** Whose effect `onDecline` is, if not the chooser's — see the
+     * `choose-modes` decision's `declineController`. */
+    declineController?: PlayerId,
   ): void {
     // "You may pay {B}" — an unpayable cost isn't a choice at all, so skip
     // straight to the decline branch rather than offering something the
@@ -1959,7 +1967,14 @@ export class Game {
       if (onDecline !== undefined) {
         applyEffectSpec(
           onDecline,
-          this.makeResolutionContext(source, controller, targets, x, triggerValue, triggerObject),
+          this.makeResolutionContext(
+            source,
+            declineController ?? controller,
+            targets,
+            x,
+            triggerValue,
+            triggerObject,
+          ),
         );
       }
       return;
@@ -1976,6 +1991,9 @@ export class Game {
       ...(triggerValue !== 0 ? { triggerValue } : {}),
       ...(triggerObject !== undefined ? { triggerObject } : {}),
       ...(onDecline !== undefined ? { onDecline } : {}),
+      ...(declineController !== undefined && declineController !== controller
+        ? { declineController }
+        : {}),
       ...(cost !== undefined ? { cost } : {}),
     };
   }
@@ -2031,7 +2049,20 @@ export class Game {
     );
     for (const i of ordered) applyEffectSpec(modes[i].effect, context);
     if (ordered.length === 0 && onDecline !== undefined) {
-      applyEffectSpec(onDecline, context);
+      const declinedBy = awaiting.declineController;
+      applyEffectSpec(
+        onDecline,
+        declinedBy === undefined
+          ? context
+          : this.makeResolutionContext(
+              source,
+              declinedBy,
+              targets,
+              chosenX > 0 ? chosenX : x,
+              triggerValue ?? 0,
+              triggerObject,
+            ),
+      );
     }
 
     // A mode's effect may itself raise a decision (rare); otherwise resume.
@@ -3226,7 +3257,7 @@ export class Game {
   private applyCombatDamageSubPass(): void {
     const cd = this.state.combatDamage;
     if (cd === null) return;
-    this.dealCombatDamage(this.subPassKind(cd.pass), cd.assigned);
+    this.withDamageBatch(() => this.dealCombatDamage(this.subPassKind(cd.pass), cd.assigned));
     this.runStateBasedActions();
     if (this.state.result.over) {
       this.state.combatDamage = null;
@@ -3625,8 +3656,10 @@ export class Game {
       // now — `withDecisionSource` still resolves its name from the object,
       // which is exactly why `DecisionSource` carries `cardName` rather than
       // leaving the client to look the object up.
+      // Typecycling reveals what it finds (rule 702.29e: "search your library
+      // for a [type] card, reveal it, put it into your hand").
       this.withDecisionSource(cardId, () => {
-        this.beginLibrarySearch(player, cyclingSearch, "hand", 0, 1, false);
+        this.beginLibrarySearch(player, cyclingSearch, "hand", 0, 1, false, undefined, true);
       });
     } else {
       this.drawCard(player);
@@ -3748,7 +3781,10 @@ export class Game {
       optionsPerSlot.push([...options]);
     }
 
-    const forced = optionsPerSlot.every((o) => o.length === 1);
+    // An "up to one" slot is never forced: leaving it empty is a choice.
+    const forced = optionsPerSlot.every(
+      (o, i) => o.length === 1 && !isOptionalSpec(def.targets[i]),
+    );
     if (def.targets.length === 0 || forced || opts.via === "cascade") {
       this.commitFreeCast(cardId, opts.via, grantHaste, optionsPerSlot.map((o) => o[0]));
       return true;
@@ -3780,6 +3816,8 @@ export class Game {
     const stormCount = this.state.spellsCastThisTurn;
     this.moveObject(cardId, "stack");
     object.targets = targets.length > 0 ? [...targets] : null;
+    // Where each target is as the spell is cast, for last-known information.
+    object.targetZones = targets.length > 0 ? this.zonesOfTargets(targets) : undefined;
     object.castVia = via;
     object.stormCount = stormCount;
     // Cast without paying its mana cost: nothing was spent (rule 118.9).
@@ -4641,6 +4679,8 @@ export class Game {
     // Commit: move to the stack, pay, announce.
     this.moveObject(cardId, "stack");
     object.targets = targets.length > 0 ? [...targets] : null;
+    // Where each target is as the spell is cast, for last-known information.
+    object.targetZones = targets.length > 0 ? this.zonesOfTargets(targets) : undefined;
     object.xValue = hasX ? chosenX : null;
     object.castVia = via ?? null;
     object.stormCount = stormCount;
@@ -4808,7 +4848,9 @@ export class Game {
       // its own target slots.
       if (ability.otherOnly === true && id === sourceId) return false;
       if (sac === "creature-you-control") {
-        return this.registry.get(printedCardName(object)).types.includes("creature");
+        // What's a creature *now*: an animated land can be sacrificed, a
+        // creature that stopped being one can't.
+        return effectiveTypes(this.registry, object).includes("creature");
       }
       // { filter } — Zuran Orb "a land", Orcish Lumberjack "a Forest".
       return matchesFilter(this.state, this.registry, id, sac.filter, { you: player });
@@ -5447,6 +5489,7 @@ export class Game {
       sourceObjectId: sourceId,
       abilityIndex,
       sourceTimestamp: this.state.objects[sourceId]?.timestamp ?? 0,
+      ...(targets.length > 0 ? { targetZones: this.zonesOfTargets(targets) } : {}),
       counters: {},
       modifiers: [],
       timestamp: 0,
@@ -6163,6 +6206,7 @@ export class Game {
           const mode = def.castModal.modes[mi];
           const specs = mode?.targets ?? [];
           const slice = targets.slice(offset, offset + specs.length);
+          const zoneSlice = (object.targetZones ?? []).slice(offset, offset + specs.length);
           offset += specs.length;
           const ok =
             mode !== undefined &&
@@ -6174,7 +6218,17 @@ export class Game {
           if (!ok || mode === undefined) continue;
           applyEffectSpec(
             mode.effect,
-            this.makeResolutionContext(id, object.controller, slice, object.xValue ?? 0),
+            this.makeResolutionContext(
+              id,
+              object.controller,
+              slice,
+              object.xValue ?? 0,
+              0,
+              undefined,
+              1,
+              0,
+              zoneSlice,
+            ),
           );
           anyApplied = true;
         }
@@ -6187,6 +6241,11 @@ export class Game {
           object.controller,
           targets,
           object.xValue ?? 0,
+          0,
+          undefined,
+          1,
+          0,
+          object.targetZones,
         );
         // Overload (rule 702.126) and kicker (rule 702.33) each replace the
         // ordinary effect "instead" when chosen; overload takes priority since
@@ -6397,6 +6456,7 @@ export class Game {
       object.triggerObject,
       object.stackMultiplier ?? 1,
       this.recordAbilityResolution(object),
+      object.targetZones,
     );
     this.withDecisionSource(source, () => {
       if (ability.resolve !== null) {
@@ -6591,7 +6651,12 @@ export class Game {
                   : // "Deals that much damage": how many counters were put.
                     ability.trigger.on === "counters-put" && event.type === "counter-added"
                     ? event.amount
-                    : undefined;
+                    : // "Loses that much life" (Sanguine Bond, Exquisite Blood):
+                      // how much the life total moved.
+                      (ability.trigger.on === "gains-life" || ability.trigger.on === "loses-life") &&
+                        event.type === "life-changed"
+                      ? Math.abs(event.delta)
+                      : undefined;
           const base = {
             sourceObjectId: id,
             cardName: printedCardName(object),
@@ -7063,10 +7128,13 @@ export class Game {
     const chooserSlots = slots.filter(
       (s): s is { spec: TargetSpec; options: readonly TargetRef[] } => "spec" in s,
     );
-    // A single forced choice (one slot, one legal option) is no decision.
+    // A single forced choice (one slot, one legal option) is no decision —
+    // unless the slot is "up to one", where leaving it empty is the other
+    // choice (Displacer Kitten needn't blink itself; Sun Titan needn't
+    // return the only card it could).
     const forced =
       chooserSlots.length > 0 &&
-      chooserSlots.every((s) => s.options.length === 1);
+      chooserSlots.every((s) => s.options.length === 1 && !isOptionalSpec(s.spec));
     if (chooserSlots.length === 0 || forced) {
       const targets = slots.map((s) => ("auto" in s ? s.auto : s.options[0]));
       this.mintTriggerAbility(
@@ -7183,7 +7251,15 @@ export class Game {
     triggerObject?: ObjectId,
     stackMultiplier = 1,
     resolutionCount = 0,
+    /** Where each object target was when it was targeted, for last-known
+     * information (rule 608.2h) — see {@link manaValueOfTarget}. */
+    targetZones: readonly (ZoneType | null)[] = [],
   ): ResolutionContext {
+    const expectedZoneOf = (target: TargetRef): ZoneType | null => {
+      if (target.kind !== "object") return null;
+      const i = targets.findIndex((t) => t?.kind === "object" && t.object === target.object);
+      return i < 0 ? null : (targetZones[i] ?? null);
+    };
     const conditionMet = (condition: StaticCondition): boolean => {
       // "If that land is a Mountain" — a question about the object that
       // fired this trigger, which only the resolution context knows, so it
@@ -7220,11 +7296,12 @@ export class Game {
       stackMultiplier,
       resolutionCount,
       dealDamage: (target, amount) => this.dealDamage(source, this.splitTargetRef(target), amount),
-      dealDamageScoped: (who, amount) => {
-        for (const p of this.scopedPlayers(controller, who, triggerObject)) {
-          this.dealDamage(source, { kind: "player", player: p }, amount);
-        }
-      },
+      dealDamageScoped: (who, amount) =>
+        this.withDamageBatch(() => {
+          for (const p of this.scopedPlayers(controller, who, triggerObject)) {
+            this.dealDamage(source, { kind: "player", player: p }, amount);
+          }
+        }),
       draw: (player, count) => {
         for (let i = 0; i < count; i += 1) {
           // Once a draw finds the library empty, every later one in the same
@@ -7239,7 +7316,7 @@ export class Game {
       },
       playersInScope: (who) => this.scopedPlayers(controller, who, triggerObject),
       discardHand: (player) => this.discardWholeHand(player),
-      manaValueOf: (target) => this.manaValueOfTarget(target),
+      manaValueOf: (target) => this.manaValueOfTarget(target, expectedZoneOf(target)),
       manaSpentOf: (target) =>
         target.kind === "object" ? (this.state.objects[target.object]?.manaSpent ?? 0) : 0,
       lifeTotalOf: (player) => this.state.players[player]?.life ?? 0,
@@ -7334,7 +7411,7 @@ export class Game {
         if (target.kind === "object") this.putOnLibrary(target.object, position);
       },
       delayTrigger: (at, effect, text, delayedController) =>
-        this.createDelayedTrigger(source, delayedController, at, effect, text, targets),
+        this.createDelayedTrigger(source, delayedController, at, effect, text, targets, targetZones),
       fight: (a, b, oneSided) => this.fightCreatures(a, b, oneSided),
       counterSpell: (target) => this.counterSpellByEffect(target),
       gainControl: (target, untilEndOfTurn) =>
@@ -7877,6 +7954,8 @@ export class Game {
             : ({ kind: "sequence", effects: [] } as EffectSpec),
     }));
 
+    // The chooser decides and pays; `otherwise` stays the punisher's own
+    // controller's effect.
     this.beginModesChoice(
       source,
       decide,
@@ -7887,6 +7966,9 @@ export class Game {
       otherwise,
       targets,
       manaOption?.pay,
+      0,
+      triggerObject,
+      controller,
     );
   }
 
@@ -9088,12 +9170,14 @@ export class Game {
     exceptSource = false,
   ): void {
     if (amount <= 0) return;
-    for (const id of [...this.state.zones.shared.battlefield]) {
-      if (exceptSource && id === source) continue;
-      if (matchesFilter(this.state, this.registry, id, filter, { you })) {
-        this.dealDamage(source, { kind: "object", object: id }, amount);
+    this.withDamageBatch(() => {
+      for (const id of [...this.state.zones.shared.battlefield]) {
+        if (exceptSource && id === source) continue;
+        if (matchesFilter(this.state, this.registry, id, filter, { you })) {
+          this.dealDamage(source, { kind: "object", object: id }, amount);
+        }
       }
-    }
+    });
   }
 
   /** Every battlefield permanent matching `filter` deals `amount` damage to
@@ -9475,6 +9559,7 @@ export class Game {
     effect: EffectSpec,
     text: string,
     targets: ResolvedTargets,
+    targetZones: readonly (ZoneType | null)[] = [],
   ): void {
     const object = this.state.objects[source];
     this.state.delayedTriggers.push({
@@ -9489,6 +9574,9 @@ export class Game {
       // Captured by value: the ability chooses no new targets when it fires
       // (rule 603.7d), and the effect that set it up is long gone by then.
       targets: [...targets],
+      // Where they were when the *creating* spell or ability targeted them:
+      // "that spell" still means the spell after it has been countered.
+      ...(targetZones.length > 0 ? { targetZones: [...targetZones] } : {}),
       effect,
       text,
     });
@@ -9521,11 +9609,17 @@ export class Game {
       case "your-next-upkeep":
         return step === "upkeep" && laterTurn && active === trigger.controller;
       case "your-next-main-phase":
-        // Simplification: "your next main phase" is read as your next turn's
-        // *precombat* main, so a trigger created during its own controller's
-        // precombat main waits a turn rather than firing postcombat. Mana
-        // Drain, the only card that says this, is cast on someone else's turn.
-        return step === "precombat-main" && laterTurn && active === trigger.controller;
+        // The first main phase of yours to *begin* after it was created. This
+        // only runs as a step begins, and one created during a main phase was
+        // created after that phase began, so no turn check is needed: cast
+        // during your precombat main or combat, it's this turn's postcombat
+        // main; during your upkeep, this turn's precombat main; on someone
+        // else's turn, your next precombat main (Mana Drain's 2020-11-10
+        // ruling).
+        return (
+          (step === "precombat-main" || step === "postcombat-main") &&
+          active === trigger.controller
+        );
     }
   }
 
@@ -9559,6 +9653,9 @@ export class Game {
       // What `stackAbilityOf` resolves from: the ability has no index into any
       // card's `triggered` list, because it isn't an ability of a card.
       this.state.objects[id].delayedTrigger = trigger;
+      if (trigger.targetZones !== undefined) {
+        this.state.objects[id].targetZones = [...trigger.targetZones];
+      }
       this.emit({
         type: "ability-triggered",
         source: trigger.source,
@@ -9783,7 +9880,8 @@ export class Game {
       return false;
     }
     object.targets = null;
-    object.xValue = null;
+    // `xValue` is left for `moveObject`, which records the spell's last-known
+    // mana value (X included) before clearing it on the way off the stack.
     this.moveObject(id, "graveyard");
     this.emit({ type: "spell-countered", object: id });
     return true;
@@ -9921,13 +10019,45 @@ export class Game {
     return false;
   }
 
-  private manaValueOfTarget(target: TargetRef): number {
+  /**
+   * The mana value of `target` — on the stack including its chosen {X}
+   * (rule 202.3e), everywhere else as printed ({X} is 0).
+   *
+   * `expectedZone` is where the target was when it was targeted. An object
+   * that has since left that zone is read by last-known information (rule
+   * 608.2h), and for a *spell* that means as it last existed on the stack:
+   * Mana Drain's "that spell's mana value" includes the X of the spell it
+   * countered. A permanent's last-known mana value never included X, and a
+   * card targeted in a graveyard is read as it is now, so neither needs
+   * anything stored.
+   */
+  private manaValueOfTarget(target: TargetRef, expectedZone: ZoneType | null = null): number {
     if (target.kind !== "object") return 0;
     const object = this.state.objects[target.object];
     if (object === undefined) return 0;
-    const name = printedCardName(object);
-    if (!this.registry.has(name)) return 0;
-    return manaValue(parseManaCost(this.registry.get(name).manaCost));
+    if (object.zone === "stack") return this.manaValueOnStack(object);
+    if (expectedZone === "stack" && object.lastStackManaValue !== undefined) {
+      return object.lastStackManaValue;
+    }
+    if (!this.registry.has(printedCardName(object))) return 0;
+    return manaValue(parseManaCost(printedManaCost(this.registry, object)));
+  }
+
+  /** A spell's mana value while it's on the stack: printed, plus each {X}
+   * at the value chosen for it (rule 202.3e). */
+  private manaValueOnStack(object: GameObject): number {
+    if (!this.registry.has(printedCardName(object))) return 0;
+    const cost = parseManaCost(printedManaCost(this.registry, object));
+    return manaValue(cost) + cost.x * Math.max(0, object.xValue ?? 0);
+  }
+
+  /** Where each of `targets` is right now, for `GameObject.targetZones` —
+   * `null` for a player or an empty optional slot. */
+  private zonesOfTargets(targets: ResolvedTargets): (ZoneType | null)[] {
+    return Array.from({ length: targets.length }, (_, i) => {
+      const t = targets[i];
+      return t?.kind === "object" ? (this.state.objects[t.object]?.zone ?? null) : null;
+    });
   }
 
   private discardWholeHand(player: PlayerId): void {
@@ -10085,7 +10215,38 @@ export class Game {
 
   private applyLifelink(source: ObjectId, amount: number): void {
     if (amount <= 0 || !this.sourceHasKeyword(source, "lifelink")) return;
-    this.changeLife(this.state.objects[source].controller, amount);
+    const controller = this.state.objects[source].controller;
+    const batch = this.lifelinkBatch;
+    if (batch !== null) {
+      const owed = batch.get(source);
+      if (owed !== undefined) owed.amount += amount;
+      else batch.set(source, { controller, amount });
+      return;
+    }
+    this.changeLife(controller, amount);
+  }
+
+  /**
+   * Deal damage that happens all at once, then apply lifelink **once per
+   * source**. Damage a single source deals to several things simultaneously
+   * (a trampler hitting a blocker and the player, "each creature", "each
+   * opponent") is one life-gain event, so "whenever you gain life" triggers
+   * once for it, not once per recipient (the Sanguine Bond / Vito rulings;
+   * rule 120.3f). Nested batches join the outer one.
+   */
+  private withDamageBatch(fn: () => void): void {
+    if (this.lifelinkBatch !== null) {
+      fn();
+      return;
+    }
+    const batch = new Map<ObjectId, { controller: PlayerId; amount: number }>();
+    this.lifelinkBatch = batch;
+    try {
+      fn();
+    } finally {
+      this.lifelinkBatch = null;
+    }
+    for (const { controller, amount } of batch.values()) this.changeLife(controller, amount);
   }
 
   private changeLife(player: PlayerId, delta: number): void {
@@ -10712,6 +10873,14 @@ export class Game {
     // already here (Verix Bladewing). Cleared like any other zone-scoped
     // flag on the *next* move, so a Verix that dies and returns is unkicked.
     const enteringKicked = object.zone === "stack" && to === "battlefield" && object.kicked === true;
+    // Last-known information for a spell leaving the stack: its mana value
+    // with X, read by "that spell's mana value" after it's gone (Mana Drain).
+    // Deliberately not cleared by later moves: it's only ever read through a
+    // target that was a spell, and that spell's last existence on the stack
+    // doesn't change because the card was exiled from the graveyard since.
+    if (object.zone === "stack" && object.kind === "card") {
+      object.lastStackManaValue = this.manaValueOnStack(object);
+    }
     // The mana spent to cast a spell stays with the permanent it becomes (an
     // "if N mana was spent to cast it" enters trigger reads it there) and
     // ends with any other move.

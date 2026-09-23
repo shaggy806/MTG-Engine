@@ -311,6 +311,18 @@ export interface GameObject {
   sourceObjectId: ObjectId | null;
   /** For an ability object: index into the source's `activated`/`triggered` list. */
   abilityIndex: number | null;
+  /** For a spell or ability on the stack: where each of its object targets
+   * was when it was targeted (`null` for a player or an empty slot). An
+   * object that has left that zone is read by last-known information (rule
+   * 608.2h) — for a spell, as it last existed on the stack. A delayed
+   * trigger carries its creator's zones forward. */
+  targetZones?: (ZoneType | null)[];
+  /** A card's mana value as it last existed on the stack, {X} included (rule
+   * 202.3e), set each time it leaves the stack. Read only through a target
+   * that was a spell — see `targetZones` — so it needn't be cleared when the
+   * card moves on (a countered spell exiled from the graveyard was still
+   * that spell). */
+  lastStackManaValue?: number;
   /** How much mana was actually spent to cast this spell — the `{ manaSpentOf }`
    * amount and the `manaSpent` filter clause (Prossh; The Emperor of
    * Palamecia's "if at least four mana was spent to cast it"). Set as it's
@@ -889,6 +901,11 @@ export type AwaitingDecision =
        * modal spell/ability entirely isn't a legal answer, so it never
        * reaches zero chosen). needed-cards P19. */
       readonly onDecline?: EffectSpec;
+      /** Whose effect `onDecline` is, when that isn't the chooser's. An
+       * `unless` punisher asks someone else whether to pay, but what happens
+       * when they won't is still its controller's effect: an opponent who
+       * declines Rhystic Study's {1} lets *you* draw. Omitted = the chooser. */
+      readonly declineController?: PlayerId;
       /** The enclosing ability's own already-chosen targets, forwarded to the
        * modes (and to `onDecline`) — a `may`/`modal` effect doesn't choose
        * new targets itself, so a mode referencing `target: 0` means "the
@@ -986,6 +1003,9 @@ export interface DelayedTrigger {
    * them by slot index exactly like any other effect.
    */
   readonly targets: ResolvedTargets;
+  /** Where those targets were when the creating spell or ability targeted
+   * them — see `GameObject.targetZones`. */
+  readonly targetZones?: readonly (ZoneType | null)[];
   readonly effect: EffectSpec;
   readonly text: string;
 }

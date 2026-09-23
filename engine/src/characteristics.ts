@@ -475,6 +475,8 @@ function countValue(
           ).length,
         0,
       );
+    case "cards-in-your-hand":
+      return state.zones.perPlayer[controller]?.hand.length ?? 0;
     case "lands-you-control":
       return permanentCount(
         state,
@@ -846,10 +848,13 @@ function computeCharacteristicsUncached(
     for (const keyword of modifier.keywords) keywords.add(keyword);
   }
 
-  // Layer 7b — base P/T set by this permanent's own characteristic-defining
+  // Layer 7b — base P/T set by this object's own characteristic-defining
   // ability (rule 604.3 / 613.4b). Only a `"self"` static applies — and not
-  // if the permanent has lost its abilities.
-  if (onBattlefield && !lostAbilities) {
+  // if the permanent has lost its abilities. A CDA works in every zone
+  // (604.3), so a Psychosis Crawler in a library or graveyard is as big as
+  // its owner's hand, which a "creature card with power 2 or less" search
+  // has to see.
+  if (!lostAbilities) {
     for (const ability of def.static) {
       if (ability.setBasePtFromCount === undefined) continue;
       if (

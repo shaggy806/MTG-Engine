@@ -1,5 +1,5 @@
 Top 2000 Commander cards by EDHREC popularity (fetched 2026-09-13)
-455 already implemented / 1545 missing (marks refreshed 2026-09-22)
+460 already implemented / 1540 missing (marks refreshed 2026-09-23)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -468,7 +468,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   469  Pyroblast                                {R}              Instant
 [ ]   470  Conjurer's Closet                        {5}              Artifact
 [ ]   471  Fabricate                                {2}{U}           Sorcery
-[ ]   472  Tatyova, Benthic Druid                   {3}{G}{U}        Legendary Creature — Merfolk Druid
+[x]   472  Tatyova, Benthic Druid                   {3}{G}{U}        Legendary Creature — Merfolk Druid
 [ ]   473  Supreme Verdict                          {1}{W}{W}{U}     Sorcery
 [ ]   474  Tamiyo's Safekeeping                     {G}              Instant
 [x]   475  Underground Mortuary                     {0}              Land — Swamp Forest
@@ -779,7 +779,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   782  Jungle Hollow                            {0}              Land
 [ ]   783  Cloudshift                               {W}              Instant
 [ ]   784  Brain Freeze                             {1}{U}           Instant
-[ ]   785  Talrand, Sky Summoner                    {2}{U}{U}        Legendary Creature — Merfolk Wizard
+[x]   785  Talrand, Sky Summoner                    {2}{U}{U}        Legendary Creature — Merfolk Wizard
 [ ]   786  Ranger-Captain of Eos                    {1}{W}{W}        Creature — Human Soldier Ranger
 [ ]   788  Inkshield                                {3}{W}{B}        Instant
 [x]   789  Brash Taunter                            {4}{R}           Creature — Goblin
@@ -980,7 +980,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   984  Moldervine Reclamation                   {3}{B}{G}        Enchantment
 [ ]   985  Emeria, the Sky Ruin                     {0}              Land
 [ ]   986  Moraug, Fury of Akoum                    {4}{R}{R}        Legendary Creature — Minotaur Warrior
-[ ]   987  Sythis, Harvest's Hand                   {G}{W}           Legendary Enchantment Creature — Nymph
+[x]   987  Sythis, Harvest's Hand                   {G}{W}           Legendary Enchantment Creature — Nymph
 [ ]   988  Destiny Spinner                          {1}{G}           Enchantment Creature — Human
 [ ]   989  Defile                                   {B}              Instant
 [ ]   990  Mask of Memory                           {2}              Artifact — Equipment
@@ -1064,7 +1064,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1068  Sakashima of a Thousand Faces            {3}{U}           Legendary Creature — Human Rogue
 [ ]  1069  Blackcleave Cliffs                       {0}              Land
 [ ]  1070  Fertile Ground                           {1}{G}           Enchantment — Aura
-[ ]  1071  Jhoira, Weatherlight Captain             {2}{U}{R}        Legendary Creature — Human Artificer
+[x]  1071  Jhoira, Weatherlight Captain             {2}{U}{R}        Legendary Creature — Human Artificer
 [ ]  1072  K'rrik, Son of Yawgmoth                  {4}{B/P}{B/P}{B/P} Legendary Creature — Phyrexian Horror Minion
 [x]  1073  Ghalta, Stampede Tyrant                  {5}{G}{G}{G}     Legendary Creature — Elder Dinosaur
 [x]  1074  Lathliss, Dragon Queen                   {4}{R}{R}        Legendary Creature — Dragon
@@ -1394,7 +1394,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1401  All Will Be One                          {3}{R}{R}        Enchantment
 [ ]  1402  Sodden Verdure                           {0}              Land — Forest Island
 [ ]  1403  Call of the Ring                         {1}{B}           Enchantment
-[ ]  1404  Adrix and Nev, Twincasters               {2}{G}{U}        Legendary Creature — Merfolk Wizard
+[x]  1404  Adrix and Nev, Twincasters               {2}{G}{U}        Legendary Creature — Merfolk Wizard
 [ ]  1405  Grave Titan                              {4}{B}{B}        Creature — Giant
 [ ]  1406  Lifecrafter's Bestiary                   {3}              Artifact
 [ ]  1407  Gaea's Gift                              {1}{G}           Instant

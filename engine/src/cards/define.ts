@@ -158,7 +158,10 @@ export type CombatRestriction =
 export type CountSpec =
   | "cards-in-all-graveyards"
   | "creature-cards-in-all-graveyards"
-  | "lands-you-control";
+  | "lands-you-control"
+  /** How many cards are in its controller's hand (Psychosis Crawler) — its
+   * owner's, off the battlefield. */
+  | "cards-in-your-hand";
 
 /**
  * A per-player running total the engine keeps for the current turn, readable

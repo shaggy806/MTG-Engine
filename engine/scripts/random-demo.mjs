@@ -825,6 +825,16 @@ const deckC = deck([
   ["Kalonian Hydra", 1],
   ["Bonesplitter", 1],
   ["Holy Strength", 1],
+  // Top-2000 staples: X in a spell's mana value, life-change amounts.
+  ["Mana Drain", 1],
+  ["Sanguine Bond", 1],
+  ["Exquisite Blood", 1],
+  ["Vito, Thorn of the Dusk Rose", 1],
+  ["Psychosis Crawler", 1],
+  ["Smothering Tithe", 1],
+  ["Ash Barrens", 1],
+  ["Displacer Kitten", 1],
+  ["Loran of the Third Path", 1],
 ]);
 
 // All four seats' decks/commanders, in seating order — sliced down to

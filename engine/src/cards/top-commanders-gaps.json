@@ -8,7 +8,8 @@
   "condition:filter-combinators",
   "condition:top-card-of-library",
   "trigger:nth-each-turn",
-  "trigger:counters-put"
+  "trigger:counters-put",
+  "trigger:life-change-amount"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
@@ -19,7 +20,7 @@
   "bug:cda-all-zones": {
    "size": "small",
    "ui": false,
-   "description": "CDA fixes: setBasePtFromCount works in every zone (rule 604.3), which matters for a commander in the command zone and for hand and graveyard filters, and it accepts a CardFilter count ('the number of Islands you control')."
+   "description": "CDA fixes: setBasePtFromCount accepts a CardFilter count ('the number of Islands you control'). Built so far: it works in every zone (rule 604.3), and counts cards in your hand."
   },
   "bug:color-identity-back-face": {
    "size": "small",
@@ -94,7 +95,7 @@
   "bug:simultaneous-damage-batching": {
    "size": "small",
    "ui": false,
-   "description": "Simultaneous damage from several sources counts as one event where the rules say so: an enrage-style dealt-damage trigger fires once per batch, and lifelink gains once per source rather than once per recipient."
+   "description": "Simultaneous damage from several sources counts as one event where the rules say so: an enrage-style dealt-damage trigger fires once per batch. Built so far: lifelink gains once per source rather than once per recipient (combat damage, damage-all, damage to each player)."
   },
   "bug:simultaneous-zone-moves": {
    "size": "large",
@@ -124,7 +125,7 @@
   "bug:x-value-propagation": {
    "size": "small",
    "ui": false,
-   "description": "X carries through: a spell's mana value on the stack includes its chosen X (rule 202.3e) in manaValueOfTarget and filters, and an ETB trigger that refers to X uses the X its source was cast with (rule 107.3m)."
+   "description": "X carries through: an ETB trigger that refers to X uses the X its source was cast with (rule 107.3m). Built so far: a spell's mana value on the stack includes its chosen X (rule 202.3e) in manaValueOfTarget and filters, and a target that was a spell is read with it after leaving the stack (Mana Drain)."
   },
   "bug:zone-change-object-identity": {
    "size": "medium",

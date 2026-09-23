@@ -308,7 +308,12 @@ mana);
 `"source"` / `"trigger-object"`) points at, read off the printed card so it
 still answers after that permanent has left the battlefield (rule 608.2h, last
 known information — Feed the Swarm destroys the permanent and *then* reads it,
-and `0` for a player target); or
+and `0` for a player target). A spell **on the stack** counts its chosen {X}
+(rule 202.3e — Kaervek reading a Fireball cast for 3 sees 4), and a target
+that was a spell and has since left the stack is read as it last existed
+there, X included (Mana Drain's "that spell's mana value" after countering
+it). Anything else reads X as 0, so Reanimate on a Stonecoil Serpent costs no
+life; or
 `{ triggerValue: true }` — a number the firing event supplied to a **triggered
 ability**: the entering / attacking creature's power (Terror of the Peaks:
 `damage`), or the combat damage a creature dealt a player (Old Gnawbone:
@@ -528,7 +533,10 @@ exist (rule 111.7), so neither comes back.
   decision itself. Options the chooser can't take aren't offered, so
   "couldn't" and "wouldn't" both land on `otherwise` — which is what the
   printed cards do too. This is the difference from `may`: the decision is
-  raised for the chooser, not the effect's controller.
+  raised for the chooser, not the effect's controller. What happens when they
+  don't pay is still the **controller's** effect — an opponent who declines
+  Rhystic Study's {1} lets *you* draw, and Smothering Tithe's Treasure is
+  yours — so an `otherwise` that is itself a `may` asks the controller.
 - **`choose-creature-type { then }`** — "Choose a creature type. [then …]"
   as a spell resolves (rule 205.3m — Crippling Fear, Distant Melody). The
   controller picks from the full catalog (`engine/src/creature-types.ts`,
@@ -617,7 +625,9 @@ index stays a fixed position. A skipped slot travels as `null` in the
 dispatched action and arrives at resolution as a hole, which every effect
 already guards for (that's how an out-of-range index reads). Only *required*
 slots gate castability (rule 601.2c), and the client offers a **Skip** button
-for an optional one.
+for an optional one. An optional slot is never "forced": even with exactly one
+legal option the player is asked, since leaving it empty is the other choice
+(Displacer Kitten needn't blink itself).
 
 Two specs are **structured** rather than strings, for the shapes the literals
 stopped covering:
@@ -775,7 +785,7 @@ triggered: [
 | `becomes-target` | `who`, `filter?`, `byOpponentOnly?` | a permanent was chosen as a target of a spell or ability (rule 115.7 — Thunderbreak Regent). Fires as the spell/ability goes on the stack, so it triggers even if that spell is countered or later fizzles. The *player* who targeted it auto-fills the first target slot, the way `deals-combat-damage-to-player` fills it with the damaged player. |
 | `becomes-tapped` | `who`, `filter?` | a permanent became tapped (rule 701.21a — City of Brass). Fires for every tapping: a mana ability, a cost that taps it, an opponent's tap effect. Not the same as `add-mana`'s `painToController`, which only charges the mana-ability path. |
 | `leaves-battlefield` | `who` | a permanent leaves for **any** zone |
-| `gains-life` / `loses-life` | `who` | a player's life changes (`who` = whose) |
+| `gains-life` / `loses-life` | `who` | a player's life changes (`who` = whose). `{ triggerValue: true }` is how much ("loses that much life" — Sanguine Bond). Lifelink damage one source deals to several things at once is **one** gain, so it triggers once. |
 | `attacks` | `who`, `filter?`, `attackingYou?` | a creature is declared as an attacker (`filter` narrows which one — Utvara Hellkite / Atarka, World Render: "a Dragon you control"). `attackingYou` fires only when the attack is aimed at this permanent's controller (Kazuul's "if you're the defending player") — which also covers "a creature an opponent controls", since nobody can attack themselves. |
 | `attacks-alone` | `who` | Exalted (needed-cards P15) — a creature you control attacked alone this combat; the lone attacker isn't a target, read it via `ResolutionContext.triggerObject` / `EffectTargetRef: "trigger-object"` |
 | `sacrifice` | `who` | a player sacrifices a permanent (Korvold, Mayhem Devil — `who` = who sacrificed) |
@@ -902,7 +912,9 @@ anthem, the keyword grant and the granted trigger like any other creature.
   *effect* (§6).
 - `setBasePtFromCount: { countOf, plusPower, plusToughness }` — a layer-7b CDA
   (`"self"` only). `countOf`: `"cards-in-all-graveyards" \|
-  "creature-cards-in-all-graveyards" \| "lands-you-control"`. (Mortivore.)
+  "creature-cards-in-all-graveyards" \| "lands-you-control" \|
+  "cards-in-your-hand"`. (Mortivore, Psychosis Crawler.) It applies in every
+  zone (rule 604.3), so the card has that size in a library or graveyard too.
 - `restrictions: [...]` — `"cant-attack" \| "cant-block" \| "must-attack" \|
   "must-be-blocked"` (Pacifism, Juggernaut, Lure).
 - `protection: { colors?, types? }` — rule 702.16 (White Knight: `{ colors:
