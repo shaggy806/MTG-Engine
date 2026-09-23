@@ -228,7 +228,7 @@ sudo journalctl -u mtg-server -f      # follow
   presses the button.
 - **Uptime monitoring**: a free UptimeRobot HTTP(S) monitor against `https://ws.tobyens.com`
   (5-minute interval, email/push alerts) — set up outside the repo, at uptimerobot.com.
-- **Idle-room reaping**: rooms with no connected seats are deleted after 2 hours
+- **Idle-room reaping**: rooms with no connected seats are deleted after 30 minutes
   (`IDLE_ROOM_MS` in `server/src/index.ts`), swept every 15 minutes — no manual cleanup needed.
 - **Rate limiting**: per-IP (via Cloudflare's `CF-Connecting-IP` header, since the tunnel means
   the socket's own remote address is always Cloudflare's edge, not the real visitor), 40

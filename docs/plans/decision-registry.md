@@ -267,5 +267,12 @@ NUL is the only reason git stores that file verbatim: making it text lets git
 normalise CRLF to LF on checkin, which rewrites all ~10,100 lines in one
 commit and takes `git blame` with it. Verified — the diff is 20,270 lines,
 and `--ignore-cr-at-eol` shows the 32 that are real. Fixing it properly means
-deciding the repo's line-ending policy first (every other `.ts` blob is
-stored CRLF), not editing the byte.
+deciding the repo's line-ending policy first, not editing the byte. (Every
+other `.ts` blob is stored LF; `game.ts` alone is CRLF, on every line.)
+
+One thing the NUL does *not* do: git's diff and merge only sniff the first
+8,000 bytes for binary content, and the NUL is thousands of lines in, so
+they treat the file as text. Two branches that edit different parts of
+`game.ts` merge cleanly (checked 2026-09-23). It's the whole-file check
+behind line-ending conversion (`git ls-files --eol` reports `-text`) and
+`grep` that see it.
