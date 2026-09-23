@@ -23,6 +23,18 @@ import type { NetworkGame } from './net/useNetworkGame.ts'
 import { stackShowsSomething } from './game/decisionSource.ts'
 import { computeBoardEntries } from './game/board.ts'
 import type { BoardEntry } from './game/board.ts'
+import {
+  addToGroup,
+  clickMembers,
+  deathCount,
+  groupBlockers,
+  lethalCount,
+  setGroupTotal,
+  spareOne,
+  survivorsOf,
+  totalOf,
+  unassigned,
+} from './game/damageAssignment.ts'
 import { usePlayback } from './game/usePlayback.ts'
 import { AnimationBus } from './game/animationBus.ts'
 import { playerLabel, seatClassOf } from './format.ts'
@@ -115,7 +127,6 @@ type CycleAction = Extract<LegalAction, { kind: 'cycle' }>
 type AbilityAction = Extract<LegalAction, { kind: 'activate-ability' }>
 type AttackAction = Extract<LegalAction, { kind: 'declare-attackers' }>
 type BlockAction = Extract<LegalAction, { kind: 'declare-blockers' }>
-type OrderAction = Extract<LegalAction, { kind: 'order-blockers' }>
 type DiscardAction = Extract<LegalAction, { kind: 'discard' }>
 type ZoneChoiceAction = Extract<LegalAction, { kind: 'choose-from-zone' }>
 type MulliganAction = Extract<LegalAction, { kind: 'mulligan' }>
@@ -173,7 +184,7 @@ interface Targeting {
 
 /**
  * Whoever the engine is actually waiting on right now — a pending
- * declaration (attackers/blockers/discard/order-blockers) if there is one,
+ * declaration (attackers/blockers/discard/...) if there is one,
  * else the current priority holder. NOT the same as "my seat": each device
  * only ever represents one seat, so unlike the old hot-seat client, "my
  * seat" and "whoever must act" are frequently different players.
@@ -187,7 +198,6 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
   attackers: 'declare attackers',
   blockers: 'declare blockers',
   discard: 'discard',
-  'order-blockers': 'order blockers',
   'choose-from-zone': 'look at cards',
   mulligan: 'decide on a mulligan',
   'commander-replacement': 'decide where their commander goes',
@@ -578,11 +588,10 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   const [attackPicks, setAttackPicks] = useState<readonly ObjectId[]>([])
   const [blockAssign, setBlockAssign] = useState<Record<string, ObjectId>>({})
   const [blockFocus, setBlockFocus] = useState<ObjectId | null>(null)
-  const [orderPicks, setOrderPicks] = useState<readonly ObjectId[]>([])
   const [discardPicks, setDiscardPicks] = useState<readonly ObjectId[]>([])
   const [bottomPicks, setBottomPicks] = useState<readonly ObjectId[]>([])
-  // Per-blocker combat-damage amounts (EG-4a), null until the player edits one
-  // (falls back to the lethal-down-the-line default when confirmed unedited).
+  // Per-blocker combat-damage amounts (EG-4a), in the offer's order: null
+  // until the player edits one, meaning the engine's standard split.
   const [damagePicks, setDamagePicks] = useState<readonly number[] | null>(null)
   const [textFrom, setTextFrom] = useState<string | null>(null)
   const [modePicks, setModePicks] = useState<readonly number[]>([])
@@ -706,9 +715,6 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   const blockAction = actions.find(
     (a): a is BlockAction => a.kind === 'declare-blockers',
   )
-  const orderAction = actions.find(
-    (a): a is OrderAction => a.kind === 'order-blockers',
-  )
   const discardAction = actions.find(
     (a): a is DiscardAction => a.kind === 'discard',
   )
@@ -749,6 +755,37 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   const assignDamageAction = actions.find(
     (a): a is AssignDamageAction => a.kind === 'assign-combat-damage',
   )
+  // The split as it stands, which the board draws as well as the bar (a
+  // badge on each blocker), so it's worked out up here: the engine's
+  // standard split until the player changes it.
+  const damageAnswer = useMemo(
+    () =>
+      assignDamageAction ? (damagePicks ?? standardAssignment(assignDamageAction)) : null,
+    [assignDamageAction, damagePicks],
+  )
+  const damageGroups = useMemo(
+    () => (assignDamageAction ? groupBlockers(assignDamageAction, view) : []),
+    [assignDamageAction, view],
+  )
+  /** Each blocker's position in the offer, which is where its amount goes. */
+  const damageIndex = useMemo(
+    () => new Map(assignDamageAction?.blockers.map((id, i) => [id, i]) ?? []),
+    [assignDamageAction],
+  )
+  /** The blockers a board tile stands for, as offer positions: every one of
+   * them, since a folded token stack is one tile and several blockers. */
+  const damageMembersOf = useCallback(
+    (ids: readonly ObjectId[]): number[] =>
+      ids.flatMap((i) => {
+        const at = damageIndex.get(i)
+        return at === undefined ? [] : [at]
+      }),
+    [damageIndex],
+  )
+  const damageSurvivors = useMemo(
+    () => (assignDamageAction ? survivorsOf(assignDamageAction) : new Set<number>()),
+    [assignDamageAction],
+  )
   const chooseTargetsAction = actions.find(
     (a): a is ChooseTargetsAction => a.kind === 'choose-targets',
   )
@@ -780,7 +817,6 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
 
   const mode:
     | 'discard'
-    | 'order-blockers'
     | 'attackers'
     | 'blockers'
     | 'choose-from-zone'
@@ -826,8 +862,6 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           ? 'put-on-bottom'
       : discardAction
         ? 'discard'
-        : orderAction
-          ? 'order-blockers'
           : attackAction
             ? 'attackers'
             : blockAction
@@ -1178,11 +1212,12 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         )
         return
       }
-      if (mode === 'order-blockers' && orderAction) {
-        if (!orderAction.blockers.includes(id)) return
-        setOrderPicks((cur) =>
-          cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id],
-        )
+      if (mode === 'assign-combat-damage' && assignDamageAction && damageAnswer) {
+        // All of them, not just the one `pickIdForClick` picked.
+        const members = damageMembersOf(ids)
+        if (members.length > 0) {
+          setDamagePicks(clickMembers(assignDamageAction, members, damageAnswer))
+        }
         return
       }
       if (mode === 'sacrifice' && sacrificeAction) {
@@ -1247,14 +1282,16 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     },
     [
       abilitiesBySource,
+      assignDamageAction,
       attackAction,
       attackAssignments,
+      damageAnswer,
+      damageMembersOf,
       sendPicksAt,
       blockAction,
       blockAssign,
       blockFocus,
       mode,
-      orderAction,
       pickIdForClick,
       pickTarget,
       sacrificeAction,
@@ -1301,19 +1338,6 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     })
   }, [blockAssign, game, seat])
 
-  const confirmOrder = useCallback(
-    (order: readonly ObjectId[]) => {
-      if (!orderAction) return
-      game.dispatch({
-        type: 'order-blockers',
-        player: seat,
-        attacker: orderAction.attacker,
-        order: [...order],
-      })
-    },
-    [game, orderAction, seat],
-  )
-
   const confirmDiscard = useCallback(() => {
     game.dispatch({ type: 'discard', player: seat, cards: [...discardPicks] })
   }, [discardPicks, game, seat])
@@ -1353,7 +1377,6 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         setTargeting(null)
         setSelectedSource(null)
         setBlockFocus(null)
-        setOrderPicks([])
       }
     }
     window.addEventListener('keydown', onKey)
@@ -1422,16 +1445,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     else if (obj.blocking) badge = `\u{1F6E1} ${game.nameOf(obj.blocking)}`
     else if (obj.isCommander) badge = 'Commander'
 
-    if (mode === 'order-blockers' && orderAction) {
-      if (id === orderAction.attacker) {
-        badge = `${orderPicks.length}/${orderAction.blockers.length} ordered`
-      } else if (orderAction.blockers.includes(id)) {
-        const at = orderPicks.indexOf(id)
-        highlight = at === -1
-        selected = at !== -1
-        order = at === -1 ? null : at + 1
-      }
-    } else if (mode === 'targeting') {
+    if (mode === 'targeting') {
       highlight = ids.some((i) =>
         targetSlot.some((o) => o.kind === 'object' && o.object === i),
       )
@@ -1460,6 +1474,19 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       highlight = isBlocker || focusedCanHit
       selected = Boolean(assignedTo) || blockFocus === id
       if (assignedTo) badge = `\u{1F6E1} ${game.nameOf(assignedTo)}`
+    } else if (mode === 'assign-combat-damage' && assignDamageAction && damageAnswer) {
+      const members = damageMembersOf(ids)
+      if (members.length > 0) {
+        const dmg = totalOf(members, damageAnswer)
+        const dead = deathCount(assignDamageAction, members, damageAnswer, damageSurvivors)
+        highlight = true
+        selected = lethalCount(assignDamageAction, members, damageAnswer) > 0
+        // The amount, on the creature it's going to: with a crowd blocking,
+        // the board is where you can see which one is which. A folded token
+        // stack says how many of it die, the way a sacrifice does.
+        if (members.length > 1 && dead > 0) badge = `☠ ${dead}/${members.length}`
+        else if (dmg > 0) badge = `${dmg} dmg${dead > 0 ? ' ☠' : ''}`
+      }
     } else if (mode === 'sacrifice' && sacrificeAction) {
       const taken = sacrificePicks.filter((x) => x === id).length
       const of = sacrificeAction.copies?.[id] ?? 1
@@ -2330,34 +2357,6 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         </button>
       </div>
     )
-  } else if (mode === 'order-blockers' && orderAction) {
-    const total = orderAction.blockers.length
-    controls = (
-      <div className="controls">
-        <span>
-          Order {game.nameOf(orderAction.attacker)}'s blockers — click them in
-          the order they take damage ({orderPicks.length}/{total})
-        </span>
-        <button
-          type="button"
-          onClick={() => confirmOrder(orderAction.blockers)}
-        >
-          Keep default order
-        </button>
-        <button
-          type="button"
-          disabled={orderPicks.length !== total}
-          onClick={() => confirmOrder(orderPicks)}
-        >
-          Confirm order
-        </button>
-        {orderPicks.length > 0 ? (
-          <button type="button" onClick={() => setOrderPicks([])}>
-            Reset
-          </button>
-        ) : null}
-      </div>
-    )
   } else if (mode === 'blockers' && blockAction) {
     const n = Object.keys(blockAssign).length
     // The set-level rules (menace, Lure) are the engine's own check against
@@ -2458,42 +2457,102 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         ) : null}
       </div>
     )
-  } else if (mode === 'assign-combat-damage' && assignDamageAction) {
-    // Lethal down the blocker order, remainder to the last blocker (or, with
-    // trample, over to the defender) — from the engine, which uses the same
-    // function when nobody is asked.
-    const dflt = standardAssignment(assignDamageAction)
-    const picks = damagePicks ?? dflt
-    const total = picks.reduce((s, n) => s + n, 0)
-    const over = assignDamageAction.power - total
+  } else if (mode === 'assign-combat-damage' && assignDamageAction && damageAnswer) {
+    // Starts at the engine's standard split: kill as many blockers as
+    // possible, the cheapest first, then trample the rest over or leave it on
+    // a blocker. Any split is legal (there's no damage assignment order since
+    // Foundations); only trampling over needs lethal on every blocker.
+    //
+    // A row per group of interchangeable blockers rather than per blocker
+    // (see game/damageAssignment.ts), scrolling past a few, with the board
+    // taking clicks for the same choice. One input per blocker made a token
+    // stack of twenty blocking into a panel taller than the quadrant under it.
+    const offer = assignDamageAction
+    const picks = damageAnswer
+    const free = unassigned(offer, picks)
+    const everyone = offer.blockers.map((_, i) => i)
+    const allLethal = lethalCount(offer, everyone, picks) === offer.blockers.length
+    const dead = deathCount(offer, everyone, picks, damageSurvivors)
     // Rule 510.1c, from the engine. Its `whyCannot` runs the same function on
     // the same offer, so a split this button enables is one the server takes.
-    const valid = damageAssignmentViolations(assignDamageAction, picks) === null
+    const valid = damageAssignmentViolations(offer, picks) === null
+    const attacked = view.objects[offer.attacker]?.attacking ?? null
+    const overTo = attacked === null ? 'the defender' : attackTargetLabel(attacked)
+    const status =
+      free > 0
+        ? offer.trample
+          ? allLethal
+            ? `→ ${overTo}: ${free}`
+            : `${free} left · trample needs lethal on all`
+          : `${free} left to assign`
+        : offer.trample
+          ? `→ ${overTo}: 0`
+          : null
     controls = (
-      <div className="controls">
+      <div className="controls damage-assign">
         <span>
-          Assign {game.nameOf(assignDamageAction.attacker)}&rsquo;s {assignDamageAction.power} damage
+          Assign {game.nameOf(offer.attacker)}&rsquo;s {offer.power} damage
+          {offer.trample ? ' (trample)' : ''}
+          <span className="muted"> · click a blocker to kill or spare it</span>
         </span>
-        {assignDamageAction.blockers.map((b, i) => (
-          <label key={b} style={{ display: 'inline-flex', gap: '0.25rem', alignItems: 'center' }}>
-            {game.nameOf(b)} (lethal {assignDamageAction.lethal[i]})
-            <input
-              type="number"
-              min={0}
-              max={assignDamageAction.power}
-              value={picks[i]}
-              onChange={(e) => {
-                const n = Math.max(0, Math.floor(Number(e.target.value) || 0))
-                setDamagePicks(picks.map((v, j) => (j === i ? n : v)))
-              }}
-              style={{ width: '3.5rem' }}
-            />
-          </label>
-        ))}
-        <span className={over > 0 && !assignDamageAction.trample ? 'muted' : ''}>
-          → defender: {Math.max(0, over)}
-          {assignDamageAction.trample ? '' : over > 0 ? ' (needs trample)' : ''}
+        <div className="damage-rows">
+          {damageGroups.map((g) => {
+            const total = totalOf(g.members, picks)
+            const killed = deathCount(offer, g.members, picks, damageSurvivors)
+            // Lethal on an indestructible blocker, which it survives.
+            const shrugged = killed === 0 && lethalCount(offer, g.members, picks) > 0
+            const size = g.members.length
+            const fewer = spareOne(g.members, picks)
+            const more = addToGroup(offer, g.members, picks)
+            return (
+              <div key={g.members[0]} className="damage-row">
+                <span className="damage-name" title={`${g.label} · ${g.detail}`}>
+                  {g.label} <span className="muted">{g.detail}</span>
+                </span>
+                <button
+                  type="button"
+                  className="damage-step"
+                  aria-label={`Spare one of ${g.label}`}
+                  disabled={!fewer}
+                  onClick={() => fewer && setDamagePicks(fewer)}
+                >
+                  −
+                </button>
+                <input
+                  type="number"
+                  min={0}
+                  max={total + Math.max(0, free)}
+                  value={total}
+                  aria-label={`Damage to ${g.label}`}
+                  onChange={(e) =>
+                    setDamagePicks(setGroupTotal(offer, g, picks, Number(e.target.value) || 0))
+                  }
+                />
+                <button
+                  type="button"
+                  className="damage-step"
+                  aria-label={`More damage to ${g.label}`}
+                  disabled={!more}
+                  onClick={() => more && setDamagePicks(more)}
+                >
+                  +
+                </button>
+                <span className="damage-dead">
+                  {killed > 0 ? (size > 1 ? `☠ ${killed}/${size}` : '☠') : shrugged ? 'lethal' : ''}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+        {status !== null ? (
+          <span className={valid ? '' : 'damage-short'}>{status}</span>
+        ) : null}
+        <span className="muted">
+          ☠ {dead}/{offer.blockers.length}
         </span>
+        <button type="button" disabled={damagePicks === null} onClick={() => setDamagePicks(null)}>
+          Reset
+        </button>
         <button
           type="button"
           disabled={!valid}

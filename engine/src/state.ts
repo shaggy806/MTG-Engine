@@ -683,12 +683,6 @@ export type AwaitingDecision =
       readonly fromEffect?: boolean;
     }
   | {
-      readonly kind: "order-blockers";
-      readonly player: PlayerId;
-      /** The attacker whose blockers are being ordered for damage assignment. */
-      readonly attacker: ObjectId;
-    }
-  | {
       readonly kind: "choose-from-zone";
       readonly player: PlayerId;
       /** Candidates already revealed to `player`, in their original zone order. */
@@ -944,11 +938,14 @@ export type AwaitingDecision =
       readonly attacker: ObjectId;
       readonly blockers: readonly ObjectId[];
       readonly power: number;
-      /** Lethal-damage threshold per blocker (toughness − damage already
-       * marked, or 1 for a deathtouch source): each must get at least this
-       * before a later blocker or the defender is assigned any. */
+      /** Lethal damage per blocker (toughness − damage already marked, or 1
+       * from a deathtouch source). Any division is legal; every blocker must
+       * have its lethal before any damage tramples over (702.19b). */
       readonly lethal: readonly number[];
       readonly trample: boolean;
+      /** Per blocker: lethal damage won't destroy it. The default split
+       * (`standardAssignment`) spends damage on these last. */
+      readonly indestructible: readonly boolean[];
     };
 
 /**
@@ -1132,11 +1129,6 @@ export interface GameState {
    * fixpoint iteration later, out of `pendingSacrifices`).
    */
   decisionSource: DecisionSource | null;
-  /**
-   * Attackers with multiple blockers still awaiting a damage-assignment order
-   * from the attacking player. Drained one `order-blockers` action at a time.
-   */
-  pendingBlockerOrders: ObjectId[];
   /**
    * Defending players (3+ player games can have more than one) still owed a
    * "declare-blockers" turn this combat, in the order they'll be asked.

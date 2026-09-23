@@ -16,6 +16,7 @@ import type {
   LegalAction,
 } from "./actions.js";
 import { standardAssignment } from "./combat/damage.js";
+import type { DamageAssignmentOffer } from "./combat/damage.js";
 import { decisionFor, mayActOn, randomAnswerFor } from "./decisions/registry.js";
 import type { RandomSource } from "./decisions/contract.js";
 import { computeCharacteristics } from "./characteristics.js";
@@ -70,21 +71,12 @@ export interface PlayerController {
   /** Declare this player's blockers. */
   declareBlockers(view: ControllerView): readonly BlockerDeclaration[];
   /**
-   * Order the blockers assigned to one attacker for damage assignment
-   * (attacking player's choice). Reached via `act` as an `order-blockers`
-   * action when `awaiting.kind === "order-blockers"`.
-   */
-  orderBlockers(
-    view: ControllerView,
-    attacker: ObjectId,
-    blockers: readonly ObjectId[],
-  ): readonly ObjectId[];
-  /**
    * Assign a blocked attacker's combat damage (rule 510.1c). Return one
    * amount per blocker in `blockers` order; `power − sum` (allowed only with
    * `trample`, and it must be ≥ 0) goes to the defending player / planeswalker.
-   * `lethal[i]` is the minimum for each blocker before a later one / the
-   * defender may be assigned. Reached via `act` when
+   * `lethal[i]` is what counts as lethal to each blocker: any division among
+   * them is legal, but damage may trample over only once every blocker has
+   * its lethal (rule 702.19b). Reached via `act` when
    * `awaiting.kind === "assign-combat-damage"`.
    */
   assignCombatDamage(
@@ -95,6 +87,7 @@ export interface PlayerController {
       readonly power: number;
       readonly lethal: readonly number[];
       readonly trample: boolean;
+      readonly indestructible: readonly boolean[];
     },
   ): readonly number[];
   /**
@@ -242,8 +235,9 @@ const firstOfEach = (
 ): ChosenTargets => legalOptions.map((options) => options[0] ?? null);
 
 /**
- * The standard combat-damage assignment: lethal down the blocker order, the
- * remainder to the last blocker (or, with trample, over to the defender).
+ * The standard combat-damage assignment: kill as many blockers as possible,
+ * the ones needing least first, then trample the rest over or leave it on a
+ * blocker (see `standardAssignment`).
  *
  * Kept under this name because it is on the engine's public seam
  * (`export * from "./controller.js"`). The implementation moved to
@@ -300,18 +294,7 @@ export class AutomaticController implements PlayerController {
     return [];
   }
 
-  orderBlockers(
-    _view: ControllerView,
-    _attacker: ObjectId,
-    blockers: readonly ObjectId[],
-  ): readonly ObjectId[] {
-    return blockers;
-  }
-
-  assignCombatDamage(
-    _view: ControllerView,
-    a: { readonly power: number; readonly lethal: readonly number[]; readonly trample: boolean },
-  ): readonly number[] {
+  assignCombatDamage(_view: ControllerView, a: DamageAssignmentOffer): readonly number[] {
     return standardDamageAssignment(a);
   }
 
@@ -455,11 +438,6 @@ const entryReady = (entry: ScriptEntry, view: ControllerView): boolean =>
 
 type AttackChooser = (view: ControllerView) => readonly AttackerDeclaration[];
 type BlockChooser = (view: ControllerView) => readonly BlockerDeclaration[];
-type OrderChooser = (
-  view: ControllerView,
-  attacker: ObjectId,
-  blockers: readonly ObjectId[],
-) => readonly ObjectId[];
 type TargetChooser = (
   view: ControllerView,
   sourceName: string,
@@ -525,6 +503,7 @@ type DamageAssigner = (
     readonly power: number;
     readonly lethal: readonly number[];
     readonly trample: boolean;
+    readonly indestructible: readonly boolean[];
   },
 ) => readonly number[];
 
@@ -539,7 +518,6 @@ export class ScriptedController implements PlayerController {
 
   declareAttackersFn: AttackChooser = () => [];
   declareBlockersFn: BlockChooser = () => [];
-  orderBlockersFn: OrderChooser = (_view, _attacker, blockers) => blockers;
   assignCombatDamageFn: DamageAssigner = (_view, a) => standardDamageAssignment(a);
   chooseTargetsFn: TargetChooser = (_view, _source, _specs, legalOptions) =>
     firstOfEach(legalOptions);
@@ -607,14 +585,6 @@ export class ScriptedController implements PlayerController {
     return this.declareBlockersFn(view);
   }
 
-  orderBlockers(
-    view: ControllerView,
-    attacker: ObjectId,
-    blockers: readonly ObjectId[],
-  ): readonly ObjectId[] {
-    return this.orderBlockersFn(view, attacker, blockers);
-  }
-
   assignCombatDamage(
     view: ControllerView,
     a: {
@@ -623,6 +593,7 @@ export class ScriptedController implements PlayerController {
       readonly power: number;
       readonly lethal: readonly number[];
       readonly trample: boolean;
+      readonly indestructible: readonly boolean[];
     },
   ): readonly number[] {
     return this.assignCombatDamageFn(view, a);

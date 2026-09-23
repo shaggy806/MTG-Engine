@@ -112,18 +112,35 @@ describe("EG-4a — trample / multi-block damage assignment as a player choice",
     expect(zoneOf(game, b2)).toBe("battlefield");
   });
 
-  it("rejects an illegal assignment (a later blocker before an earlier one has lethal)", () => {
+  it("a later blocker may take damage before an earlier one has lethal (no order since Foundations)", () => {
     const { game, a, b } = mkGame();
     const baloth = spawn(game, "Rumbling Baloth", A); // 4/4, no trample
-    const b1 = spawn(game, "Grizzly Bears", B); // 2/2 — lethal 2, ordered first
+    const b1 = spawn(game, "Grizzly Bears", B); // 2/2, declared first
     const b2 = spawn(game, "Giant Spider", B); // 2/4
     a.declareAttackersFn = () => [{ attacker: baloth, defender: B }];
     b.declareBlockersFn = () => [
       { blocker: b1, attacker: baloth },
       { blocker: b2, attacker: baloth },
     ];
+    a.assignCombatDamageFn = () => [0, 4];
 
-    a.assignCombatDamageFn = () => [0, 4]; // b2 gets damage while b1 has 0 of its 2 lethal
+    game.advanceUntil(toPostcombat);
+    expect(zoneOf(game, b1)).toBe("battlefield");
+    expect(zoneOf(game, b2)).toBe("graveyard");
+  });
+
+  it("rejects trampling over before every blocker has lethal (rule 702.19b)", () => {
+    const { game, a, b } = mkGame();
+    const wurm = spawn(game, "Craw Wurm", A); // 6/4 trample
+    const b1 = spawn(game, "Grizzly Bears", B); // 2/2
+    const b2 = spawn(game, "Giant Spider", B); // 2/4
+    a.declareAttackersFn = () => [{ attacker: wurm, defender: B }];
+    b.declareBlockersFn = () => [
+      { blocker: b1, attacker: wurm },
+      { blocker: b2, attacker: wurm },
+    ];
+
+    a.assignCombatDamageFn = () => [2, 3]; // 1 over while the Spider has 3 of its 4
     expect(() => game.advanceUntil(toPostcombat)).toThrow(/lethal/);
   });
 

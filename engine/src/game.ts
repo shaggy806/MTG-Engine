@@ -77,7 +77,6 @@ import { attackers } from "./decisions/attackers.js";
 import { chooseTargets } from "./decisions/choose-targets.js";
 import { blockers } from "./decisions/blockers.js";
 import { chooseCopy } from "./decisions/choose-copy.js";
-import { orderBlockers } from "./decisions/order-blockers.js";
 import { mulligan } from "./decisions/mulligan.js";
 import { mulliganCardsOwed } from "./decisions/shared/mulligan-math.js";
 import { commanderReplacement } from "./decisions/commander-replacement.js";
@@ -316,7 +315,6 @@ export class Game {
       applyCommanderChoice: (player, toCz) => this.applyCommanderChoice(player, toCz),
       applyMulligan: (player, keep) => this.applyMulligan(player, keep),
       applyPutOnBottom: (player, cards) => this.applyPutOnBottom(player, cards),
-      applyBlockerOrder: (p, a, o) => this.applyBlockerOrder(p, a, o),
       applyAssignCombatDamage: (p, a) => this.applyAssignCombatDamage(p, a),
       applyAttackerDeclarations: (p, d) => this.applyAttackerDeclarations(p, d),
       applyBlockerDeclarations: (p, b) => this.applyBlockerDeclarations(p, b),
@@ -378,7 +376,6 @@ export class Game {
       revealedThisTurn: [],
       decisionSource: null,
       delayedTriggers: [],
-      pendingBlockerOrders: [],
       pendingBlockerDeclarations: [],
       pendingTriggers: [],
       pendingTargetedTrigger: null,
@@ -2909,8 +2906,7 @@ export class Game {
    * Kick off the defending-player queue for this combat (3+ player games can
    * have more than one defender to ask). Each attacked defender gets their
    * own sequential "declare-blockers" turn, drained by
-   * `promptNextBlockerDeclaration` the same way `pendingBlockerOrders` drains
-   * one `order-blockers` action at a time.
+   * `promptNextBlockerDeclaration`.
    */
   private declareBlockersStep(): void {
     const attackers = this.currentAttackers();
@@ -2938,9 +2934,9 @@ export class Game {
    * blocker, skipping any who don't (same "no real decision" reasoning
    * `declareAttackersStep` documents). Leaves `awaiting` untouched (still
    * whatever the caller set it to before) if the queue drains with nobody
-   * left to ask — mirrors `pendingBlockerOrders`: the current head stays in
-   * the queue until `applyBlockerDeclarations` actually answers it and pops
-   * it off, this only peeks/skips ahead of that.
+   * left to ask. The current head stays in the queue until
+   * `applyBlockerDeclarations` actually answers it and pops it off; this only
+   * peeks/skips ahead of that.
    */
   private promptNextBlockerDeclaration(): void {
     const attackers = this.currentAttackers();
@@ -3121,58 +3117,11 @@ export class Game {
       return;
     }
 
-    // Every defender has declared (or been skipped) — the attacking player
-    // orders the blockers of each multi-blocked attacker for damage
-    // assignment (rule 509.2), one `order-blockers` action each. The
-    // declaration order is the default the UI can just confirm.
-    this.state.pendingBlockerOrders = this.currentAttackers().filter(
-      (id) => this.state.objects[id].blockedBy.length > 1,
-    );
-    this.promptNextBlockerOrder();
-  }
-
-  /**
-   * Ask the attacking player to order the next multi-blocked attacker's
-   * blockers, or resume the step once every one has been ordered.
-   */
-  private promptNextBlockerOrder(): void {
-    const next = this.state.pendingBlockerOrders[0];
-    if (next === undefined) {
-      this.state.awaiting = null;
-      this.prepareForPriority(this.activePlayer);
-      return;
-    }
-    this.state.awaiting = {
-      kind: "order-blockers",
-      player: this.activePlayer,
-      attacker: next,
-    };
-    this.grantPriority(this.activePlayer);
-  }
-
-  /** Kept because the matching apply validates before applying and throws;
-   * the rules live in `decisions/`. */
-  private whyCannotOrderBlockers(
-    player: PlayerId,
-    attacker: ObjectId,
-    order: readonly ObjectId[],
-  ): string | null {
-    return orderBlockers.whyCannot(this.decisionCtx, { type: "order-blockers", player, attacker, order }, player);
-  }
-
-  private applyBlockerOrder(
-    player: PlayerId,
-    attacker: ObjectId,
-    order: readonly ObjectId[],
-  ): void {
-    const why = this.whyCannotOrderBlockers(player, attacker, order);
-    if (why !== null) throw new Error(why);
-
-    this.state.objects[attacker].blockedBy = [...order];
-    this.state.pendingBlockerOrders = this.state.pendingBlockerOrders.filter(
-      (id) => id !== attacker,
-    );
-    this.promptNextBlockerOrder();
+    // Every defender has declared (or been skipped), so the active player
+    // gets priority (rule 509.2). There is no damage assignment order to ask
+    // for any more: a multi-blocked attacker's controller divides its damage
+    // freely in the combat-damage step (510.1c).
+    this.prepareForPriority(this.activePlayer);
   }
 
   /** Turn-based action for the combat-damage step (rule 510). Sets up the
@@ -3215,7 +3164,7 @@ export class Game {
     this.promptNextDamageAssignment();
   }
 
-  /** The blockers of `attackerId` still on the battlefield, in assignment order. */
+  /** The blockers of `attackerId` still on the battlefield, in declaration order. */
   private liveBlockersOf(attackerId: ObjectId): ObjectId[] {
     return liveBlockersOf(this.state, attackerId);
   }
@@ -3225,15 +3174,15 @@ export class Game {
   }
 
   /** Whether the attacking player has a real choice in how `attackerId` (a
-   * blocked attacker) divides its combat damage — 2+ live blockers with slack,
-   * or trample with room past the blockers' lethal. */
+   * blocked attacker) divides its combat damage — 2+ live blockers, or a lone
+   * one with trample and room past its lethal. */
   private needsDamageAssignmentChoice(attackerId: ObjectId): boolean {
     return needsDamageAssignmentChoice(this.state, this.registry, attackerId);
   }
 
   /** The standard auto-assignment for `attackerId`'s combat damage this
-   * sub-pass: lethal down the blocker order, remainder to the last blocker
-   * (or trampled over). One entry per live blocker. */
+   * sub-pass (`standardAssignment`: kill as many blockers as possible). One
+   * entry per live blocker. */
   private autoAssignForAttacker(attackerId: ObjectId): number[] {
     return autoAssignForAttacker(this.state, this.registry, attackerId);
   }
@@ -3252,6 +3201,7 @@ export class Game {
         power: computeCharacteristics(this.state, this.registry, attackerId).power,
         lethal: blockers.map((b) => this.lethalFor(attackerId, b)),
         trample: this.objHasKeyword(attackerId, "trample"),
+        indestructible: blockers.map((b) => this.objHasKeyword(b, "indestructible")),
       };
       return;
     }
@@ -3387,8 +3337,8 @@ export class Game {
           } else {
             const trample = this.objHasKeyword(attackerId, "trample");
             // A player-chosen distribution (rule 510.1c — ROADMAP Phase 11
-            // EG-4a) overrides the standard "lethal down the line"; otherwise
-            // auto-assign (deathtouch already folded into `autoAssignForAttacker`).
+            // EG-4a) overrides the standard split; otherwise auto-assign
+            // (deathtouch already folded into `autoAssignForAttacker`).
             const override = assigned[attackerId];
             const perBlocker =
               override !== undefined && override.length === liveBlockers.length
@@ -3452,7 +3402,6 @@ export class Game {
   }
 
   private endCombatStep(): void {
-    this.state.pendingBlockerOrders = [];
     this.state.pendingBlockerDeclarations = [];
     this.state.combatDamage = null;
     for (const id of this.state.zones.shared.battlefield) {

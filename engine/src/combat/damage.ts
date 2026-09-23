@@ -2,6 +2,12 @@
  * Splitting an attacker's combat damage among its blockers — rule 510.1c and
  * the "standard" split every automatic answer uses.
  *
+ * There is no damage assignment order any more: *Magic: The Gathering
+ * Foundations* removed it, so a creature blocked by several others divides
+ * its damage among them however its controller likes (510.1c), and only
+ * trample asks for lethal on each before any goes over (702.19b). See
+ * `docs/plans/damage-assignment-order.md`.
+ *
  * This module exists because the split had two implementations. `Game`'s
  * `autoAssignForAttacker` derived the blockers and their lethal amounts off
  * the board; `controller.ts`'s `standardDamageAssignment` took them
@@ -22,7 +28,9 @@ import type { ObjectId } from "../primitives.js";
 import type { GameState } from "../state.js";
 
 /** The blockers of `attackerId` that are still on the battlefield — one may
- * have been removed in response after blocks were declared. */
+ * have been removed in response after blocks were declared — in the order
+ * they were declared, which means nothing to the rules but keeps every
+ * per-blocker list lined up. */
 export function liveBlockersOf(state: GameState, attackerId: ObjectId): ObjectId[] {
   return state.objects[attackerId].blockedBy.filter(
     (id) => state.objects[id]?.zone === "battlefield",
@@ -46,6 +54,9 @@ export function lethalFor(
 /**
  * Whether the attacker's controller actually has a choice to make, or whether
  * the split is forced and can be auto-assigned without asking.
+ *
+ * Any two blockers make it a choice, since any division among them is legal.
+ * A lone blocker takes everything, unless trample leaves room past its lethal.
  */
 export function needsDamageAssignmentChoice(
   state: GameState,
@@ -56,43 +67,57 @@ export function needsDamageAssignmentChoice(
   if (live.length === 0) return false;
   const power = computeCharacteristics(state, registry, attackerId).power;
   if (power <= 0) return false;
-  const trample = objHasKeyword(state, registry, attackerId, "trample");
-  if (live.length === 1 && !trample) return false;
-  // Damage that's rigidly forced: lethal to each blocker except (without
-  // trample) the last, which just takes the remainder.
-  let forced = 0;
-  live.forEach((blockerId, index) => {
-    if (!trample && index === live.length - 1) return;
-    forced += lethalFor(state, registry, attackerId, blockerId);
-  });
-  return power > forced;
+  if (live.length >= 2) return true;
+  if (!objHasKeyword(state, registry, attackerId, "trample")) return false;
+  return power > lethalFor(state, registry, attackerId, live[0]);
 }
 
 /** What an attacker's damage assignment is being decided against: how much
- * there is to assign, what counts as lethal to each blocker in order, and
- * whether the excess may trample over. */
+ * there is to assign, what counts as lethal to each blocker (in declaration
+ * order), and whether the excess may trample over. */
 export interface DamageAssignmentOffer {
   readonly power: number;
   readonly lethal: readonly number[];
   readonly trample: boolean;
+  /** Which blockers lethal damage won't destroy, in the same order. Trample
+   * still needs lethal on them first (702.19b); they just don't die of it.
+   * Absent means none of them. */
+  readonly indestructible?: readonly boolean[];
 }
 
 /**
- * The standard combat-damage assignment: lethal down the blocker order, the
- * remainder to the last blocker (or, with trample, over to the defender).
+ * The standard combat-damage assignment: kill as many blockers as possible,
+ * the ones needing least first (ties in declaration order). Indestructible
+ * blockers come after all the rest, since lethal damage on one kills nothing:
+ * they get it only once everything that can die has, which is what trampling
+ * over needs. Whatever is left tramples over if every blocker got lethal, and
+ * otherwise goes on the cheapest blocker still short of it — or, with every
+ * blocker dead and no trample, on the last one killed.
  *
  * **The one copy.** `Game` reaches it through {@link autoAssignForAttacker}
  * when nobody is asked; every controller reaches it directly as its default
- * answer when somebody is.
+ * answer when somebody is, and the client starts its damage bar from it.
  */
 export function standardAssignment(offer: DamageAssignmentOffer): number[] {
-  let remaining = offer.power;
-  return offer.lethal.map((lethal, index) => {
-    const isLastAndNoTrample = !offer.trample && index === offer.lethal.length - 1;
-    const amount = isLastAndNoTrample ? remaining : Math.min(remaining, lethal);
-    remaining -= amount;
-    return amount;
-  });
+  const { power, lethal, trample } = offer;
+  const survives = (index: number): number => (offer.indestructible?.[index] ? 1 : 0);
+  const amounts = lethal.map(() => 0);
+  if (lethal.length === 0) return amounts;
+  const cheapestFirst = lethal
+    .map((_, index) => index)
+    .sort((a, b) => survives(a) - survives(b) || lethal[a] - lethal[b] || a - b);
+  let remaining = power;
+  let killed = 0;
+  for (const index of cheapestFirst) {
+    if (lethal[index] > remaining) break;
+    amounts[index] = lethal[index];
+    remaining -= lethal[index];
+    killed += 1;
+  }
+  if (remaining > 0 && !(trample && killed === lethal.length)) {
+    amounts[cheapestFirst[Math.min(killed, lethal.length - 1)]] += remaining;
+  }
+  return amounts;
 }
 
 /** {@link standardAssignment} with the offer read off the board — what the
@@ -108,12 +133,16 @@ export function autoAssignForAttacker(
     power: computeCharacteristics(state, registry, attackerId).power,
     lethal: live.map((blockerId) => lethalFor(state, registry, attackerId, blockerId)),
     trample: objHasKeyword(state, registry, attackerId, "trample"),
+    indestructible: live.map((blockerId) => objHasKeyword(state, registry, blockerId, "indestructible")),
   });
 }
 
 /**
  * Why `assignment` is not a legal answer to `offer`, or `null` if it is —
- * rule 510.1c, plus the arithmetic around it.
+ * rules 510.1c and 702.19b, plus the arithmetic around them. Any division of
+ * the attacker's power among its blockers is legal; only damage trampled over
+ * needs every blocker to have lethal first (damage already marked counts,
+ * and 1 is lethal from deathtouch — both folded into `lethal`).
  *
  * Deliberately says nothing about *who* is being asked: that guard, and its
  * "is not being asked to assign combat damage" wording, stay with the caller
@@ -136,17 +165,6 @@ export function damageAssignmentViolations(
   if (over < 0) return "assigned more than the attacker's power";
   if (over > 0 && !trample) {
     return "only a trampling attacker can assign combat damage to the defending player";
-  }
-  // Rule 510.1c: an amount may be assigned to a blocker (or trampled over)
-  // only once every *earlier* blocker has at least lethal.
-  for (let i = 0; i < blockers.length; i += 1) {
-    const laterAssigned = assignment[i] > 0;
-    if (!laterAssigned && over === 0) continue;
-    for (let j = 0; j < i; j += 1) {
-      if (assignment[j] < lethal[j]) {
-        return "each earlier blocker must be assigned lethal damage first";
-      }
-    }
   }
   if (over > 0) {
     for (let j = 0; j < blockers.length; j += 1) {

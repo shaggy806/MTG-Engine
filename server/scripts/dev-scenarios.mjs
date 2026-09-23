@@ -18,8 +18,9 @@
 //               in the order listed
 //   bots        per bot: `attack` (a player id: attack it with everything
 //               that can), `block` ({ attacker, with }: block that attacker
-//               with every untapped creature of that name), `casts` ([{ name,
-//               target }]: cast on its own precombat main, one per turn)
+//               with every untapped creature of that name, or of any name in a
+//               list), `casts` ([{ name, target }]: cast on its own precombat
+//               main, one per turn)
 
 export const COMMANDERS = {
   alice: "Krenko, Mob Boss",
@@ -45,6 +46,87 @@ export default {
         block: { attacker: "Colossal Dreadmaw", with: "Grizzly Bears" },
         casts: [{ name: "Diabolic Edict", target: "alice" }],
         attack: "alice",
+      },
+    },
+  },
+
+  SWARM: {
+    about:
+      "2p. A crowd of mostly different creatures blocking one attacker, for the damage " +
+      "assignment's scrolling list: attack with the trampling Colossal Dreadmaw and bob " +
+      "blocks it with four Grizzly Bears and twelve others, no two alike.",
+    players: ["alice", "bob"],
+    lands: { alice: 5, bob: 5 },
+    battlefield: {
+      alice: ["Colossal Dreadmaw"],
+      bob: [
+        ...Array(4).fill("Grizzly Bears"),
+        "Hill Giant", "Craw Wurm", "Serra Angel", "Giant Spider", "Typhoid Rats",
+        "Wall of Wood", "Raging Goblin", "Boggart Brute", "Darksteel Myr",
+        "Rumbling Baloth", "Kobolds of Kher Keep", "Vampire Nighthawk",
+      ],
+    },
+    bots: {
+      bob: {
+        block: {
+          attacker: "Colossal Dreadmaw",
+          with: [
+            "Grizzly Bears", "Hill Giant", "Craw Wurm", "Serra Angel", "Giant Spider",
+            "Typhoid Rats", "Wall of Wood", "Raging Goblin", "Boggart Brute", "Darksteel Myr",
+            "Rumbling Baloth", "Kobolds of Kher Keep", "Vampire Nighthawk",
+          ],
+        },
+      },
+    },
+  },
+
+  HORDE: {
+    about:
+      "2p. A token stack and a few others blocking one attacker: attack with the Colossal " +
+      "Dreadmaw and bob blocks it with a stack of twenty Goblin tokens, two Grizzly Bears " +
+      "and a Hill Giant.",
+    players: ["alice", "bob"],
+    lands: { alice: 5, bob: 5 },
+    battlefield: {
+      alice: ["Colossal Dreadmaw"],
+      bob: ["Grizzly Bears", "Grizzly Bears", "Hill Giant"],
+    },
+    setup(game) {
+      // Real tokens, made the way a card makes them: twenty compact into one stack.
+      game.debugApplyEffect("bob", { kind: "create-token", token: "Goblin Token", count: 20 });
+    },
+    bots: {
+      bob: {
+        block: {
+          attacker: "Colossal Dreadmaw",
+          with: ["Goblin Token", "Grizzly Bears", "Hill Giant"],
+        },
+      },
+    },
+  },
+
+  HORDE4: {
+    about:
+      "4p. HORDE from the bottom-right seat, whose quadrant the decision panel floats " +
+      "over: attack dave with the Colossal Dreadmaw and he blocks with a stack of twenty " +
+      "Goblin tokens, two Grizzly Bears and a Hill Giant.",
+    players: ["alice", "bob", "carol", "dave"],
+    lands: { alice: 5, bob: 5, carol: 5, dave: 5 },
+    battlefield: {
+      alice: ["Colossal Dreadmaw"],
+      dave: ["Grizzly Bears", "Grizzly Bears", "Hill Giant"],
+    },
+    setup(game) {
+      game.debugApplyEffect("dave", { kind: "create-token", token: "Goblin Token", count: 20 });
+    },
+    bots: {
+      bob: {},
+      carol: {},
+      dave: {
+        block: {
+          attacker: "Colossal Dreadmaw",
+          with: ["Goblin Token", "Grizzly Bears", "Hill Giant"],
+        },
       },
     },
   },
