@@ -222,6 +222,23 @@ export type TriggerSpec =
     }
   | {
       /**
+       * One or more counters were put on a permanent (rule 122.6, which
+       * includes the counters it entered with) — Shalai and Hallar's
+       * "whenever one or more +1/+1 counters are put on a creature you
+       * control". Fires once per permanent per event, so counters put on two
+       * creatures at once trigger twice (Hapatra's ruling). `who` / `filter`
+       * are about the permanent, `counter` narrows the kind, and `byYou` is
+       * "whenever **you** put …". `{ triggerValue: true }` is how many; the
+       * permanent is the trigger object.
+       */
+      readonly on: "counters-put";
+      readonly who: TriggerWho;
+      readonly counter?: string;
+      readonly filter?: CardFilter;
+      readonly byYou?: boolean;
+    }
+  | {
+      /**
        * A player drew a card (Nekusar, the Mindrazer; Niv-Mizzet, Parun;
        * Consecrated Sphinx; Smothering Tithe). `who` is who drew.
        *

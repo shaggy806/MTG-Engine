@@ -820,6 +820,9 @@ const deckC = deck([
   ["Tuvasa the Sunlit", 1],
   ["Prossh, Skyraider of Kher", 1],
   ["The Emperor of Palamecia", 1],
+  ["Shalai and Hallar", 1],
+  ["Hapatra, Vizier of Poisons", 1],
+  ["Kalonian Hydra", 1],
   ["Bonesplitter", 1],
   ["Holy Strength", 1],
 ]);

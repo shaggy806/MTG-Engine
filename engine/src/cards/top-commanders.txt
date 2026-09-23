@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-70 already implemented / 430 missing
+72 already implemented / 428 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -277,7 +277,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  271  Omnath, Locus of Mana                           9718 decks  {2}{G}           Legendary Creature — Elemental
 [x]  272  Chulane, Teller of Tales                        9679 decks  {2}{G}{W}{U}     Legendary Creature — Human Druid
 [ ]  273  Shilgengar, Sire of Famine                      9622 decks  {3}{B}{B}        Legendary Creature — Elder Demon
-[ ]  274  Shalai and Hallar                               9586 decks  {1}{R}{G}{W}     Legendary Creature — Angel Elf
+[x]  274  Shalai and Hallar                               9586 decks  {1}{R}{G}{W}     Legendary Creature — Angel Elf
 [ ]  275  Kudo, King Among Bears                          9480 decks  {G}{W}           Legendary Creature — Bear
 [ ]  276  Roxanne, Starfall Savant                        9478 decks  {3}{R}{G}        Legendary Creature — Cat Druid
 [ ]  277  Dina, Soul Steeper                              9457 decks  {B}{G}           Legendary Creature — Dryad Druid
@@ -501,6 +501,6 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  495  Felix Five-Boots                                6111 decks  {2}{B}{G}{U}     Legendary Creature — Ooze Rogue
 [ ]  496  Gilanra, Caller of Wirewood                     6097 decks  {2}{G}           Legendary Creature — Elf Druid
 [ ]  497  Imoti, Celebrant of Bounty                      6033 decks  {3}{G}{U}        Legendary Creature — Snake Druid
-[ ]  498  Hapatra, Vizier of Poisons                      6032 decks  {B}{G}           Legendary Creature — Human Cleric
+[x]  498  Hapatra, Vizier of Poisons                      6032 decks  {B}{G}           Legendary Creature — Human Cleric
 [ ]  499  Jorn, God of Winter                             6030 decks  {2}{G}           Legendary Snow Creature — God // Legendary Snow Artifact
 [x]  500  Magnus the Red                                  6020 decks  {3}{U}{R}        Legendary Creature — Demon Primarch

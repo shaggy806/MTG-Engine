@@ -310,6 +310,7 @@ import _poolGuttersnipe from "./pool/guttersnipe.js";
 import _poolHallOfHeliodsGenerosity from "./pool/hall-of-heliods-generosity.js";
 import _poolHallowedFountain from "./pool/hallowed-fountain.js";
 import _poolHangedExecutioner from "./pool/hanged-executioner.js";
+import _poolHapatraVizierOfPoisons from "./pool/hapatra-vizier-of-poisons.js";
 import _poolHarbingerOfTheHunt from "./pool/harbinger-of-the-hunt.js";
 import _poolHarmonize from "./pool/harmonize.js";
 import _poolHarrow from "./pool/harrow.js";
@@ -581,6 +582,7 @@ import _poolSelesnyaSignet from "./pool/selesnya-signet.js";
 import _poolSepharaSkysBlade from "./pool/sephara-skys-blade.js";
 import _poolSerraAngel from "./pool/serra-angel.js";
 import _poolShadowbloodRidge from "./pool/shadowblood-ridge.js";
+import _poolShalaiAndHallar from "./pool/shalai-and-hallar.js";
 import _poolShamanicRevelation from "./pool/shamanic-revelation.js";
 import _poolShardingSphinx from "./pool/sharding-sphinx.js";
 import _poolShatteredSanctum from "./pool/shattered-sanctum.js";
@@ -823,6 +825,7 @@ import _tokensCatBirdToken from "./tokens/cat-bird-token.js";
 import _tokensCatToken from "./tokens/cat-token.js";
 import _tokensChocoboBirdToken from "./tokens/chocobo-bird-token.js";
 import _tokensCragflame from "./tokens/cragflame.js";
+import _tokensDeathtouchSnakeToken from "./tokens/deathtouch-snake-token.js";
 import _tokensDragonToken55 from "./tokens/dragon-token-5-5.js";
 import _tokensDragonToken66 from "./tokens/dragon-token-6-6.js";
 import _tokensDrakeToken from "./tokens/drake-token.js";
@@ -1175,6 +1178,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolHallOfHeliodsGenerosity,
   _poolHallowedFountain,
   _poolHangedExecutioner,
+  _poolHapatraVizierOfPoisons,
   _poolHarbingerOfTheHunt,
   _poolHarmonize,
   _poolHarrow,
@@ -1446,6 +1450,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSepharaSkysBlade,
   _poolSerraAngel,
   _poolShadowbloodRidge,
+  _poolShalaiAndHallar,
   _poolShamanicRevelation,
   _poolShardingSphinx,
   _poolShatteredSanctum,
@@ -1694,6 +1699,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensCatToken,
   _tokensChocoboBirdToken,
   _tokensCragflame,
+  _tokensDeathtouchSnakeToken,
   _tokensDragonToken55,
   _tokensDragonToken66,
   _tokensDrakeToken,

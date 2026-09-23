@@ -6567,7 +6567,7 @@ export class Game {
                     ? event.object
                     : // The card drawn: its controller is who drew it, the
                       // "that player" of a `draws` trigger.
-                      event.type === "card-drawn"
+                      event.type === "card-drawn" || event.type === "counter-added"
                       ? event.object
                       : undefined;
           const powerOfId =
@@ -6588,7 +6588,10 @@ export class Game {
                   ability.trigger.on === "attacks-batch" &&
                     event.type === "attackers-declared"
                   ? this.batchedAttackers(ability.trigger, event.attackers, object).length
-                  : undefined;
+                  : // "Deals that much damage": how many counters were put.
+                    ability.trigger.on === "counters-put" && event.type === "counter-added"
+                    ? event.amount
+                    : undefined;
           const base = {
             sourceObjectId: id,
             cardName: printedCardName(object),
@@ -6710,6 +6713,15 @@ export class Game {
           event.type === "life-changed" &&
           event.delta < 0 &&
           this.matchesWhoPlayer(spec.who, event.player, self)
+        );
+      case "counters-put":
+        return (
+          event.type === "counter-added" &&
+          event.amount > 0 &&
+          (spec.counter === undefined || event.counter === spec.counter) &&
+          this.matchesWho(spec.who, event.object, self) &&
+          this.triggerFilterOk(spec.filter, event.object, self) &&
+          (spec.byYou !== true || event.by === self.controller)
         );
       case "draws":
         return (
@@ -7349,7 +7361,7 @@ export class Game {
       doubleCountersAll: (filter, counterKind) =>
         this.doubleCountersAll(controller, filter, counterKind),
       addCounter: (target, counter, amount) =>
-        this.addCounter(target, counter, amount),
+        this.addCounter(target, counter, amount, true, controller),
       amass: (amount, creatureType) => this.amass(controller, amount, creatureType),
       populate: () => this.populate(controller),
       encore: () => this.encore(controller, source),
@@ -7415,7 +7427,7 @@ export class Game {
         // Snapshot first — `addCounter` can kill a permanent (a -1/-1 counter)
         // and mutate the battlefield array underneath the loop.
         for (const id of this.battlefieldMatching(controller, filter)) {
-          this.addCounter({ kind: "object", object: id }, counter, amount, false);
+          this.addCounter({ kind: "object", object: id }, counter, amount, false, controller);
         }
       },
       proliferate: (then) => this.beginProliferate(source, controller, x, then),
@@ -7782,7 +7794,7 @@ export class Game {
         untilEndOfTurn: false,
       });
     }
-    this.addCounter({ kind: "object", object: army }, "+1/+1", amount);
+    this.addCounter({ kind: "object", object: army }, "+1/+1", amount, true, controller);
   }
 
   /**
@@ -8384,6 +8396,10 @@ export class Game {
       this.state.timestampSeq += 1;
       this.state.objects[id].timestamp = this.state.timestampSeq;
       this.state.zones.shared.battlefield.push(id);
+      // Entering with counters is putting them on it (rule 122.6).
+      for (const c of entering.counters) {
+        this.emit({ type: "counter-added", object: id, counter: c.kind, amount: c.amount, by: controller });
+      }
     }
     return id;
   }
@@ -8637,7 +8653,7 @@ export class Game {
   private doubleCountersAll(you: PlayerId, filter: CardFilter, counterKind: string): void {
     for (const id of this.battlefieldMatching(you, filter)) {
       const current = this.state.objects[id].counters[counterKind] ?? 0;
-      if (current > 0) this.addCounter({ kind: "object", object: id }, counterKind, current, false);
+      if (current > 0) this.addCounter({ kind: "object", object: id }, counterKind, current, false, you);
     }
   }
 
@@ -8847,7 +8863,17 @@ export class Game {
   /** `split: false` (a counters-on-*each* effect) changes a compacted token
    * stack uniformly; the default singles one member out, for anything that
    * names one permanent. */
-  private addCounter(target: TargetRef, counter: string, amount: number, split = true): void {
+  /** Put `amount` counters on a permanent. `by` is the player putting them
+   * (Hapatra's "whenever **you** put one or more -1/-1 counters on a
+   * creature") — the controller of the effect doing it, which defaults to
+   * the permanent's own controller. */
+  private addCounter(
+    target: TargetRef,
+    counter: string,
+    amount: number,
+    split = true,
+    by?: PlayerId,
+  ): void {
     if (target.kind !== "object") return;
     const id = split ? this.splitOneFromStack(target.object) : target.object;
     const object = this.state.objects[id];
@@ -8856,7 +8882,7 @@ export class Game {
     // when counters are being *added*, never a removal.
     const total = amount > 0 ? amount * this.counterMultiplier(id, counter) : amount;
     object.counters[counter] = (object.counters[counter] ?? 0) + total;
-    this.emit({ type: "counter-added", object: id, counter, amount: total });
+    this.emit({ type: "counter-added", object: id, counter, amount: total, by: by ?? object.controller });
   }
 
   /**
@@ -8932,7 +8958,7 @@ export class Game {
       for (const kind of Object.keys(object.counters)) {
         if (object.counters[kind] > 0) {
           object.counters[kind] += 1;
-          this.emit({ type: "counter-added", object: target.object, counter: kind, amount: 1 });
+          this.emit({ type: "counter-added", object: target.object, counter: kind, amount: 1, by: player });
         }
       }
     }
@@ -9311,7 +9337,7 @@ export class Game {
     }
     if (enterTapped) entered.tapped = true;
     if (withCounters !== undefined) {
-      this.addCounter(target, withCounters.kind, withCounters.amount);
+      this.addCounter(target, withCounters.kind, withCounters.amount, true, controller);
     }
     this.emit({ type: "permanent-entered-battlefield", object: target.object });
   }
@@ -10800,6 +10826,18 @@ export class Game {
       // (rule 714.2b).
       if (this.registry.get(printedCardName(object)).chapters !== null) {
         this.addLoreCounter(id);
+      }
+      // Counters it entered with were *put* on it (rule 122.6), so a
+      // "whenever counters are put on" trigger sees them. Announced last, once
+      // the permanent is fully itself (face, tapped state) on the battlefield.
+      for (const c of entering.counters) {
+        this.emit({
+          type: "counter-added",
+          object: id,
+          counter: c.kind,
+          amount: c.amount,
+          by: object.controller,
+        });
       }
     } else {
       object.tapped = false;

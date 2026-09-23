@@ -322,6 +322,10 @@ export type GameEvent =
       readonly object: ObjectId;
       readonly counter: string;
       readonly amount: number;
+      /** Who put them (Hapatra's "whenever **you** put …"): the controller of
+       * the effect, or the permanent's own controller for counters it
+       * entered with. */
+      readonly by?: PlayerId;
     })
   | (Base & {
       /** Counters removed (from a `removeCounter` ability cost — Walking
