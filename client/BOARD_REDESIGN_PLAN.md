@@ -42,7 +42,8 @@ player room, because the layouts diverge.
   per-quadrant "untapped sources by color" pip row. `Game.manaSources(player)` is private and
   exposed through neither `PlayerView` nor the wire protocol, so this needs a real engine +
   protocol feature (expose an untapped-mana-by-color summary from the same `manaSources`
-  logic `payMana` uses, mirror the field into both `protocol.ts` copies, then render it). The
+  logic `payMana` uses, add the field to the wire protocol in the `protocol` workspace, then
+  render it). The
   user's call: that's a lot of work for something that's the player's own job to track. A
   client-side heuristic is explicitly ruled out — inferring colour from a land's subtype is
   wrong for nonbasics, duals, rocks and dorks, and a visibly-wrong indicator is worse than

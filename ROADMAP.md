@@ -30,10 +30,10 @@ walks the phases in order.
 - [x] **Phase 4** — Mana system depth (`{C}` / any-colour / multi-mana / Treasure / hybrid / twobrid / Phyrexian / snow / ability-granting to a group / fetchlands)
 - [x] **Phase 5** — Planeswalkers
 - [x] **Phase 6** — Alternate casting zones + the cast pipeline *(6a/6b done — flashback, Snapcaster, suspend, foretell, escape; 6c long tail deferred)*
-- [x] **Phase 7** — Combat depth + turn-structure control *(core done — extra turns, additional combat, can't-be-blocked; first-strike window / trample-as-choice / must-be-blocked deferred)*
+- [x] **Phase 7** — Combat depth + turn-structure control *(core done — extra turns, additional combat, can't-be-blocked; the first-strike window, trample-as-choice and must-be-blocked landed later, in Phase 11 EG-4)*
 - [x] **Phase 8** — Cascade, storm, "cast" triggers, copy-a-spell
 - [x] **Phase 9** — Commander-format completeness + deck validation *(core done — colour identity, deck validation, Partner, a 4th commander, simultaneous mulligans; Companion / legend-rule choice deferred)*
-- [~] **Phase 10** — Tier 3 long tail (demand-driven) — **Sagas, 10a (MDFC), 10b (transform) + Day/Night, Monarch, Energy, Emblems, can't-be-countered, disturb, adventure all landed**; battles, phasing, dungeons/Initiative/Ring, banding deferred as large/niche
+- [x] **Phase 10** — Tier 3 long tail (demand-driven) — **Sagas, 10a (MDFC), 10b (transform) + Day/Night, Monarch, Energy, Emblems, can't-be-countered, disturb, adventure all landed**; battles, phasing, dungeons/Initiative/Ring, banding deferred as large/niche
 - [x] **Phase 11** — Engine-fidelity gaps — **all six increments done**: EG-1 uniform targeting decisions, EG-2 targeted modal spells, EG-3 `{X}` activated costs + conditional statics, EG-4 combat depth, EG-5 planeswalker ability coverage audit, EG-6 replacement pipeline v2 *(deferred: `choose-replacement-order`, damage redirection)*
 
 ## Dependency spine
@@ -60,18 +60,20 @@ Phase 6 (cast pipeline) ─┬─► Phase 8 (cascade / storm / copy-spell)
   registries of functions (replacement transforms, trigger predicates) live in
   the environment (`CardRegistry`), never in `state`.
 - **Every player decision is a dispatched `Action`** gated by a discriminated
-  `AwaitingDecision` on `state.awaiting`. Each new decision needs: a `state.ts`
-  `AwaitingDecision` variant, an `actions.ts` `Action` + `LegalAction` variant,
-  `game.ts` dispatch/`canDispatch`/`legalActions` cases, a `controller.ts`
-  method (+ `AutomaticController` default, `ScriptedController` `*Fn`,
-  `RandomController` branch), and a `client/src/App.tsx` `mode` + controls
-  branch + `AWAITING_LABEL` entry.
+  `AwaitingDecision` on `state.awaiting`. Each kind is a module under
+  `engine/src/decisions/` owning its whole answer half (offer, validator,
+  controller arm, bot candidates, the fuzzer's random answer), registered in a
+  total table, so adding one fails the build until every step is done — except
+  the raise itself, which stays hand-placed in `game.ts`. On the client it's a
+  `Table` `mode` + controls branch and an `AWAITING_LABEL` entry. See
+  `docs/plans/decision-registry.md`.
 - The engine is driven **synchronously** — `Game.dispatch()` fully resolves the
   stack and turn-based actions before returning. No async, no controller
   callback in the human path (`chooseTargets` is the last synchronous callback
   and only test/fuzz code hits it).
 - `prepareForPriority(player)` is the pre-priority fixpoint loop:
-  `{ SBAs; promptCommanderChoice; placePendingTriggers }` until stable. New
+  `{ raise the next owed 903.9a choice; SBAs; drain the pending-decision
+  queues; placePendingTriggers }` until stable. New
   interception loops (replacements) either nest inside this or wrap the specific
   mutators — see Phase 1.
 - Continuous effects are computed in `characteristics.ts` via the layer fold;
