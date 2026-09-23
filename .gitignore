@@ -27,3 +27,7 @@ scratch-*
 
 # Claude Code agent worktrees (isolated checkouts for parallel card authoring)
 .claude/worktrees/
+
+# Playwright (client e2e)
+client/test-results/
+client/playwright-report/
