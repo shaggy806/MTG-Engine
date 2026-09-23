@@ -1,5 +1,5 @@
 Top 2000 Commander cards by EDHREC popularity (fetched 2026-09-13)
-460 already implemented / 1540 missing (marks refreshed 2026-09-23)
+517 already implemented / 1483 missing (marks refreshed 2026-09-23)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -61,7 +61,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]    62  Demonic Tutor                            {1}{B}           Sorcery
 [x]    63  Hallowed Fountain                        {0}              Land — Plains Island
 [x]    64  Steam Vents                              {0}              Land — Island Mountain
-[ ]    65  Smothering Tithe                         {3}{W}           Enchantment
+[x]    65  Smothering Tithe                         {3}{W}           Enchantment
 [x]    66  Toxic Deluge                             {2}{B}           Sorcery
 [x]    67  Ancient Tomb                             {0}              Land
 [x]    68  Swan Song                                {U}              Instant
@@ -113,7 +113,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   114  Propaganda                               {2}{U}           Enchantment
 [x]   115  Eternal Witness                          {1}{G}{G}        Creature — Human Shaman
 [x]   116  Shivan Reef                              {0}              Land
-[ ]   117  Mana Drain                               {U}{U}           Instant
+[x]   117  Mana Drain                               {U}{U}           Instant
 [ ]   118  Urza's Saga                              {0}              Enchantment Land — Urza's Saga
 [x]   119  Mana Confluence                          {0}              Land
 [x]   120  Lotus Petal                              {0}              Artifact
@@ -147,7 +147,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   148  Adarkar Wastes                           {0}              Land
 [x]   149  Sulfurous Springs                        {0}              Land
 [ ]   150  Chrome Mox                               {0}              Artifact
-[ ]   151  Delighted Halfling                       {G}              Creature — Halfling Citizen
+[x]   151  Delighted Halfling                       {G}              Creature — Halfling Citizen
 [ ]   152  Herald's Horn                            {3}              Artifact
 [x]   153  Talisman of Conviction                   {2}              Artifact
 [x]   154  Training Center                          {0}              Land
@@ -176,7 +176,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   177  Three Tree City                          {0}              Legendary Land
 [ ]   178  Return of the Wildspeaker                {4}{G}           Instant
 [ ]   179  Gemstone Caverns                         {0}              Legendary Land
-[ ]   180  Boros Charm                              {R}{W}           Instant
+[x]   180  Boros Charm                              {R}{W}           Instant
 [x]   181  Flawless Maneuver                        {2}{W}           Instant
 [x]   182  Night's Whisper                          {1}{B}           Sorcery
 [ ]   183  Command Beacon                           {0}              Land
@@ -188,7 +188,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   189  Akroma's Will                            {3}{W}           Instant
 [x]   190  Doubling Season                          {4}{G}           Enchantment
 [x]   191  Idol of Oblivion                         {2}              Artifact
-[ ]   192  Prismatic Vista                          {0}              Land
+[x]   192  Prismatic Vista                          {0}              Land
 [ ]   193  Force of Will                            {3}{U}{U}        Instant
 [x]   194  Buried Ruin                              {0}              Land
 [ ]   195  Mosswort Bridge                          {0}              Land
@@ -202,14 +202,14 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   203  Storm-Kiln Artist                        {3}{R}           Creature — Dwarf Shaman
 [ ]   204  Mox Amber                                {0}              Legendary Artifact
 [x]   205  Stroke of Midnight                       {2}{W}           Instant
-[ ]   206  Ash Barrens                              {0}              Land
+[x]   206  Ash Barrens                              {0}              Land
 [x]   207  Rapid Hybridization                      {U}              Instant
 [x]   208  Karn's Bastion                           {0}              Land
 [ ]   209  Professional Face-Breaker                {2}{R}           Creature — Human Warrior
 [x]   210  Bountiful Promenade                      {0}              Land
 [x]   211  Thrill of Possibility                    {1}{R}           Instant
 [ ]   212  Wild Growth                              {G}              Enchantment — Aura
-[ ]   213  Beast Whisperer                          {2}{G}{G}        Creature — Elf Druid
+[x]   213  Beast Whisperer                          {2}{G}{G}        Creature — Elf Druid
 [x]   214  Crop Rotation                            {G}              Instant
 [x]   215  Fyndhorn Elves                           {G}              Creature — Elf Druid
 [x]   216  Azorius Signet                           {2}              Artifact
@@ -233,12 +233,12 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   234  Brushland                                {0}              Land
 [x]   235  Zulaport Cutthroat                       {1}{B}           Creature — Human Rogue Ally
 [ ]   236  Sword of the Animist                     {2}              Legendary Artifact — Equipment
-[ ]   237  Mithril Coat                             {3}              Legendary Artifact — Equipment
+[x]   237  Mithril Coat                             {3}              Legendary Artifact — Equipment
 [x]   238  Scute Swarm                              {2}{G}           Creature — Insect
 [x]   239  Dovin's Veto                             {W}{U}           Instant
 [ ]   240  Malakir Rebirth // Malakir Mire          {1}              Instant // Land
 [ ]   241  Gamble                                   {R}              Sorcery
-[ ]   242  Mox Opal                                 {0}              Legendary Artifact
+[x]   242  Mox Opal                                 {0}              Legendary Artifact
 [ ]   243  Rishkar's Expertise                      {4}{G}{G}        Sorcery
 [x]   244  Takenuma, Abandoned Mire                 {0}              Legendary Land
 [x]   245  Gray Merchant of Asphodel                {3}{B}{B}        Creature — Zombie
@@ -253,7 +253,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   254  Everflowing Chalice                      {0}              Artifact
 [ ]   255  Archmage Emeritus                        {2}{U}{U}        Creature — Human Wizard
 [x]   256  Viscera Seer                             {B}              Creature — Vampire Wizard
-[ ]   257  Orcish Bowmasters                        {1}{B}           Creature — Orc Archer
+[x]   257  Orcish Bowmasters                        {1}{B}           Creature — Orc Archer
 [ ]   258  Bloom Tender                             {1}{G}           Creature — Elf Druid
 [ ]   259  Syr Konrad, the Grim                     {3}{B}{B}        Legendary Creature — Human Knight
 [ ]   260  Sylvan Library                           {1}{G}           Enchantment
@@ -263,8 +263,8 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   264  Withering Torment                        {2}{B}           Instant
 [ ]   265  Untimely Malfunction                     {1}{R}           Instant
 [ ]   266  Force of Negation                        {1}{U}{U}        Instant
-[ ]   267  Panharmonicon                            {4}              Artifact
-[ ]   268  Inventors' Fair                          {0}              Legendary Land
+[x]   267  Panharmonicon                            {4}              Artifact
+[x]   268  Inventors' Fair                          {0}              Legendary Land
 [ ]   269  Bolas's Citadel                          {3}{B}{B}{B}     Legendary Artifact
 [ ]   270  Etali, Primal Storm                      {4}{R}{R}        Legendary Creature — Elder Dinosaur
 [x]   271  Diabolic Intent                          {1}{B}           Sorcery
@@ -272,12 +272,12 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   273  Snap                                     {1}{U}           Instant
 [x]   274  Deserted Beach                           {0}              Land
 [ ]   275  Hullbreaker Horror                       {5}{U}{U}        Creature — Kraken Horror
-[ ]   276  Unexpected Windfall                      {2}{R}{R}        Instant
-[ ]   277  Inspiring Call                           {2}{G}           Instant
+[x]   276  Unexpected Windfall                      {2}{R}{R}        Instant
+[x]   277  Inspiring Call                           {2}{G}           Instant
 [x]   278  Jet Medallion                            {2}              Artifact
 [ ]   279  Ragavan, Nimble Pilferer                 {R}              Legendary Creature — Monkey Pirate
 [x]   280  Haunted Ridge                            {0}              Land
-[ ]   281  Exsanguinate                             {X}{B}{B}        Sorcery
+[x]   281  Exsanguinate                             {X}{B}{B}        Sorcery
 [ ]   282  Rugged Prairie                           {0}              Land
 [ ]   283  Reality Shift                            {1}{U}           Instant
 [x]   284  Darksteel Citadel                        {0}              Artifact Land
@@ -286,8 +286,8 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   287  Temple of Epiphany                       {0}              Land
 [x]   288  Choked Estuary                           {0}              Land
 [x]   289  Aetherize                                {3}{U}           Instant
-[ ]   290  Avenger of Zendikar                      {5}{G}{G}        Creature — Elemental
-[ ]   291  Faerie Mastermind                        {1}{U}           Creature — Faerie Rogue
+[x]   290  Avenger of Zendikar                      {5}{G}{G}        Creature — Elemental
+[x]   291  Faerie Mastermind                        {1}{U}           Creature — Faerie Rogue
 [x]   292  Mana Geyser                              {3}{R}{R}        Sorcery
 [x]   293  Ruby Medallion                           {2}              Artifact
 [ ]   294  Cascade Bluffs                           {0}              Land
@@ -329,7 +329,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   330  Temple of Mystery                        {0}              Land
 [x]   331  Whispersilk Cloak                        {3}              Artifact — Equipment
 [x]   332  Golgari Rot Farm                         {0}              Land
-[ ]   333  Bastion of Remembrance                   {2}{B}           Enchantment
+[x]   333  Bastion of Remembrance                   {2}{B}           Enchantment
 [x]   334  Frostboil Snarl                          {0}              Land
 [ ]   335  Authority of the Consuls                 {W}              Enchantment
 [x]   336  Putrefy                                  {1}{B}{G}        Instant
@@ -340,13 +340,13 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   341  Sevinne's Reclamation                    {2}{W}           Sorcery
 [ ]   342  Kindred Discovery                        {3}{U}{U}        Enchantment
 [x]   343  Fortified Village                        {0}              Land
-[ ]   344  Loran of the Third Path                  {2}{W}           Legendary Creature — Human Artificer
+[x]   344  Loran of the Third Path                  {2}{W}           Legendary Creature — Human Artificer
 [x]   345  Skycloud Expanse                         {0}              Land
 [x]   346  Damn                                     {B}{B}           Sorcery
 [ ]   347  Utopia Sprawl                            {G}              Enchantment — Aura
 [ ]   348  Anger                                    {3}{R}           Creature — Incarnation
 [x]   349  Deathcap Glade                           {0}              Land
-[ ]   350  Blackblade Reforged                      {2}              Legendary Artifact — Equipment
+[x]   350  Blackblade Reforged                      {2}              Legendary Artifact — Equipment
 [x]   351  Arcane Sanctum                           {0}              Land
 [x]   352  Tropical Island                          {0}              Land — Forest Island
 [x]   353  Temple of Deceit                         {0}              Land
@@ -362,7 +362,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   363  Jetmir's Garden                          {0}              Land — Mountain Forest Plains
 [x]   364  Temple of Malady                         {0}              Land
 [ ]   365  Pact of Negation                         {0}              Instant
-[ ]   366  Anointed Procession                      {3}{W}           Enchantment
+[x]   366  Anointed Procession                      {3}{W}           Enchantment
 [ ]   367  Land Tax                                 {W}              Enchantment
 [x]   368  Shamanic Revelation                      {3}{G}{G}        Sorcery
 [x]   369  Dimir Aqueduct                           {0}              Land
@@ -379,7 +379,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   380  Nature's Claim                           {G}              Instant
 [x]   381  Opulent Palace                           {0}              Land
 [x]   382  Eiganjo, Seat of the Empire              {0}              Legendary Land
-[ ]   383  Toski, Bearer of Secrets                 {3}{G}           Legendary Creature — Squirrel
+[x]   383  Toski, Bearer of Secrets                 {3}{G}           Legendary Creature — Squirrel
 [x]   384  Badlands                                 {0}              Land — Swamp Mountain
 [x]   385  Damnation                                {2}{B}{B}        Sorcery
 [x]   386  Great Furnace                            {0}              Artifact Land
@@ -391,7 +391,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   392  Game Trail                               {0}              Land
 [ ]   393  Kutzil, Malamet Exemplar                 {1}{G}{W}        Legendary Creature — Cat Warrior
 [ ]   394  Helm of the Host                         {4}              Legendary Artifact — Equipment
-[ ]   395  Spire of Industry                        {0}              Land
+[x]   395  Spire of Industry                        {0}              Land
 [ ]   396  Spark Double                             {3}{U}           Creature — Illusion
 [ ]   397  Demolition Field                         {0}              Land
 [x]   398  Frontier Bivouac                         {0}              Land
@@ -403,21 +403,21 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   404  Seaside Citadel                          {0}              Land
 [x]   405  Evolution Sage                           {2}{G}           Creature — Elf Druid
 [ ]   406  Silence                                  {W}              Instant
-[ ]   407  Lotho, Corrupt Shirriff                  {W}{B}           Legendary Creature — Halfling Rogue
-[ ]   408  Parallel Lives                           {3}{G}           Enchantment
+[x]   407  Lotho, Corrupt Shirriff                  {W}{B}           Legendary Creature — Halfling Rogue
+[x]   408  Parallel Lives                           {3}{G}           Enchantment
 [x]   409  Orzhov Basilica                          {0}              Land
 [x]   410  Fanatic of Rhonas                        {1}{G}           Creature — Snake Druid
 [ ]   411  Selvala, Heart of the Wilds              {1}{G}{G}        Legendary Creature — Elf Scout
 [x]   412  Gilded Lotus                             {5}              Artifact
 [ ]   413  Minas Tirith                             {0}              Legendary Land
-[ ]   414  Despark                                  {W}{B}           Instant
+[x]   414  Despark                                  {W}{B}           Instant
 [x]   415  Demand Answers                           {1}{R}           Instant
-[ ]   416  Warren Soultrader                        {2}{B}           Creature — Zombie Goblin Wizard
+[x]   416  Warren Soultrader                        {2}{B}           Creature — Zombie Goblin Wizard
 [ ]   417  Mystic Forge                             {4}              Artifact
 [x]   418  Etherium Sculptor                        {1}{U}           Artifact Creature — Vedalken Artificer
 [x]   419  Shineshadow Snarl                        {0}              Land
 [x]   420  Hall of Heliod's Generosity              {0}              Legendary Land
-[ ]   421  Undercity Sewers                         {0}              Land — Island Swamp
+[x]   421  Undercity Sewers                         {0}              Land — Island Swamp
 [x]   422  Bayou                                    {0}              Land — Swamp Forest
 [x]   423  Izzet Boilerworks                        {0}              Land
 [ ]   424  Welcoming Vampire                        {2}{W}           Creature — Vampire
@@ -426,20 +426,20 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   427  Enduring Vitality                        {1}{G}{G}        Enchantment Creature — Elk Glimmer
 [x]   428  Shadowblood Ridge                        {0}              Land
 [x]   429  Walking Ballista                         {X}{X}           Artifact Creature — Construct
-[ ]   430  High Market                              {0}              Land
-[ ]   431  Tainted Wood                             {0}              Land
+[x]   430  High Market                              {0}              Land
+[x]   431  Tainted Wood                             {0}              Land
 [ ]   432  Bident of Thassa                         {2}{U}{U}        Legendary Enchantment Artifact
 [x]   433  Sungrass Prairie                         {0}              Land
 [ ]   434  Simian Spirit Guide                      {2}{R}           Creature — Ape Spirit
 [x]   435  Snakeskin Veil                           {G}              Instant
 [x]   436  Taiga                                    {0}              Land — Mountain Forest
 [ ]   437  Thassa's Oracle                          {U}{U}           Creature — Merfolk Wizard
-[ ]   438  Psychosis Crawler                        {5}              Artifact Creature — Phyrexian Horror
+[x]   438  Psychosis Crawler                        {5}              Artifact Creature — Phyrexian Horror
 [ ]   439  Red Elemental Blast                      {R}              Instant
 [ ]   440  Ephemerate                               {W}              Instant
-[ ]   441  Sram, Senior Edificer                    {1}{W}           Legendary Creature — Dwarf Advisor
+[x]   441  Sram, Senior Edificer                    {1}{W}           Legendary Creature — Dwarf Advisor
 [ ]   442  Geier Reach Sanitarium                   {0}              Legendary Land
-[ ]   443  Tainted Field                            {0}              Land
+[x]   443  Tainted Field                            {0}              Land
 [x]   444  Unnatural Growth                         {1}{G}{G}{G}{G}  Enchantment
 [ ]   445  Ohran Frostfang                          {3}{G}{G}        Snow Creature — Snake
 [ ]   446  Gaea's Cradle                            {0}              Legendary Land
@@ -447,40 +447,40 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   448  Plateau                                  {0}              Land — Mountain Plains
 [ ]   449  Entish Restoration                       {2}{G}           Instant
 [x]   450  Temple of Malice                         {0}              Land
-[ ]   451  Urza's Cave                              {0}              Land — Urza's Cave
+[x]   451  Urza's Cave                              {0}              Land — Urza's Cave
 [x]   452  Pearl Medallion                          {2}              Artifact
 [x]   453  Gruul Turf                               {0}              Land
 [ ]   454  Cursed Mirror                            {2}{R}           Artifact
-[ ]   455  Dispatch                                 {W}              Instant
+[x]   455  Dispatch                                 {W}              Instant
 [x]   456  Savannah                                 {0}              Land — Forest Plains
 [x]   457  Sheoldred, the Apocalypse                {2}{B}{B}        Legendary Creature — Phyrexian Praetor
-[ ]   458  Expedition Map                           {1}              Artifact
-[ ]   459  Goblin Bombardment                       {1}{R}           Enchantment
+[x]   458  Expedition Map                           {1}              Artifact
+[x]   459  Goblin Bombardment                       {1}{R}           Enchantment
 [ ]   460  Living Death                             {3}{B}{B}        Sorcery
 [ ]   461  Ghalta, Primal Hunger                    {10}{G}{G}       Legendary Creature — Elder Dinosaur
 [x]   462  Academy Ruins                            {0}              Legendary Land
 [ ]   463  Mental Misstep                           {U/P}            Instant
 [ ]   464  Disciple of Freyalise // Garden of Freyalise {6}              Creature — Elf Druid // Land
 [x]   465  Azorius Chancery                         {0}              Land
-[ ]   466  Vault of the Archangel                   {0}              Land
+[x]   466  Vault of the Archangel                   {0}              Land
 [ ]   467  Treasure Vault                           {0}              Artifact Land
 [x]   468  Xander's Lounge                          {0}              Land — Island Swamp Mountain
-[ ]   469  Pyroblast                                {R}              Instant
+[x]   469  Pyroblast                                {R}              Instant
 [ ]   470  Conjurer's Closet                        {5}              Artifact
-[ ]   471  Fabricate                                {2}{U}           Sorcery
+[x]   471  Fabricate                                {2}{U}           Sorcery
 [x]   472  Tatyova, Benthic Druid                   {3}{G}{U}        Legendary Creature — Merfolk Druid
-[ ]   473  Supreme Verdict                          {1}{W}{W}{U}     Sorcery
-[ ]   474  Tamiyo's Safekeeping                     {G}              Instant
+[x]   473  Supreme Verdict                          {1}{W}{W}{U}     Sorcery
+[x]   474  Tamiyo's Safekeeping                     {G}              Instant
 [x]   475  Underground Mortuary                     {0}              Land — Swamp Forest
-[ ]   476  Accursed Marauder                        {1}{B}           Creature — Zombie Warrior
+[x]   476  Accursed Marauder                        {1}{B}           Creature — Zombie Warrior
 [ ]   477  Chandra's Ignition                       {3}{R}{R}        Sorcery
 [x]   478  Indatha Triome                           {0}              Land — Plains Swamp Forest
 [ ]   479  Commander's Plate                        {1}              Artifact — Equipment
 [x]   480  Ramunap Excavator                        {2}{G}           Creature — Snake Cleric
 [x]   481  Read the Bones                           {2}{B}           Sorcery
-[ ]   482  Bedevil                                  {B}{B}{R}        Instant
+[x]   482  Bedevil                                  {B}{B}{R}        Instant
 [x]   483  Talisman of Curiosity                    {2}              Artifact
-[ ]   484  Diabolic Tutor                           {2}{B}{B}        Sorcery
+[x]   484  Diabolic Tutor                           {2}{B}{B}        Sorcery
 [ ]   485  Plaza of Heroes                          {0}              Land
 [ ]   486  Field of the Dead                        {0}              Land
 [x]   487  Raugrin Triome                           {0}              Land — Island Mountain Plains
@@ -491,8 +491,8 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   492  Adeline, Resplendent Cathar              {1}{W}{W}        Legendary Creature — Human Knight
 [ ]   493  Birgi, God of Storytelling // Harnfel, Horn of Bounty {3}              Legendary Creature — God // Legendary Artifact
 [x]   494  Boros Garrison                           {0}              Land
-[ ]   495  Tainted Peak                             {0}              Land
-[ ]   496  Vito, Thorn of the Dusk Rose             {2}{B}           Legendary Creature — Vampire Cleric
+[x]   495  Tainted Peak                             {0}              Land
+[x]   496  Vito, Thorn of the Dusk Rose             {2}{B}           Legendary Creature — Vampire Cleric
 [x]   497  Talisman of Resilience                   {2}              Artifact
 [x]   498  Savai Triome                             {0}              Land — Mountain Plains Swamp
 [x]   499  Temple of Plenty                         {0}              Land
@@ -501,18 +501,18 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   502  Blind Obedience                          {1}{W}           Enchantment
 [x]   503  Oracle of Mul Daya                       {3}{G}           Creature — Elf Shaman
 [x]   504  Rakdos Carnarium                         {0}              Land
-[ ]   505  Sanguine Bond                            {3}{B}{B}        Enchantment
+[x]   505  Sanguine Bond                            {3}{B}{B}        Enchantment
 [x]   506  Sandsteppe Citadel                       {0}              Land
 [ ]   507  Mother of Runes                          {W}              Creature — Human Cleric
-[ ]   508  Blazemire Verge                          {0}              Land
+[x]   508  Blazemire Verge                          {0}              Land
 [ ]   509  Necropotence                             {B}{B}{B}        Enchantment
 [ ]   510  Massacre Wurm                            {3}{B}{B}{B}     Creature — Phyrexian Wurm
 [ ]   511  The Meathook Massacre                    {X}{B}{B}        Legendary Enchantment
 [x]   512  Felidar Retreat                          {3}{W}           Enchantment
 [x]   513  Avacyn's Pilgrim                         {G}              Creature — Human Monk
-[ ]   514  Tainted Isle                             {0}              Land
+[x]   514  Tainted Isle                             {0}              Land
 [ ]   515  Liquimetal Torque                        {2}              Artifact
-[ ]   516  Exquisite Blood                          {4}{B}           Enchantment
+[x]   516  Exquisite Blood                          {4}{B}           Enchantment
 [ ]   517  Valakut Awakening // Valakut Stoneforge  {3}              Instant // Land
 [ ]   518  Wishclaw Talisman                        {1}{B}           Artifact
 [x]   519  Terror of the Peaks                      {3}{R}{R}        Creature — Dragon
@@ -520,7 +520,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   521  Chord of Calling                         {X}{G}{G}{G}     Instant
 [x]   522  Imperial Seal                            {B}              Sorcery
 [ ]   523  Gitaxian Probe                           {U/P}            Sorcery
-[ ]   524  Strip Mine                               {0}              Land
+[x]   524  Strip Mine                               {0}              Land
 [x]   525  Culling the Weak                         {B}              Instant
 [x]   526  Ziatora's Proving Ground                 {0}              Land — Swamp Mountain Forest
 [x]   527  Necroblossom Snarl                       {0}              Land
@@ -539,16 +539,16 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   540  The Reaver Cleaver                       {2}{R}           Legendary Artifact — Equipment
 [x]   541  Vineglimmer Snarl                        {0}              Land
 [ ]   542  Sword of Feast and Famine                {3}              Artifact — Equipment
-[ ]   543  Green Sun's Zenith                       {X}{G}           Sorcery
+[x]   543  Green Sun's Zenith                       {X}{G}           Sorcery
 [ ]   544  Mindbreak Trap                           {2}{U}{U}        Instant — Trap
 [x]   545  Hedron Archive                           {4}              Artifact
 [x]   546  Mossfire Valley                          {0}              Land
 [ ]   547  Unwinding Clock                          {4}              Artifact
 [ ]   548  Maze of Ith                              {0}              Land
-[ ]   549  Hedge Maze                               {0}              Land — Forest Island
-[ ]   550  Displacer Kitten                         {3}{U}           Creature — Cat Beast
-[ ]   551  Goblin Anarchomancer                     {R}{G}           Creature — Goblin Shaman
-[ ]   552  Bonders' Enclave                         {0}              Land
+[x]   549  Hedge Maze                               {0}              Land — Forest Island
+[x]   550  Displacer Kitten                         {3}{U}           Creature — Cat Beast
+[x]   551  Goblin Anarchomancer                     {R}{G}           Creature — Goblin Shaman
+[x]   552  Bonders' Enclave                         {0}              Land
 [ ]   553  Graven Cairns                            {0}              Land
 [ ]   554  Cathars' Crusade                         {3}{W}{W}        Enchantment
 [ ]   555  Brotherhood Regalia                      {2}              Artifact — Equipment

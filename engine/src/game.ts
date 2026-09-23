@@ -6555,6 +6555,13 @@ export class Game {
       // A command-zone source contributes *only* its `fromCommandZone`
       // abilities — Edgar Markov's attack trigger must not fire from there.
       const onlyEminence = eminenceOnly.has(id);
+      // The spell just cast is in this scan so its own "when you cast this
+      // spell" abilities (cascade, storm, Prossh) can fire — and those are
+      // the only ones a spell has working on the stack (rule 113.6). Without
+      // this, Jhoira ("whenever you cast a historic spell") drew off its own
+      // legendary casting, and Ms. Bumbleflower off hers.
+      const onlyThisCast =
+        event.type === "spell-cast" && id === event.object && object.zone === "stack";
       // An eliminated player's permanents are left on the board to be seen,
       // not to keep playing: their triggers stop firing. They leave play rather
       // than view — see the note in `matchesFilter`.
@@ -6562,6 +6569,7 @@ export class Game {
       const entries = this.effectiveTriggeredEntries(id, triggerGrantors);
       entries.forEach(({ ability, ref }, index) => {
         if (onlyEminence && ability.fromCommandZone !== true) return;
+        if (onlyThisCast && ability.trigger.on !== "this-cast") return;
         if (
           this.triggerMatches(ability.trigger, event, object) &&
           this.interveningIfMet(ability.condition, object) &&

@@ -837,15 +837,74 @@ const deckC = deck([
   ["Loran of the Third Path", 1],
 ]);
 
+// The fourth seat's deck: the top-2000 staples authored in one batch (every
+// colour, so five of each basic land), so four-player fuzzing exercises them
+// from a seat of their own rather than diluting deck B or C.
+const deckE = deck([
+  ["Accursed Marauder", 1],
+  ["Anointed Procession", 1],
+  ["Avenger of Zendikar", 1],
+  ["Bastion of Remembrance", 1],
+  ["Beast Whisperer", 1],
+  ["Bedevil", 1],
+  ["Blackblade Reforged", 1],
+  ["Blazemire Verge", 1],
+  ["Bonders' Enclave", 1],
+  ["Boros Charm", 1],
+  ["Delighted Halfling", 1],
+  ["Despark", 1],
+  ["Diabolic Tutor", 1],
+  ["Dispatch", 1],
+  ["Expedition Map", 1],
+  ["Exsanguinate", 1],
+  ["Fabricate", 1],
+  ["Faerie Mastermind", 1],
+  ["Fell the Profane", 1],
+  ["Goblin Anarchomancer", 1],
+  ["Goblin Bombardment", 1],
+  ["Green Sun's Zenith", 1],
+  ["Hedge Maze", 1],
+  ["High Market", 1],
+  ["Inspiring Call", 1],
+  ["Inventors' Fair", 1],
+  ["Lotho, Corrupt Shirriff", 1],
+  ["Mithril Coat", 1],
+  ["Mox Opal", 1],
+  ["Orcish Bowmasters", 1],
+  ["Panharmonicon", 1],
+  ["Parallel Lives", 1],
+  ["Prismatic Vista", 1],
+  ["Pyroblast", 1],
+  ["Spire of Industry", 1],
+  ["Sram, Senior Edificer", 1],
+  ["Strip Mine", 1],
+  ["Supreme Verdict", 1],
+  ["Tainted Field", 1],
+  ["Tainted Isle", 1],
+  ["Tainted Peak", 1],
+  ["Tainted Wood", 1],
+  ["Tamiyo's Safekeeping", 1],
+  ["Toski, Bearer of Secrets", 1],
+  ["Undercity Sewers", 1],
+  ["Unexpected Windfall", 1],
+  ["Urza's Cave", 1],
+  ["Vault of the Archangel", 1],
+  ["Warren Soultrader", 1],
+  ["Witch Enchanter", 1],
+  ["Plains", 5],
+  ["Island", 5],
+  ["Swamp", 5],
+  ["Mountain", 5],
+  ["Forest", 5],
+]);
+
 // All four seats' decks/commanders, in seating order — sliced down to
-// `numPlayers` for a 2-4 player game. Dave reuses deckB (no commander needed;
-// fuzz coverage for multi-defender combat) so the fourth seat still has a
-// deck that can cast its own spells.
+// `numPlayers` for a 2-4 player game. Dave plays deckE, with no commander.
 const allSeats = [
   { player: A, cards: deckA, commander: "Ureni of the Unwritten" },
   { player: B, cards: deckB, commander: "Atraxa, Praetors' Voice" },
   { player: C, cards: deckC, commander: "Ayara, First of Locthwain" },
-  { player: D, cards: deckB },
+  { player: D, cards: deckE },
 ];
 const seats = allSeats.slice(0, numPlayers);
 
