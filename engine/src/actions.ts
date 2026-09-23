@@ -12,10 +12,13 @@ import type { TargetRef, TargetSpec } from "./target.js";
 
 /** One creature tapped to help pay a convoke cost (rule 702.51a): it pays
  * for `{1}` (`"generic"`) or one mana of one of its own colors — the
- * player's choice per creature, made as the spell is cast. */
+ * player's choice per creature, made as the spell is cast. Omit `pays` to
+ * leave it to the engine: one of the cost's coloured pips the creature can
+ * pay that's still unpaid, else a generic one. A compacted token stack can
+ * be named once per token, up to its size. */
 export interface ConvokePayment {
   readonly creature: ObjectId;
-  readonly pays: "generic" | Color;
+  readonly pays?: "generic" | Color;
 }
 
 /** An alternative permission a spell can be cast under, from a zone other than
@@ -461,7 +464,8 @@ export type LegalAction =
        * many and have every one pay `"generic"`; paying a specific color
        * instead needs no such cap beyond that color's own pip count, which
        * isn't echoed here — a driver that wants to pay colors reads them
-       * off `PlayerView`). */
+       * off `PlayerView`). Simplest of all is to name the creatures and omit
+       * `pays`: the engine then puts each where it helps most. */
       readonly convoke?: {
         readonly candidates: readonly ObjectId[];
         readonly maxGeneric: number;
@@ -477,6 +481,17 @@ export type LegalAction =
          * fuzzer. A driver with no opinion should echo this back verbatim.
          */
         readonly proof: readonly ConvokePayment[];
+        /** Whether the spell can be paid for with mana alone. When it can't,
+         * convoking isn't optional, and `proof` is a set that works. */
+        readonly manaAffordable: boolean;
+        /** The most creatures that can help pay — every generic and
+         * coloured pip in the cost. Each pays one; past that, a creature
+         * has nothing left to pay. */
+        readonly maxCreatures: number;
+        /** How many tokens each compacted stack among `candidates` has —
+         * a stack is named once per token convoking. Only stacks appear, so
+         * this is absent on an ordinary board. */
+        readonly copies?: Readonly<Record<ObjectId, number>>;
       };
     }
   | {

@@ -276,6 +276,9 @@ function autoSlotsOf(slots: readonly object[]): number[] {
  * permanent the player may yet choose to tap for that other part is spared
  * whenever it can be.
  */
+/** A convoke payment with its contribution settled — see `resolveConvoke`. */
+type PaidConvoke = ConvokePayment & { readonly pays: "generic" | Color };
+
 interface ManaSourceArrangement {
   readonly last?: ReadonlySet<ObjectId>;
   readonly withheld?: ReadonlySet<ObjectId>;
@@ -1069,6 +1072,7 @@ export class Game {
           altCost === true,
           costOption,
         ) === null;
+      const manaAffordable = castable;
       // Convoke (rule 702.51): not affordable with mana alone doesn't mean
       // not castable — check again assuming every untapped creature helps,
       // maximally, before giving up on this variant.
@@ -1149,11 +1153,19 @@ export class Game {
           ? (() => {
               const candidates = this.convokeCandidates(player);
               const full = this.castingCostOf(player, card, def, 0, cost);
+              const copies: Record<ObjectId, number> = {};
+              for (const id of candidates) {
+                const n = this.state.objects[id].stackCount ?? 1;
+                if (n > 1) copies[id] = n;
+              }
               return {
                 convoke: {
                   candidates,
                   maxGeneric: full.generic,
                   proof: this.maxConvokeFor(candidates, full),
+                  manaAffordable,
+                  maxCreatures: full.generic + COLORS.reduce((n, c) => n + full.colored[c], 0),
+                  ...(Object.keys(copies).length > 0 ? { copies } : {}),
                 },
               };
             })()
@@ -1173,8 +1185,12 @@ export class Game {
   /** Every untapped creature `player` controls — the full candidate pool for
    * a convokable spell (rule 702.51a). The actual cast may use any subset,
    * each paying however the caster likes; this is just "what's eligible". */
+  /** Untapped creatures `player` could convoke with, any that make mana
+   * last: a creature that convokes can't also tap for mana (see
+   * `whyCannotCastSpell`), so a proof built from this order leaves the mana
+   * creatures for the mana whenever it can. */
   private convokeCandidates(player: PlayerId): ObjectId[] {
-    return this.state.zones.shared.battlefield.filter((id) => {
+    const creatures = this.state.zones.shared.battlefield.filter((id) => {
       const object = this.state.objects[id];
       return (
         object.controller === player &&
@@ -1182,6 +1198,11 @@ export class Game {
         computeCharacteristics(this.state, this.registry, id).types.includes("creature")
       );
     });
+    const makesMana = new Set(this.manaSources(player).map((s) => s.id));
+    return [
+      ...creatures.filter((id) => !makesMana.has(id)),
+      ...creatures.filter((id) => makesMana.has(id)),
+    ];
   }
 
   /** A greedy convoke allocation using as many of `candidates` as usefully
@@ -1197,13 +1218,18 @@ export class Game {
     let genericLeft = cost.generic;
     for (const creature of candidates) {
       const colors = computeCharacteristics(this.state, this.registry, creature).colors;
-      const payColor = COLORS.find((c) => colors.has(c) && colorLeft[c] > 0);
-      if (payColor !== undefined) {
-        out.push({ creature, pays: payColor });
-        colorLeft[payColor] -= 1;
-      } else if (genericLeft > 0) {
-        out.push({ creature, pays: "generic" });
-        genericLeft -= 1;
+      // A compacted token stack helps once per token.
+      for (let i = 0; i < (this.state.objects[creature].stackCount ?? 1); i += 1) {
+        const payColor = COLORS.find((c) => colors.has(c) && colorLeft[c] > 0);
+        if (payColor !== undefined) {
+          out.push({ creature, pays: payColor });
+          colorLeft[payColor] -= 1;
+        } else if (genericLeft > 0) {
+          out.push({ creature, pays: "generic" });
+          genericLeft -= 1;
+        } else {
+          break;
+        }
       }
     }
     return out;
@@ -4516,13 +4542,16 @@ export class Game {
         this.castCostString(cardId, via, face, kicked, overload, free, altCost),
       ),
     );
+    let convoked: PaidConvoke[] = [];
     if (convoke !== undefined && convoke.length > 0) {
       if (!def.convoke) return `${def.name} does not have convoke`;
-      const convokeError = this.whyCannotConvoke(player, convoke, baseCost);
+      const resolved = this.resolveConvoke(convoke, baseCost);
+      if (typeof resolved === "string") return resolved;
+      const convokeError = this.whyCannotConvoke(player, resolved, baseCost);
       if (convokeError !== null) return convokeError;
+      convoked = resolved;
     }
-    const cost =
-      convoke !== undefined && convoke.length > 0 ? this.reduceCostByConvoke(baseCost, convoke) : baseCost;
+    const cost = convoked.length > 0 ? this.reduceCostByConvoke(baseCost, convoked) : baseCost;
     const purpose: ManaPurpose = { kind: "cast", card: cardId };
     if (altCost && def.alternativeCost !== null) {
       // The tap half is checked against the same mana — see `tapCostOffer`.
@@ -4541,7 +4570,10 @@ export class Game {
       }
       return tap === undefined ? null : this.whyTapChoiceIsWrong(def.name, offer, tap);
     }
-    if (this.payMana(player, cost, undefined, undefined, purpose) === null) {
+    // A creature tapped to convoke is no longer untapped to tap for mana.
+    const convokers =
+      convoked.length > 0 ? { withheld: new Set(convoked.map((p) => p.creature)) } : undefined;
+    if (this.payMana(player, cost, undefined, undefined, purpose, convokers) === null) {
       return `${player} cannot pay the cost of ${def.name}`;
     }
     return null;
@@ -4554,19 +4586,21 @@ export class Game {
    * creature "for" a pip the spell doesn't need isn't a legal choice). */
   private whyCannotConvoke(
     player: PlayerId,
-    convoke: readonly ConvokePayment[],
+    convoke: readonly PaidConvoke[],
     cost: ManaCost,
   ): string | null {
-    const seen = new Set<ObjectId>();
+    const seen = new Map<ObjectId, number>();
     let genericPay = 0;
     const colorPay: Record<Color, number> = { W: 0, U: 0, B: 0, R: 0, G: 0 };
     for (const { creature, pays } of convoke) {
-      if (seen.has(creature)) return "the same creature can't convoke twice";
-      seen.add(creature);
       const object = this.state.objects[creature];
       if (object === undefined || object.zone !== "battlefield" || object.controller !== player) {
         return `${player} does not control that creature`;
       }
+      // A compacted token stack convokes once per token.
+      const times = (seen.get(creature) ?? 0) + 1;
+      if (times > (object.stackCount ?? 1)) return "the same creature can't convoke twice";
+      seen.set(creature, times);
       if (object.tapped) return "that creature is already tapped";
       const c = computeCharacteristics(this.state, this.registry, creature);
       if (!c.types.includes("creature")) return "only a creature can convoke";
@@ -4586,9 +4620,48 @@ export class Game {
     return null;
   }
 
+  /**
+   * `convoke` with every `pays` filled in. An entry that names one is taken
+   * as it stands; one that doesn't pays one of `cost`'s coloured pips that
+   * creature can and that nothing else has paid yet, else a generic one. A
+   * reason instead when an entry has nothing left to pay.
+   */
+  private resolveConvoke(
+    convoke: readonly ConvokePayment[],
+    cost: ManaCost,
+  ): PaidConvoke[] | string {
+    const colorLeft = { ...cost.colored };
+    let genericLeft = cost.generic;
+    for (const { pays } of convoke) {
+      if (pays === "generic") genericLeft -= 1;
+      else if (pays !== undefined) colorLeft[pays] -= 1;
+    }
+    const out: PaidConvoke[] = [];
+    for (const { creature, pays } of convoke) {
+      if (pays !== undefined) {
+        out.push({ creature, pays });
+        continue;
+      }
+      const object = this.state.objects[creature];
+      if (object === undefined) return "that creature does not exist";
+      const colors = computeCharacteristics(this.state, this.registry, creature).colors;
+      const color = COLORS.find((c) => colors.has(c) && colorLeft[c] > 0);
+      if (color !== undefined) {
+        colorLeft[color] -= 1;
+        out.push({ creature, pays: color });
+      } else if (genericLeft > 0) {
+        genericLeft -= 1;
+        out.push({ creature, pays: "generic" });
+      } else {
+        return `${printedCardName(object)} has nothing left to pay for by convoking`;
+      }
+    }
+    return out;
+  }
+
   /** `cost`, minus what `convoke` pays for (already validated by
    * `whyCannotConvoke`) — the remainder is paid with mana as usual. */
-  private reduceCostByConvoke(cost: ManaCost, convoke: readonly ConvokePayment[]): ManaCost {
+  private reduceCostByConvoke(cost: ManaCost, convoke: readonly PaidConvoke[]): ManaCost {
     let generic = cost.generic;
     const colored = { ...cost.colored };
     for (const { pays } of convoke) {
@@ -4674,15 +4747,21 @@ export class Game {
 
     const castingFromCommand = this.isCastableCommander(player, cardId);
     const fullCost = this.castingCostOf(player, cardId, def, chosenX, costString);
-    const cost =
-      convoke !== undefined && convoke.length > 0
-        ? this.reduceCostByConvoke(fullCost, convoke)
-        : fullCost;
+    let convoked: PaidConvoke[] = [];
+    if (convoke !== undefined && convoke.length > 0) {
+      const resolved = this.resolveConvoke(convoke, fullCost);
+      if (typeof resolved === "string") throw new Error(resolved);
+      convoked = resolved;
+    }
+    const cost = convoked.length > 0 ? this.reduceCostByConvoke(fullCost, convoked) : fullCost;
     // Sephara's alternative cost taps creatures as well: picked (or checked)
     // here, before anything is paid, and kept out of the mana plan — see
     // `tapCostOffer`.
     let tapPicked: ObjectId[] = [];
-    let manaArrangement: ManaSourceArrangement | undefined;
+    // Convoking creatures are tapped for the cost, so none of them can also
+    // tap for mana.
+    let manaArrangement: ManaSourceArrangement | undefined =
+      convoked.length > 0 ? { withheld: new Set(convoked.map((p) => p.creature)) } : undefined;
     if (altCost && def.alternativeCost !== null) {
       const spec = { ...def.alternativeCost.tapCreatures, includeSelf: false };
       const offer = this.tapCostOffer(player, cardId, spec, cost, undefined, undefined, {
@@ -4708,15 +4787,13 @@ export class Game {
       throw new Error(`${player} cannot pay the cost of ${def.name}`);
     }
     // Convoke (rule 702.51a): tap the chosen creatures as part of the cost,
-    // alongside the mana payment above.
-    if (convoke !== undefined) {
-      for (const { creature } of convoke) {
-        const c = this.state.objects[creature];
-        if (c !== undefined) {
-          c.tapped = true;
-          this.emit({ type: "permanent-tapped", object: creature });
-        }
-      }
+    // alongside the mana payment above — a token peeled off a stack for each
+    // time the stack is named.
+    for (const { creature } of convoked) {
+      if (this.state.objects[creature] === undefined) continue;
+      const id = this.splitOneFromStack(creature);
+      this.state.objects[id].tapped = true;
+      this.emit({ type: "permanent-tapped", object: id });
     }
 
     // Escape (rule 702.139): exile N other cards from the graveyard as an
