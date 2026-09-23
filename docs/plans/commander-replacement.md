@@ -1,8 +1,9 @@
 # Commander replacement (rule 903.9a)
 
 **Status:** the choice is never skipped any more (2026-09-22). Six older bugs
-found alongside the fix are still open and listed at the end; none of them
-loses the choice itself. (A seventh, the double death count, was fixed with
+were found alongside the fix: one is fixed since (fetch into a shock land) and
+the other five are still open and listed at the end; none of them loses the
+choice itself. (A seventh, the double death count, was fixed with
 the token-stack counting change.)
 
 ## How it's shaped
@@ -71,6 +72,18 @@ Changing to the post-2020 rule (903.9a as a state-based action for graveyard
 and exile, so "dies" triggers do fire for a commander) was considered and left
 alone. It's a rules change with its own consequences, not a bug fix.
 
+## Fixed since
+
+- **Fetch into a shock land was free** (fixed 2026-09-23). `applyChooseFromZone`
+  moved the chosen cards before it cleared `awaiting`, so `moveObject`'s
+  shock-land offer (which required `awaiting === null`) was skipped, *and* so
+  was its enter-tapped default: Polluted Delta for Watery Grave came in
+  untapped for no life. The land now always enters tapped, and an offer that
+  can't be asked yet waits in `pendingPayLifeForUntapped` until
+  `prepareForPriority` raises it (`raiseNextPayLifeOffer`), one land at a time,
+  so Skyshroud Claim finding two shock lands asks about each. Tests in
+  `dual-lands.test.ts`.
+
 ## Still open (older than the fix, verified on the old code)
 
 A review of the fix turned these up. Each reproduces identically on the code
@@ -87,13 +100,6 @@ before it.
   `applyCommanderChoice` never emits it, so Korvold misses it either way the
   owner answers (rule 701.21a). The cost paths emit it at once, so the two
   disagree.
-- **Fetch into a shock land is free.** `applyChooseFromZone` moves the chosen
-  cards before it clears `awaiting`, so `moveObject`'s shock-land offer (which
-  requires `awaiting === null`) is skipped, *and* so is its enter-tapped
-  default. Polluted Delta for Watery Grave: untapped, no 2 life. Hits every
-  `fetchLand()`, Nature's Lore, Three Visits, Skyshroud Claim, Crop Rotation
-  and others. Same class of bug as the one fixed here: a decision that can't
-  be asked is dropped instead of queued.
 - **Cleanup discard asks on the next turn.** `applyDiscard`'s cleanup branch
   calls `endStep()` without checking whether the post-discard SBAs raised
   anything, so a commander dying there (Giant Growth wearing off Rograkh with a

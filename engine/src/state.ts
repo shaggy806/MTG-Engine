@@ -1244,6 +1244,22 @@ export interface GameState {
     readonly intendedZone: CommanderReplacementZone;
   }[];
   /**
+   * Shock lands ("you may pay 2 life; if you don't, it enters tapped" — rule
+   * 614.13) that entered while another decision was on `awaiting`. Each is on
+   * the battlefield tapped, as if its controller had declined, until
+   * `prepareForPriority` offers the payment in turn.
+   *
+   * Without this the offer was dropped, and the tap with it: a fetch land put
+   * Watery Grave onto the battlefield while its own search was still being
+   * answered, and the land came in untapped for free.
+   */
+  pendingPayLifeForUntapped: {
+    readonly player: PlayerId;
+    /** The land that entered. */
+    readonly source: ObjectId;
+    readonly life: number;
+  }[];
+  /**
    * A "blink" (the `flicker` effect) whose exile half raised a commander's
    * 903.9a choice, parked until that choice is answered — without this the
    * whole effect was abandoned there, and a flickered commander whose owner

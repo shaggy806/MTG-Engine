@@ -308,6 +308,100 @@ describe("fixed multi-color mana sources (P0)", () => {
     void id;
   });
 
+  // The land arrives while the search's own decision is still being answered,
+  // so the offer has to wait for it rather than be dropped along with the tap.
+  describe("a shock land a search puts onto the battlefield", () => {
+    /** Alice's opening hand and first draw are Mountains, so a search finds
+     * only `library`'s cards. */
+    const searchGame = (library: readonly string[]) => {
+      const alice = new ScriptedController(A);
+      const game = Game.create({
+        seed: 1,
+        shuffle: false,
+        rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
+        controllers: { [A]: alice, [B]: new ScriptedController(B) },
+        decks: [
+          {
+            player: A,
+            cards: [
+              ...Array(8).fill("Mountain"),
+              ...library,
+              ...Array(32 - library.length).fill("Mountain"),
+            ],
+          },
+          { player: B, cards: pad([]) },
+        ],
+      });
+      game.advanceUntil(toPrecombat);
+      return { game, alice };
+    };
+    const settled = (s: GameState): boolean =>
+      s.zones.shared.stack.length === 0 && s.awaiting === null;
+    const onBattlefield = (game: Game, name: string): ObjectId => {
+      const id = game.battlefield.find((each) => game.state.objects[each].cardName === name);
+      if (id === undefined) throw new Error(`no ${name} on the battlefield`);
+      return id;
+    };
+
+    it("still offers the 2 life, and paying leaves it untapped", () => {
+      const { game, alice } = searchGame(["Watery Grave"]);
+      const fetch = land(game, "Polluted Delta");
+      alice.chooseFromZoneFn = (_v, eligible) => eligible.slice(0, 1);
+      const offers: ObjectId[] = [];
+      alice.payLifeForUntappedFn = (_v, source) => {
+        offers.push(source);
+        return true;
+      };
+      const life0 = game.state.players[A].life;
+
+      game.dispatch({ type: "activate-ability", player: A, source: fetch, abilityIndex: 0 });
+      game.advanceUntil(settled);
+
+      const grave = onBattlefield(game, "Watery Grave");
+      expect(offers).toEqual([grave]);
+      expect(game.state.objects[grave].tapped).toBe(false);
+      expect(game.state.players[A].life).toBe(life0 - 1 - 2);
+    });
+
+    it("enters tapped when the life isn't paid", () => {
+      const { game, alice } = searchGame(["Watery Grave"]);
+      const fetch = land(game, "Polluted Delta");
+      alice.chooseFromZoneFn = (_v, eligible) => eligible.slice(0, 1);
+      alice.payLifeForUntappedFn = () => false;
+      const life0 = game.state.players[A].life;
+
+      game.dispatch({ type: "activate-ability", player: A, source: fetch, abilityIndex: 0 });
+      game.advanceUntil(settled);
+
+      expect(game.state.objects[onBattlefield(game, "Watery Grave")].tapped).toBe(true);
+      expect(game.state.players[A].life).toBe(life0 - 1);
+    });
+
+    it("two found at once are each offered in turn (Skyshroud Claim)", () => {
+      const { game, alice } = searchGame(["Breeding Pool", "Temple Garden"]);
+      for (let i = 0; i < 4; i += 1) land(game, "Forest");
+      const claim = game.debugSpawn("Skyshroud Claim", A, "hand");
+      alice.chooseFromZoneFn = (_v, eligible) => eligible.slice(0, 2);
+      const offers: ObjectId[] = [];
+      // Pay for the first, decline the second.
+      alice.payLifeForUntappedFn = (_v, source) => {
+        offers.push(source);
+        return offers.length === 1;
+      };
+      const life0 = game.state.players[A].life;
+
+      game.dispatch({ type: "cast-spell", player: A, card: claim, targets: [] });
+      game.advanceUntil(settled);
+
+      const found = [onBattlefield(game, "Breeding Pool"), onBattlefield(game, "Temple Garden")];
+      expect([...offers].sort()).toEqual([...found].sort());
+      const [paid, declined] = offers as [ObjectId, ObjectId];
+      expect(game.state.objects[paid].tapped).toBe(false);
+      expect(game.state.objects[declined].tapped).toBe(true);
+      expect(game.state.players[A].life).toBe(life0 - 2);
+    });
+  });
+
   it("cycling: pay the cost, discard, draw", () => {
     const game = makeGame([]);
     // give A a land to pay {2} and a Sheltered Thicket in hand

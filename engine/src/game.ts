@@ -386,6 +386,7 @@ export class Game {
       pendingSuspendedCasts: [],
       deferredCommanderMove: null,
       pendingCommanderMoves: [],
+      pendingPayLifeForUntapped: [],
       pendingFlickerReturn: null,
       pendingDestruction: [],
       pendingSacrifices: [],
@@ -1782,6 +1783,29 @@ export class Game {
     }
   }
 
+  /**
+   * Offer the next shock land in `pendingPayLifeForUntapped` its "pay N life
+   * to untap it" choice, if nothing else is being asked. A land that has left
+   * the battlefield, changed control or been untapped since it entered has
+   * nothing left to offer, and neither does one whose controller can no
+   * longer afford the life, so those are dropped.
+   */
+  private raiseNextPayLifeOffer(): void {
+    const state = this.state;
+    if (state.awaiting !== null) return;
+    for (;;) {
+      const offer = state.pendingPayLifeForUntapped.shift();
+      if (offer === undefined) return;
+      const land = state.objects[offer.source];
+      if (land?.zone !== "battlefield" || land.controller !== offer.player || !land.tapped) {
+        continue;
+      }
+      if (state.players[offer.player].life < offer.life) continue;
+      state.awaiting = { kind: "pay-life-for-untapped", ...offer };
+      return;
+    }
+  }
+
   /** Kept because `applyCommanderChoice` validates before applying and
    * throws; the rule lives in `decisions/commander-replacement.ts`. */
   private whyCannotCommanderChoice(player: PlayerId): string | null {
@@ -2423,6 +2447,9 @@ export class Game {
       this.raiseNextCommanderChoice();
       this.runStateBasedActions();
       if (this.state.result.over) return;
+      // After the SBAs rather than before: several of them read a pending
+      // decision as "my move was deferred".
+      this.raiseNextPayLifeOffer();
       // An SBA / replacement raised a decision (e.g. a commander about to
       // leave the battlefield owes its owner a 903.9a choice) — hand that
       // player priority to answer it. `apply…Choice` calls back into here.
@@ -10977,16 +11004,18 @@ export class Game {
       // A shock land (rule 614.13): "you may pay N life; if you don't, it
       // enters tapped". It enters tapped by default; if its controller can
       // afford the life, the `pay-life-for-untapped` decision pauses the game
-      // here (like the 903.9a commander choice) to let them untap it.
-      if (entering.mayPayLife > 0 && this.state.awaiting === null) {
+      // here (like the 903.9a commander choice) to let them untap it. If
+      // another decision is already being answered — the search that found
+      // this land — the offer waits its turn in `pendingPayLifeForUntapped`.
+      if (entering.mayPayLife > 0) {
         object.tapped = true;
         if (this.state.players[object.controller].life >= entering.mayPayLife) {
-          this.state.awaiting = {
-            kind: "pay-life-for-untapped",
-            player: object.controller,
-            source: id,
-            life: entering.mayPayLife,
-          };
+          const offer = { player: object.controller, source: id, life: entering.mayPayLife };
+          if (this.state.awaiting === null) {
+            this.state.awaiting = { kind: "pay-life-for-untapped", ...offer };
+          } else {
+            this.state.pendingPayLifeForUntapped.push(offer);
+          }
         }
       }
       // Transforming DFCs (ROADMAP Phase 10b). A daybound/nightbound permanent
