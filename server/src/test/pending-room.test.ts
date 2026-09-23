@@ -24,7 +24,7 @@ describe("PendingRoom", () => {
     expect(room.isReady()).toBe(true);
     const config = room.toGameConfig();
     expect(config.decks.find((d) => d.player === ALICE)?.cards).toEqual(SEATS[0].cards);
-    expect(config.decks.find((d) => d.player === ALICE)?.commander).toBe(SEATS[0].commander);
+    expect(config.decks.find((d) => d.player === ALICE)?.commanders).toEqual([SEATS[0].commander]);
   });
 
   it("claiming with a custom deck uses it instead of the positional default", () => {
@@ -37,7 +37,50 @@ describe("PendingRoom", () => {
     const config = room.toGameConfig();
     const aliceDeck = config.decks.find((d) => d.player === ALICE);
     expect(aliceDeck?.cards).toEqual(["Forest", "Forest"]);
-    expect(aliceDeck?.commander).toBe("Ureni of the Unwritten");
+    expect(aliceDeck?.commanders).toEqual(["Ureni of the Unwritten"]);
+  });
+
+  it("carries a Partner pair through to its DeckList and seat status", () => {
+    const room = pendingRoom();
+    room.claimSeat(ALICE, "alice-token", { send: () => {} }, undefined, {
+      cards: ["Forest", "Island"],
+      commanders: ["Thrasios, Triton Hero", "Tana, the Bloodsower"],
+    });
+    room.claimSeat(BOB, "bob-token", { send: () => {} });
+    expect(room.toGameConfig().decks.find((d) => d.player === ALICE)?.commanders).toEqual([
+      "Thrasios, Triton Hero",
+      "Tana, the Bloodsower",
+    ]);
+    expect(room.seatStatuses().find((s) => s.player === ALICE)?.deck?.commanders).toEqual([
+      { name: "Thrasios, Triton Hero", printing: null },
+      { name: "Tana, the Bloodsower", printing: null },
+    ]);
+  });
+
+  // `commanders` wins over the single `commander` a client from before
+  // two-commander decks sent, so a deck carrying both is read one way only.
+  it("reads `commanders` over the legacy `commander` when a deck has both", () => {
+    const room = pendingRoom();
+    room.claimSeat(ALICE, "alice-token", { send: () => {} }, undefined, {
+      cards: ["Forest"],
+      commander: "Ayara, First of Locthwain",
+      commanders: ["Ureni of the Unwritten"],
+    });
+    room.claimSeat(BOB, "bob-token", { send: () => {} });
+    expect(room.toGameConfig().decks.find((d) => d.player === ALICE)?.commanders).toEqual([
+      "Ureni of the Unwritten",
+    ]);
+  });
+
+  it("refuses a deck naming more than two commanders", () => {
+    const room = pendingRoom();
+    expect(() =>
+      room.claimSeat(ALICE, "alice-token", { send: () => {} }, undefined, {
+        cards: ["Forest"],
+        commanders: ["Thrasios, Triton Hero", "Tana, the Bloodsower", "Kraum, Ludevic's Opus"],
+      }),
+    ).toThrow("at most two commanders");
+    expect(room.seatStatuses()[0].claimed).toBe(false);
   });
 
   it("carries a deck's chosen printings through to its DeckList and seat status", () => {
@@ -56,8 +99,12 @@ describe("PendingRoom", () => {
     });
     // Only the commander's printing rides on the seat status — that's the
     // one card the seat board draws.
-    expect(room.seatStatuses().find((s) => s.player === ALICE)?.deck?.commanderPrinting).toBe(id);
-    expect(room.seatStatuses().find((s) => s.player === BOB)?.deck?.commanderPrinting).toBeNull();
+    expect(room.seatStatuses().find((s) => s.player === ALICE)?.deck?.commanders).toEqual([
+      { name: "Ureni of the Unwritten", printing: id },
+    ]);
+    expect(room.seatStatuses().find((s) => s.player === BOB)?.deck?.commanders.map((c) => c.printing)).toEqual([
+      null,
+    ]);
   });
 
   // A printing ends up as `VisibleObject.art` in every seat's view, which
@@ -160,8 +207,7 @@ describe("PendingRoom", () => {
     expect(bobStatus?.isBot).toBe(true);
     expect(bobStatus?.deck).toEqual({
       name: SEATS[1].name,
-      commander: SEATS[1].commander ?? null,
-      commanderPrinting: null,
+      commanders: [{ name: SEATS[1].commander, printing: null }],
     });
     expect(() => room.addBot(BOB)).toThrow("already has a bot");
 
@@ -177,8 +223,7 @@ describe("PendingRoom", () => {
     room.addBot(BOB, { cards: ["Forest", "Forest"], commander: "Ureni of the Unwritten", name: "My Deck" });
     expect(room.seatStatuses().find((s) => s.player === BOB)?.deck).toEqual({
       name: "My Deck",
-      commander: "Ureni of the Unwritten",
-      commanderPrinting: null,
+      commanders: [{ name: "Ureni of the Unwritten", printing: null }],
     });
     room.claimSeat(ALICE, "alice-token", { send: () => {} });
     expect(room.toGameConfig().decks.find((d) => d.player === BOB)?.cards).toEqual(["Forest", "Forest"]);
@@ -190,8 +235,7 @@ describe("PendingRoom", () => {
     room.setBotDeck(BOB, { cards: ["Island", "Island"], commander: "Ayara, First of Locthwain", name: "Mono-Black" });
     expect(room.seatStatuses().find((s) => s.player === BOB)?.deck).toEqual({
       name: "Mono-Black",
-      commander: "Ayara, First of Locthwain",
-      commanderPrinting: null,
+      commanders: [{ name: "Ayara, First of Locthwain", printing: null }],
     });
 
     room.claimSeat(ALICE, "alice-token", { send: () => {} });

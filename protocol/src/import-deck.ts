@@ -64,11 +64,12 @@ export interface ImportedCardReport {
   readonly printingId: string | null;
 }
 
-/** `engine`'s `DeckValidationResult` plus the commander the import settled
- * on (named in a `Commander` section, or guessed) — the `format` field of
- * the terminal `result` line. */
+/** `engine`'s `DeckValidationResult` plus the commanders the import settled
+ * on — one, or two for a Partner pair; named in a `Commander` section, read
+ * off Moxfield's trailing block, or guessed — the `format` field of the
+ * terminal `result` line. Empty when there's no commander at all. */
 export type DeckFormatReport = DeckValidationResult & {
-  readonly commander: string | null;
+  readonly commanders: readonly string[];
 };
 
 /** One newline-delimited JSON line of a `POST /import-deck` response. */

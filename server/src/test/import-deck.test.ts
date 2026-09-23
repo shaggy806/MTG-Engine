@@ -526,7 +526,7 @@ describe("formatCheck (over a pasted list's implemented cards)", () => {
     ].join("\n");
     const { entries, commanders } = parseDecklistText(text);
     const r = formatCheck(entries, registry, commanders);
-    expect(r.commander).toBe("Atraxa, Praetors' Voice");
+    expect(r.commanders).toEqual(["Atraxa, Praetors' Voice"]);
     expect(r.identity).toBe("WUBG");
     expect(r.violations.some((v) => v.includes('3× "Lightning Bolt"'))).toBe(true);
     expect(r.violations.some((v) => v.includes("Raging Goblin"))).toBe(true);
@@ -545,7 +545,7 @@ describe("formatCheck (over a pasted list's implemented cards)", () => {
     ].join("\n");
     const { entries, commanders } = parseDecklistText(text);
     const r = formatCheck(entries, registry, commanders);
-    expect(r.commander).toBe("Ureni of the Unwritten");
+    expect(r.commanders).toEqual(["Ureni of the Unwritten"]);
   });
 
   it("falls back to guessing when the pasted list has no Commander section", () => {
@@ -554,15 +554,62 @@ describe("formatCheck (over a pasted list's implemented cards)", () => {
     );
     expect(commanders).toEqual([]);
     const r = formatCheck(entries, registry, commanders);
-    expect(r.commander).toBe("Atraxa, Praetors' Voice");
+    expect(r.commanders).toEqual(["Atraxa, Praetors' Voice"]);
   });
 
   it("reports an unimplemented explicit commander honestly rather than silently falling back", () => {
     const text = ["Commander", "1 Some Made Up Legend", "", "Deck", "1 Forest"].join("\n");
     const { entries, commanders } = parseDecklistText(text);
     const r = formatCheck(entries, registry, commanders);
-    expect(r.commander).toBe("Some Made Up Legend");
+    expect(r.commanders).toEqual(["Some Made Up Legend"]);
     expect(r.legal).toBe(false);
     expect(r.violations.some((v) => v.includes("not implemented"))).toBe(true);
+  });
+
+  it("reads Moxfield's trailing Partner pair as both commanders", () => {
+    const { entries, commanders, commanderSource } = parseDecklistText(
+      ["1 Sol Ring", "1 Forest", "", "1 Thrasios, Triton Hero", "1 Tana, the Bloodsower"].join("\n"),
+    );
+    const r = formatCheck(entries, registry, commanders, commanderSource);
+    expect(r.commanders).toEqual(["Thrasios, Triton Hero", "Tana, the Bloodsower"]);
+    // Both feed the deck's identity, and each is counted once — as a
+    // commander, not again among the 99.
+    expect(r.identity).toBe("URG");
+    expect(r.violations.some((v) => v.includes("Partner"))).toBe(false);
+    expect(r.violations).toContain("deck has 4 cards, the format wants 100");
+  });
+
+  it("reads a trailing pair the registry can see isn't one as a single commander", () => {
+    const { entries, commanders, commanderSource } = parseDecklistText(
+      ["1 Sol Ring", "", "1 Atraxa, Praetors' Voice", "1 Ureni of the Unwritten"].join("\n"),
+    );
+    const r = formatCheck(entries, registry, commanders, commanderSource);
+    expect(r.commanders).toEqual(["Atraxa, Praetors' Voice"]);
+  });
+
+  it("trusts a trailing pair it can't check, as it does a lone commander", () => {
+    const { entries, commanders, commanderSource } = parseDecklistText(
+      ["1 Sol Ring", "", "1 Atraxa, Praetors' Voice", "1 Some Made Up Partner"].join("\n"),
+    );
+    const r = formatCheck(entries, registry, commanders, commanderSource);
+    expect(r.commanders).toEqual(["Atraxa, Praetors' Voice", "Some Made Up Partner"]);
+  });
+
+  it("takes a Commander section's pair at face value and says when it isn't legal", () => {
+    const text = [
+      "Commander",
+      "1 Atraxa, Praetors' Voice",
+      "1 Ureni of the Unwritten",
+      "",
+      "Deck",
+      "1 Forest",
+    ].join("\n");
+    const { entries, commanders, commanderSource } = parseDecklistText(text);
+    const r = formatCheck(entries, registry, commanders, commanderSource);
+    expect(r.commanders).toEqual(["Atraxa, Praetors' Voice", "Ureni of the Unwritten"]);
+    expect(r.legal).toBe(false);
+    expect(r.violations).toContain(
+      `"Atraxa, Praetors' Voice" and "Ureni of the Unwritten" can't be paired: both commanders need Partner`,
+    );
   });
 });
