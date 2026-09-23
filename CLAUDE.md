@@ -213,7 +213,7 @@ eager WebSocket never opens for the two network-free ones: `/library` → `Libra
 - **Mana symbols always go through `<Symbols text={…} />`**, which renders `{…}` tokens as sliced-artwork pips with a CSS fallback. Never hand-roll a coloured circle.
 - **Columns that must be equal need `minmax(0, 1fr)`, not `1fr`.** A bare `1fr` is `minmax(auto, 1fr)`, so a track whose content has a wide minimum (a row of input-plus-button, a long unbreakable word, an image) takes more than its share and its neighbour takes less. On the landing page that silently gave the join panel 414px against the start panel's 387 while the footer nav below, having no such pressure, split evenly and lined up with neither. The same footgun is why the seat grid and the board rows are written with `minmax(0, 1fr)` too.
 - **A child that names its own width inside a padded box will escape that padding.** `.seat-board` at `min(1180px, 90vw)` inside a `.seat-board-box` at `min(1180px, 94vw)` overran the box's content area on a wide screen and pushed the outer seat panels out through its side padding. Let the box own the width and the child fill it (`width: 100%`).
-- **The client has no automated tests.** Verify any UI change live in the browser, in *both* a 2-player and a 3-4 player room, since the layouts diverge — **and at a short viewport (~768px tall), not just whatever monitor you're on.** Several severe layout bugs (every battlefield tile crushed to its 40px floor, the command/library rail overflowing its quadrant, the hand fan hanging off the bottom of the screen) were invisible at 1440p and obvious at 768p.
+- **The client's only automated tests are a Playwright smoke suite** (`client/e2e/`, `npm run test:e2e -w client`): the landing page, a 2- and a 4-player dev room at 1366x768, and walking into combat. It catches a page that no longer loads or a flow that no longer reaches its decision, not a layout that got worse, so verify any UI change live in the browser, in *both* a 2-player and a 3-4 player room, since the layouts diverge — **and at a short viewport (~768px tall), not just whatever monitor you're on.** Several severe layout bugs (every battlefield tile crushed to its 40px floor, the command/library rail overflowing its quadrant, the hand fan hanging off the bottom of the screen) were invisible at 1440p and obvious at 768p.
 
 ## Commands
 
@@ -221,7 +221,7 @@ Run from the repo root unless noted. Workspace scripts: `npm run <script> -w eng
 
 **Whole repo** (root scripts fan out with `--workspaces --if-present`):
 - `npm run build` — builds `engine` (tsc), then `server` (tsc), then `client` (`tsc -b && vite build`)
-- `npm test` — runs `engine` and `server` vitest, each once (`client` has no tests)
+- `npm test` — runs `engine` and `server` vitest, each once (the client's Playwright suite is separate: `npm run test:e2e -w client`)
 - `npm run lint` — oxlint on `client`
 - `npm run typecheck` — `tsc --noEmit` on `engine`, `tsc --noEmit` on `server`, `tsc -b` on `client`
 
@@ -254,7 +254,8 @@ Run from the repo root unless noted. Workspace scripts: `npm run <script> -w eng
 - `npm run dev -w client` — Vite dev server with HMR (build `engine`/`server` first); needs a room server reachable at `ws://<host>:4000` (override with `VITE_SERVER_URL`)
 - `npm run lab -w client` — the card lab, no room server needed (build `engine` once first for types)
 - `npm run build -w client` / `lint -w client` / `preview -w client`
-- No client tests yet. To watch it run: start a room server, then `npm run dev -w client` and open two tabs/devices to the same room code.
+- `npm run test:e2e -w client` — the Playwright smoke suite (`client/e2e/`, config `client/playwright.config.ts`, CI `.github/workflows/e2e.yml`). It starts `dev-rooms` and the Vite dev server itself, or reuses them if they're already up, and resets each dev room it uses through the command port. Build `engine`, `protocol` and `server` first. It runs one test at a time on purpose: a dev-rooms `reset` drops every open connection, not just that room's. `@playwright/test` is pinned to the version whose Chromium the cloud sessions' image ships; elsewhere run `npx playwright install chromium` once.
+- To watch it run by hand: start a room server, then `npm run dev -w client` and open two tabs/devices to the same room code.
 
 ## Git workflow
 
@@ -266,6 +267,7 @@ Run from the repo root unless noted. Workspace scripts: `npm run <script> -w eng
 - **Engine/server TS config is `erasableSyntaxOnly`** (same as the client): **no `enum`, no `namespace`, no constructor parameter properties**. Use string-literal unions + `as const satisfies` tables instead. Also `verbatimModuleSyntax` → split `import type { … }` from value imports. `strict` + `noUnusedLocals`/`noUnusedParameters`.
 - **Client TS config** (`client/tsconfig.app.json`) is strict bundler-mode: `verbatimModuleSyntax`, `erasableSyntaxOnly`, `noUnusedLocals`/`noUnusedParameters`, `allowImportingTsExtensions` (relative imports include the `.tsx`/`.ts` extension). `noEmit` — Vite does the transform.
 - **Engine/server tsconfig excludes `src/**/*.test.ts`** from the build; vitest type-checks tests itself.
+- **`package-lock.json` is written by npm 11.** npm 10 drops the `libc` fields npm 11 records for platform-specific optional packages, so changing dependencies with npm 10 churns the lockfile. Where the installed npm is older (the cloud sessions' image has 10.9), use `npx npm@11 install …`.
 - **Shared dev deps are hoisted to the root** `package.json` (`typescript`, `@types/node`). Don't re-add them to a workspace unless a version needs to diverge.
 - **Lint** is oxlint, not ESLint. Config in `client/.oxlintrc.json` (`react`, `typescript`, `oxc` plugins; `react/rules-of-hooks` errors).
 - Assets in `client/public/` are referenced by absolute path (e.g. `/favicon.svg`); assets imported from `src/` go through Vite.
