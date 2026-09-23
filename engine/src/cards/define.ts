@@ -17,6 +17,7 @@ import type { EffectSpec, ModeOption, SpellResolver } from "../effects.js";
 import type { CardFilter, NumCompare } from "../filter.js";
 import type { Color } from "../mana.js";
 import type { ReplacementSpec } from "../replacements.js";
+import type { ZoneType } from "../state.js";
 import type { TargetSpec } from "../target.js";
 
 export type CardType =
@@ -320,6 +321,23 @@ export type StaticCondition =
    * battlefield (not equipped, not attacking).
    */
   | { readonly kind: "source"; readonly filter: CardFilter }
+  /**
+   * Where the ability's own source is, as an intervening-if (rule 603.4):
+   * Eminence's "if ~ is in the command zone or on the battlefield" (Edgar
+   * Markov), or "if ~ is still on the battlefield".
+   *
+   * With `sameObject`, only the object the ability came from counts. A
+   * permanent that left and came back, or a commander cast from the command
+   * zone since, is a new object (rule 400.7), told apart by the timestamp the
+   * ability recorded (`GameObject.sourceTimestamp`). Only a triggered
+   * ability's resolution check has one to compare; anywhere else the source
+   * is that object by definition.
+   */
+  | {
+      readonly kind: "source-zone";
+      readonly zones: readonly ZoneType[];
+      readonly sameObject?: boolean;
+    }
   /**
    * Was the ability's own source cast with its kicker paid? — Verix
    * Bladewing's "When this enters, **if it was kicked**, …".

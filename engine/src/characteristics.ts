@@ -158,6 +158,12 @@ export interface ConditionOptions {
    * you control a Dragon …" on a Dragon counts itself), so it passes `true`.
    */
   readonly includeSelf?: boolean;
+  /**
+   * The source's timestamp when the ability triggered
+   * (`GameObject.sourceTimestamp`), for a `source-zone` condition's
+   * `sameObject`. Passed only by a triggered ability's resolution check.
+   */
+  readonly sourceTimestamp?: number;
 }
 
 /**
@@ -282,6 +288,13 @@ function evalStaticCondition(
       );
     case "source":
       return matchesFilter(state, registry, source.id, condition.filter, { you });
+    case "source-zone":
+      return (
+        condition.zones.includes(source.zone) &&
+        (condition.sameObject !== true ||
+          opts.sourceTimestamp === undefined ||
+          source.timestamp === opts.sourceTimestamp)
+      );
     case "chosen-on-enter":
       return source.chosenOnEnter === condition.value;
     case "self-kicked":

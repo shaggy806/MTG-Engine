@@ -109,6 +109,54 @@ describe("Edgar Markov — Eminence", () => {
     expect(vampires(game)).toBe(1);
   });
 
+  describe("'if Edgar Markov is in the command zone or on the battlefield' (rule 603.4)", () => {
+    /** The trigger from casting a Nighthawk, left on the stack unresolved. */
+    const triggered = (): { game: Game; edgar: ObjectId } => {
+      const game = mkGame(["Vampire Nighthawk"]);
+      game.advanceUntil(toPrecombat);
+      for (let i = 0; i < 3; i += 1) game.debugSpawn("Swamp", A, "battlefield");
+      const edgar = game.state.zones.shared.command.find(
+        (id) => game.state.objects[id].cardName === "Edgar Markov",
+      );
+      if (edgar === undefined) throw new Error("no Edgar in the command zone");
+      game.dispatch({
+        type: "cast-spell",
+        player: A,
+        card: inHand(game, "Vampire Nighthawk"),
+        targets: [],
+      });
+      expect(game.state.zones.shared.stack).toHaveLength(2);
+      return { game, edgar };
+    };
+    // White-box, like `debugSpawn`: the real zone change with nothing behind
+    // it, standing in for casting Edgar in response.
+    const move = (game: Game, id: ObjectId, to: "hand" | "battlefield"): void => {
+      (game as unknown as { moveObject(id: ObjectId, to: string): boolean }).moveObject(id, to);
+    };
+    const tokens = (game: Game): number =>
+      game.battlefield.filter((id) => game.state.objects[id].isToken).length;
+
+    it("makes nothing once Edgar has left for anywhere else", () => {
+      const { game, edgar } = triggered();
+      move(game, edgar, "hand");
+      game.advanceUntil(quiet);
+      expect(tokens(game)).toBe(0);
+      expect(
+        game.events.some(
+          (e) => e.type === "spell-fizzled" && /intervening-if/.test(e.reason ?? ""),
+        ),
+      ).toBe(true);
+    });
+
+    it("makes nothing once Edgar is a new object, even on the battlefield (rule 400.7)", () => {
+      const { game, edgar } = triggered();
+      move(game, edgar, "battlefield");
+      game.advanceUntil(quiet);
+      expect(game.state.objects[edgar].zone).toBe("battlefield");
+      expect(tokens(game)).toBe(0);
+    });
+  });
+
   it("leaves its other abilities inert in the command zone", () => {
     const game = mkGame();
     game.advanceUntil(toPrecombat);

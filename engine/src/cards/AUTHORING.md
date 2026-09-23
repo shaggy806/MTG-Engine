@@ -1000,6 +1000,14 @@ clause (section 9):
 - `{ kind: "source", filter }` — the ability's own source matches `filter`:
   "as long as ~ is equipped" (`{ equipped: true }`), "if ~ is attacking",
   "if ~ is tapped". Read wherever the source is now.
+- `{ kind: "source-zone", zones, sameObject? }` — **where** the ability's own
+  source is, as an intervening-if: Eminence's "if ~ is in the command zone or
+  on the battlefield" (`zones: ["command", "battlefield"]`, Edgar Markov) or
+  "if ~ is still on the battlefield" (`zones: ["battlefield"]`). Add
+  `sameObject: true` whenever the clause names the card itself, which is
+  nearly always: then a permanent that left and came back, or a commander
+  cast from the command zone since, no longer counts (rule 400.7), checked
+  against the timestamp the ability recorded when it triggered.
 - `{ kind: "resolved-this-turn", n }` — "if this is the **Nth time this
   ability has resolved this turn**" (Omnath, Locus of Creation; Tannuk; Ms.
   Bumbleflower). `n` counts the resolution in progress, so the first is `1`.
