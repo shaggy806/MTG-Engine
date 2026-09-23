@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "smoke": "tsc && node scripts/smoke.mjs",
+    "dev-rooms": "tsc && node scripts/dev-rooms.mjs",
     "gen:oracle-tags": "node scripts/gen-oracle-tags.mjs"
   },
   "dependencies": {
