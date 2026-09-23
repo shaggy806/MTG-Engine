@@ -172,6 +172,9 @@ export interface NetworkGame {
   ackFrame: (seq: number) => void
   createRoom: (seed?: number, players?: number) => void
   joinRoom: (roomId: string) => void
+  /** Walks back out of a room that hasn't started yet, to the landing page —
+   * giving up my seat, if I hold one, so the table can fill it again. */
+  leaveRoom: () => void
   /** Claims `seat` (the first time it's called for that seat) or updates it
    * (any later call — reuses the same seat's already-stored token, so the
    * server treats it as a reclaim rather than a conflicting claim). That's
@@ -300,6 +303,9 @@ export function useNetworkGame(): NetworkGame {
           return
         }
         case 'room-joined': {
+          // A seat-board refresh the server sent before it saw my
+          // `leave-room` — I've already left, so it mustn't pull me back in.
+          if (message.roomId !== roomIdRef.current) return
           joiningRef.current = false
           roomIdRef.current = message.roomId
           setRoomId(message.roomId)
@@ -373,7 +379,7 @@ export function useNetworkGame(): NetworkGame {
           }
           setError(message.message)
           setErrorSeq((n) => n + 1)
-          if (!isPlayingRef.current) {
+          if (!isPlayingRef.current && roomIdRef.current !== null) {
             // A rejected seat claim — drop the unconfirmed claim and any stored
             // token for it, so nothing (an auto-reclaim included) retries it in
             // a loop. The server follows up with a fresh `room-joined`.
@@ -503,6 +509,25 @@ export function useNetworkGame(): NetworkGame {
     [send],
   )
 
+  const leaveRoom = useCallback(() => {
+    const id = roomIdRef.current
+    if (id === null) return
+    send({ type: 'leave-room', roomId: id })
+    // The server has just freed the seat, so the stored claim would only
+    // reclaim someone else's the next time this room is joined.
+    clearStoredSeat(id)
+    pendingClaimRef.current = null
+    joiningRef.current = false
+    roomIdRef.current = null
+    clearRoomFromUrl()
+    setRoomId(null)
+    setSeats([])
+    setSeat(null)
+    setIsHost(false)
+    setError(null)
+    setStatus('no-room')
+  }, [send])
+
   const addSeat = useCallback(() => {
     const id = roomIdRef.current
     if (id === null) return
@@ -609,6 +634,7 @@ export function useNetworkGame(): NetworkGame {
     ackFrame,
     createRoom,
     joinRoom,
+    leaveRoom,
     claimSeat,
     addBot,
     setBotDeck,

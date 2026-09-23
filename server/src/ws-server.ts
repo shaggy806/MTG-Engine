@@ -321,6 +321,13 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
           broadcastPending(room);
           return;
         }
+        case "leave-room": {
+          const room = requirePendingRoom(manager, message.roomId);
+          room.leave(connection);
+          boundRoom = null;
+          broadcastPending(room);
+          return;
+        }
         case "start-game": {
           const room = requirePendingRoom(manager, message.roomId);
           requireHost(room, connection, "start the game");

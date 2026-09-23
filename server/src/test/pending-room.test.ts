@@ -125,6 +125,23 @@ describe("PendingRoom", () => {
     expect(room.botSeats()).toEqual([]);
   });
 
+  it("leave frees the leaver's seat for someone else, and drops their host role", () => {
+    const room = new PendingRoom("TEST1", 2, { seed: 1 }, "host-token");
+    const alice = { send: () => {} };
+    const bob = { send: () => {} };
+    room.bindHost(alice, "host-token");
+    room.claimSeat(ALICE, "alice-token", alice, "Alice", undefined, true);
+    room.claimSeat(BOB, "bob-token", bob);
+    expect(room.isHost(bob)).toBe(false);
+
+    room.leave(alice);
+    const [freed] = room.seatStatuses();
+    expect(freed).toMatchObject({ claimed: false, online: false, displayName: null, deck: null, ready: false });
+    // With the creator gone, the role falls to whoever is still seated.
+    expect(room.isHost(bob)).toBe(true);
+    expect(() => room.claimSeat(ALICE, "carol-token", { send: () => {} })).not.toThrow();
+  });
+
   it("a seat dropped and re-added leaves the table in printed seating order", () => {
     const room = pendingRoom(4);
     room.removeSeat(SEATS[2].id);

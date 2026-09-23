@@ -167,6 +167,15 @@ export type ClientMessage =
       readonly ready: boolean;
     }
   | {
+      /** Walks back out of a room that hasn't started yet — the seat board's
+       * Back button. Frees the caller's seat, if it holds one, so the table
+       * isn't left waiting on someone who has gone, and stops sending them
+       * the waiting room. A host token is kept: the creator rejoining by the
+       * code is the host again. Only valid before the room's game exists. */
+      readonly type: "leave-room";
+      readonly roomId: string;
+    }
+  | {
       /** Explicitly starts the game once every seat is filled (bot or
        * claimed) and every human seat has readied up. Host only. Rejected
        * while any seat still isn't ready. */

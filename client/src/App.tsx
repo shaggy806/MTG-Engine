@@ -307,11 +307,22 @@ function ErrorLine({ game }: { readonly game: NetworkGame }) {
   )
 }
 
+/** Leaves the waiting room for the landing page, giving up my seat so the
+ * table isn't left waiting on someone who has gone. */
+function BackToMenu({ game }: { readonly game: NetworkGame }) {
+  return (
+    <button type="button" className="link-button seat-board-back" onClick={game.leaveRoom}>
+      ← Main menu
+    </button>
+  )
+}
+
 function SeatPickerScreen({ game }: { readonly game: NetworkGame }) {
   const roomFull = game.seats.every((s) => s.claimed || s.isBot)
   return (
     <div className="overlay">
       <div className="overlay-box seat-board-box">
+        <BackToMenu game={game} />
         <h2>Room {game.roomId ?? ''}</h2>
         <p className="muted">Share this room code, then everyone joins.</p>
         <ErrorLine game={game} />
@@ -331,6 +342,7 @@ function WaitingForPlayersScreen({ game }: { readonly game: NetworkGame }) {
   return (
     <div className="overlay">
       <div className="overlay-box seat-board-box">
+        <BackToMenu game={game} />
         <h2>Room {game.roomId ?? ''}</h2>
         <ErrorLine game={game} />
         <SeatBoard game={game} />

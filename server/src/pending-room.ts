@@ -324,6 +324,17 @@ export class PendingRoom {
     this.lastActivityAt = Date.now();
   }
 
+  /** `connection` walking out of the waiting room: its seat, if it holds
+   * one, goes back to open — token, deck, name and ready state with it, so
+   * the next person to take it starts clean — and it stops being the host
+   * here until it rejoins with the host token. */
+  leave(connection: Connection): void {
+    this.host.drop(connection);
+    const index = this.seats.findIndex((s) => s.connection === connection);
+    if (index !== -1) this.seats[index] = emptySeat(this.seats[index].player);
+    this.lastActivityAt = Date.now();
+  }
+
   seatOf(connection: Connection): PlayerId | null {
     return this.seats.find((s) => s.connection === connection)?.player ?? null;
   }

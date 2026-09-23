@@ -2466,8 +2466,15 @@
   align-items: center;
   justify-content: center;
   z-index: 10;
+  /* A box taller than the window (the seat board, on a short screen) has to
+     scroll rather than overflow: centred by `align-items` alone its top runs
+     off above the viewport where no scrollbar can reach it, taking the room
+     code and the way back to the menu with it. The box's auto margins centre
+     it just the same while it fits, and never push it past the top. */
+  overflow-y: auto;
 }
 .overlay-box {
+  margin: auto;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -2504,6 +2511,14 @@
      the same token for both gaps. */
   --seat-gap: 16px;
   padding-inline: var(--seat-gap);
+  position: relative;
+}
+/* Pinned in the corner rather than in the column, so the room code stays
+   centred over the seats. */
+.seat-board-back {
+  position: absolute;
+  top: var(--seat-gap);
+  left: var(--seat-gap);
 }
 
 /* read-only zone browser (graveyard/exile today), also reused as the
