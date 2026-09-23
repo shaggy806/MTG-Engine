@@ -491,11 +491,18 @@ function counterPtBonus(counter: string): { power: number; toughness: number } {
   return { power: 0, toughness: 0 };
 }
 
-function isPrintedCreature(
+/**
+ * Whether `object` is a creature *right now* — its layer-4 types, not its
+ * printed ones. A creature-scoped static reaches an animated land or an
+ * artifact that became a creature just as it reaches a printed creature
+ * (rule 613.1d puts type-changing effects before every layer these statics
+ * work in), and stops reaching a creature that is no longer one.
+ */
+function isCreatureNow(
   registry: CardRegistry,
   object: GameObject,
 ): boolean {
-  return registry.get(printedCardName(object)).types.includes("creature");
+  return effectiveTypes(registry, object).includes("creature");
 }
 
 export function staticAffects(
@@ -509,13 +516,13 @@ export function staticAffects(
   if (affects.scope === "lands-you-control") {
     return (
       target.controller === source.controller &&
-      registry.get(printedCardName(target)).types.includes("land")
+      effectiveTypes(registry, target).includes("land")
     );
   }
   if (affects.scope === "all-creatures") {
     // Every creature on the battlefield, whoever controls it.
     if (affects.excludeSelf === true && source.id === target.id) return false;
-    if (!isPrintedCreature(registry, target)) return false;
+    if (!isCreatureNow(registry, target)) return false;
     const printed = registry.get(printedCardName(target));
     if (affects.subtype !== undefined && !effectiveSubtypes(registry, target).includes(affects.subtype)) {
       return false;
@@ -531,7 +538,7 @@ export function staticAffects(
   // "creatures-you-control"
   if (affects.excludeSelf && source.id === target.id) return false;
   if (target.controller !== source.controller) return false;
-  if (!isPrintedCreature(registry, target)) return false;
+  if (!isCreatureNow(registry, target)) return false;
   if (affects.tokenOnly === true && target.isToken !== true) return false;
   if (
     affects.withKeyword !== undefined &&
@@ -703,7 +710,7 @@ function collectStaticEffects(
     ) {
       continue;
     }
-    if (target.controller !== emblem.owner || !isPrintedCreature(registry, target)) continue;
+    if (target.controller !== emblem.owner || !isCreatureNow(registry, target)) continue;
     if (
       ability.affects.subtype !== undefined &&
       !effectiveSubtypes(registry, target).includes(ability.affects.subtype)

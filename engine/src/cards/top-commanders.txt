@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-55 already implemented / 445 missing
+58 already implemented / 442 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -222,7 +222,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  216  Umbris, Fear Manifest                          11443 decks  {3}{U}{B}        Legendary Creature — Nightmare Horror
 [ ]  217  Alania, Divergent Storm                        11420 decks  {3}{U}{R}        Legendary Creature — Otter Wizard
 [ ]  218  Saruman, the White Hand                        11401 decks  {1}{U}{B}{R}     Legendary Creature — Avatar Wizard
-[ ]  219  Sokka, Tenacious Tactician                     11394 decks  {1}{U}{R}{W}     Legendary Creature — Human Warrior Ally
+[x]  219  Sokka, Tenacious Tactician                     11394 decks  {1}{U}{R}{W}     Legendary Creature — Human Warrior Ally
 [ ]  220  Reyhan, Last of the Abzan                      11383 decks  {1}{B}{G}        Legendary Creature — Human Warrior
 [ ]  221  Michelangelo, the Heart                        11379 decks  {1}{G}           Legendary Creature — Mutant Ninja Turtle
 [ ]  222  Gonti, Canny Acquisitor                        11371 decks  {2}{B}{G}{U}     Legendary Creature — Aetherborn Rogue
@@ -266,7 +266,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  260  Katara, the Fearless                           10063 decks  {G}{W}{U}        Legendary Creature — Human Warrior Ally
 [ ]  261  Betor, Kin to All                              10019 decks  {2}{W}{B}{G}     Legendary Creature — Spirit Dragon
 [ ]  262  Doctor Doom, King of Latveria                   9982 decks  {1}{U}{B}{R}     Legendary Creature — Human Noble Villain
-[ ]  263  Bria, Riptide Rogue                             9969 decks  {2}{U}{R}        Legendary Creature — Otter Rogue
+[x]  263  Bria, Riptide Rogue                             9969 decks  {2}{U}{R}        Legendary Creature — Otter Rogue
 [ ]  264  Jetmir, Nexus of Revels                         9908 decks  {1}{R}{G}{W}     Legendary Creature — Cat Demon
 [ ]  265  Aloy, Savior of Meridian                        9887 decks  {3}{G}{U}        Legendary Creature — Human Warrior
 [ ]  266  Eddie Brock                                     9824 decks  {2}{B}           Legendary Creature — Human Hero Villain // Legendary Creature — Symbiote Hero Villain
@@ -387,7 +387,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  381  The Tenth Doctor                                7554 decks  {3}{U}{R}        Legendary Creature — Time Lord Doctor
 [ ]  382  Bruvac the Grandiloquent                        7536 decks  {2}{U}           Legendary Creature — Human Advisor
 [ ]  383  Sigarda, Font of Blessings                      7525 decks  {2}{G}{W}        Legendary Creature — Angel
-[ ]  384  Thantis, the Warweaver                          7519 decks  {3}{B}{R}{G}     Legendary Creature — Spider
+[x]  384  Thantis, the Warweaver                          7519 decks  {3}{B}{R}{G}     Legendary Creature — Spider
 [ ]  385  The Lord of Pain                                7479 decks  {3}{B}{R}        Legendary Creature — Human Assassin
 [ ]  386  Ayula, Queen Among Bears                        7460 decks  {1}{G}           Legendary Creature — Bear
 [ ]  387  Evereth, Viceroy of Plunder                     7444 decks  {2}{B}           Legendary Creature — Vampire Soldier

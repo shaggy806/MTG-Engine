@@ -843,6 +843,11 @@ static: [
 - `"attached"` — the permanent this Aura/Equipment is attached to (how Auras
   grant their effect).
 
+The creature scopes ask whether a permanent is a creature *now* (its layer-4
+types), so an animated land or an artifact that became a creature gets the
+anthem, the keyword grant and the granted trigger like any other creature.
+`lands-you-control` reads current types the same way.
+
 **Continuous-effect fields:**
 
 - `grantPt: [p, t]` — layer 7d P/T bonus.

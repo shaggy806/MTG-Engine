@@ -804,6 +804,10 @@ const deckC = deck([
   ["Turbulent Fen", 1],
   ["Festering Thicket", 1],
   ["Manifold Key", 1],
+  // Top-500 commanders unblocked by engine work.
+  ["Sokka, Tenacious Tactician", 1],
+  ["Bria, Riptide Rogue", 1],
+  ["Thantis, the Warweaver", 1],
 ]);
 
 // All four seats' decks/commanders, in seating order — sliced down to

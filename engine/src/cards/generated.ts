@@ -93,6 +93,7 @@ import _poolBrainstorm from "./pool/brainstorm.js";
 import _poolBrashTaunter from "./pool/brash-taunter.js";
 import _poolBreathOfMalfegor from "./pool/breath-of-malfegor.js";
 import _poolBreedingPool from "./pool/breeding-pool.js";
+import _poolBriaRiptideRogue from "./pool/bria-riptide-rogue.js";
 import _poolBristlyBillSpineSower from "./pool/bristly-bill-spine-sower.js";
 import _poolBruseTarlBoorishHerder from "./pool/bruse-tarl-boorish-herder.js";
 import _poolBrushland from "./pool/brushland.js";
@@ -597,6 +598,7 @@ import _poolSmolderingMarsh from "./pool/smoldering-marsh.js";
 import _poolSnakeskinVeil from "./pool/snakeskin-veil.js";
 import _poolSnapcasterMage from "./pool/snapcaster-mage.js";
 import _poolSneakAttack from "./pool/sneak-attack.js";
+import _poolSokkaTenaciousTactician from "./pool/sokka-tenacious-tactician.js";
 import _poolSolRing from "./pool/sol-ring.js";
 import _poolSolemnSimulacrum from "./pool/solemn-simulacrum.js";
 import _poolSoulSnare from "./pool/soul-snare.js";
@@ -679,6 +681,7 @@ import _poolTerrainGenerator from "./pool/terrain-generator.js";
 import _poolTerramorphicExpanse from "./pool/terramorphic-expanse.js";
 import _poolTerrorOfThePeaks from "./pool/terror-of-the-peaks.js";
 import _poolThaliaGuardianOfThraben from "./pool/thalia-guardian-of-thraben.js";
+import _poolThantisTheWarweaver from "./pool/thantis-the-warweaver.js";
 import _poolTheUnbeatableSquirrelGirl from "./pool/the-unbeatable-squirrel-girl.js";
 import _poolTheUrDragon from "./pool/the-ur-dragon.js";
 import _poolTheaterOfHorrors from "./pool/theater-of-horrors.js";
@@ -793,6 +796,7 @@ import _poolZiatorasProvingGround from "./pool/ziatoras-proving-ground.js";
 import _poolZombieApocalypse from "./pool/zombie-apocalypse.js";
 import _poolZulaportCutthroat from "./pool/zulaport-cutthroat.js";
 import _poolZuranOrb from "./pool/zuran-orb.js";
+import _tokensAllyToken from "./tokens/ally-token.js";
 import _tokensApeToken from "./tokens/ape-token.js";
 import _tokensArmyToken from "./tokens/army-token.js";
 import _tokensAssassinToken from "./tokens/assassin-token.js";
@@ -936,6 +940,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBrashTaunter,
   _poolBreathOfMalfegor,
   _poolBreedingPool,
+  _poolBriaRiptideRogue,
   _poolBristlyBillSpineSower,
   _poolBruseTarlBoorishHerder,
   _poolBrushland,
@@ -1440,6 +1445,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSnakeskinVeil,
   _poolSnapcasterMage,
   _poolSneakAttack,
+  _poolSokkaTenaciousTactician,
   _poolSolRing,
   _poolSolemnSimulacrum,
   _poolSoulSnare,
@@ -1522,6 +1528,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTerramorphicExpanse,
   _poolTerrorOfThePeaks,
   _poolThaliaGuardianOfThraben,
+  _poolThantisTheWarweaver,
   _poolTheUnbeatableSquirrelGirl,
   _poolTheUrDragon,
   _poolTheaterOfHorrors,
@@ -1642,6 +1649,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
  * other card (a `create-token` effect names one), but not a card: never
  * deck-legal, and hidden from the card library by default. */
 export const TOKEN_CARDS: readonly CardDefinition[] = [
+  _tokensAllyToken,
   _tokensApeToken,
   _tokensArmyToken,
   _tokensAssassinToken,
