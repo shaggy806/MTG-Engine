@@ -381,6 +381,7 @@ import _poolKetriaTriome from "./pool/ketria-triome.js";
 import _poolKikiJikiMirrorBreaker from "./pool/kiki-jiki-mirror-breaker.js";
 import _poolKioraBehemothBeckoner from "./pool/kiora-behemoth-beckoner.js";
 import _poolKirdApe from "./pool/kird-ape.js";
+import _poolKoboldsOfKherKeep from "./pool/kobolds-of-kher-keep.js";
 import _poolKodamasReach from "./pool/kodamas-reach.js";
 import _poolKolaghansCommand from "./pool/kolaghans-command.js";
 import _poolKorvoldFaeCursedKing from "./pool/korvold-fae-cursed-king.js";
@@ -501,6 +502,7 @@ import _poolPreyUpon from "./pool/prey-upon.js";
 import _poolPrimalMight from "./pool/primal-might.js";
 import _poolProdigalSorcerer from "./pool/prodigal-sorcerer.js";
 import _poolProsperousInnkeeper from "./pool/prosperous-innkeeper.js";
+import _poolProsshSkyraiderOfKher from "./pool/prossh-skyraider-of-kher.js";
 import _poolProvokeTheTrolls from "./pool/provoke-the-trolls.js";
 import _poolPutrefy from "./pool/putrefy.js";
 import _poolPyroclasm from "./pool/pyroclasm.js";
@@ -689,6 +691,8 @@ import _poolTerramorphicExpanse from "./pool/terramorphic-expanse.js";
 import _poolTerrorOfThePeaks from "./pool/terror-of-the-peaks.js";
 import _poolThaliaGuardianOfThraben from "./pool/thalia-guardian-of-thraben.js";
 import _poolThantisTheWarweaver from "./pool/thantis-the-warweaver.js";
+import _poolTheEmperorOfPalamecia from "./pool/the-emperor-of-palamecia.js";
+import _poolTheLordMasterOfHell from "./pool/the-lord-master-of-hell.js";
 import _poolTheUnbeatableSquirrelGirl from "./pool/the-unbeatable-squirrel-girl.js";
 import _poolTheUrDragon from "./pool/the-ur-dragon.js";
 import _poolTheaterOfHorrors from "./pool/theater-of-horrors.js";
@@ -1242,6 +1246,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolKikiJikiMirrorBreaker,
   _poolKioraBehemothBeckoner,
   _poolKirdApe,
+  _poolKoboldsOfKherKeep,
   _poolKodamasReach,
   _poolKolaghansCommand,
   _poolKorvoldFaeCursedKing,
@@ -1362,6 +1367,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolPrimalMight,
   _poolProdigalSorcerer,
   _poolProsperousInnkeeper,
+  _poolProsshSkyraiderOfKher,
   _poolProvokeTheTrolls,
   _poolPutrefy,
   _poolPyroclasm,
@@ -1550,6 +1556,8 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTerrorOfThePeaks,
   _poolThaliaGuardianOfThraben,
   _poolThantisTheWarweaver,
+  _poolTheEmperorOfPalamecia,
+  _poolTheLordMasterOfHell,
   _poolTheUnbeatableSquirrelGirl,
   _poolTheUrDragon,
   _poolTheaterOfHorrors,

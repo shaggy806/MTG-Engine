@@ -91,6 +91,10 @@ export interface CardFilter {
    * Not expressible as `colors`, which asks for specific ones. */
   readonly multicolored?: boolean;
   readonly manaValue?: NumCompare;
+  /** How much mana was actually spent to cast it (The Emperor of Palamecia:
+   * "if at least four mana was spent to cast it") — see
+   * `GameObject.manaSpent`. `0` for something that wasn't cast. */
+  readonly manaSpent?: NumCompare;
   /**
    * How many counters of a given kind are on the object — Rishkar's "each
    * creature you control **with a counter on it**", Undying's "if it had no
@@ -294,6 +298,9 @@ export function matchesFilter(
       ctx.x,
     )
   ) {
+    return false;
+  }
+  if (filter.manaSpent !== undefined && !compareNum(object.manaSpent ?? 0, filter.manaSpent, ctx.x)) {
     return false;
   }
   // Cheap, purely-positional clauses before the expensive fold below.

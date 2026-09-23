@@ -818,6 +818,8 @@ const deckC = deck([
   ["Magnus the Red", 1],
   ["Xyris, the Writhing Storm", 1],
   ["Tuvasa the Sunlit", 1],
+  ["Prossh, Skyraider of Kher", 1],
+  ["The Emperor of Palamecia", 1],
   ["Bonesplitter", 1],
   ["Holy Strength", 1],
 ]);

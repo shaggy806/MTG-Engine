@@ -953,7 +953,7 @@
   "stat:mana-spent-to-cast": {
    "size": "small",
    "ui": false,
-   "description": "Record on the spell how much mana was actually spent to cast it (0 for free casts) and whether any of it came from an artifact. Expose this as an amount and as a cast-trigger condition."
+   "description": "Record whether any of the mana spent to cast a spell came from an artifact, as a cast-trigger condition. Built so far: the mana actually spent to cast it (0 for free casts), as the manaSpentOf amount and the manaSpent filter clause."
   },
   "stat:milled-this-turn": {
    "size": "small",

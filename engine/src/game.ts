@@ -3782,6 +3782,8 @@ export class Game {
     object.targets = targets.length > 0 ? [...targets] : null;
     object.castVia = via;
     object.stormCount = stormCount;
+    // Cast without paying its mana cost: nothing was spent (rule 118.9).
+    object.manaSpent = 0;
     if (grantHaste) object.hastyUntilItLeaves = true;
     this.state.players[owner].spellsCastThisTurn += 1;
     (this.state.players[owner].spellsCastThisTurnIds ??= []).push(cardId);
@@ -4646,6 +4648,9 @@ export class Game {
     if (kicked) object.kicked = true;
     if (overload) object.overloaded = true;
     this.executePayment(player, payment);
+    // `resolved` is the concrete cost after hybrid and Phyrexian choices, so
+    // life paid for a Phyrexian pip isn't counted as mana.
+    object.manaSpent = manaValue(payment.resolved);
     // Sephara's "tap four untapped creatures you control with flying" — the
     // other half of its alternative cost, paid as the spell is cast.
     if (altCost && def.alternativeCost !== null) {
@@ -7223,6 +7228,8 @@ export class Game {
       playersInScope: (who) => this.scopedPlayers(controller, who, triggerObject),
       discardHand: (player) => this.discardWholeHand(player),
       manaValueOf: (target) => this.manaValueOfTarget(target),
+      manaSpentOf: (target) =>
+        target.kind === "object" ? (this.state.objects[target.object]?.manaSpent ?? 0) : 0,
       lifeTotalOf: (player) => this.state.players[player]?.life ?? 0,
       countInGraveyard: (filter) => {
         let n = 0;
@@ -10679,6 +10686,10 @@ export class Game {
     // already here (Verix Bladewing). Cleared like any other zone-scoped
     // flag on the *next* move, so a Verix that dies and returns is unkicked.
     const enteringKicked = object.zone === "stack" && to === "battlefield" && object.kicked === true;
+    // The mana spent to cast a spell stays with the permanent it becomes (an
+    // "if N mana was spent to cast it" enters trigger reads it there) and
+    // ends with any other move.
+    if (!(object.zone === "stack" && to === "battlefield")) object.manaSpent = undefined;
 
     const from = this.zoneList(object.zone, object.owner);
     const index = from.indexOf(id);

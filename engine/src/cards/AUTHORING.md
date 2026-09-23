@@ -300,6 +300,10 @@ Craterhoof: `{ countOf: { type: "creature", controlledBy: "you" } }`);
 (Undergrowth — Lotleth Giant's "for each creature card in your graveyard";
 `ownedBy: "you"` is what narrows it to your own);
 `{ lifeTotal: "you" }` — the controller's life total (Ajani's ultimate);
+`{ manaSpentOf: ref }` — how much mana was actually spent to cast the source
+or trigger object (Prossh: "X is the amount of mana spent to cast it";
+commander tax and {X} count, a free cast is 0, convoked creatures aren't
+mana);
 `{ manaValueOf: ref }` — the mana value of whatever a target slot (or
 `"source"` / `"trigger-object"`) points at, read off the printed card so it
 still answers after that permanent has left the battlefield (rule 608.2h, last
@@ -558,13 +562,16 @@ source, so it isn't a `CardFilter` clause.
 *computed* characteristics — `{ type, types, notTypes, typesAnyOf, subtype,
 subtypes, supertype, notSupertype, name, notName, colors, notColors, colorless,
 manaValue, power, toughness, counters, controlledBy, ownedBy, keyword,
-notKeyword, tapped, token, isCommander, equipped, enchanted, modified, anyOf }`,
+notKeyword, tapped, token, isCommander, equipped, enchanted, modified, anyOf,
+manaSpent }`,
 every present clause ANDed. `anyOf: CardFilter[]` is the "or": at least one of
 them has to match as well (historic is `anyOf: [{ type: "artifact" },
 { supertype: "legendary" }, { subtype: "Saga" }]`; Dogmeat's "enchanted or
 equipped" is two). `equipped` / `enchanted` ask whether an Equipment / Aura is
 attached, whoever controls it; `modified` is rule 700.9 — a counter, an
-Equipment, or an Aura controlled by the permanent's *own* controller. `attacking` asks whether the permanent is currently attacking (Kangee's
+Equipment, or an Aura controlled by the permanent's *own* controller.
+`manaSpent` compares the mana spent to cast it (The Emperor of Palamecia's
+cast trigger filters on `{ manaSpent: { op: "gte", n: 4 } }`). `attacking` asks whether the permanent is currently attacking (Kangee's
 Lieutenant). `subtypes`/`typesAnyOf` are an OR
 within themselves (Farseek: "a Plains, Island, Swamp, or Mountain card";
 Takenuma's Channel: "a creature or planeswalker card"). Numeric fields take

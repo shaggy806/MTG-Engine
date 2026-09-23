@@ -89,6 +89,14 @@ export type EffectAmount =
    * target or an object that no longer exists at all.
    */
   | { readonly manaValueOf: EffectTargetRef }
+  /**
+   * How much mana was actually spent to cast the object (Prossh, Skyraider of
+   * Kher: "where X is the amount of mana spent to cast it"). Commander tax,
+   * {X} and additional mana costs count; a free cast is 0, and so is mana a
+   * creature paid for by convoke, which isn't mana (rule 702.51a). `0` for
+   * anything that wasn't cast.
+   */
+  | { readonly manaSpentOf: EffectTargetRef }
   /** The effect controller's current life total (Ajani, Caller of the Pride's
    * ultimate: "create X 2/2 white Cat creature tokens, where X is your life
    * total"). */
@@ -1217,6 +1225,8 @@ export interface EffectApi {
    * the `{ manaValueOf }` {@link EffectAmount}. `0` for a player target or an
    * object that no longer exists. */
   manaValueOf(target: TargetRef): number;
+  /** See the `{ manaSpentOf }` {@link EffectAmount}. */
+  manaSpentOf(target: TargetRef): number;
   /** A player's current life total — see the `{ lifeTotal }` {@link EffectAmount}. */
   lifeTotalOf(player: PlayerId): number;
   /** See the `{ countInGraveyard }` {@link EffectAmount}. */
@@ -1626,6 +1636,10 @@ export function amountValue(amount: EffectAmount, ctx: ResolutionContext): numbe
   if ("manaValueOf" in amount) {
     const ref = resolveEffectTarget(amount.manaValueOf, ctx);
     return ref === undefined ? 0 : ctx.manaValueOf(ref);
+  }
+  if ("manaSpentOf" in amount) {
+    const ref = resolveEffectTarget(amount.manaSpentOf, ctx);
+    return ref === undefined ? 0 : ctx.manaSpentOf(ref);
   }
   return ctx.countMatching(amount.countOf) * (amount.times ?? 1);
 }

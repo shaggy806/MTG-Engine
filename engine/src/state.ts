@@ -311,6 +311,12 @@ export interface GameObject {
   sourceObjectId: ObjectId | null;
   /** For an ability object: index into the source's `activated`/`triggered` list. */
   abilityIndex: number | null;
+  /** How much mana was actually spent to cast this spell — the `{ manaSpentOf }`
+   * amount and the `manaSpent` filter clause (Prossh; The Emperor of
+   * Palamecia's "if at least four mana was spent to cast it"). Set as it's
+   * cast (0 for a free cast), kept by the permanent it resolves into, and
+   * cleared by any other zone change. */
+  manaSpent?: number;
   /** For a triggered ability object: the target slots its triggering event
    * filled rather than its controller choosing — a saboteur's "that player"
    * (Hypnotic Specter's discard). Those aren't targets (rule 115.1), so

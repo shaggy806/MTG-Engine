@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-68 already implemented / 432 missing
+70 already implemented / 430 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -428,7 +428,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  422  Talrand, Sky Summoner                           6986 decks  {2}{U}{U}        Legendary Creature — Merfolk Wizard
 [x]  423  Ognis, the Dragon's Lash                        6980 decks  {1}{B/R}{R}{R/G} Legendary Creature — Lizard Warrior
 [ ]  424  Marisi, Breaker of the Coil                     6963 decks  {1}{R}{G}{W}     Legendary Creature — Cat Warrior
-[ ]  425  Prossh, Skyraider of Kher                       6959 decks  {3}{B}{R}{G}     Legendary Creature — Dragon
+[x]  425  Prossh, Skyraider of Kher                       6959 decks  {3}{B}{R}{G}     Legendary Creature — Dragon
 [ ]  426  Juri, Master of the Revue                       6937 decks  {B}{R}           Legendary Creature — Human Shaman
 [ ]  427  Wayta, Trainer Prodigy                          6936 decks  {R}{G}{W}        Legendary Creature — Human Warrior
 [ ]  428  Ixhel, Scion of Atraxa                          6928 decks  {1}{W}{B}{G}     Legendary Creature — Phyrexian Angel
@@ -478,7 +478,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  472  Sin, Spira's Punishment                         6452 decks  {4}{B}{G}{U}     Legendary Creature — Leviathan Avatar
 [ ]  473  Mr. Foxglove                                    6450 decks  {2}{G}{W}{U}     Legendary Creature — Fox Rogue
 [ ]  474  Slimefoot, the Stowaway                         6443 decks  {1}{B}{G}        Legendary Creature — Fungus
-[ ]  475  The Emperor of Palamecia                        6412 decks  {U}{R}           Legendary Creature — Human Noble Wizard // Legendary Creature — Demon Noble Wizard
+[x]  475  The Emperor of Palamecia                        6412 decks  {U}{R}           Legendary Creature — Human Noble Wizard // Legendary Creature — Demon Noble Wizard
 [ ]  476  Karn, Legacy Reforged                           6406 decks  {5}              Legendary Artifact Creature — Golem
 [ ]  477  Cecily, Haunted Mage                            6405 decks  {1}{U}{B}{R}     Legendary Creature — Human Wizard
 [ ]  478  Nelly Borca, Impulsive Accuser                  6401 decks  {2}{R}{W}        Legendary Creature — Human Detective
