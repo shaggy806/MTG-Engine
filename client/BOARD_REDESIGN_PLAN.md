@@ -47,14 +47,22 @@ player room, because the layouts diverge.
   client-side heuristic is explicitly ruled out — inferring colour from a land's subtype is
   wrong for nonbasics, duals, rocks and dorks, and a visibly-wrong indicator is worse than
   none (see the "Rules accuracy is mandatory" standing rule).
-- **Non-land token stacking is implemented but never live-verified.** In `board.ts`'s
-  `computeBoardEntries` the stacking key includes power/toughness/summoningSick and the gate
-  is `bucket === 'land' ? obj.power === null : obj.isToken`, so only tokens fold into a
-  stack. `debugSpawn` (what `scratch.mjs` uses) always creates a real card object
-  (`isToken: false`) even for a card named "Beast Token", so it cannot exercise this path —
-  correctness was confirmed by inspection against `Game.mintTokenBatch`, the real minting
-  site. To verify live, cast a token-making card in a real room rather than spawning one.
 - **Mulligan actions still render inline** in the `.hand-strip` flow rather than the fixed
   bottom-right `.priority-actions` corner the other priority actions moved to. Left as-is
   deliberately — a mulligan is a one-time, attention-demanding decision. Unify only if it
   starts to grate.
+
+## Closed since
+
+- **Non-land token stacking, live-verified 2026-09-23.** It had only been checked by
+  inspection, because `debugSpawn` (what `scratch.mjs` and `dev-rooms` use) always makes a
+  real card object, even for a card named "Beast Token". The `STACK` dev room puts token
+  makers in hand to cast for real instead. White Sun's Zenith for 10 is one engine stack,
+  drawn ×10, and Raise the Alarm's two Soldiers are two objects the board folds into one ×2
+  tile. The check also found a bug. Jump on one Cat split that Cat off the stack with flying,
+  and the board drew it under the stack's tile: ×9, one Cat short, and no flying icon.
+  Tokens used to fold on name, tapped state, P/T and summoning sickness. The count was the
+  larger of the tile's ids and its sample's own stack, on the assumption that the two never
+  both exceed one. `board.ts` now folds only permanents identical in every field the view
+  shows (`tileKey`), and counts every token in each compacted stack on a tile
+  (`BoardEntry.count`).
