@@ -150,6 +150,11 @@ non-goader and the attack lands. A 2-player room, where the goader is the only
 defender, still attacks it. Menace on the block bar: one blocker on a menace
 attacker shows the warning and disables Block, a second enables it. Lure was
 not exercised in the browser (no Lure card to hand); it is the same function.
+It has been since (2026-09-23), in the `LURES` dev room. With nothing assigned,
+the bar names all three creatures that must block and holds Block. With one of
+them on the other attacker, it still holds. With all three on the Lure creature,
+Block is enabled and the server accepts the declaration. The tapped creature is
+exempt throughout.
 
 An earlier version of this step lived on a `client-attack-fix` branch that was
 never pushed, so it was redone from the description here rather than
