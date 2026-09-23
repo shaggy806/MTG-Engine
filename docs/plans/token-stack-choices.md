@@ -3,8 +3,8 @@
 **Status:** in progress (2026-09-22). Requested by the user: "when we need to
 select multiple creatures out of a token stack, can we get a menu to do so?
 Similar to how we activate abilities". **Sacrifice is built**, engine and
-client, and checked live in the browser, and so are **tap costs**; convoke
-and combat are not. The counting and whole-stack fixes it builds on are done (see below).
+client, and checked live in the browser, and so are **tap costs** and
+**convoke**; combat is not. The counting and whole-stack fixes it builds on are done (see below).
 
 ## Background
 
@@ -34,7 +34,7 @@ Found by the review of the counting fix (a sweep by code and by card):
 | ~~Sacrifice N (`promptNextSacrifice` → `sacrifice` decision): Necrotic Hex, Fleshbag Marauder with N > 1~~ | **Built.** The offer used to list the stack once while `count` demanded more picks than there were entries, so no answer was accepted and the game stalled. |
 | ~~"Choose up to N, sacrifice the rest" (`sacrificeAllBut`): Archfiend of Depravity~~ | **Built**, as the same decision. |
 | Declare attackers / blockers (`materializeStack`) | A stack always attacks or blocks as a whole (up to `MAX_MATERIALIZED`). It can't hold some back or split them across attackers. |
-| Convoke (`convokeCandidates`) | A stack is one candidate, so it can pay for one pip. Hour of Reckoning convoked by a player with 14 Soldier tokens gets one. |
+| ~~Convoke (`convokeCandidates`)~~ | **Built.** A stack was one candidate, so it could pay for one pip. Hour of Reckoning convoked by a player with 14 Soldier tokens got one. |
 | ~~"Tap N untapped creatures" costs (`tapOthersCandidates`): Gravespawn Sovereign, Selesnya Evangel, Sephara's alternative cost~~ | **Built.** They were counted and tapped as objects, and picked for the player (`.slice(0, count)`), which was also an AUTHORING §0 problem. |
 | Proliferate (`proliferateTargets`) | A stack is one entry and gets the counter on every member. Harmless for the player, since you'd normally want all of them, but not a choice. |
 
@@ -115,6 +115,25 @@ with exactly as many candidates as it needs asks nothing.
 A driver that doesn't pick (the bots, scripts) gets the summoning-sick
 candidates first, since they couldn't attack this turn anyway. The fuzzer
 picks at random.
+
+## What convoke shipped
+
+The same shape again, with `copies` on the `convoke` offer and a stack's id
+named once per token in `Action.convoke`. Three things differ from tap costs:
+
+- **The engine works out what each creature pays.** `ConvokePayment.pays` is
+  optional. When it's omitted, a creature pays one of the cost's coloured pips
+  it can pay, and otherwise a generic one. A client picking creatures
+  shouldn't have to redo the colour arithmetic.
+- **The same one-creature-twice bug existed here.** A convoking Llanowar
+  Elves could also be tapped for mana by the auto-payer. Convoking creatures
+  are now withheld from the mana plan. Creatures that make mana go last in
+  `candidates`, so the offer's `proof` leaves them for the mana when it can.
+- **The client never sent convoke at all**, so a spell only convoke could pay
+  for was refused. A convoke step now follows the targets, capped at
+  `maxCreatures` (every pip in the cost). When mana alone can't pay
+  (`manaAffordable: false`) it starts from the engine's `proof`. Otherwise it
+  starts empty, and confirming with none pays with mana.
 
 ## Not in scope
 

@@ -112,6 +112,7 @@ const MINI_SHRINK_FLOOR = 40
 const EMPTY_ACTIONS: readonly LegalAction[] = []
 
 type CastAction = Extract<LegalAction, { kind: 'cast-spell' }>
+type ConvokeOffer = NonNullable<CastAction['convoke']>
 
 /** The "which variant of this cast" fields a `cast-spell` action carries all
  * the way from `legalActions` back into the dispatched action. */
@@ -127,6 +128,9 @@ const castExtras = (cast: CastAction) => ({
   ...(cast.altCost === true ? { altCost: true } : {}),
   ...(cast.costOption !== undefined ? { costOption: cast.costOption } : {}),
   ...(cast.tapCost !== undefined ? { tapCost: cast.tapCost } : {}),
+  ...(cast.convoke !== undefined && cast.convoke.candidates.length > 0
+    ? { convokeOffer: cast.convoke }
+    : {}),
 })
 
 /** Every permanent a tap-cost offer stands for, a stack's id once per token
@@ -202,6 +206,9 @@ interface Targeting {
   /** A "tap N untapped … you control" cost still to pick for, once the
    * targets are in — see `pendingTap`. */
   readonly tapCost?: TapCostOffer
+  /** A convoke spell's creatures still to pick, once the targets are in —
+   * see `pendingConvoke`. */
+  readonly convokeOffer?: ConvokeOffer
 }
 
 /**
@@ -626,6 +633,14 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     readonly offer: TapCostOffer
     readonly picks: readonly ObjectId[]
   } | null>(null)
+  /** A convoke spell whose targets are in, waiting on which creatures help
+   * pay for it (rule 702.51) — none at all is paying with mana. The engine
+   * works out what each one pays. */
+  const [pendingConvoke, setPendingConvoke] = useState<{
+    readonly action: Action
+    readonly offer: ConvokeOffer
+    readonly picks: readonly ObjectId[]
+  } | null>(null)
   /** The token stack whose "how many of these?" menu is open, if any. */
   const [stackMenu, setStackMenu] = useState<ObjectId | null>(null)
   // Proliferate picks are `TargetRef`s, not ids: rule 701.27 lets you choose
@@ -865,6 +880,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     | 'choose-cast-modes'
     | 'choose-sacrifice'
     | 'choose-tap'
+    | 'choose-convoke'
     | 'assign-combat-damage'
     | 'targeting'
     | 'priority' = mulliganAction
@@ -907,6 +923,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
                     ? 'choose-sacrifice'
                     : pendingTap
                       ? 'choose-tap'
+                    : pendingConvoke
+                      ? 'choose-convoke'
                     : activeTargeting
                       ? 'targeting'
                       : 'priority'
@@ -946,6 +964,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         | 'altCost'
         | 'costOption'
         | 'tapCost'
+        | 'convokeOffer'
       >,
       targets: readonly (TargetRef | null)[],
     ) => {
@@ -979,6 +998,16 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
                 ...(t.xValue !== undefined ? { xValue: t.xValue } : {}),
                 ...(t.manaColors !== undefined ? { manaColors: t.manaColors } : {}),
               }
+      const convoke = t.convokeOffer
+      if (convoke !== undefined && action.type === 'cast-spell') {
+        setPendingConvoke({
+          action,
+          offer: convoke,
+          // A spell mana alone can't pay starts from a set known to work.
+          picks: convoke.manaAffordable ? [] : convoke.proof.map((p) => p.creature),
+        })
+        return
+      }
       const offer = t.tapCost
       if (offer === undefined || action.type === 'choose-targets') {
         game.dispatch(action)
@@ -1220,13 +1249,15 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       // A tile standing for several identical permanents: take a member not
       // already picked, so a second click picks the next one rather than
       // un-picking the first.
-      if (mode === 'choose-tap' && pendingTap) {
-        const fresh = ids.find((i) => !pendingTap.picks.includes(i))
+      const picking =
+        mode === 'choose-tap' ? pendingTap : mode === 'choose-convoke' ? pendingConvoke : null
+      if (picking) {
+        const fresh = ids.find((i) => !picking.picks.includes(i))
         if (fresh !== undefined) return fresh
       }
       return ids[0]
     },
-    [mode, activeTargeting, pendingTap],
+    [mode, activeTargeting, pendingTap, pendingConvoke],
   )
 
   const clickPermanent = useCallback(
@@ -1294,6 +1325,27 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
                   ? cur.picks.filter((x) => x !== id)
                   : cur.picks.length >= offer.count
                     ? [...cur.picks.slice(1), id]
+                    : [...cur.picks, id],
+              },
+        )
+        return
+      }
+      if (mode === 'choose-convoke' && pendingConvoke) {
+        const { offer } = pendingConvoke
+        if (!offer.candidates.includes(id)) return
+        if ((offer.copies?.[id] ?? 1) > 1) {
+          setStackMenu((cur) => (cur === id ? null : id))
+          return
+        }
+        setPendingConvoke((cur) =>
+          cur === null
+            ? cur
+            : {
+                ...cur,
+                picks: cur.picks.includes(id)
+                  ? cur.picks.filter((x) => x !== id)
+                  : cur.picks.length >= offer.maxCreatures
+                    ? cur.picks
                     : [...cur.picks, id],
               },
         )
@@ -1375,6 +1427,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       pickTarget,
       sacrificeAction,
       pendingTap,
+      pendingConvoke,
       proliferateAction,
       activeTargeting,
       defendersFor,
@@ -1575,6 +1628,14 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       const taken = picks.filter((x) => members.includes(x)).length
       const of = members.reduce((n, i) => n + (offer.copies?.[i] ?? 1), 0)
       highlight = of > taken
+      selected = taken > 0
+      if (of > 1 && taken > 0) badge = `↷ ${taken}/${of}`
+    } else if (mode === 'choose-convoke' && pendingConvoke) {
+      const { offer, picks } = pendingConvoke
+      const members = ids.filter((i) => offer.candidates.includes(i))
+      const taken = picks.filter((x) => members.includes(x)).length
+      const of = members.reduce((n, i) => n + (offer.copies?.[i] ?? 1), 0)
+      highlight = of > taken && picks.length < offer.maxCreatures
       selected = taken > 0
       if (of > 1 && taken > 0) badge = `↷ ${taken}/${of}`
     } else if (mode === 'sacrifice' && sacrificeAction) {
@@ -2189,6 +2250,34 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           Confirm
         </button>
         <button type="button" onClick={() => setPendingTap(null)}>
+          Cancel
+        </button>
+      </div>
+    )
+  } else if (mode === 'choose-convoke' && pendingConvoke) {
+    const { action, offer, picks } = pendingConvoke
+    const name = action.type === 'cast-spell' ? game.nameOf(action.card) : ''
+    controls = (
+      <div className="controls">
+        <span>
+          {name}: convoke — tap up to {offer.maxCreatures} creature
+          {offer.maxCreatures === 1 ? '' : 's'} to help pay ({picks.length} chosen)
+        </span>
+        <button
+          type="button"
+          disabled={!offer.manaAffordable && picks.length === 0}
+          onClick={() => {
+            setPendingConvoke(null)
+            game.dispatch(
+              picks.length === 0
+                ? action
+                : ({ ...action, convoke: picks.map((creature) => ({ creature })) } as Action),
+            )
+          }}
+        >
+          {picks.length === 0 ? 'Pay with mana' : `Convoke ${picks.length}`}
+        </button>
+        <button type="button" onClick={() => setPendingConvoke(null)}>
           Cancel
         </button>
       </div>
@@ -2829,7 +2918,16 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
               set: (next: readonly ObjectId[]) =>
                 setPendingTap((cur) => (cur === null ? cur : { ...cur, picks: next })),
             }
-          : null
+          : mode === 'choose-convoke' && pendingConvoke
+            ? {
+                verb: 'Convoke',
+                count: pendingConvoke.offer.maxCreatures,
+                of: pendingConvoke.offer.copies?.[stackMenu] ?? 1,
+                picks: pendingConvoke.picks,
+                set: (next: readonly ObjectId[]) =>
+                  setPendingConvoke((cur) => (cur === null ? cur : { ...cur, picks: next })),
+              }
+            : null
     if (pick === null) return null
     const taken = pick.picks.filter((x) => x === stackMenu).length
     // What this stack could be raised to: everything not already promised to
