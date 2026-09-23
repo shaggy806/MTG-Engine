@@ -1782,21 +1782,21 @@
   color: #ff8f8f;
   font-size: calc(11px * var(--ct-scale, 1));
 }
-/* planeswalker loyalty — a shield-ish badge in the bottom-right corner */
+/* planeswalker loyalty, in the bottom-right corner where P/T would be: the
+   starting-loyalty shield a planeswalker card prints (LoyaltyCounter in
+   Symbols.tsx; the shape and number come from ui/symbols.css). Only its
+   place and size are set here. */
 .ct-loyalty {
   position: absolute;
-  right: -1px;
-  bottom: -1px;
-  min-width: calc(22px * var(--ct-scale, 1));
-  padding: calc(2px * var(--ct-scale, 1)) calc(6px * var(--ct-scale, 1)) calc(4px * var(--ct-scale, 1));
-  text-align: center;
+  right: calc(2px * var(--ct-scale, 1));
+  bottom: calc(1px * var(--ct-scale, 1));
   font-size: calc(13px * var(--ct-scale, 1));
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  color: #10131a;
-  background: #d7b45a;
-  border: 1px solid #8a6d28;
-  border-radius: 7px 3px 10px 10px;
+}
+.ct-loyalty .loyalty-shape {
+  font-size: 2.1em;
+}
+.ct-loyalty .loyalty-num {
+  font-size: 1em;
 }
 
 .ct-type {

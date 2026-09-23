@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useSyncExternalStore } from 'react'
 import type { VisibleObject } from 'engine'
-import { Symbols } from './Symbols.tsx'
+import { LoyaltyCounter, Symbols } from './Symbols.tsx'
 import { costColor } from './symbols.ts'
 import { manaSymbolUrl } from './mana.ts'
 import {
@@ -151,7 +151,6 @@ export function CardTile({
   // resolves) rather than captured once at mount.
   const artFailed = !pending && isArtBlocked(artSrc)
   const isCreature = obj.power !== null && obj.toughness !== null
-  const isPlaneswalker = obj.loyalty !== null
   const counters = Object.entries(obj.counters).filter(
     ([k, n]) => n !== 0 && k !== 'loyalty',
   )
@@ -313,11 +312,7 @@ export function CardTile({
         </span>
       ) : null}
 
-      {isPlaneswalker ? (
-        <span className="ct-loyalty" title="Loyalty">
-          {obj.loyalty}
-        </span>
-      ) : null}
+      {obj.loyalty !== null ? <LoyaltyCounter value={obj.loyalty} /> : null}
 
       {order !== null ? <span className="card-order">{order}</span> : null}
       {stackCount !== null && stackCount > 1 ? (

@@ -1,0 +1,47 @@
+/* A planeswalker ability's loyalty cost, drawn the way the card prints it:
+   the Mana font's up, down or zero shape (Symbols.tsx's LoyaltyBadge) with
+   the number laid over it. Owned by the component rather than by a page,
+   because card text is drawn on every page that has any -- the game's hover
+   card and ability menu, the library, the card lab. Sized in em, so it
+   follows whatever text it's set in. */
+.loyalty-cost {
+  display: inline-grid;
+  place-items: center;
+  vertical-align: middle;
+  line-height: 1;
+  margin-right: 0.1em;
+}
+.loyalty-cost > * {
+  grid-area: 1 / 1;
+}
+.loyalty-shape {
+  font-family: 'Mana';
+  font-size: 1.9em;
+  color: #0e1016;
+  /* The printed badge is black on a light text box; on this client's dark
+     one it needs an edge to be seen at all. */
+  -webkit-text-stroke: 0.035em rgba(255, 255, 255, 0.6);
+}
+.loyalty-num {
+  font-size: 0.8em;
+  font-weight: 800;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+/* The number belongs in the middle of the shape's *body*, not of the glyph's
+   box. An up badge has its point on top and a down badge below, so a number
+   centred on the box sat high in one and low in the other: a "-3" read as
+   slipping toward its point. Set by eye against each shape at 4.5x, the way
+   the font's own stylesheet gives each shape its own offset. */
+.loyalty-up .loyalty-num {
+  translate: 0 0.15em;
+}
+.loyalty-down .loyalty-num {
+  translate: 0 -0.12em;
+}
+.loyalty-zero .loyalty-num {
+  translate: 0 0.04em;
+}
+.loyalty-start .loyalty-num {
+  translate: 0 0.06em;
+}

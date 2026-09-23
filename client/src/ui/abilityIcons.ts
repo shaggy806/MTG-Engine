@@ -58,5 +58,17 @@ export const KEYWORD_GLYPH: Record<Keyword, string> = {
   nightbound: '', // ms-dfc-night
 }
 
+/** The shapes a planeswalker's loyalty is printed in: a cost that adds
+ * counters, one that removes them, one that does neither, and the starting
+ * loyalty in the card's corner. The number goes on top as ordinary text
+ * (see `LoyaltyBadge`), rather than through the package's per-number
+ * classes. */
+export const LOYALTY_GLYPH = {
+  up: '', // ms-loyalty-up
+  down: '', // ms-loyalty-down
+  zero: '', // ms-loyalty-zero
+  start: '', // ms-loyalty-start
+} as const
+
 /** How a keyword reads in words, for the icon's accessible name. */
 export const keywordLabel = (keyword: Keyword): string => keyword.replace('-', ' ')

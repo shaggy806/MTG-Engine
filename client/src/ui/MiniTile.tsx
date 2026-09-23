@@ -5,6 +5,7 @@ import { CardTile } from './CardTile.tsx'
 import { KEYWORD_GLYPH, keywordLabel } from './abilityIcons.ts'
 import { useHoverPopover } from './useHoverPopover.ts'
 import { costColor } from './symbols.ts'
+import { LoyaltyCounter } from './Symbols.tsx'
 import { manaSymbolUrl } from './mana.ts'
 import {
   isArtBlocked,
@@ -75,7 +76,6 @@ export function MiniTile({
   const artSrc = resolveArtUrl(obj.art, face, 'art_crop', { backFace: obj.faceIsBack })
   const artFailed = !pending && isArtBlocked(artSrc)
   const isCreature = obj.power !== null && obj.toughness !== null
-  const isPlaneswalker = obj.loyalty !== null
   const clickable = Boolean(onClick) && (highlight || selected || activatable)
   const tint = costColor(obj.manaCost) ?? 'C'
 
@@ -150,11 +150,7 @@ export function MiniTile({
               {obj.damageMarked > 0 ? <span className="ct-dmg"> −{obj.damageMarked}</span> : null}
             </span>
           ) : null}
-          {isPlaneswalker ? (
-            <span className="ct-loyalty" title="Loyalty">
-              {obj.loyalty}
-            </span>
-          ) : null}
+          {obj.loyalty !== null ? <LoyaltyCounter value={obj.loyalty} /> : null}
 
           {order !== null ? <span className="card-order">{order}</span> : null}
           {stackCount !== null && stackCount > 1 ? (
