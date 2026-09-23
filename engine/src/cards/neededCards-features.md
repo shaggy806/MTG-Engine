@@ -27,9 +27,20 @@ reference. This file is a priority list, not a how-to.
 
 ## The commander gap — the current authoring priority
 
-**41 of the 500 most-played commanders are implemented** (up from 12 on
+**72 of the 500 most-played commanders are implemented** (up from 12 on
 2026-09-21). Almost any real decklist someone imports still has its commander
 substituted, which replaces the one card the deck is built around.
+
+The evening of 2026-09-22 took it from 55 to 72, one engine feature at a
+time, each shipped with the commanders it unblocked. Creature-scoped statics
+read current types (Sokka, Bria, Thantis). "The Nth time this ability has
+resolved this turn" (Omnath, Ms. Bumbleflower, and Tannuk's missing clause).
+The attachment and `anyOf` filter clauses (Dogmeat, Chishiro, Jhoira). A
+`reveal-top` effect (Thrasios). First and Nth *matching* spell or draw each
+turn (Xyris, Tuvasa). The mana spent to cast a spell (Prossh, The Emperor of
+Palamecia). A `counters-put` trigger (Shalai and Hallar, Hapatra). Dr.
+Madison Li and Magnus the Red needed nothing. The table below is still the
+snapshot's; `cmdrs:gaps` has the live numbers.
 
 ### Why the pool missed them
 
