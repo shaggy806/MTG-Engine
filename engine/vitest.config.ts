@@ -1,8 +1,8 @@
 import { defineConfig } from "vitest/config";
 
 /**
- * The only thing configured here is the test timeout, and discovery is left
- * at vitest's defaults on purpose — the suite relies on those finding tests
+ * Two things are configured here, the test timeout and module isolation
+ * (below), and discovery is left at vitest's defaults on purpose — the suite relies on those finding tests
  * wherever they sit (`src/test/*.test.ts`, plus `cards/pool.test.ts` beside
  * the layout it guards).
  *
@@ -28,5 +28,14 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     testTimeout: 30_000,
+    // One module graph per worker, not one per test file. Every test imports
+    // the card barrel (~850 modules), and re-importing it for each of ~190
+    // files was most of the suite's wall time: 4m30s isolated, under a minute
+    // shared, same results. Safe because nothing here mocks, spies, stubs
+    // globals or fakes timers, and the engine's only module-level state (the
+    // computed-value cache in `characteristics.ts`) is reset by every region
+    // that opens it. A test that needs `vi.mock` or other module-level
+    // patching would need isolation back, in its own project.
+    isolate: false,
   },
 });
