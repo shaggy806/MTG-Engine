@@ -204,7 +204,12 @@ export type CountSpec =
   /** How many counters of a kind its controller has — "power and toughness
    * are each equal to the number of experience counters you have" (Daxos the
    * Returned's Spirit). Its owner's off the battlefield. */
-  | { readonly playerCounters: PlayerCounterKind };
+  | { readonly playerCounters: PlayerCounterKind }
+  /** How many card types there are among cards in graveyards matching a
+   * filter — Tarmogoyf's "power is equal to the number of card types among
+   * cards in all graveyards" is `{ cardTypesInGraveyard: {} }` with
+   * `plusToughness: 1`. See the `EffectAmount` of the same name. */
+  | { readonly cardTypesInGraveyard: CardFilter };
 
 /**
  * A per-player running total the engine keeps for the current turn, readable
@@ -570,6 +575,18 @@ export interface StaticAbility {
     readonly filter?: CardFilter;
     readonly commanderCasts?: boolean;
     readonly playerCounters?: PlayerCounterKind;
+    /** Counters of a kind on **the affected permanent itself** — Toxrill,
+     * the Corrosive's "creatures your opponents control get -1/-1 for each
+     * slime counter on them": each creature by its own count. */
+    readonly countersOnAffected?: string;
+    /** Cards in exile matching a filter — Umbris, Fear Manifest's "+1/+1 for
+     * each card your opponents own in exile" is `{ ownedBy: "opponent" }`.
+     * Face-down cards count; they're still cards. */
+    readonly exiled?: CardFilter;
+    /** Colours among battlefield permanents matching a filter, each once —
+     * Sisay, Weatherlight Captain's "+1/+1 for each color among other
+     * legendary permanents you control" (with `excludeSelf`). */
+    readonly colorsAmong?: CardFilter;
     readonly pt: readonly [number, number];
     readonly excludeSelf?: boolean;
   };

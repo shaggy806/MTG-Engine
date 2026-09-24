@@ -386,10 +386,26 @@ scope have a nonzero total — "for each opponent who lost life this turn"),
 of that kind the scope's players have, summed, default `"you"` — Ezuri, Claw
 of Progress's "where X is the number of experience counters you have"),
 `{ opponentsControllingFewer: CardFilter }` (Voice of Many — a comparison per
-player, which no single filter can express), and `{ product: [...] }`, which
-is how compound amounts compose without every other shape growing a
-multiplier (Gray Merchant's "life equal to the life lost this way" is devotion
-× opponents, and neither factor is static).
+player, which no single filter can express),
+`{ cardsInHand: PlayerScope }` (the hand sizes of the scope's players, summed —
+"the number of cards in **defending player's** hand" is `"trigger-player"` in
+an attack trigger), `{ colorsOf: ref }` (how many colours one object has —
+Ramos, Dragon Engine's "for each of **that spell's** colors"; as it last
+existed if it has left, colourless 0), `{ colorsAmong: CardFilter,
+excludeSelf? }` (colours among battlefield permanents, each once — Sisay's
+"each color among other legendary permanents you control"),
+`{ cardTypesInGraveyard: CardFilter }` (card types among cards in graveyards,
+each type once and a two-typed card giving both — Tarmogoyf is `{}`, delirium's
+"in your graveyard" `{ ownedBy: "you" }`), and the arithmetic that composes
+the rest without every shape growing a modifier: `{ product: [...] }` (Gray
+Merchant's "life equal to the life lost this way" is devotion × opponents, and
+neither factor is static), `{ sum: [...] }` ("N plus an amount" — "mana value 1
+greater than the sacrificed creature's" is `{ sum: [{ manaValueOf: "sacrificed"
+}, 1] }`, in a filter's `{ amount }` operand as well as an effect) and
+`{ difference: [a, b], absolute? }` (`a` minus `b`, never below 0 — Mr.
+Foxglove's "cards in defending player's hand minus the number of cards in your
+hand"; `absolute` is the larger minus the smaller, Doran, Besieged by Time's
+"the difference between its power and toughness").
 
 ### Damage / life / cards
 
@@ -1236,7 +1252,7 @@ anthem, the keyword grant and the granted trigger like any other creature.
 **Continuous-effect fields:**
 
 - `grantPt: [p, t]` — layer 7d P/T bonus.
-- `grantPtPerCount: { filter?, commanderCasts?, playerCounters?, pt, excludeSelf? }` — a layer 7d bonus that
+- `grantPtPerCount: { filter?, commanderCasts?, playerCounters?, countersOnAffected?, exiled?, colorsAmong?, pt, excludeSelf? }` — a layer 7d bonus that
   *scales* with a live count (Skycat Sovereign's "+1/+1 for each **other**
   creature you control with flying"). Distinct from `setBasePtFromCount`,
   which is a CDA in layer 7b that *replaces* the printed P/T; this adds on
@@ -1245,7 +1261,14 @@ anthem, the keyword grant and the granted trigger like any other creature.
   zone this game instead of a battlefield filter (Commander's Insignia), summed
   across a Partner pair; `playerCounters: "experience"` counts the counters of
   that kind its controller has ("gets +1/+1 for each experience counter you
-  have" — Kalemne, Disciple of Iroas).
+  have" — Kalemne, Disciple of Iroas); `countersOnAffected: "slime"` counts
+  the counters on **each affected permanent itself** (Toxrill, the
+  Corrosive's "creatures your opponents control get -1/-1 for each slime
+  counter on them"); `exiled: CardFilter` counts cards in exile (Umbris, Fear
+  Manifest's "each card your opponents own in exile" is `{ ownedBy:
+  "opponent" }`); `colorsAmong: CardFilter` counts the colours among matching
+  battlefield permanents, each once (Sisay, Weatherlight Captain, with
+  `excludeSelf` for "other").
 - `noMaxHandSize: true` — "You have no maximum hand size" (Thought Vessel).
 - `doesntUntap: true` — "This artifact doesn't untap during your untap step"
   (Mana Vault, Basalt Monolith). Only its controller's own untap step.
@@ -1321,6 +1344,9 @@ anthem, the keyword grant and the granted trigger like any other creature.
   - `{ playerCounters: "experience" }` — the counters of that kind its
     controller has (Daxos the Returned's Spirit: "power and toughness are each
     equal to the number of experience counters you have").
+  - `{ cardTypesInGraveyard: CardFilter }` — card types among cards in
+    graveyards, each once (Tarmogoyf: `{ cardTypesInGraveyard: {} }` with
+    `plusToughness: 1`).
 
   It applies in every zone (rule 604.3), so the card has that size in a
   library, hand, graveyard or the command zone too; "you" is its controller,

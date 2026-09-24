@@ -230,7 +230,40 @@ export type EffectAmount =
    * "where X is the number of **experience counters you have**" (Ezuri, Claw
    * of Progress). `who` defaults to `"you"`. See `PlayerState.counters`.
    */
-  | { readonly playerCounters: PlayerCounterKind; readonly who?: PlayerScope };
+  | { readonly playerCounters: PlayerCounterKind; readonly who?: PlayerScope }
+  /** The sum of several amounts — "N plus an amount": a mana value "1
+   * greater than the sacrificed creature's" is `{ sum: [{ manaValueOf:
+   * "sacrificed" }, 1] }`, in a filter's `{ amount }` operand as much as in
+   * an effect. */
+  | { readonly sum: readonly EffectAmount[] }
+  /**
+   * The first amount minus the second, never below 0 (rule 107.1b) — Mr.
+   * Foxglove's "the number of cards in defending player's hand minus the
+   * number of cards in your hand". `absolute` makes it the larger minus the
+   * smaller: Doran, Besieged by Time's "the difference between its power and
+   * toughness".
+   */
+  | { readonly difference: readonly [EffectAmount, EffectAmount]; readonly absolute?: boolean }
+  /** How many cards are in the hands of the players a scope names, summed —
+   * "the number of cards in **defending player's** hand" is `{ cardsInHand:
+   * "trigger-player" }` in an attack trigger. */
+  | { readonly cardsInHand: PlayerScope }
+  /** How many colours what an {@link AmountRef} points at has — Ramos,
+   * Dragon Engine's "a +1/+1 counter on Ramos for each of **that spell's
+   * colors**" (`"trigger-object"` in a cast trigger). A permanent that has
+   * left is read as it last existed there; colourless is 0. */
+  | { readonly colorsOf: AmountRef }
+  /** How many colours there are **among** battlefield permanents matching a
+   * filter, each counted once however many permanents have it — "for each
+   * color among other legendary permanents you control" (Sisay, Weatherlight
+   * Captain). `excludeSelf` leaves the effect's own source out ("other"). */
+  | { readonly colorsAmong: CardFilter; readonly excludeSelf?: boolean }
+  /** How many card types there are among cards in graveyards matching a
+   * filter — each type once, however many cards have it, and a card with two
+   * types gives both (Tarmogoyf's "card types among cards in all graveyards"
+   * is `{}`; delirium's "in your graveyard" is `{ ownedBy: "you" }`). A
+   * multi-face card has its front face's types there (rule 712.8a). */
+  | { readonly cardTypesInGraveyard: CardFilter };
 
 /**
  * A ward cost (rule 702.21a) — "Ward {2}", "Ward—Pay 2 life.", "Ward—{2},
@@ -1680,6 +1713,15 @@ export interface EffectApi {
   turnStatOf(player: PlayerId, stat: TurnStat): number;
   /** See the `{ countInGraveyard }` {@link EffectAmount}. */
   countInGraveyard(filter: CardFilter): number;
+  /** How many cards are in `player`'s hand — see `{ cardsInHand }`. */
+  handSizeOf(player: PlayerId): number;
+  /** The colours of what `target` points at, as it last existed on the
+   * battlefield if it has left — see `{ colorsOf }`. */
+  colorsOf(target: TargetRef): readonly Color[];
+  /** See the `{ colorsAmong }` {@link EffectAmount}. */
+  colorsAmong(filter: CardFilter, except: readonly ObjectId[]): number;
+  /** See the `{ cardTypesInGraveyard }` {@link EffectAmount}. */
+  cardTypesInGraveyard(filter: CardFilter): number;
   /**
    * Who controls what `ref` points at — the player itself for a player ref,
    * else the object's controller.
@@ -2206,6 +2248,25 @@ export function amountValue(
   if ("product" in amount) {
     return amount.product.reduce<number>((n, a) => n * amountValue(a, ctx, each), 1);
   }
+  if ("sum" in amount) {
+    return amount.sum.reduce<number>((n, a) => n + amountValue(a, ctx, each), 0);
+  }
+  if ("difference" in amount) {
+    const a = amountValue(amount.difference[0], ctx, each);
+    const b = amountValue(amount.difference[1], ctx, each);
+    return amount.absolute === true ? Math.abs(a - b) : Math.max(0, a - b);
+  }
+  if ("cardsInHand" in amount) {
+    return ctx.playersInScope(amount.cardsInHand).reduce((n, p) => n + ctx.handSizeOf(p), 0);
+  }
+  if ("colorsOf" in amount) {
+    const ref = resolveAmountRef(amount.colorsOf, ctx);
+    return ref === undefined ? 0 : ctx.colorsOf(ref).length;
+  }
+  if ("colorsAmong" in amount) {
+    return ctx.colorsAmong(amount.colorsAmong, amount.excludeSelf === true ? [ctx.source] : []);
+  }
+  if ("cardTypesInGraveyard" in amount) return ctx.cardTypesInGraveyard(amount.cardTypesInGraveyard);
   if ("countPlayers" in amount) return ctx.playersInScope(amount.countPlayers).length;
   if ("turnStat" in amount) {
     return ctx
@@ -2391,6 +2452,8 @@ function readsEachPlayer(amount: EffectAmount): boolean {
   if ("lifeTotal" in amount) return amount.lifeTotal === "each";
   if ("half" in amount) return readsEachPlayer(amount.half);
   if ("product" in amount) return amount.product.some(readsEachPlayer);
+  if ("sum" in amount) return amount.sum.some(readsEachPlayer);
+  if ("difference" in amount) return amount.difference.some(readsEachPlayer);
   return false;
 }
 

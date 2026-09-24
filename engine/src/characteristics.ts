@@ -885,6 +885,56 @@ export function effectiveColors(
   return colors;
 }
 
+/**
+ * How many colours there are among the battlefield permanents matching
+ * `filter` from `you`'s perspective, each colour once — the `colorsAmong`
+ * amount and P/T count. `except` leaves one permanent apiece out, as
+ * `weightedMatches` does ("other legendary permanents you control").
+ */
+export function colorsAmongPermanents(
+  state: GameState,
+  registry: CardRegistry,
+  you: PlayerId,
+  filter: CardFilter,
+  except: readonly ObjectId[] = [],
+): number {
+  const colors = new Set<Color>();
+  const matches = weightedMatches(
+    state,
+    state.zones.shared.battlefield,
+    (id) => matchesFilter(state, registry, id, filter, { you }),
+    except,
+  );
+  for (const { id } of matches) {
+    for (const color of effectiveColors(registry, state.objects[id])) colors.add(color);
+  }
+  return colors.size;
+}
+
+/**
+ * How many card types there are among the cards in graveyards matching
+ * `filter` from `you`'s perspective, each type once (rule 205.2a lists them)
+ * — Tarmogoyf, delirium. A card of two types gives both. Tokens aren't
+ * cards.
+ */
+export function cardTypesInGraveyards(
+  state: GameState,
+  registry: CardRegistry,
+  you: PlayerId,
+  filter: CardFilter,
+): number {
+  const types = new Set<CardType>();
+  for (const player of state.turnOrder) {
+    for (const id of state.zones.perPlayer[player]?.graveyard ?? []) {
+      const object = state.objects[id];
+      if (object === undefined || object.isToken) continue;
+      if (!matchesFilter(state, registry, id, filter, { you })) continue;
+      for (const type of effectiveTypes(state, registry, object)) types.add(type);
+    }
+  }
+  return types.size;
+}
+
 /** The current value of a CDA's dynamic count (rule 604.3). */
 function countValue(
   spec: CountSpec,
@@ -905,6 +955,9 @@ function countValue(
     }
     if ("playerCounters" in spec) {
       return state.players[controller]?.counters[spec.playerCounters] ?? 0;
+    }
+    if ("cardTypesInGraveyard" in spec) {
+      return cardTypesInGraveyards(state, registry, controller, spec.cardTypesInGraveyard);
     }
     return allGraveyards().filter((id) =>
       matchesFilter(state, registry, id, spec.countInGraveyard, { you: controller }),
@@ -1192,6 +1245,14 @@ function collectStaticEffects(
     // perspective — the same way `setBasePtFromCount` reads its own.
     let scaledPower = 0;
     let scaledToughness = 0;
+    // Cards in exile, which is one shared zone: "cards your opponents own
+    // in exile" is `ownedBy`, read from the source's controller's side.
+    const exiledMatching = (exiledFilter: CardFilter): number =>
+      state.zones.shared.exile.filter(
+        (id) =>
+          state.objects[id]?.isToken !== true &&
+          matchesFilter(state, registry, id, exiledFilter, { you: source.controller }),
+      ).length;
     if (ability.grantPtPerCount !== undefined) {
       const per = ability.grantPtPerCount;
       const filter = per.filter;
@@ -1203,6 +1264,18 @@ function collectStaticEffects(
             )
           : per.playerCounters !== undefined
             ? (state.players[source.controller]?.counters[per.playerCounters] ?? 0)
+            : per.countersOnAffected !== undefined
+            ? (target.counters[per.countersOnAffected] ?? 0)
+            : per.exiled !== undefined
+            ? exiledMatching(per.exiled)
+            : per.colorsAmong !== undefined
+            ? colorsAmongPermanents(
+                state,
+                registry,
+                source.controller,
+                per.colorsAmong,
+                per.excludeSelf === true ? [source.id] : [],
+              )
             : filter === undefined
             ? 0
             : // Skipping the source before `matchesFilter` is what keeps

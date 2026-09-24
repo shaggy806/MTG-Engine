@@ -57,8 +57,11 @@ import type {
 } from "./cards.js";
 import {
   assignedCombatDamage,
+  cardTypesInGraveyards,
+  colorsAmongPermanents,
   computeCharacteristics,
   computedCacheMemo,
+  effectiveColors,
   objHasKeyword,
   restrictionsOf,
   effectiveSubtypes,
@@ -9733,6 +9736,18 @@ export class Game {
         }
         return n;
       },
+      handSizeOf: (player) => this.state.zones.perPlayer[player]?.hand.length ?? 0,
+      colorsOf: (target) => {
+        if (target.kind !== "object") return [];
+        const lki = lastKnownOf(target);
+        if (lki !== undefined) return lki.colors;
+        const object = this.state.objects[target.object];
+        return object === undefined ? [] : [...effectiveColors(this.registry, object)];
+      },
+      colorsAmong: (filter, except) =>
+        colorsAmongPermanents(this.state, this.registry, controller, filter, except),
+      cardTypesInGraveyard: (filter) =>
+        cardTypesInGraveyards(this.state, this.registry, controller, filter),
       gainLife: (player, amount) => this.changeLife(player, amount),
       loseLife: (player, amount) => this.changeLife(player, -amount),
       addMana: (player, mana, amount, spec) =>
@@ -14264,6 +14279,7 @@ export class Game {
       ...ctx,
       countMatching: (filter, except = []) => ctx.countMatching(filter, [...except, ...notYet]),
       aggregate: (spec, except = []) => ctx.aggregate(spec, [...except, ...notYet]),
+      colorsAmong: (filter, except = []) => ctx.colorsAmong(filter, [...except, ...notYet]),
     });
     return Math.max(0, n);
   }

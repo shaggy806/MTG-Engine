@@ -27,19 +27,23 @@ that one card is the reason the deck exists.
   Usurper and Millicent, Restless Revenant (`otherOnly` on the attack and combat-damage
   triggers, whose creature is the trigger object); Toph, the First Metalbender (`earthbend`);
   Kelsien, the Plague (a delayed trigger keyed to a permanent dying — its gaps entry still
-  lists `effect:delayed-trigger-extensions`, whose leave-keyed part it needs is built).
+  lists `effect:delayed-trigger-extensions`, whose leave-keyed part it needs is built);
+  Betor, Ancestor's Voice, Clement, the Worrywort and Minn, Wily Illusionist (a filter's
+  `{ amount }` operand); Doran, Besieged by Time (the `difference` amount and an `own`
+  compare); Sisay, Weatherlight Captain (`colorsAmong`); Toxrill, the Corrosive
+  (`grantPtPerCount.countersOnAffected`).
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first
   ten, engine-only, with the commanders each fully unblocks:
-  `condition:filter-dynamic-compare` (+1), `effect:amount-new-variants` (+1),
-  `static:pt-per-amount` (+2), `effect:this-way-results` (+3), `static:trigger-count-modifiers`
-  (+3), `effect:amount-aggregate` (+1), `effect:look-and-choose-leftover` (+1),
+  `effect:this-way-results` (+3), `static:trigger-count-modifiers` (+3),
+  `effect:amount-aggregate` (+1), `effect:look-and-choose-leftover` (+1),
   `effect:put-onto-battlefield-options` (+1), `effect:choices-by-other-players` (+3),
-  `trigger:put-into-graveyard` (+3).
+  `trigger:put-into-graveyard` (+3), `effect:missing-tokens` (+1), `trigger:combat-damage-batch`
+  (+3), `condition:filter-this-turn-history` (+2).
 - **Most-needed features overall.** `effect:this-way-results` (18),
-  `condition:filter-dynamic-compare` (16; what's left is an "N plus an amount" operand),
-  `static:grant-to-cards-outside-battlefield` (14), `zone:visibility-extensions` (13). Live
+  `static:grant-to-cards-outside-battlefield` (14), `zone:visibility-extensions`,
+  `static:grant-abilities-to-spells` and `bug:zone-change-object-identity` (13 each). Live
   numbers come from `cmdrs:gaps`.
 - **UI-bound features.** These need a new client decision and a browser check:
   `effect:may-sacrifice-then` (13), `decision:copy-new-targets` (12), `decision:choose-permanent`

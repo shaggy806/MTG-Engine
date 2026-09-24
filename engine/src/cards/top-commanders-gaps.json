@@ -53,7 +53,10 @@
   "cost:may-cost-non-mana",
   "trigger:sacrifice-filter",
   "trigger:combat-trigger-extensions",
-  "keyword:earthbend"
+  "keyword:earthbend",
+  "condition:filter-dynamic-compare",
+  "effect:amount-new-variants",
+  "static:pt-per-amount"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
