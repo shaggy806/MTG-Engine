@@ -57,7 +57,8 @@
   "condition:filter-dynamic-compare",
   "effect:amount-new-variants",
   "static:pt-per-amount",
-  "static:trigger-count-modifiers"
+  "static:trigger-count-modifiers",
+  "condition:filter-this-turn-history"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

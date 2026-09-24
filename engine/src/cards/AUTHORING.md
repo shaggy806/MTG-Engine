@@ -737,7 +737,8 @@ source, so it isn't a `CardFilter` clause.
 subtypes, supertype, notSupertype, name, notName, colors, notColors, colorless,
 manaValue, power, toughness, counters, controlledBy, ownedBy, keyword,
 notKeyword, tapped, token, isCommander, equipped, enchanted, modified, anyOf,
-manaSpent, putIntoGraveyardFromLibraryThisTurn, sharesCardTypeWith }`,
+manaSpent, putIntoGraveyardFromLibraryThisTurn, enteredThisTurn,
+attackedThisTurn, sharesCardTypeWith }`,
 every present clause ANDed. `controlledBy` is `"you"`, `"opponent"` or
 `"active-player"` (whoever's turn it is, whoever is asking). `anyOf: CardFilter[]` is the "or": at least one of
 them has to match as well (historic is `anyOf: [{ type: "artifact" },
@@ -756,8 +757,13 @@ graveyard and returns loses it (rule 400.7). `sharesCardTypeWith: "sacrificed"`
 is "a permanent that **shares a card type with it**" — the permanent the
 spell or ability sacrificed, as it last existed (Braids, Arisen Nightmare);
 an effect's filter is bound to its types as the effect applies, and anywhere
-nothing was sacrificed it matches nothing. `attacking` asks whether the
-permanent is currently attacking (Kangee's Lieutenant). `subtypes`/`typesAnyOf` are an OR
+nothing was sacrificed it matches nothing. `enteredThisTurn` /
+`attackedThisTurn` are a permanent's history this turn — "creatures that
+entered this turn", Kratos, God of War's "creatures that player controls that
+**didn't attack** this turn" (`attackedThisTurn: false`). A permanent that
+changes zones is a new object that did neither; one that has left is asked as
+it last was. `attacking` asks whether the permanent is currently attacking
+(Kangee's Lieutenant). `subtypes`/`typesAnyOf` are an OR
 within themselves (Farseek: "a Plains, Island, Swamp, or Mountain card";
 Takenuma's Channel: "a creature or planeswalker card"). Numeric fields take
 `{ op: "eq"|"ne"|"lt"|"lte"|"gt"|"gte", n }`.

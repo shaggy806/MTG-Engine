@@ -3017,6 +3017,12 @@ export class Game {
     this.state.delayedTriggers = this.state.delayedTriggers.filter(
       (t) => typeof t.at !== "object" || t.at.thisTurn !== true,
     );
+    // Nothing has attacked this turn yet — whoever controls it. (The untap
+    // step only reaches the active player's permanents.)
+    for (const id of this.state.zones.shared.battlefield) {
+      const object = this.state.objects[id];
+      if (object.attackedThisTurn === true) object.attackedThisTurn = false;
+    }
     this.state.extraCombats = 0;
     this.state.spellsCastThisTurn = 0;
     // An extra turn (Time Warp — rule 500.7) is taken by the player at the
@@ -14552,6 +14558,8 @@ export class Game {
       isToken: object.isToken,
       isCommander: object.isCommander,
       tapped: object.tapped,
+      ...(object.enteredBattlefieldOnTurn !== null ? { enteredOnTurn: object.enteredBattlefieldOnTurn } : {}),
+      ...(object.attackedThisTurn === true ? { attackedOnTurn: this.state.turn.number } : {}),
       attacking: object.attacking !== null,
       blocking: object.blocking !== null,
       equipped: attached.equipped,
@@ -14849,6 +14857,7 @@ export class Game {
 
     // A change of zone resets everything that only applies in one zone.
     object.attacking = null;
+    delete object.attackedThisTurn;
     object.blocking = null;
     object.blockedBy = [];
     object.blocked = false;

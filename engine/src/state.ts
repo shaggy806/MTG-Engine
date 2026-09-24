@@ -133,8 +133,9 @@ export interface GameObject {
     readonly indices: readonly number[];
   };
   /** True once this permanent has been declared as an attacker this turn —
-   * the "attacked this turn" half of Boast (rule 702.135). Reset in the
-   * controller's untap step. */
+   * the "attacked this turn" half of Boast (rule 702.135), and the
+   * `attackedThisTurn` filter clause. Reset as each turn begins, and by any
+   * change of zone (the permanent that comes back never attacked). */
   attackedThisTurn?: boolean;
   /**
    * Players who have goaded this creature (rule 701.38). While non-empty it
@@ -602,6 +603,10 @@ export interface LastKnownInfo {
   readonly isToken: boolean;
   readonly isCommander: boolean;
   readonly tapped: boolean;
+  /** The turn it entered the battlefield on, and the turn it attacked on if
+   * it did — for the `enteredThisTurn` / `attackedThisTurn` filter clauses. */
+  readonly enteredOnTurn?: number;
+  readonly attackedOnTurn?: number;
   readonly attacking: boolean;
   readonly blocking: boolean;
   readonly equipped: boolean;

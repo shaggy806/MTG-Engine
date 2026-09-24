@@ -197,6 +197,15 @@ export interface CardFilter {
    * `GameObject.putIntoGraveyardFromLibraryOnTurn`.
    */
   readonly putIntoGraveyardFromLibraryThisTurn?: boolean;
+  /** Entered the battlefield this turn (or didn't) — "creatures that entered
+   * this turn", "a creature that didn't enter this turn". A card anywhere
+   * but the battlefield hasn't; one that has left is asked as it last was. */
+  readonly enteredThisTurn?: boolean;
+  /** Was declared as an attacker this turn (or wasn't) — Kratos, God of
+   * War's "creatures that player controls that didn't attack this turn". A
+   * permanent that left the battlefield and came back is a new object that
+   * hasn't; one that has left is asked as it last was. */
+  readonly attackedThisTurn?: boolean;
   /**
    * Shares at least one card type with the permanent sacrificed to pay for
    * (or earlier in) the spell or ability applying this filter — "a permanent
@@ -483,6 +492,17 @@ export function matchesFilter(
   if (filter.isCommander !== undefined) {
     const commander = live !== undefined ? live.isCommander : lki!.isCommander;
     if (commander !== filter.isCommander) return false;
+  }
+  if (filter.enteredThisTurn !== undefined) {
+    const turn = live !== undefined ? live.enteredBattlefieldOnTurn : (lki!.enteredOnTurn ?? null);
+    if ((turn === state.turn.number) !== filter.enteredThisTurn) return false;
+  }
+  if (filter.attackedThisTurn !== undefined) {
+    const attacked =
+      live !== undefined
+        ? live.zone === "battlefield" && live.attackedThisTurn === true
+        : lki!.attackedOnTurn === state.turn.number;
+    if (attacked !== filter.attackedThisTurn) return false;
   }
   if (filter.putIntoGraveyardFromLibraryThisTurn !== undefined) {
     // A snapshot is of a permanent, which didn't come from a library.
