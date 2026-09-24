@@ -172,6 +172,7 @@ import _poolCrawWurm from "./pool/craw-wurm.js";
 import _poolCripplingFear from "./pool/crippling-fear.js";
 import _poolCropRotation from "./pool/crop-rotation.js";
 import _poolCrucibleOfFire from "./pool/crucible-of-fire.js";
+import _poolCrucibleOfWorlds from "./pool/crucible-of-worlds.js";
 import _poolCruelRevival from "./pool/cruel-revival.js";
 import _poolCrumblingNecropolis from "./pool/crumbling-necropolis.js";
 import _poolCrushContraband from "./pool/crush-contraband.js";
@@ -523,6 +524,7 @@ import _poolMonasterySwiftspear from "./pool/monastery-swiftspear.js";
 import _poolMordantDragon from "./pool/mordant-dragon.js";
 import _poolMorphicPool from "./pool/morphic-pool.js";
 import _poolMorskaUnderseaSleuth from "./pool/morska-undersea-sleuth.js";
+import _poolMortify from "./pool/mortify.js";
 import _poolMortivore from "./pool/mortivore.js";
 import _poolMortuaryMire from "./pool/mortuary-mire.js";
 import _poolMossfireValley from "./pool/mossfire-valley.js";
@@ -549,12 +551,14 @@ import _poolNivMizzetVisionary from "./pool/niv-mizzet-visionary.js";
 import _poolNomadOutpost from "./pool/nomad-outpost.js";
 import _poolNorinTheWary from "./pool/norin-the-wary.js";
 import _poolNotionThief from "./pool/notion-thief.js";
+import _poolNoxiousRevival from "./pool/noxious-revival.js";
 import _poolNullmageShepherd from "./pool/nullmage-shepherd.js";
 import _poolObNixilisTheFallen from "./pool/ob-nixilis-the-fallen.js";
 import _poolOgnis from "./pool/ognis.js";
 import _poolOldGnawbone from "./pool/old-gnawbone.js";
 import _poolOloroAgelessAscetic from "./pool/oloro-ageless-ascetic.js";
 import _poolOmnathLocusOfCreation from "./pool/omnath-locus-of-creation.js";
+import _poolOpenTheArmory from "./pool/open-the-armory.js";
 import _poolOpenTheGraves from "./pool/open-the-graves.js";
 import _poolOpt from "./pool/opt.js";
 import _poolOpulentPalace from "./pool/opulent-palace.js";
@@ -570,6 +574,7 @@ import _poolOvergrownTomb from "./pool/overgrown-tomb.js";
 import _poolOverrun from "./pool/overrun.js";
 import _poolOverseerOfTheDamned from "./pool/overseer-of-the-damned.js";
 import _poolOverwhelmingInstinct from "./pool/overwhelming-instinct.js";
+import _poolOverwhelmingStampede from "./pool/overwhelming-stampede.js";
 import _poolPacifism from "./pool/pacifism.js";
 import _poolPanharmonicon from "./pool/panharmonicon.js";
 import _poolParallelLives from "./pool/parallel-lives.js";
@@ -632,12 +637,15 @@ import _poolRejuvenatingSprings from "./pool/rejuvenating-springs.js";
 import _poolReliquaryTower from "./pool/reliquary-tower.js";
 import _poolRemand from "./pool/remand.js";
 import _poolRemorsefulCleric from "./pool/remorseful-cleric.js";
+import _poolReprieve from "./pool/reprieve.js";
 import _poolRestInPeace from "./pool/rest-in-peace.js";
+import _poolReturnOfTheWildspeaker from "./pool/return-of-the-wildspeaker.js";
 import _poolReturnToNature from "./pool/return-to-nature.js";
 import _poolRhysticStudy from "./pool/rhystic-study.js";
 import _poolRiftBolt from "./pool/rift-bolt.js";
 import _poolRinAndSeriInseparable from "./pool/rin-and-seri-inseparable.js";
 import _poolRishkarPeemaRenegade from "./pool/rishkar-peema-renegade.js";
+import _poolRiteOfFlame from "./pool/rite-of-flame.js";
 import _poolRiveteersOverlook from "./pool/riveteers-overlook.js";
 import _poolRockfallVale from "./pool/rockfall-vale.js";
 import _poolRograkhSonOfRohgahh from "./pool/rograkh-son-of-rohgahh.js";
@@ -646,6 +654,7 @@ import _poolRootbornDefenses from "./pool/rootborn-defenses.js";
 import _poolRootboundCrag from "./pool/rootbound-crag.js";
 import _poolRubyMedallion from "./pool/ruby-medallion.js";
 import _poolRuggedHighlands from "./pool/rugged-highlands.js";
+import _poolRuinousUltimatum from "./pool/ruinous-ultimatum.js";
 import _poolRumblingBaloth from "./pool/rumbling-baloth.js";
 import _poolRunehornHellkite from "./pool/runehorn-hellkite.js";
 import _poolRuricThar from "./pool/ruric-thar.js";
@@ -916,6 +925,7 @@ import _poolWarrenSoultrader from "./pool/warren-soultrader.js";
 import _poolWateryGrave from "./pool/watery-grave.js";
 import _poolWayfarersBauble from "./pool/wayfarers-bauble.js";
 import _poolWerebear from "./pool/werebear.js";
+import _poolWheelOfFortune from "./pool/wheel-of-fortune.js";
 import _poolWhipOfErebos from "./pool/whip-of-erebos.js";
 import _poolWhispersilkCloak from "./pool/whispersilk-cloak.js";
 import _poolWhiteKnight from "./pool/white-knight.js";
@@ -1183,6 +1193,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolCripplingFear,
   _poolCropRotation,
   _poolCrucibleOfFire,
+  _poolCrucibleOfWorlds,
   _poolCruelRevival,
   _poolCrumblingNecropolis,
   _poolCrushContraband,
@@ -1534,6 +1545,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolMordantDragon,
   _poolMorphicPool,
   _poolMorskaUnderseaSleuth,
+  _poolMortify,
   _poolMortivore,
   _poolMortuaryMire,
   _poolMossfireValley,
@@ -1560,12 +1572,14 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolNomadOutpost,
   _poolNorinTheWary,
   _poolNotionThief,
+  _poolNoxiousRevival,
   _poolNullmageShepherd,
   _poolObNixilisTheFallen,
   _poolOgnis,
   _poolOldGnawbone,
   _poolOloroAgelessAscetic,
   _poolOmnathLocusOfCreation,
+  _poolOpenTheArmory,
   _poolOpenTheGraves,
   _poolOpt,
   _poolOpulentPalace,
@@ -1581,6 +1595,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolOverrun,
   _poolOverseerOfTheDamned,
   _poolOverwhelmingInstinct,
+  _poolOverwhelmingStampede,
   _poolPacifism,
   _poolPanharmonicon,
   _poolParallelLives,
@@ -1643,12 +1658,15 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolReliquaryTower,
   _poolRemand,
   _poolRemorsefulCleric,
+  _poolReprieve,
   _poolRestInPeace,
+  _poolReturnOfTheWildspeaker,
   _poolReturnToNature,
   _poolRhysticStudy,
   _poolRiftBolt,
   _poolRinAndSeriInseparable,
   _poolRishkarPeemaRenegade,
+  _poolRiteOfFlame,
   _poolRiveteersOverlook,
   _poolRockfallVale,
   _poolRograkhSonOfRohgahh,
@@ -1657,6 +1675,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolRootboundCrag,
   _poolRubyMedallion,
   _poolRuggedHighlands,
+  _poolRuinousUltimatum,
   _poolRumblingBaloth,
   _poolRunehornHellkite,
   _poolRuricThar,
@@ -1927,6 +1946,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolWateryGrave,
   _poolWayfarersBauble,
   _poolWerebear,
+  _poolWheelOfFortune,
   _poolWhipOfErebos,
   _poolWhispersilkCloak,
   _poolWhiteKnight,
