@@ -673,6 +673,7 @@ import _poolSkycloudExpanse from "./pool/skycloud-expanse.js";
 import _poolSkyscanner from "./pool/skyscanner.js";
 import _poolSkyshroudClaim from "./pool/skyshroud-claim.js";
 import _poolSlateOfAncestry from "./pool/slate-of-ancestry.js";
+import _poolSliverOverlord from "./pool/sliver-overlord.js";
 import _poolSmolderingMarsh from "./pool/smoldering-marsh.js";
 import _poolSmotheringTithe from "./pool/smothering-tithe.js";
 import _poolSnakeskinVeil from "./pool/snakeskin-veil.js";
@@ -1634,6 +1635,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSkyscanner,
   _poolSkyshroudClaim,
   _poolSlateOfAncestry,
+  _poolSliverOverlord,
   _poolSmolderingMarsh,
   _poolSmotheringTithe,
   _poolSnakeskinVeil,

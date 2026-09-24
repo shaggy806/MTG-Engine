@@ -407,7 +407,7 @@ multiplier (Gray Merchant's "life equal to the life lost this way" is devotion
 | `sacrifice` | `who`, `filter`, `count`, `exceptSource?` | Diabolic Edict (`who: "target"`), Fleshbag Marauder (`who: "each-player"`), Korvold (`who: "you"`, `exceptSource: true` = "another") |
 | `sacrifice-source` | `then?` | Defense of the Heart — "Sacrifice ~. **If you do,** …"; no choice, and `then` only applies if the source was still there to sacrifice |
 | `fight` | `a`, `b`, `oneSided?` | Prey Upon / Rabid Bite |
-| `gain-control` | `target`, `untilEndOfTurn` | Act of Treason |
+| `gain-control` | `target`, `untilEndOfTurn` | Act of Treason; `untilEndOfTurn: false` is "lasts indefinitely" (Sliver Overlord). A timestamped layer-2 effect: the latest control effect on a permanent wins, Aura or not (rule 613.7), and when one ends the next-latest takes over |
 
 #### Delayed triggered abilities (`delayed-trigger`)
 

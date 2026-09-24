@@ -5,6 +5,9 @@
  * wins. An Aura used to beat any lasting effect outright, and an
  * until-end-of-turn steal ending used to hand the permanent to its owner even
  * when an earlier lasting effect still said otherwise.
+ *
+ * Also Sliver Overlord, whose "{1}: Gain control of target Sliver. (This
+ * effect lasts indefinitely.)" is exactly that kind of lasting effect.
  */
 
 import { describe, expect, it } from "vitest";
@@ -178,5 +181,97 @@ describe("layer 2 applies control effects in timestamp order", () => {
     game.advanceUntil(mainOf(2, B));
     expect(game.state.objects[bear].zone).toBe("battlefield");
     expect(game.state.objects[bear].controller).toBe(B);
+  });
+});
+
+describe("Sliver Overlord", () => {
+  const board = () => {
+    // Past the opening hand and the first draw, so the tutor has one to find.
+    const game = mkGame([...Array<string>(8).fill("Island"), "Test Sliver"]);
+    const aOverlord = game.debugSpawn("Sliver Overlord", A, "battlefield", { summoningSick: false });
+    const bOverlord = game.debugSpawn("Sliver Overlord", B, "battlefield", { summoningSick: false });
+    for (let i = 0; i < 4; i += 1) {
+      game.debugSpawn("Island", A, "battlefield");
+      game.debugSpawn("Island", B, "battlefield");
+    }
+    const sliver = game.debugSpawn("Test Sliver", B, "battlefield", { summoningSick: false });
+    return { game, aOverlord, bOverlord, sliver };
+  };
+
+  const take = (game: Game, player: PlayerId, overlord: ObjectId, sliver: ObjectId): void => {
+    game.dispatch({
+      type: "activate-ability",
+      player,
+      source: overlord,
+      abilityIndex: 1,
+      targets: [obj(sliver)],
+    });
+    game.advanceUntil(quiet);
+  };
+
+  it("two Overlords trade a Sliver back and forth — the latest activation wins", () => {
+    const { game, aOverlord, bOverlord, sliver } = board();
+
+    take(game, A, aOverlord, sliver);
+    expect(game.state.objects[sliver].controller).toBe(A);
+    // Lasting: still Alice's past cleanup.
+    game.advanceUntil(mainOf(2, B));
+    expect(game.state.objects[sliver].controller).toBe(A);
+
+    take(game, B, bOverlord, sliver);
+    expect(game.state.objects[sliver].controller).toBe(B);
+    game.advanceUntil(mainOf(3, A));
+    expect(game.state.objects[sliver].controller).toBe(B);
+
+    take(game, A, aOverlord, sliver);
+    expect(game.state.objects[sliver].controller).toBe(A);
+    expect(game.state.objects[sliver].summoningSick).toBe(true);
+  });
+
+  it("the steal outlasts the Overlord that made it", () => {
+    const { game, aOverlord, sliver } = board();
+    take(game, A, aOverlord, sliver);
+    game.debugApplyEffect(B, { kind: "destroy", target: 0 }, [obj(aOverlord)]);
+    game.advanceUntil(mainOf(2, B));
+    expect(game.state.objects[aOverlord].zone).toBe("graveyard");
+    expect(game.state.objects[sliver].controller).toBe(A);
+  });
+
+  it("can take a Sliver over a control Aura on it", () => {
+    const game = mkGame(["Mind Control"]);
+    const overlord = game.debugSpawn("Sliver Overlord", B, "battlefield", { summoningSick: false });
+    const sliver = game.debugSpawn("Test Sliver", B, "battlefield");
+    castMindControl(game, A, sliver);
+    expect(game.state.objects[sliver].controller).toBe(A);
+    game.debugSpawn("Island", B, "battlefield");
+    game.advanceUntil(mainOf(2, B));
+    take(game, B, overlord, sliver);
+    expect(game.state.objects[sliver].controller).toBe(B);
+  });
+
+  it("only targets Slivers", () => {
+    const { game, aOverlord } = board();
+    const bear = game.debugSpawn("Grizzly Bears", B, "battlefield");
+    const offer = game
+      .legalActions(A)
+      .find((la) => la.kind === "activate-ability" && la.source === aOverlord && la.abilityIndex === 1);
+    if (offer?.kind !== "activate-ability") throw new Error("no offer");
+    const options = offer.targetOptions[0].map((t) => (t.kind === "object" ? t.object : null));
+    expect(options).not.toContain(bear);
+    expect(options.length).toBeGreaterThan(0);
+  });
+
+  it("{3} tutors a Sliver card to hand, revealed", () => {
+    const { game, aOverlord } = board();
+    game.dispatch({ type: "activate-ability", player: A, source: aOverlord, abilityIndex: 0 });
+    game.advanceUntil((s) => s.awaiting !== null || quiet(s));
+    const awaiting = game.state.awaiting;
+    if (awaiting?.kind !== "choose-from-zone") throw new Error(`awaiting ${awaiting?.kind}`);
+    const pick = awaiting.eligible[0];
+    expect(game.state.objects[pick].cardName).toBe("Test Sliver");
+    game.dispatch({ type: "choose-from-zone", player: A, chosen: [pick] });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[pick].zone).toBe("hand");
+    expect(game.state.revealedThisTurn).toContain(pick);
   });
 });
