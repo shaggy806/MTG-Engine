@@ -887,6 +887,15 @@ static: [
   `withoutKeyword`; like the `creatures-you-control` narrowings these are
   flags rather than a `CardFilter`, because `staticAffects` runs on every
   characteristics read and is given no `GameState`.
+
+`withKeyword` (either creature scope) and `withoutKeyword` read the target's
+**current** keywords (rule 613.8a — the anthem depends on whatever grants or
+removes the keyword): a creature flying because of an Aura, Equipment, an
+anthem or a `grant-keyword` spell counts, and one that lost its abilities
+(Turn to Frog) doesn't. `collectStaticEffects` gets there without recursing:
+it applies every other static first, then matches the keyword-scoped ones
+against the keywords that produced (Alela, Artful Provocateur; Empyrean
+Eagle; Gravitational Shift).
 - `"attached"` — the permanent this Aura/Equipment is attached to (how Auras
   grant their effect).
 
@@ -1373,11 +1382,13 @@ Delete an entry in the same commit as the feature that retires it.
   `alternativeCost`**, which tapped the first eligible permanents: which
   creatures a cost taps decides which can attack or block this turn. The
   player picks them now (`tap-cost-choices.test.ts`).
-- **`AffectSpec.withKeyword` matches printed keywords only.** `staticAffects`
-  runs on every characteristics read and is deliberately given no
-  `GameState`, so it can't do the layer fold — a creature that has the keyword
-  only from another effect is missed (Sephara's "other creatures you control
-  with flying").
+- **A keyword-scoped static sees only one level of keyword grants.**
+  `withKeyword`/`withoutKeyword` match the target's *current* keywords, but
+  those are folded from every static *not* itself scoped by keyword (plus
+  emblems and the target's own modifiers). So Sephara's indestructible,
+  granted to fliers, is invisible to another keyword-scoped static — a
+  "creatures with indestructible get …" anthem wouldn't see it. No pool card
+  needs that yet.
 - **Additional costs** are `sacrifice` (a `CardFilter`), `discard` (a count)
   and `payLife` (a count) — several may be set and all are paid. Not yet: a
   *choice* between two of them ("discard a card **or** pay 3 life" — Bitter

@@ -523,12 +523,38 @@ function isCreatureNow(
   return effectiveTypes(registry, object).includes("creature");
 }
 
+/** Whether an `AffectSpec` narrows its reach by keyword — the statics whose
+ * scope has to wait for the target's layer-6 keywords (rule 613.8). */
+function scopedByKeyword(affects: AffectSpec): boolean {
+  return (
+    (affects.scope === "creatures-you-control" || affects.scope === "all-creatures") &&
+    (affects.withKeyword !== undefined ||
+      (affects.scope === "all-creatures" && affects.withoutKeyword !== undefined))
+  );
+}
+
+/**
+ * Whether a static's `affects` reaches `target`.
+ *
+ * A `withKeyword`/`withoutKeyword` clause asks about the target's *current*
+ * keywords — flying from an Aura or an anthem counts, and a creature that
+ * lost its abilities has none. Those come from `targetKeywords`, which the
+ * caller supplies because answering it means folding layer 6, and this
+ * function is called from inside that fold; without one, it falls back to
+ * printed keywords (less ability loss).
+ */
 export function staticAffects(
   registry: CardRegistry,
   affects: AffectSpec,
   source: GameObject,
   target: GameObject,
+  targetKeywords?: () => ReadonlySet<Keyword>,
 ): boolean {
+  const hasKeyword = (keyword: Keyword): boolean =>
+    targetKeywords !== undefined
+      ? targetKeywords().has(keyword)
+      : !(target.zone === "battlefield" && hasLostAbilities(target)) &&
+        registry.get(printedCardName(target)).keywords.includes(keyword);
   if (affects.scope === "self") return source.id === target.id;
   if (affects.scope === "attached") return source.attachedTo === target.id;
   if (affects.scope === "lands-you-control") {
@@ -541,16 +567,11 @@ export function staticAffects(
     // Every creature on the battlefield, whoever controls it.
     if (affects.excludeSelf === true && source.id === target.id) return false;
     if (!isCreatureNow(registry, target)) return false;
-    const printed = registry.get(printedCardName(target));
     if (affects.subtype !== undefined && !effectiveSubtypes(registry, target).includes(affects.subtype)) {
       return false;
     }
-    if (affects.withKeyword !== undefined && !printed.keywords.includes(affects.withKeyword)) {
-      return false;
-    }
-    if (affects.withoutKeyword !== undefined && printed.keywords.includes(affects.withoutKeyword)) {
-      return false;
-    }
+    if (affects.withKeyword !== undefined && !hasKeyword(affects.withKeyword)) return false;
+    if (affects.withoutKeyword !== undefined && hasKeyword(affects.withoutKeyword)) return false;
     return true;
   }
   // "creatures-you-control"
@@ -558,12 +579,7 @@ export function staticAffects(
   if (target.controller !== source.controller) return false;
   if (!isCreatureNow(registry, target)) return false;
   if (affects.tokenOnly === true && target.isToken !== true) return false;
-  if (
-    affects.withKeyword !== undefined &&
-    !registry.get(printedCardName(target)).keywords.includes(affects.withKeyword)
-  ) {
-    return false;
-  }
+  if (affects.withKeyword !== undefined && !hasKeyword(affects.withKeyword)) return false;
   if (affects.chosenColorOnly === true) {
     const chosen = source.chosenOnEnter;
     if (chosen == null) return false;
@@ -654,7 +670,18 @@ function contributingStaticSources(
   return out;
 }
 
-/** Continuous effects from battlefield permanents that apply to `target`. */
+/** Continuous effects from battlefield permanents that apply to `target`.
+ *
+ * Two passes, because a static scoped by keyword ("other creatures you
+ * control **with flying** get +1/+0") depends on every effect that grants or
+ * removes that keyword (rule 613.8a): first everything else — including every
+ * layer-6 grant, from anthems, emblems and the target's own modifiers — then
+ * the keyword-scoped statics, matched against the keywords that produced.
+ * The keyword set is built from the pass-one effects themselves rather than
+ * a recursive characteristics read, so nothing here re-enters the fold, and
+ * it's only built at all when a keyword-scoped static is on the battlefield.
+ * One level deep: a keyword-scoped static's *own* keyword grant (Sephara's
+ * indestructible) isn't seen by another keyword-scoped static. */
 function collectStaticEffects(
   state: GameState,
   registry: CardRegistry,
@@ -662,57 +689,64 @@ function collectStaticEffects(
 ): AppliedEffect[] {
   const out: AppliedEffect[] = [];
   const sources = contributingStaticSources(state, registry);
-  {
-    for (const { source, ability } of sources) {
-      if (!staticAffects(registry, ability.affects, source, target)) continue;
-      // "As long as …" gate (rule 604.3 — ROADMAP Phase 11 EG-3). Checked
-      // *after* `staticAffects` so a static that can't reach `target` never
-      // evaluates its condition (which may itself read other permanents'
-      // characteristics — checking it eagerly would recurse).
-      if (
-        ability.condition !== undefined &&
-        !staticConditionMet(state, registry, source, ability.condition)
-      ) {
-        continue;
-      }
-      // A count-scaled bonus is read live, from the source's controller's
-      // perspective — the same way `setBasePtFromCount` reads its own.
-      let scaledPower = 0;
-      let scaledToughness = 0;
-      if (ability.grantPtPerCount !== undefined) {
-        const per = ability.grantPtPerCount;
-        const filter = per.filter;
-        const n =
-          per.commanderCasts === true
-            ? Object.values(state.players[source.controller]?.commanderCastCounts ?? {}).reduce(
-                (total, casts) => total + casts,
-                0,
-              )
-            : filter === undefined
-              ? 0
-              : // Skipping the source before `matchesFilter` is what keeps
-                // Skycat Sovereign ("each *other* creature with flying") from
-                // folding its own characteristics to answer its own bonus.
-                permanentCount(
-                  state,
-                  state.zones.shared.battlefield.filter(
-                    (id) =>
-                      !(per.excludeSelf === true && id === source.id) &&
-                      matchesFilter(state, registry, id, filter, { you: source.controller }),
-                  ),
-                );
-        scaledPower = n * per.pt[0];
-        scaledToughness = n * per.pt[1];
-      }
-      out.push({
-        timestamp: source.timestamp,
-        power: (ability.grantPt?.[0] ?? 0) + scaledPower,
-        toughness: (ability.grantPt?.[1] ?? 0) + scaledToughness,
-        keywords: ability.grantKeywords ?? [],
-        restrictions: ability.restrictions ?? [],
-        protection: ability.protection ?? null,
-      });
+  const applied = (source: GameObject, ability: StaticAbility): AppliedEffect | null => {
+    // "As long as …" gate (rule 604.3 — ROADMAP Phase 11 EG-3). Checked
+    // *after* `staticAffects` so a static that can't reach `target` never
+    // evaluates its condition (which may itself read other permanents'
+    // characteristics — checking it eagerly would recurse).
+    if (
+      ability.condition !== undefined &&
+      !staticConditionMet(state, registry, source, ability.condition)
+    ) {
+      return null;
     }
+    // A count-scaled bonus is read live, from the source's controller's
+    // perspective — the same way `setBasePtFromCount` reads its own.
+    let scaledPower = 0;
+    let scaledToughness = 0;
+    if (ability.grantPtPerCount !== undefined) {
+      const per = ability.grantPtPerCount;
+      const filter = per.filter;
+      const n =
+        per.commanderCasts === true
+          ? Object.values(state.players[source.controller]?.commanderCastCounts ?? {}).reduce(
+              (total, casts) => total + casts,
+              0,
+            )
+          : filter === undefined
+            ? 0
+            : // Skipping the source before `matchesFilter` is what keeps
+              // Skycat Sovereign ("each *other* creature with flying") from
+              // folding its own characteristics to answer its own bonus.
+              permanentCount(
+                state,
+                state.zones.shared.battlefield.filter(
+                  (id) =>
+                    !(per.excludeSelf === true && id === source.id) &&
+                    matchesFilter(state, registry, id, filter, { you: source.controller }),
+                ),
+              );
+      scaledPower = n * per.pt[0];
+      scaledToughness = n * per.pt[1];
+    }
+    return {
+      timestamp: source.timestamp,
+      power: (ability.grantPt?.[0] ?? 0) + scaledPower,
+      toughness: (ability.grantPt?.[1] ?? 0) + scaledToughness,
+      keywords: ability.grantKeywords ?? [],
+      restrictions: ability.restrictions ?? [],
+      protection: ability.protection ?? null,
+    };
+  };
+  let keywordScoped = false;
+  for (const { source, ability } of sources) {
+    if (scopedByKeyword(ability.affects)) {
+      keywordScoped = true;
+      continue;
+    }
+    if (!staticAffects(registry, ability.affects, source, target)) continue;
+    const effect = applied(source, ability);
+    if (effect !== null) out.push(effect);
   }
   // Emblems (rule 114 — ROADMAP Phase 10): a player-owned anthem with no
   // battlefield object. Only the `"creatures-you-control"` scope is supported.
@@ -743,6 +777,27 @@ function collectStaticEffects(
       restrictions: ability.restrictions ?? [],
       protection: ability.protection ?? null,
     });
+  }
+  if (keywordScoped) {
+    let keywords: Set<Keyword> | null = null;
+    const targetKeywords = (): ReadonlySet<Keyword> => {
+      if (keywords === null) {
+        keywords = new Set(
+          hasLostAbilities(target) ? [] : registry.get(printedCardName(target)).keywords,
+        );
+        for (const effect of out) for (const k of effect.keywords) keywords.add(k);
+        for (const modifier of target.modifiers) for (const k of modifier.keywords) keywords.add(k);
+      }
+      return keywords;
+    };
+    const second: AppliedEffect[] = [];
+    for (const { source, ability } of sources) {
+      if (!scopedByKeyword(ability.affects)) continue;
+      if (!staticAffects(registry, ability.affects, source, target, targetKeywords)) continue;
+      const effect = applied(source, ability);
+      if (effect !== null) second.push(effect);
+    }
+    out.push(...second);
   }
   out.sort((a, b) => a.timestamp - b.timestamp);
   return out;

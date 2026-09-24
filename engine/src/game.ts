@@ -5129,7 +5129,8 @@ export class Game {
         entries: { ability: TriggeredAbility; ref: GrantedAbilityRef }[];
       }[] = [];
       for (const { source, ability, staticIndex, abilities } of sources) {
-        if (!staticAffects(this.registry, ability.affects, source, target)) continue;
+        const keywords = (): ReadonlySet<Keyword> => this.characteristics(target.id).keywords;
+        if (!staticAffects(this.registry, ability.affects, source, target, keywords)) continue;
         if (!this.staticActive(source, ability)) continue;
         const cardName = printedCardName(source);
         grants.push({
@@ -5191,7 +5192,8 @@ export class Game {
       entries: { ability: ActivatedAbility; ref: GrantedAbilityRef }[];
     }[] = [];
     for (const { source, ability, staticIndex, abilities } of sources) {
-      if (!staticAffects(this.registry, ability.affects, source, target)) continue;
+      const keywords = (): ReadonlySet<Keyword> => this.characteristics(target.id).keywords;
+      if (!staticAffects(this.registry, ability.affects, source, target, keywords)) continue;
       if (!this.staticActive(source, ability)) continue;
       const cardName = printedCardName(source);
       grants.push({

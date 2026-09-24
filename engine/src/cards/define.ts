@@ -129,10 +129,10 @@ export type AffectSpec =
        * Only creatures with this keyword — Sephara's "other creatures you
        * control **with flying** have indestructible".
        *
-       * Matched against *printed* keywords: `staticAffects` runs on every
-       * characteristics read and is deliberately given no `GameState`, so it
-       * can't do the full layer fold. A creature that only has the keyword
-       * from another effect is therefore missed — recorded in AUTHORING §15.
+       * Matched against the creature's *current* keywords — flying from an
+       * Aura or an anthem counts, a creature that lost its abilities has
+       * none (rule 613.8a). `collectStaticEffects` applies keyword-scoped
+       * statics in a second pass, after the grants they depend on.
        */
       readonly withKeyword?: Keyword;
     }
