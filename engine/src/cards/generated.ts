@@ -366,6 +366,7 @@ import _poolHeraldicBanner from "./pool/heraldic-banner.js";
 import _poolHeroicIntervention from "./pool/heroic-intervention.js";
 import _poolHighMarket from "./pool/high-market.js";
 import _poolHillGiant from "./pool/hill-giant.js";
+import _poolHinataDawnCrowned from "./pool/hinata-dawn-crowned.js";
 import _poolHinterlandHarbor from "./pool/hinterland-harbor.js";
 import _poolHistoryOfBenalia from "./pool/history-of-benalia.js";
 import _poolHoardSmelterDragon from "./pool/hoard-smelter-dragon.js";
@@ -594,6 +595,7 @@ import _poolRaugrinTriome from "./pool/raugrin-triome.js";
 import _poolRavos from "./pool/ravos.js";
 import _poolReadTheBones from "./pool/read-the-bones.js";
 import _poolReanimate from "./pool/reanimate.js";
+import _poolReaperKing from "./pool/reaper-king.js";
 import _poolReassemblingSkeleton from "./pool/reassembling-skeleton.js";
 import _poolReclamationSage from "./pool/reclamation-sage.js";
 import _poolRegrowth from "./pool/regrowth.js";
@@ -1333,6 +1335,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolHeroicIntervention,
   _poolHighMarket,
   _poolHillGiant,
+  _poolHinataDawnCrowned,
   _poolHinterlandHarbor,
   _poolHistoryOfBenalia,
   _poolHoardSmelterDragon,
@@ -1561,6 +1564,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolRavos,
   _poolReadTheBones,
   _poolReanimate,
+  _poolReaperKing,
   _poolReassemblingSkeleton,
   _poolReclamationSage,
   _poolRegrowth,
