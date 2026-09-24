@@ -309,6 +309,16 @@ export type StaticCondition =
       readonly filter: CardFilter;
       readonly atLeast: number;
     }
+  /** *Some one* opponent controls **more** permanents matching `filter` than
+   * you do — Land Tax and Knight of the White Orchid's "if an opponent
+   * controls more lands than you". Each opponent is compared on their own,
+   * with that opponent as the filter's "you". Your side follows the same self
+   * rule as `controls`: a static leaves its own permanent out of your count, a
+   * triggered ability's intervening-if counts it. */
+  | {
+      readonly kind: "opponent-controls-more";
+      readonly filter: CardFilter;
+    }
   /** Your opponents control at least `atLeast` permanents matching `filter`
    * *combined* (Turbulent Fen — "unless your opponents control eight or more
    * lands"; plural "opponents" sums across all of them, unlike the singular

@@ -100,6 +100,11 @@ export interface CounterMultiplierReplacement {
   readonly event: "would-add-counter";
   readonly multiplier: number;
   readonly counterKind?: string;
+  /** Narrows which of your permanents it applies to — Branching Evolution's
+   * "on a **creature** you control" is `{ type: "creature" }`. Matched
+   * against the permanent's computed characteristics as the counters are
+   * put on it. Omit for any permanent you control. */
+  readonly filter?: CardFilter;
 }
 
 /** "If a card would be put into a graveyard from anywhere, exile it instead"

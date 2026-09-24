@@ -632,3 +632,82 @@ describe("Haywire Mite", () => {
     expect(life(game, A)).toBe(22);
   });
 });
+
+describe("Branching Evolution", () => {
+  it("doubles +1/+1 counters on your creatures only", () => {
+    const { game } = setUp();
+    game.debugSpawn("Branching Evolution", A, "battlefield");
+    const bears = game.debugSpawn("Grizzly Bears", A, "battlefield");
+    const theirs = game.debugSpawn("Grizzly Bears", B, "battlefield");
+    const rock = game.debugSpawn("Charcoal Diamond", A, "battlefield");
+    for (const id of [bears, theirs, rock]) {
+      game.debugApplyEffect(A, { kind: "add-counter", target: 0, counter: "+1/+1", amount: 1 }, [
+        objectRef(id),
+      ]);
+    }
+    expect(game.state.objects[bears].counters["+1/+1"]).toBe(2);
+    expect(game.state.objects[theirs].counters["+1/+1"]).toBe(1);
+    expect(game.state.objects[rock].counters["+1/+1"]).toBe(1);
+  });
+});
+
+describe("Land Tax", () => {
+  it("fetches up to three basics only while an opponent has more lands", () => {
+    const { game, a } = setUp();
+    game.debugSpawn("Land Tax", A, "battlefield");
+    a.chooseModesFn = (_v, _min, max) => (max >= 1 ? [0] : []);
+    a.chooseFromZoneFn = (_v, eligible, _min, max) => eligible.slice(0, max);
+    lands(game, A, "Plains", 1);
+    lands(game, B, "Island", 1);
+    // Equal lands on Alice's turn-3 upkeep: nothing.
+    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "upkeep");
+    let hand = game.handOf(A).length;
+    game.advanceUntil((s) => s.turn.number === 3 && s.turn.step === "precombat-main" && quiet(s));
+    expect(game.handOf(A).length).toBe(hand + 1); // just the draw
+    lands(game, B, "Island", 1);
+    game.advanceUntil((s) => s.turn.number === 4 && s.turn.step === "upkeep");
+    hand = game.handOf(A).length;
+    game.advanceUntil((s) => s.turn.number === 5 && s.turn.step === "precombat-main" && quiet(s));
+    expect(game.handOf(A).length).toBe(hand + 1 + 3);
+  });
+});
+
+describe("Knight of the White Orchid", () => {
+  it("fetches a Plains onto the battlefield when behind on lands", () => {
+    const { game, a } = setUp(["Knight of the White Orchid"]);
+    lands(game, A, "Plains", 2);
+    lands(game, B, "Island", 3);
+    game.debugSpawn("Plains", A, "library");
+    a.chooseModesFn = (_v, _min, max) => (max >= 1 ? [0] : []);
+    a.chooseFromZoneFn = (_v, eligible) => eligible.slice(0, 1);
+    cast(game, A, inHand(game, A, "Knight of the White Orchid"));
+    const plains = game.battlefield.filter((id) => game.state.objects[id].cardName === "Plains");
+    expect(plains.length).toBe(3);
+  });
+
+  it("does nothing when you have as many lands", () => {
+    const { game, a } = setUp(["Knight of the White Orchid"]);
+    lands(game, A, "Plains", 2);
+    lands(game, B, "Island", 2);
+    game.debugSpawn("Plains", A, "library");
+    a.chooseModesFn = (_v, _min, max) => (max >= 1 ? [0] : []);
+    a.chooseFromZoneFn = (_v, eligible) => eligible.slice(0, 1);
+    cast(game, A, inHand(game, A, "Knight of the White Orchid"));
+    const plains = game.battlefield.filter((id) => game.state.objects[id].cardName === "Plains");
+    expect(plains.length).toBe(2);
+  });
+});
+
+describe("Cabal Coffers", () => {
+  it("pays {2} and adds {B} per Swamp you control", () => {
+    const { game } = setUp();
+    const coffers = game.debugSpawn("Cabal Coffers", A, "battlefield");
+    lands(game, A, "Swamp", 4);
+    activate(game, A, coffers, 0);
+    expect(pool(game, A)).toBe("BBBB");
+    const untapped = game.battlefield.filter(
+      (id) => game.state.objects[id].cardName === "Swamp" && !game.state.objects[id].tapped,
+    );
+    expect(untapped.length).toBe(2);
+  });
+});

@@ -418,6 +418,23 @@ function evalStaticCondition(
               matchesFilter(state, registry, id, condition.filter, { you: p }),
           ) >= condition.atLeast,
       );
+    case "opponent-controls-more": {
+      const mine = countWhere(
+        (id) =>
+          state.objects[id].controller === you &&
+          matchesFilter(state, registry, id, condition.filter, { you }),
+      );
+      return state.turnOrder.some(
+        (p) =>
+          p !== you &&
+          !state.players[p].hasLost &&
+          countWhere(
+            (id) =>
+              state.objects[id].controller === p &&
+              matchesFilter(state, registry, id, condition.filter, { you: p }),
+          ) > mine,
+      );
+    }
     case "opponents-control-total":
       return (
         countWhere((id) => {

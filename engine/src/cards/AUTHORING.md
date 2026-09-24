@@ -1309,6 +1309,10 @@ clause (section 9):
 - `{ kind: "opponent-controls", filter: CardFilter, atLeast: number }` — *one*
   opponent must meet the count on their own (Defense of the Heart: "if an
   opponent controls three or more creatures").
+- `{ kind: "opponent-controls-more", filter: CardFilter }` — *one* opponent
+  controls more matching permanents than you (Land Tax, Knight of the White
+  Orchid: "if an opponent controls more lands than you"). Your side follows
+  the `controls` self rule.
 - `{ kind: "opponents-control-total", filter: CardFilter, atLeast: number }` —
   a combined count summed across *every* opponent (Turbulent Fen: "unless your
   opponents control eight or more lands" — plural "opponents" sums, unlike
@@ -1402,7 +1406,10 @@ clause (section 9):
   `shockLand` helper); `painIfUntapped: N` deals damage if it *did* end up
   entering untapped (Rockfall Vale).
 - `{ event: "would-create-token", multiplier }` — Doubling Season.
-- `{ event: "would-add-counter", multiplier, counterKind? }` — Doubling Season.
+- `{ event: "would-add-counter", multiplier, counterKind?, filter? }` — Doubling
+  Season. `filter` narrows which of your permanents it covers (Branching
+  Evolution: `{ type: "creature" }`). Only multipliers: "that many **plus
+  one**" (Hardened Scales) would need replacement ordering.
 - `{ event: "would-be-put-into-graveyard", instead: "exile", filter?, from? }`
   — Rest in Peace / Anafenza. `from: "battlefield"` is the **dies-only** form
   ("if a creature an opponent controls would die, exile it instead"): it lets

@@ -13483,6 +13483,8 @@ export class Game {
         if (
           r?.event === "would-add-counter" &&
           (r.counterKind === undefined || r.counterKind === kind) &&
+          (r.filter === undefined ||
+            matchesFilter(this.state, this.registry, target, r.filter, { you: object.controller })) &&
           this.staticActive(object, ability)
         ) {
           mult *= r.multiplier;

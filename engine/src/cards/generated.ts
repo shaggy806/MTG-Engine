@@ -113,6 +113,7 @@ import _poolBoseijuWhoEndures from "./pool/boseiju-who-endures.js";
 import _poolBountifulLandscape from "./pool/bountiful-landscape.js";
 import _poolBountifulPromenade from "./pool/bountiful-promenade.js";
 import _poolBrainstorm from "./pool/brainstorm.js";
+import _poolBranchingEvolution from "./pool/branching-evolution.js";
 import _poolBrashTaunter from "./pool/brash-taunter.js";
 import _poolBreathOfMalfegor from "./pool/breath-of-malfegor.js";
 import _poolBreedingPool from "./pool/breeding-pool.js";
@@ -123,6 +124,7 @@ import _poolBrushland from "./pool/brushland.js";
 import _poolBuriedAlive from "./pool/buried-alive.js";
 import _poolBuriedRuin from "./pool/buried-ruin.js";
 import _poolBurnishedHart from "./pool/burnished-hart.js";
+import _poolCabalCoffers from "./pool/cabal-coffers.js";
 import _poolCabalRitual from "./pool/cabal-ritual.js";
 import _poolCabarettiCourtyard from "./pool/cabaretti-courtyard.js";
 import _poolCamaraderie from "./pool/camaraderie.js";
@@ -472,6 +474,7 @@ import _poolKiloApogeeMind from "./pool/kilo-apogee-mind.js";
 import _poolKindredDominance from "./pool/kindred-dominance.js";
 import _poolKioraBehemothBeckoner from "./pool/kiora-behemoth-beckoner.js";
 import _poolKirdApe from "./pool/kird-ape.js";
+import _poolKnightOfTheWhiteOrchid from "./pool/knight-of-the-white-orchid.js";
 import _poolKoboldsOfKherKeep from "./pool/kobolds-of-kher-keep.js";
 import _poolKodamasReach from "./pool/kodamas-reach.js";
 import _poolKolaghansCommand from "./pool/kolaghans-command.js";
@@ -481,6 +484,7 @@ import _poolKrenkoMobBoss from "./pool/krenko-mob-boss.js";
 import _poolKudoKingAmongBears from "./pool/kudo-king-among-bears.js";
 import _poolKydeleChosenOfKruphix from "./pool/kydele-chosen-of-kruphix.js";
 import _poolLaboratoryDrudge from "./pool/laboratory-drudge.js";
+import _poolLandTax from "./pool/land-tax.js";
 import _poolLathlissDragonQueen from "./pool/lathliss-dragon-queen.js";
 import _poolLazotepPlating from "./pool/lazotep-plating.js";
 import _poolLazotepReaver from "./pool/lazotep-reaver.js";
@@ -1167,6 +1171,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBountifulLandscape,
   _poolBountifulPromenade,
   _poolBrainstorm,
+  _poolBranchingEvolution,
   _poolBrashTaunter,
   _poolBreathOfMalfegor,
   _poolBreedingPool,
@@ -1177,6 +1182,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBuriedAlive,
   _poolBuriedRuin,
   _poolBurnishedHart,
+  _poolCabalCoffers,
   _poolCabalRitual,
   _poolCabarettiCourtyard,
   _poolCamaraderie,
@@ -1526,6 +1532,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolKindredDominance,
   _poolKioraBehemothBeckoner,
   _poolKirdApe,
+  _poolKnightOfTheWhiteOrchid,
   _poolKoboldsOfKherKeep,
   _poolKodamasReach,
   _poolKolaghansCommand,
@@ -1535,6 +1542,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolKudoKingAmongBears,
   _poolKydeleChosenOfKruphix,
   _poolLaboratoryDrudge,
+  _poolLandTax,
   _poolLathlissDragonQueen,
   _poolLazotepPlating,
   _poolLazotepReaver,
