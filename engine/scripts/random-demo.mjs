@@ -885,6 +885,7 @@ const deckE = deck([
   ["High Market", 1],
   ["Inspiring Call", 1],
   ["Inventors' Fair", 1],
+  ["Jetmir, Nexus of Revels", 1],
   ["Liesa, Shroud of Dusk", 1],
   ["Lotho, Corrupt Shirriff", 1],
   ["Mithril Coat", 1],
