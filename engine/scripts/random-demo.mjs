@@ -936,6 +936,8 @@ const deckE = deck([
   ["Finneas, Ace Archer", 1],
   // A mana rider that reads a spell's mana value (X included on the stack).
   ["Gilanra, Caller of Wirewood", 1],
+  // A target filter comparing against the entering creature's mana value.
+  ["Clement, the Worrywort", 1],
   ["Plains", 5],
   ["Island", 5],
   ["Swamp", 5],
