@@ -584,6 +584,15 @@ export type TriggerSpec =
       readonly on: "cast-spell";
       readonly who: TriggerWho;
       /**
+       * Also fire when the player **copies** a spell (rule 707.10 — a copy
+       * isn't cast): Magecraft's "whenever you cast **or copy** an instant or
+       * sorcery spell" (Archmage Emeritus). `who` is who controls the copy,
+       * `filter` asks about the copy, and the copy is the trigger object. The
+       * cast-only narrowings (`from`, `notFrom`, `firstEachTurn`,
+       * `nthEachTurn`) never match a copy.
+       */
+      readonly orCopy?: boolean;
+      /**
        * "…another Vampire spell" (Edgar Markov) — the source's own cast
        * doesn't count. Needed because the card on the stack is itself in the
        * trigger scan (that is how cascade and storm see their own cast), so

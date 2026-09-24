@@ -991,3 +991,37 @@ describe("Explore", () => {
     expect(canPlay()).toBe(false);
   });
 });
+
+describe("Magecraft (Archmage Emeritus, Storm-Kiln Artist)", () => {
+  it("fires on casting and on copying an instant or sorcery, not on a creature", () => {
+    const { game } = setUp(["Lightning Bolt", "Twincast", "Grizzly Bears"]);
+    game.debugSpawn("Archmage Emeritus", A, "battlefield");
+    const artist = game.debugSpawn("Storm-Kiln Artist", A, "battlefield");
+    lands(game, A, "Mountain", 3);
+    lands(game, A, "Island", 2);
+    const treasures = () =>
+      game.battlefield.filter((id) => game.state.objects[id].cardName === "Treasure Token").length;
+    const hand = game.handOf(A).length;
+    const bolt = inHand(game, A, "Lightning Bolt");
+    game.dispatch({ type: "cast-spell", player: A, card: bolt, targets: [playerRef(B)] });
+    game.advanceUntil((s) => s.priority.holder === A && s.pendingTriggers.length === 0 && s.awaiting === null);
+    game.dispatch({ type: "pass-priority", player: A });
+    game.advanceUntil((s) => s.priority.holder === A && s.zones.shared.stack.length === 1);
+    // The two cast triggers have resolved; Bolt is still on the stack.
+    expect(treasures()).toBe(1);
+    expect(game.handOf(A).length).toBe(hand - 1 + 1);
+    const twincast = inHand(game, A, "Twincast");
+    game.dispatch({ type: "cast-spell", player: A, card: twincast, targets: [objectRef(bolt)] });
+    game.advanceUntil((s) => s.zones.shared.stack.length === 2 && s.priority.holder === A && s.pendingTriggers.length === 0 && s.awaiting === null);
+    // Twincast's own cast: a second Treasure and draw.
+    game.advanceUntil(quiet);
+    // ...and the copy it made: a third of each.
+    expect(game.handOf(A).length).toBe(hand - 2 + 3);
+    expect(treasures()).toBe(3);
+    expect(pt(game, artist)).toEqual([5, 2]);
+    expect(life(game, B)).toBe(14);
+    lands(game, A, "Forest", 2);
+    cast(game, A, inHand(game, A, "Grizzly Bears"));
+    expect(treasures()).toBe(3);
+  });
+});

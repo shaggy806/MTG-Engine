@@ -7999,11 +7999,14 @@ export class Game {
                     // this.
                     event.type === "spell-cast"
                     ? event.object
-                    : // The card drawn: its controller is who drew it, the
-                      // "that player" of a `draws` trigger.
-                      event.type === "card-drawn" || event.type === "counter-added"
-                      ? event.object
-                      : undefined;
+                    : // Magecraft's copy: the copy is "that spell".
+                      event.type === "spell-copied"
+                      ? event.copy
+                      : // The card drawn: its controller is who drew it, the
+                        // "that player" of a `draws` trigger.
+                        event.type === "card-drawn" || event.type === "counter-added"
+                        ? event.object
+                        : undefined;
           const powerOfId =
             event.type === "permanent-entered-battlefield"
               ? event.object
@@ -8647,6 +8650,21 @@ export class Game {
             (spec.who === "opponent" && this.activePlayer !== self.controller))
         );
       case "cast-spell": {
+        if (event.type === "spell-copied" && spec.orCopy === true) {
+          const copierMatches =
+            spec.who === "any" ||
+            (spec.who === "you" && event.controller === self.controller) ||
+            (spec.who === "opponent" && event.controller !== self.controller);
+          return (
+            copierMatches &&
+            spec.from === undefined &&
+            spec.notFrom === undefined &&
+            spec.firstEachTurn !== true &&
+            spec.nthEachTurn === undefined &&
+            spec.noncreatureOnly !== true &&
+            this.triggerFilterOk(spec.filter, event.copy, self)
+          );
+        }
         if (event.type !== "spell-cast") return false;
         const casterMatches =
           spec.who === "any" ||

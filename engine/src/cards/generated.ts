@@ -44,6 +44,7 @@ import _poolArcaneDenial from "./pool/arcane-denial.js";
 import _poolArcaneSanctum from "./pool/arcane-sanctum.js";
 import _poolArcaneSignet from "./pool/arcane-signet.js";
 import _poolArchfiendOfDepravity from "./pool/archfiend-of-depravity.js";
+import _poolArchmageEmeritus from "./pool/archmage-emeritus.js";
 import _poolArchonOfRedemption from "./pool/archon-of-redemption.js";
 import _poolArdbert from "./pool/ardbert.js";
 import _poolArdentRecruit from "./pool/ardent-recruit.js";
@@ -808,6 +809,7 @@ import _poolStitchersSupplier from "./pool/stitchers-supplier.js";
 import _poolStompingGround from "./pool/stomping-ground.js";
 import _poolStonecoilSerpent from "./pool/stonecoil-serpent.js";
 import _poolStormHerd from "./pool/storm-herd.js";
+import _poolStormKilnArtist from "./pool/storm-kiln-artist.js";
 import _poolStormcarvedCoast from "./pool/stormcarved-coast.js";
 import _poolStormfistCrusader from "./pool/stormfist-crusader.js";
 import _poolStripMine from "./pool/strip-mine.js";
@@ -1132,6 +1134,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolArcaneSanctum,
   _poolArcaneSignet,
   _poolArchfiendOfDepravity,
+  _poolArchmageEmeritus,
   _poolArchonOfRedemption,
   _poolArdbert,
   _poolArdentRecruit,
@@ -1896,6 +1899,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolStompingGround,
   _poolStonecoilSerpent,
   _poolStormHerd,
+  _poolStormKilnArtist,
   _poolStormcarvedCoast,
   _poolStormfistCrusader,
   _poolStripMine,

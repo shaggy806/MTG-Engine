@@ -1080,6 +1080,8 @@ const deckE = deck([
   ["Morbid Opportunist", 1],
   ["Welcoming Vampire", 1],
   ["Explore", 1],
+  ["Archmage Emeritus", 1],
+  ["Storm-Kiln Artist", 1],
   ["Plains", 5],
   ["Island", 5],
   ["Swamp", 5],
