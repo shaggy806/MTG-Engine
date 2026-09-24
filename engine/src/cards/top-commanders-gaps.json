@@ -29,7 +29,10 @@
   "bug:x-value-propagation",
   "trigger:becomes-target-fixes",
   "cost:cost-modification-extensions",
-  "replacement:exile-instead"
+  "replacement:exile-instead",
+  "bug:lki-leaves-battlefield-triggers",
+  "bug:lki-object-reads",
+  "effect:sacrificed-object-lki"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
@@ -75,12 +78,12 @@
   "bug:lki-leaves-battlefield-triggers": {
    "size": "medium",
    "ui": false,
-   "description": "Take a last-known snapshot of a permanent's computed types, subtypes, counters, keywords, lost abilities and granted dies triggers before moveObject clears it, and match leaves/dies trigger filters and granted dies triggers against that (rule 603.10a). Built so far: last-known controller (lastKnownController) for 'you control' trigger scopes, filter controlledBy, and whose ability a stolen permanent's own leaves trigger is."
+   "description": "Take a last-known snapshot of a permanent's computed types, subtypes, counters, keywords, lost abilities and granted dies triggers before moveObject clears it, and match leaves/dies trigger filters and granted dies triggers against that (rule 603.10a). Built: moveObject snapshots the leaving permanent (GameObject.lastKnown, a LastKnownInfo) — the victims of one simultaneous event all before the first moves — and a leaves/dies trigger matches its filter (FilterContext.lastKnown), 'you control', lost abilities, a copied card's own abilities and its granted triggers against that."
   },
   "bug:lki-object-reads": {
    "size": "medium",
    "ui": false,
-   "description": "When a resolving ability reads an object that has left the battlefield, it uses last-known information (rule 608.2h). This covers powerOf/toughnessOf of the source, trigger object or target, 'that creature's controller', and the source's keywords (lifelink) for damage it dealt. It includes tokens that were deleted. Built so far: mana value (GameObject.lastKnownManaValue, GameState.ceasedTokenManaValues, read by manaValueOfTarget) and the controller as it left (lastKnownController)."
+   "description": "When a resolving ability reads an object that has left the battlefield, it uses last-known information (rule 608.2h). This covers powerOf/toughnessOf of the source, trigger object or target, 'that creature's controller', and the source's keywords (lifelink) for damage it dealt. It includes tokens that were deleted. Built: powerOf/toughnessOf/manaValueOf/manaSpentOf/controllerOf, trigger-object and target conditions and a departed source's damage (colours, lifelink, deathtouch, controller) read the snapshot, picked by the battlefield stint the reference names (LastKnownRefs); a deleted token's is kept in GameState.ceasedTokens."
   },
   "bug:lore-counters-fire-chapters": {
    "size": "small",
@@ -120,7 +123,7 @@
   "bug:simultaneous-zone-moves": {
    "size": "large",
    "ui": false,
-   "description": "Moves of several targets from one instruction ('destroy two target creatures', 'return X and Y') still happen one after another, and replacement effects don't look back at the group. Built so far: mass destruction, one sweep of state-based graveyard moves (lethal damage, 0 loyalty, unattached Auras, the legend rule, finished Sagas), edicts once every player has chosen, and overloaded or 'return all' bounces each move as one leave batch whose members see each other leave (rule 603.10a, withLeaveBatch), with commanders deferred by 903.9a still counted in their batch."
+   "description": "Moves of several targets from one instruction ('destroy two target creatures', 'return X and Y') still happen one after another, and replacement effects don't look back at the group. Built so far: mass destruction, one sweep of state-based graveyard moves (lethal damage, 0 loyalty, unattached Auras, the legend rule, finished Sagas), edicts once every player has chosen, and overloaded or 'return all' bounces each move as one leave batch whose members see each other leave (rule 603.10a, withLeaveBatch), with commanders deferred by 903.9a still counted in their batch. Entering together is the same gap: permanents put onto the battlefield by one instruction enter one at a time, so a 'whenever another creature enters' ability among them misses the ones that entered before it (the Elas il-Kor ruling)."
   },
   "bug:static-scope-computed-keywords": {
    "size": "small",
@@ -150,7 +153,7 @@
   "bug:zone-change-object-identity": {
    "size": "medium",
    "ui": false,
-   "description": "Rule 400.7: an object that changes zones becomes a new object. Delayed triggers, 'return it' effects, trigger-object references, targets in a graveyard, and battlefield-source identity still follow a card that left and came back; put-onto-battlefield still relies on the card being in its expected zone, and an 'until the source leaves' exile does nothing if the source has already left (rule 610.3c). Built so far: GameObject.zoneChangeCount (bumped by every moveObject) and sourceZoneChangeCount on an activated ability whose source stays in the command zone or graveyard (staysInZone), so its 'source' names nothing once the card has changed zones (Derevi, Reassembling Skeleton); a flicker source is tracked by timestamp on the battlefield."
+   "description": "Rule 400.7: an object that changes zones becomes a new object. Delayed triggers, 'return it' effects, trigger-object references, targets in a graveyard, and battlefield-source identity still follow a card that left and came back; put-onto-battlefield still relies on the card being in its expected zone, and an 'until the source leaves' exile does nothing if the source has already left (rule 610.3c). Built so far: GameObject.zoneChangeCount (bumped by every moveObject) and sourceZoneChangeCount on an activated ability whose source stays in the command zone or graveyard (staysInZone), so its 'source' names nothing once the card has changed zones (Derevi, Reassembling Skeleton); a flicker source is tracked by timestamp on the battlefield. Last-known information names the battlefield stint a reference means (LastKnownRefs, by zoneChangeCount), so a dies trigger still reads the creature it was about after the card came back; but a card that left, came back and left again before that ability resolved keeps only its later snapshot."
   },
   "condition:cast-spell-targets": {
    "size": "medium",
@@ -610,7 +613,7 @@
   "effect:sacrificed-object-lki": {
    "size": "medium",
    "ui": false,
-   "description": "Snapshot the permanent sacrificed to pay a cost, or by a preceding step, and expose its last-known power, mana value, types, subtypes and isCommander. These feed amounts (the Fling family), conditions ('if it was a commander' or 'a Hamster') and dynamic filters ('shares a card type with it')."
+   "description": "Snapshot the permanent sacrificed to pay a cost, or by a preceding step, and expose its last-known power, mana value, types, subtypes and isCommander. These feed amounts (the Fling family), conditions ('if it was a commander' or 'a Hamster') and dynamic filters ('shares a card type with it'). Built for a sacrifice paid as a cost (activated ability or spell) and a sacrifice-source step: the AmountRef \"sacrificed\" (powerOf/toughnessOf/manaValueOf), the \"sacrificed\" StaticCondition and CardFilter.sharesCardTypeWith. A sacrifice *chosen* by an earlier step (\"you may sacrifice …; when you do\") is effect:may-sacrifice-then's."
   },
   "effect:shuffle-library": {
    "size": "small",

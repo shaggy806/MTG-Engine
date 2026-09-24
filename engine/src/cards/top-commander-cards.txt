@@ -1,5 +1,5 @@
 Top 2000 Commander cards by EDHREC popularity (fetched 2026-09-13)
-525 already implemented / 1475 missing (marks refreshed 2026-09-24)
+528 already implemented / 1472 missing (marks refreshed 2026-09-24)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -611,7 +611,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   612  Vault of Whispers                        {0}              Artifact Land
 [ ]   613  Carrion Feeder                           {B}              Creature — Zombie
 [x]   614  Simic Signet                             {2}              Artifact
-[ ]   615  Elas il-Kor, Sadistic Pilgrim            {W}{B}           Legendary Creature — Phyrexian Kor Cleric
+[x]   615  Elas il-Kor, Sadistic Pilgrim            {W}{B}           Legendary Creature — Phyrexian Kor Cleric
 [ ]   616  Shizo, Death's Storehouse                {0}              Legendary Land
 [ ]   617  Bitterblossom                            {1}{B}           Kindred Enchantment — Faerie
 [ ]   618  Torment of Hailfire                      {X}{B}{B}        Sorcery
@@ -1248,7 +1248,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1254  Rosie Cotton of South Lane               {2}{W}           Legendary Creature — Halfling Peasant
 [ ]  1255  Fracture                                 {W}{B}           Instant
 [ ]  1256  Silver Myr                               {2}              Artifact Creature — Myr
-[ ]  1257  Elenda, the Dusk Rose                    {2}{W}{B}        Legendary Creature — Vampire Knight
+[x]  1257  Elenda, the Dusk Rose                    {2}{W}{B}        Legendary Creature — Vampire Knight
 [ ]  1258  Hedge Shredder                           {2}{G}{G}        Artifact — Vehicle
 [ ]  1259  Twinflame                                {1}{R}           Sorcery
 [ ]  1260  Wight of the Reliquary                   {B}{G}           Creature — Zombie Knight
@@ -1815,7 +1815,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1822  Dragon's Rage Channeler                  {R}              Creature — Human Shaman
 [ ]  1823  Mana Reflection                          {4}{G}{G}        Enchantment
 [ ]  1824  Jarad, Golgari Lich Lord                 {B}{B}{G}{G}     Legendary Creature — Zombie Elf
-[ ]  1825  Juri, Master of the Revue                {B}{R}           Legendary Creature — Human Shaman
+[x]  1825  Juri, Master of the Revue                {B}{R}           Legendary Creature — Human Shaman
 [ ]  1826  Great Hall of the Citadel                {0}              Land
 [ ]  1827  Sage's Reverie                           {3}{W}           Enchantment — Aura
 [ ]  1828  Wooded Ridgeline                         {0}              Land — Mountain Forest

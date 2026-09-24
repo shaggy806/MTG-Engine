@@ -6,7 +6,7 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**103 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**108 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
@@ -15,15 +15,15 @@ that one card is the reason the deck exists.
   that file's `built` array and author the commanders it unblocks in the same commit. The first
   ten, engine-only, with the commanders each fully unblocks:
   `stat:per-ability-turn-counters` (+1), `mechanic:player-counters` (+3),
-  `cost:ability-cost-modification` (+1), `effect:amount-aggregate` (+1), `keyword:annihilator` (+1),
-  `effect:player-scope-extensions` (+2), `trigger:damage-trigger-extensions` (+4),
-  `bug:lki-object-reads` (+3), `condition:filter-this-turn-history` (+1),
-  `replacement:damage-modification` (+3).
+  `cost:ability-cost-modification` (+1), `condition:filter-dynamic-compare` (+1),
+  `effect:amount-aggregate` (+1), `effect:target-other-than-source` (+3),
+  `effect:add-subtype` (+2), `trigger:combat-trigger-extensions` (+3),
+  `trigger:sacrifice-filter` (+1), `effect:amount-new-variants` (+1).
 - **Most-needed features overall.** `static:affect-scope-by-filter` (22),
-  `bug:lki-object-reads` and `bug:lki-leaves-battlefield-triggers` (19 each),
   `effect:target-other-than-source` (19), `effect:player-scope-extensions` and
   `effect:this-way-results` (18 each), `condition:filter-dynamic-compare` (17; what's left is an
-  "N plus an amount" operand). Live numbers come from `cmdrs:gaps`.
+  "N plus an amount" operand), `static:grant-to-cards-outside-battlefield` (14). Live numbers
+  come from `cmdrs:gaps`.
 - **UI-bound features.** These need a new client decision and a browser check:
   `decision:ward-payment` (18), `decision:copy-new-targets` (12), `effect:may-sacrifice-then` (12),
   `decision:choose-permanent` (11), `effect:enter-attacking`, `decision:free-cast-choices`,
@@ -68,7 +68,14 @@ that one card is the reason the deck exists.
   and when to revisit, are in `neededCards-features.md`, "Unbounded targeting".
 - **Zone-change identity** (rule 400.7). A delayed trigger still follows a card that left and
   came back: a creature returned by Whip of Erebos, then flickered, is still exiled at end step.
+  Likewise an effect naming "it" or a target acts on the new object, and a permanent that left,
+  came back and left again before an ability referring to its first departure resolved has
+  only the second departure's last-known information (the first is read as the card now is).
   Tracked as `bug:zone-change-object-identity`.
+- **Entering together.** Permanents put onto the battlefield by one instruction still enter
+  one at a time, so a "whenever another creature enters" ability among them misses the ones
+  that entered before it (the Elas il-Kor ruling). Leaving together is one event already.
+  Tracked as `bug:simultaneous-zone-moves`.
 - **Triggered abilities never announce their targets.** Nothing sees an `object-targeted` event
   for them, so Thunderbreak Regent's "spell or ability" misses a triggered ability. The
   spell-only cards (Gargos, Tectonic Giant) are unaffected.

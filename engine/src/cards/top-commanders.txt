@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-103 already implemented / 397 missing
+108 already implemented / 392 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -280,7 +280,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  274  Shalai and Hallar                               9586 decks  {1}{R}{G}{W}     Legendary Creature — Angel Elf
 [ ]  275  Kudo, King Among Bears                          9480 decks  {G}{W}           Legendary Creature — Bear
 [ ]  276  Roxanne, Starfall Savant                        9478 decks  {3}{R}{G}        Legendary Creature — Cat Druid
-[ ]  277  Dina, Soul Steeper                              9457 decks  {B}{G}           Legendary Creature — Dryad Druid
+[x]  277  Dina, Soul Steeper                              9457 decks  {B}{G}           Legendary Creature — Dryad Druid
 [ ]  278  Jodah, Archmage Eternal                         9447 decks  {1}{U}{R}{W}     Legendary Creature — Human Wizard
 [x]  279  Skullbriar, the Walking Grave                   9443 decks  {B}{G}           Legendary Creature — Zombie Elemental
 [x]  280  Queza, Augur of Agonies                         9409 decks  {1}{W}{U}{B}     Legendary Creature — Octopus Advisor
@@ -328,7 +328,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  322  Obeka, Brute Chronologist                       8714 decks  {1}{U}{B}{R}     Legendary Creature — Ogre Wizard
 [ ]  323  Winter, Misanthropic Guide                      8693 decks  {1}{B}{R}{G}     Legendary Creature — Human Warlock
 [ ]  324  Ikra Shidiqi, the Usurper                       8690 decks  {3}{B}{G}        Legendary Creature — Snake Wizard
-[ ]  325  Elas il-Kor, Sadistic Pilgrim                   8681 decks  {W}{B}           Legendary Creature — Phyrexian Kor Cleric
+[x]  325  Elas il-Kor, Sadistic Pilgrim                   8681 decks  {W}{B}           Legendary Creature — Phyrexian Kor Cleric
 [ ]  326  Brimaz, Blight of Oreskos                       8673 decks  {2}{W}{B}        Legendary Creature — Phyrexian Cat
 [x]  327  Kess, Dissident Mage                            8649 decks  {1}{U}{B}{R}     Legendary Creature — Human Wizard
 [ ]  328  Xenagos, God of Revels                          8608 decks  {3}{R}{G}        Legendary Enchantment Creature — God
@@ -429,10 +429,10 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  423  Ognis, the Dragon's Lash                        6980 decks  {1}{B/R}{R}{R/G} Legendary Creature — Lizard Warrior
 [ ]  424  Marisi, Breaker of the Coil                     6963 decks  {1}{R}{G}{W}     Legendary Creature — Cat Warrior
 [x]  425  Prossh, Skyraider of Kher                       6959 decks  {3}{B}{R}{G}     Legendary Creature — Dragon
-[ ]  426  Juri, Master of the Revue                       6937 decks  {B}{R}           Legendary Creature — Human Shaman
+[x]  426  Juri, Master of the Revue                       6937 decks  {B}{R}           Legendary Creature — Human Shaman
 [ ]  427  Wayta, Trainer Prodigy                          6936 decks  {R}{G}{W}        Legendary Creature — Human Warrior
 [ ]  428  Ixhel, Scion of Atraxa                          6928 decks  {1}{W}{B}{G}     Legendary Creature — Phyrexian Angel
-[ ]  429  Elenda, the Dusk Rose                           6927 decks  {2}{W}{B}        Legendary Creature — Vampire Knight
+[x]  429  Elenda, the Dusk Rose                           6927 decks  {2}{W}{B}        Legendary Creature — Vampire Knight
 [ ]  430  Karlach, Fury of Avernus                        6900 decks  {4}{R}           Legendary Creature — Tiefling Barbarian
 [ ]  431  Brigid, Clachan's Heart                         6881 decks  {2}{W}           Legendary Creature — Kithkin Warrior // Legendary Creature — Kithkin Soldier
 [ ]  432  Karumonix, the Rat King                         6865 decks  {1}{B}{B}        Legendary Creature — Phyrexian Rat
@@ -477,7 +477,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  471  Tasigur, the Golden Fang                        6477 decks  {5}{B}           Legendary Creature — Human Shaman
 [ ]  472  Sin, Spira's Punishment                         6452 decks  {4}{B}{G}{U}     Legendary Creature — Leviathan Avatar
 [ ]  473  Mr. Foxglove                                    6450 decks  {2}{G}{W}{U}     Legendary Creature — Fox Rogue
-[ ]  474  Slimefoot, the Stowaway                         6443 decks  {1}{B}{G}        Legendary Creature — Fungus
+[x]  474  Slimefoot, the Stowaway                         6443 decks  {1}{B}{G}        Legendary Creature — Fungus
 [x]  475  The Emperor of Palamecia                        6412 decks  {U}{R}           Legendary Creature — Human Noble Wizard // Legendary Creature — Demon Noble Wizard
 [ ]  476  Karn, Legacy Reforged                           6406 decks  {5}              Legendary Artifact Creature — Golem
 [ ]  477  Cecily, Haunted Mage                            6405 decks  {1}{U}{B}{R}     Legendary Creature — Human Wizard

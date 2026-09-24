@@ -267,6 +267,14 @@ const deckA = deck([
 // and plays its threats — a bloated deck just stalls out and the fuzz only
 // exercises one side. One or two copies of each mechanic is enough coverage.
 const deckB = deck([
+  // Last-known information: dies triggers that read the creature as it died
+  // (its power, types and controller), the sacrificed creature's power, and a
+  // Saproling token's snapshot after it has ceased to exist.
+  ["Juri, Master of the Revue", 1],
+  ["Elenda, the Dusk Rose", 1],
+  ["Dina, Soul Steeper", 1],
+  ["Elas il-Kor, Sadistic Pilgrim", 1],
+  ["Slimefoot, the Stowaway", 1],
   // EDH-backlog bulk pass 5 (the rest — see deckA).
   ["Necroblossom Snarl", 1],
   ["Shineshadow Snarl", 1],
