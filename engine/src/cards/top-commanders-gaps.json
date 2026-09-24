@@ -11,7 +11,8 @@
   "trigger:counters-put",
   "trigger:life-change-amount",
   "condition:source-state",
-  "keyword:landwalk"
+  "keyword:landwalk",
+  "bug:static-scope-computed-keywords"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
