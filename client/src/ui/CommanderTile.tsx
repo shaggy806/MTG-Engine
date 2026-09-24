@@ -4,7 +4,7 @@ import type { VisibleObject } from 'engine'
 import { CardTile } from './CardTile.tsx'
 import { Symbols } from './Symbols.tsx'
 import { useHoverPopover } from './useHoverPopover.ts'
-import { costColor } from './symbols.ts'
+import { cardTint } from './symbols.ts'
 import {
   isArtBlocked,
   isArtPending,
@@ -70,7 +70,7 @@ export function CommanderTile({
   // rather than an adventure's spell half.
   const artSrc = resolveArtUrl(obj.art, face, 'art_crop', { backFace: obj.faceIsBack })
   const artFailed = !pending && isArtBlocked(artSrc)
-  const tint = costColor(obj.manaCost) ?? 'C'
+  const tint = cardTint(obj)
 
   return (
     <div className="commander-tile-wrap" ref={wrapRef} {...handlers}>

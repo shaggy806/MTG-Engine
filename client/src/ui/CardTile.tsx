@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useSyncExternalStore } from 'react'
 import type { VisibleObject } from 'engine'
 import { LoyaltyCounter, Symbols } from './Symbols.tsx'
-import { costColor } from './symbols.ts'
+import { cardTint } from './symbols.ts'
 import { manaSymbolUrl } from './mana.ts'
 import {
   isArtBlocked,
@@ -164,7 +164,7 @@ export function CardTile({
   const keywordLine = obj.keywords
     .map((k) => KEYWORD_LABEL[k] ?? cap(k))
     .join(', ')
-  const tint = costColor(obj.manaCost) ?? 'C'
+  const tint = cardTint(obj)
 
   const artFirst = layout === 'art-first'
   // Hand cards (art-first) have a fixed box -- rather than silently clipping

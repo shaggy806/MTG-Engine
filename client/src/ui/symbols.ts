@@ -88,3 +88,21 @@ export function costColor(cost: string | null): string | null {
   }
   return null
 }
+
+/**
+ * The colour an art box's fallback is tinted with: `W`/`U`/`B`/`R`/`G`, or
+ * `C` for a colourless object. Read off the object's *colours*, which the
+ * engine computes (layer 5), rather than its mana cost: a token, a
+ * double-faced card's back face and a suspend card like Ancestral Vision
+ * have no cost but do have a colour, and a Painter's Servant can change it.
+ * Of a multicoloured object's colours, the first in its cost wins, so an
+ * ordinary card keeps the tint its cost always gave it.
+ */
+export function cardTint(obj: {
+  readonly manaCost: string | null
+  readonly colors: readonly string[]
+}): string {
+  const fromCost = costColor(obj.manaCost)
+  if (fromCost !== null && obj.colors.includes(fromCost)) return fromCost
+  return obj.colors[0] ?? 'C'
+}

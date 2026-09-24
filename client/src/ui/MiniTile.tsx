@@ -4,7 +4,7 @@ import type { VisibleObject } from 'engine'
 import { CardTile } from './CardTile.tsx'
 import { KEYWORD_GLYPH, keywordLabel } from './abilityIcons.ts'
 import { useHoverPopover } from './useHoverPopover.ts'
-import { costColor } from './symbols.ts'
+import { cardTint } from './symbols.ts'
 import { LoyaltyCounter } from './Symbols.tsx'
 import { manaSymbolUrl } from './mana.ts'
 import {
@@ -77,7 +77,7 @@ export function MiniTile({
   const artFailed = !pending && isArtBlocked(artSrc)
   const isCreature = obj.power !== null && obj.toughness !== null
   const clickable = Boolean(onClick) && (highlight || selected || activatable)
-  const tint = costColor(obj.manaCost) ?? 'C'
+  const tint = cardTint(obj)
 
   const { wrapRef, popoverRef, open, handlers } = useHoverPopover(obj)
 

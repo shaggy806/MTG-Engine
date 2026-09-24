@@ -101,8 +101,6 @@ that one card is the reason the deck exists.
 
 ## Client / UI
 
-- **Card tiles are tinted by mana cost.** A costless card (a token, a DFC back face, Ancestral
-  Vision) renders colourless, although the view sends each object's `colors`.
 - **The target count is ignored.** `client/src/App.tsx` doesn't read `LegalAction.targetCount`,
   the affordable range under Hinata-style per-target costs. A player who picks an unaffordable
   number of targets gets the server's rejection banner.
