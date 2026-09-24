@@ -441,3 +441,194 @@ describe("Ruinous Ultimatum", () => {
     expect(zoneOf(game, theirLand)).toBe("battlefield");
   });
 });
+
+describe("Aetherflux Reservoir", () => {
+  it("gains 1 life per spell you've cast this turn, counted on resolution", () => {
+    const { game } = setUp(["Llanowar Elves", "Llanowar Elves"]);
+    game.debugSpawn("Aetherflux Reservoir", A, "battlefield");
+    lands(game, A, "Forest", 2);
+    const [one, two] = game.handOf(A).filter((id) => game.state.objects[id].cardName === "Llanowar Elves");
+    cast(game, A, one);
+    expect(life(game, A)).toBe(21);
+    cast(game, A, two);
+    expect(life(game, A)).toBe(23);
+  });
+
+  it("pays 50 life to deal 50 damage", () => {
+    const { game } = setUp();
+    const reservoir = game.debugSpawn("Aetherflux Reservoir", A, "battlefield");
+    const offered = () =>
+      game.legalActions(A).some((o) => o.kind === "activate-ability" && o.source === reservoir);
+    expect(offered()).toBe(false);
+    game.debugApplyEffect(A, { kind: "gain-life", amount: 40 });
+    expect(offered()).toBe(true);
+    activate(game, A, reservoir, 0, [playerRef(B)]);
+    expect(life(game, A)).toBe(10);
+    expect(game.state.players[B].hasLost).toBe(true);
+  });
+});
+
+describe("Red Elemental Blast", () => {
+  it("can only target a blue spell or a blue permanent", () => {
+    const { game } = setUp(["Red Elemental Blast"]);
+    lands(game, A, "Mountain", 1);
+    const blue = game.debugSpawn("Consecrated Sphinx", B, "battlefield");
+    const green = game.debugSpawn("Grizzly Bears", B, "battlefield");
+    const reb = inHand(game, A, "Red Elemental Blast");
+    const offers = game.legalActions(A).filter((o) => o.kind === "cast-spell" && o.card === reb);
+    const objects = offers.flatMap((o) =>
+      o.kind === "cast-spell"
+        ? (o.castModal?.modes ?? []).flatMap((m) =>
+            m.targetOptions.flat().map((t) => (t.kind === "object" ? t.object : null)),
+          )
+        : [],
+    );
+    expect(objects).toContain(blue);
+    expect(objects).not.toContain(green);
+  });
+});
+
+describe("Mental Misstep", () => {
+  it("counters a mana-value-1 spell and nothing else", () => {
+    const { game } = setUp(["Mental Misstep"], ["Lightning Bolt", "Grizzly Bears"]);
+    lands(game, A, "Island", 1);
+    lands(game, B, "Mountain", 1);
+    game.dispatch({ type: "pass-priority", player: A });
+    game.advanceUntil((s) => s.priority.holder === B);
+    const bolt = inHand(game, B, "Lightning Bolt");
+    game.dispatch({ type: "cast-spell", player: B, card: bolt, targets: [playerRef(A)] });
+    game.advanceUntil((s) => s.priority.holder === A);
+    const misstep = inHand(game, A, "Mental Misstep");
+    expect(
+      game.legalActions(A).some((o) => o.kind === "cast-spell" && o.card === misstep),
+    ).toBe(true);
+    cast(game, A, misstep, [objectRef(bolt)]);
+    expect(zoneOf(game, bolt)).toBe("graveyard");
+    expect(life(game, A)).toBe(20);
+  });
+
+  it("can't target a spell with another mana value", () => {
+    const { game } = setUp(["Mental Misstep"], ["Grizzly Bears"]);
+    lands(game, A, "Island", 1);
+    lands(game, B, "Forest", 2);
+    game.dispatch({ type: "pass-priority", player: A });
+    game.advanceUntil((s) => s.priority.holder === B);
+    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "precombat-main" && s.priority.holder === B);
+    const bears = inHand(game, B, "Grizzly Bears");
+    game.dispatch({ type: "cast-spell", player: B, card: bears, targets: [] });
+    game.advanceUntil((s) => s.priority.holder === A);
+    const misstep = inHand(game, A, "Mental Misstep");
+    expect(
+      game.legalActions(A).some((o) => o.kind === "cast-spell" && o.card === misstep),
+    ).toBe(false);
+  });
+});
+
+describe("Conjurer's Closet", () => {
+  it("blinks a creature you control at your end step, if you choose", () => {
+    const { game, a } = setUp();
+    game.debugSpawn("Conjurer's Closet", A, "battlefield");
+    const elves = game.debugSpawn("Wood Elves", A, "battlefield");
+    game.debugSpawn("Forest", A, "library");
+    const start = game.state.eventLog.length;
+    a.chooseModesFn = (_v, _min, max) => (max >= 1 ? [0] : []);
+    a.chooseFromZoneFn = (_v, eligible) => eligible.slice(0, 1);
+    const forests = () =>
+      game.battlefield.filter((id) => game.state.objects[id].cardName === "Forest").length;
+    game.advanceUntil((s) => s.turn.number === 1 && s.turn.step === "cleanup");
+    // It left and came back, so its enters trigger fetched a Forest.
+    const exiled = game.state.eventLog
+      .slice(start)
+      .some((e) => e.type === "permanent-exiled" && e.object === elves);
+    expect(exiled).toBe(true);
+    expect(zoneOf(game, elves)).toBe("battlefield");
+    expect(forests()).toBe(1);
+  });
+});
+
+describe("Consecrated Sphinx", () => {
+  it("offers two cards whenever an opponent draws", () => {
+    const { game, a } = setUp();
+    game.debugSpawn("Consecrated Sphinx", A, "battlefield");
+    a.chooseModesFn = (_v, _min, max) => (max >= 1 ? [0] : []);
+    const hand = game.handOf(A).length;
+    game.debugApplyEffect(B, { kind: "draw", amount: 2 });
+    game.advanceUntil(quiet);
+    expect(game.handOf(A).length).toBe(hand + 4);
+  });
+});
+
+describe("Dramatic Reversal", () => {
+  it("untaps your nonland permanents only", () => {
+    const { game } = setUp(["Dramatic Reversal"]);
+    lands(game, A, "Island", 2);
+    const rock = game.debugSpawn("Charcoal Diamond", A, "battlefield");
+    const theirs = game.debugSpawn("Charcoal Diamond", B, "battlefield");
+    cast(game, A, inHand(game, A, "Dramatic Reversal"));
+    expect(game.state.objects[rock].tapped).toBe(false);
+    expect(game.state.objects[theirs].tapped).toBe(true);
+    const islands = game.battlefield.filter((id) => game.state.objects[id].cardName === "Island");
+    expect(islands.every((id) => game.state.objects[id].tapped)).toBe(true);
+  });
+});
+
+describe("Intangible Virtue", () => {
+  it("pumps creature tokens you control, not nontoken creatures", () => {
+    const { game } = setUp();
+    game.debugSpawn("Intangible Virtue", A, "battlefield");
+    game.debugApplyEffect(A, { kind: "create-token", token: "Human Token", count: 1 });
+    const token = game.battlefield.find((id) => game.state.objects[id].cardName === "Human Token");
+    const bears = game.debugSpawn("Grizzly Bears", A, "battlefield");
+    if (token === undefined) throw new Error("no token");
+    expect(pt(game, token)).toEqual([2, 2]);
+    expect(game.characteristics(token).keywords).toContain("vigilance");
+    expect(pt(game, bears)).toEqual([2, 2]);
+  });
+});
+
+describe("Kindred Dominance", () => {
+  it("destroys every creature not of the chosen type", () => {
+    const { game, a } = setUp(["Kindred Dominance"]);
+    lands(game, A, "Swamp", 7);
+    const bears = game.debugSpawn("Grizzly Bears", A, "battlefield");
+    const elf = game.debugSpawn("Llanowar Elves", B, "battlefield");
+    a.chooseCreatureTypeFn = () => "Elf";
+    cast(game, A, inHand(game, A, "Kindred Dominance"));
+    expect(zoneOf(game, bears)).toBe("graveyard");
+    expect(zoneOf(game, elf)).toBe("battlefield");
+  });
+});
+
+describe("Howling Mine", () => {
+  it("gives the active player an extra draw only while untapped", () => {
+    const { game } = setUp();
+    const mine = game.debugSpawn("Howling Mine", A, "battlefield");
+    const hand = game.handOf(B).length;
+    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "precombat-main" && quiet(s));
+    expect(game.handOf(B).length).toBe(hand + 2);
+    game.state.objects[mine].tapped = true;
+    game.advanceUntil((s) => s.turn.number === 3 && s.turn.step === "upkeep");
+    game.state.objects[mine].tapped = true;
+    const handA = game.handOf(A).length;
+    game.advanceUntil((s) => s.turn.number === 3 && s.turn.step === "precombat-main" && quiet(s));
+    expect(game.handOf(A).length).toBe(handA + 1);
+  });
+});
+
+describe("Haywire Mite", () => {
+  it("exiles a noncreature artifact or enchantment, and gains 2 as it dies", () => {
+    const { game } = setUp();
+    const mite = game.debugSpawn("Haywire Mite", A, "battlefield");
+    lands(game, A, "Forest", 1);
+    const rock = game.debugSpawn("Charcoal Diamond", B, "battlefield");
+    const artifactCreature = game.debugSpawn("Haywire Mite", B, "battlefield");
+    const offer = game.legalActions(A).find((o) => o.kind === "activate-ability" && o.source === mite);
+    if (offer === undefined || offer.kind !== "activate-ability") throw new Error("not offered");
+    const options = offer.targetOptions[0].map((t) => (t.kind === "object" ? t.object : null));
+    expect(options).toContain(rock);
+    expect(options).not.toContain(artifactCreature);
+    activate(game, A, mite, 0, [objectRef(rock)]);
+    expect(zoneOf(game, rock)).toBe("exile");
+    expect(life(game, A)).toBe(22);
+  });
+});
