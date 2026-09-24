@@ -140,6 +140,7 @@ import _poolClifftopRetreat from "./pool/clifftop-retreat.js";
 import _poolClone from "./pool/clone.js";
 import _poolCloudblazer from "./pool/cloudblazer.js";
 import _poolCoastalTower from "./pool/coastal-tower.js";
+import _poolCobbledWings from "./pool/cobbled-wings.js";
 import _poolCollectiveBlessing from "./pool/collective-blessing.js";
 import _poolCollectiveUnconscious from "./pool/collective-unconscious.js";
 import _poolColossalDreadmaw from "./pool/colossal-dreadmaw.js";
@@ -276,6 +277,7 @@ import _poolFlameJavelin from "./pool/flame-javelin.js";
 import _poolFlameblastDragon from "./pool/flameblast-dragon.js";
 import _poolFlawlessManeuver from "./pool/flawless-maneuver.js";
 import _poolFleshbagMarauder from "./pool/fleshbag-marauder.js";
+import _poolFlight from "./pool/flight.js";
 import _poolFloodedStrand from "./pool/flooded-strand.js";
 import _poolFlubsTheFool from "./pool/flubs-the-fool.js";
 import _poolFog from "./pool/fog.js";
@@ -1080,6 +1082,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolClone,
   _poolCloudblazer,
   _poolCoastalTower,
+  _poolCobbledWings,
   _poolCollectiveBlessing,
   _poolCollectiveUnconscious,
   _poolColossalDreadmaw,
@@ -1216,6 +1219,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolFlameblastDragon,
   _poolFlawlessManeuver,
   _poolFleshbagMarauder,
+  _poolFlight,
   _poolFloodedStrand,
   _poolFlubsTheFool,
   _poolFog,
