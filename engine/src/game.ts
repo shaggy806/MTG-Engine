@@ -93,11 +93,13 @@ import { payLifeForUntapped } from "./decisions/pay-life-for-untapped.js";
 import { scry } from "./decisions/scry.js";
 import { CREATURE_TYPES } from "./creature-types.js";
 import {
+  amountValue,
   applyEffectSpec,
   isCountScalableEffect,
   substituteChosenCreatureType,
 } from "./effects.js";
 import type {
+  EffectAmount,
   EffectSpec,
   FlickerCounters,
   FlickerOptions,
@@ -315,7 +317,17 @@ function arrangeManaSources(
   sources: readonly ManaSource[],
   { last, withheld }: ManaSourceArrangement,
 ): ManaSource[] {
-  const kept = withheld === undefined ? [...sources] : sources.filter((s) => !withheld.has(s.id));
+  // A withheld permanent is being tapped for something else, which only
+  // rules out its `{T}` options — an untapped ability (Vivi Ornitier's
+  // "{0}: Add …") never needed it untapped in the first place.
+  const kept =
+    withheld === undefined
+      ? [...sources]
+      : sources.flatMap((s) => {
+          if (!withheld.has(s.id)) return [s];
+          const options = s.options.filter((o) => o.untapped === true);
+          return options.length === 0 || s.sacrificeSelf ? [] : [{ ...s, options }];
+        });
   if (last === undefined) return kept;
   return [...kept.filter((s) => !last.has(s.id)), ...kept.filter((s) => last.has(s.id))];
 }
@@ -957,8 +969,13 @@ export class Game {
         // its own is a real choice rather than whatever the engine's default
         // happened to be. Paying a *cost* never comes through here — the mana
         // planner picks the colour it needs (see `manaSources`).
-        const choices = standaloneManaChoices(ability, (m) =>
-          this.manaOneOf(m as Parameters<typeof this.manaOneOf>[0], player),
+        const choices = standaloneManaChoices(
+          ability,
+          (m) => this.manaOneOf(m as Parameters<typeof this.manaOneOf>[0], player),
+          () =>
+            ability.effect?.kind === "add-mana" && typeof ability.effect.amount !== "number"
+              ? this.liveManaAmount(source, player, ability.effect.amount)
+              : null,
         );
         if (choices === null) {
           pushActivateAbility(source, printedCardName(object), ability, index);
@@ -5607,21 +5624,39 @@ export class Game {
       // combination of" ability — see `standaloneManaChoices`. Only the
       // unfixed part of the output is redirected, so a source that makes a
       // concrete mana alongside a choice still makes its concrete mana.
-      const context =
+      const context: ResolutionContext =
         manaColors === undefined
           ? base
           : {
               ...base,
-              addMana: (
-                p: PlayerId,
-                mana: ManaType | "any-color" | { readonly oneOf: readonly ManaType[] },
-                amount: number,
-              ): void => {
+              addMana: (p, mana, amount, spec): void => {
                 if (mana !== "any-color" && typeof mana !== "object") {
-                  base.addMana(p, mana, amount);
+                  base.addMana(p, mana, amount, spec);
                   return;
                 }
-                for (const type of manaColors) base.addMana(p, type, 1);
+                // The effect's own amount is what gets made, one unit per
+                // pick; a pick the ability can't make (or a missing one —
+                // the action is a client's word) falls back to the default
+                // colour, so a hand-built `manaColors` can't mint extra
+                // mana or a colour the card doesn't offer. `spec` rides
+                // along so a restricted source (Cavern of Souls) still
+                // stamps its restriction on mana floated by hand.
+                const allowed: readonly ManaType[] =
+                  mana === "any-color"
+                    ? COLORS
+                    : "oneOf" in mana
+                      ? mana.oneOf
+                      : this.manaOneOf(mana, player);
+                const units = Math.min(amount, Game.MAX_EFFECT_INSTANCES);
+                for (let i = 0; i < units; i += 1) {
+                  const pick = manaColors[i];
+                  base.addMana(
+                    p,
+                    pick !== undefined && allowed.includes(pick) ? pick : mana,
+                    1,
+                    spec,
+                  );
+                }
               },
             };
       if (ability.effect !== null) applyEffectSpec(ability.effect, context);
@@ -5774,9 +5809,11 @@ export class Game {
     const grantors = this.activatedGrantSources();
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
-      if (object.controller !== player || object.tapped) continue;
-      if (this.tapAbilityBlockedBySickness(object)) continue;
+      if (object.controller !== player) continue;
       if (hasLostAbilities(object)) continue; // layer 6 — no mana ability
+      // A `{T}` ability needs the permanent untapped and not summoning sick;
+      // an untapped one (Vivi Ornitier's "{0}: Add …") needs neither.
+      const canTap = !object.tapped && !this.tapAbilityBlockedBySickness(object);
 
       const def = this.registry.get(printedCardName(object));
       const options: ManaOption[] = [];
@@ -5784,25 +5821,43 @@ export class Game {
       // mixes a tap-only and a sacrifice mana ability on one permanent.
       let sacrificeSelf = false;
       const key = (o: ManaOption): string =>
-        `${[...o.fixed].sort().join(",")}|${o.anyColor}|${o.pain}|${o.lifeCost}|${o.genericCost}` +
+        `${[...o.fixed].sort().join(",")}|${o.anyColor}|${o.anyColorOf?.join(",") ?? ""}` +
+        `|${o.pain}|${o.lifeCost}|${o.genericCost}|${o.untapped ?? ""}|${o.oncePerTurn ?? ""}` +
         // Two options that make the same mana are still different options if
         // one of them is restricted.
         `|${o.tag === undefined ? "" : JSON.stringify(o.tag)}`;
-      for (const ability of this.effectiveActivated(id, grantors)) {
+      this.effectiveActivated(id, grantors).forEach((ability, abilityIndex) => {
         if (
           !isManaAbility(ability) ||
-          !ability.cost.tap ||
           ability.effect === null ||
           ability.effect.kind !== "add-mana"
         ) {
-          continue;
+          return;
+        }
+        // Rule 602.5g — spent for this turn, whether by hand or by an
+        // earlier payment.
+        if (
+          ability.oncePerTurn === true &&
+          (object.abilitiesUsedThisTurn ?? []).includes(abilityIndex)
+        ) {
+          return;
+        }
+        if (ability.cost.tap) {
+          if (!canTap) return;
+        } else if (ability.oncePerTurn !== true) {
+          // Without `{T}` or a once-a-turn limit an ability could be
+          // activated any number of times in one payment, which the planner
+          // (one activation per source) can't represent. Nothing in the pool
+          // prints a free, unlimited mana ability; one with a mana cost is a
+          // converter the tap-based sources already cover when it taps.
+          return;
         }
         // "Tap an untapped creature you control" as part of the cost
         // (Jaspera Sentinel, Holdout Settlement). `useManaSource` taps only
         // the source, so offering these to the auto-payer would hand out the
         // mana without paying for it — strictly better than the printed card.
         // They stay activatable by hand; see AUTHORING §15.
-        if (ability.cost.tapOthers !== undefined) continue;
+        if (ability.cost.tapOthers !== undefined) return;
         // A mana ability whose own activation cost contains mana is a
         // "converter" (a Signet, a filter land). Only a purely *generic* cost
         // is admitted: a coloured one would be circular, needing the colour to
@@ -5813,9 +5868,12 @@ export class Game {
           const parsed = parseManaCost(ability.cost.mana);
           const colouredPips =
             COLORS.reduce((n, c) => n + parsed.colored[c], 0) + parsed.colorless;
-          if (colouredPips > 0 || parsed.x > 0 || parsed.hybrid.length > 0) continue;
+          if (colouredPips > 0 || parsed.x > 0 || parsed.hybrid.length > 0) return;
           genericCost = parsed.generic;
-          if (genericCost <= 0) continue;
+          // A printed `{0}` is a cost of nothing (Vivi Ornitier) — only an
+          // untapped once-a-turn ability can get here with one, since a
+          // `{0}, {T}` ability is written as a plain tap.
+          if (genericCost <= 0 && ability.cost.tap) return;
         }
         if (
           ability.condition !== undefined &&
@@ -5825,7 +5883,7 @@ export class Game {
             includeSelf: true,
           })
         ) {
-          continue;
+          return;
         }
         const pain = ability.effect.painToController ?? 0;
         const lifeCost = ability.cost.payLife ?? 0;
@@ -5837,32 +5895,54 @@ export class Game {
           ability.effect.mana === "chosen"
             ? (MANA_TYPES.includes(chosen as ManaType) ? (chosen as ManaType) : null)
             : ability.effect.mana;
-        if (mana === null) continue;
-        // A mana *ability* has to report a fixed output: `manaSources` runs
-        // during payment planning, with nothing resolving and no resolution
-        // context to size an `EffectAmount` against. A board-scaled amount
-        // (Mana Geyser's "{R} for each tapped land your opponents control")
-        // only ever appears on a spell, so an ability carrying one is simply
-        // not offered as a source rather than being guessed at.
-        if (typeof ability.effect.amount !== "number") continue;
-        const manaAmount = ability.effect.amount;
+        if (mana === null) return;
+        // A live amount (Marwyn's power, Kydele's cards drawn this turn) is
+        // sized now, against the board as it stands — see `liveManaAmount`.
+        // It is what the ability would make if activated this instant, and
+        // nothing changes between planning a payment and carrying it out.
+        const manaAmount =
+          typeof ability.effect.amount === "number"
+            ? ability.effect.amount
+            : this.liveManaAmount(id, player, ability.effect.amount);
         // A converter that doesn't produce more than it costs is never worth
-        // offering, and admitting one would let the planner loop.
-        if (genericCost >= manaAmount) continue;
+        // offering, and admitting one would let the planner loop — and a
+        // live amount of 0 makes nothing at all.
+        if (manaAmount <= 0 || genericCost >= manaAmount) return;
         const tagOf = this.manaTagFor(object, ability.effect);
-        const tag = tagOf === undefined ? {} : { tag: tagOf };
+        const tag = {
+          ...(tagOf === undefined ? {} : { tag: tagOf }),
+          ...(ability.cost.tap ? {} : { untapped: true as const }),
+          ...(ability.oncePerTurn === true ? { oncePerTurn: abilityIndex } : {}),
+        };
+        const oneOf = typeof mana === "object" ? this.manaOneOf(mana, player) : [];
         const candidates: ManaOption[] =
           mana === "any-color"
             ? [{ fixed: [], anyColor: manaAmount, pain, lifeCost, genericCost, ...tag }]
             : typeof mana === "object"
-              ? manaCombinations(this.manaOneOf(mana, player), manaAmount).map((fixed) => ({
-                  fixed,
-                  anyColor: 0,
-                  pain,
-                  lifeCost,
-                  genericCost,
-                  ...tag,
-                }))
+              ? typeof ability.effect.amount !== "number"
+                ? // "X mana in any combination of …" with a live X: one
+                  // compressed option rather than X+1 enumerated splits.
+                  oneOf.length === 0
+                  ? []
+                  : [
+                      {
+                        fixed: [],
+                        anyColor: manaAmount,
+                        anyColorOf: oneOf,
+                        pain,
+                        lifeCost,
+                        genericCost,
+                        ...tag,
+                      },
+                    ]
+                : manaCombinations(oneOf, manaAmount).map((fixed) => ({
+                    fixed,
+                    anyColor: 0,
+                    pain,
+                    lifeCost,
+                    genericCost,
+                    ...tag,
+                  }))
               : [
                   {
                     fixed: Array<ManaType>(manaAmount).fill(mana),
@@ -5877,7 +5957,7 @@ export class Game {
           if (!options.some((o) => key(o) === key(option))) options.push(option);
         }
         if (ability.cost.sacrifice === "self") sacrificeSelf = true;
-      }
+      });
       if (options.length === 0) continue;
       out.push({ id, isLand: def.types.includes("land"), options, sacrificeSelf });
     }
@@ -5908,6 +5988,24 @@ export class Game {
       return ka.flex - kb.flex;
     });
     return out;
+  }
+
+  /**
+   * What a mana ability's live `amount` comes to right now, read without
+   * anything resolving: Marwyn's power, Kydele's cards drawn this turn,
+   * devotion, a count. Evaluated through an ordinary resolution context for
+   * `source` so every `EffectAmount` means exactly what it does when the
+   * ability actually resolves (rule 605.3a — a mana ability resolves the
+   * moment it's activated, so the two can't disagree). `"x"` and a trigger
+   * value read 0: a mana ability has neither.
+   *
+   * Pure — `amountValue` only reads — which is what lets `manaSources` stay
+   * memoized inside a computed-cache region. Capped where `addMana` caps
+   * what it will actually put in the pool.
+   */
+  private liveManaAmount(source: ObjectId, player: PlayerId, amount: EffectAmount): number {
+    const n = amountValue(amount, this.makeResolutionContext(source, player, []));
+    return Math.max(0, Math.min(n, Game.MAX_EFFECT_INSTANCES));
   }
 
   /** The most mana one activation of `s` can put in the pool (used only as a
@@ -5997,10 +6095,16 @@ export class Game {
     // units they contributed.
     for (const m of step.spends) this.removeMana(player, m);
     for (const m of step.mana) this.addMana(player, m, 1, step.tag);
+    if (step.oncePerTurn !== undefined) {
+      object.abilitiesUsedThisTurn = [...(object.abilitiesUsedThisTurn ?? []), step.oncePerTurn];
+      // Not an event of its own, so nothing else is going to tell a cache
+      // region that this source has stopped being one.
+      invalidateComputedCache();
+    }
     if (step.sacrifice) {
       this.moveObject(step.source, "graveyard");
       this.emit({ type: "permanent-sacrificed", object: step.source, player: object.owner });
-    } else {
+    } else if (step.untapped === undefined) {
       object.tapped = true;
       this.emit({ type: "permanent-tapped", object: step.source });
     }

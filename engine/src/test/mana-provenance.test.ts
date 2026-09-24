@@ -207,6 +207,29 @@ describe("restricted mana — which units pay", () => {
     expect(game.state.players[A].manaPool[0].restriction).toBeDefined();
     expect(canCast(game, "Lightning Bolt")).toBe(false);
   });
+
+  it("keeps it when the colour is named by hand, too", () => {
+    // A named colour (`manaColors`) goes through a different `addMana` than
+    // the default one, which used to drop the ability's spec — and with it
+    // the restriction — on the floor.
+    const game = mkGame(["Lightning Bolt"]);
+    game.advanceUntil(atFirstMain);
+    const territory = land(game, "Unclaimed Territory", "Bear");
+    game.dispatch({
+      type: "activate-ability",
+      player: A,
+      source: territory,
+      abilityIndex: 1,
+      targets: [],
+      manaColors: ["R"],
+    });
+    game.advanceUntil(settled);
+
+    expect(game.state.players[A].manaPool).toHaveLength(1);
+    expect(game.state.players[A].manaPool[0].type).toBe("R");
+    expect(game.state.players[A].manaPool[0].restriction).toBeDefined();
+    expect(canCast(game, "Lightning Bolt")).toBe(false);
+  });
 });
 
 describe("Cavern of Souls — the spell it paid for can't be countered", () => {

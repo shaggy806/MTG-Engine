@@ -727,7 +727,25 @@ colours, each unit independently chosen — Orcish Lumberjack: `{ oneOf: ["R",
 "G"] }`, `amount: 3`, needed-cards P20). A standalone activation (not part of
 paying a cost) defaults to white for `"any-color"`, or `oneOf[0]` repeated for
 `{ oneOf }` — during actual cost payment the auto-payer resolves the colour(s)
-that fit. **Still can't produce a genuine mix in one activation from a fixed
+that fit.
+
+**A mana ability's `amount` may be a live `EffectAmount`** (Marwyn, the
+Nurturer: `{ powerOf: "source" }`; Kydele: `{ turnStat: "cards-drawn" }`).
+`manaSources()` sizes it against the board as it stands, through an ordinary
+resolution context, so it means exactly what it will when the ability
+resolves; `"x"` and `triggerValue` read 0 there, and 0 or less makes the
+permanent no source at all. `{ oneOf }` with a live amount is planned as one
+compressed option — X units, each any of the listed types (`ManaOption.
+anyColorOf`) — rather than X+1 enumerated splits, so a huge X costs nothing;
+by hand, every split is offered while there are at most
+`MAX_STANDALONE_SPLITS` (12) of them, and past that one "all of this type"
+option per type. A mana ability **without `{T}`** is an auto-payer source only
+with `oncePerTurn: true` (Vivi Ornitier's "{0}: Add … Activate only once each
+turn"): the planner uses each source at most once per payment, which is only
+true of an untapped ability that can't be activated again. Such a source
+works while tapped or summoning sick, isn't tapped by a payment, survives
+being tapped to convoke, and has its once-a-turn use recorded when a payment
+draws on it. A `{0}` cost is written `mana: "{0}"`. **Still can't produce a genuine mix in one activation from a fixed
 list of *different* amounts per colour**, and an ability whose activation
 *cost* itself contains mana (a filter land's `{G/U}, {T}: …`) is excluded from
 `manaSources()`'s auto-payment scan entirely, to avoid circular payment

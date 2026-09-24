@@ -271,9 +271,10 @@ export type EffectSpec =
          */
         | { readonly producedBy: "opponents-lands" };
       /** An `EffectAmount` so a ritual can scale off the board — Mana Geyser's
-       * "{R} for each tapped land your opponents control". A mana *ability*
-       * should keep this a plain number: `manaSources()` reports what each
-       * permanent can produce without resolving anything. */
+       * "{R} for each tapped land your opponents control" — and a mana
+       * ability can make a live amount (Marwyn's power, Kydele's cards drawn
+       * this turn). `manaSources()` sizes a live amount against the board as
+       * it stands, where `"x"` and `triggerValue` read 0. */
       readonly amount: EffectAmount;
       /** Damage this mana ability deals to its controller when it's used (a
        * painland's coloured tap — Karplusan Forest: "{T}: Add {R} or {G}.

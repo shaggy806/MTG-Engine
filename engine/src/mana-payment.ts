@@ -54,6 +54,43 @@ export interface ManaOption {
    * mana and then be refused it.
    */
   readonly tag?: Omit<ManaUnit, "type">;
+  /**
+   * Narrows the `anyColor` units to these types — "X mana in any combination
+   * of {U} and/or {R}" (Vivi Ornitier) is `anyColor: X, anyColorOf: ["U",
+   * "R"]`, each unit chosen independently as it's spent. Absent means the
+   * five colours, as for Arcane Signet.
+   *
+   * This is what keeps a *live* amount affordable to plan with: enumerating
+   * every split of X mana over two colours is X+1 options, and X is a
+   * creature's power, which a token stack or a doubling effect can make
+   * enormous. The compressed form is one option whatever X is.
+   */
+  readonly anyColorOf?: readonly ManaType[];
+  /**
+   * The ability doesn't have `{T}` in its cost (Vivi Ornitier's "{0}: Add
+   * …"), so using it leaves the permanent untapped — and a tapped or
+   * summoning-sick permanent can still use it. Only ever admitted together
+   * with {@link ManaOption.oncePerTurn}, which is what makes "one activation
+   * per payment" true of it.
+   */
+  readonly untapped?: true;
+  /** "Activate only once each turn" (rule 602.5g): the ability's index on its
+   * permanent, recorded as used when the payment is carried out. */
+  readonly oncePerTurn?: number;
+}
+
+/** Whether one of `o`'s flexible units can be `m`. */
+export function anyUnitMakes(o: ManaOption, m: ManaType): boolean {
+  if (o.anyColor === 0) return false;
+  return o.anyColorOf === undefined ? m !== "C" : o.anyColorOf.includes(m);
+}
+
+/** The type a flexible unit of `o` takes when nothing asks for a particular
+ * one — generic, or surplus left floating. An unrestricted "any colour" unit
+ * has always been planned as `{C}` here; a narrowed one has to be one of its
+ * own types, since the card can't make anything else. */
+function defaultUnitOf(o: { readonly anyColorOf?: readonly ManaType[] }): ManaType {
+  return o.anyColorOf?.[0] ?? "C";
 }
 
 /** One of `player`'s permanents that can produce mana right now. `options` is
@@ -93,6 +130,10 @@ export interface ManaPlanStep {
   /** The provenance to stamp on the mana this step makes — see
    * {@link ManaOption.tag}. */
   readonly tag?: Omit<ManaUnit, "type">;
+  /** See {@link ManaOption.untapped}. */
+  readonly untapped?: true;
+  /** See {@link ManaOption.oncePerTurn}. */
+  readonly oncePerTurn?: number;
 }
 
 /** A fully-worked-out way to pay a cost: which sources to tap ({@link
@@ -168,16 +209,50 @@ export function standaloneManaChoices(
   /** The concrete colours a `oneOf`/`producedBy` names right now — resolved
    * by the caller, which has the board; see `Game.manaOneOf`. */
   oneOf: (mana: { oneOf?: readonly ManaType[]; producedBy?: string }) => readonly ManaType[],
+  /** How much a *live* amount (Vivi Ornitier's power) comes to right now —
+   * `null` when the caller can't size it, which offers the ability once
+   * with the engine's default colour, as before live amounts existed. */
+  liveAmount?: () => number | null,
 ): ManaType[][] | null {
   const effect = ability.effect;
   if (effect === null || effect.kind !== "add-mana") return null;
-  if (typeof effect.amount !== "number" || effect.amount < 1) return null;
   const mana = effect.mana;
+  if (mana !== "any-color" && typeof mana !== "object") return null;
+  if (typeof effect.amount !== "number") {
+    const amount = liveAmount?.() ?? null;
+    if (amount === null || amount < 1) return null;
+    const colors = mana === "any-color" ? COLORS : oneOf(mana);
+    if (colors.length === 0) return null;
+    // A live amount can be large, and every split of it is a separate menu
+    // entry. Past a handful, offer just "all of one type" per type: the
+    // interesting splits are what a *payment* needs, and the planner makes
+    // those itself without going through this list.
+    if (splitCount(colors.length, amount) <= MAX_STANDALONE_SPLITS) {
+      return manaCombinations(colors, amount);
+    }
+    return colors.map((c) => Array<ManaType>(amount).fill(c));
+  }
+  if (effect.amount < 1) return null;
   if (mana === "any-color") {
     return COLORS.map((c) => Array<ManaType>(effect.amount as number).fill(c));
   }
-  if (typeof mana === "object") return manaCombinations(oneOf(mana), effect.amount);
-  return null;
+  return manaCombinations(oneOf(mana), effect.amount);
+}
+
+/** The most "any combination of" splits of a live amount offered as separate
+ * standalone activations — see {@link standaloneManaChoices}. */
+export const MAX_STANDALONE_SPLITS = 12;
+
+/** How many multisets of size `amount` there are over `kinds` types —
+ * C(amount + kinds - 1, kinds - 1), stopping early once it's past any cap
+ * anyone asks about, so a huge amount costs nothing to size. */
+function splitCount(kinds: number, amount: number): number {
+  let n = 1;
+  for (let i = 1; i < kinds; i += 1) {
+    n = (n * (amount + i)) / i;
+    if (n > 1_000_000) return Infinity;
+  }
+  return Math.round(n);
 }
 
 /** Every multiset of size `amount` drawn from `colors` (order-independent,
@@ -351,6 +426,9 @@ export function planManaPayment(
      * own cost — spent back verbatim by `useManaSource`. */
     readonly spends: ManaType[];
     readonly tag?: Omit<ManaUnit, "type">;
+    readonly anyColorOf?: readonly ManaType[];
+    readonly untapped?: true;
+    readonly oncePerTurn?: number;
   }
   // Colours this cost still wants, for `coverGenericFrom`'s preference.
   const wantedColors = new Set<ManaType>(
@@ -372,10 +450,8 @@ export function planManaPayment(
     if (want !== null) {
       const exact = free((o) => o.fixed.includes(want));
       if (exact !== undefined) return exact;
-      if (want !== "C") {
-        const any = free((o) => o.anyColor > 0);
-        if (any !== undefined) return any;
-      }
+      const any = free((o) => anyUnitMakes(o, want));
+      if (any !== undefined) return any;
     }
     return [...src.options].sort(
       (a, b) =>
@@ -396,6 +472,9 @@ export function planManaPayment(
       genericCost: opt.genericCost,
       spends: [],
       ...(opt.tag !== undefined ? { tag: opt.tag } : {}),
+      ...(opt.anyColorOf !== undefined ? { anyColorOf: opt.anyColorOf } : {}),
+      ...(opt.untapped !== undefined ? { untapped: opt.untapped } : {}),
+      ...(opt.oncePerTurn !== undefined ? { oncePerTurn: opt.oncePerTurn } : {}),
     };
     tapped.push(t);
     return t;
@@ -430,7 +509,8 @@ export function planManaPayment(
       t.produced.push(m);
       return true;
     }
-    if (m !== "C" && t.freeAny > 0) {
+    const makes = t.anyColorOf === undefined ? m !== "C" : t.anyColorOf.includes(m);
+    if (makes && t.freeAny > 0) {
       t.freeAny -= 1;
       t.produced.push(m);
       return true;
@@ -448,15 +528,16 @@ export function planManaPayment(
     }
     if (t.freeAny > 0) {
       t.freeAny -= 1;
-      t.produced.push("C");
-      return "C";
+      const m = defaultUnitOf(t);
+      t.produced.push(m);
+      return m;
     }
     return null;
   };
   const coverSpecific = (m: ManaType): boolean => {
     for (const t of tapped) if (takeSpecific(t, m)) return true;
     const canMake = (s: ManaSource): boolean =>
-      s.options.some((o) => o.fixed.includes(m) || (m !== "C" && o.anyColor > 0));
+      s.options.some((o) => o.fixed.includes(m) || anyUnitMakes(o, m));
     for (const next of sources) {
       if (isTapped(next.id) || !canMake(next)) continue;
       const t = openFunded(next, m);
@@ -525,9 +606,11 @@ export function planManaPayment(
     mana: [
       ...t.produced,
       ...t.freeFixed,
-      ...Array.from<ManaType>({ length: t.freeAny }).fill("C"),
+      ...Array.from<ManaType>({ length: t.freeAny }).fill(defaultUnitOf(t)),
     ],
     ...(t.tag !== undefined ? { tag: t.tag } : {}),
+    ...(t.untapped !== undefined ? { untapped: t.untapped } : {}),
+    ...(t.oncePerTurn !== undefined ? { oncePerTurn: t.oncePerTurn } : {}),
   }));
 }
 
