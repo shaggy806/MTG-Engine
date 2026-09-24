@@ -1464,8 +1464,9 @@ export class Game {
   }
 
   /**
-   * Tokens something outside the stack still refers to by id — the target or
-   * source of a delayed trigger, the target of a prevention shield. Folding
+   * Tokens something outside the stack still refers to by id — the target of
+   * a spell or ability on the stack, the target or source of a delayed
+   * trigger, the target of a prevention shield. Folding
    * one into another object deletes its id, and an Aura or Equipment on it
    * would end up on a whole stack, so these are never folded: a split-off
    * target a delayed trigger will come back for has to still be there.
@@ -1482,6 +1483,15 @@ export class Game {
     }
     for (const shield of this.state.preventionShields) {
       if (shield.target.kind === "object") pinned.add(shield.target.object);
+    }
+    // A spell or ability on the stack whose target was locked in to one token
+    // (`lockInTargets`): a new batch folded into that token would make the
+    // target a whole stack again, and each step of its effect would peel off
+    // a different token.
+    for (const id of this.state.zones.shared.stack) {
+      for (const t of this.state.objects[id]?.targets ?? []) {
+        if (t?.kind === "object") pinned.add(t.object);
+      }
     }
     return pinned;
   }

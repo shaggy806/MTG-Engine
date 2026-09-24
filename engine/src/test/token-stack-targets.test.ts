@@ -274,6 +274,31 @@ describe("the split-off target behaves like any single target", () => {
     expect(chars(game, pumped[0].id).toughness).toBe(5);
   });
 
+  it("new tokens made while the spell waits don't fold into the Goblin it targets", () => {
+    const game = table();
+    lands(game, A, "Forest");
+    const stack = stackOf(game, A);
+
+    const defense = cast(game, A, "Blossoming Defense", [ref(stack)]);
+    const target = targetOf(game, defense);
+    // The rest of the stack is gone before the spell resolves, so the only
+    // Goblin a new batch could join is the targeted one.
+    game.state.zones.shared.battlefield = game.state.zones.shared.battlefield.filter(
+      (id) => id !== stack,
+    );
+    delete game.state.objects[stack];
+    game.debugApplyEffect(A, { kind: "create-token", token: GOBLIN, count: 10 });
+    expect(game.state.objects[target].stackCount).toBeUndefined();
+    resolveStack(game);
+
+    // One Goblin got both halves; the new ten are untouched.
+    const pumped = touched(game, (id) => chars(game, id).power === 3);
+    expect(pumped.map((o) => o.id)).toEqual([target]);
+    expect(has(game, target, "hexproof")).toBe(true);
+    expect(touched(game, (id) => has(game, id, "hexproof"))).toHaveLength(1);
+    expect(tokenCount(goblins(game))).toBe(11);
+  });
+
   it("the split-off Goblin folds back into its stack at cleanup once nothing tells them apart", () => {
     const game = table();
     lands(game, A, "Forest");
