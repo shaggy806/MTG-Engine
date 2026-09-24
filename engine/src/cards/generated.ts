@@ -18,6 +18,7 @@ import _poolAjaniCallerOfThePride from "./pool/ajani-caller-of-the-pride.js";
 import _poolAjanisPridemate from "./pool/ajanis-pridemate.js";
 import _poolAkoumHellkite from "./pool/akoum-hellkite.js";
 import _poolAkoumRefuge from "./pool/akoum-refuge.js";
+import _poolAlelaArtfulProvocateur from "./pool/alela-artful-provocateur.js";
 import _poolAmbitionsCost from "./pool/ambitions-cost.js";
 import _poolAmbushViper from "./pool/ambush-viper.js";
 import _poolAmuletOfVigor from "./pool/amulet-of-vigor.js";
@@ -960,6 +961,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAjanisPridemate,
   _poolAkoumHellkite,
   _poolAkoumRefuge,
+  _poolAlelaArtfulProvocateur,
   _poolAmbitionsCost,
   _poolAmbushViper,
   _poolAmuletOfVigor,

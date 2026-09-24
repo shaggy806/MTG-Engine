@@ -1,6 +1,6 @@
 import { defineCard } from "../define.js";
 
-/** 1/1 blue Faerie with flying — Faerie Formation's token. */
+/** 1/1 blue Faerie with flying — Faerie Formation's and Alela, Artful Provocateur's token. */
 export default defineCard({
   name: "Faerie Token",
   art: "bcd82cb0-ff4b-4f4d-b3d0-3ac53883b099",
