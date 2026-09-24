@@ -53,6 +53,14 @@ export interface GameObject {
    * `moveObject` clears zone-scoped state on the way.
    */
   exiledBy?: ObjectId;
+  /**
+   * This card is in exile because of a `flicker` whose return is delayed
+   * (Norin the Wary), and this names that particular exile — the key its
+   * `return-flickered` delayed trigger looks for (rule 610.3). Cleared by
+   * `moveObject` like `exiledBy`, so a card that leaves exile before the
+   * return, even only to come straight back, is a new object and stays put.
+   */
+  flickerLink?: string;
   /** This permanent's `castFromGraveyard` permission has been used this turn
    * (Gisa and Geralf's "once during each of your turns"). Reset with the
    * other once-per-turn flags as its controller's turn begins. */
@@ -1291,20 +1299,26 @@ export interface GameState {
     readonly life: number;
   }[];
   /**
-   * A "blink" (the `flicker` effect) whose exile half raised a commander's
+   * "Blinks" (the `flicker` effect) whose exile half raised a commander's
    * 903.9a choice, parked until that choice is answered — without this the
    * whole effect was abandoned there, and a flickered commander whose owner
-   * declined the command zone stayed in exile forever.
+   * declined the command zone stayed in exile forever. One entry per
+   * commander: a flicker of several targets can defer more than one.
    *
-   * `applyCommanderChoice` completes it: the card is returned only if the
-   * choice actually left it in exile. `null` when no blink is waiting.
+   * `applyCommanderChoice` completes each: the card is returned (or, for a
+   * delayed return, given its `flickerLink`) only if the choice actually left
+   * it in exile.
    */
-  pendingFlickerReturn: {
+  pendingFlickerReturns: {
     readonly object: ObjectId;
     /** Counters the returning permanent gets — the `flicker` effect's
      * `thenCounters`, carried across the pause. */
     readonly counters?: FlickerCounters;
-  } | null;
+    /** Who it returns under, when that isn't its owner (`underYourControl`). */
+    readonly returnUnder?: PlayerId;
+    /** A delayed return's link — the card is marked, not returned. */
+    readonly link?: string;
+  }[];
   /** True while a Fog-style effect has prevented all combat damage this turn
    * (rule 614 replacement, but turn-scoped with no permanent to hang it on).
    * Set by the `prevent-all-combat-damage` effect, cleared at the start of the

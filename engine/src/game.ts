@@ -99,6 +99,7 @@ import {
 import type {
   EffectSpec,
   FlickerCounters,
+  FlickerOptions,
   UnlessOption,
   ModeOption,
   PlayerScope,
@@ -327,6 +328,11 @@ export class Game {
    * right now — the one move of it `moveObject` must not defer again. Not
    * game state: it only ever spans that one synchronous call. */
   private completingCommanderMove: ObjectId | null = null;
+  /** The `sourceTimestamp` of the ability resolving right now, if one is —
+   * how a `flicker` of its own source tells the permanent that put the
+   * ability on the stack from a new object with the same id (rule 400.7).
+   * Not game state: it only spans that ability's resolution. */
+  private resolvingSourceTimestamp: number | null = null;
 
   /** What simultaneous damage owes once it has all been dealt (see {@link
    * withDamageBatch}): lifelink life gain per source, and the "whenever this
@@ -453,7 +459,7 @@ export class Game {
       deferredCommanderMove: null,
       pendingCommanderMoves: [],
       pendingPayLifeForUntapped: [],
-      pendingFlickerReturn: null,
+      pendingFlickerReturns: [],
       pendingDestruction: [],
       pendingSacrifices: [],
       pendingSacrificeVictims: [],
@@ -1844,12 +1850,19 @@ export class Game {
     // A blink (Essence Flux) whose exile half raised this choice: finish it if
     // the card really did end up in exile. Choosing the command zone instead
     // takes the card somewhere the blink can't reach, so it just stays there.
-    const blink = this.state.pendingFlickerReturn;
-    if (blink !== null && blink.object === commander) {
-      this.state.pendingFlickerReturn = null;
+    const blink = this.state.pendingFlickerReturns.find((b) => b.object === commander);
+    if (blink !== undefined) {
+      this.state.pendingFlickerReturns = this.state.pendingFlickerReturns.filter(
+        (b) => b !== blink,
+      );
       if (this.state.objects[commander]?.zone === "exile") {
         this.emit({ type: "permanent-exiled", object: commander });
-        this.completeFlickerReturn(commander, blink.counters);
+        if (blink.link !== undefined) {
+          // A delayed return (Norin): the card waits in exile for it.
+          this.state.objects[commander].flickerLink = blink.link;
+        } else {
+          this.completeFlickerReturn([commander], blink.counters, blink.returnUnder);
+        }
       }
     }
 
@@ -6684,13 +6697,19 @@ export class Game {
       this.recordAbilityResolution(object),
       object.targetZones,
     );
-    this.withDecisionSource(source, () => {
-      if (ability.resolve !== null) {
-        ability.resolve(context);
-      } else if (ability.effect !== null) {
-        applyEffectSpec(ability.effect, context);
-      }
-    });
+    const outerSourceTimestamp = this.resolvingSourceTimestamp;
+    this.resolvingSourceTimestamp = object.sourceTimestamp ?? null;
+    try {
+      this.withDecisionSource(source, () => {
+        if (ability.resolve !== null) {
+          ability.resolve(context);
+        } else if (ability.effect !== null) {
+          applyEffectSpec(ability.effect, context);
+        }
+      });
+    } finally {
+      this.resolvingSourceTimestamp = outerSourceTimestamp;
+    }
     this.emit({ type: "ability-resolved", source });
     this.removeAbilityFromStack(id);
   }
@@ -7799,7 +7818,9 @@ export class Game {
           this.moveObject(id, "exile");
         }
       },
-      flicker: (target, thenCounters) => this.flickerByEffect(target, thenCounters),
+      flicker: (flickered, options) => this.flickerByEffect(source, controller, flickered, options),
+      returnFlickered: (link, thenCounters, underYourControl) =>
+        this.returnFlickeredByEffect(link, thenCounters, underYourControl ? controller : undefined),
       grantFlashback: (target) => this.grantFlashbackByEffect(target),
       putOnLibrary: (target, position) => {
         if (target.kind === "object") this.putOnLibrary(target.object, position);
@@ -10042,60 +10063,163 @@ export class Game {
     );
   }
 
-  /** "Blink": exile a permanent, then immediately return it to the
-   * battlefield under its owner's control (rule 400.7 — needed-cards P9). A
+  /** "Blink": exile permanents, then return them to the battlefield (rule
+   * 400.7 — needed-cards P9). Every target is exiled first and they come back
+   * together, so each one's enters triggers see the others already there. A
    * token exiled this way ceases to exist (rule 111.7) and is never brought
    * back.
    *
+   * With `returnAt` the return is a delayed triggered ability instead (Norin
+   * the Wary), linked to this exile by a fresh `flickerLink` stamped on each
+   * card (rule 610.3); nothing is set up when nothing was exiled, which is
+   * what makes a second Norin trigger in one turn do nothing.
+   *
    * A commander's 903.9a choice is raised by the exile half and has to be
-   * answered first; the return is parked in `pendingFlickerReturn` and
+   * answered first; its return is parked in `pendingFlickerReturns` and
    * finished by `applyCommanderChoice` — declining the command zone leaves
    * the card in exile, which is exactly where the blink expects to find it.
    */
-  private flickerByEffect(target: TargetRef, thenCounters?: FlickerCounters): void {
-    if (target.kind !== "object") return;
-    const id = this.splitOneFromStack(target.object);
-    const object = this.state.objects[id];
-    if (object === undefined || object.zone !== "battlefield") return;
-    const isToken = object.isToken;
-    if (!this.moveObject(id, "exile")) {
-      // A commander's 903.9a choice (the only way `moveObject` defers).
-      // A token never gets one — it ceases to exist — so nothing to park.
-      if (!isToken) {
-        this.state.pendingFlickerReturn = {
-          object: id,
-          ...(thenCounters !== undefined ? { counters: thenCounters } : {}),
-        };
+  private flickerByEffect(
+    source: ObjectId,
+    controller: PlayerId,
+    targets: readonly TargetRef[],
+    options: FlickerOptions,
+  ): void {
+    const returnUnder = options.underYourControl === true ? controller : undefined;
+    const delayed = options.returnAt;
+    // Minted only once something is actually exiled: a trigger that finds
+    // nothing to exile leaves no trace.
+    let link: string | undefined;
+    const linkNow = (): string | undefined =>
+      delayed === undefined ? undefined : (link ??= `flicker-${this.state.nextObjectSeq++}`);
+    const exiled: ObjectId[] = [];
+    const seen = new Set<ObjectId>();
+    for (const target of targets) {
+      if (target.kind !== "object" || seen.has(target.object)) continue;
+      seen.add(target.object);
+      // "Exile Norin": the permanent that put this ability on the stack, not
+      // a new object that has the same id because it left and came back.
+      if (
+        options.fromSource === true &&
+        target.object === source &&
+        this.resolvingSourceTimestamp !== null &&
+        this.state.objects[source]?.timestamp !== this.resolvingSourceTimestamp
+      ) {
+        continue;
       }
+      const id = this.splitOneFromStack(target.object);
+      const object = this.state.objects[id];
+      if (object === undefined || object.zone !== "battlefield") continue;
+      const isToken = object.isToken;
+      if (!this.moveObject(id, "exile")) {
+        // A commander's 903.9a choice (the only way `moveObject` defers).
+        // A token never gets one — it ceases to exist — so nothing to park.
+        if (!isToken) {
+          // The rest don't wait for it: its return (or its link) is
+          // finished by `applyCommanderChoice` once its owner has answered.
+          const deferredLink = linkNow();
+          this.state.pendingFlickerReturns.push({
+            object: id,
+            ...(options.thenCounters !== undefined ? { counters: options.thenCounters } : {}),
+            ...(returnUnder !== undefined ? { returnUnder } : {}),
+            ...(deferredLink !== undefined ? { link: deferredLink } : {}),
+          });
+        }
+        continue;
+      }
+      if (this.state.objects[id]?.zone !== "exile") continue;
+      this.emit({ type: "permanent-exiled", object: id });
+      if (isToken) continue;
+      // After the move: `moveObject` clears the link on the way.
+      const exileLink = linkNow();
+      if (exileLink !== undefined) this.state.objects[id].flickerLink = exileLink;
+      exiled.push(id);
+    }
+    if (delayed === undefined) {
+      this.completeFlickerReturn(exiled, options.thenCounters, returnUnder);
       return;
     }
-    if (this.state.objects[id]?.zone !== "exile") return;
-    this.emit({ type: "permanent-exiled", object: id });
-    if (isToken) return;
-    this.completeFlickerReturn(id, thenCounters);
+    // No link means nothing was exiled (or is waiting to be): no return.
+    if (link === undefined) return;
+    this.createDelayedTrigger(
+      source,
+      controller,
+      delayed,
+      {
+        kind: "return-flickered",
+        link,
+        ...(options.thenCounters !== undefined ? { thenCounters: options.thenCounters } : {}),
+        ...(returnUnder !== undefined ? { underYourControl: true } : {}),
+      },
+      options.returnText ?? "Return the exiled card to the battlefield.",
+      [],
+    );
   }
 
-  /** The return half of a blink: bring `id` back from exile, having already
-   * confirmed that's where it is. Shared by the ordinary path and the one
-   * that had to wait on a commander's 903.9a choice. */
-  private completeFlickerReturn(id: ObjectId, counters?: FlickerCounters): void {
-    // Rule 400.7: the object returning to the battlefield is brand new, so
-    // nothing that was attached to the *old* object stays attached — unlike
-    // an ordinary exile, `id` comes straight back here before a state-based
-    // action ever gets a chance to notice it left, so its old attachments
-    // won't have fallen off on their own (704.5n).
-    this.detachFrom(id);
-    this.moveObject(id, "battlefield");
-    this.emit({ type: "permanent-entered-battlefield", object: id });
+  /** The delayed return of a `flicker` with `returnAt`: every card still in
+   * exile from that exile (rule 610.3), together. Its link is spent here, so
+   * nothing can be returned twice. */
+  private returnFlickeredByEffect(
+    link: string,
+    counters: FlickerCounters | undefined,
+    returnUnder: PlayerId | undefined,
+  ): void {
+    const linked = this.state.zones.shared.exile.filter(
+      (id) => this.state.objects[id]?.flickerLink === link,
+    );
+    for (const id of linked) this.state.objects[id].flickerLink = undefined;
+    this.completeFlickerReturn(
+      linked.filter((id) => !this.state.objects[id].isToken),
+      counters,
+      returnUnder,
+    );
+  }
+
+  /** The return half of a blink: bring `ids` back from exile together,
+   * having already confirmed that's where they are. Shared by the immediate
+   * path, the delayed one, and the one that had to wait on a commander's
+   * 903.9a choice. `returnUnder` is who controls them when it isn't their
+   * owners (`underYourControl`). */
+  private completeFlickerReturn(
+    ids: readonly ObjectId[],
+    counters?: FlickerCounters,
+    returnUnder?: PlayerId,
+  ): void {
+    const entered: ObjectId[] = [];
+    for (const id of ids) {
+      // Rule 400.7: the object returning to the battlefield is brand new, so
+      // nothing that was attached to the *old* object stays attached — unlike
+      // an ordinary exile, `id` comes straight back here before a state-based
+      // action ever gets a chance to notice it left, so its old attachments
+      // won't have fallen off on their own (704.5n).
+      this.detachFrom(id);
+      this.moveObject(id, "battlefield");
+      const object = this.state.objects[id];
+      if (object?.zone !== "battlefield") continue;
+      if (returnUnder !== undefined && object.controller !== returnUnder) {
+        // Layer 2 is recomputed every SBA pass, so this goes through the
+        // control-effect path, as `putOntoBattlefieldByEffect` does.
+        this.gainControlByEffect(returnUnder, { kind: "object", object: id }, false);
+        object.summoningSick = true;
+      }
+      entered.push(id);
+    }
+    // Announced once every one of them is back: they return simultaneously,
+    // so each one's enters triggers see the others (rule 603.6a).
+    for (const id of entered) {
+      this.emit({ type: "permanent-entered-battlefield", object: id });
+    }
     if (counters === undefined) return;
-    if (this.state.objects[id]?.zone !== "battlefield") return;
-    const matches =
-      counters.onlyIf === undefined ||
-      matchesFilter(this.state, this.registry, id, counters.onlyIf, {
-        you: this.state.objects[id].controller,
-      });
-    if (matches) {
-      this.addCounter({ kind: "object", object: id }, counters.kind, counters.amount);
+    for (const id of entered) {
+      if (this.state.objects[id]?.zone !== "battlefield") continue;
+      const matches =
+        counters.onlyIf === undefined ||
+        matchesFilter(this.state, this.registry, id, counters.onlyIf, {
+          you: this.state.objects[id].controller,
+        });
+      if (matches) {
+        this.addCounter({ kind: "object", object: id }, counters.kind, counters.amount);
+      }
     }
   }
 
@@ -11610,6 +11734,8 @@ export class Game {
     // nothing comes back when the Light does. `exileByEffect` sets this
     // *after* its own move, so an exile doesn't clear its own mark.
     object.exiledBy = undefined;
+    // Likewise a delayed flicker return's link (Norin the Wary, rule 610.3).
+    object.flickerLink = undefined;
     object.overloaded = undefined;
     // The adventure "may cast the creature from exile" permission (rule 715.3)
     // ends when the card changes zones. `resolveTopOfStack` re-sets it *after*

@@ -61,6 +61,16 @@ export interface FlickerCounters {
  * the effect's controller's perspective (Scourge of Valkas: `{ countOf:
  * { subtype: "Dragon", controlledBy: "you" } }`; Craterhoof Behemoth:
  * `{ countOf: { type: "creature", controlledBy: "you" } }`). */
+/** How a `flicker` returns what it exiled — the non-target half of its
+ * {@link EffectSpec}. */
+export interface FlickerOptions {
+  readonly thenCounters?: FlickerCounters;
+  readonly underYourControl?: boolean;
+  readonly returnAt?: DelayedTriggerTiming;
+  readonly returnText?: string;
+  /** The effect named its own source (`target: "source"`). */
+  readonly fromSource?: boolean;
+}
 export type EffectAmount =
   | number
   | "x"
@@ -511,9 +521,46 @@ export type EffectSpec =
        * stolen control all fall off). A token exiled this way ceases to exist
        * and never returns (rule 111.7 / 704.5d). needed-cards P9 — Essence Flux. */
       readonly kind: "flicker";
-      readonly target: number;
+      /**
+       * What is exiled: a target slot, `"source"` (the ability's own
+       * permanent — Norin the Wary's "exile Norin"), `"trigger-object"`, or
+       * several target slots at once (Ghostly Flicker's "two target …"),
+       * which are exiled together and return together — every one is on the
+       * battlefield before any of their enters triggers is looked at.
+       *
+       * `"source"` names the permanent the ability came from *as it was when
+       * the ability was put on the stack*: one that has since left and come
+       * back is a new object (rule 400.7), and is left alone.
+       */
+      readonly target: EffectTargetRef | readonly number[];
       /** See {@link FlickerCounters} — Essence Flux's Spirit clause. */
       readonly thenCounters?: FlickerCounters;
+      /** Return under the effect's controller's control rather than the
+       * owner's (Ghostly Flicker's "under your control"). */
+      readonly underYourControl?: boolean;
+      /**
+       * Return later rather than at once: a delayed triggered ability (rule
+       * 603.7) at this step — Norin's "at the beginning of the next end
+       * step". The return is *linked* to this exile (rule 610.3): a card that
+       * leaves exile in the meantime, even to come straight back, is a new
+       * object and stays where it is, and nothing is set up at all when
+       * nothing was exiled.
+       */
+      readonly returnAt?: DelayedTriggerTiming;
+      /** The delayed return's text, for the log and the stack. */
+      readonly returnText?: string;
+    }
+  | {
+      /**
+       * The delayed half of a `flicker` with `returnAt` — never authored on a
+       * card: the flicker builds it as it resolves, since `link` only exists
+       * once something has been exiled. Returns every card still in exile
+       * carrying `GameObject.flickerLink === link`.
+       */
+      readonly kind: "return-flickered";
+      readonly link: string;
+      readonly thenCounters?: FlickerCounters;
+      readonly underYourControl?: boolean;
     }
   | {
       /** Counter a target spell on the stack — it moves to its owner's
@@ -1329,9 +1376,17 @@ export interface EffectApi {
   chooseCreatureType(then: EffectSpec): void;
   /** Exile every card in `target`'s graveyard (a player — Bojuka Bog). */
   exileGraveyard(target: TargetRef): void;
-  /** Exile `target`, then immediately return it to the battlefield under its
-   * owner's control — see the `"flicker"` {@link EffectSpec}. */
-  flicker(target: TargetRef, thenCounters?: FlickerCounters): void;
+  /** Exile `targets`, then return them to the battlefield together — at once,
+   * or linked to a delayed return — see the `"flicker"` {@link EffectSpec}.
+   * `fromSource` marks a target that is the ability's own source, which is
+   * skipped if it has become a new object since. */
+  flicker(targets: readonly TargetRef[], options: FlickerOptions): void;
+  /** See the `"return-flickered"` {@link EffectSpec}. */
+  returnFlickered(
+    link: string,
+    thenCounters: FlickerCounters | undefined,
+    underYourControl: boolean,
+  ): void;
   /** Grant flashback to `target` (an instant/sorcery card in a graveyard) for
    * the rest of the turn, at a flashback cost equal to its mana cost
    * (Snapcaster Mage). */
@@ -1867,10 +1922,25 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       return;
     }
     case "flicker": {
-      const target = ctx.targets[spec.target];
-      if (target !== undefined) ctx.flicker(target, spec.thenCounters);
+      const refs: EffectTargetRef[] =
+        typeof spec.target === "object" ? [...spec.target] : [spec.target];
+      const targets: TargetRef[] = [];
+      for (const ref of refs) {
+        const target = resolveEffectTarget(ref, ctx);
+        if (target !== undefined) targets.push(target);
+      }
+      ctx.flicker(targets, {
+        ...(spec.thenCounters !== undefined ? { thenCounters: spec.thenCounters } : {}),
+        ...(spec.underYourControl === true ? { underYourControl: true } : {}),
+        ...(spec.returnAt !== undefined ? { returnAt: spec.returnAt } : {}),
+        ...(spec.returnText !== undefined ? { returnText: spec.returnText } : {}),
+        ...(spec.target === "source" ? { fromSource: true } : {}),
+      });
       return;
     }
+    case "return-flickered":
+      ctx.returnFlickered(spec.link, spec.thenCounters, spec.underYourControl === true);
+      return;
     case "grant-flashback": {
       const target = ctx.targets[spec.target];
       if (target !== undefined) ctx.grantFlashback(target);

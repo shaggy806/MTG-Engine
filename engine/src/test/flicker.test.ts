@@ -147,12 +147,12 @@ describe("Essence Flux on a commander — the 903.9a choice interrupts the blink
     const { game, commander } = flickerCommander(false);
     expect(game.state.objects[commander].zone).toBe("battlefield");
     expect(game.state.objects[commander].counters["+1/+1"]).toBe(1);
-    expect(game.state.pendingFlickerReturn).toBeNull();
+    expect(game.state.pendingFlickerReturns).toEqual([]);
   });
 
   it("choosing the command zone takes it out of the blink's reach", () => {
     const { game, commander } = flickerCommander(true);
     expect(game.state.objects[commander].zone).toBe("command");
-    expect(game.state.pendingFlickerReturn).toBeNull();
+    expect(game.state.pendingFlickerReturns).toEqual([]);
   });
 });
