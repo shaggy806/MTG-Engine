@@ -598,6 +598,12 @@ export type TriggerSpec =
       readonly batched?: boolean;
     }
   | {
+      /** A player surveilled (rule 701.42) — Mirko, Obsessive Theorist's
+       * "whenever you surveil". Once per surveil, however many cards. */
+      readonly on: "surveils";
+      readonly who: TriggerWho;
+    }
+  | {
       /** A player won a coin flip (rule 705) — "whenever a player wins a
        * coin flip" (Okaun, Zndrsplt: `who: "any"`), "whenever you win a coin
        * flip" (`"you"`). Once per flip won. */

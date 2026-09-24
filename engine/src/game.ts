@@ -57,6 +57,7 @@ import type {
 } from "./cards.js";
 import {
   assignedCombatDamage,
+  countValue,
   damageDealtThisTurn,
   turnHistoryCount,
   cardTypesInGraveyards,
@@ -3475,12 +3476,35 @@ export class Game {
     });
   }
 
+  /** `player`'s maximum hand size as the statics on the battlefield have it
+   * (`maxHandSize`): each `set` (less its `minus` count) in battlefield
+   * order, then every `adjust`, never below 0. */
+  private maxHandSizeOf(player: PlayerId): number {
+    let size = this.state.players[player].maxHandSize;
+    let adjust = 0;
+    for (const id of this.state.zones.shared.battlefield) {
+      const source = this.state.objects[id];
+      if (hasLostAbilities(source) || this.state.players[source.controller]?.hasLost === true) continue;
+      for (const ability of this.registry.get(printedCardName(source)).static) {
+        const rule = ability.maxHandSize;
+        if (rule === undefined) continue;
+        const reaches = rule.who === "you" ? player === source.controller : player !== source.controller;
+        if (!reaches || !this.staticActive(source, ability)) continue;
+        if (rule.set !== undefined) {
+          const minus =
+            rule.minus === undefined ? 0 : countValue(rule.minus, this.state, this.registry, source.controller);
+          size = rule.set - minus;
+        }
+        adjust += rule.adjust ?? 0;
+      }
+    }
+    return Math.max(0, size + adjust);
+  }
+
   private cleanupStep(): void {
     const active = this.activePlayer;
     const hand = this.state.zones.perPlayer[active].hand;
-    const excess = this.hasNoMaxHandSize(active)
-      ? 0
-      : hand.length - this.state.players[active].maxHandSize;
+    const excess = this.hasNoMaxHandSize(active) ? 0 : hand.length - this.maxHandSizeOf(active);
     if (excess > 0) {
       // Ask for the discard; finishCleanup runs once it is dispatched.
       this.state.awaiting = { kind: "discard", player: active, count: excess };
@@ -9260,6 +9284,14 @@ export class Game {
           event.type === "cards-put-into-graveyard" &&
           this.graveyardArrivals(spec, event.arrivals, self).length > 0
         );
+      case "surveils":
+        return (
+          event.type === "scried" &&
+          event.mode === "surveil" &&
+          (spec.who === "any" ||
+            (spec.who === "you" && event.player === self.controller) ||
+            (spec.who === "opponent" && event.player !== self.controller))
+        );
       case "wins-coin-flip":
         return (
           event.type === "coin-flipped" &&
@@ -10158,6 +10190,16 @@ export class Game {
         cardTypesInGraveyards(this.state, this.registry, controller, filter),
       thisWay: thisWayDone,
       damageDealtThisTurn: (players, combat, colors) => damageDealtThisTurn(this.state, players, combat, colors),
+      opponentsAttacked: () => {
+        const attacked = new Set<PlayerId>();
+        for (const id of this.state.zones.shared.battlefield) {
+          const object = this.state.objects[id];
+          const at = object.attacking;
+          if (object.controller !== controller || at === null) continue;
+          if (this.state.players[at as PlayerId] !== undefined && at !== controller) attacked.add(at as PlayerId);
+        }
+        return attacked.size;
+      },
       turnHistoryCount: (what, players, filter) =>
         turnHistoryCount(this.state, this.registry, players, what, filter, controller),
       cardTypesAmong: (objects, asLastKnown) => {

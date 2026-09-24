@@ -1083,7 +1083,7 @@ export function cardTypesInGraveyards(
 }
 
 /** The current value of a CDA's dynamic count (rule 604.3). */
-function countValue(
+export function countValue(
   spec: CountSpec,
   state: GameState,
   registry: CardRegistry,

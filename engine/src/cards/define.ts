@@ -842,6 +842,22 @@ export interface StaticAbility {
    * it's read straight off the battlefield at cleanup rather than through the
    * layer system. */
   readonly noMaxHandSize?: boolean;
+  /**
+   * A maximum hand size, read at cleanup like `noMaxHandSize` (which wins
+   * over it): `who`'s becomes `set` less the live count `minus` (a
+   * `CountSpec`, from this permanent's controller's side), and `adjust`
+   * changes it by that much. "Your maximum hand size is eleven" is `{ who:
+   * "you", set: 11 }`; Winter, Misanthropic Guide's "each opponent's maximum
+   * hand size is equal to seven minus the number of those card types" is `{
+   * who: "opponents", set: 7, minus: { cardTypesInGraveyard: { ownedBy:
+   * "you" } } }` behind its delirium `condition`. Never below 0.
+   */
+  readonly maxHandSize?: {
+    readonly who: "you" | "opponents";
+    readonly set?: number;
+    readonly minus?: CountSpec;
+    readonly adjust?: number;
+  };
   /** "This artifact doesn't untap during your untap step" (Mana Vault, Basalt
    * Monolith). Only its controller's own untap step: something that untaps
    * it during another player's (Seedborn Muse) still does. `affects` is

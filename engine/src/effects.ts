@@ -298,6 +298,11 @@ export type EffectAmount =
    * `turn-history` condition does. See `TurnHistory`.
    */
   | { readonly turnHistory: TurnHistoryKind; readonly who?: PlayerScope; readonly filter?: CardFilter }
+  /** How many opponents the controller is attacking with creatures this
+   * combat — melee's "+1/+1 for each opponent you attacked with a creature
+   * this combat" (rule 702.121). A planeswalker attacked isn't its
+   * controller. */
+  | { readonly opponentsAttacked: true }
   /** How much damage sources the scope's players controlled dealt this turn
    * — see the `damage-dealt-this-turn` condition. */
   | {
@@ -1938,6 +1943,8 @@ export interface EffectApi {
    * the permanents it has made them sacrifice, so far — see the `thisWay`
    * {@link EffectAmount}. */
   thisWay(what: ThisWayKind, who?: PlayerScope, filter?: CardFilter): readonly ObjectId[];
+  /** See the `{ opponentsAttacked }` {@link EffectAmount}. */
+  opponentsAttacked(): number;
   /** See the `{ damageDealtThisTurn }` {@link EffectAmount}. */
   damageDealtThisTurn(players: readonly PlayerId[], combat?: boolean, colors?: readonly Color[]): number;
   /** See the `{ turnHistory }` {@link EffectAmount}. */
@@ -2589,6 +2596,7 @@ export function amountValue(
     return ctx.colorsAmong(amount.colorsAmong, amount.excludeSelf === true ? [ctx.source] : []);
   }
   if ("cardTypesInGraveyard" in amount) return ctx.cardTypesInGraveyard(amount.cardTypesInGraveyard);
+  if ("opponentsAttacked" in amount) return ctx.opponentsAttacked();
   if ("damageDealtThisTurn" in amount) {
     return ctx.damageDealtThisTurn(ctx.playersInScope(amount.who ?? "you"), amount.combat, amount.colors);
   }

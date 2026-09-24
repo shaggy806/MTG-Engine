@@ -78,7 +78,10 @@
   "condition:player-state-thresholds",
   "trigger:cards-exiled-batch",
   "replacement:new-event-replacements",
-  "mechanic:coin-flip"
+  "mechanic:coin-flip",
+  "trigger:surveils",
+  "static:max-hand-size",
+  "keyword:melee"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
