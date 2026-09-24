@@ -70,7 +70,8 @@
   "effect:choices-by-other-players",
   "static:combat-restriction-extensions",
   "condition:entry-provenance",
-  "keyword:firebending"
+  "keyword:firebending",
+  "effect:cast-and-activate-restrictions"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

@@ -1859,6 +1859,13 @@ export interface GameState {
    * a permanent it puts onto the battlefield records as `entry.by`. Absent
    * while a spell resolves, and between resolutions. */
   resolvingSource?: { readonly source: ObjectId; readonly timestamp: number };
+  /** This turn's one-shot prohibitions (the `prohibit` effect): players who
+   * can't cast spells and/or activate abilities, and permanents — the stint
+   * they were in — whose activated abilities can't be activated. Turn-scoped. */
+  turnProhibitions?: {
+    players: { readonly player: PlayerId; readonly spells: boolean; readonly abilities: boolean }[];
+    permanents: { readonly object: ObjectId; readonly zoneChangeCount: number }[];
+  };
   /** Combat restrictions imposed as a rule for the rest of the turn — "creatures
    * your opponents control can't block this turn" (the `restrict` effect's
    * `filter` form): every permanent matching `filter`, from `you`'s side,

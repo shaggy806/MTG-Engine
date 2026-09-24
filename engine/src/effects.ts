@@ -1183,6 +1183,21 @@ export type EffectSpec =
     }
   | {
       /**
+       * Prohibitions until end of turn: "this turn, that player can't cast
+       * spells or activate abilities" (Sen Triplets — `who`, a target slot
+       * holding a player or a scope, default you, with `spells` and/or
+       * `abilities`), "its activated abilities can't be activated this turn"
+       * (Koma, Cosmos Serpent — `target`, a permanent, this stint of it).
+       * Mana abilities are activated abilities too.
+       */
+      readonly kind: "prohibit";
+      readonly who?: number | PlayerScope;
+      readonly target?: EffectTargetRef;
+      readonly spells?: boolean;
+      readonly abilities?: boolean;
+    }
+  | {
+      /**
        * Combat restrictions until end of turn — "target creature can't block
        * this turn", "~ must be blocked each combat this turn if able"
        * (Anzrag, the Quake-Mole: `target: "source"`, `restrictions:
@@ -2153,6 +2168,15 @@ export interface EffectApi {
   ): void;
   /** See the `"ward"` {@link EffectSpec}. */
   ward(cost: WardCost): void;
+  /** See the `"prohibit"` {@link EffectSpec}: `players` can't cast spells
+   * and/or activate abilities this turn, or `object`'s activated abilities
+   * can't be activated. */
+  prohibit(
+    players: readonly PlayerId[],
+    object: TargetRef | undefined,
+    spells: boolean,
+    abilities: boolean,
+  ): void;
   /** See the `"restrict"` {@link EffectSpec}: `target`'s restrictions until
    * end of turn, or with `filter` a turn-wide rule. */
   restrict(
@@ -3212,6 +3236,24 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       if (target !== undefined) {
         ctx.grantKeyword(target, spec.keyword, spec.duration);
       }
+      return;
+    }
+    case "prohibit": {
+      if (spec.target !== undefined) {
+        const target = resolveEffectTarget(spec.target, ctx);
+        if (target !== undefined) ctx.prohibit([], target, false, true);
+        return;
+      }
+      const slot = typeof spec.who === "number" ? ctx.targets[spec.who] : undefined;
+      const players =
+        spec.who === undefined
+          ? [ctx.controller]
+          : typeof spec.who === "number"
+            ? slot?.kind === "player"
+              ? [slot.player]
+              : []
+            : ctx.playersInScope(spec.who);
+      ctx.prohibit(players, undefined, spec.spells === true, spec.abilities === true);
       return;
     }
     case "restrict": {

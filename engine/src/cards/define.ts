@@ -697,6 +697,28 @@ export interface StaticAbility {
    * creatures with flying" (`{ keyword: "flying" }`). The attacker is
    * matched from this permanent's controller's side. */
   readonly canBlockOnly?: CardFilter;
+  /**
+   * A prohibition on casting and activating ("can't" beats "can" — rule
+   * 101.2): `who` — `"opponents"`, `"you"` or `"each-player"`, from this
+   * permanent's controller's side — can't cast `spells` (every spell, or
+   * ones matching a filter: Codie, Vociferous Codex's "you can't cast
+   * permanent spells"), and can't activate abilities of permanents matching
+   * `abilitiesOf` — Myrel, Shield of Argive's "artifacts, creatures,
+   * enchantments, or planeswalkers", mana abilities included, so those
+   * can't pay for anything either. Time it with `condition`: Myrel's
+   * "during your turn" is `your-turn`, Marisi, Breaker of the Coil's "during
+   * combat" a `turn-structure` condition with `duringCombat`. `affects` is
+   * irrelevant.
+   */
+  readonly prohibits?: {
+    readonly who: "opponents" | "you" | "each-player";
+    readonly spells?: true | CardFilter;
+    readonly abilitiesOf?: CardFilter;
+  };
+  /** "You may cast spells as though they had flash" (Heliod, the Warped
+   * Eclipse) — every spell (`true`) or ones matching a filter ("creature
+   * spells"), for this permanent's controller. */
+  readonly castAsThoughFlash?: true | CardFilter;
   /** "Each player may attack only the nearest opponent in the last chosen
    * direction and planeswalkers controlled by that player" (Pramikon, Sky
    * Rampart, with `chooseOnEnter: ["left", "right"]`). A rule for every
@@ -1196,6 +1218,15 @@ export interface CardDefinition {
   /** An Aura whose controller controls the enchanted permanent for as long as
    * it stays attached (Mind Control — rule 613.1b, layer 2). */
   readonly controlEnchanted: boolean;
+  /** "You can't cast this spell unless …" — checked from whatever zone it's
+   * cast, the command zone included, from the caster's side: Rakdos, Lord of
+   * Riots' "unless an opponent lost life this turn" is `{ kind: "turn-stat",
+   * stat: "life-lost", who: "opponent", atLeast: 1 }`. `null` for none. */
+  readonly castOnlyIf: StaticCondition | null;
+  /** Split second (rule 702.61): as long as this spell is on the stack,
+   * players can't cast other spells or activate abilities that aren't mana
+   * abilities. Triggered abilities still trigger. */
+  readonly splitSecond: boolean;
   /** This permanent enters as a copy of another permanent its controller
    * chooses (Clone — rule 707); `filter` narrows what may be copied. `null`
    * for a normal card. */
@@ -1424,6 +1455,8 @@ interface CardDraft {
   static?: readonly StaticAbility[];
   revealsOwnLibraryTop?: boolean;
   controlEnchanted?: boolean;
+  castOnlyIf?: StaticCondition;
+  splitSecond?: boolean;
   copyOnEnter?: { readonly filter: "creature" };
   chooseCreatureTypeOnEnter?: boolean;
   chooseOnEnter?: readonly string[];
@@ -1497,6 +1530,8 @@ export function defineCard(draft: CardDraft): CardDefinition {
     static: [...(draft.static ?? []), ...loyaltyStatic],
     revealsOwnLibraryTop: draft.revealsOwnLibraryTop ?? false,
     controlEnchanted: draft.controlEnchanted ?? false,
+    castOnlyIf: draft.castOnlyIf ?? null,
+    splitSecond: draft.splitSecond ?? false,
     copyOnEnter: draft.copyOnEnter ?? null,
     chooseCreatureTypeOnEnter: draft.chooseCreatureTypeOnEnter ?? false,
     chooseOnEnter: draft.chooseOnEnter ?? null,

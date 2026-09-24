@@ -3082,6 +3082,7 @@ export class Game {
     this.state.extraCombats = 0;
     this.state.spellsCastThisTurn = 0;
     delete this.state.turnRestrictions;
+    delete this.state.turnProhibitions;
     delete this.state.combatsAfterThisCombat;
     delete this.state.extraMainPhases;
     delete this.state.turn.combatPhases;
@@ -4761,6 +4762,8 @@ export class Game {
     const owner = object.owner;
     const def = this.registry.get(object.cardName);
     const grantHaste = opts.grantHaste ?? false;
+    // An instruction to cast it doesn't beat a "can't cast" (rule 101.2).
+    if (this.whyProhibitedFromCasting(owner, cardId, def) !== null) return false;
 
     const optionsPerSlot: TargetRef[][] = [];
     for (const spec of def.targets) {
@@ -5599,6 +5602,8 @@ export class Game {
     const blocked = this.whyCannotAct(player);
     if (blocked !== null) return blocked;
     const def = this.faceDef(cardId, face);
+    const prohibited = this.whyProhibitedFromCasting(player, cardId, def);
+    if (prohibited !== null) return prohibited;
     if (via === "flashback") {
       if (this.flashbackCostOf(cardId) === null) return `${def.name} does not have flashback`;
       if (!this.state.zones.perPlayer[player].graveyard.includes(cardId)) {
@@ -5680,9 +5685,13 @@ export class Game {
       return "only an escape cast exiles cards from the graveyard to pay for it";
     }
     if (def.types.includes("land")) return "lands are played, not cast";
-    // Instant-speed if it's an instant or has flash (rule 702.8); otherwise
-    // sorcery timing applies.
-    if (!def.types.includes("instant") && !def.keywords.includes("flash")) {
+    // Instant-speed if it's an instant, has flash (rule 702.8) or may be cast
+    // as though it had flash; otherwise sorcery timing applies.
+    if (
+      !def.types.includes("instant") &&
+      !def.keywords.includes("flash") &&
+      !this.castsAsThoughFlash(player, cardId)
+    ) {
       const timing = this.whyNotSorcerySpeed(player, `cast ${def.name}`);
       if (timing !== null) return timing;
     }
@@ -6570,6 +6579,19 @@ export class Game {
         return `${def.name} has lost its abilities`;
       }
     }
+    // Split second (rule 702.61b) leaves mana abilities alone; a prohibition
+    // doesn't.
+    if (!isManaAbility(ability)) {
+      for (const id of this.state.zones.shared.stack) {
+        const spell = this.state.objects[id];
+        if (spell?.kind === "card" && this.registry.get(printedCardName(spell)).splitSecond) {
+          return `${printedCardName(spell)} has split second`;
+        }
+      }
+    }
+    if (this.abilitiesProhibited(player, source)) {
+      return `${player} can't activate ${def.name}'s abilities`;
+    }
     if (
       ability.condition !== undefined &&
       // Rule 602.5: "Activate only if …" is a check against the game state as
@@ -7088,6 +7110,8 @@ export class Game {
       const object = this.state.objects[id];
       if (object.controller !== player) continue;
       if (hasLostAbilities(object)) continue; // layer 6 — no mana ability
+      // "Can't activate abilities of …" covers mana abilities (Myrel).
+      if (this.abilitiesProhibited(player, object)) continue;
       // A `{T}` ability needs the permanent untapped and not summoning sick;
       // an untapped one (Vivi Ornitier's "{0}: Add …") needs neither.
       const canTap = !object.tapped && !this.tapAbilityBlockedBySickness(object);
@@ -10451,6 +10475,7 @@ export class Game {
         this.grantKeyword(target, keyword, duration),
       restrict: (target, filter, restrictions) =>
         this.restrict(controller, target, filter, restrictions),
+      prohibit: (players, object, spells, abilities) => this.prohibit(players, object, spells, abilities),
       grantTriggered: (target, ability, duration) =>
         this.grantTriggered(target, ability, duration),
       grantPlayerHexproof: (who) => {
@@ -12100,6 +12125,126 @@ export class Game {
     });
   }
 
+  /** See the `"prohibit"` {@link EffectSpec}. */
+  private prohibit(
+    players: readonly PlayerId[],
+    target: TargetRef | undefined,
+    spells: boolean,
+    abilities: boolean,
+  ): void {
+    const record = (this.state.turnProhibitions ??= { players: [], permanents: [] });
+    if (target !== undefined) {
+      if (target.kind !== "object") return;
+      const object = this.state.objects[target.object];
+      if (object === undefined || object.zone !== "battlefield") return;
+      record.permanents.push({ object: object.id, zoneChangeCount: object.zoneChangeCount ?? 0 });
+      this.emit({ type: "prohibition-imposed", players: [], object: object.id, spells: false, abilities: true });
+      return;
+    }
+    if (players.length === 0 || (!spells && !abilities)) return;
+    for (const player of players) record.players.push({ player, spells, abilities });
+    this.emit({ type: "prohibition-imposed", players: [...players], spells, abilities });
+  }
+
+  /**
+   * The battlefield statics whose `prohibits` binds `player` right now (its
+   * `who` from the static's controller's side, its `condition` met), each
+   * with its source.
+   */
+  private prohibitionsOn(
+    player: PlayerId,
+  ): { readonly source: GameObject; readonly prohibits: NonNullable<StaticAbility["prohibits"]> }[] {
+    const out: { source: GameObject; prohibits: NonNullable<StaticAbility["prohibits"]> }[] = [];
+    for (const id of this.state.zones.shared.battlefield) {
+      const source = this.state.objects[id];
+      if (hasLostAbilities(source) || this.state.players[source.controller]?.hasLost === true) continue;
+      for (const ability of this.registry.get(printedCardName(source)).static) {
+        const prohibits = ability.prohibits;
+        if (prohibits === undefined) continue;
+        const binds =
+          prohibits.who === "each-player" ||
+          (prohibits.who === "you" ? player === source.controller : player !== source.controller);
+        if (!binds) continue;
+        if (ability.condition !== undefined && !this.staticActive(source, ability)) continue;
+        out.push({ source, prohibits });
+      }
+    }
+    return out;
+  }
+
+  /**
+   * Why `player` can't cast `cardId` (its face `def`) whatever the timing
+   * and cost: a split-second spell on the stack (rule 702.61), a "can't
+   * cast" prohibition this turn or from a static, or the card's own
+   * `castOnlyIf`. `null` if none.
+   */
+  private whyProhibitedFromCasting(player: PlayerId, cardId: ObjectId, def: CardDefinition): string | null {
+    for (const id of this.state.zones.shared.stack) {
+      const spell = this.state.objects[id];
+      if (id === cardId || spell?.kind !== "card") continue;
+      if (this.registry.get(printedCardName(spell)).splitSecond) {
+        return `${printedCardName(spell)} has split second`;
+      }
+    }
+    if (this.state.turnProhibitions?.players.some((p) => p.player === player && p.spells) === true) {
+      return `${player} can't cast spells this turn`;
+    }
+    for (const { source, prohibits } of this.prohibitionsOn(player)) {
+      const spells = prohibits.spells;
+      if (spells === undefined) continue;
+      if (spells === true || matchesFilter(this.state, this.registry, cardId, spells, { you: source.controller })) {
+        return `${player} can't cast ${def.name} (${printedCardName(source)})`;
+      }
+    }
+    const object = this.state.objects[cardId];
+    if (
+      def.castOnlyIf !== null &&
+      object !== undefined &&
+      !staticConditionMet(this.state, this.registry, object, def.castOnlyIf, { includeSelf: true })
+    ) {
+      return `${def.name} can't be cast now`;
+    }
+    return null;
+  }
+
+  /** Whether `player` is barred from activating `source`'s activated
+   * abilities — mana abilities included — this turn or by a static. */
+  private abilitiesProhibited(player: PlayerId, source: GameObject): boolean {
+    const turn = this.state.turnProhibitions;
+    if (turn !== undefined) {
+      if (turn.players.some((p) => p.player === player && p.abilities)) return true;
+      if (
+        turn.permanents.some(
+          (p) => p.object === source.id && p.zoneChangeCount === (source.zoneChangeCount ?? 0),
+        )
+      ) {
+        return true;
+      }
+    }
+    if (source.zone !== "battlefield") return false;
+    return this.prohibitionsOn(player).some(
+      ({ source: by, prohibits }) =>
+        prohibits.abilitiesOf !== undefined &&
+        matchesFilter(this.state, this.registry, source.id, prohibits.abilitiesOf, { you: by.controller }),
+    );
+  }
+
+  /** "You may cast spells as though they had flash" (Heliod, the Warped
+   * Eclipse) — a static of `player`'s that reaches `cardId`. */
+  private castsAsThoughFlash(player: PlayerId, cardId: ObjectId): boolean {
+    for (const id of this.state.zones.shared.battlefield) {
+      const source = this.state.objects[id];
+      if (source.controller !== player || hasLostAbilities(source)) continue;
+      for (const ability of this.registry.get(printedCardName(source)).static) {
+        const flash = ability.castAsThoughFlash;
+        if (flash === undefined) continue;
+        if (ability.condition !== undefined && !this.staticActive(source, ability)) continue;
+        if (flash === true || matchesFilter(this.state, this.registry, cardId, flash, { you: player })) return true;
+      }
+    }
+    return false;
+  }
+
   /** See the `"restrict"` {@link EffectSpec}: `target`'s combat restrictions
    * until end of turn (a modifier, one token peeled off a stack), or with
    * `filter` a rule over everything matching it for the rest of the turn. */
@@ -12196,6 +12341,11 @@ export class Game {
     }
     if ("playerCounters" in amount) {
       return this.state.players[player]?.counters[amount.playerCounters] ?? 0;
+    }
+    if ("turnStat" in amount) {
+      return this.state.turnOrder
+        .filter((p) => amount.who === "any-player" || (amount.who === "you") === (p === player))
+        .reduce((n, p) => n + turnStatOf(this.state, p, amount.turnStat), 0);
     }
     return this.state.zones.perPlayer[player].graveyard.filter((id) =>
       matchesFilter(this.state, this.registry, id, amount.cardsInGraveyard, { you: player }),

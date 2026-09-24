@@ -9,7 +9,7 @@
  * Costs and effects reuse the spell vocabulary.
  */
 
-import type { StaticCondition } from "./cards/define.js";
+import type { StaticCondition, TurnStat } from "./cards/define.js";
 import type { EffectSpec, SpellResolver } from "./effects.js";
 import type { GameEvent } from "./events.js";
 import type { PlayerCounterKind, ZoneType } from "./state.js";
@@ -181,6 +181,11 @@ export type CostReductionAmount =
   /** One per counter of a kind its controller has — Mizzix of the Izmagnus's
    * "{1} less to cast for each experience counter you have". */
   | { readonly playerCounters: PlayerCounterKind }
+  /** A turn stat summed over players — Rakdos, Lord of Riots' "{1} less to
+   * cast for each 1 life your opponents have lost this turn" is `{
+   * turnStat: "life-lost", who: "opponent" }`; Heliod, the Warped Eclipse's
+   * "for each card your opponents have drawn this turn" `"cards-drawn"`. */
+  | { readonly turnStat: TurnStat; readonly who: "you" | "opponent" | "any-player" }
   /** A sum or maximum over permanents — Ghalta, Primal Hunger's "costs {X}
    * less to cast, where X is the **total power** of creatures you control".
    * Clamped at 0. See `AggregateSpec`. */

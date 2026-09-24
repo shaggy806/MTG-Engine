@@ -624,6 +624,16 @@ export type GameEvent =
       readonly to: PlayerId;
     })
   | (Base & {
+      /** Prohibitions for the rest of the turn (the `prohibit` effect):
+       * `players` can't cast spells and/or activate abilities, or `object`'s
+       * activated abilities can't be activated. */
+      readonly type: "prohibition-imposed";
+      readonly players: readonly PlayerId[];
+      readonly object?: ObjectId;
+      readonly spells: boolean;
+      readonly abilities: boolean;
+    })
+  | (Base & {
       /** Combat restrictions until end of turn (the `restrict` effect): on
        * `object`, or — with no object — as a rule over every permanent
        * matching the effect's filter. */

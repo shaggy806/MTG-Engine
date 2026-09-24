@@ -141,6 +141,14 @@ export const makeFormatter = (game) => {
         return `${name(e.object)} gains ${e.keyword}${
           e.duration === "end-of-turn" ? " until EOT" : ""
         }`;
+      case "prohibition-imposed": {
+        const what = [e.spells ? "cast spells" : null, e.abilities ? "activate abilities" : null]
+          .filter((w) => w !== null)
+          .join(" or ");
+        return e.object !== undefined
+          ? `${name(e.object)}'s activated abilities can't be activated this turn`
+          : `${e.players.join(", ")} can't ${what} this turn`;
+      }
       case "restrictions-imposed": {
         const what = e.restrictions.map((r) => r.replaceAll("-", " ")).join(" and ");
         return e.object === undefined

@@ -225,6 +225,14 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${name(event.object)} gains ${event.keyword}${
         event.duration === 'end-of-turn' ? ' until EOT' : ''
       }`
+    case 'prohibition-imposed': {
+      const what = [event.spells ? 'cast spells' : null, event.abilities ? 'activate abilities' : null]
+        .filter((w) => w !== null)
+        .join(' or ')
+      return event.object !== undefined
+        ? `${name(event.object)}'s activated abilities can't be activated this turn`
+        : `${event.players.map((p) => playerLabel(p)).join(', ')} can't ${what} this turn`
+    }
     case 'restrictions-imposed': {
       const what = event.restrictions.map((r) => RESTRICTION_TEXT[r]).join(' and ')
       return event.object === undefined

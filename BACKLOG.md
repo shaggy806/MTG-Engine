@@ -63,7 +63,11 @@ that one card is the reason the deck exists.
   "you" }` for "if you cast it" — an enters trigger reads the X its permanent was cast with);
   Kodama of the East Tree (`putThereBySource: false`, with a `{ amount }` mana-value operand on
   its hand search); Fire Lord Zuko (`firebending({ powerOf: "source" })`, `enteredFrom:
-  "exile"`, and the `cast-spell` trigger's `from: "exile"`).
+  "exile"`, and the `cast-spell` trigger's `from: "exile"`); Rakdos, Lord of Riots
+  (`castOnlyIf`, and a `{ turnStat: "life-lost", who: "opponent" }` cost reduction), Myrel,
+  Shield of Argive (a `prohibits` static timed by `your-turn` — its 1/1 colorless Soldier
+  artifact token isn't in `cards/tokens/` yet) and Marisi, Breaker of the Coil (`prohibits`
+  timed by `turn-structure`'s `duringCombat`, and `goad`'s `who: "trigger-player"`).
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first
@@ -71,8 +75,8 @@ that one card is the reason the deck exists.
   `effect:this-way-results` (+6), `effect:missing-tokens` (+1),
   `static:grant-to-cards-outside-battlefield` (+3), `effect:amount-aggregate` (+1),
   `effect:look-and-choose-leftover` (+1), `mechanic:mdfc-transform` (+1),
-  `condition:player-state-thresholds` (+1), `keyword:annihilator` (+1),
-  `effect:cast-and-activate-restrictions` (+3), `trigger:copies-spell` (+1).
+  `condition:player-state-thresholds` (+1), `keyword:annihilator` (+1), `trigger:copies-spell`
+  (+1), `trigger:cards-exiled-batch` (+1).
 - **Most-needed features overall.** `effect:this-way-results` (18),
   `static:grant-to-cards-outside-battlefield` (14), `zone:visibility-extensions`,
   `static:grant-abilities-to-spells` and `bug:zone-change-object-identity` (13 each). Live
