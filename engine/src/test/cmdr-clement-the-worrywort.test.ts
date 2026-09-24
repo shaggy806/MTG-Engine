@@ -53,6 +53,12 @@ const spawn = (game: Game, name: string, player: PlayerId = A): ObjectId =>
 const enter = (game: Game, name: string, player: PlayerId = A): ObjectId =>
   game.debugSpawn(name, player, "battlefield", { summoningSick: false, announceEntry: true });
 
+/** Put a permanent into its owner's graveyard, as a removal spell cast in
+ * response would. */
+const kill = (game: Game, id: ObjectId): void => {
+  (game as unknown as { moveObject(id: ObjectId, to: string): boolean }).moveObject(id, "graveyard");
+};
+
 /** Run until Clement's trigger asks for its target, and return the offer. */
 const targetOffer = (game: Game): readonly ObjectId[] => {
   game.advanceUntil((s) => s.awaiting?.kind === "choose-targets");
@@ -159,6 +165,42 @@ describe("Clement, the Worrywort — the enters trigger", () => {
         (e) => e.type === "spell-fizzled" && e.reason === "all targets are illegal",
       ),
     ).toBe(true);
+  });
+});
+
+describe("Clement, the Worrywort — the entering creature has left (rule 608.2h)", () => {
+  it("reads a copy that died in response as the creature it copied", () => {
+    const game = mkGame();
+    game.advanceUntil(atMain);
+    const clement = spawn(game, CLEMENT);
+    // A Clone entering as a Craw Wurm: mana value 6 while it's a Wurm.
+    const clone = enter(game, "Grizzly Bears");
+    game.state.objects[clone].copyOf = "Craw Wurm";
+    expect(targetOffer(game)).toContain(clement);
+    choose(game, clement);
+
+    // Killed in response: the move ends the copy effect (rule 707.2), but
+    // the ability reads the creature as it last existed on the battlefield.
+    kill(game, clone);
+    game.advanceUntil(settled);
+    expect(game.state.objects[clone].zone).toBe("graveyard");
+    expect(game.state.objects[clement].zone).toBe("hand");
+  });
+
+  it("reads a token that ceased to exist as it last existed", () => {
+    const game = mkGame();
+    game.advanceUntil(atMain);
+    const clement = spawn(game, CLEMENT);
+    // A token copy of a Craw Wurm.
+    const token = enter(game, "Craw Wurm");
+    game.state.objects[token].isToken = true;
+    targetOffer(game);
+    choose(game, clement);
+
+    kill(game, token);
+    game.advanceUntil(settled);
+    expect(game.state.objects[token]).toBeUndefined(); // rule 111.7
+    expect(game.state.objects[clement].zone).toBe("hand");
   });
 });
 

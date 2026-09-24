@@ -164,6 +164,14 @@ export interface GameObject {
    */
   lastKnownController?: PlayerId;
   /**
+   * This permanent's mana value as it left the battlefield — last-known
+   * information (rule 608.2h) for an ability that reads it afterwards, taken
+   * before the move ends any copy effect (rule 707.2): a Clone that entered
+   * as a Craw Wurm and died was mana value 6. Set and cleared exactly like
+   * {@link lastKnownController}.
+   */
+  lastKnownManaValue?: number;
+  /**
    * "Impulse draw" — this card is exiled face-up and its owner may play it.
    * `until` is the turn number the permission lapses on (an "until end of
    * turn" impulse); absent means it lasts as long as `exiledWith` is on the
@@ -1195,6 +1203,15 @@ export interface GameState {
    * see it), while one revealed and drawn later does not.
    */
   revealedThisTurn: ObjectId[];
+  /**
+   * The {@link GameObject.lastKnownManaValue} of each token that ceased to
+   * exist this turn (rule 111.7), keyed by its old id: the object is deleted,
+   * but an ability on the stack may still ask its mana value by last-known
+   * information — Clement, the Worrywort's "lesser mana value" after a token
+   * copy that entered was killed in response. Cleared as the next turn
+   * begins; absent when no such token has been deleted.
+   */
+  ceasedTokenManaValues?: Record<ObjectId, number>;
   /**
    * How many times each ability has resolved this turn, for "if this is the
    * Nth time this ability has resolved this turn" (`StaticCondition`

@@ -2702,6 +2702,7 @@ export class Game {
     // it; past the turn it stops being rendered rather than lingering as a
     // permanent window into a hand.
     this.state.revealedThisTurn = [];
+    delete this.state.ceasedTokenManaValues;
     this.state.abilityResolutionsThisTurn = {};
     this.state.preventionShields = [];
     this.state.extraCombats = 0;
@@ -8374,7 +8375,17 @@ export class Game {
       },
       playersInScope: (who) => this.scopedPlayers(controller, who, triggerObject),
       discardHand: (player) => this.discardWholeHand(player),
-      manaValueOf: (target) => this.manaValueOfTarget(target, expectedZoneOf(target)),
+      // The object whose entering, dying, attacking… fired a trigger is read
+      // as it last existed on the battlefield once it has left (rule 608.2h):
+      // Clement, the Worrywort's "lesser mana value" after the entering
+      // creature was killed in response. A spell that fired a cast trigger
+      // is still on the stack, which `manaValueOfTarget` reads first.
+      manaValueOf: (target) =>
+        this.manaValueOfTarget(
+          target,
+          expectedZoneOf(target) ??
+            (target.kind === "object" && target.object === triggerObject ? "battlefield" : null),
+        ),
       manaSpentOf: (target) =>
         target.kind === "object" ? (this.state.objects[target.object]?.manaSpent ?? 0) : 0,
       lifeTotalOf: (player) => this.state.players[player]?.life ?? 0,
@@ -11635,10 +11646,24 @@ export class Game {
   private manaValueOfTarget(target: TargetRef, expectedZone: ZoneType | null = null): number {
     if (target.kind !== "object") return 0;
     const object = this.state.objects[target.object];
-    if (object === undefined) return 0;
+    if (object === undefined) {
+      // A token that has left the battlefield and ceased to exist (rule 111.7).
+      return expectedZone === "battlefield"
+        ? (this.state.ceasedTokenManaValues?.[target.object] ?? 0)
+        : 0;
+    }
     if (object.zone === "stack") return this.manaValueOnStack(object);
     if (expectedZone === "stack" && object.lastStackManaValue !== undefined) {
       return object.lastStackManaValue;
+    }
+    // A permanent that has since left the battlefield, as it last existed
+    // there — which a copy effect, ended by the move, may have changed.
+    if (
+      expectedZone === "battlefield" &&
+      object.zone !== "battlefield" &&
+      object.lastKnownManaValue !== undefined
+    ) {
+      return object.lastKnownManaValue;
     }
     if (!this.registry.has(printedCardName(object))) return 0;
     return manaValue(parseManaCost(printedManaCost(this.registry, object)));
@@ -12078,6 +12103,13 @@ export class Game {
         const zone = this.zoneList(object.zone, object.owner);
         const index = zone.indexOf(id);
         if (index >= 0) zone.splice(index, 1);
+        // Kept for the rest of the turn: an ability still on the stack may
+        // ask this token's mana value by last-known information (rule
+        // 608.2h) — a token copy of a Craw Wurm entering fired Clement, the
+        // Worrywort, and was killed in response.
+        if (object.lastKnownManaValue !== undefined) {
+          (this.state.ceasedTokenManaValues ??= {})[id] = object.lastKnownManaValue;
+        }
         delete this.state.objects[id];
         // No emit for this one, and a graveyard's length feeds CDAs
         // (`cards-in-all-graveyards`) — invalidate by hand.
@@ -12455,9 +12487,16 @@ export class Game {
       // And "a creature **you control** dies": the reset below hands it
       // back to its owner first.
       object.lastKnownController = object.controller;
+      // And its mana value, read before the reset below ends a copy effect
+      // (rule 707.2): a Clone that entered as a Craw Wurm and died was a
+      // mana value 6 creature (rule 608.2h). See `manaValueOfTarget`.
+      object.lastKnownManaValue = this.registry.has(printedCardName(object))
+        ? manaValue(parseManaCost(printedManaCost(this.registry, object)))
+        : 0;
     } else {
       // Only ever describes the move that took it off the battlefield.
       object.lastKnownController = undefined;
+      object.lastKnownManaValue = undefined;
     }
 
     // Rest in Peace (rule 614): whatever would be put into a graveyard is
