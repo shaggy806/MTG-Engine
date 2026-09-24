@@ -77,6 +77,7 @@ import _poolBlackbladeReforged from "./pool/blackblade-reforged.js";
 import _poolBlasphemousAct from "./pool/blasphemous-act.js";
 import _poolBlaze from "./pool/blaze.js";
 import _poolBlazemireVerge from "./pool/blazemire-verge.js";
+import _poolBlechLoafingPest from "./pool/blech-loafing-pest.js";
 import _poolBlightning from "./pool/blightning.js";
 import _poolBlinkmothNexus from "./pool/blinkmoth-nexus.js";
 import _poolBloodArtist from "./pool/blood-artist.js";
@@ -502,6 +503,7 @@ import _poolNullmageShepherd from "./pool/nullmage-shepherd.js";
 import _poolObNixilisTheFallen from "./pool/ob-nixilis-the-fallen.js";
 import _poolOgnis from "./pool/ognis.js";
 import _poolOldGnawbone from "./pool/old-gnawbone.js";
+import _poolOloroAgelessAscetic from "./pool/oloro-ageless-ascetic.js";
 import _poolOmnathLocusOfCreation from "./pool/omnath-locus-of-creation.js";
 import _poolOpenTheGraves from "./pool/open-the-graves.js";
 import _poolOpt from "./pool/opt.js";
@@ -1008,6 +1010,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBlasphemousAct,
   _poolBlaze,
   _poolBlazemireVerge,
+  _poolBlechLoafingPest,
   _poolBlightning,
   _poolBlinkmothNexus,
   _poolBloodArtist,
@@ -1433,6 +1436,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolObNixilisTheFallen,
   _poolOgnis,
   _poolOldGnawbone,
+  _poolOloroAgelessAscetic,
   _poolOmnathLocusOfCreation,
   _poolOpenTheGraves,
   _poolOpt,

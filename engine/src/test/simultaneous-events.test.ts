@@ -17,6 +17,9 @@
  * the Oloro rulings, rule 119.9), and a "whenever this is dealt damage"
  * trigger fires once per permanent however many sources hit it at once
  * (enrage), for the total.
+ *
+ * And the two commanders that needed the life-gain half: Oloro, Ageless
+ * Ascetic and Blech, Loafing Pest.
  */
 import { describe, expect, it } from "vitest";
 
@@ -347,5 +350,158 @@ describe("damage dealt at once", () => {
 
     expect(triggersOf(game, taunter)).toBe(1);
     expect(life(game, B)).toBe(20 - 4);
+  });
+});
+
+describe("Blech, Loafing Pest", () => {
+  it("two lifelinkers are two life gains, so Blech triggers twice", () => {
+    const { game, a } = setUp();
+    const blech = game.debugSpawn("Blech, Loafing Pest", A);
+    const spider = game.debugSpawn("Giant Spider", A);
+    const viper = game.debugSpawn("Ambush Viper", A);
+    const theirSpider = game.debugSpawn("Giant Spider", B);
+    const hawks = [
+      game.debugSpawn("Vampire Nighthawk", A, "battlefield", { summoningSick: false }),
+      game.debugSpawn("Vampire Nighthawk", A, "battlefield", { summoningSick: false }),
+    ];
+    a.declareAttackersFn = () => hawks.map((attacker) => ({ attacker, defender: B }));
+    // Bob's Spider has reach, but Bob doesn't block.
+
+    game.advanceUntil(toPostcombat);
+
+    const gains = game.state.eventLog.filter(
+      (e) => e.type === "life-changed" && e.player === A && e.delta > 0,
+    );
+    expect(gains).toHaveLength(2);
+    expect(triggersOf(game, blech)).toBe(2);
+    const counters = (id: ObjectId): number => game.state.objects[id].counters["+1/+1"] ?? 0;
+    expect(counters(blech)).toBe(2); // a Pest itself
+    expect(counters(spider)).toBe(2);
+    expect(counters(viper)).toBe(2);
+    expect(counters(theirSpider)).toBe(0);
+    expect(counters(hawks[0])).toBe(0); // a Vampire Shaman
+  });
+
+  it("one lifelinker hitting two blockers at once is one gain, so Blech triggers once", () => {
+    const { game, a, b } = setUp();
+    const blech = game.debugSpawn("Blech, Loafing Pest", A);
+    const bears = game.debugSpawn("Grizzly Bears", A, "battlefield", { summoningSick: false });
+    game.debugApplyEffect(
+      A,
+      { kind: "grant-keyword", target: 0, keyword: "lifelink", duration: "end-of-turn" },
+      [{ kind: "object", object: bears }],
+    );
+    const first = game.debugSpawn("Grizzly Bears", B, "battlefield", { summoningSick: false });
+    const second = game.debugSpawn("Grizzly Bears", B, "battlefield", { summoningSick: false });
+    a.declareAttackersFn = () => [{ attacker: bears, defender: B }];
+    a.assignCombatDamageFn = () => [1, 1];
+    b.declareBlockersFn = () => [
+      { blocker: first, attacker: bears },
+      { blocker: second, attacker: bears },
+    ];
+
+    game.advanceUntil(toPostcombat);
+
+    const dealt = game.state.eventLog.filter(
+      (e) => e.type === "damage-dealt" && e.source === bears,
+    );
+    expect(dealt).toHaveLength(2);
+    expect(triggersOf(game, blech)).toBe(1);
+    expect(game.state.objects[blech].counters["+1/+1"]).toBe(1);
+  });
+
+  it("counts a creature with two of the types once", () => {
+    const { game } = setUp();
+    const blech = game.debugSpawn("Blech, Loafing Pest", A);
+    const nest = game.debugSpawn("Hornet Nest", A); // an Insect
+    const bears = game.debugSpawn("Grizzly Bears", A);
+    game.debugApplyEffect(A, {
+      kind: "animate",
+      target: 0,
+      power: 0,
+      toughness: 2,
+      addTypes: [],
+      addSubtypes: ["Spider"],
+      duration: "end-of-turn",
+    }, [{ kind: "object", object: nest }]);
+
+    game.debugApplyEffect(A, { kind: "gain-life", amount: 3 });
+    game.advanceUntil(toPostcombat);
+
+    expect(game.state.objects[blech].counters["+1/+1"]).toBe(1);
+    expect(game.state.objects[nest].counters["+1/+1"]).toBe(1);
+    expect(game.state.objects[bears].counters["+1/+1"] ?? 0).toBe(0);
+  });
+});
+
+describe("Oloro, Ageless Ascetic", () => {
+  const drainEach = (a: ScriptedController): void => {
+    a.chooseModesFn = () => [0];
+  };
+
+  it("gains 2 life at your upkeep from the command zone — from the first turn", () => {
+    const { game } = setUp({ commander: "Oloro, Ageless Ascetic", configure: drainEach });
+    const oloro = game.state.zones.shared.command.find(
+      (id) => game.state.objects[id].owner === A,
+    ) as ObjectId;
+    const start = game.state.rules.startingLife;
+    // Turn 1's upkeep has already happened.
+    expect(life(game, A)).toBe(start + 2);
+    // Only that ability: "whenever you gain life" doesn't work from the
+    // command zone, so the gain didn't trigger it.
+    expect(triggersOf(game, oloro)).toBe(1);
+    expect(life(game, B)).toBe(start);
+
+    game.advanceUntil((s) => s.turn.number === 3 && s.turn.step === "precombat-main" && quiet(s));
+    // Bob's upkeep isn't yours; your next one is.
+    expect(life(game, A)).toBe(start + 4);
+  });
+
+  it("on the battlefield: 2 life at upkeep, and each gain may be turned into a card and a drain", () => {
+    const { game } = setUp({ configure: drainEach });
+    game.debugSpawn("Oloro, Ageless Ascetic", A);
+    game.debugSpawn("Plains", A);
+    const start = game.state.rules.startingLife;
+    const hand = game.handOf(A).length;
+
+    game.advanceUntil((s) => s.turn.number === 3 && s.turn.step === "precombat-main" && quiet(s));
+
+    // Only the battlefield upkeep ability: the command-zone one's condition
+    // is false while Oloro is on the battlefield.
+    expect(life(game, A)).toBe(start + 2);
+    expect(life(game, B)).toBe(start - 1);
+    // The draw step's card, and Oloro's.
+    expect(game.handOf(A).length).toBe(hand + 2);
+  });
+
+  it("declining the {1} does nothing", () => {
+    const { game } = setUp();
+    game.debugSpawn("Oloro, Ageless Ascetic", A);
+    game.debugSpawn("Plains", A);
+    const start = game.state.rules.startingLife;
+
+    game.debugApplyEffect(A, { kind: "gain-life", amount: 1 });
+    game.advanceUntil(toPostcombat);
+
+    expect(life(game, A)).toBe(start + 1);
+    expect(life(game, B)).toBe(start);
+  });
+
+  it("two lifelinkers dealing combat damage at once trigger it twice", () => {
+    const { game, a } = setUp({ configure: drainEach });
+    const oloro = game.debugSpawn("Oloro, Ageless Ascetic", A);
+    spawnMany(game, "Plains", A, 2);
+    const hawks = [
+      game.debugSpawn("Vampire Nighthawk", A, "battlefield", { summoningSick: false }),
+      game.debugSpawn("Vampire Nighthawk", A, "battlefield", { summoningSick: false }),
+    ];
+    a.declareAttackersFn = () => hawks.map((attacker) => ({ attacker, defender: B }));
+    const hand = game.handOf(A).length;
+
+    game.advanceUntil(toPostcombat);
+
+    expect(triggersOf(game, oloro)).toBe(2);
+    expect(life(game, B)).toBe(20 - 4 - 2);
+    expect(game.handOf(A).length).toBe(hand + 2);
   });
 });
