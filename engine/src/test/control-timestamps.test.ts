@@ -6,7 +6,7 @@
  * until-end-of-turn steal ending used to hand the permanent to its owner even
  * when an earlier lasting effect still said otherwise.
  *
- * Also Sliver Overlord, whose "{1}: Gain control of target Sliver. (This
+ * Also Sliver Overlord, whose "{3}: Gain control of target Sliver. (This
  * effect lasts indefinitely.)" is exactly that kind of lasting effect.
  */
 
@@ -243,9 +243,24 @@ describe("Sliver Overlord", () => {
     const sliver = game.debugSpawn("Test Sliver", B, "battlefield");
     castMindControl(game, A, sliver);
     expect(game.state.objects[sliver].controller).toBe(A);
-    game.debugSpawn("Island", B, "battlefield");
+    for (let i = 0; i < 3; i += 1) game.debugSpawn("Island", B, "battlefield");
     game.advanceUntil(mainOf(2, B));
     take(game, B, overlord, sliver);
+    expect(game.state.objects[sliver].controller).toBe(B);
+  });
+
+  it("the steal costs {3}, not less", () => {
+    const game = mkGame();
+    const overlord = game.debugSpawn("Sliver Overlord", A, "battlefield", { summoningSick: false });
+    const sliver = game.debugSpawn("Test Sliver", B, "battlefield");
+    for (let i = 0; i < 2; i += 1) game.debugSpawn("Island", A, "battlefield");
+    const offered = (): boolean =>
+      game
+        .legalActions(A)
+        .some((la) => la.kind === "activate-ability" && la.source === overlord && la.abilityIndex === 1);
+    expect(offered()).toBe(false);
+    game.debugSpawn("Island", A, "battlefield");
+    expect(offered()).toBe(true);
     expect(game.state.objects[sliver].controller).toBe(B);
   });
 

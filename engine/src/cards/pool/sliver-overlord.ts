@@ -11,7 +11,7 @@ export default defineCard({
   toughness: 7,
   text:
     "{3}: Search your library for a Sliver card, reveal that card, put it into your hand, then shuffle.\n" +
-    "{1}: Gain control of target Sliver. (This effect lasts indefinitely.)",
+    "{3}: Gain control of target Sliver. (This effect lasts indefinitely.)",
   activated: [
     {
       cost: { mana: "{3}", tap: false },
@@ -28,13 +28,13 @@ export default defineCard({
       text: "{3}: Search your library for a Sliver card, reveal that card, put it into your hand, then shuffle.",
     },
     {
-      cost: { mana: "{1}", tap: false },
+      cost: { mana: "{3}", tap: false },
       targets: [{ kind: "permanent", filter: { subtype: "Sliver" } }],
       // A timestamped layer-2 effect with no end: the latest control effect on
       // the Sliver wins (rule 613.7), so two Overlords trade it back and forth.
       effect: { kind: "gain-control", target: 0, untilEndOfTurn: false },
       resolve: null,
-      text: "{1}: Gain control of target Sliver. (This effect lasts indefinitely.)",
+      text: "{3}: Gain control of target Sliver. (This effect lasts indefinitely.)",
     },
   ],
 });
