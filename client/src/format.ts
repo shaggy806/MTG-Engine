@@ -45,6 +45,8 @@ const NOISY_EVENTS: ReadonlySet<GameEvent['type']> = new Set([
   'player-attacked',
   // Every blocker already has its own `blocker-declared` line.
   'attacker-blocked',
+  // The dying, milling or discarding that put them there has its own line.
+  'cards-put-into-graveyard',
 ])
 
 /** Whether `event` only shows up in the history's detailed mode. */
@@ -231,6 +233,8 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${event.player} attacks with ${event.attackers.length}`
     case 'attacked-alone':
       return `${name(event.attacker)} attacked alone`
+    case 'cards-put-into-graveyard':
+      return `${event.arrivals.map((a) => name(a.object)).join(', ')} put into a graveyard`
     case 'player-attacked':
       return `${event.player} attacks ${event.defender} with ${event.attackers.length}`
     case 'loyalty-changed':

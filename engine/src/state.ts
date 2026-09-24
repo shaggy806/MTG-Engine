@@ -644,8 +644,9 @@ export interface LastKnownRefs {
   readonly triggerObject?: number;
   /**
    * For a trigger fired by its triggering object *leaving* the battlefield (a
-   * dies trigger, a delayed "when it dies or is exiled"): that object's
-   * `zoneChangeCount` in the zone the event put it in. "Return it to the
+   * dies trigger, a delayed "when it dies or is exiled") or arriving in a
+   * graveyard (`put-into-graveyard`): that object's `zoneChangeCount` in the
+   * zone the event put it in. "Return it to the
    * battlefield" follows it there and no further — a card that has moved
    * again since (exiled from the graveyard in response) is a new object the
    * ability can't find (rule 400.7). What `ResolutionContext

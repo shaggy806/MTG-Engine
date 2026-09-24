@@ -553,13 +553,44 @@ export type TriggerSpec =
        * was itself one of the cards (a reanimated Teval) wasn't on the
        * battlefield to see them leave, and doesn't trigger.
        *
-       * The per-card form ("whenever a creature card leaves your graveyard" —
-       * Syr Konrad, the Grim) is a different trigger, once per card, and is
-       * not this one.
+       * `perCard` is the per-card form — "whenever a creature card leaves
+       * your graveyard" (Syr Konrad, the Grim): once per matching card,
+       * however many left together, each card the trigger object.
        */
       readonly on: "leaves-graveyard";
       readonly who: TriggerWho;
       readonly filter?: CardFilter;
+      readonly perCard?: boolean;
+    }
+  | {
+      /**
+       * Cards were put into a graveyard — "whenever one or more land cards
+       * are put into your graveyard from anywhere" (The Gitrog Monster:
+       * `batched`), "…creature cards … from your library" (Sidisi, Brood
+       * Tyrant: `from: "library"`), "whenever a creature card is put into a
+       * graveyard from anywhere other than the battlefield" (Syr Konrad, the
+       * Grim: `notFrom: "battlefield"`), "whenever a Lhurgoyf permanent card
+       * is put into your graveyard from anywhere other than the battlefield,
+       * put it onto the battlefield" (Disa the Restless). Off
+       * `cards-put-into-graveyard`, which groups what one simultaneous move
+       * put there: a wrath or a state-based sweep, one mill, discard or
+       * surveil. Tokens aren't cards and never count.
+       *
+       * `who` is whose graveyard (the card's owner); `filter` is matched
+       * against each card as it is there; `from` / `notFrom` are the zone it
+       * came from. `batched` ("one or more") fires once per move, with
+       * `{ triggerValue: true }` how many counted; otherwise once per card,
+       * that card the trigger object — "put **it** onto the battlefield",
+       * which finds it in that graveyard and nowhere else (rule 400.7). This
+       * permanent dying along with them doesn't see them (it's in the
+       * graveyard too by then).
+       */
+      readonly on: "put-into-graveyard";
+      readonly who: TriggerWho;
+      readonly filter?: CardFilter;
+      readonly from?: ZoneType;
+      readonly notFrom?: ZoneType;
+      readonly batched?: boolean;
     }
   | {
       /**

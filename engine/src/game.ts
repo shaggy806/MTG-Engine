@@ -538,6 +538,10 @@ export class Game {
    * withGraveyardLeaveBatch}. Not game state: it only ever spans one
    * synchronous call. */
   private graveyardLeaveBatch: Map<ObjectId, LastKnownInfo> | null = null;
+  /** The cards put into graveyards so far in the simultaneous move under
+   * way (see `withGraveyardEnterBatch`), each with the zone it came from.
+   * Not game state: it only ever spans one synchronous call. */
+  private graveyardEnterBatch: { object: ObjectId; from: ZoneType }[] | null = null;
   /** While a `cards-left-graveyard` event is being announced, each of its
    * cards as it was in the graveyard — what a `leaves-graveyard` trigger's
    * filter is matched against (rule 603.10a). `null` the rest of the time. */
@@ -3416,7 +3420,9 @@ export class Game {
 
     const fromEffect = this.state.awaiting?.kind === "discard" && this.state.awaiting.fromEffect === true;
 
-    for (const id of cards) this.moveObject(id, "graveyard");
+    this.withGraveyardEnterBatch(() => {
+      for (const id of cards) this.moveObject(id, "graveyard");
+    });
     this.emit({ type: "cards-discarded", player, objects: [...cards] });
     this.state.awaiting = null;
 
@@ -8416,6 +8422,10 @@ export class Game {
                     ability.trigger.on === "leaves-graveyard" &&
                       event.type === "cards-left-graveyard"
                     ? this.graveyardLeavers(ability.trigger, event.objects, object).length
+                    : // How many cards were put into the graveyard.
+                    ability.trigger.on === "put-into-graveyard" &&
+                      event.type === "cards-put-into-graveyard"
+                    ? this.graveyardArrivals(ability.trigger, event.arrivals, object).length
                     : // "Deals that much damage": how many counters were put.
                     ability.trigger.on === "counters-put" && event.type === "counter-added"
                     ? event.amount
@@ -8524,6 +8534,43 @@ export class Game {
           // enraged one): the trigger waits for the batch to finish and
           // fires once per permanent dealt damage, for its total. See
           // `withDamageBatch`.
+          // "Whenever a creature card is put into a graveyard": once per card,
+          // each its own trigger object — followed to that graveyard and no
+          // further (rule 400.7).
+          // "Whenever a creature card leaves your graveyard": once per card too.
+          if (
+            ability.trigger.on === "leaves-graveyard" &&
+            ability.trigger.perCard === true &&
+            event.type === "cards-left-graveyard"
+          ) {
+            for (const card of this.graveyardLeavers(ability.trigger, event.objects, object)) {
+              const { triggerValue: _count, ...single } = base;
+              this.queueTrigger(ability, { ...single, triggerObject: card }, multiplier);
+            }
+            return;
+          }
+          if (
+            ability.trigger.on === "put-into-graveyard" &&
+            ability.trigger.batched !== true &&
+            event.type === "cards-put-into-graveyard"
+          ) {
+            for (const card of this.graveyardArrivals(ability.trigger, event.arrivals, object)) {
+              const { triggerValue: _count, ...single } = base;
+              this.queueTrigger(
+                ability,
+                {
+                  ...single,
+                  triggerObject: card,
+                  lastKnownRefs: {
+                    ...(base.lastKnownRefs ?? {}),
+                    triggerObjectAfterLeaving: this.state.objects[card]?.zoneChangeCount ?? 0,
+                  },
+                },
+                multiplier,
+              );
+            }
+            return;
+          }
           const damageBatch = this.damageBatch;
           // "Whenever one or more … deal damage to a player": once per player
           // (or per event) for the whole simultaneous event, settled with it.
@@ -8837,7 +8884,8 @@ export class Game {
     };
     this.leaveBatch = batch;
     try {
-      fn();
+      // What goes to graveyards goes together too.
+      this.withGraveyardEnterBatch(fn);
     } finally {
       this.leaveBatch = null;
     }
@@ -9079,6 +9127,11 @@ export class Game {
           this.matchesWho(spec.who, event.attacker, self) &&
           !(spec.otherOnly === true && event.attacker === self.id) &&
           this.triggerFilterOk(spec.filter, event.attacker, self)
+        );
+      case "put-into-graveyard":
+        return (
+          event.type === "cards-put-into-graveyard" &&
+          this.graveyardArrivals(spec, event.arrivals, self).length > 0
         );
       case "leaves-graveyard":
         // One of those cards itself — a Teval reanimated along with others —
@@ -10601,7 +10654,9 @@ export class Game {
     this.state.awaiting = null;
 
     if (mode === "surveil") {
-      for (const id of awayOrdered) this.moveObject(id, "graveyard");
+      this.withGraveyardEnterBatch(() => {
+        for (const id of awayOrdered) this.moveObject(id, "graveyard");
+      });
     }
     this.emit({
       type: "scried",
@@ -13491,13 +13546,15 @@ export class Game {
     const player = target.player;
     if (this.state.players[player] === undefined) return;
     const milled: ObjectId[] = [];
-    for (let i = 0; i < amount; i += 1) {
-      const library = this.state.zones.perPlayer[player].library;
-      const id = library[0];
-      if (id === undefined) break;
-      this.moveObject(id, "graveyard");
-      milled.push(id);
-    }
+    this.withGraveyardEnterBatch(() => {
+      for (let i = 0; i < amount; i += 1) {
+        const library = this.state.zones.perPlayer[player].library;
+        const id = library[0];
+        if (id === undefined) break;
+        this.moveObject(id, "graveyard");
+        milled.push(id);
+      }
+    });
     if (milled.length > 0) {
       this.emit({ type: "cards-milled", player, objects: milled });
     }
@@ -13589,7 +13646,9 @@ export class Game {
     const hand = this.state.zones.perPlayer[player].hand;
     if (hand.length <= amount) {
       const all = [...hand];
-      for (const id of all) this.moveObject(id, "graveyard");
+      this.withGraveyardEnterBatch(() => {
+        for (const id of all) this.moveObject(id, "graveyard");
+      });
       if (all.length > 0) {
         this.emit({ type: "cards-discarded", player, objects: all });
       }
@@ -13685,7 +13744,9 @@ export class Game {
     if (this.state.players[player] === undefined) return;
     const all = [...this.state.zones.perPlayer[player].hand];
     if (all.length === 0) return;
-    for (const id of all) this.moveObject(id, "graveyard");
+    this.withGraveyardEnterBatch(() => {
+      for (const id of all) this.moveObject(id, "graveyard");
+    });
     this.emit({ type: "cards-discarded", player, objects: all });
   }
 
@@ -14927,6 +14988,7 @@ export class Game {
       object.zone === "graveyard" && to !== "graveyard" && !object.isToken && !alreadyAnnounced
         ? this.graveyardSnapshot(id)
         : undefined;
+    const previousZone = object.zone;
     const from = this.zoneList(object.zone, object.owner);
     const index = from.indexOf(id);
     if (index >= 0) from.splice(index, 1);
@@ -15109,7 +15171,71 @@ export class Game {
       this.emit({ type: "permanent-left-battlefield", object: id, toZone: to });
     }
     if (leftGraveyard !== undefined) this.noteGraveyardDeparture(id, leftGraveyard);
+    // A card put into a graveyard (tokens aren't cards — rule 111.1).
+    if (to === "graveyard" && previousZone !== "graveyard" && !object.isToken) {
+      this.noteGraveyardArrival(id, previousZone);
+    }
     return true;
+  }
+
+  /** Card `id` was put into a graveyard from `from`: part of the
+   * simultaneous move under way, announced when that's done — or, on its
+   * own, a move of its own, announced now. */
+  private noteGraveyardArrival(id: ObjectId, from: ZoneType): void {
+    if (this.graveyardEnterBatch !== null) {
+      this.graveyardEnterBatch.push({ object: id, from });
+    } else {
+      this.emit({ type: "cards-put-into-graveyard", arrivals: [{ object: id, from }] });
+    }
+  }
+
+  /**
+   * Carry out `fn` as one simultaneous move for the cards it puts into
+   * graveyards: they are announced together, as one
+   * `cards-put-into-graveyard` once `fn` is done, so "whenever one or more
+   * cards are put into your graveyard" fires once for all of them. A wrath
+   * or state-based sweep (`withLeaveBatch`), one mill, discard or surveil
+   * each run inside one. Nested calls join the outer move.
+   */
+  private withGraveyardEnterBatch(fn: () => void): void {
+    if (this.graveyardEnterBatch !== null) {
+      fn();
+      return;
+    }
+    const batch: { object: ObjectId; from: ZoneType }[] = [];
+    this.graveyardEnterBatch = batch;
+    try {
+      fn();
+    } finally {
+      this.graveyardEnterBatch = null;
+    }
+    if (batch.length > 0) this.emit({ type: "cards-put-into-graveyard", arrivals: batch });
+  }
+
+  /**
+   * The cards of a `cards-put-into-graveyard` that count toward a
+   * `put-into-graveyard` trigger: in the right player's graveyard (`who`),
+   * from the right zone, matching `filter` as they are there. Shared by the
+   * match, the count and the per-card firings, so they can't disagree.
+   */
+  private graveyardArrivals(
+    spec: Extract<TriggerSpec, { on: "put-into-graveyard" }>,
+    arrivals: readonly { readonly object: ObjectId; readonly from: ZoneType }[],
+    self: GameObject,
+  ): readonly ObjectId[] {
+    return arrivals
+      .filter(({ object: id, from }) => {
+        const card = this.state.objects[id];
+        if (card === undefined || card.zone !== "graveyard") return false;
+        if (spec.from !== undefined && from !== spec.from) return false;
+        if (spec.notFrom !== undefined && from === spec.notFrom) return false;
+        if (!this.matchesWhoPlayer(spec.who, card.owner, self)) return false;
+        return (
+          spec.filter === undefined ||
+          matchesFilter(this.state, this.registry, id, spec.filter, { you: self.controller })
+        );
+      })
+      .map((a) => a.object);
   }
 
   /**

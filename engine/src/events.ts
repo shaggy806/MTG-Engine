@@ -632,6 +632,16 @@ export type GameEvent =
       readonly modes: readonly number[];
     })
   | (Base & {
+      /** Cards were put into graveyards **at the same time** — dying,
+       * milled, discarded, surveilled, a spell resolving or countered —
+       * each with the zone it came from. Once per simultaneous move (a
+       * wrath, one state-based sweep, one mill or discard); a move of its
+       * own is its own. Tokens aren't cards and never appear. The hook for
+       * `put-into-graveyard` triggers. */
+      readonly type: "cards-put-into-graveyard";
+      readonly arrivals: readonly { readonly object: ObjectId; readonly from: ZoneType }[];
+    })
+  | (Base & {
       readonly type: "cards-milled";
       readonly player: PlayerId;
       readonly objects: readonly ObjectId[];

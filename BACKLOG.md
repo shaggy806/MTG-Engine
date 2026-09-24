@@ -36,16 +36,18 @@ that one card is the reason the deck exists.
   Kefka, Court Mage, Lord Windgrace and Mr. Foxglove (the `thisWay` amount and `this-way`
   condition — their gaps entries still list `effect:this-way-results`, whose discard/draw part
   they need is built); Kratos, God of War (the `attackedThisTurn` filter clause); Malcolm,
-  Keen-Eyed Navigator and Goro-Goro and Satoru (the batched `deals-damage-batch` trigger).
+  Keen-Eyed Navigator and Goro-Goro and Satoru (the batched `deals-damage-batch` trigger);
+  Sidisi, Brood Tyrant, Syr Konrad, the Grim and Disa the Restless (`put-into-graveyard`, and
+  `leaves-graveyard`'s `perCard`).
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first
   ten, engine-only, with the commanders each fully unblocks:
-  `effect:this-way-results` (+4), `trigger:put-into-graveyard` (+3),
-  `effect:choices-by-other-players` (+4), `effect:missing-tokens` (+1),
-  `replacement:damage-modification` (+3), `effect:amount-aggregate` (+1),
-  `effect:look-and-choose-leftover` (+1), `effect:put-onto-battlefield-options` (+1),
-  `stat:turn-event-tallies` (+3), `bug:cda-all-zones` (+1).
+  `effect:this-way-results` (+4), `effect:choices-by-other-players` (+4),
+  `effect:missing-tokens` (+1), `replacement:damage-modification` (+3),
+  `effect:amount-aggregate` (+1), `effect:look-and-choose-leftover` (+1),
+  `effect:put-onto-battlefield-options` (+1), `stat:turn-event-tallies` (+3),
+  `bug:cda-all-zones` (+1), `condition:turn-structure` (+1).
 - **Most-needed features overall.** `effect:this-way-results` (18),
   `static:grant-to-cards-outside-battlefield` (14), `zone:visibility-extensions`,
   `static:grant-abilities-to-spells` and `bug:zone-change-object-identity` (13 each). Live
