@@ -1212,6 +1212,11 @@ export type AwaitingDecision =
        * when they won't is still its controller's effect: an opponent who
        * declines Rhystic Study's {1} lets *you* draw. Omitted = the chooser. */
       readonly declineController?: PlayerId;
+      /** Whose effect the chosen modes are, when that isn't the chooser's —
+       * a villainous choice's options ("you draw a card", "that player
+       * discards a card") are its controller's, with the chooser as
+       * `"that-player"`. Omitted = the chooser's. */
+      readonly modesController?: PlayerId;
       /** The enclosing ability's own already-chosen targets, forwarded to the
        * modes (and to `onDecline`) — a `may`/`modal` effect doesn't choose
        * new targets itself, so a mode referencing `target: 0` means "the

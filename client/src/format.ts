@@ -271,10 +271,12 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${playerLabel(event.from)}'s draw is redirected — ${playerLabel(
         event.to,
       )} draws instead`
-    case 'modes-chosen':
+    case 'modes-chosen': {
+      const who = event.player === undefined ? '' : `${playerLabel(event.player)} `
       return event.modes.length > 0
-        ? `${name(event.source)} — mode(s) ${event.modes.map((m) => m + 1).join(', ')}`
-        : `${name(event.source)} — declined`
+        ? `${name(event.source)} — ${who}chose mode(s) ${event.modes.map((m) => m + 1).join(', ')}`
+        : `${name(event.source)} — ${who}declined`
+    }
     case 'permanent-returned-to-hand':
       return `${name(event.object)} returns to ${event.owner}'s hand`
     case 'permanent-exiled':

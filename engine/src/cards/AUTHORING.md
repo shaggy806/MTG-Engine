@@ -454,7 +454,7 @@ Mage). Cards exiled or otherwise moved "this way" aren't covered yet. The
 
 `who?` is a `PlayerScope`: `"each-player" \| "each-opponent" \| "you" \|
 "active-player" \| "trigger-controller" \| "trigger-player" \|
-"each-other-opponent"` (default = the effect's controller). `"active-player"`
+"each-other-opponent" \| "that-player"` (default = the effect's controller). `"active-player"`
 is "that player" in a trigger that fires on someone else's step.
 `"trigger-controller"` is the controller of the triggering object (the player
 who drew the card, cast the spell). `"trigger-player"` is **the player the
@@ -462,8 +462,10 @@ triggering event names** — the player dealt damage (or the controller of the
 permanent dealt damage), the defending player of an attack (a planeswalker's
 controller when the attack was at it); nobody outside such a trigger.
 `"each-other-opponent"` is each of your opponents **but** that one (Kediss:
-"it deals that much damage to each other opponent"). None of these is a
-target, so hexproof doesn't stop them.
+"it deals that much damage to each other opponent"). `"that-player"` is the
+player an `each-player-may`'s follow-up is about (and otherwise the same as
+`"trigger-player"`). None of these is a target, so hexproof doesn't stop
+them.
 
 ### Movement / removal
 
@@ -721,17 +723,55 @@ exist (rule 111.7), so neither comes back.
 - **`unless { chooser, options, otherwise }`** — a *punisher* clause, where
   **someone else** decides whether to pay and `otherwise` happens only if they
   don't (Demanding Dragon, Indulgent Tormentor, Kazuul). `chooser` is a
-  target-slot index holding a player, or `"trigger-controller"` (the
-  controller of the permanent whose event fired the trigger). Each
-  `UnlessOption` is `{ pay }` (mana), `{ payLife }` or `{ sacrifice }` plus a
-  `text` label; at most one mana option, since that payment rides on the
-  decision itself. Options the chooser can't take aren't offered, so
-  "couldn't" and "wouldn't" both land on `otherwise` — which is what the
-  printed cards do too. This is the difference from `may`: the decision is
+  target-slot index holding a player, `"trigger-controller"` (the
+  controller of the permanent whose event fired the trigger),
+  `"trigger-player"` (the player that event names), `"active-player"`, or
+  `"you"` — The Gitrog Monster's "sacrifice ~ unless **you** sacrifice a
+  land" (`otherwise: { kind: "sacrifice-source" }`), which unlike a `may`
+  with an `else` isn't offered without a land to sacrifice. Each
+  `UnlessOption` is `{ pay }` (mana), `{ payLife }`, `{ sacrifice }`,
+  `{ discard }` (a count — Tergrid's Lantern's "…unless they sacrifice a
+  nonland permanent **or discard a card**") or `{ putFromHand }` (a filter —
+  "put a land card from your hand onto the battlefield") plus a `text` label;
+  a mana option has to be the only one, since that payment rides on the
+  decision itself and would be owed whichever option was taken. Options the
+  chooser can't take in full aren't offered (rule 118.3; life needs at least
+  that much, rule 119.4), so "couldn't" and "wouldn't" both land on
+  `otherwise` — which is what the printed cards do too. This is the difference from `may`: the decision is
   raised for the chooser, not the effect's controller. What happens when they
   don't pay is still the **controller's** effect — an opponent who declines
   Rhystic Study's {1} lets *you* draw, and Smothering Tithe's Treasure is
   yours — so an `otherwise` that is itself a `may` asks the controller.
+- **`each-player-may { who, prompt?, effect?, options?, choices?, ifDid?, ifDidnt?, resultsFor? }`**
+  — a choice that belongs to other players, or to several: "each player
+  may …", "each opponent may …", "its controller may …" (`who:
+  "trigger-controller"` — Selvala, Heart of the Wilds), "the player whose
+  turn it is may …" (`"active-player"` — Obeka). Everyone in `who` is asked
+  **in turn**, from the active player (rule 101.4), with a `choose-modes`
+  decision of their own, and what one of them chose is done before the next
+  is asked. They may do `effect` (asked with `prompt` — Kwain, Itinerant
+  Meddler's "each player may draw a card"), or one of `options`
+  (`UnlessOption`s, as for `unless`, each offered only to a player who can
+  take it — Kynaios and Tiro's `{ putFromHand: { type: "land" } }`; a
+  punisher asked of each opponent, "each opponent loses 3 life unless that
+  player sacrifices a nonland permanent or discards a card", is `options`
+  and an `ifDidnt`). Either way it's **their own** effect: "you" in it is
+  them. Then `ifDid` / `ifDidnt` apply once for each player who did /
+  didn't, in turn order, as the **effect's controller's** effect, with
+  `"that-player"` naming that player — Kwain's "each player who drew a card
+  this way gains 1 life" (`ifDid: { kind: "gain-life", amount: 1, who:
+  "that-player" }`), Wernog, Rider's Chaplain's "each opponent who doesn't
+  loses 1 life. You investigate for each opponent who investigated this
+  way" (an `ifDidnt` `lose-life` of `"that-player"`, an `ifDid`
+  investigate), a tempting offer's "for each opponent who does, you …".
+  `resultsFor` keeps the follow-ups to a scope: Kynaios and Tiro's "then each
+  **opponent** who didn't draws a card" asks `"each-player"` with
+  `resultsFor: "each-opponent"`. A player with nothing they could take isn't
+  asked, and didn't. `choices` (two or more `{ text, effect }`) is a
+  **villainous choice** (rule 701.56 — "each opponent faces a villainous
+  choice — …, or …"): each of them must pick one, and the one picked is the
+  **controller's** effect about them ("you draw a card"; "that player
+  discards a card" is `who: "that-player"`).
 - **`choose-creature-type { then }`** — "Choose a creature type. [then …]"
   as a spell resolves (rule 205.3m — Crippling Fear, Distant Melody). The
   controller picks from the full catalog (`engine/src/creature-types.ts`,

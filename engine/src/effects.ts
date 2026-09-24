@@ -348,11 +348,36 @@ export function wardCostText(cost: WardCost): string {
   return onlyMana ? ` ${cost.mana}` : `—${parts.join(", ")}.`;
 }
 
-/** One way out of an `"unless"` clause. Exactly one field is set. */
+/** One way out of an `"unless"` clause, or one thing an `"each-player-may"`
+ * player may do. Exactly one field is set. Each is offered only to a player
+ * who can do all of it (rule 118.3): mana they can pay, at least that much
+ * life, a permanent to sacrifice, enough cards in hand, a matching card in
+ * hand. */
 export type UnlessOption =
   | { readonly pay: string; readonly text: string }
   | { readonly payLife: number; readonly text: string }
-  | { readonly sacrifice: CardFilter; readonly text: string };
+  | { readonly sacrifice: CardFilter; readonly text: string }
+  /** "…or discard a card" (Tergrid's Lantern, Torment of Hailfire). */
+  | { readonly discard: number; readonly text: string }
+  /** "Put a land card from your hand onto the battlefield" (Kynaios and
+   * Tiro of Meletis). */
+  | { readonly putFromHand: CardFilter; readonly text: string };
+
+/**
+ * How far an `"each-player-may"` has got — set by the engine on the copy it
+ * parks between one player's answer and the next question. Never authored.
+ */
+export interface EachPlayerMayProgress {
+  /** The `eventSeq` it began at: a player's answer is the first
+   * `modes-chosen` event by them for this source since. */
+  readonly since: number;
+  /** Asked so far, in the order asked. */
+  readonly asked: readonly PlayerId[];
+  /** Still to ask. */
+  readonly toAsk: readonly PlayerId[];
+  /** Once everyone has answered: the follow-ups still to apply. */
+  readonly results?: readonly { readonly player: PlayerId; readonly did: boolean }[];
+}
 
 /** @deprecated Use {@link CardFilter} directly — kept as an alias so existing
  * `look-and-choose` / `matchesZoneChoiceFilter` call sites still type-check. */
@@ -415,7 +440,11 @@ export type PlayerScope =
    * `"trigger-player"` — Kediss, Emberclaw Familiar's "it deals that much
    * damage to each other opponent". Every opponent when the trigger names
    * nobody. */
-  | "each-other-opponent";
+  | "each-other-opponent"
+  /** "That player" in an `"each-player-may"`'s `ifDid` / `ifDidnt`: the
+   * player the follow-up is about. Elsewhere, the same as
+   * `"trigger-player"`. Not a target. */
+  | "that-player";
 
 /** A declarative effect. Grows as milestones add vocabulary. */
 export type EffectSpec =
@@ -1528,14 +1557,70 @@ export type EffectSpec =
        * both land on `otherwise`.
        */
       readonly kind: "unless";
-      /** Who decides: a target-slot index holding a player, or the controller
-       * of the permanent whose event fired this trigger (Kazuul's attacker). */
-      readonly chooser: number | "trigger-controller";
+      /** Who decides: a target-slot index holding a player, the controller
+       * of the permanent whose event fired this trigger (Kazuul's attacker),
+       * the player the triggering event names, the effect's own controller
+       * (The Gitrog Monster's "sacrifice ~ unless **you** sacrifice a land"),
+       * or the player whose turn it is. */
+      readonly chooser: number | "trigger-controller" | "trigger-player" | "you" | "active-player";
       /** What they may do to avoid `otherwise`. At most one mana option, since
        * the mana cost rides on the decision itself. */
       readonly options: readonly UnlessOption[];
       /** What happens if they take none of the options. */
       readonly otherwise: EffectSpec;
+    }
+  | {
+      /**
+       * "Each player may …", "each opponent may …", "its controller may …",
+       * "the player whose turn it is may …" — a choice that belongs to
+       * players other than the effect's controller, or to several of them.
+       * Each player in `who` is asked in turn, from the active player (rule
+       * 101.4), with a `choose-modes` decision of their own — each question
+       * waits for the answer before it, and what one player does is done
+       * before the next is asked. What they may do is `effect` (asked with
+       * `prompt`: Kwain, Itinerant Meddler's "each player may draw a card",
+       * Wernog's "each opponent may investigate") or one of `options`, each
+       * offered only to a player who can take it (Kynaios and Tiro's "put a
+       * land card from their hand onto the battlefield"; "sacrifice a
+       * nonland permanent or discard a card"). Either way it is **that
+       * player's** effect: "you" in it is them.
+       *
+       * Once everyone has answered, `ifDid` / `ifDidnt` apply once for each
+       * player who did / didn't, in turn order, as the **effect's
+       * controller's** effect, with the `"that-player"` scope naming the
+       * player it's about: Kwain's "each player who drew a card this way
+       * gains 1 life" (`ifDid: { kind: "gain-life", amount: 1, who:
+       * "that-player" }`), Wernog's "each opponent who doesn't loses 1 life.
+       * You investigate for each opponent who investigated this way"
+       * (`ifDidnt` a `lose-life` of `"that-player"`, `ifDid` an investigate),
+       * a punisher asked of each opponent ("each opponent loses 3 life
+       * unless that player sacrifices a nonland permanent or discards a
+       * card" — `options`, and the life in `ifDidnt`). `resultsFor` narrows
+       * the follow-ups to players in a scope: Kynaios and Tiro's "then each
+       * **opponent** who didn't draws a card" is `who: "each-player"`,
+       * `resultsFor: "each-opponent"`. A player never asked (nothing they
+       * could take) didn't.
+       */
+      readonly kind: "each-player-may";
+      readonly who: PlayerScope;
+      readonly prompt?: string;
+      readonly effect?: EffectSpec;
+      readonly options?: readonly UnlessOption[];
+      /**
+       * Instead of a "may": a choice each of them **must** make between
+       * these — "each opponent faces a villainous choice — [one], or
+       * [other]" (rule 701.56). Unlike `effect` and `options`, the chosen one
+       * is the **effect's controller's** effect, with `"that-player"` naming
+       * the player who chose ("you draw a card" is the villain's; "that
+       * player discards a card" the chooser's). `ifDid` / `ifDidnt` don't
+       * apply — everyone chooses.
+       */
+      readonly choices?: readonly ModeOption[];
+      readonly ifDid?: EffectSpec;
+      readonly ifDidnt?: EffectSpec;
+      readonly resultsFor?: PlayerScope;
+      /** Set by the engine on the copy it parks between questions. */
+      readonly progress?: EachPlayerMayProgress;
     }
   | {
       /**
@@ -1889,6 +1974,9 @@ export interface EffectApi {
    * sacrificed — as its `"sacrificed"` ({@link AmountRef}), read as it last
    * existed on the battlefield. */
   withSacrificed(object: ObjectId): ResolutionContext;
+  /** This context, about `player`: the `"that-player"` scope names them —
+   * an `"each-player-may"`'s follow-ups. */
+  aboutPlayer(player: PlayerId): ResolutionContext;
   /** The card types of what `target` points at — as it last existed on the
    * battlefield if it has left since the effect referred to it. For binding
    * `CardFilter.sharesCardTypeWith`. */
@@ -2041,10 +2129,19 @@ export interface EffectApi {
   ward(cost: WardCost): void;
   /** See the `"unless"` {@link EffectSpec}. */
   unless(
-    chooser: number | "trigger-controller",
+    chooser: Extract<EffectSpec, { kind: "unless" }>["chooser"],
     options: readonly UnlessOption[],
     otherwise: EffectSpec,
   ): void;
+  /** Ask `player` an `"each-player-may"`'s question: a `choose-modes`
+   * decision of theirs, or nothing at all when there's nothing they could
+   * take. */
+  askEachPlayerMay(player: PlayerId, spec: Extract<EffectSpec, { kind: "each-player-may" }>): void;
+  /** Whether `player` took what an `"each-player-may"` that began at event
+   * `since` offered them — their first answer for this source since. */
+  tookEachPlayerMay(player: PlayerId, since: number): boolean;
+  /** The sequence number the next event will have. */
+  nextEventSeq(): number;
   /** See the `"populate"` {@link EffectSpec}. */
   populate(): void;
   /** See the `"amass"` {@link EffectSpec}. */
@@ -2313,6 +2410,60 @@ export function isCountScalableEffect(effect: EffectSpec): boolean {
       );
     default:
       return false;
+  }
+}
+
+/**
+ * An `"each-player-may"`: ask each player in turn, then apply the follow-ups
+ * player by player. Each question — and each follow-up that stops to ask
+ * something — parks the rest as a copy carrying its `progress`, beneath
+ * whatever that step parked of its own, so it all happens in order.
+ */
+function applyEachPlayerMay(
+  spec: Extract<EffectSpec, { kind: "each-player-may" }>,
+  ctx: ResolutionContext,
+): void {
+  const since = spec.progress?.since ?? ctx.nextEventSeq();
+  let asked = spec.progress?.asked ?? [];
+  let toAsk = spec.progress?.toAsk ?? ctx.playersInScope(spec.who);
+  const park = (progress: EachPlayerMayProgress, below: number): void =>
+    ctx.resumeAfterDecisions({ ...spec, progress }, below);
+  // One question at a time, each answered before the next is asked (rule
+  // 101.4). What a player chose is done before the next player is asked.
+  while (toAsk.length > 0) {
+    const player = toAsk[0];
+    asked = [...asked, player];
+    toAsk = toAsk.slice(1);
+    const parked = ctx.parkedCount();
+    const pendingBefore = ctx.decisionPending();
+    ctx.askEachPlayerMay(player, spec);
+    if (!pendingBefore && ctx.decisionPending()) {
+      park({ since, asked, toAsk }, parked);
+      return;
+    }
+  }
+  if (spec.ifDid === undefined && spec.ifDidnt === undefined) return;
+  let results =
+    spec.progress?.results ??
+    (() => {
+      const counted =
+        spec.resultsFor === undefined ? undefined : new Set(ctx.playersInScope(spec.resultsFor));
+      return asked
+        .filter((player) => counted === undefined || counted.has(player))
+        .map((player) => ({ player, did: ctx.tookEachPlayerMay(player, since) }));
+    })();
+  while (results.length > 0) {
+    const { player, did } = results[0];
+    results = results.slice(1);
+    const followUp = did ? spec.ifDid : spec.ifDidnt;
+    if (followUp === undefined) continue;
+    const parked = ctx.parkedCount();
+    const pendingBefore = ctx.decisionPending();
+    applyEffectSpec(followUp, ctx.aboutPlayer(player));
+    if (results.length > 0 && !pendingBefore && ctx.decisionPending()) {
+      park({ since, asked, toAsk: [], results }, parked);
+      return;
+    }
   }
 }
 
@@ -3239,6 +3390,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     case "unless":
       ctx.unless(spec.chooser, spec.options, spec.otherwise);
+      return;
+    case "each-player-may":
+      applyEachPlayerMay(spec, ctx);
       return;
     case "reflexive-trigger":
       ctx.reflexiveTrigger(spec.targets, spec.effect, spec.text);

@@ -47,16 +47,21 @@ that one card is the reason the deck exists.
   the `turn-structure` condition); Clive, Ifrit's Dominant (`flicker`'s `transformed`); Ojer
   Axonil, Deepest Might (`put-onto-battlefield`'s `transformed`, `would-deal-damage`'s
   `atLeast: "this-power"` with `combat: false`, and the `damage-dealt-this-turn` condition on
-  Temple of Power's transform ability).
+  Temple of Power's transform ability); The Gitrog Monster (`unless` with `chooser: "you"`);
+  Kynaios and Tiro of Meletis, Kwain, Itinerant Meddler and Wernog, Rider's Chaplain
+  (`each-player-may` and its `ifDid`/`ifDidnt` — the "this way" parts their gaps entries list
+  are those follow-ups, and Wernog's investigate is built); Dr. Eggman (its gaps entry lists
+  only `effect:choices-by-other-players` — confirm at `card:lookup` that `each-player-may`,
+  `unless` or a villainous choice covers it).
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first
   ten, engine-only, with the commanders each fully unblocks:
-  `effect:this-way-results` (+4), `effect:choices-by-other-players` (+4),
-  `effect:missing-tokens` (+1), `effect:amount-aggregate` (+1),
+  `effect:this-way-results` (+6), `effect:missing-tokens` (+1), `effect:amount-aggregate` (+1),
   `effect:look-and-choose-leftover` (+1), `static:combat-restriction-extensions` (+3),
   `mechanic:mdfc-transform` (+1), `condition:player-state-thresholds` (+1),
-  `condition:entry-provenance` (+3), `keyword:firebending` (+1).
+  `condition:entry-provenance` (+3), `keyword:firebending` (+1),
+  `static:grant-to-cards-outside-battlefield` (+3).
 - **Most-needed features overall.** `effect:this-way-results` (18),
   `static:grant-to-cards-outside-battlefield` (14), `zone:visibility-extensions`,
   `static:grant-abilities-to-spells` and `bug:zone-change-object-identity` (13 each). Live

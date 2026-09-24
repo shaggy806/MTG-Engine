@@ -2607,6 +2607,8 @@ export class Game {
       readonly notChosenThisTurn?: boolean;
       readonly costLife?: number;
       readonly costEnergy?: number;
+      /** See the `choose-modes` decision's `modesController`. */
+      readonly modesController?: PlayerId;
     } = {},
   ): void {
     const key = ability.key;
@@ -2684,6 +2686,9 @@ export class Game {
       ...(onlyUnchosen ? { notChosenThisTurn: offered } : {}),
       ...(costLife > 0 ? { costLife } : {}),
       ...(costEnergy > 0 ? { costEnergy } : {}),
+      ...(ability.modesController !== undefined && ability.modesController !== controller
+        ? { modesController: ability.modesController }
+        : {}),
     };
   }
 
@@ -2752,13 +2757,15 @@ export class Game {
       const record = (this.state.modesChosenThisTurn ??= {});
       record[abilityKey] = [...(record[abilityKey] ?? []), ...own];
     }
-    this.emit({ type: "modes-chosen", source, modes: own });
+    this.emit({ type: "modes-chosen", source, player, modes: own });
     // The X paid for the choice is what the mode's effect reads (Flameblast
     // Dragon's "it deals X damage"), overriding the ability's own X, which is
-    // 0 on a trigger.
+    // 0 on a trigger. A villainous choice's option is its controller's
+    // effect, about the player who chose it.
+    const modesBy = awaiting.modesController;
     const context = this.makeResolutionContext(
       source,
-      player,
+      modesBy ?? player,
       targets,
       chosenX > 0 ? chosenX : x,
       triggerValue ?? 0,
@@ -2766,7 +2773,7 @@ export class Game {
       1,
       0,
       targetZones,
-      lastKnownRefs,
+      modesBy === undefined ? lastKnownRefs : { ...lastKnownRefs, player },
       abilityKey !== undefined ? { abilityKey } : {},
     );
     for (const i of ordered) applyEffectSpec(modes[i].effect, context);
@@ -6135,7 +6142,7 @@ export class Game {
     });
     this.announceTargeted(chosen, player, cardId, true);
     if (sortedModes !== undefined) {
-      this.emit({ type: "modes-chosen", source: cardId, modes: [...sortedModes] });
+      this.emit({ type: "modes-chosen", source: cardId, player, modes: [...sortedModes] });
     }
     // The rest of the additional cost (rule 601.2f-h). Paid as the spell is
     // cast, so — like the sacrifice above — it stands even if the spell is
@@ -10125,6 +10132,20 @@ export class Game {
         }
       },
       sacrificeSource: () => this.sacrificeSourceByEffect(source),
+      aboutPlayer: (player) =>
+        this.makeResolutionContext(
+          source,
+          controller,
+          targets,
+          x,
+          triggerValue,
+          triggerObject,
+          stackMultiplier,
+          resolutionCount,
+          targetZones,
+          { ...refs, player },
+          opts,
+        ),
       withSacrificed: (object) => {
         // It was just sacrificed, so its latest snapshot is that departure.
         const lki = this.state.objects[object]?.lastKnown ?? this.state.ceasedTokens?.[object];
@@ -10327,6 +10348,21 @@ export class Game {
           targetZones,
           triggerController: triggerLastKnown()?.controller,
         }),
+      askEachPlayerMay: (player, spec) =>
+        this.askEachPlayerMay(
+          source,
+          controller,
+          player,
+          spec,
+          x,
+          targets,
+          triggerValue,
+          triggerObject,
+          refs,
+          targetZones,
+        ),
+      tookEachPlayerMay: (player, since) => this.tookEachPlayerMay(source, player, since),
+      nextEventSeq: () => this.state.eventSeq,
       // "Damage equal to its power" from a dies trigger reads the power it
       // died with (the Juri and Elenda rulings); a target that has left, the
       // power it left with.
@@ -10811,7 +10847,7 @@ export class Game {
     x: number,
     targets: ResolvedTargets,
     triggerObject: ObjectId | undefined,
-    chooser: number | "trigger-controller",
+    chooser: Extract<EffectSpec, { kind: "unless" }>["chooser"],
     options: readonly UnlessOption[],
     otherwise: EffectSpec,
     /** What the resolving ability knew about the objects it refers to: its
@@ -10830,10 +10866,16 @@ export class Game {
           (triggerObject !== undefined
             ? this.state.objects[triggerObject]?.controller
             : undefined))
-        : (() => {
-            const ref = targets[chooser];
-            return ref?.kind === "player" ? ref.player : undefined;
-          })();
+        : chooser === "trigger-player"
+          ? known.lastKnownRefs.player
+          : chooser === "you"
+            ? controller
+            : chooser === "active-player"
+              ? this.activePlayer
+              : (() => {
+                  const ref = targets[chooser];
+                  return ref?.kind === "player" ? ref.player : undefined;
+                })();
 
     const applyOtherwise = (): void => {
       applyEffectSpec(
@@ -10858,35 +10900,11 @@ export class Game {
     }
 
     // Only offer what they can actually take.
-    const available = options.filter((option) => {
-      if ("pay" in option) return this.payMana(decide, parseManaCost(option.pay)) !== null;
-      if ("payLife" in option) return this.state.players[decide].life > option.payLife;
-      return this.eligibleSacrifices(decide, option.sacrifice).length > 0;
-    });
-    if (available.length === 0) {
+    const offer = this.optionModes(decide, options);
+    if (offer === null) {
       applyOtherwise();
       return;
     }
-
-    const manaOption = available.find((o): o is Extract<UnlessOption, { pay: string }> =>
-      "pay" in o,
-    );
-    const modes = available.map((option) => ({
-      text: option.text,
-      effect:
-        "payLife" in option
-          ? ({ kind: "lose-life", amount: option.payLife, who: "you" } as EffectSpec)
-          : "sacrifice" in option
-            ? ({
-                kind: "sacrifice",
-                who: "you",
-                filter: option.sacrifice,
-                count: 1,
-              } as EffectSpec)
-            // The mana option's payment rides on the decision's own `cost`,
-            // so its mode has nothing left to do.
-            : ({ kind: "sequence", effects: [] } as EffectSpec),
-    }));
 
     // The chooser decides and pays; `otherwise` stays the punisher's own
     // controller's effect.
@@ -10896,16 +10914,148 @@ export class Game {
       x,
       0,
       1,
-      modes,
+      offer.modes,
       otherwise,
       targets,
-      manaOption?.pay,
+      offer.cost,
       0,
       triggerObject,
       controller,
       known.lastKnownRefs,
       known.targetZones,
     );
+  }
+
+  /**
+   * The {@link UnlessOption}s `player` could take right now, as the modes of
+   * a `choose-modes` decision, with the one mana option's cost — which rides
+   * on the decision itself, so a mana option is meant to be the only one —
+   * or `null` when there's none: a cost can be paid only in full (rule
+   * 118.3), and life only with at least that much (rule 119.4).
+   */
+  private optionModes(
+    player: PlayerId,
+    options: readonly UnlessOption[],
+  ): { readonly modes: ModeOption[]; readonly cost?: string } | null {
+    const available = options.filter((option) => {
+      if ("pay" in option) return this.payMana(player, parseManaCost(option.pay)) !== null;
+      if ("payLife" in option) return this.state.players[player].life >= option.payLife;
+      if ("discard" in option) {
+        return this.state.zones.perPlayer[player].hand.length >= option.discard;
+      }
+      if ("putFromHand" in option) {
+        return this.state.zones.perPlayer[player].hand.some((id) =>
+          matchesFilter(this.state, this.registry, id, option.putFromHand, { you: player }),
+        );
+      }
+      return this.eligibleSacrifices(player, option.sacrifice).length > 0;
+    });
+    if (available.length === 0) return null;
+    const mana = available.find((o): o is Extract<UnlessOption, { pay: string }> => "pay" in o);
+    const modes = available.map(
+      (option): ModeOption => ({
+        text: option.text,
+        effect:
+          "payLife" in option
+            ? { kind: "lose-life", amount: option.payLife, who: "you" }
+            : "sacrifice" in option
+              ? { kind: "sacrifice", who: "you", filter: option.sacrifice, count: 1 }
+              : "discard" in option
+                ? { kind: "discard", target: "you", amount: option.discard }
+                : "putFromHand" in option
+                  ? {
+                      kind: "look-and-choose",
+                      zone: "hand",
+                      min: 1,
+                      max: 1,
+                      destination: "battlefield",
+                      leftover: "stay",
+                      filter: option.putFromHand,
+                    }
+                  // The mana option's payment rides on the decision's own
+                  // `cost`, so its mode has nothing left to do.
+                  : { kind: "sequence", effects: [] },
+      }),
+    );
+    return { modes, ...(mana !== undefined ? { cost: mana.pay } : {}) };
+  }
+
+  /**
+   * One player's question of an `"each-player-may"` — see that
+   * {@link EffectSpec}: its `effect` (asked with its `prompt`), or those of
+   * its `options` they could take. Nothing at all when there's none. What
+   * they choose is their own effect.
+   */
+  private askEachPlayerMay(
+    source: ObjectId,
+    controller: PlayerId,
+    player: PlayerId,
+    spec: Extract<EffectSpec, { kind: "each-player-may" }>,
+    x: number,
+    targets: ResolvedTargets,
+    triggerValue: number,
+    triggerObject: ObjectId | undefined,
+    lastKnownRefs: LastKnownRefs,
+    targetZones: readonly (ZoneType | null)[],
+  ): void {
+    if (this.state.players[player]?.hasLost !== false) return;
+    // A villainous choice: one of them, and it's the controller's effect.
+    if (spec.choices !== undefined) {
+      if (spec.choices.length === 0) return;
+      this.beginModesChoice(
+        source,
+        player,
+        x,
+        1,
+        1,
+        spec.choices,
+        undefined,
+        targets,
+        undefined,
+        triggerValue,
+        triggerObject,
+        undefined,
+        lastKnownRefs,
+        targetZones,
+        { modesController: controller },
+      );
+      return;
+    }
+    const offer =
+      spec.options !== undefined
+        ? this.optionModes(player, spec.options)
+        : spec.effect !== undefined
+          ? { modes: [{ text: spec.prompt ?? "Do it?", effect: spec.effect }] }
+          : null;
+    if (offer === null) return;
+    this.beginModesChoice(
+      source,
+      player,
+      x,
+      0,
+      1,
+      offer.modes,
+      undefined,
+      targets,
+      "cost" in offer ? offer.cost : undefined,
+      triggerValue,
+      triggerObject,
+      undefined,
+      lastKnownRefs,
+      targetZones,
+    );
+  }
+
+  /** Whether `player` took what an `"each-player-may"` begun at event
+   * `since` offered: their first answer for `source` since. Never asked is
+   * didn't. */
+  private tookEachPlayerMay(source: ObjectId, player: PlayerId, since: number): boolean {
+    for (const event of this.eventsSince(since)) {
+      if (event.type === "modes-chosen" && event.source === source && event.player === player) {
+        return event.modes.length > 0;
+      }
+    }
+    return false;
   }
 
   /**
@@ -14273,7 +14423,7 @@ export class Game {
     triggerPlayer?: PlayerId,
   ): PlayerId[] {
     if (who === "you") return [controller];
-    if (who === "trigger-player") {
+    if (who === "trigger-player" || who === "that-player") {
       return triggerPlayer === undefined || this.state.players[triggerPlayer]?.hasLost !== false
         ? []
         : [triggerPlayer];

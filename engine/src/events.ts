@@ -626,9 +626,11 @@ export type GameEvent =
   | (Base & {
       /** A modal spell/ability's controller (or a "you may" clause) chose
        * which modes to apply — `modes` are indices into the mode list, or
-       * empty for a declined "you may". */
+       * empty for a declined "you may". `player` is who chose — not always
+       * the controller (an "unless" punisher, an "each player may"). */
       readonly type: "modes-chosen";
       readonly source: ObjectId;
+      readonly player?: PlayerId;
       readonly modes: readonly number[];
     })
   | (Base & {

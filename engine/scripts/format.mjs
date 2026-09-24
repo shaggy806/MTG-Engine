@@ -213,10 +213,12 @@ export const makeFormatter = (game) => {
         return `a shield prevents the next ${e.amount} damage to ${target(e.target)}`;
       case "draw-redirected":
         return `${e.from}'s draw is redirected — ${e.to} draws instead`;
-      case "modes-chosen":
+      case "modes-chosen": {
+        const who = e.player === undefined ? "" : `${e.player} `;
         return e.modes.length > 0
-          ? `${name(e.source)} — mode(s) ${e.modes.map((m) => m + 1).join(", ")}`
-          : `${name(e.source)} — declined`;
+          ? `${name(e.source)} — ${who}chose mode(s) ${e.modes.map((m) => m + 1).join(", ")}`
+          : `${name(e.source)} — ${who}declined`;
+      }
       case "permanent-returned-to-hand":
         return `${name(e.object)} returns to ${e.owner}'s hand`;
       case "permanent-exiled":
