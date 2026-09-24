@@ -153,6 +153,78 @@ distinct powers, Morbid/Raid/Spectacle's "did X happen this turn") need a new
 is worth doing as a batch once a few concrete cards call for it rather than
 one at a time.
 
+### Card sweep 1: the staples it skipped
+
+The first card sweep (2026-09-24, cloud) went through the 300 highest-ranked unimplemented
+top-2000 cards and authored every one the engine could already run faithfully (78, all
+landed). These 227 it skipped, each needing something the engine doesn't have yet. Its
+grouping by missing feature was lost (the run log truncates long messages), so they are listed
+by EDHREC rank, most-played first; triage them before picking the next engine feature. The
+Oracle data they were judged against can be regenerated with `scripts/top-commander-cards.mjs
+--cache-json`.
+
+Chaos Warp (29), Myriad Landscape (31), Skullclamp (41), Fabled Passage (46), Deflecting Swat
+(74), Urborg, Tomb of Yawgmoth (75), Yavimaya, Cradle of Growth (77), Esper Sentinel (78), The One
+Ring (95), Mystic Remora (99), Jeska's Will (104), Teferi's Protection (109), Propaganda (113),
+Urza's Saga (117), Black Market Connections (130), Roaming Throne (133), War Room (140), Ponder
+(145), Chrome Mox (151), Herald's Horn (153), Windfall (158), Ghostly Prison (162), Nykthos,
+Shrine to Nyx (163), Sink into Stupor // Soporific Springs (167), Reflecting Pool (168), Mystic
+Sanctuary (174), Three Tree City (177), Gemstone Caverns (179), Command Beacon (183), Hardened
+Scales (185), Akroma's Will (189), Force of Will (194), Mosswort Bridge (196), Fell the Profane //
+Fell Mire (200), Storm-Kiln Artist (201), Mox Amber (202), Patchwork Banner (204), Professional
+Face-Breaker (207), Wild Growth (212), Rhythm of the Wild (221), Animate Dead (223), The Great
+Henge (227), Mirkwood Bats (228), Sensei's Divining Top (229), Explore (234), Sword of the Animist
+(235), Malakir Rebirth // Malakir Mire (239), Gamble (241), Rishkar's Expertise (243), Mox Diamond
+(245), Grand Abolisher (251), Everflowing Chalice (254), Archmage Emeritus (255), Bloom Tender
+(257), Sylvan Library (259), Syr Konrad, the Grim (260), Academy Manufactor (262), Untimely
+Malfunction (265), Force of Negation (268), Bolas's Citadel (270), Snap (273), Etali, Primal Storm
+(275), Hullbreaker Horror (276), Ragavan, Nimble Pilferer (281), Rugged Prairie (282), Reality
+Shift (283), Cascade Bluffs (292), Witch Enchanter // Witch-Blessed Meadow (294), Braids, Arisen
+Nightmare (297), Flooded Grove (302), The Ozolith (304), Flusterstorm (307), Dryad of the Ilysian
+Grove (308), Shadowspear (309), Phyrexian Altar (310), Phyrexian Metamorph (312), Bala Ged
+Recovery // Bala Ged Sanctuary (318), Guardian Project (321), Fetid Heath (336), Sevinne's
+Reclamation (340), Kindred Discovery (341), Anger (346), Utopia Sprawl (349), Dawn's Truce (355),
+Twilight Mire (356), Shifting Woodland (360), Pact of Negation (365), Goldspan Dragon (369), Arena
+of Glory (371), Vanquisher's Banner (382), Mistrise Village (387), Underworld Breach (389),
+Forgotten Ancient (390), Dauthi Voidwalker (391), Spark Double (392), Helm of the Host (393),
+Kutzil, Malamet Exemplar (395), Demolition Field (397), Kami of Whispered Hopes (401), Silence
+(402), Selvala, Heart of the Wilds (410), Minas Tirith (413), Mystic Forge (416), Enduring
+Vitality (423), Mondrak, Glory Dominus (429), Simian Spirit Guide (432), Bident of Thassa (436),
+Ephemerate (437), Thassa's Oracle (440), Ohran Frostfang (446), Geier Reach Sanitarium (447),
+Entish Restoration (451), Cursed Mirror (452), Living Death (458), Disciple of Freyalise // Garden
+of Freyalise (462), Chandra's Ignition (474), Commander's Plate (477), Plaza of Heroes (479),
+Field of the Dead (488), Maskwood Nexus (490), Adeline, Resplendent Cathar (491), Birgi, God of
+Storytelling // Harnfel, Horn of Bounty (493), Rise of the Dark Realms (495), Faeburrow Elder
+(499), Blind Obedience (503), Mother of Runes (506), Liquimetal Torque (510), Necropotence (513),
+Valakut Awakening // Valakut Stoneforge (514), Blasphemous Edict (517), Wishclaw Talisman (519),
+Voice of Victory (522), Gitaxian Probe (524), Veil of Summer (525), Crypt Ghast (528), Bolt Bend
+(530), Pinnacle Monk // Mystic Peak (531), Ripples of Undeath (534), Relic of Legends (536), The
+Reaver Cleaver (537), Emergence Zone (538), Dread Return (539), Sword of Feast and Famine (543),
+Mindbreak Trap (544), Maze of Ith (548), Graven Cairns (552), Laboratory Maniac (554), Redirect
+Lightning (555), Brotherhood Regalia (558), Conduit of Worlds (559), Nesting Grounds (560), Second
+Harvest (561), Unbreakable Formation (562), Springleaf Drum (564), Clever Concealment (569),
+Growing Rites of Itlimoc // Itlimoc, Cradle of the Sun (571), Talon Gates of Madara (572),
+Champion of Lambholt (575), Opposition Agent (578), Thespian's Stage (580), Curiosity (583),
+Culling Ritual (585), Darksteel Mutation (586), Six (587), Return the Favor (588), Teferi's
+Ageless Insight (589), Ghostly Flicker (590), Tibalt's Trickery (595), Mulldrifter (596),
+Puresteel Paladin (597), Strionic Resonator (598), Hexing Squelcher (606), Realmwalker (607),
+Deathrite Shaman (608), Hydroelectric Specimen // Hydroelectric Laboratory (609), Cloud Key (610),
+Mangara, the Diplomat (612), Bitterblossom (617), Archdruid's Charm (620), Torment of Hailfire
+(621), Banner of Kinship (622), Dig Through Time (625), Trouble in Pairs (626), Ancient Copper
+Dragon (628), Caretaker's Talent (631), Boggart Trawler // Boggart Bog (633), Wizard Class (634),
+Treasure Cruise (635), Plaguecrafter (639), Incubation Druid (641), Ozolith, the Shattered Spire
+(642), Borne Upon a Wind (643), Midnight Clock (644), Sanctum Weaver (648), Krosan Grip (650),
+Harmonic Prodigy (654), Trailblazer's Boots (656), Sea Gate Restoration // Sea Gate, Reborn (658),
+Tireless Tracker (660), Windbrisk Heights (662), Imp's Mischief (663), Sculpting Steel (665),
+Dualcaster Mage (669), Bridgeworks Battle // Tanglespan Bridgeworks (670), Sphere of Safety (673),
+Gravecrawler (674), Changeling Outcast (675), Opal Palace (676), Shared Animosity (683),
+Purphoros, God of the Forge (687), Innkeeper's Talent (688), Reflections of Littjara (689), Into
+the Flood Maw (690), Archivist of Oghma (691), Ancient Greenwarden (692), Muddle the Mixture
+(696), Snuff Out (697), Curse of Opulence (699), Springheart Nantuko (700), The Earth Crystal
+(701), Elspeth, Storm Slayer (703), Mirari's Wake (704), Sundering Eruption // Volcanic Fissure
+(707), Life from the Loam (709), Fact or Fiction (710), Archaeomancer's Map (711), Castle
+Garenbrig (717)
+
 ### Still open inside finished features
 
 - **Overload**: Mizzix's Mastery, Eldritch Immunity, Winds of Abandon (a

@@ -1,5 +1,5 @@
 Top 2000 Commander cards by EDHREC popularity (fetched 2026-09-13)
-607 already implemented / 1393 missing (marks refreshed 2026-09-24)
+610 already implemented / 1390 missing (marks refreshed 2026-09-24)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -199,7 +199,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   200  Patchwork Banner                         {3}              Artifact
 [x]   201  Thran Dynamo                             {4}              Artifact
 [x]   202  Village Rites                            {B}              Instant
-[ ]   203  Storm-Kiln Artist                        {3}{R}           Creature — Dwarf Shaman
+[x]   203  Storm-Kiln Artist                        {3}{R}           Creature — Dwarf Shaman
 [ ]   204  Mox Amber                                {0}              Legendary Artifact
 [x]   205  Stroke of Midnight                       {2}{W}           Instant
 [x]   206  Ash Barrens                              {0}              Land
@@ -229,7 +229,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   230  Shipwreck Marsh                          {0}              Land
 [x]   231  Sign in Blood                            {B}{B}           Sorcery
 [x]   232  Growth Spiral                            {G}{U}           Instant
-[ ]   233  Explore                                  {1}{G}           Sorcery
+[x]   233  Explore                                  {1}{G}           Sorcery
 [x]   234  Brushland                                {0}              Land
 [x]   235  Zulaport Cutthroat                       {1}{B}           Creature — Human Rogue Ally
 [ ]   236  Sword of the Animist                     {2}              Legendary Artifact — Equipment
@@ -251,7 +251,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   252  Foundry Inspector                        {3}              Artifact Creature — Construct
 [x]   253  Basilisk Collar                          {1}              Artifact — Equipment
 [ ]   254  Everflowing Chalice                      {0}              Artifact
-[ ]   255  Archmage Emeritus                        {2}{U}{U}        Creature — Human Wizard
+[x]   255  Archmage Emeritus                        {2}{U}{U}        Creature — Human Wizard
 [x]   256  Viscera Seer                             {B}              Creature — Vampire Wizard
 [x]   257  Orcish Bowmasters                        {1}{B}           Creature — Orc Archer
 [ ]   258  Bloom Tender                             {1}{G}           Creature — Elf Druid

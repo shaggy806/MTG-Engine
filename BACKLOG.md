@@ -41,6 +41,9 @@ that one card is the reason the deck exists.
   "defending player" scope. Tier 3 is Station, Discover, Evoke and Reconfigure. Also open:
   damage doubling as a replacement, the rest of the Overload/free-cast/convoke families, and the
   items listed under each "still open". See `neededCards-features.md`, "Open: the card backlog".
+- **Card sweep 1's skipped staples.** 227 of the 300 highest-ranked unauthored top-2000
+  cards need engine work; listed by rank in `neededCards-features.md`, "Card sweep 1: the
+  staples it skipped". Triage them by missing feature before choosing the next card-side work.
 - **The limitation ledger.** Protection from a filter (19 cards) is the largest remaining gap.
   Then regeneration, the "put into a graveyard from anywhere" trigger, "as this enters" on a
   non-cast permanent, and discard as an ability cost. See `neededCards-features.md`, "The
