@@ -236,6 +236,7 @@ import _poolEmeraldMedallion from "./pool/emerald-medallion.js";
 import _poolEmeriaAngel from "./pool/emeria-angel.js";
 import _poolEmmaraSoulOfTheAccord from "./pool/emmara-soul-of-the-accord.js";
 import _poolEmpyreanEagle from "./pool/empyrean-eagle.js";
+import _poolEmryLurkerOfTheLoch from "./pool/emry-lurker-of-the-loch.js";
 import _poolEncroachingDragonstorm from "./pool/encroaching-dragonstorm.js";
 import _poolEnlightenedTutor from "./pool/enlightened-tutor.js";
 import _poolEnterTheGodEternals from "./pool/enter-the-god-eternals.js";
@@ -492,6 +493,7 @@ import _poolMountain from "./pool/mountain.js";
 import _poolMoxOpal from "./pool/mox-opal.js";
 import _poolMsBumbleflower from "./pool/ms-bumbleflower.js";
 import _poolMudbuttonTorchrunner from "./pool/mudbutton-torchrunner.js";
+import _poolMuldrothaTheGravetide from "./pool/muldrotha-the-gravetide.js";
 import _poolMurder from "./pool/murder.js";
 import _poolMysticMonastery from "./pool/mystic-monastery.js";
 import _poolMysticalTutor from "./pool/mystical-tutor.js";
@@ -651,6 +653,7 @@ import _poolShroofusSproutsire from "./pool/shroofus-sproutsire.js";
 import _poolSidarJabariOfZhalfir from "./pool/sidar-jabari-of-zhalfir.js";
 import _poolSidequestRaiseAChocobo from "./pool/sidequest-raise-a-chocobo.js";
 import _poolSignInBlood from "./pool/sign-in-blood.js";
+import _poolSilasRennSeekerAdept from "./pool/silas-renn-seeker-adept.js";
 import _poolSimicCharm from "./pool/simic-charm.js";
 import _poolSimicGrowthChamber from "./pool/simic-growth-chamber.js";
 import _poolSimicSignet from "./pool/simic-signet.js";
@@ -1185,6 +1188,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolEmeriaAngel,
   _poolEmmaraSoulOfTheAccord,
   _poolEmpyreanEagle,
+  _poolEmryLurkerOfTheLoch,
   _poolEncroachingDragonstorm,
   _poolEnlightenedTutor,
   _poolEnterTheGodEternals,
@@ -1441,6 +1445,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolMoxOpal,
   _poolMsBumbleflower,
   _poolMudbuttonTorchrunner,
+  _poolMuldrothaTheGravetide,
   _poolMurder,
   _poolMysticMonastery,
   _poolMysticalTutor,
@@ -1600,6 +1605,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSidarJabariOfZhalfir,
   _poolSidequestRaiseAChocobo,
   _poolSignInBlood,
+  _poolSilasRennSeekerAdept,
   _poolSimicCharm,
   _poolSimicGrowthChamber,
   _poolSimicSignet,
