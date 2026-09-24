@@ -793,7 +793,7 @@ triggered: [
 | `becomes-target` | `who`, `filter?`, `byOpponentOnly?` | a permanent was chosen as a target of a spell or ability (rule 115.7 — Thunderbreak Regent). Fires as the spell/ability goes on the stack, so it triggers even if that spell is countered or later fizzles. The *player* who targeted it auto-fills the first target slot, the way `deals-combat-damage-to-player` fills it with the damaged player. |
 | `becomes-tapped` | `who`, `filter?` | a permanent became tapped (rule 701.21a — City of Brass). Fires for every tapping: a mana ability, a cost that taps it, an opponent's tap effect. Not the same as `add-mana`'s `painToController`, which only charges the mana-ability path. |
 | `leaves-battlefield` | `who` | a permanent leaves for **any** zone |
-| `gains-life` / `loses-life` | `who` | a player's life changes (`who` = whose). `{ triggerValue: true }` is how much ("loses that much life" — Sanguine Bond). Lifelink damage one source deals to several things at once is **one** gain, so it triggers once. |
+| `gains-life` / `loses-life` | `who` | a player's life changes (`who` = whose). `{ triggerValue: true }` is how much ("loses that much life" — Sanguine Bond). Once per life-gain *event*, which is once per source (rule 119.9): lifelink damage one source deals to several things at once is **one** gain, so it triggers once; two lifelinkers dealing combat damage together are two (Oloro, Blech). |
 | `attacks` | `who`, `filter?`, `attackingYou?` | a creature is declared as an attacker (`filter` narrows which one — Utvara Hellkite / Atarka, World Render: "a Dragon you control"). `attackingYou` fires only when the attack is aimed at this permanent's controller (Kazuul's "if you're the defending player") — which also covers "a creature an opponent controls", since nobody can attack themselves. |
 | `attacks-alone` | `who` | Exalted (needed-cards P15) — a creature you control attacked alone this combat; the lone attacker isn't a target, read it via `ResolutionContext.triggerObject` / `EffectTargetRef: "trigger-object"` |
 | `sacrifice` | `who` | a player sacrifices a permanent (Korvold, Mayhem Devil — `who` = who sacrificed) |
@@ -802,7 +802,7 @@ triggered: [
 | `step-begins` | `step`, `who` | the start of a step (`"upkeep"` etc.) |
 | `discards` | `who` | "whenever an opponent discards a card" (Sangromancer). Fires once per *discard event*, not once per card — see §15. |
 | `blocks` | `who`, `filter?` | the mirror of `attacks` (Kangee, Sky Warden) |
-| `dealt-damage` | `who` | the receiving end — "whenever this creature **is dealt damage**" (Brash Taunter, Hornet Nest). Combat and non-combat alike; `{ triggerValue: true }` is how much. |
+| `dealt-damage` | `who` | the receiving end — "whenever this creature **is dealt damage**" (Brash Taunter, Hornet Nest, enrage). Combat and non-combat alike; `{ triggerValue: true }` is how much. Damage dealt all at once is one event however many sources dealt it — a creature blocked by two is dealt its combat damage once — so it triggers once, for the total. |
 | `attack-with` | `who`, `atLeast`, `filter?`, `attackingYou?` | "whenever you attack with three or more creatures" (Overwhelming Instinct, Tide Skimmer). Fires once per declaration, off the whole attacker list — an `attacks` trigger fires per attacker and can't count them. |
 | `deals-combat-damage-to-player` | `who`, `filter?` | `filter` narrows on the *damaging creature* — Sharding Sphinx's "whenever an **artifact** creature you control deals combat damage to a player". The first target slot is auto-filled with the damaged player, but only if that slot can hold one. |
 | `cast-spell` | `who`, `noncreatureOnly?`, `firstEachTurn?`, `nthEachTurn?`, `filter?` | a spell is cast. `who: "opponent"` is anyone but this permanent's controller (Kaervek the Merciless); `filter` narrows on the *spell* — `{ typesAnyOf: ["instant", "sorcery"] }` for Guttersnipe. `noncreatureOnly` predates `filter` and stays, because prowess is printed as its own word. `trigger-object` is the spell, so `{ manaValueOf: "trigger-object" }` reads its mana value. `firstEachTurn` / `nthEachTurn: N` is the caster's first / Nth spell this turn — and **with a `filter`, their first / Nth *matching* spell** (Tuvasa's "your first enchantment spell each turn", which can be your third spell). |
@@ -821,6 +821,18 @@ once per opponent's **turn**, not once per opponent.
 
 `filter` is a `CardFilter` narrowing which permanent counts (Soul Warden:
 `{ type: "creature" }`; landfall: `{ type: "land" }`).
+
+**Leaving together.** `dies`, `leaves-battlefield` and `sacrifice` are
+leaves-the-battlefield abilities, which look back in time (rule 603.10a):
+permanents that leave in one event — a wrath, one sweep of state-based
+actions, an edict once every player has chosen, an overloaded bounce — each
+see every other one leave, their own source included. Zulaport Cutthroat and
+two Bears under one Wrath of God drain three times, and nothing about the card
+has to say so. A permanent that left is matched as it last existed on the
+battlefield for **who controlled it**: `who: "you-control"`, a filter's
+`controlledBy`, and whose ability it is all use its controller as it left, so
+a stolen creature dying is the thief's. Its types, keywords and granted
+abilities are *not* yet read that way — see §15.
 
 If the ability has `targets`, the controller chooses them via a dispatched
 `choose-targets` decision when the trigger goes on the stack. A slot the event
@@ -1312,6 +1324,20 @@ Delete an entry in the same commit as the feature that retires it.
   are unmodeled alt-cast / ETB-choice mechanics (needed-cards P18).
 
 **Partial:**
+
+- **Last-known information for a leaves-the-battlefield trigger is only who
+  controlled the permanent** (§9, "Leaving together"). Everything else is read
+  off the card where it landed: an animated Mutavault that dies isn't a
+  creature dying to Blood Artist, a creature that had lost its abilities still
+  fires its own dies trigger, and a dies trigger *granted* by another
+  permanent's static is gone once the grantor has left. A card whose trigger
+  turns on one of those can't be authored faithfully yet.
+- **Only mass moves are one event.** A single instruction with several
+  targets ("destroy two target creatures", "return this card and up to one
+  other target creature card") still moves them one after another, so a
+  leaves-the-battlefield trigger among them misses the ones moved before it —
+  and of two permanents put onto the battlefield that way, only the first
+  sees the second enter.
 
 - **"You may reveal a card from your hand"** on the reveal-land cycle is taken
   automatically rather than offered as a choice — see

@@ -102,6 +102,19 @@ export interface GameObject {
    * has left — Undying's "if it had no +1/+1 counters on it". */
   lastKnownCounters?: Record<string, number>;
   /**
+   * Who controlled this permanent as it left the battlefield — last-known
+   * information (rule 603.10a) for a leaves-the-battlefield trigger, which
+   * has to be matched after `moveObject` has already handed the card back to
+   * its owner (rule 110.2). "Whenever a creature **you control** dies" asks
+   * about the thief's creature, not the owner's, and the ability of a stolen
+   * Blood Artist that dies is the thief's.
+   *
+   * Set by the move that took it off the battlefield and cleared by every
+   * other move, so it is only ever present on an object whose last move was
+   * that one.
+   */
+  lastKnownController?: PlayerId;
+  /**
    * "Impulse draw" — this card is exiled face-up and its owner may play it.
    * `until` is the turn number the permission lapses on (an "until end of
    * turn" impulse); absent means it lasts as long as `exiledWith` is on the
@@ -1175,9 +1188,11 @@ export interface GameState {
   pendingSuspendedCasts: ObjectId[];
   /**
    * Battlefield permanents a mass-destroy effect (Wrath of God) still has to
-   * destroy, one at a time — so a commander's 903.9a choice mid-wipe can pause
-   * and resume without dropping the rest. Drained by `drainPendingDestruction`
-   * inside the `prepareForPriority` fixpoint.
+   * destroy. `drainPendingDestruction` destroys them all at once, as one leave
+   * batch (rule 603.10a) — a commander among them waits for its 903.9a
+   * choice without holding up the rest — but only once nothing else is being
+   * asked: a wipe that began while another decision was pending waits here
+   * for the `prepareForPriority` fixpoint.
    */
   pendingDestruction: ObjectId[];
   /**
@@ -1199,8 +1214,10 @@ export interface GameState {
   }[];
   /**
    * Specific permanents (chosen, or auto-selected when there was no choice)
-   * still to be moved to the graveyard as a sacrifice — drained one at a time
-   * so a commander's 903.9a choice can pause it.
+   * still to be moved to the graveyard as a sacrifice. Drained only once
+   * every player owed a choice has made it, and then all at once as one
+   * leave batch (rule 101.4 — the players choose in turn, then sacrifice
+   * simultaneously; rule 603.10a) — `drainPendingSacrificeVictims`.
    */
   pendingSacrificeVictims: { readonly player: PlayerId; readonly object: ObjectId }[];
   /**
@@ -1223,6 +1240,13 @@ export interface GameState {
     /** The O-Ring (Banishing Light) exiling it "until this leaves", whose link
      * `applyCommanderChoice` sets if the card does go to exile. */
     readonly exiledBy?: ObjectId;
+    /** The permanents that left the battlefield in the same simultaneous
+     * event as this commander's deferred move (a wrath, one state-based
+     * sweep). Its move is carried out later, once its owner answers, but it
+     * still happened at the same time as theirs, so their leaves-the-
+     * battlefield abilities look back at it and it at them (rule 603.10a).
+     * See `Game.withLeaveBatch`. */
+    readonly leftWith?: readonly ObjectId[];
   } | null;
   /**
    * Commanders that tried to leave the battlefield while their owner's 903.9a
@@ -1238,6 +1262,7 @@ export interface GameState {
     readonly commander: ObjectId;
     readonly intendedZone: CommanderReplacementZone;
     readonly exiledBy?: ObjectId;
+    readonly leftWith?: readonly ObjectId[];
   }[];
   /**
    * Shock lands ("you may pay 2 life; if you don't, it enters tapped" — rule

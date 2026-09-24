@@ -152,6 +152,7 @@ import type {
   GrantedAbilityRef,
   GameState,
   MulliganHandState,
+  PendingTrigger,
   PreventionShield,
   PtModifier,
   ZoneType,
@@ -258,6 +259,31 @@ const EMPTY_TRIGGERED_ENTRIES: readonly {
   readonly ref?: GrantedAbilityRef;
 }[] = [];
 
+const EMPTY_ID_SET: ReadonlySet<ObjectId> = new Set();
+
+/** The events that announce a permanent leaving the battlefield, whose
+ * triggers look back in time (rule 603.10a). */
+type LeaveEvent = Extract<
+  GameEvent,
+  { type: "permanent-left-battlefield" | "permanent-destroyed" | "permanent-sacrificed" }
+>;
+
+function isLeaveEvent(event: GameEvent): event is LeaveEvent {
+  return (
+    event.type === "permanent-left-battlefield" ||
+    event.type === "permanent-destroyed" ||
+    event.type === "permanent-sacrificed"
+  );
+}
+
+/** The trigger kinds that are leaves-the-battlefield abilities — the only
+ * ones a permanent that has already left can still fire (rule 603.10a). */
+const LOOK_BACK_TRIGGERS: ReadonlySet<TriggerSpec["on"]> = new Set<TriggerSpec["on"]>([
+  "dies",
+  "leaves-battlefield",
+  "sacrifice",
+]);
+
 /** The indices of a trigger's slots the triggering event filled (see
  * `GameObject.autoTargetSlots`). */
 function autoSlotsOf(slots: readonly object[]): number[] {
@@ -302,10 +328,28 @@ export class Game {
    * game state: it only ever spans that one synchronous call. */
   private completingCommanderMove: ObjectId | null = null;
 
-  /** Lifelink life gain owed per source while simultaneous damage is being
-   * dealt (see {@link withDamageBatch}). Not game state: it only ever spans
-   * one synchronous call. */
-  private lifelinkBatch: Map<ObjectId, { controller: PlayerId; amount: number }> | null = null;
+  /** What simultaneous damage owes once it has all been dealt (see {@link
+   * withDamageBatch}): lifelink life gain per source, and the "whenever this
+   * is dealt damage" triggers, once per permanent however many sources hit
+   * it. Not game state: it only ever spans one synchronous call. */
+  private damageBatch: {
+    readonly lifelink: Map<ObjectId, { controller: PlayerId; amount: number }>;
+    readonly dealtDamage: Map<
+      string,
+      { ability: TriggeredAbility; trigger: PendingTrigger; multiplier: number }
+    >;
+  } | null = null;
+
+  /** The permanents that have left the battlefield so far in the one
+   * simultaneous event being carried out — a wrath, a sweep of state-based
+   * actions, an edict every player answers — plus the commanders whose move
+   * that event deferred for a 903.9a choice. Their leaves-the-battlefield
+   * abilities look back to just before it (rule 603.10a), so each of them
+   * sees every other one leave, whichever of them the engine happened to
+   * move first. See {@link withLeaveBatch}. Not game state: it only ever
+   * spans one synchronous call; a deferred commander carries the list on its
+   * own pending move (`leftWith`). */
+  private leaveBatch: { readonly left: ObjectId[]; readonly deferred: ObjectId[] } | null = null;
 
   private constructor(
     state: GameState,
@@ -1546,9 +1590,10 @@ export class Game {
     this.runStateBasedActions();
     if (this.state.result.over) return;
 
-    // The sweep above can raise a decision mid-tick — a wrath killing a
-    // commander owes its owner the 903.9a choice, and `runStateBasedActions`
-    // stops the sweep the moment it does. `prepareForPriority` hands that
+    // The sweep above can raise a decision mid-tick — a commander dying to
+    // lethal damage owes its owner the 903.9a choice, and
+    // `runStateBasedActions` stops once the sweep that raised it is done.
+    // `prepareForPriority` hands that
     // player priority on the paths that go through it, but this one doesn't:
     // without this, whoever already held priority is asked to act while a
     // declaration is pending, and passing throws.
@@ -1757,33 +1802,38 @@ export class Game {
       throw new Error("unreachable: whyCannotCommanderChoice should have caught this");
     }
 
-    const { commander, intendedZone, exiledBy } = deferred;
+    const { commander, intendedZone, exiledBy, leftWith } = deferred;
     this.state.awaiting = null;
     const destination = toCommandZone ? "command" : intendedZone;
-    // This is the move the choice was about, so `moveObject` mustn't defer it
-    // again.
-    this.completingCommanderMove = commander;
-    try {
-      this.moveObject(commander, destination);
-    } finally {
-      this.completingCommanderMove = null;
-    }
-    this.state.deferredCommanderMove = null;
-    // Banishing Light's link, which couldn't be set while the move waited.
-    if (exiledBy !== undefined && this.state.objects[commander]?.zone === "exile") {
-      this.state.objects[commander].exiledBy = exiledBy;
-    }
+    // The move completes the simultaneous event that deferred it (a wrath,
+    // a state-based sweep), so what left in that event sees it go, and it
+    // them (rule 603.10a).
+    this.withLeaveBatch(() => {
+      // This is the move the choice was about, so `moveObject` mustn't defer
+      // it again.
+      this.completingCommanderMove = commander;
+      try {
+        this.moveObject(commander, destination);
+      } finally {
+        this.completingCommanderMove = null;
+      }
+      this.state.deferredCommanderMove = null;
+      // Banishing Light's link, which couldn't be set while the move waited.
+      if (exiledBy !== undefined && this.state.objects[commander]?.zone === "exile") {
+        this.state.objects[commander].exiledBy = exiledBy;
+      }
 
-    if (!toCommandZone && intendedZone === "graveyard") {
-      // It really was put into a graveyard from the battlefield — a "dies"
-      // event (rule 700.4). Emitting it here (not in `moveObject`) keeps the
-      // non-commander death path untouched.
-      this.emit({
-        type: "permanent-destroyed",
-        object: commander,
-        reason: "put into its owner's graveyard",
-      });
-    }
+      if (!toCommandZone && intendedZone === "graveyard") {
+        // It really was put into a graveyard from the battlefield — a "dies"
+        // event (rule 700.4). Emitting it here (not in `moveObject`) keeps
+        // the non-commander death path untouched.
+        this.emit({
+          type: "permanent-destroyed",
+          object: commander,
+          reason: "put into its owner's graveyard",
+        });
+      }
+    }, leftWith);
     this.emit({
       type: "commander-zone-decision",
       object: commander,
@@ -2519,19 +2569,22 @@ export class Game {
         this.grantPriority(this.state.awaiting.player);
         return;
       }
-      // Continue a mass-destroy (Wrath of God) that a 903.9a choice paused.
+      // Carry out a mass-destroy (Wrath of God) that began while another
+      // decision was being answered.
       if (this.state.pendingDestruction.length > 0) {
         this.drainPendingDestruction();
         continue;
       }
       // Work through a sacrifice effect (Diabolic Edict / Fleshbag Marauder):
-      // move already-chosen victims, then ask the next player who has a choice.
-      if (this.state.pendingSacrificeVictims.length > 0) {
-        this.drainPendingSacrificeVictims();
-        continue;
-      }
+      // ask each player who has a choice in turn, then sacrifice everything
+      // chosen at once (rule 101.4) — so an aristocrat sacrificed to one
+      // player's edict still sees the others' victims die.
       if (this.state.pendingSacrifices.length > 0) {
         this.promptNextSacrifice();
+        continue;
+      }
+      if (this.state.pendingSacrificeVictims.length > 0) {
+        this.drainPendingSacrificeVictims();
         continue;
       }
       if (!this.placePendingTriggers()) break;
@@ -6716,13 +6769,37 @@ export class Game {
       candidates.add(subject);
       eminenceOnly.delete(subject);
     }
+    // Rule 603.10a: a leaves-the-battlefield ability looks back to just
+    // before the event, so the permanents that left *together* with this one
+    // — earlier in the same wrath or state-based sweep — still see it go,
+    // though the engine has already moved them. They contribute only their
+    // leaves-the-battlefield abilities: nothing else of theirs is watching.
+    const lookBack = this.lookBackSources(event);
+    for (const id of lookBack) {
+      candidates.add(id);
+      eminenceOnly.delete(id);
+    }
+    const leaving = isLeaveEvent(event);
     for (const id of candidates) {
-      const object = this.state.objects[id];
-      if (object === undefined) continue;
-      if (hasLostAbilities(object)) continue; // layer 6 — no triggered abilities
+      const live = this.state.objects[id];
+      if (live === undefined) continue;
+      if (hasLostAbilities(live)) continue; // layer 6 — no triggered abilities
+      // A source that has just left the battlefield is read as it last
+      // existed there: its ability is controlled by whoever controlled it
+      // then, not by the owner `moveObject` has since reverted it to (rules
+      // 603.3a, 603.10a) — a stolen Blood Artist's drain is the thief's.
+      const object =
+        leaving &&
+        (id === subject || lookBack.has(id)) &&
+        live.zone !== "battlefield" &&
+        live.lastKnownController !== undefined &&
+        live.lastKnownController !== live.controller
+          ? { ...live, controller: live.lastKnownController }
+          : live;
       // A command-zone source contributes *only* its `fromCommandZone`
       // abilities — Edgar Markov's attack trigger must not fire from there.
       const onlyEminence = eminenceOnly.has(id);
+      const onlyLookBack = lookBack.has(id);
       // The spell just cast is in this scan so its own "when you cast this
       // spell" abilities (cascade, storm, Prossh) can fire — and those are
       // the only ones a spell has working on the stack (rule 113.6). Without
@@ -6738,6 +6815,7 @@ export class Game {
       entries.forEach(({ ability, ref }, index) => {
         if (onlyEminence && ability.fromCommandZone !== true) return;
         if (onlyThisCast && ability.trigger.on !== "this-cast") return;
+        if (onlyLookBack && !LOOK_BACK_TRIGGERS.has(ability.trigger.on)) return;
         if (
           this.triggerMatches(ability.trigger, event, object) &&
           this.interveningIfMet(ability.condition, object) &&
@@ -6876,21 +6954,128 @@ export class Game {
             departed *
             (event.type === "permanent-entered-battlefield" ? (event.count ?? 1) : 1) *
             (1 + entryDoublers);
-          if (multiplier <= 1) {
-            this.state.pendingTriggers.push(base);
-          } else if (
-            ability.targets.length === 0 &&
-            ability.effect !== null &&
-            isCountScalableEffect(ability.effect)
+          // Damage dealt all at once is dealt to a permanent once, however
+          // many sources dealt it (rule 510.2 — the two creatures blocking an
+          // enraged one): the trigger waits for the batch to finish and
+          // fires once per permanent dealt damage, for its total. See
+          // `withDamageBatch`.
+          const damageBatch = this.damageBatch;
+          if (
+            ability.trigger.on === "dealt-damage" &&
+            event.type === "damage-dealt" &&
+            event.target.kind === "object" &&
+            damageBatch !== null
           ) {
-            this.state.pendingTriggers.push({ ...base, multiplier });
-          } else {
-            const copies = Math.min(multiplier, Game.MAX_EFFECT_INSTANCES);
-            for (let i = 0; i < copies; i += 1) this.state.pendingTriggers.push(base);
+            const key = `${id}#${index}@${event.target.object}`;
+            const owed = damageBatch.dealtDamage.get(key);
+            if (owed === undefined) {
+              damageBatch.dealtDamage.set(key, { ability, trigger: base, multiplier });
+            } else {
+              owed.trigger = {
+                ...owed.trigger,
+                triggerValue: (owed.trigger.triggerValue ?? 0) + event.amount,
+              };
+            }
+            return;
           }
+          this.queueTrigger(ability, base, multiplier);
         }
       });
     }
+  }
+
+  /**
+   * Queue a fired trigger `multiplier` times over (see the stacked-source
+   * note in `detectTriggersUncached`): once with its amounts scaled when the
+   * effect allows it, else once per real firing up to `MAX_EFFECT_INSTANCES`.
+   */
+  private queueTrigger(
+    ability: TriggeredAbility,
+    trigger: PendingTrigger,
+    multiplier: number,
+  ): void {
+    if (multiplier <= 1) {
+      this.state.pendingTriggers.push(trigger);
+    } else if (
+      ability.targets.length === 0 &&
+      ability.effect !== null &&
+      isCountScalableEffect(ability.effect)
+    ) {
+      this.state.pendingTriggers.push({ ...trigger, multiplier });
+    } else {
+      const copies = Math.min(multiplier, Game.MAX_EFFECT_INSTANCES);
+      for (let i = 0; i < copies; i += 1) this.state.pendingTriggers.push(trigger);
+    }
+  }
+
+  /**
+   * The permanents a leaves-the-battlefield event should also be shown to
+   * because they left *with* the one it announces (rule 603.10a): everything
+   * already moved out of the current {@link leaveBatch}, which the
+   * battlefield scan can no longer see. The permanents of that batch still to
+   * be moved are on the battlefield and see it the ordinary way, so between
+   * the two every one of them sees every other one leave — whichever order
+   * the engine moves them in.
+   *
+   * Empty outside a batch, which is what keeps a lone death exactly as it
+   * was: its subject is the only departed object that sees it.
+   */
+  private lookBackSources(event: GameEvent): ReadonlySet<ObjectId> {
+    const batch = this.leaveBatch;
+    if (batch === null || !isLeaveEvent(event) || !batch.left.includes(event.object)) {
+      return EMPTY_ID_SET;
+    }
+    const out = new Set<ObjectId>();
+    for (const id of batch.left) {
+      if (id === event.object) continue;
+      const object = this.state.objects[id];
+      if (object === undefined || object.zone === "battlefield") continue;
+      out.add(id);
+    }
+    return out;
+  }
+
+  /**
+   * Carry out `fn` as one simultaneous event for rule 603.10a: every
+   * permanent it moves off the battlefield sees every other one leave (see
+   * {@link lookBackSources}). A wrath, a sweep of state-based actions, an
+   * edict each player has answered, an overloaded bounce — each is one
+   * event, however many moves the engine makes of it. Nested calls join the
+   * outer batch.
+   *
+   * `seed` is the batch a deferred commander's move belongs to
+   * (`leftWith`): `applyCommanderChoice` completes the move later, but it
+   * happened at the same time as theirs. Once `fn` is done, every commander
+   * whose move this batch deferred is handed the finished list to carry.
+   */
+  private withLeaveBatch(fn: () => void, seed?: readonly ObjectId[]): void {
+    if (this.leaveBatch !== null) {
+      fn();
+      return;
+    }
+    const batch = {
+      left: (seed ?? []).filter((id) => {
+        const object = this.state.objects[id];
+        return object !== undefined && object.zone !== "battlefield";
+      }),
+      deferred: [] as ObjectId[],
+    };
+    this.leaveBatch = batch;
+    try {
+      fn();
+    } finally {
+      this.leaveBatch = null;
+    }
+    if (batch.deferred.length === 0 || batch.left.length === 0) return;
+    const leftWith = [...batch.left];
+    const state = this.state;
+    const deferred = state.deferredCommanderMove;
+    if (deferred !== null && batch.deferred.includes(deferred.commander)) {
+      state.deferredCommanderMove = { ...deferred, leftWith };
+    }
+    state.pendingCommanderMoves = state.pendingCommanderMoves.map((move) =>
+      batch.deferred.includes(move.commander) ? { ...move, leftWith } : move,
+    );
   }
 
   /**
@@ -6936,12 +7121,16 @@ export class Game {
         // `permanent-left-battlefield` fires exactly once per exit and carries
         // the destination, so a commander redirected to the command zone by
         // 903.9a correctly does *not* die.
+        //
+        // The permanent that died is read as it last existed on the
+        // battlefield (rule 603.10a) — "a creature you control" is whoever
+        // controlled it then, not the owner it has since reverted to.
         return (
           event.type === "permanent-left-battlefield" &&
           event.toZone === "graveyard" &&
           !(spec.otherOnly === true && event.object === self.id) &&
-          this.matchesWho(spec.who, event.object, self) &&
-          this.triggerFilterOk(spec.filter, event.object, self)
+          this.matchesWho(spec.who, event.object, self, true) &&
+          this.triggerFilterOk(spec.filter, event.object, self, true)
         );
       case "gains-life":
         return (
@@ -6976,7 +7165,7 @@ export class Game {
       case "leaves-battlefield":
         return (
           event.type === "permanent-left-battlefield" &&
-          this.matchesWho(spec.who, event.object, self)
+          this.matchesWho(spec.who, event.object, self, true)
         );
       case "becomes-target":
         return (
@@ -7148,15 +7337,21 @@ export class Game {
   }
 
   /** A trigger's optional `CardFilter` on the object that fired it. Evaluated
-   * from the source's controller's perspective. */
+   * from the source's controller's perspective. `lastKnown` reads a subject
+   * that has just left the battlefield as it last existed there (see
+   * `FilterContext.lastKnown`). */
   private triggerFilterOk(
     filter: CardFilter | undefined,
     subject: ObjectId,
     self: GameObject,
+    lastKnown = false,
   ): boolean {
     return (
       filter === undefined ||
-      matchesFilter(this.state, this.registry, subject, filter, { you: self.controller })
+      matchesFilter(this.state, this.registry, subject, filter, {
+        you: self.controller,
+        ...(lastKnown ? { lastKnown } : {}),
+      })
     );
   }
 
@@ -7173,10 +7368,14 @@ export class Game {
     return self.controller === player;
   }
 
+  /** `lastKnown`: the subject has just left the battlefield, and "you
+   * control" asks who controlled it as it left (rule 603.10a), which the
+   * move has already reset to its owner. */
   private matchesWho(
     who: TriggerWho,
     subject: ObjectId,
     self: GameObject,
+    lastKnown = false,
   ): boolean {
     switch (who) {
       case "any":
@@ -7187,7 +7386,12 @@ export class Game {
         return this.activePlayer === self.controller;
       case "you-control": {
         const object = this.state.objects[subject];
-        return object !== undefined && object.controller === self.controller;
+        if (object === undefined) return false;
+        const controller =
+          lastKnown && object.zone !== "battlefield"
+            ? (object.lastKnownController ?? object.controller)
+            : object.controller;
+        return controller === self.controller;
       }
       default:
         return false;
@@ -9438,11 +9642,10 @@ export class Game {
       });
       return;
     }
-    this.moveObject(id, "graveyard");
     // A commander's move can be deferred for its owner's 903.9a choice —
     // `applyCommanderChoice` finishes it (and emits `permanent-destroyed`
     // itself if it lands in a graveyard).
-    if (this.state.awaiting !== null) return;
+    if (!this.moveObject(id, "graveyard")) return;
     this.emit({
       type: "permanent-destroyed",
       object: id,
@@ -9450,10 +9653,11 @@ export class Game {
     });
   }
 
-  /** Destroy every battlefield permanent matching `filter` (Wrath of God).
-   * The victims are queued so a commander's 903.9a choice can pause the wipe
-   * without dropping the rest — `drainPendingDestruction` (run inside the
-   * `prepareForPriority` fixpoint) works through the queue. */
+  /** Destroy every battlefield permanent matching `filter` (Wrath of God),
+   * all at once (see `drainPendingDestruction`). The victims are queued so
+   * that a wipe begun while another decision is being answered waits for it
+   * rather than dropping anyone — the `prepareForPriority` fixpoint drains
+   * the queue. */
   private destroyAllByEffect(
     you: PlayerId,
     filter: CardFilter,
@@ -9482,20 +9686,38 @@ export class Game {
   }
 
   private returnToHandAllByEffect(you: PlayerId, filter: CardFilter): void {
-    // Snapshot: `returnToHandByEffect` mutates the battlefield array as it goes.
-    for (const id of this.battlefieldMatching(you, filter)) {
-      this.returnToHandByEffect({ kind: "object", object: id }, false);
-    }
+    // One event, so each bounced permanent's leaves-the-battlefield ability
+    // sees the rest go too (rule 603.10a). Snapshot: `returnToHandByEffect`
+    // mutates the battlefield array as it goes.
+    this.withLeaveBatch(() => {
+      for (const id of this.battlefieldMatching(you, filter)) {
+        this.returnToHandByEffect({ kind: "object", object: id }, false);
+      }
+    });
   }
 
+  /**
+   * Destroy everything queued, as **one** event: the victims of a wrath are
+   * destroyed simultaneously, so each one's dies trigger sees all the others
+   * die (rule 603.10a — Zulaport Cutthroat and two Bears under one Wrath of
+   * God drain three times, whichever the engine moves first).
+   *
+   * A commander among them doesn't stop the rest. Its owner's 903.9a choice
+   * waits in the commander queue, and the move it completes still counts as
+   * part of this event (`withLeaveBatch`'s `leftWith`). The queue only waits
+   * as a whole for a decision that was already being answered when the wipe
+   * began.
+   */
   private drainPendingDestruction(): void {
-    while (this.state.pendingDestruction.length > 0) {
-      if (this.state.awaiting !== null) return; // e.g. a commander's 903.9a choice
-      const id = this.state.pendingDestruction.shift() as ObjectId;
-      const object = this.state.objects[id];
-      if (object === undefined || object.zone !== "battlefield") continue;
-      this.destroyByEffect({ kind: "object", object: id }, false);
-    }
+    if (this.state.awaiting !== null) return;
+    this.withLeaveBatch(() => {
+      while (this.state.pendingDestruction.length > 0) {
+        const id = this.state.pendingDestruction.shift() as ObjectId;
+        const object = this.state.objects[id];
+        if (object === undefined || object.zone !== "battlefield") continue;
+        this.destroyByEffect({ kind: "object", object: id }, false);
+      }
+    });
   }
 
   /** Deal `amount` damage to every battlefield permanent matching `filter`
@@ -9666,20 +9888,27 @@ export class Game {
     }
   }
 
-  /** Actually move queued sacrifice victims to the graveyard, one at a time
-   * (a commander among them can defer via 903.9a — the drain pauses). */
+  /**
+   * Move the queued sacrifice victims to the graveyard — every player's at
+   * once, since an edict's players choose in turn and then sacrifice
+   * simultaneously (rule 101.4), which is why `prepareForPriority` asks
+   * everyone before draining this. One event, so each sacrificed permanent's
+   * dies trigger sees the others (rule 603.10a). A commander among them
+   * waits for its 903.9a choice without holding up the rest.
+   */
   private drainPendingSacrificeVictims(): void {
-    while (this.state.pendingSacrificeVictims.length > 0) {
-      if (this.state.awaiting !== null) return;
-      const next = this.state.pendingSacrificeVictims[0];
-      this.state.pendingSacrificeVictims = this.state.pendingSacrificeVictims.slice(1);
-      const object = this.state.objects[next.object];
-      if (object === undefined || object.zone !== "battlefield") continue;
-      const moved = this.moveObject(next.object, "graveyard");
-      // Sacrificed either way (rule 701.21a) — see `sacrificeTarget`.
-      this.emit({ type: "permanent-sacrificed", object: next.object, player: next.player });
-      if (!moved) return; // a commander's 903.9a choice is asked first
-    }
+    if (this.state.awaiting !== null) return;
+    this.withLeaveBatch(() => {
+      while (this.state.pendingSacrificeVictims.length > 0) {
+        const next = this.state.pendingSacrificeVictims[0];
+        this.state.pendingSacrificeVictims = this.state.pendingSacrificeVictims.slice(1);
+        const object = this.state.objects[next.object];
+        if (object === undefined || object.zone !== "battlefield") continue;
+        this.moveObject(next.object, "graveyard");
+        // Sacrificed either way (rule 701.21a) — see `sacrificeTarget`.
+        this.emit({ type: "permanent-sacrificed", object: next.object, player: next.player });
+      }
+    });
   }
 
   /** Answers a pending `sacrifice` decision. */
@@ -10572,37 +10801,56 @@ export class Game {
   private applyLifelink(source: ObjectId, amount: number): void {
     if (amount <= 0 || !this.sourceHasKeyword(source, "lifelink")) return;
     const controller = this.state.objects[source].controller;
-    const batch = this.lifelinkBatch;
+    const batch = this.damageBatch;
     if (batch !== null) {
-      const owed = batch.get(source);
+      const owed = batch.lifelink.get(source);
       if (owed !== undefined) owed.amount += amount;
-      else batch.set(source, { controller, amount });
+      else batch.lifelink.set(source, { controller, amount });
       return;
     }
     this.changeLife(controller, amount);
   }
 
   /**
-   * Deal damage that happens all at once, then apply lifelink **once per
-   * source**. Damage a single source deals to several things simultaneously
-   * (a trampler hitting a blocker and the player, "each creature", "each
-   * opponent") is one life-gain event, so "whenever you gain life" triggers
-   * once for it, not once per recipient (the Sanguine Bond / Vito rulings;
-   * rule 120.3f). Nested batches join the outer one.
+   * Deal damage that happens all at once, then settle what it owes as one
+   * event rather than one per recipient or per source:
+   *
+   * - Lifelink **once per source**. Damage a single source deals to several
+   *   things simultaneously (a trampler hitting a blocker and the player,
+   *   "each creature", "each opponent") is one life-gain event, so "whenever
+   *   you gain life" triggers once for it, not once per recipient (the
+   *   Sanguine Bond / Vito / Oloro rulings; rule 119.9). Two lifelinkers are
+   *   two sources, and two gains.
+   * - A "whenever this is dealt damage" trigger **once per permanent**. A
+   *   creature blocked by two creatures is dealt damage by both at once
+   *   (rule 510.2), which is one event: enrage triggers once, and "that much"
+   *   is the total. See `detectTriggersUncached`.
+   *
+   * The damage triggers queue first, then the gains, in the order they were
+   * dealt. Nested batches join the outer one.
    */
   private withDamageBatch(fn: () => void): void {
-    if (this.lifelinkBatch !== null) {
+    if (this.damageBatch !== null) {
       fn();
       return;
     }
-    const batch = new Map<ObjectId, { controller: PlayerId; amount: number }>();
-    this.lifelinkBatch = batch;
+    const batch = {
+      lifelink: new Map<ObjectId, { controller: PlayerId; amount: number }>(),
+      dealtDamage: new Map<
+        string,
+        { ability: TriggeredAbility; trigger: PendingTrigger; multiplier: number }
+      >(),
+    };
+    this.damageBatch = batch;
     try {
       fn();
     } finally {
-      this.lifelinkBatch = null;
+      this.damageBatch = null;
     }
-    for (const { controller, amount } of batch.values()) this.changeLife(controller, amount);
+    for (const { ability, trigger, multiplier } of batch.dealtDamage.values()) {
+      this.queueTrigger(ability, trigger, multiplier);
+    }
+    for (const { controller, amount } of batch.lifelink.values()) this.changeLife(controller, amount);
   }
 
   private changeLife(player: PlayerId, delta: number): void {
@@ -10746,50 +10994,26 @@ export class Game {
         }
       }
 
-      for (const id of [...this.state.zones.shared.battlefield]) {
-        const object = this.state.objects[id];
-        const computed = computeCharacteristics(this.state, this.registry, id);
-        // Printed creatures and man-lands currently animated to creatures
-        // (layer 4) both face the lethal-toughness / lethal-damage SBAs; once
-        // an animation wears off the land isn't a creature and is skipped.
-        if (!computed.types.includes("creature")) continue;
-        // (A 0/0 Clone still choosing what to copy is protected by the
-        // `awaiting !== null` guard at the top of this loop — SBAs don't run
-        // while any decision is pending.)
-        const toughness = computed.toughness;
-        const indestructible = computed.keywords.has("indestructible");
-        let reason: string | null = null;
-        if (toughness <= 0) {
-          // 0 toughness is a state-based *loss*, not destruction — indestructible
-          // does not save it (rule 704.5f vs 704.5g).
-          reason = "toughness is 0 or less";
-        } else if (!indestructible && object.damageMarked >= toughness) {
-          reason = "lethal damage";
-        } else if (!indestructible && object.markedByDeathtouch && object.damageMarked > 0) {
-          reason = "deathtouch";
-        }
-        if (reason !== null) {
-          this.moveObject(id, "graveyard");
-          // A commander's move was deferred for its owner's 903.9a choice —
-          // stop the sweep; `applyCommanderChoice` finishes the move and emits
-          // `permanent-destroyed` itself if it lands in a graveyard.
-          if (this.state.awaiting !== null) return;
-          this.emit({ type: "permanent-destroyed", object: id, reason });
-          changed = true;
-        }
-      }
-
-      // A planeswalker with 0 loyalty is put into its owner's graveyard
-      // (rule 704.5i).
-      for (const id of [...this.state.zones.shared.battlefield]) {
-        const object = this.state.objects[id];
-        if (!computeCharacteristics(this.state, this.registry, id).types.includes("planeswalker")) {
-          continue;
-        }
-        if ((object.counters.loyalty ?? 0) > 0) continue;
-        if (!this.moveObject(id, "graveyard")) return; // deferred 903.9a choice
-        this.emit({ type: "permanent-destroyed", object: id, reason: "0 loyalty" });
-        changed = true;
+      // Every state-based action that puts a permanent into a graveyard is
+      // found first and then performed at once (rule 704.3), as one event —
+      // so each of those permanents' dies triggers sees all the others go
+      // (rule 603.10a), and a creature that only dies *because* another one
+      // did (its lord) waits for the next check, as it should. A commander
+      // among them waits for its 903.9a choice without holding up the rest;
+      // `applyCommanderChoice` finishes its move, as part of this event.
+      const sweep = this.stateBasedGraveyardMoves();
+      if (sweep.length > 0) {
+        this.withLeaveBatch(() => {
+          for (const { id, event } of sweep) {
+            if (this.state.objects[id]?.zone !== "battlefield") continue;
+            // A commander waiting on its 903.9a choice stays where it is, and
+            // isn't a change: it would be found again on every pass.
+            if (!this.moveObject(id, "graveyard")) continue;
+            this.emit(event);
+            changed = true;
+          }
+        });
+        if (this.state.awaiting !== null) return;
       }
 
       // Not a rule — the other half of token stacking's safety contract: a
@@ -10813,75 +11037,17 @@ export class Game {
         changed = true;
       }
 
-      // Auras with no legal permanent to enchant go to the graveyard (704.5n);
-      // Equipment just becomes unattached and stays on the battlefield.
-      for (const id of [...this.state.zones.shared.battlefield]) {
+      // Equipment attached to nothing just becomes unattached and stays on
+      // the battlefield (an Aura in the same position goes to the graveyard
+      // — `stateBasedGraveyardMoves`).
+      for (const id of this.state.zones.shared.battlefield) {
         const object = this.state.objects[id];
         if (object.attachedTo === null) continue;
         const host = this.state.objects[object.attachedTo];
         if (host !== undefined && host.zone === "battlefield") continue;
-
-        if (this.registry.get(printedCardName(object)).subtypes.includes("Aura")) {
-          this.moveObject(id, "graveyard");
-          this.emit({
-            type: "permanent-destroyed",
-            object: id,
-            reason: "no longer attached to a legal permanent",
-          });
-        } else {
-          object.attachedTo = null;
-          invalidateComputedCache();
-        }
-        changed = true;
-      }
-
-      // The legend rule (704.5j): a player controlling 2+ legendary
-      // permanents with the same name keeps only one. No player choice is
-      // modeled — the copy they've controlled longest (lowest timestamp)
-      // survives and the rest go to the graveyard. The name is the one the
-      // permanent has now: a Clone of Krenko is a second Krenko (rule 707.2),
-      // not a Clone, and a transformed card has its back face's name.
-      const legendaryGroups = new Map<string, ObjectId[]>();
-      for (const id of this.state.zones.shared.battlefield) {
-        const object = this.state.objects[id];
-        if (object.notLegendary === true) continue; // Miirym's copies (P5b)
-        const name = printedCardName(object);
-        if (!this.registry.get(name).supertypes.includes("legendary")) continue;
-        const key = `${object.controller} ${name}`;
-        const group = legendaryGroups.get(key);
-        if (group) group.push(id);
-        else legendaryGroups.set(key, [id]);
-      }
-      for (const group of legendaryGroups.values()) {
-        if (group.length <= 1) continue;
-        const survivor = group.reduce((oldest, id) =>
-          this.state.objects[id].timestamp < this.state.objects[oldest].timestamp
-            ? id
-            : oldest,
-        );
-        for (const id of group) {
-          if (id === survivor) continue;
-          if (!this.moveObject(id, "graveyard")) return; // deferred 903.9a choice
-          this.emit({ type: "permanent-destroyed", object: id, reason: "legend rule" });
-        }
-        changed = true;
-      }
-
-      // Saga sacrifice (rule 714.4 / SBA 704.5s): a Saga with lore counters at
-      // or past its final chapter, and no chapter ability of its still on the
-      // stack or waiting to be placed, is sacrificed.
-      for (const id of this.state.zones.shared.battlefield) {
-        const object = this.state.objects[id];
-        const chapters = this.registry.get(printedCardName(object)).chapters;
-        if (chapters === null) continue;
-        const finalChapter = Math.max(...chapters.flatMap((c) => c.at));
-        if ((object.counters.lore ?? 0) < finalChapter) continue;
-        const busy =
-          this.state.zones.shared.stack.some((sid) => this.state.objects[sid]?.sourceObjectId === id) ||
-          this.state.pendingTriggers.some((t) => t.sourceObjectId === id);
-        if (busy) continue;
-        if (!this.moveObject(id, "graveyard")) return; // deferred 903.9a choice
-        this.emit({ type: "saga-completed", object: id });
+        if (this.registry.get(printedCardName(object)).subtypes.includes("Aura")) continue;
+        object.attachedTo = null;
+        invalidateComputedCache();
         changed = true;
       }
 
@@ -10920,6 +11086,130 @@ export class Game {
       this.state.result = { over: true, winner, reason };
       this.emit({ type: "game-ended", winner, reason });
     }
+  }
+
+  /**
+   * Every permanent a state-based action puts into its owner's graveyard
+   * right now, each with the event that announces it — read off the board as
+   * it stands, before any of them moves (rule 704.3: they're performed
+   * simultaneously). The sweep moves them all as one leave batch.
+   *
+   * In the order the checks used to run one after another: lethal creatures,
+   * then 0-loyalty planeswalkers, Auras attached to nothing, the legend rule,
+   * completed Sagas. A permanent two of them apply to is moved once, for the
+   * first.
+   */
+  private stateBasedGraveyardMoves(): { readonly id: ObjectId; readonly event: GameEventInput }[] {
+    const moves: { id: ObjectId; event: GameEventInput }[] = [];
+    const moving = new Set<ObjectId>();
+    const add = (id: ObjectId, event: GameEventInput): void => {
+      if (moving.has(id)) return;
+      moving.add(id);
+      moves.push({ id, event });
+    };
+    const battlefield = this.state.zones.shared.battlefield;
+
+    for (const id of battlefield) {
+      const object = this.state.objects[id];
+      const computed = computeCharacteristics(this.state, this.registry, id);
+      // Printed creatures and man-lands currently animated to creatures
+      // (layer 4) both face the lethal-toughness / lethal-damage SBAs; once
+      // an animation wears off the land isn't a creature and is skipped.
+      // (A 0/0 Clone still choosing what to copy is protected by the
+      // `awaiting !== null` guard in the sweep — SBAs don't run while any
+      // decision is pending.)
+      if (computed.types.includes("creature")) {
+        const toughness = computed.toughness;
+        const indestructible = computed.keywords.has("indestructible");
+        let reason: string | null = null;
+        if (toughness <= 0) {
+          // 0 toughness is a state-based *loss*, not destruction —
+          // indestructible does not save it (rule 704.5f vs 704.5g).
+          reason = "toughness is 0 or less";
+        } else if (!indestructible && object.damageMarked >= toughness) {
+          reason = "lethal damage";
+        } else if (!indestructible && object.markedByDeathtouch && object.damageMarked > 0) {
+          reason = "deathtouch";
+        }
+        if (reason !== null) add(id, { type: "permanent-destroyed", object: id, reason });
+      }
+    }
+
+    // A planeswalker with 0 loyalty is put into its owner's graveyard
+    // (rule 704.5i).
+    for (const id of battlefield) {
+      if (!computeCharacteristics(this.state, this.registry, id).types.includes("planeswalker")) {
+        continue;
+      }
+      if ((this.state.objects[id].counters.loyalty ?? 0) > 0) continue;
+      add(id, { type: "permanent-destroyed", object: id, reason: "0 loyalty" });
+    }
+
+    // An Aura attached to no legal permanent goes to the graveyard (704.5n).
+    // One whose host dies in this same check is still attached to it now, so
+    // it goes in the next check — as it would at a table.
+    for (const id of battlefield) {
+      const object = this.state.objects[id];
+      if (object.attachedTo === null) continue;
+      const host = this.state.objects[object.attachedTo];
+      if (host !== undefined && host.zone === "battlefield") continue;
+      if (!this.registry.get(printedCardName(object)).subtypes.includes("Aura")) continue;
+      add(id, {
+        type: "permanent-destroyed",
+        object: id,
+        reason: "no longer attached to a legal permanent",
+      });
+    }
+
+    // The legend rule (704.5j): a player controlling 2+ legendary permanents
+    // with the same name keeps only one. No player choice is modeled — the
+    // copy they've controlled longest (lowest timestamp) survives and the
+    // rest go to the graveyard. A copy another check is already putting into
+    // the graveyard isn't one of the candidates to keep: a player would keep
+    // one that's staying. The name is the one the permanent has now: a Clone
+    // of Krenko is a second Krenko (rule 707.2), not a Clone, and a
+    // transformed card has its back face's name.
+    const legendaryGroups = new Map<string, ObjectId[]>();
+    for (const id of battlefield) {
+      if (moving.has(id)) continue;
+      const object = this.state.objects[id];
+      if (object.notLegendary === true) continue; // Miirym's copies (P5b)
+      const name = printedCardName(object);
+      if (!this.registry.get(name).supertypes.includes("legendary")) continue;
+      const key = `${object.controller} ${name}`;
+      const group = legendaryGroups.get(key);
+      if (group) group.push(id);
+      else legendaryGroups.set(key, [id]);
+    }
+    for (const group of legendaryGroups.values()) {
+      if (group.length <= 1) continue;
+      const survivor = group.reduce((oldest, id) =>
+        this.state.objects[id].timestamp < this.state.objects[oldest].timestamp ? id : oldest,
+      );
+      for (const id of group) {
+        if (id !== survivor) {
+          add(id, { type: "permanent-destroyed", object: id, reason: "legend rule" });
+        }
+      }
+    }
+
+    // Saga sacrifice (rule 714.4 / SBA 704.5s): a Saga with lore counters at
+    // or past its final chapter, and no chapter ability of its still on the
+    // stack or waiting to be placed, is sacrificed.
+    for (const id of battlefield) {
+      const object = this.state.objects[id];
+      const chapters = this.registry.get(printedCardName(object)).chapters;
+      if (chapters === null) continue;
+      const finalChapter = Math.max(...chapters.flatMap((c) => c.at));
+      if ((object.counters.lore ?? 0) < finalChapter) continue;
+      const busy =
+        this.state.zones.shared.stack.some((sid) => this.state.objects[sid]?.sourceObjectId === id) ||
+        this.state.pendingTriggers.some((t) => t.sourceObjectId === id);
+      if (busy) continue;
+      add(id, { type: "saga-completed", object: id });
+    }
+
+    return moves;
   }
 
   // --- zones -------------------------------------------------
@@ -11146,6 +11436,12 @@ export class Game {
       // Doomscourge): the reset below clears `attacking` before the
       // dies-trigger is ever matched, so the answer has to be kept.
       object.wasAttacking = object.attacking !== null;
+      // And "a creature **you control** dies": the reset below hands it
+      // back to its owner first.
+      object.lastKnownController = object.controller;
+    } else {
+      // Only ever describes the move that took it off the battlefield.
+      object.lastKnownController = undefined;
     }
 
     // Rest in Peace (rule 614): whatever would be put into a graveyard is
@@ -11195,16 +11491,21 @@ export class Game {
         // Already on its way out, and it went wherever its first move sent
         // it; a second event reaching it before it's asked (an SBA, say)
         // doesn't redirect it.
-      } else if (state.deferredCommanderMove === null && state.awaiting === null) {
-        state.deferredCommanderMove = { commander: id, intendedZone: to };
-        state.awaiting = {
-          kind: "commander-replacement",
-          player: object.owner,
-          commander: id,
-          intendedZone: to,
-        };
       } else {
-        state.pendingCommanderMoves.push({ commander: id, intendedZone: to });
+        if (state.deferredCommanderMove === null && state.awaiting === null) {
+          state.deferredCommanderMove = { commander: id, intendedZone: to };
+          state.awaiting = {
+            kind: "commander-replacement",
+            player: object.owner,
+            commander: id,
+            intendedZone: to,
+          };
+        } else {
+          state.pendingCommanderMoves.push({ commander: id, intendedZone: to });
+        }
+        // Part of whatever simultaneous event is moving it, though its move
+        // waits for the answer — see `withLeaveBatch`.
+        this.leaveBatch?.deferred.push(id);
       }
       this.raiseNextCommanderChoice();
       return false;
@@ -11394,6 +11695,7 @@ export class Game {
       leavingBattlefield &&
       (to === "graveyard" || to === "exile" || to === "hand" || to === "library" || to === "command")
     ) {
+      this.leaveBatch?.left.push(id);
       this.emit({ type: "permanent-left-battlefield", object: id, toZone: to });
     }
     return true;

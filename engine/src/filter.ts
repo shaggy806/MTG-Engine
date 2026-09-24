@@ -155,6 +155,15 @@ export interface FilterContext {
   /** The `{X}` of the spell or ability applying this filter, for a
    * `NumCompare` written as `{ n: "x" }`. Defaults to 0. */
   readonly x?: number;
+  /**
+   * Read an object that has just left the battlefield as it last existed
+   * there (rule 603.10a) — for a trigger filter matched against the permanent
+   * whose leaving fired it. Today that covers `controlledBy`: the move has
+   * already reverted control to the owner, and "a creature you control dies"
+   * means whoever controlled it as it died (`GameObject.lastKnownController`).
+   * No effect on an object whose last move wasn't off the battlefield.
+   */
+  readonly lastKnown?: boolean;
 }
 
 /** What is attached to `id` on the battlefield, for the attachment clauses.
@@ -318,8 +327,12 @@ export function matchesFilter(
     return false;
   }
   // Cheap, purely-positional clauses before the expensive fold below.
-  if (filter.controlledBy === "you" && object.controller !== ctx.you) return false;
-  if (filter.controlledBy === "opponent" && object.controller === ctx.you) return false;
+  const controller =
+    ctx.lastKnown === true && object.zone !== "battlefield"
+      ? (object.lastKnownController ?? object.controller)
+      : object.controller;
+  if (filter.controlledBy === "you" && controller !== ctx.you) return false;
+  if (filter.controlledBy === "opponent" && controller === ctx.you) return false;
   if (filter.ownedBy === "you" && object.owner !== ctx.you) return false;
   if (filter.ownedBy === "opponent" && object.owner === ctx.you) return false;
   if (filter.tapped !== undefined && object.tapped !== filter.tapped) return false;
