@@ -917,6 +917,21 @@ describe("Morbid Opportunist", () => {
   });
 });
 
+describe("Morbid Opportunist (dying later the same turn)", () => {
+  it("doesn't trigger again when it dies in a wrath after already triggering", () => {
+    const { game } = setUp();
+    game.debugSpawn("Morbid Opportunist", A, "battlefield");
+    const first = game.debugSpawn("Grizzly Bears", B, "battlefield");
+    game.debugSpawn("Grizzly Bears", B, "battlefield");
+    const hand = game.handOf(A).length;
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [objectRef(first)]);
+    game.advanceUntil(quiet);
+    game.debugApplyEffect(A, { kind: "destroy-all", filter: { type: "creature" } });
+    game.advanceUntil(quiet);
+    expect(game.handOf(A).length).toBe(hand + 1);
+  });
+});
+
 describe("Welcoming Vampire", () => {
   it("draws for the first small creature of the turn only", () => {
     const { game } = setUp();

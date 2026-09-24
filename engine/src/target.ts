@@ -188,7 +188,10 @@ export function describeTargetSpec(spec: TargetSpec | string): string {
   if (spec.kind === "optional") return `${describeTargetSpec(spec.of)} (optional)`;
   if (spec.kind === "spell") {
     const colour = spec.filter.colors?.length === 1 ? `${COLOUR_WORD[spec.filter.colors[0]]} ` : "";
-    return `${colour}${spec.filter.type ?? ""}${spec.filter.type === undefined ? "" : " "}spell`;
+    const type = spec.filter.type === undefined ? "" : `${spec.filter.type} `;
+    const mv = spec.filter.manaValue;
+    const withMv = mv?.op === "eq" && typeof mv.n === "number" ? ` with mana value ${mv.n}` : "";
+    return `${colour}${type}spell${withMv}`;
   }
   if (spec.kind === "permanent") {
     const noun = spec.filter.type ?? spec.filter.subtype ?? "permanent";

@@ -1358,8 +1358,8 @@ clause (section 9):
   opponent controls three or more creatures").
 - `{ kind: "opponent-controls-more", filter: CardFilter }` — *one* opponent
   controls more matching permanents than you (Land Tax, Knight of the White
-  Orchid: "if an opponent controls more lands than you"). Your side follows
-  the `controls` self rule.
+  Orchid: "if an opponent controls more lands than you"). Your side counts
+  every matching permanent you control, the source included.
 - `{ kind: "opponents-control-total", filter: CardFilter, atLeast: number }` —
   a combined count summed across *every* opponent (Turbulent Fen: "unless your
   opponents control eight or more lands" — plural "opponents" sums, unlike
