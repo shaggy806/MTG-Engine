@@ -170,6 +170,8 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${name(event.object)} is countered`
     case 'ward-paid':
       return `${event.player} pays ward for ${name(event.object)}`
+    case 'ward-unpaid':
+      return `${event.player} doesn't pay ward for ${name(event.object)}`
     case 'control-changed':
       return `${event.controller} gains control of ${name(event.object)}${
         event.untilEndOfTurn ? ' until EOT' : ''

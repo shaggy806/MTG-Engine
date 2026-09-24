@@ -2212,7 +2212,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       </div>
     )
   } else if (mode === 'choose-modes' && modesChoiceAction) {
-    const { minModes, maxModes, modeTexts, source } = modesChoiceAction
+    const { minModes, maxModes, modeTexts, source, ward } = modesChoiceAction
     const optional = minModes === 0 && maxModes === 1
     const single = minModes === 1 && maxModes === 1
     const toggle = (i: number) =>
@@ -2239,13 +2239,13 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
               type="button"
               onClick={() => game.dispatch({ type: 'choose-modes', player: seat, modes: [0] })}
             >
-              Yes
+              {ward ? 'Pay' : 'Yes'}
             </button>
             <button
               type="button"
               onClick={() => game.dispatch({ type: 'choose-modes', player: seat, modes: [] })}
             >
-              No
+              {ward ? `Don't pay` : 'No'}
             </button>
           </>
         ) : single ? (
