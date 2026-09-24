@@ -304,6 +304,22 @@ describe("deals-damage — Ghyrson Starn's exactly-1 trigger", () => {
     expect(damageEvents(game, ghyrson)).toHaveLength(0);
   });
 
+  it("a token stack dealt 1 fires it once per token, and each token is dealt 2 more", () => {
+    const { game } = setUp();
+    const ghyrson = spawn(game, "Ghyrson Starn, Kelermorph");
+    const bears = spawn(game, "Grizzly Bears");
+    game.debugApplyEffect(B, { kind: "create-token", token: "3/3 Beast Token", count: 10 });
+    game.debugApplyEffect(
+      A,
+      { kind: "damage-all", filter: { subtype: "Beast" }, amount: 1 },
+      [],
+      { source: bears },
+    );
+    expect(game.state.pendingTriggers.filter((t) => t.sourceObjectId === ghyrson)).toHaveLength(10);
+    settle(game);
+    expect(game.battlefield.filter((id) => game.state.objects[id].cardName === "3/3 Beast Token")).toHaveLength(0);
+  });
+
   it("isn't a target: hexproof or not, the recipient is dealt it", () => {
     const { game } = setUp();
     spawn(game, "Ghyrson Starn, Kelermorph");
@@ -393,6 +409,21 @@ describe("dealt-damage with a filter — Sonic the Hedgehog", () => {
     const made = treasures(game, A);
     expect(made).toHaveLength(2); // Sonic and the Goblin, not the Bears
     for (const id of made) expect(game.state.objects[id].tapped).toBe(true);
+  });
+
+  it("a stack of hasty tokens dealt damage is that many creatures: a Treasure each", () => {
+    const { game } = setUp();
+    spawn(game, "Sonic the Hedgehog");
+    const theirs = spawn(game, "Grizzly Bears", B);
+    game.debugApplyEffect(A, { kind: "create-token", token: "Elemental Token", count: 10 });
+    game.debugApplyEffect(
+      B,
+      { kind: "damage-all", filter: { subtype: "Elemental", controlledBy: "opponent" }, amount: 1 },
+      [],
+      { source: theirs },
+    );
+    settle(game);
+    expect(treasures(game, A)).toHaveLength(10);
   });
 
   it("damage from two sources at once is one event for the creature: one Treasure", () => {

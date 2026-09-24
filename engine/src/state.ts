@@ -1435,7 +1435,8 @@ export interface GameState {
    * at a time, so the rest wait here. Drained one at a time by
    * `promptNextDiscard` in the `prepareForPriority` fixpoint, APNAP-ordered.
    * A player with no real choice (a hand no bigger than what's owed)
-   * discards straight away and never waits here.
+   * discards straight away and never waits here. Any effect discard raised
+   * while another decision is up waits here too, rather than overwriting it.
    */
   pendingDiscards: {
     readonly player: PlayerId;

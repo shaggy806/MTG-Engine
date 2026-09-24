@@ -364,12 +364,6 @@ const LOOK_BACK_TRIGGERS: ReadonlySet<TriggerSpec["on"]> = new Set<TriggerSpec["
 
 /** The indices of a trigger's slots the triggering event filled (see
  * `GameObject.autoTargetSlots`). */
-/** Does a triggered ability's effect act on "that permanent or player" — a
- * `damage` with `toTriggerRecipient` anywhere in it? */
-function namesTriggerRecipient(effect: EffectSpec | null): boolean {
-  return effect !== null && JSON.stringify(effect).includes('"toTriggerRecipient"');
-}
-
 function autoSlotsOf(slots: readonly object[]): number[] {
   const out: number[] = [];
   slots.forEach((slot, i) => {
@@ -7987,13 +7981,15 @@ export class Game {
               ? (this.state.objects[event.object]?.stackCount ?? 1)
               : 1;
           // Damage dealt to a token stack was dealt to every token in it, each
-          // its own recipient — unless the effect acts on "that permanent",
-          // which reaches the whole stack at once.
+          // its own permanent: a watcher fires once per token (a stack's own
+          // `dealt-damage` already scales by `object.stackCount` above). Each
+          // firing that deals damage to "that permanent" peels one token off
+          // (`splitTargetRef`), so ten tokens dealt 1 are each dealt 2 more.
           const recipients =
-            ability.trigger.on === "deals-damage" &&
+            (ability.trigger.on === "deals-damage" || ability.trigger.on === "dealt-damage") &&
             event.type === "damage-dealt" &&
             event.target.kind === "object" &&
-            !namesTriggerRecipient(ability.effect)
+            event.target.object !== id
               ? (this.state.objects[event.target.object]?.stackCount ?? 1)
               : 1;
           const multiplier =
@@ -8585,12 +8581,18 @@ export class Game {
     // The source: a spell on the stack or a permanent is read as it is; one
     // that has left the battlefield since (a dies trigger's damage) as it
     // last existed there, so "a source you control" is who controlled it.
+    // A token that has ceased to exist since (rule 111.7 — sacrificed to pay
+    // for the ability dealing the damage) is read from its snapshot.
     const source = this.state.objects[event.source];
-    if (source === undefined) return false;
-    const departed = source.zone !== "battlefield" && source.zone !== "stack";
-    const sourceController = departed
-      ? (source.lastKnown?.controller ?? source.controller)
-      : source.controller;
+    const ceased = source === undefined ? this.state.ceasedTokens?.[event.source] : undefined;
+    if (source === undefined && ceased === undefined) return false;
+    const departed = source === undefined || (source.zone !== "battlefield" && source.zone !== "stack");
+    const sourceController =
+      source === undefined
+        ? (ceased as LastKnownInfo).controller
+        : departed
+          ? (source.lastKnown?.controller ?? source.controller)
+          : source.controller;
     switch (spec.who) {
       case "any":
         break;
@@ -8620,7 +8622,7 @@ export class Game {
       if (!this.triggerFilterOk(spec.toFilter, target.object, self)) return false;
     }
     if (spec.toItsTarget === true) {
-      if (source.zone !== "stack" || source.kind !== "card") return false;
+      if (source === undefined || source.zone !== "stack" || source.kind !== "card") return false;
       const aimed = (source.targets ?? []).some(
         (t) =>
           t !== undefined &&
@@ -12568,8 +12570,10 @@ export class Game {
     if (this.state.players[player] === undefined || amount <= 0) return;
     // Someone is already being asked — "each opponent discards a card"
     // reaching its second opponent. Asking now would overwrite the first
-    // player's question, so this one waits its turn.
-    if (this.state.awaiting !== null || this.state.pendingDiscards.length > 0) {
+    // player's question, so this one waits its turn — unless there's nothing
+    // to ask: a hand no bigger than the count is discarded at once.
+    const trivial = this.state.zones.perPlayer[player].hand.length <= amount;
+    if (!trivial && (this.state.awaiting !== null || this.state.pendingDiscards.length > 0)) {
       const from = this.state.decisionSource;
       this.state.pendingDiscards.push({
         player,
