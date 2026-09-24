@@ -111,15 +111,12 @@ export type AffectSpec =
        * Only creatures that have a counter on them — Rishkar's "each creature
        * you control **with a counter on it** has '{T}: Add {G}'". `kind`
        * omitted means a counter of any kind, which is what that wording means.
-       *
-       * Narrower than a full `CardFilter` on purpose: `staticAffects` runs on
-       * every characteristics read and is deliberately given no `GameState`,
-       * and a counter count is answerable from the object alone.
+       * (Predates the `"filter"` scope, which says the same with
+       * `counters`.)
        */
       readonly withCounter?: { readonly kind?: string };
       /** Only *token* creatures — "Zombie tokens you control have flying"
-       * (Eternal Skylord). Like `withCounter`, answerable from the object
-       * alone, which is why it's a flag here rather than a `CardFilter`. */
+       * (Eternal Skylord). */
       readonly tokenOnly?: boolean;
       /** Only creatures whose colours include the source's `chosenOnEnter`
        * colour — Heraldic Banner's "creatures you control **of the chosen
@@ -139,9 +136,7 @@ export type AffectSpec =
   /**
    * Every creature on the battlefield, whoever controls it — Gravitational
    * Shift's "creatures with flying get +2/+0". Takes the same narrowing
-   * clauses as `creatures-you-control`, and for the same reason they're
-   * flags rather than a `CardFilter`: `staticAffects` runs on every
-   * characteristics read and is given no `GameState`.
+   * clauses as `creatures-you-control`.
    */
   | {
       readonly scope: "all-creatures";
@@ -154,7 +149,30 @@ export type AffectSpec =
     }
   /** Every land the source's controller controls (Chromatic Lantern). */
   | { readonly scope: "lands-you-control" }
-  | { readonly scope: "attached" };
+  | { readonly scope: "attached" }
+  /**
+   * Every battlefield permanent matching `filter`, evaluated from the
+   * source's controller's perspective — the general scope the fixed ones
+   * above are special cases of: "artifacts you control" (`{ type: "artifact",
+   * controlledBy: "you" }`), "creatures you don't control", "commander
+   * creatures you own" (`{ type: "creature", isCommander: true, ownedBy:
+   * "you" }`), "each creature you control but don't own" (`controlledBy:
+   * "you", ownedBy: "opponent"`), "non-Equipment artifact and non-Aura
+   * enchantment" (`anyOf`). `excludeSelf` is "other".
+   *
+   * The filter's type and subtype clauses read the target's *current* types
+   * (rule 613.1d puts type-changing effects before every layer a static
+   * works in); inside layer 4 itself, a type-granting static sees only the
+   * types granted before it in timestamp order (see `layerFour`). A
+   * `keyword` / `notKeyword` clause waits for layer 6 the way `withKeyword`
+   * does. `power` / `toughness` clauses (and an `{ own }` operand) can't be
+   * answered from inside the fold that computes them and fail closed.
+   */
+  | {
+      readonly scope: "filter";
+      readonly filter: CardFilter;
+      readonly excludeSelf?: boolean;
+    };
 
 /** A combat restriction a static ability imposes on the objects it `affects`
  * (Pacifism: can't attack / can't block; Juggernaut: must attack if able;
@@ -482,6 +500,29 @@ export interface StaticAbility {
   readonly replacement?: ReplacementSpec;
   /** `[power, toughness]` bonus applied in layer 7d. */
   readonly grantPt?: readonly [number, number];
+  /**
+   * Layer 4 — card types the affected permanents have "in addition to their
+   * other types" (Bello's "is a … creature"). Applied in timestamp order with
+   * the permanent's own type-changing modifiers; everything that reads a
+   * permanent's types (`effectiveTypes`, so `matchesFilter`, targeting and
+   * every other static's scope) sees them.
+   *
+   * A static with a layer-4 part keeps the set of permanents that part
+   * reached for its later layers too (rule 613.6): its keywords, granted
+   * abilities and P/T apply to exactly the permanents it gave the type to.
+   */
+  readonly addTypes?: readonly CardType[];
+  /** Layer 4 — subtypes added the same way ("are Bears in addition to their
+   * other types", "Artifacts you control are Foods"). */
+  readonly addSubtypes?: readonly string[];
+  /**
+   * Layer 7b — sets the affected permanents' base power and/or toughness
+   * (Kudo: "have base power and toughness 2/2"; a lone `toughness` is "have
+   * base toughness 1"). After characteristic-defining abilities, in
+   * timestamp order with "becomes an N/N" effects (`PtModifier.setPt`), and
+   * before counters (7c) and bonuses (7d).
+   */
+  readonly setBasePt?: { readonly power?: number; readonly toughness?: number };
   /**
    * A layer-7d bonus that *scales* with a live count — Skycat Sovereign's
    * "gets +1/+1 for each **other** creature you control with flying".

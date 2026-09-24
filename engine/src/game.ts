@@ -64,8 +64,8 @@ import {
   effectiveTypes,
   hasLostAbilities,
   invalidateComputedCache,
-  staticAffects,
   staticConditionMet,
+  staticReaches,
   suspendComputedCache,
   turnStatOf,
   withComputedCache,
@@ -5834,7 +5834,7 @@ export class Game {
       if (sac === "creature-you-control") {
         // What's a creature *now*: an animated land can be sacrificed, a
         // creature that stopped being one can't.
-        return effectiveTypes(this.registry, object).includes("creature");
+        return effectiveTypes(this.state, this.registry, object).includes("creature");
       }
       // { filter } — Zuran Orb "a land", Orcish Lumberjack "a Forest".
       return matchesFilter(this.state, this.registry, id, sac.filter, { you: player });
@@ -5925,7 +5925,7 @@ export class Game {
       }[] = [];
       for (const { source, ability, staticIndex, abilities } of sources) {
         const keywords = (): ReadonlySet<Keyword> => this.characteristics(target.id).keywords;
-        if (!staticAffects(this.registry, ability.affects, source, target, keywords)) continue;
+        if (!staticReaches(this.state, this.registry, source, ability, target, { keywords })) continue;
         if (!this.staticActive(source, ability)) continue;
         const cardName = printedCardName(source);
         grants.push({
@@ -5988,7 +5988,7 @@ export class Game {
     }[] = [];
     for (const { source, ability, staticIndex, abilities } of sources) {
       const keywords = (): ReadonlySet<Keyword> => this.characteristics(target.id).keywords;
-      if (!staticAffects(this.registry, ability.affects, source, target, keywords)) continue;
+      if (!staticReaches(this.state, this.registry, source, ability, target, { keywords })) continue;
       if (!this.staticActive(source, ability)) continue;
       const cardName = printedCardName(source);
       grants.push({
@@ -6841,7 +6841,7 @@ export class Game {
    * Greaves could attack the turn he arrived but not tap for Goblins. */
   private tapAbilityBlockedBySickness(object: GameObject): boolean {
     return (
-      effectiveTypes(this.registry, object).includes("creature") &&
+      effectiveTypes(this.state, this.registry, object).includes("creature") &&
       this.hasSummoningSickness(object) &&
       !this.objHasKeyword(object.id, "haste")
     );
@@ -9457,6 +9457,14 @@ export class Game {
         }
       },
       animate: (target, opts) => this.animate(target, opts),
+      animateAll: (filter, opts) => {
+        // Every match is fixed before the first one changes (a Treasure made
+        // a creature mustn't change what the filter matches mid-loop), and a
+        // token stack is animated whole, like any mass effect's.
+        for (const id of this.battlefieldMatching(controller, filter)) {
+          this.animate({ kind: "object", object: id }, opts, false);
+        }
+      },
       changeText: (target) => this.beginTextChoice(controller, source, target),
       createToken: (token, count, who, tapped, sacrificeAtEndStep) => {
         // "Each opponent creates a Treasure token": each of them, APNAP.
@@ -9774,7 +9782,7 @@ export class Game {
       return (
         object !== undefined &&
         object.controller === controller &&
-        effectiveSubtypes(this.registry, object).includes("Army")
+        effectiveSubtypes(this.state, this.registry, object).includes("Army")
       );
     });
     if (army === undefined) {
@@ -9789,8 +9797,9 @@ export class Game {
     // 701.44b — "It's also a [type]". A permanent subtype grant, so it sticks
     // across turns the way the printed type would.
     const object = this.state.objects[army];
-    if (object !== undefined && !effectiveSubtypes(this.registry, object).includes(creatureType)) {
+    if (object !== undefined && !effectiveSubtypes(this.state, this.registry, object).includes(creatureType)) {
       object.modifiers.push({
+        timestamp: this.state.timestampSeq,
         power: 0,
         toughness: 0,
         keywords: [],
@@ -11069,12 +11078,15 @@ export class Game {
       readonly keywords: readonly Keyword[];
       readonly duration: PtDuration;
     },
+    split = true,
   ): void {
     if (target.kind !== "object") return;
-    const id = this.splitOneFromStack(target.object);
+    const id = split ? this.splitOneFromStack(target.object) : target.object;
     const object = this.state.objects[id];
     if (object === undefined || object.zone !== "battlefield") return;
     object.modifiers.push({
+      // Ordered against type-granting and P/T-setting statics (rule 613.7).
+      timestamp: this.state.timestampSeq,
       power: 0,
       toughness: 0,
       keywords: [...opts.keywords],
@@ -11165,7 +11177,7 @@ export class Game {
     const id = this.splitOneFromStack(target.object);
     const object = this.state.objects[id];
     if (object === undefined || object.zone !== "battlefield") return;
-    const fromOptions = effectiveSubtypes(this.registry, object).filter((s) =>
+    const fromOptions = effectiveSubtypes(this.state, this.registry, object).filter((s) =>
       CHANGEABLE_CREATURE_TYPES.includes(s),
     );
     if (fromOptions.length === 0) return;

@@ -73,7 +73,7 @@ function isLivingCreature(
   if (object === undefined || object.zone !== "battlefield") return false;
   // Current types, not printed (rule 109.2): an animated Mishra's Factory or
   // a crewed Vehicle is a creature, and "target creature" can pick it.
-  return effectiveTypes(registry, object).includes("creature");
+  return effectiveTypes(state, registry, object).includes("creature");
 }
 
 /** A spell (a card, not an ability) currently on the stack. */
@@ -91,7 +91,7 @@ function isPermanentOfType(
 ): boolean {
   const object = state.objects[id];
   if (object === undefined || object.zone !== "battlefield") return false;
-  return predicate(effectiveTypes(registry, object));
+  return predicate(effectiveTypes(state, registry, object));
 }
 
 function isLivingPlayer(state: GameState, ref: TargetRef): boolean {
@@ -352,7 +352,7 @@ export function isLegalTarget(
         return false;
       }
       const def = registry.get(printedCardName(object));
-      const types = effectiveTypes(registry, object);
+      const types = effectiveTypes(state, registry, object);
       if (types.includes("artifact") || types.includes("enchantment")) return true;
       return types.includes("land") && !def.supertypes.includes("basic");
     }

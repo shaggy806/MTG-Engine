@@ -511,6 +511,14 @@ export interface PtModifier {
    * `StaticAbility.grantsTriggered`. */
   grantsTriggered?: TriggeredAbility[];
   untilEndOfTurn: boolean;
+  /**
+   * `GameState.timestampSeq` when the modifier was applied, for ordering its
+   * layer-4 and layer-7b parts against static abilities' (rule 613.7): it
+   * sorts after a static whose source has this timestamp or an earlier one.
+   * Absent (the modifiers that change no types and set no P/T) sorts after
+   * every static.
+   */
+  timestamp?: number;
 }
 
 /**

@@ -1057,6 +1057,29 @@ export type EffectSpec =
       readonly duration: PtDuration;
     }
   | {
+      /**
+       * Every battlefield permanent matching `filter` (from the effect's
+       * controller's perspective) becomes an N/N at once — Vihaan's "have
+       * Treasures you control become 3/3 Construct Assassin artifact creatures
+       * in addition to their other types until end of turn". The mass form of
+       * `animate`, with the same layers: types and subtypes added in layer 4,
+       * keywords in 6, base P/T set in 7b. With no `addTypes` it only sets
+       * base P/T ("creatures your opponents control have base power and
+       * toughness 1/1 until end of turn").
+       *
+       * The matches are fixed as the effect begins, and a token stack is
+       * animated whole rather than split.
+       */
+      readonly kind: "animate-all";
+      readonly filter: CardFilter;
+      readonly power: number;
+      readonly toughness: number;
+      readonly addTypes?: readonly CardType[];
+      readonly addSubtypes?: readonly string[];
+      readonly keywords?: readonly Keyword[];
+      readonly duration: PtDuration;
+    }
+  | {
       /** `target`'s text changes: one creature-type word is replaced by
        * another its controller chooses (Artificial Evolution — rule 612 /
        * layer 3). Resolving this raises a `choose-text` decision. */
@@ -1749,6 +1772,19 @@ export interface EffectApi {
       readonly setSubtypes?: readonly string[];
       readonly setColors?: readonly Color[];
       readonly loseAbilities?: boolean;
+      readonly keywords: readonly Keyword[];
+      readonly duration: PtDuration;
+    },
+  ): void;
+  /** Every permanent matching `filter` becomes a creature (or just has its
+   * base P/T set) — see the `"animate-all"` {@link EffectSpec}. */
+  animateAll(
+    filter: CardFilter,
+    opts: {
+      readonly power: number;
+      readonly toughness: number;
+      readonly addTypes: readonly CardType[];
+      readonly addSubtypes: readonly string[];
       readonly keywords: readonly Keyword[];
       readonly duration: PtDuration;
     },
@@ -2541,6 +2577,16 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       }
       return;
     }
+    case "animate-all":
+      ctx.animateAll(spec.filter, {
+        power: spec.power,
+        toughness: spec.toughness,
+        addTypes: spec.addTypes ?? [],
+        addSubtypes: spec.addSubtypes ?? [],
+        keywords: spec.keywords ?? [],
+        duration: spec.duration,
+      });
+      return;
     case "change-text": {
       const target = ctx.targets[spec.target];
       if (target !== undefined) ctx.changeText(target);

@@ -7,13 +7,15 @@
  * **layer 3** (text-change — a `PtModifier.textSubstitution` rewrites a
  * creature-type word in a permanent's subtypes and its lord clause), **layer
  * 4** (type-change — `PtModifier.addTypes`/`setSubtypes`/`addSubtypes` from a
- * man-land or Turn to Frog), **layer 5** (colour-change —
+ * man-land or Turn to Frog, and statics' `addTypes`/`addSubtypes` granted to
+ * other permanents; see `layerFour`), **layer 5** (colour-change —
  * `PtModifier.setColors`/`addColors`), **layer 6** (keyword grants, plus
  * `PtModifier.loseAbilities` removing a permanent's own abilities), **layer
  * 7b** (a `"self"` CDA sets base P/T, then a `PtModifier.setPt` from a
- * "becomes a N/N"), **layer 7c** (counters), **layer 7d** (P/T bonuses +
- * modifiers), timestamp-ordered within a layer. NOT yet: full text-change
- * beyond a creature-type word, and dependency ordering. Layer 2
+ * "becomes a N/N" and a static's `setBasePt`), **layer 7c** (counters),
+ * **layer 7d** (P/T bonuses + modifiers), timestamp-ordered within a layer.
+ * NOT yet: full text-change beyond a creature-type word, and dependency
+ * ordering (rule 613.8). Layer 2
  * (control-change) is modeled in `game.ts` by reassigning
  * `GameObject.controller`, not here.
  */
@@ -40,7 +42,7 @@ import type { CardFilter } from "./filter.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { permanentCount, printedCardName } from "./state.js";
-import type { GameObject, GameState, LastKnownInfo } from "./state.js";
+import type { GameObject, GameState, LastKnownInfo, PtModifier } from "./state.js";
 import type { TargetRef } from "./target.js";
 
 /**
@@ -72,11 +74,29 @@ const cdaInProgress = new Set<ObjectId>();
  */
 const ownStackInProgress = new Set<ObjectId>();
 
+/**
+ * Ids whose layer-4 fold ({@link layerFour}) is in progress. A type-granting
+ * static's scope is matched against the types folded so far, never by asking
+ * for the target's types again — but its condition, or a filter clause about
+ * something attached, can read other permanents, whose own statics may ask
+ * about this one. Re-entry for an id on this stack answers with the
+ * permanent's own types (printed plus its modifiers, no external grants):
+ * conservative, like the guards above, and likewise never cached. This is
+ * what keeps two type-granting statics whose scopes read each other's grants
+ * (a Kudo beside a Bello) from looping. Transient scaffolding.
+ */
+const layer4InProgress = new Set<ObjectId>();
+
 /** Whether a value computed now may be the re-entrancy guards' conservative
  * answer rather than the true one — and so must neither be served from nor
  * stored in the computed cache. */
 function guardActive(): boolean {
-  return conditionInProgress.size > 0 || cdaInProgress.size > 0 || ownStackInProgress.size > 0;
+  return (
+    conditionInProgress.size > 0 ||
+    cdaInProgress.size > 0 ||
+    layer4InProgress.size > 0 ||
+    ownStackInProgress.size > 0
+  );
 }
 
 /**
@@ -128,7 +148,9 @@ function othersInOwnStack(
  */
 interface ComputedCache {
   chars: Map<ObjectId, Characteristics>;
+  layer4: Map<ObjectId, LayerFour>;
   staticSources: readonly ContributingStatic[] | null;
+  typeSources: readonly ContributingStatic[] | null;
   misc: Map<string, unknown>;
 }
 
@@ -137,7 +159,9 @@ let activeCache: ComputedCache | null = null;
  * `legalActions` / SBA sweep / event) to allocate fresh Maps each time. */
 const pooledCache: ComputedCache = {
   chars: new Map(),
+  layer4: new Map(),
   staticSources: null,
+  typeSources: null,
   misc: new Map(),
 };
 let cacheCheck = false;
@@ -153,7 +177,9 @@ export function setComputedCacheCheck(on: boolean): void {
 export function withComputedCache<T>(fn: () => T): T {
   if (activeCache !== null) return fn();
   pooledCache.chars.clear();
+  pooledCache.layer4.clear();
   pooledCache.staticSources = null;
+  pooledCache.typeSources = null;
   pooledCache.misc.clear();
   activeCache = pooledCache;
   try {
@@ -168,7 +194,9 @@ export function withComputedCache<T>(fn: () => T): T {
 export function invalidateComputedCache(): void {
   if (activeCache === null) return;
   activeCache.chars.clear();
+  activeCache.layer4.clear();
   activeCache.staticSources = null;
+  activeCache.typeSources = null;
   activeCache.misc.clear();
 }
 
@@ -326,7 +354,7 @@ function evalStaticCondition(
       return (
         countWhere((id) => {
           const o = state.objects[id];
-          return o.controller === you && effectiveTypes(registry, o).includes("artifact");
+          return o.controller === you && effectiveTypes(state, registry, o).includes("artifact");
         }) >= 3
       );
     case "controls": {
@@ -537,16 +565,8 @@ function substituteWord(object: GameObject, word: string): string {
   return w;
 }
 
-/**
- * A permanent's current subtypes: printed → layer 3 (text substitution) →
- * layer 4 (`setSubtypes` replaces, then `addSubtypes` unions). Self-contained
- * (nothing external grants subtypes here), so it's safe to call from
- * `staticAffects` without recursing back into {@link computeCharacteristics}.
- */
-export function effectiveSubtypes(
-  registry: CardRegistry,
-  object: GameObject,
-): readonly string[] {
+/** Printed subtypes after this object's own layer-3 text substitution. */
+function textChangedSubtypes(registry: CardRegistry, object: GameObject): readonly string[] {
   let subtypes: readonly string[] = registry.get(printedCardName(object)).subtypes;
   for (const m of object.modifiers) {
     if (m.textSubstitution) {
@@ -554,29 +574,214 @@ export function effectiveSubtypes(
       subtypes = subtypes.map((s) => (s === from ? to : s));
     }
   }
-  for (const m of object.modifiers) {
-    if (m.setSubtypes) subtypes = [...m.setSubtypes];
-  }
-  const added: string[] = [];
-  for (const m of object.modifiers) if (m.addSubtypes) added.push(...m.addSubtypes);
-  return added.length > 0 ? [...new Set([...subtypes, ...added])] : subtypes;
+  return subtypes;
 }
 
 /**
- * A permanent's current card types: printed → layer 4 (`addTypes` from an
- * `animate` — a man-land becoming a creature). Nothing *external* grants a
- * type, so like {@link effectiveSubtypes} this is self-contained and doesn't
- * need the layer fold — which lets `matchesFilter` answer a type question
- * without recursing into {@link computeCharacteristics}.
+ * A permanent's types and subtypes after layer 4 (rule 613.1d), and which
+ * type-granting statics reached it there.
+ */
+export interface LayerFour {
+  readonly types: readonly CardType[];
+  readonly subtypes: readonly string[];
+  /**
+   * The statics with a layer-4 part (`addTypes` / `addSubtypes`) that
+   * applied to this permanent. Rule 613.6: an effect keeps applying to the
+   * same set of objects in its later layers, so the rest of such a static
+   * (Bello's keywords and 4/4, Ragost's granted ability) reaches exactly
+   * these — see {@link staticReaches}.
+   */
+  readonly applied: readonly ContributingStatic[];
+}
+
+const NO_STATICS: readonly ContributingStatic[] = [];
+
+/** One layer-4 step: an object's own modifier, or an external static. */
+type LayerFourStep =
+  | { readonly key: number; readonly modifier: PtModifier }
+  | { readonly key: number; readonly grant: ContributingStatic };
+
+/** The order key of a modifier's layer-4 / 7b part (see
+ * `PtModifier.timestamp`): just after a static whose source has the same
+ * timestamp, and after every static when it has none. */
+function modifierKey(modifier: PtModifier): number {
+  return modifier.timestamp !== undefined ? modifier.timestamp + 0.5 : Infinity;
+}
+
+function applyModifierTypes(
+  modifier: PtModifier,
+  types: CardType[] | readonly CardType[],
+  subtypes: readonly string[],
+): { types: readonly CardType[]; subtypes: readonly string[] } {
+  let t = types;
+  let st = subtypes;
+  if (modifier.setSubtypes) st = [...modifier.setSubtypes];
+  if (modifier.addTypes && modifier.addTypes.length > 0) t = union(t, modifier.addTypes);
+  if (modifier.addSubtypes && modifier.addSubtypes.length > 0) st = union(st, modifier.addSubtypes);
+  return { types: t, subtypes: st };
+}
+
+function union<T>(a: readonly T[], b: readonly T[]): readonly T[] {
+  let out: T[] | null = null;
+  for (const x of b) {
+    if ((out ?? a).includes(x)) continue;
+    out ??= [...a];
+    out.push(x);
+  }
+  return out ?? a;
+}
+
+/**
+ * Layer 4 for one object: printed types and subtypes (subtypes after layer
+ * 3), then every type-changing effect in timestamp order (rule 613.7) — the
+ * object's own modifiers (an `animate`, amass's "it's also a Zombie", Turn to
+ * Frog's "becomes a Frog") and, on the battlefield, every static with an
+ * `addTypes` / `addSubtypes` part whose scope reaches it (Kudo's Bears,
+ * Ragost's Foods, Bello's creatures).
+ *
+ * Each static's scope is matched against the types folded *so far*, which is
+ * what timestamp order means for an effect whose reach depends on types; an
+ * effect that would change what an earlier one applies to isn't reordered
+ * ahead of it (dependency, rule 613.8, isn't modeled). See
+ * `layer4InProgress` for why this can't loop.
+ */
+export function layerFour(
+  state: GameState,
+  registry: CardRegistry,
+  object: GameObject,
+): LayerFour {
+  const sources =
+    object.zone === "battlefield" && !layer4InProgress.has(object.id)
+      ? typeGrantSources(state, registry)
+      : NO_STATICS;
+  if (sources.length === 0) return ownLayerFour(registry, object);
+  if (activeCache !== null && !guardActive()) {
+    const hit = activeCache.layer4.get(object.id);
+    if (hit !== undefined) return hit;
+    const value = foldLayerFour(state, registry, object, sources);
+    activeCache.layer4.set(object.id, value);
+    return value;
+  }
+  return foldLayerFour(state, registry, object, sources);
+}
+
+/** Layer 4 from the object's own modifiers alone — everything there was
+ * before statics could grant types, and still the whole answer whenever no
+ * type-granting static is on the battlefield. */
+function ownLayerFour(registry: CardRegistry, object: GameObject): LayerFour {
+  let types: readonly CardType[] = registry.get(printedCardName(object)).types;
+  let subtypes = textChangedSubtypes(registry, object);
+  for (const modifier of object.modifiers) {
+    ({ types, subtypes } = applyModifierTypes(modifier, types, subtypes));
+  }
+  return { types, subtypes, applied: NO_STATICS };
+}
+
+function foldLayerFour(
+  state: GameState,
+  registry: CardRegistry,
+  object: GameObject,
+  sources: readonly ContributingStatic[],
+): LayerFour {
+  const steps: LayerFourStep[] = [];
+  for (const grant of sources) steps.push({ key: grant.source.timestamp, grant });
+  for (const modifier of object.modifiers) steps.push({ key: modifierKey(modifier), modifier });
+  steps.sort((a, b) => a.key - b.key);
+  let types: readonly CardType[] = registry.get(printedCardName(object)).types;
+  let subtypes = textChangedSubtypes(registry, object);
+  const applied: ContributingStatic[] = [];
+  layer4InProgress.add(object.id);
+  try {
+    for (const step of steps) {
+      if ("modifier" in step) {
+        ({ types, subtypes } = applyModifierTypes(step.modifier, types, subtypes));
+        continue;
+      }
+      const { source, ability } = step.grant;
+      if (!staticAffects(state, registry, ability.affects, source, object, { types, subtypes, inFold: true })) {
+        continue;
+      }
+      if (
+        ability.condition !== undefined &&
+        !staticConditionMet(state, registry, source, ability.condition)
+      ) {
+        continue;
+      }
+      if (ability.addTypes !== undefined) types = union(types, ability.addTypes);
+      if (ability.addSubtypes !== undefined) {
+        // The source's own text change rewrites the word it grants, as it
+        // does a lord clause's.
+        subtypes = union(subtypes, ability.addSubtypes.map((w) => substituteWord(source, w)));
+      }
+      applied.push(step.grant);
+    }
+  } finally {
+    layer4InProgress.delete(object.id);
+  }
+  return { types, subtypes, applied };
+}
+
+/** Whether a static changes types in layer 4 — and so fixes, there, which
+ * permanents the rest of it applies to (rule 613.6). */
+function hasLayerFourPart(ability: StaticAbility): boolean {
+  return ability.addTypes !== undefined || ability.addSubtypes !== undefined;
+}
+
+/**
+ * Every battlefield static with a layer-4 part, in battlefield order —
+ * usually none, and then {@link layerFour} is exactly the old self-contained
+ * read. Memoized in the active cache region like
+ * {@link contributingStaticSources}.
+ */
+function typeGrantSources(
+  state: GameState,
+  registry: CardRegistry,
+): readonly ContributingStatic[] {
+  if (activeCache !== null && activeCache.typeSources !== null) return activeCache.typeSources;
+  let out: ContributingStatic[] | null = null;
+  for (const sourceId of state.zones.shared.battlefield) {
+    const source = state.objects[sourceId];
+    const statics = registry.get(printedCardName(source)).static;
+    if (statics.length === 0) continue;
+    for (const ability of statics) {
+      if (!hasLayerFourPart(ability)) continue;
+      // As in `contributingStaticSources`: a permanent that lost its
+      // abilities, or whose controller has left the game, grants nothing.
+      if (hasLostAbilities(source) || state.players[source.controller]?.hasLost === true) break;
+      (out ??= []).push({ source, ability });
+    }
+  }
+  const result = out ?? NO_STATICS;
+  if (activeCache !== null) activeCache.typeSources = result;
+  return result;
+}
+
+/**
+ * A permanent's current subtypes: printed → layer 3 (text substitution) →
+ * layer 4 (its own `setSubtypes` / `addSubtypes` modifiers and every
+ * subtype-granting static, in timestamp order — see {@link layerFour}).
+ */
+export function effectiveSubtypes(
+  state: GameState,
+  registry: CardRegistry,
+  object: GameObject,
+): readonly string[] {
+  return layerFour(state, registry, object).subtypes;
+}
+
+/**
+ * A permanent's current card types: printed → layer 4 (an `animate` — a
+ * man-land becoming a creature — and every type-granting static; see
+ * {@link layerFour}). Answers without the rest of the layer fold, which is
+ * what lets `matchesFilter` ask a type question without recursing into
+ * {@link computeCharacteristics}.
  */
 export function effectiveTypes(
+  state: GameState,
   registry: CardRegistry,
   object: GameObject,
 ): readonly CardType[] {
-  const printed = registry.get(printedCardName(object)).types;
-  const added: CardType[] = [];
-  for (const m of object.modifiers) if (m.addTypes) added.push(...m.addTypes);
-  return added.length > 0 ? [...new Set([...printed, ...added])] : printed;
+  return layerFour(state, registry, object).types;
 }
 
 /** A permanent's current colours: printed → layer 5 (`setColors` replaces,
@@ -631,23 +836,20 @@ function counterPtBonus(counter: string): { power: number; toughness: number } {
   return { power: 0, toughness: 0 };
 }
 
-/**
- * Whether `object` is a creature *right now* — its layer-4 types, not its
- * printed ones. A creature-scoped static reaches an animated land or an
- * artifact that became a creature just as it reaches a printed creature
- * (rule 613.1d puts type-changing effects before every layer these statics
- * work in), and stops reaching a creature that is no longer one.
- */
-function isCreatureNow(
-  registry: CardRegistry,
-  object: GameObject,
-): boolean {
-  return effectiveTypes(registry, object).includes("creature");
+/** Whether a filter reads keywords anywhere in it — a scope that has to
+ * wait for layer 6 (rule 613.8a). */
+function filterReadsKeywords(filter: CardFilter): boolean {
+  return (
+    filter.keyword !== undefined ||
+    filter.notKeyword !== undefined ||
+    (filter.anyOf?.some(filterReadsKeywords) ?? false)
+  );
 }
 
 /** Whether an `AffectSpec` narrows its reach by keyword — the statics whose
  * scope has to wait for the target's layer-6 keywords (rule 613.8). */
 function scopedByKeyword(affects: AffectSpec): boolean {
+  if (affects.scope === "filter") return filterReadsKeywords(affects.filter);
   return (
     (affects.scope === "creatures-you-control" || affects.scope === "all-creatures") &&
     (affects.withKeyword !== undefined ||
@@ -656,40 +858,77 @@ function scopedByKeyword(affects: AffectSpec): boolean {
 }
 
 /**
- * Whether a static's `affects` reaches `target`.
- *
- * A `withKeyword`/`withoutKeyword` clause asks about the target's *current*
- * keywords — flying from an Aura or an anthem counts, and a creature that
- * lost its abilities has none. Those come from `targetKeywords`, which the
- * caller supplies because answering it means folding layer 6, and this
- * function is called from inside that fold; without one, it falls back to
- * printed keywords (less ability loss).
+ * What a scope check may know about its target beyond the object itself,
+ * when the caller is partway through computing it.
+ */
+export interface TargetView {
+  /** The target's types / subtypes as folded so far — a type-granting
+   * static's scope, matched inside layer 4. Omitted: the current ones
+   * (`effectiveTypes`). */
+  readonly types?: readonly CardType[];
+  readonly subtypes?: readonly string[];
+  /**
+   * The target's *current* keywords, for a keyword clause — flying from an
+   * Aura or an anthem counts, and a creature that lost its abilities has
+   * none. Answering it means folding layer 6, and the layer fold itself is
+   * one caller; without one, printed keywords (less ability loss).
+   */
+  readonly keywords?: () => ReadonlySet<Keyword>;
+  /** The caller is the layer fold computing this target's characteristics:
+   * a `filter` scope's clauses must not ask for them again (see
+   * `FilterContext.layered`). */
+  readonly inFold?: boolean;
+}
+
+/**
+ * Whether a static's `affects` reaches `target`. See {@link TargetView} for
+ * what a caller partway through the layer fold supplies.
  */
 export function staticAffects(
+  state: GameState,
   registry: CardRegistry,
   affects: AffectSpec,
   source: GameObject,
   target: GameObject,
-  targetKeywords?: () => ReadonlySet<Keyword>,
+  view: TargetView = {},
 ): boolean {
+  const targetKeywords = view.keywords;
   const hasKeyword = (keyword: Keyword): boolean =>
     targetKeywords !== undefined
       ? targetKeywords().has(keyword)
       : !(target.zone === "battlefield" && hasLostAbilities(target)) &&
         registry.get(printedCardName(target)).keywords.includes(keyword);
+  // Current types, not printed (rule 613.1d puts type changes before every
+  // layer a static works in): an animated land or an artifact that became a
+  // creature is reached like a printed creature, and a creature that stopped
+  // being one isn't.
+  const isCreatureNow = (): boolean =>
+    (view.types ?? effectiveTypes(state, registry, target)).includes("creature");
+  const subtypesNow = (): readonly string[] =>
+    view.subtypes ?? effectiveSubtypes(state, registry, target);
   if (affects.scope === "self") return source.id === target.id;
   if (affects.scope === "attached") return source.attachedTo === target.id;
+  if (affects.scope === "filter") {
+    if (target.zone !== "battlefield") return false;
+    if (affects.excludeSelf === true && source.id === target.id) return false;
+    return matchesFilter(state, registry, target.id, affects.filter, {
+      you: source.controller,
+      ...(view.inFold === true
+        ? { layered: { types: view.types, subtypes: view.subtypes, keywords: view.keywords } }
+        : {}),
+    });
+  }
   if (affects.scope === "lands-you-control") {
     return (
       target.controller === source.controller &&
-      effectiveTypes(registry, target).includes("land")
+      (view.types ?? effectiveTypes(state, registry, target)).includes("land")
     );
   }
   if (affects.scope === "all-creatures") {
     // Every creature on the battlefield, whoever controls it.
     if (affects.excludeSelf === true && source.id === target.id) return false;
-    if (!isCreatureNow(registry, target)) return false;
-    if (affects.subtype !== undefined && !effectiveSubtypes(registry, target).includes(affects.subtype)) {
+    if (!isCreatureNow()) return false;
+    if (affects.subtype !== undefined && !subtypesNow().includes(affects.subtype)) {
       return false;
     }
     if (affects.withKeyword !== undefined && !hasKeyword(affects.withKeyword)) return false;
@@ -699,7 +938,7 @@ export function staticAffects(
   // "creatures-you-control"
   if (affects.excludeSelf && source.id === target.id) return false;
   if (target.controller !== source.controller) return false;
-  if (!isCreatureNow(registry, target)) return false;
+  if (!isCreatureNow()) return false;
   if (affects.tokenOnly === true && target.isToken !== true) return false;
   if (affects.withKeyword !== undefined && !hasKeyword(affects.withKeyword)) return false;
   if (affects.chosenColorOnly === true) {
@@ -720,9 +959,34 @@ export function staticAffects(
     // rewrites the word in its lord clause too; the target is matched on its
     // *current* subtypes (layer 3 + 4).
     const wanted = substituteWord(source, affects.subtype);
-    if (!effectiveSubtypes(registry, target).includes(wanted)) return false;
+    if (!subtypesNow().includes(wanted)) return false;
   }
   return true;
+}
+
+/**
+ * Whether `source`'s static `ability` applies to `target` right now — its
+ * scope, and for a static with a layer-4 part, the permanents that part
+ * reached (rule 613.6: an effect that starts applying in one layer keeps the
+ * same set of objects in the later ones, so Bello's keywords and granted
+ * trigger go to exactly the permanents it made creatures). A static with no
+ * layer-4 part is just its scope; its condition is the caller's to check.
+ */
+export function staticReaches(
+  state: GameState,
+  registry: CardRegistry,
+  source: GameObject,
+  ability: StaticAbility,
+  target: GameObject,
+  view: TargetView = {},
+): boolean {
+  if (hasLayerFourPart(ability)) {
+    if (target.zone !== "battlefield") return false;
+    return layerFour(state, registry, target).applied.some(
+      (a) => a.ability === ability && a.source.id === source.id,
+    );
+  }
+  return staticAffects(state, registry, ability.affects, source, target, view);
 }
 
 interface AppliedEffect {
@@ -736,6 +1000,8 @@ interface AppliedEffect {
     types?: readonly CardType[];
     filter?: CardFilter;
   } | null;
+  /** Layer 7b — a `setBasePt`. */
+  readonly setBase: { readonly power?: number; readonly toughness?: number } | null;
 }
 
 /** One battlefield static that *can* contribute P/T / keywords / restrictions
@@ -781,7 +1047,8 @@ function contributingStaticSources(
         ability.grantPtPerCount === undefined &&
         ability.grantKeywords === undefined &&
         ability.restrictions === undefined &&
-        ability.protection === undefined
+        ability.protection === undefined &&
+        ability.setBasePt === undefined
       ) {
         continue;
       }
@@ -858,6 +1125,7 @@ function collectStaticEffects(
       keywords: ability.grantKeywords ?? [],
       restrictions: ability.restrictions ?? [],
       protection: ability.protection ?? null,
+      setBase: ability.setBasePt ?? null,
     };
   };
   let keywordScoped = false;
@@ -866,7 +1134,7 @@ function collectStaticEffects(
       keywordScoped = true;
       continue;
     }
-    if (!staticAffects(registry, ability.affects, source, target)) continue;
+    if (!staticReaches(state, registry, source, ability, target, { inFold: true })) continue;
     const effect = applied(source, ability);
     if (effect !== null) out.push(effect);
   }
@@ -884,10 +1152,15 @@ function collectStaticEffects(
     ) {
       continue;
     }
-    if (target.controller !== emblem.owner || !isCreatureNow(registry, target)) continue;
+    if (
+      target.controller !== emblem.owner ||
+      !effectiveTypes(state, registry, target).includes("creature")
+    ) {
+      continue;
+    }
     if (
       ability.affects.subtype !== undefined &&
-      !effectiveSubtypes(registry, target).includes(ability.affects.subtype)
+      !effectiveSubtypes(state, registry, target).includes(ability.affects.subtype)
     ) {
       continue;
     }
@@ -898,6 +1171,7 @@ function collectStaticEffects(
       keywords: ability.grantKeywords ?? [],
       restrictions: ability.restrictions ?? [],
       protection: ability.protection ?? null,
+      setBase: null,
     });
   }
   if (keywordScoped) {
@@ -915,7 +1189,14 @@ function collectStaticEffects(
     const second: AppliedEffect[] = [];
     for (const { source, ability } of sources) {
       if (!scopedByKeyword(ability.affects)) continue;
-      if (!staticAffects(registry, ability.affects, source, target, targetKeywords)) continue;
+      if (
+        !staticReaches(state, registry, source, ability, target, {
+          inFold: true,
+          keywords: targetKeywords,
+        })
+      ) {
+        continue;
+      }
       const effect = applied(source, ability);
       if (effect !== null) second.push(effect);
     }
@@ -993,11 +1274,12 @@ function computeCharacteristicsUncached(
   let toughness = def.toughness ?? 0;
   // Layer 6 — a permanent that lost its abilities keeps no printed keywords.
   const keywords = new Set<Keyword>(lostAbilities ? [] : def.keywords);
-  let types: readonly CardType[] = def.types;
-  // Layers 3 + 4 — text substitution, then set/add subtypes.
-  const subtypes: readonly string[] = onBattlefield
-    ? effectiveSubtypes(registry, object)
-    : def.subtypes;
+  // Layers 3 + 4 — text substitution, then every type-changing effect in
+  // timestamp order: the object's own modifiers (a man-land's animation adds
+  // `creature`) and type-granting statics.
+  const layer4 = onBattlefield ? layerFour(state, registry, object) : null;
+  const types: readonly CardType[] = layer4?.types ?? def.types;
+  const subtypes: readonly string[] = layer4?.subtypes ?? def.subtypes;
   // Layer 5 — colour-changing effects.
   const colors: ReadonlySet<Color> = onBattlefield
     ? effectiveColors(registry, object)
@@ -1006,16 +1288,6 @@ function computeCharacteristicsUncached(
   const staticEffects = onBattlefield
     ? collectStaticEffects(state, registry, object)
     : [];
-
-  // Layer 4 — type adds. A man-land's animation adds `creature` (and often
-  // `artifact`) on top of the printed types; nothing removes types yet.
-  if (onBattlefield) {
-    const addedTypes: CardType[] = [];
-    for (const modifier of object.modifiers) {
-      if (modifier.addTypes) addedTypes.push(...modifier.addTypes);
-    }
-    if (addedTypes.length > 0) types = [...new Set([...types, ...addedTypes])];
-  }
 
   // Layer 6 — ability adds (external anthems + modifier grants still reach a
   // permanent that lost its *own* abilities).
@@ -1065,16 +1337,25 @@ function computeCharacteristicsUncached(
       toughness = n + ability.setBasePtFromCount.plusToughness;
     }
   }
-  // Layer 7b — a "becomes a N/N" (man-land animation, Turn to Frog) *sets*
-  // base P/T. This is part of the effect, not the permanent's own CDA, so it
-  // still applies when the same effect also removed its abilities. Latest
-  // wins; before counters (7c) and bonuses (7d).
+  // Layer 7b — a "becomes a N/N" (man-land animation, Turn to Frog) and a
+  // static's "has base power and toughness N/N" (Kudo) *set* base P/T, in
+  // timestamp order (rule 613.7): latest wins. The first is part of the
+  // effect, not the permanent's own CDA, so it still applies when the same
+  // effect also removed its abilities. Before counters (7c) and bonuses (7d).
   if (onBattlefield) {
+    const sets: { key: number; power?: number; toughness?: number }[] = [];
+    for (const effect of staticEffects) {
+      if (effect.setBase !== null) sets.push({ key: effect.timestamp, ...effect.setBase });
+    }
     for (const modifier of object.modifiers) {
       if (modifier.setPt) {
-        power = modifier.setPt[0];
-        toughness = modifier.setPt[1];
+        sets.push({ key: modifierKey(modifier), power: modifier.setPt[0], toughness: modifier.setPt[1] });
       }
+    }
+    sets.sort((a, b) => a.key - b.key);
+    for (const set of sets) {
+      if (set.power !== undefined) power = set.power;
+      if (set.toughness !== undefined) toughness = set.toughness;
     }
   }
 

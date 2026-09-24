@@ -491,6 +491,7 @@ ability would have no way to name a token that didn't exist when it was set up.
 | `double-pt-all` | `filter`, `duration` | Unnatural Growth — doubles each matching permanent's own *current computed* power/toughness individually (a 2/2 and a 5/5 both matching become a 4/4 and a 10/10), unlike `modify-pt-all`'s single shared amount |
 | `proliferate` | — | proliferates *everything* eligible (no "choose any number") |
 | `animate` | `target`, `power`, `toughness`, `addTypes`, `addSubtypes`, `setSubtypes?`, `setColors?`, `loseAbilities?`, `keywords?`, `duration` | man-lands, Turn to Frog |
+| `animate-all` | `filter`, `power`, `toughness`, `addTypes?`, `addSubtypes?`, `keywords?`, `duration` | the mass form: every match becomes an N/N at once (Vihaan: "have Treasures you control become 3/3 Construct Assassin artifact creatures … until end of turn"). With no `addTypes` it only sets base P/T. Matches are fixed as it begins, and a token stack is animated whole. |
 
 ### Tokens / attach / transform
 
@@ -1091,15 +1092,25 @@ static: [
 - `"creatures-you-control"` — `+ excludeSelf?`, `+ subtype?` (a lord clause),
   `+ withCounter?: { kind? }` (Rishkar: "each creature you control **with a
   counter on it**"), `+ tokenOnly?` (Eternal Skylord: "Zombie **tokens** you
-  control"). The last two are flags rather than a `CardFilter` because
-  `staticAffects` runs on every characteristics read and is deliberately given
-  no `GameState` — both are answerable from the object alone.
+  control").
 - `"lands-you-control"` — Chromatic Lantern.
 - `"all-creatures"` — **every** creature on the battlefield, whoever controls
   it (Gravitational Shift). Takes `excludeSelf`, `subtype`, `withKeyword` and
-  `withoutKeyword`; like the `creatures-you-control` narrowings these are
-  flags rather than a `CardFilter`, because `staticAffects` runs on every
-  characteristics read and is given no `GameState`.
+  `withoutKeyword`.
+- `"filter"` — `{ scope: "filter", filter: CardFilter, excludeSelf? }`: every
+  battlefield permanent matching the filter, from the source's controller's
+  perspective. The general form of the fixed scopes, for anything they can't
+  say: "artifacts you control" (`{ type: "artifact", controlledBy: "you" }`),
+  "other outlaws you control" (`subtypes: [...]`), "commander creatures you
+  own" (`{ type: "creature", isCommander: true, ownedBy: "you" }`), "each
+  creature you control but don't own" (`controlledBy: "you", ownedBy:
+  "opponent"`), "non-Equipment artifact and non-Aura enchantment" (`anyOf`),
+  "creatures you don't control", counters on any permanent. Type and subtype
+  clauses read current (layer-4) types; a `keyword` clause waits for layer 6
+  like `withKeyword`. A `power` / `toughness` clause can't be answered from
+  inside the layer fold that computes it and **fails closed** — don't author
+  a scope that needs one. Prefer this over adding another flag to the fixed
+  scopes.
 
 `withKeyword` (either creature scope) and `withoutKeyword` read the target's
 **current** keywords (rule 613.8a — the anthem depends on whatever grants or
@@ -1158,6 +1169,19 @@ anthem, the keyword grant and the granted trigger like any other creature.
   A fact about the *controller* rather than about anything the ability
   affects, so it's read straight off the battlefield at cleanup instead of
   going through the layer system; pair it with `affects: { scope: "self" }`.
+- `addTypes: CardType[]` / `addSubtypes: string[]` — layer 4: the affected
+  permanents have these "in addition to their other types" (Kudo: "are Bears";
+  Ragost: "Artifacts you control are Foods"; Bello: "is a … creature"). Every
+  type read sees them — filters, targeting, sacrifice costs, other statics'
+  scopes — and they apply in timestamp order with the permanent's own
+  type-changing modifiers (an `animate`, Turn to Frog). A static with a
+  layer-4 part fixes its reach there (rule 613.6): its keywords, granted
+  abilities and P/T go to exactly the permanents it gave the type to.
+- `setBasePt: { power?, toughness? }` — layer 7b: the affected permanents
+  *have base* power and/or toughness N ("have base power and toughness 10/10";
+  a lone `toughness` is "have base toughness 1"). In timestamp order with
+  `animate`'s set P/T, under counters (7c) and bonuses (7d). Distinct from the
+  `"self"`-only `setBasePtFromCount` CDA, which applies first.
 - `grantKeywords: [...]` — layer 6 keyword grant.
 - `grantsActivated: [...]` — give the affected permanents these activated
   abilities (Chromatic Lantern, Cryptolith Rite).

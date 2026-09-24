@@ -19,6 +19,7 @@ import {
   effectiveColors,
   effectiveSubtypes,
   effectiveTypes,
+  hasLostAbilities,
 } from "./characteristics.js";
 import type { CardRegistry, CardType, Keyword, Supertype } from "./cards.js";
 import type { EffectAmount } from "./effects.js";
@@ -240,6 +241,20 @@ export interface FilterContext {
    * whatever is applying the filter (its source, controller, triggering
    * object, {X}, targets). Absent ⇒ such a comparison fails closed. */
   readonly amount?: (amount: EffectAmount) => number;
+  /**
+   * The object is being matched from *inside* the layer fold that computes
+   * its characteristics — a static ability's `filter` scope (see
+   * `AffectSpec`). Nothing here may fold them again, so a type or subtype
+   * clause reads `types` / `subtypes` when given (the types granted so far,
+   * inside layer 4) and a keyword clause reads `keywords` (printed ones, less
+   * ability loss, when absent). A power or toughness clause, or an `{ own }`
+   * power or toughness operand, can't be answered and fails closed.
+   */
+  readonly layered?: {
+    readonly types?: readonly CardType[] | undefined;
+    readonly subtypes?: readonly string[] | undefined;
+    readonly keywords?: (() => ReadonlySet<Keyword>) | undefined;
+  };
 }
 
 /** What is attached to `id` on the battlefield, for the attachment clauses.
@@ -257,7 +272,7 @@ export function attachmentsOf(
   for (const other of state.zones.shared.battlefield) {
     const o = state.objects[other];
     if (o === undefined || o.attachedTo !== id) continue;
-    const subtypes = effectiveSubtypes(registry, o);
+    const subtypes = effectiveSubtypes(state, registry, o);
     if (subtypes.includes("Equipment")) out.equipped = true;
     if (subtypes.includes("Aura")) {
       out.enchanted = true;
@@ -344,7 +359,11 @@ export function matchesFilter(
   // the fold is expensive enough that it's worth deferring: a static
   // ability's condition (Kird Ape's "you control a Forest") runs this over the
   // whole battlefield every time anything reads its characteristics.
-  const types = live !== undefined ? effectiveTypes(registry, live) : lki!.types;
+  const layered = live !== undefined ? ctx.layered : undefined;
+  const types =
+    live !== undefined
+      ? (layered?.types ?? effectiveTypes(state, registry, live))
+      : lki!.types;
   if (filter.type !== undefined && !types.includes(filter.type)) return false;
   if (filter.types !== undefined && !filter.types.every((t) => types.includes(t))) {
     return false;
@@ -360,7 +379,10 @@ export function matchesFilter(
     filter.subtypes !== undefined ||
     filter.notSubtypes !== undefined
   ) {
-    const subtypes = live !== undefined ? effectiveSubtypes(registry, live) : lki!.subtypes;
+    const subtypes =
+      live !== undefined
+        ? (layered?.subtypes ?? effectiveSubtypes(state, registry, live))
+        : lki!.subtypes;
     if (filter.subtype !== undefined && !subtypes.includes(filter.subtype)) return false;
     if (
       filter.subtypes !== undefined &&
@@ -424,6 +446,7 @@ export function matchesFilter(
   const dynamic = (operand: DynamicOperand): number | undefined => {
     if ("amount" in operand) return ctx.amount?.(operand.amount);
     if (operand.own === "manaValue") return manaValueNow();
+    if (own === undefined && layered !== undefined) return undefined;
     own ??= computeCharacteristics(state, registry, id);
     return operand.own === "power" ? own.power : own.toughness;
   };
@@ -501,6 +524,16 @@ export function matchesFilter(
     filter.keyword !== undefined ||
     filter.notKeyword !== undefined
   ) {
+    if (layered !== undefined) {
+      // Inside the fold: keywords as far as it has got, P/T not at all.
+      if (filter.power !== undefined || filter.toughness !== undefined) return false;
+      const keywords =
+        layered.keywords?.() ??
+        new Set(hasLostAbilities(live!) ? [] : registry.get(name).keywords);
+      if (filter.keyword !== undefined && !keywords.has(filter.keyword)) return false;
+      if (filter.notKeyword !== undefined && keywords.has(filter.notKeyword)) return false;
+      return true;
+    }
     const c: { readonly power: number; readonly toughness: number; readonly keywords: ReadonlySet<Keyword> } =
       lki !== undefined
         ? { power: lki.power, toughness: lki.toughness, keywords: new Set(lki.keywords) }
