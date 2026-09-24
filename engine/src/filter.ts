@@ -27,7 +27,7 @@ import type { Color } from "./mana.js";
 import { manaValue, parseManaCost } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { activePlayerOf, printedCardName } from "./state.js";
-import type { GameObject, GameState, LastKnownInfo } from "./state.js";
+import type { GameObject, GameState, LastKnownInfo, ZoneType } from "./state.js";
 
 /**
  * A numeric comparison clause, e.g. `{ op: "lte", n: 2 }` = "≤ 2".
@@ -210,6 +210,22 @@ export interface CardFilter {
    * permanent that left the battlefield and came back is a new object that
    * hasn't; one that has left is asked as it last was. */
   readonly attackedThisTurn?: boolean;
+  /** It entered the battlefield (this stint) as a spell that was cast and
+   * resolved — "if it was cast" (see `GameObject.entry`). */
+  readonly cast?: boolean;
+  /** …cast by **you** — "if you cast it" (Anti-Venom, Rocco, Tiamat). */
+  readonly castBy?: "you";
+  /** …cast from this zone — "if it was cast from a graveyard". */
+  readonly castFrom?: ZoneType;
+  /** It entered the battlefield from this zone — "enters from exile" (Fire
+   * Lord Zuko), "came from a graveyard" (a spell's entry comes from the
+   * stack; `castFrom` says where it was cast). */
+  readonly enteredFrom?: ZoneType;
+  /** It was (or wasn't) put onto the battlefield by an ability of the
+   * permanent applying the filter, this stint of it — Kodama of the East
+   * Tree's "if it wasn't put onto the battlefield with this ability". Needs
+   * `FilterContext.source`; without one, nothing was. */
+  readonly putThereBySource?: boolean;
   /**
    * Shares at least one card type with the permanent sacrificed to pay for
    * (or earlier in) the spell or ability applying this filter — "a permanent
@@ -254,6 +270,9 @@ export interface FilterContext {
    * whatever is applying the filter (its source, controller, triggering
    * object, {X}, targets). Absent ⇒ such a comparison fails closed. */
   readonly amount?: (amount: EffectAmount) => number;
+  /** The permanent whose trigger or ability is applying the filter — what
+   * `putThereBySource` compares against. */
+  readonly source?: ObjectId;
   /**
    * The object is being matched from *inside* the layer fold that computes
    * its characteristics — a static ability's `filter` scope (see
@@ -511,6 +530,25 @@ export function matchesFilter(
   if (filter.enteredThisTurn !== undefined) {
     const turn = live !== undefined ? live.enteredBattlefieldOnTurn : (lki!.enteredOnTurn ?? null);
     if ((turn === state.turn.number) !== filter.enteredThisTurn) return false;
+  }
+  if (
+    filter.cast !== undefined ||
+    filter.castBy !== undefined ||
+    filter.castFrom !== undefined ||
+    filter.enteredFrom !== undefined ||
+    filter.putThereBySource !== undefined
+  ) {
+    const entry = live !== undefined ? (live.zone === "battlefield" ? live.entry : undefined) : lki!.entry;
+    if (filter.cast !== undefined && (entry?.cast !== undefined) !== filter.cast) return false;
+    if (filter.castBy === "you" && entry?.cast?.by !== ctx.you) return false;
+    if (filter.castFrom !== undefined && entry?.cast?.from !== filter.castFrom) return false;
+    if (filter.enteredFrom !== undefined && entry?.from !== filter.enteredFrom) return false;
+    if (filter.putThereBySource !== undefined) {
+      const by = entry?.by;
+      const asker = ctx.source === undefined ? undefined : state.objects[ctx.source];
+      const byIt = by !== undefined && asker !== undefined && by.source === asker.id && by.timestamp === asker.timestamp;
+      if (byIt !== filter.putThereBySource) return false;
+    }
   }
   if (filter.attackedThisTurn !== undefined) {
     const attacked =

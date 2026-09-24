@@ -58,16 +58,21 @@ that one card is the reason the deck exists.
   Quake-Mole (the `restrict` effect's `"must-be-blocked-if-able"`, and `becomes-blocked` with
   `additional-combat`'s `afterThisPhase`); Anowon, the Ruin Thief (`deals-damage-batch` and
   `{ thisWay: "milled", who: "trigger-player" }` — its gaps entry lists
-  `effect:this-way-results`, whose milled part it needs is built).
+  `effect:this-way-results`, whose milled part it needs is built); Anti-Venom, Horrifying
+  Healer and Rocco, Cabaretti Caterer (an enters trigger filtered `{ cast: true, castBy:
+  "you" }` for "if you cast it" — an enters trigger reads the X its permanent was cast with);
+  Kodama of the East Tree (`putThereBySource: false`, with a `{ amount }` mana-value operand on
+  its hand search); Fire Lord Zuko (`firebending({ powerOf: "source" })`, `enteredFrom:
+  "exile"`, and the `cast-spell` trigger's `from: "exile"`).
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first
   ten, engine-only, with the commanders each fully unblocks:
-  `effect:this-way-results` (+6), `effect:missing-tokens` (+1), `effect:amount-aggregate` (+1),
+  `effect:this-way-results` (+6), `effect:missing-tokens` (+1),
+  `static:grant-to-cards-outside-battlefield` (+3), `effect:amount-aggregate` (+1),
   `effect:look-and-choose-leftover` (+1), `mechanic:mdfc-transform` (+1),
-  `condition:player-state-thresholds` (+1), `condition:entry-provenance` (+3),
-  `keyword:firebending` (+1), `static:grant-to-cards-outside-battlefield` (+3),
-  `keyword:annihilator` (+1).
+  `condition:player-state-thresholds` (+1), `keyword:annihilator` (+1),
+  `effect:cast-and-activate-restrictions` (+3), `trigger:copies-spell` (+1).
 - **Most-needed features overall.** `effect:this-way-results` (18),
   `static:grant-to-cards-outside-battlefield` (14), `zone:visibility-extensions`,
   `static:grant-abilities-to-spells` and `bug:zone-change-object-identity` (13 each). Live

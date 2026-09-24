@@ -66,6 +66,9 @@ export interface ManaUnit {
   /** "You don't lose this mana as steps and phases end" (Savage Ventmaw).
    * Still emptied at cleanup — the permission is for the turn, not forever. */
   readonly persists?: boolean;
+  /** "This mana lasts until end of combat" (firebending): kept as the
+   * combat phase's steps end, lost as it does. */
+  readonly untilEndOfCombat?: boolean;
   /** "…and that spell can't be countered" (Cavern of Souls, Delighted
    * Halfling) — a property the *spell* gains by being paid for with this
    * mana, so it can't live on the land's own card definition. */

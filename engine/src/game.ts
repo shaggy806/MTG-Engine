@@ -181,6 +181,7 @@ import type {
   CommanderReplacementZone,
   DelayedLeaveWatch,
   DelayedTrigger,
+  EntryRecord,
   DelayedTriggerTiming,
   GameObject,
   GameRules,
@@ -3025,8 +3026,13 @@ export class Game {
     targets: readonly TargetRef[] = [],
     opts: { source?: ObjectId; x?: number } = {},
   ): void {
-    // As a resolution does: what it does from here on is "this way".
+    // As a resolution does: what it does from here on is "this way", and
+    // what it puts onto the battlefield is its source's doing.
     this.state.resolutionSince = this.state.eventSeq;
+    const debugSource = opts.source === undefined ? undefined : this.state.objects[opts.source];
+    if (debugSource !== undefined) {
+      this.state.resolvingSource = { source: debugSource.id, timestamp: debugSource.timestamp };
+    }
     applyEffectSpec(
       effect,
       this.makeResolutionContext(
@@ -3147,9 +3153,18 @@ export class Game {
     // mana as steps and phases end". That permission is for the turn only, so
     // cleanup takes it away with everything else.
     const keepPersistent = step !== "cleanup";
+    // Firebending's "until end of combat": through the combat phase's own
+    // steps, and not past it — nor into the next combat phase.
+    const stillCombat =
+      step === "declare-attackers" ||
+      step === "declare-blockers" ||
+      step === "combat-damage" ||
+      step === "end-combat";
     for (const player of this.state.turnOrder) {
       const pool = this.state.players[player].manaPool;
-      const kept = keepPersistent ? pool.filter((unit) => unit.persists === true) : [];
+      const kept = keepPersistent
+        ? pool.filter((unit) => unit.persists === true || (stillCombat && unit.untilEndOfCombat === true))
+        : [];
       if (kept.length !== pool.length) {
         this.state.players[player].manaPool = kept;
       }
@@ -4818,6 +4833,7 @@ export class Game {
     this.state.players[owner].spellsCastThisTurn += 1;
     (this.state.players[owner].spellsCastThisTurnIds ??= []).push(cardId);
     this.state.spellsCastThisTurn += 1;
+    object.castFrom = castFrom;
     this.emit({
       type: "spell-cast",
       player: owner,
@@ -6130,6 +6146,7 @@ export class Game {
     this.state.players[player].spellsCastThisTurn += 1;
     (this.state.players[player].spellsCastThisTurnIds ??= []).push(cardId);
     this.state.spellsCastThisTurn += 1;
+    object.castFrom = castFrom;
 
     this.emit({
       type: "spell-cast",
@@ -7540,13 +7557,21 @@ export class Game {
     object: GameObject,
     effect: Extract<EffectSpec, { kind: "add-mana" }>,
   ): Omit<ManaUnit, "type"> | undefined {
-    const { spendOnly, whenSpent, persists } = effect;
-    if (spendOnly === undefined && whenSpent === undefined && persists !== true) return undefined;
+    const { spendOnly, whenSpent, persists, untilEndOfCombat } = effect;
+    if (
+      spendOnly === undefined &&
+      whenSpent === undefined &&
+      persists !== true &&
+      untilEndOfCombat !== true
+    ) {
+      return undefined;
+    }
 
     const tag: {
       restriction?: ManaRestriction;
       onSpend?: ManaSpendRider;
       persists?: boolean;
+      untilEndOfCombat?: boolean;
       uncounterable?: boolean;
     } = {};
 
@@ -7584,6 +7609,7 @@ export class Game {
     }
 
     if (persists === true) tag.persists = true;
+    if (untilEndOfCombat === true) tag.untilEndOfCombat = true;
     return tag;
   }
 
@@ -7755,8 +7781,16 @@ export class Game {
 
   private resolveTopOfStack(): void {
     const parked = this.state.suspendedResolutions.length;
-    // Everything from here on is this resolution's doing ("this way").
+    // Everything from here on is this resolution's doing ("this way") — and
+    // what an ability puts onto the battlefield, its source's doing
+    // (`EntryRecord.by`).
     this.state.resolutionSince = this.state.eventSeq;
+    const top = this.state.objects[this.state.zones.shared.stack[this.state.zones.shared.stack.length - 1]];
+    if (top?.kind === "ability" && top.sourceObjectId !== undefined && top.sourceObjectId !== null) {
+      this.state.resolvingSource = { source: top.sourceObjectId, timestamp: top.sourceTimestamp ?? 0 };
+    } else {
+      delete this.state.resolvingSource;
+    }
     this.resolveTopObject();
     this.holdResolutionOpen(parked);
     this.endResolutionIfDone();
@@ -7765,7 +7799,10 @@ export class Game {
   /** Once nothing of the resolution is parked any more, it's over — see
    * `GameState.resolutionSince`. */
   private endResolutionIfDone(): void {
-    if (this.state.suspendedResolutions.length === 0) delete this.state.resolutionSince;
+    if (this.state.suspendedResolutions.length === 0) {
+      delete this.state.resolutionSince;
+      delete this.state.resolvingSource;
+    }
   }
 
   /**
@@ -9340,6 +9377,7 @@ export class Game {
       filter === undefined ||
       matchesFilter(this.state, this.registry, subject, filter, {
         you: self.controller,
+        source: self.id,
         ...(lastKnown ? { lastKnown } : {}),
         // "Whenever a creature with greater power enters": the subject is
         // the would-be trigger object, the source is this permanent.
@@ -9858,6 +9896,7 @@ export class Game {
       const snapshot = lastKnownOf({ kind: "object", object: id });
       return matchesFilter(this.state, this.registry, id, filter, {
         you: controller,
+        source,
         ...(snapshot !== undefined ? { snapshot } : {}),
       });
     };
@@ -15154,6 +15193,7 @@ export class Game {
       isCommander: object.isCommander,
       tapped: object.tapped,
       ...(object.enteredBattlefieldOnTurn !== null ? { enteredOnTurn: object.enteredBattlefieldOnTurn } : {}),
+      ...(object.entry !== undefined ? { entry: object.entry } : {}),
       ...(object.attackedThisTurn === true ? { attackedOnTurn: this.state.turn.number } : {}),
       attacking: object.attacking !== null,
       blocking: object.blocking !== null,
@@ -15444,6 +15484,19 @@ export class Game {
         ? this.graveyardSnapshot(id)
         : undefined;
     const previousZone = object.zone;
+    // How it gets onto the battlefield (`EntryRecord`), read before the
+    // resets below hand it back to its owner: from where, whether it was
+    // cast and by whom, and whose ability put it there.
+    const entry: EntryRecord | undefined =
+      to !== "battlefield"
+        ? undefined
+        : {
+            from: previousZone,
+            ...(previousZone === "stack" && object.kind === "card" && object.castFrom !== undefined
+              ? { cast: { by: object.controller, from: object.castFrom } }
+              : {}),
+            ...(this.state.resolvingSource !== undefined ? { by: this.state.resolvingSource } : {}),
+          };
     const from = this.zoneList(object.zone, object.owner);
     const index = from.indexOf(id);
     if (index >= 0) from.splice(index, 1);
@@ -15491,6 +15544,8 @@ export class Game {
     object.uncounterable = undefined;
     object.lastKnownRefs = undefined;
     object.enteredKicked = enteringKicked;
+    object.entry = entry;
+    object.castFrom = undefined;
     // The O-Ring link (rule 720.2) dies with any move: a card that leaves
     // exile some other way is no longer the one the Banishing Light took, so
     // nothing comes back when the Light does. `exileByEffect` sets this

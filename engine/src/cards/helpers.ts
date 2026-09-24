@@ -40,6 +40,22 @@ export const ward = (cost: WardCost): TriggeredAbility => {
 };
 
 /**
+ * Firebending N: "Whenever this creature attacks, add N {R}. This mana lasts
+ * until end of combat." A triggered ability, so a static can grant it
+ * (`grantsTriggered`) and losing abilities removes it; `amount` may be an
+ * amount ("firebending X, where X is this creature's power" is `{ powerOf:
+ * "source" }`, read as it resolves). Put the printed line in the card's
+ * `text` as well; this is the ability's own.
+ */
+export const firebending = (amount: EffectAmount, text?: string): TriggeredAbility => ({
+  trigger: { on: "attacks", who: "self" },
+  targets: [],
+  effect: { kind: "add-mana", mana: "R", amount, untilEndOfCombat: true },
+  resolve: null,
+  text: text ?? `Firebending ${typeof amount === "number" ? amount : "X"}`,
+});
+
+/**
  * Investigate (rule 701.36a): "create a Clue token", `times` over —
  * "investigate twice" is `investigate(2)`. It's a keyword action with no
  * effect of its own beyond the token, so it's written as the `create-token`

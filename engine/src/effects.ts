@@ -573,6 +573,9 @@ export type EffectSpec =
       /** "You don't lose this mana as steps and phases end" (Savage
        * Ventmaw). Still emptied at cleanup. */
       readonly persists?: boolean;
+      /** "This mana lasts until end of combat" — firebending's (the
+       * `firebending` helper). */
+      readonly untilEndOfCombat?: boolean;
     }
   | {
       readonly kind: "draw";

@@ -50,6 +50,13 @@ export interface GameObject {
    * rider is an ETB trigger (Verix Bladewing). See `moveObject`.
    */
   enteredKicked?: boolean;
+  /** How it came onto the battlefield, this stint — see {@link EntryRecord}.
+   * Set by the move onto the battlefield, gone with its next move. */
+  entry?: EntryRecord;
+  /** The zone this spell was cast from, set as it's cast; what the move
+   * onto the battlefield records as `entry.cast.from`. Gone with its next
+   * move. */
+  castFrom?: ZoneType;
   /**
    * This card is in exile because of an "exile until ~ leaves the
    * battlefield" ability, and this is the id of the permanent that did it
@@ -610,6 +617,8 @@ export interface LastKnownInfo {
   /** The turn it entered the battlefield on, and the turn it attacked on if
    * it did — for the `enteredThisTurn` / `attackedThisTurn` filter clauses. */
   readonly enteredOnTurn?: number;
+  /** How it had entered — `GameObject.entry`. */
+  readonly entry?: EntryRecord;
   readonly attackedOnTurn?: number;
   readonly attacking: boolean;
   readonly blocking: boolean;
@@ -1444,6 +1453,25 @@ export interface DecisionSource {
 }
 
 /**
+ * How a permanent came onto the battlefield, this stint — read by the filter
+ * clauses `enteredFrom`, `cast`, `castBy`, `castFrom` and
+ * `putThereBySource`.
+ */
+export interface EntryRecord {
+  /** The zone it came from: "enters from exile" (Fire Lord Zuko), "came
+   * from a graveyard". A permanent spell comes from the stack. */
+  readonly from: ZoneType;
+  /** It got here as a spell that was cast and resolved: who cast it and
+   * from which zone — "if you cast it" (Anti-Venom, Rocco, Tiamat), "cast
+   * from a graveyard". A copy of a spell was never cast. */
+  readonly cast?: { readonly by: PlayerId; readonly from: ZoneType };
+  /** The source of the ability that put it here, with that source's
+   * timestamp then — Kodama of the East Tree's "if it wasn't put onto the
+   * battlefield with this ability". */
+  readonly by?: { readonly source: ObjectId; readonly timestamp: number };
+}
+
+/**
  * A resolution that stopped partway to ask someone something — see
  * {@link GameState.suspendedResolutions}. Either what is left of it (a
  * {@link ParkedSteps}), or, once nothing is left, just a note that it isn't
@@ -1826,6 +1854,11 @@ export interface GameState {
    * and everything it parked have finished; absent between resolutions.
    */
   resolutionSince?: number;
+  /** While an ability resolves (across the decisions it waits on, like
+   * `resolutionSince`): its source and that source's timestamp then — what
+   * a permanent it puts onto the battlefield records as `entry.by`. Absent
+   * while a spell resolves, and between resolutions. */
+  resolvingSource?: { readonly source: ObjectId; readonly timestamp: number };
   /** Combat restrictions imposed as a rule for the rest of the turn — "creatures
    * your opponents control can't block this turn" (the `restrict` effect's
    * `filter` form): every permanent matching `filter`, from `you`'s side,

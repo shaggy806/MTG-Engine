@@ -590,6 +590,7 @@ ability would have no way to name a token that didn't exist when it was set up.
 | --- | --- |
 | `create-token` | `token` (a registry name), `count`, `who?: "target-controller" \| PlayerScope` (Beast Within — under `targets[0]`'s controller; a scope has each of its players create `count` — "each opponent creates a Treasure token"), `tapped?` (Army of the Damned — "create thirteen **tapped** … tokens"; a tapped batch is never folded into a token stack, since a stack carries one `tapped` flag for all of it) `gainUntilEndOfTurn?: Keyword[]` is "they gain haste until end of turn" (Ovika, Enigma Goliath): the keywords go on the tokens this makes as they're made, never on ones already there, and such a batch only folds into a token stack made the same way. |
 | `create-token-copy` | `of: "source" \| "trigger-object" \| slot`, `count`, `gainsHaste?`, `exileAtEndStep?`, `notLegendary?`, `basePt?: [p, t]`, `who?: "you"` — a token that's a copy of a permanent, under *its* controller by default; `who: "you"` puts it under the effect's controller instead, which is what a card copying something an **opponent** controls means (Hate Mirage). `"trigger-object"` = the permanent whose entering/attacking fired the trigger (Miirym); a slot = a target (Saw in Half). `gainsHaste` is the copy exception "except it has haste" (Kiki-Jiki), which lasts; `gainUntilEndOfTurn?: Keyword[]` is "it gains haste until end of turn" (Mishra, Eminent One). |
+| firebending | `firebending(amount, text?)` from `helpers.ts` — "Firebending N (Whenever this creature attacks, add N {R}. This mana lasts until end of combat.)" as the triggered ability it is: put it in `triggered` (or grant it with `grantsTriggered`), and the printed line in `text`. `amount` takes any `EffectAmount` — Fire Lord Zuko's "firebending X, where X is Fire Lord Zuko's power" is `firebending({ powerOf: "source" })`, read as the trigger resolves. |
 | investigate | `investigate(times?)` from `helpers.ts` — rule 701.36a, "create a Clue token", written as the `create-token` of `"Clue Token"` it is ("investigate twice" is `investigate(2)`; `times` takes any `EffectAmount`). The Clue (`{2}, Sacrifice this token: Draw a card.`) has an activated ability, so Clues are never folded into a token stack. |
 | `attach` | `target` (Equip-style) |
 | `transform` | `target` (`"source"` \| slot) |
@@ -806,7 +807,8 @@ subtypes, supertype, notSupertype, name, notName, colors, notColors, colorless,
 manaValue, power, toughness, counters, controlledBy, ownedBy, keyword,
 notKeyword, tapped, token, isCommander, equipped, enchanted, modified, anyOf,
 manaSpent, putIntoGraveyardFromLibraryThisTurn, enteredThisTurn,
-attackedThisTurn, sharesCardTypeWith }`,
+attackedThisTurn, cast, castBy, castFrom, enteredFrom, putThereBySource,
+sharesCardTypeWith }`,
 every present clause ANDed. `controlledBy` is `"you"`, `"opponent"` or
 `"active-player"` (whoever's turn it is, whoever is asking). `anyOf: CardFilter[]` is the "or": at least one of
 them has to match as well (historic is `anyOf: [{ type: "artifact" },
@@ -830,7 +832,19 @@ nothing was sacrificed it matches nothing. `enteredThisTurn` /
 entered this turn", Kratos, God of War's "creatures that player controls that
 **didn't attack** this turn" (`attackedThisTurn: false`). A permanent that
 changes zones is a new object that did neither; one that has left is asked as
-it last was. `attacking` asks whether the permanent is currently attacking
+it last was. `cast` / `castBy: "you"` / `castFrom` / `enteredFrom` /
+`putThereBySource` read how a permanent came onto the battlefield, this stint
+(`GameObject.entry`): as a spell that was cast and resolved ("if you cast it"
+— Anti-Venom's enters trigger is `{ on: "enters-battlefield", who: "self",
+filter: { cast: true, castBy: "you" } }`, since whether it was cast never
+changes; a copy of a spell was never cast), cast from which zone, from which
+zone it entered (Fire Lord Zuko's "whenever a permanent you control enters
+from exile" — a spell comes from the stack, so a creature cast from exile
+doesn't), and whether an ability of the permanent applying the filter put it
+there — Kodama of the East Tree's "if it wasn't put onto the battlefield
+with this ability" is `putThereBySource: false` on its enters trigger, which
+is what keeps it from triggering off its own lands. A permanent that has left
+is asked as it last was. `attacking` asks whether the permanent is currently attacking
 (Kangee's Lieutenant). `subtypes`/`typesAnyOf` are an OR
 within themselves (Farseek: "a Plains, Island, Swamp, or Mountain card";
 Takenuma's Channel: "a creature or planeswalker card"). Numeric fields take
@@ -2045,6 +2059,10 @@ Delete an entry in the same commit as the feature that retires it.
     `{X}` counts (Gilanra, Caller of Wirewood: `{ manaValue: { op: "gte", n: 6 } }`).
   - `persists: true` — "you don't lose this mana as steps and phases end"
     (Savage Ventmaw). Still emptied at cleanup.
+  - `untilEndOfCombat: true` — "this mana lasts until end of combat": kept
+    through the combat phase's steps, lost as it ends (and not carried into
+    an additional combat phase). Firebending's — see the `firebending`
+    helper (§6).
 
   Note the *identity* clause alone was never a blocker: "one mana of any
   color in your commander's color identity" is modelled as plain

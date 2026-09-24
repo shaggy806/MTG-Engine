@@ -68,7 +68,9 @@
   "effect:put-onto-battlefield-options",
   "stat:turn-event-tallies",
   "effect:choices-by-other-players",
-  "static:combat-restriction-extensions"
+  "static:combat-restriction-extensions",
+  "condition:entry-provenance",
+  "keyword:firebending"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
