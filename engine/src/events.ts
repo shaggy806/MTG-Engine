@@ -541,6 +541,15 @@ export type GameEvent =
       readonly object: ObjectId;
     })
   | (Base & {
+      /** A permanent that would have left the battlefield for `intendedZone`
+       * was exiled instead, by a replacement it carried itself — "if it would
+       * leave the battlefield, exile it instead of putting it anywhere else"
+       * (Whip of Erebos — rule 614). */
+      readonly type: "leave-replaced-with-exile";
+      readonly object: ObjectId;
+      readonly intendedZone: "graveyard" | "hand" | "library";
+    })
+  | (Base & {
       /** A one-shot damage-prevention shield was created (Healing Salve —
        * ROADMAP Phase 11 EG-6). */
       readonly type: "prevention-shield-created";

@@ -359,6 +359,14 @@ export interface GameObject {
    * end step (Encore — rule 702.140). Distinct from `exileAtEndStep`: a
    * sacrifice sees dies-triggers, an exile doesn't. */
   sacrificeAtEndStep?: boolean;
+  /** "If it would leave the battlefield, exile it instead of putting it
+   * anywhere else" (rule 614 — Whip of Erebos, Necromancy): a replacement
+   * that follows this one object, not a static on some permanent. Set by the
+   * effect that put it onto the battlefield (`put-onto-battlefield
+   * { exileIfItWouldLeave }`), read by `moveObject` on the way out, and
+   * cleared by that same move — the card that lands in exile is a new object
+   * the replacement no longer applies to (rule 400.7). */
+  exileIfItWouldLeave?: boolean;
   /** True on a token copy created "except it's not legendary" (Miirym — rule
    * 707 / needed-cards P5b). The legend-rule SBA skips it. Intrinsic, like
    * `isToken` — never reset. */

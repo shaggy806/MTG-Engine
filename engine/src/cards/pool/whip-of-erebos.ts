@@ -1,11 +1,13 @@
 import { defineCard } from "../define.js";
 
 /**
- * Drops "If it would leave the battlefield, exile it instead of putting it
- * anywhere else" — a per-object replacement that only this card and Necromancy
- * want, and which the reanimated creature would have to carry around.
- * The end-step exile, which is what actually makes the ability temporary, is
- * a delayed triggered ability (rule 603.7).
+ * "If it would leave the battlefield, exile it instead of putting it anywhere
+ * else" is a replacement that follows the reanimated creature itself
+ * (`put-onto-battlefield { exileIfItWouldLeave }`), so a bounce or a death
+ * before the end step exiles it too. The end-step exile, which is what
+ * actually makes the ability temporary, is a delayed triggered ability (rule
+ * 603.7). "It gains haste" has no duration, so it lasts as long as the
+ * creature does.
  */
 export default defineCard({
   name: "Whip of Erebos",
@@ -16,7 +18,9 @@ export default defineCard({
   text:
     "Creatures you control have lifelink.\n" +
     "{2}{B}{B}, {T}: Return target creature card from your graveyard to the battlefield. " +
-    "It gains haste. Exile it at the beginning of the next end step. Activate only as a sorcery.",
+    "It gains haste. Exile it at the beginning of the next end step. " +
+    "If it would leave the battlefield, exile it instead of putting it anywhere else. " +
+    "Activate only as a sorcery.",
   static: [
     {
       affects: { scope: "creatures-you-control" },
@@ -32,8 +36,13 @@ export default defineCard({
       effect: {
         kind: "sequence",
         effects: [
-          { kind: "put-onto-battlefield", target: 0, underYourControl: true },
-          { kind: "grant-keyword", target: 0, keyword: "haste", duration: "end-of-turn" },
+          {
+            kind: "put-onto-battlefield",
+            target: 0,
+            underYourControl: true,
+            exileIfItWouldLeave: true,
+          },
+          { kind: "grant-keyword", target: 0, keyword: "haste", duration: "permanent" },
           {
             kind: "delayed-trigger",
             at: "next-end-step",
@@ -47,7 +56,9 @@ export default defineCard({
       resolve: null,
       text:
         "{2}{B}{B}, {T}: Return target creature card from your graveyard to the battlefield. " +
-        "It gains haste. Exile it at the beginning of the next end step. Activate only as a sorcery.",
+        "It gains haste. Exile it at the beginning of the next end step. " +
+        "If it would leave the battlefield, exile it instead of putting it anywhere else. " +
+        "Activate only as a sorcery.",
     },
   ],
 });

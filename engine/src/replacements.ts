@@ -110,11 +110,27 @@ export interface CounterMultiplierReplacement {
  * for Anafenza-style graveyard hate. The filter is evaluated from the
  * replacement source's controller's perspective, against the card's *printed*
  * characteristics (it's off the battlefield by the time it would be put into a
- * graveyard). */
+ * graveyard) — except with `from: "battlefield"`, where it's still a
+ * permanent and the filter reads its computed characteristics and current
+ * controller.
+ *
+ * `from: "battlefield"` is the **dies-only** form (rule 700.4 — "dies" means
+ * put into a graveyard from the battlefield): "If a nontoken creature an
+ * opponent controls would die, exile it instead". It doesn't catch a card
+ * discarded, milled, or countered, which the unqualified form does. Omit for
+ * "from anywhere".
+ *
+ * Finality counters (rule 122 — "if a permanent with a finality counter on it
+ * would be put into a graveyard from the battlefield, exile it instead") and
+ * the per-object "if it would leave the battlefield, exile it instead of
+ * putting it anywhere else" (`GameObject.exileIfItWouldLeave`) are the same
+ * redirect, but belong to the moving object rather than to a static, so
+ * they're applied by `moveObject` directly rather than through this spec. */
 export interface GraveyardExileReplacement {
   readonly event: "would-be-put-into-graveyard";
   readonly instead: "exile";
   readonly filter?: CardFilter;
+  readonly from?: "battlefield";
 }
 
 /** "If a player [who] would draw a card, [this permanent's controller] draws a

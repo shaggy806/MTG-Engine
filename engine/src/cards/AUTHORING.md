@@ -405,7 +405,7 @@ multiplier (Gray Merchant's "life equal to the life lost this way" is devotion
 | `destroy-all` | `filter` | Wrath of God |
 | `exile` | `target`, `untilSourceLeaves?` | Angelic Edict. Works on a card in a **graveyard** as well as a permanent (Withered Wretch). `untilSourceLeaves` is an "O-Ring" (Banishing Light, Conclave Tribunal) — see below. |
 | `return-exiled-by-source` | — | The other half of an O-Ring: returns everything this source exiled, to the battlefield under its **owner's** control. |
-| `put-onto-battlefield` | `target` (an `EffectTargetRef`, so `"trigger-object"` works — Undying returns *itself*), `underYourControl?`, `enterTapped?`, `withCounters?` | Reanimation that names one card, from anyone's graveyard — as opposed to `return-from-graveyard`'s filter over your own. `underYourControl` makes controller diverge from owner, so the card still goes back to its **owner's** graveyard when it dies. |
+| `put-onto-battlefield` | `target` (an `EffectTargetRef`, so `"trigger-object"` works — Undying returns *itself*), `underYourControl?`, `enterTapped?`, `withCounters?`, `exileIfItWouldLeave?` | Reanimation that names one card, from anyone's graveyard — as opposed to `return-from-graveyard`'s filter over your own. `underYourControl` makes controller diverge from owner, so the card still goes back to its **owner's** graveyard when it dies. |
 | `exile-graveyard` | `target` (a player slot, or `"you"`) | Bojuka Bog — exiles that player's whole graveyard at once (rule 406; the cards in it are never individually targeted) |
 | `flicker` | `target`, `thenCounters?`, `underYourControl?`, `returnAt?`, `returnText?` | Essence Flux — exiles `target`, then immediately returns it to the battlefield under its owner's control (rule 400.7 — a brand-new object; a token exiled this way never comes back). `target` is a slot, `"source"` (the ability's own permanent *as it was when the ability triggered* — one that has blinked since is left alone) or an array of slots, all exiled first and returned together so each one's enters triggers see the others. `underYourControl` returns them under the effect's controller. `returnAt` (a `DelayedTriggerTiming`) makes the return a delayed trigger instead — Norin the Wary's "exile Norin. Return it … at the beginning of the next end step" — linked to the exile (rule 610.3): a card that left exile in between stays where it is, and nothing is set up when nothing was exiled, so a second trigger in one turn does nothing. Don't build that with `exile` + `delayed-trigger`: the delayed effect can't tell the exiled card from a new object. (`return-flickered` is the delayed half it builds; never author it.) |
 | `return-to-hand` | `target: EffectTargetRef`, `from?: "battlefield" \| "graveyard" \| "exile" \| "stack"` | Unsummon (a bounce — `from` omitted). With `from`, it takes a card out of that zone instead, to its **owner's** hand: `"graveyard"` + a `card-in-graveyard` target is "return target creature card from your graveyard to your hand" (Golbez, Crystal Collector); `"source"` / `"trigger-object"` with `"graveyard"` or `"exile"` is "return it to its owner's hand" off a dies / leaves trigger, and works inside a `delayed-trigger` too. `"stack"` + a `"spell"` target is Unsubstantiate or Venser, Shaper Savant — **not a counter**: a spell that can't be countered still goes back, a copy of a spell ceases to exist (rule 707.10c), and an ability or the resolving spell itself is left alone. The object has to be in the `from` zone when the effect applies, or nothing happens. A commander returned this way offers the command zone (rule 903.9b), like a bounced one. |
@@ -1274,8 +1274,21 @@ clause (section 9):
   entering untapped (Rockfall Vale).
 - `{ event: "would-create-token", multiplier }` — Doubling Season.
 - `{ event: "would-add-counter", multiplier, counterKind? }` — Doubling Season.
-- `{ event: "would-be-put-into-graveyard", instead: "exile", filter? }` — Rest
-  in Peace / Anafenza.
+- `{ event: "would-be-put-into-graveyard", instead: "exile", filter?, from? }`
+  — Rest in Peace / Anafenza. `from: "battlefield"` is the **dies-only** form
+  ("if a creature an opponent controls would die, exile it instead"): it lets
+  a discard, a mill or a countered spell through, and its `filter` reads the
+  permanent's computed characteristics and current controller, since it's
+  still on the battlefield when the replacement is asked.
+- **Finality counters** (rule 122) need no spec: any permanent with a
+  `finality` counter that would go to a graveyard from the battlefield is
+  exiled instead, by `moveObject` itself. Put one on with
+  `put-onto-battlefield { withCounters: { kind: "finality", amount: 1 } }`
+  (Admiral Brass, Unsinkable) or `add-counter`.
+- "If it would leave the battlefield, exile it instead of putting it anywhere
+  else" follows one object, not a static — `put-onto-battlefield
+  { exileIfItWouldLeave: true }` (Whip of Erebos). It catches a bounce or a
+  tuck as well as a death, and ends when the permanent leaves.
 - `{ event: "would-draw", who: "opponent", instead: "you-draw" }` — Notion
   Thief.
 - `{ event: "would-deal-damage", multiplier }` — Dictate of the Twin Gods.
@@ -1666,7 +1679,6 @@ clause gone missing). It found 13 of 739 on the day the rule landed:
 | **Mortivore** | `{B}: Regenerate this creature` | regeneration |
 | **Chandra, Acolyte of Flame** | the whole −2 loyalty ability | cast-from-graveyard as a targeted effect |
 | **Rydia, Summoner of Mist** | the whole Summon activated ability | Saga reanimation + `{X}` in an activated cost's target filter |
-| **Whip of Erebos** | "if it would leave the battlefield, exile it instead" | a leaves-the-battlefield replacement on a granted token |
 | **Will of the Sultai** | "if you control a commander … choose both instead" | a commander-conditional mode count |
 | **Combat Thresher** | Prototype | Prototype |
 | **Fanatic of Rhonas** | Eternalize | Eternalize |

@@ -8651,13 +8651,14 @@ export class Game {
           this.emit({ type: "permanent-entered-battlefield", object: id });
         }
       },
-      putOntoBattlefield: (target, underYourControl, enterTapped, withCounters) =>
+      putOntoBattlefield: (target, underYourControl, enterTapped, withCounters, exileIfLeaves) =>
         this.putOntoBattlefieldByEffect(
           target,
           controller,
           underYourControl,
           enterTapped,
           withCounters,
+          exileIfLeaves === true,
         ),
       exileGraveyard: (target) => {
         if (target.kind !== "player") return;
@@ -11053,6 +11054,7 @@ export class Game {
     underYourControl: boolean,
     enterTapped: boolean,
     withCounters?: { readonly kind: string; readonly amount: number },
+    exileIfItWouldLeave = false,
   ): void {
     if (target.kind !== "object") return;
     const object = this.state.objects[target.object];
@@ -11070,6 +11072,8 @@ export class Game {
       entered.summoningSick = true;
     }
     if (enterTapped) entered.tapped = true;
+    // Set after the move, which clears it: this is the permanent it follows.
+    if (exileIfItWouldLeave) entered.exileIfItWouldLeave = true;
     if (withCounters !== undefined) {
       this.addCounter(target, withCounters.kind, withCounters.amount, true, controller);
     }
@@ -12626,7 +12630,7 @@ export class Game {
    * `CardFilter` — rule 614 / ROADMAP Phase 11 EG-6). The filter is matched
    * against the card's printed characteristics from the replacement source's
    * controller's perspective. */
-  private graveyardIsReplacedWithExile(cardId: ObjectId): boolean {
+  private graveyardIsReplacedWithExile(cardId: ObjectId, fromBattlefield: boolean): boolean {
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
       if (hasLostAbilities(object)) continue;
@@ -12635,6 +12639,8 @@ export class Game {
         if (
           r?.event !== "would-be-put-into-graveyard" ||
           r.instead !== "exile" ||
+          // The dies-only form (rule 700.4) lets a discard or a mill through.
+          (r.from === "battlefield" && !fromBattlefield) ||
           !this.staticActive(object, ability)
         ) {
           continue;
@@ -12698,7 +12704,31 @@ export class Game {
     // token" has none, Anafenza's "creature card" excludes them. A token
     // exiled this way never dies, which "whenever a creature dies" and the
     // died-this-turn count both see.
-    if (to === "graveyard" && this.graveyardIsReplacedWithExile(id)) {
+    //
+    // First the redirects the moving permanent carries on itself rather than
+    // on some static. "If it would leave the battlefield, exile it instead of
+    // putting it anywhere else" (Whip of Erebos) catches every destination —
+    // a bounce and a tuck as well as a death. A finality counter (rule 122)
+    // catches only the graveyard: "if a permanent with a finality counter on
+    // it would be put into a graveyard from the battlefield, exile it
+    // instead". Both are read here, before anything below clears them.
+    //
+    // The command zone is left out: a commander only goes there by its
+    // owner's 903.9a choice, which is asked *after* this redirect (so the
+    // question is about an exile) and completes through here again.
+    if (
+      leavingBattlefield &&
+      (to === "graveyard" || to === "hand" || to === "library") &&
+      object.exileIfItWouldLeave === true
+    ) {
+      this.emit({ type: "leave-replaced-with-exile", object: id, intendedZone: to });
+      to = "exile";
+    }
+    if (leavingBattlefield && to === "graveyard" && (object.counters["finality"] ?? 0) > 0) {
+      to = "exile";
+      this.emit({ type: "graveyard-replaced-with-exile", object: id });
+    }
+    if (to === "graveyard" && this.graveyardIsReplacedWithExile(id, leavingBattlefield)) {
       to = "exile";
       this.emit({ type: "graveyard-replaced-with-exile", object: id });
     }
@@ -12905,6 +12935,9 @@ export class Game {
     object.graveyardCastUsedThisTurn = undefined;
     object.graveyardCastTypesUsedThisTurn = undefined;
     object.exileIfWouldGoToGraveyard = undefined;
+    // Its "exile it if it would leave" replacement was about the permanent
+    // that just left (rule 400.7).
+    object.exileIfItWouldLeave = undefined;
     // The adventure "may cast the creature from exile" permission (rule 715.3)
     // ends when the card changes zones. `resolveTopOfStack` re-sets it *after*
     // the move to exile that creates the state.

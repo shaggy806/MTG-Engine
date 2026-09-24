@@ -193,6 +193,8 @@ export const makeFormatter = (game) => {
         return `${name(e.source)}'s ${e.amount} damage to ${target(e.target)} is prevented`;
       case "graveyard-replaced-with-exile":
         return `${name(e.object)} is exiled instead of going to a graveyard`;
+      case "leave-replaced-with-exile":
+        return `${name(e.object)} is exiled instead of going to ${e.intendedZone === "hand" ? "a hand" : e.intendedZone === "library" ? "a library" : `the ${e.intendedZone}`}`;
       case "prevention-shield-created":
         return `a shield prevents the next ${e.amount} damage to ${target(e.target)}`;
       case "draw-redirected":

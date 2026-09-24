@@ -557,8 +557,14 @@ export type EffectSpec =
       readonly target: EffectTargetRef;
       readonly underYourControl?: boolean;
       readonly enterTapped?: boolean;
-      /** Counters it enters with (Undying: "with a +1/+1 counter on it"). */
+      /** Counters it enters with (Undying: "with a +1/+1 counter on it";
+       * Admiral Brass, Unsinkable: "with a finality counter on it" — a
+       * finality counter needs nothing more, since `moveObject` reads it). */
       readonly withCounters?: { readonly kind: string; readonly amount: number };
+      /** "If it would leave the battlefield, exile it instead of putting it
+       * anywhere else" (Whip of Erebos) — sets
+       * `GameObject.exileIfItWouldLeave` on the permanent it becomes. */
+      readonly exileIfItWouldLeave?: boolean;
     }
   | {
       /** Exile every card in a target *player's* graveyard (rule 406 — Bojuka
@@ -1680,6 +1686,7 @@ export interface EffectApi {
     underYourControl: boolean,
     enterTapped: boolean,
     withCounters?: { readonly kind: string; readonly amount: number },
+    exileIfItWouldLeave?: boolean,
   ): void;
   /** See the `"search-library"` {@link EffectSpec}. */
   searchLibrary(
@@ -2101,6 +2108,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
           spec.underYourControl === true,
           spec.enterTapped === true,
           spec.withCounters,
+          spec.exileIfItWouldLeave === true,
         );
       }
       return;

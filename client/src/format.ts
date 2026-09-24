@@ -242,6 +242,8 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${name(event.source)}'s ${event.amount} damage to ${tgt(event.target)} is prevented`
     case 'graveyard-replaced-with-exile':
       return `${name(event.object)} is exiled instead of going to a graveyard`
+    case 'leave-replaced-with-exile':
+      return `${name(event.object)} is exiled instead of going to ${event.intendedZone === 'hand' ? 'a hand' : event.intendedZone === 'library' ? 'a library' : `the ${event.intendedZone}`}`
     case 'prevention-shield-created':
       return `a shield prevents the next ${event.amount} damage to ${tgt(event.target)}`
     case 'draw-redirected':
