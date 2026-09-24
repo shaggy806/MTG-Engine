@@ -110,11 +110,6 @@ that one card is the reason the deck exists.
 
 ## Tooling / docs
 
-- **Re-verify batch 4 against Scryfall.** Batch 4 is Gilanra, Caller of Wirewood; Clement,
-  the Worrywort; Gargos, Vicious Watcher; Hinata, Dawn-Crowned; Reaper King; Admiral Brass,
-  Unsinkable; and Kess, Dissident Mage. These cards were checked only through web-search
-  snippets, because cloud sessions can't reach Scryfall. Run `npm run card:verify -w engine`
-  and `card:text` from a machine that can.
 - **Refresh the snapshots.** The EDHREC ranking snapshots (`top-commander-cards.txt`,
   `top-commanders.txt`) and `edhrec-rank.ts` are frozen. Re-fetching them moves the roster, so
   do it on purpose.
