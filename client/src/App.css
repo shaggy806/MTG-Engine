@@ -2649,6 +2649,28 @@
   font-size: 0.8rem;
   padding: 2px 8px;
 }
+/* The turn-over button on a double-faced card in the zone viewer: a round
+   corner badge over the top of the art (the title bar's right end is the
+   mana cost, and the bottom right is P/T), like the library grid's. Written
+   after the rule above so it wins the tie on specificity. */
+.zone-viewer-card {
+  position: relative;
+}
+.zone-viewer-card > button.zv-flip {
+  position: absolute;
+  top: calc(var(--card-w) * 0.2);
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 12px;
+  line-height: 1;
+  background: rgba(10, 13, 16, 0.78);
+  color: var(--text);
+}
 
 /* lobby entry point for the decklist-import feasibility report */
 .link-button {

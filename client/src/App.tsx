@@ -3374,8 +3374,9 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
             // it spends, which permission pays, which face.
             variants: (id) => {
               const ways = playFacesByCard.get(id) ?? []
-              // Name the granting permanent only when it's what differs.
-              const sources = new Set(ways.map((a) => a.graveyardGrant?.source))
+              // Name the granting permanent only when two of them grant this
+              // card — not when the other way is its own flashback or escape.
+              const sources = new Set(ways.flatMap((a) => (a.graveyardGrant ? [a.graveyardGrant.source] : [])))
               return ways.map((a) => ({
                 label: graveyardVariantLabel(a, view, sources.size > 1),
                 onChoose: () => {

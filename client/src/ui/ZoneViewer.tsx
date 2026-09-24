@@ -1,6 +1,24 @@
 import { useState } from 'react'
 import type { ObjectId, VisibleObject } from 'engine'
 import { CardTile } from './CardTile.tsx'
+import { defToVisible, findCardDef } from './defToVisible.ts'
+
+/** The face a double-faced card isn't showing, as a tile of its printed
+ * values — `null` for a one-faced card, and for an adventure, whose two
+ * halves share one printed face, so there's nothing to turn over to. */
+function otherFaceOf(obj: VisibleObject): VisibleObject | null {
+  if (!obj.faces || obj.faces.length < 2) return null
+  if (findCardDef(obj.faces[0])?.adventure) return null
+  const current = obj.faceName ?? obj.cardName
+  const otherName = obj.faces.find((name) => name !== current)
+  const other = otherName === undefined ? null : findCardDef(otherName)
+  if (!other) return null
+  // `defToVisible` titles a multi-face definition by its front face, so name
+  // the face this is. A chosen printing names the whole card by id, so its
+  // other face is the same id's other image — `faceIsBack` asks for that.
+  const tile = { ...defToVisible(other, obj.art), faceName: other.name }
+  return obj.art ? { ...tile, faceIsBack: !obj.faceIsBack } : tile
+}
 
 export interface ZoneViewerProps {
   readonly title: string
@@ -63,6 +81,16 @@ export function ZoneViewer({
   onCollapse,
 }: ZoneViewerProps) {
   const [picked, setPicked] = useState<readonly ObjectId[]>([])
+  // Double-faced cards turned over to their other face, for reading it —
+  // purely a view: casting or picking still acts on the card itself.
+  const [flipped, setFlipped] = useState<ReadonlySet<ObjectId>>(() => new Set())
+  const toggleFlip = (id: ObjectId) =>
+    setFlipped((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
 
   const toggle = (id: ObjectId) => {
     if (!selection || !selection.eligible.includes(id)) return
@@ -122,10 +150,12 @@ export function ZoneViewer({
             const castHere =
               !selection && castable && castable.ids.includes(obj.id) ? castable : null
             const variants = castHere?.variants?.(obj.id) ?? []
+            const other = otherFaceOf(obj)
+            const showOther = other !== null && flipped.has(obj.id)
             return (
               <div key={obj.id} className="zone-viewer-card">
                 <CardTile
-                  obj={obj}
+                  obj={showOther ? other : obj}
                   selected={isPicked}
                   highlight={(Boolean(selection) && isEligible && !isPicked) || Boolean(castHere)}
                   dimmed={Boolean(selection) && !isEligible}
@@ -144,6 +174,17 @@ export function ZoneViewer({
                         : undefined
                   }
                 />
+                {other ? (
+                  <button
+                    type="button"
+                    className="zv-flip"
+                    title={`Turn over — ${showOther ? (obj.faceName ?? obj.cardName) : other.cardName}`}
+                    aria-label="Turn this card over"
+                    onClick={() => toggleFlip(obj.id)}
+                  >
+                    ⇄
+                  </button>
+                ) : null}
                 {castHere && variants.length > 1
                   ? variants.map((v, i) => (
                       <button key={i} type="button" onClick={v.onChoose}>
