@@ -303,6 +303,7 @@ import _poolFurycalmSnarl from "./pool/furycalm-snarl.js";
 import _poolFyndhornElves from "./pool/fyndhorn-elves.js";
 import _poolGameTrail from "./pool/game-trail.js";
 import _poolGanaxAstralHunter from "./pool/ganax-astral-hunter.js";
+import _poolGargosViciousWatcher from "./pool/gargos-vicious-watcher.js";
 import _poolGarrukWildspeaker from "./pool/garruk-wildspeaker.js";
 import _poolGarruksUprising from "./pool/garruks-uprising.js";
 import _poolGazeOfGranite from "./pool/gaze-of-granite.js";
@@ -1269,6 +1270,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolFyndhornElves,
   _poolGameTrail,
   _poolGanaxAstralHunter,
+  _poolGargosViciousWatcher,
   _poolGarrukWildspeaker,
   _poolGarruksUprising,
   _poolGazeOfGranite,
