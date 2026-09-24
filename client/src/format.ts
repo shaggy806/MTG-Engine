@@ -42,6 +42,9 @@ const NOISY_EVENTS: ReadonlySet<GameEvent['type']> = new Set([
   // creatures" — every attacker already has its own `attacker-declared` line.
   'attackers-declared',
   'attacked-alone',
+  'player-attacked',
+  // Every blocker already has its own `blocker-declared` line.
+  'attacker-blocked',
 ])
 
 /** Whether `event` only shows up in the history's detailed mode. */
@@ -228,10 +231,14 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${event.player} attacks with ${event.attackers.length}`
     case 'attacked-alone':
       return `${name(event.attacker)} attacked alone`
+    case 'player-attacked':
+      return `${event.player} attacks ${event.defender} with ${event.attackers.length}`
     case 'loyalty-changed':
       return `${name(event.object)} ${signed(event.delta)} loyalty (now ${event.loyalty})`
     case 'blocker-declared':
       return `${name(event.blocker)} blocks ${name(event.attacker)}`
+    case 'attacker-blocked':
+      return `${name(event.attacker)} is blocked`
     case 'permanent-entered-battlefield':
       return `${name(event.object)} enters the battlefield`
     case 'permanent-left-battlefield':

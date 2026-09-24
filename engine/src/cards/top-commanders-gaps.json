@@ -51,7 +51,8 @@
   "effect:target-other-than-source",
   "effect:add-subtype",
   "cost:may-cost-non-mana",
-  "trigger:sacrifice-filter"
+  "trigger:sacrifice-filter",
+  "trigger:combat-trigger-extensions"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

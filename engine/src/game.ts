@@ -3628,6 +3628,34 @@ export class Game {
     return currentAttackers(this.state);
   }
 
+  /**
+   * An `attacks` trigger's `aloneAgainstDefender` is an intervening-if (rule
+   * 603.4), so it's asked again as the ability resolves: still no other
+   * creature attacking that player — the one the attacker is attacking now,
+   * or the one it was attacking as it triggered if it has left combat since.
+   */
+  private stillAttackingAlone(ability: StackAbility, object: GameObject): boolean {
+    // A delayed or reflexive trigger carries no `trigger` of its own.
+    const trigger = (ability as Partial<TriggeredAbility>).trigger;
+    if (trigger?.on !== "attacks" || trigger.aloneAgainstDefender !== true) return true;
+    const attacker = object.triggerObject;
+    if (attacker === undefined) return true;
+    const live = this.state.objects[attacker];
+    const defender =
+      live?.zone === "battlefield" && live.attacking !== null
+        ? live.attacking
+        : object.lastKnownRefs?.player;
+    return defender === undefined || this.attackingAlone(attacker, defender);
+  }
+
+  /** Whether no creature but `attacker` is attacking `defender` — "if no
+   * other creatures are attacking that player" (`aloneAgainstDefender`). */
+  private attackingAlone(attacker: ObjectId, defender: PlayerId | ObjectId): boolean {
+    return this.state.zones.shared.battlefield.every(
+      (id) => id === attacker || this.state.objects[id].attacking !== defender,
+    );
+  }
+
   private creatureDef(id: ObjectId): CardDefinition | null {
     return creatureDef(this.state, this.registry, id);
   }
@@ -3783,7 +3811,12 @@ export class Game {
       if (defender !== undefined) forced.push({ attacker: id, defender });
     }
 
-    const allAttackers: ObjectId[] = [];
+    // The whole declaration is made before any of it is announced: it is one
+    // action (rule 508.1), and abilities that trigger on it trigger once it's
+    // complete (508.3), so an attack trigger's "if no other creatures are
+    // attacking that player" sees every attacker, not just the ones declared
+    // before its own.
+    const declaredNow: { readonly id: ObjectId; readonly defender: PlayerId | ObjectId; readonly taps: boolean }[] = [];
     for (const { attacker, defender } of [...declarations, ...forced]) {
       // A compacted stack materializes into real individual attackers here —
       // see `materializeStack`.
@@ -3795,19 +3828,20 @@ export class Game {
         // Boast (702.135) asks whether this creature attacked this turn —
         // recorded here, and reset in the controller's untap step.
         object.attackedThisTurn = true;
-        if (!this.objHasKeyword(id, "vigilance")) {
-          object.tapped = true;
-          // Attacking *taps* the creature, so a "becomes tapped" trigger
-          // (rule 701.21a) fires here exactly as it would for a cost or for
-          // convoke — Emmara, Soul of the Accord makes its Soldier when it
-          // attacks. This was setting the flag without announcing it, so
-          // those triggers silently never fired on the commonest way a
-          // creature gets tapped.
-          this.emit({ type: "permanent-tapped", object: id });
-        }
-        this.emit({ type: "attacker-declared", attacker: id, defender });
-        allAttackers.push(id);
+        const taps = !this.objHasKeyword(id, "vigilance");
+        if (taps) object.tapped = true;
+        declaredNow.push({ id, defender, taps });
       }
+    }
+    const allAttackers = declaredNow.map((d) => d.id);
+    for (const { id, defender, taps } of declaredNow) {
+      // Attacking *taps* the creature, so a "becomes tapped" trigger (rule
+      // 701.21a) fires here exactly as it would for a cost or for convoke —
+      // Emmara, Soul of the Accord makes its Soldier when it attacks. This was
+      // setting the flag without announcing it, so those triggers silently
+      // never fired on the commonest way a creature gets tapped.
+      if (taps) this.emit({ type: "permanent-tapped", object: id });
+      this.emit({ type: "attacker-declared", attacker: id, defender });
     }
     // Exalted (rule 702.111a — needed-cards P15): a single dedicated event
     // once the whole declaration is known, rather than checking "how many
@@ -3822,6 +3856,15 @@ export class Game {
         player: this.activePlayer,
         attackers: [...allAttackers],
       });
+      // Each player attacked (rule 508.3d), in turn order — "whenever a
+      // player attacks one of your opponents". Creatures attacking a
+      // planeswalker attack it, not its controller.
+      for (const defender of this.state.turnOrder) {
+        const attackers = declaredNow.filter((d) => d.defender === defender).map((d) => d.id);
+        if (attackers.length > 0) {
+          this.emit({ type: "player-attacked", player: this.activePlayer, defender, attackers });
+        }
+      }
     }
 
     this.state.awaiting = null;
@@ -3835,6 +3878,9 @@ export class Game {
     const why = this.whyCannotDeclareBlockers(player, blocks);
     if (why !== null) throw new Error(why);
 
+    // Every block is made before any is announced, as with attackers: the
+    // declaration is one action (rule 509.1) and its triggers see all of it.
+    const blockedNow: { readonly blocker: ObjectId; readonly attacker: ObjectId }[] = [];
     for (const { blocker: blockerId, attacker: attackerId } of blocks) {
       // A compacted stack materializes into real individual blockers here —
       // the attacker is never a stack itself by this point (it already
@@ -3845,12 +3891,20 @@ export class Game {
         blocker.blocking = attackerId;
         attacker.blockedBy.push(bId);
         attacker.blocked = true;
-        this.emit({
-          type: "blocker-declared",
-          blocker: bId,
-          attacker: attackerId,
-        });
+        blockedNow.push({ blocker: bId, attacker: attackerId });
       }
+    }
+    for (const { blocker, attacker } of blockedNow) {
+      this.emit({ type: "blocker-declared", blocker, attacker });
+    }
+    // Each attacker this declaration blocked becomes blocked once, however
+    // many creatures block it (rules 509.1h, 509.3c).
+    for (const attacker of new Set(blockedNow.map((b) => b.attacker))) {
+      this.emit({
+        type: "attacker-blocked",
+        attacker,
+        blockers: [...this.state.objects[attacker].blockedBy],
+      });
     }
 
     // This defender is done; move to the next queued one if there is one
@@ -7885,7 +7939,10 @@ export class Game {
       const stint = object.lastKnownRefs?.source;
       const sourceLastKnown =
         stint === undefined ? undefined : this.lastKnownOfStint(source, stint);
-      if (!this.interveningIfMet(condition, sourceObject, object.sourceTimestamp, sourceLastKnown)) {
+      if (
+        !this.interveningIfMet(condition, sourceObject, object.sourceTimestamp, sourceLastKnown) ||
+        !this.stillAttackingAlone(ability, object)
+      ) {
         this.removeAbilityFromStack(id);
         this.emit({
           type: "spell-fizzled",
@@ -8184,9 +8241,15 @@ export class Game {
             event.type === "permanent-sacrificed" ||
             event.type === "permanent-transformed"
               ? event.object
-              : event.type === "attacker-declared" || event.type === "attacked-alone"
+              : event.type === "attacker-declared" ||
+                  event.type === "attacked-alone" ||
+                  event.type === "attacker-blocked"
                 ? event.attacker
-                : event.type === "object-targeted"
+                : // The blocker: "whenever a creature you control blocks, it
+                  // gets +X/+X" (Doran, Besieged by Time).
+                  event.type === "blocker-declared"
+                  ? event.blocker
+                  : event.type === "object-targeted"
                   ? event.object
                   : // The spell that was cast, so a cast trigger can read it —
                     // "damage equal to **that spell's** mana value" is a
@@ -8221,6 +8284,9 @@ export class Game {
                   ability.trigger.on === "attacks-batch" &&
                     event.type === "attackers-declared"
                   ? this.batchedAttackers(ability.trigger, event.attackers, object).length
+                  : // How many creatures attack that player.
+                    ability.trigger.on === "attacks-player" && event.type === "player-attacked"
+                  ? event.attackers.length
                   : // How many cards left the graveyard, for "that many".
                     ability.trigger.on === "leaves-graveyard" &&
                       event.type === "cards-left-graveyard"
@@ -8493,6 +8559,12 @@ export class Game {
       }
     } else if (event.type === "attacker-declared") {
       player = this.defendingPlayerOf(event.defender);
+    } else if (event.type === "player-attacked") {
+      player = event.defender;
+    } else if (event.type === "attacker-blocked") {
+      // The defending player — the one whose creatures blocked it.
+      const attacking = this.state.objects[event.attacker]?.attacking;
+      if (attacking !== null && attacking !== undefined) player = this.defendingPlayerOf(attacking);
     }
     if (
       sourceStint === undefined &&
@@ -8750,9 +8822,19 @@ export class Game {
         return (
           event.type === "attacker-declared" &&
           this.matchesWho(spec.who, event.attacker, self) &&
+          !(spec.otherOnly === true && event.attacker === self.id) &&
           this.triggerFilterOk(spec.filter, event.attacker, self) &&
           (spec.attackingYou !== true ||
-            this.defendingPlayerOf(event.defender) === self.controller)
+            this.defendingPlayerOf(event.defender) === self.controller) &&
+          (spec.defender === undefined ||
+            (spec.defender === "player") === (this.state.players[event.defender as PlayerId] !== undefined)) &&
+          (spec.aloneAgainstDefender !== true || this.attackingAlone(event.attacker, event.defender))
+        );
+      case "attacks-player":
+        return (
+          event.type === "player-attacked" &&
+          this.matchesWhoPlayer(spec.who, event.player, self) &&
+          this.matchesWhoPlayer(spec.defender, event.defender, self)
         );
       case "attacks-batch":
         return (
@@ -8786,6 +8868,7 @@ export class Game {
           event.combat &&
           event.target.kind === "player" &&
           this.matchesWho(spec.who, event.source, self) &&
+          !(spec.otherOnly === true && event.source === self.id) &&
           this.triggerFilterOk(spec.filter, event.source, self)
         );
       case "dealt-damage":
@@ -8802,7 +8885,15 @@ export class Game {
         return (
           event.type === "blocker-declared" &&
           this.matchesWho(spec.who, event.blocker, self) &&
+          !(spec.otherOnly === true && event.blocker === self.id) &&
           this.triggerFilterOk(spec.filter, event.blocker, self)
+        );
+      case "becomes-blocked":
+        return (
+          event.type === "attacker-blocked" &&
+          this.matchesWho(spec.who, event.attacker, self) &&
+          !(spec.otherOnly === true && event.attacker === self.id) &&
+          this.triggerFilterOk(spec.filter, event.attacker, self)
         );
       case "leaves-graveyard":
         // One of those cards itself — a Teval reanimated along with others —

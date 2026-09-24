@@ -412,9 +412,6 @@ export type GameEvent =
       readonly defender: PlayerId | ObjectId;
     })
   | (Base & {
-      /** Exactly one creature was declared as an attacker this combat (rule
-       * 702.111a — Exalted, needed-cards P15). Emitted once, after every
-       * `attacker-declared` event for the same declaration. */
       /** The whole attack declaration, once it's known — for "whenever you
        * attack with N or more creatures" (Overwhelming Instinct, Tide
        * Skimmer), which can't be read off the per-attacker events. Emitted
@@ -424,6 +421,22 @@ export type GameEvent =
       readonly attackers: readonly ObjectId[];
     })
   | (Base & {
+      /** One player the declaration attacks (rule 508.3d) — once per player
+       * with at least one creature attacking them directly, after
+       * `attackers-declared`, for "whenever a player attacks one of your
+       * opponents" (Breena, the Demagogue). A creature attacking a
+       * planeswalker attacks that planeswalker, not its controller, so it's
+       * in nobody's `attackers` here. */
+      readonly type: "player-attacked";
+      /** The attacking (active) player. */
+      readonly player: PlayerId;
+      readonly defender: PlayerId;
+      readonly attackers: readonly ObjectId[];
+    })
+  | (Base & {
+      /** Exactly one creature was declared as an attacker this combat (rule
+       * 702.111a — Exalted, needed-cards P15). Emitted once, after every
+       * `attacker-declared` event for the same declaration. */
       readonly type: "attacked-alone";
       readonly attacker: ObjectId;
     })
@@ -439,6 +452,15 @@ export type GameEvent =
       readonly type: "blocker-declared";
       readonly blocker: ObjectId;
       readonly attacker: ObjectId;
+    })
+  | (Base & {
+      /** An attacking creature became blocked (rule 509.1h) — once per
+       * attacker, after its blockers' `blocker-declared` events, as its
+       * defending player's declaration completes: "whenever ~ becomes
+       * blocked" triggers once however many creatures block it (509.3c). */
+      readonly type: "attacker-blocked";
+      readonly attacker: ObjectId;
+      readonly blockers: readonly ObjectId[];
     })
   | (Base & {
       readonly type: "spell-fizzled";

@@ -359,11 +359,25 @@ export type TriggerSpec =
       readonly filter?: CardFilter;
     }
   | {
+      /**
+       * A creature was declared as an attacker (rule 508.3a) — once per
+       * attacker. The attacker is the trigger object ("it gets +X/+X") and
+       * the player it attacks, or the controller of the planeswalker it
+       * attacks, is the `"trigger-player"` ("defending player", "that
+       * opponent"). Triggers see the whole declaration: every attacker is
+       * attacking before the first of these fires (rule 508.3 — triggers on
+       * attackers being declared trigger once they all have been). A
+       * creature put onto the battlefield attacking was never declared and
+       * doesn't fire it.
+       */
       readonly on: "attacks";
       readonly who: TriggerWho;
       /** Narrow which attacker counts (Utvara Hellkite / Atarka, World
        * Render: "a Dragon you control"). needed-cards P11. */
       readonly filter?: CardFilter;
+      /** "Whenever **another** Cat you control attacks" (Arahbo, Roar of the
+       * World) — this permanent attacking doesn't count. */
+      readonly otherOnly?: boolean;
       /**
        * Only when the attack is aimed at *this* permanent's controller —
        * Kazuul's "if you're the defending player".
@@ -373,6 +387,43 @@ export type TriggerSpec =
        * pointed at you is necessarily an opponent's.
        */
       readonly attackingYou?: boolean;
+      /**
+       * What it must be attacking: `"player"` is "attacks **a player**" /
+       * "attacks **an opponent**" (Kaalia of the Vast) — a creature attacking
+       * a planeswalker is attacking that planeswalker, not its controller
+       * (rule 508.3a), so that doesn't fire it; `"planeswalker"` is the
+       * reverse.
+       */
+      readonly defender?: "player" | "planeswalker";
+      /**
+       * "…, **if no other creatures are attacking that player**" — an
+       * intervening-if (rule 603.4) over the declaration: no other creature
+       * is attacking the player or planeswalker this one attacks. Checked
+       * again as the ability resolves, so a creature put onto the
+       * battlefield attacking that player in the meantime stops it.
+       */
+      readonly aloneAgainstDefender?: boolean;
+    }
+  | {
+      /**
+       * "Whenever a player attacks one of your opponents" (Breena, the
+       * Demagogue); "whenever an opponent attacks you". Fires **once per
+       * player attacked** — a declaration with creatures attacking two of
+       * your opponents triggers it twice, and one with ten creatures attacking
+       * one of them once — off `player-attacked`. A creature attacking a
+       * planeswalker attacks that planeswalker, not its controller (rule
+       * 508.3a), so it counts for nobody here.
+       *
+       * `who` is the attacking player and `defender` the attacked one, each
+       * relative to this permanent's controller (`"you"`, `"opponent"`,
+       * `"any"`). The attacked player is the `"trigger-player"` ("that
+       * opponent"); the attacking player is the active player, which is the
+       * `"active-player"` scope ("that attacking player draws a card").
+       * `{ triggerValue: true }` is how many creatures attack that player.
+       */
+      readonly on: "attacks-player";
+      readonly who: TriggerWho;
+      readonly defender: TriggerWho;
     }
   | {
       /** Exalted (rule 702.111a — needed-cards P15): a creature you control
@@ -409,20 +460,45 @@ export type TriggerSpec =
   | {
       /** This creature dealt combat damage to a player. The ability's first
        * target slot (if any) is auto-filled with that player, when the slot
-       * can hold one. */
+       * can hold one. The creature is the trigger object — "you gain life
+       * equal to **that creature's** toughness" (Ikra Shidiqi), read as it
+       * last existed on the battlefield if the same damage killed it — and
+       * `{ triggerValue: true }` is how much it dealt. */
       readonly on: "deals-combat-damage-to-player";
       readonly who: TriggerWho;
       /** A filter on the creature that dealt the damage — Sharding Sphinx's
        * "whenever an **artifact** creature you control deals combat damage to
        * a player". */
       readonly filter?: CardFilter;
+      /** "Whenever **another** creature you control deals combat damage to
+       * a player". */
+      readonly otherOnly?: boolean;
     }
   | {
       /** This creature was declared as a blocker — the mirror of `attacks`
-       * (Kangee, Sky Warden's second half). */
+       * (Kangee, Sky Warden's second half). Once per blocker, which is the
+       * trigger object ("whenever a creature you control attacks or blocks,
+       * **it** gets +X/+X" — Doran, Besieged by Time). */
       readonly on: "blocks";
       readonly who: TriggerWho;
       readonly filter?: CardFilter;
+      readonly otherOnly?: boolean;
+    }
+  | {
+      /**
+       * An attacking creature **became blocked** (rules 509.1h, 509.3c) —
+       * "whenever Anzrag becomes blocked". Once per attacker, however many
+       * creatures block it, as its defending player's declaration completes,
+       * off `attacker-blocked`. The attacker is the trigger object, and its
+       * defending player (the one who blocked) the `"trigger-player"`. A
+       * creature nobody blocks doesn't fire it, and one whose blockers are
+       * all removed from combat afterward is still blocked (rule 509.1h)
+       * without firing again.
+       */
+      readonly on: "becomes-blocked";
+      readonly who: TriggerWho;
+      readonly filter?: CardFilter;
+      readonly otherOnly?: boolean;
     }
   | {
       /**
