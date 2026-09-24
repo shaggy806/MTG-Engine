@@ -156,6 +156,7 @@ import _poolCondemn from "./pool/condemn.js";
 import _poolConsider from "./pool/consider.js";
 import _poolContentiousPlan from "./pool/contentious-plan.js";
 import _poolCorruptedConviction from "./pool/corrupted-conviction.js";
+import _poolCosmicSpiderMan from "./pool/cosmic-spider-man.js";
 import _poolCounterspell from "./pool/counterspell.js";
 import _poolCraterhoofBehemoth from "./pool/craterhoof-behemoth.js";
 import _poolCrawWurm from "./pool/craw-wurm.js";
@@ -274,6 +275,7 @@ import _poolFertileFootsteps from "./pool/fertile-footsteps.js";
 import _poolFesteringThicket from "./pool/festering-thicket.js";
 import _poolFierceGuardianship from "./pool/fierce-guardianship.js";
 import _poolFinaleOfDevastation from "./pool/finale-of-devastation.js";
+import _poolFinneasAceArcher from "./pool/finneas-ace-archer.js";
 import _poolFireball from "./pool/fireball.js";
 import _poolFiresOfYavimaya from "./pool/fires-of-yavimaya.js";
 import _poolFlameJavelin from "./pool/flame-javelin.js";
@@ -1109,6 +1111,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolConsider,
   _poolContentiousPlan,
   _poolCorruptedConviction,
+  _poolCosmicSpiderMan,
   _poolCounterspell,
   _poolCraterhoofBehemoth,
   _poolCrawWurm,
@@ -1227,6 +1230,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolFesteringThicket,
   _poolFierceGuardianship,
   _poolFinaleOfDevastation,
+  _poolFinneasAceArcher,
   _poolFireball,
   _poolFiresOfYavimaya,
   _poolFlameJavelin,
