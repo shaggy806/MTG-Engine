@@ -56,6 +56,7 @@ import _poolAtarkaWorldRender from "./pool/atarka-world-render.js";
 import _poolAtraxaPraetorsVoice from "./pool/atraxa-praetors-voice.js";
 import _poolAuraMutation from "./pool/aura-mutation.js";
 import _poolAustereCommand from "./pool/austere-command.js";
+import _poolAuthorityOfTheConsuls from "./pool/authority-of-the-consuls.js";
 import _poolAvacynsPilgrim from "./pool/avacyns-pilgrim.js";
 import _poolAvenGagglemaster from "./pool/aven-gagglemaster.js";
 import _poolAvengerOfZendikar from "./pool/avenger-of-zendikar.js";
@@ -346,6 +347,7 @@ import _poolGeralfsMindcrusher from "./pool/geralfs-mindcrusher.js";
 import _poolGhaltaPrimalHunger from "./pool/ghalta-primal-hunger.js";
 import _poolGhaltaStampedeTyrant from "./pool/ghalta-stampede-tyrant.js";
 import _poolGhyrsonStarnKelermorph from "./pool/ghyrson-starn-kelermorph.js";
+import _poolGiadaFontOfHope from "./pool/giada-font-of-hope.js";
 import _poolGiantGrowth from "./pool/giant-growth.js";
 import _poolGiantSpider from "./pool/giant-spider.js";
 import _poolGilanraCallerOfWirewood from "./pool/gilanra-caller-of-wirewood.js";
@@ -778,6 +780,7 @@ import _poolSoulWarden from "./pool/soul-warden.js";
 import _poolSparasHeadquarters from "./pool/sparas-headquarters.js";
 import _poolSparkReaper from "./pool/spark-reaper.js";
 import _poolSpectatorSeating from "./pool/spectator-seating.js";
+import _poolSpelunking from "./pool/spelunking.js";
 import _poolSphinxOfEnlightenment from "./pool/sphinx-of-enlightenment.js";
 import _poolSphinxsRevelation from "./pool/sphinxs-revelation.js";
 import _poolSpireGarden from "./pool/spire-garden.js";
@@ -864,12 +867,14 @@ import _poolTerrainGenerator from "./pool/terrain-generator.js";
 import _poolTerramorphicExpanse from "./pool/terramorphic-expanse.js";
 import _poolTerrorOfThePeaks from "./pool/terror-of-the-peaks.js";
 import _poolThaliaGuardianOfThraben from "./pool/thalia-guardian-of-thraben.js";
+import _poolThaliaHereticCathar from "./pool/thalia-heretic-cathar.js";
 import _poolThantisTheWarweaver from "./pool/thantis-the-warweaver.js";
 import _poolTheEmperorOfPalamecia from "./pool/the-emperor-of-palamecia.js";
 import _poolTheLordMasterOfHell from "./pool/the-lord-master-of-hell.js";
 import _poolTheMeathookMassacre from "./pool/the-meathook-massacre.js";
 import _poolTheUnbeatableSquirrelGirl from "./pool/the-unbeatable-squirrel-girl.js";
 import _poolTheUrDragon from "./pool/the-ur-dragon.js";
+import _poolTheWanderingMinstrel from "./pool/the-wandering-minstrel.js";
 import _poolTheaterOfHorrors from "./pool/theater-of-horrors.js";
 import _poolThermoAlchemist from "./pool/thermo-alchemist.js";
 import _poolThievingMagpie from "./pool/thieving-magpie.js";
@@ -1027,6 +1032,7 @@ import _tokensDragonToken55 from "./tokens/dragon-token-5-5.js";
 import _tokensDragonToken66 from "./tokens/dragon-token-6-6.js";
 import _tokensDrakeToken from "./tokens/drake-token.js";
 import _tokensEldraziToken from "./tokens/eldrazi-token.js";
+import _tokensElementalTokenAllColors from "./tokens/elemental-token-all-colors.js";
 import _tokensElementalToken from "./tokens/elemental-token.js";
 import _tokensElephantToken from "./tokens/elephant-token.js";
 import _tokensElfWarriorToken from "./tokens/elf-warrior-token.js";
@@ -1129,6 +1135,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAtraxaPraetorsVoice,
   _poolAuraMutation,
   _poolAustereCommand,
+  _poolAuthorityOfTheConsuls,
   _poolAvacynsPilgrim,
   _poolAvenGagglemaster,
   _poolAvengerOfZendikar,
@@ -1419,6 +1426,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolGhaltaPrimalHunger,
   _poolGhaltaStampedeTyrant,
   _poolGhyrsonStarnKelermorph,
+  _poolGiadaFontOfHope,
   _poolGiantGrowth,
   _poolGiantSpider,
   _poolGilanraCallerOfWirewood,
@@ -1851,6 +1859,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSparasHeadquarters,
   _poolSparkReaper,
   _poolSpectatorSeating,
+  _poolSpelunking,
   _poolSphinxOfEnlightenment,
   _poolSphinxsRevelation,
   _poolSpireGarden,
@@ -1937,12 +1946,14 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTerramorphicExpanse,
   _poolTerrorOfThePeaks,
   _poolThaliaGuardianOfThraben,
+  _poolThaliaHereticCathar,
   _poolThantisTheWarweaver,
   _poolTheEmperorOfPalamecia,
   _poolTheLordMasterOfHell,
   _poolTheMeathookMassacre,
   _poolTheUnbeatableSquirrelGirl,
   _poolTheUrDragon,
+  _poolTheWanderingMinstrel,
   _poolTheaterOfHorrors,
   _poolThermoAlchemist,
   _poolThievingMagpie,
@@ -2106,6 +2117,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensDragonToken66,
   _tokensDrakeToken,
   _tokensEldraziToken,
+  _tokensElementalTokenAllColors,
   _tokensElementalToken,
   _tokensElephantToken,
   _tokensElfWarriorToken,

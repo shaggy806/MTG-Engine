@@ -265,6 +265,13 @@ const deckA = deck([
   // Ward as a real triggered ability (decision:ward-payment).
   ["Wilson, Refined Grizzly", 1],
   ["Valgavoth, Harrower of Souls", 1],
+  // Enters-battlefield replacements applied to other permanents
+  // (`others-enter-battlefield`): extra counters, enter tapped, enter untapped.
+  ["Giada, Font of Hope", 1],
+  ["The Wandering Minstrel", 1],
+  ["Thalia, Heretic Cathar", 1],
+  ["Authority of the Consuls", 1],
+  ["Spelunking", 1],
 ]);
 // Kept deliberately lean (~50 cards) so the RandomController actually draws
 // and plays its threats — a bloated deck just stalls out and the fuzz only

@@ -167,8 +167,7 @@ one at a time.
 - **Additional costs**: an optional, repeatable cost — Plumb the Forbidden,
   Dargo ("sacrifice one or more creatures"). Redirect Lightning needs a
   change-the-target effect.
-- **Put from hand**: Last March of the Ents (a greatest-toughness amount),
-  Spelunking (lands enter untapped).
+- **Put from hand**: Last March of the Ents (a greatest-toughness amount).
 - **Global land-type statics**: Urborg, Tomb of Yawgmoth and Yavimaya, Cradle
   of Growth — `effectiveSubtypes` is deliberately given no `GameState`, so a
   board-dependent land subtype touches check lands, `landProduces` and every
