@@ -13,6 +13,7 @@
  */
 
 import type { Action, ConvokePayment, LegalAction } from "../actions.js";
+import { convokeProofFor } from "../actions.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import { targetCombos } from "../decisions/shared/target-combos.js";
 
@@ -60,7 +61,14 @@ function castExtras(legal: CastSpellLegal): {
     // Tap as many creatures as the generic portion allows. Convoke is only
     // ever offered when it might be *needed* to afford the spell, so paying
     // the maximum is the filling most likely to be legal.
-    ...(convoke !== undefined && convoke.candidates.length > 0 && convoke.maxGeneric > 0
+    // An X spell is cast at its largest X (below), which convoking may be
+    // what pays for: take the payment the offer proved for it.
+    ...(convoke?.xProof !== undefined && legal.xCost !== undefined
+      ? (() => {
+          const payment = convokeProofFor(convoke, legal.xCost.maxX);
+          return payment.length > 0 ? { convoke: payment } : {};
+        })()
+      : convoke !== undefined && convoke.candidates.length > 0 && convoke.maxGeneric > 0
       ? {
           convoke: convoke.candidates
             .slice(0, convoke.maxGeneric)

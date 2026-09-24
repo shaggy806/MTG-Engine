@@ -16,6 +16,7 @@ import type {
   LegalAction,
   TapCostOffer,
 } from "./actions.js";
+import { convokeProofFor } from "./actions.js";
 import { obeyingLure } from "./combat/blocking.js";
 import { standardAssignment } from "./combat/damage.js";
 import type { DamageAssignmentOffer } from "./combat/damage.js";
@@ -726,6 +727,7 @@ function randomTapPicks(offer: TapCostOffer, pickIndex: (n: number) => number): 
 function castExtras(
   legal: Extract<LegalAction, { kind: "cast-spell" }>,
   pickIndex: (n: number) => number,
+  xValue = 0,
 ): {
   kicked?: boolean;
   overload?: boolean;
@@ -758,10 +760,13 @@ function castExtras(
     // matching creatures — tapping the same creatures but having them all pay
     // "generic" can leave the cost uncovered, which is correct rules
     // behaviour and used to crash the fuzzer. Colour-aware convoke payment is
-    // covered directly by `convoke.test.ts`.
-    ...(convokeInfo !== undefined && convokeInfo.proof.length > 0
-      ? { convoke: [...convokeInfo.proof] }
-      : {}),
+    // covered directly by `convoke.test.ts`. An X spell takes the payment
+    // proved for its largest X, trimmed to the X actually chosen.
+    ...(() => {
+      if (convokeInfo === undefined) return {};
+      const convoke = convokeProofFor(convokeInfo, xValue);
+      return convoke.length > 0 ? { convoke } : {};
+    })(),
   };
 }
 
@@ -870,18 +875,21 @@ export class RandomController extends AutomaticController {
               : {}),
           };
         }
+        // Drawn in this order — targets, X, then the extras — so a seed
+        // replays the same game.
+        const targets = this.pickTargets(legal.targetOptions, legal.targetSpecs);
+        const xValue =
+          legal.xCost !== undefined ? this.pickIndex(legal.xCost.maxX + 1) : undefined;
         return {
           type: "cast-spell",
           player,
           card: legal.card,
-          targets: this.pickTargets(legal.targetOptions, legal.targetSpecs),
-          ...(legal.xCost !== undefined
-            ? { xValue: this.pickIndex(legal.xCost.maxX + 1) }
-            : {}),
+          targets,
+          ...(xValue !== undefined ? { xValue } : {}),
           ...(legal.via !== undefined ? { via: legal.via } : {}),
           ...(legal.graveyardGrant !== undefined ? { graveyardGrant: legal.graveyardGrant } : {}),
           ...(legal.face !== undefined ? { face: legal.face } : {}),
-          ...castExtras(legal, (n) => this.pickIndex(n)),
+          ...castExtras(legal, (n) => this.pickIndex(n), xValue),
           ...(legal.tapCost !== undefined
             ? { tap: randomTapPicks(legal.tapCost, (n) => this.pickIndex(n)) }
             : {}),
@@ -1080,7 +1088,7 @@ export class HeuristicBotController extends AutomaticController {
       ...(legal.via !== undefined ? { via: legal.via } : {}),
       ...(legal.graveyardGrant !== undefined ? { graveyardGrant: legal.graveyardGrant } : {}),
       ...(legal.face !== undefined ? { face: legal.face } : {}),
-      ...castExtras(legal, pickLast),
+      ...castExtras(legal, pickLast, legal.xCost?.maxX),
     };
   }
 

@@ -353,6 +353,33 @@ export type Action =
 
 export type ActionType = Action["type"];
 
+/** A `cast-spell` offer's convoke part — see `LegalAction`. */
+export type ConvokeOffer = NonNullable<Extract<LegalAction, { kind: "cast-spell" }>["convoke"]>;
+
+/**
+ * A convoke payment `offer` proves works when the spell is cast with
+ * `xValue` as its X: `proof` for a spell without `{X}`, else
+ * `xProof.payments` with the generic entries a smaller X doesn't need
+ * dropped from the end. What's left is still enough: every generic dropped
+ * is one the cost no longer has, and with fewer creatures tapped the mana
+ * can pay whatever remains as well as it could before.
+ */
+export function convokeProofFor(offer: ConvokeOffer, xValue = 0): ConvokePayment[] {
+  const x = offer.xProof;
+  if (x === undefined) return [...offer.proof];
+  let drop = Math.max(0, x.atX - Math.max(0, Math.floor(xValue))) * x.genericPerX;
+  const out: ConvokePayment[] = [];
+  for (let i = x.payments.length - 1; i >= 0; i -= 1) {
+    const p = x.payments[i];
+    if (p.pays === "generic" && drop > 0) {
+      drop -= 1;
+      continue;
+    }
+    out.push(p);
+  }
+  return out.reverse();
+}
+
 export const actionPlayer = (action: Action): PlayerId => action.player;
 
 /**
@@ -516,9 +543,25 @@ export type LegalAction =
          * convoking isn't optional, and `proof` is a set that works. */
         readonly manaAffordable: boolean;
         /** The most creatures that can help pay — every generic and
-         * coloured pip in the cost. Each pays one; past that, a creature
-         * has nothing left to pay. */
+         * coloured pip in the cost, at the largest X offered (`xCost.maxX`)
+         * when it has one. Each pays one; past that, a creature has nothing
+         * left to pay. */
         readonly maxCreatures: number;
+        /**
+         * For a spell with `{X}` in its cost: `payments` is known to work
+         * with X at `atX` (the offer's `xCost.maxX`), which may be
+         * affordable only by convoking for X (Chord of Calling) — `proof`
+         * is sized for X=0 and pays nothing towards X. Each unit less of X
+         * is `genericPerX` fewer generic to pay (two for `{X}{X}`), so for a
+         * smaller X drop that many generic entries per unit —
+         * {@link convokeProofFor} does this. Absent when the cost has no
+         * `{X}`.
+         */
+        readonly xProof?: {
+          readonly atX: number;
+          readonly genericPerX: number;
+          readonly payments: readonly ConvokePayment[];
+        };
         /** How many tokens each compacted stack among `candidates` has —
          * a stack is named once per token convoking. Only stacks appear, so
          * this is absent on an ordinary board. */

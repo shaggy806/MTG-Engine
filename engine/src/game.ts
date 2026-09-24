@@ -708,6 +708,7 @@ export class Game {
           action.costOption,
           action.tap,
           action.graveyardGrant,
+          action.xValue,
         );
       case "activate-ability":
         return this.whyCannotActivateAbility(
@@ -1257,6 +1258,8 @@ export class Game {
             ? costString + def.kicker.cost
             : costString;
       const sacrifices = this.additionalCostSacrifices(player, def, costOption);
+      const xPlan =
+        parseManaCost(cost).x > 0 ? this.xPlanFor(player, card, def, cost, face ?? 0) : null;
       out.push({
         kind: "cast-spell",
         card,
@@ -1288,6 +1291,9 @@ export class Game {
           ? (() => {
               const candidates = this.convokeCandidates(player);
               const full = this.castingCostOf(player, card, def, 0, cost);
+              // As many creatures as the largest X on offer could use.
+              const atMaxX =
+                xPlan === null ? full : this.castingCostOf(player, card, def, xPlan.maxX, cost);
               const copies: Record<ObjectId, number> = {};
               for (const id of candidates) {
                 const n = this.state.objects[id].stackCount ?? 1;
@@ -1299,14 +1305,23 @@ export class Game {
                   maxGeneric: full.generic,
                   proof: this.maxConvokeFor(candidates, full),
                   manaAffordable,
-                  maxCreatures: full.generic + COLORS.reduce((n, c) => n + full.colored[c], 0),
+                  maxCreatures: atMaxX.generic + COLORS.reduce((n, c) => n + atMaxX.colored[c], 0),
+                  ...(xPlan !== null
+                    ? {
+                        xProof: {
+                          atX: xPlan.maxX,
+                          genericPerX: parseManaCost(cost).x,
+                          payments: xPlan.convoke,
+                        },
+                      }
+                    : {}),
                   ...(Object.keys(copies).length > 0 ? { copies } : {}),
                 },
               };
             })()
           : {}),
-        ...(parseManaCost(cost).x > 0
-          ? { xCost: { maxX: this.maxAffordableX(player, card, def, cost, face ?? 0) } }
+        ...(xPlan !== null
+          ? { xCost: { maxX: xPlan.maxX } }
           : def.additionalCost?.payLifeX === true
             ? // "Pay X life" — the ceiling is what you have, not what your
               // lands can make (rule 118.4: any amount of life you have).
@@ -1347,8 +1362,8 @@ export class Game {
    * a convokable spell is affordable *at all* — enumerated in
    * `castSpellActions`, never dispatched as-is; the real cast can use any
    * subset/allocation the driver actually chooses. */
-  private maxConvokeFor(candidates: readonly ObjectId[], cost: ManaCost): ConvokePayment[] {
-    const out: ConvokePayment[] = [];
+  private maxConvokeFor(candidates: readonly ObjectId[], cost: ManaCost): PaidConvoke[] {
+    const out: PaidConvoke[] = [];
     const colorLeft = { ...cost.colored };
     let genericLeft = cost.generic;
     for (const creature of candidates) {
@@ -4474,8 +4489,76 @@ export class Game {
     return count;
   }
 
+  /**
+   * The largest `{X}` `player` could cast `cardId` for, and a convoke
+   * payment that gets there (`[]` when mana alone does, and always for a
+   * spell without convoke).
+   *
+   * Each creature convoking pays one generic or one pip of its colour (rule
+   * 702.51a), so convoke raises X as far as mana does. Three ways of paying
+   * are tried: mana alone, then convoking the creatures that don't make mana
+   * (so those that do still can), then convoking everything — a creature
+   * that taps for two mana pays more tapped for mana than convoking. Each
+   * gets more expensive monotonically in X, so each is binary-searched, and
+   * the cheapest to reach the best X wins, tapping the fewest creatures.
+   */
+  private xPlanFor(
+    player: PlayerId,
+    cardId: ObjectId,
+    def: CardDefinition,
+    costString: string | null,
+    face: number,
+  ): { maxX: number; convoke: PaidConvoke[] } {
+    const manaOnly = this.maxAffordableX(player, cardId, def, costString, face);
+    if (!def.convoke) return { maxX: manaOnly, convoke: [] };
+    return this.withFace(cardId, face, () => {
+      const purpose: ManaPurpose = { kind: "cast", card: cardId };
+      const payable = (k: number, pool: readonly ObjectId[]): PaidConvoke[] | null => {
+        const cost = this.castingCostOf(player, cardId, def, k, costString);
+        const proof = this.maxConvokeFor(pool, cost);
+        const arrangement =
+          proof.length > 0 ? { withheld: new Set(proof.map((p) => p.creature)) } : undefined;
+        const rest = proof.length > 0 ? this.reduceCostByConvoke(cost, proof) : cost;
+        return this.payMana(player, rest, undefined, undefined, purpose, arrangement) === null
+          ? null
+          : proof;
+      };
+      // `maxAffordableX` reports 0 even when X=0 itself isn't affordable.
+      let best: { maxX: number; convoke: PaidConvoke[] } =
+        payable(0, []) !== null ? { maxX: manaOnly, convoke: [] } : { maxX: -1, convoke: [] };
+      const candidates = this.convokeCandidates(player);
+      const sources = this.manaSources(player);
+      const makesMana = new Set(sources.map((s) => s.id));
+      const spare = candidates.filter((id) => !makesMana.has(id));
+      const manaCap =
+        sources.reduce((n, s) => n + Game.sourceCapacity(s), 0) +
+        this.state.players[player].manaPool.length;
+      for (const pool of spare.length < candidates.length ? [spare, candidates] : [candidates]) {
+        if (pool.length === 0) continue;
+        let lo = best.maxX + 1;
+        let proof = payable(lo, pool);
+        if (proof === null) continue;
+        // A stack convokes once per token.
+        const hi0 = manaCap + pool.reduce((n, id) => n + (this.state.objects[id].stackCount ?? 1), 0);
+        let hi = Math.max(lo, hi0);
+        while (lo < hi) {
+          const mid = Math.ceil((lo + hi) / 2);
+          const found = payable(mid, pool);
+          if (found === null) {
+            hi = mid - 1;
+          } else {
+            lo = mid;
+            proof = found;
+          }
+        }
+        best = { maxX: lo, convoke: proof };
+      }
+      return best.maxX < 0 ? { maxX: 0, convoke: [] } : best;
+    });
+  }
+
   /** Largest value of `{X}` this player could currently pay for when casting
-   * `cardId` (0 if only X=0 is affordable). */
+   * `cardId` with mana alone (0 if only X=0 is affordable). */
   private maxAffordableX(
     player: PlayerId,
     cardId: ObjectId,
@@ -4678,6 +4761,7 @@ export class Game {
     costOption?: number,
     tap?: readonly ObjectId[],
     graveyardGrant?: GraveyardGrant,
+    xValue = 0,
   ): string | null {
     const blocked = this.whyCannotAct(player);
     if (blocked !== null) return blocked;
@@ -4839,12 +4923,14 @@ export class Game {
     if (this.state.players[player].life < this.commanderTaxLife(player, cardId)) {
       return `${player} has too little life to pay ${def.name}'s commander tax`;
     }
+    // At the X being cast for: convoking creatures can pay for X (Chord of
+    // Calling), so a convoke can't be judged against the cost at X=0.
     const baseCost = this.withFace(cardId, face, () =>
       this.castingCostOf(
         player,
         cardId,
         def,
-        0,
+        Math.max(0, Math.floor(xValue)),
         this.castCostString(cardId, via, face, kicked, overload, free, altCost),
       ),
     );
@@ -5010,6 +5096,7 @@ export class Game {
       costOption,
       tap,
       graveyardGrant,
+      xValue,
     );
     if (why !== null) throw new Error(why);
 
@@ -8469,6 +8556,7 @@ export class Game {
           enterTapped,
           restDestination,
           reveal === true,
+          x,
         ),
       scry: (amount, surveil, then) =>
         this.beginScry(source, controller, x, amount, surveil ? "surveil" : "scry", then ?? null),
@@ -8569,9 +8657,12 @@ export class Game {
     enterTapped: boolean,
     restDestination?: "hand" | "battlefield",
     reveal = false,
+    x = 0,
   ): void {
+    // `x` is the searching spell's X, for "mana value X or less" (Chord of
+    // Calling).
     const eligible = this.state.zones.perPlayer[player].library.filter((id) =>
-      matchesFilter(this.state, this.registry, id, filter, { you: player }),
+      matchesFilter(this.state, this.registry, id, filter, { you: player, x }),
     );
     this.state.awaiting = {
       kind: "choose-from-zone",
