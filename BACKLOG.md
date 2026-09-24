@@ -80,16 +80,19 @@ that one card is the reason the deck exists.
   and Zndrsplt, Eye of Wisdom (`flip-coin`'s `untilLose` and the `wins-coin-flip` trigger);
   Mirko, Obsessive Theorist (the `surveils` trigger), Winter, Misanthropic Guide (a
   `maxHandSize` static) and Tifa, Martial Artist (the `melee` helper) — confirm each at
-  `card:lookup`.
+  `card:lookup`; Rowan, Scion of War (`player-effect`'s `reduceSpells`), Lightning, Army of
+  One (its `damageTo`, if its text is the doubling it's remembered as) and Yusri, Fortune's
+  Flame (`castFromHandFree` and `flip-coin` — its "choose a number between 1 and 5" may still
+  need `decision:choose-number`).
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first
   ten, engine-only, with the commanders each fully unblocks:
-  `effect:this-way-results` (+6), `effect:temporary-player-effect` (+3), `effect:missing-tokens`
-  (+1), `static:grant-to-cards-outside-battlefield` (+3), `effect:amount-aggregate` (+1),
+  `effect:this-way-results` (+6), `effect:missing-tokens` (+1),
+  `static:grant-to-cards-outside-battlefield` (+3), `effect:amount-aggregate` (+1),
   `effect:look-and-choose-leftover` (+1), `effect:reveal-until` (+2),
   `bug:color-identity-back-face` (+1), `trigger:saga-final-chapter` (+1),
-  `bug:saga-completion-sacrifice` (+1).
+  `bug:saga-completion-sacrifice` (+1), `cost:mana-ability-complex-costs` (+2).
 - **Most-needed features overall.** `effect:this-way-results` (18),
   `static:grant-to-cards-outside-battlefield` (14), `zone:visibility-extensions`,
   `static:grant-abilities-to-spells` and `bug:zone-change-object-identity` (13 each). Live

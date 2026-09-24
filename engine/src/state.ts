@@ -1552,6 +1552,29 @@ export interface CombatDamageState {
  * `"creatures-you-control"` anthem `static` is modeled (the common
  * planeswalker-ultimate emblem) — folded in by the layer system. `text` is for
  * the log / client. */
+/**
+ * A continuous effect a resolved spell or ability gave a player for a while
+ * — an emblem that expires. See the `player-effect` EffectSpec.
+ */
+export interface PlayerEffect {
+  readonly owner: PlayerId;
+  /** Gone at this turn's cleanup, or as `owner`'s next turn begins. */
+  readonly expires: { readonly kind: "end-of-turn" } | { readonly kind: "your-next-turn" };
+  /** Matching spells `owner` casts cost this much generic mana less — the
+   * amount read as the effect was created (rule 611.2b). */
+  readonly reduceSpells?: { readonly applies: CardFilter; readonly reduceGeneric: number };
+  /** `owner` may cast matching spells from their hand without paying their
+   * mana costs. */
+  readonly castFromHandFree?: { readonly filter?: CardFilter };
+  /** Damage any source would deal to one of `players` — or, with
+   * `permanentsToo`, to a permanent one of them controls — is multiplied. */
+  readonly damageTo?: {
+    readonly players: readonly PlayerId[];
+    readonly multiplier: number;
+    readonly permanentsToo?: boolean;
+  };
+}
+
 export interface EmblemState {
   readonly id: string;
   readonly owner: PlayerId;
@@ -1859,6 +1882,9 @@ export interface GameState {
    * a permanent it puts onto the battlefield records as `entry.by`. Absent
    * while a spell resolves, and between resolutions. */
   resolvingSource?: { readonly source: ObjectId; readonly timestamp: number };
+  /** Player-level continuous effects that expire (the `player-effect`
+   * effect) — see {@link PlayerEffect}. */
+  playerEffects?: PlayerEffect[];
   /** This turn's one-shot prohibitions (the `prohibit` effect): players who
    * can't cast spells and/or activate abilities, and permanents — the stint
    * they were in — whose activated abilities can't be activated. Turn-scoped. */

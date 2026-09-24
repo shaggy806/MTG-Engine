@@ -1410,7 +1410,9 @@ export class Game {
     // Guardianship) are each an alternative cast, mutually exclusive with
     // kicker and each other (no card on the list has more than one).
     if (def.overload !== null) variants.push({ kicked: false, overload: true, free: false });
-    if (def.freeCastIf !== null) variants.push({ kicked: false, overload: false, free: true });
+    if (def.freeCastIf !== null || (via === undefined && this.freeFromHand(card))) {
+      variants.push({ kicked: false, overload: false, free: true });
+    }
     if (def.alternativeCost !== null) {
       variants.push({ kicked: false, overload: false, free: false, altCost: true });
     }
@@ -3133,6 +3135,14 @@ export class Game {
       this.state.players[player].usedGraveyardThisTurn = false;
       delete this.state.players[player].turnHistory;
     }
+    // "Until your next turn" player effects end as their owner's turn begins
+    // (the active player is the new one by now).
+    if (this.state.playerEffects !== undefined) {
+      const beginning = this.activePlayer;
+      this.state.playerEffects = this.state.playerEffects.filter(
+        (e) => !(e.expires.kind === "your-next-turn" && e.owner === beginning),
+      );
+    }
     // Day → night if the previous turn's player cast no spells (726.3);
     // night → day if they cast two or more (726.4). Only once it's day or night.
     if (prevActive !== null) {
@@ -3697,6 +3707,9 @@ export class Game {
     // Impulse-draw permissions age here, alongside every other
     // "until end of turn" effect — see `GameObject.impulse`.
     this.expireImpulsePermissions();
+    if (this.state.playerEffects !== undefined) {
+      this.state.playerEffects = this.state.playerEffects.filter((e) => e.expires.kind !== "end-of-turn");
+    }
     // "Until end of turn" control effects (Act of Treason) end — control
     // falls to whichever control effect is now the latest (rule 613.7), else
     // the owner, and the creature is summoning-sick for them again.
@@ -5226,7 +5239,29 @@ export class Game {
         }
       }
     }
+    // A temporary player effect's reduction (Rowan): the caster's own.
+    for (const effect of this.state.playerEffects ?? []) {
+      const mod = effect.reduceSpells;
+      if (mod === undefined || effect.owner !== player) continue;
+      if (matchesFilter(this.state, this.registry, cardId, mod.applies, { you: player })) {
+        reduceGeneric += mod.reduceGeneric;
+      }
+    }
     return { increaseGeneric, reduceGeneric, colored };
+  }
+
+  /** Whether a temporary player effect lets `cardId` — in its owner's hand —
+   * be cast without paying its mana cost (Yusri). */
+  private freeFromHand(cardId: ObjectId): boolean {
+    const card = this.state.objects[cardId];
+    if (card === undefined || card.zone !== "hand") return false;
+    return (this.state.playerEffects ?? []).some(
+      (effect) =>
+        effect.owner === card.owner &&
+        effect.castFromHandFree !== undefined &&
+        (effect.castFromHandFree.filter === undefined ||
+          matchesFilter(this.state, this.registry, cardId, effect.castFromHandFree.filter, { you: card.owner })),
+    );
   }
 
   /** How many active `doubleEntryTriggers` statics `controller` has that
@@ -5524,7 +5559,7 @@ export class Game {
     if (altCost && def.alternativeCost !== null) return def.alternativeCost.mana;
     // A conditional free-cast permission (Fierce Guardianship) also replaces
     // the mana cost entirely, same as overload.
-    if (free && def.freeCastIf !== null) return "{0}";
+    if (free && (def.freeCastIf !== null || (via === undefined && this.freeFromHand(cardId)))) return "{0}";
     // Overload (rule 702.126b) *replaces* the mana cost entirely, unlike
     // kicker's additive cost.
     if (overload && def.overload !== null) return def.overload.cost;
@@ -5751,7 +5786,7 @@ export class Game {
     }
     if (kicked && def.kicker === null) return `${def.name} has no kicker`;
     if (overload && def.overload === null) return `${def.name} has no overload cost`;
-    if (free) {
+    if (free && !(via === undefined && this.freeFromHand(cardId))) {
       if (def.freeCastIf === null) return `${def.name} has no free-cast permission`;
       if (!staticConditionMet(this.state, this.registry, this.state.objects[cardId], def.freeCastIf.condition)) {
         return `${def.name}'s free-cast condition isn't met`;
@@ -10545,6 +10580,9 @@ export class Game {
       restrict: (target, filter, restrictions) =>
         this.restrict(controller, target, filter, restrictions),
       prohibit: (players, object, spells, abilities) => this.prohibit(players, object, spells, abilities),
+      addPlayerEffect: (effect) => {
+        (this.state.playerEffects ??= []).push(effect);
+      },
       flipCoin: () => {
         const won = this.rng.next() < 0.5;
         this.state.rngState = this.rng.seed;
@@ -14453,8 +14491,21 @@ export class Game {
         applying.push({ by: object, r });
       }
     }
-    if (applying.length === 0) return { amount };
-    let changed = amount;
+    // "Until your next turn, … deals double that damage instead" — a player
+    // effect's, on damage to its players (or their permanents).
+    let playerMultiplier = 1;
+    const recipient = target.kind === "player" ? target.player : undefined;
+    const recipientsController = target.kind === "object" ? this.state.objects[target.object]?.controller : undefined;
+    for (const effect of this.state.playerEffects ?? []) {
+      const d = effect.damageTo;
+      if (d === undefined) continue;
+      const hits =
+        (recipient !== undefined && d.players.includes(recipient)) ||
+        (d.permanentsToo === true && recipientsController !== undefined && d.players.includes(recipientsController));
+      if (hits) playerMultiplier *= d.multiplier;
+    }
+    if (applying.length === 0) return { amount: amount * playerMultiplier };
+    let changed = amount * playerMultiplier;
     for (const { r } of applying) changed *= r.multiplier ?? 1;
     for (const { r } of applying) changed += r.plus ?? 0;
     // "…less than ~'s power …, that source deals damage equal to ~'s power

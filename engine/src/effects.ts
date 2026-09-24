@@ -24,6 +24,7 @@ import type {
   DelayedTriggerTiming,
   LeaveDestination,
   PlayerCounterKind,
+  PlayerEffect,
   TurnHistoryKind,
 } from "./state.js";
 import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
@@ -1188,6 +1189,33 @@ export type EffectSpec =
     }
   | {
       /**
+       * A continuous effect for the controller, for a while — an emblem that
+       * expires, at this turn's cleanup (`"end-of-turn"`) or as their next
+       * turn begins (`"until-your-next-turn"`). `reduceSpells` is "spells you
+       * cast this turn that are black and/or red cost {X} less to cast, where
+       * X is the amount of life you lost this turn" (Rowan, Scion of War —
+       * `applies` a filter, `reduceGeneric` an amount read as this resolves
+       * and fixed from then on, rule 611.2b); `castFromHandFree` is "you may
+       * cast spells from your hand this turn without paying their mana costs"
+       * (Yusri, Fortune's Flame), `filter` narrowing which. `damageTo` is
+       * "until your next turn, if a source would deal damage to that player
+       * or a permanent that player controls, it deals double that damage
+       * instead" (`who: "trigger-player"`, `multiplier: 2`, `permanentsToo`)
+       * — the players fixed as it resolves; the effect is still the
+       * controller's, and ends with it.
+       */
+      readonly kind: "player-effect";
+      readonly duration: "end-of-turn" | "until-your-next-turn";
+      readonly reduceSpells?: { readonly applies: CardFilter; readonly reduceGeneric: EffectAmount };
+      readonly castFromHandFree?: { readonly filter?: CardFilter };
+      readonly damageTo?: {
+        readonly who: PlayerScope;
+        readonly multiplier: number;
+        readonly permanentsToo?: boolean;
+      };
+    }
+  | {
+      /**
        * "Flip a coin. If you win the flip, [won]. If you lose the flip,
        * [lost]." (rule 705) — the effect's controller flips, on the game's
        * seeded random stream, and `won` / `lost` are their effect after it.
@@ -2192,6 +2220,8 @@ export interface EffectApi {
   ): void;
   /** See the `"ward"` {@link EffectSpec}. */
   ward(cost: WardCost): void;
+  /** See the `"player-effect"` {@link EffectSpec}. */
+  addPlayerEffect(effect: PlayerEffect): void;
   /** Flip a coin for this effect's controller (see the `"flip-coin"`
    * {@link EffectSpec}): `true` if they won the flip. */
   flipCoin(): boolean;
@@ -3270,6 +3300,30 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       }
       return;
     }
+    case "player-effect":
+      ctx.addPlayerEffect({
+        owner: ctx.controller,
+        expires: spec.duration === "end-of-turn" ? { kind: "end-of-turn" } : { kind: "your-next-turn" },
+        ...(spec.reduceSpells !== undefined
+          ? {
+              reduceSpells: {
+                applies: spec.reduceSpells.applies,
+                reduceGeneric: amountValue(spec.reduceSpells.reduceGeneric, ctx),
+              },
+            }
+          : {}),
+        ...(spec.castFromHandFree !== undefined ? { castFromHandFree: spec.castFromHandFree } : {}),
+        ...(spec.damageTo !== undefined
+          ? {
+              damageTo: {
+                players: ctx.playersInScope(spec.damageTo.who),
+                multiplier: spec.damageTo.multiplier,
+                ...(spec.damageTo.permanentsToo === true ? { permanentsToo: true } : {}),
+              },
+            }
+          : {}),
+      });
+      return;
     case "flip-coin": {
       // One flip, or flips until one is lost — each flip's branch applied as
       // it lands, since what a win does can matter to the next.

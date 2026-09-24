@@ -81,7 +81,8 @@
   "mechanic:coin-flip",
   "trigger:surveils",
   "static:max-hand-size",
-  "keyword:melee"
+  "keyword:melee",
+  "effect:temporary-player-effect"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
