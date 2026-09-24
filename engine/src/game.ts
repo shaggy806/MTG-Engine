@@ -6139,6 +6139,11 @@ export class Game {
    * trigger fires even if the spell is later countered or fizzles. Player
    * targets aren't announced: nothing in the pool triggers on a *player*
    * being targeted, and the events would be pure noise in the log.
+   *
+   * Once per *object*, not per target slot: a spell that names the same
+   * creature in two slots makes it "become the target" once (rule 115.7 /
+   * 603.2 speak of the object becoming a target, not of each instance of
+   * the word "target").
    */
   private announceTargeted(
     targets: ResolvedTargets,
@@ -6146,8 +6151,11 @@ export class Game {
     source: ObjectId,
     bySpell: boolean,
   ): void {
+    const announced = new Set<ObjectId>();
     for (const target of targets) {
       if (target === undefined || target.kind !== "object") continue;
+      if (announced.has(target.object)) continue;
+      announced.add(target.object);
       const object = this.state.objects[target.object];
       if (object === undefined || object.zone !== "battlefield") continue;
       this.emit({ type: "object-targeted", object: target.object, by, source, bySpell });
@@ -7788,7 +7796,9 @@ export class Game {
           this.triggerFilterOk(spec.filter, event.object, self) &&
           // "… an opponent controls" — relative to whoever controls the
           // permanent that's watching, not to the targeted object.
-          (spec.byOpponentOnly !== true || event.by !== self.controller)
+          (spec.byOpponentOnly !== true || event.by !== self.controller) &&
+          // "… becomes the target of a spell" — not an ability.
+          (spec.spellOnly !== true || event.bySpell)
         );
       case "attacks":
         return (

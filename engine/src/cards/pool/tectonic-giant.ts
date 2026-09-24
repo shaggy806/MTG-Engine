@@ -46,7 +46,7 @@ export default defineCard({
       text: "Whenever this creature attacks, choose one — deal 3 damage to each opponent; or exile the top two cards of your library and play one until the end of your next turn.",
     },
     {
-      trigger: { on: "becomes-target", who: "self", byOpponentOnly: true },
+      trigger: { on: "becomes-target", who: "self", byOpponentOnly: true, spellOnly: true },
       targets: [],
       effect: CHOICE,
       resolve: null,

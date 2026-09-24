@@ -322,6 +322,10 @@ export type TriggerSpec =
        * permanent's controller — which is how every printed card of this
        * shape words it. */
       readonly byOpponentOnly?: boolean;
+      /** Only a *spell* targeting it counts, not an activated ability —
+       * "becomes the target of a spell" (Gargos, Vicious Watcher; Tectonic
+       * Giant). */
+      readonly spellOnly?: boolean;
     }
   | {
       /**
