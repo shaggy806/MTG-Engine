@@ -1,5 +1,5 @@
 Top 2000 Commander cards by EDHREC popularity (fetched 2026-09-13)
-602 already implemented / 1398 missing (marks refreshed 2026-09-24)
+607 already implemented / 1393 missing (marks refreshed 2026-09-24)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -331,7 +331,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   332  Golgari Rot Farm                         {0}              Land
 [x]   333  Bastion of Remembrance                   {2}{B}           Enchantment
 [x]   334  Frostboil Snarl                          {0}              Land
-[ ]   335  Authority of the Consuls                 {W}              Enchantment
+[x]   335  Authority of the Consuls                 {W}              Enchantment
 [x]   336  Putrefy                                  {1}{B}{G}        Instant
 [ ]   337  Fetid Heath                              {0}              Land
 [x]   338  Port Town                                {0}              Land
@@ -736,7 +736,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   737  Pyretic Ritual                           {1}{R}           Instant
 [ ]   738  Kenrith's Transformation                 {1}{G}           Enchantment — Aura
 [ ]   739  Leyline of Anticipation                  {2}{U}{U}        Enchantment
-[ ]   740  Spelunking                               {2}{G}           Enchantment
+[x]   740  Spelunking                               {2}{G}           Enchantment
 [ ]   741  Flare of Fortitude                       {2}{W}{W}        Instant
 [ ]   742  Thornspire Verge                         {0}              Land
 [ ]   743  Starting Town                            {0}              Land — Town
@@ -1431,7 +1431,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1438  Ancient Silver Dragon                    {6}{U}{U}        Creature — Elder Dragon
 [ ]  1439  Legolas's Quick Reflexes                 {G}              Instant
 [ ]  1440  Drown in the Loch                        {U}{B}           Instant
-[ ]  1441  Insidious Roots                          {B}{G}           Enchantment
+[x]  1441  Insidious Roots                          {B}{G}           Enchantment
 [ ]  1442  Lizard Blades                            {1}{R}           Artifact Creature — Equipment Lizard
 [ ]  1443  Temur Battle Rage                        {1}{R}           Instant
 [ ]  1444  Comet Storm                              {X}{R}{R}        Instant
@@ -1464,7 +1464,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1471  Feign Death                              {B}              Instant
 [ ]  1472  Fell the Mighty                          {4}{W}           Sorcery
 [ ]  1473  Witty Roastmaster                        {2}{R}           Creature — Devil Citizen
-[ ]  1474  Thalia, Heretic Cathar                   {2}{W}           Legendary Creature — Human Soldier
+[x]  1474  Thalia, Heretic Cathar                   {2}{W}           Legendary Creature — Human Soldier
 [ ]  1475  Cover of Darkness                        {1}{B}           Enchantment
 [ ]  1476  Dreadhorde Invasion                      {1}{B}           Enchantment
 [ ]  1477  Cleric Class                             {W}              Enchantment — Class
@@ -1675,7 +1675,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1682  Glen Elendra Archmage                    {3}{U}           Creature — Faerie Wizard
 [ ]  1683  Timely Ward                              {2}{W}           Enchantment — Aura
 [ ]  1684  Metalwork Colossus                       {11}             Artifact Creature — Construct
-[ ]  1685  Giada, Font of Hope                      {1}{W}           Legendary Creature — Angel
+[x]  1685  Giada, Font of Hope                      {1}{W}           Legendary Creature — Angel
 [ ]  1686  Smuggler's Share                         {2}{W}           Enchantment
 [ ]  1687  Sword of Truth and Justice               {3}              Artifact — Equipment
 [ ]  1688  Sunscorch Regent                         {3}{W}{W}        Creature — Dragon

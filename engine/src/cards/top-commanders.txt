@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-127 already implemented / 373 missing
+132 already implemented / 368 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -15,12 +15,12 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]    9  Sauron, the Dark Lord                          39908 decks  {3}{U}{B}{R}     Legendary Creature — Avatar Horror
 [ ]   10  Kaalia of the Vast                             39741 decks  {1}{R}{W}{B}     Legendary Creature — Human Cleric
 [x]   11  Rograkh, Son of Rohgahh                        38866 decks  {0}              Legendary Creature — Kobold Warrior
-[ ]   12  Teval, the Balanced Scale                      38826 decks  {1}{B}{G}{U}     Legendary Creature — Spirit Dragon
+[x]   12  Teval, the Balanced Scale                      38826 decks  {1}{B}{G}{U}     Legendary Creature — Spirit Dragon
 [ ]   13  Fire Lord Azula                                37711 decks  {1}{U}{B}{R}     Legendary Creature — Human Noble
 [x]   14  Ms. Bumbleflower                               36979 decks  {1}{G}{W}{U}     Legendary Creature — Rabbit Citizen
 [ ]   15  Pantlaza, Sun-Favored                          36786 decks  {2}{R}{G}{W}     Legendary Creature — Dinosaur
 [ ]   16  Lathril, Blade of the Elves                    35764 decks  {2}{B}{G}        Legendary Creature — Elf Noble
-[ ]   17  Giada, Font of Hope                            34983 decks  {1}{W}           Legendary Creature — Angel
+[x]   17  Giada, Font of Hope                            34983 decks  {1}{W}           Legendary Creature — Angel
 [ ]   18  The Wise Mothman                               33672 decks  {1}{B}{G}{U}     Legendary Creature — Insect Mutant
 [ ]   19  Jodah, the Unifier                             33117 decks  {W}{U}{B}{R}{G}  Legendary Creature — Human Wizard
 [ ]   20  Toph, the First Metalbender                    32837 decks  {1}{R}{G}{W}     Legendary Creature — Human Warrior Ally
@@ -49,7 +49,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   43  Glarb, Calamity's Augur                        24287 decks  {B}{G}{U}        Legendary Creature — Frog Wizard Noble
 [x]   44  Animar, Soul of Elements                       23513 decks  {G}{U}{R}        Legendary Creature — Elemental
 [ ]   45  Aragorn, the Uniter                            23142 decks  {R}{G}{W}{U}     Legendary Creature — Human Noble
-[ ]   46  Arcades, the Strategist                        23135 decks  {1}{G}{W}{U}     Legendary Creature — Elder Dragon
+[x]   46  Arcades, the Strategist                        23135 decks  {1}{G}{W}{U}     Legendary Creature — Elder Dragon
 [ ]   47  Ygra, Eater of All                             22997 decks  {3}{B}{G}        Legendary Creature — Elemental Cat
 [ ]   48  The Necrobloom                                 22928 decks  {1}{W}{B}{G}     Legendary Creature — Plant
 [ ]   49  Mr. House, President and CEO                   22846 decks  {R}{W}{B}        Legendary Artifact Creature — Human
@@ -75,10 +75,10 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   69  Zurgo Stormrender                              20864 decks  {R}{W}{B}        Legendary Creature — Orc Warrior
 [ ]   70  Go-Shintai of Life's Origin                    20615 decks  {3}{G}           Legendary Enchantment Creature — Shrine
 [ ]   71  Urza, Lord High Artificer                      20594 decks  {2}{U}{U}        Legendary Creature — Human Artificer
-[ ]   72  Felothar the Steadfast                         20517 decks  {1}{W}{B}{G}     Legendary Creature — Human Warrior
+[x]   72  Felothar the Steadfast                         20517 decks  {1}{W}{B}{G}     Legendary Creature — Human Warrior
 [x]   73  Queen Marchesa                                 20464 decks  {1}{R}{W}{B}     Legendary Creature — Human Assassin
 [ ]   74  K'rrik, Son of Yawgmoth                        20441 decks  {4}{B/P}{B/P}{B/P} Legendary Creature — Phyrexian Horror Minion
-[ ]   75  The Wandering Minstrel                         20422 decks  {G}{U}           Legendary Creature — Human Bard
+[x]   75  The Wandering Minstrel                         20422 decks  {G}{U}           Legendary Creature — Human Bard
 [ ]   76  Malcolm, Keen-Eyed Navigator                   20313 decks  {2}{U}           Legendary Creature — Siren Pirate
 [ ]   77  Avatar Aang                                    20168 decks  {R}{G}{W}{U}     Legendary Creature — Human Avatar Ally // Legendary Creature — Avatar Ally
 [ ]   78  Helga, Skittish Seer                           20147 decks  {G}{W}{U}        Legendary Creature — Frog Druid

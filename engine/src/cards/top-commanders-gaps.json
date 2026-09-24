@@ -38,7 +38,10 @@
   "effect:player-scope-extensions",
   "static:affect-scope-by-filter",
   "static:grant-types-to-others",
-  "static:set-base-pt-others"
+  "static:set-base-pt-others",
+  "static:enters-replacement-for-others",
+  "trigger:leaves-graveyard",
+  "static:combat-damage-by-toughness"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
