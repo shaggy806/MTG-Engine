@@ -25,7 +25,7 @@ that one card is the reason the deck exists.
   "N plus an amount" operand), `static:grant-to-cards-outside-battlefield` (14). Live numbers
   come from `cmdrs:gaps`.
 - **UI-bound features.** These need a new client decision and a browser check:
-  `decision:ward-payment` (18), `decision:copy-new-targets` (12), `effect:may-sacrifice-then` (12),
+  `decision:ward-payment` (18), `effect:may-sacrifice-then` (13), `decision:copy-new-targets` (12),
   `decision:choose-permanent` (11), `effect:enter-attacking`, `decision:free-cast-choices`,
   `effect:attach-extensions`, `effect:cast-during-resolution`, `decision:choose-tap-costs` (10 each).
 - **Commanders authored and then dropped by their reviews.** Tifa Lockhart and Yarok need the

@@ -514,6 +514,8 @@ export type GameEvent =
   | (Base & {
       readonly type: "permanent-sacrificed";
       readonly object: ObjectId;
+      /** Who sacrificed it: its controller as it left, not its owner (rule
+       * 701.21a) — "whenever you sacrifice" counts a stolen permanent. */
       readonly player: PlayerId;
     })
   | (Base & {

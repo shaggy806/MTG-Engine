@@ -710,7 +710,10 @@ Which objects qualify:
   `modify-pt` on `"source"` with `power: { powerOf: "sacrificed" }`), or by a
   `sacrifice-source` step before the one reading it ("Sacrifice ~. If you
   do, …"). Nothing sacrificed reads 0. A sacrifice *chosen* by an earlier
-  step ("you may sacrifice a creature. When you do, …") isn't this yet.
+  step isn't this yet, optional ("you may sacrifice a creature. When you do,
+  …") or not (Minsc & Boo's "Sacrifice a creature. When you do, …"): a
+  `sacrifice` step only queues its decision, so a step after it runs before
+  anything is sacrificed (`effect:may-sacrifice-then` in the gaps JSON).
 
 The same references answer "**that creature's** controller" (`controllerOf`
 — `toControllerOfTarget`, `create-token`'s `who: "target-controller"`, the
@@ -963,7 +966,7 @@ triggered: [
 | `gains-life` / `loses-life` | `who` | a player's life changes (`who` = whose). `{ triggerValue: true }` is how much ("loses that much life" — Sanguine Bond). Once per life-gain *event*, which is once per source (rule 119.9): lifelink damage one source deals to several things at once is **one** gain, so it triggers once; two lifelinkers dealing combat damage together are two (Oloro, Blech). |
 | `attacks` | `who`, `filter?`, `attackingYou?` | a creature is declared as an attacker (`filter` narrows which one — Utvara Hellkite / Atarka, World Render: "a Dragon you control"). `attackingYou` fires only when the attack is aimed at this permanent's controller (Kazuul's "if you're the defending player") — which also covers "a creature an opponent controls", since nobody can attack themselves. |
 | `attacks-alone` | `who` | Exalted (needed-cards P15) — a creature you control attacked alone this combat; the lone attacker isn't a target, read it via `ResolutionContext.triggerObject` / `EffectTargetRef: "trigger-object"` |
-| `sacrifice` | `who` | a player sacrifices a permanent (Korvold, Mayhem Devil — `who` = who sacrificed) |
+| `sacrifice` | `who` | a player sacrifices a permanent (Korvold, Mayhem Devil — `who` = who sacrificed: its controller, not its owner, rule 701.21a, so a stolen permanent counts for the thief) |
 | `deals-combat-damage-to-player` | `who` | auto-fills the first target slot with the damaged player |
 | `transforms` | `who`, `intoFront?`, `filter?` | a DFC turns over |
 | `step-begins` | `step`, `who` | the start of a step (`"upkeep"` etc.) |

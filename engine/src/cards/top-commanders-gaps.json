@@ -543,7 +543,7 @@
   "effect:may-sacrifice-then": {
    "size": "medium",
    "ui": true,
-   "description": "'You may sacrifice [N] [filter]. If you do, [effect]': offered only when enough matching permanents exist, the player chooses which (or declines), and the tail runs only after the sacrifice has actually happened."
+   "description": "'You may sacrifice [N] [filter]. If you do, [effect]': offered only when enough matching permanents exist, the player chooses which (or declines), and the tail runs only after the sacrifice has actually happened. Also the mandatory form, 'Sacrifice a creature. When you do, [effect]' (Minsc & Boo's −2): the same choice without the decline. Either way the tail reads the permanent chosen through effect:sacrificed-object-lki's \"sacrificed\" ref, which the sacrifice step has to bind — today the sacrifice effect only queues its decision, so a step after it runs before anything is sacrificed."
   },
   "effect:missing-tokens": {
    "size": "small",
@@ -613,7 +613,7 @@
   "effect:sacrificed-object-lki": {
    "size": "medium",
    "ui": false,
-   "description": "Snapshot the permanent sacrificed to pay a cost, or by a preceding step, and expose its last-known power, mana value, types, subtypes and isCommander. These feed amounts (the Fling family), conditions ('if it was a commander' or 'a Hamster') and dynamic filters ('shares a card type with it'). Built for a sacrifice paid as a cost (activated ability or spell) and a sacrifice-source step: the AmountRef \"sacrificed\" (powerOf/toughnessOf/manaValueOf), the \"sacrificed\" StaticCondition and CardFilter.sharesCardTypeWith. A sacrifice *chosen* by an earlier step (\"you may sacrifice …; when you do\") is effect:may-sacrifice-then's."
+   "description": "Snapshot the permanent sacrificed to pay a cost, or by a preceding step, and expose its last-known power, mana value, types, subtypes and isCommander. These feed amounts (the Fling family), conditions ('if it was a commander' or 'a Hamster') and dynamic filters ('shares a card type with it'). Built for a sacrifice paid as a cost (activated ability or spell) and a sacrifice-source step: the AmountRef \"sacrificed\" (powerOf/toughnessOf/manaValueOf), the \"sacrificed\" StaticCondition and CardFilter.sharesCardTypeWith. A sacrifice *chosen* by an earlier step, optional (\"you may sacrifice …; when you do\") or not (Minsc & Boo's \"Sacrifice a creature. When you do\"), is effect:may-sacrifice-then's."
   },
   "effect:shuffle-library": {
    "size": "small",
@@ -3732,6 +3732,7 @@
    "needs": [
     "condition:filter-combinators",
     "decision:legend-rule-choice",
+    "effect:may-sacrifice-then",
     "effect:reflexive-trigger",
     "effect:sacrificed-object-lki"
    ]

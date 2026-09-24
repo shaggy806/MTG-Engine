@@ -121,8 +121,57 @@ const martyr = defineCard({
   ],
 });
 
+/** A dies trigger whose `conditional`s ask about the creature that died —
+ * which, when it was a token, has ceased to exist (rule 111.7) by the time
+ * the trigger resolves, leaving only its snapshot to answer. */
+const keepsake = defineCard({
+  name: "Test Keepsake",
+  manaCost: "{W}",
+  colors: ["W"],
+  types: ["creature"],
+  subtypes: ["Spirit"],
+  power: 1,
+  toughness: 1,
+  text:
+    "When this creature dies, if it had a +1/+1 counter on it, you gain 5 life. " +
+    "If it was a Spirit, you gain 3 life.",
+  triggered: [
+    {
+      trigger: { on: "dies", who: "self" },
+      targets: [],
+      effect: {
+        kind: "sequence",
+        effects: [
+          {
+            kind: "conditional",
+            condition: {
+              kind: "self-counters",
+              counter: "+1/+1",
+              compare: { op: "gte", n: 1 },
+            },
+            then: { kind: "gain-life", amount: 5 },
+          },
+          {
+            kind: "conditional",
+            condition: { kind: "source", filter: { subtype: "Spirit" } },
+            then: { kind: "gain-life", amount: 3 },
+          },
+        ],
+      },
+      resolve: null,
+      text:
+        "When this creature dies, if it had a +1/+1 counter on it, you gain 5 life. " +
+        "If it was a Spirit, you gain 3 life.",
+    },
+  ],
+});
+
 const registry = (): CardRegistry =>
-  createDefaultRegistry().register(graveWarden).register(altar).register(martyr);
+  createDefaultRegistry()
+    .register(graveWarden)
+    .register(altar)
+    .register(martyr)
+    .register(keepsake);
 
 const setUp = (configure?: (a: ScriptedController, b: ScriptedController) => void) => {
   const a = new ScriptedController(A);
@@ -260,6 +309,43 @@ describe("a leaves-the-battlefield trigger matches the permanent as it last exis
     expect(life(game, B)).toBe(20);
   });
 
+  it("a trigger from before its source lost its abilities and died still goes on the stack (113.7a)", () => {
+    const { game } = setUp();
+    const zulaport = game.debugSpawn("Zulaport Cutthroat", A);
+    const bears = game.debugSpawn("Grizzly Bears", A);
+    // One resolution: the Bears die (Zulaport triggers), then Zulaport loses
+    // its abilities and becomes a 0/0 — dying to the next state-based check,
+    // before its trigger is put on the stack.
+    apply(
+      game,
+      {
+        kind: "sequence",
+        effects: [
+          { kind: "destroy", target: 0 },
+          {
+            kind: "animate",
+            target: 1,
+            power: 0,
+            toughness: 0,
+            addTypes: [],
+            addSubtypes: [],
+            loseAbilities: true,
+            duration: "end-of-turn",
+          },
+        ],
+      },
+      bears,
+      zulaport,
+    );
+    settle(game);
+
+    expect(game.state.objects[zulaport].zone).toBe("graveyard");
+    // The Bears' trigger resolves; Zulaport's own death, abilityless, fires none.
+    expect(triggersOf(game, zulaport)).toBe(1);
+    expect(life(game, B)).toBe(19);
+    expect(life(game, A)).toBe(21);
+  });
+
   it("a dies trigger granted by a static fires while the grantor stays behind", () => {
     const { game } = setUp();
     game.debugSpawn("Test Grave Warden", A);
@@ -375,6 +461,31 @@ describe("a resolving ability reads a departed permanent as it last existed (608
     settle(game);
 
     expect(life(game, B)).toBe(20 - 3);
+  });
+
+  it("a token's dies trigger answers conditions about itself after it has ceased to exist", () => {
+    const { game } = setUp();
+    const [token] = tokens(game, "Test Keepsake", 1);
+    counters(game, token, 1);
+
+    destroy(game, token);
+    settle(game);
+
+    expect(game.state.objects[token]).toBeUndefined();
+    expect(triggersOf(game, token)).toBe(1);
+    expect(life(game, A)).toBe(20 + 5 + 3);
+  });
+
+  it("…exactly as the same card does, which is still in the graveyard", () => {
+    const { game } = setUp();
+    const card = game.debugSpawn("Test Keepsake", A);
+    counters(game, card, 1);
+
+    destroy(game, card);
+    settle(game);
+
+    expect(game.state.objects[card].zone).toBe("graveyard");
+    expect(life(game, A)).toBe(20 + 5 + 3);
   });
 
   it("Elenda makes a Vampire for each point of power she died with", () => {
@@ -591,6 +702,82 @@ describe("the sacrificed permanent (Dina, Soul Steeper)", () => {
 
     expect(game.state.objects[martyrId].zone).toBe("graveyard");
     expect(life(game, A)).toBe(24);
+  });
+});
+
+describe("the player who sacrifices a permanent is its controller, not its owner (701.21a)", () => {
+  /** Alice and Bob each control a Juri, and Alice has taken `name` from Bob. */
+  const stolenFromBob = (name: string) => {
+    const env = setUp();
+    const alices = env.game.debugSpawn("Juri, Master of the Revue", A);
+    const bobs = env.game.debugSpawn("Juri, Master of the Revue", B);
+    const victim = env.game.debugSpawn(name, B);
+    apply(env.game, { kind: "gain-control", target: 0, untilEndOfTurn: true }, victim);
+    settle(env.game);
+    expect(env.game.state.objects[victim].controller).toBe(A);
+    /** Alice sacrificed it, so her Juri counts it and Bob's doesn't. */
+    const sacrificedByAlice = (): void => {
+      expect(env.game.state.eventLog).toContainEqual(
+        expect.objectContaining({ type: "permanent-sacrificed", object: victim, player: A }),
+      );
+      expect(env.game.state.objects[alices].counters["+1/+1"] ?? 0).toBe(1);
+      expect(env.game.state.objects[bobs].counters["+1/+1"] ?? 0).toBe(0);
+    };
+    return { ...env, victim, sacrificedByAlice };
+  };
+
+  it("sacrificed to pay a spell's additional cost (Village Rites)", () => {
+    const { game, victim, sacrificedByAlice } = stolenFromBob("Grizzly Bears");
+    game.debugSpawn("Swamp", A);
+    const rites = game.debugSpawn("Village Rites", A, "hand");
+
+    game.dispatch({ type: "cast-spell", player: A, card: rites, sacrifice: victim });
+    settle(game);
+
+    expect(game.state.objects[victim].zone).toBe("graveyard");
+    sacrificedByAlice();
+  });
+
+  it("sacrificed for mana (a Treasure)", () => {
+    const { game, victim, sacrificedByAlice } = stolenFromBob("Treasure Token");
+    const bolt = game.debugSpawn("Lightning Bolt", A, "hand");
+
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: bolt,
+      targets: [{ kind: "player", player: B }],
+    });
+    settle(game);
+
+    expect(life(game, B)).toBe(17);
+    sacrificedByAlice();
+  });
+
+  it("sacrificing itself by a sacrifice-source step", () => {
+    const { game, victim, sacrificedByAlice } = stolenFromBob("Test Martyr");
+
+    game.dispatch({
+      type: "activate-ability",
+      player: A,
+      source: victim,
+      abilityIndex: 0,
+      targets: [],
+    });
+    settle(game);
+
+    expect(game.state.objects[victim].zone).toBe("graveyard");
+    sacrificedByAlice();
+  });
+
+  it("sacrificed by a sacrifice-target effect", () => {
+    const { game, victim, sacrificedByAlice } = stolenFromBob("Grizzly Bears");
+
+    apply(game, { kind: "sacrifice-target", target: 0 }, victim);
+    settle(game);
+
+    expect(game.state.objects[victim].zone).toBe("graveyard");
+    sacrificedByAlice();
   });
 });
 

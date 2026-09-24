@@ -288,6 +288,54 @@ const EMPTY_TRIGGERED_ENTRIES: readonly {
 
 const EMPTY_ID_SET: ReadonlySet<ObjectId> = new Set();
 
+/**
+ * What a condition about a spell's or ability's source is asked of once that
+ * source has ceased to exist — a token, deleted after it left the
+ * battlefield (rule 111.7). Every question about the permanent itself is
+ * answered from `lastKnown`, which the caller passes alongside as
+ * `ConditionOptions.sourceLastKnown`; the stand-in carries only its id and
+ * whose ability is asking ("you"). Its zone is the stack — where the
+ * intervening-if recheck's stand-in for the same token, the ability itself,
+ * is too — so a `source-zone` condition never finds it somewhere the
+ * token could have gone.
+ */
+const ceasedSourceStandIn = (
+  id: ObjectId,
+  controller: PlayerId,
+  lastKnown: LastKnownInfo,
+): GameObject => ({
+  id,
+  cardName: lastKnown.name,
+  owner: lastKnown.owner,
+  controller,
+  zone: "stack",
+  tapped: false,
+  damageMarked: 0,
+  markedByDeathtouch: false,
+  enteredBattlefieldOnTurn: null,
+  summoningSick: false,
+  loyaltyActivatedThisTurn: false,
+  targets: null,
+  controlEndsAtCleanup: false,
+  copyOf: null,
+  xValue: null,
+  attacking: null,
+  blocking: null,
+  blockedBy: [],
+  blocked: false,
+  kind: "card",
+  abilityKind: null,
+  sourceObjectId: null,
+  abilityIndex: null,
+  counters: {},
+  modifiers: [],
+  timestamp: 0,
+  isToken: true,
+  attachedTo: null,
+  isCommander: false,
+  lastKnown,
+});
+
 /** The events that announce a permanent leaving the battlefield, whose
  * triggers look back in time (rule 603.10a). */
 type LeaveEvent = Extract<
@@ -5594,10 +5642,12 @@ export class Game {
     // stands even if the spell is later countered.
     if (sacrificeVictim !== undefined && this.state.objects[sacrificeVictim] !== undefined) {
       const victim = this.splitOneFromStack(sacrificeVictim);
-      const owner = this.state.objects[victim].owner;
+      // Its controller sacrifices it (rule 701.21a) — read before the move
+      // hands it back to its owner.
+      const sacrificer = this.state.objects[victim].controller;
       const stint = this.state.objects[victim].zoneChangeCount ?? 0;
       this.moveObject(victim, "graveyard");
-      this.emit({ type: "permanent-sacrificed", object: victim, player: owner });
+      this.emit({ type: "permanent-sacrificed", object: victim, player: sacrificer });
       // What the spell's "the sacrificed creature" reads (rule 608.2h).
       object.lastKnownRefs = { sacrificed: { object: victim, zoneChangeCount: stint } };
     }
@@ -6811,7 +6861,8 @@ export class Game {
     }
     if (step.sacrifice) {
       this.moveObject(step.source, "graveyard");
-      this.emit({ type: "permanent-sacrificed", object: step.source, player: object.owner });
+      // `player`, read before the move: its controller sacrificed it (701.21a).
+      this.emit({ type: "permanent-sacrificed", object: step.source, player });
     } else if (step.untapped === undefined) {
       object.tapped = true;
       this.emit({ type: "permanent-tapped", object: step.source });
@@ -8506,12 +8557,18 @@ export class Game {
       trigger.grantedAbility !== undefined
         ? (this.abilityFromRef(trigger.grantedAbility) as TriggeredAbility | undefined)
         : undefined;
+    // An ability that has triggered goes on the stack whatever has become of
+    // its source since (rule 113.7a): one that then lost its abilities and
+    // left (its snapshot lists none), or turned into a face without this
+    // one, is still the card's own ability at this index — the same
+    // fallback `stackAbilityOf` resolves it by.
     const ability =
       granted ??
       (trigger.chapter
         ? (def.chapters ?? [])[trigger.abilityIndex]
-        : (this.triggeredOfSource(trigger.sourceObjectId, trigger.lastKnownRefs?.source) ??
-            def.triggered)[trigger.abilityIndex]);
+        : (this.triggeredOfSource(trigger.sourceObjectId, trigger.lastKnownRefs?.source)?.[
+            trigger.abilityIndex
+          ] ?? def.triggered[trigger.abilityIndex]));
 
     const triggerSource = this.abilityTargetSource(trigger);
     const abilityKind: "triggered" | "chapter" = trigger.chapter ? "chapter" : "triggered";
@@ -8790,8 +8847,14 @@ export class Game {
       // Resolution happens outside the layer fold, so the source can count
       // itself ("if creatures you control have total power 10 or greater"
       // includes the creature asking) without recursing.
-      const src = this.state.objects[source];
       const sourceLastKnown = departedSource();
+      // A token that has ceased to exist since it left (rule 111.7) is still
+      // asked about as it last existed there, like a card in a graveyard.
+      const src =
+        this.state.objects[source] ??
+        (sourceLastKnown === undefined
+          ? undefined
+          : ceasedSourceStandIn(source, controller, sourceLastKnown));
       return (
         src !== undefined &&
         staticConditionMet(this.state, this.registry, src, condition, {
@@ -8931,13 +8994,14 @@ export class Game {
         const id = this.splitOneFromStack(target.object);
         const object = this.state.objects[id];
         if (object === undefined || object.zone !== "battlefield") return;
-        const owner = object.owner;
+        // Its controller sacrifices it (rule 701.21a), not its owner.
+        const sacrificer = object.controller;
         this.moveObject(id, "graveyard");
         // Sacrificed even if a commander's 903.9a choice deferred the move,
         // and even if it ends up in the command zone (rule 701.21a), just as
         // the cost paths announce it. "Dies" is read off the move itself
         // (`permanent-left-battlefield`), so a commander never falsely dies.
-        this.emit({ type: "permanent-sacrificed", object: id, player: owner });
+        this.emit({ type: "permanent-sacrificed", object: id, player: sacrificer });
       },
       returnToHand: (target, from) =>
         this.returnToHandByEffect(target, true, from ?? "battlefield", source),
@@ -11243,6 +11307,9 @@ export class Game {
   private sacrificeSourceByEffect(source: ObjectId): boolean {
     const object = this.state.objects[source];
     if (object === undefined || object.zone !== "battlefield") return false;
+    // Its controller sacrifices it (rule 701.21a) — read before the move
+    // hands it back to its owner.
+    const sacrificer = object.controller;
     this.moveObject(source, "graveyard");
     // A commander's 903.9a choice defers the move (`moveObject` returns with
     // the permanent still on the battlefield and a decision raised). Nothing
@@ -11251,7 +11318,7 @@ export class Game {
     // documented gap: a commander with a `sacrifice-source` ability skips its
     // own tail. No pool card is both.
     if (this.state.awaiting !== null) return false;
-    this.emit({ type: "permanent-sacrificed", object: source, player: object.owner });
+    this.emit({ type: "permanent-sacrificed", object: source, player: sacrificer });
     return true;
   }
 
