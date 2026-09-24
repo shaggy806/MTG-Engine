@@ -10851,7 +10851,7 @@ export class Game {
     // (a Treasure-like) or the effect that created it ("create thirteen
     // **tapped** Zombie tokens") — short of a replacement that has it enter
     // untapped instead.
-    const entering = this.entersBattlefieldReplacement(id, { tapped });
+    const entering = this.entersBattlefieldReplacement(id, tapped);
     this.state.objects[id].tapped = entering.tapped;
     for (const c of entering.counters) {
       this.state.objects[id].counters[c.kind] =
@@ -13554,26 +13554,18 @@ export class Game {
    * The Wandering Minstrel's "enter untapped"), with any `would-add-counter`
    * multiplier (Doubling Season) folded into the counter amounts.
    *
-   * `enter.tapped` is the effect's own "put it onto the battlefield tapped".
-   * `enter.under` is the player it's entering under when that isn't its owner
-   * (a reanimation "under your control"): the permanent is judged as it will
-   * exist on the battlefield (rule 614.12), controller included, although the
-   * control effect that keeps it there is only created after the move — so
-   * the controller is set for the length of this read and put back.
+   * `effectTapped` is the effect's own "put it onto the battlefield tapped".
+   * The permanent is judged as it will exist on the battlefield (rule
+   * 614.12), controller included: `moveObject` has already put it under the
+   * player it's entering under (a reanimation "under your control").
    *
    * Also records `id` in the current {@link enterBatch}: whatever enters after
    * it in the same event doesn't see it as already here.
    */
-  private entersBattlefieldReplacement(id: ObjectId, enter: EnterOptions = {}): EnteringReplacement {
-    const object = this.state.objects[id];
-    const controller = object.controller;
-    if (enter.under !== undefined) object.controller = enter.under;
-    try {
-      return this.enteringReplacementOf(id, enter.tapped === true);
-    } finally {
-      object.controller = controller;
-      this.enterBatch?.add(id);
-    }
+  private entersBattlefieldReplacement(id: ObjectId, effectTapped = false): EnteringReplacement {
+    const entering = this.enteringReplacementOf(id, effectTapped);
+    this.enterBatch?.add(id);
+    return entering;
   }
 
   private enteringReplacementOf(id: ObjectId, effectTapped: boolean): EnteringReplacement {
@@ -14147,14 +14139,21 @@ export class Game {
       object.summoningSick = true;
       this.state.timestampSeq += 1;
       object.timestamp = this.state.timestampSeq;
+      // Who it enters under: its owner, unless the effect puts it onto the
+      // battlefield under someone else's control. The control effect that
+      // keeps it there is the caller's to create, after the move (layer 2
+      // would hand it straight back otherwise), so it is put back under its
+      // owner at the end of this branch — but for the length of the entry it
+      // is that player's. Its replacements judge it as theirs (rule 614.12),
+      // and so does every trigger the entry sets off: Shalai and Hallar sees
+      // the counters Giada puts on an Angel reanimated under your control.
+      const enteringController = enter.under ?? object.controller;
+      object.controller = enteringController;
       // Replacement effects that apply as it enters (rule 614.1c) — tapped /
       // enters-with-counters, its own and other permanents'. `object.counters`
       // was just reset above (unless it keeps them across zones, when these
       // add to what it brought).
-      const entering = this.entersBattlefieldReplacement(id, enter);
-      // Who it enters under: its owner, unless the effect says otherwise (the
-      // control effect that says so is created by the caller, after the move).
-      const enteringController = enter.under ?? object.controller;
+      const entering = this.entersBattlefieldReplacement(id, enter.tapped === true);
       object.tapped = entering.tapped;
       for (const c of entering.counters) {
         object.counters[c.kind] = (object.counters[c.kind] ?? 0) + c.amount;
@@ -14213,6 +14212,7 @@ export class Game {
           by: enteringController,
         });
       }
+      object.controller = object.owner;
     } else {
       object.tapped = false;
       object.damageMarked = 0;

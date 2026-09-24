@@ -192,6 +192,23 @@ describe("Giada, Font of Hope", () => {
     expect(plusOnes(game, theirs)).toBe(0);
   });
 
+  it("puts those counters on an Angel reanimated under your control as yours, for your triggers", () => {
+    const game = mkGame();
+    // Shalai first, so Giada's counters don't go on Shalai itself (it's an
+    // Angel too) and set off a trigger of their own.
+    spawn(game, "Shalai and Hallar");
+    spawn(game, GIADA);
+    const life = game.state.players[B].life;
+    const stolen = game.debugSpawn("Serra Angel", B, "graveyard");
+    internals(game).putOntoBattlefieldByEffect({ kind: "object", object: stolen }, A, true, false);
+    expect(plusOnes(game, stolen)).toBe(2);
+    // "Whenever one or more +1/+1 counters are put on a creature you
+    // control": the Angel was entering under Alice's control when they were.
+    game.advanceUntil(settled);
+    expect(game.state.players[B].life).toBe(life - 2);
+    expect(game.state.objects[stolen].controller).toBe(A);
+  });
+
   it("is doubled by Doubling Season, like any enters-with-counters", () => {
     const game = mkGame();
     spawn(game, GIADA);
@@ -396,6 +413,18 @@ describe("Authority of the Consuls", () => {
     game.advanceUntil(settled);
     expect(game.state.objects[mine].tapped).toBe(false);
     expect(game.state.players[A].life).toBe(life + 1);
+  });
+
+  it("gains 1 life per token in a stack an opponent creates, and taps the stack", () => {
+    const game = mkGame();
+    spawn(game, "Authority of the Consuls");
+    const life = game.state.players[A].life;
+    internals(game).createTokens(B, ANGEL_TOKEN, 10);
+    game.advanceUntil(settled);
+    const tokens = battlefieldNamed(game, ANGEL_TOKEN, B);
+    expect(tokens.reduce((n, id) => n + (game.state.objects[id].stackCount ?? 1), 0)).toBe(10);
+    expect(tokens.every((id) => game.state.objects[id].tapped)).toBe(true);
+    expect(game.state.players[A].life).toBe(life + 10);
   });
 });
 
