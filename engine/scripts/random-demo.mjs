@@ -745,6 +745,16 @@ const deckB = deck([
   ["Deadly Rollick", 1],
   ["Flawless Maneuver", 1],
   ["Hour of Reckoning", 1],
+  // Damage triggers and player scopes: source-side damage triggers (exactly
+  // 1, noncombat to an opponent, a commander's combat damage), a filtered
+  // dealt-damage trigger, damage from the triggering object, and a scoped
+  // mill / each-other-opponent.
+  ["Ghyrson Starn, Kelermorph", 1],
+  ["Hope Estheim", 1],
+  ["Be'lakor, the Dark Master", 1],
+  ["Sonic the Hedgehog", 1],
+  ["Kediss, Emberclaw Familiar", 1],
+  ["Niv-Mizzet, Visionary", 1],
 ]);
 
 // A lean Dimir deck for Carol — carries the `Ayara, First of Locthwain`

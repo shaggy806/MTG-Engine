@@ -71,6 +71,7 @@ import _poolBeastWhisperer from "./pool/beast-whisperer.js";
 import _poolBeastWithin from "./pool/beast-within.js";
 import _poolBedevil from "./pool/bedevil.js";
 import _poolBeholdTheMultiverse from "./pool/behold-the-multiverse.js";
+import _poolBelakorTheDarkMaster from "./pool/belakor-the-dark-master.js";
 import _poolBigScore from "./pool/big-score.js";
 import _poolBirdsOfParadise from "./pool/birds-of-paradise.js";
 import _poolBitterTriumph from "./pool/bitter-triumph.js";
@@ -317,6 +318,7 @@ import _poolGeodeRager from "./pool/geode-rager.js";
 import _poolGeralfsMindcrusher from "./pool/geralfs-mindcrusher.js";
 import _poolGhaltaPrimalHunger from "./pool/ghalta-primal-hunger.js";
 import _poolGhaltaStampedeTyrant from "./pool/ghalta-stampede-tyrant.js";
+import _poolGhyrsonStarnKelermorph from "./pool/ghyrson-starn-kelermorph.js";
 import _poolGiantGrowth from "./pool/giant-growth.js";
 import _poolGiantSpider from "./pool/giant-spider.js";
 import _poolGilanraCallerOfWirewood from "./pool/gilanra-caller-of-wirewood.js";
@@ -378,6 +380,7 @@ import _poolHoardSmelterDragon from "./pool/hoard-smelter-dragon.js";
 import _poolHoldoutSettlement from "./pool/holdout-settlement.js";
 import _poolHolyStrength from "./pool/holy-strength.js";
 import _poolHookHauntDrifter from "./pool/hook-haunt-drifter.js";
+import _poolHopeEstheim from "./pool/hope-estheim.js";
 import _poolHornetNest from "./pool/hornet-nest.js";
 import _poolHornetQueen from "./pool/hornet-queen.js";
 import _poolHourOfReckoning from "./pool/hour-of-reckoning.js";
@@ -429,6 +432,7 @@ import _poolKazanduMammoth from "./pool/kazandu-mammoth.js";
 import _poolKazanduRefuge from "./pool/kazandu-refuge.js";
 import _poolKazanduValley from "./pool/kazandu-valley.js";
 import _poolKazuulTyrantOfTheCliffs from "./pool/kazuul-tyrant-of-the-cliffs.js";
+import _poolKedissEmberclawFamiliar from "./pool/kediss-emberclaw-familiar.js";
 import _poolKenrithTheReturnedKing from "./pool/kenrith-the-returned-king.js";
 import _poolKessDissidentMage from "./pool/kess-dissident-mage.js";
 import _poolKessigWolfRun from "./pool/kessig-wolf-run.js";
@@ -528,6 +532,7 @@ import _poolNightsWhisper from "./pool/nights-whisper.js";
 import _poolNihilSpellbomb from "./pool/nihil-spellbomb.js";
 import _poolNissasExpedition from "./pool/nissas-expedition.js";
 import _poolNivMizzetParun from "./pool/niv-mizzet-parun.js";
+import _poolNivMizzetVisionary from "./pool/niv-mizzet-visionary.js";
 import _poolNomadOutpost from "./pool/nomad-outpost.js";
 import _poolNorinTheWary from "./pool/norin-the-wary.js";
 import _poolNotionThief from "./pool/notion-thief.js";
@@ -699,6 +704,7 @@ import _poolSneakAttack from "./pool/sneak-attack.js";
 import _poolSokkaTenaciousTactician from "./pool/sokka-tenacious-tactician.js";
 import _poolSolRing from "./pool/sol-ring.js";
 import _poolSolemnSimulacrum from "./pool/solemn-simulacrum.js";
+import _poolSonicTheHedgehog from "./pool/sonic-the-hedgehog.js";
 import _poolSoulSnare from "./pool/soul-snare.js";
 import _poolSoulWarden from "./pool/soul-warden.js";
 import _poolSparasHeadquarters from "./pool/sparas-headquarters.js";
@@ -1054,6 +1060,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBeastWithin,
   _poolBedevil,
   _poolBeholdTheMultiverse,
+  _poolBelakorTheDarkMaster,
   _poolBigScore,
   _poolBirdsOfParadise,
   _poolBitterTriumph,
@@ -1300,6 +1307,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolGeralfsMindcrusher,
   _poolGhaltaPrimalHunger,
   _poolGhaltaStampedeTyrant,
+  _poolGhyrsonStarnKelermorph,
   _poolGiantGrowth,
   _poolGiantSpider,
   _poolGilanraCallerOfWirewood,
@@ -1361,6 +1369,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolHoldoutSettlement,
   _poolHolyStrength,
   _poolHookHauntDrifter,
+  _poolHopeEstheim,
   _poolHornetNest,
   _poolHornetQueen,
   _poolHourOfReckoning,
@@ -1412,6 +1421,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolKazanduRefuge,
   _poolKazanduValley,
   _poolKazuulTyrantOfTheCliffs,
+  _poolKedissEmberclawFamiliar,
   _poolKenrithTheReturnedKing,
   _poolKessDissidentMage,
   _poolKessigWolfRun,
@@ -1511,6 +1521,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolNihilSpellbomb,
   _poolNissasExpedition,
   _poolNivMizzetParun,
+  _poolNivMizzetVisionary,
   _poolNomadOutpost,
   _poolNorinTheWary,
   _poolNotionThief,
@@ -1682,6 +1693,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSokkaTenaciousTactician,
   _poolSolRing,
   _poolSolemnSimulacrum,
+  _poolSonicTheHedgehog,
   _poolSoulSnare,
   _poolSoulWarden,
   _poolSparasHeadquarters,
