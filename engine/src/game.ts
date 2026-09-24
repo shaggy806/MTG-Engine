@@ -57,6 +57,7 @@ import type {
 } from "./cards.js";
 import {
   assignedCombatDamage,
+  turnHistoryCount,
   cardTypesInGraveyards,
   colorsAmongPermanents,
   computeCharacteristics,
@@ -188,6 +189,7 @@ import type {
   LastKnownRefs,
   LeaveDestination,
   MulliganHandState,
+  TurnHistory,
   PendingTrigger,
   PlayerCounterKind,
   PreventionShield,
@@ -386,6 +388,16 @@ function isLeaveEvent(event: GameEvent): event is LeaveEvent {
     event.type === "permanent-sacrificed"
   );
 }
+
+/** The card types that make a card a permanent card (rule 110.4). */
+const PERMANENT_TYPES: ReadonlySet<CardType> = new Set<CardType>([
+  "artifact",
+  "creature",
+  "enchantment",
+  "land",
+  "planeswalker",
+  "battle",
+]);
 
 /** A `deals-damage-batch` trigger owed by the damage event under way: the
  * players it has dealt damage to so far and how much. */
@@ -3088,6 +3100,7 @@ export class Game {
       this.state.players[player].creaturesDiedThisTurn = 0;
       this.state.players[player].createdTokenThisTurn = false;
       this.state.players[player].usedGraveyardThisTurn = false;
+      delete this.state.players[player].turnHistory;
     }
     // Day → night if the previous turn's player cast no spells (726.3);
     // night → day if they cast two or more (726.4). Only once it's day or night.
@@ -10013,6 +10026,8 @@ export class Game {
       cardTypesInGraveyard: (filter) =>
         cardTypesInGraveyards(this.state, this.registry, controller, filter),
       thisWay: thisWayDone,
+      turnHistoryCount: (what, players, filter) =>
+        turnHistoryCount(this.state, this.registry, players, what, filter, controller),
       cardTypesAmong: (objects, asLastKnown) => {
         const types = new Set<CardType>();
         for (const id of objects) {
@@ -13194,6 +13209,74 @@ export class Game {
     }
   }
 
+  /**
+   * Note `event` in the turn history of the player it concerns (see
+   * `TurnHistory`) — from `emit`, so every path that announces an entry, a
+   * death, a sacrifice, a card put into a graveyard, damage or an attack
+   * counts.
+   */
+  private recordTurnHistory(event: GameEvent): void {
+    const historyOf = (player: PlayerId | undefined): TurnHistory | undefined => {
+      const seat = player === undefined ? undefined : this.state.players[player];
+      return seat === undefined ? undefined : (seat.turnHistory ??= {});
+    };
+    switch (event.type) {
+      case "permanent-entered-battlefield": {
+        const object = this.state.objects[event.object];
+        const history = historyOf(object?.controller);
+        if (history !== undefined) {
+          (history.entered ??= []).push({ object: event.object, count: event.count ?? 1 });
+        }
+        return;
+      }
+      case "permanent-left-battlefield": {
+        if (event.toZone !== "graveyard" && event.toZone !== "exile") return;
+        const object = this.state.objects[event.object];
+        const lki = object?.lastKnown ?? this.state.ceasedTokens?.[event.object];
+        if (lki === undefined) return;
+        const history = historyOf(lki.controller);
+        if (history === undefined) return;
+        const entry = { object: event.object, count: object?.stackCount ?? 1 };
+        if (event.toZone === "exile") (history.exiled ??= []).push(entry);
+        else if (lki.types.includes("creature")) (history.died ??= []).push(entry);
+        return;
+      }
+      case "permanent-sacrificed": {
+        const history = historyOf(event.player);
+        if (history !== undefined) (history.sacrificed ??= []).push({ object: event.object, count: 1 });
+        return;
+      }
+      case "cards-put-into-graveyard": {
+        for (const { object: id } of event.arrivals) {
+          const card = this.state.objects[id];
+          if (card === undefined) continue;
+          const permanent = effectiveTypes(this.state, this.registry, card).some((t) =>
+            PERMANENT_TYPES.has(t),
+          );
+          if (!permanent) continue;
+          const history = historyOf(card.owner);
+          if (history !== undefined) (history.descended ??= []).push({ object: id, count: 1 });
+        }
+        return;
+      }
+      case "damage-dealt": {
+        if (event.target.kind !== "player") return;
+        const history = historyOf(event.target.player);
+        if (history === undefined) return;
+        history.damageTaken = (history.damageTaken ?? 0) + event.amount;
+        if (event.combat) history.combatDamageTaken = (history.combatDamageTaken ?? 0) + event.amount;
+        return;
+      }
+      case "attackers-declared": {
+        const history = historyOf(event.player);
+        if (history !== undefined) history.attacked = true;
+        return;
+      }
+      default:
+        return;
+    }
+  }
+
   /** Active player first, then the rest in turn order (rule 101.4). */
   private apnapOrder(): PlayerId[] {
     const at = this.state.turnOrder.indexOf(this.activePlayer);
@@ -15420,6 +15503,7 @@ export class Game {
     this.state.eventSeq += 1;
     const full = { ...event, seq } as GameEvent;
     this.state.eventLog.push(full);
+    this.recordTurnHistory(full);
     // Every consequential state change announces itself here, so this is the
     // broad safety net for the computed-value cache: whatever just changed,
     // `detectTriggers` and everything after it read fresh values.

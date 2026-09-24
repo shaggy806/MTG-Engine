@@ -17,7 +17,7 @@ import type { EffectSpec, ModeOption, PlayerScope, SpellResolver, ThisWayKind } 
 import type { AggregateOf, AggregateSpec, CardFilter, NumCompare } from "../filter.js";
 import type { Color } from "../mana.js";
 import type { ReplacementSpec } from "../replacements.js";
-import type { PlayerCounterKind, ZoneType } from "../state.js";
+import type { PlayerCounterKind, TurnHistoryKind, ZoneType } from "../state.js";
 import type { TargetSpec } from "../target.js";
 
 export type CardType =
@@ -233,7 +233,19 @@ export type CountSpec =
  */
 /** `"spells-cast"` counts every spell the player cast this turn, countered or
  * not and whatever they controlled at the time (Aetherflux Reservoir). */
-export type TurnStat = "life-lost" | "life-gained" | "cards-drawn" | "spells-cast";
+export type TurnStat =
+  | "life-lost"
+  | "life-gained"
+  | "cards-drawn"
+  | "spells-cast"
+  /** Damage dealt to the player this turn, and the combat part of it —
+   * "the number of opponents that were dealt combat damage this turn" (Tymna
+   * the Weaver) is `{ playersWithTurnStat: "combat-damage-taken", who:
+   * "each-opponent" }`. Damage, not life lost: prevented damage isn't dealt. */
+  | "damage-taken"
+  | "combat-damage-taken"
+  /** 1 once the player has declared an attacker this turn (raid). */
+  | "attacked";
 
 /**
  * A condition gating a static ability (rule 604.3 — "as long as …"). Evaluated
@@ -394,6 +406,24 @@ export type StaticCondition =
   /** A creature died this turn (Liliana's Devotee). Reads the turn-scoped
    * `GameState.creaturesDiedThisTurn`. */
   | { readonly kind: "creature-died-this-turn" }
+  /**
+   * Something of a {@link TurnHistory} list happened this turn at least
+   * `atLeast` times (default 1): "if another Human entered the battlefield
+   * under your control this turn" (Éowyn, Shieldmaiden: `{ what: "entered",
+   * filter: { subtype: "Human" }, excludeSelf: true }`), "if a creature died
+   * under your control this turn", "if you descended this turn". `who` is
+   * whose (default `"you"`); `filter` narrows the objects — one that has left
+   * the battlefield as it last existed there, a card put into a graveyard as
+   * it is now; `excludeSelf` leaves this permanent out ("another").
+   */
+  | {
+      readonly kind: "turn-history";
+      readonly what: TurnHistoryKind;
+      readonly who?: "you" | "opponent" | "any-player";
+      readonly filter?: CardFilter;
+      readonly atLeast?: number;
+      readonly excludeSelf?: boolean;
+    }
   /** The source's controller created a token this turn (Idol of Oblivion). */
   | { readonly kind: "created-token-this-turn" }
   /** The source's controller cast a spell from a graveyard or activated an

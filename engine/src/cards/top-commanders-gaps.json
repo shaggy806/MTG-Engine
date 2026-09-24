@@ -1032,7 +1032,7 @@
   "stat:turn-event-tallies": {
    "size": "medium",
    "ui": false,
-   "description": "Per-player, per-turn tallies of game events, with conditions and amounts over them: you attacked this turn (raid), creatures died under your control (with last-known subtypes for a filter), permanents entered under your control, permanents sacrificed, creatures exiled (keyed by controller), permanent cards put into your graveyard (descend), and damage taken or noncombat damage dealt by red sources."
+   "description": "Per-player, per-turn tallies still missing: noncombat damage dealt by sources a player controls, with a filter on the source (Ojer Axonil's red sources). Built so far: PlayerState.turnHistory — permanents entered under a player's control, creatures died under it (last-known), permanents sacrificed, permanents exiled from under it, permanent cards put into their graveyard (descend), damage and combat damage taken, and raid — with the turn-history condition, the turnHistory amount and the damage-taken, combat-damage-taken and attacked turn stats (Tymna the Weaver, Éowyn, Shieldmaiden)."
   },
   "static:affect-scope-by-filter": {
    "size": "medium",

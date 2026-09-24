@@ -42,7 +42,7 @@ import type { CardFilter } from "./filter.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { permanentCount, printedCardName } from "./state.js";
-import type { GameObject, GameState, LastKnownInfo, PtModifier } from "./state.js";
+import type { GameObject, GameState, LastKnownInfo, PtModifier, TurnHistoryKind } from "./state.js";
 import type { TargetRef } from "./target.js";
 
 /**
@@ -496,6 +496,24 @@ function evalStaticCondition(
       return state.turnOrder.some(
         (p) => p !== you && state.players[p].lifeLostThisTurn > 0,
       );
+    case "turn-history": {
+      const seats =
+        condition.who === undefined || condition.who === "you"
+          ? [you]
+          : condition.who === "opponent"
+            ? state.turnOrder.filter((p) => p !== you)
+            : state.turnOrder;
+      const n = turnHistoryCount(
+        state,
+        registry,
+        seats,
+        condition.what,
+        condition.filter,
+        you,
+        condition.excludeSelf === true ? source.id : undefined,
+      );
+      return n >= (condition.atLeast ?? 1);
+    }
     case "turn-stat": {
       // Per player, never summed: "an opponent lost 4 or more life this
       // turn" is satisfied by one opponent reaching 4, not by two reaching
@@ -584,7 +602,48 @@ export function turnStatOf(state: GameState, player: PlayerId, stat: TurnStat): 
       return seat.cardsDrawnThisTurn;
     case "spells-cast":
       return seat.spellsCastThisTurn;
+    case "damage-taken":
+      return seat.turnHistory?.damageTaken ?? 0;
+    case "combat-damage-taken":
+      return seat.turnHistory?.combatDamageTaken ?? 0;
+    case "attacked":
+      return seat.turnHistory?.attacked === true ? 1 : 0;
   }
+}
+
+/**
+ * How many things of one {@link TurnHistory} list `players` have this turn,
+ * matching `filter` from `you`'s side — a token stack counting as every
+ * token in it. A permanent that has left the battlefield is matched as it
+ * last existed there; a card put into a graveyard (`descended`), as it is
+ * now. `except` leaves one object out ("another Human").
+ */
+export function turnHistoryCount(
+  state: GameState,
+  registry: CardRegistry,
+  players: readonly PlayerId[],
+  what: TurnHistoryKind,
+  filter: CardFilter | undefined,
+  you: PlayerId,
+  except?: ObjectId,
+): number {
+  let n = 0;
+  for (const player of players) {
+    for (const entry of state.players[player]?.turnHistory?.[what] ?? []) {
+      if (entry.object === except) continue;
+      if (
+        filter !== undefined &&
+        !matchesFilter(state, registry, entry.object, filter, {
+          you,
+          ...(what === "descended" ? {} : { lastKnown: true }),
+        })
+      ) {
+        continue;
+      }
+      n += entry.count;
+    }
+  }
+  return n;
 }
 
 export function hasLostAbilities(object: GameObject): boolean {

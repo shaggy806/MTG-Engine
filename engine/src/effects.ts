@@ -13,7 +13,12 @@ import type { CardType, Keyword, StaticAbility, StaticCondition, TurnStat } from
 import type { AggregateSpec, CardFilter } from "./filter.js";
 import type { Color, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
-import type { DelayedTriggerTiming, LeaveDestination, PlayerCounterKind } from "./state.js";
+import type {
+  DelayedTriggerTiming,
+  LeaveDestination,
+  PlayerCounterKind,
+  TurnHistoryKind,
+} from "./state.js";
 import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
 
 /** `"trigger-object"` reads `ResolutionContext.triggerObject` (needed-cards
@@ -275,6 +280,15 @@ export type EffectAmount =
    * types among them instead, each once (Kefka, Court Mage's "a card for each
    * card type among cards discarded this way").
    */
+  /**
+   * How many things of one of a player's this-turn lists there are — "for
+   * each creature that died under your control this turn" (`"died"`), "the
+   * number of times you descended this turn" (`"descended"`), permanents that
+   * entered under your control (`"entered"`), permanents you sacrificed.
+   * `who` is whose (default `"you"`); `filter` narrows them as the
+   * `turn-history` condition does. See `TurnHistory`.
+   */
+  | { readonly turnHistory: TurnHistoryKind; readonly who?: PlayerScope; readonly filter?: CardFilter }
   | {
       readonly thisWay: ThisWayKind;
       readonly who?: PlayerScope;
@@ -1752,6 +1766,8 @@ export interface EffectApi {
    * the permanents it has made them sacrifice, so far — see the `thisWay`
    * {@link EffectAmount}. */
   thisWay(what: ThisWayKind, who?: PlayerScope, filter?: CardFilter): readonly ObjectId[];
+  /** See the `{ turnHistory }` {@link EffectAmount}. */
+  turnHistoryCount(what: TurnHistoryKind, players: readonly PlayerId[], filter?: CardFilter): number;
   /** How many card types there are among `objects`, each once — as they
    * last existed on the battlefield with `asLastKnown` (sacrificed
    * permanents), else as they are now. */
@@ -2301,6 +2317,9 @@ export function amountValue(
     return ctx.colorsAmong(amount.colorsAmong, amount.excludeSelf === true ? [ctx.source] : []);
   }
   if ("cardTypesInGraveyard" in amount) return ctx.cardTypesInGraveyard(amount.cardTypesInGraveyard);
+  if ("turnHistory" in amount) {
+    return ctx.turnHistoryCount(amount.turnHistory, ctx.playersInScope(amount.who ?? "you"), amount.filter);
+  }
   if ("thisWay" in amount) {
     const done = ctx.thisWay(amount.thisWay, amount.who, amount.filter);
     return amount.cardTypes === true

@@ -375,13 +375,25 @@ for nothing), `{ creaturesDiedThisTurn: true }`
 Bearer), `{ countPlayers: PlayerScope }` (Inspired Sphinx; counts living
 players, so it shrinks as a multiplayer game does),
 `{ turnStat: TurnStat, who?: PlayerScope }` (a per-turn running total —
-`"life-lost"`, `"life-gained"`, `"cards-drawn"` or `"spells-cast"` — summed over the scope,
+`"life-lost"`, `"life-gained"`, `"cards-drawn"`, `"spells-cast"`,
+`"damage-taken"`, `"combat-damage-taken"` or `"attacked"` (1 once they've
+declared an attacker — raid) — summed over the scope,
 default `"you"`: Kydele's "for each card you've drawn this turn", or the life
 your opponents lost this turn as `who: "each-opponent"`; Aetherflux Reservoir's
 "1 life for each spell you've cast this turn" as `"spells-cast"`, which counts
 countered spells too),
 `{ playersWithTurnStat: TurnStat, who: PlayerScope }` (how many players in the
-scope have a nonzero total — "for each opponent who lost life this turn"),
+scope have a nonzero total — "for each opponent who lost life this turn";
+Tymna the Weaver's "the number of opponents that were dealt combat damage this
+turn" is `"combat-damage-taken"`),
+`{ turnHistory: "entered" | "died" | "sacrificed" | "exiled" | "descended", who?, filter? }`
+(how many permanents entered under the scope's control, creatures died under
+it, permanents they sacrificed, permanents were exiled from under their
+control (Vren, the Relentless: `{ turnHistory: "exiled", who:
+"each-opponent", filter: { type: "creature" } }`), or permanent cards were put
+into their graveyards — "you descended" — this turn; a token stack counts every token.
+`filter` narrows them: a permanent that has left as it last existed, a card in
+a graveyard as it is now. See `PlayerState.turnHistory`),
 `{ playerCounters: "poison" | "experience", who?: PlayerScope }` (the counters
 of that kind the scope's players have, summed, default `"you"` — Ezuri, Claw
 of Progress's "where X is the number of experience counters you have"),
@@ -1540,6 +1552,16 @@ clause (section 9):
 - `{ kind: "opponent-lost-life-this-turn" }` — Theater of Horrors. Reads the
   per-player `lostLifeThisTurn` flag, set in `changeLife` so it catches damage
   and drain alike.
+- `{ kind: "turn-history", what, who?, filter?, atLeast?, excludeSelf? }` —
+  one of the `turnHistory` lists (§6) holds at least `atLeast` (default 1)
+  this turn: Éowyn, Shieldmaiden's "if another Human entered the battlefield
+  under your control this turn" is `{ what: "entered", filter: { subtype:
+  "Human" }, excludeSelf: true }` (a Human that entered and left since still
+  counts); "if a creature died under your control this turn" is `{ what:
+  "died" }`; "if you descended this turn" `{ what: "descended" }`. `who` is
+  `"you"` (default), `"opponent"` or `"any-player"`. The `turn-stat`
+  condition covers the running totals, raid (`stat: "attacked"`) and
+  `"combat-damage-taken"` among them.
 - `{ kind: "creature-died-this-turn" }` — Liliana's Devotee. Reads the
   turn-scoped `GameState.creaturesDiedThisTurn`, counted in `moveObject`
   while the dying permanent's types are still readable.

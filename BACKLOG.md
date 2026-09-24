@@ -39,7 +39,9 @@ that one card is the reason the deck exists.
   Keen-Eyed Navigator and Goro-Goro and Satoru (the batched `deals-damage-batch` trigger);
   Sidisi, Brood Tyrant, Syr Konrad, the Grim and Disa the Restless (`put-into-graveyard`, and
   `leaves-graveyard`'s `perCard`); Kuja, Genome Sorcerer, The Mindskinner and Neriv, Heart of
-  the Storm (the scoped `would-deal-damage` replacement).
+  the Storm (the scoped `would-deal-damage` replacement); Tymna the Weaver and Éowyn,
+  Shieldmaiden (`PlayerState.turnHistory` and the new turn stats — their gaps entries still
+  list `stat:turn-event-tallies`, whose part they need is built).
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first

@@ -865,6 +865,9 @@ export interface PlayerState {
   /** This player cast a spell from a graveyard, or activated an ability of a
    * card in a graveyard, this turn (Laboratory Drudge). */
   usedGraveyardThisTurn: boolean;
+  /** What this player's turn so far has held — see {@link TurnHistory}.
+   * Absent until something is recorded; reset as each turn begins. */
+  turnHistory?: TurnHistory;
   /** Energy counters this player has (rule 122 / {E} — ROADMAP Phase 10). A
    * player resource, not tied to any permanent; spent by a `payEnergy` ability
    * cost, gained by a `get-energy` effect. Kept apart from `counters`, which
@@ -1286,6 +1289,46 @@ export type DelayedTriggerTiming =
   | "your-next-upkeep"
   | "your-next-end-step"
   | "your-next-main-phase";
+
+/** One object in a {@link TurnHistory} list; a token stack entering or
+ * leaving at once counts as every token in it. */
+export interface TurnHistoryEntry {
+  readonly object: ObjectId;
+  readonly count: number;
+}
+
+/** The lists a {@link TurnHistory} keeps. */
+export type TurnHistoryKind = "entered" | "died" | "sacrificed" | "exiled" | "descended";
+
+/**
+ * What one player's turn so far has held, for "this turn" conditions and
+ * amounts — "if another Human entered the battlefield under your control this
+ * turn" (Éowyn, Shieldmaiden), "the number of opponents that were dealt combat
+ * damage this turn" (Tymna the Weaver), "for each creature that died under
+ * your control this turn", "the number of times you descended this turn".
+ * Recorded off the events themselves (`Game.recordTurnHistory`, from `emit`),
+ * so every path that announces one counts; reset as each turn begins.
+ */
+export interface TurnHistory {
+  /** Permanents that entered the battlefield under this player's control. */
+  entered?: TurnHistoryEntry[];
+  /** Creatures that died under this player's control. */
+  died?: TurnHistoryEntry[];
+  /** Permanents this player sacrificed. */
+  sacrificed?: TurnHistoryEntry[];
+  /** Permanents exiled from the battlefield while this player controlled
+   * them — Vren, the Relentless's "creatures your opponents controlled that
+   * were exiled this turn". */
+  exiled?: TurnHistoryEntry[];
+  /** Permanent cards put into this player's graveyard from anywhere — each
+   * is this player "descending". */
+  descended?: TurnHistoryEntry[];
+  /** Damage dealt to this player, and the part of it that was combat damage. */
+  damageTaken?: number;
+  combatDamageTaken?: number;
+  /** This player declared one or more attackers (raid). */
+  attacked?: boolean;
+}
 
 /** Where a permanent can go when it leaves the battlefield. */
 export type LeaveDestination = "graveyard" | "exile" | "hand" | "library" | "command";
