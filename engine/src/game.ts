@@ -5081,17 +5081,39 @@ export class Game {
   /** How many `doubleTriggers` statics `controller` has whose cause is
    * `event` — each makes a trigger that event causes fire once more. */
   private causeTriggerDoublers(controller: PlayerId, event: GameEvent): number {
-    const subject = (cause: "enters" | "attacks" | "combat-damage-to-player"): ObjectId | null | undefined => {
-      if (cause === "enters") {
-        return event.type === "permanent-entered-battlefield" ? event.object : undefined;
+    type Cause = NonNullable<StaticAbility["doubleTriggers"]>["cause"];
+    const subject = (cause: Cause): ObjectId | null | undefined => {
+      switch (cause) {
+        case "enters":
+          return event.type === "permanent-entered-battlefield" ? event.object : undefined;
+        case "attacks":
+          if (event.type === "attacker-declared" || event.type === "attacked-alone") return event.attacker;
+          // Whole-declaration events: no one attacker to test a filter on.
+          return event.type === "attackers-declared" || event.type === "player-attacked"
+            ? null
+            : undefined;
+        case "combat-damage-to-player":
+          return event.type === "damage-dealt" && event.combat && event.target.kind === "player"
+            ? event.source
+            : undefined;
+        case "cast-or-copy":
+          return event.type === "spell-cast"
+            ? event.object
+            : event.type === "spell-copied"
+              ? event.copy
+              : undefined;
+        case "dealt-damage":
+          return event.type === "damage-dealt" && event.target.kind === "object"
+            ? event.target.object
+            : undefined;
+        case "dies":
+          // Its dies triggers hang off one of these and its
+          // leaves-the-battlefield ones off the other.
+          return event.type === "permanent-destroyed" ||
+            (event.type === "permanent-left-battlefield" && event.toZone === "graveyard")
+            ? event.object
+            : undefined;
       }
-      if (cause === "attacks") {
-        if (event.type === "attacker-declared" || event.type === "attacked-alone") return event.attacker;
-        return event.type === "attackers-declared" ? null : undefined;
-      }
-      return event.type === "damage-dealt" && event.combat && event.target.kind === "player"
-        ? event.source
-        : undefined;
     };
     let count = 0;
     for (const id of this.state.zones.shared.battlefield) {
@@ -5104,9 +5126,48 @@ export class Game {
         if (who === undefined) continue;
         if (d.filter !== undefined) {
           if (who === null) continue;
-          if (!matchesFilter(this.state, this.registry, who, d.filter, { you: controller })) continue;
+          // A creature that died is matched as it last existed.
+          const lastKnown = d.cause === "dies";
+          if (!matchesFilter(this.state, this.registry, who, d.filter, { you: controller, lastKnown })) {
+            continue;
+          }
         }
         count += 1;
+      }
+    }
+    return count;
+  }
+
+  /**
+   * How many `doubleTriggersOf` statics `controller` has that reach an
+   * ability of `sourceId` — "if a triggered ability of an Ally you control
+   * triggers, it triggers an additional time". Only a permanent's abilities:
+   * one on the battlefield, or — `departed` — one looking back at its own
+   * departure, matched as it last existed there.
+   */
+  private sourceTriggerDoublers(controller: PlayerId, sourceId: ObjectId, departed: boolean): number {
+    const source = this.state.objects[sourceId];
+    if (source === undefined || (!departed && source.zone !== "battlefield")) return 0;
+    let count = 0;
+    for (const id of this.state.zones.shared.battlefield) {
+      const doubler = this.state.objects[id];
+      if (doubler.controller !== controller || hasLostAbilities(doubler)) continue;
+      for (const ability of this.registry.get(printedCardName(doubler)).static) {
+        const d = ability.doubleTriggersOf;
+        if (d === undefined || !this.staticActive(doubler, ability)) continue;
+        const ofSelfOrEquipment =
+          d.selfAndEquipment === true &&
+          (sourceId === id ||
+            (!departed &&
+              source.attachedTo === id &&
+              effectiveSubtypes(this.state, this.registry, source).includes("Equipment")));
+        const matches =
+          d.filter !== undefined &&
+          matchesFilter(this.state, this.registry, sourceId, d.filter, {
+            you: controller,
+            ...(departed ? { lastKnown: true } : {}),
+          });
+        if (ofSelfOrEquipment || matches) count += 1;
       }
     }
     return count;
@@ -8365,7 +8426,9 @@ export class Game {
             (ability.trigger.on === "enters-battlefield" &&
             event.type === "permanent-entered-battlefield"
               ? this.entryTriggerDoublers(object.controller, event.object)
-              : 0) + this.causeTriggerDoublers(object.controller, event);
+              : 0) +
+            this.causeTriggerDoublers(object.controller, event) +
+            this.sourceTriggerDoublers(object.controller, id, lastSeen !== undefined);
           // A compacted stack that left play is that many permanents leaving,
           // each its own event: Zulaport Cutthroat drains once per Goblin in
           // a stack a wrath kills. The stack's own abilities already scale by

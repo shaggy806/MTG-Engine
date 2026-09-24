@@ -1437,6 +1437,30 @@ anthem, the keyword grant and the granted trigger like any other creature.
   of this permanent's controller to trigger, it triggers an additional time.
   `filter`, when present, narrows which *entering* permanent counts. `affects`
   is ignored — this only ever doubles its own controller's triggers.
+- `doubleTriggers: { cause, filter? }` — "if [something] causes a triggered
+  ability of a permanent you control to trigger, that ability triggers an
+  additional time", for **any** trigger that event causes. `cause` is
+  `"enters"` (Elesh Norn, Mother of Machines), `"attacks"` (Isshin — a
+  per-attacker or a whole-declaration trigger; leave `filter` off for it),
+  `"combat-damage-to-player"` (Felix Five-Boots), `"cast-or-copy"` (Veyran,
+  Voice of Duality: `filter: { typesAnyOf: ["instant", "sorcery"],
+  controlledBy: "you" }` is "you casting or copying an instant or sorcery
+  spell"), `"dealt-damage"` ("a creature you control being dealt damage" —
+  either end of that damage's triggers) or `"dies"` (Teysa Karlov: "a
+  creature dying" — dies and leaves-the-battlefield triggers, `filter`
+  matched as it last existed). `filter` narrows the permanent, spell or copy
+  the event is about.
+- `doubleTriggersOf: { filter?, selfAndEquipment? }` — the same, keyed on
+  **whose** ability it is: "if a triggered ability of an Ally you control
+  triggers" (Katara, the Fearless: `filter: { subtype: "Ally", controlledBy:
+  "you" }`), "…of a creature you control with power 2 or less" (Delney).
+  `selfAndEquipment` is "…of ~ or an Equipment attached to it" (Cloud, Midgar
+  Mercenary, with `condition: { kind: "source", filter: { equipped: true } }`
+  for "as long as ~ is equipped"). Only permanents' abilities — a spell's
+  "when you cast this" and a command-zone card's aren't — and a
+  leaves-the-battlefield ability's source is matched as it last existed. All
+  the doublers add up: an Ally's attack trigger under Katara and Isshin fires
+  three times.
 
 **`condition?`** (`StaticCondition`) gates the *whole* static — when false it
 contributes nothing. The same union is a triggered ability's intervening-if

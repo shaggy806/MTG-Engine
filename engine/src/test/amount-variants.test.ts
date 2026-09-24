@@ -17,7 +17,6 @@
 
 import { describe, expect, it } from "vitest";
 
-import type { CardDraft } from "../cards/define.js";
 import { defineCard } from "../cards/define.js";
 import { createDefaultRegistry } from "../cards/registry.js";
 import { ScriptedController } from "../controller.js";
@@ -31,7 +30,11 @@ import type { GameState } from "../state.js";
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
 
-const legend = (name: string, colors: readonly Color[], extra: Partial<CardDraft> = {}) =>
+const legend = (
+  name: string,
+  colors: readonly Color[],
+  extra: Partial<Parameters<typeof defineCard>[0]> = {},
+) =>
   defineCard({
     name,
     manaCost: "{0}",

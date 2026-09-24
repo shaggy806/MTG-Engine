@@ -845,13 +845,47 @@ export interface StaticAbility {
    *   to test.
    * - `"combat-damage-to-player"`: a creature dealing combat damage to a
    *   player (Felix Five-Boots). `filter` narrows the damage source.
+   * - `"cast-or-copy"`: a spell being cast or copied (Veyran, Voice of
+   *   Duality: "you casting or copying an instant or sorcery spell" is
+   *   `filter: { typesAnyOf: ["instant", "sorcery"], controlledBy: "you" }`).
+   *   `filter` narrows the spell, or the copy.
+   * - `"dealt-damage"`: a permanent being dealt damage ("a creature you
+   *   control being dealt damage" — `filter` narrows the permanent). Any
+   *   trigger that damage causes, from either end of it.
+   * - `"dies"`: a permanent dying (Teysa Karlov: "a creature dying"),
+   *   `filter` matched as it last existed on the battlefield. Its dies and
+   *   leaves-the-battlefield triggers alike.
    *
-   * Only its controller's triggers. Stacks with `doubleEntryTriggers` and with
-   * itself (two sources, three times).
+   * Only its controller's triggers. Stacks with `doubleEntryTriggers`,
+   * `doubleTriggersOf` and itself (two sources, three times).
    */
   readonly doubleTriggers?: {
-    readonly cause: "enters" | "attacks" | "combat-damage-to-player";
+    readonly cause:
+      | "enters"
+      | "attacks"
+      | "combat-damage-to-player"
+      | "cast-or-copy"
+      | "dealt-damage"
+      | "dies";
     readonly filter?: CardFilter;
+  };
+  /**
+   * "If a triggered ability of [a permanent] triggers, that ability triggers
+   * an additional time" — keyed on **whose** ability it is rather than on
+   * what caused it: Katara, the Fearless's "an Ally you control" (`filter`),
+   * Delney, Streetwise Lookout's "a creature you control with power 2 or
+   * less", Cloud, Midgar Mercenary's "Cloud or an Equipment attached to it"
+   * (`selfAndEquipment`, with a `condition` for "as long as Cloud is
+   * equipped"). The permanent is matched from this static's controller's
+   * side, as it is as the ability triggers — or, for its own
+   * leaves-the-battlefield ability, as it last existed there. Only abilities
+   * of permanents: a spell's "when you cast this" isn't one, and nor is a
+   * command-zone card's. Only its controller's triggers; stacks with the
+   * cause-keyed doublers.
+   */
+  readonly doubleTriggersOf?: {
+    readonly filter?: CardFilter;
+    readonly selfAndEquipment?: boolean;
   };
   /**
    * "Permanents entering don't cause abilities of permanents your opponents

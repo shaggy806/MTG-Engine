@@ -56,7 +56,8 @@
   "keyword:earthbend",
   "condition:filter-dynamic-compare",
   "effect:amount-new-variants",
-  "static:pt-per-amount"
+  "static:pt-per-amount",
+  "static:trigger-count-modifiers"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

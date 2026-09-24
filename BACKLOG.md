@@ -31,16 +31,17 @@ that one card is the reason the deck exists.
   Betor, Ancestor's Voice, Clement, the Worrywort and Minn, Wily Illusionist (a filter's
   `{ amount }` operand); Doran, Besieged by Time (the `difference` amount and an `own`
   compare); Sisay, Weatherlight Captain (`colorsAmong`); Toxrill, the Corrosive
-  (`grantPtPerCount.countersOnAffected`).
+  (`grantPtPerCount.countersOnAffected`); Katara, the Fearless and Cloud, Midgar Mercenary
+  (`doubleTriggersOf`); Wayta, Trainer Prodigy (`doubleTriggers`' `"dealt-damage"` cause).
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first
   ten, engine-only, with the commanders each fully unblocks:
-  `effect:this-way-results` (+3), `static:trigger-count-modifiers` (+3),
-  `effect:amount-aggregate` (+1), `effect:look-and-choose-leftover` (+1),
-  `effect:put-onto-battlefield-options` (+1), `effect:choices-by-other-players` (+3),
-  `trigger:put-into-graveyard` (+3), `effect:missing-tokens` (+1), `trigger:combat-damage-batch`
-  (+3), `condition:filter-this-turn-history` (+2).
+  `effect:this-way-results` (+3), `effect:amount-aggregate` (+1),
+  `effect:look-and-choose-leftover` (+1), `effect:put-onto-battlefield-options` (+1),
+  `effect:choices-by-other-players` (+3), `trigger:put-into-graveyard` (+3),
+  `effect:missing-tokens` (+1), `trigger:combat-damage-batch` (+3),
+  `condition:filter-this-turn-history` (+2), `replacement:damage-modification` (+3).
 - **Most-needed features overall.** `effect:this-way-results` (18),
   `static:grant-to-cards-outside-battlefield` (14), `zone:visibility-extensions`,
   `static:grant-abilities-to-spells` and `bug:zone-change-object-identity` (13 each). Live
