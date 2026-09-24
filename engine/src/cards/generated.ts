@@ -289,6 +289,7 @@ import _poolFaerieFormation from "./pool/faerie-formation.js";
 import _poolFaerieMastermind from "./pool/faerie-mastermind.js";
 import _poolFaithlessLooting from "./pool/faithless-looting.js";
 import _poolFanaticOfRhonas from "./pool/fanatic-of-rhonas.js";
+import _poolFarewell from "./pool/farewell.js";
 import _poolFarhavenElf from "./pool/farhaven-elf.js";
 import _poolFarseek from "./pool/farseek.js";
 import _poolFavorableWinds from "./pool/favorable-winds.js";
@@ -524,6 +525,7 @@ import _poolManaDrain from "./pool/mana-drain.js";
 import _poolManaGeyser from "./pool/mana-geyser.js";
 import _poolManifoldKey from "./pool/manifold-key.js";
 import _poolMarchOfTheMultitudes from "./pool/march-of-the-multitudes.js";
+import _poolMarionetteApprentice from "./pool/marionette-apprentice.js";
 import _poolMarrowGnawer from "./pool/marrow-gnawer.js";
 import _poolMarshFlats from "./pool/marsh-flats.js";
 import _poolMarwynTheNurturer from "./pool/marwyn-the-nurturer.js";
@@ -890,6 +892,7 @@ import _poolTrainingCenter from "./pool/training-center.js";
 import _poolTranquilCove from "./pool/tranquil-cove.js";
 import _poolTranquilExpanse from "./pool/tranquil-expanse.js";
 import _poolTranquilThicket from "./pool/tranquil-thicket.js";
+import _poolTreasureVault from "./pool/treasure-vault.js";
 import _poolTreeOfTales from "./pool/tree-of-tales.js";
 import _poolTributeToTheWorldTree from "./pool/tribute-to-the-world-tree.js";
 import _poolTropicalIsland from "./pool/tropical-island.js";
@@ -1046,6 +1049,7 @@ import _tokensRatToken from "./tokens/rat-token.js";
 import _tokensRedSpiritTokenMenace from "./tokens/red-spirit-token-menace.js";
 import _tokensSandWarriorToken from "./tokens/sand-warrior-token.js";
 import _tokensSaprolingToken from "./tokens/saproling-token.js";
+import _tokensServoToken from "./tokens/servo-token.js";
 import _tokensSnakeToken from "./tokens/snake-token.js";
 import _tokensSoldierToken from "./tokens/soldier-token.js";
 import _tokensSpawnToken from "./tokens/spawn-token.js";
@@ -1347,6 +1351,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolFaerieMastermind,
   _poolFaithlessLooting,
   _poolFanaticOfRhonas,
+  _poolFarewell,
   _poolFarhavenElf,
   _poolFarseek,
   _poolFavorableWinds,
@@ -1582,6 +1587,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolManaGeyser,
   _poolManifoldKey,
   _poolMarchOfTheMultitudes,
+  _poolMarionetteApprentice,
   _poolMarrowGnawer,
   _poolMarshFlats,
   _poolMarwynTheNurturer,
@@ -1948,6 +1954,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTranquilCove,
   _poolTranquilExpanse,
   _poolTranquilThicket,
+  _poolTreasureVault,
   _poolTreeOfTales,
   _poolTributeToTheWorldTree,
   _poolTropicalIsland,
@@ -2110,6 +2117,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensRedSpiritTokenMenace,
   _tokensSandWarriorToken,
   _tokensSaprolingToken,
+  _tokensServoToken,
   _tokensSnakeToken,
   _tokensSoldierToken,
   _tokensSpawnToken,

@@ -2,7 +2,8 @@ import { defineCard } from "../define.js";
 
 const NON_HUMAN = { type: "creature", controlledBy: "you", notSubtypes: ["Human"] } as const;
 
-// Both modes are untargeted, so this is a resolution-time `modal` effect.
+// The mode is chosen as the spell is cast (rule 601.2b) — `castModal`, with
+// no targets in either mode.
 export default defineCard({
   name: "Return of the Wildspeaker",
   manaCost: "{4}{G}",
@@ -12,12 +13,12 @@ export default defineCard({
     "Choose one —\n" +
     "• Draw cards equal to the greatest power among non-Human creatures you control.\n" +
     "• Non-Human creatures you control get +3/+3 until end of turn.",
-  effect: {
-    kind: "modal",
+  castModal: {
     minModes: 1,
     maxModes: 1,
     modes: [
       {
+        targets: [],
         text: "Draw cards equal to the greatest power among non-Human creatures you control.",
         effect: {
           kind: "draw",
@@ -25,6 +26,7 @@ export default defineCard({
         },
       },
       {
+        targets: [],
         text: "Non-Human creatures you control get +3/+3 until end of turn.",
         effect: {
           kind: "modify-pt-all",

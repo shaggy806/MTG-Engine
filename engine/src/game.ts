@@ -9189,6 +9189,7 @@ export class Game {
           x,
         ),
       returnToHandAll: (filter) => this.returnToHandAllByEffect(controller, filter),
+      exileAll: (filter) => this.exileAllByEffect(controller, filter),
       damageAll: (filter, amount, exceptSource) =>
         this.damageAllByEffect(
           source,
@@ -11438,6 +11439,16 @@ export class Game {
     this.drainPendingDestruction();
   }
 
+  /** `exile-all` — the mass form of `exileByEffect`, as one event (rule
+   * 603.10a), a token stack exiled whole rather than one token of it. */
+  private exileAllByEffect(you: PlayerId, filter: CardFilter): void {
+    this.withLeaveBatch(() => {
+      const victims = this.battlefieldMatching(you, filter);
+      this.snapshotLeaving(victims);
+      for (const id of victims) this.exileByEffect({ kind: "object", object: id }, undefined, false);
+    });
+  }
+
   private returnToHandAllByEffect(you: PlayerId, filter: CardFilter): void {
     // One event, so each bounced permanent's leaves-the-battlefield ability
     // sees the rest go too (rule 603.10a). Snapshot: `returnToHandByEffect`
@@ -11813,9 +11824,9 @@ export class Game {
     this.emit({ type: "permanent-entered-battlefield", object: target.object });
   }
 
-  private exileByEffect(target: TargetRef, exiledBy?: ObjectId): void {
+  private exileByEffect(target: TargetRef, exiledBy?: ObjectId, split = true): void {
     if (target.kind !== "object") return;
-    const id = this.splitOneFromStack(target.object);
+    const id = split ? this.splitOneFromStack(target.object) : target.object;
     const object = this.state.objects[id];
     // Graveyard as well as battlefield: "Exile target card from a graveyard"
     // (Withered Wretch, Scavenging Ooze) targets a card, not a permanent.

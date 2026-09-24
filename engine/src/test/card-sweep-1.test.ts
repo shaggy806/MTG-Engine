@@ -108,25 +108,23 @@ describe("Castle Ardenvale", () => {
 
 describe("Return of the Wildspeaker", () => {
   it("draws the greatest power among your non-Humans", () => {
-    const { game, a } = setUp(["Return of the Wildspeaker"]);
+    const { game } = setUp(["Return of the Wildspeaker"]);
     lands(game, A, "Forest", 5);
     game.debugSpawn("Colossal Dreadmaw", A, "battlefield"); // 6/6 Dinosaur
     game.debugSpawn("Grizzly Bears", A, "battlefield");
     game.debugSpawn("Colossal Dreadmaw", B, "battlefield");
-    a.chooseModesFn = () => [0];
     const hand = game.handOf(A).length;
-    cast(game, A, inHand(game, A, "Return of the Wildspeaker"));
+    cast(game, A, inHand(game, A, "Return of the Wildspeaker"), [], { modes: [0] });
     expect(game.handOf(A).length).toBe(hand - 1 + 6);
   });
 
   it("pumps only your non-Human creatures", () => {
-    const { game, a } = setUp(["Return of the Wildspeaker"]);
+    const { game } = setUp(["Return of the Wildspeaker"]);
     lands(game, A, "Forest", 5);
     const bears = game.debugSpawn("Grizzly Bears", A, "battlefield");
     const human = game.debugSpawn("Human Token", A, "battlefield");
     const theirs = game.debugSpawn("Grizzly Bears", B, "battlefield");
-    a.chooseModesFn = () => [1];
-    cast(game, A, inHand(game, A, "Return of the Wildspeaker"));
+    cast(game, A, inHand(game, A, "Return of the Wildspeaker"), [], { modes: [1] });
     expect(pt(game, bears)).toEqual([5, 5]);
     expect(pt(game, human)).toEqual([1, 1]);
     expect(pt(game, theirs)).toEqual([2, 2]);
@@ -709,5 +707,74 @@ describe("Cabal Coffers", () => {
       (id) => game.state.objects[id].cardName === "Swamp" && !game.state.objects[id].tapped,
     );
     expect(untapped.length).toBe(2);
+  });
+});
+
+describe("Treasure Vault", () => {
+  it("pays {X}{X} for X Treasures", () => {
+    const { game } = setUp();
+    const vault = game.debugSpawn("Treasure Vault", A, "battlefield");
+    lands(game, A, "Island", 4);
+    const offer = game
+      .legalActions(A)
+      .find((o) => o.kind === "activate-ability" && o.source === vault && o.abilityIndex === 1);
+    if (offer === undefined || offer.kind !== "activate-ability") throw new Error("not offered");
+    expect(offer.xCost?.maxX).toBe(2);
+    activate(game, A, vault, 1, [], { xValue: 2 });
+    const treasures = game.battlefield.filter((id) => game.state.objects[id].cardName === "Treasure Token");
+    expect(treasures.length).toBe(2);
+    expect(zoneOf(game, vault)).toBe("graveyard");
+  });
+});
+
+describe("Marionette Apprentice", () => {
+  it("fabricates, and drains when another creature or artifact of yours dies", () => {
+    const { game, a } = setUp(["Marionette Apprentice"]);
+    lands(game, A, "Swamp", 2);
+    a.chooseModesFn = () => [1];
+    const apprentice = inHand(game, A, "Marionette Apprentice");
+    cast(game, A, apprentice);
+    const servo = game.battlefield.find((id) => game.state.objects[id].cardName === "Servo Token");
+    if (servo === undefined) throw new Error("no Servo");
+    expect(pt(game, apprentice)).toEqual([1, 2]);
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [objectRef(servo)]);
+    game.advanceUntil(quiet);
+    expect(life(game, B)).toBe(19);
+    // An opponent's creature dying is not yours.
+    const theirs = game.debugSpawn("Grizzly Bears", B, "battlefield");
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [objectRef(theirs)]);
+    game.advanceUntil(quiet);
+    expect(life(game, B)).toBe(19);
+  });
+
+  it("can take the counter instead", () => {
+    const { game, a } = setUp(["Marionette Apprentice"]);
+    lands(game, A, "Swamp", 2);
+    a.chooseModesFn = () => [0];
+    const apprentice = inHand(game, A, "Marionette Apprentice");
+    cast(game, A, apprentice);
+    expect(pt(game, apprentice)).toEqual([2, 3]);
+  });
+});
+
+describe("Farewell", () => {
+  it("exiles each chosen class, token stacks whole, and graveyards", () => {
+    const { game } = setUp(["Farewell"]);
+    lands(game, A, "Plains", 6);
+    const bears = game.debugSpawn("Grizzly Bears", B, "battlefield");
+    const rock = game.debugSpawn("Charcoal Diamond", B, "battlefield");
+    const virtue = game.debugSpawn("Intangible Virtue", A, "battlefield");
+    game.debugApplyEffect(B, { kind: "create-token", token: "Human Token", count: 12 });
+    game.advanceUntil(quiet);
+    const dead = game.debugSpawn("Grizzly Bears", B, "graveyard");
+    const farewell = inHand(game, A, "Farewell");
+    cast(game, A, farewell, [], { modes: [1, 3] });
+    expect(zoneOf(game, bears)).toBe("exile");
+    expect(zoneOf(game, dead)).toBe("exile");
+    expect(zoneOf(game, rock)).toBe("battlefield");
+    expect(zoneOf(game, virtue)).toBe("battlefield");
+    expect(game.battlefield.some((id) => game.state.objects[id].cardName === "Human Token")).toBe(false);
+    // Farewell itself goes to the graveyard after its modes.
+    expect(zoneOf(game, farewell)).toBe("graveyard");
   });
 });

@@ -596,6 +596,14 @@ export type EffectSpec =
       readonly filter: CardFilter;
     }
   | {
+      /** Exile every battlefield permanent matching `filter`, as one event
+       * (rule 603.10a — each one's leaves-the-battlefield ability sees the
+       * rest go too). Farewell's "Exile all artifacts". A token stack goes
+       * whole. The mass form of `exile`, as `destroy-all` is of `destroy`. */
+      readonly kind: "exile-all";
+      readonly filter: CardFilter;
+    }
+  | {
       /** Put a target permanent into exile. */
       readonly kind: "exile";
       readonly target: number;
@@ -1576,6 +1584,8 @@ export interface EffectApi {
   destroyAll(filter: CardFilter, onlyControllersDamagedBySource?: boolean): void;
   /** Return every battlefield permanent matching `filter` to its owner's hand. */
   returnToHandAll(filter: CardFilter): void;
+  /** Exile every battlefield permanent matching `filter` — see `exile-all`. */
+  exileAll(filter: CardFilter): void;
   /** Deal `amount` damage to every battlefield permanent matching `filter`. */
   damageAll(filter: CardFilter, amount: number, exceptSource?: boolean): void;
   /** Every battlefield permanent matching `filter` deals `amount` damage to
@@ -2295,6 +2305,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     case "return-to-hand-all":
       ctx.returnToHandAll(spec.filter);
+      return;
+    case "exile-all":
+      ctx.exileAll(spec.filter);
       return;
     case "damage-all":
       ctx.damageAll(spec.filter, amountValue(spec.amount, ctx), spec.exceptSource === true);
