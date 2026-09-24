@@ -1,7 +1,8 @@
 import { defineCard } from "../define.js";
 
-/** Kaldheim. "Choose a Background" is `pairing`: the deck validator lets a
- * legendary Background enchantment be its second commander. The creature's own ability needs no new vocab — a plain Dragon-ETB trigger,
+/** Commander Legends: Battle for Baldur's Gate. "Choose a Background" is `pairing`: the deck validator lets a
+ * legendary Background enchantment be its second commander. The creature's
+ * own ability needs no new vocab — a plain Dragon-ETB trigger,
  * "another" not required since Ganax's own entry also counts. */
 export default defineCard({
   name: "Ganax, Astral Hunter",
@@ -17,7 +18,7 @@ export default defineCard({
   text:
     "Flying\n" +
     "Whenever Ganax or another Dragon you control enters, create a Treasure token.\n" +
-    "Choose a Background. (You can have a Background as a second commander.)",
+    "Choose a Background (You can have a Background as a second commander.)",
   triggered: [
     {
       trigger: {
