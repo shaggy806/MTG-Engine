@@ -2,6 +2,9 @@
  "generated": "2026-09-22",
  "source": "Per-commander triage of every unimplemented top-commanders.txt entry (AI agents reading Oracle text + rulings against the engine), normalized onto one feature vocabulary. See neededCards-features.md, 'The commander gap'.",
  "built": [
+  "mechanic:commander-pairing",
+  "bug:control-effect-timestamps",
+  "static:counters-persist-across-zones",
   "bug:double-strike-between-damage-steps",
   "trigger:plays-land",
   "bug:static-scope-computed-types",
@@ -128,7 +131,7 @@
   "bug:token-stack-fixes": {
    "size": "small",
    "ui": false,
-   "description": "Token-stack fixes: a stacked token whose static counts 'each other [type]' skips only itself, not its whole stack, and a tap, sacrifice or convoke cost can use part of a stack. Built so far: a sacrifice, tap or convoke cost can use part of a stack."
+   "description": "Token-stack fixes: a stacked token whose static counts 'each other [type]' skips only itself, not its whole stack. Built so far: a sacrifice, tap or convoke cost can use part of a stack, and a stacked token targeted by a multi-step effect (Tamiyo's Safekeeping, Act of Treason, Blossoming Defense) is split off once, at target choice, so every step hits the same token."
   },
   "bug:transform-fixes": {
    "size": "small",

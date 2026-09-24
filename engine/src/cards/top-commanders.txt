@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-93 already implemented / 407 missing
+96 already implemented / 404 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -232,7 +232,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  226  Dina, Essence Brewer                           11138 decks  {1}{B}{G}        Legendary Creature — Dryad Druid
 [ ]  227  Child of Alara                                 11113 decks  {W}{U}{B}{R}{G}  Legendary Creature — Avatar
 [ ]  228  Dihada, Binder of Wills                        11029 decks  {1}{R}{W}{B}     Legendary Planeswalker — Dihada
-[ ]  229  Sliver Overlord                                11004 decks  {W}{U}{B}{R}{G}  Legendary Creature — Sliver Mutant
+[x]  229  Sliver Overlord                                11004 decks  {W}{U}{B}{R}{G}  Legendary Creature — Sliver Mutant
 [ ]  230  Silverquill, the Disputant                     10944 decks  {2}{W}{B}        Legendary Creature — Elder Dragon
 [x]  231  Tana, the Bloodsower                           10938 decks  {2}{R}{G}        Legendary Creature — Elf Druid
 [ ]  232  Zimone, Infinite Analyst                       10882 decks  {1}{G}{U}        Legendary Creature — Human Wizard
@@ -267,7 +267,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  261  Betor, Kin to All                              10019 decks  {2}{W}{B}{G}     Legendary Creature — Spirit Dragon
 [ ]  262  Doctor Doom, King of Latveria                   9982 decks  {1}{U}{B}{R}     Legendary Creature — Human Noble Villain
 [x]  263  Bria, Riptide Rogue                             9969 decks  {2}{U}{R}        Legendary Creature — Otter Rogue
-[ ]  264  Jetmir, Nexus of Revels                         9908 decks  {1}{R}{G}{W}     Legendary Creature — Cat Demon
+[x]  264  Jetmir, Nexus of Revels                         9908 decks  {1}{R}{G}{W}     Legendary Creature — Cat Demon
 [ ]  265  Aloy, Savior of Meridian                        9887 decks  {3}{G}{U}        Legendary Creature — Human Warrior
 [ ]  266  Eddie Brock                                     9824 decks  {2}{B}           Legendary Creature — Human Hero Villain // Legendary Creature — Symbiote Hero Villain
 [ ]  267  Shiko and Narset, Unified                       9824 decks  {1}{U}{R}{W}     Legendary Creature — Human Spirit Dragon
@@ -282,7 +282,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  276  Roxanne, Starfall Savant                        9478 decks  {3}{R}{G}        Legendary Creature — Cat Druid
 [ ]  277  Dina, Soul Steeper                              9457 decks  {B}{G}           Legendary Creature — Dryad Druid
 [ ]  278  Jodah, Archmage Eternal                         9447 decks  {1}{U}{R}{W}     Legendary Creature — Human Wizard
-[ ]  279  Skullbriar, the Walking Grave                   9443 decks  {B}{G}           Legendary Creature — Zombie Elemental
+[x]  279  Skullbriar, the Walking Grave                   9443 decks  {B}{G}           Legendary Creature — Zombie Elemental
 [x]  280  Queza, Augur of Agonies                         9409 decks  {1}{W}{U}{B}     Legendary Creature — Octopus Advisor
 [x]  281  Tatyova, Benthic Druid                          9394 decks  {3}{G}{U}        Legendary Creature — Merfolk Druid
 [ ]  282  Kratos, God of War                              9391 decks  {R}{R}{R}        Legendary Creature — God Warrior

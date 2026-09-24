@@ -1,5 +1,5 @@
 Top 2000 Commander cards by EDHREC popularity (fetched 2026-09-13)
-524 already implemented / 1476 missing (marks refreshed 2026-09-24)
+525 already implemented / 1475 missing (marks refreshed 2026-09-24)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -517,7 +517,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   518  Wishclaw Talisman                        {1}{B}           Artifact
 [x]   519  Terror of the Peaks                      {3}{R}{R}        Creature — Dragon
 [ ]   520  Blasphemous Edict                        {3}{B}{B}        Sorcery
-[ ]   521  Chord of Calling                         {X}{G}{G}{G}     Instant
+[x]   521  Chord of Calling                         {X}{G}{G}{G}     Instant
 [x]   522  Imperial Seal                            {B}              Sorcery
 [ ]   523  Gitaxian Probe                           {U/P}            Sorcery
 [x]   524  Strip Mine                               {0}              Land
