@@ -461,7 +461,8 @@ export type LegalAction =
        * "for each target" cost modification reaches it (Hinata,
        * Dawn-Crowned). The spell is affordable only with a number of
        * *distinct* targets (players and objects, each counted once however
-       * many slots name it) from `min` to `max`; a driver has to choose
+       * many slots name it — bar a token stack, which is a target per slot
+       * up to its size, `copies`) from `min` to `max`; a driver has to choose
        * targets inside that range (`fitTargetCount`), or the cast is
        * refused. `xCost.maxX` holds anywhere in the range. */
       readonly targetCount?: TargetCountRange;

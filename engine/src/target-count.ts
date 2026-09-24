@@ -10,26 +10,48 @@ import type { TargetRef, TargetSpec } from "./target.js";
 export interface TargetCountRange {
   readonly min: number;
   readonly max: number;
+  /** How many tokens each compacted token stack among the options stands
+   * for (`GameObject.stackCount`), keyed by the stack's object id — present
+   * only when some option is one. A stack named in two slots is two targets,
+   * not one: each slot is given its own token as the spell is cast
+   * (`Game.lockInTargets`). */
+  readonly copies?: TargetCopies;
 }
+
+/** Token-stack sizes by object id, for the stacks among a spell's target
+ * options (see {@link TargetCountRange.copies}). */
+export type TargetCopies = Readonly<Record<string, number>>;
 
 function refKey(ref: TargetRef): string {
   return ref.kind === "player" ? `p:${ref.player}` : `o:${ref.object}`;
+}
+
+function copiesOf(ref: TargetRef, copies: TargetCopies | undefined): number {
+  return ref.kind === "object" ? (copies?.[ref.object] ?? 1) : 1;
 }
 
 /**
  * The number of different players and objects among `targets` — Hinata's
  * ruling: a spell aimed at one creature through two "target creature"s has
  * one target for her purposes, not two. Holes (a skipped optional slot) count
- * for nothing.
+ * for nothing. A token stack (`copies`) named in several slots counts once
+ * per slot, up to its size, since each slot gets a token of its own.
  */
 export function distinctTargetCount(
   targets: readonly (TargetRef | null | undefined)[] | undefined,
+  copies?: TargetCopies,
 ): number {
-  const seen = new Set<string>();
+  const uses = new Map<string, { ref: TargetRef; n: number }>();
   for (const ref of targets ?? []) {
-    if (ref !== null && ref !== undefined) seen.add(refKey(ref));
+    if (ref === null || ref === undefined) continue;
+    const key = refKey(ref);
+    const entry = uses.get(key);
+    if (entry === undefined) uses.set(key, { ref, n: 1 });
+    else entry.n += 1;
   }
-  return seen.size;
+  let count = 0;
+  for (const { ref, n } of uses.values()) count += Math.min(n, copiesOf(ref, copies));
+  return count;
 }
 
 /**
@@ -42,6 +64,7 @@ export function distinctTargetCount(
 export function targetCountBounds(
   options: readonly (readonly TargetRef[])[],
   specs: readonly TargetSpec[],
+  copies?: TargetCopies,
 ): TargetCountRange | null {
   const required = options
     .map((_o, i) => i)
@@ -53,7 +76,9 @@ export function targetCountBounds(
   const masks = new Map<string, number>();
   required.forEach((slot, bit) => {
     for (const ref of options[slot]) {
-      const key = refKey(ref);
+      // A token stack can't fill two slots as one target (each gets its own
+      // token), so it covers one slot at a time.
+      const key = copiesOf(ref, copies) > 1 ? `${refKey(ref)}#${slot}` : refKey(ref);
       masks.set(key, (masks.get(key) ?? 0) | (1 << bit));
     }
   });
@@ -70,10 +95,14 @@ export function targetCountBounds(
   const min = best[full];
 
   // Maximum matching of slots to distinct targets (Kuhn's augmenting paths).
+  // A token stack is as many targets as it has tokens.
+  const keysOf = (ref: TargetRef): string[] => {
+    const n = Math.min(copiesOf(ref, copies), options.length);
+    return n > 1 ? Array.from({ length: n }, (_v, j) => `${refKey(ref)}#${j}`) : [refKey(ref)];
+  };
   const owner = new Map<string, number>();
   const tryAssign = (slot: number, visited: Set<string>): boolean => {
-    for (const ref of options[slot]) {
-      const key = refKey(ref);
+    for (const key of options[slot].flatMap(keysOf)) {
       if (visited.has(key)) continue;
       visited.add(key);
       const holder = owner.get(key);
@@ -96,9 +125,10 @@ export function targetCountBounds(
  * or `null` when that can't be done by these means. Too many: skip optional
  * slots, then aim a slot at a target another slot already has. Too few: fill
  * skipped optional slots, then move a doubled-up slot onto a fresh target.
- * Drivers that pick targets without reading costs (the fuzzer, the bots) run
- * their choice through this before echoing a `cast-spell` with a
- * `targetCount`.
+ * Each change is kept only if it moves the count the right way (counted as
+ * the engine counts it, token stacks included — `range.copies`). Drivers that
+ * pick targets without reading costs (the fuzzer, the bots) run their choice
+ * through this before echoing a `cast-spell` with a `targetCount`.
  */
 export function fitTargetCount(
   chosen: readonly (TargetRef | null)[],
@@ -107,23 +137,23 @@ export function fitTargetCount(
   range: TargetCountRange,
 ): (TargetRef | null)[] | null {
   const out = [...chosen];
-  const count = () => distinctTargetCount(out);
-  const uses = (key: string) => out.filter((r) => r !== null && refKey(r) === key).length;
+  const count = () => distinctTargetCount(out, range.copies);
+  /** Point slot `i` at `ref` if that moves the count by `dir`; say whether. */
+  const tryRef = (i: number, ref: TargetRef | null, dir: 1 | -1): boolean => {
+    const before = count();
+    const was = out[i];
+    out[i] = ref;
+    if ((count() - before) * dir > 0) return true;
+    out[i] = was;
+    return false;
+  };
   for (let i = out.length - 1; i >= 0 && count() > range.max; i -= 1) {
-    const ref = out[i];
-    if (ref === null || uses(refKey(ref)) > 1) continue;
-    if (isOptionalSpec(specs[i] ?? "creature")) {
-      out[i] = null;
-      continue;
-    }
-    const shared = options[i].find((o) => refKey(o) !== refKey(ref) && uses(refKey(o)) > 0);
-    if (shared !== undefined) out[i] = shared;
+    if (out[i] === null) continue;
+    if (isOptionalSpec(specs[i] ?? "creature") && tryRef(i, null, -1)) continue;
+    for (const o of options[i]) if (tryRef(i, o, -1)) break;
   }
   for (let i = 0; i < out.length && count() < range.min; i += 1) {
-    const ref = out[i];
-    if (ref !== null && uses(refKey(ref)) === 1) continue;
-    const fresh = options[i].find((o) => uses(refKey(o)) === 0);
-    if (fresh !== undefined) out[i] = fresh;
+    for (const o of options[i]) if (tryRef(i, o, 1)) break;
   }
   const n = count();
   return n >= range.min && n <= range.max ? out : null;

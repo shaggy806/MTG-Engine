@@ -176,7 +176,7 @@ import type {
 } from "./state.js";
 import { describeTargetSpec, isOptionalSpec, normalizeTargets } from "./target.js";
 import { distinctTargetCount, targetCountBounds } from "./target-count.js";
-import type { TargetCountRange } from "./target-count.js";
+import type { TargetCopies, TargetCountRange } from "./target-count.js";
 import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
 import {
   cardSource,
@@ -724,7 +724,7 @@ export class Game {
           action.tap,
           action.graveyardGrant,
           action.xValue,
-          distinctTargetCount(action.targets),
+          distinctTargetCount(action.targets, this.targetCopies(action.targets ?? [])),
         );
       case "activate-ability":
         return this.whyCannotActivateAbility(
@@ -1326,7 +1326,11 @@ export class Game {
           if (castableAt(k).castable) affordable.push(k);
         }
         if (affordable.length === 0) continue;
-        targetCount = { min: affordable[0], max: affordable[affordable.length - 1] };
+        targetCount = {
+          min: affordable[0],
+          max: affordable[affordable.length - 1],
+          ...(bounds.copies !== undefined ? { copies: bounds.copies } : {}),
+        };
         const weight = (k: number) =>
           cheapestManaAmount(this.withFace(card, face ?? 0, () => this.castingCostOf(player, card, def, 0, variantCost, k)));
         pricedAt = weight(targetCount.max) > weight(targetCount.min) ? targetCount.max : targetCount.min;
@@ -4495,12 +4499,21 @@ export class Game {
     overload: boolean,
   ): TargetCountRange | null {
     const source = this.cardSource(def, card);
+    const copies: Record<string, number> = {};
     const boundsOf = (modes: readonly number[] | undefined) => {
       const specs = this.effectiveTargetSpecs(def, modes, kicked, overload);
-      return targetCountBounds(this.targetOptionsFor(specs, player, source), specs);
+      const options = this.targetOptionsFor(specs, player, source);
+      const here = this.targetCopies(options.flat());
+      Object.assign(copies, here);
+      return targetCountBounds(options, specs, here);
     };
+    const withCopies = (range: TargetCountRange): TargetCountRange =>
+      Object.keys(copies).length > 0 ? { ...range, copies } : range;
     const modal = def.castModal;
-    if (modal === null) return boundsOf(undefined);
+    if (modal === null) {
+      const bounds = boundsOf(undefined);
+      return bounds === null ? null : withCopies(bounds);
+    }
     let min = Number.POSITIVE_INFINITY;
     let max = -1;
     for (let mask = 0; mask < 1 << modal.modes.length; mask += 1) {
@@ -4511,7 +4524,22 @@ export class Game {
       min = Math.min(min, bounds.min);
       max = Math.max(max, bounds.max);
     }
-    return max < 0 ? null : { min, max };
+    return max < 0 ? null : withCopies({ min, max });
+  }
+
+  /** The size of each compacted token stack among `refs` — a stack named in
+   * several target slots is that many targets, one token per slot
+   * (`lockInTargets`), which is how "for each target" counts it. */
+  private targetCopies(refs: readonly (TargetRef | null | undefined)[]): TargetCopies {
+    const out: Record<string, number> = {};
+    for (const ref of refs) {
+      if (ref === null || ref === undefined || ref.kind !== "object") continue;
+      const object = this.state.objects[ref.object];
+      if (object?.zone === "battlefield" && (object.stackCount ?? 1) > 1) {
+        out[ref.object] = object.stackCount ?? 1;
+      }
+    }
+    return out;
   }
 
   /** Whether static `ability` on `source` is currently active — its `condition`
@@ -5313,7 +5341,7 @@ export class Game {
   ): void {
     // "For each target" cost modifications (Hinata) count these: the targets
     // are chosen before the total cost is determined (rule 601.2c, 601.2f).
-    const targetCount = distinctTargetCount(targets);
+    const targetCount = distinctTargetCount(targets, this.targetCopies(targets));
     const why = this.whyCannotCastSpell(
       player,
       cardId,

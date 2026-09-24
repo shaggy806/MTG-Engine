@@ -494,3 +494,61 @@ describe("target counting", () => {
     expect(fitTargetCount([p(A)], [[p(A)]], ["player"], { min: 2, max: 2 })).toBeNull();
   });
 });
+
+describe("Hinata, Dawn-Crowned — a token stack named in two slots is two targets", () => {
+  // Each slot naming a compacted stack is given its own token as the spell is
+  // cast (`lockInTargets`), so the spell targets two creatures, and Hinata
+  // counts two — not the one object id both slots named.
+  const setup = (mountains: number) => {
+    const game = makeGame(["Test Twin Ping"]);
+    game.debugSpawn("Hinata, Dawn-Crowned", B);
+    game.debugApplyEffect(B, { kind: "create-token", token: "Goblin Token", count: 10 });
+    const stack = game.state.zones.shared.battlefield.find(
+      (id) => (game.state.objects[id].stackCount ?? 1) > 1,
+    );
+    if (stack === undefined) throw new Error("no token stack");
+    lands(game, "Mountain", mountains);
+    return { game, ref: { kind: "object", object: stack } as TargetRef };
+  };
+
+  it("taxes both tokens", () => {
+    const short = setup(4);
+    expect(() => short.game.dispatch(castTwinPing(short.game, [short.ref, short.ref]))).toThrow();
+    const { game, ref } = setup(5);
+    game.dispatch(castTwinPing(game, [ref, ref]));
+    expect(tappedCount(game)).toBe(5);
+    const spell = game.state.objects[game.state.zones.shared.stack.at(-1) as ObjectId];
+    const [first, second] = spell.targets ?? [];
+    expect(first?.kind === "object" && second?.kind === "object" && first.object !== second.object).toBe(true);
+  });
+
+  it("offers the stack's size with the range, and fits a pick by it", () => {
+    const { game, ref } = setup(4);
+    const legal = game
+      .legalActions(A)
+      .find((a) => a.kind === "cast-spell" && a.cardName === "Test Twin Ping");
+    if (legal?.kind !== "cast-spell" || legal.targetCount === undefined) throw new Error("not offered");
+    expect(legal.targetCount.max).toBe(1);
+    expect(Object.values(legal.targetCount.copies ?? {})).toEqual([10]);
+    const fitted = fitTargetCount([ref, ref], legal.targetOptions, legal.targetSpecs, legal.targetCount);
+    expect(distinctTargetCount(fitted ?? [], legal.targetCount.copies)).toBe(1);
+    expect(() =>
+      game.dispatch({ type: "cast-spell", player: A, card: legal.card, targets: fitted ?? [] }),
+    ).not.toThrow();
+  });
+
+  it("counts, bounds and fits stacks by their size", () => {
+    const stack: TargetRef = { kind: "object", object: "obj-s" as ObjectId };
+    const copies = { "obj-s": 3 };
+    expect(distinctTargetCount([stack, stack], copies)).toBe(2);
+    expect(distinctTargetCount([stack, stack, stack, stack], copies)).toBe(3);
+    expect(distinctTargetCount([stack, stack])).toBe(1);
+    // Two required slots with only the stack to point at: two targets at
+    // least, not one.
+    expect(targetCountBounds([[stack], [stack]], ["creature", "creature"], copies)).toEqual({
+      min: 2,
+      max: 2,
+    });
+    expect(targetCountBounds([[stack], [stack]], ["creature", "creature"])).toEqual({ min: 1, max: 1 });
+  });
+});
