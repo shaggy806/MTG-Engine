@@ -192,6 +192,13 @@ export type Action =
        * you control with flying"), picked from the variant's `tapCost` offer.
        * Omitted, the engine picks for a driver that doesn't choose. */
       readonly tap?: readonly ObjectId[];
+      /** For `via: "escape"`: the other cards in the caster's graveyard
+       * exiled to pay the escape cost (rule 702.139a — "exile N other cards
+       * from your graveyard"), picked from the variant's `escapeExile` offer:
+       * exactly `count` distinct cards, never the escaping card itself.
+       * Omitted, the engine picks the oldest, for a driver that doesn't
+       * choose. */
+      readonly escapeExile?: readonly ObjectId[];
       /** For `via: "graveyard-permission"`: which permission pays for it —
        * see {@link GraveyardGrant}. Echoed back from the variant. */
       readonly graveyardGrant?: GraveyardGrant;
@@ -513,6 +520,14 @@ export type LegalAction =
       /** What the `altCost` variant may tap, and how many — see
        * {@link TapCostOffer}. */
       readonly tapCost?: TapCostOffer;
+      /** Set on a `via: "escape"` variant: the escape cost exiles `count`
+       * other cards from the caster's graveyard, and `choices` is every one
+       * that could pay it, in graveyard order (oldest first). The driver
+       * picks `count` of them and sends them as the action's `escapeExile`. */
+      readonly escapeExile?: {
+        readonly count: number;
+        readonly choices: readonly ObjectId[];
+      };
       /** One branch of a choice of additional costs (Bitter Triumph's
        * "discard a card or pay 3 life"). The card is enumerated once per
        * affordable branch, the way a kickable spell is enumerated kicked and

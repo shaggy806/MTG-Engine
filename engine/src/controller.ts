@@ -726,6 +726,21 @@ function randomTapPicks(offer: TapCostOffer, pickIndex: (n: number) => number): 
 }
 
 /**
+ * The fuzzer's answer to an escape cost's "exile N other cards from your
+ * graveyard" offer: the newest `count` choices. Not the engine's own pick for
+ * a driver that names none (the oldest), so the fuzzer exercises the chosen,
+ * validated path; and drawn from no random source, since one more draw here
+ * would re-point every fuzzer seed.
+ */
+function escapeExilePicks(
+  legal: Extract<LegalAction, { kind: "cast-spell" }>,
+): { escapeExile?: ObjectId[] } {
+  const offer = legal.escapeExile;
+  if (offer === undefined) return {};
+  return { escapeExile: offer.choices.slice(offer.choices.length - offer.count) };
+}
+
+/**
  * `chosen`, fitted to the distinct-target range a `cast-spell` offer is
  * affordable at when a "for each target" cost modification reaches it
  * (Hinata, Dawn-Crowned — `LegalAction.targetCount`), else as it stands.
@@ -899,6 +914,7 @@ export class RandomController extends AutomaticController {
             ...(legal.tapCost !== undefined
               ? { tap: randomTapPicks(legal.tapCost, (n) => this.pickIndex(n)) }
               : {}),
+            ...escapeExilePicks(legal),
           };
         }
         // Drawn in this order — targets, X, then the extras — so a seed
@@ -925,6 +941,7 @@ export class RandomController extends AutomaticController {
           ...(legal.tapCost !== undefined
             ? { tap: randomTapPicks(legal.tapCost, (n) => this.pickIndex(n)) }
             : {}),
+          ...escapeExilePicks(legal),
         };
       }
       case "activate-ability": {

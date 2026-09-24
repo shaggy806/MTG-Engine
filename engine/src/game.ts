@@ -660,6 +660,7 @@ export class Game {
           action.costOption,
           action.tap,
           action.graveyardGrant,
+          action.escapeExile,
         );
         break;
       case "activate-ability":
@@ -725,6 +726,7 @@ export class Game {
           action.graveyardGrant,
           action.xValue,
           distinctTargetCount(action.targets, this.targetCopies(action.targets ?? [])),
+          action.escapeExile,
         );
       case "activate-ability":
         return this.whyCannotActivateAbility(
@@ -1391,6 +1393,16 @@ export class Game {
           : {}),
         ...(costOption !== undefined && costOptions !== undefined
           ? { costOption, costOptionText: costOptions[costOption].text }
+          : {}),
+        // Escape (rule 702.139a): which other graveyard cards pay the exile
+        // half of the cost is the caster's choice, made as costs are paid.
+        ...(via === "escape" && def.escape !== null
+          ? {
+              escapeExile: {
+                count: def.escape.exileCount,
+                choices: this.state.zones.perPlayer[player].graveyard.filter((id) => id !== card),
+              },
+            }
           : {}),
         ...(def.convoke
           ? (() => {
@@ -5019,6 +5031,7 @@ export class Game {
     graveyardGrant?: GraveyardGrant,
     xValue = 0,
     targetCount = 0,
+    escapeExile?: readonly ObjectId[],
   ): string | null {
     const blocked = this.whyCannotAct(player);
     if (blocked !== null) return blocked;
@@ -5042,6 +5055,10 @@ export class Game {
       const others = this.state.zones.perPlayer[player].graveyard.filter((id) => id !== cardId);
       if (others.length < def.escape.exileCount) {
         return `${def.name}'s escape needs ${def.escape.exileCount} other cards in the graveyard`;
+      }
+      if (escapeExile !== undefined) {
+        const wrong = this.whyEscapeExileIsWrong(player, cardId, def.name, def.escape.exileCount, escapeExile);
+        if (wrong !== null) return wrong;
       }
     } else if (via === "foretell") {
       const object = this.state.objects[cardId];
@@ -5095,6 +5112,9 @@ export class Game {
     }
     if (graveyardGrant !== undefined && via !== "graveyard-permission") {
       return "a graveyard permission is only spent on a graveyard-permission cast";
+    }
+    if (escapeExile !== undefined && via !== "escape") {
+      return "only an escape cast exiles cards from the graveyard to pay for it";
     }
     if (def.types.includes("land")) return "lands are played, not cast";
     // Instant-speed if it's an instant or has flash (rule 702.8); otherwise
@@ -5338,6 +5358,7 @@ export class Game {
     costOption?: number,
     tap?: readonly ObjectId[],
     graveyardGrant?: GraveyardGrant,
+    escapeExile?: readonly ObjectId[],
   ): void {
     // "For each target" cost modifications (Hinata) count these: the targets
     // are chosen before the total cost is determined (rule 601.2c, 601.2f).
@@ -5359,6 +5380,7 @@ export class Game {
       graveyardGrant,
       xValue,
       targetCount,
+      escapeExile,
     );
     if (why !== null) throw new Error(why);
 
@@ -5460,11 +5482,12 @@ export class Game {
       this.emit({ type: "permanent-tapped", object: id });
     }
 
-    // Escape (rule 702.139): exile N other cards from the graveyard as an
-    // additional cost — auto-paid from the front (oldest) of the graveyard.
+    // Escape (rule 702.139a): exile N other cards from the graveyard as part
+    // of the cost — the ones the caster chose (validated above), or for a
+    // driver that doesn't choose, the front (oldest) of the graveyard.
     if (via === "escape" && def.escape !== null) {
       const others = this.state.zones.perPlayer[player].graveyard.filter((id) => id !== cardId);
-      const exiled = others.slice(0, def.escape.exileCount);
+      const exiled = escapeExile !== undefined ? [...escapeExile] : others.slice(0, def.escape.exileCount);
       for (const id of exiled) this.moveObject(id, "exile");
       this.emit({ type: "escape-cost-paid", object: cardId, exiled: [...exiled] });
     }
@@ -9683,6 +9706,38 @@ export class Game {
         return `${what} names ${name} more times than there are to tap`;
       }
       named.set(id, times);
+    }
+    return null;
+  }
+
+  /**
+   * Why `chosen` can't pay an escape cost's "exile `count` other cards from
+   * your graveyard" (rule 702.139a), or `null` if it can: exactly `count`
+   * distinct cards, each in `player`'s graveyard right now, and none of them
+   * the escaping card itself.
+   */
+  private whyEscapeExileIsWrong(
+    player: PlayerId,
+    cardId: ObjectId,
+    name: string,
+    count: number,
+    chosen: readonly ObjectId[],
+  ): string | null {
+    if (chosen.length !== count) {
+      return `${name}'s escape exiles exactly ${count} other cards, not ${chosen.length}`;
+    }
+    if (new Set(chosen).size !== chosen.length) {
+      return `${name}'s escape can't exile the same card twice`;
+    }
+    const graveyard = this.state.zones.perPlayer[player].graveyard;
+    for (const id of chosen) {
+      if (id === cardId) return `${name} can't exile itself to pay its own escape cost`;
+      if (!graveyard.includes(id)) {
+        const object = this.state.objects[id];
+        return object === undefined
+          ? `there is no card ${id} to exile for ${name}'s escape`
+          : `${printedCardName(object)} is not in ${player}'s graveyard`;
+      }
     }
     return null;
   }
