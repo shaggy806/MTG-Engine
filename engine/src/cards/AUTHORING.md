@@ -679,9 +679,12 @@ Where `{ amount }` is answered, and when:
   comparison **fails closed** (the object doesn't match). Use `{ own }` or a
   printed number there.
 
-Last-known information is whatever the `EffectAmount` itself reads:
-`manaValueOf` a creature that has left the battlefield reads its printed card,
-but a **token** that has left has ceased to exist and reads `0`.
+Last-known information is whatever the `EffectAmount` itself reads.
+`manaValueOf` a target or trigger object that has left the battlefield reads
+it as it last existed there (rule 608.2h — `GameObject.lastKnownManaValue`,
+taken before the move ends a copy effect), a token that has ceased to exist
+included (`GameState.ceasedTokenManaValues`, kept for the turn). `powerOf` /
+`toughnessOf` have no such snapshot yet.
 
 ---
 
