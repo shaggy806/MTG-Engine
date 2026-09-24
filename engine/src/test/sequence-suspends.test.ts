@@ -385,3 +385,29 @@ describe("the rest resumes as the same spell or ability", () => {
     expect(game.state.players[A].life).toBe(23);
   });
 });
+
+describe("nesting", () => {
+  it("a nested sequence's own remainder finishes before the steps after it", () => {
+    const { game } = setUp({ [A]: ["Grizzly Bears"] });
+    const effect: EffectSpec = {
+      kind: "sequence",
+      effects: [
+        {
+          kind: "sequence",
+          effects: [
+            { kind: "discard", target: "you", amount: 1 },
+            { kind: "draw", amount: 1 },
+          ],
+        },
+        { kind: "gain-life", amount: 1 },
+      ],
+    };
+    const source = game.debugSpawn("Island", A, "battlefield");
+    const from = game.state.eventLog.length;
+    game.debugApplyEffect(A, effect, [], { source });
+    game.advanceUntil(awaiting("discard"));
+    game.dispatch({ type: "discard", player: A, cards: [inHand(game, A, "Grizzly Bears")] });
+    game.advanceUntil(quiet);
+    expect(eventTypes(game, from, ["card-drawn", "life-changed"])).toEqual(["card-drawn", "life-changed"]);
+  });
+});

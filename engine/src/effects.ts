@@ -1938,8 +1938,14 @@ export interface EffectApi {
   decisionPending(): boolean;
   /** Park `rest` — the steps of a `sequence` after the one that raised a
    * decision — to be applied with this same context once every decision
-   * now pending has been answered. See `GameState.suspendedResolutions`. */
-  resumeAfterDecisions(rest: EffectSpec): void;
+   * now pending has been answered. See `GameState.suspendedResolutions`.
+   * `below` is {@link parkedCount} as the step began: what the step parked
+   * of its own (a nested `sequence`'s remainder) is part of it, so it goes
+   * on first, and `rest` waits beneath it. */
+  resumeAfterDecisions(rest: EffectSpec, below?: number): void;
+  /** How many resolutions are parked right now — see
+   * {@link resumeAfterDecisions}. */
+  parkedCount(): number;
   /** Exile `targets`, then return them to the battlefield together — at once,
    * or linked to a delayed return — see the `"flicker"` {@link EffectSpec}.
    * `fromSource` marks a target that is the ability's own source, which is
@@ -2587,10 +2593,16 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       const pendingBefore = ctx.decisionPending();
       const steps = spec.effects;
       for (let i = 0; i < steps.length; i += 1) {
+        const parked = ctx.parkedCount();
         applyEffectSpec(steps[i], ctx);
         if (i + 1 < steps.length && !pendingBefore && ctx.decisionPending()) {
           const rest = steps.slice(i + 1);
-          ctx.resumeAfterDecisions(rest.length === 1 ? rest[0] : { kind: "sequence", effects: rest });
+          // Beneath whatever the step parked of its own — a nested sequence's
+          // remainder is still that step, which finishes first.
+          ctx.resumeAfterDecisions(
+            rest.length === 1 ? rest[0] : { kind: "sequence", effects: rest },
+            parked,
+          );
           return;
         }
       }

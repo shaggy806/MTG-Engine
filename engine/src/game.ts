@@ -9956,9 +9956,11 @@ export class Game {
       ...(opts.abilityKey !== undefined ? { abilityKey: opts.abilityKey } : {}),
       ...(refs.sacrificed !== undefined ? { sacrificed: refs.sacrificed.object } : {}),
       decisionPending: () => this.decisionOutstanding(),
-      resumeAfterDecisions: (rest) => {
+      parkedCount: () => this.state.suspendedResolutions.length,
+      resumeAfterDecisions: (rest, below) => {
         const timestamp = this.resolvingSourceTimestamp;
-        this.state.suspendedResolutions.push({
+        const parked = this.state.suspendedResolutions;
+        parked.splice(below === undefined ? parked.length : Math.min(below, parked.length), 0, {
           effect: rest,
           source,
           controller,
