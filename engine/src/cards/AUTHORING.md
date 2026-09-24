@@ -1670,11 +1670,24 @@ clause (section 9):
   tuck as well as a death, and ends when the permanent leaves.
 - `{ event: "would-draw", who: "opponent", instead: "you-draw" }` — Notion
   Thief.
-- `{ event: "would-deal-damage", multiplier }` — Dictate of the Twin Gods.
-  **Symmetric and global**, unlike every other replacement here: it doubles
-  damage from any source to any recipient, including its own controller's, so
-  `affects` is irrelevant. Applied before prevention shields, so a shield eats
-  the doubled amount.
+- `{ event: "would-deal-damage", multiplier?, plus?, prevent?, then?, source?, to? }`
+  — damage about to be dealt, changed. With neither `source` nor `to` it is
+  **symmetric and global** (Dictate of the Twin Gods' `multiplier: 2` doubles
+  damage from any source to any recipient, its own controller's included), so
+  `affects` is irrelevant. `source` filters the source of the damage from this
+  permanent's controller's side (Neriv: `{ type: "creature", controlledBy:
+  "you", enteredThisTurn: true }`; Kuja's Flare Star: a Wizard you control; a
+  departed source as it last existed); `to` narrows the recipient —
+  `"opponent"`, `"opponent-side"` (an opponent or a permanent an opponent
+  controls — Torbran's `plus: 2`), `"you"` or `"self"`. `prevent: true`
+  prevents it instead, then applies `then` as this permanent's controller's
+  effect with `"x"` the damage prevented: The Mindskinner's "prevent that
+  damage and each opponent mills that many cards" (`to: "opponent"`, `source:
+  { controlledBy: "you" }`, `then: { kind: "mill", target: "each-opponent",
+  amount: "x" }`), "prevent that damage and put that many +1/+1 counters on
+  it" (`to: "self"`). Applied in a fixed order — every multiplier, then every
+  `plus`, then the first `prevent`, then prevention shields — where rule
+  616.1 would let the affected player choose.
 
 ---
 

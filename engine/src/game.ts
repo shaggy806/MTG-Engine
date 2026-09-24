@@ -75,6 +75,7 @@ import {
   withComputedCache,
 } from "./characteristics.js";
 import type { Characteristics } from "./characteristics.js";
+import type { DamageMultiplierReplacement } from "./replacements.js";
 import { AutomaticController } from "./controller.js";
 import type { ControllerView, PlayerController } from "./controller.js";
 import type { DecisionHost, DecisionReadCtx } from "./decisions/contract.js";
@@ -13790,13 +13791,25 @@ export class Game {
   }
 
   /**
-   * The product of every active `would-deal-damage` replacement on the
-   * battlefield (Dictate of the Twin Gods). Global and symmetric — it doubles
-   * damage from *anyone* to *anyone*, so it is not filtered by controller.
-   * `1` when nothing is doubling, which is the overwhelmingly common case.
+   * `amount` damage from `source` to `target`, as the `would-deal-damage`
+   * replacements on the battlefield change it: every multiplier (Dictate of
+   * the Twin Gods; Neriv's "a creature you control that entered this turn"),
+   * then every `plus` (Torbran), then — if one prevents it instead (The
+   * Mindskinner) — none of it, with that replacement's follow-up. A fixed
+   * order where rule 616.1 would let the affected player choose; see
+   * `DamageMultiplierReplacement`. Nothing applies, the overwhelmingly common
+   * case, costs one scan.
    */
-  private damageMultiplier(): number {
-    let multiplier = 1;
+  private replacedDamage(
+    source: ObjectId,
+    target: TargetRef,
+    amount: number,
+    sourceLastKnown: LastKnownInfo | undefined,
+  ): {
+    readonly amount: number;
+    readonly prevention?: { readonly by: ObjectId; readonly controller: PlayerId; readonly then?: EffectSpec };
+  } {
+    const applying: { readonly by: GameObject; readonly r: DamageMultiplierReplacement }[] = [];
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
       if (object === undefined || hasLostAbilities(object)) continue;
@@ -13804,10 +13817,64 @@ export class Game {
         const r = ability.replacement;
         if (r === undefined || r.event !== "would-deal-damage") continue;
         if (!this.staticActive(object, ability)) continue;
-        multiplier *= r.multiplier;
+        if (!this.damageReplacementReaches(r, object, source, target, sourceLastKnown)) continue;
+        applying.push({ by: object, r });
       }
     }
-    return multiplier;
+    if (applying.length === 0) return { amount };
+    let changed = amount;
+    for (const { r } of applying) changed *= r.multiplier ?? 1;
+    for (const { r } of applying) changed += r.plus ?? 0;
+    const prevention = applying.find(({ r }) => r.prevent === true);
+    return prevention === undefined
+      ? { amount: changed }
+      : {
+          amount: changed,
+          prevention: {
+            by: prevention.by.id,
+            controller: prevention.by.controller,
+            ...(prevention.r.then !== undefined ? { then: prevention.r.then } : {}),
+          },
+        };
+  }
+
+  /** Whether a `would-deal-damage` replacement on `by` reaches damage from
+   * `source` to `target` — its `source` filter and `to` scope, read from
+   * `by`'s controller's side. */
+  private damageReplacementReaches(
+    r: DamageMultiplierReplacement,
+    by: GameObject,
+    source: ObjectId,
+    target: TargetRef,
+    sourceLastKnown: LastKnownInfo | undefined,
+  ): boolean {
+    const you = by.controller;
+    const recipientController =
+      target.kind === "player" ? target.player : this.state.objects[target.object]?.controller;
+    switch (r.to) {
+      case undefined:
+        break;
+      case "opponent":
+        if (target.kind !== "player" || target.player === you) return false;
+        break;
+      case "opponent-side":
+        if (recipientController === undefined || recipientController === you) return false;
+        break;
+      case "you":
+        if (target.kind !== "player" || target.player !== you) return false;
+        break;
+      case "self":
+        if (target.kind !== "object" || target.object !== by.id) return false;
+        break;
+    }
+    if (r.source === undefined) return true;
+    return (
+      (sourceLastKnown !== undefined || this.state.objects[source] !== undefined) &&
+      matchesFilter(this.state, this.registry, source, r.source, {
+        you,
+        ...(sourceLastKnown !== undefined ? { snapshot: sourceLastKnown } : {}),
+      })
+    );
   }
 
   private dealDamage(
@@ -13829,11 +13896,20 @@ export class Game {
       return 0;
     }
 
-    // Damage multipliers (Dictate of the Twin Gods — rule 614). Applied
-    // before prevention, so a shield eats the *doubled* amount, which is the
-    // printed interaction: doubling replaces the damage event, and prevention
-    // then applies to what it became.
-    amount *= this.damageMultiplier();
+    // Damage replacements (rule 614): doubling (Dictate of the Twin Gods),
+    // "plus 2" (Torbran), "prevent that damage and …" (The Mindskinner).
+    // Applied before the prevention shields, so a shield eats the *doubled*
+    // amount, which is the printed interaction: doubling replaces the damage
+    // event, and prevention then applies to what it became.
+    const replaced = this.replacedDamage(source, target, amount, sourceLastKnown);
+    amount = replaced.amount;
+    if (amount <= 0) return 0;
+    if (replaced.prevention !== undefined) {
+      this.emit({ type: "damage-prevented", source, target, amount });
+      const { by, controller, then } = replaced.prevention;
+      if (then !== undefined) applyEffectSpec(then, this.makeResolutionContext(by, controller, [], amount));
+      return 0;
+    }
 
     // One-shot prevention shields (Healing Salve — rule 614.9 / EG-6).
     if (this.state.preventionShields.length > 0) {

@@ -60,7 +60,8 @@
   "static:trigger-count-modifiers",
   "condition:filter-this-turn-history",
   "trigger:combat-damage-batch",
-  "trigger:put-into-graveyard"
+  "trigger:put-into-graveyard",
+  "replacement:damage-modification"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

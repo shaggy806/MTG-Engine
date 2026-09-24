@@ -31,7 +31,7 @@
  */
 
 import type { StaticCondition } from "./cards/define.js";
-import type { EffectAmount } from "./effects.js";
+import type { EffectAmount, EffectSpec } from "./effects.js";
 import type { CardFilter } from "./filter.js";
 
 /** A single replacement clause on a `StaticAbility`. Discriminated by `event`. */
@@ -208,13 +208,32 @@ export interface DrawRedirectReplacement {
 }
 
 /**
- * "If a source would deal damage to a permanent or player, it deals double
- * that damage to that permanent or player instead" (Dictate of the Twin
- * Gods). Unlike every other replacement here this one is **symmetric and
- * global** — it applies to damage from any source to any recipient, not only
- * to its controller's.
+ * Damage about to be dealt, changed (rule 614.1a) — "if a source would deal
+ * damage to a permanent or player, it deals double that damage … instead"
+ * (Dictate of the Twin Gods: `multiplier: 2`, any source, any recipient),
+ * "if a creature you control that entered this turn would deal damage, it
+ * deals twice that much damage instead" (Neriv: `source`), "…it deals that
+ * much damage plus 2 instead" (Torbran: `plus`), "…prevent that damage and
+ * each opponent mills that many cards" (The Mindskinner: `prevent` + `then`).
+ *
+ * `source` is a filter on the source of the damage, from this permanent's
+ * controller's side (a departed source as it last existed); `to` narrows
+ * the recipient: `"opponent"` (an opponent), `"opponent-side"` (an opponent
+ * or a permanent an opponent controls), `"you"`, `"self"` (this permanent).
+ * Omitted: anyone's damage, to anything.
+ *
+ * Applied in `Game.dealDamage` in a fixed order — every multiplier, then
+ * every `plus`, then the first `prevent` that applies, then prevention
+ * shields — where rule 616.1 would let the affected player order them.
+ * A `prevent` stops all of it, and `then` is applied as this permanent's
+ * controller's effect with `"x"` the damage prevented.
  */
 export interface DamageMultiplierReplacement {
   readonly event: "would-deal-damage";
-  readonly multiplier: number;
+  readonly multiplier?: number;
+  readonly plus?: number;
+  readonly prevent?: boolean;
+  readonly then?: EffectSpec;
+  readonly source?: CardFilter;
+  readonly to?: "opponent" | "opponent-side" | "you" | "self";
 }
