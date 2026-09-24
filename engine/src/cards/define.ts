@@ -503,7 +503,8 @@ export interface StaticAbility {
   /**
    * Layer 4 — card types the affected permanents have "in addition to their
    * other types" (Bello's "is a … creature"). Applied in timestamp order with
-   * the permanent's own type-changing modifiers; everything that reads a
+   * the permanent's own type-changing modifiers, after any addition its scope
+   * depends on (see `layerFour`); everything that reads a
    * permanent's types (`effectiveTypes`, so `matchesFilter`, targeting and
    * every other static's scope) sees them.
    *

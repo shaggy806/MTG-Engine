@@ -1174,7 +1174,9 @@ anthem, the keyword grant and the granted trigger like any other creature.
   Ragost: "Artifacts you control are Foods"; Bello: "is a … creature"). Every
   type read sees them — filters, targeting, sacrifice costs, other statics'
   scopes — and they apply in timestamp order with the permanent's own
-  type-changing modifiers (an `animate`, Turn to Frog). A static with a
+  type-changing modifiers (an `animate`, Turn to Frog), except that a grant
+  whose scope depends on another effect's added types applies after it (rule
+  613.8: Kudo's "other creatures" reaches a land animated after Kudo arrived). A static with a
   layer-4 part fixes its reach there (rule 613.6): its keywords, granted
   abilities and P/T go to exactly the permanents it gave the type to.
 - `setBasePt: { power?, toughness? }` — layer 7b: the affected permanents

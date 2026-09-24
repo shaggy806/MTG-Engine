@@ -10529,6 +10529,9 @@ export class Game {
               keywords: [],
               setPt: [opts.basePt[0], opts.basePt[1]] as [number, number],
               untilEndOfTurn: false,
+              // A copy exception is part of the copiable values (rule
+              // 707.9b): every other P/T-setting effect applies over it.
+              timestamp: -1,
             },
           ]
         : []),

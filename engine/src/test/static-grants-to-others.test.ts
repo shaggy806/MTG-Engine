@@ -9,7 +9,9 @@
  *   targeting, sacrifice costs, other statics' scopes all see it.
  * - 613.4b / 613.4c: a base P/T set in 7b sits under counters (7c) and
  *   bonuses (7d).
- * - 613.7: within a layer, timestamp order — a static against an `animate`.
+ * - 613.7: within a layer, timestamp order — a static against an `animate`;
+ *   613.8: except that a type grant applies after the additions its scope
+ *   depends on (Kudo reaches a land animated after it arrived).
  * - 613.6: a static's later layers reach what its layer-4 part reached.
  * - A grant ends the moment its source leaves or its condition turns false.
  */
@@ -90,17 +92,17 @@ const bearCult = defineCard({
 });
 
 /** A type grant with a P/T part, for rule 613.6. */
-const elvenKin = defineCard({
-  name: "Elven Kin",
+const bearKin = defineCard({
+  name: "Bear Kin",
   manaCost: "{1}",
   types: ["enchantment"],
-  text: "Creatures are Elves in addition to their other types and get +1/+1.",
+  text: "Bears are Elves in addition to their other types and get +1/+1.",
   static: [
     {
-      affects: { scope: "filter", filter: { type: "creature" } },
+      affects: { scope: "filter", filter: { subtype: "Bear" } },
       addSubtypes: ["Elf"],
       grantPt: [1, 1],
-      text: "Creatures are Elves in addition to their other types and get +1/+1.",
+      text: "Bears are Elves in addition to their other types and get +1/+1.",
     },
   ],
 });
@@ -124,7 +126,7 @@ const skyBlessing = defineCard({
 });
 
 const registry = createDefaultRegistry();
-for (const def of [elvenKin, bearBanner, bearsAreElves, elvesAreBears, bearCult, skyBlessing]) {
+for (const def of [bearKin, bearBanner, bearsAreElves, elvesAreBears, bearCult, skyBlessing]) {
   registry.register(def);
 }
 
@@ -219,49 +221,53 @@ describe("layer 4: types granted to other permanents", () => {
     expect(pt(second, frog)).toEqual([2, 2]);
   });
 
-  it("matches a grant's scope against the types granted before it", () => {
-    // Bello first: the Archive is a creature by the time Kudo's scope is
-    // matched, so it's a Bear too — and Kudo's later 2/2 wins in 7b.
-    const first = makeGame().game;
-    spawn(first, "Bello, Bard of the Brambles", A);
-    const archive = spawn(first, "Hedron Archive", A);
-    spawn(first, "Kudo, King Among Bears", A);
-    expect(subtypes(first, archive)).toEqual(["Elemental", "Bear"]);
-    expect(pt(first, archive)).toEqual([2, 2]);
-
-    // Kudo first: the Archive wasn't a creature when Kudo applied.
-    const second = makeGame().game;
-    spawn(second, "Kudo, King Among Bears", A);
-    spawn(second, "Bello, Bard of the Brambles", A);
-    const later = spawn(second, "Hedron Archive", A);
-    expect(subtypes(second, later)).toEqual(["Elemental"]);
-    expect(pt(second, later)).toEqual([4, 4]);
-  });
-
-  it("keeps a static's later layers to what its layer-4 part reached (613.6)", () => {
+  it("applies a grant after the effects that make its scope match (613.8)", () => {
+    // Kudo first, Bello later: Kudo's "other creatures" depends on Bello
+    // making the Archive a creature, so it still becomes a Bear. Its base
+    // P/T is Bello's 4/4 — 7b stays in timestamp order.
     const { game } = makeGame();
-    spawn(game, "Elven Kin", A);
-    const bear = spawn(game, "Grizzly Bears", A);
-    const ring = spawn(game, "Sol Ring", A);
-    // Animated after Elven Kin arrived: not a creature yet when Elven Kin's
-    // layer-4 part applied, so no Elf — and so no +1/+1 either.
+    spawn(game, "Kudo, King Among Bears", A);
+    spawn(game, "Bello, Bard of the Brambles", A);
+    const archive = spawn(game, "Hedron Archive", A);
+    expect(subtypes(game, archive)).toEqual(["Bear", "Elemental"]);
+    expect(pt(game, archive)).toEqual([4, 4]);
+
+    // A Sol Ring animated after Kudo arrived is a Bear too, and the
+    // animation's later 3/3 wins over Kudo's 2/2.
+    const ring = spawn(game, "Sol Ring", B);
     game.debugApplyEffect(
-      A,
+      B,
       {
         kind: "animate",
         target: 0,
-        power: 2,
-        toughness: 2,
+        power: 3,
+        toughness: 3,
         addTypes: ["creature"],
         addSubtypes: [],
         duration: "end-of-turn",
       },
       [{ kind: "object", object: ring }],
     );
+    expect(subtypes(game, ring)).toEqual(["Bear"]);
+    expect(pt(game, ring)).toEqual([3, 3]);
+  });
+
+  it("keeps a static's later layers to what its layer-4 part reached (613.6)", () => {
+    const { game } = makeGame();
+    spawn(game, "Bear Kin", A);
+    const bear = spawn(game, "Grizzly Bears", A);
     expect(subtypes(game, bear)).toEqual(["Bear", "Elf"]);
     expect(pt(game, bear)).toEqual([3, 3]);
-    expect(subtypes(game, ring)).toEqual([]);
-    expect(pt(game, ring)).toEqual([2, 2]);
+    // Turn to Frog, later, replaces its subtypes: no longer a Bear or an
+    // Elf. Bear Kin reached it in layer 4, before the Frog, so its +1/+1
+    // still applies on top of the Frog's 1/1.
+    game.debugApplyEffect(
+      A,
+      registry.get("Turn to Frog").effect!,
+      [{ kind: "object", object: bear }],
+    );
+    expect(subtypes(game, bear)).toEqual(["Frog"]);
+    expect(pt(game, bear)).toEqual([2, 2]);
   });
 
   it("doesn't loop when two grants' scopes read each other's grants", () => {
@@ -364,6 +370,38 @@ describe("layer 7b: base P/T set on other permanents", () => {
       [{ kind: "object", object: giant }],
     );
     expect(pt(game, giant)).toEqual([7, 7]);
+  });
+
+  it("goes over a copy exception's base P/T, which is a copiable value", () => {
+    const { game } = makeGame();
+    const wurm = spawn(game, "Wurmcoil Engine", A);
+    const copyOf = () =>
+      game.state.zones.shared.battlefield.find(
+        (id) => id !== wurm && game.state.objects[id].cardName === "Wurmcoil Engine",
+      )!;
+    game.debugApplyEffect(
+      A,
+      { kind: "create-token-copy", of: 0, count: 1, basePt: [1, 1] },
+      [{ kind: "object", object: wurm }],
+    );
+    const copy = copyOf();
+    expect(pt(game, copy)).toEqual([1, 1]);
+    spawn(game, "Kudo, King Among Bears", B);
+    expect(pt(game, copy)).toEqual([2, 2]);
+    game.debugApplyEffect(
+      A,
+      {
+        kind: "animate",
+        target: 0,
+        power: 5,
+        toughness: 5,
+        addTypes: [],
+        addSubtypes: [],
+        duration: "end-of-turn",
+      },
+      [{ kind: "object", object: copy }],
+    );
+    expect(pt(game, copy)).toEqual([5, 5]);
   });
 
   it("covers every token in a stack without splitting it", () => {

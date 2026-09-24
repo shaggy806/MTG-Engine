@@ -15,7 +15,7 @@
  * "becomes a N/N" and a static's `setBasePt`), **layer 7c** (counters),
  * **layer 7d** (P/T bonuses + modifiers), timestamp-ordered within a layer.
  * NOT yet: full text-change beyond a creature-type word, and dependency
- * ordering (rule 613.8). Layer 2
+ * ordering (rule 613.8) outside layer 4's additive type grants. Layer 2
  * (control-change) is modeled in `game.ts` by reassigning
  * `GameObject.controller`, not here.
  */
@@ -639,11 +639,10 @@ function union<T>(a: readonly T[], b: readonly T[]): readonly T[] {
  * `addTypes` / `addSubtypes` part whose scope reaches it (Kudo's Bears,
  * Ragost's Foods, Bello's creatures).
  *
- * Each static's scope is matched against the types folded *so far*, which is
- * what timestamp order means for an effect whose reach depends on types; an
- * effect that would change what an earlier one applies to isn't reordered
- * ahead of it (dependency, rule 613.8, isn't modeled). See
- * `layer4InProgress` for why this can't loop.
+ * Each static's scope is matched against the types folded so far plus what
+ * earlier passes added, which approximates dependency order (rule 613.8) for
+ * these additive effects — see `foldLayerFour`. See `layer4InProgress` for
+ * why this can't loop.
  */
 export function layerFour(
   state: GameState,
@@ -657,7 +656,10 @@ export function layerFour(
   if (sources.length === 0) return ownLayerFour(registry, object);
   if (activeCache !== null && !guardActive()) {
     const hit = activeCache.layer4.get(object.id);
-    if (hit !== undefined) return hit;
+    if (hit !== undefined) {
+      if (cacheCheck) assertSameLayerFour(hit, foldLayerFour(state, registry, object, sources), object.id);
+      return hit;
+    }
     const value = foldLayerFour(state, registry, object, sources);
     activeCache.layer4.set(object.id, value);
     return value;
@@ -677,6 +679,17 @@ function ownLayerFour(registry: CardRegistry, object: GameObject): LayerFour {
   return { types, subtypes, applied: NO_STATICS };
 }
 
+/**
+ * The fold itself. Timestamp order alone gets dependency wrong in the common
+ * case: Kudo's "other creatures are Bears" depends on anything that makes a
+ * permanent a creature (rule 613.8a), so a Mishra's Factory animated after
+ * Kudo arrived is still a Bear. Every layer-4 effect here only *adds* types
+ * (bar a modifier's `setSubtypes`), so the fold is repeated with each scope
+ * matched against the types it has so far *plus* everything the previous
+ * pass added, until which statics apply stops changing — the dependency
+ * order for additive effects. A pair that depend on each other (a loop,
+ * 613.8k) settles in timestamp order, and the pass count is bounded.
+ */
 function foldLayerFour(
   state: GameState,
   registry: CardRegistry,
@@ -687,38 +700,78 @@ function foldLayerFour(
   for (const grant of sources) steps.push({ key: grant.source.timestamp, grant });
   for (const modifier of object.modifiers) steps.push({ key: modifierKey(modifier), modifier });
   steps.sort((a, b) => a.key - b.key);
-  let types: readonly CardType[] = registry.get(printedCardName(object)).types;
-  let subtypes = textChangedSubtypes(registry, object);
-  const applied: ContributingStatic[] = [];
   layer4InProgress.add(object.id);
   try {
-    for (const step of steps) {
-      if ("modifier" in step) {
-        ({ types, subtypes } = applyModifierTypes(step.modifier, types, subtypes));
-        continue;
-      }
-      const { source, ability } = step.grant;
-      if (!staticAffects(state, registry, ability.affects, source, object, { types, subtypes, inFold: true })) {
-        continue;
-      }
-      if (
-        ability.condition !== undefined &&
-        !staticConditionMet(state, registry, source, ability.condition)
-      ) {
-        continue;
-      }
-      if (ability.addTypes !== undefined) types = union(types, ability.addTypes);
-      if (ability.addSubtypes !== undefined) {
-        // The source's own text change rewrites the word it grants, as it
-        // does a lord clause's.
-        subtypes = union(subtypes, ability.addSubtypes.map((w) => substituteWord(source, w)));
-      }
-      applied.push(step.grant);
+    let result = foldLayerFourOnce(state, registry, object, steps, null);
+    for (let pass = 0; pass < sources.length; pass += 1) {
+      const next = foldLayerFourOnce(state, registry, object, steps, result);
+      const settled =
+        next.applied.length === result.applied.length &&
+        next.applied.every((a, i) => a === result.applied[i]);
+      result = next;
+      if (settled) break;
     }
+    return result;
   } finally {
     layer4InProgress.delete(object.id);
   }
+}
+
+function foldLayerFourOnce(
+  state: GameState,
+  registry: CardRegistry,
+  object: GameObject,
+  steps: readonly LayerFourStep[],
+  previous: LayerFour | null,
+): LayerFour {
+  let types: readonly CardType[] = registry.get(printedCardName(object)).types;
+  let subtypes = textChangedSubtypes(registry, object);
+  const applied: ContributingStatic[] = [];
+  for (const step of steps) {
+    if ("modifier" in step) {
+      ({ types, subtypes } = applyModifierTypes(step.modifier, types, subtypes));
+      continue;
+    }
+    const { source, ability } = step.grant;
+    const view = {
+      types: previous === null ? types : union(types, previous.types),
+      subtypes: previous === null ? subtypes : union(subtypes, previous.subtypes),
+      inFold: true,
+    };
+    if (!staticAffects(state, registry, ability.affects, source, object, view)) continue;
+    if (
+      ability.condition !== undefined &&
+      !staticConditionMet(state, registry, source, ability.condition)
+    ) {
+      continue;
+    }
+    if (ability.addTypes !== undefined) types = union(types, ability.addTypes);
+    if (ability.addSubtypes !== undefined) {
+      // The source's own text change rewrites the word it grants, as it
+      // does a lord clause's.
+      subtypes = union(subtypes, ability.addSubtypes.map((w) => substituteWord(source, w)));
+    }
+    applied.push(step.grant);
+  }
   return { types, subtypes, applied };
+}
+
+/** Throw if a cached {@link LayerFour} diverges from a fresh fold — the
+ * {@link setComputedCacheCheck} self-check for the layer-4 cache. */
+function assertSameLayerFour(cached: LayerFour, fresh: LayerFour, id: ObjectId): void {
+  const show = (l: LayerFour): string =>
+    JSON.stringify({
+      types: [...l.types].sort(),
+      subtypes: [...l.subtypes].sort(),
+      applied: l.applied.map((a) => `${a.source.id}:${a.ability.text}`),
+    });
+  const a = show(cached);
+  const b = show(fresh);
+  if (a !== b) {
+    throw new Error(
+      `computed-cache divergence (layer 4) for ${id}: cached ${a} vs fresh ${b} — a mutation inside a cache region is missing an invalidateComputedCache() call`,
+    );
+  }
 }
 
 /** Whether a static changes types in layer 4 — and so fixes, there, which

@@ -516,7 +516,8 @@ export interface PtModifier {
    * layer-4 and layer-7b parts against static abilities' (rule 613.7): it
    * sorts after a static whose source has this timestamp or an earlier one.
    * Absent (the modifiers that change no types and set no P/T) sorts after
-   * every static.
+   * every static. A copy exception's base P/T (Saw in Half) is `-1`: it's a
+   * copiable value, under every other effect.
    */
   timestamp?: number;
 }
