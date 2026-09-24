@@ -17,7 +17,14 @@
  * `SavedDeck.printings` and `DeckList.printings`).
  */
 
-import { assignReplacements, canPairCommanders, colorIdentityOf, validateCommanderDeck } from "engine";
+import {
+  assignReplacements,
+  canCommandAlone,
+  canPairCommanders,
+  colorIdentityOf,
+  isBackground,
+  validateCommanderDeck,
+} from "engine";
 import type {
   CardDefinition,
   CardRegistry,
@@ -714,19 +721,17 @@ export function formatCheck(
   for (const e of entries) {
     for (let i = 0; i < e.count; i += 1) flat.push(e.name);
   }
-  const canCommand = (n: string): boolean => {
-    if (!registry.has(n)) return false;
-    const def = registry.get(n);
-    return (
-      def.supertypes.includes("legendary") &&
-      (def.types.includes("creature") || def.types.includes("planeswalker"))
-    );
-  };
+  const canCommand = (n: string): boolean => registry.has(n) && canCommandAlone(registry.get(n));
   // An inferred commander has to survive a check the registry can actually
   // make. An unimplemented one passes by default — nothing here can tell
-  // whether it is legal, and the structure said it was the commander.
+  // whether it is legal, and the structure said it was the commander. A
+  // Background is a commander only as half of a pair, so it survives only
+  // in a trailing block of two, where the pair check below decides.
+  const inferable = (n: string): boolean =>
+    canCommand(n) ||
+    (explicitCommanders.length === 2 && registry.has(n) && isBackground(registry.get(n)));
   const trusted = explicitCommanders.filter(
-    (claimed) => !(commanderSource === "trailing" && registry.has(claimed) && !canCommand(claimed)),
+    (claimed) => !(commanderSource === "trailing" && registry.has(claimed) && !inferable(claimed)),
   );
   // Two commanders (a Partner pair) when the list says so: a `Commander`
   // section is taken at face value, as for one, and the report says if the
@@ -743,7 +748,8 @@ export function formatCheck(
   const commanders: string[] = pair
     ? trusted.slice(0, 2)
     : trusted.length > 0
-      ? [trusted[0]]
+      ? // Unpaired, a Background can't command, so the other card leads.
+        [trusted.find((n) => !registry.has(n) || !isBackground(registry.get(n))) ?? trusted[0]]
       : guessed !== undefined
         ? [guessed]
         : [];

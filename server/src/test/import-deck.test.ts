@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, afterEach } from "vitest";
-import { colorIdentityOf, createDefaultRegistry, withinIdentity } from "engine";
+import { colorIdentityOf, createDefaultRegistry, defineCard, withinIdentity } from "engine";
 import { evaluateDecklist, formatCheck, parseDecklistText } from "../import-deck.js";
 
 const registry = createDefaultRegistry();
@@ -593,6 +593,39 @@ describe("formatCheck (over a pasted list's implemented cards)", () => {
     );
     const r = formatCheck(entries, registry, commanders, commanderSource);
     expect(r.commanders).toEqual(["Atraxa, Praetors' Voice", "Some Made Up Partner"]);
+  });
+
+  // No real Background is in the pool yet, so a stand-in is registered.
+  describe("a trailing Background pair", () => {
+    const withBackground = createDefaultRegistry().register(
+      defineCard({
+        name: "Test Background",
+        manaCost: "{1}{W}",
+        colors: ["W"],
+        supertypes: ["legendary"],
+        types: ["enchantment"],
+        subtypes: ["Background"],
+      }),
+    );
+    const check = (...trailing: string[]) => {
+      const { entries, commanders, commanderSource } = parseDecklistText(
+        ["1 Sol Ring", "", ...trailing].join("\n"),
+      );
+      return formatCheck(entries, withBackground, commanders, commanderSource);
+    };
+
+    it("reads a Choose a Background commander and its Background as both commanders", () => {
+      const r = check("1 Ganax, Astral Hunter", "1 Test Background");
+      expect(r.commanders).toEqual(["Ganax, Astral Hunter", "Test Background"]);
+      expect(r.identity).toBe("WR");
+      expect(r.violations.some((v) => v.includes("paired") || v.includes("commander"))).toBe(false);
+    });
+
+    it("leads with the creature when the Background can't pair with it", () => {
+      expect(check("1 Test Background", "1 Atraxa, Praetors' Voice").commanders).toEqual([
+        "Atraxa, Praetors' Voice",
+      ]);
+    });
   });
 
   it("takes a Commander section's pair at face value and says when it isn't legal", () => {
