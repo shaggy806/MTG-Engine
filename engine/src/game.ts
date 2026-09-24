@@ -7066,8 +7066,11 @@ export class Game {
     } finally {
       this.leaveBatch = null;
     }
-    if (batch.deferred.length === 0 || batch.left.length === 0) return;
-    const leftWith = [...batch.left];
+    if (batch.deferred.length === 0 || batch.left.length + batch.deferred.length < 2) return;
+    // The other deferred commanders too: whichever of them is answered
+    // later still left with the ones answered first (the seed drops any
+    // still on the battlefield, which see it the ordinary way).
+    const leftWith = [...batch.left, ...batch.deferred];
     const state = this.state;
     const deferred = state.deferredCommanderMove;
     if (deferred !== null && batch.deferred.includes(deferred.commander)) {

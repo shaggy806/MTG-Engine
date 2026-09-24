@@ -265,6 +265,50 @@ describe("leaving together — every one of them sees every other one leave (rul
       expect(triggersOf(game, vela)).toBe(3);
       expect(lost).toBe(5);
     });
+    it("two commanders in the wrath each see the other die, whichever is answered first", () => {
+      // Both moves wait on 903.9a answers. The one answered second must still
+      // be seen by the one answered first, which is in the graveyard by then.
+      const a = new ScriptedController(A);
+      a.chooseTargetsFn = () => [{ kind: "player", player: B }];
+      a.commanderReplacementFn = () => false;
+      const game = Game.create({
+        seed: 1,
+        shuffle: false,
+        rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
+        controllers: { [A]: a, [B]: new ScriptedController(B) },
+        decks: [
+          {
+            player: A,
+            cards: ["Wrath of God", ...Array<string>(40).fill("Swamp")],
+            commanders: ["Vela the Night-Clad", "Blood Artist"],
+          },
+          { player: B, cards: Array<string>(40).fill("Forest") },
+        ],
+      });
+      game.advanceUntil((s) => s.turn.number === 1 && s.turn.step === "precombat-main");
+      spawnMany(game, "Island", A, 5);
+      spawnMany(game, "Swamp", A, 3);
+      const [vela, artist] = ["Vela the Night-Clad", "Blood Artist"].map(
+        (name) =>
+          game.state.zones.shared.command.find(
+            (id) => game.state.objects[id].cardName === name,
+          ) as ObjectId,
+      );
+      for (const card of [vela, artist]) {
+        game.dispatch({ type: "cast-spell", player: A, card, targets: [] });
+        game.advanceUntil(quiet);
+        expect(game.state.objects[card].zone).toBe("battlefield");
+      }
+      game.debugSpawn("Grizzly Bears", A);
+
+      castWrath(game);
+
+      expect(game.state.objects[vela].zone).toBe("graveyard");
+      expect(game.state.objects[artist].zone).toBe("graveyard");
+      // Each: itself, the other commander and the Bears.
+      expect(triggersOf(game, artist)).toBe(3);
+      expect(triggersOf(game, vela)).toBe(3);
+    });
   });
 
   describe("a permanent that left is read as it last existed there", () => {
