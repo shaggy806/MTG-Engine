@@ -12,6 +12,7 @@ export default defineCard({
   subtypes: ["Human"],
   power: 2,
   toughness: 2,
+  pairing: { kind: "partner" },
   keywords: ["deathtouch"],
   text:
     "Deathtouch\n" +
