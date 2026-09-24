@@ -1,11 +1,10 @@
 import { defineCard } from "../define.js";
+import { ward } from "../helpers.js";
 
 // EDHREC commander rank 320. Two printed clauses, both existing vocabulary:
 //
-// - "Ward {2}" — a `"self"`-scoped `ward: { mana }` static, exactly Miirym,
-//   Sentinel Wyrm's. The engine pays a ward it can afford rather than offering
-//   the "decline and be countered" choice; that is how `ward` behaves for
-//   every card in the pool that has it, not anything special here.
+// - "Ward {2}" — the `ward` helper's triggered ability (rule 702.21a), exactly
+//   Miirym, Sentinel Wyrm's.
 // - "If one or more tokens would be created under your control, twice that
 //   many of those tokens are created instead." — Doubling Season's
 //   `would-create-token` multiplier (rule 614). `tokenCreationMultiplier`
@@ -42,13 +41,9 @@ export default defineCard({
   static: [
     {
       affects: { scope: "self" },
-      ward: { mana: "{2}" },
-      text: WARD_TEXT,
-    },
-    {
-      affects: { scope: "self" },
       replacement: { event: "would-create-token", multiplier: 2 },
       text: DOUBLE_TEXT,
     },
   ],
+  triggered: [ward({ mana: "{2}" })],
 });

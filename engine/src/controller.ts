@@ -26,6 +26,7 @@ import { computeCharacteristics } from "./characteristics.js";
 import { CardRegistry, createDefaultRegistry } from "./cards.js";
 import { chooseBottomOfHand, shouldMulligan } from "./bot/mulligan.js";
 import { manaValue, parseManaCost } from "./mana.js";
+import type { EffectSpec } from "./effects.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameObject, GameState } from "./state.js";
@@ -996,6 +997,18 @@ type DeclareBlockersLegal = Extract<LegalAction, { kind: "declare-blockers" }>;
  * never passes priority hangs the game it's in. */
 const MAX_ACTIVATIONS_PER_TURN = 4;
 
+/** The life an effect makes its controller lose outright — a ward payment's
+ * "Pay N life" part, which is a `lose-life` of `"you"` inside its mode. */
+function lifePaidBy(effect: EffectSpec | undefined): number {
+  if (effect === undefined) return 0;
+  if (effect.kind === "sequence") {
+    return effect.effects.reduce((n, each) => n + lifePaidBy(each), 0);
+  }
+  return effect.kind === "lose-life" && effect.who === "you" && typeof effect.amount === "number"
+    ? effect.amount
+    : 0;
+}
+
 export class HeuristicBotController extends AutomaticController {
   private readonly registry: CardRegistry;
   /** `source:abilityIndex` -> activations so far, for `activationTurn`. */
@@ -1218,6 +1231,24 @@ export class HeuristicBotController extends AutomaticController {
     max: number,
   ): readonly ObjectId[] {
     return eligible.slice(0, Math.max(min, Math.min(max, eligible.length)));
+  }
+
+  /** A ward payment (rule 702.21a) is offered only when it's affordable, and
+   * a spell of this bot's that targeted something is one it wanted to
+   * resolve, so it pays — unless the life it would pay is all it has left.
+   * Every other "you may" keeps the do-nothing default. */
+  chooseModes(
+    view: ControllerView,
+    minModes: number,
+    maxModes: number,
+    modeTexts: readonly string[],
+  ): readonly number[] {
+    const awaiting = view.state.awaiting;
+    if (awaiting?.kind === "choose-modes" && awaiting.ward !== undefined) {
+      const life = view.state.players[view.player].life;
+      return lifePaidBy(awaiting.modes[0]?.effect) >= life ? [] : [0];
+    }
+    return super.chooseModes(view, minModes, maxModes, modeTexts);
   }
 
   /**

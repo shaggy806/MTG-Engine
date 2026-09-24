@@ -602,10 +602,6 @@ export interface StaticAbility {
     readonly types?: readonly CardType[];
     readonly filter?: CardFilter;
   };
-  /** Ward (rule 702.21) — an opponent targeting this permanent (`affects:
-   * "self"`) must pay this or their spell/ability is countered. Applied at the
-   * target's resolution, auto-paid if the opponent can afford it. */
-  readonly ward?: { readonly mana?: string; readonly payLife?: number };
   /** Adjust the generic-mana cost of matching *spells* as they're cast
    * (Foundry Inspector: `{ applies: { type: "artifact", controlledBy: "you" },
    * reduceGeneric: 1 }`; Thalia: `{ applies: { notTypes: ["creature"] },

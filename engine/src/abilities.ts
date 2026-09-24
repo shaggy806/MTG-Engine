@@ -236,6 +236,13 @@ export type TriggerSpec =
        * how much (Exquisite Blood). */
       readonly on: "loses-life";
       readonly who: TriggerWho;
+      /** "…loses life **for the first time during each of their turns**"
+       * (Valgavoth, Harrower of Souls): only while that player is the active
+       * player, and only the loss that took their life lost this turn from
+       * none — so a loss earlier in the turn, even one before this permanent
+       * arrived, uses it up. Reads `PlayerState.lifeLostThisTurn`, which
+       * already counts this loss when the trigger is matched. */
+      readonly firstDuringTheirTurn?: boolean;
     }
   | {
       /**

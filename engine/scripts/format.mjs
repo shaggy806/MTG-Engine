@@ -163,6 +163,8 @@ export const makeFormatter = (game) => {
         return `${name(e.object)} is countered`;
       case "ward-paid":
         return `${e.player} pays ward for ${name(e.object)}`;
+      case "ward-unpaid":
+        return `${e.player} doesn't pay ward for ${name(e.object)}`;
       case "control-changed":
         return `${e.controller} gains control of ${name(e.object)}${
           e.untilEndOfTurn ? " until EOT" : ""

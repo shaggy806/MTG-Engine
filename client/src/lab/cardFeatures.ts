@@ -57,7 +57,6 @@ function staticTags(s: StaticAbility, out: Set<string>): void {
   if (s.grantsActivated) out.add('grantsActivated')
   if (s.condition) out.add(`condition: ${s.condition.kind}`)
   if (s.costModification) out.add('costModification')
-  if (s.ward) out.add('ward')
   if (s.protection) out.add('protection')
   if (s.restrictions) for (const r of s.restrictions) out.add(`restriction: ${r}`)
   if (s.setBasePtFromCount) out.add('setBasePtFromCount')

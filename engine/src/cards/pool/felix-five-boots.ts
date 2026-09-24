@@ -1,4 +1,5 @@
 import { defineCard } from "../define.js";
+import { ward } from "../helpers.js";
 
 // Top-commanders rank 495. Only triggers about the damage itself: a lifelink
 // creature's life gain triggers Ajani's Pridemate once, not twice (the 2024
@@ -19,11 +20,6 @@ export default defineCard({
   static: [
     {
       affects: { scope: "self" },
-      ward: { mana: "{2}" },
-      text: "Ward {2}",
-    },
-    {
-      affects: { scope: "self" },
       doubleTriggers: {
         cause: "combat-damage-to-player",
         filter: { type: "creature", controlledBy: "you" },
@@ -32,4 +28,5 @@ export default defineCard({
         "If a creature you control dealing combat damage to a player causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time.",
     },
   ],
+  triggered: [ward({ mana: "{2}" })],
 });

@@ -98,6 +98,7 @@ import {
   applyEffectSpec,
   isCountScalableEffect,
   substituteChosenCreatureType,
+  wardCostText,
 } from "./effects.js";
 import type {
   EffectAmount,
@@ -105,6 +106,7 @@ import type {
   FlickerCounters,
   FlickerOptions,
   UnlessOption,
+  WardCost,
   ModeOption,
   PlayerScope,
   PtDuration,
@@ -180,6 +182,7 @@ import type {
   PendingTrigger,
   PreventionShield,
   PtModifier,
+  TargetedBy,
   ZoneType,
 } from "./state.js";
 import { describeTargetSpec, isOptionalSpec, normalizeTargets } from "./target.js";
@@ -2555,7 +2558,8 @@ export class Game {
       throw new Error("unreachable: whyCannotChooseModes should have caught this");
     }
 
-    const { source, modes, x, onDecline, targets, cost, triggerValue, triggerObject } = awaiting;
+    const { source, modes, x, onDecline, targets, cost, triggerValue, triggerObject, ward } =
+      awaiting;
     const lastKnownRefs = awaiting.lastKnownRefs;
     const targetZones = awaiting.targetZones ?? [];
     this.state.awaiting = null;
@@ -2597,6 +2601,14 @@ export class Game {
       lastKnownRefs,
     );
     for (const i of ordered) applyEffectSpec(modes[i].effect, context);
+    // Logged once the payment has been made, and ahead of the counter.
+    if (ward !== undefined) {
+      this.emit(
+        ordered.length > 0
+          ? { type: "ward-paid", object: ward.warded, player }
+          : { type: "ward-unpaid", object: ward.warded, player, spell: ward.spell },
+      );
+    }
     if (ordered.length === 0 && onDecline !== undefined) {
       const declinedBy = awaiting.declineController;
       applyEffectSpec(
@@ -2665,6 +2677,7 @@ export class Game {
         autoSlotsOf(trig.slots),
         trig.x,
         trig.lastKnownRefs,
+        trig.targetedBy,
       );
     } else if (cast !== null) {
       this.state.pendingTargetedCast = null;
@@ -6463,7 +6476,7 @@ export class Game {
       player,
       onStack: true,
     });
-    this.announceTargeted(chosen, player, sourceId, false);
+    this.announceTargeted(chosen, player, sourceId, false, abilityId);
     this.afterPlayerAction(player);
   }
 
@@ -6472,10 +6485,12 @@ export class Game {
    * "becomes the target of" trigger (rule 115.7 — Thunderbreak Regent).
    *
    * Emitted as the spell or ability goes on the stack, which is when targets
-   * are chosen and locked in (601.2c / 602.2b), not when it resolves — the
-   * trigger fires even if the spell is later countered or fizzles. Player
-   * targets aren't announced: nothing in the pool triggers on a *player*
-   * being targeted, and the events would be pure noise in the log.
+   * are chosen and locked in (601.2c / 602.2b / 603.3d), not when it
+   * resolves — the trigger fires even if the spell is later countered or
+   * fizzles. A triggered ability announces too (`mintTriggerAbility`), so
+   * ward and Thunderbreak Regent see one. Player targets aren't announced:
+   * nothing in the pool triggers on a *player* being targeted, and the
+   * events would be pure noise in the log.
    *
    * Once per *object*, not per target slot: a spell that names the same
    * creature in two slots makes it "become the target" once (rule 115.7 /
@@ -6487,15 +6502,30 @@ export class Game {
     by: PlayerId,
     source: ObjectId,
     bySpell: boolean,
+    /** The ability object on the stack, for an ability; a spell is its own. */
+    stackObject: ObjectId = source,
+    /** Slots the triggering event filled rather than anyone choosing — not
+     * targets (rule 115.1), so not announced. */
+    autoSlots: readonly number[] = [],
   ): void {
     const announced = new Set<ObjectId>();
+    let slot = -1;
     for (const target of targets) {
+      slot += 1;
+      if (autoSlots.includes(slot)) continue;
       if (target === undefined || target.kind !== "object") continue;
       if (announced.has(target.object)) continue;
       announced.add(target.object);
       const object = this.state.objects[target.object];
       if (object === undefined || object.zone !== "battlefield") continue;
-      this.emit({ type: "object-targeted", object: target.object, by, source, bySpell });
+      this.emit({
+        type: "object-targeted",
+        object: target.object,
+        by,
+        source,
+        stackObject,
+        bySpell,
+      });
     }
   }
 
@@ -7319,15 +7349,6 @@ export class Game {
       return;
     }
 
-    // Ward (rule 702.21) — a warded target the caster doesn't control taxes
-    // the spell, or counters it if the caster can't pay.
-    if (
-      targets.length > 0 &&
-      !this.wardCheckPasses(object.controller, targets, () => this.counterObject(id))
-    ) {
-      return;
-    }
-
     this.withDecisionSource(id, () => {
       if (object.chosenModes !== undefined && def.castModal !== null) {
         // A targeted modal spell (rule 700.2 — ROADMAP Phase 11 EG-2): apply each
@@ -7604,19 +7625,6 @@ export class Game {
       return;
     }
 
-    // Ward (rule 702.21) — same as for a spell, but a countered ability just
-    // ceases to exist.
-    if (
-      targets.length > 0 &&
-      !this.wardCheckPasses(object.controller, targets, () => {
-        this.removeAbilityFromStack(id);
-        this.emit({ type: "spell-countered", object: id });
-        return true;
-      })
-    ) {
-      return;
-    }
-
     const base = this.makeResolutionContext(
       source,
       object.controller,
@@ -7635,7 +7643,14 @@ export class Game {
     const recorded = object.sourceZoneChangeCount;
     const sourceLost =
       recorded !== undefined && (this.state.objects[source]?.zoneChangeCount ?? 0) !== recorded;
-    const context = sourceLost ? { ...base, sourceLost: true } : base;
+    const targetedBy = object.targetedBy;
+    const context = {
+      ...base,
+      ...(sourceLost ? { sourceLost: true } : {}),
+      ...(targetedBy !== undefined
+        ? { ward: (cost: WardCost) => this.beginWard(source, object.controller, targetedBy, cost) }
+        : {}),
+    };
     const outerSourceTimestamp = this.resolvingSourceTimestamp;
     this.resolvingSourceTimestamp = object.sourceTimestamp ?? null;
     try {
@@ -7907,6 +7922,16 @@ export class Game {
             ...(autoTargets ? { autoTargets } : {}),
             ...(triggerValue !== undefined ? { triggerValue } : {}),
             ...(triggerObject !== undefined ? { triggerObject } : {}),
+            // Ward's "counter that spell or ability unless that player pays".
+            ...(ability.trigger.on === "becomes-target" && event.type === "object-targeted"
+              ? {
+                  targetedBy: {
+                    object: event.stackObject,
+                    player: event.by,
+                    zoneChangeCount: this.state.objects[event.stackObject]?.zoneChangeCount ?? 0,
+                  },
+                }
+              : {}),
             ...(castX !== undefined ? { x: castX } : {}),
             ...(ref !== undefined ? { grantedAbility: ref } : {}),
             ...(lastKnownRefs !== undefined ? { lastKnownRefs } : {}),
@@ -8231,7 +8256,10 @@ export class Game {
         return (
           event.type === "life-changed" &&
           event.delta < 0 &&
-          this.matchesWhoPlayer(spec.who, event.player, self)
+          this.matchesWhoPlayer(spec.who, event.player, self) &&
+          (spec.firstDuringTheirTurn !== true ||
+            (event.player === this.activePlayer &&
+              this.state.players[event.player].lifeLostThisTurn === -event.delta))
         );
       case "counters-put":
         return (
@@ -8558,6 +8586,7 @@ export class Game {
     readonly x?: number;
     readonly delayed?: DelayedTrigger;
     readonly lastKnownRefs?: LastKnownRefs;
+    readonly targetedBy?: TargetedBy;
   }): "done" | "paused" {
     // A self-contained ability record (a mana-spend rider) has no card
     // ability to look up — mint it carrying its own record, exactly as
@@ -8652,6 +8681,7 @@ export class Game {
         autoSlotsOf(slots),
         trigger.x,
         trigger.lastKnownRefs,
+        trigger.targetedBy,
       );
       return "done";
     }
@@ -8674,6 +8704,7 @@ export class Game {
         : {}),
       ...(trigger.x !== undefined ? { x: trigger.x } : {}),
       ...(trigger.lastKnownRefs !== undefined ? { lastKnownRefs: trigger.lastKnownRefs } : {}),
+      ...(trigger.targetedBy !== undefined ? { targetedBy: trigger.targetedBy } : {}),
     };
     this.state.awaiting = {
       kind: "choose-targets",
@@ -8740,6 +8771,7 @@ export class Game {
     /** The X its source was cast with (rule 107.3m) — see `PendingTrigger.x`. */
     x?: number,
     lastKnownRefs?: LastKnownRefs,
+    targetedBy?: TargetedBy,
   ): void {
     const abilityId = this.mintAbilityObject(
       sourceId,
@@ -8759,7 +8791,18 @@ export class Game {
     if (autoTargetSlots.length > 0) {
       this.state.objects[abilityId].autoTargetSlots = [...autoTargetSlots];
     }
+    if (targetedBy !== undefined) this.state.objects[abilityId].targetedBy = targetedBy;
     this.emit({ type: "ability-triggered", source: sourceId, controller });
+    // Its targets are locked in as it goes on the stack (rule 603.3d), which
+    // is when anything it targets "becomes the target of" an ability.
+    this.announceTargeted(
+      this.state.objects[abilityId].targets ?? [],
+      controller,
+      sourceId,
+      false,
+      abilityId,
+      autoTargetSlots,
+    );
   }
 
   /** `autoSlots` are slots the triggering event filled rather than a player
@@ -9148,6 +9191,9 @@ export class Game {
       },
       impulseExile: (amount, duration, castOnly, opts) =>
         this.impulseExile(controller, source, amount, duration, castOnly, opts),
+      // Only a resolving ward trigger knows what it counters; `resolveAbility`
+      // supplies the real one.
+      ward: () => {},
       unless: (chooser, options, otherwise) =>
         this.beginUnless(source, controller, x, targets, triggerObject, chooser, options, otherwise, {
           lastKnownRefs: refs,
@@ -12079,61 +12125,126 @@ export class Game {
    * put into its owner's graveyard without resolving. A countered permanent
    * spell never enters the battlefield; a countered commander is redirected to
    * the command zone by `moveObject` like any other. */
-  /** The ward cost on `id` (rule 702.21) from a `"self"` static, or `null`. */
-  private wardOf(id: ObjectId): { mana?: string; payLife?: number } | null {
-    const object = this.state.objects[id];
-    if (object === undefined || hasLostAbilities(object)) return null;
-    for (const ability of this.registry.get(printedCardName(object)).static) {
-      if (
-        ability.ward !== undefined &&
-        ability.affects.scope === "self" &&
-        this.staticActive(object, ability)
-      ) {
-        return ability.ward;
-      }
+  /**
+   * Ward's effect (rule 702.21a) — see the `"ward"` {@link EffectSpec}: the
+   * player whose spell or ability targeted `warded` chooses whether to pay
+   * `cost`; if they don't, or can't, the ward trigger counters it.
+   *
+   * Asked as a `choose-modes` decision with one optional mode, "pay", whose
+   * mana rides on the decision's `cost` and whose other parts are the mode's
+   * effect, and whose decline branch is a `counter` of the targeting spell,
+   * held as the decision's target 0. That's the `unless` shape, but a ward
+   * cost is one compound cost rather than a choice between options, and the
+   * payer is the targeting player rather than a target or triggering
+   * object's controller. A cost that can't be paid in full isn't offered.
+   */
+  private beginWard(
+    warded: ObjectId,
+    controller: PlayerId,
+    targetedBy: TargetedBy,
+    cost: WardCost,
+  ): void {
+    const spell = this.state.objects[targetedBy.object];
+    // Already gone — resolved, countered, or left and come back as a new
+    // object: there is nothing left to counter.
+    if (
+      spell === undefined ||
+      spell.zone !== "stack" ||
+      (spell.zoneChangeCount ?? 0) !== targetedBy.zoneChangeCount
+    ) {
+      return;
     }
-    return null;
+    const payer = targetedBy.player;
+    const spellRef: TargetRef = { kind: "object", object: targetedBy.object };
+    if (!this.canPayWardCost(payer, cost)) {
+      this.emit({ type: "ward-unpaid", object: warded, player: payer, spell: targetedBy.object });
+      this.counterObject(targetedBy.object);
+      return;
+    }
+    const parts: EffectSpec[] = [];
+    if (cost.payLife !== undefined) {
+      parts.push({ kind: "lose-life", amount: cost.payLife, who: "you" });
+    }
+    if (cost.sacrifice !== undefined) {
+      parts.push({
+        kind: "sacrifice",
+        who: "you",
+        filter: cost.sacrifice.filter,
+        count: cost.sacrifice.count ?? 1,
+      });
+    }
+    if (cost.discard !== undefined) {
+      parts.push({ kind: "discard", target: "you", amount: cost.discard });
+    }
+    const spellName = printedCardName(spell);
+    const what = spell.kind === "card" ? spellName : `${spellName}'s ability`;
+    this.beginModesChoice(
+      warded,
+      payer,
+      0,
+      0,
+      1,
+      [
+        {
+          text: `Pay ward${wardCostText(cost).replace(/\.$/, "")} (or ${what} is countered)`,
+          effect: { kind: "sequence", effects: parts },
+        },
+      ],
+      { kind: "counter", target: 0 },
+      [spellRef],
+      cost.mana,
+      0,
+      undefined,
+      // Countering is the ward ability's own effect, not the payer's.
+      controller,
+    );
+    const awaiting = this.state.awaiting;
+    if (awaiting?.kind === "choose-modes" && awaiting.player === payer) {
+      this.state.awaiting = { ...awaiting, ward: { warded, spell: targetedBy.object } };
+    }
   }
 
   /**
-   * Ward (rule 702.21), checked as a targeted spell/ability begins to resolve:
-   * for every warded permanent it targets that `caster` doesn't control, the
-   * caster must pay the ward cost. Paid automatically when affordable (no
-   * "decline and be countered" choice is modeled); otherwise the target's
-   * spell/ability is countered — this returns `false` and the caller aborts
-   * the resolution. `sourceIsSpell` picks the log wording.
+   * Can `player` pay all of a ward cost right now? Life can be paid down to
+   * exactly 0 (rule 119.4); blight isn't built, so a cost naming it can't be.
+   *
+   * The parts are one cost, so they're checked together: the mana is paid
+   * first (it rides on the decision), and the plan for it — the same plan
+   * the payment will make, off the same board — may pay life of its own (a
+   * painland, a Phyrexian pip) or sacrifice a source (a Treasure) that the
+   * other parts were counting on. Those are taken off before the rest is
+   * checked, so a cost that can only be paid by spending one thing twice
+   * isn't offered.
    */
-  private wardCheckPasses(
-    caster: PlayerId,
-    targets: ResolvedTargets,
-    onCountered: () => boolean,
-  ): boolean {
-    for (const target of targets) {
-      // A skipped optional slot has nothing to ward.
-      if (target === undefined || target.kind !== "object") continue;
-      const permanent = this.state.objects[target.object];
-      if (
-        permanent === undefined ||
-        permanent.zone !== "battlefield" ||
-        permanent.controller === caster
-      ) {
-        continue;
+  private canPayWardCost(player: PlayerId, cost: WardCost): boolean {
+    const state = this.state.players[player];
+    if (state === undefined || state.hasLost) return false;
+    if (cost.blight !== undefined) return false;
+    let lifeLeft = state.life;
+    const spent = new Map<ObjectId, number>();
+    if (cost.mana !== undefined) {
+      const plan = this.payMana(player, parseManaCost(cost.mana));
+      if (plan === null) return false;
+      lifeLeft -= plan.life;
+      for (const step of plan.steps) {
+        lifeLeft -= step.pain + step.lifeCost;
+        if (step.sacrifice) spent.set(step.source, (spent.get(step.source) ?? 0) + 1);
       }
-      const ward = this.wardOf(target.object);
-      if (ward === null) continue;
-
-      const manaCost = parseManaCost(ward.mana ?? null);
-      const payment = this.payMana(caster, manaCost);
-      const lifeOk =
-        ward.payLife === undefined || this.state.players[caster].life >= ward.payLife;
-      if (payment === null || !lifeOk) {
-        // Ward "counters unless the player pays" — but if the spell can't be
-        // countered, it resolves anyway (the counter just does nothing).
-        return !onCountered();
-      }
-      this.executePayment(caster, payment);
-      if (ward.payLife !== undefined) this.changeLife(caster, -ward.payLife);
-      this.emit({ type: "ward-paid", object: target.object, player: caster });
+    }
+    if (cost.payLife !== undefined && lifeLeft < cost.payLife) return false;
+    if (cost.sacrifice !== undefined) {
+      const eligible = this.eligibleSacrifices(player, cost.sacrifice.filter).reduce(
+        (n, id) =>
+          n + Math.max(0, (this.state.objects[id].stackCount ?? 1) - (spent.get(id) ?? 0)),
+        0,
+      );
+      if (eligible < (cost.sacrifice.count ?? 1)) return false;
+    }
+    if (
+      cost.discard !== undefined &&
+      this.state.zones.perPlayer[player].hand.length < cost.discard
+    ) {
+      return false;
     }
     return true;
   }
@@ -12167,6 +12278,12 @@ export class Game {
       return false;
     }
     object.targets = null;
+    // An ability on the stack (ward counters those too) just ceases to exist.
+    if (object.kind === "ability") {
+      this.removeAbilityFromStack(id);
+      this.emit({ type: "spell-countered", object: id });
+      return true;
+    }
     if (object.isCopy) {
       const stack = this.state.zones.shared.stack;
       const index = stack.indexOf(id);

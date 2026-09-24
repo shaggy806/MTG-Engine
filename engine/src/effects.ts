@@ -194,6 +194,48 @@ export type EffectAmount =
    */
   | { readonly playersWithTurnStat: TurnStat; readonly who: PlayerScope };
 
+/**
+ * A ward cost (rule 702.21a) — "Ward {2}", "Ward—Pay 2 life.", "Ward—{2},
+ * Pay 2 life.", "Ward—Sacrifice a Food.", "Ward—Discard a card.". **One**
+ * compound cost: every part that is set is paid together, and the targeting
+ * player either pays all of it or none (unlike an `"unless"` clause's
+ * options, which are alternatives). See the `"ward"` {@link EffectSpec}.
+ */
+export interface WardCost {
+  readonly mana?: string;
+  readonly payLife?: number;
+  /** "Sacrifice a legendary artifact or legendary creature" (Sauron),
+   * "Sacrifice a Food" (Ygra). The payer picks which. `text` is the clause
+   * as printed, without a trailing period ("Sacrifice a Food"). */
+  readonly sacrifice?: {
+    readonly filter: CardFilter;
+    readonly count?: number;
+    readonly text: string;
+  };
+  /** "Discard a card" (Arna Kenneruud): how many; the payer picks which. */
+  readonly discard?: number;
+  /** "Ward—Blight 2" (Auntie Ool: put two -1/-1 counters on a creature you
+   * control). Reserved for the unbuilt blight keyword: a cost naming it is
+   * treated as unpayable, and the `ward` card helper refuses to build one,
+   * so no card can be authored with it until blight lands. */
+  readonly blight?: number;
+}
+
+/** A ward cost as printed after "Ward" — "{2}" or "—{2}, Pay 2 life." — so a
+ * card's ability text and the payment prompt read the same. */
+export function wardCostText(cost: WardCost): string {
+  const parts: string[] = [];
+  if (cost.mana !== undefined) parts.push(cost.mana);
+  if (cost.payLife !== undefined) parts.push(`Pay ${cost.payLife} life`);
+  if (cost.sacrifice !== undefined) parts.push(cost.sacrifice.text);
+  if (cost.discard !== undefined) {
+    parts.push(cost.discard === 1 ? "Discard a card" : `Discard ${cost.discard} cards`);
+  }
+  if (cost.blight !== undefined) parts.push(`Blight ${cost.blight}`);
+  const onlyMana = cost.mana !== undefined && parts.length === 1;
+  return onlyMana ? ` ${cost.mana}` : `—${parts.join(", ")}.`;
+}
+
 /** One way out of an `"unless"` clause. Exactly one field is set. */
 export type UnlessOption =
   | { readonly pay: string; readonly text: string }
@@ -1170,6 +1212,20 @@ export type EffectSpec =
     }
   | {
       /**
+       * Ward's own effect (rule 702.21a): "counter that spell or ability
+       * unless that player pays [cost]". Only meaningful as the effect of a
+       * `becomes-target` trigger (the `ward` card helper builds the whole
+       * ability), which records the spell or ability that did the targeting
+       * and who controls it (`GameObject.targetedBy`). That player chooses
+       * whether to pay, as a `choose-modes` decision; declining, or being
+       * unable to pay, counters it. A spell that can't be countered resolves
+       * anyway. Does nothing once that spell or ability has left the stack.
+       */
+      readonly kind: "ward";
+      readonly cost: WardCost;
+    }
+  | {
+      /**
        * "That player chooses up to `keep` creatures they control, then
        * sacrifices the rest" (Archfiend of Depravity) — the inverse of
        * `sacrifice`, which names how many to *give up* rather than how many
@@ -1587,6 +1643,8 @@ export interface EffectApi {
       readonly gate?: StaticCondition;
     },
   ): void;
+  /** See the `"ward"` {@link EffectSpec}. */
+  ward(cost: WardCost): void;
   /** See the `"unless"` {@link EffectSpec}. */
   unless(
     chooser: number | "trigger-controller",
@@ -2494,6 +2552,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     case "unless":
       ctx.unless(spec.chooser, spec.options, spec.otherwise);
+      return;
+    case "ward":
+      ctx.ward(spec.cost);
       return;
     case "scry":
       ctx.scry(spec.amount, false, spec.then);

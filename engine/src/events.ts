@@ -308,6 +308,10 @@ export type GameEvent =
       readonly object: ObjectId;
       readonly by: PlayerId;
       readonly source: ObjectId;
+      /** The spell or ability object doing the targeting — the spell itself
+       * (so equal to `source`) for a spell, the ability object on the stack
+       * for an ability. What ward counters (rule 702.21a). */
+      readonly stackObject: ObjectId;
       readonly bySpell: boolean;
     })
   | (Base & { readonly type: "ability-resolved"; readonly source: ObjectId })
@@ -431,6 +435,16 @@ export type GameEvent =
       readonly type: "ward-paid";
       readonly object: ObjectId;
       readonly player: PlayerId;
+    })
+  | (Base & {
+      /** A player didn't (or couldn't) pay a permanent's ward cost, so the
+       * ward trigger counters `spell` — their spell or ability that targeted
+       * `object` (rule 702.21a). A `spell-countered` (or, for a spell that
+       * can't be countered, `counter-failed`) follows. */
+      readonly type: "ward-unpaid";
+      readonly object: ObjectId;
+      readonly player: PlayerId;
+      readonly spell: ObjectId;
     })
   | (Base & {
       readonly type: "control-changed";

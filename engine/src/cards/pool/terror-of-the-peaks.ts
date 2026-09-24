@@ -1,10 +1,13 @@
 import { defineCard } from "../define.js";
+import { ward } from "../helpers.js";
 
 /**
  * The "spells your opponents cast that target this creature cost an additional
- * 3 life" clause is approximated as `ward { payLife: 3 }` (auto-paid at the
- * targeting spell's resolution, or it's countered) — the engine has no
- * cast-time additional-cost hook.
+ * 3 life" clause is approximated as "Ward—Pay 3 life." (the `ward` helper: the
+ * caster chooses to pay 3 life when the trigger resolves, or their spell is
+ * countered) — the engine has no cast-time additional-cost hook. Unlike the
+ * real card it also reaches abilities, and an unpaid spell is cast and then
+ * countered rather than never cast.
  */
 export default defineCard({
   name: "Terror of the Peaks",
@@ -21,13 +24,6 @@ export default defineCard({
     "3 life to cast.\n" +
     "Whenever another creature you control enters, this creature deals damage " +
     "equal to that creature's power to any target.",
-  static: [
-    {
-      affects: { scope: "self" },
-      ward: { payLife: 3 },
-      text: "Spells your opponents cast that target this creature cost an additional 3 life to cast.",
-    },
-  ],
   triggered: [
     {
       trigger: {
@@ -42,6 +38,10 @@ export default defineCard({
       text:
         "Whenever another creature you control enters, this creature deals " +
         "damage equal to that creature's power to any target.",
+    },
+    {
+      ...ward({ payLife: 3 }),
+      text: "Spells your opponents cast that target this creature cost an additional 3 life to cast.",
     },
   ],
 });

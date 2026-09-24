@@ -149,6 +149,9 @@ describe("Adrix and Nev, Twincasters — ward {2}", () => {
     lands(game, "Mountain", 3, A); // {R} for the Bolt + {2} for the ward
 
     castFromHand(game, A, "Lightning Bolt", [{ kind: "object", object: adrix }]);
+    // Ward triggers; Alice chooses to pay.
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-modes");
+    game.dispatch({ type: "choose-modes", player: A, modes: [0] });
     game.advanceUntil(settled);
 
     expect(game.eventsOfType("ward-paid").some((e) => e.object === adrix)).toBe(true);

@@ -5,7 +5,7 @@
  */
 
 import type { ActivatedAbility, TriggeredAbility } from "../abilities.js";
-import type { EffectAmount, EffectSpec } from "../effects.js";
+import { wardCostText, type EffectAmount, type EffectSpec, type WardCost } from "../effects.js";
 import type { Color, ManaType } from "../mana.js";
 import { defineCard, type CardDefinition, type StaticAbility } from "./define.js";
 
@@ -13,6 +13,31 @@ import { defineCard, type CardDefinition, type StaticAbility } from "./define.js
  * `choose-creature-type` effect's `then` — re-exported here because card files
  * import only from `define` and `helpers`. */
 export { CHOSEN_CREATURE_TYPE } from "../effects.js";
+
+/**
+ * Ward (rule 702.21a): "Whenever this permanent becomes the target of a spell
+ * or ability an opponent controls, counter that spell or ability unless that
+ * player pays [cost]." A real triggered ability, so each instance triggers
+ * on its own (702.21b), losing abilities removes it, and a static can grant
+ * it to other permanents through `grantsTriggered` ("Goblins and Orcs you
+ * control have ward {2}" is `grantsTriggered: [ward({ mana: "{2}" })]`).
+ *
+ * `ward({ mana: "{2}" })` is "Ward {2}"; `ward({ mana: "{2}", payLife: 2 })`
+ * is "Ward—{2}, Pay 2 life." — one compound cost, paid all together. Put the
+ * printed line in the card's `text` as well; this is the ability's own.
+ */
+export const ward = (cost: WardCost): TriggeredAbility => {
+  if (cost.blight !== undefined) {
+    throw new Error("ward: a blight cost isn't built yet (the blight keyword is unimplemented)");
+  }
+  return {
+    trigger: { on: "becomes-target", who: "self", byOpponentOnly: true },
+    targets: [],
+    effect: { kind: "ward", cost },
+    resolve: null,
+    text: `Ward${wardCostText(cost)}`,
+  };
+};
 
 /**
  * Investigate (rule 701.36a): "create a Clue token", `times` over —

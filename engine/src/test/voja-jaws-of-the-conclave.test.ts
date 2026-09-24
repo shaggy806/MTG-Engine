@@ -96,10 +96,10 @@ describe("Voja, Jaws of the Conclave", () => {
     expect(def.subtypes).toEqual(["Wolf"]);
     expect([def.power, def.toughness]).toEqual([5, 5]);
     expect(def.keywords).toEqual(["vigilance", "trample"]);
-    expect(def.static).toHaveLength(1);
-    expect(def.static[0].ward).toEqual({ mana: "{3}" });
-    expect(def.triggered).toHaveLength(1);
+    expect(def.static).toHaveLength(0);
+    expect(def.triggered).toHaveLength(2);
     expect(def.triggered[0].trigger).toEqual({ on: "attacks", who: "self" });
+    expect(def.triggered[1].effect).toEqual({ kind: "ward", cost: { mana: "{3}" } });
     expect(identityString(colorIdentityOf(def))).toBe("WRG");
   });
 
@@ -284,8 +284,9 @@ describe("Voja, Jaws of the Conclave", () => {
       game.advanceUntil(settled);
     };
 
-    it("taxes an opponent's targeted spell {3} when they can pay", () => {
-      const { game } = makeGame(["Lightning Bolt"]);
+    it("taxes an opponent's targeted spell {3} when they choose to pay", () => {
+      const { game, a } = makeGame(["Lightning Bolt"]);
+      a.chooseModesFn = () => [0];
       const voja = spawn(game, VOJA, B);
       const mountains = [0, 1, 2, 3].map(() => spawn(game, "Mountain", A));
 

@@ -766,6 +766,10 @@ export type LegalAction =
       /** Rules text of each mode, in order — index into this is what the
        * `choose-modes` action submits. */
       readonly modeTexts: readonly string[];
+      /** A ward payment (rule 702.21a): mode 0 pays the ward cost of
+       * `source`, and choosing none lets `spell` — the chooser's own spell or
+       * ability that targeted it — be countered. */
+      readonly ward?: { readonly spell: ObjectId };
     }
   | {
       readonly kind: "sacrifice";

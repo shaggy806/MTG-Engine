@@ -1,4 +1,5 @@
 import { defineCard } from "../define.js";
+import { ward } from "../helpers.js";
 
 // needed-cards P5b — a token that's a copy of a permanent. The `create-token-copy`
 // effect reads the triggering creature via `of: "trigger-object"` (threaded from
@@ -19,13 +20,6 @@ export default defineCard({
   text:
     "Flying, ward {2}\n" +
     "Whenever another nontoken Dragon you control enters, create a token that's a copy of it, except the token isn't legendary.",
-  static: [
-    {
-      affects: { scope: "self" },
-      ward: { mana: "{2}" },
-      text: "Ward {2}",
-    },
-  ],
   triggered: [
     {
       trigger: {
@@ -45,5 +39,6 @@ export default defineCard({
       text:
         "Whenever another nontoken Dragon you control enters, create a token that's a copy of it, except the token isn't legendary.",
     },
+    ward({ mana: "{2}" }),
   ],
 });

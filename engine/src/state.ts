@@ -287,6 +287,9 @@ export interface GameObject {
    * a `create-token-copy` effect with `of: "trigger-object"` (Miirym, Sentinel
    * Wyrm — needed-cards P5b). */
   triggerObject?: ObjectId;
+  /** For a triggered-ability object on the stack fired by a `becomes-target`
+   * trigger: the spell or ability that targeted — see {@link TargetedBy}. */
+  targetedBy?: TargetedBy;
   /** For a triggered-ability object on the stack: how many real, independent
    * firings this one stack-object represents — the ability's own source's
    * `stackCount` (a `stackCount`-carrying token's ability fired once but
@@ -615,6 +618,21 @@ export interface LastKnownRefs {
   readonly sacrificed?: { readonly object: ObjectId; readonly zoneChangeCount: number };
 }
 
+/**
+ * The spell or ability whose targeting fired a "becomes the target"
+ * trigger (rule 115.7), recorded as it triggers: ward's "counter **that
+ * spell or ability** unless **that player** pays" (rule 702.21a) needs both.
+ * `zoneChangeCount` is the spell's as it was targeting, so a spell that has
+ * since left the stack (and come back as a new object — rule 400.7) isn't
+ * the one ward counters. An ability object is never reused, so its count is
+ * always 0.
+ */
+export interface TargetedBy {
+  readonly object: ObjectId;
+  readonly player: PlayerId;
+  readonly zoneChangeCount: number;
+}
+
 /** A triggered ability waiting to be put on the stack (rule 603.3). */
 export interface PendingTrigger {
   readonly sourceObjectId: ObjectId;
@@ -634,6 +652,9 @@ export interface PendingTrigger {
    * snapshotted when it was detected — for a `create-token-copy` effect with
    * `of: "trigger-object"` (Miirym, Sentinel Wyrm — needed-cards P5b). */
   readonly triggerObject?: ObjectId;
+  /** For a `becomes-target` trigger: the spell or ability that did the
+   * targeting — see {@link TargetedBy}. */
+  readonly targetedBy?: TargetedBy;
   /** The X the source was cast with, for its own enters-the-battlefield
    * ability (rule 107.3m) — snapshotted as the trigger is detected, since the
    * permanent may be gone (a 0/0 that entered with X=0) or a new object (it
@@ -1092,6 +1113,10 @@ export type AwaitingDecision =
        * may pay {B}. If you do, …"). Only offered when it's payable, so
        * declining by choice and being unable to pay both land on `onDecline`. */
       readonly cost?: string;
+      /** Set when this is a ward payment (rule 702.21a): the one mode pays
+       * the ward cost of `warded`, declining counters `spell` (also the
+       * decision's target 0). Choosing to pay logs `ward-paid`. */
+      readonly ward?: { readonly warded: ObjectId; readonly spell: ObjectId };
     }
   | {
       /** A triggered ability (or a suspended spell coming off suspend) needs
@@ -1365,6 +1390,8 @@ export interface GameState {
     readonly grantedAbility?: GrantedAbilityRef;
     /** See {@link PendingTrigger.lastKnownRefs}. */
     readonly lastKnownRefs?: LastKnownRefs;
+    /** See {@link PendingTrigger.targetedBy}. */
+    readonly targetedBy?: TargetedBy;
   } | null;
   /**
    * A suspended spell coming off suspend, parked while its controller chooses

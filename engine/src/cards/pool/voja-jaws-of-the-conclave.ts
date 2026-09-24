@@ -1,9 +1,10 @@
 import { defineCard } from "../define.js";
+import { ward } from "../helpers.js";
 
 // EDHREC commander rank 99. Every clause is existing vocabulary:
 //
-// - Ward {3} (rule 702.21) is a `"self"` static, the same shape as Miirym,
-//   Sentinel Wyrm's ward {2}.
+// - Ward {3} (rule 702.21) is the `ward` helper's triggered ability, the same
+//   shape as Miirym, Sentinel Wyrm's ward {2}.
 // - The attack trigger is one `sequence`, read top to bottom as printed. Both
 //   counts are `countOf`s, so both are taken as the trigger *resolves* (rule
 //   608.2h), not as Voja is declared an attacker: an Elf that arrives or dies
@@ -29,13 +30,6 @@ export default defineCard({
   toughness: 5,
   keywords: ["vigilance", "trample"],
   text: `Vigilance, trample, ward {3}\n${ATTACK_TEXT}`,
-  static: [
-    {
-      affects: { scope: "self" },
-      ward: { mana: "{3}" },
-      text: "Ward {3}",
-    },
-  ],
   triggered: [
     {
       trigger: { on: "attacks", who: "self" },
@@ -58,5 +52,6 @@ export default defineCard({
       resolve: null,
       text: ATTACK_TEXT,
     },
+    ward({ mana: "{3}" }),
   ],
 });

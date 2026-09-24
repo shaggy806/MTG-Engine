@@ -963,7 +963,7 @@ triggered: [
 | `becomes-target` | `who`, `filter?`, `byOpponentOnly?`, `spellOnly?` | a permanent was chosen as a target of a spell or ability (rule 115.7 — Thunderbreak Regent); `spellOnly` narrows it to "becomes the target of a **spell**" (Gargos, Vicious Watcher; Tectonic Giant). Fires as the spell/ability goes on the stack, so it triggers even if that spell is countered or later fizzles, and once per targeted object — a spell naming the same creature in two slots triggers it once, one naming two of your creatures triggers a `you-control` watcher twice. The *player* who targeted it auto-fills the first target slot, the way `deals-combat-damage-to-player` fills it with the damaged player. |
 | `becomes-tapped` | `who`, `filter?` | a permanent became tapped (rule 701.21a — City of Brass). Fires for every tapping: a mana ability, a cost that taps it, an opponent's tap effect. Not the same as `add-mana`'s `painToController`, which only charges the mana-ability path. |
 | `leaves-battlefield` | `who` | a permanent leaves for **any** zone |
-| `gains-life` / `loses-life` | `who` | a player's life changes (`who` = whose). `{ triggerValue: true }` is how much ("loses that much life" — Sanguine Bond). Once per life-gain *event*, which is once per source (rule 119.9): lifelink damage one source deals to several things at once is **one** gain, so it triggers once; two lifelinkers dealing combat damage together are two (Oloro, Blech). |
+| `gains-life` / `loses-life` | `who`, `firstDuringTheirTurn?` (`loses-life` only) | a player's life changes (`who` = whose). `firstDuringTheirTurn` is "loses life **for the first time during each of their turns**" (Valgavoth, Harrower of Souls): only while that player is active, and only the loss that took their life lost this turn from zero — a loss earlier in the turn, even before this permanent arrived, uses it up. `{ triggerValue: true }` is how much ("loses that much life" — Sanguine Bond). Once per life-gain *event*, which is once per source (rule 119.9): lifelink damage one source deals to several things at once is **one** gain, so it triggers once; two lifelinkers dealing combat damage together are two (Oloro, Blech). |
 | `attacks` | `who`, `filter?`, `attackingYou?` | a creature is declared as an attacker (`filter` narrows which one — Utvara Hellkite / Atarka, World Render: "a Dragon you control"). `attackingYou` fires only when the attack is aimed at this permanent's controller (Kazuul's "if you're the defending player") — which also covers "a creature an opponent controls", since nobody can attack themselves. |
 | `attacks-alone` | `who` | Exalted (needed-cards P15) — a creature you control attacked alone this combat; the lone attacker isn't a target, read it via `ResolutionContext.triggerObject` / `EffectTargetRef: "trigger-object"` |
 | `sacrifice` | `who` | a player sacrifices a permanent (Korvold, Mayhem Devil — `who` = who sacrificed: its controller, not its owner, rule 701.21a, so a stolen permanent counts for the thief) |
@@ -1035,6 +1035,25 @@ source permanent itself. Put the "if" clause here, never inside the effect: a
 different (and wrong) thing.
 
 ---
+
+**Ward** (rule 702.21) — `ward(cost)` from `helpers.ts` builds the whole
+triggered ability: a `becomes-target` trigger (`who: "self"`,
+`byOpponentOnly`) whose effect is `{ kind: "ward", cost }`. Put it in
+`triggered` (and the printed line in `text`); each instance is its own
+ability, so two `ward(...)`s trigger twice (702.21b), and a static grants it
+to others with `grantsTriggered: [ward(...)]`. `cost` is a `WardCost` —
+**one** compound cost, every part paid together:
+`{ mana: "{2}" }` (Ward {2}), `{ payLife: 2 }` (Ward—Pay 2 life.),
+`{ mana: "{2}", payLife: 2 }` (Ward—{2}, Pay 2 life.),
+`{ sacrifice: { filter, count?, text: "Sacrifice a Food" } }`,
+`{ discard: 1 }`. `blight` is reserved and the helper refuses it (the blight
+keyword isn't built). When the trigger resolves, the player whose spell or
+ability targeted the permanent (`GameObject.targetedBy`) is asked a
+`choose-modes` "pay or not" — offered only if they can pay all of it; a
+sacrifice or discard part then asks which. Declining or being unable to pay
+counters that spell or ability (a spell that can't be countered still
+resolves). Triggered abilities announce their targets too, so ward sees
+them.
 
 ## 10. Static abilities
 
@@ -1155,8 +1174,7 @@ anthem, the keyword grant and the granted trigger like any other creature.
   `combat/blocking.ts`'s `lurePlan`).
 - `protection: { colors?, types? }` — rule 702.16 (White Knight: `{ colors:
   ["B"] }`).
-- `ward: { mana?, payLife? }` — `"self"` only; an opponent targeting this must
-  pay or their spell/ability is countered (auto-paid if affordable).
+- Ward is **not** a static — it's a triggered ability; see `ward(...)` in §9.
 - `costModification: { applies: CardFilter, reduceGeneric?, increaseGeneric? }`
   — Foundry Inspector, Thalia. `affects` is ignored — `applies` says what it
   hits. Optional refinements:
@@ -1736,6 +1754,7 @@ clause gone missing). It found 13 of 739 on the day the rule landed:
 | **Fanatic of Rhonas** | Eternalize | Eternalize |
 | **Iridescent Vinelasher** | Offspring | Offspring |
 | **Starfield Vocalist** | Warp | Warp |
+| **Terror of the Peaks** | "spells your opponents cast that target this creature **cost an additional 3 life**" runs as `ward({ payLife: 3 })`: paid or countered after the cast, and it also reaches abilities | a cast-time additional cost imposed by the target |
 
 The five `proliferate` cards were a fourteenth entry of exactly the kind
 `card:text` cannot see — their text was right and their *behaviour* wasn't —
