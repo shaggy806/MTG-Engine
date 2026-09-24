@@ -30,6 +30,7 @@ const creature = (
   id: asObjectId(`c${(nextId += 1)}`),
   power,
   toughness,
+  damage: power,
   keywords: new Set(keywords),
   colors: new Set(),
   types: ["creature"],

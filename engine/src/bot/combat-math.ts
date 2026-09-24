@@ -19,7 +19,7 @@
 
 import type { CardType, Keyword } from "../cards/define.js";
 import type { Color } from "../mana.js";
-import { computeCharacteristics } from "../characteristics.js";
+import { combatDamageOf, computeCharacteristics } from "../characteristics.js";
 import { LANDWALK, landTypesControlledBy } from "../combat/eligibility.js";
 import type { CardRegistry } from "../cards.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
@@ -31,6 +31,11 @@ export interface CombatCreature {
   readonly id: ObjectId;
   readonly power: number;
   readonly toughness: number;
+  /** The combat damage it assigns (`combatDamageOf`): its power, or its
+   * toughness under Doran, the Siege Tower and the like. What every
+   * question here about damage dealt reads; `power` stays the real power,
+   * for valuing the creature. */
+  readonly damage: number;
   readonly keywords: ReadonlySet<Keyword>;
   readonly colors: ReadonlySet<Color>;
   readonly types: readonly CardType[];
@@ -70,6 +75,7 @@ export function combatCreatures(
       id,
       power: c.power,
       toughness: c.toughness,
+      damage: combatDamageOf(c),
       keywords: c.keywords,
       colors: c.colors,
       types: c.types,
@@ -77,7 +83,9 @@ export function combatCreatures(
       protectionTypes: c.protectionFrom.types,
       canBlock: !object.tapped && !c.restrictions.has("cant-block"),
       canAttack:
-        !c.keywords.has("defender") && !c.restrictions.has("cant-attack") && c.power > 0,
+        (!c.keywords.has("defender") || c.canAttackAsThoughNoDefender) &&
+        !c.restrictions.has("cant-attack") &&
+        combatDamageOf(c) > 0,
       isCommander: object.isCommander,
       controllerLands,
     };
@@ -112,7 +120,7 @@ export function canBlock(blocker: CombatCreature, attacker: CombatCreature): boo
 
 /** Damage an attacker deals if nothing blocks it. */
 const unblockedDamage = (attacker: CombatCreature): number =>
-  Math.max(0, attacker.power) * (attacker.keywords.has("double-strike") ? 2 : 1);
+  Math.max(0, attacker.damage) * (attacker.keywords.has("double-strike") ? 2 : 1);
 
 export interface DamageThrough {
   /** Total damage to the defending player. */

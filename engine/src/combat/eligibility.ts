@@ -150,7 +150,12 @@ export function whyCannotAttack(
     return `${def.name} is not controlled by the active player`;
   }
   if (object.tapped) return `${def.name} is tapped and cannot attack`;
-  if (objHasKeyword(state, registry, creatureId, "defender")) {
+  // Defender (rule 702.3b), unless something lets it "attack as though it
+  // didn't have defender" (Arcades, the Strategist) — which lifts only this.
+  if (
+    objHasKeyword(state, registry, creatureId, "defender") &&
+    !computeCharacteristics(state, registry, creatureId).canAttackAsThoughNoDefender
+  ) {
     return `${def.name} has defender and cannot attack`;
   }
   if (restrictionsOf(state, registry, creatureId).has("cant-attack")) {

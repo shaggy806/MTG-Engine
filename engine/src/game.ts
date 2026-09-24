@@ -56,6 +56,7 @@ import type {
   StaticCondition,
 } from "./cards.js";
 import {
+  assignedCombatDamage,
   computeCharacteristics,
   computedCacheMemo,
   objHasKeyword,
@@ -3864,7 +3865,7 @@ export class Game {
         player: this.state.objects[attackerId].controller,
         attacker: attackerId,
         blockers,
-        power: computeCharacteristics(this.state, this.registry, attackerId).power,
+        power: assignedCombatDamage(this.state, this.registry, attackerId),
         lethal: blockers.map((b) => this.lethalFor(attackerId, b)),
         trample: this.objHasKeyword(attackerId, "trample"),
         indestructible: blockers.map((b) => this.objHasKeyword(b, "indestructible")),
@@ -4007,8 +4008,10 @@ export class Game {
       target: TargetRef;
       amount: number;
     }[] = [];
+    // Rule 510.1a: power — or toughness, under a `combatDamageByToughness`
+    // static (Doran, the Siege Tower) — for attackers and blockers alike.
     const powerOf = (id: ObjectId): number =>
-      computeCharacteristics(this.state, this.registry, id).power;
+      assignedCombatDamage(this.state, this.registry, id);
 
     for (const attackerId of this.currentAttackers()) {
       const attacker = this.state.objects[attackerId];

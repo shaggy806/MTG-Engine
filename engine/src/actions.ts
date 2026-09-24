@@ -678,6 +678,9 @@ export type LegalAction =
       readonly kind: "assign-combat-damage";
       readonly attacker: ObjectId;
       readonly blockers: readonly ObjectId[];
+      /** How much combat damage the attacker assigns: its power, or its
+       * toughness under a `combatDamageByToughness` static (Doran, the
+       * Siege Tower). */
       readonly power: number;
       readonly lethal: readonly number[];
       readonly trample: boolean;

@@ -23,7 +23,7 @@
  */
 
 import type { CardRegistry } from "../cards.js";
-import { computeCharacteristics, objHasKeyword } from "../characteristics.js";
+import { assignedCombatDamage, computeCharacteristics, objHasKeyword } from "../characteristics.js";
 import type { ObjectId } from "../primitives.js";
 import type { GameState } from "../state.js";
 
@@ -65,7 +65,7 @@ export function needsDamageAssignmentChoice(
 ): boolean {
   const live = liveBlockersOf(state, attackerId);
   if (live.length === 0) return false;
-  const power = computeCharacteristics(state, registry, attackerId).power;
+  const power = assignedCombatDamage(state, registry, attackerId);
   if (power <= 0) return false;
   if (live.length >= 2) return true;
   if (!objHasKeyword(state, registry, attackerId, "trample")) return false;
@@ -76,6 +76,9 @@ export function needsDamageAssignmentChoice(
  * there is to assign, what counts as lethal to each blocker (in declaration
  * order), and whether the excess may trample over. */
 export interface DamageAssignmentOffer {
+  /** How much combat damage the attacker assigns (rule 510.1a): its power,
+   * or its toughness under a `combatDamageByToughness` static
+   * (`combatDamageOf`). Named for the usual case. */
   readonly power: number;
   readonly lethal: readonly number[];
   readonly trample: boolean;
@@ -130,7 +133,7 @@ export function autoAssignForAttacker(
 ): number[] {
   const live = liveBlockersOf(state, attackerId);
   return standardAssignment({
-    power: computeCharacteristics(state, registry, attackerId).power,
+    power: assignedCombatDamage(state, registry, attackerId),
     lethal: live.map((blockerId) => lethalFor(state, registry, attackerId, blockerId)),
     trample: objHasKeyword(state, registry, attackerId, "trample"),
     indestructible: live.map((blockerId) => objHasKeyword(state, registry, blockerId, "indestructible")),

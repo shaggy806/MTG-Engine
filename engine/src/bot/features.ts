@@ -37,7 +37,7 @@
  */
 
 import { isManaAbility } from "../abilities.js";
-import { computeCharacteristics, withComputedCache } from "../characteristics.js";
+import { combatDamageOf, computeCharacteristics, withComputedCache } from "../characteristics.js";
 import type { Characteristics } from "../characteristics.js";
 import type { CardRegistry } from "../cards.js";
 import type { Keyword } from "../cards/define.js";
@@ -236,9 +236,12 @@ function playerFeaturesUncached(
 
     if (isCreature) {
       creatures += n;
-      power += c.power * n;
+      // The damage it would deal in combat, which is its power except under
+      // Doran, the Siege Tower and the like — what these two terms measure.
+      const damage = combatDamageOf(c);
+      power += damage * n;
       toughness += c.toughness * n;
-      if (count(c, EVASION) > 0) evasivePower += c.power * n;
+      if (count(c, EVASION) > 0) evasivePower += damage * n;
       combatKeywords += count(c, COMBAT_KEYWORDS) * n;
       if (!object.tapped && !c.restrictions.has("cant-block")) untappedCreatures += n;
     }

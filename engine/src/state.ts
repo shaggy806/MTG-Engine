@@ -1181,6 +1181,8 @@ export type AwaitingDecision =
       readonly player: PlayerId;
       readonly attacker: ObjectId;
       readonly blockers: readonly ObjectId[];
+      /** How much combat damage the attacker assigns (`combatDamageOf`): its
+       * power, or its toughness under a `combatDamageByToughness` static. */
       readonly power: number;
       /** Lethal damage per blocker (toughness − damage already marked, or 1
        * from a deathtouch source). Any division is legal; every blocker must

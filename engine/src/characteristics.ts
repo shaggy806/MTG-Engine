@@ -536,6 +536,14 @@ export interface Characteristics {
   readonly controller: PlayerId;
   /** Combat restrictions from static abilities (Pacifism, Juggernaut). */
   readonly restrictions: ReadonlySet<CombatRestriction>;
+  /** It assigns combat damage equal to its toughness rather than its power
+   * (a `combatDamageByToughness` static — Doran, the Siege Tower), already
+   * resolved against its final P/T for the `"if-toughness-greater"` form.
+   * Read it through {@link combatDamageOf}, never directly. */
+  readonly damageByToughness: boolean;
+  /** It "can attack as though it didn't have defender" (a
+   * `canAttackAsThoughNoDefender` static — Arcades, the Strategist). */
+  readonly canAttackAsThoughNoDefender: boolean;
   /** Protection (rule 702.16): the union of every "protection from …" clause
    * — a source matching any of these colours, types or filters can't target /
    * block / enchant / damage this object. */
@@ -1067,6 +1075,8 @@ interface AppliedEffect {
   readonly toughness: number;
   readonly keywords: readonly Keyword[];
   readonly restrictions: readonly CombatRestriction[];
+  readonly combatDamageByToughness: StaticAbility["combatDamageByToughness"];
+  readonly canAttackAsThoughNoDefender: boolean;
   readonly protection: {
     colors?: readonly Color[];
     types?: readonly CardType[];
@@ -1074,6 +1084,22 @@ interface AppliedEffect {
   } | null;
   /** Layer 7b — a `setBasePt`. */
   readonly setBase: { readonly power?: number; readonly toughness?: number } | null;
+}
+
+/** Whether a static carries anything {@link collectStaticEffects} folds into
+ * a permanent's characteristics — the rest (a replacement, a CDA, a cost
+ * change, a permission) modify nothing there. */
+function contributesToCharacteristics(ability: StaticAbility): boolean {
+  return (
+    ability.grantPt !== undefined ||
+    ability.grantPtPerCount !== undefined ||
+    ability.grantKeywords !== undefined ||
+    ability.restrictions !== undefined ||
+    ability.combatDamageByToughness !== undefined ||
+    ability.canAttackAsThoughNoDefender === true ||
+    ability.protection !== undefined ||
+    ability.setBasePt !== undefined
+  );
 }
 
 /** One battlefield static that *can* contribute P/T / keywords / restrictions
@@ -1114,16 +1140,7 @@ function contributingStaticSources(
       // Only P/T-bonus / keyword-grant / restriction statics contribute here.
       // A static that is purely a replacement (rule 614 — "enters tapped") or
       // a CDA (`setBasePtFromCount`, handled in its own pass) modifies nothing.
-      if (
-        ability.grantPt === undefined &&
-        ability.grantPtPerCount === undefined &&
-        ability.grantKeywords === undefined &&
-        ability.restrictions === undefined &&
-        ability.protection === undefined &&
-        ability.setBasePt === undefined
-      ) {
-        continue;
-      }
+      if (!contributesToCharacteristics(ability)) continue;
       out.push({ source, ability });
     }
   }
@@ -1196,6 +1213,8 @@ function collectStaticEffects(
       toughness: (ability.grantPt?.[1] ?? 0) + scaledToughness,
       keywords: ability.grantKeywords ?? [],
       restrictions: ability.restrictions ?? [],
+      combatDamageByToughness: ability.combatDamageByToughness,
+      canAttackAsThoughNoDefender: ability.canAttackAsThoughNoDefender === true,
       protection: ability.protection ?? null,
       setBase: ability.setBasePt ?? null,
     };
@@ -1217,10 +1236,7 @@ function collectStaticEffects(
     if (
       ability === null ||
       ability.affects.scope !== "creatures-you-control" ||
-      (ability.grantPt === undefined &&
-        ability.grantKeywords === undefined &&
-        ability.restrictions === undefined &&
-        ability.protection === undefined)
+      !contributesToCharacteristics(ability)
     ) {
       continue;
     }
@@ -1242,6 +1258,8 @@ function collectStaticEffects(
       toughness: ability.grantPt?.[1] ?? 0,
       keywords: ability.grantKeywords ?? [],
       restrictions: ability.restrictions ?? [],
+      combatDamageByToughness: ability.combatDamageByToughness,
+      canAttackAsThoughNoDefender: ability.canAttackAsThoughNoDefender === true,
       protection: ability.protection ?? null,
       setBase: null,
     });
@@ -1316,6 +1334,8 @@ function assertSameCharacteristics(
       colors: [...c.colors].sort(),
       controller: c.controller,
       restrictions: [...c.restrictions].sort(),
+      damageByToughness: c.damageByToughness,
+      canAttackAsThoughNoDefender: c.canAttackAsThoughNoDefender,
       protColors: [...c.protectionFrom.colors].sort(),
       protTypes: [...c.protectionFrom.types].sort(),
       // Serialised whole: a filter is a plain object, and two of them
@@ -1369,9 +1389,15 @@ function computeCharacteristicsUncached(
   const protColors = new Set<Color>();
   const protTypes = new Set<CardType>();
   const protFilters: CardFilter[] = [];
+  let byToughness: StaticAbility["combatDamageByToughness"];
+  let canAttackAsThoughNoDefender = false;
   for (const effect of staticEffects) {
     for (const keyword of effect.keywords) keywords.add(keyword);
     for (const r of effect.restrictions) restrictions.add(r);
+    if (effect.combatDamageByToughness !== undefined && byToughness !== "always") {
+      byToughness = effect.combatDamageByToughness;
+    }
+    if (effect.canAttackAsThoughNoDefender) canAttackAsThoughNoDefender = true;
     if (effect.protection) {
       for (const c of effect.protection.colors ?? []) protColors.add(c);
       for (const t of effect.protection.types ?? []) protTypes.add(t);
@@ -1448,6 +1474,12 @@ function computeCharacteristicsUncached(
     toughness += modifier.toughness;
   }
 
+  // "Assigns combat damage equal to its toughness" — resolved here, after
+  // the whole P/T fold, since the "with toughness greater than its power"
+  // form asks about the final values.
+  const damageByToughness =
+    byToughness === "always" || (byToughness === "if-toughness-greater" && toughness > power);
+
   return {
     power,
     toughness,
@@ -1457,8 +1489,34 @@ function computeCharacteristicsUncached(
     colors,
     controller: object.controller,
     restrictions,
+    damageByToughness,
+    canAttackAsThoughNoDefender,
     protectionFrom: { colors: protColors, types: protTypes, filters: protFilters },
   };
+}
+
+/**
+ * How much combat damage a creature with these characteristics assigns (rule
+ * 510.1a): its power, or its toughness under a `combatDamageByToughness`
+ * static (Doran, the Siege Tower). **Every** place that sizes combat damage
+ * reads this rather than `power` — an unblocked attacker's damage, a
+ * blocker's, the split across blockers and the trample excess, the
+ * `assign-combat-damage` offer, and the bots' combat arithmetic — while
+ * everything else that says "power" keeps reading `power` (the rulings: the
+ * static changes no creature's power). May be zero or negative, which, as
+ * with power, assigns no damage.
+ */
+export function combatDamageOf(c: Characteristics): number {
+  return c.damageByToughness ? c.toughness : c.power;
+}
+
+/** {@link combatDamageOf} for one object, read off the board. */
+export function assignedCombatDamage(
+  state: GameState,
+  registry: CardRegistry,
+  id: ObjectId,
+): number {
+  return combatDamageOf(computeCharacteristics(state, registry, id));
 }
 
 /**

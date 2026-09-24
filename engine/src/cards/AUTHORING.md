@@ -1248,6 +1248,27 @@ anthem, the keyword grant and the granted trigger like any other creature.
   Lure's "all creatures able to block it do so"; on an attacker with menace it
   forces blocks only in pairs, as many as can be made (rule 509.1c —
   `combat/blocking.ts`'s `lurePlan`).
+- `combatDamageByToughness: "always" | "if-toughness-greater"` — the affected
+  creatures assign combat damage equal to their **toughness** rather than
+  their power (Doran, the Siege Tower with `affects: { scope: "all-creatures"
+  }`; Felothar the Steadfast and High Alert over `creatures-you-control`;
+  Arcades, the Strategist narrowed by `withKeyword: "defender"`).
+  `"if-toughness-greater"` is the "with toughness greater than its power"
+  form (Ancient Lumberknot), judged on the creature's computed P/T when its
+  damage is sized; an `"always"` from any source wins over it. It changes no
+  creature's power — every card's ruling says so — and the engine resizes
+  combat damage alone: unblocked, blocking, split across blockers, trampling
+  over, and the `assign-combat-damage` offer (`combatDamageOf` in
+  `characteristics.ts`). A fight, "damage equal to its power" and a power
+  condition all still read the real power.
+- `canAttackAsThoughNoDefender: true` — the affected creatures "can attack as
+  though they didn't have defender" (Arcades, Felothar, High Alert). Lifts
+  defender's "can't attack" and nothing else: summoning sickness and
+  `"cant-attack"` still apply, and the creature still *has* defender. Only
+  asked when attackers are declared, so a defender already attacking stays
+  attacking if the permission goes away mid-combat (Arcades' ruling). The
+  one-shot "can attack this turn as though it didn't have defender" (Assault
+  Formation's `{G}`, Wakestone Gargoyle) has no effect form yet.
 - `protection: { colors?, types? }` — rule 702.16 (White Knight: `{ colors:
   ["B"] }`).
 - Ward is **not** a static — it's a triggered ability; see `ward(...)` in §9.

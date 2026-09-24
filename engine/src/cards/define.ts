@@ -562,6 +562,42 @@ export interface StaticAbility {
    * `CombatRestriction`: those are bare strings, and this one has to know
    * whose "you" it means. Only meaningful with `affects: { scope: "attached" }`. */
   readonly cantAttackController?: boolean;
+  /**
+   * The affected creatures assign combat damage equal to their **toughness**
+   * rather than their power — the exception to rule 510.1a that Doran, the
+   * Siege Tower prints ("each creature assigns …"), Felothar the Steadfast
+   * ("each creature you control …") and Arcades, the Strategist ("each
+   * creature you control with defender …", an `affects.withKeyword`).
+   *
+   * - `"always"` — toughness, even where that's less than its power.
+   * - `"if-toughness-greater"` — only while the creature's toughness is
+   *   greater than its power (Ancient Lumberknot's "each creature you control
+   *   **with toughness greater than its power**"; Bark of Doran's "as long as
+   *   equipped creature's toughness is greater than its power"). Judged on
+   *   its computed P/T, at the moment damage is sized. `"always"` from any
+   *   source wins over it.
+   *
+   * Nothing's power changes (the rulings on all of them): anything else that
+   * reads power — a fight, "damage equal to its power", a power-4-or-greater
+   * trigger — reads the real value. Only combat damage is resized, wherever
+   * the engine sizes it: an unblocked attacker's damage, a blocker's, the
+   * split across blockers and what tramples over (`combatDamageOf` in
+   * `characteristics.ts`), and the bots' combat arithmetic. Read live, like
+   * any static: once the source is gone, a creature already attacking still
+   * attacks and assigns damage equal to its power again (Arcades' ruling).
+   */
+  readonly combatDamageByToughness?: "always" | "if-toughness-greater";
+  /**
+   * The affected creatures "can attack as though they didn't have defender"
+   * (Arcades, the Strategist; Felothar the Steadfast; High Alert). A
+   * permission rather than a restriction, so it lifts only defender's "can't
+   * attack" (rule 702.3b): summoning sickness, tapped creatures and every
+   * `"cant-attack"` restriction still apply, and the creature still *has*
+   * defender for anything that asks. Only consulted when a creature is
+   * declared as an attacker — once attacking, it stays attacking if the
+   * permission ends mid-combat (Arcades' ruling).
+   */
+  readonly canAttackAsThoughNoDefender?: boolean;
   /** Keywords granted in layer 6. */
   readonly grantKeywords?: readonly Keyword[];
   /** Activated abilities this static grants to every object it `affects`

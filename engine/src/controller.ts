@@ -22,7 +22,7 @@ import { standardAssignment } from "./combat/damage.js";
 import type { DamageAssignmentOffer } from "./combat/damage.js";
 import { decisionFor, mayActOn, randomAnswerFor } from "./decisions/registry.js";
 import type { RandomSource } from "./decisions/contract.js";
-import { computeCharacteristics } from "./characteristics.js";
+import { assignedCombatDamage, combatDamageOf, computeCharacteristics } from "./characteristics.js";
 import { CardRegistry, createDefaultRegistry } from "./cards.js";
 import { chooseBottomOfHand, shouldMulligan } from "./bot/mulligan.js";
 import { manaValue, parseManaCost } from "./mana.js";
@@ -1345,8 +1345,10 @@ export class HeuristicBotController extends AutomaticController {
     // and a creature under Vow of Duty can't attack the Vow's controller.
     // One shared target for everyone is rejected by `dispatch` the moment
     // either applies.
+    // Combat damage, not power: a 0/4 wall under Arcades, the Strategist
+    // deals 4.
     return legal.eligible
-      .filter((id) => computeCharacteristics(state, this.registry, id).power > 0)
+      .filter((id) => assignedCombatDamage(state, this.registry, id) > 0)
       .flatMap((attacker) => {
         const options = [...(legal.defendersFor[attacker] ?? [])].sort(byValue);
         if (options.length === 0) return [];
@@ -1394,7 +1396,7 @@ export class HeuristicBotController extends AutomaticController {
       const it = computeCharacteristics(state, this.registry, id);
       if (!it.types.includes("creature")) return false;
       if (it.restrictions.has("cant-block")) return false;
-      return it.power >= me.toughness || it.keywords.has("deathtouch");
+      return combatDamageOf(it) >= me.toughness || it.keywords.has("deathtouch");
     });
   }
 
@@ -1404,7 +1406,9 @@ export class HeuristicBotController extends AutomaticController {
       .find((o): o is DeclareBlockersLegal => o.kind === "declare-blockers");
     if (legal === undefined) return [];
     const state = view.state;
-    const power = (id: ObjectId) => computeCharacteristics(state, this.registry, id).power;
+    // What each creature deals in combat (its power, or its toughness under
+    // Doran, the Siege Tower) — the only "power" a block is judged on.
+    const power = (id: ObjectId) => assignedCombatDamage(state, this.registry, id);
     const toughness = (id: ObjectId) => computeCharacteristics(state, this.registry, id).toughness;
 
     const chosen = new Map<ObjectId, ObjectId>(); // blocker -> attacker
