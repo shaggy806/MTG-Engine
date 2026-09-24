@@ -839,6 +839,7 @@ const deckC = deck([
   ["Kalonian Hydra", 1],
   ["Bonesplitter", 1],
   ["Holy Strength", 1],
+  ["Derevi, Empyrial Tactician", 1],
   // Top-2000 staples: X in a spell's mana value, life-change amounts.
   ["Mana Drain", 1],
   ["Sanguine Bond", 1],
@@ -893,6 +894,7 @@ const deckE = deck([
   ["Prosper, Tome-Bound", 1],
   ["Pyroblast", 1],
   ["Remand", 1],
+  ["Reassembling Skeleton", 1],
   ["Spire of Industry", 1],
   ["Sram, Senior Edificer", 1],
   ["Strip Mine", 1],
