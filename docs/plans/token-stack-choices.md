@@ -17,7 +17,18 @@ stack as **all** its tokens, or singles **one** out, is now right:
   return-to-hand-all, add-/double-counters-all, "each creature deals damage".
 - **Watchers** trigger once per token when a stack dies or leaves.
 - **Anything targeting one permanent** peels one member off first
-  (`splitOneFromStack`).
+  (`splitOneFromStack`), **once, as the target is chosen** (`lockInTargets`,
+  when a spell is cast, an ability activated or a trigger put on the stack,
+  after any cost has tapped or sacrificed members). It used to happen per
+  effect step at resolution, so a multi-step effect reached a different
+  token with each step: Tamiyo's Safekeeping gave hexproof to one token and
+  indestructible to another, and Act of Treason stole one, untapped a second
+  and hasted a third. Now the target names a single real object from the
+  start, so a copy of the spell targets the same token, an opponent can
+  answer by targeting it, and the spell fizzles if it's gone. At cleanup it
+  folds back into its stack once nothing tells it apart (`tokenFoldKey`),
+  unless a delayed trigger or prevention shield still names it
+  (`pinnedTokenIds`).
 - **Tokens granted an activated ability** (Cryptolith Rite) are woken into
   separate objects, since each has to pay its own `{T}`.
 

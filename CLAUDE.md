@@ -100,11 +100,13 @@ fully interchangeable, still-pristine token copies instead of minting one object
 originates a stack past `STACK_ORIGIN_THRESHOLD` (8), so ordinary "create two tokens" cards are
 untouched. Only tokens with no activated ability and only count-scalable, non-targeted triggered
 abilities are ever stacked (`Game.isStackableTokenName`). `Game.splitOneFromStack` peels one off
-into an ordinary object the instant anything singles it out (targeted effects, a chosen
-sacrifice); `Game.materializeStack` expands a whole stack into real objects for combat (capped at
+into an ordinary object the instant anything singles it out (a chosen sacrifice; a target is split
+*once, as it's chosen* — `Game.lockInTargets` at cast, activation and trigger placement, after
+costs are paid — so every step of a multi-step effect, and any copy of the spell, reaches the same
+token); `Game.materializeStack` expands a whole stack into real objects for combat (capped at
 `MAX_MATERIALIZED` = 100 — attacking/blocking are optional, so declaring a legal subset is
-allowed); `recompactTokens` (end of cleanup) folds untouched tokens back into stacks. **Anything that counts permanents counts a stack as every token in it** — `permanentCount` (`state.ts`), behind `countOf`, cost reductions, "controls N or more" conditions, count-scaled P/T and the died-this-turn count; counting objects instead had Krenko, Mob Boss making two Goblins forever. Because that makes counts of a million reachable, loops that mint one real thing per unit (individually made tokens, mana units, unscalable trigger copies) stop at `Game.MAX_EFFECT_INSTANCES` (1000), and a draw loop stops at the first empty-library draw. See
-`token-stacking.test.ts`, `token-stack-counts.test.ts` and `random-demo.mjs` for the original repro.
+allowed); `recompactTokens` (end of cleanup) folds tokens back into stacks once nothing tells them apart (`tokenFoldKey`, shared with `findMergeableStack`) and nothing else names them by id (`pinnedTokenIds` — an attachment's host, a delayed trigger's target, a prevention shield's). **Anything that counts permanents counts a stack as every token in it** — `permanentCount` (`state.ts`), behind `countOf`, cost reductions, "controls N or more" conditions, count-scaled P/T and the died-this-turn count; counting objects instead had Krenko, Mob Boss making two Goblins forever. Because that makes counts of a million reachable, loops that mint one real thing per unit (individually made tokens, mana units, unscalable trigger copies) stop at `Game.MAX_EFFECT_INSTANCES` (1000), and a draw loop stops at the first empty-library draw. See
+`token-stacking.test.ts`, `token-stack-counts.test.ts`, `token-stack-targets.test.ts` and `random-demo.mjs` for the original repro.
 
 ### File map
 
