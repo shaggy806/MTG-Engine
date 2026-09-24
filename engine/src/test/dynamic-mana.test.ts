@@ -298,6 +298,12 @@ describe("Vivi Ornitier", () => {
       ["U", "R", "R"],
       ["R", "R", "R"],
     ]);
+    // A realistic big Vivi still gets every split — floating ten of each is
+    // the player's call.
+    counters(game, vivi, 17);
+    const twenty = offered();
+    expect(twenty).toHaveLength(21);
+    expect(twenty).toContainEqual([...Array(10).fill("U"), ...Array(10).fill("R")]);
     counters(game, vivi, 1_000_000);
     expect(offered()).toHaveLength(2);
   });

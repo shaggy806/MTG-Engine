@@ -737,9 +737,9 @@ resolves; `"x"` and `triggerValue` read 0 there, and 0 or less makes the
 permanent no source at all. `{ oneOf }` with a live amount is planned as one
 compressed option — X units, each any of the listed types (`ManaOption.
 anyColorOf`) — rather than X+1 enumerated splits, so a huge X costs nothing;
-by hand, every split is offered while there are at most
-`MAX_STANDALONE_SPLITS` (12) of them, and past that one "all of this type"
-option per type. A mana ability **without `{T}`** is an auto-payer source only
+by hand, every split is offered while all of them together come to at most
+`MAX_STANDALONE_UNITS` (512) units — for two colours, X up to 22 — and past
+that one "all of this type" option per type. A mana ability **without `{T}`** is an auto-payer source only
 with `oncePerTurn: true` (Vivi Ornitier's "{0}: Add … Activate only once each
 turn"): the planner uses each source at most once per payment, which is only
 true of an untapped ability that can't be activated again. Such a source

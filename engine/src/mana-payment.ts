@@ -224,10 +224,12 @@ export function standaloneManaChoices(
     const colors = mana === "any-color" ? COLORS : oneOf(mana);
     if (colors.length === 0) return null;
     // A live amount can be large, and every split of it is a separate menu
-    // entry. Past a handful, offer just "all of one type" per type: the
-    // interesting splits are what a *payment* needs, and the planner makes
-    // those itself without going through this list.
-    if (splitCount(colors.length, amount) <= MAX_STANDALONE_SPLITS) {
+    // entry of `amount` units. Which split to float is the player's choice
+    // (a 20-power Vivi floating ten of each), so every one is offered while
+    // the whole list stays within a budget of units — for two colours, X up
+    // to 22. Past that, offer just "all of one type" per type; the splits a
+    // *payment* needs, the planner makes itself without this list.
+    if (splitCount(colors.length, amount) * amount <= MAX_STANDALONE_UNITS) {
       return manaCombinations(colors, amount);
     }
     return colors.map((c) => Array<ManaType>(amount).fill(c));
@@ -239,9 +241,10 @@ export function standaloneManaChoices(
   return manaCombinations(oneOf(mana), effect.amount);
 }
 
-/** The most "any combination of" splits of a live amount offered as separate
- * standalone activations — see {@link standaloneManaChoices}. */
-export const MAX_STANDALONE_SPLITS = 12;
+/** The most mana units, summed over every "any combination of" split of a
+ * live amount, offered as separate standalone activations — see
+ * {@link standaloneManaChoices}. */
+export const MAX_STANDALONE_UNITS = 512;
 
 /** How many multisets of size `amount` there are over `kinds` types —
  * C(amount + kinds - 1, kinds - 1), stopping early once it's past any cap
