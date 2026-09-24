@@ -398,6 +398,7 @@ import _poolIzzetSignet from "./pool/izzet-signet.js";
 import _poolJadeMage from "./pool/jade-mage.js";
 import _poolJasperaSentinel from "./pool/jaspera-sentinel.js";
 import _poolJetMedallion from "./pool/jet-medallion.js";
+import _poolJetmirNexusOfRevels from "./pool/jetmir-nexus-of-revels.js";
 import _poolJetmirsGarden from "./pool/jetmirs-garden.js";
 import _poolJhoiraWeatherlightCaptain from "./pool/jhoira-weatherlight-captain.js";
 import _poolJosuVessLichKnight from "./pool/josu-vess-lich-knight.js";
@@ -1360,6 +1361,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolJadeMage,
   _poolJasperaSentinel,
   _poolJetMedallion,
+  _poolJetmirNexusOfRevels,
   _poolJetmirsGarden,
   _poolJhoiraWeatherlightCaptain,
   _poolJosuVessLichKnight,

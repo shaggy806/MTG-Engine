@@ -238,10 +238,22 @@ function evalStaticCondition(
   // skipped *before* its filter is asked, never matched and subtracted:
   // asking whether the source matches can mean folding its characteristics,
   // which evaluates this very condition again.
-  const matchesWhere = (keep: (id: ObjectId) => boolean, except: readonly ObjectId[] = []) =>
-    weightedMatches(state, state.zones.shared.battlefield, (id) => !skipsSelf(id) && keep(id), except);
-  const countWhere = (keep: (id: ObjectId) => boolean, except: readonly ObjectId[] = []): number =>
-    matchesWhere(keep, except).reduce((n, m) => n + m.weight, 0);
+  const matchesWhere = (
+    keep: (id: ObjectId) => boolean,
+    except: readonly ObjectId[] = [],
+    countSelf = false,
+  ) =>
+    weightedMatches(
+      state,
+      state.zones.shared.battlefield,
+      (id) => (countSelf || !skipsSelf(id)) && keep(id),
+      except,
+    );
+  const countWhere = (
+    keep: (id: ObjectId) => boolean,
+    except: readonly ObjectId[] = [],
+    countSelf = false,
+  ): number => matchesWhere(keep, except, countSelf).reduce((n, m) => n + m.weight, 0);
   switch (condition.kind) {
     case "your-turn":
       return state.turnOrder[state.turn.activePlayerIndex] === you;
@@ -290,6 +302,7 @@ function evalStaticCondition(
             state.objects[id].controller === you &&
             matchesFilter(state, registry, id, condition.filter, { you }),
           except,
+          condition.countsSelf === true,
         ) >= condition.atLeast
       );
     }

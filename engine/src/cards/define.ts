@@ -217,7 +217,12 @@ export type TurnStat = "life-lost" | "life-gained" | "cards-drawn";
  */
 export type StaticCondition =
   /** You control at least `atLeast` permanents matching `filter` (Kird Ape —
-   * "as long as you control a Forest"). */
+   * "as long as you control a Forest"). A static's condition leaves its own
+   * permanent out of the count (`ConditionOptions.includeSelf`); `countsSelf`
+   * puts it back, for a count the printed text includes it in (Jetmir, Nexus
+   * of Revels — "as long as you control three or more creatures", Jetmir being
+   * one). Keep such a `filter` to type/subtype/colour clauses, which
+   * `matchesFilter` answers without folding the source's own characteristics. */
   | {
       readonly kind: "controls";
       readonly filter: CardFilter;
@@ -235,6 +240,7 @@ export type StaticCondition =
        * where there are targets (a `conditional` effect); ignored on a
        * static ability. */
       readonly excludeTarget?: number;
+      readonly countsSelf?: boolean;
     }
   /**
    * A sum or maximum over matching battlefield permanents compared against a

@@ -1077,7 +1077,12 @@ clause (section 9):
   condition do (resolution is outside the layer fold): `excludeSelf` is "if
   you control **another** Wizard" there. `excludeTarget: i` leaves out target
   slot `i` ("a creature other than that creature") and only means anything
-  inside a `conditional` effect, where there are targets.
+  inside a `conditional` effect, where there are targets. The opposite switch,
+  `countsSelf: true`, puts a static's own permanent back into the count when the
+  printed count includes it — Jetmir, Nexus of Revels: "as long as you control
+  three or more creatures", Jetmir being one — and keep that `filter` to
+  type/subtype/colour clauses, which are answered without a characteristics
+  fold.
 - `{ kind: "aggregate", value: AggregateSpec, compare: NumCompare }` — a sum
   or maximum compared against a number (Finneas, Ace Archer: "if creatures
   you control have **total power 10 or greater**" is `{ value: { aggregate:
