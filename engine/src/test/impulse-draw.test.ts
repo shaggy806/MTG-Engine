@@ -155,6 +155,26 @@ describe("impulse-exile", () => {
     game.advanceUntil((s) => s.turn.number > turn + 1 || s.result.over);
     expect(impulseExiled(game).length).toBe(1);
   });
+
+  it("granted on an opponent's turn, a `your-next-turn` permission ends with your next turn", () => {
+    // Tectonic Giant targeted by an opponent's spell: "your next turn" is the
+    // very next one of yours, not the one after.
+    const game = makeGame();
+    game.advanceUntil((s) => s.turn.number === 2 && s.priority.holder === B);
+    game.debugApplyEffect(A, {
+      kind: "impulse-exile",
+      amount: 1,
+      duration: "your-next-turn",
+    });
+    expect(impulseExiled(game).length).toBe(1);
+
+    // Survives the rest of Bob's turn and lasts through Alice's turn 3 ...
+    game.advanceUntil((s) => s.turn.number === 3 || s.result.over);
+    expect(impulseExiled(game).length).toBe(1);
+    // ... and is gone once it ends.
+    game.advanceUntil((s) => s.turn.number === 4 || s.result.over);
+    expect(impulseExiled(game).length).toBe(0);
+  });
 });
 
 describe("Theater of Horrors — a gated permission", () => {

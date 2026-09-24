@@ -529,7 +529,10 @@ exist (rule 111.7), so neither comes back.
   — "impulse draw": exile the top N cards face-up and let yourself play them
   (Dream Pillager, Tectonic Giant, Theater of Horrors). `duration` is
   `"end-of-turn"`, `"your-next-turn"` (counted down as *that player's* turns
-  end, so extra turns and multiplayer order stay exact) or `"while-source"`.
+  end, so extra turns and multiplayer order stay exact — granted during one of
+  their own turns it lasts through the rest of it and all of the next, as
+  Prosper, Tome-Bound's end-step exile does; granted on an opponent's turn it
+  lasts through their very next one) or `"while-source"`.
   `castOnly` is "cast **spells** from among them" (no lands) rather than "play
   them". `choose` grants the permission to only that many of the exiled cards,
   via a `choose-from-zone` decision whose `destination` is `"exile-playable"`

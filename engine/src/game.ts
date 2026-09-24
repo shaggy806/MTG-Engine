@@ -8647,8 +8647,11 @@ export class Game {
         duration === "end-of-turn"
           ? { kind: "end-of-turn", turn: this.state.turn.number }
           : duration === "your-next-turn"
-            // One more of *this player's* turns has to end before it lapses.
-            ? { kind: "your-turns", remaining: 1 }
+            // It lapses as the player's next turn ends. Granted during one of
+            // their own turns, that turn has to end first; granted on someone
+            // else's turn (Tectonic Giant targeted by an opponent's spell),
+            // the next of theirs is already the last one.
+            ? { kind: "your-turns", remaining: this.activePlayer === controller ? 1 : 0 }
             : { kind: "while-source", source },
       ...(castOnly ? { castOnly: true } : {}),
       ...(opts.yourTurnOnly ? { yourTurnOnly: true } : {}),
