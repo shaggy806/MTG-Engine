@@ -2668,7 +2668,9 @@ export class Game {
       );
     } else if (cast !== null) {
       this.state.pendingTargetedCast = null;
-      this.commitFreeCast(cast.cardId, cast.via, cast.grantHaste, [...chosen]);
+      if (!this.commitFreeCast(cast.cardId, cast.via, cast.grantHaste, [...chosen])) {
+        this.abandonSuspendedCast(cast.cardId, "cost increase can't be paid");
+      }
       // Other suspended cards owed a free cast this upkeep (rule 702.62e).
       while (this.state.pendingSuspendedCasts.length > 0 && this.state.awaiting === null) {
         const next = this.state.pendingSuspendedCasts.shift();
@@ -4378,8 +4380,7 @@ export class Game {
       (o, i) => o.length === 1 && !isOptionalSpec(def.targets[i]),
     );
     if (def.targets.length === 0 || forced || opts.via === "cascade") {
-      this.commitFreeCast(cardId, opts.via, grantHaste, optionsPerSlot.map((o) => o[0]));
-      return true;
+      return this.commitFreeCast(cardId, opts.via, grantHaste, optionsPerSlot.map((o) => o[0]));
     }
 
     // A suspend cast with a real choice — park a `choose-targets` decision.
@@ -4396,18 +4397,34 @@ export class Game {
   }
 
   /** Move `cardId` to the stack as a free cast with the given targets (rule
-   * 702.62e / 702.85e) — the commit half of {@link castCardWithoutPaying}. */
+   * 702.62e / 702.85e) — the commit half of {@link castCardWithoutPaying}.
+   * `false`, with nothing moved, when a cost increase can't be paid. */
   private commitFreeCast(
     cardId: ObjectId,
     via: CastVia,
     grantHaste: boolean,
     chosen: ResolvedTargets,
-  ): void {
+  ): boolean {
     const object = this.state.objects[cardId];
     const owner = object.owner;
     const stormCount = this.state.spellsCastThisTurn;
     const castFrom = object.zone;
+    // "Without paying its mana cost" is an alternative cost of nothing, and
+    // cost increases still apply on top of it (rule 601.2f): Thalia's {1},
+    // or Hinata's {1} for each target. Worked out once the targets are
+    // chosen; a spell whose increase can't be paid isn't cast at all.
+    const increase = this.castingCostOf(
+      owner,
+      cardId,
+      this.registry.get(object.cardName),
+      0,
+      null,
+      distinctTargetCount(chosen, this.targetCopies(chosen)),
+    );
+    const payment = this.payMana(owner, increase, undefined, undefined, { kind: "cast", card: cardId });
+    if (payment === null) return false;
     this.moveObject(cardId, "stack");
+    this.executePayment(owner, payment);
     // Nothing to pay, so a target in a token stack is peeled off at once.
     const targets = this.lockInTargets(chosen);
     object.targets = targets.length > 0 ? [...targets] : null;
@@ -4415,8 +4432,9 @@ export class Game {
     object.targetZones = targets.length > 0 ? this.zonesOfTargets(targets) : undefined;
     object.castVia = via;
     object.stormCount = stormCount;
-    // Cast without paying its mana cost: nothing was spent (rule 118.9).
-    object.manaSpent = 0;
+    // Cast without paying its mana cost: only what a cost increase took was
+    // spent (rule 118.9).
+    object.manaSpent = manaValue(payment.resolved);
     if (grantHaste) object.hastyUntilItLeaves = true;
     this.state.players[owner].spellsCastThisTurn += 1;
     (this.state.players[owner].spellsCastThisTurnIds ??= []).push(cardId);
@@ -4434,6 +4452,7 @@ export class Game {
     // A free cast (cascade, suspend) targets like any other — the trigger
     // is about being targeted, not about how the spell was paid for.
     this.announceTargeted(targets, owner, cardId, true);
+    return true;
   }
 
   /** Cast a suspended card whose last time counter just came off (rule
@@ -4442,9 +4461,17 @@ export class Game {
     const object = this.state.objects[cardId];
     if (object === undefined || object.zone !== "exile") return;
     if (!this.castCardWithoutPaying(cardId, { via: "suspend", grantHaste: true })) {
-      object.suspended = false;
-      this.emit({ type: "spell-fizzled", object: cardId, reason: "no legal targets" });
+      this.abandonSuspendedCast(cardId, "couldn't be cast");
     }
+  }
+
+  /** A suspended card whose free cast didn't happen stays exiled, no longer
+   * suspended (rule 702.62e). */
+  private abandonSuspendedCast(cardId: ObjectId, reason: string): void {
+    const object = this.state.objects[cardId];
+    if (object === undefined) return;
+    object.suspended = false;
+    this.emit({ type: "spell-fizzled", object: cardId, reason });
   }
 
   /** The fixed cost to foretell any card (rule 702.144c). */
@@ -10559,7 +10586,9 @@ export class Game {
 
     if (hit !== null) {
       const cast = this.castCardWithoutPaying(hit, { via: "cascade", grantHaste: false });
-      if (!cast) hit = null; // no legal targets — it goes to the bottom too
+      // No legal targets, or a cost increase it can't pay: it goes to the
+      // bottom too.
+      if (!cast) hit = null;
     }
 
     // Everything still in exile from this cascade goes to the bottom of the

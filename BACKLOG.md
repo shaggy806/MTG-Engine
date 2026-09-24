@@ -79,8 +79,6 @@ that one card is the reason the deck exists.
 - **Triggered abilities never announce their targets.** Nothing sees an `object-targeted` event
   for them, so Thunderbreak Regent's "spell or ability" misses a triggered ability. The
   spell-only cards (Gargos, Tectonic Giant) are unaffected.
-- **Free casts skip cost increases.** `castCardWithoutPaying` (cascade, suspend) ignores
-  Thalia and Hinata. Rule 601.2f says those still apply.
 - **A copy never chooses new targets.** Tracked as `decision:copy-new-targets`, which is
   UI-bound.
 - **Token stacks in combat.** Splitting one stack across attackers or blockers is not built,
