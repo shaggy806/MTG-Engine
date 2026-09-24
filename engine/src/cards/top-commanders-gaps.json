@@ -12,7 +12,10 @@
   "trigger:life-change-amount",
   "condition:source-state",
   "keyword:landwalk",
-  "bug:static-scope-computed-keywords"
+  "bug:static-scope-computed-keywords",
+  "bug:simultaneous-damage-batching",
+  "stat:milled-this-turn",
+  "effect:flicker-generalized"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
@@ -23,7 +26,7 @@
   "bug:cda-all-zones": {
    "size": "small",
    "ui": false,
-   "description": "CDA fixes: setBasePtFromCount accepts a CardFilter count ('the number of Islands you control'). Built so far: it works in every zone (rule 604.3), and counts cards in your hand."
+   "description": "A power-only CDA over a fixed printed toughness: setBasePtFromCount always sets toughness to the count plus an offset, so Eluge's '*/5, power equal to the number of Islands you control' and Mendicant Core's power-only count can't be expressed. Built so far: the CDA works in every zone (rule 604.3), counts cards in your hand, and counts any CardFilter over the battlefield (token stacks counted in full, with a re-entrancy guard for a self-referential filter) or over all graveyards."
   },
   "bug:color-identity-back-face": {
    "size": "small",
@@ -58,7 +61,7 @@
   "bug:lki-leaves-battlefield-triggers": {
    "size": "medium",
    "ui": false,
-   "description": "Dies and leaves-the-battlefield triggers look back in time (rule 603.10a). Take a last-known snapshot before moveObject clears the object: computed types, subtypes, counters, controller, keywords and granted triggers. Match trigger filters, 'you control' and granted dies triggers against that snapshot."
+   "description": "Take a last-known snapshot of a permanent's computed types, subtypes, counters, keywords, lost abilities and granted dies triggers before moveObject clears it, and match leaves/dies trigger filters and granted dies triggers against that (rule 603.10a). Built so far: last-known controller (lastKnownController) for 'you control' trigger scopes, filter controlledBy, and whose ability a stolen permanent's own leaves trigger is."
   },
   "bug:lki-object-reads": {
    "size": "medium",
@@ -103,7 +106,7 @@
   "bug:simultaneous-zone-moves": {
    "size": "large",
    "ui": false,
-   "description": "Move permanents simultaneously in mass destruction, SBA deaths and 'return X and Y' effects, so leaves-the-battlefield triggers and replacements look back at the whole group (rule 603.10a)."
+   "description": "Moves of several targets from one instruction ('destroy two target creatures', 'return X and Y') still happen one after another, and replacement effects don't look back at the group. Built so far: mass destruction, one sweep of state-based graveyard moves (lethal damage, 0 loyalty, unattached Auras, the legend rule, finished Sagas), edicts once every player has chosen, and overloaded or 'return all' bounces each move as one leave batch whose members see each other leave (rule 603.10a, withLeaveBatch), with commanders deferred by 903.9a still counted in their batch."
   },
   "bug:static-scope-computed-keywords": {
    "size": "small",
@@ -528,7 +531,7 @@
   "effect:missing-tokens": {
    "size": "small",
    "ui": false,
-   "description": "Token definitions the pool lacks, and the investigate effect: a Clue token ('{2}, Sacrifice: Draw a card') and a 1/1 black-green Insect, for example."
+   "description": "Blood tokens (Shilgengar, Strefan), whatever else Chatterfang's and Jaws' triggers need, and a distinct 'whenever you investigate' event (investigate is plain Clue creation today, so nothing can trigger on it). Built so far: the Clue token and an investigate() helper (Tivit, Wernog, Morska), and the 1/1 black-green Insect (Grist); Treasure and the 1/1 green Squirrel already existed."
   },
   "effect:modal-ability-targeted-modes": {
    "size": "medium",

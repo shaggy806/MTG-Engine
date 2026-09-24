@@ -161,7 +161,8 @@ man-lands, "any target" unable to reach a planeswalker, and a commander's
 Five commanders were authored and then **dropped** by their reviews, each
 naming the gap: Rin and Seri (since fixed), Tifa Lockhart and Yarok (the
 engine orders simultaneous triggers for the player), Blech (one lifelink
-source damaging several things counts as several life gains), Sokka (a
+source damaging several things counted as several life gains — since
+fixed, and Blech landed with the simultaneous-events batching), Sokka (a
 prowess pump can land on the wrong token of a stack), and Kilo (a
 tap-a-creature cost still picks the creature). Aragorn, the Uniter needs
 scry to let the player order the cards kept.
