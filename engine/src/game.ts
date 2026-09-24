@@ -1399,32 +1399,91 @@ export class Game {
    * none. */
   private findMergeableStack(repId: ObjectId, controller: PlayerId): ObjectId | null {
     const rep = this.state.objects[repId];
-    const repCounters = JSON.stringify(rep.counters);
-    const repModifiers = JSON.stringify(rep.modifiers);
+    const key = this.tokenFoldKey(rep);
+    const pinned = this.pinnedTokenIds();
     for (const id of this.state.zones.shared.battlefield) {
       const o = this.state.objects[id];
       if (
         o.isToken &&
         o.controller === controller &&
         o.cardName === rep.cardName &&
-        o.copyOf === rep.copyOf &&
-        o.tapped === rep.tapped &&
-        o.summoningSick === rep.summoningSick &&
-        o.attachedTo === null &&
-        o.attacking === null &&
-        o.blocking === null &&
-        o.damageMarked === 0 &&
-        !o.markedByDeathtouch &&
-        (o.exileAtEndStep ?? false) === (rep.exileAtEndStep ?? false) &&
-        (o.sacrificeAtEndStep ?? false) === (rep.sacrificeAtEndStep ?? false) &&
-        (o.notLegendary ?? false) === (rep.notLegendary ?? false) &&
-        JSON.stringify(o.counters) === repCounters &&
-        JSON.stringify(o.modifiers) === repModifiers
+        this.isRestingToken(o) &&
+        !pinned.has(id) &&
+        this.tokenFoldKey(o) === key
       ) {
         return id;
       }
     }
     return null;
+  }
+
+  /**
+   * Everything two tokens must share to be folded into one stack, as one
+   * string: `findMergeableStack` compares a new batch against it and
+   * `recompactTokens` groups on it. Anything that tells one token from
+   * another belongs here — whose it is (owner as well as controller: a token
+   * someone stole for good isn't one of the thief's own), its state, what's
+   * been done to it (counters, modifiers, a goad, a control effect, a
+   * transformed face, a choice made as it entered) and what's still due to
+   * happen to it. A split-off target that nothing distinguishes any more
+   * matches its old stack again and folds back.
+   */
+  private tokenFoldKey(o: GameObject): string {
+    return JSON.stringify([
+      o.cardName,
+      o.copyOf,
+      o.owner,
+      o.controller,
+      o.tapped,
+      o.summoningSick,
+      o.face ?? 0,
+      o.exileAtEndStep ?? false,
+      o.sacrificeAtEndStep ?? false,
+      o.notLegendary ?? false,
+      o.goadedBy ?? [],
+      o.mustAttackPlayer ?? null,
+      o.controlledByEffect ?? null,
+      o.controlEndsAtCleanup,
+      o.chosenOnEnter ?? null,
+      o.chosenCreatureType ?? null,
+      o.counters,
+      o.modifiers,
+    ]);
+  }
+
+  /** A token in the state a fresh one is in, as far as combat and damage go:
+   * nothing attached to anything, not in combat, no damage marked. */
+  private isRestingToken(o: GameObject): boolean {
+    return (
+      o.attachedTo === null &&
+      o.attacking === null &&
+      o.blocking === null &&
+      o.damageMarked === 0 &&
+      !o.markedByDeathtouch
+    );
+  }
+
+  /**
+   * Tokens something outside the stack still refers to by id — the target or
+   * source of a delayed trigger, the target of a prevention shield. Folding
+   * one into another object deletes its id, and an Aura or Equipment on it
+   * would end up on a whole stack, so these are never folded: a split-off
+   * target a delayed trigger will come back for has to still be there.
+   */
+  private pinnedTokenIds(): Set<ObjectId> {
+    const pinned = new Set<ObjectId>();
+    for (const id of this.state.zones.shared.battlefield) {
+      const attached = this.state.objects[id].attachedTo;
+      if (attached !== null) pinned.add(attached);
+    }
+    for (const trigger of this.state.delayedTriggers) {
+      pinned.add(trigger.source);
+      for (const t of trigger.targets) if (t?.kind === "object") pinned.add(t.object);
+    }
+    for (const shield of this.state.preventionShields) {
+      if (shield.target.kind === "object") pinned.add(shield.target.object);
+    }
+    return pinned;
   }
 
   /** If `id` names a compacted token stack (`stackCount > 1`), peel exactly
@@ -1453,6 +1512,9 @@ export class Game {
     };
     delete this.state.objects[newId].stackCount;
     this.state.zones.shared.battlefield.push(newId);
+    // A new permanent on the battlefield: anything memoized about the board
+    // (a count, a static's reach) is stale.
+    invalidateComputedCache();
     return newId;
   }
 
@@ -1550,7 +1612,9 @@ export class Game {
    * nothing pending (so no ability object, trigger, or decision can be holding
    * an id it would delete); merges only tokens that are eligible
    * (`isStackableTokenName`), pristine (nothing attached, not in combat, no
-   * marked damage) and not themselves the host of an attachment; and only
+   * marked damage), not referred to from elsewhere (`pinnedTokenIds` — the
+   * host of an attachment, a delayed trigger's target) and alike in every
+   * respect `tokenFoldKey` compares; and only
    * collapses a group that either already contains a stack or is at least
    * `STACK_ORIGIN_THRESHOLD` strong. Two Soldier tokens from Raise the Alarm
    * stay two tiles on the board, exactly as before.
@@ -1583,22 +1647,14 @@ export class Game {
     ) {
       return;
     }
-    const hosts = new Set<ObjectId>();
-    for (const id of this.state.zones.shared.battlefield) {
-      const attached = this.state.objects[id].attachedTo;
-      if (attached !== null) hosts.add(attached);
-    }
+    const pinned = this.pinnedTokenIds();
     const groups = new Map<string, ObjectId[]>();
     for (const id of this.state.zones.shared.battlefield) {
       const o = this.state.objects[id];
       if (
         !o.isToken ||
-        hosts.has(id) ||
-        o.attachedTo !== null ||
-        o.attacking !== null ||
-        o.blocking !== null ||
-        o.damageMarked !== 0 ||
-        o.markedByDeathtouch ||
+        pinned.has(id) ||
+        !this.isRestingToken(o) ||
         !this.isStackableTokenName(printedCardName(o)) ||
         // A vanilla token that's been *granted* an activated ability
         // (Cryptolith Rite) has to be tapped one at a time — until there are
@@ -1610,18 +1666,8 @@ export class Game {
       ) {
         continue;
       }
-      // Every field `findMergeableStack` compares, as one key.
-      const shape = JSON.stringify([
-        o.cardName,
-        o.copyOf,
-        o.controller,
-        o.tapped,
-        o.summoningSick,
-        o.exileAtEndStep ?? false,
-        o.notLegendary ?? false,
-        o.counters,
-        o.modifiers,
-      ]);
+      // The same key `findMergeableStack` compares a new batch on.
+      const shape = this.tokenFoldKey(o);
       const group = groups.get(shape);
       if (group === undefined) groups.set(shape, [id]);
       else group.push(id);
@@ -1656,6 +1702,36 @@ export class Game {
     if (ref.kind !== "object") return ref;
     const split = this.splitOneFromStack(ref.object);
     return split === ref.object ? ref : { kind: "object", object: split };
+  }
+
+  /**
+   * Lock in the targets a spell or ability goes on the stack with (rules
+   * 601.2c, 602.2b, 603.3d): one that names a compacted token stack becomes
+   * one token peeled off it, so from then on the target is a single real
+   * object. A spell targets one token, not the stack.
+   *
+   * Done once, here, rather than by each effect step as it resolves. Each
+   * step used to peel off its own token, so Tamiyo's Safekeeping gave
+   * hexproof to one token and indestructible to another, and Act of Treason
+   * stole one, untapped a second and hasted a third. Locking in also means a
+   * copy of the spell targets the same token (rule 707.10), an opponent can
+   * answer by targeting that token, and the spell fizzles if it's gone.
+   *
+   * Called once the costs are paid, so a cost that taps or sacrifices every
+   * token of the same stack still finds each one. A stack named in two slots
+   * gives each its own token, as a repeated id in a sacrifice or tap-cost
+   * answer does. `skip` are slots the triggering event filled
+   * (`autoTargetSlots`): nobody chose them, and they're left as they are.
+   */
+  private lockInTargets(
+    targets: ResolvedTargets,
+    skip: readonly number[] = [],
+  ): ResolvedTargets {
+    return targets.map((ref, i) => {
+      if (ref === undefined || ref.kind !== "object" || skip.includes(i)) return ref;
+      if (this.state.objects[ref.object]?.zone !== "battlefield") return ref;
+      return this.splitTargetRef(ref);
+    });
   }
 
   /** Run automatic game actions until the game ends. */
@@ -4056,13 +4132,15 @@ export class Game {
     cardId: ObjectId,
     via: CastVia,
     grantHaste: boolean,
-    targets: ResolvedTargets,
+    chosen: ResolvedTargets,
   ): void {
     const object = this.state.objects[cardId];
     const owner = object.owner;
     const stormCount = this.state.spellsCastThisTurn;
     const castFrom = object.zone;
     this.moveObject(cardId, "stack");
+    // Nothing to pay, so a target in a token stack is peeled off at once.
+    const targets = this.lockInTargets(chosen);
     object.targets = targets.length > 0 ? [...targets] : null;
     // Where each target is as the spell is cast, for last-known information.
     object.targetZones = targets.length > 0 ? this.zonesOfTargets(targets) : undefined;
@@ -5056,11 +5134,9 @@ export class Game {
       }
     }
 
-    // Commit: move to the stack, pay, announce.
+    // Commit: move to the stack, pay, announce. The targets are recorded
+    // once the costs are paid, below.
     this.moveObject(cardId, "stack");
-    object.targets = targets.length > 0 ? [...targets] : null;
-    // Where each target is as the spell is cast, for last-known information.
-    object.targetZones = targets.length > 0 ? this.zonesOfTargets(targets) : undefined;
     object.xValue = hasX ? chosenX : null;
     object.castVia = via ?? null;
     // Kess's "if a spell cast this way would be put into your graveyard,
@@ -5101,6 +5177,12 @@ export class Game {
       this.moveObject(victim, "graveyard");
       this.emit({ type: "permanent-sacrificed", object: victim, player: owner });
     }
+    // The costs are paid, so a target in a token stack can be peeled off it
+    // (`lockInTargets`) without taking a token a cost above had named.
+    const chosen = this.lockInTargets(targets);
+    object.targets = chosen.length > 0 ? [...chosen] : null;
+    // Where each target is as the spell is cast, for last-known information.
+    object.targetZones = chosen.length > 0 ? this.zonesOfTargets(chosen) : undefined;
     if (castingFromCommand) {
       const name = object.cardName;
       const counts = this.state.players[player].commanderCastCounts;
@@ -5114,13 +5196,13 @@ export class Game {
       type: "spell-cast",
       player,
       object: cardId,
-      targets: targets.filter((t): t is TargetRef => t !== undefined),
+      targets: chosen.filter((t): t is TargetRef => t !== undefined),
       x: hasX ? chosenX : null,
       spellsThisTurn: this.state.players[player].spellsCastThisTurn,
       ...(via !== undefined ? { via } : {}),
       from: castFrom,
     });
-    this.announceTargeted(targets, player, cardId, true);
+    this.announceTargeted(chosen, player, cardId, true);
     if (sortedModes !== undefined) {
       this.emit({ type: "modes-chosen", source: cardId, modes: [...sortedModes] });
     }
@@ -5836,6 +5918,8 @@ export class Game {
       return;
     }
 
+    // The costs are paid: a target in a token stack is peeled off it now.
+    const chosen = this.lockInTargets(targets);
     const abilityId = this.mintAbilityObject(
       sourceId,
       // `def.name`, captured above — not `printedCardName(source)` now, since a
@@ -5846,7 +5930,7 @@ export class Game {
       player,
       "activated",
       abilityIndex,
-      targets,
+      chosen,
     );
     if (chosenX > 0) this.state.objects[abilityId].xValue = chosenX;
     if (grantedAbility !== undefined) this.state.objects[abilityId].grantedAbility = grantedAbility;
@@ -5862,7 +5946,7 @@ export class Game {
       player,
       onStack: true,
     });
-    this.announceTargeted(targets, player, sourceId, false);
+    this.announceTargeted(chosen, player, sourceId, false);
     this.afterPlayerAction(player);
   }
 
@@ -7909,7 +7993,8 @@ export class Game {
       controller,
       abilityKind,
       abilityIndex,
-      targets,
+      // A chosen target in a token stack is one token of it from here on.
+      this.lockInTargets(targets, autoTargetSlots),
       triggerValue,
       triggerObject,
       multiplier,
