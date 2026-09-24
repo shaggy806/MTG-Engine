@@ -66,6 +66,7 @@ import {
   staticAffects,
   staticConditionMet,
   suspendComputedCache,
+  turnStatOf,
   withComputedCache,
 } from "./characteristics.js";
 import type { Characteristics } from "./characteristics.js";
@@ -7732,6 +7733,7 @@ export class Game {
       manaSpentOf: (target) =>
         target.kind === "object" ? (this.state.objects[target.object]?.manaSpent ?? 0) : 0,
       lifeTotalOf: (player) => this.state.players[player]?.life ?? 0,
+      turnStatOf: (player, stat) => turnStatOf(this.state, player, stat),
       countInGraveyard: (filter) => {
         let n = 0;
         for (const player of this.state.turnOrder) {

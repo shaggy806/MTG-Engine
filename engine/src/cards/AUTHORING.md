@@ -338,6 +338,12 @@ contains, `{X}` and generic for nothing), `{ creaturesDiedThisTurn: true }`
 (per *player*, unlike `GameState`'s global counter — Liliana's Standard
 Bearer), `{ countPlayers: PlayerScope }` (Inspired Sphinx; counts living
 players, so it shrinks as a multiplayer game does),
+`{ turnStat: TurnStat, who?: PlayerScope }` (a per-turn running total —
+`"life-lost"`, `"life-gained"` or `"cards-drawn"` — summed over the scope,
+default `"you"`: Kydele's "for each card you've drawn this turn", or the life
+your opponents lost this turn as `who: "each-opponent"`),
+`{ playersWithTurnStat: TurnStat, who: PlayerScope }` (how many players in the
+scope have a nonzero total — "for each opponent who lost life this turn"),
 `{ opponentsControllingFewer: CardFilter }` (Voice of Many — a comparison per
 player, which no single filter can express), and `{ product: [...] }`, which
 is how compound amounts compose without every other shape growing a

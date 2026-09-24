@@ -9,7 +9,7 @@
  */
 
 import type { TriggeredAbility } from "./abilities.js";
-import type { CardType, Keyword, StaticAbility, StaticCondition } from "./cards.js";
+import type { CardType, Keyword, StaticAbility, StaticCondition, TurnStat } from "./cards.js";
 import type { CardFilter } from "./filter.js";
 import type { Color, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
@@ -144,7 +144,21 @@ export type EffectAmount =
   /** How many players a `PlayerScope` covers — Inspired Sphinx's "draw cards
    * equal to **the number of opponents you have**". Counts living players, so
    * it shrinks as a multiplayer game does. */
-  | { readonly countPlayers: PlayerScope };
+  | { readonly countPlayers: PlayerScope }
+  /**
+   * A per-player running total for this turn ({@link TurnStat}), summed over
+   * the players `who` names (default `"you"`) — Kydele's "{C} for each card
+   * you've drawn this turn", or "the total life your opponents lost this
+   * turn" as `who: "each-opponent"`. A player who has left the game is no
+   * longer in any scope, so their total drops out.
+   */
+  | { readonly turnStat: TurnStat; readonly who?: PlayerScope }
+  /**
+   * How many of the players `who` names have a nonzero {@link TurnStat} this
+   * turn — "for each opponent who lost life this turn". Counts players, not
+   * the amount: an opponent who lost 10 counts once.
+   */
+  | { readonly playersWithTurnStat: TurnStat; readonly who: PlayerScope };
 
 /** One way out of an `"unless"` clause. Exactly one field is set. */
 export type UnlessOption =
@@ -1277,6 +1291,9 @@ export interface EffectApi {
   manaSpentOf(target: TargetRef): number;
   /** A player's current life total — see the `{ lifeTotal }` {@link EffectAmount}. */
   lifeTotalOf(player: PlayerId): number;
+  /** One player's running total for `stat` this turn — see the `turnStat`
+   * {@link EffectAmount}. */
+  turnStatOf(player: PlayerId, stat: TurnStat): number;
   /** See the `{ countInGraveyard }` {@link EffectAmount}. */
   countInGraveyard(filter: CardFilter): number;
   /** See the `{ powerOf }` {@link EffectAmount}. */
@@ -1676,6 +1693,16 @@ export function amountValue(amount: EffectAmount, ctx: ResolutionContext): numbe
     return amount.product.reduce<number>((n, a) => n * amountValue(a, ctx), 1);
   }
   if ("countPlayers" in amount) return ctx.playersInScope(amount.countPlayers).length;
+  if ("turnStat" in amount) {
+    return ctx
+      .playersInScope(amount.who ?? "you")
+      .reduce((n, p) => n + ctx.turnStatOf(p, amount.turnStat), 0);
+  }
+  if ("playersWithTurnStat" in amount) {
+    return ctx
+      .playersInScope(amount.who)
+      .filter((p) => ctx.turnStatOf(p, amount.playersWithTurnStat) > 0).length;
+  }
   if ("opponentsControllingFewer" in amount) {
     return ctx.opponentsControllingFewer(amount.opponentsControllingFewer);
   }
