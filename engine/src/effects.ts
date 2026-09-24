@@ -1857,7 +1857,75 @@ function resolveEffectTarget(
   return ctx.targets[ref];
 }
 
-export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void {
+/** Keys under which an {@link EffectSpec} nests another one. Those are bound
+ * when *they* are applied, in the context they're applied in — a delayed
+ * trigger's effect when it fires, a `then` after the step before it. */
+const NESTED_EFFECT_KEYS: ReadonlySet<string> = new Set([
+  "effect",
+  "effects",
+  "then",
+  "else",
+  "otherwise",
+  "modes",
+]);
+
+/** Is this a `NumCompare` whose `n` is an `{ amount }` operand? Written out
+ * rather than imported from `filter.ts`, which `effects.ts` only ever needs
+ * types from. */
+function isAmountCompare(value: Record<string, unknown>): boolean {
+  const n = value["n"];
+  return "op" in value && typeof n === "object" && n !== null && "amount" in n;
+}
+
+/** Card data is immutable, so whether a spec holds anything to bind is worth
+ * remembering: nearly every resolution asks, and nearly none do. */
+const dynamicCompareMemo = new WeakMap<object, boolean>();
+
+function containsDynamicCompare(value: unknown): boolean {
+  if (value === null || typeof value !== "object") return false;
+  const memo = dynamicCompareMemo.get(value);
+  if (memo !== undefined) return memo;
+  const found = Array.isArray(value)
+    ? value.some(containsDynamicCompare)
+    : isAmountCompare(value as Record<string, unknown>) ||
+      Object.entries(value).some(
+        ([key, v]) => !NESTED_EFFECT_KEYS.has(key) && containsDynamicCompare(v),
+      );
+  dynamicCompareMemo.set(value, found);
+  return found;
+}
+
+/**
+ * `spec` with every filter comparison's `{ amount }` operand (see
+ * `DynamicOperand`) replaced by its value **now**, in this resolution.
+ *
+ * This is how "with lesser mana value" reaches every filter an effect hands
+ * to the engine — a sweep's, a search's, a count's — without each of those
+ * growing a context parameter: by the time the filter leaves this function
+ * it is plain numbers again. It runs as each effect applies, not once per
+ * resolution, so "sacrifice a creature, then search for one with mana value
+ * one greater" reads the sacrifice that has just happened. `{ own }` operands
+ * are left alone: they're about each object matched, not about the effect.
+ */
+export function bindDynamicCompares(spec: EffectSpec, ctx: ResolutionContext): EffectSpec {
+  if (!containsDynamicCompare(spec)) return spec;
+  const walk = (value: unknown): unknown => {
+    if (value === null || typeof value !== "object") return value;
+    if (Array.isArray(value)) return value.map(walk);
+    const record = value as Record<string, unknown>;
+    if (isAmountCompare(record)) {
+      const operand = record["n"] as { readonly amount: EffectAmount };
+      return { ...record, n: amountValue(operand.amount, ctx) };
+    }
+    return Object.fromEntries(
+      Object.entries(record).map(([key, v]) => [key, NESTED_EFFECT_KEYS.has(key) ? v : walk(v)]),
+    );
+  };
+  return walk(spec) as EffectSpec;
+}
+
+export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): void {
+  const spec = bindDynamicCompares(unbound, ctx);
   switch (spec.kind) {
     case "sequence": {
       for (const step of spec.effects) applyEffectSpec(step, ctx);

@@ -25,7 +25,7 @@
 import type { Action, LegalAction } from "../actions.js";
 import type { PlayerId } from "../primitives.js";
 import { normalizeTargets } from "../target.js";
-import { cardSource, invalidTargetReason, permanentSource } from "../targeting.js";
+import { cardSource, invalidTargetReason } from "../targeting.js";
 import type { TargetSource } from "../targeting.js";
 import type { ObjectId } from "../primitives.js";
 import { defineDecision } from "./define.js";
@@ -34,16 +34,15 @@ import { targetCombos } from "./shared/target-combos.js";
 
 /**
  * The {@link TargetSource} behind a parked decision — a card for a pending
- * cast, a permanent for a pending trigger, or nothing when that permanent has
- * already left (rule 608.2b).
+ * cast; for a pending trigger, its permanent (an identity-less source once
+ * that has left, rule 608.2b) together with what a target filter's dynamic
+ * operand reads, which only `Game` can answer.
  */
 function sourceForPending(ctx: DecisionReadCtx, source: ObjectId): TargetSource | undefined {
   if (ctx.state.pendingTargetedCast !== null) {
     return cardSource(ctx.registry.get(ctx.state.objects[source].cardName), source);
   }
-  return ctx.state.objects[source] !== undefined
-    ? permanentSource(ctx.state, ctx.registry, source)
-    : undefined;
+  return ctx.pendingTriggerTargetSource();
 }
 
 export const chooseTargets = defineDecision({

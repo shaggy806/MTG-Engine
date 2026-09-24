@@ -634,6 +634,55 @@ within themselves (Farseek: "a Plains, Island, Swamp, or Mountain card";
 Takenuma's Channel: "a creature or planeswalker card"). Numeric fields take
 `{ op: "eq"|"ne"|"lt"|"lte"|"gt"|"gte", n }`.
 
+#### A number read off the game (`DynamicOperand`)
+
+`n` needn't be printed. Two object shapes read it when the filter is
+evaluated:
+
+- `n: { amount: EffectAmount }` — any `EffectAmount` (§6), evaluated in the
+  context of whatever applies the filter: its source, controller, `{X}`,
+  targets, and for a triggered ability the trigger object and value. Clement,
+  the Worrywort's "return up to one target creature you control **with lesser
+  mana value**" (lesser than the creature that entered) is
+
+  ```ts
+  { kind: "permanent", whose: "you", filter: {
+      type: "creature",
+      manaValue: { op: "lt", n: { amount: { manaValueOf: "trigger-object" } } } } }
+  ```
+
+  "Power less than this creature's" is `{ amount: { powerOf: "source" } }`.
+  There is no "plus one" amount yet, so "mana value equal to 1 plus the
+  sacrificed creature's" can't be written.
+- `n: { own: "power" | "toughness" | "manaValue" }` — a characteristic of the
+  object being matched itself: "each creature spell with toughness greater
+  than its power" is `toughness: { op: "gt", n: { own: "power" } }`. Needs no
+  context, so it works everywhere a filter does.
+
+Where `{ amount }` is answered, and when:
+
+- **Target filters** (a `{ kind: "permanent" }` / `card-in-graveyard` slot):
+  when the targets are offered, when the answer is validated, and **again on
+  resolution** (rule 608.2b) — nothing is frozen, so a triggering creature
+  that has changed by then changes the answer, and a target that no longer
+  qualifies is illegal.
+- **Trigger filters** (`TriggerSpec.filter`): as the event happens, with the
+  would-be trigger object as `"trigger-object"` and this permanent as
+  `"source"`.
+- **An effect's own filters** (a sweep's, a search's, a count's, a
+  `conditional`'s): bound to plain numbers as that effect applies, step by
+  step through a `sequence`, so a later step sees what an earlier one did.
+  A nested effect (`then`, `else`, a delayed trigger's `effect`, a mode) is
+  bound when *it* applies.
+- **Anywhere else** — a static ability's `condition`, a mana restriction, an
+  imperative `resolve` building its own filter — nothing can answer it and the
+  comparison **fails closed** (the object doesn't match). Use `{ own }` or a
+  printed number there.
+
+Last-known information is whatever the `EffectAmount` itself reads:
+`manaValueOf` a creature that has left the battlefield reads its printed card,
+but a **token** that has left has ceased to exist and reads `0`.
+
 ---
 
 ## 7. Targets (`targets`)

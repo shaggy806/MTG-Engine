@@ -42,6 +42,7 @@ import type { ObjectId, PlayerId } from "../primitives.js";
 import type { AwaitingDecision, GameState } from "../state.js";
 import type { ResolvedTargets } from "../target.js";
 import type { TargetRef, TargetSpec } from "../target.js";
+import type { TargetSource } from "../targeting.js";
 
 /** One of the 17 decisions the rules can stop and ask a player for. */
 export type DecisionKind = AwaitingDecision["kind"];
@@ -165,6 +166,17 @@ export interface DecisionReadCtx {
    * large an "you may pay {X}{R}" mode's X may be.
    */
   readonly maxAffordableAbilityX: (player: PlayerId, manaString: string | null) => number;
+  /**
+   * The {@link TargetSource} of the triggered ability parked in
+   * `state.pendingTargetedTrigger`, or `undefined` when none is.
+   *
+   * A capability because a trigger's target filter can compare against an
+   * `EffectAmount` (`DynamicOperand` — Clement, the Worrywort's "with lesser
+   * mana value" reads the triggering creature), and only `Game` can evaluate
+   * one. Carries the source permanent's identity for protection while it's
+   * still around, and none once it has left (rule 608.2b).
+   */
+  readonly pendingTriggerTargetSource: () => TargetSource | undefined;
 }
 
 /**

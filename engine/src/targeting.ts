@@ -1,6 +1,7 @@
 /** Legality checks for spell / ability targets. */
 
 import type { CardDefinition, CardRegistry, CardType } from "./cards.js";
+import type { EffectAmount } from "./effects.js";
 import { computeCharacteristics, effectiveTypes } from "./characteristics.js";
 import { matchesFilter } from "./filter.js";
 import type { Color } from "./mana.js";
@@ -19,6 +20,15 @@ export interface TargetSource {
    * `"creature-defending-player-controls"` reads it — it has to know which
    * creature is attacking to know who the defending player is. */
   readonly object?: ObjectId;
+  /**
+   * Answers a target filter's dynamic `NumCompare` operand (`{ amount }` —
+   * see `DynamicOperand`) in the context of the spell or ability doing the
+   * targeting: Clement, the Worrywort's "with lesser mana value" reads the
+   * mana value of the creature whose entering fired the trigger. Supplied by
+   * `Game`, which alone can evaluate an `EffectAmount`; absent ⇒ such a
+   * clause matches nothing.
+   */
+  readonly amount?: (amount: EffectAmount) => number;
 }
 
 /** Does `target`'s protection (rule 702.16) stop `source` from affecting it? */
@@ -148,7 +158,10 @@ export function isLegalTarget(
     const whose = spec.whose ?? "any";
     if (whose === "you" && object.controller !== forPlayer) return false;
     if (whose === "opponent" && object.controller === forPlayer) return false;
-    return matchesFilter(state, registry, ref.object, spec.filter, { you: forPlayer });
+    return matchesFilter(state, registry, ref.object, spec.filter, {
+      you: forPlayer,
+      ...(source?.amount !== undefined ? { amount: source.amount } : {}),
+    });
   }
   // The structured graveyard spec.
   if (typeof spec === "object") {
@@ -174,7 +187,10 @@ export function isLegalTarget(
     // `matchesFilter` degrades to printed values off the battlefield anyway.
     return (
       spec.filter === undefined ||
-      matchesFilter(state, registry, ref.object, spec.filter, { you: forPlayer })
+      matchesFilter(state, registry, ref.object, spec.filter, {
+        you: forPlayer,
+        ...(source?.amount !== undefined ? { amount: source.amount } : {}),
+      })
     );
   }
   switch (spec) {

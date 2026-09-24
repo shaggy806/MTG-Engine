@@ -19,6 +19,7 @@ import {
   effectiveTypes,
 } from "./characteristics.js";
 import type { CardRegistry, CardType, Keyword, Supertype } from "./cards.js";
+import type { EffectAmount } from "./effects.js";
 import type { Color } from "./mana.js";
 import { manaValue, parseManaCost } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
@@ -31,14 +32,53 @@ import type { GameObject, GameState } from "./state.js";
  * `n: "x"` reads the `{X}` chosen for the spell or ability that's applying
  * the filter (Steel Hellkite: "each nonland permanent with mana value X").
  * It needs `FilterContext.x`; without one it compares against 0.
+ *
+ * `n` may also be a {@link DynamicOperand}: a number that isn't printed on the
+ * card but read off the game when the filter is evaluated.
  */
 export interface NumCompare {
   readonly op: "eq" | "ne" | "lt" | "lte" | "gt" | "gte";
-  readonly n: number | "x";
+  readonly n: number | "x" | DynamicOperand;
 }
 
-export function compareNum(value: number, cmp: NumCompare, x = 0): boolean {
-  const n = cmp.n === "x" ? x : cmp.n;
+/**
+ * The right-hand side of a {@link NumCompare} that is read when the filter is
+ * evaluated rather than written down.
+ *
+ * - `{ amount }` is any {@link EffectAmount}, evaluated in the context of the
+ *   spell or ability applying the filter — Clement, the Worrywort's "target
+ *   creature you control **with lesser mana value**" is
+ *   `{ op: "lt", n: { amount: { manaValueOf: "trigger-object" } } }`. It is
+ *   answered by `FilterContext.amount`; where nothing supplies one (a static
+ *   ability's condition, which has no triggering object or resolution) the
+ *   comparison **fails closed** — the object doesn't match. Nothing freezes
+ *   it: a target filter is re-read when the target is rechecked on
+ *   resolution, and an effect's filter when that effect applies.
+ * - `{ own }` is a characteristic of the very object being matched — "each
+ *   creature spell with toughness **greater than its power**" is
+ *   `toughness: { op: "gt", n: { own: "power" } }`. Needs no context.
+ */
+export type DynamicOperand =
+  | { readonly amount: EffectAmount }
+  | { readonly own: "power" | "toughness" | "manaValue" };
+
+/** Does a `NumCompare` carry a {@link DynamicOperand}? */
+export function isDynamicOperand(n: NumCompare["n"]): n is DynamicOperand {
+  return typeof n === "object" && n !== null;
+}
+
+/**
+ * `value <op> n`. `dynamic` answers a {@link DynamicOperand}; one it can't
+ * answer (`undefined`, or no `dynamic` at all) makes the comparison false.
+ */
+export function compareNum(
+  value: number,
+  cmp: NumCompare,
+  x = 0,
+  dynamic?: (operand: DynamicOperand) => number | undefined,
+): boolean {
+  const n = cmp.n === "x" ? x : isDynamicOperand(cmp.n) ? dynamic?.(cmp.n) : cmp.n;
+  if (n === undefined) return false;
   switch (cmp.op) {
     case "eq":
       return value === n;
@@ -173,6 +213,10 @@ export interface FilterContext {
    * No effect on an object whose last move wasn't off the battlefield.
    */
   readonly lastKnown?: boolean;
+  /** Evaluates a `NumCompare`'s `{ amount }` operand in the context of
+   * whatever is applying the filter (its source, controller, triggering
+   * object, {X}, targets). Absent ⇒ such a comparison fails closed. */
+  readonly amount?: (amount: EffectAmount) => number;
 }
 
 /** What is attached to `id` on the battlefield, for the attachment clauses.
@@ -212,6 +256,14 @@ export function printedManaCost(registry: CardRegistry, object: GameObject): str
     return registry.get(front).manaCost;
   }
   return def.manaCost;
+}
+
+/** An object's mana value. On the stack, {X} counts as the value chosen for
+ * it (rule 202.3e) — a Fireball cast for 5 is a mana value 6 spell.
+ * Everywhere else it's 0. */
+function manaValueOfObject(registry: CardRegistry, object: GameObject): number {
+  const cost = parseManaCost(printedManaCost(registry, object));
+  return manaValue(cost) + (object.zone === "stack" ? cost.x * Math.max(0, object.xValue ?? 0) : 0);
 }
 
 /** Does object `id` satisfy every clause of `filter`? */
@@ -318,21 +370,29 @@ export function matchesFilter(
       object.zone === "battlefield" ? object.attacking !== null : object.wasAttacking === true;
     if (attacking !== filter.attacking) return false;
   }
+  // A `NumCompare` operand read off the game: `{ own }` from this object,
+  // `{ amount }` from whoever is applying the filter.
+  let own: { power: number; toughness: number } | undefined;
+  const dynamic = (operand: DynamicOperand): number | undefined => {
+    if ("amount" in operand) return ctx.amount?.(operand.amount);
+    if (operand.own === "manaValue") return manaValueOfObject(registry, object);
+    own ??= computeCharacteristics(state, registry, id);
+    return operand.own === "power" ? own.power : own.toughness;
+  };
   if (filter.counters !== undefined) {
     const held = filter.counters.kind === undefined
       ? Object.values(object.counters).reduce((n, v) => n + (v ?? 0), 0)
       : (object.counters[filter.counters.kind] ?? 0);
-    if (!compareNum(held, filter.counters.compare, ctx.x)) return false;
+    if (!compareNum(held, filter.counters.compare, ctx.x, dynamic)) return false;
   }
   if (filter.manaValue !== undefined) {
-    // On the stack, {X} counts as the value chosen for it (rule 202.3e) — a
-    // Fireball cast for 5 is a mana value 6 spell. Everywhere else it's 0.
-    const cost = parseManaCost(printedManaCost(registry, object));
-    const mv =
-      manaValue(cost) + (object.zone === "stack" ? cost.x * Math.max(0, object.xValue ?? 0) : 0);
-    if (!compareNum(mv, filter.manaValue, ctx.x)) return false;
+    const mv = manaValueOfObject(registry, object);
+    if (!compareNum(mv, filter.manaValue, ctx.x, dynamic)) return false;
   }
-  if (filter.manaSpent !== undefined && !compareNum(object.manaSpent ?? 0, filter.manaSpent, ctx.x)) {
+  if (
+    filter.manaSpent !== undefined &&
+    !compareNum(object.manaSpent ?? 0, filter.manaSpent, ctx.x, dynamic)
+  ) {
     return false;
   }
   // Cheap, purely-positional clauses before the expensive fold below.
@@ -384,8 +444,11 @@ export function matchesFilter(
     filter.notKeyword !== undefined
   ) {
     const c = computeCharacteristics(state, registry, id);
-    if (filter.power !== undefined && !compareNum(c.power, filter.power, ctx.x)) return false;
-    if (filter.toughness !== undefined && !compareNum(c.toughness, filter.toughness, ctx.x)) {
+    own = c;
+    if (filter.power !== undefined && !compareNum(c.power, filter.power, ctx.x, dynamic)) {
+      return false;
+    }
+    if (filter.toughness !== undefined && !compareNum(c.toughness, filter.toughness, ctx.x, dynamic)) {
       return false;
     }
     if (filter.keyword !== undefined && !c.keywords.has(filter.keyword)) return false;

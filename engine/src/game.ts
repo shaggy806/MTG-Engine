@@ -401,6 +401,10 @@ export class Game {
       state: this.state,
       registry: this.registry,
       maxAffordableAbilityX: (player, cost) => this.maxAffordableAbilityX(player, cost),
+      pendingTriggerTargetSource: () => {
+        const pending = this.state.pendingTargetedTrigger;
+        return pending === null ? undefined : this.abilityTargetSource(pending);
+      },
     };
     this.decisionHost = {
       applyPayLifeForUntapped: (player, pay) => this.applyPayLifeForUntapped(player, pay),
@@ -1101,7 +1105,47 @@ export class Game {
 
   /** The colour/type identity of a card (its printed values). */
   private cardSource(def: CardDefinition, object?: ObjectId): TargetSource {
-    return cardSource(def, object);
+    const base = cardSource(def, object);
+    const card = object !== undefined ? this.state.objects[object] : undefined;
+    if (object === undefined || card === undefined) return base;
+    return {
+      ...base,
+      // A spell's own {X} (rule 107.3) — zero until it's been chosen.
+      amount: this.filterAmounts({ source: object, controller: card.controller, x: card.xValue ?? 0 }),
+    };
+  }
+
+  /**
+   * What answers a filter's `{ amount }` operand (`DynamicOperand`) on behalf
+   * of `env.source` — the same `amountValue` an effect's own amounts go
+   * through, so a target filter's "lesser mana value" and an effect's "equal
+   * to its mana value" can't disagree. The resolution context is built on
+   * first use: almost no filter asks, and this is made for every source.
+   */
+  private filterAmounts(env: {
+    readonly source: ObjectId;
+    readonly controller: PlayerId;
+    readonly targets?: ResolvedTargets;
+    readonly x?: number;
+    readonly triggerValue?: number;
+    readonly triggerObject?: ObjectId;
+    readonly targetZones?: readonly (ZoneType | null)[];
+  }): (amount: EffectAmount) => number {
+    let ctx: ResolutionContext | undefined;
+    return (amount) => {
+      ctx ??= this.makeResolutionContext(
+        env.source,
+        env.controller,
+        env.targets ?? [],
+        env.x ?? 0,
+        env.triggerValue ?? 0,
+        env.triggerObject,
+        1,
+        0,
+        env.targetZones ?? [],
+      );
+      return amountValue(amount, ctx);
+    };
   }
 
   /** The `castModal` descriptor for a `cast-spell` `LegalAction` (ROADMAP
@@ -1388,7 +1432,10 @@ export class Game {
   /** The colour/type identity of a permanent (its computed values).
    * Delegates to `targeting.ts`, which owns {@link TargetSource}. */
   private permanentSource(id: ObjectId): TargetSource {
-    return permanentSource(this.state, this.registry, id);
+    const base = permanentSource(this.state, this.registry, id);
+    const object = this.state.objects[id];
+    if (object === undefined) return base;
+    return { ...base, amount: this.filterAmounts({ source: id, controller: object.controller }) };
   }
 
   // --- token stacking (engine resource safety, not a rule) ------------
@@ -7161,7 +7208,17 @@ export class Game {
         ability.targets,
         targets,
         object.controller,
-        this.permanentSource(source),
+        // Target filters re-read their dynamic operands now (rule 608.2b):
+        // the triggering object may have changed or left since.
+        this.abilityTargetSource({
+          sourceObjectId: source,
+          controller: object.controller,
+          targets,
+          x: object.xValue ?? 0,
+          triggerValue: object.triggerValue ?? 0,
+          ...(object.triggerObject !== undefined ? { triggerObject: object.triggerObject } : {}),
+          ...(object.targetZones !== undefined ? { targetZones: object.targetZones } : {}),
+        }),
         object.autoTargetSlots,
       )
     ) {
@@ -7909,6 +7966,13 @@ export class Game {
       matchesFilter(this.state, this.registry, subject, filter, {
         you: self.controller,
         ...(lastKnown ? { lastKnown } : {}),
+        // "Whenever a creature with greater power enters": the subject is
+        // the would-be trigger object, the source is this permanent.
+        amount: this.filterAmounts({
+          source: self.id,
+          controller: self.controller,
+          triggerObject: subject,
+        }),
       })
     );
   }
@@ -8038,9 +8102,7 @@ export class Game {
             ? this.effectiveTriggered(trigger.sourceObjectId)
             : def.triggered)[trigger.abilityIndex]);
 
-    const triggerSource = this.state.objects[trigger.sourceObjectId] !== undefined
-      ? this.permanentSource(trigger.sourceObjectId)
-      : undefined;
+    const triggerSource = this.abilityTargetSource(trigger);
     const abilityKind: "triggered" | "chapter" = trigger.chapter ? "chapter" : "triggered";
 
     // Resolve each slot: an event-determined `auto` target (a saboteur's
@@ -8125,6 +8187,43 @@ export class Game {
       options: chooserSlots.map((s) => [...s.options]),
     };
     return "paused";
+  }
+
+  /**
+   * The {@link TargetSource} an ability targets with: its source permanent's
+   * identity (none once it has left — rule 608.2b), plus what a target
+   * filter's `{ amount }` operand reads, which for a trigger includes the
+   * triggering object and value. Clement, the Worrywort's "with lesser mana
+   * value" needs the latter even when Clement itself is gone. Shared by
+   * placing a trigger, validating its `choose-targets` answer and the recheck
+   * of any ability's targets on resolution, so all three read the operand the
+   * same way.
+   */
+  private abilityTargetSource(trigger: {
+    readonly sourceObjectId: ObjectId;
+    readonly controller: PlayerId;
+    readonly triggerValue?: number;
+    readonly triggerObject?: ObjectId;
+    readonly targets?: ResolvedTargets;
+    readonly x?: number;
+    readonly targetZones?: readonly (ZoneType | null)[];
+  }): TargetSource {
+    const base: TargetSource =
+      this.state.objects[trigger.sourceObjectId] !== undefined
+        ? permanentSource(this.state, this.registry, trigger.sourceObjectId)
+        : { colors: [], types: [] };
+    return {
+      ...base,
+      amount: this.filterAmounts({
+        source: trigger.sourceObjectId,
+        controller: trigger.controller,
+        ...(trigger.targets !== undefined ? { targets: trigger.targets } : {}),
+        ...(trigger.x !== undefined ? { x: trigger.x } : {}),
+        ...(trigger.triggerValue !== undefined ? { triggerValue: trigger.triggerValue } : {}),
+        ...(trigger.triggerObject !== undefined ? { triggerObject: trigger.triggerObject } : {}),
+        ...(trigger.targetZones !== undefined ? { targetZones: trigger.targetZones } : {}),
+      }),
+    };
   }
 
   private mintTriggerAbility(
