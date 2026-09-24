@@ -762,6 +762,10 @@ const deckB = deck([
   ["Sonic the Hedgehog", 1],
   ["Kediss, Emberclaw Familiar", 1],
   ["Niv-Mizzet, Visionary", 1],
+  // "Whenever one or more cards leave your graveyard" — batched, once per
+  // simultaneous move.
+  ["Teval, the Balanced Scale", 1],
+  ["Insidious Roots", 1],
 ]);
 
 // A lean Dimir deck for Carol — carries the `Ayara, First of Locthwain`

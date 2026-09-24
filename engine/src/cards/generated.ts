@@ -434,6 +434,7 @@ import _poolImperialSeal from "./pool/imperial-seal.js";
 import _poolIndathaTriome from "./pool/indatha-triome.js";
 import _poolIndulgentTormentor from "./pool/indulgent-tormentor.js";
 import _poolInfernalGrasp from "./pool/infernal-grasp.js";
+import _poolInsidiousRoots from "./pool/insidious-roots.js";
 import _poolInspiredSphinx from "./pool/inspired-sphinx.js";
 import _poolInspiringCall from "./pool/inspiring-call.js";
 import _poolIntangibleVirtue from "./pool/intangible-virtue.js";
@@ -866,6 +867,7 @@ import _poolTerminate from "./pool/terminate.js";
 import _poolTerrainGenerator from "./pool/terrain-generator.js";
 import _poolTerramorphicExpanse from "./pool/terramorphic-expanse.js";
 import _poolTerrorOfThePeaks from "./pool/terror-of-the-peaks.js";
+import _poolTevalTheBalancedScale from "./pool/teval-the-balanced-scale.js";
 import _poolThaliaGuardianOfThraben from "./pool/thalia-guardian-of-thraben.js";
 import _poolThaliaHereticCathar from "./pool/thalia-heretic-cathar.js";
 import _poolThantisTheWarweaver from "./pool/thantis-the-warweaver.js";
@@ -1077,6 +1079,7 @@ import _tokensTreasureToken from "./tokens/treasure-token.js";
 import _tokensVampireToken11 from "./tokens/vampire-token-1-1.js";
 import _tokensVampireToken from "./tokens/vampire-token.js";
 import _tokensWhiteDogToken11 from "./tokens/white-dog-token-1-1.js";
+import _tokensZombieDruidToken from "./tokens/zombie-druid-token.js";
 import _tokensZombieKnightToken from "./tokens/zombie-knight-token.js";
 import _tokensZombieToken from "./tokens/zombie-token.js";
 
@@ -1513,6 +1516,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolIndathaTriome,
   _poolIndulgentTormentor,
   _poolInfernalGrasp,
+  _poolInsidiousRoots,
   _poolInspiredSphinx,
   _poolInspiringCall,
   _poolIntangibleVirtue,
@@ -1945,6 +1949,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTerrainGenerator,
   _poolTerramorphicExpanse,
   _poolTerrorOfThePeaks,
+  _poolTevalTheBalancedScale,
   _poolThaliaGuardianOfThraben,
   _poolThaliaHereticCathar,
   _poolThantisTheWarweaver,
@@ -2162,6 +2167,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensVampireToken11,
   _tokensVampireToken,
   _tokensWhiteDogToken11,
+  _tokensZombieDruidToken,
   _tokensZombieKnightToken,
   _tokensZombieToken,
 ];
