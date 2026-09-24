@@ -20,6 +20,7 @@ import { describe, expect, it } from "vitest";
 
 import { createDefaultRegistry, defineCard } from "../cards.js";
 import type { CardRegistry } from "../cards.js";
+import { canPairCommanders } from "../deck-validation.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId } from "../primitives.js";
@@ -232,6 +233,16 @@ describe("rule 107.3m — an ETB ability uses the X its permanent was cast with"
 });
 
 describe("Gilanra, Caller of Wirewood", () => {
+  it("is the printed 1/2 Elf Druid with Partner", () => {
+    const reg = createDefaultRegistry();
+    const def = reg.get("Gilanra, Caller of Wirewood");
+    expect([def.manaCost, def.power, def.toughness]).toEqual(["{2}{G}", 1, 2]);
+    expect(def.subtypes).toEqual(["Elf", "Druid"]);
+    // Partner is declarative, not read off the text: without `pairing` the
+    // deck validator refused every pair.
+    expect(canPairCommanders(reg, "Gilanra, Caller of Wirewood", "Kraum, Ludevic's Opus")).toBe(true);
+  });
+
   /** Gilanra on the battlefield and able to tap, plus `forests` Forests. */
   const withGilanra = (aCards: readonly string[], forests: number): { game: Game; gilanra: ObjectId } => {
     const game = withLands(aCards, forests);

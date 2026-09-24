@@ -934,6 +934,8 @@ const deckE = deck([
   ["Kydele, Chosen of Kruphix", 1],
   ["Cosmic Spider-Man", 1],
   ["Finneas, Ace Archer", 1],
+  // A mana rider that reads a spell's mana value (X included on the stack).
+  ["Gilanra, Caller of Wirewood", 1],
   ["Plains", 5],
   ["Island", 5],
   ["Swamp", 5],

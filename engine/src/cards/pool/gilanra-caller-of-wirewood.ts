@@ -11,8 +11,9 @@ export default defineCard({
   supertypes: ["legendary"],
   types: ["creature"],
   subtypes: ["Elf", "Druid"],
-  power: 2,
-  toughness: 3,
+  power: 1,
+  toughness: 2,
+  pairing: { kind: "partner" },
   text: `${MANA_TEXT}\nPartner (You can have two commanders if both have partner.)`,
   activated: [
     {
