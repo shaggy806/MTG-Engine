@@ -365,7 +365,9 @@ export type StaticCondition =
    *
    * Only meaningful inside a `conditional` effect of a triggered ability,
    * where `ResolutionContext.triggerObject` is set; a *static* ability has no
-   * triggering object and this is always false there.
+   * triggering object and this is always false there. A triggering
+   * permanent that has left the battlefield since is matched as it last
+   * existed there (rule 608.2h — "if it was a Saproling").
    */
   | { readonly kind: "trigger-object"; readonly filter: CardFilter }
   /**
@@ -375,11 +377,20 @@ export type StaticCondition =
    *
    * Like `trigger-object`, only meaningful inside a `conditional` effect,
    * where the resolution context knows the chosen targets; always false on a
-   * static ability. The filter is matched against the card wherever it now
-   * is, which for the "if it *was*" wording means after the exile — printed
-   * characteristics still answer correctly (608.2h).
+   * static ability. A target that was a permanent and has left the
+   * battlefield since is matched as it last existed there (rule 608.2h); any
+   * other target — a card targeted in a graveyard — as it is now.
    */
   | { readonly kind: "target"; readonly index: number; readonly filter: CardFilter }
+  /**
+   * The permanent sacrificed to pay the spell's or ability's cost (or by a
+   * `sacrifice-source` step before this one) matched `filter` as it last
+   * existed on the battlefield — "if the sacrificed creature was a
+   * commander", "if it was a Hamster". False when nothing was sacrificed.
+   * Like `target`, only meaningful inside a `conditional` effect; always
+   * false on a static ability.
+   */
+  | { readonly kind: "sacrificed"; readonly filter: CardFilter }
   /**
    * "If this is the **Nth time this ability has resolved this turn**" (Omnath,
    * Locus of Creation; Ms. Bumbleflower; Tannuk). `n` counts the resolution
@@ -394,9 +405,10 @@ export type StaticCondition =
   | { readonly kind: "resolved-this-turn"; readonly n: number }
   /**
    * The ability's own source matches `filter` — "as long as ~ is equipped",
-   * "if ~ is attacking", "if ~ is tapped". Evaluated wherever the source is,
-   * so an intervening-if asked after it left the battlefield sees it off the
-   * battlefield (not equipped, not attacking).
+   * "if ~ is attacking", "if ~ is tapped". A triggered ability whose source
+   * was a permanent that has since left (its own dies trigger) reads it as it
+   * last existed on the battlefield (rule 603.10a); anything else, wherever
+   * the source now is.
    */
   | { readonly kind: "source"; readonly filter: CardFilter }
   /**

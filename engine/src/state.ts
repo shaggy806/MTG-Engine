@@ -8,7 +8,7 @@
 
 import type { CastVia } from "./actions.js";
 import type { TriggeredAbility } from "./abilities.js";
-import type { CardType, Keyword, StaticAbility, StaticCondition } from "./cards.js";
+import type { CardType, Keyword, StaticAbility, StaticCondition, Supertype } from "./cards.js";
 import type { EffectSpec, FlickerCounters } from "./effects.js";
 import type { CardFilter } from "./filter.js";
 import type { Color, ManaUnit } from "./mana.js";
@@ -50,14 +50,6 @@ export interface GameObject {
    * rider is an ETB trigger (Verix Bladewing). See `moveObject`.
    */
   enteredKicked?: boolean;
-  /**
-   * Was this permanent attacking when it left the battlefield? — the
-   * last-known-information counterpart of `attacking`, for a dies-trigger
-   * filtered on it (Kardur, Doomscourge's "whenever an attacking creature
-   * dies"). `moveObject` clears `attacking` before any such trigger is
-   * matched. See `lastKnownCounters`, which exists for the same reason.
-   */
-  wasAttacking?: boolean;
   /**
    * This card is in exile because of an "exile until ~ leaves the
    * battlefield" ability, and this is the id of the permanent that did it
@@ -145,32 +137,24 @@ export interface GameObject {
   /** This creature must attack this specific player if able — Encore's
    * "create a token copy that attacks that opponent this turn if able". */
   mustAttackPlayer?: PlayerId;
-  /** The counters this object had the last time it was on the battlefield,
-   * snapshotted by `moveObject` before it clears them. Last-known information
-   * (rule 603.10) for a question that can only be asked after the permanent
-   * has left — Undying's "if it had no +1/+1 counters on it". */
-  lastKnownCounters?: Record<string, number>;
   /**
-   * Who controlled this permanent as it left the battlefield — last-known
-   * information (rule 603.10a) for a leaves-the-battlefield trigger, which
-   * has to be matched after `moveObject` has already handed the card back to
-   * its owner (rule 110.2). "Whenever a creature **you control** dies" asks
-   * about the thief's creature, not the owner's, and the ability of a stolen
-   * Blood Artist that dies is the thief's.
+   * This object as it last existed on the battlefield — last-known
+   * information (rules 603.10a, 608.2h). See {@link LastKnownInfo}.
    *
-   * Set by the move that took it off the battlefield and cleared by every
-   * other move, so it is only ever present on an object whose last move was
-   * that one.
+   * Taken by the move that takes it off the battlefield, before that move
+   * resets control, counters, modifiers and any copy effect, and **kept**
+   * through later moves until the next departure from the battlefield
+   * replaces it: a dies trigger still reads its creature's power after the
+   * card has been exiled from the graveyard in response. Nothing reads it
+   * without saying which departure it means — see {@link LastKnownRefs}.
    */
-  lastKnownController?: PlayerId;
+  lastKnown?: LastKnownInfo;
   /**
-   * This permanent's mana value as it left the battlefield — last-known
-   * information (rule 608.2h) for an ability that reads it afterwards, taken
-   * before the move ends any copy effect (rule 707.2): a Clone that entered
-   * as a Craw Wurm and died was mana value 6. Set and cleared exactly like
-   * {@link lastKnownController}.
+   * For a spell or ability object: which battlefield stint of the objects it
+   * refers to it means, for last-known information. See
+   * {@link LastKnownRefs}.
    */
-  lastKnownManaValue?: number;
+  lastKnownRefs?: LastKnownRefs;
   /**
    * "Impulse draw" — this card is exiled face-up and its owner may play it.
    * `until` is the turn number the permission lapses on (an "until end of
@@ -549,6 +533,88 @@ export type GrantedAbilityRef =
     }
   | { readonly kind: "modifier"; readonly ability: TriggeredAbility };
 
+/**
+ * A permanent as it last existed on the battlefield (rules 603.10a, 608.2h):
+ * its *computed* characteristics — layers, counters, anthems and copy effects
+ * folded in — and the per-permanent state a leaves-the-battlefield trigger or
+ * a resolving ability may ask about once it has gone.
+ *
+ * Plain data, taken by `moveObject` as the permanent leaves (`GameObject
+ * .lastKnown`). The permanents of one simultaneous event (a wrath, a sweep of
+ * state-based actions) are all snapshotted before the first of them moves, so
+ * a creature and the lord it dies beside each keep the other's bonus. A token
+ * that ceases to exist keeps its snapshot in `GameState.ceasedTokens` for the
+ * rest of the turn.
+ */
+export interface LastKnownInfo {
+  /** The permanent's `zoneChangeCount` while it was on the battlefield — which
+   * of its stints there this describes. A reference to the permanent names
+   * the stint it means the same way (see {@link LastKnownRefs}), so a card
+   * that has since come back and left again isn't read through the wrong
+   * snapshot. */
+  readonly zoneChangeCount: number;
+  /** The name its characteristics came from (`printedCardName`): the card it
+   * was a copy of, or the face that was up. Its abilities are read off this. */
+  readonly name: string;
+  readonly owner: PlayerId;
+  readonly controller: PlayerId;
+  readonly power: number;
+  readonly toughness: number;
+  readonly types: readonly CardType[];
+  readonly subtypes: readonly string[];
+  readonly supertypes: readonly Supertype[];
+  readonly colors: readonly Color[];
+  readonly keywords: readonly Keyword[];
+  readonly counters: Readonly<Record<string, number>>;
+  /** Printed mana value of what it was (a copy effect's, a transformed card's
+   * front face's); `{X}` is 0 off the stack (rule 202.3e). */
+  readonly manaValue: number;
+  /** The mana spent to cast it, if it was cast (`GameObject.manaSpent`). */
+  readonly manaSpent?: number;
+  readonly isToken: boolean;
+  readonly isCommander: boolean;
+  readonly tapped: boolean;
+  readonly attacking: boolean;
+  readonly blocking: boolean;
+  readonly equipped: boolean;
+  readonly enchanted: boolean;
+  /** Enchanted by an Aura its own controller controlled — rule 700.9's
+   * "modified". */
+  readonly enchantedByController: boolean;
+  /** It had lost all its abilities (layer 6 — Turn to Frog), so none of its
+   * own leaves-the-battlefield abilities trigger. */
+  readonly lostAbilities: boolean;
+  /** The triggered abilities it had been *granted* — by another permanent's
+   * static or a one-shot modifier — in the order `effectiveTriggered` lists
+   * them after its printed ones. A granted dies trigger fires even when its
+   * grantor is gone by the time the death is matched. Absent when none. */
+  readonly grantedTriggers?: readonly GrantedAbilityRef[];
+}
+
+/**
+ * Which battlefield stint of the objects a spell or ability refers to it
+ * means, for last-known information (rule 608.2h). Each is the referred
+ * object's `zoneChangeCount` while it was on the battlefield: recorded when
+ * the ability triggered or was activated (the source and the triggering
+ * object), or when the permanent was sacrificed. A reference that names a
+ * stint reads that stint's {@link LastKnownInfo} once the permanent has left
+ * — and nothing, rather than a later stint's, once it has come back and left
+ * again. A missing entry means the object wasn't a permanent when referred
+ * to (a spell, a card in a hand, graveyard or the command zone), and it is
+ * read as it is now.
+ *
+ * Targets need no entry: `GameObject.targetZones` already says which were
+ * permanents.
+ */
+export interface LastKnownRefs {
+  readonly source?: number;
+  readonly triggerObject?: number;
+  /** "The sacrificed creature": the permanent sacrificed to pay the spell's
+   * or ability's cost (Dina, Soul Steeper), or by a `sacrifice-source` step
+   * before the effect reading it. */
+  readonly sacrificed?: { readonly object: ObjectId; readonly zoneChangeCount: number };
+}
+
 /** A triggered ability waiting to be put on the stack (rule 603.3). */
 export interface PendingTrigger {
   readonly sourceObjectId: ObjectId;
@@ -584,6 +650,9 @@ export interface PendingTrigger {
   readonly chapter?: boolean;
   /** Set when the ability was granted — see {@link GrantedAbilityRef}. */
   readonly grantedAbility?: GrantedAbilityRef;
+  /** Which battlefield stint of its source and triggering object the ability
+   * refers to, recorded as it triggers — see {@link LastKnownRefs}. */
+  readonly lastKnownRefs?: LastKnownRefs;
   /**
    * A whole ability record rather than an index into a card's `triggered`
    * list — a mana-spend rider (Path of Ancestry), which is an ability of no
@@ -996,6 +1065,12 @@ export type AwaitingDecision =
        */
       readonly triggerValue?: number;
       readonly triggerObject?: ObjectId;
+      /** The resolving spell's or ability's last-known references and where
+       * its targets were, forwarded the same way, so a mode still reads a
+       * source or target that has left the battlefield as it last existed
+       * there. See {@link LastKnownRefs}. */
+      readonly lastKnownRefs?: LastKnownRefs;
+      readonly targetZones?: readonly (ZoneType | null)[];
       /** A `may` effect's `else` — applied instead when zero modes are
        * chosen. `undefined` for an ordinary `modal` effect (declining a
        * modal spell/ability entirely isn't a legal answer, so it never
@@ -1212,14 +1287,14 @@ export interface GameState {
    */
   revealedThisTurn: ObjectId[];
   /**
-   * The {@link GameObject.lastKnownManaValue} of each token that ceased to
-   * exist this turn (rule 111.7), keyed by its old id: the object is deleted,
-   * but an ability on the stack may still ask its mana value by last-known
-   * information — Clement, the Worrywort's "lesser mana value" after a token
-   * copy that entered was killed in response. Cleared as the next turn
-   * begins; absent when no such token has been deleted.
+   * The {@link GameObject.lastKnown} of each token that ceased to exist this
+   * turn (rule 111.7), keyed by its old id: the object is deleted, but an
+   * ability on the stack may still read it by last-known information —
+   * Clement, the Worrywort's "lesser mana value" after a token copy that
+   * entered was killed in response, a Saproling's dies trigger. Cleared as
+   * the next turn begins; absent when no such token has been deleted.
    */
-  ceasedTokenManaValues?: Record<ObjectId, number>;
+  ceasedTokens?: Record<ObjectId, LastKnownInfo>;
   /**
    * How many times each ability has resolved this turn, for "if this is the
    * Nth time this ability has resolved this turn" (`StaticCondition`
@@ -1288,6 +1363,8 @@ export interface GameState {
     readonly x?: number;
     /** See {@link PendingTrigger.grantedAbility}. */
     readonly grantedAbility?: GrantedAbilityRef;
+    /** See {@link PendingTrigger.lastKnownRefs}. */
+    readonly lastKnownRefs?: LastKnownRefs;
   } | null;
   /**
    * A suspended spell coming off suspend, parked while its controller chooses

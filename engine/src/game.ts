@@ -112,7 +112,13 @@ import type {
   ReturnToHandZone,
   ZoneChoiceFilter,
 } from "./effects.js";
-import { aggregateOver, matchesFilter, printedManaCost, weightedMatches } from "./filter.js";
+import {
+  aggregateOver,
+  attachmentsOf,
+  matchesFilter,
+  printedManaCost,
+  weightedMatches,
+} from "./filter.js";
 import type { AggregateSpec, CardFilter } from "./filter.js";
 import type {
   EventOfType,
@@ -159,15 +165,17 @@ import {
 } from "./state.js";
 import type {
   AwaitingDecision,
+  CombatDamageState,
   CommanderMoveOrigin,
   CommanderReplacementZone,
   DelayedTrigger,
   DelayedTriggerTiming,
-  CombatDamageState,
   GameObject,
   GameRules,
-  GrantedAbilityRef,
   GameState,
+  GrantedAbilityRef,
+  LastKnownInfo,
+  LastKnownRefs,
   MulliganHandState,
   PendingTrigger,
   PreventionShield,
@@ -391,7 +399,13 @@ export class Game {
    * move first. See {@link withLeaveBatch}. Not game state: it only ever
    * spans one synchronous call; a deferred commander carries the list on its
    * own pending move (`leftWith`). */
-  private leaveBatch: { readonly left: ObjectId[]; readonly deferred: ObjectId[] } | null = null;
+  private leaveBatch: {
+    readonly left: ObjectId[];
+    readonly deferred: ObjectId[];
+    /** The event's victims as they were before any of them moved — see
+     * {@link snapshotLeaving}. */
+    readonly snapshots: Map<ObjectId, LastKnownInfo>;
+  } | null = null;
 
   private constructor(
     state: GameState,
@@ -1144,6 +1158,7 @@ export class Game {
     readonly triggerValue?: number;
     readonly triggerObject?: ObjectId;
     readonly targetZones?: readonly (ZoneType | null)[];
+    readonly lastKnownRefs?: LastKnownRefs;
   }): (amount: EffectAmount) => number {
     let ctx: ResolutionContext | undefined;
     return (amount) => {
@@ -1157,6 +1172,7 @@ export class Game {
         1,
         0,
         env.targetZones ?? [],
+        env.lastKnownRefs,
       );
       return amountValue(amount, ctx);
     };
@@ -2419,6 +2435,10 @@ export class Game {
     /** Whose effect `onDecline` is, if not the chooser's — see the
      * `choose-modes` decision's `declineController`. */
     declineController?: PlayerId,
+    /** The resolving spell's or ability's last-known references and target
+     * zones, carried to the modes — see `choose-modes`' `lastKnownRefs`. */
+    lastKnownRefs?: LastKnownRefs,
+    targetZones?: readonly (ZoneType | null)[],
   ): void {
     // "You may pay {B}" — an unpayable cost isn't a choice at all, so skip
     // straight to the decline branch rather than offering something the
@@ -2441,6 +2461,10 @@ export class Game {
             x,
             triggerValue,
             triggerObject,
+            1,
+            0,
+            targetZones ?? [],
+            lastKnownRefs,
           ),
         );
       }
@@ -2457,6 +2481,10 @@ export class Game {
       targets,
       ...(triggerValue !== 0 ? { triggerValue } : {}),
       ...(triggerObject !== undefined ? { triggerObject } : {}),
+      ...(lastKnownRefs !== undefined && Object.keys(lastKnownRefs).length > 0
+        ? { lastKnownRefs }
+        : {}),
+      ...(targetZones !== undefined && targetZones.length > 0 ? { targetZones } : {}),
       ...(onDecline !== undefined ? { onDecline } : {}),
       ...(declineController !== undefined && declineController !== controller
         ? { declineController }
@@ -2480,6 +2508,8 @@ export class Game {
     }
 
     const { source, modes, x, onDecline, targets, cost, triggerValue, triggerObject } = awaiting;
+    const lastKnownRefs = awaiting.lastKnownRefs;
+    const targetZones = awaiting.targetZones ?? [];
     this.state.awaiting = null;
 
     // Pay for the choice before applying it. The cost was checked as
@@ -2513,6 +2543,10 @@ export class Game {
       chosenX > 0 ? chosenX : x,
       triggerValue ?? 0,
       triggerObject,
+      1,
+      0,
+      targetZones,
+      lastKnownRefs,
     );
     for (const i of ordered) applyEffectSpec(modes[i].effect, context);
     if (ordered.length === 0 && onDecline !== undefined) {
@@ -2528,6 +2562,10 @@ export class Game {
               chosenX > 0 ? chosenX : x,
               triggerValue ?? 0,
               triggerObject,
+              1,
+              0,
+              targetZones,
+              lastKnownRefs,
             ),
       );
     }
@@ -2578,6 +2616,7 @@ export class Game {
         trig.grantedAbility,
         autoSlotsOf(trig.slots),
         trig.x,
+        trig.lastKnownRefs,
       );
     } else if (cast !== null) {
       this.state.pendingTargetedCast = null;
@@ -2776,7 +2815,7 @@ export class Game {
     // it; past the turn it stops being rendered rather than lingering as a
     // permanent window into a hand.
     this.state.revealedThisTurn = [];
-    delete this.state.ceasedTokenManaValues;
+    delete this.state.ceasedTokens;
     this.state.abilityResolutionsThisTurn = {};
     this.state.preventionShields = [];
     this.state.extraCombats = 0;
@@ -5556,8 +5595,11 @@ export class Game {
     if (sacrificeVictim !== undefined && this.state.objects[sacrificeVictim] !== undefined) {
       const victim = this.splitOneFromStack(sacrificeVictim);
       const owner = this.state.objects[victim].owner;
+      const stint = this.state.objects[victim].zoneChangeCount ?? 0;
       this.moveObject(victim, "graveyard");
       this.emit({ type: "permanent-sacrificed", object: victim, player: owner });
+      // What the spell's "the sacrificed creature" reads (rule 608.2h).
+      object.lastKnownRefs = { sacrificed: { object: victim, zoneChangeCount: stint } };
     }
     // The costs are paid, so a target in a token stack can be peeled off it
     // (`lockInTargets`) without taking a token a cost above had named.
@@ -6095,6 +6137,13 @@ export class Game {
     // Captured now: a cost below (sacrificing the creature an Aura grants
     // this to) can end the grant before the ability is on the stack.
     const grantedAbility = this.activatedRefFor(sourceId, abilityIndex);
+    // Likewise which permanent the source is, before a "Sacrifice ~" cost
+    // takes it away: "it" in the effect is that permanent as it last existed
+    // (rule 608.2h). A hand, graveyard or command-zone source is no
+    // permanent, and is read wherever it is.
+    const sourceStint =
+      source.zone === "battlefield" ? (source.zoneChangeCount ?? 0) : undefined;
+    let sacrificedRef: LastKnownRefs["sacrificed"];
 
     const badTarget = this.whyTargetsInvalid(
       ability.targets,
@@ -6226,8 +6275,11 @@ export class Game {
       // first (a "self" cost's source is never a stack: only ability-less
       // tokens are ever stackable).
       const victim = this.splitOneFromStack(sacrificeVictim);
+      const stint = this.state.objects[victim].zoneChangeCount ?? 0;
       this.moveObject(victim, "graveyard");
       this.emit({ type: "permanent-sacrificed", object: victim, player });
+      // "The sacrificed creature", as it last existed (Dina, Soul Steeper).
+      sacrificedRef = { object: victim, zoneChangeCount: stint };
     }
 
     if (ability.zone === "hand") {
@@ -6316,6 +6368,12 @@ export class Game {
     );
     if (chosenX > 0) this.state.objects[abilityId].xValue = chosenX;
     if (grantedAbility !== undefined) this.state.objects[abilityId].grantedAbility = grantedAbility;
+    if (sourceStint !== undefined || sacrificedRef !== undefined) {
+      this.state.objects[abilityId].lastKnownRefs = {
+        ...(sourceStint !== undefined ? { source: sourceStint } : {}),
+        ...(sacrificedRef !== undefined ? { sacrificed: sacrificedRef } : {}),
+      };
+    }
     if (ability.zone === "command" || ability.staysInZone === true) {
       // The source is still sitting in that zone — remember which object it
       // is, so a round trip before this resolves reads as a new one (rule
@@ -7225,6 +7283,7 @@ export class Game {
               1,
               0,
               zoneSlice,
+              object.lastKnownRefs,
             ),
           );
           anyApplied = true;
@@ -7243,6 +7302,7 @@ export class Game {
           1,
           0,
           object.targetZones,
+          object.lastKnownRefs,
         );
         // Overload (rule 702.126) and kicker (rule 702.33) each replace the
         // ordinary effect "instead" when chosen; overload takes priority since
@@ -7355,6 +7415,23 @@ export class Game {
     return [...colors];
   }
 
+  /**
+   * The triggered abilities `sourceId` has as the ability referring to it
+   * knows it (`stint`, see {@link LastKnownRefs}): once the permanent it was
+   * then has left the battlefield, the ones its snapshot recorded — a
+   * Clone's copied ones, a granted one — else whatever it has now.
+   * `undefined` when the object no longer exists and left nothing behind.
+   */
+  private triggeredOfSource(
+    sourceId: ObjectId,
+    stint: number | undefined,
+  ): readonly TriggeredAbility[] | undefined {
+    const departed = stint === undefined ? undefined : this.lastKnownOfStint(sourceId, stint);
+    if (departed !== undefined) return this.departedTriggeredEntries(departed).map((e) => e.ability);
+    if (this.state.objects[sourceId] === undefined) return undefined;
+    return this.effectiveTriggered(sourceId);
+  }
+
   private stackAbilityOf(object: GameObject): StackAbility {
     // A delayed triggered ability isn't an ability of any card, so there is
     // nothing to look up by index — it carries its own effect (rule 603.7).
@@ -7371,10 +7448,11 @@ export class Game {
     const def = this.registry.get(printedCardName(object));
     const index = object.abilityIndex ?? 0;
     if (object.abilityKind === "triggered") {
-      // The source may still be around with a granted ability at this index.
+      // The source may still be around with a granted ability at this index —
+      // or have left with it, when its snapshot still knows (603.10a).
       const src = object.sourceObjectId;
-      if (src !== null && this.state.objects[src] !== undefined) {
-        const eff = this.effectiveTriggered(src)[index];
+      if (src !== null) {
+        const eff = this.triggeredOfSource(src, object.lastKnownRefs?.source)?.[index];
         if (eff !== undefined) return eff;
       }
       return def.triggered[index];
@@ -7399,10 +7477,15 @@ export class Game {
 
     // Intervening-if, second check (rule 603.4): a triggered ability whose
     // condition is no longer true is removed from the stack and does nothing.
+    // A source that has left since is asked about as it last existed on the
+    // battlefield (Undying's "if it had no +1/+1 counters on it").
     if (object.abilityKind === "triggered") {
       const condition = (ability as TriggeredAbility).condition;
       const sourceObject = this.state.objects[source] ?? object;
-      if (!this.interveningIfMet(condition, sourceObject, object.sourceTimestamp)) {
+      const stint = object.lastKnownRefs?.source;
+      const sourceLastKnown =
+        stint === undefined ? undefined : this.lastKnownOfStint(source, stint);
+      if (!this.interveningIfMet(condition, sourceObject, object.sourceTimestamp, sourceLastKnown)) {
         this.removeAbilityFromStack(id);
         this.emit({
           type: "spell-fizzled",
@@ -7429,6 +7512,7 @@ export class Game {
           triggerValue: object.triggerValue ?? 0,
           ...(object.triggerObject !== undefined ? { triggerObject: object.triggerObject } : {}),
           ...(object.targetZones !== undefined ? { targetZones: object.targetZones } : {}),
+          ...(object.lastKnownRefs !== undefined ? { lastKnownRefs: object.lastKnownRefs } : {}),
         }),
         object.autoTargetSlots,
       )
@@ -7465,6 +7549,7 @@ export class Game {
       object.stackMultiplier ?? 1,
       this.recordAbilityResolution(object),
       object.targetZones,
+      object.lastKnownRefs,
     );
     // An ability activated from a zone its source stayed in (Derevi from the
     // command zone): if the card has changed zones since, it's a new object
@@ -7583,18 +7668,23 @@ export class Game {
     for (const id of candidates) {
       const live = this.state.objects[id];
       if (live === undefined) continue;
-      if (hasLostAbilities(live)) continue; // layer 6 — no triggered abilities
       // A source that has just left the battlefield is read as it last
-      // existed there: its ability is controlled by whoever controlled it
-      // then, not by the owner `moveObject` has since reverted it to (rules
-      // 603.3a, 603.10a) — a stolen Blood Artist's drain is the thief's.
+      // existed there (rules 603.3a, 603.10a), from the snapshot the move
+      // took. Its abilities are the ones it had then: none if it had lost
+      // them (Turn to Frog), a copied card's rather than the Clone's own,
+      // and a dies trigger an Aura or a lord granted it even though the
+      // grant is gone. And its ability is controlled by whoever controlled
+      // it then, not by the owner `moveObject` has since reverted it to — a
+      // stolen Blood Artist's drain is the thief's.
+      const lastSeen =
+        leaving && (id === subject || lookBack.has(id)) && live.zone !== "battlefield"
+          ? live.lastKnown
+          : undefined;
+      // Layer 6 — a permanent that lost its abilities has no triggered ones.
+      if (lastSeen !== undefined ? lastSeen.lostAbilities : hasLostAbilities(live)) continue;
       const object =
-        leaving &&
-        (id === subject || lookBack.has(id)) &&
-        live.zone !== "battlefield" &&
-        live.lastKnownController !== undefined &&
-        live.lastKnownController !== live.controller
-          ? { ...live, controller: live.lastKnownController }
+        lastSeen !== undefined && lastSeen.controller !== live.controller
+          ? { ...live, controller: lastSeen.controller }
           : live;
       // A command-zone source contributes *only* its `fromCommandZone`
       // abilities — Edgar Markov's attack trigger must not fire from there.
@@ -7611,14 +7701,17 @@ export class Game {
       // not to keep playing: their triggers stop firing. They leave play rather
       // than view — see the note in `matchesFilter`.
       if (this.state.players[object.controller]?.hasLost === true) continue;
-      const entries = this.effectiveTriggeredEntries(id, triggerGrantors);
+      const entries =
+        lastSeen !== undefined
+          ? this.departedTriggeredEntries(lastSeen)
+          : this.effectiveTriggeredEntries(id, triggerGrantors);
       entries.forEach(({ ability, ref }, index) => {
         if (onlyEminence && ability.fromCommandZone !== true) return;
         if (onlyThisCast && ability.trigger.on !== "this-cast") return;
         if (onlyLookBack && !LOOK_BACK_TRIGGERS.has(ability.trigger.on)) return;
         if (
           this.triggerMatches(ability.trigger, event, object) &&
-          this.interveningIfMet(ability.condition, object) &&
+          this.interveningIfMet(ability.condition, object, undefined, lastSeen) &&
           // Elesh Norn, Mother of Machines / Torpor Orb: an entering
           // permanent causes none of this controller's triggers.
           !(
@@ -7724,9 +7817,13 @@ export class Game {
             event.object === id
               ? (object.xValue ?? undefined)
               : undefined;
+          // Which stint on the battlefield the source and the triggering
+          // object were in — what the ability means by "it" and "that
+          // creature" if either has left by the time it resolves (608.2h).
+          const lastKnownRefs = this.refsAtTrigger(live, lastSeen, event, triggerObject);
           const base = {
             sourceObjectId: id,
-            cardName: printedCardName(object),
+            cardName: lastSeen !== undefined ? lastSeen.name : printedCardName(object),
             abilityIndex: index,
             controller: object.controller,
             ...(autoTargets ? { autoTargets } : {}),
@@ -7734,6 +7831,7 @@ export class Game {
             ...(triggerObject !== undefined ? { triggerObject } : {}),
             ...(castX !== undefined ? { x: castX } : {}),
             ...(ref !== undefined ? { grantedAbility: ref } : {}),
+            ...(lastKnownRefs !== undefined ? { lastKnownRefs } : {}),
           };
           // A stacked source's ability really fires once per creature it
           // stands for (rule 603.3d); likewise a compacted batch-entry event
@@ -7823,6 +7921,101 @@ export class Game {
   }
 
   /**
+   * The triggered abilities a permanent that has just left the battlefield
+   * had there, from its snapshot (rule 603.10a): its printed ones — those of
+   * the card it was a copy of, if it was one — then the ones it had been
+   * granted, in {@link effectiveTriggeredEntries}' order, so an index taken
+   * here names the same ability when the trigger is placed and resolved.
+   */
+  private departedTriggeredEntries(
+    departed: LastKnownInfo,
+  ): readonly { readonly ability: TriggeredAbility; readonly ref?: GrantedAbilityRef }[] {
+    if (departed.lostAbilities) return EMPTY_TRIGGERED_ENTRIES;
+    const printed = this.registry.get(departed.name).triggered.map((ability) => ({ ability }));
+    const refs = departed.grantedTriggers ?? [];
+    if (refs.length === 0) return printed;
+    const granted: { ability: TriggeredAbility; ref: GrantedAbilityRef }[] = [];
+    for (const ref of refs) {
+      const ability = this.abilityFromRef(ref) as TriggeredAbility | undefined;
+      if (ability !== undefined) granted.push({ ability, ref });
+    }
+    return [...printed, ...granted];
+  }
+
+  /**
+   * What an ability that has just triggered refers to, for last-known
+   * information (see {@link LastKnownRefs}): the battlefield stint its source
+   * was in — or had just ended, for its own leaves-the-battlefield ability —
+   * and the same for the triggering object. `undefined` when neither was a
+   * permanent.
+   */
+  private refsAtTrigger(
+    source: GameObject,
+    departed: LastKnownInfo | undefined,
+    event: GameEvent,
+    triggerObject: ObjectId | undefined,
+  ): LastKnownRefs | undefined {
+    const sourceStint =
+      departed !== undefined
+        ? departed.zoneChangeCount
+        : source.zone === "battlefield"
+          ? (source.zoneChangeCount ?? 0)
+          : undefined;
+    let triggerStint: number | undefined;
+    if (triggerObject !== undefined) {
+      const t = this.state.objects[triggerObject];
+      if (t?.zone === "battlefield") {
+        triggerStint = t.zoneChangeCount ?? 0;
+      } else if (
+        t?.lastKnown !== undefined &&
+        isLeaveEvent(event) &&
+        event.object === triggerObject
+      ) {
+        // The permanent whose leaving fired this, just snapshotted.
+        triggerStint = t.lastKnown.zoneChangeCount;
+      }
+    }
+    if (sourceStint === undefined && triggerStint === undefined) return undefined;
+    return {
+      ...(sourceStint !== undefined ? { source: sourceStint } : {}),
+      ...(triggerStint !== undefined ? { triggerObject: triggerStint } : {}),
+    };
+  }
+
+  /**
+   * `id` as it last existed on the battlefield during stint `stint` (its
+   * `zoneChangeCount` there) — rule 608.2h's last-known information — or
+   * `undefined` to read it as it is now: it is still on the battlefield in
+   * that stint, or nothing of that stint survives (it came back and left
+   * again since, and its snapshot is of the later departure). A token that
+   * has ceased to exist is read from `GameState.ceasedTokens`.
+   */
+  private lastKnownOfStint(id: ObjectId, stint: number): LastKnownInfo | undefined {
+    const object = this.state.objects[id];
+    if (object?.zone === "battlefield" && (object.zoneChangeCount ?? 0) === stint) {
+      return undefined;
+    }
+    const lki = object !== undefined ? object.lastKnown : this.state.ceasedTokens?.[id];
+    return lki?.zoneChangeCount === stint ? lki : undefined;
+  }
+
+  /**
+   * The last-known information a *target* is read by (rule 608.2h): the
+   * permanent it was when targeted (`expectedZone`, from `targetZones`) has
+   * left the battlefield since, and its latest snapshot is of that
+   * departure. A card targeted anywhere else is read as it is now.
+   */
+  private lastKnownOfTarget(
+    id: ObjectId,
+    expectedZone: ZoneType | null,
+  ): LastKnownInfo | undefined {
+    if (expectedZone !== "battlefield") return undefined;
+    const object = this.state.objects[id];
+    if (object === undefined) return this.state.ceasedTokens?.[id];
+    return object.zone === "battlefield" ? undefined : object.lastKnown;
+  }
+
+  /**
    * The permanents a leaves-the-battlefield event should also be shown to
    * because they left *with* the one it announces (rule 603.10a): everything
    * already moved out of the current {@link leaveBatch}, which the
@@ -7873,6 +8066,7 @@ export class Game {
         return object !== undefined && object.zone !== "battlefield";
       }),
       deferred: [] as ObjectId[],
+      snapshots: new Map<ObjectId, LastKnownInfo>(),
     };
     this.leaveBatch = batch;
     try {
@@ -8156,11 +8350,15 @@ export class Game {
     condition: StaticCondition | undefined,
     source: GameObject,
     sourceTimestamp?: number,
+    /** The source as it last existed on the battlefield, when the ability
+     * is about a permanent that has left (its own dies trigger). */
+    sourceLastKnown?: LastKnownInfo,
   ): boolean {
     if (condition === undefined) return true;
     return staticConditionMet(this.state, this.registry, source, condition, {
       includeSelf: true,
       ...(sourceTimestamp !== undefined ? { sourceTimestamp } : {}),
+      ...(sourceLastKnown !== undefined ? { sourceLastKnown } : {}),
     });
   }
 
@@ -8224,7 +8422,7 @@ export class Game {
         if (object === undefined) return false;
         const controller =
           lastKnown && object.zone !== "battlefield"
-            ? (object.lastKnownController ?? object.controller)
+            ? (object.lastKnown?.controller ?? object.controller)
             : object.controller;
         return controller === self.controller;
       }
@@ -8281,6 +8479,7 @@ export class Game {
     readonly grantedAbility?: GrantedAbilityRef;
     readonly x?: number;
     readonly delayed?: DelayedTrigger;
+    readonly lastKnownRefs?: LastKnownRefs;
   }): "done" | "paused" {
     // A self-contained ability record (a mana-spend rider) has no card
     // ability to look up — mint it carrying its own record, exactly as
@@ -8311,9 +8510,8 @@ export class Game {
       granted ??
       (trigger.chapter
         ? (def.chapters ?? [])[trigger.abilityIndex]
-        : (this.state.objects[trigger.sourceObjectId] !== undefined
-            ? this.effectiveTriggered(trigger.sourceObjectId)
-            : def.triggered)[trigger.abilityIndex]);
+        : (this.triggeredOfSource(trigger.sourceObjectId, trigger.lastKnownRefs?.source) ??
+            def.triggered)[trigger.abilityIndex]);
 
     const triggerSource = this.abilityTargetSource(trigger);
     const abilityKind: "triggered" | "chapter" = trigger.chapter ? "chapter" : "triggered";
@@ -8369,6 +8567,7 @@ export class Game {
         trigger.grantedAbility,
         autoSlotsOf(slots),
         trigger.x,
+        trigger.lastKnownRefs,
       );
       return "done";
     }
@@ -8390,6 +8589,7 @@ export class Game {
         ? { grantedAbility: trigger.grantedAbility }
         : {}),
       ...(trigger.x !== undefined ? { x: trigger.x } : {}),
+      ...(trigger.lastKnownRefs !== undefined ? { lastKnownRefs: trigger.lastKnownRefs } : {}),
     };
     this.state.awaiting = {
       kind: "choose-targets",
@@ -8420,6 +8620,7 @@ export class Game {
     readonly targets?: ResolvedTargets;
     readonly x?: number;
     readonly targetZones?: readonly (ZoneType | null)[];
+    readonly lastKnownRefs?: LastKnownRefs;
   }): TargetSource {
     const base: TargetSource =
       this.state.objects[trigger.sourceObjectId] !== undefined
@@ -8435,6 +8636,7 @@ export class Game {
         ...(trigger.triggerValue !== undefined ? { triggerValue: trigger.triggerValue } : {}),
         ...(trigger.triggerObject !== undefined ? { triggerObject: trigger.triggerObject } : {}),
         ...(trigger.targetZones !== undefined ? { targetZones: trigger.targetZones } : {}),
+        ...(trigger.lastKnownRefs !== undefined ? { lastKnownRefs: trigger.lastKnownRefs } : {}),
       }),
     };
   }
@@ -8453,6 +8655,7 @@ export class Game {
     autoTargetSlots: readonly number[] = [],
     /** The X its source was cast with (rule 107.3m) — see `PendingTrigger.x`. */
     x?: number,
+    lastKnownRefs?: LastKnownRefs,
   ): void {
     const abilityId = this.mintAbilityObject(
       sourceId,
@@ -8468,6 +8671,7 @@ export class Game {
     );
     if (grantedAbility !== undefined) this.state.objects[abilityId].grantedAbility = grantedAbility;
     if (x !== undefined) this.state.objects[abilityId].xValue = x;
+    if (lastKnownRefs !== undefined) this.state.objects[abilityId].lastKnownRefs = lastKnownRefs;
     if (autoTargetSlots.length > 0) {
       this.state.objects[abilityId].autoTargetSlots = [...autoTargetSlots];
     }
@@ -8514,13 +8718,51 @@ export class Game {
     stackMultiplier = 1,
     resolutionCount = 0,
     /** Where each object target was when it was targeted, for last-known
-     * information (rule 608.2h) — see {@link manaValueOfTarget}. */
+     * information (rule 608.2h) — see {@link lastKnownOfTarget}. */
     targetZones: readonly (ZoneType | null)[] = [],
+    /** Which battlefield stint of its source, triggering object and
+     * sacrificed permanent the spell or ability refers to — see
+     * {@link LastKnownRefs}. */
+    lastKnownRefs: LastKnownRefs = {},
   ): ResolutionContext {
+    const refs = lastKnownRefs;
     const expectedZoneOf = (target: TargetRef): ZoneType | null => {
       if (target.kind !== "object") return null;
       const i = targets.findIndex((t) => t?.kind === "object" && t.object === target.object);
       return i < 0 ? null : (targetZones[i] ?? null);
+    };
+    // Last-known information (rule 608.2h): a permanent this spell or
+    // ability refers to that has left the battlefield since is read as it
+    // last existed there. The source, the triggering object and the
+    // sacrificed permanent say which stint they mean (`refs`); a target was
+    // a permanent if it was on the battlefield when targeted.
+    const stintOf = (id: ObjectId): number | undefined =>
+      id === source && refs.source !== undefined
+        ? refs.source
+        : id === triggerObject && refs.triggerObject !== undefined
+          ? refs.triggerObject
+          : refs.sacrificed?.object === id
+            ? refs.sacrificed.zoneChangeCount
+            : undefined;
+    const lastKnownOf = (target: TargetRef): LastKnownInfo | undefined => {
+      if (target.kind !== "object") return undefined;
+      const stint = stintOf(target.object);
+      return stint !== undefined
+        ? this.lastKnownOfStint(target.object, stint)
+        : this.lastKnownOfTarget(target.object, expectedZoneOf(target));
+    };
+    const departedSource = (): LastKnownInfo | undefined =>
+      refs.source === undefined ? undefined : this.lastKnownOfStint(source, refs.source);
+    const triggerLastKnown = (): LastKnownInfo | undefined =>
+      triggerObject === undefined
+        ? undefined
+        : lastKnownOf({ kind: "object", object: triggerObject });
+    const matchesKnown = (id: ObjectId, filter: CardFilter): boolean => {
+      const snapshot = lastKnownOf({ kind: "object", object: id });
+      return matchesFilter(this.state, this.registry, id, filter, {
+        you: controller,
+        ...(snapshot !== undefined ? { snapshot } : {}),
+      });
     };
     const conditionMet = (condition: StaticCondition): boolean => {
       // "If that land is a Mountain" — a question about the object that
@@ -8531,15 +8773,15 @@ export class Game {
       if (condition.kind === "target") {
         const ref = targets[condition.index];
         if (ref === undefined || ref.kind !== "object") return false;
-        return matchesFilter(this.state, this.registry, ref.object, condition.filter, {
-          you: controller,
-        });
+        return matchesKnown(ref.object, condition.filter);
       }
       if (condition.kind === "trigger-object") {
         if (triggerObject === undefined) return false;
-        return matchesFilter(this.state, this.registry, triggerObject, condition.filter, {
-          you: controller,
-        });
+        return matchesKnown(triggerObject, condition.filter);
+      }
+      if (condition.kind === "sacrificed") {
+        const sacrificed = refs.sacrificed;
+        return sacrificed !== undefined && matchesKnown(sacrificed.object, condition.filter);
       }
       if (condition.kind === "resolved-this-turn") return resolutionCount === condition.n;
       // Recursing keeps the context-only kinds above answerable under a
@@ -8549,11 +8791,13 @@ export class Game {
       // itself ("if creatures you control have total power 10 or greater"
       // includes the creature asking) without recursing.
       const src = this.state.objects[source];
+      const sourceLastKnown = departedSource();
       return (
         src !== undefined &&
         staticConditionMet(this.state, this.registry, src, condition, {
           includeSelf: true,
           targets,
+          ...(sourceLastKnown !== undefined ? { sourceLastKnown } : {}),
         })
       );
     };
@@ -8566,11 +8810,15 @@ export class Game {
       triggerObject,
       stackMultiplier,
       resolutionCount,
-      dealDamage: (target, amount) => this.dealDamage(source, this.splitTargetRef(target), amount),
+      ...(refs.sacrificed !== undefined ? { sacrificed: refs.sacrificed.object } : {}),
+      // A source that has left the battlefield deals its damage as it last
+      // existed there: its colours, lifelink, deathtouch and controller.
+      dealDamage: (target, amount) =>
+        this.dealDamage(source, this.splitTargetRef(target), amount, false, departedSource()),
       dealDamageScoped: (who, amount) =>
         this.withDamageBatch(() => {
-          for (const p of this.scopedPlayers(controller, who, triggerObject)) {
-            this.dealDamage(source, { kind: "player", player: p }, amount);
+          for (const p of this.scopedPlayers(controller, who, triggerObject, triggerLastKnown())) {
+            this.dealDamage(source, { kind: "player", player: p }, amount, false, departedSource());
           }
         }),
       draw: (player, count) => {
@@ -8585,21 +8833,23 @@ export class Game {
           if (empty) break;
         }
       },
-      playersInScope: (who) => this.scopedPlayers(controller, who, triggerObject),
+      playersInScope: (who) =>
+        this.scopedPlayers(controller, who, triggerObject, triggerLastKnown()),
       discardHand: (player) => this.discardWholeHand(player),
       // The object whose entering, dying, attacking… fired a trigger is read
       // as it last existed on the battlefield once it has left (rule 608.2h):
       // Clement, the Worrywort's "lesser mana value" after the entering
       // creature was killed in response. A spell that fired a cast trigger
-      // is still on the stack, which `manaValueOfTarget` reads first.
+      // was never a permanent, and is read on the stack.
       manaValueOf: (target) =>
-        this.manaValueOfTarget(
-          target,
-          expectedZoneOf(target) ??
-            (target.kind === "object" && target.object === triggerObject ? "battlefield" : null),
-        ),
-      manaSpentOf: (target) =>
-        target.kind === "object" ? (this.state.objects[target.object]?.manaSpent ?? 0) : 0,
+        this.manaValueOfTarget(target, expectedZoneOf(target), lastKnownOf(target)),
+      manaSpentOf: (target) => {
+        if (target.kind !== "object") return 0;
+        const lki = lastKnownOf(target);
+        return lki !== undefined
+          ? (lki.manaSpent ?? 0)
+          : (this.state.objects[target.object]?.manaSpent ?? 0);
+      },
       lifeTotalOf: (player) => this.state.players[player]?.life ?? 0,
       turnStatOf: (player, stat) => turnStatOf(this.state, player, stat),
       countInGraveyard: (filter) => {
@@ -8637,12 +8887,45 @@ export class Game {
         ),
       returnToHandAll: (filter) => this.returnToHandAllByEffect(controller, filter),
       damageAll: (filter, amount, exceptSource) =>
-        this.damageAllByEffect(source, controller, filter, amount, exceptSource === true),
+        this.damageAllByEffect(
+          source,
+          controller,
+          filter,
+          amount,
+          exceptSource === true,
+          departedSource(),
+        ),
       creaturesDamageControllers: (filter, amount) =>
         this.creaturesDamageControllersByEffect(controller, filter, amount),
       sacrificePermanents: (who, filter, count, exceptId) =>
         this.sacrificeByEffect(controller, who, filter, count, exceptId),
       sacrificeSource: () => this.sacrificeSourceByEffect(source),
+      withSacrificed: (object) => {
+        // It was just sacrificed, so its latest snapshot is that departure.
+        const lki = this.state.objects[object]?.lastKnown ?? this.state.ceasedTokens?.[object];
+        return this.makeResolutionContext(
+          source,
+          controller,
+          targets,
+          x,
+          triggerValue,
+          triggerObject,
+          stackMultiplier,
+          resolutionCount,
+          targetZones,
+          lki === undefined
+            ? refs
+            : { ...refs, sacrificed: { object, zoneChangeCount: lki.zoneChangeCount } },
+        );
+      },
+      cardTypesOf: (target) => {
+        if (target.kind !== "object") return [];
+        const lki = lastKnownOf(target);
+        if (lki !== undefined) return lki.types;
+        return this.state.objects[target.object] === undefined
+          ? []
+          : computeCharacteristics(this.state, this.registry, target.object).types;
+      },
       sacrificeTarget: (target) => {
         if (target.kind !== "object") return;
         const id = this.splitOneFromStack(target.object);
@@ -8775,15 +9058,28 @@ export class Game {
       impulseExile: (amount, duration, castOnly, opts) =>
         this.impulseExile(controller, source, amount, duration, castOnly, opts),
       unless: (chooser, options, otherwise) =>
-        this.beginUnless(source, controller, x, targets, triggerObject, chooser, options, otherwise),
-      powerOf: (target) =>
-        target.kind === "object" && this.state.objects[target.object] !== undefined
+        this.beginUnless(source, controller, x, targets, triggerObject, chooser, options, otherwise, {
+          lastKnownRefs: refs,
+          targetZones,
+          triggerController: triggerLastKnown()?.controller,
+        }),
+      // "Damage equal to its power" from a dies trigger reads the power it
+      // died with (the Juri and Elenda rulings); a target that has left, the
+      // power it left with.
+      powerOf: (target) => {
+        const lki = lastKnownOf(target);
+        if (lki !== undefined) return lki.power;
+        return target.kind === "object" && this.state.objects[target.object] !== undefined
           ? computeCharacteristics(this.state, this.registry, target.object).power
-          : 0,
-      toughnessOf: (target) =>
-        target.kind === "object" && this.state.objects[target.object] !== undefined
+          : 0;
+      },
+      toughnessOf: (target) => {
+        const lki = lastKnownOf(target);
+        if (lki !== undefined) return lki.toughness;
+        return target.kind === "object" && this.state.objects[target.object] !== undefined
           ? computeCharacteristics(this.state, this.registry, target.object).toughness
-          : 0,
+          : 0;
+      },
       putOnBottomOfLibrary: (target) => {
         if (target.kind !== "object") return;
         const id = this.splitOneFromStack(target.object);
@@ -8809,7 +9105,7 @@ export class Game {
       grantTriggered: (target, ability, duration) =>
         this.grantTriggered(target, ability, duration),
       grantPlayerHexproof: (who) => {
-        for (const player of this.scopedPlayers(controller, who, triggerObject)) {
+        for (const player of this.scopedPlayers(controller, who, triggerObject, triggerLastKnown())) {
           if (!this.state.hexproofPlayers.includes(player)) {
             this.state.hexproofPlayers.push(player);
           }
@@ -8851,18 +9147,24 @@ export class Game {
         if (who === "target-controller") {
           const ref = targets[0];
           if (ref?.kind === "player") tokenController = ref.player;
-          else if (ref?.kind === "object" && this.state.objects[ref.object] !== undefined) {
+          else if (ref?.kind === "object") {
             // Rule 111.11 — a destroyed/countered target's *last-known*
-            // controller. `moveObject` has already reverted `controller` to
-            // `owner` for a permanent that left the battlefield; for a spell
-            // controller === owner anyway.
-            tokenController = this.state.objects[ref.object].controller;
+            // controller: `moveObject` has already reverted `controller` to
+            // `owner` for a permanent that left the battlefield, so read the
+            // snapshot. For a spell controller === owner anyway.
+            const who =
+              lastKnownOf(ref)?.controller ?? this.state.objects[ref.object]?.controller;
+            if (who !== undefined) tokenController = who;
           }
         }
         this.createTokens(tokenController, token, count, tapped, sacrificeAtEndStep);
       },
+      // "That creature's controller" — who controlled it as it left, if it
+      // has (rule 608.2h); `moveObject` has handed it back to its owner.
       controllerOf: (ref) =>
-        ref.kind === "player" ? ref.player : this.state.objects[ref.object]?.controller,
+        ref.kind === "player"
+          ? ref.player
+          : (lastKnownOf(ref)?.controller ?? this.state.objects[ref.object]?.controller),
       devotionTo: (color) => this.devotionTo(controller, color),
       opponentsControllingFewer: (filter) => {
         const mine = this.countBattlefieldMatching(controller, filter);
@@ -8884,12 +9186,12 @@ export class Game {
       },
       setDayNight: (value) => this.setDayNight(value),
       becomeMonarch: (who) => {
-        for (const p of this.scopedPlayers(controller, who ?? "you", triggerObject)) {
+        for (const p of this.scopedPlayers(controller, who ?? "you", triggerObject, triggerLastKnown())) {
           this.setMonarch(p, "effect");
         }
       },
       getEnergy: (amount, who) => {
-        for (const p of this.scopedPlayers(controller, who ?? "you", triggerObject)) {
+        for (const p of this.scopedPlayers(controller, who ?? "you", triggerObject, triggerLastKnown())) {
           this.changeEnergy(p, amount);
         }
       },
@@ -8917,8 +9219,12 @@ export class Game {
           cost,
           triggerValue,
           triggerObject,
+          undefined,
+          refs,
+          targetZones,
         ),
-      changeLifeScoped: (who, delta) => this.changeLifeScoped(controller, who, delta, triggerObject),
+      changeLifeScoped: (who, delta) =>
+        this.changeLifeScoped(controller, who, delta, triggerObject, triggerLastKnown()),
       searchLibrary: (
         player,
         filter,
@@ -9204,19 +9510,43 @@ export class Game {
     chooser: number | "trigger-controller",
     options: readonly UnlessOption[],
     otherwise: EffectSpec,
+    /** What the resolving ability knew about the objects it refers to: its
+     * last-known references and target zones, carried to `otherwise`, and
+     * who controlled the triggering object (as it last existed, if it has
+     * left the battlefield — rule 608.2h). */
+    known: {
+      readonly lastKnownRefs: LastKnownRefs;
+      readonly targetZones: readonly (ZoneType | null)[];
+      readonly triggerController: PlayerId | undefined;
+    },
   ): void {
     const decide =
       chooser === "trigger-controller"
-        ? (triggerObject !== undefined
+        ? (known.triggerController ??
+          (triggerObject !== undefined
             ? this.state.objects[triggerObject]?.controller
-            : undefined)
+            : undefined))
         : (() => {
             const ref = targets[chooser];
             return ref?.kind === "player" ? ref.player : undefined;
           })();
 
     const applyOtherwise = (): void => {
-      applyEffectSpec(otherwise, this.makeResolutionContext(source, controller, targets, x));
+      applyEffectSpec(
+        otherwise,
+        this.makeResolutionContext(
+          source,
+          controller,
+          targets,
+          x,
+          0,
+          triggerObject,
+          1,
+          0,
+          known.targetZones,
+          known.lastKnownRefs,
+        ),
+      );
     };
     if (decide === undefined || this.state.players[decide]?.hasLost === true) {
       applyOtherwise();
@@ -9269,6 +9599,8 @@ export class Game {
       0,
       triggerObject,
       controller,
+      known.lastKnownRefs,
+      known.targetZones,
     );
   }
 
@@ -10773,7 +11105,9 @@ export class Game {
     // sees the rest go too (rule 603.10a). Snapshot: `returnToHandByEffect`
     // mutates the battlefield array as it goes.
     this.withLeaveBatch(() => {
-      for (const id of this.battlefieldMatching(you, filter)) {
+      const victims = this.battlefieldMatching(you, filter);
+      this.snapshotLeaving(victims);
+      for (const id of victims) {
         this.returnToHandByEffect({ kind: "object", object: id }, false);
       }
     });
@@ -10794,6 +11128,7 @@ export class Game {
   private drainPendingDestruction(): void {
     if (this.state.awaiting !== null) return;
     this.withLeaveBatch(() => {
+      this.snapshotLeaving(this.state.pendingDestruction);
       while (this.state.pendingDestruction.length > 0) {
         const id = this.state.pendingDestruction.shift() as ObjectId;
         const object = this.state.objects[id];
@@ -10811,13 +11146,14 @@ export class Game {
     filter: CardFilter,
     amount: number,
     exceptSource = false,
+    sourceLastKnown?: LastKnownInfo,
   ): void {
     if (amount <= 0) return;
     this.withDamageBatch(() => {
       for (const id of [...this.state.zones.shared.battlefield]) {
         if (exceptSource && id === source) continue;
         if (matchesFilter(this.state, this.registry, id, filter, { you })) {
-          this.dealDamage(source, { kind: "object", object: id }, amount);
+          this.dealDamage(source, { kind: "object", object: id }, amount, false, sourceLastKnown);
         }
       }
     });
@@ -10982,6 +11318,7 @@ export class Game {
   private drainPendingSacrificeVictims(): void {
     if (this.state.awaiting !== null) return;
     this.withLeaveBatch(() => {
+      this.snapshotLeaving(this.state.pendingSacrificeVictims.map((v) => v.object));
       while (this.state.pendingSacrificeVictims.length > 0) {
         const next = this.state.pendingSacrificeVictims[0];
         this.state.pendingSacrificeVictims = this.state.pendingSacrificeVictims.slice(1);
@@ -11887,35 +12224,26 @@ export class Game {
    * The mana value of `target` — on the stack including its chosen {X}
    * (rule 202.3e), everywhere else as printed ({X} is 0).
    *
-   * `expectedZone` is where the target was when it was targeted. An object
-   * that has since left that zone is read by last-known information (rule
-   * 608.2h), and for a *spell* that means as it last existed on the stack:
-   * Mana Drain's "that spell's mana value" includes the X of the spell it
-   * countered. A permanent's last-known mana value never included X, and a
-   * card targeted in a graveyard is read as it is now, so neither needs
-   * anything stored.
+   * Last-known information (rule 608.2h) for an object that has left the
+   * zone it was expected in. A permanent's is its snapshot (`lastKnown`,
+   * picked out by the caller — a copy effect the move ended may have
+   * changed it, and a token may have ceased to exist). A *spell*'s is as it
+   * last existed on the stack (`expectedZone` "stack"): Mana Drain's "that
+   * spell's mana value" includes the X of the spell it countered. A card
+   * targeted in a graveyard is read as it is now.
    */
-  private manaValueOfTarget(target: TargetRef, expectedZone: ZoneType | null = null): number {
+  private manaValueOfTarget(
+    target: TargetRef,
+    expectedZone: ZoneType | null = null,
+    lastKnown?: LastKnownInfo,
+  ): number {
     if (target.kind !== "object") return 0;
+    if (lastKnown !== undefined) return lastKnown.manaValue;
     const object = this.state.objects[target.object];
-    if (object === undefined) {
-      // A token that has left the battlefield and ceased to exist (rule 111.7).
-      return expectedZone === "battlefield"
-        ? (this.state.ceasedTokenManaValues?.[target.object] ?? 0)
-        : 0;
-    }
+    if (object === undefined) return 0;
     if (object.zone === "stack") return this.manaValueOnStack(object);
     if (expectedZone === "stack" && object.lastStackManaValue !== undefined) {
       return object.lastStackManaValue;
-    }
-    // A permanent that has since left the battlefield, as it last existed
-    // there — which a copy effect, ended by the move, may have changed.
-    if (
-      expectedZone === "battlefield" &&
-      object.zone !== "battlefield" &&
-      object.lastKnownManaValue !== undefined
-    ) {
-      return object.lastKnownManaValue;
     }
     if (!this.registry.has(printedCardName(object))) return 0;
     return manaValue(parseManaCost(printedManaCost(this.registry, object)));
@@ -12011,6 +12339,11 @@ export class Game {
     target: TargetRef,
     amount: number,
     combat = false,
+    /** The source as it last existed on the battlefield, when it has left
+     * since the ability dealing this damage referred to it (rule 608.2h —
+     * "When Juri dies, it deals damage …"): its colours for protection, its
+     * lifelink and deathtouch, and its controller for the life. */
+    sourceLastKnown?: LastKnownInfo,
   ): number {
     if (amount <= 0) return 0;
 
@@ -12036,7 +12369,7 @@ export class Game {
       if (this.state.players[target.player] === undefined) return 0;
       this.emit({ type: "damage-dealt", source, target, amount, combat });
       this.changeLife(target.player, -amount);
-      this.applyLifelink(source, amount);
+      this.applyLifelink(source, amount, sourceLastKnown);
       // A creature dealing combat damage to the monarch makes its controller
       // the monarch (rule 720.5).
       const src = this.state.objects[source];
@@ -12054,8 +12387,15 @@ export class Game {
     if (object === undefined || object.zone !== "battlefield") return 0;
     // Protection (rule 702.16) — prevent damage from a matching source.
     if (
-      this.state.objects[source] !== undefined &&
-      protectionBlocks(this.state, this.registry, target.object, this.permanentSource(source))
+      (sourceLastKnown !== undefined || this.state.objects[source] !== undefined) &&
+      protectionBlocks(
+        this.state,
+        this.registry,
+        target.object,
+        sourceLastKnown !== undefined
+          ? { colors: sourceLastKnown.colors, types: sourceLastKnown.types }
+          : this.permanentSource(source),
+      )
     ) {
       this.emit({ type: "damage-prevented", source, target, amount });
       return 0;
@@ -12071,29 +12411,39 @@ export class Game {
         delta: -amount,
         loyalty: object.counters.loyalty,
       });
-      this.applyLifelink(source, amount);
+      this.applyLifelink(source, amount, sourceLastKnown);
       return amount;
     }
     object.damageMarked += amount;
-    if (this.sourceHasKeyword(source, "deathtouch")) {
+    if (this.sourceHasKeyword(source, "deathtouch", sourceLastKnown)) {
       object.markedByDeathtouch = true;
     }
     this.emit({ type: "damage-dealt", source, target, amount, combat });
-    this.applyLifelink(source, amount);
+    this.applyLifelink(source, amount, sourceLastKnown);
     return amount;
   }
 
-  /** True if `source` is a battlefield creature whose current keywords include `keyword`. */
-  private sourceHasKeyword(source: ObjectId, keyword: Keyword): boolean {
+  /** True if `source` is a battlefield creature whose current keywords
+   * include `keyword` — or, given its last-known information, was one as it
+   * left (rule 608.2h: a lifelinker's dies trigger still gains the life). */
+  private sourceHasKeyword(
+    source: ObjectId,
+    keyword: Keyword,
+    sourceLastKnown?: LastKnownInfo,
+  ): boolean {
+    if (sourceLastKnown !== undefined) {
+      return sourceLastKnown.types.includes("creature") && sourceLastKnown.keywords.includes(keyword);
+    }
     const object = this.state.objects[source];
     if (object === undefined || object.zone !== "battlefield") return false;
     if (this.creatureDef(source) === null) return false;
     return this.objHasKeyword(source, keyword);
   }
 
-  private applyLifelink(source: ObjectId, amount: number): void {
-    if (amount <= 0 || !this.sourceHasKeyword(source, "lifelink")) return;
-    const controller = this.state.objects[source].controller;
+  private applyLifelink(source: ObjectId, amount: number, sourceLastKnown?: LastKnownInfo): void {
+    if (amount <= 0 || !this.sourceHasKeyword(source, "lifelink", sourceLastKnown)) return;
+    // Its controller then: a stolen lifelinker's life is the thief's.
+    const controller = sourceLastKnown?.controller ?? this.state.objects[source].controller;
     const batch = this.damageBatch;
     if (batch !== null) {
       const owed = batch.lifelink.get(source);
@@ -12168,10 +12518,15 @@ export class Game {
     controller: PlayerId,
     who: PlayerScope,
     triggerObject?: ObjectId,
+    /** The triggering object as it last existed on the battlefield, if it
+     * has left: "that player" is who controlled it then. */
+    triggerLastKnown?: LastKnownInfo,
   ): PlayerId[] {
     if (who === "you") return [controller];
     if (who === "trigger-controller") {
-      const p = triggerObject === undefined ? undefined : this.state.objects[triggerObject]?.controller;
+      const p =
+        triggerLastKnown?.controller ??
+        (triggerObject === undefined ? undefined : this.state.objects[triggerObject]?.controller);
       return p === undefined || this.state.players[p]?.hasLost === true ? [] : [p];
     }
     // "That player", in a trigger that fires on someone else's step.
@@ -12199,9 +12554,12 @@ export class Game {
     who: PlayerScope,
     delta: number,
     triggerObject?: ObjectId,
+    triggerLastKnown?: LastKnownInfo,
   ): void {
     if (delta === 0) return;
-    for (const p of this.scopedPlayers(controller, who, triggerObject)) this.changeLife(p, delta);
+    for (const p of this.scopedPlayers(controller, who, triggerObject, triggerLastKnown)) {
+      this.changeLife(p, delta);
+    }
   }
 
   /** Add (or spend, when negative) energy counters for `player` — rule 122. */
@@ -12297,6 +12655,7 @@ export class Game {
       const sweep = this.stateBasedGraveyardMoves();
       if (sweep.length > 0) {
         this.withLeaveBatch(() => {
+          this.snapshotLeaving(sweep.map((m) => m.id));
           for (const { id, event } of sweep) {
             if (this.state.objects[id]?.zone !== "battlefield") continue;
             // A commander waiting on its 903.9a choice stays where it is, and
@@ -12356,11 +12715,11 @@ export class Game {
         const index = zone.indexOf(id);
         if (index >= 0) zone.splice(index, 1);
         // Kept for the rest of the turn: an ability still on the stack may
-        // ask this token's mana value by last-known information (rule
-        // 608.2h) — a token copy of a Craw Wurm entering fired Clement, the
-        // Worrywort, and was killed in response.
-        if (object.lastKnownManaValue !== undefined) {
-          (this.state.ceasedTokenManaValues ??= {})[id] = object.lastKnownManaValue;
+        // read this token by last-known information (rule 608.2h) — a token
+        // copy of a Craw Wurm entering fired Clement, the Worrywort, and was
+        // killed in response; a Saproling's death fired Slimefoot.
+        if (object.lastKnown !== undefined) {
+          (this.state.ceasedTokens ??= {})[id] = object.lastKnown;
         }
         delete this.state.objects[id];
         // No emit for this one, and a graveyard's length feeds CDAs
@@ -12713,6 +13072,82 @@ export class Game {
   }
 
   /**
+   * `id` as it exists on the battlefield right now, as plain data — its
+   * {@link LastKnownInfo}. Computed characteristics (copy effects, layers,
+   * anthems, counters) plus the state a leaves-the-battlefield trigger or a
+   * resolving ability may ask about once it has gone. Runs once per
+   * departure, and per victim of a simultaneous event: never over the whole
+   * battlefield.
+   */
+  private takeLastKnown(id: ObjectId): LastKnownInfo {
+    const object = this.state.objects[id];
+    const name = printedCardName(object);
+    const def = this.registry.get(name);
+    const c = computeCharacteristics(this.state, this.registry, id);
+    const attached = attachmentsOf(this.state, this.registry, id);
+    const lostAbilities = hasLostAbilities(object);
+    // The granted triggered abilities, in `effectiveTriggered`'s order after
+    // the printed ones: a granted dies trigger still fires once its grantor
+    // has left too, or its own modifiers have been cleared by the move.
+    const granted = lostAbilities
+      ? []
+      : this.effectiveTriggeredEntries(id).flatMap((e) => (e.ref === undefined ? [] : [e.ref]));
+    return {
+      zoneChangeCount: object.zoneChangeCount ?? 0,
+      name,
+      owner: object.owner,
+      controller: object.controller,
+      power: c.power,
+      toughness: c.toughness,
+      types: [...c.types],
+      subtypes: [...c.subtypes],
+      supertypes: [...def.supertypes],
+      colors: [...c.colors],
+      keywords: [...c.keywords],
+      counters: { ...object.counters },
+      // Read before the move ends a copy effect (rule 707.2): a Clone that
+      // entered as a Craw Wurm and died was a mana value 6 creature.
+      manaValue: manaValue(parseManaCost(printedManaCost(this.registry, object))),
+      ...(object.manaSpent !== undefined ? { manaSpent: object.manaSpent } : {}),
+      isToken: object.isToken,
+      isCommander: object.isCommander,
+      tapped: object.tapped,
+      attacking: object.attacking !== null,
+      blocking: object.blocking !== null,
+      equipped: attached.equipped,
+      enchanted: attached.enchanted,
+      enchantedByController: attached.enchantedByController,
+      lostAbilities,
+      ...(granted.length > 0 ? { grantedTriggers: granted } : {}),
+    };
+  }
+
+  /**
+   * Snapshot every one of `ids` still on the battlefield *before* the
+   * simultaneous event carrying them out moves the first of them (rule
+   * 603.10a). The engine moves them one at a time, so without this the
+   * second victim of a wrath would be read after its lord had already left
+   * — a 1/1 that was a 2/2 until then. `moveObject` uses these in place of
+   * taking its own. Only the event's own victims, and only for the length of
+   * the batch.
+   */
+  private snapshotLeaving(ids: Iterable<ObjectId>): void {
+    const batch = this.leaveBatch;
+    if (batch === null) return;
+    // A pure read of a board nothing has moved on yet, so one cache region
+    // shares the static-ability scan across every victim.
+    withComputedCache(() => {
+      for (const id of ids) {
+        const object = this.state.objects[id];
+        if (object === undefined || object.zone !== "battlefield" || batch.snapshots.has(id)) {
+          continue;
+        }
+        batch.snapshots.set(id, this.takeLastKnown(id));
+      }
+    });
+  }
+
+  /**
    * Moves `id` to `to`, and says whether it did: `false` means a commander's
    * 903.9a choice deferred the move (below), so the caller mustn't announce
    * it. That has to come from here, not from `awaiting` — a decision there
@@ -12729,28 +13164,29 @@ export class Game {
   private moveObjectUncached(id: ObjectId, to: ZoneType): boolean {
     const object = this.state.objects[id];
     const leavingBattlefield = object.zone === "battlefield" && to !== "battlefield";
-    // Snapshot before anything clears them — a dies-trigger's "if it had no
-    // +1/+1 counters on it" (Undying) is asked once the card is already in a
-    // graveyard. See `GameObject.lastKnownCounters`.
+    // Last-known information (rules 603.10a, 608.2h), taken before anything
+    // below resets control, counters, modifiers or a copy effect: everything a
+    // leaves-the-battlefield trigger or a resolving ability may still ask
+    // about the permanent once it has gone. See `GameObject.lastKnown`.
+    //
+    // Two snapshots of this very stint are kept rather than retaken. One
+    // taken before a simultaneous event moved anything (`snapshotLeaving` —
+    // the second victim of a wrath is read before its lord left, not after).
+    // And the one a commander was given when its 903.9a choice deferred this
+    // move: the replacement happened as the event did, however long its
+    // owner took to answer, and a second event reaching it while it waits
+    // doesn't redirect it.
     if (leavingBattlefield) {
-      object.lastKnownCounters = { ...object.counters };
-      // Likewise "whenever an **attacking** creature dies" (Kardur,
-      // Doomscourge): the reset below clears `attacking` before the
-      // dies-trigger is ever matched, so the answer has to be kept.
-      object.wasAttacking = object.attacking !== null;
-      // And "a creature **you control** dies": the reset below hands it
-      // back to its owner first.
-      object.lastKnownController = object.controller;
-      // And its mana value, read before the reset below ends a copy effect
-      // (rule 707.2): a Clone that entered as a Craw Wurm and died was a
-      // mana value 6 creature (rule 608.2h). See `manaValueOfTarget`.
-      object.lastKnownManaValue = this.registry.has(printedCardName(object))
-        ? manaValue(parseManaCost(printedManaCost(this.registry, object)))
-        : 0;
-    } else {
-      // Only ever describes the move that took it off the battlefield.
-      object.lastKnownController = undefined;
-      object.lastKnownManaValue = undefined;
+      const stint = object.zoneChangeCount ?? 0;
+      const commanderWaiting =
+        object.isCommander &&
+        (this.state.deferredCommanderMove?.commander === id ||
+          this.state.pendingCommanderMoves.some((m) => m.commander === id));
+      const kept = commanderWaiting && object.lastKnown?.zoneChangeCount === stint;
+      if (!kept) {
+        const pre = this.leaveBatch?.snapshots.get(id);
+        object.lastKnown = pre?.zoneChangeCount === stint ? pre : this.takeLastKnown(id);
+      }
     }
 
     // Rest in Peace (rule 614): whatever would be put into a graveyard is
@@ -12884,13 +13320,13 @@ export class Game {
     if (
       leavingBattlefield &&
       to === "graveyard" &&
-      computeCharacteristics(this.state, this.registry, id).types.includes("creature")
+      object.lastKnown?.types.includes("creature") === true
     ) {
       const died = object.stackCount ?? 1;
       this.state.creaturesDiedThisTurn += died;
       // Per-player as well: "under **your** control" reads the controller
       // it had on the way out, before this move reverts it to the owner.
-      const under = this.state.players[object.controller];
+      const under = this.state.players[object.lastKnown.controller];
       if (under !== undefined) under.creaturesDiedThisTurn += died;
     }
 
@@ -12970,8 +13406,10 @@ export class Game {
     object.chosenModes = undefined;
     object.kicked = undefined;
     // "That spell can't be countered" was about this casting, so it ends when
-    // the spell leaves the stack (Cavern of Souls).
+    // the spell leaves the stack (Cavern of Souls). So does what the casting
+    // sacrificed ("the sacrificed creature" — see `LastKnownRefs`).
     object.uncounterable = undefined;
+    object.lastKnownRefs = undefined;
     object.enteredKicked = enteringKicked;
     // The O-Ring link (rule 720.2) dies with any move: a card that leaves
     // exile some other way is no longer the one the Banishing Light took, so

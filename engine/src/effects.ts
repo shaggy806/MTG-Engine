@@ -20,6 +20,20 @@ import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
  * P15 — Exalted's "that creature gets +1/+1", the lone attacker rather than
  * a target or the ability's own source). */
 export type EffectTargetRef = number | "source" | "trigger-object";
+/**
+ * What an amount that reads an object (`powerOf`, `toughnessOf`,
+ * `manaValueOf`, `manaSpentOf`) may point at: anything an
+ * {@link EffectTargetRef} can, plus `"sacrificed"` — the permanent sacrificed
+ * to pay the spell's or ability's cost, or by a `sacrifice-source` step
+ * before this one ("where X is the sacrificed creature's power" — Dina, Soul
+ * Steeper). Nothing sacrificed reads 0.
+ *
+ * An object that was a permanent when the spell or ability referred to it
+ * and has left the battlefield since is read as it last existed there (rule
+ * 608.2h — see `LastKnownRefs`): "When Juri dies, it deals damage equal to
+ * its power" counts the counters Juri died with.
+ */
+export type AmountRef = EffectTargetRef | "sacrificed";
 /** Where a `return-to-hand` effect takes its object from. */
 export type ReturnToHandZone = "battlefield" | "graveyard" | "exile" | "stack";
 export type PtDuration = "end-of-turn" | "permanent";
@@ -105,16 +119,17 @@ export type EffectAmount =
   | { readonly triggerValue: true }
   /**
    * The mana value of whatever a target slot (or `"source"` /
-   * `"trigger-object"`) points at — Feed the Swarm's "you lose life equal to
-   * that permanent's mana value", Hoard-Smelter Dragon, Aura Mutation.
+   * `"trigger-object"` / `"sacrificed"`) points at — Feed the Swarm's "you
+   * lose life equal to that permanent's mana value", Hoard-Smelter Dragon,
+   * Aura Mutation.
    *
-   * Read off the object's printed card, so it still answers correctly after
-   * the permanent has left the battlefield (rule 608.2h — last known
-   * information). That matters because every card printed this way destroys
-   * the permanent *first* and then reads its mana value. `0` for a player
-   * target or an object that no longer exists at all.
+   * A permanent that has left the battlefield since is read as it last
+   * existed there (rule 608.2h — last known information, see
+   * {@link AmountRef}). That matters because every card printed this way
+   * destroys the permanent *first* and then reads its mana value. `0` for a
+   * player target or an object that no longer exists at all.
    */
-  | { readonly manaValueOf: EffectTargetRef }
+  | { readonly manaValueOf: AmountRef }
   /**
    * How much mana was actually spent to cast the object (Prossh, Skyraider of
    * Kher: "where X is the amount of mana spent to cast it"). Commander tax,
@@ -122,7 +137,7 @@ export type EffectAmount =
    * creature paid for by convoke, which isn't mana (rule 702.51a). `0` for
    * anything that wasn't cast.
    */
-  | { readonly manaSpentOf: EffectTargetRef }
+  | { readonly manaSpentOf: AmountRef }
   /** The effect controller's current life total (Ajani, Caller of the Pride's
    * ultimate: "create X 2/2 white Cat creature tokens, where X is your life
    * total"). */
@@ -132,12 +147,16 @@ export type EffectAmount =
    * `countOf`, which only ever counts battlefield permanents. The filter's
    * `ownedBy: "you"` is what restricts it to your own graveyard. */
   | { readonly countInGraveyard: CardFilter }
-  /** The *current* power of whatever a target slot points at — Unleash Fury's
-   * "double the power of target creature" is a `modify-pt` that adds this. */
-  | { readonly powerOf: EffectTargetRef }
-  /** The *current* toughness of whatever a target slot points at — Condemn's
-   * "its controller gains life equal to its toughness". */
-  | { readonly toughnessOf: EffectTargetRef }
+  /** The current power of whatever an {@link AmountRef} points at — Unleash
+   * Fury's "double the power of target creature" is a `modify-pt` that adds
+   * this; "it deals damage equal to its power" from a dies trigger reads the
+   * power it died with, and `{ powerOf: "sacrificed" }` is the Fling family's
+   * "the sacrificed creature's power". */
+  | { readonly powerOf: AmountRef }
+  /** The current toughness of whatever an {@link AmountRef} points at —
+   * Condemn's "its controller gains life equal to its toughness", read as
+   * the creature last existed on the battlefield. */
+  | { readonly toughnessOf: AmountRef }
   /** Your **devotion** to a colour (rule 700.5): every mana symbol of that
    * colour in the mana costs of permanents you control, hybrid pips included.
    * Gray Merchant of Asphodel's "each opponent loses X life, where X is your
@@ -1369,16 +1388,15 @@ export interface EffectApi {
   turnStatOf(player: PlayerId, stat: TurnStat): number;
   /** See the `{ countInGraveyard }` {@link EffectAmount}. */
   countInGraveyard(filter: CardFilter): number;
-  /** See the `{ powerOf }` {@link EffectAmount}. */
   /**
    * Who controls what `ref` points at — the player itself for a player ref,
    * else the object's controller.
    *
-   * Rule 111.11 / 608.2h — *last-known* information for an object that has
-   * already left the battlefield, which is the usual case for the cards that
-   * ask (they destroy the permanent first). `moveObject` reverts `controller`
-   * to `owner` on the way out, so a permanent that was under someone else's
-   * control names its owner here; the two coincide for everything else.
+   * Rule 111.11 / 608.2h — *last-known* information for a permanent that
+   * has left the battlefield since the spell or ability referred to it,
+   * which is the usual case for the cards that ask (they destroy the
+   * permanent first): whoever controlled it as it left, though `moveObject`
+   * has handed it back to its owner.
    */
   controllerOf(ref: TargetRef): PlayerId | undefined;
   /** See the `{ devotionTo }` {@link EffectAmount}. */
@@ -1387,6 +1405,9 @@ export interface EffectApi {
   opponentsControllingFewer(filter: CardFilter): number;
   /** See the `{ creaturesDiedThisTurn }` {@link EffectAmount}. */
   creaturesDiedThisTurn(): number;
+  /** See the `{ powerOf }` / `{ toughnessOf }` {@link EffectAmount}s — a
+   * permanent that has left the battlefield since the spell or ability
+   * referred to it reads as it last existed there. */
   powerOf(target: TargetRef): number;
   toughnessOf(target: TargetRef): number;
   /** See the `"put-on-bottom-of-library"` {@link EffectSpec}. */
@@ -1445,6 +1466,14 @@ export interface EffectApi {
    * (false if the source has already left the battlefield) — the "if you do"
    * gate on a `sacrifice-source` effect's `then`. */
   sacrificeSource(): boolean;
+  /** This context, with `object` — a permanent the effect has just
+   * sacrificed — as its `"sacrificed"` ({@link AmountRef}), read as it last
+   * existed on the battlefield. */
+  withSacrificed(object: ObjectId): ResolutionContext;
+  /** The card types of what `target` points at — as it last existed on the
+   * battlefield if it has left since the effect referred to it. For binding
+   * `CardFilter.sharesCardTypeWith`. */
+  cardTypesOf(target: TargetRef): readonly CardType[];
   /** See the `"return-to-hand"` {@link EffectSpec} — `from` defaults to the
    * battlefield. */
   returnToHand(target: TargetRef, from?: ReturnToHandZone): void;
@@ -1749,6 +1778,10 @@ export interface ResolutionContext extends EffectApi {
    * changed zones since: it's a new object (rule 400.7), so an effect naming
    * `"source"` finds nothing. Absent otherwise. */
   readonly sourceLost?: boolean;
+  /** The permanent sacrificed to pay this spell's or ability's cost, or by a
+   * `sacrifice-source` step before this one — what an {@link AmountRef}
+   * `"sacrificed"` reads. Absent when nothing was. */
+  readonly sacrificed?: ObjectId;
 }
 
 /** Effect kinds safe to fire once with their count/amount multiplied by a
@@ -1807,19 +1840,19 @@ export function amountValue(amount: EffectAmount, ctx: ResolutionContext): numbe
   if ("devotionTo" in amount) return ctx.devotionTo(amount.devotionTo);
   if ("creaturesDiedThisTurn" in amount) return ctx.creaturesDiedThisTurn();
   if ("powerOf" in amount) {
-    const ref = resolveEffectTarget(amount.powerOf, ctx);
+    const ref = resolveAmountRef(amount.powerOf, ctx);
     return ref === undefined ? 0 : ctx.powerOf(ref);
   }
   if ("toughnessOf" in amount) {
-    const ref = resolveEffectTarget(amount.toughnessOf, ctx);
+    const ref = resolveAmountRef(amount.toughnessOf, ctx);
     return ref === undefined ? 0 : ctx.toughnessOf(ref);
   }
   if ("manaValueOf" in amount) {
-    const ref = resolveEffectTarget(amount.manaValueOf, ctx);
+    const ref = resolveAmountRef(amount.manaValueOf, ctx);
     return ref === undefined ? 0 : ctx.manaValueOf(ref);
   }
   if ("manaSpentOf" in amount) {
-    const ref = resolveEffectTarget(amount.manaSpentOf, ctx);
+    const ref = resolveAmountRef(amount.manaSpentOf, ctx);
     return ref === undefined ? 0 : ctx.manaSpentOf(ref);
   }
   if ("aggregate" in amount) {
@@ -1848,6 +1881,13 @@ function scopedController(
 
 /** Imperative escape hatch for a spell or ability the vocab can't express. */
 export type SpellResolver = (ctx: ResolutionContext) => void;
+
+function resolveAmountRef(ref: AmountRef, ctx: ResolutionContext): TargetRef | undefined {
+  if (ref === "sacrificed") {
+    return ctx.sacrificed === undefined ? undefined : { kind: "object", object: ctx.sacrificed };
+  }
+  return resolveEffectTarget(ref, ctx);
+}
 
 function resolveEffectTarget(
   ref: EffectTargetRef,
@@ -1895,6 +1935,7 @@ function containsDynamicCompare(value: unknown): boolean {
   const found = Array.isArray(value)
     ? value.some(containsDynamicCompare)
     : isAmountCompare(value as Record<string, unknown>) ||
+      "sharesCardTypeWith" in value ||
       Object.entries(value).some(
         ([key, v]) => !NESTED_EFFECT_KEYS.has(key) && containsDynamicCompare(v),
       );
@@ -1913,6 +1954,11 @@ function containsDynamicCompare(value: unknown): boolean {
  * resolution, so "sacrifice a creature, then search for one with mana value
  * one greater" reads the sacrifice that has just happened. `{ own }` operands
  * are left alone: they're about each object matched, not about the effect.
+ *
+ * `CardFilter.sharesCardTypeWith: "sacrificed"` is bound the same way, to the
+ * card types the sacrificed permanent had as it last existed on the
+ * battlefield (an `anyOf` of one `typesAnyOf`, so an `anyOf` the filter
+ * already had still applies).
  */
 export function bindDynamicCompares(spec: EffectSpec, ctx: ResolutionContext): EffectSpec {
   if (!containsDynamicCompare(spec)) return spec;
@@ -1924,9 +1970,19 @@ export function bindDynamicCompares(spec: EffectSpec, ctx: ResolutionContext): E
       const operand = record["n"] as { readonly amount: EffectAmount };
       return { ...record, n: amountValue(operand.amount, ctx) };
     }
-    return Object.fromEntries(
+    const walked = Object.fromEntries(
       Object.entries(record).map(([key, v]) => [key, NESTED_EFFECT_KEYS.has(key) ? v : walk(v)]),
     );
+    if (!("sharesCardTypeWith" in walked)) return walked;
+    // "Shares a card type with it": the sacrificed permanent's types as it
+    // last existed, ANDed with whatever `anyOf` the filter already had.
+    const { sharesCardTypeWith: _with, anyOf, ...rest } = walked as CardFilter;
+    const types =
+      ctx.sacrificed === undefined
+        ? []
+        : ctx.cardTypesOf({ kind: "object", object: ctx.sacrificed });
+    const shares: CardFilter = { typesAnyOf: types, ...(anyOf !== undefined ? { anyOf } : {}) };
+    return { ...rest, anyOf: [shares] };
   };
   return walk(spec) as EffectSpec;
 }
@@ -2065,7 +2121,10 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       // actually happened (rule 603.4-adjacent: the source may have been
       // removed in response).
       const sacrificed = ctx.sacrificeSource();
-      if (sacrificed && spec.then !== undefined) applyEffectSpec(spec.then, ctx);
+      if (sacrificed && spec.then !== undefined) {
+        // "The sacrificed creature" in the tail is the source, as it was.
+        applyEffectSpec(spec.then, ctx.withSacrificed(ctx.source));
+      }
       return;
     }
     case "fight": {

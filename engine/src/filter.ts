@@ -9,7 +9,9 @@
  *
  * Off the battlefield (a library / graveyard card) `computeCharacteristics`
  * degrades to printed values, which is what a library search / graveyard
- * filter wants.
+ * filter wants. A permanent that has *left* the battlefield is matched as it
+ * last existed there only when the caller asks (`FilterContext.lastKnown` /
+ * `.snapshot` — a dies trigger's filter, a resolving ability's "if it was …").
  */
 
 import {
@@ -24,7 +26,7 @@ import type { Color } from "./mana.js";
 import { manaValue, parseManaCost } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { printedCardName } from "./state.js";
-import type { GameObject, GameState } from "./state.js";
+import type { GameObject, GameState, LastKnownInfo } from "./state.js";
 
 /**
  * A numeric comparison clause, e.g. `{ op: "lte", n: 2 }` = "≤ 2".
@@ -191,6 +193,15 @@ export interface CardFilter {
    */
   readonly putIntoGraveyardFromLibraryThisTurn?: boolean;
   /**
+   * Shares at least one card type with the permanent sacrificed to pay for
+   * (or earlier in) the spell or ability applying this filter — "a permanent
+   * that shares a card type with it" (Braids, Arisen Nightmare), read from
+   * the sacrificed permanent as it last existed on the battlefield. Bound to
+   * a plain `typesAnyOf` as the effect applies (`bindDynamicCompares`); with
+   * nothing sacrificed, or anywhere else, it matches nothing.
+   */
+  readonly sharesCardTypeWith?: "sacrificed";
+  /**
    * At least one of these filters must match, as well as every other clause
    * here — the "or" a flat clause list can't say: historic ("artifact,
    * legendary, or Saga"), "enchanted or equipped", "black and/or red".
@@ -207,12 +218,20 @@ export interface FilterContext {
   /**
    * Read an object that has just left the battlefield as it last existed
    * there (rule 603.10a) — for a trigger filter matched against the permanent
-   * whose leaving fired it. Today that covers `controlledBy`: the move has
-   * already reverted control to the owner, and "a creature you control dies"
-   * means whoever controlled it as it died (`GameObject.lastKnownController`).
-   * No effect on an object whose last move wasn't off the battlefield.
+   * whose leaving fired it, as the event happens. Every clause then reads its
+   * `GameObject.lastKnown` snapshot: the controller it had, the types and
+   * subtypes an effect had given it, its counters, keywords, power. No effect
+   * on an object that is on the battlefield.
    */
   readonly lastKnown?: boolean;
+  /**
+   * Match this snapshot of the object instead of the object as it is now —
+   * last-known information the caller has already picked out for a
+   * particular departure from the battlefield (a resolving ability's "if it
+   * was a Saproling", "if the sacrificed creature was a commander"). Wins
+   * over `lastKnown`, and answers even for a token that has ceased to exist.
+   */
+  readonly snapshot?: LastKnownInfo;
   /** Evaluates a `NumCompare`'s `{ amount }` operand in the context of
    * whatever is applying the filter (its source, controller, triggering
    * object, {X}, targets). Absent ⇒ such a comparison fails closed. */
@@ -220,8 +239,10 @@ export interface FilterContext {
 }
 
 /** What is attached to `id` on the battlefield, for the attachment clauses.
- * Attachments leave with the permanent, so off the battlefield it's none. */
-function attachmentsOf(
+ * Attachments leave with the permanent, so off the battlefield it's none —
+ * which is why a leaving permanent's snapshot records them first
+ * (`LastKnownInfo.equipped`). */
+export function attachmentsOf(
   state: GameState,
   registry: CardRegistry,
   id: ObjectId,
@@ -266,7 +287,12 @@ function manaValueOfObject(registry: CardRegistry, object: GameObject): number {
   return manaValue(cost) + (object.zone === "stack" ? cost.x * Math.max(0, object.xValue ?? 0) : 0);
 }
 
-/** Does object `id` satisfy every clause of `filter`? */
+/** Does object `id` satisfy every clause of `filter`?
+ *
+ * With a snapshot in play (`FilterContext.lastKnown` / `.snapshot`) every
+ * clause reads it instead of the object: one code path, so no clause can be
+ * answered from the snapshot in one place and from the card in the
+ * graveyard in another. */
 export function matchesFilter(
   state: GameState,
   registry: CardRegistry,
@@ -274,8 +300,19 @@ export function matchesFilter(
   filter: CardFilter,
   ctx: FilterContext,
 ): boolean {
-  const object = state.objects[id];
-  if (object === undefined) return false;
+  const object: GameObject | undefined = state.objects[id];
+  const lki: LastKnownInfo | undefined =
+    ctx.snapshot ??
+    (ctx.lastKnown !== true
+      ? undefined
+      : object === undefined
+        ? state.ceasedTokens?.[id]
+        : object.zone !== "battlefield"
+          ? object.lastKnown
+          : undefined);
+  // Exactly one of the two describes the object from here on.
+  const live = lki === undefined ? object : undefined;
+  if (live === undefined && lki === undefined) return false;
 
   // A permanent whose controller has left the game takes no further part in
   // it: nothing counts it, targets it, or sweeps it up.
@@ -285,9 +322,17 @@ export function matchesFilter(
   // table — an eliminated player's battlefield sits there for everyone to
   // read. Functionally they are gone, which is the half the rules are about;
   // the client tints the quadrant so nobody mistakes them for live.
-  if (object.zone === "battlefield" && state.players[object.controller]?.hasLost === true) {
+  if (
+    live !== undefined &&
+    live.zone === "battlefield" &&
+    state.players[live.controller]?.hasLost === true
+  ) {
     return false;
   }
+  // "Shares a card type with the sacrificed creature" is bound to plain
+  // types by the effect applying it (`bindDynamicCompares`); left unbound —
+  // anywhere nothing could answer it — it matches nothing.
+  if (filter.sharesCardTypeWith !== undefined) return false;
 
   // Types, subtypes and colours are self-contained (layers 4 / 3 / 5 come only
   // from the object's own modifiers), so they're answered without the layer
@@ -295,7 +340,7 @@ export function matchesFilter(
   // the fold is expensive enough that it's worth deferring: a static
   // ability's condition (Kird Ape's "you control a Forest") runs this over the
   // whole battlefield every time anything reads its characteristics.
-  const types = effectiveTypes(registry, object);
+  const types = live !== undefined ? effectiveTypes(registry, live) : lki!.types;
   if (filter.type !== undefined && !types.includes(filter.type)) return false;
   if (filter.types !== undefined && !filter.types.every((t) => types.includes(t))) {
     return false;
@@ -311,7 +356,7 @@ export function matchesFilter(
     filter.subtypes !== undefined ||
     filter.notSubtypes !== undefined
   ) {
-    const subtypes = effectiveSubtypes(registry, object);
+    const subtypes = live !== undefined ? effectiveSubtypes(registry, live) : lki!.subtypes;
     if (filter.subtype !== undefined && !subtypes.includes(filter.subtype)) return false;
     if (
       filter.subtypes !== undefined &&
@@ -326,20 +371,16 @@ export function matchesFilter(
       return false;
     }
   }
-  if (
-    filter.supertype !== undefined &&
-    !registry.get(printedCardName(object)).supertypes.includes(filter.supertype)
-  ) {
-    return false;
+  const name = live !== undefined ? printedCardName(live) : lki!.name;
+  if (filter.supertype !== undefined || filter.notSupertype !== undefined) {
+    const supertypes = live !== undefined ? registry.get(name).supertypes : lki!.supertypes;
+    if (filter.supertype !== undefined && !supertypes.includes(filter.supertype)) return false;
+    if (filter.notSupertype !== undefined && supertypes.includes(filter.notSupertype)) {
+      return false;
+    }
   }
-  if (
-    filter.notSupertype !== undefined &&
-    registry.get(printedCardName(object)).supertypes.includes(filter.notSupertype)
-  ) {
-    return false;
-  }
-  if (filter.name !== undefined && printedCardName(object) !== filter.name) return false;
-  if (filter.notName !== undefined && printedCardName(object) === filter.notName) return false;
+  if (filter.name !== undefined && name !== filter.name) return false;
+  if (filter.notName !== undefined && name === filter.notName) return false;
 
   if (
     filter.colors !== undefined ||
@@ -347,7 +388,8 @@ export function matchesFilter(
     filter.colorless === true ||
     filter.multicolored !== undefined
   ) {
-    const colors = effectiveColors(registry, object);
+    const colors: ReadonlySet<Color> =
+      live !== undefined ? effectiveColors(registry, live) : new Set(lki!.colors);
     if (filter.colors !== undefined && !filter.colors.every((col) => colors.has(col))) {
       return false;
     }
@@ -360,57 +402,66 @@ export function matchesFilter(
     }
   }
 
-  if (filter.blocking !== undefined && (object.blocking !== null) !== filter.blocking) {
-    return false;
+  if (filter.blocking !== undefined) {
+    const blocking = live !== undefined ? live.blocking !== null : lki!.blocking;
+    if (blocking !== filter.blocking) return false;
   }
   if (filter.attacking !== undefined) {
-    // Off the battlefield, `attacking` has already been cleared by the move
-    // that took it there — fall back to the snapshot (rule 608.2h).
-    const attacking =
-      object.zone === "battlefield" ? object.attacking !== null : object.wasAttacking === true;
+    // Off the battlefield `attacking` has been cleared by the move, and only
+    // a snapshot still knows (Kardur's "whenever an attacking creature dies").
+    const attacking = live !== undefined ? live.attacking !== null : lki!.attacking;
     if (attacking !== filter.attacking) return false;
   }
   // A `NumCompare` operand read off the game: `{ own }` from this object,
   // `{ amount }` from whoever is applying the filter.
-  let own: { power: number; toughness: number } | undefined;
+  let own: { readonly power: number; readonly toughness: number } | undefined = lki;
+  const manaValueNow = (): number =>
+    live !== undefined ? manaValueOfObject(registry, live) : lki!.manaValue;
   const dynamic = (operand: DynamicOperand): number | undefined => {
     if ("amount" in operand) return ctx.amount?.(operand.amount);
-    if (operand.own === "manaValue") return manaValueOfObject(registry, object);
+    if (operand.own === "manaValue") return manaValueNow();
     own ??= computeCharacteristics(state, registry, id);
     return operand.own === "power" ? own.power : own.toughness;
   };
+  const counters = live !== undefined ? live.counters : lki!.counters;
   if (filter.counters !== undefined) {
     const held = filter.counters.kind === undefined
-      ? Object.values(object.counters).reduce((n, v) => n + (v ?? 0), 0)
-      : (object.counters[filter.counters.kind] ?? 0);
+      ? Object.values(counters).reduce((n, v) => n + (v ?? 0), 0)
+      : (counters[filter.counters.kind] ?? 0);
     if (!compareNum(held, filter.counters.compare, ctx.x, dynamic)) return false;
   }
   if (filter.manaValue !== undefined) {
-    const mv = manaValueOfObject(registry, object);
-    if (!compareNum(mv, filter.manaValue, ctx.x, dynamic)) return false;
+    if (!compareNum(manaValueNow(), filter.manaValue, ctx.x, dynamic)) return false;
   }
-  if (
-    filter.manaSpent !== undefined &&
-    !compareNum(object.manaSpent ?? 0, filter.manaSpent, ctx.x, dynamic)
-  ) {
-    return false;
+  if (filter.manaSpent !== undefined) {
+    const spent = live !== undefined ? live.manaSpent : lki!.manaSpent;
+    if (!compareNum(spent ?? 0, filter.manaSpent, ctx.x, dynamic)) return false;
   }
   // Cheap, purely-positional clauses before the expensive fold below.
-  const controller =
-    ctx.lastKnown === true && object.zone !== "battlefield"
-      ? (object.lastKnownController ?? object.controller)
-      : object.controller;
+  const controller = live !== undefined ? live.controller : lki!.controller;
+  const owner = live !== undefined ? live.owner : lki!.owner;
   if (filter.controlledBy === "you" && controller !== ctx.you) return false;
   if (filter.controlledBy === "opponent" && controller === ctx.you) return false;
-  if (filter.ownedBy === "you" && object.owner !== ctx.you) return false;
-  if (filter.ownedBy === "opponent" && object.owner === ctx.you) return false;
-  if (filter.tapped !== undefined && object.tapped !== filter.tapped) return false;
-  if (filter.token !== undefined && object.isToken !== filter.token) return false;
-  if (filter.isCommander !== undefined && object.isCommander !== filter.isCommander) return false;
+  if (filter.ownedBy === "you" && owner !== ctx.you) return false;
+  if (filter.ownedBy === "opponent" && owner === ctx.you) return false;
+  if (filter.tapped !== undefined) {
+    const tapped = live !== undefined ? live.tapped : lki!.tapped;
+    if (tapped !== filter.tapped) return false;
+  }
+  if (filter.token !== undefined) {
+    const token = live !== undefined ? live.isToken : lki!.isToken;
+    if (token !== filter.token) return false;
+  }
+  if (filter.isCommander !== undefined) {
+    const commander = live !== undefined ? live.isCommander : lki!.isCommander;
+    if (commander !== filter.isCommander) return false;
+  }
   if (filter.putIntoGraveyardFromLibraryThisTurn !== undefined) {
+    // A snapshot is of a permanent, which didn't come from a library.
     const milled =
-      object.zone === "graveyard" &&
-      object.putIntoGraveyardFromLibraryOnTurn === state.turn.number;
+      live !== undefined &&
+      live.zone === "graveyard" &&
+      live.putIntoGraveyardFromLibraryOnTurn === state.turn.number;
     if (milled !== filter.putIntoGraveyardFromLibraryThisTurn) return false;
   }
   if (
@@ -418,12 +469,12 @@ export function matchesFilter(
     filter.enchanted !== undefined ||
     filter.modified !== undefined
   ) {
-    const attached = attachmentsOf(state, registry, id);
+    const attached = live !== undefined ? attachmentsOf(state, registry, id) : lki!;
     if (filter.equipped !== undefined && attached.equipped !== filter.equipped) return false;
     if (filter.enchanted !== undefined && attached.enchanted !== filter.enchanted) return false;
     if (filter.modified !== undefined) {
       const modified =
-        Object.values(object.counters).some((n) => (n ?? 0) > 0) ||
+        Object.values(counters).some((n) => (n ?? 0) > 0) ||
         attached.equipped ||
         attached.enchantedByController;
       if (modified !== filter.modified) return false;
@@ -431,7 +482,9 @@ export function matchesFilter(
   }
   if (
     filter.anyOf !== undefined &&
-    !filter.anyOf.some((each) => matchesFilter(state, registry, id, each, ctx))
+    !filter.anyOf.some((each) =>
+      matchesFilter(state, registry, id, each, lki === undefined ? ctx : { ...ctx, snapshot: lki }),
+    )
   ) {
     return false;
   }
@@ -443,7 +496,10 @@ export function matchesFilter(
     filter.keyword !== undefined ||
     filter.notKeyword !== undefined
   ) {
-    const c = computeCharacteristics(state, registry, id);
+    const c: { readonly power: number; readonly toughness: number; readonly keywords: ReadonlySet<Keyword> } =
+      lki !== undefined
+        ? { power: lki.power, toughness: lki.toughness, keywords: new Set(lki.keywords) }
+        : computeCharacteristics(state, registry, id);
     own = c;
     if (filter.power !== undefined && !compareNum(c.power, filter.power, ctx.x, dynamic)) {
       return false;

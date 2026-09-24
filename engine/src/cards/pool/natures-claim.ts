@@ -10,10 +10,10 @@ export default defineCard({
   effect: {
     kind: "sequence",
     effects: [
-      // Life first, while the target is still there to read a controller off
-      // — the same ordering Swords to Plowshares uses.
-      { kind: "gain-life", amount: 4, toControllerOfTarget: 0 },
       { kind: "destroy", target: 0 },
+      // The printed order: "its controller" is who controlled it as it was
+      // destroyed (rule 608.2h), a thief included.
+      { kind: "gain-life", amount: 4, toControllerOfTarget: 0 },
     ],
   },
 });

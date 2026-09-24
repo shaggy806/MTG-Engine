@@ -40,7 +40,7 @@ import type { CardFilter } from "./filter.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { permanentCount, printedCardName } from "./state.js";
-import type { GameObject, GameState } from "./state.js";
+import type { GameObject, GameState, LastKnownInfo } from "./state.js";
 import type { TargetRef } from "./target.js";
 
 /**
@@ -194,6 +194,15 @@ export interface ConditionOptions {
    * `conditional` effect); a static ability has none.
    */
   readonly targets?: readonly (TargetRef | undefined)[];
+  /**
+   * The source as it last existed on the battlefield, when the ability
+   * asking is about a permanent that has since left (rule 603.10a — a dies
+   * trigger's "if it had no +1/+1 counters on it", "if it was equipped").
+   * Supplied by a caller that knows which departure it means (see
+   * `LastKnownRefs`); without it, a source off the battlefield falls back to
+   * its latest snapshot.
+   */
+  readonly sourceLastKnown?: LastKnownInfo;
 }
 
 /**
@@ -368,7 +377,10 @@ function evalStaticCondition(
         condition.atLeast
       );
     case "source":
-      return matchesFilter(state, registry, source.id, condition.filter, { you });
+      return matchesFilter(state, registry, source.id, condition.filter, {
+        you,
+        ...(opts.sourceLastKnown !== undefined ? { snapshot: opts.sourceLastKnown } : {}),
+      });
     case "source-zone":
       return (
         condition.zones.includes(source.zone) &&
@@ -417,7 +429,8 @@ function evalStaticCondition(
       // (603.10) — `moveObject` clears `counters`, so a dies-trigger asking
       // "did it have counters" has only the snapshot to go on.
       const held =
-        source.zone === "battlefield" ? source.counters : (source.lastKnownCounters ?? {});
+        opts.sourceLastKnown?.counters ??
+        (source.zone === "battlefield" ? source.counters : (source.lastKnown?.counters ?? {}));
       const n =
         condition.counter === undefined
           ? Object.values(held).reduce((sum, v) => sum + (v ?? 0), 0)
@@ -426,6 +439,7 @@ function evalStaticCondition(
     }
     case "target":
     case "trigger-object":
+    case "sacrificed":
     case "resolved-this-turn":
       // A static ability has no triggering object, no chosen targets and no
       // resolution in progress — these kinds are only meaningful inside a

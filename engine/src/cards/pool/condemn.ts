@@ -12,9 +12,10 @@ export default defineCard({
   effect: {
     kind: "sequence",
     effects: [
-      // Life first: `toughnessOf` needs the creature still measurable.
-      { kind: "gain-life", amount: { toughnessOf: 0 }, toControllerOfTarget: 0 },
       { kind: "put-on-bottom-of-library", target: 0 },
+      // The printed order: `toughnessOf` and "its controller" read the
+      // creature as it last existed on the battlefield (rule 608.2h).
+      { kind: "gain-life", amount: { toughnessOf: 0 }, toControllerOfTarget: 0 },
     ],
   },
 });

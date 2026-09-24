@@ -325,9 +325,9 @@ or trigger object (Prossh: "X is the amount of mana spent to cast it";
 commander tax and {X} count, a free cast is 0, convoked creatures aren't
 mana);
 `{ manaValueOf: ref }` — the mana value of whatever a target slot (or
-`"source"` / `"trigger-object"`) points at, read off the printed card so it
-still answers after that permanent has left the battlefield (rule 608.2h, last
-known information — Feed the Swarm destroys the permanent and *then* reads it,
+`"source"` / `"trigger-object"` / `"sacrificed"`) points at, as it last
+existed on the battlefield if it has left since (rule 608.2h, last known
+information — Feed the Swarm destroys the permanent and *then* reads it,
 and `0` for a player target). A spell **on the stack** counts its chosen {X}
 (rule 202.3e — Kaervek reading a Fireball cast for 3 sees 4), and a target
 that was a spell and has since left the stack is read as it last existed
@@ -357,9 +357,11 @@ count; mana value off the printed cost with `{X}` as 0. A **sum counts a
 token stack once per token** — twenty 1/1 Goblins in one stack are 20 power.
 A max over no permanents is 0, and the amount is clamped at 0, rule 107.1b),
 `{ countInGraveyard }`, `{ manaValueOf }`, `{ powerOf }`, `{ toughnessOf }`
-(Condemn), `{ lifeTotal: "you" }` (Storm Herd), `{ devotionTo: Color }` (rule
-700.5 — Gray Merchant of Asphodel; a hybrid pip counts for each colour it
-contains, `{X}` and generic for nothing), `{ creaturesDiedThisTurn: true }`
+(Condemn; each takes a target slot, `"source"`, `"trigger-object"` or
+`"sacrificed"` — see "Last-known information" below), `{ lifeTotal: "you" }`
+(Storm Herd), `{ devotionTo: Color }` (rule 700.5 — Gray Merchant of
+Asphodel; a hybrid pip counts for each colour it contains, `{X}` and generic
+for nothing), `{ creaturesDiedThisTurn: true }`
 (per *player*, unlike `GameState`'s global counter — Liliana's Standard
 Bearer), `{ countPlayers: PlayerScope }` (Inspired Sphinx; counts living
 players, so it shrinks as a multiplayer game does),
@@ -614,7 +616,7 @@ source, so it isn't a `CardFilter` clause.
 subtypes, supertype, notSupertype, name, notName, colors, notColors, colorless,
 manaValue, power, toughness, counters, controlledBy, ownedBy, keyword,
 notKeyword, tapped, token, isCommander, equipped, enchanted, modified, anyOf,
-manaSpent, putIntoGraveyardFromLibraryThisTurn }`,
+manaSpent, putIntoGraveyardFromLibraryThisTurn, sharesCardTypeWith }`,
 every present clause ANDed. `anyOf: CardFilter[]` is the "or": at least one of
 them has to match as well (historic is `anyOf: [{ type: "artifact" },
 { supertype: "legendary" }, { subtype: "Saga" }]`; Dogmeat's "enchanted or
@@ -628,8 +630,12 @@ or any other library-to-graveyard move, never discarded or destroyed (Captain
 N'ghathrod's end-step target is `{ kind: "card-in-graveyard", whose:
 "opponent", filter: { typesAnyOf: ["artifact", "creature"],
 putIntoGraveyardFromLibraryThisTurn: true } }`). A card that leaves the
-graveyard and returns loses it (rule 400.7). `attacking` asks whether the permanent is currently attacking (Kangee's
-Lieutenant). `subtypes`/`typesAnyOf` are an OR
+graveyard and returns loses it (rule 400.7). `sharesCardTypeWith: "sacrificed"`
+is "a permanent that **shares a card type with it**" — the permanent the
+spell or ability sacrificed, as it last existed (Braids, Arisen Nightmare);
+an effect's filter is bound to its types as the effect applies, and anywhere
+nothing was sacrificed it matches nothing. `attacking` asks whether the
+permanent is currently attacking (Kangee's Lieutenant). `subtypes`/`typesAnyOf` are an OR
 within themselves (Farseek: "a Plains, Island, Swamp, or Mountain card";
 Takenuma's Channel: "a creature or planeswalker card"). Numeric fields take
 `{ op: "eq"|"ne"|"lt"|"lte"|"gt"|"gte", n }`.
@@ -679,12 +685,42 @@ Where `{ amount }` is answered, and when:
   comparison **fails closed** (the object doesn't match). Use `{ own }` or a
   printed number there.
 
-Last-known information is whatever the `EffectAmount` itself reads.
-`manaValueOf` a target or trigger object that has left the battlefield reads
-it as it last existed there (rule 608.2h — `GameObject.lastKnownManaValue`,
-taken before the move ends a copy effect), a token that has ceased to exist
-included (`GameState.ceasedTokenManaValues`, kept for the turn). `powerOf` /
-`toughnessOf` have no such snapshot yet.
+#### Last-known information (rule 608.2h)
+
+An object an amount reads that was a **permanent** when the spell or ability
+referred to it, and has left the battlefield since, is read **as it last
+existed there** — its computed power and toughness (counters, anthems,
+pumps), mana value (what a copy effect made it), controller, types, colours
+and keywords (`GameObject.lastKnown`, taken as it left). "When Juri dies, it
+deals damage equal to its power to any target" is just `{ powerOf: "source" }`
+(Juri, Master of the Revue; Elenda's `create-token` count), and it counts the
+counters Juri died with even if Juri has been exiled from the graveyard — or
+returned to the battlefield — in response. A token that has ceased to exist
+is read the same way for the rest of the turn (`GameState.ceasedTokens`).
+Which objects qualify:
+
+- `"source"` and `"trigger-object"` — when the ability triggered or was
+  activated while they were on the battlefield, or for a permanent's own
+  leaves-the-battlefield ability (`GameObject.lastKnownRefs`).
+- a target slot — when the target was on the battlefield as it was targeted
+  (`targetZones`). A card targeted in a graveyard is read as it is now.
+- `"sacrificed"` — the permanent sacrificed to pay the spell's or ability's
+  cost (Dina, Soul Steeper's "{1}, Sacrifice another creature: Dina gets +X/+0
+  until end of turn, where X is the sacrificed creature's power" is a
+  `modify-pt` on `"source"` with `power: { powerOf: "sacrificed" }`), or by a
+  `sacrifice-source` step before the one reading it ("Sacrifice ~. If you
+  do, …"). Nothing sacrificed reads 0. A sacrifice *chosen* by an earlier
+  step ("you may sacrifice a creature. When you do, …") isn't this yet.
+
+The same references answer "**that creature's** controller" (`controllerOf`
+— `toControllerOfTarget`, `create-token`'s `who: "target-controller"`, the
+`"trigger-controller"` scope), a `trigger-object` / `target` condition's
+filter, and the damage a departed source deals: its colours for
+protection, its lifelink and deathtouch, and its controller for the life.
+
+One gap: a permanent that left, came back and left *again* before an ability
+referring to its first departure resolved keeps only the later snapshot, and
+the earlier reference reads the card as it now is.
 
 ---
 
@@ -776,6 +812,10 @@ removeCounter?, payEnergy?, discardHand?, tapOthers? }`.
 - `sacrifice: "self"` ("Sacrifice this: …"), `"creature-you-control"`, or
   `{ filter: CardFilter }` (Zuran Orb — "Sacrifice a land"). The last two make
   the player pick (a `sacrifice` choice on the `activate-ability` LegalAction).
+  The effect reads what was sacrificed as `"sacrificed"` — "where X is the
+  sacrificed creature's power" is `{ powerOf: "sacrificed" }` (§6,
+  "Last-known information"). A spell's `additionalCost.sacrifice` works the
+  same way.
 - `payLife: 2`, `payEnergy: 3`, `removeCounter: { kind: "+1/+1", count: 1 }`,
   `discardHand: true`, `exileSelf: true` — all paid automatically (no
   decision). `exileSelf` is Hanged Executioner's "Exile this creature",
@@ -957,10 +997,16 @@ actions, an edict once every player has chosen, an overloaded bounce — each
 see every other one leave, their own source included. Zulaport Cutthroat and
 two Bears under one Wrath of God drain three times, and nothing about the card
 has to say so. A permanent that left is matched as it last existed on the
-battlefield for **who controlled it**: `who: "you-control"`, a filter's
-`controlledBy`, and whose ability it is all use its controller as it left, so
-a stolen creature dying is the thief's. Its types, keywords and granted
-abilities are *not* yet read that way — see §15.
+battlefield (its `GameObject.lastKnown` snapshot, rule 603.10a): `who:
+"you-control"`, the whole `filter` (types and subtypes an effect gave it — an
+animated land dying is a creature dying — counters, keywords, power, token,
+controller) and whose ability it is. A stolen creature dying is the thief's.
+Its own abilities are the ones it had then: none if it had lost them (Turn to
+Frog), a copied card's rather than the Clone's, and a dies trigger an Aura, a
+lord or a one-shot `grant-triggered` gave it, even though that grant ended
+with the move. The victims of one event are all snapshotted before the first
+of them moves, so a creature and the lord it dies beside keep each other's
+bonuses.
 
 If the ability has `targets`, the controller chooses them via a dispatched
 `choose-targets` decision when the trigger goes on the stack. A slot the event
@@ -1226,11 +1272,19 @@ clause (section 9):
   has left the battlefield (rule 603.10), which is the only way Undying's "if
   it had no +1/+1 counters on it" can be asked at all: a dies-trigger is
   checked after the card is already in a graveyard, and `moveObject` clears
-  counters on every zone change (`GameObject.lastKnownCounters`).
+  counters on every zone change (`GameObject.lastKnown`).
 - `{ kind: "target", index, filter }` — the object in target slot `index`
   matches `filter` (Scavenging Ooze: "Exile target card from a graveyard.
   **If it was a creature card**, …"). Same restriction as `trigger-object`
   below: only meaningful inside a `conditional` effect.
+  A target that was a permanent and has left the battlefield since is matched
+  as it last existed there.
+- `{ kind: "sacrificed", filter }` — the permanent the spell or ability
+  sacrificed (its cost, or a `sacrifice-source` step before this one)
+  matched `filter` as it last existed on the battlefield: "if the sacrificed
+  creature was a commander" (`{ isCommander: true }`), "if it was a Hamster".
+  False when nothing was sacrificed. Only meaningful inside a `conditional`
+  effect.
 - `{ kind: "trigger-object", filter }` — the object whose event fired the
   *triggered ability* currently resolving matches `filter` (Akoum Hellkite:
   "If that land is a Mountain, it deals 2 damage instead"). Only meaningful
@@ -1238,7 +1292,9 @@ clause (section 9):
   which has no triggering object.
 - `{ kind: "source", filter }` — the ability's own source matches `filter`:
   "as long as ~ is equipped" (`{ equipped: true }`), "if ~ is attacking",
-  "if ~ is tapped". Read wherever the source is now.
+  "if ~ is tapped". A triggered ability whose source has left the
+  battlefield since it triggered (its own dies trigger) reads it as it last
+  existed there; otherwise wherever the source is now.
 - `{ kind: "source-zone", zones, sameObject? }` — **where** the ability's own
   source is, as an intervening-if: Eminence's "if ~ is in the command zone or
   on the battlefield" (`zones: ["command", "battlefield"]`, Edgar Markov) or
@@ -1595,13 +1651,6 @@ Delete an entry in the same commit as the feature that retires it.
 
 **Partial:**
 
-- **Last-known information for a leaves-the-battlefield trigger is only who
-  controlled the permanent** (§9, "Leaving together"). Everything else is read
-  off the card where it landed: an animated Mutavault that dies isn't a
-  creature dying to Blood Artist, a creature that had lost its abilities still
-  fires its own dies trigger, and a dies trigger *granted* by another
-  permanent's static is gone once the grantor has left. A card whose trigger
-  turns on one of those can't be authored faithfully yet.
 - **Only mass moves are one event.** A single instruction with several
   targets ("destroy two target creatures", "return this card and up to one
   other target creature card") still moves them one after another, so a
