@@ -2548,10 +2548,16 @@ export class Game {
      * zones, carried to the modes — see `choose-modes`' `lastKnownRefs`. */
     lastKnownRefs?: LastKnownRefs,
     targetZones?: readonly (ZoneType | null)[],
-    /** The ability choosing (`ResolutionContext.abilityKey`), and whether
-     * only modes it hasn't had chosen this turn are offered — `modal`'s
-     * `notChosenThisTurn`, `may`'s `oncePerTurn`. */
-    ability: { readonly key?: string; readonly notChosenThisTurn?: boolean } = {},
+    /** The ability choosing (`ResolutionContext.abilityKey`); whether only
+     * modes it hasn't had chosen this turn are offered — `modal`'s
+     * `notChosenThisTurn`, `may`'s `oncePerTurn`; and the life and energy
+     * parts of a `may`'s cost. */
+    ability: {
+      readonly key?: string;
+      readonly notChosenThisTurn?: boolean;
+      readonly costLife?: number;
+      readonly costEnergy?: number;
+    } = {},
   ): void {
     const key = ability.key;
     const decline = (): void => {
@@ -2598,6 +2604,12 @@ export class Game {
       decline();
       return;
     }
+    const costLife = Math.max(0, ability.costLife ?? 0);
+    const costEnergy = Math.max(0, ability.costEnergy ?? 0);
+    if (!this.canPayLifeAndEnergy(controller, costLife, costEnergy)) {
+      decline();
+      return;
+    }
     this.state.awaiting = {
       kind: "choose-modes",
       player: controller,
@@ -2620,7 +2632,16 @@ export class Game {
       ...(cost !== undefined ? { cost } : {}),
       ...(key !== undefined ? { abilityKey: key } : {}),
       ...(onlyUnchosen ? { notChosenThisTurn: offered } : {}),
+      ...(costLife > 0 ? { costLife } : {}),
+      ...(costEnergy > 0 ? { costEnergy } : {}),
     };
+  }
+
+  /** Can `player` pay `life` life (rule 119.4: only with at least that much;
+   * paying 0 always) and `energy` energy? */
+  private canPayLifeAndEnergy(player: PlayerId, life: number, energy: number): boolean {
+    const ps = this.state.players[player];
+    return (life <= 0 || ps.life >= life) && (energy <= 0 || ps.energy >= energy);
   }
 
   /** Answers a pending `choose-modes` decision. Applies the chosen modes'
@@ -2649,6 +2670,11 @@ export class Game {
     // payment falls back to the decline branch rather than giving it away.
     let chosen = [...modeIndices];
     let chosenX = 0;
+    // A `may`'s life and energy are part of the same cost: all of it is paid,
+    // or none (a board that moved since the question was asked declines).
+    const costLife = awaiting.costLife ?? 0;
+    const costEnergy = awaiting.costEnergy ?? 0;
+    if (chosen.length > 0 && !this.canPayLifeAndEnergy(player, costLife, costEnergy)) chosen = [];
     if (cost !== undefined && chosen.length > 0) {
       const parsed = parseManaCost(cost);
       chosenX = parsed.x > 0 ? Math.max(0, Math.floor(xValue ?? 0)) : 0;
@@ -2660,6 +2686,10 @@ export class Game {
       const payment = this.payMana(player, concrete);
       if (payment === null) chosen = [];
       else this.executePayment(player, payment);
+    }
+    if (chosen.length > 0) {
+      if (costLife > 0) this.changeLife(player, -costLife);
+      if (costEnergy > 0) this.changeEnergy(player, -costEnergy);
     }
     // Listed order, not the order the player named them (rule 700.2b).
     const ordered = chosen.sort((a, b) => a - b);
@@ -9992,7 +10022,7 @@ export class Game {
         this.state.preventionShields.push({ target, amount, combatOnly });
         this.emit({ type: "prevention-shield-created", target, amount });
       },
-      chooseModes: (minModes, maxModes, modes, onDecline, cost, notChosenThisTurn) =>
+      chooseModes: (minModes, maxModes, modes, onDecline, cost, notChosenThisTurn, otherCost) =>
         this.beginModesChoice(
           source,
           controller,
@@ -10008,7 +10038,12 @@ export class Game {
           undefined,
           refs,
           targetZones,
-          { key: opts.abilityKey, notChosenThisTurn: notChosenThisTurn === true },
+          {
+            key: opts.abilityKey,
+            notChosenThisTurn: notChosenThisTurn === true,
+            ...(otherCost?.life !== undefined ? { costLife: otherCost.life } : {}),
+            ...(otherCost?.energy !== undefined ? { costEnergy: otherCost.energy } : {}),
+          },
         ),
       changeLifeScoped: (who, delta) =>
         this.changeLifeScoped(controller, who, delta, triggerObject, triggerLastKnown(), refs.player),

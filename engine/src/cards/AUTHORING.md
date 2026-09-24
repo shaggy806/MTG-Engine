@@ -578,12 +578,18 @@ exist (rule 111.7), so neither comes back.
   are offered, and with none left nothing happens. Counted per ability, like
   `resolved-this-turn` (a permanent that leaves and returns starts again),
   and reset as each turn begins.
-- **`may { effect, prompt, cost?, then?, else?, oncePerTurn? }`** — "You may [effect]". One
+- **`may { effect, prompt, cost?, costLife?, costEnergy?, then?, else?, oncePerTurn? }`** — "You may [effect]". One
   optional mode; same targeting rule as `modal`. `cost` is a mana cost to say
   yes ("you may pay {B}. If you do, draw a card" — Nihil Spellbomb): the
   choice is only *offered* when it's payable, so being unable to pay and
   declining both land on `else`, and the mana is spent as the choice is
-  answered (re-checked then, since the board can move in between). `then`
+  answered (re-checked then, since the board can move in between).
+  `costLife` / `costEnergy` are the rest of that cost, as amounts read when
+  the `may` applies — Zoraline, Cosmos Caller's "you may pay {W}{B} and 2
+  life", Tymna the Weaver's "you may pay X life", "you may pay {E}{E}": the
+  choice is offered only when every part can be paid (life: at least that
+  much, rule 119.4), and all of it is paid together as it's answered. Say
+  the whole cost in `prompt`, which is what the player sees. `then`
   applies only when `effect` was chosen ("If you do, …" — Ob Nixilis, the
   Fallen); `else` only when it was declined ("If you didn't, …", or an
   "unless" cost framed as the decline branch — Springheart Nantuko, The

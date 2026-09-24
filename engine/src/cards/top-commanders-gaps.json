@@ -49,7 +49,8 @@
   "effect:created-tokens-gain-keyword-eot",
   "effect:reflexive-trigger",
   "effect:target-other-than-source",
-  "effect:add-subtype"
+  "effect:add-subtype",
+  "cost:may-cost-non-mana"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

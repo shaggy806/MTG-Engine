@@ -1340,6 +1340,18 @@ export type EffectSpec =
        * `else`. Paid as the choice is answered, not when the effect resolves.
        */
       readonly cost?: string;
+      /**
+       * Life to pay as part of that cost (with `cost`, or on its own) —
+       * Zoraline, Cosmos Caller's "you may pay {W}{B} and 2 life", Tymna the
+       * Weaver's "you may pay X life". Read as the `may` applies. Payable only
+       * with at least that much life (rule 119.4); paying 0 is always
+       * possible. Paying it is losing life.
+       */
+      readonly costLife?: EffectAmount;
+      /** Energy to pay as part of that cost — "you may pay {E}{E}". Read as
+       * the `may` applies (so "an amount of {E} equal to its mana value" is an
+       * amount); payable only with that much energy. */
+      readonly costEnergy?: EffectAmount;
       /** "If you do, [effect]" (rule 608.2h) — applied only when `effect` was
        * actually chosen (Ob Nixilis, the Fallen: "you may have target player
        * lose 3 life. If you do, put three +1/+1 counters on Ob Nixilis.").
@@ -2005,6 +2017,8 @@ export interface EffectApi {
     /** Offer only the modes this ability hasn't had chosen this turn — see
      * `modal`'s `notChosenThisTurn` and `may`'s `oncePerTurn`. */
     notChosenThisTurn?: boolean,
+    /** The rest of a `may`'s cost: life and energy, as numbers. */
+    otherCost?: { readonly life?: number; readonly energy?: number },
   ): void;
   /** Scry (`surveil: false`) or surveil (`surveil: true`) `amount` cards;
    * apply `then` afterwards. See the `"scry"` / `"surveil"` {@link EffectSpec}. */
@@ -2903,6 +2917,12 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         spec.else,
         spec.cost,
         spec.oncePerTurn === true,
+        spec.costLife === undefined && spec.costEnergy === undefined
+          ? undefined
+          : {
+              ...(spec.costLife !== undefined ? { life: amountValue(spec.costLife, ctx) } : {}),
+              ...(spec.costEnergy !== undefined ? { energy: amountValue(spec.costEnergy, ctx) } : {}),
+            },
       );
       return;
     }

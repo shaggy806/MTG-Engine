@@ -1199,6 +1199,10 @@ export type AwaitingDecision =
        * the ward cost of `warded`, declining counters `spell` (also the
        * decision's target 0). Choosing to pay logs `ward-paid`. */
       readonly ward?: { readonly warded: ObjectId; readonly spell: ObjectId };
+      /** The life and energy parts of a `may`'s cost — see `may.costLife`
+       * and `may.costEnergy` — paid alongside `cost` as the choice is made. */
+      readonly costLife?: number;
+      readonly costEnergy?: number;
       /** Which ability is choosing (`ResolutionContext.abilityKey`), so a
        * mode's effect resolves as part of it. */
       readonly abilityKey?: string;
