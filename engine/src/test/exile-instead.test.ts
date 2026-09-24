@@ -329,3 +329,70 @@ describe("Admiral Brass, Unsinkable", () => {
     expect(game.state.objects[plunderer].zone).toBe("graveyard");
   });
 });
+
+describe("finality counters alongside other rules", () => {
+  const settle = (game: Game, toCommandZone: boolean, asked: string[]): void => {
+    for (let i = 0; i < 300; i += 1) {
+      const awaiting = game.state.awaiting;
+      if (awaiting?.kind === "commander-replacement") {
+        asked.push(awaiting.intendedZone);
+        game.dispatch({ type: "commander-replacement", player: awaiting.player, toCommandZone });
+        continue;
+      }
+      if (awaiting !== null) throw new Error(`unexpected ${awaiting.kind}`);
+      if (game.state.zones.shared.stack.length === 0 && game.state.pendingTriggers.length === 0) {
+        return;
+      }
+      game.dispatch({ type: "pass-priority", player: game.state.priority.holder! });
+    }
+    throw new Error("never settled");
+  };
+  const finality = (game: Game, id: ObjectId): void =>
+    game.debugApplyEffect(A, { kind: "add-counter", target: 0, counter: "finality", amount: 1 }, [
+      { kind: "object", object: id },
+    ]);
+
+  for (const toCommandZone of [true, false]) {
+    it(`a commander with one is asked about exile, not a graveyard (${toCommandZone ? "to the command zone" : "stays exiled"})`, () => {
+      const { game } = mkGame(["Lightning Bolt"]);
+      game.advanceUntil(toPrecombat);
+      // "Whenever this or another creature you control dies" — a death would show.
+      game.debugSpawn("Zulaport Cutthroat", A, "battlefield");
+      const commander = game.debugSpawn("Grizzly Bears", A, "battlefield");
+      game.state.objects[commander].isCommander = true;
+      finality(game, commander);
+      const life = game.state.players[B].life;
+      game.debugSpawn("Mountain", A, "battlefield");
+      game.dispatch({
+        type: "cast-spell",
+        player: A,
+        card: handCard(game, A, "Lightning Bolt"),
+        targets: [{ kind: "object", object: commander }],
+      });
+      const asked: string[] = [];
+      settle(game, toCommandZone, asked);
+
+      expect(asked).toEqual(["exile"]);
+      expect(game.state.objects[commander].zone).toBe(toCommandZone ? "command" : "exile");
+      expect(game.state.players[B].life).toBe(life);
+    });
+  }
+
+  it("in a wrath, the creature with one is exiled while the rest die together", () => {
+    const { game } = mkGame(["Wrath of God"]);
+    game.advanceUntil(toPrecombat);
+    game.debugSpawn("Zulaport Cutthroat", A, "battlefield");
+    const marked = game.debugSpawn("Grizzly Bears", A, "battlefield");
+    finality(game, marked);
+    game.debugSpawn("Grizzly Bears", A, "battlefield");
+    for (let i = 0; i < 4; i += 1) game.debugSpawn("Plains", A, "battlefield");
+    const life = game.state.players[B].life;
+    game.dispatch({ type: "cast-spell", player: A, card: handCard(game, A, "Wrath of God"), targets: [] });
+    settle(game, true, []);
+
+    expect(game.state.objects[marked].zone).toBe("exile");
+    // Zulaport sees itself and the other Bears die — not the exiled one.
+    expect(game.state.players[B].life).toBe(life - 2);
+    expect(game.state.creaturesDiedThisTurn).toBe(2);
+  });
+});

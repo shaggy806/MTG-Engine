@@ -943,6 +943,8 @@ const deckE = deck([
   // Cost modifications keyed on targets, and twobrid pips.
   ["Hinata, Dawn-Crowned", 1],
   ["Reaper King", 1],
+  // Finality counters (exile-instead replacements).
+  ["Admiral Brass, Unsinkable", 1],
   ["Plains", 5],
   ["Island", 5],
   ["Swamp", 5],
