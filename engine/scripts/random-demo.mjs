@@ -262,6 +262,9 @@ const deckA = deck([
   ["Kalonian Hydra", 1],
   ["Bristly Bill, Spine Sower", 1],
   ["Unnatural Growth", 1],
+  // Ward as a real triggered ability (decision:ward-payment).
+  ["Wilson, Refined Grizzly", 1],
+  ["Valgavoth, Harrower of Souls", 1],
 ]);
 // Kept deliberately lean (~50 cards) so the RandomController actually draws
 // and plays its threats — a bloated deck just stalls out and the fuzz only

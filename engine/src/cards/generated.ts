@@ -854,6 +854,7 @@ import _poolUrtetRemnantOfMemnarch from "./pool/urtet-remnant-of-memnarch.js";
 import _poolUrzasCave from "./pool/urzas-cave.js";
 import _poolUrzasIncubator from "./pool/urzas-incubator.js";
 import _poolUtvaraHellkite from "./pool/utvara-hellkite.js";
+import _poolValgavothHarrowerOfSouls from "./pool/valgavoth-harrower-of-souls.js";
 import _poolValorInAkros from "./pool/valor-in-akros.js";
 import _poolVampireNighthawk from "./pool/vampire-nighthawk.js";
 import _poolVampiricRites from "./pool/vampiric-rites.js";
@@ -893,6 +894,7 @@ import _poolWhispersilkCloak from "./pool/whispersilk-cloak.js";
 import _poolWhiteKnight from "./pool/white-knight.js";
 import _poolWhiteSunsZenith from "./pool/white-suns-zenith.js";
 import _poolWillOfTheSultai from "./pool/will-of-the-sultai.js";
+import _poolWilsonRefinedGrizzly from "./pool/wilson-refined-grizzly.js";
 import _poolWiltLeafCavaliers from "./pool/wilt-leaf-cavaliers.js";
 import _poolWindreaderSphinx from "./pool/windreader-sphinx.js";
 import _poolWindsweptHeath from "./pool/windswept-heath.js";
@@ -1835,6 +1837,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolUrzasCave,
   _poolUrzasIncubator,
   _poolUtvaraHellkite,
+  _poolValgavothHarrowerOfSouls,
   _poolValorInAkros,
   _poolVampireNighthawk,
   _poolVampiricRites,
@@ -1874,6 +1877,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolWhiteKnight,
   _poolWhiteSunsZenith,
   _poolWillOfTheSultai,
+  _poolWilsonRefinedGrizzly,
   _poolWiltLeafCavaliers,
   _poolWindreaderSphinx,
   _poolWindsweptHeath,
