@@ -449,6 +449,7 @@ import _poolLotusField from "./pool/lotus-field.js";
 import _poolLotusPetal from "./pool/lotus-petal.js";
 import _poolLoyalGuardian from "./pool/loyal-guardian.js";
 import _poolLoyalSubordinate from "./pool/loyal-subordinate.js";
+import _poolLumraBellowOfTheWoods from "./pool/lumra-bellow-of-the-woods.js";
 import _poolLure from "./pool/lure.js";
 import _poolLuxurySuite from "./pool/luxury-suite.js";
 import _poolMabel from "./pool/mabel.js";
@@ -1393,6 +1394,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolLotusPetal,
   _poolLoyalGuardian,
   _poolLoyalSubordinate,
+  _poolLumraBellowOfTheWoods,
   _poolLure,
   _poolLuxurySuite,
   _poolMabel,
