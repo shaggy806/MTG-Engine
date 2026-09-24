@@ -55,6 +55,10 @@ const ANY = "Test Any Yard Watcher";
 /** "Whenever one or more artifact cards leave your graveyard, you gain that
  * much life" — one per artifact card. */
 const ARTIFACTS = "Test Artifact Yard Watcher";
+/** "Whenever one or more creature cards leave your graveyard, …" (Insidious
+ * Roots) and its land-card twin. */
+const CREATURES = "Test Creature Yard Watcher";
+const LANDS = "Test Land Yard Watcher";
 
 const registry = createDefaultRegistry()
   .register(watcher(YOURS, {}, gainOne))
@@ -66,7 +70,9 @@ const registry = createDefaultRegistry()
       { filter: { type: "artifact" } },
       { kind: "gain-life", amount: { triggerValue: true } },
     ),
-  );
+  )
+  .register(watcher(CREATURES, { filter: { type: "creature" } }, gainOne))
+  .register(watcher(LANDS, { filter: { type: "land" } }, gainOne));
 
 const makeGame = (): Game => {
   const game = Game.create({
@@ -393,6 +399,90 @@ describe("leaves-graveyard — a filter, read as the cards were in the graveyard
     expect(game.state.objects[bears].zone).toBe("battlefield");
     expect(triggersOf(game, w)).toBe(0);
   });
+});
+
+describe("leaves-graveyard — a multi-face card is its front face in the graveyard", () => {
+  it("a creature // land card played as its land from the graveyard left as a creature card", () => {
+    // Kazandu Mammoth // Kazandu Valley, played as the land through
+    // Muldrotha's permission. In the graveyard it had only its front face's
+    // characteristics (rule 712.8a): a creature card, not a land card — though
+    // the land face is already up by the time the card moves.
+    const game = makeGame();
+    const creatures = game.debugSpawn(CREATURES, A);
+    const lands = game.debugSpawn(LANDS, A);
+    game.debugSpawn("Muldrotha, the Gravetide", A);
+    const [mammoth] = yard(game, ["Kazandu Mammoth"]);
+    const offer = game
+      .legalActions(A)
+      .find((act) => act.kind === "play-land" && act.card === mammoth);
+    if (offer?.kind !== "play-land") throw new Error("no graveyard land play offered");
+    expect(offer.face).toBe(1);
+    game.dispatch({
+      type: "play-land",
+      player: A,
+      card: mammoth,
+      face: 1,
+      ...(offer.graveyardGrant !== undefined ? { graveyardGrant: offer.graveyardGrant } : {}),
+    });
+    settle(game);
+    expect(game.state.objects[mammoth].zone).toBe("battlefield");
+    expect(triggersOf(game, creatures)).toBe(1);
+    expect(triggersOf(game, lands)).toBe(0);
+  });
+});
+
+describe("leaves-graveyard — a commander returned to hand (rule 903.9b)", () => {
+  const returnWithCommander = (toCommandZone: boolean) => {
+    const game = makeGame();
+    const w = game.debugSpawn(YOURS, A);
+    const [cmdr, opt] = yard(game, ["Grizzly Bears", "Opt"]);
+    game.state.objects[cmdr].isCommander = true;
+    game.debugApplyEffect(A, {
+      kind: "look-and-choose",
+      zone: "graveyard",
+      min: 0,
+      max: 2,
+      destination: "hand",
+      leftover: "stay",
+    });
+    game.dispatch({ type: "choose-from-zone", player: A, chosen: [cmdr, opt] });
+    game.advanceUntil((s) => s.awaiting?.kind === "commander-replacement");
+    game.dispatch({ type: "commander-replacement", player: A, toCommandZone });
+    settle(game);
+    return { game, w, cmdr, opt };
+  };
+
+  it.each([true, false])(
+    "leaves with the cards returned beside it, whatever its owner answers (command zone: %s)",
+    (toCommandZone) => {
+      const { game, w, cmdr, opt } = returnWithCommander(toCommandZone);
+      expect(game.state.objects[cmdr].zone).toBe(toCommandZone ? "command" : "hand");
+      expect(game.state.objects[opt].zone).toBe("hand");
+      // One move — the replacement only changed where the commander went.
+      expect(triggersOf(game, w)).toBe(1);
+      expect(leftEvents(game)).toHaveLength(1);
+      expect([...(leftEvents(game)[0]?.objects ?? [])].sort()).toEqual([cmdr, opt].sort());
+    },
+  );
+
+  it.each([true, false])(
+    "a commander returned on its own is one move, not two (command zone: %s)",
+    (toCommandZone) => {
+      const game = makeGame();
+      const w = game.debugSpawn(YOURS, A);
+      const [cmdr] = yard(game, ["Grizzly Bears"]);
+      game.state.objects[cmdr].isCommander = true;
+      game.debugApplyEffect(A, { kind: "return-to-hand", target: 0, from: "graveyard" }, [
+        obj(cmdr),
+      ]);
+      game.advanceUntil((s) => s.awaiting?.kind === "commander-replacement");
+      game.dispatch({ type: "commander-replacement", player: A, toCommandZone });
+      settle(game);
+      expect(game.state.objects[cmdr].zone).toBe(toCommandZone ? "command" : "hand");
+      expect(triggersOf(game, w)).toBe(1);
+      expect(leftEvents(game)).toHaveLength(1);
+    },
+  );
 });
 
 describe("leaves-graveyard — the watcher itself", () => {

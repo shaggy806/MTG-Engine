@@ -436,7 +436,11 @@ export type TriggerSpec =
        * `"opponent"`, `"any"`. `filter` is matched against each card as it
        * was in the graveyard (rule 603.10a — these abilities look back in
        * time), so a card that became an artifact on its way to the
-       * battlefield doesn't count; a move with nothing matching doesn't fire.
+       * battlefield doesn't count, and a multi-face card is its front face
+       * (rule 712.8a — a creature // land played as its land left as a
+       * creature card); a move with nothing matching doesn't fire. A
+       * commander returned to hand leaves with the rest of its move whether
+       * its owner sends it to the command zone instead or not (rule 903.9b).
        * `{ triggerValue: true }` is how many cards counted. A permanent that
        * was itself one of the cards (a reanimated Teval) wasn't on the
        * battlefield to see them leave, and doesn't trigger.

@@ -14058,6 +14058,17 @@ export class Game {
         // Part of whatever simultaneous event is moving it, though its move
         // waits for the answer — see `withLeaveBatch`.
         if (leavingBattlefield) this.leaveBatch?.deferred.push(id);
+        // A commander headed from a graveyard to its owner's hand leaves the
+        // graveyard whichever way its owner answers: rule 903.9b replaces
+        // where it goes (the command zone instead of the hand), not whether
+        // it goes, and the replaced move is still part of this event. So it
+        // leaves now, together with whatever else this move takes out of a
+        // graveyard — "return up to two cards" is one "whenever one or more
+        // cards leave your graveyard" trigger, not two — and completing the
+        // move once answered doesn't announce it again (below).
+        if (handFromElsewhere && object.zone === "graveyard") {
+          this.noteGraveyardDeparture(id, this.graveyardSnapshot(id));
+        }
       }
       this.raiseNextCommanderChoice();
       return false;
@@ -14122,10 +14133,16 @@ export class Game {
     // those look back in time (rule 603.10a). Taken now, before the reset
     // below and before it can become something else where it's going (a
     // Clone reanimated as a copy of an artifact was a creature card).
-    // Tokens aren't cards (rule 111.1).
+    // Tokens aren't cards (rule 111.1). A commander completing a deferred
+    // return to hand from a graveyard was already announced as it was
+    // deferred (above).
+    const alreadyAnnounced =
+      this.completingCommanderMove === id &&
+      this.state.deferredCommanderMove?.commander === id &&
+      this.state.deferredCommanderMove.from === "graveyard";
     const leftGraveyard =
-      object.zone === "graveyard" && to !== "graveyard" && !object.isToken
-        ? this.takeLastKnown(id)
+      object.zone === "graveyard" && to !== "graveyard" && !object.isToken && !alreadyAnnounced
+        ? this.graveyardSnapshot(id)
         : undefined;
     const from = this.zoneList(object.zone, object.owner);
     const index = from.indexOf(id);
@@ -14307,16 +14324,32 @@ export class Game {
       this.leaveBatch?.left.push(id);
       this.emit({ type: "permanent-left-battlefield", object: id, toZone: to });
     }
-    // Part of the simultaneous move under way, announced when it's done;
-    // on its own, a move of its own, announced now.
-    if (leftGraveyard !== undefined) {
-      if (this.graveyardLeaveBatch !== null) {
-        this.graveyardLeaveBatch.set(id, leftGraveyard);
-      } else {
-        this.announceGraveyardDepartures(new Map([[id, leftGraveyard]]));
-      }
-    }
+    if (leftGraveyard !== undefined) this.noteGraveyardDeparture(id, leftGraveyard);
     return true;
+  }
+
+  /**
+   * A card as it is in its graveyard — what a `leaves-graveyard` trigger's
+   * filter is matched against (rule 603.10a). Read with its **front face**
+   * up: outside the battlefield and the stack a multi-face card has only its
+   * front face's characteristics (rules 712.8a, 715.4), but a cast or a land
+   * play out of a graveyard has already turned up the face it's using by the
+   * time `moveObject` sees it — a Kazandu Mammoth played as Kazandu Valley
+   * (Muldrotha) left the graveyard a creature card, not a land card.
+   */
+  private graveyardSnapshot(id: ObjectId): LastKnownInfo {
+    return this.withFace(id, 0, () => this.takeLastKnown(id));
+  }
+
+  /** Card `id` has left a graveyard (or, for a deferred commander, is sure
+   * to): part of the simultaneous move under way, announced when that's
+   * done — or, on its own, a move of its own, announced now. */
+  private noteGraveyardDeparture(id: ObjectId, snapshot: LastKnownInfo): void {
+    if (this.graveyardLeaveBatch !== null) {
+      this.graveyardLeaveBatch.set(id, snapshot);
+    } else {
+      this.announceGraveyardDepartures(new Map([[id, snapshot]]));
+    }
   }
 
   /**
