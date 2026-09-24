@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-111 already implemented / 389 missing
+127 already implemented / 373 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -30,7 +30,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   24  Cloud, Ex-SOLDIER                              31517 decks  {2}{R}{G}{W}     Legendary Creature — Human Soldier Mercenary
 [ ]   25  Hearthhull, the Worldseed                      31352 decks  {1}{B}{R}{G}     Legendary Artifact — Spacecraft
 [ ]   26  Kefka, Court Mage                              31209 decks  {2}{U}{B}{R}     Legendary Creature — Human Wizard // Legendary Creature — Avatar Wizard
-[ ]   27  Valgavoth, Harrower of Souls                   30711 decks  {2}{B}{R}        Legendary Creature — Elder Demon
+[x]   27  Valgavoth, Harrower of Souls                   30711 decks  {2}{B}{R}        Legendary Creature — Elder Demon
 [x]   28  Isshin, Two Heavens as One                     30593 decks  {R}{W}{B}        Legendary Creature — Human Samurai
 [ ]   29  Sephiroth, Fabled SOLDIER                      30424 decks  {2}{B}           Legendary Creature — Human Avatar Soldier // Legendary Creature — Angel Nightmare Avatar
 [ ]   30  Baylen, the Haymaker                           29839 decks  {R}{G}{W}        Legendary Creature — Rabbit Warrior
@@ -41,7 +41,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   35  Sam, Loyal Attendant                           26958 decks  {1}{G}{W}        Legendary Creature — Halfling Peasant
 [ ]   36  Hashaton, Scarab's Fist                        26919 decks  {W}{B}           Legendary Creature — Zombie Wizard
 [ ]   37  Ashling, the Limitless                         26287 decks  {2}{R}           Legendary Creature — Elemental Sorcerer
-[ ]   38  Bello, Bard of the Brambles                    26266 decks  {1}{R}{G}        Legendary Creature — Raccoon Bard
+[x]   38  Bello, Bard of the Brambles                    26266 decks  {1}{R}{G}        Legendary Creature — Raccoon Bard
 [ ]   39  Esika, God of the Tree                         26010 decks  {1}{G}{G}        Legendary Creature — God // Legendary Enchantment
 [ ]   40  Hakbal of the Surging Soul                     25305 decks  {2}{G}{U}        Legendary Creature — Merfolk Scout
 [x]   41  Muldrotha, the Gravetide                       25224 decks  {3}{B}{G}{U}     Legendary Creature — Elemental Avatar
@@ -84,7 +84,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   78  Helga, Skittish Seer                           20147 decks  {G}{W}{U}        Legendary Creature — Frog Druid
 [ ]   79  Zaxara, the Exemplary                          20130 decks  {1}{B}{G}{U}     Legendary Creature — Nightmare Hydra
 [ ]   80  Choco, Seeker of Paradise                      19996 decks  {1}{G}{W}{U}     Legendary Creature — Bird
-[ ]   81  Ghyrson Starn, Kelermorph                      19886 decks  {1}{U}{R}        Legendary Creature — Tyranid Human
+[x]   81  Ghyrson Starn, Kelermorph                      19886 decks  {1}{U}{R}        Legendary Creature — Tyranid Human
 [x]   82  Xyris, the Writhing Storm                      19765 decks  {2}{G}{U}{R}     Legendary Creature — Snake Leviathan
 [ ]   83  Kotis, the Fangkeeper                          19750 decks  {1}{B}{G}{U}     Legendary Creature — Zombie Warrior
 [ ]   84  The First Sliver                               19750 decks  {W}{U}{B}{R}{G}  Legendary Creature — Sliver
@@ -96,14 +96,14 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   90  Kilo, Apogee Mind                              19083 decks  {U}{R}{W}        Legendary Artifact Creature — Robot Artificer
 [ ]   91  Eriette of the Charmed Apple                   19038 decks  {1}{W}{B}        Legendary Creature — Human Warlock
 [ ]   92  Henzie "Toolbox" Torre                         18773 decks  {B}{R}{G}        Legendary Creature — Devil Rogue
-[ ]   93  Ragost, Deft Gastronaut                        18756 decks  {R}{W}           Legendary Creature — Lobster Citizen
+[x]   93  Ragost, Deft Gastronaut                        18756 decks  {R}{W}           Legendary Creature — Lobster Citizen
 [ ]   94  Vial Smasher the Fierce                        18699 decks  {1}{B}{R}        Legendary Creature — Goblin Berserker
 [x]   95  Omnath, Locus of Creation                      18632 decks  {R}{G}{W}{U}     Legendary Creature — Elemental
 [ ]   96  Norman Osborn                                  18576 decks  {1}{U}           Legendary Creature — Human Scientist Villain // Legendary Creature — Goblin Human Villain
 [x]   97  Captain N'ghathrod                             18527 decks  {3}{U}{B}        Legendary Creature — Horror Pirate
 [x]   98  Urtet, Remnant of Memnarch                     18526 decks  {3}              Legendary Artifact Creature — Myr
 [x]   99  Voja, Jaws of the Conclave                     18497 decks  {2}{R}{G}{W}     Legendary Creature — Wolf
-[ ]  100  Hope Estheim                                   18200 decks  {W}{U}           Legendary Creature — Human Wizard
+[x]  100  Hope Estheim                                   18200 decks  {W}{U}           Legendary Creature — Human Wizard
 [ ]  101  Magda, Brazen Outlaw                           17938 decks  {1}{R}           Legendary Creature — Dwarf Berserker
 [ ]  102  Ezio Auditore da Firenze                       17857 decks  {1}{B}           Legendary Creature — Human Assassin
 [ ]  103  Alela, Cunning Conqueror                       17841 decks  {2}{U}{B}        Legendary Creature — Faerie Warlock
@@ -121,7 +121,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  115  Aesi, Tyrant of Gyre Strait                    17143 decks  {4}{G}{U}        Legendary Creature — Serpent
 [ ]  116  Witherbloom, the Balancer                      17139 decks  {6}{B}{G}        Legendary Creature — Elder Dragon
 [ ]  117  Zur the Enchanter                              17114 decks  {1}{W}{U}{B}     Legendary Creature — Human Wizard
-[ ]  118  Urza, Chief Artificer                          17039 decks  {3}{W}{U}{B}     Legendary Creature — Human Artificer
+[x]  118  Urza, Chief Artificer                          17039 decks  {3}{W}{U}{B}     Legendary Creature — Human Artificer
 [x]  119  Alela, Artful Provocateur                      16894 decks  {1}{W}{U}{B}     Legendary Creature — Faerie Warlock
 [ ]  120  Mendicant Core, Guidelight                     16880 decks  {W}{U}           Legendary Artifact Creature — Robot
 [ ]  121  Galadriel, Light of Valinor                    16855 decks  {2}{G}{W}{U}     Legendary Creature — Elf Noble
@@ -136,7 +136,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  130  Zimone, Mystery Unraveler                      15788 decks  {2}{G}{U}        Legendary Creature — Human Wizard
 [x]  131  Niv-Mizzet, Parun                              15769 decks  {U}{U}{U}{R}{R}{R} Legendary Creature — Dragon Wizard
 [ ]  132  Zada, Hedron Grinder                           15692 decks  {3}{R}           Legendary Creature — Goblin Ally
-[ ]  133  Be'lakor, the Dark Master                      15648 decks  {3}{U}{B}{R}     Legendary Creature — Demon Noble
+[x]  133  Be'lakor, the Dark Master                      15648 decks  {3}{U}{B}{R}     Legendary Creature — Demon Noble
 [ ]  134  Tifa Lockhart                                  15467 decks  {1}{G}           Legendary Creature — Human Monk
 [ ]  135  Leonardo, the Balance                          15298 decks  {3}{W}           Legendary Creature — Mutant Ninja Turtle
 [ ]  136  Marina Vendrell                                15239 decks  {W}{U}{B}{R}{G}  Legendary Creature — Human Warlock
@@ -207,7 +207,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  201  Judith, Carnage Connoisseur                    12173 decks  {3}{B}{R}        Legendary Creature — Human Shaman
 [x]  202  Sheoldred, the Apocalypse                      12116 decks  {2}{B}{B}        Legendary Creature — Phyrexian Praetor
 [ ]  203  Celes, Rune Knight                             12104 decks  {1}{R}{W}{B}     Legendary Creature — Human Wizard Knight
-[ ]  204  Sonic the Hedgehog                             12031 decks  {1}{U}{R}{W}     Legendary Creature — Hedgehog Warrior
+[x]  204  Sonic the Hedgehog                             12031 decks  {1}{U}{R}{W}     Legendary Creature — Hedgehog Warrior
 [ ]  205  Varina, Lich Queen                             11960 decks  {1}{W}{U}{B}     Legendary Creature — Zombie Wizard
 [ ]  206  Kona, Rescue Beastie                           11932 decks  {3}{G}           Legendary Creature — Beast Survivor
 [ ]  207  Captain Howler, Sea Scourge                    11896 decks  {2}{U}{R}        Legendary Creature — Shark Pirate
@@ -255,10 +255,10 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  249  Saheeli, Radiant Creator                       10286 decks  {1}{G}{U}{R}     Legendary Creature — Human Artificer
 [ ]  250  Raffine, Scheming Seer                         10235 decks  {W}{U}{B}        Legendary Creature — Sphinx Demon
 [ ]  251  Yidris, Maelstrom Wielder                      10231 decks  {U}{B}{R}{G}     Legendary Creature — Ogre Wizard
-[ ]  252  Vihaan, Goldwaker                              10220 decks  {R}{W}{B}        Legendary Creature — Dwarf Warlock
+[x]  252  Vihaan, Goldwaker                              10220 decks  {R}{W}{B}        Legendary Creature — Dwarf Warlock
 [ ]  253  Tannuk, Steadfast Second                       10189 decks  {2}{R}{R}        Legendary Creature — Kavu Pilot
 [ ]  254  Gev, Scaled Scorch                             10169 decks  {B}{R}           Legendary Creature — Lizard Mercenary
-[ ]  255  Kediss, Emberclaw Familiar                     10160 decks  {1}{R}           Legendary Creature — Elemental Lizard
+[x]  255  Kediss, Emberclaw Familiar                     10160 decks  {1}{R}           Legendary Creature — Elemental Lizard
 [ ]  256  Lord Windgrace                                 10113 decks  {2}{B}{R}{G}     Legendary Planeswalker — Windgrace
 [ ]  257  The Gitrog Monster                             10087 decks  {3}{B}{G}        Legendary Creature — Frog Horror
 [ ]  258  Okaun, Eye of Chaos                            10074 decks  {4}{R}           Legendary Creature — Cyclops Berserker
@@ -278,7 +278,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  272  Chulane, Teller of Tales                        9679 decks  {2}{G}{W}{U}     Legendary Creature — Human Druid
 [ ]  273  Shilgengar, Sire of Famine                      9622 decks  {3}{B}{B}        Legendary Creature — Elder Demon
 [x]  274  Shalai and Hallar                               9586 decks  {1}{R}{G}{W}     Legendary Creature — Angel Elf
-[ ]  275  Kudo, King Among Bears                          9480 decks  {G}{W}           Legendary Creature — Bear
+[x]  275  Kudo, King Among Bears                          9480 decks  {G}{W}           Legendary Creature — Bear
 [ ]  276  Roxanne, Starfall Savant                        9478 decks  {3}{R}{G}        Legendary Creature — Cat Druid
 [x]  277  Dina, Soul Steeper                              9457 decks  {B}{G}           Legendary Creature — Dryad Druid
 [ ]  278  Jodah, Archmage Eternal                         9447 decks  {1}{U}{R}{W}     Legendary Creature — Human Wizard
@@ -302,7 +302,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  296  Elsha, Threefold Master                         9167 decks  {U}{R}{W}        Legendary Creature — Djinn Monk
 [x]  297  Gargos, Vicious Watcher                         9116 decks  {3}{G}{G}{G}     Legendary Creature — Hydra
 [ ]  298  Noctis, Prince of Lucis                         9100 decks  {1}{W}{U}{B}     Legendary Creature — Human Noble
-[ ]  299  Syr Gwyn, Hero of Ashvale                       9089 decks  {3}{R}{W}{B}     Legendary Creature — Human Knight
+[x]  299  Syr Gwyn, Hero of Ashvale                       9089 decks  {3}{R}{W}{B}     Legendary Creature — Human Knight
 [ ]  300  Athreos, God of Passage                         9079 decks  {1}{W}{B}        Legendary Enchantment Creature — God
 [ ]  301  Coram, the Undertaker                           9077 decks  {1}{B}{R}{G}     Legendary Creature — Human Warrior
 [ ]  302  Marvo, Deep Operative                           9069 decks  {3}{U}{B}        Legendary Creature — Octopus Rogue
@@ -356,7 +356,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  350  Squall, SeeD Mercenary                          8000 decks  {2}{W}{B}        Legendary Creature — Human Knight Mercenary
 [x]  351  Morska, Undersea Sleuth                         7985 decks  {G}{W}{U}        Legendary Creature — Vedalken Fish Detective
 [x]  352  Bristly Bill, Spine Sower                       7950 decks  {1}{G}           Legendary Creature — Plant Druid
-[ ]  353  Niv-Mizzet, Visionary                           7935 decks  {4}{U}{R}        Legendary Creature — Dragon Wizard
+[x]  353  Niv-Mizzet, Visionary                           7935 decks  {4}{U}{R}        Legendary Creature — Dragon Wizard
 [ ]  354  Mishra, Eminent One                             7921 decks  {2}{U}{B}{R}     Legendary Creature — Human Artificer
 [ ]  355  Shirei, Shizo's Caretaker                       7897 decks  {4}{B}           Legendary Creature — Spirit
 [ ]  356  Myrkul, Lord of Bones                           7891 decks  {4}{W}{B}{G}     Legendary Creature — God
@@ -420,7 +420,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  414  Astarion, the Decadent                          7064 decks  {4}{W}{B}        Legendary Creature — Vampire Elf Rogue
 [x]  415  Chishiro, the Shattered Blade                   7060 decks  {2}{R}{G}        Legendary Creature — Snake Samurai
 [ ]  416  Jenova, Ancient Calamity                        7056 decks  {2}{B}{G}        Legendary Creature — Alien
-[ ]  417  Raised by Giants                                7033 decks  {5}{G}           Legendary Enchantment — Background
+[x]  417  Raised by Giants                                7033 decks  {5}{G}           Legendary Enchantment — Background
 [ ]  418  The Mimeoplasm                                  7024 decks  {2}{B}{G}{U}     Legendary Creature — Ooze
 [ ]  419  Ral, Monsoon Mage                               7014 decks  {1}{R}           Legendary Creature — Human Wizard // Legendary Planeswalker — Ral
 [ ]  420  Duskana, the Rage Mother                        7001 decks  {2}{R}{G}{W}     Legendary Creature — Bear
@@ -444,7 +444,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  438  Baeloth Barrityl, Entertainer                   6809 decks  {4}{R}           Legendary Creature — Elf Shaman
 [ ]  439  Rootha, Mastering the Moment                    6807 decks  {2}{U}{R}        Legendary Creature — Orc Sorcerer
 [ ]  440  Ivy, Gleeful Spellthief                         6799 decks  {G}{U}           Legendary Creature — Faerie Rogue
-[ ]  441  Don Andres, the Renegade                        6779 decks  {1}{U}{B}{R}     Legendary Creature — Vampire Pirate
+[x]  441  Don Andres, the Renegade                        6779 decks  {1}{U}{B}{R}     Legendary Creature — Vampire Pirate
 [ ]  442  Zethi, Arcane Blademaster                       6777 decks  {1}{W}{U}        Legendary Creature — Human Soldier
 [x]  443  Emry, Lurker of the Loch                        6759 decks  {2}{U}           Legendary Creature — Merfolk Wizard
 [ ]  444  Kambal, Profiteering Mayor                      6759 decks  {1}{W}{B}        Legendary Creature — Human Advisor
@@ -486,7 +486,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  480  Teval, Arbiter of Virtue                        6377 decks  {2}{B}{G}{U}     Legendary Creature — Spirit Dragon
 [ ]  481  Anhelo, the Painter                             6362 decks  {U}{B}{R}        Legendary Creature — Vampire Assassin
 [ ]  482  Selvala, Heart of the Wilds                     6362 decks  {1}{G}{G}        Legendary Creature — Elf Scout
-[ ]  483  Wilson, Refined Grizzly                         6353 decks  {1}{G}           Legendary Creature — Bear Warrior
+[x]  483  Wilson, Refined Grizzly                         6353 decks  {1}{G}           Legendary Creature — Bear Warrior
 [ ]  484  Tevesh Szat, Doom of Fools                      6317 decks  {4}{B}           Legendary Planeswalker — Szat
 [ ]  485  Aeve, Progenitor Ooze                           6278 decks  {2}{G}{G}{G}     Legendary Creature — Ooze
 [ ]  486  Narset, Enlightened Master                      6266 decks  {3}{U}{R}{W}     Legendary Creature — Human Monk

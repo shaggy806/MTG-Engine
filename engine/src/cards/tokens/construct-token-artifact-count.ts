@@ -5,6 +5,7 @@ import { defineCard } from "../define.js";
 // counts itself, since it's an artifact.
 export default defineCard({
   name: "Construct Token",
+  art: "914fecab-24c0-4179-84d6-ded78c29134f",
   types: ["artifact", "creature"],
   subtypes: ["Construct"],
   power: 0,

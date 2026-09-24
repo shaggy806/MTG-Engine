@@ -32,7 +32,13 @@
   "replacement:exile-instead",
   "bug:lki-leaves-battlefield-triggers",
   "bug:lki-object-reads",
-  "effect:sacrificed-object-lki"
+  "effect:sacrificed-object-lki",
+  "decision:ward-payment",
+  "trigger:damage-trigger-extensions",
+  "effect:player-scope-extensions",
+  "static:affect-scope-by-filter",
+  "static:grant-types-to-others",
+  "static:set-base-pt-others"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

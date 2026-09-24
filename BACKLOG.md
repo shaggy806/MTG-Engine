@@ -6,28 +6,30 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**111 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**127 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
+- **Ready to author, no engine work:** Ygra, Eater of All and Maha, Its Feathers Night (ward,
+  type grants and base P/T are built), and Betor, Kin to All (player scopes are built; its
+  gaps entry still lists `effect:amount-aggregate`, whose condition form it needs is built).
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first
-  ten, engine-only, with the commanders each fully unblocks:
-  `stat:per-ability-turn-counters` (+1), `mechanic:player-counters` (+3),
-  `cost:ability-cost-modification` (+1), `condition:filter-dynamic-compare` (+1),
-  `effect:amount-aggregate` (+1), `effect:target-other-than-source` (+3),
-  `effect:add-subtype` (+2), `trigger:combat-trigger-extensions` (+3),
-  `trigger:sacrifice-filter` (+1), `effect:amount-new-variants` (+1).
-- **Most-needed features overall.** `static:affect-scope-by-filter` (22),
-  `effect:target-other-than-source` (19), `effect:player-scope-extensions` and
-  `effect:this-way-results` (18 each), `condition:filter-dynamic-compare` (17; what's left is an
+  ten, engine-only, with the commanders each fully unblocks (batch A's
+  `static:enters-replacement-for-others`, +3, is on local branch `gap/enters-replacement-others`):
+  `stat:per-ability-turn-counters` (+1), `mechanic:player-counters` (+3), `keyword:earthbend`
+  (+1), `cost:ability-cost-modification` (+1), `effect:created-tokens-gain-keyword-eot` (+1),
+  `effect:reflexive-trigger` (+3), `cost:may-cost-non-mana` (+1), `effect:amount-aggregate` (+1),
+  `effect:look-and-choose-leftover` (+1).
+- **Most-needed features overall.** `effect:target-other-than-source` (19),
+  `effect:this-way-results` (18), `condition:filter-dynamic-compare` (16; what's left is an
   "N plus an amount" operand), `static:grant-to-cards-outside-battlefield` (14). Live numbers
   come from `cmdrs:gaps`.
 - **UI-bound features.** These need a new client decision and a browser check:
-  `decision:ward-payment` (18), `effect:may-sacrifice-then` (13), `decision:copy-new-targets` (12),
-  `decision:choose-permanent` (11), `effect:enter-attacking`, `decision:free-cast-choices`,
-  `effect:attach-extensions`, `effect:cast-during-resolution`, `decision:choose-tap-costs` (10 each).
+  `effect:may-sacrifice-then` (13), `decision:copy-new-targets` (12), `decision:choose-permanent`
+  (11), `effect:enter-attacking`, `decision:free-cast-choices`, `effect:attach-extensions`,
+  `effect:cast-during-resolution` (10 each), `decision:choose-tap-costs` (9).
 - **Commanders authored and then dropped by their reviews.** Tifa Lockhart and Yarok need the
   player to order simultaneous triggers (`decision:trigger-order`). Aragorn, the Uniter needs
   scry to let the player order the kept cards (`decision:library-ordering`).
@@ -74,9 +76,6 @@ that one card is the reason the deck exists.
   one at a time, so a "whenever another creature enters" ability among them misses the ones
   that entered before it (the Elas il-Kor ruling). Leaving together is one event already.
   Tracked as `bug:simultaneous-zone-moves`.
-- **Triggered abilities never announce their targets.** Nothing sees an `object-targeted` event
-  for them, so Thunderbreak Regent's "spell or ability" misses a triggered ability. The
-  spell-only cards (Gargos, Tectonic Giant) are unaffected.
 - **A copy never chooses new targets.** Tracked as `decision:copy-new-targets`, which is
   UI-bound.
 - **Token stacks in combat.** Splitting one stack across attackers or blockers is not built,
