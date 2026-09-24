@@ -156,10 +156,21 @@ const castExtras = (cast: CastAction) => ({
   // Which graveyard permission pays for it, when several could.
   ...(cast.graveyardGrant !== undefined ? { graveyardGrant: cast.graveyardGrant } : {}),
   ...(cast.tapCost !== undefined ? { tapCost: cast.tapCost } : {}),
+  // Not `escapeExile`: that's an offer to pick from, not a field to echo.
+  // `startCast` asks for the picks and carries them as `CastPicks`.
   ...(cast.convoke !== undefined && cast.convoke.candidates.length > 0
     ? { convokeOffer: cast.convoke }
     : {}),
 })
+
+/** The costs of a cast already chosen before its modes / X / targets, carried
+ * through each of those steps into the dispatched action: the permanent an
+ * additional sacrifice cost takes (rule 601.2f — Harrow), and the cards an
+ * escape cast exiles from the graveyard (rule 702.139a). */
+interface CastPicks {
+  readonly sacrifice?: ObjectId
+  readonly escapeExile?: readonly ObjectId[]
+}
 
 /** Every permanent a tap-cost offer stands for, a stack's id once per token
  * — the whole offer, for when there's exactly as much as the cost needs. */
@@ -208,6 +219,10 @@ interface Targeting {
   readonly xValue?: number
   /** Permanent chosen to pay a "sacrifice a creature you control" ability cost. */
   readonly sacrifice?: ObjectId
+  /** The other graveyard cards an escape cast exiles (rule 702.139a), picked
+   * from the variant's `escapeExile` offer before any of this — see
+   * `pendingEscape`. */
+  readonly escapeExile?: readonly ObjectId[]
   /** Alternative casting permission (Phase 6) — flashback / escape / foretell. */
   readonly via?: CastVia
   /** Which face of a multi-face card is being cast (Phase 10). */
@@ -607,22 +622,34 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   const boardMutationObserverRef = useRef<MutationObserver | null>(null)
   // Set while an `{X}` cost is being chosen, before target selection — for an
   // X spell (`CastAction`) or an X activated ability (`AbilityAction`, EG-3).
-  const [pendingX, setPendingX] = useState<{
-    readonly action: CastAction | AbilityAction
-    readonly value: number
-    /** A permanent already chosen to pay an additional sacrifice cost (P8). */
-    readonly sacrifice?: ObjectId
-  } | null>(null)
+  const [pendingX, setPendingX] = useState<
+    | ({
+        readonly action: CastAction | AbilityAction
+        readonly value: number
+      } & CastPicks)
+    | null
+  >(null)
   // Set while a targeted modal spell's modes are being chosen (Phase 11 EG-2),
   // before target selection.
-  const [pendingModes, setPendingModes] = useState<{
-    readonly cast: CastAction
-    readonly picked: readonly number[]
-    /** A permanent already chosen to pay an additional sacrifice cost (P8). */
-    readonly sacrifice?: ObjectId
-  } | null>(null)
+  const [pendingModes, setPendingModes] = useState<
+    | ({
+        readonly cast: CastAction
+        readonly picked: readonly number[]
+      } & CastPicks)
+    | null
+  >(null)
   // Set while choosing which creature to sacrifice for an ability's cost.
   const [pendingSac, setPendingSac] = useState<AbilityAction | CastAction | null>(null)
+  /** An escape cast waiting on which other graveyard cards it exiles (rule
+   * 702.139a), asked in a `ZoneViewer` before its modes / X / targets.
+   * `sacrifice` is an additional cost already picked, if it had one. */
+  const [pendingEscape, setPendingEscape] = useState<
+    | ({
+        readonly cast: CastAction
+        readonly offer: NonNullable<CastAction['escapeExile']>
+      } & Pick<CastPicks, 'sacrifice'>)
+    | null
+  >(null)
   const [selectedSource, setSelectedSource] = useState<ObjectId | null>(null)
   // Attacker -> chosen defender. With more than one legal opponent, clicking
   // an attacker assigns it to the first opponent by default and focuses it;
@@ -909,6 +936,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     | 'scry'
     | 'choose-x'
     | 'choose-cast-modes'
+    | 'choose-escape-exile'
     | 'choose-sacrifice'
     | 'choose-tap'
     | 'choose-convoke'
@@ -946,6 +974,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
               ? 'blockers'
               : zoneChoiceAction
                 ? 'choose-from-zone'
+                : pendingEscape
+                  ? 'choose-escape-exile'
                 : pendingModes
                   ? 'choose-cast-modes'
                 : pendingX
@@ -985,6 +1015,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         | 'abilityIndex'
         | 'xValue'
         | 'sacrifice'
+        | 'escapeExile'
         | 'via'
         | 'face'
         | 'modes'
@@ -1020,6 +1051,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
                 ...(t.costOption !== undefined ? { costOption: t.costOption } : {}),
                 ...(t.graveyardGrant !== undefined ? { graveyardGrant: t.graveyardGrant } : {}),
                 ...(t.sacrifice !== undefined ? { sacrifice: t.sacrifice } : {}),
+                ...(t.escapeExile !== undefined ? { escapeExile: [...t.escapeExile] } : {}),
               }
             : {
                 type: 'activate-ability',
@@ -1068,17 +1100,42 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     [finishTargets],
   )
 
-  /** Cast, past the additional-cost step — `sacrifice` is the permanent chosen
-   * to pay a `CardDefinition.additionalCost` (Harrow: "sacrifice a land"). */
+  /** Cast, past the additional-cost step — `chosen` holds the costs picked so
+   * far: the permanent a `CardDefinition.additionalCost` sacrifices (Harrow:
+   * "sacrifice a land") and, once asked, the cards an escape cast exiles. */
   const startCast = useCallback(
-    (cast: CastAction, sacrifice?: ObjectId) => {
-      const sacProp = sacrifice !== undefined ? { sacrifice } : {}
+    (cast: CastAction, chosen: CastPicks = {}) => {
+      // Escape (rule 702.139a): which other graveyard cards pay the exile
+      // half of the cost is the caster's choice. Asked next, before modes / X
+      // / targets — unless the graveyard holds exactly as many as the cost
+      // needs, which leaves nothing to choose.
+      const escape = cast.escapeExile
+      if (
+        escape !== undefined &&
+        chosen.escapeExile === undefined &&
+        escape.choices.length !== escape.count
+      ) {
+        setPendingEscape({
+          cast,
+          offer: escape,
+          ...(chosen.sacrifice !== undefined ? { sacrifice: chosen.sacrifice } : {}),
+        })
+        return
+      }
+      const picks: CastPicks = {
+        ...(chosen.sacrifice !== undefined ? { sacrifice: chosen.sacrifice } : {}),
+        ...(chosen.escapeExile !== undefined
+          ? { escapeExile: chosen.escapeExile }
+          : escape !== undefined
+            ? { escapeExile: escape.choices }
+            : {}),
+      }
       if (cast.castModal) {
-        setPendingModes({ cast, picked: [], ...sacProp })
+        setPendingModes({ cast, picked: [], ...picks })
         return
       }
       if (cast.xCost) {
-        setPendingX({ action: cast, value: cast.xCost.maxX, ...sacProp })
+        setPendingX({ action: cast, value: cast.xCost.maxX, ...picks })
         return
       }
       beginTargeting({
@@ -1089,10 +1146,21 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         specs: cast.targetSpecs,
         options: cast.targetOptions,
         ...castExtras(cast),
-        ...sacProp,
+        ...picks,
       })
     },
     [beginTargeting],
+  )
+
+  /** The escape choice's Confirm: carry on casting with those cards. */
+  const confirmEscapeExile = useCallback(
+    (escapeExile: readonly ObjectId[]) => {
+      if (!pendingEscape) return
+      const { cast, sacrifice } = pendingEscape
+      setPendingEscape(null)
+      startCast(cast, { ...(sacrifice !== undefined ? { sacrifice } : {}), escapeExile })
+    },
+    [pendingEscape, startCast],
   )
 
   const beginCast = useCallback(
@@ -1102,7 +1170,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       if (cast.sacrifice) {
         if (cast.sacrifice.choices.length === 0) return
         if (cast.sacrifice.choices.length === 1) {
-          startCast(cast, cast.sacrifice.choices[0])
+          startCast(cast, { sacrifice: cast.sacrifice.choices[0] })
         } else {
           setPendingSac(cast)
         }
@@ -1117,7 +1185,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   // proceed to targeting over the union of those modes' target specs.
   const confirmModes = useCallback(() => {
     if (!pendingModes?.cast.castModal) return
-    const { cast, picked, sacrifice } = pendingModes
+    const { cast, picked, ...picks } = pendingModes
     const modes = [...picked].sort((a, b) => a - b)
     setPendingModes(null)
     const chosen = modes.map((i) => cast.castModal!.modes[i])
@@ -1130,7 +1198,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       options: chosen.flatMap((m) => m.targetOptions),
       modes,
       ...castExtras(cast),
-      ...(sacrifice !== undefined ? { sacrifice } : {}),
+      ...picks,
     })
   }, [beginTargeting, pendingModes])
 
@@ -1154,7 +1222,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
 
   const confirmX = useCallback(() => {
     if (!pendingX) return
-    const { action, value, sacrifice } = pendingX
+    const { action, value, ...picks } = pendingX
     setPendingX(null)
     if (action.kind === 'activate-ability') {
       beginTargeting({
@@ -1178,7 +1246,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       options: action.targetOptions,
       xValue: value,
       ...castExtras(action),
-      ...(sacrifice !== undefined ? { sacrifice } : {}),
+      ...picks,
     })
   }, [beginTargeting, pendingX])
 
@@ -2512,7 +2580,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
             type="button"
             onClick={() => {
               setPendingSac(null)
-              if (sacChoice.kind === 'cast-spell') startCast(sacChoice, id)
+              if (sacChoice.kind === 'cast-spell') startCast(sacChoice, { sacrifice: id })
               else startAbility(sacChoice, id)
             }}
           >
@@ -2520,6 +2588,21 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           </button>
         ))}
         <button type="button" onClick={() => setPendingSac(null)}>
+          Cancel
+        </button>
+      </div>
+    )
+  } else if (mode === 'choose-escape-exile' && pendingEscape) {
+    // The choice itself is the ZoneViewer popup below; this strip is what
+    // shows under it.
+    const n = pendingEscape.offer.count
+    controls = (
+      <div className="controls">
+        <span className="muted">
+          Escape {pendingEscape.cast.cardName} — choose {n} other card{n === 1 ? '' : 's'} to
+          exile
+        </span>
+        <button type="button" onClick={() => setPendingEscape(null)}>
           Cancel
         </button>
       </div>
@@ -3402,6 +3485,24 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           }}
           collapsed={decisionCollapsed}
           onCollapse={() => setDecisionCollapsed(true)}
+        />
+      ) : null}
+
+      {mode === 'choose-escape-exile' && pendingEscape ? (
+        <ZoneViewer
+          title={`Exile ${pendingEscape.offer.count} other card${
+            pendingEscape.offer.count === 1 ? '' : 's'
+          } to escape ${pendingEscape.cast.cardName}`}
+          ids={pendingEscape.offer.choices}
+          resolve={(id) => view.objects[id]}
+          selection={{
+            min: pendingEscape.offer.count,
+            max: pendingEscape.offer.count,
+            eligible: pendingEscape.offer.choices,
+            onConfirm: confirmEscapeExile,
+            // Nothing is committed yet: backing out just drops the cast.
+            onCancel: () => setPendingEscape(null),
+          }}
         />
       ) : null}
 

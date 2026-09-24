@@ -53,6 +53,10 @@ export interface ZoneViewerProps {
      * this only decides which tiles respond to a click. */
     readonly eligible: readonly ObjectId[]
     readonly onConfirm: (chosen: readonly ObjectId[]) => void
+    /** For a choice that can be backed out of — a cost being picked for a
+     * cast not yet made (escape's "exile N other cards"), unlike an effect's
+     * forced decision: a Cancel button in the header, which calls this. */
+    readonly onCancel?: () => void
   }
   /** Selection mode only: hidden so the board can be seen ("View board").
    * The component stays mounted, so picks made so far survive; the owner
@@ -68,7 +72,8 @@ export interface ZoneViewerProps {
  *
  * A selection is a forced decision, so it has no close button — but it can be
  * collapsed ("View board") to check the board before choosing, the same
- * escape hatch `CreatureTypePicker` has.
+ * escape hatch `CreatureTypePicker` has. The exception is a cost being picked
+ * for a cast (escape's exile), which `selection.onCancel` lets you back out of.
  */
 export function ZoneViewer({
   title,
@@ -130,6 +135,11 @@ export function ZoneViewer({
               {onCollapse ? (
                 <button type="button" onClick={onCollapse}>
                   View board
+                </button>
+              ) : null}
+              {selection.onCancel ? (
+                <button type="button" onClick={selection.onCancel}>
+                  Cancel
                 </button>
               ) : null}
             </span>
@@ -209,7 +219,9 @@ export function ZoneViewer({
               disabled={!canConfirm}
               onClick={() => selection.onConfirm(picked)}
             >
-              {picked.length === 0 ? 'Put none' : `Confirm (${picked.length})`}
+              {picked.length === 0 && selection.min === 0
+                ? 'Put none'
+                : `Confirm (${picked.length})`}
             </button>
           </div>
         ) : null}
