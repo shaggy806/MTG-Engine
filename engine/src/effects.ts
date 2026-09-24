@@ -1145,6 +1145,11 @@ export type EffectSpec =
        * Acolyte of Flame). Sacrificed rather than exiled, so dies-triggers
        * see them go — the same per-object flag Encore uses. */
       readonly sacrificeAtEndStep?: boolean;
+      /** "**They gain haste until end of turn**" (Ovika, Enigma Goliath): the
+       * tokens this creates get these keywords until the turn ends — the
+       * tokens just made and no others, since the grant is part of making
+       * them (they fold into a token stack only with ones made the same way). */
+      readonly gainUntilEndOfTurn?: readonly Keyword[];
     }
   | {
       /** Create `count` token(s) that are copies of a permanent (rule 707.10 —
@@ -1157,8 +1162,12 @@ export type EffectSpec =
       readonly kind: "create-token-copy";
       readonly of: "source" | "trigger-object" | number;
       readonly count: number;
-      /** The token copies gain haste (Miirym). */
+      /** The token copies have haste — a copy exception ("except it has
+       * haste" — Kiki-Jiki), which lasts as long as they do. */
       readonly gainsHaste?: boolean;
+      /** "**It gains haste until end of turn**" (Mishra, Eminent One): the
+       * keywords last only this turn, unlike `gainsHaste`. */
+      readonly gainUntilEndOfTurn?: readonly Keyword[];
       /** Exile the token copies at the beginning of the next end step (Miirym). */
       readonly exileAtEndStep?: boolean;
       /** *Sacrifice* them at the beginning of the next end step instead
@@ -1884,6 +1893,8 @@ export interface EffectApi {
     who?: "target-controller" | PlayerScope,
     tapped?: boolean,
     sacrificeAtEndStep?: boolean,
+    /** Keywords the new tokens gain until end of turn. */
+    gainUntilEndOfTurn?: readonly Keyword[],
   ): void;
   /** Create `count` token(s) that are copies of the permanent `of` — see the
    * `"create-token-copy"` {@link EffectSpec}. */
@@ -1900,6 +1911,8 @@ export interface EffectApi {
       sacrificeAtEndStep?: boolean;
       notLegendary: boolean;
       basePt?: readonly [number, number];
+      /** Keywords the copies gain until end of turn. */
+      gainUntilEndOfTurn?: readonly Keyword[];
     },
   ): void;
   /** True if `condition` holds from the effect source's controller's
@@ -2739,6 +2752,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         spec.who,
         spec.tapped === true,
         spec.sacrificeAtEndStep === true,
+        spec.gainUntilEndOfTurn,
       );
       return;
     case "create-token-copy": {
@@ -2757,6 +2771,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
           notLegendary: spec.notLegendary ?? false,
           under: spec.who === "you" ? ctx.controller : undefined,
           ...(spec.basePt ? { basePt: spec.basePt } : {}),
+          ...(spec.gainUntilEndOfTurn ? { gainUntilEndOfTurn: spec.gainUntilEndOfTurn } : {}),
         });
       }
       return;

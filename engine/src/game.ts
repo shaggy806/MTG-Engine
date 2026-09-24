@@ -387,6 +387,14 @@ const LOOK_BACK_TRIGGERS: ReadonlySet<TriggerSpec["on"]> = new Set<TriggerSpec["
   "sacrifice",
 ]);
 
+/** The modifier that gives a token being created `keywords` until end of
+ * turn ("they gain haste until end of turn") — none for no keywords. */
+function untilEndOfTurnKeywords(keywords: readonly Keyword[]): PtModifier[] {
+  return keywords.length === 0
+    ? []
+    : [{ power: 0, toughness: 0, keywords: [...keywords], untilEndOfTurn: true }];
+}
+
 /** The indices of a trigger's slots the triggering event filled (see
  * `GameObject.autoTargetSlots`). */
 function autoSlotsOf(slots: readonly object[]): number[] {
@@ -9882,10 +9890,12 @@ export class Game {
         }
       },
       changeText: (target) => this.beginTextChoice(controller, source, target),
-      createToken: (token, count, who, tapped, sacrificeAtEndStep) => {
+      createToken: (token, count, who, tapped, sacrificeAtEndStep, gainUntilEndOfTurn) => {
         // "Each opponent creates a Treasure token": each of them, APNAP.
         if (who !== undefined && who !== "you" && who !== "target-controller") {
-          for (const p of scoped(who)) this.createTokens(p, token, count, tapped, sacrificeAtEndStep);
+          for (const p of scoped(who)) {
+            this.createTokens(p, token, count, tapped, sacrificeAtEndStep, gainUntilEndOfTurn);
+          }
           return;
         }
         let tokenController = controller;
@@ -9902,7 +9912,7 @@ export class Game {
             if (who !== undefined) tokenController = who;
           }
         }
-        this.createTokens(tokenController, token, count, tapped, sacrificeAtEndStep);
+        this.createTokens(tokenController, token, count, tapped, sacrificeAtEndStep, gainUntilEndOfTurn);
       },
       // "That creature's controller" — who controlled it as it left, if it
       // has (rule 608.2h); `moveObject` has handed it back to its owner.
@@ -10891,6 +10901,7 @@ export class Game {
     count: number,
     tapped = false,
     sacrificeAtEndStep = false,
+    gainUntilEndOfTurn: readonly Keyword[] = [],
   ): void {
     this.registry.get(tokenName); // validate the token is a known definition
     // Doubling Season / Parallel Lives (rule 614): "twice that many instead".
@@ -10900,7 +10911,7 @@ export class Game {
       tokenName,
       null,
       total,
-      [],
+      untilEndOfTurnKeywords(gainUntilEndOfTurn),
       false,
       false,
       false,
@@ -10926,6 +10937,7 @@ export class Game {
       notLegendary: boolean;
       basePt?: readonly [number, number];
       under?: PlayerId;
+      gainUntilEndOfTurn?: readonly Keyword[];
     },
   ): void {
     const of = this.state.objects[ofId];
@@ -10955,6 +10967,7 @@ export class Game {
             },
           ]
         : []),
+      ...untilEndOfTurnKeywords(opts.gainUntilEndOfTurn ?? []),
     ];
     this.mintTokenBatch(
       controller,
