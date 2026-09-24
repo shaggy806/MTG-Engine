@@ -505,6 +505,7 @@ import _poolNihilSpellbomb from "./pool/nihil-spellbomb.js";
 import _poolNissasExpedition from "./pool/nissas-expedition.js";
 import _poolNivMizzetParun from "./pool/niv-mizzet-parun.js";
 import _poolNomadOutpost from "./pool/nomad-outpost.js";
+import _poolNorinTheWary from "./pool/norin-the-wary.js";
 import _poolNotionThief from "./pool/notion-thief.js";
 import _poolNullmageShepherd from "./pool/nullmage-shepherd.js";
 import _poolObNixilisTheFallen from "./pool/ob-nixilis-the-fallen.js";
@@ -1450,6 +1451,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolNissasExpedition,
   _poolNivMizzetParun,
   _poolNomadOutpost,
+  _poolNorinTheWary,
   _poolNotionThief,
   _poolNullmageShepherd,
   _poolObNixilisTheFallen,
