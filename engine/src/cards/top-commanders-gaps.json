@@ -71,7 +71,9 @@
   "static:combat-restriction-extensions",
   "condition:entry-provenance",
   "keyword:firebending",
-  "effect:cast-and-activate-restrictions"
+  "effect:cast-and-activate-restrictions",
+  "keyword:annihilator",
+  "trigger:copies-spell"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

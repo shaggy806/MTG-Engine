@@ -736,6 +736,10 @@ export type TriggerSpec =
        * `nthEachTurn`) never match a copy.
        */
       readonly orCopy?: boolean;
+      /** Fire **only** when the player copies a spell — Kalamax, the
+       * Stormsire's "whenever you copy an instant spell". As `orCopy`
+       * otherwise. */
+      readonly copyOnly?: boolean;
       /**
        * "…another Vampire spell" (Edgar Markov) — the source's own cast
        * doesn't count. Needed because the card on the stack is itself in the

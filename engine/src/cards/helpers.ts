@@ -40,6 +40,21 @@ export const ward = (cost: WardCost): TriggeredAbility => {
 };
 
 /**
+ * Annihilator N (rule 702.86): "Whenever this creature attacks, defending
+ * player sacrifices N permanents." The defending player is the one it
+ * attacks, or the controller of the planeswalker it attacks. A triggered
+ * ability, so a static can grant it (`grantsTriggered`); each instance
+ * triggers on its own. Put the printed line in the card's `text` as well.
+ */
+export const annihilator = (n: number): TriggeredAbility => ({
+  trigger: { on: "attacks", who: "self" },
+  targets: [],
+  effect: { kind: "sacrifice", who: "trigger-player", filter: {}, count: n },
+  resolve: null,
+  text: `Annihilator ${n}`,
+});
+
+/**
  * Firebending N: "Whenever this creature attacks, add N {R}. This mana lasts
  * until end of combat." A triggered ability, so a static can grant it
  * (`grantsTriggered`) and losing abilities removes it; `amount` may be an

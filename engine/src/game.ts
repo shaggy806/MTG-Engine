@@ -9297,7 +9297,8 @@ export class Game {
             (spec.who === "opponent" && this.activePlayer !== self.controller))
         );
       case "cast-spell": {
-        if (event.type === "spell-copied" && spec.orCopy === true) {
+        if (spec.copyOnly === true && event.type !== "spell-copied") return false;
+        if (event.type === "spell-copied" && (spec.orCopy === true || spec.copyOnly === true)) {
           const copierMatches =
             spec.who === "any" ||
             (spec.who === "you" && event.controller === self.controller) ||
