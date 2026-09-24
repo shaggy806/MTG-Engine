@@ -334,6 +334,31 @@ describe("return-to-hand from the stack — Remand", () => {
   });
 });
 
+describe("return-to-hand from the stack — a flashed-back spell", () => {
+  it("is exiled instead, since it would leave the stack (rule 702.34a)", () => {
+    const game = mkGame();
+    lands(game, "Mountain", A, 2);
+    lands(game, "Island", B, 2);
+    const loot = game.debugSpawn("Faithless Looting", A, "graveyard");
+    game.dispatch({ type: "cast-spell", player: A, card: loot, targets: [], via: "flashback" });
+    expect(zoneOf(game, loot)).toBe("stack");
+    game.dispatch({ type: "pass-priority", player: A });
+    const remand = toHand(game, "Remand", B);
+    game.dispatch({
+      type: "cast-spell",
+      player: B,
+      card: remand,
+      targets: [{ kind: "object", object: loot }],
+    });
+    game.advanceUntil(quiet);
+
+    expect(zoneOf(game, loot)).toBe("exile");
+    expect(
+      game.eventsOfType("permanent-returned-to-hand").some((e) => e.object === loot),
+    ).toBe(false);
+  });
+});
+
 describe("rule 903.9b — a commander returned to hand from the stack", () => {
   const remandCommander = (toCommandZone: boolean): { game: Game; cmdr: ObjectId } => {
     const game = mkGame();

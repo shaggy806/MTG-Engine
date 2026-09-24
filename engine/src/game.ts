@@ -10444,6 +10444,8 @@ export class Game {
     // A commander may go to the command zone instead (rule 903.9b) — asked
     // by `moveObject`, which returns `false` while that choice is pending.
     if (!this.moveObject(id, "hand")) return;
+    // A flashed-back spell is exiled instead (rule 702.34a) — not a return.
+    if (this.state.objects[id]?.zone !== "hand") return;
     this.emit({ type: "permanent-returned-to-hand", object: id, owner, from });
   }
 
@@ -12066,6 +12068,17 @@ export class Game {
     // The same for a spell cast under an exile-afterwards graveyard
     // permission (Kess). The flag only ever sits on a spell on the stack.
     if (object.exileIfWouldGoToGraveyard === true && to === "graveyard") {
+      to = "exile";
+    }
+    // Flashback's "exile this card instead of putting it anywhere else any
+    // time it would leave the stack" (rule 702.34a) covers more than a
+    // graveyard: a flashed-back spell returned to its owner's hand (Remand)
+    // is exiled too.
+    if (
+      object.castVia === "flashback" &&
+      object.zone === "stack" &&
+      (to === "hand" || to === "library")
+    ) {
       to = "exile";
     }
 

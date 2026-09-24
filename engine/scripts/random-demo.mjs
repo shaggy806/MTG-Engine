@@ -51,6 +51,8 @@ const deckA = deck([
   ["Vivi Ornitier", 1],
   ["Marwyn, the Nurturer", 1],
   ["Kydele, Chosen of Kruphix", 1],
+  // Return-to-hand from the stack (Remand).
+  ["Remand", 1],
   // EDH-backlog bulk pass 5: Snarl reveal-lands and Karoo bounce lands (new:
   // the `land-you-control` target spec).
   ["Vineglimmer Snarl", 1],
@@ -874,6 +876,7 @@ const deckE = deck([
   ["Fell the Profane", 1],
   ["Goblin Anarchomancer", 1],
   ["Goblin Bombardment", 1],
+  ["Golbez, Crystal Collector", 1],
   ["Green Sun's Zenith", 1],
   ["Hedge Maze", 1],
   ["High Market", 1],
@@ -889,6 +892,7 @@ const deckE = deck([
   ["Prismatic Vista", 1],
   ["Prosper, Tome-Bound", 1],
   ["Pyroblast", 1],
+  ["Remand", 1],
   ["Spire of Industry", 1],
   ["Sram, Senior Edificer", 1],
   ["Strip Mine", 1],
