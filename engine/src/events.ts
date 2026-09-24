@@ -624,6 +624,12 @@ export type GameEvent =
       readonly to: PlayerId;
     })
   | (Base & {
+      /** A player flipped a coin (rule 705) and won or lost the flip. */
+      readonly type: "coin-flipped";
+      readonly player: PlayerId;
+      readonly won: boolean;
+    })
+  | (Base & {
       /** Cards were put into exile **at the same time** — the exile-side
        * twin of `cards-put-into-graveyard`: one per simultaneous move, each
        * card with the zone it came from. Tokens aren't cards. */

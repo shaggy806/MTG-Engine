@@ -598,6 +598,13 @@ export type TriggerSpec =
       readonly batched?: boolean;
     }
   | {
+      /** A player won a coin flip (rule 705) — "whenever a player wins a
+       * coin flip" (Okaun, Zndrsplt: `who: "any"`), "whenever you win a coin
+       * flip" (`"you"`). Once per flip won. */
+      readonly on: "wins-coin-flip";
+      readonly who: TriggerWho;
+    }
+  | {
       /**
        * One or more cards were put into exile at once — Ketramose, the New
        * Dawn's "whenever one or more cards are put into exile from

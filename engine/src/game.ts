@@ -77,7 +77,11 @@ import {
   withComputedCache,
 } from "./characteristics.js";
 import type { Characteristics } from "./characteristics.js";
-import type { DamageMultiplierReplacement } from "./replacements.js";
+import type {
+  DamageMultiplierReplacement,
+  LifeGainReplacement,
+  MillMultiplierReplacement,
+} from "./replacements.js";
 import { AutomaticController } from "./controller.js";
 import type { ControllerView, PlayerController } from "./controller.js";
 import type { DecisionHost, DecisionReadCtx } from "./decisions/contract.js";
@@ -9256,6 +9260,14 @@ export class Game {
           event.type === "cards-put-into-graveyard" &&
           this.graveyardArrivals(spec, event.arrivals, self).length > 0
         );
+      case "wins-coin-flip":
+        return (
+          event.type === "coin-flipped" &&
+          event.won &&
+          (spec.who === "any" ||
+            (spec.who === "you" && event.player === self.controller) ||
+            (spec.who === "opponent" && event.player !== self.controller))
+        );
       case "put-into-exile":
         return (
           event.type === "cards-put-into-exile" &&
@@ -10491,6 +10503,12 @@ export class Game {
       restrict: (target, filter, restrictions) =>
         this.restrict(controller, target, filter, restrictions),
       prohibit: (players, object, spells, abilities) => this.prohibit(players, object, spells, abilities),
+      flipCoin: () => {
+        const won = this.rng.next() < 0.5;
+        this.state.rngState = this.rng.seed;
+        this.emit({ type: "coin-flipped", player: controller, won });
+        return won;
+      },
       grantTriggered: (target, ability, duration) =>
         this.grantTriggered(target, ability, duration),
       grantPlayerHexproof: (who) => {
@@ -14096,6 +14114,10 @@ export class Game {
     if (target.kind !== "player") return;
     const player = target.player;
     if (this.state.players[player] === undefined) return;
+    // "…they mill twice that many cards instead" (Bruvac).
+    for (const r of this.playerEventReplacements(player)) {
+      if (r.event === "would-mill") amount *= r.multiplier;
+    }
     const milled: ObjectId[] = [];
     this.withGraveyardEnterBatch(() => {
       for (let i = 0; i < amount; i += 1) {
@@ -14634,6 +14656,15 @@ export class Game {
   }
 
   private changeLife(player: PlayerId, delta: number): void {
+    // Gaining life, changed: "…that much life plus 1 instead" (Bilbo), or not
+    // at all ("your opponents can't gain life").
+    if (delta > 0) {
+      const replacements = this.playerEventReplacements(player).filter(
+        (r): r is LifeGainReplacement => r.event === "would-gain-life",
+      );
+      if (replacements.some((r) => r.prevent === true)) return;
+      for (const r of replacements) delta += r.plus ?? 0;
+    }
     const playerState = this.state.players[player];
     playerState.life += delta;
     // Recorded here so every path counts — damage, a drain, a cost paid.
@@ -15046,7 +15077,50 @@ export class Game {
       this.drawCardRaw(redirectTo);
       return;
     }
-    this.drawCardRaw(player);
+    // "If you would draw a card, draw N cards instead" — those N aren't
+    // replaced again (rule 614.5).
+    const draws = this.drawCountFor(player);
+    for (let i = 0; i < draws; i += 1) this.drawCardRaw(player);
+  }
+
+  /** How many cards a single draw of `player`'s becomes under a `would-draw`
+   * "draw N instead" of their own (the largest, if several) — 1 without
+   * one. */
+  private drawCountFor(player: PlayerId): number {
+    let draws = 1;
+    for (const id of this.state.zones.shared.battlefield) {
+      const source = this.state.objects[id];
+      if (hasLostAbilities(source) || source.controller !== player) continue;
+      for (const ability of this.registry.get(printedCardName(source)).static) {
+        const r = ability.replacement;
+        if (r?.event !== "would-draw" || r.who !== "you" || typeof r.instead !== "object") continue;
+        if (!this.staticActive(source, ability)) continue;
+        draws = Math.max(draws, r.instead.draws);
+      }
+    }
+    return draws;
+  }
+
+  /** The `would-mill` and `would-gain-life` replacements that reach
+   * `player`'s event — each one's `who` read from its controller's side. */
+  private playerEventReplacements(
+    player: PlayerId,
+  ): (MillMultiplierReplacement | LifeGainReplacement)[] {
+    const out: (MillMultiplierReplacement | LifeGainReplacement)[] = [];
+    for (const id of this.state.zones.shared.battlefield) {
+      const source = this.state.objects[id];
+      if (hasLostAbilities(source) || this.state.players[source.controller]?.hasLost === true) continue;
+      for (const ability of this.registry.get(printedCardName(source)).static) {
+        const r = ability.replacement;
+        if (r === undefined || (r.event !== "would-mill" && r.event !== "would-gain-life")) continue;
+        const reaches =
+          r.who === "any-player" ||
+          (r.who === "you" ? player === source.controller : player !== source.controller);
+        if (!reaches || !this.staticActive(source, ability)) continue;
+        out.push(r);
+      }
+    }
+    return out;
   }
 
   /** Whose draw replaces `player`'s (a `would-draw` static an opponent

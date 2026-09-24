@@ -569,6 +569,7 @@ ability would have no way to name a token that didn't exist when it was set up.
 | `modify-pt` | `target`, `power`, `toughness`, `duration` | `duration: "end-of-turn" \| "permanent"` |
 | `modify-pt-all` | `filter`, `power`, `toughness`, `duration`, `exceptSource?`, `controlledByTarget?` | Overrun. `exceptSource` spares the source ("**other** attacking creatures you control with flying" — Steel-Plume Marshal, itself one). `controlledByTarget` scopes to a *targeted seat* (Great Oak Guardian), which a `CardFilter`'s `controlledBy` can't name — it only knows "you" and "opponent". |
 | `grant-keyword` | `target`, `keyword`, `duration` | |
+| `flip-coin` | `won?`, `lost?`, `untilLose?` | "Flip a coin. If you win the flip, …; if you lose the flip, …" (rule 705): the controller flips on the game's seeded random stream (so a seed replays), then `won` or `lost` applies as their effect. `untilLose: true` is "flip a coin until you lose a flip" (Okaun, Eye of Chaos; Zndrsplt, Eye of Wisdom) — `won` once per win. Each flip is a `coin-flipped` event, which the `wins-coin-flip` trigger reads. |
 | `prohibit` | `who` (a target slot or a `PlayerScope`, default you) with `spells` / `abilities`, or `target` (a permanent) | Prohibitions until end of turn: Sen Triplets' "this turn, that player can't cast spells or activate abilities" (`who: 0, spells: true, abilities: true`), Koma, Cosmos Serpent's "its activated abilities can't be activated this turn" (`target: 0` — that permanent this stint; flickered, it's a new object). Mana abilities are activated abilities, so they're barred too. `GameState.turnProhibitions`. |
 | `restrict` | `target` or `filter`, `restrictions` | Combat restrictions (§5's `CombatRestriction`s) until end of turn: "target creature can't block this turn" (`restrictions: ["cant-block"]`), Anzrag, the Quake-Mole's "~ must be blocked each combat this turn if able" (`target: "source"`, `["must-be-blocked-if-able"]`). On `target` it's a modifier, like a keyword grant; with `filter` instead it's a rule for the rest of the turn over everything matching it from your side — "creatures your opponents control can't block this turn" binds a creature that enters later too (rule 611.2c; `GameState.turnRestrictions`). |
 | `grant-graveyard-cast` | `target` | "Choose target artifact card in your graveyard. You may cast that card this turn" (Silas Renn, Emry) — pair with a `card-in-graveyard` target. A one-shot permission on the *card* (`GameObject.graveyardCastPermission`) for the effect's controller, for its normal cost, until end of turn: it outlives whatever granted it and ends if the card leaves the graveyard. Casts only, never a land. Offered as `via: "graveyard-permission"` with `graveyardGrant.source` = the card itself. |
@@ -1206,6 +1207,7 @@ triggered: [
 | `sacrifice` | `who`, `filter?`, `otherOnly?` | a player sacrifices a permanent (Korvold, Mayhem Devil — `who` = who sacrificed: its controller, not its owner, rule 701.21a, so a stolen permanent counts for the thief). `filter` is matched against the permanent as it last existed on the battlefield ("a **nontoken** permanent" is `{ token: false }`; a sacrificed token is still a token), `otherOnly` is "another", and the sacrificed permanent is the trigger object ("its power" — `{ powerOf: "trigger-object" }`, its power as it left). |
 | `transforms` | `who`, `intoFront?`, `filter?` | a DFC turns over |
 | `step-begins` | `step`, `who` | the start of a step (`"upkeep"` etc.) |
+| `wins-coin-flip` | `who` | "whenever a player wins a coin flip" (Okaun, Zndrsplt — `who: "any"`), "whenever you win a coin flip" (`"you"`): once per flip won. |
 | `put-into-exile` | `who`, `filter?`, `from?: ZoneType[]` | **batched** — "whenever one or more cards are put into exile from graveyards and/or the battlefield" (Ketramose, the New Dawn: `from: ["graveyard", "battlefield"]`, with a `your-turn` condition for "during your turn"): once per simultaneous move (a whole graveyard exiled is one), `{ triggerValue: true }` being how many counted. `who` is whose cards, `filter` is asked of them in exile. Tokens aren't cards. |
 | `put-into-graveyard` | `who`, `filter?`, `from?`, `notFrom?`, `batched?` | cards put into a graveyard, from anywhere — dying, milled, discarded, surveilled, a spell resolving or countered. `batched` is "whenever **one or more** land cards are put into your graveyard" (The Gitrog Monster; Sidisi, Brood Tyrant with `from: "library"`): once per simultaneous move — a wrath or state-based sweep, one mill, discard or surveil — `{ triggerValue: true }` being how many counted. Without it, once per card, that card the trigger object: Syr Konrad's "a creature card is put into a graveyard from anywhere other than the battlefield" (`notFrom: "battlefield"`, `who: "any"`), Disa the Restless's "…put it onto the battlefield" (`put-onto-battlefield` with `"trigger-object"`, which finds the card only in that graveyard). `who` is whose graveyard, `filter` is matched against the card as it is there, `from` / `notFrom` the zone it came from. Tokens aren't cards and never count. |
 | `discards` | `who` | "whenever an opponent discards a card" (Sangromancer). Fires once per *discard event*, not once per card — see §15. |
@@ -1834,7 +1836,17 @@ clause (section 9):
   { exileIfItWouldLeave: true }` (Whip of Erebos). It catches a bounce or a
   tuck as well as a death, and ends when the permanent leaves.
 - `{ event: "would-draw", who: "opponent", instead: "you-draw" }` — Notion
-  Thief.
+  Thief. `{ event: "would-draw", who: "you", instead: { draws: N } }` is "if
+  you would draw a card, draw N cards instead" (gate it with the static's
+  `condition`); neither applies again to the draws it makes (rule 614.5).
+- `{ event: "would-mill", who, multiplier }` — Bruvac the Grandiloquent's "if
+  an opponent would mill one or more cards, they mill twice that many cards
+  instead" (`who: "opponent"`, `multiplier: 2`); several multiply.
+- `{ event: "would-gain-life", who, plus?, prevent? }` — Bilbo, Birthday
+  Celebrant's "if you would gain life, you gain that much life plus 1
+  instead" (`who: "you"`, `plus: 1`), or "your opponents can't gain life"
+  (The Lord of Pain — `who: "opponent"`, `prevent: true`). Applied to every
+  life gain, lifelink's included; one `prevent` beats every `plus`.
 - `{ event: "would-deal-damage", multiplier?, plus?, atLeast?, combat?, prevent?, then?, source?, to? }`
   — damage about to be dealt, changed. With neither `source` nor `to` it is
   **symmetric and global** (Dictate of the Twin Gods' `multiplier: 2` doubles

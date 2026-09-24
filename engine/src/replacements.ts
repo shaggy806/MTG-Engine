@@ -42,7 +42,9 @@ export type ReplacementSpec =
   | CounterMultiplierReplacement
   | GraveyardExileReplacement
   | DrawRedirectReplacement
-  | DamageMultiplierReplacement;
+  | DamageMultiplierReplacement
+  | MillMultiplierReplacement
+  | LifeGainReplacement;
 
 /** As the source permanent enters the battlefield (rule 614.1c). A self-
  * replacement — printed on the card, applies only to it. */
@@ -202,9 +204,40 @@ export interface GraveyardExileReplacement {
 export interface DrawRedirectReplacement {
   readonly event: "would-draw";
   /** Whose draw is replaced, relative to this permanent's controller. */
-  readonly who: "opponent";
-  /** The replacement: the source's controller draws instead. */
-  readonly instead: "you-draw";
+  readonly who: "opponent" | "you";
+  /** The replacement: the source's controller draws instead (Notion Thief —
+   * `who: "opponent"`), or that player draws `draws` cards instead ("if you
+   * would draw a card, draw two cards instead" — gate it with the static's
+   * `condition`). Neither replacement applies again to the draws it makes
+   * (rule 614.5). */
+  readonly instead: "you-draw" | { readonly draws: number };
+}
+
+/**
+ * A mill, multiplied (rule 614.1a) — Bruvac the Grandiloquent's "if an
+ * opponent would mill one or more cards, they mill twice that many cards
+ * instead" (`who: "opponent"`, `multiplier: 2`). `who` is whose mill,
+ * relative to this permanent's controller; several multiply together.
+ */
+export interface MillMultiplierReplacement {
+  readonly event: "would-mill";
+  readonly who: "opponent" | "you" | "any-player";
+  readonly multiplier: number;
+}
+
+/**
+ * Life about to be gained, changed — Bilbo, Birthday Celebrant's "if you
+ * would gain life, you gain that much life plus 1 instead" (`who: "you"`,
+ * `plus: 1`), and "your opponents can't gain life" (The Lord of Pain —
+ * `who: "opponent"`, `prevent: true`; strictly a prohibition, but it stops
+ * the same event, lifelink's included). Every `plus` adds up; one `prevent`
+ * wins over all of them.
+ */
+export interface LifeGainReplacement {
+  readonly event: "would-gain-life";
+  readonly who: "opponent" | "you" | "any-player";
+  readonly plus?: number;
+  readonly prevent?: boolean;
 }
 
 /**

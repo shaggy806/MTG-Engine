@@ -1183,6 +1183,21 @@ export type EffectSpec =
     }
   | {
       /**
+       * "Flip a coin. If you win the flip, [won]. If you lose the flip,
+       * [lost]." (rule 705) — the effect's controller flips, on the game's
+       * seeded random stream, and `won` / `lost` are their effect after it.
+       * `untilLose` is "flip a coin until you lose a flip" (Okaun, Eye of
+       * Chaos; Zndrsplt, Eye of Wisdom): every flip won is its own
+       * `coin-flipped` event, which a `wins-coin-flip` trigger fires on, and
+       * `won` applies once per win.
+       */
+      readonly kind: "flip-coin";
+      readonly won?: EffectSpec;
+      readonly lost?: EffectSpec;
+      readonly untilLose?: boolean;
+    }
+  | {
+      /**
        * Prohibitions until end of turn: "this turn, that player can't cast
        * spells or activate abilities" (Sen Triplets — `who`, a target slot
        * holding a player or a scope, default you, with `spells` and/or
@@ -2170,6 +2185,9 @@ export interface EffectApi {
   ): void;
   /** See the `"ward"` {@link EffectSpec}. */
   ward(cost: WardCost): void;
+  /** Flip a coin for this effect's controller (see the `"flip-coin"`
+   * {@link EffectSpec}): `true` if they won the flip. */
+  flipCoin(): boolean;
   /** See the `"prohibit"` {@link EffectSpec}: `players` can't cast spells
    * and/or activate abilities this turn, or `object`'s activated abilities
    * can't be activated. */
@@ -2525,6 +2543,10 @@ function applyEachPlayerMay(
     }
   }
 }
+
+/** How many flips "flip a coin until you lose a flip" makes at most — a
+ * bound the seeded stream practically never reaches, against a loop. */
+const MAX_FLIPS = 1000;
 
 /** Resolve an {@link EffectAmount} against the resolution context. `each`
  * is the player a scoped effect is being applied to right now, for a
@@ -3237,6 +3259,17 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) {
         ctx.grantKeyword(target, spec.keyword, spec.duration);
+      }
+      return;
+    }
+    case "flip-coin": {
+      // One flip, or flips until one is lost — each flip's branch applied as
+      // it lands, since what a win does can matter to the next.
+      for (let i = 0; i < MAX_FLIPS; i += 1) {
+        const won = ctx.flipCoin();
+        const branch = won ? spec.won : spec.lost;
+        if (branch !== undefined) applyEffectSpec(branch, ctx);
+        if (!won || spec.untilLose !== true) return;
       }
       return;
     }

@@ -76,7 +76,9 @@
   "trigger:copies-spell",
   "mechanic:mdfc-transform",
   "condition:player-state-thresholds",
-  "trigger:cards-exiled-batch"
+  "trigger:cards-exiled-batch",
+  "replacement:new-event-replacements",
+  "mechanic:coin-flip"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

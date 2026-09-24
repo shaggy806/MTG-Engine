@@ -260,6 +260,8 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${name(event.attacker)} attacked alone`
     case 'cards-put-into-graveyard':
       return `${event.arrivals.map((a) => name(a.object)).join(', ')} put into a graveyard`
+    case 'coin-flipped':
+      return `${playerLabel(event.player)} ${event.won ? 'wins' : 'loses'} a coin flip`
     case 'cards-put-into-exile':
       return `${event.arrivals.map((a) => name(a.object)).join(', ')} put into exile`
     case 'player-attacked':
