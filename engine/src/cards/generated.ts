@@ -290,6 +290,7 @@ import _poolEvolvingWilds from "./pool/evolving-wilds.js";
 import _poolExoticOrchard from "./pool/exotic-orchard.js";
 import _poolExpeditionMap from "./pool/expedition-map.js";
 import _poolExploration from "./pool/exploration.js";
+import _poolExplore from "./pool/explore.js";
 import _poolExquisiteBlood from "./pool/exquisite-blood.js";
 import _poolExsanguinate from "./pool/exsanguinate.js";
 import _poolFabricate from "./pool/fabricate.js";
@@ -1377,6 +1378,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolExoticOrchard,
   _poolExpeditionMap,
   _poolExploration,
+  _poolExplore,
   _poolExquisiteBlood,
   _poolExsanguinate,
   _poolFabricate,

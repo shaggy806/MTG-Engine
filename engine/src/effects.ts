@@ -1046,6 +1046,12 @@ export type EffectSpec =
       readonly kind: "additional-combat";
     }
   | {
+      /** "You may play an additional land this turn" (Explore) — `amount`
+       * more land drops for the effect's controller, this turn only. */
+      readonly kind: "additional-land-drop";
+      readonly amount: number;
+    }
+  | {
       /** Untap every battlefield permanent matching `filter` (Aggravated
        * Assault: `{ type: "creature", controlledBy: "you" }`). */
       readonly kind: "untap-all";
@@ -1795,6 +1801,8 @@ export interface EffectApi {
   /** Queue an additional combat + main phase after this main phase (Aggravated
    * Assault). */
   additionalCombat(): void;
+  /** See the `additional-land-drop` {@link EffectSpec}. */
+  additionalLandDrops(amount: number): void;
   /** Untap every battlefield permanent matching `filter`. */
   untapAll(filter: CardFilter, scopeTo?: PlayerId): void;
   tapAll(filter: CardFilter): void;
@@ -2604,6 +2612,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     }
     case "additional-combat":
       ctx.additionalCombat();
+      return;
+    case "additional-land-drop":
+      ctx.additionalLandDrops(spec.amount);
       return;
     case "untap-all":
       ctx.untapAll(spec.filter, scopedController(spec.controlledByTarget, ctx));

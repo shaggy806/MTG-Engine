@@ -521,7 +521,8 @@ ability would have no way to name a token that didn't exist when it was set up.
 
 ### Turn structure / cast-triggered
 
-`take-extra-turn`, `additional-combat`, `untap-all { filter, controlledByTarget? }`, `storm`,
+`take-extra-turn`, `additional-combat`, `additional-land-drop { amount }` (Explore's "You may
+play an additional land this turn"), `untap-all { filter, controlledByTarget? }`, `storm`,
 `cascade`, `copy-spell { target }`.
 
 ### Format extras

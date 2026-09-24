@@ -942,3 +942,52 @@ describe("Welcoming Vampire", () => {
     expect(game.handOf(A).length).toBe(hand + 1);
   });
 });
+
+describe("Explore", () => {
+  it("allows one more land this turn only, and draws", () => {
+    const { game } = setUp(["Explore", "Forest", "Forest", "Forest"]);
+    lands(game, A, "Forest", 2);
+    const hand = game.handOf(A).length;
+    cast(game, A, inHand(game, A, "Explore"));
+    expect(game.handOf(A).length).toBe(hand);
+    const forests = () => game.handOf(A).filter((id) => game.state.objects[id].cardName === "Forest");
+    const canPlay = () => game.legalActions(A).some((o) => o.kind === "play-land");
+    // maxLandsPerTurn is 99 in this harness; check the counter directly.
+    expect(game.state.players[A].extraLandsThisTurn).toBe(1);
+    expect(canPlay()).toBe(true);
+    expect(forests().length).toBe(3);
+    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "upkeep");
+    expect(game.state.players[A].extraLandsThisTurn).toBe(0);
+  });
+
+  it("lifts a one-land limit to two", () => {
+    const a = new ScriptedController(A);
+    const b = new ScriptedController(B);
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      registry,
+      rules: { skipFirstDraw: false },
+      controllers: { [A]: a, [B]: b },
+      decks: [
+        { player: A, cards: ["Explore", "Forest", "Forest", "Forest", ...Array<string>(40).fill("Island")] },
+        { player: B, cards: Array<string>(40).fill("Island") },
+      ],
+    });
+    game.advanceUntil((s) => s.turn.number === 1 && s.turn.step === "precombat-main");
+    const play = () => {
+      const forest = game.handOf(A).find((id) => game.state.objects[id].cardName === "Forest");
+      if (forest === undefined) throw new Error("no Forest");
+      game.dispatch({ type: "play-land", player: A, card: forest });
+      game.advanceUntil(quiet);
+    };
+    const canPlay = () => game.legalActions(A).some((o) => o.kind === "play-land");
+    play();
+    game.debugSpawn("Forest", A, "battlefield");
+    expect(canPlay()).toBe(false);
+    cast(game, A, inHand(game, A, "Explore"));
+    expect(canPlay()).toBe(true);
+    play();
+    expect(canPlay()).toBe(false);
+  });
+});

@@ -2956,6 +2956,7 @@ export class Game {
     }
     for (const player of this.state.turnOrder) {
       this.state.players[player].landsPlayedThisTurn = 0;
+      this.state.players[player].extraLandsThisTurn = 0;
       this.state.players[player].spellsCastThisTurn = 0;
       this.state.players[player].lifeLostThisTurn = 0;
       this.state.players[player].lifeGainedThisTurn = 0;
@@ -4227,7 +4228,9 @@ export class Game {
         }
       }
     }
-    return this.state.rules.maxLandsPerTurn + extra;
+    return (
+      this.state.rules.maxLandsPerTurn + extra + (this.state.players[player].extraLandsThisTurn ?? 0)
+    );
   }
 
   private landDropReason(player: PlayerId): string | null {
@@ -9633,6 +9636,10 @@ export class Game {
       additionalCombat: () => {
         this.state.extraCombats += 1;
         this.emit({ type: "additional-combat-queued", player: controller });
+      },
+      additionalLandDrops: (amount) => {
+        const seat = this.state.players[controller];
+        seat.extraLandsThisTurn = (seat.extraLandsThisTurn ?? 0) + amount;
       },
       untapAll: (filter, scopeTo) => {
         for (const id of this.battlefieldMatching(scopeTo ?? controller, filter)) {

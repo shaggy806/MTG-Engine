@@ -741,6 +741,10 @@ export interface PlayerState {
   manaPool: ManaUnit[];
   maxHandSize: number;
   landsPlayedThisTurn: number;
+  /** Extra land drops an effect granted this turn — Explore's "You may play
+   * an additional land this turn". Reset as each turn begins; the ongoing
+   * kind (Azusa) is a static, `extraLandsPerTurn`. */
+  extraLandsThisTurn?: number;
   hasLost: boolean;
   lossReason: string | null;
   /**
