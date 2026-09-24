@@ -1,9 +1,7 @@
 import { defineCard } from "../define.js";
 
-/** Kaldheim. "Choose a Background" (a Commander deckbuilding option — pairing
- * with a second, non-legendary commander) isn't modeled: the engine's Partner
- * support only pairs two same-type commanders, not a Background enchantment.
- * The creature's own ability needs no new vocab — a plain Dragon-ETB trigger,
+/** Kaldheim. "Choose a Background" is `pairing`: the deck validator lets a
+ * legendary Background enchantment be its second commander. The creature's own ability needs no new vocab — a plain Dragon-ETB trigger,
  * "another" not required since Ganax's own entry also counts. */
 export default defineCard({
   name: "Ganax, Astral Hunter",
@@ -14,6 +12,7 @@ export default defineCard({
   subtypes: ["Dragon"],
   power: 3,
   toughness: 4,
+  pairing: { kind: "choose-a-background" },
   keywords: ["flying"],
   text:
     "Flying\n" +

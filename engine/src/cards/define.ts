@@ -969,7 +969,40 @@ export interface CardDefinition {
    * adventure exiles the card (rather than graveyard) with a "you may cast the
    * creature later from exile" permission. `true` on both faces. */
   readonly adventure: boolean;
+  /** The partner-family ability that lets this card be one of *two*
+   * commanders (rule 702.124), or `null` for a card that can only command
+   * alone. A deckbuilding rule, read by `deck-validation.ts`'s
+   * `canPairCommanders` and nothing in play. See {@link CommanderPairing}. */
+  readonly pairing: CommanderPairing | null;
 }
+
+/**
+ * A partner-family ability (rule 702.124). Each kind pairs only with its own
+ * kind — "different partner abilities are distinct from one another" — so a
+ * plain Partner commander can't team up with a "Partner with" one, nor a
+ * Friends forever one with a Survivors one:
+ *
+ * - `partner` — plain "Partner": pairs with any other card that has it.
+ * - `partner-with` — "Partner with [name]": pairs only with the card it names,
+ *   and only if that card's own Partner with names this one back. The
+ *   ability's enters trigger (a tutor for the partner) is a separate
+ *   `triggered` entry — `partnerWithTrigger` in `cards/helpers.ts`.
+ * - `partner-group` — "Partner—[text]" and its forerunners Friends forever
+ *   and Character select: pairs only with a card carrying the *same*
+ *   `group` text ("Father & son", "Survivors", "Friends forever",
+ *   "Character select").
+ * - `choose-a-background` — pairs with a legendary Background enchantment,
+ *   which then counts as a commander itself even though it isn't a creature.
+ *   The Background needs no `pairing` of its own: its type line is enough.
+ * - `doctors-companion` — pairs with a legendary Time Lord Doctor creature
+ *   that has no other creature types; the Doctor needs no `pairing` either.
+ */
+export type CommanderPairing =
+  | { readonly kind: "partner" }
+  | { readonly kind: "partner-with"; readonly name: string }
+  | { readonly kind: "partner-group"; readonly group: string }
+  | { readonly kind: "choose-a-background" }
+  | { readonly kind: "doctors-companion" };
 
 /** One chapter ability of a Saga (rule 714.2c). `at` lists the lore-counter
  * counts that fire it — usually `[1]` / `[2]` / `[3]`, but a shared "I, II"
@@ -1057,6 +1090,7 @@ interface CardDraft {
   transform?: boolean;
   disturb?: { readonly cost: string };
   adventure?: boolean;
+  pairing?: CommanderPairing;
 }
 
 /** Build a {@link CardDefinition} from a partial draft, filling in defaults. */
@@ -1124,6 +1158,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     transform: draft.transform ?? false,
     disturb: draft.disturb ?? null,
     adventure: draft.adventure ?? false,
+    pairing: draft.pairing ?? null,
   };
 }
 

@@ -1,8 +1,6 @@
 import { defineCard } from "../define.js";
 
-// Top-commanders rank 447. Partner is read off the rules text by
-// `validateCommanderDeck`, so the reminder line is the whole of it here — the
-// same shape Tana, Ishai and Kraum use.
+// Top-commanders rank 447.
 //
 // The upkeep clause is printed as "you may return **target** creature card
 // from your graveyard to your hand". The engine has the `card-in-graveyard`
@@ -24,6 +22,7 @@ export default defineCard({
   subtypes: ["Human", "Cleric"],
   power: 2,
   toughness: 2,
+  pairing: { kind: "partner" },
   keywords: ["flying"],
   text:
     "Flying\n" +

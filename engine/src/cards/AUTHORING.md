@@ -235,6 +235,7 @@ from the same link.
 | `exileOnResolve` | `boolean` | "Exile ~" printed on a non-permanent spell's own resolution text (Genesis Ultimatum) — goes to exile instead of the graveyard after resolving, unconditionally (however it was cast). Distinct from flashback/disturb/adventure, which only redirect a spell cast *that way*. needed-cards P19. |
 | `shuffleIntoLibraryOnResolve` | `boolean` | "Shuffle ~ into its owner's library" as the last part of resolving (White Sun's Zenith). Only on resolving: a *countered* one goes to the graveyard, because the shuffle is an instruction the spell never got to carry out. |
 | `revealsOwnLibraryTop` | `boolean` | play with your top card revealed (Oracle of Mul Daya) |
+| `pairing` | `CommanderPairing` | the partner-family ability that lets this card be one of **two** commanders (rule 702.124) — §12. Never inferred from `text`. |
 
 ---
 
@@ -1224,7 +1225,30 @@ Grep the pool for `resolve:` — there are very few.
   a shared "I, II"). `history-of-benalia.ts`.
 - **Commander** — nothing on the card marks it; it's whichever card a
   `DeckList.commander` names. `supertypes: ["legendary"]` is conventional. The
-  engine adds the `{2}` tax and the 903.9a replacement automatically.
+  engine adds the `{2}` tax and the 903.9a replacement automatically — for a
+  non-creature commander (a Background) too.
+- **Partner and its variants** (rule 702.124) — a deckbuilding ability, set as
+  `pairing` and read only by the deck validator (`canPairCommanders`). The
+  printed line still goes in `text`, but the validator never reads `text`, so
+  a card without `pairing` can't pair however its text reads
+  (`commander-pairing.test.ts` checks the two agree across the pool). Each
+  kind pairs only with its own:
+  - `{ kind: "partner" }` — plain "Partner". `thrasios-triton-hero.ts`.
+  - `{ kind: "partner-with", name }` — "Partner with [name]": only with that
+    card, whose own `partner-with` must name this one. The keyword also prints
+    an enters trigger; add it as `triggered: [partnerWithTrigger(name)]` from
+    `helpers.ts` (target player may search for the named card, reveal it, put
+    it in hand).
+  - `{ kind: "partner-group", group }` — "Partner—[text]" (`"Father & son"`,
+    `"Survivors"`) and the older "Friends forever" / "Character select",
+    which pair the same way: only with the identical `group` string.
+  - `{ kind: "choose-a-background" }` — "Choose a Background": pairs with a
+    legendary enchantment with subtype `Background`. The Background itself
+    needs **no** `pairing` — its type line is what makes it one — and it can
+    only be a commander as that second half. `ganax-astral-hunter.ts`.
+  - `{ kind: "doctors-companion" }` — "Doctor's companion": pairs with a
+    legendary creature whose subtypes are exactly `Time Lord` and `Doctor`,
+    which needs no `pairing` of its own.
 
 ---
 
@@ -1526,7 +1550,7 @@ Delete an entry in the same commit as the feature that retires it.
 **Not modeled at all:** phasing, Battles, dungeons / the Initiative / the Ring,
 banding, "day/night"-independent double-faced tokens, a static ability that
 makes a planeswalker a creature (Gideon), ability-dependency ordering (rule
-613.8), companions / backgrounds.
+613.8), companions.
 
 ### Known exceptions already in the pool
 

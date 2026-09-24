@@ -11,6 +11,7 @@ export default defineCard({
   subtypes: ["Zombie", "Horror"],
   power: 4,
   toughness: 4,
+  pairing: { kind: "partner" },
   keywords: ["flying", "haste"],
   text:
     "Flying, haste\n" +

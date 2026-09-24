@@ -9,6 +9,7 @@ export default defineCard({
   subtypes: ["Merfolk", "Wizard"],
   power: 1,
   toughness: 3,
+  pairing: { kind: "partner" },
   text:
     "{4}: Scry 1, then reveal the top card of your library. If it's a land card, put it onto " +
     "the battlefield tapped. Otherwise, draw a card.\n" +

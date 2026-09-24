@@ -6,9 +6,6 @@ import { defineCard } from "../define.js";
 // `supertype`. Nothing in the engine grants or removes the legendary
 // supertype (no layer touches supertypes), so reading it off the printed card
 // is exact even for a clone, which reports its copied name.
-//
-// Partner is read off the rules text by `validateCommanderDeck`, so the
-// reminder line is the whole of it here — there is no `partner` keyword.
 export default defineCard({
   name: "Yoshimaru, Ever Faithful",
   manaCost: "{W}",
@@ -18,6 +15,7 @@ export default defineCard({
   subtypes: ["Dog"],
   power: 1,
   toughness: 1,
+  pairing: { kind: "partner" },
   text:
     "Whenever another legendary permanent you control enters, put a +1/+1 counter on Yoshimaru.\n" +
     "Partner (You can have two commanders if both have partner.)",

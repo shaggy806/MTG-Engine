@@ -21,6 +21,7 @@ export default defineCard({
   subtypes: ["Human", "Ally"],
   power: 3,
   toughness: 3,
+  pairing: { kind: "partner" },
   text: `${TEXT}\nPartner (You can have two commanders if both have partner.)`,
   triggered: [
     {

@@ -16,6 +16,7 @@ export default defineCard({
   subtypes: ["Kobold", "Warrior"],
   power: 0,
   toughness: 1,
+  pairing: { kind: "partner" },
   keywords: ["first-strike", "menace", "trample"],
   text:
     "First strike, menace, trample\n" +

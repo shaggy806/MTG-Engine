@@ -4,7 +4,7 @@
  * under `pool/` and `tokens/`.
  */
 
-import type { ActivatedAbility } from "../abilities.js";
+import type { ActivatedAbility, TriggeredAbility } from "../abilities.js";
 import type { EffectAmount, EffectSpec } from "../effects.js";
 import type { Color, ManaType } from "../mana.js";
 import { defineCard, type CardDefinition, type StaticAbility } from "./define.js";
@@ -26,6 +26,32 @@ export const investigate = (times: EffectAmount = 1): EffectSpec => ({
   kind: "create-token",
   token: "Clue Token",
   count: times,
+});
+
+/**
+ * The enters trigger "Partner with [name]" carries alongside its deckbuilding
+ * half (rule 702.124): "When this creature enters, target player may search
+ * their library for a card named [name], reveal it, put it into their hand,
+ * then shuffle." Pair it with `pairing: { kind: "partner-with", name }` —
+ * the two are one printed keyword, so a card with one has both.
+ */
+export const partnerWithTrigger = (name: string): TriggeredAbility => ({
+  trigger: { on: "enters-battlefield", who: "self" },
+  targets: ["player"],
+  effect: {
+    kind: "search-library",
+    filter: { name },
+    destination: "hand",
+    // "may search": optional for the target, you included.
+    min: 0,
+    max: 1,
+    reveal: true,
+    who: { controllerOfTarget: 0 },
+  },
+  resolve: null,
+  text:
+    `When this creature enters, target player may search their library for a card named ${name}, ` +
+    "reveal it, put it into their hand, then shuffle.",
 });
 
 /** The `{T}: Add {C}` ability every mana-producing basic land has. */

@@ -1,8 +1,6 @@
 import { defineCard } from "../define.js";
 
-// Top-commanders rank 163. Partner is read off the rules text by
-// `validateCommanderDeck`, so the reminder line is the whole of it here.
-// `otherOnly` can't change anything for an opponent-only trigger (Ishai's own
+// Top-commanders rank 163. `otherOnly` can't change anything for an opponent-only trigger (Ishai's own
 // cast is its controller's), but keeps the stack copy of Ishai out of it
 // however the scan is widened later.
 export default defineCard({
@@ -14,6 +12,7 @@ export default defineCard({
   subtypes: ["Bird", "Monk"],
   power: 1,
   toughness: 1,
+  pairing: { kind: "partner" },
   keywords: ["flying"],
   text:
     "Flying\n" +

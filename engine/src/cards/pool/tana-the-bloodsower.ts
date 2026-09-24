@@ -9,6 +9,7 @@ export default defineCard({
   subtypes: ["Elf", "Druid"],
   power: 2,
   toughness: 2,
+  pairing: { kind: "partner" },
   keywords: ["trample"],
   text:
     "Trample\n" +
