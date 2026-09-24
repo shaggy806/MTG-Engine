@@ -9,6 +9,7 @@ import _poolAcademyRuins from "./pool/academy-ruins.js";
 import _poolAccursedMarauder from "./pool/accursed-marauder.js";
 import _poolActOfTreason from "./pool/act-of-treason.js";
 import _poolAdarkarWastes from "./pool/adarkar-wastes.js";
+import _poolAdmiralBrassUnsinkable from "./pool/admiral-brass-unsinkable.js";
 import _poolAdrixAndNev from "./pool/adrix-and-nev.js";
 import _poolAesiTyrantOfGyreStrait from "./pool/aesi-tyrant-of-gyre-strait.js";
 import _poolAetherize from "./pool/aetherize.js";
@@ -978,6 +979,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAccursedMarauder,
   _poolActOfTreason,
   _poolAdarkarWastes,
+  _poolAdmiralBrassUnsinkable,
   _poolAdrixAndNev,
   _poolAesiTyrantOfGyreStrait,
   _poolAetherize,
