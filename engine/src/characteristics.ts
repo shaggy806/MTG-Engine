@@ -29,12 +29,19 @@ import type {
   StaticCondition,
   TurnStat,
 } from "./cards.js";
-import { compareNum, matchesFilter } from "./filter.js";
+import {
+  aggregateOver,
+  aggregateValueOf,
+  compareNum,
+  matchesFilter,
+  weightedMatches,
+} from "./filter.js";
 import type { CardFilter } from "./filter.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { permanentCount, printedCardName } from "./state.js";
 import type { GameObject, GameState } from "./state.js";
+import type { TargetRef } from "./target.js";
 
 /**
  * Ids whose static `condition` is currently being evaluated. A condition that
@@ -181,6 +188,12 @@ export interface ConditionOptions {
    * `sameObject`. Passed only by a triggered ability's resolution check.
    */
   readonly sourceTimestamp?: number;
+  /**
+   * The chosen targets of the ability resolving, for a `controls`
+   * condition's `excludeTarget`. Passed only by a resolution context (a
+   * `conditional` effect); a static ability has none.
+   */
+  readonly targets?: readonly (TargetRef | undefined)[];
 }
 
 /**
@@ -225,11 +238,10 @@ function evalStaticCondition(
   // skipped *before* its filter is asked, never matched and subtracted:
   // asking whether the source matches can mean folding its characteristics,
   // which evaluates this very condition again.
-  const countWhere = (keep: (id: ObjectId) => boolean): number =>
-    permanentCount(
-      state,
-      state.zones.shared.battlefield.filter((id) => !skipsSelf(id) && keep(id)),
-    );
+  const matchesWhere = (keep: (id: ObjectId) => boolean, except: readonly ObjectId[] = []) =>
+    weightedMatches(state, state.zones.shared.battlefield, (id) => !skipsSelf(id) && keep(id), except);
+  const countWhere = (keep: (id: ObjectId) => boolean, except: readonly ObjectId[] = []): number =>
+    matchesWhere(keep, except).reduce((n, m) => n + m.weight, 0);
   switch (condition.kind) {
     case "your-turn":
       return state.turnOrder[state.turn.activePlayerIndex] === you;
@@ -264,14 +276,53 @@ function evalStaticCondition(
           return o.controller === you && effectiveTypes(registry, o).includes("artifact");
         }) >= 3
       );
-    case "controls":
+    case "controls": {
+      // A static ability's scan has already skipped the source whole.
+      const except: ObjectId[] = [];
+      if (condition.excludeSelf === true && opts.includeSelf === true) except.push(source.id);
+      if (condition.excludeTarget !== undefined) {
+        const ref = opts.targets?.[condition.excludeTarget];
+        if (ref?.kind === "object") except.push(ref.object);
+      }
       return (
         countWhere(
           (id) =>
             state.objects[id].controller === you &&
             matchesFilter(state, registry, id, condition.filter, { you }),
+          except,
         ) >= condition.atLeast
       );
+    }
+    case "aggregate": {
+      const { value } = condition;
+      const except =
+        value.excludeSelf === true && opts.includeSelf === true ? [source.id] : [];
+      const matches = matchesWhere(
+        (id) => matchesFilter(state, registry, id, value.filter, { you }),
+        except,
+      );
+      return compareNum(
+        aggregateOver(state, registry, matches, value.aggregate, value.of),
+        condition.compare,
+      );
+    }
+    case "source-greatest": {
+      if (source.zone !== "battlefield") return false;
+      const mine = aggregateValueOf(state, registry, source.id, condition.of);
+      // The source's own stack-mates are other permanents with its value.
+      const others = weightedMatches(
+        state,
+        state.zones.shared.battlefield,
+        (id) =>
+          (id !== source.id || (source.stackCount ?? 1) > 1) &&
+          matchesFilter(state, registry, id, condition.filter, { you }),
+        [source.id],
+      );
+      return others.every((m) => {
+        const theirs = aggregateValueOf(state, registry, m.id, condition.of);
+        return condition.strict === true ? mine > theirs : mine >= theirs;
+      });
+    }
     case "opponent-controls":
       // "an opponent controls three or more creatures" — one opponent must
       // meet the count on their own, so count per player and take the best.

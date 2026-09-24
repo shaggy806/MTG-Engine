@@ -14,7 +14,7 @@
 
 import type { ActivatedAbility, CostReductionAmount, TriggeredAbility } from "../abilities.js";
 import type { EffectSpec, ModeOption, SpellResolver } from "../effects.js";
-import type { CardFilter, NumCompare } from "../filter.js";
+import type { AggregateOf, AggregateSpec, CardFilter, NumCompare } from "../filter.js";
 import type { Color } from "../mana.js";
 import type { ReplacementSpec } from "../replacements.js";
 import type { ZoneType } from "../state.js";
@@ -218,7 +218,59 @@ export type TurnStat = "life-lost" | "life-gained" | "cards-drawn";
 export type StaticCondition =
   /** You control at least `atLeast` permanents matching `filter` (Kird Ape —
    * "as long as you control a Forest"). */
-  | { readonly kind: "controls"; readonly filter: CardFilter; readonly atLeast: number }
+  | {
+      readonly kind: "controls";
+      readonly filter: CardFilter;
+      readonly atLeast: number;
+      /**
+       * "If you control **another** Wizard". A *static* ability's condition
+       * already leaves its own permanent out (see `ConditionOptions`); this
+       * is for a triggered ability's intervening-if and a `conditional`
+       * effect, which count the source unless told not to. One permanent,
+       * not one object: the rest of a token stack still counts.
+       */
+      readonly excludeSelf?: boolean;
+      /** Leave out whatever target slot `excludeTarget` names — "if you
+       * control a creature **other than that creature**". Only meaningful
+       * where there are targets (a `conditional` effect); ignored on a
+       * static ability. */
+      readonly excludeTarget?: number;
+    }
+  /**
+   * A sum or maximum over matching battlefield permanents compared against a
+   * number — Finneas, Ace Archer's "if creatures you control have **total
+   * power 10 or greater**" is `{ value: { aggregate: "sum", of: "power",
+   * filter: { type: "creature", controlledBy: "you" } }, compare: { op:
+   * "gte", n: 10 } }`. A token stack counts once per token in a sum.
+   *
+   * On a *static* ability the source's own value is left out, as every
+   * board-scanning condition does (its characteristics are what is being
+   * computed); a triggered ability and a `conditional` effect count it.
+   */
+  | {
+      readonly kind: "aggregate";
+      readonly value: AggregateSpec;
+      readonly compare: NumCompare;
+    }
+  /**
+   * The source's own power / toughness / mana value is the greatest among
+   * the permanents matching `filter` — "if ~'s power is **greater than each
+   * other creature's power**" (`strict`, where a tie fails) or "~ has the
+   * greatest power among creatures you control" (a tie still has the
+   * greatest, rule-wise). Vacuously true when nothing else matches. Another
+   * member of the source's own token stack is an "other" creature, and has
+   * the same value.
+   *
+   * On a static ability the source's own value is read with that static's
+   * condition switched off (the re-entrancy guard), so a static whose own
+   * P/T grant would change the answer is not modeled.
+   */
+  | {
+      readonly kind: "source-greatest";
+      readonly of: AggregateOf;
+      readonly filter: CardFilter;
+      readonly strict?: boolean;
+    }
   /** *Some one* opponent controls at least `atLeast` permanents matching
    * `filter` (Defense of the Heart — "if an opponent controls three or more
    * creatures"). Each opponent is counted separately — three creatures spread

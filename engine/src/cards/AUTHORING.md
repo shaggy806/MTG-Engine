@@ -217,7 +217,7 @@ from the same link.
 | `alternativeCost` | `{ mana, tapCreatures: { count, filter } }` | an alternative cost that replaces the mana cost *and* taps permanents (rule 601.2b — Sephara's "pay {W} and tap four untapped creatures you control with flying rather than pay this spell's mana cost"). Offered as a second `cast-spell` variant (`altCost: true`), the same shape `kicked`/`overload`/`free` use; the caster picks what it taps, as for `tapOthers`. |
 | `freeCastIf` | `{ condition: StaticCondition }` | a conditional free-cast permission printed on the spell itself (the CMM commander-precon cycle — Fierce Guardianship: "If you control a commander, you may cast this spell without paying its mana cost."). Unlike `overload`, targets/effect are completely unchanged — only the cost differs, and it's *in addition to* the normal cast, not instead of it. `legalActions` offers the card twice whenever the condition is currently met. |
 | `convoke` | `boolean` | **Convoke** (rule 702.51 — Chord of Calling, Hour of Reckoning). A pure payment-*method* choice made as the spell is cast (`Action.convoke: ConvokePayment[]`, each `{ creature, pays?: "generic" \| Color }` — omit `pays` and the engine puts the creature where it helps most; a token stack is named once per token) — tap untapped creatures instead of mana for part of the cost. A convoking creature can't also tap for mana. Doesn't change the printed cost, targets, or effect; not enumerated as a second `cast-spell` variant — the one `LegalAction` carries `convoke: { candidates, maxGeneric, proof, manaAffordable, maxCreatures, copies? }` (every untapped creature the caster controls) instead. |
-| `selfCostReduction` | `{ condition: StaticCondition, reduceGeneric }` | a reduction printed on the spell itself, gated on board state (rule 601.2f — Ferocious, Finale of Devastation: "if you control a creature with power 4 or greater, this spell costs {2} less"). Unlike a `StaticAbility.costModification` (a permanent reducing *other* spells) this is evaluated for the card being cast, from whatever zone — no permanent has to be on the battlefield granting it. `reduceGeneric` accepts a live count too (`{ countOf: CardFilter }` — Blasphemous Act: "{1} less for each creature on the battlefield", `{ type: "creature" }` with no `controlledBy` counts every player's). `condition` is mandatory; a reduction with no real "if" clause uses `{ kind: "controls", filter: {}, atLeast: 0 }` (trivially always true). needed-cards P10, P19. |
+| `selfCostReduction` | `{ condition: StaticCondition, reduceGeneric }` | a reduction printed on the spell itself, gated on board state (rule 601.2f — Ferocious, Finale of Devastation: "if you control a creature with power 4 or greater, this spell costs {2} less"). Unlike a `StaticAbility.costModification` (a permanent reducing *other* spells) this is evaluated for the card being cast, from whatever zone — no permanent has to be on the battlefield granting it. `reduceGeneric` accepts a live count too (`{ countOf: CardFilter }` — Blasphemous Act: "{1} less for each creature on the battlefield", `{ type: "creature" }` with no `controlledBy` counts every player's) and an aggregate (`{ aggregate: "sum", of: "power", filter: { type: "creature", controlledBy: "you" } }` — Ghalta, Primal Hunger's "{X} less, where X is the total power of creatures you control"; clamped at 0). `condition` is mandatory; a reduction with no real "if" clause uses `{ kind: "controls", filter: {}, atLeast: 0 }` (trivially always true). needed-cards P10, P19. |
 | `flashback` | `{ cost, payLife? }` | cast from graveyard, then exiled (rule 702.34). `payLife` is part of the cost (Deep Analysis's "Flashback—{1}{U}, Pay 3 life"), so it gates castability and is paid as the spell is cast. |
 | `foretell` | `{ cost }` | pay `{2}` to exile face-down, cast later for `cost` |
 | `escape` | `{ cost, exileCount }` | cast from graveyard + exile N other graveyard cards |
@@ -329,8 +329,19 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 `modify-pt-all` `power`/`toughness`, `add-mana` `amount`, and `create-token`
 `count`.
 
-The rest of the shapes: `{ countOf: CardFilter, times? }` (a battlefield
-count, optionally multiplied — Shamanic Revelation's "4 life **for each**"),
+The rest of the shapes: `{ countOf: CardFilter, times?, excludeSelf?,
+excludeTarget? }` (a battlefield count, optionally multiplied — Shamanic
+Revelation's "4 life **for each**"; `excludeSelf` is "for each **other**
+creature you control", `excludeTarget: i` is "other than **that** creature",
+leaving out whatever target slot `i` names. Both leave out one *permanent*:
+a source that is a member of a token stack leaves the rest of its stack
+counted), `{ aggregate: "sum" | "max", of: "power" | "toughness" |
+"mana-value", filter, excludeSelf? }` (an `AggregateSpec`, `filter.ts` — "X is
+the **total power** of creatures you control", "the **greatest mana value**
+among permanents you control". Computed values, so anthems and counters
+count; mana value off the printed cost with `{X}` as 0. A **sum counts a
+token stack once per token** — twenty 1/1 Goblins in one stack are 20 power.
+A max over no permanents is 0, and the amount is clamped at 0, rule 107.1b),
 `{ countInGraveyard }`, `{ manaValueOf }`, `{ powerOf }`, `{ toughnessOf }`
 (Condemn), `{ lifeTotal: "you" }` (Storm Herd), `{ devotionTo: Color }` (rule
 700.5 — Gray Merchant of Asphodel; a hybrid pip counts for each colour it
@@ -438,9 +449,9 @@ ability would have no way to name a token that didn't exist when it was set up.
 | `grant-keyword` | `target`, `keyword`, `duration` | |
 | `grant-graveyard-cast` | `target` | "Choose target artifact card in your graveyard. You may cast that card this turn" (Silas Renn, Emry) — pair with a `card-in-graveyard` target. A one-shot permission on the *card* (`GameObject.graveyardCastPermission`) for the effect's controller, for its normal cost, until end of turn: it outlives whatever granted it and ends if the card leaves the graveyard. Casts only, never a land. Offered as `via: "graveyard-permission"` with `graveyardGrant.source` = the card itself. |
 | `grant-triggered` | `target`, `ability`, `duration` | "gains 'Whenever this creature deals combat damage to a player, draw that many cards'" (Hunter's Prowess, Hunter's Insight). Rides on the target's own modifiers, so `"end-of-turn"` expires with every other until-end-of-turn modifier. The ongoing equivalent is `StaticAbility.grantsTriggered` (§10). |
-| `grant-keyword-all` | `filter`, `keyword`, `duration` | Overrun's trample |
+| `grant-keyword-all` | `filter`, `keyword`, `duration`, `exceptSource?` | Overrun's trample. `exceptSource` is "**other** Spiders you control gain …" (Cosmic Spider-Man). Hits what matches as it resolves (rule 611.2c) — a creature arriving later doesn't gain it. |
 | `add-counter` | `target`, `counter` (string), `amount` | `counter: "+1/+1"` etc. |
-| `add-counter-all` | `filter`, `counter`, `amount` | the untargeted mass form (Loyal Guardian: "a +1/+1 counter on each creature you control"). Routes through `add-counter` per permanent, so Doubling Season still composes. |
+| `add-counter-all` | `filter`, `counter`, `amount`, `exceptSource?` | the untargeted mass form (Loyal Guardian: "a +1/+1 counter on each creature you control"). Routes through `add-counter` per permanent, so Doubling Season still composes. `exceptSource` is "each **other** creature you control" (Finneas, Ace Archer). |
 | `populate` | — | Populate (rule 701.32): create a token copying a creature token you control (Rootborn Defenses). Copies the largest by power rather than asking — see §15 "Partial". |
 | `amass` | `amount`, `creatureType` | Amass N (rule 701.44). One effect rather than create-then-count, because "an Army you control" has to resolve to the **same** object each time — that's what makes repeated amassing grow one creature. Picks the first Army rather than asking; no precon makes two. |
 | `grant-player-hexproof` | `who?` | "You gain hexproof until end of turn" (Lazotep Plating). A *player* can't be targeted by opponents; permanents gaining hexproof is `grant-keyword-all`. Turn-scoped on `GameState.hexproofPlayers`. |
@@ -1042,7 +1053,31 @@ anthem, the keyword grant and the granted trigger like any other creature.
 contributes nothing. The same union is a triggered ability's intervening-if
 clause (section 9):
 
-- `{ kind: "controls", filter: CardFilter, atLeast: number }` — Kird Ape.
+- `{ kind: "controls", filter: CardFilter, atLeast: number, excludeSelf?,
+  excludeTarget? }` — Kird Ape. A **static**'s condition never counts its own
+  permanent (the scan would recurse into the characteristics being computed),
+  but a triggered ability's intervening-if and a `conditional` effect's
+  condition do (resolution is outside the layer fold): `excludeSelf` is "if
+  you control **another** Wizard" there. `excludeTarget: i` leaves out target
+  slot `i` ("a creature other than that creature") and only means anything
+  inside a `conditional` effect, where there are targets.
+- `{ kind: "aggregate", value: AggregateSpec, compare: NumCompare }` — a sum
+  or maximum compared against a number (Finneas, Ace Archer: "if creatures
+  you control have **total power 10 or greater**" is `{ value: { aggregate:
+  "sum", of: "power", filter: { type: "creature", controlledBy: "you" } },
+  compare: { op: "gte", n: 10 } }`). A token stack counts once per token.
+  Same self rule as `controls`: a static leaves its own permanent out of the
+  total; a trigger or `conditional` counts it unless `value.excludeSelf`.
+- `{ kind: "source-greatest", of, filter, strict? }` — the source's own
+  power / toughness / mana value is the greatest among permanents matching
+  `filter` (from its controller's view — `{ type: "creature" }` is every
+  creature). `strict: true` is "greater than **each other** creature's
+  power", where a tie fails; without it, "has the greatest power among …",
+  where a tie still has the greatest. Vacuously true with nothing else
+  matching; another member of the source's own token stack is another
+  creature with the same value. On a static, the source's own value is read
+  with that static switched off, so a static whose own P/T bonus changes the
+  answer isn't modeled.
 - `{ kind: "opponent-controls", filter: CardFilter, atLeast: number }` — *one*
   opponent must meet the count on their own (Defense of the Heart: "if an
   opponent controls three or more creatures").
@@ -1285,6 +1320,16 @@ Delete an entry in the same commit as the feature that retires it.
 
 **No vocabulary for:**
 
+- **Aggregates in the layer fold**: a sum or maximum (`AggregateSpec`) is an
+  `EffectAmount`, a `StaticCondition` and a cost reduction, but not yet a
+  characteristic-defining ability ("power equal to the greatest power among
+  other creatures you control") or a static P/T bonus ("gets +X/+0, where X is
+  the total power of …"). Reading other creatures' power inside one
+  creature's own layer fold needs dependency ordering the engine doesn't
+  have. An **attack batch** ("the greatest power among attacking creatures")
+  can only be approximated by an `attacking: true` filter at resolution,
+  which drifts from the batch if an attacker leaves or another starts
+  attacking — don't author a card on that approximation.
 - Returning a card from **another player's** graveyard to a hand.
   `return-from-graveyard` covers *your own* graveyard → battlefield / hand;
   `escape` / `flashback` / `disturb` cover self-recursion of the spell itself;

@@ -13,7 +13,7 @@ import type { StaticCondition } from "./cards/define.js";
 import type { EffectSpec, SpellResolver } from "./effects.js";
 import type { GameEvent } from "./events.js";
 import type { ZoneType } from "./state.js";
-import type { CardFilter } from "./filter.js";
+import type { AggregateSpec, CardFilter } from "./filter.js";
 import type { TargetSpec } from "./target.js";
 import type { Step } from "./turn.js";
 
@@ -157,12 +157,17 @@ export interface ActivatedAbility {
  *   Animar").
  * - `cardsInGraveyard`: cards in *your* graveyard matching a filter (Karador,
  *   Ghost Chieftain: "{1} less for each creature card in your graveyard").
+ * - an `AggregateSpec`: a sum or maximum over matching permanents.
  */
 export type CostReductionAmount =
   | number
   | { readonly countOf: CardFilter }
   | { readonly countersOnSource: string }
-  | { readonly cardsInGraveyard: CardFilter };
+  | { readonly cardsInGraveyard: CardFilter }
+  /** A sum or maximum over permanents — Ghalta, Primal Hunger's "costs {X}
+   * less to cast, where X is the **total power** of creatures you control".
+   * Clamped at 0. See `AggregateSpec`. */
+  | AggregateSpec;
 
 /** Who the triggering object must be relative to the ability's source. */
 export type TriggerWho =

@@ -394,3 +394,99 @@ export function matchesFilter(
 
   return true;
 }
+
+/**
+ * One battlefield permanent a count or an aggregate reads, and how many
+ * permanents it stands for: a compacted token stack is every token in it
+ * (`GameObject.stackCount`), so anything that counts permanents counts them
+ * all.
+ */
+export interface WeightedMatch {
+  readonly id: ObjectId;
+  readonly weight: number;
+}
+
+/**
+ * The permanents among `ids` that `keep` accepts, each weighted by how many
+ * permanents it is — less the ones `except` names. "Other" and "except
+ * target" leave out *one permanent*, not one object: an excluded member of a
+ * stack of five leaves the other four counted, and an excluded ordinary
+ * permanent drops out entirely.
+ */
+export function weightedMatches(
+  state: GameState,
+  ids: readonly ObjectId[],
+  keep: (id: ObjectId) => boolean,
+  except: readonly ObjectId[] = [],
+): WeightedMatch[] {
+  const out: WeightedMatch[] = [];
+  for (const id of ids) {
+    const object = state.objects[id];
+    if (object === undefined || !keep(id)) continue;
+    const weight = (object.stackCount ?? 1) - (except.includes(id) ? 1 : 0);
+    if (weight > 0) out.push({ id, weight });
+  }
+  return out;
+}
+
+/** What an aggregate reads off each permanent. */
+export type AggregateOf = "power" | "toughness" | "mana-value";
+
+/**
+ * A sum or a maximum over matching battlefield permanents (rule 208 /
+ * 202.3): Ghalta's "the **total power** of creatures you control", Finneas's
+ * "creatures you control have total power 10 or greater", "the **greatest
+ * mana value** among permanents you control".
+ *
+ * - `sum` counts a token stack once per token in it — twenty 1/1 Goblins in
+ *   one stack are 20 power, exactly as twenty separate tokens would be.
+ * - `max` is 0 over no permanents at all (there is nothing to have a
+ *   greatest value), which is what every printed "greatest … among" means
+ *   on an empty board.
+ *
+ * `filter` is evaluated from the ability's controller's perspective, as
+ * `countOf` is. `excludeSelf` is "**other** creatures you control".
+ */
+export interface AggregateSpec {
+  readonly aggregate: "sum" | "max";
+  readonly of: AggregateOf;
+  readonly filter: CardFilter;
+  readonly excludeSelf?: boolean;
+}
+
+/** One permanent's current power, toughness or mana value — computed, so
+ * anthems and counters count; mana value from the printed cost, with `{X}`
+ * as 0 off the stack (rule 202.3e). */
+export function aggregateValueOf(
+  state: GameState,
+  registry: CardRegistry,
+  id: ObjectId,
+  of: AggregateOf,
+): number {
+  if (of === "mana-value") {
+    const object = state.objects[id];
+    return object === undefined ? 0 : manaValue(parseManaCost(printedManaCost(registry, object)));
+  }
+  const c = computeCharacteristics(state, registry, id);
+  return of === "power" ? c.power : c.toughness;
+}
+
+/** Fold `matches` into one number — see {@link AggregateSpec}. The raw
+ * value: a negative power lowers a sum, and callers that need a
+ * non-negative amount clamp it themselves. */
+export function aggregateOver(
+  state: GameState,
+  registry: CardRegistry,
+  matches: readonly WeightedMatch[],
+  aggregate: "sum" | "max",
+  of: AggregateOf,
+): number {
+  if (matches.length === 0) return 0;
+  if (aggregate === "sum") {
+    return matches.reduce((n, m) => n + aggregateValueOf(state, registry, m.id, of) * m.weight, 0);
+  }
+  return matches.reduce(
+    (best, m) => Math.max(best, aggregateValueOf(state, registry, m.id, of)),
+    -Infinity,
+  );
+}

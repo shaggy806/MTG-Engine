@@ -10,7 +10,7 @@
 
 import type { TriggeredAbility } from "./abilities.js";
 import type { CardType, Keyword, StaticAbility, StaticCondition, TurnStat } from "./cards.js";
-import type { CardFilter } from "./filter.js";
+import type { AggregateSpec, CardFilter } from "./filter.js";
 import type { Color, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { DelayedTriggerTiming } from "./state.js";
@@ -81,7 +81,20 @@ export type EffectAmount =
        * each** creature you control with power 4 or greater"). Defaults to 1,
        * which is the plain "one per" every other user of `countOf` wants. */
       readonly times?: number;
+      /** Leave the effect's own source out — "for each **other** creature
+       * you control". One permanent, not one object: a source that is a
+       * member of a token stack leaves the rest of the stack counted. */
+      readonly excludeSelf?: boolean;
+      /** Leave out whatever target slot `excludeTarget` names — "for each
+       * creature you control **other than that creature**". */
+      readonly excludeTarget?: number;
     }
+  /** A sum or maximum over matching battlefield permanents — "X is the
+   * **total power** of creatures you control", "the **greatest mana value**
+   * among permanents you control". A token stack counts once per token in a
+   * sum. Clamped at 0 (rule 107.1b), so a board of negative-power creatures
+   * deals no damage rather than a negative amount. See {@link AggregateSpec}. */
+  | AggregateSpec
   /** A numeric quantity the triggering event supplies (ROADMAP P4b): the power
    * of the entering creature (Terror of the Peaks) or, for a "deals combat
    * damage to a player" trigger, the damage dealt (Old Gnawbone — "create that
@@ -719,6 +732,9 @@ export type EffectSpec =
       readonly filter: CardFilter;
       readonly keyword: Keyword;
       readonly duration: PtDuration;
+      /** Spare the effect's own source — "**other** Spiders you control
+       * gain flying" (Cosmic Spider-Man). Same clause as `modify-pt-all`. */
+      readonly exceptSource?: boolean;
     }
   | {
       readonly kind: "add-counter";
@@ -741,6 +757,9 @@ export type EffectSpec =
       readonly filter: CardFilter;
       readonly counter: string;
       readonly amount: EffectAmount;
+      /** Spare the effect's own source — "put a +1/+1 counter on each
+       * **other** creature you control" (Finneas, Ace Archer). */
+      readonly exceptSource?: boolean;
     }
   | {
       /** "You gain hexproof until end of turn" (Lazotep Plating). A *player*
@@ -1434,7 +1453,10 @@ export interface EffectApi {
   mill(target: TargetRef, amount: number): void;
   /** Number of battlefield permanents matching `filter`, evaluated with the
    * effect's controller as "you" (for an `EffectAmount` `{ countOf }`). */
-  countMatching(filter: CardFilter): number;
+  countMatching(filter: CardFilter, except?: readonly ObjectId[]): number;
+  /** See the aggregate {@link EffectAmount}: the raw sum or maximum, with
+   * `except` left out one permanent apiece. */
+  aggregate(spec: AggregateSpec, except: readonly ObjectId[]): number;
   /** See the `"return-from-graveyard"` {@link EffectSpec} — from the effect's
    * controller's graveyard. */
   returnFromGraveyard(
@@ -1461,7 +1483,12 @@ export interface EffectApi {
     scopeTo?: PlayerId,
   ): void;
   /** Grant `keyword` to every battlefield permanent matching `filter`. */
-  grantKeywordAll(filter: CardFilter, keyword: Keyword, duration: PtDuration): void;
+  grantKeywordAll(
+    filter: CardFilter,
+    keyword: Keyword,
+    duration: PtDuration,
+    exceptSource?: boolean,
+  ): void;
   /** See the `"double-pt-all"` {@link EffectSpec}. */
   doublePtAll(filter: CardFilter, duration: PtDuration): void;
   /** See the `"grant-player-hexproof"` {@link EffectSpec}. */
@@ -1497,7 +1524,12 @@ export interface EffectApi {
   /** See the `"amass"` {@link EffectSpec}. */
   amass(amount: number, creatureType: string): void;
   /** See the `"add-counter-all"` {@link EffectSpec}. */
-  addCounterAll(filter: CardFilter, counter: string, amount: number): void;
+  addCounterAll(
+    filter: CardFilter,
+    counter: string,
+    amount: number,
+    exceptSource?: boolean,
+  ): void;
   /** See the `"double-counters-all"` {@link EffectSpec}. */
   doubleCountersAll(filter: CardFilter, counterKind: string): void;
   addCounter(target: TargetRef, counter: string, amount: number): void;
@@ -1739,7 +1771,16 @@ export function amountValue(amount: EffectAmount, ctx: ResolutionContext): numbe
     const ref = resolveEffectTarget(amount.manaSpentOf, ctx);
     return ref === undefined ? 0 : ctx.manaSpentOf(ref);
   }
-  return ctx.countMatching(amount.countOf) * (amount.times ?? 1);
+  if ("aggregate" in amount) {
+    return Math.max(0, ctx.aggregate(amount, amount.excludeSelf === true ? [ctx.source] : []));
+  }
+  const except: ObjectId[] = [];
+  if (amount.excludeSelf === true) except.push(ctx.source);
+  if (amount.excludeTarget !== undefined) {
+    const ref = ctx.targets[amount.excludeTarget];
+    if (ref?.kind === "object") except.push(ref.object);
+  }
+  return ctx.countMatching(amount.countOf, except) * (amount.times ?? 1);
 }
 
 /** The player a `controlledByTarget` slot points at, or `undefined` when the
@@ -2083,13 +2124,18 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
       ctx.amass(amountValue(spec.amount, ctx), spec.creatureType);
       return;
     case "add-counter-all":
-      ctx.addCounterAll(spec.filter, spec.counter, amountValue(spec.amount, ctx));
+      ctx.addCounterAll(
+        spec.filter,
+        spec.counter,
+        amountValue(spec.amount, ctx),
+        spec.exceptSource === true,
+      );
       return;
     case "double-counters-all":
       ctx.doubleCountersAll(spec.filter, spec.counterKind);
       return;
     case "grant-keyword-all":
-      ctx.grantKeywordAll(spec.filter, spec.keyword, spec.duration);
+      ctx.grantKeywordAll(spec.filter, spec.keyword, spec.duration, spec.exceptSource === true);
       return;
     case "add-counter": {
       const target = resolveEffectTarget(spec.target, ctx);

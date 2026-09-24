@@ -111,8 +111,8 @@ import type {
   ResolutionContext,
   ZoneChoiceFilter,
 } from "./effects.js";
-import { matchesFilter, printedManaCost } from "./filter.js";
-import type { CardFilter } from "./filter.js";
+import { aggregateOver, matchesFilter, printedManaCost, weightedMatches } from "./filter.js";
+import type { AggregateSpec, CardFilter } from "./filter.js";
 import type {
   EventOfType,
   GameEvent,
@@ -7921,8 +7921,17 @@ export class Game {
       // Recursing keeps the context-only kinds above answerable under a
       // `not`, which `staticConditionMet` alone would read as always false.
       if (condition.kind === "not") return !conditionMet(condition.of);
+      // Resolution happens outside the layer fold, so the source can count
+      // itself ("if creatures you control have total power 10 or greater"
+      // includes the creature asking) without recursing.
       const src = this.state.objects[source];
-      return src !== undefined && staticConditionMet(this.state, this.registry, src, condition);
+      return (
+        src !== undefined &&
+        staticConditionMet(this.state, this.registry, src, condition, {
+          includeSelf: true,
+          targets,
+        })
+      );
     };
     return {
       controller,
@@ -8060,7 +8069,8 @@ export class Game {
       gainControl: (target, untilEndOfTurn) =>
         this.gainControlByEffect(controller, target, untilEndOfTurn),
       mill: (target, amount) => this.millByEffect(target, amount),
-      countMatching: (filter) => this.countBattlefieldMatching(controller, filter),
+      countMatching: (filter, except) => this.countBattlefieldMatching(controller, filter, except),
+      aggregate: (spec, except) => this.aggregateBattlefield(controller, spec, except),
       returnFromGraveyard: (filter, destination, count, enterTapped) =>
         this.returnFromGraveyardByEffect(controller, filter, destination, count, enterTapped),
       discardCards: (target, amount) => this.discardByEffect(target, amount),
@@ -8075,8 +8085,14 @@ export class Game {
           duration,
           exceptSource === true ? source : undefined,
         ),
-      grantKeywordAll: (filter, keyword, duration) =>
-        this.grantKeywordAll(controller, filter, keyword, duration),
+      grantKeywordAll: (filter, keyword, duration, exceptSource) =>
+        this.grantKeywordAll(
+          controller,
+          filter,
+          keyword,
+          duration,
+          exceptSource === true ? source : undefined,
+        ),
       doublePtAll: (filter, duration) => this.doublePtAll(controller, filter, duration),
       doubleCountersAll: (filter, counterKind) =>
         this.doubleCountersAll(controller, filter, counterKind),
@@ -8143,10 +8159,11 @@ export class Game {
         // ceases to exist either way (rule 111.7).
         this.moveObject(id, "library");
       },
-      addCounterAll: (filter, counter, amount) => {
+      addCounterAll: (filter, counter, amount, exceptSource) => {
         // Snapshot first — `addCounter` can kill a permanent (a -1/-1 counter)
         // and mutate the battlefield array underneath the loop.
         for (const id of this.battlefieldMatching(controller, filter)) {
+          if (exceptSource === true && id === source) continue;
           this.addCounter({ kind: "object", object: id }, counter, amount, false, controller);
         }
       },
@@ -9575,8 +9592,37 @@ export class Game {
    * "for each Goblin you control" goes through here; counting objects instead
    * had Krenko, Mob Boss making two tokens a turn forever once his first
    * few folded into a stack. */
-  private countBattlefieldMatching(you: PlayerId, filter: CardFilter): number {
-    return permanentCount(this.state, this.battlefieldMatching(you, filter));
+  private countBattlefieldMatching(
+    you: PlayerId,
+    filter: CardFilter,
+    except: readonly ObjectId[] = [],
+  ): number {
+    if (except.length === 0) {
+      return permanentCount(this.state, this.battlefieldMatching(you, filter));
+    }
+    return weightedMatches(
+      this.state,
+      this.state.zones.shared.battlefield,
+      (id) => matchesFilter(this.state, this.registry, id, filter, { you }),
+      except,
+    ).reduce((n, m) => n + m.weight, 0);
+  }
+
+  /** A sum or maximum over the permanents matching `spec.filter` from
+   * `you`'s perspective — see {@link AggregateSpec}. `except` leaves one
+   * permanent apiece out ("other creatures you control"). */
+  private aggregateBattlefield(
+    you: PlayerId,
+    spec: AggregateSpec,
+    except: readonly ObjectId[] = [],
+  ): number {
+    const matches = weightedMatches(
+      this.state,
+      this.state.zones.shared.battlefield,
+      (id) => matchesFilter(this.state, this.registry, id, spec.filter, { you }),
+      except,
+    );
+    return aggregateOver(this.state, this.registry, matches, spec.aggregate, spec.of);
   }
 
   /** The generic mana a `CostReductionAmount` takes off, for `player`, with
@@ -9588,6 +9634,12 @@ export class Game {
   ): number {
     if (typeof amount === "number") return amount;
     if ("countOf" in amount) return this.countBattlefieldMatching(player, amount.countOf);
+    if ("aggregate" in amount) {
+      // Ghalta's "X is the total power of creatures you control". Clamped at
+      // 0: a negative total doesn't make the spell cost more (rule 107.1b).
+      const except = amount.excludeSelf === true && sourceId !== undefined ? [sourceId] : [];
+      return Math.max(0, this.aggregateBattlefield(player, amount, except));
+    }
     if ("countersOnSource" in amount) {
       if (sourceId === undefined) return 0;
       return this.state.objects[sourceId]?.counters[amount.countersOnSource] ?? 0;
@@ -9655,8 +9707,10 @@ export class Game {
     filter: CardFilter,
     keyword: Keyword,
     duration: PtDuration,
+    except?: ObjectId,
   ): void {
     for (const id of this.battlefieldMatching(you, filter)) {
+      if (id === except) continue;
       this.grantKeyword({ kind: "object", object: id }, keyword, duration, false);
     }
   }
