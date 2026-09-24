@@ -188,6 +188,7 @@ import _poolDelightedHalfling from "./pool/delighted-halfling.js";
 import _poolDemandAnswers from "./pool/demand-answers.js";
 import _poolDemandingDragon from "./pool/demanding-dragon.js";
 import _poolDemonicTutor from "./pool/demonic-tutor.js";
+import _poolDereviEmpyrialTactician from "./pool/derevi-empyrial-tactician.js";
 import _poolDesertedBeach from "./pool/deserted-beach.js";
 import _poolDespark from "./pool/despark.js";
 import _poolDevouringLight from "./pool/devouring-light.js";
@@ -588,6 +589,7 @@ import _poolRaugrinTriome from "./pool/raugrin-triome.js";
 import _poolRavos from "./pool/ravos.js";
 import _poolReadTheBones from "./pool/read-the-bones.js";
 import _poolReanimate from "./pool/reanimate.js";
+import _poolReassemblingSkeleton from "./pool/reassembling-skeleton.js";
 import _poolReclamationSage from "./pool/reclamation-sage.js";
 import _poolRegrowth from "./pool/regrowth.js";
 import _poolRejuvenatingSprings from "./pool/rejuvenating-springs.js";
@@ -1146,6 +1148,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolDemandAnswers,
   _poolDemandingDragon,
   _poolDemonicTutor,
+  _poolDereviEmpyrialTactician,
   _poolDesertedBeach,
   _poolDespark,
   _poolDevouringLight,
@@ -1546,6 +1549,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolRavos,
   _poolReadTheBones,
   _poolReanimate,
+  _poolReassemblingSkeleton,
   _poolReclamationSage,
   _poolRegrowth,
   _poolRejuvenatingSprings,
