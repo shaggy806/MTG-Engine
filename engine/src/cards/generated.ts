@@ -139,6 +139,7 @@ import _poolCityOfBrass from "./pool/city-of-brass.js";
 import _poolCitywideBust from "./pool/citywide-bust.js";
 import _poolClanDefiance from "./pool/clan-defiance.js";
 import _poolCleansingNova from "./pool/cleansing-nova.js";
+import _poolClementTheWorrywort from "./pool/clement-the-worrywort.js";
 import _poolClifftopRetreat from "./pool/clifftop-retreat.js";
 import _poolClone from "./pool/clone.js";
 import _poolCloudblazer from "./pool/cloudblazer.js";
@@ -1104,6 +1105,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolCitywideBust,
   _poolClanDefiance,
   _poolCleansingNova,
+  _poolClementTheWorrywort,
   _poolClifftopRetreat,
   _poolClone,
   _poolCloudblazer,
