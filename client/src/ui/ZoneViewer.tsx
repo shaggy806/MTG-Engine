@@ -17,6 +17,11 @@ export interface ZoneViewerProps {
     readonly ids: readonly ObjectId[]
     readonly label: (id: ObjectId) => string
     readonly onCast: (id: ObjectId) => void
+    /** When a card can be played from here more than one way (Muldrotha
+     * offering an artifact creature as either type, a modal double-faced
+     * card's two faces), a button per way, in place of the single one —
+     * the choice stays explicit, so a bare click on the card does nothing. */
+    readonly variants?: (id: ObjectId) => readonly { label: string; onChoose: () => void }[]
   }
   /** Turns this into a forced "choose between min and max of these" decision
    * (a `choose-from-zone` effect, e.g. looking at the top of your library) —
@@ -116,6 +121,7 @@ export function ZoneViewer({
             const isPicked = picked.includes(obj.id)
             const castHere =
               !selection && castable && castable.ids.includes(obj.id) ? castable : null
+            const variants = castHere?.variants?.(obj.id) ?? []
             return (
               <div key={obj.id} className="zone-viewer-card">
                 <CardTile
@@ -133,12 +139,19 @@ export function ZoneViewer({
                   onClick={
                     selection && isEligible
                       ? () => toggle(obj.id)
-                      : castHere
+                      : castHere && variants.length <= 1
                         ? () => castHere.onCast(obj.id)
                         : undefined
                   }
                 />
-                {castHere ? (
+                {castHere && variants.length > 1
+                  ? variants.map((v, i) => (
+                      <button key={i} type="button" onClick={v.onChoose}>
+                        {v.label}
+                      </button>
+                    ))
+                  : null}
+                {castHere && variants.length <= 1 ? (
                   <button type="button" onClick={() => castHere.onCast(obj.id)}>
                     {castHere.label(obj.id)}
                   </button>

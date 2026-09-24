@@ -117,6 +117,25 @@ type ConvokeOffer = NonNullable<CastAction['convoke']>
 
 /** The "which variant of this cast" fields a `cast-spell` action carries all
  * the way from `legalActions` back into the dispatched action. */
+/** A button label for one way of playing a card from a graveyard or exile —
+ * enough to tell the variants apart: the face, the permanent type a
+ * Muldrotha-style allowance spends, the permanent granting it. */
+function graveyardVariantLabel(a: CastAction | LandAction, view: PlayerView): string {
+  const verb = a.kind === 'play-land' ? 'Play' : 'Cast'
+  const parts: string[] = []
+  const grant = a.graveyardGrant
+  if (grant?.asType !== undefined) parts.push(`as ${grant.asType}`)
+  if (grant !== undefined && grant.source !== a.card) {
+    const source = view.objects[grant.source]?.cardName
+    if (source !== undefined) parts.push(`via ${source}`)
+  }
+  if (a.kind === 'cast-spell') {
+    if (a.via !== undefined && a.via !== 'graveyard-permission') parts.push(a.via)
+    if (a.kicked) parts.push(`kicked ${a.kickerCost ?? ''}`.trim())
+  }
+  return `${verb} ${a.cardName}${parts.length > 0 ? ` (${parts.join(', ')})` : ''}`
+}
+
 const castExtras = (cast: CastAction) => ({
   ...(cast.via !== undefined ? { via: cast.via } : {}),
   ...(cast.face !== undefined ? { face: cast.face } : {}),
@@ -3345,6 +3364,16 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
               if (land) playFace(land)
               else if (c) beginCast(c)
             },
+            // Several ways to play one card from here: which Muldrotha type
+            // it spends, which permission pays, which face.
+            variants: (id) =>
+              (playFacesByCard.get(id) ?? []).map((a) => ({
+                label: graveyardVariantLabel(a, view),
+                onChoose: () => {
+                  setZoneView(null)
+                  playFace(a)
+                },
+              })),
           }}
         />
       ) : null}
