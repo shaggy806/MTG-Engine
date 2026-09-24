@@ -457,6 +457,7 @@ const deckB = deck([
   ["Devouring Light", 1],
   ["Scatter the Seeds", 1],
   ["March of the Multitudes", 1],
+  ["Chord of Calling", 1],
   ["Farhaven Elf", 1],
   ["Pilgrim's Eye", 1],
   ["Sphinx of Enlightenment", 1],
