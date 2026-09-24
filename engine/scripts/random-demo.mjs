@@ -1055,6 +1055,8 @@ const deckE = deck([
   ["Seedborn Muse", 1],
   ["Unwinding Clock", 1],
   ["Bender's Waterskin", 1],
+  ["Morbid Opportunist", 1],
+  ["Welcoming Vampire", 1],
   ["Plains", 5],
   ["Island", 5],
   ["Swamp", 5],

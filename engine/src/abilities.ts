@@ -616,6 +616,15 @@ export interface TriggeredAbility {
    * the source itself. needed-cards P7.
    */
   readonly condition?: StaticCondition;
+  /**
+   * "This ability triggers only once each turn" (rule 603.2 — Morbid
+   * Opportunist, Welcoming Vampire). Once it has triggered this turn, further
+   * events don't trigger it, whoever's turn it is. That also makes "whenever
+   * one or more …" exact on a per-object trigger: the first of a batch
+   * triggers it and the rest can't. Tracked per ability of one object, so a
+   * permanent that leaves and returns is a new object that may trigger again.
+   */
+  readonly oncePerTurn?: boolean;
   readonly text: string;
 }
 

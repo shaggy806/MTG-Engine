@@ -884,3 +884,61 @@ describe("Seedborn Muse, Unwinding Clock, Bender's Waterskin", () => {
     expect(game.state.objects[basalt].tapped).toBe(true);
   });
 });
+
+describe("Morbid Opportunist", () => {
+  it("draws once a turn however many creatures die, and again next turn", () => {
+    const { game } = setUp(["Wrath of God"]);
+    game.debugSpawn("Morbid Opportunist", A, "battlefield");
+    const one = game.debugSpawn("Grizzly Bears", B, "battlefield");
+    const two = game.debugSpawn("Grizzly Bears", B, "battlefield");
+    const three = game.debugSpawn("Grizzly Bears", A, "battlefield");
+    const hand = game.handOf(A).length;
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [objectRef(one)]);
+    game.advanceUntil(quiet);
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [objectRef(two)]);
+    game.advanceUntil(quiet);
+    expect(game.handOf(A).length).toBe(hand + 1);
+    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "precombat-main" && quiet(s));
+    const before = game.handOf(A).length;
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [objectRef(three)]);
+    game.advanceUntil(quiet);
+    expect(game.handOf(A).length).toBe(before + 1);
+  });
+
+  it("triggers once for a whole wrath, its own death included", () => {
+    const { game } = setUp(["Wrath of God"]);
+    lands(game, A, "Plains", 4);
+    game.debugSpawn("Morbid Opportunist", A, "battlefield");
+    game.debugSpawn("Grizzly Bears", B, "battlefield");
+    game.debugSpawn("Grizzly Bears", B, "battlefield");
+    const hand = game.handOf(A).length;
+    cast(game, A, inHand(game, A, "Wrath of God"));
+    expect(game.handOf(A).length).toBe(hand - 1 + 1);
+  });
+});
+
+describe("Welcoming Vampire", () => {
+  it("draws for the first small creature of the turn only", () => {
+    const { game } = setUp();
+    game.debugSpawn("Welcoming Vampire", A, "battlefield");
+    const hand = game.handOf(A).length;
+    game.debugApplyEffect(A, { kind: "create-token", token: "Human Token", count: 3 });
+    game.advanceUntil(quiet);
+    game.debugSpawn("Grizzly Bears", A, "battlefield", { announceEntry: true });
+    game.advanceUntil(quiet);
+    expect(game.handOf(A).length).toBe(hand + 1);
+  });
+
+  it("ignores big creatures and opponents' creatures", () => {
+    const { game } = setUp();
+    game.debugSpawn("Welcoming Vampire", A, "battlefield");
+    const hand = game.handOf(A).length;
+    game.debugSpawn("Colossal Dreadmaw", A, "battlefield", { announceEntry: true });
+    game.debugSpawn("Grizzly Bears", B, "battlefield", { announceEntry: true });
+    game.advanceUntil(quiet);
+    expect(game.handOf(A).length).toBe(hand);
+    game.debugSpawn("Grizzly Bears", A, "battlefield", { announceEntry: true });
+    game.advanceUntil(quiet);
+    expect(game.handOf(A).length).toBe(hand + 1);
+  });
+});

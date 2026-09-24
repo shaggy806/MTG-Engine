@@ -7850,6 +7850,7 @@ export class Game {
         if (onlyLookBack && !LOOK_BACK_TRIGGERS.has(ability.trigger.on)) return;
         if (
           this.triggerMatches(ability.trigger, event, object) &&
+          !(ability.oncePerTurn === true && this.triggeredOnceThisTurn(live, index)) &&
           this.interveningIfMet(ability.condition, object, undefined, lastSeen) &&
           // Elesh Norn, Mother of Machines / Torpor Orb: an entering
           // permanent causes none of this controller's triggers.
@@ -8032,11 +8033,16 @@ export class Game {
             event.target.object !== id
               ? (this.state.objects[event.target.object]?.stackCount ?? 1)
               : 1;
+          // "Triggers only once each turn": this firing is the one, whatever
+          // the stack size or batch count would otherwise multiply it to.
+          if (ability.oncePerTurn === true) this.markTriggeredOnce(live, index);
           const multiplier =
-            (object.stackCount ?? 1) *
-            departed *
-            recipients *
-            (event.type === "permanent-entered-battlefield" ? (event.count ?? 1) : 1) *
+            (ability.oncePerTurn === true
+              ? 1
+              : (object.stackCount ?? 1) *
+                departed *
+                recipients *
+                (event.type === "permanent-entered-battlefield" ? (event.count ?? 1) : 1)) *
             (1 + entryDoublers);
           // Damage dealt all at once is dealt to a permanent once, however
           // many sources dealt it (rule 510.2 — the two creatures blocking an
@@ -8066,6 +8072,34 @@ export class Game {
         }
       });
     }
+  }
+
+  /** Has `object`'s `oncePerTurn` triggered ability `index` triggered yet
+   * this turn, as this object? */
+  private triggeredOnceThisTurn(object: GameObject, index: number): boolean {
+    const once = object.triggeredOnce;
+    return (
+      once !== undefined &&
+      once.turn === this.state.turn.number &&
+      once.zoneChangeCount === (object.zoneChangeCount ?? 0) &&
+      once.indices.includes(index)
+    );
+  }
+
+  private markTriggeredOnce(object: GameObject, index: number): void {
+    const zoneChangeCount = object.zoneChangeCount ?? 0;
+    const once = object.triggeredOnce;
+    const current =
+      once !== undefined &&
+      once.turn === this.state.turn.number &&
+      once.zoneChangeCount === zoneChangeCount
+        ? once.indices
+        : [];
+    object.triggeredOnce = {
+      turn: this.state.turn.number,
+      zoneChangeCount,
+      indices: [...current, index],
+    };
   }
 
   /**

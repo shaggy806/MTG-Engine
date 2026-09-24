@@ -120,6 +120,18 @@ export interface GameObject {
    * controller's untap step alongside `loyaltyActivatedThisTurn`.
    */
   abilitiesUsedThisTurn?: number[];
+  /**
+   * Indices of this object's triggered abilities marked `oncePerTurn` that
+   * have already triggered — "This ability triggers only once each turn"
+   * (Morbid Opportunist). Stamped with the turn number and the object's
+   * `zoneChangeCount`, so it lapses by itself when the turn ends or the
+   * object changes zones (rule 400.7 — a new object), with nothing to reset.
+   */
+  triggeredOnce?: {
+    readonly turn: number;
+    readonly zoneChangeCount: number;
+    readonly indices: readonly number[];
+  };
   /** True once this permanent has been declared as an attacker this turn —
    * the "attacked this turn" half of Boast (rule 702.135). Reset in the
    * controller's untap step. */

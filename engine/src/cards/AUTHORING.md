@@ -1045,6 +1045,13 @@ If the ability has `targets`, the controller chooses them via a dispatched
 `choose-targets` decision when the trigger goes on the stack. A slot the event
 determines (`deals-combat-damage-to-player`) is auto-filled.
 
+**`oncePerTurn: true`** is "This ability triggers only once each turn"
+(Morbid Opportunist, Welcoming Vampire): after it has triggered once this
+turn, further events don't trigger it — which also makes "whenever **one or
+more** …" exact on a per-object trigger, since the first of a batch triggers
+it and the rest can't. Per ability of one object: a permanent that leaves
+and returns may trigger again.
+
 **`condition?`** (`StaticCondition`, the same union section 10 documents) is an
 **intervening-if** clause — rule 603.4, "When ~ enters, **if** you control a
 creature with power 4 or greater, draw a card":

@@ -556,6 +556,7 @@ import _poolMistyRainforest from "./pool/misty-rainforest.js";
 import _poolMithrilCoat from "./pool/mithril-coat.js";
 import _poolMoleManMoloidMaster from "./pool/mole-man-moloid-master.js";
 import _poolMonasterySwiftspear from "./pool/monastery-swiftspear.js";
+import _poolMorbidOpportunist from "./pool/morbid-opportunist.js";
 import _poolMordantDragon from "./pool/mordant-dragon.js";
 import _poolMorphicPool from "./pool/morphic-pool.js";
 import _poolMorskaUnderseaSleuth from "./pool/morska-undersea-sleuth.js";
@@ -970,6 +971,7 @@ import _poolWardenOfEvosIsle from "./pool/warden-of-evos-isle.js";
 import _poolWarrenSoultrader from "./pool/warren-soultrader.js";
 import _poolWateryGrave from "./pool/watery-grave.js";
 import _poolWayfarersBauble from "./pool/wayfarers-bauble.js";
+import _poolWelcomingVampire from "./pool/welcoming-vampire.js";
 import _poolWerebear from "./pool/werebear.js";
 import _poolWheelOfFortune from "./pool/wheel-of-fortune.js";
 import _poolWhipOfErebos from "./pool/whip-of-erebos.js";
@@ -1627,6 +1629,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolMithrilCoat,
   _poolMoleManMoloidMaster,
   _poolMonasterySwiftspear,
+  _poolMorbidOpportunist,
   _poolMordantDragon,
   _poolMorphicPool,
   _poolMorskaUnderseaSleuth,
@@ -2041,6 +2044,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolWarrenSoultrader,
   _poolWateryGrave,
   _poolWayfarersBauble,
+  _poolWelcomingVampire,
   _poolWerebear,
   _poolWheelOfFortune,
   _poolWhipOfErebos,
