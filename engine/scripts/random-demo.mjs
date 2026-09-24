@@ -918,6 +918,8 @@ const deckE = deck([
   ["Vivi Ornitier", 1],
   ["Marwyn, the Nurturer", 1],
   ["Kydele, Chosen of Kruphix", 1],
+  ["Cosmic Spider-Man", 1],
+  ["Finneas, Ace Archer", 1],
   ["Plains", 5],
   ["Island", 5],
   ["Swamp", 5],
