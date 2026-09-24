@@ -956,6 +956,8 @@ const deckE = deck([
   // Kess: a once-a-turn instant/sorcery permission whose spell is exiled
   // instead of reaching the graveyard.
   ["Kess, Dissident Mage", 1],
+  // Kilo: proliferates whenever it becomes tapped, however that happens.
+  ["Kilo, Apogee Mind", 1],
   ["Plains", 5],
   ["Island", 5],
   ["Swamp", 5],

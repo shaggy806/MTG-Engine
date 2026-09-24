@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-108 already implemented / 392 missing
+109 already implemented / 391 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -93,7 +93,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   87  Betor, Ancestor's Voice                        19405 decks  {2}{W}{B}{G}     Legendary Creature — Spirit Dragon
 [ ]   88  Auntie Ool, Cursewretch                        19398 decks  {1}{B}{R}{G}     Legendary Creature — Goblin Warlock
 [ ]   89  Sisay, Weatherlight Captain                    19122 decks  {2}{W}           Legendary Creature — Human Soldier
-[ ]   90  Kilo, Apogee Mind                              19083 decks  {U}{R}{W}        Legendary Artifact Creature — Robot Artificer
+[x]   90  Kilo, Apogee Mind                              19083 decks  {U}{R}{W}        Legendary Artifact Creature — Robot Artificer
 [ ]   91  Eriette of the Charmed Apple                   19038 decks  {1}{W}{B}        Legendary Creature — Human Warlock
 [ ]   92  Henzie "Toolbox" Torre                         18773 decks  {B}{R}{G}        Legendary Creature — Devil Rogue
 [ ]   93  Ragost, Deft Gastronaut                        18756 decks  {R}{W}           Legendary Creature — Lobster Citizen

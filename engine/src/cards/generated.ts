@@ -433,6 +433,7 @@ import _poolKessDissidentMage from "./pool/kess-dissident-mage.js";
 import _poolKessigWolfRun from "./pool/kessig-wolf-run.js";
 import _poolKetriaTriome from "./pool/ketria-triome.js";
 import _poolKikiJikiMirrorBreaker from "./pool/kiki-jiki-mirror-breaker.js";
+import _poolKiloApogeeMind from "./pool/kilo-apogee-mind.js";
 import _poolKioraBehemothBeckoner from "./pool/kiora-behemoth-beckoner.js";
 import _poolKirdApe from "./pool/kird-ape.js";
 import _poolKoboldsOfKherKeep from "./pool/kobolds-of-kher-keep.js";
@@ -1410,6 +1411,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolKessigWolfRun,
   _poolKetriaTriome,
   _poolKikiJikiMirrorBreaker,
+  _poolKiloApogeeMind,
   _poolKioraBehemothBeckoner,
   _poolKirdApe,
   _poolKoboldsOfKherKeep,

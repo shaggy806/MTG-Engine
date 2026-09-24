@@ -6,7 +6,7 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**108 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**109 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
@@ -30,9 +30,7 @@ that one card is the reason the deck exists.
   `effect:attach-extensions`, `effect:cast-during-resolution`, `decision:choose-tap-costs` (10 each).
 - **Commanders authored and then dropped by their reviews.** Tifa Lockhart and Yarok need the
   player to order simultaneous triggers (`decision:trigger-order`). Aragorn, the Uniter needs
-  scry to let the player order the kept cards (`decision:library-ordering`). Kilo needs
-  `decision:choose-tap-costs`; a fixed-count tap cost is a player choice now, so re-check Kilo
-  first.
+  scry to let the player order the kept cards (`decision:library-ordering`).
 
 ## Card backlog (top-2000 staples and the precons)
 
