@@ -779,6 +779,23 @@ export interface StaticAbility {
      * left to take is lost rather than taken off the generic part. */
     readonly coloredOnly?: boolean;
   };
+  /**
+   * Changes what activated abilities cost to activate (rule 602.2b, which
+   * applies rule 601.2f's cost modifications to activation costs):
+   * "Activated abilities of Foods you control cost {1} less to activate"
+   * (Sam, Loyal Attendant) is `{ applies: { subtype: "Food", controlledBy:
+   * "you" }, reduceGeneric: 1 }`. `applies` is matched against the ability's
+   * source, with this static's controller as "you". Generic mana only, added
+   * before anything is taken off, and never below {0}; an increase puts a
+   * cost on an ability that had no mana in it. Mana abilities are left alone
+   * — the payment planner prices those as sources, not as costs. `affects` is
+   * ignored.
+   */
+  readonly abilityCostModification?: {
+    readonly applies: CardFilter;
+    readonly reduceGeneric?: number;
+    readonly increaseGeneric?: number;
+  };
   /** Layer 7b: set base power and toughness to a dynamic count (+ the given
    * offsets). Only meaningful with `affects.scope === "self"` (a CDA). */
   readonly setBasePtFromCount?: {

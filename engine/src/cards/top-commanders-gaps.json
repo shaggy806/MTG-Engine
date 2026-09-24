@@ -44,7 +44,8 @@
   "static:combat-damage-by-toughness",
   "bug:sequence-suspends-on-decision",
   "stat:per-ability-turn-counters",
-  "mechanic:player-counters"
+  "mechanic:player-counters",
+  "cost:ability-cost-modification"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

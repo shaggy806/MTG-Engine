@@ -1326,6 +1326,17 @@ anthem, the keyword grant and the granted trigger like any other creature.
   half of twobrid pips (`{2/W}`), but only the ones actually paid with
   generic mana — the Spectral Procession ruling. Reaper King under Foundry
   Inspector is `{W}{U}{B}{R}` plus one mana without a Forest.
+- `abilityCostModification: { applies: CardFilter, reduceGeneric?, increaseGeneric? }`
+  — the same for *activation* costs (rule 602.2b): "Activated abilities of
+  Foods you control cost {1} less to activate" (Sam, Loyal Attendant) is
+  `{ applies: { subtype: "Food", controlledBy: "you" }, reduceGeneric: 1 }`,
+  matched against the ability's source from this static's controller's view.
+  Generic only, never below `{0}`, and an increase puts a cost on an ability
+  with no mana in it (Suppression Field's shape, `applies: {}`). Mana
+  abilities are left alone, which is what "unless they're mana abilities"
+  says and what the payment planner needs; a card that changes a *mana*
+  ability's cost can't be authored. `legalActions`, activation and the
+  `{X}` ceiling all read the modified cost.
 - `playFromGraveyard: CardFilter` — while this permanent is on the battlefield
   its controller may *play* matching cards from their graveyard (Ramunap
   Excavator: `{ type: "land" }`). `affects` is ignored. Still costs the land

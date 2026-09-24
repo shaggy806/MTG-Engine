@@ -524,7 +524,16 @@ export class Game {
     this.decisionCtx = {
       state: this.state,
       registry: this.registry,
-      maxAffordableAbilityX: (player, cost) => this.maxAffordableAbilityX(player, cost),
+      maxAffordableAbilityX: (player, cost) => {
+        const parsed = parseManaCost(cost);
+        return parsed.x === 0
+          ? 0
+          : this.maxAffordableAbilityX(player, (x) => ({
+              ...parsed,
+              generic: parsed.generic + parsed.x * x,
+              x: 0,
+            }));
+      },
       pendingTriggerTargetSource: () => {
         const pending = this.state.pendingTargetedTrigger;
         return pending === null ? undefined : this.abilityTargetSource(pending);
@@ -1131,7 +1140,7 @@ export class Game {
                 // maxAffordableAbilityX.
                 maxX: this.maxAffordableAbilityX(
                   player,
-                  ability.cost.mana,
+                  (x) => this.activatedAbilityManaCost(player, source, ability, x).cost,
                   ability.cost.tap || ability.zone !== undefined ? undefined : source,
                   ability.cost.tap ? source : undefined,
                 ),
@@ -5170,24 +5179,17 @@ export class Game {
    */
   private maxAffordableAbilityX(
     player: PlayerId,
-    manaString: string | null,
+    costAt: (x: number) => ManaCost,
     avoid?: ObjectId,
     exclude?: ObjectId,
   ): number {
-    const parsed = parseManaCost(manaString);
-    if (parsed.x === 0) return 0;
     const pool = this.state.players[player].manaPool;
     const cap =
       this.manaSources(player).reduce((n, s) => n + Game.sourceCapacity(s), 0) +
       pool.length;
     let best = 0;
     for (let k = 1; k <= cap; k += 1) {
-      const cost: ManaCost = {
-        ...parsed,
-        generic: parsed.generic + parsed.x * k,
-        x: 0,
-      };
-      if (this.payMana(player, cost, avoid, exclude) === null) break;
+      if (this.payMana(player, costAt(k), avoid, exclude) === null) break;
       best = k;
     }
     return best;
@@ -6202,14 +6204,15 @@ export class Game {
   }
 
   /** `ability.cost.mana`, with `{X}` resolved to `xValue` (folded into
-   * generic) and `ability.costReduction` applied to the generic portion
-   * (rule 601.2f-style — can't go below 0). Mirrors `castingCostOf`'s
-   * `selfCostReduction` handling, but for an ability's own printed cost
-   * rather than a spell's. Returns the resolved cost alongside the chosen
-   * X, since `activateAbility` needs to stamp the latter on the stack
-   * object. */
+   * generic), `ability.costReduction` and any `abilityCostModification`
+   * statics applied to the generic portion (rules 601.2f, 602.2b — can't go
+   * below 0). Mirrors `castingCostOf`'s `selfCostReduction` handling, but
+   * for an ability of `sourceId` rather than a spell. Returns the resolved
+   * cost alongside the chosen X, since `activateAbility` needs to stamp the
+   * latter on the stack object. */
   private activatedAbilityManaCost(
     player: PlayerId,
+    sourceId: ObjectId,
     ability: ActivatedAbility,
     xValue = 0,
   ): { cost: ManaCost; chosenX: number } {
@@ -6219,6 +6222,10 @@ export class Game {
     let generic = parsed.generic + parsed.x * chosenX;
     if (ability.costReduction !== undefined) {
       generic -= this.costReductionAmount(ability.costReduction.reduceGeneric, player);
+    }
+    if (!isManaAbility(ability)) {
+      const mod = this.abilityCostModificationFor(sourceId);
+      generic += mod.increaseGeneric - mod.reduceGeneric;
     }
     return {
       cost: {
@@ -6230,6 +6237,31 @@ export class Game {
       },
       chosenX,
     };
+  }
+
+  /** What `abilityCostModification` statics on the battlefield do to the
+   * activation cost of an ability of `sourceId`: the generic mana they add
+   * and take off (rule 602.2b). */
+  private abilityCostModificationFor(sourceId: ObjectId): {
+    increaseGeneric: number;
+    reduceGeneric: number;
+  } {
+    let increaseGeneric = 0;
+    let reduceGeneric = 0;
+    for (const id of this.state.zones.shared.battlefield) {
+      const source = this.state.objects[id];
+      if (source === undefined || hasLostAbilities(source)) continue;
+      for (const ability of this.registry.get(printedCardName(source)).static) {
+        const mod = ability.abilityCostModification;
+        if (mod === undefined || !this.staticActive(source, ability)) continue;
+        if (!matchesFilter(this.state, this.registry, sourceId, mod.applies, { you: source.controller })) {
+          continue;
+        }
+        increaseGeneric += mod.increaseGeneric ?? 0;
+        reduceGeneric += mod.reduceGeneric ?? 0;
+      }
+    }
+    return { increaseGeneric, reduceGeneric };
   }
 
   private whyCannotActivateAbility(
@@ -6339,7 +6371,7 @@ export class Game {
     } else if (
       this.payMana(
         player,
-        this.activatedAbilityManaCost(player, ability).cost,
+        this.activatedAbilityManaCost(player, sourceId, ability).cost,
         undefined,
         // Matches `activateAbility`'s own payment below: a source being tapped
         // to pay `{T}` isn't available to pay the mana half as well.
@@ -6440,7 +6472,7 @@ export class Game {
     // ability object below so `ctx.x` reads it at resolution. Also folds in
     // `ability.costReduction` (the Kamigawa Channel lands' per-legendary
     // discount).
-    const { cost: manaCost, chosenX } = this.activatedAbilityManaCost(player, ability, xValue);
+    const { cost: manaCost, chosenX } = this.activatedAbilityManaCost(player, sourceId, ability, xValue);
     // A `{T}` in the cost taps the source as part of paying, so it can't also
     // be tapped for mana toward the same activation (rule 602.2a) — that's an
     // exclusion, not a preference. Otherwise merely prefer to leave the source
@@ -10700,7 +10732,7 @@ export class Game {
       player,
       sourceId,
       ability.cost.tapOthers,
-      this.activatedAbilityManaCost(player, ability).cost,
+      this.activatedAbilityManaCost(player, sourceId, ability).cost,
       ability.cost.tap || ability.zone !== undefined ? undefined : sourceId,
       ability.cost.tap ? sourceId : undefined,
       { kind: "ability", source: sourceId },
