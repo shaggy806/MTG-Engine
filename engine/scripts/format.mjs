@@ -9,6 +9,11 @@ export const makeFormatter = (game) => {
   };
   const target = (t) =>
     t.kind === "player" ? t.player : name(t.object);
+  // Where a card was played or cast from — said only when it isn't the hand.
+  const fromZone = (zone) =>
+    zone === undefined || zone === "hand"
+      ? ""
+      : ` from ${zone === "command" ? "the command zone" : zone}`;
 
   const describe = (e) => {
     switch (e.type) {
@@ -83,9 +88,9 @@ export const makeFormatter = (game) => {
       case "damage-cleared":
         return `${e.objects.length} permanent(s)`;
       case "land-played":
-        return `${e.player} plays ${name(e.object)}`;
+        return `${e.player} plays ${name(e.object)}${fromZone(e.from)}`;
       case "spell-cast":
-        return `${e.player} casts ${name(e.object)}${
+        return `${e.player} casts ${name(e.object)}${fromZone(e.from)}${
           e.via ? ` (${e.via})` : ""
         }${e.x != null ? ` (X=${e.x})` : ""}${
           e.targets.length ? ` at ${e.targets.map(target).join(", ")}` : ""

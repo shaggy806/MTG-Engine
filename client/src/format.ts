@@ -49,6 +49,13 @@ export function isDetailOnlyEvent(event: GameEvent): boolean {
   return NOISY_EVENTS.has(event.type)
 }
 
+/** Where a card was played or cast from — said only when it isn't the hand,
+ * which is where nearly everything comes from. */
+function fromZone(zone: string): string {
+  if (zone === 'hand') return ''
+  return ` from ${zone === 'command' ? 'the command zone' : zone}`
+}
+
 export function describeTarget(ref: TargetRef, nameOf: NameOf): string {
   return ref.kind === 'player' ? ref.player : nameOf(ref.object)
 }
@@ -130,9 +137,9 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
     case 'damage-cleared':
       return `damage cleared from ${event.objects.length} permanent(s)`
     case 'land-played':
-      return `${event.player} plays ${name(event.object)}`
+      return `${event.player} plays ${name(event.object)}${fromZone(event.from)}`
     case 'spell-cast':
-      return `${event.player} casts ${name(event.object)}${
+      return `${event.player} casts ${name(event.object)}${fromZone(event.from)}${
         event.via ? ` (${event.via})` : ''
       }${event.x != null ? ` (X=${event.x})` : ''}${
         event.targets.length ? ` at ${event.targets.map(tgt).join(', ')}` : ''

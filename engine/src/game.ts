@@ -3798,10 +3798,11 @@ export class Game {
       if (found !== null) this.spendGraveyardGrant(found);
     }
 
+    const from = this.state.objects[cardId].zone;
     this.state.objects[cardId].face = face;
     this.moveObject(cardId, "battlefield");
     playerState.landsPlayedThisTurn += 1;
-    this.emit({ type: "land-played", player, object: cardId });
+    this.emit({ type: "land-played", player, object: cardId, from });
     this.emit({ type: "permanent-entered-battlefield", object: cardId });
     // A land is *played*, not cast, so it never went through the spell
     // resolution path where this used to live — and every "as this land
@@ -4046,6 +4047,7 @@ export class Game {
     const object = this.state.objects[cardId];
     const owner = object.owner;
     const stormCount = this.state.spellsCastThisTurn;
+    const castFrom = object.zone;
     this.moveObject(cardId, "stack");
     object.targets = targets.length > 0 ? [...targets] : null;
     // Where each target is as the spell is cast, for last-known information.
@@ -4066,6 +4068,7 @@ export class Game {
       x: object.xValue ?? null,
       spellsThisTurn: this.state.players[owner].spellsCastThisTurn,
       via,
+      from: castFrom,
     });
     // A free cast (cascade, suspend) targets like any other — the trigger
     // is about being targeted, not about how the spell was paid for.
@@ -4883,6 +4886,9 @@ export class Game {
     if (why !== null) throw new Error(why);
 
     const object = this.state.objects[cardId];
+    // Where it's cast from, before anything moves it (601.2a) — see the
+    // `spell-cast` event's `from`.
+    const castFrom = object.zone;
     // Set the face up front so `printedCardName` / characteristics resolve to
     // the chosen face for the rest of this method and while on the stack.
     if (object.faces !== undefined) object.face = face;
@@ -5065,6 +5071,7 @@ export class Game {
       x: hasX ? chosenX : null,
       spellsThisTurn: this.state.players[player].spellsCastThisTurn,
       ...(via !== undefined ? { via } : {}),
+      from: castFrom,
     });
     this.announceTargeted(targets, player, cardId, true);
     if (sortedModes !== undefined) {
@@ -7399,6 +7406,13 @@ export class Game {
         );
       case "plays-land":
         return event.type === "land-played" && this.matchesWhoPlayer(spec.who, event.player, self);
+      case "plays-card": {
+        // Playing a card is playing a land or casting a spell (rule 601.2 /
+        // 305.1) — both events, each carrying the zone it came from.
+        if (event.type !== "land-played" && event.type !== "spell-cast") return false;
+        if (!this.matchesWhoPlayer(spec.who, event.player, self)) return false;
+        return spec.from === undefined || event.from === spec.from;
+      }
       case "leaves-battlefield":
         return (
           event.type === "permanent-left-battlefield" &&
@@ -7515,6 +7529,8 @@ export class Game {
           (spec.who === "opponent" && event.player !== self.controller);
         if (!casterMatches) return false;
         if (spec.otherOnly === true && event.object === self.id) return false;
+        if (spec.from !== undefined && event.from !== spec.from) return false;
+        if (spec.notFrom !== undefined && event.from === spec.notFrom) return false;
         if (!this.triggerFilterOk(spec.filter, event.object, self)) return false;
         const nth = spec.firstEachTurn === true ? 1 : spec.nthEachTurn;
         if (nth !== undefined) {

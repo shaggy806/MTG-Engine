@@ -12,6 +12,7 @@
 import type { StaticCondition } from "./cards/define.js";
 import type { EffectSpec, SpellResolver } from "./effects.js";
 import type { GameEvent } from "./events.js";
+import type { ZoneType } from "./state.js";
 import type { CardFilter } from "./filter.js";
 import type { TargetSpec } from "./target.js";
 import type { Step } from "./turn.js";
@@ -222,6 +223,21 @@ export type TriggerSpec =
        */
       readonly on: "plays-land";
       readonly who: TriggerWho;
+    }
+  | {
+      /**
+       * A player **played a card** — played a land *or* cast a spell, since
+       * "play" covers both (rule 601.2 / 305.1). `from` narrows it to the
+       * zone the card was played from: Prosper, Tome-Bound's "whenever you
+       * play a card **from exile**" fires on a land played off an impulse
+       * exile as well as on a foretold, suspended, cascaded or adventure card
+       * cast from there. Reads the `from` recorded on `land-played` and
+       * `spell-cast` (a copy of a spell is never *cast* here, so it never
+       * counts — rule 707.10).
+       */
+      readonly on: "plays-card";
+      readonly who: TriggerWho;
+      readonly from?: ZoneType;
     }
   | {
       /**
@@ -449,6 +465,12 @@ export type TriggerSpec =
        * without this Edgar's Eminence fires as Edgar is cast.
        */
       readonly otherOnly?: boolean;
+      /** Only a spell cast **from** this zone ("whenever you cast a spell
+       * from exile") — the `from` recorded on the `spell-cast` event. */
+      readonly from?: ZoneType;
+      /** Only a spell cast from anywhere **but** this zone ("whenever you
+       * cast a spell from anywhere other than your hand"). */
+      readonly notFrom?: ZoneType;
       readonly noncreatureOnly?: boolean;
       readonly firstEachTurn?: boolean;
       /** The caster's Nth spell this turn — Kraum, Ludevic's Opus's "casts

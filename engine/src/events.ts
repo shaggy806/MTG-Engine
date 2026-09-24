@@ -7,6 +7,7 @@
 import type { CastVia } from "./actions.js";
 import type { ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
+import type { ZoneType } from "./state.js";
 import type { TargetRef } from "./target.js";
 import type { Phase, Step } from "./turn.js";
 
@@ -198,6 +199,11 @@ export type GameEvent =
       readonly type: "land-played";
       readonly player: PlayerId;
       readonly object: ObjectId;
+      /** The zone the land was played from — usually `hand`, but a land can
+       * be played from exile (impulse draw), a graveyard or the top of a
+       * library. What a "whenever you play a card from exile" trigger reads
+       * (Prosper, Tome-Bound). */
+      readonly from: ZoneType;
     })
   | (Base & { readonly type: "permanent-tapped"; readonly object: ObjectId })
   | (Base & {
@@ -210,6 +216,12 @@ export type GameEvent =
       readonly type: "spell-cast";
       readonly player: PlayerId;
       readonly object: ObjectId;
+      /** The zone the spell was cast from (rule 601.2a moves it to the stack
+       * first, so this is recorded before that move) — `hand`, `exile`
+       * (foretell, suspend, cascade, adventure, impulse), `graveyard`
+       * (flashback, escape), `command`, or `library`. Read by a
+       * `cast-spell` trigger's `from`/`notFrom` and by `plays-card`. */
+      readonly from: ZoneType;
       readonly targets: readonly TargetRef[];
       /** The value chosen for `{X}`, or `null` when the cost had no `{X}`. */
       readonly x: number | null;
