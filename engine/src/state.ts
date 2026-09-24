@@ -1130,6 +1130,12 @@ export interface CombatDamageState {
    * amount dealt to each of its blockers, in `blockedBy` order (leftover, if
    * trample, goes to the defender). */
   readonly assigned: Readonly<Record<string, readonly number[]>>;
+  /** The attackers and blockers that had first strike or double strike as the
+   * first-strike step began (rule 510.4), id → battlefield timestamp then —
+   * the second step's roster is everyone *not* here plus whoever has double
+   * strike by then. Empty for a `"single"` step. Lives and dies with this
+   * record, so it's gone by end of combat. */
+  readonly firstStepStrikers: Readonly<Record<string, number>>;
 }
 
 /** An emblem (rule 114 — ROADMAP Phase 10): a player-owned object carrying one

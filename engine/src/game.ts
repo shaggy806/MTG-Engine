@@ -2823,6 +2823,7 @@ export class Game {
         regularOwed: false,
         pendingAssignments: [],
         assigned: {},
+        firstStepStrikers: this.state.combatDamage.firstStepStrikers,
       };
       this.runCombatDamageSubPass();
       this.prepareForPriority(this.state.awaiting?.player ?? this.activePlayer);
@@ -3465,6 +3466,7 @@ export class Game {
       regularOwed: firstStrike,
       pendingAssignments: [],
       assigned: {},
+      firstStepStrikers: firstStrike ? this.recordFirstStepStrikers() : {},
     };
     this.runCombatDamageSubPass();
   }
@@ -3606,6 +3608,32 @@ export class Game {
     return false;
   }
 
+  /** Rule 510.4: which combatants had first strike or double strike as the
+   * first combat-damage step began. The second step is dealt by the ones that
+   * had neither *then* plus the ones that have double strike *now*, so this
+   * has to be written down before anything can change it — gaining first
+   * strike in between doesn't stop a creature dealing damage in the second
+   * step, and losing it doesn't let a first striker deal damage twice
+   * (702.7c). Keyed id → battlefield timestamp, so a creature that left and
+   * came back attacking (a new object, rule 400.7) isn't mistaken for the one
+   * that struck. */
+  private recordFirstStepStrikers(): Record<string, number> {
+    const out: Record<string, number> = {};
+    const note = (id: ObjectId): void => {
+      if (this.striker(id)) out[id] = this.state.objects[id].timestamp;
+    };
+    for (const attackerId of this.currentAttackers()) {
+      note(attackerId);
+      for (const blockerId of this.liveBlockersOf(attackerId)) note(blockerId);
+    }
+    return out;
+  }
+
+  private hadStrikeAsFirstStepBegan(id: ObjectId): boolean {
+    const recorded = this.state.combatDamage?.firstStepStrikers[id];
+    return recorded !== undefined && recorded === this.state.objects[id]?.timestamp;
+  }
+
   private striker(id: ObjectId): boolean {
     return (
       this.objHasKeyword(id, "first-strike") ||
@@ -3618,9 +3646,10 @@ export class Game {
     if (pass === "all") return true;
     const ds = this.objHasKeyword(id, "double-strike");
     if (pass === "first") return ds || this.objHasKeyword(id, "first-strike");
-    // Regular pass: everyone except first-strike-only creatures (double
-    // strikers deal again).
-    return ds || !this.objHasKeyword(id, "first-strike");
+    // Regular pass (rule 510.4): whoever had neither first strike nor double
+    // strike as the first step began, plus whoever has double strike now —
+    // not whoever lacks first strike now.
+    return ds || !this.hadStrikeAsFirstStepBegan(id);
   }
 
   /** The `TargetRef` combat damage goes to for a creature attacking `attacking`
