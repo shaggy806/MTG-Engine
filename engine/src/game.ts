@@ -13329,11 +13329,13 @@ export class Game {
       to === "graveyard"
     ) {
       to = "exile";
+      this.emit({ type: "graveyard-replaced-with-exile", object: id });
     }
     // The same for a spell cast under an exile-afterwards graveyard
     // permission (Kess). The flag only ever sits on a spell on the stack.
     if (object.exileIfWouldGoToGraveyard === true && to === "graveyard") {
       to = "exile";
+      this.emit({ type: "graveyard-replaced-with-exile", object: id });
     }
     // Flashback's "exile this card instead of putting it anywhere else any
     // time it would leave the stack" (rule 702.34a) covers more than a
@@ -13344,6 +13346,7 @@ export class Game {
       object.zone === "stack" &&
       (to === "hand" || to === "library")
     ) {
+      this.emit({ type: "leave-replaced-with-exile", object: id, intendedZone: to });
       to = "exile";
     }
 

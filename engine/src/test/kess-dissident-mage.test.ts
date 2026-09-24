@@ -88,6 +88,9 @@ describe("Kess, Dissident Mage", () => {
     expect(game.state.players[B].life).toBe(17);
     expect(game.state.objects[bolt].zone).toBe("exile");
     expect(game.state.objects[bolt].exileIfWouldGoToGraveyard).toBeUndefined();
+    expect(
+      game.events.some((e) => e.type === "graveyard-replaced-with-exile" && e.object === bolt),
+    ).toBe(true);
     // One spell a turn: the second Bolt is still there, the permission isn't.
     expect(graveyardCasts(game)).toEqual([]);
     expect(game.state.objects[second].zone).toBe("graveyard");

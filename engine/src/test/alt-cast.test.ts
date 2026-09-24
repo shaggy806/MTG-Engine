@@ -72,6 +72,10 @@ describe("Flashback — Faithless Looting", () => {
     game.advanceUntil(settled);
     expect(game.state.zones.shared.exile).toContain(fl);
     expect(game.graveyardOf(A)).not.toContain(fl);
+    // The log says why it went to exile rather than the graveyard.
+    expect(
+      game.events.some((e) => e.type === "graveyard-replaced-with-exile" && e.object === fl),
+    ).toBe(true);
   });
 
   it("is not castable via flashback at instant speed / on another player's turn", () => {

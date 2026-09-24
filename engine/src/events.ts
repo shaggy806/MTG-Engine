@@ -546,7 +546,9 @@ export type GameEvent =
       /** A permanent that would have left the battlefield for `intendedZone`
        * was exiled instead, by a replacement it carried itself — "if it would
        * leave the battlefield, exile it instead of putting it anywhere else"
-       * (Whip of Erebos — rule 614). */
+       * (Whip of Erebos — rule 614). Also a flashed-back spell leaving the
+       * stack for a hand or library (rule 702.34a — Remand on a flashback
+       * spell). */
       readonly type: "leave-replaced-with-exile";
       readonly object: ObjectId;
       readonly intendedZone: "graveyard" | "hand" | "library";

@@ -86,8 +86,6 @@ that one card is the reason the deck exists.
   `docs/plans/token-stack-choices.md`.
 - **Resolve-hatch sweep.** Convert the remaining imperative `resolve` cards to a declarative
   `effect`.
-- **Missing log event.** A spell exiled by a graveyard permission's `exileAfterwards` (Kess), or
-  by flashback, emits no `graveyard-replaced-with-exile` event. Only the log is affected.
 
 ## Bots
 
