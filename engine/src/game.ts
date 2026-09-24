@@ -184,6 +184,7 @@ import type {
   PendingTrigger,
   PlayerCounterKind,
   PreventionShield,
+  ReflexiveTrigger,
   PtModifier,
   TargetedBy,
   ZoneType,
@@ -2777,6 +2778,7 @@ export class Game {
         trig.x,
         trig.lastKnownRefs,
         trig.targetedBy,
+        trig.reflexive,
       );
     } else if (cast !== null) {
       this.state.pendingTargetedCast = null;
@@ -7819,6 +7821,11 @@ export class Game {
     if (delayed !== undefined) {
       return { targets: [], effect: delayed.effect, resolve: null };
     }
+    // Nor is a reflexive one (rule 603.12), which also chose its own targets.
+    const reflexive = object.reflexiveTrigger;
+    if (reflexive !== undefined) {
+      return { targets: reflexive.targets, effect: reflexive.effect, resolve: null };
+    }
     // A granted ability resolves as what was granted, whether or not the
     // grant (or its source) is still around — rule 113.7a.
     if (object.grantedAbility !== undefined) {
@@ -7977,7 +7984,7 @@ export class Game {
    * the per-turn records key it — see `ResolutionContext.abilityKey`. A
    * delayed trigger is no object's ability, and has none. */
   private abilityTurnKey(object: GameObject): string | undefined {
-    if (object.delayedTrigger !== undefined) return undefined;
+    if (object.delayedTrigger !== undefined || object.reflexiveTrigger !== undefined) return undefined;
     const granted = object.grantedAbility;
     const which =
       granted?.kind === "static"
@@ -9107,6 +9114,7 @@ export class Game {
     readonly delayed?: DelayedTrigger;
     readonly lastKnownRefs?: LastKnownRefs;
     readonly targetedBy?: TargetedBy;
+    readonly reflexive?: ReflexiveTrigger;
   }): "done" | "paused" {
     // A self-contained ability record (a mana-spend rider) has no card
     // ability to look up — mint it carrying its own record, exactly as
@@ -9128,7 +9136,7 @@ export class Game {
       });
       return "done";
     }
-    const def = this.registry.get(trigger.cardName);
+    const reflexive = trigger.reflexive;
     const granted =
       trigger.grantedAbility !== undefined
         ? (this.abilityFromRef(trigger.grantedAbility) as TriggeredAbility | undefined)
@@ -9137,14 +9145,19 @@ export class Game {
     // its source since (rule 113.7a): one that then lost its abilities and
     // left (its snapshot lists none), or turned into a face without this
     // one, is still the card's own ability at this index — the same
-    // fallback `stackAbilityOf` resolves it by.
-    const ability =
+    // fallback `stackAbilityOf` resolves it by. A reflexive ability is no
+    // card's, and brings its own.
+    const ability: { readonly targets: readonly TargetSpec[] } =
+      reflexive ??
       granted ??
-      (trigger.chapter
-        ? (def.chapters ?? [])[trigger.abilityIndex]
-        : (this.triggeredOfSource(trigger.sourceObjectId, trigger.lastKnownRefs?.source)?.[
-            trigger.abilityIndex
-          ] ?? def.triggered[trigger.abilityIndex]));
+      (() => {
+        const def = this.registry.get(trigger.cardName);
+        return trigger.chapter
+          ? (def.chapters ?? [])[trigger.abilityIndex]
+          : (this.triggeredOfSource(trigger.sourceObjectId, trigger.lastKnownRefs?.source)?.[
+              trigger.abilityIndex
+            ] ?? def.triggered[trigger.abilityIndex]);
+      })();
 
     const triggerSource = this.abilityTargetSource(trigger);
     const abilityKind: "triggered" | "chapter" = trigger.chapter ? "chapter" : "triggered";
@@ -9202,6 +9215,7 @@ export class Game {
         trigger.x,
         trigger.lastKnownRefs,
         trigger.targetedBy,
+        reflexive,
       );
       return "done";
     }
@@ -9225,6 +9239,7 @@ export class Game {
       ...(trigger.x !== undefined ? { x: trigger.x } : {}),
       ...(trigger.lastKnownRefs !== undefined ? { lastKnownRefs: trigger.lastKnownRefs } : {}),
       ...(trigger.targetedBy !== undefined ? { targetedBy: trigger.targetedBy } : {}),
+      ...(reflexive !== undefined ? { reflexive } : {}),
     };
     this.state.awaiting = {
       kind: "choose-targets",
@@ -9292,6 +9307,8 @@ export class Game {
     x?: number,
     lastKnownRefs?: LastKnownRefs,
     targetedBy?: TargetedBy,
+    /** The record of a reflexive ability — see `ReflexiveTrigger`. */
+    reflexive?: ReflexiveTrigger,
   ): void {
     const abilityId = this.mintAbilityObject(
       sourceId,
@@ -9312,6 +9329,7 @@ export class Game {
       this.state.objects[abilityId].autoTargetSlots = [...autoTargetSlots];
     }
     if (targetedBy !== undefined) this.state.objects[abilityId].targetedBy = targetedBy;
+    if (reflexive !== undefined) this.state.objects[abilityId].reflexiveTrigger = reflexive;
     this.emit({ type: "ability-triggered", source: sourceId, controller });
     // Its targets are locked in as it goes on the stack (rule 603.3d), which
     // is when anything it targets "becomes the target of" an ability.
@@ -9664,6 +9682,27 @@ export class Game {
         this.exileByEffect(target, untilSourceLeaves === true ? source : undefined),
       chooseCreatureType: (then) =>
         this.beginCreatureTypeChoice(source, controller, undefined, { then, targets, x }),
+      reflexiveTrigger: (specs, effect, text) => {
+        // Rule 603.12: it triggers now and waits, like any trigger, to be put
+        // on the stack the next time a player would receive priority.
+        const object = this.state.objects[source];
+        const cardName =
+          object !== undefined
+            ? printedCardName(object)
+            : (this.state.ceasedTokens?.[source]?.name ?? this.state.decisionSource?.cardName);
+        if (cardName === undefined) return;
+        this.state.pendingTriggers.push({
+          sourceObjectId: source,
+          cardName,
+          abilityIndex: 0,
+          controller,
+          ...(x !== 0 ? { x } : {}),
+          ...(triggerValue !== 0 ? { triggerValue } : {}),
+          ...(triggerObject !== undefined ? { triggerObject } : {}),
+          ...(Object.keys(refs).length > 0 ? { lastKnownRefs: refs } : {}),
+          reflexive: { targets: [...specs], effect, text },
+        });
+      },
       returnExiledBySource: () => {
         // A token exiled this way ceased to exist (rule 111.7) and never
         // comes back; anything that moved on from exile in the meantime is

@@ -46,7 +46,8 @@
   "stat:per-ability-turn-counters",
   "mechanic:player-counters",
   "cost:ability-cost-modification",
-  "effect:created-tokens-gain-keyword-eot"
+  "effect:created-tokens-gain-keyword-eot",
+  "effect:reflexive-trigger"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

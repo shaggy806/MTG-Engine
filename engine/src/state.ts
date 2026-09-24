@@ -216,6 +216,10 @@ export interface GameObject {
    * object on the stack.
    */
   delayedTrigger?: DelayedTrigger;
+  /** This stack object is a reflexive triggered ability (rule 603.12) — the
+   * whole record, for the same reason as `delayedTrigger`. Only ever set on
+   * an `"ability"` object on the stack. */
+  reflexiveTrigger?: ReflexiveTrigger;
   /** Chosen targets while this is a spell/ability on the stack; `null` otherwise. */
   /** A hole (`undefined`) marks an optional target slot the caster chose to
    * leave empty — see `ResolvedTargets`. */
@@ -727,6 +731,26 @@ export interface PendingTrigger {
    * right order.
    */
   readonly delayed?: DelayedTrigger;
+  /** A reflexive triggered ability — see {@link ReflexiveTrigger}. Placed
+   * like a card's own triggered ability, choosing its targets as it goes on
+   * the stack, from this record's specs rather than a card's list. */
+  readonly reflexive?: ReflexiveTrigger;
+}
+
+/**
+ * A reflexive triggered ability (rule 603.12): "you may pay {2}. **When you
+ * do**, return target creature card …" (Terra, Herald of Hope). A resolving
+ * spell or ability creates it once the optional or conditional action has
+ * happened, and it goes on the stack the next time a player would receive
+ * priority — after that spell or ability has finished resolving — choosing
+ * its targets then. It belongs to no card's ability list, so it carries its
+ * own targets and effect, as a {@link DelayedTrigger} does; its source and
+ * controller are the resolving spell's or ability's.
+ */
+export interface ReflexiveTrigger {
+  readonly targets: readonly TargetSpec[];
+  readonly effect: EffectSpec;
+  readonly text: string;
 }
 
 /** A kind of counter a player can have (rule 122.1), apart from energy — see
@@ -1506,6 +1530,8 @@ export interface GameState {
     readonly lastKnownRefs?: LastKnownRefs;
     /** See {@link PendingTrigger.targetedBy}. */
     readonly targetedBy?: TargetedBy;
+    /** See {@link PendingTrigger.reflexive}. */
+    readonly reflexive?: ReflexiveTrigger;
   } | null;
   /**
    * A suspended spell coming off suspend, parked while its controller chooses

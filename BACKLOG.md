@@ -19,15 +19,17 @@ that one card is the reason the deck exists.
   one of its steps raises); Leonardo, the Balance (`may`'s `oncePerTurn`); Fynn, the
   Fangbearer, Atreus, Impulsive Son and Kratos, Stoic Father (poison and experience counters);
   Sam, Loyal Attendant (`abilityCostModification`); Ovika, Enigma Goliath (`create-token`'s
-  `gainUntilEndOfTurn`).
+  `gainUntilEndOfTurn`); Terra, Herald of Hope, Evereth, Viceroy of Plunder and Slinza, the
+  Spiked Stampede (`reflexive-trigger`).
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first
   ten, engine-only, with the commanders each fully unblocks:
-  `keyword:earthbend` (+1), `effect:reflexive-trigger` (+3), `cost:may-cost-non-mana` (+1),
-  `effect:amount-aggregate` (+1), `effect:target-other-than-source` (+3), `effect:add-subtype`
-  (+2), `trigger:combat-trigger-extensions` (+3), `trigger:sacrifice-filter` (+1),
-  `condition:filter-dynamic-compare` (+1), `effect:amount-new-variants` (+1).
+  `cost:may-cost-non-mana` (+1), `keyword:earthbend` (+1), `effect:amount-aggregate` (+1),
+  `effect:target-other-than-source` (+3), `effect:add-subtype` (+2),
+  `trigger:combat-trigger-extensions` (+3), `trigger:sacrifice-filter` (+1),
+  `condition:filter-dynamic-compare` (+1), `effect:amount-new-variants` (+1),
+  `static:pt-per-amount` (+2).
 - **Most-needed features overall.** `effect:target-other-than-source` (19),
   `effect:this-way-results` (18), `condition:filter-dynamic-compare` (16; what's left is an
   "N plus an amount" operand), `static:grant-to-cards-outside-battlefield` (14). Live numbers

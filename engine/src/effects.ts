@@ -819,6 +819,27 @@ export type EffectSpec =
     }
   | {
       /**
+       * "**When you do**, [effect]" — a reflexive triggered ability (rule
+       * 603.12): Terra, Herald of Hope's "you may pay {2}. When you do,
+       * return target creature card with power 3 or less from your graveyard
+       * to the battlefield tapped" is a `may` with `cost: "{2}"` whose
+       * `effect` is this. Applying it doesn't do `effect`: it triggers an
+       * ability that goes on the stack the next time a player would receive
+       * priority, once the spell or ability that made it has finished
+       * resolving, and chooses `targets` then — so, unlike a `may`'s `then`,
+       * it can target, and players can respond to it. `effect` refers to
+       * those targets by slot as any ability does; `"source"`, X and the
+       * triggering event are the creating spell's or ability's. Put it where
+       * the action has certainly happened: a `may`'s effect (after its cost is
+       * paid), a `sacrifice-source`'s `then`.
+       */
+      readonly kind: "reflexive-trigger";
+      readonly targets: readonly TargetSpec[];
+      readonly effect: EffectSpec;
+      readonly text: string;
+    }
+  | {
+      /**
        * Put a targeted card on top of (or on the bottom of) its owner's
        * library — Academy Ruins, Mortuary Mire, Hall of Heliod's Generosity,
        * all of which recur a graveyard card by putting it back on the deck
@@ -1703,6 +1724,9 @@ export interface EffectApi {
   ): void;
   /** See the `"choose-creature-type"` {@link EffectSpec}. */
   chooseCreatureType(then: EffectSpec): void;
+  /** Trigger a reflexive ability — see the `"reflexive-trigger"`
+   * {@link EffectSpec}. */
+  reflexiveTrigger(targets: readonly TargetSpec[], effect: EffectSpec, text: string): void;
   /** Exile every card in `target`'s graveyard (a player — Bojuka Bog), as
    * one move. */
   exileGraveyard(target: TargetRef): void;
@@ -2876,6 +2900,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     case "unless":
       ctx.unless(spec.chooser, spec.options, spec.otherwise);
+      return;
+    case "reflexive-trigger":
+      ctx.reflexiveTrigger(spec.targets, spec.effect, spec.text);
       return;
     case "ward":
       ctx.ward(spec.cost);
