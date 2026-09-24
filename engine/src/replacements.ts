@@ -232,6 +232,13 @@ export interface DamageMultiplierReplacement {
   readonly event: "would-deal-damage";
   readonly multiplier?: number;
   readonly plus?: number;
+  /** "…would deal an amount of damage **less than ~'s power** …, that
+   * source deals damage equal to ~'s power instead" (Ojer Axonil, Deepest
+   * Might) — raised to this permanent's power, never lowered. After the
+   * multipliers and additions. */
+  readonly atLeast?: "this-power";
+  /** Only combat (`true`) or only noncombat (`false`) damage. */
+  readonly combat?: boolean;
   readonly prevent?: boolean;
   readonly then?: EffectSpec;
   readonly source?: CardFilter;

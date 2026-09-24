@@ -64,7 +64,9 @@
   "replacement:damage-modification",
   "bug:cda-all-zones",
   "condition:turn-structure",
-  "effect:additional-combat-after-this-phase"
+  "effect:additional-combat-after-this-phase",
+  "effect:put-onto-battlefield-options",
+  "stat:turn-event-tallies"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
@@ -1035,7 +1037,7 @@
   "stat:turn-event-tallies": {
    "size": "medium",
    "ui": false,
-   "description": "Per-player, per-turn tallies still missing: noncombat damage dealt by sources a player controls, with a filter on the source (Ojer Axonil's red sources). Built so far: PlayerState.turnHistory — permanents entered under a player's control, creatures died under it (last-known), permanents sacrificed, permanents exiled from under it, permanent cards put into their graveyard (descend), damage and combat damage taken, and raid — with the turn-history condition, the turnHistory amount and the damage-taken, combat-damage-taken and attacked turn stats (Tymna the Weaver, Éowyn, Shieldmaiden)."
+   "description": "Per-player, per-turn tallies: PlayerState.turnHistory — permanents entered under a player's control, creatures died under it (last-known), permanents sacrificed, permanents exiled from under it, permanent cards put into their graveyard (descend), damage and combat damage taken, raid, and the damage sources they controlled dealt with each source's colours as it dealt it — read by the turn-history and damage-dealt-this-turn conditions, the turnHistory and damageDealtThisTurn amounts and the damage-taken, combat-damage-taken and attacked turn stats (Tymna the Weaver, Éowyn, Shieldmaiden, Ojer Axonil's Temple of Power)."
   },
   "static:affect-scope-by-filter": {
    "size": "medium",

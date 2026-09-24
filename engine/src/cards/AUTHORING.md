@@ -394,6 +394,10 @@ control (Vren, the Relentless: `{ turnHistory: "exiled", who:
 into their graveyards — "you descended" — this turn; a token stack counts every token.
 `filter` narrows them: a permanent that has left as it last existed, a card in
 a graveyard as it is now. See `PlayerState.turnHistory`),
+`{ damageDealtThisTurn: true, who?, combat?, colors? }` (how much damage
+sources the scope's players controlled dealt this turn, to anything — only
+combat or only noncombat damage if `combat` says, only from sources that were
+one of `colors` as they dealt it; see the `damage-dealt-this-turn` condition),
 `{ playerCounters: "poison" | "experience", who?: PlayerScope }` (the counters
 of that kind the scope's players have, summed, default `"you"` — Ezuri, Claw
 of Progress's "where X is the number of experience counters you have"),
@@ -473,13 +477,13 @@ target, so hexproof doesn't stop them.
 | `destroy-all` | `filter` | Wrath of God |
 | `exile` | `target`, `untilSourceLeaves?` | Angelic Edict. Works on a card in a **graveyard** as well as a permanent (Withered Wretch). `untilSourceLeaves` is an "O-Ring" (Banishing Light, Conclave Tribunal) — see below. |
 | `return-exiled-by-source` | — | The other half of an O-Ring: returns everything this source exiled, to the battlefield under its **owner's** control. |
-| `put-onto-battlefield` | `target` (an `EffectTargetRef`, so `"trigger-object"` works — Undying returns *itself*), `underYourControl?`, `enterTapped?`, `withCounters?`, `exileIfItWouldLeave?` | Reanimation that names one card, from anyone's graveyard — as opposed to `return-from-graveyard`'s filter over your own. `underYourControl` makes controller diverge from owner, so the card still goes back to its **owner's** graveyard when it dies. |
+| `put-onto-battlefield` | `target` (an `EffectTargetRef`, so `"trigger-object"` works — Undying returns *itself*), `underYourControl?`, `enterTapped?`, `withCounters?`, `exileIfItWouldLeave?`, `transformed?` | Reanimation that names one card, from anyone's graveyard — as opposed to `return-from-graveyard`'s filter over your own. `underYourControl` makes controller diverge from owner, so the card still goes back to its **owner's** graveyard when it dies. `transformed` is "…onto the battlefield transformed" (Ojer Axonil's "return it to the battlefield tapped and transformed"): a transforming double-faced card enters back face up; anything else just enters. |
 | `exile-graveyard` | `target` (a player slot, or `"you"`) | Bojuka Bog — exiles that player's whole graveyard at once (rule 406; the cards in it are never individually targeted) |
-| `flicker` | `target`, `thenCounters?`, `underYourControl?`, `returnAt?`, `returnText?` | Essence Flux — exiles `target`, then immediately returns it to the battlefield under its owner's control (rule 400.7 — a brand-new object; a token exiled this way never comes back). `target` is a slot, `"source"` (the ability's own permanent *as it was when the ability triggered* — one that has blinked since is left alone) or an array of slots, all exiled first and returned together so each one's enters triggers see the others. `underYourControl` returns them under the effect's controller. `returnAt` (a `DelayedTriggerTiming`) makes the return a delayed trigger instead — Norin the Wary's "exile Norin. Return it … at the beginning of the next end step" — linked to the exile (rule 610.3): a card that left exile in between stays where it is, and nothing is set up when nothing was exiled, so a second trigger in one turn does nothing. Don't build that with `exile` + `delayed-trigger`: the delayed effect can't tell the exiled card from a new object. (`return-flickered` is the delayed half it builds; never author it.) |
+| `flicker` | `target`, `thenCounters?`, `underYourControl?`, `transformed?`, `returnAt?`, `returnText?` | Essence Flux — exiles `target`, then immediately returns it to the battlefield under its owner's control (rule 400.7 — a brand-new object; a token exiled this way never comes back). `target` is a slot, `"source"` (the ability's own permanent *as it was when the ability triggered* — one that has blinked since is left alone) or an array of slots, all exiled first and returned together so each one's enters triggers see the others. `underYourControl` returns them under the effect's controller. `transformed` is "…return it to the battlefield **transformed**" (Clive, Ifrit's Dominant), now or at a delayed return. `returnAt` (a `DelayedTriggerTiming`) makes the return a delayed trigger instead — Norin the Wary's "exile Norin. Return it … at the beginning of the next end step" — linked to the exile (rule 610.3): a card that left exile in between stays where it is, and nothing is set up when nothing was exiled, so a second trigger in one turn does nothing. Don't build that with `exile` + `delayed-trigger`: the delayed effect can't tell the exiled card from a new object. (`return-flickered` is the delayed half it builds; never author it.) |
 | `return-to-hand` | `target: EffectTargetRef`, `from?: "battlefield" \| "graveyard" \| "exile" \| "stack"` | Unsummon (a bounce — `from` omitted). With `from`, it takes a card out of that zone instead, to its **owner's** hand: `"graveyard"` + a `card-in-graveyard` target is "return target creature card from your graveyard to your hand" (Golbez, Crystal Collector); `"source"` / `"trigger-object"` with `"graveyard"` or `"exile"` is "return it to its owner's hand" off a dies / leaves trigger, and works inside a `delayed-trigger` too. `"stack"` + a `"spell"` target is Unsubstantiate or Venser, Shaper Savant — **not a counter**: a spell that can't be countered still goes back, a copy of a spell ceases to exist (rule 707.10c), and an ability or the resolving spell itself is left alone. The object has to be in the `from` zone when the effect applies, or nothing happens. A commander returned this way offers the command zone (rule 903.9b), like a bounced one. |
 | `return-to-hand-all` | `filter` | Cyclonic Rift, overloaded — mirrors `destroy-all` |
 | `exile-all` | `filter` | Farewell's "Exile all artifacts" — the mass `exile`, one event (each one's leaves trigger sees the rest go), a token stack exiled whole |
-| `return-from-graveyard` | `filter`, `destination: "battlefield" \| "hand"`, `count: number \| "all"`, `enterTapped?` | Splendid Reclamation (from *your* graveyard; a `number` less than the match count raises a `choose-from-zone`) |
+| `return-from-graveyard` | `filter`, `destination: "battlefield" \| "hand"`, `count: number \| "all"`, `enterTapped?`, `withCounters?` | Splendid Reclamation (from *your* graveyard; a `number` less than the match count raises a `choose-from-zone`). `withCounters: { kind: "finality", amount: 1 }` is "…with a finality counter on it" (Shilgengar, Sire of Famine) — put on each card that enters, before its entry is announced, whether everything returns at once or the player chooses. |
 | `search-library` … `reveal?` | — | "…, **reveal it**, …" (Enlightened Tutor, Mystical Tutor): shows the find to every player, rule 701.16. Off by default — a plain "search your library for a card" (Vampiric Tutor) reveals nothing, and the difference is printed on the cards. |
 | `put-on-library` | `target`, `position: "top" \| "bottom"` | Academy Ruins, Mortuary Mire — puts one **targeted** card on its owner's deck. Pair it with a `card-in-graveyard` target for the graveyard-recursion lands; unlike `return-from-graveyard` it is target-driven, so it reaches any graveyard. |
 | `delayed-trigger` | `at`, `effect`, `text`, `controller?` | Whip of Erebos's "exile it at the beginning of the next end step", Arcane Denial's upkeep draws; with `at: { leaves, to, thisTurn? }`, Kelsien, the Plague's "when that creature dies this turn". Rule 603.7 — see below. |
@@ -1583,6 +1587,14 @@ clause (section 9):
   `"you"` (default), `"opponent"` or `"any-player"`. The `turn-stat`
   condition covers the running totals, raid (`stat: "attacked"`) and
   `"combat-damage-taken"` among them.
+- `{ kind: "damage-dealt-this-turn", who?, combat?, colors?, atLeast }` —
+  sources `who` (`"you"` by default, `"opponent"`, `"any-player"`)
+  controlled dealt at least `atLeast` damage this turn: Ojer Axonil's Temple
+  of Power's "activate only if red sources you controlled dealt 4 or more
+  noncombat damage this turn" (an activated ability's `condition`) is
+  `{ colors: ["R"], combat: false, atLeast: 4 }`. Each damage event is
+  recorded against its source's controller with the source's colours as it
+  dealt it — a departed source's as it last existed.
 - `{ kind: "creature-died-this-turn" }` — Liliana's Devotee. Reads the
   turn-scoped `GameState.creaturesDiedThisTurn`, counted in `moveObject`
   while the dying permanent's types are still readable.
@@ -1713,7 +1725,7 @@ clause (section 9):
   tuck as well as a death, and ends when the permanent leaves.
 - `{ event: "would-draw", who: "opponent", instead: "you-draw" }` — Notion
   Thief.
-- `{ event: "would-deal-damage", multiplier?, plus?, prevent?, then?, source?, to? }`
+- `{ event: "would-deal-damage", multiplier?, plus?, atLeast?, combat?, prevent?, then?, source?, to? }`
   — damage about to be dealt, changed. With neither `source` nor `to` it is
   **symmetric and global** (Dictate of the Twin Gods' `multiplier: 2` doubles
   damage from any source to any recipient, its own controller's included), so
@@ -1728,9 +1740,16 @@ clause (section 9):
   damage and each opponent mills that many cards" (`to: "opponent"`, `source:
   { controlledBy: "you" }`, `then: { kind: "mill", target: "each-opponent",
   amount: "x" }`), "prevent that damage and put that many +1/+1 counters on
-  it" (`to: "self"`). Applied in a fixed order — every multiplier, then every
-  `plus`, then the first `prevent`, then prevention shields — where rule
-  616.1 would let the affected player choose.
+  it" (`to: "self"`). `combat` narrows it to combat (`true`) or noncombat
+  (`false`) damage, and `atLeast: "this-power"` raises the damage to this
+  permanent's power when it's less — Ojer Axonil, Deepest Might's "if a red
+  source you control would deal an amount of noncombat damage less than Ojer
+  Axonil's power to an opponent, that source deals damage equal to Ojer
+  Axonil's power instead" (`atLeast: "this-power", combat: false, source:
+  { colors: ["R"], controlledBy: "you" }, to: "opponent"`). Applied in a fixed
+  order — every multiplier, then every `plus`, then every `atLeast`, then the
+  first `prevent`, then prevention shields — where rule 616.1 would let the
+  affected player choose.
 
 ---
 

@@ -432,6 +432,21 @@ export type StaticCondition =
    * the battlefield as it last existed there, a card put into a graveyard as
    * it is now; `excludeSelf` leaves this permanent out ("another").
    */
+  /**
+   * Sources a player controlled dealt at least `atLeast` damage this turn —
+   * Ojer Axonil's Temple of Power: "activate only if **red sources you
+   * controlled dealt 4 or more noncombat damage** this turn" (`{ colors:
+   * ["R"], combat: false, atLeast: 4 }`). `who` is the controller (default
+   * `"you"`), `combat` narrows the kind of damage, and `colors` the sources
+   * — ones that were at least one of these colours as they dealt it.
+   */
+  | {
+      readonly kind: "damage-dealt-this-turn";
+      readonly who?: "you" | "opponent" | "any-player";
+      readonly combat?: boolean;
+      readonly colors?: readonly Color[];
+      readonly atLeast: number;
+    }
   | {
       readonly kind: "turn-history";
       readonly what: TurnHistoryKind;

@@ -6,7 +6,10 @@
  * `turn-history` condition, the `turnHistory` amount and the new turn stats.
  * Tymna the Weaver's "the number of opponents that were dealt combat damage
  * this turn"; Éowyn, Shieldmaiden's "if another Human entered the battlefield
- * under your control this turn".
+ * under your control this turn". And the damage sources a player controlled
+ * dealt, with their colours as they dealt it — Ojer Axonil's Temple of Power:
+ * "activate only if red sources you controlled dealt 4 or more noncombat
+ * damage this turn".
  */
 
 import { describe, expect, it } from "vitest";
@@ -32,6 +35,10 @@ const opponentsHit: EffectAmount = { playersWithTurnStat: "combat-damage-taken",
  * another Human entered the battlefield under your control this turn, you
  * gain 5 life." */
 const EOWYN = "Test Shieldmaiden";
+/** Temple of Power's shape, gaining life in place of transforming: "{T}: ….
+ * Activate only if red sources you controlled dealt 4 or more noncombat
+ * damage this turn and only as a sorcery." */
+const TEMPLE = "Test Temple";
 
 const registry = createDefaultRegistry()
   .register(
@@ -78,6 +85,24 @@ const registry = createDefaultRegistry()
           effect: { kind: "gain-life", amount: 5 },
           resolve: null,
           text: EOWYN,
+        },
+      ],
+    }),
+  )
+  .register(
+    defineCard({
+      name: TEMPLE,
+      types: ["land"],
+      text: TEMPLE,
+      activated: [
+        {
+          cost: { mana: null, tap: true },
+          condition: { kind: "damage-dealt-this-turn", colors: ["R"], combat: false, atLeast: 4 },
+          sorcerySpeed: true,
+          targets: [],
+          effect: { kind: "gain-life", amount: 5 },
+          resolve: null,
+          text: TEMPLE,
         },
       ],
     }),
@@ -249,5 +274,70 @@ describe("the lists and stats", () => {
     run(game, { kind: "damage", amount: 3, who: "each-opponent" });
     expect(amount(game, { turnStat: "damage-taken", who: "each-opponent" })).toBe(5);
     expect(amount(game, { turnStat: "combat-damage-taken", who: "each-opponent" })).toBe(2);
+  });
+});
+
+describe("damage dealt by sources you controlled", () => {
+  /** `source` deals `amount` noncombat damage to `to`. */
+  const burn = (game: Game, source: ObjectId, to: PlayerId, amount: number): void => {
+    const controller = game.state.objects[source].controller;
+    game.debugApplyEffect(controller, { kind: "damage", amount, target: 0 }, [{ kind: "player", player: to }], {
+      source,
+    });
+    game.advanceUntil(quiet);
+  };
+
+  it("by its sources' colours, and by whose they were", () => {
+    const { game } = setUp();
+    const goblin = game.debugSpawn("Raging Goblin", A, "battlefield");
+    const bears = game.debugSpawn("Grizzly Bears", A, "battlefield");
+    const theirs = game.debugSpawn("Raging Goblin", B, "battlefield");
+    burn(game, goblin, B, 3);
+    burn(game, bears, B, 2);
+    burn(game, theirs, A, 5);
+    expect(amount(game, { damageDealtThisTurn: true })).toBe(5);
+    expect(amount(game, { damageDealtThisTurn: true, colors: ["R"] })).toBe(3);
+    expect(amount(game, { damageDealtThisTurn: true, colors: ["R"], who: "each-opponent" })).toBe(5);
+    const red = (atLeast: number): StaticCondition => ({
+      kind: "damage-dealt-this-turn",
+      colors: ["R"],
+      combat: false,
+      atLeast,
+    });
+    expect(holds(game, red(3))).toBe(true);
+    expect(holds(game, red(4))).toBe(false);
+  });
+
+  it("combat damage is kept apart", () => {
+    const { game, a } = setUp();
+    const goblin = game.debugSpawn("Raging Goblin", A, "battlefield");
+    a.declareAttackersFn = () => [{ attacker: goblin, defender: B }];
+    game.advanceUntil((s) => s.turn.step === "postcombat-main");
+    expect(amount(game, { damageDealtThisTurn: true, combat: true })).toBe(1);
+    expect(amount(game, { damageDealtThisTurn: true, combat: false })).toBe(0);
+  });
+
+  it("a source that has left counts as it last was", () => {
+    const { game } = setUp();
+    const goblin = game.debugSpawn("Raging Goblin", A, "battlefield");
+    run(game, { kind: "destroy", target: 0 }, goblin);
+    burn(game, goblin, B, 2);
+    expect(amount(game, { damageDealtThisTurn: true, colors: ["R"] })).toBe(2);
+  });
+
+  it("Temple of Power: activated only once red sources have dealt 4 noncombat damage", () => {
+    const { game } = setUp();
+    const temple = game.debugSpawn(TEMPLE, A, "battlefield");
+    const offered = (): boolean =>
+      game.legalActions(A).some((o) => o.kind === "activate-ability" && o.source === temple);
+    const goblin = game.debugSpawn("Raging Goblin", A, "battlefield");
+    expect(offered()).toBe(false);
+    burn(game, goblin, B, 3);
+    expect(offered()).toBe(false);
+    burn(game, goblin, B, 1);
+    expect(offered()).toBe(true);
+    // Your next turn starts the count afresh.
+    game.advanceUntil((s) => s.turn.number === 3 && s.turn.step === "precombat-main");
+    expect(offered()).toBe(false);
   });
 });

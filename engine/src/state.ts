@@ -1014,6 +1014,9 @@ export type AwaitingDecision =
       /** A library-search result that enters the battlefield does so tapped
        * (Rampant Growth). Only meaningful with `destination: "battlefield"`. */
       readonly enterTapped?: boolean;
+      /** Counters each card put onto the battlefield enters with — a
+       * `return-from-graveyard`'s `withCounters`. */
+      readonly enterWithCounters?: { readonly kind: string; readonly amount: number };
       /** The chosen cards are shown to every player ("search your library for
        * an artifact card, **reveal it**, …" — Enlightened Tutor). */
       readonly reveal?: boolean;
@@ -1331,6 +1334,16 @@ export interface TurnHistory {
   /** Damage dealt to this player, and the part of it that was combat damage. */
   damageTaken?: number;
   combatDamageTaken?: number;
+  /** Damage dealt by sources this player controlled, to anything — each
+   * with its source's colours as it dealt it: "if red sources you controlled
+   * dealt 4 or more noncombat damage this turn" (Ojer Axonil's Temple of
+   * Power). */
+  damageDealt?: {
+    readonly source: ObjectId;
+    readonly amount: number;
+    readonly combat: boolean;
+    readonly colors: readonly Color[];
+  }[];
   /** This player declared one or more attackers (raid). */
   attacked?: boolean;
 }
@@ -1774,6 +1787,8 @@ export interface GameState {
     readonly returnUnder?: PlayerId;
     /** A delayed return's link — the card is marked, not returned. */
     readonly link?: string;
+    /** It returns transformed. */
+    readonly transformed?: boolean;
   }[];
   /**
    * Resolutions waiting on a decision one of their own steps raised, most

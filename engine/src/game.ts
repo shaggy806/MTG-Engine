@@ -57,6 +57,7 @@ import type {
 } from "./cards.js";
 import {
   assignedCombatDamage,
+  damageDealtThisTurn,
   turnHistoryCount,
   cardTypesInGraveyards,
   colorsAmongPermanents,
@@ -314,6 +315,9 @@ interface EnterOptions {
   readonly tapped?: boolean;
   /** "…under your control", when that isn't its owner. */
   readonly under?: PlayerId;
+  /** "…onto the battlefield transformed" — a transforming double-faced card
+   * enters with its back face up (rule 712.14). */
+  readonly transformed?: boolean;
 }
 
 /** Everything the enters-battlefield replacements decided about one entry
@@ -2348,7 +2352,7 @@ export class Game {
           // A delayed return (Norin): the card waits in exile for it.
           this.state.objects[commander].flickerLink = blink.link;
         } else {
-          this.completeFlickerReturn([commander], blink.counters, blink.returnUnder);
+          this.completeFlickerReturn([commander], blink.counters, blink.returnUnder, blink.transformed === true);
         }
       }
     }
@@ -3562,6 +3566,7 @@ export class Game {
       if (to === "library-top") return;
       this.moveObject(id, to, { tapped: awaiting.enterTapped === true });
       if (to === "battlefield") {
+        this.enterWithCounters(id, awaiting.enterWithCounters, player);
         this.emit({ type: "permanent-entered-battlefield", object: id });
       }
     }));
@@ -10052,6 +10057,7 @@ export class Game {
       cardTypesInGraveyard: (filter) =>
         cardTypesInGraveyards(this.state, this.registry, controller, filter),
       thisWay: thisWayDone,
+      damageDealtThisTurn: (players, combat, colors) => damageDealtThisTurn(this.state, players, combat, colors),
       turnHistoryCount: (what, players, filter) =>
         turnHistoryCount(this.state, this.registry, players, what, filter, controller),
       cardTypesAmong: (objects, asLastKnown) => {
@@ -10200,7 +10206,7 @@ export class Game {
           }
         });
       },
-      putOntoBattlefield: (target, underYourControl, enterTapped, withCounters, exileIfLeaves) =>
+      putOntoBattlefield: (target, underYourControl, enterTapped, withCounters, exileIfLeaves, transformed) =>
         this.putOntoBattlefieldByEffect(
           target,
           controller,
@@ -10208,6 +10214,7 @@ export class Game {
           enterTapped,
           withCounters,
           exileIfLeaves === true,
+          transformed === true,
         ),
       exileGraveyard: (target) => {
         if (target.kind !== "player") return;
@@ -10221,8 +10228,13 @@ export class Game {
       },
       simultaneously: (fn) => this.withLeaveBatch(() => this.withGraveyardLeaveBatch(fn)),
       flicker: (flickered, options) => this.flickerByEffect(source, controller, flickered, options),
-      returnFlickered: (link, thenCounters, underYourControl) =>
-        this.returnFlickeredByEffect(link, thenCounters, underYourControl ? controller : undefined),
+      returnFlickered: (link, thenCounters, underYourControl, transformed) =>
+        this.returnFlickeredByEffect(
+          link,
+          thenCounters,
+          underYourControl ? controller : undefined,
+          transformed,
+        ),
       grantFlashback: (target) => this.grantFlashbackByEffect(target),
       grantGraveyardCast: (target) => this.grantGraveyardCastByEffect(controller, target),
       putOnLibrary: (target, position) => {
@@ -10237,8 +10249,8 @@ export class Game {
       mill: (target, amount) => this.millByEffect(target, amount),
       countMatching: (filter, except) => this.countBattlefieldMatching(controller, filter, except),
       aggregate: (spec, except) => this.aggregateBattlefield(controller, spec, except),
-      returnFromGraveyard: (filter, destination, count, enterTapped) =>
-        this.returnFromGraveyardByEffect(controller, filter, destination, count, enterTapped),
+      returnFromGraveyard: (filter, destination, count, enterTapped, withCounters) =>
+        this.returnFromGraveyardByEffect(controller, filter, destination, count, enterTapped, withCounters),
       discardCards: (target, amount) => this.discardByEffect(target, amount),
       modifyPt: (target, power, toughness, duration) =>
         this.modifyPt(target, power, toughness, duration),
@@ -12796,6 +12808,7 @@ export class Game {
     enterTapped: boolean,
     withCounters?: { readonly kind: string; readonly amount: number },
     exileIfItWouldLeave = false,
+    transformed = false,
   ): void {
     if (target.kind !== "object") return;
     const object = this.state.objects[target.object];
@@ -12805,6 +12818,7 @@ export class Game {
     this.moveObject(target.object, "battlefield", {
       tapped: enterTapped,
       ...(underYourControl ? { under: controller } : {}),
+      ...(transformed ? { transformed: true } : {}),
     });
     const entered = this.state.objects[target.object];
     if (entered === undefined || entered.zone !== "battlefield") return;
@@ -12924,6 +12938,7 @@ export class Game {
             ...(options.thenCounters !== undefined ? { counters: options.thenCounters } : {}),
             ...(returnUnder !== undefined ? { returnUnder } : {}),
             ...(deferredLink !== undefined ? { link: deferredLink } : {}),
+            ...(options.transformed === true ? { transformed: true } : {}),
           });
         }
         continue;
@@ -12937,7 +12952,7 @@ export class Game {
       exiled.push(id);
     }
     if (delayed === undefined) {
-      this.completeFlickerReturn(exiled, options.thenCounters, returnUnder);
+      this.completeFlickerReturn(exiled, options.thenCounters, returnUnder, options.transformed === true);
       return;
     }
     // No link means nothing was exiled (or is waiting to be): no return.
@@ -12951,6 +12966,7 @@ export class Game {
         link,
         ...(options.thenCounters !== undefined ? { thenCounters: options.thenCounters } : {}),
         ...(returnUnder !== undefined ? { underYourControl: true } : {}),
+        ...(options.transformed === true ? { transformed: true } : {}),
       },
       options.returnText ?? "Return the exiled card to the battlefield.",
       [],
@@ -12964,6 +12980,7 @@ export class Game {
     link: string,
     counters: FlickerCounters | undefined,
     returnUnder: PlayerId | undefined,
+    transformed = false,
   ): void {
     const linked = this.state.zones.shared.exile.filter(
       (id) => this.state.objects[id]?.flickerLink === link,
@@ -12973,6 +12990,7 @@ export class Game {
       linked.filter((id) => !this.state.objects[id].isToken),
       counters,
       returnUnder,
+      transformed,
     );
   }
 
@@ -12985,6 +13003,7 @@ export class Game {
     ids: readonly ObjectId[],
     counters?: FlickerCounters,
     returnUnder?: PlayerId,
+    transformed = false,
   ): void {
     const entered: ObjectId[] = [];
     this.withEnterBatch(() => {
@@ -12995,7 +13014,10 @@ export class Game {
         // action ever gets a chance to notice it left, so its old attachments
         // won't have fallen off on their own (704.5n).
         this.detachFrom(id);
-        this.moveObject(id, "battlefield", returnUnder !== undefined ? { under: returnUnder } : {});
+        this.moveObject(id, "battlefield", {
+          ...(returnUnder !== undefined ? { under: returnUnder } : {}),
+          ...(transformed ? { transformed: true } : {}),
+        });
         const object = this.state.objects[id];
         if (object?.zone !== "battlefield") continue;
         if (returnUnder !== undefined && object.controller !== returnUnder) {
@@ -13287,6 +13309,33 @@ export class Game {
         return;
       }
       case "damage-dealt": {
+        // Its source's controller and colours as it dealt it: a spell's or a
+        // permanent's own, a departed source's as it left.
+        const source = this.state.objects[event.source];
+        const departed =
+          source === undefined
+            ? this.state.ceasedTokens?.[event.source]
+            : source.zone === "battlefield" || source.zone === "stack"
+              ? undefined
+              : source.lastKnown;
+        const dealer = departed?.controller ?? source?.controller;
+        const dealt = historyOf(dealer);
+        if (dealt !== undefined) {
+          // Read fresh: the damage was marked before this event invalidated
+          // anything.
+          const colors =
+            departed !== undefined
+              ? departed.colors
+              : source !== undefined
+                ? suspendComputedCache(() => [...computeCharacteristics(this.state, this.registry, source.id).colors])
+                : [];
+          (dealt.damageDealt ??= []).push({
+            source: event.source,
+            amount: event.amount,
+            combat: event.combat,
+            colors,
+          });
+        }
         if (event.target.kind !== "player") return;
         const history = historyOf(event.target.player);
         if (history === undefined) return;
@@ -13681,6 +13730,7 @@ export class Game {
     destination: "battlefield" | "hand",
     count: number | "all",
     enterTapped: boolean,
+    withCounters?: { readonly kind: string; readonly amount: number },
   ): void {
     const eligible = this.state.zones.perPlayer[player].graveyard.filter((id) =>
       matchesFilter(this.state, this.registry, id, filter, { you: player }),
@@ -13694,6 +13744,7 @@ export class Game {
           for (const id of eligible) {
             this.moveObject(id, destination, { tapped: enterTapped });
             if (destination === "battlefield") {
+              this.enterWithCounters(id, withCounters, player);
               this.emit({ type: "permanent-entered-battlefield", object: id });
             }
           }
@@ -13711,7 +13762,22 @@ export class Game {
       destination,
       leftover: "stay",
       ...(enterTapped && destination === "battlefield" ? { enterTapped: true } : {}),
+      ...(withCounters !== undefined && destination === "battlefield"
+        ? { enterWithCounters: withCounters }
+        : {}),
     };
+  }
+
+  /** Put `withCounters` on `id`, just put onto the battlefield by `player`'s
+   * effect — "with a finality counter on it". Before its entry is announced,
+   * so its enters triggers see them. */
+  private enterWithCounters(
+    id: ObjectId,
+    withCounters: { readonly kind: string; readonly amount: number } | undefined,
+    player: PlayerId,
+  ): void {
+    if (withCounters === undefined || this.state.objects[id]?.zone !== "battlefield") return;
+    this.addCounter({ kind: "object", object: id }, withCounters.kind, withCounters.amount, true, player);
   }
 
   /** Target player discards `amount` cards. If their hand is that small or
@@ -13914,6 +13980,7 @@ export class Game {
     source: ObjectId,
     target: TargetRef,
     amount: number,
+    combat: boolean,
     sourceLastKnown: LastKnownInfo | undefined,
   ): {
     readonly amount: number;
@@ -13927,7 +13994,7 @@ export class Game {
         const r = ability.replacement;
         if (r === undefined || r.event !== "would-deal-damage") continue;
         if (!this.staticActive(object, ability)) continue;
-        if (!this.damageReplacementReaches(r, object, source, target, sourceLastKnown)) continue;
+        if (!this.damageReplacementReaches(r, object, source, target, combat, sourceLastKnown)) continue;
         applying.push({ by: object, r });
       }
     }
@@ -13935,6 +14002,13 @@ export class Game {
     let changed = amount;
     for (const { r } of applying) changed *= r.multiplier ?? 1;
     for (const { r } of applying) changed += r.plus ?? 0;
+    // "…less than ~'s power …, that source deals damage equal to ~'s power
+    // instead": raised, never lowered.
+    for (const { by, r } of applying) {
+      if (r.atLeast === "this-power") {
+        changed = Math.max(changed, computeCharacteristics(this.state, this.registry, by.id).power);
+      }
+    }
     const prevention = applying.find(({ r }) => r.prevent === true);
     return prevention === undefined
       ? { amount: changed }
@@ -13949,18 +14023,20 @@ export class Game {
   }
 
   /** Whether a `would-deal-damage` replacement on `by` reaches damage from
-   * `source` to `target` — its `source` filter and `to` scope, read from
-   * `by`'s controller's side. */
+   * `source` to `target` — its `combat` scope, `source` filter and `to`
+   * scope, read from `by`'s controller's side. */
   private damageReplacementReaches(
     r: DamageMultiplierReplacement,
     by: GameObject,
     source: ObjectId,
     target: TargetRef,
+    combat: boolean,
     sourceLastKnown: LastKnownInfo | undefined,
   ): boolean {
     const you = by.controller;
     const recipientController =
       target.kind === "player" ? target.player : this.state.objects[target.object]?.controller;
+    if (r.combat !== undefined && r.combat !== combat) return false;
     switch (r.to) {
       case undefined:
         break;
@@ -14011,7 +14087,7 @@ export class Game {
     // Applied before the prevention shields, so a shield eats the *doubled*
     // amount, which is the printed interaction: doubling replaces the damage
     // event, and prevention then applies to what it became.
-    const replaced = this.replacedDamage(source, target, amount, sourceLastKnown);
+    const replaced = this.replacedDamage(source, target, amount, combat, sourceLastKnown);
     amount = replaced.amount;
     if (amount <= 0) return 0;
     if (replaced.prevention !== undefined) {
@@ -14648,18 +14724,26 @@ export class Game {
    * Also records `id` in the current {@link enterBatch}: whatever enters after
    * it in the same event doesn't see it as already here.
    */
-  private entersBattlefieldReplacement(id: ObjectId, effectTapped = false): EnteringReplacement {
-    const entering = this.enteringReplacementOf(id, effectTapped);
+  private entersBattlefieldReplacement(
+    id: ObjectId,
+    effectTapped = false,
+    effectTransformed = false,
+  ): EnteringReplacement {
+    const entering = this.enteringReplacementOf(id, effectTapped, effectTransformed);
     this.enterBatch?.add(id);
     return entering;
   }
 
-  private enteringReplacementOf(id: ObjectId, effectTapped: boolean): EnteringReplacement {
+  private enteringReplacementOf(
+    id: ObjectId,
+    effectTapped: boolean,
+    effectTransformed = false,
+  ): EnteringReplacement {
     const object = this.state.objects[id];
     const def = this.registry.get(printedCardName(object));
     let tapped = effectTapped;
     let untapped = false;
-    let transformed = false;
+    let transformed = effectTransformed;
     let painIfUntapped = 0;
     let mayPayLife = 0;
     const counters: { kind: string; amount: number }[] = [];
@@ -15271,7 +15355,11 @@ export class Game {
       // enters-with-counters, its own and other permanents'. `object.counters`
       // was just reset above (unless it keeps them across zones, when these
       // add to what it brought).
-      const entering = this.entersBattlefieldReplacement(id, enter.tapped === true);
+      const entering = this.entersBattlefieldReplacement(
+        id,
+        enter.tapped === true,
+        enter.transformed === true,
+      );
       object.tapped = entering.tapped;
       for (const c of entering.counters) {
         object.counters[c.kind] = (object.counters[c.kind] ?? 0) + c.amount;

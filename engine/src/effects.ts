@@ -102,6 +102,8 @@ export interface DelayedLeaves {
 export interface FlickerOptions {
   readonly thenCounters?: FlickerCounters;
   readonly underYourControl?: boolean;
+  /** It returns transformed (Clive, Ifrit's Dominant). */
+  readonly transformed?: boolean;
   readonly returnAt?: DelayedTriggerTiming;
   readonly returnText?: string;
   /** The effect named its own source (`target: "source"`). */
@@ -289,6 +291,14 @@ export type EffectAmount =
    * `turn-history` condition does. See `TurnHistory`.
    */
   | { readonly turnHistory: TurnHistoryKind; readonly who?: PlayerScope; readonly filter?: CardFilter }
+  /** How much damage sources the scope's players controlled dealt this turn
+   * — see the `damage-dealt-this-turn` condition. */
+  | {
+      readonly damageDealtThisTurn: true;
+      readonly who?: PlayerScope;
+      readonly combat?: boolean;
+      readonly colors?: readonly Color[];
+    }
   | {
       readonly thisWay: ThisWayKind;
       readonly who?: PlayerScope;
@@ -782,6 +792,10 @@ export type EffectSpec =
        * anywhere else" (Whip of Erebos) — sets
        * `GameObject.exileIfItWouldLeave` on the permanent it becomes. */
       readonly exileIfItWouldLeave?: boolean;
+      /** "…onto the battlefield **transformed**" (Ojer Axonil's "return it
+       * to the battlefield tapped and transformed") — a transforming
+       * double-faced card enters with its back face up. */
+      readonly transformed?: boolean;
     }
   | {
       /** Exile every card in a target *player's* graveyard (rule 406 — Bojuka
@@ -825,6 +839,10 @@ export type EffectSpec =
        * nothing was exiled.
        */
       readonly returnAt?: DelayedTriggerTiming;
+      /** "…return it to the battlefield **transformed**" (Clive, Ifrit's
+       * Dominant) — a transforming double-faced card comes back with its
+       * back face up (rule 712.14); anything else returns as usual. */
+      readonly transformed?: boolean;
       /** The delayed return's text, for the log and the stack. */
       readonly returnText?: string;
     }
@@ -839,6 +857,7 @@ export type EffectSpec =
       readonly link: string;
       readonly thenCounters?: FlickerCounters;
       readonly underYourControl?: boolean;
+      readonly transformed?: boolean;
     }
   | {
       /** Counter a target spell on the stack — it moves to its owner's
@@ -888,6 +907,9 @@ export type EffectSpec =
       readonly count: number | "all";
       /** Battlefield-bound cards enter tapped (Splendid Reclamation). */
       readonly enterTapped?: boolean;
+      /** …"with a finality counter on it" (Shilgengar, Sire of Famine) —
+       * counters each battlefield-bound card enters with. */
+      readonly withCounters?: { readonly kind: string; readonly amount: number };
     }
   | {
       /**
@@ -1773,6 +1795,8 @@ export interface EffectApi {
    * the permanents it has made them sacrifice, so far — see the `thisWay`
    * {@link EffectAmount}. */
   thisWay(what: ThisWayKind, who?: PlayerScope, filter?: CardFilter): readonly ObjectId[];
+  /** See the `{ damageDealtThisTurn }` {@link EffectAmount}. */
+  damageDealtThisTurn(players: readonly PlayerId[], combat?: boolean, colors?: readonly Color[]): number;
   /** See the `{ turnHistory }` {@link EffectAmount}. */
   turnHistoryCount(what: TurnHistoryKind, players: readonly PlayerId[], filter?: CardFilter): number;
   /** How many card types there are among `objects`, each once — as they
@@ -1926,6 +1950,7 @@ export interface EffectApi {
     link: string,
     thenCounters: FlickerCounters | undefined,
     underYourControl: boolean,
+    transformed: boolean,
   ): void;
   /** Grant flashback to `target` (an instant/sorcery card in a graveyard) for
    * the rest of the turn, at a flashback cost equal to its mana cost
@@ -1956,6 +1981,7 @@ export interface EffectApi {
     destination: "battlefield" | "hand",
     count: number | "all",
     enterTapped: boolean,
+    withCounters?: { readonly kind: string; readonly amount: number },
   ): void;
   /** `target` (a player) discards `amount` cards. */
   discardCards(target: TargetRef, amount: number): void;
@@ -2174,6 +2200,7 @@ export interface EffectApi {
     enterTapped: boolean,
     withCounters?: { readonly kind: string; readonly amount: number },
     exileIfItWouldLeave?: boolean,
+    transformed?: boolean,
   ): void;
   /** See the `"search-library"` {@link EffectSpec}. */
   searchLibrary(
@@ -2324,6 +2351,9 @@ export function amountValue(
     return ctx.colorsAmong(amount.colorsAmong, amount.excludeSelf === true ? [ctx.source] : []);
   }
   if ("cardTypesInGraveyard" in amount) return ctx.cardTypesInGraveyard(amount.cardTypesInGraveyard);
+  if ("damageDealtThisTurn" in amount) {
+    return ctx.damageDealtThisTurn(ctx.playersInScope(amount.who ?? "you"), amount.combat, amount.colors);
+  }
   if ("turnHistory" in amount) {
     return ctx.turnHistoryCount(amount.turnHistory, ctx.playersInScope(amount.who ?? "you"), amount.filter);
   }
@@ -2762,6 +2792,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
           spec.enterTapped === true,
           spec.withCounters,
           spec.exileIfItWouldLeave === true,
+          spec.transformed === true,
         );
       }
       return;
@@ -2796,12 +2827,18 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         ...(spec.underYourControl === true ? { underYourControl: true } : {}),
         ...(spec.returnAt !== undefined ? { returnAt: spec.returnAt } : {}),
         ...(spec.returnText !== undefined ? { returnText: spec.returnText } : {}),
+        ...(spec.transformed === true ? { transformed: true } : {}),
         ...(spec.target === "source" ? { fromSource: true } : {}),
       });
       return;
     }
     case "return-flickered":
-      ctx.returnFlickered(spec.link, spec.thenCounters, spec.underYourControl === true);
+      ctx.returnFlickered(
+        spec.link,
+        spec.thenCounters,
+        spec.underYourControl === true,
+        spec.transformed === true,
+      );
       return;
     case "grant-flashback": {
       const target = ctx.targets[spec.target];
@@ -2904,6 +2941,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         spec.destination,
         spec.count,
         spec.enterTapped ?? false,
+        spec.withCounters,
       );
       return;
     case "discard": {

@@ -526,6 +526,15 @@ function evalStaticCondition(
       }
       return true;
     }
+    case "damage-dealt-this-turn": {
+      const seats =
+        condition.who === undefined || condition.who === "you"
+          ? [you]
+          : condition.who === "opponent"
+            ? state.turnOrder.filter((p) => p !== you)
+            : state.turnOrder;
+      return damageDealtThisTurn(state, seats, condition.combat, condition.colors) >= condition.atLeast;
+    }
     case "turn-history": {
       const seats =
         condition.who === undefined || condition.who === "you"
@@ -639,6 +648,29 @@ export function turnStatOf(state: GameState, player: PlayerId, stat: TurnStat): 
     case "attacked":
       return seat.turnHistory?.attacked === true ? 1 : 0;
   }
+}
+
+/**
+ * How much damage sources `players` controlled dealt this turn — combat or
+ * noncombat only if `combat` says, and only from sources that were one of
+ * `colors` as they dealt it if that's given — the `damage-dealt-this-turn`
+ * condition and amount.
+ */
+export function damageDealtThisTurn(
+  state: GameState,
+  players: readonly PlayerId[],
+  combat: boolean | undefined,
+  colors: readonly Color[] | undefined,
+): number {
+  let n = 0;
+  for (const player of players) {
+    for (const dealt of state.players[player]?.turnHistory?.damageDealt ?? []) {
+      if (combat !== undefined && dealt.combat !== combat) continue;
+      if (colors !== undefined && !dealt.colors.some((c) => colors.includes(c))) continue;
+      n += dealt.amount;
+    }
+  }
+  return n;
 }
 
 /**

@@ -5,7 +5,9 @@
  * opponent or a permanent an opponent controls" — Torbran), "+2" (`plus`),
  * and prevention with a follow-up ("prevent that damage and each opponent
  * mills that many cards" — The Mindskinner; "prevent that damage and put
- * that many +1/+1 counters on it").
+ * that many +1/+1 counters on it"), and raising noncombat damage to this
+ * permanent's power ("…less than Ojer Axonil's power to an opponent, that
+ * source deals damage equal to Ojer Axonil's power instead").
  */
 
 import { describe, expect, it } from "vitest";
@@ -35,8 +37,35 @@ const NERIV = "Test Storm Heart";
 const TORBRAN = "Test Thane";
 const MINDSKINNER = "Test Mindskinner";
 const SPONGE = "Test Sponge";
+const OJER = "Test Deepest Might";
 
 const registry = createDefaultRegistry()
+  .register(
+    defineCard({
+      name: OJER,
+      manaCost: "{2}{R}{R}{R}",
+      colors: ["R"],
+      supertypes: ["legendary"],
+      types: ["creature"],
+      subtypes: ["God"],
+      power: 4,
+      toughness: 4,
+      text: OJER,
+      static: [
+        {
+          affects: { scope: "self" },
+          replacement: {
+            event: "would-deal-damage",
+            atLeast: "this-power",
+            combat: false,
+            source: { colors: ["R"], controlledBy: "you" },
+            to: "opponent",
+          },
+          text: OJER,
+        },
+      ],
+    }),
+  )
   .register(
     enchantment(NERIV, {
       event: "would-deal-damage",
@@ -85,13 +114,13 @@ const registry = createDefaultRegistry()
     }),
   );
 
-const setUp = () => {
+const setUp = (a = new ScriptedController(A)) => {
   const game = Game.create({
     seed: 1,
     shuffle: false,
     registry,
     rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
-    controllers: { [A]: new ScriptedController(A), [B]: new ScriptedController(B) },
+    controllers: { [A]: a, [B]: new ScriptedController(B) },
     decks: [
       { player: A, cards: Array<string>(40).fill("Island") },
       { player: B, cards: Array<string>(40).fill("Island") },
@@ -183,5 +212,35 @@ describe("prevention with a follow-up", () => {
     expect(game.state.objects[sponge].damageMarked).toBe(0);
     expect(game.state.objects[sponge].counters["+1/+1"]).toBe(3);
     expect(game.characteristics(sponge).power).toBe(5);
+  });
+});
+
+describe("raised to this permanent's power", () => {
+  it("Ojer Axonil: a red source's noncombat damage to an opponent is at least its power", () => {
+    const game = setUp();
+    game.debugSpawn(OJER, A, "battlefield");
+    const goblin = game.debugSpawn("Raging Goblin", A, "battlefield");
+    hit(game, goblin, B, 1);
+    expect(life(game, B)).toBe(16);
+    // More than its power stays as it is.
+    hit(game, goblin, B, 5);
+    expect(life(game, B)).toBe(11);
+    // Not damage to a creature, nor from a source that isn't red.
+    const theirs = game.debugSpawn("Hill Giant", B, "battlefield");
+    hit(game, goblin, theirs, 1);
+    expect(game.state.objects[theirs].damageMarked).toBe(1);
+    const bears = game.debugSpawn("Grizzly Bears", A, "battlefield");
+    hit(game, bears, B, 1);
+    expect(life(game, B)).toBe(10);
+  });
+
+  it("…and not combat damage", () => {
+    const a = new ScriptedController(A);
+    const game = setUp(a);
+    game.debugSpawn(OJER, A, "battlefield");
+    const goblin = game.debugSpawn("Raging Goblin", A, "battlefield");
+    a.declareAttackersFn = () => [{ attacker: goblin, defender: B }];
+    game.advanceUntil((s) => s.turn.step === "postcombat-main");
+    expect(life(game, B)).toBe(19);
   });
 });

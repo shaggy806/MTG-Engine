@@ -39,19 +39,24 @@ that one card is the reason the deck exists.
   Keen-Eyed Navigator and Goro-Goro and Satoru (the batched `deals-damage-batch` trigger);
   Sidisi, Brood Tyrant, Syr Konrad, the Grim and Disa the Restless (`put-into-graveyard`, and
   `leaves-graveyard`'s `perCard`); Kuja, Genome Sorcerer, The Mindskinner and Neriv, Heart of
-  the Storm (the scoped `would-deal-damage` replacement); Tymna the Weaver and Éowyn,
-  Shieldmaiden (`PlayerState.turnHistory` and the new turn stats — their gaps entries still
-  list `stat:turn-event-tallies`, whose part they need is built); Karlach, Fury of Avernus
-  (`additional-combat`'s `afterThisPhase` and the `turn-structure` condition).
+  the Storm (the scoped `would-deal-damage` replacement); Tymna the Weaver, Éowyn,
+  Shieldmaiden and The Mycotyrant (`PlayerState.turnHistory` and the new turn stats — "the
+  number of times you descended this turn" is `{ turnHistory: "descended" }`); Michelangelo,
+  the Heart (the same, plus `turn-structure` — check at `card:lookup` that its tally is one
+  `turnHistory` records); Karlach, Fury of Avernus (`additional-combat`'s `afterThisPhase` and
+  the `turn-structure` condition); Clive, Ifrit's Dominant (`flicker`'s `transformed`); Ojer
+  Axonil, Deepest Might (`put-onto-battlefield`'s `transformed`, `would-deal-damage`'s
+  `atLeast: "this-power"` with `combat: false`, and the `damage-dealt-this-turn` condition on
+  Temple of Power's transform ability).
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first
   ten, engine-only, with the commanders each fully unblocks:
-  `stat:turn-event-tallies` (+4), `effect:put-onto-battlefield-options` (+2),
   `effect:this-way-results` (+4), `effect:choices-by-other-players` (+4),
   `effect:missing-tokens` (+1), `effect:amount-aggregate` (+1),
   `effect:look-and-choose-leftover` (+1), `static:combat-restriction-extensions` (+3),
-  `mechanic:mdfc-transform` (+1), `condition:player-state-thresholds` (+1).
+  `mechanic:mdfc-transform` (+1), `condition:player-state-thresholds` (+1),
+  `condition:entry-provenance` (+3), `keyword:firebending` (+1).
 - **Most-needed features overall.** `effect:this-way-results` (18),
   `static:grant-to-cards-outside-battlefield` (14), `zone:visibility-extensions`,
   `static:grant-abilities-to-spells` and `bug:zone-change-object-identity` (13 each). Live
