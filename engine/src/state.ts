@@ -938,6 +938,11 @@ export interface TurnState {
   /** True when this turn was taken via an extra-turn effect (Time Warp) rather
    * than the normal rotation — ROADMAP Phase 7. */
   isExtra: boolean;
+  /** How many combat and main phases have begun this turn — the one under
+   * way included — for "if it's the first combat phase of the turn"
+   * (Karlach) and "your second main phase". Reset as each turn begins. */
+  combatPhases?: number;
+  mainPhases?: number;
 }
 
 export interface PriorityState {
@@ -1794,6 +1799,13 @@ export interface GameState {
    * and everything it parked have finished; absent between resolutions.
    */
   resolutionSince?: number;
+  /** Combat phases owed straight after the combat phase under way ("after
+   * this phase, there is an additional combat phase"), each maybe
+   * "followed by an additional main phase". Turn-scoped. */
+  combatsAfterThisCombat?: { readonly withMain: boolean }[];
+  /** Additional main phases owed after the postcombat main phase under way
+   * (a `withMain` combat's). Turn-scoped. */
+  extraMainPhases?: number;
   /** True while a Fog-style effect has prevented all combat damage this turn
    * (rule 614 replacement, but turn-scoped with no permanent to hang it on).
    * Set by the `prevent-all-combat-damage` effect, cleared at the start of the

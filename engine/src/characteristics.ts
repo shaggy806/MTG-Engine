@@ -44,6 +44,17 @@ import type { ObjectId, PlayerId } from "./primitives.js";
 import { permanentCount, printedCardName } from "./state.js";
 import type { GameObject, GameState, LastKnownInfo, PtModifier, TurnHistoryKind } from "./state.js";
 import type { TargetRef } from "./target.js";
+import { isMainPhase } from "./turn.js";
+import type { Step } from "./turn.js";
+
+/** The steps of a combat phase (rule 506.1). */
+const COMBAT_STEPS: ReadonlySet<Step> = new Set<Step>([
+  "begin-combat",
+  "declare-attackers",
+  "declare-blockers",
+  "combat-damage",
+  "end-combat",
+]);
 
 /**
  * Ids whose static `condition` is currently being evaluated. A condition that
@@ -496,6 +507,25 @@ function evalStaticCondition(
       return state.turnOrder.some(
         (p) => p !== you && state.players[p].lifeLostThisTurn > 0,
       );
+    case "turn-structure": {
+      const step = state.turn.step;
+      const inCombat = COMBAT_STEPS.has(step);
+      if (condition.steps !== undefined && !condition.steps.includes(step)) return false;
+      if (condition.duringCombat === true && !inCombat) return false;
+      if (
+        condition.combatPhase !== undefined &&
+        (!inCombat || (state.turn.combatPhases ?? 0) !== condition.combatPhase)
+      ) {
+        return false;
+      }
+      if (
+        condition.mainPhase !== undefined &&
+        (!isMainPhase(step) || (state.turn.mainPhases ?? 0) !== condition.mainPhase)
+      ) {
+        return false;
+      }
+      return true;
+    }
     case "turn-history": {
       const seats =
         condition.who === undefined || condition.who === "you"
@@ -1576,8 +1606,11 @@ function computeCharacteristicsUncached(
       } finally {
         cdaInProgress.delete(object.id);
       }
-      power = n + ability.setBasePtFromCount.plusPower;
-      toughness = n + ability.setBasePtFromCount.plusToughness;
+      // A CDA may define only one of the two, the other staying as printed
+      // (Eluge, the Shoreless Sea's "*/5").
+      const only = ability.setBasePtFromCount.only;
+      if (only !== "toughness") power = n + ability.setBasePtFromCount.plusPower;
+      if (only !== "power") toughness = n + ability.setBasePtFromCount.plusToughness;
     }
   }
   // Layer 7b — a "becomes a N/N" (man-land animation, Turn to Frog) and a

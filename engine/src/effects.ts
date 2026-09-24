@@ -1180,8 +1180,15 @@ export type EffectSpec =
   | {
       /** After this (post-combat) main phase there is an additional combat
        * phase then an additional main phase (Aggravated Assault — rule 500.8 /
-       * ROADMAP Phase 7). */
+       * ROADMAP Phase 7). With `afterThisPhase`, the additional combat phase
+       * comes **straight after the combat phase under way** instead
+       * (Karlach, Fury of Avernus; Anzrag: "after this phase, there is an
+       * additional combat phase"), and `withMain` adds "followed by an
+       * additional main phase" (Najeela, the Blade-Blossom) — one more main
+       * phase before the rest of the turn. */
       readonly kind: "additional-combat";
+      readonly afterThisPhase?: boolean;
+      readonly withMain?: boolean;
     }
   | {
       /** "You may play an additional land this turn" (Explore) — `amount`
@@ -2040,7 +2047,7 @@ export interface EffectApi {
   copySpell(target: TargetRef): void;
   /** Queue an additional combat + main phase after this main phase (Aggravated
    * Assault). */
-  additionalCombat(): void;
+  additionalCombat(afterThisPhase?: { readonly withMain: boolean }): void;
   /** See the `additional-land-drop` {@link EffectSpec}. */
   additionalLandDrops(amount: number): void;
   /** Untap every battlefield permanent matching `filter`. */
@@ -2993,7 +3000,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     }
     case "additional-combat":
-      ctx.additionalCombat();
+      ctx.additionalCombat(
+        spec.afterThisPhase === true ? { withMain: spec.withMain === true } : undefined,
+      );
       return;
     case "additional-land-drop":
       ctx.additionalLandDrops(spec.amount);

@@ -61,7 +61,10 @@
   "condition:filter-this-turn-history",
   "trigger:combat-damage-batch",
   "trigger:put-into-graveyard",
-  "replacement:damage-modification"
+  "replacement:damage-modification",
+  "bug:cda-all-zones",
+  "condition:turn-structure",
+  "effect:additional-combat-after-this-phase"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

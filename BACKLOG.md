@@ -41,16 +41,17 @@ that one card is the reason the deck exists.
   `leaves-graveyard`'s `perCard`); Kuja, Genome Sorcerer, The Mindskinner and Neriv, Heart of
   the Storm (the scoped `would-deal-damage` replacement); Tymna the Weaver and Éowyn,
   Shieldmaiden (`PlayerState.turnHistory` and the new turn stats — their gaps entries still
-  list `stat:turn-event-tallies`, whose part they need is built).
+  list `stat:turn-event-tallies`, whose part they need is built); Karlach, Fury of Avernus
+  (`additional-combat`'s `afterThisPhase` and the `turn-structure` condition).
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first
   ten, engine-only, with the commanders each fully unblocks:
+  `stat:turn-event-tallies` (+4), `effect:put-onto-battlefield-options` (+2),
   `effect:this-way-results` (+4), `effect:choices-by-other-players` (+4),
   `effect:missing-tokens` (+1), `effect:amount-aggregate` (+1),
-  `effect:look-and-choose-leftover` (+1), `effect:put-onto-battlefield-options` (+1),
-  `stat:turn-event-tallies` (+3), `bug:cda-all-zones` (+1), `condition:turn-structure` (+1),
-  `effect:additional-combat-after-this-phase` (+1).
+  `effect:look-and-choose-leftover` (+1), `static:combat-restriction-extensions` (+3),
+  `mechanic:mdfc-transform` (+1), `condition:player-state-thresholds` (+1).
 - **Most-needed features overall.** `effect:this-way-results` (18),
   `static:grant-to-cards-outside-battlefield` (14), `zone:visibility-extensions`,
   `static:grant-abilities-to-spells` and `bug:zone-change-object-identity` (13 each). Live

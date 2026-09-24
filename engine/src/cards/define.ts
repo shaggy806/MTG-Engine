@@ -19,6 +19,7 @@ import type { Color } from "../mana.js";
 import type { ReplacementSpec } from "../replacements.js";
 import type { PlayerCounterKind, TurnHistoryKind, ZoneType } from "../state.js";
 import type { TargetSpec } from "../target.js";
+import type { Step } from "../turn.js";
 
 export type CardType =
   | "land"
@@ -406,6 +407,21 @@ export type StaticCondition =
   /** A creature died this turn (Liliana's Devotee). Reads the turn-scoped
    * `GameState.creaturesDiedThisTurn`. */
   | { readonly kind: "creature-died-this-turn" }
+  /**
+   * Where the turn is — "activate only during combat" (`duringCombat`),
+   * "during your end step" (`steps: ["end"]` with a `your-turn` elsewhere),
+   * "if it's the **first combat phase** of the turn" (Karlach, Fury of
+   * Avernus: `combatPhase: 1`), "your **second main phase**" (`mainPhase:
+   * 2`). Every clause given has to hold. The phase counts include the one
+   * under way, extra combat and main phases counted in turn order.
+   */
+  | {
+      readonly kind: "turn-structure";
+      readonly steps?: readonly Step[];
+      readonly duringCombat?: boolean;
+      readonly combatPhase?: number;
+      readonly mainPhase?: number;
+    }
   /**
    * Something of a {@link TurnHistory} list happened this turn at least
    * `atLeast` times (default 1): "if another Human entered the battlefield
@@ -866,6 +882,10 @@ export interface StaticAbility {
     readonly countOf: CountSpec;
     readonly plusPower: number;
     readonly plusToughness: number;
+    /** A CDA that defines only its power (Eluge, the Shoreless Sea: a star
+     * over a printed 5 — "power is equal to the number of Islands you
+     * control") or only its toughness; the other stays as printed. */
+    readonly only?: "power" | "toughness";
   };
   /** Additional land drops per turn for this permanent's controller (rule
    * 305.2c-adjacent — needed-cards P16, Azusa, Lost but Seeking / Icetill Explorer).

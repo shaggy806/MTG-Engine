@@ -3064,6 +3064,10 @@ export class Game {
     }
     this.state.extraCombats = 0;
     this.state.spellsCastThisTurn = 0;
+    delete this.state.combatsAfterThisCombat;
+    delete this.state.extraMainPhases;
+    delete this.state.turn.combatPhases;
+    delete this.state.turn.mainPhases;
     // An extra turn (Time Warp — rule 500.7) is taken by the player at the
     // front of the queue instead of advancing the normal rotation.
     const extraFor = this.state.extraTurns.length > 0 ? this.state.extraTurns.shift() ?? null : null;
@@ -3122,6 +3126,10 @@ export class Game {
 
   private enterStep(step: Step): void {
     this.state.turn.step = step;
+    // Which combat or main phase of the turn this is (Karlach's "the first
+    // combat phase of the turn").
+    if (step === "begin-combat") this.state.turn.combatPhases = (this.state.turn.combatPhases ?? 0) + 1;
+    if (isMainPhase(step)) this.state.turn.mainPhases = (this.state.turn.mainPhases ?? 0) + 1;
     // Mana empties as each step and phase ends (rule 500.4), except units
     // whose source said otherwise — Savage Ventmaw's "you don't lose this
     // mana as steps and phases end". That permission is for the turn only, so
@@ -3248,6 +3256,24 @@ export class Game {
       };
       this.runCombatDamageSubPass();
       this.prepareForPriority(this.state.awaiting?.player ?? this.activePlayer);
+      return;
+    }
+    // "After this phase, there is an additional combat phase" (rule 500.8):
+    // straight after this one — and, "followed by an additional main phase",
+    // one more main phase once it's over.
+    const after = this.state.combatsAfterThisCombat;
+    if (this.state.turn.step === "end-combat" && after !== undefined && after.length > 0) {
+      const [next, ...rest] = after;
+      if (rest.length > 0) this.state.combatsAfterThisCombat = rest;
+      else delete this.state.combatsAfterThisCombat;
+      if (next.withMain) this.state.extraMainPhases = (this.state.extraMainPhases ?? 0) + 1;
+      this.emit({ type: "additional-combat-phase" });
+      this.enterStep("begin-combat");
+      return;
+    }
+    if (this.state.turn.step === "postcombat-main" && (this.state.extraMainPhases ?? 0) > 0) {
+      this.state.extraMainPhases = (this.state.extraMainPhases ?? 0) - 1;
+      this.enterStep("postcombat-main");
       return;
     }
     // Additional combat (Aggravated Assault — rule 500.8): when the postcombat
@@ -10349,8 +10375,9 @@ export class Game {
       storm: (sourceId) => this.stormCopy(sourceId),
       cascade: (player, sourceId) => this.cascade(player, sourceId),
       copySpell: (target) => this.copySpellByEffect(controller, target),
-      additionalCombat: () => {
-        this.state.extraCombats += 1;
+      additionalCombat: (afterThisPhase) => {
+        if (afterThisPhase === undefined) this.state.extraCombats += 1;
+        else (this.state.combatsAfterThisCombat ??= []).push({ withMain: afterThisPhase.withMain });
         this.emit({ type: "additional-combat-queued", player: controller });
       },
       additionalLandDrops: (amount) => {

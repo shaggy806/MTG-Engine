@@ -600,9 +600,20 @@ ability would have no way to name a token that didn't exist when it was set up.
 
 ### Turn structure / cast-triggered
 
-`take-extra-turn`, `additional-combat`, `additional-land-drop { amount }` (Explore's "You may
+`take-extra-turn`, `additional-combat { afterThisPhase?, withMain? }`, `additional-land-drop { amount }` (Explore's "You may
 play an additional land this turn"), `untap-all { filter, controlledByTarget? }`, `storm`,
 `cascade`, `copy-spell { target }`.
+
+`additional-combat` alone is Aggravated Assault's "after this main phase,
+there is an additional combat phase followed by an additional main phase":
+both come after the postcombat main phase. `afterThisPhase: true` puts the
+combat phase **straight after the combat phase under way** instead (Karlach,
+Fury of Avernus; Anzrag: "after this phase, there is an additional combat
+phase"), and `withMain: true` adds "followed by an additional main phase"
+(Najeela, the Blade-Blossom) — one more main phase before the rest of the
+turn. Use it from a combat trigger; the `turn-structure` condition's
+`combatPhase: 1` is "if it's the first combat phase of the turn", which is
+what stops Karlach's trigger adding a third.
 
 ### Format extras
 
@@ -1364,8 +1375,10 @@ anthem, the keyword grant and the granted trigger like any other creature.
   trigger and the stack object both carry — never shifts. The one-shot
   "gains '[trigger]' until end of turn" equivalent is the `grant-triggered`
   *effect* (§6).
-- `setBasePtFromCount: { countOf, plusPower, plusToughness }` — a layer-7b CDA
-  (`"self"` only). `countOf` is a `CountSpec`:
+- `setBasePtFromCount: { countOf, plusPower, plusToughness, only? }` — a layer-7b CDA
+  (`"self"` only). `only: "power"` defines just the power, the toughness
+  staying as printed (Eluge, the Shoreless Sea's "*/5"); `"toughness"` the
+  reverse. `countOf` is a `CountSpec`:
   - `{ countOf: CardFilter }` — battlefield permanents matching the filter, a
     token stack counting as every token in it. "The number of lands you
     control" (Beanstalk Giant, Lumra, Bellow of the Woods) is `{ countOf: {
@@ -1552,6 +1565,14 @@ clause (section 9):
 - `{ kind: "opponent-lost-life-this-turn" }` — Theater of Horrors. Reads the
   per-player `lostLifeThisTurn` flag, set in `changeLife` so it catches damage
   and drain alike.
+- `{ kind: "turn-structure", steps?, duringCombat?, combatPhase?, mainPhase? }`
+  — where the turn is: during one of `steps`, during a combat phase, during
+  the Nth combat phase of the turn (Karlach's "if it's the first combat phase
+  of the turn" is `combatPhase: 1`), or the Nth main phase ("your second main
+  phase" is `mainPhase: 2`, which is the first postcombat main unless an
+  additional one came before it). Every clause given has to hold; pair it
+  with `your-turn` for "your". The counts are `TurnState.combatPhases` /
+  `mainPhases`, the phase under way included.
 - `{ kind: "turn-history", what, who?, filter?, atLeast?, excludeSelf? }` —
   one of the `turnHistory` lists (§6) holds at least `atLeast` (default 1)
   this turn: Éowyn, Shieldmaiden's "if another Human entered the battlefield
