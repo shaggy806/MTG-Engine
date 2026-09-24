@@ -13,7 +13,7 @@ import type { CardType, Keyword, StaticAbility, StaticCondition, TurnStat } from
 import type { AggregateSpec, CardFilter } from "./filter.js";
 import type { Color, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
-import type { DelayedTriggerTiming, PlayerCounterKind } from "./state.js";
+import type { DelayedTriggerTiming, LeaveDestination, PlayerCounterKind } from "./state.js";
 import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
 
 /** `"trigger-object"` reads `ResolutionContext.triggerObject` (needed-cards
@@ -70,6 +70,26 @@ export interface FlickerCounters {
   readonly kind: string;
   readonly amount: number;
   readonly onlyIf?: CardFilter;
+}
+
+/**
+ * A `delayed-trigger` keyed to one permanent leaving the battlefield rather
+ * than to a step: "when **that creature** dies this turn" (Kelsien, the
+ * Plague), earthbend's "when **it** dies or is exiled". `leaves` is a target
+ * slot, `"source"` or `"trigger-object"`, and must name a permanent on the
+ * battlefield as the effect applies (otherwise there is nothing to watch, and
+ * no trigger is made). When it fires, that permanent — now wherever it went —
+ * is the ability's trigger object, so "return it to the battlefield" is
+ * `put-onto-battlefield` with `target: "trigger-object"`; the creating
+ * effect's targets still ride along by slot. See `DelayedLeaveWatch`.
+ */
+export interface DelayedLeaves {
+  readonly leaves: EffectTargetRef;
+  /** `["graveyard"]` is "dies", `["graveyard", "exile"]` "dies or is
+   * exiled". */
+  readonly to: readonly LeaveDestination[];
+  /** "…this turn". */
+  readonly thisTurn?: boolean;
 }
 
 /** How a `flicker` returns what it exiled — the non-target half of its
@@ -808,7 +828,9 @@ export type EffectSpec =
        * `"source"` still means the card that set it up.
        */
       readonly kind: "delayed-trigger";
-      readonly at: DelayedTriggerTiming;
+      /** A step ("at the beginning of the next end step"), or a permanent
+       * leaving the battlefield ("when it dies") — see {@link DelayedLeaves}. */
+      readonly at: DelayedTriggerTiming | DelayedLeaves;
       readonly effect: EffectSpec;
       /** Text for the log and the stack. */
       readonly text: string;
@@ -816,6 +838,23 @@ export type EffectSpec =
        * default, or the controller of a target slot (Arcane Denial hands its
        * "may draw two cards" to the player whose spell was countered). */
       readonly controller?: { readonly controllerOfTarget: number };
+    }
+  | {
+      /**
+       * Earthbend N, a keyword action: "Target land you control becomes a 0/0
+       * creature with haste that's still a land. Put N +1/+1 counters on it.
+       * When it dies or is exiled, return it to the battlefield tapped." —
+       * Toph, the First Metalbender's "at the beginning of your end step,
+       * earthbend 2". `target` is the land — a slot whose spec is a land you
+       * control, `"source"` or `"trigger-object"`. Permanent, not until end of
+       * turn: it stays a creature for as long as it stays on the battlefield.
+       * The return is a delayed triggered ability (rule 603.7), so it
+       * survives the land losing its abilities; it returns the card under its
+       * owner's control, and only from the graveyard or exile it went to.
+       */
+      readonly kind: "earthbend";
+      readonly target: EffectTargetRef;
+      readonly amount: EffectAmount;
     }
   | {
       /**
@@ -1746,7 +1785,13 @@ export interface EffectApi {
   /** Set up a delayed triggered ability — see the `"delayed-trigger"`
    * {@link EffectSpec}. `controller` is who will control it when it fires. */
   delayTrigger(
-    at: DelayedTriggerTiming,
+    at:
+      | DelayedTriggerTiming
+      | {
+          readonly leaves: ObjectId;
+          readonly to: readonly LeaveDestination[];
+          readonly thisTurn?: boolean;
+        },
     effect: EffectSpec,
     text: string,
     controller: PlayerId,
@@ -2078,6 +2123,13 @@ export interface ResolutionContext extends EffectApi {
    * `undefined` outside such a resolution — for `create-token-copy` with
    * `of: "trigger-object"` (Miirym). needed-cards P5b. */
   readonly triggerObject?: ObjectId;
+  /** The trigger object left the battlefield as the ability triggered (a
+   * dies trigger's "it") and has changed zones again since: a new object
+   * (rule 400.7), so an effect that acts on `"trigger-object"` — "return it
+   * to the battlefield" — finds nothing. Reading it ("its power") is
+   * last-known information and still works. See `LastKnownRefs
+   * .triggerObjectAfterLeaving`. */
+  readonly triggerObjectLost?: boolean;
   /** How many real, independent firings this resolution stands for — see
    * `GameObject.stackMultiplier`. `1` outside a scaled resolution. Only
    * `create-token` / `create-token-copy` read it (the only effect kinds
@@ -2226,6 +2278,11 @@ function resolveAmountRef(ref: AmountRef, ctx: ResolutionContext): TargetRef | u
   if (ref === "sacrificed") {
     return ctx.sacrificed === undefined ? undefined : { kind: "object", object: ctx.sacrificed };
   }
+  // A read: a trigger object that has moved on since is read as it last
+  // existed, which the context's lookups do (rule 608.2h).
+  if (ref === "trigger-object") {
+    return ctx.triggerObject === undefined ? undefined : { kind: "object", object: ctx.triggerObject };
+  }
   return resolveEffectTarget(ref, ctx);
 }
 
@@ -2237,7 +2294,7 @@ function resolveEffectTarget(
     return ctx.sourceLost === true ? undefined : { kind: "object", object: ctx.source };
   }
   if (ref === "trigger-object") {
-    return ctx.triggerObject !== undefined
+    return ctx.triggerObject !== undefined && ctx.triggerObjectLost !== true
       ? { kind: "object", object: ctx.triggerObject }
       : undefined;
   }
@@ -2643,7 +2700,56 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         if (who === undefined) return;
         controller = who;
       }
+      if (typeof spec.at === "object") {
+        // "When it dies": only a permanent can die, so there must be one to
+        // watch as this applies.
+        const watched = resolveEffectTarget(spec.at.leaves, ctx);
+        if (watched?.kind !== "object") return;
+        ctx.delayTrigger(
+          {
+            leaves: watched.object,
+            to: spec.at.to,
+            ...(spec.at.thisTurn === true ? { thisTurn: true } : {}),
+          },
+          spec.effect,
+          spec.text,
+          controller,
+        );
+        return;
+      }
       ctx.delayTrigger(spec.at, spec.effect, spec.text, controller);
+      return;
+    }
+    case "earthbend": {
+      // Earthbend N: "Target land you control becomes a 0/0 creature with
+      // haste that's still a land. Put N +1/+1 counters on it. When it dies
+      // or is exiled, return it to the battlefield tapped." The steps are
+      // applied in that order within one resolution, so the 0/0 never faces
+      // state-based actions before its counters arrive.
+      const target = spec.target;
+      applyEffectSpec(
+        {
+          kind: "animate",
+          target,
+          power: 0,
+          toughness: 0,
+          addTypes: ["creature"],
+          addSubtypes: [],
+          keywords: ["haste"],
+          duration: "permanent",
+        },
+        ctx,
+      );
+      applyEffectSpec({ kind: "add-counter", target, counter: "+1/+1", amount: spec.amount }, ctx);
+      applyEffectSpec(
+        {
+          kind: "delayed-trigger",
+          at: { leaves: target, to: ["graveyard", "exile"] },
+          effect: { kind: "put-onto-battlefield", target: "trigger-object", enterTapped: true },
+          text: "When it dies or is exiled, return it to the battlefield tapped.",
+        },
+        ctx,
+      );
       return;
     }
     case "sacrifice-target": {

@@ -25,16 +25,18 @@ that one card is the reason the deck exists.
   Calamity (`add-types`); Zoraline, Cosmos Caller (`may`'s `costLife`); Szarel, Genesis
   Shepherd (the sacrifice trigger's `filter`); Arahbo, Roar of the World, Ikra Shidiqi, the
   Usurper and Millicent, Restless Revenant (`otherOnly` on the attack and combat-damage
-  triggers, whose creature is the trigger object).
+  triggers, whose creature is the trigger object); Toph, the First Metalbender (`earthbend`);
+  Kelsien, the Plague (a delayed trigger keyed to a permanent dying — its gaps entry still
+  lists `effect:delayed-trigger-extensions`, whose leave-keyed part it needs is built).
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first
   ten, engine-only, with the commanders each fully unblocks:
-  `keyword:earthbend` (+1), `condition:filter-dynamic-compare` (+1),
-  `effect:amount-new-variants` (+1), `static:pt-per-amount` (+2), `effect:this-way-results`
-  (+3), `static:trigger-count-modifiers` (+3), `effect:amount-aggregate` (+1),
-  `effect:look-and-choose-leftover` (+1), `effect:put-onto-battlefield-options` (+1),
-  `effect:choices-by-other-players` (+3).
+  `condition:filter-dynamic-compare` (+1), `effect:amount-new-variants` (+1),
+  `static:pt-per-amount` (+2), `effect:this-way-results` (+3), `static:trigger-count-modifiers`
+  (+3), `effect:amount-aggregate` (+1), `effect:look-and-choose-leftover` (+1),
+  `effect:put-onto-battlefield-options` (+1), `effect:choices-by-other-players` (+3),
+  `trigger:put-into-graveyard` (+3).
 - **Most-needed features overall.** `effect:this-way-results` (18),
   `condition:filter-dynamic-compare` (16; what's left is an "N plus an amount" operand),
   `static:grant-to-cards-outside-battlefield` (14), `zone:visibility-extensions` (13). Live

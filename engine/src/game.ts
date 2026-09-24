@@ -172,6 +172,7 @@ import type {
   CombatDamageState,
   CommanderMoveOrigin,
   CommanderReplacementZone,
+  DelayedLeaveWatch,
   DelayedTrigger,
   DelayedTriggerTiming,
   GameObject,
@@ -180,6 +181,7 @@ import type {
   GrantedAbilityRef,
   LastKnownInfo,
   LastKnownRefs,
+  LeaveDestination,
   MulliganHandState,
   PendingTrigger,
   PlayerCounterKind,
@@ -1743,6 +1745,7 @@ export class Game {
     for (const trigger of this.state.delayedTriggers) {
       pinned.add(trigger.source);
       for (const t of trigger.targets) if (t?.kind === "object") pinned.add(t.object);
+      if (typeof trigger.at === "object") pinned.add(trigger.at.leaves);
     }
     for (const shield of this.state.preventionShields) {
       if (shield.target.kind === "object") pinned.add(shield.target.object);
@@ -3003,6 +3006,10 @@ export class Game {
     this.state.abilityResolutionsThisTurn = {};
     delete this.state.modesChosenThisTurn;
     this.state.preventionShields = [];
+    // "When that creature dies this turn" watches no longer.
+    this.state.delayedTriggers = this.state.delayedTriggers.filter(
+      (t) => typeof t.at !== "object" || t.at.thisTurn !== true,
+    );
     this.state.extraCombats = 0;
     this.state.spellsCastThisTurn = 0;
     // An extra turn (Time Warp — rule 500.7) is taken by the player at the
@@ -8420,6 +8427,10 @@ export class Game {
         }
       });
     }
+    // Delayed triggers waiting on this permanent leaving (earthbend's "when
+    // it dies or is exiled") belong to no permanent, so the scan above can't
+    // see them.
+    if (event.type === "permanent-left-battlefield") this.fireLeaveWatchers(event);
   }
 
   /** Has `object`'s `oncePerTurn` triggered ability `index` triggered yet
@@ -8519,6 +8530,7 @@ export class Game {
           ? (source.zoneChangeCount ?? 0)
           : undefined;
     let triggerStint: number | undefined;
+    let afterLeaving: number | undefined;
     if (triggerObject !== undefined) {
       const t = this.state.objects[triggerObject];
       if (t?.zone === "battlefield") {
@@ -8528,8 +8540,10 @@ export class Game {
         isLeaveEvent(event) &&
         event.object === triggerObject
       ) {
-        // The permanent whose leaving fired this, just snapshotted.
+        // The permanent whose leaving fired this, just snapshotted — and
+        // where it went, which is as far as "return it" follows it.
         triggerStint = t.lastKnown.zoneChangeCount;
+        afterLeaving = t.zoneChangeCount ?? 0;
       } else if (
         t?.lastKnown !== undefined &&
         t.zone !== "stack" &&
@@ -8577,6 +8591,7 @@ export class Game {
     return {
       ...(sourceStint !== undefined ? { source: sourceStint } : {}),
       ...(triggerStint !== undefined ? { triggerObject: triggerStint } : {}),
+      ...(afterLeaving !== undefined ? { triggerObjectAfterLeaving: afterLeaving } : {}),
       ...(recipient !== undefined ? { recipient } : {}),
       ...(player !== undefined ? { player } : {}),
     };
@@ -9238,8 +9253,19 @@ export class Game {
         "triggered",
         0,
         trigger.delayed.targets,
+        undefined,
+        trigger.triggerObject,
       );
       this.state.objects[id].delayedTrigger = trigger.delayed;
+      // A leave-keyed delayed trigger: which stint "it" was, and where it
+      // went. Its targets are where they were when the creating effect
+      // targeted them, as for a step-keyed one.
+      if (trigger.lastKnownRefs !== undefined) {
+        this.state.objects[id].lastKnownRefs = trigger.lastKnownRefs;
+      }
+      if (trigger.delayed.targetZones !== undefined) {
+        this.state.objects[id].targetZones = [...trigger.delayed.targetZones];
+      }
       this.emit({
         type: "ability-triggered",
         source: trigger.delayed.source,
@@ -9609,6 +9635,13 @@ export class Game {
       stackMultiplier,
       resolutionCount,
       ...(opts.sourceLost === true ? { sourceLost: true } : {}),
+      // A trigger object that left the battlefield as the ability triggered,
+      // and has changed zones again since, is a new object (rule 400.7).
+      ...(triggerObject !== undefined &&
+      refs.triggerObjectAfterLeaving !== undefined &&
+      this.state.objects[triggerObject]?.zoneChangeCount !== refs.triggerObjectAfterLeaving
+        ? { triggerObjectLost: true }
+        : {}),
       ...(opts.abilityKey !== undefined ? { abilityKey: opts.abilityKey } : {}),
       ...(refs.sacrificed !== undefined ? { sacrificed: refs.sacrificed.object } : {}),
       decisionPending: () => this.decisionOutstanding(),
@@ -12700,21 +12733,37 @@ export class Game {
 
   // --- delayed triggered abilities (rule 603.7) ------------------
 
-  /** Record a delayed triggered ability — see the `delayed-trigger` effect. */
+  /** Record a delayed triggered ability — see the `delayed-trigger` effect.
+   * A leave-keyed one watches the permanent's current battlefield stint, and
+   * isn't made at all for something that isn't on the battlefield. */
   private createDelayedTrigger(
     source: ObjectId,
     controller: PlayerId,
-    at: DelayedTriggerTiming,
+    at:
+      | DelayedTriggerTiming
+      | {
+          readonly leaves: ObjectId;
+          readonly to: readonly LeaveDestination[];
+          readonly thisTurn?: boolean;
+        },
     effect: EffectSpec,
     text: string,
     targets: ResolvedTargets,
     targetZones: readonly (ZoneType | null)[] = [],
   ): void {
+    let when: DelayedTriggerTiming | DelayedLeaveWatch;
+    if (typeof at === "object") {
+      const watched = this.state.objects[at.leaves];
+      if (watched?.zone !== "battlefield") return;
+      when = { ...at, to: [...at.to], stint: watched.zoneChangeCount ?? 0 };
+    } else {
+      when = at;
+    }
     const object = this.state.objects[source];
     this.state.delayedTriggers.push({
       id: `delayed-${this.state.nextObjectSeq++}`,
       controller,
-      at,
+      at: when,
       createdOnTurn: this.state.turn.number,
       createdDuringEndStep:
         this.state.turn.step === "end" || this.state.turn.step === "cleanup",
@@ -12741,6 +12790,8 @@ export class Game {
    * their own controller's turn.
    */
   private delayedTriggerFires(trigger: DelayedTrigger, step: Step): boolean {
+    // A leave-keyed trigger waits on its permanent, not on a step.
+    if (typeof trigger.at === "object") return false;
     const active = this.activePlayer;
     const laterTurn = this.state.turn.number > trigger.createdOnTurn;
     // This turn's end step still counts, unless the trigger was created
@@ -12809,6 +12860,40 @@ export class Game {
         type: "ability-triggered",
         source: trigger.source,
         controller: trigger.controller,
+      });
+    }
+  }
+
+  /**
+   * The leave-keyed delayed triggers watching the permanent `event` is about
+   * (see `DelayedLeaveWatch`): each is used up as that permanent leaves the
+   * battlefield, and fires — queued like any trigger, the permanent as its
+   * trigger object — if it left for one of the zones it watches. Called from
+   * `detectTriggers`, which a leave event reaches after the move.
+   */
+  private fireLeaveWatchers(event: Extract<GameEvent, { type: "permanent-left-battlefield" }>): void {
+    if (this.state.delayedTriggers.length === 0) return;
+    const object = this.state.objects[event.object];
+    const stint = object?.lastKnown?.zoneChangeCount;
+    if (object === undefined || stint === undefined) return;
+    const watching = this.state.delayedTriggers.filter(
+      (t) => typeof t.at === "object" && t.at.leaves === event.object && t.at.stint === stint,
+    );
+    if (watching.length === 0) return;
+    this.state.delayedTriggers = this.state.delayedTriggers.filter((t) => !watching.includes(t));
+    for (const trigger of watching) {
+      if (typeof trigger.at !== "object" || !trigger.at.to.includes(event.toZone)) continue;
+      this.state.pendingTriggers.push({
+        sourceObjectId: trigger.source,
+        cardName: trigger.sourceName,
+        abilityIndex: 0,
+        controller: trigger.controller,
+        triggerObject: event.object,
+        lastKnownRefs: {
+          triggerObject: stint,
+          triggerObjectAfterLeaving: object.zoneChangeCount ?? 0,
+        },
+        delayed: trigger,
       });
     }
   }

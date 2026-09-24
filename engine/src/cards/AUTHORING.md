@@ -439,7 +439,7 @@ target, so hexproof doesn't stop them.
 | `return-from-graveyard` | `filter`, `destination: "battlefield" \| "hand"`, `count: number \| "all"`, `enterTapped?` | Splendid Reclamation (from *your* graveyard; a `number` less than the match count raises a `choose-from-zone`) |
 | `search-library` … `reveal?` | — | "…, **reveal it**, …" (Enlightened Tutor, Mystical Tutor): shows the find to every player, rule 701.16. Off by default — a plain "search your library for a card" (Vampiric Tutor) reveals nothing, and the difference is printed on the cards. |
 | `put-on-library` | `target`, `position: "top" \| "bottom"` | Academy Ruins, Mortuary Mire — puts one **targeted** card on its owner's deck. Pair it with a `card-in-graveyard` target for the graveyard-recursion lands; unlike `return-from-graveyard` it is target-driven, so it reaches any graveyard. |
-| `delayed-trigger` | `at`, `effect`, `text`, `controller?` | Whip of Erebos's "exile it at the beginning of the next end step", Arcane Denial's upkeep draws. Rule 603.7 — see below. |
+| `delayed-trigger` | `at`, `effect`, `text`, `controller?` | Whip of Erebos's "exile it at the beginning of the next end step", Arcane Denial's upkeep draws; with `at: { leaves, to, thisTurn? }`, Kelsien, the Plague's "when that creature dies this turn". Rule 603.7 — see below. |
 | `reflexive-trigger` | `targets: TargetSpec[]`, `effect`, `text` | "**When you do**, …" — a reflexive triggered ability (rule 603.12): Terra, Herald of Hope's "you may pay {2}. When you do, return target creature card with power 3 or less from your graveyard to the battlefield tapped" is a `may` with `cost: "{2}"` and this as its `effect`. Applying it triggers an ability that goes on the stack once the creating spell or ability has finished resolving, choosing `targets` then — so it *can* target, unlike a `may`'s `then`, and players can respond to it. `effect` reads its own targets by slot; `"source"`, X (including an X paid for the `may`) and the triggering event are the creator's. With no legal target it's removed as it would go on the stack. Put it only where the action has certainly happened: a `may`'s `effect`, a `sacrifice-source`'s `then`. |
 | `counter` | `target` (a spell), `into?: "hand"` | Counterspell. A spell that can't be countered stays on the stack and resolves (`counter-failed`); a countered copy of a spell ceases to exist (rule 707.10c). `into: "hand"` is Remand's "if that spell is countered this way, put it into its owner's hand instead" — still a counter, so it does nothing to a spell that can't be countered, unlike `return-to-hand` with `from: "stack"`. |
 | `sacrifice-all-but` | `who`, `keep`, `filter` | "chooses up to N they control, then sacrifices the rest" (Archfiend of Depravity) — the inverse of `sacrifice`, which names how many to give up. Raised only when they're over the limit. |
@@ -476,6 +476,36 @@ the card that set it up. Neither has to still be around when it fires.
 `controller` (`{ controllerOfTarget: n }`) hands the ability to someone else —
 Arcane Denial's "**its controller** may draw up to two cards".
 
+**When a permanent leaves.** `at` can instead wait on one permanent leaving
+the battlefield — "when that creature dies this turn, you get an experience
+counter" (Kelsien, the Plague):
+
+```ts
+{
+  kind: "delayed-trigger",
+  at: { leaves: 0, to: ["graveyard"], thisTurn: true },
+  effect: { kind: "add-player-counters", counter: "experience", amount: 1 },
+  text: "When that creature dies this turn, you get an experience counter.",
+}
+```
+
+`leaves` is a slot, `"source"` or `"trigger-object"`, and has to be a
+permanent on the battlefield as the effect applies — otherwise nothing is set
+up. `to` lists the destinations that fire it (`["graveyard"]` is "dies",
+`["graveyard", "exile"]` "dies or is exiled"); `thisTurn` makes it lapse as the
+next turn begins. It watches that permanent's current stint only: it is used up
+the first time the permanent leaves for anywhere, so one bounced to hand and
+replayed is a new object it never fires for (rule 400.7). When it fires, the
+permanent is its trigger object, wherever it went — "return it to the
+battlefield" is `{ kind: "put-onto-battlefield", target: "trigger-object" }`
+(under its owner's control unless it says otherwise), and finds the card only
+in the zone it went to: exiled from the graveyard in response, it stays in
+exile. The same is true of every leave-triggered ability's "it" — undying's
+return included.
+
+Earthbend is built on this — use the `earthbend` effect rather than spelling
+it out (§ P/T, counters, keywords).
+
 For the common "create a token, then get rid of it at end of turn" shape, use
 `create-token` / `create-token-copy`'s `sacrificeAtEndStep` (Kiki-Jiki,
 Chandra, Acolyte of Flame) or `exileAtEndStep` (Miirym) instead — the delayed
@@ -492,6 +522,7 @@ ability would have no way to name a token that didn't exist when it was set up.
 | `grant-triggered` | `target`, `ability`, `duration` | "gains 'Whenever this creature deals combat damage to a player, draw that many cards'" (Hunter's Prowess, Hunter's Insight). Rides on the target's own modifiers, so `"end-of-turn"` expires with every other until-end-of-turn modifier. The ongoing equivalent is `StaticAbility.grantsTriggered` (§10). |
 | `grant-keyword-all` | `filter`, `keyword`, `duration`, `exceptSource?` | Overrun's trample. `exceptSource` is "**other** Spiders you control gain …" (Cosmic Spider-Man). Hits what matches as it resolves (rule 611.2c) — a creature arriving later doesn't gain it. |
 | `add-counter` | `target`, `counter` (string), `amount` | `counter: "+1/+1"` etc. |
+| `earthbend` | `target`, `amount` | Earthbend N — "target land you control becomes a 0/0 creature with haste that's still a land. Put N +1/+1 counters on it. When it dies or is exiled, return it to the battlefield tapped." (Toph, the First Metalbender's end-step earthbend 2 is a `step-begins` trigger with a land-you-control target slot and `{ kind: "earthbend", target: 0, amount: 2 }`). Permanent, not until end of turn. The return is a delayed trigger keyed to the land leaving (see *Delayed triggered abilities*), so it survives the land losing its abilities, returns it under its owner's control, and only from the graveyard or exile it went to. |
 | `add-counter-all` | `filter`, `counter`, `amount`, `exceptSource?` | the untargeted mass form (Loyal Guardian: "a +1/+1 counter on each creature you control"). Routes through `add-counter` per permanent, so Doubling Season still composes. `exceptSource` is "each **other** creature you control" (Finneas, Ace Archer). |
 | `populate` | — | Populate (rule 701.32): create a token copying a creature token you control (Rootborn Defenses). Copies the largest by power rather than asking — see §15 "Partial". |
 | `amass` | `amount`, `creatureType` | Amass N (rule 701.44). One effect rather than create-then-count, because "an Army you control" has to resolve to the **same** object each time — that's what makes repeated amassing grow one creature. Picks the first Army rather than asking; no precon makes two. |

@@ -637,6 +637,17 @@ export interface LastKnownInfo {
 export interface LastKnownRefs {
   readonly source?: number;
   readonly triggerObject?: number;
+  /**
+   * For a trigger fired by its triggering object *leaving* the battlefield (a
+   * dies trigger, a delayed "when it dies or is exiled"): that object's
+   * `zoneChangeCount` in the zone the event put it in. "Return it to the
+   * battlefield" follows it there and no further — a card that has moved
+   * again since (exiled from the graveyard in response) is a new object the
+   * ability can't find (rule 400.7). What `ResolutionContext
+   * .triggerObjectLost` is worked out from; reads of it ("its power") are
+   * last-known information and don't care.
+   */
+  readonly triggerObjectAfterLeaving?: number;
   /** "The sacrificed creature": the permanent sacrificed to pay the spell's
    * or ability's cost (Dina, Soul Steeper), or by a `sacrifice-source` step
    * before the effect reading it. */
@@ -1270,12 +1281,37 @@ export type DelayedTriggerTiming =
   | "your-next-end-step"
   | "your-next-main-phase";
 
+/** Where a permanent can go when it leaves the battlefield. */
+export type LeaveDestination = "graveyard" | "exile" | "hand" | "library" | "command";
+
+/**
+ * A delayed trigger keyed to one permanent leaving the battlefield rather
+ * than to a step (rule 603.7) — earthbend's "when it dies or is exiled,
+ * return it to the battlefield tapped", Kelsien, the Plague's "when that
+ * creature dies this turn". It fires the first time that permanent leaves
+ * for one of `to`, as a triggered ability whose trigger object is the
+ * permanent, and is gone once it leaves for anywhere: whatever comes back is
+ * a new object (rule 400.7) it never knew.
+ */
+export interface DelayedLeaveWatch {
+  readonly leaves: ObjectId;
+  /** The permanent's `zoneChangeCount` on the battlefield as the trigger was
+   * made — which stint of it this watches. */
+  readonly stint: number;
+  /** `["graveyard"]` is "dies"; `["graveyard", "exile"]` "dies or is
+   * exiled". */
+  readonly to: readonly LeaveDestination[];
+  /** "…this turn": it lapses as the next turn begins. */
+  readonly thisTurn?: boolean;
+}
+
 /**
  * A delayed triggered ability (rule 603.7): created by a resolving spell or
- * ability, waiting on one future step, then gone. It isn't an ability *of* any
- * permanent — it exists on its own here, which is exactly why `detectTriggers`
- * (a scan over battlefield permanents) can't see it and `enterStep` fires it
- * directly.
+ * ability, waiting on one future step — or on one permanent leaving the
+ * battlefield ({@link DelayedLeaveWatch}) — then gone. It isn't an ability
+ * *of* any permanent — it exists on its own here, which is exactly why
+ * `detectTriggers`' scan over battlefield permanents can't see it: `enterStep`
+ * fires the step-keyed ones directly, and a leave event checks the watchers.
  */
 export interface DelayedTrigger {
   readonly id: string;
@@ -1283,7 +1319,8 @@ export interface DelayedTrigger {
    * but not always — Arcane Denial's draw belongs to the countered spell's
    * controller. */
   readonly controller: PlayerId;
-  readonly at: DelayedTriggerTiming;
+  /** The step it waits for, or the permanent whose leaving it waits for. */
+  readonly at: DelayedTriggerTiming | DelayedLeaveWatch;
   /** The turn it was created on, so "the next end step" can't mean one the
    * game is already in. */
   readonly createdOnTurn: number;
