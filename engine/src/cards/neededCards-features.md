@@ -27,7 +27,7 @@ reference. This file is a priority list, not a how-to.
 
 ## The commander gap — the current authoring priority
 
-**72 of the 500 most-played commanders are implemented** (up from 12 on
+**93 of the 500 most-played commanders are implemented** (up from 12 on
 2026-09-21). Almost any real decklist someone imports still has its commander
 substituted, which replaces the one card the deck is built around.
 
@@ -39,8 +39,14 @@ The attachment and `anyOf` filter clauses (Dogmeat, Chishiro, Jhoira). A
 `reveal-top` effect (Thrasios). First and Nth *matching* spell or draw each
 turn (Xyris, Tuvasa). The mana spent to cast a spell (Prossh, The Emperor of
 Palamecia). A `counters-put` trigger (Shalai and Hallar, Hapatra). Dr.
-Madison Li and Magnus the Red needed nothing. The table below is still the
-snapshot's; `cmdrs:gaps` has the live numbers.
+Madison Li and Magnus the Red needed nothing. A 2026-09-24 batch took it
+on from 81 to 93: live-amount mana abilities and turn-stat amounts (Vivi
+Ornitier, Marwyn, Kydele), graveyard cast permissions (Muldrotha, Silas Renn,
+Emry), the zone a spell was cast from (Prosper), "other" counts and
+sum/max aggregates (Cosmic Spider-Man, Finneas), commander tax paid in life
+(Liesa), return-to-hand from any zone (Golbez) and command-zone abilities
+(Derevi). The table below is still the snapshot's; `cmdrs:gaps` has the live
+numbers.
 
 ### Why the pool missed them
 

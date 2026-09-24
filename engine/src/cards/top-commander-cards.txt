@@ -1,5 +1,5 @@
 Top 2000 Commander cards by EDHREC popularity (fetched 2026-09-13)
-519 already implemented / 1481 missing (marks refreshed 2026-09-24)
+524 already implemented / 1476 missing (marks refreshed 2026-09-24)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -600,7 +600,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   601  Arbor Elf                                {G}              Creature — Elf Druid
 [ ]   602  Scrawling Crawler                        {3}              Artifact Creature — Phyrexian Construct
 [ ]   603  Minamo, School at Water's Edge           {0}              Legendary Land
-[ ]   604  Emry, Lurker of the Loch                 {2}{U}           Legendary Creature — Merfolk Wizard
+[x]   604  Emry, Lurker of the Loch                 {2}{U}           Legendary Creature — Merfolk Wizard
 [ ]   605  Reprieve                                 {1}{W}           Instant
 [ ]   606  Realmwalker                              {2}{G}           Creature — Shapeshifter
 [ ]   607  Deathrite Shaman                         {B/G}            Creature — Elf Shaman
@@ -768,7 +768,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   770  Avacyn, Angel of Hope                    {5}{W}{W}{W}     Legendary Creature — Angel
 [ ]   771  Eladamri's Call                          {G}{W}           Instant
 [ ]   772  Noble Hierarch                           {G}              Creature — Human Druid
-[ ]   773  Reassembling Skeleton                    {1}{B}           Creature — Skeleton Warrior
+[x]   773  Reassembling Skeleton                    {1}{B}           Creature — Skeleton Warrior
 [ ]   774  Ferrous Lake                             {0}              Land
 [ ]   775  Ornithopter                              {0}              Artifact Creature — Thopter
 [ ]   776  Spinerock Knoll                          {0}              Land
@@ -1089,7 +1089,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1093  Ugin, the Ineffable                      {6}              Legendary Planeswalker — Ugin
 [x]  1094  Tranquil Cove                            {0}              Land
 [x]  1095  Cathartic Reunion                        {1}{R}           Sorcery
-[ ]  1096  Muldrotha, the Gravetide                 {3}{B}{G}{U}     Legendary Creature — Elemental Avatar
+[x]  1096  Muldrotha, the Gravetide                 {3}{B}{G}{U}     Legendary Creature — Elemental Avatar
 [ ]  1097  Not Dead After All                       {B}              Instant
 [ ]  1098  Genji Glove                              {5}              Artifact — Equipment
 [ ]  1099  Wall of Omens                            {1}{W}           Creature — Wall
@@ -1126,7 +1126,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1131  Lumra, Bellow of the Woods               {4}{G}{G}        Legendary Creature — Elemental Bear
 [ ]  1132  Well of Lost Dreams                      {4}              Artifact
 [ ]  1133  Secret Rendezvous                        {1}{W}{W}        Sorcery
-[ ]  1134  Vivi Ornitier                            {1}{U}{R}        Legendary Creature — Wizard
+[x]  1134  Vivi Ornitier                            {1}{U}{R}        Legendary Creature — Wizard
 [ ]  1135  Augur of Autumn                          {1}{G}{G}        Creature — Human Druid
 [ ]  1136  Deflecting Palm                          {R}{W}           Instant
 [ ]  1137  Spore Frog                               {G}              Creature — Frog
@@ -1188,7 +1188,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1193  Wheel of Misfortune                      {2}{R}           Sorcery
 [x]  1194  Dragon's Hoard                           {3}              Artifact
 [ ]  1195  Archon of Sun's Grace                    {2}{W}{W}        Creature — Archon
-[ ]  1196  Marwyn, the Nurturer                     {2}{G}           Legendary Creature — Elf Druid
+[x]  1196  Marwyn, the Nurturer                     {2}{G}           Legendary Creature — Elf Druid
 [ ]  1197  Thriving Bluff                           {0}              Land
 [ ]  1198  Expedite                                 {R}              Instant
 [ ]  1199  Homeward Path                            {0}              Land

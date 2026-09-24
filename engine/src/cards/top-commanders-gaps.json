@@ -15,7 +15,13 @@
   "bug:static-scope-computed-keywords",
   "bug:simultaneous-damage-batching",
   "stat:milled-this-turn",
-  "effect:flicker-generalized"
+  "effect:flicker-generalized",
+  "effect:amount-turn-stat",
+  "trigger:cast-or-play-origin-zone",
+  "condition:count-excluding-source",
+  "cost:commander-tax-as-life",
+  "effect:return-to-hand-extensions",
+  "zone:activated-ability-zones"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
@@ -136,7 +142,7 @@
   "bug:zone-change-object-identity": {
    "size": "medium",
    "ui": false,
-   "description": "Rule 400.7: an object that changes zones becomes a new object. Delayed triggers, 'return it' effects, trigger-object references and sources stop tracking a card that left and came back. put-onto-battlefield requires the card to still be in its expected zone, and an 'until the source leaves' exile does nothing if the source has already left (rule 610.3c)."
+   "description": "Rule 400.7: an object that changes zones becomes a new object. Delayed triggers, 'return it' effects, trigger-object references, targets in a graveyard, and battlefield-source identity still follow a card that left and came back; put-onto-battlefield still relies on the card being in its expected zone, and an 'until the source leaves' exile does nothing if the source has already left (rule 610.3c). Built so far: GameObject.zoneChangeCount (bumped by every moveObject) and sourceZoneChangeCount on an activated ability whose source stays in the command zone or graveyard (staysInZone), so its 'source' names nothing once the card has changed zones (Derevi, Reassembling Skeleton); a flicker source is tracked by timestamp on the battlefield."
   },
   "condition:cast-spell-targets": {
    "size": "medium",
@@ -356,7 +362,7 @@
   "effect:amount-aggregate": {
    "size": "small",
    "ui": false,
-   "description": "Sum and max aggregates over matching objects: total power or toughness of creatures you control (a token stack counts N times), the greatest power or mana value among a filter or an attack batch, and 'greater than each other creature's power'. Used in conditions, CDAs, P/T bonuses and cost reductions."
+   "description": "Aggregates in CDAs (a layer-7b base P/T set from a sum or max, e.g. Karn, Legacy Reforged) and in static P/T bonuses, a greatest value over an attack batch or any non-battlefield set, and a static ability's aggregate condition that counts its own source. Built so far: sum and max of power, toughness or mana value over filtered battlefield permanents (a token stack counts N times in a sum; 0 over nothing) as an EffectAmount, as the StaticConditions aggregate and source-greatest ('greater than each other creature's power', strict or not), and as a cost reduction (Ghalta's shape)."
   },
   "effect:amount-counters-on-object": {
    "size": "small",
@@ -516,7 +522,7 @@
   "effect:mana-ability-dynamic-amount": {
    "size": "medium",
    "ui": false,
-   "description": "Mana abilities whose output is a live amount (power, a count, devotion, or X chosen in any colour combination): manaSources and standaloneManaChoices size it without a resolution context and enumerate colour splits."
+   "description": "Choosing an arbitrary colour split by hand for a very large X (past 22 for two colours only all-of-one-type is offered; needs a client count picker), letting the player pick the colour of leftover floating mana when the auto-payer draws on such a source, and 'X mana of any one color' with a live X (a live any-color amount is planned as a free mix). Built so far: live-amount mana abilities (power, counts, devotion, turn stats) sized by manaSources/standaloneManaChoices through a resolution context; one compressed anyColorOf payer option for 'X in any combination of'; untapped once-a-turn {0} mana abilities as auto-payer sources, with the once-a-turn use recorded when a payment draws on them (Vivi Ornitier, Marwyn, Kydele)."
   },
   "effect:mana-ability-side-effects": {
    "size": "medium",
@@ -951,7 +957,7 @@
   "replacement:spell-exiled-as-it-resolves": {
    "size": "small",
    "ui": false,
-   "description": "Mark a specific spell so it is exiled instead of going to the graveyard as it resolves (cast through a permission, or chosen by a trigger), with optional follow-up handling."
+   "description": "A spell chosen by a trigger to be exiled as it resolves, with follow-up handling (Feather's return to hand). Built so far: a spell cast through a graveyard permission can be marked exile-instead-of-graveyard (castFromGraveyard.exileAfterwards, GameObject.exileIfWouldGoToGraveyard), which covers Kess, Dissident Mage's static."
   },
   "replacement:token-creation-additive": {
    "size": "medium",
@@ -1226,7 +1232,7 @@
   "zone:graveyard-cast-permissions": {
    "size": "medium",
    "ui": false,
-   "description": "Graveyard cast permissions: a one-shot 'you may play target card from your graveyard this turn', permissions that reach any player's graveyard, and a permission that adds an extra cost (pay 3 life), with a choice of grantor when several apply."
+   "description": "Permissions that reach any player's graveyard (Coram), and a one-shot permission to *play* a target card (lands included) rather than only cast it. Built so far: the one-shot 'you may cast target card from your graveyard this turn' on the card (Silas Renn, Emry; lost if the card leaves the graveyard, lapses at end of turn), Muldrotha's per-permanent-type allowances (a land played with the land drop, a multi-typed card spending one chosen type), a permission with an extra life cost (payLife), and a choice of grantor when several apply (LegalAction/cast-spell graveyardGrant)."
   },
   "zone:impulse-permission-options": {
    "size": "medium",
