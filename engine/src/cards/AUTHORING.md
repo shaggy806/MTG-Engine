@@ -217,7 +217,7 @@ from the same link.
 | `alternativeCost` | `{ mana, tapCreatures: { count, filter } }` | an alternative cost that replaces the mana cost *and* taps permanents (rule 601.2b — Sephara's "pay {W} and tap four untapped creatures you control with flying rather than pay this spell's mana cost"). Offered as a second `cast-spell` variant (`altCost: true`), the same shape `kicked`/`overload`/`free` use; the caster picks what it taps, as for `tapOthers`. |
 | `freeCastIf` | `{ condition: StaticCondition }` | a conditional free-cast permission printed on the spell itself (the CMM commander-precon cycle — Fierce Guardianship: "If you control a commander, you may cast this spell without paying its mana cost."). Unlike `overload`, targets/effect are completely unchanged — only the cost differs, and it's *in addition to* the normal cast, not instead of it. `legalActions` offers the card twice whenever the condition is currently met. |
 | `convoke` | `boolean` | **Convoke** (rule 702.51 — Chord of Calling, Hour of Reckoning). A pure payment-*method* choice made as the spell is cast (`Action.convoke: ConvokePayment[]`, each `{ creature, pays?: "generic" \| Color }` — omit `pays` and the engine puts the creature where it helps most; a token stack is named once per token) — tap untapped creatures instead of mana for part of the cost. A convoking creature can't also tap for mana. Doesn't change the printed cost, targets, or effect; not enumerated as a second `cast-spell` variant — the one `LegalAction` carries `convoke: { candidates, maxGeneric, proof, manaAffordable, maxCreatures, xProof?, copies? }` (every untapped creature the caster controls) instead. Convoke pays for `{X}` too (Chord of Calling): `xCost.maxX` counts the creatures that could convoke, the cast is checked at the X chosen, and `xProof` is a payment proved at that largest X — `convokeProofFor(offer, x)` trims it to any smaller one. |
-| `selfCostReduction` | `{ condition: StaticCondition, reduceGeneric }` | a reduction printed on the spell itself, gated on board state (rule 601.2f — Ferocious, Finale of Devastation: "if you control a creature with power 4 or greater, this spell costs {2} less"). Unlike a `StaticAbility.costModification` (a permanent reducing *other* spells) this is evaluated for the card being cast, from whatever zone — no permanent has to be on the battlefield granting it. `reduceGeneric` accepts a live count too (`{ countOf: CardFilter }` — Blasphemous Act: "{1} less for each creature on the battlefield", `{ type: "creature" }` with no `controlledBy` counts every player's) and an aggregate (`{ aggregate: "sum", of: "power", filter: { type: "creature", controlledBy: "you" } }` — Ghalta, Primal Hunger's "{X} less, where X is the total power of creatures you control"; clamped at 0). `condition` is mandatory; a reduction with no real "if" clause uses `{ kind: "controls", filter: {}, atLeast: 0 }` (trivially always true). needed-cards P10, P19. |
+| `selfCostReduction` | `{ condition: StaticCondition, reduceGeneric }` | a reduction printed on the spell itself, gated on board state (rule 601.2f — Ferocious, Finale of Devastation: "if you control a creature with power 4 or greater, this spell costs {2} less"). Unlike a `StaticAbility.costModification` (a permanent reducing *other* spells) this is evaluated for the card being cast, from whatever zone — no permanent has to be on the battlefield granting it. `reduceGeneric` accepts a live count too (`{ countOf: CardFilter }` — Blasphemous Act: "{1} less for each creature on the battlefield", `{ type: "creature" }` with no `controlledBy` counts every player's) and an aggregate (`{ aggregate: "sum", of: "power", filter: { type: "creature", controlledBy: "you" } }` — Ghalta, Primal Hunger's "{X} less, where X is the total power of creatures you control"; clamped at 0) and `{ playerCounters: "experience" }` (Mizzix of the Izmagnus's "{1} less for each experience counter you have"). `condition` is mandatory; a reduction with no real "if" clause uses `{ kind: "controls", filter: {}, atLeast: 0 }` (trivially always true). needed-cards P10, P19. |
 | `flashback` | `{ cost, payLife? }` | cast from graveyard, then exiled (rule 702.34). `payLife` is part of the cost (Deep Analysis's "Flashback—{1}{U}, Pay 3 life"), so it gates castability and is paid as the spell is cast. |
 | `foretell` | `{ cost }` | pay `{2}` to exile face-down, cast later for `cost` |
 | `escape` | `{ cost, exileCount }` | cast from graveyard + exile N other graveyard cards |
@@ -382,6 +382,9 @@ your opponents lost this turn as `who: "each-opponent"`; Aetherflux Reservoir's
 countered spells too),
 `{ playersWithTurnStat: TurnStat, who: PlayerScope }` (how many players in the
 scope have a nonzero total — "for each opponent who lost life this turn"),
+`{ playerCounters: "poison" | "experience", who?: PlayerScope }` (the counters
+of that kind the scope's players have, summed, default `"you"` — Ezuri, Claw
+of Progress's "where X is the number of experience counters you have"),
 `{ opponentsControllingFewer: CardFilter }` (Voice of Many — a comparison per
 player, which no single filter can express), and `{ product: [...] }`, which
 is how compound amounts compose without every other shape growing a
@@ -528,6 +531,10 @@ play an additional land this turn"), `untap-all { filter, controlledByTarget? }`
 ### Format extras
 
 `become-monarch { who? }`, `get-energy { amount, who? }`,
+`add-player-counters { counter: "poison" | "experience", amount, who?, target? }`
+("you get an experience counter"; Fynn, the Fangbearer's "that player gets two
+poison counters" is `who: "trigger-player"`; ten poison counters lose the game,
+rule 704.5c — energy keeps its own `get-energy`),
 `create-emblem { text, static? }`, `prevent-all-combat-damage` (Fog),
 `prevent-damage { target, amount, combatOnly? }` (Healing Salve).
 
@@ -1173,14 +1180,16 @@ anthem, the keyword grant and the granted trigger like any other creature.
 **Continuous-effect fields:**
 
 - `grantPt: [p, t]` — layer 7d P/T bonus.
-- `grantPtPerCount: { filter?, commanderCasts?, pt, excludeSelf? }` — a layer 7d bonus that
+- `grantPtPerCount: { filter?, commanderCasts?, playerCounters?, pt, excludeSelf? }` — a layer 7d bonus that
   *scales* with a live count (Skycat Sovereign's "+1/+1 for each **other**
   creature you control with flying"). Distinct from `setBasePtFromCount`,
   which is a CDA in layer 7b that *replaces* the printed P/T; this adds on
   top, so counters and other anthems stack with it normally. `commanderCasts:
   true` counts the times its controller has cast a commander from the command
   zone this game instead of a battlefield filter (Commander's Insignia), summed
-  across a Partner pair.
+  across a Partner pair; `playerCounters: "experience"` counts the counters of
+  that kind its controller has ("gets +1/+1 for each experience counter you
+  have" — Kalemne, Disciple of Iroas).
 - `noMaxHandSize: true` — "You have no maximum hand size" (Thought Vessel).
 - `doesntUntap: true` — "This artifact doesn't untap during your untap step"
   (Mana Vault, Basalt Monolith). Only its controller's own untap step.
@@ -1253,6 +1262,9 @@ anthem, the keyword grant and the granted trigger like any other creature.
     "in your graveyard".
   - `"cards-in-all-graveyards"` (Lord of Extinction), `"cards-in-your-hand"`
     (Psychosis Crawler).
+  - `{ playerCounters: "experience" }` — the counters of that kind its
+    controller has (Daxos the Returned's Spirit: "power and toughness are each
+    equal to the number of experience counters you have").
 
   It applies in every zone (rule 604.3), so the card has that size in a
   library, hand, graveyard or the command zone too; "you" is its controller,
@@ -1379,6 +1391,10 @@ clause (section 9):
   opponents control eight or more lands" — plural "opponents" sums, unlike
   `opponent-controls`'s singular "an opponent").
 - `{ kind: "your-turn" }`
+- `{ kind: "player-counters", counter, who: "you" | "opponent", atLeast }` —
+  a player has at least that many counters of a kind; `"opponent"` is *one*
+  opponent on their own. Corrupted ("as long as an opponent has three or more
+  poison counters") is `{ counter: "poison", who: "opponent", atLeast: 3 }`.
 - `{ kind: "threshold" }` — 7+ cards in your graveyard.
 - `{ kind: "metalcraft" }` — 3+ artifacts.
 - `{ kind: "opponent-lost-life-this-turn" }` — Theater of Horrors. Reads the

@@ -423,9 +423,15 @@ function ownedProliferateTargets(
   view: ControllerView,
   eligible: readonly TargetRef[],
 ): readonly TargetRef[] {
+  // A player's counters are theirs to want or not: yourself unless you're
+  // poisoned, an opponent only if they are.
+  const poisoned = (player: PlayerId): boolean =>
+    (view.state.players[player]?.counters.poison ?? 0) > 0;
   return eligible.filter((target) =>
     target.kind === "player"
       ? target.player === view.player
+        ? !poisoned(target.player)
+        : poisoned(target.player)
       : view.state.objects[target.object]?.controller === view.player,
   );
 }

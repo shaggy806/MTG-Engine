@@ -702,8 +702,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   /** The token stack whose "how many of these?" menu is open, if any. */
   const [stackMenu, setStackMenu] = useState<ObjectId | null>(null)
   // Proliferate picks are `TargetRef`s, not ids: rule 701.27 lets you choose
-  // players as well as permanents (energy counters are the only player-borne
-  // counter here, so the player half is usually empty).
+  // players as well as permanents (a player with energy, poison or experience
+  // counters).
   const [proliferatePicks, setProliferatePicks] = useState<readonly TargetRef[]>([])
   const [zoneView, setZoneView] = useState<{
     readonly title: string
@@ -2405,9 +2405,22 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     )
   } else if (mode === 'proliferate' && proliferateAction) {
     const players = proliferateAction.eligible.filter((t) => t.kind === 'player')
+    // A player's own counters are theirs to want, poison aside.
     const mine = proliferateAction.eligible.filter((t) =>
-      t.kind === 'player' ? t.player === seat : view.objects[t.object]?.controller === seat,
+      t.kind === 'player'
+        ? t.player === seat && (view.players[seat]?.counters.poison ?? 0) === 0
+        : view.objects[t.object]?.controller === seat,
     )
+    const counterKinds = (player: PlayerId): string => {
+      const info = view.players[player]
+      const kinds = [
+        ...(info !== undefined && info.energy > 0 ? ['energy'] : []),
+        ...Object.entries(info?.counters ?? {})
+          .filter(([, n]) => (n ?? 0) > 0)
+          .map(([kind]) => kind),
+      ]
+      return kinds.length > 0 ? kinds.join(', ') : 'counters'
+    }
     controls = (
       <div className="controls">
         <span>
@@ -2445,7 +2458,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
               }
             >
               {picked ? '✓ ' : ''}
-              {playerLabel(player)}&apos;s energy
+              {playerLabel(player)}&apos;s {counterKinds(player)}
             </button>
           )
         })}

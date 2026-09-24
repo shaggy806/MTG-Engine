@@ -10,23 +10,23 @@ When something lands, delete its line. When you find something new, add one.
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
-- **Ready to author, no engine work:** Ygra, Eater of All, Gev, Scaled Scorch and Maha, Its
+- **Ready to author, no engine work** (each needs `card:lookup` first, so they wait for a
+  session with Scryfall access): Ygra, Eater of All, Gev, Scaled Scorch and Maha, Its
   Feathers Night (ward, type grants, base P/T and other-permanent enters replacements are
-  built), Betor, Kin to All (player scopes are built; its
-  gaps entry still lists `effect:amount-aggregate`, whose condition form it needs is built),
-  Thalia and The Gitrog Monster, Quintorius, History Chaser and Zimone and Dina (a
-  `sequence` now waits for a decision one of its steps raises), and Leonardo, the Balance
-  (`may`'s `oncePerTurn`). All need `card:lookup` first, so they wait for a session with
-  Scryfall access.
+  built); Betor, Kin to All (player scopes are built; its gaps entry still lists
+  `effect:amount-aggregate`, whose condition form it needs is built); Thalia and The Gitrog
+  Monster, Quintorius, History Chaser and Zimone and Dina (a `sequence` waits for a decision
+  one of its steps raises); Leonardo, the Balance (`may`'s `oncePerTurn`); Fynn, the
+  Fangbearer, Atreus, Impulsive Son and Kratos, Stoic Father (poison and experience counters).
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first
   ten, engine-only, with the commanders each fully unblocks:
-  `mechanic:player-counters` (+3), `keyword:earthbend` (+1), `cost:ability-cost-modification`
-  (+1), `effect:created-tokens-gain-keyword-eot` (+1), `effect:reflexive-trigger` (+3),
+  `keyword:earthbend` (+1), `cost:ability-cost-modification` (+1),
+  `effect:created-tokens-gain-keyword-eot` (+1), `effect:reflexive-trigger` (+3),
   `cost:may-cost-non-mana` (+1), `effect:amount-aggregate` (+1),
   `effect:target-other-than-source` (+3), `effect:add-subtype` (+2),
-  `trigger:combat-trigger-extensions` (+3).
+  `trigger:combat-trigger-extensions` (+3), `trigger:sacrifice-filter` (+1).
 - **Most-needed features overall.** `effect:target-other-than-source` (19),
   `effect:this-way-results` (18), `condition:filter-dynamic-compare` (16; what's left is an
   "N plus an amount" operand), `static:grant-to-cards-outside-battlefield` (14). Live numbers
@@ -99,6 +99,10 @@ that one card is the reason the deck exists.
   "Sequencing" steps from "Re-run `bot:audit`" onward are still outstanding. See
   `docs/plans/bot-v3-search.md`.
 - **v2's Phase 7 feature list is superseded.** Don't build it. See `docs/plans/smarter-bots.md`.
+- **Poison is invisible to the evaluation.** `bot/features.ts` reads energy but not
+  `PlayerState.counters`, so a bot sees nothing coming until ten poison counters end the game,
+  and proliferate's search candidates ("mine", "everything", "nothing") never single out an
+  opponent's poison. The default proliferate answer (`ownedProliferateTargets`) does.
 
 ## Client / UI
 

@@ -7,7 +7,7 @@
 import type { CastVia } from "./actions.js";
 import type { ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
-import type { ZoneType } from "./state.js";
+import type { PlayerCounterKind, ZoneType } from "./state.js";
 import type { TargetRef } from "./target.js";
 import type { Phase, Step } from "./turn.js";
 
@@ -98,6 +98,16 @@ export type GameEvent =
       readonly player: PlayerId;
       readonly delta: number;
       readonly energy: number;
+    })
+  | (Base & {
+      /** A player's count of some other kind of counter changed (rule 122.1
+       * — poison, experience; see `PlayerState.counters`). `total` is how
+       * many they have now. */
+      readonly type: "player-counters-changed";
+      readonly player: PlayerId;
+      readonly counter: PlayerCounterKind;
+      readonly delta: number;
+      readonly total: number;
     })
   | (Base & {
       /** A player got an emblem (rule 114 — ROADMAP Phase 10). */

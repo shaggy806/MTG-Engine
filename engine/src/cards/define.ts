@@ -17,7 +17,7 @@ import type { EffectSpec, ModeOption, SpellResolver } from "../effects.js";
 import type { AggregateOf, AggregateSpec, CardFilter, NumCompare } from "../filter.js";
 import type { Color } from "../mana.js";
 import type { ReplacementSpec } from "../replacements.js";
-import type { ZoneType } from "../state.js";
+import type { PlayerCounterKind, ZoneType } from "../state.js";
 import type { TargetSpec } from "../target.js";
 
 export type CardType =
@@ -200,7 +200,11 @@ export type CountSpec =
   | { readonly countOf: CardFilter }
   /** Cards in **all** graveyards matching a filter — Mortivore's "creature
    * cards in all graveyards". `ownedBy: "you"` narrows it to your own. */
-  | { readonly countInGraveyard: CardFilter };
+  | { readonly countInGraveyard: CardFilter }
+  /** How many counters of a kind its controller has — "power and toughness
+   * are each equal to the number of experience counters you have" (Daxos the
+   * Returned's Spirit). Its owner's off the battlefield. */
+  | { readonly playerCounters: PlayerCounterKind };
 
 /**
  * A per-player running total the engine keeps for the current turn, readable
@@ -339,6 +343,17 @@ export type StaticCondition =
   | { readonly kind: "opponent-count"; readonly atLeast: number }
   /** It's your turn. */
   | { readonly kind: "your-turn" }
+  /**
+   * A player has at least `atLeast` counters of a kind (rule 122.1) — you,
+   * or *some one* opponent counted on their own: corrupted's "as long as an
+   * opponent has three or more poison counters". See `PlayerState.counters`.
+   */
+  | {
+      readonly kind: "player-counters";
+      readonly counter: PlayerCounterKind;
+      readonly who: "you" | "opponent";
+      readonly atLeast: number;
+    }
   /** Who is the monarch (rule 720): you, or any opponent (Queen Marchesa's
    * "if an opponent is the monarch"). False while nobody is. */
   | { readonly kind: "monarch"; readonly who: "you" | "opponent" }
@@ -547,11 +562,14 @@ export interface StaticAbility {
    * anthems stack with it normally. `excludeSelf` is what "other" means.
    */
   readonly grantPtPerCount?: {
-    /** What to count: battlefield permanents matching a filter, or the number
+    /** What to count: battlefield permanents matching a filter, the number
      * of times the controller has cast a commander from the command zone this
-     * game (Commander's Insignia). */
+     * game (Commander's Insignia), or the counters of a kind the controller
+     * has ("gets +1/+1 for each experience counter you have" — Kalemne,
+     * Disciple of Iroas). */
     readonly filter?: CardFilter;
     readonly commanderCasts?: boolean;
+    readonly playerCounters?: PlayerCounterKind;
     readonly pt: readonly [number, number];
     readonly excludeSelf?: boolean;
   };

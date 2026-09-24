@@ -330,6 +330,13 @@ function evalStaticCondition(
       return condition.who === "you"
         ? state.monarch === you
         : state.monarch !== null && state.monarch !== you;
+    case "player-counters": {
+      const has = (p: PlayerId): boolean =>
+        (state.players[p]?.counters[condition.counter] ?? 0) >= condition.atLeast;
+      return condition.who === "you"
+        ? has(you)
+        : state.turnOrder.some((p) => p !== you && state.players[p]?.hasLost !== true && has(p));
+    }
     case "hand-size": {
       const n = state.zones.perPlayer[you].hand.length;
       return (
@@ -896,6 +903,9 @@ function countValue(
         ),
       );
     }
+    if ("playerCounters" in spec) {
+      return state.players[controller]?.counters[spec.playerCounters] ?? 0;
+    }
     return allGraveyards().filter((id) =>
       matchesFilter(state, registry, id, spec.countInGraveyard, { you: controller }),
     ).length;
@@ -1191,7 +1201,9 @@ function collectStaticEffects(
               (total, casts) => total + casts,
               0,
             )
-          : filter === undefined
+          : per.playerCounters !== undefined
+            ? (state.players[source.controller]?.counters[per.playerCounters] ?? 0)
+            : filter === undefined
             ? 0
             : // Skipping the source before `matchesFilter` is what keeps
               // Skycat Sovereign ("each *other* creature with flying") from

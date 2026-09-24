@@ -13,7 +13,7 @@ import type { CardType, Keyword, StaticAbility, StaticCondition, TurnStat } from
 import type { AggregateSpec, CardFilter } from "./filter.js";
 import type { Color, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
-import type { DelayedTriggerTiming } from "./state.js";
+import type { DelayedTriggerTiming, PlayerCounterKind } from "./state.js";
 import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
 
 /** `"trigger-object"` reads `ResolutionContext.triggerObject` (needed-cards
@@ -204,7 +204,13 @@ export type EffectAmount =
    * turn — "for each opponent who lost life this turn". Counts players, not
    * the amount: an opponent who lost 10 counts once.
    */
-  | { readonly playersWithTurnStat: TurnStat; readonly who: PlayerScope };
+  | { readonly playersWithTurnStat: TurnStat; readonly who: PlayerScope }
+  /**
+   * How many counters of one kind the players `who` names have, summed —
+   * "where X is the number of **experience counters you have**" (Ezuri, Claw
+   * of Progress). `who` defaults to `"you"`. See `PlayerState.counters`.
+   */
+  | { readonly playerCounters: PlayerCounterKind; readonly who?: PlayerScope };
 
 /**
  * A ward cost (rule 702.21a) — "Ward {2}", "Ward—Pay 2 life.", "Ward—{2},
@@ -1196,6 +1202,21 @@ export type EffectSpec =
       readonly who?: PlayerScope;
     }
   | {
+      /**
+       * A player gets `amount` counters of a kind (rule 122.1) — "you get an
+       * experience counter" (Ezuri, Claw of Progress), "that player gets two
+       * poison counters" (Fynn, the Fangbearer: `who: "trigger-player"`). To
+       * the effect's controller by default, a `PlayerScope`, or the player in
+       * target slot `target`. Ten poison counters lose the game (rule
+       * 704.5c). Energy has its own `get-energy`.
+       */
+      readonly kind: "add-player-counters";
+      readonly counter: PlayerCounterKind;
+      readonly amount: EffectAmount;
+      readonly who?: PlayerScope;
+      readonly target?: number;
+    }
+  | {
       /** A player gets `amount` energy counters ({E} — rule 122 / ROADMAP
        * Phase 10). `who` defaults to the effect's controller. */
       readonly kind: "get-energy";
@@ -1895,6 +1916,12 @@ export interface EffectApi {
   becomeMonarch(who: PlayerScope | undefined): void;
   /** `who` gets `amount` energy counters (rule 122). */
   getEnergy(amount: number, who: PlayerScope | undefined): void;
+  /** `player` gets `amount` counters of `counter` — see the
+   * `"add-player-counters"` {@link EffectSpec}. */
+  addPlayerCounters(player: PlayerId, counter: PlayerCounterKind, amount: number): void;
+  /** How many counters of `counter` `player` has — see the `playerCounters`
+   * {@link EffectAmount}. */
+  playerCountersOf(player: PlayerId, counter: PlayerCounterKind): number;
   /** The effect's controller gets an emblem (rule 114). */
   createEmblem(text: string, staticAbility: StaticAbility | undefined): void;
   /** Prevent all combat damage this turn (Fog). */
@@ -2056,6 +2083,11 @@ export function amountValue(
     return ctx
       .playersInScope(amount.who ?? "you")
       .reduce((n, p) => n + ctx.turnStatOf(p, amount.turnStat), 0);
+  }
+  if ("playerCounters" in amount) {
+    return ctx
+      .playersInScope(amount.who ?? "you")
+      .reduce((n, p) => n + ctx.playerCountersOf(p, amount.playerCounters), 0);
   }
   if ("playersWithTurnStat" in amount) {
     return ctx
@@ -2753,6 +2785,18 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "get-energy":
       ctx.getEnergy(spec.amount, spec.who);
       return;
+    case "add-player-counters": {
+      const players =
+        spec.target !== undefined
+          ? scopedOrTargetedPlayers(spec.target, ctx).flatMap((ref) =>
+              ref.kind === "player" ? [ref.player] : [],
+            )
+          : ctx.playersInScope(spec.who ?? "you");
+      for (const player of players) {
+        ctx.addPlayerCounters(player, spec.counter, amountValue(spec.amount, ctx, player));
+      }
+      return;
+    }
     case "create-emblem":
       ctx.createEmblem(spec.text, spec.static);
       return;

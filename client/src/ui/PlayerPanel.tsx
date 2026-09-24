@@ -1,3 +1,4 @@
+import { POISON_LETHAL } from 'engine'
 import type { ManaPool, PlayerId, PublicPlayerInfo } from 'engine'
 import { playerLabel } from '../format.ts'
 import type { SeatClass } from '../format.ts'
@@ -73,6 +74,8 @@ export function PlayerPanel({
   onTargetClick,
 }: PlayerPanelProps) {
   const mana = manaString(info.manaPool)
+  const poison = info.counters.poison ?? 0
+  const experience = info.counters.experience ?? 0
   const classes = [
     'player-panel',
     seatClass,
@@ -161,9 +164,24 @@ export function PlayerPanel({
           <Symbols text={mana} />
         </div>
       ) : null}
-      {info.energy > 0 ? (
-        <div className="pp-energy" title="Energy counters ({E} — rule 122)">
-          ⚡ {info.energy}
+      {/* One row, however many kinds: a quadrant has no height to spare. */}
+      {info.energy > 0 || poison > 0 || experience > 0 ? (
+        <div className="pp-counters">
+          {info.energy > 0 ? (
+            <span className="pp-energy" title="Energy counters ({E} — rule 122)">
+              ⚡ {info.energy}
+            </span>
+          ) : null}
+          {poison > 0 ? (
+            <span className="pp-poison" title="Poison counters (ten lose the game — rule 704.5c)">
+              ☠ {poison}/{POISON_LETHAL}
+            </span>
+          ) : null}
+          {experience > 0 ? (
+            <span className="pp-experience" title="Experience counters (rule 122.1)">
+              ✦ {experience} experience
+            </span>
+          ) : null}
         </div>
       ) : null}
       {emblemTexts.length > 0 ? (

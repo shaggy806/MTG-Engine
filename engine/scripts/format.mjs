@@ -43,6 +43,8 @@ export const makeFormatter = (game) => {
         return `${e.player} becomes the monarch (${e.via})`;
       case "energy-changed":
         return `${e.player} ${e.delta >= 0 ? "+" : ""}${e.delta} energy (now ${e.energy})`;
+      case "player-counters-changed":
+        return `${e.player} ${e.delta >= 0 ? "+" : ""}${e.delta} ${e.counter} (now ${e.total})`;
       case "emblem-created":
         return `${e.player} gets an emblem — "${e.text}"`;
       case "card-on-adventure":

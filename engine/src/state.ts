@@ -729,6 +729,13 @@ export interface PendingTrigger {
   readonly delayed?: DelayedTrigger;
 }
 
+/** A kind of counter a player can have (rule 122.1), apart from energy — see
+ * `PlayerState.counters`. */
+export type PlayerCounterKind = "poison" | "experience";
+
+/** How many poison counters make a player lose (rule 704.5c). */
+export const POISON_LETHAL = 10;
+
 export interface PlayerState {
   readonly id: PlayerId;
   life: number;
@@ -819,8 +826,17 @@ export interface PlayerState {
   usedGraveyardThisTurn: boolean;
   /** Energy counters this player has (rule 122 / {E} — ROADMAP Phase 10). A
    * player resource, not tied to any permanent; spent by a `payEnergy` ability
-   * cost, gained by a `get-energy` effect. */
+   * cost, gained by a `get-energy` effect. Kept apart from `counters`, which
+   * came later, because the bots' evaluation reads it as a feature. */
   energy: number;
+  /**
+   * Every other kind of counter this player has (rule 122.1) — poison
+   * (ten or more lose the game, rule 704.5c) and experience. Given by an
+   * `add-player-counters` effect, read by the `playerCounters` amount, count
+   * and cost reduction and the `player-counters` condition, and grown by
+   * proliferate. A kind the player has none of is absent.
+   */
+  counters: Partial<Record<PlayerCounterKind, number>>;
   /**
    * Which printing of each card this player brought, keyed by card name — a
    * Scryfall reference in the same shapes {@link CardDefinition.art} accepts
@@ -1736,6 +1752,7 @@ export function createPlayerState(id: PlayerId, rules: GameRules): PlayerState {
     createdTokenThisTurn: false,
     usedGraveyardThisTurn: false,
     energy: 0,
+    counters: {},
     printings: {},
   };
 }

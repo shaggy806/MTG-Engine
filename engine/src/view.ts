@@ -21,6 +21,7 @@ import type {
   DecisionSource,
   GameResult,
   GameState,
+  PlayerCounterKind,
   PriorityState,
   TurnState,
   ZoneType,
@@ -50,6 +51,10 @@ export interface PublicPlayerInfo {
   readonly commanderCastCounts: Readonly<Record<string, number>>;
   /** Energy counters this player has ({E} — rule 122 / ROADMAP Phase 10). */
   readonly energy: number;
+  /** The other counters this player has — poison, experience (rule 122.1;
+   * see `PlayerState.counters`). A kind they have none of is absent. Ten
+   * poison counters lose the game (`POISON_LETHAL`). */
+  readonly counters: Readonly<Partial<Record<PlayerCounterKind, number>>>;
 }
 
 /** Combat damage one commander has dealt one player. */
@@ -423,6 +428,7 @@ function viewForUncached(
         }),
       commanderCastCounts: { ...playerState.commanderCastCounts },
       energy: playerState.energy,
+      counters: { ...playerState.counters },
     };
     graveyards[player] = [...zones.graveyard];
     visibleIds.push(...zones.graveyard);

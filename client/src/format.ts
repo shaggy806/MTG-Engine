@@ -92,6 +92,10 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${event.player} becomes the monarch (${event.via})`
     case 'energy-changed':
       return `${event.player} ${event.delta >= 0 ? '+' : ''}${event.delta} energy (now ${event.energy})`
+    case 'player-counters-changed':
+      return `${playerLabel(event.player)} ${event.delta >= 0 ? 'gets' : 'loses'} ${Math.abs(
+        event.delta,
+      )} ${event.counter} counter${Math.abs(event.delta) === 1 ? '' : 's'} (now ${event.total})`
     case 'emblem-created':
       return `${event.player} gets an emblem — "${event.text}"`
     case 'card-on-adventure':

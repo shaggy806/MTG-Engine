@@ -160,6 +160,7 @@ import type { ObjectId, PlayerId, Rng } from "./primitives.js";
 import { asObjectId, createRng, shuffle } from "./primitives.js";
 import {
   DEFAULT_RULES,
+  POISON_LETHAL,
   activePlayerOf,
   cloneGameState,
   createPlayerState,
@@ -181,6 +182,7 @@ import type {
   LastKnownRefs,
   MulliganHandState,
   PendingTrigger,
+  PlayerCounterKind,
   PreventionShield,
   PtModifier,
   TargetedBy,
@@ -9906,6 +9908,9 @@ export class Game {
           this.changeEnergy(p, amount);
         }
       },
+      addPlayerCounters: (player, counter, amount) =>
+        this.changePlayerCounters(player, counter, amount),
+      playerCountersOf: (player, counter) => this.state.players[player]?.counters[counter] ?? 0,
       createEmblem: (text, staticAbility) =>
         this.createEmblem(controller, text, staticAbility ?? null),
       preventAllCombatDamage: () => {
@@ -11379,6 +11384,9 @@ export class Game {
       if (sourceId === undefined) return 0;
       return this.state.objects[sourceId]?.counters[amount.countersOnSource] ?? 0;
     }
+    if ("playerCounters" in amount) {
+      return this.state.players[player]?.counters[amount.playerCounters] ?? 0;
+    }
     return this.state.zones.perPlayer[player].graveyard.filter((id) =>
       matchesFilter(this.state, this.registry, id, amount.cardsInGraveyard, { you: player }),
     ).length;
@@ -11651,12 +11659,9 @@ export class Game {
   /**
    * Everything that could be proliferated right now (rule 701.27a): every
    * battlefield permanent carrying at least one counter, in battlefield
-   * order, then every player holding energy counters.
-   *
-   * Energy is genuinely in scope — rule 122 makes it a counter a player has,
-   * and proliferate reaches those as well as permanents. It's the only
-   * player-borne counter this engine has (no poison), so the player half of
-   * the list is usually empty.
+   * order, then every player still in the game with a counter — energy,
+   * poison or experience (rule 122: those are counters a player has, and
+   * proliferate reaches them as well as permanents).
    */
   private proliferateTargets(): TargetRef[] {
     const out: TargetRef[] = [];
@@ -11667,7 +11672,11 @@ export class Game {
       }
     }
     for (const player of this.state.turnOrder) {
-      if (this.state.players[player].energy > 0) out.push({ kind: "player", player });
+      const ps = this.state.players[player];
+      if (ps.hasLost) continue;
+      if (ps.energy > 0 || Object.values(ps.counters).some((n) => (n ?? 0) > 0)) {
+        out.push({ kind: "player", player });
+      }
     }
     return out;
   }
@@ -11708,9 +11717,13 @@ export class Game {
 
     for (const target of chosen) {
       if (target.kind === "player") {
-        // Energy is the only counter a player can hold here; one more of the
-        // kind already there means one more energy.
-        this.changeEnergy(target.player, 1);
+        // One more of each kind the player already has.
+        const ps = this.state.players[target.player];
+        if (ps === undefined || ps.hasLost) continue;
+        if (ps.energy > 0) this.changeEnergy(target.player, 1);
+        for (const kind of Object.keys(ps.counters) as PlayerCounterKind[]) {
+          if ((ps.counters[kind] ?? 0) > 0) this.changePlayerCounters(target.player, kind, 1);
+        }
         continue;
       }
       const object = this.state.objects[target.object];
@@ -13420,6 +13433,20 @@ export class Game {
     }
   }
 
+  /** Give `player` `delta` more counters of `counter` (rule 122.1), or take
+   * some away when negative — see `PlayerState.counters`. A player who has
+   * left the game gets none. */
+  private changePlayerCounters(player: PlayerId, counter: PlayerCounterKind, delta: number): void {
+    const ps = this.state.players[player];
+    if (ps === undefined || ps.hasLost || delta === 0) return;
+    const before = ps.counters[counter] ?? 0;
+    const total = Math.max(0, before + delta);
+    if (total === before) return;
+    if (total === 0) delete ps.counters[counter];
+    else ps.counters[counter] = total;
+    this.emit({ type: "player-counters-changed", player, counter, delta: total - before, total });
+  }
+
   /** Add (or spend, when negative) energy counters for `player` — rule 122. */
   private changeEnergy(player: PlayerId, delta: number): void {
     if (delta === 0) return;
@@ -13483,6 +13510,8 @@ export class Game {
         let reason: string | null = null;
         if (playerState.life <= 0) {
           reason = "life total is 0 or less";
+        } else if ((playerState.counters.poison ?? 0) >= POISON_LETHAL) {
+          reason = `has ${POISON_LETHAL} or more poison counters`;
         } else if (playerState.attemptedDrawFromEmptyLibrary) {
           reason = "attempted to draw from an empty library";
         } else {

@@ -12,7 +12,7 @@
 import type { StaticCondition } from "./cards/define.js";
 import type { EffectSpec, SpellResolver } from "./effects.js";
 import type { GameEvent } from "./events.js";
-import type { ZoneType } from "./state.js";
+import type { PlayerCounterKind, ZoneType } from "./state.js";
 import type { AggregateSpec, CardFilter } from "./filter.js";
 import type { TargetSpec } from "./target.js";
 import type { Step } from "./turn.js";
@@ -183,6 +183,9 @@ export type CostReductionAmount =
   | { readonly countOf: CardFilter }
   | { readonly countersOnSource: string }
   | { readonly cardsInGraveyard: CardFilter }
+  /** One per counter of a kind its controller has — Mizzix of the Izmagnus's
+   * "{1} less to cast for each experience counter you have". */
+  | { readonly playerCounters: PlayerCounterKind }
   /** A sum or maximum over permanents — Ghalta, Primal Hunger's "costs {X}
    * less to cast, where X is the **total power** of creatures you control".
    * Clamped at 0. See `AggregateSpec`. */

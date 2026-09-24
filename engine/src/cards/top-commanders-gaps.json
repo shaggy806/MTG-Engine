@@ -43,7 +43,8 @@
   "trigger:leaves-graveyard",
   "static:combat-damage-by-toughness",
   "bug:sequence-suspends-on-decision",
-  "stat:per-ability-turn-counters"
+  "stat:per-ability-turn-counters",
+  "mechanic:player-counters"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
