@@ -945,6 +945,9 @@ const deckE = deck([
   ["Reaper King", 1],
   // Finality counters (exile-instead replacements).
   ["Admiral Brass, Unsinkable", 1],
+  // Kess: a once-a-turn instant/sorcery permission whose spell is exiled
+  // instead of reaching the graveyard.
+  ["Kess, Dissident Mage", 1],
   ["Plains", 5],
   ["Island", 5],
   ["Swamp", 5],

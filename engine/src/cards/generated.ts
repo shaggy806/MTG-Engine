@@ -425,6 +425,7 @@ import _poolKazanduRefuge from "./pool/kazandu-refuge.js";
 import _poolKazanduValley from "./pool/kazandu-valley.js";
 import _poolKazuulTyrantOfTheCliffs from "./pool/kazuul-tyrant-of-the-cliffs.js";
 import _poolKenrithTheReturnedKing from "./pool/kenrith-the-returned-king.js";
+import _poolKessDissidentMage from "./pool/kess-dissident-mage.js";
 import _poolKessigWolfRun from "./pool/kessig-wolf-run.js";
 import _poolKetriaTriome from "./pool/ketria-triome.js";
 import _poolKikiJikiMirrorBreaker from "./pool/kiki-jiki-mirror-breaker.js";
@@ -1395,6 +1396,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolKazanduValley,
   _poolKazuulTyrantOfTheCliffs,
   _poolKenrithTheReturnedKing,
+  _poolKessDissidentMage,
   _poolKessigWolfRun,
   _poolKetriaTriome,
   _poolKikiJikiMirrorBreaker,
