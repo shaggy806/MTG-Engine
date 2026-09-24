@@ -959,6 +959,14 @@ export interface CardDefinition {
    * to the graveyard like any other spell, because the shuffle is an
    * instruction the spell never got to carry out. */
   readonly shuffleIntoLibraryOnResolve: boolean;
+  /** "Counters remain on ~ as it moves to any zone other than a player's
+   * hand or library" (Skullbriar, the Walking Grave). A static ability that
+   * functions in every zone, so `moveObject` keeps `counters` across any move
+   * except one to a hand or library, including graveyard -> battlefield and
+   * command zone -> stack -> battlefield. Everything else rule 400.7 resets
+   * still resets. A permanent that has lost its abilities as it leaves the
+   * battlefield loses its counters as usual. `false` for normal cards. */
+  readonly countersPersistAcrossZones: boolean;
   /** True for a *transforming* double-faced card (rule 712.4 — ROADMAP Phase
    * 10b): it's only ever cast/played as its front face, and turns over in
    * place via a transform effect / a day-night change (werewolves) / an
@@ -1093,6 +1101,7 @@ interface CardDraft {
   commanderTaxAsLife?: boolean;
   exileOnResolve?: boolean;
   shuffleIntoLibraryOnResolve?: boolean;
+  countersPersistAcrossZones?: boolean;
   transform?: boolean;
   disturb?: { readonly cost: string };
   adventure?: boolean;
@@ -1161,6 +1170,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     commanderTaxAsLife: draft.commanderTaxAsLife ?? false,
     exileOnResolve: draft.exileOnResolve ?? false,
     shuffleIntoLibraryOnResolve: draft.shuffleIntoLibraryOnResolve ?? false,
+    countersPersistAcrossZones: draft.countersPersistAcrossZones ?? false,
     transform: draft.transform ?? false,
     disturb: draft.disturb ?? null,
     adventure: draft.adventure ?? false,

@@ -12478,6 +12478,16 @@ export class Game {
     // clears it. See `GameObject.putIntoGraveyardFromLibraryOnTurn`.
     object.putIntoGraveyardFromLibraryOnTurn =
       object.zone === "library" && to === "graveyard" ? this.state.turn.number : undefined;
+    // Skullbriar (`countersPersistAcrossZones`): its counters stay with it
+    // through any move except to a hand or library. Read before the reset
+    // below, off the object as it is now: a Clone copying Skullbriar has the
+    // ability as it leaves, and a Skullbriar that lost its abilities on the
+    // battlefield (Turn to Frog) doesn't, so its counters go as usual.
+    const keepCounters =
+      to !== "hand" &&
+      to !== "library" &&
+      this.registry.get(printedCardName(object)).countersPersistAcrossZones &&
+      !(object.zone === "battlefield" && hasLostAbilities(object));
     const from = this.zoneList(object.zone, object.owner);
     const index = from.indexOf(id);
     if (index >= 0) from.splice(index, 1);
@@ -12492,7 +12502,7 @@ export class Game {
     object.blockedBy = [];
     object.blocked = false;
     object.markedByDeathtouch = false;
-    object.counters = {};
+    if (!keepCounters) object.counters = {};
     object.modifiers = [];
     object.attachedTo = null;
     // A permanent that leaves the battlefield reverts to its owner's control
@@ -12555,7 +12565,8 @@ export class Game {
       this.state.timestampSeq += 1;
       object.timestamp = this.state.timestampSeq;
       // Replacement effects that apply as it enters (rule 614.1c) — tapped /
-      // enters-with-counters. `object.counters` was just reset above.
+      // enters-with-counters. `object.counters` was just reset above (unless
+      // it keeps them across zones, when these add to what it brought).
       const entering = this.entersBattlefieldReplacement(id);
       object.tapped = entering.tapped;
       for (const c of entering.counters) {
