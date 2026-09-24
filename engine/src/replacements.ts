@@ -24,14 +24,20 @@
  * damage-prevention shields (Healing Salve) live on `GameState.preventionShields`
  * rather than here (no permanent to hang them on, like Fog). Still not modeled:
  * multi-replacement ordering, damage *redirection* to a third object (Harm's Way).
+ *
+ * `others-enter-battlefield` is the external form of the enters-battlefield
+ * replacement: how *other* permanents enter (Giada's extra counters, Thalia's
+ * "enter tapped", The Wandering Minstrel's "enter untapped").
  */
 
 import type { StaticCondition } from "./cards/define.js";
+import type { EffectAmount } from "./effects.js";
 import type { CardFilter } from "./filter.js";
 
 /** A single replacement clause on a `StaticAbility`. Discriminated by `event`. */
 export type ReplacementSpec =
   | EntersBattlefieldReplacement
+  | OthersEnterReplacement
   | TokenMultiplierReplacement
   | CounterMultiplierReplacement
   | GraveyardExileReplacement
@@ -80,6 +86,58 @@ export interface EntersBattlefieldReplacement {
    * 10b). Daybound's conditional "if it's night" is handled by the engine,
    * not this flag. */
   readonly transformed?: boolean;
+}
+
+/**
+ * How *other* permanents enter (rule 614.1c) — the external counterpart of
+ * {@link EntersBattlefieldReplacement}, applied by `Game.moveObject` and the
+ * token minter to every permanent entering while this one is on the
+ * battlefield:
+ *   - "Each other Angel you control enters with an additional +1/+1 counter on
+ *     it for each Angel you already control" (Giada, Font of Hope);
+ *   - "Creatures and nonbasic lands your opponents control enter tapped"
+ *     (Thalia, Heretic Cathar);
+ *   - "Lands you control enter untapped" (The Wandering Minstrel, Spelunking).
+ *
+ * **Never applies to its own source**, "other" printed or not: a permanent's
+ * ability that affects a general set of permanents doesn't modify how that
+ * permanent itself enters (rule 614.12). Nor does it apply to anything
+ * entering *at the same time* as its source, which isn't on the battlefield
+ * yet (the Thalia / Minstrel / Metallic Mimic rulings) — the engine's
+ * simultaneous-entry batch (`Game.withEnterBatch`) is what says so.
+ */
+export interface OthersEnterReplacement {
+  readonly event: "others-enter-battlefield";
+  /** Which entering permanents it applies to, matched against each one as it
+   * would exist on the battlefield (rule 614.12) — its computed types, and the
+   * player it's entering under — from this permanent's controller's
+   * perspective: `controlledBy: "you"` is "you control", `"opponent"` is
+   * "your opponents control". */
+  readonly filter: CardFilter;
+  /** It enters tapped, whatever would otherwise untap it on the way in: a
+   * land that "enters tapped unless …" enters tapped even when the condition
+   * holds (the Thalia, Heretic Cathar ruling). */
+  readonly tapped?: boolean;
+  /**
+   * It enters untapped — beating every "enters tapped", its own ("this land
+   * enters tapped"), another permanent's (`tapped` above) and an effect's
+   * ("put it onto the battlefield tapped"). Rule 616.1 lets the entering
+   * permanent's controller order the replacements, so they can always apply
+   * this one last, and the card only reaches permanents its controller
+   * controls; a shock land isn't offered its life payment at all (the
+   * Wandering Minstrel and Spelunking rulings).
+   */
+  readonly untapped?: boolean;
+  /**
+   * It enters with this many additional counters of `kind`. `amount` is read
+   * as it enters, from this permanent's perspective (so `countOf` counts what
+   * *its* controller controls), and **never counts the permanent entering, or
+   * anything entering alongside it** — Giada's "for each Angel you already
+   * control". `"trigger-object"` in an amount names the entering permanent.
+   * A `would-add-counter` multiplier (Doubling Season) applies on top, as it
+   * does to any enters-with-counters.
+   */
+  readonly counters?: { readonly kind: string; readonly amount: EffectAmount };
 }
 
 /** "If one or more tokens would be created under your control, twice that many

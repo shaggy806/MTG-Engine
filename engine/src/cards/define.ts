@@ -509,8 +509,9 @@ export interface StaticAbility {
    * present and false, the static contributes nothing. Re-evaluated on every
    * characteristics read, so it's live. ROADMAP Phase 11 EG-3. */
   readonly condition?: StaticCondition;
-  /** A replacement effect (rule 614) — see `replacements.ts`. Phase 1a: only
-   * `enters-battlefield` self-replacements. */
+  /** A replacement effect (rule 614) — see `replacements.ts`. `affects` is
+   * irrelevant to one: each `ReplacementSpec` names what it reaches itself
+   * (`scope: "self"` is the convention). */
   readonly replacement?: ReplacementSpec;
   /** `[power, toughness]` bonus applied in layer 7d. */
   readonly grantPt?: readonly [number, number];

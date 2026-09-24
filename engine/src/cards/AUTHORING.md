@@ -1421,6 +1421,25 @@ clause (section 9):
   `mayPayLife: N` is a shock land (a `pay-life-for-untapped` decision, via the
   `shockLand` helper); `painIfUntapped: N` deals damage if it *did* end up
   entering untapped (Rockfall Vale).
+- `{ event: "others-enter-battlefield", filter, tapped?, untapped?,
+  counters?: { kind, amount } }` — how **other** permanents enter. `filter`
+  picks which, read from this permanent's controller's side against each one
+  as it will exist on the battlefield, including the player it's entering
+  under: Thalia, Heretic Cathar's "creatures and nonbasic lands your
+  opponents control enter tapped" is `{ controlledBy: "opponent", anyOf:
+  [{ type: "creature" }, { type: "land", notSupertype: "basic" }] }` with
+  `tapped: true`. `untapped: true` is "lands you control enter untapped" (The
+  Wandering Minstrel, Spelunking) and beats every enters-tapped — the land's
+  own, another permanent's `tapped`, an effect's "put it onto the battlefield
+  tapped" — and a shock land isn't asked for its life. `counters.amount` is an
+  `EffectAmount` read as the permanent enters, and never counts it or
+  anything entering beside it: Giada's "an additional +1/+1 counter on it for
+  each Angel you **already** control" is `{ countOf: { subtype: "Angel",
+  controlledBy: "you" } }`; a fixed "an additional +1/+1 counter" is `1`.
+  Leave "other" out of the filter: rule 614.12 already keeps a permanent's
+  replacement off itself, and off anything entering at the same time as it
+  (a token batch, a mass reanimation, a flicker's return, a tutor's finds are
+  each one simultaneous entry).
 - `{ event: "would-create-token", multiplier }` — Doubling Season.
 - `{ event: "would-add-counter", multiplier, counterKind?, filter? }` — Doubling
   Season. `filter` narrows which of your permanents it covers (Branching
@@ -1739,6 +1758,14 @@ Delete an entry in the same commit as the feature that retires it.
   was added for Cavern of Souls and friends — a land is played, not cast, so
   every one of them used to enter with no type named and its restricted mana
   could pay for nothing.)
+- **"As this enters" choices are made after the replacements are read.** A
+  Clone's copy choice (`copyOnEnter`) and a chosen creature type are asked
+  once the permanent is on the battlefield, so an `others-enter-battlefield`
+  replacement judges it as it was printed: a Clone copying an Angel doesn't
+  get Giada's counters, where rule 614.12 says it should. Metallic Mimic ("each
+  other creature you control **of the chosen type** enters with an additional
+  +1/+1 counter") is blocked on the same ordering, and on a filter for the
+  chosen type.
 - **Bestow** (rule 702.103 — Springheart Nantuko), **Eternalize** (rule
   702.129 — Fanatic of Rhonas), **retrace** (rule 702.83 — Six), **riot**
   (rule 702.152 — Rhythm of the Wild), **Hideaway** (rule 702.104 — Mosswort
@@ -1752,7 +1779,11 @@ Delete an entry in the same commit as the feature that retires it.
   other target creature card") still moves them one after another, so a
   leaves-the-battlefield trigger among them misses the ones moved before it —
   and of two permanents put onto the battlefield that way, only the first
-  sees the second enter.
+  sees the second enter, and the second is treated as entering after the
+  first by an `others-enter-battlefield` replacement (Giada counts the first
+  Angel). Mass entries — a token batch, `return-from-graveyard` of every
+  match, a flicker's return, a tutor's finds, an O-Ring's exiles coming back
+  — are one simultaneous entry (`Game.withEnterBatch`).
 
 - **"You may reveal a card from your hand"** on the reveal-land cycle is taken
   automatically rather than offered as a choice — see

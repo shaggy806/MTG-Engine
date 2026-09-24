@@ -291,6 +291,28 @@ const EMPTY_TRIGGERED_ENTRIES: readonly {
 
 const EMPTY_ID_SET: ReadonlySet<ObjectId> = new Set();
 
+/** How the effect moving a permanent onto the battlefield says it enters —
+ * read by the enters-battlefield replacements (rule 614.1c) as it does,
+ * rather than applied after the move, so a replacement can still override
+ * it (The Wandering Minstrel's "lands you control enter untapped" beats a
+ * "put it onto the battlefield tapped"). */
+interface EnterOptions {
+  /** "…onto the battlefield tapped". */
+  readonly tapped?: boolean;
+  /** "…under your control", when that isn't its owner. */
+  readonly under?: PlayerId;
+}
+
+/** Everything the enters-battlefield replacements decided about one entry
+ * (see `Game.entersBattlefieldReplacement`). */
+interface EnteringReplacement {
+  readonly tapped: boolean;
+  readonly transformed: boolean;
+  readonly counters: readonly { readonly kind: string; readonly amount: number }[];
+  readonly painIfUntapped: number;
+  readonly mayPayLife: number;
+}
+
 /**
  * What a condition about a spell's or ability's source is asked of once that
  * source has ceased to exist — a token, deleted after it left the
@@ -457,6 +479,17 @@ export class Game {
      * {@link snapshotLeaving}. */
     readonly snapshots: Map<ObjectId, LastKnownInfo>;
   } | null = null;
+
+  /** The permanents that have entered the battlefield so far in the one
+   * simultaneous event being carried out — a batch of tokens, a mass
+   * reanimation, a flicker's return, a tutor putting several lands onto the
+   * battlefield. None of them is on the battlefield yet as far as another
+   * one's entry is concerned: its `others-enter-battlefield` replacements
+   * don't apply to the rest, and it isn't one of the permanents "you already
+   * control" (rule 614.12 — the Giada / Thalia / Wandering Minstrel rulings).
+   * See {@link withEnterBatch}. Not game state: it only ever spans one
+   * synchronous call. */
+  private enterBatch: Set<ObjectId> | null = null;
 
   private constructor(
     state: GameState,
@@ -3306,8 +3339,9 @@ export class Game {
 
     // A split tutor (Cultivate) sends the first find to `destination` and the
     // rest to `restDestination`; with no `restDestination` they all go to the
-    // same place, which is every other tutor.
-    chosen.forEach((id, index) => {
+    // same place, which is every other tutor. Whatever goes onto the
+    // battlefield goes there at once.
+    this.withEnterBatch(() => chosen.forEach((id, index) => {
       // "Exile the top two, choose one of them" — the chosen cards don't
       // move at all, they just gain the impulse permission.
       if (awaiting.destination === "exile-playable") {
@@ -3324,12 +3358,11 @@ export class Game {
       // A tutor-to-top's find is put on top *after* the search's shuffle
       // (below) — moving it now would only have it shuffled back in.
       if (to === "library-top") return;
-      this.moveObject(id, to);
+      this.moveObject(id, to, { tapped: awaiting.enterTapped === true });
       if (to === "battlefield") {
-        if (awaiting.enterTapped) this.state.objects[id].tapped = true;
         this.emit({ type: "permanent-entered-battlefield", object: id });
       }
-    });
+    }));
 
     if (awaiting.leftover === "bottom-random") {
       // `moveObject` always appends to a zone's array, and the library's
@@ -8333,6 +8366,25 @@ export class Game {
   }
 
   /**
+   * Carry out `fn` as one simultaneous entry onto the battlefield: every
+   * permanent it puts there enters at the same time as the others, so none
+   * of them is "already" on the battlefield for another's entry (see
+   * {@link enterBatch}). The engine moves them one at a time; without this a
+   * second Angel returned beside Giada would get Giada's counters, and count
+   * the first as an Angel you already control. Nested calls join the outer
+   * batch.
+   */
+  private withEnterBatch<T>(fn: () => T): T {
+    if (this.enterBatch !== null) return fn();
+    this.enterBatch = new Set();
+    try {
+      return fn();
+    } finally {
+      this.enterBatch = null;
+    }
+  }
+
+  /**
    * Which of a declaration's attackers count toward a batched attack trigger.
    *
    * Shared by the match and the count so the two can't disagree — a trigger
@@ -9336,14 +9388,17 @@ export class Game {
       returnExiledBySource: () => {
         // A token exiled this way ceased to exist (rule 111.7) and never
         // comes back; anything that moved on from exile in the meantime is
-        // no longer linked, because `moveObject` cleared the mark.
-        for (const id of [...this.state.zones.shared.exile]) {
-          const object = this.state.objects[id];
-          if (object?.exiledBy !== source || object.isToken) continue;
-          object.exiledBy = undefined;
-          this.moveObject(id, "battlefield");
-          this.emit({ type: "permanent-entered-battlefield", object: id });
-        }
+        // no longer linked, because `moveObject` cleared the mark. They all
+        // return at once.
+        this.withEnterBatch(() => {
+          for (const id of [...this.state.zones.shared.exile]) {
+            const object = this.state.objects[id];
+            if (object?.exiledBy !== source || object.isToken) continue;
+            object.exiledBy = undefined;
+            this.moveObject(id, "battlefield");
+            this.emit({ type: "permanent-entered-battlefield", object: id });
+          }
+        });
       },
       putOntoBattlefield: (target, underYourControl, enterTapped, withCounters, exileIfLeaves) =>
         this.putOntoBattlefieldByEffect(
@@ -10668,7 +10723,9 @@ export class Game {
     if (total <= 0) return;
     this.state.players[controller].createdTokenThisTurn = true;
     const printedName = copyOf ?? cardName;
-    const mintIndividually = (): void => {
+    // The whole batch enters at once — one simultaneous entry, however many
+    // objects it takes (see `withEnterBatch`).
+    const mintIndividually = (): void => this.withEnterBatch(() => {
       for (let i = 0; i < Math.min(total, Game.MAX_EFFECT_INSTANCES); i += 1) {
         const id = this.mintFreshTokenObject(
           controller,
@@ -10684,7 +10741,7 @@ export class Game {
         if (copied) this.emit({ type: "permanent-copied", object: id, copyOf: printedName });
         this.emit({ type: "permanent-entered-battlefield", object: id });
       }
-    };
+    });
     // Tokens that enter *tapped* are never stacked: `findMergeableStack` has
     // no notion of tapped-ness, so they'd fold into an untapped stack and come
     // out untapped. Thirteen real objects (Army of the Damned) is well inside
@@ -10790,11 +10847,12 @@ export class Game {
       ...(exileAtEndStep ? { exileAtEndStep: true } : {}),
       ...(notLegendary ? { notLegendary: true } : {}),
     };
-    const entering = this.entersBattlefieldReplacement(id);
-    // Either source of "enters tapped" is enough: the token's own replacement
+    // Either source of "enters tapped" is enough — the token's own replacement
     // (a Treasure-like) or the effect that created it ("create thirteen
-    // **tapped** Zombie tokens").
-    this.state.objects[id].tapped = entering.tapped || tapped;
+    // **tapped** Zombie tokens") — short of a replacement that has it enter
+    // untapped instead.
+    const entering = this.entersBattlefieldReplacement(id, { tapped });
+    this.state.objects[id].tapped = entering.tapped;
     for (const c of entering.counters) {
       this.state.objects[id].counters[c.kind] =
         (this.state.objects[id].counters[c.kind] ?? 0) + c.amount;
@@ -11886,7 +11944,10 @@ export class Game {
     // Only from a zone a card can be reanimated out of; a permanent already
     // on the battlefield isn't put onto it again.
     if (object === undefined || object.zone === "battlefield") return;
-    this.moveObject(target.object, "battlefield");
+    this.moveObject(target.object, "battlefield", {
+      tapped: enterTapped,
+      ...(underYourControl ? { under: controller } : {}),
+    });
     const entered = this.state.objects[target.object];
     if (entered === undefined || entered.zone !== "battlefield") return;
     if (underYourControl && entered.controller !== controller) {
@@ -11896,7 +11957,6 @@ export class Game {
       this.gainControlByEffect(controller, { kind: "object", object: target.object }, false);
       entered.summoningSick = true;
     }
-    if (enterTapped) entered.tapped = true;
     // Set after the move, which clears it: this is the permanent it follows.
     if (exileIfItWouldLeave) entered.exileIfItWouldLeave = true;
     if (withCounters !== undefined) {
@@ -12069,24 +12129,26 @@ export class Game {
     returnUnder?: PlayerId,
   ): void {
     const entered: ObjectId[] = [];
-    for (const id of ids) {
-      // Rule 400.7: the object returning to the battlefield is brand new, so
-      // nothing that was attached to the *old* object stays attached — unlike
-      // an ordinary exile, `id` comes straight back here before a state-based
-      // action ever gets a chance to notice it left, so its old attachments
-      // won't have fallen off on their own (704.5n).
-      this.detachFrom(id);
-      this.moveObject(id, "battlefield");
-      const object = this.state.objects[id];
-      if (object?.zone !== "battlefield") continue;
-      if (returnUnder !== undefined && object.controller !== returnUnder) {
-        // Layer 2 is recomputed every SBA pass, so this goes through the
-        // control-effect path, as `putOntoBattlefieldByEffect` does.
-        this.gainControlByEffect(returnUnder, { kind: "object", object: id }, false);
-        object.summoningSick = true;
+    this.withEnterBatch(() => {
+      for (const id of ids) {
+        // Rule 400.7: the object returning to the battlefield is brand new, so
+        // nothing that was attached to the *old* object stays attached — unlike
+        // an ordinary exile, `id` comes straight back here before a state-based
+        // action ever gets a chance to notice it left, so its old attachments
+        // won't have fallen off on their own (704.5n).
+        this.detachFrom(id);
+        this.moveObject(id, "battlefield", returnUnder !== undefined ? { under: returnUnder } : {});
+        const object = this.state.objects[id];
+        if (object?.zone !== "battlefield") continue;
+        if (returnUnder !== undefined && object.controller !== returnUnder) {
+          // Layer 2 is recomputed every SBA pass, so this goes through the
+          // control-effect path, as `putOntoBattlefieldByEffect` does.
+          this.gainControlByEffect(returnUnder, { kind: "object", object: id }, false);
+          object.summoningSick = true;
+        }
+        entered.push(id);
       }
-      entered.push(id);
-    }
+    });
     // Announced once every one of them is back: they return simultaneously,
     // so each one's enters triggers see the others (rule 603.6a).
     for (const id of entered) {
@@ -12645,13 +12707,15 @@ export class Game {
     );
     if (eligible.length === 0) return;
     if (count === "all" || eligible.length <= count) {
-      for (const id of eligible) {
-        this.moveObject(id, destination);
-        if (destination === "battlefield") {
-          if (enterTapped) this.state.objects[id].tapped = true;
-          this.emit({ type: "permanent-entered-battlefield", object: id });
+      // All at once: one simultaneous entry.
+      this.withEnterBatch(() => {
+        for (const id of eligible) {
+          this.moveObject(id, destination, { tapped: enterTapped });
+          if (destination === "battlefield") {
+            this.emit({ type: "permanent-entered-battlefield", object: id });
+          }
         }
-      }
+      });
       return;
     }
     this.state.awaiting = {
@@ -13485,23 +13549,51 @@ export class Game {
    * The `enters-battlefield` replacements (rule 614.1c) that apply to `id` as
    * it enters — the entering card's own self-replacements ("~ enters tapped",
    * "~ enters with N +1/+1 counters"; `amount: "x"` reads the `{X}` chosen when
-   * it was cast), with any `would-add-counter` multiplier (Doubling Season)
-   * folded into the counter amounts.
+   * it was cast), then every other permanent's `others-enter-battlefield`
+   * replacement that reaches it (Giada's counters, Thalia's "enter tapped",
+   * The Wandering Minstrel's "enter untapped"), with any `would-add-counter`
+   * multiplier (Doubling Season) folded into the counter amounts.
+   *
+   * `enter.tapped` is the effect's own "put it onto the battlefield tapped".
+   * `enter.under` is the player it's entering under when that isn't its owner
+   * (a reanimation "under your control"): the permanent is judged as it will
+   * exist on the battlefield (rule 614.12), controller included, although the
+   * control effect that keeps it there is only created after the move — so
+   * the controller is set for the length of this read and put back.
+   *
+   * Also records `id` in the current {@link enterBatch}: whatever enters after
+   * it in the same event doesn't see it as already here.
    */
-  private entersBattlefieldReplacement(id: ObjectId): {
-    tapped: boolean;
-    transformed: boolean;
-    counters: { kind: string; amount: number }[];
-    painIfUntapped: number;
-    mayPayLife: number;
-  } {
+  private entersBattlefieldReplacement(id: ObjectId, enter: EnterOptions = {}): EnteringReplacement {
+    const object = this.state.objects[id];
+    const controller = object.controller;
+    if (enter.under !== undefined) object.controller = enter.under;
+    try {
+      return this.enteringReplacementOf(id, enter.tapped === true);
+    } finally {
+      object.controller = controller;
+      this.enterBatch?.add(id);
+    }
+  }
+
+  private enteringReplacementOf(id: ObjectId, effectTapped: boolean): EnteringReplacement {
     const object = this.state.objects[id];
     const def = this.registry.get(printedCardName(object));
-    let tapped = false;
+    let tapped = effectTapped;
+    let untapped = false;
     let transformed = false;
     let painIfUntapped = 0;
     let mayPayLife = 0;
     const counters: { kind: string; amount: number }[] = [];
+    const addCounters = (kind: string, base: number): void => {
+      const amount = base * this.counterMultiplier(id, kind);
+      if (amount <= 0) return;
+      // One placement per kind: everything it enters with is put on at once
+      // (rule 122.6), so a "whenever counters are put on" trigger fires once.
+      const same = counters.find((c) => c.kind === kind);
+      if (same !== undefined) same.amount += amount;
+      else counters.push({ kind, amount });
+    };
     for (const ability of def.static) {
       const r = ability.replacement;
       if (r === undefined || r.event !== "enters-battlefield") continue;
@@ -13523,19 +13615,74 @@ export class Game {
       if (r.mayPayLife !== undefined) mayPayLife = r.mayPayLife;
       if (r.transformed) transformed = true;
       if (r.counters) {
-        const base =
-          r.counters.amount === "x" ? (object.xValue ?? 0) : r.counters.amount;
-        const amount = base * this.counterMultiplier(id, r.counters.kind);
-        if (amount > 0) counters.push({ kind: r.counters.kind, amount });
+        addCounters(
+          r.counters.kind,
+          r.counters.amount === "x" ? (object.xValue ?? 0) : r.counters.amount,
+        );
       }
     }
+    // Other permanents' replacements (rule 614.12). Never its own — a
+    // permanent's ability over a general set of permanents doesn't modify how
+    // that permanent itself enters — and never one entering alongside it,
+    // which isn't on the battlefield yet.
+    for (const sourceId of this.state.zones.shared.battlefield) {
+      if (sourceId === id || this.enterBatch?.has(sourceId) === true) continue;
+      const source = this.state.objects[sourceId];
+      if (source === undefined || hasLostAbilities(source)) continue;
+      // An eliminated player's permanents stop affecting the game (see
+      // `matchesFilter`).
+      if (this.state.players[source.controller]?.hasLost === true) continue;
+      for (const ability of this.registry.get(printedCardName(source)).static) {
+        const r = ability.replacement;
+        if (r?.event !== "others-enter-battlefield") continue;
+        if (!this.staticActive(source, ability)) continue;
+        if (!matchesFilter(this.state, this.registry, id, r.filter, { you: source.controller })) {
+          continue;
+        }
+        if (r.tapped === true) tapped = true;
+        if (r.untapped === true) untapped = true;
+        if (r.counters !== undefined) {
+          // A compacted stack of such permanents is that many replacements.
+          const each = this.enteringCounterAmount(sourceId, source.controller, id, r.counters.amount);
+          addCounters(r.counters.kind, each * (source.stackCount ?? 1));
+        }
+      }
+    }
+    // "Enters untapped" is applied last: the entering permanent's controller
+    // orders the replacements (rule 616.1), and it only ever reaches
+    // permanents its own controller controls. With nothing left to pay for,
+    // a shock land isn't offered its life payment.
+    if (untapped) tapped = false;
     return {
       tapped,
       transformed,
       counters,
       painIfUntapped: tapped ? 0 : painIfUntapped,
-      mayPayLife: tapped ? 0 : mayPayLife,
+      mayPayLife: tapped || untapped ? 0 : mayPayLife,
     };
+  }
+
+  /**
+   * An `others-enter-battlefield` counter amount, read from its source's
+   * perspective as `entering` enters. The count never includes `entering`
+   * itself or anything entering with it — "for each Angel you **already**
+   * control" (Giada) — and `"trigger-object"` names the entering permanent.
+   */
+  private enteringCounterAmount(
+    source: ObjectId,
+    controller: PlayerId,
+    entering: ObjectId,
+    amount: EffectAmount,
+  ): number {
+    if (typeof amount === "number") return amount;
+    const notYet = [entering, ...(this.enterBatch ?? [])];
+    const ctx = this.makeResolutionContext(source, controller, [], 0, 0, entering);
+    const n = amountValue(amount, {
+      ...ctx,
+      countMatching: (filter, except = []) => ctx.countMatching(filter, [...except, ...notYet]),
+      aggregate: (spec, except = []) => ctx.aggregate(spec, [...except, ...notYet]),
+    });
+    return Math.max(0, n);
   }
 
   /** Product of every `would-create-token` multiplier (rule 614) on a
@@ -13700,15 +13847,19 @@ export class Game {
    * it. That has to come from here, not from `awaiting` — a decision there
    * may be someone else's, and reading it that way dropped the log events of
    * every permanent an overloaded Cyclonic Rift bounced after a commander.
+   *
+   * `enter` is how a move onto the battlefield says the permanent enters
+   * (tapped, under someone other than its owner) — passed in rather than
+   * applied afterwards, so the enters-battlefield replacements see it.
    */
-  private moveObject(id: ObjectId, to: ZoneType): boolean {
+  private moveObject(id: ObjectId, to: ZoneType, enter: EnterOptions = {}): boolean {
     // Zone moves interleave reads and writes too finely for point
     // invalidation — run with the computed-value cache off (and cleared on
     // the way out). See `suspendComputedCache`.
-    return suspendComputedCache(() => this.moveObjectUncached(id, to));
+    return suspendComputedCache(() => this.moveObjectUncached(id, to, enter));
   }
 
-  private moveObjectUncached(id: ObjectId, to: ZoneType): boolean {
+  private moveObjectUncached(id: ObjectId, to: ZoneType, enter: EnterOptions): boolean {
     const object = this.state.objects[id];
     const leavingBattlefield = object.zone === "battlefield" && to !== "battlefield";
     // Last-known information (rules 603.10a, 608.2h), taken before anything
@@ -13997,9 +14148,13 @@ export class Game {
       this.state.timestampSeq += 1;
       object.timestamp = this.state.timestampSeq;
       // Replacement effects that apply as it enters (rule 614.1c) — tapped /
-      // enters-with-counters. `object.counters` was just reset above (unless
-      // it keeps them across zones, when these add to what it brought).
-      const entering = this.entersBattlefieldReplacement(id);
+      // enters-with-counters, its own and other permanents'. `object.counters`
+      // was just reset above (unless it keeps them across zones, when these
+      // add to what it brought).
+      const entering = this.entersBattlefieldReplacement(id, enter);
+      // Who it enters under: its owner, unless the effect says otherwise (the
+      // control effect that says so is created by the caller, after the move).
+      const enteringController = enter.under ?? object.controller;
       object.tapped = entering.tapped;
       for (const c of entering.counters) {
         object.counters[c.kind] = (object.counters[c.kind] ?? 0) + c.amount;
@@ -14007,7 +14162,7 @@ export class Game {
       if (entering.painIfUntapped > 0) {
         this.dealDamage(
           id,
-          { kind: "player", player: object.controller },
+          { kind: "player", player: enteringController },
           entering.painIfUntapped,
         );
       }
@@ -14019,8 +14174,8 @@ export class Game {
       // this land — the offer waits its turn in `pendingPayLifeForUntapped`.
       if (entering.mayPayLife > 0) {
         object.tapped = true;
-        if (this.state.players[object.controller].life >= entering.mayPayLife) {
-          const offer = { player: object.controller, source: id, life: entering.mayPayLife };
+        if (this.state.players[enteringController].life >= entering.mayPayLife) {
+          const offer = { player: enteringController, source: id, life: entering.mayPayLife };
           if (this.state.awaiting === null) {
             this.state.awaiting = { kind: "pay-life-for-untapped", ...offer };
           } else {
@@ -14055,7 +14210,7 @@ export class Game {
           object: id,
           counter: c.kind,
           amount: c.amount,
-          by: object.controller,
+          by: enteringController,
         });
       }
     } else {
