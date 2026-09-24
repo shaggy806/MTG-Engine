@@ -666,6 +666,13 @@ export type LegalAction =
        * forces blocks only in pairs. `combat/blocking.ts`'s `lurePlan` works
        * out how many. */
       readonly mustBlock: readonly ObjectId[];
+      /** Attackers that must be blocked **if able** (Anzrag, the
+       * Quake-Mole): each has to be blocked by at least one creature (two,
+       * with menace) whenever this defender's creatures not needed for
+       * `mustBlock` can manage it — `combat/blocking.ts`'s `ifAblePlan`
+       * works out how many of them can be at once. Absent when there are
+       * none. */
+      readonly mustBeBlockedIfAble?: readonly ObjectId[];
     }
   | {
       /** A blocked attacker's controller assigns its combat damage (rule

@@ -599,7 +599,8 @@ export interface Characteristics {
   readonly subtypes: readonly string[];
   readonly colors: ReadonlySet<Color>;
   readonly controller: PlayerId;
-  /** Combat restrictions from static abilities (Pacifism, Juggernaut). */
+  /** Combat restrictions from static abilities (Pacifism, Juggernaut) and
+   * from `restrict` effects' modifiers. */
   readonly restrictions: ReadonlySet<CombatRestriction>;
   /** It assigns combat damage equal to its toughness rather than its power
    * (a `combatDamageByToughness` static — Doran, the Siege Tower), already
@@ -1613,6 +1614,7 @@ function computeCharacteristicsUncached(
   }
   for (const modifier of object.modifiers) {
     for (const keyword of modifier.keywords) keywords.add(keyword);
+    for (const r of modifier.restrictions ?? []) restrictions.add(r);
   }
 
   // Layer 7b — base P/T set by this object's own characteristic-defining
@@ -1730,18 +1732,32 @@ export function assignedCombatDamage(
 }
 
 /**
- * Combat restrictions on `id` from static abilities (Pacifism, Juggernaut).
+ * Combat restrictions on `id`: from static abilities (Pacifism, Juggernaut)
+ * and `restrict` modifiers — the characteristics' own — plus any turn-wide
+ * `restrict` rule it matches (`GameState.turnRestrictions`). Every legality
+ * check reads restrictions through here.
  *
- * A one-field read of {@link computeCharacteristics}, as a free function so
- * the combat predicates can be lifted out of `Game` without dragging `this`
- * along — see `combat/eligibility.ts`.
+ * A free function so the combat predicates can be lifted out of `Game`
+ * without dragging `this` along — see `combat/eligibility.ts`.
  */
 export function restrictionsOf(
   state: GameState,
   registry: CardRegistry,
   id: ObjectId,
 ): ReadonlySet<CombatRestriction> {
-  return computeCharacteristics(state, registry, id).restrictions;
+  const own = computeCharacteristics(state, registry, id).restrictions;
+  // A turn-wide rule ("creatures your opponents control can't block this
+  // turn") binds whatever matches it now, so it's matched here, outside the
+  // fold, rather than baked into the characteristics.
+  const rules = state.turnRestrictions;
+  if (rules === undefined || rules.length === 0) return own;
+  let out: Set<CombatRestriction> | null = null;
+  for (const rule of rules) {
+    if (!matchesFilter(state, registry, id, rule.filter, { you: rule.you })) continue;
+    out ??= new Set(own);
+    for (const r of rule.restrictions) out.add(r);
+  }
+  return out ?? own;
 }
 
 /** Whether `id` currently has `keyword`, counting every layer-6 grant and

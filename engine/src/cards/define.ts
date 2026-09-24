@@ -177,12 +177,22 @@ export type AffectSpec =
 
 /** A combat restriction a static ability imposes on the objects it `affects`
  * (Pacifism: can't attack / can't block; Juggernaut: must attack if able;
- * Lure: all creatures able to block this one must do so — rule 509.1c). */
+ * Lure: all creatures able to block this one must do so — rule 509.1c), or
+ * a `restrict` effect imposes until end of turn. */
 export type CombatRestriction =
   | "cant-attack"
   | "cant-block"
   | "must-attack"
-  | "must-be-blocked";
+  /** Lure: **every** creature able to block it must do so. */
+  | "must-be-blocked"
+  /** "Must be blocked if able" (Anzrag, the Quake-Mole): the defending
+   * player has to block it with at least one creature (two, with menace)
+   * when they can — a requirement (rule 509.1c), weighed against the rest
+   * as the declaration is checked. */
+  | "must-be-blocked-if-able"
+  /** "Can't attack its owner" — attacking a planeswalker its owner controls
+   * included. */
+  | "cant-attack-owner";
 
 /**
  * A dynamic quantity a characteristic-defining ability can read (rule 604.3).
@@ -668,12 +678,33 @@ export interface StaticAbility {
     readonly pt: readonly [number, number];
     readonly excludeSelf?: boolean;
   };
-  /** The creature this is attached to "can't attack you or planeswalkers you
-   * control" (Vow of Duty), where "you" is *this* permanent's controller.
-   * Checked directly in `whyCannotAttack` rather than as a
-   * `CombatRestriction`: those are bare strings, and this one has to know
-   * whose "you" it means. Only meaningful with `affects: { scope: "attached" }`. */
+  /** The affected creatures "can't attack you or planeswalkers you control",
+   * where "you" is *this* permanent's controller: the creature an Aura
+   * enchants (Vow of Duty, `affects: { scope: "attached" }`), or every
+   * creature a scope reaches (Eriette of the Charmed Apple's "each creature
+   * that's enchanted by an Aura you control" — a `filter` scope with
+   * `enchantedBy: "you"`). Checked directly in `whyCannotAttack` rather than
+   * as a `CombatRestriction`: those are bare strings, and this one has to
+   * know whose "you" it means. */
   readonly cantAttackController?: boolean;
+  /** The affected creatures "can't be blocked by [filter]" — Delney,
+   * Streetwise Lookout's "creatures you control with power 2 or less can't
+   * be blocked by creatures with power 3 or greater" (`{ power: { op:
+   * "gte", n: 3 } }`). The blocker is matched from this permanent's
+   * controller's side. */
+  readonly cantBeBlockedBy?: CardFilter;
+  /** The affected creatures "can block only [filter]" — "can block only
+   * creatures with flying" (`{ keyword: "flying" }`). The attacker is
+   * matched from this permanent's controller's side. */
+  readonly canBlockOnly?: CardFilter;
+  /** "Each player may attack only the nearest opponent in the last chosen
+   * direction and planeswalkers controlled by that player" (Pramikon, Sky
+   * Rampart, with `chooseOnEnter: ["left", "right"]`). A rule for every
+   * player, whatever `affects` says. The direction is this permanent's
+   * `chosenOnEnter` — left is the next player in turn order, right the one
+   * before, skipping anyone who has left the game — and with several such
+   * permanents the latest one's choice is the one in force. */
+  readonly attackOnlyNearestOpponent?: boolean;
   /**
    * The affected creatures assign combat damage equal to their **toughness**
    * rather than their power — the exception to rule 510.1a that Doran, the

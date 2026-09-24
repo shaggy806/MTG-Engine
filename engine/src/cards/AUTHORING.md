@@ -567,6 +567,7 @@ ability would have no way to name a token that didn't exist when it was set up.
 | `modify-pt` | `target`, `power`, `toughness`, `duration` | `duration: "end-of-turn" \| "permanent"` |
 | `modify-pt-all` | `filter`, `power`, `toughness`, `duration`, `exceptSource?`, `controlledByTarget?` | Overrun. `exceptSource` spares the source ("**other** attacking creatures you control with flying" — Steel-Plume Marshal, itself one). `controlledByTarget` scopes to a *targeted seat* (Great Oak Guardian), which a `CardFilter`'s `controlledBy` can't name — it only knows "you" and "opponent". |
 | `grant-keyword` | `target`, `keyword`, `duration` | |
+| `restrict` | `target` or `filter`, `restrictions` | Combat restrictions (§5's `CombatRestriction`s) until end of turn: "target creature can't block this turn" (`restrictions: ["cant-block"]`), Anzrag, the Quake-Mole's "~ must be blocked each combat this turn if able" (`target: "source"`, `["must-be-blocked-if-able"]`). On `target` it's a modifier, like a keyword grant; with `filter` instead it's a rule for the rest of the turn over everything matching it from your side — "creatures your opponents control can't block this turn" binds a creature that enters later too (rule 611.2c; `GameState.turnRestrictions`). |
 | `grant-graveyard-cast` | `target` | "Choose target artifact card in your graveyard. You may cast that card this turn" (Silas Renn, Emry) — pair with a `card-in-graveyard` target. A one-shot permission on the *card* (`GameObject.graveyardCastPermission`) for the effect's controller, for its normal cost, until end of turn: it outlives whatever granted it and ends if the card leaves the graveyard. Casts only, never a land. Offered as `via: "graveyard-permission"` with `graveyardGrant.source` = the card itself. |
 | `grant-triggered` | `target`, `ability`, `duration` | "gains 'Whenever this creature deals combat damage to a player, draw that many cards'" (Hunter's Prowess, Hunter's Insight). Rides on the target's own modifiers, so `"end-of-turn"` expires with every other until-end-of-turn modifier. The ongoing equivalent is `StaticAbility.grantsTriggered` (§10). |
 | `grant-keyword-all` | `filter`, `keyword`, `duration`, `exceptSource?` | Overrun's trample. `exceptSource` is "**other** Spiders you control gain …" (Cosmic Spider-Man). Hits what matches as it resolves (rule 611.2c) — a creature arriving later doesn't gain it. |
@@ -811,7 +812,7 @@ every present clause ANDed. `controlledBy` is `"you"`, `"opponent"` or
 them has to match as well (historic is `anyOf: [{ type: "artifact" },
 { supertype: "legendary" }, { subtype: "Saga" }]`; Dogmeat's "enchanted or
 equipped" is two). `equipped` / `enchanted` ask whether an Equipment / Aura is
-attached, whoever controls it; `modified` is rule 700.9 — a counter, an
+attached, whoever controls it (`enchantedBy: "you"` — an Aura *you* control); `modified` is rule 700.9 — a counter, an
 Equipment, or an Aura controlled by the permanent's *own* controller.
 `manaSpent` compares the mana spent to cast it (The Emperor of Palamecia's
 cast trigger filters on `{ manaSpent: { op: "gte", n: 4 } }`). `putIntoGraveyardFromLibraryThisTurn` is a
@@ -1387,11 +1388,30 @@ anthem, the keyword grant and the granted trigger like any other creature.
     way would be put into your graveyard, exile it instead".
   - `payLife: N` — an extra cost on top of the spell's own ("by paying 3 life
     in addition to paying their other costs"); it also gates the offer.
-- `cantAttackController: true` — with `affects: { scope: "attached" }`, the
-  enchanted creature "can't attack you or planeswalkers you control" (Vow of
-  Duty), where "you" is the *Aura's* controller. Checked in `whyCannotAttack`
+- `cantAttackController: true` — the affected creatures "can't attack you or
+  planeswalkers you control", where "you" is *this permanent's* controller:
+  the enchanted creature with `affects: { scope: "attached" }` (Vow of Duty),
+  or everything any scope reaches — Eriette of the Charmed Apple's "each
+  creature that's enchanted by an Aura you control" is a `filter` scope with
+  `{ type: "creature", enchantedBy: "you" }`. Checked in `whyCannotAttack`
   rather than as a `CombatRestriction`, because those are bare strings and
   can't say whose "you" is meant.
+- `cantBeBlockedBy: CardFilter` / `canBlockOnly: CardFilter` — the affected
+  creatures "can't be blocked by [filter]" (Delney, Streetwise Lookout's
+  "creatures you control with power 2 or less can't be blocked by creatures
+  with power 3 or greater": a `filter` scope with `power: { op: "lte", n: 2
+  }` and `cantBeBlockedBy: { power: { op: "gte", n: 3 } }`) / "can block only
+  [filter]" ("can block only creatures with flying" — `{ keyword: "flying" }`;
+  the creature still needs flying or reach to block a flyer at all). The
+  other creature is matched from this permanent's controller's side. Read
+  when a block is checked rather than folded into characteristics, so the
+  scope may ask about power and toughness.
+- `attackOnlyNearestOpponent: true` — with `chooseOnEnter: ["left",
+  "right"]`, Pramikon, Sky Rampart's "each player may attack only the nearest
+  opponent in the last chosen direction and planeswalkers controlled by that
+  player": a rule for every player (whatever `affects` says), left being
+  onward in turn order and right back, skipping players who have lost; the
+  latest such permanent's choice is in force.
   A fact about the *controller* rather than about anything the ability
   affects, so it's read straight off the battlefield at cleanup instead of
   going through the layer system; pair it with `affects: { scope: "self" }`.
@@ -1446,10 +1466,16 @@ anthem, the keyword grant and the granted trigger like any other creature.
   characteristics (a `keyword`, `power`); if that asks about the CDA's own
   object, the nested read uses its printed P/T rather than recursing.
 - `restrictions: [...]` — `"cant-attack" \| "cant-block" \| "must-attack" \|
-  "must-be-blocked"` (Pacifism, Juggernaut, Lure). `"must-be-blocked"` is
-  Lure's "all creatures able to block it do so"; on an attacker with menace it
-  forces blocks only in pairs, as many as can be made (rule 509.1c —
-  `combat/blocking.ts`'s `lurePlan`).
+  "must-be-blocked" \| "must-be-blocked-if-able" \| "cant-attack-owner"`
+  (Pacifism, Juggernaut, Lure). `"must-be-blocked"` is Lure's "all creatures
+  able to block it do so"; on an attacker with menace it forces blocks only in
+  pairs, as many as can be made (rule 509.1c — `combat/blocking.ts`'s
+  `lurePlan`). `"must-be-blocked-if-able"` asks only for **one** blocker (two
+  with menace) whenever the defender has one to spare — also a rule 509.1c
+  requirement, weighed as the declaration is checked (`ifAblePlan`; the
+  creatures Lure needs stay with Lure). `"cant-attack-owner"` keeps a stolen
+  creature off its owner and their planeswalkers. The same list, until end of
+  turn, is what the `restrict` effect imposes (§6).
 - `combatDamageByToughness: "always" | "if-toughness-greater"` — the affected
   creatures assign combat damage equal to their **toughness** rather than
   their power (Doran, the Siege Tower with `affects: { scope: "all-creatures"

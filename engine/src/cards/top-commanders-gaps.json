@@ -67,7 +67,8 @@
   "effect:additional-combat-after-this-phase",
   "effect:put-onto-battlefield-options",
   "stat:turn-event-tallies",
-  "effect:choices-by-other-players"
+  "effect:choices-by-other-players",
+  "static:combat-restriction-extensions"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

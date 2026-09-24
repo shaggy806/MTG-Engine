@@ -8,7 +8,7 @@
 
 import type { CastVia } from "./actions.js";
 import type { TriggeredAbility } from "./abilities.js";
-import type { CardType, Keyword, StaticAbility, StaticCondition, Supertype } from "./cards.js";
+import type { CardType, CombatRestriction, Keyword, StaticAbility, StaticCondition, Supertype } from "./cards.js";
 import type { EffectSpec, FlickerCounters } from "./effects.js";
 import type { CardFilter } from "./filter.js";
 import type { Color, ManaUnit } from "./mana.js";
@@ -496,6 +496,10 @@ export interface PtModifier {
   power: number;
   toughness: number;
   keywords: Keyword[];
+  /** Combat restrictions this modifier imposes, with it — "target creature
+   * can't block this turn", "~ must be blocked each combat this turn if
+   * able" (the `restrict` effect). */
+  restrictions?: CombatRestriction[];
   /** Layer 4 — card types this modifier adds (a man-land's "becomes a …
    * creature. It's still a land." keeps the printed types and adds these). */
   addTypes?: CardType[];
@@ -614,6 +618,9 @@ export interface LastKnownInfo {
   /** Enchanted by an Aura its own controller controlled — rule 700.9's
    * "modified". */
   readonly enchantedByController: boolean;
+  /** The controllers of the Auras on it, when there were any — the filter's
+   * `enchantedBy`. */
+  readonly enchantedBy?: readonly PlayerId[];
   /** It had lost all its abilities (layer 6 — Turn to Frog), so none of its
    * own leaves-the-battlefield abilities trigger. */
   readonly lostAbilities: boolean;
@@ -1819,6 +1826,16 @@ export interface GameState {
    * and everything it parked have finished; absent between resolutions.
    */
   resolutionSince?: number;
+  /** Combat restrictions imposed as a rule for the rest of the turn — "creatures
+   * your opponents control can't block this turn" (the `restrict` effect's
+   * `filter` form): every permanent matching `filter`, from `you`'s side,
+   * including ones that enter later (rule 611.2c). Read through
+   * `restrictionsOf`. Turn-scoped. */
+  turnRestrictions?: {
+    readonly filter: CardFilter;
+    readonly you: PlayerId;
+    readonly restrictions: readonly CombatRestriction[];
+  }[];
   /** Combat phases owed straight after the combat phase under way ("after
    * this phase, there is an additional combat phase"), each maybe
    * "followed by an additional main phase". Turn-scoped. */

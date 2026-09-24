@@ -3075,6 +3075,7 @@ export class Game {
     }
     this.state.extraCombats = 0;
     this.state.spellsCastThisTurn = 0;
+    delete this.state.turnRestrictions;
     delete this.state.combatsAfterThisCombat;
     delete this.state.extraMainPhases;
     delete this.state.turn.combatPhases;
@@ -10409,6 +10410,8 @@ export class Game {
       proliferate: (then) => this.beginProliferate(source, controller, x, then),
       grantKeyword: (target, keyword, duration) =>
         this.grantKeyword(target, keyword, duration),
+      restrict: (target, filter, restrictions) =>
+        this.restrict(controller, target, filter, restrictions),
       grantTriggered: (target, ability, duration) =>
         this.grantTriggered(target, ability, duration),
       grantPlayerHexproof: (who) => {
@@ -12056,6 +12059,35 @@ export class Game {
       keyword,
       duration,
     });
+  }
+
+  /** See the `"restrict"` {@link EffectSpec}: `target`'s combat restrictions
+   * until end of turn (a modifier, one token peeled off a stack), or with
+   * `filter` a rule over everything matching it for the rest of the turn. */
+  private restrict(
+    controller: PlayerId,
+    target: TargetRef | undefined,
+    filter: CardFilter | undefined,
+    restrictions: readonly CombatRestriction[],
+  ): void {
+    if (restrictions.length === 0) return;
+    if (filter !== undefined) {
+      (this.state.turnRestrictions ??= []).push({ filter, you: controller, restrictions: [...restrictions] });
+      this.emit({ type: "restrictions-imposed", player: controller, restrictions: [...restrictions] });
+      return;
+    }
+    if (target?.kind !== "object") return;
+    const id = this.splitOneFromStack(target.object);
+    const object = this.state.objects[id];
+    if (object === undefined || object.zone !== "battlefield") return;
+    object.modifiers.push({
+      power: 0,
+      toughness: 0,
+      keywords: [],
+      restrictions: [...restrictions],
+      untilEndOfTurn: true,
+    });
+    this.emit({ type: "restrictions-imposed", object: id, player: controller, restrictions: [...restrictions] });
   }
 
   /** Which battlefield permanents a mass P/T / keyword effect (Overrun) hits —
@@ -15128,6 +15160,7 @@ export class Game {
       equipped: attached.equipped,
       enchanted: attached.enchanted,
       enchantedByController: attached.enchantedByController,
+      ...(attached.enchantedBy.length > 0 ? { enchantedBy: attached.enchantedBy } : {}),
       lostAbilities,
       ...(granted.length > 0 ? { grantedTriggers: granted } : {}),
     };

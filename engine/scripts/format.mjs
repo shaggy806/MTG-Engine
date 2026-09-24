@@ -141,6 +141,12 @@ export const makeFormatter = (game) => {
         return `${name(e.object)} gains ${e.keyword}${
           e.duration === "end-of-turn" ? " until EOT" : ""
         }`;
+      case "restrictions-imposed": {
+        const what = e.restrictions.map((r) => r.replaceAll("-", " ")).join(" and ");
+        return e.object === undefined
+          ? `${e.player}: for the rest of the turn, affected creatures: ${what}`
+          : `${name(e.object)}: ${what} this turn`;
+      }
       case "pt-modifier-expired":
         return `${e.objects.map(name).join(", ")} — modifiers wear off`;
       case "permanent-animated":

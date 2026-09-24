@@ -2728,6 +2728,9 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     const unforcedBlockers = violations.flatMap((v) =>
       v.kind === 'must-be-blocked' ? [v.blocker] : [],
     )
+    const unblockedMusts = violations.flatMap((v) =>
+      v.kind === 'must-be-blocked-if-able' ? [v.attacker] : [],
+    )
     controls = (
       <div className="controls">
         <span>
@@ -2745,6 +2748,11 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
                 .map((id) => game.nameOf(id))
                 .join(', ')} must block (Lure)`
             : ''}
+          {unblockedMusts.length > 0
+            ? ` · ${unblockedMusts
+                .map((id) => game.nameOf(id))
+                .join(', ')} must be blocked if able`
+            : ''}
         </span>
         <button
           type="button"
@@ -2757,7 +2765,9 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         </button>
         <button
           type="button"
-          disabled={loneMenace.length > 0 || unforcedBlockers.length > 0}
+          disabled={
+            loneMenace.length > 0 || unforcedBlockers.length > 0 || unblockedMusts.length > 0
+          }
           onClick={confirmBlockers}
         >
           {n === 0 ? 'No blocks' : `Block (${n})`}

@@ -11,7 +11,7 @@
  */
 
 import type { CardRegistry, CardType, CombatRestriction, Keyword } from "./cards.js";
-import { computeCharacteristics, withComputedCache } from "./characteristics.js";
+import { computeCharacteristics, restrictionsOf, withComputedCache } from "./characteristics.js";
 import type { GameEvent } from "./events.js";
 import type { Color, ManaPool } from "./mana.js";
 import { poolCounts } from "./mana.js";
@@ -316,7 +316,8 @@ function visible(
       ? (object.counters.loyalty ?? 0)
       : null,
     keywords: [...computed.keywords],
-    restrictions: [...computed.restrictions],
+    // Including a turn-wide "can't block this turn" rule it falls under.
+    restrictions: [...restrictionsOf(state, registry, id)],
     colors: [...computed.colors],
     tapped: object.tapped,
     damageMarked: object.damageMarked,

@@ -52,16 +52,22 @@ that one card is the reason the deck exists.
   (`each-player-may` and its `ifDid`/`ifDidnt` — the "this way" parts their gaps entries list
   are those follow-ups, and Wernog's investigate is built); Dr. Eggman (its gaps entry lists
   only `effect:choices-by-other-players` — confirm at `card:lookup` that `each-player-may`,
-  `unless` or a villainous choice covers it).
+  `unless` or a villainous choice covers it); Eriette of the Charmed Apple
+  (`cantAttackController` over a `filter` scope with `enchantedBy: "you"`), Delney, Streetwise
+  Lookout (`cantBeBlockedBy`, and `doubleTriggersOf` with a power filter) and Anzrag, the
+  Quake-Mole (the `restrict` effect's `"must-be-blocked-if-able"`, and `becomes-blocked` with
+  `additional-combat`'s `afterThisPhase`); Anowon, the Ruin Thief (`deals-damage-batch` and
+  `{ thisWay: "milled", who: "trigger-player" }` — its gaps entry lists
+  `effect:this-way-results`, whose milled part it needs is built).
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first
   ten, engine-only, with the commanders each fully unblocks:
   `effect:this-way-results` (+6), `effect:missing-tokens` (+1), `effect:amount-aggregate` (+1),
-  `effect:look-and-choose-leftover` (+1), `static:combat-restriction-extensions` (+3),
-  `mechanic:mdfc-transform` (+1), `condition:player-state-thresholds` (+1),
-  `condition:entry-provenance` (+3), `keyword:firebending` (+1),
-  `static:grant-to-cards-outside-battlefield` (+3).
+  `effect:look-and-choose-leftover` (+1), `mechanic:mdfc-transform` (+1),
+  `condition:player-state-thresholds` (+1), `condition:entry-provenance` (+3),
+  `keyword:firebending` (+1), `static:grant-to-cards-outside-battlefield` (+3),
+  `keyword:annihilator` (+1).
 - **Most-needed features overall.** `effect:this-way-results` (18),
   `static:grant-to-cards-outside-battlefield` (14), `zone:visibility-extensions`,
   `static:grant-abilities-to-spells` and `bug:zone-change-object-identity` (13 each). Live
@@ -121,6 +127,13 @@ that one card is the reason the deck exists.
   Tracked as `bug:simultaneous-zone-moves`.
 - **A copy never chooses new targets.** Tracked as `decision:copy-new-targets`, which is
   UI-bound.
+- **An Aura entering other than as a spell** is attached to nothing. Only a resolving Aura
+  spell attaches (`resolveTopObject`); one reanimated, returned by a flicker or put onto the
+  battlefield from a library or hand floats unattached for good. Rule 303.4f has its
+  controller choose what it enchants as it enters (303.4g: with nothing to choose, it stays
+  where it was), and the SBA sweep (`stateBasedGraveyardMoves`) skips an Aura attached to
+  nothing, where rule 704.5m puts it into the graveyard. The choice is UI-bound; fixing the
+  sweep alone would only trade a floating Aura for a lost one.
 - **Token stacks in combat.** Splitting one stack across attackers or blockers is not built,
   and neither is choosing which of a stack proliferate touches. See
   `docs/plans/token-stack-choices.md`.

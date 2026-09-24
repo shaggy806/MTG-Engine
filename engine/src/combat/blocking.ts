@@ -1,7 +1,8 @@
 /**
- * The two block-declaration rules that constrain a *set* of blocks rather
- * than any single one: menace (rule 702.111) and "must be blocked" (Lure,
- * rule 509.1c).
+ * The block-declaration rules that constrain a *set* of blocks rather than
+ * any single one: menace (rule 702.111), "must be blocked" (Lure, rule
+ * 509.1c) and "must be blocked if able" (at least one blocker — also a
+ * requirement under rule 509.1c).
  *
  * Lure is a requirement and menace a restriction, and rule 509.1c says how
  * they meet: a declaration has to obey as many requirements as it can
@@ -44,7 +45,9 @@ export type BlockingViolation =
   /** `attacker` has menace and exactly one creature was assigned to it. */
   | { readonly kind: "menace"; readonly attacker: ObjectId }
   /** `blocker` could have blocked a must-be-blocked attacker and didn't. */
-  | { readonly kind: "must-be-blocked"; readonly blocker: ObjectId };
+  | { readonly kind: "must-be-blocked"; readonly blocker: ObjectId }
+  /** `attacker` must be blocked if able, could have been, and wasn't. */
+  | { readonly kind: "must-be-blocked-if-able"; readonly attacker: ObjectId };
 
 /** How many creatures a declaration has to have blocking must-be-blocked
  * attackers, and one way of getting there. */
@@ -184,7 +187,88 @@ export function blockingViolations(
       }
     }
   }
+
+  // "Must be blocked if able": as many of those attackers blocked as can be
+  // (`ifAblePlan`). Short of that, the ones named are the ones the plan
+  // blocks and this declaration doesn't.
+  const ifAble = offer.mustBeBlockedIfAble ?? [];
+  if (ifAble.length > 0) {
+    const plan = ifAblePlan(offer);
+    const need = (attacker: ObjectId): number => (offer.menaceAttackers.includes(attacker) ? 2 : 1);
+    const obeyed = ifAble.filter((a) => (perAttacker.get(a) ?? 0) >= need(a));
+    if (obeyed.length < plan.required) {
+      const planned = new Set(plan.assignment.values());
+      for (const attacker of ifAble) {
+        if (planned.has(attacker) && !obeyed.includes(attacker)) {
+          out.push({ kind: "must-be-blocked-if-able", attacker });
+        }
+      }
+    }
+  }
   return out;
+}
+
+/**
+ * How many "must be blocked if able" attackers (`offer.mustBeBlockedIfAble`)
+ * can be blocked at once, and one assignment that does it — each by one
+ * creature, or two with menace (a token stack counting as every token in
+ * it), out of the creatures {@link lurePlan} doesn't already need. Those
+ * stay where Lure has them: moving one would trade a requirement for a
+ * requirement (rule 509.1c counts both alike), so a declaration obeying
+ * Lure first is always among the most obedient.
+ *
+ * A search over the attackers in order — each blocked by one of the ways
+ * open to it, or not — keeping the best; bounded like `lurePlan`'s, and as
+ * lenient past the bound.
+ */
+export function ifAblePlan(offer: BlockOffer): LurePlan {
+  const attackers = offer.mustBeBlockedIfAble ?? [];
+  const assignment = new Map<ObjectId, ObjectId>();
+  if (attackers.length === 0) return { required: 0, assignment };
+  const needed = offer.mustBlock.length > 0 ? lurePlan(offer).assignment : new Map<ObjectId, ObjectId>();
+  const free = offer.eligible.filter((e) => !needed.has(e.blocker));
+  const menace = new Set(offer.menaceAttackers);
+  // The ways each attacker can be blocked: one creature, or — with menace —
+  // one stack of two or more, or any two creatures.
+  const ways = attackers.map((attacker) => {
+    const able = free.filter((e) => e.canBlock.includes(attacker));
+    if (!menace.has(attacker)) return able.map((e) => [e.blocker]);
+    const out: ObjectId[][] = able.filter((e) => (e.copies ?? 1) >= 2).map((e) => [e.blocker]);
+    for (let i = 0; i < able.length; i += 1) {
+      for (let j = i + 1; j < able.length; j += 1) out.push([able[i].blocker, able[j].blocker]);
+    }
+    return out;
+  });
+  const used = new Set<ObjectId>();
+  const choice: (ObjectId[] | null)[] = attackers.map(() => null);
+  let best = 0;
+  let bestChoice: (ObjectId[] | null)[] = [...choice];
+  let steps = 0;
+  const search = (i: number, value: number): boolean => {
+    steps += 1;
+    if (steps > LURE_SEARCH_LIMIT) return false;
+    if (value + (attackers.length - i) <= best) return true;
+    if (i === attackers.length) {
+      best = value;
+      bestChoice = [...choice];
+      return true;
+    }
+    for (const way of ways[i]) {
+      if (way.some((b) => used.has(b))) continue;
+      for (const b of way) used.add(b);
+      choice[i] = way;
+      const finished = search(i + 1, value + 1);
+      for (const b of way) used.delete(b);
+      choice[i] = null;
+      if (!finished) return false;
+    }
+    return search(i + 1, value);
+  };
+  search(0, 0);
+  bestChoice.forEach((way, i) => {
+    for (const blocker of way ?? []) assignment.set(blocker, attackers[i]);
+  });
+  return { required: best, assignment };
 }
 
 /**
@@ -200,7 +284,10 @@ export function obeyingLure(
   offer: BlockOffer,
 ): BlockerDeclaration[] {
   if (blockingViolations(blocks, offer).length === 0) return [...blocks];
-  const { assignment } = lurePlan(offer);
+  // Lure's creatures where its plan has them, then — out of the rest — the
+  // "must be blocked if able" plan's (see `ifAblePlan`, which leaves Lure's
+  // alone).
+  const assignment = new Map([...lurePlan(offer).assignment, ...ifAblePlan(offer).assignment]);
   const moved: BlockerDeclaration[] = [
     ...blocks.filter((b) => !assignment.has(b.blocker)),
     ...[...assignment].map(([blocker, attacker]) => ({ blocker, attacker })),

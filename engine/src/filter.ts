@@ -181,6 +181,10 @@ export interface CardFilter {
   readonly equipped?: boolean;
   /** Has an Aura attached to it, whoever controls the Aura (rule 303.4). */
   readonly enchanted?: boolean;
+  /** Has an Aura attached to it that **you** control — Eriette of the
+   * Charmed Apple's "each creature that's enchanted by an Aura you
+   * control". */
+  readonly enchantedBy?: "you";
   /**
    * Is **modified** (rule 700.9): has a counter of any kind on it, is
    * equipped, or is enchanted by an Aura its *own controller* controls
@@ -274,8 +278,18 @@ export function attachmentsOf(
   state: GameState,
   registry: CardRegistry,
   id: ObjectId,
-): { equipped: boolean; enchanted: boolean; enchantedByController: boolean } {
-  const out = { equipped: false, enchanted: false, enchantedByController: false };
+): {
+  equipped: boolean;
+  enchanted: boolean;
+  enchantedByController: boolean;
+  enchantedBy: PlayerId[];
+} {
+  const out = {
+    equipped: false,
+    enchanted: false,
+    enchantedByController: false,
+    enchantedBy: [] as PlayerId[],
+  };
   const host = state.objects[id];
   if (host === undefined || host.zone !== "battlefield") return out;
   for (const other of state.zones.shared.battlefield) {
@@ -286,6 +300,7 @@ export function attachmentsOf(
     if (subtypes.includes("Aura")) {
       out.enchanted = true;
       if (o.controller === host.controller) out.enchantedByController = true;
+      if (!out.enchantedBy.includes(o.controller)) out.enchantedBy.push(o.controller);
     }
   }
   return out;
@@ -515,11 +530,13 @@ export function matchesFilter(
   if (
     filter.equipped !== undefined ||
     filter.enchanted !== undefined ||
+    filter.enchantedBy !== undefined ||
     filter.modified !== undefined
   ) {
     const attached = live !== undefined ? attachmentsOf(state, registry, id) : lki!;
     if (filter.equipped !== undefined && attached.equipped !== filter.equipped) return false;
     if (filter.enchanted !== undefined && attached.enchanted !== filter.enchanted) return false;
+    if (filter.enchantedBy === "you" && !(attached.enchantedBy ?? []).includes(ctx.you)) return false;
     if (filter.modified !== undefined) {
       const modified =
         Object.values(counters).some((n) => (n ?? 0) > 0) ||

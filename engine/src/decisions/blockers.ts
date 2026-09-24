@@ -58,7 +58,17 @@ function blockersOffer(
   const mustBlock = attacking.filter((id) =>
     restrictionsOf(ctx.state, ctx.registry, id).has("must-be-blocked"),
   );
-  return { kind: "declare-blockers", eligible, menaceAttackers, mustBlock };
+  // Attackers that need only *one* blocker if one can manage (Anzrag).
+  const mustBeBlockedIfAble = attacking.filter((id) =>
+    restrictionsOf(ctx.state, ctx.registry, id).has("must-be-blocked-if-able"),
+  );
+  return {
+    kind: "declare-blockers",
+    eligible,
+    menaceAttackers,
+    mustBlock,
+    ...(mustBeBlockedIfAble.length > 0 ? { mustBeBlockedIfAble } : {}),
+  };
 }
 
 export const blockers = defineDecision({
@@ -93,7 +103,9 @@ export const blockers = defineDecision({
     if (violation === undefined) return null;
     return violation.kind === "menace"
       ? `${name(violation.attacker)} has menace and must be blocked by two or more creatures`
-      : `${name(violation.blocker)} must block (a "must be blocked" attacker)`;
+      : violation.kind === "must-be-blocked"
+        ? `${name(violation.blocker)} must block (a "must be blocked" attacker)`
+        : `${name(violation.attacker)} must be blocked if able`;
   },
 
   apply: (host, action): void => {

@@ -17,11 +17,16 @@
 
 import type { CardDefinition, CardRegistry, Keyword } from "../cards.js";
 import {
+  computedCacheMemo,
   computeCharacteristics,
   hasLostAbilities,
   objHasKeyword,
   restrictionsOf,
+  staticConditionMet,
+  staticReaches,
 } from "../characteristics.js";
+import type { StaticAbility } from "../cards.js";
+import type { CardFilter } from "../filter.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import { matchesFilter } from "../filter.js";
 import { printedCardName } from "../state.js";
@@ -158,7 +163,8 @@ export function whyCannotAttack(
   ) {
     return `${def.name} has defender and cannot attack`;
   }
-  if (restrictionsOf(state, registry, creatureId).has("cant-attack")) {
+  const restrictions = restrictionsOf(state, registry, creatureId);
+  if (restrictions.has("cant-attack")) {
     return `${def.name} can't attack`;
   }
   if (
@@ -172,17 +178,32 @@ export function whyCannotAttack(
       ? `${def.name} can't attack that planeswalker`
       : "attackers can only attack an opponent who hasn't already lost";
   }
-  // "Can't attack you or planeswalkers you control" (Vow of Duty) — "you"
-  // is the controller of whatever is attached, not of the creature.
   const defendingPlayer = defendingPlayerOf(state, target);
+  if (restrictions.has("cant-attack-owner") && defendingPlayer === object.owner) {
+    return `${def.name} can't attack its owner`;
+  }
+  const nearest = nearestOpponentRule(state, registry, player);
+  if (nearest !== null && defendingPlayer !== nearest) {
+    return `${def.name} may attack only ${nearest} (the nearest opponent in the chosen direction)`;
+  }
+  // "Can't attack you or planeswalkers you control" — "you" is the
+  // controller of the permanent saying so, not of the creature: the Aura on
+  // it (Vow of Duty), or a static reaching it (Eriette of the Charmed
+  // Apple's creatures enchanted by an Aura you control).
   for (const id of state.zones.shared.battlefield) {
-    const attached = state.objects[id];
-    if (attached.attachedTo !== creatureId || hasLostAbilities(attached)) continue;
-    if (attached.controller !== defendingPlayer) continue;
-    const forbids = registry
-      .get(printedCardName(attached))
-      .static.some((ability) => ability.cantAttackController === true);
-    if (forbids) return `${def.name} can't attack ${defendingPlayer}`;
+    const source = state.objects[id];
+    if (source.controller !== defendingPlayer || hasLostAbilities(source)) continue;
+    for (const ability of registry.get(printedCardName(source)).static) {
+      if (ability.cantAttackController !== true) continue;
+      if (!staticReaches(state, registry, source, ability, object)) continue;
+      if (
+        ability.condition !== undefined &&
+        !staticConditionMet(state, registry, source, ability.condition)
+      ) {
+        continue;
+      }
+      return `${def.name} can't attack ${defendingPlayer}`;
+    }
   }
   return null;
 }
@@ -226,6 +247,19 @@ export function whyCannotBlock(
     const attackerDef = registry.get(printedCardName(attacker));
     return `${blockerDef.name} can't block ${attackerDef.name} — it isn't attacking ${player}`;
   }
+  // "Can't be blocked by [filter]" on the attacker (Delney, Streetwise
+  // Lookout), "can block only [filter]" on the blocker.
+  if (
+    blockFilters(state, registry, attacker, "cantBeBlockedBy").some(({ filter, you }) =>
+      matchesFilter(state, registry, blockerId, filter, { you }),
+    ) ||
+    blockFilters(state, registry, blocker, "canBlockOnly").some(
+      ({ filter, you }) => !matchesFilter(state, registry, attackerId, filter, { you }),
+    )
+  ) {
+    const attackerDef = registry.get(printedCardName(attacker));
+    return `${blockerDef.name} can't block ${attackerDef.name}`;
+  }
   // Fear (702.36) / Intimidate (702.13) — blockable only by an artifact
   // creature, plus black creatures (fear) or colour-sharers (intimidate).
   const fear = objHasKeyword(state, registry, attackerId, "fear");
@@ -267,6 +301,90 @@ export function whyCannotBlock(
     return `${blockerDef.name} can't block ${attackerDef.name} (flying)`;
   }
   return null;
+}
+
+/**
+ * The one opponent `player` may attack under an `attackOnlyNearestOpponent`
+ * static (Pramikon, Sky Rampart), or `null` when none is in force: the
+ * nearest one in the direction chosen for the latest such permanent — left
+ * is onward in turn order, right is back — skipping players who have lost.
+ */
+export function nearestOpponentRule(
+  state: GameState,
+  registry: CardRegistry,
+  player: PlayerId,
+): PlayerId | null {
+  let rule: GameObject | null = null;
+  for (const id of state.zones.shared.battlefield) {
+    const source = state.objects[id];
+    if (hasLostAbilities(source) || state.players[source.controller]?.hasLost === true) continue;
+    if (source.chosenOnEnter !== "left" && source.chosenOnEnter !== "right") continue;
+    const governs = registry
+      .get(printedCardName(source))
+      .static.some(
+        (ability) =>
+          ability.attackOnlyNearestOpponent === true &&
+          (ability.condition === undefined || staticConditionMet(state, registry, source, ability.condition)),
+      );
+    if (governs && (rule === null || source.timestamp > rule.timestamp)) rule = source;
+  }
+  if (rule === null) return null;
+  const order = state.turnOrder;
+  const step = rule.chosenOnEnter === "left" ? 1 : -1;
+  const from = order.indexOf(player);
+  for (let i = 1; i < order.length; i += 1) {
+    const other = order[(((from + step * i) % order.length) + order.length) % order.length];
+    if (other !== player && state.players[other]?.hasLost !== true) return other;
+  }
+  return null;
+}
+
+/** The battlefield statics carrying a `cantBeBlockedBy` or `canBlockOnly`
+ * filter — the target-independent half of {@link blockFilters}, memoized per
+ * cache region (almost always none). */
+function blockFilterSources(
+  state: GameState,
+  registry: CardRegistry,
+): readonly { readonly source: GameObject; readonly ability: StaticAbility }[] {
+  return computedCacheMemo("block-filter-sources", () => {
+    const out: { source: GameObject; ability: StaticAbility }[] = [];
+    for (const id of state.zones.shared.battlefield) {
+      const source = state.objects[id];
+      if (hasLostAbilities(source) || state.players[source.controller]?.hasLost === true) continue;
+      for (const ability of registry.get(printedCardName(source)).static) {
+        if (ability.cantBeBlockedBy !== undefined || ability.canBlockOnly !== undefined) {
+          out.push({ source, ability });
+        }
+      }
+    }
+    return out;
+  });
+}
+
+/**
+ * The `field` filters (a static's `cantBeBlockedBy` or `canBlockOnly`) that
+ * reach `object`, each with whose side it's read from. Read here, when a
+ * block is checked, rather than folded into its characteristics: a scope
+ * like Delney's "creatures you control with power 2 or less" asks for the
+ * very power that fold computes, which from inside it fails closed.
+ */
+function blockFilters(
+  state: GameState,
+  registry: CardRegistry,
+  object: GameObject,
+  field: "cantBeBlockedBy" | "canBlockOnly",
+): { readonly filter: CardFilter; readonly you: PlayerId }[] {
+  const out: { filter: CardFilter; you: PlayerId }[] = [];
+  for (const { source, ability } of blockFilterSources(state, registry)) {
+    const filter = ability[field];
+    if (filter === undefined) continue;
+    if (!staticReaches(state, registry, source, ability, object)) continue;
+    if (ability.condition !== undefined && !staticConditionMet(state, registry, source, ability.condition)) {
+      continue;
+    }
+    out.push({ filter, you: source.controller });
+  }
+  return out;
 }
 
 /**

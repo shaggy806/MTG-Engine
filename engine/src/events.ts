@@ -5,7 +5,7 @@
  */
 
 import type { CastVia } from "./actions.js";
-import type { CardType } from "./cards.js";
+import type { CardType, CombatRestriction } from "./cards.js";
 import type { ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { PlayerCounterKind, ZoneType } from "./state.js";
@@ -622,6 +622,15 @@ export type GameEvent =
       readonly type: "draw-redirected";
       readonly from: PlayerId;
       readonly to: PlayerId;
+    })
+  | (Base & {
+      /** Combat restrictions until end of turn (the `restrict` effect): on
+       * `object`, or — with no object — as a rule over every permanent
+       * matching the effect's filter. */
+      readonly type: "restrictions-imposed";
+      readonly object?: ObjectId;
+      readonly player: PlayerId;
+      readonly restrictions: readonly CombatRestriction[];
     })
   | (Base & {
       /** A modal spell/ability's controller (or a "you may" clause) chose

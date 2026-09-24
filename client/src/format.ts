@@ -3,7 +3,7 @@
  * playground scripts' `format.mjs`, used by the event log.
  */
 
-import type { GameEvent, ObjectId, PlayerId, Step, TargetRef } from 'engine'
+import type { CombatRestriction, GameEvent, ObjectId, PlayerId, Step, TargetRef } from 'engine'
 import type { SeatStatus } from 'protocol'
 
 export type NameOf = (id: ObjectId) => string
@@ -20,6 +20,16 @@ export type NameOf = (id: ObjectId) => string
  * unimportant": anything a player could point at and ask "when did that
  * happen?" stays in the default view.
  */
+/** A combat restriction as the log says it — "X can't block this turn". */
+const RESTRICTION_TEXT: Record<CombatRestriction, string> = {
+  'cant-attack': "can't attack",
+  'cant-block': "can't block",
+  'must-attack': 'must attack',
+  'must-be-blocked': 'must be blocked by every creature able',
+  'must-be-blocked-if-able': 'must be blocked if able',
+  'cant-attack-owner': "can't attack its owner",
+}
+
 const NOISY_EVENTS: ReadonlySet<GameEvent['type']> = new Set([
   'priority-received',
   'priority-passed',
@@ -215,6 +225,12 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${name(event.object)} gains ${event.keyword}${
         event.duration === 'end-of-turn' ? ' until EOT' : ''
       }`
+    case 'restrictions-imposed': {
+      const what = event.restrictions.map((r) => RESTRICTION_TEXT[r]).join(' and ')
+      return event.object === undefined
+        ? `${playerLabel(event.player)}: for the rest of the turn, affected creatures ${what}`
+        : `${name(event.object)} ${what} this turn`
+    }
     case 'pt-modifier-expired':
       return `${event.objects.map(name).join(', ')} — modifiers wear off`
     case 'permanent-animated':

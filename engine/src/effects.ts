@@ -9,7 +9,14 @@
  */
 
 import type { TriggeredAbility } from "./abilities.js";
-import type { CardType, Keyword, StaticAbility, StaticCondition, TurnStat } from "./cards.js";
+import type {
+  CardType,
+  CombatRestriction,
+  Keyword,
+  StaticAbility,
+  StaticCondition,
+  TurnStat,
+} from "./cards.js";
 import type { AggregateSpec, CardFilter } from "./filter.js";
 import type { Color, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
@@ -1172,6 +1179,22 @@ export type EffectSpec =
       readonly duration: PtDuration;
     }
   | {
+      /**
+       * Combat restrictions until end of turn — "target creature can't block
+       * this turn", "~ must be blocked each combat this turn if able"
+       * (Anzrag, the Quake-Mole: `target: "source"`, `restrictions:
+       * ["must-be-blocked-if-able"]`): on `target`, as a modifier the way a
+       * keyword grant is. With `filter` instead, a rule for the rest of the
+       * turn over every permanent matching it from the controller's side —
+       * "creatures your opponents control can't block this turn" binds a
+       * creature that enters later too (rule 611.2c).
+       */
+      readonly kind: "restrict";
+      readonly target?: EffectTargetRef;
+      readonly filter?: CardFilter;
+      readonly restrictions: readonly CombatRestriction[];
+    }
+  | {
       /** `target` (an instant/sorcery card in a graveyard, via the
        * `"instant-or-sorcery-in-your-graveyard"` target spec) gains flashback
        * until end of turn for a cost equal to its mana cost — Snapcaster Mage
@@ -2127,6 +2150,13 @@ export interface EffectApi {
   ): void;
   /** See the `"ward"` {@link EffectSpec}. */
   ward(cost: WardCost): void;
+  /** See the `"restrict"` {@link EffectSpec}: `target`'s restrictions until
+   * end of turn, or with `filter` a turn-wide rule. */
+  restrict(
+    target: TargetRef | undefined,
+    filter: CardFilter | undefined,
+    restrictions: readonly CombatRestriction[],
+  ): void;
   /** See the `"unless"` {@link EffectSpec}. */
   unless(
     chooser: Extract<EffectSpec, { kind: "unless" }>["chooser"],
@@ -3179,6 +3209,15 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       if (target !== undefined) {
         ctx.grantKeyword(target, spec.keyword, spec.duration);
       }
+      return;
+    }
+    case "restrict": {
+      if (spec.filter !== undefined) {
+        ctx.restrict(undefined, spec.filter, spec.restrictions);
+        return;
+      }
+      const target = spec.target === undefined ? undefined : resolveEffectTarget(spec.target, ctx);
+      if (target !== undefined) ctx.restrict(target, undefined, spec.restrictions);
       return;
     }
     case "grant-triggered": {
