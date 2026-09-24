@@ -475,6 +475,34 @@ export type TriggerSpec =
       readonly otherOnly?: boolean;
     }
   | {
+      /**
+       * A **batched** damage trigger: "whenever one or more creatures you
+       * control deal combat damage to a player" (Goro-Goro and Satoru,
+       * Alela, Anowon, Professional Face-Breaker) — **once per player**
+       * dealt damage by at least one matching source in one simultaneous
+       * damage event (a combat damage step; first-strike and regular damage
+       * are two, rule 510.4), however many sources dealt it. It is settled
+       * as that event's damage is, like enrage.
+       *
+       * `who` / `filter` are about the sources ("one or more **Pirates** you
+       * control"); `to: "opponent"` narrows the players; `combat` is `true`
+       * for combat damage only ("deal combat damage") or `false` for
+       * noncombat, and left off for any. The player is the
+       * `"trigger-player"` ("that player"), and `{ triggerValue: true }` is
+       * the total those sources dealt them ("mills a card for each 1 damage
+       * dealt to them"). `once: "per-event"` fires once for the whole event
+       * instead, with `{ triggerValue: true }` the number of players dealt
+       * damage and no trigger player — Malcolm, Keen-Eyed Navigator's "you
+       * create a Treasure token for each opponent dealt damage".
+       */
+      readonly on: "deals-damage-batch";
+      readonly who: TriggerWho;
+      readonly filter?: CardFilter;
+      readonly to?: "player" | "opponent";
+      readonly combat?: boolean;
+      readonly once?: "per-player" | "per-event";
+    }
+  | {
       /** This creature was declared as a blocker — the mirror of `attacks`
        * (Kangee, Sky Warden's second half). Once per blocker, which is the
        * trigger object ("whenever a creature you control attacks or blocks,

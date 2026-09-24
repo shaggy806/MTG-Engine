@@ -386,6 +386,25 @@ function isLeaveEvent(event: GameEvent): event is LeaveEvent {
   );
 }
 
+/** A `deals-damage-batch` trigger owed by the damage event under way: the
+ * players it has dealt damage to so far and how much. */
+interface OwedDamageBatchTrigger {
+  readonly ability: TriggeredAbility;
+  readonly trigger: PendingTrigger;
+  readonly multiplier: number;
+  readonly players: Set<PlayerId>;
+  amount: number;
+  readonly perEvent: boolean;
+}
+
+/** `trigger` without the player its event named (`LastKnownRefs.player`). */
+function withoutTriggerPlayer(trigger: PendingTrigger): PendingTrigger {
+  const refs = trigger.lastKnownRefs;
+  if (refs?.player === undefined) return trigger;
+  const { player: _player, ...rest } = refs;
+  return { ...trigger, lastKnownRefs: rest };
+}
+
 /** The trigger kinds that are leaves-the-battlefield abilities — the only
  * ones a permanent that has already left can still fire (rule 603.10a). */
 const LOOK_BACK_TRIGGERS: ReadonlySet<TriggerSpec["on"]> = new Set<TriggerSpec["on"]>([
@@ -479,6 +498,9 @@ export class Game {
       string,
       { ability: TriggeredAbility; trigger: PendingTrigger; multiplier: number }
     >;
+    /** `deals-damage-batch` triggers owed, per watcher ability and — unless
+     * it fires once per event — per player dealt damage. */
+    readonly damageTo: Map<string, OwedDamageBatchTrigger>;
   } | null = null;
 
   /** The permanents that have left the battlefield so far in the one
@@ -8503,6 +8525,38 @@ export class Game {
           // fires once per permanent dealt damage, for its total. See
           // `withDamageBatch`.
           const damageBatch = this.damageBatch;
+          // "Whenever one or more … deal damage to a player": once per player
+          // (or per event) for the whole simultaneous event, settled with it.
+          if (
+            ability.trigger.on === "deals-damage-batch" &&
+            event.type === "damage-dealt" &&
+            event.target.kind === "player"
+          ) {
+            const perEvent = ability.trigger.once === "per-event";
+            const player = event.target.player;
+            // One firing for several players names none of them.
+            const trigger: PendingTrigger = perEvent ? withoutTriggerPlayer(base) : base;
+            if (damageBatch === null) {
+              this.queueTrigger(ability, { ...trigger, triggerValue: perEvent ? 1 : event.amount }, multiplier);
+              return;
+            }
+            const key = perEvent ? `${id}#${index}` : `${id}#${index}@${player}`;
+            const owed = damageBatch.damageTo.get(key);
+            if (owed === undefined) {
+              damageBatch.damageTo.set(key, {
+                ability,
+                trigger,
+                multiplier,
+                players: new Set([player]),
+                amount: event.amount,
+                perEvent,
+              });
+            } else {
+              owed.players.add(player);
+              owed.amount += event.amount;
+            }
+            return;
+          }
           if (
             ability.trigger.on === "dealt-damage" &&
             event.type === "damage-dealt" &&
@@ -8994,6 +9048,24 @@ export class Game {
         );
       case "deals-damage":
         return event.type === "damage-dealt" && this.dealsDamageMatches(spec, event, self);
+      case "deals-damage-batch": {
+        if (
+          event.type !== "damage-dealt" ||
+          event.target.kind !== "player" ||
+          (spec.combat !== undefined && event.combat !== spec.combat) ||
+          (spec.to === "opponent" && event.target.player === self.controller)
+        ) {
+          return false;
+        }
+        // A spell on the stack or a permanent is read as it is; a source
+        // that has left the battlefield since, as it last existed there.
+        const zone = this.state.objects[event.source]?.zone;
+        const departed = zone !== "battlefield" && zone !== "stack";
+        return (
+          this.matchesWho(spec.who, event.source, self, departed) &&
+          this.triggerFilterOk(spec.filter, event.source, self, departed)
+        );
+      }
       case "blocks":
         return (
           event.type === "blocker-declared" &&
@@ -13826,6 +13898,7 @@ export class Game {
         string,
         { ability: TriggeredAbility; trigger: PendingTrigger; multiplier: number }
       >(),
+      damageTo: new Map<string, OwedDamageBatchTrigger>(),
     };
     this.damageBatch = batch;
     try {
@@ -13835,6 +13908,13 @@ export class Game {
     }
     for (const { ability, trigger, multiplier } of batch.dealtDamage.values()) {
       this.queueTrigger(ability, trigger, multiplier);
+    }
+    for (const owed of batch.damageTo.values()) {
+      this.queueTrigger(
+        owed.ability,
+        { ...owed.trigger, triggerValue: owed.perEvent ? owed.players.size : owed.amount },
+        owed.multiplier,
+      );
     }
     for (const { controller, amount } of batch.lifelink.values()) this.changeLife(controller, amount);
   }
