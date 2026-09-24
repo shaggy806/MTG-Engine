@@ -12,7 +12,7 @@ export default defineCard({
   power: 1,
   toughness: 2,
   text:
-    "This spell costs {1} less to cast for each artifact you control.\n" +
+    "Affinity for artifacts (This spell costs {1} less to cast for each artifact you control.)\n" +
     "When Emry enters, mill four cards.\n" +
     "{T}: Choose target artifact card in your graveyard. You may cast that card this turn.",
   selfCostReduction: {

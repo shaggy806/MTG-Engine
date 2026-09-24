@@ -14,11 +14,12 @@
 import { describe, expect, it } from "vitest";
 
 import type { Action, LegalAction } from "../actions.js";
-import { ScriptedController } from "../controller.js";
+import { EvalBotController } from "../bot/eval-bot.js";
+import { HeuristicBotController, RandomController, ScriptedController } from "../controller.js";
 import { createDefaultRegistry } from "../cards.js";
 import { defineCard } from "../cards/define.js";
 import { Game } from "../game.js";
-import { asPlayerId } from "../primitives.js";
+import { asPlayerId, createRng } from "../primitives.js";
 import type { ObjectId } from "../primitives.js";
 import type { GameState } from "../state.js";
 
@@ -325,11 +326,12 @@ describe("Emry, Lurker of the Loch", () => {
     const { game } = makeGame();
     toMain(game);
     game.debugSpawn("Island", A, "battlefield");
-    game.debugSpawn("Sol Ring", A, "battlefield");
+    // Two artifacts that make no mana, so only the discount can pay the {2}.
+    game.debugSpawn("Darksteel Myr", A, "battlefield");
     game.debugSpawn("Darksteel Myr", A, "battlefield");
     game.debugSpawn("Darksteel Myr", B, "battlefield"); // not yours: doesn't count
     const emry = game.debugSpawn("Emry, Lurker of the Loch", A, "hand");
-    // {2}{U} less two: the Island alone pays, Sol Ring untouched.
+    // {2}{U} less two: the Island alone pays.
     const cast = game.legalActions(A).find((x) => x.kind === "cast-spell" && x.card === emry);
     expect(cast).toBeDefined();
     const library = game.state.zones.perPlayer[A].library.length;
@@ -489,5 +491,47 @@ describe("the static's other shapes", () => {
 
     game.state.players[A].life = 2;
     expect(offersFor(game, ring2)).toEqual([]);
+  });
+});
+
+describe("drivers", () => {
+  // The fuzzer rarely gets Muldrotha onto the battlefield, so play from a
+  // position that has one: every driver must send back a graveyard offer that
+  // `dispatch` takes (a refused one throws out of `advance`), and must
+  // actually use the permissions it's offered.
+  const position = () => {
+    const { game } = makeGame();
+    toMain(game);
+    addLands(game, 3);
+    game.debugSpawn("Muldrotha, the Gravetide", A, "battlefield");
+    game.debugSpawn("Emry, Lurker of the Loch", A, "battlefield", { summoningSick: false });
+    for (const name of ["Darksteel Myr", "Sol Ring", "Darksteel Citadel", "Kazandu Mammoth"]) {
+      game.debugSpawn(name, A, "graveyard");
+      game.debugSpawn(name, A, "graveyard");
+    }
+    return game.snapshot();
+  };
+  const fromGraveyard = (game: Game) =>
+    game.events.filter((e) => e.type === "spell-cast" && e.via === "graveyard-permission").length;
+  const drive = (controller: (p: typeof A) => ScriptedController | RandomController | HeuristicBotController | EvalBotController) => {
+    const game = Game.fromSnapshot(position(), {
+      controllers: { [A]: controller(A), [B]: new ScriptedController(B) },
+    });
+    game.advanceUntil((s) => s.turn.number > 3 || s.result.over);
+    return game;
+  };
+
+  it("RandomController plays graveyard offers that dispatch accepts", () => {
+    let used = 0;
+    for (let seed = 1; seed <= 12; seed += 1) {
+      const rng = createRng(seed);
+      used += fromGraveyard(drive((p) => new RandomController(p, () => rng.next())));
+    }
+    expect(used).toBeGreaterThan(0);
+  });
+
+  it("the heuristic and searching bots cast from the graveyard", () => {
+    expect(fromGraveyard(drive((p) => new HeuristicBotController(p)))).toBeGreaterThan(0);
+    expect(fromGraveyard(drive((p) => new EvalBotController(p)))).toBeGreaterThan(0);
   });
 });

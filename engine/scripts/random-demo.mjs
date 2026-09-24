@@ -413,6 +413,12 @@ const deckB = deck([
   ["Citanul Hierophants", 1],
   ["Nullmage Shepherd", 1],
   ["Gisa and Geralf", 1],
+  // Graveyard cast permissions: Muldrotha's per-type allowances (a land
+  // played, a multi-typed card spending one type) and the one-shot "you may
+  // cast that card this turn" on a card (Silas Renn, Emry).
+  ["Muldrotha, the Gravetide", 1],
+  ["Silas Renn, Seeker Adept", 1],
+  ["Emry, Lurker of the Loch", 1],
   ["White Sun's Zenith", 1],
   ["Commander's Insignia", 1],
   ["Idol of Oblivion", 1],
