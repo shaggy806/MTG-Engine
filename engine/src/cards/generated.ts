@@ -323,6 +323,7 @@ import _poolGoblinBombardment from "./pool/goblin-bombardment.js";
 import _poolGoblinChieftain from "./pool/goblin-chieftain.js";
 import _poolGoblinRaider from "./pool/goblin-raider.js";
 import _poolGodlessShrine from "./pool/godless-shrine.js";
+import _poolGolbezCrystalCollector from "./pool/golbez-crystal-collector.js";
 import _poolGolgariRotFarm from "./pool/golgari-rot-farm.js";
 import _poolGolgariSignet from "./pool/golgari-signet.js";
 import _poolGrapeshot from "./pool/grapeshot.js";
@@ -1280,6 +1281,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolGoblinChieftain,
   _poolGoblinRaider,
   _poolGodlessShrine,
+  _poolGolbezCrystalCollector,
   _poolGolgariRotFarm,
   _poolGolgariSignet,
   _poolGrapeshot,
