@@ -142,6 +142,15 @@ export interface CardFilter {
    */
   readonly modified?: boolean;
   /**
+   * Is (or isn't) a card in a graveyard that was put there **from a library
+   * this turn** — Captain N'ghathrod's "target artifact or creature card in an
+   * opponent's graveyard that was put there from a library this turn". Milling
+   * is the usual way; surveil and other library-to-graveyard moves count too,
+   * and a discarded or destroyed card never does. See
+   * `GameObject.putIntoGraveyardFromLibraryOnTurn`.
+   */
+  readonly putIntoGraveyardFromLibraryThisTurn?: boolean;
+  /**
    * At least one of these filters must match, as well as every other clause
    * here — the "or" a flat clause list can't say: historic ("artifact,
    * legendary, or Saga"), "enchanted or equipped", "black and/or red".
@@ -338,6 +347,12 @@ export function matchesFilter(
   if (filter.tapped !== undefined && object.tapped !== filter.tapped) return false;
   if (filter.token !== undefined && object.isToken !== filter.token) return false;
   if (filter.isCommander !== undefined && object.isCommander !== filter.isCommander) return false;
+  if (filter.putIntoGraveyardFromLibraryThisTurn !== undefined) {
+    const milled =
+      object.zone === "graveyard" &&
+      object.putIntoGraveyardFromLibraryOnTurn === state.turn.number;
+    if (milled !== filter.putIntoGraveyardFromLibraryThisTurn) return false;
+  }
   if (
     filter.equipped !== undefined ||
     filter.enchanted !== undefined ||

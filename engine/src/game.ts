@@ -2379,6 +2379,9 @@ export class Game {
     if (zone === "library") return id;
     this.moveObject(id, zone);
     const object = this.state.objects[id];
+    // The library is only a staging point here, not where the card came
+    // from: a card spawned into a graveyard wasn't milled.
+    if (object !== undefined) object.putIntoGraveyardFromLibraryOnTurn = undefined;
     if (object !== undefined && object.zone === "battlefield") {
       if (opts.tapped) object.tapped = true;
       if (opts.summoningSick === false) object.summoningSick = false;
@@ -11554,6 +11557,12 @@ export class Game {
     // ends with any other move.
     if (!(object.zone === "stack" && to === "battlefield")) object.manaSpent = undefined;
 
+    // Rule 400.7: wherever it goes, it arrives as a new object, and only a
+    // library-to-graveyard move is "put there from a library" (Captain
+    // N'ghathrod). Every other move — including graveyard to graveyard —
+    // clears it. See `GameObject.putIntoGraveyardFromLibraryOnTurn`.
+    object.putIntoGraveyardFromLibraryOnTurn =
+      object.zone === "library" && to === "graveyard" ? this.state.turn.number : undefined;
     const from = this.zoneList(object.zone, object.owner);
     const index = from.indexOf(id);
     if (index >= 0) from.splice(index, 1);
