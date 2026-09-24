@@ -312,6 +312,7 @@ import _poolGeralfsMindcrusher from "./pool/geralfs-mindcrusher.js";
 import _poolGhaltaStampedeTyrant from "./pool/ghalta-stampede-tyrant.js";
 import _poolGiantGrowth from "./pool/giant-growth.js";
 import _poolGiantSpider from "./pool/giant-spider.js";
+import _poolGilanraCallerOfWirewood from "./pool/gilanra-caller-of-wirewood.js";
 import _poolGildedLotus from "./pool/gilded-lotus.js";
 import _poolGisaAndGeralf from "./pool/gisa-and-geralf.js";
 import _poolGishathSunsAvatar from "./pool/gishath-suns-avatar.js";
@@ -1276,6 +1277,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolGhaltaStampedeTyrant,
   _poolGiantGrowth,
   _poolGiantSpider,
+  _poolGilanraCallerOfWirewood,
   _poolGildedLotus,
   _poolGisaAndGeralf,
   _poolGishathSunsAvatar,

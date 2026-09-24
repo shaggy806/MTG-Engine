@@ -1,5 +1,5 @@
 /**
- * X carries through (rule 107.3m).
+ * X carries through (rule 107.3m) — and Gilanra, Caller of Wirewood.
  *
  * A permanent spell cast with X remembers that X for its own
  * enters-the-battlefield abilities: "enters with X counters" (a replacement)
@@ -10,6 +10,10 @@
  * The trigger half snapshots X as the trigger is detected rather than
  * reading it off the permanent later, so the ability keeps its X even if the
  * permanent is flickered before the ability resolves.
+ *
+ * Gilanra rides the same thread from the other direction: its mana's rider
+ * asks the *spell's* mana value, which on the stack includes the chosen X
+ * (rule 202.3e) — so an X spell that X makes 6 or more draws a card.
  */
 
 import { describe, expect, it } from "vitest";
@@ -141,6 +145,12 @@ const cast = (game: Game, name: string, xValue?: number, targets: readonly Objec
 
 const life = (game: Game): number => game.state.players[A].life;
 
+/** Cards A drew from event `since` on. */
+const drawsSince = (game: Game, since: number): number =>
+  game.state.eventLog
+    .slice(since)
+    .filter((e) => e.type === "card-drawn" && e.player === A).length;
+
 describe("rule 107.3m — an ETB ability uses the X its permanent was cast with", () => {
   it("an ETB trigger that says X reads the X the spell was cast with", () => {
     const game = withLands(["Test X Harbinger"], 4);
@@ -218,5 +228,96 @@ describe("rule 107.3m — an ETB ability uses the X its permanent was cast with"
     game.advanceUntil(settled);
     // A new object with X = 0: no counters, so it dies as a 0/0.
     expect(game.state.objects[ballista].zone).toBe("graveyard");
+  });
+});
+
+describe("Gilanra, Caller of Wirewood", () => {
+  /** Gilanra on the battlefield and able to tap, plus `forests` Forests. */
+  const withGilanra = (aCards: readonly string[], forests: number): { game: Game; gilanra: ObjectId } => {
+    const game = withLands(aCards, forests);
+    const gilanra = game.debugSpawn("Gilanra, Caller of Wirewood", A, "battlefield", {
+      summoningSick: false,
+    });
+    return { game, gilanra };
+  };
+
+  it("draws when the auto-payer taps it for a spell with mana value 6", () => {
+    // Exactly six sources for a six-drop, so the payment has to use Gilanra.
+    const { game, gilanra } = withGilanra(["Colossal Dreadmaw"], 5);
+    const since = game.state.eventLog.length;
+    const dreadmaw = cast(game, "Colossal Dreadmaw");
+    expect(game.state.objects[gilanra].tapped).toBe(true);
+    game.advanceUntil(settled);
+    expect(drawsSince(game, since)).toBe(1);
+    expect(game.state.objects[dreadmaw].zone).toBe("battlefield");
+  });
+
+  it("counts X toward the spell's mana value: Walking Ballista for X=3 draws", () => {
+    // {X}{X} with X=3 is mana value 6 on the stack (rule 202.3e).
+    const { game, gilanra } = withGilanra(["Walking Ballista"], 5);
+    const since = game.state.eventLog.length;
+    cast(game, "Walking Ballista", 3);
+    expect(game.state.objects[gilanra].tapped).toBe(true);
+    game.advanceUntil(settled);
+    expect(drawsSince(game, since)).toBe(1);
+  });
+
+  it("does not draw for Walking Ballista at X=2 (mana value 4)", () => {
+    const { game, gilanra } = withGilanra(["Walking Ballista"], 3);
+    const since = game.state.eventLog.length;
+    cast(game, "Walking Ballista", 2);
+    expect(game.state.objects[gilanra].tapped).toBe(true);
+    game.advanceUntil(settled);
+    expect(drawsSince(game, since)).toBe(0);
+  });
+
+  it("does not draw for a five-drop", () => {
+    const { game, gilanra } = withGilanra(["Doubling Season"], 4);
+    const since = game.state.eventLog.length;
+    cast(game, "Doubling Season");
+    expect(game.state.objects[gilanra].tapped).toBe(true);
+    game.advanceUntil(settled);
+    expect(drawsSince(game, since)).toBe(0);
+  });
+
+  it("does not draw when its mana pays for an ability", () => {
+    // Walking Ballista's "{4}: Put a +1/+1 counter" with Gilanra and three
+    // Forests — an activation, not a cast, so the rider never fires.
+    const { game, gilanra } = withGilanra([], 3);
+    const ballista = game.debugSpawn("Walking Ballista", A, "battlefield");
+    game.state.objects[ballista].counters["+1/+1"] = 1;
+    const since = game.state.eventLog.length;
+    game.dispatch({
+      type: "activate-ability",
+      player: A,
+      source: ballista,
+      abilityIndex: 0,
+      targets: [],
+    });
+    expect(game.state.objects[gilanra].tapped).toBe(true);
+    game.advanceUntil(settled);
+    expect(game.state.objects[ballista].counters["+1/+1"]).toBe(2);
+    expect(drawsSince(game, since)).toBe(0);
+  });
+
+  it("still draws when Gilanra left the battlefield with its mana floating", () => {
+    // Tap Gilanra by hand, then bounce it: the rider rides on the mana, not
+    // on the permanent, so spending that mana on a six-drop still draws —
+    // for the player whose pool the mana was in, whoever controls (or
+    // whether anything still is) the permanent that made it.
+    const { game, gilanra } = withGilanra(["Colossal Dreadmaw"], 5);
+    game.dispatch({
+      type: "activate-ability",
+      player: A,
+      source: gilanra,
+      abilityIndex: 0,
+      targets: [],
+    });
+    expect(game.state.players[A].manaPool).toHaveLength(1);
+    (game as unknown as { moveObject(id: ObjectId, to: string): boolean }).moveObject(gilanra, "hand");
+    const since = game.state.eventLog.length;
+    cast(game, "Colossal Dreadmaw");
+    game.advanceUntil(settled);
+    expect(drawsSince(game, since)).toBe(1);
   });
 });

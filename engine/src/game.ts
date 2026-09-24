@@ -6643,7 +6643,7 @@ export class Game {
       const spell = this.state.objects[purpose.card];
       if (spell !== undefined) spell.uncounterable = true;
     }
-    for (const unit of spent) this.fireManaSpendRider(unit, purpose);
+    for (const unit of spent) this.fireManaSpendRider(player, unit, purpose);
   }
 
   /**
@@ -6752,11 +6752,15 @@ export class Game {
    * paid for and resolves first (rule 603.2) — which is right, and is why
    * this can't just apply the effect inline.
    */
-  private fireManaSpendRider(unit: ManaUnit, purpose: ManaPurpose): void {
+  private fireManaSpendRider(player: PlayerId, unit: ManaUnit, purpose: ManaPurpose): void {
     const rider = unit.onSpend;
     if (rider === undefined || purpose === null || purpose.kind !== "cast") return;
-    const controller = this.state.objects[rider.source]?.controller;
-    if (controller === undefined) return;
+    // The permanent that made the mana may be gone by now — tapped for mana,
+    // then sacrificed or bounced with the mana still floating — and the
+    // rider triggers all the same: it belongs to the mana, not to anything on
+    // the battlefield. Only the player whose pool the unit sat in can spend
+    // it, and that is who controlled the ability that made it.
+    const controller = player;
     if (
       rider.spell !== undefined &&
       !matchesFilter(this.state, this.registry, purpose.card, rider.spell, { you: controller })

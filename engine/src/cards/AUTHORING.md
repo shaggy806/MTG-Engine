@@ -1431,6 +1431,10 @@ Delete an entry in the same commit as the feature that retires it.
     …" (Path of Ancestry). `spell: "shares-type-with-commander"` resolves
     against the controller's commanders at activation time. It fires as a
     real triggered ability, so it resolves *above* the spell it paid for.
+    Only a *cast* fires it — mana spent on an ability never does — and it
+    still fires if the permanent that made the mana has left since. A
+    `manaValue` clause in `spell` reads the spell on the stack, so its chosen
+    `{X}` counts (Gilanra, Caller of Wirewood: `{ manaValue: { op: "gte", n: 6 } }`).
   - `persists: true` — "you don't lose this mana as steps and phases end"
     (Savage Ventmaw). Still emptied at cleanup.
 
