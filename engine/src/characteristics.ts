@@ -549,6 +549,8 @@ export function turnStatOf(state: GameState, player: PlayerId, stat: TurnStat): 
       return seat.lifeGainedThisTurn;
     case "cards-drawn":
       return seat.cardsDrawnThisTurn;
+    case "spells-cast":
+      return seat.spellsCastThisTurn;
   }
 }
 

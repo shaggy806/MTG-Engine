@@ -218,9 +218,13 @@ export type CountSpec =
  * Spells cast, creatures died and lands played are also tracked per turn,
  * but as their own `PlayerState` fields with their own conditions, and are
  * not folded in here: ~60 call sites read them, and moving those would be a
- * large mechanical change for no behaviour.
+ * large mechanical change for no behaviour. `"spells-cast"` is the one
+ * exception, and only as a *read* of `PlayerState.spellsCastThisTurn`, for
+ * an amount ("1 life for each spell you've cast this turn").
  */
-export type TurnStat = "life-lost" | "life-gained" | "cards-drawn";
+/** `"spells-cast"` counts every spell the player cast this turn, countered or
+ * not and whatever they controlled at the time (Aetherflux Reservoir). */
+export type TurnStat = "life-lost" | "life-gained" | "cards-drawn" | "spells-cast";
 
 /**
  * A condition gating a static ability (rule 604.3 — "as long as …"). Evaluated

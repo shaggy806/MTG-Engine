@@ -373,9 +373,11 @@ for nothing), `{ creaturesDiedThisTurn: true }`
 Bearer), `{ countPlayers: PlayerScope }` (Inspired Sphinx; counts living
 players, so it shrinks as a multiplayer game does),
 `{ turnStat: TurnStat, who?: PlayerScope }` (a per-turn running total —
-`"life-lost"`, `"life-gained"` or `"cards-drawn"` — summed over the scope,
+`"life-lost"`, `"life-gained"`, `"cards-drawn"` or `"spells-cast"` — summed over the scope,
 default `"you"`: Kydele's "for each card you've drawn this turn", or the life
-your opponents lost this turn as `who: "each-opponent"`),
+your opponents lost this turn as `who: "each-opponent"`; Aetherflux Reservoir's
+"1 life for each spell you've cast this turn" as `"spells-cast"`, which counts
+countered spells too),
 `{ playersWithTurnStat: TurnStat, who: PlayerScope }` (how many players in the
 scope have a nonzero total — "for each opponent who lost life this turn"),
 `{ opponentsControllingFewer: CardFilter }` (Voice of Many — a comparison per
@@ -796,6 +798,12 @@ stopped covering:
   control", "target creature with power 4 or greater". **Prefer a string
   literal when one fits** — it reads better and most of the pool uses them;
   reach for this when spelling the shape as a literal wouldn't be reused.
+- `{ kind: "spell", filter: CardFilter }` — a spell on the stack matching a
+  filter: Red Elemental Blast's "target **blue** spell" (`{ colors: ["U"] }`),
+  Mental Misstep's "target spell **with mana value 1**". Read as the spell is
+  on the stack — printed colours and types, and a mana value that counts its
+  chosen {X} (rule 202.3e). The unfiltered shapes stay string literals
+  (`"spell"`, `"creature-spell"`, …).
 - `{ kind: "card-in-graveyard", whose?: "any" | "you" | "opponent" | "defending-player", filter?: CardFilter }`
   — a card in a graveyard (Withered Wretch, Cemetery Reaper, Return to
   Nature's third mode). Graveyard targeting varies on both *whose* graveyard

@@ -13,6 +13,7 @@ import _poolAdarkarWastes from "./pool/adarkar-wastes.js";
 import _poolAdmiralBrassUnsinkable from "./pool/admiral-brass-unsinkable.js";
 import _poolAdrixAndNev from "./pool/adrix-and-nev.js";
 import _poolAesiTyrantOfGyreStrait from "./pool/aesi-tyrant-of-gyre-strait.js";
+import _poolAetherfluxReservoir from "./pool/aetherflux-reservoir.js";
 import _poolAetherize from "./pool/aetherize.js";
 import _poolAftermathAnalyst from "./pool/aftermath-analyst.js";
 import _poolAggravatedAssault from "./pool/aggravated-assault.js";
@@ -515,6 +516,7 @@ import _poolMassacreWurm from "./pool/massacre-wurm.js";
 import _poolMayhemDevil from "./pool/mayhem-devil.js";
 import _poolMeanderingRiver from "./pool/meandering-river.js";
 import _poolMendingHands from "./pool/mending-hands.js";
+import _poolMentalMisstep from "./pool/mental-misstep.js";
 import _poolMentorOfTheMeek from "./pool/mentor-of-the-meek.js";
 import _poolMeticulousArchive from "./pool/meticulous-archive.js";
 import _poolMidnightReaper from "./pool/midnight-reaper.js";
@@ -643,6 +645,7 @@ import _poolReanimate from "./pool/reanimate.js";
 import _poolReaperKing from "./pool/reaper-king.js";
 import _poolReassemblingSkeleton from "./pool/reassembling-skeleton.js";
 import _poolReclamationSage from "./pool/reclamation-sage.js";
+import _poolRedElementalBlast from "./pool/red-elemental-blast.js";
 import _poolRegrowth from "./pool/regrowth.js";
 import _poolRejuvenatingSprings from "./pool/rejuvenating-springs.js";
 import _poolReliquaryTower from "./pool/reliquary-tower.js";
@@ -1051,6 +1054,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAdmiralBrassUnsinkable,
   _poolAdrixAndNev,
   _poolAesiTyrantOfGyreStrait,
+  _poolAetherfluxReservoir,
   _poolAetherize,
   _poolAftermathAnalyst,
   _poolAggravatedAssault,
@@ -1553,6 +1557,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolMayhemDevil,
   _poolMeanderingRiver,
   _poolMendingHands,
+  _poolMentalMisstep,
   _poolMentorOfTheMeek,
   _poolMeticulousArchive,
   _poolMidnightReaper,
@@ -1681,6 +1686,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolReaperKing,
   _poolReassemblingSkeleton,
   _poolReclamationSage,
+  _poolRedElementalBlast,
   _poolRegrowth,
   _poolRejuvenatingSprings,
   _poolReliquaryTower,

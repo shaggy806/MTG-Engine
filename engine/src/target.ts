@@ -1,6 +1,7 @@
 /** Reference types for spell / ability targets. Pure data, no logic. */
 
 import type { CardFilter } from "./filter.js";
+import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 
 export type TargetRef =
@@ -128,6 +129,17 @@ export type TargetSpec =
       readonly filter?: CardFilter;
     }
   /**
+   * A spell on the stack matching a filter — Red Elemental Blast's "counter
+   * target **blue** spell", Mental Misstep's "target spell **with mana value
+   * 1**". The filter reads the spell as it is on the stack: its printed
+   * colours and types, and a mana value that counts its chosen {X} (rule
+   * 202.3e). The string specs above stay for the unfiltered shapes.
+   */
+  | {
+      readonly kind: "spell";
+      readonly filter: CardFilter;
+    }
+  /**
    * A slot that may be left empty — "up to one target creature" (Ajani,
    * Caller of the Pride), "up to two target creatures you don't control"
    * (Hate Mirage), "fights up to one target creature" (Primal Might).
@@ -174,6 +186,10 @@ export function isOptionalSpec(spec: TargetSpec): boolean {
 export function describeTargetSpec(spec: TargetSpec | string): string {
   if (typeof spec === "string") return spec;
   if (spec.kind === "optional") return `${describeTargetSpec(spec.of)} (optional)`;
+  if (spec.kind === "spell") {
+    const colour = spec.filter.colors?.length === 1 ? `${COLOUR_WORD[spec.filter.colors[0]]} ` : "";
+    return `${colour}${spec.filter.type ?? ""}${spec.filter.type === undefined ? "" : " "}spell`;
+  }
   if (spec.kind === "permanent") {
     const noun = spec.filter.type ?? spec.filter.subtype ?? "permanent";
     if (spec.whose === "you") return `${noun} you control`;
@@ -189,6 +205,14 @@ export function describeTargetSpec(spec: TargetSpec | string): string {
   const what = spec.filter?.type ?? "card";
   return `${what} in ${whose}`;
 }
+
+const COLOUR_WORD: Readonly<Record<Color, string>> = {
+  W: "white",
+  U: "blue",
+  B: "black",
+  R: "red",
+  G: "green",
+};
 
 export const targetsPlayer = (ref: TargetRef, player: PlayerId): boolean =>
   ref.kind === "player" && ref.player === player;

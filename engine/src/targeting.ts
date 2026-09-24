@@ -163,6 +163,17 @@ export function isLegalTarget(
       ...(source?.amount !== undefined ? { amount: source.amount } : {}),
     });
   }
+  // A filtered spell on the stack.
+  if (typeof spec === "object" && spec.kind === "spell") {
+    return (
+      ref.kind === "object" &&
+      isSpellOnStack(state, ref.object) &&
+      matchesFilter(state, registry, ref.object, spec.filter, {
+        you: forPlayer,
+        ...(source?.amount !== undefined ? { amount: source.amount } : {}),
+      })
+    );
+  }
   // The structured graveyard spec.
   if (typeof spec === "object") {
     if (ref.kind !== "object") return false;
