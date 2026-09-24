@@ -434,6 +434,7 @@ import _poolLazotepPlating from "./pool/lazotep-plating.js";
 import _poolLazotepReaver from "./pool/lazotep-reaver.js";
 import _poolLeafkinDruid from "./pool/leafkin-druid.js";
 import _poolLevitation from "./pool/levitation.js";
+import _poolLiesaShroudOfDusk from "./pool/liesa-shroud-of-dusk.js";
 import _poolLightningBolt from "./pool/lightning-bolt.js";
 import _poolLightningGreaves from "./pool/lightning-greaves.js";
 import _poolLilianasDevotee from "./pool/lilianas-devotee.js";
@@ -1389,6 +1390,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolLazotepReaver,
   _poolLeafkinDruid,
   _poolLevitation,
+  _poolLiesaShroudOfDusk,
   _poolLightningBolt,
   _poolLightningGreaves,
   _poolLilianasDevotee,
