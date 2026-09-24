@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-109 already implemented / 391 missing
+110 already implemented / 390 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -313,7 +313,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  307  Arna Kennerüd, Skycaptain                       8987 decks  {2}{W}{U}{B}     Legendary Creature — Human Knight
 [ ]  308  Raggadragga, Goreguts Boss                      8971 decks  {2}{R}{G}        Legendary Creature — Human Boar
 [ ]  309  Minsc & Boo, Timeless Heroes                    8968 decks  {2}{R}{G}        Legendary Planeswalker — Minsc
-[ ]  310  Ghalta, Primal Hunger                           8956 decks  {10}{G}{G}       Legendary Creature — Elder Dinosaur
+[x]  310  Ghalta, Primal Hunger                           8956 decks  {10}{G}{G}       Legendary Creature — Elder Dinosaur
 [x]  311  Dogmeat, Ever Loyal                             8944 decks  {R}{G}{W}        Legendary Creature — Dog
 [ ]  312  Alexios, Deimos of Kosmos                       8932 decks  {3}{R}           Legendary Creature — Human Berserker
 [ ]  313  The Master of Keys                              8902 decks  {X}{W}{U}{B}     Legendary Enchantment Creature — Horror

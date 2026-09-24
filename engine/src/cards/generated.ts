@@ -315,6 +315,7 @@ import _poolGenerousGift from "./pool/generous-gift.js";
 import _poolGenesisUltimatum from "./pool/genesis-ultimatum.js";
 import _poolGeodeRager from "./pool/geode-rager.js";
 import _poolGeralfsMindcrusher from "./pool/geralfs-mindcrusher.js";
+import _poolGhaltaPrimalHunger from "./pool/ghalta-primal-hunger.js";
 import _poolGhaltaStampedeTyrant from "./pool/ghalta-stampede-tyrant.js";
 import _poolGiantGrowth from "./pool/giant-growth.js";
 import _poolGiantSpider from "./pool/giant-spider.js";
@@ -1293,6 +1294,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolGenesisUltimatum,
   _poolGeodeRager,
   _poolGeralfsMindcrusher,
+  _poolGhaltaPrimalHunger,
   _poolGhaltaStampedeTyrant,
   _poolGiantGrowth,
   _poolGiantSpider,

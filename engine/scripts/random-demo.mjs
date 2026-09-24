@@ -958,6 +958,8 @@ const deckE = deck([
   ["Kess, Dissident Mage", 1],
   // Kilo: proliferates whenever it becomes tapped, however that happens.
   ["Kilo, Apogee Mind", 1],
+  // Ghalta: {X} less, X the total power of creatures you control.
+  ["Ghalta, Primal Hunger", 1],
   ["Plains", 5],
   ["Island", 5],
   ["Swamp", 5],
