@@ -1,4 +1,5 @@
 import { defineCard } from "../define.js";
+import { ward } from "../helpers.js";
 
 // Top-commanders rank 81. "Three Autostubs" is a `deals-damage` trigger: a
 // source you control other than Ghyrson dealing exactly 1 damage to one
@@ -23,14 +24,8 @@ export default defineCard({
   power: 3,
   toughness: 2,
   text: `Ward {2}\n${AUTOSTUBS_TEXT}`,
-  static: [
-    {
-      affects: { scope: "self" },
-      ward: { mana: "{2}" },
-      text: "Ward {2}",
-    },
-  ],
   triggered: [
+    ward({ mana: "{2}" }),
     {
       trigger: { on: "deals-damage", who: "you-control", otherOnly: true, exactly: 1 },
       targets: [],

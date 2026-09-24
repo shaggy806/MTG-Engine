@@ -63,7 +63,8 @@ describe("Ghyrson Starn, Kelermorph", () => {
   it("has ward {2}", () => {
     const { game } = setUp();
     const ghyrson = game.debugSpawn(GHYRSON, A);
-    const statics = game.registry.get(game.state.objects[ghyrson].cardName).static;
-    expect(statics.some((s) => s.ward?.mana === "{2}")).toBe(true);
+    const def = game.registry.get(game.state.objects[ghyrson].cardName);
+    // Ward is a triggered ability (rule 702.21a), built by the `ward` helper.
+    expect(def.triggered.map((t) => t.effect)).toContainEqual({ kind: "ward", cost: { mana: "{2}" } });
   });
 });
