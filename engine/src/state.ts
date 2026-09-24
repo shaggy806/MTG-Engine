@@ -273,9 +273,16 @@ export interface GameObject {
    * battlefield or stack). */
   face?: number;
   /** The value chosen for `{X}` when this spell was cast (rule 601.2b). Set on
-   * the stack object and preserved onto the permanent it becomes, so an
-   * "enters with X counters"-style effect can still read it. `null` when the
-   * cost had no `{X}`. Cleared by `moveObject` on any later zone change. */
+   * the stack object and preserved onto the permanent it becomes, because the
+   * permanent's own enters-the-battlefield replacement ("enters with X
+   * counters") and triggered abilities use it (rule 107.3m) — the latter via
+   * `PendingTrigger.x`, which copies it onto the ability object. Nothing else
+   * reads it off a permanent: for everything else the permanent's X is 0
+   * (a filter's mana value only counts it on the stack). `null` when the
+   * cost had no `{X}` or the permanent entered without being cast. Cleared by
+   * `moveObject` on any later zone change, so a flickered permanent comes
+   * back as a new object with no X. On an ability object it is the X that
+   * ability resolves with (`ctx.x`). */
   xValue: number | null;
   /** For a triggered-ability object on the stack: a numeric quantity from the
    * triggering event (the entering / attacking creature's power, or the combat
@@ -545,6 +552,14 @@ export interface PendingTrigger {
    * snapshotted when it was detected — for a `create-token-copy` effect with
    * `of: "trigger-object"` (Miirym, Sentinel Wyrm — needed-cards P5b). */
   readonly triggerObject?: ObjectId;
+  /** The X the source was cast with, for its own enters-the-battlefield
+   * ability (rule 107.3m) — snapshotted as the trigger is detected, since the
+   * permanent may be gone (a 0/0 that entered with X=0) or a new object (it
+   * was flickered) by the time the ability is put on the stack. Becomes the
+   * ability object's `xValue`, so the ability reads it as `ctx.x`. Absent for
+   * every other trigger, and for a permanent that entered without being cast:
+   * X is 0 then. */
+  readonly x?: number;
   /** See {@link GameObject.stackMultiplier} — how many real firings this one
    * queued trigger represents. `undefined`/`1` outside a scaled resolution. */
   readonly multiplier?: number;
@@ -1244,6 +1259,8 @@ export interface GameState {
     readonly triggerValue?: number;
     /** See {@link PendingTrigger.triggerObject}. */
     readonly triggerObject?: ObjectId;
+    /** See {@link PendingTrigger.x}. */
+    readonly x?: number;
     /** See {@link PendingTrigger.grantedAbility}. */
     readonly grantedAbility?: GrantedAbilityRef;
   } | null;

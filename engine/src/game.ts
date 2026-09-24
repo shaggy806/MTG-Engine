@@ -2456,6 +2456,7 @@ export class Game {
         undefined,
         trig.grantedAbility,
         autoSlotsOf(trig.slots),
+        trig.x,
       );
     } else if (cast !== null) {
       this.state.pendingTargetedCast = null;
@@ -7438,6 +7439,19 @@ export class Game {
                         event.type === "life-changed"
                       ? Math.abs(event.delta)
                       : undefined;
+          // Rule 107.3m: an enters-the-battlefield ability of a permanent that
+          // was cast with X uses that X. Snapshotted now, off the entering
+          // object itself, because the ability is its own object from here on:
+          // the permanent dying to state-based actions (a 0/0 that entered with
+          // X=0 counters) or being flickered before this resolves doesn't change
+          // the X the ability already has. Another permanent's entry trigger
+          // reads nothing — it's that object's ETB, not this one's.
+          const castX =
+            ability.trigger.on === "enters-battlefield" &&
+            event.type === "permanent-entered-battlefield" &&
+            event.object === id
+              ? (object.xValue ?? undefined)
+              : undefined;
           const base = {
             sourceObjectId: id,
             cardName: printedCardName(object),
@@ -7446,6 +7460,7 @@ export class Game {
             ...(autoTargets ? { autoTargets } : {}),
             ...(triggerValue !== undefined ? { triggerValue } : {}),
             ...(triggerObject !== undefined ? { triggerObject } : {}),
+            ...(castX !== undefined ? { x: castX } : {}),
             ...(ref !== undefined ? { grantedAbility: ref } : {}),
           };
           // A stacked source's ability really fires once per creature it
@@ -7983,6 +7998,7 @@ export class Game {
     readonly multiplier?: number;
     readonly chapter?: boolean;
     readonly grantedAbility?: GrantedAbilityRef;
+    readonly x?: number;
     readonly delayed?: DelayedTrigger;
   }): "done" | "paused" {
     // A self-contained ability record (a mana-spend rider) has no card
@@ -8073,6 +8089,7 @@ export class Game {
         trigger.multiplier,
         trigger.grantedAbility,
         autoSlotsOf(slots),
+        trigger.x,
       );
       return "done";
     }
@@ -8093,6 +8110,7 @@ export class Game {
       ...(trigger.grantedAbility !== undefined
         ? { grantedAbility: trigger.grantedAbility }
         : {}),
+      ...(trigger.x !== undefined ? { x: trigger.x } : {}),
     };
     this.state.awaiting = {
       kind: "choose-targets",
@@ -8117,6 +8135,8 @@ export class Game {
     multiplier?: number,
     grantedAbility?: GrantedAbilityRef,
     autoTargetSlots: readonly number[] = [],
+    /** The X its source was cast with (rule 107.3m) — see `PendingTrigger.x`. */
+    x?: number,
   ): void {
     const abilityId = this.mintAbilityObject(
       sourceId,
@@ -8131,6 +8151,7 @@ export class Game {
       multiplier,
     );
     if (grantedAbility !== undefined) this.state.objects[abilityId].grantedAbility = grantedAbility;
+    if (x !== undefined) this.state.objects[abilityId].xValue = x;
     if (autoTargetSlots.length > 0) {
       this.state.objects[abilityId].autoTargetSlots = [...autoTargetSlots];
     }

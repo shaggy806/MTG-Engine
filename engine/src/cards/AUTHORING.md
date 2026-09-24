@@ -260,6 +260,17 @@ Parsed by `parseManaCost` (`mana.ts`). Symbols, in `{…}`:
 `amount: "x"` / `ctx.x`. `{X}` in an **activated ability's** cost works the same
 way (`activate-ability.xValue`). See `Fireball`, `Cinder Elemental`.
 
+A **permanent** spell's X carries onto the battlefield for its own
+enters-the-battlefield abilities only (rule 107.3m): an "enters with X
+counters" replacement (`counters.amount: "x"`, `walking-ballista.ts`) and a
+`trigger: { on: "enters-battlefield", who: "self" }` ability whose effect says
+`"x"` both see the X it was cast with — the trigger snapshots it as it
+triggers, so flickering the permanent in response doesn't change it. Any other
+ability of the permanent sees X = 0, as does a permanent that entered without
+being cast, and the card after it leaves and returns (a new object). A
+"whenever *another* creature enters" trigger is not this permanent's ETB and
+reads 0 too.
+
 `manaValue` counts `{C}` as 1, a hybrid pip as its greatest half, `{X}` as 0.
 
 ---
