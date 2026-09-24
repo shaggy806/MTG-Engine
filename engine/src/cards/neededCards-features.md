@@ -1,52 +1,33 @@
 # Engine feature backlog
 
-This file tracks engine-feature gaps found by cross-referencing real card text
-against the current vocabulary. Two workstreams have fed it:
+The detail behind the engine items in `BACKLOG.md` (the repo-root list of
+everything still to do). This file ranks engine features by how many real
+cards each would unblock, from two measured populations:
 
-1. **`neededCards.txt`** (P0-P20, below) — two curated precon decks, ~170
-   cards. **Effectively done.** Full narrative detail for each pass lives in
-   git history (`git log --oneline -- engine/src/cards/neededCards-features.md`)
-   and in the commits themselves — this file only keeps the compact record.
-2. **The EDH-popularity backlog** (current focus) — `top-commander-cards.txt`
-   (top 2000 Commander cards by EDHREC rank, cross-referenced against
-   `cards/pool/`) and `top-commander-cards-flagged.txt` (a heuristic screen
-   over that list — see `engine/scripts/top-commander-cards.mjs` and
-   `flag-problematic-cards.mjs`) flag cards that likely need a feature this
-   engine doesn't have yet. This section ranks those features by how many
-   flagged cards each would unblock.
-
+1. **The commander gap** (current priority): `top-commanders.txt` and the
+   per-commander triage `top-commanders-gaps.json`, ranked by
+   `npm run cmdrs:gaps -w engine`.
+2. **The card backlog**: `top-commander-cards.txt` (the top 2000 Commander
+   cards by EDHREC rank, cross-referenced against `cards/pool/`) and
+   `top-commander-cards-flagged.txt` (a heuristic screen over it — see
+   `engine/scripts/top-commander-cards.mjs` and `flag-problematic-cards.mjs`).
    **Refresh the `[x]` marks with `npm run cards:mark -w engine`** after
-   authoring. That re-marks in place against the current pool and leaves the
-   EDHREC ranking snapshot alone, so this file's correspondence with it holds;
-   a full re-fetch would move the roster underneath it.
+   authoring; that re-marks in place and leaves the ranking snapshot alone.
 
-Read `cards/AUTHORING.md` before authoring any card; it's the field-by-field
-reference. This file is a priority list, not a how-to.
+Finished passes are indexed at the end, compactly, because source comments
+cite them ("needed-cards P16", "Tier-1 feature"). Their narrative is in
+`git log -- engine/src/cards/neededCards-features.md`. Read `cards/AUTHORING.md`
+before authoring any card; this file is a priority list, not a how-to.
 
 ---
 
 ## The commander gap — the current authoring priority
 
-**93 of the 500 most-played commanders are implemented** (up from 12 on
-2026-09-21). Almost any real decklist someone imports still has its commander
-substituted, which replaces the one card the deck is built around.
+**103 of the 500 most-played commanders are implemented** (12 on 2026-09-21).
+Almost any real decklist someone imports still has its commander substituted,
+which replaces the one card the deck is built around. `BACKLOG.md` carries
+the current top of the build order; `cmdrs:gaps` has the live numbers.
 
-The evening of 2026-09-22 took it from 55 to 72, one engine feature at a
-time, each shipped with the commanders it unblocked. Creature-scoped statics
-read current types (Sokka, Bria, Thantis). "The Nth time this ability has
-resolved this turn" (Omnath, Ms. Bumbleflower, and Tannuk's missing clause).
-The attachment and `anyOf` filter clauses (Dogmeat, Chishiro, Jhoira). A
-`reveal-top` effect (Thrasios). First and Nth *matching* spell or draw each
-turn (Xyris, Tuvasa). The mana spent to cast a spell (Prossh, The Emperor of
-Palamecia). A `counters-put` trigger (Shalai and Hallar, Hapatra). Dr.
-Madison Li and Magnus the Red needed nothing. A 2026-09-24 batch took it
-on from 81 to 93: live-amount mana abilities and turn-stat amounts (Vivi
-Ornitier, Marwyn, Kydele), graveyard cast permissions (Muldrotha, Silas Renn,
-Emry), the zone a spell was cast from (Prosper), "other" counts and
-sum/max aggregates (Cosmic Spider-Man, Finneas), commander tax paid in life
-(Liesa), return-to-hand from any zone (Golbez) and command-zone abilities
-(Derevi). The table below is still the snapshot's; `cmdrs:gaps` has the live
-numbers.
 
 ### Why the pool missed them
 
@@ -108,99 +89,37 @@ Of the 469 still missing when the snapshot was taken:
   scope that takes a filter, last-known information, "another target",
   dynamic comparisons in filters, per-turn counters. This is the Tier 1b
   lesson again, at the scale of the whole commander list.
-- **29 need nothing new** (buildable today): 42 Rin and Seri, Inseparable, 45 Aragorn, the Uniter, 90 Kilo, Apogee Mind, 116 Witherbloom, the Balancer, 124 Yoshimaru, Ever Faithful, 134 Tifa Lockhart, 150 Marrow-Gnawer, 155 Sythis, Harvest's Hand, 163 Ishai, Ojutai Dragonspeaker, 175 Yarok, the Desecrated, 182 Shroofus Sproutsire, 186 Blech, Loafing Pest, 219 Sokka, Tenacious Tactician, 263 Bria, Riptide Rogue, 272 Chulane, Teller of Tales, 281 Tatyova, Benthic Druid, 296 Elsha, Threefold Master, 320 Adrix and Nev, Twincasters, 350 Squall, SeeD Mercenary, 370 The Unbeatable Squirrel Girl, 401 Ardbert, Warrior of Darkness, 403 Mabel, Heir to Cragflame, 422 Talrand, Sky Summoner, 423 Ognis, the Dragon's Lash, 437 Ruric Thar, the Unbowed, 447 Ravos, Soultender, 448 Thorin, King of Durin's Folk, 462 Dr. Madison Li, 500 Magnus the Red.
-  Kilo and Aragorn, the Uniter are exceptions the triage missed: both were
-  tried and dropped. Kilo's tap-a-creature cost is still picked for the
-  player; Aragorn needs scry to let the player order the kept cards.
 - **Greedy engine-only order.** Repeatedly build the feature that fully
   unblocks the most commanders per unit of effort (small 1, medium 3,
   large 10), leaving out anything that needs client UI. That unblocks about
   **75 commanders with 40 features**, most of them small. `cmdrs:gaps` prints
   the current order.
 
-The 20 features the most commanders need (`sole` = the only thing blocking
-that many; `UI` = needs a new player choice the client must render):
-
-| feature | needed by | sole | size | UI | what to build |
-| --- | ---: | ---: | --- | --- | --- |
-| `static:affect-scope-by-filter` | 22 | 0 | medium |  | Generalise AffectSpec beyond its fixed scopes to a CardFilter-driven scope: all permanents or artifacts you control, creatures you don't control or an opponent's, commanders you own, creatures you control but don't own, card-type and subtype any-of narrowing, counters on any permanent. wardOf also reads ward granted to other permanents. |
-| `bug:lki-object-reads` | 19 | 2 | medium |  | When a resolving ability reads an object that has left the battlefield, it uses last-known information (rule 608.2h). This covers powerOf/toughnessOf of the source, trigger object or target, 'that creature's controller', and the source's keywords (lifelink) for damage it dealt. It includes tokens that were deleted. |
-| `bug:lki-leaves-battlefield-triggers` | 19 | 2 | medium |  | Dies and leaves-the-battlefield triggers look back in time (rule 603.10a). Take a last-known snapshot before moveObject clears the object: computed types, subtypes, counters, controller, keywords and granted triggers. Match trigger filters, 'you control' and granted dies triggers against that snapshot. |
-| `effect:target-other-than-source` | 19 | 1 | medium |  | An 'another / other target' exclusion for triggered as well as activated abilities: drop the source (or an earlier slot's pick, or the triggering player) from a slot's options. Split it from the 'sacrifice another' cost flag, which otherOnly controls too today. |
-| `decision:ward-payment` | 18 | 0 | medium | yes | Ward as a real triggered ability when the object becomes a target. The targeting player chooses whether to pay, and a non-mana ward cost (discard a card) needs its own choice. |
-| `effect:player-scope-extensions` | 18 | 0 | medium |  | More player scopes: players named by the triggering event (defending player, damaged player, active player, the trigger object's controller, each opponent other than that player), each player or each opponent for mill, discard and create-token, CardFilter controlledBy active player, and per-player amounts (each opponent loses half their life). |
-| `effect:this-way-results` | 18 | 0 | medium |  | The resolution context records what earlier steps actually did: cards discarded, milled, exiled, drawn or moved, and whether an optional action happened. That backs 'for each card … this way' amounts, 'if a land was discarded or milled this way' conditions, a real 'if you do', and follow-ups that choose or copy among the cards just moved. |
-| `mechanic:commander-pairing` | 18 | 0 | small |  | Deck validation for two commanders: both need Partner, 'Partner with [name]' pairs only with that card, Friends forever and Character select pair only within their variant, and 'Choose a Background' pairs with a legendary Background enchantment. |
-| `condition:filter-dynamic-compare` | 18 | 1 | small |  | NumCompare.n reads an EffectAmount when evaluated: the trigger object's mana value or power, the source's current power, the sacrificed MV + 1, the trigger value, or the object's own power ('toughness greater than its power'). It is re-evaluated at resolution. |
-| `cost:cost-modification-extensions` | 17 | 4 | medium |  | Extensions to costModification and selfCostReduction: a reduction that scales with a general amount (counters on the source, turn stats, graveyard counts), one that applies only to the first matching spell each turn, one that depends on the chosen targets, one that removes a coloured pip, and one that reduces the generic half of a twobrid pip. |
-| `condition:filter-combinators` | 17 | 1 | small |  | CardFilter boolean combinators: anyOf (historic, 'artifact or Artificer', 'black and/or red', 'flash or haste', 'MV or power equal to N') and negated clauses (notSupertype for 'nonlegendary' and 'nonbasic', notName). |
-| `bug:x-value-propagation` | 15 | 1 | small |  | X carries through: a spell's mana value on the stack includes its chosen X (rule 202.3e) in manaValueOfTarget and filters, and an ETB trigger that refers to X uses the X its source was cast with (rule 107.3m). |
-| `static:grant-to-cards-outside-battlefield` | 14 | 1 | medium |  | Statics that grant abilities to cards outside the battlefield: ninjutsu, miracle, warp, web-slinging or an alternative cost to matching cards in hand or spells you cast, and flashback or escape to matching cards in your graveyard. |
-| `stat:per-ability-turn-counters` | 13 | 2 | small |  | Per-object, per-ability counters that reset each turn: 'this ability triggers only once each turn', 'do this only once each turn', and 'if this is the first time this ability has resolved this turn'. |
-| `zone:visibility-extensions` | 13 | 0 | medium |  | Who can see what, in viewFor and revealedThisTurn: a card exiled face down that only the exiler may look at, 'plays with their hand revealed', 'look at the top card of your library any time' (owner only), and effects that reveal cards to every player (look-and-choose's 'reveal', 'you may reveal that card'). |
-| `bug:static-scope-computed-types` | 13 | 1 | small |  | staticAffects' creature scopes (creatures-you-control, all-creatures, emblems, land creatures) gate on printed types through isPrintedCreature. They should read computed layer-4 types, so animated lands and crewed Vehicles get anthems and keyword grants. |
-| `effect:sacrificed-object-lki` | 13 | 1 | medium |  | Snapshot the permanent sacrificed to pay a cost, or by a preceding step, and expose its last-known power, mana value, types, subtypes and isCommander. These feed amounts (the Fling family), conditions ('if it was a commander' or 'a Hamster') and dynamic filters ('shares a card type with it'). |
-| `effect:amount-turn-stat` | 13 | 0 | small |  | EffectAmounts that read turn stats: your life lost, gained or cards drawn this turn, the total across opponents, and the number of players or opponents who lost life this turn. |
-| `bug:zone-change-object-identity` | 13 | 0 | medium |  | Rule 400.7: an object that changes zones becomes a new object. Delayed triggers, 'return it' effects, trigger-object references and sources stop tracking a card that left and came back. put-onto-battlefield requires the card to still be in its expected zone, and an 'until the source leaves' exile does nothing if the source has already left (rule 610.3c). |
-| `decision:copy-new-targets` | 12 | 0 | medium | yes | 'You may choose new targets for the copy': raise choose-targets for each copy (storm, Twincast, copy triggers), with the original's targets as the default. |
-
-The most-needed features that need client UI, which have to wait for a
-session that can check the client in a browser:
-`decision:ward-payment` (18), `decision:copy-new-targets` (12), `effect:may-sacrifice-then` (12), `decision:choose-permanent` (11), `effect:enter-attacking` (10), `decision:free-cast-choices` (10), `effect:attach-extensions` (10), `effect:cast-during-resolution` (10).
-
-Already built from this list (2026-09-22), each with the commanders it
-unblocked: the `draws` trigger and the `"trigger-controller"` scope (Nekusar,
-Niv-Mizzet, Temmet, Sheoldred, Queza); `monarch` and `hand-size` conditions,
-`nthEachTurn` on cast triggers and the `plays-land` trigger (Queen Marchesa,
-Kraum, Flubs); a counted, revealing `look-and-choose` (Gishath); cost
-reductions that scale with any amount (Animar, Karador); and
-`doubleTriggers` / `suppressEntryTriggers` (Isshin, Elesh Norn, Felix
-Five-Boots). Eight more needed nothing new: Kenrith, Arabella, Urtet, Voja,
-Aesi, Rin and Seri, Marrow-Gnawer, Sythis, Ishai and Shroofus.
-
-Fixes the triage and the reviews turned up along the way: token stacks
-counted as one creature (Krenko made two Goblins forever), haste not lifting
-summoning sickness for {T} abilities, "target creature" ignoring animated
-man-lands, "any target" unable to reach a planeswalker, and a commander's
-903.9a choice being skipped for the rest of a game.
-
-Five commanders were authored and then **dropped** by their reviews, each
-naming the gap: Rin and Seri (since fixed), Tifa Lockhart and Yarok (the
-engine orders simultaneous triggers for the player), Blech (one lifelink
-source damaging several things counted as several life gains — since
-fixed, and Blech landed with the simultaneous-events batching), Sokka (a
-prowess pump can land on the wrong token of a stack), and Kilo (a
-tap-a-creature cost still picks the creature). Aragorn, the Uniter needs
-scry to let the player order the cards kept.
+The live per-feature ranking (needed by, sole blocker, size, needs client
+UI) and the greedy order are `cmdrs:gaps`' output; each feature's "what to
+build" — including what is already built of a partly shipped one — is its
+`description` in the JSON. The commanders authored and then dropped by their
+reviews carry a `note` there, and are listed in `BACKLOG.md`.
 
 ### Suggested order
 
-1. **Author the ones that need nothing** (the list above), each with an
-   adversarial rules review. That is how Kenrith, Arabella, Urtet, Voja and
-   Aesi landed.
-2. **Build down `cmdrs:gaps`' engine-only order**, authoring each
-   commander a feature unblocks in the same commit.
-3. **Then the UI-bound features.** Ward payment, choosing new targets for a
+1. **Build down `cmdrs:gaps`' engine-only order**, authoring each
+   commander a feature unblocks in the same commit, each with an
+   adversarial rules review.
+2. **Then the UI-bound features.** Ward payment, choosing new targets for a
    copy, "may sacrifice — when you do", choosing a permanent, and entering
    attacking with a chosen defender each need a new decision the client
    renders. See also `docs/plans/token-stack-choices.md`.
 
-## Next: EDH-popularity feature backlog
+## Open: the card backlog
 
-Derived from `top-commander-cards-flagged.txt` (264/2000 not-yet-implemented
-cards flagged, regenerate with `node scripts/top-commander-cards.mjs --count
-2000 --cache-json <path>` then `node scripts/flag-problematic-cards.mjs
-<path>`). Ranked by cards unblocked; a feature that unblocks another is noted.
-
-### Tier 1 — build these first (highest rank-weighted impact)
-
-| # | feature | cards | headline examples | what it needs |
-| --- | --- | --- | --- | --- |
-| 1 | **Channel** — DONE | 4 shipped | **Boseiju** (#76), **Otawara** (#88), **Takenuma** (#244), **Eiganjo** (#382) | `ActivatedAbility.zone: "hand"` (activatable only from hand; discarding the source is an implicit, unconditional part of the cost — it still goes on the stack like any other activated ability, rule 702.51a) + `ActivatedAbility.costReduction` (a live-count discount printed on the ability itself, mirroring `selfCostReduction`). Reused the existing activated-ability/stack machinery almost entirely — `stackAbilityOf`'s existing "source vanished, fall back to `def.activated[index]`" path (rule 608.2b) already covers a discarded source with zero changes. Also needed two new `TargetSpec`s (`attacking-or-blocking-creature`, `artifact-enchantment-or-nonbasic-land-an-opponent-controls`) and `CardFilter.typesAnyOf` (an OR of card types, mirroring `subtypes`). Boseiju's "that player may search their library..." clause was dropped — it needs a `may`/`search-library` decision made by a *different* player than the effect's controller, a real gap no other card needs yet. `channel.test.ts`. |
-| 2 | **Overload** — DONE (3 of the 6 shipped) | 3 shipped | **Cyclonic Rift** (#54), **Vandalblast** (#101), **Damn** (#346) — **Mizzix's Mastery**, **Eldritch Immunity**, **Winds of Abandon** still TBD (a different effect shape each, not just more overload plumbing) | `CardDefinition.overload: { cost, effect }` — a `cast-spell` variant enumerated alongside the base cast (mirrors kicker's fan-out, but *replaces* the mana cost instead of adding to it, and always takes zero targets, rule 702.126a). New `return-to-hand-all` `EffectSpec` (mirrors `destroy-all`) for Cyclonic Rift; Vandalblast/Damn reused `destroy-all` as-is. Also needed two new `TargetSpec`s for the *unkicked* modes to stay faithful to real text ("target artifact/nonland permanent **you don't control**"): `artifact-an-opponent-controls`, `nonland-permanent-an-opponent-controls`. **Fuzzer caught a real bug**: `RandomController`'s `castExtras` forwarded `kicked` but not `overload`, so it built a targetless overload cast without the `overload` flag — `whyCannotCastSpell` then validated it against the *unkicked* target specs and threw. Fixed in `controller.ts`; client `App.tsx` wired the same way as the kicker fan-out (an "(overload {cost})" button alongside "Cast"). `overload.test.ts`. |
-| 3 | **Conditional free-cast** — DONE (3 of the cycle shipped) | 3 shipped | **Fierce Guardianship** (#83), **Deadly Rollick** (#107), **Flawless Maneuver** (#181) — **Deflecting Swat** still TBD; **Etali, Primal Storm** is a *different* mechanic (see below) | `CardDefinition.freeCastIf: { condition: StaticCondition }` — reuses the exact `StaticCondition` union `StaticAbility`/`TriggeredAbility`/`ActivatedAbility.condition` already read (its fourth consumer), gated the same way `selfCostReduction` gates a cost discount, just zeroing the cost instead of reducing it. Unlike `overload`, targets/effect are completely unchanged — only the cost differs — so no target-spec or resolution-branch change was needed at all, just cost-string + affordability-check + enumeration plumbing (mirrors `overload`'s "extra `cast-spell` variant" shape). New `CardFilter.isCommander` for "if you control a commander" (fed into the existing `"controls"` condition kind). **Deflecting Swat** ("choose new targets for target spell or ability") needs two real, unbuilt primitives — a `TargetSpec` that can target a stack *ability* object, not just a spell, and a "change the target of a spell/ability on the stack" effect (no redirect/retarget effect exists) — dropped, documented in the card file. **Etali, Primal Storm**'s "exile the top card of each player's library, then cast any number of them without paying their mana costs" is a bigger, different primitive (multi-card, multi-player impulse + free-cast-any-number, an extension of the cascade-family `castCardWithoutPaying` core) — separate future work. `free-cast.test.ts`. |
-| 4 | **"Double"** — DONE (3 of the 6 shipped) | 3 shipped | **Kalonian Hydra** (#1119, errata'd off Double Strike onto this), **Bristly Bill** (#921), **Unnatural Growth** (#444) — **Twinflame Tyrant**, **Solphim, Mayhem Dominus**, **Gisela, Blade of Goldnight** are a *different* mechanic (see below) | Real Oracle text split Scryfall's single "Double" keyword tag into two genuinely different mechanics. **Shipped**: two new one-shot mass `EffectSpec`s — `double-counters-all { filter, counterKind }` (reads each matching permanent's own current count of that counter kind and adds that many again, routed through the existing `addCounter` so Doubling Season's *replacement* multiplier still composes on top — ruling-correct 3x, not 4x, per real Magic rulings) and `double-pt-all { filter, duration }` (reads each matching permanent's own current *computed* power/toughness individually — a 2/2 and a 5/5 both matching become a 4/4 and a 10/10, not a shared amount like `modify-pt-all` — filling a gap this doc had flagged since P16's dropped World War Hulk chapter III). **Not this feature — a different, unbuilt mechanism**: Twinflame Tyrant / Solphim / Gisela's "if a source you control would deal damage to an opponent, it deals double that damage instead" is a *continuous replacement* on damage events (rule 615-adjacent, the Furnace-of-Rath/Fiery-Emancipation family), not a one-shot effect — `replacements.ts` has no damage-multiplier `ReplacementSpec` kind at all today. Real future work, likely higher-value than the one-shot pass just shipped given how common damage-doublers are in the format, but a separate build. `double.test.ts`. |
-| 5 | **Convoke** — DONE (2 of the 4 shipped) | 2 shipped | **Hour of Reckoning** (#1030), **Chord of Calling** (#521 — convoke pays for its `{X}`) — **Clever Concealment** (phasing), **City on Fire** (damage-tripling replacement) still TBD | `CardDefinition.convoke: boolean` — a pure payment-*method* choice made as the spell is cast (`Action.convoke: ConvokePayment[]`, each `{creature, pays: "generic" | Color}`), left orthogonal to the existing `payMana`/`planManaPayment` mana-source machinery entirely rather than folded into it: the chosen convoke payments reduce the computed `ManaCost` directly (`reduceCostByConvoke`) *before* `payMana` runs on the remainder, so no `ManaSource`/`ManaOption` change was needed at all. Validated by a new `whyCannotConvoke` (untapped, a creature, one of its own colors or generic, and never more payers of a kind than the cost has left of it). Unlike `overload`/`free`, a convokable spell is **not** enumerated as a second `cast-spell` variant — `LegalAction` just carries `convoke: { candidates, maxGeneric }` (every untapped creature the caster controls, plus the cost's generic amount as a safe upper bound for an all-generic allocation) on its one entry, and `castSpellActions` falls back to a greedy `maxConvokeFor` proof (colored pips first, then generic) to decide whether an otherwise-unaffordable spell becomes castable at all before listing it. `RandomController` always convokes for `"generic"` (it has no registry access to read a candidate's colors) — colored-payment is only exercised directly in `convoke.test.ts`, not by the fuzzer. **Not wired into the client**: `Chord of Calling`'s `{X}` interacts with `maxAffordableX` (mana-only, convoke-unaware) in a way that would need real rework to get right, and no card without an `{X}` cost needed it, so it and any client convoke UI (a multi-select of creatures + per-creature color choice — a bigger UI investment than the kicker/overload/free button pattern) are left as follow-up work; a convokable spell today is castable only by the engine's own controllers (`ScriptedController`/`RandomController`), not through the web client. `convoke.test.ts`. |
+Derived from `top-commander-cards-flagged.txt` (regenerate with `node
+scripts/top-commander-cards.mjs --count 2000 --cache-json <path>` then `node
+scripts/flag-problematic-cards.mjs <path>`). Tier 1 and the Tier 1b
+primitives are done (see the index at the end). Measure before picking the
+next one: `node scripts/top-commander-cards.mjs --count 2000 --out
+<throwaway> --cache-json <path>` gives current Oracle text for the whole list
+without touching the checked-in snapshot.
 
 ### Tier 2 — solid value, smaller or more speculative
 
@@ -234,73 +153,35 @@ distinct powers, Morbid/Raid/Spectacle's "did X happen this turn") need a new
 is worth doing as a batch once a few concrete cards call for it rather than
 one at a time.
 
-### Recommended build order
+### Still open inside finished features
 
-1. ~~**Channel**~~ — **done** (Boseiju, Otawara, Takenuma, Eiganjo).
-2. ~~**Overload**~~ — **done** (Cyclonic Rift, Vandalblast, Damn).
-3. ~~**Conditional free-cast**~~ — **done** (Fierce Guardianship, Deadly Rollick,
-   Flawless Maneuver).
-4. ~~**"Double"**~~ — **done** (Kalonian Hydra, Bristly Bill, Unnatural
-   Growth). Damage-doubling (Twinflame Tyrant / Solphim / Gisela) is a
-   separate, unbuilt replacement-effect mechanism — see the table above.
-5. ~~**Convoke**~~ — **done** (Hour of Reckoning). Turned out not to need
-   `payMana`/`planManaPayment` changes at all — convoke payments reduce the
-   `ManaCost` directly before the mana-source machinery ever sees it, so the
-   "biggest lift of the five" framing above didn't hold up against real
-   Oracle text. Chord of Calling (`{X}` + convoke) and client UI are follow-up
-   work — see the table above.
-
-**Tier 1 is complete.**
-
----
-
-## Tier 1b — the primitives the keyword screen missed
-
-Re-measured against a fresh top-2000 pull once the `[x]` marks were fixed
-(they had been badly stale — 111 reported, 329 real). The result overturned
-this file's Tier 2 ordering: the biggest blockers are not named keywords at
-all, they are small, unglamorous *primitives* that a keyword screen can't see
-because no keyword names them. Counting unimplemented top-2000 cards whose
-Oracle text needs each:
-
-| feature | cards blocked | status |
-| --- | --- | --- |
-| **delayed triggered abilities** (rule 603.7) | 31 | **DONE** |
-| **put a card on top of a library** | 18 | **DONE** |
-| **put a card from your hand onto the battlefield** | 20 | **DONE** |
-| **additional cost that isn't a sacrifice** (discard / pay life / pay X life) | 11 | **DONE**; "A **or** B" (Bitter Triumph #840) still open |
-| more `StaticCondition` kinds | 10 | **Mostly done** — `delirium` added; morbid and threshold turned out to exist already. Coven and Raid still open, and neither has a card the rest of whose text is expressible |
-| unbounded targeting ("any number of target …") | 11 | **Deliberately deferred** — see below |
-
-For comparison, the Tier 2 keywords below block 4-9 cards each. Measure before
-picking the next one: `node scripts/top-commander-cards.mjs --count 2000 --out
-<throwaway> --cache-json <path>` gives current Oracle text for the whole list
-without touching the checked-in snapshot.
-
-### Delayed triggered abilities — DONE (31 cards unblocked)
-
-`GameState.delayedTriggers` + a `delayed-trigger` effect. A delayed ability
-belongs to no permanent, which is exactly why `detectTriggers` (a scan over
-battlefield permanents) can't see it — `enterStep` fires them instead, minting
-a stack object that carries the whole `DelayedTrigger` record because there is
-no card ability for `stackAbilityOf` to find by index.
-
-It chooses no new targets (rule 603.7d), so it carries forward the targets the
-creating effect had and refers to them by slot exactly like any other effect —
-which is what let `delayed-trigger` reuse the entire effect vocabulary for
-free. `controller: { controllerOfTarget }` hands the ability to someone else
-(Arcane Denial's "**its controller** may draw up to two cards"), which is the
-only part that needed anything new.
-
-Separately, `create-token` / `create-token-copy` gained `sacrificeAtEndStep`
-alongside the existing `exileAtEndStep`: a delayed ability can't name a token
-that didn't exist when it was set up, and "sacrifice them at the beginning of
-the next end step" is a whole family of its own (Kiki-Jiki, Chandra, The Fire
-Crystal, Voice of Victory). It reuses Encore's per-object flag.
-
-Shipped: **Whip of Erebos** (#713), **Arcane Denial** (#53), **Kiki-Jiki,
-Mirror Breaker** (#1247), and the clause Chandra, Acolyte of Flame had been
-dropping. `delayed-triggers.test.ts`.
+- **Overload**: Mizzix's Mastery, Eldritch Immunity, Winds of Abandon (a
+  different effect shape each).
+- **Conditional free-cast**: Deflecting Swat (targeting a stack *ability* and
+  a change-the-target effect); Etali, Primal Storm (multi-card impulse +
+  cast-any-number).
+- **Damage doubling** (Twinflame Tyrant, Solphim, Gisela, City on Fire): a
+  continuous replacement on damage events; `replacements.ts` has no
+  damage-multiplier kind.
+- **Convoke**: Clever Concealment (phasing).
+- **Additional costs**: an optional, repeatable cost — Plumb the Forbidden,
+  Dargo ("sacrifice one or more creatures"). Redirect Lightning needs a
+  change-the-target effect.
+- **Put from hand**: Last March of the Ents (a greatest-toughness amount),
+  Spelunking (lands enter untapped).
+- **Global land-type statics**: Urborg, Tomb of Yawgmoth and Yavimaya, Cradle
+  of Growth — `effectiveSubtypes` is deliberately given no `GameState`, so a
+  board-dependent land subtype touches check lands, `landProduces` and every
+  `subtype` clause.
+- **Remaining `StaticCondition`s**: Coven and Raid (no card whose other text
+  is expressible yet).
+- **Protection from a filter** (19 cards — Mother of Runes, Giver of Runes,
+  the Sword cycle): `protection: {colors, types}` widening to a `CardFilter`.
+  The One Ring and Teferi's Protection give protection to a *player* instead.
+- **Cards E3 skipped** for want of a primitive and still unauthored:
+  Ponder (put cards back in any order), Skullclamp ("equipped creature
+  dies"), Chaos Warp (shuffle a permanent into a library), The One Ring
+  (protection for a player), Urza's Saga.
 
 ### Unbounded targeting — scoped, and deliberately not built
 
@@ -322,291 +203,6 @@ time has the same problem from the other end.
 
 Four cards is not worth that. Revisit if the count grows, or alongside Strive
 (which needs a per-target cost and would want the same machinery).
-
-The same effort instead bought twelve cards, six of them in the top 80 — see
-below.
-
-### The top-80 cluster — DONE
-
-Measured after the marks were fixed, by reading the highest-ranked
-unimplemented cards rather than bucketing by keyword. Three needed **no engine
-work at all**, which is the recurring lesson of this whole exercise:
-
-- **Reliquary Tower** (#10) — `noMaxHandSize` shipped with Thought Vessel.
-- **Reanimate** (#54) — `manaValueOf` already reads a target's printed mana
-  value as last-known information, which is exactly what "lose life equal to
-  that card's mana value" needs after the card has moved.
-- **Rhystic Study** (#44) — the `unless` punisher effect and its
-  `chooser: "trigger-controller"` already existed; a `cast-spell` trigger
-  carries the spell, whose controller is the caster.
-
-Three small features covered the rest:
-
-- **`add-mana`'s `{ producedBy: "opponents-lands" }`** — a `oneOf` whose list
-  is read off the board rather than printed, resolved in all three places a
-  mana spec is read (the payment planner, the standalone-activation menu, and
-  `addMana`). **Exotic Orchard** (#9), **Fellwar Stone** (#17).
-- **`look-and-choose` destination `"library-top"`** — **Brainstorm** (#72).
-- **A `enchantment-instant-or-sorcery-spell` target spec** — **Swan Song**
-  (#68), plus a 2/2 blue Bird token, since the existing Bird is a 1/1 white one.
-
-**Urborg, Tomb of Yawgmoth** (#73) and **Yavimaya, Cradle of Growth** (#77)
-were scoped and dropped: "each land is a Swamp" needs a *static from another
-permanent* to add a subtype, but `effectiveSubtypes` is deliberately given no
-`GameState` so that `staticAffects` can call it without recursing. Making land
-subtypes board-dependent touches check-lands, `landProduces` and every
-`subtype` filter clause. Real work, not a quick win.
-
-### Additional costs beyond a sacrifice — DONE for fixed amounts
-
-`CardDefinition.additionalCost` went from `{ sacrifice }` to
-`{ sacrifice?, discard?, payLife? }`, any combination of which is paid as the
-spell is cast. Both new forms gate *castability* rather than fizzling on
-resolution, which is the whole difference between a cost and an effect: too
-small a hand, or too little life, and the spell simply isn't offered.
-
-Two details worth keeping: the discard is raised after the spell is already on
-the stack, so it can't be discarded to pay for its own cost (rule 601.2h), and
-it happens at cast time, so it stands even if the spell is later countered.
-
-Shipped: **Thrill of Possibility** (#211), **Big Score** (#138), **Seize the
-Spoils** (#762), **Cathartic Reunion** (#1099), plus **Culling the Weak**
-(#524) and **Corrupted Conviction** (#599), whose sacrifice cost had been
-expressible all along and simply wasn't authored. `additional-costs.test.ts`.
-
-**`payLifeX`** then covered **Toxic Deluge** (#66): an `{X}` spell whose mana
-cost contains no `{X}` at all. `xCost.maxX` becomes the caster's life total
-rather than what their lands can pay, and `ctx.x` reads the chosen value like
-any other X — so the only genuinely new part was where the ceiling comes from.
-
-**A choice between two costs — DONE.** `additionalCost.options` takes a list
-of whole costs of which exactly one is paid, each enumerated as its own
-castable variant the way kicker is, so the caster chooses by picking a
-`cast-spell` rather than by answering a decision mid-cast. Shipped **Bitter
-Triumph** (#839) and **Demand Answers** (#414); `additional-costs.test.ts`.
-
-Measured first, because the feature sounded more general than it is: only
-six cards in the top 2000 have an `or` in an additional-cost clause, and
-three of those are something else. **Deadly Dispute** (#130) was never
-blocked — "sacrifice an artifact or creature" is one cost with a `typesAnyOf`
-filter, not a choice. **Redirect Lightning** (#558) needs the choice *and* a
-change-the-target effect, which isn't modeled, so it stays out under §0.
-
-Still open: **Plumb the Forbidden** (#1154) and **Dargo, the Shipwrecker**
-need an *optional, repeatable* cost ("sacrifice one or more creatures"),
-which is a different shape again — a count the caster picks, not a branch.
-
-### Put a card from your hand onto the battlefield — DONE (20 cards unblocked)
-
-`look-and-choose`'s `zone` gained `"hand"`, which turned out to be the whole
-feature — the decision, the filter, the optional-ness (`min: 0`) and the
-"leave the rest alone" (`leftover: "stay"`) were all already there, and
-`enterTapped` came along for Terrain Generator. It bypasses the land-drop
-rule for free, which is correct: putting a land onto the battlefield is not
-playing one.
-
-Shipped: **Growth Spiral** (#234), **Ghalta, Stampede Tyrant** (#1072),
-**Terrain Generator** (#1887), **Eureka Moment** (#1992).
-`put-from-hand.test.ts`.
-
-That missing piece — a `then` on `look-and-choose`, applied with the *chosen*
-cards as its targets — is now built, along with a `sacrifice-target` effect
-for naming one permanent rather than raising an edict. Together with delayed
-triggers they make **Sneak Attack** (#1498) exact: put a creature from hand
-onto the battlefield, give *that* creature haste, sacrifice *it* at the next
-end step. Three features that were each useless alone.
-
-**Last March of the Ents** (#980) still needs an `EffectAmount` for "the
-greatest toughness among creatures you control" (a max, not a count), and
-**Spelunking** a replacement making your lands enter untapped.
-
-### Put a card on top of a library — DONE (18 cards unblocked)
-
-Two shapes, one primitive. `search-library`'s `destination` gained
-`"library-top"` for the tutor-to-top family, and a new `put-on-library
-{ target, position }` effect covers the targeted graveyard-to-deck lands.
-
-The ordering is the whole trick and is easy to get backwards: the find is put
-on top *after* the search's own shuffle (rule 701.19j), so `applyZoneChoice`
-deliberately skips the move in its per-card loop and places the chosen cards
-once the shuffle has run.
-
-Shipped: **Vampiric Tutor** (#113), **Enlightened Tutor** (#123), **Mystical
-Tutor** (#160), **Imperial Seal** (#526), **Academy Ruins** (#462), **Mortuary
-Mire** (#694), **Hall of Heliod's Generosity** (#422). `library-top.test.ts`.
-
-Note `card-in-graveyard` + `put-onto-battlefield` already covered targeted
-reanimation from *any* graveyard (Gravespawn Sovereign's shape) — the 36 cards
-that look blocked on it are merely unauthored, not blocked. Reanimate itself
-needs only an `EffectAmount` that reads a target's mana value.
-
----
-
-Work down Tier 1b next, then Tier 2 opportunistically; treat Tier 3 as
-"revisit if the card count grows," not a queue.
-
-### E1 — the first bulk-authoring pass (53 cards, no new feature needed)
-
-Tier 1 finished the *features* the popularity list demanded; this pass took the
-other half of the same list — the top-200 staples that need **no** new
-vocabulary — and authored them in bulk. 53 cards, all verified against Scryfall
-by `card:verify`.
-
-**A tooling correction first.** `top-commander-cards.txt`'s `[x]`/`[ ]` marks
-were produced by regexing `name: "…"` out of each `pool/` file, so every card
-built by a `helpers.ts` constructor (`shockLand("Blood Crypt", …)` — the whole
-file) was falsely reported missing. Ten already-implemented lands were listed as
-unauthored. *(Fixed since: the script reads `POOL_CARDS` out of the built
-`dist/`, and `--refresh` re-marks the file in place.)*
-
-Shipped:
-
-- **Five land cycles completed** (32 cards) — shock (Watery Grave, Breeding
-  Pool, Godless Shrine, Hallowed Fountain, Steam Vents, Sacred Foundry, Temple
-  Garden), fetch (Polluted Delta, Flooded Strand, Misty Rainforest, Windswept
-  Heath, Scalding Tarn, Marsh Flats, Arid Mesa), check (Clifftop Retreat,
-  Dragonskull Summit, Isolated Chapel, Glacial Fortress, Drowned Catacomb,
-  Woodland Cemetery, Sunpetal Grove), pain (Battlefield Forge, Caves of Koilos,
-  Llanowar Wastes, Underground River, Adarkar Wastes, Sulfurous Springs,
-  Brushland), BFZ duals (Sunken Hollow, Smoldering Marsh, Canopy Vista, Prairie
-  Stream). Every one is a single `helpers.ts` call — the P0/P1 land toolkit had
-  already paid for all of them, and each cycle now has all ten members, which
-  is what a real imported decklist actually asks for.
-- **The Talisman cycle** (10) — a new `talisman()` helper: a pain land's exact
-  ability set on a `{2}` artifact.
-- **Rocks and utility lands** — Mind Stone, Lotus Petal, Ashnod's Altar,
-  Wayfarer's Bauble, Swiftfoot Boots, Ancient Tomb, Mana Confluence, City of
-  Brass.
-- **Spells and creatures** — Dark Ritual, Three Visits, Elvish Mystic, Abrade,
-  Deadly Dispute, Generous Gift (+ an Elephant token), Blood Artist, Solemn
-  Simulacrum, Eternal Witness.
-
-Two engine changes came out of it, both rules bugs rather than new vocabulary:
-
-1. **`TriggerSpec.on: "becomes-tapped"`** (rule 701.21a) — City of Brass. A
-   `predicate` trigger can't express it: the predicate sees only the raw event,
-   never which permanent carries the ability, so two Cities would each fire for
-   the other's tapping. `painToController` doesn't fit either — the City hurts
-   however it got tapped, including when tapped to pay a cost.
-2. **`dies` now matches any battlefield → graveyard move**, not just
-   `permanent-destroyed` (rule 700.4). It had missed **every sacrifice**, so
-   Zulaport Cutthroat — in the pool since P-era — silently did nothing when you
-   sacrificed a creature, and the whole aristocrats interaction was dead.
-   Keyed off `permanent-left-battlefield`'s `toZone`, which also gets the
-   903.9a case right for free: a commander redirected to the command zone
-   never reaches a graveyard, so it doesn't die.
-
-`edh-staples.test.ts`. Both bugs were found by authoring a card and testing it,
-not by reading the engine — worth repeating for the next bulk pass.
-
-### E2 — every made-up card replaced with a real one
-
-The pool had carried 27 invented cards since the ROADMAP phases — placeholders
-written to exercise a mechanic when no real card had been looked up for it
-(`Grovewatch Elder // Grovewatch Hollow` for MDFCs, `Nightfall Cultist //
-Voidfall Horror` for a transform ability and a `transforms` trigger, `Rendwin,
-Warden of the Grove` for a planeswalker, four seat commanders, and so on). They
-were invisible to `card:verify` (a name Scryfall has never heard of is reported
-as `NOT FOUND`, not as a mismatch), so nothing flagged them, and a deck built in
-the deck builder could contain cards that don't exist.
-
-All 27 are gone, replaced by real cards carrying the same mechanic, and
-`card:verify` now reports **327 checked, 0 mismatched, 0 not found**. The
-substitutions, by what each was covering:
-
-| mechanic | was | now |
-| --- | --- | --- |
-| MDFC (creature // land) | Grovewatch Elder // Hollow | **Kazandu Mammoth // Kazandu Valley** |
-| Adventure | Emberclaw Scout // Ember Dart | **Beanstalk Giant // Fertile Footsteps** |
-| Disturb | Gravebound Squire // Spectral Squire | **Baithook Angler // Hook-Haunt Drifter** |
-| daybound / nightbound | Moonrise Cultivator // Marauder | **Harvesttide Infiltrator // Harvesttide Assailant** |
-| activated transform | Nightfall Cultist | **Bloodline Keeper // Lord of Lineage** |
-| `transforms` trigger | Voidfall Horror | **Sidequest: Raise a Chocobo // Black Chocobo** |
-| planeswalker | Rendwin / Yulra | **Garruk Wildspeaker**, **Elspeth, Sun's Champion** |
-| emblem | Coronation Rite | **Elspeth, Sun's Champion**'s −7 |
-| resolution-time `modal` | Deliberate Course | **Austere Command** (choose two) |
-| cast-time `castModal` | Sunder Charm / Duskwood Verdict | **Simic Charm** / **Kolaghan's Command** |
-| Partner pair | Bramblewing / Corvath | **Tana, the Bloodsower** / **Bruse Tarl, Boorish Herder** |
-| seat commanders | Ashmark / Sarova / Seraphine | **Atraxa, Praetors' Voice** / **Ayara, First of Locthwain** / **Emmara, Soul of the Accord** |
-| `prevent-damage` shield | Sunlit Bastion | **Mending Hands** |
-| dies → damage | Vengeful Ghoul | **Mudbutton Torchrunner** |
-| graveyard `look-and-choose` | Grave Recall | **Regrowth** |
-| library `look-and-choose` | Explorer's Insight | **Ureni of the Unwritten** (already in the pool) |
-| counter-pump creature | Wildwood Sentinel | **Walking Ballista** (already in the pool) |
-| big body | Mossback Dragon | **Colossal Dreadmaw** |
-
-Two more rules bugs fell out of the swap, both found the same way as E1's — by
-making a real card work:
-
-1. **An activated ability's "Activate only if …" condition skipped its own
-   source.** Rule 602.5 checks the game state, and the permanent is part of it:
-   Bloodline Keeper is one of the five Vampires its own transform ability
-   counts. (A *static* ability's condition is the one that skips itself, so
-   "as long as you control another …" can't read itself.) Fixed in both the
-   `whyCannotActivateAbility` gate and `manaSources`' auto-payment scan.
-2. **`ActivatedAbility.otherOnly` now also excludes the source from a
-   sacrifice cost** — Ayara's "Sacrifice **another** black creature" could
-   otherwise eat Ayara herself.
-
-Three things the real cards could not carry over, each because the engine
-can't express the real card faithfully and inventing one is no longer allowed:
-
-- **A static anthem on a planeswalker.** Domri, Anarch of Bolas is the only
-  real printing, and its +1 grants "creature spells you cast this turn can't be
-  countered", which has no vocabulary. The layer path itself is unchanged —
-  `collectStaticEffects` never special-cased planeswalkers.
-- **A triggered ability on a planeswalker** — same story; no real planeswalker
-  in the pool has one.
-- **An *unfiltered* library `look-and-choose`.** Every real card of that shape
-  filters what you may take (Ureni: a Dragon). The filtered path is covered.
-
-### E3 — five more cycles and the text-structure audit (57 cards)
-
-Another no-new-feature bulk pass, same shape as E1: **five complete cycles**
-behind new `helpers.ts` constructors — the original dual lands (`dualLand`),
-the Theros scry lands (`scryLand`, which the two already-authored Temples were
-refactored onto), the Innistrad slow lands (`slowLand`), the artifact lands
-(`artifactLand`) and the Medallions (`medallion`) — plus 19 hand-authored
-staples: Fyndhorn Elves, Harmonize, Night's Whisper, Thran Dynamo, Ornithopter
-of Paradise, Reclamation Sage, Viscera Seer, Village Rites, Terminate, Diabolic
-Intent, Skyshroud Claim, Pongify, Stroke of Midnight, Anguished Unmaking,
-Basilisk Collar, Karn's Bastion, Phyrexian Tower, Buried Ruin, Temple of the
-False God, Darksteel Citadel. Pool is 384 cards, all verified.
-
-**The display half.** A card's `text` is rendered verbatim, so its "\n"s are
-what separate one ability from the next on screen — except nothing was
-checking them and `.ct-rules` had no `white-space` rule, so every newline
-collapsed to a space and abilities ran together. `card:verify --text` now
-audits each card's line structure against Scryfall's `oracle_text`; it found
-15 cards genuinely missing a break. The flag is opt-in because ~34 remaining
-differences are correct by design (the keyword line comes from `keywords`, a
-typed dual needs an explicit "{T}: Add" line Scryfall leaves implicit, an
-unmodeled ability's line is missing on purpose).
-
-**The fuzzer caught a real priority bug**, unrelated to any of these cards but
-newly reachable once the decks changed: `tick()` runs state-based actions and
-*then* asks the priority holder to act, but an SBA sweep can raise a decision
-mid-tick — a wrath killing a commander owes its owner the 903.9a choice.
-`prepareForPriority` hands that player priority; `tick` didn't, so whoever
-already held priority was asked to act with a declaration pending and threw on
-passing. Needed a commander, a mass destroy and Rest in Peace (redirecting the
-commander's move to exile) on the board at once, which is why it survived this
-long.
-
-**Deliberately skipped** (each needs a primitive the engine doesn't have, all
-in the top 125): Exotic Orchard / Fellwar Stone / Path of Ancestry (mana
-provenance — "a color a land an opponent controls could produce"), Reliquary
-Tower / Thought Vessel (no `maxHandSize` static), Cultivate / Kodama's Reach
-(multi-destination tutor), Swords to Plowshares / Path to Exile (life or a
-search for *another* player, scaled off the target), Rhystic Study / Smothering
-Tithe / Esper Sentinel (an "unless that player pays" clause), Reanimate
-(another player's graveyard), Brainstorm / Ponder (put cards back on top in any
-order), Toxic Deluge (pay-X-life as an additional cost), Urborg / Yavimaya (a
-global type-change static), Skullclamp ("equipped creature dies"), Chaos Warp
-(shuffle a permanent into a library), Cavern of Souls, The One Ring, Urza's
-Saga.
-
----
 
 ## The limitation ledger — every §15 gap, ranked by blocked cards
 
@@ -646,89 +242,36 @@ nothing in the repo distinguished them.
 Retrace, riot and Prototype gate **nothing** in the top 2000 — they are in §15
 because a card in the pool wanted them, not because the backlog does. Leave
 them.
+Since measured: mana provenance and the plays-a-land trigger are built.
 
-### Mana provenance — DONE (21 cards unblocked, four of them top-250)
+## Done: index of finished passes
 
-Built as designed below, in one pass. Shipped: **Path of Ancestry** (#14),
-**Cavern of Souls** (#111), **Secluded Courtyard** (#219), **Unclaimed
-Territory** (#247), **Ancient Ziggurat**. `mana-provenance.test.ts`, and the
-authoring vocabulary is AUTHORING §15's "Mana provenance" entry.
+Kept so that source comments citing them resolve. The narrative for each is
+in `git log`.
 
-Three things the plan didn't anticipate, all found by writing the tests and
-running the fuzzer rather than by reading the code:
+- **Tier 1 (EDH-popularity backlog)** — Channel (Boseiju, Otawara, Takenuma,
+  Eiganjo; `channel.test.ts`), Overload (Cyclonic Rift, Vandalblast, Damn;
+  `overload.test.ts`), conditional free-cast (Fierce Guardianship, Deadly
+  Rollick, Flawless Maneuver; `free-cast.test.ts`), "Double" (Kalonian Hydra,
+  Bristly Bill, Unnatural Growth — `double-counters-all`/`double-pt-all`,
+  which also filled the gap P16's dropped World War Hulk chapter III had
+  flagged; `double.test.ts`), Convoke (Hour of Reckoning, Chord of Calling;
+  `convoke.test.ts`).
+- **Tier 1b (primitives the keyword screen missed)** — delayed triggered
+  abilities (`delayed-triggers.test.ts`), put a card on top of a library
+  (`library-top.test.ts`), put a card from hand onto the battlefield
+  (`put-from-hand.test.ts`), additional costs beyond a sacrifice incl. a
+  choice between two costs (`additional-costs.test.ts`), the top-80 cluster
+  (Exotic Orchard, Fellwar Stone, Brainstorm, Swan Song, Reliquary Tower,
+  Reanimate, Rhystic Study).
+- **E1** — 53 top-200 staples with no new feature (`edh-staples.test.ts`);
+  found the `becomes-tapped` trigger and "dies matches every battlefield →
+  graveyard move".
+- **E2** — every invented placeholder card replaced with a real printing.
+- **E3** — five more cycles and the text-structure audit (`card:verify --text`).
+- **Mana provenance** — the mana pool as tagged `ManaUnit`s (Path of
+  Ancestry, Cavern of Souls, …; `mana-provenance.test.ts`, AUTHORING §15).
 
-1. **"As this enters, choose a creature type" never fired for a land.** It
-   hung off the permanent-*spell* resolution path, and a land is played, not
-   cast — so all three chosen-type lands entered with no type named and their
-   restricted mana could pay for nothing. `applyEnterChoices` is now shared by
-   both paths.
-2. **A hand-activated mana ability didn't tag its mana.** The payment planner
-   tagged what it produced, but `applyEffectSpec`'s `add-mana` didn't — and
-   floating mana is precisely the case the tagged pool exists for.
-3. **The generic-spend type choice underflowed** when a restricted unit this
-   payment couldn't touch was floating: picking the pip's colour by "is there
-   a unit of this type" selected that unit's colour and then failed to take
-   it. It has to choose over what is actually spendable. The fuzzer hit this
-   on 115 of 150 seeds; there is now a regression test.
-
-The original scoping follows, unchanged.
-
-### The design: mana provenance (21 cards, four of them top-250)
-
-The single highest-value gap, and three printed shapes over one underlying
-change:
-
-- **restricted spend** — "Spend this mana only to cast a creature spell of the
-  chosen type" (Cavern of Souls #111, Secluded Courtyard #219, Unclaimed
-  Territory #247, Plaza of Heroes #485, Castle Garenbrig #722, Haven of the
-  Spirit Dragon #1149, Eldrazi Temple #1718, Delighted Halfling #151, …)
-- **a rider on spend** — "When that mana is spent to cast a creature spell
-  that shares a creature type with your commander, scry 1" (**Path of Ancestry
-  #14**, Arena of Glory #371)
-- **pool persistence** — "You don't lose this mana as steps and phases end"
-  (Savage Ventmaw #1670, Ashling #1552, Electro #1314)
-
-All three need the same thing: **the mana pool stops being a count and becomes
-a list of tagged units.** `PlayerState.manaPool: Record<ManaType, number>`
-becomes `readonly ManaUnit[]`, where a unit is `{ type, restriction?,
-onSpend?, persists? }` — still plain `structuredClone`-able data, and the
-count form is reconstructed by a selector for the view and the planner. That
-is the whole feature; the three shapes are three optional fields on the unit.
-
-The work, in dependency order:
-
-1. **Represent it.** `manaPool` → a list; a `poolCounts()` selector for the
-   ~8 read sites (`game.ts` ×6, `view.ts`, the client's mana display).
-   `poolTotal` becomes `length`.
-2. **Spend it correctly.** `spendFromPool` stops being a subtraction and
-   becomes a small matching: each pip must be paid by a unit legal for *this*
-   spell, and restricted units go first (use-it-or-lose-it) so an unrestricted
-   one isn't wasted on a pip the restricted one could have covered. Greedy is
-   provably enough here — legality is a per-unit predicate against a single
-   spell, and same-type pips are interchangeable.
-3. **Thread the context.** `payMana` → `planManaPayment` → `chooseOption`
-   need to know what is being paid for, so the planner doesn't tap Haven for a
-   non-Dragon. A `ManaLegality` argument (`{kind:"cast", def} | {kind:"ability",
-   source} | null`) through ~10 call sites, mechanical. **Watch `canAfford` /
-   `isDeadForMana` (`game.ts:4513`, `:4553`)** — they estimate capacity for
-   the bot and the auto-passer, and ignoring restrictions there over-estimates,
-   which shows up as a bot trying to cast what it can't pay for.
-4. **Persistence** is then one line: the step/phase `emptyPool()` at
-   `game.ts:2576` drops only units without `persists`, and cleanup drops all.
-5. **The rider** falls out of step 2: `spendFromPool` now knows which unit
-   paid for what, so it emits a `mana-spent` event carrying the tag and the
-   spell, and `detectTriggers` handles it like any other. Path of Ancestry's
-   scry goes on the stack above the spell, which is correct (rule 603.2).
-
-Roughly a day, most of it in steps 1–3, and it is the kind of change that is
-much cheaper now than after another thousand cards. **Protection-from-filter
-(19 cards) is the cheaper second pick** — `protection: {colors, types}`
-widening to a `CardFilter` reaches Mother of Runes, Giver of Runes, Spirit
-Mantle and the whole Sword cycle without new machinery. Note its top two,
-The One Ring (#92) and Teferi's Protection (#109), are *not* in that discount:
-both give protection to a **player**, and Teferi's also needs phasing.
-
----
 
 ## Completed: `neededCards.txt` passes (P0-P20)
 

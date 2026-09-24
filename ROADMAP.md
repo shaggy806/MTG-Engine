@@ -5,8 +5,8 @@ enough engine coverage to run ordinary Commander decks / precons.
 
 **Status: all 11 phases are done**, and so is the follow-on "needed-cards" P0–P20
 card-driven bulk-authoring series. The engine now expresses the mechanics an ordinary
-Commander deck needs. **The plan of record for new work lives in
-`engine/src/cards/neededCards-features.md`**, not here — see [Where next](#where-next).
+Commander deck needs. **Open work — including everything this plan deferred — is listed in
+[`BACKLOG.md`](BACKLOG.md)**, not here.
 
 **What this file is for now.** Two things, both still live:
 
@@ -228,29 +228,8 @@ Six increments closing gaps that made real cards inexpressible:
 
 ## Where next
 
-All 11 phases are done, and so is the bulk card-authoring pass this section
-originally pointed at (needed-cards P0–P20 — two curated precon decks, ~170
-cards, effectively complete; see `engine/src/cards/neededCards-features.md`).
-
-**The plan of record for what to build next now lives in
-`engine/src/cards/neededCards-features.md`**, not here: an EDH-popularity-driven
-backlog (the top 2000 Commander cards by EDHREC rank, cross-referenced against
-the pool and screened for likely-unsupported mechanics) ranking engine features
-by how many real cards each would unblock, with a "Tier 1/2/3" prioritization
-and a recommended build order. That file is kept current as each feature
-ships; this section isn't. Candidate directions that don't fit that
-card-driven framing, roughly by payoff:
-
-1. **`resolve`-hatch sweep** — convert the remaining bespoke imperative
-   `resolve` cards to declarative `effect` form now that the vocab is broad.
-2. **Phase 10 deferred (large/niche)** — Battles (a card type + attack target),
-   phasing (a state dimension), dungeons / Initiative + Undercity / Ring, banding.
-   Demand-driven; none blocks ordinary Commander play. (These also show up with
-   low EDH-popularity card counts in the backlog doc above, which is further
-   evidence they're not worth a scope change yet.)
-3. **Engine long tail** — see CLAUDE.md's "Not modeled" paragraph and
-   `cards/AUTHORING.md` §15 for the current, maintained list of specific
-   unmodeled vocabulary and partial features.
-
-Client/server feature work is tracked separately, in `docs/plans/` — four of the five
-long-term features there have shipped; server-side deck save/share is still unscoped.
+Not here. [`BACKLOG.md`](BACKLOG.md) is the single list of open work. That includes what
+these phases deferred: Phase 10's Battles, phasing,
+dungeons/Initiative/Ring and banding, Phase 9's Companion and legend-rule choice, Phase 11's
+`choose-replacement-order` and damage redirection, and the `resolve`-hatch sweep. Engine features
+are ranked by the cards they unblock in `engine/src/cards/neededCards-features.md`.

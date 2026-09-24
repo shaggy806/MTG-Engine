@@ -13,27 +13,27 @@ that order so `engine` builds first, then `protocol`, then `server`).
 **Where the docs live.** This file is a map of *current architecture* — not a changelog. The
 others, and what each is for:
 
+- **`BACKLOG.md`** — **the plan of record for open work**: one line per thing still to do
+  (commander gap, card backlog, engine rules gaps, bots, client/UI, tooling), each pointing at
+  where its detail lives. Delete a line when it lands; add one when you find something. Nothing
+  else lists open work, so check it before starting and update it in the same commit.
 - **`ROADMAP.md`** — the engine's build history, condensed. Its 11 phases and the follow-on
   "needed-cards" P0–P20 passes are **all done**; ~180 source comments cite "ROADMAP Phase N", so
   the phase index stays. **Read its *Architecture constraints* section before touching the
   engine.** Per-phase narrative detail is in `git log`, not here.
-- **`engine/src/cards/neededCards-features.md`** — the plan of record for *new* engine work: an
-  EDH-popularity-driven backlog (from `top-commander-cards.txt`/`top-commander-cards-flagged.txt`,
-  the top 2000 Commander cards by EDHREC rank cross-referenced against the pool) ranking features
-  by how many real cards each would unblock, plus a compact P0–P20 index. The pool is ~746 real
-  cards (`npm run card:verify -w engine` prints the current count). The `[x]` marks in
-  `top-commander-cards.txt` are refreshed by `npm run cards:mark -w engine`, which re-marks
-  the file in place against the built pool rather than re-fetching the ranking.
-  **The commander backlog is measured, not screened**: `top-commanders-gaps.json` maps every unimplemented
-  top-500 commander to the engine features it needs (a per-card triage, normalized onto one ~245-feature
-  vocabulary), and `npm run cmdrs:gaps -w engine` ranks those features, both by commanders blocked and as a greedy
-  engine-only build order. Add a feature's key to the JSON's `built` array when it lands.
-  **Its top section is the current priority: the commander gap.** Only 12 of the 500
-  most-played *commanders* are implemented, so an imported decklist almost always has its
-  commander substituted — the one card the deck exists for. That is a separate population from
-  the card backlog and needs its own list (`top-commanders.txt`, `npm run cmdrs:top` /
-  `cmdrs:mark -w engine`): ranking commanders by *card* popularity misses 53 of the top 100,
-  because a commander is a singleton played almost nowhere but its own deck.
+- **`engine/src/cards/neededCards-features.md`** — the detail behind `BACKLOG.md`'s engine items:
+  engine features ranked by how many real cards each would unblock, over two measured
+  populations, plus a compact index of finished passes (P0–P20, Tier 1, E1–E3) that source
+  comments cite. **The commander gap comes first**: `top-commanders.txt` (`npm run cmdrs:top` /
+  `cmdrs:mark -w engine`) is the top 500 commanders by decks run *as commander* — ranking them by
+  card popularity misses 53 of the top 100, because a commander is a singleton played almost
+  nowhere but its own deck — and `top-commanders-gaps.json` maps every unimplemented one to the
+  engine features it needs (a per-card triage over one ~245-feature vocabulary), which
+  `npm run cmdrs:gaps -w engine` ranks by commanders blocked and as a greedy engine-only build
+  order. Add a feature's key to the JSON's `built` array when it lands. The card backlog is
+  `top-commander-cards.txt`/`top-commander-cards-flagged.txt` (the top 2000 Commander cards by
+  EDHREC rank against the pool), re-marked in place by `npm run cards:mark -w engine`. The pool is
+  ~750 real cards (`npm run card:verify -w engine` prints the current count).
 - **`engine/src/cards/AUTHORING.md`** — the hand-authoring guide for adding a card. Read before
   authoring.
 - **`DEPLOYMENT.md`** — the tobyens.com production hosting/update runbook.
@@ -44,7 +44,7 @@ others, and what each is for:
   `auto-pass-interruptions` (the shared "something real happened" scan that
   stops both it and auto-pass).
   `engine-gaps` records the engine work that unblocked most of the precons, paused with the rest
-  substituted. `smarter-bots` (v2, one-ply search) is **in progress** and its search architecture is superseded by `bot-v3-search` (rollout search over sampled worlds — **built, benched, and deliberately not seated**: it loses to v2 by six points at four players, and the evaluation re-fit is outstanding; read it before changing how the bot picks actions). `token-stack-choices` (**in progress**) designs picking some members of a token stack, the last stack gap after the counting and whole-stack fixes: sacrifice N, tap costs and convoke are built; splitting a stack across attackers or blockers, and choosing which of a stack proliferate touches, are not. `commander-replacement` records how rule 903.9a is asked (never skipped: queued when it can't be asked yet, re-asked when overwritten) and the older bugs found alongside it, all since fixed. `damage-assignment-order` (**implemented**) records that Foundations removed damage assignment order, so a blocked creature's damage is divided freely among its blockers (trample still needs lethal on each first), and how the engine dropped its `order-blockers` decision and lethal-in-order validator for it. Server-side deck save/share
+  substituted. `smarter-bots` (v2, one-ply search, what live rooms seat) has its search architecture superseded by `bot-v3-search` (rollout search over sampled worlds — **built, benched, and deliberately not seated**: it loses to v2 by six points at four players, and the evaluation re-fit is outstanding; read it before changing how the bot picks actions). `token-stack-choices` (**in progress**) designs picking some members of a token stack, the last stack gap after the counting and whole-stack fixes: sacrifice N, tap costs and convoke are built; splitting a stack across attackers or blockers, and choosing which of a stack proliferate touches, are not. `commander-replacement` records how rule 903.9a is asked (never skipped: queued when it can't be asked yet, re-asked when overwritten) and the older bugs found alongside it, all since fixed. `damage-assignment-order` (**implemented**) records that Foundations removed damage assignment order, so a blocked creature's damage is divided freely among its blockers (trample still needs lethal on each first), and how the engine dropped its `order-blockers` decision and lethal-in-order validator for it. Server-side deck save/share
   is still unscoped.
 - **`client/BOARD_REDESIGN_PLAN.md`** — the board-overhaul record: the mockup URL, the settled
   design rules, and the known gaps. All 18 phases shipped.
@@ -87,11 +87,9 @@ shields, and a color-identity-aware Commander deck validator (`identity.ts`, `de
 playable right now with per-slot target options; `viewFor(player)` produces a redacted,
 self-contained snapshot for one seat.
 
-**Not modeled** (see ROADMAP for the full deferred list): Battles, phasing, dungeons/Initiative/
-Ring, banding, Companion, multi-replacement ordering (`choose-replacement-order`), damage redirection
-to a third object, dependency ordering between static effects, a player choice on which same-named
-legendary permanent the legend rule keeps (deterministic — oldest survives), full text-change beyond
-a single creature-type word, snow *sources* (snow mana is generic today).
+**Not modeled**, and every other known rules gap, is listed under "Engine rules gaps" in
+`BACKLOG.md` — Battles, phasing, dungeons/Initiative/Ring, banding, Companion, replacement
+ordering, static dependency ordering and snow sources among them.
 
 **Token stacking** (an engine resource-safety mechanism, not a rule — added after the fuzzer hung
 on a self-replicating-token card): `GameObject.stackCount` lets one object stand in for many
