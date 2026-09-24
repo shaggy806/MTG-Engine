@@ -1276,6 +1276,43 @@ export interface DecisionSource {
   readonly cardName: string;
 }
 
+/**
+ * A resolution that stopped partway to ask someone something — see
+ * {@link GameState.suspendedResolutions}. Either what is left of it (a
+ * {@link ParkedSteps}), or, once nothing is left, just a note that it isn't
+ * over until its last decision has been answered.
+ */
+export type SuspendedResolution = ParkedSteps | { readonly effect: null };
+
+/**
+ * The steps of a resolution still to apply, with everything its resolution
+ * context was built from, so they resume as the same spell or ability: its
+ * source and controller, its targets and where they were, its X, the
+ * triggering event's value and object, and which battlefield stints it
+ * refers to (last-known information).
+ */
+export interface ParkedSteps {
+  readonly effect: EffectSpec;
+  readonly source: ObjectId;
+  readonly controller: PlayerId;
+  readonly targets: ResolvedTargets;
+  readonly targetZones: readonly (ZoneType | null)[];
+  readonly x: number;
+  readonly triggerValue: number;
+  readonly triggerObject?: ObjectId;
+  readonly stackMultiplier: number;
+  readonly resolutionCount: number;
+  readonly lastKnownRefs: LastKnownRefs;
+  /** See `ResolutionContext.sourceLost`. */
+  readonly sourceLost?: boolean;
+  /** The timestamp the source had when the ability went on the stack, so
+   * "exile ~" still skips a source that has become a new object. */
+  readonly sourceTimestamp?: number;
+  /** What the resolution's decisions are said to come from — restored while
+   * the rest runs, so a decision it raises still names its card. */
+  readonly decisionSource: DecisionSource | null;
+}
+
 
 /** A one-shot damage-prevention shield (Healing Salve — ROADMAP Phase 11 EG-6). */
 export interface PreventionShield {
@@ -1584,6 +1621,22 @@ export interface GameState {
     /** A delayed return's link — the card is marked, not returned. */
     readonly link?: string;
   }[];
+  /**
+   * Resolutions waiting on a decision one of their own steps raised, most
+   * recent last (rule 608.2c: a spell's instructions are followed in order,
+   * so "each opponent sacrifices a creature, then you draw a card" can't
+   * draw before the sacrifices are chosen).
+   *
+   * A `sequence` step that leaves a decision to answer parks the steps after
+   * it here, and a resolution that ends with one still unanswered parks an
+   * empty remainder. `prepareForPriority` resumes the newest once nothing is
+   * awaited and no queued prompt is left, so a remainder nested inside a
+   * chosen mode finishes before the steps after that mode. While any is
+   * parked the resolution is still under way: no state-based actions are
+   * performed (rule 704.3 — they are checked only as a player would receive
+   * priority) and no triggered ability is put on the stack (rule 603.3).
+   */
+  suspendedResolutions: SuspendedResolution[];
   /** True while a Fog-style effect has prevented all combat damage this turn
    * (rule 614 replacement, but turn-scoped with no permanent to hang it on).
    * Set by the `prevent-all-combat-damage` effect, cleared at the start of the

@@ -971,9 +971,8 @@ export type EffectSpec =
        */
       readonly kind: "proliferate";
       /** Applied once the choice is answered — Contentious Plan's
-       * "Proliferate. Draw a card." A `sequence` can't express this: it runs
-       * every step synchronously, so the draw would happen *before* the
-       * choice came back. Same shape and same reason as `scry`'s `then`. */
+       * "Proliferate. Draw a card." Predates a `sequence` waiting for a
+       * decision one of its steps raises, which now does the same. */
       readonly then?: EffectSpec;
     }
   | {
@@ -1233,7 +1232,7 @@ export type EffectSpec =
        * modes' effects apply in listed order. Raised as a `choose-modes`
        * decision. **Modes must be non-targeted** for now (targeted modal
        * spells need cast-time mode selection — see ROADMAP Phase 1c / 6).
-       * Must be the whole effect or the last step of a `sequence`. */
+       * A `sequence` step after it waits for the choice. */
       readonly kind: "modal";
       readonly minModes: number;
       readonly maxModes: number;
@@ -1252,8 +1251,8 @@ export type EffectSpec =
     }
   | {
       /** "You may [effect]" (rule 601.3e / 608.2). Resolves via the same
-       * `choose-modes` decision — one optional mode. Same non-targeted /
-       * terminal restriction as `modal`. */
+       * `choose-modes` decision — one optional mode. Same non-targeted
+       * restriction as `modal`. */
       readonly kind: "may";
       readonly effect: EffectSpec;
       /** The yes/no prompt, e.g. "Draw a card?". */
@@ -1669,6 +1668,14 @@ export interface EffectApi {
    * permanents it takes off the battlefield leave together (rule 603.10a).
    * See the `sequence` {@link EffectSpec}'s `simultaneous`. */
   simultaneously(fn: () => void): void;
+  /** Whether something the resolution has done so far is still waiting on a
+   * player — a decision on `awaiting`, or a queued discard, sacrifice,
+   * destruction or 903.9a choice not yet asked. */
+  decisionPending(): boolean;
+  /** Park `rest` — the steps of a `sequence` after the one that raised a
+   * decision — to be applied with this same context once every decision
+   * now pending has been answered. See `GameState.suspendedResolutions`. */
+  resumeAfterDecisions(rest: EffectSpec): void;
   /** Exile `targets`, then return them to the battlefield together — at once,
    * or linked to a delayed return — see the `"flicker"` {@link EffectSpec}.
    * `fromSource` marks a target that is the ability's own source, which is
@@ -2219,11 +2226,29 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
   const spec = bindDynamicCompares(unbound, ctx);
   switch (spec.kind) {
     case "sequence": {
-      const run = (): void => {
-        for (const step of spec.effects) applyEffectSpec(step, ctx);
-      };
-      if (spec.simultaneous === true) ctx.simultaneously(run);
-      else run();
+      // One instruction over several objects: nothing in it stops to ask.
+      if (spec.simultaneous === true) {
+        ctx.simultaneously(() => {
+          for (const step of spec.effects) applyEffectSpec(step, ctx);
+        });
+        return;
+      }
+      // Instructions are followed in order (rule 608.2c), so a step that
+      // stops to ask someone something — which cards to discard, what to
+      // sacrifice, whether to pay — is answered before the next step happens.
+      // The steps after it wait in `GameState.suspendedResolutions`. A
+      // decision that was already pending when the sequence began isn't one
+      // of its steps', and holds nothing up.
+      const pendingBefore = ctx.decisionPending();
+      const steps = spec.effects;
+      for (let i = 0; i < steps.length; i += 1) {
+        applyEffectSpec(steps[i], ctx);
+        if (i + 1 < steps.length && !pendingBefore && ctx.decisionPending()) {
+          const rest = steps.slice(i + 1);
+          ctx.resumeAfterDecisions(rest.length === 1 ? rest[0] : { kind: "sequence", effects: rest });
+          return;
+        }
+      }
       return;
     }
     case "damage": {

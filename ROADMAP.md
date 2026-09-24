@@ -72,8 +72,9 @@ Phase 6 (cast pipeline) ─┬─► Phase 8 (cascade / storm / copy-spell)
   callback in the human path (`chooseTargets` is the last synchronous callback
   and only test/fuzz code hits it).
 - `prepareForPriority(player)` is the pre-priority fixpoint loop:
-  `{ raise the next owed 903.9a choice; SBAs; drain the pending-decision
-  queues; placePendingTriggers }` until stable. New
+  `{ raise the next owed 903.9a choice; SBAs (unless a resolution is
+  suspended); drain the pending-decision queues; resume a suspended
+  resolution; placePendingTriggers }` until stable. New
   interception loops (replacements) either nest inside this or wrap the specific
   mutators — see Phase 1.
 - Continuous effects are computed in `characteristics.ts` via the layer fold;

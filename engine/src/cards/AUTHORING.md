@@ -550,7 +550,13 @@ exist (rule 111.7), so neither comes back.
   leave together (one `leaves-graveyard` trigger, not one per card), and
   permanents taken off the battlefield leave together (rule 603.10a). Leave
   it off a sequence of separate sentences, which really are separate events
-  (rule 608.2c).
+  (rule 608.2c). A step that stops to ask someone something — a discard, an
+  edict, a search, a `may`, a mode — is answered, by everyone it asks, before
+  the next step happens: the rest of the sequence waits in
+  `GameState.suspendedResolutions`, and the spell is still resolving
+  meanwhile (no state-based actions, no triggers put on the stack). So
+  "each player sacrifices six creatures. You create six Zombies" is just two
+  steps, and the Zombies can't be sacrificed.
 - **`modal { minModes, maxModes, modes: ModeOption[] }`** — "choose one" /
   "choose one or both". Each `ModeOption` is `{ text, effect }`. **A mode
   can't introduce a *new* target choice of its own** — for a modal spell whose
@@ -629,9 +635,6 @@ exist (rule 111.7), so neither comes back.
   view — same `{ controls, your-turn, threshold, metalcraft }` union as a
   static's `condition`), otherwise `else`. Scute Swarm ("if you control six or
   more lands …").
-
-`modal` / `may` / `look-and-choose` must be the whole effect or the **last**
-step of a `sequence`.
 
 A `CardFilter` numeric clause may be written `{ op: "eq", n: "x" }` to compare
 against the `{X}` of the spell or ability applying it (Steel Hellkite: "each

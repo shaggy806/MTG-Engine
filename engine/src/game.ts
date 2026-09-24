@@ -615,6 +615,7 @@ export class Game {
       pendingDiscards: [],
       pendingSacrifices: [],
       pendingSacrificeVictims: [],
+      suspendedResolutions: [],
       preventAllCombatDamage: false,
       hexproofPlayers: [],
       creaturesDiedThisTurn: 0,
@@ -3043,7 +3044,9 @@ export class Game {
       // Before the SBAs, so a commander still waiting on the battlefield for
       // its 903.9a choice is asked about rather than swept up by them.
       this.raiseNextCommanderChoice();
-      this.runStateBasedActions();
+      // Not partway through a resolution (rule 704.3): a spell that paused
+      // to ask for a discard is still resolving until its last step is done.
+      if (this.state.suspendedResolutions.length === 0) this.runStateBasedActions();
       if (this.state.result.over) return;
       // After the SBAs rather than before: several of them read a pending
       // decision as "my move was deferred".
@@ -3076,6 +3079,12 @@ export class Game {
       }
       if (this.state.pendingSacrificeVictims.length > 0) {
         this.drainPendingSacrificeVictims();
+        continue;
+      }
+      // Everything a suspended resolution was waiting on has been answered:
+      // carry on with the rest of it, before any trigger goes on the stack.
+      if (this.state.suspendedResolutions.length > 0) {
+        this.resumeSuspendedResolution();
         continue;
       }
       if (!this.placePendingTriggers()) break;
@@ -7380,7 +7389,7 @@ export class Game {
     priority.passed = [];
     if (this.state.zones.shared.stack.length > 0) {
       this.resolveTopOfStack();
-      this.runStateBasedActions();
+      if (this.state.suspendedResolutions.length === 0) this.runStateBasedActions();
       if (this.state.result.over) {
         priority.active = false;
         priority.holder = null;
@@ -7430,6 +7439,76 @@ export class Game {
   }
 
   private resolveTopOfStack(): void {
+    const parked = this.state.suspendedResolutions.length;
+    this.resolveTopObject();
+    this.holdResolutionOpen(parked);
+  }
+
+  /**
+   * A resolution that ended — or resumed and ended — with a decision still
+   * unanswered isn't over until it is (see `GameState.suspendedResolutions`).
+   * Unless it parked steps of its own, which already hold it open, note it
+   * with an empty remainder. `parked` is how many were parked before it began.
+   */
+  private holdResolutionOpen(parked: number): void {
+    if (this.state.suspendedResolutions.length > parked) return;
+    if (this.decisionOutstanding()) this.state.suspendedResolutions.push({ effect: null });
+  }
+
+  /** See `ResolutionContext.decisionPending`. */
+  private decisionOutstanding(): boolean {
+    const s = this.state;
+    return (
+      s.awaiting !== null ||
+      s.pendingDiscards.length > 0 ||
+      s.pendingSacrifices.length > 0 ||
+      s.pendingSacrificeVictims.length > 0 ||
+      s.pendingDestruction.length > 0 ||
+      s.deferredCommanderMove !== null ||
+      s.pendingCommanderMoves.length > 0 ||
+      s.pendingPayLifeForUntapped.length > 0
+    );
+  }
+
+  /**
+   * Carry on with the most recently suspended resolution, now that every
+   * decision it was waiting on has been answered — see
+   * `GameState.suspendedResolutions`. Its steps run as the same spell or
+   * ability, and may suspend it again.
+   */
+  private resumeSuspendedResolution(): void {
+    const next = this.state.suspendedResolutions.pop();
+    if (next === undefined || next.effect === null) return;
+    const parked = this.state.suspendedResolutions.length;
+    const outerSourceTimestamp = this.resolvingSourceTimestamp;
+    this.resolvingSourceTimestamp = next.sourceTimestamp ?? null;
+    this.state.decisionSource = next.decisionSource;
+    try {
+      applyEffectSpec(
+        next.effect,
+        this.makeResolutionContext(
+          next.source,
+          next.controller,
+          next.targets,
+          next.x,
+          next.triggerValue,
+          next.triggerObject,
+          next.stackMultiplier,
+          next.resolutionCount,
+          next.targetZones,
+          next.lastKnownRefs,
+          next.sourceLost === true ? { sourceLost: true } : {},
+        ),
+      );
+    } finally {
+      this.resolvingSourceTimestamp = outerSourceTimestamp;
+      // As `withDecisionSource` leaves it: a queued prompt carries its own.
+      if (this.state.awaiting === null) this.state.decisionSource = null;
+    }
+    this.holdResolutionOpen(parked);
+  }
+
+  private resolveTopObject(): void {
     const stack = this.state.zones.shared.stack;
     const id = stack[stack.length - 1];
     const object = this.state.objects[id];
@@ -7749,6 +7828,12 @@ export class Game {
       return;
     }
 
+    // An ability activated from a zone its source stayed in (Derevi from the
+    // command zone): if the card has changed zones since, it's a new object
+    // (rule 400.7) and "put Derevi onto the battlefield" finds nothing.
+    const recorded = object.sourceZoneChangeCount;
+    const sourceLost =
+      recorded !== undefined && (this.state.objects[source]?.zoneChangeCount ?? 0) !== recorded;
     const base = this.makeResolutionContext(
       source,
       object.controller,
@@ -7760,17 +7845,11 @@ export class Game {
       this.recordAbilityResolution(object),
       object.targetZones,
       object.lastKnownRefs,
+      sourceLost ? { sourceLost: true } : {},
     );
-    // An ability activated from a zone its source stayed in (Derevi from the
-    // command zone): if the card has changed zones since, it's a new object
-    // (rule 400.7) and "put Derevi onto the battlefield" finds nothing.
-    const recorded = object.sourceZoneChangeCount;
-    const sourceLost =
-      recorded !== undefined && (this.state.objects[source]?.zoneChangeCount ?? 0) !== recorded;
     const targetedBy = object.targetedBy;
     const context = {
       ...base,
-      ...(sourceLost ? { sourceLost: true } : {}),
       ...(targetedBy !== undefined
         ? { ward: (cost: WardCost) => this.beginWard(source, object.controller, targetedBy, cost) }
         : {}),
@@ -9202,6 +9281,8 @@ export class Game {
      * sacrificed permanent the spell or ability refers to — see
      * {@link LastKnownRefs}. */
     lastKnownRefs: LastKnownRefs = {},
+    /** See `ResolutionContext.sourceLost`. */
+    opts: { readonly sourceLost?: boolean } = {},
   ): ResolutionContext {
     const refs = lastKnownRefs;
     const expectedZoneOf = (target: TargetRef): ZoneType | null => {
@@ -9305,7 +9386,28 @@ export class Game {
       triggerObject,
       stackMultiplier,
       resolutionCount,
+      ...(opts.sourceLost === true ? { sourceLost: true } : {}),
       ...(refs.sacrificed !== undefined ? { sacrificed: refs.sacrificed.object } : {}),
+      decisionPending: () => this.decisionOutstanding(),
+      resumeAfterDecisions: (rest) => {
+        const timestamp = this.resolvingSourceTimestamp;
+        this.state.suspendedResolutions.push({
+          effect: rest,
+          source,
+          controller,
+          targets: [...targets],
+          targetZones: [...targetZones],
+          x,
+          triggerValue,
+          ...(triggerObject !== undefined ? { triggerObject } : {}),
+          stackMultiplier,
+          resolutionCount,
+          lastKnownRefs: refs,
+          ...(opts.sourceLost === true ? { sourceLost: true } : {}),
+          ...(timestamp !== null ? { sourceTimestamp: timestamp } : {}),
+          decisionSource: this.state.decisionSource,
+        });
+      },
       // A source that has left the battlefield deals its damage as it last
       // existed there: its colours, lifelink, deathtouch and controller.
       dealDamage: (target, amount, from) => {
@@ -9439,6 +9541,7 @@ export class Game {
           lki === undefined
             ? refs
             : { ...refs, sacrificed: { object, zoneChangeCount: lki.zoneChangeCount } },
+          opts,
         );
       },
       cardTypesOf: (target) => {

@@ -41,7 +41,8 @@
   "static:set-base-pt-others",
   "static:enters-replacement-for-others",
   "trigger:leaves-graveyard",
-  "static:combat-damage-by-toughness"
+  "static:combat-damage-by-toughness",
+  "bug:sequence-suspends-on-decision"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
