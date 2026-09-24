@@ -496,6 +496,7 @@ import _poolMiirymSentinelWyrm from "./pool/miirym-sentinel-wyrm.js";
 import _poolMindControl from "./pool/mind-control.js";
 import _poolMindRot from "./pool/mind-rot.js";
 import _poolMindStone from "./pool/mind-stone.js";
+import _poolMinnWilyIllusionist from "./pool/minn-wily-illusionist.js";
 import _poolMireTriton from "./pool/mire-triton.js";
 import _poolMishrasFactory from "./pool/mishras-factory.js";
 import _poolMistyRainforest from "./pool/misty-rainforest.js";
@@ -948,6 +949,7 @@ import _tokensHornetToken from "./tokens/hornet-token.js";
 import _tokensHumanSoldierToken from "./tokens/human-soldier-token.js";
 import _tokensHumanToken from "./tokens/human-token.js";
 import _tokensHumanWarriorToken from "./tokens/human-warrior-token.js";
+import _tokensIllusionTokenMinn from "./tokens/illusion-token-minn.js";
 import _tokensInsectTokenBlackGreen from "./tokens/insect-token-black-green.js";
 import _tokensInsectToken from "./tokens/insect-token.js";
 import _tokensJunkToken from "./tokens/junk-token.js";
@@ -1475,6 +1477,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolMindControl,
   _poolMindRot,
   _poolMindStone,
+  _poolMinnWilyIllusionist,
   _poolMireTriton,
   _poolMishrasFactory,
   _poolMistyRainforest,
@@ -1933,6 +1936,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensHumanSoldierToken,
   _tokensHumanToken,
   _tokensHumanWarriorToken,
+  _tokensIllusionTokenMinn,
   _tokensInsectTokenBlackGreen,
   _tokensInsectToken,
   _tokensJunkToken,

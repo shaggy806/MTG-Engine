@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-110 already implemented / 390 missing
+111 already implemented / 389 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -482,7 +482,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  476  Karn, Legacy Reforged                           6406 decks  {5}              Legendary Artifact Creature — Golem
 [ ]  477  Cecily, Haunted Mage                            6405 decks  {1}{U}{B}{R}     Legendary Creature — Human Wizard
 [ ]  478  Nelly Borca, Impulsive Accuser                  6401 decks  {2}{R}{W}        Legendary Creature — Human Detective
-[ ]  479  Minn, Wily Illusionist                          6397 decks  {1}{U}{U}        Legendary Creature — Gnome Wizard
+[x]  479  Minn, Wily Illusionist                          6397 decks  {1}{U}{U}        Legendary Creature — Gnome Wizard
 [ ]  480  Teval, Arbiter of Virtue                        6377 decks  {2}{B}{G}{U}     Legendary Creature — Spirit Dragon
 [ ]  481  Anhelo, the Painter                             6362 decks  {U}{B}{R}        Legendary Creature — Vampire Assassin
 [ ]  482  Selvala, Heart of the Wilds                     6362 decks  {1}{G}{G}        Legendary Creature — Elf Scout

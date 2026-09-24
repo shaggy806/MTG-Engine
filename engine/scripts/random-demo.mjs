@@ -960,6 +960,8 @@ const deckE = deck([
   ["Kilo, Apogee Mind", 1],
   // Ghalta: {X} less, X the total power of creatures you control.
   ["Ghalta, Primal Hunger", 1],
+  // Minn: second-draw Illusions, and a dies trigger reading the power it died with.
+  ["Minn, Wily Illusionist", 1],
   ["Plains", 5],
   ["Island", 5],
   ["Swamp", 5],
