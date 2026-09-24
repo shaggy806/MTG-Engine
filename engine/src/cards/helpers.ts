@@ -5,6 +5,7 @@
  */
 
 import type { ActivatedAbility } from "../abilities.js";
+import type { EffectAmount, EffectSpec } from "../effects.js";
 import type { Color, ManaType } from "../mana.js";
 import { defineCard, type CardDefinition, type StaticAbility } from "./define.js";
 
@@ -12,6 +13,20 @@ import { defineCard, type CardDefinition, type StaticAbility } from "./define.js
  * `choose-creature-type` effect's `then` — re-exported here because card files
  * import only from `define` and `helpers`. */
 export { CHOSEN_CREATURE_TYPE } from "../effects.js";
+
+/**
+ * Investigate (rule 701.36a): "create a Clue token", `times` over —
+ * "investigate twice" is `investigate(2)`. It's a keyword action with no
+ * effect of its own beyond the token, so it's written as the `create-token`
+ * it is rather than a new effect kind: every token multiplier, stack rule
+ * and count-scaling check already reads that. The Clue is an ordinary token
+ * with an activated ability, so it's never folded into a token stack.
+ */
+export const investigate = (times: EffectAmount = 1): EffectSpec => ({
+  kind: "create-token",
+  token: "Clue Token",
+  count: times,
+});
 
 /** The `{T}: Add {C}` ability every mana-producing basic land has. */
 export const manaTapAbility = (mana: Color): ActivatedAbility => ({

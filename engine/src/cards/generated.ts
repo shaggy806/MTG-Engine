@@ -890,6 +890,7 @@ import _tokensCatBeastToken from "./tokens/cat-beast-token.js";
 import _tokensCatBirdToken from "./tokens/cat-bird-token.js";
 import _tokensCatToken from "./tokens/cat-token.js";
 import _tokensChocoboBirdToken from "./tokens/chocobo-bird-token.js";
+import _tokensClueToken from "./tokens/clue-token.js";
 import _tokensCragflame from "./tokens/cragflame.js";
 import _tokensDeathtouchSnakeToken from "./tokens/deathtouch-snake-token.js";
 import _tokensDragonToken55 from "./tokens/dragon-token-5-5.js";
@@ -908,6 +909,7 @@ import _tokensHornetToken from "./tokens/hornet-token.js";
 import _tokensHumanSoldierToken from "./tokens/human-soldier-token.js";
 import _tokensHumanToken from "./tokens/human-token.js";
 import _tokensHumanWarriorToken from "./tokens/human-warrior-token.js";
+import _tokensInsectTokenBlackGreen from "./tokens/insect-token-black-green.js";
 import _tokensInsectToken from "./tokens/insect-token.js";
 import _tokensJunkToken from "./tokens/junk-token.js";
 import _tokensKaroxBladewingToken from "./tokens/karox-bladewing-token.js";
@@ -1833,6 +1835,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensCatBirdToken,
   _tokensCatToken,
   _tokensChocoboBirdToken,
+  _tokensClueToken,
   _tokensCragflame,
   _tokensDeathtouchSnakeToken,
   _tokensDragonToken55,
@@ -1851,6 +1854,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensHumanSoldierToken,
   _tokensHumanToken,
   _tokensHumanWarriorToken,
+  _tokensInsectTokenBlackGreen,
   _tokensInsectToken,
   _tokensJunkToken,
   _tokensKaroxBladewingToken,
