@@ -348,6 +348,30 @@ function evalStaticCondition(
         ? has(you)
         : state.turnOrder.some((p) => p !== you && state.players[p]?.hasLost !== true && has(p));
     }
+    case "life-total": {
+      const within = (p: PlayerId): boolean => {
+        const life = state.players[p]?.life ?? 0;
+        const atMost =
+          condition.atMost === "half-starting" ? Math.floor(state.rules.startingLife / 2) : condition.atMost;
+        return (
+          (condition.atLeast === undefined || life >= condition.atLeast) &&
+          (atMost === undefined || life <= atMost)
+        );
+      };
+      if (condition.who === undefined || condition.who === "you") return within(you);
+      const opponents = state.turnOrder.filter((p) => p !== you && state.players[p]?.hasLost !== true);
+      return condition.who === "opponent" ? opponents.some(within) : opponents.length > 0 && opponents.every(within);
+    }
+    case "cards-in-exile": {
+      let n = 0;
+      for (const id of state.zones.shared.exile) {
+        const card = state.objects[id];
+        if (card === undefined || card.isToken) continue;
+        if (condition.filter !== undefined && !matchesFilter(state, registry, id, condition.filter, { you })) continue;
+        n += 1;
+      }
+      return n >= condition.atLeast;
+    }
     case "hand-size": {
       const n = state.zones.perPlayer[you].hand.length;
       return (

@@ -1845,8 +1845,10 @@ export type EffectSpec =
       readonly enterTapped?: boolean;
       /** `"hand"` (needed-cards P19 — Genesis Ultimatum: "…and the rest into
        * your hand") puts every non-chosen looked-at card into the chooser's
-       * hand, regardless of `filter`. */
-      readonly leftover: "bottom-random" | "stay" | "hand";
+       * hand, regardless of `filter`; `"graveyard"` ("…put the rest into your
+       * graveyard") into their graveyard, in the same move as the chosen
+       * ones. */
+      readonly leftover: "bottom-random" | "stay" | "hand" | "graveyard";
       /** Narrows which revealed candidates can be chosen (e.g. Ureni of the
        * Unwritten: only a Dragon card). Everything is still revealed either
        * way — omit for "any of them". */
@@ -2382,7 +2384,7 @@ export interface EffectApi {
     min: number,
     max: number,
     destination: "battlefield" | "hand" | "library-top" | "graveyard",
-    leftover: "bottom-random" | "stay" | "hand",
+    leftover: "bottom-random" | "stay" | "hand" | "graveyard",
     filter: ZoneChoiceFilter | undefined,
     enterTapped?: boolean,
     then?: EffectSpec,

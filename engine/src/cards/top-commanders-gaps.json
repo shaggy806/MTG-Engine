@@ -73,7 +73,10 @@
   "keyword:firebending",
   "effect:cast-and-activate-restrictions",
   "keyword:annihilator",
-  "trigger:copies-spell"
+  "trigger:copies-spell",
+  "mechanic:mdfc-transform",
+  "condition:player-state-thresholds",
+  "trigger:cards-exiled-batch"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
@@ -559,7 +562,7 @@
   "effect:look-and-choose-leftover": {
    "size": "small",
    "ui": false,
-   "description": "More look-and-choose leftover destinations: into the graveyard, or a destination decided by a condition checked after the chosen card is placed."
+   "description": "More look-and-choose leftover destinations. Still missing: a destination decided by a condition checked after the chosen card is placed. Built so far: leftover 'graveyard' — the rest into your graveyard, in the same move as the chosen cards."
   },
   "effect:look-and-choose-second-pick": {
    "size": "small",

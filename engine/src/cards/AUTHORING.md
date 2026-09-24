@@ -597,7 +597,7 @@ ability would have no way to name a token that didn't exist when it was set up.
 | firebending | `firebending(amount, text?)` from `helpers.ts` — "Firebending N (Whenever this creature attacks, add N {R}. This mana lasts until end of combat.)" as the triggered ability it is: put it in `triggered` (or grant it with `grantsTriggered`), and the printed line in `text`. `amount` takes any `EffectAmount` — Fire Lord Zuko's "firebending X, where X is Fire Lord Zuko's power" is `firebending({ powerOf: "source" })`, read as the trigger resolves. |
 | investigate | `investigate(times?)` from `helpers.ts` — rule 701.36a, "create a Clue token", written as the `create-token` of `"Clue Token"` it is ("investigate twice" is `investigate(2)`; `times` takes any `EffectAmount`). The Clue (`{2}, Sacrifice this token: Draw a card.`) has an activated ability, so Clues are never folded into a token stack. |
 | `attach` | `target` (Equip-style) |
-| `transform` | `target` (`"source"` \| slot) |
+| `transform` | `target` (`"source"` \| slot) | A transforming DFC turns over; since the 2025 rules change so does a modal DFC, to a face that's a permanent (Kazandu Mammoth to Kazandu Valley, never Fell Mire to Fell the Profane). |
 | `day-night` | `value: "day" \| "night"` |
 
 ### Tutors / library manipulation
@@ -608,7 +608,7 @@ ability would have no way to name a token that didn't exist when it was set up.
 | `scry` | `amount`, `then?` | Preordain (`then: { kind: "draw", amount: 1 }`) |
 | `reveal-top` | `then` | "Reveal the top card of your library. If it's a land card, put it onto the battlefield tapped. Otherwise, draw a card" (Thrasios). Reveals to every player, then applies `then` with **that card as target 0**, so a `{ kind: "target", index: 0, filter }` condition and a `put-onto-battlefield { target: 0 }` both reach it. The card doesn't move unless `then` moves it. |
 | `surveil` | `amount`, `then?` | Consider |
-| `look-and-choose` | `zone: "library" \| "graveyard" \| "hand"`, `count?`, `min`, `max`, `destination`, `leftover: "bottom-random" \| "stay" \| "hand"`, `filter?`, `enterTapped?` | Ureni of the Unwritten; Genesis Ultimatum uses `leftover: "hand"` — every non-chosen looked-at card goes to hand, regardless of `filter` (needed-cards P19). **`zone: "hand"`** is the "you may put a land card from your hand onto the battlefield" family (Growth Spiral, Ghalta, Terrain Generator): `min: 0` is the "you may", `leftover: "stay"` leaves the rest of the hand alone, and it bypasses the land-drop rule because putting a land onto the battlefield is not *playing* one. **`then`** is applied once the choice is answered, with the **chosen cards as its targets** — the only way to say anything about a card that was chosen rather than targeted (Sneak Attack's "that creature gains haste"). |
+| `look-and-choose` | `zone: "library" \| "graveyard" \| "hand"`, `count?`, `min`, `max`, `destination`, `leftover: "bottom-random" \| "stay" \| "hand" \| "graveyard"`, `filter?`, `enterTapped?` | Ureni of the Unwritten; Genesis Ultimatum uses `leftover: "hand"` — every non-chosen looked-at card goes to hand, regardless of `filter` (needed-cards P19); `"graveyard"` is "…and the rest into your graveyard", in the same move as the chosen cards. **`zone: "hand"`** is the "you may put a land card from your hand onto the battlefield" family (Growth Spiral, Ghalta, Terrain Generator): `min: 0` is the "you may", `leftover: "stay"` leaves the rest of the hand alone, and it bypasses the land-drop rule because putting a land onto the battlefield is not *playing* one. **`then`** is applied once the choice is answered, with the **chosen cards as its targets** — the only way to say anything about a card that was chosen rather than targeted (Sneak Attack's "that creature gains haste"). |
 
 ### Turn structure / cast-triggered
 
@@ -1206,6 +1206,7 @@ triggered: [
 | `sacrifice` | `who`, `filter?`, `otherOnly?` | a player sacrifices a permanent (Korvold, Mayhem Devil — `who` = who sacrificed: its controller, not its owner, rule 701.21a, so a stolen permanent counts for the thief). `filter` is matched against the permanent as it last existed on the battlefield ("a **nontoken** permanent" is `{ token: false }`; a sacrificed token is still a token), `otherOnly` is "another", and the sacrificed permanent is the trigger object ("its power" — `{ powerOf: "trigger-object" }`, its power as it left). |
 | `transforms` | `who`, `intoFront?`, `filter?` | a DFC turns over |
 | `step-begins` | `step`, `who` | the start of a step (`"upkeep"` etc.) |
+| `put-into-exile` | `who`, `filter?`, `from?: ZoneType[]` | **batched** — "whenever one or more cards are put into exile from graveyards and/or the battlefield" (Ketramose, the New Dawn: `from: ["graveyard", "battlefield"]`, with a `your-turn` condition for "during your turn"): once per simultaneous move (a whole graveyard exiled is one), `{ triggerValue: true }` being how many counted. `who` is whose cards, `filter` is asked of them in exile. Tokens aren't cards. |
 | `put-into-graveyard` | `who`, `filter?`, `from?`, `notFrom?`, `batched?` | cards put into a graveyard, from anywhere — dying, milled, discarded, surveilled, a spell resolving or countered. `batched` is "whenever **one or more** land cards are put into your graveyard" (The Gitrog Monster; Sidisi, Brood Tyrant with `from: "library"`): once per simultaneous move — a wrath or state-based sweep, one mill, discard or surveil — `{ triggerValue: true }` being how many counted. Without it, once per card, that card the trigger object: Syr Konrad's "a creature card is put into a graveyard from anywhere other than the battlefield" (`notFrom: "battlefield"`, `who: "any"`), Disa the Restless's "…put it onto the battlefield" (`put-onto-battlefield` with `"trigger-object"`, which finds the card only in that graveyard). `who` is whose graveyard, `filter` is matched against the card as it is there, `from` / `notFrom` the zone it came from. Tokens aren't cards and never count. |
 | `discards` | `who` | "whenever an opponent discards a card" (Sangromancer). Fires once per *discard event*, not once per card — see §15. |
 | `leaves-graveyard` | `who`, `filter?`, `perCard?` | **batched** — "whenever one or more cards leave your graveyard" (Teval, the Balanced Scale; Insidious Roots: `filter: { type: "creature" }`). Fires **once per simultaneous move**, however many cards: a whole graveyard exiled, a "return all", the cards one choice takes, an escape cost's exile, a `simultaneous` sequence. A move of its own — a card cast or played from the graveyard, one card returned, a graveyard ability exiling its card as a cost — is its own trigger, so an escape cast is two (the card to the stack, then the cost). `who` is whose graveyard; `filter` is matched against each card as it was **in the graveyard** (rule 603.10a) — a multi-face card by its front face, even when it left as its back (rule 712.8a) — and a move with nothing matching doesn't fire. `{ triggerValue: true }` is how many cards counted. A permanent that was itself one of the cards (a reanimated Teval) doesn't see them leave. Tokens aren't cards and never count. `perCard: true` is the per-card form — "whenever a creature card leaves your graveyard" (Syr Konrad, the Grim): once per matching card, however many left together, each card the trigger object. |
@@ -1664,6 +1665,16 @@ clause (section 9):
   opponent on their own. Corrupted ("as long as an opponent has three or more
   poison counters") is `{ counter: "poison", who: "opponent", atLeast: 3 }`.
 - `{ kind: "threshold" }` — 7+ cards in your graveyard.
+- `{ kind: "life-total", who?, atLeast?, atMost? }` — a life total, inclusive:
+  Bilbo, Birthday Celebrant's "activate only if you have 111 or more life"
+  is `atLeast: 111`; "at most half your starting life total" is `atMost:
+  "half-starting"` (rounded down). `who` is `"you"` (default), `"opponent"`
+  (some opponent) or `"each-opponent"` (every opponent).
+- `{ kind: "cards-in-exile", atLeast, filter? }` — cards in exile, every
+  player's (face-down ones too; tokens aren't cards): Ketramose, the New
+  Dawn's "can't attack or block unless there are seven or more cards in
+  exile" is a `restrictions: ["cant-attack", "cant-block"]` static gated by
+  `{ kind: "not", of: { kind: "cards-in-exile", atLeast: 7 } }`.
 - `{ kind: "metalcraft" }` — 3+ artifacts.
 - `{ kind: "opponent-lost-life-this-turn" }` — Theater of Horrors. Reads the
   per-player `lostLifeThisTurn` flag, set in `changeLife` so it catches damage

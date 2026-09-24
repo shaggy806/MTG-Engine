@@ -70,16 +70,18 @@ that one card is the reason the deck exists.
   timed by `turn-structure`'s `duringCombat`, and `goad`'s `who: "trigger-player"`); Veyran,
   Voice of Duality (`cast-spell`'s `orCopy` and `doubleTriggers`' `"cast-or-copy"` cause);
   Azlask, the Swelling Scourge (the `annihilator` helper — confirm at `card:lookup` that it
-  covers the rest).
+  covers the rest); Ketramose, the New Dawn (the batched `put-into-exile` trigger, and
+  `cards-in-exile` under a `not` on its attack/block restriction); Bruce Banner (a modal DFC
+  that transforms) and Aragorn, King of Gondor (the `life-total` condition) — each gaps entry
+  lists only what this batch built, so confirm the text at `card:lookup`.
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first
   ten, engine-only, with the commanders each fully unblocks:
   `effect:this-way-results` (+6), `effect:missing-tokens` (+1),
   `static:grant-to-cards-outside-battlefield` (+3), `effect:amount-aggregate` (+1),
-  `effect:look-and-choose-leftover` (+1), `mechanic:mdfc-transform` (+1),
-  `condition:player-state-thresholds` (+1), `trigger:cards-exiled-batch` (+1),
-  `trigger:surveils` (+1), `static:max-hand-size` (+1).
+  `effect:look-and-choose-leftover` (+1), `trigger:surveils` (+1), `static:max-hand-size` (+1),
+  `replacement:new-event-replacements` (+3), `keyword:melee` (+1), `effect:reveal-until` (+2).
 - **Most-needed features overall.** `effect:this-way-results` (18),
   `static:grant-to-cards-outside-battlefield` (14), `zone:visibility-extensions`,
   `static:grant-abilities-to-spells` and `bug:zone-change-object-identity` (13 each). Live

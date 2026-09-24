@@ -1026,7 +1026,7 @@ export type AwaitingDecision =
        * moved just to look at it — the graveyard-search case); the whole
        * library is shuffled (a library *search* / tutor — rule 701.19); or
        * put into the chooser's hand (Genesis Ultimatum — needed-cards P19). */
-      readonly leftover: "bottom-random" | "stay" | "shuffle" | "hand";
+      readonly leftover: "bottom-random" | "stay" | "shuffle" | "hand" | "graveyard";
       /** A library-search result that enters the battlefield does so tapped
        * (Rampant Growth). Only meaningful with `destination: "battlefield"`. */
       readonly enterTapped?: boolean;

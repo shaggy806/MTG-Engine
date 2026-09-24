@@ -175,6 +175,8 @@ export const makeFormatter = (game) => {
         return `${name(e.attacker)} attacked alone`;
       case "cards-put-into-graveyard":
         return `${e.arrivals.map((a) => name(a.object)).join(", ")} put into a graveyard`;
+      case "cards-put-into-exile":
+        return `${e.arrivals.map((a) => name(a.object)).join(", ")} put into exile`;
       case "player-attacked":
         return `${e.player} attacks ${e.defender} with ${e.attackers.length}`;
       case "loyalty-changed":

@@ -599,6 +599,21 @@ export type TriggerSpec =
     }
   | {
       /**
+       * One or more cards were put into exile at once — Ketramose, the New
+       * Dawn's "whenever one or more cards are put into exile from
+       * graveyards and/or the battlefield during your turn" (`from:
+       * ["graveyard", "battlefield"]`, with a `your-turn` condition). Once
+       * per simultaneous move (`cards-put-into-exile`), `who` being whose
+       * cards they are and `filter` asked of them in exile. Tokens aren't
+       * cards. `{ triggerValue: true }` is how many.
+       */
+      readonly on: "put-into-exile";
+      readonly who: TriggerWho;
+      readonly filter?: CardFilter;
+      readonly from?: readonly ZoneType[];
+    }
+  | {
+      /**
        * A player discarded one or more cards — Sangromancer's "whenever an
        * opponent discards a card".
        *

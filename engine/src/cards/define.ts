@@ -388,6 +388,24 @@ export type StaticCondition =
   /** How many cards are in your hand, inclusive bounds (Flubs, the Fool: "if
    * you have no cards in hand" is `atMost: 0`; hellbent the same). */
   | { readonly kind: "hand-size"; readonly atMost?: number; readonly atLeast?: number }
+  /**
+   * A life total, inclusive bounds: Bilbo, Birthday Celebrant's "activate
+   * only if you have 111 or more life" is `atLeast: 111`; "if you have at
+   * most half your starting life total" is `atMost: "half-starting"`
+   * (rounded down). `who` is `"you"` (default), `"opponent"` (some opponent
+   * does) or `"each-opponent"` (every opponent does).
+   */
+  | {
+      readonly kind: "life-total";
+      readonly who?: "you" | "opponent" | "each-opponent";
+      readonly atLeast?: number;
+      readonly atMost?: number | "half-starting";
+    }
+  /** At least `atLeast` cards in exile, every player's (face-down ones
+   * included; tokens aren't cards) — Ketramose, the New Dawn's "unless there
+   * are seven or more cards in exile". `filter` narrows them, from this
+   * permanent's controller's side ("cards your opponents own in exile"). */
+  | { readonly kind: "cards-in-exile"; readonly atLeast: number; readonly filter?: CardFilter }
   /** Threshold (rule 702.27) — seven or more cards in your graveyard. */
   | { readonly kind: "threshold" }
   /** Delirium (rule 702.120) — four or more *card types* among the cards in

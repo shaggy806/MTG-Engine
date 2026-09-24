@@ -219,3 +219,27 @@ describe("leaving a graveyard, per card", () => {
     expect(life(game)).toBe(22);
   });
 });
+
+describe("look and choose, the rest into the graveyard", () => {
+  it("one card to hand, the rest put into the graveyard in one move", () => {
+    const game = setUp(deck("Grizzly Bears", "Hill Giant", "Island", "Island"));
+    const gitrog = game.debugSpawn(GITROG, A, "battlefield");
+    const hand = game.handOf(A).length;
+    const graveyard = game.state.zones.perPlayer[A].graveyard.length;
+    run(game, {
+      kind: "look-and-choose",
+      zone: "library",
+      count: 4,
+      min: 1,
+      max: 1,
+      destination: "hand",
+      leftover: "graveyard",
+      filter: { type: "creature" },
+    });
+    expect(game.handOf(A).length).toBe(hand + 1);
+    expect(game.state.zones.perPlayer[A].graveyard.length).toBe(graveyard + 3);
+    // Two Islands among the three — one batched trigger.
+    expect(fired(game, gitrog)).toBe(1);
+    expect(life(game)).toBe(22);
+  });
+});

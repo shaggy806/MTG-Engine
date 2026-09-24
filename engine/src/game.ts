@@ -560,6 +560,9 @@ export class Game {
    * way (see `withGraveyardEnterBatch`), each with the zone it came from.
    * Not game state: it only ever spans one synchronous call. */
   private graveyardEnterBatch: { object: ObjectId; from: ZoneType }[] | null = null;
+  /** The same for cards put into exile, collected alongside — see
+   * `withGraveyardEnterBatch`. */
+  private exileEnterBatch: { object: ObjectId; from: ZoneType }[] | null = null;
   /** While a `cards-left-graveyard` event is being announced, each of its
    * cards as it was in the graveyard — what a `leaves-graveyard` trigger's
    * filter is matched against (rule 603.10a). `null` the rest of the time. */
@@ -3607,6 +3610,10 @@ export class Game {
     } else if (awaiting.leftover === "hand") {
       // Genesis Ultimatum: "… and the rest into your hand." needed-cards P19.
       for (const id of leftover) this.moveObject(id, "hand");
+    } else if (awaiting.leftover === "graveyard") {
+      // "…and the rest into your graveyard" — with the chosen cards, one
+      // move (this runs inside the choice's batch).
+      for (const id of leftover) this.moveObject(id, "graveyard");
     }
     // leftover === "stay": nothing to do — those cards were only ever looked
     // at, never removed from wherever they already were.
@@ -8540,6 +8547,8 @@ export class Game {
                     ability.trigger.on === "put-into-graveyard" &&
                       event.type === "cards-put-into-graveyard"
                     ? this.graveyardArrivals(ability.trigger, event.arrivals, object).length
+                    : ability.trigger.on === "put-into-exile" && event.type === "cards-put-into-exile"
+                    ? this.exileArrivals(ability.trigger, event.arrivals, object).length
                     : // "Deals that much damage": how many counters were put.
                     ability.trigger.on === "counters-put" && event.type === "counter-added"
                     ? event.amount
@@ -9246,6 +9255,11 @@ export class Game {
         return (
           event.type === "cards-put-into-graveyard" &&
           this.graveyardArrivals(spec, event.arrivals, self).length > 0
+        );
+      case "put-into-exile":
+        return (
+          event.type === "cards-put-into-exile" &&
+          this.exileArrivals(spec, event.arrivals, self).length > 0
         );
       case "leaves-graveyard":
         // One of those cards itself — a Teval reanimated along with others —
@@ -10707,7 +10721,7 @@ export class Game {
     min: number,
     max: number,
     destination: "battlefield" | "hand" | "library-top" | "graveyard",
-    leftover: "bottom-random" | "stay" | "hand",
+    leftover: "bottom-random" | "stay" | "hand" | "graveyard",
     filter: ZoneChoiceFilter | undefined,
     enterTapped = false,
     then?: { effect: EffectSpec; source: ObjectId; x: number },
@@ -12502,11 +12516,14 @@ export class Game {
    * can be turned over by a `transform` effect / a day-night change. */
   private isTransformingDfc(id: ObjectId): boolean {
     const object = this.state.objects[id];
-    return (
-      object.faces !== undefined &&
-      object.faces.length >= 2 &&
-      this.frontFaceDef(id).transform
-    );
+    if (object.faces === undefined || object.faces.length < 2) return false;
+    const front = this.frontFaceDef(id);
+    if (front.transform) return true;
+    // Since the 2025 rules change a modal DFC turns over too, to a face that
+    // is a permanent — never an adventure's spell half.
+    if (front.adventure) return false;
+    const other = this.registry.get(object.faces[(object.face ?? 0) === 0 ? 1 : 0]);
+    return other.types.some((type) => PERMANENT_TYPES.has(type));
   }
 
   /**
@@ -15840,6 +15857,10 @@ export class Game {
     if (to === "graveyard" && previousZone !== "graveyard" && !object.isToken) {
       this.noteGraveyardArrival(id, previousZone);
     }
+    // …or into exile.
+    if (to === "exile" && previousZone !== "exile" && !object.isToken) {
+      this.noteExileArrival(id, previousZone);
+    }
     return true;
   }
 
@@ -15868,13 +15889,49 @@ export class Game {
       return;
     }
     const batch: { object: ObjectId; from: ZoneType }[] = [];
+    const exiled: { object: ObjectId; from: ZoneType }[] = [];
     this.graveyardEnterBatch = batch;
+    this.exileEnterBatch = exiled;
     try {
       fn();
     } finally {
       this.graveyardEnterBatch = null;
+      this.exileEnterBatch = null;
     }
     if (batch.length > 0) this.emit({ type: "cards-put-into-graveyard", arrivals: batch });
+    if (exiled.length > 0) this.emit({ type: "cards-put-into-exile", arrivals: exiled });
+  }
+
+  /** Card `id` was put into exile from `from` — `noteGraveyardArrival`'s
+   * twin, announced with the rest of the move under way, or on its own. */
+  private noteExileArrival(id: ObjectId, from: ZoneType): void {
+    if (this.exileEnterBatch !== null) {
+      this.exileEnterBatch.push({ object: id, from });
+    } else {
+      this.emit({ type: "cards-put-into-exile", arrivals: [{ object: id, from }] });
+    }
+  }
+
+  /** The cards of a `cards-put-into-exile` that count toward a
+   * `put-into-exile` trigger: still in exile, whose (`who`) and from where
+   * it says, matching `filter` there. */
+  private exileArrivals(
+    spec: Extract<TriggerSpec, { on: "put-into-exile" }>,
+    arrivals: readonly { readonly object: ObjectId; readonly from: ZoneType }[],
+    self: GameObject,
+  ): readonly ObjectId[] {
+    return arrivals
+      .filter(({ object: id, from }) => {
+        const card = this.state.objects[id];
+        if (card === undefined || card.zone !== "exile") return false;
+        if (spec.from !== undefined && !spec.from.includes(from)) return false;
+        if (!this.matchesWhoPlayer(spec.who, card.owner, self)) return false;
+        return (
+          spec.filter === undefined ||
+          matchesFilter(this.state, this.registry, id, spec.filter, { you: self.controller })
+        );
+      })
+      .map(({ object }) => object);
   }
 
   /**
@@ -15945,7 +16002,8 @@ export class Game {
     const batch = new Map<ObjectId, LastKnownInfo>();
     this.graveyardLeaveBatch = batch;
     try {
-      fn();
+      // Where they go, they go together too (a whole graveyard exiled).
+      this.withGraveyardEnterBatch(fn);
     } finally {
       this.graveyardLeaveBatch = null;
     }

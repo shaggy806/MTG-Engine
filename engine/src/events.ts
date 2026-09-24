@@ -624,6 +624,13 @@ export type GameEvent =
       readonly to: PlayerId;
     })
   | (Base & {
+      /** Cards were put into exile **at the same time** — the exile-side
+       * twin of `cards-put-into-graveyard`: one per simultaneous move, each
+       * card with the zone it came from. Tokens aren't cards. */
+      readonly type: "cards-put-into-exile";
+      readonly arrivals: readonly { readonly object: ObjectId; readonly from: ZoneType }[];
+    })
+  | (Base & {
       /** Prohibitions for the rest of the turn (the `prohibit` effect):
        * `players` can't cast spells and/or activate abilities, or `object`'s
        * activated abilities can't be activated. */
