@@ -595,6 +595,21 @@ export type GameEvent =
       readonly objects: readonly ObjectId[];
     })
   | (Base & {
+      /**
+       * One or more cards left graveyards **at the same time** — for any
+       * destination: cast or played from there, returned to a hand or the
+       * battlefield, exiled (a whole graveyard at once, or as an escape
+       * cost), put into a library. One event per simultaneous move, however
+       * many cards and graveyards it took them from, which is what makes a
+       * "whenever one or more cards leave your graveyard" trigger (Teval, the
+       * Balanced Scale) fire once for it. Each card's owner is whose
+       * graveyard it left. Tokens aren't cards, so they never appear here.
+       * Emitted once the cards have arrived wherever they went.
+       */
+      readonly type: "cards-left-graveyard";
+      readonly objects: readonly ObjectId[];
+    })
+  | (Base & {
       readonly type: "player-lost";
       readonly player: PlayerId;
       readonly reason: string;

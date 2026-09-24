@@ -316,6 +316,19 @@ export type EffectSpec =
        * discards two cards.) */
       readonly kind: "sequence";
       readonly effects: readonly EffectSpec[];
+      /**
+       * The steps are **one instruction** acting on several objects, written
+       * as one step per target slot — Victimize's "return the chosen cards to
+       * the battlefield tapped" — so what they move, moves at the same time
+       * (rule 608.2c reads instructions one at a time, but one instruction is
+       * one event). Cards they take out of graveyards leave together, which
+       * a "whenever one or more cards leave your graveyard" trigger sees as
+       * one move; permanents they take off the battlefield leave together too
+       * (rule 603.10a). Leave it off a sequence of separate sentences
+       * ("Destroy target creature. Return target card from your graveyard to
+       * your hand."), which really are separate events.
+       */
+      readonly simultaneous?: boolean;
     }
   | {
       readonly kind: "damage";
@@ -1642,8 +1655,14 @@ export interface EffectApi {
   ): void;
   /** See the `"choose-creature-type"` {@link EffectSpec}. */
   chooseCreatureType(then: EffectSpec): void;
-  /** Exile every card in `target`'s graveyard (a player — Bojuka Bog). */
+  /** Exile every card in `target`'s graveyard (a player — Bojuka Bog), as
+   * one move. */
   exileGraveyard(target: TargetRef): void;
+  /** Carry out `fn` as one simultaneous event: the cards it takes out of
+   * graveyards leave together (one `cards-left-graveyard`), and the
+   * permanents it takes off the battlefield leave together (rule 603.10a).
+   * See the `sequence` {@link EffectSpec}'s `simultaneous`. */
+  simultaneously(fn: () => void): void;
   /** Exile `targets`, then return them to the battlefield together — at once,
    * or linked to a delayed return — see the `"flicker"` {@link EffectSpec}.
    * `fromSource` marks a target that is the ability's own source, which is
@@ -2192,7 +2211,11 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
   const spec = bindDynamicCompares(unbound, ctx);
   switch (spec.kind) {
     case "sequence": {
-      for (const step of spec.effects) applyEffectSpec(step, ctx);
+      const run = (): void => {
+        for (const step of spec.effects) applyEffectSpec(step, ctx);
+      };
+      if (spec.simultaneous === true) ctx.simultaneously(run);
+      else run();
       return;
     }
     case "damage": {
@@ -2397,9 +2420,12 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     }
     case "exile-graveyard": {
       if (spec.target === "each-player") {
-        for (const player of ctx.playersInScope("each-player")) {
-          ctx.exileGraveyard({ kind: "player", player });
-        }
+        // "Exile all graveyards" is one move, not one per player.
+        ctx.simultaneously(() => {
+          for (const player of ctx.playersInScope("each-player")) {
+            ctx.exileGraveyard({ kind: "player", player });
+          }
+        });
         return;
       }
       const target =

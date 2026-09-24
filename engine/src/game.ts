@@ -491,6 +491,18 @@ export class Game {
    * synchronous call. */
   private enterBatch: Set<ObjectId> | null = null;
 
+  /** The cards that have left a graveyard so far in the one simultaneous
+   * move being carried out — a whole graveyard exiled, the cards a choice
+   * returned, an escape cost — each with how it was there. Announced as one
+   * `cards-left-graveyard` when the move is done. See {@link
+   * withGraveyardLeaveBatch}. Not game state: it only ever spans one
+   * synchronous call. */
+  private graveyardLeaveBatch: Map<ObjectId, LastKnownInfo> | null = null;
+  /** While a `cards-left-graveyard` event is being announced, each of its
+   * cards as it was in the graveyard — what a `leaves-graveyard` trigger's
+   * filter is matched against (rule 603.10a). `null` the rest of the time. */
+  private graveyardDepartures: ReadonlyMap<ObjectId, LastKnownInfo> | null = null;
+
   private constructor(
     state: GameState,
     registry: CardRegistry,
@@ -3337,6 +3349,23 @@ export class Game {
       this.revealCards(player, chosen, "library");
     }
 
+    // The chosen cards move together, so the ones a choice takes out of a
+    // graveyard leave it as one move ("return up to two cards").
+    this.withGraveyardLeaveBatch(() => this.moveChosenFromZone(awaiting, player, chosen, leftover));
+
+    this.emit({ type: "cards-chosen-from-zone", player, objects: [...chosen] });
+    this.state.awaiting = null;
+    this.finishChooseFromZone(awaiting, player, chosen);
+  }
+
+  /** The moves half of {@link applyChooseFromZone}: the chosen cards to where
+   * the choice sends them, and the ones left over. */
+  private moveChosenFromZone(
+    awaiting: Extract<AwaitingDecision, { kind: "choose-from-zone" }>,
+    player: PlayerId,
+    chosen: readonly ObjectId[],
+    leftover: readonly ObjectId[],
+  ): void {
     // A split tutor (Cultivate) sends the first find to `destination` and the
     // rest to `restDestination`; with no `restDestination` they all go to the
     // same place, which is every other tutor. Whatever goes onto the
@@ -3386,10 +3415,15 @@ export class Game {
     if (awaiting.destination === "library-top") {
       for (const id of [...chosen].reverse()) this.putOnLibrary(id, "top");
     }
+  }
 
-    this.emit({ type: "cards-chosen-from-zone", player, objects: [...chosen] });
-    this.state.awaiting = null;
-
+  /** The rest of {@link applyChooseFromZone}, once the cards have moved and
+   * the decision is answered: the choice's `then`, and priority. */
+  private finishChooseFromZone(
+    awaiting: Extract<AwaitingDecision, { kind: "choose-from-zone" }>,
+    player: PlayerId,
+    chosen: readonly ObjectId[],
+  ): void {
     // "…, then that creature gains haste" — applied with the chosen cards as
     // its targets, since they were never targets of the spell itself. Nothing
     // chosen means nothing to say it about.
@@ -5694,7 +5728,12 @@ export class Game {
     if (via === "escape" && def.escape !== null) {
       const others = this.state.zones.perPlayer[player].graveyard.filter((id) => id !== cardId);
       const exiled = escapeExile !== undefined ? [...escapeExile] : others.slice(0, def.escape.exileCount);
-      for (const id of exiled) this.moveObject(id, "exile");
+      // One cost, paid at once — and a separate move from the card's own to
+      // the stack below (rules 601.2a / 601.2h), so each is its own
+      // "cards leave your graveyard" event.
+      this.withGraveyardLeaveBatch(() => {
+        for (const id of exiled) this.moveObject(id, "exile");
+      });
       this.emit({ type: "escape-cost-paid", object: cardId, exiled: [...exiled] });
     }
 
@@ -7978,7 +8017,11 @@ export class Game {
                   ability.trigger.on === "attacks-batch" &&
                     event.type === "attackers-declared"
                   ? this.batchedAttackers(ability.trigger, event.attackers, object).length
-                  : // "Deals that much damage": how many counters were put.
+                  : // How many cards left the graveyard, for "that many".
+                    ability.trigger.on === "leaves-graveyard" &&
+                      event.type === "cards-left-graveyard"
+                    ? this.graveyardLeavers(ability.trigger, event.objects, object).length
+                    : // "Deals that much damage": how many counters were put.
                     ability.trigger.on === "counters-put" && event.type === "counter-added"
                     ? event.amount
                     : // "Loses that much life" (Sanguine Bond, Exquisite Blood):
@@ -8547,6 +8590,15 @@ export class Game {
           event.type === "blocker-declared" &&
           this.matchesWho(spec.who, event.blocker, self) &&
           this.triggerFilterOk(spec.filter, event.blocker, self)
+        );
+      case "leaves-graveyard":
+        // One of those cards itself — a Teval reanimated along with others —
+        // was in the graveyard, not on the battlefield, as they left (rule
+        // 603.10a looks back to just before the move).
+        return (
+          event.type === "cards-left-graveyard" &&
+          !event.objects.includes(self.id) &&
+          this.graveyardLeavers(spec, event.objects, self).length > 0
         );
       case "discards":
         return (
@@ -9411,11 +9463,15 @@ export class Game {
         ),
       exileGraveyard: (target) => {
         if (target.kind !== "player") return;
-        // Snapshot: `moveObject` mutates the graveyard array as it goes.
-        for (const id of [...this.state.zones.perPlayer[target.player].graveyard]) {
-          this.moveObject(id, "exile");
-        }
+        // Snapshot: `moveObject` mutates the graveyard array as it goes. The
+        // whole graveyard goes at once.
+        this.withGraveyardLeaveBatch(() => {
+          for (const id of [...this.state.zones.perPlayer[target.player].graveyard]) {
+            this.moveObject(id, "exile");
+          }
+        });
       },
+      simultaneously: (fn) => this.withLeaveBatch(() => this.withGraveyardLeaveBatch(fn)),
       flicker: (flickered, options) => this.flickerByEffect(source, controller, flickered, options),
       returnFlickered: (link, thenCounters, underYourControl) =>
         this.returnFlickeredByEffect(link, thenCounters, underYourControl ? controller : undefined),
@@ -12707,14 +12763,17 @@ export class Game {
     );
     if (eligible.length === 0) return;
     if (count === "all" || eligible.length <= count) {
-      // All at once: one simultaneous entry.
-      this.withEnterBatch(() => {
-        for (const id of eligible) {
-          this.moveObject(id, destination, { tapped: enterTapped });
-          if (destination === "battlefield") {
-            this.emit({ type: "permanent-entered-battlefield", object: id });
+      // "Return all land cards from your graveyard" moves them at once: one
+      // graveyard departure, and one simultaneous entry.
+      this.withGraveyardLeaveBatch(() => {
+        this.withEnterBatch(() => {
+          for (const id of eligible) {
+            this.moveObject(id, destination, { tapped: enterTapped });
+            if (destination === "battlefield") {
+              this.emit({ type: "permanent-entered-battlefield", object: id });
+            }
           }
-        }
+        });
       });
       return;
     }
@@ -14058,6 +14117,16 @@ export class Game {
       to !== "library" &&
       this.registry.get(printedCardName(object)).countersPersistAcrossZones &&
       !(object.zone === "battlefield" && hasLostAbilities(object));
+    // A card leaving a graveyard, as it was there — what a "whenever one or
+    // more artifact cards leave your graveyard" trigger asks about, since
+    // those look back in time (rule 603.10a). Taken now, before the reset
+    // below and before it can become something else where it's going (a
+    // Clone reanimated as a copy of an artifact was a creature card).
+    // Tokens aren't cards (rule 111.1).
+    const leftGraveyard =
+      object.zone === "graveyard" && to !== "graveyard" && !object.isToken
+        ? this.takeLastKnown(id)
+        : undefined;
     const from = this.zoneList(object.zone, object.owner);
     const index = from.indexOf(id);
     if (index >= 0) from.splice(index, 1);
@@ -14238,7 +14307,86 @@ export class Game {
       this.leaveBatch?.left.push(id);
       this.emit({ type: "permanent-left-battlefield", object: id, toZone: to });
     }
+    // Part of the simultaneous move under way, announced when it's done;
+    // on its own, a move of its own, announced now.
+    if (leftGraveyard !== undefined) {
+      if (this.graveyardLeaveBatch !== null) {
+        this.graveyardLeaveBatch.set(id, leftGraveyard);
+      } else {
+        this.announceGraveyardDepartures(new Map([[id, leftGraveyard]]));
+      }
+    }
     return true;
+  }
+
+  /**
+   * Carry out `fn` as one simultaneous move for the cards it takes out of
+   * graveyards: they are announced together, as one `cards-left-graveyard`
+   * once `fn` is done, so a "whenever one or more cards leave your
+   * graveyard" trigger fires once for all of them. Anything that moves
+   * several graveyard cards in one instruction runs inside one — exiling a
+   * whole graveyard, the cards a choice returns, an escape cost, a
+   * `simultaneous` sequence. A move outside one is its own event. Nested
+   * calls join the outer move.
+   */
+  private withGraveyardLeaveBatch(fn: () => void): void {
+    if (this.graveyardLeaveBatch !== null) {
+      fn();
+      return;
+    }
+    const batch = new Map<ObjectId, LastKnownInfo>();
+    this.graveyardLeaveBatch = batch;
+    try {
+      fn();
+    } finally {
+      this.graveyardLeaveBatch = null;
+    }
+    if (batch.size > 0) this.announceGraveyardDepartures(batch);
+  }
+
+  /** Announce one simultaneous move of cards out of graveyards, with each
+   * card's snapshot from there on hand for the triggers it fires. */
+  private announceGraveyardDepartures(departed: ReadonlyMap<ObjectId, LastKnownInfo>): void {
+    const outer = this.graveyardDepartures;
+    this.graveyardDepartures = departed;
+    try {
+      this.emit({ type: "cards-left-graveyard", objects: [...departed.keys()] });
+    } finally {
+      this.graveyardDepartures = outer;
+    }
+  }
+
+  /**
+   * Which cards of a `cards-left-graveyard` count toward a `leaves-graveyard`
+   * trigger: left the right player's graveyard (`who`) and match `filter` as
+   * they were there. Shared by the match and the count, like
+   * {@link batchedAttackers}, so a trigger that fired on three artifact cards
+   * can't then count two.
+   */
+  private graveyardLeavers(
+    spec: Extract<TriggerSpec, { on: "leaves-graveyard" }>,
+    cards: readonly ObjectId[],
+    self: GameObject,
+  ): readonly ObjectId[] {
+    return cards.filter((id) => {
+      const snapshot = this.graveyardDepartures?.get(id);
+      const owner = snapshot?.owner ?? this.state.objects[id]?.owner;
+      if (owner === undefined || !this.matchesWhoPlayer(spec.who, owner, self)) return false;
+      return (
+        spec.filter === undefined ||
+        matchesFilter(this.state, this.registry, id, spec.filter, {
+          you: self.controller,
+          ...(snapshot !== undefined ? { snapshot } : {}),
+          // A comparison against a live amount, as `triggerFilterOk` answers
+          // one for every other trigger filter.
+          amount: this.filterAmounts({
+            source: self.id,
+            controller: self.controller,
+            triggerObject: id,
+          }),
+        })
+      );
+    });
   }
 
   private zoneList(zone: ZoneType, owner: PlayerId): ObjectId[] {

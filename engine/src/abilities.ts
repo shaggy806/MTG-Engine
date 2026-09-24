@@ -422,6 +422,35 @@ export type TriggerSpec =
     }
   | {
       /**
+       * A **batched** graveyard trigger: "whenever one or more cards leave
+       * your graveyard" (Teval, the Balanced Scale; Tormod, the Desecrator),
+       * narrowed by `filter` for "one or more **artifact** cards" (Imotekh
+       * the Stormlord). Fires **once per simultaneous move**, however many
+       * cards it took — exiling a whole graveyard, returning several cards
+       * at once, an escape cost's exile — off the `cards-left-graveyard`
+       * event. Separate moves are separate triggers, including the two halves
+       * of an escape cast: the card moving to the stack (rule 601.2a) and the
+       * cards exiled to pay for it (601.2h).
+       *
+       * `who` is whose graveyard: `"you"` (this permanent's controller's),
+       * `"opponent"`, `"any"`. `filter` is matched against each card as it
+       * was in the graveyard (rule 603.10a — these abilities look back in
+       * time), so a card that became an artifact on its way to the
+       * battlefield doesn't count; a move with nothing matching doesn't fire.
+       * `{ triggerValue: true }` is how many cards counted. A permanent that
+       * was itself one of the cards (a reanimated Teval) wasn't on the
+       * battlefield to see them leave, and doesn't trigger.
+       *
+       * The per-card form ("whenever a creature card leaves your graveyard" —
+       * Syr Konrad, the Grim) is a different trigger, once per card, and is
+       * not this one.
+       */
+      readonly on: "leaves-graveyard";
+      readonly who: TriggerWho;
+      readonly filter?: CardFilter;
+    }
+  | {
+      /**
        * A player discarded one or more cards — Sangromancer's "whenever an
        * opponent discards a card".
        *

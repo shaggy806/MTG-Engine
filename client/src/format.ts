@@ -264,6 +264,13 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${event.player} sacrifices ${name(event.object)}`
     case 'cards-milled':
       return `${event.player} mills ${event.objects.map(name).join(', ')}`
+    case 'cards-left-graveyard':
+      // A count, not names: some of these cards may have gone somewhere
+      // this seat can't see (an opponent's hand), and an unknown id has no
+      // name to show.
+      return event.objects.length === 1
+        ? 'a card leaves a graveyard'
+        : `${event.objects.length} cards leave a graveyard`
     case 'player-lost':
       return `${event.player} loses: ${event.reason}`
     case 'game-ended':

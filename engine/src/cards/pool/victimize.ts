@@ -16,8 +16,12 @@ export default defineCard({
   // resolution, which is why it gates castability rather than being a
   // `sacrifice` effect that could fizzle the reanimation.
   additionalCost: { sacrifice: { type: "creature", controlledBy: "you" } },
+  // One instruction, "return the chosen cards": they leave the graveyard
+  // together, so a "whenever one or more cards leave your graveyard" trigger
+  // fires once.
   effect: {
     kind: "sequence",
+    simultaneous: true,
     effects: [
       { kind: "put-onto-battlefield", target: 0, enterTapped: true },
       { kind: "put-onto-battlefield", target: 1, enterTapped: true },

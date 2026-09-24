@@ -213,6 +213,8 @@ export const makeFormatter = (game) => {
         return `${e.player} sacrifices ${name(e.object)}`;
       case "cards-milled":
         return `${e.player} mills ${e.objects.map(name).join(", ")}`;
+      case "cards-left-graveyard":
+        return `${e.objects.map(name).join(", ")} ${e.objects.length === 1 ? "leaves" : "leave"} the graveyard`;
       case "player-lost":
         return `${e.player}: ${e.reason}`;
       case "game-ended":
