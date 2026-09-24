@@ -7,6 +7,7 @@ import { defineCard } from "../define.js";
 // (`Game.isStackableTokenName`) — each Clue is its own object.
 export default defineCard({
   name: "Clue Token",
+  art: "ef607895-d6d2-44ab-a6b4-84af55fce593",
   types: ["artifact"],
   subtypes: ["Clue"],
   text: "{2}, Sacrifice this token: Draw a card.",

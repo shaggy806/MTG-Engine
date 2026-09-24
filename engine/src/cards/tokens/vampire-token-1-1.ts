@@ -5,6 +5,7 @@ import { defineCard } from "../define.js";
 // convention follows "3/3 Beast Token".
 export default defineCard({
   name: "1/1 Vampire Token",
+  art: "73690930-4b00-4f35-aa6f-bbfeeb711330",
   colors: ["B"],
   types: ["creature"],
   subtypes: ["Vampire"],
