@@ -705,6 +705,7 @@ const deckB = deck([
   ["Elspeth, Sun's Champion", 1],
   ["Baithook Angler", 2],
   ["Beanstalk Giant", 2],
+  ["Lumra, Bellow of the Woods", 1],
   ["Simic Charm", 2],
   ["Kolaghan's Command", 1],
   ["Ardent Recruit", 2],
