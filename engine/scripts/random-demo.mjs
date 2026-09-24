@@ -940,6 +940,9 @@ const deckE = deck([
   ["Clement, the Worrywort", 1],
   // "Becomes the target of a spell", once per object.
   ["Gargos, Vicious Watcher", 1],
+  // Cost modifications keyed on targets, and twobrid pips.
+  ["Hinata, Dawn-Crowned", 1],
+  ["Reaper King", 1],
   ["Plains", 5],
   ["Island", 5],
   ["Swamp", 5],
