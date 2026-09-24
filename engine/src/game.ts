@@ -8181,6 +8181,7 @@ export class Game {
               : event.type === "permanent-entered-battlefield" ||
             event.type === "permanent-destroyed" ||
             event.type === "permanent-left-battlefield" ||
+            event.type === "permanent-sacrificed" ||
             event.type === "permanent-transformed"
               ? event.object
               : event.type === "attacker-declared" || event.type === "attacked-alone"
@@ -8764,9 +8765,13 @@ export class Game {
           event.type === "attacked-alone" && this.matchesWho(spec.who, event.attacker, self)
         );
       case "sacrifice":
+        // The permanent is read as it last existed on the battlefield: a
+        // sacrificed token is still "a token", an animated land "a creature".
         return (
           event.type === "permanent-sacrificed" &&
-          this.matchesWhoPlayer(spec.who, event.player, self)
+          this.matchesWhoPlayer(spec.who, event.player, self) &&
+          !(spec.otherOnly === true && event.object === self.id) &&
+          this.triggerFilterOk(spec.filter, event.object, self, true)
         );
       case "transforms":
         return (

@@ -386,9 +386,15 @@ export type TriggerSpec =
   | {
       /** A player sacrificed a permanent (Korvold, Mayhem Devil — rule 701.19).
        * `who` is relative to the sacrificing player: `"you"` = this permanent's
-       * controller sacrificed one, `"any"` = anyone did. needed-cards P6. */
+       * controller sacrificed one, `"any"` = anyone did. needed-cards P6.
+       * `filter` narrows it ("whenever you sacrifice a **nontoken**
+       * permanent", "…a Food"), matched against the permanent as it last
+       * existed on the battlefield; `otherOnly` is "another". The sacrificed
+       * permanent is the trigger object ("its power", "that creature"). */
       readonly on: "sacrifice";
       readonly who: TriggerWho;
+      readonly filter?: CardFilter;
+      readonly otherOnly?: boolean;
     }
   | {
       /** A permanent turned over to its other face (rule 712.10 — ROADMAP

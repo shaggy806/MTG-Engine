@@ -50,7 +50,8 @@
   "effect:reflexive-trigger",
   "effect:target-other-than-source",
   "effect:add-subtype",
-  "cost:may-cost-non-mana"
+  "cost:may-cost-non-mana",
+  "trigger:sacrifice-filter"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
