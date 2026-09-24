@@ -25,7 +25,11 @@
   "condition:count-excluding-source",
   "cost:commander-tax-as-life",
   "effect:return-to-hand-extensions",
-  "zone:activated-ability-zones"
+  "zone:activated-ability-zones",
+  "bug:x-value-propagation",
+  "trigger:becomes-target-fixes",
+  "cost:cost-modification-extensions",
+  "replacement:exile-instead"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
@@ -76,7 +80,7 @@
   "bug:lki-object-reads": {
    "size": "medium",
    "ui": false,
-   "description": "When a resolving ability reads an object that has left the battlefield, it uses last-known information (rule 608.2h). This covers powerOf/toughnessOf of the source, trigger object or target, 'that creature's controller', and the source's keywords (lifelink) for damage it dealt. It includes tokens that were deleted."
+   "description": "When a resolving ability reads an object that has left the battlefield, it uses last-known information (rule 608.2h). This covers powerOf/toughnessOf of the source, trigger object or target, 'that creature's controller', and the source's keywords (lifelink) for damage it dealt. It includes tokens that were deleted. Built so far: mana value (GameObject.lastKnownManaValue, GameState.ceasedTokenManaValues, read by manaValueOfTarget) and the controller as it left (lastKnownController)."
   },
   "bug:lore-counters-fire-chapters": {
    "size": "small",
@@ -191,7 +195,7 @@
   "condition:filter-dynamic-compare": {
    "size": "small",
    "ui": false,
-   "description": "NumCompare.n reads an EffectAmount when evaluated: the trigger object's mana value or power, the source's current power, the sacrificed MV + 1, the trigger value, or the object's own power ('toughness greater than its power'). It is re-evaluated at resolution."
+   "description": "NumCompare.n reads an EffectAmount when evaluated: the sacrificed MV + 1 (no 'N plus an amount' EffectAmount exists yet — Eddie Brock, Iron Man; they also need effect:sacrificed-object-lki). Built so far: a filter comparison's number can be a live EffectAmount (DynamicOperand — the trigger object's mana value or power, the source's current power, the trigger value), re-evaluated at resolution, with a departed trigger object read by last-known mana value (Clement, the Worrywort)."
   },
   "condition:filter-this-turn-history": {
    "size": "small",
