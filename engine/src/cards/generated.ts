@@ -637,6 +637,7 @@ import _poolShipwreckMarsh from "./pool/shipwreck-marsh.js";
 import _poolShivanOasis from "./pool/shivan-oasis.js";
 import _poolShivanReef from "./pool/shivan-reef.js";
 import _poolShroofusSproutsire from "./pool/shroofus-sproutsire.js";
+import _poolSidarJabariOfZhalfir from "./pool/sidar-jabari-of-zhalfir.js";
 import _poolSidequestRaiseAChocobo from "./pool/sidequest-raise-a-chocobo.js";
 import _poolSignInBlood from "./pool/sign-in-blood.js";
 import _poolSimicCharm from "./pool/simic-charm.js";
@@ -1570,6 +1571,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolShivanOasis,
   _poolShivanReef,
   _poolShroofusSproutsire,
+  _poolSidarJabariOfZhalfir,
   _poolSidequestRaiseAChocobo,
   _poolSignInBlood,
   _poolSimicCharm,
