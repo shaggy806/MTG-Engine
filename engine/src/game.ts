@@ -3156,11 +3156,51 @@ export class Game {
       object.graveyardCastTypesUsedThisTurn = undefined;
       object.combatDamagedPlayersThisTurn = [];
       object.attackedThisTurn = false;
-      if (object.tapped) {
+      if (object.tapped && !this.hasOwnStatic(object, (a) => a.doesntUntap === true)) {
         object.tapped = false;
         this.emit({ type: "permanent-untapped", object: id });
       }
     }
+    // Seedborn Muse, Unwinding Clock, Bender's Waterskin: other players'
+    // permanents that untap during this player's untap step too.
+    for (const id of this.state.zones.shared.battlefield) {
+      const object = this.state.objects[id];
+      if (object === undefined || object.controller === active || !object.tapped) continue;
+      if (this.state.players[object.controller]?.hasLost === true) continue;
+      if (this.untapsDuringOthersUntap(object)) {
+        object.tapped = false;
+        this.emit({ type: "permanent-untapped", object: id });
+      }
+    }
+  }
+
+  /** Does `object` carry an active static of its own matching `test`? */
+  private hasOwnStatic(object: GameObject, test: (ability: StaticAbility) => boolean): boolean {
+    if (hasLostAbilities(object)) return false;
+    return this.registry
+      .get(printedCardName(object))
+      .static.some((ability) => test(ability) && this.staticActive(object, ability));
+  }
+
+  /** Whether a permanent untaps during a player's untap step other than its
+   * controller's — a `untapsDuringOthersUntap` static on itself (`"self"`) or
+   * on any permanent its controller controls whose filter it matches. */
+  private untapsDuringOthersUntap(object: GameObject): boolean {
+    if (this.hasOwnStatic(object, (a) => a.untapsDuringOthersUntap === "self")) return true;
+    return this.state.zones.shared.battlefield.some((id) => {
+      const granter = this.state.objects[id];
+      if (granter === undefined || granter.controller !== object.controller) return false;
+      if (hasLostAbilities(granter)) return false;
+      return this.registry.get(printedCardName(granter)).static.some((ability) => {
+        const filter = ability.untapsDuringOthersUntap;
+        return (
+          filter !== undefined &&
+          filter !== "self" &&
+          this.staticActive(granter, ability) &&
+          matchesFilter(this.state, this.registry, object.id, filter, { you: granter.controller })
+        );
+      });
+    });
   }
 
   private drawStep(): void {

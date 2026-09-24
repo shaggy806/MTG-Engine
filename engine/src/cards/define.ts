@@ -622,6 +622,19 @@ export interface StaticAbility {
    * it's read straight off the battlefield at cleanup rather than through the
    * layer system. */
   readonly noMaxHandSize?: boolean;
+  /** "This artifact doesn't untap during your untap step" (Mana Vault, Basalt
+   * Monolith). Only its controller's own untap step: something that untaps
+   * it during another player's (Seedborn Muse) still does. `affects` is
+   * ignored — it is always the permanent carrying it. */
+  readonly doesntUntap?: boolean;
+  /**
+   * Untap during each **other** player's untap step, as well as your own:
+   * `"self"` is Bender's Waterskin ("untap this artifact"), a `CardFilter` is
+   * every permanent you control matching it — Seedborn Muse's `{}` ("all
+   * permanents you control"), Unwinding Clock's `{ type: "artifact" }`. The
+   * filter's "you" is this permanent's controller. `affects` is ignored.
+   */
+  readonly untapsDuringOthersUntap?: "self" | CardFilter;
   /** Combat restrictions imposed on the affected objects (Pacifism, Juggernaut). */
   readonly restrictions?: readonly CombatRestriction[];
   /** A permission (rule 305.9 / 118.9) — while this permanent is on the

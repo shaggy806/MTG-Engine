@@ -67,6 +67,7 @@ import _poolBadlands from "./pool/badlands.js";
 import _poolBaithookAngler from "./pool/baithook-angler.js";
 import _poolBalefulStrix from "./pool/baleful-strix.js";
 import _poolBanishingLight from "./pool/banishing-light.js";
+import _poolBasaltMonolith from "./pool/basalt-monolith.js";
 import _poolBasiliskCollar from "./pool/basilisk-collar.js";
 import _poolBastionOfRemembrance from "./pool/bastion-of-remembrance.js";
 import _poolBattlefieldForge from "./pool/battlefield-forge.js";
@@ -79,6 +80,7 @@ import _poolBedevil from "./pool/bedevil.js";
 import _poolBeholdTheMultiverse from "./pool/behold-the-multiverse.js";
 import _poolBelakorTheDarkMaster from "./pool/belakor-the-dark-master.js";
 import _poolBelloBardOfTheBrambles from "./pool/bello-bard-of-the-brambles.js";
+import _poolBendersWaterskin from "./pool/benders-waterskin.js";
 import _poolBigScore from "./pool/big-score.js";
 import _poolBirdsOfParadise from "./pool/birds-of-paradise.js";
 import _poolBitterTriumph from "./pool/bitter-triumph.js";
@@ -377,6 +379,7 @@ import _poolGreatOakGuardian from "./pool/great-oak-guardian.js";
 import _poolGreaterGood from "./pool/greater-good.js";
 import _poolGreed from "./pool/greed.js";
 import _poolGreenSunsZenith from "./pool/green-suns-zenith.js";
+import _poolGrimMonolith from "./pool/grim-monolith.js";
 import _poolGrimTutor from "./pool/grim-tutor.js";
 import _poolGrizzlyBears from "./pool/grizzly-bears.js";
 import _poolGrowthSpiral from "./pool/growth-spiral.js";
@@ -525,6 +528,7 @@ import _poolManOWar from "./pool/man-o-war.js";
 import _poolManaConfluence from "./pool/mana-confluence.js";
 import _poolManaDrain from "./pool/mana-drain.js";
 import _poolManaGeyser from "./pool/mana-geyser.js";
+import _poolManaVault from "./pool/mana-vault.js";
 import _poolManifoldKey from "./pool/manifold-key.js";
 import _poolMarchOfTheMultitudes from "./pool/march-of-the-multitudes.js";
 import _poolMarionetteApprentice from "./pool/marionette-apprentice.js";
@@ -717,6 +721,7 @@ import _poolSeaOfClouds from "./pool/sea-of-clouds.js";
 import _poolSeasideCitadel from "./pool/seaside-citadel.js";
 import _poolSeatOfTheSynod from "./pool/seat-of-the-synod.js";
 import _poolSecludedCourtyard from "./pool/secluded-courtyard.js";
+import _poolSeedbornMuse from "./pool/seedborn-muse.js";
 import _poolSeethingSong from "./pool/seething-song.js";
 import _poolSeizeTheSpoils from "./pool/seize-the-spoils.js";
 import _poolSejiriRefuge from "./pool/sejiri-refuge.js";
@@ -922,6 +927,7 @@ import _poolUnlicensedDisintegration from "./pool/unlicensed-disintegration.js";
 import _poolUnnaturalGrowth from "./pool/unnatural-growth.js";
 import _poolUnstableObelisk from "./pool/unstable-obelisk.js";
 import _poolUnsummon from "./pool/unsummon.js";
+import _poolUnwindingClock from "./pool/unwinding-clock.js";
 import _poolUrborgVolcano from "./pool/urborg-volcano.js";
 import _poolUreniOfTheUnwritten from "./pool/ureni-of-the-unwritten.js";
 import _poolUrtetRemnantOfMemnarch from "./pool/urtet-remnant-of-memnarch.js";
@@ -1132,6 +1138,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBaithookAngler,
   _poolBalefulStrix,
   _poolBanishingLight,
+  _poolBasaltMonolith,
   _poolBasiliskCollar,
   _poolBastionOfRemembrance,
   _poolBattlefieldForge,
@@ -1144,6 +1151,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBeholdTheMultiverse,
   _poolBelakorTheDarkMaster,
   _poolBelloBardOfTheBrambles,
+  _poolBendersWaterskin,
   _poolBigScore,
   _poolBirdsOfParadise,
   _poolBitterTriumph,
@@ -1442,6 +1450,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolGreaterGood,
   _poolGreed,
   _poolGreenSunsZenith,
+  _poolGrimMonolith,
   _poolGrimTutor,
   _poolGrizzlyBears,
   _poolGrowthSpiral,
@@ -1590,6 +1599,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolManaConfluence,
   _poolManaDrain,
   _poolManaGeyser,
+  _poolManaVault,
   _poolManifoldKey,
   _poolMarchOfTheMultitudes,
   _poolMarionetteApprentice,
@@ -1782,6 +1792,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSeasideCitadel,
   _poolSeatOfTheSynod,
   _poolSecludedCourtyard,
+  _poolSeedbornMuse,
   _poolSeethingSong,
   _poolSeizeTheSpoils,
   _poolSejiriRefuge,
@@ -1987,6 +1998,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolUnnaturalGrowth,
   _poolUnstableObelisk,
   _poolUnsummon,
+  _poolUnwindingClock,
   _poolUrborgVolcano,
   _poolUreniOfTheUnwritten,
   _poolUrtetRemnantOfMemnarch,

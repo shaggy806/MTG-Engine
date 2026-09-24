@@ -1151,6 +1151,12 @@ anthem, the keyword grant and the granted trigger like any other creature.
   zone this game instead of a battlefield filter (Commander's Insignia), summed
   across a Partner pair.
 - `noMaxHandSize: true` — "You have no maximum hand size" (Thought Vessel).
+- `doesntUntap: true` — "This artifact doesn't untap during your untap step"
+  (Mana Vault, Basalt Monolith). Only its controller's own untap step.
+- `untapsDuringOthersUntap: "self" | CardFilter` — untap during each **other**
+  player's untap step too: `"self"` is Bender's Waterskin, a filter is every
+  permanent you control matching it (Seedborn Muse `{}`, Unwinding Clock
+  `{ type: "artifact" }`).
 - `castFromGraveyard: { filter, oncePerTurn?, yourTurnOnly?, perType?,
   exileAfterwards?, payLife? }` — a permission to cast spells from your
   graveyard for their normal cost (Gisa and Geralf: "Once during each of your

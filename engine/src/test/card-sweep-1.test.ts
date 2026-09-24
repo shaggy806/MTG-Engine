@@ -814,3 +814,73 @@ describe("Black Market", () => {
     expect(pool(game, A)).toBe("BB");
   });
 });
+
+describe("Basalt Monolith / Grim Monolith", () => {
+  it("doesn't untap in its controller's untap step, but untaps by its own ability", () => {
+    const { game } = setUp();
+    const basalt = game.debugSpawn("Basalt Monolith", A, "battlefield", { tapped: true });
+    const grim = game.debugSpawn("Grim Monolith", A, "battlefield", { tapped: true });
+    const island = game.debugSpawn("Island", A, "battlefield", { tapped: true });
+    game.advanceUntil((s) => s.turn.number === 3 && s.turn.step === "upkeep");
+    expect(game.state.objects[basalt].tapped).toBe(true);
+    expect(game.state.objects[grim].tapped).toBe(true);
+    expect(game.state.objects[island].tapped).toBe(false);
+    lands(game, A, "Island", 2);
+    game.advanceUntil((s) => s.turn.number === 3 && s.turn.step === "precombat-main" && quiet(s));
+    activate(game, A, basalt, 1);
+    expect(game.state.objects[basalt].tapped).toBe(false);
+  });
+});
+
+describe("Mana Vault", () => {
+  it("pings you in your draw step while tapped, and untaps for {4}", () => {
+    const { game, a } = setUp();
+    const vault = game.debugSpawn("Mana Vault", A, "battlefield", { tapped: true });
+    lands(game, A, "Island", 4);
+    a.chooseModesFn = () => [];
+    game.advanceUntil((s) => s.turn.number === 3 && s.turn.step === "precombat-main" && quiet(s));
+    expect(game.state.objects[vault].tapped).toBe(true);
+    expect(life(game, A)).toBe(19);
+    a.chooseModesFn = (_v, _min, max) => (max >= 1 ? [0] : []);
+    game.advanceUntil((s) => s.turn.number === 5 && s.turn.step === "precombat-main" && quiet(s));
+    expect(game.state.objects[vault].tapped).toBe(false);
+    expect(life(game, A)).toBe(19);
+  });
+});
+
+describe("Seedborn Muse, Unwinding Clock, Bender's Waterskin", () => {
+  it("untap their controller's permanents during other players' untap steps", () => {
+    const { game } = setUp();
+    game.debugSpawn("Unwinding Clock", A, "battlefield");
+    const skin = game.debugSpawn("Bender's Waterskin", A, "battlefield", { tapped: true });
+    const rock = game.debugSpawn("Charcoal Diamond", A, "battlefield");
+    const land = game.debugSpawn("Island", A, "battlefield", { tapped: true });
+    const theirs = game.debugSpawn("Charcoal Diamond", B, "battlefield");
+    expect(game.state.objects[rock].tapped).toBe(true);
+    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "upkeep");
+    expect(game.state.objects[skin].tapped).toBe(false);
+    expect(game.state.objects[rock].tapped).toBe(false); // an artifact: the Clock
+    expect(game.state.objects[land].tapped).toBe(true); // not an artifact
+    expect(game.state.objects[theirs].tapped).toBe(false); // Bob's own untap step
+
+    const muse = setUp();
+    muse.game.debugSpawn("Seedborn Muse", A, "battlefield");
+    const island = muse.game.debugSpawn("Island", A, "battlefield", { tapped: true });
+    const bobs = muse.game.debugSpawn("Island", B, "battlefield", { tapped: true });
+    muse.game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "upkeep");
+    expect(muse.game.state.objects[island].tapped).toBe(false);
+    expect(muse.game.state.objects[bobs].tapped).toBe(false);
+  });
+
+  it("don't override \"doesn't untap during your untap step\" on your own turn", () => {
+    const { game } = setUp();
+    game.debugSpawn("Seedborn Muse", A, "battlefield");
+    const basalt = game.debugSpawn("Basalt Monolith", A, "battlefield", { tapped: true });
+    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "upkeep");
+    // Bob's untap step: Seedborn untaps it.
+    expect(game.state.objects[basalt].tapped).toBe(false);
+    game.state.objects[basalt].tapped = true;
+    game.advanceUntil((s) => s.turn.number === 3 && s.turn.step === "upkeep");
+    expect(game.state.objects[basalt].tapped).toBe(true);
+  });
+});
