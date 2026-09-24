@@ -7,8 +7,8 @@
  *   Whenever a Horror you control deals combat damage to a player, that
  *   player mills that many cards.
  *   At the beginning of your end step, choose target artifact or creature
- *   card in an opponent's graveyard that was put there from a library this
- *   turn. Put it onto the battlefield under your control.
+ *   card in an opponent's graveyard that was put there from their library
+ *   this turn. Put it onto the battlefield under your control.
  *
  * What each test pins down:
  *
@@ -89,13 +89,13 @@ const objectIds = (refs: readonly TargetRef[]): ObjectId[] =>
   refs.flatMap((r) => (r.kind === "object" ? [r.object] : []));
 
 describe("Captain N'ghathrod", () => {
-  it("is a 3/5 blue-black legendary Horror Pirate", () => {
+  it("is a 3/6 blue-black legendary Horror Pirate", () => {
     const def = registry.get(CAPTAIN);
     expect(def.manaCost).toBe("{3}{U}{B}");
     expect(def.supertypes).toEqual(["legendary"]);
     expect(def.types).toEqual(["creature"]);
     expect(def.subtypes).toEqual(["Horror", "Pirate"]);
-    expect([def.power, def.toughness]).toEqual([3, 5]);
+    expect([def.power, def.toughness]).toEqual([3, 6]);
     expect(identityString(colorIdentityOf(def))).toBe("UB");
   });
 
@@ -205,5 +205,31 @@ describe("Captain N'ghathrod", () => {
     game.debugApplyEffect(A, { kind: "discard-hand", who: "each-opponent" });
     expect(game.state.objects[bears].zone).toBe("graveyard");
     expect(milled(game, bears)).toBe(false);
+  });
+
+  it("marks a surveilled card and a tutored-to-graveyard card too", () => {
+    const { game, b } = makeGame();
+    const [surveilled, kept] = stackLibrary(game, B, ["Grizzly Bears", "Hill Giant"]);
+    // Bob surveils 2, binning the top card only.
+    b.chooseScryFn = (_view, cards) => cards.filter((id) => id === surveilled);
+    game.debugApplyEffect(B, { kind: "surveil", amount: 2 });
+    game.advanceUntil((s) => s.awaiting === null);
+    expect(game.state.objects[surveilled].zone).toBe("graveyard");
+    expect(milled(game, surveilled)).toBe(true);
+    expect(game.state.objects[kept].zone).toBe("library");
+    expect(milled(game, kept)).toBe(false);
+
+    // Entomb: "search your library for a card, put that card into your graveyard".
+    b.chooseFromZoneFn = (_view, eligible) => eligible.filter((id) => id === kept);
+    game.debugApplyEffect(B, {
+      kind: "search-library",
+      filter: {},
+      destination: "graveyard",
+      min: 1,
+      max: 1,
+    });
+    game.advanceUntil((s) => s.awaiting === null);
+    expect(game.state.objects[kept].zone).toBe("graveyard");
+    expect(milled(game, kept)).toBe(true);
   });
 });

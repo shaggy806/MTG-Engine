@@ -8,11 +8,11 @@ export default defineCard({
   types: ["creature"],
   subtypes: ["Horror", "Pirate"],
   power: 3,
-  toughness: 5,
+  toughness: 6,
   text:
     "Horrors you control have menace.\n" +
     "Whenever a Horror you control deals combat damage to a player, that player mills that many cards.\n" +
-    "At the beginning of your end step, choose target artifact or creature card in an opponent's graveyard that was put there from a library this turn. Put it onto the battlefield under your control.",
+    "At the beginning of your end step, choose target artifact or creature card in an opponent's graveyard that was put there from their library this turn. Put it onto the battlefield under your control.",
   static: [
     {
       // The Captain is a Horror itself, so it has menace too.
@@ -48,7 +48,7 @@ export default defineCard({
       ],
       effect: { kind: "put-onto-battlefield", target: 0, underYourControl: true },
       resolve: null,
-      text: "At the beginning of your end step, choose target artifact or creature card in an opponent's graveyard that was put there from a library this turn. Put it onto the battlefield under your control.",
+      text: "At the beginning of your end step, choose target artifact or creature card in an opponent's graveyard that was put there from their library this turn. Put it onto the battlefield under your control.",
     },
   ],
 });
