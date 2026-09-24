@@ -189,3 +189,55 @@ describe("Norin the Wary — exiled when a spell is cast or a creature attacks",
     expect(game.state.objects[norin].zone).toBe("battlefield");
   });
 });
+
+describe("Norin the Wary — owner, command zone, and \"next\" end step", () => {
+  it("stolen Norin returns under owner's control", () => {
+    const { game } = mkGame(["Lightning Bolt"]);
+    game.advanceUntil(toPrecombat);
+    const norin = game.debugSpawn("Norin the Wary", B, "battlefield");
+    game.debugApplyEffect(A, { kind: "gain-control", target: 0, untilEndOfTurn: false }, [{ kind: "object", object: norin }]);
+    game.advanceUntil(quiet);
+    expect(game.state.objects[norin].controller).toBe(A);
+    castBolt(game);
+    game.advanceUntil(quiet);
+    expect(game.state.objects[norin].zone).toBe("exile");
+    expect(game.state.delayedTriggers[0].controller).toBe(A);
+    game.advanceUntil(toEndStep);
+    expect(game.state.objects[norin].zone).toBe("battlefield");
+    expect(game.state.objects[norin].controller).toBe(B);
+    // The delayed return is plain data (GameState is a structuredClone-able tree).
+    expect(structuredClone(game.state.delayedTriggers)).toEqual(game.state.delayedTriggers);
+  });
+  it("commander to command zone: no return", () => {
+    const { game } = mkGame(["Lightning Bolt"]);
+    game.advanceUntil(toPrecombat);
+    const norin = game.debugSpawn("Norin the Wary", A, "battlefield");
+    game.state.objects[norin].isCommander = true;
+    castBolt(game);
+    game.advanceUntil((s) => s.awaiting?.kind === "commander-replacement");
+    expect(game.state.delayedTriggers).toHaveLength(1);
+    game.dispatch({ type: "commander-replacement", player: A, toCommandZone: true });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[norin].zone).toBe("command");
+    game.advanceUntil(toEndStep);
+    expect(game.state.objects[norin].zone).toBe("command");
+    expect(game.state.delayedTriggers).toHaveLength(0);
+  });
+  it("exiled again during end step returns next turn's end step", () => {
+    const { game } = mkGame(["Lightning Bolt", "Lightning Bolt"]);
+    game.advanceUntil(toPrecombat);
+    const norin = game.debugSpawn("Norin the Wary", A, "battlefield");
+    castBolt(game);
+    game.advanceUntil(quiet);
+    game.advanceUntil(toEndStep);
+    expect(game.state.objects[norin].zone).toBe("battlefield");
+    castBolt(game);
+    game.advanceUntil(quiet);
+    expect(game.state.objects[norin].zone).toBe("exile");
+    expect(game.state.delayedTriggers).toHaveLength(1);
+    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "precombat-main");
+    expect(game.state.objects[norin].zone).toBe("exile");
+    game.advanceUntil((s) => s.turn.number === 2 && toEndStep(s));
+    expect(game.state.objects[norin].zone).toBe("battlefield");
+  });
+});

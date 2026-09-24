@@ -55,12 +55,7 @@ export interface FlickerCounters {
   readonly amount: number;
   readonly onlyIf?: CardFilter;
 }
-/** A numeric amount in an effect: a literal, `"x"` for the value chosen for
- * `{X}` when the spell/ability was put on the stack (`ResolutionContext.x`),
- * or a live count of battlefield permanents matching a filter, evaluated from
- * the effect's controller's perspective (Scourge of Valkas: `{ countOf:
- * { subtype: "Dragon", controlledBy: "you" } }`; Craterhoof Behemoth:
- * `{ countOf: { type: "creature", controlledBy: "you" } }`). */
+
 /** How a `flicker` returns what it exiled — the non-target half of its
  * {@link EffectSpec}. */
 export interface FlickerOptions {
@@ -71,6 +66,12 @@ export interface FlickerOptions {
   /** The effect named its own source (`target: "source"`). */
   readonly fromSource?: boolean;
 }
+/** A numeric amount in an effect: a literal, `"x"` for the value chosen for
+ * `{X}` when the spell/ability was put on the stack (`ResolutionContext.x`),
+ * or a live count of battlefield permanents matching a filter, evaluated from
+ * the effect's controller's perspective (Scourge of Valkas: `{ countOf:
+ * { subtype: "Dragon", controlledBy: "you" } }`; Craterhoof Behemoth:
+ * `{ countOf: { type: "creature", controlledBy: "you" } }`). */
 export type EffectAmount =
   | number
   | "x"
