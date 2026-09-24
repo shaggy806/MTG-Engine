@@ -563,8 +563,13 @@ exist (rule 111.7), so neither comes back.
   modes need their own targets, use the top-level `castModal` field instead
   (mode choice happens at cast time). A mode's effect *can* reference the
   enclosing ability's own already-chosen targets (`target: 0`, same as
-  anywhere else) — needed-cards P19.
-- **`may { effect, prompt, cost?, then?, else? }`** — "You may [effect]". One
+  anywhere else) — needed-cards P19. `notChosenThisTurn: true` is "choose
+  one **that hasn't been chosen this turn**" (Galadriel, Light of Valinor):
+  only the modes this ability of this object hasn't had chosen yet this turn
+  are offered, and with none left nothing happens. Counted per ability, like
+  `resolved-this-turn` (a permanent that leaves and returns starts again),
+  and reset as each turn begins.
+- **`may { effect, prompt, cost?, then?, else?, oncePerTurn? }`** — "You may [effect]". One
   optional mode; same targeting rule as `modal`. `cost` is a mana cost to say
   yes ("you may pay {B}. If you do, draw a card" — Nihil Spellbomb): the
   choice is only *offered* when it's payable, so being unable to pay and
@@ -573,7 +578,13 @@ exist (rule 111.7), so neither comes back.
   applies only when `effect` was chosen ("If you do, …" — Ob Nixilis, the
   Fallen); `else` only when it was declined ("If you didn't, …", or an
   "unless" cost framed as the decline branch — Springheart Nantuko, The
-  Gitrog Monster's upkeep). needed-cards P19.
+  Gitrog Monster's upkeep). needed-cards P19. `oncePerTurn: true` is "**Do
+  this only once each turn.**" (Pantlaza, Sun-Favored): the ability still
+  triggers every time, but once it has done it this turn it isn't offered
+  again (`else` applies instead); a resolution where it was declined doesn't
+  count. Same per-ability count as `modal`'s `notChosenThisTurn` — a `may` is
+  a choice of one mode. Not "This ability triggers only once each turn", which
+  is the trigger's own `oncePerTurn` (§9).
 - **`goad { target }`** / **`goad { who }`** — goad every creature a target
   player controls (rule 701.38 — Geode Rager), or every creature a whole
   `PlayerScope` controls (Kardur, Doomscourge's `who: "each-opponent"`).

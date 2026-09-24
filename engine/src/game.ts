@@ -2538,7 +2538,42 @@ export class Game {
      * zones, carried to the modes — see `choose-modes`' `lastKnownRefs`. */
     lastKnownRefs?: LastKnownRefs,
     targetZones?: readonly (ZoneType | null)[],
+    /** The ability choosing (`ResolutionContext.abilityKey`), and whether
+     * only modes it hasn't had chosen this turn are offered — `modal`'s
+     * `notChosenThisTurn`, `may`'s `oncePerTurn`. */
+    ability: { readonly key?: string; readonly notChosenThisTurn?: boolean } = {},
   ): void {
+    const key = ability.key;
+    const decline = (): void => {
+      if (onDecline === undefined) return;
+      applyEffectSpec(
+        onDecline,
+        this.makeResolutionContext(
+          source,
+          declineController ?? controller,
+          targets,
+          x,
+          triggerValue,
+          triggerObject,
+          1,
+          0,
+          targetZones ?? [],
+          lastKnownRefs,
+          key !== undefined ? { abilityKey: key } : {},
+        ),
+      );
+    };
+    // "Choose one that hasn't been chosen this turn" / "do this only once
+    // each turn": the modes this ability already had chosen are gone, and
+    // with none left there is nothing to choose — a `may` falls to its "if
+    // you don't".
+    const onlyUnchosen = ability.notChosenThisTurn === true && key !== undefined;
+    const chosenBefore = onlyUnchosen ? (this.state.modesChosenThisTurn?.[key] ?? []) : [];
+    const offered = modes.map((_mode, i) => i).filter((i) => !chosenBefore.includes(i));
+    if (offered.length === 0 && modes.length > 0) {
+      decline();
+      return;
+    }
     // "You may pay {B}" — an unpayable cost isn't a choice at all, so skip
     // straight to the decline branch rather than offering something the
     // player can't take (rule 601.2h / 608.2).
@@ -2550,32 +2585,16 @@ export class Game {
         ? null
         : { ...costParsed, generic: costParsed.generic, x: 0 };
     if (baseline !== null && this.payMana(controller, baseline) === null) {
-      if (onDecline !== undefined) {
-        applyEffectSpec(
-          onDecline,
-          this.makeResolutionContext(
-            source,
-            declineController ?? controller,
-            targets,
-            x,
-            triggerValue,
-            triggerObject,
-            1,
-            0,
-            targetZones ?? [],
-            lastKnownRefs,
-          ),
-        );
-      }
+      decline();
       return;
     }
     this.state.awaiting = {
       kind: "choose-modes",
       player: controller,
       source,
-      minModes,
-      maxModes: Math.min(maxModes, modes.length),
-      modes: modes.map((m) => ({ text: m.text, effect: m.effect })),
+      minModes: Math.min(minModes, offered.length),
+      maxModes: Math.min(maxModes, offered.length),
+      modes: offered.map((i) => ({ text: modes[i].text, effect: modes[i].effect })),
       x,
       targets,
       ...(triggerValue !== 0 ? { triggerValue } : {}),
@@ -2589,6 +2608,8 @@ export class Game {
         ? { declineController }
         : {}),
       ...(cost !== undefined ? { cost } : {}),
+      ...(key !== undefined ? { abilityKey: key } : {}),
+      ...(onlyUnchosen ? { notChosenThisTurn: offered } : {}),
     };
   }
 
@@ -2632,7 +2653,16 @@ export class Game {
     }
     // Listed order, not the order the player named them (rule 700.2b).
     const ordered = chosen.sort((a, b) => a - b);
-    this.emit({ type: "modes-chosen", source, modes: ordered });
+    // Offered out of fewer than all of them ("that hasn't been chosen this
+    // turn"): which of the ability's own modes these are, recorded as used.
+    const unchosen = awaiting.notChosenThisTurn;
+    const own = unchosen === undefined ? ordered : ordered.map((i) => unchosen[i]);
+    const abilityKey = awaiting.abilityKey;
+    if (unchosen !== undefined && abilityKey !== undefined && own.length > 0) {
+      const record = (this.state.modesChosenThisTurn ??= {});
+      record[abilityKey] = [...(record[abilityKey] ?? []), ...own];
+    }
+    this.emit({ type: "modes-chosen", source, modes: own });
     // The X paid for the choice is what the mode's effect reads (Flameblast
     // Dragon's "it deals X damage"), overriding the ability's own X, which is
     // 0 on a trigger.
@@ -2647,6 +2677,7 @@ export class Game {
       0,
       targetZones,
       lastKnownRefs,
+      abilityKey !== undefined ? { abilityKey } : {},
     );
     for (const i of ordered) applyEffectSpec(modes[i].effect, context);
     // Logged once the payment has been made, and ahead of the counter.
@@ -2674,6 +2705,7 @@ export class Game {
               0,
               targetZones,
               lastKnownRefs,
+              abilityKey !== undefined ? { abilityKey } : {},
             ),
       );
     }
@@ -2928,6 +2960,7 @@ export class Game {
     this.state.revealedThisTurn = [];
     delete this.state.ceasedTokens;
     this.state.abilityResolutionsThisTurn = {};
+    delete this.state.modesChosenThisTurn;
     this.state.preventionShields = [];
     this.state.extraCombats = 0;
     this.state.spellsCastThisTurn = 0;
@@ -7497,7 +7530,10 @@ export class Game {
           next.resolutionCount,
           next.targetZones,
           next.lastKnownRefs,
-          next.sourceLost === true ? { sourceLost: true } : {},
+          {
+            ...(next.sourceLost === true ? { sourceLost: true } : {}),
+            ...(next.abilityKey !== undefined ? { abilityKey: next.abilityKey } : {}),
+          },
         ),
       );
     } finally {
@@ -7834,6 +7870,7 @@ export class Game {
     const recorded = object.sourceZoneChangeCount;
     const sourceLost =
       recorded !== undefined && (this.state.objects[source]?.zoneChangeCount ?? 0) !== recorded;
+    const abilityKey = this.abilityTurnKey(object);
     const base = this.makeResolutionContext(
       source,
       object.controller,
@@ -7845,7 +7882,10 @@ export class Game {
       this.recordAbilityResolution(object),
       object.targetZones,
       object.lastKnownRefs,
-      sourceLost ? { sourceLost: true } : {},
+      {
+        ...(sourceLost ? { sourceLost: true } : {}),
+        ...(abilityKey !== undefined ? { abilityKey } : {}),
+      },
     );
     const targetedBy = object.targetedBy;
     const context = {
@@ -7884,16 +7924,24 @@ export class Game {
    * shift as grants come and go.
    */
   private recordAbilityResolution(object: GameObject): number {
-    if (object.delayedTrigger !== undefined) return 0;
+    const key = this.abilityTurnKey(object);
+    if (key === undefined) return 0;
+    const counts = (this.state.abilityResolutionsThisTurn ??= {});
+    counts[key] = (counts[key] ?? 0) + 1;
+    return counts[key];
+  }
+
+  /** Which ability of which object `object` (an ability on the stack) is, as
+   * the per-turn records key it — see `ResolutionContext.abilityKey`. A
+   * delayed trigger is no object's ability, and has none. */
+  private abilityTurnKey(object: GameObject): string | undefined {
+    if (object.delayedTrigger !== undefined) return undefined;
     const granted = object.grantedAbility;
     const which =
       granted?.kind === "static"
         ? `static:${granted.cardName}:${granted.staticIndex}:${granted.list}:${granted.index}`
         : `${object.abilityKind}:${object.abilityIndex ?? 0}`;
-    const key = `${object.sourceObjectId ?? object.id}@${object.sourceTimestamp ?? 0}#${which}`;
-    const counts = (this.state.abilityResolutionsThisTurn ??= {});
-    counts[key] = (counts[key] ?? 0) + 1;
-    return counts[key];
+    return `${object.sourceObjectId ?? object.id}@${object.sourceTimestamp ?? 0}#${which}`;
   }
 
   private removeAbilityFromStack(id: ObjectId): void {
@@ -9281,8 +9329,8 @@ export class Game {
      * sacrificed permanent the spell or ability refers to — see
      * {@link LastKnownRefs}. */
     lastKnownRefs: LastKnownRefs = {},
-    /** See `ResolutionContext.sourceLost`. */
-    opts: { readonly sourceLost?: boolean } = {},
+    /** See `ResolutionContext.sourceLost` and `ResolutionContext.abilityKey`. */
+    opts: { readonly sourceLost?: boolean; readonly abilityKey?: string } = {},
   ): ResolutionContext {
     const refs = lastKnownRefs;
     const expectedZoneOf = (target: TargetRef): ZoneType | null => {
@@ -9387,6 +9435,7 @@ export class Game {
       stackMultiplier,
       resolutionCount,
       ...(opts.sourceLost === true ? { sourceLost: true } : {}),
+      ...(opts.abilityKey !== undefined ? { abilityKey: opts.abilityKey } : {}),
       ...(refs.sacrificed !== undefined ? { sacrificed: refs.sacrificed.object } : {}),
       decisionPending: () => this.decisionOutstanding(),
       resumeAfterDecisions: (rest) => {
@@ -9404,6 +9453,7 @@ export class Game {
           resolutionCount,
           lastKnownRefs: refs,
           ...(opts.sourceLost === true ? { sourceLost: true } : {}),
+          ...(opts.abilityKey !== undefined ? { abilityKey: opts.abilityKey } : {}),
           ...(timestamp !== null ? { sourceTimestamp: timestamp } : {}),
           decisionSource: this.state.decisionSource,
         });
@@ -9867,7 +9917,7 @@ export class Game {
         this.state.preventionShields.push({ target, amount, combatOnly });
         this.emit({ type: "prevention-shield-created", target, amount });
       },
-      chooseModes: (minModes, maxModes, modes, onDecline, cost) =>
+      chooseModes: (minModes, maxModes, modes, onDecline, cost, notChosenThisTurn) =>
         this.beginModesChoice(
           source,
           controller,
@@ -9883,6 +9933,7 @@ export class Game {
           undefined,
           refs,
           targetZones,
+          { key: opts.abilityKey, notChosenThisTurn: notChosenThisTurn === true },
         ),
       changeLifeScoped: (who, delta) =>
         this.changeLifeScoped(controller, who, delta, triggerObject, triggerLastKnown(), refs.player),

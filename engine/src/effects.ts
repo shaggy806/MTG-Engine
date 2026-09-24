@@ -1237,6 +1237,12 @@ export type EffectSpec =
       readonly minModes: number;
       readonly maxModes: number;
       readonly modes: readonly ModeOption[];
+      /** "Choose one **that hasn't been chosen this turn**" (Galadriel,
+       * Light of Valinor): only the modes this ability of this object hasn't
+       * had chosen yet this turn are offered, and nothing happens once every
+       * one has been. Counted per ability, like `resolved-this-turn`, so a
+       * permanent that leaves and comes back starts again (rule 400.7). */
+      readonly notChosenThisTurn?: boolean;
     }
   | {
       /** Apply `then` if `condition` holds at resolution, otherwise `else`
@@ -1278,6 +1284,13 @@ export type EffectSpec =
        * same shape with `effect` framed as the *unless* clause). needed-cards
        * P19. */
       readonly else?: EffectSpec;
+      /** "You may [effect]. **Do this only once each turn.**" (Pantlaza,
+       * Sun-Favored): once this ability of this object has done it this
+       * turn, it isn't offered again — `else`, if any, applies instead. A
+       * turn when it was declined doesn't count, so a later resolution may
+       * still do it. Counted per ability, as `modal`'s `notChosenThisTurn`
+       * is: a `may` is a choice of one mode. */
+      readonly oncePerTurn?: boolean;
     }
   | {
       /**
@@ -1900,6 +1913,9 @@ export interface EffectApi {
     onDecline?: EffectSpec,
     /** A mana cost the chooser must pay to pick a mode — see `may.cost`. */
     cost?: string,
+    /** Offer only the modes this ability hasn't had chosen this turn — see
+     * `modal`'s `notChosenThisTurn` and `may`'s `oncePerTurn`. */
+    notChosenThisTurn?: boolean,
   ): void;
   /** Scry (`surveil: false`) or surveil (`surveil: true`) `amount` cards;
    * apply `then` afterwards. See the `"scry"` / `"surveil"` {@link EffectSpec}. */
@@ -1977,6 +1993,11 @@ export interface ResolutionContext extends EffectApi {
    * `sacrifice-source` step before this one — what an {@link AmountRef}
    * `"sacrificed"` reads. Absent when nothing was. */
   readonly sacrificed?: ObjectId;
+  /** Which ability of which object is resolving, as the per-turn records
+   * key it (`resolved-this-turn`, a `may`'s `oncePerTurn`): the source, the
+   * timestamp it had when the ability went on the stack, and which of its
+   * abilities. Absent for a spell and a delayed trigger. */
+  readonly abilityKey?: string;
 }
 
 /** Effect kinds safe to fire once with their count/amount multiplied by a
@@ -2746,7 +2767,14 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     }
     case "modal":
-      ctx.chooseModes(spec.minModes, spec.maxModes, spec.modes);
+      ctx.chooseModes(
+        spec.minModes,
+        spec.maxModes,
+        spec.modes,
+        undefined,
+        undefined,
+        spec.notChosenThisTurn === true,
+      );
       return;
     case "may": {
       const chosenEffect: EffectSpec =
@@ -2759,6 +2787,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         [{ text: spec.prompt, effect: chosenEffect }],
         spec.else,
         spec.cost,
+        spec.oncePerTurn === true,
       );
       return;
     }

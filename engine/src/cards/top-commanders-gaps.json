@@ -42,7 +42,8 @@
   "static:enters-replacement-for-others",
   "trigger:leaves-graveyard",
   "static:combat-damage-by-toughness",
-  "bug:sequence-suspends-on-decision"
+  "bug:sequence-suspends-on-decision",
+  "stat:per-ability-turn-counters"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
@@ -1003,7 +1004,7 @@
   "stat:per-ability-turn-counters": {
    "size": "small",
    "ui": false,
-   "description": "Per-object, per-ability counters that reset each turn: 'this ability triggers only once each turn' and 'do this only once each turn'. Built so far: 'if this is the Nth time this ability has resolved this turn' (the resolved-this-turn condition)."
+   "description": "Per-object, per-ability counters that reset each turn. Built: 'this ability triggers only once each turn' (TriggeredAbility.oncePerTurn), 'do this only once each turn' (may.oncePerTurn), 'choose one that hasn't been chosen this turn' (modal.notChosenThisTurn) and 'if this is the Nth time this ability has resolved this turn' (the resolved-this-turn condition)."
   },
   "stat:spells-cast-this-turn-record": {
    "size": "medium",

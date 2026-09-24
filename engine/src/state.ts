@@ -1159,6 +1159,13 @@ export type AwaitingDecision =
        * the ward cost of `warded`, declining counters `spell` (also the
        * decision's target 0). Choosing to pay logs `ward-paid`. */
       readonly ward?: { readonly warded: ObjectId; readonly spell: ObjectId };
+      /** Which ability is choosing (`ResolutionContext.abilityKey`), so a
+       * mode's effect resolves as part of it. */
+      readonly abilityKey?: string;
+      /** "That hasn't been chosen this turn": which of the ability's modes
+       * each offered one is, recorded in `GameState.modesChosenThisTurn`
+       * once chosen. */
+      readonly notChosenThisTurn?: readonly number[];
     }
   | {
       /** A triggered ability (or a suspended spell coming off suspend) needs
@@ -1305,6 +1312,8 @@ export interface ParkedSteps {
   readonly lastKnownRefs: LastKnownRefs;
   /** See `ResolutionContext.sourceLost`. */
   readonly sourceLost?: boolean;
+  /** See `ResolutionContext.abilityKey`. */
+  readonly abilityKey?: string;
   /** The timestamp the source had when the ability went on the stack, so
    * "exile ~" still skips a source that has become a new object. */
   readonly sourceTimestamp?: number;
@@ -1411,6 +1420,14 @@ export interface GameState {
    * begins. Optional so an older snapshot still loads.
    */
   abilityResolutionsThisTurn?: Record<string, number>;
+  /**
+   * Which modes each ability has had chosen this turn, keyed like
+   * `abilityResolutionsThisTurn` — for "choose one that hasn't been chosen
+   * this turn" (`modal`'s `notChosenThisTurn`) and "do this only once each
+   * turn" (`may`'s `oncePerTurn`, a choice of one mode). Turn-scoped,
+   * cleared as a turn begins.
+   */
+  modesChosenThisTurn?: Record<string, number[]>;
   /** A declaration the engine is waiting for, or `null`. */
   awaiting: AwaitingDecision | null;
   /**
