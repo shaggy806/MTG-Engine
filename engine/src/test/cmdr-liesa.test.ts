@@ -20,7 +20,7 @@
 import { describe, expect, it } from "vitest";
 
 import { createDefaultRegistry } from "../cards.js";
-import { ScriptedController } from "../controller.js";
+import { HeuristicBotController, ScriptedController } from "../controller.js";
 import { Game } from "../game.js";
 import { colorIdentityOf, identityString } from "../identity.js";
 import { asPlayerId } from "../primitives.js";
@@ -154,9 +154,9 @@ describe("Liesa, Shroud of Dusk", () => {
     game.state.players[A].life = 4;
     expect(canCast(game, liesa)).toBe(true);
     game.dispatch({ type: "cast-spell", player: A, card: liesa, targets: [] });
-    game.advanceUntil((s) => s.result !== null);
+    game.advanceUntil((s) => s.result.over);
     expect(life(game, A)).toBe(0);
-    expect(game.state.result).not.toBeNull();
+    expect(game.state.result).toMatchObject({ over: true, winner: B });
   });
 
   it("a painland's damage while paying the mana comes out of the same life", () => {
@@ -240,5 +240,30 @@ describe("Liesa, Shroud of Dusk", () => {
     // Bob cast it, so Bob loses the 2; Alice's further 3 is the Bolt.
     expect(life(game, B)).toBe(18);
     expect(life(game, A)).toBe(15);
+  });
+
+  it("the v1 bot won't pay its own life total to 0 for the tax, but pays it from above", () => {
+    const run = (startLife: number) => {
+      const game = Game.create({
+        seed: 3,
+        shuffle: false,
+        rules: { skipFirstDraw: false },
+        controllers: { [A]: new HeuristicBotController(A) },
+        decks: [
+          { player: A, cards: Array<string>(40).fill("Island"), commander: LIESA },
+          { player: B, cards: Array<string>(40).fill("Island") },
+        ],
+      });
+      game.advanceUntil((s) => s.turn.step === "upkeep");
+      liesaMana(game);
+      setPreviousCasts(game, 2);
+      game.state.players[A].life = startLife;
+      game.advanceUntil((s) => s.turn.step === "end" || s.result.over);
+      const liesa = Object.values(game.state.objects).find((o) => o.cardName === LIESA);
+      return { zone: liesa?.zone, life: life(game, A) };
+    };
+    // Legal at 4 (rule 119.4), but it would leave the bot dead.
+    expect(run(4)).toEqual({ zone: "command", life: 4 });
+    expect(run(5)).toEqual({ zone: "battlefield", life: 1 });
   });
 });

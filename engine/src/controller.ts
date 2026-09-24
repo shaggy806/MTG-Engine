@@ -1170,6 +1170,19 @@ export class HeuristicBotController extends AutomaticController {
     return chooseBottomOfHand(hand, this.registry, count);
   }
 
+  /** Whether casting `legal` would pay a life-paid commander tax (Liesa,
+   * Shroud of Dusk) down to 0 or below. The cast is legal (rule 119.4 lets
+   * life be paid down to exactly 0), so `legalActions` offers it, but paying
+   * it means losing at the next state-based check. */
+  private taxWouldKill(state: GameState, legal: CastSpellLegal): boolean {
+    const object = state.objects[legal.card];
+    if (object === undefined || object.zone !== "command") return false;
+    if (!this.registry.get(object.cardName).commanderTaxAsLife) return false;
+    const player = state.players[this.playerId];
+    const tax = 2 * (player.commanderCastCounts[object.cardName] ?? 0);
+    return tax > 0 && player.life - tax <= 0;
+  }
+
   act(view: ControllerView): Action {
     const awaited = answerAwaited(this, view);
     if (awaited !== null) return awaited;
@@ -1180,7 +1193,9 @@ export class HeuristicBotController extends AutomaticController {
     const lands = options.filter((o): o is PlayLandLegal => o.kind === "play-land");
     if (lands.length > 0) return this.toPlayLand(this.bestLand(view.state, lands));
 
-    const spells = options.filter((o): o is CastSpellLegal => o.kind === "cast-spell");
+    const spells = options.filter(
+      (o): o is CastSpellLegal => o.kind === "cast-spell" && !this.taxWouldKill(view.state, o),
+    );
     if (spells.length > 0) {
       const best = spells.reduce((a, b) =>
         this.manaValueOf(b.cardName) > this.manaValueOf(a.cardName) ? b : a,
