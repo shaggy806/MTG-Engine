@@ -477,6 +477,7 @@ import _poolMoleManMoloidMaster from "./pool/mole-man-moloid-master.js";
 import _poolMonasterySwiftspear from "./pool/monastery-swiftspear.js";
 import _poolMordantDragon from "./pool/mordant-dragon.js";
 import _poolMorphicPool from "./pool/morphic-pool.js";
+import _poolMorskaUnderseaSleuth from "./pool/morska-undersea-sleuth.js";
 import _poolMortivore from "./pool/mortivore.js";
 import _poolMortuaryMire from "./pool/mortuary-mire.js";
 import _poolMossfireValley from "./pool/mossfire-valley.js";
@@ -1416,6 +1417,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolMonasterySwiftspear,
   _poolMordantDragon,
   _poolMorphicPool,
+  _poolMorskaUnderseaSleuth,
   _poolMortivore,
   _poolMortuaryMire,
   _poolMossfireValley,
