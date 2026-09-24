@@ -115,17 +115,21 @@ const EMPTY_ACTIONS: readonly LegalAction[] = []
 type CastAction = Extract<LegalAction, { kind: 'cast-spell' }>
 type ConvokeOffer = NonNullable<CastAction['convoke']>
 
-/** The "which variant of this cast" fields a `cast-spell` action carries all
- * the way from `legalActions` back into the dispatched action. */
-/** A button label for one way of playing a card from a graveyard or exile —
- * enough to tell the variants apart: the face, the permanent type a
- * Muldrotha-style allowance spends, the permanent granting it. */
-function graveyardVariantLabel(a: CastAction | LandAction, view: PlayerView): string {
+/** A button label for one way of playing a card from a graveyard or exile.
+ * The tile above already names the card, so the label says only what tells
+ * this way apart from the others: the permanent type a Muldrotha-style
+ * allowance spends, the face, and — when more than one permanent grants the
+ * card — which one this uses. */
+function graveyardVariantLabel(
+  a: CastAction | LandAction,
+  view: PlayerView,
+  showSource: boolean,
+): string {
   const verb = a.kind === 'play-land' ? 'Play' : 'Cast'
   const parts: string[] = []
   const grant = a.graveyardGrant
   if (grant?.asType !== undefined) parts.push(`as ${grant.asType}`)
-  if (grant !== undefined && grant.source !== a.card) {
+  if (showSource && grant !== undefined && grant.source !== a.card) {
     const source = view.objects[grant.source]?.cardName
     if (source !== undefined) parts.push(`via ${source}`)
   }
@@ -133,9 +137,11 @@ function graveyardVariantLabel(a: CastAction | LandAction, view: PlayerView): st
     if (a.via !== undefined && a.via !== 'graveyard-permission') parts.push(a.via)
     if (a.kicked) parts.push(`kicked ${a.kickerCost ?? ''}`.trim())
   }
-  return `${verb} ${a.cardName}${parts.length > 0 ? ` (${parts.join(', ')})` : ''}`
+  return parts.length > 0 ? `${verb} ${parts.join(', ')}` : verb
 }
 
+/** The "which variant of this cast" fields a `cast-spell` action carries all
+ * the way from `legalActions` back into the dispatched action. */
 const castExtras = (cast: CastAction) => ({
   ...(cast.via !== undefined ? { via: cast.via } : {}),
   ...(cast.face !== undefined ? { face: cast.face } : {}),
@@ -3366,14 +3372,18 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
             },
             // Several ways to play one card from here: which Muldrotha type
             // it spends, which permission pays, which face.
-            variants: (id) =>
-              (playFacesByCard.get(id) ?? []).map((a) => ({
-                label: graveyardVariantLabel(a, view),
+            variants: (id) => {
+              const ways = playFacesByCard.get(id) ?? []
+              // Name the granting permanent only when it's what differs.
+              const sources = new Set(ways.map((a) => a.graveyardGrant?.source))
+              return ways.map((a) => ({
+                label: graveyardVariantLabel(a, view, sources.size > 1),
                 onChoose: () => {
                   setZoneView(null)
                   playFace(a)
                 },
-              })),
+              }))
+            },
           }}
         />
       ) : null}
