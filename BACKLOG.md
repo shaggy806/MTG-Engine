@@ -102,6 +102,11 @@ that one card is the reason the deck exists.
   coloured-pip or twobrid reduction isn't shown.
 - **Convoke with a target-dependent cost.** The offered `proof` is priced at the dearer end of
   the target-count range. This is latent: no pool card has both.
+- **Player designations as a viewable zone.** Emblems are listed as text lines under the
+  player panel today. Give them (and, once modeled, the Ring and the Initiative/dungeon) a zone
+  button on the player banner that opens a viewer, the way graveyard and exile do. The monarch
+  keeps its 👑 beside the player's name (`PlayerPanel`'s `pp-monarch`, checked in 2- and
+  4-player rooms).
 - **Server-side deck save and share** is still unscoped. Decks live in `localStorage`.
 
 ## Tooling / docs
