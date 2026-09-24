@@ -938,6 +938,8 @@ const deckE = deck([
   ["Gilanra, Caller of Wirewood", 1],
   // A target filter comparing against the entering creature's mana value.
   ["Clement, the Worrywort", 1],
+  // "Becomes the target of a spell", once per object.
+  ["Gargos, Vicious Watcher", 1],
   ["Plains", 5],
   ["Island", 5],
   ["Swamp", 5],

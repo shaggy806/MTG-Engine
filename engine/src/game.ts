@@ -9884,6 +9884,10 @@ export class Game {
     };
     this.state.zones.shared.stack.push(id);
     this.emit({ type: "spell-copied", original: originalId, copy: id, controller });
+    // The copy is a new spell targeting what the original does, so each of
+    // those objects becomes the target of a spell again (rule 707.10) --
+    // a Twincast on a Giant Growth triggers Gargos a second time.
+    this.announceTargeted(original.targets ?? [], controller, id, true);
     return id;
   }
 

@@ -142,6 +142,35 @@ describe("Gargos, Vicious Watcher", () => {
     expect(gargosTriggers(game, gargos)).toBe(0);
   });
 
+  it("triggers again for a copy of the spell, which targets the creature too", () => {
+    const game = makeGame();
+    toMain(game);
+    const gargos = creature(game, "Gargos, Vicious Watcher");
+    const bears = creature(game, "Grizzly Bears");
+    creature(game, "Grizzly Bears", B);
+    readyLands(game, 1);
+    const islands = ["Island", "Island"].map((n) => {
+      const id = game.debugSpawn(n, A, "battlefield");
+      game.state.objects[id].tapped = false;
+      return id;
+    });
+    expect(islands).toHaveLength(2);
+
+    const growth = game.debugSpawn("Giant Growth", A, "hand");
+    game.dispatch({ type: "cast-spell", player: A, card: growth, targets: [obj(bears)] });
+    expect(gargosTriggers(game, gargos)).toBe(1);
+    // Twincast goes on the stack above Gargos's trigger and the Growth.
+    const twincast = game.debugSpawn("Twincast", A, "hand");
+    game.dispatch({ type: "cast-spell", player: A, card: twincast, targets: [obj(growth)] });
+    game.dispatch({ type: "pass-priority", player: A });
+    game.dispatch({ type: "pass-priority", player: B });
+    // Twincast resolved: the copy of Giant Growth targets the Bears.
+    expect(
+      game.state.eventLog.filter((e) => e.type === "object-targeted" && e.object === bears),
+    ).toHaveLength(2);
+    expect(gargosTriggers(game, gargos)).toBe(2);
+  });
+
   it("may decline the fight — up to one target", () => {
     const game = makeGame();
     toMain(game);
