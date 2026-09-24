@@ -314,6 +314,9 @@ const deckB = deck([
   // checks that whichever branch `legalActions` offered is one `dispatch`
   // accepts.
   ["Bitter Triumph", 1],
+  // Counters that persist across zone changes: dies with them, comes back
+  // with them off Reanimate beside it; a bounce strips them.
+  ["Skullbriar, the Walking Grave", 1],
   // The first commanders authored off top-commanders.txt. Krenko is here
   // deliberately: his token count doubles every activation, which is the
   // self-replicating shape that motivated token stacking in the first
