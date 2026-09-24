@@ -633,10 +633,11 @@ export type EffectSpec =
       readonly into?: "hand";
     }
   | {
-      /** Gain control of a target permanent (rule 613.1b, layer 2 — modeled
-       * here by reassigning `controller`). `untilEndOfTurn` reverts it in the
-       * cleanup step (Act of Treason); otherwise it lasts until the permanent
-       * changes zones. */
+      /** Gain control of a target permanent (rule 613.1b, layer 2): a
+       * control effect timestamped as it resolves, recorded on
+       * `GameObject.controlEffects`; the latest one on the permanent wins
+       * (rule 613.7). `untilEndOfTurn` ends it in the cleanup step (Act of
+       * Treason); otherwise it lasts until the permanent changes zones. */
       readonly kind: "gain-control";
       readonly target: number;
       readonly untilEndOfTurn: boolean;

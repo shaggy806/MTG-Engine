@@ -22,6 +22,18 @@ export type PrivateZone = "library" | "hand" | "graveyard";
 export type SharedZone = "battlefield" | "stack" | "exile" | "command";
 export type ZoneType = PrivateZone | SharedZone;
 
+/** One layer-2 control-changing effect on a permanent — see
+ * `GameObject.controlEffects`. */
+export interface ControlEffect {
+  /** Who the effect says controls the permanent. */
+  readonly controller: PlayerId;
+  /** When the effect was created (`GameState.timestampSeq`) — the latest
+   * applicable control effect wins (rule 613.7). */
+  readonly timestamp: number;
+  /** Act of Treason's "until end of turn" — ends in the cleanup step. */
+  readonly untilEndOfTurn: boolean;
+}
+
 /** An instance of a card (or token) somewhere in the game. */
 export interface GameObject {
   readonly id: ObjectId;
@@ -212,21 +224,23 @@ export interface GameObject {
    * Cleared by `moveObject` with every other per-object flag.
    */
   uncounterable?: boolean;
-  /** True when a temporary control-change effect (Act of Treason) controls this
-   * permanent — cleanup reverts `controller` to `owner`. Cleared by
-   * `moveObject` on any zone change. */
+  /** True when one of `controlEffects` is a temporary one (Act of Treason)
+   * that cleanup has yet to end. Cleared by cleanup and by `moveObject` on any
+   * zone change. */
   controlEndsAtCleanup: boolean;
   /**
-   * A *permanent* control change from an effect rather than an Aura — "put it
-   * onto the battlefield under your control" (Gravespawn Sovereign), or a
-   * `gain-control` with `untilEndOfTurn: false`.
-   *
-   * Needed because layer 2 recomputes control on every state-based-action
-   * pass and reverts to the owner unless something still says otherwise; an
-   * Aura says so by staying attached, and this is how an effect says so.
-   * Cleared by `moveObject` with every other per-permanent flag.
+   * The control-changing effects (layer 2) that came from a resolved spell or
+   * ability rather than an attached Aura — a `gain-control` (Act of Treason,
+   * Sliver Overlord), or "put it onto the battlefield under your control"
+   * (Gravespawn Sovereign). Each carries the timestamp it was created at
+   * (rule 613.7b); `Game.recomputeControl` weighs them against every attached
+   * control-granting Aura (whose timestamp is when it became attached, rule
+   * 613.7e) and the latest one wins, else the owner. An `untilEndOfTurn` one
+   * is dropped in cleanup. Absent on almost every permanent; cleared by
+   * `moveObject` on any zone change, since a new object has no history
+   * (rule 400.7).
    */
-  controlledByEffect?: PlayerId;
+  controlEffects?: ControlEffect[];
   /** The name of the card this permanent is currently a *copy* of (rule 707 /
    * layer 1), or `null` when it is just itself. Every characteristic read —
    * P/T, types, abilities, the client's card face — resolves through

@@ -1421,6 +1421,8 @@ export class Game {
       if (
         o.isToken &&
         o.controller === controller &&
+        o.owner === rep.owner &&
+        o.controlEffects === undefined &&
         o.cardName === rep.cardName &&
         this.isRestingToken(o) &&
         !pinned.has(id) &&
@@ -1457,7 +1459,7 @@ export class Game {
       o.notLegendary ?? false,
       o.goadedBy ?? [],
       o.mustAttackPlayer ?? null,
-      o.controlledByEffect ?? null,
+      o.controlEffects ?? null,
       o.controlEndsAtCleanup,
       o.chosenOnEnter ?? null,
       o.chosenCreatureType ?? null,
@@ -1536,6 +1538,9 @@ export class Game {
       blockedBy: [...stack.blockedBy],
     };
     delete this.state.objects[newId].stackCount;
+    if (stack.controlEffects !== undefined) {
+      this.state.objects[newId].controlEffects = stack.controlEffects.map((e) => ({ ...e }));
+    }
     this.state.zones.shared.battlefield.push(newId);
     // A new permanent on the battlefield: anything memoized about the board
     // (a count, a static's reach) is stale.
@@ -1680,6 +1685,8 @@ export class Game {
         !o.isToken ||
         pinned.has(id) ||
         !this.isRestingToken(o) ||
+        // Stolen tokens keep their own layer-2 history; never fold them.
+        o.controlEffects !== undefined ||
         !this.isStackableTokenName(printedCardName(o)) ||
         // A vanilla token that's been *granted* an activated ability
         // (Cryptolith Rite) has to be tapped one at a time — until there are
@@ -3115,23 +3122,21 @@ export class Game {
     // "until end of turn" effect — see `GameObject.impulse`.
     this.expireImpulsePermissions();
     // "Until end of turn" control effects (Act of Treason) end — control
-    // reverts to the owner, and the creature is summoning-sick for them again.
+    // falls to whichever control effect is now the latest (rule 613.7), else
+    // the owner, and the creature is summoning-sick for them again.
+    let controlEffectEnded = false;
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
       if (!object.controlEndsAtCleanup) continue;
       object.controlEndsAtCleanup = false;
-      if (object.controller !== object.owner) {
-        object.controller = object.owner;
-        object.summoningSick = true;
-        object.attacking = null;
-        object.blocking = null;
-        this.emit({
-          type: "control-changed",
-          object: id,
-          controller: object.owner,
-          untilEndOfTurn: false,
-        });
-      }
+      const lasting = (object.controlEffects ?? []).filter((e) => !e.untilEndOfTurn);
+      if (lasting.length > 0) object.controlEffects = lasting;
+      else delete object.controlEffects;
+      controlEffectEnded = true;
+    }
+    if (controlEffectEnded) {
+      invalidateComputedCache();
+      this.recomputeControl();
     }
 
     // "Until end of turn" flashback grants (Snapcaster Mage) end — these ride
@@ -9777,6 +9782,12 @@ export class Game {
       return;
     }
     sourceObject.attachedTo = targetId;
+    // An Aura or Equipment gets a new timestamp as it becomes attached (rule
+    // 613.7e) — which is what a control-granting Aura moved onto a creature
+    // is weighed against the other control effects on it by.
+    this.state.timestampSeq += 1;
+    sourceObject.timestamp = this.state.timestampSeq;
+    invalidateComputedCache();
     this.emit({ type: "permanent-attached", source, target: targetId });
   }
 
@@ -10676,8 +10687,8 @@ export class Game {
    * belongs to whoever owned it, and goes back to *their* graveyard when it
    * dies, which is why owner and controller have to diverge here rather than
    * the object simply changing hands. `runStateBasedActions` recomputes
-   * control (layer 2) afterwards and leaves an unattached control change
-   * alone, so this sticks.
+   * control (layer 2) afterwards, and the control effect recorded here is
+   * what keeps it there.
    */
   private putOntoBattlefieldByEffect(
     target: TargetRef,
@@ -11119,27 +11130,35 @@ export class Game {
     return object.grantedFlashback?.cost ?? null;
   }
 
-  /** Recompute every battlefield permanent's controller from continuous
-   * effects (temporary steals + control-granting Auras). Returns whether any
-   * changed. A temporary steal (`controlEndsAtCleanup`) outranks an Aura
-   * until it wears off in cleanup. */
+  /** Recompute every battlefield permanent's controller from its layer-2
+   * control effects (rule 613.1b): the resolved ones on
+   * `GameObject.controlEffects` and every attached control-granting Aura
+   * (timestamped when it became attached, rule 613.7e). They apply in
+   * timestamp order, so the latest one wins (rule 613.7); with none, the
+   * owner controls it. Returns whether any controller changed. */
   private recomputeControl(): boolean {
     // Cheap early-out for the overwhelmingly common no-control-effects board.
     const anyControlEffect = this.state.zones.shared.battlefield.some((id) => {
       const o = this.state.objects[id];
-      return o.controller !== o.owner || this.registry.get(printedCardName(o)).controlEnchanted;
+      return (
+        o.controller !== o.owner ||
+        o.controlEffects !== undefined ||
+        this.registry.get(printedCardName(o)).controlEnchanted
+      );
     });
     if (!anyControlEffect) return false;
 
     let changed = false;
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
-      if (object.controlEndsAtCleanup) continue;
-
-      // An effect that changed control permanently (Gravespawn Sovereign's
-      // "under your control") keeps it until something else takes over.
-      let controller = object.controlledByEffect ?? object.owner;
+      let controller = object.owner;
       let bestTimestamp = -1;
+      for (const effect of object.controlEffects ?? []) {
+        if (effect.timestamp >= bestTimestamp) {
+          bestTimestamp = effect.timestamp;
+          controller = effect.controller;
+        }
+      }
       for (const auraId of this.state.zones.shared.battlefield) {
         const aura = this.state.objects[auraId];
         if (
@@ -11170,10 +11189,13 @@ export class Game {
     return changed;
   }
 
-  /** `player` gains control of `target` (rule 613.1b, layer 2 — modeled by
-   * reassigning `controller`). The creature is summoning-sick for its new
-   * controller (rule 302.6; Act of Treason grants haste to compensate).
-   * `untilEndOfTurn` marks it for a cleanup-step revert to its owner. */
+  /** `player` gains control of `target` (rule 613.1b, layer 2): a new control
+   * effect, timestamped now, so it outranks every control effect already on
+   * the permanent — Aura or otherwise — until one newer arrives
+   * (`recomputeControl`). Recorded even when `player` already controls it, so
+   * that control survives the earlier effect ending. The creature is
+   * summoning-sick for a new controller (rule 302.6; Act of Treason grants
+   * haste to compensate). `untilEndOfTurn` ends the effect in cleanup. */
   private gainControlByEffect(
     player: PlayerId,
     target: TargetRef,
@@ -11183,13 +11205,19 @@ export class Game {
     const id = this.splitOneFromStack(target.object);
     const object = this.state.objects[id];
     if (object === undefined || object.zone !== "battlefield") return;
+    this.state.timestampSeq += 1;
+    const effect = { controller: player, timestamp: this.state.timestampSeq, untilEndOfTurn };
+    // A lasting effect ends only with the permanent's zone change, which ends
+    // every other one too — so nothing older can ever apply again, and
+    // dropping it keeps Sliver Overlord's repeatable steal from growing this.
+    object.controlEffects = untilEndOfTurn ? [...(object.controlEffects ?? []), effect] : [effect];
+    object.controlEndsAtCleanup = untilEndOfTurn;
+    invalidateComputedCache();
     if (object.controller === player) return;
     object.controller = player;
     object.summoningSick = true;
     object.attacking = null;
     object.blocking = null;
-    if (untilEndOfTurn) object.controlEndsAtCleanup = true;
-    else object.controlledByEffect = player;
     this.emit({
       type: "control-changed",
       object: id,
@@ -11798,9 +11826,9 @@ export class Game {
       changed = false;
 
       // Continuous control effects (layer 2), recomputed each pass: a
-      // permanent is controlled by its owner unless a temporary steal
-      // (`controlEndsAtCleanup`) or an attached control-granting Aura
-      // (latest timestamp wins) says otherwise.
+      // permanent is controlled by its owner unless a control effect
+      // (`controlEffects`) or an attached control-granting Aura says
+      // otherwise — the latest timestamp wins.
       if (this.recomputeControl()) changed = true;
 
       for (const player of this.state.turnOrder) {
@@ -12442,6 +12470,7 @@ export class Game {
     // (rule 110.2 / 400.3) — so a stolen creature that dies or is bounced goes
     // to its owner, not the thief.
     object.controlEndsAtCleanup = false;
+    delete object.controlEffects;
     object.controller = object.owner;
     // A copy effect ends when the object changes zones (rule 707.2) — a Clone
     // that dies and returns is a Clone again.
