@@ -94,9 +94,6 @@ that one card is the reason the deck exists.
 
 ## Client / UI
 
-- **A graveyard-viewer button per way to play a card.** Parked on branch
-  `claude/gap-graveyard-cast-client` (commit `12c64af`). It needs a browser check in both a
-  2-player and a 4-player room before it lands.
 - **Card tiles are tinted by mana cost.** A costless card (a token, a DFC back face, Ancestral
   Vision) renders colourless, although the view sends each object's `colors`.
 - **The target count is ignored.** `client/src/App.tsx` doesn't read `LegalAction.targetCount`,

@@ -242,4 +242,32 @@ export default {
     },
     bots: { bob: {} },
   },
+  MULDR: {
+    about:
+      "2p. Muldrotha, the Gravetide with a graveyard to play from, for the graveyard viewer's " +
+      "one-button-per-way: Darksteel Myr (an artifact creature, castable as either type), " +
+      "Grizzly Bears (one way), Forest and Fell the Profane (its land face, Fell Mire).",
+    players: ["alice", "bob"],
+    lands: { alice: 10, bob: 5 },
+    battlefield: { alice: ["Muldrotha, the Gravetide"], bob: ["Grizzly Bears"] },
+    setup(game) {
+      for (const name of ["Darksteel Myr", "Grizzly Bears", "Forest", "Fell the Profane"]) {
+        game.debugSpawn(name, "alice", "graveyard");
+      }
+    },
+    bots: { bob: {} },
+  },
+
+  MULD4: {
+    about: "4p. MULDR's board for alice, in the quadrant layout.",
+    players: ["alice", "bob", "carol", "dave"],
+    lands: { alice: 10, bob: 5, carol: 5, dave: 5 },
+    battlefield: { alice: ["Muldrotha, the Gravetide"], bob: ["Grizzly Bears"] },
+    setup(game) {
+      for (const name of ["Darksteel Myr", "Grizzly Bears", "Forest", "Fell the Profane"]) {
+        game.debugSpawn(name, "alice", "graveyard");
+      }
+    },
+    bots: { bob: {}, carol: {}, dave: {} },
+  },
 };
