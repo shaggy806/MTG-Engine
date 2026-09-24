@@ -120,9 +120,18 @@ import type {
   GameEventInput,
   GameEventType,
 } from "./events.js";
-import { COLORS, MANA_TYPES, manaValue, parseManaCost } from "./mana.js";
+import {
+  COLORS,
+  MANA_TYPES,
+  cheapestManaAmount,
+  coloredReductionOf,
+  manaValue,
+  parseManaCost,
+  reduceManaCost,
+} from "./mana.js";
 import type {
   Color,
+  ColoredReduction,
   ManaCost,
   ManaRestriction,
   ManaSpendRider,
@@ -166,6 +175,8 @@ import type {
   ZoneType,
 } from "./state.js";
 import { describeTargetSpec, isOptionalSpec, normalizeTargets } from "./target.js";
+import { distinctTargetCount, targetCountBounds } from "./target-count.js";
+import type { TargetCountRange } from "./target-count.js";
 import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
 import {
   cardSource,
@@ -713,6 +724,7 @@ export class Game {
           action.tap,
           action.graveyardGrant,
           action.xValue,
+          distinctTargetCount(action.targets),
         );
       case "activate-ability":
         return this.whyCannotActivateAbility(
@@ -1230,34 +1242,10 @@ export class Game {
       variants.push(...crossed);
     }
     for (const { kicked, overload, free, altCost, costOption } of variants) {
-      let castable =
-        this.whyCannotCastSpell(
-          player,
-          card,
-          via,
-          face ?? 0,
-          undefined,
-          kicked,
-          undefined,
-          overload,
-          free,
-          undefined,
-          altCost === true,
-          costOption,
-          undefined,
-          graveyardGrant,
-        ) === null;
-      const manaAffordable = castable;
-      // Convoke (rule 702.51): not affordable with mana alone doesn't mean
-      // not castable — check again assuming every untapped creature helps,
-      // maximally, before giving up on this variant.
-      if (!castable && def.convoke) {
-        const baseCost = this.withFace(card, face ?? 0, () =>
-          this.castingCostOf(player, card, def, 0, this.castCostString(card, via, face, kicked, overload, free)),
-        );
-        const proof = this.maxConvokeFor(this.convokeCandidates(player), baseCost);
-        if (
-          proof.length > 0 &&
+      /** Whether this variant can be cast with `targetCount` distinct
+       * targets, and whether mana alone pays for it. */
+      const castableAt = (targetCount: number): { castable: boolean; manaAffordable: boolean } => {
+        let castable =
           this.whyCannotCastSpell(
             player,
             card,
@@ -1268,17 +1256,86 @@ export class Game {
             undefined,
             overload,
             free,
-            proof,
-            false,
             undefined,
+            altCost === true,
+            costOption,
             undefined,
             graveyardGrant,
-          ) === null
-        ) {
-          castable = true;
+            0,
+            targetCount,
+          ) === null;
+        const manaAffordable = castable;
+        // Convoke (rule 702.51): not affordable with mana alone doesn't mean
+        // not castable — check again assuming every untapped creature helps,
+        // maximally, before giving up on this variant.
+        if (!castable && def.convoke) {
+          const baseCost = this.withFace(card, face ?? 0, () =>
+            this.castingCostOf(
+              player,
+              card,
+              def,
+              0,
+              this.castCostString(card, via, face, kicked, overload, free),
+              targetCount,
+            ),
+          );
+          const proof = this.maxConvokeFor(this.convokeCandidates(player), baseCost);
+          if (
+            proof.length > 0 &&
+            this.whyCannotCastSpell(
+              player,
+              card,
+              via,
+              face ?? 0,
+              undefined,
+              kicked,
+              undefined,
+              overload,
+              free,
+              proof,
+              false,
+              undefined,
+              undefined,
+              graveyardGrant,
+              0,
+              targetCount,
+            ) === null
+          ) {
+            castable = true;
+          }
         }
+        return { castable, manaAffordable };
+      };
+      // A "for each target" cost modification (Hinata, Dawn-Crowned) makes
+      // the cost a function of the targets, which aren't chosen yet: offer
+      // the spell if *some* number of targets a legal choice can have is
+      // affordable, and say which (`targetCount`). Everything priced below
+      // for the offer — X's ceiling, the convoke proof — is priced at the
+      // dearer end of that range, so it holds for any count inside it.
+      let targetCount: TargetCountRange | undefined;
+      let pricedAt = 0;
+      let manaAffordable: boolean;
+      const variantCost = this.castCostString(card, via, face, kicked, overload, free, altCost === true, costOption);
+      if (this.withFace(card, face ?? 0, () => this.costDependsOnTargets(player, card, def, variantCost))) {
+        const bounds = this.withFace(card, face ?? 0, () =>
+          this.targetCountBoundsFor(def, player, card, kicked, overload),
+        );
+        if (bounds === null) continue;
+        const affordable: number[] = [];
+        for (let k = bounds.min; k <= bounds.max; k += 1) {
+          if (castableAt(k).castable) affordable.push(k);
+        }
+        if (affordable.length === 0) continue;
+        targetCount = { min: affordable[0], max: affordable[affordable.length - 1] };
+        const weight = (k: number) =>
+          cheapestManaAmount(this.withFace(card, face ?? 0, () => this.castingCostOf(player, card, def, 0, variantCost, k)));
+        pricedAt = weight(targetCount.max) > weight(targetCount.min) ? targetCount.max : targetCount.min;
+        manaAffordable = castableAt(pricedAt).manaAffordable;
+      } else {
+        const at = castableAt(0);
+        if (!at.castable) continue;
+        manaAffordable = at.manaAffordable;
       }
-      if (!castable) continue;
       const specs = this.effectiveTargetSpecs(def, undefined, kicked, overload);
       const options = this.targetOptionsFor(specs, player, this.cardSource(def, card));
       // Rule 601.2c — a spell can't be cast without a legal target for every
@@ -1303,7 +1360,7 @@ export class Game {
             : costString;
       const sacrifices = this.additionalCostSacrifices(player, def, costOption);
       const xPlan =
-        parseManaCost(cost).x > 0 ? this.xPlanFor(player, card, def, cost, face ?? 0) : null;
+        parseManaCost(cost).x > 0 ? this.xPlanFor(player, card, def, cost, face ?? 0, pricedAt) : null;
       out.push({
         kind: "cast-spell",
         card,
@@ -1334,10 +1391,10 @@ export class Game {
         ...(def.convoke
           ? (() => {
               const candidates = this.convokeCandidates(player);
-              const full = this.castingCostOf(player, card, def, 0, cost);
+              const full = this.castingCostOf(player, card, def, 0, cost, pricedAt);
               // As many creatures as the largest X on offer could use.
               const atMaxX =
-                xPlan === null ? full : this.castingCostOf(player, card, def, xPlan.maxX, cost);
+                xPlan === null ? full : this.castingCostOf(player, card, def, xPlan.maxX, cost, pricedAt);
               const copies: Record<ObjectId, number> = {};
               for (const id of candidates) {
                 const n = this.state.objects[id].stackCount ?? 1;
@@ -1364,6 +1421,7 @@ export class Game {
               };
             })()
           : {}),
+        ...(targetCount !== undefined ? { targetCount } : {}),
         ...(xPlan !== null
           ? { xCost: { maxX: xPlan.maxX } }
           : def.additionalCost?.payLifeX === true
@@ -4369,31 +4427,91 @@ export class Game {
   /** `def.manaCost`, plus the commander tax if `cardId` is being cast from
    * the command zone, with `{X}` resolved to `xValue` (folded into generic),
    * and battlefield `costModification` statics (Foundry Inspector, Thalia)
-   * applied to the generic portion (rule 601.2f — can't go below 0). */
+   * applied (rule 601.2f — can't go below 0; see `reduceManaCost` for where
+   * a reduction lands). `targetCount` is how many distinct targets the spell
+   * has, for a "for each target" modification (Hinata, Dawn-Crowned) — the
+   * targets are chosen before the cost is determined (601.2c, then 601.2f). */
   private castingCostOf(
     player: PlayerId,
     cardId: ObjectId,
     def: CardDefinition,
     xValue = 0,
     costString: string | null = def.manaCost,
+    targetCount = 0,
   ): ManaCost {
     const base = parseManaCost(costString);
     const tax = this.isCastableCommander(player, cardId) ? this.commanderTax(player, cardId) : 0;
-    let generic = base.generic + tax + base.x * Math.max(0, xValue);
-    generic += this.costModificationFor(cardId);
+    const mods = this.costModificationFor(player, cardId, targetCount);
+    let reduction = mods.reduceGeneric;
     if (
       def.selfCostReduction !== null &&
       staticConditionMet(this.state, this.registry, this.state.objects[cardId], def.selfCostReduction.condition)
     ) {
-      generic -= this.costReductionAmount(def.selfCostReduction.reduceGeneric, player, cardId);
+      reduction += this.costReductionAmount(def.selfCostReduction.reduceGeneric, player, cardId);
     }
-    return {
-      colored: base.colored,
-      colorless: base.colorless,
-      generic: Math.max(0, generic),
-      x: 0,
-      hybrid: base.hybrid,
+    return reduceManaCost(
+      {
+        ...base,
+        generic: base.generic + tax + base.x * Math.max(0, xValue) + mods.increaseGeneric,
+        x: 0,
+      },
+      reduction,
+      mods.colored,
+    );
+  }
+
+  /** Whether what `player` would pay for `cardId` depends on how many
+   * targets it's cast with — a "for each target" `costModification` reaches
+   * it (Hinata, Dawn-Crowned) and actually changes something. Linear in the
+   * count, so comparing none against one is enough. */
+  private costDependsOnTargets(
+    player: PlayerId,
+    cardId: ObjectId,
+    def: CardDefinition,
+    costString: string | null,
+  ): boolean {
+    const anyPerTarget = [...this.state.zones.shared.battlefield, ...this.state.zones.shared.command].some(
+      (id) => {
+        const source = this.state.objects[id];
+        return (
+          source !== undefined &&
+          this.registry.get(printedCardName(source)).static.some((a) => a.costModification?.perTarget === true)
+        );
+      },
+    );
+    if (!anyPerTarget) return false;
+    const at = (k: number) => JSON.stringify(this.castingCostOf(player, cardId, def, 0, costString, k));
+    return at(0) !== at(1);
+  }
+
+  /** The fewest and most distinct targets `cardId` could be cast with, over
+   * every legal choice of targets — and, for a targeted modal spell, of
+   * modes. `null` when no legal choice exists. */
+  private targetCountBoundsFor(
+    def: CardDefinition,
+    player: PlayerId,
+    card: ObjectId,
+    kicked: boolean,
+    overload: boolean,
+  ): TargetCountRange | null {
+    const source = this.cardSource(def, card);
+    const boundsOf = (modes: readonly number[] | undefined) => {
+      const specs = this.effectiveTargetSpecs(def, modes, kicked, overload);
+      return targetCountBounds(this.targetOptionsFor(specs, player, source), specs);
     };
+    const modal = def.castModal;
+    if (modal === null) return boundsOf(undefined);
+    let min = Number.POSITIVE_INFINITY;
+    let max = -1;
+    for (let mask = 0; mask < 1 << modal.modes.length; mask += 1) {
+      const modes = modal.modes.map((_m, i) => i).filter((i) => (mask & (1 << i)) !== 0);
+      if (modes.length < modal.minModes || modes.length > modal.maxModes) continue;
+      const bounds = boundsOf(modes);
+      if (bounds === null) continue;
+      min = Math.min(min, bounds.min);
+      max = Math.max(max, bounds.max);
+    }
+    return max < 0 ? null : { min, max };
   }
 
   /** Whether static `ability` on `source` is currently active — its `condition`
@@ -4450,11 +4568,18 @@ export class Game {
       : "{" + String(actual.generic) + "}" + printed;
   }
 
-  /** Net generic-mana adjustment to `cardId`'s cost from `costModification`
-   * statics on the battlefield (increases first, then reductions — rule
-   * 601.2f). Positive = costs more. */
-  private costModificationFor(cardId: ObjectId): number {
-    let delta = 0;
+  /** What `costModification` statics on the battlefield (and Eminence's in
+   * the command zone) do to `cardId`'s cost as `player` casts it with
+   * `targetCount` distinct targets: the generic mana they add, the generic
+   * mana they take off, and the coloured reductions (rule 601.2f). */
+  private costModificationFor(
+    player: PlayerId,
+    cardId: ObjectId,
+    targetCount = 0,
+  ): { increaseGeneric: number; reduceGeneric: number; colored: ColoredReduction[] } {
+    let increaseGeneric = 0;
+    let reduceGeneric = 0;
+    const colored: ColoredReduction[] = [];
     // The command zone joins the scan for Eminence's static form (The
     // Ur-Dragon), and contributes only the abilities marked for it.
     const sources = [
@@ -4488,15 +4613,33 @@ export class Game {
         if (!matchesFilter(this.state, this.registry, cardId, applies, { you: source.controller })) {
           continue;
         }
-        const reduceGeneric =
-          mod.reduceGeneric === undefined
-            ? 0
-            : this.costReductionAmount(mod.reduceGeneric, source.controller, source.id);
-        delta += mod.increaseGeneric ?? 0;
-        delta -= reduceGeneric;
+        // "Spells you cast" / "spells your opponents cast" (Hinata): the
+        // caster, whoever the card belongs to.
+        if (mod.caster === "you" && player !== source.controller) continue;
+        if (mod.caster === "opponent" && player === source.controller) continue;
+        // "The first … spell you cast each turn": any matching spell this
+        // player has already cast this turn has had it.
+        if (
+          mod.firstEachTurn === true &&
+          (this.state.players[player].spellsCastThisTurnIds ?? []).some(
+            (id) =>
+              this.state.objects[id] !== undefined &&
+              matchesFilter(this.state, this.registry, id, applies, { you: source.controller }),
+          )
+        ) {
+          continue;
+        }
+        const times = mod.perTarget === true ? targetCount : 1;
+        if (mod.reduceGeneric !== undefined) {
+          reduceGeneric += times * this.costReductionAmount(mod.reduceGeneric, source.controller, source.id);
+        }
+        increaseGeneric += times * (mod.increaseGeneric ?? 0);
+        if (mod.reduceColored !== undefined) {
+          colored.push(coloredReductionOf(mod.reduceColored, mod.coloredOnly === true));
+        }
       }
     }
-    return delta;
+    return { increaseGeneric, reduceGeneric, colored };
   }
 
   /** How many active `doubleEntryTriggers` statics `controller` has that
@@ -4591,13 +4734,14 @@ export class Game {
     def: CardDefinition,
     costString: string | null,
     face: number,
+    targetCount = 0,
   ): { maxX: number; convoke: PaidConvoke[] } {
-    const manaOnly = this.maxAffordableX(player, cardId, def, costString, face);
+    const manaOnly = this.maxAffordableX(player, cardId, def, costString, face, targetCount);
     if (!def.convoke) return { maxX: manaOnly, convoke: [] };
     return this.withFace(cardId, face, () => {
       const purpose: ManaPurpose = { kind: "cast", card: cardId };
       const payable = (k: number, pool: readonly ObjectId[]): PaidConvoke[] | null => {
-        const cost = this.castingCostOf(player, cardId, def, k, costString);
+        const cost = this.castingCostOf(player, cardId, def, k, costString, targetCount);
         const proof = this.maxConvokeFor(pool, cost);
         const arrangement =
           proof.length > 0 ? { withheld: new Set(proof.map((p) => p.creature)) } : undefined;
@@ -4648,6 +4792,7 @@ export class Game {
     def: CardDefinition,
     costString: string | null = def.manaCost,
     face = 0,
+    targetCount = 0,
   ): number {
     const parsed = parseManaCost(costString);
     if (parsed.x === 0) return 0;
@@ -4665,7 +4810,7 @@ export class Game {
         if (
           this.payMana(
             player,
-            this.castingCostOf(player, cardId, def, k, costString),
+            this.castingCostOf(player, cardId, def, k, costString, targetCount),
             undefined,
             undefined,
             { kind: "cast", card: cardId },
@@ -4845,6 +4990,7 @@ export class Game {
     tap?: readonly ObjectId[],
     graveyardGrant?: GraveyardGrant,
     xValue = 0,
+    targetCount = 0,
   ): string | null {
     const blocked = this.whyCannotAct(player);
     if (blocked !== null) return blocked;
@@ -5015,6 +5161,7 @@ export class Game {
         def,
         Math.max(0, Math.floor(xValue)),
         this.castCostString(cardId, via, face, kicked, overload, free, altCost),
+        targetCount,
       ),
     );
     let convoked: PaidConvoke[] = [];
@@ -5164,6 +5311,9 @@ export class Game {
     tap?: readonly ObjectId[],
     graveyardGrant?: GraveyardGrant,
   ): void {
+    // "For each target" cost modifications (Hinata) count these: the targets
+    // are chosen before the total cost is determined (rule 601.2c, 601.2f).
+    const targetCount = distinctTargetCount(targets);
     const why = this.whyCannotCastSpell(
       player,
       cardId,
@@ -5180,6 +5330,7 @@ export class Game {
       tap,
       graveyardGrant,
       xValue,
+      targetCount,
     );
     if (why !== null) throw new Error(why);
 
@@ -5231,7 +5382,7 @@ export class Game {
     if (this.state.players[player].life < taxLife) {
       throw new Error(`${player} has too little life to pay ${def.name}'s commander tax`);
     }
-    const fullCost = this.castingCostOf(player, cardId, def, chosenX, costString);
+    const fullCost = this.castingCostOf(player, cardId, def, chosenX, costString, targetCount);
     let convoked: PaidConvoke[] = [];
     if (convoke !== undefined && convoke.length > 0) {
       const resolved = this.resolveConvoke(convoke, fullCost);

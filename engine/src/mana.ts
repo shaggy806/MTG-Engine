@@ -121,6 +121,12 @@ export interface ManaCost {
   /** Hybrid / twobrid / Phyrexian pips, each resolved to one of its
    * alternatives at payment time (see `Game.resolveHybridCost`). */
   readonly hybrid: readonly HybridPip[];
+  /** Generic reduction left over once the generic part reached `{0}`, for
+   * the `{2}` halves of twobrid pips (`{2/W}`) — but only the ones paid with
+   * generic mana (the Spectral Procession ruling), which is decided at
+   * payment time, so it's carried here rather than baked into a pip. See
+   * `reduceManaCost` and `resolveHybridCost`. */
+  readonly twobridReduction?: number;
 }
 
 function isColor(value: string): value is Color {
@@ -192,5 +198,99 @@ export function manaValue(cost: ManaCost): number {
     COLORS.reduce((sum, color) => sum + cost.colored[color], cost.generic) +
     cost.colorless +
     cost.hybrid.reduce((sum, pip) => sum + hybridPipValue(pip), 0)
+  );
+}
+
+/**
+ * One coloured cost reduction ("costs {W}{B} less" — rule 118.7): how many
+ * of each colour it takes off, and whether what finds no coloured pip to take
+ * is lost (`coloredOnly` — "this effect reduces only the amount of colored
+ * mana you pay") or comes off the generic part instead (rules 118.7b/c).
+ */
+export interface ColoredReduction {
+  readonly colors: Readonly<Record<Color, number>>;
+  readonly coloredOnly: boolean;
+}
+
+/** The coloured symbols of `text` as a per-colour count, for a
+ * {@link ColoredReduction} (`"{W}{B}"` → one W, one B). */
+export function coloredReductionOf(text: string, coloredOnly: boolean): ColoredReduction {
+  return { colors: { ...parseManaCost(text).colored }, coloredOnly };
+}
+
+/**
+ * `cost` with cost reductions applied (rule 601.2f), none of which can take
+ * it below nothing.
+ *
+ * Coloured reductions go first: each takes a pip of its colour, else a hybrid
+ * pip that includes the colour (rule 118.7e — that pip is paid as the
+ * colour), preferring a twobrid pip since its other half is the dearer one;
+ * what's left comes off the generic part unless `coloredOnly`.
+ *
+ * A generic reduction larger than the generic part carries over as
+ * `twobridReduction`, for whichever twobrid pips end up paid with generic
+ * mana: rule 601.2f has the payment for each hybrid pip chosen before the
+ * total cost is, and a generic reduction applies to a monocolored hybrid pip
+ * only if it's paid generically (the Spectral Procession ruling). Any other
+ * excess is lost — a cost can't go below nothing.
+ */
+export function reduceManaCost(
+  cost: ManaCost,
+  reduceGeneric: number,
+  colored: readonly ColoredReduction[] = [],
+): ManaCost {
+  const nextColored = { ...cost.colored };
+  const hybrid: HybridPip[] = [...cost.hybrid];
+  let generic = cost.generic;
+  let reduction = Math.max(0, reduceGeneric);
+  for (const { colors, coloredOnly } of colored) {
+    for (const color of COLORS) {
+      let left = colors[color];
+      const take = Math.min(left, nextColored[color]);
+      nextColored[color] -= take;
+      left -= take;
+      while (left > 0) {
+        const hasColor = (pip: HybridPip) =>
+          pip.some((o) => o.kind === "color" && o.color === color);
+        let index = hybrid.findIndex((pip) => hasColor(pip) && pip.some((o) => o.kind === "generic"));
+        if (index < 0) index = hybrid.findIndex(hasColor);
+        if (index < 0) break;
+        hybrid.splice(index, 1);
+        left -= 1;
+      }
+      if (left > 0 && !coloredOnly) reduction += left;
+    }
+  }
+  generic -= reduction;
+  let twobridReduction = cost.twobridReduction ?? 0;
+  if (generic < 0) {
+    const twobridGeneric = hybrid.reduce(
+      (sum, pip) => sum + Math.max(0, ...pip.map((o) => (o.kind === "generic" ? o.amount : 0))),
+      0,
+    );
+    twobridReduction = Math.min(twobridGeneric, twobridReduction - generic);
+    generic = 0;
+  }
+  return {
+    generic,
+    colored: nextColored,
+    colorless: cost.colorless,
+    x: cost.x,
+    hybrid,
+    ...(twobridReduction > 0 ? { twobridReduction } : {}),
+  };
+}
+
+/** The least mana `cost` could be paid with, each hybrid pip at its cheapest
+ * half — for comparing two versions of one cost, not for paying either. */
+export function cheapestManaAmount(cost: ManaCost): number {
+  return (
+    COLORS.reduce((sum, color) => sum + cost.colored[color], cost.generic) +
+    cost.colorless +
+    cost.hybrid.reduce(
+      (sum, pip) =>
+        sum + Math.min(...pip.map((option) => (option.kind === "generic" ? option.amount : 1))),
+      0,
+    )
   );
 }

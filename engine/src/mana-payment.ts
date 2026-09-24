@@ -15,7 +15,7 @@
 
 import type { ActivatedAbility } from "./abilities.js";
 import { COLORS, poolCounts, poolTotal } from "./mana.js";
-import type { ManaCost, ManaType, ManaUnit } from "./mana.js";
+import type { Color, HybridOption, HybridPip, ManaCost, ManaType, ManaUnit } from "./mana.js";
 import type { ObjectId } from "./primitives.js";
 
 /** One possible output of a single mana-ability activation: `fixed` is the
@@ -279,6 +279,79 @@ export function manaCombinations(colors: readonly ManaType[], amount: number): M
   return out;
 }
 /**
+ * {@link resolveHybridCost} for a cost carrying a `twobridReduction` — a
+ * generic reduction that outran the generic part and is left for the `{2}`
+ * halves of twobrid pips paid generically (the Spectral Procession ruling).
+ *
+ * Every pip is first offered its colour, as usual, and the pips that can't
+ * be paid that way go generic with the reduction taken off. Colour first is
+ * what keeps the answer "can this be paid at all" right: the reduction only
+ * ever helps a generic half, so it's best kept for the pips that have to be
+ * paid generically. Then any reduction still spare pays a colour-paid pip's
+ * generic half outright, handing its land back. A separate path, rather than
+ * a branch in the ordinary loop, so costs with no such reduction are
+ * resolved exactly as they always were.
+ */
+function resolveReducedTwobrid(
+  view: ManaPlanningView,
+  cost: ManaCost,
+  start: ManaCost,
+  reduction: number,
+  avoid?: ObjectId,
+  exclude?: ObjectId,
+): { concrete: ManaCost; life: number } | null {
+  let concrete = start;
+  let spare = reduction;
+  let life = 0;
+  const genericHalf = (pip: HybridPip): number | undefined =>
+    pip.find((o): o is Extract<HybridOption, { kind: "generic" }> => o.kind === "generic")?.amount;
+  const inColour: { pip: HybridPip; color: Color }[] = [];
+  const rest: HybridPip[] = [];
+  for (const pip of cost.hybrid) {
+    let paid = false;
+    for (const option of pip) {
+      if (option.kind !== "color") continue;
+      const colored = { ...concrete.colored };
+      colored[option.color] += 1;
+      const trial: ManaCost = { ...concrete, colored };
+      if (planManaPayment(view, trial, avoid, exclude) !== null) {
+        concrete = trial;
+        inColour.push({ pip, color: option.color });
+        paid = true;
+        break;
+      }
+    }
+    if (!paid) rest.push(pip);
+  }
+  for (const pip of rest) {
+    const half = genericHalf(pip);
+    if (half !== undefined) {
+      const off = Math.min(half, spare);
+      const trial: ManaCost = { ...concrete, generic: concrete.generic + half - off };
+      if (planManaPayment(view, trial, avoid, exclude) !== null) {
+        concrete = trial;
+        spare -= off;
+        continue;
+      }
+    }
+    if (pip.some((o) => o.kind === "phyrexian") && view.life - life - 2 >= 1) {
+      life += 2;
+      continue;
+    }
+    return null;
+  }
+  for (const { pip, color } of inColour) {
+    const half = genericHalf(pip);
+    if (half === undefined || half > spare) continue;
+    const colored = { ...concrete.colored };
+    colored[color] -= 1;
+    concrete = { ...concrete, colored };
+    spare -= half;
+  }
+  return { concrete, life };
+}
+
+/**
  * Resolve every hybrid / twobrid / Phyrexian pip in `cost` to a concrete
  * payment, returning the pip-free cost plus the life owed for Phyrexian pips
  * (or `null` if a pip can't be paid at all). Greedy and auto-pilot: for each
@@ -306,6 +379,9 @@ export function resolveHybridCost(
   };
   let life = 0;
   const startingLife = view.life;
+
+  const spare = cost.twobridReduction ?? 0;
+  if (spare > 0) return resolveReducedTwobrid(view, cost, concrete, spare, avoid, exclude);
 
   for (const pip of cost.hybrid) {
     let chosen: ManaCost | null = null;

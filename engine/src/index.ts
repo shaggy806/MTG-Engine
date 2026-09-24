@@ -9,6 +9,7 @@ export const VERSION = "1.0.0";
 export * from "./primitives.js";
 export * from "./mana.js";
 export * from "./target.js";
+export * from "./target-count.js";
 export * from "./effects.js";
 export * from "./abilities.js";
 export * from "./cards.js";

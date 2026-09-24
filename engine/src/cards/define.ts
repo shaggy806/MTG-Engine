@@ -617,6 +617,36 @@ export interface StaticAbility {
      * type" — needed-cards P14). No effect (matches nothing) before the
      * ETB choice is made. */
     readonly matchesChosenCreatureType?: boolean;
+    /** Who has to be casting the spell, relative to this static's
+     * controller: `"you"` ("spells you cast") or `"opponent"` ("spells your
+     * opponents cast" — Hinata, Dawn-Crowned). Judged against the actual
+     * caster, not the card's controller, so a card cast from someone else's
+     * graveyard or exile counts as the caster's spell. Omitted = anyone. */
+    readonly caster?: "you" | "opponent";
+    /** "…cost {1} less to cast **for each target**" (Hinata, Dawn-Crowned):
+     * `reduceGeneric` / `increaseGeneric` are multiplied by the number of
+     * distinct players and objects the spell targets as it's cast (Hinata's
+     * ruling: two "target creature"s aimed at one creature count once). The
+     * cost is locked in after targets are chosen (rule 601.2c before
+     * 601.2f), so `legalActions` offers such a spell with the `targetCount`
+     * range it is affordable at. */
+    readonly perTarget?: boolean;
+    /** Only the caster's first spell each turn that matches `applies` ("the
+     * first creature spell you cast each turn costs {1} less") — earlier
+     * spells are asked the same question, so a matching spell cast earlier
+     * this turn uses the discount up even if it was cast before this
+     * permanent arrived. */
+    readonly firstEachTurn?: boolean;
+    /** Coloured pips removed from the cost ("Cleric spells you cast cost
+     * {W}{B} less" — Edgewalker), as a mana string of coloured symbols.
+     * Each symbol takes a matching coloured pip, else a hybrid pip that
+     * includes that colour (rule 118.7e — paid as that colour), else, per
+     * rule 118.7b/c, one generic — unless `coloredOnly`. */
+    readonly reduceColored?: string;
+    /** "This effect reduces only the amount of colored mana you pay"
+     * (Edgewalker, Morophon): a coloured reduction with nothing coloured
+     * left to take is lost rather than taken off the generic part. */
+    readonly coloredOnly?: boolean;
   };
   /** Layer 7b: set base power and toughness to a dynamic count (+ the given
    * offsets). Only meaningful with `affects.scope === "self"` (a CDA). */

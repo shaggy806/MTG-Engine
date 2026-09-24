@@ -1110,7 +1110,30 @@ anthem, the keyword grant and the granted trigger like any other creature.
   pay or their spell/ability is countered (auto-paid if affordable).
 - `costModification: { applies: CardFilter, reduceGeneric?, increaseGeneric? }`
   — Foundry Inspector, Thalia. `affects` is ignored — `applies` says what it
-  hits.
+  hits. Optional refinements:
+  - `caster: "you" | "opponent"` — "spells you cast" / "spells your
+    opponents cast", judged against whoever is actually casting it (not the
+    card's controller, so a card cast out of someone else's graveyard is the
+    caster's spell). Prefer this over `applies.controlledBy` for new cards.
+  - `perTarget: true` — the amounts are "for each target" (Hinata,
+    Dawn-Crowned): multiplied by the number of *distinct* players and objects
+    the spell is cast targeting (the card's ruling — one creature named by two
+    "target creature"s counts once). The cost is worked out from the targets
+    actually chosen; `legalActions` offers such a spell with a `targetCount`
+    range it's affordable at.
+  - `firstEachTurn: true` — "the first creature spell you cast each turn
+    costs {1} less": skipped once the caster has cast any spell matching
+    `applies` this turn.
+  - `reduceColored: "{W}{B}"` (+ `coloredOnly?`) — takes coloured pips off
+    (Edgewalker's "Cleric spells you cast cost {W}{B} less"): each symbol
+    takes a pip of its colour, else a hybrid pip containing it (rule 118.7e),
+    else one generic (118.7b/c) — unless `coloredOnly: true`, the printed
+    "this effect reduces only the amount of colored mana you pay".
+
+  A generic reduction bigger than the generic part carries on to the `{2}`
+  half of twobrid pips (`{2/W}`), but only the ones actually paid with
+  generic mana — the Spectral Procession ruling. Reaper King under Foundry
+  Inspector is `{W}{U}{B}{R}` plus one mana without a Forest.
 - `playFromGraveyard: CardFilter` — while this permanent is on the battlefield
   its controller may *play* matching cards from their graveyard (Ramunap
   Excavator: `{ type: "land" }`). `affects` is ignored. Still costs the land

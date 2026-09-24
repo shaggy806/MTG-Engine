@@ -31,6 +31,7 @@ import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameObject, GameState } from "./state.js";
 import { isOptionalSpec } from "./target.js";
 import type { TargetRef, TargetSpec } from "./target.js";
+import { fitTargetCount } from "./target-count.js";
 
 export type { AttackerDeclaration, BlockerDeclaration };
 
@@ -724,6 +725,24 @@ function randomTapPicks(offer: TapCostOffer, pickIndex: (n: number) => number): 
   return picked;
 }
 
+/**
+ * `chosen`, fitted to the distinct-target range a `cast-spell` offer is
+ * affordable at when a "for each target" cost modification reaches it
+ * (Hinata, Dawn-Crowned — `LegalAction.targetCount`), else as it stands.
+ * `null` when no re-pointing fits, and the driver should do something else.
+ * Draws nothing from any random source, so a fuzzer seed replays the same
+ * whether or not the offer carried a range.
+ */
+export function fitCastTargets(
+  legal: Extract<LegalAction, { kind: "cast-spell" }>,
+  chosen: readonly (TargetRef | null)[],
+  options: readonly (readonly TargetRef[])[],
+  specs: readonly TargetSpec[],
+): (TargetRef | null)[] | null {
+  if (legal.targetCount === undefined) return [...chosen];
+  return fitTargetCount(chosen, options, specs, legal.targetCount);
+}
+
 function castExtras(
   legal: Extract<LegalAction, { kind: "cast-spell" }>,
   pickIndex: (n: number) => number,
@@ -859,7 +878,14 @@ export class RandomController extends AutomaticController {
             modes.push(pool.splice(this.pickIndex(pool.length), 1)[0]);
           }
           modes.sort((a, b) => a - b);
-          const targets = modes.flatMap((i) => this.pickTargets(cm.modes[i].targetOptions));
+          const picked = modes.flatMap((i) => this.pickTargets(cm.modes[i].targetOptions));
+          const targets = fitCastTargets(
+            legal,
+            picked,
+            modes.flatMap((i) => cm.modes[i].targetOptions),
+            modes.flatMap((i) => cm.modes[i].targetSpecs),
+          );
+          if (targets === null) return passFor(player);
           return {
             type: "cast-spell",
             player,
@@ -877,7 +903,13 @@ export class RandomController extends AutomaticController {
         }
         // Drawn in this order — targets, X, then the extras — so a seed
         // replays the same game.
-        const targets = this.pickTargets(legal.targetOptions, legal.targetSpecs);
+        const targets = fitCastTargets(
+          legal,
+          this.pickTargets(legal.targetOptions, legal.targetSpecs),
+          legal.targetOptions,
+          legal.targetSpecs,
+        );
+        if (targets === null) return passFor(player);
         const xValue =
           legal.xCost !== undefined ? this.pickIndex(legal.xCost.maxX + 1) : undefined;
         return {
@@ -1066,7 +1098,13 @@ export class HeuristicBotController extends AutomaticController {
         .filter((i) => cm.modes[i].targetOptions.every((options) => options.length > 0));
       if (fillable.length < cm.minModes) return passFor(player);
       const modes = fillable.slice(0, Math.max(cm.minModes, Math.min(cm.maxModes, fillable.length)));
-      const targets = modes.flatMap((i) => firstOfEach(cm.modes[i].targetOptions));
+      const targets = fitCastTargets(
+        legal,
+        modes.flatMap((i) => firstOfEach(cm.modes[i].targetOptions)),
+        modes.flatMap((i) => cm.modes[i].targetOptions),
+        modes.flatMap((i) => cm.modes[i].targetSpecs),
+      );
+      if (targets === null) return passFor(player);
       return {
         type: "cast-spell",
         player,
@@ -1079,11 +1117,18 @@ export class HeuristicBotController extends AutomaticController {
         ...castExtras(legal, pickLast),
       };
     }
+    const targets = fitCastTargets(
+      legal,
+      firstOfEach(legal.targetOptions),
+      legal.targetOptions,
+      legal.targetSpecs,
+    );
+    if (targets === null) return passFor(player);
     return {
       type: "cast-spell",
       player,
       card: legal.card,
-      targets: firstOfEach(legal.targetOptions),
+      targets,
       ...(legal.xCost !== undefined ? { xValue: legal.xCost.maxX } : {}),
       ...(legal.via !== undefined ? { via: legal.via } : {}),
       ...(legal.graveyardGrant !== undefined ? { graveyardGrant: legal.graveyardGrant } : {}),

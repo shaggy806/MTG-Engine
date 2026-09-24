@@ -16,6 +16,8 @@ import type { Action, ConvokePayment, LegalAction } from "../actions.js";
 import { convokeProofFor } from "../actions.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import { targetCombos } from "../decisions/shared/target-combos.js";
+import { fitTargetCount } from "../target-count.js";
+import type { TargetRef, TargetSpec } from "../target.js";
 
 // Re-exported from its new home: a decision module needs it too, and nothing
 // under `decisions/` may import from `bot/`.
@@ -102,19 +104,45 @@ function castCandidates(legal: CastSpellLegal, player: PlayerId): Action[] {
       0,
       Math.max(modal.minModes, Math.min(modal.maxModes, fillable.length)),
     );
-    const targets = modes.flatMap(
+    const picked = modes.flatMap(
       (index) =>
         targetCombos(modal.modes[index].targetOptions, 1, modal.modes[index].targetSpecs)[0] ?? [],
     );
-    return [{ ...common, targets, modes }];
+    const targets = fitTargets(
+      legal,
+      picked,
+      modes.flatMap((index) => modal.modes[index].targetOptions),
+      modes.flatMap((index) => modal.modes[index].targetSpecs),
+    );
+    return targets === null ? [] : [{ ...common, targets, modes }];
   }
 
   // X is taken at its maximum. Enumerating every X multiplies the search by
   // the mana available and almost always lands on the maximum anyway.
   const xValue = legal.xCost !== undefined ? { xValue: legal.xCost.maxX } : {};
-  return targetCombos(legal.targetOptions, MAX_TARGET_COMBOS, legal.targetSpecs).map(
-    (targets) => ({ ...common, ...xValue, targets }),
-  );
+  // A "for each target" cost (Hinata) makes only some fillings affordable:
+  // each is fitted into the offered range, and one that can't be is dropped.
+  const seen = new Set<string>();
+  const out: Action[] = [];
+  for (const combo of targetCombos(legal.targetOptions, MAX_TARGET_COMBOS, legal.targetSpecs)) {
+    const targets = fitTargets(legal, combo, legal.targetOptions, legal.targetSpecs);
+    if (targets === null) continue;
+    const key = JSON.stringify(targets);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({ ...common, ...xValue, targets });
+  }
+  return out;
+}
+
+function fitTargets(
+  legal: CastSpellLegal,
+  chosen: readonly (TargetRef | null)[],
+  options: readonly (readonly TargetRef[])[],
+  specs: readonly TargetSpec[],
+): (TargetRef | null)[] | null {
+  if (legal.targetCount === undefined) return [...chosen];
+  return fitTargetCount(chosen, options, specs, legal.targetCount);
 }
 
 function abilityCandidates(legal: ActivateAbilityLegal, player: PlayerId): Action[] {

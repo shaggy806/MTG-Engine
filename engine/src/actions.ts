@@ -10,6 +10,7 @@ import type { CardType } from "./cards/define.js";
 import type { Color, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { TargetRef, TargetSpec } from "./target.js";
+import type { TargetCountRange } from "./target-count.js";
 
 /** One creature tapped to help pay a convoke cost (rule 702.51a): it pays
  * for `{1}` (`"generic"`) or one mana of one of its own colors — the
@@ -456,6 +457,14 @@ export type LegalAction =
        * affordable). A driver must include `xValue` in the `cast-spell`
        * action; anything from 0 to `maxX` is legal. */
       readonly xCost?: { readonly maxX: number };
+      /** Set when what the spell costs depends on how many targets it has — a
+       * "for each target" cost modification reaches it (Hinata,
+       * Dawn-Crowned). The spell is affordable only with a number of
+       * *distinct* targets (players and objects, each counted once however
+       * many slots name it) from `min` to `max`; a driver has to choose
+       * targets inside that range (`fitTargetCount`), or the cast is
+       * refused. `xCost.maxX` holds anywhere in the range. */
+      readonly targetCount?: TargetCountRange;
       /** Present when this is an alternative-permission cast (not from the hand
        * for the printed cost — `"flashback"` / `"escape"` from the graveyard,
        * `"foretell"` from face-down exile). The driver must echo `via` back in
