@@ -30,7 +30,7 @@ export default defineCard({
   colors: ["U", "R"],
   supertypes: ["legendary"],
   types: ["creature"],
-  subtypes: ["Human", "Wizard"],
+  subtypes: ["Wizard"],
   power: 0,
   toughness: 3,
   text: `${MANA_TEXT}\n${CAST_TEXT}`,

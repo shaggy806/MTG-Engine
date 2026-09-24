@@ -11,6 +11,7 @@
  */
 import { describe, expect, it } from "vitest";
 
+import { createDefaultRegistry } from "../cards.js";
 import { HeuristicBotController, RandomController } from "../controller.js";
 import type { PlayerController } from "../controller.js";
 import { Game } from "../game.js";
@@ -48,6 +49,25 @@ const canCast = (game: Game, card: ObjectId): boolean =>
 
 const cast = (game: Game, card: ObjectId): void =>
   game.dispatch({ type: "cast-spell", player: A, card, targets: [] });
+
+describe("printed stat blocks", () => {
+  // Oracle: Kydele is a 2/3 Human Wizard; Vivi is a 0/3 Wizard (no Human).
+  // Scryfall is the authority (`card:verify`), but this pins what shipped
+  // wrong once.
+  const registry = createDefaultRegistry();
+  it("Kydele is 2/3", () => {
+    const k = registry.get("Kydele, Chosen of Kruphix");
+    expect([k.power, k.toughness, k.subtypes]).toEqual([2, 3, ["Human", "Wizard"]]);
+  });
+  it("Vivi is a 0/3 Wizard", () => {
+    const v = registry.get("Vivi Ornitier");
+    expect([v.power, v.toughness, v.subtypes]).toEqual([0, 3, ["Wizard"]]);
+  });
+  it("Marwyn is a 1/1 Elf Druid", () => {
+    const m = registry.get("Marwyn, the Nurturer");
+    expect([m.power, m.toughness, m.subtypes]).toEqual([1, 1, ["Elf", "Druid"]]);
+  });
+});
 
 describe("Marwyn, the Nurturer", () => {
   it("taps for {G} equal to her power, which grows as Elves enter", () => {

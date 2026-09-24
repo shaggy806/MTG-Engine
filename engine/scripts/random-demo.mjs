@@ -47,6 +47,10 @@ const deck = (entries) =>
 // Both decks get a mana base that can actually cast their own spells —
 // otherwise one side just sits there and the fuzz only exercises one player.
 const deckA = deck([
+  // Mana abilities with a live amount (power, cards drawn this turn).
+  ["Vivi Ornitier", 1],
+  ["Marwyn, the Nurturer", 1],
+  ["Kydele, Chosen of Kruphix", 1],
   // EDH-backlog bulk pass 5: Snarl reveal-lands and Karoo bounce lands (new:
   // the `land-you-control` target spec).
   ["Vineglimmer Snarl", 1],
@@ -903,6 +907,10 @@ const deckE = deck([
   ["Flight", 1],
   ["Cobbled Wings", 1],
   ["Captain N'ghathrod", 1],
+  // Mana abilities with a live amount (power, cards drawn this turn).
+  ["Vivi Ornitier", 1],
+  ["Marwyn, the Nurturer", 1],
+  ["Kydele, Chosen of Kruphix", 1],
   ["Plains", 5],
   ["Island", 5],
   ["Swamp", 5],
