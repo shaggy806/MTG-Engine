@@ -424,6 +424,7 @@ import _poolKolaghansCommand from "./pool/kolaghans-command.js";
 import _poolKorvoldFaeCursedKing from "./pool/korvold-fae-cursed-king.js";
 import _poolKraumLudevicsOpus from "./pool/kraum-ludevics-opus.js";
 import _poolKrenkoMobBoss from "./pool/krenko-mob-boss.js";
+import _poolKydeleChosenOfKruphix from "./pool/kydele-chosen-of-kruphix.js";
 import _poolLaboratoryDrudge from "./pool/laboratory-drudge.js";
 import _poolLathlissDragonQueen from "./pool/lathliss-dragon-queen.js";
 import _poolLazotepPlating from "./pool/lazotep-plating.js";
@@ -465,6 +466,7 @@ import _poolManifoldKey from "./pool/manifold-key.js";
 import _poolMarchOfTheMultitudes from "./pool/march-of-the-multitudes.js";
 import _poolMarrowGnawer from "./pool/marrow-gnawer.js";
 import _poolMarshFlats from "./pool/marsh-flats.js";
+import _poolMarwynTheNurturer from "./pool/marwyn-the-nurturer.js";
 import _poolMeanderingRiver from "./pool/meandering-river.js";
 import _poolMendingHands from "./pool/mending-hands.js";
 import _poolMentorOfTheMeek from "./pool/mentor-of-the-meek.js";
@@ -842,6 +844,7 @@ import _poolVineglimmerSnarl from "./pool/vineglimmer-snarl.js";
 import _poolVisceraSeer from "./pool/viscera-seer.js";
 import _poolVitoThornOfTheDuskRose from "./pool/vito-thorn-of-the-dusk-rose.js";
 import _poolVituGhaziTheCityTree from "./pool/vitu-ghazi-the-city-tree.js";
+import _poolViviOrnitier from "./pool/vivi-ornitier.js";
 import _poolVizierOfTheScorpion from "./pool/vizier-of-the-scorpion.js";
 import _poolVoiceOfMany from "./pool/voice-of-many.js";
 import _poolVojaJawsOfTheConclave from "./pool/voja-jaws-of-the-conclave.js";
@@ -1370,6 +1373,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolKorvoldFaeCursedKing,
   _poolKraumLudevicsOpus,
   _poolKrenkoMobBoss,
+  _poolKydeleChosenOfKruphix,
   _poolLaboratoryDrudge,
   _poolLathlissDragonQueen,
   _poolLazotepPlating,
@@ -1411,6 +1415,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolMarchOfTheMultitudes,
   _poolMarrowGnawer,
   _poolMarshFlats,
+  _poolMarwynTheNurturer,
   _poolMeanderingRiver,
   _poolMendingHands,
   _poolMentorOfTheMeek,
@@ -1788,6 +1793,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolVisceraSeer,
   _poolVitoThornOfTheDuskRose,
   _poolVituGhaziTheCityTree,
+  _poolViviOrnitier,
   _poolVizierOfTheScorpion,
   _poolVoiceOfMany,
   _poolVojaJawsOfTheConclave,
