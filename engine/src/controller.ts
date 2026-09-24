@@ -830,6 +830,7 @@ export class RandomController extends AutomaticController {
           player,
           card: legal.card,
           ...(legal.face !== undefined ? { face: legal.face } : {}),
+          ...(legal.graveyardGrant !== undefined ? { graveyardGrant: legal.graveyardGrant } : {}),
         };
       case "suspend":
         return { type: "suspend", player, card: legal.card };
@@ -861,6 +862,7 @@ export class RandomController extends AutomaticController {
             targets,
             modes,
             ...(legal.via !== undefined ? { via: legal.via } : {}),
+            ...(legal.graveyardGrant !== undefined ? { graveyardGrant: legal.graveyardGrant } : {}),
             ...(legal.face !== undefined ? { face: legal.face } : {}),
             ...castExtras(legal, (n) => this.pickIndex(n)),
             ...(legal.tapCost !== undefined
@@ -877,6 +879,7 @@ export class RandomController extends AutomaticController {
             ? { xValue: this.pickIndex(legal.xCost.maxX + 1) }
             : {}),
           ...(legal.via !== undefined ? { via: legal.via } : {}),
+          ...(legal.graveyardGrant !== undefined ? { graveyardGrant: legal.graveyardGrant } : {}),
           ...(legal.face !== undefined ? { face: legal.face } : {}),
           ...castExtras(legal, (n) => this.pickIndex(n)),
           ...(legal.tapCost !== undefined
@@ -1037,6 +1040,7 @@ export class HeuristicBotController extends AutomaticController {
       player: this.playerId,
       card: legal.card,
       ...(legal.face !== undefined ? { face: legal.face } : {}),
+      ...(legal.graveyardGrant !== undefined ? { graveyardGrant: legal.graveyardGrant } : {}),
     };
   }
 
@@ -1062,6 +1066,7 @@ export class HeuristicBotController extends AutomaticController {
         targets,
         modes,
         ...(legal.via !== undefined ? { via: legal.via } : {}),
+        ...(legal.graveyardGrant !== undefined ? { graveyardGrant: legal.graveyardGrant } : {}),
         ...(legal.face !== undefined ? { face: legal.face } : {}),
         ...castExtras(legal, pickLast),
       };
@@ -1073,6 +1078,7 @@ export class HeuristicBotController extends AutomaticController {
       targets: firstOfEach(legal.targetOptions),
       ...(legal.xCost !== undefined ? { xValue: legal.xCost.maxX } : {}),
       ...(legal.via !== undefined ? { via: legal.via } : {}),
+      ...(legal.graveyardGrant !== undefined ? { graveyardGrant: legal.graveyardGrant } : {}),
       ...(legal.face !== undefined ? { face: legal.face } : {}),
       ...castExtras(legal, pickLast),
     };

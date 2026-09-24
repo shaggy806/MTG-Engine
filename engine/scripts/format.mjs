@@ -94,6 +94,8 @@ export const makeFormatter = (game) => {
         return `${name(e.object)} resolves`;
       case "flashback-granted":
         return `${name(e.object)} gains flashback ${e.cost}`;
+      case "graveyard-cast-granted":
+        return `${e.player} may cast ${name(e.object)} from the graveyard this turn`;
       case "flashback-grant-expired":
         return `${name(e.object)}'s flashback grant expires`;
       case "card-suspended":

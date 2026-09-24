@@ -806,6 +806,17 @@ export type EffectSpec =
       readonly target: number;
     }
   | {
+      /** "Choose target artifact card in your graveyard. You may cast that
+       * card this turn" (Silas Renn, Emry) — `target` (a card in a graveyard,
+       * via a `card-in-graveyard` spec) gets a one-shot permission for the
+       * ability's controller to cast it, for its ordinary cost, until end of
+       * turn. The permission lives on the card (`GameObject
+       * .graveyardCastPermission`) and ends if the card leaves the graveyard.
+       * Casts only: a land can't be cast. */
+      readonly kind: "grant-graveyard-cast";
+      readonly target: number;
+    }
+  | {
       /**
        * Give a permanent a triggered ability — "gains 'Whenever this creature
        * deals combat damage to a player, draw that many cards'" (Hunter's
@@ -1410,6 +1421,9 @@ export interface EffectApi {
    * the rest of the turn, at a flashback cost equal to its mana cost
    * (Snapcaster Mage). */
   grantFlashback(target: TargetRef): void;
+  /** Let this effect's controller cast `target` (a card in a graveyard)
+   * from there this turn — see the `grant-graveyard-cast` effect. */
+  grantGraveyardCast(target: TargetRef): void;
   /** `a` and `b` (both creatures) fight; with `oneSided` only `a` deals. */
   fight(a: TargetRef, b: TargetRef, oneSided: boolean): void;
   /** Counter a target spell on the stack. */
@@ -1973,6 +1987,11 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     case "grant-flashback": {
       const target = ctx.targets[spec.target];
       if (target !== undefined) ctx.grantFlashback(target);
+      return;
+    }
+    case "grant-graveyard-cast": {
+      const target = ctx.targets[spec.target];
+      if (target !== undefined) ctx.grantGraveyardCast(target);
       return;
     }
     case "mill": {

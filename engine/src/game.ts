@@ -25,6 +25,7 @@ import type {
   BlockerDeclaration,
   CastVia,
   ConvokePayment,
+  GraveyardGrant,
   LegalAction,
   TapCostOffer,
 } from "./actions.js";
@@ -332,6 +333,14 @@ function arrangeManaSources(
   return [...kept.filter((s) => !last.has(s.id)), ...kept.filter((s) => last.has(s.id))];
 }
 
+/** One permission a graveyard card could be played under, with the static
+ * that grants it (`null` for the card's own one-shot permission) — see
+ * `Game.graveyardGrantsFor`. */
+type GraveyardGrantOption = {
+  readonly grant: GraveyardGrant;
+  readonly permission: NonNullable<StaticAbility["castFromGraveyard"]> | null;
+};
+
 export class Game {
   readonly state: GameState;
   private readonly registry: CardRegistry;
@@ -604,7 +613,7 @@ export class Game {
         this.passPriority(action.player);
         break;
       case "play-land":
-        this.playLand(action.player, action.card, action.face ?? 0);
+        this.playLand(action.player, action.card, action.face ?? 0, action.graveyardGrant);
         break;
       case "suspend":
         this.suspendCard(action.player, action.card);
@@ -632,6 +641,7 @@ export class Game {
           action.altCost === true,
           action.costOption,
           action.tap,
+          action.graveyardGrant,
         );
         break;
       case "activate-ability":
@@ -667,7 +677,12 @@ export class Game {
           ? null
           : `${action.player} does not have priority`;
       case "play-land":
-        return this.whyCannotPlayLand(action.player, action.card, action.face ?? 0);
+        return this.whyCannotPlayLand(
+          action.player,
+          action.card,
+          action.face ?? 0,
+          action.graveyardGrant,
+        );
       case "suspend":
         return this.whyCannotSuspend(action.player, action.card);
       case "foretell":
@@ -689,6 +704,7 @@ export class Game {
           action.altCost === true,
           action.costOption,
           action.tap,
+          action.graveyardGrant,
         );
       case "activate-ability":
         return this.whyCannotActivateAbility(
@@ -844,19 +860,45 @@ export class Game {
       );
     }
 
-    // A graveyard-cast permission granted by a permanent (Gisa and Geralf).
-    // Offered once per card however many permanents could grant it; the
-    // first one found pays for it when the spell is cast.
+    // Graveyard permissions: one granted by a permanent (Gisa and Geralf,
+    // Muldrotha) or one riding on the card itself (Silas Renn, Emry). Offered
+    // once per permission that applies — and, for Muldrotha, once per
+    // permanent type the card could spend — so which permission is used up is
+    // the player's choice, carried as `graveyardGrant`. Each face of a modal
+    // double-faced card is its own option, as it is from the hand.
     for (const card of this.state.zones.perPlayer[player].graveyard) {
-      if (this.graveyardCastGrantor(player, card) === null) continue;
-      const def = this.registry.get(this.state.objects[card].cardName);
-      if (def.types.includes("land")) continue; // "cast", not "play"
-      out.push(
-        ...this.castSpellActions(player, card, def.name, def, {
-          via: "graveyard-permission",
-          costString: def.manaCost,
-        }),
-      );
+      const ownDef = this.registry.get(this.state.objects[card].cardName);
+      const cardFaces = ownDef.transform ? null : ownDef.faces;
+      const faceList: readonly (number | undefined)[] =
+        cardFaces !== null ? cardFaces.map((_n, i) => i) : [undefined];
+      for (const face of faceList) {
+        const grants = this.graveyardGrantsFor(player, card, face ?? 0);
+        if (grants.length === 0) continue;
+        const def = this.faceDef(card, face ?? 0);
+        const faceProp = face !== undefined ? { face } : {};
+        for (const { grant } of grants) {
+          if (def.types.includes("land")) {
+            if (this.whyCannotPlayLand(player, card, face ?? 0, grant) === null) {
+              out.push({
+                kind: "play-land",
+                card,
+                cardName: def.name,
+                ...faceProp,
+                graveyardGrant: grant,
+              });
+            }
+            continue;
+          }
+          out.push(
+            ...this.castSpellActions(player, card, def.name, def, {
+              via: "graveyard-permission",
+              ...faceProp,
+              costString: def.manaCost,
+              graveyardGrant: grant,
+            }),
+          );
+        }
+      }
     }
 
     // Adventure (rule 715.3) — a card exiled by its adventure resolving may be
@@ -893,6 +935,9 @@ export class Game {
     for (const card of this.state.zones.perPlayer[player].graveyard) {
       const def = this.registry.get(this.state.objects[card].cardName);
       if (!def.types.includes("land")) continue;
+      // A limited permission (Muldrotha's land allowance) was offered above,
+      // with the grant it spends.
+      if (!this.mayPlayFromGraveyard(player, card)) continue;
       if (this.whyCannotPlayLand(player, card) !== null) continue;
       out.push({ kind: "play-land", card, cardName: def.name });
     }
@@ -1090,9 +1135,14 @@ export class Game {
     card: ObjectId,
     cardName: string,
     def: CardDefinition,
-    opts: { via?: CastVia; face?: number; costString: string | null },
+    opts: {
+      via?: CastVia;
+      face?: number;
+      costString: string | null;
+      graveyardGrant?: GraveyardGrant;
+    },
   ): LegalAction[] {
-    const { via, face, costString } = opts;
+    const { via, face, costString, graveyardGrant } = opts;
     const out: LegalAction[] = [];
     const variants: {
       kicked: boolean;
@@ -1137,6 +1187,8 @@ export class Game {
           undefined,
           altCost === true,
           costOption,
+          undefined,
+          graveyardGrant,
         ) === null;
       const manaAffordable = castable;
       // Convoke (rule 702.51): not affordable with mana alone doesn't mean
@@ -1160,6 +1212,10 @@ export class Game {
             overload,
             free,
             proof,
+            false,
+            undefined,
+            undefined,
+            graveyardGrant,
           ) === null
         ) {
           castable = true;
@@ -1196,6 +1252,7 @@ export class Game {
         targetSpecs: specs,
         targetOptions: options,
         ...(via !== undefined ? { via } : {}),
+        ...(graveyardGrant !== undefined ? { graveyardGrant } : {}),
         ...(face !== undefined ? { face } : {}),
         ...this.castModalDescriptor(def, player, card),
         ...(sacrifices.length > 0 ? { sacrifice: { choices: sacrifices } } : {}),
@@ -2742,6 +2799,7 @@ export class Game {
       object.loyaltyActivatedThisTurn = false;
       object.abilitiesUsedThisTurn = [];
       object.graveyardCastUsedThisTurn = false;
+      object.graveyardCastTypesUsedThisTurn = undefined;
       object.combatDamagedPlayersThisTurn = [];
       object.attackedThisTurn = false;
       if (object.tapped) {
@@ -3616,12 +3674,17 @@ export class Game {
     }
   }
 
-  private whyCannotPlayLand(player: PlayerId, cardId: ObjectId, face = 0): string | null {
+  private whyCannotPlayLand(
+    player: PlayerId,
+    cardId: ObjectId,
+    face = 0,
+    graveyardGrant?: GraveyardGrant,
+  ): string | null {
     return (
       this.whyCannotAct(player) ??
       this.whyNotSorcerySpeed(player, "play a land") ??
       this.landDropReason(player) ??
-      this.landPlayableReason(player, cardId, face)
+      this.landPlayableReason(player, cardId, face, graveyardGrant)
     );
   }
 
@@ -3684,11 +3747,25 @@ export class Game {
       : null;
   }
 
-  private landPlayableReason(player: PlayerId, cardId: ObjectId, face = 0): string | null {
+  private landPlayableReason(
+    player: PlayerId,
+    cardId: ObjectId,
+    face = 0,
+    graveyardGrant?: GraveyardGrant,
+  ): string | null {
     const zones = this.state.zones.perPlayer[player];
+    if (graveyardGrant !== undefined) {
+      // A named graveyard permission (Muldrotha's land allowance) must be one
+      // that applies to this card right now.
+      if (this.findGraveyardGrant(player, cardId, face, graveyardGrant) === null) {
+        return `${player} has no such permission to play that card from their graveyard`;
+      }
+    }
     const playable =
       zones.hand.includes(cardId) ||
-      (zones.graveyard.includes(cardId) && this.mayPlayFromGraveyard(player, cardId)) ||
+      (zones.graveyard.includes(cardId) &&
+        (this.mayPlayFromGraveyard(player, cardId) ||
+          this.graveyardGrantsFor(player, cardId, face).length > 0)) ||
       (zones.library[0] === cardId && this.mayPlayFromLibraryTop(player, cardId)) ||
       // "Impulse draw" that says *play* rather than *cast* includes lands
       // (Tectonic Giant, Theater of Horrors).
@@ -3701,10 +3778,25 @@ export class Game {
     return def.types.includes("land") ? null : `${def.name} is not a land`;
   }
 
-  private playLand(player: PlayerId, cardId: ObjectId, face = 0): void {
-    const why = this.whyCannotPlayLand(player, cardId, face);
+  private playLand(
+    player: PlayerId,
+    cardId: ObjectId,
+    face = 0,
+    graveyardGrant?: GraveyardGrant,
+  ): void {
+    const why = this.whyCannotPlayLand(player, cardId, face, graveyardGrant);
     if (why !== null) throw new Error(why);
     const playerState = this.state.players[player];
+    // From a graveyard under a limited permission (Muldrotha), spend it while
+    // the card is still there. An unnamed one prefers an unlimited permission
+    // (Ramunap Excavator), which spends nothing.
+    if (
+      this.state.objects[cardId].zone === "graveyard" &&
+      (graveyardGrant !== undefined || !this.mayPlayFromGraveyard(player, cardId))
+    ) {
+      const found = this.findGraveyardGrant(player, cardId, face, graveyardGrant);
+      if (found !== null) this.spendGraveyardGrant(found);
+    }
 
     this.state.objects[cardId].face = face;
     this.moveObject(cardId, "battlefield");
@@ -4459,6 +4551,7 @@ export class Game {
     altCost = false,
     costOption?: number,
     tap?: readonly ObjectId[],
+    graveyardGrant?: GraveyardGrant,
   ): string | null {
     const blocked = this.whyCannotAct(player);
     if (blocked !== null) return blocked;
@@ -4513,7 +4606,7 @@ export class Game {
         return `${def.name} is not playable from exile by ${player}`;
       }
     } else if (via === "graveyard-permission") {
-      if (this.graveyardCastGrantor(player, cardId) === null) {
+      if (this.findGraveyardGrant(player, cardId, face, graveyardGrant) === null) {
         return `${player} has no permission to cast ${def.name} from their graveyard`;
       }
     } else if (
@@ -4532,6 +4625,9 @@ export class Game {
       ) {
         return `${def.name}'s alternative cost needs ${alt.tapCreatures.count} untapped creatures`;
       }
+    }
+    if (graveyardGrant !== undefined && via !== "graveyard-permission") {
+      return "a graveyard permission is only spent on a graveyard-permission cast";
     }
     if (def.types.includes("land")) return "lands are played, not cast";
     // Instant-speed if it's an instant or has flash (rule 702.8); otherwise
@@ -4766,6 +4862,7 @@ export class Game {
     altCost = false,
     costOption?: number,
     tap?: readonly ObjectId[],
+    graveyardGrant?: GraveyardGrant,
   ): void {
     const why = this.whyCannotCastSpell(
       player,
@@ -4781,6 +4878,7 @@ export class Game {
       altCost,
       costOption,
       tap,
+      graveyardGrant,
     );
     if (why !== null) throw new Error(why);
 
@@ -4897,15 +4995,14 @@ export class Game {
       this.state.players[player].usedGraveyardThisTurn = true;
     }
 
-    // Spend a once-per-turn graveyard permission *before* the card leaves the
-    // graveyard, while the grantor lookup can still see it there.
+    // Spend the graveyard permission *before* the card leaves the graveyard,
+    // while the grant lookup can still see it there.
+    let graveyardPermission: GraveyardGrantOption["permission"] = null;
     if (via === "graveyard-permission") {
-      const grantor = this.graveyardCastGrantor(player, cardId);
-      if (grantor !== null) {
-        const ability = this.graveyardCastAbility(grantor);
-        if (ability?.oncePerTurn === true) {
-          this.state.objects[grantor].graveyardCastUsedThisTurn = true;
-        }
+      const found = this.findGraveyardGrant(player, cardId, face, graveyardGrant);
+      if (found !== null) {
+        this.spendGraveyardGrant(found);
+        graveyardPermission = found.permission;
       }
     }
 
@@ -4916,6 +5013,9 @@ export class Game {
     object.targetZones = targets.length > 0 ? this.zonesOfTargets(targets) : undefined;
     object.xValue = hasX ? chosenX : null;
     object.castVia = via ?? null;
+    // Kess's "if a spell cast this way would be put into your graveyard,
+    // exile it instead" — set after the move to the stack, which clears it.
+    if (graveyardPermission?.exileAfterwards === true) object.exileIfWouldGoToGraveyard = true;
     object.stormCount = stormCount;
     if (sortedModes !== undefined) object.chosenModes = sortedModes;
     if (kicked) object.kicked = true;
@@ -4931,6 +5031,11 @@ export class Game {
     // as the spell is cast.
     if (via === "flashback" && def.flashback?.payLife !== undefined) {
       this.changeLife(player, -def.flashback.payLife);
+    }
+    // A graveyard permission's own extra cost ("by paying 3 life in addition
+    // to paying their other costs").
+    if (graveyardPermission?.payLife !== undefined) {
+      this.changeLife(player, -graveyardPermission.payLife);
     }
     // The additional sacrifice (rule 601.2f/h) is paid *after* mana, so the
     // land being sacrificed can still be tapped for the spell's own cost first
@@ -7928,6 +8033,7 @@ export class Game {
       returnFlickered: (link, thenCounters, underYourControl) =>
         this.returnFlickeredByEffect(link, thenCounters, underYourControl ? controller : undefined),
       grantFlashback: (target) => this.grantFlashbackByEffect(target),
+      grantGraveyardCast: (target) => this.grantGraveyardCastByEffect(controller, target),
       putOnLibrary: (target, position) => {
         if (target.kind === "object") this.putOnLibrary(target.object, position);
       },
@@ -8597,45 +8703,132 @@ export class Game {
     this.emit({ type: "library-shuffled", player });
   }
 
-  /** A permanent's `castFromGraveyard` permission, if its printed statics
-   * carry one and it hasn't lost its abilities. */
-  private graveyardCastAbility(
+  /** A permanent's `castFromGraveyard` permissions — every printed static
+   * carrying one — or none if it has lost its abilities. */
+  private graveyardCastAbilities(
     id: ObjectId,
-  ): NonNullable<StaticAbility["castFromGraveyard"]> | undefined {
+  ): NonNullable<StaticAbility["castFromGraveyard"]>[] {
     const object = this.state.objects[id];
-    if (object === undefined || hasLostAbilities(object)) return undefined;
+    if (object === undefined || hasLostAbilities(object)) return [];
+    const out: NonNullable<StaticAbility["castFromGraveyard"]>[] = [];
     for (const ability of this.registry.get(printedCardName(object)).static) {
-      if (ability.castFromGraveyard !== undefined) return ability.castFromGraveyard;
+      if (ability.castFromGraveyard !== undefined) out.push(ability.castFromGraveyard);
     }
-    return undefined;
+    return out;
   }
 
   /**
-   * The permanent letting `player` cast `card` from their graveyard right now,
-   * or `null` — see `StaticAbility.castFromGraveyard`. Checks the card is in
-   * *that player's* graveyard, matches the filter, and that the grantor's
-   * once-per-turn and your-turn gates are still open.
+   * Every permission `player` could play `card` (as face `face`) from their
+   * graveyard under right now, each with the permission it would spend:
+   *
+   * - the card's own one-shot permission (Silas Renn, Emry) — casts only;
+   * - each permanent `player` controls with a `castFromGraveyard` static
+   *   whose gates are open and whose filter the card matches — once, or for
+   *   a `perType` grant (Muldrotha) once per permanent type the face has and
+   *   the grantor hasn't spent this turn. A land face is only ever offered a
+   *   `"land"` allowance, and only a `perType` grant listing it can play one:
+   *   every other permission says "cast".
+   *
+   * The order is the default an action that names no grant is played under:
+   * the card's own permission first (it lapses anyway), then the permanents
+   * in battlefield order. Ramunap Excavator's unlimited `playFromGraveyard`
+   * isn't one of these — it spends nothing — see `landPlayableReason`.
    */
-  private graveyardCastGrantor(player: PlayerId, card: ObjectId): ObjectId | null {
+  private graveyardGrantsFor(
+    player: PlayerId,
+    card: ObjectId,
+    face = 0,
+  ): GraveyardGrantOption[] {
     const object = this.state.objects[card];
     if (object === undefined || object.zone !== "graveyard" || object.owner !== player) {
-      return null;
+      return [];
+    }
+    const def = this.faceDef(card, face);
+    const isLand = def.types.includes("land");
+    const out: GraveyardGrantOption[] = [];
+    const own = object.graveyardCastPermission;
+    if (
+      !isLand &&
+      own !== undefined &&
+      own.player === player &&
+      own.turn === this.state.turn.number
+    ) {
+      out.push({ grant: { source: card }, permission: null });
     }
     for (const id of this.state.zones.shared.battlefield) {
       const grantor = this.state.objects[id];
       if (grantor.controller !== player) continue;
-      const permission = this.graveyardCastAbility(id);
-      if (permission === undefined) continue;
-      if (permission.yourTurnOnly === true && this.activePlayer !== player) continue;
-      if (permission.oncePerTurn === true && grantor.graveyardCastUsedThisTurn === true) {
-        continue;
+      for (const permission of this.graveyardCastAbilities(id)) {
+        if (permission.yourTurnOnly === true && this.activePlayer !== player) continue;
+        if (permission.oncePerTurn === true && grantor.graveyardCastUsedThisTurn === true) {
+          continue;
+        }
+        // Rule 119.4: life can be paid only up to what you have.
+        if (
+          permission.payLife !== undefined &&
+          this.state.players[player].life < permission.payLife
+        ) {
+          continue;
+        }
+        if (!matchesFilter(this.state, this.registry, card, permission.filter, { you: player })) {
+          continue;
+        }
+        if (permission.perType !== undefined) {
+          const spent = grantor.graveyardCastTypesUsedThisTurn ?? [];
+          for (const type of permission.perType) {
+            if (spent.includes(type) || !def.types.includes(type)) continue;
+            // A land is played with the land allowance and nothing else; a
+            // spell never uses it.
+            if ((type === "land") !== isLand) continue;
+            out.push({ grant: { source: id, asType: type }, permission });
+          }
+        } else if (!isLand) {
+          out.push({ grant: { source: id }, permission });
+        }
       }
-      if (!matchesFilter(this.state, this.registry, card, permission.filter, { you: player })) {
-        continue;
-      }
-      return id;
     }
-    return null;
+    return out;
+  }
+
+  /** The permission `grant` names among `graveyardGrantsFor`, or — for a
+   * driver that named none — the first that applies; `null` if none does. */
+  private findGraveyardGrant(
+    player: PlayerId,
+    card: ObjectId,
+    face: number,
+    grant: GraveyardGrant | undefined,
+  ): GraveyardGrantOption | null {
+    const grants = this.graveyardGrantsFor(player, card, face);
+    if (grant === undefined) return grants[0] ?? null;
+    return (
+      grants.find((g) => g.grant.source === grant.source && g.grant.asType === grant.asType) ??
+      null
+    );
+  }
+
+  /** Spend a graveyard permission as the card is played — before it leaves
+   * the graveyard. The card's own permission needs nothing: the move clears
+   * it. */
+  private spendGraveyardGrant(found: GraveyardGrantOption): void {
+    const { grant, permission } = found;
+    if (permission === null) return;
+    const grantor = this.state.objects[grant.source];
+    if (grantor === undefined) return;
+    if (grant.asType !== undefined) {
+      (grantor.graveyardCastTypesUsedThisTurn ??= []).push(grant.asType);
+    }
+    if (permission.oncePerTurn === true) grantor.graveyardCastUsedThisTurn = true;
+    invalidateComputedCache();
+  }
+
+  /** "Choose target artifact card in your graveyard. You may cast that card
+   * this turn" (Silas Renn, Emry) — see `GameObject.graveyardCastPermission`. */
+  private grantGraveyardCastByEffect(controller: PlayerId, target: TargetRef): void {
+    if (target.kind !== "object") return;
+    const object = this.state.objects[target.object];
+    if (object === undefined || object.zone !== "graveyard") return;
+    object.graveyardCastPermission = { player: controller, turn: this.state.turn.number };
+    this.emit({ type: "graveyard-cast-granted", object: target.object, player: controller });
   }
 
   private impulsePlayable(player: PlayerId, card: ObjectId): boolean {
@@ -11703,6 +11896,11 @@ export class Game {
     ) {
       to = "exile";
     }
+    // The same for a spell cast under an exile-afterwards graveyard
+    // permission (Kess). The flag only ever sits on a spell on the stack.
+    if (object.exileIfWouldGoToGraveyard === true && to === "graveyard") {
+      to = "exile";
+    }
 
     // Commander replacement (rule 903.9a): a commander that would leave the
     // battlefield for a hidden zone — its owner may send it to the command
@@ -11843,6 +12041,15 @@ export class Game {
     // Likewise a delayed flicker return's link (Norin the Wary, rule 610.3).
     object.flickerLink = undefined;
     object.overloaded = undefined;
+    // Graveyard permissions: a card's own "you may cast it this turn" belongs
+    // to that object in that graveyard, and a grantor's spent allowances to
+    // that object on the battlefield — a card that comes back is a new object
+    // (rule 400.7), with no permission and a fresh set of allowances (the
+    // Karador and Muldrotha rulings).
+    object.graveyardCastPermission = undefined;
+    object.graveyardCastUsedThisTurn = undefined;
+    object.graveyardCastTypesUsedThisTurn = undefined;
+    object.exileIfWouldGoToGraveyard = undefined;
     // The adventure "may cast the creature from exile" permission (rule 715.3)
     // ends when the card changes zones. `resolveTopOfStack` re-sets it *after*
     // the move to exile that creates the state.

@@ -141,6 +141,8 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${name(event.object)} resolves`
     case 'flashback-granted':
       return `${name(event.object)} gains flashback ${event.cost}`
+    case 'graveyard-cast-granted':
+      return `${event.player} may cast ${name(event.object)} from the graveyard this turn`
     case 'flashback-grant-expired':
       return `${name(event.object)}'s flashback grant expires`
     case 'card-suspended':

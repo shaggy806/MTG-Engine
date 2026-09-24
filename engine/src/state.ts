@@ -65,6 +65,25 @@ export interface GameObject {
    * (Gisa and Geralf's "once during each of your turns"). Reset with the
    * other once-per-turn flags as its controller's turn begins. */
   graveyardCastUsedThisTurn?: boolean;
+  /** The permanent types whose `castFromGraveyard.perType` allowance this
+   * permanent has spent this turn (Muldrotha). Reset with
+   * `graveyardCastUsedThisTurn`, and by `moveObject` — a new Muldrotha is a
+   * new object with a fresh set. */
+  graveyardCastTypesUsedThisTurn?: CardType[];
+  /**
+   * A one-shot permission on a card in a graveyard: `player` may cast it
+   * during turn `turn` (Silas Renn, Emry: "choose target artifact card in
+   * your graveyard. You may cast that card this turn"). It belongs to the
+   * card, not to whatever granted it, so it outlives its grantor — and it
+   * ends when the card leaves the graveyard (`moveObject` clears it): a card
+   * that comes back is a new object with no permission.
+   */
+  graveyardCastPermission?: { readonly player: PlayerId; readonly turn: number };
+  /** This spell was cast under a permission that exiles it instead of letting
+   * it reach a graveyard (Kess, Dissident Mage — `castFromGraveyard
+   * .exileAfterwards`). Consulted by `moveObject` for the move off the
+   * stack, and cleared by any move after that. */
+  exileIfWouldGoToGraveyard?: boolean;
   /** True once dealt damage by a deathtouch source this turn (rule 704.5h). Cleared with `damageMarked`. */
   markedByDeathtouch: boolean;
   /** Turn number this object last entered the battlefield; `null` otherwise. */

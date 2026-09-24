@@ -436,6 +436,7 @@ ability would have no way to name a token that didn't exist when it was set up.
 | `modify-pt` | `target`, `power`, `toughness`, `duration` | `duration: "end-of-turn" \| "permanent"` |
 | `modify-pt-all` | `filter`, `power`, `toughness`, `duration`, `exceptSource?`, `controlledByTarget?` | Overrun. `exceptSource` spares the source ("**other** attacking creatures you control with flying" — Steel-Plume Marshal, itself one). `controlledByTarget` scopes to a *targeted seat* (Great Oak Guardian), which a `CardFilter`'s `controlledBy` can't name — it only knows "you" and "opponent". |
 | `grant-keyword` | `target`, `keyword`, `duration` | |
+| `grant-graveyard-cast` | `target` | "Choose target artifact card in your graveyard. You may cast that card this turn" (Silas Renn, Emry) — pair with a `card-in-graveyard` target. A one-shot permission on the *card* (`GameObject.graveyardCastPermission`) for the effect's controller, for its normal cost, until end of turn: it outlives whatever granted it and ends if the card leaves the graveyard. Casts only, never a land. Offered as `via: "graveyard-permission"` with `graveyardGrant.source` = the card itself. |
 | `grant-triggered` | `target`, `ability`, `duration` | "gains 'Whenever this creature deals combat damage to a player, draw that many cards'" (Hunter's Prowess, Hunter's Insight). Rides on the target's own modifiers, so `"end-of-turn"` expires with every other until-end-of-turn modifier. The ongoing equivalent is `StaticAbility.grantsTriggered` (§10). |
 | `grant-keyword-all` | `filter`, `keyword`, `duration` | Overrun's trample |
 | `add-counter` | `target`, `counter` (string), `amount` | `counter: "+1/+1"` etc. |
@@ -946,13 +947,27 @@ anthem, the keyword grant and the granted trigger like any other creature.
   zone this game instead of a battlefield filter (Commander's Insignia), summed
   across a Partner pair.
 - `noMaxHandSize: true` — "You have no maximum hand size" (Thought Vessel).
-- `castFromGraveyard: { filter, oncePerTurn?, yourTurnOnly? }` — a permission
-  to cast spells from your graveyard for their normal cost (Gisa and Geralf:
-  "Once during each of your turns, you may cast a Zombie creature spell from
-  your graveyard" — both gates). Offered as `via: "graveyard-permission"`.
-  Unlike flashback the permission belongs to the *grantor*, so it ends when
-  that permanent leaves, and nothing exiles the spell afterwards: a countered
-  one goes back to the graveyard.
+- `castFromGraveyard: { filter, oncePerTurn?, yourTurnOnly?, perType?,
+  exileAfterwards?, payLife? }` — a permission to cast spells from your
+  graveyard for their normal cost (Gisa and Geralf: "Once during each of your
+  turns, you may cast a Zombie creature spell from your graveyard" — both
+  gates). Offered as `via: "graveyard-permission"`, **one variant per
+  permission that applies**, each carrying a `graveyardGrant: { source,
+  asType? }` the driver echoes back — so with two grantors (Gisa and Karador
+  on a Zombie) which one is spent is the player's choice. Unlike flashback
+  the permission belongs to the *grantor*, so it ends when that permanent
+  leaves, and by default nothing exiles the spell afterwards: a countered one
+  goes back to the graveyard.
+  - `perType: CardType[]` — Muldrotha's once-per-turn allowance **per
+    permanent type** instead of a single use. A multi-typed card is offered
+    once per type it could spend (`graveyardGrant.asType`); listing `"land"`
+    also lets the permission *play* a land (as a `play-land` variant, still
+    taking the land drop). Spent allowances ride on the grantor
+    (`graveyardCastTypesUsedThisTurn`), so a new Muldrotha has a fresh set.
+  - `exileAfterwards: true` — Kess, Dissident Mage's "if a spell cast this
+    way would be put into your graveyard, exile it instead".
+  - `payLife: N` — an extra cost on top of the spell's own ("by paying 3 life
+    in addition to paying their other costs"); it also gates the offer.
 - `cantAttackController: true` — with `affects: { scope: "attached" }`, the
   enchanted creature "can't attack you or planeswalkers you control" (Vow of
   Duty), where "you" is the *Aura's* controller. Checked in `whyCannotAttack`

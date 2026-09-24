@@ -6,6 +6,7 @@
  * the engine through the same entry point.
  */
 
+import type { CardType } from "./cards/define.js";
 import type { Color, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { TargetRef, TargetSpec } from "./target.js";
@@ -48,6 +49,28 @@ export type CastVia =
    * it afterwards — a countered one goes back to the graveyard. */
   | "graveyard-permission";
 
+/**
+ * Which permission a card is being played from a graveyard under, when more
+ * than one could apply (Karador and Gisa and Geralf both offering the same
+ * Zombie; Muldrotha offering an artifact creature as either type).
+ *
+ * `source` is the permanent whose `castFromGraveyard` static grants it, or
+ * **the card itself** for a one-shot permission that lives on the card
+ * (Silas Renn, Emry: "choose target artifact card in your graveyard. You may
+ * cast that card this turn"). `asType` is the permanent type whose allowance
+ * a per-type grant (Muldrotha) spends — the player's choice for a card with
+ * several (rule: "if a card has multiple permanent types, choose one as you
+ * play it").
+ *
+ * A `LegalAction` carries one per variant, and the driver echoes it back.
+ * An action that omits it is played under the first permission that
+ * applies — an unlimited one (Ramunap Excavator) before a limited one.
+ */
+export interface GraveyardGrant {
+  readonly source: ObjectId;
+  readonly asType?: CardType;
+}
+
 export interface AttackerDeclaration {
   readonly attacker: ObjectId;
   /** A player, or an opponent's planeswalker to attack (rule 508.1). */
@@ -87,6 +110,9 @@ export type Action =
       /** Which face of a multi-face card to play (rule 712 — ROADMAP Phase
        * 10). Index into `CardDefinition.faces`; `0` / omitted = the front. */
       readonly face?: number;
+      /** The graveyard permission this land is played under — see
+       * {@link GraveyardGrant}. */
+      readonly graveyardGrant?: GraveyardGrant;
     }
   | {
       /** Suspend a card from hand (rule 702.62): a special action, pay the
@@ -165,6 +191,9 @@ export type Action =
        * you control with flying"), picked from the variant's `tapCost` offer.
        * Omitted, the engine picks for a driver that doesn't choose. */
       readonly tap?: readonly ObjectId[];
+      /** For `via: "graveyard-permission"`: which permission pays for it —
+       * see {@link GraveyardGrant}. Echoed back from the variant. */
+      readonly graveyardGrant?: GraveyardGrant;
     }
   | {
       readonly type: "activate-ability";
@@ -348,6 +377,10 @@ export type LegalAction =
       /** Set when `card` is a multi-face card — the face this action plays.
        * The driver echoes it back in the `play-land` action. */
       readonly face?: number;
+      /** Set when the land is played from a graveyard under a limited
+       * permission (Muldrotha's land allowance) — one variant per permission
+       * that applies. The driver echoes it back. */
+      readonly graveyardGrant?: GraveyardGrant;
     }
   | {
       readonly kind: "suspend";
@@ -401,6 +434,11 @@ export type LegalAction =
        * `"foretell"` from face-down exile). The driver must echo `via` back in
        * the `cast-spell` action. */
       readonly via?: CastVia;
+      /** For `via: "graveyard-permission"`: the permission this variant is
+       * cast under. A card castable under several (two grantors, or one
+       * multi-typed card under Muldrotha) is enumerated once per permission.
+       * The driver echoes it back. See {@link GraveyardGrant}. */
+      readonly graveyardGrant?: GraveyardGrant;
       /** Set when `card` is a multi-face card — the face this action casts.
        * The driver echoes it back in the `cast-spell` action. */
       readonly face?: number;

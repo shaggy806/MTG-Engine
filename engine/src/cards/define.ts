@@ -466,11 +466,30 @@ export interface StaticAbility {
    * turn, and `yourTurnOnly` to casting during your own turn; the Gisa and
    * Geralf wording ("once during each of your turns") needs both. The
    * permission belongs to the permanent, so it ends the moment that leaves.
+   *
+   * `perType` is Muldrotha's allowance instead of a single use: once per turn
+   * **per listed permanent type**, a multi-typed card spending just one of
+   * its types, which the player picks (each type is its own `LegalAction`
+   * variant, carrying `graveyardGrant.asType`). Listing `"land"` extends the
+   * permission from casting to *playing* a land, which still takes the land
+   * drop. The allowances are per permanent: a new Muldrotha that turn grants
+   * a fresh set (the 2018 ruling), since `moveObject` clears them.
+   *
+   * `exileAfterwards` is Kess's "if a spell cast this way would be put into
+   * your graveyard, exile it instead" — flashback's replacement, riding on
+   * the spell. `payLife` is an extra cost paid on top of the spell's own
+   * ("by paying 3 life in addition to paying their other costs").
+   *
+   * When several permissions apply to one card, the card is offered once per
+   * permission, so which one is spent is the player's choice.
    */
   readonly castFromGraveyard?: {
     readonly filter: CardFilter;
     readonly oncePerTurn?: boolean;
     readonly yourTurnOnly?: boolean;
+    readonly perType?: readonly CardType[];
+    readonly exileAfterwards?: boolean;
+    readonly payLife?: number;
   };
   /** "You have no maximum hand size" (Thought Vessel, Reliquary Tower). A
    * property of the *controller*, not of anything this ability `affects`, so

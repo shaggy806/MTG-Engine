@@ -229,6 +229,13 @@ export type GameEvent =
       readonly cost: string;
     })
   | (Base & {
+      /** A one-shot "you may cast that card this turn" permission on a card
+       * in a graveyard (Silas Renn, Emry). */
+      readonly type: "graveyard-cast-granted";
+      readonly object: ObjectId;
+      readonly player: PlayerId;
+    })
+  | (Base & {
       readonly type: "flashback-grant-expired";
       readonly object: ObjectId;
     })

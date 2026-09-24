@@ -76,6 +76,7 @@ function castCandidates(legal: CastSpellLegal, player: PlayerId): Action[] {
     player,
     card: legal.card,
     ...(legal.via !== undefined ? { via: legal.via } : {}),
+    ...(legal.graveyardGrant !== undefined ? { graveyardGrant: legal.graveyardGrant } : {}),
     ...(legal.face !== undefined ? { face: legal.face } : {}),
     ...castExtras(legal),
   };
@@ -146,6 +147,7 @@ export function candidateActions(
           player,
           card: legal.card,
           ...(legal.face !== undefined ? { face: legal.face } : {}),
+          ...(legal.graveyardGrant !== undefined ? { graveyardGrant: legal.graveyardGrant } : {}),
         },
       ];
     case "cast-spell":

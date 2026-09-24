@@ -3,6 +3,7 @@ import type { CSSProperties, ReactNode } from 'react'
 import type {
   Action,
   CastVia,
+  GraveyardGrant,
   LegalAction,
   ManaType,
   ObjectId,
@@ -127,6 +128,8 @@ const castExtras = (cast: CastAction) => ({
   // additional costs that names no branch is refused outright.
   ...(cast.altCost === true ? { altCost: true } : {}),
   ...(cast.costOption !== undefined ? { costOption: cast.costOption } : {}),
+  // Which graveyard permission pays for it, when several could.
+  ...(cast.graveyardGrant !== undefined ? { graveyardGrant: cast.graveyardGrant } : {}),
   ...(cast.tapCost !== undefined ? { tapCost: cast.tapCost } : {}),
   ...(cast.convoke !== undefined && cast.convoke.candidates.length > 0
     ? { convokeOffer: cast.convoke }
@@ -203,6 +206,9 @@ interface Targeting {
   /** The branch of a choice of additional costs this variant pays (Bitter
    * Triumph's "discard a card or pay 3 life"), echoed back. */
   readonly costOption?: number
+  /** The graveyard permission this cast spends (Muldrotha's type, which
+   * grantor), echoed back. */
+  readonly graveyardGrant?: GraveyardGrant
   /** A "tap N untapped … you control" cost still to pick for, once the
    * targets are in — see `pendingTap`. */
   readonly tapCost?: TapCostOffer
@@ -963,6 +969,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         | 'manaColors'
         | 'altCost'
         | 'costOption'
+        | 'graveyardGrant'
         | 'tapCost'
         | 'convokeOffer'
       >,
@@ -986,6 +993,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
                 ...(t.free === true ? { free: true } : {}),
                 ...(t.altCost === true ? { altCost: true } : {}),
                 ...(t.costOption !== undefined ? { costOption: t.costOption } : {}),
+                ...(t.graveyardGrant !== undefined ? { graveyardGrant: t.graveyardGrant } : {}),
                 ...(t.sacrifice !== undefined ? { sacrifice: t.sacrifice } : {}),
               }
             : {
@@ -1110,6 +1118,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           player: seat,
           card: a.card,
           ...(a.face !== undefined ? { face: a.face } : {}),
+          ...(a.graveyardGrant !== undefined ? { graveyardGrant: a.graveyardGrant } : {}),
         })
       } else {
         beginCast(a)
