@@ -555,6 +555,7 @@ import _poolPreyUpon from "./pool/prey-upon.js";
 import _poolPrimalMight from "./pool/primal-might.js";
 import _poolPrismaticVista from "./pool/prismatic-vista.js";
 import _poolProdigalSorcerer from "./pool/prodigal-sorcerer.js";
+import _poolProsperTomeBound from "./pool/prosper-tome-bound.js";
 import _poolProsperousInnkeeper from "./pool/prosperous-innkeeper.js";
 import _poolProsshSkyraiderOfKher from "./pool/prossh-skyraider-of-kher.js";
 import _poolProvokeTheTrolls from "./pool/provoke-the-trolls.js";
@@ -1507,6 +1508,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolPrimalMight,
   _poolPrismaticVista,
   _poolProdigalSorcerer,
+  _poolProsperTomeBound,
   _poolProsperousInnkeeper,
   _poolProsshSkyraiderOfKher,
   _poolProvokeTheTrolls,
