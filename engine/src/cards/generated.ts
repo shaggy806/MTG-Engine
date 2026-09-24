@@ -72,6 +72,7 @@ import _poolBeastWithin from "./pool/beast-within.js";
 import _poolBedevil from "./pool/bedevil.js";
 import _poolBeholdTheMultiverse from "./pool/behold-the-multiverse.js";
 import _poolBelakorTheDarkMaster from "./pool/belakor-the-dark-master.js";
+import _poolBelloBardOfTheBrambles from "./pool/bello-bard-of-the-brambles.js";
 import _poolBigScore from "./pool/big-score.js";
 import _poolBirdsOfParadise from "./pool/birds-of-paradise.js";
 import _poolBitterTriumph from "./pool/bitter-triumph.js";
@@ -211,6 +212,7 @@ import _poolDispatch from "./pool/dispatch.js";
 import _poolDisplacerKitten from "./pool/displacer-kitten.js";
 import _poolDistantMelody from "./pool/distant-melody.js";
 import _poolDogmeatEverLoyal from "./pool/dogmeat-ever-loyal.js";
+import _poolDonAndresTheRenegade from "./pool/don-andres-the-renegade.js";
 import _poolDoomBlade from "./pool/doom-blade.js";
 import _poolDoublingSeason from "./pool/doubling-season.js";
 import _poolDovinsVeto from "./pool/dovins-veto.js";
@@ -447,6 +449,7 @@ import _poolKolaghansCommand from "./pool/kolaghans-command.js";
 import _poolKorvoldFaeCursedKing from "./pool/korvold-fae-cursed-king.js";
 import _poolKraumLudevicsOpus from "./pool/kraum-ludevics-opus.js";
 import _poolKrenkoMobBoss from "./pool/krenko-mob-boss.js";
+import _poolKudoKingAmongBears from "./pool/kudo-king-among-bears.js";
 import _poolKydeleChosenOfKruphix from "./pool/kydele-chosen-of-kruphix.js";
 import _poolLaboratoryDrudge from "./pool/laboratory-drudge.js";
 import _poolLathlissDragonQueen from "./pool/lathliss-dragon-queen.js";
@@ -593,7 +596,9 @@ import _poolQuezaAugurOfAgonies from "./pool/queza-augur-of-agonies.js";
 import _poolRabidBite from "./pool/rabid-bite.js";
 import _poolRaffinesTower from "./pool/raffines-tower.js";
 import _poolRagingGoblin from "./pool/raging-goblin.js";
+import _poolRagostDeftGastronaut from "./pool/ragost-deft-gastronaut.js";
 import _poolRaiseTheAlarm from "./pool/raise-the-alarm.js";
+import _poolRaisedByGiants from "./pool/raised-by-giants.js";
 import _poolRakdosCarnarium from "./pool/rakdos-carnarium.js";
 import _poolRakdosCharm from "./pool/rakdos-charm.js";
 import _poolRakdosSignet from "./pool/rakdos-signet.js";
@@ -750,6 +755,7 @@ import _poolSwiftfootBoots from "./pool/swiftfoot-boots.js";
 import _poolSwordsToPlowshares from "./pool/swords-to-plowshares.js";
 import _poolSylvanReclamation from "./pool/sylvan-reclamation.js";
 import _poolSylvanSafekeeper from "./pool/sylvan-safekeeper.js";
+import _poolSyrGwynHeroOfAshvale from "./pool/syr-gwyn-hero-of-ashvale.js";
 import _poolSythisHarvestsHand from "./pool/sythis-harvests-hand.js";
 import _poolTaiga from "./pool/taiga.js";
 import _poolTaintedField from "./pool/tainted-field.js";
@@ -857,6 +863,7 @@ import _poolUnsummon from "./pool/unsummon.js";
 import _poolUrborgVolcano from "./pool/urborg-volcano.js";
 import _poolUreniOfTheUnwritten from "./pool/ureni-of-the-unwritten.js";
 import _poolUrtetRemnantOfMemnarch from "./pool/urtet-remnant-of-memnarch.js";
+import _poolUrzaChiefArtificer from "./pool/urza-chief-artificer.js";
 import _poolUrzasCave from "./pool/urzas-cave.js";
 import _poolUrzasIncubator from "./pool/urzas-incubator.js";
 import _poolUtvaraHellkite from "./pool/utvara-hellkite.js";
@@ -876,6 +883,7 @@ import _poolVerdantForce from "./pool/verdant-force.js";
 import _poolVerixBladewing from "./pool/verix-bladewing.js";
 import _poolVernalFen from "./pool/vernal-fen.js";
 import _poolVictimize from "./pool/victimize.js";
+import _poolVihaanGoldwaker from "./pool/vihaan-goldwaker.js";
 import _poolVillageRites from "./pool/village-rites.js";
 import _poolVineglimmerSnarl from "./pool/vineglimmer-snarl.js";
 import _poolVisceraSeer from "./pool/viscera-seer.js";
@@ -939,6 +947,7 @@ import _tokensCatBirdToken from "./tokens/cat-bird-token.js";
 import _tokensCatToken from "./tokens/cat-token.js";
 import _tokensChocoboBirdToken from "./tokens/chocobo-bird-token.js";
 import _tokensClueToken from "./tokens/clue-token.js";
+import _tokensConstructTokenArtifactCount from "./tokens/construct-token-artifact-count.js";
 import _tokensCragflame from "./tokens/cragflame.js";
 import _tokensDeathtouchSnakeToken from "./tokens/deathtouch-snake-token.js";
 import _tokensDragonToken55 from "./tokens/dragon-token-5-5.js";
@@ -1061,6 +1070,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBedevil,
   _poolBeholdTheMultiverse,
   _poolBelakorTheDarkMaster,
+  _poolBelloBardOfTheBrambles,
   _poolBigScore,
   _poolBirdsOfParadise,
   _poolBitterTriumph,
@@ -1200,6 +1210,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolDisplacerKitten,
   _poolDistantMelody,
   _poolDogmeatEverLoyal,
+  _poolDonAndresTheRenegade,
   _poolDoomBlade,
   _poolDoublingSeason,
   _poolDovinsVeto,
@@ -1436,6 +1447,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolKorvoldFaeCursedKing,
   _poolKraumLudevicsOpus,
   _poolKrenkoMobBoss,
+  _poolKudoKingAmongBears,
   _poolKydeleChosenOfKruphix,
   _poolLaboratoryDrudge,
   _poolLathlissDragonQueen,
@@ -1582,7 +1594,9 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolRabidBite,
   _poolRaffinesTower,
   _poolRagingGoblin,
+  _poolRagostDeftGastronaut,
   _poolRaiseTheAlarm,
+  _poolRaisedByGiants,
   _poolRakdosCarnarium,
   _poolRakdosCharm,
   _poolRakdosSignet,
@@ -1739,6 +1753,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSwordsToPlowshares,
   _poolSylvanReclamation,
   _poolSylvanSafekeeper,
+  _poolSyrGwynHeroOfAshvale,
   _poolSythisHarvestsHand,
   _poolTaiga,
   _poolTaintedField,
@@ -1846,6 +1861,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolUrborgVolcano,
   _poolUreniOfTheUnwritten,
   _poolUrtetRemnantOfMemnarch,
+  _poolUrzaChiefArtificer,
   _poolUrzasCave,
   _poolUrzasIncubator,
   _poolUtvaraHellkite,
@@ -1865,6 +1881,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolVerixBladewing,
   _poolVernalFen,
   _poolVictimize,
+  _poolVihaanGoldwaker,
   _poolVillageRites,
   _poolVineglimmerSnarl,
   _poolVisceraSeer,
@@ -1934,6 +1951,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensCatToken,
   _tokensChocoboBirdToken,
   _tokensClueToken,
+  _tokensConstructTokenArtifactCount,
   _tokensCragflame,
   _tokensDeathtouchSnakeToken,
   _tokensDragonToken55,

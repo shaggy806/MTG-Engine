@@ -975,6 +975,16 @@ const deckE = deck([
   ["Ghalta, Primal Hunger", 1],
   // Minn: second-draw Illusions, and a dies trigger reading the power it died with.
   ["Minn, Wily Illusionist", 1],
+  // Statics over a CardFilter scope that grant types (layer 4) and set base
+  // P/T (layer 7b) to other permanents, and a mass animate.
+  ["Bello, Bard of the Brambles", 1],
+  ["Ragost, Deft Gastronaut", 1],
+  ["Urza, Chief Artificer", 1],
+  ["Vihaan, Goldwaker", 1],
+  ["Kudo, King Among Bears", 1],
+  ["Syr Gwyn, Hero of Ashvale", 1],
+  ["Raised by Giants", 1],
+  ["Don Andres, the Renegade", 1],
   ["Plains", 5],
   ["Island", 5],
   ["Swamp", 5],
