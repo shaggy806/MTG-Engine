@@ -796,20 +796,34 @@ planning — see §15.
   controller's perspective. A gated *mana* ability is also excluded from
   `manaSources()`'s auto-payment scan while the condition is false, not just
   from manual activation. needed-cards P19.
-- `zone: "hand" | "graveyard"` — activatable only from that zone, never as a
-  permanent's ability, with the card *leaving* that zone an implicit,
-  unconditional part of the cost (no separate `sacrifice`/flag needed). The
-  ability still goes on the stack like any other. `legalActions` scans both
-  zones the same way it scans the battlefield.
+- `zone: "hand" | "graveyard" | "command"` — activatable only from that zone,
+  never as a permanent's ability, and only by the card's **owner**. The
+  ability still goes on the stack like any other (a zone ability is never a
+  mana ability — those stay battlefield-only). `legalActions` scans those
+  zones the same way it scans the battlefield (the shared command zone for
+  the cards the player owns).
   - `"hand"` is **Channel** (rule 702.51a — Boseiju, Who Endures), and
-    **discards** the source.
+    **discards** the source as an implicit, unconditional part of the cost.
   - `"graveyard"` is "Exile this card from your graveyard: …" (Runehorn
     Hellkite), and **exiles** it. Because it's a cost, the exile happens on
-    activation and stands even if the ability is countered.
+    activation and stands even if the ability is countered. Add
+    **`staysInZone: true`** for a graveyard ability whose cost doesn't move
+    the card (Reassembling Skeleton: "{1}{B}: Return this card from your
+    graveyard to the battlefield tapped." — `put-onto-battlefield` on
+    `"source"` with `enterTapped`).
+  - `"command"` has no zone-change cost (Derevi, Empyrial Tactician:
+    "{1}{G}{W}{U}: Put Derevi onto the battlefield from the command zone." —
+    `put-onto-battlefield` on `"source"`). Putting a commander onto the
+    battlefield this way isn't casting it: no commander tax, no cast
+    triggers, but its enters triggers fire.
 
-  Which zone-change pays the cost is fixed per zone rather than configurable,
-  matching every printed card in the pool; a graveyard ability that doesn't
-  exile itself would need a separate flag.
+  When the source stays put (`"command"`, or `staysInZone`), the ability
+  remembers *which object* it was activated from: if the card changes zones
+  before the ability resolves — cast in response, or returned and killed
+  again — it's a new object (rule 400.7) and `"source"` names nothing, so
+  the effect does nothing (`GameObject.zoneChangeCount`). That check is made
+  as the ability starts resolving; an effect that pauses for a decision and
+  names `"source"` afterwards isn't re-checked.
 - `costReduction: { reduceGeneric }` — a live-count discount printed on the
   ability itself (mirrors `CardDefinition.selfCostReduction`, but for an
   activated ability's own cost) — the Kamigawa Channel lands' "This ability

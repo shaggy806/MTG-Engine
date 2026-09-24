@@ -120,13 +120,32 @@ export interface ActivatedAbility {
    *   this card: [effect]". Pays by **discarding** the source.
    * - `"graveyard"` — Runehorn Hellkite's "{5}{R}, Exile this card from your
    *   graveyard: …", and the shape Encore is built on. Pays by **exiling**
-   *   the source.
+   *   the source, unless `staysInZone` says the cost doesn't move it.
+   * - `"command"` — Derevi, Empyrial Tactician's "{1}{G}{W}{U}: Put Derevi
+   *   onto the battlefield from the command zone." No zone-change cost: the
+   *   card stays where it is until the ability resolves.
    *
-   * Which zone-change the cost is, is fixed per zone rather than configurable,
-   * because that's what every printed card in the pool does. A graveyard
-   * ability that doesn't exile itself would need a separate flag.
+   * Only the card's owner may activate it (a card in a hand, graveyard or the
+   * command zone is controlled by nobody else). It is never a mana ability
+   * (`isManaAbility`): mana abilities stay battlefield-only, so auto-payment
+   * never reaches into another zone.
+   *
+   * An ability whose source stays put (`"command"`, or `staysInZone`) and
+   * whose effect names `"source"` finds it only if it is still the same object
+   * when the ability resolves (rule 400.7): the card leaving that zone —
+   * Derevi cast in response, say, even if she comes back — makes `"source"`
+   * name nothing, so the effect does nothing. See
+   * `GameObject.zoneChangeCount`.
    */
-  readonly zone?: "hand" | "graveyard";
+  readonly zone?: "hand" | "graveyard" | "command";
+  /**
+   * A `zone: "graveyard"` ability whose cost *doesn't* exile the card
+   * (Reassembling Skeleton: "{1}{B}: Return this card from your graveyard to
+   * the battlefield tapped."). The card stays in the graveyard while the
+   * ability is on the stack, so it can be activated again in response, and
+   * the effect finds it only if it's still there (see `zone`).
+   */
+  readonly staysInZone?: boolean;
   /** "Activate only once each turn" (rule 602.5g — Steel Hellkite). Tracked
    * per ability index on `GameObject.abilitiesUsedThisTurn`, so a permanent
    * with two such abilities limits each separately. */
@@ -546,6 +565,9 @@ export function isManaAbility(ability: ActivatedAbility): boolean {
   return (
     // A loyalty ability uses the stack even if it adds mana (rule 606.3).
     ability.loyaltyCost === undefined &&
+    // Mana abilities are battlefield-only here: an ability activated from a
+    // hand, graveyard or the command zone always uses the stack.
+    ability.zone === undefined &&
     ability.targets.length === 0 &&
     // A "Sacrifice this: Add …" mana ability (Treasure) is fine — the payment
     // machinery handles a self-sacrifice. A "sacrifice a creature you

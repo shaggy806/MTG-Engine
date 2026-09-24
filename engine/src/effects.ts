@@ -1724,6 +1724,11 @@ export interface ResolutionContext extends EffectApi {
    * first time — for `StaticCondition` `resolved-this-turn`. `0` for a spell,
    * which is not an ability. */
   readonly resolutionCount?: number;
+  /** The ability's source stayed in a non-battlefield zone while it was on
+   * the stack (`ActivatedAbility.zone: "command"`, or `staysInZone`) and has
+   * changed zones since: it's a new object (rule 400.7), so an effect naming
+   * `"source"` finds nothing. Absent otherwise. */
+  readonly sourceLost?: boolean;
 }
 
 /** Effect kinds safe to fire once with their count/amount multiplied by a
@@ -1828,7 +1833,9 @@ function resolveEffectTarget(
   ref: EffectTargetRef,
   ctx: ResolutionContext,
 ): TargetRef | undefined {
-  if (ref === "source") return { kind: "object", object: ctx.source };
+  if (ref === "source") {
+    return ctx.sourceLost === true ? undefined : { kind: "object", object: ctx.source };
+  }
   if (ref === "trigger-object") {
     return ctx.triggerObject !== undefined
       ? { kind: "object", object: ctx.triggerObject }

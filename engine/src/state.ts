@@ -390,6 +390,17 @@ export interface GameObject {
    * which is how "the Nth time this ability has resolved this turn" tells the
    * two objects apart (see `GameState.abilityResolutionsThisTurn`). */
   sourceTimestamp?: number;
+  /** For an activated ability whose source stays in a non-battlefield zone
+   * while it's on the stack (`ActivatedAbility.zone: "command"`, or
+   * `staysInZone`): the source's `zoneChangeCount` as it was activated. If
+   * the source has moved since, it is a new object (rule 400.7) and the
+   * ability's `"source"` names nothing. */
+  sourceZoneChangeCount?: number;
+  /** How many times this object has changed zones — bumped by every
+   * `moveObject`. Object ids survive zone changes in this engine (a commander
+   * keeps its id), so this is what tells the card an ability was activated
+   * from apart from the same card after a round trip. Absent means 0. */
+  zoneChangeCount?: number;
   /** For an ability object whose ability was *granted* rather than printed:
    * where it came from, so it still resolves once the grant is gone (see
    * {@link GrantedAbilityRef}). Absent for a printed ability. */

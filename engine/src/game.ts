@@ -1036,8 +1036,8 @@ export class Game {
     }
 
     // Abilities activated from a zone other than the battlefield: Channel
-    // from hand (rule 702.51a), and the "exile this card from your graveyard"
-    // shape. Both pay by moving the source out of that zone — see
+    // from hand (rule 702.51a), a graveyard ability (usually "exile this card
+    // from your graveyard"), and a command-zone one (Derevi) — see
     // `ActivatedAbility.zone`.
     for (const zone of ["hand", "graveyard"] as const) {
       for (const card of this.state.zones.perPlayer[player][zone]) {
@@ -1046,6 +1046,15 @@ export class Game {
           if (ability.zone === zone) pushActivateAbility(card, def.name, ability, index);
         });
       }
+    }
+    // The command zone is shared, so only the cards `player` owns.
+    for (const card of this.state.zones.shared.command) {
+      const object = this.state.objects[card];
+      if (object === undefined || object.owner !== player || object.kind !== "card") continue;
+      const def = this.registry.get(object.cardName);
+      this.effectiveActivated(card).forEach((ability, index) => {
+        if (ability.zone === "command") pushActivateAbility(card, def.name, ability, index);
+      });
     }
 
     return out;
@@ -5475,9 +5484,12 @@ export class Game {
       return `${def.name} has no ability #${abilityIndex}`;
     }
     if (ability.zone !== undefined) {
-      // Channel (702.51a) from hand, or an "exile this from your graveyard"
-      // ability — activatable only from that zone, never as a permanent's.
-      if (source.zone !== ability.zone) return `that card is not in ${ability.zone}`;
+      // Channel (702.51a) from hand, a graveyard ability or a command-zone
+      // one (Derevi) — activatable only from that zone, never as a
+      // permanent's.
+      if (source.zone !== ability.zone) {
+        return `that card is not in ${ability.zone === "command" ? "the command zone" : ability.zone}`;
+      }
       if (source.owner !== player) return `${player} does not own that card`;
     } else {
       if (source.zone !== "battlefield") {
@@ -5763,9 +5775,14 @@ export class Game {
       this.state.players[player].usedGraveyardThisTurn = true;
       // The graveyard equivalent — "Exile this card from your graveyard" is
       // likewise part of the cost, so it happens now rather than on
-      // resolution, and stands even if the ability is countered.
-      this.moveObject(sourceId, "exile");
+      // resolution, and stands even if the ability is countered. A
+      // `staysInZone` ability (Reassembling Skeleton) has no such cost: the
+      // card waits in the graveyard for its own effect to move it.
+      if (ability.staysInZone !== true) this.moveObject(sourceId, "exile");
     }
+    // A command-zone ability (Derevi) costs no zone change either — putting
+    // the card onto the battlefield is its *effect*, which is why it isn't
+    // cast: no commander tax, no cast trigger.
 
     if (isManaAbility(ability)) {
       // Mana abilities resolve immediately and never use the stack.
@@ -5833,6 +5850,12 @@ export class Game {
     );
     if (chosenX > 0) this.state.objects[abilityId].xValue = chosenX;
     if (grantedAbility !== undefined) this.state.objects[abilityId].grantedAbility = grantedAbility;
+    if (ability.zone === "command" || ability.staysInZone === true) {
+      // The source is still sitting in that zone — remember which object it
+      // is, so a round trip before this resolves reads as a new one (rule
+      // 400.7). See `resolveAbility`.
+      this.state.objects[abilityId].sourceZoneChangeCount = source.zoneChangeCount ?? 0;
+    }
     this.emit({
       type: "ability-activated",
       source: sourceId,
@@ -6944,7 +6967,7 @@ export class Game {
       return;
     }
 
-    const context = this.makeResolutionContext(
+    const base = this.makeResolutionContext(
       source,
       object.controller,
       targets,
@@ -6955,6 +6978,13 @@ export class Game {
       this.recordAbilityResolution(object),
       object.targetZones,
     );
+    // An ability activated from a zone its source stayed in (Derevi from the
+    // command zone): if the card has changed zones since, it's a new object
+    // (rule 400.7) and "put Derevi onto the battlefield" finds nothing.
+    const recorded = object.sourceZoneChangeCount;
+    const sourceLost =
+      recorded !== undefined && (this.state.objects[source]?.zoneChangeCount ?? 0) !== recorded;
+    const context = sourceLost ? { ...base, sourceLost: true } : base;
     const outerSourceTimestamp = this.resolvingSourceTimestamp;
     this.resolvingSourceTimestamp = object.sourceTimestamp ?? null;
     try {
@@ -12191,6 +12221,7 @@ export class Game {
 
     object.zone = to;
     this.zoneList(to, object.owner).push(id);
+    object.zoneChangeCount = (object.zoneChangeCount ?? 0) + 1;
 
     // A change of zone resets everything that only applies in one zone.
     object.attacking = null;
