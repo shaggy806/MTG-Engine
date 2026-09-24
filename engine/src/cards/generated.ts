@@ -346,6 +346,7 @@ import _poolHarvesttideAssailant from "./pool/harvesttide-assailant.js";
 import _poolHarvesttideInfiltrator from "./pool/harvesttide-infiltrator.js";
 import _poolHateMirage from "./pool/hate-mirage.js";
 import _poolHauntedRidge from "./pool/haunted-ridge.js";
+import _poolHazezonShaperOfSand from "./pool/hazezon-shaper-of-sand.js";
 import _poolHedgeMaze from "./pool/hedge-maze.js";
 import _poolHedronArchive from "./pool/hedron-archive.js";
 import _poolHeraldicBanner from "./pool/heraldic-banner.js";
@@ -608,6 +609,7 @@ import _poolSavannah from "./pool/savannah.js";
 import _poolSawInHalf from "./pool/saw-in-half.js";
 import _poolScaldingTarn from "./pool/scalding-tarn.js";
 import _poolScatterTheSeeds from "./pool/scatter-the-seeds.js";
+import _poolScavengerGrounds from "./pool/scavenger-grounds.js";
 import _poolScavengingOoze from "./pool/scavenging-ooze.js";
 import _poolScourgeOfValkas from "./pool/scourge-of-valkas.js";
 import _poolScrubland from "./pool/scrubland.js";
@@ -921,6 +923,7 @@ import _tokensPhyrexianWurmLifelink from "./tokens/phyrexian-wurm-lifelink.js";
 import _tokensPlantToken from "./tokens/plant-token.js";
 import _tokensRatToken from "./tokens/rat-token.js";
 import _tokensRedSpiritTokenMenace from "./tokens/red-spirit-token-menace.js";
+import _tokensSandWarriorToken from "./tokens/sand-warrior-token.js";
 import _tokensSaprolingToken from "./tokens/saproling-token.js";
 import _tokensSnakeToken from "./tokens/snake-token.js";
 import _tokensSoldierToken from "./tokens/soldier-token.js";
@@ -1280,6 +1283,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolHarvesttideInfiltrator,
   _poolHateMirage,
   _poolHauntedRidge,
+  _poolHazezonShaperOfSand,
   _poolHedgeMaze,
   _poolHedronArchive,
   _poolHeraldicBanner,
@@ -1542,6 +1546,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSawInHalf,
   _poolScaldingTarn,
   _poolScatterTheSeeds,
+  _poolScavengerGrounds,
   _poolScavengingOoze,
   _poolScourgeOfValkas,
   _poolScrubland,
@@ -1861,6 +1866,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensPlantToken,
   _tokensRatToken,
   _tokensRedSpiritTokenMenace,
+  _tokensSandWarriorToken,
   _tokensSaprolingToken,
   _tokensSnakeToken,
   _tokensSoldierToken,
