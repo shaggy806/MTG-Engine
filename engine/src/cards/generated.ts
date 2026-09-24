@@ -30,6 +30,7 @@ import _poolAmuletOfVigor from "./pool/amulet-of-vigor.js";
 import _poolAnOfferYouCantRefuse from "./pool/an-offer-you-cant-refuse.js";
 import _poolAnafenzaTheForemost from "./pool/anafenza-the-foremost.js";
 import _poolAncientDen from "./pool/ancient-den.js";
+import _poolAncientLumberknot from "./pool/ancient-lumberknot.js";
 import _poolAncientTomb from "./pool/ancient-tomb.js";
 import _poolAncientZiggurat from "./pool/ancient-ziggurat.js";
 import _poolAngelicEdict from "./pool/angelic-edict.js";
@@ -38,6 +39,7 @@ import _poolAnimarSoulOfElements from "./pool/animar-soul-of-elements.js";
 import _poolAnointedProcession from "./pool/anointed-procession.js";
 import _poolArabellaAbandonedDoll from "./pool/arabella-abandoned-doll.js";
 import _poolArborElf from "./pool/arbor-elf.js";
+import _poolArcadesTheStrategist from "./pool/arcades-the-strategist.js";
 import _poolArcaneDenial from "./pool/arcane-denial.js";
 import _poolArcaneSanctum from "./pool/arcane-sanctum.js";
 import _poolArcaneSignet from "./pool/arcane-signet.js";
@@ -236,6 +238,7 @@ import _poolDistantMelody from "./pool/distant-melody.js";
 import _poolDogmeatEverLoyal from "./pool/dogmeat-ever-loyal.js";
 import _poolDonAndresTheRenegade from "./pool/don-andres-the-renegade.js";
 import _poolDoomBlade from "./pool/doom-blade.js";
+import _poolDoranTheSiegeTower from "./pool/doran-the-siege-tower.js";
 import _poolDoublingSeason from "./pool/doubling-season.js";
 import _poolDovinsVeto from "./pool/dovins-veto.js";
 import _poolDrMadisonLi from "./pool/dr-madison-li.js";
@@ -304,6 +307,7 @@ import _poolFelixFiveBoots from "./pool/felix-five-boots.js";
 import _poolFellMire from "./pool/fell-mire.js";
 import _poolFellTheProfane from "./pool/fell-the-profane.js";
 import _poolFellwarStone from "./pool/fellwar-stone.js";
+import _poolFelotharTheSteadfast from "./pool/felothar-the-steadfast.js";
 import _poolFencingAce from "./pool/fencing-ace.js";
 import _poolFertileFootsteps from "./pool/fertile-footsteps.js";
 import _poolFesteringThicket from "./pool/festering-thicket.js";
@@ -407,6 +411,7 @@ import _poolHedgeMaze from "./pool/hedge-maze.js";
 import _poolHedronArchive from "./pool/hedron-archive.js";
 import _poolHeraldicBanner from "./pool/heraldic-banner.js";
 import _poolHeroicIntervention from "./pool/heroic-intervention.js";
+import _poolHighAlert from "./pool/high-alert.js";
 import _poolHighMarket from "./pool/high-market.js";
 import _poolHillGiant from "./pool/hill-giant.js";
 import _poolHinataDawnCrowned from "./pool/hinata-dawn-crowned.js";
@@ -1112,6 +1117,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAnOfferYouCantRefuse,
   _poolAnafenzaTheForemost,
   _poolAncientDen,
+  _poolAncientLumberknot,
   _poolAncientTomb,
   _poolAncientZiggurat,
   _poolAngelicEdict,
@@ -1120,6 +1126,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAnointedProcession,
   _poolArabellaAbandonedDoll,
   _poolArborElf,
+  _poolArcadesTheStrategist,
   _poolArcaneDenial,
   _poolArcaneSanctum,
   _poolArcaneSignet,
@@ -1318,6 +1325,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolDogmeatEverLoyal,
   _poolDonAndresTheRenegade,
   _poolDoomBlade,
+  _poolDoranTheSiegeTower,
   _poolDoublingSeason,
   _poolDovinsVeto,
   _poolDrMadisonLi,
@@ -1386,6 +1394,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolFellMire,
   _poolFellTheProfane,
   _poolFellwarStone,
+  _poolFelotharTheSteadfast,
   _poolFencingAce,
   _poolFertileFootsteps,
   _poolFesteringThicket,
@@ -1489,6 +1498,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolHedronArchive,
   _poolHeraldicBanner,
   _poolHeroicIntervention,
+  _poolHighAlert,
   _poolHighMarket,
   _poolHillGiant,
   _poolHinataDawnCrowned,

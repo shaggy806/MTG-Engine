@@ -887,6 +887,17 @@ const deckC = deck([
   ["Ash Barrens", 1],
   ["Displacer Kitten", 1],
   ["Loran of the Third Path", 1],
+  // Combat damage by toughness, and defenders that may attack anyway — plus
+  // a defender of deck C's own, so the attack permission gets exercised.
+  ["Arcades, the Strategist", 1],
+  ["Felothar the Steadfast", 1],
+  ["Doran, the Siege Tower", 1],
+  ["High Alert", 1],
+  ["Ancient Lumberknot", 1],
+  ["Wall of Wood", 1],
+  // Green and white sources, so the cards above get cast at all.
+  ["Forest", 3],
+  ["Plains", 3],
 ]);
 
 // The fourth seat's deck: the top-2000 staples authored in one batch (every
