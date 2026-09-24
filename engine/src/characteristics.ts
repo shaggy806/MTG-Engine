@@ -64,11 +64,43 @@ const conditionInProgress = new Set<ObjectId>();
  */
 const cdaInProgress = new Set<ObjectId>();
 
+/**
+ * Ids whose own token stack is being matched against their "each **other**
+ * …" count bonus (`grantPtPerCount.excludeSelf` — see `othersInOwnStack`).
+ * Matching the source can fold its characteristics, which reads the same
+ * bonus; re-entry answers 0 (conservative) and is never cached.
+ */
+const ownStackInProgress = new Set<ObjectId>();
+
 /** Whether a value computed now may be the re-entrancy guards' conservative
  * answer rather than the true one — and so must neither be served from nor
  * stored in the computed cache. */
 function guardActive(): boolean {
-  return conditionInProgress.size > 0 || cdaInProgress.size > 0;
+  return conditionInProgress.size > 0 || cdaInProgress.size > 0 || ownStackInProgress.size > 0;
+}
+
+/**
+ * The other tokens in `source`'s own stack that an "each **other** …" count
+ * bonus sees. The count skips the source permanent, but a token stack is
+ * `stackCount` interchangeable tokens, and the rest of them are "other" to
+ * each one — Minn, Wily Illusionist's Illusions, made one at a time, fold
+ * into one stack, and each still gets +1/+0 for the others. They match the
+ * filter exactly when the source does.
+ */
+function othersInOwnStack(
+  state: GameState,
+  registry: CardRegistry,
+  source: GameObject,
+  filter: CardFilter,
+): number {
+  const others = (source.stackCount ?? 1) - 1;
+  if (others <= 0 || ownStackInProgress.has(source.id)) return 0;
+  ownStackInProgress.add(source.id);
+  try {
+    return matchesFilter(state, registry, source.id, filter, { you: source.controller }) ? others : 0;
+  } finally {
+    ownStackInProgress.delete(source.id);
+  }
 }
 
 /**
@@ -815,7 +847,7 @@ function collectStaticEffects(
                     !(per.excludeSelf === true && id === source.id) &&
                     matchesFilter(state, registry, id, filter, { you: source.controller }),
                 ),
-              );
+              ) + (per.excludeSelf === true ? othersInOwnStack(state, registry, source, filter) : 0);
       scaledPower = n * per.pt[0];
       scaledToughness = n * per.pt[1];
     }
