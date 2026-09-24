@@ -578,7 +578,7 @@ source, so it isn't a `CardFilter` clause.
 subtypes, supertype, notSupertype, name, notName, colors, notColors, colorless,
 manaValue, power, toughness, counters, controlledBy, ownedBy, keyword,
 notKeyword, tapped, token, isCommander, equipped, enchanted, modified, anyOf,
-manaSpent }`,
+manaSpent, putIntoGraveyardFromLibraryThisTurn }`,
 every present clause ANDed. `anyOf: CardFilter[]` is the "or": at least one of
 them has to match as well (historic is `anyOf: [{ type: "artifact" },
 { supertype: "legendary" }, { subtype: "Saga" }]`; Dogmeat's "enchanted or
@@ -586,7 +586,13 @@ equipped" is two). `equipped` / `enchanted` ask whether an Equipment / Aura is
 attached, whoever controls it; `modified` is rule 700.9 — a counter, an
 Equipment, or an Aura controlled by the permanent's *own* controller.
 `manaSpent` compares the mana spent to cast it (The Emperor of Palamecia's
-cast trigger filters on `{ manaSpent: { op: "gte", n: 4 } }`). `attacking` asks whether the permanent is currently attacking (Kangee's
+cast trigger filters on `{ manaSpent: { op: "gte", n: 4 } }`). `putIntoGraveyardFromLibraryThisTurn` is a
+graveyard card that got there from a library this turn — milled, surveilled,
+or any other library-to-graveyard move, never discarded or destroyed (Captain
+N'ghathrod's end-step target is `{ kind: "card-in-graveyard", whose:
+"opponent", filter: { typesAnyOf: ["artifact", "creature"],
+putIntoGraveyardFromLibraryThisTurn: true } }`). A card that leaves the
+graveyard and returns loses it (rule 400.7). `attacking` asks whether the permanent is currently attacking (Kangee's
 Lieutenant). `subtypes`/`typesAnyOf` are an OR
 within themselves (Farseek: "a Plains, Island, Swamp, or Mountain card";
 Takenuma's Channel: "a creature or planeswalker card"). Numeric fields take

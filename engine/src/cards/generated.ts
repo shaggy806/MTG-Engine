@@ -117,6 +117,7 @@ import _poolCabalRitual from "./pool/cabal-ritual.js";
 import _poolCabarettiCourtyard from "./pool/cabaretti-courtyard.js";
 import _poolCamaraderie from "./pool/camaraderie.js";
 import _poolCanopyVista from "./pool/canopy-vista.js";
+import _poolCaptainNghathrod from "./pool/captain-nghathrod.js";
 import _poolCarnageTyrant from "./pool/carnage-tyrant.js";
 import _poolCatharticReunion from "./pool/cathartic-reunion.js";
 import _poolCavernOfSouls from "./pool/cavern-of-souls.js";
@@ -1060,6 +1061,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolCabarettiCourtyard,
   _poolCamaraderie,
   _poolCanopyVista,
+  _poolCaptainNghathrod,
   _poolCarnageTyrant,
   _poolCatharticReunion,
   _poolCavernOfSouls,
