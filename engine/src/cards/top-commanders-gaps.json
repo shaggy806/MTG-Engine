@@ -48,7 +48,8 @@
   "cost:ability-cost-modification",
   "effect:created-tokens-gain-keyword-eot",
   "effect:reflexive-trigger",
-  "effect:target-other-than-source"
+  "effect:target-other-than-source",
+  "effect:add-subtype"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

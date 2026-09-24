@@ -501,6 +501,7 @@ ability would have no way to name a token that didn't exist when it was set up.
 | `proliferate` | — | proliferates *everything* eligible (no "choose any number") |
 | `animate` | `target`, `power`, `toughness`, `addTypes`, `addSubtypes`, `setSubtypes?`, `setColors?`, `loseAbilities?`, `keywords?`, `duration` | man-lands, Turn to Frog |
 | `animate-all` | `filter`, `power`, `toughness`, `addTypes?`, `addSubtypes?`, `keywords?`, `duration` | the mass form: every match becomes an N/N at once (Vihaan: "have Treasures you control become 3/3 Construct Assassin artifact creatures … until end of turn"). With no `addTypes` it only sets base P/T. Matches are fixed as it begins, and a token stack is animated whole. |
+| `add-types` | `target: EffectTargetRef`, `addTypes?`, `addSubtypes?`, `duration` | "It becomes a Demon **in addition to its other types**" (Clavileño, First of the Blessed; Jenova, Ancient Calamity's "that creature becomes a Mutant"): layer 4 only — P/T, colours and abilities are untouched, unlike `animate` — until end of turn or for as long as it stays on the battlefield. A lord of the new type reaches it. After a `put-onto-battlefield` in the same `sequence`, the same slot reaches the returned permanent ("…return it to the battlefield. It's a Zombie in addition to its other types"). |
 
 ### Tokens / attach / transform
 

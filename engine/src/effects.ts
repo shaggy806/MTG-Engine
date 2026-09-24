@@ -1117,6 +1117,23 @@ export type EffectSpec =
     }
   | {
       /**
+       * "[It] becomes a Demon **in addition to its other types**" (Clavileño,
+       * First of the Blessed; Jenova, Ancient Calamity's "that creature
+       * becomes a Mutant"): types and/or subtypes added in layer 4, and
+       * nothing else — its P/T, colours and abilities are left alone, unlike
+       * `animate`. `"end-of-turn"` or `"permanent"` (for as long as it's on
+       * the battlefield). `target` is a slot, `"source"` or
+       * `"trigger-object"`; a card returned to the battlefield earlier in the
+       * same resolution keeps its id, so its slot still reaches it there.
+       */
+      readonly kind: "add-types";
+      readonly target: EffectTargetRef;
+      readonly addTypes?: readonly CardType[];
+      readonly addSubtypes?: readonly string[];
+      readonly duration: PtDuration;
+    }
+  | {
+      /**
        * Every battlefield permanent matching `filter` (from the effect's
        * controller's perspective) becomes an N/N at once — Vihaan's "have
        * Treasures you control become 3/3 Construct Assassin artifact creatures
@@ -1894,6 +1911,14 @@ export interface EffectApi {
       readonly keywords: readonly Keyword[];
       readonly duration: PtDuration;
     },
+  ): void;
+  /** `target` gains types and subtypes — see the `"add-types"`
+   * {@link EffectSpec}. */
+  addTypes(
+    target: TargetRef,
+    types: readonly CardType[],
+    subtypes: readonly string[],
+    duration: PtDuration,
   ): void;
   /** Every permanent matching `filter` becomes a creature (or just has its
    * base P/T set) — see the `"animate-all"` {@link EffectSpec}. */
@@ -2751,6 +2776,13 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
           keywords: spec.keywords ?? [],
           duration: spec.duration,
         });
+      }
+      return;
+    }
+    case "add-types": {
+      const target = resolveEffectTarget(spec.target, ctx);
+      if (target !== undefined) {
+        ctx.addTypes(target, spec.addTypes ?? [], spec.addSubtypes ?? [], spec.duration);
       }
       return;
     }

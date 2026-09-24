@@ -5,6 +5,7 @@
  */
 
 import type { CastVia } from "./actions.js";
+import type { CardType } from "./cards.js";
 import type { ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { PlayerCounterKind, ZoneType } from "./state.js";
@@ -385,6 +386,15 @@ export type GameEvent =
       readonly object: ObjectId;
       readonly power: number;
       readonly toughness: number;
+      readonly duration: "end-of-turn" | "permanent";
+    })
+  | (Base & {
+      /** A permanent gained types or subtypes "in addition to its other
+       * types" (the `add-types` effect — layer 4). */
+      readonly type: "types-added";
+      readonly object: ObjectId;
+      readonly types: readonly CardType[];
+      readonly subtypes: readonly string[];
       readonly duration: "end-of-turn" | "permanent";
     })
   | (Base & {

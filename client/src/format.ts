@@ -216,6 +216,10 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${name(event.object)} becomes a ${event.power}/${event.toughness} creature${
         event.duration === 'end-of-turn' ? ' until EOT' : ''
       }`
+    case 'types-added':
+      return `${name(event.object)} becomes ${[...event.subtypes, ...event.types].join(' ')} in addition to its other types${
+        event.duration === 'end-of-turn' ? ' until EOT' : ''
+      }`
     case 'text-changed':
       return `${name(event.object)}: text "${event.from}" → "${event.to}"`
     case 'attacker-declared':

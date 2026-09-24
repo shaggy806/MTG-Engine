@@ -9908,6 +9908,7 @@ export class Game {
         }
       },
       animate: (target, opts) => this.animate(target, opts),
+      addTypes: (target, types, subtypes, duration) => this.addTypes(target, types, subtypes, duration),
       animateAll: (filter, opts) => {
         // Every match is fixed before the first one changes (a Treasure made
         // a creature mustn't change what the filter matches mid-loop), and a
@@ -11574,6 +11575,30 @@ export class Game {
       toughness: opts.toughness,
       duration: opts.duration,
     });
+  }
+
+  /** See the `"add-types"` {@link EffectSpec}: layer 4 alone. */
+  private addTypes(
+    target: TargetRef,
+    types: readonly CardType[],
+    subtypes: readonly string[],
+    duration: PtDuration,
+  ): void {
+    if (target.kind !== "object" || (types.length === 0 && subtypes.length === 0)) return;
+    const id = this.splitOneFromStack(target.object);
+    const object = this.state.objects[id];
+    if (object === undefined || object.zone !== "battlefield") return;
+    object.modifiers.push({
+      // Ordered against type-granting statics (rule 613.7).
+      timestamp: this.state.timestampSeq,
+      power: 0,
+      toughness: 0,
+      keywords: [],
+      addTypes: [...types],
+      addSubtypes: [...subtypes],
+      untilEndOfTurn: duration === "end-of-turn",
+    });
+    this.emit({ type: "types-added", object: id, types: [...types], subtypes: [...subtypes], duration });
   }
 
   /** The front face's `CardDefinition` for `id`'s card — resolves through
