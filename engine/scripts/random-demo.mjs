@@ -886,6 +886,7 @@ const deckE = deck([
   ["Panharmonicon", 1],
   ["Parallel Lives", 1],
   ["Prismatic Vista", 1],
+  ["Prosper, Tome-Bound", 1],
   ["Pyroblast", 1],
   ["Spire of Industry", 1],
   ["Sram, Senior Edificer", 1],
