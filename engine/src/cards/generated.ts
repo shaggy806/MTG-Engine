@@ -668,6 +668,7 @@ import _poolSimicCharm from "./pool/simic-charm.js";
 import _poolSimicGrowthChamber from "./pool/simic-growth-chamber.js";
 import _poolSimicSignet from "./pool/simic-signet.js";
 import _poolSinisterSabotage from "./pool/sinister-sabotage.js";
+import _poolSkullbriarTheWalkingGrave from "./pool/skullbriar-the-walking-grave.js";
 import _poolSkyDiamond from "./pool/sky-diamond.js";
 import _poolSkycatSovereign from "./pool/skycat-sovereign.js";
 import _poolSkycloudExpanse from "./pool/skycloud-expanse.js";
@@ -1631,6 +1632,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSimicGrowthChamber,
   _poolSimicSignet,
   _poolSinisterSabotage,
+  _poolSkullbriarTheWalkingGrave,
   _poolSkyDiamond,
   _poolSkycatSovereign,
   _poolSkycloudExpanse,
