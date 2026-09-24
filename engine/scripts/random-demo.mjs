@@ -1047,6 +1047,8 @@ const deckE = deck([
   ["Treasure Vault", 1],
   ["Marionette Apprentice", 1],
   ["Farewell", 1],
+  ["Chasm Skulker", 1],
+  ["Black Market", 1],
   ["Plains", 5],
   ["Island", 5],
   ["Swamp", 5],

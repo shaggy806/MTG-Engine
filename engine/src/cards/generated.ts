@@ -83,6 +83,7 @@ import _poolBigScore from "./pool/big-score.js";
 import _poolBirdsOfParadise from "./pool/birds-of-paradise.js";
 import _poolBitterTriumph from "./pool/bitter-triumph.js";
 import _poolBlackChocobo from "./pool/black-chocobo.js";
+import _poolBlackMarket from "./pool/black-market.js";
 import _poolBlackbladeReforged from "./pool/blackblade-reforged.js";
 import _poolBlasphemousAct from "./pool/blasphemous-act.js";
 import _poolBlaze from "./pool/blaze.js";
@@ -143,6 +144,7 @@ import _poolChainReaction from "./pool/chain-reaction.js";
 import _poolChampionOfThePerished from "./pool/champion-of-the-perished.js";
 import _poolChandraAcolyteOfFlame from "./pool/chandra-acolyte-of-flame.js";
 import _poolCharcoalDiamond from "./pool/charcoal-diamond.js";
+import _poolChasmSkulker from "./pool/chasm-skulker.js";
 import _poolChishiroTheShatteredBlade from "./pool/chishiro-the-shattered-blade.js";
 import _poolChokedEstuary from "./pool/choked-estuary.js";
 import _poolChordOfCalling from "./pool/chord-of-calling.js";
@@ -1054,6 +1056,7 @@ import _tokensSnakeToken from "./tokens/snake-token.js";
 import _tokensSoldierToken from "./tokens/soldier-token.js";
 import _tokensSpawnToken from "./tokens/spawn-token.js";
 import _tokensSpiritToken from "./tokens/spirit-token.js";
+import _tokensSquidToken from "./tokens/squid-token.js";
 import _tokensSquirrelToken from "./tokens/squirrel-token.js";
 import _tokensThopterToken from "./tokens/thopter-token.js";
 import _tokensTreasureToken from "./tokens/treasure-token.js";
@@ -1145,6 +1148,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBirdsOfParadise,
   _poolBitterTriumph,
   _poolBlackChocobo,
+  _poolBlackMarket,
   _poolBlackbladeReforged,
   _poolBlasphemousAct,
   _poolBlaze,
@@ -1205,6 +1209,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolChampionOfThePerished,
   _poolChandraAcolyteOfFlame,
   _poolCharcoalDiamond,
+  _poolChasmSkulker,
   _poolChishiroTheShatteredBlade,
   _poolChokedEstuary,
   _poolChordOfCalling,
@@ -2122,6 +2127,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensSoldierToken,
   _tokensSpawnToken,
   _tokensSpiritToken,
+  _tokensSquidToken,
   _tokensSquirrelToken,
   _tokensThopterToken,
   _tokensTreasureToken,

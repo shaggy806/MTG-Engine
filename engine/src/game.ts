@@ -9397,6 +9397,13 @@ export class Game {
           ? computeCharacteristics(this.state, this.registry, target.object).toughness
           : 0;
       },
+      countersOf: (target, counter) => {
+        const lki = lastKnownOf(target);
+        if (lki !== undefined) return lki.counters[counter] ?? 0;
+        return target.kind === "object"
+          ? (this.state.objects[target.object]?.counters[counter] ?? 0)
+          : 0;
+      },
       putOnBottomOfLibrary: (target) => {
         if (target.kind !== "object") return;
         const id = this.splitOneFromStack(target.object);

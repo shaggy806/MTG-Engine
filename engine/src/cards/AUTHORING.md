@@ -363,7 +363,9 @@ among permanents you control". Computed values, so anthems and counters
 count; mana value off the printed cost with `{X}` as 0. A **sum counts a
 token stack once per token** — twenty 1/1 Goblins in one stack are 20 power.
 A max over no permanents is 0, and the amount is clamped at 0, rule 107.1b),
-`{ countInGraveyard }`, `{ manaValueOf }`, `{ powerOf }`, `{ toughnessOf }`
+`{ countersOn: ref, counter }` (how many counters of one kind are on it —
+Black Market's charge counters; from a dies trigger, the counters it died
+with, Chasm Skulker), `{ countInGraveyard }`, `{ manaValueOf }`, `{ powerOf }`, `{ toughnessOf }`
 (Condemn; each takes a target slot, `"source"`, `"trigger-object"` or
 `"sacrificed"` — see "Last-known information" below), `{ lifeTotal: "you" }`
 (Storm Herd), `{ devotionTo: Color }` (rule 700.5 — Gray Merchant of

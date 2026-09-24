@@ -163,6 +163,12 @@ export type EffectAmount =
    * Condemn's "its controller gains life equal to its toughness", read as
    * the creature last existed on the battlefield. */
   | { readonly toughnessOf: AmountRef }
+  /** How many counters of one kind are on whatever an {@link AmountRef}
+   * points at — Black Market's "{B} for each charge counter on this
+   * enchantment", Chasm Skulker's "X is the number of +1/+1 counters on this
+   * creature" from its own dies trigger, which reads the counters it died
+   * with (last-known information, rule 608.2h). `0` for a player. */
+  | { readonly countersOn: AmountRef; readonly counter: string }
   /** Your **devotion** to a colour (rule 700.5): every mana symbol of that
    * colour in the mana costs of permanents you control, hybrid pips included.
    * Gray Merchant of Asphodel's "each opponent loses X life, where X is your
@@ -1546,6 +1552,8 @@ export interface EffectApi {
    * referred to it reads as it last existed there. */
   powerOf(target: TargetRef): number;
   toughnessOf(target: TargetRef): number;
+  /** See the `{ countersOn }` {@link EffectAmount}. */
+  countersOf(target: TargetRef, counter: string): number;
   /** See the `"put-on-bottom-of-library"` {@link EffectSpec}. */
   putOnBottomOfLibrary(target: TargetRef): void;
   /** Every player a `PlayerScope` names, in APNAP order and skipping anyone
@@ -2011,6 +2019,10 @@ export function amountValue(
   if ("toughnessOf" in amount) {
     const ref = resolveAmountRef(amount.toughnessOf, ctx);
     return ref === undefined ? 0 : ctx.toughnessOf(ref);
+  }
+  if ("countersOn" in amount) {
+    const ref = resolveAmountRef(amount.countersOn, ctx);
+    return ref === undefined ? 0 : ctx.countersOf(ref, amount.counter);
   }
   if ("manaValueOf" in amount) {
     const ref = resolveAmountRef(amount.manaValueOf, ctx);

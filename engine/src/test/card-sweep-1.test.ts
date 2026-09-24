@@ -778,3 +778,39 @@ describe("Farewell", () => {
     expect(zoneOf(game, farewell)).toBe("graveyard");
   });
 });
+
+describe("Chasm Skulker", () => {
+  it("grows on your draws and leaves a Squid per counter it died with", () => {
+    const { game } = setUp();
+    const skulker = game.debugSpawn("Chasm Skulker", A, "battlefield");
+    game.debugApplyEffect(A, { kind: "draw", amount: 3 });
+    game.advanceUntil(quiet);
+    game.debugApplyEffect(B, { kind: "draw", amount: 2 });
+    game.advanceUntil(quiet);
+    expect(pt(game, skulker)).toEqual([4, 4]);
+    game.debugApplyEffect(B, { kind: "destroy", target: 0 }, [objectRef(skulker)]);
+    game.advanceUntil(quiet);
+    const squids = game.battlefield
+      .filter((id) => game.state.objects[id].cardName === "Squid Token")
+      .reduce((n, id) => n + (game.state.objects[id].stackCount ?? 1), 0);
+    expect(squids).toBe(3);
+  });
+});
+
+describe("Black Market", () => {
+  it("counts creature deaths and pays them out at your first main phase", () => {
+    const { game } = setUp();
+    const market = game.debugSpawn("Black Market", A, "battlefield");
+    const mine = game.debugSpawn("Grizzly Bears", A, "battlefield");
+    const theirs = game.debugSpawn("Grizzly Bears", B, "battlefield");
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [objectRef(mine)]);
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [objectRef(theirs)]);
+    game.advanceUntil(quiet);
+    expect(game.state.objects[market].counters.charge).toBe(2);
+    // Not on Bob's turn.
+    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "precombat-main" && quiet(s));
+    expect(pool(game, A)).toBe("");
+    game.advanceUntil((s) => s.turn.number === 3 && s.turn.step === "precombat-main" && quiet(s));
+    expect(pool(game, A)).toBe("BB");
+  });
+});
