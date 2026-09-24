@@ -320,6 +320,13 @@ Craterhoof: `{ countOf: { type: "creature", controlledBy: "you" } }`);
 (Undergrowth — Lotleth Giant's "for each creature card in your graveyard";
 `ownedBy: "you"` is what narrows it to your own);
 `{ lifeTotal: "you" }` — the controller's life total (Ajani's ultimate);
+`{ lifeTotal: "each" }` — the life of **each player a scoped effect is
+applied to**, read once per player ("each opponent loses half **their**
+life" is a `lose-life` with `who: "each-opponent"` and this inside `half`;
+works for scoped `damage` / `draw` / `mill` / `discard` / `gain-life` /
+`lose-life`; outside a scope it reads the controller's);
+`{ half: EffectAmount, round: "up" | "down" }` — half of an amount, rounded
+the way the card says (rule 107.1a);
 `{ manaSpentOf: ref }` — how much mana was actually spent to cast the source
 or trigger object (Prossh: "X is the amount of mana spent to cast it";
 commander tax and {X} count, a free cast is 0, convoked creatures aren't
@@ -381,19 +388,28 @@ multiplier (Gray Merchant's "life equal to the life lost this way" is devotion
 
 | kind | fields | example |
 | --- | --- | --- |
-| `damage` | `amount`, `target` \| `who` \| `toControllerOfTarget` | Lightning Bolt (`target`); Breath of Malfegor (`who: "each-opponent"`); Unlicensed Disintegration — "deals 3 damage to **that creature's** controller" (`toControllerOfTarget: 0`, mirroring `create-token`'s `who: "target-controller"`) |
+| `damage` | `amount`, `target` \| `who` \| `toControllerOfTarget` \| `toTriggerRecipient`, `from?` | Lightning Bolt (`target`); Breath of Malfegor (`who: "each-opponent"`); Unlicensed Disintegration — "deals 3 damage to **that creature's** controller" (`toControllerOfTarget: 0`, mirroring `create-token`'s `who: "target-controller"`). `toTriggerRecipient: true` is "deals 2 damage to **that permanent or player**" in a damage trigger (Ghyrson Starn) — whatever the triggering damage hit, not a target, and nothing once a permanent recipient has left the battlefield. `from: "trigger-object"` makes the *triggering object* the source — "**it** deals damage equal to its power" (Be'lakor's entering Demon), "**it** deals that much damage to each other opponent" (Kediss's commander): its lifelink, deathtouch and colours apply, read as it last existed on the battlefield if it has left. |
 | `damage-all` | `filter`, `amount`, `exceptSource?` | Pyroclasm. `exceptSource` spares the source itself — Harbinger of the Hunt's "each **other** creature with flying", which a `CardFilter` can't say (it describes the permanent matched, not its relationship to the damage source). |
 | `creatures-damage-controllers` | `filter`, `amount` | Rakdos Charm — "each creature deals 1 damage to its controller"; the reverse direction from `damage-all` (each matching permanent is its own source, hitting its own controller, not the caster). needed-cards P20 |
 | `gain-life` | `amount` (an `EffectAmount`), `who?` | Healing Salve; Shamanic Revelation's "4 life for each creature you control with power 4 or greater" is `{ countOf: …, times: 4 }` |
 | `lose-life` | `amount`, `who?` \| `target?` | Zulaport Cutthroat (`who`); Ob Nixilis, the Fallen — "target player loses 3 life" (`target`, a target-slot index — mutually exclusive with `who`, needed-cards P19) |
 | `draw` | `amount`, `who?`, `target?` | Divination (controller draws); Stormfist Crusader (`who: "each-player"`); Bloodgift Demon (`target`, a player slot). `target` wins if both are set. |
 | `discard-hand` | `who` | Dragon Mage — "each player discards their hand". A whole hand at once with nothing to choose, so unlike `discard` it never raises a decision, which is what lets "discards their hand, **then** draws seven" resolve in one pass. |
-| `discard` | `target` (slot \| `"you"`), `amount` | Mind Rot / Faithless Looting |
-| `mill` | `target` (slot \| `"you"`), `amount` | Tome Scour / Aftermath Analyst (`"you"`) |
+| `discard` | `target` (slot \| a `PlayerScope`), `amount` | Mind Rot / Faithless Looting (`"you"`) / "each opponent discards a card" (`"each-opponent"`). A scope asks each player with a real choice **in turn**, APNAP (`GameState.pendingDiscards`); a player whose hand is no bigger than the count discards it at once. |
+| `mill` | `target` (slot \| a `PlayerScope`), `amount` | Tome Scour / Aftermath Analyst (`"you"`) / Hope Estheim (`"each-opponent"`) |
 
 `who?` is a `PlayerScope`: `"each-player" \| "each-opponent" \| "you" \|
-"active-player"` (default = the effect's controller). `"active-player"` is
-"that player" in a trigger that fires on someone else's step.
+"active-player" \| "trigger-controller" \| "trigger-player" \|
+"each-other-opponent"` (default = the effect's controller). `"active-player"`
+is "that player" in a trigger that fires on someone else's step.
+`"trigger-controller"` is the controller of the triggering object (the player
+who drew the card, cast the spell). `"trigger-player"` is **the player the
+triggering event names** — the player dealt damage (or the controller of the
+permanent dealt damage), the defending player of an attack (a planeswalker's
+controller when the attack was at it); nobody outside such a trigger.
+`"each-other-opponent"` is each of your opponents **but** that one (Kediss:
+"it deals that much damage to each other opponent"). None of these is a
+target, so hexproof doesn't stop them.
 
 ### Movement / removal
 
@@ -480,7 +496,7 @@ ability would have no way to name a token that didn't exist when it was set up.
 
 | kind | fields |
 | --- | --- |
-| `create-token` | `token` (a registry name), `count`, `who?: "you" \| "target-controller"` (Beast Within — under `targets[0]`'s controller), `tapped?` (Army of the Damned — "create thirteen **tapped** … tokens"; a tapped batch is never folded into a token stack, since a stack carries one `tapped` flag for all of it) |
+| `create-token` | `token` (a registry name), `count`, `who?: "target-controller" \| PlayerScope` (Beast Within — under `targets[0]`'s controller; a scope has each of its players create `count` — "each opponent creates a Treasure token"), `tapped?` (Army of the Damned — "create thirteen **tapped** … tokens"; a tapped batch is never folded into a token stack, since a stack carries one `tapped` flag for all of it) |
 | `create-token-copy` | `of: "source" \| "trigger-object" \| slot`, `count`, `gainsHaste?`, `exileAtEndStep?`, `notLegendary?`, `basePt?: [p, t]`, `who?: "you"` — a token that's a copy of a permanent, under *its* controller by default; `who: "you"` puts it under the effect's controller instead, which is what a card copying something an **opponent** controls means (Hate Mirage). `"trigger-object"` = the permanent whose entering/attacking fired the trigger (Miirym); a slot = a target (Saw in Half). |
 | investigate | `investigate(times?)` from `helpers.ts` — rule 701.36a, "create a Clue token", written as the `create-token` of `"Clue Token"` it is ("investigate twice" is `investigate(2)`; `times` takes any `EffectAmount`). The Clue (`{2}, Sacrifice this token: Draw a card.`) has an activated ability, so Clues are never folded into a token stack. |
 | `attach` | `target` (Equip-style) |
@@ -617,7 +633,8 @@ subtypes, supertype, notSupertype, name, notName, colors, notColors, colorless,
 manaValue, power, toughness, counters, controlledBy, ownedBy, keyword,
 notKeyword, tapped, token, isCommander, equipped, enchanted, modified, anyOf,
 manaSpent, putIntoGraveyardFromLibraryThisTurn, sharesCardTypeWith }`,
-every present clause ANDed. `anyOf: CardFilter[]` is the "or": at least one of
+every present clause ANDed. `controlledBy` is `"you"`, `"opponent"` or
+`"active-player"` (whoever's turn it is, whoever is asking). `anyOf: CardFilter[]` is the "or": at least one of
 them has to match as well (historic is `anyOf: [{ type: "artifact" },
 { supertype: "legendary" }, { subtype: "Saga" }]`; Dogmeat's "enchanted or
 equipped" is two). `equipped` / `enchanted` ask whether an Equipment / Aura is
@@ -972,7 +989,8 @@ triggered: [
 | `step-begins` | `step`, `who` | the start of a step (`"upkeep"` etc.) |
 | `discards` | `who` | "whenever an opponent discards a card" (Sangromancer). Fires once per *discard event*, not once per card — see §15. |
 | `blocks` | `who`, `filter?` | the mirror of `attacks` (Kangee, Sky Warden) |
-| `dealt-damage` | `who` | the receiving end — "whenever this creature **is dealt damage**" (Brash Taunter, Hornet Nest, enrage). Combat and non-combat alike; `{ triggerValue: true }` is how much. Damage dealt all at once is one event however many sources dealt it — a creature blocked by two is dealt its combat damage once — so it triggers once, for the total. |
+| `dealt-damage` | `who`, `filter?`, `combat?` | the receiving end — "whenever this creature **is dealt damage**" (Brash Taunter, Hornet Nest, enrage). Combat and non-combat alike unless `combat` says which; `filter` narrows the permanent dealt damage (Sonic the Hedgehog: "a creature you control **with flash or haste**" — read as the damage is dealt, before SBAs). `{ triggerValue: true }` is how much; the permanent is the trigger object and the `"trigger-player"` is its controller. Damage dealt all at once is one event however many sources dealt it — a creature blocked by two is dealt its combat damage once — so it triggers once, for the total. |
+| `deals-damage` | `who`, `filter?`, `otherOnly?`, `to?`, `toFilter?`, `combat?`, `exactly?`, `toItsTarget?` | the dealing end, for any recipient — Niv-Mizzet, Visionary's "whenever a source you control deals noncombat damage to an opponent" (`{ who: "you-control", to: "opponent", combat: false }`), Ghyrson Starn's "another source you control deals **exactly 1** damage to a permanent or player" (`otherOnly`, `exactly: 1`), Kediss's "a commander you control deals combat damage to an opponent" (`filter: { isCommander: true }`). `who` / `filter` are about the **source** — a spell, a permanent, an ability's source — judged as it last existed on the battlefield if it had left; `to` is `"player" \| "opponent" \| "permanent" \| "creature" \| "planeswalker"` and `toFilter` narrows a permanent recipient; `toItsTarget` is "a spell deals damage to a permanent or player **it targets**". Once **per recipient** per damage event (a `damage-all` for 1 fires it once per creature, and a token stack counts once per token unless the effect hits "that permanent", which reaches the whole stack), for the amount actually **dealt** — after doubling and prevention, so fully prevented damage fires nothing and 2 prevented to 1 is "exactly 1". `{ triggerValue: true }` is the amount, the source is the trigger object (`damage.from: "trigger-object"`), the recipient is `damage.toTriggerRecipient`, and a player recipient (or a permanent's controller) is the `"trigger-player"`. |
 | `attack-with` | `who`, `atLeast`, `filter?`, `attackingYou?` | "whenever you attack with three or more creatures" (Overwhelming Instinct, Tide Skimmer). Fires once per declaration, off the whole attacker list — an `attacks` trigger fires per attacker and can't count them. |
 | `deals-combat-damage-to-player` | `who`, `filter?` | `filter` narrows on the *damaging creature* — Sharding Sphinx's "whenever an **artifact** creature you control deals combat damage to a player". The first target slot is auto-filled with the damaged player, but only if that slot can hold one. |
 | `cast-spell` | `who`, `noncreatureOnly?`, `firstEachTurn?`, `nthEachTurn?`, `filter?`, `from?`, `notFrom?` | a spell is cast. `who: "opponent"` is anyone but this permanent's controller (Kaervek the Merciless); `filter` narrows on the *spell* — `{ typesAnyOf: ["instant", "sorcery"] }` for Guttersnipe. `noncreatureOnly` predates `filter` and stays, because prowess is printed as its own word. `trigger-object` is the spell, so `{ manaValueOf: "trigger-object" }` reads its mana value. `firstEachTurn` / `nthEachTurn: N` is the caster's first / Nth spell this turn — and **with a `filter`, their first / Nth *matching* spell** (Tuvasa's "your first enchantment spell each turn", which can be your third spell). `from` / `notFrom` are the **zone it was cast from** (the `spell-cast` event records it before the spell moves to the stack): `from: "exile"` is "whenever you cast a spell from exile", `notFrom: "hand"` is "from anywhere other than your hand". A spell cast via foretell, suspend, cascade, an adventure or an impulse exile comes from `"exile"`; flashback / escape from `"graveyard"`; a commander from `"command"`. |

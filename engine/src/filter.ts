@@ -25,7 +25,7 @@ import type { EffectAmount } from "./effects.js";
 import type { Color } from "./mana.js";
 import { manaValue, parseManaCost } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
-import { printedCardName } from "./state.js";
+import { activePlayerOf, printedCardName } from "./state.js";
 import type { GameObject, GameState, LastKnownInfo } from "./state.js";
 
 /**
@@ -154,8 +154,12 @@ export interface CardFilter {
   readonly blocking?: boolean;
   readonly power?: NumCompare;
   readonly toughness?: NumCompare;
-  /** Controlled by the filtering player (`"you"`) or anyone else (`"opponent"`). */
-  readonly controlledBy?: "you" | "opponent";
+  /** Controlled by the filtering player (`"you"`), anyone else
+   * (`"opponent"`), or whoever's turn it is (`"active-player"` — "creatures
+   * **the active player** controls", "each creature attacking player
+   * controls" outside combat). The active player is read off the state, so
+   * it is the same answer whoever is asking. */
+  readonly controlledBy?: "you" | "opponent" | "active-player";
   /** Owned by the filtering player / anyone else (zone-agnostic, for graveyards). */
   readonly ownedBy?: "you" | "opponent";
   readonly keyword?: Keyword;
@@ -442,6 +446,7 @@ export function matchesFilter(
   const owner = live !== undefined ? live.owner : lki!.owner;
   if (filter.controlledBy === "you" && controller !== ctx.you) return false;
   if (filter.controlledBy === "opponent" && controller === ctx.you) return false;
+  if (filter.controlledBy === "active-player" && controller !== activePlayerOf(state)) return false;
   if (filter.ownedBy === "you" && owner !== ctx.you) return false;
   if (filter.ownedBy === "opponent" && owner === ctx.you) return false;
   if (filter.tapped !== undefined) {

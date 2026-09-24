@@ -138,10 +138,16 @@ export type EffectAmount =
    * anything that wasn't cast.
    */
   | { readonly manaSpentOf: AmountRef }
-  /** The effect controller's current life total (Ajani, Caller of the Pride's
-   * ultimate: "create X 2/2 white Cat creature tokens, where X is your life
-   * total"). */
-  | { readonly lifeTotal: "you" }
+  /** A current life total: the effect controller's (`"you"` — Ajani, Caller
+   * of the Pride's ultimate: "create X 2/2 white Cat creature tokens, where X
+   * is your life total"), or `"each"`, the life of **each player the effect
+   * is applied to** — "each opponent loses half **their** life" is a
+   * scoped `lose-life` whose amount is read once per player. Outside a
+   * scoped effect `"each"` reads the controller's. */
+  | { readonly lifeTotal: "you" | "each" }
+  /** Half of an amount, rounded up or down (rule 107.1a says which the card
+   * must say) — "half their life, rounded up". */
+  | { readonly half: EffectAmount; readonly round: "up" | "down" }
   /** How many cards in **graveyards** match a filter — Undergrowth's "for
    * each creature card in your graveyard" (Lotleth Giant). Distinct from
    * `countOf`, which only ever counts battlefield permanents. The filter's
@@ -284,7 +290,17 @@ export type PlayerScope =
    * the event is about something they did: the player who drew the card
    * (Nekusar, the Mindrazer), the player who cast the spell. Not a target,
    * so a hexproof player is still reached. */
-  | "trigger-controller";
+  | "trigger-controller"
+  /** The player the triggering event names — "that player" / "defending
+   * player": the player dealt damage (or the controller of the permanent
+   * dealt damage), the defending player of an attack. See
+   * `LastKnownRefs.player`. Nobody outside such a trigger. Not a target. */
+  | "trigger-player"
+  /** Each opponent of the effect's controller **other than** the
+   * `"trigger-player"` — Kediss, Emberclaw Familiar's "it deals that much
+   * damage to each other opponent". Every opponent when the trigger names
+   * nobody. */
+  | "each-other-opponent";
 
 /** A declarative effect. Grows as milestones add vocabulary. */
 export type EffectSpec =
@@ -302,8 +318,22 @@ export type EffectSpec =
       readonly target?: number;
       /** Untargeted damage to a whole scope of players (Sabotender / Tannuk:
        * "deals 1 damage to each opponent" — needed-cards P16), instead of a
-       * chosen target. */
+       * chosen target. A per-player `amount` (`lifeTotal: "each"`) is read
+       * for each of them. */
       readonly who?: PlayerScope;
+      /** Untargeted damage to whatever the triggering event was aimed at —
+       * "deals 2 damage to **that permanent or player**" (Ghyrson Starn).
+       * See `LastKnownRefs.recipient`: a permanent that has left the
+       * battlefield since is not dealt anything. */
+      readonly toTriggerRecipient?: true;
+      /** Who deals it, when that isn't the effect's own source: `"trigger-
+       * object"` is the object that fired the trigger — "**it** deals damage
+       * equal to its power to any target" (Be'lakor, the Dark Master: the
+       * entering Demon), "**it** deals that much damage to each other
+       * opponent" (Kediss: the commander that dealt combat damage). Its
+       * lifelink, deathtouch and colours (for protection) apply, as it last
+       * existed on the battlefield if it has left (rule 608.2h). */
+      readonly from?: "trigger-object";
       /**
        * Damage aimed at the *controller* of whatever a target slot points at
        * — Unlicensed Disintegration's "deals 3 damage to **that creature's**
@@ -714,7 +744,10 @@ export type EffectSpec =
        * their graveyard. `target: "you"` = the effect's controller, with no
        * target slot (Aftermath Analyst's "mill three cards"). */
       readonly kind: "mill";
-      readonly target: number | "you";
+      /** A target slot holding a player, or a scope — `"you"` (Aftermath
+       * Analyst) or `"each-opponent"` (Hope Estheim: "each opponent mills X
+       * cards"), a per-player amount read for each. */
+      readonly target: number | PlayerScope;
       readonly amount: EffectAmount;
     }
   | {
@@ -772,7 +805,10 @@ export type EffectSpec =
        * `target: "you"` = the effect's controller, with no target slot
        * (Faithless Looting's "then discard two cards"). */
       readonly kind: "discard";
-      readonly target: number | "you";
+      /** A target slot holding a player, or a scope ("each opponent discards
+       * a card"). Each player with a real choice is asked in turn — see
+       * `GameState.pendingDiscards`. */
+      readonly target: number | PlayerScope;
       readonly amount: EffectAmount;
     }
   | {
@@ -1036,8 +1072,10 @@ export type EffectSpec =
        * controller (default), or the controller of `targets[0]` (Beast Within:
        * "its controller creates a 3/3 Beast"; An Offer You Can't Refuse: the
        * countered spell's controller). Rule 111.11 — for a destroyed /
-       * countered target this is its last-known controller. */
-      readonly who?: "you" | "target-controller";
+       * countered target this is its last-known controller. A
+       * {@link PlayerScope} has each of those players create `count` tokens
+       * ("each opponent creates a Treasure token"). */
+      readonly who?: "target-controller" | PlayerScope;
       /** The tokens enter **tapped** (Army of the Damned, Necrotic Hex,
        * Overseer of the Damned). These are never folded into a token stack —
        * see `mintTokenBatch`. */
@@ -1426,10 +1464,21 @@ export interface ModeOption {
 
 /** Primitive mutations an effect can perform. Implemented by the engine. */
 export interface EffectApi {
-  dealDamage(target: TargetRef, amount: number): void;
+  /** `from: "trigger-object"`: the triggering object deals it, not the
+   * effect's source — see the `damage` {@link EffectSpec}'s `from`. */
+  dealDamage(target: TargetRef, amount: number, from?: "trigger-object"): void;
   /** Deal damage to a whole scope of players, untargeted (Sabotender /
-   * Tannuk: "deals 1 damage to each opponent" — needed-cards P16). */
-  dealDamageScoped(who: PlayerScope, amount: number): void;
+   * Tannuk: "deals 1 damage to each opponent" — needed-cards P16), all at
+   * once. `amountFor` is asked per player, for a per-player amount. */
+  dealDamageScoped(
+    who: PlayerScope,
+    amountFor: (player: PlayerId) => number,
+    from?: "trigger-object",
+  ): void;
+  /** What the triggering event was aimed at, if it still is what it was —
+   * see `LastKnownRefs.recipient`. `undefined` outside such a trigger, for a
+   * permanent that has left the battlefield since, or a player who has lost. */
+  triggerRecipient(): TargetRef | undefined;
   draw(player: PlayerId, count: number): void;
   /** The mana value of the card behind `target`, from its printed cost — see
    * the `{ manaValueOf }` {@link EffectAmount}. `0` for a player target or an
@@ -1710,7 +1759,7 @@ export interface EffectApi {
   createToken(
     token: string,
     count: number,
-    who?: "you" | "target-controller",
+    who?: "target-controller" | PlayerScope,
     tapped?: boolean,
     sacrificeAtEndStep?: boolean,
   ): void;
@@ -1871,15 +1920,27 @@ export function isCountScalableEffect(effect: EffectSpec): boolean {
   }
 }
 
-/** Resolve an {@link EffectAmount} against the resolution context. */
-export function amountValue(amount: EffectAmount, ctx: ResolutionContext): number {
+/** Resolve an {@link EffectAmount} against the resolution context. `each`
+ * is the player a scoped effect is being applied to right now, for a
+ * per-player amount (`lifeTotal: "each"`). */
+export function amountValue(
+  amount: EffectAmount,
+  ctx: ResolutionContext,
+  each?: PlayerId,
+): number {
   if (amount === "x") return ctx.x;
   if (typeof amount === "number") return amount;
   if ("triggerValue" in amount) return ctx.triggerValue;
-  if ("lifeTotal" in amount) return ctx.lifeTotalOf(ctx.controller);
+  if ("lifeTotal" in amount) {
+    return ctx.lifeTotalOf(amount.lifeTotal === "each" ? (each ?? ctx.controller) : ctx.controller);
+  }
+  if ("half" in amount) {
+    const n = amountValue(amount.half, ctx, each) / 2;
+    return Math.max(0, amount.round === "up" ? Math.ceil(n) : Math.floor(n));
+  }
   if ("countInGraveyard" in amount) return ctx.countInGraveyard(amount.countInGraveyard);
   if ("product" in amount) {
-    return amount.product.reduce<number>((n, a) => n * amountValue(a, ctx), 1);
+    return amount.product.reduce<number>((n, a) => n * amountValue(a, ctx, each), 1);
   }
   if ("countPlayers" in amount) return ctx.playersInScope(amount.countPlayers).length;
   if ("turnStat" in amount) {
@@ -2045,6 +2106,30 @@ export function bindDynamicCompares(spec: EffectSpec, ctx: ResolutionContext): E
   return walk(spec) as EffectSpec;
 }
 
+/** Does `amount` read a per-player value (`lifeTotal: "each"`), so a scoped
+ * effect has to read it once for each player? */
+function readsEachPlayer(amount: EffectAmount): boolean {
+  if (typeof amount !== "object") return false;
+  if ("lifeTotal" in amount) return amount.lifeTotal === "each";
+  if ("half" in amount) return readsEachPlayer(amount.half);
+  if ("product" in amount) return amount.product.some(readsEachPlayer);
+  return false;
+}
+
+/** A `mill` / `discard` `target`: the player in a target slot, or every
+ * player a scope names (`"you"` is a scope of one). */
+function scopedOrTargetedPlayers(
+  target: number | PlayerScope,
+  ctx: ResolutionContext,
+): readonly TargetRef[] {
+  if (typeof target === "number") {
+    const ref = ctx.targets[target];
+    return ref === undefined ? [] : [ref];
+  }
+  if (target === "you") return [{ kind: "player", player: ctx.controller }];
+  return ctx.playersInScope(target).map((player) => ({ kind: "player", player }));
+}
+
 export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): void {
   const spec = bindDynamicCompares(unbound, ctx);
   switch (spec.kind) {
@@ -2057,16 +2142,28 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         const of = ctx.targets[spec.toControllerOfTarget];
         const controller = of === undefined ? undefined : ctx.controllerOf(of);
         if (controller !== undefined) {
-          ctx.dealDamage({ kind: "player", player: controller }, amountValue(spec.amount, ctx));
+          ctx.dealDamage(
+            { kind: "player", player: controller },
+            amountValue(spec.amount, ctx, controller),
+            spec.from,
+          );
         }
         return;
       }
       if (spec.who !== undefined) {
-        ctx.dealDamageScoped(spec.who, amountValue(spec.amount, ctx));
+        ctx.dealDamageScoped(spec.who, (player) => amountValue(spec.amount, ctx, player), spec.from);
         return;
       }
-      const target = spec.target !== undefined ? ctx.targets[spec.target] : undefined;
-      if (target !== undefined) ctx.dealDamage(target, amountValue(spec.amount, ctx));
+      const target =
+        spec.toTriggerRecipient === true
+          ? ctx.triggerRecipient()
+          : spec.target !== undefined
+            ? ctx.targets[spec.target]
+            : undefined;
+      if (target !== undefined) {
+        const each = target.kind === "player" ? target.player : undefined;
+        ctx.dealDamage(target, amountValue(spec.amount, ctx, each), spec.from);
+      }
       return;
     }
     case "add-mana":
@@ -2087,14 +2184,13 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       }
       return;
     case "draw": {
-      const amount = amountValue(spec.amount, ctx);
       if (spec.target !== undefined) {
         const ref = ctx.targets[spec.target];
-        if (ref?.kind === "player") ctx.draw(ref.player, amount);
+        if (ref?.kind === "player") ctx.draw(ref.player, amountValue(spec.amount, ctx, ref.player));
         return;
       }
       for (const player of ctx.playersInScope(spec.who ?? "you")) {
-        ctx.draw(player, amount);
+        ctx.draw(player, amountValue(spec.amount, ctx, player));
       }
       return;
     }
@@ -2110,7 +2206,10 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         return;
       }
       if (spec.who === undefined || spec.who === "you") ctx.gainLife(ctx.controller, gained);
-      else ctx.changeLifeScoped(spec.who, gained);
+      else if (!readsEachPlayer(spec.amount)) ctx.changeLifeScoped(spec.who, gained);
+      else {
+        for (const p of ctx.playersInScope(spec.who)) ctx.gainLife(p, amountValue(spec.amount, ctx, p));
+      }
       return;
     }
     case "lose-life": {
@@ -2127,7 +2226,12 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         return;
       }
       if (spec.who === undefined || spec.who === "you") ctx.loseLife(ctx.controller, life);
-      else ctx.changeLifeScoped(spec.who, -life);
+      else if (!readsEachPlayer(spec.amount)) ctx.changeLifeScoped(spec.who, -life);
+      else {
+        // "Each opponent loses half their life": each one's own amount,
+        // read as their turn in APNAP order comes.
+        for (const p of ctx.playersInScope(spec.who)) ctx.loseLife(p, amountValue(spec.amount, ctx, p));
+      }
       return;
     }
     case "tap": {
@@ -2275,11 +2379,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     }
     case "mill": {
-      const target =
-        spec.target === "you"
-          ? ({ kind: "player", player: ctx.controller } as const)
-          : ctx.targets[spec.target];
-      if (target !== undefined) ctx.mill(target, amountValue(spec.amount, ctx));
+      for (const target of scopedOrTargetedPlayers(spec.target, ctx)) {
+        ctx.mill(target, amountValue(spec.amount, ctx, target.kind === "player" ? target.player : undefined));
+      }
       return;
     }
     case "delayed-trigger": {
@@ -2321,11 +2423,12 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       );
       return;
     case "discard": {
-      const target =
-        spec.target === "you"
-          ? ({ kind: "player", player: ctx.controller } as const)
-          : ctx.targets[spec.target];
-      if (target !== undefined) ctx.discardCards(target, amountValue(spec.amount, ctx));
+      for (const target of scopedOrTargetedPlayers(spec.target, ctx)) {
+        ctx.discardCards(
+          target,
+          amountValue(spec.amount, ctx, target.kind === "player" ? target.player : undefined),
+        );
+      }
       return;
     }
     case "modify-pt": {

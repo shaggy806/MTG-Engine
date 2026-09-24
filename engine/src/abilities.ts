@@ -466,6 +466,63 @@ export type TriggerSpec =
        */
       readonly on: "dealt-damage";
       readonly who: TriggerWho;
+      /** Narrow which permanent dealt damage counts — Sonic the Hedgehog's
+       * "a creature you control **with flash or haste**". Read as the damage
+       * is dealt, before state-based actions can have killed it. */
+      readonly filter?: CardFilter;
+      /** `true`: combat damage only; `false`: noncombat damage only. */
+      readonly combat?: boolean;
+    }
+  | {
+      /**
+       * A source *dealt* damage — the dealing end, for any recipient and any
+       * kind of damage (rule 120.1). Ghyrson Starn's "whenever another source
+       * you control deals exactly 1 damage to a permanent or player",
+       * Niv-Mizzet, Visionary's "whenever a source you control deals
+       * noncombat damage to an opponent", Kediss's "whenever a commander you
+       * control deals combat damage to an opponent".
+       *
+       * Fires once per damage event per recipient: a source that deals damage
+       * to three things at once (a `damage-all`, "each opponent", a trampler
+       * and its blocker) triggers three times, each with the amount *that*
+       * recipient was dealt. That amount is after prevention and doubling —
+       * damage that was prevented was never dealt (rule 615.1), so it doesn't
+       * trigger at all, and 2 damage prevented down to 1 is "exactly 1".
+       *
+       * `{ triggerValue: true }` is the amount dealt; the source is the
+       * trigger object ("it deals that much damage"); the recipient is what
+       * a `damage` effect's `toTriggerRecipient` hits, and a player
+       * recipient (or a permanent recipient's controller) is the
+       * `"trigger-player"` scope — "that player", "each **other** opponent".
+       */
+      readonly on: "deals-damage";
+      /** Whose the *source* is, relative to this permanent: `"self"` (this
+       * deals damage), `"you-control"` (a source you control — a spell, a
+       * permanent, or the source of an ability), `"opponent"`, `"any"`. A
+       * source that has left the battlefield is judged as it last existed
+       * there. */
+      readonly who: TriggerWho;
+      /** A filter on the source ("a commander you control", "an instant or
+       * sorcery spell you control"). */
+      readonly filter?: CardFilter;
+      /** "**another** source" — this permanent's own damage doesn't count. */
+      readonly otherOnly?: boolean;
+      /** What the damage was dealt to. Omitted: any permanent or player. */
+      readonly to?: "player" | "opponent" | "permanent" | "creature" | "planeswalker";
+      /** A filter on a *permanent* recipient ("deals damage to a creature an
+       * opponent controls"). Never matches a player. */
+      readonly toFilter?: CardFilter;
+      /** `true`: combat damage only; `false`: noncombat damage only. */
+      readonly combat?: boolean;
+      /** Only exactly this much damage to that recipient (Ghyrson Starn's
+       * "exactly 1 damage"). */
+      readonly exactly?: number;
+      /** Only damage a *spell* deals to one of its own targets — "an instant
+       * or sorcery spell you control deals damage to a permanent or player it
+       * targets". A source that isn't a spell on the stack never matches (an
+       * ability's damage is dealt by its source permanent, which has no
+       * targets of its own). */
+      readonly toItsTarget?: boolean;
     }
   | {
       /** A permanent became tapped (rule 701.21a — City of Brass, Grand

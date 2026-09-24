@@ -616,6 +616,23 @@ export interface LastKnownRefs {
    * or ability's cost (Dina, Soul Steeper), or by a `sacrifice-source` step
    * before the effect reading it. */
   readonly sacrificed?: { readonly object: ObjectId; readonly zoneChangeCount: number };
+  /**
+   * What the triggering event was aimed at, for a trigger whose event has a
+   * recipient — the permanent or player a `damage-dealt` event hit
+   * (`deals-damage`, `dealt-damage`, `deals-combat-damage-to-player`).
+   * `zoneChangeCount` is a permanent recipient's battlefield stint: "that
+   * permanent" is gone, rather than read as it last was, once it has left
+   * (Ghyrson Starn's 2 damage to a creature that has since died hits
+   * nothing). What a `damage` effect's `toTriggerRecipient` hits.
+   */
+  readonly recipient?: { readonly target: TargetRef; readonly zoneChangeCount?: number };
+  /**
+   * The player the triggering event names — "that player": the player dealt
+   * damage (or the controller of the permanent dealt damage), the defending
+   * player of an attack. What the `"trigger-player"` and
+   * `"each-other-opponent"` scopes read.
+   */
+  readonly player?: PlayerId;
 }
 
 /**
@@ -1412,6 +1429,20 @@ export interface GameState {
    * for the `prepareForPriority` fixpoint.
    */
   pendingDestruction: ObjectId[];
+  /**
+   * Players still owed a "discard N cards" decision from a *scoped* discard
+   * effect ("each opponent discards a card") — one player's choice is asked
+   * at a time, so the rest wait here. Drained one at a time by
+   * `promptNextDiscard` in the `prepareForPriority` fixpoint, APNAP-ordered.
+   * A player with no real choice (a hand no bigger than what's owed)
+   * discards straight away and never waits here.
+   */
+  pendingDiscards: {
+    readonly player: PlayerId;
+    readonly count: number;
+    /** What ordered the discard — see `pendingSacrifices`' `source`. */
+    readonly source?: DecisionSource;
+  }[];
   /**
    * Players still owed a "choose N permanents to sacrifice" decision from a
    * sacrifice *effect* (Diabolic Edict, Fleshbag Marauder). Drained one at a

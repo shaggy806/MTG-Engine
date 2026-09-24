@@ -364,6 +364,12 @@ const LOOK_BACK_TRIGGERS: ReadonlySet<TriggerSpec["on"]> = new Set<TriggerSpec["
 
 /** The indices of a trigger's slots the triggering event filled (see
  * `GameObject.autoTargetSlots`). */
+/** Does a triggered ability's effect act on "that permanent or player" — a
+ * `damage` with `toTriggerRecipient` anywhere in it? */
+function namesTriggerRecipient(effect: EffectSpec | null): boolean {
+  return effect !== null && JSON.stringify(effect).includes('"toTriggerRecipient"');
+}
+
 function autoSlotsOf(slots: readonly object[]): number[] {
   const out: number[] = [];
   slots.forEach((slot, i) => {
@@ -566,6 +572,7 @@ export class Game {
       pendingPayLifeForUntapped: [],
       pendingFlickerReturns: [],
       pendingDestruction: [],
+      pendingDiscards: [],
       pendingSacrifices: [],
       pendingSacrificeVictims: [],
       preventAllCombatDamage: false,
@@ -3011,6 +3018,11 @@ export class Game {
       // decision was being answered.
       if (this.state.pendingDestruction.length > 0) {
         this.drainPendingDestruction();
+        continue;
+      }
+      // "Each opponent discards a card": the next player owed a choice.
+      if (this.state.pendingDiscards.length > 0) {
+        this.promptNextDiscard();
         continue;
       }
       // Work through a sacrifice effect (Diabolic Edict / Fleshbag Marauder):
@@ -7850,7 +7862,16 @@ export class Game {
           // The object whose entering / attacking / etc. fired this trigger —
           // for `create-token-copy` `of: "trigger-object"` (Miirym). P5b.
           const triggerObject =
-            event.type === "permanent-entered-battlefield" ||
+            // A damage trigger's object: the permanent dealt it, for the
+            // receiving end; the source that dealt it ("it deals that much
+            // damage"), for the dealing end.
+            event.type === "damage-dealt"
+              ? ability.trigger.on === "dealt-damage"
+                ? event.target.kind === "object"
+                  ? event.target.object
+                  : undefined
+                : event.source
+              : event.type === "permanent-entered-battlefield" ||
             event.type === "permanent-destroyed" ||
             event.type === "permanent-left-battlefield" ||
             event.type === "permanent-transformed"
@@ -7880,7 +7901,8 @@ export class Game {
             powerOfId !== undefined && this.state.objects[powerOfId] !== undefined
               ? computeCharacteristics(this.state, this.registry, powerOfId).power
               : (ability.trigger.on === "deals-combat-damage-to-player" ||
-                    ability.trigger.on === "dealt-damage") &&
+                    ability.trigger.on === "dealt-damage" ||
+                    ability.trigger.on === "deals-damage") &&
                   event.type === "damage-dealt"
                 ? event.amount
                 : // A batched attack trigger's value is *how many* matched,
@@ -7964,9 +7986,20 @@ export class Game {
             event.object !== id
               ? (this.state.objects[event.object]?.stackCount ?? 1)
               : 1;
+          // Damage dealt to a token stack was dealt to every token in it, each
+          // its own recipient — unless the effect acts on "that permanent",
+          // which reaches the whole stack at once.
+          const recipients =
+            ability.trigger.on === "deals-damage" &&
+            event.type === "damage-dealt" &&
+            event.target.kind === "object" &&
+            !namesTriggerRecipient(ability.effect)
+              ? (this.state.objects[event.target.object]?.stackCount ?? 1)
+              : 1;
           const multiplier =
             (object.stackCount ?? 1) *
             departed *
+            recipients *
             (event.type === "permanent-entered-battlefield" ? (event.count ?? 1) : 1) *
             (1 + entryDoublers);
           // Damage dealt all at once is dealt to a permanent once, however
@@ -8076,12 +8109,49 @@ export class Game {
       ) {
         // The permanent whose leaving fired this, just snapshotted.
         triggerStint = t.lastKnown.zoneChangeCount;
+      } else if (
+        t?.lastKnown !== undefined &&
+        t.zone !== "stack" &&
+        event.type === "damage-dealt" &&
+        event.source === triggerObject
+      ) {
+        // Damage dealt by a permanent that had already left (a dies
+        // trigger's "it deals damage"): "it" is as it last existed there.
+        triggerStint = t.lastKnown.zoneChangeCount;
       }
     }
-    if (sourceStint === undefined && triggerStint === undefined) return undefined;
+    // What the event was aimed at, and "that player": the recipient of
+    // damage, the defending player of an attack.
+    let recipient: LastKnownRefs["recipient"];
+    let player: PlayerId | undefined;
+    if (event.type === "damage-dealt") {
+      const target = event.target;
+      if (target.kind === "player") {
+        recipient = { target };
+        player = target.player;
+      } else {
+        const hit = this.state.objects[target.object];
+        if (hit?.zone === "battlefield") {
+          recipient = { target, zoneChangeCount: hit.zoneChangeCount ?? 0 };
+          player = hit.controller;
+        }
+      }
+    } else if (event.type === "attacker-declared") {
+      player = this.defendingPlayerOf(event.defender);
+    }
+    if (
+      sourceStint === undefined &&
+      triggerStint === undefined &&
+      recipient === undefined &&
+      player === undefined
+    ) {
+      return undefined;
+    }
     return {
       ...(sourceStint !== undefined ? { source: sourceStint } : {}),
       ...(triggerStint !== undefined ? { triggerObject: triggerStint } : {}),
+      ...(recipient !== undefined ? { recipient } : {}),
+      ...(player !== undefined ? { player } : {}),
     };
   }
 
@@ -8344,8 +8414,12 @@ export class Game {
         return (
           event.type === "damage-dealt" &&
           event.target.kind === "object" &&
-          this.matchesWho(spec.who, event.target.object, self)
+          (spec.combat === undefined || event.combat === spec.combat) &&
+          this.matchesWho(spec.who, event.target.object, self) &&
+          this.triggerFilterOk(spec.filter, event.target.object, self)
         );
+      case "deals-damage":
+        return event.type === "damage-dealt" && this.dealsDamageMatches(spec, event, self);
       case "blocks":
         return (
           event.type === "blocker-declared" &&
@@ -8492,6 +8566,71 @@ export class Game {
         }),
       })
     );
+  }
+
+  /**
+   * A `deals-damage` trigger against one `damage-dealt` event: the kind and
+   * amount, then the source ("another source you control"), then the
+   * recipient. The amount is what was actually dealt — `dealDamage` only
+   * emits the event for damage that got through.
+   */
+  private dealsDamageMatches(
+    spec: Extract<TriggerSpec, { on: "deals-damage" }>,
+    event: Extract<GameEvent, { type: "damage-dealt" }>,
+    self: GameObject,
+  ): boolean {
+    if (spec.combat !== undefined && event.combat !== spec.combat) return false;
+    if (spec.exactly !== undefined && event.amount !== spec.exactly) return false;
+    if (spec.otherOnly === true && event.source === self.id) return false;
+    // The source: a spell on the stack or a permanent is read as it is; one
+    // that has left the battlefield since (a dies trigger's damage) as it
+    // last existed there, so "a source you control" is who controlled it.
+    const source = this.state.objects[event.source];
+    if (source === undefined) return false;
+    const departed = source.zone !== "battlefield" && source.zone !== "stack";
+    const sourceController = departed
+      ? (source.lastKnown?.controller ?? source.controller)
+      : source.controller;
+    switch (spec.who) {
+      case "any":
+        break;
+      case "self":
+        if (event.source !== self.id) return false;
+        break;
+      case "opponent":
+        if (sourceController === self.controller) return false;
+        break;
+      default:
+        if (sourceController !== self.controller) return false;
+    }
+    if (!this.triggerFilterOk(spec.filter, event.source, self, departed)) return false;
+    // The recipient.
+    const target = event.target;
+    if (target.kind === "player") {
+      if (spec.to === "permanent" || spec.to === "creature" || spec.to === "planeswalker") return false;
+      if (spec.toFilter !== undefined) return false;
+      if (spec.to === "opponent" && target.player === self.controller) return false;
+    } else {
+      if (spec.to === "player" || spec.to === "opponent") return false;
+      if (spec.to === "creature" || spec.to === "planeswalker") {
+        if (this.state.objects[target.object] === undefined) return false;
+        const types = computeCharacteristics(this.state, this.registry, target.object).types;
+        if (!types.includes(spec.to)) return false;
+      }
+      if (!this.triggerFilterOk(spec.toFilter, target.object, self)) return false;
+    }
+    if (spec.toItsTarget === true) {
+      if (source.zone !== "stack" || source.kind !== "card") return false;
+      const aimed = (source.targets ?? []).some(
+        (t) =>
+          t !== undefined &&
+          (t.kind === "player"
+            ? target.kind === "player" && t.player === target.player
+            : target.kind === "object" && t.object === target.object),
+      );
+      if (!aimed) return false;
+    }
+    return true;
   }
 
   /** Like `matchesWho`, but the subject is a *player* (a life-change trigger).
@@ -8884,6 +9023,17 @@ export class Game {
       triggerObject === undefined
         ? undefined
         : lastKnownOf({ kind: "object", object: triggerObject });
+    const scoped = (who: PlayerScope): PlayerId[] =>
+      this.scopedPlayers(controller, who, triggerObject, triggerLastKnown(), refs.player);
+    // Who deals an effect's damage: its own source, or — "it deals damage"
+    // — the object that fired the trigger, each as it last existed on the
+    // battlefield if it has left.
+    const damageSource = (
+      from: "trigger-object" | undefined,
+    ): { readonly id: ObjectId; readonly lastKnown: LastKnownInfo | undefined } =>
+      from === "trigger-object" && triggerObject !== undefined
+        ? { id: triggerObject, lastKnown: triggerLastKnown() }
+        : { id: source, lastKnown: departedSource() };
     const matchesKnown = (id: ObjectId, filter: CardFilter): boolean => {
       const snapshot = lastKnownOf({ kind: "object", object: id });
       return matchesFilter(this.state, this.registry, id, filter, {
@@ -8946,14 +9096,33 @@ export class Game {
       ...(refs.sacrificed !== undefined ? { sacrificed: refs.sacrificed.object } : {}),
       // A source that has left the battlefield deals its damage as it last
       // existed there: its colours, lifelink, deathtouch and controller.
-      dealDamage: (target, amount) =>
-        this.dealDamage(source, this.splitTargetRef(target), amount, false, departedSource()),
-      dealDamageScoped: (who, amount) =>
+      dealDamage: (target, amount, from) => {
+        const by = damageSource(from);
+        this.dealDamage(by.id, this.splitTargetRef(target), amount, false, by.lastKnown);
+      },
+      dealDamageScoped: (who, amountFor, from) => {
+        const by = damageSource(from);
         this.withDamageBatch(() => {
-          for (const p of this.scopedPlayers(controller, who, triggerObject, triggerLastKnown())) {
-            this.dealDamage(source, { kind: "player", player: p }, amount, false, departedSource());
+          for (const p of scoped(who)) {
+            this.dealDamage(by.id, { kind: "player", player: p }, amountFor(p), false, by.lastKnown);
           }
-        }),
+        });
+      },
+      triggerRecipient: () => {
+        const recipient = refs.recipient;
+        if (recipient === undefined) return undefined;
+        const target = recipient.target;
+        if (target.kind === "player") {
+          return this.state.players[target.player]?.hasLost === false ? target : undefined;
+        }
+        // "That permanent" is the one that was dealt the damage: once it has
+        // left the battlefield it's a new object (rule 400.7).
+        const object = this.state.objects[target.object];
+        return object?.zone === "battlefield" &&
+          (object.zoneChangeCount ?? 0) === (recipient.zoneChangeCount ?? 0)
+          ? target
+          : undefined;
+      },
       draw: (player, count) => {
         for (let i = 0; i < count; i += 1) {
           // Once a draw finds the library empty, every later one in the same
@@ -8966,8 +9135,7 @@ export class Game {
           if (empty) break;
         }
       },
-      playersInScope: (who) =>
-        this.scopedPlayers(controller, who, triggerObject, triggerLastKnown()),
+      playersInScope: (who) => scoped(who),
       discardHand: (player) => this.discardWholeHand(player),
       // The object whose entering, dying, attacking… fired a trigger is read
       // as it last existed on the battlefield once it has left (rule 608.2h):
@@ -9030,8 +9198,17 @@ export class Game {
         ),
       creaturesDamageControllers: (filter, amount) =>
         this.creaturesDamageControllersByEffect(controller, filter, amount),
-      sacrificePermanents: (who, filter, count, exceptId) =>
-        this.sacrificeByEffect(controller, who, filter, count, exceptId),
+      sacrificePermanents: (who, filter, count, exceptId) => {
+        // A scope that names players by the triggering event ("that player
+        // sacrifices a creature") is resolved here, where the event is known.
+        if (typeof who === "object" || who === "you" || who === "each-player" || who === "each-opponent") {
+          this.sacrificeByEffect(controller, who, filter, count, exceptId);
+          return;
+        }
+        for (const player of scoped(who)) {
+          this.sacrificeByEffect(controller, { player }, filter, count, exceptId);
+        }
+      },
       sacrificeSource: () => this.sacrificeSourceByEffect(source),
       withSacrificed: (object) => {
         // It was just sacrificed, so its latest snapshot is that departure.
@@ -9242,7 +9419,7 @@ export class Game {
       grantTriggered: (target, ability, duration) =>
         this.grantTriggered(target, ability, duration),
       grantPlayerHexproof: (who) => {
-        for (const player of this.scopedPlayers(controller, who, triggerObject, triggerLastKnown())) {
+        for (const player of scoped(who)) {
           if (!this.state.hexproofPlayers.includes(player)) {
             this.state.hexproofPlayers.push(player);
           }
@@ -9280,6 +9457,11 @@ export class Game {
       animate: (target, opts) => this.animate(target, opts),
       changeText: (target) => this.beginTextChoice(controller, source, target),
       createToken: (token, count, who, tapped, sacrificeAtEndStep) => {
+        // "Each opponent creates a Treasure token": each of them, APNAP.
+        if (who !== undefined && who !== "you" && who !== "target-controller") {
+          for (const p of scoped(who)) this.createTokens(p, token, count, tapped, sacrificeAtEndStep);
+          return;
+        }
         let tokenController = controller;
         if (who === "target-controller") {
           const ref = targets[0];
@@ -9323,12 +9505,12 @@ export class Game {
       },
       setDayNight: (value) => this.setDayNight(value),
       becomeMonarch: (who) => {
-        for (const p of this.scopedPlayers(controller, who ?? "you", triggerObject, triggerLastKnown())) {
+        for (const p of scoped(who ?? "you")) {
           this.setMonarch(p, "effect");
         }
       },
       getEnergy: (amount, who) => {
-        for (const p of this.scopedPlayers(controller, who ?? "you", triggerObject, triggerLastKnown())) {
+        for (const p of scoped(who ?? "you")) {
           this.changeEnergy(p, amount);
         }
       },
@@ -9361,7 +9543,7 @@ export class Game {
           targetZones,
         ),
       changeLifeScoped: (who, delta) =>
-        this.changeLifeScoped(controller, who, delta, triggerObject, triggerLastKnown()),
+        this.changeLifeScoped(controller, who, delta, triggerObject, triggerLastKnown(), refs.player),
       searchLibrary: (
         player,
         filter,
@@ -12384,6 +12566,36 @@ export class Game {
     if (target.kind !== "player") return;
     const player = target.player;
     if (this.state.players[player] === undefined || amount <= 0) return;
+    // Someone is already being asked — "each opponent discards a card"
+    // reaching its second opponent. Asking now would overwrite the first
+    // player's question, so this one waits its turn.
+    if (this.state.awaiting !== null || this.state.pendingDiscards.length > 0) {
+      const from = this.state.decisionSource;
+      this.state.pendingDiscards.push({
+        player,
+        count: amount,
+        ...(from !== null ? { source: from } : {}),
+      });
+      return;
+    }
+    this.discardNow(player, amount);
+  }
+
+  /** Ask the next player queued in `pendingDiscards` (see `discardByEffect`).
+   * Run from the `prepareForPriority` fixpoint, which only gets here once
+   * nothing else is being asked. */
+  private promptNextDiscard(): void {
+    const next = this.state.pendingDiscards.shift();
+    if (next === undefined || this.state.players[next.player]?.hasLost === true) return;
+    this.discardNow(next.player, next.count);
+    if (this.state.awaiting !== null && next.source !== undefined) {
+      this.state.decisionSource = next.source;
+    }
+  }
+
+  /** Discard `amount` cards from `player`'s hand: the whole hand at once if
+   * that's all there is, else ask which. */
+  private discardNow(player: PlayerId, amount: number): void {
     const hand = this.state.zones.perPlayer[player].hand;
     if (hand.length <= amount) {
       const all = [...hand];
@@ -12734,8 +12946,15 @@ export class Game {
     /** The triggering object as it last existed on the battlefield, if it
      * has left: "that player" is who controlled it then. */
     triggerLastKnown?: LastKnownInfo,
+    /** The player the triggering event named — `LastKnownRefs.player`. */
+    triggerPlayer?: PlayerId,
   ): PlayerId[] {
     if (who === "you") return [controller];
+    if (who === "trigger-player") {
+      return triggerPlayer === undefined || this.state.players[triggerPlayer]?.hasLost !== false
+        ? []
+        : [triggerPlayer];
+    }
     if (who === "trigger-controller") {
       const p =
         triggerLastKnown?.controller ??
@@ -12756,7 +12975,8 @@ export class Game {
     return rotated.filter(
       (p) =>
         !this.state.players[p].hasLost &&
-        (who === "each-player" || p !== controller),
+        (who === "each-player" || p !== controller) &&
+        (who !== "each-other-opponent" || p !== triggerPlayer),
     );
   }
 
@@ -12768,9 +12988,10 @@ export class Game {
     delta: number,
     triggerObject?: ObjectId,
     triggerLastKnown?: LastKnownInfo,
+    triggerPlayer?: PlayerId,
   ): void {
     if (delta === 0) return;
-    for (const p of this.scopedPlayers(controller, who, triggerObject, triggerLastKnown)) {
+    for (const p of this.scopedPlayers(controller, who, triggerObject, triggerLastKnown, triggerPlayer)) {
       this.changeLife(p, delta);
     }
   }
