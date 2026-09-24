@@ -17,7 +17,7 @@ export default defineCard({
     {
       affects: { scope: "self" },
       setBasePtFromCount: {
-        countOf: "creature-cards-in-all-graveyards",
+        countOf: { countInGraveyard: { type: "creature" } },
         plusPower: 0,
         plusToughness: 0,
       },

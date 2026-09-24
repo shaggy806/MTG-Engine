@@ -947,10 +947,23 @@ anthem, the keyword grant and the granted trigger like any other creature.
   "gains '[trigger]' until end of turn" equivalent is the `grant-triggered`
   *effect* (§6).
 - `setBasePtFromCount: { countOf, plusPower, plusToughness }` — a layer-7b CDA
-  (`"self"` only). `countOf`: `"cards-in-all-graveyards" \|
-  "creature-cards-in-all-graveyards" \| "lands-you-control" \|
-  "cards-in-your-hand"`. (Mortivore, Psychosis Crawler.) It applies in every
-  zone (rule 604.3), so the card has that size in a library or graveyard too.
+  (`"self"` only). `countOf` is a `CountSpec`:
+  - `{ countOf: CardFilter }` — battlefield permanents matching the filter, a
+    token stack counting as every token in it. "The number of lands you
+    control" (Beanstalk Giant, Lumra, Bellow of the Woods) is `{ countOf: {
+    type: "land", controlledBy: "you" } }`; the CDA's own object counts when
+    it matches ("creatures you control" includes itself).
+  - `{ countInGraveyard: CardFilter }` — cards in **all** graveyards matching
+    the filter (Mortivore: `{ type: "creature" }`); add `ownedBy: "you"` for
+    "in your graveyard".
+  - `"cards-in-all-graveyards"` (Lord of Extinction), `"cards-in-your-hand"`
+    (Psychosis Crawler).
+
+  It applies in every zone (rule 604.3), so the card has that size in a
+  library, hand, graveyard or the command zone too; "you" is its controller,
+  i.e. its owner off the battlefield. A filter may read computed
+  characteristics (a `keyword`, `power`); if that asks about the CDA's own
+  object, the nested read uses its printed P/T rather than recursing.
 - `restrictions: [...]` — `"cant-attack" \| "cant-block" \| "must-attack" \|
   "must-be-blocked"` (Pacifism, Juggernaut, Lure). `"must-be-blocked"` is
   Lure's "all creatures able to block it do so"; on an attacker with menace it

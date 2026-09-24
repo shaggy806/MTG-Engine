@@ -14,7 +14,7 @@ export default defineCard({
   static: [
     {
       affects: { scope: "self" },
-      setBasePtFromCount: { countOf: "lands-you-control", plusPower: 0, plusToughness: 0 },
+      setBasePtFromCount: { countOf: { countOf: { type: "land", controlledBy: "you" } }, plusPower: 0, plusToughness: 0 },
       text:
         "Beanstalk Giant's power and toughness are each equal to the number of lands you control.",
     },

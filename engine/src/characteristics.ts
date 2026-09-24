@@ -48,6 +48,23 @@ import type { GameObject, GameState } from "./state.js";
 const conditionInProgress = new Set<ObjectId>();
 
 /**
+ * Ids whose characteristic-defining count (`setBasePtFromCount`) is currently
+ * being taken. A count whose filter reads computed characteristics ("creatures
+ * you control with flying") asks about the CDA's own object, which would fold
+ * its characteristics and take the count again. Re-entry for an id on this
+ * stack skips the CDA and answers with the printed P/T — conservative, like
+ * `conditionInProgress`, and likewise never cached. Transient scaffolding.
+ */
+const cdaInProgress = new Set<ObjectId>();
+
+/** Whether a value computed now may be the re-entrancy guards' conservative
+ * answer rather than the true one — and so must neither be served from nor
+ * stored in the computed cache. */
+function guardActive(): boolean {
+  return conditionInProgress.size > 0 || cdaInProgress.size > 0;
+}
+
+/**
  * A scoped memo for computed values that are pure functions of the current
  * `GameState` — {@link computeCharacteristics} results, the
  * {@link contributingStaticSources} battlefield pre-scan, and (via
@@ -139,7 +156,7 @@ export function suspendComputedCache<T>(fn: () => T): T {
  * `key` — used by `Game` for its mana-source list. Computes fresh when no
  * region is active or a condition evaluation is in progress. */
 export function computedCacheMemo<T>(key: string, compute: () => T): T {
-  if (activeCache === null || conditionInProgress.size > 0) return compute();
+  if (activeCache === null || guardActive()) return compute();
   if (activeCache.misc.has(key)) return activeCache.misc.get(key) as T;
   const value = compute();
   activeCache.misc.set(key, value);
@@ -473,31 +490,26 @@ function countValue(
   registry: CardRegistry,
   controller: PlayerId,
 ): number {
-  switch (spec) {
-    case "cards-in-all-graveyards":
-      return state.turnOrder.reduce(
-        (n, p) => n + state.zones.perPlayer[p].graveyard.length,
-        0,
-      );
-    case "creature-cards-in-all-graveyards":
-      return state.turnOrder.reduce(
-        (n, p) =>
-          n +
-          state.zones.perPlayer[p].graveyard.filter((id) =>
-            registry.get(state.objects[id].cardName).types.includes("creature"),
-          ).length,
-        0,
-      );
-    case "cards-in-your-hand":
-      return state.zones.perPlayer[controller]?.hand.length ?? 0;
-    case "lands-you-control":
+  const allGraveyards = (): ObjectId[] =>
+    state.turnOrder.flatMap((p) => state.zones.perPlayer[p]?.graveyard ?? []);
+  if (typeof spec === "object") {
+    if ("countOf" in spec) {
       return permanentCount(
         state,
-        state.zones.shared.battlefield.filter((id) => {
-          const o = state.objects[id];
-          return o.controller === controller && registry.get(o.cardName).types.includes("land");
-        }),
+        state.zones.shared.battlefield.filter((id) =>
+          matchesFilter(state, registry, id, spec.countOf, { you: controller }),
+        ),
       );
+    }
+    return allGraveyards().filter((id) =>
+      matchesFilter(state, registry, id, spec.countInGraveyard, { you: controller }),
+    ).length;
+  }
+  switch (spec) {
+    case "cards-in-all-graveyards":
+      return allGraveyards().length;
+    case "cards-in-your-hand":
+      return state.zones.perPlayer[controller]?.hand.length ?? 0;
     default:
       return 0;
   }
@@ -811,7 +823,7 @@ export function computeCharacteristics(
   // Cache only outside condition evaluation — a value computed while any
   // static condition is in progress may be the re-entrancy guard's
   // conservative answer, not the true one (see `conditionInProgress`).
-  if (activeCache !== null && conditionInProgress.size === 0) {
+  if (activeCache !== null && !guardActive()) {
     const hit = activeCache.chars.get(id);
     if (hit !== undefined) {
       if (cacheCheck) assertSameCharacteristics(hit, computeCharacteristicsUncached(state, registry, id), id);
@@ -925,18 +937,20 @@ function computeCharacteristicsUncached(
   if (!lostAbilities) {
     for (const ability of def.static) {
       if (ability.setBasePtFromCount === undefined) continue;
+      if (cdaInProgress.has(object.id)) continue;
       if (
         ability.condition !== undefined &&
         !staticConditionMet(state, registry, object, ability.condition)
       ) {
         continue;
       }
-      const n = countValue(
-        ability.setBasePtFromCount.countOf,
-        state,
-        registry,
-        object.controller,
-      );
+      let n: number;
+      cdaInProgress.add(object.id);
+      try {
+        n = countValue(ability.setBasePtFromCount.countOf, state, registry, object.controller);
+      } finally {
+        cdaInProgress.delete(object.id);
+      }
       power = n + ability.setBasePtFromCount.plusPower;
       toughness = n + ability.setBasePtFromCount.plusToughness;
     }

@@ -165,14 +165,24 @@ export type CombatRestriction =
   | "must-attack"
   | "must-be-blocked";
 
-/** A dynamic quantity a characteristic-defining ability can read (rule 604.3). */
+/**
+ * A dynamic quantity a characteristic-defining ability can read (rule 604.3).
+ * "You" is the object's controller — its owner, off the battlefield, since a
+ * CDA works in every zone.
+ */
 export type CountSpec =
   | "cards-in-all-graveyards"
-  | "creature-cards-in-all-graveyards"
-  | "lands-you-control"
   /** How many cards are in its controller's hand (Psychosis Crawler) — its
    * owner's, off the battlefield. */
-  | "cards-in-your-hand";
+  | "cards-in-your-hand"
+  /** Battlefield permanents matching a filter, a token stack counting as
+   * every token in it (`permanentCount`) — Beanstalk Giant's "the number of
+   * lands you control" is `{ countOf: { type: "land", controlledBy: "you" } }`.
+   * The CDA's own object is counted when it matches, as the rules say. */
+  | { readonly countOf: CardFilter }
+  /** Cards in **all** graveyards matching a filter — Mortivore's "creature
+   * cards in all graveyards". `ownedBy: "you"` narrows it to your own. */
+  | { readonly countInGraveyard: CardFilter };
 
 /**
  * A per-player running total the engine keeps for the current turn, readable
