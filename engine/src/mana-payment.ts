@@ -184,7 +184,8 @@ export interface ManaPlanningView {
    * of it this payment may actually touch. */
   readonly pool: readonly ManaUnit[];
   /** The payer's current life, which caps what a painland option or a
-   * Phyrexian pip is allowed to cost them. */
+   * Phyrexian pip is allowed to cost them — less any life the same cost
+   * already spends outside the mana (Liesa's commander tax), so it can be 0. */
   readonly life: number;
   /** Every permanent that could produce mana right now. */
   readonly sources: readonly ManaSource[];
@@ -382,11 +383,16 @@ export function planManaPayment(
   // trikeland option whose toll would drop it to 0 or below) — a human's
   // casts are auto-paid too, and "kill yourself to cast a spell" is never
   // the intent. Consistent with `resolveHybridCost`'s Phyrexian "never
-  // below 1 life" rule.
+  // below 1 life" rule. A toll-free option always stays: `view.life` can be
+  // 0 when the rest of the cost spends every point of life (Liesa's
+  // commander tax paid down to exactly 0), and a Plains costs none of it.
   const currentLife = view.life;
   const affordableOptions = (s: ManaSource): ManaSource => ({
     ...s,
-    options: s.options.filter((o) => o.pain + o.lifeCost < currentLife),
+    options: s.options.filter((o) => {
+      const toll = o.pain + o.lifeCost;
+      return toll === 0 || toll < currentLife;
+    }),
   });
   // Drop options whose mana couldn't pay for what's being paid for (rule
   // 106.6b). Done at the *option* level rather than the source level

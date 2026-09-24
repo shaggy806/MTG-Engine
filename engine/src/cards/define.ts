@@ -934,6 +934,13 @@ export interface CardDefinition {
    * ward "counter it" clause does nothing to this spell. `false` for normal
    * cards. */
   readonly cantBeCountered: boolean;
+  /** The commander tax is paid in life instead of mana (Liesa, Shroud of
+   * Dusk: "Rather than pay {2} for each previous time you've cast this spell
+   * from the command zone this game, pay 2 life that many times."). Only a
+   * cast from the command zone owes any tax at all, so casting the card from
+   * anywhere else costs neither. Life can be paid down to exactly 0 (rule
+   * 119.4). `false` for normal cards. */
+  readonly commanderTaxAsLife: boolean;
   /** "Exile ~" as a printed clause of a non-permanent spell's own resolution
    * text (Genesis Ultimatum) — it goes to exile instead of the graveyard
    * after resolving, unconditionally. Distinct from flashback/disturb/
@@ -1044,6 +1051,7 @@ interface CardDraft {
   chapters?: readonly SagaChapter[];
   faces?: readonly string[];
   cantBeCountered?: boolean;
+  commanderTaxAsLife?: boolean;
   exileOnResolve?: boolean;
   shuffleIntoLibraryOnResolve?: boolean;
   transform?: boolean;
@@ -1110,6 +1118,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     chapters: draft.chapters ?? null,
     faces: draft.faces ?? null,
     cantBeCountered: draft.cantBeCountered ?? false,
+    commanderTaxAsLife: draft.commanderTaxAsLife ?? false,
     exileOnResolve: draft.exileOnResolve ?? false,
     shuffleIntoLibraryOnResolve: draft.shuffleIntoLibraryOnResolve ?? false,
     transform: draft.transform ?? false,

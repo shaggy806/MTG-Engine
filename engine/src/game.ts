@@ -4139,10 +4139,31 @@ export class Game {
   }
 
   /** {2} more for each previous time *this* commander (by name) was cast from
-   * the command zone this game (rule 903.8, "commander tax"). */
+   * the command zone this game (rule 903.8, "commander tax") — or nothing,
+   * for a commander that pays its tax in life instead (see
+   * {@link commanderTaxLife}). */
   private commanderTax(player: PlayerId, cardId: ObjectId): number {
+    if (this.taxPaidInLife(cardId)) return 0;
+    return 2 * this.previousCommanderCasts(player, cardId);
+  }
+
+  /** The life `player` pays as the commander tax when casting `cardId` from
+   * the command zone: 2 for each previous cast, for a card whose
+   * `commanderTaxAsLife` replaces the {2} (Liesa, Shroud of Dusk — "pay 2
+   * life that many times"). 0 for any other card, and for any cast from
+   * elsewhere — the tax is only ever owed on a cast from the command zone. */
+  private commanderTaxLife(player: PlayerId, cardId: ObjectId): number {
+    if (!this.isCastableCommander(player, cardId) || !this.taxPaidInLife(cardId)) return 0;
+    return 2 * this.previousCommanderCasts(player, cardId);
+  }
+
+  private previousCommanderCasts(player: PlayerId, cardId: ObjectId): number {
     const name = this.state.objects[cardId].cardName;
-    return 2 * (this.state.players[player].commanderCastCounts[name] ?? 0);
+    return this.state.players[player].commanderCastCounts[name] ?? 0;
+  }
+
+  private taxPaidInLife(cardId: ObjectId): boolean {
+    return this.registry.get(this.state.objects[cardId].cardName).commanderTaxAsLife;
   }
 
   /** `def.manaCost`, plus the commander tax if `cardId` is being cast from
@@ -4711,6 +4732,11 @@ export class Game {
         return `${def.name} has no legal ${describeTargetSpec(spec)} target`;
       }
     }
+    // Liesa's life-paid commander tax. Rule 119.4: life can be paid only
+    // while the total is at least the payment — down to exactly 0 is fine.
+    if (this.state.players[player].life < this.commanderTaxLife(player, cardId)) {
+      return `${player} has too little life to pay ${def.name}'s commander tax`;
+    }
     const baseCost = this.withFace(cardId, face, () =>
       this.castingCostOf(
         player,
@@ -4929,6 +4955,10 @@ export class Game {
     if (badTarget !== null) throw new Error(badTarget);
 
     const castingFromCommand = this.isCastableCommander(player, cardId);
+    const taxLife = this.commanderTaxLife(player, cardId);
+    if (this.state.players[player].life < taxLife) {
+      throw new Error(`${player} has too little life to pay ${def.name}'s commander tax`);
+    }
     const fullCost = this.castingCostOf(player, cardId, def, chosenX, costString);
     let convoked: PaidConvoke[] = [];
     if (convoke !== undefined && convoke.length > 0) {
@@ -5030,6 +5060,9 @@ export class Game {
     // `resolved` is the concrete cost after hybrid and Phyrexian choices, so
     // life paid for a Phyrexian pip isn't counted as mana.
     object.manaSpent = manaValue(payment.resolved);
+    // The commander tax, paid in life rather than mana (Liesa). Part of the
+    // total cost, so paid alongside the mana; it isn't mana spent.
+    if (taxLife > 0) this.changeLife(player, -taxLife);
     // Sephara's "tap four untapped creatures you control with flying" — the
     // other half of its alternative cost, paid as the spell is cast.
     this.payTapCost(tapPicked);
@@ -6180,9 +6213,12 @@ export class Game {
     arrange?: ManaSourceArrangement,
   ): ManaPlanningView {
     const sources = this.manaSources(player);
+    // Life a spell's cost already spends outside the mana (Liesa's commander
+    // tax) isn't there for a painland or a Phyrexian pip to spend as well.
+    const reserved = purpose?.kind === "cast" ? this.commanderTaxLife(player, purpose.card) : 0;
     return {
       pool: this.state.players[player].manaPool,
-      life: this.state.players[player].life,
+      life: this.state.players[player].life - reserved,
       sources: arrange === undefined ? sources : arrangeManaSources(sources, arrange),
       canPay: (unit) => this.manaUnitCanPay(player, unit, purpose),
     };
