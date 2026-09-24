@@ -92,15 +92,10 @@ export interface ActivatedAbility {
    * lands"). Uses the stack like any other activated ability.
    */
   readonly loyaltyCost?: number;
-  /** "…another target X" (Manifold Key: "Untap another target artifact") —
-   * the source permanent itself is excluded from every target slot's legal
-   * options. Without it a self-untap-style ability can target itself and
-   * become a repeatable no-net-cost loop the fuzzer's tick budget catches;
-   * mirrors `TriggerSpec.otherOnly`. needed-cards P17.
-   *
-   * It also keeps the source out of its own **sacrifice cost** (Ayara, First
-   * of Locthwain: "Sacrifice **another** black creature") — same word, same
-   * meaning, and without it Ayara could eat herself to draw. */
+  /** "Sacrifice **another** black creature" (Ayara, First of Locthwain) —
+   * keeps the source out of its own **sacrifice cost**; without it Ayara
+   * could eat herself to draw. Targets are another matter: "another target
+   * artifact" (Manifold Key) is an `other` target spec on that slot. */
   readonly otherOnly?: boolean;
   /** "Activate only if …" (rule 602.5, e.g. Ferocious — Fanatic of Rhonas:
    * "{T}: Add {G}{G}{G}{G}. Activate only if you control a creature with

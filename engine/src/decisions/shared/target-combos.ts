@@ -8,7 +8,7 @@
  * untouched.
  */
 
-import { isOptionalSpec } from "../../target.js";
+import { isOptionalSpec, otherSlotConflict } from "../../target.js";
 import type { TargetRef, TargetSpec } from "../../target.js";
 
 /**
@@ -44,5 +44,6 @@ export function targetCombos(
     }
     combos = next;
   });
-  return combos;
+  // "Another target" relations between slots are judged on the whole combo.
+  return combos.filter((combo) => otherSlotConflict(specs, combo) === null);
 }

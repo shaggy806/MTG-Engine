@@ -150,7 +150,37 @@ export type TargetSpec =
    * as `null` in `Action.targets` and arrives at resolution as `undefined`,
    * which is what an effect reading `ctx.targets[i]` already checks for.
    */
-  | { readonly kind: "optional"; readonly of: TargetSpec };
+  | { readonly kind: "optional"; readonly of: TargetSpec }
+  /**
+   * "**another** target …" / "target … **other than** …": whatever `of`
+   * accepts, less one object or player — see {@link OtherThan}. Ezuri, Claw
+   * of Progress's "another target creature you control" is `{ kind: "other",
+   * of: "creature-you-control" }`. Nests either way round with `optional`
+   * ("up to one other target creature").
+   */
+  | { readonly kind: "other"; readonly of: TargetSpec; readonly than?: OtherThan };
+
+/**
+ * What an `other` slot must differ from:
+ * - `"source"` (the default) — the spell's or ability's own source, the
+ *   usual "another target …" (Brash Taunter's "fights another target
+ *   creature").
+ * - `"trigger-object"` — the object whose event fired the trigger ("target
+ *   creature other than that creature").
+ * - `"trigger-player"` — the player the triggering event names (The Lord of
+ *   Pain's "another target player": other than the one who cast the spell).
+ * - `{ slot }` — the target chosen for an earlier slot of the same spell or
+ *   ability (Ulvenwald Tracker's "target creature you control fights
+ *   **another** target creature"). A relation between two slots, so each
+ *   slot's options still list everything and the pair is checked together;
+ *   choosers narrow a slot's options by what they already picked
+ *   (`slotOptions`). Not for a trigger whose slots the event fills.
+ */
+export type OtherThan =
+  | "source"
+  | "trigger-object"
+  | "trigger-player"
+  | { readonly slot: number };
 
 /**
  * Targets as the engine carries them internally, once a dispatched action has
@@ -170,12 +200,68 @@ export function normalizeTargets(
 
 /** The underlying spec a (possibly optional) slot accepts. */
 export function requiredSpec(spec: TargetSpec): TargetSpec {
-  return typeof spec === "object" && spec.kind === "optional" ? spec.of : spec;
+  if (typeof spec !== "object") return spec;
+  if (spec.kind === "optional") return spec.of;
+  if (spec.kind === "other") return { ...spec, of: requiredSpec(spec.of) };
+  return spec;
 }
 
 /** May this slot be left empty? */
 export function isOptionalSpec(spec: TargetSpec): boolean {
-  return typeof spec === "object" && spec.kind === "optional";
+  if (typeof spec !== "object") return false;
+  if (spec.kind === "optional") return true;
+  return spec.kind === "other" && isOptionalSpec(spec.of);
+}
+
+/** What this slot must differ from, if it's an "another …" slot — looked for
+ * through an `optional` wrapper too. See {@link OtherThan}. */
+export function otherThan(spec: TargetSpec): OtherThan | undefined {
+  if (typeof spec !== "object") return undefined;
+  if (spec.kind === "other") return spec.than ?? "source";
+  if (spec.kind === "optional") return otherThan(spec.of);
+  return undefined;
+}
+
+const sameTarget = (a: TargetRef, b: TargetRef): boolean =>
+  a.kind === "player"
+    ? b.kind === "player" && a.player === b.player
+    : b.kind === "object" && a.object === b.object;
+
+/**
+ * Slot `i`'s options once an "other than slot n" relation (see
+ * {@link OtherThan}) has been applied against the targets already `picked`
+ * for the slots before it — what a chooser filling the slots in order should
+ * offer. Every other slot's options come back as they are.
+ */
+export function slotOptions(
+  specs: readonly TargetSpec[],
+  options: readonly (readonly TargetRef[])[],
+  i: number,
+  picked: readonly (TargetRef | null | undefined)[],
+): readonly TargetRef[] {
+  const all = options[i] ?? [];
+  const than = specs[i] === undefined ? undefined : otherThan(specs[i]);
+  if (than === undefined || typeof than !== "object") return all;
+  const earlier = picked[than.slot];
+  return earlier === null || earlier === undefined ? all : all.filter((ref) => !sameTarget(ref, earlier));
+}
+
+/** The first pair of slots whose "other than slot n" relation `chosen`
+ * breaks — the later slot and the one it must differ from — or `null`. */
+export function otherSlotConflict(
+  specs: readonly TargetSpec[],
+  chosen: readonly (TargetRef | null | undefined)[],
+): { readonly slot: number; readonly than: number } | null {
+  for (let i = 0; i < specs.length; i += 1) {
+    const than = otherThan(specs[i]);
+    if (than === undefined || typeof than !== "object") continue;
+    const mine = chosen[i];
+    const theirs = chosen[than.slot];
+    if (mine !== null && mine !== undefined && theirs !== null && theirs !== undefined && sameTarget(mine, theirs)) {
+      return { slot: i, than: than.slot };
+    }
+  }
+  return null;
 }
 
 /**
@@ -186,6 +272,17 @@ export function isOptionalSpec(spec: TargetSpec): boolean {
 export function describeTargetSpec(spec: TargetSpec | string): string {
   if (typeof spec === "string") return spec;
   if (spec.kind === "optional") return `${describeTargetSpec(spec.of)} (optional)`;
+  if (spec.kind === "other") {
+    const than = spec.than ?? "source";
+    const inner = describeTargetSpec(spec.of);
+    return than === "source"
+      ? `another ${inner}`
+      : than === "trigger-object"
+        ? `${inner} other than that one`
+        : than === "trigger-player"
+          ? `${inner} other than that player`
+          : `${inner} other than target ${than.slot + 1}`;
+  }
   if (spec.kind === "spell") {
     const colour = spec.filter.colors?.length === 1 ? `${COLOUR_WORD[spec.filter.colors[0]]} ` : "";
     const type = spec.filter.type === undefined ? "" : `${spec.filter.type} `;

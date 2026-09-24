@@ -8,7 +8,8 @@ import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { printedCardName } from "./state.js";
 import type { GameState } from "./state.js";
-import { isOptionalSpec } from "./target.js";
+import { isOptionalSpec, otherSlotConflict } from "./target.js";
+import type { OtherThan } from "./target.js";
 import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
 
 /** The colour/type identity of whatever is targeting / damaging / blocking —
@@ -16,10 +17,16 @@ import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
 export interface TargetSource {
   readonly colors: ReadonlySet<Color> | readonly Color[];
   readonly types: readonly CardType[];
-  /** The permanent the spell/ability comes from, when there is one. Only
-   * `"creature-defending-player-controls"` reads it — it has to know which
-   * creature is attacking to know who the defending player is. */
+  /** The permanent the spell/ability comes from, when there is one —
+   * `"creature-defending-player-controls"` has to know which creature is
+   * attacking to know who the defending player is, and an `other` slot
+   * (`than: "source"`) leaves it out. */
   readonly object?: ObjectId;
+  /** For a triggered ability, the object and the player its event names —
+   * what an `other` slot's `than: "trigger-object"` / `"trigger-player"`
+   * leaves out. */
+  readonly triggerObject?: ObjectId;
+  readonly triggerPlayer?: PlayerId;
   /**
    * Answers a target filter's dynamic `NumCompare` operand (`{ amount }` —
    * see `DynamicOperand`) in the context of the spell or ability doing the
@@ -94,6 +101,18 @@ function isPermanentOfType(
   return predicate(effectiveTypes(state, registry, object));
 }
 
+/** Is `ref` the one thing an `other` slot must differ from? An "other than
+ * slot n" relation isn't this ref's alone to answer — `otherSlotConflict`
+ * checks the pair. */
+function excludedAsOther(than: OtherThan, ref: TargetRef, source: TargetSource | undefined): boolean {
+  if (typeof than === "object" || source === undefined) return false;
+  if (than === "trigger-player") {
+    return ref.kind === "player" && source.triggerPlayer !== undefined && ref.player === source.triggerPlayer;
+  }
+  const id = than === "source" ? source.object : source.triggerObject;
+  return ref.kind === "object" && id !== undefined && ref.object === id;
+}
+
 function isLivingPlayer(state: GameState, ref: TargetRef): boolean {
   return (
     ref.kind === "player" &&
@@ -147,6 +166,11 @@ export function isLegalTarget(
   // An optional slot accepts exactly what its inner spec accepts; whether it
   // may be left *empty* is a question for the caller, not for a given ref.
   if (typeof spec === "object" && spec.kind === "optional") {
+    return isLegalTarget(state, registry, spec.of, ref, forPlayer, source, opts);
+  }
+  // "Another target …": the inner spec, less what it has to differ from.
+  if (typeof spec === "object" && spec.kind === "other") {
+    if (excludedAsOther(spec.than ?? "source", ref, source)) return false;
     return isLegalTarget(state, registry, spec.of, ref, forPlayer, source, opts);
   }
   // A filtered battlefield permanent (see `TargetSpec`). Like the graveyard
@@ -453,6 +477,12 @@ export function legalTargets(
   if (typeof spec === "object" && spec.kind === "optional") {
     return legalTargets(state, registry, spec.of, forPlayer, source);
   }
+  if (typeof spec === "object" && spec.kind === "other") {
+    const than = spec.than ?? "source";
+    return legalTargets(state, registry, spec.of, forPlayer, source).filter(
+      (ref) => !excludedAsOther(than, ref, source),
+    );
+  }
   const out: TargetRef[] = [];
   for (const player of state.turnOrder) {
     const ref: TargetRef = { kind: "player", player };
@@ -556,6 +586,10 @@ export function invalidTargetReason(
     if (!isLegalTarget(state, registry, specs[i], ref, player, source)) {
       return `illegal target for ${name}`;
     }
+  }
+  const conflict = otherSlotConflict(specs, chosen);
+  if (conflict !== null) {
+    return `${name}'s target ${conflict.slot + 1} must be another than its target ${conflict.than + 1}`;
   }
   return null;
 }

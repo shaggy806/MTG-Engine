@@ -30,7 +30,7 @@ import type { EffectSpec } from "./effects.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameObject, GameState } from "./state.js";
-import { isOptionalSpec } from "./target.js";
+import { isOptionalSpec, slotOptions } from "./target.js";
 import type { TargetRef, TargetSpec } from "./target.js";
 import { fitTargetCount } from "./target-count.js";
 
@@ -237,7 +237,15 @@ const discardFromFront = (
  */
 const firstOfEach = (
   legalOptions: readonly (readonly TargetRef[])[],
-): ChosenTargets => legalOptions.map((options) => options[0] ?? null);
+  specs: readonly TargetSpec[] = [],
+): ChosenTargets => {
+  // Slot by slot, so an "another target" slot skips what an earlier one took.
+  const picked: (TargetRef | null)[] = [];
+  for (let i = 0; i < legalOptions.length; i += 1) {
+    picked.push(slotOptions(specs, legalOptions, i, picked)[0] ?? null);
+  }
+  return picked;
+};
 
 /**
  * The standard combat-damage assignment: kill as many blockers as possible,
@@ -306,10 +314,10 @@ export class AutomaticController implements PlayerController {
   chooseTargets(
     _view: ControllerView,
     _sourceName: string,
-    _specs: readonly TargetSpec[],
+    specs: readonly TargetSpec[],
     legalOptions: readonly (readonly TargetRef[])[],
   ): ChosenTargets {
-    return firstOfEach(legalOptions);
+    return firstOfEach(legalOptions, specs);
   }
 
   chooseFromZone(
@@ -530,8 +538,8 @@ export class ScriptedController implements PlayerController {
   declareAttackersFn: AttackChooser = () => [];
   declareBlockersFn: BlockChooser = () => [];
   assignCombatDamageFn: DamageAssigner = (_view, a) => standardDamageAssignment(a);
-  chooseTargetsFn: TargetChooser = (_view, _source, _specs, legalOptions) =>
-    firstOfEach(legalOptions);
+  chooseTargetsFn: TargetChooser = (_view, _source, specs, legalOptions) =>
+    firstOfEach(legalOptions, specs);
   chooseFromZoneFn: ZoneChooser = (_view, eligible, min, _max) => eligible.slice(0, min);
   mulliganFn: MulliganChooser = () => false;
   chooseBottomOfLibraryFn: BottomChooser = (hand, count) => discardFromFront(hand, count);
@@ -841,11 +849,15 @@ export class RandomController extends AutomaticController {
     options: readonly (readonly TargetRef[])[],
     specs: readonly TargetSpec[] = [],
   ): ChosenTargets {
-    return options.map((choices, i) => {
-      if (choices.length === 0) return null;
-      if (isOptionalSpec(specs[i] ?? "creature") && this.random() < 0.25) return null;
-      return choices[this.pickIndex(choices.length)];
-    });
+    const picked: (TargetRef | null)[] = [];
+    for (let i = 0; i < options.length; i += 1) {
+      // Narrowed by an "another target" relation to an earlier slot's pick.
+      const choices = slotOptions(specs, options, i, picked);
+      if (choices.length === 0) picked.push(null);
+      else if (isOptionalSpec(specs[i] ?? "creature") && this.random() < 0.25) picked.push(null);
+      else picked.push(choices[this.pickIndex(choices.length)]);
+    }
+    return picked;
   }
 
   /**
@@ -1136,7 +1148,7 @@ export class HeuristicBotController extends AutomaticController {
       const modes = fillable.slice(0, Math.max(cm.minModes, Math.min(cm.maxModes, fillable.length)));
       const targets = fitCastTargets(
         legal,
-        modes.flatMap((i) => firstOfEach(cm.modes[i].targetOptions)),
+        modes.flatMap((i) => firstOfEach(cm.modes[i].targetOptions, cm.modes[i].targetSpecs)),
         modes.flatMap((i) => cm.modes[i].targetOptions),
         modes.flatMap((i) => cm.modes[i].targetSpecs),
       );
@@ -1155,7 +1167,7 @@ export class HeuristicBotController extends AutomaticController {
     }
     const targets = fitCastTargets(
       legal,
-      firstOfEach(legal.targetOptions),
+      firstOfEach(legal.targetOptions, legal.targetSpecs),
       legal.targetOptions,
       legal.targetSpecs,
     );
@@ -1213,7 +1225,7 @@ export class HeuristicBotController extends AutomaticController {
       player,
       source: legal.source,
       abilityIndex: legal.abilityIndex,
-      targets: firstOfEach(legal.targetOptions),
+      targets: firstOfEach(legal.targetOptions, legal.targetSpecs),
       ...(sac !== undefined && sac.choices.length > 0
         ? { sacrifice: sac.choices[sac.choices.length - 1] }
         : {}),

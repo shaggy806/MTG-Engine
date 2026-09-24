@@ -47,7 +47,8 @@
   "mechanic:player-counters",
   "cost:ability-cost-modification",
   "effect:created-tokens-gain-keyword-eot",
-  "effect:reflexive-trigger"
+  "effect:reflexive-trigger",
+  "effect:target-other-than-source"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

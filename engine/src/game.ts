@@ -189,7 +189,7 @@ import type {
   TargetedBy,
   ZoneType,
 } from "./state.js";
-import { describeTargetSpec, isOptionalSpec, normalizeTargets } from "./target.js";
+import { describeTargetSpec, isOptionalSpec, normalizeTargets, otherThan } from "./target.js";
 import { distinctTargetCount, targetCountBounds } from "./target-count.js";
 import type { TargetCopies, TargetCountRange } from "./target-count.js";
 import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
@@ -1127,12 +1127,7 @@ export class Game {
             : `${ability.text} (add ${manaColors.map((m) => `{${m}}`).join("")})`,
         ...(manaColors !== undefined ? { manaColors } : {}),
         targetSpecs: ability.targets,
-        targetOptions: this.targetOptionsFor(
-          ability.targets,
-          player,
-          this.permanentSource(source),
-          ability.otherOnly ? source : undefined,
-        ),
+        targetOptions: this.targetOptionsFor(ability.targets, player, this.permanentSource(source)),
         ...(ability.cost.sacrifice !== undefined && ability.cost.sacrifice !== "self"
           ? { sacrifice: { choices: this.sacrificeCandidates(player, source, ability) } }
           : {}),
@@ -1241,13 +1236,8 @@ export class Game {
     specs: readonly TargetSpec[],
     forPlayer: PlayerId,
     source?: TargetSource,
-    excludeObject?: ObjectId,
   ): readonly (readonly TargetRef[])[] {
-    return specs.map((spec) =>
-      legalTargets(this.state, this.registry, spec, forPlayer, source).filter(
-        (ref) => excludeObject === undefined || ref.kind !== "object" || ref.object !== excludeObject,
-      ),
-    );
+    return specs.map((spec) => legalTargets(this.state, this.registry, spec, forPlayer, source));
   }
 
   /** The colour/type identity of a card (its printed values). */
@@ -6453,13 +6443,6 @@ export class Game {
       this.permanentSource(sourceId),
     );
     if (badTarget !== null) throw new Error(badTarget);
-    ability.targets.forEach((_spec, i) => {
-      const target = targets[i];
-      const isSource = target?.kind === "object" && target.object === sourceId;
-      if (ability.otherOnly === true && isSource) {
-        throw new Error(`illegal target for ${def.name}'s ability`);
-      }
-    });
 
     // Resolve which permanent the sacrifice cost (if any) will consume.
     let sacrificeVictim: ObjectId | null = null;
@@ -8132,9 +8115,11 @@ export class Game {
           // creature** that player controls" (Mordant Dragon) was handed the
           // player instead, and the whole trigger was then dropped for "no
           // legal targets". A slot that would have accepted the auto still
-          // gets it, so no card that works today changes.
+          // gets it, so no card that works today changes. An "another target"
+          // slot is a real choice by definition, never the event's to fill.
           const autoTargets =
             autoCandidate === undefined ||
+            (ability.targets[0] !== undefined && otherThan(ability.targets[0]) !== undefined) ||
             (ability.targets[0] !== undefined &&
               !isLegalTarget(
                 this.state,
@@ -9276,8 +9261,11 @@ export class Game {
       this.state.objects[trigger.sourceObjectId] !== undefined
         ? permanentSource(this.state, this.registry, trigger.sourceObjectId)
         : { colors: [], types: [] };
+    const triggerPlayer = trigger.lastKnownRefs?.player;
     return {
       ...base,
+      ...(trigger.triggerObject !== undefined ? { triggerObject: trigger.triggerObject } : {}),
+      ...(triggerPlayer !== undefined ? { triggerPlayer } : {}),
       amount: this.filterAmounts({
         source: trigger.sourceObjectId,
         controller: trigger.controller,

@@ -8,8 +8,7 @@ export default defineCard({
   activated: [
     {
       cost: { mana: "{1}", tap: true },
-      targets: ["artifact"],
-      otherOnly: true,
+      targets: [{ kind: "other", of: "artifact" }],
       effect: { kind: "untap", target: 0 },
       resolve: null,
       text: "{1}, {T}: Untap another target artifact.",

@@ -20,20 +20,21 @@ that one card is the reason the deck exists.
   Fangbearer, Atreus, Impulsive Son and Kratos, Stoic Father (poison and experience counters);
   Sam, Loyal Attendant (`abilityCostModification`); Ovika, Enigma Goliath (`create-token`'s
   `gainUntilEndOfTurn`); Terra, Herald of Hope, Evereth, Viceroy of Plunder and Slinza, the
-  Spiked Stampede (`reflexive-trigger`).
+  Spiked Stampede (`reflexive-trigger`); Imotekh the Stormlord, Commodore Guff and Ezuri, Claw
+  of Progress (the `other` target spec).
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first
   ten, engine-only, with the commanders each fully unblocks:
-  `cost:may-cost-non-mana` (+1), `keyword:earthbend` (+1), `effect:amount-aggregate` (+1),
-  `effect:target-other-than-source` (+3), `effect:add-subtype` (+2),
-  `trigger:combat-trigger-extensions` (+3), `trigger:sacrifice-filter` (+1),
+  `effect:add-subtype` (+2), `cost:may-cost-non-mana` (+1), `trigger:combat-trigger-extensions`
+  (+3), `keyword:earthbend` (+1), `trigger:sacrifice-filter` (+1),
   `condition:filter-dynamic-compare` (+1), `effect:amount-new-variants` (+1),
-  `static:pt-per-amount` (+2).
-- **Most-needed features overall.** `effect:target-other-than-source` (19),
-  `effect:this-way-results` (18), `condition:filter-dynamic-compare` (16; what's left is an
-  "N plus an amount" operand), `static:grant-to-cards-outside-battlefield` (14). Live numbers
-  come from `cmdrs:gaps`.
+  `static:pt-per-amount` (+2), `effect:this-way-results` (+3), `static:trigger-count-modifiers`
+  (+3).
+- **Most-needed features overall.** `effect:this-way-results` (18),
+  `condition:filter-dynamic-compare` (16; what's left is an "N plus an amount" operand),
+  `static:grant-to-cards-outside-battlefield` (14), `zone:visibility-extensions` (13). Live
+  numbers come from `cmdrs:gaps`.
 - **UI-bound features.** These need a new client decision and a browser check:
   `effect:may-sacrifice-then` (13), `decision:copy-new-targets` (12), `decision:choose-permanent`
   (11), `effect:enter-attacking`, `decision:free-cast-choices`, `effect:attach-extensions`,

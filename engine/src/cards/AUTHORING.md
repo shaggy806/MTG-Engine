@@ -822,6 +822,23 @@ for an optional one. An optional slot is never "forced": even with exactly one
 legal option the player is asked, since leaving it empty is the other choice
 (Displacer Kitten needn't blink itself).
 
+"**Another** target …" wraps a slot the same way: `{ kind: "other", of:
+TargetSpec, than? }` accepts what `of` does, less one thing. `than` is
+`"source"` by default — the spell's or ability's own source (Ezuri, Claw of
+Progress's "another target creature you control"; Manifold Key's "untap
+another target artifact") — or `"trigger-object"` ("target creature other
+than that creature" — the one whose event fired the trigger),
+`"trigger-player"` (The Lord of Pain's "another target player" — other than
+the player the event names), or `{ slot: n }` ("target creature you control
+fights **another** target creature": different from what slot `n` took). The
+first three narrow the slot's own options; `{ slot }` relates two slots, so
+each still lists everything and the pair is checked together (the client and
+the bots narrow a later slot by what they picked — `slotOptions`). It nests
+either way round with `optional` ("up to one other target creature"). An
+"other" slot is never filled in by the triggering event the way a saboteur's
+"that player" is, and `{ slot }` isn't for a trigger whose slots the event
+fills.
+
 Two specs are **structured** rather than strings, for the shapes the literals
 stopped covering:
 
@@ -942,14 +959,13 @@ planning — see §15.
 - `loyaltyCost: 1` (or `-3`) — marks a **loyalty ability**: `cost.mana` /
   `cost.tap` are ignored, it's sorcery-speed, once per planeswalker per turn,
   and paid by adding/removing loyalty counters. Requires `loyalty` on the card.
-- `otherOnly: true` — "…**another** target X" (Manifold Key: "Untap another
-  target artifact") excludes the source permanent itself from every target
-  slot's legal options. Without it, a self-referential ability like an untap
-  can target itself and become a repeatable no-net-cost loop — needed-cards
-  P17 caught exactly this in the fuzzer. Mirrors `TriggeredAbility`'s
-  `otherOnly` (§9); there is still no generic "not this object" exclusion
-  for a *triggered* ability's or spell's targets, or for a `resolve`
-  script's own target choices — see §15.
+- `otherOnly: true` — "Sacrifice **another** …": keeps the source out of its
+  own sacrifice cost (Ayara, First of Locthwain; Dina, Soul Steeper). It says
+  nothing about targets any more — "untap **another** target artifact"
+  (Manifold Key) is an `other` slot (§7), which works for triggered
+  abilities and spells too. Without it, a self-referential ability like an
+  untap could target itself and become a repeatable no-net-cost loop —
+  needed-cards P17 caught exactly this in the fuzzer.
 - `boast: true` — **Boast** (rule 702.135 — Dragonkin Berserker): activatable
   only if this creature attacked this turn (`GameObject.attackedThisTurn`),
   and only once each turn. Implies `oncePerTurn`.

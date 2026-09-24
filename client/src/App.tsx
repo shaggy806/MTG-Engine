@@ -19,6 +19,7 @@ import {
   damageAssignmentViolations,
   describeTargetSpec,
   isOptionalSpec,
+  slotOptions,
   standardAssignment,
 } from 'engine'
 import { useNetworkGame } from './net/useNetworkGame.ts'
@@ -1342,7 +1343,12 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   const pickIdForClick = useCallback(
     (ids: readonly ObjectId[]): ObjectId => {
       if (mode === 'targeting' && activeTargeting) {
-        const slot = activeTargeting.options[activeTargeting.picked.length] ?? []
+        const slot = slotOptions(
+          activeTargeting.specs,
+          activeTargeting.options,
+          activeTargeting.picked.length,
+          activeTargeting.picked,
+        )
         const found = ids.find((i) =>
           slot.some((o) => o.kind === 'object' && o.object === i),
         )
@@ -1366,7 +1372,12 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     (ids: readonly ObjectId[]) => {
       const id = pickIdForClick(ids)
       if (mode === 'targeting' && activeTargeting) {
-        const slot = activeTargeting.options[activeTargeting.picked.length] ?? []
+        const slot = slotOptions(
+          activeTargeting.specs,
+          activeTargeting.options,
+          activeTargeting.picked.length,
+          activeTargeting.picked,
+        )
         if (slot.some((o) => o.kind === 'object' && o.object === id)) {
           pickTarget({ kind: 'object', object: id })
         }
@@ -1543,7 +1554,12 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         return
       }
       if (mode !== 'targeting' || !activeTargeting) return
-      const slot = activeTargeting.options[activeTargeting.picked.length] ?? []
+      const slot = slotOptions(
+        activeTargeting.specs,
+        activeTargeting.options,
+        activeTargeting.picked.length,
+        activeTargeting.picked,
+      )
       if (slot.some((o) => o.kind === 'player' && o.player === pid)) {
         pickTarget({ kind: 'player', player: pid })
       }
@@ -1619,8 +1635,14 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   }, [mode, pass])
 
   // --- render ----------------------------------------------------
+  // "Another target" leaves out what an earlier slot already took.
   const targetSlot = activeTargeting
-    ? (activeTargeting.options[activeTargeting.picked.length] ?? [])
+    ? slotOptions(
+        activeTargeting.specs,
+        activeTargeting.options,
+        activeTargeting.picked.length,
+        activeTargeting.picked,
+      )
     : []
   const pickedObjKeys = new Set(
     (activeTargeting?.picked ?? [])
