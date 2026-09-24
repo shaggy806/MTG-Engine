@@ -407,6 +407,21 @@ Foxglove's "cards in defending player's hand minus the number of cards in your
 hand"; `absolute` is the larger minus the smaller, Doran, Besieged by Time's
 "the difference between its power and toughness").
 
+**"This way."** `{ thisWay: "discarded" | "drawn" | "milled" | "sacrificed",
+who?, filter?, cardTypes? }` counts what the resolving spell or ability has
+made players discard, draw or mill, or sacrifice, **so far** — "draw a card for
+each card discarded this way", Celes's "draw that many cards plus one" (`{
+sum: [{ thisWay: "discarded" }, 1] }`). It's read off the resolution's own
+events (`GameState.resolutionSince`), so a step that waited on a player's
+choice — the discard itself, usually — counts once it has happened; put it in
+a *later* step of a `sequence`. `who` narrows whose cards (default everyone's:
+"each player discards a card, then you draw a card for each card discarded
+this way"); `filter` narrows the cards as they are now — in the graveyard a
+discard put them in — and a sacrificed permanent as it last existed;
+`cardTypes: true` counts the card types among them instead (Kefka, Court
+Mage). Cards exiled or otherwise moved "this way" aren't covered yet. The
+`this-way` condition (§10) asks the same question as an "if".
+
 ### Damage / life / cards
 
 | kind | fields | example |
@@ -1581,6 +1596,13 @@ clause (section 9):
   that leaves and returns is a new object with a fresh count, and an ability
   that fizzled never resolved, so it doesn't count. Only meaningful inside the
   ability's own `conditional` effect (a `not` around it works too).
+- `{ kind: "this-way", what, who?, filter?, atLeast?, atMost? }` — a question
+  about what the resolving spell or ability has done so far: "if a land card
+  is discarded **this way**" (Lord Windgrace: `{ what: "discarded", filter: {
+  type: "land" } }`), "if you **didn't draw** cards this way" (Mr. Foxglove:
+  `{ what: "drawn", who: "you", atMost: 0 }`). Over the same cards the
+  `thisWay` amount counts (§6); `atLeast` defaults to 1, or to 0 when `atMost`
+  is given. Only meaningful inside a `conditional` effect.
 
 **`replacement?`** (`ReplacementSpec`, `replacements.ts`) — a replacement effect
 *is* a static ability:

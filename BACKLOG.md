@@ -32,7 +32,10 @@ that one card is the reason the deck exists.
   `{ amount }` operand); Doran, Besieged by Time (the `difference` amount and an `own`
   compare); Sisay, Weatherlight Captain (`colorsAmong`); Toxrill, the Corrosive
   (`grantPtPerCount.countersOnAffected`); Katara, the Fearless and Cloud, Midgar Mercenary
-  (`doubleTriggersOf`); Wayta, Trainer Prodigy (`doubleTriggers`' `"dealt-damage"` cause).
+  (`doubleTriggersOf`); Wayta, Trainer Prodigy (`doubleTriggers`' `"dealt-damage"` cause);
+  Kefka, Court Mage, Lord Windgrace and Mr. Foxglove (the `thisWay` amount and `this-way`
+  condition — their gaps entries still list `effect:this-way-results`, whose discard/draw part
+  they need is built).
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first

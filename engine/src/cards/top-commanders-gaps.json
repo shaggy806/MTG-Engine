@@ -663,7 +663,7 @@
   "effect:this-way-results": {
    "size": "medium",
    "ui": false,
-   "description": "The resolution context records what earlier steps actually did: cards discarded, milled, exiled, drawn or moved, and whether an optional action happened. That backs 'for each card … this way' amounts, 'if a land was discarded or milled this way' conditions, a real 'if you do', and follow-ups that choose or copy among the cards just moved."
+   "description": "The resolution context records what earlier steps actually did beyond discards, draws, mills and sacrifices: cards exiled or moved this way ('for each creature exiled this way', 'put up to one enchantment card milled this way into your hand' — choosing or copying among the cards just moved), and whether an optional action like putting a land from your hand onto the battlefield happened ('if you don't'). Built so far: the thisWay amount and this-way condition over cards discarded, drawn, milled or sacrificed by the resolution so far (who, filter, card types among them), read off its events since GameState.resolutionSince (Kefka, Court Mage; Lord Windgrace; Mr. Foxglove)."
   },
   "effect:token-copy-last-known-info": {
    "size": "small",

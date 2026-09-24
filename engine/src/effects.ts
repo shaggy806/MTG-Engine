@@ -263,7 +263,24 @@ export type EffectAmount =
    * types gives both (Tarmogoyf's "card types among cards in all graveyards"
    * is `{}`; delirium's "in your graveyard" is `{ ownedBy: "you" }`). A
    * multi-face card has its front face's types there (rule 712.8a). */
-  | { readonly cardTypesInGraveyard: CardFilter };
+  | { readonly cardTypesInGraveyard: CardFilter }
+  /**
+   * How many cards the resolving spell or ability has made players
+   * **discard, draw or mill**, or permanents **sacrifice**, so far — "draw a
+   * card for each card discarded this way", "that many cards plus one". Every
+   * step before this one counts, including one that waited on a player's
+   * choice. `who` narrows whose (default: everyone's); `filter` narrows the
+   * cards, as they are now (a discarded card in the graveyard it went to), a
+   * sacrificed permanent as it last existed; `cardTypes` counts the card
+   * types among them instead, each once (Kefka, Court Mage's "a card for each
+   * card type among cards discarded this way").
+   */
+  | {
+      readonly thisWay: ThisWayKind;
+      readonly who?: PlayerScope;
+      readonly filter?: CardFilter;
+      readonly cardTypes?: boolean;
+    };
 
 /**
  * A ward cost (rule 702.21a) — "Ward {2}", "Ward—Pay 2 life.", "Ward—{2},
@@ -344,6 +361,15 @@ export function substituteChosenCreatureType(spec: EffectSpec, creatureType: str
 }
 
 /** Which players an "each" / mass effect reaches. */
+/**
+ * What a spell or ability did "this way" — the cards it made players
+ * discard, draw or mill, or the permanents it made them sacrifice, read off
+ * the events of the resolution so far (see `GameState.resolutionSince`). The
+ * `thisWay` {@link EffectAmount} counts them; the `this-way` condition asks
+ * about them.
+ */
+export type ThisWayKind = "discarded" | "drawn" | "milled" | "sacrificed";
+
 export type PlayerScope =
   | "each-player"
   | "each-opponent"
@@ -1722,6 +1748,14 @@ export interface EffectApi {
   colorsAmong(filter: CardFilter, except: readonly ObjectId[]): number;
   /** See the `{ cardTypesInGraveyard }` {@link EffectAmount}. */
   cardTypesInGraveyard(filter: CardFilter): number;
+  /** The cards this resolution has made players discard / draw / mill, or
+   * the permanents it has made them sacrifice, so far — see the `thisWay`
+   * {@link EffectAmount}. */
+  thisWay(what: ThisWayKind, who?: PlayerScope, filter?: CardFilter): readonly ObjectId[];
+  /** How many card types there are among `objects`, each once — as they
+   * last existed on the battlefield with `asLastKnown` (sacrificed
+   * permanents), else as they are now. */
+  cardTypesAmong(objects: readonly ObjectId[], asLastKnown: boolean): number;
   /**
    * Who controls what `ref` points at — the player itself for a player ref,
    * else the object's controller.
@@ -2267,6 +2301,12 @@ export function amountValue(
     return ctx.colorsAmong(amount.colorsAmong, amount.excludeSelf === true ? [ctx.source] : []);
   }
   if ("cardTypesInGraveyard" in amount) return ctx.cardTypesInGraveyard(amount.cardTypesInGraveyard);
+  if ("thisWay" in amount) {
+    const done = ctx.thisWay(amount.thisWay, amount.who, amount.filter);
+    return amount.cardTypes === true
+      ? ctx.cardTypesAmong(done, amount.thisWay === "sacrificed")
+      : done.length;
+  }
   if ("countPlayers" in amount) return ctx.playersInScope(amount.countPlayers).length;
   if ("turnStat" in amount) {
     return ctx

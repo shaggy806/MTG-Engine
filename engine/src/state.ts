@@ -1737,6 +1737,14 @@ export interface GameState {
    * priority) and no triggered ability is put on the stack (rule 603.3).
    */
   suspendedResolutions: SuspendedResolution[];
+  /**
+   * The `eventSeq` the spell or ability now resolving began at — what "this
+   * way" reads (the `thisWay` amount and the `this-way` condition): every
+   * event since is its own, because nothing else happens while it resolves,
+   * across the decisions it waits on too. Set as it begins, cleared once it
+   * and everything it parked have finished; absent between resolutions.
+   */
+  resolutionSince?: number;
   /** True while a Fog-style effect has prevented all combat damage this turn
    * (rule 614 replacement, but turn-scoped with no permanent to hang it on).
    * Set by the `prevent-all-combat-damage` effect, cleared at the start of the

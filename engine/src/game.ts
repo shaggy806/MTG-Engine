@@ -116,6 +116,7 @@ import type {
   PtDuration,
   ResolutionContext,
   ReturnToHandZone,
+  ThisWayKind,
   ZoneChoiceFilter,
 } from "./effects.js";
 import {
@@ -2974,6 +2975,8 @@ export class Game {
     targets: readonly TargetRef[] = [],
     opts: { source?: ObjectId; x?: number } = {},
   ): void {
+    // As a resolution does: what it does from here on is "this way".
+    this.state.resolutionSince = this.state.eventSeq;
     applyEffectSpec(
       effect,
       this.makeResolutionContext(
@@ -2983,6 +2986,7 @@ export class Game {
         opts.x ?? 0,
       ),
     );
+    if (!this.decisionOutstanding()) this.endResolutionIfDone();
   }
 
   // --- turn / step progression --------------------------------------
@@ -3631,6 +3635,15 @@ export class Game {
    * itself if it's a player, or the controller of an attacked planeswalker. */
   private defendingPlayerOf(target: PlayerId | ObjectId): PlayerId {
     return defendingPlayerOf(this.state, target);
+  }
+
+  /** The events emitted since `seq` (inclusive), oldest first. The log is
+   * append-only and in `seq` order, so this walks back from its end. */
+  private eventsSince(seq: number): readonly GameEvent[] {
+    const log = this.state.eventLog;
+    let i = log.length;
+    while (i > 0 && log[i - 1].seq >= seq) i -= 1;
+    return log.slice(i);
   }
 
   /** Battlefield creatures currently declared as attackers. */
@@ -7655,8 +7668,17 @@ export class Game {
 
   private resolveTopOfStack(): void {
     const parked = this.state.suspendedResolutions.length;
+    // Everything from here on is this resolution's doing ("this way").
+    this.state.resolutionSince = this.state.eventSeq;
     this.resolveTopObject();
     this.holdResolutionOpen(parked);
+    this.endResolutionIfDone();
+  }
+
+  /** Once nothing of the resolution is parked any more, it's over — see
+   * `GameState.resolutionSince`. */
+  private endResolutionIfDone(): void {
+    if (this.state.suspendedResolutions.length === 0) delete this.state.resolutionSince;
   }
 
   /**
@@ -7693,7 +7715,10 @@ export class Game {
    */
   private resumeSuspendedResolution(): void {
     const next = this.state.suspendedResolutions.pop();
-    if (next === undefined || next.effect === null) return;
+    if (next === undefined || next.effect === null) {
+      this.endResolutionIfDone();
+      return;
+    }
     const parked = this.state.suspendedResolutions.length;
     const outerSourceTimestamp = this.resolvingSourceTimestamp;
     this.resolvingSourceTimestamp = next.sourceTimestamp ?? null;
@@ -7724,6 +7749,7 @@ export class Game {
       if (this.state.awaiting === null) this.state.decisionSource = null;
     }
     this.holdResolutionOpen(parked);
+    this.endResolutionIfDone();
   }
 
   private resolveTopObject(): void {
@@ -9599,6 +9625,9 @@ export class Game {
     opts: { readonly sourceLost?: boolean; readonly abilityKey?: string } = {},
   ): ResolutionContext {
     const refs = lastKnownRefs;
+    // Where "this way" starts: the resolution under way (every continuation
+    // of it reads the same), or — outside one — this context's own start.
+    const since = this.state.resolutionSince ?? this.state.eventSeq;
     const expectedZoneOf = (target: TargetRef): ZoneType | null => {
       if (target.kind !== "object") return null;
       const i = targets.findIndex((t) => t?.kind === "object" && t.object === target.object);
@@ -9648,6 +9677,41 @@ export class Game {
         ...(snapshot !== undefined ? { snapshot } : {}),
       });
     };
+    // What this resolution has done so far — see the `thisWay` amount.
+    const thisWayDone = (
+      what: ThisWayKind,
+      who: PlayerScope | undefined,
+      filter: CardFilter | undefined,
+    ): ObjectId[] => {
+      const players = who === undefined ? undefined : new Set(scoped(who));
+      const done: ObjectId[] = [];
+      for (const event of this.eventsSince(since)) {
+        const [player, objects]: readonly [PlayerId | undefined, readonly ObjectId[]] =
+          what === "discarded" && event.type === "cards-discarded"
+            ? [event.player, event.objects]
+            : what === "milled" && event.type === "cards-milled"
+              ? [event.player, event.objects]
+              : what === "drawn" && event.type === "card-drawn"
+                ? [event.player, [event.object]]
+                : what === "sacrificed" && event.type === "permanent-sacrificed"
+                  ? [event.player, [event.object]]
+                  : [undefined, []];
+        if (player === undefined || (players !== undefined && !players.has(player))) continue;
+        for (const id of objects) {
+          if (
+            filter === undefined ||
+            matchesFilter(this.state, this.registry, id, filter, {
+              you: controller,
+              // A sacrificed permanent is asked about as it last existed.
+              ...(what === "sacrificed" ? { lastKnown: true } : {}),
+            })
+          ) {
+            done.push(id);
+          }
+        }
+      }
+      return done;
+    };
     const conditionMet = (condition: StaticCondition): boolean => {
       // "If that land is a Mountain" — a question about the object that
       // fired this trigger, which only the resolution context knows, so it
@@ -9668,6 +9732,11 @@ export class Game {
         return sacrificed !== undefined && matchesKnown(sacrificed.object, condition.filter);
       }
       if (condition.kind === "resolved-this-turn") return resolutionCount === condition.n;
+      if (condition.kind === "this-way") {
+        const done = thisWayDone(condition.what, condition.who, condition.filter).length;
+        const atLeast = condition.atLeast ?? (condition.atMost === undefined ? 1 : 0);
+        return done >= atLeast && (condition.atMost === undefined || done <= condition.atMost);
+      }
       // Recursing keeps the context-only kinds above answerable under a
       // `not`, which `staticConditionMet` alone would read as always false.
       if (condition.kind === "not") return !conditionMet(condition.of);
@@ -9811,6 +9880,21 @@ export class Game {
         colorsAmongPermanents(this.state, this.registry, controller, filter, except),
       cardTypesInGraveyard: (filter) =>
         cardTypesInGraveyards(this.state, this.registry, controller, filter),
+      thisWay: thisWayDone,
+      cardTypesAmong: (objects, asLastKnown) => {
+        const types = new Set<CardType>();
+        for (const id of objects) {
+          const object = this.state.objects[id];
+          const kinds =
+            object === undefined
+              ? (this.state.ceasedTokens?.[id]?.types ?? [])
+              : asLastKnown && object.lastKnown !== undefined
+                ? object.lastKnown.types
+                : effectiveTypes(this.state, this.registry, object);
+          for (const type of kinds) types.add(type);
+        }
+        return types.size;
+      },
       gainLife: (player, amount) => this.changeLife(player, amount),
       loseLife: (player, amount) => this.changeLife(player, -amount),
       addMana: (player, mana, amount, spec) =>

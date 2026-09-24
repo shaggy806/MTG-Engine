@@ -13,7 +13,7 @@
  */
 
 import type { ActivatedAbility, CostReductionAmount, TriggeredAbility } from "../abilities.js";
-import type { EffectSpec, ModeOption, SpellResolver } from "../effects.js";
+import type { EffectSpec, ModeOption, PlayerScope, SpellResolver, ThisWayKind } from "../effects.js";
 import type { AggregateOf, AggregateSpec, CardFilter, NumCompare } from "../filter.js";
 import type { Color } from "../mana.js";
 import type { ReplacementSpec } from "../replacements.js";
@@ -454,6 +454,23 @@ export type StaticCondition =
    * the ability itself; always false on a static ability.
    */
   | { readonly kind: "resolved-this-turn"; readonly n: number }
+  /**
+   * "If a land card is discarded **this way**" (Lord Windgrace), "if you
+   * **didn't** draw cards this way" (Mr. Foxglove) — a question about what the
+   * resolving spell or ability has done so far, over the same cards the
+   * `thisWay` amount counts. Met when there are at least `atLeast` and at
+   * most `atMost` of them — `atLeast` defaults to 1, or to 0 when `atMost` is
+   * given, so `{ atMost: 0 }` is "didn't". Only a resolution can answer it;
+   * anywhere else it is false.
+   */
+  | {
+      readonly kind: "this-way";
+      readonly what: ThisWayKind;
+      readonly who?: PlayerScope;
+      readonly filter?: CardFilter;
+      readonly atLeast?: number;
+      readonly atMost?: number;
+    }
   /**
    * The ability's own source matches `filter` — "as long as ~ is equipped",
    * "if ~ is attacking", "if ~ is tapped". A triggered ability whose source
