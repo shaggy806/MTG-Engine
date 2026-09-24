@@ -499,9 +499,13 @@ export type GameEvent =
       readonly reason: string;
     })
   | (Base & {
+      /** Despite the name, also a card returned from a graveyard or exile,
+       * or a spell from the stack — `from` says which (absent: the
+       * battlefield). */
       readonly type: "permanent-returned-to-hand";
       readonly object: ObjectId;
       readonly owner: PlayerId;
+      readonly from?: "graveyard" | "exile" | "stack";
     })
   | (Base & {
       readonly type: "permanent-exiled";

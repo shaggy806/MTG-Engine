@@ -1059,6 +1059,9 @@ export interface DelayedTrigger {
 
 /** The zones a commander can be moved to that offer the 903.9a choice. */
 export type CommanderReplacementZone = "graveyard" | "exile" | "hand" | "library";
+/** Where a commander waits while its 903.9 choice is pending, other than the
+ * battlefield (see `GameState.deferredCommanderMove`). */
+export type CommanderMoveOrigin = "stack" | "graveyard" | "exile";
 
 /**
  * What caused the decision on {@link GameState.awaiting} — the resolving
@@ -1284,6 +1287,11 @@ export interface GameState {
      * battlefield abilities look back at it and it at them (rule 603.10a).
      * See `Game.withLeaveBatch`. */
     readonly leftWith?: readonly ObjectId[];
+    /** Where it waits meanwhile — the battlefield when absent. A commander
+     * put into its owner's hand *from anywhere* is asked too (rule 903.9b):
+     * a spell returned from the stack (Remand) or a card from a graveyard or
+     * exile, each of which waits where it is. */
+    readonly from?: CommanderMoveOrigin;
   } | null;
   /**
    * Commanders that tried to leave the battlefield while their owner's 903.9a
@@ -1300,6 +1308,7 @@ export interface GameState {
     readonly intendedZone: CommanderReplacementZone;
     readonly exiledBy?: ObjectId;
     readonly leftWith?: readonly ObjectId[];
+    readonly from?: CommanderMoveOrigin;
   }[];
   /**
    * Shock lands ("you may pay 2 life; if you don't, it enters tapped" — rule

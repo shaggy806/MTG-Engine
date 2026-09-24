@@ -591,6 +591,7 @@ import _poolReclamationSage from "./pool/reclamation-sage.js";
 import _poolRegrowth from "./pool/regrowth.js";
 import _poolRejuvenatingSprings from "./pool/rejuvenating-springs.js";
 import _poolReliquaryTower from "./pool/reliquary-tower.js";
+import _poolRemand from "./pool/remand.js";
 import _poolRemorsefulCleric from "./pool/remorseful-cleric.js";
 import _poolRestInPeace from "./pool/rest-in-peace.js";
 import _poolReturnToNature from "./pool/return-to-nature.js";
@@ -1547,6 +1548,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolRegrowth,
   _poolRejuvenatingSprings,
   _poolReliquaryTower,
+  _poolRemand,
   _poolRemorsefulCleric,
   _poolRestInPeace,
   _poolReturnToNature,

@@ -395,7 +395,7 @@ multiplier (Gray Merchant's "life equal to the life lost this way" is devotion
 | `put-onto-battlefield` | `target` (an `EffectTargetRef`, so `"trigger-object"` works — Undying returns *itself*), `underYourControl?`, `enterTapped?`, `withCounters?` | Reanimation that names one card, from anyone's graveyard — as opposed to `return-from-graveyard`'s filter over your own. `underYourControl` makes controller diverge from owner, so the card still goes back to its **owner's** graveyard when it dies. |
 | `exile-graveyard` | `target` (a player slot, or `"you"`) | Bojuka Bog — exiles that player's whole graveyard at once (rule 406; the cards in it are never individually targeted) |
 | `flicker` | `target`, `thenCounters?`, `underYourControl?`, `returnAt?`, `returnText?` | Essence Flux — exiles `target`, then immediately returns it to the battlefield under its owner's control (rule 400.7 — a brand-new object; a token exiled this way never comes back). `target` is a slot, `"source"` (the ability's own permanent *as it was when the ability triggered* — one that has blinked since is left alone) or an array of slots, all exiled first and returned together so each one's enters triggers see the others. `underYourControl` returns them under the effect's controller. `returnAt` (a `DelayedTriggerTiming`) makes the return a delayed trigger instead — Norin the Wary's "exile Norin. Return it … at the beginning of the next end step" — linked to the exile (rule 610.3): a card that left exile in between stays where it is, and nothing is set up when nothing was exiled, so a second trigger in one turn does nothing. Don't build that with `exile` + `delayed-trigger`: the delayed effect can't tell the exiled card from a new object. (`return-flickered` is the delayed half it builds; never author it.) |
-| `return-to-hand` | `target` | Unsummon |
+| `return-to-hand` | `target: EffectTargetRef`, `from?: "battlefield" \| "graveyard" \| "exile" \| "stack"` | Unsummon (a bounce — `from` omitted). With `from`, it takes a card out of that zone instead, to its **owner's** hand: `"graveyard"` + a `card-in-graveyard` target is "return target creature card from your graveyard to your hand" (Golbez, Crystal Collector); `"source"` / `"trigger-object"` with `"graveyard"` or `"exile"` is "return it to its owner's hand" off a dies / leaves trigger, and works inside a `delayed-trigger` too. `"stack"` + a `"spell"` target is Remand — **not a counter**: a spell that can't be countered still goes back, a copy of a spell ceases to exist (rule 707.10c), and an ability or the resolving spell itself is left alone. The object has to be in the `from` zone when the effect applies, or nothing happens. A commander returned this way offers the command zone (rule 903.9b), like a bounced one. |
 | `return-to-hand-all` | `filter` | Cyclonic Rift, overloaded — mirrors `destroy-all` |
 | `return-from-graveyard` | `filter`, `destination: "battlefield" \| "hand"`, `count: number \| "all"`, `enterTapped?` | Splendid Reclamation (from *your* graveyard; a `number` less than the match count raises a `choose-from-zone`) |
 | `search-library` … `reveal?` | — | "…, **reveal it**, …" (Enlightened Tutor, Mystical Tutor): shows the find to every player, rule 701.16. Off by default — a plain "search your library for a card" (Vampiric Tutor) reveals nothing, and the difference is printed on the cards. |
@@ -1331,13 +1331,17 @@ Delete an entry in the same commit as the feature that retires it.
   can only be approximated by an `attacking: true` filter at resolution,
   which drifts from the batch if an attacker leaves or another starts
   attacking — don't author a card on that approximation.
-- Returning a card from **another player's** graveyard to a hand.
-  `return-from-graveyard` covers *your own* graveyard → battlefield / hand;
-  `escape` / `flashback` / `disturb` cover self-recursion of the spell itself;
+- Putting a card from **another player's** graveyard into **your** hand
+  ("put it into your hand" — a steal, not a return). `return-to-hand` with
+  `from: "graveyard"` returns a targeted card to its **owner's** hand, which
+  is the same thing for your own graveyard and for "return target card from a
+  graveyard to its owner's hand";
+  `return-from-graveyard` covers *your own* graveyard → battlefield / hand by
+  filter; `escape` / `flashback` / `disturb` cover self-recursion of the spell itself;
   `StaticAbility.playFromGraveyard` (Ramunap Excavator) lets you *play*
   matching cards from your graveyard. Reaching **any** graveyard is fine for a
   *targeted* effect — the `card-in-graveyard` target spec plus
-  `put-onto-battlefield` (Reanimate's shape) or `put-on-library`.
+  `return-to-hand`, `put-onto-battlefield` (Reanimate's shape) or `put-on-library`.
   Putting a card **on top of / on the bottom of a library** is the
   `put-on-library` effect (Academy Ruins) and `search-library`'s
   `destination: "library-top"` (Vampiric Tutor).

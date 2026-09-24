@@ -20,6 +20,8 @@ import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
  * P15 — Exalted's "that creature gets +1/+1", the lone attacker rather than
  * a target or the ability's own source). */
 export type EffectTargetRef = number | "source" | "trigger-object";
+/** Where a `return-to-hand` effect takes its object from. */
+export type ReturnToHandZone = "battlefield" | "graveyard" | "exile" | "stack";
 export type PtDuration = "end-of-turn" | "permanent";
 
 /**
@@ -470,6 +472,28 @@ export type EffectSpec =
        * no target at all (Encroaching Dragonstorm — needed-cards P16). */
       readonly kind: "return-to-hand";
       readonly target: EffectTargetRef;
+      /**
+       * The zone the object is returned **from** — `"battlefield"` (a bounce)
+       * when omitted. The object has to be in that zone as the effect
+       * applies, or nothing happens: "return target creature card from your
+       * graveyard to your hand" does nothing to a card that has since been
+       * exiled, and a bounce does nothing to a permanent that already left.
+       *
+       * - `"graveyard"` / `"exile"` — a card (Golbez, Crystal Collector;
+       *   Regrowth), or with `"source"` / `"trigger-object"` the card behind
+       *   the ability ("return it to its owner's hand" off a dies trigger, now
+       *   or inside a `delayed-trigger`).
+       * - `"stack"` — a **spell** to its owner's hand (Remand). Not a counter
+       *   (rule 701.5): "can't be countered" doesn't stop it, and nothing
+       *   that watches for a spell being countered sees it. A copy of a spell
+       *   ceases to exist instead (rule 707.10c); an ability on the stack
+       *   isn't a card and is left alone, and so is the spell that is itself
+       *   resolving.
+       *
+       * A commander returned to hand from any of these may go to the command
+       * zone instead (rule 903.9b), exactly like a bounced one.
+       */
+      readonly from?: ReturnToHandZone;
     }
   | {
       /** Return every battlefield permanent matching `filter` to its owner's
@@ -1403,7 +1427,9 @@ export interface EffectApi {
    * (false if the source has already left the battlefield) — the "if you do"
    * gate on a `sacrifice-source` effect's `then`. */
   sacrificeSource(): boolean;
-  returnToHand(target: TargetRef): void;
+  /** See the `"return-to-hand"` {@link EffectSpec} — `from` defaults to the
+   * battlefield. */
+  returnToHand(target: TargetRef, from?: ReturnToHandZone): void;
   exileObject(target: TargetRef, untilSourceLeaves?: boolean): void;
   /** See the `"return-exiled-by-source"` {@link EffectSpec}. */
   returnExiledBySource(): void;
@@ -1965,7 +1991,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     }
     case "return-to-hand": {
       const target = resolveEffectTarget(spec.target, ctx);
-      if (target !== undefined) ctx.returnToHand(target);
+      if (target !== undefined) ctx.returnToHand(target, spec.from);
       return;
     }
     case "exile": {

@@ -109,6 +109,7 @@ import type {
   PlayerScope,
   PtDuration,
   ResolutionContext,
+  ReturnToHandZone,
   ZoneChoiceFilter,
 } from "./effects.js";
 import { aggregateOver, matchesFilter, printedManaCost, weightedMatches } from "./filter.js";
@@ -149,6 +150,8 @@ import {
 } from "./state.js";
 import type {
   AwaitingDecision,
+  CommanderMoveOrigin,
+  CommanderReplacementZone,
   DelayedTrigger,
   DelayedTriggerTiming,
   CombatDamageState,
@@ -1962,15 +1965,17 @@ export class Game {
   private raiseNextCommanderChoice(): void {
     const state = this.state;
     if (state.awaiting !== null) return;
-    const stillHere = (id: ObjectId): boolean => state.objects[id]?.zone === "battlefield";
+    // Where it waits: the battlefield, or for a return to hand from anywhere
+    // else (rule 903.9b) the zone it's still in.
+    const stillHere = (id: ObjectId, zone: ZoneType): boolean => state.objects[id]?.zone === zone;
     for (;;) {
       if (state.deferredCommanderMove === null) {
         const next = state.pendingCommanderMoves.shift();
         if (next === undefined) return;
         state.deferredCommanderMove = next;
       }
-      const { commander, intendedZone } = state.deferredCommanderMove;
-      if (stillHere(commander)) {
+      const { commander, intendedZone, from } = state.deferredCommanderMove;
+      if (stillHere(commander, from ?? "battlefield")) {
         state.awaiting = {
           kind: "commander-replacement",
           player: state.objects[commander].owner,
@@ -8058,7 +8063,8 @@ export class Game {
         // (`permanent-left-battlefield`), so a commander never falsely dies.
         this.emit({ type: "permanent-sacrificed", object: id, player: owner });
       },
-      returnToHand: (target) => this.returnToHandByEffect(target),
+      returnToHand: (target, from) =>
+        this.returnToHandByEffect(target, true, from ?? "battlefield", source),
       exileObject: (target, untilSourceLeaves) =>
         this.exileByEffect(target, untilSourceLeaves === true ? source : undefined),
       chooseCreatureType: (then) =>
@@ -10377,8 +10383,17 @@ export class Game {
 
   /** `split: false` (a return-*all*) moves a compacted token stack whole —
    * every token in it goes, not one; the default singles one member out. */
-  private returnToHandByEffect(target: TargetRef, split = true): void {
+  private returnToHandByEffect(
+    target: TargetRef,
+    split = true,
+    from: ReturnToHandZone = "battlefield",
+    resolving?: ObjectId,
+  ): void {
     if (target.kind !== "object") return;
+    if (from !== "battlefield") {
+      this.returnCardToHand(target.object, from, resolving);
+      return;
+    }
     const id = split ? this.splitOneFromStack(target.object) : target.object;
     const object = this.state.objects[id];
     if (object === undefined || object.zone !== "battlefield") return;
@@ -10387,6 +10402,49 @@ export class Game {
     const owner = object.owner;
     if (!this.moveObject(id, "hand")) return;
     this.emit({ type: "permanent-returned-to-hand", object: id, owner });
+  }
+
+  /**
+   * `return-to-hand` from a graveyard, exile or the stack — see the effect's
+   * `from`. The object has to be a card still in that zone.
+   *
+   * From the stack it's a spell going back to its owner's hand (Remand),
+   * which is not countering it: `counterObject`'s "can't be countered" check
+   * deliberately doesn't apply, and no `spell-countered` is emitted. The
+   * spell that is itself resolving is skipped — it is about to finish
+   * resolving and move on its own, and moving it first would leave its
+   * resolution to move a card that's already in a hand. A copy of a spell ceases to exist rather
+   * than going anywhere (rule 707.10c), the same as a fizzled one.
+   */
+  private returnCardToHand(
+    id: ObjectId,
+    from: Exclude<ReturnToHandZone, "battlefield">,
+    resolving: ObjectId | undefined,
+  ): void {
+    const object = this.state.objects[id];
+    if (object === undefined || object.zone !== from || object.kind !== "card") return;
+    if (from === "stack") {
+      // Whatever is resolving sits on top of the stack until it's done. The
+      // effect's source on top is a spell returning *itself*; a source lower
+      // down is a spell a triggered ability of its own is acting on ("when
+      // you cast this spell, …"), which is fair game.
+      const stack = this.state.zones.shared.stack;
+      if (id === resolving && stack[stack.length - 1] === id) return;
+      if (object.isCopy) {
+        const index = stack.indexOf(id);
+        if (index >= 0) stack.splice(index, 1);
+        delete this.state.objects[id];
+        return;
+      }
+      // It will never resolve now, so it has nothing left to aim at — the
+      // same thing `counterObject` does on the way to the graveyard.
+      object.targets = null;
+    }
+    const owner = object.owner;
+    // A commander may go to the command zone instead (rule 903.9b) — asked
+    // by `moveObject`, which returns `false` while that choice is pending.
+    if (!this.moveObject(id, "hand")) return;
+    this.emit({ type: "permanent-returned-to-hand", object: id, owner, from });
   }
 
   /**
@@ -12022,13 +12080,27 @@ export class Game {
     // asked — the commander waits on the battlefield in
     // `pendingCommanderMoves` and `prepareForPriority` asks in turn. Either
     // way the move didn't happen, and this returns `false` to say so.
+    //
+    // Rule 903.9b extends it to a commander put into its owner's hand from
+    // anywhere else too — a spell returned from the stack (Remand), a card
+    // from a graveyard or exile — which waits where it is, the same way. A
+    // library-to-hand move (a draw, a tutor) isn't asked: a commander is
+    // almost never in a library, and a draw has no way to wait.
+    const handFromElsewhere =
+      to === "hand" &&
+      (object.zone === "stack" || object.zone === "graveyard" || object.zone === "exile");
     if (
-      leavingBattlefield &&
       object.isCommander &&
-      (to === "graveyard" || to === "exile" || to === "hand" || to === "library") &&
-      this.completingCommanderMove !== id
+      this.completingCommanderMove !== id &&
+      ((leavingBattlefield &&
+        (to === "graveyard" || to === "exile" || to === "hand" || to === "library")) ||
+        handFromElsewhere)
     ) {
       const state = this.state;
+      const intendedZone = to as CommanderReplacementZone;
+      const origin: { from?: CommanderMoveOrigin } = handFromElsewhere
+        ? { from: object.zone as CommanderMoveOrigin }
+        : {};
       const alreadyLeaving =
         state.deferredCommanderMove?.commander === id ||
         state.pendingCommanderMoves.some((m) => m.commander === id);
@@ -12038,19 +12110,19 @@ export class Game {
         // doesn't redirect it.
       } else {
         if (state.deferredCommanderMove === null && state.awaiting === null) {
-          state.deferredCommanderMove = { commander: id, intendedZone: to };
+          state.deferredCommanderMove = { commander: id, intendedZone, ...origin };
           state.awaiting = {
             kind: "commander-replacement",
             player: object.owner,
             commander: id,
-            intendedZone: to,
+            intendedZone,
           };
         } else {
-          state.pendingCommanderMoves.push({ commander: id, intendedZone: to });
+          state.pendingCommanderMoves.push({ commander: id, intendedZone, ...origin });
         }
         // Part of whatever simultaneous event is moving it, though its move
         // waits for the answer — see `withLeaveBatch`.
-        this.leaveBatch?.deferred.push(id);
+        if (leavingBattlefield) this.leaveBatch?.deferred.push(id);
       }
       this.raiseNextCommanderChoice();
       return false;
