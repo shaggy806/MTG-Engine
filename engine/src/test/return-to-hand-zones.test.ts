@@ -2,9 +2,13 @@
  * `return-to-hand` from somewhere other than the battlefield — the effect's
  * `from` field:
  *
- * - `"stack"`: a spell back to its owner's hand (Remand). Not a counter, so a
- *   spell that can't be countered goes back all the same and nothing sees a
- *   `spell-countered`; a copy of a spell ceases to exist (rule 707.10c).
+ * - `"stack"`: a spell back to its owner's hand (Unsubstantiate; Venser,
+ *   Shaper Savant — neither pooled, so a test card stands in). Not a counter,
+ *   so a spell that can't be countered goes back all the same and nothing
+ *   sees a `spell-countered`; a copy of a spell ceases to exist (rule
+ *   707.10c).
+ * - Remand, by contrast, *is* a counter (`counter` with `into: "hand"`): a
+ *   spell that can't be countered stays on the stack and resolves.
  * - `"graveyard"` / `"exile"`: a targeted card, or with `"source"` /
  *   `"trigger-object"` the card behind the ability — now, or on a delayed
  *   trigger. The object has to still be in that zone.
@@ -31,7 +35,26 @@ const SHEPHERD = "Test Shepherd";
 const EXILE_HOME = "Test Exile Homing Bear";
 const SELF_RETURN = "Test Self Return";
 const CAST_RETURN = "Test Cast Return";
+/** "Return target spell to its owner's hand" — the non-counter stack bounce
+ * (Unsubstantiate's spell half, Venser's ETB), with Remand's draw bolted on. */
+const STACK_BOUNCE = "Test Spell Bounce";
 const registry = createDefaultRegistry().register(
+  defineCard({
+    name: STACK_BOUNCE,
+    manaCost: "{1}{U}",
+    colors: ["U"],
+    types: ["instant"],
+    text: "Return target spell to its owner's hand.\nDraw a card.",
+    targets: ["spell"],
+    effect: {
+      kind: "sequence",
+      effects: [
+        { kind: "return-to-hand", target: 0, from: "stack" },
+        { kind: "draw", amount: 1 },
+      ],
+    },
+  }),
+).register(
   defineCard({
     name: HOMING,
     manaCost: "{1}{G}",
@@ -177,26 +200,78 @@ const zoneOf = (game: Game, id: ObjectId): string | undefined => game.state.obje
 const quiet = (s: GameState): boolean =>
   s.zones.shared.stack.length === 0 && s.awaiting === null && s.pendingTriggers.length === 0;
 
-/** A casts `spell` (with `targets`), then passes; B answers with Remand
- * aimed at `aimedAt` (the spell by default). */
-const castThenRemand = (
+/** A casts `spell` (with `targets`), then passes; B answers with `answer`
+ * (the test bounce by default, or Remand) aimed at the spell. */
+const castThenAnswer = (
   game: Game,
   spell: ObjectId,
   targets: { kind: "player"; player: PlayerId }[] = [],
+  answer: string = STACK_BOUNCE,
 ): ObjectId => {
   game.dispatch({ type: "cast-spell", player: A, card: spell, targets });
   game.dispatch({ type: "pass-priority", player: A });
-  const remand = toHand(game, "Remand", B);
+  const response = toHand(game, answer, B);
   game.dispatch({
     type: "cast-spell",
     player: B,
-    card: remand,
+    card: response,
     targets: [{ kind: "object", object: spell }],
   });
-  return remand;
+  return response;
 };
 
-describe("return-to-hand from the stack — Remand", () => {
+/** A casts Lightning Bolt at B and copies it with Twincast, then passes;
+ * B answers the copy with `answer`. Returns the copy's id. */
+const answerTwincastCopy = (game: Game, answer: string): ObjectId => {
+  lands(game, "Mountain", A, 1);
+  lands(game, "Island", A, 2);
+  lands(game, "Island", B, 2);
+  const bolt = toHand(game, "Lightning Bolt", A);
+  const twincast = toHand(game, "Twincast", A);
+  game.dispatch({
+    type: "cast-spell",
+    player: A,
+    card: bolt,
+    targets: [{ kind: "player", player: B }],
+  });
+  game.dispatch({
+    type: "cast-spell",
+    player: A,
+    card: twincast,
+    targets: [{ kind: "object", object: bolt }],
+  });
+  // Resolve Twincast only: both pass once.
+  const stackBefore = new Set(game.state.zones.shared.stack);
+  game.dispatch({ type: "pass-priority", player: A });
+  game.dispatch({ type: "pass-priority", player: B });
+  // Keep the copy's target if asked.
+  for (let i = 0; i < 5 && game.state.awaiting !== null; i += 1) {
+    const aw = game.state.awaiting;
+    if (aw.kind !== "choose-modes") break;
+    game.dispatch({ type: "choose-modes", player: aw.player, modes: [] });
+  }
+  const copy = game.state.zones.shared.stack.find((id) => !stackBefore.has(id));
+  if (copy === undefined) throw new Error("Twincast made no copy");
+  expect(game.state.objects[copy].isCopy).toBe(true);
+
+  game.dispatch({ type: "pass-priority", player: A });
+  const response = toHand(game, answer, B);
+  game.dispatch({
+    type: "cast-spell",
+    player: B,
+    card: response,
+    targets: [{ kind: "object", object: copy }],
+  });
+  return copy;
+};
+
+const inAnyHandOrGraveyard = (game: Game, id: ObjectId): boolean =>
+  [A, B].some((p) => {
+    const zones = game.state.zones.perPlayer[p];
+    return zones.hand.includes(id) || zones.graveyard.includes(id);
+  });
+
+describe("return-to-hand from the stack — a spell bounce", () => {
   it("returns the spell to its owner's hand and draws a card, without countering it", () => {
     const game = mkGame();
     lands(game, "Forest", A, 2);
@@ -204,16 +279,16 @@ describe("return-to-hand from the stack — Remand", () => {
     const bears = toHand(game, "Grizzly Bears", A);
     const bHandBefore = game.state.zones.perPlayer[B].hand.length;
 
-    const remand = castThenRemand(game, bears);
+    const bounce = castThenAnswer(game, bears);
     game.advanceUntil(quiet);
 
     expect(zoneOf(game, bears)).toBe("hand");
     expect(game.state.zones.perPlayer[A].hand).toContain(bears);
     expect(game.state.objects[bears].targets).toBeNull();
     expect(game.battlefield).not.toContain(bears);
-    // Remand was put into B's hand (+1), cast (−1), and drew a card (+1).
+    // The bounce was put into B's hand (+1), cast (−1), and drew a card (+1).
     expect(game.state.zones.perPlayer[B].hand.length).toBe(bHandBefore + 1);
-    expect(zoneOf(game, remand)).toBe("graveyard");
+    expect(zoneOf(game, bounce)).toBe("graveyard");
     expect(game.eventsOfType("spell-countered")).toHaveLength(0);
     expect(
       game
@@ -228,7 +303,7 @@ describe("return-to-hand from the stack — Remand", () => {
     lands(game, "Island", B, 2);
     const tyrant = toHand(game, "Carnage Tyrant", A);
 
-    castThenRemand(game, tyrant);
+    castThenAnswer(game, tyrant);
     game.advanceUntil(quiet);
 
     expect(zoneOf(game, tyrant)).toBe("hand");
@@ -240,7 +315,7 @@ describe("return-to-hand from the stack — Remand", () => {
     lands(game, "Mountain", A, 1);
     lands(game, "Island", B, 2);
     const bolt = toHand(game, "Lightning Bolt", A);
-    castThenRemand(game, bolt, [{ kind: "player", player: B }]);
+    castThenAnswer(game, bolt, [{ kind: "player", player: B }]);
     game.advanceUntil(quiet);
 
     expect(zoneOf(game, bolt)).toBe("hand");
@@ -260,14 +335,14 @@ describe("return-to-hand from the stack — Remand", () => {
       targets: [{ kind: "player", player: B }],
     });
     game.dispatch({ type: "pass-priority", player: A });
-    const remand = toHand(game, "Remand", B);
+    const bounce = toHand(game, STACK_BOUNCE, B);
     game.dispatch({
       type: "cast-spell",
       player: B,
-      card: remand,
+      card: bounce,
       targets: [{ kind: "object", object: bolt }],
     });
-    // B holds priority and counters the Bolt on top of their own Remand.
+    // B holds priority and counters the Bolt on top of their own bounce.
     const counter = toHand(game, "Counterspell", B);
     game.dispatch({
       type: "cast-spell",
@@ -279,62 +354,79 @@ describe("return-to-hand from the stack — Remand", () => {
 
     expect(zoneOf(game, bolt)).toBe("graveyard");
     expect(
-      game.eventsOfType("spell-fizzled").some((e) => e.object === remand),
+      game.eventsOfType("spell-fizzled").some((e) => e.object === bounce),
     ).toBe(true);
   });
 
   it("a copy of a spell ceases to exist instead (rule 707.10c)", () => {
     const game = mkGame();
-    lands(game, "Mountain", A, 1);
-    lands(game, "Island", A, 2);
-    lands(game, "Island", B, 2);
-    const bolt = toHand(game, "Lightning Bolt", A);
-    const twincast = toHand(game, "Twincast", A);
-    game.dispatch({
-      type: "cast-spell",
-      player: A,
-      card: bolt,
-      targets: [{ kind: "player", player: B }],
-    });
-    game.dispatch({
-      type: "cast-spell",
-      player: A,
-      card: twincast,
-      targets: [{ kind: "object", object: bolt }],
-    });
-    // Resolve Twincast only: both pass once.
-    const stackBefore = new Set(game.state.zones.shared.stack);
-    game.dispatch({ type: "pass-priority", player: A });
-    game.dispatch({ type: "pass-priority", player: B });
-    // Keep the copy's target if asked.
-    for (let i = 0; i < 5 && game.state.awaiting !== null; i += 1) {
-      const aw = game.state.awaiting;
-      if (aw.kind !== "choose-modes") break;
-      game.dispatch({ type: "choose-modes", player: aw.player, modes: [] });
-    }
-    const copy = game.state.zones.shared.stack.find((id) => !stackBefore.has(id));
-    expect(copy).toBeDefined();
-    if (copy === undefined) return;
-    expect(game.state.objects[copy].isCopy).toBe(true);
-
-    game.dispatch({ type: "pass-priority", player: A });
-    const remand = toHand(game, "Remand", B);
-    game.dispatch({
-      type: "cast-spell",
-      player: B,
-      card: remand,
-      targets: [{ kind: "object", object: copy }],
-    });
+    const copy = answerTwincastCopy(game, STACK_BOUNCE);
     game.advanceUntil(quiet);
 
     expect(game.state.objects[copy]).toBeUndefined();
-    expect(game.state.zones.perPlayer[A].hand).not.toContain(copy);
+    expect(inAnyHandOrGraveyard(game, copy)).toBe(false);
     // Only the original Bolt hit B.
     expect(game.state.players[B].life).toBe(17);
   });
 });
 
-describe("return-to-hand from the stack — a flashed-back spell", () => {
+describe("Remand — counter target spell, into its owner's hand instead", () => {
+  it("counters a spell into its owner's hand, and draws a card", () => {
+    const game = mkGame();
+    lands(game, "Forest", A, 2);
+    lands(game, "Island", B, 2);
+    const bears = toHand(game, "Grizzly Bears", A);
+    const bHandBefore = game.state.zones.perPlayer[B].hand.length;
+
+    const remand = castThenAnswer(game, bears, [], "Remand");
+    game.advanceUntil(quiet);
+
+    expect(zoneOf(game, bears)).toBe("hand");
+    expect(game.state.zones.perPlayer[A].hand).toContain(bears);
+    expect(game.state.zones.perPlayer[A].graveyard).not.toContain(bears);
+    expect(game.state.objects[bears].targets).toBeNull();
+    expect(game.battlefield).not.toContain(bears);
+    // Remand was put into B's hand (+1), cast (−1), and drew a card (+1).
+    expect(game.state.zones.perPlayer[B].hand.length).toBe(bHandBefore + 1);
+    expect(zoneOf(game, remand)).toBe("graveyard");
+    expect(game.eventsOfType("spell-countered").some((e) => e.object === bears)).toBe(true);
+  });
+
+  it("a spell that can't be countered stays on the stack and resolves — Remand still draws", () => {
+    const game = mkGame();
+    lands(game, "Forest", A, 6);
+    lands(game, "Island", B, 2);
+    const tyrant = toHand(game, "Carnage Tyrant", A);
+    const bHandBefore = game.state.zones.perPlayer[B].hand.length;
+
+    const remand = castThenAnswer(game, tyrant, [], "Remand");
+    game.advanceUntil((s) => s.objects[remand]?.zone === "graveyard");
+
+    // Remand has resolved: the Tyrant is still there, and the draw happened.
+    expect(zoneOf(game, tyrant)).toBe("stack");
+    expect(game.eventsOfType("counter-failed").some((e) => e.object === tyrant)).toBe(true);
+    expect(game.eventsOfType("spell-countered")).toHaveLength(0);
+    expect(game.state.zones.perPlayer[B].hand.length).toBe(bHandBefore + 1);
+
+    game.advanceUntil(quiet);
+    expect(zoneOf(game, tyrant)).toBe("battlefield");
+    expect(game.state.zones.perPlayer[A].hand).not.toContain(tyrant);
+  });
+
+  it("a countered copy of a spell ceases to exist (rule 707.10c)", () => {
+    const game = mkGame();
+    const copy = answerTwincastCopy(game, "Remand");
+    game.advanceUntil(quiet);
+
+    expect(game.state.objects[copy]).toBeUndefined();
+    expect(inAnyHandOrGraveyard(game, copy)).toBe(false);
+    expect(game.eventsOfType("spell-countered").some((e) => e.object === copy)).toBe(true);
+    // Only the original Bolt hit B.
+    expect(game.state.players[B].life).toBe(17);
+  });
+});
+
+describe.each([STACK_BOUNCE, "Remand"])("a flashed-back spell answered by %s", (answer) => {
   it("is exiled instead, since it would leave the stack (rule 702.34a)", () => {
     const game = mkGame();
     lands(game, "Mountain", A, 2);
@@ -343,11 +435,11 @@ describe("return-to-hand from the stack — a flashed-back spell", () => {
     game.dispatch({ type: "cast-spell", player: A, card: loot, targets: [], via: "flashback" });
     expect(zoneOf(game, loot)).toBe("stack");
     game.dispatch({ type: "pass-priority", player: A });
-    const remand = toHand(game, "Remand", B);
+    const response = toHand(game, answer, B);
     game.dispatch({
       type: "cast-spell",
       player: B,
-      card: remand,
+      card: response,
       targets: [{ kind: "object", object: loot }],
     });
     game.advanceUntil(quiet);
@@ -359,40 +451,43 @@ describe("return-to-hand from the stack — a flashed-back spell", () => {
   });
 });
 
-describe("rule 903.9b — a commander returned to hand from the stack", () => {
-  const remandCommander = (toCommandZone: boolean): { game: Game; cmdr: ObjectId } => {
-    const game = mkGame();
-    lands(game, "Forest", A, 2);
-    lands(game, "Island", B, 2);
-    const cmdr = toHand(game, "Grizzly Bears", A);
-    game.state.objects[cmdr].isCommander = true;
-    castThenRemand(game, cmdr);
-    game.advanceUntil((s) => s.awaiting?.kind === "commander-replacement" || quiet(s));
-    const awaiting = game.state.awaiting;
-    expect(awaiting?.kind).toBe("commander-replacement");
-    if (awaiting?.kind !== "commander-replacement") throw new Error("not asked");
-    expect(awaiting.player).toBe(A);
-    expect(awaiting.commander).toBe(cmdr);
-    expect(awaiting.intendedZone).toBe("hand");
-    // It waits on the stack, not somewhere half-moved.
-    expect(zoneOf(game, cmdr)).toBe("stack");
-    game.dispatch({ type: "commander-replacement", player: A, toCommandZone });
-    game.advanceUntil(quiet);
-    return { game, cmdr };
-  };
+describe.each([STACK_BOUNCE, "Remand"])(
+  "rule 903.9b — a commander sent to hand from the stack by %s",
+  (answer) => {
+    const answerCommander = (toCommandZone: boolean): { game: Game; cmdr: ObjectId } => {
+      const game = mkGame();
+      lands(game, "Forest", A, 2);
+      lands(game, "Island", B, 2);
+      const cmdr = toHand(game, "Grizzly Bears", A);
+      game.state.objects[cmdr].isCommander = true;
+      castThenAnswer(game, cmdr, [], answer);
+      game.advanceUntil((s) => s.awaiting?.kind === "commander-replacement" || quiet(s));
+      const awaiting = game.state.awaiting;
+      expect(awaiting?.kind).toBe("commander-replacement");
+      if (awaiting?.kind !== "commander-replacement") throw new Error("not asked");
+      expect(awaiting.player).toBe(A);
+      expect(awaiting.commander).toBe(cmdr);
+      expect(awaiting.intendedZone).toBe("hand");
+      // It waits on the stack, not somewhere half-moved.
+      expect(zoneOf(game, cmdr)).toBe("stack");
+      game.dispatch({ type: "commander-replacement", player: A, toCommandZone });
+      game.advanceUntil(quiet);
+      return { game, cmdr };
+    };
 
-  it("its owner may send it to the command zone", () => {
-    const { game, cmdr } = remandCommander(true);
-    expect(zoneOf(game, cmdr)).toBe("command");
-    expect(game.state.zones.shared.stack).not.toContain(cmdr);
-  });
+    it("its owner may send it to the command zone", () => {
+      const { game, cmdr } = answerCommander(true);
+      expect(zoneOf(game, cmdr)).toBe("command");
+      expect(game.state.zones.shared.stack).not.toContain(cmdr);
+    });
 
-  it("or let it go to their hand", () => {
-    const { game, cmdr } = remandCommander(false);
-    expect(zoneOf(game, cmdr)).toBe("hand");
-    expect(game.state.deferredCommanderMove).toBeNull();
-  });
-});
+    it("or let it go to their hand", () => {
+      const { game, cmdr } = answerCommander(false);
+      expect(zoneOf(game, cmdr)).toBe("hand");
+      expect(game.state.deferredCommanderMove).toBeNull();
+    });
+  },
+);
 
 describe("return-to-hand from a graveyard", () => {
   it("'return it' off its own dies trigger — `source`, now", () => {

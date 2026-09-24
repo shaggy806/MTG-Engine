@@ -51,7 +51,7 @@ const deckA = deck([
   ["Vivi Ornitier", 1],
   ["Marwyn, the Nurturer", 1],
   ["Kydele, Chosen of Kruphix", 1],
-  // Return-to-hand from the stack (Remand).
+  // A counter that puts the spell into its owner's hand instead (Remand).
   ["Remand", 1],
   // EDH-backlog bulk pass 5: Snarl reveal-lands and Karoo bounce lands (new:
   // the `land-you-control` target spec).

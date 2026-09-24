@@ -8137,7 +8137,7 @@ export class Game {
       delayTrigger: (at, effect, text, delayedController) =>
         this.createDelayedTrigger(source, delayedController, at, effect, text, targets, targetZones),
       fight: (a, b, oneSided) => this.fightCreatures(a, b, oneSided),
-      counterSpell: (target) => this.counterSpellByEffect(target),
+      counterSpell: (target, into) => this.counterSpellByEffect(target, into),
       gainControl: (target, untilEndOfTurn) =>
         this.gainControlByEffect(controller, target, untilEndOfTurn),
       mill: (target, amount) => this.millByEffect(target, amount),
@@ -10438,9 +10438,11 @@ export class Game {
    * `return-to-hand` from a graveyard, exile or the stack — see the effect's
    * `from`. The object has to be a card still in that zone.
    *
-   * From the stack it's a spell going back to its owner's hand (Remand),
-   * which is not countering it: `counterObject`'s "can't be countered" check
-   * deliberately doesn't apply, and no `spell-countered` is emitted. The
+   * From the stack it's a spell going back to its owner's hand
+   * (Unsubstantiate, Venser, Shaper Savant), which is not countering it:
+   * `counterObject`'s "can't be countered" check deliberately doesn't apply,
+   * and no `spell-countered` is emitted. (Remand is a counter instead — the
+   * `counter` effect's `into: "hand"`.) The
    * spell that is itself resolving is skipped — it is about to finish
    * resolving and move on its own, and moving it first would leave its
    * resolution to move a card that's already in a hand. A copy of a spell ceases to exist rather
@@ -11073,17 +11075,24 @@ export class Game {
     return true;
   }
 
-  private counterSpellByEffect(target: TargetRef): void {
+  private counterSpellByEffect(target: TargetRef, into: "hand" | undefined): void {
     if (target.kind !== "object") return;
-    this.counterObject(target.object);
+    this.counterObject(target.object, into ?? "graveyard");
   }
 
   /**
    * Counter the spell/ability on the stack (rule 701.5). Returns `false`
    * without countering when it "can't be countered" (`CardDefinition.cantBeCountered`
    * — rule 701.5f), so the caller lets it resolve; `true` when it was countered.
+   *
+   * A countered spell goes to its owner's graveyard, or with `into: "hand"`
+   * to their hand instead (Remand's "if that spell is countered this way,
+   * put it into its owner's hand instead"). Either is still `moveObject`'s
+   * to redirect: a flashed-back spell is exiled (rule 702.34a), and a
+   * commander sent to hand may go to the command zone (rule 903.9b). A copy
+   * of a spell goes to neither — it ceases to exist (rule 707.10c).
    */
-  private counterObject(id: ObjectId): boolean {
+  private counterObject(id: ObjectId, into: "graveyard" | "hand" = "graveyard"): boolean {
     const object = this.state.objects[id];
     if (object === undefined || object.zone !== "stack") return false;
     if (
@@ -11095,9 +11104,19 @@ export class Game {
       return false;
     }
     object.targets = null;
+    if (object.isCopy) {
+      const stack = this.state.zones.shared.stack;
+      const index = stack.indexOf(id);
+      if (index >= 0) stack.splice(index, 1);
+      delete this.state.objects[id];
+      this.emit({ type: "spell-countered", object: id });
+      return true;
+    }
     // `xValue` is left for `moveObject`, which records the spell's last-known
     // mana value (X included) before clearing it on the way off the stack.
-    this.moveObject(id, "graveyard");
+    // A commander headed for a hand waits on the stack for its owner's 903.9b
+    // answer (`moveObject` returns `false`); it's countered all the same.
+    this.moveObject(id, into);
     this.emit({ type: "spell-countered", object: id });
     return true;
   }
@@ -12102,8 +12121,8 @@ export class Game {
     }
     // Flashback's "exile this card instead of putting it anywhere else any
     // time it would leave the stack" (rule 702.34a) covers more than a
-    // graveyard: a flashed-back spell returned to its owner's hand (Remand)
-    // is exiled too.
+    // graveyard: a flashed-back spell countered into its owner's hand
+    // (Remand) or returned there (Unsubstantiate) is exiled too.
     if (
       object.castVia === "flashback" &&
       object.zone === "stack" &&
@@ -12125,8 +12144,9 @@ export class Game {
     // way the move didn't happen, and this returns `false` to say so.
     //
     // Rule 903.9b extends it to a commander put into its owner's hand from
-    // anywhere else too — a spell returned from the stack (Remand), a card
-    // from a graveyard or exile — which waits where it is, the same way. A
+    // anywhere else too — a spell countered into its owner's hand (Remand) or
+    // returned there from the stack (Unsubstantiate), a card from a graveyard
+    // or exile — which waits where it is, the same way. A
     // library-to-hand move (a draw, a tutor) isn't asked: a commander is
     // almost never in a library, and a draw has no way to wait.
     const handFromElsewhere =

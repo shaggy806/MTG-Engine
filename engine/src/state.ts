@@ -1300,8 +1300,9 @@ export interface GameState {
     readonly leftWith?: readonly ObjectId[];
     /** Where it waits meanwhile — the battlefield when absent. A commander
      * put into its owner's hand *from anywhere* is asked too (rule 903.9b):
-     * a spell returned from the stack (Remand) or a card from a graveyard or
-     * exile, each of which waits where it is. */
+     * a spell countered into its owner's hand (Remand) or returned there
+     * from the stack (Unsubstantiate), or a card from a graveyard or exile,
+     * each of which waits where it is. */
     readonly from?: CommanderMoveOrigin;
   } | null;
   /**

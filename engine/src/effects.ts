@@ -483,7 +483,9 @@ export type EffectSpec =
        *   Regrowth), or with `"source"` / `"trigger-object"` the card behind
        *   the ability ("return it to its owner's hand" off a dies trigger, now
        *   or inside a `delayed-trigger`).
-       * - `"stack"` — a **spell** to its owner's hand (Remand). Not a counter
+       * - `"stack"` — a **spell** to its owner's hand (Unsubstantiate,
+       *   Venser, Shaper Savant — not Remand, which counters the spell and
+       *   is the `counter` effect's `into: "hand"`). Not a counter
        *   (rule 701.5): "can't be countered" doesn't stop it, and nothing
        *   that watches for a spell being countered sees it. A copy of a spell
        *   ceases to exist instead (rule 707.10c); an ability on the stack
@@ -617,9 +619,18 @@ export type EffectSpec =
     }
   | {
       /** Counter a target spell on the stack — it moves to its owner's
-       * graveyard without resolving (rule 701.5). */
+       * graveyard without resolving (rule 701.5). A spell that can't be
+       * countered stays on the stack and resolves, and a copy of a spell
+       * ceases to exist rather than going anywhere (rule 707.10c). */
       readonly kind: "counter";
       readonly target: number;
+      /**
+       * `"hand"`: if the spell is countered this way, put it into its
+       * owner's hand instead of into their graveyard (Remand). Still a
+       * counter — it does nothing to a spell that can't be countered — unlike
+       * `return-to-hand` with `from: "stack"`, which isn't one.
+       */
+      readonly into?: "hand";
     }
   | {
       /** Gain control of a target permanent (rule 613.1b, layer 2 — modeled
@@ -1471,8 +1482,9 @@ export interface EffectApi {
   grantGraveyardCast(target: TargetRef): void;
   /** `a` and `b` (both creatures) fight; with `oneSided` only `a` deals. */
   fight(a: TargetRef, b: TargetRef, oneSided: boolean): void;
-  /** Counter a target spell on the stack. */
-  counterSpell(target: TargetRef): void;
+  /** Counter a target spell on the stack — into its owner's hand instead
+   * of their graveyard with `into: "hand"`. */
+  counterSpell(target: TargetRef, into?: "hand"): void;
   /** The effect's controller gains control of `target`. */
   gainControl(target: TargetRef, untilEndOfTurn: boolean): void;
   /** `target` (a player) mills `amount` cards. */
@@ -1988,7 +2000,7 @@ export function applyEffectSpec(spec: EffectSpec, ctx: ResolutionContext): void 
     }
     case "counter": {
       const target = ctx.targets[spec.target];
-      if (target !== undefined) ctx.counterSpell(target);
+      if (target !== undefined) ctx.counterSpell(target, spec.into);
       return;
     }
     case "gain-control": {
