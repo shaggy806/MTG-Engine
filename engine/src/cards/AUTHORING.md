@@ -113,20 +113,45 @@ the snapshot into `engine/src/cards/scaffold/`: name, cost, colours, types,
 P/T, loyalty, faces and their layout flags, `text`, the keywords the engine
 models, a partner ability's `pairing`, the rulings in the header, and each
 token it makes matched to an existing `tokens/` file or given a skeleton of
-its own. Every Oracle line left to author is a `// TODO(scaffold):` comment
-where its ability goes. `scaffold/` isn't registered, so a half-authored
-card can't reach a game; when every TODO is gone, move the file into
-`pool/` (a token into `tokens/`) and run `gen:cards`. `cards/pool.test.ts`
-fails on a `TODO(scaffold)` left in either.
+its own. `scripts/oracle-parse.mjs` then reads the rules text, line by line,
+in two tiers:
 
-A card whose text is only keywords the engine models is finished by the
-scaffold ("auto-finished") — `--auto-scan` finds every such card in both
-backlog lists, `--auto-scan --all` in the whole snapshot — but still isn't
-registered: it's written to `engine/src/cards/review/`. Check it (`npm run
-card:verify -w engine -- --dir review`, and `card:text` the same way) and
-against its Oracle text, then move it into `pool/`. Lands are never
-auto-finished: their land types imply mana abilities the engine needs
-written out (rule 305.6).
+- **Structure.** A line shaped like an ability becomes one: `cost: effect`
+  an activated ability (mana, `{T}`, sacrifice, tap-N-untapped, life,
+  counters, a loyalty cost, "Activate only as a sorcery"/"once each turn"),
+  `When/Whenever/At …` a triggered ability with its `trigger` (entering,
+  dying, attacking, casting, landfall, step starts, …), "enters tapped" a
+  replacement, Enchant an Aura's target. The effect it can't read stays
+  `effect: null` with its sentence as a TODO beside it.
+- **Effects.** A sentence that matches a whole-sentence template — draw,
+  damage, destroy, exile, bounce, life, counters, pump, keyword grants,
+  tokens, mana, scry/surveil/mill, tutors, "you may …" — becomes its
+  `EffectSpec`, with its `targets`. A template matches a *whole* sentence or
+  nothing: "where X is …", "for each …" and any clause it doesn't know leave
+  the sentence to you rather than half-read.
+
+Every Oracle line left to author is a `// TODO(scaffold):` comment where its
+ability goes. `scaffold/` isn't registered, so a half-authored card can't
+reach a game; when every TODO is gone, move the file into `pool/` (a token
+into `tokens/`) and run `gen:cards`. `cards/pool.test.ts` fails on a
+`TODO(scaffold)` left in either. **Read what was filled in, not just the
+TODOs**: the parser is checked against the pool, but a new card can use a
+familiar sentence in an unfamiliar way.
+
+A card whose every line was read is finished by the scaffold
+("auto-finished") but still isn't registered: it's written to
+`engine/src/cards/review/`. `--auto-scan` finds every such card in both
+backlog lists, `--auto-scan --all` in the whole snapshot. Check it (`npm run
+card:verify -w engine -- --dir review`, and `card:text` the same way)
+against its Oracle text and rulings, then move it into `pool/`.
+
+`npm run card:scaffold -w engine -- --report` writes nothing: it says how much
+of the backlog the parser reads and lists the unparsed lines that recur most,
+which is where a new template earns the most. `npm run card:parse-check -w
+engine` is the parser's ground truth — every ability it claims to have read,
+on every pool card, compared with the hand-authored one — and
+`test/oracle-parse.test.ts` fails on any disagreement. When you add a
+template, run both.
 
 Or create `engine/src/cards/pool/grizzly-bears.ts` by hand:
 

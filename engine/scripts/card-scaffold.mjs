@@ -30,12 +30,16 @@
 //                                                           in both backlog lists
 //   npm run card:scaffold -w engine -- --auto-scan --all    …in the whole snapshot
 //   --dry-run                                               print what would be written
+//   npm run card:scaffold -w engine -- --report [--all]     write nothing: how much of the backlog
+//                                                           (or the whole snapshot) the parser reads,
+//                                                           and the unparsed lines that recur most
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { POOL_CARDS, TOKEN_CARDS } from "../dist/cards/generated.js";
+import { parseFace, toSource } from "./oracle-parse.mjs";
 import { findCard, loadSnapshot, suggest } from "./oracle-snapshot.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -55,7 +59,8 @@ const option = (name) => {
   const i = args.indexOf(name);
   return i >= 0 ? args[i + 1] : undefined;
 };
-const dryRun = flag("--dry-run");
+const reportMode = flag("--report");
+const dryRun = flag("--dry-run") || reportMode;
 
 if (loadSnapshot() === null) {
   console.error("No Oracle snapshot — run `npm run gen:oracle -w engine` first.");
@@ -106,167 +111,112 @@ function parseTypeLine(typeLine) {
   return { supertypes, types, subtypes: right.split(" ").filter(Boolean), unknown };
 }
 
-/** Oracle keyword → the engine's `Keyword`. Anything else is authored by hand. */
-const KEYWORDS = {
-  flying: "flying",
-  reach: "reach",
-  haste: "haste",
-  vigilance: "vigilance",
-  defender: "defender",
-  "first strike": "first-strike",
-  "double strike": "double-strike",
-  trample: "trample",
-  deathtouch: "deathtouch",
-  lifelink: "lifelink",
-  menace: "menace",
-  indestructible: "indestructible",
-  hexproof: "hexproof",
-  shroud: "shroud",
-  flash: "flash",
-  fear: "fear",
-  intimidate: "intimidate",
-  plainswalk: "plainswalk",
-  islandwalk: "islandwalk",
-  swampwalk: "swampwalk",
-  mountainwalk: "mountainwalk",
-  forestwalk: "forestwalk",
-  desertwalk: "desertwalk",
-};
-
-const stripReminder = (line) => line.replace(/\s*\([^)]*\)/g, "").trim();
-
-/**
- * What one Oracle line becomes, if the snapshot alone can say:
- * `{ keywords }` for a line of modeled keywords, `{ ward }` for a plain mana
- * or life ward, `{ pairing }` for a partner ability, `{ note }` for a line with
- * no behaviour of its own; `null` when it needs authoring.
- */
-function classifyLine(rawLine, cardName) {
-  const line = stripReminder(rawLine);
-  if (line === "") return { note: "reminder text" };
-  if (line === `${cardName} can be your commander.`) return { note: "commander eligibility" };
-  let m;
-  if (/^Partner$/.test(line)) return { pairing: { kind: "partner" } };
-  if ((m = /^Partner with (.+)$/.exec(line))) return { pairing: { kind: "partner-with", name: m[1] } };
-  if ((m = /^Partner—(.+)$/.exec(line))) return { pairing: { kind: "partner-group", group: m[1] } };
-  if (/^Friends forever$/.test(line)) return { pairing: { kind: "partner-group", group: "Friends forever" } };
-  if (/^Choose a Background$/.test(line)) return { pairing: { kind: "choose-a-background" } };
-  if (/^Doctor's companion$/.test(line)) return { pairing: { kind: "doctors-companion" } };
-  if ((m = /^Ward ((?:\{[0-9WUBRGC]+\})+)$/.exec(line))) return { ward: { mana: m[1] } };
-  if ((m = /^Ward—Pay (\d+) life\.$/.exec(line))) return { ward: { payLife: Number(m[1]) } };
-  const words = line.split(/,\s*|;\s*/).map((w) => w.toLowerCase());
-  if (words.length > 0 && words.every((w) => KEYWORDS[w] !== undefined)) {
-    return { keywords: words.map((w) => KEYWORDS[w]) };
-  }
-  return null;
-}
-
-// --------------------------------------------------------- writing a file
-
-/** Pool-style source for one value: arrays and strings as a person writes them. */
-const lit = (v) => (typeof v === "string" ? JSON.stringify(v) : JSON.stringify(v).replace(/,/g, ", "));
-
-const pairingLiteral = (p) =>
-  p.kind === "partner-with"
-    ? `{ kind: "partner-with", name: ${lit(p.name)} }`
-    : p.kind === "partner-group"
-      ? `{ kind: "partner-group", group: ${lit(p.group)} }`
-      : `{ kind: "${p.kind}" }`;
+// ------------------------------------------------------- writing a file
 
 /** A back face's own art: Scryfall serves the second face of a printing
  * under `/back/`. */
 const backArt = (printing) =>
   `https://cards.scryfall.io/art_crop/back/${printing[0]}/${printing[1]}/${printing}.jpg`;
 
+const BASIC_MANA = { Plains: "W", Island: "U", Swamp: "B", Mountain: "R", Forest: "G" };
+
 /**
- * One face's file. `face` is the snapshot face (or the whole entry for a
- * single-faced card); `ctx` carries the card-level parts.
+ * One face's file, from `parseFace` (oracle-parse.mjs). `face` is the snapshot
+ * face (or the whole entry for a single-faced card); `ctx` carries the
+ * card-level parts.
  */
 function faceSource(face, ctx) {
   const t = parseTypeLine(face.type_line);
-  const lines = (face.oracle_text ?? "").split("\n").filter(Boolean);
-  const keywords = [];
-  const wards = [];
-  const todos = [];
-  let pairing = null;
-  let usesPartnerWith = null;
-  for (const line of lines) {
-    const c = classifyLine(line, face.name);
-    if (c === null) todos.push(line);
-    else if (c.keywords) keywords.push(...c.keywords);
-    else if (c.ward) wards.push(c.ward);
-    else if (c.pairing) {
-      pairing = c.pairing;
-      if (c.pairing.kind === "partner-with") usesPartnerWith = c.pairing.name;
-    }
-  }
+  const parsed = parseFace(face, { tokenFor: ctx.tokenFor });
   const notes = [];
   if (t.unknown.length > 0) notes.push(`type words the engine has no type for: ${t.unknown.join(", ")}`);
   const numeric = (v) => v === undefined || /^\d+$/.test(v);
   if (!numeric(face.power) || !numeric(face.toughness) || !numeric(face.loyalty)) {
-    notes.push(`P/T ${face.power}/${face.toughness}${face.loyalty !== undefined ? `, loyalty ${face.loyalty}` : ""} isn't a plain number — a characteristic-defining ability, or an X`);
+    notes.push(
+      `P/T ${face.power}/${face.toughness}${face.loyalty !== undefined ? `, loyalty ${face.loyalty}` : ""} ` +
+        "isn't a plain number — a characteristic-defining ability, or an X",
+    );
   }
   if (ctx.layoutNote) notes.push(ctx.layoutNote);
-  // A land's basic land types carry mana abilities the engine only has when
-  // they're written out (rule 305.6), and its reminder text can hide one
-  // (Dryad Arbor) — never finished automatically.
-  if (t.types.includes("land")) notes.push("a land: write out its mana abilities (rule 305.6)");
-  const done = todos.length === 0 && notes.length === 0;
 
-  const imports = ['import { defineCard } from "../define.js";'];
-  const helpers = [];
-  if (wards.length > 0) helpers.push("ward");
-  if (usesPartnerWith !== null) helpers.push("partnerWithTrigger");
-  if (helpers.length > 0) imports.push(`import { ${helpers.join(", ")} } from "../helpers.js";`);
+  // A basic land type means "{T}: Add [its colour]" (rule 305.6), which the
+  // engine only has written out.
+  const basics = t.subtypes.filter((s) => BASIC_MANA[s] !== undefined);
+  if (t.types.includes("land") && basics.length > 0) {
+    const colors = basics.map((s) => BASIC_MANA[s]);
+    parsed.activated.unshift({
+      cost: { mana: null, tap: true },
+      targets: [],
+      effect: colors.length === 1 ? { kind: "add-mana", mana: colors[0], amount: 1 } : { kind: "add-mana", mana: { oneOf: colors }, amount: 1 },
+      resolve: null,
+      text: `{T}: Add ${colors.map((c) => `{${c}}`).join(" or ")}.`,
+    });
+  }
+  // An Aura targets what it enchants.
+  if (parsed.enchant !== undefined) parsed.targets = [parsed.enchant];
+  const done = parsed.complete && notes.length === 0 && (parsed.enchant !== undefined || t.subtypes.includes("Aura") === false);
 
   const num = (v) => (v === undefined ? undefined : /^\d+$/.test(v) ? Number(v) : 0);
-  const fields = [];
-  fields.push(`  name: ${lit(face.name)},`);
-  if (ctx.art) fields.push(`  art: ${lit(ctx.art)},`);
-  if (face.mana_cost) fields.push(`  manaCost: ${lit(face.mana_cost)},`);
-  fields.push(`  colors: ${lit(orderColors(face.colors ?? face.color_indicator ?? ctx.colors))},`);
-  if (t.supertypes.length > 0) fields.push(`  supertypes: ${lit(t.supertypes)},`);
-  fields.push(`  types: ${lit(t.types)},`);
-  if (t.subtypes.length > 0) fields.push(`  subtypes: ${lit(t.subtypes)},`);
-  if (face.power !== undefined) fields.push(`  power: ${num(face.power)},`, `  toughness: ${num(face.toughness)},`);
-  if (face.loyalty !== undefined) fields.push(`  loyalty: ${num(face.loyalty)},`);
-  if (keywords.length > 0) fields.push(`  keywords: ${lit([...new Set(keywords)])},`);
-  if (pairing !== null) fields.push(`  pairing: ${pairingLiteral(pairing)},`);
-  fields.push(`  text: ${lit(face.oracle_text ?? "")},`);
-  const triggered = [
-    ...(usesPartnerWith !== null ? [`partnerWithTrigger(${lit(usesPartnerWith)})`] : []),
-    ...wards.map((w) => `ward(${w.mana ? `{ mana: ${lit(w.mana)} }` : `{ payLife: ${w.payLife} }`})`),
-  ];
-  if (triggered.length > 0) fields.push(`  triggered: [${triggered.join(", ")}],`);
-  if (ctx.faces) fields.push(`  faces: ${lit(ctx.faces)},`);
-  if (ctx.flag) fields.push(`  ${ctx.flag}: true,`);
-  for (const n of notes) fields.push(`  // TODO(scaffold): ${n}`);
-  for (const line of todos) fields.push(`  // TODO(scaffold): ${line}`);
+  const def = {
+    name: face.name,
+    art: ctx.art,
+    manaCost: face.mana_cost || undefined,
+    colors: orderColors(face.colors ?? face.color_indicator ?? ctx.colors),
+    supertypes: t.supertypes.length ? t.supertypes : undefined,
+    types: t.types,
+    subtypes: t.subtypes.length ? t.subtypes : undefined,
+    power: num(face.power),
+    toughness: num(face.toughness),
+    loyalty: num(face.loyalty),
+    keywords: parsed.keywords.length ? [...new Set(parsed.keywords)] : undefined,
+    pairing: parsed.pairing,
+    cantBeCountered: parsed.cantBeCountered,
+    cycling: parsed.cycling,
+    flashback: parsed.flashback,
+    text: face.oracle_text ?? "",
+    targets: parsed.targets?.length ? parsed.targets : undefined,
+    effect: parsed.effect ?? undefined,
+    castModal: parsed.castModal,
+    activated: parsed.activated.length ? parsed.activated : undefined,
+    triggered: parsed.triggered.length ? parsed.triggered : undefined,
+    static: parsed.static.length ? parsed.static : undefined,
+    faces: ctx.faces,
+    ...(ctx.flag ? { [ctx.flag]: true } : {}),
+  };
+  const body = toSource(def).replace(/\n}$/, "");
+  const todos = [
+    ...notes,
+    ...parsed.todo,
+    ...(parsed.effectHints ?? []).map((h) => `(parsed "${h.sentence}" as ${JSON.stringify(h.effect)})`),
+  ].map((n) => `  // TODO(scaffold): ${n}`);
 
   // The header speaks for the whole card: a face with nothing left to author
   // is still a scaffold while another face of it isn't done.
   const render = (cardDone) => {
     const header = [
-    ...(cardDone
-      ? [
-          "// REVIEW — auto-finished by `npm run card:scaffold` from the Oracle snapshot: its text",
-          "// is only keywords the engine models, so nothing was left to author. Not in the",
-          "// registry: check it against the card's Oracle text, then move it into cards/pool/",
-          "// (or tokens/) and run `npm run gen:cards -w engine`.",
-        ]
-      : [
-          "// SCAFFOLD — written by `npm run card:scaffold` from the Oracle snapshot. Not in the",
-          "// registry: author each TODO(scaffold), move this file into cards/pool/ (or",
-          "// tokens/), then run `npm run gen:cards -w engine`. See cards/AUTHORING.md.",
-        ]),
-    ...ctx.headerNotes.map((n) => `// ${n}`),
-    ...(ctx.rulings.length > 0 && !cardDone
-      ? ["//", "// Rulings:", ...ctx.rulings.flatMap((r) => wrap(`[${r.date}] ${r.text}`, "//   "))]
-      : []),
+      ...(cardDone
+        ? [
+            "// REVIEW — auto-finished by `npm run card:scaffold` from the Oracle snapshot: every line",
+            "// of its text matched a template, so nothing was left to author. Not in the registry:",
+            "// check it against the card's Oracle text, then move it into cards/pool/ (or tokens/)",
+            "// and run `npm run gen:cards -w engine`.",
+          ]
+        : [
+            "// SCAFFOLD — written by `npm run card:scaffold` from the Oracle snapshot. Not in the",
+            "// registry: author each TODO(scaffold), move this file into cards/pool/ (or",
+            "// tokens/), then run `npm run gen:cards -w engine`. See cards/AUTHORING.md.",
+          ]),
+      ...ctx.headerNotes.map((n) => `// ${n}`),
+      ...(ctx.rulings.length > 0 && !cardDone
+        ? ["//", "// Rulings:", ...ctx.rulings.flatMap((r) => wrap(`[${r.date}] ${r.text}`, "//   "))]
+        : []),
     ];
-    return `${imports.join("\n")}\n\n${header.join("\n")}\n\nexport default defineCard({\n${fields.join("\n")}\n});\n`;
+    return (
+      `import { defineCard } from "../define.js";\n\n${header.join("\n")}\n\n` +
+      `export default defineCard(${body}${todos.length ? `\n${todos.join("\n")}` : ""}\n});\n`
+    );
   };
-  return { done, render };
+  return { done, render, parsed };
 }
 
 /** Word-wrap a comment line at 100 columns. */
@@ -329,7 +279,7 @@ function newTokenName(t, cardName) {
 
 // ------------------------------------------------------------ one card
 
-const report = { scaffolded: [], autoFinished: [], skipped: [], tokens: [] };
+const report = { scaffolded: [], autoFinished: [], skipped: [], tokens: [], parsed: [] };
 
 function write(dir, file, source) {
   if (dryRun) return;
@@ -337,7 +287,7 @@ function write(dir, file, source) {
   writeFileSync(path.join(dir, file), source);
 }
 
-function scaffoldCard(name, { autoOnly = false } = {}) {
+function scaffoldCard(name, { autoOnly = false, ignoreScaffolded = false } = {}) {
   const entry = findCard(name);
   if (entry === undefined) {
     const near = suggest(name);
@@ -349,7 +299,7 @@ function scaffoldCard(name, { autoOnly = false } = {}) {
     if (!autoOnly) report.skipped.push(`${entry.name}: already in the pool`);
     return;
   }
-  if (!autoOnly && faces.some((f) => scaffolded.has(slug(f.name)))) {
+  if (!autoOnly && !ignoreScaffolded && faces.some((f) => scaffolded.has(slug(f.name)))) {
     report.skipped.push(`${entry.name}: already scaffolded`);
     return;
   }
@@ -359,6 +309,7 @@ function scaffoldCard(name, { autoOnly = false } = {}) {
   // The tokens it makes, matched to ours or given a skeleton.
   const tokenNotes = [];
   const newTokens = [];
+  const resolved = [];
   const amasses = faces.some((f) => /\bamass\b/i.test(f.oracle_text ?? ""));
   for (const t of (entry.tokens ?? []).filter(isRealToken)) {
     // Amass makes the engine's own "Army Token" and gives it the type.
@@ -369,16 +320,35 @@ function scaffoldCard(name, { autoOnly = false } = {}) {
     const have = existingToken(t);
     if (have) {
       tokenNotes.push(`Makes ${t.name} → use "${have.name}".`);
+      resolved.push({ t, name: have.name });
       continue;
     }
     const tokenName = newTokenName(t, entry.name);
+    resolved.push({ t, name: tokenName });
     tokenNotes.push(`Makes ${t.name} → new token "${tokenName}" (scaffolded).`);
     newTokens.push({ t, tokenName });
   }
 
+  // "create a 1/1 white Spirit creature token with flying" → the token it
+  // names: one of the card's own tokens with that name (and P/T, if given),
+  // or one of the common named artifact tokens the pool already has.
+  const tokenFor = (desc) => {
+    const pt = /^(\d+)\/(\d+) /.exec(desc);
+    const hit = resolved.find(
+      ({ t }) =>
+        ` ${desc} `.includes(` ${t.name} `) &&
+        (pt === null || (String(t.power) === pt[1] && String(t.toughness) === pt[2])),
+    );
+    if (hit) return hit.name;
+    const named = /^(Treasure|Food|Clue|Blood|Map|Gold|Powerstone|Junk|Incubator)$/.exec(desc);
+    if (named && tokenNames.has(`${named[1]} Token`)) return `${named[1]} Token`;
+    return null;
+  };
+
   const results = faces.map((face, i) => ({
     face,
     ...faceSource(face, {
+      tokenFor,
       colors: entry.colors,
       art: multi && i > 0 ? backArt(entry.printing) : undefined,
       faces: multi ? faces.map((f) => f.name) : undefined,
@@ -391,6 +361,8 @@ function scaffoldCard(name, { autoOnly = false } = {}) {
       ],
     }),
   }));
+
+  for (const r of results) report.parsed.push(r.parsed);
 
   // Auto-finish only when every face is done and no token needs work.
   const finished = results.every((r) => r.done) && newTokens.length === 0;
@@ -426,7 +398,14 @@ function backlog(file) {
     .map((l) => l.replace(/^\[ \]\s+\d+\s+/, "").split(/\s{2,}/)[0]);
 }
 
-if (flag("--auto-scan")) {
+if (reportMode) {
+  const names = flag("--all")
+    ? loadSnapshot().entries.filter((e) => e.commander === "legal").map((e) => e.name)
+    : [...new Set([...backlog("top-commanders.txt"), ...backlog("top-commander-cards.txt")])];
+  for (const name of names) scaffoldCard(name, { autoOnly: false, ignoreScaffolded: true });
+  printCoverage(names.length);
+  process.exit(0);
+} else if (flag("--auto-scan")) {
   const names = flag("--all")
     ? loadSnapshot().entries.filter((e) => e.commander === "legal").map((e) => e.name)
     : [...new Set([...backlog("top-commanders.txt"), ...backlog("top-commander-cards.txt")])];
@@ -446,6 +425,40 @@ if (flag("--auto-scan")) {
     process.exit(1);
   }
   for (const name of names) scaffoldCard(name);
+}
+
+/** `--report`: the parser's reach over what was just (dry-)scaffolded. */
+function printCoverage(total) {
+  const pct = (a, b) => `${a}/${b} (${b ? ((100 * a) / b).toFixed(1) : 0}%)`;
+  let abilities = 0;
+  let finished = 0;
+  let unreadLines = 0;
+  const unparsed = new Map();
+  const count = (line) => {
+    // One template reads every number and every mana cost alike.
+    const key = line.replace(/\b\d+\b/g, "N").replace(/\{[^}]+\}/g, "{…}");
+    unparsed.set(key, (unparsed.get(key) ?? 0) + 1);
+  };
+  for (const p of report.parsed) {
+    // An ability here had its cost or trigger read, whatever became of its
+    // effect; a line read not at all is in `todo`.
+    for (const a of [...p.activated, ...p.triggered]) {
+      abilities += 1;
+      if (a.effect !== null && a.__todo === undefined) finished += 1;
+      for (const t of a.__todo ?? []) count(t);
+    }
+    unreadLines += p.todo.length;
+    for (const t of p.todo) count(t);
+  }
+  const cards = report.autoFinished.length + report.scaffolded.length;
+  console.log(`${total} names; ${cards} would be written (the rest are in the pool or not in the snapshot)`);
+  console.log(`auto-finished (every line read): ${pct(report.autoFinished.length, cards)}`);
+  console.log(`abilities with their cost or trigger read: ${abilities} (and ${unreadLines} other lines not read at all)`);
+  console.log(`  …with the effect read too: ${pct(finished, abilities)}`);
+  console.log("\nThe unparsed lines that recur most — the next templates to write:");
+  for (const [line, n] of [...unparsed].sort((a, b) => b[1] - a[1]).slice(0, 40)) {
+    console.log(`  ${String(n).padStart(4)}  ${line.length > 110 ? `${line.slice(0, 107)}…` : line}`);
+  }
 }
 
 const show = (label, list) => {

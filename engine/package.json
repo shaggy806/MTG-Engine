@@ -22,6 +22,7 @@
     "gen:oracle": "node scripts/gen-oracle.mjs",
     "card:lookup": "node scripts/scryfall-lookup.mjs",
     "card:scaffold": "npm run build && node scripts/card-scaffold.mjs",
+    "card:parse-check": "npm run build && node scripts/oracle-parse-check.mjs",
     "card:verify": "npm run build && node scripts/verify-cards.mjs",
     "card:text": "npm run build && node scripts/verify-cards.mjs --text",
     "cards:mark": "npm run build && node scripts/top-commander-cards.mjs --refresh",
