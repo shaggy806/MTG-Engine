@@ -100,7 +100,7 @@ const singular = (w) => {
  * "Elf", "Zombie creature", "noncreature artifact", "creature token" — as a
  * `CardFilter`. `null` for anything with a word it doesn't know.
  */
-export function parseTypePhrase(phrase) {
+export function parseTypePhrase(phrase, { cards = false } = {}) {
   const words = phrase.trim().split(/\s+/);
   const filter = {};
   const types = [];
@@ -110,11 +110,19 @@ export function parseTypePhrase(phrase) {
     const raw = words[i];
     const w = singular(raw.replace(/,$/, ""));
     if (w === "or" || w === "and/or") {
-      if (types.length === 0) return null;
+      // "creature or planeswalker" is either type. "artifact creature or
+      // Vehicle" is (artifact creature) or (Vehicle), which one filter can't
+      // say, so only a lone type before the "or" is read.
+      if (types.length !== 1 || filter.subtype !== undefined) return null;
       anyOf.push(types.pop());
       continue;
     }
-    if (w === "permanent" || w === "permanents") continue;
+    // On the battlefield everything is a permanent. Among cards (a graveyard,
+    // a library) a "permanent card" is one that isn't an instant or sorcery.
+    if (w === "permanent" || w === "permanents") {
+      if (cards) notTypes.push("instant", "sorcery");
+      continue;
+    }
     if (w === "nontoken") filter.token = false;
     else if (w === "token" || w === "tokens") filter.token = true;
     else if (w === "legendary") filter.supertype = "legendary";
@@ -125,8 +133,9 @@ export function parseTypePhrase(phrase) {
       if (anyOf.length > 0) anyOf.push(w);
       else types.push(w);
     } else if (/^[A-Z][a-z]+$/.test(w) && !["You", "Your"].includes(w)) {
-      // A subtype, singular as printed after a quantity ("an Elf").
-      if (filter.subtype !== undefined) return null;
+      // A subtype, singular as printed after a quantity ("an Elf"). Not as
+      // an alternative to a type ("creature or Vehicle").
+      if (filter.subtype !== undefined || anyOf.length > 0) return null;
       filter.subtype = w;
     } else return null;
   }
@@ -182,7 +191,7 @@ const TARGET = `(?:${TARGET_PHRASES.map(([p]) => escapeRe(p)).join("|")})`;
 function graveyardTargetOf(phrase) {
   const m = /^target (.+?) card from (your|a|an opponent's) graveyard$/i.exec(phrase);
   if (!m) return undefined;
-  const filter = parseTypePhrase(m[1]);
+  const filter = parseTypePhrase(m[1], { cards: true });
   if (filter === null) return undefined;
   const whose = m[2] === "your" ? "you" : m[2] === "a" ? "any" : "opponent";
   return { kind: "card-in-graveyard", whose, filter };
@@ -507,12 +516,12 @@ export function parseSentence(sentence, ctx) {
 
   // Searching.
   if ((m = /^search your library for an? (.+?) card, put it onto the battlefield( tapped)?, then shuffle\.$/i.exec(s))) {
-    const filter = parseTypePhrase(m[1]);
+    const filter = parseTypePhrase(m[1], { cards: true });
     if (filter === null) return null;
     return { kind: "search-library", filter, destination: "battlefield", min: 0, max: 1, ...(m[2] ? { enterTapped: true } : {}) };
   }
   if ((m = /^search your library for an? (.+?) card, reveal it, put it into your hand, then shuffle\.$/i.exec(s))) {
-    const filter = parseTypePhrase(m[1]);
+    const filter = parseTypePhrase(m[1], { cards: true });
     if (filter === null) return null;
     return { kind: "search-library", filter, destination: "hand", min: 0, max: 1, reveal: true };
   }

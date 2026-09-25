@@ -19,7 +19,7 @@ import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
 // @ts-expect-error — a plain .mjs script, typed only at runtime.
-import { parseFace, parseTrigger, parseCost, parseSentence } from "../../scripts/oracle-parse.mjs";
+import { parseFace, parseTrigger, parseCost, parseSentence, parseTypePhrase } from "../../scripts/oracle-parse.mjs";
 // @ts-expect-error — as above.
 import { checkPool } from "../../scripts/oracle-parse-check.mjs";
 
@@ -100,6 +100,21 @@ describe("costs and triggers", () => {
       { on: "cast-spell", who: "you", filter: { typesAnyOf: ["instant", "sorcery"] } },
     ]);
     expect(parseTrigger("Whenever you cycle or discard another card")).toBeNull();
+  });
+
+  it("an 'or' between whole phrases isn't one filter", () => {
+    expect(parseTypePhrase("creature or planeswalker")).toEqual({ typesAnyOf: ["creature", "planeswalker"] });
+    // (artifact creature) or (Vehicle) — Canoptek Spyder. Read as one filter it
+    // came out as "an artifact creature that's a Vehicle".
+    expect(parseTypePhrase("nontoken artifact creature or Vehicle")).toBeNull();
+    expect(parseTypePhrase("artifact creature or enchantment")).toBeNull();
+  });
+
+  it("a 'permanent card' is one that isn't an instant or sorcery", () => {
+    // Revive the Shire's "target permanent card from your graveyard" was read
+    // as any card at all. On the battlefield the word says nothing.
+    expect(parseTypePhrase("permanent", { cards: true })).toEqual({ notTypes: ["instant", "sorcery"] });
+    expect(parseTypePhrase("permanent")).toEqual({});
   });
 });
 

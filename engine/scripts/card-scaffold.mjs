@@ -29,6 +29,8 @@
 //   npm run card:scaffold -w engine -- --auto-scan          auto-finish (into review/) every keyword-only card
 //                                                           in both backlog lists
 //   npm run card:scaffold -w engine -- --auto-scan --all    …in the whole snapshot
+//   npm run card:scaffold -w engine -- --auto-scan --ranks 2001-4000
+//                                                           …among the cards of that EDHREC rank range
 //   --dry-run                                               print what would be written
 //   npm run card:scaffold -w engine -- --report [--all]     write nothing: how much of the backlog
 //                                                           (or the whole snapshot) the parser reads,
@@ -398,18 +400,30 @@ function backlog(file) {
     .map((l) => l.replace(/^\[ \]\s+\d+\s+/, "").split(/\s{2,}/)[0]);
 }
 
-if (reportMode) {
-  const names = flag("--all")
+/** The names `--report` and `--auto-scan` look at: an EDHREC rank range
+ * (`--ranks 2001-4000`, most-played first), the whole snapshot (`--all`), or
+ * both backlog lists. */
+function scanNames() {
+  const ranks = option("--ranks");
+  if (ranks !== undefined) {
+    const [lo, hi] = ranks.split("-").map(Number);
+    return loadSnapshot()
+      .entries.filter((e) => e.commander === "legal" && e.edhrec_rank >= lo && e.edhrec_rank <= hi)
+      .sort((a, b) => a.edhrec_rank - b.edhrec_rank)
+      .map((e) => e.name);
+  }
+  return flag("--all")
     ? loadSnapshot().entries.filter((e) => e.commander === "legal").map((e) => e.name)
     : [...new Set([...backlog("top-commanders.txt"), ...backlog("top-commander-cards.txt")])];
+}
+
+if (reportMode) {
+  const names = scanNames();
   for (const name of names) scaffoldCard(name, { autoOnly: false, ignoreScaffolded: true });
   printCoverage(names.length);
   process.exit(0);
 } else if (flag("--auto-scan")) {
-  const names = flag("--all")
-    ? loadSnapshot().entries.filter((e) => e.commander === "legal").map((e) => e.name)
-    : [...new Set([...backlog("top-commanders.txt"), ...backlog("top-commander-cards.txt")])];
-  for (const name of names) scaffoldCard(name, { autoOnly: true });
+  for (const name of scanNames()) scaffoldCard(name, { autoOnly: true });
 } else if (option("--next") !== undefined) {
   const n = Number(option("--next"));
   const list = backlog(flag("--cards") ? "top-commander-cards.txt" : "top-commanders.txt");
@@ -421,7 +435,7 @@ if (reportMode) {
 } else {
   const names = args.filter((a) => !a.startsWith("--") && a !== option("--next"));
   if (names.length === 0) {
-    console.error('Usage: npm run card:scaffold -w engine -- "Card Name" … | --next N [--cards] | --auto-scan [--all] [--dry-run]');
+    console.error('Usage: npm run card:scaffold -w engine -- "Card Name" … | --next N [--cards] | --auto-scan [--all | --ranks A-B] [--dry-run]');
     process.exit(1);
   }
   for (const name of names) scaffoldCard(name);
