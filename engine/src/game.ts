@@ -12,6 +12,7 @@ import { isManaAbility } from "./abilities.js";
 import type {
   ActivatedAbility,
   CostReductionAmount,
+  DefenderLife,
   SacrificeCost,
   StackAbility,
   TriggeredAbility,
@@ -3828,6 +3829,43 @@ export class Game {
   /** Battlefield creatures currently declared as attackers. */
   private currentAttackers(): ObjectId[] {
     return currentAttackers(this.state);
+  }
+
+  /**
+   * The attack triggers' intervening-ifs (rule 603.4), asked again as the
+   * ability resolves: an `attacks` trigger's `aloneAgainstDefender` (see
+   * `stillAttackingAlone`) and a `"more-than-another-opponent"`
+   * `defenderLife`, of the player attacked as it triggered.
+   */
+  private attackConditionsStillHold(ability: StackAbility, object: GameObject): boolean {
+    // A delayed or reflexive trigger carries no `trigger` of its own.
+    const trigger = (ability as Partial<TriggeredAbility>).trigger;
+    if (trigger?.on !== "attacks" && trigger?.on !== "attacks-player") return true;
+    if (trigger.defenderLife === "more-than-another-opponent") {
+      const defender = object.lastKnownRefs?.player;
+      if (defender === undefined || !this.defenderLifeRanks(trigger.defenderLife, defender, object.controller)) {
+        return false;
+      }
+    }
+    return this.stillAttackingAlone(ability, object);
+  }
+
+  /**
+   * Whether `defender` — what an attacker is attacking, a player or a
+   * planeswalker — is a player whose life ranks as `rank` asks, with `you`
+   * the watching permanent's controller (see `DefenderLife`). Players who
+   * have left the game aren't compared.
+   */
+  private defenderLifeRanks(rank: DefenderLife, defender: PlayerId | ObjectId, you: PlayerId): boolean {
+    const attacked = this.state.players[defender as PlayerId];
+    if (attacked === undefined || attacked.hasLost) return false;
+    const others = this.state.turnOrder.filter((p) => p !== defender && !this.state.players[p].hasLost);
+    switch (rank) {
+      case "most":
+        return others.every((p) => this.state.players[p].life <= attacked.life);
+      case "more-than-another-opponent":
+        return others.some((p) => p !== you && this.state.players[p].life < attacked.life);
+    }
   }
 
   /**
@@ -8481,7 +8519,7 @@ export class Game {
         stint === undefined ? undefined : this.lastKnownOfStint(source, stint);
       if (
         !this.interveningIfMet(condition, sourceObject, object.sourceTimestamp, sourceLastKnown) ||
-        !this.stillAttackingAlone(ability, object)
+        !this.attackConditionsStillHold(ability, object)
       ) {
         this.removeAbilityFromStack(id);
         this.emit({
@@ -9494,13 +9532,17 @@ export class Game {
             this.defendingPlayerOf(event.defender) === self.controller) &&
           (spec.defender === undefined ||
             (spec.defender === "player") === (this.state.players[event.defender as PlayerId] !== undefined)) &&
-          (spec.aloneAgainstDefender !== true || this.attackingAlone(event.attacker, event.defender))
+          (spec.aloneAgainstDefender !== true || this.attackingAlone(event.attacker, event.defender)) &&
+          (spec.defenderLife === undefined ||
+            this.defenderLifeRanks(spec.defenderLife, event.defender, self.controller))
         );
       case "attacks-player":
         return (
           event.type === "player-attacked" &&
           this.matchesWhoPlayer(spec.who, event.player, self) &&
-          this.matchesWhoPlayer(spec.defender, event.defender, self)
+          this.matchesWhoPlayer(spec.defender, event.defender, self) &&
+          (spec.defenderLife === undefined ||
+            this.defenderLifeRanks(spec.defenderLife, event.defender, self.controller))
         );
       case "attacks-batch":
         return (

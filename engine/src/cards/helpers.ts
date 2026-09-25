@@ -6,6 +6,7 @@
 
 import type { ActivatedAbility, TriggeredAbility } from "../abilities.js";
 import { wardCostText, type EffectAmount, type EffectSpec, type WardCost } from "../effects.js";
+import type { CardFilter } from "../filter.js";
 import type { Color, ManaType } from "../mana.js";
 import { defineCard, type CardDefinition, type StaticAbility } from "./define.js";
 
@@ -71,6 +72,61 @@ export const annihilator = (n: number): TriggeredAbility => ({
   effect: { kind: "sacrifice", who: "trigger-player", filter: {}, count: n },
   resolve: null,
   text: `Annihilator ${n}`,
+});
+
+/**
+ * Dethrone (rule 702.105a): "Whenever this creature attacks the player with
+ * the most life or tied for most life, put a +1/+1 counter on this
+ * creature." Every player in the game is compared, you included, and a
+ * creature attacking a planeswalker isn't attacking a player (the attack
+ * trigger's `defenderLife: "most"`). Not an intervening-if: the counter goes
+ * on however life totals change before it resolves. A triggered ability, so
+ * a static can grant it (Marchesa, the Black Rose's "other creatures you
+ * control have dethrone" is a `grantsTriggered` of this) and each instance
+ * triggers on its own (rule 702.105b). Put the printed line in the card's
+ * `text` as well.
+ */
+export const dethrone = (): TriggeredAbility => ({
+  trigger: { on: "attacks", who: "self", defenderLife: "most" },
+  targets: [],
+  effect: { kind: "add-counter", target: "source", counter: "+1/+1", amount: 1 },
+  resolve: null,
+  text: "Dethrone",
+});
+
+/**
+ * Affinity for [something] (rule 702.41a): "This spell costs {1} less to
+ * cast for each [something] you control" — the card's `selfCostReduction`.
+ * `filter` is the something, and is counted among the caster's permanents
+ * as the spell is cast: `affinity({ type: "artifact" })` is affinity for
+ * artifacts, `affinity({ types: ["artifact", "creature"] })` for artifact
+ * creatures. It only ever reduces generic mana (rule 601.2f). Put the
+ * printed line in the card's `text` as well.
+ */
+export const affinity = (filter: CardFilter): NonNullable<CardDefinition["selfCostReduction"]> => ({
+  // Unconditional: the always-true gate Blasphemous Act uses.
+  condition: { kind: "controls", filter: {}, atLeast: 0 },
+  reduceGeneric: { countOf: { ...filter, controlledBy: "you" } },
+});
+
+/**
+ * "[Spells] you cast have affinity for [something]" — affinity granted to
+ * other spells, as a `costModification` static on the permanent that grants
+ * it: each spell its controller casts matching `spells` costs {1} less for
+ * each permanent matching `filter` they control. Like every static on a
+ * permanent it works only while that permanent is on the battlefield, and
+ * two grants both apply, as two instances of affinity would (rule 702.41b).
+ * A card whose own affinity is printed as well carries `affinity(filter)`
+ * beside this.
+ */
+export const grantAffinity = (spells: CardFilter, filter: CardFilter, text: string): StaticAbility => ({
+  affects: { scope: "self" },
+  costModification: {
+    applies: spells,
+    caster: "you",
+    reduceGeneric: { countOf: { ...filter, controlledBy: "you" } },
+  },
+  text,
 });
 
 /**

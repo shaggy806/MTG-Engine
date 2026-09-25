@@ -96,7 +96,9 @@
   "trigger:leaves-battlefield-filter",
   "effect:amount-counters-on-object",
   "bug:zone-change-object-identity",
-  "static:grant-abilities-to-spells"
+  "static:grant-abilities-to-spells",
+  "keyword:affinity",
+  "condition:defending-player-life-rank"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

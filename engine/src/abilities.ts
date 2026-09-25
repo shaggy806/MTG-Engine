@@ -197,6 +197,27 @@ export type CostReductionAmount =
    * Clamped at 0. See `AggregateSpec`. */
   | AggregateSpec;
 
+/**
+ * How an attacked player's life total compares with the other players', for
+ * an `attacks` or `attacks-player` trigger. Only a *player* ranks: a
+ * creature attacking a planeswalker is attacking that planeswalker (rule
+ * 508.3a), so it never meets one of these. Players who have left the game
+ * aren't compared.
+ */
+export type DefenderLife =
+  /** Dethrone (rule 702.105a): "attacks the player with the most life or
+   * tied for most life" — among every player in the game, this permanent's
+   * controller included, so attacking an opponent while you have the most
+   * life doesn't count unless they're tied with you. A trigger condition,
+   * not an intervening-if: asked as the attack is declared and never again,
+   * so the counter still goes on if life totals change before it resolves. */
+  | "most"
+  /** "…, if that opponent has more life than another of your opponents"
+   * (Breena, the Demagogue): more than at least one *other* opponent of this
+   * permanent's controller. An intervening-if (rule 603.4), so it's asked
+   * again as the ability resolves, of the same attacked player. */
+  | "more-than-another-opponent";
+
 /** Who the triggering object must be relative to the ability's source. */
 export type TriggerWho =
   | "self"
@@ -423,6 +444,10 @@ export type TriggerSpec =
        * battlefield attacking that player in the meantime stops it.
        */
       readonly aloneAgainstDefender?: boolean;
+      /** How the attacked player's life total ranks — dethrone's "attacks
+       * the player with the most life or tied for most life". See
+       * {@link DefenderLife}. */
+      readonly defenderLife?: DefenderLife;
     }
   | {
       /**
@@ -444,6 +469,10 @@ export type TriggerSpec =
       readonly on: "attacks-player";
       readonly who: TriggerWho;
       readonly defender: TriggerWho;
+      /** How the attacked player's life total ranks — Breena's "if that
+       * opponent has more life than another of your opponents". See
+       * {@link DefenderLife}. */
+      readonly defenderLife?: DefenderLife;
     }
   | {
       /** Exalted (rule 702.111a — needed-cards P15): a creature you control
