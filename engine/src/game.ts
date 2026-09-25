@@ -254,7 +254,7 @@ export interface DeckList {
 }
 
 export interface GameConfig {
-  /** Exactly two decks. Seating order follows array order. */
+  /** Two to four decks, one per seat. Seating order follows array order. */
   readonly decks: readonly DeckList[];
   readonly seed?: number;
   /** Defaults to the first player in `decks`. */
@@ -306,9 +306,6 @@ interface TriggeredGrantSource {
 
 /** Combat damage from the same commander at or above this total is a loss (rule 903.10a). */
 const COMMANDER_DAMAGE_THRESHOLD = COMMANDER_DAMAGE_LETHAL;
-
-
-/** How many suggested creature types a catalog choice offers up front. */
 
 /** Shared empty result for `effectiveTriggeredEntries`' common no-triggers
  * case, so the per-event battlefield scan allocates nothing for a plain land
@@ -3022,9 +3019,9 @@ export class Game {
   }
 
   /**
-   * **Debug / sandbox only** — put a card straight into a zone, bypassing
-   * drawing and casting. Used by `engine/src/sandbox.ts` (the card lab) and
-   * ad-hoc scripts; never part of normal play. A move to `"battlefield"` /
+   * **Debug only** — put a card straight into a zone, bypassing
+   * drawing and casting. Used by tests, the dev-rooms scenarios and ad-hoc
+   * scripts; never part of normal play. A move to `"battlefield"` /
    * `"graveyard"` / `"exile"` / `"hand"` goes through the real `moveObject`,
    * so enters-battlefield *replacements* (enters tapped, enters with
    * counters) and Aura attachment apply as usual.
@@ -3064,7 +3061,7 @@ export class Game {
   }
 
   /**
-   * **Debug / sandbox only** — resolve a bare {@link EffectSpec} as though
+   * **Debug only** — resolve a bare {@link EffectSpec} as though
    * `player` controlled a source that produced it, with no card, no stack and
    * no cost. The sibling of {@link debugSpawn} for the *effect* vocabulary:
    * it lets a test exercise one effect kind directly instead of building a

@@ -14,8 +14,8 @@
  * `<img>` at all while a name's batch lookup is in flight or retrying, so a
  * big board's first render fires one POST instead of one by-name request per
  * permanent; once the batch gives up (a few backed-off retries, e.g. through
- * a Scryfall maintenance blip) or was never queued (the card lab), the
- * by-name fallback renders something so nothing regresses.
+ * a Scryfall maintenance blip) or was never queued, the by-name fallback
+ * renders something so nothing regresses.
  *
  * A card can also override art entirely with a `CardDefinition.art` link
  * pinning a specific printing — pasted straight from a browser, the Scryfall

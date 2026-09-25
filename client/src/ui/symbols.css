@@ -2,7 +2,7 @@
    the Mana font's up, down or zero shape (Symbols.tsx's LoyaltyBadge) with
    the number laid over it. Owned by the component rather than by a page,
    because card text is drawn on every page that has any -- the game's hover
-   card and ability menu, the library, the card lab. Sized in em, so it
+   card and ability menu, the library, the deck builder. Sized in em, so it
    follows whatever text it's set in. */
 .loyalty-cost {
   display: inline-grid;

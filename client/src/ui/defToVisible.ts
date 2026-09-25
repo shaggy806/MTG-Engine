@@ -1,11 +1,11 @@
 import type { CardDefinition, ObjectId, PlayerId, VisibleObject } from 'engine/client'
 
 /**
- * A cheap `CardDefinition` → `VisibleObject` adapter for gallery tiles and
- * hover previews (the library page, the deck builder, the card lab) —
- * *printed* values only, no layer computation. The detail pane and the
- * sandbox use a real `game.viewFor(...)` instead, which reflects static
- * abilities / counters / animation.
+ * A cheap `CardDefinition` → `VisibleObject` adapter for hover previews (the
+ * deck builder's, and a double-faced card's other face in the zone viewer) —
+ * *printed* values only, no layer computation. A card in a real game comes
+ * from `viewFor(...)` instead, which reflects static abilities, counters and
+ * animation.
  *
  * `art` overrides the definition's own illustration, for a deck that has
  * chosen a printing (`SavedDeck.printings`) — the same substitution

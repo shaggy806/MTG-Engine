@@ -20,7 +20,7 @@ card is one file, one `defineCard({...})` call, one `export default`.
 - [11. The `resolve` escape hatch](#11-the-resolve-escape-hatch)
 - [12. Multi-face, transform, adventure, Saga, commander](#12-multi-face-transform-adventure-saga-commander)
 - [13. Worked examples](#13-worked-examples)
-- [14. Preview your card (`npm run lab`)](#14-preview-your-card-npm-run-lab)
+- [14. Preview your card](#14-preview-your-card)
 - [15. Current engine limitations](#15-current-engine-limitations)
 - [16. Testing a new card](#16-testing-a-new-card)
 
@@ -2254,25 +2254,33 @@ abilities each with a `loyaltyCost` and `cost: { mana: null, tap: false }`.
 
 ---
 
-## 14. Preview your card (`npm run lab`)
+## 14. Preview your card
+
+Both views below read the *built* engine, so rebuild after every edit
+(`npm run build -w engine`, whose prebuild also registers a new file).
+
+**How it reads** — the library page, which needs no room server:
 
 ```
-npm run build -w engine     # once, so the lab's types resolve
-npm run lab -w client        # → http://localhost:5174/card-lab.html
+npm run dev -w client          # → http://localhost:5173/library?card=Card%20Name
 ```
 
-- **left** — every card, searchable / type-filterable.
-- **Tile** tab — the engine's own render (printed values) + a full-card-image
-  toggle. This is where an `art` override shows up.
-- **Structure** tab — the parsed effect / ability tree, plus chips for every
-  engine feature the card uses (good for sanity-checking against §15).
-- **Sandbox** tab — a solo game with the card in hand (and on the battlefield
-  if it's a permanent), 25 lands, and an opponent with a creature, a
-  deathtouch creature, and a planeswalker to target. Cast it, activate it,
-  watch the stack and log. **Reset** rebuilds.
+Its card overlay shows the printed face (this is where an `art` override
+shows up), the `text` the definition carries for each face, the mechanics
+it's built from and the tokens it makes.
 
-Editing an **existing** card file hot-reloads the lab instantly. A **new** file
-still needs `npm run gen:cards -w engine` first.
+**How it plays** — a dev room, with the real client and every decision's real
+UI:
+
+```
+npm run dev-rooms -w server    # restart it after rebuilding the engine
+npm run dev -w client          # → http://localhost:5173/?room=TWOPW
+curl -s localhost:4099 -d '{"op":"spawn","room":"TWOPW","player":"alice","zone":"hand","cards":["Card Name"]}'
+```
+
+`TWOPW` gives you eight lands against a creature and a planeswalker to target;
+`spawn` without `zone` puts a permanent straight onto the battlefield, and
+`reset` rebuilds the room. `CLAUDE.md` lists the other rooms and commands.
 
 ---
 
@@ -2538,12 +2546,11 @@ clause; nothing catches a wrong one but reading the card.**
   just makes sure it's drawn). If `legalActions` ever offers something
   `dispatch` refuses, this crashes.
 - **Write a focused test** if the card exercises new-ish behaviour — one
-  `engine/src/test/<card-or-feature>.test.ts` that builds a `Game` (or uses
-  `createSandbox` from `sandbox.ts`), dispatches through the interaction, and
-  asserts the outcome. See `engine/src/test/clone.test.ts` for the white-box
-  `spawn` pattern, or `engine/src/test/sandbox.test.ts` for the sandbox helper.
+  `engine/src/test/<card-or-feature>.test.ts` that builds a `Game`, dispatches
+  through the interaction, and asserts the outcome. See
+  `engine/src/test/clone.test.ts` for the white-box `spawn` pattern.
 - **Run the suite:** `npm run test -w engine`.
-- **Eyeball it:** `npm run lab -w client`, Sandbox tab.
+- **Eyeball it:** in a dev room (§14).
 
 Periodically re-verify the *whole* pool, not just new cards — `npm run card:verify -w
 engine` (`engine/scripts/verify-cards.mjs`) diffs every `cards/pool/` card's mana cost,

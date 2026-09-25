@@ -184,9 +184,7 @@ function tokenLabel(def: CardDefinition): string {
   return def.name.replace(/ Token\b.*$/, '')
 }
 
-// Same `?card=Name` deep-link convention the card lab uses (see
-// `client/src/lab/CardLab.tsx`'s cardParam/setCardParam) so a specific card
-// can be linked to directly.
+// A `?card=Name` deep link, so a specific card can be linked to directly.
 function cardParam(): string | null {
   return new URL(window.location.href).searchParams.get('card')
 }
@@ -705,9 +703,8 @@ function FaceText({ def }: { readonly def: CardDefinition }) {
 
 /**
  * The engine-shaped mechanics a card carries, as plain player-facing labels.
- * Deliberately *not* the card lab's `describeCardFeatures` readout, which
- * names internal `EffectSpec`/`TriggerSpec` kinds — useful when authoring a
- * card, noise to someone browsing the pool.
+ * Deliberately never an internal `EffectSpec`/`TriggerSpec` kind name —
+ * useful when authoring a card, noise to someone browsing the pool.
  */
 function MechanicChips({ def, isToken }: { readonly def: CardDefinition; readonly isToken: boolean }) {
   const chips: string[] = []

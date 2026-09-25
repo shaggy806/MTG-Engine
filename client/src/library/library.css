@@ -1,10 +1,6 @@
 /* The public card library — a Scryfall-shaped search result: a sticky
    search/filter bar over a responsive grid of whole card faces, and a card's
-   own page as an overlay rather than a permanent side pane.
-
-   Its own class prefix rather than sharing the dev card lab's (lab/lab.css),
-   since this page ships in the production bundle and the lab's classes are
-   meant to stay dev-only. */
+   own page as an overlay rather than a permanent side pane. */
 
 .lib-page {
   min-height: 100vh;
