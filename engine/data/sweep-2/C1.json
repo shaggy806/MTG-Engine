@@ -1,0 +1,508 @@
+{
+  "batch": "C1",
+  "status": "complete",
+  "authored": [
+    {
+      "name": "Lathril, Blade of the Elves",
+      "files": [
+        "engine/src/cards/pool/lathril-blade-of-the-elves.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Baylen, the Haymaker",
+      "files": [
+        "engine/src/cards/pool/baylen-the-haymaker.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Meren of Clan Nel Toth",
+      "files": [
+        "engine/src/cards/pool/meren-of-clan-nel-toth.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Atla Palani, Nest Tender",
+      "files": [
+        "engine/src/cards/pool/atla-palani-nest-tender.ts",
+        "engine/src/cards/tokens/egg-token.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Sauron, the Dark Lord",
+      "needs": [
+        "mechanic:the-ring"
+      ],
+      "why": "'The Ring tempts you' (from an Army's combat damage) and 'whenever the Ring tempts you' have no engine representation."
+    },
+    {
+      "name": "Kaalia of the Vast",
+      "needs": [
+        "effect:enter-attacking"
+      ],
+      "why": "Putting a card from hand onto the battlefield tapped and attacking that opponent isn't expressible."
+    },
+    {
+      "name": "Fire Lord Azula",
+      "needs": [
+        "effect:copy-spell-extensions",
+        "effect:copy-permanent-spell",
+        "decision:copy-new-targets"
+      ],
+      "why": "copy-spell only copies a targeted instant/sorcery; copying the triggering spell (any spell, permanents included) with new targets is missing."
+    },
+    {
+      "name": "Pantlaza, Sun-Favored",
+      "needs": [
+        "keyword:discover",
+        "decision:free-cast-choices"
+      ],
+      "why": "Discover X (exile until MV <= X, then cast free or put into hand) isn't modelled."
+    },
+    {
+      "name": "The Wise Mothman",
+      "needs": [
+        "mechanic:rad-counters",
+        "decision:variable-target-count"
+      ],
+      "why": "Rad counters (and their precombat-main mill trigger) aren't modelled, nor 'up to X targets' with X from the number of nonland cards milled."
+    },
+    {
+      "name": "Jodah, the Unifier",
+      "needs": [
+        "effect:cast-during-resolution",
+        "decision:free-cast-choices"
+      ],
+      "why": "'Exile until a legendary nonland card with lesser MV; you may cast it free' needs a cast during resolution; cascade is hard-wired to the spell's MV and always casts with auto-picked targets."
+    },
+    {
+      "name": "Yuriko, the Tiger's Shadow",
+      "needs": [
+        "keyword:ninjutsu",
+        "effect:enter-attacking"
+      ],
+      "why": "Commander ninjutsu isn't modelled."
+    },
+    {
+      "name": "Cloud, Ex-SOLDIER",
+      "needs": [
+        "effect:attach-extensions"
+      ],
+      "why": "'Attach up to one target Equipment you control to it' — attach only attaches the source to a target, not a target Equipment to the source."
+    },
+    {
+      "name": "Hearthhull, the Worldseed",
+      "needs": [
+        "mechanic:station",
+        "bug:commander-eligibility-vehicles"
+      ],
+      "why": "Station and Spacecraft thresholds aren't modelled."
+    },
+    {
+      "name": "Sephiroth, Fabled SOLDIER // Sephiroth, One-Winged Angel",
+      "needs": [
+        "effect:emblem-triggered-abilities",
+        "replacement:as-transforms",
+        "effect:may-sacrifice-then"
+      ],
+      "why": "The back face's emblem carries a triggered ability (emblems can only carry statics), granted 'as it transforms'; 'you may sacrifice another creature. If you do' and 'sacrifice any number … draw that many' have no vocabulary."
+    },
+    {
+      "name": "Chatterfang, Squirrel General",
+      "needs": [
+        "replacement:token-creation-additive",
+        "cost:sacrifice-multiple"
+      ],
+      "why": "'Those tokens plus that many Squirrels' is an additive token replacement (only multipliers exist); 'Sacrifice X Squirrels' as a cost isn't expressible."
+    },
+    {
+      "name": "Ulalek, Fused Atrocity",
+      "needs": [
+        "cost:colorless-hybrid-mana",
+        "keyword:devoid",
+        "effect:copy-ability",
+        "effect:copy-spell-extensions",
+        "decision:copy-new-targets"
+      ],
+      "why": "{C/W}-style costs, devoid, and copying every spell and ability you control aren't modelled."
+    },
+    {
+      "name": "Frodo, Adventurous Hobbit",
+      "needs": [
+        "mechanic:the-ring"
+      ],
+      "why": "The Ring tempting you and Ring-bearer state aren't modelled."
+    },
+    {
+      "name": "Hashaton, Scarab's Fist",
+      "needs": [
+        "effect:copy-exceptions",
+        "effect:token-copy-options"
+      ],
+      "why": "A tapped token copy of a discarded card in the graveyard 'except it's a 4/4 black Zombie' — create-token-copy copies permanents only, can't enter tapped or override colour and creature types."
+    },
+    {
+      "name": "Ashling, the Limitless",
+      "needs": [
+        "keyword:evoke",
+        "effect:token-copy-last-known-info",
+        "effect:delayed-trigger-extensions"
+      ],
+      "why": "Granting evoke, copying a sacrificed Elemental from last-known info, and a 'sacrifice it unless you pay {W}{U}{B}{R}{G}' delayed trigger aren't expressible."
+    },
+    {
+      "name": "Hakbal of the Surging Soul",
+      "needs": [
+        "keyword:explore"
+      ],
+      "why": "Explore isn't modelled."
+    },
+    {
+      "name": "Glarb, Calamity's Augur",
+      "needs": [
+        "zone:cast-from-library-top",
+        "zone:visibility-extensions"
+      ],
+      "why": "playFromLibraryTop only plays lands; casting MV>=4 spells from the top and privately looking at it any time aren't modelled."
+    },
+    {
+      "name": "Aragorn, the Uniter",
+      "needs": [
+        "decision:library-ordering"
+      ],
+      "why": "'Scry 2' can't order the cards kept on top (AUTHORING §15); everything else is expressible."
+    },
+    {
+      "name": "The Necrobloom",
+      "needs": [
+        "keyword:dredge"
+      ],
+      "why": "Granting dredge 2 to land cards in the graveyard isn't modelled."
+    },
+    {
+      "name": "Mr. House, President and CEO",
+      "needs": [
+        "mechanic:dice-rolling",
+        "decision:manual-payment-choices"
+      ],
+      "why": "Die rolls, 'whenever you roll 4 or higher', and counting mana from Treasures spent on an ability aren't modelled."
+    },
+    {
+      "name": "Caesar, Legion's Emperor",
+      "needs": [
+        "effect:enter-attacking",
+        "effect:may-sacrifice-then",
+        "effect:modal-ability-targeted-modes"
+      ],
+      "why": "Tokens created tapped and attacking, 'you may sacrifice another creature. When you do' and a two-mode choice with a targeted mode aren't expressible."
+    },
+    {
+      "name": "Breya, Etherium Shaper",
+      "needs": [
+        "cost:sacrifice-multiple",
+        "effect:modal-ability-targeted-modes"
+      ],
+      "why": "'Sacrifice two artifacts' as an activation cost isn't expressible (a cost sacrifices one permanent)."
+    },
+    {
+      "name": "Wilhelt, the Rotcleaver",
+      "needs": [
+        "keyword:decayed",
+        "effect:may-sacrifice-then"
+      ],
+      "why": "The Zombie token has decayed, which isn't modelled; 'you may sacrifice a Zombie. If you do, draw' has no vocabulary."
+    },
+    {
+      "name": "Maralen, Fae Ascendant",
+      "needs": [
+        "effect:impulse-exile-other-libraries",
+        "zone:cast-cards-you-dont-own"
+      ],
+      "why": "Exiling an opponent's library top and casting those cards once each turn isn't modelled."
+    },
+    {
+      "name": "Kinnan, Bonder Prodigy",
+      "needs": [
+        "effect:add-mana-extensions"
+      ],
+      "why": "The 'produced' extra mana, when a multi-type producer is tapped by hand, is always the first type made rather than the player's choice."
+    },
+    {
+      "name": "Teysa Karlov",
+      "needs": [
+        "bug:simultaneous-zone-moves"
+      ],
+      "why": "doubleTriggers is read only from permanents still on the battlefield, so creatures dying alongside Teysa (a wrath) aren't doubled, against her ruling; verified: Teysa+Zulaport+Bears destroyed together drained 3, not 6."
+    },
+    {
+      "name": "Zhulodok, Void Gorger",
+      "needs": [
+        "decision:free-cast-choices"
+      ],
+      "why": "Cascade always casts the hit (no 'you may') with auto-picked targets."
+    },
+    {
+      "name": "Tidus, Yuna's Guardian",
+      "needs": [
+        "effect:move-counter"
+      ],
+      "why": "Moving a counter from one creature to another isn't expressible."
+    },
+    {
+      "name": "Shorikai, Genesis Engine",
+      "needs": [
+        "keyword:crew",
+        "bug:commander-eligibility-vehicles"
+      ],
+      "why": "Crew and Vehicles aren't modelled (the Pilot token's crew bonus too)."
+    },
+    {
+      "name": "Zurgo Stormrender",
+      "needs": [
+        "keyword:mobilize",
+        "effect:enter-attacking"
+      ],
+      "why": "Mobilize's tapped-and-attacking token isn't expressible."
+    },
+    {
+      "name": "Go-Shintai of Life's Origin",
+      "needs": [
+        "effect:attach-extensions"
+      ],
+      "why": "Returning an Aura to the battlefield without casting it needs choosing what it enchants; the engine doesn't attach it."
+    },
+    {
+      "name": "Urza, Lord High Artificer",
+      "needs": [
+        "effect:shuffle-library"
+      ],
+      "why": "'Shuffle your library, then exile the top card' needs a standalone shuffle effect."
+    },
+    {
+      "name": "K'rrik, Son of Yawgmoth",
+      "needs": [
+        "cost:pay-life-for-pips",
+        "decision:manual-payment-choices"
+      ],
+      "why": "'For each {B} in a cost, you may pay 2 life' isn't modelled."
+    },
+    {
+      "name": "Avatar Aang // Aang, Master of Elements",
+      "needs": [
+        "trigger:bends",
+        "keyword:waterbend",
+        "keyword:airbend"
+      ],
+      "why": "'Whenever you waterbend, earthbend, firebend, or airbend' and the per-turn record of bending kinds aren't modelled."
+    },
+    {
+      "name": "Helga, Skittish Seer",
+      "needs": [
+        "bug:mana-any-one-color",
+        "condition:filter-card-property-clauses"
+      ],
+      "why": "'X mana of any one color' isn't an add-mana form, and 'creature spells with {X} in their mana costs' isn't a filter clause."
+    },
+    {
+      "name": "Zaxara, the Exemplary",
+      "needs": [
+        "bug:mana-any-one-color",
+        "condition:filter-card-property-clauses",
+        "effect:create-token-with-counters"
+      ],
+      "why": "'Two mana of any one color', a spell with {X} in its cost, and a Hydra token entering with X counters aren't expressible."
+    },
+    {
+      "name": "Choco, Seeker of Paradise",
+      "needs": [
+        "effect:look-and-choose-second-pick",
+        "effect:amount-fields-dynamic"
+      ],
+      "why": "Look at 'that many' cards, one to hand then any number of lands onto the battlefield and the rest to the graveyard, needs a dynamic count and a second pick."
+    },
+    {
+      "name": "Kotis, the Fangkeeper",
+      "needs": [
+        "effect:impulse-exile-other-libraries",
+        "zone:cast-cards-you-dont-own",
+        "effect:cast-during-resolution",
+        "decision:free-cast-choices"
+      ],
+      "why": "Exiling the damaged player's library top X and casting any number of them free during resolution isn't modelled."
+    },
+    {
+      "name": "The First Sliver",
+      "needs": [
+        "decision:free-cast-choices"
+      ],
+      "why": "Cascade always casts the hit (no 'you may') with auto-picked targets."
+    },
+    {
+      "name": "Terra, Magical Adept // Esper Terra",
+      "needs": [
+        "bug:lore-counters-fire-chapters",
+        "decision:choose-number",
+        "effect:delayed-trigger-extensions"
+      ],
+      "why": "The Saga back face puts up to three lore counters on a token Saga copy (a chosen number, and added lore counters don't fire chapters) and sacrifices it at your next end step."
+    },
+    {
+      "name": "Auntie Ool, Cursewretch",
+      "needs": [
+        "keyword:blight"
+      ],
+      "why": "Ward—Blight 2 needs blight as a cost."
+    },
+    {
+      "name": "Henzie \"Toolbox\" Torre",
+      "needs": [
+        "keyword:blitz"
+      ],
+      "why": "Granting blitz isn't modelled."
+    },
+    {
+      "name": "Vial Smasher the Fierce",
+      "needs": [
+        "effect:random-choice",
+        "decision:choose-permanent"
+      ],
+      "why": "Choosing an opponent at random, then that player or one of their planeswalkers (not targeted), isn't expressible."
+    },
+    {
+      "name": "Norman Osborn // Green Goblin",
+      "needs": [
+        "keyword:connive",
+        "keyword:mayhem"
+      ],
+      "why": "Connive and mayhem aren't modelled."
+    },
+    {
+      "name": "Magda, Brazen Outlaw",
+      "needs": [
+        "cost:sacrifice-multiple"
+      ],
+      "why": "'Sacrifice five Treasures' as a cost isn't expressible."
+    },
+    {
+      "name": "Ezio Auditore da Firenze",
+      "needs": [
+        "keyword:freerunning",
+        "effect:lose-game"
+      ],
+      "why": "Freerunning and 'that player loses the game' aren't modelled."
+    },
+    {
+      "name": "Alela, Cunning Conqueror",
+      "needs": [
+        "mechanic:goad-extensions",
+        "effect:target-spec-additions"
+      ],
+      "why": "Goading one target creature 'that player controls' isn't expressible (goad takes a player or scope)."
+    },
+    {
+      "name": "Zinnia, Valley's Voice",
+      "needs": [
+        "keyword:offspring",
+        "condition:filter-card-property-clauses"
+      ],
+      "why": "Granting offspring and counting creatures with base power 1 aren't modelled."
+    },
+    {
+      "name": "Obeka, Splitter of Seconds",
+      "needs": [
+        "effect:additional-upkeep-steps"
+      ],
+      "why": "Additional upkeep steps aren't modelled."
+    },
+    {
+      "name": "High Perfect Morcant",
+      "needs": [
+        "keyword:blight"
+      ],
+      "why": "'Each opponent blights 1' isn't modelled."
+    },
+    {
+      "name": "Marneus Calgar",
+      "needs": [
+        "trigger:enters-batch"
+      ],
+      "why": "'Whenever one or more tokens you control enter' needs a once-per-batch enters trigger."
+    },
+    {
+      "name": "Atraxa, Grand Unifier",
+      "needs": [
+        "decision:choose-from-zone-extensions"
+      ],
+      "why": "'For each card type, you may put a card of that type into your hand' needs a per-type constrained pick."
+    },
+    {
+      "name": "Deadpool, Trading Card",
+      "needs": [
+        "effect:exchange-text-boxes",
+        "bug:as-enters-choices-any-entry"
+      ],
+      "why": "Exchanging text boxes isn't modelled."
+    },
+    {
+      "name": "Aminatou, Veil Piercer",
+      "needs": [
+        "keyword:miracle",
+        "decision:library-ordering"
+      ],
+      "why": "Granting miracle isn't modelled; surveil 2 can't order the kept cards."
+    },
+    {
+      "name": "Etali, Primal Conqueror // Etali, Primal Sickness",
+      "needs": [
+        "effect:cast-during-resolution",
+        "effect:impulse-exile-other-libraries",
+        "zone:cast-cards-you-dont-own",
+        "decision:free-cast-choices"
+      ],
+      "why": "Each player exiling until a nonland card and you casting any number of them free isn't expressible."
+    },
+    {
+      "name": "Zur the Enchanter",
+      "needs": [
+        "effect:attach-extensions"
+      ],
+      "why": "The search can find an Aura, which put onto the battlefield needs choosing what it enchants."
+    },
+    {
+      "name": "Mendicant Core, Guidelight",
+      "needs": [
+        "mechanic:speed",
+        "effect:copy-permanent-spell"
+      ],
+      "why": "Start your engines!/max speed and copying an artifact spell aren't modelled."
+    },
+    {
+      "name": "Galadriel, Light of Valinor",
+      "needs": [
+        "decision:library-ordering",
+        "effect:modal-ability-targeted-modes"
+      ],
+      "why": "The third mode's 'Scry 2' can't order the kept cards (AUTHORING §15); the not-chosen-this-turn modal itself is built. Its modes are also chosen at resolution rather than as the trigger goes on the stack."
+    },
+    {
+      "name": "Jin Sakai, Ghost of Tsushima",
+      "needs": [
+        "effect:modal-ability-targeted-modes"
+      ],
+      "why": "The triggered 'choose one' (Standoff/Ghost) must be chosen as the trigger goes on the stack (rule 700.2b); the engine's modal effect asks at resolution, after responses such as a flashed-in blocker. Everything else is expressible."
+    }
+  ],
+  "newFeatures": {},
+  "bugs": [
+    {
+      "card": "Teysa Karlov",
+      "what": "doubleTriggers (cause: dies) is only read from statics on permanents still on the battlefield, so a creature dying at the same time as Teysa isn't doubled (her ruling says it is). Repro: Teysa Karlov + Zulaport Cutthroat + Grizzly Bears, destroy-all creatures → opponent loses 3, not 6."
+    }
+  ],
+  "unprocessed": []
+}

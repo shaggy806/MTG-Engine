@@ -64,6 +64,7 @@ import _poolAshnodsAltar from "./pool/ashnods-altar.js";
 import _poolAssassinsTrophy from "./pool/assassins-trophy.js";
 import _poolAtarkaMonument from "./pool/atarka-monument.js";
 import _poolAtarkaWorldRender from "./pool/atarka-world-render.js";
+import _poolAtlaPalaniNestTender from "./pool/atla-palani-nest-tender.js";
 import _poolAtraxaPraetorsVoice from "./pool/atraxa-praetors-voice.js";
 import _poolAtreusImpulsiveSon from "./pool/atreus-impulsive-son.js";
 import _poolAuraMutation from "./pool/aura-mutation.js";
@@ -85,6 +86,7 @@ import _poolBasaltMonolith from "./pool/basalt-monolith.js";
 import _poolBasiliskCollar from "./pool/basilisk-collar.js";
 import _poolBastionOfRemembrance from "./pool/bastion-of-remembrance.js";
 import _poolBattlefieldForge from "./pool/battlefield-forge.js";
+import _poolBaylenTheHaymaker from "./pool/baylen-the-haymaker.js";
 import _poolBayou from "./pool/bayou.js";
 import _poolBeanstalkGiant from "./pool/beanstalk-giant.js";
 import _poolBeastWhisperer from "./pool/beast-whisperer.js";
@@ -558,6 +560,7 @@ import _poolKynaiosAndTiroOfMeletis from "./pool/kynaios-and-tiro-of-meletis.js"
 import _poolLaboratoryDrudge from "./pool/laboratory-drudge.js";
 import _poolLandTax from "./pool/land-tax.js";
 import _poolLathlissDragonQueen from "./pool/lathliss-dragon-queen.js";
+import _poolLathrilBladeOfTheElves from "./pool/lathril-blade-of-the-elves.js";
 import _poolLazotepPlating from "./pool/lazotep-plating.js";
 import _poolLazotepReaver from "./pool/lazotep-reaver.js";
 import _poolLeafkinDruid from "./pool/leafkin-druid.js";
@@ -615,6 +618,7 @@ import _poolMeanderingRiver from "./pool/meandering-river.js";
 import _poolMendingHands from "./pool/mending-hands.js";
 import _poolMentalMisstep from "./pool/mental-misstep.js";
 import _poolMentorOfTheMeek from "./pool/mentor-of-the-meek.js";
+import _poolMerenOfClanNelToth from "./pool/meren-of-clan-nel-toth.js";
 import _poolMeticulousArchive from "./pool/meticulous-archive.js";
 import _poolMichelangeloTheHeart from "./pool/michelangelo-the-heart.js";
 import _poolMidnightReaper from "./pool/midnight-reaper.js";
@@ -1173,6 +1177,7 @@ import _tokensDragonSpiritToken from "./tokens/dragon-spirit-token.js";
 import _tokensDragonToken55 from "./tokens/dragon-token-5-5.js";
 import _tokensDragonToken66 from "./tokens/dragon-token-6-6.js";
 import _tokensDrakeToken from "./tokens/drake-token.js";
+import _tokensEggToken from "./tokens/egg-token.js";
 import _tokensEldraziToken from "./tokens/eldrazi-token.js";
 import _tokensElementalTokenAllColors from "./tokens/elemental-token-all-colors.js";
 import _tokensElementalToken from "./tokens/elemental-token.js";
@@ -1301,6 +1306,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAssassinsTrophy,
   _poolAtarkaMonument,
   _poolAtarkaWorldRender,
+  _poolAtlaPalaniNestTender,
   _poolAtraxaPraetorsVoice,
   _poolAtreusImpulsiveSon,
   _poolAuraMutation,
@@ -1322,6 +1328,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBasiliskCollar,
   _poolBastionOfRemembrance,
   _poolBattlefieldForge,
+  _poolBaylenTheHaymaker,
   _poolBayou,
   _poolBeanstalkGiant,
   _poolBeastWhisperer,
@@ -1795,6 +1802,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolLaboratoryDrudge,
   _poolLandTax,
   _poolLathlissDragonQueen,
+  _poolLathrilBladeOfTheElves,
   _poolLazotepPlating,
   _poolLazotepReaver,
   _poolLeafkinDruid,
@@ -1852,6 +1860,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolMendingHands,
   _poolMentalMisstep,
   _poolMentorOfTheMeek,
+  _poolMerenOfClanNelToth,
   _poolMeticulousArchive,
   _poolMichelangeloTheHeart,
   _poolMidnightReaper,
@@ -2416,6 +2425,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensDragonToken55,
   _tokensDragonToken66,
   _tokensDrakeToken,
+  _tokensEggToken,
   _tokensEldraziToken,
   _tokensElementalTokenAllColors,
   _tokensElementalToken,
