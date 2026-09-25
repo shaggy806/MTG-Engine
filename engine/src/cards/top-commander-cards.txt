@@ -1,5 +1,5 @@
 Top 2000 Commander cards by EDHREC popularity (fetched 2026-09-13)
-610 already implemented / 1390 missing (marks refreshed 2026-09-24)
+620 already implemented / 1380 missing (marks refreshed 2026-09-25)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -255,7 +255,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   256  Viscera Seer                             {B}              Creature — Vampire Wizard
 [x]   257  Orcish Bowmasters                        {1}{B}           Creature — Orc Archer
 [ ]   258  Bloom Tender                             {1}{G}           Creature — Elf Druid
-[ ]   259  Syr Konrad, the Grim                     {3}{B}{B}        Legendary Creature — Human Knight
+[x]   259  Syr Konrad, the Grim                     {3}{B}{B}        Legendary Creature — Human Knight
 [ ]   260  Sylvan Library                           {1}{G}           Enchantment
 [x]   261  Infernal Grasp                           {1}{B}           Instant
 [ ]   262  Academy Manufactor                       {3}              Artifact Creature — Assembly-Worker
@@ -759,7 +759,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   760  Imprisoned in the Moon                   {2}{U}           Enchantment — Aura
 [ ]   762  Dryad Arbor                              {0}              Land Creature — Forest Dryad
 [ ]   763  Void Rend                                {W}{U}{B}        Instant
-[ ]   764  Veyran, Voice of Duality                 {1}{U}{R}        Legendary Creature — Efreet Wizard
+[x]   764  Veyran, Voice of Duality                 {1}{U}{R}        Legendary Creature — Efreet Wizard
 [ ]   765  Kaya's Ghostform                         {B}              Enchantment — Aura
 [ ]   766  Elegant Parlor                           {0}              Land — Mountain Plains
 [ ]   767  Priest of Titania                        {1}{G}           Creature — Elf Druid
@@ -831,7 +831,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   835  Rancor                                   {G}              Enchantment — Aura
 [ ]   836  Blightstep Pathway // Searstep Pathway   {0}              Land // Land
 [ ]   837  Gyre Sage                                {1}{G}           Creature — Elf Druid
-[ ]   838  Delney, Streetwise Lookout               {2}{W}           Legendary Creature — Human Scout
+[x]   838  Delney, Streetwise Lookout               {2}{W}           Legendary Creature — Human Scout
 [ ]   839  Curse of the Swine                       {X}{U}{U}        Sorcery
 [ ]   840  Urza's Tower                             {0}              Land — Urza's Tower
 [x]   841  Bitter Triumph                           {1}{B}           Instant
@@ -897,7 +897,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   901  Loot, Exuberant Explorer                 {2}{G}           Legendary Creature — Beast Noble
 [ ]   902  Forsaken Monument                        {5}              Legendary Artifact
 [ ]   903  The Fire Crystal                         {2}{R}{R}        Legendary Artifact
-[ ]   904  The Gitrog Monster                       {3}{B}{G}        Legendary Creature — Frog Horror
+[x]   904  The Gitrog Monster                       {3}{B}{G}        Legendary Creature — Frog Horror
 [ ]   905  Padeem, Consul of Innovation             {3}{U}           Legendary Creature — Vedalken Artificer
 [ ]   906  Resculpt                                 {1}{U}           Instant
 [ ]   907  Warleader's Call                         {1}{R}{W}        Enchantment
@@ -972,7 +972,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   976  Alhammarret's Archive                    {5}              Legendary Artifact
 [ ]   977  Krosan Verge                             {0}              Land
 [ ]   978  Inspiring Statuary                       {3}              Artifact
-[ ]   979  Kodama of the East Tree                  {4}{G}{G}        Legendary Creature — Spirit
+[x]   979  Kodama of the East Tree                  {4}{G}{G}        Legendary Creature — Spirit
 [ ]   980  Last March of the Ents                   {6}{G}{G}        Sorcery
 [ ]   981  The Wind Crystal                         {2}{W}{W}        Legendary Artifact
 [ ]   982  Sunken Ruins                             {0}              Land
@@ -1049,7 +1049,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1053  Tranquil Thicket                         {0}              Land
 [ ]  1054  Jhoira's Familiar                        {4}              Artifact Creature — Bird
 [ ]  1055  Aura Shards                              {1}{G}{W}        Enchantment
-[ ]  1056  Karlach, Fury of Avernus                 {4}{R}           Legendary Creature — Tiefling Barbarian
+[x]  1056  Karlach, Fury of Avernus                 {4}{R}           Legendary Creature — Tiefling Barbarian
 [x]  1057  Wurmcoil Engine                          {6}              Artifact Creature — Phyrexian Wurm
 [ ]  1058  Swiftwater Cliffs                        {0}              Land
 [x]  1059  Hunter's Insight                         {2}{G}           Instant
@@ -1512,7 +1512,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1519  Final Fortune                            {R}{R}           Instant
 [ ]  1520  Disciple of Bolas                        {3}{B}           Creature — Human Wizard
 [ ]  1521  Rites of Flourishing                     {2}{G}           Enchantment
-[ ]  1522  Myrel, Shield of Argive                  {3}{W}           Legendary Creature — Human Soldier
+[x]  1522  Myrel, Shield of Argive                  {3}{W}           Legendary Creature — Human Soldier
 [ ]  1523  Drana, Liberator of Malakir              {1}{B}{B}        Legendary Creature — Vampire Ally
 [ ]  1524  Horizon of Progress                      {0}              Land
 [x]  1525  Scourge of Valkas                        {2}{R}{R}{R}     Creature — Dragon
@@ -1594,7 +1594,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1601  Eldrazi Conscription                     {8}              Kindred Enchantment — Eldrazi Aura
 [ ]  1602  Resourceful Defense                      {2}{W}           Enchantment
 [ ]  1603  Deserted Temple                          {0}              Land
-[ ]  1604  Cloud, Midgar Mercenary                  {W}{W}           Legendary Creature — Human Soldier Mercenary
+[x]  1604  Cloud, Midgar Mercenary                  {W}{W}           Legendary Creature — Human Soldier Mercenary
 [ ]  1605  Maelstrom Wanderer                       {5}{G}{U}{R}     Legendary Creature — Elemental
 [ ]  1606  Replicating Ring                         {3}              Snow Artifact
 [ ]  1607  Consuming Aberration                     {3}{U}{B}        Creature — Horror
@@ -1717,7 +1717,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1724  Crypt of Agadeem                         {0}              Land
 [ ]  1725  Twinning Staff                           {3}              Artifact
 [ ]  1726  Overlord of the Hauntwoods               {3}{G}{G}        Enchantment Creature — Avatar Horror
-[ ]  1727  The Locust God                           {4}{U}{R}        Legendary Creature — God
+[x]  1727  The Locust God                           {4}{U}{R}        Legendary Creature — God
 [ ]  1728  Impulsive Pilferer                       {R}              Creature — Goblin Pirate
 [ ]  1729  Intruder Alarm                           {2}{U}           Enchantment
 [ ]  1730  Slither Blade                            {U}              Creature — Snake Rogue
@@ -1926,7 +1926,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1933  Brawn                                    {3}{G}           Creature — Incarnation
 [ ]  1934  Port Razer                               {3}{R}{R}        Creature — Orc Pirate
 [ ]  1935  Day of Judgment                          {2}{W}{W}        Sorcery
-[ ]  1936  Maha, Its Feathers Night                 {3}{B}{B}        Legendary Creature — Elemental Bird
+[x]  1936  Maha, Its Feathers Night                 {3}{B}{B}        Legendary Creature — Elemental Bird
 [ ]  1937  Dreamstone Hedron                        {6}              Artifact
 [ ]  1938  Seething Landscape                       {0}              Land
 [ ]  1939  Varragoth, Bloodsky Sire                 {2}{B}           Legendary Creature — Demon Rogue

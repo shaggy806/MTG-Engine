@@ -109,9 +109,13 @@ describe("pool Partner commanders (rule 702.124)", () => {
     for (const card of POOL_CARDS) {
       const printed = /^Partner \(/m.test(card.text)
         ? "partner"
-        : /^Choose a Background\b/m.test(card.text)
-          ? "choose-a-background"
-          : undefined;
+        : /^Partner with /m.test(card.text)
+          ? "partner-with"
+          : /^Partner—/m.test(card.text)
+            ? "partner-group"
+            : /^Choose a Background\b/m.test(card.text)
+              ? "choose-a-background"
+              : undefined;
       expect(card.pairing?.kind, card.name).toBe(printed);
     }
   });

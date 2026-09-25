@@ -6,125 +6,25 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**132 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**249 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
-- **Ready to author, no engine work** (each needs `card:lookup` first, so they wait for a
-  session with Scryfall access): Ygra, Eater of All, Gev, Scaled Scorch and Maha, Its
-  Feathers Night (ward, type grants, base P/T and other-permanent enters replacements are
-  built); Betor, Kin to All (player scopes are built; its gaps entry still lists
-  `effect:amount-aggregate`, whose condition form it needs is built); Thalia and The Gitrog
-  Monster, Quintorius, History Chaser and Zimone and Dina (a `sequence` waits for a decision
-  one of its steps raises); Leonardo, the Balance (`may`'s `oncePerTurn`); Fynn, the
-  Fangbearer, Atreus, Impulsive Son and Kratos, Stoic Father (poison and experience counters);
-  Sam, Loyal Attendant (`abilityCostModification`); Ovika, Enigma Goliath (`create-token`'s
-  `gainUntilEndOfTurn`); Terra, Herald of Hope, Evereth, Viceroy of Plunder and Slinza, the
-  Spiked Stampede (`reflexive-trigger`); Imotekh the Stormlord, Commodore Guff and Ezuri, Claw
-  of Progress (the `other` target spec); Clavileño, First of the Blessed and Jenova, Ancient
-  Calamity (`add-types`); Zoraline, Cosmos Caller (`may`'s `costLife`); Szarel, Genesis
-  Shepherd (the sacrifice trigger's `filter`); Arahbo, Roar of the World, Ikra Shidiqi, the
-  Usurper and Millicent, Restless Revenant (`otherOnly` on the attack and combat-damage
-  triggers, whose creature is the trigger object); Toph, the First Metalbender (`earthbend`);
-  Kelsien, the Plague (a delayed trigger keyed to a permanent dying — its gaps entry still
-  lists `effect:delayed-trigger-extensions`, whose leave-keyed part it needs is built);
-  Betor, Ancestor's Voice, Clement, the Worrywort and Minn, Wily Illusionist (a filter's
-  `{ amount }` operand); Doran, Besieged by Time (the `difference` amount and an `own`
-  compare); Sisay, Weatherlight Captain (`colorsAmong`); Toxrill, the Corrosive
-  (`grantPtPerCount.countersOnAffected`); Katara, the Fearless and Cloud, Midgar Mercenary
-  (`doubleTriggersOf`); Wayta, Trainer Prodigy (`doubleTriggers`' `"dealt-damage"` cause);
-  Kefka, Court Mage, Lord Windgrace and Mr. Foxglove (the `thisWay` amount and `this-way`
-  condition); Kratos, God of War (the `attackedThisTurn` filter clause); Malcolm,
-  Keen-Eyed Navigator and Goro-Goro and Satoru (the batched `deals-damage-batch` trigger);
-  Sidisi, Brood Tyrant, Syr Konrad, the Grim and Disa the Restless (`put-into-graveyard`, and
-  `leaves-graveyard`'s `perCard`); Kuja, Genome Sorcerer, The Mindskinner and Neriv, Heart of
-  the Storm (the scoped `would-deal-damage` replacement); Tymna the Weaver, Éowyn,
-  Shieldmaiden and The Mycotyrant (`PlayerState.turnHistory` and the new turn stats — "the
-  number of times you descended this turn" is `{ turnHistory: "descended" }`); Michelangelo,
-  the Heart (the same, plus `turn-structure` — check at `card:lookup` that its tally is one
-  `turnHistory` records); Karlach, Fury of Avernus (`additional-combat`'s `afterThisPhase` and
-  the `turn-structure` condition); Clive, Ifrit's Dominant (`flicker`'s `transformed`); Ojer
-  Axonil, Deepest Might (`put-onto-battlefield`'s `transformed`, `would-deal-damage`'s
-  `atLeast: "this-power"` with `combat: false`, and the `damage-dealt-this-turn` condition on
-  Temple of Power's transform ability); The Gitrog Monster (`unless` with `chooser: "you"`);
-  Kynaios and Tiro of Meletis, Kwain, Itinerant Meddler and Wernog, Rider's Chaplain
-  (`each-player-may` and its `ifDid`/`ifDidnt` — the "this way" parts their gaps entries list
-  are those follow-ups, and Wernog's investigate is built); Dr. Eggman (its gaps entry lists
-  only `effect:choices-by-other-players` — confirm at `card:lookup` that `each-player-may`,
-  `unless` or a villainous choice covers it); Eriette of the Charmed Apple
-  (`cantAttackController` over a `filter` scope with `enchantedBy: "you"`), Delney, Streetwise
-  Lookout (`cantBeBlockedBy`, and `doubleTriggersOf` with a power filter) and Anzrag, the
-  Quake-Mole (the `restrict` effect's `"must-be-blocked-if-able"`, and `becomes-blocked` with
-  `additional-combat`'s `afterThisPhase`); Anowon, the Ruin Thief (`deals-damage-batch` and
-  `{ thisWay: "milled", who: "trigger-player" }` — its gaps entry lists
-  `effect:this-way-results`, whose milled part it needs is built); Anti-Venom, Horrifying
-  Healer and Rocco, Cabaretti Caterer (an enters trigger filtered `{ cast: true, castBy:
-  "you" }` for "if you cast it" — an enters trigger reads the X its permanent was cast with);
-  Kodama of the East Tree (`putThereBySource: false`, with a `{ amount }` mana-value operand on
-  its hand search); Fire Lord Zuko (`firebending({ powerOf: "source" })`, `enteredFrom:
-  "exile"`, and the `cast-spell` trigger's `from: "exile"`); Rakdos, Lord of Riots
-  (`castOnlyIf`, and a `{ turnStat: "life-lost", who: "opponent" }` cost reduction), Myrel,
-  Shield of Argive (a `prohibits` static timed by `your-turn` — its 1/1 colorless Soldier
-  artifact token isn't in `cards/tokens/` yet) and Marisi, Breaker of the Coil (`prohibits`
-  timed by `turn-structure`'s `duringCombat`, and `goad`'s `who: "trigger-player"`); Veyran,
-  Voice of Duality (`cast-spell`'s `orCopy` and `doubleTriggers`' `"cast-or-copy"` cause);
-  Azlask, the Swelling Scourge (the `annihilator` helper — confirm at `card:lookup` that it
-  covers the rest); Ketramose, the New Dawn (the batched `put-into-exile` trigger, and
-  `cards-in-exile` under a `not` on its attack/block restriction); Bruce Banner (a modal DFC
-  that transforms) and Aragorn, King of Gondor (the `life-total` condition) — each gaps entry
-  lists only what this batch built, so confirm the text at `card:lookup`; Bruvac the
-  Grandiloquent (`would-mill`), The Lord of Pain (`would-gain-life`'s `prevent`, a `cast-spell`
-  trigger's `firstEachTurn` and an `other` player target) and Bilbo, Birthday Celebrant
-  (`would-gain-life`'s `plus`, and a `life-total` activation condition); Okaun, Eye of Chaos
-  and Zndrsplt, Eye of Wisdom (`flip-coin`'s `untilLose` and the `wins-coin-flip` trigger);
-  Mirko, Obsessive Theorist (the `surveils` trigger), Winter, Misanthropic Guide (a
-  `maxHandSize` static) and Tifa, Martial Artist (the `melee` helper) — confirm each at
-  `card:lookup`; Rowan, Scion of War (`player-effect`'s `reduceSpells`), Lightning, Army of
-  One (its `damageTo`, if its text is the doubling it's remembered as) and Yusri, Fortune's
-  Flame (`castFromHandFree` and `flip-coin` — its "choose a number between 1 and 5" may still
-  need `decision:choose-number`); Iroh, Grand Lotus and The Master of Keys (the
-  `grantsToGraveyard` static's flashback and escape) and Jodah, Archmage Eternal
-  (`alternativeCostForSpells`); Narci, Fable Singer (the `chapter-resolves` trigger's
-  `finalOnly`, and a completed Saga's sacrifice); Esika, God of the Tree (its back face's
-  `reveal-until`, and a colour identity that now reads it), Umbris, Fear Manifest and Hei Bai,
-  Forest Guardian (`reveal-until`); Tom Bombadil (`reveal-until`, the `chapter-resolves`
-  trigger and a lore-counter aggregate — its gaps entry still lists `effect:amount-aggregate`,
-  whose counters form it needs is built); Kykar, Wind's Fury, Ramos, Dragon Engine and Loot,
-  the Pathfinder (mana abilities with a sacrifice, counter or coloured cost, and `exhaust`);
-  Narset, Enlightened Master and Nahiri, Forged in Fury (`impulse-exile`'s `filter` and
-  `free`); Kibo, Uktabi Prince and Roxanne, Starfall Savant (`add-mana`'s `also` and the
-  `tapped-for-mana` triggered mana ability; their Banana and Meteorite tokens are authored
-  with them); Reyhan, Last of the Abzan (`leaves-battlefield`'s `to` and `filter`, and a
-  `countersOn` of the trigger object); The Locust God and Eshki, Temur's Roar (rule 400.7
-  object identity for delayed triggers, sources and targets); Judith, Carnage Connoisseur
-  and Abaddon the Despoiler (`grant-keyword` on a spell, and the `grantsToSpells` static);
-  Yuna, Grand Summoner, Codie, Vociferous Codex and Shirei, Shizo's Caretaker (a `nextSpell`
-  delayed trigger, `enters-with-counters`, `allow-cast-from-exile`, a carried trigger object
-  and `source-on-battlefield` — their gaps entries still list
-  `effect:delayed-trigger-extensions`, whose parts they need are built); Tergrid, God of
-  Fright (`discards`' `perCard` and `filter` — its gaps entry still lists
-  `trigger:discards-extensions`, whose per-card part it needs is built); Witherbloom, the
-  Balancer (`affinity` and `grantAffinity`); Marchesa, the Black Rose (`dethrone()`, granted
-  with `grantsTriggered`, and a carried trigger object for "return that card" — its gaps
-  entry still lists `effect:delayed-trigger-extensions`, whose part it needs is built);
-  Shadow the Hedgehog (the `manaFrom` filter clause — "if mana from an artifact was spent to
-  cast it"); Nine-Fingers Keene (`look-and-choose`'s `leftoverIf`); Aang, at the Crossroads
-  (rule 701.28f for its delayed transform, and entering transformed); Nicol Bolas, the
-  Ravager (the Arisen entering transformed with its loyalty, and `exile-from-library`'s
-  `allBut`); Sorin of House Markov (a lifelink keyword counter, and the transform fixes) —
-  confirm each at `card:lookup`.
+- **Ready to author, no engine work: none left.** Every commander the gaps JSON marked
+  ready was authored on 2026-09-24 (`test/commanders-ready-*.test.ts`). Each one left needs at
+  least one feature; start from the greedy order below.
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first
   ten, engine-only, with the commanders each fully unblocks:
-  `effect:amount-aggregate` (+2), `effect:delayed-trigger-extensions` (+5),
-  `trigger:discards-extensions` (+2), `effect:missing-tokens` (+1),
   `bug:as-enters-choices-any-entry` (+2), `keyword:changeling` (+1),
   `condition:filter-card-property-clauses` (+2), `mechanic:goad-extensions` (+3),
-  `effect:target-spec-additions` (+1), `mechanic:suspect` (+1).
+  `effect:target-spec-additions` (+1), `mechanic:suspect` (+1),
+  `stat:spells-cast-this-turn-record` (+2), `effect:amount-fields-dynamic` (+2),
+  `effect:look-and-choose-second-pick` (+1), `effect:control-change-extensions` (+2).
 - **Most-needed features overall.** `zone:visibility-extensions` (13),
   `effect:copy-spell-extensions`, `effect:copy-exceptions` and
-  `effect:delayed-trigger-extensions` (11 each). Live numbers come from `cmdrs:gaps`.
+  `condition:filter-card-property-clauses` (11 each). Live numbers come from `cmdrs:gaps`.
 - **UI-bound features.** These need a new client decision and a browser check:
   `effect:may-sacrifice-then` (13), `decision:copy-new-targets` (12), `decision:choose-permanent`
   (11), `effect:enter-attacking`, `decision:free-cast-choices`, `effect:attach-extensions`,

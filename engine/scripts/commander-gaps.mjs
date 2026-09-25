@@ -42,7 +42,8 @@ const implemented = new Set(
 );
 
 const open = data.commanders
-  .filter((c) => !implemented.has(c.name))
+  // The list names a double-faced commander by its front face alone.
+  .filter((c) => !implemented.has(c.name) && !implemented.has(c.name.split(" // ")[0]))
   .map((c) => ({ ...c, needs: c.needs.filter((k) => !built.has(k)) }));
 
 const need = new Map();

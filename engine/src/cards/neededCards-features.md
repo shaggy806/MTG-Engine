@@ -176,7 +176,7 @@ Face-Breaker (207), Wild Growth (212), Rhythm of the Wild (221), Animate Dead (2
 Henge (227), Mirkwood Bats (228), Sensei's Divining Top (229), Explore (234), Sword of the Animist
 (235), Malakir Rebirth // Malakir Mire (239), Gamble (241), Rishkar's Expertise (243), Mox Diamond
 (245), Grand Abolisher (251), Everflowing Chalice (254), Archmage Emeritus (255), Bloom Tender
-(257), Sylvan Library (259), Syr Konrad, the Grim (260), Academy Manufactor (262), Untimely
+(257), Sylvan Library (259), Academy Manufactor (262), Untimely
 Malfunction (265), Force of Negation (268), Bolas's Citadel (270), Snap (273), Etali, Primal Storm
 (275), Hullbreaker Horror (276), Ragavan, Nimble Pilferer (281), Rugged Prairie (282), Reality
 Shift (283), Cascade Bluffs (292), Witch Enchanter // Witch-Blessed Meadow (294), Braids, Arisen

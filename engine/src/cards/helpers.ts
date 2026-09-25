@@ -146,6 +146,32 @@ export const firebending = (amount: EffectAmount, text?: string): TriggeredAbili
 });
 
 /**
+ * Extort (rule 702.101a): "Whenever you cast a spell, you may pay {W/B}. If
+ * you do, each opponent loses 1 life and you gain that much life." A
+ * triggered ability, so each instance triggers separately. "That much" is
+ * the life the opponents lost — one each, which nothing in the pool stops a
+ * player losing — so the gain is the number of opponents.
+ */
+export const extort = (): TriggeredAbility => ({
+  trigger: { on: "cast-spell", who: "you" },
+  targets: [],
+  effect: {
+    kind: "may",
+    prompt: "Pay {W/B} to extort?",
+    cost: "{W/B}",
+    effect: {
+      kind: "sequence",
+      effects: [
+        { kind: "lose-life", amount: 1, who: "each-opponent" },
+        { kind: "gain-life", amount: { countPlayers: "each-opponent" } },
+      ],
+    },
+  },
+  resolve: null,
+  text: "Extort",
+});
+
+/**
  * Investigate (rule 701.36a): "create a Clue token", `times` over —
  * "investigate twice" is `investigate(2)`. It's a keyword action with no
  * effect of its own beyond the token, so it's written as the `create-token`
