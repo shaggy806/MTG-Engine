@@ -175,12 +175,24 @@ export type TargetSpec =
  *   slot's options still list everything and the pair is checked together;
  *   choosers narrow a slot's options by what they already picked
  *   (`slotOptions`). Not for a trigger whose slots the event fills.
+ * - `{ slots }` — every one of several earlier slots. "Two target lands" is
+ *   one instance of the word "target", and the same object can be chosen
+ *   only once for it (rule 601.2c): each slot after the first differs from
+ *   all the slots before it. The `distinctTargets` card helper builds them.
  */
 export type OtherThan =
   | "source"
   | "trigger-object"
   | "trigger-player"
-  | { readonly slot: number };
+  | { readonly slot: number }
+  | { readonly slots: readonly number[] };
+
+/** The earlier slots an `other` relation names — none for one that is about
+ * the source, the trigger object or the trigger player. */
+export function otherThanSlots(than: OtherThan): readonly number[] {
+  if (typeof than !== "object") return [];
+  return "slot" in than ? [than.slot] : than.slots;
+}
 
 /**
  * Targets as the engine carries them internally, once a dispatched action has
@@ -241,9 +253,11 @@ export function slotOptions(
 ): readonly TargetRef[] {
   const all = options[i] ?? [];
   const than = specs[i] === undefined ? undefined : otherThan(specs[i]);
-  if (than === undefined || typeof than !== "object") return all;
-  const earlier = picked[than.slot];
-  return earlier === null || earlier === undefined ? all : all.filter((ref) => !sameTarget(ref, earlier));
+  if (than === undefined) return all;
+  const earlier = otherThanSlots(than)
+    .map((slot) => picked[slot])
+    .filter((ref): ref is TargetRef => ref !== null && ref !== undefined);
+  return earlier.length === 0 ? all : all.filter((ref) => !earlier.some((e) => sameTarget(ref, e)));
 }
 
 /**
@@ -285,11 +299,12 @@ export function otherSlotConflict(
 ): { readonly slot: number; readonly than: number } | null {
   for (let i = 0; i < specs.length; i += 1) {
     const than = otherThan(specs[i]);
-    if (than === undefined || typeof than !== "object") continue;
+    if (than === undefined) continue;
     const mine = chosen[i];
-    const theirs = chosen[than.slot];
-    if (mine !== null && mine !== undefined && theirs !== null && theirs !== undefined && sameTarget(mine, theirs)) {
-      return { slot: i, than: than.slot };
+    if (mine === null || mine === undefined) continue;
+    for (const slot of otherThanSlots(than)) {
+      const theirs = chosen[slot];
+      if (theirs !== null && theirs !== undefined && sameTarget(mine, theirs)) return { slot: i, than: slot };
     }
   }
   return null;
@@ -306,13 +321,15 @@ export function describeTargetSpec(spec: TargetSpec | string): string {
   if (spec.kind === "other") {
     const than = spec.than ?? "source";
     const inner = describeTargetSpec(spec.of);
+    if (typeof than === "object") {
+      const slots = otherThanSlots(than).map((slot) => slot + 1);
+      return `${inner} other than target${slots.length > 1 ? "s" : ""} ${slots.join(" and ")}`;
+    }
     return than === "source"
       ? `another ${inner}`
       : than === "trigger-object"
         ? `${inner} other than that one`
-        : than === "trigger-player"
-          ? `${inner} other than that player`
-          : `${inner} other than target ${than.slot + 1}`;
+        : `${inner} other than that player`;
   }
   if (spec.kind === "spell") {
     const colour = spec.filter.colors?.length === 1 ? `${COLOUR_WORD[spec.filter.colors[0]]} ` : "";

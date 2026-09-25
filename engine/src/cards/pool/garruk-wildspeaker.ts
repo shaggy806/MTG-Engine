@@ -1,4 +1,5 @@
 import { defineCard } from "../define.js";
+import { distinctTargets } from "../helpers.js";
 
 const youControlCreatures = { type: "creature", controlledBy: "you" } as const;
 
@@ -18,7 +19,7 @@ export default defineCard({
     {
       loyaltyCost: 1,
       cost: { mana: null, tap: false },
-      targets: ["land", "land"],
+      targets: distinctTargets(2, "land"),
       effect: {
         kind: "sequence",
         effects: [

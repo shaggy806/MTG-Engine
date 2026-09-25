@@ -8,12 +8,36 @@ import type { ActivatedAbility, TriggeredAbility } from "../abilities.js";
 import { wardCostText, type EffectAmount, type EffectSpec, type WardCost } from "../effects.js";
 import type { CardFilter } from "../filter.js";
 import type { Color, ManaType } from "../mana.js";
+import type { TargetSpec } from "../target.js";
 import { defineCard, type CardDefinition, type StaticAbility } from "./define.js";
 
 /** The placeholder for "the chosen creature type" inside a
  * `choose-creature-type` effect's `then` — re-exported here because card files
  * import only from `define` and `helpers`. */
 export { CHOSEN_CREATURE_TYPE } from "../effects.js";
+
+/**
+ * "Two target lands", "up to two target creatures": one instance of the word
+ * "target" spread over `n` slots, so the same object or player can be chosen
+ * for only one of them (rule 601.2c). Each slot after the first is `other`
+ * than every slot of the group before it. `optional` makes every slot "up
+ * to"; `from` is the group's first slot when other slots come before it, and
+ * `otherThan` names earlier slots outside the group that every slot must also
+ * differ from — Drakuseth's "each of up to two **other** targets" is
+ * `distinctTargets(2, "any-target", { optional: true, from: 1, otherThan: [0] })`.
+ */
+export const distinctTargets = (
+  n: number,
+  spec: TargetSpec,
+  opts: { readonly optional?: boolean; readonly from?: number; readonly otherThan?: readonly number[] } = {},
+): TargetSpec[] => {
+  const from = opts.from ?? 0;
+  return Array.from({ length: n }, (_, i) => {
+    const earlier = [...(opts.otherThan ?? []), ...Array.from({ length: i }, (__, j) => from + j)];
+    const slot: TargetSpec = earlier.length === 0 ? spec : { kind: "other", of: spec, than: { slots: earlier } };
+    return opts.optional === true ? { kind: "optional", of: slot } : slot;
+  });
+};
 
 /**
  * Ward (rule 702.21a): "Whenever this permanent becomes the target of a spell

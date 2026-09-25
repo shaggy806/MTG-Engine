@@ -143,7 +143,6 @@ that one card is the reason the deck exists.
   - A granted escape (Underworld Breach) is never offered for a card with its own escape.
   - A must-attack creature left out of a declaration is sent at the first legal defender, not
     its controller's choice.
-  - Two slots of one "two target" clause accept the same object (Ghostly Flicker).
   - Play-from-graveyard reads a double-faced card by its front face only (Ancient Greenwarden).
   - Performance: a per-creature enters trigger watching an opponent's token stack
     (Authority of the Consuls against Scute Swarm) puts hundreds of triggers on the stack.

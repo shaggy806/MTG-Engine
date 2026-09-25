@@ -1,4 +1,5 @@
 import { defineCard } from "../define.js";
+import { distinctTargets } from "../helpers.js";
 
 export default defineCard({
   name: "Rishkar, Peema Renegade",
@@ -15,11 +16,9 @@ export default defineCard({
   triggered: [
     {
       trigger: { on: "enters-battlefield", who: "self" },
-      // "each of up to two target creatures" — two optional slots.
-      targets: [
-        { kind: "optional", of: "creature" },
-        { kind: "optional", of: "creature" },
-      ],
+      // "each of up to two target creatures" — two optional slots, and two
+      // different creatures.
+      targets: distinctTargets(2, "creature", { optional: true }),
       effect: {
         kind: "sequence",
         effects: [

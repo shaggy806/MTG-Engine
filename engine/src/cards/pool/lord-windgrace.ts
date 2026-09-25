@@ -1,5 +1,6 @@
 import type { TargetSpec } from "../../target.js";
 import { defineCard } from "../define.js";
+import { distinctTargets } from "../helpers.js";
 
 // #256 in top-commanders.txt.
 //
@@ -13,8 +14,7 @@ const MINUS3_TEXT = "−3: Return up to two target land cards from your graveyar
 const MINUS11_TEXT =
   "−11: Destroy up to six target nonland permanents, then create six 2/2 green Cat Warrior " +
   "creature tokens with forestwalk.";
-const landCard: TargetSpec = { kind: "optional", of: { kind: "card-in-graveyard", whose: "you", filter: { type: "land" } } };
-const nonland: TargetSpec = { kind: "optional", of: "nonland-permanent" };
+const landCard: TargetSpec = { kind: "card-in-graveyard", whose: "you", filter: { type: "land" } };
 const SIX = [0, 1, 2, 3, 4, 5] as const;
 
 export default defineCard({
@@ -49,7 +49,7 @@ export default defineCard({
     {
       loyaltyCost: -3,
       cost: { mana: null, tap: false },
-      targets: [landCard, landCard],
+      targets: distinctTargets(2, landCard, { optional: true }),
       effect: {
         kind: "sequence",
         simultaneous: true,
@@ -64,7 +64,7 @@ export default defineCard({
     {
       loyaltyCost: -11,
       cost: { mana: null, tap: false },
-      targets: SIX.map(() => nonland),
+      targets: distinctTargets(6, "nonland-permanent", { optional: true }),
       effect: {
         kind: "sequence",
         effects: [

@@ -1,7 +1,9 @@
 import { defineCard } from "../define.js";
+import { distinctTargets } from "../helpers.js";
 
 // "each of up to two other targets" — two optional slots, so Drakuseth can
-// attack into a board that only offers the one target it must have.
+// attack into a board that only offers the one target it must have, each
+// other than the first target and than each other.
 export default defineCard({
   name: "Drakuseth, Maw of Flames",
   manaCost: "{4}{R}{R}{R}",
@@ -19,11 +21,7 @@ export default defineCard({
   triggered: [
     {
       trigger: { on: "attacks", who: "self" },
-      targets: [
-        "any-target",
-        { kind: "optional", of: "any-target" },
-        { kind: "optional", of: "any-target" },
-      ],
+      targets: ["any-target", ...distinctTargets(2, "any-target", { optional: true, from: 1, otherThan: [0] })],
       effect: {
         kind: "sequence",
         effects: [

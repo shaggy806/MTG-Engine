@@ -1,4 +1,5 @@
 import { defineCard } from "../define.js";
+import { distinctTargets } from "../helpers.js";
 
 export default defineCard({
   name: "Sylvan Reclamation",
@@ -8,10 +9,7 @@ export default defineCard({
   text:
     "Exile up to two target artifacts and/or enchantments.\n" +
     "Basic landcycling {2}",
-  targets: [
-    { kind: "optional", of: "artifact-or-enchantment" },
-    { kind: "optional", of: "artifact-or-enchantment" },
-  ],
+  targets: distinctTargets(2, "artifact-or-enchantment", { optional: true }),
   effect: {
     kind: "sequence",
     effects: [

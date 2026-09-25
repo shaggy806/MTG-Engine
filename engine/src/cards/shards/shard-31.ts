@@ -62,6 +62,7 @@ import _poolFog from "../pool/fog.js";
 import _poolFoundryInspector from "../pool/foundry-inspector.js";
 import _poolFoxfireOak from "../pool/foxfire-oak.js";
 import _poolFungalInfection from "../pool/fungal-infection.js";
+import _poolGhostlyFlicker from "../pool/ghostly-flicker.js";
 import _poolGideonsLawkeeper from "../pool/gideons-lawkeeper.js";
 import _poolGnathosaur from "../pool/gnathosaur.js";
 import _poolGoblinBerserker from "../pool/goblin-berserker.js";
@@ -232,6 +233,7 @@ const shard: CardShard = {
     _poolFoundryInspector,
     _poolFoxfireOak,
     _poolFungalInfection,
+    _poolGhostlyFlicker,
     _poolGideonsLawkeeper,
     _poolGnathosaur,
     _poolGoblinBerserker,

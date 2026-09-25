@@ -1,4 +1,5 @@
 import { defineCard } from "../define.js";
+import { distinctTargets } from "../helpers.js";
 
 export default defineCard({
   name: "Victimize",
@@ -8,10 +9,7 @@ export default defineCard({
   text:
     "Choose two target creature cards in your graveyard. Sacrifice a creature. " +
     "If you do, return the chosen cards to the battlefield tapped.",
-  targets: [
-    { kind: "card-in-graveyard", whose: "you", filter: { type: "creature" } },
-    { kind: "card-in-graveyard", whose: "you", filter: { type: "creature" } },
-  ],
+  targets: distinctTargets(2, { kind: "card-in-graveyard", whose: "you", filter: { type: "creature" } }),
   // "Sacrifice a creature" is an additional cost of casting, not part of the
   // resolution, which is why it gates castability rather than being a
   // `sacrifice` effect that could fizzle the reanimation.

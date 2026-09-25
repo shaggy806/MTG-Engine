@@ -1,4 +1,5 @@
 import { defineCard } from "../define.js";
+import { distinctTargets } from "../helpers.js";
 
 export default defineCard({
   name: "Hate Mirage",
@@ -6,11 +7,9 @@ export default defineCard({
   colors: ["R"],
   types: ["sorcery"],
   text: "Choose up to two target creatures you don't control. For each of those creatures, create a token that's a copy of that creature. Those tokens gain haste. Exile them at the beginning of the next end step.",
-  // "Up to two" is two optional slots, so each copy keeps a fixed `of:` index.
-  targets: [
-    { kind: "optional", of: "creature-an-opponent-controls" },
-    { kind: "optional", of: "creature-an-opponent-controls" },
-  ],
+  // "Up to two" is two optional slots, so each copy keeps a fixed `of:` index,
+  // and two different creatures.
+  targets: distinctTargets(2, "creature-an-opponent-controls", { optional: true }),
   effect: {
     kind: "sequence",
     effects: [

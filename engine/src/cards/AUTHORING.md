@@ -1164,6 +1164,22 @@ either way round with `optional` ("up to one other target creature"). An
 "that player" is, and `{ slot }` isn't for a trigger whose slots the event
 fills.
 
+**"Two target …" needs two different things.** "Untap two target lands",
+"up to two target creatures" is one instance of the word "target" spread
+over two slots, and the same object or player can be chosen for only one of
+them (rule 601.2c). Build the slots with the `distinctTargets` helper
+(`helpers.ts`) rather than listing the spec twice: `distinctTargets(2,
+"land")` (Garruk Wildspeaker), `distinctTargets(2, "creature", { optional:
+true })` (Rishkar). Each slot after the first is `{ kind: "other", of, than:
+{ slots: [...] } }`, other than every slot of the group before it. `from` is
+the group's first slot when other slots come before it, and `otherThan`
+names earlier slots outside the group that it must differ from too —
+Drakuseth's "4 damage to any target and 3 damage to each of up to two other
+targets" is `["any-target", ...distinctTargets(2, "any-target", { optional:
+true, from: 1, otherThan: [0] })]`. Separate instances of the word ("target
+creature … target creature" in two sentences) are separate slots with no
+relation, and may point at the same thing.
+
 Two specs are **structured** rather than strings, for the shapes the literals
 stopped covering:
 

@@ -38,12 +38,16 @@ export function targetCombos(
     for (const combo of combos) {
       for (const choice of choices) {
         if (next.length >= limit) break;
-        next.push([...combo, choice]);
+        const extended = [...combo, choice];
+        // An "other than target n" relation is judged as each slot is
+        // filled, so the cap never fills up with combos that break one — the
+        // six slots of "up to six target permanents" would otherwise spend
+        // it all on the first permanent chosen six times.
+        if (otherSlotConflict(specs, extended) === null) next.push(extended);
       }
       if (next.length >= limit) break;
     }
     combos = next;
   });
-  // "Another target" relations between slots are judged on the whole combo.
-  return combos.filter((combo) => otherSlotConflict(specs, combo) === null);
+  return combos;
 }

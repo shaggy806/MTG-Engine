@@ -1808,6 +1808,7 @@ import _poolGhostLitRedeemer from "./pool/ghost-lit-redeemer.js";
 import _poolGhostLitStalker from "./pool/ghost-lit-stalker.js";
 import _poolGhostSpectralSaboteur from "./pool/ghost-spectral-saboteur.js";
 import _poolGhostWarden from "./pool/ghost-warden.js";
+import _poolGhostlyFlicker from "./pool/ghostly-flicker.js";
 import _poolGhostlySentinel from "./pool/ghostly-sentinel.js";
 import _poolGhostlyVisit from "./pool/ghostly-visit.js";
 import _poolGhostsOfTheDamned from "./pool/ghosts-of-the-damned.js";
@@ -7336,6 +7337,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolGhostLitStalker,
   _poolGhostSpectralSaboteur,
   _poolGhostWarden,
+  _poolGhostlyFlicker,
   _poolGhostlySentinel,
   _poolGhostlyVisit,
   _poolGhostsOfTheDamned,
