@@ -141,7 +141,6 @@ that one card is the reason the deck exists.
   - A commander its owner sends to the command zone never dies, so its own dies trigger is lost
     (Child of Alara).
   - `otherOnly` also strips the source from an ability's target check (Dina, Essence Brewer).
-  - A negative amount isn't clamped to 0 (rule 107.1b): a negative power gains negative life.
   - A granted escape (Underworld Breach) is never offered for a card with its own escape.
   - A player who can't cast spells can still suspend (Silence).
   - A must-attack creature left out of a declaration is sent at the first legal defender, not

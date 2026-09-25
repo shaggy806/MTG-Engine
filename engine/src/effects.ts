@@ -201,12 +201,15 @@ export type EffectAmount =
    * Fury's "double the power of target creature" is a `modify-pt` that adds
    * this; "it deals damage equal to its power" from a dies trigger reads the
    * power it died with, and `{ powerOf: "sacrificed" }` is the Fling family's
-   * "the sacrificed creature's power". */
-  | { readonly powerOf: AmountRef }
+   * "the sacrificed creature's power". `doubling` marks a "double its power"
+   * P/T change, the one place a power below 0 is used as it is (see
+   * {@link ptChangeValue}). */
+  | { readonly powerOf: AmountRef; readonly doubling?: true }
   /** The current toughness of whatever an {@link AmountRef} points at —
    * Condemn's "its controller gains life equal to its toughness", read as
-   * the creature last existed on the battlefield. */
-  | { readonly toughnessOf: AmountRef }
+   * the creature last existed on the battlefield. `doubling` as for
+   * `powerOf`. */
+  | { readonly toughnessOf: AmountRef; readonly doubling?: true }
   /** How many counters of one kind are on whatever an {@link AmountRef}
    * points at — Black Market's "{B} for each charge counter on this
    * enchantment", Chasm Skulker's "X is the number of +1/+1 counters on this
@@ -2831,8 +2834,51 @@ const MAX_FLIPS = 1000;
 
 /** Resolve an {@link EffectAmount} against the resolution context. `each`
  * is the player a scoped effect is being applied to right now, for a
- * per-player amount (`lifeTotal: "each"`). */
+ * per-player amount (`lifeTotal: "each"`).
+ *
+ * Never below 0 (rule 107.1b): a calculation that comes out negative uses 0,
+ * so a sacrificed creature's negative power gains no life, adds no counters
+ * and draws no cards. The calculation itself is done as written first — the
+ * difference between a -1 power and a 3 toughness is 4 — and only its result
+ * is clamped. A P/T change reads its amounts through {@link ptChangeValue}
+ * instead, which keeps a card's own minus sign. */
 export function amountValue(
+  amount: EffectAmount,
+  ctx: ResolutionContext,
+  each?: PlayerId,
+): number {
+  return Math.max(0, signedAmountValue(amount, ctx, each));
+}
+
+/**
+ * The amount a `modify-pt` or `modify-pt-all` adds to power or toughness.
+ * Unlike every other amount it may be negative, but only by the card's own
+ * sign: "-X/-X" is written `{ product: ["x", -1] }`, and its X is clamped at
+ * 0 before the sign applies (rule 107.1b), as is the X of "+X/+X, where X is
+ * its power". A doubling (`{ powerOf, doubling: true }`) reads the value as
+ * it is: doubling a -2 power makes it -4 (rules 107.1b, 701.10d).
+ */
+export function ptChangeValue(
+  amount: EffectAmount,
+  ctx: ResolutionContext,
+  each?: PlayerId,
+): number {
+  if (typeof amount === "number") return amount;
+  if (typeof amount === "object" && "product" in amount) {
+    const printed = amount.product.filter((a): a is number => typeof a === "number");
+    if (printed.some((n) => n < 0)) {
+      const rest = amount.product.filter((a) => typeof a !== "number");
+      return printed.reduce((n, a) => n * a, 1) * amountValue({ product: rest }, ctx, each);
+    }
+  }
+  if (typeof amount === "object" && ("powerOf" in amount || "toughnessOf" in amount) && amount.doubling === true) {
+    return signedAmountValue(amount, ctx, each);
+  }
+  return amountValue(amount, ctx, each);
+}
+
+/** {@link amountValue} before its clamp: the calculation as written. */
+function signedAmountValue(
   amount: EffectAmount,
   ctx: ResolutionContext,
   each?: PlayerId,
@@ -2844,19 +2890,19 @@ export function amountValue(
     return ctx.lifeTotalOf(amount.lifeTotal === "each" ? (each ?? ctx.controller) : ctx.controller);
   }
   if ("half" in amount) {
-    const n = amountValue(amount.half, ctx, each) / 2;
+    const n = signedAmountValue(amount.half, ctx, each) / 2;
     return Math.max(0, amount.round === "up" ? Math.ceil(n) : Math.floor(n));
   }
   if ("countInGraveyard" in amount) return ctx.countInGraveyard(amount.countInGraveyard);
   if ("product" in amount) {
-    return amount.product.reduce<number>((n, a) => n * amountValue(a, ctx, each), 1);
+    return amount.product.reduce<number>((n, a) => n * signedAmountValue(a, ctx, each), 1);
   }
   if ("sum" in amount) {
-    return amount.sum.reduce<number>((n, a) => n + amountValue(a, ctx, each), 0);
+    return amount.sum.reduce<number>((n, a) => n + signedAmountValue(a, ctx, each), 0);
   }
   if ("difference" in amount) {
-    const a = amountValue(amount.difference[0], ctx, each);
-    const b = amountValue(amount.difference[1], ctx, each);
+    const a = signedAmountValue(amount.difference[0], ctx, each);
+    const b = signedAmountValue(amount.difference[1], ctx, each);
     return amount.absolute === true ? Math.abs(a - b) : Math.max(0, a - b);
   }
   if ("cardsInHand" in amount) {
@@ -3533,8 +3579,8 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       if (target !== undefined) {
         ctx.modifyPt(
           target,
-          amountValue(spec.power, ctx),
-          amountValue(spec.toughness, ctx),
+          ptChangeValue(spec.power, ctx),
+          ptChangeValue(spec.toughness, ctx),
           spec.duration,
         );
       }
@@ -3543,8 +3589,8 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "modify-pt-all":
       ctx.modifyPtAll(
         spec.filter,
-        amountValue(spec.power, ctx),
-        amountValue(spec.toughness, ctx),
+        ptChangeValue(spec.power, ctx),
+        ptChangeValue(spec.toughness, ctx),
         spec.duration,
         spec.exceptSource === true,
         scopedController(spec.controlledByTarget, ctx),

@@ -11,7 +11,7 @@ export default defineCard({
   effect: {
     kind: "modify-pt",
     target: 0,
-    power: { powerOf: 0 },
+    power: { powerOf: 0, doubling: true },
     toughness: 0,
     duration: "end-of-turn",
   },

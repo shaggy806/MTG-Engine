@@ -487,6 +487,16 @@ Foxglove's "cards in defending player's hand minus the number of cards in your
 hand"; `absolute` is the larger minus the smaller, Doran, Besieged by Time's
 "the difference between its power and toughness").
 
+**Every amount is at least 0** (rule 107.1b): a sacrificed creature's
+negative power gains no life and adds no counters. The arithmetic is done as
+written and only its result is clamped. A `modify-pt`/`modify-pt-all` amount
+is the one exception, and only for the card's own sign: "-X/-X" is `{
+product: ["x", -1] }` (X clamped, then negated — The Meathook Massacre). A
+"double its power" is `{ powerOf: ref, doubling: true }` (Unleash Fury,
+Okaun), which reads a power below 0 as it is, since doubling a -2 power makes
+it -4 (rule 701.10d). "+X/+X, where X is its power" is a plain `{ powerOf }`,
+which adds nothing for a negative power.
+
 **"This way."** `{ thisWay, who?, filter?, cardTypes? }` counts what the
 resolving spell or ability has done **so far** — `thisWay` is one of
 `"discarded"`, `"drawn"`, `"milled"`, `"sacrificed"`, `"destroyed"` (a destroy

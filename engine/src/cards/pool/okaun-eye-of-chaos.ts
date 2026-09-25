@@ -33,8 +33,8 @@ export default defineCard({
       effect: {
         kind: "modify-pt",
         target: "source",
-        power: { powerOf: "source" },
-        toughness: { toughnessOf: "source" },
+        power: { powerOf: "source", doubling: true },
+        toughness: { toughnessOf: "source", doubling: true },
         duration: "end-of-turn",
       },
       resolve: null,
