@@ -200,8 +200,21 @@ describe("costs and triggers", () => {
     expect(spell.complete).toBe(false);
   });
 
+  it("an edict reads its player from the first target", () => {
+    // The engine's `who: "target"` is target 0, so Grave Exchange (a card,
+    // then a player) would make the card sacrifice.
+    const face = (oracle_text: string) =>
+      parseFace({ name: "Test Edict", type_line: "Sorcery", oracle_text }, { tokenFor: () => null });
+    expect(face("Target player sacrifices a creature of their choice.").complete).toBe(true);
+    expect(
+      face(
+        "Return target creature card from your graveyard to your hand. Target player sacrifices a creature of their choice.",
+      ).complete,
+    ).toBe(false);
+  });
+
   it("an Aura card returned to the battlefield is left to author", () => {
-    // It would enter attached to nothing and go straight back (Rise to Glory).
+    // It would enter attached to nothing, and stay that way (Rise to Glory).
     expect(parseSentence("Return target Aura card from your graveyard to the battlefield.", ctx())).toBeNull();
     expect(parseSentence("Return target creature card from your graveyard to the battlefield.", ctx())?.kind).toBe(
       "put-onto-battlefield",

@@ -550,7 +550,9 @@ export function parseSentence(sentence, ctx) {
     if (typeof count !== "number" || filter === null) return null;
     const who = { "each player": "each-player", "each opponent": "each-opponent" }[m[1].toLowerCase()];
     if (who !== undefined) return { kind: "sacrifice", who, filter, count };
-    ctx.target(targetOf(m[1]));
+    // The engine reads the player from the first target, so a player named
+    // after another target (Grave Exchange's card, then player) isn't read.
+    if (ctx.target(targetOf(m[1])) !== 0) return null;
     return { kind: "sacrifice", who: "target", filter, count };
   }
 
