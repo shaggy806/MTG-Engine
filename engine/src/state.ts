@@ -127,6 +127,10 @@ export interface GameObject {
    * controller's untap step alongside `loyaltyActivatedThisTurn`.
    */
   abilitiesUsedThisTurn?: number[];
+  /** Indices of this object's exhaust abilities already activated — once
+   * each for as long as the object exists (see `ActivatedAbility.exhaust`).
+   * Cleared by any zone change. */
+  exhaustedAbilities?: number[];
   /**
    * Indices of this object's triggered abilities marked `oncePerTurn` that
    * have already triggered — "This ability triggers only once each turn"

@@ -145,6 +145,12 @@ export interface ActivatedAbility {
    * per ability index on `GameObject.abilitiesUsedThisTurn`, so a permanent
    * with two such abilities limits each separately. */
   readonly oncePerTurn?: boolean;
+  /** Exhaust — "Activate each exhaust ability only once": once for as long
+   * as the object exists, rather than once each turn (Loot, the
+   * Pathfinder). Tracked per ability index on
+   * `GameObject.exhaustedAbilities`, which a zone change clears — the
+   * permanent that comes back is a new object (rule 400.7). */
+  readonly exhaust?: boolean;
   /** Boast (rule 702.135 — Dragonkin Berserker): activatable only if this
    * creature attacked this turn, and only once each turn. Implies
    * `oncePerTurn`; the "attacked this turn" half reads
@@ -875,18 +881,19 @@ export function isManaAbility(ability: ActivatedAbility): boolean {
     // Mana abilities are battlefield-only here: an ability activated from a
     // hand, graveyard or the command zone always uses the stack.
     ability.zone === undefined &&
+    // Whatever it costs (rule 605.1a says nothing about costs): a sacrifice
+    // of itself (Treasure) or of a chosen permanent (Kykar's "Sacrifice a
+    // Spirit"), life, counters removed (Ramos), energy. Which of those the
+    // auto-payer can pay by itself is `Game.manaSources`' business; the
+    // rest are activated by hand, and still never use the stack.
     ability.targets.length === 0 &&
-    // A "Sacrifice this: Add …" mana ability (Treasure) is fine — the payment
-    // machinery handles a self-sacrifice. A "sacrifice a creature you
-    // control" cost isn't (it needs a choice).
-    (ability.cost.sacrifice === undefined || ability.cost.sacrifice === "self") &&
-    // A `Pay N life` cost is fine — a mana ability may cost life (rule 605.1a
-    // says nothing about costs; the trikelands, City of Brass-likes). It's
-    // auto-paid, same as a Phyrexian pip.
-    ability.cost.removeCounter === undefined &&
-    ability.cost.payEnergy === undefined &&
     ability.resolve === null &&
     ability.effect !== null &&
-    ability.effect.kind === "add-mana"
+    // One `add-mana`, or several in a row — Ramos, Dragon Engine's "Add
+    // {W}{W}{U}{U}{B}{B}{R}{R}{G}{G}" is five of them.
+    (ability.effect.kind === "add-mana" ||
+      (ability.effect.kind === "sequence" &&
+        ability.effect.effects.length > 0 &&
+        ability.effect.effects.every((step) => step.kind === "add-mana")))
   );
 }

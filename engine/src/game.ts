@@ -6718,6 +6718,10 @@ export class Game {
     ) {
       return `${def.name}'s ability has already been activated this turn`;
     }
+    // Exhaust: once for as long as this object exists.
+    if (ability.exhaust === true && (source.exhaustedAbilities ?? []).includes(abilityIndex)) {
+      return `${def.name}'s exhaust ability has already been activated`;
+    }
     if (ability.loyaltyCost !== undefined) {
       // Loyalty ability (rule 606): sorcery-speed, once per permanent per turn,
       // and a "minus" ability needs that many loyalty counters to spend.
@@ -6936,6 +6940,9 @@ export class Game {
         ...(source.abilitiesUsedThisTurn ?? []),
         abilityIndex,
       ];
+    }
+    if (ability.exhaust === true) {
+      source.exhaustedAbilities = [...(source.exhaustedAbilities ?? []), abilityIndex];
     }
     if (ability.loyaltyCost !== undefined) {
       source.counters.loyalty = (source.counters.loyalty ?? 0) + ability.loyaltyCost;
@@ -7257,8 +7264,21 @@ export class Game {
         // (Jaspera Sentinel, Holdout Settlement). `useManaSource` taps only
         // the source, so offering these to the auto-payer would hand out the
         // mana without paying for it — strictly better than the printed card.
-        // They stay activatable by hand; see AUTHORING §15.
+        // They stay activatable by hand; see AUTHORING §15. The same goes
+        // for every other cost it can't pay: sacrificing a chosen permanent
+        // (Kykar's Spirits), removing counters (Ramos), energy, exiling or
+        // discarding, and an exhaust ability's single use.
         if (ability.cost.tapOthers !== undefined) return;
+        if (
+          (ability.cost.sacrifice !== undefined && ability.cost.sacrifice !== "self") ||
+          ability.cost.removeCounter !== undefined ||
+          ability.cost.payEnergy !== undefined ||
+          ability.cost.exileSelf === true ||
+          ability.cost.discardHand === true ||
+          ability.exhaust === true
+        ) {
+          return;
+        }
         // A mana ability whose own activation cost contains mana is a
         // "converter" (a Signet, a filter land). Only a purely *generic* cost
         // is admitted: a coloured one would be circular, needing the colour to
@@ -16117,6 +16137,10 @@ export class Game {
     object.exiledBy = undefined;
     // Likewise a delayed flicker return's link (Norin the Wary, rule 610.3).
     object.flickerLink = undefined;
+    // Its once-a-turn and exhaust abilities: the permanent that comes back
+    // is a new object that has used neither (rule 400.7).
+    object.abilitiesUsedThisTurn = undefined;
+    object.exhaustedAbilities = undefined;
     object.overloaded = undefined;
     // Graveyard permissions: a card's own "you may cast it this turn" belongs
     // to that object in that graveyard, and a grantor's spent allowances to

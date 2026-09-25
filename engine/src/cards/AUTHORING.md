@@ -1141,6 +1141,16 @@ list of *different* amounts per colour**, and an ability whose activation
 `manaSources()`'s auto-payment scan entirely, to avoid circular payment
 planning — see §15.
 
+**Any cost makes a mana ability** (rule 605.1a is about what it does, not what
+it costs): Kykar, Wind's Fury's "Sacrifice a Spirit: Add {R}" (`sacrifice: {
+filter: { subtype: "Spirit" } }`), Ramos, Dragon Engine's "Remove five +1/+1
+counters: Add {W}{W}{U}{U}{B}{B}{R}{R}{G}{G}" (`removeCounter`, and a
+`sequence` of `add-mana` steps, which counts as one mana ability), an energy
+cost, a coloured one (Loot, the Pathfinder's `{G}, {T}`). They never use the
+stack, and a driver sees `manaAbility: true` on the offer. The auto-payer only
+uses what it can pay by itself — `{T}`, a self-sacrifice, life, generic mana
+— so these are activated by hand, their mana floating for what comes next.
+
 - `sorcerySpeed: true` — the ability works only when you could cast a sorcery
   (Equip). An Equipment is `types: ["artifact"], subtypes: ["Equipment"]` with
   an `activated` ability `{ effect: { kind: "attach", target: 0 }, targets:
@@ -1161,7 +1171,12 @@ planning — see §15.
 - `oncePerTurn: true` — "Activate only once each turn" (rule 602.5g — Steel
   Hellkite). Recorded per ability index on `GameObject.abilitiesUsedThisTurn`,
   so a permanent with two such abilities limits each separately, and reset in
-  the controller's untap step.
+  the controller's untap step — and by any zone change, since the permanent
+  that comes back is a new object (rule 400.7).
+- `exhaust: true` — **Exhaust**, "activate each exhaust ability only once":
+  once for as long as the object exists, rather than once a turn (Loot, the
+  Pathfinder). Recorded on `GameObject.exhaustedAbilities`; a zone change
+  clears it.
 - `condition: StaticCondition` — "Activate only if …" (rule 602.5, Fanatic of
   Rhonas's Ferocious: "{T}: Add {G}{G}{G}{G}. Activate only if you control a
   creature with power 4 or greater"). Mirrors `StaticAbility`/
@@ -2183,8 +2198,9 @@ Delete an entry in the same commit as the feature that retires it.
   Dragonspeaker's ultimate: "At the beginning of your draw step, draw two
   additional cards") is therefore unauthorable. This is the common shape for
   planeswalker ultimates, so it's a real gap rather than a one-card one.
-- **A mana ability whose activation cost contains a *coloured* pip is still
-  unmodeled.** `manaSources()` now admits a "converter" — a mana ability whose
+- **The auto-payer never pays a mana ability whose activation cost contains a
+  *coloured* pip** (it's activated by hand instead — see §8). `manaSources()`
+  admits a "converter" — a mana ability whose
   own cost is purely **generic** and which produces more than it costs (the ten
   Signets via the `signet` helper, filter lands like Flooded Grove). The
   planner reaches for one only after the ordinary sources are spent, funds its
