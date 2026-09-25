@@ -250,6 +250,7 @@ import _poolDictateOfHeliod from "./pool/dictate-of-heliod.js";
 import _poolDictateOfTheTwinGods from "./pool/dictate-of-the-twin-gods.js";
 import _poolDimirAqueduct from "./pool/dimir-aqueduct.js";
 import _poolDimirSignet from "./pool/dimir-signet.js";
+import _poolDinaEssenceBrewer from "./pool/dina-essence-brewer.js";
 import _poolDinaSoulSteeper from "./pool/dina-soul-steeper.js";
 import _poolDiregrafCaptain from "./pool/diregraf-captain.js";
 import _poolDisaTheRestless from "./pool/disa-the-restless.js";
@@ -410,6 +411,7 @@ import _poolGolgariRotFarm from "./pool/golgari-rot-farm.js";
 import _poolGolgariSignet from "./pool/golgari-signet.js";
 import _poolGoreclawTerrorOfQalSisma from "./pool/goreclaw-terror-of-qal-sisma.js";
 import _poolGoroGoroAndSatoru from "./pool/goro-goro-and-satoru.js";
+import _poolGrandArbiterAugustinIv from "./pool/grand-arbiter-augustin-iv.js";
 import _poolGrapeshot from "./pool/grapeshot.js";
 import _poolGravePact from "./pool/grave-pact.js";
 import _poolGravespawnSovereign from "./pool/gravespawn-sovereign.js";
@@ -578,6 +580,7 @@ import _poolLoranOfTheThirdPath from "./pool/loran-of-the-third-path.js";
 import _poolLordOfExtinction from "./pool/lord-of-extinction.js";
 import _poolLordOfLineage from "./pool/lord-of-lineage.js";
 import _poolLordOfTheAccursed from "./pool/lord-of-the-accursed.js";
+import _poolLordOfTheNazgul from "./pool/lord-of-the-nazgul.js";
 import _poolLordWindgrace from "./pool/lord-windgrace.js";
 import _poolLothoCorruptShirriff from "./pool/lotho-corrupt-shirriff.js";
 import _poolLotlethGiant from "./pool/lotleth-giant.js";
@@ -1234,6 +1237,7 @@ import _tokensVampireToken from "./tokens/vampire-token.js";
 import _tokensWhiteDogToken11 from "./tokens/white-dog-token-1-1.js";
 import _tokensWizardTokenGuff from "./tokens/wizard-token-guff.js";
 import _tokensWizardTokenKuja from "./tokens/wizard-token-kuja.js";
+import _tokensWraithToken from "./tokens/wraith-token.js";
 import _tokensZombieDruidToken from "./tokens/zombie-druid-token.js";
 import _tokensZombieKnightToken from "./tokens/zombie-knight-token.js";
 import _tokensZombieToken from "./tokens/zombie-token.js";
@@ -1487,6 +1491,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolDictateOfTheTwinGods,
   _poolDimirAqueduct,
   _poolDimirSignet,
+  _poolDinaEssenceBrewer,
   _poolDinaSoulSteeper,
   _poolDiregrafCaptain,
   _poolDisaTheRestless,
@@ -1647,6 +1652,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolGolgariSignet,
   _poolGoreclawTerrorOfQalSisma,
   _poolGoroGoroAndSatoru,
+  _poolGrandArbiterAugustinIv,
   _poolGrapeshot,
   _poolGravePact,
   _poolGravespawnSovereign,
@@ -1815,6 +1821,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolLordOfExtinction,
   _poolLordOfLineage,
   _poolLordOfTheAccursed,
+  _poolLordOfTheNazgul,
   _poolLordWindgrace,
   _poolLothoCorruptShirriff,
   _poolLotlethGiant,
@@ -2477,6 +2484,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensWhiteDogToken11,
   _tokensWizardTokenGuff,
   _tokensWizardTokenKuja,
+  _tokensWraithToken,
   _tokensZombieDruidToken,
   _tokensZombieKnightToken,
   _tokensZombieToken,
