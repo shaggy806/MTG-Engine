@@ -67,7 +67,6 @@ import {
   computedCacheMemo,
   effectiveColors,
   objHasKeyword,
-  restrictionsOf,
   effectiveSubtypes,
   effectiveTypes,
   hasLostAbilities,
@@ -799,13 +798,6 @@ export class Game {
     return computeCharacteristics(this.state, this.registry, id);
   }
 
-  /** Combat restrictions on `id` from static abilities (Pacifism, Juggernaut).
-   * Delegates to `characteristics.ts`, which is where the combat predicates
-   * reach for it without a `Game`. */
-  private restrictionsOf(id: ObjectId): ReadonlySet<CombatRestriction> {
-    return restrictionsOf(this.state, this.registry, id);
-  }
-
   private objHasKeyword(id: ObjectId, keyword: Keyword): boolean {
     return objHasKeyword(this.state, this.registry, id, keyword);
   }
@@ -1332,10 +1324,14 @@ export class Game {
   }
 
   private controllerView(player: PlayerId): ControllerView {
+    // One question about one board: a controller and the decision's own
+    // `ask` both read the offer (attackers: the creatures that must attack),
+    // so it's worked out once. Nothing changes the state while it's asked.
+    let legal: readonly LegalAction[] | undefined;
     return {
       state: this.state,
       player,
-      legalActions: () => this.legalActions(player),
+      legalActions: () => (legal ??= this.legalActions(player)),
     };
   }
 
@@ -4071,40 +4067,11 @@ export class Game {
     player: PlayerId,
     declarations: readonly AttackerDeclaration[],
   ): void {
+    // A creature that must attack if able — "attacks each combat if able",
+    // goad, encore — is in the declaration, at a defender its controller
+    // chose: the validator refuses one that leaves it out (rule 508.1d).
     const why = this.whyCannotDeclareAttackers(player, declarations);
     if (why !== null) throw new Error(why);
-
-    // "Attacks each combat if able" (Juggernaut): auto-declare any must-attack
-    // creature the player left out but that could legally attack. It's sent at
-    // the first legal opponent (the player doesn't get to choose the target of
-    // a forced attacker here — a small simplification).
-    const declared = new Set(declarations.map((d) => d.attacker));
-    const forced: AttackerDeclaration[] = [];
-    for (const id of this.state.zones.shared.battlefield) {
-      const object = this.state.objects[id];
-      if (declared.has(id) || object.controller !== player) continue;
-      const goadedBy = object.goadedBy ?? [];
-      // Goad (701.38) and Encore's "attacks that opponent if able" are both
-      // attack *requirements*, so they force a declaration exactly the way
-      // `must-attack` does.
-      const required =
-        this.restrictionsOf(id).has("must-attack") ||
-        goadedBy.length > 0 ||
-        object.mustAttackPlayer !== undefined;
-      if (!required) continue;
-      const legal = this.legalDefenders(player).filter(
-        (d) => this.whyCannotAttack(player, id, d) === null,
-      );
-      // "…attacks that opponent if able" beats everything; otherwise a goaded
-      // creature must avoid its goaders if it can (701.38b).
-      const defender =
-        (object.mustAttackPlayer !== undefined
-          ? legal.find((d) => d === object.mustAttackPlayer)
-          : undefined) ??
-        legal.find((d) => !goadedBy.includes(this.defendingPlayerOf(d))) ??
-        legal[0];
-      if (defender !== undefined) forced.push({ attacker: id, defender });
-    }
 
     // The whole declaration is made before any of it is announced: it is one
     // action (rule 508.1), and abilities that trigger on it trigger once it's
@@ -4112,7 +4079,7 @@ export class Game {
     // attacking that player" sees every attacker, not just the ones declared
     // before its own.
     const declaredNow: { readonly id: ObjectId; readonly defender: PlayerId | ObjectId; readonly taps: boolean }[] = [];
-    for (const { attacker, defender } of [...declarations, ...forced]) {
+    for (const { attacker, defender } of declarations) {
       // A compacted stack materializes into real individual attackers here —
       // see `materializeStack`.
       for (const id of this.materializeStack(attacker)) {

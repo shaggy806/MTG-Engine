@@ -70,9 +70,13 @@ export function decisionFor(kind: DecisionKind): AnyDecisionModule {
  * Only `attackers` answers — see its module. Exists so a driver skipping a
  * seat's windows doesn't have to know which decisions are skippable.
  */
-export function autoAnswerFor(awaiting: AwaitingDecision, player: PlayerId): Action | null {
+export function autoAnswerFor(
+  awaiting: AwaitingDecision,
+  player: PlayerId,
+  legal: readonly LegalAction[],
+): Action | null {
   const { autoAnswer } = DECISIONS[awaiting.kind];
-  return autoAnswer === undefined ? null : autoAnswer(awaiting as never, player);
+  return autoAnswer === undefined ? null : autoAnswer(awaiting as never, player, legal);
 }
 
 /**

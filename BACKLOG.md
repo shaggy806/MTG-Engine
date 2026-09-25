@@ -140,8 +140,6 @@ that one card is the reason the deck exists.
     among them (Vren) stops applying partway.
   - A commander its owner sends to the command zone never dies, so its own dies trigger is lost
     (Child of Alara).
-  - A must-attack creature left out of a declaration is sent at the first legal defender, not
-    its controller's choice.
   - Performance: a per-creature enters trigger watching an opponent's token stack
     (Authority of the Consuls against Scute Swarm) puts hundreds of triggers on the stack.
 

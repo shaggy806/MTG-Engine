@@ -33,5 +33,6 @@ export * from "./cards/edhrec-rank.js";
 export * from "./cards/card-shards.js";
 export { CardRegistry } from "./cards/card-registry.js";
 export { PINNED_ART, TOKEN_NAMES } from "./cards/generated-index.js";
+export { attackingViolations } from "./combat/attacking.js";
 export { blockingViolations } from "./combat/blocking.js";
 export { damageAssignmentViolations, standardAssignment } from "./combat/damage.js";

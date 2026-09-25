@@ -645,6 +645,13 @@ export type LegalAction =
       readonly defendersFor: Readonly<
         Record<ObjectId, readonly (PlayerId | ObjectId)[]>
       >;
+      /**
+       * The eligible attackers that must attack if able (rule 508.1d —
+       * "attacks each combat if able", goad, encore). A declaration has to
+       * include every one of them, each at one of its `defendersFor`; which
+       * one is the player's choice. `combat/attacking.ts` checks it.
+       */
+      readonly mustAttack: readonly ObjectId[];
     }
   | {
       readonly kind: "declare-blockers";

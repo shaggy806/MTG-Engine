@@ -50,10 +50,13 @@ describe("goad", () => {
     game.debugApplyEffect(A, { kind: "goad", target: 0 }, [{ kind: "player", player: B }]);
 
     game.advanceUntil((s) => s.awaiting?.kind === "attackers" || s.result.over);
-    // B declares nothing; the goad forces the attack anyway.
-    game.dispatch({ type: "declare-attackers", player: B, attackers: [] });
+    // Declaring nothing leaves out a creature that must attack (rule 508.1d).
+    expect(() => game.dispatch({ type: "declare-attackers", player: B, attackers: [] })).toThrow(
+      /must attack if able/,
+    );
+    game.dispatch({ type: "declare-attackers", player: B, attackers: [{ attacker: theirs, defender: A }] });
 
-    expect(game.state.objects[theirs].attacking).not.toBeNull();
+    expect(game.state.objects[theirs].attacking).toBe(A);
   });
 
   it("lapses when the goader's next turn begins", () => {

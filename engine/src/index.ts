@@ -40,6 +40,8 @@ export type { DecisionKind } from "./decisions/contract.js";
  * `combat/` stays internal.
  */
 export { defendersForAttacker } from "./combat/eligibility.js";
+export { attackingViolations, withRequiredAttackers } from "./combat/attacking.js";
+export type { AttackOffer, AttackingViolation } from "./combat/attacking.js";
 export { blockingViolations } from "./combat/blocking.js";
 export type { BlockOffer, BlockingViolation } from "./combat/blocking.js";
 export { damageAssignmentViolations, standardAssignment } from "./combat/damage.js";

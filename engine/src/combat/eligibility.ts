@@ -434,6 +434,43 @@ export function defendersForAttacker(
   return legalDefenders(state, registry, player).filter(
     (defender) =>
       whyCannotAttack(state, registry, player, attacker, defender) === null &&
-      !goadForbidsDefender(state, registry, player, attacker, defender),
+      !goadForbidsDefender(state, registry, player, attacker, defender) &&
+      !mustAttackPlayerForbids(state, registry, player, attacker, defender),
+  );
+}
+
+/**
+ * Encore's "attacks that opponent this turn if able" (rule 702.141a,
+ * `GameObject.mustAttackPlayer`): while that player may be attacked, no one
+ * else may be — not even their planeswalker, which isn't the player.
+ */
+export function mustAttackPlayerForbids(
+  state: GameState,
+  registry: CardRegistry,
+  player: PlayerId,
+  attacker: ObjectId,
+  defender: PlayerId | ObjectId,
+): boolean {
+  const target = state.objects[attacker]?.mustAttackPlayer;
+  if (target === undefined || defender === target) return false;
+  return (
+    legalDefenders(state, registry, player).includes(target) &&
+    whyCannotAttack(state, registry, player, attacker, target) === null
+  );
+}
+
+/**
+ * Whether `attacker` must attack this combat if able (rule 508.1d): "attacks
+ * each combat if able", goad (rule 701.38a) or encore's "attacks that
+ * opponent if able". Whether it *is* able is whether it has a legal
+ * defender; the `declare-attackers` offer's `mustAttack` asks both.
+ */
+export function mustAttack(state: GameState, registry: CardRegistry, attacker: ObjectId): boolean {
+  const object = state.objects[attacker];
+  if (object === undefined) return false;
+  return (
+    (object.goadedBy ?? []).length > 0 ||
+    object.mustAttackPlayer !== undefined ||
+    restrictionsOf(state, registry, attacker).has("must-attack")
   );
 }

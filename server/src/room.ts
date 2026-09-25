@@ -745,7 +745,10 @@ export class Room {
       // Whether this seat's auto-pass is still running is room policy; what
       // a skippable decision's answer *is* belongs to the decision, so the
       // room asks rather than restating it. Only `attackers` answers.
-      const skip = wasActive && !justCleared ? autoAnswerFor(s.awaiting, seat.player) : null;
+      const skip =
+        wasActive && !justCleared
+          ? autoAnswerFor(s.awaiting, seat.player, this.game.legalActions(seat.player))
+          : null;
       if (skip !== null) {
         this.game.dispatch(skip);
         return true;

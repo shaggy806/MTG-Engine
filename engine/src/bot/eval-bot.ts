@@ -24,6 +24,7 @@
 
 import type { Action, AttackerDeclaration, BlockerDeclaration, LegalAction } from "../actions.js";
 import type { CardRegistry } from "../cards.js";
+import { withRequiredAttackers } from "../combat/attacking.js";
 import { createDefaultRegistry } from "../cards.js";
 import { HeuristicBotController } from "../controller.js";
 import type { ControllerView, PlayerController } from "../controller.js";
@@ -472,11 +473,14 @@ export class EvalBotController extends HeuristicBotController {
     const alpha = this.alphaStrike(state, legal, deadAnyway);
     if (alpha !== null) return alpha;
 
+    // A creature that must attack is in every declaration the engine takes,
+    // so a candidate is scored with it (at its first defender, where `ask`
+    // puts it) unless the candidate already sends it somewhere.
     const score = (attackers: readonly AttackerDeclaration[]): number | null => {
       const after = simulateCombat(state, this.cards, {
         type: "declare-attackers",
         player: me,
-        attackers,
+        attackers: withRequiredAttackers(attackers, legal),
       });
       if (after === null) return null;
       const value = evaluateState(after, this.cards, me, w);
@@ -654,7 +658,7 @@ export class EvalBotController extends HeuristicBotController {
       const after = simulateCombat(state, this.cards, {
         type: "declare-attackers",
         player: me,
-        attackers: declaration,
+        attackers: withRequiredAttackers(declaration, legal),
       });
       if (after !== null && !this.crackbackLethal(after)) return declaration;
     }

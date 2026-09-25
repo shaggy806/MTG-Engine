@@ -1764,7 +1764,10 @@ anthem, the keyword grant and the granted trigger like any other creature.
   object, the nested read uses its printed P/T rather than recursing.
 - `restrictions: [...]` — `"cant-attack" \| "cant-block" \| "must-attack" \|
   "must-be-blocked" \| "must-be-blocked-if-able" \| "cant-attack-owner"`
-  (Pacifism, Juggernaut, Lure). `"must-be-blocked"` is Lure's "all creatures
+  (Pacifism, Juggernaut, Lure). `"must-attack"` is "attacks each combat if
+  able": the attack declaration has to include the creature whenever it can
+  attack, at a defender its controller picks (rule 508.1d — the offer's
+  `mustAttack`, checked by `combat/attacking.ts`). `"must-be-blocked"` is Lure's "all creatures
   able to block it do so"; on an attacker with menace it forces blocks only in
   pairs, as many as can be made (rule 509.1c — `combat/blocking.ts`'s
   `lurePlan`). `"must-be-blocked-if-able"` asks only for **one** blocker (two

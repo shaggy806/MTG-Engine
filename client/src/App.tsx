@@ -15,6 +15,7 @@ import type {
   VisibleObject,
 } from 'engine/client'
 import {
+  attackingViolations,
   blockingViolations,
   damageAssignmentViolations,
   describeTargetSpec,
@@ -652,12 +653,20 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     | null
   >(null)
   const [selectedSource, setSelectedSource] = useState<ObjectId | null>(null)
-  // Attacker -> chosen defender. With more than one legal opponent, clicking
-  // an attacker assigns it to the first opponent by default and focuses it;
-  // clicking a different opponent's panel while focused redirects it.
+  // Attacker -> chosen defender. A creature that must attack (rule 508.1d)
+  // and has only one defender it may attack starts out assigned to it, as a
+  // click on it would; one with a choice waits for the player to make it.
   const [attackAssignments, setAttackAssignments] = useState<
     Record<string, PlayerId | ObjectId>
-  >({})
+  >(() => {
+    const offer = actions.find((a): a is AttackAction => a.kind === 'declare-attackers')
+    const start: Record<string, PlayerId | ObjectId> = {}
+    for (const id of offer?.mustAttack ?? []) {
+      const defenders = offer?.defendersFor[id] ?? []
+      if (defenders.length === 1) start[id] = defenders[0]
+    }
+    return start
+  })
   /**
    * Attackers picked but not yet pointed at anyone — the pending group.
    *
@@ -2687,6 +2696,16 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       attackPicks.length === 0
         ? []
         : (attackAction.defenders ?? []).filter((d) => canSendPicksAt(d))
+    // Creatures that must attack and aren't yet pointed at anyone — the
+    // engine's own check against this offer, so Confirm can't disagree with
+    // the validator.
+    const unmetMusts = attackingViolations(
+      Object.entries(attackAssignments).map(([attacker, defender]) => ({
+        attacker: attacker as ObjectId,
+        defender,
+      })),
+      attackAction,
+    ).map((v) => v.attacker)
     controls = (
       <div className="controls">
         <span>
@@ -2696,6 +2715,9 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
             ? groupTargets.length > 0
               ? ' · click who they attack'
               : ' · no one legal for all of them — narrow the selection'
+            : ''}
+          {unmetMusts.length > 0
+            ? ` · ${unmetMusts.map((id) => game.nameOf(id)).join(', ')} must attack`
             : ''}
         </span>
         {unpicked.length > 0 ? (
@@ -2711,7 +2733,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
             Clear
           </button>
         ) : null}
-        <button type="button" onClick={confirmAttackers}>
+        <button type="button" disabled={unmetMusts.length > 0} onClick={confirmAttackers}>
           {assignedCount === 0 ? 'No attacks' : `Attack with ${assignedCount}`}
         </button>
       </div>

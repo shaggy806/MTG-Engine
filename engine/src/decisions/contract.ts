@@ -280,9 +280,16 @@ export interface DecisionModule<K extends DecisionKind = DecisionKind> {
    * Only `attackers` has one: "declare no attackers" is the trivially safe
    * answer, and a seat that has opted out of its own priority windows should
    * not be stopped by the attack step. Every other kind either has no safe
-   * default or is a decision the player asked for.
+   * default or is a decision the player asked for. `legal` is what
+   * `legalActions` offers the player; `null` means this decision has no
+   * safe answer right now after all (a creature that must attack, with a
+   * choice of whom), so the player is asked.
    */
-  readonly autoAnswer?: (awaiting: AwaitingOf<K>, player: PlayerId) => Action;
+  readonly autoAnswer?: (
+    awaiting: AwaitingOf<K>,
+    player: PlayerId,
+    legal: readonly LegalAction[],
+  ) => Action | null;
 
   /**
    * Candidate answers for the searching bots, best-effort and capped.
