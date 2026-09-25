@@ -763,6 +763,7 @@ export function parseFace(face, ctx = {}) {
         rest = rest.slice(0, rest.indexOf(" Activate only "));
       }
       i = fillEffect(ability, rest, { tokenFor }, lines, i);
+      manaAbilityExtras(ability);
       out.activated.push(ability);
       continue;
     }
@@ -830,6 +831,20 @@ export function parseFace(face, ctx = {}) {
 
 /** Fill `ability.effect` / `targets` from its effect text; a "choose one —"
  * swallows the bullet lines after it. Returns the last line index used. */
+/**
+ * "{T}: Add {G}{G}. You gain 2 life." is one mana ability (rule 605.1a):
+ * whatever follows the mana rides on `add-mana`'s `also`, since a plain
+ * sequence with a non-mana step isn't a mana ability and would use the stack.
+ * Only an untargeted ability whose other steps make no mana.
+ */
+function manaAbilityExtras(ability) {
+  const e = ability.effect;
+  if (e?.kind !== "sequence" || e.effects[0]?.kind !== "add-mana" || ability.targets.length > 0) return;
+  const rest = e.effects.slice(1);
+  if (rest.length === 0 || rest.some((step) => step.kind === "add-mana")) return;
+  ability.effect = { ...e.effects[0], also: rest.length === 1 ? rest[0] : { kind: "sequence", effects: rest } };
+}
+
 function fillEffect(ability, text, ctx, lines, i) {
   const modalHead = /^Choose (one|two|one or both|one or more) —$/.exec(text.trim());
   if (modalHead) {

@@ -110,6 +110,21 @@ describe("costs and triggers", () => {
     expect(parseTypePhrase("artifact creature or enchantment")).toBeNull();
   });
 
+  it("what a mana ability does besides the mana rides on `also`", () => {
+    // The Great Henge: a sequence with a non-mana step isn't a mana ability
+    // (rule 605.1a), so the ability would have used the stack.
+    const parsed = parseFace(
+      { name: "Test Henge", type_line: "Artifact", oracle_text: "{T}: Add {G}{G}. You gain 2 life." },
+      { tokenFor: () => null },
+    );
+    expect(parsed.activated[0].effect).toEqual({
+      kind: "add-mana",
+      mana: "G",
+      amount: 2,
+      also: { kind: "gain-life", amount: 2 },
+    });
+  });
+
   it("a 'permanent card' is one that isn't an instant or sorcery", () => {
     // Revive the Shire's "target permanent card from your graveyard" was read
     // as any card at all. On the battlefield the word says nothing.
