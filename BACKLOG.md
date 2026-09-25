@@ -41,10 +41,10 @@ that one card is the reason the deck exists.
   items listed under each "still open". See `neededCards-features.md`, "Open: the card backlog".
 - **Cards the scaffolder finishes on its own.** Of the snapshot's 30,710 unimplemented
   Commander-legal cards, the parser reads every line of 4,241 (`npm run card:scaffold -w engine
-  -- --report --all`). Ranks 2001–4000 are reviewed and in the pool (147). Continue down the
-  ranks: `--auto-scan --ranks A-B` writes them to `review/`. Check each against its Oracle text
-  and rulings, and each token it makes against its token file, then move it into `pool/`.
-  Ornithopter and Zetalpa, Primal Dawn are still in `review/`, waiting for their batches below.
+  -- --report --all`). Ranks 2001–16000 are reviewed and in the pool (1,276 cards). Continue
+  down the ranks: `--auto-scan --ranks A-B` writes them to `review/`. Check each against its
+  Oracle text and rulings, and each token it makes against its token file, then move it into
+  `pool/`.
 - **More Oracle-parser templates.** `npm run card:scaffold -w engine -- --report` lists the
   unparsed lines that recur most across the backlog; the parser reads about 42% of the
   abilities it finds there. Add a template, then keep `npm run card:parse-check -w engine` at
