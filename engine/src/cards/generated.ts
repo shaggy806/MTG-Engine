@@ -1102,6 +1102,7 @@ import _poolWalkingBallista from "./pool/walking-ballista.js";
 import _poolWallOfWood from "./pool/wall-of-wood.js";
 import _poolWardenOfEvosIsle from "./pool/warden-of-evos-isle.js";
 import _poolWarrenSoultrader from "./pool/warren-soultrader.js";
+import _poolWastes from "./pool/wastes.js";
 import _poolWateryGrave from "./pool/watery-grave.js";
 import _poolWayfarersBauble from "./pool/wayfarers-bauble.js";
 import _poolWaytaTrainerProdigy from "./pool/wayta-trainer-prodigy.js";
@@ -2338,6 +2339,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolWallOfWood,
   _poolWardenOfEvosIsle,
   _poolWarrenSoultrader,
+  _poolWastes,
   _poolWateryGrave,
   _poolWayfarersBauble,
   _poolWaytaTrainerProdigy,
