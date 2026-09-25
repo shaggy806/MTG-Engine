@@ -83,7 +83,8 @@
   "static:max-hand-size",
   "keyword:melee",
   "effect:temporary-player-effect",
-  "effect:this-way-results"
+  "effect:this-way-results",
+  "static:grant-to-cards-outside-battlefield"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
@@ -779,7 +780,7 @@
   "keyword:evoke": {
    "size": "medium",
    "ui": false,
-   "description": "Evoke (rule 702.74): an alternative cost offered as a cast variant, plus the 'when it enters, if it was evoked, sacrifice it' trigger. Granting evoke to other spells is static:grant-to-cards-outside-battlefield."
+   "description": "Evoke (rule 702.74): an alternative cost offered as a cast variant, plus the 'when it enters, if it was evoked, sacrifice it' trigger. Includes a static granting evoke to other spells (the way grantsToGraveyard grants flashback)."
   },
   "keyword:exhaust": {
    "size": "small",
@@ -824,7 +825,7 @@
   "keyword:miracle": {
    "size": "medium",
    "ui": true,
-   "description": "Miracle (rule 702.94): track the first card each player draws each turn, offer to reveal it, and let its controller cast it for the miracle cost."
+   "description": "Miracle (rule 702.94): track the first card each player draws each turn, offer to reveal it, and let its controller cast it for the miracle cost. Includes a static granting it to matching cards (the way grantsToGraveyard grants flashback)."
   },
   "keyword:mobilize": {
    "size": "small",
@@ -839,7 +840,7 @@
   "keyword:ninjutsu": {
    "size": "medium",
    "ui": true,
-   "description": "Ninjutsu: an activated ability from hand once blockers are declared. Pay its cost and return an unblocked attacker you control, and the ninja enters tapped and attacking."
+   "description": "Ninjutsu: an activated ability from hand once blockers are declared. Pay its cost and return an unblocked attacker you control, and the ninja enters tapped and attacking. Includes a static granting it to matching cards (the way grantsToGraveyard grants flashback)."
   },
   "keyword:offspring": {
    "size": "medium",
@@ -859,7 +860,7 @@
   "keyword:warp": {
    "size": "medium",
    "ui": false,
-   "description": "Warp (rule 702.185): an alternative cost from hand. At the next end step the permanent is exiled, and its owner may cast it from exile later."
+   "description": "Warp (rule 702.185): an alternative cost from hand. At the next end step the permanent is exiled, and its owner may cast it from exile later. Includes a static granting it to matching cards (the way grantsToGraveyard grants flashback)."
   },
   "keyword:waterbend": {
    "size": "medium",
@@ -869,7 +870,7 @@
   "keyword:web-slinging": {
    "size": "medium",
    "ui": true,
-   "description": "Web-slinging: an alternative cost that pays mana and returns a tapped creature you control to hand, with a choice of which creature."
+   "description": "Web-slinging: an alternative cost that pays mana and returns a tapped creature you control to hand, with a choice of which creature. Includes a static granting it to matching cards (the way grantsToGraveyard grants flashback)."
   },
   "mechanic:clash": {
    "size": "medium",
@@ -1104,7 +1105,7 @@
   "static:grant-to-cards-outside-battlefield": {
    "size": "medium",
    "ui": false,
-   "description": "Statics that grant abilities to cards outside the battlefield: ninjutsu, miracle, warp, web-slinging or an alternative cost to matching cards in hand or spells you cast, and flashback or escape to matching cards in your graveyard."
+   "description": "Statics that grant abilities to cards outside the battlefield: flashback or escape to matching cards in your graveyard (grantsToGraveyard — Iroh, Grand Lotus; The Master of Keys) and an alternative cost to the spells you cast (alternativeCostForSpells — Jodah, Archmage Eternal). Granting a keyword the engine doesn't have yet (ninjutsu, miracle, warp, web-slinging, evoke) is part of that keyword's own feature."
   },
   "static:grant-types-to-others": {
    "size": "medium",

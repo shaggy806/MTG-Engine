@@ -1444,6 +1444,29 @@ anthem, the keyword grant and the granted trigger like any other creature.
     way would be put into your graveyard, exile it instead".
   - `payLife: N` — an extra cost on top of the spell's own ("by paying 3 life
     in addition to paying their other costs"); it also gates the offer.
+- `grantsToGraveyard: { filter, flashback?: { cost }, escape?: { cost,
+  exileCount } }` — cards in your graveyard matching `filter` **have**
+  flashback or escape (rule 604.1): Iroh, Grand Lotus's "during your turn,
+  each instant and sorcery card in your graveyard has flashback. The
+  flashback cost is equal to its mana cost" is `{ filter: { typesAnyOf:
+  ["instant", "sorcery"] }, flashback: { cost: "mana-cost" } }` with a
+  `your-turn` `condition`; The Master of Keys's "each enchantment card in
+  your graveyard has escape. The escape cost is equal to the card's mana cost
+  plus exile three other cards from your graveyard" is `{ filter: { type:
+  "enchantment" }, escape: { cost: "mana-cost", exileCount: 3 } }`. `cost`
+  is a mana string or `"mana-cost"` (the card's own — a card with none gets
+  nothing). Offered exactly like a printed flashback or escape (`via`), and a
+  card that has its own keeps it. The grant ends when this permanent leaves;
+  a spell already cast with it is still exiled as it leaves the stack.
+- `alternativeCostForSpells: { mana, filter? }` — an alternative cost (rule
+  118.9) for the spells you cast: Jodah, Archmage Eternal's "you may pay
+  {W}{U}{B}{R}{G} rather than pay the mana cost for spells you cast" is `{
+  mana: "{W}{U}{B}{R}{G}" }`. Offered as the `altCost` variant of any spell
+  cast for its mana cost — from hand, the command zone (commander tax still
+  applies), exile or a graveyard permission — but never of one cast for
+  another alternative cost (flashback, escape, foretell, disturb, a free
+  cast: rule 118.9a allows one). A card with its own alternative cost
+  (Sephara) offers that one instead. An X spell cast this way has X = 0.
 - `cantAttackController: true` — the affected creatures "can't attack you or
   planeswalkers you control", where "you" is *this permanent's* controller:
   the enchanted creature with `affects: { scope: "attached" }` (Vow of Duty),

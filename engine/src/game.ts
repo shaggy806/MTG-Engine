@@ -1136,11 +1136,12 @@ export class Game {
     for (const card of this.state.zones.perPlayer[player].graveyard) {
       const cardName = this.state.objects[card].cardName;
       const def = this.registry.get(cardName);
-      if (def.escape === null) continue;
+      const escape = this.escapeOf(card);
+      if (escape === null) continue;
       out.push(
         ...this.castSpellActions(player, card, cardName, def, {
           via: "escape",
-          costString: def.escape.cost,
+          costString: escape.cost,
         }),
       );
     }
@@ -1415,7 +1416,7 @@ export class Game {
     if (def.freeCastIf !== null || (via === undefined && this.freeFromHand(card))) {
       variants.push({ kicked: false, overload: false, free: true });
     }
-    if (def.alternativeCost !== null) {
+    if (this.alternativeCostOf(card, def, via, player) !== null) {
       variants.push({ kicked: false, overload: false, free: false, altCost: true });
     }
     // A choice of additional costs (rule 601.2b) multiplies through whatever
@@ -1504,7 +1505,17 @@ export class Game {
       let targetCount: TargetCountRange | undefined;
       let pricedAt = 0;
       let manaAffordable: boolean;
-      const variantCost = this.castCostString(card, via, face, kicked, overload, free, altCost === true, costOption);
+      const variantCost = this.castCostString(
+        card,
+        via,
+        face,
+        kicked,
+        overload,
+        free,
+        altCost === true,
+        costOption,
+        player,
+      );
       if (this.withFace(card, face ?? 0, () => this.costDependsOnTargets(player, card, def, variantCost))) {
         const bounds = this.withFace(card, face ?? 0, () =>
           this.targetCountBoundsFor(def, player, card, kicked, overload),
@@ -1542,8 +1553,9 @@ export class Game {
       ) {
         continue;
       }
-      const cost = altCost === true && def.alternativeCost !== null
-        ? def.alternativeCost.mana
+      const alternative = altCost === true ? this.alternativeCostOf(card, def, via, player) : null;
+      const cost = alternative !== null
+        ? alternative.mana
         : free
         ? "{0}"
         : overload && def.overload !== null
@@ -1583,13 +1595,18 @@ export class Game {
           : {}),
         // Escape (rule 702.139a): which other graveyard cards pay the exile
         // half of the cost is the caster's choice, made as costs are paid.
-        ...(via === "escape" && def.escape !== null
-          ? {
-              escapeExile: {
-                count: def.escape.exileCount,
-                choices: this.state.zones.perPlayer[player].graveyard.filter((id) => id !== card),
-              },
-            }
+        ...(via === "escape"
+          ? (() => {
+              const escape = this.escapeOf(card);
+              return escape === null
+                ? {}
+                : {
+                    escapeExile: {
+                      count: escape.exileCount,
+                      choices: this.state.zones.perPlayer[player].graveyard.filter((id) => id !== card),
+                    },
+                  };
+            })()
           : {}),
         ...(def.convoke
           ? (() => {
@@ -5550,12 +5567,18 @@ export class Game {
     free = false,
     altCost = false,
     costOption?: number,
+    /** Who is casting it — whose statics may offer an alternative cost
+     * (Jodah). Defaults to its owner. */
+    caster?: PlayerId,
   ): string | null {
     const def = this.faceDef(cardId, face);
-    // An alternative cost (Sephara) replaces the mana cost entirely, like
-    // overload and a free-cast permission — the creature-tapping half is
-    // paid separately in `castSpell`.
-    if (altCost && def.alternativeCost !== null) return def.alternativeCost.mana;
+    // An alternative cost (Sephara, Jodah) replaces the mana cost entirely,
+    // like overload and a free-cast permission — the creature-tapping half
+    // is paid separately in `castSpell`.
+    if (altCost) {
+      const alternative = this.alternativeCostOf(cardId, def, via, caster ?? this.state.objects[cardId]?.owner);
+      if (alternative !== null) return alternative.mana;
+    }
     // A conditional free-cast permission (Fierce Guardianship) also replaces
     // the mana cost entirely, same as overload.
     if (free && (def.freeCastIf !== null || (via === undefined && this.freeFromHand(cardId)))) return "{0}";
@@ -5566,7 +5589,7 @@ export class Game {
       via === "flashback"
         ? this.flashbackCostOf(cardId)
         : via === "escape"
-          ? (def.escape?.cost ?? null)
+          ? (this.escapeOf(cardId)?.cost ?? null)
           : via === "foretell"
             ? (def.foretell?.cost ?? null)
             : // Disturb (rule 702.150) — the disturb cost is on the front face.
@@ -5685,16 +5708,17 @@ export class Game {
         return `${player} cannot pay ${life} life for ${def.name}'s flashback`;
       }
     } else if (via === "escape") {
-      if (def.escape === null) return `${def.name} does not have escape`;
+      const escape = this.escapeOf(cardId);
+      if (escape === null) return `${def.name} does not have escape`;
       if (!this.state.zones.perPlayer[player].graveyard.includes(cardId)) {
         return `${def.name} is not in ${player}'s graveyard`;
       }
       const others = this.state.zones.perPlayer[player].graveyard.filter((id) => id !== cardId);
-      if (others.length < def.escape.exileCount) {
-        return `${def.name}'s escape needs ${def.escape.exileCount} other cards in the graveyard`;
+      if (others.length < escape.exileCount) {
+        return `${def.name}'s escape needs ${escape.exileCount} other cards in the graveyard`;
       }
       if (escapeExile !== undefined) {
-        const wrong = this.whyEscapeExileIsWrong(player, cardId, def.name, def.escape.exileCount, escapeExile);
+        const wrong = this.whyEscapeExileIsWrong(player, cardId, def.name, escape.exileCount, escapeExile);
         if (wrong !== null) return wrong;
       }
     } else if (via === "foretell") {
@@ -5737,9 +5761,10 @@ export class Game {
       return `${player} does not have that card in hand`;
     }
     if (altCost) {
-      const alt = def.alternativeCost;
+      const alt = this.alternativeCostOf(cardId, def, via, player);
       if (alt === null) return `${def.name} has no alternative cost`;
       if (
+        alt.tapCreatures !== undefined &&
         this.tapCapacity(
           this.tapOthersCandidates(player, cardId, { ...alt.tapCreatures, includeSelf: false }),
         ) < alt.tapCreatures.count
@@ -5849,7 +5874,7 @@ export class Game {
         cardId,
         def,
         Math.max(0, Math.floor(xValue)),
-        this.castCostString(cardId, via, face, kicked, overload, free, altCost),
+        this.castCostString(cardId, via, face, kicked, overload, free, altCost, undefined, player),
         targetCount,
       ),
     );
@@ -5864,12 +5889,13 @@ export class Game {
     }
     const cost = convoked.length > 0 ? this.reduceCostByConvoke(baseCost, convoked) : baseCost;
     const purpose: ManaPurpose = { kind: "cast", card: cardId };
-    if (altCost && def.alternativeCost !== null) {
+    const alternativeTaps = altCost ? this.alternativeCostOf(cardId, def, via, player)?.tapCreatures : undefined;
+    if (alternativeTaps !== undefined) {
       // The tap half is checked against the same mana — see `tapCostOffer`.
       const offer = this.tapCostOffer(
         player,
         cardId,
-        { ...def.alternativeCost.tapCreatures, includeSelf: false },
+        { ...alternativeTaps, includeSelf: false },
         cost,
         undefined,
         undefined,
@@ -6033,6 +6059,10 @@ export class Game {
     // the chosen face for the rest of this method and while on the stack.
     if (object.faces !== undefined) object.face = face;
     const def = this.registry.get(printedCardName(object));
+    // Read while the card is still where it's cast from: a granted escape or
+    // alternative cost belongs to it there.
+    const escape = via === "escape" ? this.escapeOf(cardId) : null;
+    const alternativeTaps = altCost ? this.alternativeCostOf(cardId, def, via, player)?.tapCreatures : undefined;
     const costString = this.castCostString(
       cardId,
       via,
@@ -6042,6 +6072,7 @@ export class Game {
       free,
       altCost,
       costOption,
+      player,
     );
     const hasX =
       parseManaCost(costString).x > 0 || def.additionalCost?.payLifeX === true;
@@ -6089,8 +6120,8 @@ export class Game {
     // tap for mana.
     let manaArrangement: ManaSourceArrangement | undefined =
       convoked.length > 0 ? { withheld: new Set(convoked.map((p) => p.creature)) } : undefined;
-    if (altCost && def.alternativeCost !== null) {
-      const spec = { ...def.alternativeCost.tapCreatures, includeSelf: false };
+    if (alternativeTaps !== undefined) {
+      const spec = { ...alternativeTaps, includeSelf: false };
       const offer = this.tapCostOffer(player, cardId, spec, cost, undefined, undefined, {
         kind: "cast",
         card: cardId,
@@ -6126,9 +6157,9 @@ export class Game {
     // Escape (rule 702.139a): exile N other cards from the graveyard as part
     // of the cost — the ones the caster chose (validated above), or for a
     // driver that doesn't choose, the front (oldest) of the graveyard.
-    if (via === "escape" && def.escape !== null) {
+    if (escape !== null) {
       const others = this.state.zones.perPlayer[player].graveyard.filter((id) => id !== cardId);
-      const exiled = escapeExile !== undefined ? [...escapeExile] : others.slice(0, def.escape.exileCount);
+      const exiled = escapeExile !== undefined ? [...escapeExile] : others.slice(0, escape.exileCount);
       // One cost, paid at once — and a separate move from the card's own to
       // the stack below (rules 601.2a / 601.2h), so each is its own
       // "cards leave your graveyard" event.
@@ -11619,20 +11650,21 @@ export class Game {
     face: number,
   ): TapCostOffer | null {
     const def = this.faceDef(cardId, face);
-    if (def.alternativeCost === null) return null;
+    const taps = this.alternativeCostOf(cardId, def, via, player)?.tapCreatures;
+    if (taps === undefined) return null;
     const cost = this.withFace(cardId, face, () =>
       this.castingCostOf(
         player,
         cardId,
         def,
         0,
-        this.castCostString(cardId, via, face, false, false, false, true),
+        this.castCostString(cardId, via, face, false, false, false, true, undefined, player),
       ),
     );
     return this.tapCostOffer(
       player,
       cardId,
-      { ...def.alternativeCost.tapCreatures, includeSelf: false },
+      { ...taps, includeSelf: false },
       cost,
       undefined,
       undefined,
@@ -13878,7 +13910,97 @@ export class Game {
     if (object === undefined) return null;
     const printed = this.registry.get(object.cardName).flashback?.cost;
     if (printed !== undefined) return printed;
-    return object.grantedFlashback?.cost ?? null;
+    return object.grantedFlashback?.cost ?? this.graveyardGrantOf(cardId, "flashback")?.cost ?? null;
+  }
+
+  /** The escape `cardId` has: its printed one, else one a `grantsToGraveyard`
+   * static grants it (The Master of Keys), or `null`. */
+  private escapeOf(cardId: ObjectId): CardDefinition["escape"] {
+    const object = this.state.objects[cardId];
+    if (object === undefined) return null;
+    const printed = this.registry.get(object.cardName).escape;
+    if (printed !== null) return printed;
+    const granted = this.graveyardGrantOf(cardId, "escape");
+    return granted === null ? null : { cost: granted.cost, exileCount: granted.exileCount ?? 0 };
+  }
+
+  /** The active statics of the permanents `controller` controls that `pick`
+   * selects, with their sources — none once they have left the game, and
+   * none of a permanent that has lost its abilities. */
+  private activeStaticsOf(
+    controller: PlayerId,
+    pick: (ability: StaticAbility) => boolean,
+  ): { readonly source: GameObject; readonly ability: StaticAbility }[] {
+    const out: { source: GameObject; ability: StaticAbility }[] = [];
+    if (this.state.players[controller]?.hasLost !== false) return out;
+    for (const id of this.state.zones.shared.battlefield) {
+      const source = this.state.objects[id];
+      if (source === undefined || source.controller !== controller || hasLostAbilities(source)) continue;
+      for (const ability of this.registry.get(printedCardName(source)).static) {
+        if (pick(ability) && this.staticActive(source, ability)) out.push({ source, ability });
+      }
+    }
+    return out;
+  }
+
+  /** Flashback or escape a `grantsToGraveyard` static of a permanent its
+   * owner controls gives `cardId` in that owner's graveyard — the first
+   * that applies — with its cost worked out; `null` when none does. */
+  private graveyardGrantOf(
+    cardId: ObjectId,
+    keyword: "flashback" | "escape",
+  ): { readonly cost: string; readonly exileCount?: number } | null {
+    const card = this.state.objects[cardId];
+    if (card === undefined || card.zone !== "graveyard") return null;
+    for (const { ability } of this.activeStaticsOf(
+      card.owner,
+      (a) => a.grantsToGraveyard?.[keyword] !== undefined,
+    )) {
+      const grant = ability.grantsToGraveyard!;
+      if (!matchesFilter(this.state, this.registry, cardId, grant.filter, { you: card.owner })) continue;
+      const spec = grant[keyword]!;
+      const cost = spec.cost === "mana-cost" ? this.registry.get(card.cardName).manaCost : spec.cost;
+      if (cost === null) continue;
+      return grant.escape !== undefined && keyword === "escape"
+        ? { cost, exileCount: grant.escape.exileCount }
+        : { cost };
+    }
+    return null;
+  }
+
+  /**
+   * The alternative cost (rule 118.9) `caster` may cast `cardId` for: the
+   * card's own (Sephara, Sky's Blade), or — for a spell cast for its mana
+   * cost rather than already for another alternative cost — one an
+   * `alternativeCostForSpells` static of a permanent the caster controls
+   * offers the spells they cast (Jodah, Archmage Eternal). `null` when none.
+   */
+  private alternativeCostOf(
+    cardId: ObjectId,
+    def: CardDefinition,
+    via: CastVia | undefined,
+    caster: PlayerId | undefined,
+  ): {
+    readonly mana: string;
+    readonly tapCreatures?: { readonly count: number; readonly filter: CardFilter };
+  } | null {
+    if (def.alternativeCost !== null) return def.alternativeCost;
+    // Flashback, escape, foretell, disturb, a suspend or cascade cast are
+    // alternative costs (or no cost) already: only one applies (118.9a).
+    if (via !== undefined && via !== "impulse" && via !== "graveyard-permission" && via !== "adventure") {
+      return null;
+    }
+    if (caster === undefined) return null;
+    for (const { ability } of this.activeStaticsOf(caster, (a) => a.alternativeCostForSpells !== undefined)) {
+      const grant = ability.alternativeCostForSpells!;
+      if (
+        grant.filter === undefined ||
+        matchesFilter(this.state, this.registry, cardId, grant.filter, { you: caster })
+      ) {
+        return { mana: grant.mana };
+      }
+    }
+    return null;
   }
 
   /** Recompute every battlefield permanent's controller from its layer-2

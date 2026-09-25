@@ -837,6 +837,34 @@ export interface StaticAbility {
     readonly exileAfterwards?: boolean;
     readonly payLife?: number;
   };
+  /**
+   * Keywords this permanent gives cards in its controller's **graveyard**
+   * (rule 604.1 — a static ability reaches another zone when its text says
+   * so): "each instant and sorcery card in your graveyard has flashback. The
+   * flashback cost is equal to its mana cost" (Iroh, Grand Lotus, whose
+   * "during your turn" is a `your-turn` `condition`), "each enchantment card
+   * in your graveyard has escape. The escape cost is equal to the card's
+   * mana cost plus exile three other cards from your graveyard" (The Master
+   * of Keys). A `cost` of `"mana-cost"` is the card's own mana cost, so a
+   * card with none gets nothing; a card with a printed flashback or escape
+   * keeps its own. The grant ends the moment this permanent leaves, but a
+   * spell already cast with it is still exiled as it leaves the stack.
+   */
+  readonly grantsToGraveyard?: {
+    readonly filter: CardFilter;
+    readonly flashback?: { readonly cost: string | "mana-cost" };
+    readonly escape?: { readonly cost: string | "mana-cost"; readonly exileCount: number };
+  };
+  /**
+   * An alternative cost (rule 118.9) for the spells this permanent's
+   * controller casts — Jodah, Archmage Eternal's "you may pay
+   * {W}{U}{B}{R}{G} rather than pay the mana cost for spells you cast",
+   * narrowed by `filter` when given. Offered as the `altCost` cast variant
+   * of any spell cast for its mana cost (not one already cast for another
+   * alternative cost — flashback, escape, foretell, a free cast); a card
+   * with an alternative cost of its own (Sephara) offers that one instead.
+   */
+  readonly alternativeCostForSpells?: { readonly mana: string; readonly filter?: CardFilter };
   /** "You have no maximum hand size" (Thought Vessel, Reliquary Tower). A
    * property of the *controller*, not of anything this ability `affects`, so
    * it's read straight off the battlefield at cleanup rather than through the
