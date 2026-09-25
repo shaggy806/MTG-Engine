@@ -6,7 +6,7 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**249 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**256 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
@@ -39,16 +39,15 @@ that one card is the reason the deck exists.
   "defending player" scope. Tier 3 is Station, Discover, Evoke and Reconfigure. Also open:
   damage doubling as a replacement, the rest of the Overload/free-cast/convoke families, and the
   items listed under each "still open". See `neededCards-features.md`, "Open: the card backlog".
-- **Cards the scaffolder finishes on its own.** Of the snapshot's 30,710 unimplemented
-  Commander-legal cards, the parser reads every line of 4,241 (`npm run card:scaffold -w engine
-  -- --report --all`). Every ranked card from 2001 down is reviewed and in the pool (4,060 cards). Continue
-  down the ranks: `--auto-scan --ranks A-B` writes them to `review/`. Check each against its
-  Oracle text and rulings, and each token it makes against its token file, then move it into
-  `pool/`.
-- **More Oracle-parser templates.** `npm run card:scaffold -w engine -- --report` lists the
-  unparsed lines that recur most across the backlog; the parser reads about 42% of the
-  abilities it finds there. Add a template, then keep `npm run card:parse-check -w engine` at
-  zero disagreements.
+- **More Oracle-parser templates.** Every card the parser reads whole is in the pool: 4,205 of
+  them, each reviewed against its Oracle text, rulings and tokens (card sweep 3, 2026-09-25).
+  `npm run card:scaffold -w engine -- --report --all` now finds none left: 26,469
+  Commander-legal cards remain, each with a line the parser can't read. It reads the cost or
+  trigger of 16,853 of their abilities and the effect of 22% of those. The unread lines that
+  recur most are the next templates: an ability's "Choose one —" (266), Crew (180),
+  "Regenerate ~" (151), "You may pay {…}" (142), "Transform ~" (138). Add one, keep
+  `npm run card:parse-check -w engine` at zero disagreements, then `--auto-scan --all` writes
+  what it unlocks to `review/` for checking.
 - **Rydia, Summoner of Mist is missing its Summon ability** ("{X}, {T}: Return target Saga card
   with mana value X from your graveyard to the battlefield with a finality counter on it. It
   gains haste until end of turn."). Both reasons its file gives for dropping it are gone now
@@ -63,8 +62,8 @@ that one card is the reason the deck exists.
     `effect:may-sacrifice-then` (12), `effect:cast-during-resolution` and
     `condition:filter-card-property-clauses` (11 each), `effect:attach-extensions`,
     `effect:add-mana-extensions` and `bug:as-enters-choices-any-entry` (10 each).
-  - The rest of the backlog is untriaged: 62 commanders and 1,144 cards, the lists' unmarked
-    entries past those batches.
+  - The rest of the backlog is untriaged: 62 commanders and 1,006 cards, the lists' unmarked
+    entries past those batches. The scaffolder can't finish any of them on its own.
 - **The limitation ledger.** Protection from a filter (19 cards) is the largest remaining gap.
   Then regeneration, the "put into a graveyard from anywhere" trigger, "as this enters" on a
   non-cast permanent, and discard as an ability cost. See `neededCards-features.md`, "The
@@ -85,6 +84,15 @@ that one card is the reason the deck exists.
   ROADMAP's Phase 10 deferred these as large or niche. None of them blocks ordinary Commander
   play. The alt-cast long tail left by Phase 6 (retrace, Warp, Bestow, Prototype, …) is in
   AUTHORING §15 and the limitation ledger.
+- **Labelled abilities the engine can't run.** Card sweep 3 found these dash labels, each of
+  which changes how its line works. The scaffolder leaves them to author:
+  - Power-up (37 cards): once only, and cheaper by the card's mana cost the turn it entered.
+    It is small: a flag beside `exhaust` plus that cost reduction.
+  - Max speed (34): needs `mechanic:speed`.
+  - A Case's To solve and Solved (13 each).
+  - Forecast (11).
+  - Companion (10).
+  Exhaust and Boast are read, as the ability flags the engine already has.
 - **Replacement ordering.** There is no `choose-replacement-order` (rule 616.1) and no damage
   redirection to a third object. When a commander with a finality counter dies, it is exiled
   first and then its owner gets the 903.9a choice; that result is sane, but nobody chose the order.
@@ -178,3 +186,8 @@ that one card is the reason the deck exists.
 - **Refresh the snapshots.** The EDHREC ranking snapshots (`top-commander-cards.txt`,
   `top-commanders.txt`) and `edhrec-rank.ts` are frozen. Re-fetching them moves the roster, so
   do it on purpose.
+- **CI's fuzzer reaches three quarters of the pool.** CI's 38 fixed seeds put 3,904 of the
+  5,369 deckable cards in some deck. The other quarter is never fuzzed in CI, only locally,
+  where 150 two-player seeds reach all but 46. Either raise CI's game counts (about 60
+  two-player seeds for 87%, roughly double the fuzz time), or start each run at a different
+  seed so that successive runs sweep the whole pool.

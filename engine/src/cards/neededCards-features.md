@@ -23,7 +23,7 @@ before authoring any card; this file is a priority list, not a how-to.
 
 ## The commander gap — the current authoring priority
 
-**103 of the 500 most-played commanders are implemented** (12 on 2026-09-21).
+**256 of the 500 most-played commanders are implemented** (2026-09-25).
 Almost any real decklist someone imports still has its commander substituted,
 which replaces the one card the deck is built around. `BACKLOG.md` carries
 the current top of the build order; `cmdrs:gaps` has the live numbers.
