@@ -21,8 +21,11 @@ stretch to author something the engine can't really do.
 3. Your batch's card names are in `sweep2/batches.json` on this data branch. Read it without
    merging:
    `git fetch origin claude/sweep2-input && git show FETCH_HEAD:sweep2/batches.json > /tmp/batches.json`
-4. Branch **`claude/sweep2-<batch>`** (e.g. `claude/sweep2-K3`) from the current
-   `origin/main`, **not** from the data branch. Push to it as you go. Never push to `main`.
+4. **`git fetch origin main` first.** The sandbox's copy of `origin/main` can be a day
+   stale, without the scaffolder or hundreds of recent cards. Then branch
+   **`claude/sweep2-<batch>`** (e.g. `claude/sweep2-K3`) from that fresh `origin/main`,
+   **not** from the data branch. If `engine/scripts/card-scaffold.mjs` doesn't exist, you're
+   on a stale base: fetch again. Push to your branch as you go. Never push to `main`.
 
 ## The tools
 
