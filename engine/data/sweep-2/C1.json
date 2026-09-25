@@ -1,6 +1,6 @@
 {
   "batch": "C1",
-  "status": "in-progress",
+  "status": "complete",
   "authored": [
     {
       "name": "Lathril, Blade of the Elves",
@@ -28,13 +28,6 @@
       "files": [
         "engine/src/cards/pool/atla-palani-nest-tender.ts",
         "engine/src/cards/tokens/egg-token.ts"
-      ],
-      "tested": true
-    },
-    {
-      "name": "Jin Sakai, Ghost of Tsushima",
-      "files": [
-        "engine/src/cards/pool/jin-sakai-ghost-of-tsushima.ts"
       ],
       "tested": true
     }
@@ -491,9 +484,17 @@
     {
       "name": "Galadriel, Light of Valinor",
       "needs": [
-        "decision:library-ordering"
+        "decision:library-ordering",
+        "effect:modal-ability-targeted-modes"
       ],
-      "why": "The third mode's 'Scry 2' can't order the kept cards (AUTHORING §15); the not-chosen-this-turn modal itself is built."
+      "why": "The third mode's 'Scry 2' can't order the kept cards (AUTHORING §15); the not-chosen-this-turn modal itself is built. Its modes are also chosen at resolution rather than as the trigger goes on the stack."
+    },
+    {
+      "name": "Jin Sakai, Ghost of Tsushima",
+      "needs": [
+        "effect:modal-ability-targeted-modes"
+      ],
+      "why": "The triggered 'choose one' (Standoff/Ghost) must be chosen as the trigger goes on the stack (rule 700.2b); the engine's modal effect asks at resolution, after responses such as a flashed-in blocker. Everything else is expressible."
     }
   ],
   "newFeatures": {},

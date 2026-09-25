@@ -503,7 +503,6 @@ import _poolJetMedallion from "./pool/jet-medallion.js";
 import _poolJetmirNexusOfRevels from "./pool/jetmir-nexus-of-revels.js";
 import _poolJetmirsGarden from "./pool/jetmirs-garden.js";
 import _poolJhoiraWeatherlightCaptain from "./pool/jhoira-weatherlight-captain.js";
-import _poolJinSakaiGhostOfTsushima from "./pool/jin-sakai-ghost-of-tsushima.js";
 import _poolJodahArchmageEternal from "./pool/jodah-archmage-eternal.js";
 import _poolJosuVessLichKnight from "./pool/josu-vess-lich-knight.js";
 import _poolJudithCarnageConnoisseur from "./pool/judith-carnage-connoisseur.js";
@@ -1746,7 +1745,6 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolJetmirNexusOfRevels,
   _poolJetmirsGarden,
   _poolJhoiraWeatherlightCaptain,
-  _poolJinSakaiGhostOfTsushima,
   _poolJodahArchmageEternal,
   _poolJosuVessLichKnight,
   _poolJudithCarnageConnoisseur,
