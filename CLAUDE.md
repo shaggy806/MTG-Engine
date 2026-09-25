@@ -31,7 +31,7 @@ others, and what each is for:
   engine features it needs (a per-card triage over one ~245-feature vocabulary), which
   `npm run cmdrs:gaps -w engine` ranks by commanders blocked and as a greedy engine-only build
   order. Add a feature's key to the JSON's `built` array when it lands. The card backlog is
-  `top-commander-cards.txt`/`top-commander-cards-flagged.txt` (the top 2000 Commander cards by
+  `top-commander-cards.txt` (the top 2000 Commander cards by
   EDHREC rank against the pool), re-marked in place by `npm run cards:mark -w engine`. The pool is
   ~5,400 real cards (`npm run card:verify -w engine` prints the current count of definitions,
   which is a little higher: each face of a double-faced card is its own).

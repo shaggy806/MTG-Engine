@@ -8,9 +8,8 @@ cards each would unblock, from two measured populations:
    per-commander triage `top-commanders-gaps.json`, ranked by
    `npm run cmdrs:gaps -w engine`.
 2. **The card backlog**: `top-commander-cards.txt` (the top 2000 Commander
-   cards by EDHREC rank, cross-referenced against `cards/pool/`) and
-   `top-commander-cards-flagged.txt` (a heuristic screen over it — see
-   `engine/scripts/top-commander-cards.mjs` and `flag-problematic-cards.mjs`).
+   cards by EDHREC rank, cross-referenced against `cards/pool/` — see
+   `engine/scripts/top-commander-cards.mjs`).
    **Refresh the `[x]` marks with `npm run cards:mark -w engine`** after
    authoring; that re-marks in place and leaves the ranking snapshot alone.
 
@@ -113,45 +112,27 @@ reviews carry a `note` there, and are listed in `BACKLOG.md`.
 
 ## Open: the card backlog
 
-Derived from `top-commander-cards-flagged.txt` (regenerate with `node
-scripts/top-commander-cards.mjs --count 2000 --cache-json <path>` then `node
-scripts/flag-problematic-cards.mjs <path>`). Tier 1 and the Tier 1b
-primitives are done (see the index at the end). Measure before picking the
-next one: `node scripts/top-commander-cards.mjs --count 2000 --out
-<throwaway> --cache-json <path>` gives current Oracle text for the whole list
-without touching the checked-in snapshot.
+Ranked from a keyword screen of the top 2000 taken on 2026-09-12. The screen
+itself is retired: the card sweeps' per-card triage replaced it ("Card sweep
+1" below, and `engine/data/sweep-2/`). Tier 1 and the Tier 1b primitives are
+done (see the index at the end). Measure before picking the next one: `node
+scripts/top-commander-cards.mjs --count 2000 --out <throwaway> --cache-json
+<path>` gives current Oracle text for the whole list without touching the
+checked-in snapshot.
 
 ### Tier 2 — solid value, smaller or more speculative
 
 - **Spree** (7 cards: Return the Favor, Three Steps Ahead, Great Train Heist) — a modal spell where each chosen mode carries its own *additional* cost, unlike `castModal`'s single shared cost. Extend `CardDefinition.castModal` with a per-mode `additionalCost?`.
 - **Class enchantments** (6 cards, `layout:class`: Wizard Class, Cleric Class, Druid Class) — a leveling permanent with rank-gated ability tiers, paid up incrementally. New card shape, closer to a Saga than anything else, but with a pay-to-advance cost per rank instead of a free per-turn chapter.
 - **Changeling** ("this card is every creature type," 6 cards: Realmwalker, Morophon, Mirror Entity) — a continuous "has all creature types" characteristic, checked by every `subtype`/`subtypes` `CardFilter` clause. Layer 4/6 addition to `characteristics.ts`.
-- **Magecraft** (4 cards: Storm-Kiln Artist, Archmage Emeritus, Veyran) — a `cast-spell` trigger narrowed to instant-or-sorcery *and* firing again on a copy, not just a cast. `TriggeredAbility.trigger.cast-spell` needs an `instantOrSorceryOnly?` flag and a `copy-spell` hookup.
-- **"Defending player" scope** (unblocks Annihilator's real gap, 4 cards: Kozilek, Ulamog, Artisan of Kozilek) — `PlayerScope` only has `each-player`/`each-opponent`/`you`; an `attacks` trigger's payload needs to target *the specific player being attacked*, which matters once 3-4 player tables are in play (an `each-opponent` sacrifice would incorrectly hit every opponent, not just the one being attacked).
 
 ### Tier 3 — real but niche, or a big lift for a small current payoff
 
 - **Station** (7 cards, mostly newest-set/low-rank: Exploration Broodship, Evendo, Uthros) — a whole new subsystem (a permanent sub-type + counter-threshold-gated text tiers, keyed off what's tapped to fund it). Large build, currently low return — revisit once more Station cards enter the format.
 - **Discover** (4), **Evoke** (4), **Reconfigure** (3) — each a distinct, self-contained alt-cast/alt-ability shape; none shares much with the others or with Tier 1/2. Cherry-pick opportunistically.
 - **Phasing** (8 cards, headlined by **Teferi's Protection** at #109) — explicitly out of scope per this file's parent (CLAUDE.md's "Not modeled" list). High-profile but a genuinely large state-machine addition (a whole not-really-a-zone permanent status); revisit only as a deliberate scope change, not opportunistically.
-- **Dungeons/Initiative** (3), **Backgrounds** (3 — the pairing itself is now validated, `pairing: { kind: "choose-a-background" }`, but no Background card is authored yet), **Vehicles/crew** (2), **split/aftermath layout** (4), **Battle cards** (2) — each explicitly out of scope already; low card counts in the top 2000 confirm they're not worth a scope change yet.
-
-### False positives in the flagged screen — no engine work needed
-
-**Partner**, **Affinity**, and **Constellation**-style ability words were
-flagged only because Scryfall tags them as a named "keyword," not because the
-underlying mechanic is missing — Partner is a shipped Commander feature,
-Affinity is exactly `selfCostReduction.reduceGeneric: { countOf }` (P19), and
-Constellation is an ordinary filtered `enters-battlefield` trigger. Fixed in
-`flag-problematic-cards.mjs`'s allowlist so they no longer appear in
-`top-commander-cards-flagged.txt`. Expect more of these among the one-off
-"ability word" keywords still in the file's raw output (Alliance, Addendum,
-Raid, Spectacle, Morbid, Coven, Delirium, ...) — most describe a
-`StaticCondition`-gated trigger; a few (Delirium's 4+ card types, Coven's 3+
-distinct powers, Morbid/Raid/Spectacle's "did X happen this turn") need a new
-`StaticCondition` *kind* (cheap per-condition, no framework change), which
-is worth doing as a batch once a few concrete cards call for it rather than
-one at a time.
+- **Dungeons/Initiative** (3), **Vehicles/crew** (2), **split/aftermath layout** (4), **Battle cards** (2) — each explicitly out of scope already; low card counts in the top 2000 confirm they're not worth a scope change yet.
+- **Backgrounds** (3) are no longer blocked as a mechanic: the pairing is built (`pairing: { kind: "choose-a-background" }`) and one Background, Raised by Giants, is authored. What's left of the three comes down to each card's own text.
 
 ### Card sweep 1: the staples it skipped
 

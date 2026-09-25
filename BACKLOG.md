@@ -35,8 +35,8 @@ that one card is the reason the deck exists.
 
 ## Card backlog (top-2000 staples and the precons)
 
-- **EDH-popularity feature tiers.** Tier 2 is Spree, Class, Changeling, Magecraft and a
-  "defending player" scope. Tier 3 is Station, Discover, Evoke and Reconfigure. Also open:
+- **EDH-popularity feature tiers.** Tier 2 is Spree, Class and Changeling. Tier 3 is Station,
+  Discover, Evoke and Reconfigure. Also open:
   damage doubling as a replacement, the rest of the Overload/free-cast/convoke families, and the
   items listed under each "still open". See `neededCards-features.md`, "Open: the card backlog".
 - **More Oracle-parser templates.** Every card the parser reads whole is in the pool: 4,205 of
