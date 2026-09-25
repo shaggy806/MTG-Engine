@@ -6468,8 +6468,7 @@ export class Game {
       const object = this.state.objects[id];
       if (object.controller !== player) return false;
       // "Sacrifice **another** black creature" (Ayara) — `otherOnly` keeps the
-      // source out of its own sacrifice cost, the same way it keeps it out of
-      // its own target slots.
+      // source out of its own sacrifice cost. Its targets are left alone.
       if (ability.otherOnly === true && id === sourceId) return false;
       if (sac === "creature-you-control") {
         // What's a creature *now*: an animated land can be sacrificed, a
@@ -6870,12 +6869,11 @@ export class Game {
       const timing = this.whyNotSorcerySpeed(player, `activate ${def.name}'s ability`);
       if (timing !== null) return timing;
     }
-    const abilityOptions = ability.targets.map((spec) => {
-      const options = legalTargets(this.state, this.registry, spec, player, this.permanentSource(sourceId));
-      return ability.otherOnly
-        ? options.filter((ref) => ref.kind !== "object" || ref.object !== sourceId)
-        : options;
-    });
+    // `otherOnly` is about the sacrifice cost alone: "Sacrifice another
+    // creature: … target creature" may target its own source (Dina).
+    const abilityOptions = ability.targets.map((spec) =>
+      legalTargets(this.state, this.registry, spec, player, this.permanentSource(sourceId)),
+    );
     for (const [i, spec] of ability.targets.entries()) {
       if (isOptionalSpec(spec)) continue;
       if (abilityOptions[i].length === 0) {
