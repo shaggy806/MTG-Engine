@@ -613,7 +613,7 @@ function chooseReplacements(
   let identity: Set<Color> | null = commanders.length > 0 ? new Set() : null;
   for (const name of commanders) {
     const colors = registry.has(name)
-      ? [...colorIdentityOf(registry.get(name))]
+      ? [...colorIdentityOf(registry.get(name), registry)]
       : scryfallByName.get(name)?.colorIdentity;
     if (colors === undefined || identity === null) {
       identity = null;

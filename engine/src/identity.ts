@@ -25,9 +25,34 @@ function colorsInText(text: string, into: Set<Color>): void {
   }
 }
 
-/** The colour identity of `def` — a set of `Color`s (rule 903.4). */
-export function colorIdentityOf(def: CardDefinition): Set<Color> {
-  const identity = new Set<Color>(def.colors);
+/** Where the other faces of a multi-face card are found by name — a
+ * `CardRegistry` fits. */
+export interface FaceLookup {
+  has(name: string): boolean;
+  get(name: string): CardDefinition;
+}
+
+/**
+ * The colour identity of `def` — a set of `Color`s (rule 903.4). A card
+ * with several faces has every face's (rule 903.4d — a double-faced card's
+ * back face counts, and so does an adventurer's spell half, being part of
+ * the same card), read through `faces`; without a lookup only `def` itself
+ * is read, which is right for a single-faced card and nothing else.
+ */
+export function colorIdentityOf(def: CardDefinition, faces?: FaceLookup): Set<Color> {
+  const identity = new Set<Color>();
+  addIdentityOf(def, identity);
+  if (faces !== undefined && def.faces !== null) {
+    for (const name of def.faces) {
+      if (name !== def.name && faces.has(name)) addIdentityOf(faces.get(name), identity);
+    }
+  }
+  return identity;
+}
+
+/** One face's colours and mana symbols, into `identity`. */
+function addIdentityOf(def: CardDefinition, identity: Set<Color>): void {
+  for (const c of def.colors) identity.add(c);
   colorsInText(def.manaCost ?? "", identity);
   colorsInText(def.text, identity);
   for (const ability of def.activated) {
@@ -36,7 +61,6 @@ export function colorIdentityOf(def: CardDefinition): Set<Color> {
   }
   for (const ability of def.triggered) colorsInText(ability.text, identity);
   for (const ability of def.static) colorsInText(ability.text, identity);
-  return identity;
 }
 
 /** Sorted WUBRG string form ("", "WU", "WUBRG") — handy for display / compare. */

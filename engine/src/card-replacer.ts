@@ -25,6 +25,7 @@
 import { BUILTIN_CARDS, isDeckableCard } from "./cards.js";
 import type { CardDefinition, CardType } from "./cards/define.js";
 import { colorIdentityOf, withinIdentity } from "./identity.js";
+import type { FaceLookup } from "./identity.js";
 import { COLORS, manaValue, parseManaCost } from "./mana.js";
 import type { Color, ManaCost } from "./mana.js";
 
@@ -299,6 +300,13 @@ function confidenceOf(similarity: number, targetHasTags: boolean): ReplacementCo
   return "low";
 }
 
+/** The built-in cards by name, for a multi-face card's other faces. */
+const BUILTIN_BY_NAME = new Map(BUILTIN_CARDS.map((def) => [def.name, def]));
+const BUILTIN_FACES: FaceLookup = {
+  has: (name) => BUILTIN_BY_NAME.has(name),
+  get: (name) => BUILTIN_BY_NAME.get(name)!,
+};
+
 /**
  * The implemented cards most like `target`, best first — at most
  * `context.limit` (3) of them, and none at all when nothing is a sensible
@@ -337,7 +345,7 @@ export function suggestReplacements(
     if (!isDeckableCard(def) || def.supertypes.includes("basic")) continue;
     if (exclude.has(def.name) || def.name === target.name) continue;
     if (context.forCommander === true && !canBeCommander(def)) continue;
-    if (identity !== null && !withinIdentity(colorIdentityOf(def), identity)) continue;
+    if (identity !== null && !withinIdentity(colorIdentityOf(def, BUILTIN_FACES), identity)) continue;
 
     const defTypes = new Set<string>(def.types);
     // A land fills a land slot and nothing else does.

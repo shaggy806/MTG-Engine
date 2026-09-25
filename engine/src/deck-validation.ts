@@ -236,7 +236,7 @@ export function validateCommanderDeck(
       violations.push(`"${name}" can't be a commander (not a legendary creature)`);
     }
     // A pair's colour identity is the union of both (rule 903.4).
-    for (const c of colorIdentityOf(def)) commanderIdentity.add(c);
+    for (const c of colorIdentityOf(def, registry)) commanderIdentity.add(c);
   }
   // An unimplemented commander is already a violation above, and whether it
   // can pair is exactly what the registry can't say.
@@ -258,7 +258,7 @@ export function validateCommanderDeck(
     if (n > 1 && !BASIC_LANDS.has(name)) {
       violations.push(`${n}× "${name}" — singleton format allows only 1`);
     }
-    if (!withinIdentity(colorIdentityOf(registry.get(name)), commanderIdentity)) {
+    if (!withinIdentity(colorIdentityOf(registry.get(name), registry), commanderIdentity)) {
       violations.push(
         `"${name}" is outside the commander's colour identity (${identityString(commanderIdentity) || "colourless"})`,
       );
