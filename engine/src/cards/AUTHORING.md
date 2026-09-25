@@ -1163,6 +1163,22 @@ stack, and a driver sees `manaAbility: true` on the offer. The auto-payer only
 uses what it can pay by itself — `{T}`, a self-sacrifice, life, generic mana
 — so these are activated by hand, their mana floating for what comes next.
 
+**A mana ability that does more** (rule 605.1a again) puts the rest on
+`add-mana`'s `also`: Kibo, Uktabi Prince's Banana, "{T}, Sacrifice this
+artifact: Add {R} or {G}. You gain 2 life.", is `{ kind: "add-mana", mana: {
+oneOf: ["R", "G"] }, amount: 1, also: { kind: "gain-life", amount: 2 } }`.
+Applied right after the mana, off the stack, whether it's activated by hand or
+the auto-payer uses it to pay a cost.
+
+**Triggered mana abilities** (rule 605.1b) are the `tapped-for-mana` trigger
+(§9) with an `add-mana` effect: Crypt Ghast's "whenever you tap a Swamp for
+mana, add an additional {B}" is `trigger: { on: "tapped-for-mana", who:
+"you-control", filter: { subtype: "Swamp" } }`, `effect: { kind: "add-mana",
+mana: "B", amount: 1 }`; Roxanne, Starfall Savant's "…add one mana of any type
+that artifact token produced" is `mana: "produced"` (meaningless anywhere
+else). They never go on the stack: the extra mana is made with the rest, and
+the auto-payer counts it — a Swamp under Crypt Ghast is a `{B}{B}` source.
+
 - `sorcerySpeed: true` — the ability works only when you could cast a sorcery
   (Equip). An Equipment is `types: ["artifact"], subtypes: ["Equipment"]` with
   an `activated` ability `{ effect: { kind: "attach", target: 0 }, targets:
@@ -1252,6 +1268,7 @@ triggered: [
 | `enters-battlefield` | `who`, `filter?`, `otherOnly?` | a permanent enters |
 | `dies` | `who`, `filter?`, `otherOnly?` | a permanent → graveyard from the battlefield, **however it got there** (rule 700.4) — destroyed, sacrificed, the legend rule, a Saga completing. A commander redirected to the command zone by 903.9a doesn't die. |
 | `becomes-target` | `who`, `filter?`, `byOpponentOnly?`, `spellOnly?` | a permanent was chosen as a target of a spell or ability (rule 115.7 — Thunderbreak Regent); `spellOnly` narrows it to "becomes the target of a **spell**" (Gargos, Vicious Watcher; Tectonic Giant). Fires as the spell/ability goes on the stack, so it triggers even if that spell is countered or later fizzles, and once per targeted object — a spell naming the same creature in two slots triggers it once, one naming two of your creatures triggers a `you-control` watcher twice. The *player* who targeted it auto-fills the first target slot, the way `deals-combat-damage-to-player` fills it with the damaged player. |
+| `tapped-for-mana` | `who`, `filter?` | a permanent was tapped for mana (its mana ability with `{T}` in the cost). A **triggered mana ability** (rule 605.1b): never on the stack, its `add-mana` is made with the tapped permanent's mana and counted by the auto-payer — see "Triggered mana abilities" in §8. |
 | `becomes-tapped` | `who`, `filter?` | a permanent became tapped (rule 701.21a — City of Brass). Fires for every tapping: a mana ability, a cost that taps it, an opponent's tap effect. Not the same as `add-mana`'s `painToController`, which only charges the mana-ability path. |
 | `leaves-battlefield` | `who` | a permanent leaves for **any** zone |
 | `gains-life` / `loses-life` | `who`, `firstDuringTheirTurn?` (`loses-life` only) | a player's life changes (`who` = whose). `firstDuringTheirTurn` is "loses life **for the first time during each of their turns**" (Valgavoth, Harrower of Souls): only while that player is active, and only the loss that took their life lost this turn from zero — a loss earlier in the turn, even before this permanent arrived, uses it up. `{ triggerValue: true }` is how much ("loses that much life" — Sanguine Bond). Once per life-gain *event*, which is once per source (rule 119.9): lifelink damage one source deals to several things at once is **one** gain, so it triggers once; two lifelinkers dealing combat damage together are two (Oloro, Blech). |

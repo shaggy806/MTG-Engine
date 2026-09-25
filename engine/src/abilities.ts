@@ -469,6 +469,23 @@ export type TriggerSpec =
       readonly filter?: CardFilter;
     }
   | {
+      /**
+       * A permanent was tapped for mana — its mana ability with `{T}` in the
+       * cost resolved (Roxanne, Starfall Savant's "whenever you tap an
+       * artifact token for mana, add one mana of any type that artifact
+       * token produced"; Crypt Ghast's "whenever you tap a Swamp for mana,
+       * add an additional {B}"). A **triggered mana ability** (rule 605.1b):
+       * it never uses the stack, but is applied at once, as the mana is
+       * made — and the auto-payer counts it, so the extra mana pays too. Its
+       * effect is an `add-mana`, whose `mana: "produced"` is "one mana of any
+       * type that permanent produced". `who` is about the tapped permanent
+       * (`"you-control"`: "whenever you tap …").
+       */
+      readonly on: "tapped-for-mana";
+      readonly who: TriggerWho;
+      readonly filter?: CardFilter;
+    }
+  | {
       /** A Saga's chapter ability resolved — `finalOnly` is "whenever the
        * **final chapter ability** of a Saga you control resolves" (Tom
        * Bombadil, Narci, Fable Singer). `who` is about the Saga (`"self"`: a

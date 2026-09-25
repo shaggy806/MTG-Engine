@@ -7044,7 +7044,27 @@ export class Game {
                 }
               },
             };
+      const poolBefore = this.state.players[player].manaPool.length;
       if (ability.effect !== null) applyEffectSpec(ability.effect, context);
+      // Tapped for mana: triggered mana abilities (rule 605.1b) add theirs
+      // at once, "of any type that permanent produced" read off what it just
+      // made.
+      if (ability.cost.tap) {
+        const produced = this.state.players[player].manaPool
+          .slice(poolBefore)
+          .map((unit) => unit.type);
+        for (const extra of this.tappedForManaExtras(source)) {
+          if (extra.mana === "produced") {
+            if (produced.length > 0) this.addMana(player, produced[0], extra.amount);
+          } else if (extra.mana !== "chosen") {
+            this.addMana(
+              player,
+              typeof extra.mana === "object" ? { oneOf: this.manaOneOf(extra.mana, player) } : extra.mana,
+              extra.amount,
+            );
+          }
+        }
+      }
       this.emit({
         type: "ability-activated",
         source: sourceId,
@@ -7334,7 +7354,7 @@ export class Game {
           ability.effect.mana === "chosen"
             ? (MANA_TYPES.includes(chosen as ManaType) ? (chosen as ManaType) : null)
             : ability.effect.mana;
-        if (mana === null) return;
+        if (mana === null || mana === "produced") return;
         // A live amount (Marwyn's power, Kydele's cards drawn this turn) is
         // sized now, against the board as it stands — see `liveManaAmount`.
         // It is what the ability would make if activated this instant, and
@@ -7352,6 +7372,7 @@ export class Game {
           ...(tagOf === undefined ? {} : { tag: tagOf }),
           ...(ability.cost.tap ? {} : { untapped: true as const }),
           ...(ability.oncePerTurn === true ? { oncePerTurn: abilityIndex } : {}),
+          ...(ability.effect.also !== undefined ? { rider: ability.effect.also } : {}),
         };
         const oneOf = typeof mana === "object" ? this.manaOneOf(mana, player) : [];
         const candidates: ManaOption[] =
@@ -7392,7 +7413,15 @@ export class Game {
                     ...tag,
                   },
                 ];
-        for (const option of candidates) {
+        // Triggered mana abilities (rule 605.1b) — the extra mana tapping
+        // this permanent for mana makes — are part of what it's worth to a
+        // payment, and `useManaSource` makes them along with the rest.
+        const extras = ability.cost.tap ? this.tappedForManaExtras(object) : [];
+        const withExtras = extras.reduce(
+          (options, extra) => options.flatMap((option) => this.withManaExtra(option, extra, player)),
+          candidates,
+        );
+        for (const option of withExtras) {
           if (!options.some((o) => key(o) === key(option))) options.push(option);
         }
         if (ability.cost.sacrifice === "self") sacrificeSelf = true;
@@ -7555,6 +7584,81 @@ export class Game {
     if (step.pain > 0) {
       this.dealDamage(step.source, { kind: "player", player }, step.pain);
     }
+    // What else the mana ability does (`add-mana`'s `also`).
+    if (step.rider !== undefined) {
+      applyEffectSpec(step.rider, this.makeResolutionContext(step.source, player, []));
+    }
+  }
+
+  /**
+   * `option` with one triggered mana ability's extra mana on top — a fixed
+   * type, or "one mana of any type that permanent produced", once per type
+   * the option makes (an "any colour" unit could be any of them, so its
+   * units and the extra come out as one colour).
+   */
+  private withManaExtra(
+    option: ManaOption,
+    extra: { readonly mana: Extract<EffectSpec, { kind: "add-mana" }>["mana"]; readonly amount: number },
+    player: PlayerId,
+  ): ManaOption[] {
+    const plus = (type: ManaType, anyColor = option.anyColor): ManaOption => ({
+      ...option,
+      fixed: [...option.fixed, ...Array<ManaType>(extra.amount).fill(type)],
+      anyColor,
+    });
+    const mana = extra.mana;
+    if (mana === "chosen") return [option];
+    if (mana === "any-color") {
+      return option.anyColorOf === undefined
+        ? [{ ...option, anyColor: option.anyColor + extra.amount }]
+        : COLORS.map((c) => plus(c));
+    }
+    if (typeof mana === "object") return this.manaOneOf(mana, player).map((t) => plus(t));
+    if (mana !== "produced") return [plus(mana)];
+    const out = [...new Set(option.fixed)].map((t) => plus(t));
+    if (option.anyColor > 0) {
+      for (const c of option.anyColorOf ?? COLORS) {
+        const { anyColorOf: _restricted, ...rest } = option;
+        out.push({
+          ...rest,
+          fixed: [...option.fixed, ...Array<ManaType>(option.anyColor + extra.amount).fill(c)],
+          anyColor: 0,
+        });
+      }
+    }
+    return out;
+  }
+
+  /**
+   * The extra mana triggered mana abilities make as `tapped` is tapped for
+   * mana (rule 605.1b — a `tapped-for-mana` trigger): each matching one's
+   * `add-mana`, from the side of the permanent that has it. Read by the
+   * auto-payer's option list and by a mana ability activated by hand.
+   */
+  private tappedForManaExtras(
+    tapped: GameObject,
+  ): { readonly mana: Extract<EffectSpec, { kind: "add-mana" }>["mana"]; readonly amount: number }[] {
+    const out: { mana: Extract<EffectSpec, { kind: "add-mana" }>["mana"]; amount: number }[] = [];
+    for (const id of this.state.zones.shared.battlefield) {
+      const holder = this.state.objects[id];
+      if (holder === undefined || hasLostAbilities(holder)) continue;
+      if (this.state.players[holder.controller]?.hasLost === true) continue;
+      for (const ability of this.registry.get(printedCardName(holder)).triggered) {
+        const trigger = ability.trigger;
+        if (trigger.on !== "tapped-for-mana") continue;
+        const effect = ability.effect;
+        if (effect === null || effect.kind !== "add-mana" || typeof effect.amount !== "number") continue;
+        if (!this.matchesWho(trigger.who, tapped.id, holder)) continue;
+        if (
+          trigger.filter !== undefined &&
+          !matchesFilter(this.state, this.registry, tapped.id, trigger.filter, { you: holder.controller })
+        ) {
+          continue;
+        }
+        out.push({ mana: effect.mana, amount: effect.amount });
+      }
+    }
+    return out;
   }
 
   /** Take one specific unit of mana back out of `player`'s pool — the other
@@ -8240,7 +8344,7 @@ export class Game {
         if (effect === null || effect.kind !== "add-mana") continue;
         const m = effect.mana;
         if (m === "any-color") for (const c of COLORS) colors.add(c);
-        else if (typeof m === "string" && m !== "chosen" && m !== "C") colors.add(m);
+        else if (typeof m === "string" && m !== "chosen" && m !== "produced" && m !== "C") colors.add(m);
         else if (typeof m === "object" && "oneOf" in m) for (const c of m.oneOf) colors.add(c);
       }
     }
@@ -9332,6 +9436,10 @@ export class Game {
           !(spec.otherOnly === true && event.object === self.id) &&
           this.triggerFilterOk(spec.filter, event.object, self, true)
         );
+      case "tapped-for-mana":
+        // A triggered mana ability (rule 605.1b) resolves as the mana is
+        // made — see `tappedForManaExtras` — and is never put on the stack.
+        return false;
       case "chapter-resolves":
         return (
           event.type === "chapter-resolved" &&

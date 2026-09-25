@@ -561,6 +561,11 @@ export type EffectSpec =
         | ManaType
         | "any-color"
         | "chosen"
+        /** "One mana of any type that [permanent] produced" — only in a
+         * `tapped-for-mana` triggered mana ability, where it's what the
+         * permanent tapped for mana made (Roxanne, Starfall Savant; Mana
+         * Flare). Anywhere else it makes nothing. */
+        | "produced"
         | { readonly oneOf: readonly ManaType[] }
         /**
          * "…of any color that a land an opponent controls could produce"
@@ -606,6 +611,12 @@ export type EffectSpec =
       /** "This mana lasts until end of combat" — firebending's (the
        * `firebending` helper). */
       readonly untilEndOfCombat?: boolean;
+      /** What else the mana ability does, as part of it — Kibo, Uktabi
+       * Prince's Banana: "{T}, Sacrifice this artifact: Add {R} or {G}. **You
+       * gain 2 life.**" Applied right after the mana is added, and still
+       * without using the stack; the auto-payer applies it too when it uses
+       * the ability to pay a cost. */
+      readonly also?: EffectSpec;
     }
   | {
       readonly kind: "draw";
@@ -3045,6 +3056,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     }
     case "add-mana":
+      // What a permanent tapped for mana produced is known only to the
+      // triggered mana ability the engine applies there (`tapped-for-mana`).
+      if (spec.mana === "produced") return;
       ctx.addMana(
         ctx.controller,
         // "The chosen color" — resolved against the source permanent; falls
@@ -3060,6 +3074,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
           spec.painToController,
         );
       }
+      if (spec.also !== undefined) applyEffectSpec(spec.also, ctx);
       return;
     case "draw": {
       if (spec.target !== undefined) {

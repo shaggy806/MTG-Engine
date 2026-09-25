@@ -14,6 +14,7 @@
  */
 
 import type { ActivatedAbility } from "./abilities.js";
+import type { EffectSpec } from "./effects.js";
 import { COLORS, poolCounts, poolTotal } from "./mana.js";
 import type { Color, HybridOption, HybridPip, ManaCost, ManaType, ManaUnit } from "./mana.js";
 import type { ObjectId } from "./primitives.js";
@@ -77,6 +78,9 @@ export interface ManaOption {
   /** "Activate only once each turn" (rule 602.5g): the ability's index on its
    * permanent, recorded as used when the payment is carried out. */
   readonly oncePerTurn?: number;
+  /** What else the mana ability does — `add-mana`'s `also` — applied when
+   * the payment uses it. */
+  readonly rider?: EffectSpec;
 }
 
 /** Whether one of `o`'s flexible units can be `m`. */
@@ -134,6 +138,8 @@ export interface ManaPlanStep {
   readonly untapped?: true;
   /** See {@link ManaOption.oncePerTurn}. */
   readonly oncePerTurn?: number;
+  /** See {@link ManaOption.rider}. */
+  readonly rider?: EffectSpec;
 }
 
 /** A fully-worked-out way to pay a cost: which sources to tap ({@link
@@ -514,6 +520,7 @@ export function planManaPayment(
     readonly anyColorOf?: readonly ManaType[];
     readonly untapped?: true;
     readonly oncePerTurn?: number;
+    readonly rider?: EffectSpec;
   }
   // Colours this cost still wants, for `coverGenericFrom`'s preference.
   const wantedColors = new Set<ManaType>(
@@ -560,6 +567,7 @@ export function planManaPayment(
       ...(opt.anyColorOf !== undefined ? { anyColorOf: opt.anyColorOf } : {}),
       ...(opt.untapped !== undefined ? { untapped: opt.untapped } : {}),
       ...(opt.oncePerTurn !== undefined ? { oncePerTurn: opt.oncePerTurn } : {}),
+      ...(opt.rider !== undefined ? { rider: opt.rider } : {}),
     };
     tapped.push(t);
     return t;
@@ -696,6 +704,7 @@ export function planManaPayment(
     ...(t.tag !== undefined ? { tag: t.tag } : {}),
     ...(t.untapped !== undefined ? { untapped: t.untapped } : {}),
     ...(t.oncePerTurn !== undefined ? { oncePerTurn: t.oncePerTurn } : {}),
+    ...(t.rider !== undefined ? { rider: t.rider } : {}),
   }));
 }
 

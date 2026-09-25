@@ -1054,7 +1054,7 @@ export class HeuristicBotController extends AutomaticController {
       const mana = effect.mana;
       if (typeof mana === "string") {
         if (mana === "any-color") return ["W", "U", "B", "R", "G"];
-        if (mana !== "C" && mana !== "chosen") out.push(mana as Color);
+        if (mana !== "C" && mana !== "chosen" && mana !== "produced") out.push(mana as Color);
       } else if ("oneOf" in mana) {
         for (const m of mana.oneOf) if (m !== "C") out.push(m as Color);
       }

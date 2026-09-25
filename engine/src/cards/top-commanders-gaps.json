@@ -91,7 +91,8 @@
   "effect:reveal-until",
   "cost:mana-ability-complex-costs",
   "keyword:exhaust",
-  "zone:impulse-permission-options"
+  "zone:impulse-permission-options",
+  "effect:mana-ability-side-effects"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
