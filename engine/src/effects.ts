@@ -581,6 +581,12 @@ export type EffectSpec =
         | "produced"
         | { readonly oneOf: readonly ManaType[] }
         /**
+         * One of each listed type, all together, `amount` times over:
+         * "Add {W}{U}" (a Signet, a Karoo land) is `{ all: ["W", "U"] }` with
+         * `amount: 1`. Not a `oneOf` × 2, which could make {W}{W}.
+         */
+        | { readonly all: readonly ManaType[] }
+        /**
          * "…of any color that a land an opponent controls could produce"
          * (Exotic Orchard, Fellwar Stone). A `oneOf` whose list is read off
          * the board rather than printed, so it shrinks and grows with what
@@ -3160,7 +3166,10 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       // What a permanent tapped for mana produced is known only to the
       // triggered mana ability the engine applies there (`tapped-for-mana`).
       if (spec.mana === "produced") return;
-      ctx.addMana(
+      if (typeof spec.mana === "object" && "all" in spec.mana) {
+        const times = amountValue(spec.amount, ctx);
+        for (const type of spec.mana.all) ctx.addMana(ctx.controller, type, times, spec);
+      } else ctx.addMana(
         ctx.controller,
         // "The chosen color" — resolved against the source permanent; falls
         // back to the payer's choice if the label isn't a colour (it always

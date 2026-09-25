@@ -561,10 +561,15 @@ export function parseSentence(sentence, ctx) {
   // Mana.
   if ((m = /^add ((?:\{[WUBRGC]\})+)\.$/i.exec(s))) {
     const units = m[1].match(/[WUBRGC]/g);
-    const counts = {};
-    for (const u of units) counts[u] = (counts[u] ?? 0) + 1;
-    const adds = Object.entries(counts).map(([mana, n]) => ({ kind: "add-mana", mana, amount: n }));
-    return adds.length === 1 ? adds[0] : { kind: "sequence", effects: adds };
+    // One type is that type, N times; several are one of each ("Add {W}{U}"),
+    // N times over when each appears N times ("{W}{W}{U}{U}").
+    const types = [...new Set(units)];
+    if (types.length === 1) return { kind: "add-mana", mana: units[0], amount: units.length };
+    const each = units.length / types.length;
+    const even = types.every((t) => units.filter((u) => u === t).length === each);
+    return even
+      ? { kind: "add-mana", mana: { all: types }, amount: each }
+      : { kind: "add-mana", mana: { all: units }, amount: 1 };
   }
   // A choice of colour. In a mana ability the payment picks it; in an ability
   // that uses the stack (a trigger, a spell, a loyalty ability) nothing does,

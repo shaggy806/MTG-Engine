@@ -3,8 +3,7 @@ import { defineCard } from "../define.js";
 // #180 in top-commanders.txt.
 //
 // The mana ability's cost is counters, which the auto-payer doesn't remove
-// by itself, so it's activated by hand and its mana floats. Five `add-mana`
-// steps in one `sequence` are still one mana ability.
+// by itself, so it's activated by hand and its mana floats.
 const COUNTER_TEXT = "Whenever you cast a spell, put a +1/+1 counter on Ramos for each of that spell's colors.";
 const MANA_TEXT =
   "Remove five +1/+1 counters from Ramos: Add {W}{W}{U}{U}{B}{B}{R}{R}{G}{G}. Activate only once each turn.";
@@ -33,14 +32,7 @@ export default defineCard({
     {
       cost: { mana: null, tap: false, removeCounter: { kind: "+1/+1", count: 5 } },
       targets: [],
-      effect: {
-        kind: "sequence",
-        effects: (["W", "U", "B", "R", "G"] as const).map((mana) => ({
-          kind: "add-mana" as const,
-          mana,
-          amount: 2,
-        })),
-      },
+      effect: { kind: "add-mana", mana: { all: ["W", "U", "B", "R", "G"] }, amount: 2 },
       resolve: null,
       oncePerTurn: true,
       text: MANA_TEXT,

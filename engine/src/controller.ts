@@ -1057,6 +1057,8 @@ export class HeuristicBotController extends AutomaticController {
         if (mana !== "C" && mana !== "chosen" && mana !== "produced") out.push(mana as Color);
       } else if ("oneOf" in mana) {
         for (const m of mana.oneOf) if (m !== "C") out.push(m as Color);
+      } else if ("all" in mana) {
+        for (const m of mana.all) if (m !== "C") out.push(m as Color);
       }
     }
     return out;

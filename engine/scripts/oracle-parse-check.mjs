@@ -63,24 +63,13 @@ function canonTrigger(t) {
 }
 const same = (a, b) => JSON.stringify(canon(canonTrigger(a))) === JSON.stringify(canon(canonTrigger(b)));
 
-/** How a disagreement over an add-mana effect should be read:
- * - "split" — "Add {B} or {R}" parsed as one ability with a choice, authored
- *   (equivalently) as one ability per colour;
- * - "pool-any-combination" — "Add {W}{U}" parsed as exactly those two, the
- *   pool's `oneOf` × 2 letting it make {W}{W} too (a pool bug, not a parser one);
- * - undefined — a real disagreement. */
-function manaEquivalence(parsed, authored) {
-  if (parsed?.kind === "add-mana" && typeof parsed.mana === "object" && authored?.kind === "add-mana") {
-    if (typeof authored.mana === "string" && parsed.mana.oneOf?.includes(authored.mana)) return "split";
-  }
-  if (parsed?.kind === "sequence" && parsed.effects.every((e) => e.kind === "add-mana" && typeof e.mana === "string")) {
-    const colours = parsed.effects.map((e) => e.mana);
-    if (authored?.kind === "add-mana" && authored.mana?.oneOf?.length > 0 &&
-        colours.every((c) => authored.mana.oneOf.includes(c)) && authored.amount === colours.length) {
-      return "pool-any-combination";
-    }
-  }
-  return undefined;
+/** "Add {B} or {R}" parsed as one ability with a choice, authored
+ * (equivalently) as one ability per colour. */
+function manaSplit(parsed, authored) {
+  return (
+    parsed?.kind === "add-mana" && typeof parsed.mana === "object" && authored?.kind === "add-mana" &&
+    typeof authored.mana === "string" && parsed.mana.oneOf?.includes(authored.mana) === true
+  );
 }
 const tidy = (s) =>
   s
@@ -98,7 +87,6 @@ export function checkPool(poolCards, tokenName = "Treasure Token") {
   const tokenFor = () => tokenName;
   const stats = { cards: 0, abilities: 0, claimed: 0, agreed: 0, keywordCards: 0, keywordAgreed: 0 };
   const mismatches = [];
-  const poolIssues = [];
 
   for (const def of poolCards) {
     const entry = findCard(def.name);
@@ -144,27 +132,20 @@ export function checkPool(poolCards, tokenName = "Treasure Token") {
           ? ["cost", "targets", "effect", "sorcerySpeed", "oncePerTurn", "loyaltyCost", "zone", "otherOnly", "condition"]
           : ["trigger", "targets", "effect", "oncePerTurn"];
         let differ = fields.filter((f) => !same(p[f] ?? null, match[f] ?? null) && !(f === "sorcerySpeed" && !p[f] && !match[f]));
-        const mana = differ.length === 1 && differ[0] === "effect" ? manaEquivalence(p.effect, match.effect) : undefined;
-        if (mana === "split") differ = [];
-        if (mana === "pool-any-combination") {
-          stats.poolAnyCombination = (stats.poolAnyCombination ?? 0) + 1;
-          poolIssues.push(def.name);
-          stats.claimed -= 1;
-          continue;
-        }
+        if (differ.length === 1 && differ[0] === "effect" && manaSplit(p.effect, match.effect)) differ = [];
         if (differ.length === 0) stats.agreed += 1;
         else mismatches.push({ card: def.name, kind, text: p.text, differ, parsed: canon(p), authored: canon(match) });
       }
     }
   }
 
-  return { stats, mismatches, poolIssues };
+  return { stats, mismatches };
 }
 
 const isMain = process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href;
 if (isMain) {
   const { POOL_CARDS } = await import("../dist/cards/generated.js");
-  const { stats, mismatches, poolIssues } = checkPool(POOL_CARDS);
+  const { stats, mismatches } = checkPool(POOL_CARDS);
   const pct = (a, b) => `${a}/${b} (${b ? ((100 * a) / b).toFixed(1) : 0}%)`;
   console.log(`${stats.cards} pool cards with a snapshot entry`);
   console.log(`keywords agree on ${pct(stats.keywordAgreed, stats.keywordCards)} of cards`);

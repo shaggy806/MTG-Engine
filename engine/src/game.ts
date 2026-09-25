@@ -7157,6 +7157,10 @@ export class Game {
             if (produced.length > 0) {
               this.addMana(player, produced[0], extra.amount, undefined, this.manaOriginOf(extra.holder));
             }
+          } else if (typeof extra.mana === "object" && "all" in extra.mana) {
+            for (const type of extra.mana.all) {
+              this.addMana(player, type, extra.amount, undefined, this.manaOriginOf(extra.holder));
+            }
           } else if (extra.mana !== "chosen") {
             this.addMana(
               player,
@@ -7478,7 +7482,10 @@ export class Game {
         // A converter that doesn't produce more than it costs is never worth
         // offering, and admitting one would let the planner loop — and a
         // live amount of 0 makes nothing at all.
-        if (manaAmount <= 0 || genericCost >= manaAmount) return;
+        // "Add {W}{U}" makes `amount` of each type it lists.
+        const each = typeof mana === "object" && "all" in mana ? mana.all : null;
+        const units = each === null ? manaAmount : manaAmount * each.length;
+        if (manaAmount <= 0 || genericCost >= units) return;
         const tagOf = this.manaTagFor(object, ability.effect);
         const tag = {
           ...(tagOf === undefined ? {} : { tag: tagOf }),
@@ -7486,10 +7493,21 @@ export class Game {
           ...(ability.oncePerTurn === true ? { oncePerTurn: abilityIndex } : {}),
           ...(ability.effect.also !== undefined ? { rider: ability.effect.also } : {}),
         };
-        const oneOf = typeof mana === "object" ? this.manaOneOf(mana, player) : [];
+        const oneOf = typeof mana === "object" && !("all" in mana) ? this.manaOneOf(mana, player) : [];
         const candidates: ManaOption[] =
           mana === "any-color"
             ? [{ fixed: [], anyColor: manaAmount, pain, lifeCost, genericCost, ...tag }]
+            : each !== null
+              ? [
+                  {
+                    fixed: Array.from({ length: manaAmount }, () => each).flat(),
+                    anyColor: 0,
+                    pain,
+                    lifeCost,
+                    genericCost,
+                    ...tag,
+                  },
+                ]
             : typeof mana === "object"
               ? typeof ability.effect.amount !== "number"
                 ? // "X mana in any combination of …" with a live X: one
@@ -7733,6 +7751,16 @@ export class Game {
       return option.anyColorOf === undefined
         ? [{ ...option, anyColor: option.anyColor + extra.amount, extraFrom }]
         : COLORS.map((c) => plus(c));
+    }
+    if (typeof mana === "object" && "all" in mana) {
+      const made = Array.from({ length: extra.amount }, () => mana.all).flat();
+      return [
+        {
+          ...option,
+          fixed: [...option.fixed, ...made],
+          extraFrom: [...(option.extraFrom ?? []), ...Array<ObjectId>(made.length).fill(extra.holder)],
+        },
+      ];
     }
     if (typeof mana === "object") return this.manaOneOf(mana, player).map((t) => plus(t));
     if (mana !== "produced") return [plus(mana)];
@@ -8497,6 +8525,7 @@ export class Game {
         if (m === "any-color") for (const c of COLORS) colors.add(c);
         else if (typeof m === "string" && m !== "chosen" && m !== "produced" && m !== "C") colors.add(m);
         else if (typeof m === "object" && "oneOf" in m) for (const c of m.oneOf) colors.add(c);
+        else if (typeof m === "object" && "all" in m) for (const c of m.all) if (c !== "C") colors.add(c);
       }
     }
     return [...colors];

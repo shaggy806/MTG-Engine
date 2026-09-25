@@ -413,7 +413,7 @@ export const signet = (name: string, colors: readonly [Color, Color]): CardDefin
       {
         cost: { mana: "{1}", tap: true },
         targets: [],
-        effect: { kind: "add-mana", mana: { oneOf: colors }, amount: 2 },
+        effect: { kind: "add-mana", mana: { all: colors }, amount: 1 },
         resolve: null,
         text: `{1}, {T}: Add {${colors[0]}}{${colors[1]}}.`,
       },
@@ -491,7 +491,7 @@ export const filterLand = (
       {
         cost: { mana: "{1}", tap: true },
         targets: [],
-        effect: { kind: "add-mana", mana: { oneOf: colors }, amount: 2 },
+        effect: { kind: "add-mana", mana: { all: colors }, amount: 1 },
         resolve: null,
         text: `{1}, {T}: Add {${colors[0]}}{${colors[1]}}.`,
       },
@@ -546,7 +546,7 @@ export const karooLand = (
       {
         cost: { mana: null, tap: true },
         targets: [],
-        effect: { kind: "add-mana", mana: { oneOf: colors }, amount: 2 },
+        effect: { kind: "add-mana", mana: { all: colors }, amount: 1 },
         resolve: null,
         text: `{T}: Add {${colors[0]}}{${colors[1]}}.`,
       },

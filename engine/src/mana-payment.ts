@@ -232,6 +232,8 @@ export function standaloneManaChoices(
   if (effect === null || effect.kind !== "add-mana") return null;
   const mana = effect.mana;
   if (mana !== "any-color" && typeof mana !== "object") return null;
+  // "Add {W}{U}" has one outcome, so it's offered once.
+  if (typeof mana === "object" && "all" in mana) return null;
   if (typeof effect.amount !== "number") {
     const amount = liveAmount?.() ?? null;
     if (amount === null || amount < 1) return null;

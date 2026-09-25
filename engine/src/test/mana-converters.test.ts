@@ -48,23 +48,42 @@ const canCast = (game: Game, card: string): boolean => {
 };
 
 describe("a Signet as a mana source", () => {
-  it("fixes colour: two Plains plus a Signet casts a {B}{B} spell", () => {
+  it("fixes colour: Plains plus a Signet casts a {B}{R} spell", () => {
     const game = makeGame();
     open(game);
-    // Plains make no black, so without the Signet the spell is uncastable.
+    // Plains make neither colour, so without the Signet it's uncastable.
     lands(game, "Plains", 2);
-    expect(canCast(game, "Sign in Blood")).toBe(false);
+    expect(canCast(game, "Stormfist Crusader")).toBe(false);
 
     const fresh = makeGame();
     open(fresh);
-    for (let i = 0; i < 3; i += 1) {
-      const id = fresh.debugSpawn("Plains", A, "battlefield");
-      fresh.state.objects[id].tapped = false;
-    }
+    lands(fresh, "Plains", 1);
     const signet = fresh.debugSpawn("Rakdos Signet", A, "battlefield");
     fresh.state.objects[signet].tapped = false;
-    // {B}{B}: one Plains funds the Signet, which makes both black.
-    expect(canCast(fresh, "Sign in Blood")).toBe(true);
+    // {B}{R}: the Plains funds the Signet, which makes one of each.
+    expect(canCast(fresh, "Stormfist Crusader")).toBe(true);
+  });
+
+  it("makes exactly {B}{R} — never two of one colour", () => {
+    // "Add {B}{R}" is one black and one red, so a {B}{B} spell is out of
+    // reach however much else there is to fund the Signet.
+    const game = makeGame();
+    open(game);
+    lands(game, "Plains", 3);
+    const signet = game.debugSpawn("Rakdos Signet", A, "battlefield");
+    game.state.objects[signet].tapped = false;
+    expect(canCast(game, "Sign in Blood")).toBe(false);
+
+    // By hand, too: activating it floats one of each.
+    const hand = makeGame();
+    open(hand);
+    lands(hand, "Plains", 1);
+    const floating = hand.debugSpawn("Rakdos Signet", A, "battlefield");
+    hand.state.objects[floating].tapped = false;
+    hand.dispatch({ type: "activate-ability", player: A, source: floating, abilityIndex: 0, targets: [] });
+    const pool = poolCounts(hand.state.players[A].manaPool);
+    expect(pool.B).toBe(1);
+    expect(pool.R).toBe(1);
   });
 
   it("actually taps both, and pays the Signet's own {1} from the pool", () => {
@@ -74,13 +93,8 @@ describe("a Signet as a mana source", () => {
     const signet = game.debugSpawn("Rakdos Signet", A, "battlefield");
     game.state.objects[signet].tapped = false;
 
-    const card = game.debugSpawn("Sign in Blood", A, "hand");
-    game.dispatch({
-      type: "cast-spell",
-      player: A,
-      card,
-      targets: [{ kind: "player", player: A }],
-    });
+    const card = game.debugSpawn("Stormfist Crusader", A, "hand");
+    game.dispatch({ type: "cast-spell", player: A, card, targets: [] });
 
     expect(game.state.objects[signet].tapped).toBe(true);
     const tappedLands = game.state.zones.shared.battlefield.filter(
@@ -89,7 +103,7 @@ describe("a Signet as a mana source", () => {
         game.state.objects[id].tapped &&
         game.characteristics(id).types.includes("land"),
     );
-    // One Plains funded the Signet's {1}; the Signet's {B}{B} paid the spell.
+    // One Plains funded the Signet's {1}; the Signet's {B}{R} paid the spell.
     expect(tappedLands.length).toBe(1);
   });
 
