@@ -158,10 +158,13 @@
 .pp-monarch {
   margin-left: 4px;
 }
+/* A player's counters — poison, energy, experience — in the header row beside
+   the name, kept together on one line. */
 .pp-counters {
-  display: flex;
-  flex-wrap: wrap;
-  column-gap: 10px;
+  display: inline-flex;
+  align-items: baseline;
+  column-gap: 8px;
+  white-space: nowrap;
 }
 .pp-energy {
   font-size: 12px;

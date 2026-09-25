@@ -104,6 +104,28 @@ export function PlayerPanel({
           />
         )}
         <span className="pp-name">{playerLabel(info.id, seats)}</span>
+        {/* Every counter the player has, beside the name — poison, energy,
+            experience — rather than on a row of its own: they're read with
+            the player, and a quadrant has no height to spare. */}
+        {poison > 0 || info.energy > 0 || experience > 0 ? (
+          <span className="pp-counters">
+            {poison > 0 ? (
+              <span className="pp-poison" title="Poison counters (ten lose the game — rule 704.5c)">
+                ☠ {poison}/{POISON_LETHAL}
+              </span>
+            ) : null}
+            {info.energy > 0 ? (
+              <span className="pp-energy" title="Energy counters ({E} — rule 122)">
+                ⚡ {info.energy}
+              </span>
+            ) : null}
+            {experience > 0 ? (
+              <span className="pp-experience" title="Experience counters (rule 122.1)">
+                ✦ {experience} exp
+              </span>
+            ) : null}
+          </span>
+        ) : null}
         {wentFirst ? <span className="pp-went-first" title="Won the highroll, goes first">🎲</span> : null}
         {isMonarch ? <span className="pp-monarch" title="The monarch (rule 720)">👑</span> : null}
         {info.commanderDamageTaken.length > 0 ? (
@@ -162,26 +184,6 @@ export function PlayerPanel({
       {mana ? (
         <div className="pp-mana" title="Mana pool">
           <Symbols text={mana} />
-        </div>
-      ) : null}
-      {/* One row, however many kinds: a quadrant has no height to spare. */}
-      {info.energy > 0 || poison > 0 || experience > 0 ? (
-        <div className="pp-counters">
-          {info.energy > 0 ? (
-            <span className="pp-energy" title="Energy counters ({E} — rule 122)">
-              ⚡ {info.energy}
-            </span>
-          ) : null}
-          {poison > 0 ? (
-            <span className="pp-poison" title="Poison counters (ten lose the game — rule 704.5c)">
-              ☠ {poison}/{POISON_LETHAL}
-            </span>
-          ) : null}
-          {experience > 0 ? (
-            <span className="pp-experience" title="Experience counters (rule 122.1)">
-              ✦ {experience} experience
-            </span>
-          ) : null}
         </div>
       ) : null}
       {emblemTexts.length > 0 ? (
