@@ -198,8 +198,10 @@ describe("evaluateDecklist", () => {
         toughness: "4",
         color_identity: ["G", "W"],
       },
-      "Tireless Tracker": {
-        name: "Tireless Tracker",
+      // Made up: a real unimplemented card (this was Tireless Tracker) gets
+      // authored sooner or later, and then has no stand-ins to choose.
+      "Unauthored Tracker": {
+        name: "Unauthored Tracker",
         mana_cost: "{2}{G}",
         type_line: "Creature — Human Scout",
         power: "3",
@@ -220,7 +222,7 @@ describe("evaluateDecklist", () => {
       [
         { name: "Trostani Discordant", count: 1 },
         { name: "Llanowar Elves", count: 1 },
-        { name: "Tireless Tracker", count: 1 },
+        { name: "Unauthored Tracker", count: 1 },
         { name: "Wood Elves", count: 1 },
       ],
       registry,
@@ -243,7 +245,7 @@ describe("evaluateDecklist", () => {
     // Two same-shaped cards never get the same first choice.
     const firsts = cards.map((c) => c.suggestedReplacement).filter((n) => n !== null);
     expect(new Set(firsts).size).toBe(firsts.length);
-    expect(byName.get("Tireless Tracker")!.replacements.length).toBeGreaterThan(0);
+    expect(byName.get("Unauthored Tracker")!.replacements.length).toBeGreaterThan(0);
   });
 
   it("reports an implemented card straight from the local registry, no network call", async () => {
