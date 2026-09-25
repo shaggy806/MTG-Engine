@@ -50,13 +50,11 @@ that one card is the reason the deck exists.
   unparsed lines that recur most across the backlog; the parser reads about 42% of the
   abilities it finds there. Add a template, then keep `npm run card:parse-check -w engine` at
   zero disagreements.
-- **Pool bugs the parser check found.** Signets and the Karoo-style "Add {W}{U}" lands are
-  authored as `{oneOf: [W, U]}` × 2, which also makes {W}{W}. The fix needs the mana auto-payer
-  (`Game.manaSources`) to take a sequence of fixed `add-mana` steps. Eternal Witness and
-  Kolaghan's Command return a card from a graveyard with no target; audit the other untargeted
-  `return-from-graveyard` cards the same way (Buried Ruin and Ravos are fixed). Craw Wurm has
-  trample, but the real card is vanilla. `combat.test`, `combat-depth.test` and
-  `combat-damage-by-toughness.test` use it as a trampler, so give them a real trampler first.
+- **Rydia, Summoner of Mist is missing its Summon ability** ("{X}, {T}: Return target Saga card
+  with mana value X from your graveyard to the battlefield with a finality counter on it. It
+  gains haste until end of turn."). Both reasons its file gives for dropping it are gone now
+  (`card-in-graveyard` targets, finality counters), but a target filter on "mana value X"
+  still needs checking. Its landfall loot also draws even when no card was discarded.
 - **Card sweep 1's skipped staples.** 227 of the 300 highest-ranked unauthored top-2000
   cards need engine work; listed by rank in `neededCards-features.md`, "Card sweep 1: the
   staples it skipped". Triage them by missing feature before choosing the next card-side work.
