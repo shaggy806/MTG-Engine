@@ -39,13 +39,12 @@ that one card is the reason the deck exists.
   "defending player" scope. Tier 3 is Station, Discover, Evoke and Reconfigure. Also open:
   damage doubling as a replacement, the rest of the Overload/free-cast/convoke families, and the
   items listed under each "still open". See `neededCards-features.md`, "Open: the card backlog".
-- **Cards waiting in `engine/src/cards/review/`.** Auto-finished by `card:scaffold` and
-  unregistered until checked: Ornithopter, Zetalpa, Primal Dawn. Check each
-  (`npm run card:verify -w engine -- --dir review`, then against its Oracle text) and move it
-  into `pool/`. `--auto-scan` over both backlog lists auto-finishes about 160 more (mostly
-  lands, pathways and simple spells), not yet written. `--auto-scan --all` finds far more across
-  the whole snapshot: decide whether the pool wants them (they bloat the client's card bundle
-  with mostly unplayed cards).
+- **Cards the scaffolder finishes on its own.** Of the snapshot's 30,710 unimplemented
+  Commander-legal cards, the parser reads every line of 4,241 (`npm run card:scaffold -w engine
+  -- --report --all`). Ranks 2001–4000 are reviewed and in the pool (147). Continue down the
+  ranks: `--auto-scan --ranks A-B` writes them to `review/`. Check each against its Oracle text
+  and rulings, and each token it makes against its token file, then move it into `pool/`.
+  Ornithopter and Zetalpa, Primal Dawn are still in `review/`, waiting for their batches below.
 - **More Oracle-parser templates.** `npm run card:scaffold -w engine -- --report` lists the
   unparsed lines that recur most across the backlog; the parser reads about 42% of the
   abilities it finds there. Add a template, then keep `npm run card:parse-check -w engine` at
@@ -55,9 +54,17 @@ that one card is the reason the deck exists.
   gains haste until end of turn."). Both reasons its file gives for dropping it are gone now
   (`card-in-graveyard` targets, finality counters), but a target filter on "mana value X"
   still needs checking. Its landfall loot also draws even when no card was discarded.
-- **Card sweep 1's skipped staples.** 227 of the 300 highest-ranked unauthored top-2000
-  cards need engine work; listed by rank in `neededCards-features.md`, "Card sweep 1: the
-  staples it skipped". Triage them by missing feature before choosing the next card-side work.
+- **Card sweep 2 (2026-09-25).** Five cloud batches triaged the 189 best-ranked unimplemented
+  top-500 commanders (C1–C3) and the 208 best-ranked unimplemented top-2000 cards (K1–K2). Those
+  208 include most of card sweep 1's 227 skips. They authored 36 cards and recorded 361 as
+  blocked, each with its missing features, in `engine/data/sweep-2/*.json`. The keys are those of
+  `top-commanders-gaps.json`, or `new:*` described in the file.
+  - The most-needed features: `decision:copy-new-targets` (16), `effect:copy-exceptions` (14),
+    `effect:may-sacrifice-then` (12), `effect:cast-during-resolution` and
+    `condition:filter-card-property-clauses` (11 each), `effect:attach-extensions`,
+    `effect:add-mana-extensions` and `bug:as-enters-choices-any-entry` (10 each).
+  - The rest of the backlog is untriaged: 62 commanders and 1,144 cards, the lists' unmarked
+    entries past those batches.
 - **The limitation ledger.** Protection from a filter (19 cards) is the largest remaining gap.
   Then regeneration, the "put into a graveyard from anywhere" trigger, "as this enters" on a
   non-cast permanent, and discard as an ability cost. See `neededCards-features.md`, "The
@@ -65,13 +72,15 @@ that one card is the reason the deck exists.
 - **Pre-§0 debt.** Some cards in the pool lose or misplay a printed clause. Fix or delete each
   one. See `cards/AUTHORING.md` §15, "Known exceptions already in the pool", and
   `npm run card:text -w engine`.
-- **Precon stand-ins.** 43 cards in the five starter decks still play as substitutes. The
+- **Precon stand-ins.** 42 cards in the five starter decks still play as substitutes. The
   engine plan for them is paused. See `docs/plans/precon-decks.md` (the substitution list) and
   `docs/plans/engine-gaps.md`. Deleting a substitution is the whole revert.
 
 ## Engine rules gaps
 
-- **Not modeled.** Battles, phasing, dungeons/Initiative/the Ring, banding, Companion,
+- **Not modeled.** Battles, phasing, dungeons/Initiative/the Ring (Lord of the Nazgûl's
+  "protection from Ring-bearers" is authored as inert on the strength of this: revisit it when
+  the Ring lands), banding, Companion,
   snow *sources* (snow mana is generic), and full text-change beyond one creature-type word.
   ROADMAP's Phase 10 deferred these as large or niche. None of them blocks ordinary Commander
   play. The alt-cast long tail left by Phase 6 (retrace, Warp, Bestow, Prototype, …) is in
@@ -110,6 +119,24 @@ that one card is the reason the deck exists.
   `docs/plans/token-stack-choices.md`.
 - **Resolve-hatch sweep.** Convert the remaining imperative `resolve` cards to a declarative
   `effect`.
+
+- **Engine bugs card sweep 2 found** (repros in `engine/data/sweep-2/*.json`, `bugs`):
+  - Dies-trigger doubling (Teysa Karlov) misses creatures that die alongside the doubler.
+  - A mass destroy moves its victims one by one, so a "would die, exile instead" permanent
+    among them (Vren) stops applying partway.
+  - A commander its owner sends to the command zone never dies, so its own dies trigger is lost
+    (Child of Alara).
+  - `otherOnly` also strips the source from an ability's target check (Dina, Essence Brewer).
+  - A negative amount isn't clamped to 0 (rule 107.1b): a negative power gains negative life.
+  - A granted escape (Underworld Breach) is never offered for a card with its own escape.
+  - A player who can't cast spells can still suspend (Silence).
+  - A must-attack creature left out of a declaration is sent at the first legal defender, not
+    its controller's choice.
+  - `extort()` gains the life it *meant* to drain, not the life actually lost.
+  - Two slots of one "two target" clause accept the same object (Ghostly Flicker).
+  - Play-from-graveyard reads a double-faced card by its front face only (Ancient Greenwarden).
+  - Performance: a per-creature enters trigger watching an opponent's token stack
+    (Authority of the Consuls against Scute Swarm) puts hundreds of triggers on the stack.
 
 ## Bots
 
