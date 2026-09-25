@@ -100,7 +100,8 @@
   "keyword:affinity",
   "condition:defending-player-life-rank",
   "stat:mana-spent-to-cast",
-  "effect:look-and-choose-leftover"
+  "effect:look-and-choose-leftover",
+  "bug:transform-fixes"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

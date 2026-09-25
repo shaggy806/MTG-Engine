@@ -240,6 +240,13 @@ export interface GameObject {
    * object on the stack.
    */
   delayedTrigger?: DelayedTrigger;
+  /** For an ability object: the `eventSeq` as it was put on the stack. An
+   * ability of a permanent transforms that permanent only if it hasn't
+   * transformed since (rule 701.28f — see `transformedAtSeq`). */
+  stackedAtSeq?: number;
+  /** The `eventSeq` this permanent last transformed at (rule 701.28f).
+   * Cleared as it changes zones — entering transformed isn't transforming. */
+  transformedAtSeq?: number;
   /** This stack object is a reflexive triggered ability (rule 603.12) — the
    * whole record, for the same reason as `delayedTrigger`. Only ever set on
    * an `"ability"` object on the stack. */
@@ -1490,6 +1497,9 @@ export interface DelayedTrigger {
    * hand at the beginning of the next end step" (The Locust God) finds
    * nothing once it has changed zones again (rule 400.7). */
   readonly sourceStint?: number;
+  /** The `eventSeq` it was created at: it transforms its source only if the
+   * source hasn't transformed since (rule 701.28f). */
+  readonly createdAtSeq?: number;
   readonly effect: EffectSpec;
   readonly text: string;
 }
@@ -1563,6 +1573,9 @@ export interface ParkedSteps {
   readonly sourceLost?: boolean;
   /** See `ResolutionContext.abilityKey`. */
   readonly abilityKey?: string;
+  /** The `eventSeq` after which its source transforming stops the ability
+   * transforming it (rule 701.28f) — see `GameObject.stackedAtSeq`. */
+  readonly transformSince?: number;
   /** The timestamp the source had when the ability went on the stack, so
    * "exile ~" still skips a source that has become a new object. */
   readonly sourceTimestamp?: number;

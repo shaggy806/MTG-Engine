@@ -7318,6 +7318,7 @@ export class Game {
       ...(multiplier !== undefined ? { stackMultiplier: multiplier } : {}),
       controlEndsAtCleanup: false,
       copyOf: null,
+      stackedAtSeq: this.state.eventSeq,
     };
     this.state.zones.shared.stack.push(abilityId);
     return abilityId;
@@ -8273,6 +8274,7 @@ export class Game {
           {
             ...(next.sourceLost === true ? { sourceLost: true } : {}),
             ...(next.abilityKey !== undefined ? { abilityKey: next.abilityKey } : {}),
+            ...(next.transformSince !== undefined ? { transformSince: next.transformSince } : {}),
           },
         ),
       );
@@ -8628,6 +8630,7 @@ export class Game {
     const sourceLost =
       recorded !== undefined && (this.state.objects[source]?.zoneChangeCount ?? 0) !== recorded;
     const abilityKey = this.abilityTurnKey(object);
+    const transformSince = object.delayedTrigger?.createdAtSeq ?? object.stackedAtSeq;
     const base = this.makeResolutionContext(
       source,
       object.controller,
@@ -8642,6 +8645,10 @@ export class Game {
       {
         ...(sourceLost ? { sourceLost: true } : {}),
         ...(abilityKey !== undefined ? { abilityKey } : {}),
+        // Rule 701.28f: it transforms its source only if the source hasn't
+        // transformed since it was put on the stack — a delayed trigger,
+        // since it was created.
+        ...(transformSince !== undefined ? { transformSince } : {}),
       },
     );
     const targetedBy = object.targetedBy;
@@ -10337,8 +10344,9 @@ export class Game {
      * sacrificed permanent the spell or ability refers to — see
      * {@link LastKnownRefs}. */
     lastKnownRefs: LastKnownRefs = {},
-    /** See `ResolutionContext.sourceLost` and `ResolutionContext.abilityKey`. */
-    opts: { readonly sourceLost?: boolean; readonly abilityKey?: string } = {},
+    /** See `ResolutionContext.sourceLost` and `ResolutionContext.abilityKey`;
+     * `transformSince` is `ParkedSteps.transformSince`. */
+    opts: { readonly sourceLost?: boolean; readonly abilityKey?: string; readonly transformSince?: number } = {},
   ): ResolutionContext {
     const refs = lastKnownRefs;
     // Where "this way" starts: the resolution under way (every continuation
@@ -10507,6 +10515,7 @@ export class Game {
           lastKnownRefs: refs,
           ...(opts.sourceLost === true ? { sourceLost: true } : {}),
           ...(opts.abilityKey !== undefined ? { abilityKey: opts.abilityKey } : {}),
+          ...(opts.transformSince !== undefined ? { transformSince: opts.transformSince } : {}),
           ...(timestamp !== null ? { sourceTimestamp: timestamp } : {}),
           decisionSource: this.state.decisionSource,
         });
@@ -11116,7 +11125,14 @@ export class Game {
       attach: (target) => this.attachPermanent(source, target),
       transform: (target) => {
         const t = this.splitTargetRef(target);
-        if (t.kind === "object") this.transformPermanent(t.object);
+        if (t.kind !== "object") return;
+        // Rule 701.28f: an ability of a permanent that has transformed since
+        // the ability was put on the stack (a delayed one: was created)
+        // doesn't transform it again.
+        const since = opts.transformSince;
+        const last = this.state.objects[t.object]?.transformedAtSeq;
+        if (t.object === source && since !== undefined && last !== undefined && last > since) return;
+        this.transformPermanent(t.object);
       },
       setDayNight: (value) => this.setDayNight(value),
       becomeMonarch: (who) => {
@@ -13156,6 +13172,23 @@ export class Game {
     return own.faces !== null ? this.registry.get(own.faces[0]) : own;
   }
 
+  /** Whether the transforming DFC `id` enters the battlefield transformed:
+   * `byEffect` (an effect puts it there transformed), its front face's own
+   * "enters transformed" replacement, or a daybound card while it's night
+   * (702.145f). */
+  private entersTransformed(id: ObjectId, byEffect: boolean): boolean {
+    if (byEffect) return true;
+    const front = this.frontFaceDef(id);
+    if (front.keywords.includes("daybound")) return this.state.dayNight === "night";
+    const object = this.state.objects[id];
+    return front.static.some(
+      (a) =>
+        a.replacement?.event === "enters-battlefield" &&
+        a.replacement.transformed === true &&
+        this.staticActive(object, a),
+    );
+  }
+
   /** Is `id` a transforming double-faced permanent (rule 712.4)? — only these
    * can be turned over by a `transform` effect / a day-night change. */
   private isTransformingDfc(id: ObjectId): boolean {
@@ -13187,6 +13220,7 @@ export class Game {
       face: object.face,
       front: object.face === 0,
     });
+    object.transformedAtSeq = this.state.eventSeq;
   }
 
   /**
@@ -14193,6 +14227,7 @@ export class Game {
       ...(object !== undefined && object.zone !== "stack"
         ? { sourceStint: object.zoneChangeCount ?? 0 }
         : {}),
+      createdAtSeq: this.state.eventSeq,
       effect,
       text,
     });
@@ -16659,6 +16694,9 @@ export class Game {
     // Its "exile it if it would leave" replacement was about the permanent
     // that just left (rule 400.7).
     object.exileIfItWouldLeave = undefined;
+    // So was having transformed (rule 701.28f) — and entering transformed
+    // isn't transforming.
+    object.transformedAtSeq = undefined;
     // The adventure "may cast the creature from exile" permission (rule 715.3)
     // ends when the card changes zones. `resolveTopOfStack` re-sets it *after*
     // the move to exile that creates the state.
@@ -16684,6 +16722,15 @@ export class Game {
       // the counters Giada puts on an Angel reanimated under your control.
       const enteringController = enter.under ?? object.controller;
       object.controller = enteringController;
+      // A transforming double-faced card entering transformed — put there
+      // transformed, its own "enters transformed", or a daybound card while
+      // it's night (702.145f) — has its back face up from the start, so the
+      // replacements that apply as it enters are the back face's (a
+      // planeswalker back face's loyalty among them), and so is everything
+      // that sees it enter.
+      if (this.isTransformingDfc(id) && this.entersTransformed(id, enter.transformed === true)) {
+        object.face = 1;
+      }
       // Replacement effects that apply as it enters (rule 614.1c) — tapped /
       // enters-with-counters, its own and other permanents'. `object.counters`
       // was just reset above (unless it keeps them across zones, when these
