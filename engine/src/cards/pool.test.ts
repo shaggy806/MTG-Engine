@@ -98,7 +98,8 @@ describe("classify", () => {
     expect(deckable.some((d) => isTokenCard(d))).toBe(false);
     expect(deckable.some((d) => !isCardFront(d))).toBe(false);
     // Sanity: the overwhelming majority of the pool is still deckable, so a
-    // predicate that accidentally rejected everything would fail here.
-    expect(deckable.length).toBeGreaterThan(POOL_CARDS.length - 20);
+    // predicate that accidentally rejected everything would fail here. A
+    // proportion, not a fixed count: every double-faced card adds a back face.
+    expect(deckable.length).toBeGreaterThan(POOL_CARDS.length * 0.9);
   });
 });

@@ -1,0 +1,827 @@
+{
+  "batch": "K1",
+  "status": "complete",
+  "authored": [
+    {
+      "name": "Fabled Passage",
+      "files": [
+        "engine/src/cards/pool/fabled-passage.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Professional Face-Breaker",
+      "files": [
+        "engine/src/cards/pool/professional-face-breaker.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "The Great Henge",
+      "files": [
+        "engine/src/cards/pool/the-great-henge.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Malakir Rebirth // Malakir Mire",
+      "files": [
+        "engine/src/cards/pool/malakir-rebirth.ts",
+        "engine/src/cards/pool/malakir-mire.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Grand Abolisher",
+      "files": [
+        "engine/src/cards/pool/grand-abolisher.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Rugged Prairie",
+      "files": [
+        "engine/src/cards/pool/rugged-prairie.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Cascade Bluffs",
+      "files": [
+        "engine/src/cards/pool/cascade-bluffs.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Flooded Grove",
+      "files": [
+        "engine/src/cards/pool/flooded-grove.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Phyrexian Altar",
+      "files": [
+        "engine/src/cards/pool/phyrexian-altar.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Bala Ged Recovery // Bala Ged Sanctuary",
+      "files": [
+        "engine/src/cards/pool/bala-ged-recovery.ts",
+        "engine/src/cards/pool/bala-ged-sanctuary.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Fetid Heath",
+      "files": [
+        "engine/src/cards/pool/fetid-heath.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Twilight Mire",
+      "files": [
+        "engine/src/cards/pool/twilight-mire.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Demolition Field",
+      "files": [
+        "engine/src/cards/pool/demolition-field.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Bident of Thassa",
+      "files": [
+        "engine/src/cards/pool/bident-of-thassa.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Ohran Frostfang",
+      "files": [
+        "engine/src/cards/pool/ohran-frostfang.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Entish Restoration",
+      "files": [
+        "engine/src/cards/pool/entish-restoration.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Chaos Warp",
+      "needs": [
+        "new:shuffle-into-library",
+        "new:reveal-top-any-library"
+      ],
+      "why": "Shuffles the target permanent into its owner's library, then reveals the top card of that player's library; there's no shuffle-a-permanent-into-its-library effect, and reveal-top only reads the controller's own library."
+    },
+    {
+      "name": "Myriad Landscape",
+      "needs": [
+        "decision:choose-from-zone-extensions"
+      ],
+      "why": "\"Up to two basic land cards that share a land type\" constrains the two finds against each other; a search filter only checks each card on its own (AUTHORING §15)."
+    },
+    {
+      "name": "Skullclamp",
+      "needs": [
+        "new:attached-object-refs"
+      ],
+      "why": "\"Whenever equipped creature dies\" is the Equipment's own trigger, keyed to the creature it's attached to; no trigger subject names the attached permanent (a granted trigger would belong to the creature's controller, not the Equipment's)."
+    },
+    {
+      "name": "Urborg, Tomb of Yawgmoth",
+      "needs": [
+        "static:basic-land-type-mana"
+      ],
+      "why": "Lands gain the Swamp type, but a gained basic land type doesn't give the intrinsic {T}: Add {B} (rule 305.6)."
+    },
+    {
+      "name": "Deflecting Swat",
+      "needs": [
+        "new:change-targets"
+      ],
+      "why": "\"You may choose new targets for target spell or ability\": no effect changes a stack object's targets, and no target spec reaches an ability on the stack."
+    },
+    {
+      "name": "Yavimaya, Cradle of Growth",
+      "needs": [
+        "static:basic-land-type-mana"
+      ],
+      "why": "Lands gain the Forest type, but a gained basic land type doesn't give the intrinsic {T}: Add {G} (rule 305.6)."
+    },
+    {
+      "name": "Esper Sentinel",
+      "needs": [
+        "effect:amount-fields-dynamic"
+      ],
+      "why": "\"Unless that player pays {X}, where X is this creature's power\": an unless option's mana payment is a fixed string, not an amount."
+    },
+    {
+      "name": "The One Ring",
+      "needs": [
+        "new:player-protection"
+      ],
+      "why": "\"You gain protection from everything until your next turn\": there's no player protection (only player hexproof)."
+    },
+    {
+      "name": "Mystic Remora",
+      "needs": [
+        "new:cumulative-upkeep"
+      ],
+      "why": "Cumulative upkeep {1} needs a cost that scales with the age counters; `may`'s cost is a fixed mana string."
+    },
+    {
+      "name": "Jeska's Will",
+      "needs": [
+        "new:commander-conditional-mode-count"
+      ],
+      "why": "\"If you control a commander as you cast this spell, you may choose both instead\" — a mode count that depends on a commander as the spell is cast (the Will of the Sultai gap)."
+    },
+    {
+      "name": "Teferi's Protection",
+      "needs": [
+        "new:phasing",
+        "new:player-protection",
+        "new:life-total-cant-change"
+      ],
+      "why": "Phasing isn't modeled, nor player protection from everything, nor \"your life total can't change\"."
+    },
+    {
+      "name": "Propaganda",
+      "needs": [
+        "new:attack-tax"
+      ],
+      "why": "\"Creatures can't attack you unless their controller pays {2} for each creature attacking you\" — no attack-cost mechanism."
+    },
+    {
+      "name": "Urza's Saga",
+      "needs": [
+        "effect:modifier-grants-activated"
+      ],
+      "why": "The chapters give the Saga activated abilities (\"This Saga gains '{T}: Add {C}.'\"); a one-shot effect can't grant an activated ability."
+    },
+    {
+      "name": "Black Market Connections",
+      "needs": [
+        "keyword:changeling"
+      ],
+      "why": "The Hire a Mercenary mode's 3/2 Shapeshifter token has changeling, which isn't modeled."
+    },
+    {
+      "name": "Roaming Throne",
+      "needs": [
+        "new:chosen-creature-type-reads"
+      ],
+      "why": "It is the chosen type, and doubles triggers of creatures of the chosen type; the type named on entry is readable only by cost reductions and mana restrictions, not by filters, type grants or trigger doublers."
+    },
+    {
+      "name": "War Room",
+      "needs": [
+        "new:dynamic-life-cost"
+      ],
+      "why": "\"Pay life equal to the number of colors in your commanders' color identity\": an activation cost's payLife is a fixed number, and nothing reads the commanders' colour identity."
+    },
+    {
+      "name": "Ponder",
+      "needs": [
+        "decision:library-ordering",
+        "effect:shuffle-library"
+      ],
+      "why": "\"Put them back in any order. You may shuffle\": no library-ordering decision, and no optional shuffle step."
+    },
+    {
+      "name": "Chrome Mox",
+      "needs": [
+        "new:imprint",
+        "effect:add-mana-extensions"
+      ],
+      "why": "Imprint (a linked exile from hand on entry), and mana of any of the exiled card's colours."
+    },
+    {
+      "name": "Herald's Horn",
+      "needs": [
+        "new:chosen-creature-type-reads"
+      ],
+      "why": "The upkeep reveal checks \"a creature card of the chosen type\"; the chosen type can't be read by a filter or condition (the cost reduction half alone is expressible)."
+    },
+    {
+      "name": "Windfall",
+      "needs": [
+        "new:max-over-players-amount"
+      ],
+      "why": "Draws \"equal to the greatest number of cards a player discarded this way\" — thisWay amounts sum over players; there's no maximum per player."
+    },
+    {
+      "name": "Ghostly Prison",
+      "needs": [
+        "new:attack-tax"
+      ],
+      "why": "\"Creatures can't attack you unless their controller pays {2} for each creature attacking you\" — no attack-cost mechanism."
+    },
+    {
+      "name": "Nykthos, Shrine to Nyx",
+      "needs": [
+        "effect:add-mana-extensions"
+      ],
+      "why": "\"Choose a color. Add an amount of mana of that color equal to your devotion to that color\": add-mana can't key its amount to a colour chosen as it resolves."
+    },
+    {
+      "name": "Sink into Stupor // Soporific Springs",
+      "needs": [
+        "effect:target-spec-additions"
+      ],
+      "why": "\"Target spell or nonland permanent an opponent controls\": no target spec spans a spell and a permanent in one slot."
+    },
+    {
+      "name": "Reflecting Pool",
+      "needs": [
+        "effect:add-mana-extensions"
+      ],
+      "why": "\"One mana of any type that a land you control could produce\": add-mana reads producible types only from opponents' lands."
+    },
+    {
+      "name": "Mystic Sanctuary",
+      "needs": [
+        "new:enters-untapped-trigger"
+      ],
+      "why": "\"When this land enters untapped\" is a trigger condition on how it entered; an intervening-if on the source being untapped would be rechecked at resolution and fail if the land was tapped for mana in response."
+    },
+    {
+      "name": "Three Tree City",
+      "needs": [
+        "new:chosen-creature-type-reads",
+        "effect:add-mana-extensions"
+      ],
+      "why": "Counts \"creatures you control of the chosen type\" (the type named on entry can't be read by a filter or amount) and adds mana of a colour chosen as the ability resolves."
+    },
+    {
+      "name": "Gemstone Caverns",
+      "needs": [
+        "new:opening-hand-actions"
+      ],
+      "why": "\"If this card is in your opening hand and you're not the starting player, you may begin the game with it on the battlefield\": no pre-game actions from an opening hand. Its luck-counter mana also depends on it."
+    },
+    {
+      "name": "Command Beacon",
+      "needs": [
+        "new:commander-to-hand"
+      ],
+      "why": "\"Put your commander into your hand from the command zone\": no effect moves a card from the command zone to a hand."
+    },
+    {
+      "name": "Hardened Scales",
+      "needs": [
+        "new:counter-replacement-plus"
+      ],
+      "why": "\"That many plus one +1/+1 counters are put on it instead\": the would-add-counter replacement only multiplies, with no additive form."
+    },
+    {
+      "name": "Akroma's Will",
+      "needs": [
+        "new:commander-conditional-mode-count"
+      ],
+      "why": "\"If you control a commander as you cast this spell, you may choose both instead\" (the Will of the Sultai gap). Its protection-from-each-colour grant is also only a static today, not a mass effect."
+    },
+    {
+      "name": "Force of Will",
+      "needs": [
+        "new:alt-cost-exile-from-hand"
+      ],
+      "why": "The alternative cost \"pay 1 life and exile a blue card from your hand\" — no alternative cost exiles a chosen card from hand."
+    },
+    {
+      "name": "Mosswort Bridge",
+      "needs": [
+        "new:hideaway"
+      ],
+      "why": "Hideaway isn't modeled (AUTHORING §15)."
+    },
+    {
+      "name": "Patchwork Banner",
+      "needs": [
+        "new:chosen-creature-type-reads"
+      ],
+      "why": "\"Creatures you control of the chosen type get +1/+1\": a static scope can't read the type chosen on entry."
+    },
+    {
+      "name": "Mox Amber",
+      "needs": [
+        "effect:add-mana-extensions"
+      ],
+      "why": "\"One mana of any color among legendary creatures and planeswalkers you control\": add-mana can't take its colours from a set of permanents."
+    },
+    {
+      "name": "Wild Growth",
+      "needs": [
+        "new:attached-object-refs"
+      ],
+      "why": "\"Whenever enchanted land is tapped for mana\" is the Aura's triggered mana ability keyed to the land it enchants; tapped-for-mana triggers only see printed abilities, and no trigger subject names the enchanted permanent."
+    },
+    {
+      "name": "Rhythm of the Wild",
+      "needs": [
+        "new:riot",
+        "new:grant-uncounterable"
+      ],
+      "why": "Riot isn't modeled (AUTHORING §15), and nothing makes the controller's creature spells uncounterable."
+    },
+    {
+      "name": "Animate Dead",
+      "needs": [
+        "effect:attach-extensions"
+      ],
+      "why": "Enchants a creature card in a graveyard, reanimates it and reattaches as \"enchant creature put onto the battlefield with this Aura\": no Aura that returns and attaches to its target card."
+    },
+    {
+      "name": "Mirkwood Bats",
+      "needs": [
+        "new:token-created-trigger"
+      ],
+      "why": "\"Whenever you create … a token\" is keyed on who created the token; the engine records no creator, and a \"token enters under your control\" trigger isn't the same event."
+    },
+    {
+      "name": "Sensei's Divining Top",
+      "needs": [
+        "decision:library-ordering",
+        "new:put-source-on-library"
+      ],
+      "why": "\"Put them back in any order\" needs library ordering, and \"put this artifact on top of its owner's library\" needs put-on-library to take its own source."
+    },
+    {
+      "name": "Sword of the Animist",
+      "needs": [
+        "new:attached-object-refs"
+      ],
+      "why": "\"Whenever equipped creature attacks\" is the Equipment's trigger (its controller searches); no trigger subject names the attached creature."
+    },
+    {
+      "name": "Gamble",
+      "needs": [
+        "effect:random-choice"
+      ],
+      "why": "\"Discard a card at random\": discard is always chosen."
+    },
+    {
+      "name": "Rishkar's Expertise",
+      "needs": [
+        "effect:cast-during-resolution"
+      ],
+      "why": "\"You may cast a spell with mana value 5 or less from your hand without paying its mana cost\" during resolution."
+    },
+    {
+      "name": "Mox Diamond",
+      "needs": [
+        "new:enter-replacement-discard"
+      ],
+      "why": "\"If this artifact would enter, you may discard a land card instead. If you don't, put it into its owner's graveyard\": no entry replacement that asks for a discard or redirects the permanent."
+    },
+    {
+      "name": "Everflowing Chalice",
+      "needs": [
+        "keyword:multikicker"
+      ],
+      "why": "Multikicker isn't modeled (only a single kicker)."
+    },
+    {
+      "name": "Bloom Tender",
+      "needs": [
+        "effect:add-mana-extensions"
+      ],
+      "why": "\"For each color among permanents you control, add one mana of that color\": add-mana can't take a colour set from permanents."
+    },
+    {
+      "name": "Sylvan Library",
+      "needs": [
+        "new:drawn-this-turn-choice"
+      ],
+      "why": "\"Choose two cards in your hand drawn this turn. For each, pay 4 life or put it on top\": no memory of which cards in hand were drawn this turn and no per-card pay-or-return choice."
+    },
+    {
+      "name": "Academy Manufactor",
+      "needs": [
+        "replacement:token-creation-additive"
+      ],
+      "why": "\"If you would create a Clue, Food, or Treasure token, instead create one of each\": the token replacement only multiplies."
+    },
+    {
+      "name": "Untimely Malfunction",
+      "needs": [
+        "new:change-targets"
+      ],
+      "why": "\"Change the target of target spell or ability with a single target\": no retargeting effect and no target spec for an ability on the stack."
+    },
+    {
+      "name": "Force of Negation",
+      "needs": [
+        "new:alt-cost-exile-from-hand",
+        "new:counter-exile-instead"
+      ],
+      "why": "The not-your-turn alternative cost exiles a blue card from hand, and \"exile it instead of putting it into its owner's graveyard\" isn't an option on counter."
+    },
+    {
+      "name": "Bolas's Citadel",
+      "needs": [
+        "zone:cast-from-library-top",
+        "cost:sacrifice-multiple"
+      ],
+      "why": "Casting from the top of the library paying life equal to mana value, and \"Sacrifice ten nonland permanents\"."
+    },
+    {
+      "name": "Etali, Primal Storm",
+      "needs": [
+        "effect:impulse-exile-other-libraries",
+        "effect:cast-during-resolution"
+      ],
+      "why": "Exiles the top card of each player's library and casts any number of them free during resolution."
+    },
+    {
+      "name": "Snap",
+      "needs": [
+        "decision:choose-permanent"
+      ],
+      "why": "\"Untap up to two lands\" is an untargeted choice of lands on resolution."
+    },
+    {
+      "name": "Hullbreaker Horror",
+      "needs": [
+        "effect:modal-ability-targeted-modes"
+      ],
+      "why": "\"Choose up to one —\" of two targeted modes on a triggered ability."
+    },
+    {
+      "name": "Ragavan, Nimble Pilferer",
+      "needs": [
+        "new:dash",
+        "effect:impulse-exile-other-libraries"
+      ],
+      "why": "Dash isn't modeled, and \"exile the top card of that player's library. Until end of turn, you may cast that card\" reaches another player's library."
+    },
+    {
+      "name": "Reality Shift",
+      "needs": [
+        "mechanic:face-down"
+      ],
+      "why": "Manifest (a face-down 2/2) isn't modeled."
+    },
+    {
+      "name": "The Ozolith",
+      "needs": [
+        "effect:move-counter"
+      ],
+      "why": "Moving a creature's counters onto The Ozolith as it leaves and moving them all onto a target creature."
+    },
+    {
+      "name": "Dryad of the Ilysian Grove",
+      "needs": [
+        "static:basic-land-type-mana"
+      ],
+      "why": "\"Lands you control are every basic land type\": a gained basic land type doesn't give its intrinsic mana ability (rule 305.6)."
+    },
+    {
+      "name": "Flusterstorm",
+      "needs": [
+        "new:unless-target-controller",
+        "decision:copy-new-targets"
+      ],
+      "why": "\"Unless its controller pays {1}\" where \"its\" is the targeted spell (unless's chooser must be a player slot), and storm copies that may choose new targets."
+    },
+    {
+      "name": "Shadowspear",
+      "needs": [
+        "new:lose-keywords-effect"
+      ],
+      "why": "\"Permanents your opponents control lose hexproof and indestructible until end of turn\": no effect removes specific keywords."
+    },
+    {
+      "name": "Phyrexian Metamorph",
+      "needs": [
+        "replacement:copy-on-enter-options",
+        "effect:copy-exceptions"
+      ],
+      "why": "Enters as a copy of an artifact or creature (copyOnEnter only takes creatures) and \"it's an artifact in addition\" is a copy exception."
+    },
+    {
+      "name": "Guardian Project",
+      "needs": [
+        "condition:filter-card-property-clauses"
+      ],
+      "why": "\"If it doesn't have the same name as another creature you control or a creature card in your graveyard\": no name-uniqueness condition."
+    },
+    {
+      "name": "Sevinne's Reclamation",
+      "needs": [
+        "effect:copy-spell-extensions",
+        "decision:copy-new-targets"
+      ],
+      "why": "\"If this spell was cast from a graveyard, you may copy this spell and may choose a new target for the copy\"."
+    },
+    {
+      "name": "Kindred Discovery",
+      "needs": [
+        "new:chosen-creature-type-reads"
+      ],
+      "why": "\"Whenever a creature you control of the chosen type enters or attacks\": a trigger filter can't read the type chosen on entry."
+    },
+    {
+      "name": "Utopia Sprawl",
+      "needs": [
+        "new:attached-object-refs"
+      ],
+      "why": "\"Whenever enchanted Forest is tapped for mana, its controller adds an additional one mana of the chosen color\" — a trigger keyed to the enchanted land."
+    },
+    {
+      "name": "Anger",
+      "needs": [
+        "new:graveyard-static"
+      ],
+      "why": "\"As long as this card is in your graveyard and you control a Mountain, creatures you control have haste\": statics only work from the battlefield (and the command zone for costs)."
+    },
+    {
+      "name": "Dawn's Truce",
+      "needs": [
+        "new:gift"
+      ],
+      "why": "Gift isn't modeled."
+    },
+    {
+      "name": "Shifting Woodland",
+      "needs": [
+        "effect:become-copy"
+      ],
+      "why": "\"This land becomes a copy of target permanent card in your graveyard until end of turn\"."
+    },
+    {
+      "name": "Pact of Negation",
+      "needs": [
+        "effect:lose-game"
+      ],
+      "why": "\"At the beginning of your next upkeep, pay {3}{U}{U}. If you don't, you lose the game\": no lose-the-game effect."
+    },
+    {
+      "name": "Arena of Glory",
+      "needs": [
+        "new:exert",
+        "new:mana-spent-grants-haste"
+      ],
+      "why": "Exert isn't modeled, nor \"if any of that mana is spent on a creature spell, it gains haste\"."
+    },
+    {
+      "name": "Goldspan Dragon",
+      "needs": [
+        "bug:mana-any-one-color"
+      ],
+      "why": "Treasures gain \"Add two mana of any one color\"; add-mana's any-colour amount is paid as independently coloured units, which would let it pay {U}{R}."
+    },
+    {
+      "name": "Vanquisher's Banner",
+      "needs": [
+        "new:chosen-creature-type-reads"
+      ],
+      "why": "The anthem and cast trigger both read the type chosen on entry, which filters can't."
+    },
+    {
+      "name": "Underworld Breach",
+      "needs": [
+        "new:multiple-graveyard-permissions"
+      ],
+      "why": "A card with its own escape (Uro, Kroxa) must be able to use Breach's escape instead (ruling: you choose which applies), but a printed escape always shadows a granted one."
+    },
+    {
+      "name": "Dauthi Voidwalker",
+      "needs": [
+        "new:shadow"
+      ],
+      "why": "Shadow isn't a modeled keyword (also needs a void-counter exile replacement and a play-it-free permission)."
+    },
+    {
+      "name": "Forgotten Ancient",
+      "needs": [
+        "effect:move-counter"
+      ],
+      "why": "\"Move any number of +1/+1 counters from this creature onto other creatures\" — a player-chosen distribution of moved counters."
+    },
+    {
+      "name": "Mistrise Village",
+      "needs": [
+        "new:grant-uncounterable"
+      ],
+      "why": "\"The next spell you cast this turn can't be countered\": nothing makes a spell uncounterable after the fact."
+    },
+    {
+      "name": "Kutzil, Malamet Exemplar",
+      "needs": [
+        "condition:filter-card-property-clauses"
+      ],
+      "why": "\"Creatures … each with power greater than its base power\": no filter clause compares power to base power."
+    },
+    {
+      "name": "Helm of the Host",
+      "needs": [
+        "new:attached-object-refs"
+      ],
+      "why": "\"Create a token that's a copy of equipped creature\": no effect reference names the permanent an Equipment is attached to."
+    },
+    {
+      "name": "Spark Double",
+      "needs": [
+        "replacement:copy-on-enter-options",
+        "effect:copy-exceptions"
+      ],
+      "why": "Copies a creature or planeswalker you control, with an extra counter and not legendary."
+    },
+    {
+      "name": "Kami of Whispered Hopes",
+      "needs": [
+        "new:counter-replacement-plus",
+        "bug:mana-any-one-color"
+      ],
+      "why": "\"That many plus one +1/+1 counters\" (additive counter replacement) and \"X mana of any one color\"."
+    },
+    {
+      "name": "Silence",
+      "needs": [
+        "bug:prohibit-cast-suspend"
+      ],
+      "why": "The prohibit effect is expressible, but a player who can't cast spells can still suspend a card (the card's ruling says they can't): whyCannotSuspend never consults cast prohibitions."
+    },
+    {
+      "name": "Minas Tirith",
+      "needs": [
+        "new:attackers-this-turn-count"
+      ],
+      "why": "\"Activate only if you attacked with two or more creatures this turn\": the turn stats only record whether you attacked, not with how many."
+    },
+    {
+      "name": "Mystic Forge",
+      "needs": [
+        "zone:cast-from-library-top",
+        "zone:visibility-extensions"
+      ],
+      "why": "Casting artifact and colourless spells from the top of the library, and looking at it any time."
+    },
+    {
+      "name": "Mondrak, Glory Dominus",
+      "needs": [
+        "cost:sacrifice-multiple"
+      ],
+      "why": "\"Sacrifice two other artifacts and/or creatures\" as an activation cost."
+    },
+    {
+      "name": "Enduring Vitality",
+      "needs": [
+        "static:self-type-changes"
+      ],
+      "why": "\"Return it to the battlefield under its owner's control. It's an enchantment. (It's not a creature.)\" — returns having lost the creature type."
+    },
+    {
+      "name": "Simian Spirit Guide",
+      "needs": [
+        "new:hand-mana-ability"
+      ],
+      "why": "\"Exile this card from your hand: Add {R}\" — a mana ability activated from hand, exiling itself; zone abilities are never mana abilities and a hand ability discards."
+    },
+    {
+      "name": "Thassa's Oracle",
+      "needs": [
+        "new:win-game"
+      ],
+      "why": "\"You win the game\" isn't an effect."
+    },
+    {
+      "name": "Ephemerate",
+      "needs": [
+        "new:rebound"
+      ],
+      "why": "Rebound isn't modeled."
+    },
+    {
+      "name": "Geier Reach Sanitarium",
+      "needs": [
+        "new:simultaneous-hidden-discard"
+      ],
+      "why": "'Each player discards a card' is chosen face down in turn order and discarded all at once (ruling); the engine asks one player at a time and discards each publicly before asking the next."
+    }
+  ],
+  "newFeatures": {
+    "new:alt-cost-exile-from-hand": "An alternative spell cost that exiles a chosen card from hand matching a filter ('exile a blue card from your hand'), optionally with life and a timing condition (not your turn).",
+    "new:attached-object-refs": "The permanent an Aura or Equipment is attached to, named by the attachment's own abilities: as a trigger subject ('whenever equipped creature dies/attacks', 'whenever enchanted land is tapped for mana' — the attachment's controller controls the trigger, and a tapped-for-mana one must count for the auto-payer) and as an effect reference ('a token that's a copy of equipped creature').",
+    "new:attack-tax": "'Creatures can't attack you unless their controller pays {N} for each creature attacking you' — a cost paid as attackers are declared.",
+    "new:attackers-this-turn-count": "How many creatures a player attacked with this turn, as a condition or amount ('if you attacked with two or more creatures this turn').",
+    "new:change-targets": "Change or choose new targets for a spell or ability on the stack ('you may choose new targets for target spell or ability', 'change the target of target spell or ability with a single target'), including a target spec that reaches an activated or triggered ability on the stack.",
+    "new:chosen-creature-type-reads": "The creature type a permanent's controller chose as it entered (chooseCreatureTypeOnEnter), readable beyond cost reductions and mana restrictions: in a static's scope (lords), trigger filters, counts and conditions, reveal checks, trigger doublers, and a self type-add ('is the chosen type in addition to its other types').",
+    "new:commander-conditional-mode-count": "A modal spell's maximum number of modes that rises when its caster controls a commander as they cast it ('choose one. If you control a commander as you cast this spell, you may choose both instead').",
+    "new:commander-to-hand": "Put a commander into its owner's hand from the command zone as an effect (Command Beacon).",
+    "new:counter-exile-instead": "A counter effect that exiles the countered spell instead of putting it into its owner's graveyard.",
+    "new:counter-replacement-plus": "An additive counter replacement — 'that many plus one +1/+1 counters are put on it instead' — alongside the existing multiplier, with a filter on which permanents it reaches.",
+    "new:cumulative-upkeep": "Cumulative upkeep (rule 702.24): an upkeep trigger that adds an age counter and asks for the cost once per age counter, sacrificing the permanent if it isn't paid.",
+    "new:dash": "Dash (rule 702.109): an alternative cost that grants haste and returns the permanent to its owner's hand at the next end step.",
+    "new:drawn-this-turn-choice": "A per-card memory of which cards in hand were drawn this turn, and a choice over them with a per-card pay-or-return (Sylvan Library).",
+    "new:dynamic-life-cost": "An activation cost that pays a live amount of life, e.g. 'pay life equal to the number of colors in your commanders' color identity' (needs that amount too).",
+    "new:enter-replacement-discard": "An entry replacement that asks its controller to discard a matching card, and otherwise puts the permanent into its owner's graveyard instead (Mox Diamond).",
+    "new:enters-untapped-trigger": "A trigger condition on how a permanent entered — 'when this land enters untapped' — decided at entry, not rechecked at resolution as an intervening-if would be.",
+    "new:exert": "Exert (rule 701.43): an optional or cost-paid exert that keeps the permanent from untapping during its controller's next untap step.",
+    "new:gift": "Gift (rule 702.174): promise an opponent a gift as the spell is cast; they get it before the other effects, and 'if the gift was promised' conditions read it.",
+    "new:grant-uncounterable": "Make spells uncounterable after the fact or by a static: 'creature spells you control can't be countered', 'the next spell you cast this turn can't be countered'.",
+    "new:graveyard-static": "A static ability that functions while its card is in a graveyard ('as long as this card is in your graveyard and you control a Mountain, creatures you control have haste').",
+    "new:hand-mana-ability": "A mana ability activated from hand that exiles the card as its cost ('Exile this card from your hand: Add {R}') — never on the stack, usable while paying.",
+    "new:hideaway": "Hideaway (rule 702.75): look at the top N, exile one face down linked to the permanent, the rest on the bottom, and a later ability that plays the linked card free.",
+    "new:imprint": "Imprint: exile a chosen card from hand (or elsewhere) linked to the permanent, and read the linked exiled card later (its colours, its mana value, casting a copy).",
+    "new:life-total-cant-change": "'Your life total can't change' for a duration: life gain and loss (damage included) leave it unchanged.",
+    "new:lose-keywords-effect": "An effect that removes named keywords for a duration — 'permanents your opponents control lose hexproof and indestructible until end of turn'.",
+    "new:mana-spent-grants-haste": "Mana that grants the spell it pays for something when spent — 'if any of that mana is spent on a creature spell, it gains haste until end of turn'.",
+    "new:max-over-players-amount": "An amount that is the greatest per-player value rather than a sum — 'the greatest number of cards a player discarded this way'.",
+    "new:multiple-graveyard-permissions": "A card with its own escape (or flashback) that is also granted one may use either (the Underworld Breach ruling); today a printed keyword always shadows a granted one.",
+    "new:opening-hand-actions": "Actions taken from an opening hand before the game starts: 'you may begin the game with it on the battlefield' (Gemstone Caverns, the Leylines), with their conditions (not the starting player).",
+    "new:phasing": "Phasing (rule 702.26): permanents phase out and in, treated as though they don't exist while phased out.",
+    "new:player-protection": "Protection for a player ('you gain protection from everything until your next turn'): can't be targeted, damage prevented, can't be attacked/enchanted, with a duration.",
+    "new:put-source-on-library": "put-on-library (and similar moves) for the ability's own source — 'put this artifact on top of its owner's library'.",
+    "new:rebound": "Rebound (rule 702.88): a spell cast from hand is exiled as it resolves and may be cast free from exile at its controller's next upkeep.",
+    "new:reveal-top-any-library": "reveal-top (and its 'if it's a permanent card, put it onto the battlefield' follow-up) for another player's library — the owner of a target, a scope — not only the effect controller's.",
+    "new:riot": "Riot (rule 702.136): enters with your choice of a +1/+1 counter or haste, including when granted by a static.",
+    "new:shadow": "The shadow keyword (rule 702.28): can block or be blocked only by creatures with shadow.",
+    "new:shuffle-into-library": "Shuffle a permanent (or card) into its owner's library as an effect — 'the owner of target permanent shuffles it into their library'.",
+    "new:simultaneous-hidden-discard": "An 'each player discards' where every player chooses in turn order without seeing the others' choices and all the cards are discarded together as one event (rule 701.9b's ruling for Geier Reach Sanitarium, Windfall-style effects).",
+    "new:token-created-trigger": "'Whenever you create a token' — a trigger keyed to the player creating tokens, which needs the creator recorded on the token.",
+    "new:unless-target-controller": "An 'unless' clause whose chooser is the controller of a targeted object (a spell or permanent) — 'counter target spell unless its controller pays {1}' — not only a targeted player.",
+    "new:win-game": "A 'you win the game' effect routed through the existing elimination path."
+  },
+  "bugs": [
+    {
+      "card": "Bala Ged Recovery // Bala Ged Sanctuary, Malakir Rebirth // Malakir Mire",
+      "what": "cards/pool.test.ts's isDeckableCard sanity check (deckable > POOL_CARDS.length - 20) fails once the pool holds more than 20 back faces; these two MDFCs take it to 21 (1145 deckable of 1166). The margin needs raising or making proportional. Left unedited here, since the sweep may not touch engine tests."
+    },
+    {
+      "card": "Underworld Breach",
+      "what": "Game.escapeOf returns a card's printed escape whenever it has one, so a grantsToGraveyard escape (Underworld Breach, The Master of Keys) is never offered for such a card, though the rulings let the player choose which escape applies."
+    },
+    {
+      "card": "The Great Henge",
+      "what": "test/oracle-parse.test.ts reports a parser disagreement: scripts/oracle-parse.mjs reads '{T}: Add {G}{G}. You gain 2 life.' as a sequence of add-mana and gain-life, which isManaAbility rejects (the ability would use the stack). The pool file puts the life on add-mana's `also` (Kibo, Uktabi Prince's shape), which is the correct mana ability; the parser template needs to emit `also` for a trailing clause of a mana ability."
+    },
+    {
+      "card": "Silence",
+      "what": "Game.whyCannotSuspend never checks cast prohibitions (turnProhibitions / prohibits statics), so a player under Silence or Grand Abolisher-style effects can still suspend a card; the rulings say a player who can't cast spells can't suspend. Key bug:prohibit-cast-suspend."
+    },
+    {
+      "card": "Bident of Thassa",
+      "what": "A must-attack creature its controller leaves out of the attack declaration is sent at legal[0] by applyAttackerDeclarations (game.ts ~4046-4071) rather than its controller choosing which defender; declaring it explicitly still works."
+    },
+    {
+      "card": "Bident of Thassa",
+      "what": "test/sample-decks.test.ts fails: First Flight's substitutions table in engine/src/sample-decks.ts still swaps out Bident of Thassa, which is now implemented. Delete that entry (the sweep may not edit sample-decks.ts)."
+    }
+  ],
+  "unprocessed": []
+}

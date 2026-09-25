@@ -456,11 +456,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
         "Large creature, and a flier, which Isperia rewards.",
       ),
       sub(
-        "Bident of Thassa",
-        "Behold the Multiverse",
-        "Four-mana blue card draw.",
-      ),
-      sub(
         "Diluvian Primordial",
         "Steel Hellkite",
         "Large flying finisher.",
