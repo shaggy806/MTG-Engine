@@ -38,6 +38,7 @@ import {
   matchesFilter,
   weightedMatches,
 } from "./filter.js";
+import type { EffectAmount } from "./effects.js";
 import type { CardFilter } from "./filter.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
@@ -731,6 +732,56 @@ export function turnHistoryCount(
     }
   }
   return n;
+}
+
+/**
+ * Whether `ability` — a `grantsToSpells` static of `source` — reaches
+ * `spell`, a spell on the stack: its controller's spells matching `filter`,
+ * cast from one of `castFrom`, while the static's condition holds. `amount`
+ * answers a filter's `{ amount }` operand; without it such a compare fails
+ * closed.
+ */
+export function spellGrantReaches(
+  state: GameState,
+  registry: CardRegistry,
+  source: GameObject,
+  ability: StaticAbility,
+  spell: GameObject,
+  amount?: (amount: EffectAmount) => number,
+): boolean {
+  const grant = ability.grantsToSpells;
+  if (grant === undefined || spell.zone !== "stack" || spell.kind !== "card") return false;
+  if (source.zone !== "battlefield" || hasLostAbilities(source)) return false;
+  if (state.players[source.controller]?.hasLost === true || spell.controller !== source.controller) return false;
+  if (grant.castFrom !== undefined && (spell.castFrom === undefined || !grant.castFrom.includes(spell.castFrom))) {
+    return false;
+  }
+  if (ability.condition !== undefined && !staticConditionMet(state, registry, source, ability.condition)) {
+    return false;
+  }
+  return (
+    grant.filter === undefined ||
+    matchesFilter(state, registry, spell.id, grant.filter, {
+      you: source.controller,
+      ...(amount !== undefined ? { amount } : {}),
+    })
+  );
+}
+
+/** The keywords `grantsToSpells` statics on the battlefield give `spell`. */
+function spellGrantedKeywords(state: GameState, registry: CardRegistry, spell: GameObject): Keyword[] {
+  const out: Keyword[] = [];
+  for (const id of state.zones.shared.battlefield) {
+    const source = state.objects[id];
+    if (source === undefined) continue;
+    for (const ability of registry.get(printedCardName(source)).static) {
+      const keywords = ability.grantsToSpells?.keywords;
+      if (keywords !== undefined && spellGrantReaches(state, registry, source, ability, spell)) {
+        out.push(...keywords);
+      }
+    }
+  }
+  return out;
 }
 
 export function hasLostAbilities(object: GameObject): boolean {
@@ -1635,6 +1686,10 @@ function computeCharacteristicsUncached(
       for (const t of effect.protection.types ?? []) protTypes.add(t);
       if (effect.protection.filter !== undefined) protFilters.push(effect.protection.filter);
     }
+  }
+  // A spell's keywords from what grants them to spells (`grantsToSpells`).
+  if (object.zone === "stack" && object.kind === "card") {
+    for (const keyword of spellGrantedKeywords(state, registry, object)) keywords.add(keyword);
   }
   for (const modifier of object.modifiers) {
     for (const keyword of modifier.keywords) keywords.add(keyword);

@@ -865,6 +865,25 @@ export interface StaticAbility {
    * with an alternative cost of its own (Sephara) offers that one instead.
    */
   readonly alternativeCostForSpells?: { readonly mana: string; readonly filter?: CardFilter };
+  /**
+   * Keywords and abilities the spells this permanent's controller casts have
+   * while they're on the stack (rule 113.6 — a spell's abilities work there):
+   * Abaddon the Despoiler's "during your turn, spells you cast from your hand
+   * with mana value X or less have cascade" (a `your-turn` `condition`,
+   * `castFrom: ["hand"]`, a `manaValue` compare on an `{ amount }` operand,
+   * and a `this-cast` cascade trigger in `triggered`), The First Sliver's
+   * "Sliver spells you cast have cascade", "spells you cast have lifelink".
+   * `filter` is matched against the spell, from this permanent's
+   * controller's side. A granted `this-cast` trigger fires as the spell is
+   * cast; granted keywords are the spell's own (lifelink and deathtouch on
+   * the damage it deals).
+   */
+  readonly grantsToSpells?: {
+    readonly filter?: CardFilter;
+    readonly castFrom?: readonly ZoneType[];
+    readonly keywords?: readonly Keyword[];
+    readonly triggered?: readonly TriggeredAbility[];
+  };
   /** "You have no maximum hand size" (Thought Vessel, Reliquary Tower). A
    * property of the *controller*, not of anything this ability `affects`, so
    * it's read straight off the battlefield at cleanup rather than through the

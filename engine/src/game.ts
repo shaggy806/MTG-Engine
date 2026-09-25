@@ -72,6 +72,7 @@ import {
   hasLostAbilities,
   invalidateComputedCache,
   staticConditionMet,
+  spellGrantReaches,
   staticReaches,
   suspendComputedCache,
   turnStatOf,
@@ -6468,7 +6469,8 @@ export class Game {
     if (
       printedAbilities.length === 0 &&
       target.modifiers.length === 0 &&
-      (grantors !== undefined && grantors.length === 0)
+      (grantors !== undefined && grantors.length === 0) &&
+      target.zone !== "stack"
     ) {
       return EMPTY_TRIGGERED_ENTRIES;
     }
@@ -6503,6 +6505,33 @@ export class Game {
       }
       grants.sort((a, b) => a.ts - b.ts);
       for (const g of grants) granted.push(...g.entries);
+    }
+    // A spell on the stack: what grants abilities to its controller's spells
+    // (`grantsToSpells` — cascade, most often), by the granting permanent's
+    // timestamp.
+    if (target.zone === "stack" && target.kind === "card") {
+      const grants: { ts: number; source: GameObject; ability: StaticAbility; staticIndex: number }[] = [];
+      for (const id of this.state.zones.shared.battlefield) {
+        const source = this.state.objects[id];
+        if (source === undefined) continue;
+        this.registry.get(printedCardName(source)).static.forEach((ability, staticIndex) => {
+          if (ability.grantsToSpells?.triggered === undefined) return;
+          const amount = this.filterAmounts({ source: source.id, controller: source.controller });
+          if (spellGrantReaches(this.state, this.registry, source, ability, target, amount)) {
+            grants.push({ ts: source.timestamp, source, ability, staticIndex });
+          }
+        });
+      }
+      grants.sort((a, b) => a.ts - b.ts);
+      for (const { source, ability, staticIndex } of grants) {
+        const cardName = printedCardName(source);
+        (ability.grantsToSpells?.triggered ?? []).forEach((grantedAbility, index) => {
+          granted.push({
+            ability: grantedAbility,
+            ref: { kind: "static", cardName, staticIndex, list: "spell-triggered", index },
+          });
+        });
+      }
     }
     return granted.length === 0 ? printed : [...printed, ...granted];
   }
@@ -6587,7 +6616,9 @@ export class Game {
     const granting = this.registry.get(ref.cardName).static[ref.staticIndex];
     return ref.list === "activated"
       ? granting?.grantsActivated?.[ref.index]
-      : granting?.grantsTriggered?.[ref.index];
+      : ref.list === "spell-triggered"
+        ? granting?.grantsToSpells?.triggered?.[ref.index]
+        : granting?.grantsTriggered?.[ref.index];
   }
 
   /** `objectId`'s printed `activated` abilities plus any currently granted to
@@ -12564,7 +12595,11 @@ export class Game {
     if (target.kind !== "object") return;
     const id = split ? this.splitOneFromStack(target.object) : target.object;
     const object = this.state.objects[id];
-    if (object === undefined || object.zone !== "battlefield") return;
+    // A permanent, or a spell — Judith's "that spell gains deathtouch and
+    // lifelink", which lasts as long as it's on the stack (`moveObject`
+    // clears modifiers as it leaves).
+    if (object === undefined) return;
+    if (object.zone !== "battlefield" && !(object.zone === "stack" && object.kind === "card")) return;
     object.modifiers.push({
       power: 0,
       toughness: 0,
@@ -15155,6 +15190,8 @@ export class Game {
       return sourceLastKnown.types.includes("creature") && sourceLastKnown.keywords.includes(keyword);
     }
     const object = this.state.objects[source];
+    // A spell's own — printed or granted (Judith's deathtouch and lifelink).
+    if (object?.zone === "stack" && object.kind === "card") return this.objHasKeyword(source, keyword);
     if (object === undefined || object.zone !== "battlefield") return false;
     if (this.creatureDef(source) === null) return false;
     return this.objHasKeyword(source, keyword);

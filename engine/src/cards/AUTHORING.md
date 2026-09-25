@@ -587,7 +587,7 @@ ability would have no way to name a token that didn't exist when it was set up.
 | --- | --- | --- |
 | `modify-pt` | `target`, `power`, `toughness`, `duration` | `duration: "end-of-turn" \| "permanent"` |
 | `modify-pt-all` | `filter`, `power`, `toughness`, `duration`, `exceptSource?`, `controlledByTarget?` | Overrun. `exceptSource` spares the source ("**other** attacking creatures you control with flying" — Steel-Plume Marshal, itself one). `controlledByTarget` scopes to a *targeted seat* (Great Oak Guardian), which a `CardFilter`'s `controlledBy` can't name — it only knows "you" and "opponent". |
-| `grant-keyword` | `target`, `keyword`, `duration` | |
+| `grant-keyword` | `target`, `keyword`, `duration` | A permanent — or a spell on the stack: Judith, Carnage Connoisseur's "whenever you cast an instant or sorcery spell, … that spell gains deathtouch and lifelink" is two of these on `"trigger-object"`, lasting while it's on the stack. A spell's lifelink and deathtouch apply to the damage it deals. |
 | `player-effect` | `duration: "end-of-turn" \| "until-your-next-turn"`, `reduceSpells?`, `castFromHandFree?`, `damageTo?` | A continuous effect for the controller that expires — an emblem with a clock (`GameState.playerEffects`): `reduceSpells: { applies, reduceGeneric }` is Rowan, Scion of War's "spells you cast this turn that are black and/or red cost {X} less to cast, where X is the amount of life you lost this turn" (`applies: { anyOf: [{ colors: ["B"] }, { colors: ["R"] }] }`, `reduceGeneric: { turnStat: "life-lost", who: "you" }` — read as it resolves and fixed, rule 611.2b); `castFromHandFree: { filter? }` is Yusri's "you may cast spells from your hand this turn without paying their mana costs" (offered as a `free` cast); `damageTo: { who, multiplier, permanentsToo? }` is "until your next turn, if a source would deal damage to that player or a permanent that player controls, it deals double that damage instead" (the players fixed as it resolves). |
 | `flip-coin` | `won?`, `lost?`, `untilLose?` | "Flip a coin. If you win the flip, …; if you lose the flip, …" (rule 705): the controller flips on the game's seeded random stream (so a seed replays), then `won` or `lost` applies as their effect. `untilLose: true` is "flip a coin until you lose a flip" (Okaun, Eye of Chaos; Zndrsplt, Eye of Wisdom) — `won` once per win. Each flip is a `coin-flipped` event, which the `wins-coin-flip` trigger reads. |
 | `prohibit` | `who` (a target slot or a `PlayerScope`, default you) with `spells` / `abilities`, or `target` (a permanent) | Prohibitions until end of turn: Sen Triplets' "this turn, that player can't cast spells or activate abilities" (`who: 0, spells: true, abilities: true`), Koma, Cosmos Serpent's "its activated abilities can't be activated this turn" (`target: 0` — that permanent this stint; flickered, it's a new object). Mana abilities are activated abilities, so they're barred too. `GameState.turnProhibitions`. |
@@ -1521,6 +1521,17 @@ anthem, the keyword grant and the granted trigger like any other creature.
   nothing). Offered exactly like a printed flashback or escape (`via`), and a
   card that has its own keeps it. The grant ends when this permanent leaves;
   a spell already cast with it is still exiled as it leaves the stack.
+- `grantsToSpells: { filter?, castFrom?, keywords?, triggered? }` — keywords
+  and abilities the spells you cast have on the stack (rule 113.6): "spells you
+  cast have lifelink" is `{ keywords: ["lifelink"] }`; Abaddon the Despoiler's
+  "during your turn, spells you cast from your hand with mana value X or less
+  have cascade, where X is the total amount of life your opponents have lost
+  this turn" is a `your-turn` `condition` with `{ castFrom: ["hand"], filter:
+  { manaValue: { op: "lte", n: { amount: { turnStat: "life-lost", who:
+  "opponent" } } } }, triggered: [<a "this-cast" cascade trigger>] }` — a
+  granted `this-cast` trigger fires as the spell is cast, like a printed one.
+  `filter` is matched against the spell from your side; an `{ amount }`
+  operand works for a granted trigger but fails closed for granted keywords.
 - `alternativeCostForSpells: { mana, filter? }` — an alternative cost (rule
   118.9) for the spells you cast: Jodah, Archmage Eternal's "you may pay
   {W}{U}{B}{R}{G} rather than pay the mana cost for spells you cast" is `{

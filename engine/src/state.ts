@@ -593,7 +593,8 @@ export type GrantedAbilityRef =
       /** The granting card's printed name, and where in its definition. */
       readonly cardName: string;
       readonly staticIndex: number;
-      readonly list: "activated" | "triggered";
+      /** `"spell-triggered"`: a `grantsToSpells` static's `triggered`. */
+      readonly list: "activated" | "triggered" | "spell-triggered";
       readonly index: number;
     }
   | { readonly kind: "modifier"; readonly ability: TriggeredAbility };

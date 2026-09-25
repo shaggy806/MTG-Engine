@@ -96,21 +96,21 @@ that one card is the reason the deck exists.
   `tapped-for-mana` triggered mana ability; their Banana and Meteorite tokens are authored
   with them); Reyhan, Last of the Abzan (`leaves-battlefield`'s `to` and `filter`, and a
   `countersOn` of the trigger object); The Locust God and Eshki, Temur's Roar (rule 400.7
-  object identity for delayed triggers, sources and targets) — confirm each at
-  `card:lookup`.
+  object identity for delayed triggers, sources and targets); Judith, Carnage Connoisseur
+  and Abaddon the Despoiler (`grant-keyword` on a spell, and the `grantsToSpells` static) —
+  confirm each at `card:lookup`.
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first
   ten, engine-only, with the commanders each fully unblocks:
   `effect:amount-aggregate` (+2), `effect:delayed-trigger-extensions` (+4),
-  `trigger:discards-extensions` (+2), `effect:missing-tokens` (+1),
-  `effect:look-and-choose-leftover` (+1), `condition:defending-player-life-rank` (+1),
-  `bug:transform-fixes` (+1), `effect:exile-library-all-but-bottom` (+1),
-  `mechanic:keyword-counters` (+1), `static:grant-abilities-to-spells` (+2).
-- **Most-needed features overall.** `zone:visibility-extensions` and
-  `static:grant-abilities-to-spells` (13 each), `effect:copy-spell-extensions`,
-  `effect:copy-exceptions` and `effect:delayed-trigger-extensions` (11 each). Live numbers
-  come from `cmdrs:gaps`.
+  `trigger:discards-extensions` (+2), `effect:missing-tokens` (+1), `stat:mana-spent-to-cast`
+  (+1), `effect:look-and-choose-leftover` (+1), `keyword:affinity` (+1),
+  `condition:defending-player-life-rank` (+1), `bug:transform-fixes` (+1),
+  `effect:exile-library-all-but-bottom` (+1).
+- **Most-needed features overall.** `zone:visibility-extensions` (13),
+  `effect:copy-spell-extensions`, `effect:copy-exceptions` and
+  `effect:delayed-trigger-extensions` (11 each). Live numbers come from `cmdrs:gaps`.
 - **UI-bound features.** These need a new client decision and a browser check:
   `effect:may-sacrifice-then` (13), `decision:copy-new-targets` (12), `decision:choose-permanent`
   (11), `effect:enter-attacking`, `decision:free-cast-choices`, `effect:attach-extensions`,

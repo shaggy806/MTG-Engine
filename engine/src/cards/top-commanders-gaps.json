@@ -95,7 +95,8 @@
   "effect:mana-ability-side-effects",
   "trigger:leaves-battlefield-filter",
   "effect:amount-counters-on-object",
-  "bug:zone-change-object-identity"
+  "bug:zone-change-object-identity",
+  "static:grant-abilities-to-spells"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
@@ -1111,7 +1112,7 @@
   "static:grant-abilities-to-spells": {
    "size": "medium",
    "ui": false,
-   "description": "Statics and turn-scoped effects that grant keywords or abilities to spells you cast (cascade, split second, lifelink, deathtouch), read on the stack and at cast time. dealDamage honours a spell's granted keywords."
+   "description": "Statics and turn-scoped effects that grant keywords or abilities to spells you cast, read on the stack and at cast time. Built: a grantsToSpells static (filter, castFrom, keywords, triggered — Abaddon's cascade as a granted this-cast trigger, 'spells you cast have lifelink'), grant-keyword on a spell on the stack (Judith's deathtouch and lifelink), and dealDamage honouring a spell's lifelink and deathtouch. Split second granted to spells is not modelled (it's a card field, not a keyword)."
   },
   "static:grant-to-cards-outside-battlefield": {
    "size": "medium",
