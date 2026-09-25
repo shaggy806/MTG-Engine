@@ -9,7 +9,7 @@
 import type { CastVia } from "./actions.js";
 import type { TriggeredAbility } from "./abilities.js";
 import type { CardType, CombatRestriction, Keyword, StaticAbility, StaticCondition, Supertype } from "./cards.js";
-import type { EffectSpec, FlickerCounters } from "./effects.js";
+import type { EffectSpec, FlickerCounters, LookAndChooseLeftoverIf } from "./effects.js";
 import type { CardFilter } from "./filter.js";
 import type { Color, ManaOrigin, ManaUnit } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
@@ -1063,6 +1063,10 @@ export type AwaitingDecision =
        * library is shuffled (a library *search* / tutor — rule 701.19); or
        * put into the chooser's hand (Genesis Ultimatum — needed-cards P19). */
       readonly leftover: "bottom-random" | "stay" | "shuffle" | "hand" | "graveyard";
+      /** Where the rest go instead when a condition holds once the chosen
+       * cards have moved — the `look-and-choose` effect's `leftoverIf`, asked
+       * of `thenSource`. */
+      readonly leftoverIf?: LookAndChooseLeftoverIf;
       /** A library-search result that enters the battlefield does so tapped
        * (Rampant Growth). Only meaningful with `destination: "battlefield"`. */
       readonly enterTapped?: boolean;

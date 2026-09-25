@@ -2026,6 +2026,17 @@ export type EffectSpec =
        * graveyard") into their graveyard, in the same move as the chosen
        * ones. */
       readonly leftover: "bottom-random" | "stay" | "hand" | "graveyard";
+      /**
+       * A leftover destination that depends on how things stand once the
+       * chosen cards are where they're going — Nine-Fingers Keene's "you may
+       * put a Gate card from among them onto the battlefield. Then if you
+       * control nine or more Gates, put the rest into your graveyard.
+       * Otherwise, put the rest on the bottom of your library in a random
+       * order": when `condition` holds, asked after the chosen cards have
+       * moved (a Gate just put onto the battlefield counts), the rest go to
+       * `leftover` here; otherwise to the effect's own `leftover`.
+       */
+      readonly leftoverIf?: LookAndChooseLeftoverIf;
       /** Narrows which revealed candidates can be chosen (e.g. Ureni of the
        * Unwritten: only a Dragon card). Everything is still revealed either
        * way — omit for "any of them". */
@@ -2041,6 +2052,12 @@ export type EffectSpec =
        */
       readonly then?: EffectSpec;
     };
+
+/** See the `look-and-choose` effect's `leftoverIf`. */
+export interface LookAndChooseLeftoverIf {
+  readonly condition: StaticCondition;
+  readonly leftover: "bottom-random" | "hand" | "graveyard";
+}
 
 /** One selectable mode of a `modal` effect (rule 700.2) or a `castModal` card
  * (ROADMAP Phase 11 EG-2). */
@@ -2601,6 +2618,7 @@ export interface EffectApi {
     enterTapped?: boolean,
     then?: EffectSpec,
     reveal?: boolean,
+    leftoverIf?: LookAndChooseLeftoverIf,
   ): void;
 }
 
@@ -3868,6 +3886,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         spec.enterTapped === true,
         spec.then,
         spec.reveal === true,
+        spec.leftoverIf,
       );
       return;
     default:

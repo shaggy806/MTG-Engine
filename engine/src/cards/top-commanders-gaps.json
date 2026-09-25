@@ -99,7 +99,8 @@
   "static:grant-abilities-to-spells",
   "keyword:affinity",
   "condition:defending-player-life-rank",
-  "stat:mana-spent-to-cast"
+  "stat:mana-spent-to-cast",
+  "effect:look-and-choose-leftover"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
@@ -585,7 +586,7 @@
   "effect:look-and-choose-leftover": {
    "size": "small",
    "ui": false,
-   "description": "More look-and-choose leftover destinations. Still missing: a destination decided by a condition checked after the chosen card is placed. Built so far: leftover 'graveyard' — the rest into your graveyard, in the same move as the chosen cards."
+   "description": "More look-and-choose leftover destinations: 'graveyard' — the rest into your graveyard, in the same move as the chosen cards — and leftoverIf, a destination decided by a condition asked once the chosen cards have moved (Nine-Fingers Keene: the Gate just put onto the battlefield counts toward 'nine or more Gates')."
   },
   "effect:look-and-choose-second-pick": {
    "size": "small",

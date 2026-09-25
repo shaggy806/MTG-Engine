@@ -120,6 +120,7 @@ import type {
   EffectSpec,
   FlickerCounters,
   FlickerOptions,
+  LookAndChooseLeftoverIf,
   UnlessOption,
   WardCost,
   ModeOption,
@@ -3678,19 +3679,31 @@ export class Game {
       }
     }));
 
-    if (awaiting.leftover === "bottom-random") {
+    // "Then if you control nine or more Gates, put the rest into your
+    // graveyard. Otherwise, …" — asked now the chosen cards have moved.
+    const leftoverTo =
+      awaiting.leftoverIf !== undefined &&
+      this.makeResolutionContext(
+        awaiting.thenSource ?? asObjectId("choose-from-zone-source"),
+        player,
+        [],
+        awaiting.thenX ?? 0,
+      ).conditionMet(awaiting.leftoverIf.condition)
+        ? awaiting.leftoverIf.leftover
+        : awaiting.leftover;
+    if (leftoverTo === "bottom-random") {
       // `moveObject` always appends to a zone's array, and the library's
       // array is drawn from index 0 (the top) — so pushing here lands each
       // card on the bottom, in shuffle order.
       for (const id of shuffle(leftover, this.rng)) this.moveObject(id, "library");
       this.state.rngState = this.rng.seed;
-    } else if (awaiting.leftover === "shuffle") {
+    } else if (leftoverTo === "shuffle") {
       // A library search — shuffle the whole library afterwards (rule 701.19j).
       this.shuffleLibraryOf(player);
-    } else if (awaiting.leftover === "hand") {
+    } else if (leftoverTo === "hand") {
       // Genesis Ultimatum: "… and the rest into your hand." needed-cards P19.
       for (const id of leftover) this.moveObject(id, "hand");
-    } else if (awaiting.leftover === "graveyard") {
+    } else if (leftoverTo === "graveyard") {
       // "…and the rest into your graveyard" — with the chosen cards, one
       // move (this runs inside the choice's batch).
       for (const id of leftover) this.moveObject(id, "graveyard");
@@ -11195,7 +11208,7 @@ export class Game {
           ),
         );
       },
-      lookAndChoose: (zone, count, min, max, destination, leftover, filter, enterTapped, then, reveal) =>
+      lookAndChoose: (zone, count, min, max, destination, leftover, filter, enterTapped, then, reveal, leftoverIf) =>
         this.beginZoneChoice(
           controller,
           zone,
@@ -11206,8 +11219,11 @@ export class Game {
           leftover,
           filter,
           enterTapped === true,
-          then === undefined ? undefined : { effect: then, source, x },
+          // The source and X outlive the resolution for a `then` to apply
+          // and a `leftoverIf` to be asked once the choice is answered.
+          then === undefined && leftoverIf === undefined ? undefined : { effect: then, source, x },
           reveal === true,
+          leftoverIf,
         ),
     };
   }
@@ -11235,8 +11251,9 @@ export class Game {
     leftover: "bottom-random" | "stay" | "hand" | "graveyard",
     filter: ZoneChoiceFilter | undefined,
     enterTapped = false,
-    then?: { effect: EffectSpec; source: ObjectId; x: number },
+    then?: { effect: EffectSpec | undefined; source: ObjectId; x: number },
     reveal = false,
+    leftoverIf?: LookAndChooseLeftoverIf,
   ): void {
     const zoneCards = this.state.zones.perPlayer[player][zone];
     // Only a library is looked at `count` deep; a graveyard is public and a
@@ -11258,7 +11275,9 @@ export class Game {
       destination,
       leftover,
       ...(enterTapped && destination === "battlefield" ? { enterTapped: true } : {}),
-      ...(then !== undefined ? { then: then.effect, thenSource: then.source, thenX: then.x } : {}),
+      ...(then?.effect !== undefined ? { then: then.effect } : {}),
+      ...(then !== undefined ? { thenSource: then.source, thenX: then.x } : {}),
+      ...(leftoverIf !== undefined ? { leftoverIf } : {}),
     };
   }
 
