@@ -104,42 +104,6 @@ describe("Boggart Trawler // Boggart Bog", () => {
   });
 });
 
-describe("Crypt Ghast", () => {
-  it("a Swamp taps for an extra {B}", () => {
-    const { game } = setUp();
-    spawn(game, "Crypt Ghast");
-    spawn(game, "Swamp");
-    const whisper = game.debugSpawn("Night's Whisper", A, "hand");
-    const before = game.handOf(A).length;
-    cast(game, whisper);
-    expect(game.state.objects[whisper].zone).toBe("graveyard");
-    expect(game.handOf(A)).toHaveLength(before + 1);
-  });
-
-  it("extorts when you cast a spell", () => {
-    const { game, a } = setUp();
-    spawn(game, "Crypt Ghast");
-    lands(game, "Plains", 2);
-    const bolt = game.debugSpawn("Lightning Bolt", A, "hand");
-    spawn(game, "Mountain");
-    a.chooseModesFn = () => [0];
-    cast(game, bolt, [player(B)]);
-    expect(life(game, B)).toBe(16);
-    expect(life(game, A)).toBe(21);
-  });
-});
-
-describe("Blind Obedience", () => {
-  it("opponents' artifacts and creatures enter tapped, yours don't", () => {
-    const { game } = setUp();
-    spawn(game, "Blind Obedience");
-    expect(game.state.objects[spawn(game, "Grizzly Bears", B)].tapped).toBe(true);
-    expect(game.state.objects[spawn(game, "Sol Ring", B)].tapped).toBe(true);
-    expect(game.state.objects[spawn(game, "Forest", B)].tapped).toBe(false);
-    expect(game.state.objects[spawn(game, "Grizzly Bears", A)].tapped).toBe(false);
-  });
-});
-
 describe("Graven Cairns", () => {
   it("{B/R}, {T}: two mana in any combination of {B} and {R}", () => {
     const { game } = setUp();
@@ -166,7 +130,7 @@ describe("Relic of Legends", () => {
     const { game } = setUp();
     const relic = spawn(game, "Relic of Legends");
     const bears = spawn(game, "Grizzly Bears");
-    const legend = spawn(game, "Mangara, the Diplomat");
+    const legend = spawn(game, "Thrasios, Triton Hero");
     const offers = game
       .legalActions(A)
       .filter((o) => o.kind === "activate-ability" && o.source === relic && o.abilityIndex === 1);
@@ -206,55 +170,6 @@ describe("Tireless Tracker", () => {
     expect(clue).toBeDefined();
     activate(game, clue, 0);
     expect(game.state.objects[tracker].counters["+1/+1"]).toBe(1);
-  });
-});
-
-describe("Mangara, the Diplomat", () => {
-  it("draws when an opponent casts their second spell each turn", () => {
-    const { game } = setUp();
-    spawn(game, "Mangara, the Diplomat");
-    lands(game, "Island", 2, B);
-    const first = game.debugSpawn("Opt", B, "hand");
-    const second = game.debugSpawn("Opt", B, "hand");
-    toStep(game, "end");
-    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "precombat-main" && quiet(s));
-    const before = game.handOf(A).length;
-    cast(game, first, [], {}, B);
-    expect(game.handOf(A)).toHaveLength(before);
-    cast(game, second, [], {}, B);
-    expect(game.handOf(A)).toHaveLength(before + 1);
-  });
-
-  it("draws once when two or more creatures attack you", () => {
-    const { game, b } = setUp();
-    spawn(game, "Mangara, the Diplomat");
-    const x = spawn(game, "Grizzly Bears", B);
-    const y = spawn(game, "Grizzly Bears", B);
-    const z = spawn(game, "Grizzly Bears", B);
-    b.declareAttackersFn = () => [
-      { attacker: x, defender: A },
-      { attacker: y, defender: A },
-      { attacker: z, defender: A },
-    ];
-    toStep(game, "end");
-    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "precombat-main" && quiet(s));
-    const before = game.handOf(A).length;
-    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "declare-blockers");
-    game.advanceUntil(quiet);
-    expect(game.handOf(A)).toHaveLength(before + 1);
-  });
-
-  it("doesn't draw for a lone attacker", () => {
-    const { game, b } = setUp();
-    spawn(game, "Mangara, the Diplomat");
-    const x = spawn(game, "Grizzly Bears", B);
-    b.declareAttackersFn = () => [{ attacker: x, defender: A }];
-    toStep(game, "end");
-    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "precombat-main" && quiet(s));
-    const before = game.handOf(A).length;
-    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "declare-blockers");
-    game.advanceUntil(quiet);
-    expect(game.handOf(A)).toHaveLength(before);
   });
 });
 
@@ -307,7 +222,7 @@ describe("Brotherhood Regalia", () => {
     spawn(game, "Plains");
     const regalia = spawn(game, "Brotherhood Regalia");
     const bears = spawn(game, "Grizzly Bears");
-    const legend = spawn(game, "Mangara, the Diplomat");
+    const legend = spawn(game, "Thrasios, Triton Hero");
     const cheap = game
       .legalActions(A)
       .filter((o) => o.kind === "activate-ability" && o.source === regalia && o.abilityIndex === 0);
@@ -323,7 +238,7 @@ describe("Brotherhood Regalia", () => {
     const { game } = setUp();
     spawn(game, "Plains");
     const regalia = spawn(game, "Brotherhood Regalia");
-    const legend = spawn(game, "Mangara, the Diplomat");
+    const legend = spawn(game, "Thrasios, Triton Hero");
     activate(game, regalia, 0, [obj(legend)]);
     spawn(game, "Mountain", B);
     const bolt = game.debugSpawn("Lightning Bolt", B, "hand");
@@ -332,35 +247,6 @@ describe("Brotherhood Regalia", () => {
     cast(game, bolt, [obj(legend)], {}, B);
     expect(game.state.objects[legend].zone).toBe("battlefield");
     expect(game.state.objects[bolt].zone).toBe("graveyard");
-  });
-});
-
-describe("Ghostly Flicker", () => {
-  it("blinks two things you control, which come back as new objects", () => {
-    const { game, a } = setUp();
-    lands(game, "Island", 3);
-    const bears = spawn(game, "Grizzly Bears");
-    game.debugApplyEffect(A, { kind: "add-counter", target: 0, counter: "+1/+1", amount: 1 }, [obj(bears)]);
-    const land = spawn(game, "Forest");
-    game.state.objects[land].tapped = true;
-    const flicker = game.debugSpawn("Ghostly Flicker", A, "hand");
-    a.chooseTargetsFn = () => [obj(bears), obj(land)];
-    cast(game, flicker, [obj(bears), obj(land)]);
-    const newBears = named(game, "Grizzly Bears", A)[0];
-    expect(game.state.objects[newBears].counters["+1/+1"] ?? 0).toBe(0);
-    expect(named(game, "Forest", A).every((id) => !game.state.objects[id].tapped)).toBe(true);
-  });
-
-  it("returns an opponent's creature you control under your control", () => {
-    const { game } = setUp();
-    lands(game, "Island", 3);
-    const theirs = spawn(game, "Grizzly Bears", B);
-    game.debugApplyEffect(A, { kind: "gain-control", target: 0, untilEndOfTurn: true }, [obj(theirs)]);
-    const land = spawn(game, "Forest");
-    const flicker = game.debugSpawn("Ghostly Flicker", A, "hand");
-    cast(game, flicker, [obj(theirs), obj(land)]);
-    game.advanceUntil((s) => s.turn.number === 2 && quiet(s));
-    expect(named(game, "Grizzly Bears", A)).toHaveLength(1);
   });
 });
 
@@ -413,30 +299,6 @@ describe("Bridgeworks Battle // Tanglespan Bridgeworks", () => {
     const battle = game.debugSpawn("Bridgeworks Battle", A, "hand");
     cast(game, battle, [obj(bears), null]);
     expect(game.viewFor(A).objects[bears]?.power).toBe(4);
-  });
-});
-
-describe("Ancient Greenwarden", () => {
-  it("plays lands from the graveyard, and doubles landfall", () => {
-    const { game } = setUp();
-    spawn(game, "Ancient Greenwarden");
-    spawn(game, "Tireless Tracker");
-    const land = game.debugSpawn("Forest", A, "graveyard");
-    expect(game.legalActions(A).some((o) => o.kind === "play-land" && o.card === land)).toBe(true);
-    game.dispatch({ type: "play-land", player: A, card: land });
-    game.advanceUntil(quiet);
-    expect(named(game, "Clue Token").reduce((n, id) => n + (game.state.objects[id].stackCount ?? 1), 0)).toBe(2);
-  });
-
-  it("doesn't double an artifact entering", () => {
-    const { game, a } = setUp();
-    a.chooseModesFn = () => [0];
-    spawn(game, "Ancient Greenwarden");
-    spawn(game, "Puresteel Paladin");
-    const before = game.handOf(A).length;
-    game.debugSpawn("Bonesplitter", A, "battlefield", { announceEntry: true });
-    game.advanceUntil(quiet);
-    expect(game.handOf(A)).toHaveLength(before + 1);
   });
 });
 

@@ -1,6 +1,6 @@
 {
   "batch": "K2",
-  "status": "in-progress",
+  "status": "complete",
   "authored": [
     {
       "name": "Krosan Grip",
@@ -14,20 +14,6 @@
       "files": [
         "engine/src/cards/pool/boggart-trawler.ts",
         "engine/src/cards/pool/boggart-bog.ts"
-      ],
-      "tested": true
-    },
-    {
-      "name": "Crypt Ghast",
-      "files": [
-        "engine/src/cards/pool/crypt-ghast.ts"
-      ],
-      "tested": true
-    },
-    {
-      "name": "Blind Obedience",
-      "files": [
-        "engine/src/cards/pool/blind-obedience.ts"
       ],
       "tested": true
     },
@@ -56,13 +42,6 @@
       "name": "Tireless Tracker",
       "files": [
         "engine/src/cards/pool/tireless-tracker.ts"
-      ],
-      "tested": true
-    },
-    {
-      "name": "Mangara, the Diplomat",
-      "files": [
-        "engine/src/cards/pool/mangara-the-diplomat.ts"
       ],
       "tested": true
     },
@@ -96,13 +75,6 @@
       "tested": true
     },
     {
-      "name": "Ghostly Flicker",
-      "files": [
-        "engine/src/cards/pool/ghostly-flicker.ts"
-      ],
-      "tested": true
-    },
-    {
       "name": "Puresteel Paladin",
       "files": [
         "engine/src/cards/pool/puresteel-paladin.ts"
@@ -114,13 +86,6 @@
       "files": [
         "engine/src/cards/pool/bridgeworks-battle.ts",
         "engine/src/cards/pool/tanglespan-bridgeworks.ts"
-      ],
-      "tested": true
-    },
-    {
-      "name": "Ancient Greenwarden",
-      "files": [
-        "engine/src/cards/pool/ancient-greenwarden.ts"
       ],
       "tested": true
     },
@@ -759,6 +724,41 @@
         "new:gift"
       ],
       "why": "Gift a tapped Fish."
+    },
+    {
+      "name": "Crypt Ghast",
+      "needs": [
+        "new:extort-life-lost"
+      ],
+      "why": "The extort helper gains one life per opponent rather than the life actually lost (ruling: with Platinum Emperion you gain nothing). The Swamp mana trigger is expressible."
+    },
+    {
+      "name": "Blind Obedience",
+      "needs": [
+        "new:extort-life-lost"
+      ],
+      "why": "Extort gains a fixed amount rather than the life actually lost (see Crypt Ghast). The enters-tapped half is expressible."
+    },
+    {
+      "name": "Mangara, the Diplomat",
+      "needs": [
+        "new:attack-with-intervening-if"
+      ],
+      "why": "'If two or more of those creatures are attacking you and/or planeswalkers you control' is an intervening-if (rule 603.4). attack-with checks it only when the ability triggers, never again on resolution, which the ruling relies on."
+    },
+    {
+      "name": "Ghostly Flicker",
+      "needs": [
+        "new:distinct-targets-across-slots"
+      ],
+      "why": "'Two target …' needs two different objects, but separate target slots aren't checked against each other. The reviewer had a cast with the same permanent in both slots accepted."
+    },
+    {
+      "name": "Ancient Greenwarden",
+      "needs": [
+        "new:play-mdfc-land-face-from-graveyard"
+      ],
+      "why": "'You may play lands from your graveyard' should let you play an MDFC's land back face (ruling). playFromGraveyard matches the card's front face, so the permission misses it. The trigger-doubling half is fine."
     }
   ],
   "newFeatures": {
@@ -811,12 +811,28 @@
     "new:gift": "Gift: an optional promise to an opponent as the spell is cast, with 'if the gift was promised' riders.",
     "new:draw-replacement-except-first": "A would-draw replacement that exempts the first card drawn in each of your draw steps.",
     "new:dynamic-compare-in-static-filters": "Dynamic numeric operands (the source's power, a live amount) in the CardFilters statics read — cantBeBlockedBy, canBlockOnly, affects scopes.",
-    "new:spree": "Spree: choose one or more modes, each with its own additional cost."
+    "new:spree": "Spree: choose one or more modes, each with its own additional cost.",
+    "new:extort-life-lost": "Extort (and similar drains) gaining life equal to the life actually lost this way, rather than a count of opponents.",
+    "new:attack-with-intervening-if": "An attack-with trigger's attacker count, rechecked as an intervening-if when the ability resolves (rule 603.4).",
+    "new:distinct-targets-across-slots": "Several target slots that share one use of the word 'target' ('two target creatures') must name different objects.",
+    "new:play-mdfc-land-face-from-graveyard": "Graveyard play permissions (playFromGraveyard) should consider a modal DFC's land face, not just its front."
   },
   "bugs": [
     {
       "card": "(pool guard)",
       "what": "src/cards/pool.test.ts 'isDeckableCard excludes tokens and back faces' allows at most 20 non-deckable pool entries (POOL_CARDS.length - 20); this batch's three MDFC back faces (Boggart Bog, Mystic Peak, Tanglespan Bridgeworks) take it to 22. The margin needs raising or counting back faces explicitly; test files outside the batch's own are off-limits here."
+    },
+    {
+      "card": "Crypt Ghast / Blind Obedience",
+      "what": "helpers.ts extort() gains { countPlayers: 'each-opponent' } life, not the life actually lost; wrong whenever an opponent's loss is prevented or altered."
+    },
+    {
+      "card": "Ghostly Flicker",
+      "what": "cast-spell with targets [X, X] across two separate slots of one 'two target' clause is accepted (rule 601.2c); found by the reviewer with a script against engine/dist."
+    },
+    {
+      "card": "Ancient Greenwarden",
+      "what": "mayPlayFromGraveyard (game.ts) matches a graveyard card by its front face, so with Boggart Trawler // Boggart Bog in the graveyard only plain lands are offered."
     }
   ],
   "unprocessed": []
