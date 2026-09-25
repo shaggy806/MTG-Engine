@@ -8,6 +8,5 @@ export default defineCard({
   subtypes: ["Wurm"],
   power: 6,
   toughness: 4,
-  keywords: ["trample"],
-  text: "Trample",
+  text: "",
 });

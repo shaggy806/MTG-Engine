@@ -1,6 +1,6 @@
 // Scripted combat-keywords demo. Alice swings with four creatures:
 //
-//   Craw Wurm       6/4 trample
+//   Colossal Dreadmaw 6/6 trample
 //   White Knight    2/2 first strike
 //   Vampire Nighthawk 2/3 flying, deathtouch, lifelink
 //   Boggart Brute   3/2 menace
@@ -8,9 +8,9 @@
 // Bob blocks with what he has:
 //   - a Grizzly Bears in front of the White Knight  -> dies to first strike,
 //     having dealt nothing back
-//   - Typhoid Rats + a Grizzly Bears on the Craw Wurm -> the Wurm assigns just
+//   - Typhoid Rats + a Grizzly Bears on the Dreadmaw -> it assigns just
 //     1 to the deathtouch Rats, 2 to the Bear, and TRAMPLES 3 over; the Rats'
-//     one point of deathtouch damage still kills the Wurm
+//     one point of deathtouch damage still kills the Dreadmaw
 //   - nothing can block the flying Nighthawk (2 to Bob, +2 life to Alice)
 //   - Bob's spare Hill Giant can't block the Brute alone (menace), so it
 //     connects for 3
@@ -45,7 +45,7 @@ const game = Game.create({
 
 const spawn = makeSpawn(game);
 
-const wurm = spawn("Craw Wurm", A);
+const wurm = spawn("Colossal Dreadmaw", A);
 const knight = spawn("White Knight", A);
 const hawk = spawn("Vampire Nighthawk", A);
 const brute = spawn("Boggart Brute", A);

@@ -88,6 +88,13 @@ const apply = (game: Game, effect: EffectSpec, ...targets: ObjectId[]): void =>
     effect,
     targets.map((object) => ({ kind: "object", object })),
   );
+/** Craw Wurm (a vanilla 6/4 — toughness below power) given trample for the
+ * turn: no printed 6/4 trampler to hand. */
+const trampler = (game: Game): ObjectId => {
+  const id = spawn(game, "Craw Wurm");
+  apply(game, { kind: "grant-keyword", target: 0, keyword: "trample", duration: "end-of-turn" }, id);
+  return id;
+};
 const quiet = (s: GameState): boolean =>
   s.zones.shared.stack.length === 0 && s.awaiting === null && s.pendingTriggers.length === 0;
 const toPostcombat = (s: GameState): boolean =>
@@ -165,7 +172,7 @@ describe("combatDamageByToughness", () => {
   it("sizes the assign-combat-damage offer and the trample excess by toughness", () => {
     const { game, a, b } = setUp();
     spawn(game, "Doran, the Siege Tower");
-    const wurm = spawn(game, "Craw Wurm"); // 6/4 trample
+    const wurm = trampler(game); // 6/4 trample
     const bears = spawn(game, "Grizzly Bears", B);
     attackWith(a, wurm);
     b.declareBlockersFn = () => [{ blocker: bears, attacker: wurm }];
@@ -187,7 +194,7 @@ describe("combatDamageByToughness", () => {
     // 4 toughness leaves nothing, so there is none to ask.
     const { game, a, b } = setUp();
     spawn(game, "Doran, the Siege Tower");
-    const wurm = spawn(game, "Craw Wurm");
+    const wurm = trampler(game);
     const theirs = spawn(game, "Test Bulwark", B);
     attackWith(a, wurm);
     b.declareBlockersFn = () => [{ blocker: theirs, attacker: wurm }];

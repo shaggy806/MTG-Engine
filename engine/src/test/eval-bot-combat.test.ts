@@ -150,8 +150,7 @@ describe("EvalBotController combat", () => {
       }
       g.state.players[A].life = 5;
     });
-    // One bear can stop one Wurm (all but its 4 trample damage); the other
-    // still deals 6.
+    // One bear can stop one Wurm; the other still deals 6.
     expect(bot().declareAttackers(viewOf(game, A))).toHaveLength(1);
   });
 
@@ -159,7 +158,8 @@ describe("EvalBotController combat", () => {
     const board = (life: number) =>
       atDeclaration("blockers", (g) => {
         g.debugSpawn("Grizzly Bears", A, "battlefield", { summoningSick: false });
-        g.debugSpawn("Craw Wurm", B, "battlefield", { summoningSick: false });
+        // A trampler, so a chump block saves only 2 of its 6.
+        g.debugSpawn("Colossal Dreadmaw", B, "battlefield", { summoningSick: false });
         g.state.players[A].life = life;
       });
     expect(bot().declareBlockers(viewOf(board(40), A))).toHaveLength(0);

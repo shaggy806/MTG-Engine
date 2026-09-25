@@ -60,7 +60,7 @@ const zoneOf = (game: Game, id: ObjectId): string => game.state.objects[id]?.zon
 describe("EG-4a — trample / multi-block damage assignment as a player choice", () => {
   it("a trampler blocked by one creature — the controller splits the damage", () => {
     const { game, a, b } = mkGame();
-    const wurm = spawn(game, "Craw Wurm", A); // 6/4 trample
+    const wurm = spawn(game, "Colossal Dreadmaw", A); // 6/6 trample
     const bear = spawn(game, "Grizzly Bears", B); // 2/2
     a.declareAttackersFn = () => [{ attacker: wurm, defender: B }];
     b.declareBlockersFn = () => [{ blocker: bear, attacker: wurm }];
@@ -79,7 +79,7 @@ describe("EG-4a — trample / multi-block damage assignment as a player choice",
 
   it("the controller may over-assign to the blocker and trample nothing", () => {
     const { game, a, b } = mkGame();
-    const wurm = spawn(game, "Craw Wurm", A);
+    const wurm = spawn(game, "Colossal Dreadmaw", A);
     const bear = spawn(game, "Grizzly Bears", B);
     a.declareAttackersFn = () => [{ attacker: wurm, defender: B }];
     b.declareBlockersFn = () => [{ blocker: bear, attacker: wurm }];
@@ -131,7 +131,7 @@ describe("EG-4a — trample / multi-block damage assignment as a player choice",
 
   it("rejects trampling over before every blocker has lethal (rule 702.19b)", () => {
     const { game, a, b } = mkGame();
-    const wurm = spawn(game, "Craw Wurm", A); // 6/4 trample
+    const wurm = spawn(game, "Colossal Dreadmaw", A); // 6/6 trample
     const b1 = spawn(game, "Grizzly Bears", B); // 2/2
     const b2 = spawn(game, "Giant Spider", B); // 2/4
     a.declareAttackersFn = () => [{ attacker: wurm, defender: B }];
@@ -224,13 +224,13 @@ describe("EG-4c — must be blocked (Lure)", () => {
 
   it("declaring the forced block resolves normally", () => {
     const { game, a, b } = mkGame();
-    const attacker = spawn(game, "Craw Wurm", A); // 6/4
+    const attacker = spawn(game, "Colossal Dreadmaw", A); // 6/6 trample
     const lure = spawn(game, "Lure", A);
     game.state.objects[lure].attachedTo = attacker;
     const blocker = spawn(game, "Grizzly Bears", B);
     a.declareAttackersFn = () => [{ attacker, defender: B }];
     b.declareBlockersFn = () => [{ blocker, attacker }];
-    // Craw Wurm has trample — assign lethal to the bear, trample the rest.
+    // A trampler — assign lethal to the bear, trample the rest.
     a.assignCombatDamageFn = () => [2];
 
     game.advanceUntil(toPostcombat);

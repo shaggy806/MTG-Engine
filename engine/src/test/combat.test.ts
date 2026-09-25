@@ -337,7 +337,7 @@ describe("combat keywords", () => {
 
   it("trample carries excess damage to the defending player", () => {
     const { game, a, b } = makeGame();
-    const wurm = spawn(game, "Craw Wurm", A); // 6/4 trample
+    const wurm = spawn(game, "Colossal Dreadmaw", A); // 6/6 trample
     const bear = spawn(game, "Grizzly Bears", B); // 2/2
     a.declareAttackersFn = () => [{ attacker: wurm, defender: B }];
     b.declareBlockersFn = () => [{ blocker: bear, attacker: wurm }];
@@ -349,7 +349,7 @@ describe("combat keywords", () => {
 
   it("trample assigns lethal to every blocker before the player", () => {
     const { game, a, b } = makeGame();
-    const wurm = spawn(game, "Craw Wurm", A); // 6/4 trample
+    const wurm = spawn(game, "Colossal Dreadmaw", A); // 6/6 trample
     const bear = spawn(game, "Grizzly Bears", B); // 2/2
     const giant = spawn(game, "Hill Giant", B); // 3/3
     a.declareAttackersFn = () => [{ attacker: wurm, defender: B }];

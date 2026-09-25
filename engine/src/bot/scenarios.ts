@@ -297,7 +297,9 @@ const SCENARIOS: readonly BotScenario[] = [
         });
         game.advanceUntil((s) => s.priority.holder !== null);
         game.debugSpawn("Grizzly Bears", A, "battlefield", { summoningSick: false });
-        game.debugSpawn("Craw Wurm", B, "battlefield", { summoningSick: false });
+        // A trampler: a chump block saves only 2 of its 6, so at 40 life
+        // the bear is worth more than the life.
+        game.debugSpawn("Colossal Dreadmaw", B, "battlefield", { summoningSick: false });
         game.state.players[A].life = life;
         game.advanceUntil((s) => s.awaiting?.kind === "blockers" && s.awaiting.player === A);
         return makeBot(A, registry, weights).declareBlockers(viewOf(game, A)).length;
