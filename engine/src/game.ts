@@ -9384,9 +9384,13 @@ export class Game {
         return spec.from === undefined || event.from === spec.from;
       }
       case "leaves-battlefield":
+        // Read as it last existed on the battlefield, like `dies`.
         return (
           event.type === "permanent-left-battlefield" &&
-          this.matchesWho(spec.who, event.object, self, true)
+          (spec.to === undefined || spec.to.includes(event.toZone)) &&
+          !(spec.otherOnly === true && event.object === self.id) &&
+          this.matchesWho(spec.who, event.object, self, true) &&
+          this.triggerFilterOk(spec.filter, event.object, self, true)
         );
       case "becomes-target":
         return (
@@ -10729,10 +10733,16 @@ export class Game {
       },
       countersOf: (target, counter) => {
         const lki = lastKnownOf(target);
-        if (lki !== undefined) return lki.counters[counter] ?? 0;
-        return target.kind === "object"
-          ? (this.state.objects[target.object]?.counters[counter] ?? 0)
-          : 0;
+        const counters =
+          lki !== undefined
+            ? lki.counters
+            : target.kind === "object"
+              ? this.state.objects[target.object]?.counters
+              : undefined;
+        if (counters === undefined) return 0;
+        // Every kind: "the number of counters on it".
+        if (counter === undefined) return Object.values(counters).reduce((n, k) => n + k, 0);
+        return counters[counter] ?? 0;
       },
       putOnBottomOfLibrary: (target) => {
         if (target.kind !== "object") return;

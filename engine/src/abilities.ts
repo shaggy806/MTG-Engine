@@ -231,6 +231,15 @@ export type TriggerSpec =
        * only fires for a move to a graveyard. Rule 603.6d / 700.4. */
       readonly on: "leaves-battlefield";
       readonly who: TriggerWho;
+      /** Matched against the permanent as it last existed on the battlefield
+       * — "a creature you control", "if it had one or more +1/+1 counters on
+       * it" (a `counters` clause). */
+      readonly filter?: CardFilter;
+      /** "Another …" — not this permanent itself. */
+      readonly otherOnly?: boolean;
+      /** Only for these destinations — Reyhan, Last of the Abzan's "dies or
+       * is put into the command zone" is `["graveyard", "command"]`. */
+      readonly to?: readonly ("graveyard" | "exile" | "hand" | "library" | "command")[];
     }
   | {
       /** A player gained life (Ajani's Pridemate). `who` is whose life.

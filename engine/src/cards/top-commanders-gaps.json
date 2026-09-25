@@ -92,7 +92,9 @@
   "cost:mana-ability-complex-costs",
   "keyword:exhaust",
   "zone:impulse-permission-options",
-  "effect:mana-ability-side-effects"
+  "effect:mana-ability-side-effects",
+  "trigger:leaves-battlefield-filter",
+  "effect:amount-counters-on-object"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

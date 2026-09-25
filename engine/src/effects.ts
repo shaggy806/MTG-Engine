@@ -204,7 +204,12 @@ export type EffectAmount =
    * enchantment", Chasm Skulker's "X is the number of +1/+1 counters on this
    * creature" from its own dies trigger, which reads the counters it died
    * with (last-known information, rule 608.2h). `0` for a player. */
-  | { readonly countersOn: AmountRef; readonly counter: string }
+  | {
+      readonly countersOn: AmountRef;
+      /** One kind; omitted, every counter of every kind — "the number of
+       * counters on it". */
+      readonly counter?: string;
+    }
   /** Your **devotion** to a colour (rule 700.5): every mana symbol of that
    * colour in the mana costs of permanents you control, hybrid pips included.
    * Gray Merchant of Asphodel's "each opponent loses X life, where X is your
@@ -2092,7 +2097,7 @@ export interface EffectApi {
   powerOf(target: TargetRef): number;
   toughnessOf(target: TargetRef): number;
   /** See the `{ countersOn }` {@link EffectAmount}. */
-  countersOf(target: TargetRef, counter: string): number;
+  countersOf(target: TargetRef, counter: string | undefined): number;
   /** See the `"put-on-bottom-of-library"` {@link EffectSpec}. */
   putOnBottomOfLibrary(target: TargetRef): void;
   /** Every player a `PlayerScope` names, in APNAP order and skipping anyone
