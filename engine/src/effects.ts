@@ -2147,6 +2147,8 @@ export interface EffectApi {
   countInGraveyard(filter: CardFilter): number;
   /** How many cards are in `player`'s hand — see `{ cardsInHand }`. */
   handSizeOf(player: PlayerId): number;
+  /** How many cards are in `player`'s library. */
+  librarySizeOf(player: PlayerId): number;
   /** The colours of what `target` points at, as it last existed on the
    * battlefield if it has left — see `{ colorsOf }`. */
   colorsOf(target: TargetRef): readonly Color[];
@@ -3159,6 +3161,28 @@ function scopedOrTargetedPlayers(
   return ctx.playersInScope(target).map((player) => ({ kind: "player", player }));
 }
 
+/**
+ * Whether a `may`'s action can be done in full, which is the only way it is
+ * offered. A player can't mill more cards than their library holds, and if
+ * given the choice can't choose to (rule 701.17b — Daggerfang Duo with one
+ * card left can't choose to mill two); "you may discard a card. If you do,
+ * draw a card" with an empty hand is the same, or it would draw for nothing
+ * (Rydia, Summoner of Mist). Only the action chosen is asked about, a
+ * sequence's first step: "draw, then discard" is possible from an empty hand.
+ */
+function mayBeDone(effect: EffectSpec, ctx: ResolutionContext): boolean {
+  const action = effect.kind === "sequence" ? effect.effects[0] : effect;
+  if (action === undefined) return true;
+  if (action.kind === "mill" || action.kind === "discard") {
+    return scopedOrTargetedPlayers(action.target, ctx).every((ref) => {
+      if (ref.kind !== "player") return true;
+      const has = action.kind === "mill" ? ctx.librarySizeOf(ref.player) : ctx.handSizeOf(ref.player);
+      return has >= amountValue(action.amount, ctx, ref.player);
+    });
+  }
+  return true;
+}
+
 export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): void {
   const spec = bindDynamicCompares(unbound, ctx);
   switch (spec.kind) {
@@ -3903,6 +3927,12 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       );
       return;
     case "may": {
+      // An action that can't be done in full isn't offered: it is as though
+      // the player declined (see `mayBeDone`).
+      if (!mayBeDone(spec.effect, ctx)) {
+        if (spec.else !== undefined) applyEffectSpec(spec.else, ctx);
+        return;
+      }
       const chosenEffect: EffectSpec =
         spec.then === undefined
           ? spec.effect

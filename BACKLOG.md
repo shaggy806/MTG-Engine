@@ -52,7 +52,7 @@ that one card is the reason the deck exists.
   with mana value X from your graveyard to the battlefield with a finality counter on it. It
   gains haste until end of turn."). Both reasons its file gives for dropping it are gone now
   (`card-in-graveyard` targets, finality counters), but a target filter on "mana value X"
-  still needs checking. Its landfall loot also draws even when no card was discarded.
+  still needs checking.
 - **Card sweep 2 (2026-09-25).** Five cloud batches triaged the 189 best-ranked unimplemented
   top-500 commanders (C1–C3) and the 208 best-ranked unimplemented top-2000 cards (K1–K2). Those
   208 include most of card sweep 1's 227 skips. They authored 36 cards and recorded 361 as
@@ -146,9 +146,6 @@ that one card is the reason the deck exists.
   - Play-from-graveyard reads a double-faced card by its front face only (Ancient Greenwarden).
   - Performance: a per-creature enters trigger watching an opponent's token stack
     (Authority of the Consuls against Scute Swarm) puts hundreds of triggers on the stack.
-- **A small engine gap the scaffolder review found:**
-  - A "you may" around an action that can only partly happen is still offered. Daggerfang
-    Duo's ruling: with one card left you can't choose to mill two, but the engine mills the one.
 
 ## Bots
 

@@ -10647,6 +10647,7 @@ export class Game {
         return n;
       },
       handSizeOf: (player) => this.state.zones.perPlayer[player]?.hand.length ?? 0,
+      librarySizeOf: (player) => this.state.zones.perPlayer[player]?.library.length ?? 0,
       colorsOf: (target) => {
         if (target.kind !== "object") return [];
         const lki = lastKnownOf(target);
