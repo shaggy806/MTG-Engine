@@ -1528,7 +1528,7 @@ anthem, the keyword grant and the granted trigger like any other creature.
   have cascade, where X is the total amount of life your opponents have lost
   this turn" is a `your-turn` `condition` with `{ castFrom: ["hand"], filter:
   { manaValue: { op: "lte", n: { amount: { turnStat: "life-lost", who:
-  "opponent" } } } }, triggered: [<a "this-cast" cascade trigger>] }` — a
+  "each-opponent" } } } }, triggered: [<a "this-cast" cascade trigger>] }` — a
   granted `this-cast` trigger fires as the spell is cast, like a printed one.
   `filter` is matched against the spell from your side; an `{ amount }`
   operand works for a granted trigger but fails closed for granted keywords.

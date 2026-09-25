@@ -47,7 +47,7 @@ const registry = createDefaultRegistry()
           condition: { kind: "your-turn" },
           grantsToSpells: {
             castFrom: ["hand"],
-            filter: { manaValue: { op: "lte", n: { amount: { turnStat: "life-lost", who: "opponent" } } } },
+            filter: { manaValue: { op: "lte", n: { amount: { turnStat: "life-lost", who: "each-opponent" } } } },
             triggered: [CASCADE],
           },
           text: DESPOILER,
