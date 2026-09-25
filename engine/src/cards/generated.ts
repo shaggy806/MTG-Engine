@@ -387,7 +387,6 @@ import _poolGargosViciousWatcher from "./pool/gargos-vicious-watcher.js";
 import _poolGarrukWildspeaker from "./pool/garruk-wildspeaker.js";
 import _poolGarruksUprising from "./pool/garruks-uprising.js";
 import _poolGazeOfGranite from "./pool/gaze-of-granite.js";
-import _poolGeierReachSanitarium from "./pool/geier-reach-sanitarium.js";
 import _poolGenerousGift from "./pool/generous-gift.js";
 import _poolGenesisUltimatum from "./pool/genesis-ultimatum.js";
 import _poolGeodeRager from "./pool/geode-rager.js";
@@ -868,7 +867,6 @@ import _poolSidequestRaiseAChocobo from "./pool/sidequest-raise-a-chocobo.js";
 import _poolSidisiBroodTyrant from "./pool/sidisi-brood-tyrant.js";
 import _poolSignInBlood from "./pool/sign-in-blood.js";
 import _poolSilasRennSeekerAdept from "./pool/silas-renn-seeker-adept.js";
-import _poolSilence from "./pool/silence.js";
 import _poolSimicCharm from "./pool/simic-charm.js";
 import _poolSimicGrowthChamber from "./pool/simic-growth-chamber.js";
 import _poolSimicSignet from "./pool/simic-signet.js";
@@ -1644,7 +1642,6 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolGarrukWildspeaker,
   _poolGarruksUprising,
   _poolGazeOfGranite,
-  _poolGeierReachSanitarium,
   _poolGenerousGift,
   _poolGenesisUltimatum,
   _poolGeodeRager,
@@ -2125,7 +2122,6 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSidisiBroodTyrant,
   _poolSignInBlood,
   _poolSilasRennSeekerAdept,
-  _poolSilence,
   _poolSimicCharm,
   _poolSimicGrowthChamber,
   _poolSimicSignet,

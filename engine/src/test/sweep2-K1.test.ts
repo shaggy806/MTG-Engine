@@ -247,11 +247,14 @@ describe("Fabled Passage", () => {
   const fetchWith = (otherLands: number) => {
     const { game, a } = setUp();
     const basic = game.debugSpawn("Forest", A, "library");
-    lands(game, "Island", otherLands);
+    const islands = lands(game, "Island", otherLands);
+    // Already tapped: "that land" is only the one the search found.
+    game.state.objects[islands[0]].tapped = true;
     const passage = spawn(game, "Fabled Passage");
     a.chooseFromZoneFn = (_view, eligible) => eligible.filter((id) => id === basic);
     activate(game, passage, 0);
     expect(game.state.objects[basic].zone).toBe("battlefield");
+    expect(game.state.objects[islands[0]].tapped).toBe(true);
     return game.state.objects[basic].tapped;
   };
 
@@ -294,25 +297,6 @@ describe("Demolition Field", () => {
   });
 });
 
-describe("Silence", () => {
-  it("opponents can't cast spells for the rest of the turn", () => {
-    const { game } = setUp();
-    lands(game, "Plains", 1);
-    lands(game, "Island", 1, B);
-    const opt = game.debugSpawn("Opt", B, "hand");
-    game.dispatch({ type: "cast-spell", player: A, card: game.debugSpawn("Silence", A, "hand"), targets: [] });
-    passToB(game);
-    // With Silence still on the stack, Bob may respond.
-    expect(castable(game, B, opt)).toBe(true);
-    game.dispatch({ type: "pass-priority", player: B });
-    game.advanceUntil(quiet);
-    passToB(game);
-    expect(castable(game, B, opt)).toBe(false);
-    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "upkeep" && s.priority.holder === B);
-    expect(castable(game, B, opt)).toBe(true);
-  });
-});
-
 describe("Bident of Thassa", () => {
   it("may draw per creature that connects, and makes opponents' creatures attack this turn", () => {
     const { game, a } = setUp();
@@ -336,21 +320,6 @@ describe("Bident of Thassa", () => {
     const late = spawn(game, "Hill Giant", B);
     expect(restrictionsOf(game.state, registry, late).has("must-attack")).toBe(true);
     expect(restrictionsOf(game.state, registry, bears).has("must-attack")).toBe(false);
-  });
-});
-
-describe("Geier Reach Sanitarium", () => {
-  it("each player draws a card, then discards a card", () => {
-    const { game } = setUp();
-    const sanitarium = spawn(game, "Geier Reach Sanitarium");
-    lands(game, "Island", 2);
-    const handA = game.handOf(A).length;
-    const handB = game.handOf(B).length;
-    const graveB = game.state.zones.perPlayer[B].graveyard.length;
-    activate(game, sanitarium, 1);
-    expect(game.handOf(A).length).toBe(handA);
-    expect(game.handOf(B).length).toBe(handB);
-    expect(game.state.zones.perPlayer[B].graveyard.length).toBe(graveB + 1);
   });
 });
 

@@ -1,6 +1,6 @@
 {
   "batch": "K1",
-  "status": "in-progress",
+  "status": "complete",
   "authored": [
     {
       "name": "Fabled Passage",
@@ -96,23 +96,9 @@
       "tested": true
     },
     {
-      "name": "Silence",
-      "files": [
-        "engine/src/cards/pool/silence.ts"
-      ],
-      "tested": true
-    },
-    {
       "name": "Bident of Thassa",
       "files": [
         "engine/src/cards/pool/bident-of-thassa.ts"
-      ],
-      "tested": true
-    },
-    {
-      "name": "Geier Reach Sanitarium",
-      "files": [
-        "engine/src/cards/pool/geier-reach-sanitarium.ts"
       ],
       "tested": true
     },
@@ -704,6 +690,13 @@
       "why": "\"That many plus one +1/+1 counters\" (additive counter replacement) and \"X mana of any one color\"."
     },
     {
+      "name": "Silence",
+      "needs": [
+        "bug:prohibit-cast-suspend"
+      ],
+      "why": "The prohibit effect is expressible, but a player who can't cast spells can still suspend a card (the card's ruling says they can't): whyCannotSuspend never consults cast prohibitions."
+    },
+    {
       "name": "Minas Tirith",
       "needs": [
         "new:attackers-this-turn-count"
@@ -752,6 +745,13 @@
         "new:rebound"
       ],
       "why": "Rebound isn't modeled."
+    },
+    {
+      "name": "Geier Reach Sanitarium",
+      "needs": [
+        "new:simultaneous-hidden-discard"
+      ],
+      "why": "'Each player discards a card' is chosen face down in turn order and discarded all at once (ruling); the engine asks one player at a time and discards each publicly before asking the next."
     }
   ],
   "newFeatures": {
@@ -792,6 +792,7 @@
     "new:riot": "Riot (rule 702.136): enters with your choice of a +1/+1 counter or haste, including when granted by a static.",
     "new:shadow": "The shadow keyword (rule 702.28): can block or be blocked only by creatures with shadow.",
     "new:shuffle-into-library": "Shuffle a permanent (or card) into its owner's library as an effect — 'the owner of target permanent shuffles it into their library'.",
+    "new:simultaneous-hidden-discard": "An 'each player discards' where every player chooses in turn order without seeing the others' choices and all the cards are discarded together as one event (rule 701.9b's ruling for Geier Reach Sanitarium, Windfall-style effects).",
     "new:token-created-trigger": "'Whenever you create a token' — a trigger keyed to the player creating tokens, which needs the creator recorded on the token.",
     "new:unless-target-controller": "An 'unless' clause whose chooser is the controller of a targeted object (a spell or permanent) — 'counter target spell unless its controller pays {1}' — not only a targeted player.",
     "new:win-game": "A 'you win the game' effect routed through the existing elimination path."
@@ -808,6 +809,14 @@
     {
       "card": "The Great Henge",
       "what": "test/oracle-parse.test.ts reports a parser disagreement: scripts/oracle-parse.mjs reads '{T}: Add {G}{G}. You gain 2 life.' as a sequence of add-mana and gain-life, which isManaAbility rejects (the ability would use the stack). The pool file puts the life on add-mana's `also` (Kibo, Uktabi Prince's shape), which is the correct mana ability; the parser template needs to emit `also` for a trailing clause of a mana ability."
+    },
+    {
+      "card": "Silence",
+      "what": "Game.whyCannotSuspend never checks cast prohibitions (turnProhibitions / prohibits statics), so a player under Silence or Grand Abolisher-style effects can still suspend a card; the rulings say a player who can't cast spells can't suspend. Key bug:prohibit-cast-suspend."
+    },
+    {
+      "card": "Bident of Thassa",
+      "what": "A must-attack creature its controller leaves out of the attack declaration is sent at legal[0] by applyAttackerDeclarations (game.ts ~4046-4071) rather than its controller choosing which defender; declaring it explicitly still works."
     },
     {
       "card": "Bident of Thassa",
