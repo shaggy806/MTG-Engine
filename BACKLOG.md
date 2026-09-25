@@ -160,8 +160,6 @@ that one card is the reason the deck exists.
 
 ## Client / UI
 
-- **Reduced costs display wrong.** `displayCostOf` rewrites only the generic number, so a
-  coloured-pip or twobrid reduction isn't shown.
 - **Convoke with a target-dependent cost.** The offered `proof` is priced at the dearer end of
   the target-count range. This is latent: no pool card has both.
 - **Player designations as a viewable zone.** Emblems are listed as text lines under the

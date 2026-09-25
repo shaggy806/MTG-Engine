@@ -5236,14 +5236,15 @@ export class Game {
   }
 
   /**
-   * `cardId`'s printed mana cost with its generic portion rewritten to what
-   * `player` would actually pay, or `null` when nothing has changed it.
+   * `cardId`'s printed mana cost as `player` would actually pay it, or `null`
+   * when nothing has changed it.
    *
-   * Only the generic number is rewritten, and that is exact rather than a
-   * simplification: commander tax, `costModification` and
-   * `selfCostReduction` all adjust the generic portion and nothing else, so
-   * re-serialising a parsed `ManaCost` would risk getting a hybrid or
-   * Phyrexian pip wrong for no gain.
+   * Written by editing the printed symbols, which keep their printed order
+   * and form: the generic number is rewritten; a coloured or hybrid pip that
+   * a coloured reduction took is dropped (rule 118.7 — "costs {W}{B} less");
+   * and a twobrid pip's generic half comes down by a generic reduction that
+   * outran the generic part (`{2/W}` reads `{1/W}` — the Spectral Procession
+   * ruling), vanishing once that half is nothing, since it's then free.
    *
    * `{0}` is dropped when the cost has other pips, because "{R}" is how a
    * fully-reduced Blasphemous Act reads -- but kept when it is the whole
@@ -5265,19 +5266,51 @@ export class Game {
     const tax = this.isCastableCommander(player, cardId)
       ? this.commanderTax(player, cardId)
       : 0;
-    const withTax = this.castingCostOf(player, cardId, def, 0, printed);
-    const actualGeneric = Math.max(0, withTax.generic - tax);
-    if (actualGeneric === base.generic) return null;
-    const actual = { generic: actualGeneric };
-
-    const GENERIC = /\{(\d+)\}/;
-    if (actual.generic === 0) {
-      const withoutGeneric = printed.replace(GENERIC, "");
-      return withoutGeneric.length > 0 ? withoutGeneric : "{0}";
+    const cost = this.castingCostOf(player, cardId, def, 0, printed);
+    const generic = Math.max(0, cost.generic - tax);
+    const colored = { ...cost.colored };
+    const hybridLeft = cost.hybrid.map((pip) => JSON.stringify(pip));
+    let twobrid = cost.twobridReduction ?? 0;
+    let changed = generic !== base.generic;
+    const out: string[] = [];
+    let genericShown = false;
+    for (const token of printed.match(/\{[^}]+\}/g) ?? []) {
+      const symbol = token.slice(1, -1);
+      // The generic part, snow ({S}) included, is shown once as one number.
+      if (/^\d+$/.test(symbol) || symbol === "S") {
+        if (!genericShown && generic > 0) out.push(`{${generic}}`);
+        genericShown = true;
+        continue;
+      }
+      if (symbol === "W" || symbol === "U" || symbol === "B" || symbol === "R" || symbol === "G") {
+        if (colored[symbol] > 0) {
+          colored[symbol] -= 1;
+          out.push(token);
+        } else changed = true;
+        continue;
+      }
+      if (symbol.includes("/")) {
+        const index = hybridLeft.indexOf(JSON.stringify(parseManaCost(token).hybrid[0]));
+        if (index < 0) {
+          changed = true;
+          continue;
+        }
+        hybridLeft.splice(index, 1);
+        const twobridPip = /^(\d+)\/(.+)$/.exec(symbol);
+        if (twobridPip !== null && twobrid > 0) {
+          const half = Number(twobridPip[1]);
+          const off = Math.min(half, twobrid);
+          twobrid -= off;
+          changed = true;
+          if (half > off) out.push(`{${half - off}/${twobridPip[2]}}`);
+          continue;
+        }
+      }
+      out.push(token);
     }
-    return base.generic > 0
-      ? printed.replace(GENERIC, "{" + String(actual.generic) + "}")
-      : "{" + String(actual.generic) + "}" + printed;
+    if (!changed) return null;
+    if (!genericShown && generic > 0) out.unshift(`{${generic}}`);
+    return out.length > 0 ? out.join("") : "{0}";
   }
 
   /** What `costModification` statics on the battlefield (and Eminence's in
