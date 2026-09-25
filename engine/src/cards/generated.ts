@@ -4934,6 +4934,7 @@ import _poolUndergrowthRecon from "./pool/undergrowth-recon.js";
 import _poolUndergrowthStadium from "./pool/undergrowth-stadium.js";
 import _poolUndermine from "./pool/undermine.js";
 import _poolUnderseaInvader from "./pool/undersea-invader.js";
+import _poolUnderworldBreach from "./pool/underworld-breach.js";
 import _poolUnderworldRageHound from "./pool/underworld-rage-hound.js";
 import _poolUnearth from "./pool/unearth.js";
 import _poolUnexpectedWindfall from "./pool/unexpected-windfall.js";
@@ -10464,6 +10465,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolUndergrowthStadium,
   _poolUndermine,
   _poolUnderseaInvader,
+  _poolUnderworldBreach,
   _poolUnderworldRageHound,
   _poolUnearth,
   _poolUnexpectedWindfall,

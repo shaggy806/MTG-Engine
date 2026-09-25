@@ -502,6 +502,14 @@ type GraveyardGrantOption = {
   readonly permission: NonNullable<StaticAbility["castFromGraveyard"]> | null;
 };
 
+/** One escape a graveyard card has (rule 702.138) — see `Game.escapesOf`. */
+type EscapeOption = {
+  readonly cost: string;
+  readonly exileCount: number;
+  /** The permanent whose static grants it; absent for the card's own. */
+  readonly grantor?: ObjectId;
+};
+
 /** The extra mana one triggered mana ability adds as a permanent is tapped
  * for mana (rule 605.1b) — see `Game.tappedForManaExtras`. */
 type ManaExtra = {
@@ -1150,18 +1158,27 @@ export class Game {
     }
 
     // Escape (rule 702.139) — a card in this player's graveyard with escape,
-    // enough other cards there to pay the exile cost, and the mana.
+    // enough other cards there to pay the exile cost, and the mana. Once per
+    // escape it has, when a granted one sits beside its own or another
+    // (Underworld Breach's ruling: the player chooses which applies), each
+    // named by `graveyardGrant`; and once per face of a modal card, since an
+    // escaped adventurer may be cast as its Adventure.
     for (const card of this.state.zones.perPlayer[player].graveyard) {
-      const cardName = this.state.objects[card].cardName;
-      const def = this.registry.get(cardName);
-      const escape = this.escapeOf(card);
-      if (escape === null) continue;
-      out.push(
-        ...this.castSpellActions(player, card, cardName, def, {
-          via: "escape",
-          costString: escape.cost,
-        }),
-      );
+      for (const face of this.modalFaces(card)) {
+        const def = this.faceDef(card, face ?? 0);
+        if (def.types.includes("land")) continue;
+        const escapes = this.escapesOf(card, face ?? 0);
+        for (const escape of escapes) {
+          out.push(
+            ...this.castSpellActions(player, card, def.name, def, {
+              via: "escape",
+              ...(face !== undefined ? { face } : {}),
+              costString: escape.cost,
+              ...(escapes.length > 1 ? { graveyardGrant: { source: escape.grantor ?? card } } : {}),
+            }),
+          );
+        }
+      }
     }
 
     // A static permission to play lands from your graveyard (Ramunap
@@ -1501,7 +1518,7 @@ export class Game {
               card,
               def,
               0,
-              this.castCostString(card, via, face, kicked, overload, free),
+              this.castCostString(card, via, face, kicked, overload, free, false, undefined, undefined, graveyardGrant),
               targetCount,
             ),
           );
@@ -1551,6 +1568,7 @@ export class Game {
         altCost === true,
         costOption,
         player,
+        graveyardGrant,
       );
       if (this.withFace(card, face ?? 0, () => this.costDependsOnTargets(player, card, def, variantCost))) {
         const bounds = this.withFace(card, face ?? 0, () =>
@@ -1633,7 +1651,7 @@ export class Game {
         // half of the cost is the caster's choice, made as costs are paid.
         ...(via === "escape"
           ? (() => {
-              const escape = this.escapeOf(card);
+              const escape = this.escapeOf(card, face ?? 0, graveyardGrant);
               return escape === null
                 ? {}
                 : {
@@ -5677,6 +5695,8 @@ export class Game {
     /** Who is casting it — whose statics may offer an alternative cost
      * (Jodah). Defaults to its owner. */
     caster?: PlayerId,
+    /** For an escape cast, which escape — see `escapeOf`. */
+    graveyardGrant?: GraveyardGrant,
   ): string | null {
     const def = this.faceDef(cardId, face);
     // An alternative cost (Sephara, Jodah) replaces the mana cost entirely,
@@ -5703,7 +5723,7 @@ export class Game {
       via === "flashback"
         ? this.flashbackCostOf(cardId)
         : via === "escape"
-          ? (this.escapeOf(cardId)?.cost ?? null)
+          ? (this.escapeOf(cardId, face, graveyardGrant)?.cost ?? null)
           : via === "foretell"
             ? (def.foretell?.cost ?? null)
             : // Disturb (rule 702.150) — the disturb cost is on the front face.
@@ -5822,8 +5842,12 @@ export class Game {
         return `${player} cannot pay ${life} life for ${def.name}'s flashback`;
       }
     } else if (via === "escape") {
-      const escape = this.escapeOf(cardId);
-      if (escape === null) return `${def.name} does not have escape`;
+      const escape = this.escapeOf(cardId, face, graveyardGrant);
+      if (escape === null) {
+        return graveyardGrant === undefined
+          ? `${def.name} does not have escape`
+          : `${def.name} does not have that escape`;
+      }
       if (!this.state.zones.perPlayer[player].graveyard.includes(cardId)) {
         return `${def.name} is not in ${player}'s graveyard`;
       }
@@ -5886,8 +5910,10 @@ export class Game {
         return `${def.name}'s alternative cost needs ${alt.tapCreatures.count} untapped creatures`;
       }
     }
-    if (graveyardGrant !== undefined && via !== "graveyard-permission") {
-      return "a graveyard permission is only spent on a graveyard-permission cast";
+    // It names the permission a graveyard-permission cast spends, or which of
+    // several escapes an escape cast uses.
+    if (graveyardGrant !== undefined && via !== "graveyard-permission" && via !== "escape") {
+      return "a graveyard permission only names a graveyard-permission or escape cast";
     }
     if (escapeExile !== undefined && via !== "escape") {
       return "only an escape cast exiles cards from the graveyard to pay for it";
@@ -5998,7 +6024,7 @@ export class Game {
         cardId,
         def,
         Math.max(0, Math.floor(xValue)),
-        this.castCostString(cardId, via, face, kicked, overload, free, altCost, undefined, player),
+        this.castCostString(cardId, via, face, kicked, overload, free, altCost, undefined, player, graveyardGrant),
         targetCount,
       ),
     );
@@ -6185,7 +6211,7 @@ export class Game {
     const def = this.registry.get(printedCardName(object));
     // Read while the card is still where it's cast from: a granted escape or
     // alternative cost belongs to it there.
-    const escape = via === "escape" ? this.escapeOf(cardId) : null;
+    const escape = via === "escape" ? this.escapeOf(cardId, face, graveyardGrant) : null;
     const alternativeTaps = altCost ? this.alternativeCostOf(cardId, def, via, player)?.tapCreatures : undefined;
     const costString = this.castCostString(
       cardId,
@@ -6197,6 +6223,7 @@ export class Game {
       altCost,
       costOption,
       player,
+      graveyardGrant,
     );
     const hasX =
       parseManaCost(costString).x > 0 || def.additionalCost?.payLifeX === true;
@@ -14656,15 +14683,45 @@ export class Game {
     return object.grantedFlashback?.cost ?? this.graveyardGrantOf(cardId, "flashback")?.cost ?? null;
   }
 
-  /** The escape `cardId` has: its printed one, else one a `grantsToGraveyard`
-   * static grants it (The Master of Keys), or `null`. */
-  private escapeOf(cardId: ObjectId): CardDefinition["escape"] {
-    const object = this.state.objects[cardId];
-    if (object === undefined) return null;
-    const printed = this.registry.get(object.cardName).escape;
-    if (printed !== null) return printed;
-    const granted = this.graveyardGrantOf(cardId, "escape");
-    return granted === null ? null : { cost: granted.cost, exileCount: granted.exileCount ?? 0 };
+  /**
+   * Every escape `cardId` has, cast as `face`: its printed one (for its
+   * front face), then each a `grantsToGraveyard` static of a permanent its
+   * owner controls gives it (Underworld Breach, The Master of Keys), whose
+   * "the card's mana cost" is the cost of the face being cast. The player
+   * chooses which applies (Underworld Breach's ruling). `grantor` is the
+   * granting permanent, absent for the card's own; escapes identical in
+   * cost are listed once, since nothing tells them apart.
+   */
+  private escapesOf(cardId: ObjectId, face = 0): EscapeOption[] {
+    const card = this.state.objects[cardId];
+    if (card === undefined) return [];
+    const out: EscapeOption[] = [];
+    const printed = this.registry.get(card.cardName).escape;
+    if (printed !== null && face === 0) out.push({ cost: printed.cost, exileCount: printed.exileCount });
+    if (card.zone !== "graveyard") return out;
+    for (const { source, ability } of this.activeStaticsOf(
+      card.owner,
+      (a) => a.grantsToGraveyard?.escape !== undefined,
+    )) {
+      const grant = ability.grantsToGraveyard!;
+      if (!matchesFilter(this.state, this.registry, cardId, grant.filter, { you: card.owner })) continue;
+      const spec = grant.escape!;
+      const cost = spec.cost === "mana-cost" ? this.faceDef(cardId, face).manaCost : spec.cost;
+      if (cost === null) continue;
+      const exileCount = spec.exileCount ?? 0;
+      if (out.some((e) => e.cost === cost && e.exileCount === exileCount)) continue;
+      out.push({ cost, exileCount, grantor: source.id });
+    }
+    return out;
+  }
+
+  /** The escape `cardId` is cast with as `face`: the one `grant` names — the
+   * granting permanent, or the card itself for its own escape — or, unnamed,
+   * the first of {@link escapesOf}. `null` when there's no such escape. */
+  private escapeOf(cardId: ObjectId, face = 0, grant?: GraveyardGrant): EscapeOption | null {
+    const escapes = this.escapesOf(cardId, face);
+    if (grant === undefined) return escapes[0] ?? null;
+    return escapes.find((e) => (e.grantor ?? cardId) === grant.source) ?? null;
   }
 
   /** The active statics of the permanents `controller` controls that `pick`
@@ -14686,13 +14743,11 @@ export class Game {
     return out;
   }
 
-  /** Flashback or escape a `grantsToGraveyard` static of a permanent its
-   * owner controls gives `cardId` in that owner's graveyard — the first
-   * that applies — with its cost worked out; `null` when none does. */
-  private graveyardGrantOf(
-    cardId: ObjectId,
-    keyword: "flashback" | "escape",
-  ): { readonly cost: string; readonly exileCount?: number } | null {
+  /** Flashback a `grantsToGraveyard` static of a permanent its owner
+   * controls gives `cardId` in that owner's graveyard — the first that
+   * applies — with its cost worked out; `null` when none does. (Escape lists
+   * every one: see `escapesOf`.) */
+  private graveyardGrantOf(cardId: ObjectId, keyword: "flashback"): { readonly cost: string } | null {
     const card = this.state.objects[cardId];
     if (card === undefined || card.zone !== "graveyard") return null;
     for (const { ability } of this.activeStaticsOf(
@@ -14704,9 +14759,7 @@ export class Game {
       const spec = grant[keyword]!;
       const cost = spec.cost === "mana-cost" ? this.registry.get(card.cardName).manaCost : spec.cost;
       if (cost === null) continue;
-      return grant.escape !== undefined && keyword === "escape"
-        ? { cost, exileCount: grant.escape.exileCount }
-        : { cost };
+      return { cost };
     }
     return null;
   }

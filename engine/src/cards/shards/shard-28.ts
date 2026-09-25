@@ -159,6 +159,7 @@ import _poolTravelingPhilosopher from "../pool/traveling-philosopher.js";
 import _poolTuskedColossodon from "../pool/tusked-colossodon.js";
 import _poolTyrranax from "../pool/tyrranax.js";
 import _poolUndergroundRiver from "../pool/underground-river.js";
+import _poolUnderworldBreach from "../pool/underworld-breach.js";
 import _poolUrsapine from "../pool/ursapine.js";
 import _poolVampireRevenant from "../pool/vampire-revenant.js";
 import _poolViashinoSandscout from "../pool/viashino-sandscout.js";
@@ -332,6 +333,7 @@ const shard: CardShard = {
     _poolTuskedColossodon,
     _poolTyrranax,
     _poolUndergroundRiver,
+    _poolUnderworldBreach,
     _poolUrsapine,
     _poolVampireRevenant,
     _poolViashinoSandscout,
