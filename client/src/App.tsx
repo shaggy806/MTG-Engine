@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import type {
   Action,
@@ -1967,7 +1967,13 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   }
 
   const handIds = view.zones.hands[seat] ?? []
-  useEffect(() => {
+  // A layout effect, not a plain one: `Table` remounts on every frame it's
+  // shown, so the spacing starts back at HAND_CARD_GAP each time, and
+  // measured after the browser had painted, the hand showed one frame at
+  // that default before snapping to its real spacing. During the mulligan,
+  // where the hand fills the popup and the bots' decisions arrive as a run
+  // of frames, that was the hand jittering each time an opponent chose.
+  useLayoutEffect(() => {
     const row = handRowRef.current
     if (!row) return
     const recompute = () => {
