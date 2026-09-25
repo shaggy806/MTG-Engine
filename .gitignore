@@ -31,3 +31,6 @@ scratch-*
 # Playwright (client e2e)
 client/test-results/
 client/playwright-report/
+
+# Scryfall bulk-data downloads (engine/scripts/gen-oracle.mjs)
+engine/.cache/

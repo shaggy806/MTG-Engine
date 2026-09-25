@@ -5,10 +5,18 @@
 // `cards/pool/*.ts` file, and again if a card's ruling behaviour is in
 // doubt.
 //
+// Reads the checked-in Oracle snapshot (`data/oracle/cards.jsonl`, built by
+// `npm run gen:oracle`) first, rulings included, and only goes to the network
+// for a card the snapshot doesn't have — so it works in a cloud session, which
+// can't reach Scryfall. `--online` skips the snapshot.
+//
 // Usage:
 //   node scripts/scryfall-lookup.mjs "Card Name" ["Another Card" ...]
+//   node scripts/scryfall-lookup.mjs --online "Card Name"   (live Scryfall only)
 //   node scripts/scryfall-lookup.mjs --rulings "Card Name"
 //   node scripts/scryfall-lookup.mjs --json "Card Name"   (raw Scryfall payload)
+
+import { findCard, suggest } from "./oracle-snapshot.mjs";
 
 const USER_AGENT = "MTG-Engine-CardAuthoring/1.0";
 
@@ -122,10 +130,43 @@ async function printRulingsIfRequested(card, rulings) {
   console.log("");
 }
 
+/** A snapshot entry, printed the way a live lookup is. */
+function printSnapshotCard(entry, { rulings, json }) {
+  if (json) {
+    console.log(JSON.stringify(entry, null, 2));
+    return;
+  }
+  const card = {
+    ...entry,
+    scryfall_uri: `https://scryfall.com/card/${entry.set}/${entry.collector_number} (snapshot)`,
+    card_faces: entry.faces,
+  };
+  printCard(card, { rulings: false, json: false });
+  if (entry.tokens?.length) {
+    console.log("Tokens it makes:");
+    for (const t of entry.tokens) {
+      const pt = t.power !== undefined ? ` ${t.power}/${t.toughness}` : "";
+      const colors = t.colors?.length ? ` ${t.colors.join("")}` : " colorless";
+      const text = t.oracle_text ? ` — ${t.oracle_text.replaceAll("\n", " / ")}` : "";
+      console.log(`  - ${t.name}:${colors}${pt} ${t.type_line}${text}  [printing ${t.printing}]`);
+    }
+    console.log("");
+  }
+  if (rulings) {
+    if (!entry.rulings?.length) console.log("No rulings.");
+    else {
+      console.log("Rulings:");
+      for (const r of entry.rulings) console.log(`  [${r.date}] ${r.text}`);
+    }
+    console.log("");
+  }
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const rulings = args.includes("--rulings");
   const json = args.includes("--json");
+  const online = args.includes("--online");
   const names = args.filter((a) => !a.startsWith("--"));
 
   if (names.length === 0) {
@@ -136,6 +177,15 @@ async function main() {
 
   let hadError = false;
   for (const name of names) {
+    const entry = online ? undefined : findCard(name);
+    if (entry !== undefined) {
+      printSnapshotCard(entry, { rulings, json });
+      continue;
+    }
+    if (!online) {
+      const near = suggest(name);
+      console.error(`(${name} isn't in the snapshot${near.length ? `; did you mean ${near.join(", ")}?` : ""} — asking Scryfall)`);
+    }
     const result = await fetchCardByName(name);
     if (!result.ok) {
       console.error(`✗ ${name}: ${result.error}`);

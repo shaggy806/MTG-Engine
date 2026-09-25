@@ -39,6 +39,12 @@ that one card is the reason the deck exists.
   "defending player" scope. Tier 3 is Station, Discover, Evoke and Reconfigure. Also open:
   damage doubling as a replacement, the rest of the Overload/free-cast/convoke families, and the
   items listed under each "still open". See `neededCards-features.md`, "Open: the card backlog".
+- **Cards waiting in `engine/src/cards/review/`.** Auto-finished by `card:scaffold` (keyword-only
+  text) and unregistered until checked: Ornithopter, Zetalpa, Primal Dawn. Check each
+  (`npm run card:verify -w engine -- --dir review`, then against its Oracle text) and move it
+  into `pool/`. `--auto-scan --all` finds 936 more keyword-only cards across the whole snapshot,
+  not yet written: decide whether the pool wants them (they roughly double the client's card
+  bundle for mostly unplayed cards).
 - **Card sweep 1's skipped staples.** 227 of the 300 highest-ranked unauthored top-2000
   cards need engine work; listed by rank in `neededCards-features.md`, "Card sweep 1: the
   staples it skipped". Triage them by missing feature before choosing the next card-side work.

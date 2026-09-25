@@ -31,10 +31,14 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
 import { writeFileSync } from "node:fs";
 
-const POOL_DIR = fileURLToPath(new URL("../dist/cards/pool/", import.meta.url));
+
 const USER_AGENT = "MTG-Engine-CardVerification/1.0";
 
 const args = process.argv.slice(2);
+// `--dir review` (or `scaffold`) audits the card scaffolder's unregistered
+// output instead of the pool — the check to run before moving a file in.
+const dirArg = args.indexOf("--dir") >= 0 ? args[args.indexOf("--dir") + 1] : "pool";
+const POOL_DIR = fileURLToPath(new URL(`../dist/cards/${dirArg}/`, import.meta.url));
 const flag = (name, fallback) => {
   const i = args.indexOf(`--${name}`);
   return i >= 0 && args[i + 1] !== undefined ? args[i + 1] : fallback;

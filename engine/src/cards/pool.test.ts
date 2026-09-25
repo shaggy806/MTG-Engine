@@ -22,6 +22,13 @@ const modules = import.meta.glob<{ default: CardDefinition }>(
 
 const files = Object.entries(modules).filter(([p]) => !p.endsWith(".test.ts"));
 
+// The source text of the same files, for the scaffold guard below.
+const sources = import.meta.glob<string>(["./pool/*.ts", "./tokens/*.ts"], {
+  eager: true,
+  query: "?raw",
+  import: "default",
+});
+
 describe("card pool layout", () => {
   it("every file default-exports a uniquely-named CardDefinition", () => {
     const seen = new Set<string>();
@@ -54,6 +61,19 @@ describe("card pool layout", () => {
       );
     expect(new Set(POOL_CARDS.map((c) => c.name))).toEqual(named("pool"));
     expect(new Set(TOKEN_CARDS.map((c) => c.name))).toEqual(named("tokens"));
+  });
+});
+
+describe("card scaffolds", () => {
+  // `npm run card:scaffold` writes a skeleton with a `TODO(scaffold)` per
+  // Oracle line still to author, in cards/scaffold/, outside the registry.
+  // One reaching pool/ or tokens/ with a TODO left would ship a card missing
+  // an ability (AUTHORING §0).
+  it("no pool or token file still has a TODO(scaffold)", () => {
+    const unfinished = Object.entries(sources)
+      .filter(([, text]) => text.includes("TODO(scaffold)"))
+      .map(([path]) => path);
+    expect(unfinished).toEqual([]);
   });
 });
 

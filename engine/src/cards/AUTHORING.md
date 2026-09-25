@@ -90,18 +90,45 @@ the engine's behaviour is only as correct as the printed card. Run:
 npm run card:lookup -w engine -- "Card Name"
 ```
 
-(`engine/scripts/scryfall-lookup.mjs`, a thin wrapper over the [Scryfall
-card API](https://scryfall.com/docs/api/cards/named)). It prints the
-authoritative mana cost, type line, P/T or loyalty, colors, keywords, and
-full Oracle text — every face separately for a DFC/split/adventure card,
-plus any related token names under "Related parts". Add `--rulings` to also
-pull official rulings (useful when a card's exact interaction is unclear —
-e.g. how an intervening-if or a replacement effect is worded), or `--json`
-for the raw Scryfall payload. It accepts multiple names in one call and
-does its own rate-limit throttling/retry, so batch-lookup a set of cards
-before authoring all of them.
+(`engine/scripts/scryfall-lookup.mjs`). It prints the authoritative mana
+cost, type line, P/T or loyalty, colors, keywords, and full Oracle text —
+every face separately for a DFC/split/adventure card — plus the tokens it
+makes. Add `--rulings` for the official rulings (useful when a card's exact
+interaction is unclear — how an intervening-if or a replacement effect is
+worded), or `--json` for the raw entry. It takes several names at once.
 
-Then create `engine/src/cards/pool/grizzly-bears.ts`:
+It reads the **Oracle snapshot** first: `engine/data/oracle/cards.jsonl`,
+checked in, one line per Commander-legal card and per token, with its
+rulings and the tokens it makes folded in (`grep '^{"name":"Card Name"'`
+finds one). So it works with no network — a cloud session can't reach
+Scryfall — and only asks Scryfall for a card the snapshot lacks (`--online`
+always does). `npm run gen:oracle -w engine` rebuilds the snapshot from
+Scryfall's [bulk data](https://scryfall.com/docs/api/bulk-data), cached in
+the git-ignored `engine/.cache/scryfall/`; rerun it when a set comes out.
+
+**Or start from a scaffold.** `npm run card:scaffold -w engine -- "Card
+Name"` (or `--next 10` for the next unimplemented top-500 commanders,
+`--next 10 --cards` for the top-2000 backlog) writes the card's file from
+the snapshot into `engine/src/cards/scaffold/`: name, cost, colours, types,
+P/T, loyalty, faces and their layout flags, `text`, the keywords the engine
+models, a partner ability's `pairing`, the rulings in the header, and each
+token it makes matched to an existing `tokens/` file or given a skeleton of
+its own. Every Oracle line left to author is a `// TODO(scaffold):` comment
+where its ability goes. `scaffold/` isn't registered, so a half-authored
+card can't reach a game; when every TODO is gone, move the file into
+`pool/` (a token into `tokens/`) and run `gen:cards`. `cards/pool.test.ts`
+fails on a `TODO(scaffold)` left in either.
+
+A card whose text is only keywords the engine models is finished by the
+scaffold ("auto-finished") — `--auto-scan` finds every such card in both
+backlog lists, `--auto-scan --all` in the whole snapshot — but still isn't
+registered: it's written to `engine/src/cards/review/`. Check it (`npm run
+card:verify -w engine -- --dir review`, and `card:text` the same way) and
+against its Oracle text, then move it into `pool/`. Lands are never
+auto-finished: their land types imply mana abilities the engine needs
+written out (rule 305.6).
+
+Or create `engine/src/cards/pool/grizzly-bears.ts` by hand:
 
 ```ts
 import { defineCard } from "../define.js";
