@@ -32,7 +32,9 @@ export const makeFormatter = (game) => {
       case "lore-counter-added":
         return `${name(e.object)} — lore counter ${e.lore}`;
       case "saga-completed":
-        return `${name(e.object)} is sacrificed (final chapter)`;
+        return `${name(e.object)} has finished its final chapter`;
+      case "chapter-resolved":
+        return `${name(e.saga)}'s ${e.final ? "final " : ""}chapter ability resolves`;
       case "permanent-transformed":
         return `${name(e.object)} transforms (now ${e.front ? "front" : "back"} face)`;
       case "day-night-changed":

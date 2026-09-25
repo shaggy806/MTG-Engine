@@ -1230,6 +1230,7 @@ triggered: [
 | `attacks-alone` | `who` | Exalted (needed-cards P15) — a creature you control attacked alone this combat; the lone attacker isn't a target, read it via `ResolutionContext.triggerObject` / `EffectTargetRef: "trigger-object"` |
 | `sacrifice` | `who`, `filter?`, `otherOnly?` | a player sacrifices a permanent (Korvold, Mayhem Devil — `who` = who sacrificed: its controller, not its owner, rule 701.21a, so a stolen permanent counts for the thief). `filter` is matched against the permanent as it last existed on the battlefield ("a **nontoken** permanent" is `{ token: false }`; a sacrificed token is still a token), `otherOnly` is "another", and the sacrificed permanent is the trigger object ("its power" — `{ powerOf: "trigger-object" }`, its power as it left). |
 | `transforms` | `who`, `intoFront?`, `filter?` | a DFC turns over |
+| `chapter-resolves` | `who`, `finalOnly?`, `filter?` | a Saga's chapter ability resolved (not one removed for illegal targets); `finalOnly` is "whenever **the final chapter ability** of a Saga you control resolves" (Tom Bombadil, Narci, Fable Singer) — one whose chapter numbers include the Saga's highest. The Saga is the trigger object: "that Saga's mana value" is `{ manaValueOf: "trigger-object" }`, read as it last existed once the final chapter has sacrificed it. |
 | `step-begins` | `step`, `who` | the start of a step (`"upkeep"` etc.) |
 | `surveils` | `who` | "whenever you surveil" (Mirko, Obsessive Theorist): once per surveil, however many cards. A scry isn't one. |
 | `wins-coin-flip` | `who` | "whenever a player wins a coin flip" (Okaun, Zndrsplt — `who: "any"`), "whenever you win a coin flip" (`"you"`): once per flip won. |
@@ -1960,7 +1961,10 @@ Grep the pool for `resolve:` — there are very few.
   adventureName]`. `emberclaw-scout.ts`.
 - **Saga** — `chapters: [{ at: number[], targets, effect, resolve, text }]`.
   `at` lists the lore counts that fire the chapter (`[1]`, `[2]`, `[1, 2]` for
-  a shared "I, II"). `history-of-benalia.ts`.
+  a shared "I, II"). `history-of-benalia.ts`. Once its final chapter ability
+  has left the stack its controller sacrifices it (rule 714.4) — a real
+  sacrifice, so "whenever you sacrifice an enchantment" sees it — and the
+  `chapter-resolves` trigger (§9) fires as each chapter ability resolves.
 - **Commander** — nothing on the card marks it; it's whichever card a
   `DeckList.commander` names. `supertypes: ["legendary"]` is conventional. The
   engine adds the `{2}` tax and the 903.9a replacement automatically — for a

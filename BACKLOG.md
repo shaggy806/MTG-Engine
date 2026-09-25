@@ -84,16 +84,17 @@ that one card is the reason the deck exists.
   Flame (`castFromHandFree` and `flip-coin` — its "choose a number between 1 and 5" may still
   need `decision:choose-number`); Iroh, Grand Lotus and The Master of Keys (the
   `grantsToGraveyard` static's flashback and escape) and Jodah, Archmage Eternal
-  (`alternativeCostForSpells`) — confirm each at `card:lookup`.
+  (`alternativeCostForSpells`); Narci, Fable Singer (the `chapter-resolves` trigger's
+  `finalOnly`, and a completed Saga's sacrifice) — confirm each at `card:lookup`.
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first
   ten, engine-only, with the commanders each fully unblocks:
-  `effect:missing-tokens` (+1), `effect:amount-aggregate` (+1),
-  `effect:look-and-choose-leftover` (+1), `effect:reveal-until` (+2),
-  `bug:color-identity-back-face` (+1), `trigger:saga-final-chapter` (+1),
-  `bug:saga-completion-sacrifice` (+1), `cost:mana-ability-complex-costs` (+2),
-  `keyword:exhaust` (+1), `zone:impulse-permission-options` (+2).
+  `effect:reveal-until` (+3), `effect:amount-aggregate` (+2), `effect:missing-tokens` (+1),
+  `effect:look-and-choose-leftover` (+1), `cost:mana-ability-complex-costs` (+2),
+  `keyword:exhaust` (+1), `zone:impulse-permission-options` (+2),
+  `effect:mana-ability-side-effects` (+2), `effect:delayed-trigger-extensions` (+2),
+  `trigger:discards-extensions` (+1).
 - **Most-needed features overall.** `zone:visibility-extensions`,
   `static:grant-abilities-to-spells` and `bug:zone-change-object-identity` (13 each),
   `effect:reveal-until` (12). Live numbers come from `cmdrs:gaps`.

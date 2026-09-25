@@ -8371,6 +8371,12 @@ export class Game {
     } finally {
       this.resolvingSourceTimestamp = outerSourceTimestamp;
     }
+    if (object.abilityKind === "chapter") {
+      const chapters = this.registry.get(printedCardName(object)).chapters ?? [];
+      const last = Math.max(0, ...chapters.flatMap((chapter) => chapter.at));
+      const final = chapters[object.abilityIndex ?? 0]?.at.includes(last) === true;
+      this.emit({ type: "chapter-resolved", saga: source, final });
+    }
     this.emit({ type: "ability-resolved", source });
     this.removeAbilityFromStack(id);
   }
@@ -8586,6 +8592,8 @@ export class Game {
             event.type === "permanent-sacrificed" ||
             event.type === "permanent-transformed"
               ? event.object
+              : event.type === "chapter-resolved"
+                ? event.saga
               : event.type === "attacker-declared" ||
                   event.type === "attacked-alone" ||
                   event.type === "attacker-blocked"
@@ -9285,6 +9293,13 @@ export class Game {
           this.matchesWhoPlayer(spec.who, event.player, self) &&
           !(spec.otherOnly === true && event.object === self.id) &&
           this.triggerFilterOk(spec.filter, event.object, self, true)
+        );
+      case "chapter-resolves":
+        return (
+          event.type === "chapter-resolved" &&
+          (spec.finalOnly !== true || event.final) &&
+          this.matchesWho(spec.who, event.saga, self) &&
+          this.triggerFilterOk(spec.filter, event.saga, self)
         );
       case "transforms":
         return (
@@ -15053,10 +15068,16 @@ export class Game {
           this.snapshotLeaving(sweep.map((m) => m.id));
           for (const { id, event } of sweep) {
             if (this.state.objects[id]?.zone !== "battlefield") continue;
+            // Who sacrifices a completed Saga: its controller (rule 714.4),
+            // read before the move hands it back to its owner.
+            const controller = this.state.objects[id].controller;
             // A commander waiting on its 903.9a choice stays where it is, and
             // isn't a change: it would be found again on every pass.
             if (!this.moveObject(id, "graveyard")) continue;
             this.emit(event);
+            if (event.type === "saga-completed") {
+              this.emit({ type: "permanent-sacrificed", object: id, player: controller });
+            }
             changed = true;
           }
         });

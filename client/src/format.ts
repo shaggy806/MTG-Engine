@@ -42,6 +42,9 @@ const NOISY_EVENTS: ReadonlySet<GameEvent['type']> = new Set([
   'pt-modifier-expired',
   'trigger-removed',
   'ability-resolved',
+  // The chapter ability's own resolution — for "whenever the final chapter
+  // ability of a Saga you control resolves".
+  'chapter-resolved',
   'flashback-grant-expired',
   'time-counter-removed',
   // One per targeted object on every targeted spell — bookkeeping for
@@ -97,7 +100,9 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
     case 'lore-counter-added':
       return `${name(event.object)} — lore counter ${event.lore}`
     case 'saga-completed':
-      return `${name(event.object)} is sacrificed (final chapter)`
+      return `${name(event.object)} has finished its final chapter`
+    case 'chapter-resolved':
+      return `${name(event.saga)}'s ${event.final ? 'final ' : ''}chapter ability resolves`
     case 'permanent-transformed':
       return `${name(event.object)} transforms (now ${event.front ? 'front' : 'back'} face)`
     case 'day-night-changed':

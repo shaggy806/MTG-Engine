@@ -84,7 +84,10 @@
   "keyword:melee",
   "effect:temporary-player-effect",
   "effect:this-way-results",
-  "static:grant-to-cards-outside-battlefield"
+  "static:grant-to-cards-outside-battlefield",
+  "bug:color-identity-back-face",
+  "trigger:saga-final-chapter",
+  "bug:saga-completion-sacrifice"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

@@ -61,9 +61,18 @@ export type GameEvent =
       readonly lore: number;
     })
   | (Base & {
-      /** A Saga was sacrificed after its final chapter (SBA 704.5s). */
+      /** A Saga was sacrificed after its final chapter (SBA 704.5s) — also
+       * announced as a `permanent-sacrificed` by its controller, rule 714.4. */
       readonly type: "saga-completed";
       readonly object: ObjectId;
+    })
+  | (Base & {
+      /** A Saga's chapter ability resolved (it wasn't removed for illegal
+       * targets); `final` when it is the final chapter ability (rule 714.2d
+       * — one whose chapter numbers include the Saga's highest). */
+      readonly type: "chapter-resolved";
+      readonly saga: ObjectId;
+      readonly final: boolean;
     })
   | (Base & {
       /** A permanent turned over to its other face (rule 712.10 — a transform

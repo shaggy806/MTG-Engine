@@ -463,6 +463,18 @@ export type TriggerSpec =
       readonly filter?: CardFilter;
     }
   | {
+      /** A Saga's chapter ability resolved — `finalOnly` is "whenever the
+       * **final chapter ability** of a Saga you control resolves" (Tom
+       * Bombadil, Narci, Fable Singer). `who` is about the Saga (`"self"`: a
+       * Saga's own). The Saga is the trigger object: "that Saga's mana value"
+       * is a `{ manaValueOf: "trigger-object" }`, read as it last existed if
+       * the final chapter has sacrificed it by then. */
+      readonly on: "chapter-resolves";
+      readonly who: TriggerWho;
+      readonly finalOnly?: boolean;
+      readonly filter?: CardFilter;
+    }
+  | {
       /** This creature dealt combat damage to a player. The ability's first
        * target slot (if any) is auto-filled with that player, when the slot
        * can hold one. The creature is the trigger object — "you gain life
