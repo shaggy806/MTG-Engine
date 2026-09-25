@@ -296,6 +296,58 @@ because a card in the pool wanted them, not because the backlog does. Leave
 them.
 Since measured: mana provenance and the plays-a-land trigger are built.
 
+## Built ahead: vocabulary no card uses yet
+
+Measured on 2026-09-25 by walking all 5,522 definitions. Each piece below was
+built ahead of a card that is still in the backlog (most of them in the
+2026-09-24 gap wave), so nothing in the pool runs it and the fuzzer never
+reaches it. Keep it, and give the first card that uses one a close rules
+review. The pieces marked **untested** have no unit test either, so nothing
+has ever run them.
+
+- **Effect kinds:** `prohibit` (for Sen Triplets and Koma, Cosmos Serpent),
+  and `day-night` ("it becomes night"; **untested**).
+- **Trigger kinds:** `attacks-player`, and the `predicate` escape hatch
+  (**untested**).
+- **Static conditions:** `source-greatest`, `player-counters`.
+- **Static-ability fields:** `canBlockOnly`, `castAsThoughFlash`,
+  `attackOnlyNearestOpponent`.
+- **Filter clauses:** `notColors`, `notName`, `sharesCardTypeWith`.
+- **Amounts:** `{ sum }`, `{ damageDealtThisTurn }`.
+- **Combat restriction:** `cant-attack-owner`.
+- **Target spec:** `creature-or-player` (**untested**). One real card still
+  prints "target creature or player": Firesong and Sunspeaker.
+- **Replacement fields:** `transformed` on enters-battlefield, `from` on
+  would-be-put-into-graveyard, `plus` on would-deal-damage. Also
+  `painIfUntapped` (**untested**), the one piece no real card can use: it was
+  written for a Rockfall Vale text that isn't the card's, and no card in the
+  Oracle snapshot deals damage for entering untapped.
+- **Layer hook:** `PtModifier.addColors` (**untested**). The colour step reads
+  it, but no effect sets it.
+- **Optional fields no card sets yet:**
+  - Effects: `add-mana.persists`, `exile-from-library.amount`,
+    `return-from-graveyard.withCounters`, `reveal-until.tapped`,
+    `additional-combat.withMain`, `animate-all.keywords`,
+    `create-token-copy.gainUntilEndOfTurn`, `become-monarch.who`,
+    `add-player-counters.target`, `get-energy.who`,
+    `prevent-damage.combatOnly`, `modal.notChosenThisTurn`, `may.costEnergy`,
+    `may.else`.
+  - Triggers: `attacks.defender` and `.aloneAgainstDefender`,
+    `transforms.filter`, `chapter-resolves.filter`,
+    `deals-combat-damage-to-player.otherOnly`, `blocks.filter` and
+    `.otherOnly`, `becomes-blocked.filter` and `.otherOnly`,
+    `put-into-exile.filter`, `dealt-damage.combat`, `deals-damage.toFilter`
+    and `.toItsTarget`, `becomes-tapped.filter`, `cast-spell.copyOnly` and
+    `.notFrom`.
+  - Conditions: `hand-size.atLeast`, `life-total.who` and `.atMost`,
+    `cards-in-exile.filter`, `turn-structure.steps`,
+    `damage-dealt-this-turn.who`, `turn-history.who` and `.atLeast`,
+    `this-way.atLeast`.
+
+Engine-internal pieces aren't listed: the `return-flickered` effect, and the
+`progress` field on `reveal-until` and `each-player-may`, are made by the
+engine itself.
+
 ## Done: index of finished passes
 
 Kept so that source comments citing them resolve. The narrative for each is

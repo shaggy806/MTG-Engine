@@ -71,6 +71,11 @@ that one card is the reason the deck exists.
 - **Pre-§0 debt.** Some cards in the pool lose or misplay a printed clause. Fix or delete each
   one. See `cards/AUTHORING.md` §15, "Known exceptions already in the pool", and
   `npm run card:text -w engine`.
+- **The original deck lists.** `engine/src/cards/neededCards.txt` holds the first two decks
+  the pool was built for (Ureni's Temur dragons, Korvold and Lord Windgrace's lands) and some
+  one-off requests. 48 of its cards are still missing, and 23 of those aren't in the top-2000
+  list, so nothing else tracks them. Their `FEATURE:` notes date from the P0–P20 passes, so
+  re-check each one against the engine before building for it.
 - **Precon stand-ins.** 42 cards in the five starter decks still play as substitutes. The
   engine plan for them is paused. See `docs/plans/precon-decks.md` (the substitution list) and
   `docs/plans/engine-gaps.md`. Deleting a substitution is the whole revert.
@@ -158,7 +163,11 @@ that one card is the reason the deck exists.
 - **v3 is built but not seated.** Its evaluation hasn't been re-fitted for a search that
   actually casts things, and it benches six points behind v2 at four players. The
   "Sequencing" steps from "Re-run `bot:audit`" onward are still outstanding. See
-  `docs/plans/bot-v3-search.md`.
+  `docs/plans/bot-v3-search.md`. Nothing live runs it, and it hasn't changed since
+  2026-09-19, so decide: re-fit it, or retire it. Retiring means `bot/plan.ts`,
+  `plan-bot.ts` and `determinize.ts`, `test/bot-plan.test.ts`, the `bot:plan`, `bot:census` and
+  `bot:rollout-cost` scripts, `BOT_PLAN_BUDGET_MS` in `server/src/room.ts`, and the `v3` paths
+  in the scenario, harvest and tune workers and in `room-pacing.test.ts`.
 - **v2's Phase 7 feature list is superseded.** Don't build it. See `docs/plans/smarter-bots.md`.
 - **Poison is invisible to the evaluation.** `bot/features.ts` reads energy but not
   `PlayerState.counters`, so a bot sees nothing coming until ten poison counters end the game,
@@ -200,3 +209,20 @@ that one card is the reason the deck exists.
   where 150 two-player seeds reach all but 46. Either raise CI's game counts (about 60
   two-player seeds for 87%, roughly double the fuzz time), or start each run at a different
   seed so that successive runs sweep the whole pool.
+
+## Code health
+
+- **Two ways to name a deck's commanders.** `DeckList` and `WireDeck` carry a lone
+  `commander` beside `commanders`, and `commandersOf` reads either. `WireDeck`'s doc calls the
+  lone field a shim for clients from before Partner pairs, but `SAMPLE_DECKS`, the server's
+  `SEATS` and `PendingRoom`'s fallback deck still use it, as do ten test files. Move them all
+  onto `commanders`, then drop the lone field.
+- **Saved-deck migrations.** `client/src/deck-builder/decks.ts` rewrites two old shapes every
+  time it reads saved decks: a lone `commander` (from before Partner pairs) and Princess Sarah's
+  old name (renamed on 2026-09-16). Neither rewrite is saved, so an old deck needs them until
+  it's next edited. Write each migrated deck back once, then drop both.
+- **Vocabulary built ahead of any card.** About twenty effect, trigger, condition, filter and
+  replacement pieces, plus a few dozen optional fields, have no card using them yet, and five
+  have no test either. Keep them for the cards they were built for, but review the first card
+  that uses each. The list is in `neededCards-features.md`, "Built ahead". `painIfUntapped` is
+  the one no real card can use.

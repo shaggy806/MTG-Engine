@@ -14,7 +14,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Carnelian Orb of Dragonkind      FEATURE: not a restriction — a *bonus* keyed to what the produced mana gets spent on ("if that mana is spent on a Dragon creature spell, it gains haste"). The engine has no mana-provenance tracking at all; a different (and harder) problem than Haven of the Spirit Dragon's true spend-restriction below
 [+] 1 Cinder Glade
 [x] 1 Command Tower
-[ ] 1 Cultivate                        FEATURE: multi-destination tutor (one to battlefield, one to hand)
+[x] 1 Cultivate
 [ ] 1 Deceptive Frostkite             FEATURE: `copyOnEnter` is a bare, unparameterized copy (`filter: "creature"` only) — needs a power>=4 restriction on the candidate AND an "except it gains an extra type + keyword" exception on top of the copy — a different, simpler ask than Sarkhan's P12 "keeps its OWN name" case
 [+] 1 Defense of the Heart            (P7 — opponent-controls condition + sacrifice-source effect)
 [ ] 1 Dracogenesis                     FEATURE: "you may cast Dragon spells without paying their mana costs" — an Omniscience-style free-cast permission on ALL of a cost (colored pips included), not just a generic reduction
@@ -24,13 +24,13 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Dragonspeaker Shaman
 [+] 1 Encroaching Dragonstorm          (P16 — already-shipped search-library + return-to-hand widened to accept "source")
 [+] 1 Essence Flux                     FEATURE: flicker (exile then return under your control)
-[ ] 1 Exotic Orchard                   FEATURE: mana = "a color a land an opponent controls could produce"
+[x] 1 Exotic Orchard
 [+] 1 Fanatic of Rhonas                (P19 — new `ActivatedAbility.condition` gate for the Ferocious mana ability, mirroring StaticAbility/TriggeredAbility's; drops Eternalize — a wholly separate, unmodeled alt-cast-as-a-token-from-graveyard mechanic)
 [+] 1 Farseek
-[ ] 1 Flooded Grove                    FEATURE: filter land — `add-mana` produces one color x amount only; needs either a mixed-color output ("Add {G}{U}" in one activation) or `isManaAbility` recognizing a `sequence` of `add-mana` steps as a mana ability
+[x] 1 Flooded Grove
 [x] 5 Forest
 [+] 1 Frontier Bivouac
-[ ] 1 Frontier Siege                   FEATURE: mode-on-enter + recurring mana / attack trigger — no "choose a mode as this enters, then behave permanently as that mode" primitive exists (unlike `chooseCreatureTypeOnEnter`, which only feeds a cost-matching check, not a whole alternate ability set)
+[x] 1 Frontier Siege
 [ ] 1 Frostcliff Siege                 FEATURE: (mode-on-enter siege — same gap as Frontier Siege)
 [+] 1 Ganax, Astral Hunter             (P18 — zero new vocab: a plain Dragon-ETB Treasure trigger; the old FEATURE note here described a different, wrong mechanic. "Choose a Background" — a Commander deckbuilding option, pairing with a second non-legendary commander — isn't modeled; the engine's Partner support only pairs two same-type commanders)
 [+] 1 Garruk's Uprising               (P7 — TriggeredAbility.condition, an intervening-if ETB draw)
@@ -46,7 +46,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Karplusan Forest
 [+] 1 Kessig Wolf Run                  (P10 — {X} activated-ability cost feeds modify-pt "x")
 [+] 1 Kiora, Behemoth Beckoner         (P12 — real text needed no new vocab; the guessed static was wrong)
-[ ] 1 Kodama's Reach                   FEATURE: = Cultivate (multi-destination tutor)
+[x] 1 Kodama's Reach
 [ ] 1 Last March of the Ents           FEATURE: real text has no counters at all (a stale guess) — draw cards equal to the GREATEST toughness among your creatures (a max-stat aggregate; `EffectAmount` only has `countOf`, a count, not a max) then put any number of creature cards from hand onto the battlefield (no "cards from hand onto the battlefield" effect exists at all)
 [+] 1 Lathliss, Dragon Queen           (+ token "Dragon Token" 5/5 flying)
 [+] 1 Lightning Greaves                (P15 — new "shroud" keyword)
@@ -55,12 +55,12 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Marang River Regent              FEATURE: real text has no unblockable clause at all (a stale guess) — it's an Omen MDFC: front-face ETB "return up to two OTHER target nonland permanents" needs optional/"up to N" targeting (every declared target slot is mandatory today — a previously-undocumented gap, see AUTHORING §15); the Omen back face also needs its own "shuffle into its owner's library instead of the graveyard after resolving" alt-zone rule, distinct from flashback/escape/disturb's fixed destinations
 [+] 1 Miirym, Sentinel Wyrm            (P5b — create-token-copy of: trigger-object)
 [ ] 1 Mirror Room / Fractured Realm    FEATURE: Room cards (Duskmourn split-enchantment / door unlock); Fractured Realm's own ability is a broader (all-triggers, not just ETB) version of P15's doubleEntryTriggers
-[ ] 1 Mossfire Valley                  FEATURE: the same underlying gap as Flooded Grove above (add-mana can't output two different colors in one activation) but simpler — a flat {1} cost, no hybrid/filter-land mechanic
+[x] 1 Mossfire Valley
 [ ] 1 Mosswort Bridge                  FEATURE: Hideaway
 [x] 6 Mountain
 [+] 1 Nature's Lore
 [+] 1 Old Gnawbone
-[ ] 1 Path of Ancestry                 FEATURE: mana within commander color identity + "used to cast a creature -> scry 1" — shares the mana-provenance/restricted-spend gap with Haven of the Spirit Dragon and Carnelian Orb of Dragonkind above, plus needs the commander's live color identity readable at runtime from an effect
+[x] 1 Path of Ancestry
 [x] 1 Rampant Growth
 [+] 1 Rapid Hybridization
 [ ] 1 Rhythm of the Wild               FEATURE: riot (unmodeled — a wholly new "choose a +1/+1 counter or haste on ETB" keyword-adjacent mechanic); "creature spells you control can't be countered" needs a new static granting can't-be-countered to a filtered class of spells — `cantBeCountered` today is a fixed boolean on a single card's own definition, not a grantable protection
@@ -94,7 +94,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Aftermath Analyst
 [+] 1 Amulet of Vigor                  (dup — see Deck 1)
 [+] 1 Beast Within
-[ ] 1 Blasphemous Act                  (dup — see Deck 1)
+[x] 1 Blasphemous Act                  (dup — see Deck 1)
 [+] 1 Blood Crypt
 [+] 1 Bloodstained Mire
 [+] 1 Bojuka Bog                      (P8 — exile-graveyard effect)
@@ -111,7 +111,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Evendo, Waking Haven             FEATURE: Station (rule 702.171) — same unbuilt mechanic as Exploration Broodship (P15) and Kavaron, Memorial World
 [x] 1 Evolving Wilds
 [ ] 1 Exploration Broodship            FEATURE: Station (not crew) — an activated ability that piles charge counters equal to a tapped creature's power onto this Spacecraft, with threshold-gated abilities (3+/8+) and an 8+ animation into a creature
-[ ] 1 Fabled Passage                   FEATURE: `search-library`'s `enterTapped` is a fixed flag — Fabled Passage needs a conditional untap checked AFTER the fetched land enters (based on how many lands you then control), which isn't expressible (no way to reference "the card search-library just found" in a following step)
+[x] 1 Fabled Passage
 [ ] 1 Famished Worldsire               FEATURE: Ward {3} already works; "devour land 3" (sac lands as it enters, gets 3x that many counters) is a new ETB replacement, and its own ETB effect needs X = this creature's current power, which EffectApi can't read (no characteristics access from a resolve script)
 [+] 1 Festering Thicket                (P17 — an unconditional-tapped B/G dual + cycling {2} — zero new vocab, Sheltered Thicket's exact shape)
 [+] 1 Finale of Devastation            (P10 — tutor + Ferocious selfCostReduction; X>=10 haste/fight TBD)
@@ -126,7 +126,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Iridescent Vinelasher
 [ ] 1 Kavaron, Memorial World          FEATURE: Station (rule 702.171) — same unbuilt mechanic as Exploration Broodship (P15) and Evendo, Waking Haven
 [+] 1 Korvold, Fae-Cursed King         (P6 — on:"sacrifice" trigger + sacrifice exceptSource; stub finished)
-[ ] 1 Lord Windgrace                   FEATURE: planeswalker — +2 discard-then-draw with a bonus draw conditioned on the discarded card's type (an async "branch on a resolved decision" not yet modeled), -3/-11 "up to N target" multi-targeting (not modeled at all), and "can be your commander" for a non-creature legendary (see P12; real text has no land destruction or emblem — the guess was wrong)
+[x] 1 Lord Windgrace
 [+] 1 Lotus Cobra
 [+] 1 Lotus Field                      (P18 — zero new vocab: `sacrifice` already auto-resolves below its count with no decision needed, and `add-mana "any-color"` already picks one color for the whole activation; the old FEATURE note here predated both)
 [+] 1 Manifold Key                     (P17 — new "artifact" TargetSpec; the unblockable half reuses the existing grant-keyword effect)
@@ -152,7 +152,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Shifting Woodland                FEATURE: "becomes a copy of target permanent card in your graveyard" — needs a "target card in graveyard" TargetSpec (Conduit of Worlds and Toph both want the same primitive) + a resolution-time "become a copy" effect for an already-on-battlefield permanent (`copyOnEnter` is ETB-only); Delirium's "Activate only if 4+ card types in your graveyard" also needs the same ActivatedAbility condition-gate gap as Fanatic of Rhonas
 [ ] 1 Six                              FEATURE: real text has no forests-matter, graveyard-land-play, or regeneration clause at all (a fabricated guess) — Reach; attack trigger mills 3 and may take a land from AMONG THOSE THREE to hand (`look-and-choose`'s graveyard mode considers the WHOLE graveyard, not just what was just milled, so it over-reaches here); and retrace (cast permanent cards from graveyard by discarding a land) is a wholly unmodeled alt-cast mechanic
 [x] 1 Sol Ring
-[ ] 1 Spelunking                       FEATURE: "lands you control enter untapped" replacement (shares the gap with Horizon Explorer above); the ETB "draw, then may put a land from hand onto the battlefield" is also blocked — no "put a card from hand onto the battlefield" effect exists
+[x] 1 Spelunking
 [+] 1 Splendid Reclamation
 [ ] 1 Springheart Nantuko              FEATURE: Bestow (rule 702.103) isn't modeled at all — no `CardDefinition` field for it, unlike adventure/transform/disturb/foretell/etc. The landfall ability's own "may X, if you do A, else B" is solved now (P19's `may` `then`/`else`), so Bestow alone blocks this one
 [+] 1 Stomping Ground                  (dup — see Deck 1)
@@ -162,7 +162,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Tannuk, Memorial Ensign          (P16 — reuses Sabotender's damage-each-opponent primitive; drops "if this is the second time this ability has resolved this turn, draw a card" — per-ability-per-turn resolution counting isn't tracked)
 [+] 1 Tear Asunder                    (P8 — CardDefinition.kicker)
 [+] 1 Terramorphic Expanse
-[ ] 1 The Gitrog Monster               FEATURE: real upkeep clause is "sacrifice Gitrog unless you sacrifice a land" — no discard alternative at all (a stale guess). The "may/unless" half is solved now (P19's `may` `then`/`else`); still needs a general "a card was put into a graveyard from anywhere" trigger (broader than `dies`, which only covers battlefield-to-graveyard) for the draw ability. The extra land drop is already free (`extraLandsPerTurn`, P16)
+[x] 1 The Gitrog Monster
 [+] 1 Tireless Provisioner
 [ ] 1 Toph, Hardheaded Teacher         FEATURE: "earthbend 1" (see Earthbender Ascension above) on every spell cast, plus a "that land" reference into a later clause that only applies if the spell was a Lesson (no Lesson subtype/card-type in the pool). The ETB "may discard a card; if you do, return target instant/sorcery from graveyard to hand" is close but still needs the "target card in graveyard" TargetSpec noted at Shifting Woodland above
 [ ] 1 Traveling Chocobo                FEATURE: real text has no Food, landfall, or counters at all (a fabricated guess) — "you may play lands and cast Bird spells from the top of your library" needs a play-from-library-top permission for lands (now free: `playFromLibraryTop: CardFilter`, shipped for Oracle of Mul Daya) plus a *cast*-from-library-top permission for spells (still unmodeled — playFromLibraryTop only covers lands, the same way playFromGraveyard doesn't cover casting nonland cards). The trigger-doubling clause is already free now (`doubleEntryTriggers: {filter}`, P15)
