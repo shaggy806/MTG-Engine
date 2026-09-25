@@ -499,16 +499,6 @@ export const filterLand = (
   });
 
 /**
- * A "Triome" (Raugrin Triome, Jetmir's Garden, …): a *typed* tri-land that
- * enters tapped and has cycling {3}.
- *
- * Unlike {@link triLand} these carry all three basic land types, so they feed
- * everything that keys off a type — a check land sees one as a Swamp, and
- * `landProduces` reads a colour straight off the subtype. The colours are
- * derived from the types for exactly that reason, rather than passed in and
- * allowed to disagree with them.
- */
-/**
  * A "Karoo" / bounce land (Azorius Chancery, Gruul Turf, ...): enters tapped,
  * returns a land you control to your hand as it enters, and taps for two mana
  * of its two colours at once.
@@ -553,6 +543,15 @@ export const karooLand = (
     ],
   });
 
+/**
+ * A "Triome" (Raugrin Triome, Jetmir's Garden, …): a *typed* tri-land that
+ * enters tapped and has cycling {3}.
+ *
+ * Unlike {@link triLand} these carry all three basic land types, so they feed
+ * everything that keys off a type — a check land sees one as a Swamp. The
+ * colours are derived from the types for that reason, rather than passed in
+ * and allowed to disagree with them.
+ */
 export const triomeLand = (
   name: string,
   landTypes: readonly [string, string, string],
@@ -873,19 +872,6 @@ export const talisman = (name: string, colors: readonly [Color, Color]): CardDef
       })),
     ],
   });
-
-/**
- * The single color of mana a land taps for, or `null` if it is not a
- * mana-producing basic land. (Non-basic mana lands come later.)
- */
-export function landProduces(def: CardDefinition): Color | null {
-  if (!def.types.includes("land")) return null;
-  for (const subtype of def.subtypes) {
-    const color = BASIC_LAND_MANA[subtype];
-    if (color !== undefined) return color;
-  }
-  return null;
-}
 
 export const basicLand = (
   name: string,

@@ -345,7 +345,7 @@ async function importDecklist(
 /**
  * Paste a decklist export, resolve it into a deck the engine can actually
  * play right now: an implemented card is kept as-is, an unimplemented one
- * with a `suggestedReplacement` (see `engine`'s `suggestReplacement`, run
+ * with a `suggestedReplacement` (see `engine`'s `assignReplacements`, run
  * server-side against the pool) is swapped in instead, and anything with no
  * match at all (or not found on Scryfall) is dropped. Saves the result via
  * `createDeckFromImport` and hands the new deck + a summary back to the

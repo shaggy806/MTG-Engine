@@ -1650,7 +1650,3 @@ export function defineCard(draft: CardDraft): CardDefinition {
     pairing: draft.pairing ?? null,
   };
 }
-
-export function hasKeyword(def: CardDefinition, keyword: Keyword): boolean {
-  return def.keywords.includes(keyword);
-}

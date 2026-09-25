@@ -344,9 +344,3 @@ const COLOUR_WORD: Readonly<Record<Color, string>> = {
   R: "red",
   G: "green",
 };
-
-export const targetsPlayer = (ref: TargetRef, player: PlayerId): boolean =>
-  ref.kind === "player" && ref.player === player;
-
-export const targetsObject = (ref: TargetRef, object: ObjectId): boolean =>
-  ref.kind === "object" && ref.object === object;

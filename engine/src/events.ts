@@ -709,14 +709,6 @@ export type GameEvent =
       readonly player: PlayerId;
       readonly reason: string;
     })
-  /** Rule 800.4a — the loser's objects left the game with them. Separate from
-   * `player-lost` because losing and leaving are two rules, and the count is
-   * what makes a board suddenly emptying legible in the log. */
-  | (Base & {
-      readonly type: "player-left";
-      readonly player: PlayerId;
-      readonly objects: number;
-    })
   | (Base & {
       readonly type: "game-ended";
       readonly winner: PlayerId | null;

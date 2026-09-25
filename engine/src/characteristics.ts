@@ -1905,6 +1905,3 @@ export function objHasKeyword(
 ): boolean {
   return computeCharacteristics(state, registry, id).keywords.has(keyword);
 }
-
-/** @deprecated Use {@link computeCharacteristics}. */
-export const characteristicsOf = computeCharacteristics;

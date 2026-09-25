@@ -488,18 +488,11 @@ describe("viewFor", () => {
   it("never exposes library contents, only sizes", () => {
     const game = mkGame();
     game.advanceUntil(atFirstMain);
-    const view = game.viewFor(A, { revealAll: true });
+    const view = game.viewFor(A);
     expect(view.players[A].librarySize).toBe(game.libraryOf(A).length);
     for (const id of game.libraryOf(A)) {
       expect(view.objects[id]).toBeUndefined();
     }
-  });
-
-  it("revealAll exposes both hands", () => {
-    const game = mkGame();
-    game.advanceUntil(atFirstMain);
-    const view = game.viewFor(A, { revealAll: true });
-    expect(view.zones.hands[B]).toHaveLength(game.handOf(B).length);
   });
 
   it("bakes computed characteristics into battlefield objects", () => {

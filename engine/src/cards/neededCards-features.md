@@ -223,8 +223,8 @@ Garenbrig (717)
 - **Put from hand**: Last March of the Ents (a greatest-toughness amount).
 - **Global land-type statics**: Urborg, Tomb of Yawgmoth and Yavimaya, Cradle
   of Growth — `effectiveSubtypes` is deliberately given no `GameState`, so a
-  board-dependent land subtype touches check lands, `landProduces` and every
-  `subtype` clause.
+  board-dependent land subtype touches check lands and every `subtype`
+  clause.
 - **Remaining `StaticCondition`s**: Coven and Raid (no card whose other text
   is expressible yet).
 - **Protection from a filter** (19 cards — Mother of Runes, Giver of Runes,

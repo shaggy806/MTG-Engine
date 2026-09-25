@@ -38,7 +38,6 @@ export interface PublicPlayerInfo {
   readonly librarySize: number;
   readonly graveyardSize: number;
   readonly landsPlayedThisTurn: number;
-  readonly maxHandSize: number;
   readonly hasLost: boolean;
   readonly lossReason: string | null;
   /** Combat damage this player has taken from each commander so far, one
@@ -137,10 +136,7 @@ export interface VisibleObject {
   /** A player, or an opponent's planeswalker (an `ObjectId`), or `null`. */
   readonly attacking: PlayerId | ObjectId | null;
   readonly blocking: ObjectId | null;
-  readonly blockedBy: readonly ObjectId[];
-  readonly blocked: boolean;
   readonly kind: "card" | "ability";
-  readonly abilityKind: "activated" | "triggered" | "chapter" | null;
   readonly sourceObjectId: ObjectId | null;
   readonly abilityIndex: number | null;
   readonly targets: readonly TargetRef[] | null;
@@ -170,7 +166,6 @@ export interface VisibleObject {
 }
 
 export interface PlayerView {
-  readonly viewer: PlayerId;
   readonly turnOrder: readonly PlayerId[];
   /** Who the "highroll" (or a configured `startingPlayer`) chose to go
    * first — fixed for the life of the game, unlike `activePlayer`. */
@@ -203,7 +198,8 @@ export interface PlayerView {
     readonly command: readonly ObjectId[];
     /** Every hand's ids are here regardless of whose it is (so an opponent's
      * hand can render as N face-down cards) — but `objects` below only
-     * carries the identity of your own hand's cards, unless `revealAll`. */
+     * carries the identity of your own hand's cards, and of any card that
+     * was revealed. */
     readonly hands: Readonly<Record<PlayerId, readonly ObjectId[]>>;
     readonly graveyards: Readonly<Record<PlayerId, readonly ObjectId[]>>;
   };
@@ -221,8 +217,6 @@ export interface PlayerView {
 }
 
 export interface ViewOptions {
-  /** Reveal every hand (for a hot-seat spectator or debugging). */
-  readonly revealAll?: boolean;
   /**
    * What `cardId` costs the viewer right now, or `null` when it is the
    * printed cost. Supplied by `Game.viewFor`, because working it out needs
@@ -325,10 +319,7 @@ function visible(
     summoningSick: object.summoningSick,
     attacking: object.attacking,
     blocking: object.blocking,
-    blockedBy: [...object.blockedBy],
-    blocked: object.blocked,
     kind: object.kind,
-    abilityKind: object.abilityKind,
     sourceObjectId: object.sourceObjectId,
     abilityIndex: object.abilityIndex,
     // A hole is a skipped optional slot; the view shows only real targets.
@@ -364,8 +355,6 @@ function viewForUncached(
   viewer: PlayerId,
   options: ViewOptions = {},
 ): PlayerView {
-  const revealAll = options.revealAll ?? false;
-
   const players: Record<PlayerId, PublicPlayerInfo> = {};
   const hands: Record<PlayerId, readonly ObjectId[]> = {};
   const graveyards: Record<PlayerId, readonly ObjectId[]> = {};
@@ -378,7 +367,7 @@ function viewForUncached(
     // `exile` zone list, so a client renders a face-down back for it.
     ...state.zones.shared.exile.filter((id) => {
       const object = state.objects[id];
-      return revealAll || object?.foretold !== true || object.owner === viewer;
+      return object?.foretold !== true || object.owner === viewer;
     }),
     ...state.zones.shared.command,
   ];
@@ -410,7 +399,6 @@ function viewForUncached(
       librarySize: zones.library.length,
       graveyardSize: zones.graveyard.length,
       landsPlayedThisTurn: playerState.landsPlayedThisTurn,
-      maxHandSize: playerState.maxHandSize,
       hasLost: playerState.hasLost,
       lossReason: playerState.lossReason,
       commanderDamageTaken: Object.entries(playerState.commanderDamageTaken)
@@ -446,9 +434,9 @@ function viewForUncached(
     // client can render a face-down back per card (and later swap one to its
     // real face if something reveals it, e.g. Gitaxian Probe). Only the
     // *identity* (the object's entry in `objects` below) stays hidden unless
-    // it's your own hand, `revealAll`, or the card was actually revealed.
+    // it's your own hand or the card was actually revealed.
     hands[player] = [...zones.hand];
-    if (revealAll || player === viewer) {
+    if (player === viewer) {
       visibleIds.push(...zones.hand);
     }
   }
@@ -472,7 +460,6 @@ function viewForUncached(
   }
 
   return {
-    viewer,
     turnOrder: [...state.turnOrder],
     startingPlayer: state.startingPlayer,
     activePlayer: activePlayerOf(state),

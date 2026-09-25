@@ -47,7 +47,8 @@ import { printedCardName } from "../state.js";
 import type { GameObject, GameState } from "../state.js";
 
 /** The terms the score is linear in — the vector a fit operates on. Order is
- * load-bearing: `featureVector` and the fitted-weight files index by it. */
+ * load-bearing: `scripts/fit-weights.mjs` and the fitted-weight files index
+ * by it. */
 export const FEATURE_KEYS = [
   "life",
   "lifeDanger",
@@ -302,8 +303,3 @@ function playerFeaturesUncached(
     commanderTax: Object.values(p.commanderCastCounts).reduce((a, b) => a + b, 0),
   };
 }
-
-/** `FEATURE_KEYS` order, signs folded in — the design vector for a fit, and
- * what a fitted coefficient multiplies. */
-export const featureVector = (f: PlayerFeatures): number[] =>
-  FEATURE_KEYS.map((k) => featureSign(k) * f[k]);

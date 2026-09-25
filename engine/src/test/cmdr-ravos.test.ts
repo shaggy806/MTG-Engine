@@ -16,7 +16,7 @@
 import { describe, expect, it } from "vitest";
 
 import { createDefaultRegistry } from "../cards.js";
-import { characteristicsOf } from "../characteristics.js";
+import { computeCharacteristics } from "../characteristics.js";
 import { ScriptedController } from "../controller.js";
 import { Game } from "../game.js";
 import { colorIdentityOf, identityString } from "../identity.js";
@@ -52,7 +52,7 @@ const spawn = (game: Game, name: string, player: PlayerId): ObjectId =>
 const bury = (game: Game, name: string, player: PlayerId): ObjectId =>
   game.debugSpawn(name, player, "graveyard");
 const pt = (game: Game, id: ObjectId): [number, number] => {
-  const c = characteristicsOf(game.state, game.registry, id);
+  const c = computeCharacteristics(game.state, game.registry, id);
   return [c.power ?? 0, c.toughness ?? 0];
 };
 const graveyardOf = (game: Game, player: PlayerId): readonly ObjectId[] =>

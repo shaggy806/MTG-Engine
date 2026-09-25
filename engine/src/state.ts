@@ -15,8 +15,7 @@ import type { Color, ManaOrigin, ManaUnit } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameEvent } from "./events.js";
 import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
-import type { Phase, Step } from "./turn.js";
-import { phaseOfStep } from "./turn.js";
+import type { Step } from "./turn.js";
 
 export type PrivateZone = "library" | "hand" | "graveyard";
 export type SharedZone = "battlefield" | "stack" | "exile" | "command";
@@ -2132,20 +2131,3 @@ export const permanentCount = (state: GameState, ids: readonly ObjectId[]): numb
 
 export const activePlayerOf = (state: GameState): PlayerId =>
   state.turnOrder[state.turn.activePlayerIndex];
-
-export const currentPhaseOf = (state: GameState): Phase =>
-  phaseOfStep(state.turn.step);
-
-export const privateZone = (
-  state: GameState,
-  player: PlayerId,
-  zone: PrivateZone,
-): readonly ObjectId[] => state.zones.perPlayer[player][zone];
-
-export const battlefieldOf = (state: GameState): readonly ObjectId[] =>
-  state.zones.shared.battlefield;
-
-export const resolveObjects = (
-  state: GameState,
-  ids: readonly ObjectId[],
-): GameObject[] => ids.map((id) => state.objects[id]);

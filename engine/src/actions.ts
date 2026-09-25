@@ -359,8 +359,6 @@ export type Action =
       readonly away: readonly ObjectId[];
     };
 
-export type ActionType = Action["type"];
-
 /** A `cast-spell` offer's convoke part — see `LegalAction`. */
 export type ConvokeOffer = NonNullable<Extract<LegalAction, { kind: "cast-spell" }>["convoke"]>;
 

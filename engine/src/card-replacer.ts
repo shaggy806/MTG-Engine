@@ -397,15 +397,6 @@ export function suggestReplacements(
   return scored.slice(0, limit);
 }
 
-/** The single best stand-in for `target`, or `null` — see
- * {@link suggestReplacements}. */
-export function suggestReplacement(
-  target: ReplacementTarget,
-  context: ReplacementContext = {},
-): string | null {
-  return suggestReplacements(target, { ...context, limit: 1 })[0]?.name ?? null;
-}
-
 /**
  * How many candidates each target contributes to the assignment below. The
  * assignment wants more room than the UI shows to trade with, and the cost of

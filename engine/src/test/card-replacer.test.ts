@@ -2,14 +2,18 @@ import { describe, expect, it } from "vitest";
 import {
   createOracleTagIndex,
   parseTypeLine,
-  suggestReplacement,
   suggestReplacements,
 } from "../card-replacer.js";
+import type { ReplacementTarget } from "../card-replacer.js";
 import { colorIdentityOf, withinIdentity } from "../identity.js";
 import { createDefaultRegistry } from "../cards.js";
 import { manaValue, parseManaCost } from "../mana.js";
 
 const registry = createDefaultRegistry();
+
+/** The single best stand-in's name, or `null` when nothing fits. */
+const bestReplacement = (target: ReplacementTarget): string | null =>
+  suggestReplacements(target, { limit: 1 })[0]?.name ?? null;
 
 describe("parseTypeLine", () => {
   it("splits supertype + type + subtypes", () => {
@@ -41,9 +45,9 @@ describe("parseTypeLine", () => {
   });
 });
 
-describe("suggestReplacement", () => {
+describe("suggestReplacements — the best match", () => {
   it("returns an implemented, same-type card for a green bear-shaped creature", () => {
-    const name = suggestReplacement({ manaCost: "{1}{G}", typeLine: "Creature — Bear" });
+    const name = bestReplacement({ manaCost: "{1}{G}", typeLine: "Creature — Bear" });
     expect(name).not.toBeNull();
     const def = registry.get(name!);
     expect(def.types).toContain("creature");
@@ -51,7 +55,7 @@ describe("suggestReplacement", () => {
   });
 
   it("never suggests a creature for a noncreature instant", () => {
-    const name = suggestReplacement({ manaCost: "{1}{U}", typeLine: "Instant" });
+    const name = bestReplacement({ manaCost: "{1}{U}", typeLine: "Instant" });
     expect(name).not.toBeNull();
     const def = registry.get(name!);
     expect(def.types).toEqual(["instant"]);
@@ -61,28 +65,28 @@ describe("suggestReplacement", () => {
     // Grizzly Bears-shaped creature at a specific, uncommon mana value (5) --
     // the result should be a creature reasonably close to that cost, not an
     // arbitrary one.
-    const name = suggestReplacement({ manaCost: "{3}{G}{G}", typeLine: "Creature — Beast" });
+    const name = bestReplacement({ manaCost: "{3}{G}{G}", typeLine: "Creature — Beast" });
     const def = registry.get(name!);
     expect(def.types).toContain("creature");
     expect(Math.abs(manaValue(parseManaCost(def.manaCost)) - 5)).toBeLessThanOrEqual(2);
   });
 
   it("returns null for a type line with no recognizable card type", () => {
-    expect(suggestReplacement({ manaCost: null, typeLine: "Hero" })).toBeNull();
+    expect(bestReplacement({ manaCost: null, typeLine: "Hero" })).toBeNull();
   });
 
   it("returns null when nothing in the pool shares the target's type at all", () => {
     // Battle is a real CardType but this pool (per AUTHORING/ROADMAP) has no
     // implemented Battle cards -- confirms the hard type filter actually
     // excludes rather than falling back to "closest anything".
-    const name = suggestReplacement({ manaCost: "{3}{R}", typeLine: "Battle — Siege" });
+    const name = bestReplacement({ manaCost: "{3}{R}", typeLine: "Battle — Siege" });
     expect(name).toBeNull();
   });
 
   it("is deterministic across repeated calls", () => {
     const target = { manaCost: "{2}{W}", typeLine: "Creature — Human Soldier" };
-    const first = suggestReplacement(target);
-    const second = suggestReplacement(target);
+    const first = bestReplacement(target);
+    const second = bestReplacement(target);
     expect(first).toBe(second);
   });
 });
