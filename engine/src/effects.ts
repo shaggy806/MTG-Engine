@@ -20,6 +20,7 @@ import type {
 import type { AggregateSpec, CardFilter } from "./filter.js";
 import type { Color, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
+import type { ThisWayEntry } from "./this-way.js";
 import type {
   DelayedTriggerTiming,
   LeaveDestination,
@@ -314,7 +315,11 @@ export type EffectAmount =
     }
   | {
       readonly thisWay: ThisWayKind;
-      readonly who?: PlayerScope;
+      /** Whose (see `ThisWayEntry.player`): a scope, or `"each"` — the
+       * player a scoped effect is applied to, read once for each ("its
+       * controller creates a token for each creature destroyed this way" is a
+       * `create-token` with `who: "each-player"` and this). */
+      readonly who?: PlayerScope | "each";
       readonly filter?: CardFilter;
       readonly cardTypes?: boolean;
     };
@@ -425,12 +430,25 @@ export function substituteChosenCreatureType(spec: EffectSpec, creatureType: str
 /** Which players an "each" / mass effect reaches. */
 /**
  * What a spell or ability did "this way" — the cards it made players
- * discard, draw or mill, or the permanents it made them sacrifice, read off
- * the events of the resolution so far (see `GameState.resolutionSince`). The
- * `thisWay` {@link EffectAmount} counts them; the `this-way` condition asks
- * about them.
+ * discard, draw or mill, the permanents it made them sacrifice, and what it
+ * destroyed (a destroy effect, not a creature dying of damage), exiled
+ * (permanents and cards alike), returned to a hand, put into a graveyard
+ * (cards — tokens aren't) or put onto the battlefield from a zone (not a
+ * token created) — read off the events of the resolution so far (see
+ * `GameState.resolutionSince` and `this-way.ts`). The `thisWay`
+ * {@link EffectAmount} counts them, the `this-way` condition asks about them
+ * and the `thisWay` filter clause picks among them.
  */
-export type ThisWayKind = "discarded" | "drawn" | "milled" | "sacrificed";
+export type ThisWayKind =
+  | "discarded"
+  | "drawn"
+  | "milled"
+  | "sacrificed"
+  | "destroyed"
+  | "exiled"
+  | "returned-to-hand"
+  | "put-into-graveyard"
+  | "put-onto-battlefield";
 
 export type PlayerScope =
   | "each-player"
@@ -1967,10 +1985,10 @@ export interface EffectApi {
   colorsAmong(filter: CardFilter, except: readonly ObjectId[]): number;
   /** See the `{ cardTypesInGraveyard }` {@link EffectAmount}. */
   cardTypesInGraveyard(filter: CardFilter): number;
-  /** The cards this resolution has made players discard / draw / mill, or
-   * the permanents it has made them sacrifice, so far — see the `thisWay`
-   * {@link EffectAmount}. */
-  thisWay(what: ThisWayKind, who?: PlayerScope, filter?: CardFilter): readonly ObjectId[];
+  /** What this resolution has done `what` to so far, whose it was among
+   * `players` (everyone's when absent) and matching `filter` — see the
+   * `thisWay` {@link EffectAmount}. */
+  thisWay(what: ThisWayKind, players?: readonly PlayerId[], filter?: CardFilter): readonly ThisWayEntry[];
   /** See the `{ opponentsAttacked }` {@link EffectAmount}. */
   opponentsAttacked(): number;
   /** See the `{ damageDealtThisTurn }` {@link EffectAmount}. */
@@ -1978,9 +1996,11 @@ export interface EffectApi {
   /** See the `{ turnHistory }` {@link EffectAmount}. */
   turnHistoryCount(what: TurnHistoryKind, players: readonly PlayerId[], filter?: CardFilter): number;
   /** How many card types there are among `objects`, each once — as they
-   * last existed on the battlefield with `asLastKnown` (sacrificed
-   * permanents), else as they are now. */
-  cardTypesAmong(objects: readonly ObjectId[], asLastKnown: boolean): number;
+   * last existed on the battlefield if `departed` (a sacrificed or
+   * destroyed permanent), else as they are now. */
+  cardTypesAmong(
+    objects: readonly { readonly object: ObjectId; readonly departed: boolean }[],
+  ): number;
   /**
    * Who controls what `ref` points at — the player itself for a player ref,
    * else the object's controller.
@@ -2634,10 +2654,16 @@ export function amountValue(
     return ctx.turnHistoryCount(amount.turnHistory, ctx.playersInScope(amount.who ?? "you"), amount.filter);
   }
   if ("thisWay" in amount) {
-    const done = ctx.thisWay(amount.thisWay, amount.who, amount.filter);
+    const players =
+      amount.who === undefined
+        ? undefined
+        : amount.who === "each"
+          ? [each ?? ctx.controller]
+          : ctx.playersInScope(amount.who);
+    const done = ctx.thisWay(amount.thisWay, players, amount.filter);
     return amount.cardTypes === true
-      ? ctx.cardTypesAmong(done, amount.thisWay === "sacrificed")
-      : done.length;
+      ? ctx.cardTypesAmong(done)
+      : done.reduce((n, entry) => n + entry.count, 0);
   }
   if ("countPlayers" in amount) return ctx.playersInScope(amount.countPlayers).length;
   if ("turnStat" in amount) {
@@ -2817,11 +2843,12 @@ export function bindDynamicCompares(spec: EffectSpec, ctx: ResolutionContext): E
   return walk(spec) as EffectSpec;
 }
 
-/** Does `amount` read a per-player value (`lifeTotal: "each"`), so a scoped
- * effect has to read it once for each player? */
+/** Does `amount` read a per-player value (`lifeTotal: "each"`, a `thisWay`
+ * of `who: "each"`), so a scoped effect has to read it once for each player? */
 function readsEachPlayer(amount: EffectAmount): boolean {
   if (typeof amount !== "object") return false;
   if ("lifeTotal" in amount) return amount.lifeTotal === "each";
+  if ("thisWay" in amount) return amount.who === "each";
   if ("half" in amount) return readsEachPlayer(amount.half);
   if ("product" in amount) return amount.product.some(readsEachPlayer);
   if ("sum" in amount) return amount.sum.some(readsEachPlayer);
@@ -3435,6 +3462,24 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     }
     case "create-token":
+      // A per-player count ("its controller creates a token for each
+      // creature destroyed this way") is read for each player the scope
+      // names, each creating their own.
+      if (spec.who !== undefined && spec.who !== "target-controller" && readsEachPlayer(spec.count)) {
+        for (const player of ctx.playersInScope(spec.who)) {
+          ctx
+            .aboutPlayer(player)
+            .createToken(
+              spec.token,
+              amountValue(spec.count, ctx, player) * ctx.stackMultiplier,
+              "that-player",
+              spec.tapped === true,
+              spec.sacrificeAtEndStep === true,
+              spec.gainUntilEndOfTurn,
+            );
+        }
+        return;
+      }
       ctx.createToken(
         spec.token,
         amountValue(spec.count, ctx) * ctx.stackMultiplier,

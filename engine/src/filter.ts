@@ -22,12 +22,13 @@ import {
   hasLostAbilities,
 } from "./characteristics.js";
 import type { CardRegistry, CardType, Keyword, Supertype } from "./cards.js";
-import type { EffectAmount } from "./effects.js";
+import type { EffectAmount, ThisWayKind } from "./effects.js";
 import type { Color } from "./mana.js";
 import { manaValue, parseManaCost } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { activePlayerOf, printedCardName } from "./state.js";
 import type { GameObject, GameState, LastKnownInfo, ZoneType } from "./state.js";
+import { thisWayEntries } from "./this-way.js";
 
 /**
  * A numeric comparison clause, e.g. `{ op: "lte", n: 2 }` = "≤ 2".
@@ -236,6 +237,14 @@ export interface CardFilter {
    */
   readonly sharesCardTypeWith?: "sacrificed";
   /**
+   * One of the objects the spell or ability now resolving has done this to
+   * (see `ThisWayKind`) — choosing among the cards just moved: "you may put
+   * a creature card milled this way into your hand", "put a permanent card
+   * from among them onto the battlefield" after an exile. Between
+   * resolutions nothing matches.
+   */
+  readonly thisWay?: ThisWayKind;
+  /**
    * At least one of these filters must match, as well as every other clause
    * here — the "or" a flat clause list can't say: historic ("artifact,
    * legendary, or Saga"), "enchanted or equipped", "black and/or red".
@@ -395,6 +404,9 @@ export function matchesFilter(
   // types by the effect applying it (`bindDynamicCompares`); left unbound —
   // anywhere nothing could answer it — it matches nothing.
   if (filter.sharesCardTypeWith !== undefined) return false;
+  if (filter.thisWay !== undefined && !thisWayEntries(state, filter.thisWay).some((e) => e.object === id)) {
+    return false;
+  }
 
   // Types, subtypes and colours are self-contained (layers 4 / 3 / 5 come only
   // from the object's own modifiers), so they're answered without the layer

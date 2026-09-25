@@ -34,8 +34,7 @@ that one card is the reason the deck exists.
   (`grantPtPerCount.countersOnAffected`); Katara, the Fearless and Cloud, Midgar Mercenary
   (`doubleTriggersOf`); Wayta, Trainer Prodigy (`doubleTriggers`' `"dealt-damage"` cause);
   Kefka, Court Mage, Lord Windgrace and Mr. Foxglove (the `thisWay` amount and `this-way`
-  condition — their gaps entries still list `effect:this-way-results`, whose discard/draw part
-  they need is built); Kratos, God of War (the `attackedThisTurn` filter clause); Malcolm,
+  condition); Kratos, God of War (the `attackedThisTurn` filter clause); Malcolm,
   Keen-Eyed Navigator and Goro-Goro and Satoru (the batched `deals-damage-batch` trigger);
   Sidisi, Brood Tyrant, Syr Konrad, the Grim and Disa the Restless (`put-into-graveyard`, and
   `leaves-graveyard`'s `perCard`); Kuja, Genome Sorcerer, The Mindskinner and Neriv, Heart of
@@ -88,15 +87,15 @@ that one card is the reason the deck exists.
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first
   ten, engine-only, with the commanders each fully unblocks:
-  `effect:this-way-results` (+6), `effect:missing-tokens` (+1),
-  `static:grant-to-cards-outside-battlefield` (+3), `effect:amount-aggregate` (+1),
-  `effect:look-and-choose-leftover` (+1), `effect:reveal-until` (+2),
-  `bug:color-identity-back-face` (+1), `trigger:saga-final-chapter` (+1),
-  `bug:saga-completion-sacrifice` (+1), `cost:mana-ability-complex-costs` (+2).
-- **Most-needed features overall.** `effect:this-way-results` (18),
-  `static:grant-to-cards-outside-battlefield` (14), `zone:visibility-extensions`,
-  `static:grant-abilities-to-spells` and `bug:zone-change-object-identity` (13 each). Live
-  numbers come from `cmdrs:gaps`.
+  `effect:missing-tokens` (+1), `static:grant-to-cards-outside-battlefield` (+3),
+  `effect:amount-aggregate` (+1), `effect:look-and-choose-leftover` (+1), `effect:reveal-until`
+  (+2), `bug:color-identity-back-face` (+1), `trigger:saga-final-chapter` (+1),
+  `bug:saga-completion-sacrifice` (+1), `cost:mana-ability-complex-costs` (+2),
+  `keyword:exhaust` (+1).
+- **Most-needed features overall.** `static:grant-to-cards-outside-battlefield` (14),
+  `zone:visibility-extensions`, `static:grant-abilities-to-spells` and
+  `bug:zone-change-object-identity` (13 each), `effect:reveal-until` (12). Live numbers come
+  from `cmdrs:gaps`.
 - **UI-bound features.** These need a new client decision and a browser check:
   `effect:may-sacrifice-then` (13), `decision:copy-new-targets` (12), `decision:choose-permanent`
   (11), `effect:enter-attacking`, `decision:free-cast-choices`, `effect:attach-extensions`,

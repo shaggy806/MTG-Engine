@@ -425,20 +425,36 @@ Foxglove's "cards in defending player's hand minus the number of cards in your
 hand"; `absolute` is the larger minus the smaller, Doran, Besieged by Time's
 "the difference between its power and toughness").
 
-**"This way."** `{ thisWay: "discarded" | "drawn" | "milled" | "sacrificed",
-who?, filter?, cardTypes? }` counts what the resolving spell or ability has
-made players discard, draw or mill, or sacrifice, **so far** — "draw a card for
-each card discarded this way", Celes's "draw that many cards plus one" (`{
-sum: [{ thisWay: "discarded" }, 1] }`). It's read off the resolution's own
-events (`GameState.resolutionSince`), so a step that waited on a player's
-choice — the discard itself, usually — counts once it has happened; put it in
-a *later* step of a `sequence`. `who` narrows whose cards (default everyone's:
-"each player discards a card, then you draw a card for each card discarded
-this way"); `filter` narrows the cards as they are now — in the graveyard a
-discard put them in — and a sacrificed permanent as it last existed;
-`cardTypes: true` counts the card types among them instead (Kefka, Court
-Mage). Cards exiled or otherwise moved "this way" aren't covered yet. The
-`this-way` condition (§10) asks the same question as an "if".
+**"This way."** `{ thisWay, who?, filter?, cardTypes? }` counts what the
+resolving spell or ability has done **so far** — `thisWay` is one of
+`"discarded"`, `"drawn"`, `"milled"`, `"sacrificed"`, `"destroyed"` (a destroy
+effect — never a creature dying of damage or to the legend rule),
+`"exiled"` (permanents and cards from any zone), `"returned-to-hand"`,
+`"put-into-graveyard"` (cards — tokens aren't) and `"put-onto-battlefield"`
+(moved there from a zone — not a token created). "Draw a card for each card
+discarded this way", Celes's "draw that many cards plus one" (`{ sum: [{
+thisWay: "discarded" }, 1] }`), Abdel Adrian's "create a Soldier for each
+permanent exiled this way", Dihada's "a Treasure for each card put into your
+graveyard this way". A token stack that went whole counts every token in it.
+It's read off the resolution's own events (`GameState.resolutionSince`), so a
+step that waited on a player's choice — the discard itself, usually — counts
+once it has happened; put it in a *later* step of a `sequence`. `who` narrows
+whose (default everyone's): the player who discarded, drew, milled or
+sacrificed; a destroyed, exiled or returned permanent's controller as it left;
+a card's owner otherwise (always, for a graveyard); a permanent put onto the
+battlefield's controller there. `who: "each"` is the player a scoped effect is
+applied to, read once for each — "destroy all creatures; for each creature
+destroyed this way, its controller creates a 3/3 Beast" is `{ kind:
+"create-token", token: "3/3 Beast Token", who: "each-player", count: {
+thisWay: "destroyed", who: "each" } }`. `filter` narrows them — a permanent
+that left doing it as it last existed, a card as it is now (in the graveyard a
+discard put it in); `cardTypes: true` counts the card types among them
+instead (Kefka, Court Mage). The `this-way` condition (§10) asks the same
+question as an "if" — Hakbal's "you may put a land card from your hand onto
+the battlefield. If you don't, draw a card" is a `look-and-choose` from the
+hand, then a `conditional` on `{ kind: "this-way", what:
+"put-onto-battlefield", atMost: 0 }` — and the `thisWay` `CardFilter`
+clause (below) chooses among them.
 
 ### Damage / life / cards
 
@@ -815,7 +831,7 @@ manaValue, power, toughness, counters, controlledBy, ownedBy, keyword,
 notKeyword, tapped, token, isCommander, equipped, enchanted, modified, anyOf,
 manaSpent, putIntoGraveyardFromLibraryThisTurn, enteredThisTurn,
 attackedThisTurn, cast, castBy, castFrom, enteredFrom, putThereBySource,
-sharesCardTypeWith }`,
+sharesCardTypeWith, thisWay }`,
 every present clause ANDed. `controlledBy` is `"you"`, `"opponent"` or
 `"active-player"` (whoever's turn it is, whoever is asking). `anyOf: CardFilter[]` is the "or": at least one of
 them has to match as well (historic is `anyOf: [{ type: "artifact" },
@@ -851,7 +867,13 @@ doesn't), and whether an ability of the permanent applying the filter put it
 there — Kodama of the East Tree's "if it wasn't put onto the battlefield
 with this ability" is `putThereBySource: false` on its enters trigger, which
 is what keeps it from triggering off its own lands. A permanent that has left
-is asked as it last was. `attacking` asks whether the permanent is currently attacking
+is asked as it last was. `thisWay` (a `ThisWayKind` — see "This way" above) matches only what the
+spell or ability now resolving has done that to — choosing among the cards
+just moved: "mill three cards; you may put a creature card milled this way into
+your hand" is a `mill` then a `may` of `{ kind: "return-from-graveyard",
+filter: { type: "creature", thisWay: "milled" }, destination: "hand", count: 1
+}`; a card already in the graveyard doesn't qualify. Between resolutions it
+matches nothing. `attacking` asks whether the permanent is currently attacking
 (Kangee's Lieutenant). `subtypes`/`typesAnyOf` are an OR
 within themselves (Farseek: "a Plains, Island, Swamp, or Mountain card";
 Takenuma's Channel: "a creature or planeswalker card"). Numeric fields take
@@ -1785,9 +1807,11 @@ clause (section 9):
   about what the resolving spell or ability has done so far: "if a land card
   is discarded **this way**" (Lord Windgrace: `{ what: "discarded", filter: {
   type: "land" } }`), "if you **didn't draw** cards this way" (Mr. Foxglove:
-  `{ what: "drawn", who: "you", atMost: 0 }`). Over the same cards the
-  `thisWay` amount counts (§6); `atLeast` defaults to 1, or to 0 when `atMost`
-  is given. Only meaningful inside a `conditional` effect.
+  `{ what: "drawn", who: "you", atMost: 0 }`), "if you don't" put a land
+  onto the battlefield (Hakbal: `{ what: "put-onto-battlefield", atMost: 0 }`).
+  Over the same objects the `thisWay` amount counts (§6); `atLeast` defaults
+  to 1, or to 0 when `atMost` is given. Only meaningful inside a `conditional`
+  effect.
 
 **`replacement?`** (`ReplacementSpec`, `replacements.ts`) — a replacement effect
 *is* a static ability:

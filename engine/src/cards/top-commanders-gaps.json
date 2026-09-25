@@ -82,7 +82,8 @@
   "trigger:surveils",
   "static:max-hand-size",
   "keyword:melee",
-  "effect:temporary-player-effect"
+  "effect:temporary-player-effect",
+  "effect:this-way-results"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

@@ -14,6 +14,7 @@ import { defineCard } from "../cards/define.js";
 import { createDefaultRegistry } from "../cards/registry.js";
 import { ScriptedController } from "../controller.js";
 import type { EffectSpec } from "../effects.js";
+import * as filterModule from "../filter.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { PlayerId } from "../primitives.js";
@@ -50,13 +51,19 @@ const registry = createDefaultRegistry().register(
 const islands = (n = 40): string[] => Array<string>(n).fill("Island");
 /** Opening hands are the top of the library, and a scripted player discards
  * from the front of their hand — so a deck's first card is what they give up. */
-const setUp = (aDeck: readonly string[] = islands(), bDeck: readonly string[] = islands()) => {
+const setUp = (
+  aDeck: readonly string[] = islands(),
+  bDeck: readonly string[] = islands(),
+  choose?: ScriptedController["chooseFromZoneFn"],
+) => {
+  const a = new ScriptedController(A);
+  if (choose !== undefined) a.chooseFromZoneFn = choose;
   const game = Game.create({
     seed: 1,
     shuffle: false,
     registry,
     rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
-    controllers: { [A]: new ScriptedController(A), [B]: new ScriptedController(B) },
+    controllers: { [A]: a, [B]: new ScriptedController(B) },
     decks: [
       { player: A, cards: [...aDeck] },
       { player: B, cards: [...bDeck] },
@@ -189,5 +196,232 @@ describe("drawn, milled and sacrificed this way", () => {
       ],
     });
     expect(game.state.players[A].life).toBe(21);
+  });
+});
+
+const namesIn = (game: Game, ids: readonly string[]): string[] =>
+  ids.map((id) => game.state.objects[id as keyof typeof game.state.objects].cardName);
+const battlefieldOf = (game: Game, player: PlayerId): string[] =>
+  namesIn(
+    game,
+    game.state.zones.shared.battlefield.filter((id) => game.state.objects[id].controller === player),
+  );
+const life = (game: Game, player: PlayerId = A): number => game.state.players[player].life;
+
+describe("destroyed, exiled, returned and put into a graveyard this way", () => {
+  it("exiled: permanents and a token stack, each token counted", () => {
+    const game = setUp();
+    game.debugSpawn("Grizzly Bears", A, "battlefield");
+    game.debugSpawn("Grizzly Bears", B, "battlefield");
+    run(game, { kind: "create-token", token: "Goblin Token", count: 10 });
+    expect(game.state.zones.shared.battlefield.length).toBeLessThan(12);
+    run(game, {
+      kind: "sequence",
+      effects: [
+        { kind: "exile-all", filter: { type: "creature" } },
+        { kind: "gain-life", amount: { thisWay: "exiled" } },
+        { kind: "gain-life", amount: { thisWay: "exiled", who: "each-opponent" }, who: "each-opponent" },
+      ],
+    });
+    // Two Bears and ten Goblins; Bob's Bears alone for Bob.
+    expect(life(game)).toBe(32);
+    expect(life(game, B)).toBe(21);
+  });
+
+  it("exiled: cards from a graveyard, asked about as they are now", () => {
+    const game = setUp();
+    game.debugSpawn("Grizzly Bears", B, "graveyard");
+    game.debugSpawn("Grizzly Bears", B, "graveyard");
+    game.debugSpawn("Island", B, "graveyard");
+    run(game, {
+      kind: "sequence",
+      effects: [
+        { kind: "exile-graveyard", target: "each-player" },
+        { kind: "gain-life", amount: { thisWay: "exiled", filter: { type: "creature" } } },
+      ],
+    });
+    expect(life(game)).toBe(22);
+  });
+
+  it("destroyed: each controller gets a token per creature of theirs destroyed", () => {
+    const game = setUp();
+    game.debugSpawn("Grizzly Bears", A, "battlefield");
+    game.debugSpawn("Grizzly Bears", B, "battlefield");
+    game.debugSpawn("Grizzly Bears", B, "battlefield");
+    game.debugSpawn("Darksteel Myr", B, "battlefield");
+    run(game, {
+      kind: "sequence",
+      effects: [
+        { kind: "destroy-all", filter: { type: "creature" } },
+        {
+          kind: "create-token",
+          token: "3/3 Beast Token",
+          count: { thisWay: "destroyed", who: "each" },
+          who: "each-player",
+        },
+      ],
+    });
+    // The indestructible Myr wasn't destroyed.
+    expect(battlefieldOf(game, A)).toEqual(["3/3 Beast Token"]);
+    expect(battlefieldOf(game, B).sort()).toEqual(["3/3 Beast Token", "3/3 Beast Token", "Darksteel Myr"]);
+  });
+
+  it("destroyed: a creature dying of damage isn't", () => {
+    const game = setUp();
+    const bears = game.debugSpawn("Grizzly Bears", B, "battlefield");
+    // Damage needs a source to come from.
+    const source = game.debugSpawn("Island", A, "battlefield");
+    game.debugApplyEffect(
+      A,
+      {
+        kind: "sequence",
+        effects: [
+          { kind: "damage-all", filter: { type: "creature" }, amount: 5 },
+          { kind: "gain-life", amount: { thisWay: "destroyed" } },
+        ],
+      },
+      [],
+      { source },
+    );
+    // Dealt lethal damage — it dies to the next state-based check, which is
+    // no destroy effect's doing.
+    expect(game.state.objects[bears].damageMarked).toBe(5);
+    expect(life(game)).toBe(20);
+  });
+
+  it("returned to hand: read as it last existed", () => {
+    const game = setUp();
+    game.debugSpawn("Grizzly Bears", B, "battlefield");
+    game.debugSpawn("Island", B, "battlefield");
+    run(game, {
+      kind: "sequence",
+      effects: [
+        { kind: "return-to-hand-all", filter: { controlledBy: "opponent" } },
+        { kind: "gain-life", amount: { thisWay: "returned-to-hand", filter: { type: "creature" } } },
+      ],
+    });
+    expect(life(game)).toBe(21);
+  });
+
+  it("put into a graveyard: the rest of what was looked at", () => {
+    // Dihada's −3 shape: "Reveal the top four cards of your library. You may
+    // put any number of legendary cards from among them into your hand. Put
+    // the rest into your graveyard. You gain 1 life for each card put into
+    // your graveyard this way."
+    const game = setUp(
+      [...islands(8), "Grizzly Bears", "Island", "Grizzly Bears", "Island", ...islands(28)],
+      islands(),
+      (_view, eligible) => eligible.slice(0, 1),
+    );
+    run(game, {
+      kind: "sequence",
+      effects: [
+        {
+          kind: "look-and-choose",
+          zone: "library",
+          count: 4,
+          reveal: true,
+          min: 0,
+          max: 4,
+          destination: "hand",
+          leftover: "graveyard",
+          filter: { type: "creature" },
+        },
+        { kind: "gain-life", amount: { thisWay: "put-into-graveyard", who: "you" } },
+      ],
+    });
+    expect(life(game)).toBe(23);
+  });
+});
+
+describe("put onto the battlefield this way", () => {
+  /** Hakbal's shape: "you may put a land card from your hand onto the
+   * battlefield. If you don't, draw a card." */
+  const hakbal: EffectSpec = {
+    kind: "sequence",
+    effects: [
+      {
+        kind: "look-and-choose",
+        zone: "hand",
+        min: 0,
+        max: 1,
+        destination: "battlefield",
+        leftover: "stay",
+        filter: { type: "land" },
+      },
+      {
+        kind: "conditional",
+        condition: { kind: "this-way", what: "put-onto-battlefield", atMost: 0 },
+        then: { kind: "draw", amount: 1 },
+      },
+    ],
+  };
+
+  it("'if you don't': putting a land in draws nothing", () => {
+    const game = setUp(islands(), islands(), (_view, eligible) => eligible.slice(0, 1));
+    const before = hand(game);
+    run(game, hakbal);
+    expect(hand(game)).toBe(before - 1);
+    expect(battlefieldOf(game, A)).toEqual(["Island"]);
+  });
+
+  it("…and declining draws a card", () => {
+    const game = setUp(islands(), islands(), () => []);
+    const before = hand(game);
+    run(game, hakbal);
+    expect(hand(game)).toBe(before + 1);
+    expect(battlefieldOf(game, A)).toEqual([]);
+  });
+
+  it("a token created isn't put onto the battlefield", () => {
+    const game = setUp();
+    run(game, {
+      kind: "sequence",
+      effects: [
+        { kind: "create-token", token: "Goblin Token", count: 1 },
+        {
+          kind: "conditional",
+          condition: { kind: "this-way", what: "put-onto-battlefield", atMost: 0 },
+          then: { kind: "gain-life", amount: 1 },
+        },
+      ],
+    });
+    expect(life(game)).toBe(21);
+  });
+});
+
+describe("choosing among the cards moved this way", () => {
+  it("a creature card milled this way — not one already in the graveyard", () => {
+    // "Mill three cards. You may put a creature card milled this way into
+    // your hand."
+    const game = setUp([...islands(7), "Island", "Grizzly Bears", "Island", ...islands(30)]);
+    const old = game.debugSpawn("Darksteel Myr", A, "graveyard");
+    const before = hand(game);
+    run(game, {
+      kind: "sequence",
+      effects: [
+        { kind: "mill", target: "you", amount: 3 },
+        {
+          kind: "return-from-graveyard",
+          filter: { type: "creature", thisWay: "milled" },
+          destination: "hand",
+          count: 1,
+        },
+      ],
+    });
+    expect(hand(game)).toBe(before + 1);
+    expect(namesIn(game, game.handOf(A))).toContain("Grizzly Bears");
+    expect(game.state.objects[old].zone).toBe("graveyard");
+  });
+
+  it("between resolutions the clause matches nothing", () => {
+    const game = setUp();
+    const bears = game.debugSpawn("Grizzly Bears", A, "graveyard");
+    run(game, { kind: "mill", target: "you", amount: 3 });
+    expect(game.state.resolutionSince).toBeUndefined();
+    const { matchesFilter } = filterModule;
+    expect(
+      matchesFilter(game.state, registry, bears, { thisWay: "milled" }, { you: A }),
+    ).toBe(false);
   });
 });

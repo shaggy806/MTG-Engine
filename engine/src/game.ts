@@ -207,6 +207,8 @@ import type {
 } from "./state.js";
 import { describeTargetSpec, isOptionalSpec, normalizeTargets, otherThan } from "./target.js";
 import { distinctTargetCount, targetCountBounds } from "./target-count.js";
+import { eventsSince as eventLogSince, thisWayEntries } from "./this-way.js";
+import type { ThisWayEntry } from "./this-way.js";
 import type { TargetCopies, TargetCountRange } from "./target-count.js";
 import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
 import {
@@ -3791,10 +3793,7 @@ export class Game {
   /** The events emitted since `seq` (inclusive), oldest first. The log is
    * append-only and in `seq` order, so this walks back from its end. */
   private eventsSince(seq: number): readonly GameEvent[] {
-    const log = this.state.eventLog;
-    let i = log.length;
-    while (i > 0 && log[i - 1].seq >= seq) i -= 1;
-    return log.slice(i);
+    return eventLogSince(this.state, seq);
   }
 
   /** Battlefield creatures currently declared as attackers. */
@@ -10021,37 +10020,21 @@ export class Game {
     // What this resolution has done so far — see the `thisWay` amount.
     const thisWayDone = (
       what: ThisWayKind,
-      who: PlayerScope | undefined,
+      players: readonly PlayerId[] | undefined,
       filter: CardFilter | undefined,
-    ): ObjectId[] => {
-      const players = who === undefined ? undefined : new Set(scoped(who));
-      const done: ObjectId[] = [];
-      for (const event of this.eventsSince(since)) {
-        const [player, objects]: readonly [PlayerId | undefined, readonly ObjectId[]] =
-          what === "discarded" && event.type === "cards-discarded"
-            ? [event.player, event.objects]
-            : what === "milled" && event.type === "cards-milled"
-              ? [event.player, event.objects]
-              : what === "drawn" && event.type === "card-drawn"
-                ? [event.player, [event.object]]
-                : what === "sacrificed" && event.type === "permanent-sacrificed"
-                  ? [event.player, [event.object]]
-                  : [undefined, []];
-        if (player === undefined || (players !== undefined && !players.has(player))) continue;
-        for (const id of objects) {
-          if (
-            filter === undefined ||
-            matchesFilter(this.state, this.registry, id, filter, {
+    ): ThisWayEntry[] => {
+      const whose = players === undefined ? undefined : new Set(players);
+      return thisWayEntries(this.state, what, since).filter(
+        (entry) =>
+          (whose === undefined || whose.has(entry.player)) &&
+          (filter === undefined ||
+            matchesFilter(this.state, this.registry, entry.object, filter, {
               you: controller,
-              // A sacrificed permanent is asked about as it last existed.
-              ...(what === "sacrificed" ? { lastKnown: true } : {}),
-            })
-          ) {
-            done.push(id);
-          }
-        }
-      }
-      return done;
+              // A permanent that left doing it is asked about as it last
+              // existed on the battlefield.
+              ...(entry.departed ? { lastKnown: true } : {}),
+            })),
+      );
     };
     const conditionMet = (condition: StaticCondition): boolean => {
       // "If that land is a Mountain" — a question about the object that
@@ -10074,7 +10057,11 @@ export class Game {
       }
       if (condition.kind === "resolved-this-turn") return resolutionCount === condition.n;
       if (condition.kind === "this-way") {
-        const done = thisWayDone(condition.what, condition.who, condition.filter).length;
+        const done = thisWayDone(
+          condition.what,
+          condition.who === undefined ? undefined : scoped(condition.who),
+          condition.filter,
+        ).reduce((n, entry) => n + entry.count, 0);
         const atLeast = condition.atLeast ?? (condition.atMost === undefined ? 1 : 0);
         return done >= atLeast && (condition.atMost === undefined || done <= condition.atMost);
       }
@@ -10237,14 +10224,14 @@ export class Game {
       },
       turnHistoryCount: (what, players, filter) =>
         turnHistoryCount(this.state, this.registry, players, what, filter, controller),
-      cardTypesAmong: (objects, asLastKnown) => {
+      cardTypesAmong: (objects) => {
         const types = new Set<CardType>();
-        for (const id of objects) {
+        for (const { object: id, departed } of objects) {
           const object = this.state.objects[id];
           const kinds =
             object === undefined
               ? (this.state.ceasedTokens?.[id]?.types ?? [])
-              : asLastKnown && object.lastKnown !== undefined
+              : departed && object.lastKnown !== undefined
                 ? object.lastKnown.types
                 : effectiveTypes(this.state, this.registry, object);
           for (const type of kinds) types.add(type);
