@@ -306,7 +306,15 @@ function scaffoldCard(name, { autoOnly = false, ignoreScaffolded = false } = {})
     return;
   }
   const multi = entry.faces !== undefined && ["transform", "modal_dfc", "adventure"].includes(entry.layout);
-  const layoutNote = SUPPORTED_LAYOUTS.has(entry.layout) || multi ? null : `layout "${entry.layout}" isn't modeled`;
+  // Scryfall files an Omen (Tarkir: Dragonstorm) under the adventure layout,
+  // but an Omen spell is shuffled into its owner's library as it resolves
+  // rather than exiled to be cast later, which the engine doesn't do.
+  const omen = faces.some((f) => /\bOmen\b/.test(f.type_line ?? ""));
+  const layoutNote = omen
+    ? "an Omen (shuffled into its owner's library as it resolves) isn't modeled; it isn't an adventure"
+    : SUPPORTED_LAYOUTS.has(entry.layout) || multi
+      ? null
+      : `layout "${entry.layout}" isn't modeled`;
 
   // The tokens it makes, matched to ours or given a skeleton.
   const tokenNotes = [];

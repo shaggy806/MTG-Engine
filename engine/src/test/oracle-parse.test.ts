@@ -123,6 +123,25 @@ describe("costs and triggers", () => {
       amount: 2,
       also: { kind: "gain-life", amount: 2 },
     });
+    // Chromatic Sphere draws: moving a card from a library makes it no mana
+    // ability at all (rule 605.1a), so it uses the stack and is left to author.
+    const sphere = parseFace(
+      {
+        name: "Test Sphere",
+        type_line: "Artifact",
+        oracle_text: "{1}, {T}, Sacrifice this artifact: Add one mana of any color. Draw a card.",
+      },
+      { tokenFor: () => null },
+    );
+    expect(sphere.complete).toBe(false);
+  });
+
+  it("a subtype that ends in s in the singular keeps it", () => {
+    // Kor Cartographer's "search your library for a Plains card" came out as
+    // subtype "Plain", which no land has.
+    expect(parseTypePhrase("Plains", { cards: true })).toEqual({ subtype: "Plains" });
+    expect(parseTypePhrase("Cyclops")).toEqual({ subtype: "Cyclops" });
+    expect(parseTypePhrase("Goblins")).toEqual({ subtype: "Goblin" });
   });
 
   it("a 'permanent card' is one that isn't an instant or sorcery", () => {

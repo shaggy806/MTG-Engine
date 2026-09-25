@@ -86,9 +86,17 @@ const KW = `(${Object.keys(KEYWORDS).join("|")})`;
 const CARD_TYPES = ["creature", "artifact", "enchantment", "land", "planeswalker", "instant", "sorcery", "battle"];
 /** Creature types whose plural isn't just "-s". */
 const IRREGULAR = { Elves: "Elf", Dwarves: "Dwarf", Wolves: "Wolf", Werewolves: "Werewolf", Faeries: "Faerie", Mice: "Mouse", Fungi: "Fungus", Allies: "Ally", Sphinxes: "Sphinx", Foxes: "Fox", Octopi: "Octopus", Djinn: "Djinn", Mercenaries: "Mercenary", Zombies: "Zombie" };
+/** Subtypes that end in "s" in the singular: the land type Plains and the
+ * creature types that do (the engine's CREATURE_TYPES), which the plural
+ * rule below would otherwise clip ("Plains" → "Plain"). */
+const SINGULAR_WITH_S = new Set([
+  "Plains", "Astartes", "Aurochs", "Custodes", "Cyclops", "Fungus", "Homunculus", "Nautilus", "Octopus",
+  "Pegasus", "Platypus", "Thalakos", "Walrus",
+]);
 const singular = (w) => {
   const lower = w.toLowerCase();
   if (CARD_TYPES.includes(lower.replace(/s$/, ""))) return lower.replace(/s$/, "");
+  if (SINGULAR_WITH_S.has(w)) return w;
   if (IRREGULAR[w] !== undefined) return IRREGULAR[w];
   // A capitalised plural subtype: "Goblins", "Slivers".
   if (/^[A-Z][a-z]+s$/.test(w) && !/ss$/.test(w)) return w.slice(0, -1);
@@ -831,17 +839,32 @@ export function parseFace(face, ctx = {}) {
 
 /** Fill `ability.effect` / `targets` from its effect text; a "choose one —"
  * swallows the bullet lines after it. Returns the last line index used. */
+/** Effects that move cards to or from a library. */
+const LIBRARY_EFFECTS = new Set([
+  "draw", "mill", "search-library", "scry", "surveil", "look-and-choose", "put-on-library", "reveal-until",
+]);
+const touchesLibrary = (e) =>
+  e !== null && typeof e === "object" &&
+  (LIBRARY_EFFECTS.has(e.kind) || Object.values(e).some((v) => (Array.isArray(v) ? v.some(touchesLibrary) : touchesLibrary(v))));
+
 /**
  * "{T}: Add {G}{G}. You gain 2 life." is one mana ability (rule 605.1a):
  * whatever follows the mana rides on `add-mana`'s `also`, since a plain
  * sequence with a non-mana step isn't a mana ability and would use the stack.
- * Only an untargeted ability whose other steps make no mana.
+ * Only an untargeted ability whose other steps make no mana, and none that
+ * moves a card to or from a library: those aren't mana abilities (605.1a —
+ * Chromatic Sphere's "Add one mana of any color. Draw a card." uses the
+ * stack), and a colour choice made on the stack needs authoring.
  */
 function manaAbilityExtras(ability) {
   const e = ability.effect;
   if (e?.kind !== "sequence" || e.effects[0]?.kind !== "add-mana" || ability.targets.length > 0) return;
   const rest = e.effects.slice(1);
   if (rest.length === 0 || rest.some((step) => step.kind === "add-mana")) return;
+  if (rest.some(touchesLibrary)) {
+    ability.__todo = [...(ability.__todo ?? []), "not a mana ability (rule 605.1a: it moves a card to or from a library), so it uses the stack"];
+    return;
+  }
   ability.effect = { ...e.effects[0], also: rest.length === 1 ? rest[0] : { kind: "sequence", effects: rest } };
 }
 
