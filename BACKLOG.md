@@ -90,17 +90,18 @@ that one card is the reason the deck exists.
   Forest Guardian (`reveal-until`); Tom Bombadil (`reveal-until`, the `chapter-resolves`
   trigger and a lore-counter aggregate — its gaps entry still lists `effect:amount-aggregate`,
   whose counters form it needs is built); Kykar, Wind's Fury, Ramos, Dragon Engine and Loot,
-  the Pathfinder (mana abilities with a sacrifice, counter or coloured cost, and `exhaust`) —
-  confirm each at `card:lookup`.
+  the Pathfinder (mana abilities with a sacrifice, counter or coloured cost, and `exhaust`);
+  Narset, Enlightened Master and Nahiri, Forged in Fury (`impulse-exile`'s `filter` and
+  `free`) — confirm each at `card:lookup`.
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first
   ten, engine-only, with the commanders each fully unblocks:
   `effect:amount-aggregate` (+2), `effect:missing-tokens` (+1),
-  `effect:look-and-choose-leftover` (+1), `zone:impulse-permission-options` (+2),
-  `effect:mana-ability-side-effects` (+2), `effect:delayed-trigger-extensions` (+2),
-  `trigger:discards-extensions` (+1), `bug:zone-change-object-identity` (+4),
-  `condition:defending-player-life-rank` (+1), `effect:amount-counters-on-object` (+1).
+  `effect:look-and-choose-leftover` (+1), `effect:mana-ability-side-effects` (+2),
+  `effect:delayed-trigger-extensions` (+2), `trigger:discards-extensions` (+1),
+  `bug:zone-change-object-identity` (+4), `condition:defending-player-life-rank` (+1),
+  `effect:amount-counters-on-object` (+1), `trigger:leaves-battlefield-filter` (+1).
 - **Most-needed features overall.** `zone:visibility-extensions`,
   `static:grant-abilities-to-spells` and `bug:zone-change-object-identity` (13 each),
   `effect:copy-spell-extensions`, `effect:copy-exceptions` and

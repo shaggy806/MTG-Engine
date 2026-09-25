@@ -211,3 +211,69 @@ describe("Theater of Horrors — a gated permission", () => {
     ).toBe(true);
   });
 });
+
+describe("impulse options: which cards, and free casts", () => {
+  const exiledNamed = (game: Game, name: string) =>
+    game.state.zones.shared.exile.find((id) => game.state.objects[id].cardName === name)!;
+  const castVariants = (game: Game, card: string) =>
+    game
+      .legalActions(A)
+      .filter((a) => a.kind === "cast-spell" && a.card === card)
+      .map((a) => (a.kind === "cast-spell" && a.free === true ? "free" : "paid"));
+
+  it("Narset: noncreature, nonland cards, and only without paying their mana costs", () => {
+    // Opening hand and the first draw are eight Mountains; then the four.
+    const game = makeGame(
+      list([["Mountain", 8], ["Ambition's Cost", 1], ["Grizzly Bears", 1], ["Mountain", 1], ["Bonesplitter", 1], ["Mountain", 28]]),
+    );
+    game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+    readyMountains(game, 5);
+    game.debugApplyEffect(A, {
+      kind: "impulse-exile",
+      amount: 4,
+      duration: "end-of-turn",
+      castOnly: true,
+      filter: { notTypes: ["creature", "land"] },
+      free: { only: true },
+    });
+    expect(game.state.zones.shared.exile).toHaveLength(4);
+    // Only free, and only the noncreature spells.
+    expect(castVariants(game, exiledNamed(game, "Ambition's Cost"))).toEqual(["free"]);
+    expect(castVariants(game, exiledNamed(game, "Bonesplitter"))).toEqual(["free"]);
+    expect(castVariants(game, exiledNamed(game, "Grizzly Bears"))).toEqual([]);
+    // A paid cast is refused outright.
+    const cost = exiledNamed(game, "Ambition's Cost");
+    expect(() => game.dispatch({ type: "cast-spell", player: A, card: cost, via: "impulse", targets: [] })).toThrow(
+      /only without paying/,
+    );
+    const before = game.state.players[A].life;
+    const untapped = game.state.zones.shared.battlefield.filter((id) => !game.state.objects[id].tapped).length;
+    game.dispatch({ type: "cast-spell", player: A, card: cost, via: "impulse", free: true, targets: [] });
+    game.advanceUntil((s) => s.zones.shared.stack.length === 0 && s.awaiting === null);
+    // Ambition's Cost: draw three, lose 3 life — and no land was tapped.
+    expect(game.state.players[A].life).toBe(before - 3);
+    expect(game.state.zones.shared.battlefield.filter((id) => !game.state.objects[id].tapped)).toHaveLength(untapped);
+  });
+
+  it("Nahiri: Equipment free, anything else for its cost", () => {
+    const game = makeGame(list([["Mountain", 8], ["Bonesplitter", 1], ["Lightning Bolt", 1], ["Mountain", 30]]));
+    game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+    readyMountains(game, 1);
+    game.debugApplyEffect(A, {
+      kind: "impulse-exile",
+      amount: 2,
+      duration: "end-of-turn",
+      free: { filter: { subtype: "Equipment" } },
+    });
+    expect(castVariants(game, exiledNamed(game, "Bonesplitter")).sort()).toEqual(["free", "paid"]);
+    expect(castVariants(game, exiledNamed(game, "Lightning Bolt"))).toEqual(["paid"]);
+  });
+
+  it("`while-exiled` never lapses", () => {
+    const game = makeGame();
+    game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+    game.debugApplyEffect(A, { kind: "impulse-exile", amount: 1, duration: "while-exiled" });
+    game.advanceUntil((s) => s.turn.number === 5 || s.result.over);
+    expect(impulseExiled(game)).toHaveLength(1);
+  });
+});

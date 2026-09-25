@@ -1408,15 +1408,22 @@ export class Game {
       altCost?: boolean;
       costOption?: number;
     }[] = [{ kicked: false, overload: false, free: false }];
-    if (def.kicker !== null) variants.push({ kicked: true, overload: false, free: false });
+    // An impulse permission only to cast it free (Narset): no paid variant.
+    const impulseFree = via === "impulse" ? this.impulseFreeCast(card) : null;
+    if (impulseFree === "only") variants.length = 0;
+    if (def.kicker !== null && impulseFree !== "only") {
+      variants.push({ kicked: true, overload: false, free: false });
+    }
     // Overload (rule 702.126) and a conditional free-cast permission (Fierce
     // Guardianship) are each an alternative cast, mutually exclusive with
     // kicker and each other (no card on the list has more than one).
-    if (def.overload !== null) variants.push({ kicked: false, overload: true, free: false });
-    if (def.freeCastIf !== null || (via === undefined && this.freeFromHand(card))) {
+    if (def.overload !== null && impulseFree !== "only") {
+      variants.push({ kicked: false, overload: true, free: false });
+    }
+    if (def.freeCastIf !== null || (via === undefined && this.freeFromHand(card)) || impulseFree !== null) {
       variants.push({ kicked: false, overload: false, free: true });
     }
-    if (this.alternativeCostOf(card, def, via, player) !== null) {
+    if (impulseFree !== "only" && this.alternativeCostOf(card, def, via, player) !== null) {
       variants.push({ kicked: false, overload: false, free: false, altCost: true });
     }
     // A choice of additional costs (rule 601.2b) multiplies through whatever
@@ -5581,7 +5588,14 @@ export class Game {
     }
     // A conditional free-cast permission (Fierce Guardianship) also replaces
     // the mana cost entirely, same as overload.
-    if (free && (def.freeCastIf !== null || (via === undefined && this.freeFromHand(cardId)))) return "{0}";
+    if (
+      free &&
+      (def.freeCastIf !== null ||
+        (via === undefined && this.freeFromHand(cardId)) ||
+        (via === "impulse" && this.impulseFreeCast(cardId) !== null))
+    ) {
+      return "{0}";
+    }
     // Overload (rule 702.126b) *replaces* the mana cost entirely, unlike
     // kicker's additive cost.
     if (overload && def.overload !== null) return def.overload.cost;
@@ -5810,7 +5824,11 @@ export class Game {
     }
     if (kicked && def.kicker === null) return `${def.name} has no kicker`;
     if (overload && def.overload === null) return `${def.name} has no overload cost`;
-    if (free && !(via === undefined && this.freeFromHand(cardId))) {
+    const impulseFree = via === "impulse" ? this.impulseFreeCast(cardId) : null;
+    if (impulseFree === "only" && !free) {
+      return `${def.name} may be cast from exile only without paying its mana cost`;
+    }
+    if (free && !(via === undefined && this.freeFromHand(cardId)) && impulseFree === null) {
       if (def.freeCastIf === null) return `${def.name} has no free-cast permission`;
       if (!staticConditionMet(this.state, this.registry, this.state.objects[cardId], def.freeCastIf.condition)) {
         return `${def.name}'s free-cast condition isn't met`;
@@ -11321,12 +11339,14 @@ export class Game {
     controller: PlayerId,
     source: ObjectId,
     amount: number,
-    duration: "end-of-turn" | "your-next-turn" | "while-source",
+    duration: "end-of-turn" | "your-next-turn" | "while-source" | "while-exiled",
     castOnly: boolean,
     opts: {
       readonly choose?: number;
       readonly yourTurnOnly?: boolean;
       readonly gate?: StaticCondition;
+      readonly filter?: CardFilter;
+      readonly free?: { readonly filter?: CardFilter; readonly only?: boolean };
     } = {},
   ): void {
     if (amount <= 0) return;
@@ -11345,8 +11365,12 @@ export class Game {
             // else's turn (Tectonic Giant targeted by an opponent's spell),
             // the next of theirs is already the last one.
             ? { kind: "your-turns", remaining: this.activePlayer === controller ? 1 : 0 }
-            : { kind: "while-source", source },
+            : duration === "while-exiled"
+              ? { kind: "while-exiled" }
+              : { kind: "while-source", source },
       ...(castOnly ? { castOnly: true } : {}),
+      ...(opts.filter !== undefined ? { filter: opts.filter } : {}),
+      ...(opts.free !== undefined ? { free: opts.free } : {}),
       ...(opts.yourTurnOnly ? { yourTurnOnly: true } : {}),
       ...(opts.gate !== undefined ? { gate: opts.gate } : {}),
     };
@@ -11543,11 +11567,31 @@ export class Game {
     this.emit({ type: "graveyard-cast-granted", object: target.object, player: controller });
   }
 
+  /** Whether `cardId`'s impulse permission lets it be cast without paying
+   * its mana cost (`GameObject.impulse.free`): `"may"`, `"only"` (paying
+   * isn't allowed — Narset), or `null`. */
+  private impulseFreeCast(cardId: ObjectId): "may" | "only" | null {
+    const impulse = this.state.objects[cardId]?.impulse;
+    if (impulse?.free === undefined) return null;
+    const { filter, only } = impulse.free;
+    if (filter !== undefined && !matchesFilter(this.state, this.registry, cardId, filter, { you: impulse.player })) {
+      return null;
+    }
+    return only === true ? "only" : "may";
+  }
+
   private impulsePlayable(player: PlayerId, card: ObjectId): boolean {
     const object = this.state.objects[card];
     const impulse = object?.impulse;
     if (object === undefined || impulse === undefined) return false;
     if (object.zone !== "exile" || impulse.player !== player) return false;
+    // Only the cards it covers — Narset's "noncreature, nonland cards".
+    if (
+      impulse.filter !== undefined &&
+      !matchesFilter(this.state, this.registry, card, impulse.filter, { you: player })
+    ) {
+      return false;
+    }
     // Gates on *using* it, checked live — Theater of Horrors' cards come and
     // go as the turn and the life-loss condition change.
     if (impulse.yourTurnOnly === true && this.activePlayer !== player) return false;

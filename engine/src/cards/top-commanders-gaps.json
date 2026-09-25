@@ -90,7 +90,8 @@
   "bug:saga-completion-sacrifice",
   "effect:reveal-until",
   "cost:mana-ability-complex-costs",
-  "keyword:exhaust"
+  "keyword:exhaust",
+  "zone:impulse-permission-options"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

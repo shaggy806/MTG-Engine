@@ -733,16 +733,27 @@ exist (rule 111.7), so neither comes back.
   step. One effect because the loop, the per-opponent attack requirement and
   the sacrifice are one instruction — and it copies a card in **exile**, which
   the Encore cost put there (`zone: "graveyard"`).
-- **`impulse-exile { amount, duration, castOnly?, choose?, yourTurnOnly?, gate? }`**
+- **`impulse-exile { amount, duration, castOnly?, filter?, free?, choose?, yourTurnOnly?, gate? }`**
   — "impulse draw": exile the top N cards face-up and let yourself play them
   (Dream Pillager, Tectonic Giant, Theater of Horrors). `duration` is
   `"end-of-turn"`, `"your-next-turn"` (counted down as *that player's* turns
   end, so extra turns and multiplayer order stay exact — granted during one of
   their own turns it lasts through the rest of it and all of the next, as
   Prosper, Tome-Bound's end-step exile does; granted on an opponent's turn it
-  lasts through their very next one) or `"while-source"`.
+  lasts through their very next one), `"while-source"` or `"while-exiled"`
+  ("for as long as it remains exiled").
   `castOnly` is "cast **spells** from among them" (no lands) rather than "play
-  them". `choose` grants the permission to only that many of the exiled cards,
+  them". `filter` narrows which of them the permission covers, and `free` is
+  "without paying their mana costs" — for all of them, or those matching its
+  own `filter`, offered as a `free` cast variant beside the paid one; `only:
+  true` when paying isn't allowed at all. Narset, Enlightened Master's "exile
+  the top four cards of your library. Until end of turn, you may cast
+  noncreature, nonland cards exiled with Narset this turn without paying their
+  mana costs" is `{ amount: 4, duration: "end-of-turn", castOnly: true, filter:
+  { notTypes: ["creature", "land"] }, free: { only: true } }`; Nahiri, Forged
+  in Fury's "you may play that card this turn. You may cast Equipment spells
+  this way without paying their mana costs" is `free: { filter: { subtype:
+  "Equipment" } }`. `choose` grants the permission to only that many of the exiled cards,
   via a `choose-from-zone` decision whose `destination` is `"exile-playable"`
   — the cards never move. `yourTurnOnly` / `gate` are checked live every time
   the permission is *used*, as opposed to `duration`, which is when it lapses.
@@ -1100,15 +1111,16 @@ removeCounter?, payEnergy?, discardHand?, tapOthers? }`.
   stack paying token by token; one creature never pays both this and the
   mana half of the same cost.
 
-**Mana abilities** (`isManaAbility`): a `{T}: Add …` ability with no targets,
-no `resolve`, an `add-mana` effect, and no life/counter/energy/non-self
-sacrifice cost. These resolve immediately without using the stack. Use the
+**Mana abilities** (`isManaAbility`, rule 605.1a): an ability with no
+targets, no `resolve`, and an `add-mana` effect (or a `sequence` of them),
+activated from the battlefield and not a loyalty ability — **whatever it
+costs**. These resolve immediately without using the stack. Use the
 `manaTapAbility(color)` / `addManaAbility({...})` helpers from
-`cards/helpers.js`. **A *filtered* sacrifice cost (`{ filter }`, not `"self"`)
-disqualifies an ability from `isManaAbility`** even if it's otherwise
-mana-shaped (Orcish Lumberjack: "{T}, Sacrifice a Forest: Add …") — it needs a
-real choice the auto-payment scan doesn't make, so it resolves on the stack
-like an ordinary activated ability instead. needed-cards P20.
+`cards/helpers.js`. A cost the auto-payer can't pay by itself — a chosen
+sacrifice (Orcish Lumberjack's "{T}, Sacrifice a Forest: Add …", Ashnod's
+Altar, Phyrexian Tower), counters, energy, a coloured mana cost — keeps the
+ability out of `manaSources()`, so it's activated by hand, its mana floating
+for what comes next; it still never uses the stack. needed-cards P20.
 
 `add-mana`'s `mana` field: a fixed `ManaType` (`"W"`/`"U"`/`"B"`/`"R"`/`"G"`/
 `"C"`), `"any-color"` (one of the five, the payer's choice — Arcane Signet), or

@@ -200,12 +200,24 @@ export interface GameObject {
      *   turn number.
      * - `while-source` — for as long as the permanent that exiled it is on
      *   the battlefield (Theater of Horrors).
+     * - `while-exiled` — "for as long as it remains exiled": never, while it
+     *   stays (leaving exile ends it anyway, as for every permission).
      */
     expiry:
       | { readonly kind: "end-of-turn"; readonly turn: number }
       | { kind: "your-turns"; remaining: number }
-      | { readonly kind: "while-source"; readonly source: ObjectId };
+      | { readonly kind: "while-source"; readonly source: ObjectId }
+      | { readonly kind: "while-exiled" };
     readonly castOnly?: boolean;
+    /** Which of the exiled cards the permission covers — Narset, Enlightened
+     * Master's "noncreature, nonland cards". Matched from the permission
+     * holder's side; a card it doesn't match can't be played this way. */
+    readonly filter?: CardFilter;
+    /** Cast without paying its mana cost: every card the permission covers,
+     * or those matching `filter` (Nahiri, Forged in Fury's "you may cast
+     * Equipment spells this way without paying their mana costs"). `only`
+     * is a permission that is *only* to cast them free (Narset). */
+    readonly free?: { readonly filter?: CardFilter; readonly only?: boolean };
     /** Extra gates on *using* the permission, as opposed to when it lapses —
      * Theater of Horrors' "**During your turn, if an opponent lost life this
      * turn**, you may play …". Evaluated live, so the cards become playable

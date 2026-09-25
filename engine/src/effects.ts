@@ -1846,8 +1846,17 @@ export type EffectSpec =
        */
       readonly kind: "impulse-exile";
       readonly amount: EffectAmount;
-      readonly duration: "end-of-turn" | "your-next-turn" | "while-source";
+      /** `"while-exiled"` is "for as long as it remains exiled". */
+      readonly duration: "end-of-turn" | "your-next-turn" | "while-source" | "while-exiled";
       readonly castOnly?: boolean;
+      /** Which of the exiled cards may be played — Narset, Enlightened
+       * Master's "noncreature, nonland cards exiled with Narset". */
+      readonly filter?: CardFilter;
+      /** "…without paying their mana costs": for every card the permission
+       * covers, or those matching `filter` (Nahiri, Forged in Fury's
+       * Equipment spells); `only` when paying isn't allowed at all (Narset's
+       * "you may cast … without paying their mana costs"). */
+      readonly free?: { readonly filter?: CardFilter; readonly only?: boolean };
       /** Grant the permission to only this many of the exiled cards, chosen
        * by the controller — Tectonic Giant's "exile the top two cards of your
        * library. **Choose one of them.**" The rest stay exiled with no
@@ -2297,12 +2306,14 @@ export interface EffectApi {
   /** See the `"impulse-exile"` {@link EffectSpec}. */
   impulseExile(
     amount: number,
-    duration: "end-of-turn" | "your-next-turn" | "while-source",
+    duration: "end-of-turn" | "your-next-turn" | "while-source" | "while-exiled",
     castOnly: boolean,
     opts?: {
       readonly choose?: number;
       readonly yourTurnOnly?: boolean;
       readonly gate?: StaticCondition;
+      readonly filter?: CardFilter;
+      readonly free?: { readonly filter?: CardFilter; readonly only?: boolean };
     },
   ): void;
   /** See the `"ward"` {@link EffectSpec}. */
@@ -3714,6 +3725,8 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         choose: spec.choose,
         yourTurnOnly: spec.yourTurnOnly,
         gate: spec.gate,
+        ...(spec.filter !== undefined ? { filter: spec.filter } : {}),
+        ...(spec.free !== undefined ? { free: spec.free } : {}),
       });
       return;
     case "unless":
