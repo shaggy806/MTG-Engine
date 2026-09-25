@@ -484,6 +484,7 @@ import _poolBlightning from "./pool/blightning.js";
 import _poolBlightsoilDruid from "./pool/blightsoil-druid.js";
 import _poolBlightstepPathway from "./pool/blightstep-pathway.js";
 import _poolBlindCreeper from "./pool/blind-creeper.js";
+import _poolBlindObedience from "./pool/blind-obedience.js";
 import _poolBlindPhantasm from "./pool/blind-phantasm.js";
 import _poolBlindingMage from "./pool/blinding-mage.js";
 import _poolBlindingSouleater from "./pool/blinding-souleater.js";
@@ -986,6 +987,7 @@ import _poolCruelWitness from "./pool/cruel-witness.js";
 import _poolCrumblingNecropolis from "./pool/crumbling-necropolis.js";
 import _poolCrumblingVestige from "./pool/crumbling-vestige.js";
 import _poolCrushContraband from "./pool/crush-contraband.js";
+import _poolCryptGhast from "./pool/crypt-ghast.js";
 import _poolCryptOfTheEternals from "./pool/crypt-of-the-eternals.js";
 import _poolCryptRipper from "./pool/crypt-ripper.js";
 import _poolCryptolithRite from "./pool/cryptolith-rite.js";
@@ -6010,6 +6012,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBlightsoilDruid,
   _poolBlightstepPathway,
   _poolBlindCreeper,
+  _poolBlindObedience,
   _poolBlindPhantasm,
   _poolBlindingMage,
   _poolBlindingSouleater,
@@ -6512,6 +6515,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolCrumblingNecropolis,
   _poolCrumblingVestige,
   _poolCrushContraband,
+  _poolCryptGhast,
   _poolCryptOfTheEternals,
   _poolCryptRipper,
   _poolCryptolithRite,

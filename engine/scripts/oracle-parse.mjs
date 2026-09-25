@@ -459,7 +459,7 @@ export function parseSentence(sentence, ctx) {
       kind: "sequence",
       effects: [
         { kind: "lose-life", amount: n, who: "each-opponent" },
-        { kind: "gain-life", amount: { product: [n, { countPlayers: "each-opponent" }] } },
+        { kind: "gain-life", amount: { lifeLostThisWay: true, who: "each-opponent" } },
       ],
     };
   }

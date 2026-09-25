@@ -243,6 +243,13 @@ export type EffectAmount =
    * equal to **the number of opponents you have**". Counts living players, so
    * it shrinks as a multiplayer game does. */
   | { readonly countPlayers: PlayerScope }
+  /** How much life the players `who` names (default everyone) have lost so
+   * far in the resolution under way — "each opponent loses 1 life and you
+   * gain **that much** life" (extort), "you gain life equal to the life lost
+   * this way" (Gray Merchant of Asphodel). The life actually lost, read off
+   * the resolution's own life changes, so an opponent whose loss is changed
+   * or who can't lose life counts for what they lost. */
+  | { readonly lifeLostThisWay: true; readonly who?: PlayerScope }
   /**
    * A per-player running total for this turn ({@link TurnStat}), summed over
    * the players `who` names (default `"you"`) — Kydele's "{C} for each card
@@ -2149,6 +2156,9 @@ export interface EffectApi {
    * `players` (everyone's when absent) and matching `filter` — see the
    * `thisWay` {@link EffectAmount}. */
   thisWay(what: ThisWayKind, players?: readonly PlayerId[], filter?: CardFilter): readonly ThisWayEntry[];
+  /** How much life `players` (everyone when absent) have lost so far in
+   * this resolution — see the `lifeLostThisWay` {@link EffectAmount}. */
+  lifeLostThisWay(players?: readonly PlayerId[]): number;
   /** See the `{ opponentsAttacked }` {@link EffectAmount}. */
   opponentsAttacked(): number;
   /** See the `{ damageDealtThisTurn }` {@link EffectAmount}. */
@@ -2936,6 +2946,9 @@ function signedAmountValue(
       : done.reduce((n, entry) => n + entry.count, 0);
   }
   if ("countPlayers" in amount) return ctx.playersInScope(amount.countPlayers).length;
+  if ("lifeLostThisWay" in amount) {
+    return ctx.lifeLostThisWay(amount.who === undefined ? undefined : ctx.playersInScope(amount.who));
+  }
   if ("turnStat" in amount) {
     return ctx
       .playersInScope(amount.who ?? "you")

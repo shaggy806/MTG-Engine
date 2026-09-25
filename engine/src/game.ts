@@ -214,7 +214,7 @@ import type {
 } from "./state.js";
 import { describeTargetSpec, isOptionalSpec, normalizeTargets, otherThan, targetsFillable } from "./target.js";
 import { distinctTargetCount, targetCountBounds } from "./target-count.js";
-import { eventsSince as eventLogSince, thisWayEntries } from "./this-way.js";
+import { eventsSince as eventLogSince, lifeLostSince, thisWayEntries } from "./this-way.js";
 import type { ThisWayEntry } from "./this-way.js";
 import type { TargetCopies, TargetCountRange } from "./target-count.js";
 import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
@@ -10645,6 +10645,7 @@ export class Game {
       cardTypesInGraveyard: (filter) =>
         cardTypesInGraveyards(this.state, this.registry, controller, filter),
       thisWay: thisWayDone,
+      lifeLostThisWay: (players) => lifeLostSince(this.state, since, players),
       damageDealtThisTurn: (players, combat, colors) => damageDealtThisTurn(this.state, players, combat, colors),
       opponentsAttacked: () => {
         const attacked = new Set<PlayerId>();

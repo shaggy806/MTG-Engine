@@ -41,6 +41,25 @@ export function eventsSince(state: GameState, seq: number): readonly GameEvent[]
 }
 
 /**
+ * How much life `players` (everyone when absent) have lost since event
+ * `since` — the resolution under way's "life lost this way". Read off the
+ * life changes themselves, so it is the life actually lost.
+ */
+export function lifeLostSince(
+  state: GameState,
+  since: number,
+  players?: readonly PlayerId[],
+): number {
+  const whose = players === undefined ? undefined : new Set(players);
+  let lost = 0;
+  for (const event of eventsSince(state, since)) {
+    if (event.type !== "life-changed" || event.delta >= 0) continue;
+    if (whose === undefined || whose.has(event.player)) lost -= event.delta;
+  }
+  return lost;
+}
+
+/**
  * What the resolution that began at event `since` — by default the one under
  * way, and nothing between resolutions — has done `what` to, each object
  * once, oldest first.

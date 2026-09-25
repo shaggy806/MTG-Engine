@@ -24,15 +24,9 @@ export default defineCard({
             who: "each-opponent",
           },
           {
-            // "Life lost this way" — each opponent lost your devotion, so the
-            // total is that times however many opponents are left. Exact
-            // today: nothing in this engine replaces or prevents *life loss*
-            // (prevention shields are damage-only), so no opponent can lose
-            // less than the full amount.
+            // "Life lost this way": what the opponents actually lost.
             kind: "gain-life",
-            amount: {
-              product: [{ devotionTo: "B" }, { countPlayers: "each-opponent" }],
-            },
+            amount: { lifeLostThisWay: true, who: "each-opponent" },
           },
         ],
       },

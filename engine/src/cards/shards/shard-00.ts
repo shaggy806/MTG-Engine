@@ -18,6 +18,7 @@ import _poolBasaltMonolith from "../pool/basalt-monolith.js";
 import _poolBatheInGold from "../pool/bathe-in-gold.js";
 import _poolBeastAttack from "../pool/beast-attack.js";
 import _poolBigfinBouncer from "../pool/bigfin-bouncer.js";
+import _poolBlindObedience from "../pool/blind-obedience.js";
 import _poolBootsOfSpeed from "../pool/boots-of-speed.js";
 import _poolBristlyBillSpineSower from "../pool/bristly-bill-spine-sower.js";
 import _poolBronzeSword from "../pool/bronze-sword.js";
@@ -199,6 +200,7 @@ const shard: CardShard = {
     _poolBatheInGold,
     _poolBeastAttack,
     _poolBigfinBouncer,
+    _poolBlindObedience,
     _poolBootsOfSpeed,
     _poolBristlyBillSpineSower,
     _poolBronzeSword,
