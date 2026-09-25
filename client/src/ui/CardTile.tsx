@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useSyncExternalStore } from 'react'
-import type { VisibleObject } from 'engine'
+import type { VisibleObject } from 'engine/client'
 import { LoyaltyCounter, Symbols } from './Symbols.tsx'
 import { cardTint } from './symbols.ts'
 import { manaSymbolUrl } from './mana.ts'

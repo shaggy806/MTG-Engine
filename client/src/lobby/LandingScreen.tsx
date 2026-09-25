@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { NetworkGame } from '../net/useNetworkGame.ts'
-import { findCardDef } from '../ui/defToVisible.ts'
+import { PINNED_ART } from 'engine/client'
 import { cssUrl, resolveArtUrl } from '../ui/art.ts'
 import './landing.css'
 
@@ -17,9 +17,9 @@ const ROOM_CODE_CHARS = /[^ABCDEFGHJKLMNPQRSTUVWXYZ23456789]/g
  * nothing.
  *
  * Deliberately *not* required to be in the pool: `resolveArtUrl` falls back
- * to Scryfall's by-name lookup when there's no `CardDefinition` to read an
- * `art` field from, which is why this can name any real card rather than
- * only an implemented one.
+ * to Scryfall's by-name lookup when the pool pins no art for it
+ * (`PINNED_ART`), which is why this can name any real card rather than only
+ * an implemented one.
  */
 const HERO_CARD = 'The Ur-Dragon'
 
@@ -72,8 +72,8 @@ export function LandingScreen({
     if (code.length === ROOM_CODE_LENGTH) game.joinRoom(code)
   }
 
-  // Not gated on `findCardDef` finding anything — see HERO_CARD.
-  const heroArt = resolveArtUrl(findCardDef(HERO_CARD)?.art, HERO_CARD, 'art_crop')
+  // Not gated on the card being in the pool — see HERO_CARD.
+  const heroArt = resolveArtUrl(PINNED_ART[HERO_CARD], HERO_CARD, 'art_crop')
 
   return (
     <div className="landing">

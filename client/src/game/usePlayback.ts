@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { LegalAction, PlayerView } from 'engine'
-import { phaseOfStep } from 'engine'
+import type { LegalAction, PlayerView } from 'engine/client'
+import { phaseOfStep } from 'engine/client'
 import { scheduleEvents } from './animationSchedule.ts'
 import type { AnimationBus } from './animationBus.ts'
 

@@ -13,7 +13,7 @@ import type {
   TargetRef,
   TargetSpec,
   VisibleObject,
-} from 'engine'
+} from 'engine/client'
 import {
   blockingViolations,
   damageAssignmentViolations,
@@ -21,7 +21,7 @@ import {
   isOptionalSpec,
   slotOptions,
   standardAssignment,
-} from 'engine'
+} from 'engine/client'
 import { useNetworkGame } from './net/useNetworkGame.ts'
 import type { NetworkGame } from './net/useNetworkGame.ts'
 import { stackShowsSomething } from './game/decisionSource.ts'

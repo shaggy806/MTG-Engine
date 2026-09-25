@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { FocusEvent, MouseEvent } from 'react'
 import { createPortal } from 'react-dom'
-import type { CardDefinition, CardType, Color } from 'engine'
+import type { CardDefinition, CardType, Color } from 'engine/client'
 import {
-  BUILTIN_CARDS,
   edhrecRankOf,
   isCardFront,
   isTokenCard,
   manaValue,
   parseManaCost,
   tokensCreatedBy,
-} from 'engine'
+} from 'engine/client'
+import { cardPool } from '../cards/cardData.ts'
 import { CardImage } from '../ui/CardImage.tsx'
 import { Symbols } from '../ui/Symbols.tsx'
 import './library.css'
@@ -72,13 +72,11 @@ const TYPE_ORDER: readonly CardType[] = [
   'land',
 ]
 
-const BY_NAME = new Map(BUILTIN_CARDS.map((c) => [c.name, c]))
-
 /**
  * One row of the gallery: a card, precomputed for search and sorting. Built
- * once at module scope — the pool is fixed for the life of the page, so
- * re-deriving a lowercased haystack and a mana value per keystroke across
- * 400 cards would be pure waste.
+ * once, the first time the page renders (`galleryRows`) — the pool is fixed
+ * for the life of the page, so re-deriving a lowercased haystack and a mana
+ * value per keystroke across thousands of cards would be pure waste.
  */
 interface Entry {
   readonly def: CardDefinition
@@ -114,7 +112,7 @@ function typeLineOf(def: CardDefinition): string {
 
 function buildEntry(def: CardDefinition): Entry {
   const otherName = def.faces && def.faces.length > 1 ? def.faces[1] : null
-  const other = otherName === null ? null : (BY_NAME.get(otherName) ?? null)
+  const other = otherName === null ? null : (cardPool().byName.get(otherName) ?? null)
   return {
     def,
     other,
@@ -140,22 +138,42 @@ function buildEntry(def: CardDefinition): Entry {
   }
 }
 
-// One entry per *card*, not per registered definition: a back face is the
-// same physical card as its front (rule 712.3), so it appears in the gallery
-// only as that front's flip side — exactly how Scryfall lists one result per
-// card. Tokens are built too, but hidden unless asked for.
-const ENTRIES: readonly Entry[] = BUILTIN_CARDS.filter(isCardFront)
-  .map(buildEntry)
-  .sort((a, b) => a.def.name.localeCompare(b.def.name))
+interface Gallery {
+  readonly entries: readonly Entry[]
+  /** How many entries are cards rather than tokens. */
+  readonly cardCount: number
+}
 
-const CARD_COUNT = ENTRIES.filter((e) => !e.isToken).length
+let gallery: Gallery | null = null
+
+/**
+ * Every row the gallery can show, built from the card pool the first time
+ * the page renders. `main.tsx` loads the whole pool before rendering this
+ * page, so it's always there to build from.
+ *
+ * One entry per *card*, not per registered definition: a back face is the
+ * same physical card as its front (rule 712.3), so it appears in the gallery
+ * only as that front's flip side — exactly how Scryfall lists one result per
+ * card. Tokens are built too, but hidden unless asked for.
+ */
+function galleryRows(): Gallery {
+  if (gallery === null) {
+    const { cards, tokens } = cardPool()
+    const entries = [...cards, ...tokens]
+      .filter(isCardFront)
+      .map(buildEntry)
+      .sort((a, b) => a.def.name.localeCompare(b.def.name))
+    gallery = { entries, cardCount: entries.filter((e) => !e.isToken).length }
+  }
+  return gallery
+}
 
 /** The tokens a card makes, either face — resolved to their definitions, in
  * the order its text names them. */
 function tokensOf(entry: Entry): readonly CardDefinition[] {
   const names = [...tokensCreatedBy(entry.def), ...(entry.other ? tokensCreatedBy(entry.other) : [])]
   return [...new Set(names)].flatMap((name) => {
-    const def = BY_NAME.get(name)
+    const def = cardPool().byName.get(name)
     return def === undefined ? [] : [def]
   })
 }
@@ -196,6 +214,8 @@ function setCardParam(name: string | null): void {
  * library shows you things you could actually put in a deck.
  */
 export function LibraryPage() {
+  const { entries, cardCount } = galleryRows()
+  const cardsByName = cardPool().byName
   const [query, setQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState<CardType | null>(null)
   const [colorFilter, setColorFilter] = useState<readonly ColorFilter[]>([])
@@ -203,17 +223,17 @@ export function LibraryPage() {
   const [showTokens, setShowTokens] = useState(() => {
     // A deep link straight to a token shouldn't land on an empty gallery.
     const param = cardParam()
-    const def = param === null ? undefined : BY_NAME.get(param)
+    const def = param === null ? undefined : cardsByName.get(param)
     return def !== undefined && isTokenCard(def)
   })
   const [selectedName, setSelectedName] = useState<string | null>(() => {
     const param = cardParam()
-    return param !== null && BY_NAME.has(param) ? param : null
+    return param !== null && cardsByName.has(param) ? param : null
   })
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    const rows = ENTRIES.filter((e) => {
+    const rows = entries.filter((e) => {
       if (e.isToken && !showTokens) return false
       if (typeFilter !== null && !e.def.types.includes(typeFilter)) return false
       if (colorFilter.length > 0 && !e.colorKeys.some((c) => colorFilter.includes(c))) return false
@@ -232,7 +252,7 @@ export function LibraryPage() {
               : a.typeRank - b.typeRank
       return key !== 0 ? key : byName(a, b)
     })
-  }, [query, typeFilter, colorFilter, sort, showTokens])
+  }, [entries, query, typeFilter, colorFilter, sort, showTokens])
 
   const [page, setPage] = useState(0)
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
@@ -273,7 +293,7 @@ export function LibraryPage() {
     window.scrollTo({ top: 0, behavior: 'auto' })
   }
 
-  const selected = selectedName === null ? null : (BY_NAME.get(selectedName) ?? null)
+  const selected = selectedName === null ? null : (cardsByName.get(selectedName) ?? null)
 
   const select = useCallback((name: string | null) => {
     setSelectedName(name)
@@ -322,7 +342,7 @@ export function LibraryPage() {
           <input
             className="lib-search"
             type="search"
-            placeholder={`Search ${CARD_COUNT} cards by name, type or rules text…`}
+            placeholder={`Search ${cardCount} cards by name, type or rules text…`}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -412,7 +432,7 @@ export function LibraryPage() {
         </p>
         {filtered.length === 0 ? (
           <p className="lib-empty muted">
-            No cards match. The pool is {CARD_COUNT} implemented cards — try a shorter search.
+            No cards match. The pool is {cardCount} implemented cards — try a shorter search.
           </p>
         ) : (
           <>
@@ -447,7 +467,7 @@ export function LibraryPage() {
           // Keyed by card, so walking to the next one with the arrows starts
           // it fresh (front face up) rather than carrying a flip across.
           key={selected.name}
-          entry={ENTRIES.find((e) => e.def.name === selected.name) ?? buildEntry(selected)}
+          entry={entries.find((e) => e.def.name === selected.name) ?? buildEntry(selected)}
           onClose={() => select(null)}
           onPrev={selectedIndex > 0 ? () => step(-1) : null}
           onNext={

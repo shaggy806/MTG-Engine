@@ -1,4 +1,4 @@
-import type { GameEvent, Phase } from 'engine'
+import type { GameEvent, Phase } from 'engine/client'
 
 /**
  * How long each kind of animation is on screen. `AnimationLayer` imports

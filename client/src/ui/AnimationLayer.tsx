@@ -9,7 +9,7 @@ import type {
   PlayerView,
   TargetRef,
   VisibleObject,
-} from 'engine'
+} from 'engine/client'
 import { CardTile } from './CardTile.tsx'
 import { playerLabel, seatClassOf } from '../format.ts'
 import type { SeatClass } from '../format.ts'

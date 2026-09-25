@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
-import { COMMANDER_DAMAGE_LETHAL } from 'engine'
-import type { CommanderDamage } from 'engine'
+import { COMMANDER_DAMAGE_LETHAL } from 'engine/client'
+import type { CommanderDamage } from 'engine/client'
 import {
   getArtCacheVersion,
   isArtBlocked,

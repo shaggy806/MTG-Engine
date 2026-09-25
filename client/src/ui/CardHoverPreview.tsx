@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom'
-import type { CardDefinition } from 'engine'
+import type { CardDefinition } from 'engine/client'
 import { CardTile } from './CardTile.tsx'
 import { defToVisible } from './defToVisible.ts'
 

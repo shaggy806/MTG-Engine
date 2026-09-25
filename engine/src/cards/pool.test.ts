@@ -6,13 +6,19 @@
  * silently shipping a card that no registry knows about.
  *
  * Also guards the pool/tokens split the codegen records as `POOL_CARDS` /
- * `TOKEN_CARDS`, since `isTokenCard` has no other way to tell the two apart.
+ * `TOKEN_CARDS`, since `isTokenCard` has no other way to tell the two apart,
+ * and the second copy of the pool the codegen writes for web pages: the
+ * shards, and the index of token names and pinned art beside them. The
+ * codegen reads each card's name and art from its source text, so these are
+ * where a card file it misread fails.
  */
 
 import { describe, expect, it } from "vitest";
+import { CARD_SHARD_COUNT, cardShardOf, loadCardShard } from "./card-shards.js";
 import { isCardFront, isDeckableCard, isTokenCard } from "./classify.js";
 import type { CardDefinition } from "./define.js";
 import { POOL_CARDS, TOKEN_CARDS } from "./generated.js";
+import { PINNED_ART, TOKEN_NAMES } from "./generated-index.js";
 import { createDefaultRegistry } from "./registry.js";
 
 const modules = import.meta.glob<{ default: CardDefinition }>(
@@ -61,6 +67,53 @@ describe("card pool layout", () => {
       );
     expect(new Set(POOL_CARDS.map((c) => c.name))).toEqual(named("pool"));
     expect(new Set(TOKEN_CARDS.map((c) => c.name))).toEqual(named("tokens"));
+  });
+});
+
+describe("card shards", () => {
+  const regenerate = "run `npm run gen:cards -w engine`";
+
+  it("hold every card once, each in the shard its name hashes to", async () => {
+    const shards = await Promise.all(
+      Array.from({ length: CARD_SHARD_COUNT }, (_, i) => loadCardShard(i)),
+    );
+    const pool: CardDefinition[] = [];
+    const tokens: CardDefinition[] = [];
+    shards.forEach((shard, i) => {
+      for (const def of [...shard.pool, ...shard.tokens]) {
+        expect(
+          cardShardOf(def.name),
+          `${def.name} is in shard ${i}, so gen-cards.mjs misread its name — or ${regenerate}`,
+        ).toBe(i);
+      }
+      pool.push(...shard.pool);
+      tokens.push(...shard.tokens);
+    });
+    // The same definitions, not copies: a shard imports the card's own module.
+    const byName = (defs: readonly CardDefinition[]) =>
+      [...defs].sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+    expect(byName(pool), regenerate).toEqual(byName(POOL_CARDS));
+    expect(byName(tokens), regenerate).toEqual(byName(TOKEN_CARDS));
+    for (const [shard, all] of [
+      [pool, POOL_CARDS],
+      [tokens, TOKEN_CARDS],
+    ] as const) {
+      const sorted = byName(all);
+      byName(shard).forEach((def, i) => expect(def).toBe(sorted[i]));
+    }
+  });
+
+  it("an unknown name still names a shard", () => {
+    const shard = cardShardOf("Not a Real Card");
+    expect(Number.isInteger(shard) && shard >= 0 && shard < CARD_SHARD_COUNT).toBe(true);
+  });
+
+  it("the index's token names and pinned art are the definitions' own", () => {
+    expect([...TOKEN_NAMES].sort(), regenerate).toEqual(TOKEN_CARDS.map((c) => c.name).sort());
+    const pinned = Object.fromEntries(
+      POOL_CARDS.flatMap((c) => (c.art === null ? [] : [[c.name, c.art]])),
+    );
+    expect(PINNED_ART, regenerate).toEqual(pinned);
   });
 });
 

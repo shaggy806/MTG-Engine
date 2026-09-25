@@ -1,4 +1,4 @@
-import type { GameEvent, PlayerView } from 'engine'
+import type { GameEvent, PlayerView } from 'engine/client'
 
 /**
  * The one channel between "what the board is currently playing out"

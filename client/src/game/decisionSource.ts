@@ -11,7 +11,7 @@
  * Lives here rather than in `Stack.tsx` so that file exports only components
  * (React Fast Refresh).
  */
-import type { ObjectId, PlayerView } from 'engine'
+import type { ObjectId, PlayerView } from 'engine/client'
 
 /** The object to draw as the decision's cause, or `null` if there's nothing
  * extra to draw — nothing pending, the cause is already on the stack, or the

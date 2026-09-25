@@ -16,7 +16,7 @@
  * the engine's `damageAssignmentViolations`.
  */
 
-import type { LegalAction, ObjectId, PlayerView, VisibleObject } from 'engine'
+import type { LegalAction, ObjectId, PlayerView, VisibleObject } from 'engine/client'
 
 export type AssignDamageOffer = Extract<LegalAction, { kind: 'assign-combat-damage' }>
 

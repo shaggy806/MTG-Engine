@@ -1,4 +1,4 @@
-import type { PlayerView } from 'engine'
+import type { PlayerView } from 'engine/client'
 
 const STEPS = [
   ['untap', 'UT'],

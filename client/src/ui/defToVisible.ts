@@ -1,15 +1,4 @@
-import { BUILTIN_CARDS } from 'engine'
-import type { CardDefinition, ObjectId, PlayerId, VisibleObject } from 'engine'
-
-const CARD_BY_NAME = new Map(BUILTIN_CARDS.map((c) => [c.name, c]))
-
-/** Looks up a card's printed definition by name — every implemented card is
- * bundled client-side (`BUILTIN_CARDS`), so this works for any seat's chosen
- * commander without a server round-trip, regardless of which device picked
- * it. `null` for a name the pool doesn't implement. */
-export function findCardDef(name: string): CardDefinition | null {
-  return CARD_BY_NAME.get(name) ?? null
-}
+import type { CardDefinition, ObjectId, PlayerId, VisibleObject } from 'engine/client'
 
 /**
  * A cheap `CardDefinition` → `VisibleObject` adapter for gallery tiles and

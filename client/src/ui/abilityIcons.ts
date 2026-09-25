@@ -16,7 +16,7 @@
  * mana-font 1.18.0's `css/mana.css` — the version is pinned exactly in
  * package.json for that reason.
  */
-import type { Keyword } from 'engine'
+import type { Keyword } from 'engine/client'
 import manaWoff2 from 'mana-font/fonts/mana.woff2?url'
 
 // Registered once, when this module is first imported. `display: block`

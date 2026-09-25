@@ -13,7 +13,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { Action, LegalAction, ObjectId, PlayerId, PlayerView } from 'engine'
+import type { Action, LegalAction, ObjectId, PlayerId, PlayerView } from 'engine/client'
 import type { Frame } from '../game/usePlayback.ts'
 import type { BotSpeed, ClientMessage, SeatStatus, ServerMessage, WireDeck } from 'protocol'
 

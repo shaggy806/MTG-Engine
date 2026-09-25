@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
-import type { CardDefinition } from 'engine'
-import { isTokenCard } from 'engine'
+import type { CardDefinition } from 'engine/client'
+import { isTokenCard } from 'engine/client'
 import { Symbols } from './Symbols.tsx'
 import {
   getArtCacheVersion,

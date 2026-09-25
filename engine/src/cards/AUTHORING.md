@@ -187,6 +187,13 @@ Rules:
   runs automatically as a `prebuild` / `pretypecheck` step, so `npm run build
   -w engine` or `npm run typecheck -w engine` picks a new file up too. If you
   forget, `cards/pool.test.ts` fails with a pointer to run it.
+- The same run writes the card shards the web client loads cards from
+  (`cards/shards/`, and `cards/generated-index.ts` beside them), which place
+  each card by its name. It reads that name, and any `art`, from the file's
+  source, so a card file has one of two shapes:
+  `export default defineCard({ name: "…", … })`, or
+  `export default helper("Name", …)` for a helper that takes the name first
+  (`painLand`, `shockLand`, …). Commit all of those files with the card.
 - **A token** is just a card with no `manaCost` (see `tokens/soldier-token.ts`).
   Put it in `tokens/` instead of `pool/`. It's minted by a `create-token`
   effect, never cast.

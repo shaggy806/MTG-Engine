@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
-import type { PlayerId } from 'engine'
+import type { PlayerId } from 'engine/client'
 import type { NetworkGame } from '../net/useNetworkGame.ts'
 import type { SeatCommander, WireDeck } from 'protocol'
 import { playerLabel, SEAT_CLASSES } from '../format.ts'

@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { GameEvent } from 'engine'
+import type { CardDefinition, GameEvent } from 'engine/client'
 import { describeEvent, isDetailOnlyEvent, type NameOf } from '../format.ts'
-import { findCardDef } from './defToVisible.ts'
+import { requestCards, useCardData } from '../cards/cardData.ts'
+
+type CardLookup = (name: string) => CardDefinition | null | undefined
 
 export interface EventLogProps {
   readonly events: readonly GameEvent[]
@@ -22,10 +24,10 @@ export interface EventLogProps {
 const MARK_START = '\u0001'
 const MARK_END = '\u0002'
 
-/** What a card's name shows on hover — the answer to "what does this do?". */
-function cardTooltip(name: string): string {
-  const def = findCardDef(name)
-  if (def === null) return name
+/** What a card's name shows on hover — the answer to "what does this do?".
+ * Just the name until its definition has loaded (see `EventText`). */
+function cardTooltip(name: string, def: CardDefinition | null | undefined): string {
+  if (!def) return name
   const typeLine = [
     ...(def.supertypes ?? []),
     ...def.types,
@@ -37,8 +39,18 @@ function cardTooltip(name: string): string {
     (def.text.length > 0 ? `\n\n${def.text}` : '')
 }
 
-/** One event's sentence, with its card names as hoverable bold runs. */
-function EventText({ event, nameOf }: { readonly event: GameEvent; readonly nameOf: NameOf }) {
+/** One event's sentence, with its card names as hoverable bold runs. A
+ * name's definition, which its tooltip is made of, is fetched the first time
+ * the pointer reaches it, rather than for every name the log holds. */
+function EventText({
+  event,
+  nameOf,
+  lookup,
+}: {
+  readonly event: GameEvent
+  readonly nameOf: NameOf
+  readonly lookup: CardLookup
+}) {
   const marked = describeEvent(event, (id) => `${MARK_START}${nameOf(id)}${MARK_END}`)
   // Odd indices are the marked names — `split` on a single-char delimiter
   // pair alternates plain/marked as long as marks never nest, which they
@@ -55,7 +67,12 @@ function EventText({ event, nameOf }: { readonly event: GameEvent; readonly name
     <span className="ev-text">
       {parts.map((part, i) =>
         part.text.length === 0 ? null : part.card ? (
-          <strong key={i} className="ev-card" title={cardTooltip(part.text)}>
+          <strong
+            key={i}
+            className="ev-card"
+            title={cardTooltip(part.text, lookup(part.text))}
+            onPointerEnter={() => requestCards([part.text])}
+          >
             {part.text}
           </strong>
         ) : (
@@ -79,6 +96,7 @@ function EventText({ event, nameOf }: { readonly event: GameEvent; readonly name
 export function EventLog({ events, nameOf }: EventLogProps) {
   const boxRef = useRef<HTMLDivElement>(null)
   const [detailed, setDetailed] = useState(false)
+  const lookup = useCardData()
 
   const shown = useMemo(() => {
     if (detailed) return events
@@ -115,7 +133,7 @@ export function EventLog({ events, nameOf }: EventLogProps) {
         {shown.map((event) => (
           <li key={event.seq} className={`ev ev-${event.type}`}>
             <span className="ev-seq">{event.seq}</span>
-            <EventText event={event} nameOf={nameOf} />
+            <EventText event={event} nameOf={nameOf} lookup={lookup} />
           </li>
         ))}
       </ul>

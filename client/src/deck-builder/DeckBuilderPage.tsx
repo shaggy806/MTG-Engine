@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { SAMPLE_DECKS, commandersOf, createDefaultRegistry, validateCommanderDeck } from 'engine'
-import type { PreconSubstitution } from 'engine'
+import { SAMPLE_DECKS, commandersOf, validateCommanderDeck } from 'engine/client'
+import type { PreconSubstitution } from 'engine/client'
 import type {
   DeckFormatReport,
   ImportDeckLine,
@@ -23,9 +23,8 @@ import type { SavedDeck } from './decks.ts'
 import { DeckEditor } from './DeckEditor.tsx'
 import { ReplacementReview } from './ReplacementReview.tsx'
 import { CONFIDENCE_LABEL } from './replacement-labels.ts'
+import { cardPool } from '../cards/cardData.ts'
 import './deck-builder.css'
-
-const registry = createDefaultRegistry()
 
 // Same host/port convention as useNetworkGame's SERVER_URL, but http(s) for
 // this one-off request/response endpoint rather than the room's WebSocket.
@@ -578,7 +577,7 @@ function StarterViewer({
   const legal = useMemo(
     () =>
       commanders.length > 0 &&
-      validateCommanderDeck({ commanders, cards: cardList, size: 100 }, registry).legal,
+      validateCommanderDeck({ commanders, cards: cardList, size: 100 }, cardPool().registry).legal,
     [commanders, cardList],
   )
   const substitutedIn = useMemo(() => new Set(substitutions.map((s) => s.substitute)), [substitutions])

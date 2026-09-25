@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import type { ObjectId } from 'engine'
+import type { ObjectId } from 'engine/client'
 import { Symbols } from './Symbols.tsx'
 
 /** Breathing room between the tile and the menu, and between the menu and

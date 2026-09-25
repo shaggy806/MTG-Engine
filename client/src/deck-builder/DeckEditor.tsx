@@ -1,14 +1,8 @@
 import { useCallback, useMemo, useState } from 'react'
 import type { DragEvent, MouseEvent } from 'react'
-import type { CardDefinition } from 'engine'
-import {
-  BUILTIN_CARDS,
-  canPairCommanders,
-  createDefaultRegistry,
-  hasPartner,
-  isDeckableCard,
-  validateCommanderDeck,
-} from 'engine'
+import type { CardDefinition } from 'engine/client'
+import { canPairCommanders, hasPartner, isDeckableCard, validateCommanderDeck } from 'engine/client'
+import { cardPool } from '../cards/cardData.ts'
 import { Symbols } from '../ui/Symbols.tsx'
 import { CardHoverPreview } from '../ui/CardHoverPreview.tsx'
 import type { HoverTarget } from '../ui/CardHoverPreview.tsx'
@@ -29,17 +23,23 @@ const TYPE_FILTERS = [
 
 const DECK_SIZE = 100
 
-/** The buildable pool. Tokens and back faces are registered definitions but
- * neither is a decklist entry — a token isn't a card at all (rule 111.1),
- * and a double-faced card is listed under its front face (rule 712.3) — so
- * they're filtered out here rather than offered and then rejected by
- * `validateCommanderDeck`. */
-const cards = BUILTIN_CARDS.filter(isDeckableCard).sort((a, b) => a.name.localeCompare(b.name))
-const registry = createDefaultRegistry()
-/** Every definition, including the ones the pool hides: a deck saved before
- * this filter existed can still name one, and such a row has to render (and
- * be removable) rather than showing up as an unknown card. */
-const byName = new Map(BUILTIN_CARDS.map((c) => [c.name, c]))
+let buildable: readonly CardDefinition[] | null = null
+
+/** The buildable pool, by name. Tokens and back faces are registered
+ * definitions but neither is a decklist entry — a token isn't a card at all
+ * (rule 111.1), and a double-faced card is listed under its front face (rule
+ * 712.3) — so they're filtered out here rather than offered and then rejected
+ * by `validateCommanderDeck`. Built from the card pool on first use:
+ * `main.tsx` loads the whole pool before rendering the deck builder. */
+function buildableCards(): readonly CardDefinition[] {
+  buildable ??= cardPool().cards.filter(isDeckableCard)
+  return buildable
+}
+
+/** Every definition, including the ones the buildable pool hides: a deck
+ * saved before that filter existed can still name one, and such a row has to
+ * render (and be removable) rather than showing up as an unknown card. */
+const cardNamed = (name: string): CardDefinition | undefined => cardPool().byName.get(name)
 
 const isCommanderEligible = (def: CardDefinition): boolean =>
   def.supertypes.includes('legendary') &&
@@ -54,7 +54,7 @@ const isCommanderEligible = (def: CardDefinition): boolean =>
  */
 function toggledCommanders(commanders: readonly string[], cardName: string): readonly string[] {
   if (commanders.includes(cardName)) return commanders.filter((n) => n !== cardName)
-  const partner = commanders.find((n) => canPairCommanders(registry, n, cardName))
+  const partner = commanders.find((n) => canPairCommanders(cardPool().registry, n, cardName))
   return partner === undefined ? [cardName] : [partner, cardName]
 }
 
@@ -117,7 +117,7 @@ export function DeckEditor({
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    return cards.filter((c) => {
+    return buildableCards().filter((c) => {
       if (typeFilter && !c.types.includes(typeFilter as CardDefinition['types'][number])) return false
       if (!q) return true
       return (
@@ -151,7 +151,7 @@ export function DeckEditor({
   const deckRows = useMemo(() => {
     const groups = new Map<Group, { name: string; n: number; def: CardDefinition | undefined }[]>()
     for (const [cardName, n] of [...counts].sort((a, b) => a[0].localeCompare(b[0]))) {
-      const def = byName.get(cardName)
+      const def = cardNamed(cardName)
       const g = def === undefined ? 'other' : groupOf(def)
       const row = { name: cardName, n, def }
       const existing = groups.get(g)
@@ -165,8 +165,8 @@ export function DeckEditor({
 
   const unknownNames = useMemo(() => {
     const names = new Set<string>()
-    for (const c of deck.cards) if (!byName.has(c)) names.add(c)
-    for (const c of deck.commanders) if (!byName.has(c)) names.add(c)
+    for (const c of deck.cards) if (cardNamed(c) === undefined) names.add(c)
+    for (const c of deck.commanders) if (cardNamed(c) === undefined) names.add(c)
     return [...names]
   }, [deck.cards, deck.commanders])
 
@@ -174,7 +174,7 @@ export function DeckEditor({
 
   const legality = useMemo(
     () =>
-      validateCommanderDeck({ commanders: deck.commanders, cards: deck.cards, size: DECK_SIZE }, registry),
+      validateCommanderDeck({ commanders: deck.commanders, cards: deck.cards, size: DECK_SIZE }, cardPool().registry),
     [deck.commanders, deck.cards],
   )
 
@@ -283,13 +283,13 @@ export function DeckEditor({
 
   // Stable, because `CardContextMenu` registers it as a window listener.
   const closeMenu = useCallback(() => setMenu(null), [])
-  const pickingDef = picking === null ? null : (byName.get(picking) ?? null)
+  const pickingDef = picking === null ? null : (cardNamed(picking) ?? null)
 
   const onDrop = (e: DragEvent) => {
     e.preventDefault()
     setDropActive(false)
     const dropped = e.dataTransfer.getData(DRAG_MIME)
-    if (dropped && byName.has(dropped)) addCard(dropped)
+    if (dropped && cardNamed(dropped) !== undefined) addCard(dropped)
   }
 
   return (
@@ -367,7 +367,7 @@ export function DeckEditor({
           <div className="db-search-row">
             <input
               className="db-search"
-              placeholder={`Search ${cards.length} cards…`}
+              placeholder={`Search ${buildableCards().length} cards…`}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
@@ -495,8 +495,8 @@ export function DeckEditor({
               <div
                 key={commander}
                 className="db-commander-slot"
-                {...hoverProps(byName.get(commander))}
-                {...menuProps(byName.get(commander), [
+                {...hoverProps(cardNamed(commander))}
+                {...menuProps(cardNamed(commander), [
                   { label: 'Clear commander', onSelect: () => toggleCommander(commander) },
                 ])}
               >
@@ -519,7 +519,7 @@ export function DeckEditor({
                   No commander — pick a legendary creature or planeswalker with ☆
                 </span>
               </div>
-            ) : deck.commanders.length === 1 && hasPartner(registry, deck.commanders[0]) ? (
+            ) : deck.commanders.length === 1 && hasPartner(cardPool().registry, deck.commanders[0]) ? (
               <p className="db-commander-hint muted">
                 {deck.commanders[0]} has Partner — ☆ another commander with Partner to add a second.
               </p>

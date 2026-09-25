@@ -3,7 +3,7 @@
  * playground scripts' `format.mjs`, used by the event log.
  */
 
-import type { CombatRestriction, GameEvent, ObjectId, PlayerId, Step, TargetRef } from 'engine'
+import type { CombatRestriction, GameEvent, ObjectId, PlayerId, Step, TargetRef } from 'engine/client'
 import type { SeatStatus } from 'protocol'
 
 export type NameOf = (id: ObjectId) => string

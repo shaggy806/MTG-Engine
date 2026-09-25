@@ -1,4 +1,4 @@
-import type { PlayerView } from 'engine'
+import type { PlayerView } from 'engine/client'
 import { STEP_LABEL, playerLabel, seatClassOf } from '../format.ts'
 import type { SeatStatus } from 'protocol'
 

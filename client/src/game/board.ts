@@ -14,7 +14,7 @@
  *    interchangeable".
  */
 
-import type { ObjectId, PlayerId, PlayerView, VisibleObject } from 'engine'
+import type { ObjectId, PlayerId, PlayerView, VisibleObject } from 'engine/client'
 
 export type Bucket = 'land' | 'creature' | 'planeswalker' | 'artifact' | 'enchantment'
 

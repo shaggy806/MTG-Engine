@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import type { ObjectId, PlayerView, TargetRef } from 'engine'
+import type { ObjectId, PlayerView, TargetRef } from 'engine/client'
 import { decisionGhostOf } from '../game/decisionSource.ts'
 import { describeTarget } from '../format.ts'
 import { CardTile } from './CardTile.tsx'

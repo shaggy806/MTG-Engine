@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { CardDefinition } from 'engine'
+import type { CardDefinition } from 'engine/client'
 import { resolveArtUrl } from '../ui/art.ts'
 import { fetchMorePrintings, fetchPrintings } from './printings.ts'
 import type { Printing, PrintingPage } from './printings.ts'

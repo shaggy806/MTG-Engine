@@ -12,7 +12,7 @@
  * starter deck as-is shouldn't require duplicating it into "my decks" first.
  */
 
-import { SAMPLE_DECKS, commandersOf } from 'engine'
+import { SAMPLE_DECKS, commandersOf } from 'engine/client'
 import type { SeatCommander } from 'protocol'
 
 export interface SavedDeck {

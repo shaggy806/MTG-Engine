@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { createPortal } from 'react-dom'
-import type { VisibleObject } from 'engine'
+import type { VisibleObject } from 'engine/client'
 import { CardTile } from './CardTile.tsx'
 import { KEYWORD_GLYPH, keywordLabel } from './abilityIcons.ts'
 import { useHoverPopover } from './useHoverPopover.ts'

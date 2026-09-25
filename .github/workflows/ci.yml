@@ -23,10 +23,14 @@ jobs:
       # In workspace order: server and client resolve engine and protocol
       # through their built dist/, so everything below needs this first.
       - run: npm run build
-      # The engine's prebuild regenerates cards/generated.ts; a diff here
-      # means a card was added without committing the regenerated barrel.
+      # The engine's prebuild regenerates cards/generated.ts, the card shards
+      # and their index; a diff or a new file here means a card was added
+      # without committing what the codegen wrote for it.
       - name: Generated files are committed
-        run: git diff --exit-code
+        run: |
+          git diff --exit-code
+          untracked=$(git ls-files --others --exclude-standard)
+          if [ -n "$untracked" ]; then echo "Uncommitted new files:"; echo "$untracked"; exit 1; fi
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test

@@ -15,12 +15,18 @@ import { defineConfig } from 'vite'
  *    picks it up (it's only added to `BUILTIN_CARDS` by the codegen).
  */
 const engineSrc = fileURLToPath(new URL('../engine/src/index.ts', import.meta.url))
+const engineClientSrc = fileURLToPath(new URL('../engine/src/client.ts', import.meta.url))
 const repoRoot = fileURLToPath(new URL('..', import.meta.url))
 
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    alias: { engine: engineSrc },
+    // `engine/client` first: an alias matches as a prefix, so `engine` alone
+    // would turn it into a path under index.ts.
+    alias: [
+      { find: 'engine/client', replacement: engineClientSrc },
+      { find: 'engine', replacement: engineSrc },
+    ],
     dedupe: ['react', 'react-dom'],
   },
   server: {

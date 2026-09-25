@@ -180,12 +180,21 @@ that one card is the reason the deck exists.
   keeps its 👑 beside the player's name (`PlayerPanel`'s `pp-monarch`, checked in 2- and
   4-player rooms).
 - **Server-side deck save and share** is still unscoped. Decks live in `localStorage`.
+- **The library and the deck builder load every card definition.** Both fetch all 32 card
+  shards (`client/src/cards/cardData.ts`): 2.5 MB, 450 kB gzipped at 5,400 cards, and growing
+  with the pool. They read only printed fields, each ability's text (colour identity) and the
+  tokens a card makes. A generated catalog of just those, sharded the same way, would be a
+  fraction of the size. The game page loads no definitions up front.
 
 ## Tooling / docs
 
 - **Refresh the snapshots.** The EDHREC ranking snapshots (`top-commander-cards.txt`,
   `top-commanders.txt`) and `edhrec-rank.ts` are frozen. Re-fetching them moves the roster, so
   do it on purpose.
+- **In dev, the library and the deck builder load every card as its own module.** Vite's dev
+  server doesn't bundle, so their 32 card shards arrive as ~5,600 requests and take 20-40 s to
+  open. The game and the lobby touch no card module. Emitting each shard as one bundled file in
+  the engine's build would fix it.
 - **CI's fuzzer reaches three quarters of the pool.** CI's 38 fixed seeds put 3,904 of the
   5,369 deckable cards in some deck. The other quarter is never fuzzed in CI, only locally,
   where 150 two-player seeds reach all but 46. Either raise CI's game counts (about 60

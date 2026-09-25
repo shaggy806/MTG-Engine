@@ -172,6 +172,14 @@ need restarting for an ordinary code change — only `mtg-server` actually chang
 reboot` does *not* deploy new code** — it just restarts whatever's already built on disk; always
 run `./deploy.sh` instead.
 
+The client build is several files, not one: the game's own script, the library and the deck
+builder as lazy chunks, and the card pool in 32 shards (see CLAUDE.md, "`cards/cardData.ts`").
+Each deploy replaces them under new hashed names. A tab left open across a deploy that then asks
+for a file it hadn't loaded yet gets `index.html` from Caddy's `try_files` fallback instead, which
+fails to load as a script. In a game that costs only extras (a history tooltip shows just the
+card's name, and a double-faced card in a zone viewer can't be turned over), and a library or deck
+builder caught mid-load offers a reload. Reloading the tab fixes either.
+
 ## Checking on it (SSH)
 
 The server carries an operator endpoint on **127.0.0.1:4010** (`STATUS_PORT` to move it). It is

@@ -1,5 +1,5 @@
-import { POISON_LETHAL } from 'engine'
-import type { ManaPool, PlayerId, PublicPlayerInfo } from 'engine'
+import { POISON_LETHAL } from 'engine/client'
+import type { ManaPool, PlayerId, PublicPlayerInfo } from 'engine/client'
 import { playerLabel } from '../format.ts'
 import type { SeatClass } from '../format.ts'
 import type { SeatStatus } from 'protocol'

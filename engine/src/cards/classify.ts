@@ -6,7 +6,9 @@
  * definition is shaped exactly like a card's (that's the point: `create-token`
  * resolves a name through the same `CardRegistry`), and the only record that
  * it *is* a token is which directory its file lives in — which the codegen
- * preserves as `TOKEN_CARDS`. A back face is likewise a fully-registered
+ * preserves as `TOKEN_CARDS`, and as bare names in `TOKEN_NAMES`. This module
+ * reads the names, so that a web page asking whether a definition is a token
+ * doesn't load every token to find out. A back face is likewise a fully-registered
  * definition; what marks it is that its own name isn't the first entry of its
  * `faces` list.
  *
@@ -17,13 +19,13 @@
  */
 
 import type { CardDefinition } from "./define.js";
-import { TOKEN_CARDS } from "./generated.js";
+import { TOKEN_NAMES } from "./generated-index.js";
 
-const TOKEN_NAMES: ReadonlySet<string> = new Set(TOKEN_CARDS.map((c) => c.name));
+const TOKENS: ReadonlySet<string> = new Set(TOKEN_NAMES);
 
 /** True for a definition authored under `cards/tokens/` — a token, not a card. */
 export function isTokenCard(def: CardDefinition): boolean {
-  return TOKEN_NAMES.has(def.name);
+  return TOKENS.has(def.name);
 }
 
 /**

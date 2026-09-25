@@ -1,6 +1,6 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import { CardImage } from '../ui/CardImage.tsx'
-import { findCardDef } from '../ui/defToVisible.ts'
+import { cardPool } from '../cards/cardData.ts'
 import {
   getArtCacheVersion,
   isArtBlocked,
@@ -119,7 +119,7 @@ export function ReplacementReview({
             </span>
             <div className="rr-option-row">
               {shown.map((option, i) => {
-                const def = findCardDef(option.name)
+                const def = cardPool().byName.get(option.name) ?? null
                 const chosen = option.name === current.to
                 return (
                   <button

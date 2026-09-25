@@ -145,3 +145,33 @@ h3 {
   border-color: var(--accent);
   color: var(--accent);
 }
+
+/* The library's and the deck builder's loading and load-failed states
+   (cards/PoolLoading.tsx) — shared by both pages, hence here. Loading fades
+   in after a beat, so a load served from the browser's cache never flashes
+   it; a failure shows at once. */
+.pool-status {
+  min-height: 100vh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.75em;
+  color: var(--muted);
+  font-size: 1.1rem;
+}
+.pool-status-loading {
+  animation: pool-status-in 0.3s ease 0.25s both;
+}
+.pool-status p {
+  margin: 0;
+}
+@keyframes pool-status-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pool-status-loading {
+    animation: none;
+  }
+}

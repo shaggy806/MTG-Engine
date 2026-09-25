@@ -1,17 +1,24 @@
-import { useState } from 'react'
-import type { ObjectId, VisibleObject } from 'engine'
+import { useEffect, useState } from 'react'
+import type { CardDefinition, ObjectId, VisibleObject } from 'engine/client'
 import { CardTile } from './CardTile.tsx'
-import { defToVisible, findCardDef } from './defToVisible.ts'
+import { defToVisible } from './defToVisible.ts'
+import { requestCards, useCardData } from '../cards/cardData.ts'
 
 /** The face a double-faced card isn't showing, as a tile of its printed
  * values — `null` for a one-faced card, and for an adventure, whose two
- * halves share one printed face, so there's nothing to turn over to. */
-function otherFaceOf(obj: VisibleObject): VisibleObject | null {
+ * halves share one printed face, so there's nothing to turn over to. Also
+ * `null` until both faces' definitions have loaded (`lookup` answers
+ * `undefined` before then), so the turn-over button appears once they have. */
+function otherFaceOf(
+  obj: VisibleObject,
+  lookup: (name: string) => CardDefinition | null | undefined,
+): VisibleObject | null {
   if (!obj.faces || obj.faces.length < 2) return null
-  if (findCardDef(obj.faces[0])?.adventure) return null
+  const front = lookup(obj.faces[0])
+  if (front === undefined || front?.adventure) return null
   const current = obj.faceName ?? obj.cardName
   const otherName = obj.faces.find((name) => name !== current)
-  const other = otherName === undefined ? null : findCardDef(otherName)
+  const other = otherName === undefined ? null : lookup(otherName)
   if (!other) return null
   // `defToVisible` titles a multi-face definition by its front face, so name
   // the face this is. A chosen printing names the whole card by id, so its
@@ -97,6 +104,21 @@ export function ZoneViewer({
       return next
     })
 
+  // Both faces of every double-faced card shown, for its turn-over button:
+  // fetched as the viewer opens, from the shards those names are in
+  // (`cards/cardData.ts`). Keyed by the names, not the array, so a re-render
+  // showing the same cards doesn't ask again.
+  const lookup = useCardData()
+  const faceNames = ids
+    .flatMap((id) => {
+      const faces = resolve(id)?.faces
+      return faces && faces.length > 1 ? faces : []
+    })
+    .join('\n')
+  useEffect(() => {
+    if (faceNames.length > 0) requestCards(faceNames.split('\n'))
+  }, [faceNames])
+
   const toggle = (id: ObjectId) => {
     if (!selection || !selection.eligible.includes(id)) return
     setPicked((cur) => {
@@ -160,7 +182,7 @@ export function ZoneViewer({
             const castHere =
               !selection && castable && castable.ids.includes(obj.id) ? castable : null
             const variants = castHere?.variants?.(obj.id) ?? []
-            const other = otherFaceOf(obj)
+            const other = otherFaceOf(obj, lookup)
             const showOther = other !== null && flipped.has(obj.id)
             return (
               <div key={obj.id} className="zone-viewer-card">
