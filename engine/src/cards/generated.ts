@@ -4091,6 +4091,7 @@ import _poolSigiledStarfish from "./pool/sigiled-starfish.js";
 import _poolSignInBlood from "./pool/sign-in-blood.js";
 import _poolSignpostScarecrow from "./pool/signpost-scarecrow.js";
 import _poolSilasRennSeekerAdept from "./pool/silas-renn-seeker-adept.js";
+import _poolSilence from "./pool/silence.js";
 import _poolSilentArtisan from "./pool/silent-artisan.js";
 import _poolSilentAttendant from "./pool/silent-attendant.js";
 import _poolSilentClearing from "./pool/silent-clearing.js";
@@ -9616,6 +9617,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSignInBlood,
   _poolSignpostScarecrow,
   _poolSilasRennSeekerAdept,
+  _poolSilence,
   _poolSilentArtisan,
   _poolSilentAttendant,
   _poolSilentClearing,

@@ -142,7 +142,6 @@ that one card is the reason the deck exists.
     (Child of Alara).
   - `otherOnly` also strips the source from an ability's target check (Dina, Essence Brewer).
   - A granted escape (Underworld Breach) is never offered for a card with its own escape.
-  - A player who can't cast spells can still suspend (Silence).
   - A must-attack creature left out of a declaration is sent at the first legal defender, not
     its controller's choice.
   - `extort()` gains the life it *meant* to drain, not the life actually lost.

@@ -4732,6 +4732,11 @@ export class Game {
     }
     const def = this.registry.get(this.state.objects[cardId].cardName);
     if (def.suspend === null) return `${def.name} does not have suspend`;
+    // Only a card its owner could begin to cast can be suspended (rule
+    // 702.62a): Silence, split second and a card's own casting condition
+    // stop it as they stop the cast.
+    const prohibited = this.whyProhibitedFromCasting(player, cardId, def);
+    if (prohibited !== null) return prohibited;
     if (!def.types.includes("instant") && !def.keywords.includes("flash")) {
       const timing = this.whyNotSorcerySpeed(player, `suspend ${def.name}`);
       if (timing !== null) return timing;

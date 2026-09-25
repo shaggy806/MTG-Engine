@@ -125,6 +125,7 @@ import _poolScrollThief from "../pool/scroll-thief.js";
 import _poolSedgeScorpion from "../pool/sedge-scorpion.js";
 import _poolShelteringBoughs from "../pool/sheltering-boughs.js";
 import _poolShockingGrasp from "../pool/shocking-grasp.js";
+import _poolSilence from "../pool/silence.js";
 import _poolSinisterHideout from "../pool/sinister-hideout.js";
 import _poolSinisterMonolith from "../pool/sinister-monolith.js";
 import _poolSisayWeatherlightCaptain from "../pool/sisay-weatherlight-captain.js";
@@ -287,6 +288,7 @@ const shard: CardShard = {
     _poolSedgeScorpion,
     _poolShelteringBoughs,
     _poolShockingGrasp,
+    _poolSilence,
     _poolSinisterHideout,
     _poolSinisterMonolith,
     _poolSisayWeatherlightCaptain,
