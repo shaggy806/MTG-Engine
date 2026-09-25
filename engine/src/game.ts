@@ -10637,6 +10637,23 @@ export class Game {
       },
       storm: (sourceId) => this.stormCopy(sourceId),
       cascade: (player, sourceId) => this.cascade(player, sourceId),
+      revealUntil: (owner, spec) => this.revealUntil(owner, controller, spec),
+      placeRevealed: (owner, revealed, rest, exiled) => this.placeRevealed(owner, revealed, rest, exiled),
+      withTargets: (newTargets) =>
+        this.makeResolutionContext(
+          source,
+          controller,
+          newTargets,
+          x,
+          triggerValue,
+          triggerObject,
+          stackMultiplier,
+          resolutionCount,
+          // Each is where it was found, for last-known information.
+          newTargets.map((t) => (t.kind === "object" ? (this.state.objects[t.object]?.zone ?? null) : null)),
+          refs,
+          opts,
+        ),
       copySpell: (target) => this.copySpellByEffect(controller, target),
       additionalCombat: (afterThisPhase) => {
         if (afterThisPhase === undefined) this.state.extraCombats += 1;
@@ -12184,6 +12201,88 @@ export class Game {
     );
     for (const id of shuffle(toBottom, this.rng)) this.moveObject(id, "library");
     this.state.rngState = this.rng.seed;
+  }
+
+  /**
+   * The finding half of a `reveal-until`: reveal (or exile, face up, one at
+   * a time) `owner`'s library from the top until a card matches the spec's
+   * filter, then put that card where `put` says. Revealed cards are shown to
+   * every player (rule 701.16); exiled ones are public anyway.
+   */
+  private revealUntil(
+    owner: PlayerId,
+    controller: PlayerId,
+    spec: Extract<EffectSpec, { kind: "reveal-until" }>,
+  ): { readonly revealed: readonly ObjectId[]; readonly hit: ObjectId | null } {
+    const library = this.state.zones.perPlayer[owner].library;
+    const revealed: ObjectId[] = [];
+    let hit: ObjectId | null = null;
+    const matches = (id: ObjectId): boolean =>
+      matchesFilter(this.state, this.registry, id, spec.filter, { you: controller });
+    if (spec.exile === true) {
+      while (library.length > 0) {
+        const top = library[0];
+        this.moveObject(top, "exile");
+        revealed.push(top);
+        if (matches(top)) {
+          hit = top;
+          break;
+        }
+      }
+    } else {
+      for (const id of library) {
+        revealed.push(id);
+        if (matches(id)) {
+          hit = id;
+          break;
+        }
+      }
+      this.revealCards(owner, revealed, "library");
+    }
+    if (hit !== null && spec.put !== undefined) {
+      this.moveObject(hit, spec.put, spec.put === "battlefield" && spec.tapped === true ? { tapped: true } : {});
+    }
+    return { revealed, hit };
+  }
+
+  /** The placing half of a `reveal-until`: every card it revealed that is
+   * still where it was revealed — in `owner`'s library, or in exile — goes
+   * where `rest` says. */
+  private placeRevealed(
+    owner: PlayerId,
+    revealed: readonly ObjectId[],
+    rest: Extract<EffectSpec, { kind: "reveal-until" }>["rest"],
+    exiled: boolean,
+  ): void {
+    const zone: ZoneType = exiled ? "exile" : "library";
+    const still = revealed.filter((id) => this.state.objects[id]?.zone === zone);
+    switch (rest) {
+      case "stay":
+        return;
+      case "graveyard":
+        this.withGraveyardEnterBatch(() => {
+          for (const id of still) this.moveObject(id, "graveyard");
+        });
+        return;
+      case "bottom-random": {
+        const order = shuffle(still, this.rng);
+        this.state.rngState = this.rng.seed;
+        if (exiled) {
+          for (const id of order) this.moveObject(id, "library");
+          return;
+        }
+        const library = this.state.zones.perPlayer[owner].library;
+        const moving = new Set(order);
+        const kept = library.filter((id) => !moving.has(id));
+        library.length = 0;
+        library.push(...kept, ...order);
+        return;
+      }
+      case "shuffle":
+        if (exiled) for (const id of still) this.moveObject(id, "library");
+        this.shuffleLibraryOf(owner);
+        return;
+    }
   }
 
   /** Twincast (rule 707.10): copy the instant/sorcery spell `target`. */

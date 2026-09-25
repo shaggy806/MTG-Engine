@@ -87,7 +87,6 @@ describe("a multi-face card's identity is every face's (rule 903.4d)", () => {
     .register(
       defineCard({
         name: DOUBLE_BACK,
-        manaCost: null,
         colors: ["B"],
         types: ["creature"],
         subtypes: ["Vampire", "Knight"],

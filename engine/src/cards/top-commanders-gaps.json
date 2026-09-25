@@ -87,7 +87,8 @@
   "static:grant-to-cards-outside-battlefield",
   "bug:color-identity-back-face",
   "trigger:saga-final-chapter",
-  "bug:saga-completion-sacrifice"
+  "bug:saga-completion-sacrifice",
+  "effect:reveal-until"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

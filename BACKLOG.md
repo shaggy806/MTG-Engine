@@ -85,19 +85,22 @@ that one card is the reason the deck exists.
   need `decision:choose-number`); Iroh, Grand Lotus and The Master of Keys (the
   `grantsToGraveyard` static's flashback and escape) and Jodah, Archmage Eternal
   (`alternativeCostForSpells`); Narci, Fable Singer (the `chapter-resolves` trigger's
-  `finalOnly`, and a completed Saga's sacrifice) — confirm each at `card:lookup`.
+  `finalOnly`, and a completed Saga's sacrifice); Esika, God of the Tree (its back face's
+  `reveal-until`, and a colour identity that now reads it), Umbris, Fear Manifest and Hei Bai,
+  Forest Guardian (`reveal-until`) — confirm each at `card:lookup`.
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first
   ten, engine-only, with the commanders each fully unblocks:
-  `effect:reveal-until` (+3), `effect:amount-aggregate` (+2), `effect:missing-tokens` (+1),
+  `effect:amount-aggregate` (+2), `effect:missing-tokens` (+1),
   `effect:look-and-choose-leftover` (+1), `cost:mana-ability-complex-costs` (+2),
   `keyword:exhaust` (+1), `zone:impulse-permission-options` (+2),
   `effect:mana-ability-side-effects` (+2), `effect:delayed-trigger-extensions` (+2),
-  `trigger:discards-extensions` (+1).
+  `trigger:discards-extensions` (+1), `bug:zone-change-object-identity` (+4).
 - **Most-needed features overall.** `zone:visibility-extensions`,
   `static:grant-abilities-to-spells` and `bug:zone-change-object-identity` (13 each),
-  `effect:reveal-until` (12). Live numbers come from `cmdrs:gaps`.
+  `effect:copy-spell-extensions`, `effect:copy-exceptions` and
+  `effect:delayed-trigger-extensions` (11 each). Live numbers come from `cmdrs:gaps`.
 - **UI-bound features.** These need a new client decision and a browser check:
   `effect:may-sacrifice-then` (13), `decision:copy-new-targets` (12), `decision:choose-permanent`
   (11), `effect:enter-attacking`, `decision:free-cast-choices`, `effect:attach-extensions`,

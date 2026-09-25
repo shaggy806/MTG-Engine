@@ -427,6 +427,12 @@ export function substituteChosenCreatureType(spec: EffectSpec, creatureType: str
   return walk(spec) as EffectSpec;
 }
 
+/** A `reveal-until` waiting for its `then` to finish — see its `progress`. */
+export interface RevealUntilProgress {
+  readonly owner: PlayerId;
+  readonly revealed: readonly ObjectId[];
+}
+
 /** Which players an "each" / mass effect reaches. */
 /**
  * What a spell or ability did "this way" — the cards it made players
@@ -1330,6 +1336,48 @@ export type EffectSpec =
       readonly kind: "cascade";
     }
   | {
+      /**
+       * Reveal cards from the top of a library until one matches `filter` —
+       * a generalised cascade (rule 701.16): The Prismatic Bridge's "reveal
+       * cards from the top of your library until you reveal a creature or
+       * planeswalker card. Put that card onto the battlefield and the rest on
+       * the bottom of your library in a random order", Umbris's "target
+       * opponent exiles cards from the top of their library until they exile
+       * a land card". With nothing matching, every card is revealed and all
+       * of them are "the rest".
+       */
+      readonly kind: "reveal-until";
+      /** Whose library: the effect's controller's (default), or the player
+       * in this target slot. */
+      readonly whose?: number;
+      /** What stops it, matched against each card as it's revealed — an `{
+       * amount }` compare is bound as the effect applies ("a nonland card
+       * with lesser mana value"). */
+      readonly filter: CardFilter;
+      /** Exile each card, face up, as it goes, rather than reveal it. */
+      readonly exile?: boolean;
+      /** Where the card found goes. Omitted, it stays with the rest — unless
+       * `then` moves it. */
+      readonly put?: "battlefield" | "hand" | "graveyard";
+      /** A card put onto the battlefield enters tapped. */
+      readonly tapped?: boolean;
+      /** Applied once the card found is placed, with it as target 0 — "you
+       * may put that card onto the battlefield" is a `may` of a
+       * `put-onto-battlefield` of 0. Skipped when nothing matched. */
+      readonly then?: EffectSpec;
+      /**
+       * What happens to every revealed card still where it was revealed —
+       * the rest, and the card found if nothing moved it: `"bottom-random"`
+       * (the bottom of the library in a random order), `"graveyard"`,
+       * `"shuffle"` (into the library, which is shuffled — "then shuffle")
+       * or `"stay"` (exiled cards stay exiled; revealed ones stay on top).
+       */
+      readonly rest: "bottom-random" | "graveyard" | "shuffle" | "stay";
+      /** Set only on the copy parked across a decision `then` raised: what
+       * was revealed, so the rest can still be placed. */
+      readonly progress?: RevealUntilProgress;
+    }
+  | {
       /** Copy target instant/sorcery spell on the stack (Twincast — rule
        * 707.10 / ROADMAP Phase 8). The copy keeps the original's targets. */
       readonly kind: "copy-spell";
@@ -2147,6 +2195,25 @@ export interface EffectApi {
   /** How many resolutions are parked right now — see
    * {@link resumeAfterDecisions}. */
   parkedCount(): number;
+  /** Reveal (or, with `exile`, exile) the top of `owner`'s library until a
+   * card matches `filter`, and put that card where `put` says — see the
+   * `"reveal-until"` {@link EffectSpec}. Returns every card revealed, in
+   * order, and the card found (the last of them), or `null`. */
+  revealUntil(
+    owner: PlayerId,
+    spec: Extract<EffectSpec, { kind: "reveal-until" }>,
+  ): { readonly revealed: readonly ObjectId[]; readonly hit: ObjectId | null };
+  /** Place what a `reveal-until` revealed that is still where it was
+   * revealed — see its `rest`. */
+  placeRevealed(
+    owner: PlayerId,
+    revealed: readonly ObjectId[],
+    rest: Extract<EffectSpec, { kind: "reveal-until" }>["rest"],
+    exiled: boolean,
+  ): void;
+  /** This context with other targets — a step applied to cards the
+   * resolution found rather than chose (a `reveal-until`'s `then`). */
+  withTargets(targets: readonly TargetRef[]): ResolutionContext;
   /** Exile `targets`, then return them to the battlefield together — at once,
    * or linked to a delayed return — see the `"flicker"` {@link EffectSpec}.
    * `fromSource` marks a target that is the ability's own source, which is
@@ -2599,6 +2666,38 @@ function applyEachPlayerMay(
       return;
     }
   }
+}
+
+/**
+ * A `"reveal-until"`: reveal, place the card found, apply `then` to it —
+ * which may stop to ask something, parking the rest as a copy carrying
+ * `progress` — then place the rest.
+ */
+function applyRevealUntil(
+  spec: Extract<EffectSpec, { kind: "reveal-until" }>,
+  ctx: ResolutionContext,
+): void {
+  let progress = spec.progress;
+  if (progress === undefined) {
+    let owner: PlayerId = ctx.controller;
+    if (spec.whose !== undefined) {
+      const ref = ctx.targets[spec.whose];
+      if (ref === undefined || ref.kind !== "player") return;
+      owner = ref.player;
+    }
+    const found = ctx.revealUntil(owner, spec);
+    progress = { owner, revealed: found.revealed };
+    if (spec.then !== undefined && found.hit !== null) {
+      const parked = ctx.parkedCount();
+      const pendingBefore = ctx.decisionPending();
+      applyEffectSpec(spec.then, ctx.withTargets([{ kind: "object", object: found.hit }]));
+      if (!pendingBefore && ctx.decisionPending()) {
+        ctx.resumeAfterDecisions({ ...spec, progress }, parked);
+        return;
+      }
+    }
+  }
+  ctx.placeRevealed(progress.owner, progress.revealed, spec.rest, spec.exile === true);
 }
 
 /** How many flips "flip a coin until you lose a flip" makes at most — a
@@ -3402,6 +3501,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     case "cascade":
       ctx.cascade(ctx.controller, ctx.source);
+      return;
+    case "reveal-until":
+      applyRevealUntil(spec, ctx);
       return;
     case "copy-spell": {
       const target = ctx.targets[spec.target];
