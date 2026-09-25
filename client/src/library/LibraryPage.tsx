@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import type { FocusEvent, MouseEvent } from 'react'
+import { createPortal } from 'react-dom'
 import type { CardDefinition, CardType, Color } from 'engine'
 import {
   BUILTIN_CARDS,
@@ -7,6 +9,7 @@ import {
   isTokenCard,
   manaValue,
   parseManaCost,
+  tokensCreatedBy,
 } from 'engine'
 import { CardImage } from '../ui/CardImage.tsx'
 import { Symbols } from '../ui/Symbols.tsx'
@@ -146,6 +149,22 @@ const ENTRIES: readonly Entry[] = BUILTIN_CARDS.filter(isCardFront)
   .sort((a, b) => a.def.name.localeCompare(b.def.name))
 
 const CARD_COUNT = ENTRIES.filter((e) => !e.isToken).length
+
+/** The tokens a card makes, either face — resolved to their definitions, in
+ * the order its text names them. */
+function tokensOf(entry: Entry): readonly CardDefinition[] {
+  const names = [...tokensCreatedBy(entry.def), ...(entry.other ? tokensCreatedBy(entry.other) : [])]
+  return [...new Set(names)].flatMap((name) => {
+    const def = BY_NAME.get(name)
+    return def === undefined ? [] : [def]
+  })
+}
+
+/** A token's registry name as a player would say it: "Imp Token (Judith)"
+ * is an Imp, "3/3 Beast Token" a 3/3 Beast. */
+function tokenLabel(def: CardDefinition): string {
+  return def.name.replace(/ Token\b.*$/, '')
+}
 
 // Same `?card=Name` deep-link convention the card lab uses (see
 // `client/src/lab/CardLab.tsx`'s cardParam/setCardParam) so a specific card
@@ -485,6 +504,8 @@ function CardOverlay({
 }) {
   const [flipped, setFlipped] = useState(false)
   const shown = flipped && entry.other ? entry.other : entry.def
+  const tokens = useMemo(() => tokensOf(entry), [entry])
+  const [preview, setPreview] = useState<PreviewTarget | null>(null)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -504,7 +525,10 @@ function CardOverlay({
       aria-label={entry.def.name}
       onClick={onClose}
     >
-      <div className="lib-overlay-box" onClick={(e) => e.stopPropagation()}>
+      <div
+        className={`lib-overlay-box${tokens.length > 0 ? ' has-tokens' : ''}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <button type="button" className="lib-overlay-close" onClick={onClose} aria-label="Close">
           ×
         </button>
@@ -549,8 +573,87 @@ function CardOverlay({
             </div>
           ) : null}
         </div>
+
+        {tokens.length > 0 ? (
+          <aside className="lib-overlay-tokens" aria-label="Tokens this card makes">
+            <h3>Tokens</h3>
+            <ul>
+              {tokens.map((token) => (
+                <li key={token.name}>
+                  <button
+                    type="button"
+                    className="lib-token-name"
+                    onMouseEnter={(e: MouseEvent<HTMLButtonElement>) =>
+                      setPreview({ def: token, anchor: e.currentTarget.getBoundingClientRect() })
+                    }
+                    onMouseLeave={() => setPreview(null)}
+                    onFocus={(e: FocusEvent<HTMLButtonElement>) =>
+                      setPreview({ def: token, anchor: e.currentTarget.getBoundingClientRect() })
+                    }
+                    onBlur={() => setPreview(null)}
+                  >
+                    <span>{tokenLabel(token)}</span>
+                    <span className="muted lib-token-type">
+                      {token.power !== null && token.toughness !== null ? `${token.power}/${token.toughness} ` : ''}
+                      {typeLineOf(token)}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </aside>
+        ) : null}
       </div>
+      <TokenPreview target={preview} />
     </div>
+  )
+}
+
+interface PreviewTarget {
+  readonly def: CardDefinition
+  /** The hovered or focused name, in viewport coordinates. */
+  readonly anchor: DOMRect
+}
+
+/** Width and height of the preview — `.lib-token-preview` in library.css. */
+const PREVIEW_W = 240
+const PREVIEW_H = 336
+const PREVIEW_GAP = 16
+
+/**
+ * A token's face, floating beside the name being hovered. Portalled to
+ * `document.body` and placed from JS, like `CardHoverPreview`: the overlay
+ * box is a scroll container, so a child would be clipped.
+ *
+ * Anchored to the name rather than the pointer, and to its *left* first: the
+ * token list is the right-hand column, so a preview beside the pointer sat on
+ * top of the very names you'd move to next. With no room there (the one-column
+ * phone layout) it goes to the right, and failing that above or below the
+ * name. Always clamped inside the viewport.
+ */
+function TokenPreview({ target }: { readonly target: PreviewTarget | null }) {
+  if (target === null) return null
+  const a = target.anchor
+  const clampX = (x: number) => Math.min(Math.max(PREVIEW_GAP, x), window.innerWidth - PREVIEW_W - PREVIEW_GAP)
+  const clampY = (y: number) => Math.min(Math.max(PREVIEW_GAP, y), window.innerHeight - PREVIEW_H - PREVIEW_GAP)
+  let left: number
+  let top: number
+  if (a.left - PREVIEW_GAP - PREVIEW_W >= PREVIEW_GAP) {
+    left = a.left - PREVIEW_GAP - PREVIEW_W
+    top = clampY(a.top + a.height / 2 - PREVIEW_H / 2)
+  } else if (a.right + PREVIEW_GAP + PREVIEW_W <= window.innerWidth - PREVIEW_GAP) {
+    left = a.right + PREVIEW_GAP
+    top = clampY(a.top + a.height / 2 - PREVIEW_H / 2)
+  } else {
+    left = clampX(a.left + a.width / 2 - PREVIEW_W / 2)
+    const above = a.top - PREVIEW_GAP - PREVIEW_H
+    top = above >= PREVIEW_GAP ? above : clampY(a.bottom + PREVIEW_GAP)
+  }
+  return createPortal(
+    <div className="lib-token-preview" style={{ left, top }} aria-hidden="true">
+      <CardImage def={target.def} />
+    </div>,
+    document.body,
   )
 }
 

@@ -46,3 +46,31 @@ export function isCardFront(def: CardDefinition): boolean {
 export function isDeckableCard(def: CardDefinition): boolean {
   return !isTokenCard(def) && isCardFront(def);
 }
+
+/**
+ * The tokens a card can make, by registry name, in the order its text first
+ * names them: every `create-token` anywhere in its abilities, effects and
+ * modes (a granted ability's too), and the Army an `amass` makes. Found by
+ * walking the definition's plain data, so an imperative `resolve` hatch is
+ * invisible to it. Token *copies* of a permanent (`create-token-copy`,
+ * populate, encore) name no token of their own and aren't listed.
+ */
+export function tokensCreatedBy(def: CardDefinition): readonly string[] {
+  const found: string[] = [];
+  const add = (name: string): void => {
+    if (!found.includes(name)) found.push(name);
+  };
+  const walk = (value: unknown): void => {
+    if (Array.isArray(value)) {
+      for (const item of value) walk(item);
+      return;
+    }
+    if (value === null || typeof value !== "object") return;
+    const node = value as Record<string, unknown>;
+    if (node.kind === "create-token" && typeof node.token === "string") add(node.token);
+    if (node.kind === "amass") add("Army Token");
+    for (const child of Object.values(node)) walk(child);
+  };
+  walk(def);
+  return found;
+}

@@ -24,7 +24,9 @@
   background: var(--panel-2);
 }
 
-.card-image img {
+/* The face itself, a direct child — not the mana-symbol images a fallback
+   face sets inline in its text. */
+.card-image > img {
   display: block;
   width: 100%;
   height: 100%;

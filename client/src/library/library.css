@@ -387,6 +387,69 @@
   padding: 4px 12px;
 }
 
+/* The tokens a card makes, as a narrow third column. Only the names live
+   here; hovering one floats its face beside it (.lib-token-preview), so the
+   panel stays short however many tokens a card makes. */
+.lib-overlay-box.has-tokens {
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr) minmax(0, 0.5fr);
+  width: min(1120px, 100%);
+}
+.lib-overlay-box.has-tokens .lib-overlay-text {
+  padding-right: 0;
+}
+.lib-overlay-tokens {
+  min-width: 0;
+  padding-top: 26px; /* clear of the close button */
+  border-left: 1px solid var(--border);
+  padding-left: clamp(12px, 1.6vw, 20px);
+}
+.lib-overlay-tokens h3 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.lib-overlay-tokens ul {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lib-token-name {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  width: 100%;
+  padding: 6px 8px;
+  text-align: left;
+  font-size: 13px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: default;
+}
+.lib-token-name:hover,
+.lib-token-name:focus-visible {
+  background: var(--panel-2, rgba(255, 255, 255, 0.05));
+  border-color: var(--border);
+}
+.lib-token-type {
+  font-size: 11px;
+  text-transform: capitalize;
+}
+.lib-token-preview {
+  position: fixed;
+  z-index: 70;
+  width: 240px;
+  pointer-events: none;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.55));
+}
+
 /* One column once the two won't both fit: the card face goes on top, capped
    so it can't push the text off a short viewport. */
 @media (max-width: 720px) {
@@ -399,6 +462,15 @@
   }
   .lib-overlay-text {
     padding-right: 0;
+  }
+  .lib-overlay-box.has-tokens {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .lib-overlay-tokens {
+    padding-left: 0;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
   }
   .lib-header-top {
     flex-wrap: wrap;
