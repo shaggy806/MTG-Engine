@@ -10,11 +10,7 @@ export default defineCard({
     "{T}, Sacrifice Tranquil Thicket: Add {G}.\n" +
     "Cycling {G}",
   activated: [
-    addManaAbility({
-      mana: "G",
-      sacrifice: "self",
-      text: "{T}, Sacrifice Tranquil Thicket: Add {G}.",
-    }),
+    addManaAbility({ mana: "G", text: "{T}: Add {G}." }),
   ],
   static: [entersTappedStatic("Tranquil Thicket")],
 });

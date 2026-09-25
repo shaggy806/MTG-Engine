@@ -9,13 +9,9 @@
  *   bonus is gone the moment Ravos is.
  * - "At the beginning of your upkeep, you may return target creature card
  *   from your graveyard to your hand." — *your* upkeep, *your* graveyard,
- *   *creature* cards only, and *may*.
- *
- * Fidelity note: "target" is modelled as a resolution-time choice (the pool's
- * standing idiom for a your-graveyard→hand return — Eternal Witness, Buried
- * Ruin, Kolaghan's Command), because the engine has no effect that moves a
- * *targeted* graveyard card to a hand. `fires with an empty graveyard` below
- * pins the one divergence that is visible from outside the card.
+ *   *creature* cards only, and *may*. The card is a *target*, chosen as the
+ *   trigger goes on the stack — so with no creature card there the ability
+ *   never goes on the stack at all (rule 603.3d).
  */
 import { describe, expect, it } from "vitest";
 
@@ -207,11 +203,8 @@ describe("Ravos — at the beginning of your upkeep", () => {
       bury(g, "Glorious Anthem", A);
     });
 
-    expect(game.state.awaiting?.kind).toBe("choose-modes");
-    game.dispatch({ type: "choose-modes", player: A, modes: [0] });
-    game.advanceUntil(quiet);
-
-    // Saying yes with nothing eligible returns nothing at all.
+    // No creature card to target: nothing to ask, nothing returned.
+    expect(game.state.awaiting).toBeNull();
     expect(graveyardOf(game, A)).toHaveLength(2);
     expect(game.handOf(A).some((i) => game.state.objects[i].cardName === "Lightning Bolt")).toBe(
       false,
@@ -235,26 +228,16 @@ describe("Ravos — at the beginning of your upkeep", () => {
     expect(game.handOf(A).some((i) => game.state.objects[i].cardName === "Craw Wurm")).toBe(false);
   });
 
-  it("returns exactly one of several creature cards, the one you pick", () => {
+  it("returns exactly one of several creature cards, the one you target", () => {
     const game = mkGame();
-    toUpkeepQuestion(game, (g) => {
-      bury(g, "Grizzly Bears", A);
-      bury(g, "Craw Wurm", A);
-    });
-
-    expect(game.state.awaiting?.kind).toBe("choose-modes");
+    game.advanceUntil(mainPhaseOf(1, A));
+    spawn(game, RAVOS, A);
+    bury(game, "Grizzly Bears", A);
+    const wurm = bury(game, "Craw Wurm", A);
+    game.advanceUntil(awaitingOf("choose-targets", A));
+    game.dispatch({ type: "choose-targets", player: A, targets: [{ kind: "object", object: wurm }] });
+    game.advanceUntil(awaitingOf("choose-modes", A));
     game.dispatch({ type: "choose-modes", player: A, modes: [0] });
-    game.advanceUntil(awaitingOf("choose-from-zone", A));
-
-    const awaiting = game.state.awaiting;
-    if (awaiting === null || awaiting.kind !== "choose-from-zone") {
-      throw new Error("expected a choose-from-zone decision");
-    }
-    const wurm = awaiting.eligible.find(
-      (id) => game.state.objects[id].cardName === "Craw Wurm",
-    );
-    if (wurm === undefined) throw new Error("Craw Wurm isn't eligible");
-    game.dispatch({ type: "choose-from-zone", player: A, chosen: [wurm] });
     game.advanceUntil(quiet);
 
     expect(game.handOf(A).some((i) => game.state.objects[i].cardName === "Craw Wurm")).toBe(true);
@@ -307,22 +290,14 @@ describe("Ravos — at the beginning of your upkeep", () => {
     expect(graveyardOf(game, A)).toHaveLength(1);
   });
 
-  it("fires even with an empty graveyard — the one divergence from 'target'", () => {
-    // Printed, the ability targets, so with no creature card in the graveyard
-    // rule 603.3d keeps it off the stack entirely. Modelled non-targeted, it
-    // triggers and asks a question that can do nothing. Pinned here so the
-    // divergence is a decision on the record rather than a surprise.
+  it("asks nothing with an empty graveyard — no target, no ability (rule 603.3d)", () => {
     const game = mkGame();
-    const { from } = toUpkeepQuestion(game, () => {
+    toUpkeepQuestion(game, () => {
       /* nothing in any graveyard */
     });
 
     expect(graveyardOf(game, A)).toHaveLength(0);
-    expect(ravosTriggers(game, from)).toBe(1);
-    expect(game.state.awaiting?.kind).toBe("choose-modes");
-
-    game.dispatch({ type: "choose-modes", player: A, modes: [0] });
-    game.advanceUntil(quiet);
-    expect(graveyardOf(game, A)).toHaveLength(0);
+    expect(game.state.awaiting).toBeNull();
+    expect(game.state.turn.number).toBe(3);
   });
 });

@@ -22,6 +22,7 @@ export default defineCard({
         destination: "hand",
         min: 0,
         max: 1,
+        reveal: true,
       },
       resolve: null,
       text:

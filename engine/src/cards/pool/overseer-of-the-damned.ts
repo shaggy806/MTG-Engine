@@ -17,7 +17,9 @@ export default defineCard({
   triggered: [
     {
       trigger: { on: "enters-battlefield", who: "self" },
-      targets: [{ kind: "optional", of: "creature" }],
+      // "You may destroy target creature": a target has to be chosen if
+      // there is one (rule 603.3d) — the "may" is at resolution.
+      targets: ["creature"],
       effect: {
         kind: "may",
         prompt: "Destroy the targeted creature?",

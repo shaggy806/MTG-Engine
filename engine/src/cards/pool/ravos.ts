@@ -41,16 +41,11 @@ export default defineCard({
   triggered: [
     {
       trigger: { on: "step-begins", step: "upkeep", who: "you" },
-      targets: [],
+      targets: [{ kind: "card-in-graveyard", whose: "you", filter: { type: "creature" } }],
       effect: {
         kind: "may",
-        prompt: "Return a creature card from your graveyard to your hand?",
-        effect: {
-          kind: "return-from-graveyard",
-          filter: { type: "creature" },
-          destination: "hand",
-          count: 1,
-        },
+        prompt: "Return the target creature card to your hand?",
+        effect: { kind: "return-to-hand", target: 0, from: "graveyard" },
       },
       resolve: null,
       text:

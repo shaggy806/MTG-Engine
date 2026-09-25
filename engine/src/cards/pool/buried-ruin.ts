@@ -14,13 +14,8 @@ export default defineCard({
     addManaAbility({ mana: "C", text: "{T}: Add {C}." }),
     {
       cost: { mana: "{2}", tap: true, sacrifice: "self" },
-      targets: [],
-      effect: {
-        kind: "return-from-graveyard",
-        filter: { type: "artifact" },
-        destination: "hand",
-        count: 1,
-      },
+      targets: [{ kind: "card-in-graveyard", whose: "you", filter: { type: "artifact" } }],
+      effect: { kind: "return-to-hand", target: 0, from: "graveyard" },
       resolve: null,
       text:
         "{2}, {T}, Sacrifice Buried Ruin: Return target artifact card from your graveyard to " +
