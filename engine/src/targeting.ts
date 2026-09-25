@@ -3,7 +3,7 @@
 import type { CardDefinition, CardRegistry, CardType } from "./cards.js";
 import type { EffectAmount } from "./effects.js";
 import { computeCharacteristics, effectiveTypes } from "./characteristics.js";
-import { matchesFilter } from "./filter.js";
+import { filterReadsX, matchesFilter } from "./filter.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { printedCardName } from "./state.js";
@@ -36,6 +36,27 @@ export interface TargetSource {
    * clause matches nothing.
    */
   readonly amount?: (amount: EffectAmount) => number;
+  /** The `{X}` chosen for the spell or ability doing the targeting, for a
+   * target filter's `n: "x"` ("target Saga card with mana value X"). */
+  readonly x?: number;
+}
+
+/** What a target filter is matched with on behalf of `source`. */
+function targetFilterContext(forPlayer: PlayerId, source: TargetSource | undefined) {
+  return {
+    you: forPlayer,
+    ...(source?.amount !== undefined ? { amount: source.amount } : {}),
+    ...(source?.x !== undefined ? { x: source.x } : {}),
+  };
+}
+
+/** Does this slot's filter read `{X}` (see `filterReadsX`)? Its options then
+ * depend on the X chosen, so an ability with one is offered once per X —
+ * see `Game.legalActions`. */
+export function targetSpecReadsX(spec: TargetSpec): boolean {
+  if (typeof spec !== "object") return false;
+  if (spec.kind === "optional" || spec.kind === "other") return targetSpecReadsX(spec.of);
+  return spec.filter !== undefined && filterReadsX(spec.filter);
 }
 
 /** Does `target`'s protection (rule 702.16) stop `source` from affecting it? */
@@ -182,20 +203,14 @@ export function isLegalTarget(
     const whose = spec.whose ?? "any";
     if (whose === "you" && object.controller !== forPlayer) return false;
     if (whose === "opponent" && object.controller === forPlayer) return false;
-    return matchesFilter(state, registry, ref.object, spec.filter, {
-      you: forPlayer,
-      ...(source?.amount !== undefined ? { amount: source.amount } : {}),
-    });
+    return matchesFilter(state, registry, ref.object, spec.filter, targetFilterContext(forPlayer, source));
   }
   // A filtered spell on the stack.
   if (typeof spec === "object" && spec.kind === "spell") {
     return (
       ref.kind === "object" &&
       isSpellOnStack(state, ref.object) &&
-      matchesFilter(state, registry, ref.object, spec.filter, {
-        you: forPlayer,
-        ...(source?.amount !== undefined ? { amount: source.amount } : {}),
-      })
+      matchesFilter(state, registry, ref.object, spec.filter, targetFilterContext(forPlayer, source))
     );
   }
   // The structured graveyard spec.
@@ -222,10 +237,7 @@ export function isLegalTarget(
     // `matchesFilter` degrades to printed values off the battlefield anyway.
     return (
       spec.filter === undefined ||
-      matchesFilter(state, registry, ref.object, spec.filter, {
-        you: forPlayer,
-        ...(source?.amount !== undefined ? { amount: source.amount } : {}),
-      })
+      matchesFilter(state, registry, ref.object, spec.filter, targetFilterContext(forPlayer, source))
     );
   }
   switch (spec) {

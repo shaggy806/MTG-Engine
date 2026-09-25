@@ -622,8 +622,14 @@ export type LegalAction =
       /** Set when the ability's cost contains `{X}` (ROADMAP Phase 11 EG-3).
        * `maxX` is the largest value of X this player could currently pay for
        * (0 when only X=0 is affordable). The driver must include `xValue` in
-       * the `activate-ability` action; anything from 0 to `maxX` is legal. */
-      readonly xCost?: { readonly maxX: number };
+       * the `activate-ability` action; anything from `minX` (0 when absent)
+       * to `maxX` is legal.
+       *
+       * An ability whose target filter reads X (Rydia, Summoner of Mist's
+       * "target Saga card with mana value X") is enumerated once per X that
+       * has a legal set of targets, with `minX` = `maxX` = that X and
+       * `targetOptions` for it. */
+      readonly xCost?: { readonly maxX: number; readonly minX?: number };
     }
   | {
       readonly kind: "declare-attackers";

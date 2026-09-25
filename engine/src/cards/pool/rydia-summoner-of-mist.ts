@@ -1,13 +1,17 @@
 import { defineCard } from "../define.js";
 
-// needed-cards P16. Ships the landfall loot half only (already-shipped
-// vocab — a "you may" wrapping a discard-then-draw sequence). The "Summon"
-// activated ability — return a target Saga card from the graveyard with a
-// finality counter (rule 122.3e-adjacent: exiled instead of leaving the
-// battlefield again) — is dropped: no TargetSpec for "a Saga card in your
-// graveyard" exists, and finality counters aren't modeled as a replacement
-// at all. Both are real gaps, but this is the only card on the list that
-// needs either.
+// needed-cards P16. Summon's target reads the X chosen for it ("mana value
+// X"), so the ability is offered once per X some Saga card in the graveyard
+// has. The finality counter needs nothing more: `moveObject` exiles a
+// permanent carrying one that would go to a graveyard (rule 122). A Saga
+// creature ("Summon: …") is what makes "it gains haste" matter.
+const LANDFALL_TEXT =
+  "Landfall — Whenever a land you control enters, you may discard a card. If you do, draw a card.";
+const SUMMON_TEXT =
+  "Summon — {X}, {T}: Return target Saga card with mana value X from your graveyard to the " +
+  "battlefield with a finality counter on it. It gains haste until end of turn. Activate only " +
+  "as a sorcery.";
+
 export default defineCard({
   name: "Rydia, Summoner of Mist",
   manaCost: "{R}{G}",
@@ -17,7 +21,7 @@ export default defineCard({
   subtypes: ["Human", "Shaman"],
   power: 1,
   toughness: 2,
-  text: "Landfall — Whenever a land you control enters, you may discard a card. If you do, draw a card.",
+  text: `${LANDFALL_TEXT}\n${SUMMON_TEXT}`,
   triggered: [
     {
       trigger: { on: "enters-battlefield", who: "you-control", filter: { type: "land" } },
@@ -34,7 +38,29 @@ export default defineCard({
         },
       },
       resolve: null,
-      text: "Landfall — Whenever a land you control enters, you may discard a card. If you do, draw a card.",
+      text: LANDFALL_TEXT,
+    },
+  ],
+  activated: [
+    {
+      cost: { mana: "{X}", tap: true },
+      sorcerySpeed: true,
+      targets: [
+        {
+          kind: "card-in-graveyard",
+          whose: "you",
+          filter: { subtype: "Saga", manaValue: { op: "eq", n: "x" } },
+        },
+      ],
+      effect: {
+        kind: "sequence",
+        effects: [
+          { kind: "put-onto-battlefield", target: 0, withCounters: { kind: "finality", amount: 1 } },
+          { kind: "grant-keyword", target: 0, keyword: "haste", duration: "end-of-turn" },
+        ],
+      },
+      resolve: null,
+      text: SUMMON_TEXT,
     },
   ],
 });

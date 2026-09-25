@@ -224,6 +224,7 @@ import {
   legalTargets,
   permanentSource,
   protectionBlocks,
+  targetSpecReadsX,
 } from "./targeting.js";
 import type { TargetSource } from "./targeting.js";
 import { PHASE_OF_STEP, isMainPhase, nextStep, stepUsesPriority } from "./turn.js";
@@ -944,6 +945,7 @@ export class Game {
           action.source,
           action.abilityIndex,
           action.tap,
+          action.xValue ?? 0,
         );
       default:
         return `unknown action: ${(action as { type: string }).type}`;
@@ -1219,42 +1221,60 @@ export class Game {
       manaColors?: readonly ManaType[],
     ): void => {
       if (this.whyCannotActivateAbility(player, source, index) !== null) return;
-      out.push({
-        kind: "activate-ability",
-        source,
-        abilityIndex: index,
-        cardName,
-        text:
+      const maxX =
+        parseManaCost(ability.cost.mana).x > 0
+          ? // Mirrors activateAbility's own payMana call exactly — see
+            // maxAffordableAbilityX.
+            this.maxAffordableAbilityX(
+              player,
+              (x) => this.activatedAbilityManaCost(player, source, ability, x).cost,
+              ability.cost.tap || ability.zone !== undefined ? undefined : source,
+              ability.cost.tap ? source : undefined,
+            )
+          : undefined;
+      const push = (
+        targetOptions: readonly (readonly TargetRef[])[],
+        xCost?: { readonly maxX: number; readonly minX?: number },
+      ): void => {
+        const label =
           manaColors === undefined
             ? ability.text
-            : `${ability.text} (add ${manaColors.map((m) => `{${m}}`).join("")})`,
-        ...(manaColors !== undefined ? { manaColors } : {}),
-        targetSpecs: ability.targets,
-        targetOptions: this.targetOptionsFor(ability.targets, player, this.permanentSource(source)),
-        ...(ability.cost.sacrifice !== undefined && ability.cost.sacrifice !== "self"
-          ? { sacrifice: { choices: this.sacrificeCandidates(player, source, ability) } }
-          : {}),
-        ...(() => {
-          const tapCost = this.abilityTapCostOffer(player, source, ability);
-          return tapCost === null ? {} : { tapCost };
-        })(),
-        ...(ability.loyaltyCost !== undefined ? { loyalty: ability.loyaltyCost } : {}),
-        ...(isManaAbility(ability) ? { manaAbility: true as const } : {}),
-        ...(parseManaCost(ability.cost.mana).x > 0
-          ? {
-              xCost: {
-                // Mirrors activateAbility's own payMana call exactly — see
-                // maxAffordableAbilityX.
-                maxX: this.maxAffordableAbilityX(
-                  player,
-                  (x) => this.activatedAbilityManaCost(player, source, ability, x).cost,
-                  ability.cost.tap || ability.zone !== undefined ? undefined : source,
-                  ability.cost.tap ? source : undefined,
-                ),
-              },
-            }
-          : {}),
-      });
+            : `${ability.text} (add ${manaColors.map((m) => `{${m}}`).join("")})`;
+        out.push({
+          kind: "activate-ability",
+          source,
+          abilityIndex: index,
+          cardName,
+          text: xCost?.minX !== undefined ? `${label} (X=${xCost.minX})` : label,
+          ...(manaColors !== undefined ? { manaColors } : {}),
+          targetSpecs: ability.targets,
+          targetOptions,
+          ...(ability.cost.sacrifice !== undefined && ability.cost.sacrifice !== "self"
+            ? { sacrifice: { choices: this.sacrificeCandidates(player, source, ability) } }
+            : {}),
+          ...(() => {
+            const tapCost = this.abilityTapCostOffer(player, source, ability);
+            return tapCost === null ? {} : { tapCost };
+          })(),
+          ...(ability.loyaltyCost !== undefined ? { loyalty: ability.loyaltyCost } : {}),
+          ...(isManaAbility(ability) ? { manaAbility: true as const } : {}),
+          ...(xCost !== undefined ? { xCost } : {}),
+        });
+      };
+      if (maxX !== undefined && ability.targets.some(targetSpecReadsX)) {
+        // "Target Saga card with mana value X": what may be targeted depends
+        // on X, so the ability is offered once per X that has a legal set of
+        // targets, each with that X fixed and that X's options.
+        for (let x = 0; x <= maxX; x += 1) {
+          const options = this.targetOptionsFor(ability.targets, player, this.permanentSource(source, x));
+          if (targetsFillable(ability.targets, options)) push(options, { minX: x, maxX: x });
+        }
+        return;
+      }
+      push(
+        this.targetOptionsFor(ability.targets, player, this.permanentSource(source)),
+        maxX !== undefined ? { maxX } : undefined,
+      );
     };
 
     const abilityGrantors = this.activatedGrantSources();
@@ -1762,12 +1782,22 @@ export class Game {
   }
 
   /** The colour/type identity of a permanent (its computed values).
-   * Delegates to `targeting.ts`, which owns {@link TargetSource}. */
-  private permanentSource(id: ObjectId): TargetSource {
+   * Delegates to `targeting.ts`, which owns {@link TargetSource}. `x` is the
+   * `{X}` chosen for the ability doing the targeting, for a filter that
+   * reads it (Rydia, Summoner of Mist's "Saga card with mana value X"). */
+  private permanentSource(id: ObjectId, x?: number): TargetSource {
     const base = permanentSource(this.state, this.registry, id);
     const object = this.state.objects[id];
     if (object === undefined) return base;
-    return { ...base, amount: this.filterAmounts({ source: id, controller: object.controller }) };
+    return {
+      ...base,
+      ...(x !== undefined ? { x } : {}),
+      amount: this.filterAmounts({
+        source: id,
+        controller: object.controller,
+        ...(x !== undefined ? { x } : {}),
+      }),
+    };
   }
 
   // --- token stacking (engine resource safety, not a rule) ------------
@@ -6852,11 +6882,16 @@ export class Game {
     return { increaseGeneric, reduceGeneric };
   }
 
+  /** `x` is the `{X}` chosen for the activation. Without one — `legalActions`
+   * asking before it enumerates X — an ability whose target filter reads X
+   * isn't checked for targets here: which X values have any is the offer's to
+   * find (`pushActivateAbility`). */
   private whyCannotActivateAbility(
     player: PlayerId,
     sourceId: ObjectId,
     abilityIndex: number,
     tap?: readonly ObjectId[],
+    x?: number,
   ): string | null {
     const blocked = this.whyCannotAct(player);
     if (blocked !== null) return blocked;
@@ -6954,19 +6989,21 @@ export class Game {
     }
     // `otherOnly` is about the sacrifice cost alone: "Sacrifice another
     // creature: … target creature" may target its own source (Dina).
-    const abilityOptions = ability.targets.map((spec) =>
-      legalTargets(this.state, this.registry, spec, player, this.permanentSource(sourceId)),
-    );
-    for (const [i, spec] of ability.targets.entries()) {
-      if (isOptionalSpec(spec)) continue;
-      if (abilityOptions[i].length === 0) {
-        return `${def.name}'s ability has no legal ${describeTargetSpec(spec)} target`;
+    if (x !== undefined || !ability.targets.some(targetSpecReadsX)) {
+      const abilityOptions = ability.targets.map((spec) =>
+        legalTargets(this.state, this.registry, spec, player, this.permanentSource(sourceId, x)),
+      );
+      for (const [i, spec] of ability.targets.entries()) {
+        if (isOptionalSpec(spec)) continue;
+        if (abilityOptions[i].length === 0) {
+          return `${def.name}'s ability has no legal ${describeTargetSpec(spec)} target`;
+        }
       }
-    }
-    // Every slot has something, but "another target" may still leave no way
-    // to fill them all at once (Wayta with no other creature out).
-    if (!targetsFillable(ability.targets, abilityOptions)) {
-      return `${def.name}'s ability has no legal combination of targets`;
+      // Every slot has something, but "another target" may still leave no way
+      // to fill them all at once (Wayta with no other creature out).
+      if (!targetsFillable(ability.targets, abilityOptions)) {
+        return `${def.name}'s ability has no legal combination of targets`;
+      }
     }
     if (ability.cost.tapOthers !== undefined) {
       // The tap half is checked against the same mana — see `tapCostOffer`.
@@ -7029,7 +7066,7 @@ export class Game {
     manaColors?: readonly ManaType[],
     tap?: readonly ObjectId[],
   ): void {
-    const why = this.whyCannotActivateAbility(player, sourceId, abilityIndex, tap);
+    const why = this.whyCannotActivateAbility(player, sourceId, abilityIndex, tap, xValue);
     if (why !== null) throw new Error(why);
 
     const source = this.state.objects[sourceId];
@@ -7051,7 +7088,7 @@ export class Game {
       targets,
       player,
       `${def.name}'s ability`,
-      this.permanentSource(sourceId),
+      this.permanentSource(sourceId, xValue),
     );
     if (badTarget !== null) throw new Error(badTarget);
 
@@ -10389,6 +10426,7 @@ export class Game {
       ...base,
       ...(trigger.triggerObject !== undefined ? { triggerObject: trigger.triggerObject } : {}),
       ...(triggerPlayer !== undefined ? { triggerPlayer } : {}),
+      ...(trigger.x !== undefined ? { x: trigger.x } : {}),
       amount: this.filterAmounts({
         source: trigger.sourceObjectId,
         controller: trigger.controller,

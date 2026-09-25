@@ -48,11 +48,6 @@ that one card is the reason the deck exists.
   "Regenerate ~" (151), "You may pay {…}" (142), "Transform ~" (138). Add one, keep
   `npm run card:parse-check -w engine` at zero disagreements, then `--auto-scan --all` writes
   what it unlocks to `review/` for checking.
-- **Rydia, Summoner of Mist is missing its Summon ability** ("{X}, {T}: Return target Saga card
-  with mana value X from your graveyard to the battlefield with a finality counter on it. It
-  gains haste until end of turn."). Both reasons its file gives for dropping it are gone now
-  (`card-in-graveyard` targets, finality counters), but a target filter on "mana value X"
-  still needs checking.
 - **Card sweep 2 (2026-09-25).** Five cloud batches triaged the 189 best-ranked unimplemented
   top-500 commanders (C1–C3) and the 208 best-ranked unimplemented top-2000 cards (K1–K2). Those
   208 include most of card sweep 1's 227 skips. They authored 36 cards and recorded 361 as

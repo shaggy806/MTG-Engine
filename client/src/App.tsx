@@ -1271,11 +1271,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     [beginCast, game, seat],
   )
 
-  const confirmX = useCallback(() => {
-    if (!pendingX) return
-    const { action, value, ...picks } = pendingX
-    setPendingX(null)
-    if (action.kind === 'activate-ability') {
+  const startAbilityAtX = useCallback(
+    (action: AbilityAction, value: number) => {
       beginTargeting({
         kind: 'activate',
         source: action.source,
@@ -1286,6 +1283,16 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         xValue: value,
         ...(action.tapCost !== undefined ? { tapCost: action.tapCost } : {}),
       })
+    },
+    [beginTargeting],
+  )
+
+  const confirmX = useCallback(() => {
+    if (!pendingX) return
+    const { action, value, ...picks } = pendingX
+    setPendingX(null)
+    if (action.kind === 'activate-ability') {
+      startAbilityAtX(action, value)
       return
     }
     beginTargeting({
@@ -1299,7 +1306,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       ...castExtras(action),
       ...picks,
     })
-  }, [beginTargeting, pendingX])
+  }, [beginTargeting, pendingX, startAbilityAtX])
 
   const startAbility = useCallback(
     (ab: AbilityAction, sacrifice?: ObjectId) => {
@@ -1321,6 +1328,12 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   const clickAbility = useCallback(
     (ab: AbilityAction) => {
       if (ab.xCost) {
+        // An offer whose targets fix X (Rydia's "Saga card with mana value
+        // X") has nothing to ask.
+        if (ab.xCost.minX === ab.xCost.maxX) {
+          startAbilityAtX(ab, ab.xCost.maxX)
+          return
+        }
         setPendingX({ action: ab, value: ab.xCost.maxX })
         return
       }
@@ -1335,7 +1348,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       }
       startAbility(ab)
     },
-    [startAbility],
+    [startAbility, startAbilityAtX],
   )
 
   const pickTarget = useCallback(
@@ -2699,6 +2712,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     )
   } else if (mode === 'choose-x' && pendingX) {
     const pxMax = pendingX.action.xCost?.maxX ?? 0
+    const pxMin = pendingX.action.kind === 'activate-ability' ? (pendingX.action.xCost?.minX ?? 0) : 0
     const pxVerb = pendingX.action.kind === 'activate-ability' ? 'Activate' : 'Cast'
     controls = (
       <div className="controls">
@@ -2707,11 +2721,11 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         </span>
         <input
           type="number"
-          min={0}
+          min={pxMin}
           max={pxMax}
           value={pendingX.value}
           onChange={(e) => {
-            const n = Math.max(0, Math.min(pxMax, Math.floor(Number(e.target.value) || 0)))
+            const n = Math.max(pxMin, Math.min(pxMax, Math.floor(Number(e.target.value) || 0)))
             setPendingX({ action: pendingX.action, value: n })
           }}
           style={{ width: '4rem' }}

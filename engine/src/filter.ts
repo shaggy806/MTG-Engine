@@ -66,6 +66,26 @@ export type DynamicOperand =
   | { readonly amount: EffectAmount }
   | { readonly own: "power" | "toughness" | "manaValue" };
 
+/**
+ * Does any clause of `filter` compare against `{X}` — `n: "x"`, or an
+ * `{ amount: "x" }` operand? A target filter that does (Rydia, Summoner of
+ * Mist's "target Saga card with mana value X") has no fixed set of options
+ * until X is chosen.
+ */
+export function filterReadsX(filter: CardFilter): boolean {
+  const readsX = (cmp: NumCompare | undefined): boolean =>
+    cmp !== undefined &&
+    (cmp.n === "x" || (isDynamicOperand(cmp.n) && "amount" in cmp.n && cmp.n.amount === "x"));
+  return (
+    readsX(filter.manaValue) ||
+    readsX(filter.manaSpent) ||
+    readsX(filter.counters?.compare) ||
+    readsX(filter.power) ||
+    readsX(filter.toughness) ||
+    (filter.anyOf ?? []).some(filterReadsX)
+  );
+}
+
 /** Does a `NumCompare` carry a {@link DynamicOperand}? */
 export function isDynamicOperand(n: NumCompare["n"]): n is DynamicOperand {
   return typeof n === "object" && n !== null;

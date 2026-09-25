@@ -937,7 +937,11 @@ exist (rule 111.7), so neither comes back.
 A `CardFilter` numeric clause may be written `{ op: "eq", n: "x" }` to compare
 against the `{X}` of the spell or ability applying it (Steel Hellkite: "each
 nonland permanent with mana value X"; Chord of Calling's `search-library`: "a creature card
-with mana value X or less"). `destroy-all` also takes
+with mana value X or less"). An **activated ability's target** filter may read
+it too (Rydia, Summoner of Mist: "target Saga card with mana value X"): such an
+ability is offered once per X that has a legal set of targets, each offer with
+that X fixed (`xCost: { minX, maxX }` equal). A *spell's* target filter can't
+yet — nothing offers a spell per X. `destroy-all` also takes
 `onlyControllersDamagedBySource`, narrowing to permanents whose *controller*
 this effect's source dealt combat damage to this turn — a fact about the
 source, so it isn't a `CardFilter` clause.

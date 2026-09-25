@@ -986,7 +986,13 @@ export class RandomController extends AutomaticController {
             ? { sacrifice: sac.choices[this.pickIndex(sac.choices.length)] }
             : {}),
           ...(legal.xCost !== undefined
-            ? { xValue: this.pickIndex(legal.xCost.maxX + 1) }
+            ? {
+                // `minX` is 0 but on an offer whose targets fix X, so every
+                // other ability draws exactly what it always has.
+                xValue:
+                  (legal.xCost.minX ?? 0) +
+                  this.pickIndex(legal.xCost.maxX - (legal.xCost.minX ?? 0) + 1),
+              }
             : {}),
           ...(legal.tapCost !== undefined
             ? { tap: randomTapPicks(legal.tapCost, (n) => this.pickIndex(n)) }
