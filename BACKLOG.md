@@ -111,16 +111,17 @@ that one card is the reason the deck exists.
   cast it"); Nine-Fingers Keene (`look-and-choose`'s `leftoverIf`); Aang, at the Crossroads
   (rule 701.28f for its delayed transform, and entering transformed); Nicol Bolas, the
   Ravager (the Arisen entering transformed with its loyalty, and `exile-from-library`'s
-  `allBut`) — confirm each at `card:lookup`.
+  `allBut`); Sorin of House Markov (a lifelink keyword counter, and the transform fixes) —
+  confirm each at `card:lookup`.
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first
   ten, engine-only, with the commanders each fully unblocks:
   `effect:amount-aggregate` (+2), `effect:delayed-trigger-extensions` (+5),
-  `trigger:discards-extensions` (+2), `effect:missing-tokens` (+1), `mechanic:keyword-counters`
-  (+1), `bug:as-enters-choices-any-entry` (+2), `keyword:changeling` (+1),
+  `trigger:discards-extensions` (+2), `effect:missing-tokens` (+1),
+  `bug:as-enters-choices-any-entry` (+2), `keyword:changeling` (+1),
   `condition:filter-card-property-clauses` (+2), `mechanic:goad-extensions` (+3),
-  `effect:target-spec-additions` (+1).
+  `effect:target-spec-additions` (+1), `mechanic:suspect` (+1).
 - **Most-needed features overall.** `zone:visibility-extensions` (13),
   `effect:copy-spell-extensions`, `effect:copy-exceptions` and
   `effect:delayed-trigger-extensions` (11 each). Live numbers come from `cmdrs:gaps`.

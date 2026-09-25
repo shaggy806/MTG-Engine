@@ -649,6 +649,40 @@ export interface Characteristics {
   };
 }
 
+/**
+ * Keyword counters (rule 122.1b): a permanent with a flying, lifelink,
+ * vigilance… counter on it has that keyword, in layer 6 alongside every other
+ * ability-adding effect. The counter's kind is the keyword's own name here
+ * (`"first-strike"`, not "first strike"). Decayed, exalted and shadow
+ * counters aren't among them: the engine has no such keywords.
+ */
+export const KEYWORD_COUNTERS: ReadonlySet<Keyword> = new Set<Keyword>([
+  "flying",
+  "first-strike",
+  "double-strike",
+  "deathtouch",
+  "haste",
+  "hexproof",
+  "indestructible",
+  "lifelink",
+  "menace",
+  "reach",
+  "trample",
+  "vigilance",
+]);
+
+/** The keywords `object`'s keyword counters give it — see
+ * {@link KEYWORD_COUNTERS}. Like the other layer-6 grants that come from
+ * outside its own text, they stay through a loss of its own abilities. */
+export function keywordCountersOn(object: GameObject): Keyword[] {
+  if (object.zone !== "battlefield") return [];
+  const out: Keyword[] = [];
+  for (const [kind, n] of Object.entries(object.counters)) {
+    if ((n ?? 0) > 0 && KEYWORD_COUNTERS.has(kind as Keyword)) out.push(kind as Keyword);
+  }
+  return out;
+}
+
 /** True if this permanent has lost its own abilities (layer 6 — Turn to Frog). */
 /**
  * One player's running total for `stat` this turn.
@@ -1557,6 +1591,7 @@ function collectStaticEffects(
         );
         for (const effect of out) for (const k of effect.keywords) keywords.add(k);
         for (const modifier of target.modifiers) for (const k of modifier.keywords) keywords.add(k);
+        for (const k of keywordCountersOn(target)) keywords.add(k);
       }
       return keywords;
     };
@@ -1696,6 +1731,7 @@ function computeCharacteristicsUncached(
     for (const keyword of modifier.keywords) keywords.add(keyword);
     for (const r of modifier.restrictions ?? []) restrictions.add(r);
   }
+  for (const keyword of keywordCountersOn(object)) keywords.add(keyword);
 
   // Layer 7b — base P/T set by this object's own characteristic-defining
   // ability (rule 604.3 / 613.4b). Only a `"self"` static applies — and not
