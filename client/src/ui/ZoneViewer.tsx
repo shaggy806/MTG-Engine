@@ -64,6 +64,10 @@ export interface ZoneViewerProps {
      * cast not yet made (escape's "exile N other cards"), unlike an effect's
      * forced decision: a Cancel button in the header, which calls this. */
     readonly onCancel?: () => void
+    /** The confirm button's label with nothing picked, when `min` is 0 —
+     * "Put none" unless the choice says otherwise (an optional target's
+     * "Skip"). */
+    readonly noneLabel?: string
   }
   /** Selection mode only: hidden so the board can be seen ("View board").
    * The component stays mounted, so picks made so far survive; the owner
@@ -242,7 +246,7 @@ export function ZoneViewer({
               onClick={() => selection.onConfirm(picked)}
             >
               {picked.length === 0 && selection.min === 0
-                ? 'Put none'
+                ? (selection.noneLabel ?? 'Put none')
                 : `Confirm (${picked.length})`}
             </button>
           </div>

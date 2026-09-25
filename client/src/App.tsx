@@ -762,6 +762,10 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   // Table remounts per frame, but no frame arrives while the game waits on
   // this seat's answer, so this outlives exactly the decision it belongs to.
   const [decisionCollapsed, setDecisionCollapsed] = useState(false)
+  // The same for the popup a graveyard or exile target is picked from, by the
+  // slot it was hidden for (`zoneTargetKey`): the next slot, or a targeting
+  // backed out of and begun again, starts shown.
+  const [zoneTargetHidden, setZoneTargetHidden] = useState<string | null>(null)
 
   // --- classify the legal actions ------------------------------------
   const landByCard = useMemo(() => {
@@ -1669,6 +1673,20 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   // "Another target" leaves out what an earlier slot already took, and a
   // "for each target" cost what it couldn't pay for.
   const targetSlot = activeTargeting ? currentSlotOptions(activeTargeting) : []
+  // A slot's options that nothing on the board stands for — a card in a
+  // graveyard (Regrowth, Rydia's Summon) or in exile. They're picked from a
+  // popup of just those cards.
+  const zoneTargetIds = targetSlot.flatMap((o) =>
+    o.kind === 'object' &&
+    !view.zones.battlefield.includes(o.object) &&
+    !view.zones.stack.includes(o.object)
+      ? [o.object]
+      : [],
+  )
+  const zoneTargetKey = activeTargeting
+    ? `${activeTargeting.kind}:${activeTargeting.source}:${activeTargeting.abilityIndex}:${activeTargeting.picked.length}`
+    : null
+  const zoneTargetCollapsed = zoneTargetKey !== null && zoneTargetHidden === zoneTargetKey
   const pickedObjKeys = new Set(
     (activeTargeting?.picked ?? [])
       .filter((r) => r?.kind === 'object')
@@ -2610,6 +2628,11 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           {describeTargetSpec(activeTargeting.specs[activeTargeting.picked.length])} (
           {activeTargeting.picked.length + 1}/{activeTargeting.specs.length})
         </span>
+        {zoneTargetIds.length > 0 && zoneTargetCollapsed ? (
+          <button type="button" onClick={() => setZoneTargetHidden(null)}>
+            Show choices
+          </button>
+        ) : null}
         {isOptionalSpec(activeTargeting.specs[activeTargeting.picked.length]) ? (
           <button
             type="button"
@@ -3575,6 +3598,34 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           }}
           collapsed={decisionCollapsed}
           onCollapse={() => setDecisionCollapsed(true)}
+        />
+      ) : null}
+
+      {mode === 'targeting' && activeTargeting && zoneTargetIds.length > 0 ? (
+        <ZoneViewer
+          // One popup per slot, so a pick made for the last one doesn't
+          // carry over.
+          key={zoneTargetKey ?? ''}
+          title={`${game.nameOf(activeTargeting.source)} — target ${describeTargetSpec(activeTargeting.specs[activeTargeting.picked.length])}`}
+          ids={zoneTargetIds}
+          resolve={(id) => view.objects[id]}
+          selection={{
+            min:
+              isOptionalSpec(activeTargeting.specs[activeTargeting.picked.length]) &&
+              maySkipSlot(activeTargeting)
+                ? 0
+                : 1,
+            max: 1,
+            eligible: zoneTargetIds,
+            noneLabel: 'Skip',
+            onConfirm: (chosen) =>
+              pickTarget(chosen[0] === undefined ? null : { kind: 'object', object: chosen[0] }),
+            ...(activeTargeting.kind === 'choose-targets'
+              ? {}
+              : { onCancel: () => setTargeting(null) }),
+          }}
+          collapsed={zoneTargetCollapsed}
+          onCollapse={() => setZoneTargetHidden(zoneTargetKey)}
         />
       ) : null}
 
