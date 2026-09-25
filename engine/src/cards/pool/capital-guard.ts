@@ -1,0 +1,12 @@
+import { defineCard } from "../define.js";
+
+export default defineCard({
+  name: "Capital Guard",
+  manaCost: "{1}{R}",
+  colors: ["R"],
+  types: ["creature"],
+  subtypes: ["Human", "Soldier"],
+  power: 2,
+  toughness: 2,
+  text: "",
+});

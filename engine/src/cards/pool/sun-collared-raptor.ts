@@ -1,0 +1,22 @@
+import { defineCard } from "../define.js";
+
+export default defineCard({
+  name: "Sun-Collared Raptor",
+  manaCost: "{1}{R}",
+  colors: ["R"],
+  types: ["creature"],
+  subtypes: ["Dinosaur"],
+  power: 1,
+  toughness: 2,
+  keywords: ["trample"],
+  text: "Trample\n{2}{R}: This creature gets +3/+0 until end of turn.",
+  activated: [
+    {
+      cost: { mana: "{2}{R}", tap: false },
+      targets: [],
+      effect: { kind: "modify-pt", target: "source", power: 3, toughness: 0, duration: "end-of-turn" },
+      resolve: null,
+      text: "{2}{R}: This creature gets +3/+0 until end of turn.",
+    },
+  ],
+});

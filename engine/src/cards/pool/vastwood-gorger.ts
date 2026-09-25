@@ -1,0 +1,12 @@
+import { defineCard } from "../define.js";
+
+export default defineCard({
+  name: "Vastwood Gorger",
+  manaCost: "{5}{G}",
+  colors: ["G"],
+  types: ["creature"],
+  subtypes: ["Wurm"],
+  power: 5,
+  toughness: 6,
+  text: "",
+});

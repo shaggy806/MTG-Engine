@@ -41,7 +41,7 @@ that one card is the reason the deck exists.
   items listed under each "still open". See `neededCards-features.md`, "Open: the card backlog".
 - **Cards the scaffolder finishes on its own.** Of the snapshot's 30,710 unimplemented
   Commander-legal cards, the parser reads every line of 4,241 (`npm run card:scaffold -w engine
-  -- --report --all`). Ranks 2001–24000 are reviewed and in the pool (2,433 cards). Continue
+  -- --report --all`). Ranks 2001–28000 are reviewed and in the pool (3,133 cards). Continue
   down the ranks: `--auto-scan --ranks A-B` writes them to `review/`. Check each against its
   Oracle text and rulings, and each token it makes against its token file, then move it into
   `pool/`.
