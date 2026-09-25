@@ -492,6 +492,10 @@ export type StaticCondition =
    * died this turn**". Cheaper than a `no-` variant of every condition, and
    * it composes. */
   | { readonly kind: "not"; readonly of: StaticCondition }
+  /** Every one of these holds — "at the beginning of your second main phase,
+   * if you attacked this turn" (Michelangelo, the Heart) is a `turn-structure`
+   * and a `turn-stat` together. */
+  | { readonly kind: "all"; readonly of: readonly StaticCondition[] }
   /** The source's `chosenOnEnter` label equals `value` — Frontier Siege's
    * "Khans" / "Dragons" halves. */
   | { readonly kind: "chosen-on-enter"; readonly value: string }
@@ -889,6 +893,11 @@ export interface StaticAbility {
     readonly castFrom?: readonly ZoneType[];
     readonly keywords?: readonly Keyword[];
     readonly triggered?: readonly TriggeredAbility[];
+    /** The spells have split second (rule 702.61) while they're on the stack
+     * — Shadow the Hedgehog's "each spell you cast has split second if mana
+     * from an artifact was spent to cast it" (`filter: { manaFrom: { type:
+     * "artifact" } }`). Read wherever a printed split second is. */
+    readonly splitSecond?: boolean;
   };
   /** "You have no maximum hand size" (Thought Vessel, Reliquary Tower). A
    * property of the *controller*, not of anything this ability `affects`, so

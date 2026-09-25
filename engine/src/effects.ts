@@ -1381,6 +1381,17 @@ export type EffectSpec =
       readonly duration: PtDuration;
     }
   | {
+      /** The mass form of `grant-triggered`: every battlefield permanent
+       * matching `filter` (from the effect's controller's side) gains the
+       * ability — Azlask, the Swelling Scourge's "Scions and Spawns you
+       * control gain … annihilator 1 until end of turn". Matches are fixed as
+       * it resolves (rule 611.2c), and a token stack gains it whole. */
+      readonly kind: "grant-triggered-all";
+      readonly filter: CardFilter;
+      readonly ability: TriggeredAbility;
+      readonly duration: PtDuration;
+    }
+  | {
       /** The effect's controller takes an extra turn after this one (Time
        * Warp — rule 500.7 / ROADMAP Phase 7). */
       readonly kind: "take-extra-turn";
@@ -2468,6 +2479,8 @@ export interface EffectApi {
     ability: TriggeredAbility,
     duration: PtDuration,
   ): void;
+  /** See the `"grant-triggered-all"` {@link EffectSpec}. */
+  grantTriggeredAll(filter: CardFilter, ability: TriggeredAbility, duration: PtDuration): void;
   /** The effect's controller takes an extra turn after this one (Time Warp). */
   takeExtraTurn(): void;
   /** Storm — copy the spell `sourceId` for each earlier spell its controller
@@ -3638,6 +3651,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       if (target !== undefined) ctx.grantTriggered(target, spec.ability, spec.duration);
       return;
     }
+    case "grant-triggered-all":
+      ctx.grantTriggeredAll(spec.filter, spec.ability, spec.duration);
+      return;
     case "take-extra-turn":
       ctx.takeExtraTurn();
       return;

@@ -71,6 +71,7 @@ import {
   effectiveSubtypes,
   effectiveTypes,
   hasLostAbilities,
+  spellHasSplitSecond,
   invalidateComputedCache,
   staticConditionMet,
   spellGrantReaches,
@@ -6800,7 +6801,7 @@ export class Game {
     if (!isManaAbility(ability)) {
       for (const id of this.state.zones.shared.stack) {
         const spell = this.state.objects[id];
-        if (spell?.kind === "card" && this.registry.get(printedCardName(spell)).splitSecond) {
+        if (spell !== undefined && spellHasSplitSecond(this.state, this.registry, spell)) {
           return `${printedCardName(spell)} has split second`;
         }
       }
@@ -10457,6 +10458,7 @@ export class Game {
       // Recursing keeps the context-only kinds above answerable under a
       // `not`, which `staticConditionMet` alone would read as always false.
       if (condition.kind === "not") return !conditionMet(condition.of);
+      if (condition.kind === "all") return condition.of.every(conditionMet);
       // Resolution happens outside the layer fold, so the source can count
       // itself ("if creatures you control have total power 10 or greater"
       // includes the creature asking) without recursing.
@@ -11010,6 +11012,17 @@ export class Game {
       },
       grantTriggered: (target, ability, duration) =>
         this.grantTriggered(target, ability, duration),
+      grantTriggeredAll: (filter, ability, duration) => {
+        for (const id of this.battlefieldMatching(controller, filter)) {
+          this.state.objects[id]?.modifiers.push({
+            power: 0,
+            toughness: 0,
+            keywords: [],
+            grantsTriggered: [ability],
+            untilEndOfTurn: duration === "end-of-turn",
+          });
+        }
+      },
       grantPlayerHexproof: (who) => {
         for (const player of scoped(who)) {
           if (!this.state.hexproofPlayers.includes(player)) {
@@ -12858,7 +12871,7 @@ export class Game {
     for (const id of this.state.zones.shared.stack) {
       const spell = this.state.objects[id];
       if (id === cardId || spell?.kind !== "card") continue;
-      if (this.registry.get(printedCardName(spell)).splitSecond) {
+      if (spellHasSplitSecond(this.state, this.registry, spell)) {
         return `${printedCardName(spell)} has split second`;
       }
     }

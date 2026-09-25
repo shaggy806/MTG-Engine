@@ -528,6 +528,8 @@ function evalStaticCondition(
       // read true. The guard exists for mutually-conditional permanents, not
       // for a composite condition on one of them.
       return !evalStaticCondition(state, registry, source, condition.of, opts);
+    case "all":
+      return condition.of.every((each) => evalStaticCondition(state, registry, source, each, opts));
     case "opponent-lost-life-this-turn":
       return state.turnOrder.some(
         (p) => p !== you && state.players[p].lifeLostThisTurn > 0,
@@ -801,6 +803,23 @@ export function spellGrantReaches(
       ...(amount !== undefined ? { amount } : {}),
     })
   );
+}
+
+/** Whether `spell`, on the stack, has split second (rule 702.61): printed, or
+ * given by a `grantsToSpells` static on the battlefield. */
+export function spellHasSplitSecond(state: GameState, registry: CardRegistry, spell: GameObject): boolean {
+  if (spell.kind !== "card") return false;
+  if (registry.get(printedCardName(spell)).splitSecond) return true;
+  for (const id of state.zones.shared.battlefield) {
+    const source = state.objects[id];
+    if (source === undefined) continue;
+    for (const ability of registry.get(printedCardName(source)).static) {
+      if (ability.grantsToSpells?.splitSecond === true && spellGrantReaches(state, registry, source, ability, spell)) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 /** The keywords `grantsToSpells` statics on the battlefield give `spell`. */
