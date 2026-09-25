@@ -1,4 +1,4 @@
-// Shared pretty-printing for the playground scripts.
+// Pretty-prints a game's event log, for the fuzzer's `--log` (random-demo.mjs).
 
 export const makeFormatter = (game) => {
   const name = (id) => {
