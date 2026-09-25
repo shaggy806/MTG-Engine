@@ -11,7 +11,7 @@ import type { TriggeredAbility } from "./abilities.js";
 import type { CardType, CombatRestriction, Keyword, StaticAbility, StaticCondition, Supertype } from "./cards.js";
 import type { EffectSpec, FlickerCounters } from "./effects.js";
 import type { CardFilter } from "./filter.js";
-import type { Color, ManaUnit } from "./mana.js";
+import type { Color, ManaOrigin, ManaUnit } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameEvent } from "./events.js";
 import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
@@ -455,6 +455,10 @@ export interface GameObject {
    * cast (0 for a free cast), kept by the permanent it resolves into, and
    * cleared by any other zone change. */
   manaSpent?: number;
+  /** Where the mana spent to cast this spell came from, one entry per unit
+   * spent — the `manaFrom` filter clause ("if mana from an artifact was
+   * spent to cast it"). Kept and cleared with `manaSpent`. */
+  manaSpentFrom?: ManaOrigin[];
   /** For a triggered ability object: the target slots its triggering event
    * filled rather than its controller choosing — a saboteur's "that player"
    * (Hypnotic Specter's discard). Those aren't targets (rule 115.1), so
@@ -641,6 +645,8 @@ export interface LastKnownInfo {
   readonly manaValue: number;
   /** The mana spent to cast it, if it was cast (`GameObject.manaSpent`). */
   readonly manaSpent?: number;
+  /** Where that mana came from (`GameObject.manaSpentFrom`). */
+  readonly manaSpentFrom?: readonly ManaOrigin[];
   readonly isToken: boolean;
   readonly isCommander: boolean;
   readonly tapped: boolean;

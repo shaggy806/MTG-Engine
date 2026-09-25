@@ -106,17 +106,18 @@ that one card is the reason the deck exists.
   `trigger:discards-extensions`, whose per-card part it needs is built); Witherbloom, the
   Balancer (`affinity` and `grantAffinity`); Marchesa, the Black Rose (`dethrone()`, granted
   with `grantsTriggered`, and a carried trigger object for "return that card" — its gaps
-  entry still lists `effect:delayed-trigger-extensions`, whose part it needs is built) —
-  confirm each at `card:lookup`.
+  entry still lists `effect:delayed-trigger-extensions`, whose part it needs is built);
+  Shadow the Hedgehog (the `manaFrom` filter clause — "if mana from an artifact was spent to
+  cast it") — confirm each at `card:lookup`.
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first
   ten, engine-only, with the commanders each fully unblocks:
   `effect:amount-aggregate` (+2), `effect:delayed-trigger-extensions` (+5),
-  `trigger:discards-extensions` (+2), `effect:missing-tokens` (+1), `stat:mana-spent-to-cast`
-  (+1), `effect:look-and-choose-leftover` (+1), `bug:transform-fixes` (+1),
+  `trigger:discards-extensions` (+2), `effect:missing-tokens` (+1),
+  `effect:look-and-choose-leftover` (+1), `bug:transform-fixes` (+1),
   `effect:exile-library-all-but-bottom` (+1), `mechanic:keyword-counters` (+1),
-  `bug:as-enters-choices-any-entry` (+2).
+  `bug:as-enters-choices-any-entry` (+2), `keyword:changeling` (+1).
 - **Most-needed features overall.** `zone:visibility-extensions` (13),
   `effect:copy-spell-extensions`, `effect:copy-exceptions` and
   `effect:delayed-trigger-extensions` (11 each). Live numbers come from `cmdrs:gaps`.

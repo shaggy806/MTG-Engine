@@ -23,8 +23,8 @@ import {
 } from "./characteristics.js";
 import type { CardRegistry, CardType, Keyword, Supertype } from "./cards.js";
 import type { EffectAmount, ThisWayKind } from "./effects.js";
-import type { Color } from "./mana.js";
-import { manaValue, parseManaCost } from "./mana.js";
+import type { Color, ManaFromSpec } from "./mana.js";
+import { manaOriginMatches, manaValue, parseManaCost } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { activePlayerOf, printedCardName } from "./state.js";
 import type { GameObject, GameState, LastKnownInfo, ZoneType } from "./state.js";
@@ -139,6 +139,13 @@ export interface CardFilter {
    * "if at least four mana was spent to cast it") — see
    * `GameObject.manaSpent`. `0` for something that wasn't cast. */
   readonly manaSpent?: NumCompare;
+  /** "If mana from an artifact was spent to cast it" (`{ type: "artifact"
+   * }`), "…from a Treasure" (`{ subtype: "Treasure" }`): at least `atLeast`
+   * (default 1) units of the mana spent to cast it were made by a source
+   * matching every field given, as that source was when it made the mana —
+   * see `GameObject.manaSpentFrom`. Something that wasn't cast matches
+   * nothing. */
+  readonly manaFrom?: ManaFromSpec & { readonly atLeast?: number };
   /**
    * How many counters of a given kind are on the object — Rishkar's "each
    * creature you control **with a counter on it**", Undying's "if it had no
@@ -518,6 +525,13 @@ export function matchesFilter(
   if (filter.manaSpent !== undefined) {
     const spent = live !== undefined ? live.manaSpent : lki!.manaSpent;
     if (!compareNum(spent ?? 0, filter.manaSpent, ctx.x, dynamic)) return false;
+  }
+  if (filter.manaFrom !== undefined) {
+    const spec = filter.manaFrom;
+    const origins = (live !== undefined ? live.manaSpentFrom : lki!.manaSpentFrom) ?? [];
+    if (origins.filter((origin) => manaOriginMatches(origin, spec)).length < (spec.atLeast ?? 1)) {
+      return false;
+    }
   }
   // Cheap, purely-positional clauses before the expensive fold below.
   const controller = live !== undefined ? live.controller : lki!.controller;

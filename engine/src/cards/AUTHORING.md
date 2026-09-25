@@ -875,7 +875,7 @@ source, so it isn't a `CardFilter` clause.
 subtypes, supertype, notSupertype, name, notName, colors, notColors, colorless,
 manaValue, power, toughness, counters, controlledBy, ownedBy, keyword,
 notKeyword, tapped, token, isCommander, equipped, enchanted, modified, anyOf,
-manaSpent, putIntoGraveyardFromLibraryThisTurn, enteredThisTurn,
+manaSpent, manaFrom, putIntoGraveyardFromLibraryThisTurn, enteredThisTurn,
 attackedThisTurn, cast, castBy, castFrom, enteredFrom, putThereBySource,
 sharesCardTypeWith, thisWay }`,
 every present clause ANDed. `controlledBy` is `"you"`, `"opponent"` or
@@ -886,7 +886,14 @@ equipped" is two). `equipped` / `enchanted` ask whether an Equipment / Aura is
 attached, whoever controls it (`enchantedBy: "you"` — an Aura *you* control); `modified` is rule 700.9 — a counter, an
 Equipment, or an Aura controlled by the permanent's *own* controller.
 `manaSpent` compares the mana spent to cast it (The Emperor of Palamecia's
-cast trigger filters on `{ manaSpent: { op: "gte", n: 4 } }`). `putIntoGraveyardFromLibraryThisTurn` is a
+cast trigger filters on `{ manaSpent: { op: "gte", n: 4 } }`). `manaFrom` asks
+where that mana came from: `{ type: "artifact" }` is "if mana from an artifact
+was spent to cast it", `{ subtype: "Treasure" }` "…from a Treasure", and
+`atLeast` (default 1) how many units ("two or more mana from creatures" is `{
+type: "creature", atLeast: 2 }`). Each unit is read off its source as it made
+the mana — a Treasure sacrificed for it was still a Treasure — and extra mana a
+triggered mana ability added is that ability's permanent's, not the one tapped.
+Kept by the permanent the spell becomes, like `manaSpent`. `putIntoGraveyardFromLibraryThisTurn` is a
 graveyard card that got there from a library this turn — milled, surveilled,
 or any other library-to-graveyard move, never discarded or destroyed (Captain
 N'ghathrod's end-step target is `{ kind: "card-in-graveyard", whose:

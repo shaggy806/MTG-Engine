@@ -98,7 +98,8 @@
   "bug:zone-change-object-identity",
   "static:grant-abilities-to-spells",
   "keyword:affinity",
-  "condition:defending-player-life-rank"
+  "condition:defending-player-life-rank",
+  "stat:mana-spent-to-cast"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
@@ -1044,7 +1045,7 @@
   "stat:mana-spent-to-cast": {
    "size": "small",
    "ui": false,
-   "description": "Record whether any of the mana spent to cast a spell came from an artifact, as a cast-trigger condition. Built so far: the mana actually spent to cast it (0 for free casts), as the manaSpentOf amount and the manaSpent filter clause."
+   "description": "Where the mana spent to cast a spell came from, and how much: every unit of mana carries its source's types, subtypes and supertypes as it made the mana (ManaUnit.from, a ManaOrigin — extra mana from a triggered mana ability is that ability's permanent's), a spell keeps them as it's paid for (GameObject.manaSpentFrom, like manaSpent), and the manaFrom filter clause asks for at least N units from a matching source ('if mana from an artifact was spent to cast it'); the manaSpentOf amount and manaSpent clause are the total."
   },
   "stat:milled-this-turn": {
    "size": "small",

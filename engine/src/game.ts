@@ -157,6 +157,7 @@ import type {
   Color,
   ColoredReduction,
   ManaCost,
+  ManaOrigin,
   ManaRestriction,
   ManaSpendRider,
   ManaType,
@@ -500,6 +501,15 @@ function arrangeManaSources(
 type GraveyardGrantOption = {
   readonly grant: GraveyardGrant;
   readonly permission: NonNullable<StaticAbility["castFromGraveyard"]> | null;
+};
+
+/** The extra mana one triggered mana ability adds as a permanent is tapped
+ * for mana (rule 605.1b) — see `Game.tappedForManaExtras`. */
+type ManaExtra = {
+  readonly mana: Extract<EffectSpec, { kind: "add-mana" }>["mana"];
+  readonly amount: number;
+  /** The permanent whose triggered ability it is: the mana is from it. */
+  readonly holder: ObjectId;
 };
 
 export class Game {
@@ -7130,12 +7140,16 @@ export class Game {
           .map((unit) => unit.type);
         for (const extra of this.tappedForManaExtras(source)) {
           if (extra.mana === "produced") {
-            if (produced.length > 0) this.addMana(player, produced[0], extra.amount);
+            if (produced.length > 0) {
+              this.addMana(player, produced[0], extra.amount, undefined, this.manaOriginOf(extra.holder));
+            }
           } else if (extra.mana !== "chosen") {
             this.addMana(
               player,
               typeof extra.mana === "object" ? { oneOf: this.manaOneOf(extra.mana, player) } : extra.mana,
               extra.amount,
+              undefined,
+              this.manaOriginOf(extra.holder),
             );
           }
         }
@@ -7648,7 +7662,17 @@ export class Game {
     // — the plan orders its funding sources ahead of it, and names the exact
     // units they contributed.
     for (const m of step.spends) this.removeMana(player, m);
-    for (const m of step.mana) this.addMana(player, m, 1, step.tag);
+    // The last units are what triggered mana abilities added, and theirs.
+    const extraFrom = step.extraFrom ?? [];
+    const own = step.mana.length - extraFrom.length;
+    const origins = new Map<ObjectId, ManaOrigin | undefined>();
+    const originOf = (id: ObjectId): ManaOrigin | undefined => {
+      if (!origins.has(id)) origins.set(id, this.manaOriginOf(id));
+      return origins.get(id);
+    };
+    step.mana.forEach((m, i) =>
+      this.addMana(player, m, 1, step.tag, originOf(i < own ? step.source : extraFrom[i - own])),
+    );
     if (step.oncePerTurn !== undefined) {
       object.abilitiesUsedThisTurn = [...(object.abilitiesUsedThisTurn ?? []), step.oncePerTurn];
       // Not an event of its own, so nothing else is going to tell a cache
@@ -7679,21 +7703,20 @@ export class Game {
    * the option makes (an "any colour" unit could be any of them, so its
    * units and the extra come out as one colour).
    */
-  private withManaExtra(
-    option: ManaOption,
-    extra: { readonly mana: Extract<EffectSpec, { kind: "add-mana" }>["mana"]; readonly amount: number },
-    player: PlayerId,
-  ): ManaOption[] {
+  private withManaExtra(option: ManaOption, extra: ManaExtra, player: PlayerId): ManaOption[] {
+    // The extra units are the triggered ability's source's (see `ManaOrigin`).
+    const extraFrom = [...(option.extraFrom ?? []), ...Array<ObjectId>(extra.amount).fill(extra.holder)];
     const plus = (type: ManaType, anyColor = option.anyColor): ManaOption => ({
       ...option,
       fixed: [...option.fixed, ...Array<ManaType>(extra.amount).fill(type)],
       anyColor,
+      extraFrom,
     });
     const mana = extra.mana;
     if (mana === "chosen") return [option];
     if (mana === "any-color") {
       return option.anyColorOf === undefined
-        ? [{ ...option, anyColor: option.anyColor + extra.amount }]
+        ? [{ ...option, anyColor: option.anyColor + extra.amount, extraFrom }]
         : COLORS.map((c) => plus(c));
     }
     if (typeof mana === "object") return this.manaOneOf(mana, player).map((t) => plus(t));
@@ -7706,6 +7729,7 @@ export class Game {
           ...rest,
           fixed: [...option.fixed, ...Array<ManaType>(option.anyColor + extra.amount).fill(c)],
           anyColor: 0,
+          extraFrom,
         });
       }
     }
@@ -7718,10 +7742,8 @@ export class Game {
    * `add-mana`, from the side of the permanent that has it. Read by the
    * auto-payer's option list and by a mana ability activated by hand.
    */
-  private tappedForManaExtras(
-    tapped: GameObject,
-  ): { readonly mana: Extract<EffectSpec, { kind: "add-mana" }>["mana"]; readonly amount: number }[] {
-    const out: { mana: Extract<EffectSpec, { kind: "add-mana" }>["mana"]; amount: number }[] = [];
+  private tappedForManaExtras(tapped: GameObject): ManaExtra[] {
+    const out: ManaExtra[] = [];
     for (const id of this.state.zones.shared.battlefield) {
       const holder = this.state.objects[id];
       if (holder === undefined || hasLostAbilities(holder)) continue;
@@ -7738,7 +7760,7 @@ export class Game {
         ) {
           continue;
         }
-        out.push({ mana: effect.mana, amount: effect.amount });
+        out.push({ mana: effect.mana, amount: effect.amount, holder: holder.id });
       }
     }
     return out;
@@ -7791,6 +7813,9 @@ export class Game {
     /** The provenance the producing ability stamps on every unit it makes —
      * a spend restriction, a rider, a "doesn't empty" permission. */
     tag?: Omit<ManaUnit, "type">,
+    /** What the mana is "from" — the source of the ability or spell making
+     * it, read by `manaOriginOf`. */
+    origin?: ManaOrigin,
   ): void {
     // A standalone "add one mana of any colour"/"any combination of [...]"
     // (not paying a cost) just makes white / all of the first listed colour —
@@ -7799,8 +7824,22 @@ export class Game {
       mana === "any-color" ? "W" : typeof mana === "object" ? mana.oneOf[0] : mana;
     const pool = this.state.players[player].manaPool;
     const units = Math.min(amount, Game.MAX_EFFECT_INSTANCES);
-    for (let i = 0; i < units; i += 1) pool.push({ type: concrete, ...tag });
+    for (let i = 0; i < units; i += 1) {
+      pool.push({ type: concrete, ...tag, ...(origin !== undefined ? { from: origin } : {}) });
+    }
     this.emit({ type: "mana-added", player, mana: concrete, amount: units });
+  }
+
+  /** What mana made by `id` is from, as it is now (see `ManaOrigin`): its
+   * computed card types and subtypes, and its printed supertypes. */
+  private manaOriginOf(id: ObjectId): ManaOrigin | undefined {
+    const object = this.state.objects[id];
+    if (object === undefined) return undefined;
+    return {
+      types: [...effectiveTypes(this.state, this.registry, object)],
+      subtypes: [...effectiveSubtypes(this.state, this.registry, object)],
+      supertypes: [...this.registry.get(printedCardName(object)).supertypes],
+    };
   }
 
   /**
@@ -7880,6 +7919,14 @@ export class Game {
     if (purpose !== null && purpose.kind === "cast" && spent.some((u) => u.uncounterable)) {
       const spell = this.state.objects[purpose.card];
       if (spell !== undefined) spell.uncounterable = true;
+    }
+    // Where the mana that cast it came from ("if mana from an artifact was
+    // spent to cast it"). Paid for only once, so this is all of it.
+    if (purpose !== null && purpose.kind === "cast") {
+      const spell = this.state.objects[purpose.card];
+      if (spell !== undefined) {
+        spell.manaSpentFrom = spent.flatMap((u) => (u.from === undefined ? [] : [u.from]));
+      }
     }
     for (const unit of spent) this.fireManaSpendRider(player, unit, purpose);
   }
@@ -10570,8 +10617,9 @@ export class Game {
           amount,
           // The source is the permanent whose ability this is, which is what
           // `manaTagFor` reads the chosen creature type and the commander's
-          // types off.
+          // types off — and what the mana is from.
           spec === undefined ? undefined : this.manaTagFor(this.state.objects[source], spec),
+          this.manaOriginOf(source),
         ),
       tapPermanent: (target) => this.setTapped(target, true),
       untapPermanent: (target) => this.setTapped(target, false),
@@ -16206,6 +16254,7 @@ export class Game {
       // entered as a Craw Wurm and died was a mana value 6 creature.
       manaValue: manaValue(parseManaCost(printedManaCost(this.registry, object))),
       ...(object.manaSpent !== undefined ? { manaSpent: object.manaSpent } : {}),
+      ...(object.manaSpentFrom !== undefined ? { manaSpentFrom: [...object.manaSpentFrom] } : {}),
       isToken: object.isToken,
       isCommander: object.isCommander,
       tapped: object.tapped,
@@ -16466,7 +16515,10 @@ export class Game {
     // The mana spent to cast a spell stays with the permanent it becomes (an
     // "if N mana was spent to cast it" enters trigger reads it there) and
     // ends with any other move.
-    if (!(object.zone === "stack" && to === "battlefield")) object.manaSpent = undefined;
+    if (!(object.zone === "stack" && to === "battlefield")) {
+      object.manaSpent = undefined;
+      object.manaSpentFrom = undefined;
+    }
 
     // Rule 400.7: wherever it goes, it arrives as a new object, and only a
     // library-to-graveyard move is "put there from a library" (Captain

@@ -81,6 +81,10 @@ export interface ManaOption {
   /** What else the mana ability does — `add-mana`'s `also` — applied when
    * the payment uses it. */
   readonly rider?: EffectSpec;
+  /** Who made the extra mana triggered mana abilities add as this source is
+   * tapped (rule 605.1b), one id per extra unit — those units are theirs,
+   * not this source's (see `ManaOrigin`). */
+  readonly extraFrom?: readonly ObjectId[];
 }
 
 /** Whether one of `o`'s flexible units can be `m`. */
@@ -140,6 +144,9 @@ export interface ManaPlanStep {
   readonly oncePerTurn?: number;
   /** See {@link ManaOption.rider}. */
   readonly rider?: EffectSpec;
+  /** See {@link ManaOption.extraFrom}: the last `extraFrom.length` units of
+   * `mana` are theirs. */
+  readonly extraFrom?: readonly ObjectId[];
 }
 
 /** A fully-worked-out way to pay a cost: which sources to tap ({@link
@@ -521,6 +528,7 @@ export function planManaPayment(
     readonly untapped?: true;
     readonly oncePerTurn?: number;
     readonly rider?: EffectSpec;
+    readonly extraFrom?: readonly ObjectId[];
   }
   // Colours this cost still wants, for `coverGenericFrom`'s preference.
   const wantedColors = new Set<ManaType>(
@@ -568,6 +576,7 @@ export function planManaPayment(
       ...(opt.untapped !== undefined ? { untapped: opt.untapped } : {}),
       ...(opt.oncePerTurn !== undefined ? { oncePerTurn: opt.oncePerTurn } : {}),
       ...(opt.rider !== undefined ? { rider: opt.rider } : {}),
+      ...(opt.extraFrom !== undefined ? { extraFrom: opt.extraFrom } : {}),
     };
     tapped.push(t);
     return t;
@@ -705,6 +714,7 @@ export function planManaPayment(
     ...(t.untapped !== undefined ? { untapped: t.untapped } : {}),
     ...(t.oncePerTurn !== undefined ? { oncePerTurn: t.oncePerTurn } : {}),
     ...(t.rider !== undefined ? { rider: t.rider } : {}),
+    ...(t.extraFrom !== undefined ? { extraFrom: t.extraFrom } : {}),
   }));
 }
 

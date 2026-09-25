@@ -2,6 +2,7 @@
 
 // Type-only, so nothing here participates in a runtime cycle — `filter.ts`
 // and `effects.ts` both import this module for real.
+import type { CardType, Supertype } from "./cards/define.js";
 import type { EffectSpec } from "./effects.js";
 import type { CardFilter } from "./filter.js";
 import type { ObjectId } from "./primitives.js";
@@ -77,7 +78,38 @@ export interface ManaUnit {
    * spent to cast a creature spell that shares a creature type with your
    * commander, scry 1". Carried as plain data so it survives a snapshot. */
   readonly onSpend?: ManaSpendRider;
+  /** What made it — see {@link ManaOrigin}. */
+  readonly from?: ManaOrigin;
 }
+
+/**
+ * What made a unit of mana: the card types, subtypes and supertypes of the
+ * source of the ability or spell that added it, as they were when it did —
+ * "mana from an artifact", "mana from a Treasure". Taken as the mana is
+ * made, because the source is often gone by the time the mana is spent (a
+ * Treasure sacrificed for it). Extra mana a triggered mana ability adds
+ * (rule 605.1b — "whenever you tap a creature for mana, add an additional
+ * {G}") is that ability's source's, not the tapped permanent's.
+ */
+export interface ManaOrigin {
+  readonly types: readonly CardType[];
+  readonly subtypes: readonly string[];
+  readonly supertypes: readonly Supertype[];
+}
+
+/** Which sources of mana count — a `CardFilter.manaFrom` clause. Every field
+ * given must match. */
+export interface ManaFromSpec {
+  readonly type?: CardType;
+  readonly subtype?: string;
+  readonly supertype?: Supertype;
+}
+
+/** Whether mana made by `origin` is mana from what `spec` names. */
+export const manaOriginMatches = (origin: ManaOrigin, spec: ManaFromSpec): boolean =>
+  (spec.type === undefined || origin.types.includes(spec.type)) &&
+  (spec.subtype === undefined || origin.subtypes.includes(spec.subtype)) &&
+  (spec.supertype === undefined || origin.supertypes.includes(spec.supertype));
 
 /** A triggered ability that fires when one unit of mana is spent on a
  * matching spell (rule 106.12 / 603.2e). */
