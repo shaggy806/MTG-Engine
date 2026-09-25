@@ -27,8 +27,6 @@ export interface CardTileProps {
    * printed cost (the commander tax, rule 903.4) — shown next to the cost
    * pips rather than folded into them, so the printed cost stays legible. */
   readonly extraGenericCost?: number
-  /** A small ordinal shown top-left (blocker damage order). */
-  readonly order?: number | null
   /** How many identical permanents this tile stands in for (a land stack). */
   readonly stackCount?: number | null
   /** The seat-colour class of whoever this permanent is attacking, or null.
@@ -118,7 +116,6 @@ export function CardTile({
   activatable = false,
   badge = null,
   extraGenericCost = 0,
-  order = null,
   stackCount = null,
   attackSeat = null,
   layout = 'title',
@@ -314,7 +311,6 @@ export function CardTile({
 
       {obj.loyalty !== null ? <LoyaltyCounter value={obj.loyalty} /> : null}
 
-      {order !== null ? <span className="card-order">{order}</span> : null}
       {stackCount !== null && stackCount > 1 ? (
         <span className="card-stack">×{stackCount}</span>
       ) : null}

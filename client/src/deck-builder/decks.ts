@@ -2,8 +2,8 @@
  * Local (per-browser) deck persistence — no server-side save/share yet, that's
  * the separate, later roadmap item (see `docs/plans/`). A small named-deck
  * list in `localStorage`, plus a reference to whichever deck is "active":
- * the one `useNetworkGame` sends along when creating or claiming a seat in a
- * room (see `getActivePayload`). `localStorage`, not `sessionStorage` — a
+ * the deck a seat starts with on the seat board (`getActiveDeck`, read by
+ * `SeatBoard`). `localStorage`, not `sessionStorage` — a
  * deck someone's building should survive closing the tab, unlike a room seat
  * claim.
  *
@@ -234,28 +234,6 @@ export function getActiveDeck(): DeckContents | null {
   if (ref === null) return null
   if (ref.kind === 'starter') return starterContents(ref.index)
   return getDeck(ref.id)
-}
-
-/** What `useNetworkGame.claimSeat`/`addBot`/`setBotDeck` send over the wire —
- * `undefined` when no deck is active (or it's empty), so the server falls
- * back to that seat's positional starter deck (see
- * `server/src/pending-room.ts`). */
-export function getActivePayload():
-  | {
-      readonly cards: readonly string[]
-      readonly commanders: readonly string[]
-      readonly name: string
-      readonly printings?: Readonly<Record<string, string>>
-    }
-  | undefined {
-  const deck = getActiveDeck()
-  if (deck === null || deck.cards.length === 0) return undefined
-  return {
-    cards: deck.cards,
-    commanders: deck.commanders,
-    name: deck.name,
-    printings: deck.printings,
-  }
 }
 
 /** One pickable option in the seat-picker's deck-choice popup — a saved deck

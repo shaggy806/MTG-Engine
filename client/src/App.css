@@ -1596,9 +1596,9 @@
 }
 /* stays readable over a tapped tile's dimming scrim (z-index:1 above) --
    see the comment on .card-tile.tapped::before/.mini-tile.tapped::before.
-   .card-order/.card-stack set their own z-index further down instead of
-   listing them here, since a rule appearing later in the file always wins
-   a same-specificity conflict regardless of what's declared here. */
+   .card-stack sets its own z-index further down instead of being listed
+   here, since a rule appearing later in the file always wins a
+   same-specificity conflict regardless of what's declared here. */
 .ct-pt,
 .ct-loyalty,
 .card-flag,
@@ -1950,23 +1950,6 @@
   background: var(--warn);
   border-radius: 3px;
   padding: 0 calc(4px * var(--ct-scale, 1));
-}
-.card-order {
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 17px;
-  height: 17px;
-  display: grid;
-  place-items: center;
-  font-size: 11px;
-  font-weight: 800;
-  color: #0b0e14;
-  background: var(--accent);
-  border-radius: 50%;
-  /* above a tapped tile's dimming scrim (z-index:1) -- see the comment on
-     .card-tile.tapped::before/.mini-tile.tapped::before. */
-  z-index: 2;
 }
 /* how many identical lands a stacked tile stands in for */
 .card-stack {

@@ -34,12 +34,9 @@ import './card-image.css'
 export function CardImage({
   def,
   version = 'normal',
-  className,
 }: {
   readonly def: CardDefinition
   readonly version?: ArtVersion
-  /** Extra classes on the wrapper (the card-shaped box, not the `<img>`). */
-  readonly className?: string
 }) {
   // Re-render when a batched lookup resolves, so the direct CDN URL replaces
   // the by-name fallback (and a name the batch gave up on stops being held).
@@ -57,9 +54,7 @@ export function CardImage({
   const src = resolveArtUrl(def.art, def.name, version)
   const failed = !pending && (unlookupable || isArtBlocked(src))
 
-  const classes = ['card-image', pending || failed ? 'placeholder' : '', className ?? '']
-    .filter(Boolean)
-    .join(' ')
+  const classes = pending || failed ? 'card-image placeholder' : 'card-image'
 
   return (
     <span className={classes}>

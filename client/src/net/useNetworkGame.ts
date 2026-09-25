@@ -170,7 +170,9 @@ export interface NetworkGame {
    * won't let a bot take its next move until every seat that acks has caught
    * up, which is what keeps bot play in step with the animations. */
   ackFrame: (seq: number) => void
-  createRoom: (seed?: number, players?: number) => void
+  /** Opens a two-seat room with this tab as its host. The table is sized
+   * from the seat board afterwards (`addSeat`/`removeSeat`). */
+  createRoom: () => void
   joinRoom: (roomId: string) => void
   /** Walks back out of a room that hasn't started yet, to the landing page —
    * giving up my seat, if I hold one, so the table can fill it again. */
@@ -427,14 +429,11 @@ export function useNetworkGame(): NetworkGame {
     }
   }, [openSocket])
 
-  const createRoom = useCallback(
-    (seed?: number, players?: number) => {
-      const hostToken = newClientToken()
-      pendingHostTokenRef.current = hostToken
-      send({ type: 'create-room', seed, players, hostToken })
-    },
-    [send],
-  )
+  const createRoom = useCallback(() => {
+    const hostToken = newClientToken()
+    pendingHostTokenRef.current = hostToken
+    send({ type: 'create-room', hostToken })
+  }, [send])
 
   const joinRoom = useCallback(
     (id: string) => {

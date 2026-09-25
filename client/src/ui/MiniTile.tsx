@@ -27,7 +27,6 @@ export interface MiniTileProps {
   readonly activatable?: boolean
   readonly badge?: string | null
   readonly extraGenericCost?: number
-  readonly order?: number | null
   readonly stackCount?: number | null
   /** The seat-colour class of whoever this permanent is attacking, or null.
    * The tile is outlined in it, because the `⚔ <name>` badge is small,
@@ -59,7 +58,6 @@ export function MiniTile({
   activatable = false,
   badge = null,
   extraGenericCost = 0,
-  order = null,
   stackCount = null,
   attackSeat = null,
   onClick,
@@ -152,7 +150,6 @@ export function MiniTile({
           ) : null}
           {obj.loyalty !== null ? <LoyaltyCounter value={obj.loyalty} /> : null}
 
-          {order !== null ? <span className="card-order">{order}</span> : null}
           {stackCount !== null && stackCount > 1 ? (
             <span className="card-stack">×{stackCount}</span>
           ) : null}

@@ -1691,7 +1691,6 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     let selected = false
     let activatable = false
     let badge: string | null = null
-    let order: number | null = null
     // Both halves of "is this attacking someone": a declaration this seat is
     // still building (`attackAssignments`, mine only) and an attack already
     // on the board (`obj.attacking`, which every seat sees).
@@ -1788,7 +1787,6 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           selected={selected}
           activatable={activatable}
           badge={badge}
-          order={order}
           stackCount={opts.stackCount ?? null}
           attackSeat={attackSeat}
           onClick={() => clickPermanent(ids)}
@@ -1803,7 +1801,6 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         selected={selected}
         activatable={activatable}
         badge={badge}
-        order={order}
         stackCount={opts.stackCount ?? null}
         attackSeat={attackSeat}
         onClick={() => clickPermanent(ids)}

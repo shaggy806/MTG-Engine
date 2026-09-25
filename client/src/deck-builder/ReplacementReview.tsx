@@ -36,7 +36,6 @@ export interface ReviewSubstitution {
 export function ReplacementReview({
   substitutions,
   deckCards,
-  initialIndex = 0,
   onChoose,
   onClose,
 }: {
@@ -44,11 +43,10 @@ export function ReplacementReview({
   /** Everything the deck holds now — a stand-in already in it can't be
    * picked for another card, which would break singleton. */
   readonly deckCards: readonly string[]
-  readonly initialIndex?: number
   readonly onChoose: (from: string, to: string) => void
   readonly onClose: () => void
 }) {
-  const [index, setIndex] = useState(initialIndex)
+  const [index, setIndex] = useState(0)
   const count = substitutions.length
   const current = substitutions[Math.min(index, count - 1)]
   const inDeck = new Set(deckCards)
