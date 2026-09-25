@@ -172,6 +172,10 @@ export interface GameObject {
    * without saying which departure it means — see {@link LastKnownRefs}.
    */
   lastKnown?: LastKnownInfo;
+  /** The snapshots `lastKnown` held before, newest first, a few kept: a
+   * permanent that left, came back and left again before an ability
+   * referring to its first departure resolved is still read as it was then. */
+  earlierLastKnown?: LastKnownInfo[];
   /**
    * For a spell or ability object: which battlefield stint of the objects it
    * refers to it means, for last-known information. See
@@ -440,10 +444,12 @@ export interface GameObject {
   /** For a spell or ability on the stack: each object target's
    * `zoneChangeCount` when it was targeted (`null` for a player or an empty
    * slot). One that has changed zones since is a new object (rule 400.7) —
-   * no longer the one meant — so it counts as gone when this resolves. Not
-   * for a delayed trigger, which chose no targets of its own: what it carries
-   * is read by last-known information (rule 608.2h — Mana Drain's "that
-   * spell's mana value"). */
+   * no longer the one meant — so it counts as gone when this resolves. A
+   * delayed trigger, which chose no targets of its own, carries its
+   * creator's as they were when it was created (`DelayedTrigger.targetStints`):
+   * it acts on none that has changed zones since, while what it reads of
+   * them still comes from last-known information (rule 608.2h — Mana
+   * Drain's "that spell's mana value"). */
   targetStints?: (number | null)[];
   /** A spell's counters to enter the battlefield with — the
    * `enters-with-counters` effect. Cleared by any zone change but its own
@@ -1491,6 +1497,12 @@ export interface DelayedTrigger {
   /** Where those targets were when the creating spell or ability targeted
    * them — see `GameObject.targetZones`. */
   readonly targetZones?: readonly (ZoneType | null)[];
+  /** Which object each target was as this was created (its
+   * `zoneChangeCount` then; `null` for a player). "Exile it at the
+   * beginning of the next end step" does nothing to one that has changed
+   * zones since, as it's a new object (rule 400.7), though what the ability
+   * reads of it still comes from last-known information. */
+  readonly targetStints?: readonly (number | null)[];
   /** The source's `zoneChangeCount` as this was created, when the source was
    * a card or permanent rather than a spell: "return **it** to its owner's
    * hand at the beginning of the next end step" (The Locust God) finds

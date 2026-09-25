@@ -1952,6 +1952,11 @@ export class Game {
    */
   static readonly MAX_EFFECT_INSTANCES = 1000;
 
+  /** How many earlier departures' snapshots a card keeps besides its
+   * latest (`GameObject.earlierLastKnown`): enough for an ability to outlive
+   * its permanent coming back and leaving again a few times over. */
+  private static readonly EARLIER_LAST_KNOWN = 3;
+
   /**
    * The most separate objects one kind of token is woken into when its tokens
    * are granted an activated ability (Cryptolith Rite's "{T}: Add"). Small on
@@ -8698,10 +8703,12 @@ export class Game {
   private resolveAbility(object: GameObject): void {
     const id = object.id;
     const ability = this.stackAbilityOf(object);
-    // A delayed trigger chose no targets (rule 603.7d): what it carries is
-    // read by last-known information, not re-checked as targets.
-    const targets =
-      object.delayedTrigger !== undefined ? (object.targets ?? []) : this.targetsStillMeant(object);
+    // A delayed trigger chose no targets (rule 603.7d), so what it carries
+    // isn't re-checked as targets. It acts only on those still the objects
+    // they were as it was created (rule 400.7), but reads every one of them,
+    // through last-known information (Mana Drain's "that spell").
+    const targets = this.targetsStillMeant(object);
+    const readTargets = object.delayedTrigger !== undefined ? (object.targets ?? []) : undefined;
     const source = object.sourceObjectId ?? id;
 
     // Intervening-if, second check (rule 603.4): a triggered ability whose
@@ -8784,6 +8791,7 @@ export class Game {
         // transformed since it was put on the stack — a delayed trigger,
         // since it was created.
         ...(transformSince !== undefined ? { transformSince } : {}),
+        ...(readTargets !== undefined ? { readTargets } : {}),
       },
     );
     const targetedBy = object.targetedBy;
@@ -9497,7 +9505,9 @@ export class Game {
       return undefined;
     }
     const lki = object !== undefined ? object.lastKnown : this.state.ceasedTokens?.[id];
-    return lki?.zoneChangeCount === stint ? lki : undefined;
+    if (lki?.zoneChangeCount === stint) return lki;
+    // An earlier departure: it has come back and left again since.
+    return object?.earlierLastKnown?.find((earlier) => earlier.zoneChangeCount === stint);
   }
 
   /**
@@ -10490,9 +10500,15 @@ export class Game {
      * sacrificed permanent the spell or ability refers to — see
      * {@link LastKnownRefs}. */
     lastKnownRefs: LastKnownRefs = {},
-    /** See `ResolutionContext.sourceLost` and `ResolutionContext.abilityKey`;
-     * `transformSince` is `ParkedSteps.transformSince`. */
-    opts: { readonly sourceLost?: boolean; readonly abilityKey?: string; readonly transformSince?: number } = {},
+    /** See `ResolutionContext.sourceLost`, `ResolutionContext.abilityKey`
+     * and `ResolutionContext.readTargets`; `transformSince` is
+     * `ParkedSteps.transformSince`. */
+    opts: {
+      readonly sourceLost?: boolean;
+      readonly abilityKey?: string;
+      readonly transformSince?: number;
+      readonly readTargets?: ResolvedTargets;
+    } = {},
   ): ResolutionContext {
     const refs = lastKnownRefs;
     // Where "this way" starts: the resolution under way (every continuation
@@ -10500,7 +10516,9 @@ export class Game {
     const since = this.state.resolutionSince ?? this.state.eventSeq;
     const expectedZoneOf = (target: TargetRef): ZoneType | null => {
       if (target.kind !== "object") return null;
-      const i = targets.findIndex((t) => t?.kind === "object" && t.object === target.object);
+      const i = (opts.readTargets ?? targets).findIndex(
+        (t) => t?.kind === "object" && t.object === target.object,
+      );
       return i < 0 ? null : (targetZones[i] ?? null);
     };
     // Last-known information (rule 608.2h): a permanent this spell or
@@ -10628,6 +10646,7 @@ export class Game {
       controller,
       source,
       targets,
+      ...(opts.readTargets !== undefined ? { readTargets: opts.readTargets } : {}),
       x,
       triggerValue,
       triggerObject,
@@ -14384,6 +14403,9 @@ export class Game {
       // Where they were when the *creating* spell or ability targeted them:
       // "that spell" still means the spell after it has been countered.
       ...(targetZones.length > 0 ? { targetZones: [...targetZones] } : {}),
+      // Which objects they are now: one that changes zones before this
+      // resolves is a new object (rule 400.7), and "exile it" leaves it be.
+      ...(targets.length > 0 ? { targetStints: this.stintsOfTargets(targets) } : {}),
       // Which object its source is now: one that changes zones before this
       // resolves is a new object (rule 400.7), and "return it" finds nothing.
       ...(object !== undefined && object.zone !== "stack"
@@ -14493,6 +14515,7 @@ export class Game {
   private carryDelayedIdentity(id: ObjectId, trigger: DelayedTrigger): void {
     const object = this.state.objects[id];
     if (trigger.targetZones !== undefined) object.targetZones = [...trigger.targetZones];
+    if (trigger.targetStints !== undefined) object.targetStints = [...trigger.targetStints];
     if (trigger.sourceStint !== undefined) object.sourceZoneChangeCount = trigger.sourceStint;
   }
 
@@ -16620,7 +16643,17 @@ export class Game {
       const kept = commanderWaiting && object.lastKnown?.zoneChangeCount === stint;
       if (!kept) {
         const pre = this.leaveBatch?.snapshots.get(id);
+        const previous = object.lastKnown;
         object.lastKnown = pre?.zoneChangeCount === stint ? pre : this.takeLastKnown(id);
+        // The departure before this one, for whatever still refers to it: it
+        // came back and left again before a dies trigger of its first
+        // departure resolved.
+        if (previous !== undefined && previous.zoneChangeCount !== stint) {
+          object.earlierLastKnown = [previous, ...(object.earlierLastKnown ?? [])].slice(
+            0,
+            Game.EARLIER_LAST_KNOWN,
+          );
+        }
       }
     }
 

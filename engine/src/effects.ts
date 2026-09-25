@@ -2685,6 +2685,11 @@ export interface ResolutionContext extends EffectApi {
    * checking for `undefined` — which effects already do for an out-of-range
    * index — is all a skipped slot needs. */
   readonly targets: ResolvedTargets;
+  /** A delayed trigger's targets, every one it carries, for what it reads
+   * of them ("that spell's mana value"): `targets` holds only those still
+   * the objects they were as it was created, the ones it may act on (rule
+   * 400.7). Absent for anything else, whose reads use `targets`. */
+  readonly readTargets?: ResolvedTargets;
   /** The value chosen for `{X}` when this spell/ability was put on the stack,
    * or 0 if its cost had no `{X}`. */
   readonly x: number;
@@ -3037,6 +3042,9 @@ function resolveAmountRef(ref: AmountRef, ctx: ResolutionContext): TargetRef | u
     return ctx.triggerObject === undefined ? undefined : { kind: "object", object: ctx.triggerObject };
   }
   if (ref === "source") return { kind: "object", object: ctx.source };
+  // A read, so a delayed trigger's carried target is read even once it has
+  // changed zones (by last-known information), though not acted on.
+  if (typeof ref === "number" && ctx.readTargets !== undefined) return ctx.readTargets[ref];
   return resolveEffectTarget(ref, ctx);
 }
 
