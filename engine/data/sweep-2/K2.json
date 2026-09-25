@@ -1,0 +1,839 @@
+{
+  "batch": "K2",
+  "status": "complete",
+  "authored": [
+    {
+      "name": "Krosan Grip",
+      "files": [
+        "engine/src/cards/pool/krosan-grip.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Boggart Trawler // Boggart Bog",
+      "files": [
+        "engine/src/cards/pool/boggart-trawler.ts",
+        "engine/src/cards/pool/boggart-bog.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Graven Cairns",
+      "files": [
+        "engine/src/cards/pool/graven-cairns.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Relic of Legends",
+      "files": [
+        "engine/src/cards/pool/relic-of-legends.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Springleaf Drum",
+      "files": [
+        "engine/src/cards/pool/springleaf-drum.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Tireless Tracker",
+      "files": [
+        "engine/src/cards/pool/tireless-tracker.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Pinnacle Monk // Mystic Peak",
+      "files": [
+        "engine/src/cards/pool/pinnacle-monk.ts",
+        "engine/src/cards/pool/mystic-peak.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Liquimetal Torque",
+      "files": [
+        "engine/src/cards/pool/liquimetal-torque.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "The Reaver Cleaver",
+      "files": [
+        "engine/src/cards/pool/the-reaver-cleaver.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Brotherhood Regalia",
+      "files": [
+        "engine/src/cards/pool/brotherhood-regalia.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Puresteel Paladin",
+      "files": [
+        "engine/src/cards/pool/puresteel-paladin.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Bridgeworks Battle // Tanglespan Bridgeworks",
+      "files": [
+        "engine/src/cards/pool/bridgeworks-battle.ts",
+        "engine/src/cards/pool/tanglespan-bridgeworks.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Ripples of Undeath",
+      "files": [
+        "engine/src/cards/pool/ripples-of-undeath.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Cursed Mirror",
+      "needs": [
+        "new:copy-on-enter-duration",
+        "effect:copy-exceptions"
+      ],
+      "why": "'As this enters, you may have it become a copy of any creature until end of turn, except it has haste': copyOnEnter is permanent, mandatory and creature-only, with no duration or haste exception."
+    },
+    {
+      "name": "Living Death",
+      "needs": [
+        "new:mass-graveyard-to-battlefield"
+      ],
+      "why": "No effect exiles only the creature cards from every graveyard and then puts the cards exiled this way onto the battlefield under their owners' control."
+    },
+    {
+      "name": "Disciple of Freyalise // Garden of Freyalise",
+      "needs": [
+        "effect:may-sacrifice-then"
+      ],
+      "why": "'You may sacrifice another creature. If you do, gain X life and draw X cards, where X is its power' needs a may-sacrifice whose tail reads the sacrificed creature; the sacrifice effect only queues its decision."
+    },
+    {
+      "name": "Chandra's Ignition",
+      "needs": [
+        "new:damage-from-target"
+      ],
+      "why": "The targeted creature must be the source of the damage to each other creature and each opponent; damage-all/damage only deal damage from the resolving spell (or a trigger object)."
+    },
+    {
+      "name": "Commander's Plate",
+      "needs": [
+        "new:protection-choice-and-dynamic"
+      ],
+      "why": "Protection from each colour outside your commander's colour identity: protection colours are fixed in the card definition, not computed."
+    },
+    {
+      "name": "Plaza of Heroes",
+      "needs": [
+        "new:add-mana-colors-among"
+      ],
+      "why": "'Add one mana of any color among legendary permanents you control' — add-mana has no 'colours among [filter]' form."
+    },
+    {
+      "name": "Field of the Dead",
+      "needs": [
+        "new:distinct-names-count-condition"
+      ],
+      "why": "The intervening-if 'seven or more lands with different names' needs a condition counting distinct names among permanents."
+    },
+    {
+      "name": "Maskwood Nexus",
+      "needs": [
+        "keyword:changeling"
+      ],
+      "why": "'Creatures you control are every creature type', including creature spells and cards in other zones — no every-type marker."
+    },
+    {
+      "name": "Adeline, Resplendent Cathar",
+      "needs": [
+        "effect:enter-attacking"
+      ],
+      "why": "Tokens 'tapped and attacking that player' for each opponent — no enter-attacking token creation."
+    },
+    {
+      "name": "Birgi, God of Storytelling // Harnfel, Horn of Bounty",
+      "needs": [
+        "new:boast-extra-activations",
+        "cost:choose-cards-as-cost"
+      ],
+      "why": "Birgi's 'creatures you control can boast twice' has no vocabulary, and Harnfel's 'Discard a card:' activation cost isn't modelled."
+    },
+    {
+      "name": "Faeburrow Elder",
+      "needs": [
+        "new:add-mana-colors-among"
+      ],
+      "why": "'For each color among permanents you control, add one mana of that color' — the P/T half is expressible (grantPtPerCount.colorsAmong), the mana ability isn't."
+    },
+    {
+      "name": "Rise of the Dark Realms",
+      "needs": [
+        "new:mass-graveyard-to-battlefield"
+      ],
+      "why": "return-from-graveyard only reaches your own graveyard; nothing puts all creature cards from all graveyards onto the battlefield under your control."
+    },
+    {
+      "name": "Mother of Runes",
+      "needs": [
+        "new:protection-choice-and-dynamic"
+      ],
+      "why": "'Gains protection from the color of your choice until end of turn' — no effect grants protection, let alone a colour chosen on resolution."
+    },
+    {
+      "name": "Necropotence",
+      "needs": [
+        "new:skip-step",
+        "zone:visibility-extensions"
+      ],
+      "why": "'Skip your draw step' has no vocabulary, and the pay-1-life ability exiles face down then returns that card to hand at the next end step."
+    },
+    {
+      "name": "Valakut Awakening // Valakut Stoneforge",
+      "needs": [
+        "new:hand-to-library-bottom-any-number",
+        "decision:library-ordering"
+      ],
+      "why": "'Put any number of cards from your hand on the bottom of your library, then draw that many plus one': look-and-choose from hand only goes to the library top, and bottom order isn't chosen."
+    },
+    {
+      "name": "Wishclaw Talisman",
+      "needs": [
+        "effect:control-change-extensions",
+        "decision:choose-player"
+      ],
+      "why": "'An opponent gains control of this artifact' — no effect gives control to another (chosen) player."
+    },
+    {
+      "name": "Blasphemous Edict",
+      "needs": [
+        "new:conditional-alternative-cost"
+      ],
+      "why": "'You may pay {B} rather than pay this spell's mana cost if there are thirteen or more creatures' — alternativeCost has no condition and always taps creatures; freeCastIf is only free."
+    },
+    {
+      "name": "Gitaxian Probe",
+      "needs": [
+        "zone:visibility-extensions"
+      ],
+      "why": "'Look at target player's hand' — no effect reveals a hand to one player."
+    },
+    {
+      "name": "Veil of Summer",
+      "needs": [
+        "new:spells-cant-be-countered-static",
+        "new:hexproof-from-colors",
+        "stat:spells-cast-this-turn-record"
+      ],
+      "why": "'Spells you control can't be countered this turn', hexproof from blue and black, and 'if an opponent has cast a blue or black spell this turn' all lack vocabulary."
+    },
+    {
+      "name": "Voice of Victory",
+      "needs": [
+        "keyword:mobilize"
+      ],
+      "why": "Mobilize 2 needs tokens created tapped and attacking."
+    },
+    {
+      "name": "Bolt Bend",
+      "needs": [
+        "new:change-target"
+      ],
+      "why": "'Change the target of target spell or ability with a single target' — no retargeting effect."
+    },
+    {
+      "name": "Dread Return",
+      "needs": [
+        "new:flashback-nonmana-costs",
+        "cost:sacrifice-multiple"
+      ],
+      "why": "'Flashback—Sacrifice three creatures': flashback costs are mana (+ life) only."
+    },
+    {
+      "name": "Emergence Zone",
+      "needs": [
+        "new:flash-permission-this-turn"
+      ],
+      "why": "'You may cast spells this turn as though they had flash' — castAsThoughFlash is a static, with no one-shot this-turn form."
+    },
+    {
+      "name": "Sword of Feast and Famine",
+      "needs": [
+        "new:trigger-on-attached-permanent"
+      ],
+      "why": "'Whenever equipped creature deals combat damage to a player, … you untap all lands you control' is the Equipment's own trigger (its controller's 'you'); a granted trigger would belong to the creature's controller."
+    },
+    {
+      "name": "Mindbreak Trap",
+      "needs": [
+        "decision:variable-target-count",
+        "new:conditional-alternative-cost"
+      ],
+      "why": "'Exile any number of target spells', and the {0} alternative cost gated on an opponent having cast three or more spells this turn."
+    },
+    {
+      "name": "Maze of Ith",
+      "needs": [
+        "new:prevent-damage-by-and-to-permanent"
+      ],
+      "why": "'Prevent all combat damage that would be dealt to and dealt by that creature this turn' — prevent-damage only shields damage dealt to a target, by amount."
+    },
+    {
+      "name": "Conduit of Worlds",
+      "needs": [
+        "effect:cast-during-resolution"
+      ],
+      "why": "'If you haven't cast a spell this turn, you may cast that card. If you do, you can't cast additional spells this turn' is a cast during resolution plus a conditional prohibition."
+    },
+    {
+      "name": "Laboratory Maniac",
+      "needs": [
+        "new:win-the-game"
+      ],
+      "why": "'If you would draw a card while your library has no cards in it, you win the game instead' — no win-the-game replacement."
+    },
+    {
+      "name": "Unbreakable Formation",
+      "needs": [
+        "new:addendum"
+      ],
+      "why": "Addendum needs 'this spell was cast during your main phase'; a resolution-time main-phase check would wrongly give a copy the bonus (ruling)."
+    },
+    {
+      "name": "Nesting Grounds",
+      "needs": [
+        "effect:move-counter"
+      ],
+      "why": "'Move a counter from target permanent you control onto a second target permanent'."
+    },
+    {
+      "name": "Second Harvest",
+      "needs": [
+        "new:token-copy-for-each-matching"
+      ],
+      "why": "'For each token you control, create a token that's a copy of that permanent' — create-token-copy copies one named object."
+    },
+    {
+      "name": "Growing Rites of Itlimoc // Itlimoc, Cradle of the Sun",
+      "needs": [
+        "decision:library-ordering"
+      ],
+      "why": "'Put the rest on the bottom of your library in any order' — look-and-choose only puts the rest on the bottom in a random order. Everything else (including the transform and Itlimoc) is expressible."
+    },
+    {
+      "name": "Champion of Lambholt",
+      "needs": [
+        "new:dynamic-compare-in-static-filters"
+      ],
+      "why": "'Creatures with power less than this creature's power can't block creatures you control' — a static's cantBeBlockedBy filter can't compare against the source's live power (an { amount } operand fails closed there)."
+    },
+    {
+      "name": "Redirect Lightning",
+      "needs": [
+        "new:change-target"
+      ],
+      "why": "'Change the target of target spell or ability with a single target' — no retargeting effect (the pay-5-life-or-{2} additional cost is expressible)."
+    },
+    {
+      "name": "Opposition Agent",
+      "needs": [
+        "new:search-library-control"
+      ],
+      "why": "Controlling opponents while they search and exiling what they find for you to play — no search hooks."
+    },
+    {
+      "name": "Talon Gates of Madara",
+      "needs": [
+        "new:phasing"
+      ],
+      "why": "'Up to one target creature phases out' — phasing isn't modelled; the {4} put-from-hand ability is also unusual."
+    },
+    {
+      "name": "Clever Concealment",
+      "needs": [
+        "new:phasing",
+        "decision:variable-target-count"
+      ],
+      "why": "'Any number of target nonland permanents you control phase out' — phasing and unbounded targeting."
+    },
+    {
+      "name": "Thespian's Stage",
+      "needs": [
+        "effect:become-copy",
+        "effect:copy-exceptions"
+      ],
+      "why": "'This land becomes a copy of target land, except it has this ability' — no become-a-copy effect with an exception."
+    },
+    {
+      "name": "Six",
+      "needs": [
+        "new:retrace-grant"
+      ],
+      "why": "'During your turn, nonland permanent cards in your graveyard have retrace' — retrace isn't modelled (the attack mill/return is)."
+    },
+    {
+      "name": "Culling Ritual",
+      "needs": [
+        "effect:add-mana-extensions"
+      ],
+      "why": "'Add {B} or {G} for each permanent destroyed this way' from a resolving spell: mana added outside cost payment takes the first colour, with no player choice of split."
+    },
+    {
+      "name": "Darksteel Mutation",
+      "needs": [
+        "new:set-types-static"
+      ],
+      "why": "'Is an Insect artifact creature … and loses all other abilities, card types, and creature types' — a static that sets (not adds) types and removes abilities from the enchanted creature."
+    },
+    {
+      "name": "Curiosity",
+      "needs": [
+        "new:trigger-on-attached-permanent"
+      ],
+      "why": "'Whenever enchanted creature deals damage to an opponent, you may draw' is the Aura's trigger (its controller's 'you' and 'opponent'); the Aura can enchant an opponent's creature, where a granted trigger would be wrong."
+    },
+    {
+      "name": "Teferi's Ageless Insight",
+      "needs": [
+        "new:draw-replacement-except-first"
+      ],
+      "why": "'If you would draw a card except the first one you draw in each of your draw steps, draw two instead' — would-draw has no first-in-draw-step exemption."
+    },
+    {
+      "name": "Return the Favor",
+      "needs": [
+        "new:spree",
+        "effect:copy-ability",
+        "new:change-target",
+        "decision:copy-new-targets"
+      ],
+      "why": "Spree modes with additional costs, copying an activated/triggered ability, and changing a target."
+    },
+    {
+      "name": "Tibalt's Trickery",
+      "needs": [
+        "effect:random-choice",
+        "effect:cast-during-resolution"
+      ],
+      "why": "Random choice of 1-3, mill, exile-until a nonland card with a different name, and 'they may cast that card without paying its mana cost'."
+    },
+    {
+      "name": "Mulldrifter",
+      "needs": [
+        "keyword:evoke"
+      ],
+      "why": "Evoke."
+    },
+    {
+      "name": "Strionic Resonator",
+      "needs": [
+        "effect:copy-ability",
+        "decision:copy-new-targets"
+      ],
+      "why": "'Copy target triggered ability you control. You may choose new targets for the copy.'"
+    },
+    {
+      "name": "Realmwalker",
+      "needs": [
+        "keyword:changeling",
+        "zone:cast-from-library-top",
+        "bug:as-enters-choices-any-entry"
+      ],
+      "why": "Changeling, look at the top card any time, and cast creature spells of the chosen type from the top of your library."
+    },
+    {
+      "name": "Deathrite Shaman",
+      "needs": [
+        "effect:add-mana-extensions"
+      ],
+      "why": "Its first ability targets, so it's not a mana ability; resolving from the stack, 'add one mana of any color' always makes {W} — manaColors is only honoured for a real mana ability. Verified in a test."
+    },
+    {
+      "name": "Hydroelectric Specimen // Hydroelectric Laboratory",
+      "needs": [
+        "new:change-target"
+      ],
+      "why": "'You may change the target of target instant or sorcery spell with a single target to this creature'."
+    },
+    {
+      "name": "Cloud Key",
+      "needs": [
+        "bug:as-enters-choices-any-entry"
+      ],
+      "why": "chooseOnEnter only fires when the permanent is cast; a Cloud Key flickered, copied or reanimated has no type chosen and reduces nothing."
+    },
+    {
+      "name": "Bitterblossom",
+      "needs": [
+        "new:kindred-card-type"
+      ],
+      "why": "Bitterblossom is a Kindred Enchantment — Faerie; the engine has no Kindred card type, so card-type counts (delirium, Tarmogoyf) would be wrong."
+    },
+    {
+      "name": "Torment of Hailfire",
+      "needs": [
+        "new:repeat-x-times"
+      ],
+      "why": "'Repeat the following process X times' — each iteration is an each-player-may punisher, but nothing repeats an effect X times."
+    },
+    {
+      "name": "Archdruid's Charm",
+      "needs": [
+        "new:search-destination-by-type"
+      ],
+      "why": "Mode 1: 'Search for a creature or land card and reveal it. Put it onto the battlefield tapped if it's a land card. Otherwise, put it into your hand' — search-library has one destination."
+    },
+    {
+      "name": "Dig Through Time",
+      "needs": [
+        "keyword:delve",
+        "decision:library-ordering"
+      ],
+      "why": "Delve, and 'the rest on the bottom of your library in any order'."
+    },
+    {
+      "name": "Hexing Squelcher",
+      "needs": [
+        "new:spells-cant-be-countered-static"
+      ],
+      "why": "'Spells you control can't be countered' — cantBeCountered is per card; no static grants it to your spells."
+    },
+    {
+      "name": "Trouble in Pairs",
+      "needs": [
+        "new:skip-extra-turns"
+      ],
+      "why": "'If an opponent would begin an extra turn, that player skips that turn instead' — no extra-turn replacement (the draw triggers are expressible)."
+    },
+    {
+      "name": "Banner of Kinship",
+      "needs": [
+        "new:enters-with-counters-dynamic",
+        "new:anthem-per-counter-on-source",
+        "bug:as-enters-choices-any-entry"
+      ],
+      "why": "Enters with a fellowship counter per creature of the chosen type, and chosen-type creatures get +1/+1 per counter on the Banner — enters-with counters are fixed and grantPtPerCount can't count the source's counters."
+    },
+    {
+      "name": "Ancient Copper Dragon",
+      "needs": [
+        "mechanic:dice-rolling"
+      ],
+      "why": "Roll a d20."
+    },
+    {
+      "name": "Caretaker's Talent",
+      "needs": [
+        "new:class-enchantments"
+      ],
+      "why": "Class levels aren't modelled."
+    },
+    {
+      "name": "Wizard Class",
+      "needs": [
+        "new:class-enchantments"
+      ],
+      "why": "Class levels aren't modelled."
+    },
+    {
+      "name": "Treasure Cruise",
+      "needs": [
+        "keyword:delve"
+      ],
+      "why": "Delve."
+    },
+    {
+      "name": "Plaguecrafter",
+      "needs": [
+        "new:edict-fallback-per-player"
+      ],
+      "why": "'Each player sacrifices a creature or planeswalker. Each player who can't discards a card' — no per-player fallback on an edict."
+    },
+    {
+      "name": "Midnight Clock",
+      "needs": [
+        "new:nth-counter-trigger",
+        "new:shuffle-zones-into-library"
+      ],
+      "why": "'When the twelfth hour counter is put on this' and 'shuffle your hand and graveyard into your library'."
+    },
+    {
+      "name": "Ozolith, the Shattered Spire",
+      "needs": [
+        "new:counter-replacement-additive"
+      ],
+      "why": "'That many plus one +1/+1 counters' — would-add-counter only multiplies."
+    },
+    {
+      "name": "Sanctum Weaver",
+      "needs": [
+        "bug:mana-any-one-color"
+      ],
+      "why": "'Add X mana of any one color' is paid as independently coloured units."
+    },
+    {
+      "name": "Incubation Druid",
+      "needs": [
+        "new:add-mana-lands-could-produce"
+      ],
+      "why": "'One mana of any type that a land you control could produce' (and three with a +1/+1 counter) — only the opponents'-lands form exists."
+    },
+    {
+      "name": "Borne Upon a Wind",
+      "needs": [
+        "new:flash-permission-this-turn"
+      ],
+      "why": "'You may cast spells this turn as though they had flash'."
+    },
+    {
+      "name": "Trailblazer's Boots",
+      "needs": [
+        "new:nonbasic-landwalk"
+      ],
+      "why": "Nonbasic landwalk isn't a keyword."
+    },
+    {
+      "name": "Harmonic Prodigy",
+      "needs": [
+        "new:trigger-doubler-exclude-self"
+      ],
+      "why": "'A Shaman or another Wizard you control' — doubleTriggersOf has no 'other than this permanent' clause, and a name filter would wrongly skip a second Prodigy."
+    },
+    {
+      "name": "Windbrisk Heights",
+      "needs": [
+        "new:hideaway"
+      ],
+      "why": "Hideaway."
+    },
+    {
+      "name": "Sea Gate Restoration // Sea Gate, Reborn",
+      "needs": [
+        "new:no-max-hand-size-rest-of-game"
+      ],
+      "why": "'You have no maximum hand size for the rest of the game' — noMaxHandSize is only read off permanents, and emblems carry only anthems."
+    },
+    {
+      "name": "Sculpting Steel",
+      "needs": [
+        "replacement:copy-on-enter-options"
+      ],
+      "why": "'Enter as a copy of any artifact' — copyOnEnter only copies creatures."
+    },
+    {
+      "name": "Imp's Mischief",
+      "needs": [
+        "new:change-target"
+      ],
+      "why": "'Change the target of target spell with a single target'."
+    },
+    {
+      "name": "Dualcaster Mage",
+      "needs": [
+        "decision:copy-new-targets"
+      ],
+      "why": "'Copy target instant or sorcery spell. You may choose new targets for the copy' — copy-spell keeps the original's targets."
+    },
+    {
+      "name": "Sphere of Safety",
+      "needs": [
+        "new:attack-tax"
+      ],
+      "why": "'Can't attack you … unless their controller pays {X} for each' — no attack cost."
+    },
+    {
+      "name": "Opal Palace",
+      "needs": [
+        "new:commander-cast-count-amount"
+      ],
+      "why": "'Enters with additional +1/+1 counters equal to the number of times it's been cast from the command zone' when this mana is spent on your commander."
+    },
+    {
+      "name": "Changeling Outcast",
+      "needs": [
+        "keyword:changeling"
+      ],
+      "why": "Changeling."
+    },
+    {
+      "name": "Gravecrawler",
+      "needs": [
+        "new:cast-self-from-graveyard"
+      ],
+      "why": "'You may cast this card from your graveyard as long as you control a Zombie' — castFromGraveyard is a battlefield permanent's permission, not a card's own from its graveyard."
+    },
+    {
+      "name": "Shared Animosity",
+      "needs": [
+        "new:count-sharing-creature-type"
+      ],
+      "why": "'+1/+0 for each other attacking creature that shares a creature type with it'."
+    },
+    {
+      "name": "Purphoros, God of the Forge",
+      "needs": [
+        "condition:devotion",
+        "static:self-type-changes"
+      ],
+      "why": "'As long as your devotion to red is less than five, Purphoros isn't a creature'."
+    },
+    {
+      "name": "Reflections of Littjara",
+      "needs": [
+        "effect:copy-spell-extensions",
+        "effect:copy-permanent-spell",
+        "bug:as-enters-choices-any-entry"
+      ],
+      "why": "'Whenever you cast a spell of the chosen type, copy that spell' — copying the triggering spell, and permanent spells."
+    },
+    {
+      "name": "Innkeeper's Talent",
+      "needs": [
+        "new:class-enchantments"
+      ],
+      "why": "Class levels aren't modelled."
+    },
+    {
+      "name": "Archivist of Oghma",
+      "needs": [
+        "new:searches-library-trigger"
+      ],
+      "why": "'Whenever an opponent searches their library'."
+    },
+    {
+      "name": "Muddle the Mixture",
+      "needs": [
+        "new:transmute"
+      ],
+      "why": "Transmute."
+    },
+    {
+      "name": "Into the Flood Maw",
+      "needs": [
+        "new:gift"
+      ],
+      "why": "Gift a tapped Fish."
+    },
+    {
+      "name": "Crypt Ghast",
+      "needs": [
+        "new:extort-life-lost"
+      ],
+      "why": "The extort helper gains one life per opponent rather than the life actually lost (ruling: with Platinum Emperion you gain nothing). The Swamp mana trigger is expressible."
+    },
+    {
+      "name": "Blind Obedience",
+      "needs": [
+        "new:extort-life-lost"
+      ],
+      "why": "Extort gains a fixed amount rather than the life actually lost (see Crypt Ghast). The enters-tapped half is expressible."
+    },
+    {
+      "name": "Mangara, the Diplomat",
+      "needs": [
+        "new:attack-with-intervening-if"
+      ],
+      "why": "'If two or more of those creatures are attacking you and/or planeswalkers you control' is an intervening-if (rule 603.4). attack-with checks it only when the ability triggers, never again on resolution, which the ruling relies on."
+    },
+    {
+      "name": "Ghostly Flicker",
+      "needs": [
+        "new:distinct-targets-across-slots"
+      ],
+      "why": "'Two target …' needs two different objects, but separate target slots aren't checked against each other. The reviewer had a cast with the same permanent in both slots accepted."
+    },
+    {
+      "name": "Ancient Greenwarden",
+      "needs": [
+        "new:play-mdfc-land-face-from-graveyard"
+      ],
+      "why": "'You may play lands from your graveyard' should let you play an MDFC's land back face (ruling). playFromGraveyard matches the card's front face, so the permission misses it. The trigger-doubling half is fine."
+    }
+  ],
+  "newFeatures": {
+    "new:copy-on-enter-duration": "An optional 'as this enters, you may have it become a copy of X until end of turn' with a duration, rather than a permanent Clone copy.",
+    "new:mass-graveyard-to-battlefield": "Put every card matching a filter from all graveyards (or those an effect exiled this way) onto the battlefield, under their owners' or the effect controller's control; plus exiling only the matching cards from every graveyard.",
+    "new:damage-from-target": "Damage (to one target, to each matching permanent, or to a player scope) dealt by a targeted permanent rather than by the resolving spell.",
+    "new:protection-choice-and-dynamic": "Protection whose qualities aren't printed: 'protection from the color of your choice until end of turn' (chosen on resolution, as a one-shot grant), and 'from each color not in your commander's color identity' (computed).",
+    "new:add-mana-colors-among": "add-mana reading colours off permanents: 'one mana of any color among [filter] you control', and 'for each color among permanents you control, add one mana of that color'.",
+    "new:distinct-names-count-condition": "A condition/amount counting permanents with different names ('seven or more lands with different names').",
+    "new:boast-extra-activations": "A static letting boast abilities be activated more than once per turn ('can boast twice during each of your turns').",
+    "new:skip-step": "'Skip your draw step' (and similar step skips) as a static.",
+    "new:hand-to-library-bottom-any-number": "Put any number of cards from hand on the bottom of the library, and read how many were put ('draw that many plus one').",
+    "new:conditional-alternative-cost": "An alternative mana cost gated on a condition ('pay {B} rather than this spell's mana cost if there are thirteen or more creatures'; a Trap's '{0} if an opponent cast three or more spells this turn').",
+    "new:spells-cant-be-countered-static": "'Spells you control can't be countered' as a static (or 'this turn' as an effect).",
+    "new:hexproof-from-colors": "Hexproof from a colour for players and permanents.",
+    "new:change-target": "'Change the target of target spell or ability with a single target' (optionally to a specific object), re-checking legality.",
+    "new:flashback-nonmana-costs": "Flashback costs with non-mana parts (sacrifice N creatures, discard, exile).",
+    "new:flash-permission-this-turn": "A one-shot 'you may cast spells this turn as though they had flash' for the effect's controller.",
+    "new:trigger-on-attached-permanent": "An Aura's or Equipment's own triggered ability watching the enchanted/equipped permanent ('whenever enchanted creature deals damage…', 'whenever equipped creature deals combat damage to a player…'), controlled by the attachment's controller.",
+    "new:prevent-damage-by-and-to-permanent": "Prevent all (combat) damage dealt to and dealt by a target permanent this turn.",
+    "new:win-the-game": "A 'you win the game' outcome, including as a replacement for drawing from an empty library.",
+    "new:addendum": "Addendum: a spell condition true only if the spell was actually cast during its controller's main phase (a copy wasn't cast).",
+    "new:token-copy-for-each-matching": "Create one token copy of each permanent matching a filter ('for each token you control, create a token that's a copy of it').",
+    "new:search-library-control": "Hooks on library searches: control an opponent while they search, and redirect what they find to exile for you to play.",
+    "new:phasing": "Phasing (rule 702.26): phase out/in, treated as though it doesn't exist until its controller's next untap step.",
+    "new:retrace-grant": "Retrace (cast from graveyard by discarding a land in addition), including as a grant to graveyard cards.",
+    "new:set-types-static": "A static that sets an affected permanent's card types and creature types and removes its abilities (Darksteel Mutation), rather than only adding.",
+    "new:kindred-card-type": "The Kindred card type (formerly tribal), so a noncreature card with creature types counts it among its card types.",
+    "new:repeat-x-times": "Repeat an effect block X times.",
+    "new:search-destination-by-type": "A tutor whose destination depends on the found card's type ('onto the battlefield tapped if it's a land card, otherwise into your hand').",
+    "new:skip-extra-turns": "A replacement making an opponent skip an extra turn they would begin.",
+    "new:enters-with-counters-dynamic": "An enters-with-counters self-replacement whose amount is a live count (e.g. of creatures of the chosen type).",
+    "new:anthem-per-counter-on-source": "A P/T bonus to affected permanents that scales with counters on the static's source.",
+    "new:class-enchantments": "Class enchantments: levels gained as a sorcery-speed activated ability, with abilities that switch on per level and 'when this Class becomes level N' triggers.",
+    "new:edict-fallback-per-player": "An edict with a per-player fallback for each player who couldn't sacrifice ('each player who can't discards a card').",
+    "new:nth-counter-trigger": "'When the Nth [kind] counter is put on this' — a counters-put trigger keyed to crossing a count.",
+    "new:shuffle-zones-into-library": "Shuffle a player's hand and/or graveyard into their library.",
+    "new:counter-replacement-additive": "A would-add-counter replacement adding N more ('that many plus one') rather than multiplying.",
+    "new:add-mana-lands-could-produce": "add-mana of 'any type that a land you control could produce'.",
+    "new:nonbasic-landwalk": "Nonbasic landwalk as a keyword.",
+    "new:trigger-doubler-exclude-self": "doubleTriggersOf with an 'another'/excludeSelf clause.",
+    "new:hideaway": "Hideaway N and 'play the exiled card without paying its mana cost' gates.",
+    "new:no-max-hand-size-rest-of-game": "'You have no maximum hand size for the rest of the game' from a resolving spell (a player-level, game-long effect).",
+    "new:attack-tax": "Attack costs ('can't attack you unless their controller pays {X} for each').",
+    "new:commander-cast-count-amount": "An EffectAmount reading how many times a commander has been cast from the command zone, applied to the spell the mana paid for.",
+    "new:cast-self-from-graveyard": "A card's own static permission to cast itself from its owner's graveyard, gated on a condition ('as long as you control a Zombie').",
+    "new:count-sharing-creature-type": "A count of other permanents that share a creature type with a given creature.",
+    "new:searches-library-trigger": "A 'whenever a player searches their library' trigger.",
+    "new:transmute": "Transmute: discard from hand as a sorcery to tutor a card with the same mana value.",
+    "new:gift": "Gift: an optional promise to an opponent as the spell is cast, with 'if the gift was promised' riders.",
+    "new:draw-replacement-except-first": "A would-draw replacement that exempts the first card drawn in each of your draw steps.",
+    "new:dynamic-compare-in-static-filters": "Dynamic numeric operands (the source's power, a live amount) in the CardFilters statics read — cantBeBlockedBy, canBlockOnly, affects scopes.",
+    "new:spree": "Spree: choose one or more modes, each with its own additional cost.",
+    "new:extort-life-lost": "Extort (and similar drains) gaining life equal to the life actually lost this way, rather than a count of opponents.",
+    "new:attack-with-intervening-if": "An attack-with trigger's attacker count, rechecked as an intervening-if when the ability resolves (rule 603.4).",
+    "new:distinct-targets-across-slots": "Several target slots that share one use of the word 'target' ('two target creatures') must name different objects.",
+    "new:play-mdfc-land-face-from-graveyard": "Graveyard play permissions (playFromGraveyard) should consider a modal DFC's land face, not just its front."
+  },
+  "bugs": [
+    {
+      "card": "(pool guard)",
+      "what": "src/cards/pool.test.ts 'isDeckableCard excludes tokens and back faces' allows at most 20 non-deckable pool entries (POOL_CARDS.length - 20); this batch's three MDFC back faces (Boggart Bog, Mystic Peak, Tanglespan Bridgeworks) take it to 22. The margin needs raising or counting back faces explicitly; test files outside the batch's own are off-limits here."
+    },
+    {
+      "card": "Crypt Ghast / Blind Obedience",
+      "what": "helpers.ts extort() gains { countPlayers: 'each-opponent' } life, not the life actually lost; wrong whenever an opponent's loss is prevented or altered."
+    },
+    {
+      "card": "Ghostly Flicker",
+      "what": "cast-spell with targets [X, X] across two separate slots of one 'two target' clause is accepted (rule 601.2c); found by the reviewer with a script against engine/dist."
+    },
+    {
+      "card": "Ancient Greenwarden",
+      "what": "mayPlayFromGraveyard (game.ts) matches a graveyard card by its front face, so with Boggart Trawler // Boggart Bog in the graveyard only plain lands are offered."
+    }
+  ],
+  "unprocessed": []
+}
