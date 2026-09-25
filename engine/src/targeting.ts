@@ -506,7 +506,13 @@ export function legalTargets(
       if (isLegalTarget(state, registry, spec, ref, forPlayer, source)) out.push(ref);
     }
   } else if (typeof spec === "object" && spec.kind === "card-in-graveyard") {
+    // Only the graveyards `whose` can reach: a "your graveyard" spell in hand
+    // is enumerated on every `legalActions` call, and late in a game each
+    // graveyard holds dozens of cards.
+    const whose = spec.whose ?? "any";
     for (const player of state.turnOrder) {
+      if (whose === "you" && player !== forPlayer) continue;
+      if (whose === "opponent" && player === forPlayer) continue;
       for (const id of state.zones.perPlayer[player].graveyard) {
         const ref: TargetRef = { kind: "object", object: id };
         if (isLegalTarget(state, registry, spec, ref, forPlayer, source)) out.push(ref);

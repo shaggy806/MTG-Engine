@@ -38,6 +38,9 @@ const CAST_RETURN = "Test Cast Return";
 /** "Return target spell to its owner's hand" — the non-counter stack bounce
  * (Unsubstantiate's spell half, Venser's ETB), with Remand's draw bolted on. */
 const STACK_BOUNCE = "Test Spell Bounce";
+/** "Return a card from your graveyard to your hand", chosen as it resolves
+ * (a `choose-from-zone`) — the shape Regrowth had before it targeted. */
+const GRAVE_PICK = "Test Graveyard Pick";
 const registry = createDefaultRegistry().register(
   defineCard({
     name: STACK_BOUNCE,
@@ -163,6 +166,15 @@ const registry = createDefaultRegistry().register(
     types: ["sorcery"],
     text: "Return this spell to its owner's hand.",
     effect: { kind: "return-to-hand", target: "source", from: "stack" },
+  }),
+).register(
+  defineCard({
+    name: GRAVE_PICK,
+    manaCost: "{1}{G}",
+    colors: ["G"],
+    types: ["sorcery"],
+    text: "Return a card from your graveyard to your hand.",
+    effect: { kind: "look-and-choose", zone: "graveyard", min: 1, max: 1, destination: "hand", leftover: "stay" },
   }),
 );
 
@@ -661,7 +673,7 @@ describe("return-to-hand from the stack takes a spell its own trigger acts on", 
 
 describe("rule 903.9b — a commander chosen out of a graveyard mid-decision", () => {
   it("is asked about once the choice is made, and waits in the graveyard meanwhile", () => {
-    // Regrowth picks through a `choose-from-zone` decision, so the move to
+    // The card is picked through a `choose-from-zone` decision, so the move to
     // hand happens while that decision is still on `awaiting` and the 903.9b
     // question has to queue behind it — the commander waiting in the
     // graveyard, not on the battlefield.
@@ -669,8 +681,8 @@ describe("rule 903.9b — a commander chosen out of a graveyard mid-decision", (
     lands(game, "Forest", A, 2);
     const cmdr = game.debugSpawn("Grizzly Bears", A, "graveyard");
     game.state.objects[cmdr].isCommander = true;
-    const regrowth = toHand(game, "Regrowth", A);
-    game.dispatch({ type: "cast-spell", player: A, card: regrowth });
+    const pick = toHand(game, GRAVE_PICK, A);
+    game.dispatch({ type: "cast-spell", player: A, card: pick });
     game.advanceUntil((s) => s.awaiting?.kind === "choose-from-zone");
     game.dispatch({ type: "choose-from-zone", player: A, chosen: [cmdr] });
 

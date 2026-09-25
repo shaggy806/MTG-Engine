@@ -1,8 +1,5 @@
 import { defineCard } from "../define.js";
 
-// Mode 1's real text targets a card in a graveyard, which has no `TargetSpec`
-// (AUTHORING §15) — the card is chosen as the mode resolves instead. See
-// `regrowth.ts`.
 export default defineCard({
   name: "Kolaghan's Command",
   manaCost: "{1}{B}{R}",
@@ -20,12 +17,8 @@ export default defineCard({
     modes: [
       {
         text: "Return target creature card from your graveyard to your hand.",
-        effect: {
-          kind: "return-from-graveyard",
-          filter: { type: "creature" },
-          destination: "hand",
-          count: 1,
-        },
+        targets: [{ kind: "card-in-graveyard", whose: "you", filter: { type: "creature" } }],
+        effect: { kind: "return-to-hand", target: 0, from: "graveyard" },
       },
       {
         text: "Target player discards a card.",

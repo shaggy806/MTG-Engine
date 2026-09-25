@@ -1,12 +1,8 @@
 import { defineCard } from "../define.js";
 
-// Real text is "return **target** card from your graveyard to your hand". The
-// engine has no `TargetSpec` for an arbitrary card in a graveyard (AUTHORING
-// §15), so this is modelled as a non-targeted `return-from-graveyard` — the
-// controller picks the card as the trigger resolves rather than as it goes on
-// the stack. The only observable difference is rule 608.2b fizzling (a trigger
-// whose only target became illegal), which nothing in the pool can cause for a
-// card sitting in a graveyard.
+// "You may return target card": the card is a target, chosen as the trigger
+// goes on the stack (so with an empty graveyard it never does — rule 603.3d);
+// the "may" is at resolution.
 export default defineCard({
   name: "Eternal Witness",
   manaCost: "{1}{G}{G}",
@@ -21,16 +17,11 @@ export default defineCard({
   triggered: [
     {
       trigger: { on: "enters-battlefield", who: "self" },
-      targets: [],
+      targets: [{ kind: "card-in-graveyard", whose: "you" }],
       effect: {
         kind: "may",
-        prompt: "Return a card from your graveyard to your hand?",
-        effect: {
-          kind: "return-from-graveyard",
-          filter: {},
-          destination: "hand",
-          count: 1,
-        },
+        prompt: "Return the target card to your hand?",
+        effect: { kind: "return-to-hand", target: 0, from: "graveyard" },
       },
       resolve: null,
       text:

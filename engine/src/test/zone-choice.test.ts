@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { createDefaultRegistry, defineCard } from "../cards.js";
 import { Game } from "../game.js";
 import type { GameConfig } from "../game.js";
 import { asObjectId, asPlayerId } from "../primitives.js";
@@ -83,9 +84,23 @@ const named = (game: Game, ids: readonly ObjectId[], name: string): ObjectId => 
   return id;
 };
 
-describe("look-and-choose: graveyard (Regrowth)", () => {
+/** "Return a card from your graveyard to your hand", chosen as it resolves —
+ * the shape Regrowth had before it targeted. Test-only, never pooled. */
+const GRAVE_PICK = "Test Graveyard Pick";
+const pickRegistry = createDefaultRegistry().register(
+  defineCard({
+    name: GRAVE_PICK,
+    manaCost: "{1}{G}",
+    colors: ["G"],
+    types: ["sorcery"],
+    text: "Return a card from your graveyard to your hand.",
+    effect: { kind: "look-and-choose", zone: "graveyard", min: 1, max: 1, destination: "hand", leftover: "stay" },
+  }),
+);
+
+describe("look-and-choose: graveyard", () => {
   it("puts the chosen card into hand and leaves the rest sitting in the graveyard", () => {
-    const game = mkGame(["Forest", "Forest", "Forest", "Regrowth"]);
+    const game = mkGame(["Forest", "Forest", "Forest", GRAVE_PICK], [], { registry: pickRegistry });
     game.advanceUntil(atFirstMain);
     const bear = spawnInto(game, "Grizzly Bears", A, "graveyard");
     const wurm = spawnInto(game, "Craw Wurm", A, "graveyard");
@@ -100,7 +115,7 @@ describe("look-and-choose: graveyard (Regrowth)", () => {
     game.dispatch({
       type: "cast-spell",
       player: A,
-      card: named(game, game.handOf(A), "Regrowth"),
+      card: named(game, game.handOf(A), GRAVE_PICK),
       targets: [],
     });
     game.advanceUntil(stackEmpty);
