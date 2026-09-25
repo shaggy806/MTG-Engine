@@ -133,6 +133,9 @@ export function parseTypePhrase(phrase, { cards = false } = {}) {
       anyOf.push(types.pop());
       continue;
     }
+    // Only another type can follow the "or": "creature or token" is a
+    // creature or any token, not a creature token (Ice Cream Kitty).
+    if (anyOf.length > 0 && !CARD_TYPES.includes(w)) return null;
     // On the battlefield everything is a permanent. Among cards (a graveyard,
     // a library) a "permanent card" is one that isn't an instant or sorcery.
     if (w === "permanent" || w === "permanents") {
@@ -154,6 +157,11 @@ export function parseTypePhrase(phrase, { cards = false } = {}) {
       if (filter.subtype !== undefined || anyOf.length > 0) return null;
       filter.subtype = w;
     } else return null;
+  }
+  // Whether "nontoken" or "legendary" before an "or" reaches past it is the
+  // card's to say, not the parser's.
+  if (anyOf.length > 0 && (filter.token !== undefined || filter.supertype !== undefined || notTypes.length > 0)) {
+    return null;
   }
   if (anyOf.length > 0) filter.typesAnyOf = anyOf;
   if (types.length === 1) filter.type = types[0];

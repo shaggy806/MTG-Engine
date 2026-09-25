@@ -108,6 +108,11 @@ describe("costs and triggers", () => {
     // came out as "an artifact creature that's a Vehicle".
     expect(parseTypePhrase("nontoken artifact creature or Vehicle")).toBeNull();
     expect(parseTypePhrase("artifact creature or enchantment")).toBeNull();
+    // Ice Cream Kitty's "another creature or token" is a creature or any
+    // token; read as one filter it was a creature token.
+    expect(parseTypePhrase("creature or token")).toBeNull();
+    // Whether a word before the "or" reaches past it is the card's to say.
+    expect(parseTypePhrase("nontoken creature or planeswalker")).toBeNull();
   });
 
   it("what a mana ability does besides the mana rides on `also`", () => {
