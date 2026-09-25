@@ -1,0 +1,10 @@
+import { defineCard } from "../define.js";
+
+export default defineCard({
+  name: "Pyretic Ritual",
+  manaCost: "{1}{R}",
+  colors: ["R"],
+  types: ["instant"],
+  text: "Add {R}{R}{R}.",
+  effect: { kind: "add-mana", mana: "R", amount: 3 },
+});
