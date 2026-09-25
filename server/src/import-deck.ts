@@ -175,7 +175,6 @@ export function parseDecklistText(text: string): ParsedDecklist {
 export interface ScryfallCardSummary {
   readonly manaCost: string | null;
   readonly typeLine: string;
-  readonly oracleText: string;
   /** Front face's, for a creature; what the replacer compares bodies on. */
   readonly power: string | null;
   readonly toughness: string | null;
@@ -192,7 +191,6 @@ interface ScryfallCardPayload {
   readonly name?: string;
   readonly mana_cost?: string;
   readonly type_line?: string;
-  readonly oracle_text?: string;
   readonly power?: string;
   readonly toughness?: string;
   readonly keywords?: readonly string[];
@@ -201,7 +199,6 @@ interface ScryfallCardPayload {
     readonly name?: string;
     readonly mana_cost?: string;
     readonly type_line?: string;
-    readonly oracle_text?: string;
     readonly power?: string;
     readonly toughness?: string;
   }[];
@@ -236,12 +233,6 @@ function summarize(data: ScryfallCardPayload): ScryfallCardSummary {
   return {
     manaCost: data.mana_cost ?? face?.mana_cost ?? null,
     typeLine: data.type_line ?? face?.type_line ?? "",
-    oracleText:
-      data.oracle_text ??
-      (data.card_faces ?? [])
-        .map((f) => f.oracle_text ?? "")
-        .filter((t) => t !== "")
-        .join("\n//\n"),
     power: data.power ?? face?.power ?? null,
     toughness: data.toughness ?? face?.toughness ?? null,
     keywords: data.keywords ?? [],
@@ -414,11 +405,6 @@ export async function lookupScryfallMany(
   return out;
 }
 
-/** Single-name convenience wrapper over `lookupScryfallMany`. */
-export async function lookupScryfall(name: string): Promise<ScryfallCardSummary | null> {
-  return (await lookupScryfallMany([name])).get(name) ?? null;
-}
-
 /** `(SET) number` → the Scryfall card id, or `null` for a pair that doesn't
  * resolve. Cached for the life of the process, misses included. */
 const printingCache = new Map<string, string | null>();
@@ -554,7 +540,6 @@ export async function evaluateDecklist(
         found: true,
         manaCost: def.manaCost,
         typeLine: localTypeLine(def),
-        oracleText: def.text,
         suggestedReplacement: null,
         replacements: [],
         printingId: printingIds.get(entry.name) ?? null,
@@ -568,7 +553,6 @@ export async function evaluateDecklist(
       found: scryfall !== null,
       manaCost: scryfall?.manaCost ?? null,
       typeLine: scryfall?.typeLine ?? "",
-      oracleText: scryfall?.oracleText ?? "",
       suggestedReplacement: options[0]?.name ?? null,
       replacements: options,
       printingId: null,

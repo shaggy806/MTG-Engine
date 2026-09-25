@@ -47,7 +47,6 @@ export interface ImportedCardReport {
   readonly found: boolean;
   readonly manaCost: string | null;
   readonly typeLine: string;
-  readonly oracleText: string;
   /** The stand-in the import uses for this card: `replacements[0]`, or
    * `null` when `implemented` (nothing to replace) or nothing is a sensible
    * match. */

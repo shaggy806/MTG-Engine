@@ -281,9 +281,6 @@ describe("evaluateDecklist", () => {
     expect(result.implemented).toBe(false);
     expect(result.found).toBe(true);
     expect(result.manaCost).toBe("{2}");
-    expect(result.oracleText).toBe(
-      "{T}: Add one mana of any color that a land you control could produce.",
-    );
     // An artifact that taps for mana -- some already-implemented mana rock
     // is a plausible enough stand-in.
     expect(result.suggestedReplacement).not.toBeNull();
@@ -379,7 +376,7 @@ describe("evaluateDecklist", () => {
     );
 
     expect(result.found).toBe(true);
-    expect(result.oracleText).toBe("Alpha text\n//\nBeta text");
+    expect(result.typeLine).toBe("Instant // Instant");
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(JSON.parse((fetchMock.mock.calls[1][1] as { body: string }).body)).toEqual({
       identifiers: [{ name: "Split Alpha // Split Beta" }],

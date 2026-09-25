@@ -33,13 +33,8 @@ export const SEATS: readonly SeatDeck[] = [ALICE, BOB, CAROL, DAVE].map((id, i) 
   cards: SAMPLE_DECKS[i].cards,
 }));
 
-/** Alice's and Bob's commanders/decks addressed by name, for tests that
- * construct a `Game` directly rather than going through a room. */
-export const COMMANDERS: { readonly alice: string; readonly bob: string } = {
-  alice: SEATS[0].commander as string,
-  bob: SEATS[1].commander as string,
-};
-
+/** Alice's and Bob's decks addressed by name, for tests that construct a
+ * `Game` directly rather than going through a room. */
 export const DECKS: {
   readonly alice: readonly string[];
   readonly bob: readonly string[];
