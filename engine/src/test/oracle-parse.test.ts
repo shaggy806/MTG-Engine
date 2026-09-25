@@ -136,6 +136,22 @@ describe("costs and triggers", () => {
     expect(sphere.complete).toBe(false);
   });
 
+  it("a spell is bounced from the stack", () => {
+    // Take It Back: without `from: "stack"` the bounce would look for a
+    // permanent and do nothing to the spell.
+    expect(parseSentence("Return target spell to its owner's hand.", ctx())).toEqual({
+      kind: "return-to-hand",
+      target: 0,
+      from: "stack",
+    });
+  });
+
+  it("several mana of any one color in a mana ability is left to author", () => {
+    // any-color x 2 is paid as two independent colours (bug:mana-any-one-color).
+    expect(parseSentence("Add two mana of any one color.", ctx())).toBeNull();
+    expect(parseSentence("Add two mana of any one color.", ctx({ onStack: true }))?.kind).toBe("modal");
+  });
+
   it("a subtype that ends in s in the singular keeps it", () => {
     // Kor Cartographer's "search your library for a Plains card" came out as
     // subtype "Plain", which no land has.

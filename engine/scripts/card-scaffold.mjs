@@ -140,6 +140,11 @@ function faceSource(face, ctx) {
     );
   }
   if (ctx.layoutNote) notes.push(ctx.layoutNote);
+  // {S} has to be paid with mana from a snow source; the engine folds it into
+  // generic, so any mana would pay it (AUTHORING §15).
+  if (/\{S\}/.test(`${face.mana_cost ?? ""} ${face.oracle_text ?? ""}`)) {
+    notes.push("snow mana ({S}) isn't modeled: the engine would take any mana for it");
+  }
 
   // A basic land type means "{T}: Add [its colour]" (rule 305.6), which the
   // engine only has written out.

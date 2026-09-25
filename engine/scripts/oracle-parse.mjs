@@ -493,7 +493,14 @@ export function parseSentence(sentence, ctx) {
   // Removal and movement.
   if ((m = re(`destroy (${TARGET})`).exec(s))) return { kind: "destroy", target: slot(m[1]) };
   if ((m = re(`exile (${TARGET})`).exec(s))) return { kind: "exile", target: slot(m[1]) };
-  if ((m = re(`return (${TARGET}) to its owner's hand`).exec(s))) return { kind: "return-to-hand", target: slot(m[1]) };
+  if ((m = re(`return (${TARGET}) to its owner's hand`).exec(s))) {
+    // A spell is on the stack: "return target spell to its owner's hand"
+    // (Unsubstantiate, Take It Back) takes it from there. Without `from`,
+    // return-to-hand bounces a permanent and would do nothing to a spell.
+    const spec = targetOf(m[1]);
+    const onStack = typeof spec === "string" ? spec.endsWith("spell") : spec?.kind === "spell";
+    return { kind: "return-to-hand", target: slot(m[1]), ...(onStack ? { from: "stack" } : {}) };
+  }
   if (re("return ~ to its owner's hand").test(s)) return { kind: "return-to-hand", target: "source" };
   if ((m = re(`tap (${TARGET})`).exec(s))) return { kind: "tap", target: slot(m[1]) };
   if ((m = re(`untap (${TARGET})`).exec(s))) return { kind: "untap", target: slot(m[1]) };
@@ -607,7 +614,11 @@ export function parseSentence(sentence, ctx) {
   if (/^add one mana of any color\.$/i.test(s)) return choice(WUBRG, 1);
   if ((m = new RegExp(`^add ${N} mana of any one color\\.$`, "i").exec(s))) {
     const n = amount(m[1]);
-    return typeof n === "number" ? choice(WUBRG, n) : null;
+    // In a mana ability, "two mana of any one color" would be any-color x 2,
+    // which the auto-payer pays as independently coloured units: BACKLOG's
+    // bug:mana-any-one-color (Gilded Lotus). Left to author until that's fixed.
+    if (typeof n !== "number" || (n > 1 && !ctx.onStack)) return null;
+    return choice(WUBRG, n);
   }
 
   // Everything else that's a whole instruction by itself.
