@@ -160,9 +160,6 @@ that one card is the reason the deck exists.
 
 ## Client / UI
 
-- **The target count is ignored.** `client/src/App.tsx` doesn't read `LegalAction.targetCount`,
-  the affordable range under Hinata-style per-target costs. A player who picks an unaffordable
-  number of targets gets the server's rejection banner.
 - **Reduced costs display wrong.** `displayCostOf` rewrites only the generic number, so a
   coloured-pip or twobrid reduction isn't shown.
 - **Convoke with a target-dependent cost.** The offered `proof` is priced at the dearer end of

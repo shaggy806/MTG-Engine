@@ -10,6 +10,7 @@ import type {
   PlayerId,
   PlayerView,
   TapCostOffer,
+  TargetCountRange,
   TargetRef,
   TargetSpec,
   VisibleObject,
@@ -19,6 +20,7 @@ import {
   blockingViolations,
   damageAssignmentViolations,
   describeTargetSpec,
+  distinctTargetCount,
   isOptionalSpec,
   slotOptions,
   standardAssignment,
@@ -158,6 +160,9 @@ const castExtras = (cast: CastAction) => ({
   // Which graveyard permission pays for it, when several could.
   ...(cast.graveyardGrant !== undefined ? { graveyardGrant: cast.graveyardGrant } : {}),
   ...(cast.tapCost !== undefined ? { tapCost: cast.tapCost } : {}),
+  // Not echoed either: how many distinct targets are affordable, which the
+  // targeting steps keep inside (`currentSlotOptions`).
+  ...(cast.targetCount !== undefined ? { targetCount: cast.targetCount } : {}),
   // Not `escapeExile`: that's an offer to pick from, not a field to echo.
   // `startCast` asks for the picks and carries them as `CastPicks`.
   ...(cast.convoke !== undefined && cast.convoke.candidates.length > 0
@@ -257,6 +262,38 @@ interface Targeting {
   /** A convoke spell's creatures still to pick, once the targets are in —
    * see `pendingConvoke`. */
   readonly convokeOffer?: ConvokeOffer
+  /** How many distinct targets the cast is affordable with, under a "for
+   * each target" cost (Hinata, Dawn-Crowned) — see `currentSlotOptions`. */
+  readonly targetCount?: TargetCountRange
+}
+
+/**
+ * The options for the slot being filled: what `slotOptions` allows ("another
+ * target" leaves out what an earlier slot took), less any that would leave
+ * the cast unaffordable. Under a "for each target" cost only some numbers of
+ * distinct targets are payable (`targetCount`), so an option that takes the
+ * count past the most, or leaves too few slots to reach the fewest, is out.
+ */
+function currentSlotOptions(t: Targeting): readonly TargetRef[] {
+  const i = t.picked.length
+  const options = slotOptions(t.specs, t.options, i, t.picked)
+  const range = t.targetCount
+  if (range === undefined) return options
+  const later = t.specs.length - i - 1
+  return options.filter((ref) => {
+    const n = distinctTargetCount([...t.picked, ref], range.copies)
+    return n <= range.max && n + later >= range.min
+  })
+}
+
+/** Whether an optional slot may be skipped: not when the slots after it
+ * could no longer reach the fewest distinct targets the cast is affordable
+ * with. */
+function maySkipSlot(t: Targeting): boolean {
+  const range = t.targetCount
+  if (range === undefined) return true
+  const later = t.specs.length - t.picked.length - 1
+  return distinctTargetCount(t.picked, range.copies) + later >= range.min
 }
 
 /**
@@ -1352,12 +1389,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   const pickIdForClick = useCallback(
     (ids: readonly ObjectId[]): ObjectId => {
       if (mode === 'targeting' && activeTargeting) {
-        const slot = slotOptions(
-          activeTargeting.specs,
-          activeTargeting.options,
-          activeTargeting.picked.length,
-          activeTargeting.picked,
-        )
+        const slot = currentSlotOptions(activeTargeting)
         const found = ids.find((i) =>
           slot.some((o) => o.kind === 'object' && o.object === i),
         )
@@ -1381,12 +1413,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     (ids: readonly ObjectId[]) => {
       const id = pickIdForClick(ids)
       if (mode === 'targeting' && activeTargeting) {
-        const slot = slotOptions(
-          activeTargeting.specs,
-          activeTargeting.options,
-          activeTargeting.picked.length,
-          activeTargeting.picked,
-        )
+        const slot = currentSlotOptions(activeTargeting)
         if (slot.some((o) => o.kind === 'object' && o.object === id)) {
           pickTarget({ kind: 'object', object: id })
         }
@@ -1563,12 +1590,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         return
       }
       if (mode !== 'targeting' || !activeTargeting) return
-      const slot = slotOptions(
-        activeTargeting.specs,
-        activeTargeting.options,
-        activeTargeting.picked.length,
-        activeTargeting.picked,
-      )
+      const slot = currentSlotOptions(activeTargeting)
       if (slot.some((o) => o.kind === 'player' && o.player === pid)) {
         pickTarget({ kind: 'player', player: pid })
       }
@@ -1644,15 +1666,9 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   }, [mode, pass])
 
   // --- render ----------------------------------------------------
-  // "Another target" leaves out what an earlier slot already took.
-  const targetSlot = activeTargeting
-    ? slotOptions(
-        activeTargeting.specs,
-        activeTargeting.options,
-        activeTargeting.picked.length,
-        activeTargeting.picked,
-      )
-    : []
+  // "Another target" leaves out what an earlier slot already took, and a
+  // "for each target" cost what it couldn't pay for.
+  const targetSlot = activeTargeting ? currentSlotOptions(activeTargeting) : []
   const pickedObjKeys = new Set(
     (activeTargeting?.picked ?? [])
       .filter((r) => r?.kind === 'object')
@@ -2595,7 +2611,11 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           {activeTargeting.picked.length + 1}/{activeTargeting.specs.length})
         </span>
         {isOptionalSpec(activeTargeting.specs[activeTargeting.picked.length]) ? (
-          <button type="button" onClick={() => pickTarget(null)}>
+          <button
+            type="button"
+            disabled={!maySkipSlot(activeTargeting)}
+            onClick={() => pickTarget(null)}
+          >
             Skip
           </button>
         ) : null}
