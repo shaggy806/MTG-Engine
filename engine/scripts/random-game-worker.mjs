@@ -7,7 +7,7 @@
 // `Game.advance`'s tick budget can't either (it only counts ticks that
 // return). `Worker.terminate()` stops the thread wherever it is.
 
-import { parentPort, workerData } from "node:worker_threads";
+import { parentPort } from "node:worker_threads";
 
 import { Game, RandomController, createRng, setComputedCacheCheck } from "../dist/index.js";
 
@@ -16,9 +16,8 @@ import { Game, RandomController, createRng, setComputedCacheCheck } from "../dis
 // every mutation inside a cache region invalidates (see characteristics.ts).
 if (process.env.MTG_CACHE_CHECK) setComputedCacheCheck(true);
 
-const { seats } = workerData;
-
-parentPort.on("message", ({ seed }) => {
+// Each game's decks come with its seed: they're built per seed (fuzz-decks.mjs).
+parentPort.on("message", ({ seed, seats }) => {
   const startedAt = Date.now();
   try {
     const rng = createRng(seed * 7919);

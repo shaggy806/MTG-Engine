@@ -2525,10 +2525,11 @@ clause; nothing catches a wrong one but reading the card.**
 - **Read the Oracle text beside the finished file**, clause by clause, and
   confirm each one is expressed. This is the only check that catches a clause
   that's present but *wrong* (§0, §15) — every tool below is blind to it.
-- **Fuzz it.** Add the name to one of the decks in
-  `engine/scripts/random-demo.mjs`, then `npm run play:random -w engine --
-  --games 300`. If `legalActions` ever offers something `dispatch` refuses,
-  this crashes.
+- **Fuzz it.** `npm run play:random -w engine -- --games 100 --with "Card
+  Name"` puts it in every seat's deck (the fuzzer's decks are built per seed
+  from the whole pool, so it's already in the rotation without this; `--with`
+  just makes sure it's drawn). If `legalActions` ever offers something
+  `dispatch` refuses, this crashes.
 - **Write a focused test** if the card exercises new-ish behaviour — one
   `engine/src/test/<card-or-feature>.test.ts` that builds a `Game` (or uses
   `createSandbox` from `sandbox.ts`), dispatches through the interaction, and

@@ -34,8 +34,5 @@ jobs:
       # refuses, or a game runs away. Exits non-zero naming the seed.
       - name: Fuzz, 2 players
         run: node engine/scripts/random-demo.mjs --games 30
-      # A four-player random game with the fuzzer's ~500-card decks can run
-      # past 300 turns (seed 2 does, in about 80s); the limit is there to
-      # catch a hang, not a long game.
       - name: Fuzz, 4 players
-        run: node engine/scripts/random-demo.mjs --games 8 --players 4 --timeout 120
+        run: node engine/scripts/random-demo.mjs --games 8 --players 4
