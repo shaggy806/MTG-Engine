@@ -87,7 +87,9 @@ that one card is the reason the deck exists.
   (`alternativeCostForSpells`); Narci, Fable Singer (the `chapter-resolves` trigger's
   `finalOnly`, and a completed Saga's sacrifice); Esika, God of the Tree (its back face's
   `reveal-until`, and a colour identity that now reads it), Umbris, Fear Manifest and Hei Bai,
-  Forest Guardian (`reveal-until`) — confirm each at `card:lookup`.
+  Forest Guardian (`reveal-until`); Tom Bombadil (`reveal-until`, the `chapter-resolves`
+  trigger and a lore-counter aggregate — its gaps entry still lists `effect:amount-aggregate`,
+  whose counters form it needs is built) — confirm each at `card:lookup`.
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first

@@ -673,8 +673,11 @@ export function weightedMatches(
   return out;
 }
 
-/** What an aggregate reads off each permanent. */
-export type AggregateOf = "power" | "toughness" | "mana-value";
+/** What an aggregate reads off each permanent: its power, toughness or mana
+ * value, or how many counters of one kind are on it — Tom Bombadil's "four
+ * or more **lore counters among Sagas you control**" is a sum of `{
+ * counters: "lore" }`. */
+export type AggregateOf = "power" | "toughness" | "mana-value" | { readonly counters: string };
 
 /**
  * A sum or a maximum over matching battlefield permanents (rule 208 /
@@ -700,13 +703,14 @@ export interface AggregateSpec {
 
 /** One permanent's current power, toughness or mana value — computed, so
  * anthems and counters count; mana value from the printed cost, with `{X}`
- * as 0 off the stack (rule 202.3e). */
+ * as 0 off the stack (rule 202.3e) — or the counters of a kind on it. */
 export function aggregateValueOf(
   state: GameState,
   registry: CardRegistry,
   id: ObjectId,
   of: AggregateOf,
 ): number {
+  if (typeof of === "object") return state.objects[id]?.counters[of.counters] ?? 0;
   if (of === "mana-value") {
     const object = state.objects[id];
     return object === undefined ? 0 : manaValue(parseManaCost(printedManaCost(registry, object)));

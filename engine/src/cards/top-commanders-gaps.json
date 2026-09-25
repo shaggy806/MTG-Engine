@@ -429,7 +429,7 @@
   "effect:amount-aggregate": {
    "size": "small",
    "ui": false,
-   "description": "Aggregates in CDAs (a layer-7b base P/T set from a sum or max, e.g. Karn, Legacy Reforged) and in static P/T bonuses, a greatest value over an attack batch or any non-battlefield set, and a static ability's aggregate condition that counts its own source. Built so far: sum and max of power, toughness or mana value over filtered battlefield permanents (a token stack counts N times in a sum; 0 over nothing) as an EffectAmount, as the StaticConditions aggregate and source-greatest ('greater than each other creature's power', strict or not), and as a cost reduction (Ghalta's shape)."
+   "description": "Aggregates in CDAs (a layer-7b base P/T set from a sum or max, e.g. Karn, Legacy Reforged) and in static P/T bonuses, a greatest value over an attack batch or any non-battlefield set, and a static ability's aggregate condition that counts its own source. Built so far: sum and max of power, toughness, mana value or the counters of one kind (Tom Bombadil's lore counters among Sagas) over filtered battlefield permanents (a token stack counts N times in a sum; 0 over nothing) as an EffectAmount, as the StaticConditions aggregate and source-greatest ('greater than each other creature's power', strict or not), and as a cost reduction (Ghalta's shape)."
   },
   "effect:amount-counters-on-object": {
    "size": "small",

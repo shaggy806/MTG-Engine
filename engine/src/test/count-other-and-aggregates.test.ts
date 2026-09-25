@@ -281,6 +281,28 @@ describe("aggregate amounts", () => {
   });
 });
 
+describe("an aggregate of counters", () => {
+  it("Tom Bombadil's shape: lore counters among Sagas you control", () => {
+    const game = table();
+    const bears = spawn(game, "Grizzly Bears");
+    const lore = {
+      aggregate: "sum",
+      of: { counters: "lore" },
+      filter: { subtype: "Saga", controlledBy: "you" },
+    } as const;
+    // History of Benalia enters with a lore counter.
+    const first = spawn(game, "History of Benalia");
+    spawn(game, "History of Benalia");
+    spawn(game, "History of Benalia", B); // not yours
+    expect(amountOf(game, lore, bears)).toBe(2);
+    game.state.objects[first].counters.lore = 2;
+    const four = { kind: "aggregate", value: lore, compare: { op: "gte", n: 4 } } as const;
+    expect(branch(game, four, bears)).toBe(false);
+    game.state.objects[first].counters.lore = 3;
+    expect(branch(game, four, bears)).toBe(true);
+  });
+});
+
 describe("aggregate conditions", () => {
   it("a resolving ability's total includes its own source", () => {
     const game = table();
