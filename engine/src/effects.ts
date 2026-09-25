@@ -106,6 +106,14 @@ export interface DelayedLeaves {
   readonly thisTurn?: boolean;
 }
 
+/** "When you next cast a [filter] spell this turn" (Yuna, Grand Summoner;
+ * Codie, Vociferous Codex) — a delayed trigger keyed to its controller's next
+ * spell matching `nextSpell` (`{}` for any), once, and this turn only. That
+ * spell is its trigger object. */
+export interface DelayedNextSpell {
+  readonly nextSpell: CardFilter;
+}
+
 /** How a `flicker` returns what it exiled — the non-target half of its
  * {@link EffectSpec}. */
 export interface FlickerOptions {
@@ -1008,9 +1016,14 @@ export type EffectSpec =
        * `"source"` still means the card that set it up.
        */
       readonly kind: "delayed-trigger";
-      /** A step ("at the beginning of the next end step"), or a permanent
-       * leaving the battlefield ("when it dies") — see {@link DelayedLeaves}. */
-      readonly at: DelayedTriggerTiming | DelayedLeaves;
+      /** A step ("at the beginning of the next end step"), a permanent
+       * leaving the battlefield ("when it dies" — see {@link DelayedLeaves}),
+       * or the controller's next spell this turn ({@link DelayedNextSpell}).
+       * Whatever the creating ability's trigger object was ("return **that
+       * card** to the battlefield at the beginning of the next end step" —
+       * Shirei, Shizo's Caretaker) is the delayed ability's too, unless the
+       * spell it waits for is. */
+      readonly at: DelayedTriggerTiming | DelayedLeaves | DelayedNextSpell;
       readonly effect: EffectSpec;
       /** Text for the log and the stack. */
       readonly text: string;
@@ -1018,6 +1031,27 @@ export type EffectSpec =
        * default, or the controller of a target slot (Arcane Denial hands its
        * "may draw two cards" to the player whose spell was countered). */
       readonly controller?: { readonly controllerOfTarget: number };
+    }
+  | {
+      /** "That creature enters with two additional +1/+1 counters on it"
+       * (Yuna, Grand Summoner): a spell on the stack — usually the trigger
+       * object of a `nextSpell` delayed trigger — enters the battlefield with
+       * these counters as it resolves (rule 614.1c: an ETB trigger sees
+       * them). Nothing for anything else. */
+      readonly kind: "enters-with-counters";
+      readonly target: EffectTargetRef;
+      readonly counter: string;
+      readonly amount: EffectAmount;
+    }
+  | {
+      /** "Until end of turn, you may cast that card" — a card in exile
+       * (Codie, Vociferous Codex's, found by a `reveal-until`): cast only,
+       * this turn, by the effect's controller; with `free`, only "without
+       * paying its mana cost". The permission rides on the card as an impulse
+       * one (`GameObject.impulse`). */
+      readonly kind: "allow-cast-from-exile";
+      readonly target: EffectTargetRef;
+      readonly free?: boolean;
     }
   | {
       /**
@@ -1389,6 +1423,10 @@ export type EffectSpec =
        * or `"stay"` (exiled cards stay exiled; revealed ones stay on top).
        */
       readonly rest: "bottom-random" | "graveyard" | "shuffle" | "stay";
+      /** The card found isn't one of the rest, whatever became of it — Codie,
+       * Vociferous Codex's "put each **other** card exiled this way on the
+       * bottom", which leaves it in exile to be cast. */
+      readonly keepFound?: boolean;
       /** Set only on the copy parked across a decision `then` raised: what
        * was revealed, so the rest can still be placed. */
       readonly progress?: RevealUntilProgress;
@@ -2188,11 +2226,16 @@ export interface EffectApi {
           readonly leaves: ObjectId;
           readonly to: readonly LeaveDestination[];
           readonly thisTurn?: boolean;
-        },
+        }
+      | DelayedNextSpell,
     effect: EffectSpec,
     text: string,
     controller: PlayerId,
   ): void;
+  /** See the `"enters-with-counters"` {@link EffectSpec}. */
+  entersWithCounters(target: TargetRef, counter: string, amount: number): void;
+  /** See the `"allow-cast-from-exile"` {@link EffectSpec}. */
+  allowCastFromExile(target: TargetRef, free: boolean): void;
   /** See the `"choose-creature-type"` {@link EffectSpec}. */
   chooseCreatureType(then: EffectSpec): void;
   /** Trigger a reflexive ability — see the `"reflexive-trigger"`
@@ -2713,7 +2756,10 @@ function applyRevealUntil(
       owner = ref.player;
     }
     const found = ctx.revealUntil(owner, spec);
-    progress = { owner, revealed: found.revealed };
+    progress = {
+      owner,
+      revealed: spec.keepFound === true ? found.revealed.filter((id) => id !== found.hit) : found.revealed,
+    };
     if (spec.then !== undefined && found.hit !== null) {
       const parked = ctx.parkedCount();
       const pendingBefore = ctx.decisionPending();
@@ -3309,6 +3355,10 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         if (who === undefined) return;
         controller = who;
       }
+      if (typeof spec.at === "object" && "nextSpell" in spec.at) {
+        ctx.delayTrigger({ nextSpell: spec.at.nextSpell }, spec.effect, spec.text, controller);
+        return;
+      }
       if (typeof spec.at === "object") {
         // "When it dies": only a permanent can die, so there must be one to
         // watch as this applies.
@@ -3327,6 +3377,16 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         return;
       }
       ctx.delayTrigger(spec.at, spec.effect, spec.text, controller);
+      return;
+    }
+    case "enters-with-counters": {
+      const target = resolveEffectTarget(spec.target, ctx);
+      if (target !== undefined) ctx.entersWithCounters(target, spec.counter, amountValue(spec.amount, ctx));
+      return;
+    }
+    case "allow-cast-from-exile": {
+      const target = resolveEffectTarget(spec.target, ctx);
+      if (target !== undefined) ctx.allowCastFromExile(target, spec.free === true);
       return;
     }
     case "earthbend": {

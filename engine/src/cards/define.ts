@@ -561,6 +561,12 @@ export type StaticCondition =
       readonly atMost?: number;
     }
   /**
+   * "If ~ is still on the battlefield" (Shirei, Shizo's Caretaker's delayed
+   * return): the resolving ability's source is on the battlefield as the
+   * same object it was (rule 400.7). Only a resolution can answer it.
+   */
+  | { readonly kind: "source-on-battlefield" }
+  /**
    * The ability's own source matches `filter` — "as long as ~ is equipped",
    * "if ~ is attacking", "if ~ is tapped". A triggered ability whose source
    * was a permanent that has since left (its own dies trigger) reads it as it

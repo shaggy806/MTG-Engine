@@ -114,6 +114,7 @@ import {
   wardCostText,
 } from "./effects.js";
 import type {
+  DelayedNextSpell,
   EffectAmount,
   EffectSpec,
   FlickerCounters,
@@ -185,6 +186,7 @@ import type {
   CombatDamageState,
   CommanderMoveOrigin,
   CommanderReplacementZone,
+  DelayedCastWatch,
   DelayedLeaveWatch,
   DelayedTrigger,
   EntryRecord,
@@ -1830,7 +1832,8 @@ export class Game {
     for (const trigger of this.state.delayedTriggers) {
       pinned.add(trigger.source);
       for (const t of trigger.targets) if (t?.kind === "object") pinned.add(t.object);
-      if (typeof trigger.at === "object") pinned.add(trigger.at.leaves);
+      if (typeof trigger.at === "object" && "leaves" in trigger.at) pinned.add(trigger.at.leaves);
+      if (trigger.triggerObject !== undefined) pinned.add(trigger.triggerObject);
     }
     for (const shield of this.state.preventionShields) {
       if (shield.target.kind === "object") pinned.add(shield.target.object);
@@ -3106,9 +3109,10 @@ export class Game {
     this.state.abilityResolutionsThisTurn = {};
     delete this.state.modesChosenThisTurn;
     this.state.preventionShields = [];
-    // "When that creature dies this turn" watches no longer.
+    // "When that creature dies this turn" watches no longer, nor does "when
+    // you next cast a spell this turn".
     this.state.delayedTriggers = this.state.delayedTriggers.filter(
-      (t) => typeof t.at !== "object" || t.at.thisTurn !== true,
+      (t) => typeof t.at !== "object" || ("leaves" in t.at && t.at.thisTurn !== true),
     );
     // Nothing has attacked this turn yet — whoever controls it. (The untap
     // step only reaches the active player's permanents.)
@@ -8313,8 +8317,13 @@ export class Game {
 
     if (this.isPermanentSpell(def)) {
       const escapedWith = object.castVia === "escape" ? def.escape?.counters : undefined;
+      // "That creature enters with two additional +1/+1 counters" (Yuna).
+      const extraCounters = object.entersWithCounters;
       this.moveObject(id, "battlefield");
       object.targets = null;
+      if (extraCounters !== undefined && this.state.objects[id]?.zone === "battlefield") {
+        for (const c of extraCounters) this.addCounter({ kind: "object", object: id }, c.kind, c.amount);
+      }
       // "This creature escapes with a +1/+1 counter on it" — before the
       // enters-battlefield event, so an ETB trigger reads the counter the
       // permanent genuinely arrived with (rule 614.1c).
@@ -9040,6 +9049,7 @@ export class Game {
     // it dies or is exiled") belong to no permanent, so the scan above can't
     // see them.
     if (event.type === "permanent-left-battlefield") this.fireLeaveWatchers(event);
+    if (event.type === "spell-cast") this.fireCastWatchers(event);
   }
 
   /** Has `object`'s `oncePerTurn` triggered ability `index` triggered yet
@@ -10294,6 +10304,10 @@ export class Game {
         return sacrificed !== undefined && matchesKnown(sacrificed.object, condition.filter);
       }
       if (condition.kind === "resolved-this-turn") return resolutionCount === condition.n;
+      // "If ~ is still on the battlefield" — as the same object.
+      if (condition.kind === "source-on-battlefield") {
+        return opts.sourceLost !== true && this.state.objects[source]?.zone === "battlefield";
+      }
       if (condition.kind === "this-way") {
         const done = thisWayDone(
           condition.what,
@@ -10671,7 +10685,27 @@ export class Game {
         if (target.kind === "object") this.putOnLibrary(target.object, position);
       },
       delayTrigger: (at, effect, text, delayedController) =>
-        this.createDelayedTrigger(source, delayedController, at, effect, text, targets, targetZones),
+        this.createDelayedTrigger(source, delayedController, at, effect, text, targets, targetZones, {
+          ...(triggerObject !== undefined ? { triggerObject } : {}),
+          refs,
+        }),
+      entersWithCounters: (target, counter, amount) => {
+        if (target.kind !== "object" || amount <= 0) return;
+        const spell = this.state.objects[target.object];
+        if (spell === undefined || spell.zone !== "stack" || spell.kind !== "card") return;
+        spell.entersWithCounters = [...(spell.entersWithCounters ?? []), { kind: counter, amount }];
+      },
+      allowCastFromExile: (target, free) => {
+        if (target.kind !== "object") return;
+        const card = this.state.objects[target.object];
+        if (card === undefined || card.zone !== "exile") return;
+        card.impulse = {
+          player: controller,
+          expiry: { kind: "end-of-turn", turn: this.state.turn.number },
+          castOnly: true,
+          ...(free ? { free: { only: true } } : {}),
+        };
+      },
       fight: (a, b, oneSided) => this.fightCreatures(a, b, oneSided),
       counterSpell: (target, into) => this.counterSpellByEffect(target, into),
       gainControl: (target, untilEndOfTurn) =>
@@ -13970,14 +14004,19 @@ export class Game {
           readonly leaves: ObjectId;
           readonly to: readonly LeaveDestination[];
           readonly thisTurn?: boolean;
-        },
+        }
+      | DelayedNextSpell,
     effect: EffectSpec,
     text: string,
     targets: ResolvedTargets,
     targetZones: readonly (ZoneType | null)[] = [],
+    /** The creating ability's trigger object, and how it knew it. */
+    creator: { readonly triggerObject?: ObjectId; readonly refs?: LastKnownRefs } = {},
   ): void {
-    let when: DelayedTriggerTiming | DelayedLeaveWatch;
-    if (typeof at === "object") {
+    let when: DelayedTriggerTiming | DelayedLeaveWatch | DelayedCastWatch;
+    if (typeof at === "object" && "nextSpell" in at) {
+      when = { nextSpell: at.nextSpell, turn: this.state.turn.number };
+    } else if (typeof at === "object") {
       const watched = this.state.objects[at.leaves];
       if (watched?.zone !== "battlefield") return;
       when = { ...at, to: [...at.to], stint: watched.zoneChangeCount ?? 0 };
@@ -13985,7 +14024,20 @@ export class Game {
       when = at;
     }
     const object = this.state.objects[source];
+    const carried =
+      creator.triggerObject === undefined ? undefined : this.state.objects[creator.triggerObject];
     this.state.delayedTriggers.push({
+      // "That card": the creating ability's trigger object, as the object it
+      // is now — it has to still be that object when this resolves.
+      ...(carried !== undefined
+        ? {
+            triggerObject: carried.id,
+            triggerObjectStint: carried.zoneChangeCount ?? 0,
+            ...(creator.refs?.triggerObject !== undefined
+              ? { triggerObjectRefs: { triggerObject: creator.refs.triggerObject } }
+              : {}),
+          }
+        : {}),
       id: `delayed-${this.state.nextObjectSeq++}`,
       controller,
       at: when,
@@ -14079,11 +14131,21 @@ export class Game {
         "triggered",
         0,
         trigger.targets,
+        undefined,
+        trigger.triggerObject,
       );
       // What `stackAbilityOf` resolves from: the ability has no index into any
       // card's `triggered` list, because it isn't an ability of a card.
       this.state.objects[id].delayedTrigger = trigger;
       this.carryDelayedIdentity(id, trigger);
+      // "That card" is still that card only if it hasn't changed zones since
+      // (rule 400.7) — and is read as it last existed where it was.
+      if (trigger.triggerObject !== undefined && trigger.triggerObjectStint !== undefined) {
+        this.state.objects[id].lastKnownRefs = {
+          ...(trigger.triggerObjectRefs ?? {}),
+          triggerObjectAfterLeaving: trigger.triggerObjectStint,
+        };
+      }
       this.emit({
         type: "ability-triggered",
         source: trigger.source,
@@ -14114,7 +14176,7 @@ export class Game {
     const stint = object?.lastKnown?.zoneChangeCount;
     if (object === undefined || stint === undefined) return;
     const watching = this.state.delayedTriggers.filter(
-      (t) => typeof t.at === "object" && t.at.leaves === event.object && t.at.stint === stint,
+      (t) => typeof t.at === "object" && "leaves" in t.at && t.at.leaves === event.object && t.at.stint === stint,
     );
     if (watching.length === 0) return;
     this.state.delayedTriggers = this.state.delayedTriggers.filter((t) => !watching.includes(t));
@@ -14122,7 +14184,9 @@ export class Game {
     // left (rule 603.7c), and still has to be that object when this resolves.
     const after = object.zoneChangeCount ?? 0;
     for (const watched of watching) {
-      if (typeof watched.at !== "object" || !watched.at.to.includes(event.toZone)) continue;
+      if (typeof watched.at !== "object" || !("leaves" in watched.at) || !watched.at.to.includes(event.toZone)) {
+        continue;
+      }
       const trigger: DelayedTrigger =
         watched.source === event.object && watched.sourceStint !== undefined
           ? { ...watched, sourceStint: after }
@@ -14137,6 +14201,36 @@ export class Game {
           triggerObject: stint,
           triggerObjectAfterLeaving: object.zoneChangeCount ?? 0,
         },
+        delayed: trigger,
+      });
+    }
+  }
+
+  /**
+   * The "when you next cast a … spell this turn" delayed triggers `event`
+   * answers (see `DelayedCastWatch`): its caster's, this turn's, whose filter
+   * the spell matches. Each fires once — queued like any trigger, the spell
+   * as its trigger object — and is used up.
+   */
+  private fireCastWatchers(event: Extract<GameEvent, { type: "spell-cast" }>): void {
+    if (this.state.delayedTriggers.length === 0) return;
+    const firing = this.state.delayedTriggers.filter(
+      (t) =>
+        typeof t.at === "object" &&
+        "nextSpell" in t.at &&
+        t.at.turn === this.state.turn.number &&
+        t.controller === event.player &&
+        matchesFilter(this.state, this.registry, event.object, t.at.nextSpell, { you: t.controller }),
+    );
+    if (firing.length === 0) return;
+    this.state.delayedTriggers = this.state.delayedTriggers.filter((t) => !firing.includes(t));
+    for (const trigger of firing) {
+      this.state.pendingTriggers.push({
+        sourceObjectId: trigger.source,
+        cardName: trigger.sourceName,
+        abilityIndex: 0,
+        controller: trigger.controller,
+        triggerObject: event.object,
         delayed: trigger,
       });
     }
@@ -16407,6 +16501,7 @@ export class Game {
     object.exiledBy = undefined;
     // Likewise a delayed flicker return's link (Norin the Wary, rule 610.3).
     object.flickerLink = undefined;
+    object.entersWithCounters = undefined;
     // Its once-a-turn and exhaust abilities: the permanent that comes back
     // is a new object that has used neither (rule 400.7).
     object.abilitiesUsedThisTurn = undefined;

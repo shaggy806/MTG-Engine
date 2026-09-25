@@ -97,8 +97,12 @@ that one card is the reason the deck exists.
   with them); Reyhan, Last of the Abzan (`leaves-battlefield`'s `to` and `filter`, and a
   `countersOn` of the trigger object); The Locust God and Eshki, Temur's Roar (rule 400.7
   object identity for delayed triggers, sources and targets); Judith, Carnage Connoisseur
-  and Abaddon the Despoiler (`grant-keyword` on a spell, and the `grantsToSpells` static) —
-  confirm each at `card:lookup`.
+  and Abaddon the Despoiler (`grant-keyword` on a spell, and the `grantsToSpells` static);
+  Yuna, Grand Summoner, Codie, Vociferous Codex and Shirei, Shizo's Caretaker (a `nextSpell`
+  delayed trigger, `enters-with-counters`, `allow-cast-from-exile`, a carried trigger object
+  and `source-on-battlefield` — their gaps entries still list
+  `effect:delayed-trigger-extensions`, whose parts they need are built) — confirm each at
+  `card:lookup`.
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first

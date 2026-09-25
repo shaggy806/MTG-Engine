@@ -439,6 +439,10 @@ export interface GameObject {
    * is read by last-known information (rule 608.2h — Mana Drain's "that
    * spell's mana value"). */
   targetStints?: (number | null)[];
+  /** A spell's counters to enter the battlefield with — the
+   * `enters-with-counters` effect. Cleared by any zone change but its own
+   * resolution onto the battlefield. */
+  entersWithCounters?: { readonly kind: string; readonly amount: number }[];
   /** A card's mana value as it last existed on the stack, {X} included (rule
    * 202.3e), set each time it leaves the stack. Read only through a target
    * that was a spell — see `targetZones` — so it needn't be cleared when the
@@ -1419,6 +1423,14 @@ export interface DelayedLeaveWatch {
   readonly thisTurn?: boolean;
 }
 
+/** A delayed trigger waiting for its controller's next spell this turn
+ * matching `nextSpell` — see `DelayedNextSpell`. */
+export interface DelayedCastWatch {
+  readonly nextSpell: CardFilter;
+  /** The turn it was made on: it lapses as the next begins. */
+  readonly turn: number;
+}
+
 /**
  * A delayed triggered ability (rule 603.7): created by a resolving spell or
  * ability, waiting on one future step — or on one permanent leaving the
@@ -1433,8 +1445,16 @@ export interface DelayedTrigger {
    * but not always — Arcane Denial's draw belongs to the countered spell's
    * controller. */
   readonly controller: PlayerId;
-  /** The step it waits for, or the permanent whose leaving it waits for. */
-  readonly at: DelayedTriggerTiming | DelayedLeaveWatch;
+  /** The step it waits for, the permanent whose leaving it waits for, or
+   * the spell its controller casts next. */
+  readonly at: DelayedTriggerTiming | DelayedLeaveWatch | DelayedCastWatch;
+  /** The creating ability's trigger object, and its `zoneChangeCount` then
+   * — "return **that card** to the battlefield" (Shirei, Shizo's Caretaker).
+   * It's the delayed ability's trigger object too, as long as it's still that
+   * object (rule 400.7). */
+  readonly triggerObject?: ObjectId;
+  readonly triggerObjectStint?: number;
+  readonly triggerObjectRefs?: LastKnownRefs;
   /** The turn it was created on, so "the next end step" can't mean one the
    * game is already in. */
   readonly createdOnTurn: number;

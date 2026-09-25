@@ -509,7 +509,8 @@ them.
 | `return-from-graveyard` | `filter`, `destination: "battlefield" \| "hand"`, `count: number \| "all"`, `enterTapped?`, `withCounters?` | Splendid Reclamation (from *your* graveyard; a `number` less than the match count raises a `choose-from-zone`). `withCounters: { kind: "finality", amount: 1 }` is "…with a finality counter on it" (Shilgengar, Sire of Famine) — put on each card that enters, before its entry is announced, whether everything returns at once or the player chooses. |
 | `search-library` … `reveal?` | — | "…, **reveal it**, …" (Enlightened Tutor, Mystical Tutor): shows the find to every player, rule 701.16. Off by default — a plain "search your library for a card" (Vampiric Tutor) reveals nothing, and the difference is printed on the cards. |
 | `put-on-library` | `target`, `position: "top" \| "bottom"` | Academy Ruins, Mortuary Mire — puts one **targeted** card on its owner's deck. Pair it with a `card-in-graveyard` target for the graveyard-recursion lands; unlike `return-from-graveyard` it is target-driven, so it reaches any graveyard. |
-| `delayed-trigger` | `at`, `effect`, `text`, `controller?` | Whip of Erebos's "exile it at the beginning of the next end step", Arcane Denial's upkeep draws; with `at: { leaves, to, thisTurn? }`, Kelsien, the Plague's "when that creature dies this turn". Rule 603.7 — see below. |
+| `delayed-trigger` | `at`, `effect`, `text`, `controller?` | Whip of Erebos's "exile it at the beginning of the next end step", Arcane Denial's upkeep draws; with `at: { leaves, to, thisTurn? }`, Kelsien, the Plague's "when that creature dies this turn"; with `at: { nextSpell }`, "when you next cast a creature spell this turn" (Yuna). Rule 603.7 — see below. |
+| `enters-with-counters` | `target`, `counter`, `amount` | "That creature enters with two additional +1/+1 counters on it" — a spell on the stack (Yuna's `nextSpell` trigger object) enters with them as it resolves. |
 | `reflexive-trigger` | `targets: TargetSpec[]`, `effect`, `text` | "**When you do**, …" — a reflexive triggered ability (rule 603.12): Terra, Herald of Hope's "you may pay {2}. When you do, return target creature card with power 3 or less from your graveyard to the battlefield tapped" is a `may` with `cost: "{2}"` and this as its `effect`. Applying it triggers an ability that goes on the stack once the creating spell or ability has finished resolving, choosing `targets` then — so it *can* target, unlike a `may`'s `then`, and players can respond to it. `effect` reads its own targets by slot; `"source"`, X (including an X paid for the `may`) and the triggering event are the creator's. With no legal target it's removed as it would go on the stack. Put it only where the action has certainly happened: a `may`'s `effect`, a `sacrifice-source`'s `then`. |
 | `counter` | `target` (a spell), `into?: "hand"` | Counterspell. A spell that can't be countered stays on the stack and resolves (`counter-failed`); a countered copy of a spell ceases to exist (rule 707.10c). `into: "hand"` is Remand's "if that spell is countered this way, put it into its owner's hand instead" — still a counter, so it does nothing to a spell that can't be countered, unlike `return-to-hand` with `from: "stack"`. |
 | `sacrifice-all-but` | `who`, `keep`, `filter` | "chooses up to N they control, then sacrifices the rest" (Archfiend of Depravity) — the inverse of `sacrifice`, which names how many to give up. Raised only when they're over the limit. |
@@ -576,6 +577,34 @@ return included.
 Earthbend is built on this — use the `earthbend` effect rather than spelling
 it out (§ P/T, counters, keywords).
 
+**When you next cast a spell.** `at: { nextSpell: CardFilter }` waits for its
+controller's next spell this turn matching the filter (`{}` for any), fires
+once, and lapses as the turn ends; that spell is its trigger object. Yuna,
+Grand Summoner's "when you next cast a creature spell this turn, that creature
+enters with two additional +1/+1 counters on it" is `at: { nextSpell: { type:
+"creature" } }` with `{ kind: "enters-with-counters", target:
+"trigger-object", counter: "+1/+1", amount: 2 }` (counters a spell enters the
+battlefield with as it resolves — before its enters triggers look). Codie,
+Vociferous Codex's "when you cast your next spell this turn, exile cards from
+the top of your library until you exile an instant or sorcery card with lesser
+mana value. Until end of turn, you may cast that card without paying its mana
+cost. Put each other card exiled this way on the bottom of your library in a
+random order" is `at: { nextSpell: {} }` with a `reveal-until` (`exile: true`,
+a `manaValue` compare on `{ amount: { manaValueOf: "trigger-object" } }`,
+`rest: "bottom-random"`, `keepFound: true`) whose `then` is `{ kind:
+"allow-cast-from-exile", target: 0, free: true }` — "until end of turn, you may
+cast that card" (`free`: only without paying its mana cost).
+
+**"That card."** A delayed trigger carries the creating ability's trigger
+object: Shirei, Shizo's Caretaker's "whenever a creature you control with power
+1 or less is put into a graveyard from the battlefield, you may return that
+card to the battlefield under its owner's control at the beginning of the next
+end step if Shirei is still on the battlefield" is a `dies` trigger whose
+`delayed-trigger` effect is a `conditional` on `{ kind: "source-on-battlefield"
+}` of a `put-onto-battlefield` of `"trigger-object"`. The card has to still be
+the object that died — gone from its graveyard and back is a new one (rule
+400.7) — and "if Shirei is still on the battlefield" is the same Shirei.
+
 For the common "create a token, then get rid of it at end of turn" shape, use
 `create-token` / `create-token-copy`'s `sacrificeAtEndStep` (Kiki-Jiki,
 Chandra, Acolyte of Flame) or `exileAtEndStep` (Miirym) instead — the delayed
@@ -629,8 +658,9 @@ ability would have no way to name a token that didn't exist when it was set up.
 | `search-library` | `who?: { controllerOfTarget }` (Path to Exile — *its controller* searches), `filter`, `destination: "hand" \| "battlefield"`, `min`, `max`, `enterTapped?`, `restDestination?` | Demonic Tutor, Rampant Growth. `max` is an `EffectAmount`, so "up to X basic lands, where X is the number of tapped creatures you control" is a `countOf` (Harvest Season). `restDestination` sends every *chosen* card after the first somewhere else — Cultivate's "put one onto the battlefield tapped and the other into your hand" (distinct from `leftover`, which is about cards **not** chosen). |
 | `scry` | `amount`, `then?` | Preordain (`then: { kind: "draw", amount: 1 }`) |
 | `reveal-top` | `then` | "Reveal the top card of your library. If it's a land card, put it onto the battlefield tapped. Otherwise, draw a card" (Thrasios). Reveals to every player, then applies `then` with **that card as target 0**, so a `{ kind: "target", index: 0, filter }` condition and a `put-onto-battlefield { target: 0 }` both reach it. The card doesn't move unless `then` moves it. |
-| `reveal-until` | `whose?`, `filter`, `exile?`, `put?: "battlefield" \| "hand" \| "graveyard"`, `tapped?`, `then?`, `rest: "bottom-random" \| "graveyard" \| "shuffle" \| "stay"` | A generalised cascade: reveal cards from the top of a library — the controller's, or the player in target slot `whose` — until one matches `filter` (an `{ amount }` compare is bound as it applies: "a nonland card with lesser mana value"). The Prismatic Bridge's "…until you reveal a creature or planeswalker card. Put that card onto the battlefield and the rest on the bottom of your library in a random order" is `{ filter: { typesAnyOf: ["creature", "planeswalker"] }, put: "battlefield", rest: "bottom-random" }`; Umbris's "target opponent exiles cards from the top of their library until they exile a land card" is `{ whose: 0, filter: { type: "land" }, exile: true, rest: "stay" }` (`exile` exiles each card face up as it goes). `then` is applied with **the card found as target 0** after `put` — "you may put that card onto the battlefield. Then shuffle" is a `then` of `{ kind: "may", effect: { kind: "put-onto-battlefield", target: 0 } }` with `rest: "shuffle"`, and the rest wait for its answer. `rest` places every revealed card still where it was revealed — the card found too, if nothing moved it; with nothing matching, that's all of them. |
+| `reveal-until` | `whose?`, `filter`, `exile?`, `put?: "battlefield" \| "hand" \| "graveyard"`, `tapped?`, `then?`, `rest: "bottom-random" \| "graveyard" \| "shuffle" \| "stay"`, `keepFound?` | A generalised cascade: reveal cards from the top of a library — the controller's, or the player in target slot `whose` — until one matches `filter` (an `{ amount }` compare is bound as it applies: "a nonland card with lesser mana value"). The Prismatic Bridge's "…until you reveal a creature or planeswalker card. Put that card onto the battlefield and the rest on the bottom of your library in a random order" is `{ filter: { typesAnyOf: ["creature", "planeswalker"] }, put: "battlefield", rest: "bottom-random" }`; Umbris's "target opponent exiles cards from the top of their library until they exile a land card" is `{ whose: 0, filter: { type: "land" }, exile: true, rest: "stay" }` (`exile` exiles each card face up as it goes). `then` is applied with **the card found as target 0** after `put` — "you may put that card onto the battlefield. Then shuffle" is a `then` of `{ kind: "may", effect: { kind: "put-onto-battlefield", target: 0 } }` with `rest: "shuffle"`, and the rest wait for its answer. `rest` places every revealed card still where it was revealed — the card found too, if nothing moved it, unless `keepFound` ("put each **other** card exiled this way on the bottom" — it stays in exile to be cast); with nothing matching, that's all of them. |
 | `surveil` | `amount`, `then?` | Consider |
+| `allow-cast-from-exile` | `target`, `free?` | "Until end of turn, you may cast that card [without paying its mana cost]" — a card in exile, usually a `reveal-until`'s find (Codie). Cast only, this turn, by the effect's controller; `free` permits only the free cast. |
 | `look-and-choose` | `zone: "library" \| "graveyard" \| "hand"`, `count?`, `min`, `max`, `destination`, `leftover: "bottom-random" \| "stay" \| "hand" \| "graveyard"`, `filter?`, `enterTapped?` | Ureni of the Unwritten; Genesis Ultimatum uses `leftover: "hand"` — every non-chosen looked-at card goes to hand, regardless of `filter` (needed-cards P19); `"graveyard"` is "…and the rest into your graveyard", in the same move as the chosen cards. **`zone: "hand"`** is the "you may put a land card from your hand onto the battlefield" family (Growth Spiral, Ghalta, Terrain Generator): `min: 0` is the "you may", `leftover: "stay"` leaves the rest of the hand alone, and it bypasses the land-drop rule because putting a land onto the battlefield is not *playing* one. **`then`** is applied once the choice is answered, with the **chosen cards as its targets** — the only way to say anything about a card that was chosen rather than targeted (Sneak Attack's "that creature gains haste"). |
 
 ### Turn structure / cast-triggered
@@ -1900,6 +1930,10 @@ clause (section 9):
   that leaves and returns is a new object with a fresh count, and an ability
   that fizzled never resolved, so it doesn't count. Only meaningful inside the
   ability's own `conditional` effect (a `not` around it works too).
+- `{ kind: "source-on-battlefield" }` — "if ~ is still on the battlefield":
+  the resolving ability's source is there as the same object it was (rule
+  400.7). Shirei, Shizo's Caretaker's delayed return. Only a resolution can
+  answer it.
 - `{ kind: "this-way", what, who?, filter?, atLeast?, atMost? }` — a question
   about what the resolving spell or ability has done so far: "if a land card
   is discarded **this way**" (Lord Windgrace: `{ what: "discarded", filter: {

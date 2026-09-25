@@ -522,7 +522,7 @@
   "effect:delayed-trigger-extensions": {
    "size": "medium",
    "ui": false,
-   "description": "Delayed triggers keyed to an event rather than a step beyond one permanent leaving ('whenever it deals combat damage this turn', 'when you next cast a creature spell this turn'), and delayed triggers that capture the trigger object or the tokens just created. Built so far: a delayed trigger keyed to one permanent leaving the battlefield for given zones (dies, is exiled), optionally only this turn, whose trigger object is that permanent (Kelsien, the Plague; earthbend's return)."
+   "description": "Delayed triggers keyed to an event rather than a step, and delayed triggers that capture an object. Still missing: one keyed to a permanent's event other than leaving ('whenever it deals combat damage this turn'), and one that captures the tokens just created (Satya's 'exile that token'). Built so far: one keyed to a permanent leaving the battlefield for given zones, optionally this turn, whose trigger object is that permanent (Kelsien, the Plague; earthbend's return); one keyed to the controller's next spell this turn matching a filter, whose trigger object is that spell (at: { nextSpell } — Yuna, Codie), with enters-with-counters for that spell and allow-cast-from-exile for a card it finds; and the creating ability's trigger object carried into the delayed ability while it's still that object, with a source-on-battlefield condition (Shirei, Shizo's Caretaker)."
   },
   "effect:divide-among-targets": {
    "size": "medium",
