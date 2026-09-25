@@ -151,9 +151,13 @@ describe("costs and triggers", () => {
     });
   });
 
-  it("several mana of any one color in a mana ability is left to author", () => {
-    // any-color x 2 is paid as two independent colours (bug:mana-any-one-color).
-    expect(parseSentence("Add two mana of any one color.", ctx())).toBeNull();
+  it("several mana of any one color: any-color x N in a mana ability, a mode per colour on the stack", () => {
+    // Any-color with an amount is all of one colour (Gilded Lotus).
+    expect(parseSentence("Add two mana of any one color.", ctx())).toEqual({
+      kind: "add-mana",
+      mana: "any-color",
+      amount: 2,
+    });
     expect(parseSentence("Add two mana of any one color.", ctx({ onStack: true }))?.kind).toBe("modal");
   });
 

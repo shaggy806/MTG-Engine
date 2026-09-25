@@ -237,7 +237,9 @@ export function standaloneManaChoices(
   if (typeof effect.amount !== "number") {
     const amount = liveAmount?.() ?? null;
     if (amount === null || amount < 1) return null;
-    const colors = mana === "any-color" ? COLORS : oneOf(mana);
+    // "Any color" is any one colour, however much is made.
+    if (mana === "any-color") return COLORS.map((c) => Array<ManaType>(amount).fill(c));
+    const colors = oneOf(mana);
     if (colors.length === 0) return null;
     // A live amount can be large, and every split of it is a separate menu
     // entry of `amount` units. Which split to float is the player's choice

@@ -643,10 +643,9 @@ export function parseSentence(sentence, ctx) {
   if (/^add one mana of any color\.$/i.test(s)) return choice(WUBRG, 1);
   if ((m = new RegExp(`^add ${N} mana of any one color\\.$`, "i").exec(s))) {
     const n = amount(m[1]);
-    // In a mana ability, "two mana of any one color" would be any-color x 2,
-    // which the auto-payer pays as independently coloured units: BACKLOG's
-    // bug:mana-any-one-color (Gilded Lotus). Left to author until that's fixed.
-    if (typeof n !== "number" || (n > 1 && !ctx.onStack)) return null;
+    // In a mana ability "any-color" with an amount is that much of one
+    // colour (Gilded Lotus); on the stack it's a mode per colour.
+    if (typeof n !== "number") return null;
     return choice(WUBRG, n);
   }
 

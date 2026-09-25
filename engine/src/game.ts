@@ -7146,7 +7146,9 @@ export class Game {
                       : this.manaOneOf(mana, player);
                 const units = Math.min(amount, Game.MAX_EFFECT_INSTANCES);
                 for (let i = 0; i < units; i += 1) {
-                  const pick = manaColors[i];
+                  // "Any color" is any *one* colour however much is made
+                  // (Gilded Lotus), so the first pick names it for all.
+                  const pick = mana === "any-color" ? manaColors[0] : manaColors[i];
                   base.addMana(
                     p,
                     pick !== undefined && allowed.includes(pick) ? pick : mana,
@@ -7509,7 +7511,19 @@ export class Game {
         const oneOf = typeof mana === "object" && !("all" in mana) ? this.manaOneOf(mana, player) : [];
         const candidates: ManaOption[] =
           mana === "any-color"
-            ? [{ fixed: [], anyColor: manaAmount, pain, lifeCost, genericCost, ...tag }]
+            ? manaAmount === 1
+              ? [{ fixed: [], anyColor: 1, pain, lifeCost, genericCost, ...tag }]
+              : // "Add three mana of any one color" (Gilded Lotus) is all
+                // three of one colour: an option per colour, never three
+                // independently chosen units.
+                COLORS.map((c) => ({
+                  fixed: Array<ManaType>(manaAmount).fill(c),
+                  anyColor: 0,
+                  pain,
+                  lifeCost,
+                  genericCost,
+                  ...tag,
+                }))
             : each !== null
               ? [
                   {

@@ -565,7 +565,9 @@ export type EffectSpec =
     }
   | {
       /** `mana: "any-color"` — one mana of any of the five colours, the
-       * player's choice (Arcane Signet, Command Tower, Treasure). During
+       * player's choice (Arcane Signet, Command Tower, Treasure). With an
+       * `amount` above 1 it is that much mana of any **one** colour (Gilded
+       * Lotus: "three mana of any one color"), never a mix. During
        * cost payment the planner picks the colour it needs; a standalone
        * activation (holding priority, not paying anything) just adds white.
        * `mana: { oneOf: [...] }` — `amount` mana in any combination of the

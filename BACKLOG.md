@@ -146,10 +146,7 @@ that one card is the reason the deck exists.
   - Play-from-graveyard reads a double-faced card by its front face only (Ancient Greenwarden).
   - Performance: a per-creature enters trigger watching an opponent's token stack
     (Authority of the Consuls against Scute Swarm) puts hundreds of triggers on the stack.
-- **Two small engine gaps the scaffolder review found:**
-  - "Add N mana of any one color" (N > 1) is auto-paid as N independent colours
-    (`bug:mana-any-one-color`). Gilded Lotus and Lotus Field are in the pool with it; the
-    parser leaves new ones unfinished until it's fixed.
+- **A small engine gap the scaffolder review found:**
   - A "you may" around an action that can only partly happen is still offered. Daggerfang
     Duo's ruling: with one card left you can't choose to mill two, but the engine mills the one.
 
