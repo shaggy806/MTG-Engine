@@ -1,0 +1,499 @@
+{
+  "batch": "C3",
+  "status": "complete",
+  "authored": [],
+  "blocked": [
+    {
+      "name": "Lorehold, the Historian",
+      "needs": [
+        "keyword:miracle"
+      ],
+      "why": "Granting miracle {2} to instants and sorceries in hand needs miracle itself (first-card-drawn tracking and a cast-on-draw offer), which isn't modeled."
+    },
+    {
+      "name": "Narset, Enlightened Exile",
+      "needs": [
+        "effect:cast-during-resolution",
+        "effect:copy-permanent-spell"
+      ],
+      "why": "Exiling a graveyard card, copying it and casting the copy for free during resolution isn't expressible, and the copy may be an artifact or enchantment (a permanent-spell copy)."
+    },
+    {
+      "name": "Krark, the Thumbless",
+      "needs": [
+        "effect:copy-spell-extensions",
+        "decision:copy-new-targets"
+      ],
+      "why": "copy-spell only copies a targeted spell, not the triggering one, and copies always keep the original's targets instead of offering new ones."
+    },
+    {
+      "name": "Infinite Guideline Station",
+      "needs": [
+        "mechanic:station",
+        "decision:choose-tap-costs"
+      ],
+      "why": "Station and Spacecraft (charge counters from tapping another creature, becomes a creature at 12+) aren't modeled (AUTHORING §15)."
+    },
+    {
+      "name": "Niko, Light of Hope",
+      "needs": [
+        "effect:become-copy"
+      ],
+      "why": "'Shards you control become copies of it until the next end step' needs existing permanents to become copies of an object for a duration."
+    },
+    {
+      "name": "Prismari, the Inspiration",
+      "needs": [
+        "decision:copy-new-targets"
+      ],
+      "why": "Storm copies are made with the original's targets (copyStackSpell), so 'you may choose new targets for the copies' is lost."
+    },
+    {
+      "name": "Trostani, Selesnya's Voice",
+      "needs": [
+        "decision:choose-permanent"
+      ],
+      "why": "Populate copies the largest creature token by power rather than letting the player choose which token to copy (AUTHORING §15 Partial)."
+    },
+    {
+      "name": "Volo, Guide to Monsters",
+      "needs": [
+        "effect:copy-permanent-spell",
+        "effect:copy-spell-extensions",
+        "trigger:cast-spell-clauses"
+      ],
+      "why": "Copying a creature spell (it becomes a token) isn't modeled (copyStackSpell refuses permanent spells), nor is the 'doesn't share a creature type with a creature you control or in your graveyard' cast-trigger clause."
+    },
+    {
+      "name": "Kastral, the Windcrested",
+      "needs": [
+        "decision:choose-from-zone-extensions"
+      ],
+      "why": "Mode one picks a Bird card from hand OR graveyard in one choice; choose-from-zone can't span two zones."
+    },
+    {
+      "name": "Saheeli, Radiant Creator",
+      "needs": [
+        "effect:copy-exceptions"
+      ],
+      "why": "The token copy is 'a 5/5 artifact creature in addition to its other types'; create-token-copy can set base P/T but can't add card types as a copy exception."
+    },
+    {
+      "name": "Raffine, Scheming Seer",
+      "needs": [
+        "keyword:connive"
+      ],
+      "why": "Connive X (draw, discard, counters per nonland discarded) has no effect in the engine."
+    },
+    {
+      "name": "Yidris, Maelstrom Wielder",
+      "needs": [
+        "new:temporary-spell-ability-grant",
+        "decision:free-cast-choices"
+      ],
+      "why": "Nothing grants cascade to the spells you cast from hand for the rest of the turn, and cascade's free cast can't be declined and auto-picks targets."
+    },
+    {
+      "name": "Tannuk, Steadfast Second",
+      "needs": [
+        "keyword:warp"
+      ],
+      "why": "Granting warp {2}{R} to cards in hand needs warp, which isn't modeled (AUTHORING §15, Starfield Vocalist)."
+    },
+    {
+      "name": "Doctor Doom, King of Latveria",
+      "needs": [
+        "keyword:connive",
+        "trigger:discards-extensions"
+      ],
+      "why": "Connive isn't modeled, and 'whenever you discard one or more land cards' needs a batched, filtered discard trigger."
+    },
+    {
+      "name": "Aloy, Savior of Meridian",
+      "needs": [
+        "keyword:discover",
+        "effect:amount-aggregate"
+      ],
+      "why": "Discover isn't modeled, and X is the greatest power among the attack batch, which AUTHORING §15 says can't be expressed faithfully."
+    },
+    {
+      "name": "Eddie Brock // Venom, Lethal Protector",
+      "needs": [
+        "effect:may-sacrifice-then"
+      ],
+      "why": "Venom's 'you may sacrifice another creature. If you do, draw X ... where X is the sacrificed creature's mana value' needs a chosen optional sacrifice whose follow-up reads what was sacrificed."
+    },
+    {
+      "name": "Shiko and Narset, Unified",
+      "needs": [
+        "condition:cast-spell-targets",
+        "effect:copy-spell-extensions",
+        "decision:copy-new-targets",
+        "effect:copy-permanent-spell"
+      ],
+      "why": "Flurry copies the triggering spell only 'if it targets a permanent or player' with new targets (and it may be a permanent spell); none of that is expressible."
+    },
+    {
+      "name": "Omnath, Locus of Mana",
+      "needs": [
+        "replacement:mana-pool-emptying",
+        "static:mana-pool-reads"
+      ],
+      "why": "Keeping unspent green mana across steps and +1/+1 per unspent green mana both need hooks on the mana pool that don't exist."
+    },
+    {
+      "name": "Shilgengar, Sire of Famine",
+      "needs": [
+        "effect:missing-tokens",
+        "cost:sacrifice-multiple",
+        "cost:choose-cards-as-cost"
+      ],
+      "why": "There's no Blood token (its 'Discard a card' activation cost isn't expressible), and 'Sacrifice six Blood tokens' as a cost isn't either."
+    },
+    {
+      "name": "Iron Man, Titan of Innovation",
+      "needs": [
+        "effect:may-sacrifice-then"
+      ],
+      "why": "'You may sacrifice a noncreature artifact. If you do, search for an artifact with mana value 1 plus the sacrificed one's' needs a chosen optional sacrifice feeding its follow-up."
+    },
+    {
+      "name": "Thranduil, the Elvenking",
+      "needs": [
+        "static:gain-abilities-from-graveyard"
+      ],
+      "why": "Having all activated abilities of Elf cards in your graveyard (the Necrotic Ooze shape) isn't modeled."
+    },
+    {
+      "name": "Tayam, Luminous Enigma",
+      "needs": [
+        "cost:remove-counters-from-chosen"
+      ],
+      "why": "'Remove three counters from among creatures you control' as a cost isn't expressible; removeCounter only comes off the source."
+    },
+    {
+      "name": "Brenard, Ginger Sculptor",
+      "needs": [
+        "effect:copy-exceptions",
+        "effect:token-copy-last-known-info",
+        "effect:exile-with-counters"
+      ],
+      "why": "Exiling the dead creature from the graveyard and making a token copy that is also a 1/1 Food Golem artifact with a granted ability needs copy exceptions and copying a card that has left the battlefield."
+    },
+    {
+      "name": "Phenax, God of Deception",
+      "needs": [
+        "condition:devotion",
+        "static:self-type-changes"
+      ],
+      "why": "'As long as your devotion to blue and black is less than seven, Phenax isn't a creature' needs a devotion condition and a conditional removal of its own card type."
+    },
+    {
+      "name": "Indominus Rex, Alpha",
+      "needs": [
+        "decision:discard-any-number",
+        "bug:as-enters-choices-any-entry"
+      ],
+      "why": "'As it enters, discard any number of creature cards', with counters keyed to their keywords, needs an any-number discard as an as-enters replacement."
+    },
+    {
+      "name": "Noctis, Prince of Lucis",
+      "needs": [
+        "zone:graveyard-cast-permissions",
+        "replacement:enters-modifier-via-permission"
+      ],
+      "why": "Casting artifacts from your graveyard for an extra 3 life, entering with a finality counter because they were cast that way, isn't expressible."
+    },
+    {
+      "name": "Athreos, God of Passage",
+      "needs": [
+        "condition:devotion",
+        "static:self-type-changes"
+      ],
+      "why": "'Isn't a creature' while devotion to white and black is below seven needs a devotion condition and a conditional self type removal."
+    },
+    {
+      "name": "Coram, the Undertaker",
+      "needs": [
+        "effect:amount-aggregate",
+        "zone:graveyard-cast-permissions",
+        "zone:cast-cards-you-dont-own"
+      ],
+      "why": "+X/+0 from the greatest power in all graveyards is an aggregate in the layer fold (§15), and playing lands and casting spells from any graveyard (including opponents' cards) isn't modeled."
+    },
+    {
+      "name": "Marvo, Deep Operative",
+      "needs": [
+        "mechanic:clash",
+        "effect:cast-during-resolution"
+      ],
+      "why": "Clash isn't modeled, nor is casting a spell from hand for free during resolution."
+    },
+    {
+      "name": "The Infamous Cruelclaw",
+      "needs": [
+        "effect:cast-during-resolution"
+      ],
+      "why": "Casting the exiled card by discarding a card instead of paying its mana cost, during resolution, isn't expressible."
+    },
+    {
+      "name": "Arna Kennerüd, Skycaptain",
+      "needs": [
+        "effect:double-counters-each-kind",
+        "effect:attach-extensions"
+      ],
+      "why": "Doubling every kind of counter on one attacker, then token copies of each attached permanent attached to it, isn't expressible."
+    },
+    {
+      "name": "Raggadragga, Goreguts Boss",
+      "needs": [
+        "condition:filter-card-property-clauses"
+      ],
+      "why": "'Each creature you control with a mana ability' needs a has-a-mana-ability filter clause, which CardFilter doesn't have."
+    },
+    {
+      "name": "Minsc & Boo, Timeless Heroes",
+      "needs": [
+        "decision:legend-rule-choice",
+        "effect:may-sacrifice-then"
+      ],
+      "why": "A new Boo against an old one is settled by the legend rule's oldest-survives default, not the player's choice. The −2's 'Sacrifice a creature. When you do …' can't bind the sacrificed creature to its reflexive trigger."
+    },
+    {
+      "name": "Alexios, Deimos of Kosmos",
+      "needs": [
+        "static:cant-be-sacrificed",
+        "effect:control-change-extensions"
+      ],
+      "why": "'Can't be sacrificed', and giving control of it to the player whose upkeep it is, aren't expressible."
+    },
+    {
+      "name": "Omnath, Locus of Rage",
+      "needs": [
+        "bug:commander-903-9a-current-rules"
+      ],
+      "why": "As a commander, choosing the command zone is a pre-move replacement in the engine, so 'Whenever Omnath dies' never fires when it's moved there. Under current rule 903.9a it dies first."
+    },
+    {
+      "name": "Kalamax, the Stormsire",
+      "needs": [
+        "effect:copy-spell-extensions",
+        "decision:copy-new-targets"
+      ],
+      "why": "Copying the triggering instant (not a targeted one) with new targets isn't expressible."
+    },
+    {
+      "name": "Slimefoot and Squee",
+      "needs": [
+        "bug:simultaneous-zone-moves"
+      ],
+      "why": "'Return this card and up to one other target creature card' puts the two onto the battlefield one after another rather than simultaneously (AUTHORING §15 Partial names this exact wording)."
+    },
+    {
+      "name": "Obeka, Brute Chronologist",
+      "needs": [
+        "effect:end-the-turn"
+      ],
+      "why": "Ending the turn (rule 723.1) isn't modeled."
+    },
+    {
+      "name": "Brimaz, Blight of Oreskos",
+      "needs": [
+        "mechanic:incubate"
+      ],
+      "why": "Incubate and the double-faced Incubator token aren't modeled."
+    },
+    {
+      "name": "Xenagos, God of Revels",
+      "needs": [
+        "condition:devotion",
+        "static:self-type-changes"
+      ],
+      "why": "'Isn't a creature' while devotion to red and green is below seven needs a devotion condition and a conditional self type removal."
+    },
+    {
+      "name": "Braids, Arisen Nightmare",
+      "needs": [
+        "effect:may-sacrifice-then"
+      ],
+      "why": "'You may sacrifice an artifact, creature, … If you do, each opponent may sacrifice a permanent that shares a card type with it' needs an optional chosen sacrifice whose follow-up reads the sacrificed permanent."
+    },
+    {
+      "name": "Haldan, Avid Arcanist",
+      "needs": [
+        "zone:play-from-exile-with-counter",
+        "cost:mana-spending-rules"
+      ],
+      "why": "Playing cards you exiled that have fetch counters, spending mana as though it were any colour, isn't modeled."
+    },
+    {
+      "name": "Pako, Arcane Retriever",
+      "needs": [
+        "effect:impulse-exile-other-libraries",
+        "effect:exile-with-counters"
+      ],
+      "why": "Exiling the top card of each player's library with a fetch counter on each isn't expressible."
+    },
+    {
+      "name": "Strefan, Maurer Progenitor",
+      "needs": [
+        "effect:missing-tokens",
+        "effect:may-sacrifice-then",
+        "effect:enter-attacking"
+      ],
+      "why": "There's no Blood token, no 'you may sacrifice two Blood tokens. If you do …' and no putting a card from hand onto the battlefield tapped and attacking."
+    },
+    {
+      "name": "Ghave, Guru of Spores",
+      "needs": [
+        "cost:remove-counters-from-chosen"
+      ],
+      "why": "'Remove a +1/+1 counter from a creature you control' as a cost needs the counter taken from a chosen permanent, not only the source."
+    },
+    {
+      "name": "Vnwxt, Verbose Host",
+      "needs": [
+        "mechanic:speed"
+      ],
+      "why": "Start your engines!/speed and max speed aren't modeled."
+    },
+    {
+      "name": "Saskia the Unyielding",
+      "needs": [
+        "decision:choose-player",
+        "bug:as-enters-choices-any-entry"
+      ],
+      "why": "'As Saskia enters, choose a player' has no player-choice form (chooseOnEnter is a fixed string list) and would only fire when it's cast."
+    },
+    {
+      "name": "Talion, the Kindly Lord",
+      "needs": [
+        "bug:as-enters-choices-any-entry",
+        "decision:choose-number",
+        "new:compare-to-chosen-value"
+      ],
+      "why": "'Choose a number between 1 and 10' as it enters, then matching a spell's mana value, power or toughness to it, has no filter comparison against a chosen value, and the choice would only fire when it's cast."
+    },
+    {
+      "name": "Maelstrom Wanderer",
+      "needs": [
+        "decision:free-cast-choices"
+      ],
+      "why": "Cascade's free cast can't be declined and auto-picks its targets (castCardWithoutPaying commits a cascade cast with the first legal target)."
+    },
+    {
+      "name": "Sen Triplets",
+      "needs": [
+        "zone:cast-cards-you-dont-own",
+        "zone:visibility-extensions"
+      ],
+      "why": "Playing cards from an opponent's hand and making them play with their hand revealed aren't modeled."
+    },
+    {
+      "name": "Xavier Sal, Infested Captain",
+      "needs": [
+        "cost:remove-counters-from-chosen",
+        "decision:choose-permanent"
+      ],
+      "why": "'Remove a counter from another permanent you control' as a cost isn't expressible, and populate doesn't let the player choose the token."
+    },
+    {
+      "name": "Grist, the Hunger Tide",
+      "needs": [
+        "static:self-type-changes",
+        "effect:repeat-process",
+        "effect:may-sacrifice-then"
+      ],
+      "why": "Being a 1/1 Insect creature off the battlefield, the +1's repeat-while-an-Insect-is-milled loop and the −2's 'you may sacrifice a creature. When you do' aren't expressible."
+    },
+    {
+      "name": "Kellan, the Kid",
+      "needs": [
+        "effect:cast-during-resolution"
+      ],
+      "why": "Casting a permanent spell from hand for free during resolution isn't expressible (and the 'if you don't' land fallback depends on it)."
+    },
+    {
+      "name": "Mishra, Eminent One",
+      "needs": [
+        "effect:copy-exceptions"
+      ],
+      "why": "The token copy's name is Mishra's Warform and it's a 4/4 Construct artifact creature in addition to its other types. create-token-copy can't rename a copy or add types."
+    },
+    {
+      "name": "Myrkul, Lord of Bones",
+      "needs": [
+        "effect:copy-exceptions",
+        "effect:token-copy-last-known-info",
+        "effect:exile-with-counters"
+      ],
+      "why": "A token copy of the exiled card that is an enchantment and loses all other card types needs copy exceptions and copying a card off the battlefield."
+    },
+    {
+      "name": "Ellivere of the Wild Court",
+      "needs": [
+        "mechanic:role-tokens",
+        "effect:attach-extensions"
+      ],
+      "why": "Role tokens (the Virtuous Role, its one-Role-per-player SBA) and creating an Aura token attached to a target aren't modeled."
+    },
+    {
+      "name": "Koma, Cosmos Serpent",
+      "needs": [
+        "effect:modal-ability-targeted-modes"
+      ],
+      "why": "A modal activated ability with a targeted mode ('tap target permanent') chosen as it's activated isn't expressible."
+    },
+    {
+      "name": "Ozai, the Phoenix King",
+      "needs": [
+        "replacement:mana-pool-emptying",
+        "static:mana-pool-reads"
+      ],
+      "why": "Unspent mana becoming red instead of being lost, and flying/indestructible with six or more unspent mana, need mana-pool hooks."
+    },
+    {
+      "name": "Gluntch, the Bestower",
+      "needs": [
+        "decision:choose-player",
+        "decision:choose-permanent"
+      ],
+      "why": "Choosing three players at resolution, and the first choosing a creature they control for the counters, aren't expressible."
+    },
+    {
+      "name": "The Gitrog, Ravenous Ride",
+      "needs": [
+        "keyword:saddle",
+        "effect:may-sacrifice-then"
+      ],
+      "why": "Saddle isn't modeled, nor is 'you may sacrifice a creature that saddled it. If you do, draw X … where X is its power'."
+    },
+    {
+      "name": "Breena, the Demagogue",
+      "needs": [
+        "decision:choose-permanent"
+      ],
+      "why": "'You put two +1/+1 counters on a creature you control' is an untargeted choice of permanent at resolution, which isn't expressible."
+    },
+    {
+      "name": "Kadena, Slinking Sorcerer",
+      "needs": [
+        "mechanic:face-down"
+      ],
+      "why": "Face-down creature spells and permanents (morph/manifest/disguise) aren't modeled."
+    },
+    {
+      "name": "Sméagol, Helpful Guide",
+      "needs": [
+        "mechanic:the-ring"
+      ],
+      "why": "The Ring tempts you is not modeled (AUTHORING §15)."
+    }
+  ],
+  "newFeatures": {
+    "new:temporary-spell-ability-grant": "A one-shot effect that gives the spells its controller casts for the rest of the turn a keyword or triggered ability, optionally only those cast from a given zone (Yidris: 'as you cast spells from your hand this turn, they gain cascade'). The static grantsToSpells form exists, but nothing grants it for a duration.",
+    "new:compare-to-chosen-value": "A filter or trigger clause that compares a number (a spell's mana value, power or toughness) against a value chosen as the permanent entered (Talion, the Kindly Lord's chosen number)."
+  },
+  "bugs": [],
+  "unprocessed": []
+}
