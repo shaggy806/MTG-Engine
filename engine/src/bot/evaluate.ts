@@ -57,7 +57,9 @@ export interface EvalWeights {
    */
   readonly lifeDanger: number;
   /** Subtracted: the most combat damage taken from any one commander — 21
-   * of it loses the game however much life is left (rule 903.10a). */
+   * of it loses the game however much life is left (rule 903.10a) — or the
+   * player's poison counters on the same scale, whichever is nearer a loss
+   * (ten poison is 21). */
   readonly commanderDamage: number;
   /** Cards in hand, whatever they are. Public for every player. */
   readonly hand: number;

@@ -44,8 +44,17 @@ export function decisionCandidates(
    * is entirely about whose permanent gets the counter. Without it that
    * branch degrades to "all or nothing", never to a wrong answer. */
   controllerOf: (id: ObjectId) => PlayerId | undefined = () => undefined,
+  /** How many poison counters a player has — `proliferate` again, which
+   * can put one on a poisoned opponent. */
+  poisonOf?: (player: PlayerId) => number,
 ): Action[] | null {
   const decision = decisionForOffer(legal);
   if (decision === undefined) return null;
-  return decision.candidates?.(legal, player, MAX_DECISION_CANDIDATES, { order, controllerOf }) ?? null;
+  return (
+    decision.candidates?.(legal, player, MAX_DECISION_CANDIDATES, {
+      order,
+      controllerOf,
+      ...(poisonOf !== undefined ? { poisonOf } : {}),
+    }) ?? null
+  );
 }

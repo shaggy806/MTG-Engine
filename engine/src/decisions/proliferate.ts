@@ -70,8 +70,22 @@ export const proliferate = defineDecision({
     const mine = legal.eligible.filter((t) =>
       t.kind === "player" ? t.player === player : helpers.controllerOf(t.object) === player,
     );
+    // What the default answer picks: your permanents, poison on an opponent
+    // who has some, and yourself only while unpoisoned. Without it the search
+    // never singled out an opponent's poison.
+    const poisonOf = helpers.poisonOf;
+    const owned =
+      poisonOf === undefined
+        ? mine
+        : legal.eligible.filter((t) =>
+            t.kind === "player"
+              ? t.player === player
+                ? poisonOf(t.player) === 0
+                : poisonOf(t.player) > 0
+              : helpers.controllerOf(t.object) === player,
+          );
     const seen = new Set<string>();
-    return [mine, legal.eligible, []]
+    return [owned, mine, legal.eligible, []]
       .filter((chosen) => {
         const key = chosen.map((t) => (t.kind === "player" ? t.player : t.object)).join(",");
         if (seen.has(key)) return false;

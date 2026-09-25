@@ -43,7 +43,8 @@ import type { CardRegistry } from "../cards.js";
 import type { Keyword } from "../cards/define.js";
 import { manaValue, parseManaCost } from "../mana.js";
 import type { PlayerId } from "../primitives.js";
-import { printedCardName } from "../state.js";
+import { POISON_LETHAL, printedCardName } from "../state.js";
+import { COMMANDER_DAMAGE_LETHAL } from "../view.js";
 import type { GameObject, GameState } from "../state.js";
 
 /** The terms the score is linear in — the vector a fit operates on. Order is
@@ -277,7 +278,14 @@ function playerFeaturesUncached(
   return {
     life: p.life,
     lifeDanger: Math.max(0, LIFE_DANGER_AT - p.life),
-    commanderDamage: Math.max(0, ...Object.values(p.commanderDamageTaken)),
+    // The nearest loss that isn't life: the worst commander's damage, or
+    // poison on the same scale (10 counters lose as 21 damage does). Folded
+    // into one term, so the fitted weight reads poison too without a refit.
+    commanderDamage: Math.max(
+      0,
+      ...Object.values(p.commanderDamageTaken),
+      ((p.counters.poison ?? 0) * COMMANDER_DAMAGE_LETHAL) / POISON_LETHAL,
+    ),
     hand: zones.hand.length,
     handManaValue,
     creatures,

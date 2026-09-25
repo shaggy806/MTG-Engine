@@ -380,6 +380,10 @@ export interface CandidateHelpers {
    * Only `proliferate` needs it, and without it that branch degrades to
    * "all or nothing", never to a wrong answer. */
   readonly controllerOf: (id: ObjectId) => PlayerId | undefined;
+  /** How many poison counters a player has; `undefined` when the caller
+   * didn't supply it. Only `proliferate` needs it: a poisoned opponent is
+   * worth a counter, a poisoned self isn't. */
+  readonly poisonOf?: (player: PlayerId) => number;
 }
 
 /** A module of unknown kind, as the registry stores them. */

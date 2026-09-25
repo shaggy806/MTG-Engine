@@ -145,10 +145,6 @@ that one card is the reason the deck exists.
   `bot:rollout-cost` scripts, `BOT_PLAN_BUDGET_MS` in `server/src/room.ts`, and the `v3` paths
   in the scenario, harvest and tune workers and in `room-pacing.test.ts`.
 - **v2's Phase 7 feature list is superseded.** Don't build it. See `docs/plans/smarter-bots.md`.
-- **Poison is invisible to the evaluation.** `bot/features.ts` reads energy but not
-  `PlayerState.counters`, so a bot sees nothing coming until ten poison counters end the game,
-  and proliferate's search candidates ("mine", "everything", "nothing") never single out an
-  opponent's poison. The default proliferate answer (`ownedProliferateTargets`) does.
 
 ## Client / UI
 

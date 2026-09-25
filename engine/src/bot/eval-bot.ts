@@ -218,6 +218,7 @@ function bestDecision(
           me,
           (ids) => byManaValue(view.state, cards, ids),
           (id) => view.state.objects[id]?.controller,
+          (player) => view.state.players[player]?.counters.poison ?? 0,
         );
   if (candidates === null || candidates.length === 0) return inherited;
 
