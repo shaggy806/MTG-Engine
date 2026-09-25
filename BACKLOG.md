@@ -168,12 +168,14 @@ that one card is the reason the deck exists.
 - **Legend rule.** The oldest permanent survives. The player gets no choice.
 - **Unbounded targeting** ("any number of target …") is deliberately not built. The reasons,
   and when to revisit, are in `neededCards-features.md`, "Unbounded targeting".
-- **Zone-change identity** (rule 400.7). A delayed trigger still follows a card that left and
-  came back: a creature returned by Whip of Erebos, then flickered, is still exiled at end step.
-  Likewise an effect naming "it" or a target acts on the new object, and a permanent that left,
-  came back and left again before an ability referring to its first departure resolved has
-  only the second departure's last-known information (the first is read as the card now is).
-  Tracked as `bug:zone-change-object-identity`.
+- **Zone-change identity** (rule 400.7). A spell's or ability's targets and source, and a
+  delayed trigger's source, are now checked as the objects they were (`targetStints`,
+  `sourceZoneChangeCount`, `DelayedTrigger.sourceStint` — `bug:zone-change-object-identity`,
+  built). Two pieces are left. A delayed trigger's *carried targets* aren't checked: a
+  creature returned by Whip of Erebos, then flickered, is still exiled at end step as a new
+  object. And a permanent that left, came back and left again before an ability referring to
+  its first departure resolved has only the second departure's last-known information (the
+  first is read as the card now is).
 - **Entering together.** Permanents put onto the battlefield by one instruction still enter
   one at a time, so a "whenever another creature enters" ability among them misses the ones
   that entered before it (the Elas il-Kor ruling). Leaving together is one event already.
