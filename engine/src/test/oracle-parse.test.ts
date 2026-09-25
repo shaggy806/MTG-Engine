@@ -160,6 +160,27 @@ describe("costs and triggers", () => {
     expect(parseTypePhrase("Goblins")).toEqual({ subtype: "Goblin" });
   });
 
+  it("a dash label that means something isn't dropped like an ability word", () => {
+    const face = (oracle_text: string) =>
+      parseFace({ name: "Test Label", type_line: "Artifact Creature — Construct", oracle_text }, { tokenFor: () => null });
+    // Camera Launcher: without the flag, its once-only ability could be
+    // activated every turn.
+    const exhaust = face("Exhaust — {3}: Put a +1/+1 counter on this creature.");
+    expect(exhaust.complete).toBe(true);
+    expect(exhaust.activated[0].exhaust).toBe(true);
+    const boast = face("Boast — {1}{R}: This creature deals 1 damage to any target.");
+    expect(boast.activated[0].boast).toBe(true);
+    // An ability word still goes.
+    expect(face("Landfall — Whenever a land you control enters, you gain 1 life.").complete).toBe(true);
+    // Power-up (once only, cheaper the turn it entered) isn't modeled, and a
+    // villainous choice's dash follows the trigger itself.
+    expect(face("Power-up — {5}{U}: Put three +1/+1 counters on this creature.").complete).toBe(false);
+    expect(
+      face("When this creature enters, each opponent faces a villainous choice — They lose 2 life, or you draw a card.")
+        .complete,
+    ).toBe(false);
+  });
+
   it("a 'permanent card' is one that isn't an instant or sorcery", () => {
     // Revive the Shire's "target permanent card from your graveyard" was read
     // as any card at all. On the battlefield the word says nothing.

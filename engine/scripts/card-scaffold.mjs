@@ -268,6 +268,9 @@ function existingToken(t) {
     if (def.art === t.printing) return true;
     const sameList = (a, b) => [...a].sort().join() === [...b].sort().join();
     return (
+      // A legendary token is its own: Karox Bladewing is a 4/4 flying Dragon
+      // too, but two of them die to the legend rule.
+      sameList(def.supertypes ?? [], tt.supertypes) &&
       sameList(def.colors, orderColors(t.colors)) &&
       sameList(def.types, tt.types) &&
       sameList(def.subtypes, tt.subtypes) &&
