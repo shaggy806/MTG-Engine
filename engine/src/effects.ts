@@ -989,6 +989,18 @@ export type EffectSpec =
       readonly amount: EffectAmount;
     }
   | {
+      /** Exile cards from the top of a library, face up, with no permission
+       * to play them (`impulse-exile` is that): "exile the top three cards
+       * of target player's library" (`amount`), or all but the bottom few —
+       * Nicol Bolas, the Arisen's "exile all but the bottom card of target
+       * player's library" (`allBut: 1`, in place of `amount`). `whose` is a
+       * target slot holding a player, or a scope (`"you"`, the default). */
+      readonly kind: "exile-from-library";
+      readonly whose?: number | PlayerScope;
+      readonly amount?: EffectAmount;
+      readonly allBut?: number;
+    }
+  | {
       /** Return every card matching `filter` from the effect's controller's
        * graveyard to `destination` (Splendid Reclamation: all land cards to
        * the battlefield tapped — rule 608). `count: "all"` moves every match
@@ -2327,6 +2339,9 @@ export interface EffectApi {
   gainControl(target: TargetRef, untilEndOfTurn: boolean): void;
   /** `target` (a player) mills `amount` cards. */
   mill(target: TargetRef, amount: number): void;
+  /** See the `"exile-from-library"` {@link EffectSpec}: the top `top` cards
+   * of `target`'s library, or all of it but the bottom `allBut`. */
+  exileFromLibrary(target: TargetRef, count: { readonly top: number } | { readonly allBut: number }): void;
   /** Number of battlefield permanents matching `filter`, evaluated with the
    * effect's controller as "you" (for an `EffectAmount` `{ countOf }`). */
   countMatching(filter: CardFilter, except?: readonly ObjectId[]): number;
@@ -3360,6 +3375,23 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "mill": {
       for (const target of scopedOrTargetedPlayers(spec.target, ctx)) {
         ctx.mill(target, amountValue(spec.amount, ctx, target.kind === "player" ? target.player : undefined));
+      }
+      return;
+    }
+    case "exile-from-library": {
+      for (const target of scopedOrTargetedPlayers(spec.whose ?? "you", ctx)) {
+        ctx.exileFromLibrary(
+          target,
+          spec.allBut !== undefined
+            ? { allBut: spec.allBut }
+            : {
+                top: amountValue(
+                  spec.amount ?? 1,
+                  ctx,
+                  target.kind === "player" ? target.player : undefined,
+                ),
+              },
+        );
       }
       return;
     }

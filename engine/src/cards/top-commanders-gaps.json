@@ -101,7 +101,8 @@
   "condition:defending-player-life-rank",
   "stat:mana-spent-to-cast",
   "effect:look-and-choose-leftover",
-  "bug:transform-fixes"
+  "bug:transform-fixes",
+  "effect:exile-library-all-but-bottom"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

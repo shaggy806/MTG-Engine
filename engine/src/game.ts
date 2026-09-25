@@ -10850,6 +10850,7 @@ export class Game {
       gainControl: (target, untilEndOfTurn) =>
         this.gainControlByEffect(controller, target, untilEndOfTurn),
       mill: (target, amount) => this.millByEffect(target, amount),
+      exileFromLibrary: (target, count) => this.exileFromLibraryByEffect(target, count),
       countMatching: (filter, except) => this.countBattlefieldMatching(controller, filter, except),
       aggregate: (spec, except) => this.aggregateBattlefield(controller, spec, except),
       returnFromGraveyard: (filter, destination, count, enterTapped, withCounters) =>
@@ -14961,6 +14962,19 @@ export class Game {
     if (milled.length > 0) {
       this.emit({ type: "cards-milled", player, objects: milled });
     }
+  }
+
+  /** See the `"exile-from-library"` {@link EffectSpec}: the top cards of a
+   * player's library, into exile face up — `top` of them, or every one but
+   * the bottom `allBut`. */
+  private exileFromLibraryByEffect(
+    target: TargetRef,
+    count: { readonly top: number } | { readonly allBut: number },
+  ): void {
+    if (target.kind !== "player" || this.state.players[target.player] === undefined) return;
+    const library = this.state.zones.perPlayer[target.player].library;
+    const n = "top" in count ? Math.max(0, count.top) : Math.max(0, library.length - count.allBut);
+    for (const id of library.slice(0, n)) this.moveObject(id, "exile");
   }
 
   /** See the `"return-from-graveyard"` {@link EffectSpec}. Returns cards from

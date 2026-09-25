@@ -472,6 +472,7 @@ clause (below) chooses among them.
 | `discard-hand` | `who` | Dragon Mage — "each player discards their hand". A whole hand at once with nothing to choose, so unlike `discard` it never raises a decision, which is what lets "discards their hand, **then** draws seven" resolve in one pass. |
 | `discard` | `target` (slot \| a `PlayerScope`), `amount` | Mind Rot / Faithless Looting (`"you"`) / "each opponent discards a card" (`"each-opponent"`). A scope asks each player with a real choice **in turn**, APNAP (`GameState.pendingDiscards`); a player whose hand is no bigger than the count discards it at once. |
 | `mill` | `target` (slot \| a `PlayerScope`), `amount` | Tome Scour / Aftermath Analyst (`"you"`) / Hope Estheim (`"each-opponent"`) |
+| `exile-from-library` | `whose?` (slot \| a `PlayerScope`, default `"you"`), `amount?` \| `allBut?` | Exile the top `amount` cards of a library face up, or all but the bottom `allBut` — Nicol Bolas, the Arisen's "exile all but the bottom card of target player's library" is `{ whose: 0, allBut: 1 }`. No permission to play them (that's `impulse-exile`); `{ thisWay: "exiled" }` counts them. |
 
 `who?` is a `PlayerScope`: `"each-player" \| "each-opponent" \| "you" \|
 "active-player" \| "trigger-controller" \| "trigger-player" \|
