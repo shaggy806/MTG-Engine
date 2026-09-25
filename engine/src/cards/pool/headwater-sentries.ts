@@ -1,0 +1,12 @@
+import { defineCard } from "../define.js";
+
+export default defineCard({
+  name: "Headwater Sentries",
+  manaCost: "{3}{U}",
+  colors: ["U"],
+  types: ["creature"],
+  subtypes: ["Merfolk", "Warrior"],
+  power: 2,
+  toughness: 5,
+  text: "",
+});

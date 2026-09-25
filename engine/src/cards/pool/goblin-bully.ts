@@ -1,0 +1,12 @@
+import { defineCard } from "../define.js";
+
+export default defineCard({
+  name: "Goblin Bully",
+  manaCost: "{1}{R}",
+  colors: ["R"],
+  types: ["creature"],
+  subtypes: ["Goblin"],
+  power: 2,
+  toughness: 1,
+  text: "",
+});
