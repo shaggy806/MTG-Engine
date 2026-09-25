@@ -804,6 +804,14 @@
     {
       "card": "Underworld Breach",
       "what": "Game.escapeOf returns a card's printed escape whenever it has one, so a grantsToGraveyard escape (Underworld Breach, The Master of Keys) is never offered for such a card, though the rulings let the player choose which escape applies."
+    },
+    {
+      "card": "The Great Henge",
+      "what": "test/oracle-parse.test.ts reports a parser disagreement: scripts/oracle-parse.mjs reads '{T}: Add {G}{G}. You gain 2 life.' as a sequence of add-mana and gain-life, which isManaAbility rejects (the ability would use the stack). The pool file puts the life on add-mana's `also` (Kibo, Uktabi Prince's shape), which is the correct mana ability; the parser template needs to emit `also` for a trailing clause of a mana ability."
+    },
+    {
+      "card": "Bident of Thassa",
+      "what": "test/sample-decks.test.ts fails: First Flight's substitutions table in engine/src/sample-decks.ts still swaps out Bident of Thassa, which is now implemented. Delete that entry (the sweep may not edit sample-decks.ts)."
     }
   ],
   "unprocessed": []
