@@ -9,6 +9,7 @@ import _poolAerialResponder from "../pool/aerial-responder.js";
 import _poolAgentOfKotis from "../pool/agent-of-kotis.js";
 import _poolAkroanMastiff from "../pool/akroan-mastiff.js";
 import _poolAltarsLight from "../pool/altars-light.js";
+import _poolAncientGreenwarden from "../pool/ancient-greenwarden.js";
 import _poolArcaneSignet from "../pool/arcane-signet.js";
 import _poolArrowsOfJustice from "../pool/arrows-of-justice.js";
 import _poolAuthorityOfTheConsuls from "../pool/authority-of-the-consuls.js";
@@ -184,6 +185,7 @@ const shard: CardShard = {
     _poolAgentOfKotis,
     _poolAkroanMastiff,
     _poolAltarsLight,
+    _poolAncientGreenwarden,
     _poolArcaneSignet,
     _poolArrowsOfJustice,
     _poolAuthorityOfTheConsuls,

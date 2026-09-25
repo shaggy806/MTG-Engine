@@ -1067,25 +1067,30 @@ export class Game {
 
     // "Impulse draw" — a card exiled face-up with permission to play it, for
     // its ordinary cost (Dream Pillager, Tectonic Giant, Theater of Horrors).
+    // Either face of a modal double-faced card, as from the hand.
     for (const card of this.state.zones.shared.exile) {
       if (!this.impulsePlayable(player, card)) continue;
       const object = this.state.objects[card];
-      const def = this.registry.get(object.cardName);
-      if (def.types.includes("land")) {
-        // "You may *play* them" includes lands; "cast spells from among them"
-        // doesn't. Still costs the land drop.
-        if (object.impulse?.castOnly === true) continue;
-        if (this.whyCannotPlayLand(player, card) === null) {
-          out.push({ kind: "play-land", card, cardName: def.name });
+      for (const face of this.modalFaces(card)) {
+        const def = this.faceDef(card, face ?? 0);
+        const faceProp = face !== undefined ? { face } : {};
+        if (def.types.includes("land")) {
+          // "You may *play* them" includes lands; "cast spells from among
+          // them" doesn't. Still costs the land drop.
+          if (object.impulse?.castOnly === true) continue;
+          if (this.whyCannotPlayLand(player, card, face ?? 0) === null) {
+            out.push({ kind: "play-land", card, cardName: def.name, ...faceProp });
+          }
+          continue;
         }
-        continue;
+        out.push(
+          ...this.castSpellActions(player, card, def.name, def, {
+            via: "impulse",
+            ...faceProp,
+            costString: def.manaCost,
+          }),
+        );
       }
-      out.push(
-        ...this.castSpellActions(player, card, def.name, def, {
-          via: "impulse",
-          costString: def.manaCost,
-        }),
-      );
     }
 
     // Graveyard permissions: one granted by a permanent (Gisa and Geralf,
@@ -1161,24 +1166,35 @@ export class Game {
 
     // A static permission to play lands from your graveyard (Ramunap
     // Excavator — rule 118.9). Still consumes the land drop / sorcery timing.
+    // It reaches a modal double-faced card's land face, whatever its front
+    // (Ancient Greenwarden's ruling).
     for (const card of this.state.zones.perPlayer[player].graveyard) {
-      const def = this.registry.get(this.state.objects[card].cardName);
-      if (!def.types.includes("land")) continue;
-      // A limited permission (Muldrotha's land allowance) was offered above,
-      // with the grant it spends.
-      if (!this.mayPlayFromGraveyard(player, card)) continue;
-      if (this.whyCannotPlayLand(player, card) !== null) continue;
-      out.push({ kind: "play-land", card, cardName: def.name });
+      for (const face of this.modalFaces(card)) {
+        const def = this.faceDef(card, face ?? 0);
+        if (!def.types.includes("land")) continue;
+        // A limited permission (Muldrotha's land allowance) was offered above,
+        // with the grant it spends.
+        if (!this.mayPlayFromGraveyard(player, card, face ?? 0)) continue;
+        if (this.whyCannotPlayLand(player, card, face ?? 0) !== null) continue;
+        out.push({ kind: "play-land", card, cardName: def.name, ...(face !== undefined ? { face } : {}) });
+      }
     }
 
     // A static permission to play the top card of your library if it's a
-    // land (Oracle of Mul Daya). Still consumes the land drop / sorcery
-    // timing.
+    // land (Oracle of Mul Daya), a modal double-faced card's land face
+    // included. Still consumes the land drop / sorcery timing.
     const libraryTop = this.state.zones.perPlayer[player].library[0];
     if (libraryTop !== undefined) {
-      const def = this.registry.get(this.state.objects[libraryTop].cardName);
-      if (def.types.includes("land") && this.whyCannotPlayLand(player, libraryTop) === null) {
-        out.push({ kind: "play-land", card: libraryTop, cardName: def.name });
+      for (const face of this.modalFaces(libraryTop)) {
+        const def = this.faceDef(libraryTop, face ?? 0);
+        if (def.types.includes("land") && this.whyCannotPlayLand(player, libraryTop, face ?? 0) === null) {
+          out.push({
+            kind: "play-land",
+            card: libraryTop,
+            cardName: def.name,
+            ...(face !== undefined ? { face } : {}),
+          });
+        }
       }
     }
 
@@ -4579,15 +4595,38 @@ export class Game {
 
   /** While a `playFromGraveyard` static (Ramunap Excavator) is on the
    * battlefield under `player`'s control, they may play a matching card from
-   * their graveyard (rule 118.9 / 305.9). */
-  private mayPlayFromGraveyard(player: PlayerId, cardId: ObjectId): boolean {
+   * their graveyard (rule 118.9 / 305.9). Matched as the face being played:
+   * "play lands" reaches a modal double-faced card's land face, though in
+   * the graveyard the card is only its front (Ancient Greenwarden's ruling). */
+  private mayPlayFromGraveyard(player: PlayerId, cardId: ObjectId, face = 0): boolean {
+    return this.playPermissionFrom(player, cardId, face, (ability) => ability.playFromGraveyard);
+  }
+
+  /** While a `playFromLibraryTop` static (Oracle of Mul Daya) is on the
+   * battlefield under `player`'s control, they may play the top card of
+   * their library if it matches (rule 118.9-adjacent) — as the face being
+   * played, as from the graveyard. */
+  private mayPlayFromLibraryTop(player: PlayerId, cardId: ObjectId, face = 0): boolean {
+    return this.playPermissionFrom(player, cardId, face, (ability) => ability.playFromLibraryTop);
+  }
+
+  /** Whether an active static of `player`'s whose `filter` this picks out
+   * matches `cardId` played as `face`. */
+  private playPermissionFrom(
+    player: PlayerId,
+    cardId: ObjectId,
+    face: number,
+    filterOf: (ability: StaticAbility) => CardFilter | undefined,
+  ): boolean {
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
       if (source.controller !== player || hasLostAbilities(source)) continue;
       for (const ability of this.registry.get(printedCardName(source)).static) {
-        const filter = ability.playFromGraveyard;
+        const filter = filterOf(ability);
         if (filter === undefined || !this.staticActive(source, ability)) continue;
-        if (matchesFilter(this.state, this.registry, cardId, filter, { you: player })) {
+        if (
+          this.withFace(cardId, face, () => matchesFilter(this.state, this.registry, cardId, filter, { you: player }))
+        ) {
           return true;
         }
       }
@@ -4595,22 +4634,13 @@ export class Game {
     return false;
   }
 
-  /** While a `playFromLibraryTop` static (Oracle of Mul Daya) is on the
-   * battlefield under `player`'s control, they may play the top card of
-   * their library if it matches (rule 118.9-adjacent). */
-  private mayPlayFromLibraryTop(player: PlayerId, cardId: ObjectId): boolean {
-    for (const id of this.state.zones.shared.battlefield) {
-      const source = this.state.objects[id];
-      if (source.controller !== player || hasLostAbilities(source)) continue;
-      for (const ability of this.registry.get(printedCardName(source)).static) {
-        const filter = ability.playFromLibraryTop;
-        if (filter === undefined || !this.staticActive(source, ability)) continue;
-        if (matchesFilter(this.state, this.registry, cardId, filter, { you: player })) {
-          return true;
-        }
-      }
-    }
-    return false;
+  /** The faces of `cardId` a player chooses between as they play it: each of
+   * a modal multi-face card's (rule 712 — a modal double-faced card, an
+   * adventurer), or `[undefined]` for a single-faced card and a transforming
+   * one, which is only ever played as its front. */
+  private modalFaces(cardId: ObjectId): readonly (number | undefined)[] {
+    const def = this.registry.get(this.state.objects[cardId].cardName);
+    return def.transform || def.faces === null ? [undefined] : def.faces.map((_n, i) => i);
   }
 
   /** The base land-drop limit plus any `extraLandsPerTurn` statics `player`
@@ -4655,9 +4685,9 @@ export class Game {
     const playable =
       zones.hand.includes(cardId) ||
       (zones.graveyard.includes(cardId) &&
-        (this.mayPlayFromGraveyard(player, cardId) ||
+        (this.mayPlayFromGraveyard(player, cardId, face) ||
           this.graveyardGrantsFor(player, cardId, face).length > 0)) ||
-      (zones.library[0] === cardId && this.mayPlayFromLibraryTop(player, cardId)) ||
+      (zones.library[0] === cardId && this.mayPlayFromLibraryTop(player, cardId, face)) ||
       // "Impulse draw" that says *play* rather than *cast* includes lands
       // (Tectonic Giant, Theater of Horrors).
       (this.impulsePlayable(player, cardId) &&
@@ -4683,7 +4713,7 @@ export class Game {
     // (Ramunap Excavator), which spends nothing.
     if (
       this.state.objects[cardId].zone === "graveyard" &&
-      (graveyardGrant !== undefined || !this.mayPlayFromGraveyard(player, cardId))
+      (graveyardGrant !== undefined || !this.mayPlayFromGraveyard(player, cardId, face))
     ) {
       const found = this.findGraveyardGrant(player, cardId, face, graveyardGrant);
       if (found !== null) this.spendGraveyardGrant(found);

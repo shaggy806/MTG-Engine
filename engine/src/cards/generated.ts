@@ -148,6 +148,7 @@ import _poolAncientBrontodon from "./pool/ancient-brontodon.js";
 import _poolAncientCarp from "./pool/ancient-carp.js";
 import _poolAncientCrab from "./pool/ancient-crab.js";
 import _poolAncientDen from "./pool/ancient-den.js";
+import _poolAncientGreenwarden from "./pool/ancient-greenwarden.js";
 import _poolAncientGrudge from "./pool/ancient-grudge.js";
 import _poolAncientLumberknot from "./pool/ancient-lumberknot.js";
 import _poolAncientSpider from "./pool/ancient-spider.js";
@@ -5677,6 +5678,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAncientCarp,
   _poolAncientCrab,
   _poolAncientDen,
+  _poolAncientGreenwarden,
   _poolAncientGrudge,
   _poolAncientLumberknot,
   _poolAncientSpider,
