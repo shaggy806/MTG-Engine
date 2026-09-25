@@ -186,6 +186,28 @@ describe("costs and triggers", () => {
     ).toBe(false);
   });
 
+  it("'other creatures you control' excludes the source only when nothing else is named", () => {
+    const face = (type_line: string, oracle_text: string) =>
+      parseFace({ name: "Test Other", type_line, oracle_text }, { tokenFor: () => null });
+    const lord = face("Creature — Knight", "Whenever this creature attacks, other creatures you control get +1/+1 until end of turn.");
+    expect(lord.triggered[0].effect.exceptSource).toBe(true);
+    // Exhilarating Elocution: the one "other" leaves out is the target, and
+    // a spell was never a creature to leave out.
+    const spell = face(
+      "Sorcery",
+      "Put two +1/+1 counters on target creature you control. Other creatures you control get +1/+1 until end of turn.",
+    );
+    expect(spell.complete).toBe(false);
+  });
+
+  it("an Aura card returned to the battlefield is left to author", () => {
+    // It would enter attached to nothing and go straight back (Rise to Glory).
+    expect(parseSentence("Return target Aura card from your graveyard to the battlefield.", ctx())).toBeNull();
+    expect(parseSentence("Return target creature card from your graveyard to the battlefield.", ctx())?.kind).toBe(
+      "put-onto-battlefield",
+    );
+  });
+
   it("a 'permanent card' is one that isn't an instant or sorcery", () => {
     // Revive the Shire's "target permanent card from your graveyard" was read
     // as any card at all. On the battlefield the word says nothing.

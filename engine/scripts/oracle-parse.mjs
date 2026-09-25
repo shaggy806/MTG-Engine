@@ -385,6 +385,11 @@ export function parseTrigger(clause) {
  * allocates a target slot and returns its index; `ctx.tokenFor(desc)` names
  * the engine token a "create" means.
  */
+/** "Other creatures you control" means other than the source only on a
+ * permanent's ability that hasn't named a target: on a spell, or after "target
+ * creature", the one it excludes is the target (Exhilarating Elocution). */
+const otherMeansSource = (ctx) => !ctx.spell && ctx.targets.length === 0;
+
 export function parseSentence(sentence, ctx) {
   const s = sentence.replace(/\s+/g, " ").trim();
   // "…, where X is the number of …" / "for each …" define an amount by a rule
@@ -494,6 +499,7 @@ export function parseSentence(sentence, ctx) {
     const n = amount(m[1]);
     if (m[2] === "~") return { kind: "add-counter", target: "source", counter: "+1/+1", amount: n };
     if (/^each/.test(m[2])) {
+      if (/other/.test(m[2]) && !otherMeansSource(ctx)) return null;
       return {
         kind: "add-counter-all",
         filter: { type: "creature", controlledBy: "you" },
@@ -531,6 +537,9 @@ export function parseSentence(sentence, ctx) {
     return i === undefined ? null : { kind: "return-to-hand", target: i, from: "graveyard" };
   }
   if ((m = /^return (target .+? card from your graveyard) to the battlefield( tapped)?\.$/i.exec(s))) {
+    // An Aura put onto the battlefield this way isn't attached to anything
+    // (BACKLOG), so a card that names one (Rise to Glory) is left to author.
+    if (/\bAura\b/.test(m[1])) return null;
     const i = slot(m[1]);
     return i === undefined ? null : { kind: "put-onto-battlefield", target: i, ...(m[2] ? { enterTapped: true } : {}) };
   }
@@ -571,6 +580,7 @@ export function parseSentence(sentence, ctx) {
     };
   }
   if ((m = re(`(other )?creatures you control get ([+-]\\d+)/([+-]\\d+) until end of turn`).exec(s))) {
+    if (m[1] && !otherMeansSource(ctx)) return null;
     return {
       kind: "modify-pt-all",
       filter: { type: "creature", controlledBy: "you" },
@@ -587,6 +597,7 @@ export function parseSentence(sentence, ctx) {
     return kws.length === 1 ? one(kws[0]) : { kind: "sequence", effects: kws.map(one) };
   }
   if ((m = re(`(other )?creatures you control gain ${KW}(?: and ${KW})? until end of turn`).exec(s))) {
+    if (m[1] && !otherMeansSource(ctx)) return null;
     const kws = [m[2], m[3]].filter(Boolean).map((k) => KEYWORDS[k.toLowerCase()]);
     const one = (keyword) => ({
       kind: "grant-keyword-all",
@@ -852,12 +863,12 @@ export function parseFace(face, ctx = {}) {
 
   // A spell: its lines are one effect (a modal one if it opens "Choose …").
   if (out.spellLines) {
-    const modal = parseModalSpell(out.spellLines, { tokenFor, onStack: true });
+    const modal = parseModalSpell(out.spellLines, { tokenFor, onStack: true, spell: true });
     if (modal !== undefined) {
       if (modal === null) out.todo.push(...out.spellLines.map((l) => printed(l.raw)));
       else Object.assign(out, modal);
     } else {
-      const ctx2 = { targets: spellTargets, tokenFor, onStack: true };
+      const ctx2 = { targets: spellTargets, tokenFor, onStack: true, spell: true };
       const text = out.spellLines.map((l) => l.line).join(" ");
       const r = parseEffect(text, ctx2);
       out.targets = spellTargets;
@@ -952,7 +963,7 @@ function parseModalSpell(spellLines, ctx) {
     if (!l.line.startsWith("•")) return null;
     const text = l.line.replace(/^•\s*/, "");
     const targets = [];
-    const r = parseEffect(text, { targets, tokenFor: ctx.tokenFor, onStack: ctx.onStack });
+    const r = parseEffect(text, { targets, tokenFor: ctx.tokenFor, onStack: ctx.onStack, spell: ctx.spell });
     if (r.effect === null) return null;
     modes.push({ text: stripReminder(l.raw).replace(/^•\s*/, ""), ...(targets.length ? { targets } : {}), effect: r.effect });
   }
