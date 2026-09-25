@@ -26,7 +26,8 @@ export default defineCard({
       text: "Whenever a creature an opponent controls dies, you may gain 3 life.",
     },
     {
-      trigger: { on: "discards", who: "opponent" },
+      // Once per card discarded, not once per discard.
+      trigger: { on: "discards", who: "opponent", perCard: true },
       targets: [],
       effect: { kind: "may", prompt: "Gain 3 life?", effect: { kind: "gain-life", amount: 3 } },
       resolve: null,

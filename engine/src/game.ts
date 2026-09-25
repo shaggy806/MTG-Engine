@@ -8845,6 +8845,9 @@ export class Game {
                     ? this.graveyardArrivals(ability.trigger, event.arrivals, object).length
                     : ability.trigger.on === "put-into-exile" && event.type === "cards-put-into-exile"
                     ? this.exileArrivals(ability.trigger, event.arrivals, object).length
+                    : // "…for each card discarded this way".
+                    ability.trigger.on === "discards" && event.type === "cards-discarded"
+                    ? this.discardedMatching(ability.trigger, event.objects, object).length
                     : // "Deals that much damage": how many counters were put.
                     ability.trigger.on === "counters-put" && event.type === "counter-added"
                     ? event.amount
@@ -8965,6 +8968,30 @@ export class Game {
             for (const card of this.graveyardLeavers(ability.trigger, event.objects, object)) {
               const { triggerValue: _count, ...single } = base;
               this.queueTrigger(ability, { ...single, triggerObject: card }, multiplier);
+            }
+            return;
+          }
+          // "Whenever an opponent discards a card": once per card, each its
+          // own trigger object, followed to the graveyard and no further.
+          if (
+            ability.trigger.on === "discards" &&
+            ability.trigger.perCard === true &&
+            event.type === "cards-discarded"
+          ) {
+            for (const card of this.discardedMatching(ability.trigger, event.objects, object)) {
+              const { triggerValue: _count, ...single } = base;
+              this.queueTrigger(
+                ability,
+                {
+                  ...single,
+                  triggerObject: card,
+                  lastKnownRefs: {
+                    ...(base.lastKnownRefs ?? {}),
+                    triggerObjectAfterLeaving: this.state.objects[card]?.zoneChangeCount ?? 0,
+                  },
+                },
+                multiplier,
+              );
             }
             return;
           }
@@ -9601,10 +9628,10 @@ export class Game {
       case "discards":
         return (
           event.type === "cards-discarded" &&
-          event.objects.length > 0 &&
           (spec.who === "any" ||
             (spec.who === "you" && event.player === self.controller) ||
-            (spec.who === "opponent" && event.player !== self.controller))
+            (spec.who === "opponent" && event.player !== self.controller)) &&
+          this.discardedMatching(spec, event.objects, self).length > 0
         );
       case "attack-with": {
         if (event.type !== "attackers-declared") return false;
@@ -16725,6 +16752,22 @@ export class Game {
    * from the right zone, matching `filter` as they are there. Shared by the
    * match, the count and the per-card firings, so they can't disagree.
    */
+  /** The cards of a `cards-discarded` that a `discards` trigger's `filter`
+   * matches, as they are in the graveyard (from the watcher's side). */
+  private discardedMatching(
+    spec: Extract<TriggerSpec, { on: "discards" }>,
+    objects: readonly ObjectId[],
+    self: GameObject,
+  ): readonly ObjectId[] {
+    if (spec.filter === undefined) return objects;
+    const filter = spec.filter;
+    return objects.filter(
+      (id) =>
+        this.state.objects[id] !== undefined &&
+        matchesFilter(this.state, this.registry, id, filter, { you: self.controller }),
+    );
+  }
+
   private graveyardArrivals(
     spec: Extract<TriggerSpec, { on: "put-into-graveyard" }>,
     arrivals: readonly { readonly object: ObjectId; readonly from: ZoneType }[],

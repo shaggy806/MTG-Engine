@@ -671,17 +671,20 @@ export type TriggerSpec =
     }
   | {
       /**
-       * A player discarded one or more cards — Sangromancer's "whenever an
-       * opponent discards a card".
-       *
-       * Fires **once per discard event**, not once per card: `cards-discarded`
-       * carries the whole batch, and a card printed this way ("whenever an
-       * opponent discards a card, you may gain 3 life") would in the real
-       * rules trigger once per card. The divergence only shows on a
-       * multi-card discard; recorded in AUTHORING §15.
+       * A player discarded one or more cards — "whenever you discard one or
+       * more cards" (Captain Howler, Sea Scourge), once per discard event,
+       * with `{ triggerValue: true }` how many matched. `filter` narrows the
+       * cards, as they are in the graveyard. `perCard` is "whenever an
+       * opponent discards a card" — once per card, each its trigger object,
+       * followed to the graveyard and no further (Tergrid, God of Fright's
+       * "you may put that card onto the battlefield under your control" is
+       * `filter: { typesAnyOf: [<the permanent types>] }` and a
+       * `put-onto-battlefield` of `"trigger-object"`).
        */
       readonly on: "discards";
       readonly who: TriggerWho;
+      readonly filter?: CardFilter;
+      readonly perCard?: boolean;
     }
   | {
       /**

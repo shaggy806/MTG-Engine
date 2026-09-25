@@ -1227,7 +1227,7 @@
   "trigger:discards-extensions": {
    "size": "small",
    "ui": false,
-   "description": "The discards trigger gains a card filter, can fire once per card with a trigger object, can supply the count as a trigger value, and records the cause (an opponent's spell or ability) for cards that trigger from the graveyard."
+   "description": "The discards trigger records the cause (an opponent's spell or ability) for cards that trigger from the graveyard — Orvar, the All-Form's 'when a spell or ability an opponent controls causes you to discard this card'. Built so far: a card filter, once per card with the card as trigger object (perCard — Tergrid, God of Fright, Sangromancer), and the count of matching cards as the trigger value."
   },
   "trigger:enters-batch": {
    "size": "medium",

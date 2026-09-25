@@ -101,7 +101,9 @@ that one card is the reason the deck exists.
   Yuna, Grand Summoner, Codie, Vociferous Codex and Shirei, Shizo's Caretaker (a `nextSpell`
   delayed trigger, `enters-with-counters`, `allow-cast-from-exile`, a carried trigger object
   and `source-on-battlefield` — their gaps entries still list
-  `effect:delayed-trigger-extensions`, whose parts they need are built) — confirm each at
+  `effect:delayed-trigger-extensions`, whose parts they need are built); Tergrid, God of
+  Fright (`discards`' `perCard` and `filter` — its gaps entry still lists
+  `trigger:discards-extensions`, whose per-card part it needs is built) — confirm each at
   `card:lookup`.
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
