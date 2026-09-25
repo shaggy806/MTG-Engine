@@ -5412,6 +5412,15 @@ export class Game {
             : undefined;
       }
     };
+    const doubles = (d: NonNullable<StaticAbility["doubleTriggers"]>): boolean => {
+      const who = subject(d.cause);
+      if (who === undefined) return false;
+      if (d.filter === undefined) return true;
+      if (who === null) return false;
+      // A creature that died is matched as it last existed.
+      const lastKnown = d.cause === "dies";
+      return matchesFilter(this.state, this.registry, who, d.filter, { you: controller, lastKnown });
+    };
     let count = 0;
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
@@ -5419,17 +5428,25 @@ export class Game {
       for (const ability of this.registry.get(printedCardName(source)).static) {
         const d = ability.doubleTriggers;
         if (d === undefined || !this.staticActive(source, ability)) continue;
-        const who = subject(d.cause);
-        if (who === undefined) continue;
-        if (d.filter !== undefined) {
-          if (who === null) continue;
-          // A creature that died is matched as it last existed.
-          const lastKnown = d.cause === "dies";
-          if (!matchesFilter(this.state, this.registry, who, d.filter, { you: controller, lastKnown })) {
-            continue;
-          }
+        if (doubles(d)) count += 1;
+      }
+    }
+    // A creature dying at the same time as the doubler — the doubler itself
+    // included — still makes abilities trigger an additional time (Teysa
+    // Karlov's rulings): a leave event also looks back at its own subject and
+    // at the rest of its batch that has already left, each as it last
+    // existed there (rule 603.10a). Only an unconditional static, since its
+    // condition can't be asked of a permanent that has gone.
+    if (isLeaveEvent(event)) {
+      for (const id of new Set([event.object, ...this.lookBackSources(event)])) {
+        const was = this.state.objects[id];
+        const last = was?.lastKnown;
+        if (was === undefined || was.zone === "battlefield" || last === undefined) continue;
+        if (last.controller !== controller || last.lostAbilities) continue;
+        for (const ability of this.registry.get(last.name).static) {
+          const d = ability.doubleTriggers;
+          if (d !== undefined && ability.condition === undefined && doubles(d)) count += 1;
         }
-        count += 1;
       }
     }
     return count;
@@ -16400,6 +16417,32 @@ export class Game {
           continue;
         }
         return true;
+      }
+    }
+    // Permanents leaving in one event leave together, so a replacement one
+    // of them makes still applies to the others the engine happens to move
+    // after it: a wrath that takes Vren, the Relentless with an opponent's
+    // creatures exiles those creatures (Vren's ruling), and Rest in Peace
+    // destroyed beside creatures exiles them. Asked of the batch's departed
+    // members as they last existed; only an unconditional static, since a
+    // condition can't be asked of a permanent that has gone.
+    if (fromBattlefield && this.leaveBatch !== null) {
+      for (const id of this.leaveBatch.left) {
+        const was = this.state.objects[id];
+        const last = was?.lastKnown;
+        if (was === undefined || was.zone === "battlefield" || last === undefined || last.lostAbilities) continue;
+        for (const ability of this.registry.get(last.name).static) {
+          const r = ability.replacement;
+          if (r?.event !== "would-be-put-into-graveyard" || r.instead !== "exile") continue;
+          if (ability.condition !== undefined) continue;
+          if (
+            r.filter !== undefined &&
+            !matchesFilter(this.state, this.registry, cardId, r.filter, { you: last.controller })
+          ) {
+            continue;
+          }
+          return true;
+        }
       }
     }
     return false;

@@ -147,6 +147,7 @@ import _poolSunbeamSpellbomb from "../pool/sunbeam-spellbomb.js";
 import _poolTajuruPathwarden from "../pool/tajuru-pathwarden.js";
 import _poolTempleOfMystery from "../pool/temple-of-mystery.js";
 import _poolTerritorialRoc from "../pool/territorial-roc.js";
+import _poolTeysaKarlov from "../pool/teysa-karlov.js";
 import _poolThanosDeathsConsort from "../pool/thanos-deaths-consort.js";
 import _poolTheUnbeatableSquirrelGirl from "../pool/the-unbeatable-squirrel-girl.js";
 import _poolThunderclapWyvern from "../pool/thunderclap-wyvern.js";
@@ -321,6 +322,7 @@ const shard: CardShard = {
     _poolTajuruPathwarden,
     _poolTempleOfMystery,
     _poolTerritorialRoc,
+    _poolTeysaKarlov,
     _poolThanosDeathsConsort,
     _poolTheUnbeatableSquirrelGirl,
     _poolThunderclapWyvern,

@@ -135,13 +135,16 @@ that one card is the reason the deck exists.
   `effect`.
 
 - **Engine bugs card sweep 2 found** (repros in `engine/data/sweep-2/*.json`, `bugs`):
-  - Dies-trigger doubling (Teysa Karlov) misses creatures that die alongside the doubler.
-  - A mass destroy moves its victims one by one, so a "would die, exile instead" permanent
-    among them (Vren) stops applying partway.
   - A commander its owner sends to the command zone never dies, so its own dies trigger is lost
     (Child of Alara).
   - Performance: a per-creature enters trigger watching an opponent's token stack
-    (Authority of the Consuls against Scute Swarm) puts hundreds of triggers on the stack.
+    (Authority of the Consuls against Scute Swarm) puts hundreds of triggers on the stack. They
+    are right by the rules: a stack of N tokens entering is N creatures entering, and "gain 1
+    life" can't be scaled to one "gain N" (a "whenever you gain life" trigger would fire once,
+    not N times), so `isCountScalableEffect` rightly refuses it and `queueTrigger` makes one
+    trigger per token, up to 1,000. A faithful fix needs a stack object that stands for N
+    identical triggers and resolves one at a time, with priority between each, which a Stifle
+    splits one off of, as a token stack does. Otherwise it's only slow.
 
 ## Bots
 

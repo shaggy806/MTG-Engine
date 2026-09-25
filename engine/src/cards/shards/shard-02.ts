@@ -171,6 +171,7 @@ import _poolVassalSoul from "../pool/vassal-soul.js";
 import _poolVerixBladewing from "../pool/verix-bladewing.js";
 import _poolViashinoCutthroat from "../pool/viashino-cutthroat.js";
 import _poolViashinoSandstalker from "../pool/viashino-sandstalker.js";
+import _poolVrenTheRelentless from "../pool/vren-the-relentless.js";
 import _poolWallOfEarth from "../pool/wall-of-earth.js";
 import _poolWallOfFaith from "../pool/wall-of-faith.js";
 import _poolWhipOfErebos from "../pool/whip-of-erebos.js";
@@ -354,6 +355,7 @@ const shard: CardShard = {
     _poolVerixBladewing,
     _poolViashinoCutthroat,
     _poolViashinoSandstalker,
+    _poolVrenTheRelentless,
     _poolWallOfEarth,
     _poolWallOfFaith,
     _poolWhipOfErebos,

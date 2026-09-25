@@ -70,6 +70,7 @@ export const TOKEN_NAMES: readonly string[] = [
   "Phyrexian Wurm Token (Lifelink)",
   "Plant Token",
   "Rat Token",
+  "Rat Token (Vren)",
   "Sand Warrior Token",
   "Saproling Token",
   "Servo Token",

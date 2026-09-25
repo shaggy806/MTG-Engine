@@ -4648,6 +4648,7 @@ import _poolTerrorOfTheFairgrounds from "./pool/terror-of-the-fairgrounds.js";
 import _poolTerrorOfThePeaks from "./pool/terror-of-the-peaks.js";
 import _poolTevalTheBalancedScale from "./pool/teval-the-balanced-scale.js";
 import _poolTeyosLightshield from "./pool/teyos-lightshield.js";
+import _poolTeysaKarlov from "./pool/teysa-karlov.js";
 import _poolThaliaAndTheGitrogMonster from "./pool/thalia-and-the-gitrog-monster.js";
 import _poolThaliaGuardianOfThraben from "./pool/thalia-guardian-of-thraben.js";
 import _poolThaliaHereticCathar from "./pool/thalia-heretic-cathar.js";
@@ -5140,6 +5141,7 @@ import _poolVowOfDuty from "./pool/vow-of-duty.js";
 import _poolVoyagesEnd from "./pool/voyages-end.js";
 import _poolVoyagingSatyr from "./pool/voyaging-satyr.js";
 import _poolVraskasContempt from "./pool/vraskas-contempt.js";
+import _poolVrenTheRelentless from "./pool/vren-the-relentless.js";
 import _poolVulpineGoliath from "./pool/vulpine-goliath.js";
 import _poolVulshokBattlegear from "./pool/vulshok-battlegear.js";
 import _poolVulshokBerserker from "./pool/vulshok-berserker.js";
@@ -5503,6 +5505,7 @@ import _tokensPhyrexianGoblinToken from "./tokens/phyrexian-goblin-token.js";
 import _tokensPhyrexianWurmDeathtouch from "./tokens/phyrexian-wurm-deathtouch.js";
 import _tokensPhyrexianWurmLifelink from "./tokens/phyrexian-wurm-lifelink.js";
 import _tokensPlantToken from "./tokens/plant-token.js";
+import _tokensRatTokenVren from "./tokens/rat-token-vren.js";
 import _tokensRatToken from "./tokens/rat-token.js";
 import _tokensRedSpiritTokenMenace from "./tokens/red-spirit-token-menace.js";
 import _tokensSandWarriorToken from "./tokens/sand-warrior-token.js";
@@ -10179,6 +10182,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTerrorOfThePeaks,
   _poolTevalTheBalancedScale,
   _poolTeyosLightshield,
+  _poolTeysaKarlov,
   _poolThaliaAndTheGitrogMonster,
   _poolThaliaGuardianOfThraben,
   _poolThaliaHereticCathar,
@@ -10671,6 +10675,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolVoyagesEnd,
   _poolVoyagingSatyr,
   _poolVraskasContempt,
+  _poolVrenTheRelentless,
   _poolVulpineGoliath,
   _poolVulshokBattlegear,
   _poolVulshokBerserker,
@@ -11040,6 +11045,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensPhyrexianWurmDeathtouch,
   _tokensPhyrexianWurmLifelink,
   _tokensPlantToken,
+  _tokensRatTokenVren,
   _tokensRatToken,
   _tokensRedSpiritTokenMenace,
   _tokensSandWarriorToken,
