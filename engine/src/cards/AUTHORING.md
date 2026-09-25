@@ -2464,16 +2464,17 @@ Delete an entry in the same commit as the feature that retires it.
 
 **Partial:**
 
-- **Only mass moves are one event.** A single instruction with several
-  targets ("destroy two target creatures", "return this card and up to one
-  other target creature card") still moves them one after another, so a
-  leaves-the-battlefield trigger among them misses the ones moved before it —
-  and of two permanents put onto the battlefield that way, only the first
-  sees the second enter, and the second is treated as entering after the
-  first by an `others-enter-battlefield` replacement (Giada counts the first
-  Angel). Mass entries — a token batch, `return-from-graveyard` of every
-  match, a flicker's return, a tutor's finds, an O-Ring's exiles coming back
-  — are one simultaneous entry (`Game.withEnterBatch`).
+- **One instruction over several targets needs `simultaneous`.** "Destroy
+  two target creatures", "return this card and up to one other target
+  creature card" is one step per target slot, and only a `sequence` marked
+  `simultaneous: true` (§6) moves them as one event: each leaving permanent
+  sees the others leave, each entering one sees the others enter (the Elas
+  il-Kor ruling), and none is "already" on the battlefield for another's
+  `others-enter-battlefield` replacement (Giada). Without it they move one
+  after another. Mass moves — a wrath, a token batch, `return-from-graveyard`
+  of every match, a flicker's return, a tutor's finds, an O-Ring's exiles
+  coming back — are one event already (`Game.withLeaveBatch`,
+  `Game.withEnterBatch`).
 
 - **"You may reveal a card from your hand"** on the reveal-land cycle is taken
   automatically rather than offered as a choice — see

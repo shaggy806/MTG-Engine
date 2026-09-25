@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-256 already implemented / 244 missing
+259 already implemented / 241 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -64,7 +64,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   58  Kuja, Genome Sorcerer                          22133 decks  {2}{B}{R}        Legendary Creature — Human Mutant Wizard // Legendary Creature — Avatar Wizard
 [x]   59  Ureni of the Unwritten                         22009 decks  {4}{G}{U}{R}     Legendary Creature — Spirit Dragon
 [ ]   60  Kinnan, Bonder Prodigy                         21712 decks  {G}{U}           Legendary Creature — Human Druid
-[ ]   61  Teysa Karlov                                   21555 decks  {2}{W}{B}        Legendary Creature — Human Advisor
+[x]   61  Teysa Karlov                                   21555 decks  {2}{W}{B}        Legendary Creature — Human Advisor
 [x]   62  Gishath, Sun's Avatar                          21340 decks  {5}{R}{G}{W}     Legendary Creature — Dinosaur Avatar
 [ ]   63  Zhulodok, Void Gorger                          21261 decks  {5}{C}           Legendary Creature — Eldrazi
 [x]   64  Tom Bombadil                                   21241 decks  {W}{U}{B}{R}{G}  Legendary Creature — God Bard
@@ -188,7 +188,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  182  Shroofus Sproutsire                            12929 decks  {2}{G}           Legendary Creature — Saproling
 [ ]  183  Jon Irenicus, Shattered One                    12889 decks  {2}{U}{B}        Legendary Creature — Elf Wizard
 [ ]  184  Wolverine, Best There Is                       12856 decks  {1}{R}{G}        Legendary Creature — Mutant Berserker Hero
-[ ]  185  Vren, the Relentless                           12840 decks  {2}{U}{B}        Legendary Creature — Rat Rogue
+[x]  185  Vren, the Relentless                           12840 decks  {2}{U}{B}        Legendary Creature — Rat Rogue
 [x]  186  Blech, Loafing Pest                            12836 decks  {1}{B}{G}        Legendary Creature — Pest
 [ ]  187  Sefris of the Hidden Ways                      12800 decks  {W}{U}{B}        Legendary Creature — Human Wizard
 [x]  188  The Mindskinner                                12796 decks  {U}{U}{U}        Legendary Enchantment Creature — Nightmare
@@ -322,7 +322,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  316  Codie, Vociferous Codex                         8859 decks  {3}              Legendary Artifact Creature — Book Construct
 [x]  317  Goro-Goro and Satoru                            8855 decks  {U}{B}{R}        Legendary Creature — Goblin Human
 [ ]  318  Kalamax, the Stormsire                          8841 decks  {1}{G}{U}{R}     Legendary Creature — Elemental Dinosaur
-[ ]  319  Slimefoot and Squee                             8791 decks  {B}{R}{G}        Legendary Creature — Fungus Goblin
+[x]  319  Slimefoot and Squee                             8791 decks  {B}{R}{G}        Legendary Creature — Fungus Goblin
 [x]  320  Adrix and Nev, Twincasters                      8734 decks  {2}{G}{U}        Legendary Creature — Merfolk Wizard
 [x]  321  Lumra, Bellow of the Woods                      8733 decks  {4}{G}{G}        Legendary Creature — Elemental Bear
 [ ]  322  Obeka, Brute Chronologist                       8714 decks  {1}{U}{B}{R}     Legendary Creature — Ogre Wizard

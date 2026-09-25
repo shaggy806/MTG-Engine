@@ -10,8 +10,10 @@ export default defineCard({
     "Exile up to two target artifacts and/or enchantments.\n" +
     "Basic landcycling {2}",
   targets: distinctTargets(2, "artifact-or-enchantment", { optional: true }),
+  // One instruction over both targets: they leave together.
   effect: {
     kind: "sequence",
+    simultaneous: true,
     effects: [
       { kind: "exile", target: 0 },
       { kind: "exile", target: 1 },

@@ -575,6 +575,10 @@ export class Game {
    * See {@link withEnterBatch}. Not game state: it only ever spans one
    * synchronous call. */
   private enterBatch: Set<ObjectId> | null = null;
+  /** The `permanent-entered-battlefield` events of the entry under way,
+   * held back until all of its permanents are on the battlefield — see
+   * {@link withEnterBatch}. `null` outside one. */
+  private enterAnnouncements: GameEventInput[] | null = null;
 
   /** The cards that have left a graveyard so far in the one simultaneous
    * move being carried out — a whole graveyard exiled, the cards a choice
@@ -9566,11 +9570,22 @@ export class Game {
   private withEnterBatch<T>(fn: () => T): T {
     if (this.enterBatch !== null) return fn();
     this.enterBatch = new Set();
+    this.enterAnnouncements = [];
+    let entered: GameEventInput[];
+    let result: T;
     try {
-      return fn();
+      result = fn();
     } finally {
+      entered = this.enterAnnouncements;
       this.enterBatch = null;
+      this.enterAnnouncements = null;
     }
+    // Announced once every one of them is on the battlefield, so each sees
+    // the others enter (rule 603.6a): "whenever another creature enters"
+    // among them triggers for all the rest, whichever the engine moved
+    // first (the Elas il-Kor ruling).
+    for (const event of entered) this.emit(event);
+    return result;
   }
 
   /**
@@ -10910,7 +10925,8 @@ export class Game {
           }
         });
       },
-      simultaneously: (fn) => this.withLeaveBatch(() => this.withGraveyardLeaveBatch(fn)),
+      simultaneously: (fn) =>
+        this.withLeaveBatch(() => this.withGraveyardLeaveBatch(() => this.withEnterBatch(fn))),
       flicker: (flickered, options) => this.flickerByEffect(source, controller, flickered, options),
       returnFlickered: (link, thenCounters, underYourControl, transformed) =>
         this.returnFlickeredByEffect(
@@ -17229,6 +17245,12 @@ export class Game {
   }
 
   private emit(event: GameEventInput): void {
+    // Permanents entering together are announced together, once every one of
+    // them is on the battlefield — see `withEnterBatch`.
+    if (event.type === "permanent-entered-battlefield" && this.enterAnnouncements !== null) {
+      this.enterAnnouncements.push(event);
+      return;
+    }
     const seq = this.state.eventSeq;
     this.state.eventSeq += 1;
     const full = { ...event, seq } as GameEvent;

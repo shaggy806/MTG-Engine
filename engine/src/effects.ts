@@ -522,7 +522,9 @@ export type EffectSpec =
        * one event). Cards they take out of graveyards leave together, which
        * a "whenever one or more cards leave your graveyard" trigger sees as
        * one move; permanents they take off the battlefield leave together too
-       * (rule 603.10a). Leave it off a sequence of separate sentences
+       * (rule 603.10a), and permanents they put onto the battlefield enter
+       * together, each seeing the others enter (rule 603.6a — the Elas il-Kor
+       * ruling). Leave it off a sequence of separate sentences
        * ("Destroy target creature. Return target card from your graveyard to
        * your hand."), which really are separate events.
        */
@@ -2308,9 +2310,11 @@ export interface EffectApi {
    * one move. */
   exileGraveyard(target: TargetRef): void;
   /** Carry out `fn` as one simultaneous event: the cards it takes out of
-   * graveyards leave together (one `cards-left-graveyard`), and the
-   * permanents it takes off the battlefield leave together (rule 603.10a).
-   * See the `sequence` {@link EffectSpec}'s `simultaneous`. */
+   * graveyards leave together (one `cards-left-graveyard`), the permanents
+   * it takes off the battlefield leave together (rule 603.10a), and the ones
+   * it puts onto the battlefield enter together, each seeing the others
+   * enter (rule 603.6a). See the `sequence` {@link EffectSpec}'s
+   * `simultaneous`. */
   simultaneously(fn: () => void): void;
   /** Whether something the resolution has done so far is still waiting on a
    * player — a decision on `awaiting`, or a queued discard, sacrifice,

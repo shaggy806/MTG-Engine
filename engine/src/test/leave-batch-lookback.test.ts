@@ -110,6 +110,24 @@ describe("Vren, the Relentless", () => {
     for (const id of rats) expect(computeCharacteristics(game.state, registry, id).power).toBe(3);
   });
 
+  it("a stack of its Rats counts every other Rat in the stack", () => {
+    const game = setUp();
+    spawn(game, "Vren, the Relentless");
+    const theirs = Array.from({ length: 10 }, () => spawn(game, "Grizzly Bears", B));
+    game.debugApplyEffect(A, { kind: "destroy-all", filter: { type: "creature", controlledBy: "opponent" } }, []);
+    game.advanceUntil(quiet);
+    for (const id of theirs) expect(game.state.objects[id].zone).toBe("exile");
+    game.advanceUntil((s) => s.turn.step === "end" && quiet(s));
+    const rats = game.state.zones.shared.battlefield.filter(
+      (id) => game.state.objects[id].cardName === "Rat Token (Vren)",
+    );
+    const count = rats.reduce((n, id) => n + (game.state.objects[id].stackCount ?? 1), 0);
+    expect(count).toBe(10);
+    expect(rats.length).toBeLessThan(10);
+    // Nine other Rat tokens and Vren.
+    for (const id of rats) expect(computeCharacteristics(game.state, registry, id).power).toBe(11);
+  });
+
   it("leaves a mill alone: only dying is replaced", () => {
     const game = setUp();
     spawn(game, "Vren, the Relentless");

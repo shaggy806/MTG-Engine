@@ -6,7 +6,7 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**256 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**259 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
@@ -18,17 +18,17 @@ that one card is the reason the deck exists.
   that file's `built` array and author the commanders it unblocks in the same commit. The first
   ten, engine-only, with the commanders each fully unblocks:
   `bug:as-enters-choices-any-entry` (+2), `keyword:changeling` (+1),
-  `condition:filter-card-property-clauses` (+2), `mechanic:goad-extensions` (+3),
-  `effect:target-spec-additions` (+1), `mechanic:suspect` (+1),
-  `stat:spells-cast-this-turn-record` (+2), `effect:amount-fields-dynamic` (+2),
-  `effect:look-and-choose-second-pick` (+1), `effect:control-change-extensions` (+2).
+  `condition:filter-card-property-clauses` (+2), `effect:create-token-with-counters` (+1),
+  `mechanic:goad-extensions` (+3), `effect:target-spec-additions` (+1), `mechanic:suspect` (+1),
+  `effect:mana-ability-dynamic-amount` (+2), `stat:spells-cast-this-turn-record` (+2),
+  `effect:amount-fields-dynamic` (+2).
 - **Most-needed features overall.** `zone:visibility-extensions` (13),
   `effect:copy-spell-extensions`, `effect:copy-exceptions` and
   `condition:filter-card-property-clauses` (11 each). Live numbers come from `cmdrs:gaps`.
 - **UI-bound features.** These need a new client decision and a browser check:
   `effect:may-sacrifice-then` (13), `decision:copy-new-targets` (12), `decision:choose-permanent`
-  (11), `effect:enter-attacking`, `decision:free-cast-choices`, `effect:attach-extensions`,
-  `effect:cast-during-resolution` (10 each), `decision:choose-tap-costs` (9).
+  (11), `effect:enter-attacking`, `effect:attach-extensions`, `effect:cast-during-resolution`
+  (10 each), `decision:free-cast-choices` (9), `decision:choose-tap-costs` (7).
 - **Commanders authored and then dropped by their reviews.** Tifa Lockhart and Yarok need the
   player to order simultaneous triggers (`decision:trigger-order`). Aragorn, the Uniter needs
   scry to let the player order the kept cards (`decision:library-ordering`).
@@ -114,10 +114,6 @@ that one card is the reason the deck exists.
   object. And a permanent that left, came back and left again before an ability referring to
   its first departure resolved has only the second departure's last-known information (the
   first is read as the card now is).
-- **Entering together.** Permanents put onto the battlefield by one instruction still enter
-  one at a time, so a "whenever another creature enters" ability among them misses the ones
-  that entered before it (the Elas il-Kor ruling). Leaving together is one event already.
-  Tracked as `bug:simultaneous-zone-moves`.
 - **A copy never chooses new targets.** Tracked as `decision:copy-new-targets`, which is
   UI-bound.
 - **An Aura entering other than as a spell** is attached to nothing. Only a resolving Aura

@@ -4196,6 +4196,7 @@ import _poolSlateOfAncestry from "./pool/slate-of-ancestry.js";
 import _poolSleddingOtterPenguin from "./pool/sledding-otter-penguin.js";
 import _poolSliceInTwain from "./pool/slice-in-twain.js";
 import _poolSlimebind from "./pool/slimebind.js";
+import _poolSlimefootAndSquee from "./pool/slimefoot-and-squee.js";
 import _poolSlimefootTheStowaway from "./pool/slimefoot-the-stowaway.js";
 import _poolSlinkingSerpent from "./pool/slinking-serpent.js";
 import _poolSlinkingSkirge from "./pool/slinking-skirge.js";
@@ -9730,6 +9731,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSleddingOtterPenguin,
   _poolSliceInTwain,
   _poolSlimebind,
+  _poolSlimefootAndSquee,
   _poolSlimefootTheStowaway,
   _poolSlinkingSerpent,
   _poolSlinkingSkirge,

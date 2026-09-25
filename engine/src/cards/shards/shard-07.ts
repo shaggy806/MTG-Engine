@@ -142,6 +142,7 @@ import _poolShadowbeastSighting from "../pool/shadowbeast-sighting.js";
 import _poolSimicCharm from "../pool/simic-charm.js";
 import _poolSkyshroudClaim from "../pool/skyshroud-claim.js";
 import _poolSkyshroudPoacher from "../pool/skyshroud-poacher.js";
+import _poolSlimefootAndSquee from "../pool/slimefoot-and-squee.js";
 import _poolSokkasSwordTraining from "../pool/sokkas-sword-training.js";
 import _poolSoulSnare from "../pool/soul-snare.js";
 import _poolSpitfireLagac from "../pool/spitfire-lagac.js";
@@ -328,6 +329,7 @@ const shard: CardShard = {
     _poolSimicCharm,
     _poolSkyshroudClaim,
     _poolSkyshroudPoacher,
+    _poolSlimefootAndSquee,
     _poolSokkasSwordTraining,
     _poolSoulSnare,
     _poolSpitfireLagac,

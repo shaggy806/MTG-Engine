@@ -103,7 +103,10 @@
   "effect:look-and-choose-leftover",
   "bug:transform-fixes",
   "effect:exile-library-all-but-bottom",
-  "mechanic:keyword-counters"
+  "mechanic:keyword-counters",
+  "bug:mana-any-one-color",
+  "bug:simultaneous-zone-moves",
+  "bug:token-stack-fixes"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
