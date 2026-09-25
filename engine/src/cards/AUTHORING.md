@@ -979,6 +979,20 @@ One gap: a permanent that left, came back and left *again* before an ability
 referring to its first departure resolved keeps only the later snapshot, and
 the earlier reference reads the card as it now is.
 
+**Reading isn't acting** (rule 400.7 — an object that changes zones is a new
+object). A spell's or ability's own targets remember which object each was
+(`GameObject.targetStints`): one that has changed zones since — a creature
+flickered in response, a graveyard card that left and came back — is gone,
+and a spell whose every target went that way fizzles. Its `"source"` is the
+same (`sourceZoneChangeCount`, `ResolutionContext.sourceLost`): "put a +1/+1
+counter on ~" on a creature flickered in response puts none, and a delayed
+trigger's "return it to its owner's hand" (The Locust God) finds nothing once
+the card has left its graveyard and come back. An *amount* reading any of them
+still reads it, as it last existed — Juri's power above, Mana Drain's "that
+spell's mana value" — since information comes from last-known information
+whatever became of the object. And an O-Ring whose source has already left
+as its exile resolves exiles nothing at all (rule 610.3c).
+
 ---
 
 ## 7. Targets (`targets`)

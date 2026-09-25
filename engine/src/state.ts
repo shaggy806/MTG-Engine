@@ -431,6 +431,14 @@ export interface GameObject {
    * 608.2h) — for a spell, as it last existed on the stack. A delayed
    * trigger carries its creator's zones forward. */
   targetZones?: (ZoneType | null)[];
+  /** For a spell or ability on the stack: each object target's
+   * `zoneChangeCount` when it was targeted (`null` for a player or an empty
+   * slot). One that has changed zones since is a new object (rule 400.7) —
+   * no longer the one meant — so it counts as gone when this resolves. Not
+   * for a delayed trigger, which chose no targets of its own: what it carries
+   * is read by last-known information (rule 608.2h — Mana Drain's "that
+   * spell's mana value"). */
+  targetStints?: (number | null)[];
   /** A card's mana value as it last existed on the stack, {X} included (rule
    * 202.3e), set each time it leaves the stack. Read only through a target
    * that was a spell — see `targetZones` — so it needn't be cleared when the
@@ -454,11 +462,12 @@ export interface GameObject {
    * which is how "the Nth time this ability has resolved this turn" tells the
    * two objects apart (see `GameState.abilityResolutionsThisTurn`). */
   sourceTimestamp?: number;
-  /** For an activated ability whose source stays in a non-battlefield zone
-   * while it's on the stack (`ActivatedAbility.zone: "command"`, or
-   * `staysInZone`): the source's `zoneChangeCount` as it was activated. If
-   * the source has moved since, it is a new object (rule 400.7) and the
-   * ability's `"source"` names nothing. */
+  /** For an ability object: its source's `zoneChangeCount` as it went on
+   * the stack (for a delayed trigger, as it was created). If the source has
+   * moved since, it is a new object (rule 400.7), and the ability's
+   * `"source"` names nothing to act on — "put a +1/+1 counter on ~" on a
+   * creature flickered in response puts none — while a read of it ("its
+   * power") uses last-known information. */
   sourceZoneChangeCount?: number;
   /** How many times this object has changed zones — bumped by every
    * `moveObject`. Object ids survive zone changes in this engine (a commander
@@ -1445,6 +1454,11 @@ export interface DelayedTrigger {
   /** Where those targets were when the creating spell or ability targeted
    * them — see `GameObject.targetZones`. */
   readonly targetZones?: readonly (ZoneType | null)[];
+  /** The source's `zoneChangeCount` as this was created, when the source was
+   * a card or permanent rather than a spell: "return **it** to its owner's
+   * hand at the beginning of the next end step" (The Locust God) finds
+   * nothing once it has changed zones again (rule 400.7). */
+  readonly sourceStint?: number;
   readonly effect: EffectSpec;
   readonly text: string;
 }

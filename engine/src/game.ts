@@ -4898,6 +4898,7 @@ export class Game {
     object.targets = targets.length > 0 ? [...targets] : null;
     // Where each target is as the spell is cast, for last-known information.
     object.targetZones = targets.length > 0 ? this.zonesOfTargets(targets) : undefined;
+    object.targetStints = targets.length > 0 ? this.stintsOfTargets(targets) : undefined;
     object.castVia = via;
     object.stormCount = stormCount;
     // Cast without paying its mana cost: only what a cost increase took was
@@ -6265,6 +6266,7 @@ export class Game {
     object.targets = chosen.length > 0 ? [...chosen] : null;
     // Where each target is as the spell is cast, for last-known information.
     object.targetZones = chosen.length > 0 ? this.zonesOfTargets(chosen) : undefined;
+    object.targetStints = chosen.length > 0 ? this.stintsOfTargets(chosen) : undefined;
     if (castingFromCommand) {
       const name = object.cardName;
       const counts = this.state.players[player].commanderCastCounts;
@@ -7195,7 +7197,15 @@ export class Game {
       sourceObjectId: sourceId,
       abilityIndex,
       sourceTimestamp: this.state.objects[sourceId]?.timestamp ?? 0,
-      ...(targets.length > 0 ? { targetZones: this.zonesOfTargets(targets) } : {}),
+      // Which object its source is as it goes on the stack: one that has
+      // changed zones by the time this resolves is a new object (rule
+      // 400.7), and "~" in the effect finds nothing (`sourceLost`).
+      ...(this.state.objects[sourceId] !== undefined
+        ? { sourceZoneChangeCount: this.state.objects[sourceId].zoneChangeCount ?? 0 }
+        : {}),
+      ...(targets.length > 0
+        ? { targetZones: this.zonesOfTargets(targets), targetStints: this.stintsOfTargets(targets) }
+        : {}),
       counters: {},
       modifiers: [],
       timestamp: 0,
@@ -8153,7 +8163,7 @@ export class Game {
     }
 
     const def = this.registry.get(printedCardName(object));
-    const targets = object.targets ?? [];
+    const targets = this.targetsStillMeant(object);
 
     // A kicked spell may target something its unkicked specs wouldn't allow
     // (Tear Asunder), so the fizzle check uses the specs it was actually cast
@@ -8413,7 +8423,10 @@ export class Game {
   private resolveAbility(object: GameObject): void {
     const id = object.id;
     const ability = this.stackAbilityOf(object);
-    const targets = object.targets ?? [];
+    // A delayed trigger chose no targets (rule 603.7d): what it carries is
+    // read by last-known information, not re-checked as targets.
+    const targets =
+      object.delayedTrigger !== undefined ? (object.targets ?? []) : this.targetsStillMeant(object);
     const source = object.sourceObjectId ?? id;
 
     // Intervening-if, second check (rule 603.4): a triggered ability whose
@@ -9890,9 +9903,7 @@ export class Game {
       if (trigger.lastKnownRefs !== undefined) {
         this.state.objects[id].lastKnownRefs = trigger.lastKnownRefs;
       }
-      if (trigger.delayed.targetZones !== undefined) {
-        this.state.objects[id].targetZones = [...trigger.delayed.targetZones];
-      }
+      this.carryDelayedIdentity(id, trigger.delayed);
       this.emit({
         type: "ability-triggered",
         source: trigger.delayed.source,
@@ -10540,8 +10551,22 @@ export class Game {
       },
       returnToHand: (target, from) =>
         this.returnToHandByEffect(target, true, from ?? "battlefield", source),
-      exileObject: (target, untilSourceLeaves) =>
-        this.exileByEffect(target, untilSourceLeaves === true ? source : undefined),
+      exileObject: (target, untilSourceLeaves) => {
+        if (untilSourceLeaves === true) {
+          // Rule 610.3c: exiled "until" something that has already happened
+          // — its source gone, or back as a new object (400.7) — it isn't
+          // exiled at all.
+          const src = this.state.objects[source];
+          if (
+            src === undefined ||
+            src.zone !== "battlefield" ||
+            (refs.source !== undefined && (src.zoneChangeCount ?? 0) !== refs.source)
+          ) {
+            return;
+          }
+        }
+        this.exileByEffect(target, untilSourceLeaves === true ? source : undefined);
+      },
       chooseCreatureType: (then) =>
         this.beginCreatureTypeChoice(source, controller, undefined, { then, targets, x }),
       reflexiveTrigger: (specs, effect, text) => {
@@ -12306,6 +12331,7 @@ export class Game {
       summoningSick: false,
       loyaltyActivatedThisTurn: false,
       targets: original.targets ? [...original.targets] : null,
+      ...(original.targetStints !== undefined ? { targetStints: [...original.targetStints] } : {}),
       attacking: null,
       blocking: null,
       blockedBy: [],
@@ -13939,6 +13965,11 @@ export class Game {
       // Where they were when the *creating* spell or ability targeted them:
       // "that spell" still means the spell after it has been countered.
       ...(targetZones.length > 0 ? { targetZones: [...targetZones] } : {}),
+      // Which object its source is now: one that changes zones before this
+      // resolves is a new object (rule 400.7), and "return it" finds nothing.
+      ...(object !== undefined && object.zone !== "stack"
+        ? { sourceStint: object.zoneChangeCount ?? 0 }
+        : {}),
       effect,
       text,
     });
@@ -14017,15 +14048,22 @@ export class Game {
       // What `stackAbilityOf` resolves from: the ability has no index into any
       // card's `triggered` list, because it isn't an ability of a card.
       this.state.objects[id].delayedTrigger = trigger;
-      if (trigger.targetZones !== undefined) {
-        this.state.objects[id].targetZones = [...trigger.targetZones];
-      }
+      this.carryDelayedIdentity(id, trigger);
       this.emit({
         type: "ability-triggered",
         source: trigger.source,
         controller: trigger.controller,
       });
     }
+  }
+
+  /** What a fired delayed trigger's stack object `id` knows of the objects
+   * its creator meant: where its targets were (for last-known information),
+   * and which object its source was (rule 400.7 — `sourceLost`). */
+  private carryDelayedIdentity(id: ObjectId, trigger: DelayedTrigger): void {
+    const object = this.state.objects[id];
+    if (trigger.targetZones !== undefined) object.targetZones = [...trigger.targetZones];
+    if (trigger.sourceStint !== undefined) object.sourceZoneChangeCount = trigger.sourceStint;
   }
 
   /**
@@ -14045,8 +14083,15 @@ export class Game {
     );
     if (watching.length === 0) return;
     this.state.delayedTriggers = this.state.delayedTriggers.filter((t) => !watching.includes(t));
-    for (const trigger of watching) {
-      if (typeof trigger.at !== "object" || !trigger.at.to.includes(event.toZone)) continue;
+    // "Return it": the permanent it waited on is the object it became as it
+    // left (rule 603.7c), and still has to be that object when this resolves.
+    const after = object.zoneChangeCount ?? 0;
+    for (const watched of watching) {
+      if (typeof watched.at !== "object" || !watched.at.to.includes(event.toZone)) continue;
+      const trigger: DelayedTrigger =
+        watched.source === event.object && watched.sourceStint !== undefined
+          ? { ...watched, sourceStint: after }
+          : watched;
       this.state.pendingTriggers.push({
         sourceObjectId: trigger.source,
         cardName: trigger.sourceName,
@@ -14812,6 +14857,32 @@ export class Game {
     return Array.from({ length: targets.length }, (_, i) => {
       const t = targets[i];
       return t?.kind === "object" ? (this.state.objects[t.object]?.zone ?? null) : null;
+    });
+  }
+
+  /** Which object each target is right now — see `GameObject.targetStints`. */
+  private stintsOfTargets(targets: ResolvedTargets): (number | null)[] {
+    return Array.from({ length: targets.length }, (_, i) => {
+      const t = targets[i];
+      if (t?.kind !== "object") return null;
+      const object = this.state.objects[t.object];
+      return object === undefined ? null : (object.zoneChangeCount ?? 0);
+    });
+  }
+
+  /** `object`'s targets as they stand as it resolves: an object target that
+   * has changed zones since it was targeted is a new object (rule 400.7), no
+   * longer the one meant, so its slot is empty now — and a spell or ability
+   * whose every target went that way fizzles like any other. */
+  private targetsStillMeant(object: GameObject): ResolvedTargets {
+    const targets = object.targets ?? [];
+    const stints = object.targetStints;
+    if (stints === undefined) return targets;
+    return targets.map((ref, i) => {
+      const stint = stints[i];
+      if (ref === undefined || ref.kind !== "object" || stint === null || stint === undefined) return ref;
+      const now = this.state.objects[ref.object];
+      return now === undefined || (now.zoneChangeCount ?? 0) === stint ? ref : undefined;
     });
   }
 

@@ -94,7 +94,8 @@
   "zone:impulse-permission-options",
   "effect:mana-ability-side-effects",
   "trigger:leaves-battlefield-filter",
-  "effect:amount-counters-on-object"
+  "effect:amount-counters-on-object",
+  "bug:zone-change-object-identity"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
@@ -215,7 +216,7 @@
   "bug:zone-change-object-identity": {
    "size": "medium",
    "ui": false,
-   "description": "Rule 400.7: an object that changes zones becomes a new object. Delayed triggers, 'return it' effects, trigger-object references, targets in a graveyard, and battlefield-source identity still follow a card that left and came back; put-onto-battlefield still relies on the card being in its expected zone, and an 'until the source leaves' exile does nothing if the source has already left (rule 610.3c). Built so far: GameObject.zoneChangeCount (bumped by every moveObject) and sourceZoneChangeCount on an activated ability whose source stays in the command zone or graveyard (staysInZone), so its 'source' names nothing once the card has changed zones (Derevi, Reassembling Skeleton); a flicker source is tracked by timestamp on the battlefield. Last-known information names the battlefield stint a reference means (LastKnownRefs, by zoneChangeCount), so a dies trigger still reads the creature it was about after the card came back; but a card that left, came back and left again before that ability resolved keeps only its later snapshot."
+   "description": "Rule 400.7: an object that changes zones becomes a new object. Built: GameObject.zoneChangeCount (bumped by every moveObject); a stack object's targetStints and sourceZoneChangeCount, so at resolution a target that has changed zones since it was targeted is gone (a spell whose every target went fizzles) and a changed source is sourceLost — reads of either still use last-known information (LastKnownRefs), so Juri still deals the power it died with and Mana Drain still reads the countered spell; a delayed trigger's sourceStint, so The Locust God's 'return it' finds nothing once the card has left and come back; and an until-the-source-leaves exile whose source has already left exiles nothing (rule 610.3c). Left: a card that left, came back and left again before an ability about its first departure resolved keeps only its later snapshot."
   },
   "condition:cast-spell-targets": {
    "size": "medium",

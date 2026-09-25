@@ -827,9 +827,9 @@ export type EffectSpec =
        * second `leaves-battlefield` ability running `return-exiled-by-source`.
        *
        * Marks `GameObject.exiledBy` with the source's id, which is what links
-       * the two halves. If the source leaves before the exile happens, or the
-       * exiled card moves on to somewhere else, nothing comes back — the same
-       * way the printed card behaves.
+       * the two halves. If the source has left before the exile happens (or
+       * is back as a new object), nothing is exiled at all (rule 610.3c); if
+       * the exiled card moves on to somewhere else, nothing comes back.
        */
       readonly untilSourceLeaves?: boolean;
     }
@@ -2863,11 +2863,15 @@ function resolveAmountRef(ref: AmountRef, ctx: ResolutionContext): TargetRef | u
   if (ref === "sacrificed") {
     return ctx.sacrificed === undefined ? undefined : { kind: "object", object: ctx.sacrificed };
   }
-  // A read: a trigger object that has moved on since is read as it last
-  // existed, which the context's lookups do (rule 608.2h).
+  // A read: a trigger object — or the source — that has moved on since is
+  // read as it last existed, which the context's lookups do (rule 608.2h).
+  // Only acting on one needs it to be the same object still (`sourceLost`,
+  // `triggerObjectLost`): Juri, Master of the Revue reanimated in response
+  // still deals the power it died with.
   if (ref === "trigger-object") {
     return ctx.triggerObject === undefined ? undefined : { kind: "object", object: ctx.triggerObject };
   }
+  if (ref === "source") return { kind: "object", object: ctx.source };
   return resolveEffectTarget(ref, ctx);
 }
 
