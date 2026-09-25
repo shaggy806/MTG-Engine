@@ -428,6 +428,28 @@ describe("Wayta, Trainer Prodigy", () => {
     activate(game, wayta, 1, [obj(bear), obj(elf)]);
     expect(game.state.objects[elf].zone).toBe("graveyard");
   });
+
+  it("isn't offered at {G} with no second creature of yours to fight", () => {
+    // Wayta alone is a legal target for both slots, but not for both at
+    // once: "another target creature" has to be a different one (601.2c).
+    const { game } = setUp();
+    const wayta = spawn(game, "Wayta, Trainer Prodigy");
+    spawn(game, "Forest");
+    const offered = game
+      .legalActions(A)
+      .filter((x) => x.kind === "activate-ability" && x.source === wayta)
+      .map((x) => (x.kind === "activate-ability" ? x.abilityIndex : -1));
+    expect(offered).not.toContain(1);
+    expect(() =>
+      game.dispatch({
+        type: "activate-ability",
+        player: A,
+        source: wayta,
+        abilityIndex: 1,
+        targets: [obj(wayta), obj(wayta)],
+      }),
+    ).toThrow(/combination of targets/);
+  });
 });
 
 describe("Karlach, Fury of Avernus", () => {

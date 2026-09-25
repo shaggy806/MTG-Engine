@@ -30,7 +30,7 @@ import type { EffectSpec } from "./effects.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameObject, GameState } from "./state.js";
-import { isOptionalSpec, slotOptions } from "./target.js";
+import { isOptionalSpec, slotOptions, targetsFillable } from "./target.js";
 import type { TargetRef, TargetSpec } from "./target.js";
 import { fitTargetCount } from "./target-count.js";
 
@@ -235,14 +235,25 @@ const discardFromFront = (
  * because the action shouldn't have been offered"; `legalActions` already
  * refuses to offer the latter (rule 601.2c).
  */
+/** Slot `i`'s options, less any that would leave a later required slot with
+ * no legal target (see `targetsFillable`). */
+const fillableOptions = (
+  specs: readonly TargetSpec[],
+  options: readonly (readonly TargetRef[])[],
+  i: number,
+  picked: readonly (TargetRef | null)[],
+): readonly TargetRef[] =>
+  slotOptions(specs, options, i, picked).filter((ref) => targetsFillable(specs, options, [...picked, ref]));
+
 const firstOfEach = (
   legalOptions: readonly (readonly TargetRef[])[],
   specs: readonly TargetSpec[] = [],
 ): ChosenTargets => {
-  // Slot by slot, so an "another target" slot skips what an earlier one took.
+  // Slot by slot, so an "another target" slot skips what an earlier one took
+  // — and never takes what a later one is left needing.
   const picked: (TargetRef | null)[] = [];
   for (let i = 0; i < legalOptions.length; i += 1) {
-    picked.push(slotOptions(specs, legalOptions, i, picked)[0] ?? null);
+    picked.push(fillableOptions(specs, legalOptions, i, picked)[0] ?? null);
   }
   return picked;
 };
@@ -852,7 +863,7 @@ export class RandomController extends AutomaticController {
     const picked: (TargetRef | null)[] = [];
     for (let i = 0; i < options.length; i += 1) {
       // Narrowed by an "another target" relation to an earlier slot's pick.
-      const choices = slotOptions(specs, options, i, picked);
+      const choices = fillableOptions(specs, options, i, picked);
       if (choices.length === 0) picked.push(null);
       else if (isOptionalSpec(specs[i] ?? "creature") && this.random() < 0.25) picked.push(null);
       else picked.push(choices[this.pickIndex(choices.length)]);

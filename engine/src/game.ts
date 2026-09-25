@@ -212,7 +212,7 @@ import type {
   TargetedBy,
   ZoneType,
 } from "./state.js";
-import { describeTargetSpec, isOptionalSpec, normalizeTargets, otherThan } from "./target.js";
+import { describeTargetSpec, isOptionalSpec, normalizeTargets, otherThan, targetsFillable } from "./target.js";
 import { distinctTargetCount, targetCountBounds } from "./target-count.js";
 import { eventsSince as eventLogSince, thisWayEntries } from "./this-way.js";
 import type { ThisWayEntry } from "./this-way.js";
@@ -1572,7 +1572,7 @@ export class Game {
       // is gated by `castModalDescriptor` instead.
       if (
         def.castModal === null &&
-        specs.some((spec, i) => options[i].length === 0 && !isOptionalSpec(spec))
+        !targetsFillable(specs, options)
       ) {
         continue;
       }
@@ -5935,17 +5935,23 @@ export class Game {
     // A non-modal spell's target legality is checked up front; a modal spell's
     // is checked per chosen mode (only once `modes` is known — at enumeration
     // time the driver hasn't picked yet).
-    for (const spec of this.effectiveTargetSpecs(def, modes, kicked, overload)) {
+    const castSpecs = this.effectiveTargetSpecs(def, modes, kicked, overload);
+    const castOptions = castSpecs.map((spec) =>
+      legalTargets(this.state, this.registry, spec, player, this.cardSource(def, cardId)),
+    );
+    for (const [i, spec] of castSpecs.entries()) {
       // An *optional* slot with nothing to point at is simply left empty, so
       // it never blocks the cast (rule 601.2c only demands a legal target for
       // the slots that require one).
       if (isOptionalSpec(spec)) continue;
-      if (
-        legalTargets(this.state, this.registry, spec, player, this.cardSource(def, cardId))
-          .length === 0
-      ) {
+      if (castOptions[i].length === 0) {
         return `${def.name} has no legal ${describeTargetSpec(spec)} target`;
       }
+    }
+    // Every slot has something, but "another target" may still leave no way
+    // to fill them all at once.
+    if (!targetsFillable(castSpecs, castOptions)) {
+      return `${def.name} has no legal combination of targets`;
     }
     // Liesa's life-paid commander tax. Rule 119.4: life can be paid only
     // while the total is at least the payment — down to exactly 0 is fine.
@@ -6862,15 +6868,22 @@ export class Game {
       const timing = this.whyNotSorcerySpeed(player, `activate ${def.name}'s ability`);
       if (timing !== null) return timing;
     }
-    for (const spec of ability.targets) {
-      if (isOptionalSpec(spec)) continue;
+    const abilityOptions = ability.targets.map((spec) => {
       const options = legalTargets(this.state, this.registry, spec, player, this.permanentSource(sourceId));
-      const eligible = ability.otherOnly
+      return ability.otherOnly
         ? options.filter((ref) => ref.kind !== "object" || ref.object !== sourceId)
         : options;
-      if (eligible.length === 0) {
+    });
+    for (const [i, spec] of ability.targets.entries()) {
+      if (isOptionalSpec(spec)) continue;
+      if (abilityOptions[i].length === 0) {
         return `${def.name}'s ability has no legal ${describeTargetSpec(spec)} target`;
       }
+    }
+    // Every slot has something, but "another target" may still leave no way
+    // to fill them all at once (Wayta with no other creature out).
+    if (!targetsFillable(ability.targets, abilityOptions)) {
+      return `${def.name}'s ability has no legal combination of targets`;
     }
     if (ability.cost.tapOthers !== undefined) {
       // The tap half is checked against the same mana — see `tapCostOffer`.

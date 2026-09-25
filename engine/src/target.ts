@@ -246,6 +246,37 @@ export function slotOptions(
   return earlier === null || earlier === undefined ? all : all.filter((ref) => !sameTarget(ref, earlier));
 }
 
+/**
+ * Can every required slot be filled at once, from `options`, with every
+ * "other than slot n" relation kept — given the targets already `picked` for
+ * the slots before `from`? Each slot having an option on its own isn't enough:
+ * "target creature you control fights another target creature you control"
+ * lists your one creature in both slots (Wayta, Trainer Prodigy with nothing
+ * else out), and no legal choice fills both (rule 601.2c).
+ *
+ * A search over the slots in order; slot counts are a handful, so this is
+ * cheap — and it stops at the first complete assignment.
+ */
+export function targetsFillable(
+  specs: readonly TargetSpec[],
+  options: readonly (readonly TargetRef[])[],
+  picked: readonly (TargetRef | null)[] = [],
+  from = picked.length,
+): boolean {
+  if (from >= options.length) return true;
+  // The cheap answers first: a required slot with nothing at all, or no
+  // relation between slots to get in the way.
+  for (let i = from; i < options.length; i += 1) {
+    if (options[i].length === 0 && !isOptionalSpec(specs[i] ?? "creature")) return false;
+  }
+  if (!specs.some((s, i) => i >= from && typeof otherThan(s) === "object")) return true;
+  const chosen = [...picked.slice(0, from)];
+  for (const ref of slotOptions(specs, options, from, chosen)) {
+    if (targetsFillable(specs, options, [...chosen, ref], from + 1)) return true;
+  }
+  return isOptionalSpec(specs[from] ?? "creature") && targetsFillable(specs, options, [...chosen, null], from + 1);
+}
+
 /** The first pair of slots whose "other than slot n" relation `chosen`
  * breaks — the later slot and the one it must differ from — or `null`. */
 export function otherSlotConflict(
