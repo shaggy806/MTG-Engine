@@ -41,7 +41,7 @@ that one card is the reason the deck exists.
   items listed under each "still open". See `neededCards-features.md`, "Open: the card backlog".
 - **Cards the scaffolder finishes on its own.** Of the snapshot's 30,710 unimplemented
   Commander-legal cards, the parser reads every line of 4,241 (`npm run card:scaffold -w engine
-  -- --report --all`). Ranks 2001–20000 are reviewed and in the pool (1,817 cards). Continue
+  -- --report --all`). Ranks 2001–24000 are reviewed and in the pool (2,433 cards). Continue
   down the ranks: `--auto-scan --ranks A-B` writes them to `review/`. Check each against its
   Oracle text and rulings, and each token it makes against its token file, then move it into
   `pool/`.
@@ -113,7 +113,8 @@ that one card is the reason the deck exists.
   controller choose what it enchants as it enters (303.4g: with nothing to choose, it stays
   where it was), and the SBA sweep (`stateBasedGraveyardMoves`) skips an Aura attached to
   nothing, where rule 704.5m puts it into the graveyard. The choice is UI-bound; fixing the
-  sweep alone would only trade a floating Aura for a lost one.
+  sweep alone would only trade a floating Aura for a lost one. It keeps Rise to Glory out of
+  the pool: the scaffolder leaves a "return target Aura card" to a person.
 - **Token stacks in combat.** Splitting one stack across attackers or blockers is not built,
   and neither is choosing which of a stack proliferate touches. See
   `docs/plans/token-stack-choices.md`.
