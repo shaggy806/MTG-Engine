@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-280 already implemented / 220 missing
+282 already implemented / 218 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -106,7 +106,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  100  Hope Estheim                                   18200 decks  {W}{U}           Legendary Creature — Human Wizard
 [ ]  101  Magda, Brazen Outlaw                           17938 decks  {1}{R}           Legendary Creature — Dwarf Berserker
 [ ]  102  Ezio Auditore da Firenze                       17857 decks  {1}{B}           Legendary Creature — Human Assassin
-[ ]  103  Alela, Cunning Conqueror                       17841 decks  {2}{U}{B}        Legendary Creature — Faerie Warlock
+[x]  103  Alela, Cunning Conqueror                       17841 decks  {2}{U}{B}        Legendary Creature — Faerie Warlock
 [ ]  104  Zinnia, Valley's Voice                         17824 decks  {U}{R}{W}        Legendary Creature — Bird Bard
 [x]  105  Sidar Jabari of Zhalfir                        17798 decks  {1}{W}{U}{B}     Legendary Creature — Human Knight
 [ ]  106  Obeka, Splitter of Seconds                     17786 decks  {1}{U}{B}{R}     Legendary Creature — Ogre Warlock
@@ -394,7 +394,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  388  Slinza, the Spiked Stampede                     7440 decks  {4}{G}           Legendary Creature — Beast
 [x]  389  Ezuri, Claw of Progress                         7437 decks  {2}{G}{U}        Legendary Creature — Phyrexian Elf Warrior
 [x]  390  Bilbo, Birthday Celebrant                       7415 decks  {W}{B}{G}        Legendary Creature — Halfling Rogue
-[ ]  391  The Beamtown Bullies                            7406 decks  {1}{B}{R}{G}     Legendary Creature — Ogre Devil Warrior
+[x]  391  The Beamtown Bullies                            7406 decks  {1}{B}{R}{G}     Legendary Creature — Ogre Devil Warrior
 [x]  392  Pramikon, Sky Rampart                           7391 decks  {U}{R}{W}        Legendary Creature — Wall
 [ ]  393  Tony Stark                                      7376 decks  {1}{U}           Legendary Creature — Human Artificer Hero // Legendary Artifact Creature — Human Hero
 [ ]  394  Kiora, Sovereign of the Deep                    7371 decks  {3}{G}{U}        Legendary Creature — Merfolk Noble

@@ -40,6 +40,7 @@ export const TOKEN_NAMES: readonly string[] = [
   "Elemental Token (All Colors)",
   "Elephant Token",
   "Elf Warrior Token",
+  "Faerie Rogue Token",
   "Faerie Token",
   "Food Token",
   "Frog Lizard Token",

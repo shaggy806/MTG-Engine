@@ -21,6 +21,10 @@ export type TargetSpec =
   /** A player other than the one choosing the target ("target opponent" —
    * Iridescent Vinelasher). */
   | "opponent"
+  /** An opponent who is the active player — The Beamtown Bullies' "target
+   * opponent whose turn it is". There is none on your own turn, so an
+   * ability with this slot can only be activated on an opponent's. */
+  | "opponent-whose-turn-it-is"
   | "creature-or-player"
   /** An opponent, or any planeswalker (Theater of Horrors' "target opponent
    * or planeswalker"). */
@@ -97,11 +101,14 @@ export type TargetSpec =
    * literals above stop converging. The literals stay for the common shapes —
    * they read better at the call site and most of the pool already uses them.
    *
-   * `whose` defaults to `"any"`.
+   * `whose` defaults to `"any"`. `"trigger-player"` is "that player" of a
+   * triggered ability — the player its event names (`TargetSource.triggerPlayer`
+   * — Alela, Cunning Conqueror's "goad target creature **that player**
+   * controls", the player her Faeries dealt combat damage to).
    */
   | {
       readonly kind: "permanent";
-      readonly whose?: "any" | "you" | "opponent";
+      readonly whose?: "any" | "you" | "opponent" | "trigger-player";
       readonly filter: CardFilter;
     }
   /**
@@ -137,6 +144,9 @@ export type TargetSpec =
    */
   | {
       readonly kind: "spell";
+      /** Whose spell: "target instant or sorcery spell **you control**".
+       * Defaults to `"any"`. */
+      readonly whose?: "any" | "you" | "opponent";
       readonly filter: CardFilter;
     }
   /**

@@ -121,7 +121,8 @@
   "condition:filter-card-property-clauses",
   "keyword:changeling",
   "effect:control-change-extensions",
-  "static:cant-be-sacrificed"
+  "static:cant-be-sacrificed",
+  "effect:target-spec-additions"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

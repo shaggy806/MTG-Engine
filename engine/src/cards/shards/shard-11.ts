@@ -167,6 +167,7 @@ import _poolTanglespanBridgeworks from "../pool/tanglespan-bridgeworks.js";
 import _poolTearAsunder from "../pool/tear-asunder.js";
 import _poolTerrorOfThePeaks from "../pool/terror-of-the-peaks.js";
 import _poolThaliaHereticCathar from "../pool/thalia-heretic-cathar.js";
+import _poolTheBeamtownBullies from "../pool/the-beamtown-bullies.js";
 import _poolThornscapeApprentice from "../pool/thornscape-apprentice.js";
 import _poolThunderfootBaloth from "../pool/thunderfoot-baloth.js";
 import _poolTimeOfNeed from "../pool/time-of-need.js";
@@ -361,6 +362,7 @@ const shard: CardShard = {
     _poolTearAsunder,
     _poolTerrorOfThePeaks,
     _poolThaliaHereticCathar,
+    _poolTheBeamtownBullies,
     _poolThornscapeApprentice,
     _poolThunderfootBaloth,
     _poolTimeOfNeed,

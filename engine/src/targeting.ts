@@ -203,15 +203,19 @@ export function isLegalTarget(
     const whose = spec.whose ?? "any";
     if (whose === "you" && object.controller !== forPlayer) return false;
     if (whose === "opponent" && object.controller === forPlayer) return false;
+    if (whose === "trigger-player" && (source?.triggerPlayer === undefined || object.controller !== source.triggerPlayer)) {
+      return false;
+    }
     return matchesFilter(state, registry, ref.object, spec.filter, targetFilterContext(forPlayer, source));
   }
   // A filtered spell on the stack.
   if (typeof spec === "object" && spec.kind === "spell") {
-    return (
-      ref.kind === "object" &&
-      isSpellOnStack(state, ref.object) &&
-      matchesFilter(state, registry, ref.object, spec.filter, targetFilterContext(forPlayer, source))
-    );
+    if (ref.kind !== "object" || !isSpellOnStack(state, ref.object)) return false;
+    const whose = spec.whose ?? "any";
+    const controller = state.objects[ref.object].controller;
+    if (whose === "you" && controller !== forPlayer) return false;
+    if (whose === "opponent" && controller === forPlayer) return false;
+    return matchesFilter(state, registry, ref.object, spec.filter, targetFilterContext(forPlayer, source));
   }
   // The structured graveyard spec.
   if (typeof spec === "object") {
@@ -245,6 +249,13 @@ export function isLegalTarget(
       return isLivingPlayer(state, ref);
     case "opponent":
       return isLivingPlayer(state, ref) && ref.kind === "player" && ref.player !== forPlayer;
+    case "opponent-whose-turn-it-is":
+      return (
+        isLivingPlayer(state, ref) &&
+        ref.kind === "player" &&
+        ref.player !== forPlayer &&
+        ref.player === state.turnOrder[state.turn.activePlayerIndex]
+      );
     case "creature":
       return ref.kind === "object" && isLivingCreature(state, registry, ref.object);
     case "nonblack-creature":

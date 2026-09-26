@@ -1218,7 +1218,9 @@ values (`target.ts`):
 
 `"any-target"`, `"creature"`, `"nonblack-creature"`, `"creature-you-control"`,
 `"creature-an-opponent-controls"`, `"player"`, `"opponent"` (a player other
-than the chooser), `"creature-or-player"`, `"opponent-or-planeswalker"`,
+than the chooser), `"opponent-whose-turn-it-is"` (The Beamtown Bullies — none on
+your own turn, so an ability with it can only be activated on an opponent's),
+`"creature-or-player"`, `"opponent-or-planeswalker"`,
 `"permanent"`, `"nonland-permanent"`, `"nonland-permanent-an-opponent-controls"`,
 `"land"`, `"artifact"`, `"artifact-an-opponent-controls"`, `"artifact-or-enchantment"`,
 `"artifact-enchantment-or-nonbasic-land-an-opponent-controls"`,
@@ -1288,14 +1290,18 @@ relation, and may point at the same thing.
 Two specs are **structured** rather than strings, for the shapes the literals
 stopped covering:
 
-- `{ kind: "permanent", whose?: "any" | "you" | "opponent", filter: CardFilter }`
+- `{ kind: "permanent", whose?: "any" | "you" | "opponent" | "trigger-player", filter: CardFilter }`
   — a battlefield permanent matching an arbitrary filter. "Target creature
   with flying" / "without flying" (Clan Defiance), "target Dragon you
-  control", "target creature with power 4 or greater". **Prefer a string
+  control", "target creature with power 4 or greater". `whose: "trigger-player"`
+  is "target creature **that player** controls" on a triggered ability: the
+  player its event names (Alela, Cunning Conqueror's player dealt combat
+  damage), whose permanents alone are legal. **Prefer a string
   literal when one fits** — it reads better and most of the pool uses them;
   reach for this when spelling the shape as a literal wouldn't be reused.
-- `{ kind: "spell", filter: CardFilter }` — a spell on the stack matching a
-  filter: Red Elemental Blast's "target **blue** spell" (`{ colors: ["U"] }`),
+- `{ kind: "spell", whose?: "any" | "you" | "opponent", filter: CardFilter }` — a spell
+  on the stack matching a filter (and, with `whose`, by its controller — "target
+  instant or sorcery spell **you control**"): Red Elemental Blast's "target **blue** spell" (`{ colors: ["U"] }`),
   Mental Misstep's "target spell **with mana value 1**". Read as the spell is
   on the stack — printed colours and types, and a mana value that counts its
   chosen {X} (rule 202.3e). The unfiltered shapes stay string literals

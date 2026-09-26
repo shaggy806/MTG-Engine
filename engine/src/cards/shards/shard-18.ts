@@ -174,6 +174,7 @@ import _poolZimoneAndDina from "../pool/zimone-and-dina.js";
 import _poolZodiacRat from "../pool/zodiac-rat.js";
 import _tokensAllyToken from "../tokens/ally-token.js";
 import _tokensCatToken from "../tokens/cat-token.js";
+import _tokensFaerieRogueToken from "../tokens/faerie-rogue-token.js";
 import _tokensHumanKnightToken from "../tokens/human-knight-token.js";
 import _tokensWhiteDogToken11 from "../tokens/white-dog-token-1-1.js";
 import _tokensZombieDruidToken from "../tokens/zombie-druid-token.js";
@@ -353,6 +354,7 @@ const shard: CardShard = {
   tokens: [
     _tokensAllyToken,
     _tokensCatToken,
+    _tokensFaerieRogueToken,
     _tokensHumanKnightToken,
     _tokensWhiteDogToken11,
     _tokensZombieDruidToken,

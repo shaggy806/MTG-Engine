@@ -103,6 +103,7 @@ import _poolAlabornTrooper from "./pool/alaborn-trooper.js";
 import _poolAladdinsRing from "./pool/aladdins-ring.js";
 import _poolAlchemistsApprentice from "./pool/alchemists-apprentice.js";
 import _poolAlelaArtfulProvocateur from "./pool/alela-artful-provocateur.js";
+import _poolAlelaCunningConqueror from "./pool/alela-cunning-conqueror.js";
 import _poolAlertShuInfantry from "./pool/alert-shu-infantry.js";
 import _poolAleshasLegacy from "./pool/aleshas-legacy.js";
 import _poolAlexiosDeimosOfKosmos from "./pool/alexios-deimos-of-kosmos.js";
@@ -4698,6 +4699,7 @@ import _poolThatsMine from "./pool/thats-mine.js";
 import _poolThaumatog from "./pool/thaumatog.js";
 import _poolThaumaturgesFamiliar from "./pool/thaumaturges-familiar.js";
 import _poolTheAutonomousFurnace from "./pool/the-autonomous-furnace.js";
+import _poolTheBeamtownBullies from "./pool/the-beamtown-bullies.js";
 import _poolTheDrossPits from "./pool/the-dross-pits.js";
 import _poolTheEmperorOfPalamecia from "./pool/the-emperor-of-palamecia.js";
 import _poolTheFabulousFrogMan from "./pool/the-fabulous-frog-man.js";
@@ -5518,6 +5520,7 @@ import _tokensElementalTokenAllColors from "./tokens/elemental-token-all-colors.
 import _tokensElementalToken from "./tokens/elemental-token.js";
 import _tokensElephantToken from "./tokens/elephant-token.js";
 import _tokensElfWarriorToken from "./tokens/elf-warrior-token.js";
+import _tokensFaerieRogueToken from "./tokens/faerie-rogue-token.js";
 import _tokensFaerieToken from "./tokens/faerie-token.js";
 import _tokensFoodToken from "./tokens/food-token.js";
 import _tokensFrogLizardToken from "./tokens/frog-lizard-token.js";
@@ -5687,6 +5690,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAladdinsRing,
   _poolAlchemistsApprentice,
   _poolAlelaArtfulProvocateur,
+  _poolAlelaCunningConqueror,
   _poolAlertShuInfantry,
   _poolAleshasLegacy,
   _poolAlexiosDeimosOfKosmos,
@@ -10282,6 +10286,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolThaumatog,
   _poolThaumaturgesFamiliar,
   _poolTheAutonomousFurnace,
+  _poolTheBeamtownBullies,
   _poolTheDrossPits,
   _poolTheEmperorOfPalamecia,
   _poolTheFabulousFrogMan,
@@ -11108,6 +11113,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensElementalToken,
   _tokensElephantToken,
   _tokensElfWarriorToken,
+  _tokensFaerieRogueToken,
   _tokensFaerieToken,
   _tokensFoodToken,
   _tokensFrogLizardToken,
