@@ -105,6 +105,7 @@ import { chooseTargets } from "./decisions/choose-targets.js";
 import { blockers } from "./decisions/blockers.js";
 import { chooseCopy } from "./decisions/choose-copy.js";
 import { chooseEnchant } from "./decisions/choose-enchant.js";
+import { choosePermanents } from "./decisions/choose-permanents.js";
 import { legendRule } from "./decisions/legend-rule.js";
 import { mulligan } from "./decisions/mulligan.js";
 import { mulliganCardsOwed } from "./decisions/shared/mulligan-math.js";
@@ -732,6 +733,7 @@ export class Game {
       applyPayLifeForUntapped: (player, pay) => this.applyPayLifeForUntapped(player, pay),
       applyCopyChoice: (player, copy) => this.applyCopyChoice(player, copy),
       applyEnchantChoice: (player, enchant) => this.applyEnchantChoice(player, enchant),
+      applyChoosePermanents: (player, chosen) => this.applyChoosePermanents(player, chosen),
       applyLegendRuleChoice: (player, keep) => this.applyLegendRuleChoice(player, keep),
       applyTextChoice: (player, from, to) => this.applyTextChoice(player, from, to),
       applyProliferate: (player, chosen) => this.applyProliferate(player, chosen),
@@ -12110,6 +12112,8 @@ export class Game {
         }
       },
       proliferate: (then) => this.beginProliferate(source, controller, x, then),
+      choosePermanents: (filter, min, max, then, prompt) =>
+        this.beginChoosePermanents(source, controller, x, filter, min, max, then, prompt),
       grantKeyword: (target, keyword, duration) =>
         this.grantKeyword(target, keyword, lasting(duration, controller)),
       restrict: (target, filter, restrictions) =>
@@ -14834,6 +14838,63 @@ export class Game {
 
     if (then !== null) {
       applyEffectSpec(then, this.makeResolutionContext(source, player, [], x));
+    }
+    if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
+  }
+
+  /**
+   * See the `"choose-permanents"` {@link EffectSpec}: `player` chooses from
+   * `min` to `max` of the permanents matching `filter` as the effect
+   * resolves. Nothing is asked when nothing matches; with fewer than `min`
+   * to choose from, all of them are the only answer, and still asked.
+   */
+  private beginChoosePermanents(
+    source: ObjectId,
+    player: PlayerId,
+    x: number,
+    filter: CardFilter,
+    min: number,
+    max: number,
+    then: EffectSpec,
+    prompt: string,
+  ): void {
+    const eligible = this.battlefieldMatching(player, filter);
+    const available = eligible.reduce((n, id) => n + (this.state.objects[id]?.stackCount ?? 1), 0);
+    const most = Math.min(Math.max(0, max), available);
+    if (most <= 0) return;
+    this.state.awaiting = {
+      kind: "choose-permanents",
+      player,
+      eligible,
+      min: Math.min(min, most),
+      max: most,
+      prompt,
+      then,
+      source,
+      x,
+    };
+  }
+
+  /** Answers a pending `choose-permanents` decision: `then` for each one
+   * picked, in order, as target 0 — a stack named twice is two of its
+   * tokens, each peeled off as the effect singles it out. */
+  private applyChoosePermanents(player: PlayerId, chosen: readonly ObjectId[]): void {
+    const why = choosePermanents.whyCannot(
+      this.decisionCtx,
+      { type: "choose-permanents", player, permanents: chosen },
+      player,
+    );
+    if (why !== null) throw new Error(why);
+    const awaiting = this.state.awaiting;
+    if (awaiting === null || awaiting.kind !== "choose-permanents") {
+      throw new Error("unreachable: choosePermanents.whyCannot should have caught this");
+    }
+    const { then, source, x } = awaiting;
+    this.state.awaiting = null;
+    for (const id of chosen) {
+      // Re-checked rather than trusted: something may have left since.
+      if (this.state.objects[id]?.zone !== "battlefield") continue;
+      applyEffectSpec(then, this.makeResolutionContext(source, player, [{ kind: "object", object: id }], x));
     }
     if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
   }

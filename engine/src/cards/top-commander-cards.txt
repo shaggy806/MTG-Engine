@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1325 already implemented / 3675 missing (marks refreshed 2026-09-26)
+1330 already implemented / 3670 missing (marks refreshed 2026-09-26)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -270,7 +270,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   271  Diabolic Intent                          {1}{B}           Sorcery
 [x]   272  Deserted Beach                           {0}              Land
 [x]   273  Unexpected Windfall                      {2}{R}{R}        Instant
-[ ]   274  Snap                                     {1}{U}           Instant
+[x]   274  Snap                                     {1}{U}           Instant
 [ ]   275  Etali, Primal Storm                      {4}{R}{R}        Legendary Creature — Elder Dinosaur
 [ ]   276  Hullbreaker Horror                       {5}{U}{U}        Creature — Kraken Horror
 [x]   277  Jet Medallion                            {2}              Artifact
@@ -925,7 +925,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   929  Fountainport                             {0}              Land
 [x]   930  Solve the Equation                       {2}{U}           Sorcery
 [ ]   931  Caged Sun                                {6}              Artifact
-[ ]   932  Peregrine Drake                          {4}{U}           Creature — Drake
+[x]   932  Peregrine Drake                          {4}{U}           Creature — Drake
 [ ]   933  Evolution Witness                        {2}{G}           Creature — Elf Shaman Mutant
 [ ]   934  Dispel                                   {U}              Instant
 [ ]   935  Bastion Protector                        {2}{W}           Creature — Human Soldier
@@ -1008,7 +1008,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1012  Annie Joins Up                           {1}{R}{G}{W}     Legendary Enchantment
 [ ]  1013  Force of Vigor                           {2}{G}{G}        Instant
 [x]  1014  Talisman of Unity                        {2}              Artifact
-[ ]  1015  Rewind                                   {2}{U}{U}        Instant
+[x]  1015  Rewind                                   {2}{U}{U}        Instant
 [x]  1016  Managorger Hydra                         {2}{G}           Creature — Hydra
 [ ]  1017  Necromancy                               {2}{B}           Enchantment
 [ ]  1018  Arasta of the Endless Web                {2}{G}{G}        Legendary Enchantment Creature — Spider
@@ -1053,7 +1053,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1057  Wurmcoil Engine                          {6}              Artifact Creature — Phyrexian Wurm
 [x]  1058  Hunter's Insight                         {2}{G}           Instant
 [ ]  1059  Strix Serenade                           {U}              Instant
-[ ]  1060  Unwind                                   {2}{U}           Instant
+[x]  1060  Unwind                                   {2}{U}           Instant
 [x]  1061  Tranquil Thicket                         {0}              Land
 [ ]  1062  Angel of the Ruins                       {5}{W}{W}        Artifact Creature — Angel
 [x]  1063  Shared Roots                             {1}{G}           Sorcery — Lesson
@@ -1370,7 +1370,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1377  Sephara, Sky's Blade                     {4}{W}{W}{W}     Legendary Creature — Angel
 [x]  1378  Tangled Islet                            {0}              Land — Forest Island
 [ ]  1379  Elven Chorus                             {3}{G}           Enchantment
-[ ]  1380  Cloud of Faeries                         {1}{U}           Creature — Faerie
+[x]  1380  Cloud of Faeries                         {1}{U}           Creature — Faerie
 [ ]  1381  Invasion of Ikoria // Zilortha, Apex of Ikoria {2}              Battle — Siege // Legendary Creature — Dinosaur
 [x]  1382  Regrowth                                 {1}{G}           Sorcery
 [ ]  1383  Ulamog, the Infinite Gyre                {11}             Legendary Creature — Eldrazi

@@ -80,11 +80,11 @@ casting zones (flashback, suspend, foretell, escape, disturb, adventure, MDFCs, 
 turns/combats, cascade/storm/spell-copying, Sagas, station cards (Spacecraft — rule 702.184, 721), the Monarch/Energy/Emblems, damage-prevention
 shields, and a color-identity-aware Commander deck validator (`identity.ts`, `deck-validation.ts`).
 
-**Every player decision is a dispatched action**, never a synchronous controller callback. Each of the 18 kinds is a module under `decisions/` owning its whole *answer* half — offer, validator, controller arm, bot candidates — registered in a total table, so adding one fails the build at that table rather than several hundred lines away. Applying stays on `Game`. See `docs/plans/decision-registry.md`. The kinds:
+**Every player decision is a dispatched action**, never a synchronous controller callback. Each of the 19 kinds is a module under `decisions/` owning its whole *answer* half — offer, validator, controller arm, bot candidates — registered in a total table, so adding one fails the build at that table rather than several hundred lines away. Applying stays on `Game`. See `docs/plans/decision-registry.md`. The kinds:
 `declare-attackers` / `declare-blockers` / `assign-combat-damage` / `discard` /
 `choose-from-zone` / `mulligan` (answered by `mulligan`, then `put-on-bottom`) / `commander-replacement` /
 `pay-life-for-untapped` / `choose-copy` / `choose-enchant` / `legend-rule` / `choose-text` / `choose-creature-type` / `choose-modes` / `choose-targets` /
-`sacrifice` / `scry` / `proliferate` alongside the priority actions. `legalActions(player)` enumerates what's
+`sacrifice` / `scry` / `proliferate` / `choose-permanents` (a choice made as an effect resolves, no targeting — "untap up to two lands") alongside the priority actions. `legalActions(player)` enumerates what's
 playable right now with per-slot target options; `viewFor(player)` produces a redacted,
 self-contained snapshot for one seat.
 

@@ -13,7 +13,7 @@ import type { DecisionKind } from "../../decisions/contract.js";
  * one module. That is what this file is for.
  */
 describe("decision tables", () => {
-  const KIND_COUNT = 18;
+  const KIND_COUNT = 19;
 
   it("covers every decision kind, and only those", () => {
     expect(Object.keys(DECISION_ACTIONS)).toHaveLength(KIND_COUNT);
@@ -42,7 +42,7 @@ describe("decision tables", () => {
         owner.set(action, kind as DecisionKind);
       }
     }
-    // 17 kinds, 18 actions: `mulligan` is the one kind with two, because a
+    // One more action than kinds: `mulligan` is the one kind with two, because a
     // single AwaitingDecision carries both halves of the mulligan phase and
     // switches on the player's own `hand.step`.
     expect(owner.size).toBe(KIND_COUNT + 1);

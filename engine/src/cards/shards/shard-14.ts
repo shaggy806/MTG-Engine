@@ -136,6 +136,7 @@ import _poolProwlingCaracal from "../pool/prowling-caracal.js";
 import _poolRakdosCharm from "../pool/rakdos-charm.js";
 import _poolRegress from "../pool/regress.js";
 import _poolRemoteIsle from "../pool/remote-isle.js";
+import _poolRewind from "../pool/rewind.js";
 import _poolRinAndSeriInseparable from "../pool/rin-and-seri-inseparable.js";
 import _poolRoccoStreetChef from "../pool/rocco-street-chef.js";
 import _poolRuinousGremlin from "../pool/ruinous-gremlin.js";
@@ -316,6 +317,7 @@ const shard: CardShard = {
     _poolRakdosCharm,
     _poolRegress,
     _poolRemoteIsle,
+    _poolRewind,
     _poolRinAndSeriInseparable,
     _poolRoccoStreetChef,
     _poolRuinousGremlin,

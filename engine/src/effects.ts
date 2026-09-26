@@ -621,6 +621,25 @@ export type EffectSpec =
       readonly simultaneous?: boolean;
     }
   | {
+      /**
+       * Choose permanents as this resolves, with no targeting — "untap up to
+       * two lands" is `{ kind: "choose-permanents", filter: { type: "land" },
+       * upTo: 2, then: { kind: "untap", target: 0 }, prompt: "Untap up to two
+       * lands" }` (Snap). The effect's controller picks from `min` (default
+       * 0) to `upTo` of the battlefield permanents matching `filter` from
+       * their side, and `then` applies to each one picked as target 0. Not a
+       * target: a hexproof land can be chosen, and nothing chosen makes the
+       * spell fizzle. Nothing is asked when nothing matches. `then` shouldn't
+       * itself stop to ask anything.
+       */
+      readonly kind: "choose-permanents";
+      readonly filter: CardFilter;
+      readonly upTo: EffectAmount;
+      readonly min?: number;
+      readonly then: EffectSpec;
+      readonly prompt: string;
+    }
+  | {
       /** One member's turn of a `for-each-target`: target `index` bound to
        * slot `from`. Built by the engine as it applies one — never
        * authored. */
@@ -2690,6 +2709,8 @@ export interface EffectApi {
    * where it was when targeted, whether it was found illegal — moves with
    * it. */
   withTargetAt(from: number, index: number): ResolutionContext;
+  /** See the `"choose-permanents"` {@link EffectSpec}: raise the choice. */
+  choosePermanents(filter: CardFilter, min: number, max: number, then: EffectSpec, prompt: string): void;
   /** This context, about `player`: the `"that-player"` scope names them —
    * an `"each-player-may"`'s follow-ups. */
   aboutPlayer(player: PlayerId): ResolutionContext;
@@ -3834,6 +3855,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       applyEffectSpec(spec.effect, ctx.withTargetAt(spec.from, spec.index));
       return;
     }
+    case "choose-permanents":
+      ctx.choosePermanents(spec.filter, spec.min ?? 0, amountValue(spec.upTo, ctx), spec.then, spec.prompt);
+      return;
     case "damage": {
       if (spec.toControllerOfTarget !== undefined) {
         const of = ctx.targets[spec.toControllerOfTarget];

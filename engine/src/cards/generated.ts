@@ -883,6 +883,7 @@ import _poolClone from "./pool/clone.js";
 import _poolCloudCrusader from "./pool/cloud-crusader.js";
 import _poolCloudManta from "./pool/cloud-manta.js";
 import _poolCloudMidgarMercenary from "./pool/cloud-midgar-mercenary.js";
+import _poolCloudOfFaeries from "./pool/cloud-of-faeries.js";
 import _poolCloudblazer from "./pool/cloudblazer.js";
 import _poolCloudchaserEagle from "./pool/cloudchaser-eagle.js";
 import _poolCloudcrownOak from "./pool/cloudcrown-oak.js";
@@ -3376,6 +3377,7 @@ import _poolPelakkaWurm from "./pool/pelakka-wurm.js";
 import _poolPendrellDrake from "./pool/pendrell-drake.js";
 import _poolPendulumOfPatterns from "./pool/pendulum-of-patterns.js";
 import _poolPensiveMinotaur from "./pool/pensive-minotaur.js";
+import _poolPeregrineDrake from "./pool/peregrine-drake.js";
 import _poolPeregrineGriffin from "./pool/peregrine-griffin.js";
 import _poolPerilousShadow from "./pool/perilous-shadow.js";
 import _poolPerimeterPatrol from "./pool/perimeter-patrol.js";
@@ -3745,6 +3747,7 @@ import _poolReviveTheShire from "./pool/revive-the-shire.js";
 import _poolRevivingDose from "./pool/reviving-dose.js";
 import _poolRevivingMelody from "./pool/reviving-melody.js";
 import _poolRevokeExistence from "./pool/revoke-existence.js";
+import _poolRewind from "./pool/rewind.js";
 import _poolReyaDawnbringer from "./pool/reya-dawnbringer.js";
 import _poolReyhanLastOfTheAbzan from "./pool/reyhan-last-of-the-abzan.js";
 import _poolRhoxBrute from "./pool/rhox-brute.js";
@@ -4322,6 +4325,7 @@ import _poolSmolderingMarsh from "./pool/smoldering-marsh.js";
 import _poolSmotheringTithe from "./pool/smothering-tithe.js";
 import _poolSnakeBasket from "./pool/snake-basket.js";
 import _poolSnakeskinVeil from "./pool/snakeskin-veil.js";
+import _poolSnap from "./pool/snap.js";
 import _poolSnapcasterMage from "./pool/snapcaster-mage.js";
 import _poolSnappingCreeper from "./pool/snapping-creeper.js";
 import _poolSnappingDrake from "./pool/snapping-drake.js";
@@ -5086,6 +5090,7 @@ import _poolUnstableObelisk from "./pool/unstable-obelisk.js";
 import _poolUnsubtleMockery from "./pool/unsubtle-mockery.js";
 import _poolUnsummon from "./pool/unsummon.js";
 import _poolUntamedHunger from "./pool/untamed-hunger.js";
+import _poolUnwind from "./pool/unwind.js";
 import _poolUnwindingClock from "./pool/unwinding-clock.js";
 import _poolUnyaroBeeSting from "./pool/unyaro-bee-sting.js";
 import _poolUnyieldingKrumar from "./pool/unyielding-krumar.js";
@@ -6569,6 +6574,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolCloudCrusader,
   _poolCloudManta,
   _poolCloudMidgarMercenary,
+  _poolCloudOfFaeries,
   _poolCloudblazer,
   _poolCloudchaserEagle,
   _poolCloudcrownOak,
@@ -9062,6 +9068,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolPendrellDrake,
   _poolPendulumOfPatterns,
   _poolPensiveMinotaur,
+  _poolPeregrineDrake,
   _poolPeregrineGriffin,
   _poolPerilousShadow,
   _poolPerimeterPatrol,
@@ -9431,6 +9438,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolRevivingDose,
   _poolRevivingMelody,
   _poolRevokeExistence,
+  _poolRewind,
   _poolReyaDawnbringer,
   _poolReyhanLastOfTheAbzan,
   _poolRhoxBrute,
@@ -10008,6 +10016,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSmotheringTithe,
   _poolSnakeBasket,
   _poolSnakeskinVeil,
+  _poolSnap,
   _poolSnapcasterMage,
   _poolSnappingCreeper,
   _poolSnappingDrake,
@@ -10772,6 +10781,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolUnsubtleMockery,
   _poolUnsummon,
   _poolUntamedHunger,
+  _poolUnwind,
   _poolUnwindingClock,
   _poolUnyaroBeeSting,
   _poolUnyieldingKrumar,

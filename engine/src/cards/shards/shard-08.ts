@@ -168,6 +168,7 @@ import _poolTocasiasDigSite from "../pool/tocasias-dig-site.js";
 import _poolTuktukRubblefort from "../pool/tuktuk-rubblefort.js";
 import _poolUnflinchingCourage from "../pool/unflinching-courage.js";
 import _poolUnhallowedPhalanx from "../pool/unhallowed-phalanx.js";
+import _poolUnwind from "../pool/unwind.js";
 import _poolUrborgVolcano from "../pool/urborg-volcano.js";
 import _poolUsherOfTheFallen from "../pool/usher-of-the-fallen.js";
 import _poolUtvaraHellkite from "../pool/utvara-hellkite.js";
@@ -360,6 +361,7 @@ const shard: CardShard = {
     _poolTuktukRubblefort,
     _poolUnflinchingCourage,
     _poolUnhallowedPhalanx,
+    _poolUnwind,
     _poolUrborgVolcano,
     _poolUsherOfTheFallen,
     _poolUtvaraHellkite,

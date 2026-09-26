@@ -37,6 +37,7 @@ import _poolCaveSense from "../pool/cave-sense.js";
 import _poolCelestialForce from "../pool/celestial-force.js";
 import _poolChainToMemory from "../pool/chain-to-memory.js";
 import _poolClockOfOmens from "../pool/clock-of-omens.js";
+import _poolCloudOfFaeries from "../pool/cloud-of-faeries.js";
 import _poolCloudshift from "../pool/cloudshift.js";
 import _poolCoastalHornclaw from "../pool/coastal-hornclaw.js";
 import _poolCollectiveBlessing from "../pool/collective-blessing.js";
@@ -225,6 +226,7 @@ const shard: CardShard = {
     _poolCelestialForce,
     _poolChainToMemory,
     _poolClockOfOmens,
+    _poolCloudOfFaeries,
     _poolCloudshift,
     _poolCoastalHornclaw,
     _poolCollectiveBlessing,

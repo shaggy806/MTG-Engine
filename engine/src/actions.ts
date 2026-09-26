@@ -358,6 +358,13 @@ export type Action =
       readonly permanents: readonly ObjectId[];
     }
   | {
+      /** Answers a pending `choose-permanents` decision ("untap up to two
+       * lands"): the permanents chosen, a token stack named once per token. */
+      readonly type: "choose-permanents";
+      readonly player: PlayerId;
+      readonly permanents: readonly ObjectId[];
+    }
+  | {
       /** Answers a pending `proliferate` decision (rule 701.27): the
        * permanents and/or players to give another counter of each kind they
        * already have. Any subset of `awaiting.eligible`, **including the
@@ -847,6 +854,18 @@ export type LegalAction =
        * including none. No `count`: that is the point of the card. */
       readonly kind: "proliferate";
       readonly eligible: readonly TargetRef[];
+    }
+  | {
+      /** Choose from `min` to `max` of `eligible` as an effect resolves —
+       * "untap up to two lands". Not targeting. */
+      readonly kind: "choose-permanents";
+      readonly eligible: readonly ObjectId[];
+      readonly min: number;
+      readonly max: number;
+      /** What is being chosen for — "Untap up to two lands". */
+      readonly prompt: string;
+      /** As `sacrifice`'s: how many a compacted token stack stands for. */
+      readonly copies?: Readonly<Record<ObjectId, number>>;
     }
   | {
       readonly kind: "scry";

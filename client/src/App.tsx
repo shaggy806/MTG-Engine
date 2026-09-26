@@ -205,6 +205,7 @@ type CreatureTypeChoiceAction = Extract<LegalAction, { kind: 'choose-creature-ty
 type ModesChoiceAction = Extract<LegalAction, { kind: 'choose-modes' }>
 type SacrificeAction = Extract<LegalAction, { kind: 'sacrifice' }>
 type ProliferateAction = Extract<LegalAction, { kind: 'proliferate' }>
+type ChoosePermanentsAction = Extract<LegalAction, { kind: 'choose-permanents' }>
 type ScryAction = Extract<LegalAction, { kind: 'scry' }>
 type AssignDamageAction = Extract<LegalAction, { kind: 'assign-combat-damage' }>
 type ChooseTargetsAction = Extract<LegalAction, { kind: 'choose-targets' }>
@@ -342,6 +343,7 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
   'assign-combat-damage': 'assign combat damage',
   sacrifice: 'choose what to sacrifice',
   proliferate: 'choose what to proliferate',
+  'choose-permanents': 'choose permanents',
   scry: 'scry',
 }
 
@@ -748,6 +750,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   const [textFrom, setTextFrom] = useState<string | null>(null)
   const [modePicks, setModePicks] = useState<readonly number[]>([])
   const [sacrificePicks, setSacrificePicks] = useState<readonly ObjectId[]>([])
+  const [permanentPicks, setPermanentPicks] = useState<readonly ObjectId[]>([])
   /** A cast or activation whose targets are in, waiting on which permanents
    * its "tap N untapped … you control" cost taps (rule 601.2h — costs are
    * paid last). `picks` names a stack once per token. */
@@ -924,6 +927,9 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   const sacrificeAction = actions.find(
     (a): a is SacrificeAction => a.kind === 'sacrifice',
   )
+  const choosePermanentsAction = actions.find(
+    (a): a is ChoosePermanentsAction => a.kind === 'choose-permanents',
+  )
   const proliferateAction = actions.find(
     (a): a is ProliferateAction => a.kind === 'proliferate',
   )
@@ -1008,6 +1014,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     | 'choose-modes'
     | 'sacrifice'
     | 'proliferate'
+    | 'choose-permanents'
     | 'scry'
     | 'choose-x'
     | 'choose-cast-modes'
@@ -1039,6 +1046,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           ? 'sacrifice'
         : proliferateAction
           ? 'proliferate'
+        : choosePermanentsAction
+          ? 'choose-permanents'
         : scryAction
           ? 'scry'
         : assignDamageAction
@@ -1503,14 +1512,20 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       // already picked, so a second click picks the next one rather than
       // un-picking the first.
       const picking =
-        mode === 'choose-tap' ? pendingTap : mode === 'choose-convoke' ? pendingConvoke : null
+        mode === 'choose-tap'
+          ? pendingTap
+          : mode === 'choose-convoke'
+            ? pendingConvoke
+            : mode === 'choose-permanents'
+              ? { picks: permanentPicks }
+              : null
       if (picking) {
         const fresh = ids.find((i) => !picking.picks.includes(i))
         if (fresh !== undefined) return fresh
       }
       return ids[0]
     },
-    [mode, activeTargeting, pendingTap, pendingConvoke],
+    [mode, activeTargeting, pendingTap, pendingConvoke, permanentPicks],
   )
 
   const clickPermanent = useCallback(
@@ -1636,6 +1651,23 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         )
         return
       }
+      if (mode === 'choose-permanents' && choosePermanentsAction) {
+        if (!choosePermanentsAction.eligible.includes(id)) return
+        // A token stack is one tile for several tokens: how many of it is a
+        // count, as for a sacrifice.
+        if ((choosePermanentsAction.copies?.[id] ?? 1) > 1) {
+          setStackMenu((cur) => (cur === id ? null : id))
+          return
+        }
+        setPermanentPicks((cur) =>
+          cur.includes(id)
+            ? cur.filter((x) => x !== id)
+            : cur.length >= choosePermanentsAction.max
+              ? [...cur.slice(1), id]
+              : [...cur, id],
+        )
+        return
+      }
       if (mode === 'proliferate' && proliferateAction) {
         if (!eligibleToProliferate(proliferateAction, id)) return
         // A plain toggle, with no cap: "any number" has no count to enforce,
@@ -1694,6 +1726,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       pickTarget,
       unpickTarget,
       sacrificeAction,
+      choosePermanentsAction,
       pendingTap,
       pendingConvoke,
       proliferateAction,
@@ -1937,6 +1970,12 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       // A stack gives up some of itself, so the tile has to say how many —
       // "selected" alone can't tell three of nine from nine of nine.
       if (of > 1 && taken > 0) badge = `☠ ${taken}/${of}`
+    } else if (mode === 'choose-permanents' && choosePermanentsAction) {
+      const taken = permanentPicks.filter((x) => x === id).length
+      const of = choosePermanentsAction.copies?.[id] ?? 1
+      highlight = choosePermanentsAction.eligible.includes(id) && taken === 0
+      selected = taken > 0
+      if (of > 1 && taken > 0) badge = `✓ ${taken}/${of}`
     } else if (mode === 'proliferate' && proliferateAction) {
       const picked = proliferatePicks.some((t) => t.kind === 'object' && t.object === id)
       highlight = eligibleToProliferate(proliferateAction, id) && !picked
@@ -2620,6 +2659,32 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           disabled={sacrificePicks.length !== sacrificeAction.count}
           onClick={() =>
             game.dispatch({ type: 'sacrifice', player: seat, permanents: [...sacrificePicks] })
+          }
+        >
+          Confirm
+        </button>
+      </div>
+    )
+  } else if (mode === 'choose-permanents' && choosePermanentsAction) {
+    const { min, max } = choosePermanentsAction
+    controls = (
+      <div className="controls">
+        <span>
+          {view.decisionSource ? `${view.decisionSource.cardName}: ` : ''}
+          {choosePermanentsAction.prompt} — {permanentPicks.length}/{max} chosen
+        </span>
+        <button
+          type="button"
+          disabled={permanentPicks.length === 0}
+          onClick={() => setPermanentPicks([])}
+        >
+          Clear
+        </button>
+        <button
+          type="button"
+          disabled={permanentPicks.length < min || permanentPicks.length > max}
+          onClick={() =>
+            game.dispatch({ type: 'choose-permanents', player: seat, permanents: [...permanentPicks] })
           }
         >
           Confirm
@@ -3314,6 +3379,14 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
             picks: sacrificePicks,
             set: (next: readonly ObjectId[]) => setSacrificePicks(next),
           }
+        : mode === 'choose-permanents' && choosePermanentsAction
+          ? {
+              verb: 'Choose',
+              count: choosePermanentsAction.max,
+              of: choosePermanentsAction.copies?.[stackMenu] ?? 1,
+              picks: permanentPicks,
+              set: (next: readonly ObjectId[]) => setPermanentPicks(next),
+            }
         : mode === 'choose-tap' && pendingTap
           ? {
               verb: 'Tap',

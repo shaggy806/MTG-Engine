@@ -1461,6 +1461,27 @@ export type AwaitingDecision =
       readonly x: number;
     }
   | {
+      /**
+       * Permanents chosen as an effect resolves, with no targeting — "untap
+       * up to two lands" (the `choose-permanents` effect: Snap, Frantic
+       * Search). `player` picks from `min` to `max` of `eligible`, and
+       * `then` is applied to each one picked, as target 0, in the order
+       * picked; `source`/`x` rebuild the resolution context for it, as
+       * `proliferate`'s do. A compacted token stack is one entry that may be
+       * named up to its size.
+       */
+      readonly kind: "choose-permanents";
+      readonly player: PlayerId;
+      readonly eligible: readonly ObjectId[];
+      readonly min: number;
+      readonly max: number;
+      /** What the choice is for, as a prompt — "Untap up to two lands". */
+      readonly prompt: string;
+      readonly then: EffectSpec;
+      readonly source: ObjectId;
+      readonly x: number;
+    }
+  | {
       /** A modal spell/ability is resolving (rule 700.2), or a "you may"
        * clause (rule 601.3e). The controller picks between `minModes` and
        * `maxModes` distinct modes; their effects apply after. */

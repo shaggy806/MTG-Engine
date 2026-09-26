@@ -228,6 +228,17 @@ export interface PlayerController {
     view: ControllerView,
     eligible: readonly TargetRef[],
   ): readonly TargetRef[];
+  /**
+   * An effect is resolving that chooses permanents without targeting them
+   * ("untap up to two lands"): return from `min` to `max` of `eligible`,
+   * a compacted token stack named once per token.
+   */
+  choosePermanents(
+    view: ControllerView,
+    eligible: readonly ObjectId[],
+    min: number,
+    max: number,
+  ): readonly ObjectId[];
 }
 
 const passFor = (player: PlayerId): Action => ({
@@ -461,6 +472,35 @@ export class AutomaticController implements PlayerController {
   ): readonly TargetRef[] {
     return ownedProliferateTargets(view, eligible);
   }
+
+  choosePermanents(
+    view: ControllerView,
+    eligible: readonly ObjectId[],
+    min: number,
+    max: number,
+  ): readonly ObjectId[] {
+    return ownPermanentsFirst(view, eligible, min, max);
+  }
+}
+
+/**
+ * The default "choose up to N" answer: as many of your own as allowed, then
+ * anyone's only as far as `min` demands. "Untap up to two lands" is nearly
+ * always about your lands, and untapping an opponent's is the move to avoid.
+ */
+function ownPermanentsFirst(
+  view: ControllerView,
+  eligible: readonly ObjectId[],
+  min: number,
+  max: number,
+): readonly ObjectId[] {
+  const mine = eligible.filter((id) => view.state.objects[id]?.controller === view.player);
+  const out = mine.slice(0, max);
+  for (const id of eligible) {
+    if (out.length >= min) break;
+    if (!out.includes(id)) out.push(id);
+  }
+  return out;
 }
 
 /**
@@ -620,6 +660,13 @@ export class ScriptedController implements PlayerController {
    * about the choice. */
   chooseProliferateFn: ProliferateChooser = (view, eligible) =>
     ownedProliferateTargets(view, eligible);
+  /** Your own first, up to `max` — see `ownPermanentsFirst`. */
+  choosePermanentsFn: (
+    view: ControllerView,
+    eligible: readonly ObjectId[],
+    min: number,
+    max: number,
+  ) => readonly ObjectId[] = (view, eligible, min, max) => ownPermanentsFirst(view, eligible, min, max);
 
   constructor(playerId: PlayerId, script: readonly ScriptEntry[] = []) {
     this.playerId = playerId;
@@ -778,6 +825,15 @@ export class ScriptedController implements PlayerController {
     eligible: readonly TargetRef[],
   ): readonly TargetRef[] {
     return this.chooseProliferateFn(view, eligible);
+  }
+
+  choosePermanents(
+    view: ControllerView,
+    eligible: readonly ObjectId[],
+    min: number,
+    max: number,
+  ): readonly ObjectId[] {
+    return this.choosePermanentsFn(view, eligible, min, max);
   }
 }
 

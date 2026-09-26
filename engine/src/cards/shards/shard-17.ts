@@ -105,6 +105,7 @@ import _poolNimanaSkydancer from "../pool/nimana-skydancer.js";
 import _poolObyraDreamingDuelist from "../pool/obyra-dreaming-duelist.js";
 import _poolOgreSentry from "../pool/ogre-sentry.js";
 import _poolOldGnawbone from "../pool/old-gnawbone.js";
+import _poolPeregrineDrake from "../pool/peregrine-drake.js";
 import _poolPhyrexianVault from "../pool/phyrexian-vault.js";
 import _poolPrimevalShambler from "../pool/primeval-shambler.js";
 import _poolPullFromTomorrow from "../pool/pull-from-tomorrow.js";
@@ -295,6 +296,7 @@ const shard: CardShard = {
     _poolObyraDreamingDuelist,
     _poolOgreSentry,
     _poolOldGnawbone,
+    _poolPeregrineDrake,
     _poolPhyrexianVault,
     _poolPrimevalShambler,
     _poolPullFromTomorrow,

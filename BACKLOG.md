@@ -36,7 +36,7 @@ that one card is the reason the deck exists.
 ## Card backlog (top-5000 staples and the precons)
 
 - **The current priority (2026-09-26): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,325 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,330 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped; past those, nothing is triaged.
@@ -120,22 +120,17 @@ that one card is the reason the deck exists.
 - **A cascaded spell's targets are picked for the player.** `castCardWithoutPaying` takes the
   first legal target of each slot for a cascade cast (and one member of an "any number of"
   group), where rule 702.85a has the caster choose.
-- **Frantic Search targets its lands.** "Untap up to three lands" doesn't target, but the card
-  is authored as three optional target slots: the lands are picked as it's cast, a hexproof
-  land can't be picked, and three chosen lands all leaving in response fizzle the whole spell
-  (no draw). Needs a choice made on resolution — the same `decision:choose-permanent` Amass
-  and `sacrifice-all-but` want — which also unblocks Snap, Peregrine Drake, Rewind, Unwind and
-  Cloud of Faeries.
 - **A copy never chooses new targets.** Tracked as `decision:copy-new-targets`, which is
   UI-bound.
 - **Amass grows the first Army creature.** Rule 701.47a lets the player choose, and a changeling
-  is an Army too (Morophon beside Orcish Bowmasters' Army). Needs `decision:choose-permanent`,
-  which is UI-bound. See AUTHORING §15, "Partial".
+  is an Army too (Morophon beside Orcish Bowmasters' Army). The `choose-permanents` decision
+  (built 2026-09-26 for "untap up to N lands") is the piece it needs. See AUTHORING §15, "Partial".
 - **A token copy isn't asked its "as this enters" choice** (a token copy of Clone, Morophon or
   Urza's Incubator), though the gaps list marks `bug:as-enters-choices-any-entry` built. See
   AUTHORING §15.
 - **`sacrifice-all-but` always keeps the most it may.** "Choose up to N, then sacrifice the rest"
-  never lets the player keep fewer (to sacrifice more for death triggers).
+  never lets the player keep fewer (to sacrifice more for death triggers). The `choose-permanents`
+  decision could ask it.
 - **Token stacks in combat.** Splitting one stack across attackers or blockers is not built,
   and neither is choosing which of a stack proliferate touches. See
   `docs/plans/token-stack-choices.md`.

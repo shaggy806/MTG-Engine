@@ -2,7 +2,7 @@
  * The contract every decision kind's module implements, plus the two tables
  * that make the set of kinds total.
  *
- * **What a decision module owns.** Each of the 17 `AwaitingDecision` kinds is
+ * **What a decision module owns.** Each of the 19 `AwaitingDecision` kinds is
  * answered by the same five steps today, spread across five independent
  * if-chains in four files: project a `LegalAction` (`legalActions`), validate
  * an incoming `Action` (`whyCannot*`), apply it (`dispatch`), ask a controller
@@ -44,7 +44,7 @@ import type { ResolvedTargets } from "../target.js";
 import type { TargetRef, TargetSpec } from "../target.js";
 import type { TargetSource } from "../targeting.js";
 
-/** One of the 17 decisions the rules can stop and ask a player for. */
+/** One of the 19 decisions the rules can stop and ask a player for. */
 export type DecisionKind = AwaitingDecision["kind"];
 
 /** The `AwaitingDecision` variant belonging to kind `K`. */
@@ -98,6 +98,7 @@ export const DECISION_ACTIONS = {
   "choose-targets": ["choose-targets"],
   sacrifice: ["sacrifice"],
   proliferate: ["proliferate"],
+  "choose-permanents": ["choose-permanents"],
   scry: ["scry"],
 } as const satisfies Record<DecisionKind, readonly Action["type"][]>;
 
@@ -129,6 +130,7 @@ export const DECISION_OFFERS = {
   "choose-targets": ["choose-targets"],
   sacrifice: ["sacrifice"],
   proliferate: ["proliferate"],
+  "choose-permanents": ["choose-permanents"],
   scry: ["scry"],
 } as const satisfies Record<DecisionKind, readonly LegalAction["kind"][]>;
 
@@ -200,6 +202,7 @@ export interface DecisionHost {
   readonly applyLegendRuleChoice: (player: PlayerId, keep: ObjectId) => void;
   readonly applyTextChoice: (player: PlayerId, from: string, to: string) => void;
   readonly applyProliferate: (player: PlayerId, chosen: readonly TargetRef[]) => void;
+  readonly applyChoosePermanents: (player: PlayerId, chosen: readonly ObjectId[]) => void;
   readonly applyCreatureTypeChoice: (player: PlayerId, creatureType: string) => void;
   readonly applyModesChoice: (player: PlayerId, modes: readonly number[], xValue?: number) => void;
   readonly applyChooseFromZone: (player: PlayerId, chosen: readonly ObjectId[]) => void;
@@ -328,7 +331,7 @@ export interface DecisionModule<K extends DecisionKind = DecisionKind> {
    * uniformly from what is legal. Those weights are tuned for coverage and
    * termination; they are not a policy and nothing plays by them.
    *
-   * **Present on all 17 kinds**, unlike `candidates` — a decision the fuzzer
+   * **Present on every kind**, unlike `candidates` — a decision the fuzzer
    * cannot answer is a decision it deadlocks on, so there is no judgement call
    * about whether a kind is worth having one.
    *
