@@ -167,10 +167,20 @@ export const powerUp = (
  * that base power and toughness in addition to its other types (721.2b:
  * `addTypes: ["creature"]` and `setBasePt`). Counters from anywhere count,
  * proliferate's included, and losing them takes the abilities away.
+ *
+ * A striation runs to the next station symbol: in Oracle text every line
+ * after an "N+ |" line belongs to that symbol, not just the first (Hearthhull's
+ * "Whenever you sacrifice a land" is an 8+ ability). A static ability of the
+ * striation that reaches other permanents ("Other artifacts you control have
+ * …") passes its own `affects`.
  */
-export const stationBand = (at: number, band: Omit<StaticAbility, "affects" | "condition">): StaticAbility => ({
+export const stationBand = (
+  at: number,
+  band: Omit<StaticAbility, "affects" | "condition">,
+  affects: StaticAbility["affects"] = { scope: "self" },
+): StaticAbility => ({
   ...band,
-  affects: { scope: "self" },
+  affects,
   condition: { kind: "source", filter: { counters: { kind: "charge", compare: { op: "gte", n: at } } } },
 });
 

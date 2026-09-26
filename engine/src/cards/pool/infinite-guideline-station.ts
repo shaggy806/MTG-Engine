@@ -2,8 +2,9 @@ import { defineCard } from "../define.js";
 import { station, stationBand } from "../helpers.js";
 
 // #241 in top-commanders.txt. Station (rule 702.184) and one station symbol
-// (rule 721.2): a 7/15 flier from twelve charge counters on. Both counts
-// include itself, a five-colour permanent.
+// (rule 721.2): a 7/15 flier from twelve charge counters on, with the attack
+// trigger in the same striation. Both counts include itself, a five-colour
+// permanent.
 const ROBOT_TEXT =
   "When Infinite Guideline Station enters, create a tapped 2/2 colorless Robot artifact creature token for each " +
   "multicolored permanent you control.";
@@ -30,7 +31,16 @@ export default defineCard({
       addTypes: ["creature"],
       setBasePt: { power: 7, toughness: 15 },
       grantKeywords: ["flying"],
-      text: "12+ | Flying",
+      grantsTriggered: [
+        {
+          trigger: { on: "attacks", who: "self" },
+          targets: [],
+          effect: { kind: "draw", amount: { countOf: MULTICOLORED_YOU_CONTROL } },
+          resolve: null,
+          text: DRAW_TEXT,
+        },
+      ],
+      text: `12+ | Flying\n${DRAW_TEXT}`,
     }),
   ],
   triggered: [
@@ -40,13 +50,6 @@ export default defineCard({
       effect: { kind: "create-token", token: "Robot Token", count: { countOf: MULTICOLORED_YOU_CONTROL }, tapped: true },
       resolve: null,
       text: ROBOT_TEXT,
-    },
-    {
-      trigger: { on: "attacks", who: "self" },
-      targets: [],
-      effect: { kind: "draw", amount: { countOf: MULTICOLORED_YOU_CONTROL } },
-      resolve: null,
-      text: DRAW_TEXT,
     },
   ],
 });

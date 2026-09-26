@@ -9,6 +9,9 @@
  *   additional land this turn.
  *   8+ | Flying, vigilance, haste                                    [6/7]
  *   Whenever you sacrifice a land, each opponent loses 2 life.
+ *
+ * Every line after a station symbol belongs to that symbol's striation, so
+ * the drain is an 8+ ability like the flying.
  */
 
 import { describe, expect, it } from "vitest";
@@ -168,7 +171,7 @@ describe("station symbols (rule 721.2)", () => {
 });
 
 describe("Hearthhull, the Worldseed", () => {
-  it("2+: draws two and gives a land drop, and each opponent loses 2 as the land is sacrificed", () => {
+  it("2+: draws two and gives a land drop — and below 8 the sacrificed land drains nobody", () => {
     const game = setUp();
     const hull = spawn(game, HEARTHHULL);
     game.state.objects[hull].counters.charge = 2;
@@ -183,7 +186,27 @@ describe("Hearthhull, the Worldseed", () => {
     expect(game.state.objects[fodder].zone).toBe("graveyard");
     expect(game.handOf(A)).toHaveLength(hand + 2);
     expect(game.state.players[A].extraLandsThisTurn).toBe(1);
+    expect(game.state.players[B].life).toBe(life);
+  });
+
+  it("8+: whenever you sacrifice a land, each opponent loses 2 life", () => {
+    const game = setUp();
+    const hull = spawn(game, HEARTHHULL);
+    game.state.objects[hull].counters.charge = 8;
+    spawn(game, "Forest");
+    const fodder = spawn(game, "Swamp");
+    const life = game.state.players[B].life;
+    const offer = offers(game, hull).find((a) => a.text.startsWith("{1}, {T}, Sacrifice a land"));
+    if (offer === undefined) throw new Error("the 2+ ability isn't offered");
+    game.dispatch({ type: "activate-ability", player: A, source: hull, abilityIndex: offer.abilityIndex, sacrifice: fodder });
+    game.advanceUntil(quiet);
     expect(game.state.players[B].life).toBe(life - 2);
+    // Any land you sacrifice, not just to its own ability: a fetch land.
+    const wilds = spawn(game, "Evolving Wilds");
+    game.dispatch({ type: "activate-ability", player: A, source: wilds, abilityIndex: 0 });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[wilds].zone).toBe("graveyard");
+    expect(game.state.players[B].life).toBe(life - 4);
   });
 
   it("can be a commander: a Spacecraft with a power/toughness box (rule 903.3)", () => {
@@ -216,11 +239,16 @@ describe("Inspirit, Flagship Vessel", () => {
     expect(charge(game, hull)).toBe(0);
   });
 
-  it("gives your other artifacts hexproof and indestructible", () => {
+  it("8+: gives your other artifacts hexproof and indestructible", () => {
     const game = setUp();
     const inspirit = spawn(game, "Inspirit, Flagship Vessel");
     const hull = spawn(game, HEARTHHULL);
     const theirs = spawn(game, HEARTHHULL, B);
+    game.state.objects[inspirit].counters.charge = 7;
+    for (const k of ["hexproof", "indestructible"] as const) {
+      expect(game.characteristics(hull).keywords.has(k)).toBe(false);
+    }
+    game.state.objects[inspirit].counters.charge = 8;
     for (const k of ["hexproof", "indestructible"] as const) {
       expect(game.characteristics(hull).keywords.has(k)).toBe(true);
       expect(game.characteristics(inspirit).keywords.has(k)).toBe(false);
@@ -255,5 +283,22 @@ describe("Infinite Guideline Station", () => {
     const hand = game.handOf(A).length;
     game.advanceUntil((s) => s.turn.step === "declare-blockers" && quiet(s));
     expect(game.handOf(A)).toHaveLength(hand + 2);
+  });
+
+  it("the attack draw is a 12+ ability: made a creature some other way below 12, it draws nothing", () => {
+    const a = new ScriptedController(A);
+    const game = setUp(a);
+    const station = spawn(game, "Infinite Guideline Station");
+    game.state.objects[station].counters.charge = 11;
+    game.debugApplyEffect(
+      A,
+      { kind: "animate", target: 0, power: 3, toughness: 3, addTypes: ["creature"], addSubtypes: [], duration: "end-of-turn" },
+      [{ kind: "object", object: station }],
+    );
+    a.declareAttackersFn = () => [{ attacker: station, defender: B }];
+    const hand = game.handOf(A).length;
+    game.advanceUntil((s) => s.turn.step === "declare-blockers" && quiet(s));
+    expect(game.state.players[B].life).toBe(20);
+    expect(game.handOf(A)).toHaveLength(hand);
   });
 });

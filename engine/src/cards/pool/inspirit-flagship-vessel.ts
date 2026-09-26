@@ -3,7 +3,7 @@ import { station, stationBand } from "../helpers.js";
 
 // #165 in top-commanders.txt. Station (rule 702.184) and two station symbols
 // (rule 721.2): the first grants the combat trigger, the second makes it a
-// 5/5 flier. With no artifact targeted ("up to one"), there's no counter to
+// 5/5 flier and protects the other artifacts. With no artifact targeted ("up to one"), there's no counter to
 // choose.
 const STATION_TEXT =
   "Station (Tap another creature you control: Put charge counters equal to its power on this Spacecraft. " +
@@ -55,10 +55,10 @@ export default defineCard({
       grantKeywords: ["flying"],
       text: "8+ | Flying",
     }),
-    {
-      affects: { scope: "filter", filter: { type: "artifact", controlledBy: "you" }, excludeSelf: true },
-      grantKeywords: ["hexproof", "indestructible"],
-      text: ARTIFACTS_TEXT,
-    },
+    stationBand(
+      8,
+      { grantKeywords: ["hexproof", "indestructible"], text: ARTIFACTS_TEXT },
+      { scope: "filter", filter: { type: "artifact", controlledBy: "you" }, excludeSelf: true },
+    ),
   ],
 });

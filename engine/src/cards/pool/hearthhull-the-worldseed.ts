@@ -4,7 +4,8 @@ import { station, stationBand } from "../helpers.js";
 // #25 in top-commanders.txt — a Spacecraft with a power/toughness box, so a
 // legal commander (rule 903.3). Station (rule 702.184) and its two station
 // symbols (rule 721.2): an artifact until it has eight charge counters, a
-// 6/7 creature from then on.
+// 6/7 creature from then on. The land-sacrifice drain is in the 8+
+// striation too.
 const STATION_TEXT =
   "Station (Tap another creature you control: Put charge counters equal to its power on this Spacecraft. " +
   "Station only as a sorcery. It's an artifact creature at 8+.)";
@@ -46,16 +47,16 @@ export default defineCard({
       addTypes: ["creature"],
       setBasePt: { power: 6, toughness: 7 },
       grantKeywords: ["flying", "vigilance", "haste"],
-      text: `8+ | ${CREATURE_TEXT}`,
+      grantsTriggered: [
+        {
+          trigger: { on: "sacrifice", who: "you", filter: { type: "land" } },
+          targets: [],
+          effect: { kind: "lose-life", amount: 2, who: "each-opponent" },
+          resolve: null,
+          text: DRAIN_TEXT,
+        },
+      ],
+      text: `8+ | ${CREATURE_TEXT}\n${DRAIN_TEXT}`,
     }),
-  ],
-  triggered: [
-    {
-      trigger: { on: "sacrifice", who: "you", filter: { type: "land" } },
-      targets: [],
-      effect: { kind: "lose-life", amount: 2, who: "each-opponent" },
-      resolve: null,
-      text: DRAIN_TEXT,
-    },
   ],
 });

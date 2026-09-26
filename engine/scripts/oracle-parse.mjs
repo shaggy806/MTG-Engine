@@ -715,8 +715,15 @@ export function parseFace(face, ctx = {}) {
   const tokenFor = ctx.tokenFor ?? (() => null);
   const spellTargets = [];
 
+  // A station symbol ("8+ | Flying") opens a striation that runs to the next
+  // one or the end of the text box (rule 721.2): every line after it is that
+  // symbol's, not the card's own, and a person authors it as a
+  // `stationBand`.
+  let inStriation = false;
   for (let i = 0; i < lines.length; i += 1) {
     const raw = lines[i];
+    if (/^\d+\+ \| /.test(raw)) inStriation = true;
+    if (inStriation) { out.todo.push(printed(raw)); continue; }
     const whole = normalize(raw, face.name);
     // An ability word or flavor word ("Landfall —", "Crushing Teeth —") means
     // nothing, so it's dropped. A few labels written the same way do mean
