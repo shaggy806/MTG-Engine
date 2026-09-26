@@ -86,6 +86,7 @@ import _poolJibbirikOmnivore from "../pool/jibbirik-omnivore.js";
 import _poolJundBattlemage from "../pool/jund-battlemage.js";
 import _poolKeepersOfTheFaith from "../pool/keepers-of-the-faith.js";
 import _poolKessigRecluse from "../pool/kessig-recluse.js";
+import _poolKillianDecisiveMentor from "../pool/killian-decisive-mentor.js";
 import _poolKnighthood from "../pool/knighthood.js";
 import _poolKrenkosCommand from "../pool/krenkos-command.js";
 import _poolLargeBear from "../pool/large-bear.js";
@@ -270,6 +271,7 @@ const shard: CardShard = {
     _poolJundBattlemage,
     _poolKeepersOfTheFaith,
     _poolKessigRecluse,
+    _poolKillianDecisiveMentor,
     _poolKnighthood,
     _poolKrenkosCommand,
     _poolLargeBear,

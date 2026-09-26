@@ -334,6 +334,7 @@ import _poolAzureMage from "./pool/azure-mage.js";
 import _poolAzusaLostButSeeking from "./pool/azusa-lost-but-seeking.js";
 import _poolBackupAgent from "./pool/backup-agent.js";
 import _poolBadlands from "./pool/badlands.js";
+import _poolBaelothBarritylEntertainer from "./pool/baeloth-barrityl-entertainer.js";
 import _poolBaithookAngler from "./pool/baithook-angler.js";
 import _poolBakeIntoAPie from "./pool/bake-into-a-pie.js";
 import _poolBakeryRaid from "./pool/bakery-raid.js";
@@ -2512,6 +2513,7 @@ import _poolKikiJikiMirrorBreaker from "./pool/kiki-jiki-mirror-breaker.js";
 import _poolKillMaimBurn from "./pool/kill-maim-burn.js";
 import _poolKillerBees from "./pool/killer-bees.js";
 import _poolKillerWhale from "./pool/killer-whale.js";
+import _poolKillianDecisiveMentor from "./pool/killian-decisive-mentor.js";
 import _poolKilnFiend from "./pool/kiln-fiend.js";
 import _poolKiloApogeeMind from "./pool/kilo-apogee-mind.js";
 import _poolKindercatch from "./pool/kindercatch.js";
@@ -3094,6 +3096,7 @@ import _poolNeedlethornDrake from "./pool/needlethorn-drake.js";
 import _poolNeedlevergePathway from "./pool/needleverge-pathway.js";
 import _poolNegate from "./pool/negate.js";
 import _poolNekusarTheMindrazer from "./pool/nekusar-the-mindrazer.js";
+import _poolNellyBorcaImpulsiveAccuser from "./pool/nelly-borca-impulsive-accuser.js";
 import _poolNemaSiltlurker from "./pool/nema-siltlurker.js";
 import _poolNephaliaDrownyard from "./pool/nephalia-drownyard.js";
 import _poolNephaliaMoondrakes from "./pool/nephalia-moondrakes.js";
@@ -5906,6 +5909,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAzusaLostButSeeking,
   _poolBackupAgent,
   _poolBadlands,
+  _poolBaelothBarritylEntertainer,
   _poolBaithookAngler,
   _poolBakeIntoAPie,
   _poolBakeryRaid,
@@ -8084,6 +8088,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolKillMaimBurn,
   _poolKillerBees,
   _poolKillerWhale,
+  _poolKillianDecisiveMentor,
   _poolKilnFiend,
   _poolKiloApogeeMind,
   _poolKindercatch,
@@ -8666,6 +8671,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolNeedlevergePathway,
   _poolNegate,
   _poolNekusarTheMindrazer,
+  _poolNellyBorcaImpulsiveAccuser,
   _poolNemaSiltlurker,
   _poolNephaliaDrownyard,
   _poolNephaliaMoondrakes,

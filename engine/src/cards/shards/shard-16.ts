@@ -113,6 +113,7 @@ import _poolMundasVanguard from "../pool/mundas-vanguard.js";
 import _poolMyrTurbine from "../pool/myr-turbine.js";
 import _poolNaturalize from "../pool/naturalize.js";
 import _poolNaturesChant from "../pool/natures-chant.js";
+import _poolNellyBorcaImpulsiveAccuser from "../pool/nelly-borca-impulsive-accuser.js";
 import _poolNocturnalFeeder from "../pool/nocturnal-feeder.js";
 import _poolNoxiousNewt from "../pool/noxious-newt.js";
 import _poolOctoprophet from "../pool/octoprophet.js";
@@ -309,6 +310,7 @@ const shard: CardShard = {
     _poolMyrTurbine,
     _poolNaturalize,
     _poolNaturesChant,
+    _poolNellyBorcaImpulsiveAccuser,
     _poolNocturnalFeeder,
     _poolNoxiousNewt,
     _poolOctoprophet,

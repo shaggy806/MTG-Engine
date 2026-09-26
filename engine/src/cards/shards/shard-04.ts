@@ -9,6 +9,7 @@ import _poolAnkleBiter from "../pool/ankle-biter.js";
 import _poolAtarkaMonument from "../pool/atarka-monument.js";
 import _poolAvenSkirmisher from "../pool/aven-skirmisher.js";
 import _poolAviationPioneer from "../pool/aviation-pioneer.js";
+import _poolBaelothBarritylEntertainer from "../pool/baeloth-barrityl-entertainer.js";
 import _poolBaronyVampire from "../pool/barony-vampire.js";
 import _poolBarrinMasterWizard from "../pool/barrin-master-wizard.js";
 import _poolBashToBits from "../pool/bash-to-bits.js";
@@ -195,6 +196,7 @@ const shard: CardShard = {
     _poolAtarkaMonument,
     _poolAvenSkirmisher,
     _poolAviationPioneer,
+    _poolBaelothBarritylEntertainer,
     _poolBaronyVampire,
     _poolBarrinMasterWizard,
     _poolBashToBits,
