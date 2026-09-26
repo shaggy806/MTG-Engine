@@ -2559,11 +2559,18 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       </div>
     )
   } else if (mode === 'commander-replacement' && commanderChoiceAction) {
+    // A commander in a graveyard or exile is already there (rule 903.9a); one
+    // headed for a hand or library hasn't moved yet (903.9b).
+    const cmdZone = commanderChoiceAction.intendedZone
+    const cmdThere = cmdZone === 'graveyard' || cmdZone === 'exile'
+    const cmdZoneName = cmdZone === 'exile' ? 'exile' : `your ${cmdZone}`
     controls = (
       <div className="controls">
         <span>
-          {game.nameOf(commanderChoiceAction.commander)} would go to your{' '}
-          {commanderChoiceAction.intendedZone} — move it to the command zone instead?
+          {game.nameOf(commanderChoiceAction.commander)}{' '}
+          {cmdThere
+            ? `is in ${cmdZoneName} — move it to the command zone?`
+            : `would go to ${cmdZoneName} — move it to the command zone instead?`}
         </span>
         <button
           type="button"
@@ -2579,7 +2586,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
             game.dispatch({ type: 'commander-replacement', player: seat, toCommandZone: false })
           }
         >
-          Leave in {commanderChoiceAction.intendedZone}
+          {cmdThere ? `Leave in ${cmdZone}` : `Put into ${cmdZone}`}
         </button>
       </div>
     )

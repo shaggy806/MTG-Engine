@@ -261,10 +261,20 @@ export const makeFormatter = (game) => {
           : `${e.player} keeps their opening hand`;
       case "cards-put-on-bottom":
         return `${e.player} puts ${e.objects.map(name).join(", ")} on the bottom of their library`;
-      case "commander-zone-decision":
-        return e.toCommandZone
-          ? `${name(e.object)} goes to the command zone (from ${e.from})`
-          : `${name(e.object)} stays in the ${e.from}`;
+      case "commander-zone-decision": {
+        // A graveyard or exile it's already in (rule 903.9a); a hand or
+        // library it hasn't reached (903.9b).
+        const there = e.from === "graveyard" || e.from === "exile";
+        const zone = e.from === "exile" ? "exile" : `the ${e.from}`;
+        if (e.toCommandZone) {
+          return there
+            ? `${name(e.object)} goes to the command zone from ${zone}`
+            : `${name(e.object)} goes to the command zone instead of ${zone}`;
+        }
+        return there
+          ? `${name(e.object)} stays in ${zone}`
+          : `${name(e.object)} goes to its owner's ${e.from}`;
+      }
       default:
         return JSON.stringify(e);
     }

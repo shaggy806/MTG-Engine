@@ -118,10 +118,8 @@ describe("Essence Flux — exile a creature you control, then return it fresh", 
   });
 });
 
-describe("Essence Flux on a commander — the 903.9a choice interrupts the blink", () => {
-  /** Flicker `A`'s commander and answer the command-zone question with
-   * `toCommandZone`. Returns the commander's id and the game. */
-  const flickerCommander = (toCommandZone: boolean) => {
+describe("Essence Flux on a commander", () => {
+  it("comes back like anything else — it's never in exile when state-based actions are checked", () => {
     const { game } = mkGame(["Essence Flux", "Island"]);
     game.advanceUntil(toPrecombat);
     // A Spirit Dragon, so the +1/+1 counter clause is in play too.
@@ -135,24 +133,11 @@ describe("Essence Flux on a commander — the 903.9a choice interrupts the blink
       card: game.handOf(A).find((id) => game.state.objects[id].cardName === "Essence Flux")!,
       targets: [{ kind: "object", object: commander }],
     });
-    game.advanceUntil((s) => s.awaiting?.kind === "commander-replacement");
-    expect(game.state.awaiting).toMatchObject({ commander, intendedZone: "exile" });
-
-    game.dispatch({ type: "commander-replacement", player: A, toCommandZone });
     game.advanceUntil(quiet);
-    return { game, commander };
-  };
-
-  it("declining the command zone lets the blink finish — it comes back to the battlefield", () => {
-    const { game, commander } = flickerCommander(false);
+    // Rule 903.9a offers the command zone to a commander in exile at the next
+    // check, and by then this one was back on the battlefield.
+    expect(game.eventsOfType("commander-zone-decision")).toEqual([]);
     expect(game.state.objects[commander].zone).toBe("battlefield");
     expect(game.state.objects[commander].counters["+1/+1"]).toBe(1);
-    expect(game.state.pendingFlickerReturns).toEqual([]);
-  });
-
-  it("choosing the command zone takes it out of the blink's reach", () => {
-    const { game, commander } = flickerCommander(true);
-    expect(game.state.objects[commander].zone).toBe("command");
-    expect(game.state.pendingFlickerReturns).toEqual([]);
   });
 });

@@ -183,7 +183,7 @@ describe("Norin the Wary — exiled when a spell is cast or a creature attacks",
     game.dispatch({ type: "commander-replacement", player: A, toCommandZone: false });
     game.advanceUntil(quiet);
     expect(game.state.objects[norin].zone).toBe("exile");
-    expect(game.state.pendingFlickerReturns).toEqual([]);
+    expect(game.state.delayedTriggers).toHaveLength(1);
 
     game.advanceUntil(toEndStep);
     expect(game.state.objects[norin].zone).toBe("battlefield");

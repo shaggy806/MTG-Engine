@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-259 already implemented / 241 missing
+261 already implemented / 239 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -230,7 +230,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  224  Veyran, Voice of Duality                       11357 decks  {1}{U}{R}        Legendary Creature — Efreet Wizard
 [ ]  225  Tinybones, Bauble Burglar                      11172 decks  {1}{B}           Legendary Creature — Skeleton Rogue
 [x]  226  Dina, Essence Brewer                           11138 decks  {1}{B}{G}        Legendary Creature — Dryad Druid
-[ ]  227  Child of Alara                                 11113 decks  {W}{U}{B}{R}{G}  Legendary Creature — Avatar
+[x]  227  Child of Alara                                 11113 decks  {W}{U}{B}{R}{G}  Legendary Creature — Avatar
 [ ]  228  Dihada, Binder of Wills                        11029 decks  {1}{R}{W}{B}     Legendary Planeswalker — Dihada
 [x]  229  Sliver Overlord                                11004 decks  {W}{U}{B}{R}{G}  Legendary Creature — Sliver Mutant
 [ ]  230  Silverquill, the Disputant                     10944 decks  {2}{W}{B}        Legendary Creature — Elder Dragon
@@ -318,7 +318,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  312  Alexios, Deimos of Kosmos                       8932 decks  {3}{R}           Legendary Creature — Human Berserker
 [x]  313  The Master of Keys                              8902 decks  {X}{W}{U}{B}     Legendary Enchantment Creature — Horror
 [x]  314  Myrel, Shield of Argive                         8893 decks  {3}{W}           Legendary Creature — Human Soldier
-[ ]  315  Omnath, Locus of Rage                           8880 decks  {3}{R}{R}{G}{G}  Legendary Creature — Elemental
+[x]  315  Omnath, Locus of Rage                           8880 decks  {3}{R}{R}{G}{G}  Legendary Creature — Elemental
 [x]  316  Codie, Vociferous Codex                         8859 decks  {3}              Legendary Artifact Creature — Book Construct
 [x]  317  Goro-Goro and Satoru                            8855 decks  {U}{B}{R}        Legendary Creature — Goblin Human
 [ ]  318  Kalamax, the Stormsire                          8841 decks  {1}{G}{U}{R}     Legendary Creature — Elemental Dinosaur

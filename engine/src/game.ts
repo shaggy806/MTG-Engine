@@ -524,7 +524,7 @@ export class Game {
   private readonly registry: CardRegistry;
   private readonly controllers: Record<PlayerId, PlayerController>;
   private readonly rng: Rng;
-  /** The commander whose 903.9a choice `applyCommanderChoice` is carrying out
+  /** The commander whose 903.9b choice `applyCommanderChoice` is carrying out
    * right now — the one move of it `moveObject` must not defer again. Not
    * game state: it only ever spans that one synchronous call. */
   private completingCommanderMove: ObjectId | null = null;
@@ -552,7 +552,8 @@ export class Game {
   /** The permanents that have left the battlefield so far in the one
    * simultaneous event being carried out — a wrath, a sweep of state-based
    * actions, an edict every player answers — plus the commanders whose move
-   * that event deferred for a 903.9a choice. Their leaves-the-battlefield
+   * to a hand or library that event deferred for a 903.9b choice (an
+   * overloaded Cyclonic Rift). Their leaves-the-battlefield
    * abilities look back to just before it (rule 603.10a), so each of them
    * sees every other one leave, whichever of them the engine happened to
    * move first. See {@link withLeaveBatch}. Not game state: it only ever
@@ -715,7 +716,7 @@ export class Game {
       deferredCommanderMove: null,
       pendingCommanderMoves: [],
       pendingPayLifeForUntapped: [],
-      pendingFlickerReturns: [],
+      commanderArrivals: [],
       pendingDestruction: [],
       pendingDiscards: [],
       pendingSacrifices: [],
@@ -2207,9 +2208,9 @@ export class Game {
     this.runStateBasedActions();
     if (this.state.result.over) return;
 
-    // The sweep above can raise a decision mid-tick — a commander dying to
-    // lethal damage owes its owner the 903.9a choice, and
-    // `runStateBasedActions` stops once the sweep that raised it is done.
+    // The sweep above can raise a decision mid-tick — a commander that died
+    // to lethal damage owes its owner the 903.9a choice, which
+    // `runStateBasedActions` raises once the sweep is done.
     // `prepareForPriority` hands that
     // player priority on the paths that go through it, but this one doesn't:
     // without this, whoever already held priority is asked to act while a
@@ -2405,11 +2406,15 @@ export class Game {
   }
 
   /**
-   * Answers a pending `commander-replacement` decision (rule 903.9a) and
-   * *then* performs the move that was deferred — straight to the command zone
-   * if the owner chose that, otherwise to the zone it was headed for. Because
-   * the move happens here (not before the decision), a "dies" trigger fires
-   * only when the commander actually lands in a graveyard.
+   * Answers a pending `commander-replacement` decision (rule 903.9).
+   *
+   * A commander in a graveyard or exile (903.9a — a state-based action, so
+   * it has already died, and been seen to) goes to the command zone if its
+   * owner says so, and otherwise stays put.
+   *
+   * One about to be put into a hand or library (903.9b — a replacement
+   * effect) hasn't moved yet: the move that was deferred happens now, to the
+   * command zone instead if the owner chose that.
    */
   private applyCommanderChoice(player: PlayerId, toCommandZone: boolean): void {
     const why = this.whyCannotCommanderChoice(player);
@@ -2419,8 +2424,15 @@ export class Game {
       throw new Error("unreachable: whyCannotCommanderChoice should have caught this");
     }
 
-    const { commander, intendedZone, exiledBy, leftWith } = deferred;
+    const { commander, intendedZone, leftWith } = deferred;
     this.state.awaiting = null;
+    if (intendedZone === "graveyard" || intendedZone === "exile") {
+      this.state.deferredCommanderMove = null;
+      if (toCommandZone) this.moveObject(commander, "command");
+      this.emit({ type: "commander-zone-decision", object: commander, toCommandZone, from: intendedZone });
+      this.prepareForPriority(this.activePlayer);
+      return;
+    }
     const destination = toCommandZone ? "command" : intendedZone;
     // The move completes the simultaneous event that deferred it (a wrath,
     // a state-based sweep), so what left in that event sees it go, and it
@@ -2435,21 +2447,6 @@ export class Game {
         this.completingCommanderMove = null;
       }
       this.state.deferredCommanderMove = null;
-      // Banishing Light's link, which couldn't be set while the move waited.
-      if (exiledBy !== undefined && this.state.objects[commander]?.zone === "exile") {
-        this.state.objects[commander].exiledBy = exiledBy;
-      }
-
-      if (!toCommandZone && intendedZone === "graveyard") {
-        // It really was put into a graveyard from the battlefield — a "dies"
-        // event (rule 700.4). Emitting it here (not in `moveObject`) keeps
-        // the non-commander death path untouched.
-        this.emit({
-          type: "permanent-destroyed",
-          object: commander,
-          reason: "put into its owner's graveyard",
-        });
-      }
     }, leftWith);
     this.emit({
       type: "commander-zone-decision",
@@ -2457,58 +2454,66 @@ export class Game {
       toCommandZone,
       from: intendedZone,
     });
-
-    // A blink (Essence Flux) whose exile half raised this choice: finish it if
-    // the card really did end up in exile. Choosing the command zone instead
-    // takes the card somewhere the blink can't reach, so it just stays there.
-    const blink = this.state.pendingFlickerReturns.find((b) => b.object === commander);
-    if (blink !== undefined) {
-      this.state.pendingFlickerReturns = this.state.pendingFlickerReturns.filter(
-        (b) => b !== blink,
-      );
-      if (this.state.objects[commander]?.zone === "exile") {
-        this.emit({ type: "permanent-exiled", object: commander });
-        if (blink.link !== undefined) {
-          // A delayed return (Norin): the card waits in exile for it.
-          this.state.objects[commander].flickerLink = blink.link;
-        } else {
-          this.completeFlickerReturn([commander], blink.counters, blink.returnUnder, blink.transformed === true);
-        }
-      }
-    }
-
     this.prepareForPriority(this.activePlayer);
   }
 
   /**
-   * Puts the next owed 903.9a choice on `awaiting`, if nothing else is there.
+   * Rule 903.9a, as part of a state-based check: each commander put into a
+   * graveyard or exile since the last check, and still there, is owed its
+   * owner's choice of the command zone. Queued behind anything already
+   * waiting, in APNAP order of their owners (rule 101.4), for
+   * `raiseNextCommanderChoice` to ask; the list of arrivals starts again.
+   */
+  private offerArrivedCommanders(): void {
+    const state = this.state;
+    if (state.commanderArrivals.length === 0) return;
+    const arrivals = state.commanderArrivals;
+    state.commanderArrivals = [];
+    const order = this.apnapOrder();
+    const offers = arrivals.flatMap(({ commander, stint }) => {
+      const object = state.objects[commander];
+      if (object === undefined || (object.zoneChangeCount ?? 0) !== stint) return [];
+      if (object.zone !== "graveyard" && object.zone !== "exile") return [];
+      if (state.players[object.owner]?.hasLost === true) return [];
+      return [{ commander, intendedZone: object.zone, stint, from: object.zone }];
+    });
+    const ownerIndex = (id: ObjectId): number => order.indexOf(state.objects[id].owner);
+    offers.sort((a, b) => ownerIndex(a.commander) - ownerIndex(b.commander));
+    state.pendingCommanderMoves.push(...offers);
+  }
+
+  /**
+   * Puts the next owed 903.9 choice on `awaiting`, if nothing else is there.
    *
-   * First a deferred choice whose question was overwritten: Path to Exile
-   * defers its commander's exile, then carries straight on into "its
-   * controller may search", whose own decision replaces the question. The
-   * move is still owed once the search is answered, and asking again is what
-   * stops it being lost — before this, the commander never left and
-   * `deferredCommanderMove` stayed set for the rest of the game, so every
-   * later commander moved without its owner being asked at all.
+   * First a deferred choice whose question was overwritten: a 903.9b move
+   * deferred partway through a resolution whose next step raised a decision
+   * of its own over the question. The move is still owed once that's
+   * answered, and asking again is what stops it being lost — before this,
+   * the commander never left and `deferredCommanderMove` stayed set for the
+   * rest of the game, so every later commander moved without its owner being
+   * asked at all.
    *
    * Then whatever queued behind it in `pendingCommanderMoves`. An entry whose
-   * commander has since left the battlefield some other way is dropped, so a
-   * stale one can never wedge the queue.
+   * commander has since gone somewhere else, or (a 903.9a offer) left and
+   * come back, is dropped, so a stale one can never wedge the queue.
    */
   private raiseNextCommanderChoice(): void {
     const state = this.state;
     if (state.awaiting !== null) return;
-    // Where it waits: the battlefield, or for a return to hand from anywhere
-    // else (rule 903.9b) the zone it's still in.
-    const stillHere = (id: ObjectId, zone: ZoneType): boolean => state.objects[id]?.zone === zone;
+    // Where it waits: the battlefield, the graveyard or exile a 903.9a offer
+    // found it in, or for a return to hand from anywhere else (rule 903.9b)
+    // the zone it's still in.
+    const stillHere = (id: ObjectId, zone: ZoneType, stint: number | undefined): boolean =>
+      state.objects[id]?.zone === zone &&
+      (stint === undefined || (state.objects[id].zoneChangeCount ?? 0) === stint);
     for (;;) {
       if (state.deferredCommanderMove === null) {
         const next = state.pendingCommanderMoves.shift();
         if (next === undefined) return;
         state.deferredCommanderMove = next;
       }
-      const { commander, intendedZone, from } = state.deferredCommanderMove;
-      if (stillHere(commander, from ?? "battlefield")) {
+      const { commander, intendedZone, from, stint } = state.deferredCommanderMove;
+      if (stillHere(commander, from ?? "battlefield", stint)) {
         state.awaiting = {
           kind: "commander-replacement",
           player: state.objects[commander].owner,
@@ -3329,8 +3334,8 @@ export class Game {
   /**
    * Repeatedly: perform state-based actions, then put any waiting triggered
    * abilities on the stack — until nothing more happens. Then grant priority.
-   * A replacement (903.9a commander redirect) or an SBA (cleanup discard) may
-   * raise a decision along the way; that player gets priority to answer it.
+   * An SBA (a commander's 903.9a choice) or a replacement (903.9b) may raise
+   * a decision along the way; that player gets priority to answer it.
    */
   private prepareForPriority(player: PlayerId): void {
     let guard = 0;
@@ -3340,7 +3345,7 @@ export class Game {
         throw new Error("prepareForPriority did not settle; likely an engine bug");
       }
       // Before the SBAs, so a commander still waiting on the battlefield for
-      // its 903.9a choice is asked about rather than swept up by them.
+      // its 903.9b choice is asked about rather than swept up by them.
       this.raiseNextCommanderChoice();
       // Not partway through a resolution (rule 704.3): a spell that paused
       // to ask for a discard is still resolving until its last step is done.
@@ -3349,9 +3354,9 @@ export class Game {
       // After the SBAs rather than before: several of them read a pending
       // decision as "my move was deferred".
       this.raiseNextPayLifeOffer();
-      // An SBA / replacement raised a decision (e.g. a commander about to
-      // leave the battlefield owes its owner a 903.9a choice) — hand that
-      // player priority to answer it. `apply…Choice` calls back into here.
+      // An SBA / replacement raised a decision (e.g. a commander put into a
+      // graveyard owes its owner a 903.9a choice) — hand that player
+      // priority to answer it. `apply…Choice` calls back into here.
       if (this.state.awaiting !== null) {
         this.grantPriority(this.state.awaiting.player);
         return;
@@ -9598,10 +9603,11 @@ export class Game {
    * event, however many moves the engine makes of it. Nested calls join the
    * outer batch.
    *
-   * `seed` is the batch a deferred commander's move belongs to
-   * (`leftWith`): `applyCommanderChoice` completes the move later, but it
-   * happened at the same time as theirs. Once `fn` is done, every commander
-   * whose move this batch deferred is handed the finished list to carry.
+   * `seed` is the batch a commander's deferred move to a hand or library
+   * belongs to (`leftWith`): `applyCommanderChoice` completes the move later
+   * (rule 903.9b), but it happened at the same time as theirs. Once `fn` is
+   * done, every commander whose move this batch deferred is handed the
+   * finished list to carry.
    */
   private withLeaveBatch(fn: () => void, seed?: readonly ObjectId[]): void {
     if (this.leaveBatch !== null) {
@@ -9709,8 +9715,9 @@ export class Game {
         // Korvold, a Saga completing) and the legend rule, so an aristocrats
         // drain (Blood Artist, Zulaport Cutthroat) silently did nothing.
         // `permanent-left-battlefield` fires exactly once per exit and carries
-        // the destination, so a commander redirected to the command zone by
-        // 903.9a correctly does *not* die.
+        // the destination. A commander dies like anything else (rule 903.9a
+        // offers the command zone only once it's in the graveyard); one sent
+        // to the command zone in place of a hand or library (903.9b) doesn't.
         //
         // The permanent that died is read as it last existed on the
         // battlefield (rule 603.10a) — "a creature you control" is whoever
@@ -10933,10 +10940,6 @@ export class Game {
         // Its controller sacrifices it (rule 701.21a), not its owner.
         const sacrificer = object.controller;
         this.moveObject(id, "graveyard");
-        // Sacrificed even if a commander's 903.9a choice deferred the move,
-        // and even if it ends up in the command zone (rule 701.21a), just as
-        // the cost paths announce it. "Dies" is read off the move itself
-        // (`permanent-left-battlefield`), so a commander never falsely dies.
         this.emit({ type: "permanent-sacrificed", object: id, player: sacrificer });
       },
       returnToHand: (target, from) =>
@@ -13693,9 +13696,6 @@ export class Game {
       });
       return;
     }
-    // A commander's move can be deferred for its owner's 903.9a choice —
-    // `applyCommanderChoice` finishes it (and emits `permanent-destroyed`
-    // itself if it lands in a graveyard).
     if (!this.moveObject(id, "graveyard")) return;
     this.emit({
       type: "permanent-destroyed",
@@ -13765,11 +13765,9 @@ export class Game {
    * die (rule 603.10a — Zulaport Cutthroat and two Bears under one Wrath of
    * God drain three times, whichever the engine moves first).
    *
-   * A commander among them doesn't stop the rest. Its owner's 903.9a choice
-   * waits in the commander queue, and the move it completes still counts as
-   * part of this event (`withLeaveBatch`'s `leftWith`). The queue only waits
-   * as a whole for a decision that was already being answered when the wipe
-   * began.
+   * A commander among them dies with the rest; its owner's 903.9a choice
+   * comes at the next state-based check. The queue only waits as a whole for
+   * a decision that was already being answered when the wipe began.
    */
   private drainPendingDestruction(): void {
     if (this.state.awaiting !== null) return;
@@ -13892,14 +13890,7 @@ export class Game {
     // Its controller sacrifices it (rule 701.21a) — read before the move
     // hands it back to its owner.
     const sacrificer = object.controller;
-    this.moveObject(source, "graveyard");
-    // A commander's 903.9a choice defers the move (`moveObject` returns with
-    // the permanent still on the battlefield and a decision raised). Nothing
-    // has been sacrificed yet, and running an "if you do" tail here would
-    // clobber that pending decision — so report "didn't happen". Narrow
-    // documented gap: a commander with a `sacrifice-source` ability skips its
-    // own tail. No pool card is both.
-    if (this.state.awaiting !== null) return false;
+    if (!this.moveObject(source, "graveyard")) return false;
     this.emit({ type: "permanent-sacrificed", object: source, player: sacrificer });
     return true;
   }
@@ -13961,8 +13952,8 @@ export class Game {
    * once, since an edict's players choose in turn and then sacrifice
    * simultaneously (rule 101.4), which is why `prepareForPriority` asks
    * everyone before draining this. One event, so each sacrificed permanent's
-   * dies trigger sees the others (rule 603.10a). A commander among them
-   * waits for its 903.9a choice without holding up the rest.
+   * dies trigger sees the others (rule 603.10a). A commander among them is
+   * offered the command zone at the next state-based check (rule 903.9a).
    */
   private drainPendingSacrificeVictims(): void {
     if (this.state.awaiting !== null) return;
@@ -14135,14 +14126,7 @@ export class Game {
     if (object === undefined) return;
     if (object.zone !== "battlefield" && object.zone !== "graveyard") return;
     const wasPermanent = object.zone === "battlefield";
-    if (!this.moveObject(id, "exile")) {
-      // A commander's 903.9a choice deferred the move. The O-Ring's link
-      // waits with it, for `applyCommanderChoice` to set if the card really
-      // goes to exile — without it, the commander stayed exiled for good once
-      // the O-Ring left.
-      if (exiledBy !== undefined) this.linkDeferredExile(id, exiledBy);
-      return;
-    }
+    if (!this.moveObject(id, "exile")) return;
     // After the move: `moveObject` clears zone-scoped state on the way out,
     // and this link has to survive until the O-Ring itself leaves.
     if (exiledBy !== undefined && this.state.objects[id]?.zone === "exile") {
@@ -14151,19 +14135,6 @@ export class Game {
     // The event is about a permanent leaving the battlefield; a graveyard
     // card being exiled isn't one, and the log formatters read it that way.
     if (wasPermanent) this.emit({ type: "permanent-exiled", object: id });
-  }
-
-  /** Carry an O-Ring's "until this leaves" link on a commander's deferred
-   * move to exile (`exileByEffect`) — wherever that move is waiting. */
-  private linkDeferredExile(commander: ObjectId, exiledBy: ObjectId): void {
-    const state = this.state;
-    if (state.deferredCommanderMove?.commander === commander) {
-      state.deferredCommanderMove = { ...state.deferredCommanderMove, exiledBy };
-      return;
-    }
-    state.pendingCommanderMoves = state.pendingCommanderMoves.map((move) =>
-      move.commander === commander ? { ...move, exiledBy } : move,
-    );
   }
 
   /** "Blink": exile permanents, then return them to the battlefield (rule
@@ -14177,10 +14148,9 @@ export class Game {
    * card (rule 610.3); nothing is set up when nothing was exiled, which is
    * what makes a second Norin trigger in one turn do nothing.
    *
-   * A commander's 903.9a choice is raised by the exile half and has to be
-   * answered first; its return is parked in `pendingFlickerReturns` and
-   * finished by `applyCommanderChoice` — declining the command zone leaves
-   * the card in exile, which is exactly where the blink expects to find it.
+   * A commander comes back like anything else: it's offered the command zone
+   * only if it's still in exile at the next state-based check (rule 903.9a),
+   * which an immediate return never is.
    */
   private flickerByEffect(
     source: ObjectId,
@@ -14214,23 +14184,7 @@ export class Game {
       const object = this.state.objects[id];
       if (object === undefined || object.zone !== "battlefield") continue;
       const isToken = object.isToken;
-      if (!this.moveObject(id, "exile")) {
-        // A commander's 903.9a choice (the only way `moveObject` defers).
-        // A token never gets one — it ceases to exist — so nothing to park.
-        if (!isToken) {
-          // The rest don't wait for it: its return (or its link) is
-          // finished by `applyCommanderChoice` once its owner has answered.
-          const deferredLink = linkNow();
-          this.state.pendingFlickerReturns.push({
-            object: id,
-            ...(options.thenCounters !== undefined ? { counters: options.thenCounters } : {}),
-            ...(returnUnder !== undefined ? { returnUnder } : {}),
-            ...(deferredLink !== undefined ? { link: deferredLink } : {}),
-            ...(options.transformed === true ? { transformed: true } : {}),
-          });
-        }
-        continue;
-      }
+      if (!this.moveObject(id, "exile")) continue;
       if (this.state.objects[id]?.zone !== "exile") continue;
       this.emit({ type: "permanent-exiled", object: id });
       if (isToken) continue;
@@ -15931,11 +15885,16 @@ export class Game {
   private runStateBasedActionsUncached(): void {
     let changed = true;
     while (changed) {
-      // A replacement raised a decision mid-sweep (a commander about to leave
-      // the battlefield — rule 903.9a). Stop until it's answered; the caller
-      // (`prepareForPriority` / `applyCommanderChoice`) resumes the sweep.
+      // A decision was raised mid-sweep (a shock land's payment, say). Stop
+      // until it's answered; the caller (`prepareForPriority` / the answer's
+      // own `apply…`) resumes the sweep.
       if (this.state.awaiting !== null) return;
       changed = false;
+
+      // Rule 903.9a: a commander put into a graveyard or exile since the last
+      // check may go to the command zone. Its owner is asked once this check
+      // is done (below), so the rest of it isn't held up.
+      this.offerArrivedCommanders();
 
       // Continuous control effects (layer 2), recomputed each pass: a
       // permanent is controlled by its owner unless a control effect
@@ -15976,8 +15935,7 @@ export class Game {
       // so each of those permanents' dies triggers sees all the others go
       // (rule 603.10a), and a creature that only dies *because* another one
       // did (its lord) waits for the next check, as it should. A commander
-      // among them waits for its 903.9a choice without holding up the rest;
-      // `applyCommanderChoice` finishes its move, as part of this event.
+      // among them goes too, and is offered the command zone by the next.
       const sweep = this.stateBasedGraveyardMoves();
       if (sweep.length > 0) {
         this.withLeaveBatch(() => {
@@ -15987,8 +15945,6 @@ export class Game {
             // Who sacrifices a completed Saga: its controller (rule 714.4),
             // read before the move hands it back to its owner.
             const controller = this.state.objects[id].controller;
-            // A commander waiting on its 903.9a choice stays where it is, and
-            // isn't a change: it would be found again on every pass.
             if (!this.moveObject(id, "graveyard")) continue;
             this.emit(event);
             if (event.type === "saga-completed") {
@@ -16076,7 +16032,10 @@ export class Game {
         winner !== null ? "last player remaining" : "all players have lost";
       this.state.result = { over: true, winner, reason };
       this.emit({ type: "game-ended", winner, reason });
+      return;
     }
+    // The 903.9a choices this check found, now that the rest of it is done.
+    this.raiseNextCommanderChoice();
   }
 
   /**
@@ -16641,8 +16600,8 @@ export class Game {
 
   /**
    * Moves `id` to `to`, and says whether it did: `false` means a commander's
-   * 903.9a choice deferred the move (below), so the caller mustn't announce
-   * it. That has to come from here, not from `awaiting` — a decision there
+   * 903.9b choice deferred a move to a hand or library (below), so the caller
+   * mustn't announce it. That has to come from here, not from `awaiting` — a decision there
    * may be someone else's, and reading it that way dropped the log events of
    * every permanent an overloaded Cyclonic Rift bounced after a commander.
    *
@@ -16668,7 +16627,7 @@ export class Game {
     // Two snapshots of this very stint are kept rather than retaken. One
     // taken before a simultaneous event moved anything (`snapshotLeaving` —
     // the second victim of a wrath is read before its lord left, not after).
-    // And the one a commander was given when its 903.9a choice deferred this
+    // And the one a commander was given when its 903.9b choice deferred this
     // move: the replacement happened as the event did, however long its
     // owner took to answer, and a second event reaching it while it waits
     // doesn't redirect it.
@@ -16711,8 +16670,9 @@ export class Game {
     // instead". Both are read here, before anything below clears them.
     //
     // The command zone is left out: a commander only goes there by its
-    // owner's 903.9a choice, which is asked *after* this redirect (so the
-    // question is about an exile) and completes through here again.
+    // owner's choice, and a 903.9b one is asked *after* this redirect — a
+    // Whip-returned commander that would be bounced is exiled, and offered
+    // the command zone from there (903.9a).
     if (
       leavingBattlefield &&
       (to === "graveyard" || to === "hand" || to === "library") &&
@@ -16760,11 +16720,13 @@ export class Game {
       to = "exile";
     }
 
-    // Commander replacement (rule 903.9a): a commander that would leave the
-    // battlefield for a hidden zone — its owner may send it to the command
+    // Commander replacement (rule 903.9b): a commander that would be put into
+    // its owner's hand or library — its owner may put it into the command
     // zone instead. Ask *before* moving (this is a replacement effect, rule
-    // 614), so a "dies" trigger never fires unless it truly lands in a
-    // graveyard. The move is deferred to `applyCommanderChoice`.
+    // 614); the move is deferred to `applyCommanderChoice`. (A graveyard or
+    // exile is 903.9a's, and isn't a replacement: the commander goes there,
+    // and the next state-based check offers the command zone — see
+    // `offerArrivedCommanders`.)
     //
     // The choice is never skipped. When it can't be asked right now — another
     // decision is on `awaiting`, or another commander's is already being
@@ -16772,21 +16734,19 @@ export class Game {
     // `pendingCommanderMoves` and `prepareForPriority` asks in turn. Either
     // way the move didn't happen, and this returns `false` to say so.
     //
-    // Rule 903.9b extends it to a commander put into its owner's hand from
-    // anywhere else too — a spell countered into its owner's hand (Remand) or
-    // returned there from the stack (Unsubstantiate), a card from a graveyard
-    // or exile — which waits where it is, the same way. A
-    // library-to-hand move (a draw, a tutor) isn't asked: a commander is
-    // almost never in a library, and a draw has no way to wait.
+    // It applies to a commander put into its owner's hand from anywhere else
+    // too — a spell countered into its owner's hand (Remand) or returned there
+    // from the stack (Unsubstantiate), a card from a graveyard or exile —
+    // which waits where it is, the same way. A library-to-hand move (a draw,
+    // a tutor) isn't asked: a commander is almost never in a library, and a
+    // draw has no way to wait.
     const handFromElsewhere =
       to === "hand" &&
       (object.zone === "stack" || object.zone === "graveyard" || object.zone === "exile");
     if (
       object.isCommander &&
       this.completingCommanderMove !== id &&
-      ((leavingBattlefield &&
-        (to === "graveyard" || to === "exile" || to === "hand" || to === "library")) ||
-        handFromElsewhere)
+      ((leavingBattlefield && (to === "hand" || to === "library")) || handFromElsewhere)
     ) {
       const state = this.state;
       const intendedZone = to as CommanderReplacementZone;
@@ -16833,10 +16793,9 @@ export class Game {
 
     // "If a creature died this turn" (rule 700.4 — a creature going to a
     // graveyard from the battlefield). Counted here, after every redirect, so
-    // only a death that really happens counts: not a Rest in Peace exile, and
-    // a commander once, when its owner's answer lets it through — the deferral
-    // above used to count it as well. Its types are still readable, and a
-    // compacted token stack is that many creatures dying.
+    // only a death that really happens counts: not a Rest in Peace exile. Its
+    // types are still readable, and a compacted token stack is that many
+    // creatures dying.
     if (
       leavingBattlefield &&
       to === "graveyard" &&
@@ -16925,6 +16884,15 @@ export class Game {
     object.zone = to;
     this.zoneList(to, object.owner).push(id);
     object.zoneChangeCount = (object.zoneChangeCount ?? 0) + 1;
+    // Rule 903.9a: a commander put into a graveyard or exile — from anywhere —
+    // may go to the command zone, which the next state-based check offers.
+    // Only this arrival: the count it came with says which one.
+    if (object.isCommander && (to === "graveyard" || to === "exile")) {
+      this.state.commanderArrivals = [
+        ...this.state.commanderArrivals.filter((a) => a.commander !== id),
+        { commander: id, stint: object.zoneChangeCount },
+      ];
+    }
 
     // A change of zone resets everything that only applies in one zone.
     object.attacking = null;
@@ -17052,7 +17020,7 @@ export class Game {
       // A shock land (rule 614.13): "you may pay N life; if you don't, it
       // enters tapped". It enters tapped by default; if its controller can
       // afford the life, the `pay-life-for-untapped` decision pauses the game
-      // here (like the 903.9a commander choice) to let them untap it. If
+      // here (like a commander's 903.9b choice) to let them untap it. If
       // another decision is already being answered — the search that found
       // this land — the offer waits its turn in `pendingPayLifeForUntapped`.
       if (entering.mayPayLife > 0) {

@@ -106,7 +106,8 @@
   "mechanic:keyword-counters",
   "bug:mana-any-one-color",
   "bug:simultaneous-zone-moves",
-  "bug:token-stack-fixes"
+  "bug:token-stack-fixes",
+  "bug:commander-903-9a-current-rules"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

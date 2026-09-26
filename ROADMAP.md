@@ -72,7 +72,7 @@ Phase 6 (cast pipeline) ─┬─► Phase 8 (cascade / storm / copy-spell)
   callback in the human path (`chooseTargets` is the last synchronous callback
   and only test/fuzz code hits it).
 - `prepareForPriority(player)` is the pre-priority fixpoint loop:
-  `{ raise the next owed 903.9a choice; SBAs (unless a resolution is
+  `{ raise the next owed 903.9 choice; SBAs (unless a resolution is
   suspended); drain the pending-decision queues; resume a suspended
   resolution; placePendingTriggers }` until stable. New
   interception loops (replacements) either nest inside this or wrap the specific
@@ -113,7 +113,9 @@ and graveyard→exile replacements, and Fog as a turn-scoped `preventAllCombatDa
 Multipliers stack as a product, so no `choose-replacement-order` decision was needed.
 Also delivered the `modal` / `may` `EffectSpec` primitives and the `choose-modes`
 decision, and reworked 903.9a so `moveObject` raises `commander-replacement` *before*
-the move.
+the move (the pre-2020 wording; replaced on 2026-09-25 by the current rule, a state-based
+action once the commander is in a graveyard or exile — see
+`docs/plans/commander-replacement.md`).
 
 ### Phase 2 — Effect vocabulary
 

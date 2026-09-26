@@ -97,6 +97,7 @@ import _poolMomentOfCraving from "../pool/moment-of-craving.js";
 import _poolMysticSnake from "../pool/mystic-snake.js";
 import _poolNoDachi from "../pool/no-dachi.js";
 import _poolOboroPalaceInTheClouds from "../pool/oboro-palace-in-the-clouds.js";
+import _poolOmnathLocusOfRage from "../pool/omnath-locus-of-rage.js";
 import _poolOmniCheesePizza from "../pool/omni-cheese-pizza.js";
 import _poolOneirophage from "../pool/oneirophage.js";
 import _poolOrcishMechanics from "../pool/orcish-mechanics.js";
@@ -268,6 +269,7 @@ const shard: CardShard = {
     _poolMysticSnake,
     _poolNoDachi,
     _poolOboroPalaceInTheClouds,
+    _poolOmnathLocusOfRage,
     _poolOmniCheesePizza,
     _poolOneirophage,
     _poolOrcishMechanics,

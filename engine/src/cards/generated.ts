@@ -802,6 +802,7 @@ import _poolChatterOfTheSquirrel from "./pool/chatter-of-the-squirrel.js";
 import _poolCheckpointOfficer from "./pool/checkpoint-officer.js";
 import _poolChiefOfTheEdge from "./pool/chief-of-the-edge.js";
 import _poolChiefOfTheScale from "./pool/chief-of-the-scale.js";
+import _poolChildOfAlara from "./pool/child-of-alara.js";
 import _poolChildOfNight from "./pool/child-of-night.js";
 import _poolChildOfThorns from "./pool/child-of-thorns.js";
 import _poolChimneyRabble from "./pool/chimney-rabble.js";
@@ -3202,6 +3203,7 @@ import _poolOmenOfTheHunt from "./pool/omen-of-the-hunt.js";
 import _poolOmenspeaker from "./pool/omenspeaker.js";
 import _poolOminousAsylum from "./pool/ominous-asylum.js";
 import _poolOmnathLocusOfCreation from "./pool/omnath-locus-of-creation.js";
+import _poolOmnathLocusOfRage from "./pool/omnath-locus-of-rage.js";
 import _poolOmniCheesePizza from "./pool/omni-cheese-pizza.js";
 import _poolOnTheJob from "./pool/on-the-job.js";
 import _poolOnakkeOgre from "./pool/onakke-ogre.js";
@@ -5470,6 +5472,7 @@ import _tokensDragonToken66 from "./tokens/dragon-token-6-6.js";
 import _tokensDrakeToken from "./tokens/drake-token.js";
 import _tokensEggToken from "./tokens/egg-token.js";
 import _tokensEldraziToken from "./tokens/eldrazi-token.js";
+import _tokensElementalToken55 from "./tokens/elemental-token-5-5.js";
 import _tokensElementalTokenAllColors from "./tokens/elemental-token-all-colors.js";
 import _tokensElementalToken from "./tokens/elemental-token.js";
 import _tokensElephantToken from "./tokens/elephant-token.js";
@@ -6337,6 +6340,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolCheckpointOfficer,
   _poolChiefOfTheEdge,
   _poolChiefOfTheScale,
+  _poolChildOfAlara,
   _poolChildOfNight,
   _poolChildOfThorns,
   _poolChimneyRabble,
@@ -8737,6 +8741,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolOmenspeaker,
   _poolOminousAsylum,
   _poolOmnathLocusOfCreation,
+  _poolOmnathLocusOfRage,
   _poolOmniCheesePizza,
   _poolOnTheJob,
   _poolOnakkeOgre,
@@ -11011,6 +11016,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensDrakeToken,
   _tokensEggToken,
   _tokensEldraziToken,
+  _tokensElementalToken55,
   _tokensElementalTokenAllColors,
   _tokensElementalToken,
   _tokensElephantToken,

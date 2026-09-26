@@ -41,8 +41,8 @@ const TEST_BIG_COMMANDER = defineCard({
   toughness: 21,
 });
 // A {1}{G} 2/2 (dies to a Bolt) carrying both a `leaves-battlefield` trigger
-// and a `dies` trigger — so the 903.9a rework can be seen firing the former
-// but not the latter when the owner picks the command zone.
+// and a `dies` trigger — so rule 903.9a can be seen firing both whichever
+// zone the owner then picks: the choice comes after the death.
 const TEST_COMMANDER_TRIGGERS = defineCard({
   name: "Test Commander (Triggers)",
   manaCost: "{1}{G}",
@@ -223,17 +223,16 @@ describe("commander replacement choice (903.9a)", () => {
     return { game, commanderId, controller };
   };
 
-  it("pauses on a `commander-replacement` decision *before* the commander moves", () => {
+  it("asks once the commander is in the graveyard — a state-based action, not a replacement", () => {
     const { game, commanderId } = setup(() => {
       const c = new ScriptedController(A);
       c.commanderReplacementFn = () => true;
       return c;
     });
     bolt(game, commanderId);
-    // The Bolt resolves and the game stops, waiting on Alice's choice — the
-    // replacement fires *before* the move, so the commander is still on the
-    // battlefield (rule 614 / 903.9a). This is what keeps a "dies" trigger
-    // from ever seeing it in the graveyard.
+    // The Bolt resolves, the commander dies, and the next state-based check
+    // stops the game on Alice's choice (rule 903.9a) — with the commander
+    // already in the graveyard, so everything that sees a creature die saw it.
     game.advanceUntil((s) => s.awaiting?.kind === "commander-replacement");
     expect(game.state.awaiting).toMatchObject({
       kind: "commander-replacement",
@@ -241,7 +240,7 @@ describe("commander replacement choice (903.9a)", () => {
       commander: commanderId,
       intendedZone: "graveyard",
     });
-    expect(game.state.objects[commanderId].zone).toBe("battlefield");
+    expect(game.state.objects[commanderId].zone).toBe("graveyard");
   });
 
   it("moves it to the command zone when the owner says yes", () => {
@@ -275,7 +274,7 @@ describe("commander replacement choice (903.9a)", () => {
   });
 });
 
-describe("903.9a fires before the move — leaves-battlefield vs dies triggers", () => {
+describe("903.9a comes after the death — leaves-battlefield and dies triggers", () => {
   const setup = (toCommandZone: boolean) => {
     const controller = new ScriptedController(A);
     controller.commanderReplacementFn = () => toCommandZone;
@@ -310,7 +309,7 @@ describe("903.9a fires before the move — leaves-battlefield vs dies triggers",
   const drawsByA = (game: Game): number =>
     game.eventsOfType("card-drawn").filter((e) => e.player === A).length;
 
-  it("→ command zone: the leaves-battlefield trigger fires, the dies trigger does not", () => {
+  it("→ command zone: it died first, so both the leaves-battlefield and the dies trigger fire", () => {
     const { game, commanderId } = setup(true);
     const drawsBefore = drawsByA(game);
     const lifeBefore = game.state.players[A].life;
@@ -325,9 +324,9 @@ describe("903.9a fires before the move — leaves-battlefield vs dies triggers",
 
     expect(game.state.objects[commanderId].zone).toBe("command");
     expect(drawsByA(game) - drawsBefore).toBe(1); // leaves-battlefield
-    expect(game.state.players[A].life).toBe(lifeBefore); // no "you gain 3 life"
+    expect(game.state.players[A].life).toBe(lifeBefore + 3); // dies → gain 3
     expect(game.eventsOfType("permanent-destroyed").some((e) => e.object === commanderId)).toBe(
-      false,
+      true,
     );
     expect(
       game.eventsOfType("permanent-left-battlefield").some((e) => e.object === commanderId),

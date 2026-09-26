@@ -127,11 +127,10 @@ describe("creatures that died this turn", () => {
     expect(game.state.creaturesDiedThisTurn).toBe(9);
   });
 
-  for (const [toCommandZone, died] of [
-    [true, 0],
-    [false, 1],
-  ] as const) {
-    it(`a commander whose owner answers ${toCommandZone ? "command zone" : "graveyard"} counts ${died}, once`, () => {
+  // It dies either way: rule 903.9a offers the command zone once it's in the
+  // graveyard.
+  for (const toCommandZone of [true, false]) {
+    it(`a commander whose owner answers ${toCommandZone ? "command zone" : "graveyard"} counts 1, once`, () => {
       const game = table();
       const krenko = spawn(game, "Krenko, Mob Boss", B);
       game.state.objects[krenko].isCommander = true;
@@ -154,7 +153,7 @@ describe("creatures that died this turn", () => {
         game.dispatch({ type: "commander-replacement", player: B, toCommandZone });
       }
       expect(game.state.objects[krenko].zone).toBe(toCommandZone ? "command" : "graveyard");
-      expect(game.state.players[B].creaturesDiedThisTurn).toBe(died);
+      expect(game.state.players[B].creaturesDiedThisTurn).toBe(1);
     });
   }
 

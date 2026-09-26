@@ -248,7 +248,7 @@ describe("leaving together — every one of them sees every other one leave (rul
       return { game, vela, artist, lost: start - life(game, B) };
     };
 
-    it("its move waits for the owner's answer, but it still died with the others", () => {
+    it("it dies with the others, and stays in the graveyard when its owner says so", () => {
       const { game, vela, artist, lost } = withVela(false);
       expect(game.state.objects[vela].zone).toBe("graveyard");
       // Blood Artist: itself, the Bears, and Vela.
@@ -258,12 +258,12 @@ describe("leaving together — every one of them sees every other one leave (rul
       expect(lost).toBe(6);
     });
 
-    it("sent to the command zone instead, it didn't die — but it did leave with them", () => {
+    it("sent to the command zone afterwards, it still died with them (rule 903.9a)", () => {
       const { game, vela, artist, lost } = withVela(true);
       expect(game.state.objects[vela].zone).toBe("command");
-      expect(triggersOf(game, artist)).toBe(2);
+      expect(triggersOf(game, artist)).toBe(3);
       expect(triggersOf(game, vela)).toBe(3);
-      expect(lost).toBe(5);
+      expect(lost).toBe(6);
     });
     it("two commanders in the wrath each see the other die, whichever is answered first", () => {
       // Both moves wait on 903.9a answers. The one answered second must still

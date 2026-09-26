@@ -19,6 +19,7 @@ import _poolBlightedFen from "../pool/blighted-fen.js";
 import _poolBloodCelebrant from "../pool/blood-celebrant.js";
 import _poolBojukaBog from "../pool/bojuka-bog.js";
 import _poolBronzebeakMoa from "../pool/bronzebeak-moa.js";
+import _poolChildOfAlara from "../pool/child-of-alara.js";
 import _poolChishiroTheShatteredBlade from "../pool/chishiro-the-shattered-blade.js";
 import _poolCircuitMender from "../pool/circuit-mender.js";
 import _poolColossapede from "../pool/colossapede.js";
@@ -206,6 +207,7 @@ const shard: CardShard = {
     _poolBloodCelebrant,
     _poolBojukaBog,
     _poolBronzebeakMoa,
+    _poolChildOfAlara,
     _poolChishiroTheShatteredBlade,
     _poolCircuitMender,
     _poolColossapede,

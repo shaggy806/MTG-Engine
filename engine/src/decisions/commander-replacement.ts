@@ -1,15 +1,17 @@
 /**
- * Rule 903.9a — a commander that would change zones may go to the command
- * zone instead, and it is the **owner's** choice, made every time rather than
- * configured once.
+ * Rule 903.9 — a commander's owner may put it into the command zone, and it
+ * is the **owner's** choice, made every time rather than configured once. Two
+ * rules raise it: 903.9a, a state-based action, once the commander is in a
+ * graveyard or exile; and 903.9b, a replacement effect, when it would be put
+ * into a hand or library.
  *
  * The answer is a single boolean, which makes this the second-smallest
  * decision in the engine. Almost everything interesting about it is in the
- * raise, which stays on `Game` and is not simple: `moveObject` defers the
- * commander's move behind this decision, parks it in `deferredCommanderMove`,
- * and about a dozen callers carry an `if (this.state.awaiting !== null)
- * return;` pause guard so nothing proceeds past a move that hasn't been
- * answered yet. None of that is touched here.
+ * raise, which stays on `Game`: the state-based check queues 903.9a offers
+ * (`offerArrivedCommanders`), and `moveObject` defers a 903.9b move behind
+ * this decision and parks it in `deferredCommanderMove`, with its callers
+ * reading `moveObject`'s return so nothing proceeds past a move that hasn't
+ * been answered yet. None of that is touched here.
  */
 
 import type { Action, LegalAction } from "../actions.js";
@@ -18,16 +20,17 @@ import { defineDecision } from "./define.js";
 export const commanderReplacement = defineDecision({
   kind: "commander-replacement",
 
-  // The rules raise this, not a card: it is the commander's own replacement
-  // effect, and there is no spell to name in the prompt.
+  // The rules raise this, not a card: a state-based action or the
+  // commander's own replacement effect, and there is no spell to name in the
+  // prompt.
   hasSource: false,
 
   legal: (_ctx, awaiting): LegalAction[] => [
     {
       kind: "commander-replacement",
       commander: awaiting.commander,
-      // Where it was headed if the offer is declined — the client says
-      // "to the graveyard" or "to exile" rather than just "move it?".
+      // Where it stays (a graveyard, exile) or goes (a hand, a library) if the
+      // offer is declined — the client names it rather than just "move it?".
       intendedZone: awaiting.intendedZone,
     },
   ],

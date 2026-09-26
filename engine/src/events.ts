@@ -732,8 +732,9 @@ export type GameEvent =
       readonly objects: readonly ObjectId[];
     })
   | (Base & {
-      /** The owner of a commander in a hidden zone chose whether to move it to
-       * the command zone instead (rule 903.9a). `from` is where it had gone. */
+      /** A commander's owner chose whether to put it into the command zone
+       * (rule 903.9). `from` is the graveyard or exile it was in (903.9a), or
+       * the hand or library it was headed for (903.9b). */
       readonly type: "commander-zone-decision";
       readonly object: ObjectId;
       readonly toCommandZone: boolean;

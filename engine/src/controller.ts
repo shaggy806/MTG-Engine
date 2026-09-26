@@ -131,8 +131,9 @@ export interface PlayerController {
     count: number,
   ): readonly ObjectId[];
   /**
-   * A commander was put into `movedTo` (a hidden zone). Return `true` to move
-   * it to the command zone instead, `false` to leave it (rule 903.9a).
+   * A commander is in a graveyard or exile (rule 903.9a), or is about to be
+   * put into a hand or library (903.9b) — `movedTo` says which. Return `true`
+   * to put it into the command zone, `false` to leave it there, or let it go.
    */
   commanderReplacement(
     view: ControllerView,
@@ -351,10 +352,15 @@ export class AutomaticController implements PlayerController {
     return discardFromFront(hand, count);
   }
 
-  commanderReplacement(): boolean {
-    // Default to the command zone — matches the pre-choice behavior, so
-    // tests that don't care about the decision are unaffected.
-    return true;
+  commanderReplacement(view: ControllerView, commander: ObjectId): boolean {
+    // The command zone — but a commander in exile that can still be cast from
+    // there (on an adventure, foretold, suspended) is where its owner put it
+    // on purpose, and casting it from there costs no tax.
+    const object = view.state.objects[commander];
+    return !(
+      object?.zone === "exile" &&
+      (object.onAdventure || object.foretold || object.suspended)
+    );
   }
 
   payLifeForUntapped(): boolean {

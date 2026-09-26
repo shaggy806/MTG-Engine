@@ -1414,7 +1414,7 @@ triggered: [
 | `on` | extra fields | fires when |
 | --- | --- | --- |
 | `enters-battlefield` | `who`, `filter?`, `otherOnly?` | a permanent enters |
-| `dies` | `who`, `filter?`, `otherOnly?` | a permanent → graveyard from the battlefield, **however it got there** (rule 700.4) — destroyed, sacrificed, the legend rule, a Saga completing. A commander redirected to the command zone by 903.9a doesn't die. |
+| `dies` | `who`, `filter?`, `otherOnly?` | a permanent → graveyard from the battlefield, **however it got there** (rule 700.4) — destroyed, sacrificed, the legend rule, a Saga completing. A commander dies like anything else: its owner is offered the command zone only once it's in the graveyard (903.9a). |
 | `becomes-target` | `who`, `filter?`, `byOpponentOnly?`, `spellOnly?` | a permanent was chosen as a target of a spell or ability (rule 115.7 — Thunderbreak Regent); `spellOnly` narrows it to "becomes the target of a **spell**" (Gargos, Vicious Watcher; Tectonic Giant). Fires as the spell/ability goes on the stack, so it triggers even if that spell is countered or later fizzles, and once per targeted object — a spell naming the same creature in two slots triggers it once, one naming two of your creatures triggers a `you-control` watcher twice. The *player* who targeted it auto-fills the first target slot, the way `deals-combat-damage-to-player` fills it with the damaged player. |
 | `tapped-for-mana` | `who`, `filter?` | a permanent was tapped for mana (its mana ability with `{T}` in the cost). A **triggered mana ability** (rule 605.1b): never on the stack, its `add-mana` is made with the tapped permanent's mana and counted by the auto-payer — see "Triggered mana abilities" in §8. |
 | `becomes-tapped` | `who`, `filter?` | a permanent became tapped (rule 701.21a — City of Brass). Fires for every tapping: a mana ability, a cost that taps it, an opponent's tap effect. Not the same as `add-mana`'s `painToController`, which only charges the mana-ability path. |
@@ -2187,8 +2187,10 @@ Grep the pool for `resolve:` — there are very few.
   `chapter-resolves` trigger (§9) fires as each chapter ability resolves.
 - **Commander** — nothing on the card marks it; it's whichever card a
   `DeckList.commander` names. `supertypes: ["legendary"]` is conventional. The
-  engine adds the `{2}` tax and the 903.9a replacement automatically — for a
-  non-creature commander (a Background) too.
+  engine adds the `{2}` tax and the command-zone choice (rule 903.9)
+  automatically — for a non-creature commander (a Background) too. A
+  commander's own "when this dies" trigger works as written: it dies first,
+  and is offered the command zone after (Child of Alara).
 - **Partner and its variants** (rule 702.124) — a deckbuilding ability, set as
   `pairing` and read only by the deck validator (`canPairCommanders`). The
   printed line still goes in `text`, but the validator never reads `text`, so

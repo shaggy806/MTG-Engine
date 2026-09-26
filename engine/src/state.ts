@@ -9,7 +9,7 @@
 import type { CastVia } from "./actions.js";
 import type { TriggeredAbility } from "./abilities.js";
 import type { CardType, CombatRestriction, Keyword, StaticAbility, StaticCondition, Supertype } from "./cards.js";
-import type { EffectSpec, FlickerCounters, LookAndChooseLeftoverIf } from "./effects.js";
+import type { EffectSpec, LookAndChooseLeftoverIf } from "./effects.js";
 import type { CardFilter } from "./filter.js";
 import type { Color, ManaOrigin, ManaUnit } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
@@ -1118,10 +1118,17 @@ export type AwaitingDecision =
       readonly hands: Readonly<Record<string, MulliganHandState>>;
     }
   | {
-      /** A commander *would* be put into a hidden/graveyard zone from the
-       * battlefield; its owner may send it to the command zone instead
-       * (rule 903.9a). The move hasn't happened yet — it's still on the
-       * battlefield until this is answered. */
+      /**
+       * A commander's owner may put it into the command zone (rule 903.9).
+       * `intendedZone` is where it stays, or goes, if they don't:
+       * - `"graveyard"` / `"exile"`: it's already there. Rule 903.9a makes
+       *   this a state-based action, so it died (or was exiled) first, and
+       *   everything that sees a creature die saw it.
+       * - `"hand"` / `"library"`: it hasn't moved yet. Rule 903.9b is a
+       *   replacement effect, so it waits where it was — on the battlefield,
+       *   or for a return to hand, on the stack or in a graveyard or exile —
+       *   until this is answered.
+       */
       readonly kind: "commander-replacement";
       readonly player: PlayerId;
       readonly commander: ObjectId;
@@ -1515,10 +1522,13 @@ export interface DelayedTrigger {
   readonly text: string;
 }
 
-/** The zones a commander can be moved to that offer the 903.9a choice. */
+/** The zones a commander's owner is offered the command zone from: a
+ * graveyard or exile once it's there (rule 903.9a), a hand or library in
+ * place of going there (903.9b). */
 export type CommanderReplacementZone = "graveyard" | "exile" | "hand" | "library";
 /** Where a commander waits while its 903.9 choice is pending, other than the
- * battlefield (see `GameState.deferredCommanderMove`). */
+ * battlefield (see `GameState.deferredCommanderMove`): the graveyard or exile
+ * it was put into (903.9a), or for a return to hand, the zone it's leaving. */
 export type CommanderMoveOrigin = "stack" | "graveyard" | "exile";
 
 /**
@@ -1849,25 +1859,25 @@ export interface GameState {
    */
   pendingSacrificeVictims: { readonly player: PlayerId; readonly object: ObjectId }[];
   /**
-   * A commander that is *about to* be put into a hidden zone from the
-   * battlefield and whose owner is being asked whether to send it to the
-   * command zone instead (rule 903.9a — a replacement effect). `moveObject`
-   * has NOT moved the commander yet, so a "dies" trigger never sees it in the
-   * graveyard. `applyCommanderChoice` completes the move. `null` when no such
-   * choice is pending.
+   * The commander whose owner is being asked whether to put it into the
+   * command zone (rule 903.9), or `null`. Either it's in the graveyard or
+   * exile it was put into, and this is the state-based action of 903.9a; or
+   * it's *about to* be put into a hand or library, 903.9b's replacement, and
+   * `moveObject` hasn't moved it yet. `applyCommanderChoice` does whichever
+   * move the answer calls for.
    *
    * The `commander-replacement` decision is normally on `awaiting` while this
    * is set, but not always: a later step of the same resolution can raise a
-   * decision of its own over it (Path to Exile's "may search"). The question
-   * is asked again once that one is answered — `raiseNextCommanderChoice`.
+   * decision of its own over a 903.9b question. The question is asked again
+   * once that one is answered — `raiseNextCommanderChoice`.
    */
   deferredCommanderMove: {
     readonly commander: ObjectId;
-    /** Where it would have gone had 903.9a not applied. */
+    /** Where it stays (903.9a) or goes (903.9b) if its owner declines. */
     readonly intendedZone: CommanderReplacementZone;
-    /** The O-Ring (Banishing Light) exiling it "until this leaves", whose link
-     * `applyCommanderChoice` sets if the card does go to exile. */
-    readonly exiledBy?: ObjectId;
+    /** A 903.9a offer's: the zone-change count it arrived with, so it's asked
+     * about only while it's still that object (rule 400.7). */
+    readonly stint?: number;
     /** The permanents that left the battlefield in the same simultaneous
      * event as this commander's deferred move (a wrath, one state-based
      * sweep). Its move is carried out later, once its owner answers, but it
@@ -1875,30 +1885,40 @@ export interface GameState {
      * battlefield abilities look back at it and it at them (rule 603.10a).
      * See `Game.withLeaveBatch`. */
     readonly leftWith?: readonly ObjectId[];
-    /** Where it waits meanwhile — the battlefield when absent. A commander
-     * put into its owner's hand *from anywhere* is asked too (rule 903.9b):
-     * a spell countered into its owner's hand (Remand) or returned there
-     * from the stack (Unsubstantiate), or a card from a graveyard or exile,
-     * each of which waits where it is. */
+    /** Where it waits meanwhile — the battlefield when absent. A 903.9a
+     * offer waits in the graveyard or exile it's in. A commander put into
+     * its owner's hand *from anywhere* is asked too (rule 903.9b): a spell
+     * countered into its owner's hand (Remand) or returned there from the
+     * stack (Unsubstantiate), or a card from a graveyard or exile, each of
+     * which waits where it is. */
     readonly from?: CommanderMoveOrigin;
   } | null;
   /**
-   * Commanders that tried to leave the battlefield while their owner's 903.9a
-   * choice couldn't be asked yet — another decision was on `awaiting`, or
-   * another commander's choice was already being asked. Each stays on the
-   * battlefield, exactly like the one on `deferredCommanderMove`, until
-   * `prepareForPriority` asks about it in turn.
+   * Commanders whose owner is owed the choice on `deferredCommanderMove` and
+   * hasn't been asked yet, in the order they'll be asked: every 903.9a offer
+   * one state-based check found (in APNAP order of their owners, rule
+   * 101.4), and every 903.9b move that came while another decision was on
+   * `awaiting`, which waits where it is until `prepareForPriority` asks.
    *
-   * Without this the move went ahead unasked: an overloaded Cyclonic Rift
-   * asked about the first opponent's commander and bounced the rest silently.
+   * Without this a move went ahead unasked: an overloaded Cyclonic Rift asked
+   * about the first opponent's commander and bounced the rest silently.
    */
   pendingCommanderMoves: {
     readonly commander: ObjectId;
     readonly intendedZone: CommanderReplacementZone;
-    readonly exiledBy?: ObjectId;
+    readonly stint?: number;
     readonly leftWith?: readonly ObjectId[];
     readonly from?: CommanderMoveOrigin;
   }[];
+  /**
+   * Commanders put into a graveyard or exile since state-based actions were
+   * last checked, each with the zone-change count it arrived with. Rule
+   * 903.9a: the next check offers each one that's still there its owner's
+   * choice of the command zone (`offerArrivedCommanders`), and the list
+   * starts again. One that moved on before the check isn't offered for the
+   * zone it left, only for where it is now if that's a graveyard or exile.
+   */
+  commanderArrivals: { readonly commander: ObjectId; readonly stint: number }[];
   /**
    * Shock lands ("you may pay 2 life; if you don't, it enters tapped" — rule
    * 614.13) that entered while another decision was on `awaiting`. Each is on
@@ -1914,29 +1934,6 @@ export interface GameState {
     /** The land that entered. */
     readonly source: ObjectId;
     readonly life: number;
-  }[];
-  /**
-   * "Blinks" (the `flicker` effect) whose exile half raised a commander's
-   * 903.9a choice, parked until that choice is answered — without this the
-   * whole effect was abandoned there, and a flickered commander whose owner
-   * declined the command zone stayed in exile forever. One entry per
-   * commander: a flicker of several targets can defer more than one.
-   *
-   * `applyCommanderChoice` completes each: the card is returned (or, for a
-   * delayed return, given its `flickerLink`) only if the choice actually left
-   * it in exile.
-   */
-  pendingFlickerReturns: {
-    readonly object: ObjectId;
-    /** Counters the returning permanent gets — the `flicker` effect's
-     * `thenCounters`, carried across the pause. */
-    readonly counters?: FlickerCounters;
-    /** Who it returns under, when that isn't its owner (`underYourControl`). */
-    readonly returnUnder?: PlayerId;
-    /** A delayed return's link — the card is marked, not returned. */
-    readonly link?: string;
-    /** It returns transformed. */
-    readonly transformed?: boolean;
   }[];
   /**
    * Resolutions waiting on a decision one of their own steps raised, most

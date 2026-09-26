@@ -268,8 +268,10 @@ export type Action =
       readonly cards: readonly ObjectId[];
     }
   | {
-      /** Answers a pending commander-replacement decision (rule 903.9a):
-       * move the commander to the command zone, or leave it where it went. */
+      /** Answers a pending commander-replacement decision (rule 903.9): put
+       * the commander into the command zone, or leave it in the graveyard or
+       * exile it's in (903.9a) / let it go to the hand or library it's headed
+       * for (903.9b). */
       readonly type: "commander-replacement";
       readonly player: PlayerId;
       readonly toCommandZone: boolean;
@@ -732,8 +734,9 @@ export type LegalAction =
   | {
       readonly kind: "commander-replacement";
       readonly commander: ObjectId;
-      /** Where the commander would go if left where the rules put it (before
-       * the owner's 903.9a choice). */
+      /** Where the commander stays if the offer is declined — the graveyard
+       * or exile it's already in (rule 903.9a) — or goes: the hand or library
+       * it hasn't been put into yet (903.9b). */
       readonly intendedZone: "graveyard" | "exile" | "hand" | "library";
     }
   | {

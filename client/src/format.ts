@@ -340,10 +340,20 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
         : `${event.player} keeps their opening hand`
     case 'cards-put-on-bottom':
       return `${event.player} puts ${event.objects.map(name).join(', ')} on the bottom of their library`
-    case 'commander-zone-decision':
-      return event.toCommandZone
-        ? `${name(event.object)} goes to the command zone (from ${event.from})`
-        : `${name(event.object)} stays in the ${event.from}`
+    case 'commander-zone-decision': {
+      // A graveyard or exile it's already in (rule 903.9a); a hand or library
+      // it hasn't reached (903.9b).
+      const there = event.from === 'graveyard' || event.from === 'exile'
+      const zone = event.from === 'exile' ? 'exile' : `the ${event.from}`
+      if (event.toCommandZone) {
+        return there
+          ? `${name(event.object)} goes to the command zone from ${zone}`
+          : `${name(event.object)} goes to the command zone instead of ${zone}`
+      }
+      return there
+        ? `${name(event.object)} stays in ${zone}`
+        : `${name(event.object)} goes to its owner's ${event.from}`
+    }
     default:
       return JSON.stringify(event)
   }

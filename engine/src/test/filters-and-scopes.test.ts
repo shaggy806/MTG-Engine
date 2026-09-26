@@ -142,7 +142,7 @@ describe("destroy-all — Wrath of God (rule 700-style mass destroy)", () => {
     ).toBe(true);
   });
 
-  it("pauses on a commander's 903.9a choice mid-wipe, then finishes the rest", () => {
+  it("destroys a commander with the rest, then offers its owner the command zone (903.9a)", () => {
     const a = new ScriptedController(A);
     a.commanderReplacementFn = () => true;
     const game = Game.create({
@@ -164,8 +164,11 @@ describe("destroy-all — Wrath of God (rule 700-style mass destroy)", () => {
 
     cast(game, "Wrath of God");
     game.advanceUntil((s) => s.awaiting?.kind === "commander-replacement");
-    // the wipe is paused — the two vanilla bears are still queued / on board
-    expect(game.state.objects[commander].zone).toBe("battlefield");
+    // Asked once the wipe is done: everything, the commander included, is in
+    // a graveyard.
+    expect(game.state.objects[commander].zone).toBe("graveyard");
+    expect(zoneOf(game, bears1)).toBe("graveyard");
+    expect(zoneOf(game, bears2)).toBe("graveyard");
 
     game.advanceUntil(settled);
     expect(game.state.objects[commander].zone).toBe("command");

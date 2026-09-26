@@ -1,22 +1,61 @@
-# Commander replacement (rule 903.9a)
+# Commander replacement (rule 903.9)
 
-**Status:** the choice is never skipped any more (2026-09-22). The six older
-bugs found alongside the fix are all fixed since (2026-09-23), and listed at
-the end; none of them lost the choice itself. (A seventh, the double death
-count, was fixed with the token-stack counting change.)
+**Status:** the current rule since 2026-09-25 — see "The current rule" below.
+Before that the engine modeled the pre-2020 replacement for every zone; the
+rest of this record is about that model, whose fixes carried over. The choice
+is never skipped any more (2026-09-22). The six older bugs found alongside the
+fix are all fixed since (2026-09-23), and listed at the end; none of them lost
+the choice itself. (A seventh, the double death count, was fixed with the
+token-stack counting change.)
 
-## How it's shaped
+## The current rule (2026-09-25)
 
-The engine models 903.9a as a replacement effect (the pre-2020 wording) for all
-four hidden zones: `moveObject` doesn't move a commander that's leaving the
-battlefield for a graveyard, exile, hand or library. It parks the move in
-`deferredCommanderMove`, raises a `commander-replacement` decision on
-`awaiting`, and returns. `applyCommanderChoice` makes the move once the owner
-answers. That keeps a "dies" trigger from ever seeing a commander that went to
+Rule 903.9a now reads: "If a commander is in a graveyard or in exile and that
+object was put into that zone since the last time state-based actions were
+checked, its owner may put it into the command zone. This is a state-based
+action." 903.9b keeps the replacement for a hand or a library.
+
+- `moveObject` lets a commander go to a graveyard or exile like anything else,
+  and records it in `commanderArrivals` with the zone-change count it arrived
+  with. Each state-based check (`offerArrivedCommanders`) queues an offer for
+  every one still there, in APNAP order of their owners (rule 101.4), and
+  `raiseNextCommanderChoice` asks them in turn once the check is done.
+  `applyCommanderChoice` moves an accepted one to the command zone and leaves a
+  declined one where it is; it isn't asked again until it next arrives.
+- A move to a hand or a library is deferred exactly as before (903.9b), with
+  everything below that kept it from being lost.
+- So a commander dies: its own "when this dies" trigger fires (Child of Alara
+  destroys every nonland permanent even as it goes home — the card sweep 2 bug
+  that prompted this), Blood Artist drains for it, it counts for "a creature
+  died this turn", and Omnath, Locus of Rage deals its damage as it last
+  existed. The old model's "a commander sent home never died" was right only
+  under the pre-2020 wording.
+- A commander discarded, milled or countered is offered too: it was put into a
+  graveyard, from wherever. The old model only ever asked about a permanent.
+- A flickered commander is never asked: it's back before the next check. That
+  made the deferred-blink machinery (`pendingFlickerReturns`) and the O-Ring
+  link carried on a deferred exile (`linkDeferredExile`) dead, and both are
+  gone: an exiled commander carries its `exiledBy` like any other card.
+- The default answer (`AutomaticController`, under every bot) is still the
+  command zone, but not for a commander in exile that can be cast from there
+  — on an adventure, foretold or suspended — which its owner put there on
+  purpose, and which costs no tax to cast from there.
+
+The model below is what the engine did before this; the fixes to it still hold
+for 903.9b.
+
+## How it was shaped
+
+The engine modeled 903.9a as a replacement effect (the pre-2020 wording) for all
+four hidden zones: `moveObject` didn't move a commander that was leaving the
+battlefield for a graveyard, exile, hand or library. It parked the move in
+`deferredCommanderMove`, raised a `commander-replacement` decision on
+`awaiting`, and returned. `applyCommanderChoice` made the move once the owner
+answered. That kept a "dies" trigger from ever seeing a commander that went to
 the command zone.
 
-Everything calling `moveObject` finds out the move didn't happen by reading
-`awaiting !== null` afterwards. About a dozen sites rely on that.
+Everything calling `moveObject` found out the move didn't happen by reading
+`awaiting !== null` afterwards. About a dozen sites relied on that.
 
 ## What went wrong
 
@@ -69,7 +108,9 @@ cases fail on the old code.
 
 Changing to the post-2020 rule (903.9a as a state-based action for graveyard
 and exile, so "dies" triggers do fire for a commander) was considered and left
-alone. It's a rules change with its own consequences, not a bug fix.
+alone at the time as a rules change rather than a bug fix. Card sweep 2 then
+found a commander it made unplayable (Child of Alara), and it was made on
+2026-09-25 — see "The current rule" above.
 
 ## Fixed since
 
