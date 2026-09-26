@@ -35,8 +35,8 @@ that one card is the reason the deck exists.
 
 ## Card backlog (top-2000 staples and the precons)
 
-- **EDH-popularity feature tiers.** Tier 2 is Spree and Class. Tier 3 is Station,
-  Discover, Evoke and Reconfigure. Also open:
+- **EDH-popularity feature tiers.** Tier 2 is Spree and Class. Tier 3 is Discover, Evoke and
+  Reconfigure. Also open:
   damage doubling as a replacement, the rest of the Overload/free-cast/convoke families, and the
   items listed under each "still open". See `neededCards-features.md`, "Open: the card backlog".
 - **More Oracle-parser templates.** Every card the parser reads whole is in the pool: 4,205 of
@@ -116,7 +116,16 @@ that one card is the reason the deck exists.
 - **A target gone illegal beside a legal one** (rule 608.2b). Resolution finds those slots
   (`ResolutionContext.illegalTargets`), but only the control-changing effects skip them; every
   other effect still acts on such a target (the hexproofed half of a two-target spell). Spread it
-  effect by effect: reading an illegal target is still allowed, acting on it isn't.
+  effect by effect: reading an illegal target is still allowed, acting on it isn't. Jon Irenicus
+  waits on it.
+- **Losing all abilities keeps granted keywords.** An effect that removes all abilities never
+  removes a keyword another effect granted, whichever came first (rule 613.7). Only suspect's
+  menace and can't-block are timestamped against it.
+- **A token copy isn't asked its "as this enters" choice** (a token copy of Clone, Morophon or
+  Urza's Incubator), though the gaps list marks `bug:as-enters-choices-any-entry` built. See
+  AUTHORING §15.
+- **`sacrifice-all-but` always keeps the most it may.** "Choose up to N, then sacrifice the rest"
+  never lets the player keep fewer (to sacrifice more for death triggers).
 - **Token stacks in combat.** Splitting one stack across attackers or blockers is not built,
   and neither is choosing which of a stack proliferate touches. See
   `docs/plans/token-stack-choices.md`.
@@ -137,6 +146,9 @@ that one card is the reason the deck exists.
 
 ## Client / UI
 
+- **Goaded and suspected aren't shown.** A goaded or suspected creature looks like any other;
+  only the menace and can't-block that suspect gives appear. Both are designations the view could
+  carry as a badge.
 - **Convoke with a target-dependent cost.** The offered `proof` is priced at the dearer end of
   the target-count range. This is latent: no pool card has both.
 - **Player designations as a viewable zone.** Emblems are listed as text lines under the
@@ -182,3 +194,12 @@ that one card is the reason the deck exists.
   have no test either. Keep them for the cards they were built for, but review the first card
   that uses each. The list is in `neededCards-features.md`, "Built ahead". `painIfUntapped` is
   the one no real card can use.
+- **Prohibition scans are quadratic.** `abilitiesProhibited`/`prohibitionsOn` rescan the whole
+  battlefield on every call, per permanent, and `recomputeControl` rescans for control Auras per
+  permanent once anything has a control effect. On a land-heavy board they were 31% of a
+  profile, and turns slow down steadily. Not a hang, and the fuzzer's decks don't hit it.
+- **Small known slips.** Geode Rager targets an opponent where its text says "target player".
+  `effects.ts` cites Encore as 702.140 (it's 702.141). Rin and Seri's and Urtet's `otherOnly`
+  flags are redundant now, and their comments out of date. `TriggerWho` `"opponent"` is always
+  false on a trigger about an object (no pool card uses it). `card:parse-check` reports four
+  keyword disagreements (Harvesttide Assailant and Infiltrator, Sokka, Stonecoil Serpent).
