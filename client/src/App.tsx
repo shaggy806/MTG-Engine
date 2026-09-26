@@ -184,6 +184,25 @@ interface CastPicks {
  * — the whole offer, for when there's exactly as much as the cost needs. */
 const allTapChoices = (offer: TapCostOffer): ObjectId[] =>
   offer.choices.flatMap((id) => Array<ObjectId>(offer.copies?.[id] ?? 1).fill(id))
+
+/** "Sacrifice a land", "Sacrifice another creature" — the thing an ability's
+ * sacrifice cost names, as printed. */
+const SACRIFICE_CLAUSE = /\bSacrifice (?:an? |another )([^,:.]+?)(?=[,:.]|$)/i
+/** What a sacrifice cost asks for, for its prompt: the ability's own words
+ * when it prints them (Hearthhull's "a land"), otherwise the type every
+ * choice shares (a spell's additional cost), otherwise "permanent". */
+function sacrificeNoun(
+  action: AbilityAction | CastAction,
+  view: PlayerView,
+  choices: readonly ObjectId[],
+): string {
+  const printed = action.kind === 'activate-ability' ? SACRIFICE_CLAUSE.exec(action.text)?.[1] : undefined
+  if (printed !== undefined) return printed
+  for (const type of ['land', 'creature', 'artifact', 'enchantment', 'planeswalker'] as const) {
+    if (choices.length > 0 && choices.every((id) => view.objects[id]?.types.includes(type))) return type
+  }
+  return 'permanent'
+}
 type LandAction = Extract<LegalAction, { kind: 'play-land' }>
 type SuspendAction = Extract<LegalAction, { kind: 'suspend' }>
 type ForetellAction = Extract<LegalAction, { kind: 'foretell' }>
@@ -1508,6 +1527,11 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         )
         if (found) return found
       }
+      if (mode === 'choose-sacrifice' && pendingSac?.sacrifice !== undefined) {
+        const choices = pendingSac.sacrifice.choices
+        const found = ids.find((i) => choices.includes(i))
+        if (found) return found
+      }
       // A tile standing for several identical permanents: take a member not
       // already picked, so a second click picks the next one rather than
       // un-picking the first.
@@ -1525,12 +1549,21 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       }
       return ids[0]
     },
-    [mode, activeTargeting, pendingTap, pendingConvoke, permanentPicks],
+    [mode, activeTargeting, pendingSac, pendingTap, pendingConvoke, permanentPicks],
   )
 
   const clickPermanent = useCallback(
     (ids: readonly ObjectId[]) => {
       const id = pickIdForClick(ids)
+      if (mode === 'choose-sacrifice' && pendingSac?.sacrifice !== undefined) {
+        // One click is the whole answer: the cost names one permanent.
+        if (!pendingSac.sacrifice.choices.includes(id)) return
+        const sacChoice = pendingSac
+        setPendingSac(null)
+        if (sacChoice.kind === 'cast-spell') startCast(sacChoice, { sacrifice: id })
+        else startAbility(sacChoice, id)
+        return
+      }
       if (mode === 'targeting' && activeTargeting) {
         const slot = currentSlotOptions(activeTargeting)
         if (slot.some((o) => o.kind === 'object' && o.object === id)) {
@@ -1727,6 +1760,9 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       unpickTarget,
       sacrificeAction,
       choosePermanentsAction,
+      pendingSac,
+      startCast,
+      startAbility,
       pendingTap,
       pendingConvoke,
       proliferateAction,
@@ -1940,6 +1976,9 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         if (members.length > 1 && dead > 0) badge = `☠ ${dead}/${members.length}`
         else if (dmg > 0) badge = `${dmg} dmg${dead > 0 ? ' ☠' : ''}`
       }
+    } else if (mode === 'choose-sacrifice' && pendingSac?.sacrifice !== undefined) {
+      const choices = pendingSac.sacrifice.choices
+      highlight = ids.some((i) => choices.includes(i))
     } else if (mode === 'choose-tap' && pendingTap) {
       // Over every permanent the tile stands for: several identical ones
       // folded together, or one of the engine's token stacks.
@@ -2893,27 +2932,14 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   ) {
     // Either an activated ability's sacrifice cost, or a spell's additional
     // cost to cast (rule 601.2f — Harrow "sacrifice a land"). P8.
-    const sacChoices = pendingSac.sacrifice.choices
-    const sacChoice = pendingSac
+    // The choices are picked on the board, where each one is highlighted —
+    // a list of names can't tell two Forests apart.
+    const noun = sacrificeNoun(pendingSac, view, pendingSac.sacrifice.choices)
     controls = (
       <div className="controls">
         <span>
-          {sacChoice.cardName} — sacrifice which{' '}
-          {sacChoice.kind === 'cast-spell' ? 'permanent' : 'creature'}?
+          {pendingSac.cardName} — choose {/^[aeiou]/i.test(noun) ? 'an' : 'a'} {noun} to sacrifice
         </span>
-        {sacChoices.map((id) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => {
-              setPendingSac(null)
-              if (sacChoice.kind === 'cast-spell') startCast(sacChoice, { sacrifice: id })
-              else startAbility(sacChoice, id)
-            }}
-          >
-            {game.nameOf(id)}
-          </button>
-        ))}
         <button type="button" onClick={() => setPendingSac(null)}>
           Cancel
         </button>
