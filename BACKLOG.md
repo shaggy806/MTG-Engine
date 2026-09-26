@@ -113,11 +113,6 @@ that one card is the reason the deck exists.
 - **Amass grows the first Army creature.** Rule 701.47a lets the player choose, and a changeling
   is an Army too (Morophon beside Orcish Bowmasters' Army). Needs `decision:choose-permanent`,
   which is UI-bound. See AUTHORING §15, "Partial".
-- **A target gone illegal beside a legal one** (rule 608.2b). Resolution finds those slots
-  (`ResolutionContext.illegalTargets`), but only the control-changing effects skip them; every
-  other effect still acts on such a target (the hexproofed half of a two-target spell). Spread it
-  effect by effect: reading an illegal target is still allowed, acting on it isn't. Jon Irenicus
-  waits on it.
 - **Losing all abilities keeps granted keywords.** An effect that removes all abilities never
   removes a keyword another effect granted, whichever came first (rule 613.7). Only suspect's
   menace and can't-block are timestamped against it.

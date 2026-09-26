@@ -8854,21 +8854,24 @@ export class Game {
     }
 
     const def = this.registry.get(printedCardName(object));
-    const targets = this.targetsStillMeant(object);
 
     // A kicked spell may target something its unkicked specs wouldn't allow
-    // (Tear Asunder), so the fizzle check uses the specs it was actually cast
-    // with — `chosenModes` handles the modal case below, on its own.
-    const castSpecs = this.effectiveTargetSpecs(
-      def,
-      undefined,
-      object.kicked === true,
-      object.overloaded === true,
+    // (Tear Asunder), so the check uses the specs it was actually cast with,
+    // and a modal spell's are its chosen modes', in order (rule 700.2).
+    const chosenModes = def.castModal !== null ? object.chosenModes : undefined;
+    const castSpecs =
+      chosenModes !== undefined
+        ? chosenModes.flatMap((mi) => def.castModal?.modes[mi]?.targets ?? [])
+        : this.effectiveTargetSpecs(def, undefined, object.kicked === true, object.overloaded === true);
+    const legality = this.targetLegality(
+      castSpecs,
+      object.targets ?? [],
+      this.targetsStillMeant(object),
+      object.controller,
+      this.cardSource(def, id),
     );
-    if (
-      castSpecs.length > 0 &&
-      !this.anyTargetLegal(castSpecs, targets, object.controller, this.cardSource(def, id))
-    ) {
+    const targets = legality.targets;
+    if (legality.fizzles) {
       object.targets = null;
       this.emit({
         type: "spell-fizzled",
@@ -8888,26 +8891,21 @@ export class Game {
     }
 
     this.withDecisionSource(id, () => {
-      if (object.chosenModes !== undefined && def.castModal !== null) {
-        // A targeted modal spell (rule 700.2 — ROADMAP Phase 11 EG-2): apply each
-        // chosen mode with its own slice of `targets`; skip a mode whose targets
-        // are now illegal (608.2b); the spell "fizzles" only if every mode does.
+      if (chosenModes !== undefined && def.castModal !== null) {
+        // A targeted modal spell (rule 700.2 — ROADMAP Phase 11 EG-2): each
+        // chosen mode applies with its own slice of `targets`, a target gone
+        // illegal blanked in it like any other (608.2b) — so a mode still does
+        // whatever isn't about that target. Only when every target the spell
+        // chose is illegal does nothing happen, target-less modes included.
         let offset = 0;
-        let anyApplied = false;
-        for (const mi of object.chosenModes) {
+        for (const mi of chosenModes) {
           const mode = def.castModal.modes[mi];
-          const specs = mode?.targets ?? [];
-          const slice = targets.slice(offset, offset + specs.length);
-          const zoneSlice = (object.targetZones ?? []).slice(offset, offset + specs.length);
-          offset += specs.length;
-          const ok =
-            mode !== undefined &&
-            specs.every(
-              (spec, i) =>
-                slice[i] !== undefined &&
-                isLegalTarget(this.state, this.registry, spec, slice[i], object.controller, this.cardSource(def, id)),
-            );
-          if (!ok || mode === undefined) continue;
+          const count = mode?.targets?.length ?? 0;
+          const slice = targets.slice(offset, offset + count);
+          const zoneSlice = (object.targetZones ?? []).slice(offset, offset + count);
+          const illegal = legality.illegal.filter((i) => i >= offset && i < offset + count).map((i) => i - offset);
+          offset += count;
+          if (mode === undefined) continue;
           applyEffectSpec(
             mode.effect,
             this.makeResolutionContext(
@@ -8921,19 +8919,12 @@ export class Game {
               0,
               zoneSlice,
               object.lastKnownRefs,
+              illegal.length > 0 ? { illegalTargets: illegal } : {},
             ),
           );
-          anyApplied = true;
-        }
-        if (!anyApplied) {
-          this.emit({ type: "spell-fizzled", object: id, reason: "all chosen modes have illegal targets" });
         }
       } else {
-        // The targets that are illegal now, beside one that isn't (608.2b).
-        const illegalTargets =
-          castSpecs.length === 0
-            ? []
-            : this.illegalTargetSlots(castSpecs, targets, object.controller, this.cardSource(def, id));
+        const illegalTargets = legality.illegal;
         const context = this.makeResolutionContext(
           id,
           object.controller,
@@ -9157,10 +9148,16 @@ export class Game {
             ...(object.targetZones !== undefined ? { targetZones: object.targetZones } : {}),
             ...(object.lastKnownRefs !== undefined ? { lastKnownRefs: object.lastKnownRefs } : {}),
           });
-    if (
-      ability.targets.length > 0 &&
-      !this.anyTargetLegal(ability.targets, targets, object.controller, targetSource, object.autoTargetSlots)
-    ) {
+    // A delayed trigger chose no targets (603.7d); what it carries is read.
+    const legality = this.targetLegality(
+      object.delayedTrigger !== undefined ? [] : ability.targets,
+      object.targets ?? [],
+      targets,
+      object.controller,
+      targetSource,
+      object.autoTargetSlots,
+    );
+    if (legality.fizzles) {
       this.removeAbilityFromStack(id);
       this.emit({
         type: "spell-fizzled",
@@ -9169,18 +9166,7 @@ export class Game {
       });
       return;
     }
-    // The targets that are illegal now, beside one that isn't (rule 608.2b).
-    // A delayed trigger chose none (603.7d).
-    const illegalTargets =
-      ability.targets.length === 0 || object.delayedTrigger !== undefined
-        ? []
-        : this.illegalTargetSlots(
-            ability.targets,
-            targets,
-            object.controller,
-            targetSource,
-            object.autoTargetSlots,
-          );
+    const illegalTargets = legality.illegal;
 
     // An ability activated from a zone its source stayed in (Derevi from the
     // command zone): if the card has changed zones since, it's a new object
@@ -9193,7 +9179,7 @@ export class Game {
     const base = this.makeResolutionContext(
       source,
       object.controller,
-      targets,
+      legality.targets,
       object.xValue ?? 0,
       object.triggerValue ?? 0,
       object.triggerObject,
@@ -10902,46 +10888,41 @@ export class Game {
     return abilityId;
   }
 
-  /** `autoSlots` are slots the triggering event filled rather than a player
-   * choosing (see `GameObject.autoTargetSlots`): still checked for shape, but
-   * not as targets. */
-  private anyTargetLegal(
-    specs: readonly TargetSpec[],
-    targets: ResolvedTargets,
-    forPlayer: PlayerId,
-    source?: TargetSource,
-    autoSlots: readonly number[] = [],
-  ): boolean {
-    return specs.some(
-      (spec, i) =>
-        targets[i] !== undefined &&
-        isLegalTarget(this.state, this.registry, spec, targets[i], forPlayer, source, {
-          notTargeted: autoSlots.includes(i),
-        }),
-    );
-  }
-
   /**
-   * Rule 608.2b, the other half of {@link anyTargetLegal}: of a spell or
-   * ability that isn't fizzling, the slots whose target is illegal as it
-   * starts to resolve — what `ResolutionContext.illegalTargets` carries. An
-   * empty (skipped) slot isn't illegal, and an event-filled one isn't a
-   * target at all.
+   * Rule 608.2b as a spell or ability starts to resolve. `chosen` is what it
+   * targeted as it went on the stack — a hole where an "up to" slot chose
+   * nothing, and `autoSlots` filled by its event rather than targeted, neither
+   * a target — and `now` the same with every target that has changed zones
+   * since gone (`targetsStillMeant`). It doesn't resolve at all only if it
+   * chose a target and every one it chose is illegal now; one that chose none
+   * resolves. Otherwise each illegal one is blanked in `targets`, so no part
+   * of the effect acts on it or finds out anything about it, and listed in
+   * `illegal` for the effects that say so themselves.
    */
-  private illegalTargetSlots(
+  private targetLegality(
     specs: readonly TargetSpec[],
-    targets: ResolvedTargets,
+    chosen: ResolvedTargets,
+    now: ResolvedTargets,
     forPlayer: PlayerId,
     source?: TargetSource,
     autoSlots: readonly number[] = [],
-  ): number[] {
-    const out: number[] = [];
+  ): { readonly fizzles: boolean; readonly illegal: readonly number[]; readonly targets: ResolvedTargets } {
+    const targets = [...now];
+    const illegal: number[] = [];
+    let anyChosen = false;
+    let anyLegal = false;
     specs.forEach((spec, i) => {
-      const ref = targets[i];
-      if (ref === undefined || autoSlots.includes(i)) return;
-      if (!isLegalTarget(this.state, this.registry, spec, ref, forPlayer, source)) out.push(i);
+      if (chosen[i] === undefined || autoSlots.includes(i)) return;
+      anyChosen = true;
+      const ref = now[i];
+      if (ref !== undefined && isLegalTarget(this.state, this.registry, spec, ref, forPlayer, source)) {
+        anyLegal = true;
+        return;
+      }
+      illegal.push(i);
+      targets[i] = undefined;
     });
-    return out;
+    return { fizzles: anyChosen && !anyLegal, illegal, targets };
   }
 
   private isPermanentSpell(def: CardDefinition): boolean {

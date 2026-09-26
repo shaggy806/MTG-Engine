@@ -2925,12 +2925,11 @@ export interface ResolutionContext extends EffectApi {
   /**
    * The slots whose target was found illegal as this spell or ability began
    * to resolve, while another stayed legal so it didn't fizzle (rule
-   * 608.2b): it does nothing to those targets and makes them do nothing,
-   * though it may still read them. Still in `targets`. Honoured so far by
-   * the control-changing effects (`gain-control`, `put-onto-battlefield`'s
-   * `under`) — every other effect still acts on a target that's become
-   * illegal beside a legal one (BACKLOG, "Engine rules gaps"). Absent when
-   * every target was legal.
+   * 608.2b). Each is already blank in `targets` (`Game.targetLegality`), so
+   * no effect acts on it or finds anything out about it; this list is for an
+   * effect where an empty slot and an illegal one mean different things —
+   * `gain-control`'s `who`, whose absence means "you". Absent when every
+   * target was legal.
    */
   readonly illegalTargets?: readonly number[];
   /** The value chosen for `{X}` when this spell/ability was put on the stack,
