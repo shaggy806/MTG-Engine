@@ -4920,18 +4920,43 @@ export class Game {
     }
   }
 
-  /** Put one lore counter on the Saga `sagaId` and queue any chapter ability
-   * whose `at` includes the new count (rule 714.2c). */
-  private addLoreCounter(sagaId: ObjectId): void {
+  /** Put a Saga's own lore counters on `sagaId` — the one it enters with
+   * (rule 714.3a; `amount` is more when a counter doubler applies to that, as
+   * it does to any counters a permanent enters with, rule 122.6) or the one
+   * its controller's precombat main phase adds (714.3c) — and queue the
+   * chapters they reach. */
+  private addLoreCounter(sagaId: ObjectId, amount = 1): void {
     const object = this.state.objects[sagaId];
-    if (object === undefined) return;
+    if (object === undefined || amount <= 0) return;
+    if (this.registry.get(printedCardName(object)).chapters === null) return;
+    const before = object.counters.lore ?? 0;
+    object.counters.lore = before + amount;
+    this.emit({ type: "lore-counter-added", object: sagaId, lore: before + amount });
+    this.triggerChapters(sagaId, before, before + amount);
+  }
+
+  /**
+   * Queue the chapter abilities lore counters just put on the Saga `sagaId`
+   * reached: every chapter number N with `before` < N ≤ `after` (rule
+   * 714.2b), however the counters got there — its own lore counter, an
+   * effect, proliferate. A chapter printed with several numbers ("I, II")
+   * triggers once for each one reached (rule 714.2c).
+   *
+   * Several reached at once are the controller's to order on the stack; with
+   * no ordering decision yet, they're queued so the chapters resolve in the
+   * order they're numbered — the last queued goes on top — which is how the
+   * Saga reads (chapter II's Knight is there for chapter III's pump).
+   */
+  private triggerChapters(sagaId: ObjectId, before: number, after: number): void {
+    const object = this.state.objects[sagaId];
     const chapters = this.registry.get(printedCardName(object)).chapters;
     if (chapters === null) return;
-    object.counters.lore = (object.counters.lore ?? 0) + 1;
-    const n = object.counters.lore;
-    this.emit({ type: "lore-counter-added", object: sagaId, lore: n });
-    chapters.forEach((chapter, index) => {
-      if (!chapter.at.includes(n)) return;
+    const reached = chapters
+      .flatMap((chapter, index) =>
+        chapter.at.filter((n) => n > before && n <= after).map((n) => ({ index, n })),
+      )
+      .sort((a, b) => b.n - a.n);
+    for (const { index } of reached) {
       this.state.pendingTriggers.push({
         sourceObjectId: sagaId,
         cardName: printedCardName(object),
@@ -4939,7 +4964,7 @@ export class Game {
         controller: object.controller,
         chapter: true,
       });
-    });
+    }
   }
 
   /**
@@ -13554,8 +13579,10 @@ export class Game {
     // Doubling Season (rule 614): "twice that many counters instead" — only
     // when counters are being *added*, never a removal.
     const total = amount > 0 ? amount * this.counterMultiplier(id, counter) : amount;
-    object.counters[counter] = (object.counters[counter] ?? 0) + total;
+    const before = object.counters[counter] ?? 0;
+    object.counters[counter] = before + total;
     this.emit({ type: "counter-added", object: id, counter, amount: total, by: by ?? object.controller });
+    if (counter === "lore" && total > 0) this.triggerChapters(id, before, before + total);
   }
 
   /**
@@ -13633,11 +13660,10 @@ export class Game {
       // as it was when the decision went up, and a permanent can leave in
       // between (a sacrifice the same effect queued, say).
       if (object === undefined || object.zone !== "battlefield") continue;
+      // Through `addCounter`, as any effect putting counters: a doubler
+      // doubles it (Doubling Season), and a Saga's chapter fires.
       for (const kind of Object.keys(object.counters)) {
-        if (object.counters[kind] > 0) {
-          object.counters[kind] += 1;
-          this.emit({ type: "counter-added", object: target.object, counter: kind, amount: 1, by: player });
-        }
+        if (object.counters[kind] > 0) this.addCounter(target, kind, 1, false, player);
       }
     }
     this.emit({ type: "proliferated", player, count: chosen.length });
@@ -17074,10 +17100,10 @@ export class Game {
           object.face = 1;
         }
       }
-      // A Saga enters with one lore counter, firing its chapter I ability
-      // (rule 714.2b).
+      // A Saga enters with a lore counter (rule 714.3a), firing its chapter I
+      // ability — two under Doubling Season, firing chapter II as well.
       if (this.registry.get(printedCardName(object)).chapters !== null) {
-        this.addLoreCounter(id);
+        this.addLoreCounter(id, this.counterMultiplier(id, "lore"));
       }
       // Counters it entered with were *put* on it (rule 122.6), so a
       // "whenever counters are put on" trigger sees them. Announced last, once
