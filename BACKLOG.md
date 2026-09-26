@@ -6,7 +6,7 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**287 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**289 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 

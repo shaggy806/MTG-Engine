@@ -11254,6 +11254,12 @@ export class Game {
       },
       lifeTotalOf: (player) => this.state.players[player]?.life ?? 0,
       turnStatOf: (player, stat) => turnStatOf(this.state, player, stat),
+      castThisTurnOf: (player, filter, greatest) => {
+        const cast = (this.state.players[player]?.spellsCastThisTurnAs ?? []).filter(({ id, spell }) =>
+          matchesFilter(this.state, this.registry, id, filter, { you: controller, snapshot: spell }),
+        );
+        return greatest === undefined ? cast.length : cast.reduce((n, { spell }) => Math.max(n, spell.manaValue), 0);
+      },
       countInGraveyard: (filter) => {
         let n = 0;
         for (const player of this.state.turnOrder) {
@@ -11810,7 +11816,7 @@ export class Game {
         }
       },
       changeText: (target) => this.beginTextChoice(controller, source, target),
-      createToken: (token, count, who, tapped, sacrificeAtEndStep, gainUntilEndOfTurn, goadedForGame, thenCounters) => {
+      createToken: (token, count, who, tapped, sacrificeAtEndStep, gainUntilEndOfTurn, goadedForGame, thenCounters, basePt) => {
         // "The tokens are goaded for the rest of the game": by this effect's
         // controller, whoever creates them (Rendmaw, Creaking Nest).
         const goadedBy = goadedForGame === true ? controller : undefined;
@@ -11826,6 +11832,7 @@ export class Game {
             gainUntilEndOfTurn,
             goadedBy,
             thenCounters !== undefined,
+            basePt,
           );
           if (thenCounters === undefined || thenCounters.amount <= 0) return;
           for (const id of made) {
@@ -13011,6 +13018,8 @@ export class Game {
     goadedForGameBy?: PlayerId,
     /** Make every token its own object, never part of a token stack. */
     separate = false,
+    /** An X/X token's base power and toughness. */
+    basePt?: readonly [number, number],
   ): readonly ObjectId[] {
     this.registry.get(tokenName); // validate the token is a known definition
     // Doubling Season / Parallel Lives (rule 614): "twice that many instead".
@@ -13020,7 +13029,23 @@ export class Game {
       tokenName,
       null,
       total,
-      untilEndOfTurnKeywords(gainUntilEndOfTurn),
+      [
+        ...untilEndOfTurnKeywords(gainUntilEndOfTurn),
+        // "An X/X token": what the effect made it (rule 111.3 — its copiable
+        // values), under every other effect that sets its P/T.
+        ...(basePt === undefined
+          ? []
+          : [
+              {
+                power: 0,
+                toughness: 0,
+                keywords: [],
+                setPt: [basePt[0], basePt[1]] as [number, number],
+                untilEndOfTurn: false,
+                timestamp: -1,
+              },
+            ]),
+      ],
       false,
       false,
       false,

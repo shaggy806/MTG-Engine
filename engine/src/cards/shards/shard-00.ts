@@ -183,6 +183,7 @@ import _poolWoodedRidgeline from "../pool/wooded-ridgeline.js";
 import _poolYouthfulKnight from "../pool/youthful-knight.js";
 import _poolYouthfulValkyrie from "../pool/youthful-valkyrie.js";
 import _poolZhaoTheSeethingFlame from "../pool/zhao-the-seething-flame.js";
+import _poolZurEternalSchemer from "../pool/zur-eternal-schemer.js";
 import _tokensLifelinkSoldierToken from "../tokens/lifelink-soldier-token.js";
 import _tokensMerfolkToken from "../tokens/merfolk-token.js";
 
@@ -368,6 +369,7 @@ const shard: CardShard = {
     _poolYouthfulKnight,
     _poolYouthfulValkyrie,
     _poolZhaoTheSeethingFlame,
+    _poolZurEternalSchemer,
   ],
   tokens: [
     _tokensLifelinkSoldierToken,

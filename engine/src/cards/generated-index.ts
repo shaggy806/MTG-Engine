@@ -102,6 +102,7 @@ export const TOKEN_NAMES: readonly string[] = [
   "Wizard Token (Guff)",
   "Wizard Token (Kuja)",
   "Wraith Token",
+  "X/X Elemental Token (Flying, Haste)",
   "Zombie Druid Token",
   "Zombie Knight Token",
   "Zombie Token",

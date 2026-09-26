@@ -3767,6 +3767,7 @@ import _poolRootOut from "./pool/root-out.js";
 import _poolRootbornDefenses from "./pool/rootborn-defenses.js";
 import _poolRootboundCrag from "./pool/rootbound-crag.js";
 import _poolRootbreakerWurm from "./pool/rootbreaker-wurm.js";
+import _poolRoothaMasteringTheMoment from "./pool/rootha-mastering-the-moment.js";
 import _poolRootriderFaun from "./pool/rootrider-faun.js";
 import _poolRootwalla from "./pool/rootwalla.js";
 import _poolRootwaterCommando from "./pool/rootwater-commando.js";
@@ -5491,6 +5492,7 @@ import _poolZoralineCosmosCaller from "./pool/zoraline-cosmos-caller.js";
 import _poolZukosOffense from "./pool/zukos-offense.js";
 import _poolZulaportChainmage from "./pool/zulaport-chainmage.js";
 import _poolZulaportCutthroat from "./pool/zulaport-cutthroat.js";
+import _poolZurEternalSchemer from "./pool/zur-eternal-schemer.js";
 import _poolZurTheEnchanter from "./pool/zur-the-enchanter.js";
 import _poolZuranEnchanter from "./pool/zuran-enchanter.js";
 import _poolZuranOrb from "./pool/zuran-orb.js";
@@ -5592,6 +5594,7 @@ import _tokensWhiteDogToken11 from "./tokens/white-dog-token-1-1.js";
 import _tokensWizardTokenGuff from "./tokens/wizard-token-guff.js";
 import _tokensWizardTokenKuja from "./tokens/wizard-token-kuja.js";
 import _tokensWraithToken from "./tokens/wraith-token.js";
+import _tokensXXElementalTokenFlyingHaste from "./tokens/x-x-elemental-token-flying-haste.js";
 import _tokensZombieDruidToken from "./tokens/zombie-druid-token.js";
 import _tokensZombieKnightToken from "./tokens/zombie-knight-token.js";
 import _tokensZombieToken from "./tokens/zombie-token.js";
@@ -9362,6 +9365,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolRootbornDefenses,
   _poolRootboundCrag,
   _poolRootbreakerWurm,
+  _poolRoothaMasteringTheMoment,
   _poolRootriderFaun,
   _poolRootwalla,
   _poolRootwaterCommando,
@@ -11086,6 +11090,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolZukosOffense,
   _poolZulaportChainmage,
   _poolZulaportCutthroat,
+  _poolZurEternalSchemer,
   _poolZurTheEnchanter,
   _poolZuranEnchanter,
   _poolZuranOrb,
@@ -11193,6 +11198,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensWizardTokenGuff,
   _tokensWizardTokenKuja,
   _tokensWraithToken,
+  _tokensXXElementalTokenFlyingHaste,
   _tokensZombieDruidToken,
   _tokensZombieKnightToken,
   _tokensZombieToken,

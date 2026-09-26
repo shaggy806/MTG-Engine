@@ -265,6 +265,17 @@ export type EffectAmount =
    * longer in any scope, so their total drops out.
    */
   | { readonly turnStat: TurnStat; readonly who?: PlayerScope }
+  /** The spells `who` (you by default) cast this turn that match the
+   * filter, each read as it was cast (`PlayerState.spellsCastThisTurnAs`):
+   * how many, or with `greatest: "mana-value"` the greatest mana value
+   * among them, its {X} counted (Rootha, Mastering the Moment's "the greatest
+   * mana value among instant and sorcery spells you've cast this turn"). 0
+   * with none. */
+  | {
+      readonly castThisTurn: CardFilter;
+      readonly who?: PlayerScope;
+      readonly greatest?: "mana-value";
+    }
   /**
    * How many of the players `who` names have a nonzero {@link TurnStat} this
    * turn — "for each opponent who lost life this turn". Counts players, not
@@ -1639,8 +1650,11 @@ export type EffectSpec =
        * (man-lands animate themselves); Turn to Frog targets a creature. */
       readonly kind: "animate";
       readonly target: EffectTargetRef;
-      readonly power: number;
-      readonly toughness: number;
+      /** Its base P/T. A live amount is read once, as the effect applies
+       * (rule 608.2h — Zur, Eternal Schemer's "base power and base
+       * toughness each equal to its mana value"), and stays that. */
+      readonly power: EffectAmount;
+      readonly toughness: EffectAmount;
       readonly addTypes: readonly CardType[];
       readonly addSubtypes: readonly string[];
       /** Replace the printed subtypes entirely (Turn to Frog: "a … Frog"). */
@@ -1737,6 +1751,11 @@ export type EffectSpec =
        * look at a 0/0 until the effect is done. Such tokens are always made
        * as separate objects, never folded into a token stack as they're made. */
       readonly thenCounters?: { readonly kind: string; readonly amount: EffectAmount };
+      /** "Create an **X/X** … token": its base power and toughness, set as
+       * it's made — part of what the token is, so every other P/T effect
+       * applies over them (Rootha, Mastering the Moment's Elemental, the
+       * token's printed P/T being 0/0). Read once, as the effect resolves. */
+      readonly basePt?: { readonly power: EffectAmount; readonly toughness: EffectAmount };
     }
   | {
       /** Create `count` token(s) that are copies of a permanent (rule 707.10 —
@@ -2328,6 +2347,10 @@ export interface EffectApi {
   /** One player's running total for `stat` this turn — see the `turnStat`
    * {@link EffectAmount}. */
   turnStatOf(player: PlayerId, stat: TurnStat): number;
+  /** How many of the spells `player` cast this turn match `filter`, as
+   * they were cast — or the greatest mana value among them. See the
+   * `castThisTurn` {@link EffectAmount}. */
+  castThisTurnOf(player: PlayerId, filter: CardFilter, greatest?: "mana-value"): number;
   /** See the `{ countInGraveyard }` {@link EffectAmount}. */
   countInGraveyard(filter: CardFilter): number;
   /** How many cards are in `player`'s hand — see `{ cardsInHand }`. */
@@ -2810,6 +2833,8 @@ export interface EffectApi {
     goadedForGame?: boolean,
     /** Counters the effect's controller then puts on each new token. */
     thenCounters?: { readonly kind: string; readonly amount: number },
+    /** The new tokens' base power and toughness, for an X/X token. */
+    basePt?: readonly [number, number],
   ): void;
   /** Create `count` token(s) that are copies of the permanent `of` — see the
    * `"create-token-copy"` {@link EffectSpec}. */
@@ -3234,6 +3259,12 @@ function signedAmountValue(
     return ctx
       .playersInScope(amount.who ?? "you")
       .reduce((n, p) => n + ctx.turnStatOf(p, amount.turnStat), 0);
+  }
+  if ("castThisTurn" in amount) {
+    const each = ctx
+      .playersInScope(amount.who ?? "you")
+      .map((p) => ctx.castThisTurnOf(p, amount.castThisTurn, amount.greatest));
+    return amount.greatest === undefined ? each.reduce((n, v) => n + v, 0) : Math.max(0, ...each);
   }
   if ("playerCounters" in amount) {
     return ctx
@@ -4140,8 +4171,8 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) {
         ctx.animate(target, {
-          power: spec.power,
-          toughness: spec.toughness,
+          power: amountValue(spec.power, ctx),
+          toughness: amountValue(spec.toughness, ctx),
           addTypes: spec.addTypes,
           addSubtypes: spec.addSubtypes,
           setSubtypes: spec.setSubtypes,
@@ -4194,6 +4225,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
               spec.thenCounters === undefined
                 ? undefined
                 : { kind: spec.thenCounters.kind, amount: amountValue(spec.thenCounters.amount, ctx, player) },
+              spec.basePt === undefined
+                ? undefined
+                : [amountValue(spec.basePt.power, ctx, player), amountValue(spec.basePt.toughness, ctx, player)],
             );
         }
         return;
@@ -4209,6 +4243,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         spec.thenCounters === undefined
           ? undefined
           : { kind: spec.thenCounters.kind, amount: amountValue(spec.thenCounters.amount, ctx) },
+        spec.basePt === undefined
+          ? undefined
+          : [amountValue(spec.basePt.power, ctx), amountValue(spec.basePt.toughness, ctx)],
       );
       return;
     case "create-token-copy": {

@@ -188,6 +188,7 @@ import _tokensFungusTokenCantBlock from "../tokens/fungus-token-cant-block.js";
 import _tokensKnightToken from "../tokens/knight-token.js";
 import _tokensMoloidToken from "../tokens/moloid-token.js";
 import _tokensRedSpiritTokenMenace from "../tokens/red-spirit-token-menace.js";
+import _tokensXXElementalTokenFlyingHaste from "../tokens/x-x-elemental-token-flying-haste.js";
 
 const shard: CardShard = {
   pool: [
@@ -378,6 +379,7 @@ const shard: CardShard = {
     _tokensKnightToken,
     _tokensMoloidToken,
     _tokensRedSpiritTokenMenace,
+    _tokensXXElementalTokenFlyingHaste,
   ],
 };
 

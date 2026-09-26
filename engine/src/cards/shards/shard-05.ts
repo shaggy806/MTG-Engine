@@ -116,6 +116,7 @@ import _poolRememberTheFallen from "../pool/remember-the-fallen.js";
 import _poolRiftBolt from "../pool/rift-bolt.js";
 import _poolRingOfTheLucii from "../pool/ring-of-the-lucii.js";
 import _poolRodeoPyromancers from "../pool/rodeo-pyromancers.js";
+import _poolRoothaMasteringTheMoment from "../pool/rootha-mastering-the-moment.js";
 import _poolRuggedHighlands from "../pool/rugged-highlands.js";
 import _poolRuinationWurm from "../pool/ruination-wurm.js";
 import _poolRuinsRecluse from "../pool/ruins-recluse.js";
@@ -295,6 +296,7 @@ const shard: CardShard = {
     _poolRiftBolt,
     _poolRingOfTheLucii,
     _poolRodeoPyromancers,
+    _poolRoothaMasteringTheMoment,
     _poolRuggedHighlands,
     _poolRuinationWurm,
     _poolRuinsRecluse,
