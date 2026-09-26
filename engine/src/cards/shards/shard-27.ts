@@ -135,6 +135,7 @@ import _poolStormSpirit from "../pool/storm-spirit.js";
 import _poolStrengthOfThePack from "../pool/strength-of-the-pack.js";
 import _poolSwornGuardian from "../pool/sworn-guardian.js";
 import _poolSzarelGenesisShepherd from "../pool/szarel-genesis-shepherd.js";
+import _poolTalionTheKindlyLord from "../pool/talion-the-kindly-lord.js";
 import _poolTalismanOfIndulgence from "../pool/talisman-of-indulgence.js";
 import _poolTempleOfEnlightenment from "../pool/temple-of-enlightenment.js";
 import _poolTempleOfPlenty from "../pool/temple-of-plenty.js";
@@ -303,6 +304,7 @@ const shard: CardShard = {
     _poolStrengthOfThePack,
     _poolSwornGuardian,
     _poolSzarelGenesisShepherd,
+    _poolTalionTheKindlyLord,
     _poolTalismanOfIndulgence,
     _poolTempleOfEnlightenment,
     _poolTempleOfPlenty,

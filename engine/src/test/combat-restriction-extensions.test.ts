@@ -14,6 +14,7 @@ import { describe, expect, it } from "vitest";
 
 import type { LegalAction } from "../actions.js";
 import { ifAblePlan, obeyingLure } from "../combat/blocking.js";
+import { nearestOpponentRule } from "../combat/eligibility.js";
 import { defineCard } from "../cards/define.js";
 import { createDefaultRegistry } from "../cards/registry.js";
 import { ScriptedController } from "../controller.js";
@@ -34,8 +35,8 @@ const ERIETTE = "Test Charmed Apple";
 const SKY_WARDEN = "Test Sky Warden";
 const HOUND = "Test Loyal Hound";
 /** Pramikon, Sky Rampart's rule: "As this enters, choose left or right. Each
- * player may attack only the nearest opponent in the last chosen direction
- * and planeswalkers controlled by that player." */
+ * player may attack only the nearest opponent in the chosen direction and
+ * planeswalkers controlled by that opponent." */
 const RAMPART = "Test Sky Rampart";
 
 const enchantment = (name: string, statics: Parameters<typeof defineCard>[0]["static"]) =>
@@ -250,16 +251,30 @@ describe("the nearest opponent in the chosen direction", () => {
     expect(defendersFor(game, B, bears)).toEqual([C]);
   });
 
-  it("the latest choice is the one in force, and a player who has lost is skipped", () => {
+  it("a player who has lost is skipped", () => {
     const { game } = setUp([A, B, C, D]);
     game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "precombat-main");
-    rampart(game, "left", C);
     rampart(game, "right", C);
     game.state.players[A].hasLost = true;
     const bears = ready(game, "Grizzly Bears", B);
     game.advanceUntil((s) => s.awaiting?.kind === "attackers");
     // Right of Bob is Alice, who has lost, so Dave.
     expect(defendersFor(game, B, bears)).toEqual([D]);
+  });
+
+  // "If two Pramikons on the battlefield disagree on which direction three or
+  // more players must attack, players can't attack at all." (ruling) Each
+  // one's direction applies; it isn't the latest that wins.
+  it("every choice applies at once: two that disagree leave nobody to attack", () => {
+    const { game } = setUp([A, B, C, D]);
+    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "precombat-main");
+    rampart(game, "left", B);
+    rampart(game, "right", B);
+    expect(nearestOpponentRule(game.state, registry, B)).toEqual([]);
+    // With two players left, left and right are the same opponent.
+    game.state.players[A].hasLost = true;
+    game.state.players[C].hasLost = true;
+    expect(nearestOpponentRule(game.state, registry, B)).toEqual([D]);
   });
 });
 

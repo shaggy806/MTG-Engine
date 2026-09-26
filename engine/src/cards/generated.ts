@@ -3395,6 +3395,7 @@ import _poolPouncingCheetah from "./pool/pouncing-cheetah.js";
 import _poolPrairieStream from "./pool/prairie-stream.js";
 import _poolPrakhataClubSecurity from "./pool/prakhata-club-security.js";
 import _poolPrakhataPillarBug from "./pool/prakhata-pillar-bug.js";
+import _poolPramikonSkyRampart from "./pool/pramikon-sky-rampart.js";
 import _poolPrecinctCaptain from "./pool/precinct-captain.js";
 import _poolPrecisionBolt from "./pool/precision-bolt.js";
 import _poolPreemptiveStrike from "./pool/preemptive-strike.js";
@@ -4556,6 +4557,7 @@ import _poolTalasAirShip from "./pool/talas-air-ship.js";
 import _poolTalasMerchant from "./pool/talas-merchant.js";
 import _poolTalasScout from "./pool/talas-scout.js";
 import _poolTalasWarrior from "./pool/talas-warrior.js";
+import _poolTalionTheKindlyLord from "./pool/talion-the-kindly-lord.js";
 import _poolTalismanOfConviction from "./pool/talisman-of-conviction.js";
 import _poolTalismanOfCreativity from "./pool/talisman-of-creativity.js";
 import _poolTalismanOfCuriosity from "./pool/talisman-of-curiosity.js";
@@ -8933,6 +8935,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolPrairieStream,
   _poolPrakhataClubSecurity,
   _poolPrakhataPillarBug,
+  _poolPramikonSkyRampart,
   _poolPrecinctCaptain,
   _poolPrecisionBolt,
   _poolPreemptiveStrike,
@@ -10094,6 +10097,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTalasMerchant,
   _poolTalasScout,
   _poolTalasWarrior,
+  _poolTalionTheKindlyLord,
   _poolTalismanOfConviction,
   _poolTalismanOfCreativity,
   _poolTalismanOfCuriosity,

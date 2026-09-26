@@ -183,8 +183,10 @@ export function whyCannotAttack(
     return `${def.name} can't attack its owner`;
   }
   const nearest = nearestOpponentRule(state, registry, player);
-  if (nearest !== null && defendingPlayer !== nearest) {
-    return `${def.name} may attack only ${nearest} (the nearest opponent in the chosen direction)`;
+  if (nearest !== null && !nearest.includes(defendingPlayer)) {
+    return nearest.length === 0
+      ? `${def.name} can't attack: the directions chosen disagree, so there's no opponent to attack`
+      : `${def.name} may attack only ${nearest[0]} (the nearest opponent in the chosen direction)`;
   }
   // "Can't attack you or planeswalkers you control" — "you" is the
   // controller of the permanent saying so, not of the creature: the Aura on
@@ -304,20 +306,23 @@ export function whyCannotBlock(
 }
 
 /**
- * The one opponent `player` may attack under an `attackOnlyNearestOpponent`
- * static (Pramikon, Sky Rampart), or `null` when none is in force: the
- * nearest one in the direction chosen for the latest such permanent — left
- * is onward in turn order, right is back — skipping players who have lost.
+ * The opponents `player` may attack under `attackOnlyNearestOpponent` statics
+ * (Pramikon, Sky Rampart), or `null` when none is in force: the nearest one
+ * in the direction chosen for each such permanent — left is onward in turn
+ * order, right is back — skipping players who have lost. Every one applies
+ * at once, so two that disagree, with three or more players left, leave
+ * nobody to attack (the Pramikon ruling) and this is empty.
  */
 export function nearestOpponentRule(
   state: GameState,
   registry: CardRegistry,
   player: PlayerId,
-): PlayerId | null {
-  let rule: GameObject | null = null;
+): readonly PlayerId[] | null {
+  const directions = new Set<"left" | "right">();
   for (const id of state.zones.shared.battlefield) {
     const source = state.objects[id];
     if (hasLostAbilities(source) || state.players[source.controller]?.hasLost === true) continue;
+    // No direction chosen (it entered some way that didn't ask): no effect.
     if (source.chosenOnEnter !== "left" && source.chosenOnEnter !== "right") continue;
     const governs = registry
       .get(printedCardName(source))
@@ -326,17 +331,21 @@ export function nearestOpponentRule(
           ability.attackOnlyNearestOpponent === true &&
           (ability.condition === undefined || staticConditionMet(state, registry, source, ability.condition)),
       );
-    if (governs && (rule === null || source.timestamp > rule.timestamp)) rule = source;
+    if (governs) directions.add(source.chosenOnEnter);
   }
-  if (rule === null) return null;
+  if (directions.size === 0) return null;
   const order = state.turnOrder;
-  const step = rule.chosenOnEnter === "left" ? 1 : -1;
   const from = order.indexOf(player);
-  for (let i = 1; i < order.length; i += 1) {
-    const other = order[(((from + step * i) % order.length) + order.length) % order.length];
-    if (other !== player && state.players[other]?.hasLost !== true) return other;
-  }
-  return null;
+  const nearest = (step: number): PlayerId | null => {
+    for (let i = 1; i < order.length; i += 1) {
+      const other = order[(((from + step * i) % order.length) + order.length) % order.length];
+      if (other !== player && state.players[other]?.hasLost !== true) return other;
+    }
+    return null;
+  };
+  const allowed = [...directions].map((direction) => nearest(direction === "left" ? 1 : -1));
+  const first = allowed[0];
+  return first !== null && allowed.every((p) => p === first) ? [first] : [];
 }
 
 /** The battlefield statics carrying a `cantBeBlockedBy` or `canBlockOnly`

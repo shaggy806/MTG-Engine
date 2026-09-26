@@ -11239,6 +11239,11 @@ export class Game {
         const chosen = this.state.objects[source]?.chosenOnEnter;
         return MANA_TYPES.includes(chosen as ManaType) ? (chosen as ManaType) : undefined;
       },
+      chosenNumberOfSource: () => {
+        const chosen = this.state.objects[source]?.chosenOnEnter;
+        const n = typeof chosen === "string" ? Number(chosen) : Number.NaN;
+        return Number.isInteger(n) ? n : undefined;
+      },
       sacrificeAllBut: (player, keep, filter) => {
         // "Chooses up to N they control, then sacrifices the rest" — the
         // existing sacrifice queue already asks the right player; it just

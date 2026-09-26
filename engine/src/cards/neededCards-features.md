@@ -310,8 +310,7 @@ has ever run them.
 - **Trigger kinds:** `attacks-player`, and the `predicate` escape hatch
   (**untested**).
 - **Static conditions:** `source-greatest`, `player-counters`.
-- **Static-ability fields:** `canBlockOnly`, `castAsThoughFlash`,
-  `attackOnlyNearestOpponent`.
+- **Static-ability fields:** `canBlockOnly`, `castAsThoughFlash`.
 - **Filter clauses:** `notColors`, `notName`, `sharesCardTypeWith`.
 - **Amounts:** `{ sum }`, `{ damageDealtThisTurn }`.
 - **Combat restriction:** `cant-attack-owner`.

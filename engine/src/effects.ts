@@ -161,6 +161,11 @@ export type EffectAmount =
    * many Treasure tokens"). Snapshotted when the trigger is detected; `0`
    * outside a triggered-ability resolution. */
   | { readonly triggerValue: true }
+  /** The number chosen as the source entered — Talion, the Kindly Lord's "the
+   * chosen number" (a `chooseOnEnter` of "1"…"10"). `NaN` while none was
+   * chosen, so a comparison with it never holds: like Pramikon's direction,
+   * a choice that was never made has no effect. */
+  | { readonly chosenNumber: true }
   /**
    * The mana value of whatever a target slot (or `"source"` /
    * `"trigger-object"` / `"sacrificed"`) points at — Feed the Swarm's "you
@@ -2441,6 +2446,9 @@ export interface EffectApi {
   /** The colour this effect's source named as it entered, or `undefined` —
    * see `GameObject.chosenOnEnter` and `add-mana`'s `"chosen"`. */
   chosenColorOfSource(): ManaType | undefined;
+  /** The number chosen as the source entered, if one was — see the
+   * `chosenNumber` {@link EffectAmount}. */
+  chosenNumberOfSource(): number | undefined;
   /** See the `"goad"` {@link EffectSpec}. */
   goadCreaturesOf(player: PlayerId): void;
   /** See the `"impulse-exile"` {@link EffectSpec}. */
@@ -2923,6 +2931,7 @@ function signedAmountValue(
   if (amount === "x") return ctx.x;
   if (typeof amount === "number") return amount;
   if ("triggerValue" in amount) return ctx.triggerValue;
+  if ("chosenNumber" in amount) return ctx.chosenNumberOfSource() ?? Number.NaN;
   if ("lifeTotal" in amount) {
     return ctx.lifeTotalOf(amount.lifeTotal === "each" ? (each ?? ctx.controller) : ctx.controller);
   }

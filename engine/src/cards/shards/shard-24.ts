@@ -107,6 +107,7 @@ import _poolOnTheJob from "../pool/on-the-job.js";
 import _poolParcelMyr from "../pool/parcel-myr.js";
 import _poolPitilessGorgon from "../pool/pitiless-gorgon.js";
 import _poolPoisonArrow from "../pool/poison-arrow.js";
+import _poolPramikonSkyRampart from "../pool/pramikon-sky-rampart.js";
 import _poolPressurePoint from "../pool/pressure-point.js";
 import _poolProwlingFelidar from "../pool/prowling-felidar.js";
 import _poolQuarryBeetle from "../pool/quarry-beetle.js";
@@ -276,6 +277,7 @@ const shard: CardShard = {
     _poolParcelMyr,
     _poolPitilessGorgon,
     _poolPoisonArrow,
+    _poolPramikonSkyRampart,
     _poolPressurePoint,
     _poolProwlingFelidar,
     _poolQuarryBeetle,

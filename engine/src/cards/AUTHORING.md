@@ -406,7 +406,11 @@ life; or
 `{ triggerValue: true }` — a number the firing event supplied to a **triggered
 ability**: the entering / attacking creature's power (Terror of the Peaks:
 `damage`), or the combat damage a creature dealt a player (Old Gnawbone:
-`create-token` `count`). `0` outside a triggered-ability resolution. An
+`create-token` `count`). `0` outside a triggered-ability resolution; or
+`{ chosenNumber: true }` — the number chosen as the source entered, from a
+`chooseOnEnter` of numbers (Talion, the Kindly Lord's "the chosen number",
+compared in its trigger's filter as `n: { amount: { chosenNumber: true } }`).
+`NaN` when none was chosen, so a comparison with it never holds. An
 `EffectAmount` is accepted by `damage` / `damage-all` / `mill` / `discard` /
 `draw` / `gain-life` / `lose-life` / `prevent-damage` `amount`, `modify-pt` /
 `modify-pt-all` `power`/`toughness`, `add-mana` `amount`, and `create-token`
@@ -1703,10 +1707,11 @@ anthem, the keyword grant and the granted trigger like any other creature.
   scope may ask about power and toughness.
 - `attackOnlyNearestOpponent: true` — with `chooseOnEnter: ["left",
   "right"]`, Pramikon, Sky Rampart's "each player may attack only the nearest
-  opponent in the last chosen direction and planeswalkers controlled by that
-  player": a rule for every player (whatever `affects` says), left being
-  onward in turn order and right back, skipping players who have lost; the
-  latest such permanent's choice is in force.
+  opponent in the chosen direction and planeswalkers controlled by that
+  opponent": a rule for every player (whatever `affects` says), left being
+  onward in turn order and right back, skipping players who have lost. Every
+  such permanent's direction applies at once, so two that disagree with three
+  or more players left leave nobody to attack (the Pramikon ruling).
 - `prohibits: { who, spells?, abilitiesOf? }` — a "can't" about casting and
   activating (rule 101.2 — it beats any "can"): `who` (`"opponents"`,
   `"you"`, `"each-player"`, from this permanent's controller's side) can't

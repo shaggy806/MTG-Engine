@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-261 already implemented / 239 missing
+263 already implemented / 237 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -345,7 +345,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  339  Vnwxt, Verbose Host                             8171 decks  {1}{U}           Legendary Creature — Homunculus
 [ ]  340  Saskia the Unyielding                           8145 decks  {B}{R}{G}{W}     Legendary Creature — Human Soldier
 [x]  341  Imotekh the Stormlord                           8137 decks  {2}{B}{B}        Legendary Artifact Creature — Necron
-[ ]  342  Talion, the Kindly Lord                         8105 decks  {2}{U}{B}        Legendary Creature — Faerie Noble
+[x]  342  Talion, the Kindly Lord                         8105 decks  {2}{U}{B}        Legendary Creature — Faerie Noble
 [ ]  343  Maelstrom Wanderer                              8102 decks  {5}{G}{U}{R}     Legendary Creature — Elemental
 [ ]  344  Sen Triplets                                    8043 decks  {2}{W}{U}{B}     Legendary Artifact Creature — Human Wizard
 [ ]  345  Xavier Sal, Infested Captain                    8040 decks  {B}{G}{U}        Legendary Creature — Human Fungus Pirate
@@ -395,7 +395,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  389  Ezuri, Claw of Progress                         7437 decks  {2}{G}{U}        Legendary Creature — Phyrexian Elf Warrior
 [x]  390  Bilbo, Birthday Celebrant                       7415 decks  {W}{B}{G}        Legendary Creature — Halfling Rogue
 [ ]  391  The Beamtown Bullies                            7406 decks  {1}{B}{R}{G}     Legendary Creature — Ogre Devil Warrior
-[ ]  392  Pramikon, Sky Rampart                           7391 decks  {U}{R}{W}        Legendary Creature — Wall
+[x]  392  Pramikon, Sky Rampart                           7391 decks  {U}{R}{W}        Legendary Creature — Wall
 [ ]  393  Tony Stark                                      7376 decks  {1}{U}           Legendary Creature — Human Artificer Hero // Legendary Artifact Creature — Human Hero
 [ ]  394  Kiora, Sovereign of the Deep                    7371 decks  {3}{G}{U}        Legendary Creature — Merfolk Noble
 [x]  395  Azusa, Lost but Seeking                         7363 decks  {2}{G}           Legendary Creature — Human Monk

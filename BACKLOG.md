@@ -6,7 +6,7 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**261 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**263 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
@@ -17,11 +17,11 @@ that one card is the reason the deck exists.
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The first
   ten, engine-only, with the commanders each fully unblocks:
-  `bug:as-enters-choices-any-entry` (+2), `keyword:changeling` (+1),
-  `condition:filter-card-property-clauses` (+2), `effect:create-token-with-counters` (+1),
-  `mechanic:goad-extensions` (+3), `effect:target-spec-additions` (+1), `mechanic:suspect` (+1),
-  `effect:mana-ability-dynamic-amount` (+2), `stat:spells-cast-this-turn-record` (+2),
-  `effect:amount-fields-dynamic` (+2).
+  `keyword:changeling` (+1), `condition:filter-card-property-clauses` (+2),
+  `effect:create-token-with-counters` (+1), `mechanic:goad-extensions` (+3),
+  `effect:target-spec-additions` (+1), `effect:control-change-extensions` (+3),
+  `static:cant-be-sacrificed` (+2), `mechanic:suspect` (+1),
+  `effect:mana-ability-dynamic-amount` (+2), `stat:spells-cast-this-turn-record` (+2).
 - **Most-needed features overall.** `zone:visibility-extensions` (13),
   `effect:copy-spell-extensions`, `effect:copy-exceptions` and
   `condition:filter-card-property-clauses` (11 each). Live numbers come from `cmdrs:gaps`.
