@@ -1703,8 +1703,13 @@ function computeCharacteristicsUncached(
   const onBattlefield = object.zone === "battlefield";
   const lostAbilities = onBattlefield && hasLostAbilities(object);
 
-  let power = def.power ?? 0;
-  let toughness = def.toughness ?? 0;
+  // A station card's printed power and toughness are a station symbol's
+  // (rule 721.2b): it has them only through that symbol's static ability, so
+  // never in another zone (721.2c) or below that symbol's threshold, and not
+  // when something else makes it a creature (the station ruling).
+  const printedPt = !def.activated.some((ability) => ability.station === true);
+  let power = printedPt ? (def.power ?? 0) : 0;
+  let toughness = printedPt ? (def.toughness ?? 0) : 0;
   // Layer 6 — a permanent that lost its abilities keeps no printed keywords.
   const keywords = new Set<Keyword>(lostAbilities ? [] : def.keywords);
   // Layers 3 + 4 — text substitution, then every type-changing effect in

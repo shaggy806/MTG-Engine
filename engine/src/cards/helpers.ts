@@ -119,6 +119,40 @@ export const dethrone = (): TriggeredAbility => ({
 });
 
 /**
+ * Station (rule 702.184a): "Tap another untapped creature you control: Put a
+ * number of charge counters on this permanent equal to the tapped creature's
+ * power. Activate only as a sorcery." The power is read as the ability
+ * resolves, as the creature last existed if it has left (the station
+ * ruling); a negative one puts nothing on. Tapping for it isn't the
+ * creature's own {T}, so a summoning-sick creature can. It makes its card a
+ * station card (702.184b), whose printed power and toughness are its station
+ * symbol's (`stationBand`). `text` is the printed line, reminder text and all.
+ */
+export const station = (text: string): ActivatedAbility => ({
+  cost: { mana: null, tap: false, tapOthers: { count: 1, filter: { type: "creature" } } },
+  targets: [],
+  effect: { kind: "add-counter", target: "source", counter: "charge", amount: { powerOf: "tapped" } },
+  resolve: null,
+  sorcerySpeed: true,
+  station: true,
+  text,
+});
+
+/**
+ * A station symbol (rule 721.2): a static ability giving its permanent what
+ * the symbol's striation holds while it has `at` or more charge counters —
+ * abilities (721.2a), and with a power/toughness box, being a creature with
+ * that base power and toughness in addition to its other types (721.2b:
+ * `addTypes: ["creature"]` and `setBasePt`). Counters from anywhere count,
+ * proliferate's included, and losing them takes the abilities away.
+ */
+export const stationBand = (at: number, band: Omit<StaticAbility, "affects" | "condition">): StaticAbility => ({
+  ...band,
+  affects: { scope: "self" },
+  condition: { kind: "source", filter: { counters: { kind: "charge", compare: { op: "gte", n: at } } } },
+});
+
+/**
  * Affinity for [something] (rule 702.41a): "This spell costs {1} less to
  * cast for each [something] you control" — the card's `selfCostReduction`.
  * `filter` is the something, and is counted among the caster's permanents

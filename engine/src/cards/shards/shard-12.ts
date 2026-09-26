@@ -73,6 +73,7 @@ import _poolGnarledMass from "../pool/gnarled-mass.js";
 import _poolGoobbueGardener from "../pool/goobbue-gardener.js";
 import _poolHaazdaOfficer from "../pool/haazda-officer.js";
 import _poolHarrierStrix from "../pool/harrier-strix.js";
+import _poolHearthhullTheWorldseed from "../pool/hearthhull-the-worldseed.js";
 import _poolHornetSting from "../pool/hornet-sting.js";
 import _poolHulkBruceBanner from "../pool/hulk-bruce-banner.js";
 import _poolIsland from "../pool/island.js";
@@ -237,6 +238,7 @@ const shard: CardShard = {
     _poolGoobbueGardener,
     _poolHaazdaOfficer,
     _poolHarrierStrix,
+    _poolHearthhullTheWorldseed,
     _poolHornetSting,
     _poolHulkBruceBanner,
     _poolIsland,

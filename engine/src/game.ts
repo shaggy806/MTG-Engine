@@ -7405,7 +7405,14 @@ export class Game {
       this.emit({ type: "permanent-tapped", object: sourceId });
     }
     // "Tap five untapped Zombies you control" — see `AbilityCost.tapOthers`.
-    this.payTapCost(tapPicked);
+    // A cost that tapped one permanent remembers it: "the tapped creature's
+    // power" (station, rule 702.184a) is read as the ability resolves, as it
+    // last existed if it has left (the station ruling).
+    const tapped = this.payTapCost(tapPicked);
+    const tappedRef: LastKnownRefs["tapped"] =
+      tapped.length === 1
+        ? { object: tapped[0], zoneChangeCount: this.state.objects[tapped[0]].zoneChangeCount ?? 0 }
+        : undefined;
     this.executePayment(player, payment);
     if (ability.cost.payLife !== undefined) {
       this.changeLife(player, -ability.cost.payLife);
@@ -7583,10 +7590,11 @@ export class Game {
     );
     if (chosenX > 0) this.state.objects[abilityId].xValue = chosenX;
     if (grantedAbility !== undefined) this.state.objects[abilityId].grantedAbility = grantedAbility;
-    if (sourceStint !== undefined || sacrificedRef !== undefined) {
+    if (sourceStint !== undefined || sacrificedRef !== undefined || tappedRef !== undefined) {
       this.state.objects[abilityId].lastKnownRefs = {
         ...(sourceStint !== undefined ? { source: sourceStint } : {}),
         ...(sacrificedRef !== undefined ? { sacrificed: sacrificedRef } : {}),
+        ...(tappedRef !== undefined ? { tapped: tappedRef } : {}),
       };
     }
     if (ability.zone === "command" || ability.staysInZone === true) {
@@ -10882,9 +10890,10 @@ export class Game {
     };
     // Last-known information (rule 608.2h): a permanent this spell or
     // ability refers to that has left the battlefield since is read as it
-    // last existed there. The source, the triggering object and the
-    // sacrificed permanent say which stint they mean (`refs`); a target was
-    // a permanent if it was on the battlefield when targeted.
+    // last existed there. The source, the triggering object, the sacrificed
+    // permanent and the one tapped for the cost say which stint they mean
+    // (`refs`); a target was a permanent if it was on the battlefield when
+    // targeted.
     const stintOf = (id: ObjectId): number | undefined =>
       id === source && refs.source !== undefined
         ? refs.source
@@ -10892,7 +10901,9 @@ export class Game {
           ? refs.triggerObject
           : refs.sacrificed?.object === id
             ? refs.sacrificed.zoneChangeCount
-            : undefined;
+            : refs.tapped?.object === id
+              ? refs.tapped.zoneChangeCount
+              : undefined;
     const lastKnownOf = (target: TargetRef): LastKnownInfo | undefined => {
       if (target.kind !== "object") return undefined;
       const stint = stintOf(target.object);
@@ -11021,6 +11032,7 @@ export class Game {
         : {}),
       ...(opts.abilityKey !== undefined ? { abilityKey: opts.abilityKey } : {}),
       ...(refs.sacrificed !== undefined ? { sacrificed: refs.sacrificed.object } : {}),
+      ...(refs.tapped !== undefined ? { tapped: refs.tapped.object } : {}),
       decisionPending: () => this.decisionOutstanding(),
       parkedCount: () => this.state.suspendedResolutions.length,
       resumeAfterDecisions: (rest, below) => {
@@ -12765,12 +12777,13 @@ export class Game {
 
   /** Taps what {@link tapCostPicks} chose, peeling one token off a stack for
    * each time its id appears. */
-  private payTapCost(picked: readonly ObjectId[]): void {
-    for (const chosen of picked) {
+  private payTapCost(picked: readonly ObjectId[]): ObjectId[] {
+    return picked.map((chosen) => {
       const id = this.splitOneFromStack(chosen);
       this.state.objects[id].tapped = true;
       this.emit({ type: "permanent-tapped", object: id });
-    }
+      return id;
+    });
   }
 
   private populate(controller: PlayerId): void {

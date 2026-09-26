@@ -40,14 +40,16 @@ export type EffectTargetRef = number | "source" | "trigger-object";
  * {@link EffectTargetRef} can, plus `"sacrificed"` — the permanent sacrificed
  * to pay the spell's or ability's cost, or by a `sacrifice-source` step
  * before this one ("where X is the sacrificed creature's power" — Dina, Soul
- * Steeper). Nothing sacrificed reads 0.
+ * Steeper) — and `"tapped"`, the one permanent tapped to pay the ability's
+ * cost ("equal to the tapped creature's power" — station). Nothing
+ * sacrificed or tapped reads 0.
  *
  * An object that was a permanent when the spell or ability referred to it
  * and has left the battlefield since is read as it last existed there (rule
  * 608.2h — see `LastKnownRefs`): "When Juri dies, it deals damage equal to
  * its power" counts the counters Juri died with.
  */
-export type AmountRef = EffectTargetRef | "sacrificed";
+export type AmountRef = EffectTargetRef | "sacrificed" | "tapped";
 /** Where a `return-to-hand` effect takes its object from. */
 export type ReturnToHandZone = "battlefield" | "graveyard" | "exile" | "stack";
 export type PtDuration = "end-of-turn" | "permanent";
@@ -2772,6 +2774,9 @@ export interface ResolutionContext extends EffectApi {
    * `sacrifice-source` step before this one — what an {@link AmountRef}
    * `"sacrificed"` reads. Absent when nothing was. */
   readonly sacrificed?: ObjectId;
+  /** The one permanent tapped to pay this ability's cost — what an
+   * {@link AmountRef} `"tapped"` reads. Absent when nothing was. */
+  readonly tapped?: ObjectId;
   /** Which ability of which object is resolving, as the per-turn records
    * key it (`resolved-this-turn`, a `may`'s `oncePerTurn`): the source, the
    * timestamp it had when the ability went on the stack, and which of its
@@ -3090,6 +3095,9 @@ export type SpellResolver = (ctx: ResolutionContext) => void;
 function resolveAmountRef(ref: AmountRef, ctx: ResolutionContext): TargetRef | undefined {
   if (ref === "sacrificed") {
     return ctx.sacrificed === undefined ? undefined : { kind: "object", object: ctx.sacrificed };
+  }
+  if (ref === "tapped") {
+    return ctx.tapped === undefined ? undefined : { kind: "object", object: ctx.tapped };
   }
   // A read: a trigger object — or the source — that has moved on since is
   // read as it last existed, which the context's lookups do (rule 608.2h).

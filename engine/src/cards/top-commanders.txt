@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-266 already implemented / 234 missing
+269 already implemented / 231 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -28,7 +28,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   22  Yuriko, the Tiger's Shadow                     32047 decks  {1}{U}{B}        Legendary Creature — Human Ninja
 [x]   23  Kenrith, the Returned King                     31620 decks  {4}{W}           Legendary Creature — Human Noble
 [ ]   24  Cloud, Ex-SOLDIER                              31517 decks  {2}{R}{G}{W}     Legendary Creature — Human Soldier Mercenary
-[ ]   25  Hearthhull, the Worldseed                      31352 decks  {1}{B}{R}{G}     Legendary Artifact — Spacecraft
+[x]   25  Hearthhull, the Worldseed                      31352 decks  {1}{B}{R}{G}     Legendary Artifact — Spacecraft
 [x]   26  Kefka, Court Mage                              31209 decks  {2}{U}{B}{R}     Legendary Creature — Human Wizard // Legendary Creature — Avatar Wizard
 [x]   27  Valgavoth, Harrower of Souls                   30711 decks  {2}{B}{R}        Legendary Creature — Elder Demon
 [x]   28  Isshin, Two Heavens as One                     30593 decks  {R}{W}{B}        Legendary Creature — Human Samurai
@@ -168,7 +168,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  162  Azlask, the Swelling Scourge                   13822 decks  {3}              Legendary Creature — Eldrazi
 [x]  163  Ishai, Ojutai Dragonspeaker                    13791 decks  {2}{W}{U}        Legendary Creature — Bird Monk
 [ ]  164  Shelob, Child of Ungoliant                     13732 decks  {4}{B}{G}        Legendary Creature — Spider Demon
-[ ]  165  Inspirit, Flagship Vessel                      13524 decks  {U}{R}{W}        Legendary Artifact — Spacecraft
+[x]  165  Inspirit, Flagship Vessel                      13524 decks  {U}{R}{W}        Legendary Artifact — Spacecraft
 [ ]  166  Feather, the Redeemed                          13510 decks  {R}{W}{W}        Legendary Creature — Angel
 [ ]  167  Rocco, Street Chef                             13462 decks  {R}{G}{W}        Legendary Creature — Elf Druid
 [x]  168  Atreus, Impulsive Son                          13368 decks  {1}{U}{R}        Legendary Creature — God Archer
@@ -244,7 +244,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  238  Narset, Enlightened Exile                      10506 decks  {1}{U}{R}{W}     Legendary Creature — Human Monk
 [ ]  239  Krark, the Thumbless                           10505 decks  {1}{R}           Legendary Creature — Goblin Wizard
 [x]  240  Rakdos, Lord of Riots                          10471 decks  {B}{B}{R}{R}     Legendary Creature — Demon
-[ ]  241  Infinite Guideline Station                     10457 decks  {W}{U}{B}{R}{G}  Legendary Artifact — Spacecraft
+[x]  241  Infinite Guideline Station                     10457 decks  {W}{U}{B}{R}{G}  Legendary Artifact — Spacecraft
 [ ]  242  Niko, Light of Hope                            10448 decks  {2}{W}{U}        Legendary Creature — Human Wizard
 [x]  243  Ketramose, the New Dawn                        10444 decks  {1}{W}{B}        Legendary Creature — God
 [ ]  244  Prismari, the Inspiration                      10435 decks  {5}{U}{R}        Legendary Creature — Elder Dragon

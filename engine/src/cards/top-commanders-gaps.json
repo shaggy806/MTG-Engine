@@ -114,7 +114,8 @@
   "bug:modal-modes-on-cast",
   "bug:player-leaves-game-cleanup",
   "bug:as-enters-choices-any-entry",
-  "effect:aura-enters-choice"
+  "effect:aura-enters-choice",
+  "mechanic:station"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

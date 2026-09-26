@@ -59,6 +59,7 @@ import _poolHealersHawk from "../pool/healers-hawk.js";
 import _poolHengeOfRamos from "../pool/henge-of-ramos.js";
 import _poolHourOfDefeat from "../pool/hour-of-defeat.js";
 import _poolHowlingFury from "../pool/howling-fury.js";
+import _poolInfiniteGuidelineStation from "../pool/infinite-guideline-station.js";
 import _poolInsomniaCrownCity from "../pool/insomnia-crown-city.js";
 import _poolIrrigationDitch from "../pool/irrigation-ditch.js";
 import _poolIsshinTwoHeavensAsOne from "../pool/isshin-two-heavens-as-one.js";
@@ -223,6 +224,7 @@ const shard: CardShard = {
     _poolHengeOfRamos,
     _poolHourOfDefeat,
     _poolHowlingFury,
+    _poolInfiniteGuidelineStation,
     _poolInsomniaCrownCity,
     _poolIrrigationDitch,
     _poolIsshinTwoHeavensAsOne,

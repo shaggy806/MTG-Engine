@@ -83,6 +83,10 @@ export interface ActivatedAbility {
   readonly text: string;
   /** True for abilities like Equip that function only as a sorcery (rule 602.3). */
   readonly sorcerySpeed?: boolean;
+  /** This is a station ability (rule 702.184a — `cards/helpers.ts`'s
+   * `station()`), which makes its card a station card (702.184b): one whose
+   * printed power and toughness belong to a station symbol (721.2b). */
+  readonly station?: boolean;
   /**
    * A loyalty ability (rule 606) — present ⇒ this ability's cost is "add
    * `loyaltyCost` loyalty counters to the source" (negative removes them),

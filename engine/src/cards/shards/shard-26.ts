@@ -179,6 +179,7 @@ import _poolZagothTriome from "../pool/zagoth-triome.js";
 import _poolZealotOfTheGodPharaoh from "../pool/zealot-of-the-god-pharaoh.js";
 import _poolZombieApocalypse from "../pool/zombie-apocalypse.js";
 import _tokensPegasusToken from "../tokens/pegasus-token.js";
+import _tokensRobotToken from "../tokens/robot-token.js";
 import _tokensZombieToken from "../tokens/zombie-token.js";
 
 const shard: CardShard = {
@@ -361,6 +362,7 @@ const shard: CardShard = {
   ],
   tokens: [
     _tokensPegasusToken,
+    _tokensRobotToken,
     _tokensZombieToken,
   ],
 };

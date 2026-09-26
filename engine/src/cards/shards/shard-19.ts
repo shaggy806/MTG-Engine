@@ -70,6 +70,7 @@ import _poolInfernoJet from "../pool/inferno-jet.js";
 import _poolInsidiousRoots from "../pool/insidious-roots.js";
 import _poolInspiration from "../pool/inspiration.js";
 import _poolInspiredSphinx from "../pool/inspired-sphinx.js";
+import _poolInspiritFlagshipVessel from "../pool/inspirit-flagship-vessel.js";
 import _poolIntangibleVirtue from "../pool/intangible-virtue.js";
 import _poolIronrootTreefolk from "../pool/ironroot-treefolk.js";
 import _poolIzzetChronarch from "../pool/izzet-chronarch.js";
@@ -247,6 +248,7 @@ const shard: CardShard = {
     _poolInsidiousRoots,
     _poolInspiration,
     _poolInspiredSphinx,
+    _poolInspiritFlagshipVessel,
     _poolIntangibleVirtue,
     _poolIronrootTreefolk,
     _poolIzzetChronarch,

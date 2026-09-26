@@ -2122,6 +2122,7 @@ import _poolHeapGate from "./pool/heap-gate.js";
 import _poolHeartOfRamos from "./pool/heart-of-ramos.js";
 import _poolHeartWarden from "./pool/heart-warden.js";
 import _poolHearthfireHobgoblin from "./pool/hearthfire-hobgoblin.js";
+import _poolHearthhullTheWorldseed from "./pool/hearthhull-the-worldseed.js";
 import _poolHeartwoodGiant from "./pool/heartwood-giant.js";
 import _poolHeartwoodTreefolk from "./pool/heartwood-treefolk.js";
 import _poolHeatRay from "./pool/heat-ray.js";
@@ -2309,6 +2310,7 @@ import _poolInfernalGrasp from "./pool/infernal-grasp.js";
 import _poolInfernalTribute from "./pool/infernal-tribute.js";
 import _poolInfernoFist from "./pool/inferno-fist.js";
 import _poolInfernoJet from "./pool/inferno-jet.js";
+import _poolInfiniteGuidelineStation from "./pool/infinite-guideline-station.js";
 import _poolInfuriate from "./pool/infuriate.js";
 import _poolInkriseInfiltrator from "./pool/inkrise-infiltrator.js";
 import _poolInkwellLeviathan from "./pool/inkwell-leviathan.js";
@@ -2329,6 +2331,7 @@ import _poolInspiringCaptain from "./pool/inspiring-captain.js";
 import _poolInspiringCleric from "./pool/inspiring-cleric.js";
 import _poolInspiringRoar from "./pool/inspiring-roar.js";
 import _poolInspiringUnicorn from "./pool/inspiring-unicorn.js";
+import _poolInspiritFlagshipVessel from "./pool/inspirit-flagship-vessel.js";
 import _poolInstantRamen from "./pool/instant-ramen.js";
 import _poolIntangibleVirtue from "./pool/intangible-virtue.js";
 import _poolIntimidation from "./pool/intimidation.js";
@@ -5517,6 +5520,7 @@ import _tokensPlantToken from "./tokens/plant-token.js";
 import _tokensRatTokenVren from "./tokens/rat-token-vren.js";
 import _tokensRatToken from "./tokens/rat-token.js";
 import _tokensRedSpiritTokenMenace from "./tokens/red-spirit-token-menace.js";
+import _tokensRobotToken from "./tokens/robot-token.js";
 import _tokensSandWarriorToken from "./tokens/sand-warrior-token.js";
 import _tokensSaprolingToken from "./tokens/saproling-token.js";
 import _tokensServoToken from "./tokens/servo-token.js";
@@ -7666,6 +7670,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolHeartOfRamos,
   _poolHeartWarden,
   _poolHearthfireHobgoblin,
+  _poolHearthhullTheWorldseed,
   _poolHeartwoodGiant,
   _poolHeartwoodTreefolk,
   _poolHeatRay,
@@ -7853,6 +7858,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolInfernalTribute,
   _poolInfernoFist,
   _poolInfernoJet,
+  _poolInfiniteGuidelineStation,
   _poolInfuriate,
   _poolInkriseInfiltrator,
   _poolInkwellLeviathan,
@@ -7873,6 +7879,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolInspiringCleric,
   _poolInspiringRoar,
   _poolInspiringUnicorn,
+  _poolInspiritFlagshipVessel,
   _poolInstantRamen,
   _poolIntangibleVirtue,
   _poolIntimidation,
@@ -11067,6 +11074,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensRatTokenVren,
   _tokensRatToken,
   _tokensRedSpiritTokenMenace,
+  _tokensRobotToken,
   _tokensSandWarriorToken,
   _tokensSaprolingToken,
   _tokensServoToken,

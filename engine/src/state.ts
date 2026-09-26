@@ -750,6 +750,9 @@ export interface LastKnownRefs {
    * or ability's cost (Dina, Soul Steeper), or by a `sacrifice-source` step
    * before the effect reading it. */
   readonly sacrificed?: { readonly object: ObjectId; readonly zoneChangeCount: number };
+  /** "The tapped creature": the one permanent tapped to pay the ability's
+   * cost (`AbilityCost.tapOthers` — station's, rule 702.184a). */
+  readonly tapped?: { readonly object: ObjectId; readonly zoneChangeCount: number };
   /**
    * What the triggering event was aimed at, for a trigger whose event has a
    * recipient — the permanent or player a `damage-dealt` event hit
