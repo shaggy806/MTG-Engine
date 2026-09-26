@@ -111,7 +111,8 @@
   "bug:counter-annihilation",
   "bug:lore-counters-fire-chapters",
   "bug:commander-eligibility-vehicles",
-  "bug:modal-modes-on-cast"
+  "bug:modal-modes-on-cast",
+  "bug:player-leaves-game-cleanup"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

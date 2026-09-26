@@ -31,6 +31,12 @@ export interface ControlEffect {
   readonly timestamp: number;
   /** Act of Treason's "until end of turn" — ends in the cleanup step. */
   readonly untilEndOfTurn: boolean;
+  /** Made by "put it onto the battlefield under your control" rather than a
+   * control-changing effect: `controller` is then who the permanent entered
+   * under, its default controller (rule 110.2). The two differ only once that
+   * player leaves the game — an effect giving them control ends, but a
+   * permanent they control by default is exiled (rule 800.4a). */
+  readonly entered?: boolean;
 }
 
 /** An instance of a card (or token) somewhere in the game. */

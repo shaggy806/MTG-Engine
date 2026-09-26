@@ -412,18 +412,19 @@ export function matchesFilter(
   const live = lki === undefined ? object : undefined;
   if (live === undefined && lki === undefined) return false;
 
-  // A permanent whose controller has left the game takes no further part in
-  // it: nothing counts it, targets it, or sweeps it up.
+  // What a player who has left the game owns, anywhere, and a permanent
+  // they control, takes no further part in it: nothing counts it, targets
+  // it, returns it or sweeps it up.
   //
   // Rule 800.4a removes a departing player's objects from the game. Here they
-  // leave *play* but stay on the board, which is what happens at a real
-  // table — an eliminated player's battlefield sits there for everyone to
-  // read. Functionally they are gone, which is the half the rules are about;
-  // the client tints the quadrant so nobody mistakes them for live.
+  // stay where they are — an eliminated player's battlefield sits there for
+  // everyone to read, as it would at a table — but they are gone, which is
+  // the half the rules are about (`Game.leaveGame`, `Game.inGame`); the
+  // client tints the quadrant so nobody mistakes them for live.
   if (
     live !== undefined &&
-    live.zone === "battlefield" &&
-    state.players[live.controller]?.hasLost === true
+    (state.players[live.owner]?.hasLost === true ||
+      (live.zone === "battlefield" && state.players[live.controller]?.hasLost === true))
   ) {
     return false;
   }

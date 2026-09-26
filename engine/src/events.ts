@@ -100,7 +100,9 @@ export type GameEvent =
        * how — an effect, or combat damage to the previous monarch. */
       readonly type: "monarch-changed";
       readonly player: PlayerId;
-      readonly via: "effect" | "combat-damage";
+      /** `monarch-left`: the monarch left the game, and the designation
+       * passed on (rule 725.4). */
+      readonly via: "effect" | "combat-damage" | "monarch-left";
     })
   | (Base & {
       /** A player's energy count changed (rule 122 / {E} — ROADMAP Phase 10). */

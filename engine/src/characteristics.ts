@@ -1194,8 +1194,11 @@ export function countValue(
   registry: CardRegistry,
   controller: PlayerId,
 ): number {
+  // A player who has left the game took their graveyard with them (800.4a).
   const allGraveyards = (): ObjectId[] =>
-    state.turnOrder.flatMap((p) => state.zones.perPlayer[p]?.graveyard ?? []);
+    state.turnOrder.flatMap((p) =>
+      state.players[p]?.hasLost === true ? [] : (state.zones.perPlayer[p]?.graveyard ?? []),
+    );
   if (typeof spec === "object") {
     if ("countOf" in spec) {
       return permanentCount(

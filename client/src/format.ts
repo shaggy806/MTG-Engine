@@ -110,7 +110,9 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
     case 'counter-failed':
       return `${name(event.object)} can't be countered`
     case 'monarch-changed':
-      return `${event.player} becomes the monarch (${event.via})`
+      return event.via === 'monarch-left'
+        ? `${event.player} becomes the monarch (the monarch left the game)`
+        : `${event.player} becomes the monarch (${event.via})`
     case 'energy-changed':
       return `${event.player} ${event.delta >= 0 ? '+' : ''}${event.delta} energy (now ${event.energy})`
     case 'player-counters-changed':

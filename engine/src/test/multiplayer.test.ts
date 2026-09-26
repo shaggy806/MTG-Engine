@@ -273,10 +273,12 @@ describe("loss conditions with more than two players", () => {
    * An eliminated player's permanents stay on the battlefield so the others
    * can still see what they had, but stop taking part in the game.
    *
-   * **This is a deliberate deviation from rule 800.4a**, which removes a
-   * departing player's objects from the game outright. It is a UI choice, not
-   * an oversight: the board stays readable. The functional half is what these
-   * assertions pin.
+   * Rule 800.4a removes a departing player's objects from the game outright;
+   * leaving them to be seen is a UI choice, not an oversight, and the board
+   * stays readable. The functional half is what these assertions pin — and
+   * the rest of 800.4a (what they'd taken goes back, what they own goes with
+   * them from anywhere, their spells leave the stack) is
+   * `player-leaves-game.test.ts`.
    */
   it("leaves a dead player's permanents visible but inert", () => {
     const { game } = makeThreePlayerGame();

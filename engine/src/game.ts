@@ -189,6 +189,7 @@ import type {
   CombatDamageState,
   CommanderMoveOrigin,
   CommanderReplacementZone,
+  ControlEffect,
   DelayedCastWatch,
   DelayedLeaveWatch,
   DelayedTrigger,
@@ -581,6 +582,12 @@ export class Game {
    * held back until all of its permanents are on the battlefield — see
    * {@link withEnterBatch}. `null` outside one. */
   private enterAnnouncements: GameEventInput[] | null = null;
+  /** The player whose leaving the game (`leaveGame`) is under way. While it
+   * is, their own cards may still move — off the stack, as they leave — and
+   * nothing triggers on it: those cards left the game rather than going
+   * anywhere in it (rule 800.4a). Not game state: it spans one synchronous
+   * call. */
+  private departing: PlayerId | null = null;
 
   /** The cards that have left a graveyard so far in the one simultaneous
    * move being carried out — a whole graveyard exiled, the cards a choice
@@ -8935,6 +8942,9 @@ export class Game {
 
   /** Scan for triggered abilities that just fired and queue them. */
   private detectTriggers(event: GameEvent): void {
+    // A departing player's cards leaving the stack left the game — nothing
+    // sees them go (`leaveGame`).
+    if (this.departing !== null) return;
     // Pure scan over one event (the only write is pushing pending triggers,
     // which nothing cached reads) — worth a region of its own because it runs
     // on *every* emitted event, right after `emit` invalidated whatever a
@@ -14131,7 +14141,7 @@ export class Game {
       // Layer 2 recomputes control every SBA pass and reverts to the owner
       // unless a control *effect* says otherwise, so this has to go through
       // the same path `gain-control` uses rather than just assigning.
-      this.gainControlByEffect(controller, { kind: "object", object: target.object }, false);
+      this.gainControlByEffect(controller, { kind: "object", object: target.object }, false, true);
       entered.summoningSick = true;
     }
     // Set after the move, which clears it: this is the permanent it follows.
@@ -14291,7 +14301,7 @@ export class Game {
         if (returnUnder !== undefined && object.controller !== returnUnder) {
           // Layer 2 is recomputed every SBA pass, so this goes through the
           // control-effect path, as `putOntoBattlefieldByEffect` does.
-          this.gainControlByEffect(returnUnder, { kind: "object", object: id }, false);
+          this.gainControlByEffect(returnUnder, { kind: "object", object: id }, false, true);
           object.summoningSick = true;
         }
         entered.push(id);
@@ -14892,11 +14902,22 @@ export class Game {
     if (!anyControlEffect) return false;
 
     let changed = false;
+    const left = (player: PlayerId): boolean => this.state.players[player]?.hasLost === true;
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
       let controller = object.owner;
       let bestTimestamp = -1;
+      // What a player who has left the game owns left with them (rule
+      // 800.4a). It stays on the board to be seen, under its owner, which
+      // makes it inert — whoever an effect was giving it to.
+      if (left(object.owner)) {
+        bestTimestamp = Infinity;
+      }
       for (const effect of object.controlEffects ?? []) {
+        // An effect giving control to a player who has left the game has
+        // ended (800.4a), and so has the default control of one they put
+        // onto the battlefield — which `leaveGame` exiled.
+        if (left(effect.controller)) continue;
         if (effect.timestamp >= bestTimestamp) {
           bestTimestamp = effect.timestamp;
           controller = effect.controller;
@@ -14907,6 +14928,7 @@ export class Game {
         if (
           aura.attachedTo === id &&
           this.registry.get(printedCardName(aura)).controlEnchanted &&
+          !left(aura.controller) &&
           aura.timestamp >= bestTimestamp
         ) {
           bestTimestamp = aura.timestamp;
@@ -14943,17 +14965,30 @@ export class Game {
     player: PlayerId,
     target: TargetRef,
     untilEndOfTurn: boolean,
+    /** "Put it onto the battlefield under your control" — see
+     * `ControlEffect.entered`. */
+    entered = false,
   ): void {
     if (target.kind !== "object") return;
     const id = this.splitOneFromStack(target.object);
     const object = this.state.objects[id];
     if (object === undefined || object.zone !== "battlefield") return;
     this.state.timestampSeq += 1;
-    const effect = { controller: player, timestamp: this.state.timestampSeq, untilEndOfTurn };
+    const effect = {
+      controller: player,
+      timestamp: this.state.timestampSeq,
+      untilEndOfTurn,
+      ...(entered ? { entered: true } : {}),
+    };
     // A lasting effect ends only with the permanent's zone change, which ends
     // every other one too — so nothing older can ever apply again, and
     // dropping it keeps Sliver Overlord's repeatable steal from growing this.
-    object.controlEffects = untilEndOfTurn ? [...(object.controlEffects ?? []), effect] : [effect];
+    // Bar who it entered under, its default controller (rule 110.2): an
+    // effect ends when its holder leaves the game (800.4a), and then that
+    // player has it again.
+    object.controlEffects = untilEndOfTurn
+      ? [...(object.controlEffects ?? []), effect]
+      : [...(object.controlEffects ?? []).filter((e) => e.entered === true), effect];
     object.controlEndsAtCleanup = untilEndOfTurn;
     invalidateComputedCache();
     if (object.controller === player) return;
@@ -15875,7 +15910,7 @@ export class Game {
   }
 
   /** Make `player` the monarch (rule 720). No-op if they already are. */
-  private setMonarch(player: PlayerId, via: "effect" | "combat-damage"): void {
+  private setMonarch(player: PlayerId, via: "effect" | "combat-damage" | "monarch-left"): void {
     if (this.state.monarch === player) return;
     this.state.monarch = player;
     this.emit({ type: "monarch-changed", player, via });
@@ -15952,6 +15987,9 @@ export class Game {
           playerState.hasLost = true;
           playerState.lossReason = reason;
           this.emit({ type: "player-lost", player, reason });
+          // They leave the game at once (rule 800.4a), not as a state-based
+          // action — though losing is one.
+          this.leaveGame(player);
           changed = true;
         }
       }
@@ -16012,9 +16050,9 @@ export class Game {
       // — `stateBasedGraveyardMoves`).
       for (const id of this.state.zones.shared.battlefield) {
         const object = this.state.objects[id];
-        if (object.attachedTo === null) continue;
+        if (object.attachedTo === null || !this.inGame(object)) continue;
         const host = this.state.objects[object.attachedTo];
-        if (host !== undefined && host.zone === "battlefield") continue;
+        if (host !== undefined && host.zone === "battlefield" && this.inGame(host)) continue;
         if (this.registry.get(printedCardName(object)).subtypes.includes("Aura")) continue;
         object.attachedTo = null;
         invalidateComputedCache();
@@ -16069,6 +16107,100 @@ export class Game {
   }
 
   /**
+   * Whether `object` is still in the game. A player who has left it took
+   * everything they own with them, and anything still under their control
+   * (rule 800.4a). The engine leaves those where they are, to be seen, but
+   * state-based actions don't touch them and `matchesFilter` finds none.
+   */
+  private inGame(object: GameObject): boolean {
+    return (
+      this.state.players[object.owner]?.hasLost !== true &&
+      this.state.players[object.controller]?.hasLost !== true
+    );
+  }
+
+  /**
+   * Rule 800.4a: what happens the moment `player` leaves a multiplayer game —
+   * as soon as they leave, not as a state-based action.
+   *
+   * Effects giving them control of anything end, and everything they own
+   * leaves the game. Both are layer 2, so `recomputeControl` (run here, and
+   * in every sweep after) hands what they'd taken back to its owner and puts
+   * what they own under them, where it sits inert with the rest of their
+   * board (`inGame`). Then:
+   *
+   * - their abilities on the stack, and their copies of spells, cease to
+   *   exist; their spell cards leave the stack without resolving, for their
+   *   graveyard, where nothing sees them arrive — they left the game;
+   * - what they control but don't own is exiled: a spell cast from someone
+   *   else's cards, and a permanent put onto the battlefield under their
+   *   control (their default control of it, rule 110.2, isn't an effect
+   *   that can end);
+   * - their Auras and Equipment come off other players' permanents;
+   * - the triggered abilities they'd control that haven't gone on the stack
+   *   never will, delayed ones included (800.4d);
+   * - if they were the monarch, the active player becomes it, or the next
+   *   player in turn order if that's them (725.4).
+   */
+  private leaveGame(player: PlayerId): void {
+    for (const id of [...this.state.zones.shared.stack]) {
+      const object = this.state.objects[id];
+      if (object === undefined) continue;
+      if (object.kind === "ability" || object.isCopy === true) {
+        if (object.controller === player) this.removeAbilityFromStack(id);
+        continue;
+      }
+      if (object.owner === player) {
+        this.departing = player;
+        try {
+          this.moveObject(id, "graveyard");
+        } finally {
+          this.departing = null;
+        }
+      } else if (object.controller === player) {
+        this.moveObject(id, "exile");
+      }
+    }
+
+    for (const id of [...this.state.zones.shared.battlefield]) {
+      const object = this.state.objects[id];
+      if (object === undefined || object.owner === player) continue;
+      const latest = (object.controlEffects ?? []).reduce<ControlEffect | null>(
+        (best, e) => (best === null || e.timestamp >= best.timestamp ? e : best),
+        null,
+      );
+      if (latest?.entered === true && latest.controller === player) {
+        this.moveObject(id, "exile");
+      }
+    }
+    for (const id of this.state.zones.shared.battlefield) {
+      const object = this.state.objects[id];
+      if (object.owner !== player || object.attachedTo === null) continue;
+      const host = this.state.objects[object.attachedTo];
+      if (host !== undefined && host.owner !== player) {
+        object.attachedTo = null;
+        invalidateComputedCache();
+      }
+    }
+
+    this.state.pendingTriggers = this.state.pendingTriggers.filter((t) => t.controller !== player);
+    this.state.delayedTriggers = this.state.delayedTriggers.filter((t) => t.controller !== player);
+
+    if (this.state.monarch === player) {
+      const order = this.state.turnOrder;
+      const active = this.activePlayer;
+      const start = active !== player ? order.indexOf(active) : order.indexOf(player) + 1;
+      const next = [...order.slice(start), ...order.slice(0, start)].find(
+        (p) => !this.state.players[p].hasLost,
+      );
+      if (next === undefined) this.state.monarch = null;
+      else this.setMonarch(next, "monarch-left");
+    }
+
+    this.recomputeControl();
+  }
+
+  /**
    * Rule 704.5q: a permanent with both +1/+1 and -1/-1 counters on it has N
    * of each removed, N the smaller count. `leaving` is what this same check
    * is putting into a graveyard, which keeps its counters as it goes.
@@ -16077,7 +16209,7 @@ export class Game {
   private annihilateCounters(leaving: ReadonlySet<ObjectId>): boolean {
     let removed = false;
     for (const id of this.state.zones.shared.battlefield) {
-      if (leaving.has(id)) continue;
+      if (leaving.has(id) || !this.inGame(this.state.objects[id])) continue;
       const counters = this.state.objects[id].counters;
       const n = Math.min(counters["+1/+1"] ?? 0, counters["-1/-1"] ?? 0);
       if (n <= 0) continue;
@@ -16110,7 +16242,11 @@ export class Game {
       moving.add(id);
       moves.push({ id, event });
     };
-    const battlefield = this.state.zones.shared.battlefield;
+    // A departed player's permanents aren't in the game (rule 800.4a): no
+    // state-based action applies to them.
+    const battlefield = this.state.zones.shared.battlefield.filter((id) =>
+      this.inGame(this.state.objects[id]),
+    );
 
     for (const id of battlefield) {
       const object = this.state.objects[id];
@@ -16155,7 +16291,8 @@ export class Game {
       const object = this.state.objects[id];
       if (object.attachedTo === null) continue;
       const host = this.state.objects[object.attachedTo];
-      if (host !== undefined && host.zone === "battlefield") continue;
+      // A host whose owner left the game left with them (800.4a).
+      if (host !== undefined && host.zone === "battlefield" && this.inGame(host)) continue;
       if (!this.registry.get(printedCardName(object)).subtypes.includes("Aura")) continue;
       add(id, {
         type: "permanent-destroyed",
@@ -16671,6 +16808,14 @@ export class Game {
 
   private moveObjectUncached(id: ObjectId, to: ZoneType, enter: EnterOptions): boolean {
     const object = this.state.objects[id];
+    // What a player who has left the game owns left with them (rule 800.4a):
+    // it stays where it is, to be seen, and goes nowhere — bar their cards on
+    // the stack as they leave (`leaveGame`). Nor is anything put onto the
+    // battlefield under a player who has left; it stays put (800.4b).
+    const left = (player: PlayerId | undefined): boolean =>
+      player !== undefined && this.state.players[player]?.hasLost === true;
+    if (left(object.owner) && this.departing !== object.owner) return false;
+    if (to === "battlefield" && left(enter.under)) return false;
     const leavingBattlefield = object.zone === "battlefield" && to !== "battlefield";
     // Last-known information (rules 603.10a, 608.2h), taken before anything
     // below resets control, counters, modifiers or a copy effect: everything a
