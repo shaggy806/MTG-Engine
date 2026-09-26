@@ -4,18 +4,6 @@ What is left to do, and nothing else. Each item is one line that points to where
 lives. Finished work belongs in `git log` and in the design records' `Status:` lines, not here.
 When something lands, delete its line. When you find something new, add one.
 
-## ⚠ Verify first — before anything else
-
-- **The rule 903.9a change was pushed before it was fully verified** (commit "Engine: a
-  commander dies before its owner is offered the command zone", 2026-09-25). The engine
-  suite (3,163 tests), engine and client typecheck, and client lint pass. Not yet run:
-  `npm run test -w server`; a fuzz pass (`node engine/scripts/random-demo.mjs --games 30`
-  and `--games 12 --players 4`); and a browser check of the reworded commander prompt in a
-  2-player and a 4-player dev room at ~768px tall. Check both a commander in a graveyard
-  ("is in your graveyard — move it to the command zone?") and one headed for a hand ("would
-  go to your hand … instead?"). Fix whatever fails, then delete this section. Start nothing
-  else until then.
-
 ## Commander gap (the current priority)
 
 **261 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
