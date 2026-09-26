@@ -122,7 +122,8 @@
   "keyword:changeling",
   "effect:control-change-extensions",
   "static:cant-be-sacrificed",
-  "effect:target-spec-additions"
+  "effect:target-spec-additions",
+  "effect:create-token-with-counters"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

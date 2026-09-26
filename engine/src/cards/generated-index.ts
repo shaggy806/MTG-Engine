@@ -51,6 +51,7 @@ export const TOKEN_NAMES: readonly string[] = [
   "Human Soldier Token",
   "Human Token",
   "Human Warrior Token",
+  "Hydra Token",
   "Illusion Token (Minn)",
   "Imp Token (Judith)",
   "Insect Token",

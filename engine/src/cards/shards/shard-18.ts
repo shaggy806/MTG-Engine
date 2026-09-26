@@ -170,6 +170,7 @@ import _poolWirewoodSavage from "../pool/wirewood-savage.js";
 import _poolWrathOfGod from "../pool/wrath-of-god.js";
 import _poolXiraArien from "../pool/xira-arien.js";
 import _poolYshtolaNightsBlessed from "../pool/yshtola-nights-blessed.js";
+import _poolZaxaraTheExemplary from "../pool/zaxara-the-exemplary.js";
 import _poolZimoneAndDina from "../pool/zimone-and-dina.js";
 import _poolZodiacRat from "../pool/zodiac-rat.js";
 import _tokensAllyToken from "../tokens/ally-token.js";
@@ -348,6 +349,7 @@ const shard: CardShard = {
     _poolWrathOfGod,
     _poolXiraArien,
     _poolYshtolaNightsBlessed,
+    _poolZaxaraTheExemplary,
     _poolZimoneAndDina,
     _poolZodiacRat,
   ],

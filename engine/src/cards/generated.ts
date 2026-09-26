@@ -5445,6 +5445,7 @@ import _poolZagothCrystal from "./pool/zagoth-crystal.js";
 import _poolZagothTriome from "./pool/zagoth-triome.js";
 import _poolZap from "./pool/zap.js";
 import _poolZarichiTiger from "./pool/zarichi-tiger.js";
+import _poolZaxaraTheExemplary from "./pool/zaxara-the-exemplary.js";
 import _poolZealotOfTheGodPharaoh from "./pool/zealot-of-the-god-pharaoh.js";
 import _poolZealousGuardian from "./pool/zealous-guardian.js";
 import _poolZealousLorecaster from "./pool/zealous-lorecaster.js";
@@ -5533,6 +5534,7 @@ import _tokensHumanKnightToken from "./tokens/human-knight-token.js";
 import _tokensHumanSoldierToken from "./tokens/human-soldier-token.js";
 import _tokensHumanToken from "./tokens/human-token.js";
 import _tokensHumanWarriorToken from "./tokens/human-warrior-token.js";
+import _tokensHydraToken from "./tokens/hydra-token.js";
 import _tokensIllusionTokenMinn from "./tokens/illusion-token-minn.js";
 import _tokensImpTokenJudith from "./tokens/imp-token-judith.js";
 import _tokensInsectTokenBlackGreen from "./tokens/insect-token-black-green.js";
@@ -11032,6 +11034,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolZagothTriome,
   _poolZap,
   _poolZarichiTiger,
+  _poolZaxaraTheExemplary,
   _poolZealotOfTheGodPharaoh,
   _poolZealousGuardian,
   _poolZealousLorecaster,
@@ -11126,6 +11129,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensHumanSoldierToken,
   _tokensHumanToken,
   _tokensHumanWarriorToken,
+  _tokensHydraToken,
   _tokensIllusionTokenMinn,
   _tokensImpTokenJudith,
   _tokensInsectTokenBlackGreen,

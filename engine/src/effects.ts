@@ -1728,6 +1728,13 @@ export type EffectSpec =
        * whoever creates them: a token of their own must attack each combat
        * too (rule 701.15b). Part of making them, like `gainUntilEndOfTurn`. */
       readonly goadedForGame?: boolean;
+      /** "…**then put N counters on it**" (Zaxara, the Exemplary's "create a
+       * 0/0 green Hydra creature token, then put X +1/+1 counters on it"):
+       * the effect's controller puts them on each token this made, once it
+       * has entered. It entered without them, and state-based actions don't
+       * look at a 0/0 until the effect is done. Such tokens are always made
+       * as separate objects, never folded into a token stack as they're made. */
+      readonly thenCounters?: { readonly kind: string; readonly amount: EffectAmount };
     }
   | {
       /** Create `count` token(s) that are copies of a permanent (rule 707.10 —
@@ -2799,6 +2806,8 @@ export interface EffectApi {
     /** The new tokens are goaded by the effect's controller for the rest of
      * the game. */
     goadedForGame?: boolean,
+    /** Counters the effect's controller then puts on each new token. */
+    thenCounters?: { readonly kind: string; readonly amount: number },
   ): void;
   /** Create `count` token(s) that are copies of the permanent `of` — see the
    * `"create-token-copy"` {@link EffectSpec}. */
@@ -4180,6 +4189,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
               spec.sacrificeAtEndStep === true,
               spec.gainUntilEndOfTurn,
               spec.goadedForGame === true,
+              spec.thenCounters === undefined
+                ? undefined
+                : { kind: spec.thenCounters.kind, amount: amountValue(spec.thenCounters.amount, ctx, player) },
             );
         }
         return;
@@ -4192,6 +4204,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         spec.sacrificeAtEndStep === true,
         spec.gainUntilEndOfTurn,
         spec.goadedForGame === true,
+        spec.thenCounters === undefined
+          ? undefined
+          : { kind: spec.thenCounters.kind, amount: amountValue(spec.thenCounters.amount, ctx) },
       );
       return;
     case "create-token-copy": {

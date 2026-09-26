@@ -9564,12 +9564,19 @@ export class Game {
           // X=0 counters) or being flickered before this resolves doesn't change
           // the X the ability already has. Another permanent's entry trigger
           // reads nothing — it's that object's ETB, not this one's.
+          //
+          // A cast trigger's X is the X of the spell that was cast (Zaxara,
+          // the Exemplary's "a spell with {X} in its mana cost … put X +1/+1
+          // counters"): chosen as it was cast (rule 601.2b) and fixed from
+          // then on, so it's read now — the spell may be countered first.
           const castX =
             ability.trigger.on === "enters-battlefield" &&
             event.type === "permanent-entered-battlefield" &&
             event.object === id
               ? (object.xValue ?? undefined)
-              : undefined;
+              : ability.trigger.on === "cast-spell" && event.type === "spell-cast"
+                ? (this.state.objects[event.object]?.xValue ?? undefined)
+                : undefined;
           // Which stint on the battlefield the source and the triggering
           // object were in — what the ability means by "it" and "that
           // creature" if either has left by the time it resolves (608.2h).
@@ -11790,15 +11797,31 @@ export class Game {
         }
       },
       changeText: (target) => this.beginTextChoice(controller, source, target),
-      createToken: (token, count, who, tapped, sacrificeAtEndStep, gainUntilEndOfTurn, goadedForGame) => {
+      createToken: (token, count, who, tapped, sacrificeAtEndStep, gainUntilEndOfTurn, goadedForGame, thenCounters) => {
         // "The tokens are goaded for the rest of the game": by this effect's
         // controller, whoever creates them (Rendmaw, Creaking Nest).
         const goadedBy = goadedForGame === true ? controller : undefined;
+        // "…then put X +1/+1 counters on it": this effect's controller puts
+        // them on each token it made (Zaxara, the Exemplary).
+        const make = (p: PlayerId): void => {
+          const made = this.createTokens(
+            p,
+            token,
+            count,
+            tapped,
+            sacrificeAtEndStep,
+            gainUntilEndOfTurn,
+            goadedBy,
+            thenCounters !== undefined,
+          );
+          if (thenCounters === undefined || thenCounters.amount <= 0) return;
+          for (const id of made) {
+            this.addCounter({ kind: "object", object: id }, thenCounters.kind, thenCounters.amount, false, controller);
+          }
+        };
         // "Each opponent creates a Treasure token": each of them, APNAP.
         if (who !== undefined && who !== "you" && who !== "target-controller") {
-          for (const p of scoped(who)) {
-            this.createTokens(p, token, count, tapped, sacrificeAtEndStep, gainUntilEndOfTurn, goadedBy);
-          }
+          for (const p of scoped(who)) make(p);
           return;
         }
         let tokenController = controller;
@@ -11815,7 +11838,7 @@ export class Game {
             if (who !== undefined) tokenController = who;
           }
         }
-        this.createTokens(tokenController, token, count, tapped, sacrificeAtEndStep, gainUntilEndOfTurn, goadedBy);
+        make(tokenController);
       },
       // "That creature's controller" — who controlled it as it left, if it
       // has (rule 608.2h); `moveObject` has handed it back to its owner.
@@ -12973,11 +12996,13 @@ export class Game {
     gainUntilEndOfTurn: readonly Keyword[] = [],
     /** The tokens are goaded by this player for the rest of the game. */
     goadedForGameBy?: PlayerId,
-  ): void {
+    /** Make every token its own object, never part of a token stack. */
+    separate = false,
+  ): readonly ObjectId[] {
     this.registry.get(tokenName); // validate the token is a known definition
     // Doubling Season / Parallel Lives (rule 614): "twice that many instead".
     const total = count * this.tokenCreationMultiplier(controller);
-    this.mintTokenBatch(
+    return this.mintTokenBatch(
       controller,
       tokenName,
       null,
@@ -12989,6 +13014,7 @@ export class Game {
       tapped,
       sacrificeAtEndStep,
       goadedForGameBy,
+      separate,
     );
   }
 
@@ -13075,7 +13101,9 @@ export class Game {
    * triggered ability on such a token still fires the correct number of
    * times (see `detectTriggers`'s `stackMultiplier`). Any token this can't
    * safely cover (an activated ability, a targeted trigger) is always minted
-   * as `total` separate ordinary objects. */
+   * as `total` separate ordinary objects, as is a batch made `separate`.
+   * Returns the objects it made: one per token, or the stack it made them
+   * into (or grew). */
   private mintTokenBatch(
     controller: PlayerId,
     cardName: string,
@@ -13088,13 +13116,15 @@ export class Game {
     tapped = false,
     sacrificeAtEndStep = false,
     goadedForGameBy?: PlayerId,
-  ): void {
-    if (total <= 0) return;
+    separate = false,
+  ): readonly ObjectId[] {
+    if (total <= 0) return [];
     this.state.players[controller].createdTokenThisTurn = true;
     const printedName = copyOf ?? cardName;
+    const made: ObjectId[] = [];
     // The whole batch enters at once — one simultaneous entry, however many
     // objects it takes (see `withEnterBatch`).
-    const mintIndividually = (): void => this.withEnterBatch(() => {
+    const mintIndividually = (): readonly ObjectId[] => this.withEnterBatch(() => {
       for (let i = 0; i < Math.min(total, Game.MAX_EFFECT_INSTANCES); i += 1) {
         const id = this.mintFreshTokenObject(
           controller,
@@ -13108,18 +13138,17 @@ export class Game {
           sacrificeAtEndStep,
           goadedForGameBy,
         );
+        made.push(id);
         if (copied) this.emit({ type: "permanent-copied", object: id, copyOf: printedName });
         this.emit({ type: "permanent-entered-battlefield", object: id });
       }
+      return made;
     });
     // Tokens that enter *tapped* are never stacked: `findMergeableStack` has
     // no notion of tapped-ness, so they'd fold into an untapped stack and come
     // out untapped. Thirteen real objects (Army of the Damned) is well inside
     // what the battlefield handles.
-    if (tapped || !this.isStackableTokenName(printedName)) {
-      mintIndividually();
-      return;
-    }
+    if (separate || tapped || !this.isStackableTokenName(printedName)) return mintIndividually();
     const repId = this.mintFreshTokenObject(
       controller,
       cardName,
@@ -13134,10 +13163,7 @@ export class Game {
     );
     const existing = this.findMergeableStack(repId, controller);
     delete this.state.objects[repId]; // the representative never really "exists" on its own
-    if (existing === null && total < Game.STACK_ORIGIN_THRESHOLD) {
-      mintIndividually();
-      return;
-    }
+    if (existing === null && total < Game.STACK_ORIGIN_THRESHOLD) return mintIndividually();
     let finalId: ObjectId;
     if (existing !== null) {
       const stack = this.state.objects[existing];
@@ -13161,6 +13187,7 @@ export class Game {
     }
     if (copied) this.emit({ type: "permanent-copied", object: finalId, copyOf: printedName });
     this.emit({ type: "permanent-entered-battlefield", object: finalId, count: total });
+    return [finalId];
   }
 
   /** Build one fresh token `GameObject`, apply its enters-tapped /
