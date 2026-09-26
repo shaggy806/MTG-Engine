@@ -47,6 +47,9 @@ const settle = (game: Game): void =>
   game.advanceUntil((s) => s.zones.shared.stack.length === 0 && s.awaiting === null);
 
 const withMana = (game: Game, player: ReturnType<typeof asPlayerId>, count: number): void => {
+  // Command Tower makes only its controller's commander colours: five, as a
+  // five-colour commander's.
+  game.state.players[player].commanderIdentity = ["W", "U", "B", "R", "G"];
   for (let i = 0; i < count; i++) game.debugSpawn("Command Tower", player);
 };
 

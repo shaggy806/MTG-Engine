@@ -64,6 +64,9 @@ const channelActionOf = (game: Game, player: PlayerId, source: ObjectId) => {
 // Give every land in these tests one green source of mana so a {1}{G}/{3}{U}/
 // {3}{B}/{2}{W} Channel cost is always payable regardless of color.
 const withMana = (game: Game, player: PlayerId, count: number): void => {
+  // Command Tower makes only its controller's commander colours: five, as a
+  // five-colour commander's.
+  game.state.players[player].commanderIdentity = ["W", "U", "B", "R", "G"];
   for (let i = 0; i < count; i++) game.debugSpawn("Command Tower", player);
 };
 

@@ -15,12 +15,9 @@ export default defineCard({
       targets: [],
       effect: {
         kind: "add-mana",
-        // "In your commander's color identity" is modelled as plain
-        // any-colour, exactly as Arcane Signet and Commander's Sphere are:
-        // for any deck that passes `validateCommanderDeck`, every card this
-        // mana could be spent on is already inside that identity, so the two
-        // readings can't diverge. See AUTHORING §15.
-        mana: "any-color",
+        // Only your commanders' colours, and nothing at all without a
+        // commander (`PlayerState.commanderIdentity`).
+        mana: "commander-identity",
         amount: 1,
         whenSpent: {
           spell: "shares-type-with-commander",

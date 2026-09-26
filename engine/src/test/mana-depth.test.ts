@@ -113,10 +113,12 @@ describe("Sol Ring — a multi-mana source", () => {
   });
 });
 
-describe("any-color sources", () => {
+describe("commander-colour sources", () => {
   it("Arcane Signet pays a colored pip no land in the deck could", () => {
     const { game } = scriptedGame(["Soul Warden"]);
     game.advanceUntil(toPrecombat);
+    // A white commander's colours.
+    game.state.players[A].commanderIdentity = ["W"];
     const signet = spawn(game, "Arcane Signet", A); // deck is all Mountains
 
     game.dispatch({
@@ -132,9 +134,20 @@ describe("any-color sources", () => {
     ).toBe(true);
   });
 
-  it("Command Tower is a land that taps for any color", () => {
+  it("Arcane Signet can't pay a pip outside its controller's commander colours", () => {
+    const { game } = scriptedGame(["Soul Warden"]);
+    game.advanceUntil(toPrecombat);
+    game.state.players[A].commanderIdentity = ["U", "B"];
+    spawn(game, "Arcane Signet", A);
+    expect(
+      game.legalActions(A).some((x) => x.kind === "cast-spell" && x.cardName === "Soul Warden"),
+    ).toBe(false);
+  });
+
+  it("Command Tower is a land that taps for its controller's commander colours", () => {
     const { game } = scriptedGame(["Command Tower", "Soul Warden"]);
     game.advanceUntil(toPrecombat);
+    game.state.players[A].commanderIdentity = ["W", "G"];
     game.dispatch({
       type: "play-land",
       player: A,

@@ -16,13 +16,15 @@ import { poolCounts } from "../mana.js";
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
 
-const mkGame = () =>
+/** Alice's commanders set what Command Tower makes: Tom Bombadil is all
+ * five colours. */
+const mkGame = (commanders: readonly string[] = ["Tom Bombadil"]) =>
   Game.create({
     seed: 1,
     shuffle: false,
     rules: { skipFirstDraw: false, maxLandsPerTurn: 99 },
     decks: [
-      { player: A, cards: Array(40).fill("Forest") },
+      { player: A, cards: Array(40).fill("Forest"), commanders: [...commanders] },
       { player: B, cards: Array(40).fill("Forest") },
     ],
   });
@@ -79,6 +81,28 @@ describe("choosing the colour of an 'any color' mana ability", () => {
     });
 
     expect(poolCounts(game.state.players[A].manaPool).W).toBe(1);
+  });
+
+  it("offers only the colours of its controller's commander", () => {
+    const game = mkGame(["Atraxa, Praetors' Voice"]);
+    game.advanceUntil(atMain);
+    const tower = game.debugSpawn("Command Tower", A, "battlefield");
+
+    const options = game
+      .legalActions(A)
+      .filter((a) => a.kind === "activate-ability" && a.source === tower);
+    expect(
+      options.map((a) => (a.kind === "activate-ability" ? a.manaColors : undefined)),
+    ).toEqual([["W"], ["U"], ["B"], ["G"]]);
+  });
+
+  it("makes no mana at all for a player with no commander", () => {
+    const game = mkGame([]);
+    game.advanceUntil(atMain);
+    const tower = game.debugSpawn("Command Tower", A, "battlefield");
+    expect(
+      game.legalActions(A).filter((a) => a.kind === "activate-ability" && a.source === tower),
+    ).toEqual([]);
   });
 
   it("leaves a fixed-colour ability alone — one option, no colour list", () => {

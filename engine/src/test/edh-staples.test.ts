@@ -229,6 +229,7 @@ describe("Mind Stone", () => {
 describe("Generous Gift", () => {
   it("destroys any permanent and gives its controller a 3/3 Elephant", () => {
     const game = makeGame(["Generous Gift"]);
+    game.state.players[A].commanderIdentity = ["W", "U", "B", "R", "G"];
     for (let i = 0; i < 3; i += 1) game.debugSpawn("Command Tower", A);
     const target = game.debugSpawn("Grizzly Bears", B);
 
@@ -260,6 +261,7 @@ describe("Solemn Simulacrum", () => {
       alice.chooseModesFn = () => [0];
       alice.chooseFromZoneFn = (_view, eligible) => eligible.slice(0, 1);
     });
+    game.state.players[A].commanderIdentity = ["W", "U", "B", "R", "G"];
     for (let i = 0; i < 4; i += 1) game.debugSpawn("Command Tower", A);
 
     game.dispatch({

@@ -1278,7 +1278,11 @@ ability out of `manaSources()`, so it's activated by hand, its mana floating
 for what comes next; it still never uses the stack. needed-cards P20.
 
 `add-mana`'s `mana` field: a fixed `ManaType` (`"W"`/`"U"`/`"B"`/`"R"`/`"G"`/
-`"C"`), `"any-color"` (one of the five, the payer's choice — Arcane Signet), or
+`"C"`), `"any-color"` (one of the five, the payer's choice — Treasure),
+`"commander-identity"` ("one mana of any color in your commander's color
+identity" — Command Tower, Arcane Signet: one of `PlayerState.commanderIdentity`'s
+colours, and no mana at all for a player with no commander or a colourless
+one), or
 `{ oneOf: ManaType[] }` (`amount` mana in any combination of the listed
 colours, each unit independently chosen — Orcish Lumberjack: `{ oneOf: ["R",
 "G"] }`, `amount: 3`, needed-cards P20). A standalone activation (not part of
@@ -2412,12 +2416,10 @@ Delete an entry in the same commit as the feature that retires it.
     an additional combat phase). Firebending's — see the `firebending`
     helper (§6).
 
-  Note the *identity* clause alone was never a blocker: "one mana of any
-  color in your commander's color identity" is modelled as plain
-  `"any-color"` (`arcane-signet.ts`, `commanders-sphere.ts`, and now
-  `path-of-ancestry.ts`), which is exact for any deck that passes
-  `validateCommanderDeck` — every card the mana could be spent on is already
-  inside that identity. `mana-provenance.test.ts`.
+  The *identity* clause is `mana: "commander-identity"` (Path of Ancestry,
+  like Command Tower): only the player's commanders' colours, never plain
+  `"any-color"` — the two differ for a colourless commander, a player with
+  none, and a spell stolen from outside the identity. `mana-provenance.test.ts`.
 - **An emblem can only carry a `StaticAbility`.** `create-emblem` takes
   `static?`, and emblems live in `GameState.emblems` rather than as
   `GameObject`s, so `detectTriggers` — which scans battlefield permanents —

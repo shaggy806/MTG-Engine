@@ -593,6 +593,11 @@ export type EffectSpec =
         | ManaType
         | "any-color"
         | "chosen"
+        /** "One mana of any color in your commander's color identity" (Command
+         * Tower, Arcane Signet): one of `PlayerState.commanderIdentity`'s
+         * colours, the payer's choice — nothing at all for a player with no
+         * commander or a colourless one (the rulings). */
+        | "commander-identity"
         /** "One mana of any type that [permanent] produced" — only in a
          * `tapped-for-mana` triggered mana ability, where it's what the
          * permanent tapped for mana made (Roxanne, Starfall Savant; Mana
@@ -2454,6 +2459,9 @@ export interface EffectApi {
   /** The number chosen as the source entered, if one was — see the
    * `chosenNumber` {@link EffectAmount}. */
   chosenNumberOfSource(): number | undefined;
+  /** The colours in the effect's controller's commanders' colour identity —
+   * see `PlayerState.commanderIdentity`. */
+  commanderColors(): readonly ManaType[];
   /** See the `"goad"` {@link EffectSpec}. */
   goadCreaturesOf(player: PlayerId): void;
   /** See the `"impulse-exile"` {@link EffectSpec}. */
@@ -3291,7 +3299,12 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       // What a permanent tapped for mana produced is known only to the
       // triggered mana ability the engine applies there (`tapped-for-mana`).
       if (spec.mana === "produced") return;
-      if (typeof spec.mana === "object" && "all" in spec.mana) {
+      // "Any color in your commander's color identity" — nothing at all with
+      // no colour there (no commander, or a colourless one).
+      if (spec.mana === "commander-identity") {
+        const colors = ctx.commanderColors();
+        if (colors.length > 0) ctx.addMana(ctx.controller, { oneOf: colors }, amountValue(spec.amount, ctx), spec);
+      } else if (typeof spec.mana === "object" && "all" in spec.mana) {
         const times = amountValue(spec.amount, ctx);
         for (const type of spec.mana.all) ctx.addMana(ctx.controller, type, times, spec);
       } else ctx.addMana(

@@ -251,7 +251,7 @@ export const manaTapAbility = (mana: Color): ActivatedAbility => ({
  * one-shot ("{T}, Sacrifice this: …").
  */
 export const addManaAbility = (opts: {
-  mana: ManaType | "any-color";
+  mana: ManaType | "any-color" | "commander-identity";
   amount?: number;
   sacrifice?: "self";
   text: string;

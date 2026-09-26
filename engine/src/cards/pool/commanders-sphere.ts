@@ -1,10 +1,8 @@
 import { addManaAbility } from "../helpers.js";
 import { defineCard } from "../define.js";
 
-// "in your commander's color identity" is modelled as plain `"any-color"`, the
-// same approximation `arcane-signet.ts` makes. In a deck that passes
-// `validateCommanderDeck` the two are indistinguishable: every card the mana
-// could be spent on is already inside that identity.
+// Only your commanders' colours (`PlayerState.commanderIdentity`), and no
+// mana at all without a commander, or with a colourless one (the rulings).
 export default defineCard({
   name: "Commander's Sphere",
   manaCost: "{3}",
@@ -14,7 +12,7 @@ export default defineCard({
     "Sacrifice Commander's Sphere: Draw a card.",
   activated: [
     addManaAbility({
-      mana: "any-color",
+      mana: "commander-identity",
       text: "{T}: Add one mana of any color in your commander's color identity.",
     }),
     {

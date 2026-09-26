@@ -974,6 +974,14 @@ export interface PlayerState {
    * (which deliberately resets per-object state) without being reset.
    */
   printings: Record<string, string>;
+  /**
+   * The colours in this player's commanders' colour identity (rule 903.4 —
+   * both, for a pair), fixed by the deck at setup: what "one mana of any
+   * color in your commander's color identity" (Command Tower, Arcane
+   * Signet) may make. Empty for a player with no commander, or a colourless
+   * one — and then it makes nothing (the rulings).
+   */
+  commanderIdentity?: readonly Color[];
 }
 
 export interface GameRules {

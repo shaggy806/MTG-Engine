@@ -139,6 +139,7 @@ import {
   weightedMatches,
 } from "./filter.js";
 import type { AggregateSpec, CardFilter } from "./filter.js";
+import { colorIdentityOf } from "./identity.js";
 import type {
   EventOfType,
   GameEvent,
@@ -1296,8 +1297,17 @@ export class Game {
         // its own is a real choice rather than whatever the engine's default
         // happened to be. Paying a *cost* never comes through here — the mana
         // planner picks the colour it needs (see `manaSources`).
+        // "Any color in your commander's color identity": its choices are
+        // that player's commander colours, and with none it makes no mana,
+        // so it isn't offered — as `manaSources` leaves it out.
+        let offered = ability;
+        if (ability.effect?.kind === "add-mana" && ability.effect.mana === "commander-identity") {
+          const identity = this.commanderIdentityMana(player);
+          if (identity === null) return;
+          offered = { ...ability, effect: { ...ability.effect, mana: identity } };
+        }
         const choices = standaloneManaChoices(
-          ability,
+          offered,
           (m) => this.manaOneOf(m as Parameters<typeof this.manaOneOf>[0], player),
           () =>
             ability.effect?.kind === "add-mana" && typeof ability.effect.amount !== "number"
@@ -2261,6 +2271,13 @@ export class Game {
       // Copied, not aliased: `GameState` has to stay a self-contained,
       // `structuredClone`-able tree, and a caller's object is neither.
       this.state.players[player].printings = { ...printings };
+      // Rule 903.4: a pair's identity is both of theirs.
+      const identity = new Set<Color>();
+      for (const name of commanderNames) {
+        if (!this.registry.has(name)) continue;
+        for (const c of colorIdentityOf(this.registry.get(name), this.registry)) identity.add(c);
+      }
+      this.state.players[player].commanderIdentity = COLORS.filter((c) => identity.has(c));
       this.state.zones.perPlayer[player] = {
         library: [],
         hand: [],
@@ -7422,6 +7439,11 @@ export class Game {
             for (const type of extra.mana.all) {
               this.addMana(player, type, extra.amount, undefined, this.manaOriginOf(extra.holder));
             }
+          } else if (extra.mana === "commander-identity") {
+            const identity = this.commanderIdentityMana(player);
+            if (identity !== null) {
+              this.addMana(player, identity, extra.amount, undefined, this.manaOriginOf(extra.holder));
+            }
           } else if (extra.mana !== "chosen") {
             this.addMana(
               player,
@@ -7730,7 +7752,9 @@ export class Game {
         const mana =
           ability.effect.mana === "chosen"
             ? (MANA_TYPES.includes(chosen as ManaType) ? (chosen as ManaType) : null)
-            : ability.effect.mana;
+            : ability.effect.mana === "commander-identity"
+              ? this.commanderIdentityMana(player)
+              : ability.effect.mana;
         if (mana === null || mana === "produced") return;
         // A live amount (Marwyn's power, Kydele's cards drawn this turn) is
         // sized now, against the board as it stands — see `liveManaAmount`.
@@ -8034,6 +8058,10 @@ export class Game {
           extraFrom: [...(option.extraFrom ?? []), ...Array<ObjectId>(made.length).fill(extra.holder)],
         },
       ];
+    }
+    if (mana === "commander-identity") {
+      const identity = this.commanderIdentityMana(player);
+      return identity === null ? [option] : identity.oneOf.map((t) => plus(t));
     }
     if (typeof mana === "object") return this.manaOneOf(mana, player).map((t) => plus(t));
     if (mana !== "produced") return [plus(mana)];
@@ -8804,6 +8832,15 @@ export class Game {
    * has to be resolved wherever the spec is read — the payment planner, the
    * standalone-activation menu and `addMana` itself.
    */
+  /** "One mana of any color in your commander's color identity" for
+   * `player`: one of those colours (`PlayerState.commanderIdentity`), or
+   * `null` — nothing at all — with none (no commander, or a colourless one:
+   * the Command Tower rulings). */
+  private commanderIdentityMana(player: PlayerId): { readonly oneOf: readonly ManaType[] } | null {
+    const colors = this.state.players[player]?.commanderIdentity ?? [];
+    return colors.length === 0 ? null : { oneOf: colors };
+  }
+
   private manaOneOf(
     mana: { readonly oneOf: readonly ManaType[] } | { readonly producedBy: "opponents-lands" },
     player: PlayerId,
@@ -8822,7 +8859,9 @@ export class Game {
         if (effect === null || effect.kind !== "add-mana") continue;
         const m = effect.mana;
         if (m === "any-color") for (const c of COLORS) colors.add(c);
-        else if (typeof m === "string" && m !== "chosen" && m !== "produced" && m !== "C") colors.add(m);
+        else if (m === "commander-identity") {
+          for (const c of this.state.players[object.controller]?.commanderIdentity ?? []) colors.add(c);
+        } else if (typeof m === "string" && m !== "chosen" && m !== "produced" && m !== "C") colors.add(m);
         else if (typeof m === "object" && "oneOf" in m) for (const c of m.oneOf) colors.add(c);
         else if (typeof m === "object" && "all" in m) for (const c of m.all) if (c !== "C") colors.add(c);
       }
@@ -11252,6 +11291,7 @@ export class Game {
         const chosen = this.state.objects[source]?.chosenOnEnter;
         return MANA_TYPES.includes(chosen as ManaType) ? (chosen as ManaType) : undefined;
       },
+      commanderColors: () => this.state.players[controller]?.commanderIdentity ?? [],
       chosenNumberOfSource: () => {
         const chosen = this.state.objects[source]?.chosenOnEnter;
         const n = typeof chosen === "string" ? Number(chosen) : Number.NaN;
