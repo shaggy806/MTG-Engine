@@ -27,7 +27,7 @@ import type {
   ZoneType,
 } from "./state.js";
 import { decisionHasSource } from "./decisions/registry.js";
-import { activePlayerOf, faceName, printedCardName } from "./state.js";
+import { activePlayerOf, faceName, nameOf, printedCardName } from "./state.js";
 import { withoutTypeMarkers } from "./subtypes.js";
 import type { TargetRef } from "./target.js";
 
@@ -84,6 +84,10 @@ export interface VisibleObject {
    * `= cardName` for a single-faced card. The client renders the face from
    * `copyOf ?? faceName`. `faces` lists all of them (front first) or is `null`. */
   readonly faceName: string;
+  /** The name a copy exception gave it ("except its name is Mishra's
+   * Warform"), when that isn't its card's — the name to show, while
+   * `copyOf ?? faceName` still says which card's face to draw. */
+  readonly name?: string;
   readonly faces: readonly string[] | null;
   /** A Scryfall link pinning this card's art (its up face's / copied card's),
    * or `null` for the by-name lookup. See `CardDefinition.art`. Carries the
@@ -295,6 +299,7 @@ function visible(
     cardName: object.cardName,
     copyOf: object.copyOf,
     faceName: faceName(object),
+    ...(nameOf(object) !== printedCardName(object) ? { name: nameOf(object) } : {}),
     faces: object.faces === undefined ? null : [...object.faces],
     art: printing ?? def.art,
     faceIsBack,

@@ -176,6 +176,7 @@ import _poolAngelsMercy from "./pool/angels-mercy.js";
 import _poolAnglerDrake from "./pool/angler-drake.js";
 import _poolAngrathsRampage from "./pool/angraths-rampage.js";
 import _poolAnguishedUnmaking from "./pool/anguished-unmaking.js";
+import _poolAniktheaHandOfErebos from "./pool/anikthea-hand-of-erebos.js";
 import _poolAnimarSoulOfElements from "./pool/animar-soul-of-elements.js";
 import _poolAnkleBiter from "./pool/ankle-biter.js";
 import _poolAnkleShanker from "./pool/ankle-shanker.js";
@@ -2968,6 +2969,7 @@ import _poolMirkoObsessiveTheorist from "./pool/mirko-obsessive-theorist.js";
 import _poolMirranSpy from "./pool/mirran-spy.js";
 import _poolMirriCatWarrior from "./pool/mirri-cat-warrior.js";
 import _poolMisguidedRage from "./pool/misguided-rage.js";
+import _poolMishraEminentOne from "./pool/mishra-eminent-one.js";
 import _poolMishrasFactory from "./pool/mishras-factory.js";
 import _poolMishrasOnslaught from "./pool/mishras-onslaught.js";
 import _poolMisshapenFiend from "./pool/misshapen-fiend.js";
@@ -3847,6 +3849,7 @@ import _poolSageOfMysteries from "./pool/sage-of-mysteries.js";
 import _poolSageOfTheInwardEye from "./pool/sage-of-the-inward-eye.js";
 import _poolSagesKnowledge from "./pool/sages-knowledge.js";
 import _poolSagesRowSavant from "./pool/sages-row-savant.js";
+import _poolSaheeliRadiantCreator from "./pool/saheeli-radiant-creator.js";
 import _poolSailorOfMeans from "./pool/sailor-of-means.js";
 import _poolSakuraTribeElder from "./pool/sakura-tribe-elder.js";
 import _poolSaltMarsh from "./pool/salt-marsh.js";
@@ -4716,6 +4719,7 @@ import _poolTheGitrogMonster from "./pool/the-gitrog-monster.js";
 import _poolTheGreatHenge from "./pool/the-great-henge.js";
 import _poolTheHunterMaze from "./pool/the-hunter-maze.js";
 import _poolTheIncredibleHulk from "./pool/the-incredible-hulk.js";
+import _poolTheJollyBalloonMan from "./pool/the-jolly-balloon-man.js";
 import _poolTheLadyOfTheMountain from "./pool/the-lady-of-the-mountain.js";
 import _poolTheLocustGod from "./pool/the-locust-god.js";
 import _poolTheLordMasterOfHell from "./pool/the-lord-master-of-hell.js";
@@ -5777,6 +5781,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAnglerDrake,
   _poolAngrathsRampage,
   _poolAnguishedUnmaking,
+  _poolAniktheaHandOfErebos,
   _poolAnimarSoulOfElements,
   _poolAnkleBiter,
   _poolAnkleShanker,
@@ -8569,6 +8574,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolMirranSpy,
   _poolMirriCatWarrior,
   _poolMisguidedRage,
+  _poolMishraEminentOne,
   _poolMishrasFactory,
   _poolMishrasOnslaught,
   _poolMisshapenFiend,
@@ -9448,6 +9454,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSageOfTheInwardEye,
   _poolSagesKnowledge,
   _poolSagesRowSavant,
+  _poolSaheeliRadiantCreator,
   _poolSailorOfMeans,
   _poolSakuraTribeElder,
   _poolSaltMarsh,
@@ -10317,6 +10324,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTheGreatHenge,
   _poolTheHunterMaze,
   _poolTheIncredibleHulk,
+  _poolTheJollyBalloonMan,
   _poolTheLadyOfTheMountain,
   _poolTheLocustGod,
   _poolTheLordMasterOfHell,

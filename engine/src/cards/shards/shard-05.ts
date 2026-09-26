@@ -99,6 +99,7 @@ import _poolMartyrForTheCause from "../pool/martyr-for-the-cause.js";
 import _poolMendingHands from "../pool/mending-hands.js";
 import _poolMerfolkOfThePearlTrident from "../pool/merfolk-of-the-pearl-trident.js";
 import _poolMightOfOaks from "../pool/might-of-oaks.js";
+import _poolMishraEminentOne from "../pool/mishra-eminent-one.js";
 import _poolMoonwingMoth from "../pool/moonwing-moth.js";
 import _poolMossMonster from "../pool/moss-monster.js";
 import _poolNetworkDisruptor from "../pool/network-disruptor.js";
@@ -279,6 +280,7 @@ const shard: CardShard = {
     _poolMendingHands,
     _poolMerfolkOfThePearlTrident,
     _poolMightOfOaks,
+    _poolMishraEminentOne,
     _poolMoonwingMoth,
     _poolMossMonster,
     _poolNetworkDisruptor,

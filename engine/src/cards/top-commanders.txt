@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-291 already implemented / 209 missing
+295 already implemented / 205 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -174,7 +174,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  168  Atreus, Impulsive Son                          13368 decks  {1}{U}{R}        Legendary Creature — God Archer
 [x]  169  Kratos, Stoic Father                           13368 decks  {2}{R}{W}        Legendary Creature — God Warrior
 [ ]  170  Sakashima of a Thousand Faces                  13361 decks  {3}{U}           Legendary Creature — Human Rogue
-[ ]  171  Anikthea, Hand of Erebos                       13355 decks  {2}{W}{B}{G}     Legendary Enchantment Creature — Demigod
+[x]  171  Anikthea, Hand of Erebos                       13355 decks  {2}{W}{B}{G}     Legendary Enchantment Creature — Demigod
 [x]  172  Fire Lord Zuko                                 13329 decks  {R}{W}{B}        Legendary Creature — Human Noble Ally
 [x]  173  Rendmaw, Creaking Nest                         13317 decks  {3}{B}{G}        Legendary Artifact Creature — Scarecrow
 [ ]  174  Omo, Queen of Vesuva                           13314 decks  {2}{G/U}         Legendary Creature — Shapeshifter Noble
@@ -216,7 +216,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  210  Derevi, Empyrial Tactician                     11868 decks  {G}{W}{U}        Legendary Creature — Bird Wizard
 [ ]  211  Indoraptor, the Perfect Hybrid                 11800 decks  {1}{B/G}{R}      Legendary Creature — Dinosaur Mutant
 [x]  212  Arahbo, Roar of the World                      11780 decks  {3}{G}{W}        Legendary Creature — Cat Avatar
-[ ]  213  The Jolly Balloon Man                          11747 decks  {1}{R}{W}        Legendary Creature — Human Clown
+[x]  213  The Jolly Balloon Man                          11747 decks  {1}{R}{W}        Legendary Creature — Human Clown
 [x]  214  Ovika, Enigma Goliath                          11524 decks  {5}{U}{R}        Legendary Creature — Phyrexian Nightmare
 [x]  215  Yuna, Grand Summoner                           11452 decks  {1}{G}{W}{U}     Legendary Creature — Human Cleric
 [x]  216  Umbris, Fear Manifest                          11443 decks  {3}{U}{B}        Legendary Creature — Nightmare Horror
@@ -252,7 +252,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  246  Trostani, Selesnya's Voice                     10377 decks  {G}{G}{W}{W}     Legendary Creature — Dryad
 [ ]  247  Volo, Guide to Monsters                        10359 decks  {2}{G}{U}        Legendary Creature — Human Wizard
 [ ]  248  Kastral, the Windcrested                       10313 decks  {3}{W}{U}        Legendary Creature — Bird Scout
-[ ]  249  Saheeli, Radiant Creator                       10286 decks  {1}{G}{U}{R}     Legendary Creature — Human Artificer
+[x]  249  Saheeli, Radiant Creator                       10286 decks  {1}{G}{U}{R}     Legendary Creature — Human Artificer
 [ ]  250  Raffine, Scheming Seer                         10235 decks  {W}{U}{B}        Legendary Creature — Sphinx Demon
 [ ]  251  Yidris, Maelstrom Wielder                      10231 decks  {U}{B}{R}{G}     Legendary Creature — Ogre Wizard
 [x]  252  Vihaan, Goldwaker                              10220 decks  {R}{W}{B}        Legendary Creature — Dwarf Warlock
@@ -357,7 +357,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  351  Morska, Undersea Sleuth                         7985 decks  {G}{W}{U}        Legendary Creature — Vedalken Fish Detective
 [x]  352  Bristly Bill, Spine Sower                       7950 decks  {1}{G}           Legendary Creature — Plant Druid
 [x]  353  Niv-Mizzet, Visionary                           7935 decks  {4}{U}{R}        Legendary Creature — Dragon Wizard
-[ ]  354  Mishra, Eminent One                             7921 decks  {2}{U}{B}{R}     Legendary Creature — Human Artificer
+[x]  354  Mishra, Eminent One                             7921 decks  {2}{U}{B}{R}     Legendary Creature — Human Artificer
 [x]  355  Shirei, Shizo's Caretaker                       7897 decks  {4}{B}           Legendary Creature — Spirit
 [ ]  356  Myrkul, Lord of Bones                           7891 decks  {4}{W}{B}{G}     Legendary Creature — God
 [ ]  357  Ellivere of the Wild Court                      7866 decks  {2}{G}{W}        Legendary Creature — Human Knight

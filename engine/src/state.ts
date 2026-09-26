@@ -345,6 +345,9 @@ export interface GameObject {
    */
   enterChoice?: {
     readonly copyOf?: string | null;
+    /** The copied permanent's copy exceptions (its `copiable` modifiers),
+     * which the copy takes too (rule 707.9b). */
+    readonly copyModifiers?: readonly PtModifier[];
     readonly chosen?: string;
     readonly enchant?: ObjectId | null;
   };
@@ -646,6 +649,14 @@ export interface PtModifier {
    * `"cant-be-sacrificed"` effect). The static equivalent is
    * `StaticAbility.cantBeSacrificed`. */
   cantBeSacrificed?: boolean;
+  /** Part of the object's **copiable values** (rule 707.9b): an exception a
+   * copy effect made ("except it's a 3/3 black Zombie creature in addition
+   * to its other types"). Anything that copies this object copies these
+   * too — a token copy, a Clone. Timestamped under every other effect. */
+  copiable?: true;
+  /** Its name — a copy exception's "except its name is Mishra's Warform".
+   * Read through {@link nameOf}. */
+  setName?: string;
   untilEndOfTurn: boolean;
   /**
    * `GameState.timestampSeq` when the modifier was applied, for ordering its
@@ -762,6 +773,9 @@ export interface LastKnownInfo {
   /** It had lost all its abilities (layer 6 — Turn to Frog), so none of its
    * own leaves-the-battlefield abilities trigger. */
   readonly lostAbilities: boolean;
+  /** The name a copy exception gave it, where that isn't its card's
+   * (`name`, which stays the registry key) — see {@link nameOf}. */
+  readonly renamed?: string;
   /** The triggered abilities it had been *granted* — by another permanent's
    * static or a one-shot modifier — in the order `effectiveTriggered` lists
    * them after its printed ones; with `lostAbilities`, only those granted
@@ -2352,6 +2366,18 @@ export const faceName = (object: GameObject): string => {
  * should go through this. */
 export const printedCardName = (object: GameObject): string =>
   object.copyOf ?? faceName(object);
+
+/** The name `object` has (rule 201.2): one a copy exception gave it
+ * ("except its name is Mishra's Warform" — a copiable `setName`, the latest
+ * such), else its card's ({@link printedCardName}). What the legend rule and
+ * every "named …" read; the registry stays keyed by `printedCardName`. */
+export const nameOf = (object: GameObject): string => {
+  for (let i = object.modifiers.length - 1; i >= 0; i -= 1) {
+    const m = object.modifiers[i];
+    if (m.copiable === true && m.setName !== undefined) return m.setName;
+  }
+  return printedCardName(object);
+};
 
 /**
  * How many permanents `ids` stand for: a compacted token stack is every token

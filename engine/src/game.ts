@@ -130,6 +130,7 @@ import type {
   FlickerCounters,
   FlickerOptions,
   LookAndChooseLeftoverIf,
+  CopyExceptions,
   ZoneSecondPick,
   UnlessOption,
   WardCost,
@@ -195,6 +196,7 @@ import {
   createPlayerState,
   permanentCount,
   printedCardName,
+  nameOf,
 } from "./state.js";
 import type {
   AwaitingDecision,
@@ -332,6 +334,27 @@ interface TriggeredEntry {
   readonly ability: TriggeredAbility;
   readonly ref?: GrantedAbilityRef;
   readonly lost?: true;
+}
+
+/** A copy effect's exceptions as the copiable modifier the copy carries
+ * (rule 707.9b) — see {@link CopyExceptions}. */
+function copyExceptionModifier(exceptions: CopyExceptions): PtModifier {
+  return {
+    power: 0,
+    toughness: 0,
+    keywords: [...(exceptions.keywords ?? [])],
+    ...(exceptions.addTypes !== undefined ? { addTypes: [...exceptions.addTypes] } : {}),
+    ...(exceptions.addSubtypes !== undefined ? { addSubtypes: [...exceptions.addSubtypes] } : {}),
+    ...(exceptions.setColors !== undefined ? { setColors: [...exceptions.setColors] } : {}),
+    ...(exceptions.addColors !== undefined ? { addColors: [...exceptions.addColors] } : {}),
+    ...(exceptions.basePt !== undefined
+      ? { setPt: [exceptions.basePt[0], exceptions.basePt[1]] as [number, number] }
+      : {}),
+    ...(exceptions.name !== undefined ? { setName: exceptions.name } : {}),
+    untilEndOfTurn: false,
+    copiable: true,
+    timestamp: -1,
+  };
 }
 
 /** Shared empty result for `effectiveTriggeredEntries`' common no-triggers
@@ -2664,9 +2687,12 @@ export class Game {
     // copied card's printed name, which every characteristic read resolves
     // through; `moveObject` makes it the copy as it enters.
     const clone = this.state.objects[awaiting.source];
+    const copied = copy === null ? undefined : this.state.objects[copy];
     clone.enterChoice = {
       ...clone.enterChoice,
-      copyOf: copy === null ? null : printedCardName(this.state.objects[copy]),
+      copyOf: copied === undefined ? null : printedCardName(copied),
+      // Its copy exceptions are part of what's copied (rule 707.9b).
+      copyModifiers: copied === undefined ? [] : copied.modifiers.filter((m) => m.copiable === true),
     };
     // A copy is announced as it enters; declining, now.
     if (copy === null) this.emit({ type: "permanent-copied", object: awaiting.source, copyOf: null });
@@ -13236,6 +13262,7 @@ export class Game {
       basePt?: readonly [number, number];
       under?: PlayerId;
       gainUntilEndOfTurn?: readonly Keyword[];
+      exceptions?: CopyExceptions;
     },
   ): void {
     const of = this.state.objects[ofId];
@@ -13247,9 +13274,26 @@ export class Game {
     // control" (Hate Mirage).
     const controller = opts.under ?? of.controller;
     const total = count * this.tokenCreationMultiplier(controller);
+    // A copy exception is part of the copiable values (rule 707.9b): every
+    // other effect applies over it, and a copy of this copy has it too. So
+    // the copied object's own exceptions come first (a copy of an Anikthea
+    // Zombie is a Zombie), then this copy's, which win where they differ.
+    const inherited: PtModifier[] = of.modifiers
+      .filter((m) => m.copiable === true)
+      .map((m) => ({ ...m, timestamp: -2 }));
     const modifiers: PtModifier[] = [
+      ...inherited,
       ...(opts.gainsHaste
-        ? [{ power: 0, toughness: 0, keywords: ["haste" as const], untilEndOfTurn: false }]
+        ? [
+            {
+              power: 0,
+              toughness: 0,
+              keywords: ["haste" as const],
+              untilEndOfTurn: false,
+              copiable: true as const,
+              timestamp: -1,
+            },
+          ]
         : []),
       ...(opts.basePt
         ? [
@@ -13259,12 +13303,12 @@ export class Game {
               keywords: [],
               setPt: [opts.basePt[0], opts.basePt[1]] as [number, number],
               untilEndOfTurn: false,
-              // A copy exception is part of the copiable values (rule
-              // 707.9b): every other P/T-setting effect applies over it.
+              copiable: true as const,
               timestamp: -1,
             },
           ]
         : []),
+      ...(opts.exceptions !== undefined ? [copyExceptionModifier(opts.exceptions)] : []),
       ...untilEndOfTurnKeywords(opts.gainUntilEndOfTurn ?? []),
     ];
     this.mintTokenBatch(
@@ -13274,7 +13318,7 @@ export class Game {
       total,
       modifiers,
       opts.exileAtEndStep,
-      opts.notLegendary,
+      opts.notLegendary || of.notLegendary === true,
       true,
       false,
       opts.sacrificeAtEndStep === true,
@@ -17303,9 +17347,9 @@ export class Game {
       if (moving.has(id)) continue;
       const object = this.state.objects[id];
       if (object.notLegendary === true) continue; // Miirym's copies (P5b)
-      const name = printedCardName(object);
-      if (!this.registry.get(name).supertypes.includes("legendary")) continue;
-      const key = `${object.controller} ${name}`;
+      if (!this.registry.get(printedCardName(object)).supertypes.includes("legendary")) continue;
+      // The name it has — a copy exception's, if one renamed it.
+      const key = `${object.controller} ${nameOf(object)}`;
       const group = legendaryGroups.get(key);
       if (group) group.push(id);
       else legendaryGroups.set(key, [id]);
@@ -17321,7 +17365,7 @@ export class Game {
         if (legend === null || order.indexOf(player) < order.indexOf(legend.player)) {
           legend = {
             player,
-            name: printedCardName(this.state.objects[group[0]]),
+            name: nameOf(this.state.objects[group[0]]),
             // The one they've controlled longest first — what a player who
             // doesn't care keeps.
             options: [...group].sort((a, b) => this.state.objects[a].timestamp - this.state.objects[b].timestamp),
@@ -17731,6 +17775,7 @@ export class Game {
     const c = computeCharacteristics(this.state, this.registry, id);
     const attached = attachmentsOf(this.state, this.registry, id);
     const lostAbilities = hasLostAbilities(object);
+    const renamed = nameOf(object);
     // The granted triggered abilities, in `effectiveTriggered`'s order after
     // the printed ones: a granted dies trigger still fires once its grantor
     // has left too, or its own modifiers have been cleared by the move. Only
@@ -17777,6 +17822,7 @@ export class Game {
       ...(goaders.length > 0 ? { goaders: [...goaders] } : {}),
       ...(object.suspectedAt !== undefined ? { suspected: true } : {}),
       lostAbilities,
+      ...(renamed !== name ? { renamed } : {}),
       ...(granted.length > 0 ? { grantedTriggers: granted } : {}),
     };
   }
@@ -18167,6 +18213,7 @@ export class Game {
     if (to === "battlefield" && enterChoice !== undefined) {
       if (enterChoice.copyOf !== undefined && enterChoice.copyOf !== null) {
         object.copyOf = enterChoice.copyOf;
+        for (const m of enterChoice.copyModifiers ?? []) object.modifiers.push({ ...m, timestamp: -2 });
         this.emit({ type: "permanent-copied", object: id, copyOf: enterChoice.copyOf });
       }
       if (enterChoice.chosen !== undefined) {

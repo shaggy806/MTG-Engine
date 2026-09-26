@@ -201,7 +201,7 @@ export function CardTile({
   }, [artFirst, typeLineText])
   const nameNode = (
     <span className="ct-name">
-      {face}
+      {obj.name ?? face}
       {obj.copyOf ? <span className="ct-copy"> (copy)</span> : null}
       {obj.faces && obj.faces.length > 1 ? (
         <span className="ct-copy" title={obj.faces.join(' // ')}> ⇄</span>

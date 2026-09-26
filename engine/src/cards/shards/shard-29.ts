@@ -110,6 +110,7 @@ import _poolRiverSneak from "../pool/river-sneak.js";
 import _poolRuinsOfTrokair from "../pool/ruins-of-trokair.js";
 import _poolRunedServitor from "../pool/runed-servitor.js";
 import _poolSacredArmory from "../pool/sacred-armory.js";
+import _poolSaheeliRadiantCreator from "../pool/saheeli-radiant-creator.js";
 import _poolSanctuaryCat from "../pool/sanctuary-cat.js";
 import _poolSavaiTriome from "../pool/savai-triome.js";
 import _poolScarlandThrinax from "../pool/scarland-thrinax.js";
@@ -270,6 +271,7 @@ const shard: CardShard = {
     _poolRuinsOfTrokair,
     _poolRunedServitor,
     _poolSacredArmory,
+    _poolSaheeliRadiantCreator,
     _poolSanctuaryCat,
     _poolSavaiTriome,
     _poolScarlandThrinax,

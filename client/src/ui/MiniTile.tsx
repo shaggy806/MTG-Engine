@@ -114,8 +114,8 @@ export function MiniTile({
             .mt-body — which is what carries the 4:3 aspect ratio (and is
             the positioning context for those overlays) now that the tile
             itself is banner + art, not art alone. */}
-        <span className="mt-banner" title={face}>
-          {face}
+        <span className="mt-banner" title={obj.name ?? face}>
+          {obj.name ?? face}
         </span>
         <span className="mt-body">
           <span className={`mt-art tint-${tint}`}>

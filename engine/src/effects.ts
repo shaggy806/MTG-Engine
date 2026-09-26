@@ -1790,6 +1790,8 @@ export type EffectSpec =
       /** Override the copies' base power/toughness (Saw in Half — "except
        * they're each 1/1"; a layer-7b set, so counters / anthems still apply). */
       readonly basePt?: readonly [number, number];
+      /** The rest of a copy's exceptions — see {@link CopyExceptions}. */
+      readonly exceptions?: CopyExceptions;
     }
   | {
       /** Attach the source (an Aura/Equipment) to a target permanent. */
@@ -2330,6 +2332,26 @@ export type EffectSpec =
        */
       readonly then?: EffectSpec;
     };
+
+/**
+ * What a copy effect makes different about its copy — "except it's a 3/3
+ * black Zombie creature in addition to its other types" (Anikthea, Hand of
+ * Erebos), "except its name is Mishra's Warform" (Mishra, Eminent One).
+ * Exceptions are part of the copy's copiable values (rule 707.9b): every
+ * other effect applies over them, and anything that copies the copy copies
+ * them too. `setColors` replaces its colours ("it's black"); `addColors`,
+ * `addTypes` and `addSubtypes` are "in addition to its other …";
+ * `keywords` are abilities it has ("and it has flying and haste").
+ */
+export interface CopyExceptions {
+  readonly name?: string;
+  readonly addTypes?: readonly CardType[];
+  readonly addSubtypes?: readonly string[];
+  readonly setColors?: readonly Color[];
+  readonly addColors?: readonly Color[];
+  readonly basePt?: readonly [number, number];
+  readonly keywords?: readonly Keyword[];
+}
 
 /** See the `look-and-choose` effect's `leftoverIf`. */
 export interface LookAndChooseLeftoverIf {
@@ -2896,6 +2918,7 @@ export interface EffectApi {
       basePt?: readonly [number, number];
       /** Keywords the copies gain until end of turn. */
       gainUntilEndOfTurn?: readonly Keyword[];
+      exceptions?: CopyExceptions;
     },
   ): void;
   /** True if `condition` holds from the effect source's controller's
@@ -4313,6 +4336,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
           under: spec.who === "you" ? ctx.controller : undefined,
           ...(spec.basePt ? { basePt: spec.basePt } : {}),
           ...(spec.gainUntilEndOfTurn ? { gainUntilEndOfTurn: spec.gainUntilEndOfTurn } : {}),
+          ...(spec.exceptions ? { exceptions: spec.exceptions } : {}),
         });
       }
       return;

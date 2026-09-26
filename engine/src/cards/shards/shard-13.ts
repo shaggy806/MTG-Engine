@@ -156,6 +156,7 @@ import _poolTarPitcher from "../pool/tar-pitcher.js";
 import _poolTectonicGiant from "../pool/tectonic-giant.js";
 import _poolTempleGarden from "../pool/temple-garden.js";
 import _poolTheDrossPits from "../pool/the-dross-pits.js";
+import _poolTheJollyBalloonMan from "../pool/the-jolly-balloon-man.js";
 import _poolThornwindFaeries from "../pool/thornwind-faeries.js";
 import _poolTouchstone from "../pool/touchstone.js";
 import _poolTrollHornCameo from "../pool/troll-horn-cameo.js";
@@ -336,6 +337,7 @@ const shard: CardShard = {
     _poolTectonicGiant,
     _poolTempleGarden,
     _poolTheDrossPits,
+    _poolTheJollyBalloonMan,
     _poolThornwindFaeries,
     _poolTouchstone,
     _poolTrollHornCameo,

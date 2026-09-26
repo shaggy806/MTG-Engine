@@ -29,7 +29,7 @@ import { isGoaded } from "./goad.js";
 import type { Color, ManaCost, ManaFromSpec } from "./mana.js";
 import { COLORS, manaOriginMatches, manaValue, parseManaCost } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
-import { activePlayerOf, printedCardName } from "./state.js";
+import { activePlayerOf, nameOf, printedCardName } from "./state.js";
 import type { GameObject, GameState, LastKnownInfo, ZoneType } from "./state.js";
 import { hasSubtype } from "./subtypes.js";
 import { thisWayEntries } from "./this-way.js";
@@ -602,8 +602,10 @@ export function matchesFilter(
       return false;
     }
   }
-  if (filter.name !== undefined && name !== filter.name) return false;
-  if (filter.notName !== undefined && name === filter.notName) return false;
+  // The name it has — a copy exception's, if one renamed it (`nameOf`).
+  const named = live !== undefined ? nameOf(live) : (lki!.renamed ?? lki!.name);
+  if (filter.name !== undefined && named !== filter.name) return false;
+  if (filter.notName !== undefined && named === filter.notName) return false;
 
   if (
     filter.colors !== undefined ||
@@ -828,7 +830,7 @@ export function matchesFilter(
       const object = state.objects[other];
       return (
         object !== undefined &&
-        printedCardName(object) === name &&
+        nameOf(object) === named &&
         matchesFilter(state, registry, other, inner, innerCtx)
       );
     });
