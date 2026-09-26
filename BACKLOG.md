@@ -36,7 +36,7 @@ that one card is the reason the deck exists.
 ## Card backlog (top-5000 staples and the precons)
 
 - **The current priority (2026-09-26): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,378 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,393 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped; past those, nothing is triaged.

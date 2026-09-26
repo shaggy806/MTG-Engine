@@ -230,9 +230,29 @@ Garenbrig (717)
   the Sword cycle): `protection: {colors, types}` widening to a `CardFilter`.
   The One Ring and Teferi's Protection give protection to a *player* instead.
 - **Cards E3 skipped** for want of a primitive and still unauthored:
-  Ponder (put cards back in any order), Skullclamp ("equipped creature
-  dies"), Chaos Warp (shuffle a permanent into a library), The One Ring
-  (protection for a player), Urza's Saga.
+  Ponder (put cards back in any order), Chaos Warp (shuffle a permanent
+  into a library), The One Ring (protection for a player), Urza's Saga.
+
+### Host triggers — built 2026-09-26
+
+**Built** as the `"attached"` `TriggerWho`: "whenever **equipped** creature
+…", "whenever **enchanted** creature / land …" — the Equipment's or Aura's
+host as the event happened, whoever controls it, with the trigger still the
+attachment's and its controller's. A host that died is matched by the link
+the attachment still has until the next state-based check (704.5n); an
+attachment that left alongside it remembers its host
+(`LastKnownInfo.attachedTo`, rule 603.10a). Measured before it was built: 75
+missing top-5000 cards. It shipped with Skullclamp, Wild Growth (a triggered
+mana ability, so the auto-payer counts it), Sword of the Animist, Sword of
+Feast and Famine, Sword of Fire and Ice, Sword of Light and Shadow,
+Curiosity, Ophidian Eye, Aqueous Form, Mask of Memory, Goldvein Pick,
+Beamtown Beatstick, Argentum Armor, Explorer's Scope and Sticky Fingers.
+
+Sword of Fire and Ice turned up a real bug: a combat damage trigger's first
+target slot was auto-filled with the damaged player whenever it could hold
+one, so Mindscour Dragon's "target player mills four" could only ever pick
+the damaged opponent. "That player" is now the `"trigger-player"` scope
+(Xyris, Captain N'ghathrod moved to it) and every slot is a real choice.
 
 ### Unbounded targeting — built 2026-09-26
 

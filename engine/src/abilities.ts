@@ -237,7 +237,17 @@ export type TriggerWho =
    * subject is a *player* — a `step-begins` trigger's "each opponent's end
    * step" (Archfiend of Depravity), which fires once per opponent's turn
    * rather than once per opponent. */
-  | "opponent";
+  | "opponent"
+  /**
+   * The permanent this one is attached to — "**equipped** creature",
+   * "**enchanted** creature / land / permanent" (Skullclamp, Wild Growth, the
+   * Swords): the Equipment's or Aura's host as the event happened, whoever
+   * controls it. The trigger is still the Equipment's or Aura's, and its
+   * controller's. A host that has left ("equipped creature dies") is matched
+   * by the host its source had then — remembered by a source that left at
+   * the same time (`LastKnownInfo.attachedTo`).
+   */
+  | "attached";
 
 export type TriggerSpec =
   | {
@@ -553,9 +563,11 @@ export type TriggerSpec =
       readonly filter?: CardFilter;
     }
   | {
-      /** This creature dealt combat damage to a player. The ability's first
-       * target slot (if any) is auto-filled with that player, when the slot
-       * can hold one. The creature is the trigger object — "you gain life
+      /** This creature dealt combat damage to a player — "that player" is
+       * the `"trigger-player"` scope (Xyris, Captain N'ghathrod); a target
+       * slot is always the controller's choice (Mindscour Dragon's "target
+       * player mills four", Sword of Fire and Ice's "any target"). The
+       * creature is the trigger object — "you gain life
        * equal to **that creature's** toughness" (Ikra Shidiqi), read as it
        * last existed on the battlefield if the same damage killed it — and
        * `{ triggerValue: true }` is how much it dealt. */

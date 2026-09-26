@@ -797,6 +797,10 @@ export interface LastKnownInfo {
   readonly blocking: boolean;
   readonly equipped: boolean;
   readonly enchanted: boolean;
+  /** What it was attached to, if it was an Equipment or Aura on something —
+   * so an "equipped creature dies" trigger still knows its host when both
+   * left together. */
+  readonly attachedTo?: ObjectId;
   /** Enchanted by an Aura its own controller controlled — rule 700.9's
    * "modified". */
   readonly enchantedByController: boolean;

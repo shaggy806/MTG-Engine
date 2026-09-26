@@ -149,6 +149,7 @@ import _poolSkyclaveGeopede from "../pool/skyclave-geopede.js";
 import _poolSkyscanner from "../pool/skyscanner.js";
 import _poolSliptideSerpent from "../pool/sliptide-serpent.js";
 import _poolSnareThopter from "../pool/snare-thopter.js";
+import _poolStickyFingers from "../pool/sticky-fingers.js";
 import _poolSunbeamSpellbomb from "../pool/sunbeam-spellbomb.js";
 import _poolTajuruPathwarden from "../pool/tajuru-pathwarden.js";
 import _poolTempleOfMystery from "../pool/temple-of-mystery.js";
@@ -331,6 +332,7 @@ const shard: CardShard = {
     _poolSkyscanner,
     _poolSliptideSerpent,
     _poolSnareThopter,
+    _poolStickyFingers,
     _poolSunbeamSpellbomb,
     _poolTajuruPathwarden,
     _poolTempleOfMystery,

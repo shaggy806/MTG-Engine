@@ -9,6 +9,7 @@ import _poolAkroanJailer from "../pool/akroan-jailer.js";
 import _poolAlmightyBrushwagg from "../pool/almighty-brushwagg.js";
 import _poolAncientLumberknot from "../pool/ancient-lumberknot.js";
 import _poolAncientZiggurat from "../pool/ancient-ziggurat.js";
+import _poolAqueousForm from "../pool/aqueous-form.js";
 import _poolArborElf from "../pool/arbor-elf.js";
 import _poolArtfulTakedown from "../pool/artful-takedown.js";
 import _poolArtificialEvolution from "../pool/artificial-evolution.js";
@@ -191,6 +192,7 @@ import _poolWallOfLava from "../pool/wall-of-lava.js";
 import _poolWarlordsAxe from "../pool/warlords-axe.js";
 import _poolWarstormSurge from "../pool/warstorm-surge.js";
 import _poolWaterTribeCaptain from "../pool/water-tribe-captain.js";
+import _poolWildGrowth from "../pool/wild-growth.js";
 import _poolWizardsSchool from "../pool/wizards-school.js";
 import _poolXyrisTheWrithingStorm from "../pool/xyris-the-writhing-storm.js";
 import _poolZodiacHorse from "../pool/zodiac-horse.js";
@@ -208,6 +210,7 @@ const shard: CardShard = {
     _poolAlmightyBrushwagg,
     _poolAncientLumberknot,
     _poolAncientZiggurat,
+    _poolAqueousForm,
     _poolArborElf,
     _poolArtfulTakedown,
     _poolArtificialEvolution,
@@ -390,6 +393,7 @@ const shard: CardShard = {
     _poolWarlordsAxe,
     _poolWarstormSurge,
     _poolWaterTribeCaptain,
+    _poolWildGrowth,
     _poolWizardsSchool,
     _poolXyrisTheWrithingStorm,
     _poolZodiacHorse,

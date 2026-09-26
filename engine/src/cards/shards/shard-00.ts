@@ -51,6 +51,7 @@ import _poolElfhameWurm from "../pool/elfhame-wurm.js";
 import _poolEliteArchers from "../pool/elite-archers.js";
 import _poolElvishHandservant from "../pool/elvish-handservant.js";
 import _poolEverethViceroyOfPlunder from "../pool/evereth-viceroy-of-plunder.js";
+import _poolExplorersScope from "../pool/explorers-scope.js";
 import _poolExposeToDaylight from "../pool/expose-to-daylight.js";
 import _poolExultantCultist from "../pool/exultant-cultist.js";
 import _poolFaithlessLooting from "../pool/faithless-looting.js";
@@ -239,6 +240,7 @@ const shard: CardShard = {
     _poolEliteArchers,
     _poolElvishHandservant,
     _poolEverethViceroyOfPlunder,
+    _poolExplorersScope,
     _poolExposeToDaylight,
     _poolExultantCultist,
     _poolFaithlessLooting,

@@ -28,9 +28,8 @@ export default defineCard({
         who: "you-control",
         filter: { subtype: "Horror" },
       },
-      // Auto-filled with the damaged player ("that player").
-      targets: ["player"],
-      effect: { kind: "mill", target: 0, amount: { triggerValue: true } },
+      targets: [],
+      effect: { kind: "mill", target: "trigger-player", amount: { triggerValue: true } },
       resolve: null,
       text: "Whenever a Horror you control deals combat damage to a player, that player mills that many cards.",
     },

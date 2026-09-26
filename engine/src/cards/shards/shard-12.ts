@@ -102,6 +102,7 @@ import _poolMyrKinsmith from "../pool/myr-kinsmith.js";
 import _poolNantukoHusk from "../pool/nantuko-husk.js";
 import _poolNarciFableSinger from "../pool/narci-fable-singer.js";
 import _poolNyxbornMarauder from "../pool/nyxborn-marauder.js";
+import _poolOphidianEye from "../pool/ophidian-eye.js";
 import _poolOxiddaScrapmelter from "../pool/oxidda-scrapmelter.js";
 import _poolPatagiaGolem from "../pool/patagia-golem.js";
 import _poolPendrellDrake from "../pool/pendrell-drake.js";
@@ -274,6 +275,7 @@ const shard: CardShard = {
     _poolNantukoHusk,
     _poolNarciFableSinger,
     _poolNyxbornMarauder,
+    _poolOphidianEye,
     _poolOxiddaScrapmelter,
     _poolPatagiaGolem,
     _poolPendrellDrake,

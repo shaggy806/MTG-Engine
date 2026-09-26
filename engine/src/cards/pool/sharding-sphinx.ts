@@ -20,7 +20,6 @@ export default defineCard({
         who: "you-control",
         filter: { type: "artifact" },
       },
-      // No target slot, so the auto-filled damaged player has nowhere to go.
       targets: [],
       effect: {
         kind: "may",

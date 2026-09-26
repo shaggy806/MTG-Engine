@@ -157,6 +157,7 @@ import _poolStormscapeApprentice from "../pool/stormscape-apprentice.js";
 import _poolSuddenStrength from "../pool/sudden-strength.js";
 import _poolSunSentinel from "../pool/sun-sentinel.js";
 import _poolSungracePegasus from "../pool/sungrace-pegasus.js";
+import _poolSwordOfFireAndIce from "../pool/sword-of-fire-and-ice.js";
 import _poolTalismanOfDominance from "../pool/talisman-of-dominance.js";
 import _poolTemporalAdept from "../pool/temporal-adept.js";
 import _poolThornglintBridge from "../pool/thornglint-bridge.js";
@@ -350,6 +351,7 @@ const shard: CardShard = {
     _poolSuddenStrength,
     _poolSunSentinel,
     _poolSungracePegasus,
+    _poolSwordOfFireAndIce,
     _poolTalismanOfDominance,
     _poolTemporalAdept,
     _poolThornglintBridge,

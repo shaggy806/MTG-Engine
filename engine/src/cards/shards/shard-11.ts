@@ -163,6 +163,7 @@ import _poolStaffOfNin from "../pool/staff-of-nin.js";
 import _poolStomperCub from "../pool/stomper-cub.js";
 import _poolStormfistCrusader from "../pool/stormfist-crusader.js";
 import _poolStreetbreakerWurm from "../pool/streetbreaker-wurm.js";
+import _poolSwordOfTheAnimist from "../pool/sword-of-the-animist.js";
 import _poolSwornCompanions from "../pool/sworn-companions.js";
 import _poolTaintedWood from "../pool/tainted-wood.js";
 import _poolTalrandsInvocation from "../pool/talrands-invocation.js";
@@ -361,6 +362,7 @@ const shard: CardShard = {
     _poolStomperCub,
     _poolStormfistCrusader,
     _poolStreetbreakerWurm,
+    _poolSwordOfTheAnimist,
     _poolSwornCompanions,
     _poolTaintedWood,
     _poolTalrandsInvocation,

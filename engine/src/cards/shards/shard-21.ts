@@ -132,6 +132,7 @@ import _poolStormcallerOfKeranos from "../pool/stormcaller-of-keranos.js";
 import _poolStudentOfOjutai from "../pool/student-of-ojutai.js";
 import _poolSubmergedBoneyard from "../pool/submerged-boneyard.js";
 import _poolSunastianFalconer from "../pool/sunastian-falconer.js";
+import _poolSwordOfFeastAndFamine from "../pool/sword-of-feast-and-famine.js";
 import _poolSylvokReplica from "../pool/sylvok-replica.js";
 import _poolSymbioticBeast from "../pool/symbiotic-beast.js";
 import _poolTanglebloom from "../pool/tanglebloom.js";
@@ -292,6 +293,7 @@ const shard: CardShard = {
     _poolStudentOfOjutai,
     _poolSubmergedBoneyard,
     _poolSunastianFalconer,
+    _poolSwordOfFeastAndFamine,
     _poolSylvokReplica,
     _poolSymbioticBeast,
     _poolTanglebloom,

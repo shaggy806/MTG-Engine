@@ -97,6 +97,7 @@ import _poolMalachiteGolem from "../pool/malachite-golem.js";
 import _poolManalith from "../pool/manalith.js";
 import _poolMarbleChalice from "../pool/marble-chalice.js";
 import _poolMartyrForTheCause from "../pool/martyr-for-the-cause.js";
+import _poolMaskOfMemory from "../pool/mask-of-memory.js";
 import _poolMendingHands from "../pool/mending-hands.js";
 import _poolMerfolkOfThePearlTrident from "../pool/merfolk-of-the-pearl-trident.js";
 import _poolMightOfOaks from "../pool/might-of-oaks.js";
@@ -282,6 +283,7 @@ const shard: CardShard = {
     _poolManalith,
     _poolMarbleChalice,
     _poolMartyrForTheCause,
+    _poolMaskOfMemory,
     _poolMendingHands,
     _poolMerfolkOfThePearlTrident,
     _poolMightOfOaks,

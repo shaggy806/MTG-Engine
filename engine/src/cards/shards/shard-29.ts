@@ -7,6 +7,7 @@ import _poolAIMSynthoids from "../pool/a-i-m-synthoids.js";
 import _poolAdaptiveGemguard from "../pool/adaptive-gemguard.js";
 import _poolAffaProtector from "../pool/affa-protector.js";
 import _poolArdbert from "../pool/ardbert.js";
+import _poolArgentumArmor from "../pool/argentum-armor.js";
 import _poolAttendedKnight from "../pool/attended-knight.js";
 import _poolAuspiciousArrival from "../pool/auspicious-arrival.js";
 import _poolBargain from "../pool/bargain.js";
@@ -170,6 +171,7 @@ const shard: CardShard = {
     _poolAdaptiveGemguard,
     _poolAffaProtector,
     _poolArdbert,
+    _poolArgentumArmor,
     _poolAttendedKnight,
     _poolAuspiciousArrival,
     _poolBargain,

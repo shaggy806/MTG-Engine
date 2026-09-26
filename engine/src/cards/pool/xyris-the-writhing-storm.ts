@@ -26,14 +26,13 @@ export default defineCard({
         "steps, create a 1/1 green Snake creature token.",
     },
     {
-      // "That player" is filled in by the damage, not targeted.
       trigger: { on: "deals-combat-damage-to-player", who: "self" },
-      targets: ["player"],
+      targets: [],
       effect: {
         kind: "sequence",
         effects: [
           { kind: "draw", amount: { triggerValue: true } },
-          { kind: "draw", amount: { triggerValue: true }, target: 0 },
+          { kind: "draw", amount: { triggerValue: true }, who: "trigger-player" },
         ],
       },
       resolve: null,

@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1378 already implemented / 3622 missing (marks refreshed 2026-09-26)
+1393 already implemented / 3607 missing (marks refreshed 2026-09-26)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -37,7 +37,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]    38  Solemn Simulacrum                        {4}              Artifact Creature — Golem
 [x]    39  Flooded Strand                           {0}              Land
 [x]    40  Three Visits                             {1}{G}           Sorcery
-[ ]    41  Skullclamp                               {1}              Artifact — Equipment
+[x]    41  Skullclamp                               {1}              Artifact — Equipment
 [x]    42  Misty Rainforest                         {0}              Land
 [x]    43  Bloodstained Mire                        {0}              Land
 [x]    44  Windswept Heath                          {0}              Land
@@ -208,7 +208,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   209  Ash Barrens                              {0}              Land
 [x]   210  Bountiful Promenade                      {0}              Land
 [x]   211  Thrill of Possibility                    {1}{R}           Instant
-[ ]   212  Wild Growth                              {G}              Enchantment — Aura
+[x]   212  Wild Growth                              {G}              Enchantment — Aura
 [x]   213  Crop Rotation                            {G}              Instant
 [x]   214  Beast Whisperer                          {2}{G}{G}        Creature — Elf Druid
 [x]   215  Fyndhorn Elves                           {G}              Creature — Elf Druid
@@ -231,7 +231,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   232  Sign in Blood                            {B}{B}           Sorcery
 [x]   233  Dovin's Veto                             {W}{U}           Instant
 [x]   234  Explore                                  {1}{G}           Sorcery
-[ ]   235  Sword of the Animist                     {2}              Legendary Artifact — Equipment
+[x]   235  Sword of the Animist                     {2}              Legendary Artifact — Equipment
 [x]   236  Growth Spiral                            {G}{U}           Instant
 [x]   237  Zulaport Cutthroat                       {1}{B}           Creature — Human Rogue Ally
 [x]   238  Mithril Coat                             {3}              Legendary Artifact — Equipment
@@ -539,7 +539,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   540  Green Sun's Zenith                       {X}{G}           Sorcery
 [x]   541  Temple of Abandon                        {0}              Land
 [x]   542  Vineglimmer Snarl                        {0}              Land
-[ ]   543  Sword of Feast and Famine                {3}              Artifact — Equipment
+[x]   543  Sword of Feast and Famine                {3}              Artifact — Equipment
 [x]   544  Mindbreak Trap                           {2}{U}{U}        Instant — Trap
 [x]   545  Hedron Archive                           {4}              Artifact
 [x]   546  Unwinding Clock                          {4}              Artifact
@@ -579,7 +579,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   580  Thespian's Stage                         {0}              Land
 [x]   581  Grave Pact                               {1}{B}{B}{B}     Enchantment
 [x]   582  Saw in Half                              {2}{B}           Instant
-[ ]   583  Curiosity                                {U}              Enchantment — Aura
+[x]   583  Curiosity                                {U}              Enchantment — Aura
 [x]   584  Emerald Medallion                        {2}              Artifact
 [ ]   585  Culling Ritual                           {2}{B}{G}        Sorcery
 [ ]   586  Darksteel Mutation                       {1}{W}           Enchantment — Aura
@@ -753,7 +753,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   754  Eldritch Evolution                       {1}{G}{G}        Sorcery
 [ ]   755  Chimil, the Inner Sun                    {6}              Legendary Artifact
 [ ]   756  Bloodchief Ascension                     {B}              Enchantment
-[ ]   757  Aqueous Form                             {U}              Enchantment — Aura
+[x]   757  Aqueous Form                             {U}              Enchantment — Aura
 [x]   758  Valley Floodcaller                       {2}{U}           Creature — Otter Wizard
 [x]   759  Veyran, Voice of Duality                 {1}{U}{R}        Legendary Creature — Efreet Wizard
 [x]   760  Seize the Spoils                         {2}{R}           Sorcery
@@ -977,7 +977,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   981  Inspiring Statuary                       {3}              Artifact
 [ ]   982  Blightsteel Colossus                     {12}             Artifact Creature — Phyrexian Golem
 [x]   983  Kardur, Doomscourge                      {2}{B}{R}        Legendary Creature — Demon Berserker
-[ ]   984  Mask of Memory                           {2}              Artifact — Equipment
+[x]   984  Mask of Memory                           {2}              Artifact — Equipment
 [x]   985  Kodama of the East Tree                  {4}{G}{G}        Legendary Creature — Spirit
 [x]   986  Defile                                   {B}              Instant
 [ ]   987  Approach of the Second Sun               {6}{W}           Sorcery
@@ -1325,7 +1325,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1332  Endurance                                {1}{G}{G}        Creature — Elemental Incarnation
 [ ]  1333  Vraska, Betrayal's Sting                 {4}{B}{B/P}      Legendary Planeswalker — Vraska
 [ ]  1334  Conqueror's Flail                        {2}              Artifact — Equipment
-[ ]  1335  Sword of Fire and Ice                    {3}              Artifact — Equipment
+[x]  1335  Sword of Fire and Ice                    {3}              Artifact — Equipment
 [ ]  1336  Baral, Chief of Compliance               {1}{U}           Legendary Creature — Human Wizard
 [ ]  1337  Secret Tunnel                            {0}              Land — Cave
 [ ]  1338  Jadar, Ghoulcaller of Nephalia           {1}{B}           Legendary Creature — Human Wizard
@@ -1612,7 +1612,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1619  Masterwork of Ingenuity                  {1}              Artifact — Equipment
 [ ]  1620  Stitch Together                          {B}{B}           Sorcery
 [ ]  1621  Urza's Ruinous Blast                     {4}{W}           Legendary Sorcery
-[ ]  1622  Ophidian Eye                             {2}{U}           Enchantment — Aura
+[x]  1622  Ophidian Eye                             {2}{U}           Enchantment — Aura
 [ ]  1623  Chainer, Nightmare Adept                 {2}{B}{R}        Legendary Creature — Human Minion
 [ ]  1624  Elvish Warmaster                         {1}{G}           Creature — Elf Warrior
 [ ]  1625  Defiler of Vigor                         {3}{G}{G}        Creature — Phyrexian Wurm
@@ -1843,7 +1843,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1850  Containment Construct                    {2}              Artifact Creature — Construct
 [x]  1851  Sunhome, Fortress of the Legion          {0}              Land
 [ ]  1852  Threefold Thunderhulk                    {7}              Artifact Creature — Gnome
-[ ]  1853  Sticky Fingers                           {R}              Enchantment — Aura
+[x]  1853  Sticky Fingers                           {R}              Enchantment — Aura
 [ ]  1854  Razorgrass Ambush // Razorgrass Field    {2}              Instant // Land
 [ ]  1855  Knuckles the Echidna                     {2}{R}{R}        Legendary Creature — Echidna Warrior
 [ ]  1856  Origin of Metalbending                   {1}{G}           Instant — Lesson
@@ -1984,7 +1984,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1991  Strength of the Harvest // Haven of the Harvest {3}              Enchantment — Aura // Land
 [ ]  1992  Grist, the Hunger Tide                   {1}{B}{G}        Legendary Planeswalker — Grist
 [ ]  1993  Taunt from the Rampart                   {3}{R}{W}        Sorcery
-[ ]  1994  Goldvein Pick                            {2}              Artifact — Equipment
+[x]  1994  Goldvein Pick                            {2}              Artifact — Equipment
 [ ]  1995  Virtue of Persistence // Locthwain Scorn {5}{B}{B} // {1}{B} Enchantment // Sorcery — Adventure
 [x]  1996  Summon: Titan                            {3}{G}{G}        Enchantment Creature — Saga Giant
 [x]  1997  Lord of the Accursed                     {2}{B}           Creature — Zombie
@@ -2197,7 +2197,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2204  Think Twice                              {1}{U}           Instant
 [ ]  2205  Season of Weaving                        {4}{U}{U}        Sorcery
 [ ]  2206  Ondu Inversion // Ondu Skyruins          {8}              Sorcery // Land
-[ ]  2207  Argentum Armor                           {6}              Artifact — Equipment
+[x]  2207  Argentum Armor                           {6}              Artifact — Equipment
 [x]  2208  Wall of Blossoms                         {1}{G}           Creature — Plant Wall
 [ ]  2209  Season of Growth                         {1}{G}           Enchantment
 [x]  2210  Arabella, Abandoned Doll                 {R}{W}           Legendary Artifact Creature — Toy
@@ -2234,13 +2234,13 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2241  Assemble the Legion                      {3}{R}{W}        Enchantment
 [x]  2242  Idyllic Beachfront                       {0}              Land — Plains Island
 [ ]  2243  Stuffy Doll                              {5}              Artifact Creature — Construct
-[ ]  2244  Sword of Light and Shadow                {3}              Artifact — Equipment
+[x]  2244  Sword of Light and Shadow                {3}              Artifact — Equipment
 [ ]  2245  Dragonhawk, Fate's Tempest               {3}{R}{R}        Legendary Creature — Bird Dragon
 [x]  2246  Llanowar Tribe                           {G}{G}{G}        Creature — Elf Druid
 [ ]  2247  Jaya's Immolating Inferno                {X}{R}{R}        Legendary Sorcery
 [ ]  2248  Deceptive Landscape                      {0}              Land
 [x]  2249  Gut Shot                                 {R/P}            Instant
-[ ]  2250  Explorer's Scope                         {1}              Artifact — Equipment
+[x]  2250  Explorer's Scope                         {1}              Artifact — Equipment
 [ ]  2251  Broken Bond                              {1}{G}           Sorcery
 [x]  2252  Temur Battlecrier                        {G}{U}{R}        Creature — Orc Ranger
 [ ]  2253  Manabarbs                                {3}{R}           Enchantment
@@ -2567,7 +2567,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2574  Goblin Chieftain                         {1}{R}{R}        Creature — Goblin
 [ ]  2575  Dread Presence                           {3}{B}           Creature — Nightmare
 [ ]  2576  Imoti, Celebrant of Bounty               {3}{G}{U}        Legendary Creature — Snake Druid
-[ ]  2577  Beamtown Beatstick                       {R}              Artifact — Equipment
+[x]  2577  Beamtown Beatstick                       {R}              Artifact — Equipment
 [ ]  2578  Currency Converter                       {1}              Artifact
 [ ]  2579  Will of the Abzan                        {3}{B}           Sorcery
 [ ]  2580  Siege-Gang Lieutenant                    {3}{R}           Creature — Goblin

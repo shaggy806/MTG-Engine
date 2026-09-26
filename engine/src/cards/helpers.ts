@@ -292,6 +292,19 @@ export const partnerWithTrigger = (name: string): TriggeredAbility => ({
 });
 
 /** The `{T}: Add {C}` ability every mana-producing basic land has. */
+/**
+ * "Equip {N}" (rule 702.6a): "{N}: Attach to target creature you control.
+ * Equip only as a sorcery."
+ */
+export const equip = (cost: string): ActivatedAbility => ({
+  cost: { mana: cost, tap: false },
+  targets: ["creature-you-control"],
+  effect: { kind: "attach", target: 0 },
+  resolve: null,
+  text: `Equip ${cost}`,
+  sorcerySpeed: true,
+});
+
 export const manaTapAbility = (mana: Color): ActivatedAbility => ({
   cost: { mana: null, tap: true },
   targets: [],

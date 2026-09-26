@@ -146,6 +146,7 @@ import _poolSeraphOfTheSuns from "../pool/seraph-of-the-suns.js";
 import _poolShaperGuildmage from "../pool/shaper-guildmage.js";
 import _poolShivanDragon from "../pool/shivan-dragon.js";
 import _poolSimicRagworm from "../pool/simic-ragworm.js";
+import _poolSkullclamp from "../pool/skullclamp.js";
 import _poolSkystreakEngineer from "../pool/skystreak-engineer.js";
 import _poolSmotheringTithe from "../pool/smothering-tithe.js";
 import _poolSolidarity from "../pool/solidarity.js";
@@ -334,6 +335,7 @@ const shard: CardShard = {
     _poolShaperGuildmage,
     _poolShivanDragon,
     _poolSimicRagworm,
+    _poolSkullclamp,
     _poolSkystreakEngineer,
     _poolSmotheringTithe,
     _poolSolidarity,

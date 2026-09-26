@@ -60,6 +60,7 @@ import _poolGlazeFiend from "../pool/glaze-fiend.js";
 import _poolGlorifierOfDusk from "../pool/glorifier-of-dusk.js";
 import _poolGoblinSkyRaider from "../pool/goblin-sky-raider.js";
 import _poolGoblinStriker from "../pool/goblin-striker.js";
+import _poolGoldveinPick from "../pool/goldvein-pick.js";
 import _poolGuadosalamFarplaneGateway from "../pool/guadosalam-farplane-gateway.js";
 import _poolGuardianOfPilgrims from "../pool/guardian-of-pilgrims.js";
 import _poolHeavyBallista from "../pool/heavy-ballista.js";
@@ -237,6 +238,7 @@ const shard: CardShard = {
     _poolGlorifierOfDusk,
     _poolGoblinSkyRaider,
     _poolGoblinStriker,
+    _poolGoldveinPick,
     _poolGuadosalamFarplaneGateway,
     _poolGuardianOfPilgrims,
     _poolHeavyBallista,

@@ -16,6 +16,7 @@ import _poolAtog from "../pool/atog.js";
 import _poolAugmentingAutomaton from "../pool/augmenting-automaton.js";
 import _poolBallLightning from "../pool/ball-lightning.js";
 import _poolBantBattlemage from "../pool/bant-battlemage.js";
+import _poolBeamtownBeatstick from "../pool/beamtown-beatstick.js";
 import _poolBenalishKnight from "../pool/benalish-knight.js";
 import _poolBlessedOrator from "../pool/blessed-orator.js";
 import _poolBlindCreeper from "../pool/blind-creeper.js";
@@ -38,6 +39,7 @@ import _poolCloudchaserEagle from "../pool/cloudchaser-eagle.js";
 import _poolConsider from "../pool/consider.js";
 import _poolCorruptCourtOfficial from "../pool/corrupt-court-official.js";
 import _poolCrackTheEarth from "../pool/crack-the-earth.js";
+import _poolCuriosity from "../pool/curiosity.js";
 import _poolDaggerclawImp from "../pool/daggerclaw-imp.js";
 import _poolDaiLiCensor from "../pool/dai-li-censor.js";
 import _poolDamnation from "../pool/damnation.js";
@@ -141,6 +143,7 @@ import _poolStormKilnArtist from "../pool/storm-kiln-artist.js";
 import _poolSundownPass from "../pool/sundown-pass.js";
 import _poolSunkenRuins from "../pool/sunken-ruins.js";
 import _poolSwiftwaterCliffs from "../pool/swiftwater-cliffs.js";
+import _poolSwordOfLightAndShadow from "../pool/sword-of-light-and-shadow.js";
 import _poolTakenumaAbandonedMire from "../pool/takenuma-abandoned-mire.js";
 import _poolTeeterpeakAmbusher from "../pool/teeterpeak-ambusher.js";
 import _poolTelimtorsDarts from "../pool/telimtors-darts.js";
@@ -189,6 +192,7 @@ const shard: CardShard = {
     _poolAugmentingAutomaton,
     _poolBallLightning,
     _poolBantBattlemage,
+    _poolBeamtownBeatstick,
     _poolBenalishKnight,
     _poolBlessedOrator,
     _poolBlindCreeper,
@@ -211,6 +215,7 @@ const shard: CardShard = {
     _poolConsider,
     _poolCorruptCourtOfficial,
     _poolCrackTheEarth,
+    _poolCuriosity,
     _poolDaggerclawImp,
     _poolDaiLiCensor,
     _poolDamnation,
@@ -314,6 +319,7 @@ const shard: CardShard = {
     _poolSundownPass,
     _poolSunkenRuins,
     _poolSwiftwaterCliffs,
+    _poolSwordOfLightAndShadow,
     _poolTakenumaAbandonedMire,
     _poolTeeterpeakAmbusher,
     _poolTelimtorsDarts,

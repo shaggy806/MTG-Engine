@@ -9661,24 +9661,18 @@ export class Game {
             this.entryTriggersSuppressed(object.controller)
           )
         ) {
+          // "… deals 3 damage to that player" — the player whose spell or
+          // ability did the targeting. (A combat damage trigger's "that
+          // player" is the `"trigger-player"` scope instead: its target slots
+          // are real choices — Mindscour Dragon's "target player mills four",
+          // Sword of Fire and Ice's "any target" — never the event's to fill.)
           const autoCandidate: TargetRef | undefined =
-            ability.trigger.on === "deals-combat-damage-to-player" &&
-            event.type === "damage-dealt" &&
-            event.target.kind === "player"
-              ? event.target
-              : // "… deals 3 damage to that player" — the player whose spell
-                // or ability did the targeting.
-                ability.trigger.on === "becomes-target" &&
-                  event.type === "object-targeted"
-                ? { kind: "player" as const, player: event.by }
-                : undefined;
+            ability.trigger.on === "becomes-target" && event.type === "object-targeted"
+              ? { kind: "player" as const, player: event.by }
+              : undefined;
           // Only hand the event-determined player to slot 0 if that slot can
-          // actually hold a player. A saboteur trigger that targets "**target
-          // creature** that player controls" (Mordant Dragon) was handed the
-          // player instead, and the whole trigger was then dropped for "no
-          // legal targets". A slot that would have accepted the auto still
-          // gets it, so no card that works today changes. An "another target"
-          // slot is a real choice by definition, never the event's to fill.
+          // actually hold a player. An "another target" slot is a real choice
+          // by definition, never the event's to fill.
           const autoTargets =
             autoCandidate === undefined ||
             (ability.targets[0] !== undefined && otherThan(ability.targets[0]) !== undefined) ||
@@ -10795,6 +10789,11 @@ export class Game {
       case "opponent":
         if (sourceController === self.controller) return false;
         break;
+      case "attached":
+        // "Whenever enchanted creature deals damage" (Curiosity): the host,
+        // whoever controls it.
+        if (!this.matchesWho(spec.who, event.source, self)) return false;
+        break;
       default:
         if (sourceController !== self.controller) return false;
     }
@@ -10838,6 +10837,8 @@ export class Game {
   ): boolean {
     if (who === "any") return true;
     if (who === "opponent") return self.controller !== player;
+    // Nothing attaches to a player here (no "enchant player" Auras).
+    if (who === "attached") return false;
     return self.controller === player;
   }
 
@@ -10865,6 +10866,15 @@ export class Game {
             ? (object.lastKnown?.controller ?? object.controller)
             : object.controller;
         return controller === self.controller;
+      }
+      case "attached": {
+        // The host as the event happened: a source still on the battlefield
+        // stays attached until the next state-based check (rule 704.5n), so
+        // its own link still names a host that just died; one that left
+        // alongside it remembers the host it had.
+        const host =
+          self.zone === "battlefield" ? self.attachedTo : (self.lastKnown?.attachedTo ?? self.attachedTo);
+        return host !== null && host !== undefined && host === subject;
       }
       default:
         return false;
@@ -18307,6 +18317,7 @@ export class Game {
       enchanted: attached.enchanted,
       enchantedByController: attached.enchantedByController,
       ...(attached.enchantedBy.length > 0 ? { enchantedBy: attached.enchantedBy } : {}),
+      ...(object.attachedTo !== null ? { attachedTo: object.attachedTo } : {}),
       ...(goaders.length > 0 ? { goaders: [...goaders] } : {}),
       ...(object.suspectedAt !== undefined ? { suspected: true } : {}),
       lostAbilities,
