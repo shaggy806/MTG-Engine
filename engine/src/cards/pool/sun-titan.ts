@@ -9,7 +9,7 @@ const RECURSION = {
       of: {
         kind: "card-in-graveyard" as const,
         whose: "you" as const,
-        filter: { manaValue: { op: "lte" as const, n: 3 } },
+        filter: { notTypes: ["instant", "sorcery"] as const, manaValue: { op: "lte" as const, n: 3 } },
       },
     },
   ],

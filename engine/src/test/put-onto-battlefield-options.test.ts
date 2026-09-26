@@ -16,6 +16,7 @@ import type { EffectSpec } from "../effects.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId } from "../primitives.js";
+import type { TargetRef } from "../target.js";
 import { faceName } from "../state.js";
 import type { GameState } from "../state.js";
 
@@ -25,13 +26,13 @@ const B = asPlayerId("bob");
 const DFC = "Baithook Angler";
 const BACK = "Hook-Haunt Drifter";
 
-const setUp = () => {
+const setUp = (a = new ScriptedController(A)) => {
   const game = Game.create({
     seed: 1,
     shuffle: false,
     registry: createDefaultRegistry(),
     rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
-    controllers: { [A]: new ScriptedController(A), [B]: new ScriptedController(B) },
+    controllers: { [A]: a, [B]: new ScriptedController(B) },
     decks: [
       { player: A, cards: Array<string>(40).fill("Island") },
       { player: B, cards: Array<string>(40).fill("Island") },
@@ -126,5 +127,42 @@ describe("return-from-graveyard with counters", () => {
     run(game, finality);
     run(game, { kind: "destroy", target: 0 }, bears);
     expect(game.state.objects[bears].zone).toBe("exile");
+  });
+});
+
+describe("a card that can't enter the battlefield stays where it was", () => {
+  it("an instant or sorcery card (rule 400.4a)", () => {
+    const game = setUp();
+    const bolt = game.debugSpawn("Lightning Bolt", A, "graveyard");
+    run(game, { kind: "put-onto-battlefield", target: 0 }, bolt);
+    expect(game.state.objects[bolt].zone).toBe("graveyard");
+    expect(game.eventsOfType("permanent-entered-battlefield").map((e) => e.object)).not.toContain(bolt);
+  });
+
+  it("a modal double-faced card whose front face is a sorcery, though it left as its land", () => {
+    const game = setUp();
+    const card = game.debugSpawn("Malakir Rebirth", A, "hand");
+    game.dispatch({ type: "play-land", player: A, card, face: 1 });
+    expect(game.state.objects[card].zone).toBe("battlefield");
+    // It would come back front face up, and that face can't enter.
+    run(game, { kind: "flicker", target: 0 }, card);
+    expect(game.state.objects[card].zone).toBe("exile");
+  });
+
+  it("Sun Titan returns only a permanent card", () => {
+    const a = new ScriptedController(A);
+    let offered: readonly TargetRef[] = [];
+    a.chooseTargetsFn = (_view, _source, _specs, options) => {
+      offered = options[0] ?? [];
+      return [undefined];
+    };
+    const game = setUp(a);
+    const bolt = game.debugSpawn("Lightning Bolt", A, "graveyard");
+    const bears = game.debugSpawn("Grizzly Bears", A, "graveyard");
+    game.debugSpawn("Sun Titan", A, "battlefield", { announceEntry: true });
+    game.advanceUntil(quiet);
+    const ids = offered.map((ref) => (ref.kind === "object" ? ref.object : null));
+    expect(ids).toContain(bears);
+    expect(ids).not.toContain(bolt);
   });
 });

@@ -3827,8 +3827,8 @@ export class Game {
       // A tutor-to-top's find is put on top *after* the search's shuffle
       // (below) — moving it now would only have it shuffled back in.
       if (to === "library-top" || to === "exile-playable") return;
-      this.moveObject(id, to, { tapped: awaiting.enterTapped === true });
-      if (to === "battlefield") {
+      const moved = this.moveObject(id, to, { tapped: awaiting.enterTapped === true });
+      if (moved && to === "battlefield") {
         this.enterWithCounters(id, awaiting.enterWithCounters, player);
         this.emit({ type: "permanent-entered-battlefield", object: id });
       }
@@ -11232,8 +11232,9 @@ export class Game {
         this.withEnterBatch(() => {
           for (const id of returning) {
             this.state.objects[id].exiledBy = undefined;
-            this.moveObject(id, "battlefield");
-            this.emit({ type: "permanent-entered-battlefield", object: id });
+            if (this.moveObject(id, "battlefield")) {
+              this.emit({ type: "permanent-entered-battlefield", object: id });
+            }
           }
         });
         return false;
@@ -15523,8 +15524,8 @@ export class Game {
       this.withGraveyardLeaveBatch(() => {
         this.withEnterBatch(() => {
           for (const id of eligible) {
-            this.moveObject(id, destination, { tapped: enterTapped });
-            if (destination === "battlefield") {
+            const moved = this.moveObject(id, destination, { tapped: enterTapped });
+            if (moved && destination === "battlefield") {
               this.enterWithCounters(id, withCounters, player);
               this.emit({ type: "permanent-entered-battlefield", object: id });
             }
@@ -17116,6 +17117,12 @@ export class Game {
       player !== undefined && this.state.players[player]?.hasLost === true;
     if (left(object.owner) && this.departing !== object.owner) return false;
     if (to === "battlefield" && left(enter.under)) return false;
+    // An instant or sorcery card that would enter the battlefield stays where
+    // it was (rule 400.4a).
+    if (to === "battlefield" && object.zone !== "battlefield") {
+      const types = computeCharacteristics(this.state, this.registry, id).types;
+      if (types.includes("instant") || types.includes("sorcery")) return false;
+    }
     const leavingBattlefield = object.zone === "battlefield" && to !== "battlefield";
     // Last-known information (rules 603.10a, 608.2h), taken before anything
     // below resets control, counters, modifiers or a copy effect: everything a
