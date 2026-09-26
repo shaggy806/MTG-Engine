@@ -117,7 +117,9 @@
   "effect:aura-enters-choice",
   "mechanic:station",
   "mechanic:goad-extensions",
-  "mechanic:suspect"
+  "mechanic:suspect",
+  "condition:filter-card-property-clauses",
+  "keyword:changeling"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

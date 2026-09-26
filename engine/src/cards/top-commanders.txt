@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-272 already implemented / 228 missing
+275 already implemented / 225 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -128,7 +128,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  122  Jin Sakai, Ghost of Tsushima                   16513 decks  {1}{W}{U}{B}     Legendary Creature — Human Samurai
 [ ]  123  Storm, Force of Nature                         16444 decks  {1}{G}{U}{R}     Legendary Creature — Mutant Hero
 [x]  124  Yoshimaru, Ever Faithful                       16385 decks  {W}              Legendary Creature — Dog
-[ ]  125  Morophon, the Boundless                        16181 decks  {7}              Legendary Creature — Shapeshifter
+[x]  125  Morophon, the Boundless                        16181 decks  {7}              Legendary Creature — Shapeshifter
 [x]  126  Fynn, the Fangbearer                           16177 decks  {1}{G}           Legendary Creature — Human Warrior
 [ ]  127  Captain America, First Avenger                 15988 decks  {R}{W}{U}        Legendary Creature — Human Soldier Hero
 [x]  128  Kynaios and Tiro of Meletis                    15854 decks  {R}{G}{W}{U}     Legendary Creature — Human Soldier
@@ -311,7 +311,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  305  The Infamous Cruelclaw                          9048 decks  {1}{B}{R}        Legendary Creature — Weasel Mercenary
 [x]  306  Toxrill, the Corrosive                          9006 decks  {5}{B}{B}        Legendary Creature — Slug Horror
 [ ]  307  Arna Kennerüd, Skycaptain                       8987 decks  {2}{W}{U}{B}     Legendary Creature — Human Knight
-[ ]  308  Raggadragga, Goreguts Boss                      8971 decks  {2}{R}{G}        Legendary Creature — Human Boar
+[x]  308  Raggadragga, Goreguts Boss                      8971 decks  {2}{R}{G}        Legendary Creature — Human Boar
 [ ]  309  Minsc & Boo, Timeless Heroes                    8968 decks  {2}{R}{G}        Legendary Planeswalker — Minsc
 [x]  310  Ghalta, Primal Hunger                           8956 decks  {10}{G}{G}       Legendary Creature — Elder Dinosaur
 [x]  311  Dogmeat, Ever Loyal                             8944 decks  {R}{G}{W}        Legendary Creature — Dog
@@ -423,7 +423,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  417  Raised by Giants                                7033 decks  {5}{G}           Legendary Enchantment — Background
 [ ]  418  The Mimeoplasm                                  7024 decks  {2}{B}{G}{U}     Legendary Creature — Ooze
 [ ]  419  Ral, Monsoon Mage                               7014 decks  {1}{R}           Legendary Creature — Human Wizard // Legendary Planeswalker — Ral
-[ ]  420  Duskana, the Rage Mother                        7001 decks  {2}{R}{G}{W}     Legendary Creature — Bear
+[x]  420  Duskana, the Rage Mother                        7001 decks  {2}{R}{G}{W}     Legendary Creature — Bear
 [x]  421  Hinata, Dawn-Crowned                            6990 decks  {1}{U}{R}{W}     Legendary Creature — Kirin Spirit
 [x]  422  Talrand, Sky Summoner                           6986 decks  {2}{U}{U}        Legendary Creature — Merfolk Wizard
 [x]  423  Ognis, the Dragon's Lash                        6980 decks  {1}{B/R}{R}{R/G} Legendary Creature — Lizard Warrior
