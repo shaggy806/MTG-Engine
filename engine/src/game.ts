@@ -11492,6 +11492,7 @@ export class Game {
       storm: (sourceId) => this.stormCopy(sourceId),
       cascade: (player, sourceId) => this.cascade(player, sourceId),
       revealUntil: (owner, spec) => this.revealUntil(owner, controller, spec),
+      placeFound: (hit, put, tapped) => this.placeFound(hit, put, tapped),
       placeRevealed: (owner, revealed, rest, exiled) => this.placeRevealed(owner, revealed, rest, exiled),
       withTargets: (newTargets) =>
         this.makeResolutionContext(
@@ -13100,8 +13101,9 @@ export class Game {
   /**
    * The finding half of a `reveal-until`: reveal (or exile, face up, one at
    * a time) `owner`'s library from the top until a card matches the spec's
-   * filter, then put that card where `put` says. Revealed cards are shown to
-   * every player (rule 701.16); exiled ones are public anyway.
+   * filter. Revealed cards are shown to every player (rule 701.16); exiled
+   * ones are public anyway. Putting the card found where it goes is
+   * `placeFound`'s.
    */
   private revealUntil(
     owner: PlayerId,
@@ -13133,10 +13135,29 @@ export class Game {
       }
       this.revealCards(owner, revealed, "library");
     }
-    if (hit !== null && spec.put !== undefined) {
-      this.moveObject(hit, spec.put, spec.put === "battlefield" && spec.tapped === true ? { tapped: true } : {});
-    }
     return { revealed, hit };
+  }
+
+  /**
+   * Put the card a `reveal-until` found where its `put` says. Onto the
+   * battlefield it enters as any card put there does: once its "as this
+   * enters" choices are made (rule 614.12 — a Clone found this way copies
+   * something), which it stops to ask first, returning `true` with nothing
+   * moved, to run again with the answer; and announcing its entry, which its
+   * own "when this enters" and everything watching permanents enter see.
+   */
+  private placeFound(hit: ObjectId, put: "battlefield" | "hand" | "graveyard", tapped: boolean): boolean {
+    const object = this.state.objects[hit];
+    if (object === undefined) return false;
+    if (put !== "battlefield") {
+      this.moveObject(hit, put);
+      return false;
+    }
+    if (this.askEnterChoice(hit, object.owner)) return true;
+    if (this.moveObject(hit, "battlefield", tapped ? { tapped: true } : {})) {
+      this.emit({ type: "permanent-entered-battlefield", object: hit });
+    }
+    return false;
   }
 
   /** The placing half of a `reveal-until`: every card it revealed that is

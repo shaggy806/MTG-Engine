@@ -91,6 +91,39 @@ describe("reveal until: put it onto the battlefield, the rest on the bottom", ()
     expect(game.state.zones.perPlayer[A].library).toHaveLength(42 - 8 - 1);
   });
 
+  it("the card found enters as any card put onto the battlefield does", () => {
+    const game = setUp(["Island", "Elvish Visionary", "Swamp"]);
+    const hand = game.state.zones.perPlayer[A].hand.length;
+    run(game, BRIDGE);
+    const [visionary] = game.state.zones.shared.battlefield.filter(
+      (id) => game.state.objects[id].cardName === "Elvish Visionary",
+    );
+    expect(visionary).toBeDefined();
+    expect(game.eventsOfType("permanent-entered-battlefield").map((e) => e.object)).toContain(visionary);
+    // "When this creature enters, draw a card."
+    expect(game.state.zones.perPlayer[A].hand).toHaveLength(hand + 1);
+  });
+
+  it("a Clone found chooses what it copies before it enters, and the rest wait for it", () => {
+    const game = setUp(["Island", "Clone", "Swamp"]);
+    const giant = game.debugSpawn("Hill Giant", B, "battlefield");
+    const source = game.debugSpawn("Island", A, "battlefield");
+    const [island, clone] = game.state.zones.perPlayer[A].library;
+    game.debugApplyEffect(A, BRIDGE, [], { source });
+    // Asked as it's about to enter (rule 614.12): nothing has moved yet.
+    expect(game.state.awaiting).toMatchObject({ kind: "choose-copy", source: clone });
+    expect(game.state.objects[clone].zone).toBe("library");
+    expect(game.state.zones.perPlayer[A].library[0]).toBe(island);
+    game.dispatch({ type: "choose-copy", player: A, copy: giant });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[clone].zone).toBe("battlefield");
+    expect(game.state.objects[clone].copyOf).toBe("Hill Giant");
+    // Revealed once, and the rest placed once the Clone was in.
+    expect(game.eventsOfType("cards-revealed").filter((e) => e.player === A)).toHaveLength(1);
+    expect(libraryNames(game, A)[0]).toBe("Swamp");
+    expect(libraryNames(game, A).at(-1)).toBe("Island");
+  });
+
   it("nothing matching: every card is revealed, and all of them are the rest", () => {
     const game = setUp([]);
     run(game, { ...BRIDGE, rest: "graveyard" });

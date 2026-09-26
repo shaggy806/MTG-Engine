@@ -455,10 +455,16 @@ export function substituteChosenCreatureType(spec: EffectSpec, creatureType: str
   return walk(spec) as EffectSpec;
 }
 
-/** A `reveal-until` waiting for its `then` to finish — see its `progress`. */
+/** A `reveal-until` waiting on a decision — see its `progress`. */
 export interface RevealUntilProgress {
   readonly owner: PlayerId;
   readonly revealed: readonly ObjectId[];
+  /** The card found, or `null` for none. */
+  readonly hit: ObjectId | null;
+  /** Whether the card found has been put where `put` says, and `then`
+   * applied: the decision waited on is `then`'s, rather than the "as this
+   * enters" choice of the card being put onto the battlefield. */
+  readonly placed: boolean;
 }
 
 /** Which players an "each" / mass effect reaches. */
@@ -1485,8 +1491,9 @@ export type EffectSpec =
        * Vociferous Codex's "put each **other** card exiled this way on the
        * bottom", which leaves it in exile to be cast. */
       readonly keepFound?: boolean;
-      /** Set only on the copy parked across a decision `then` raised: what
-       * was revealed, so the rest can still be placed. */
+      /** Set only on the copy parked across a decision — the "as this
+       * enters" choice of the card found, or one `then` raised: what was
+       * revealed and found, so it isn't revealed again. */
       readonly progress?: RevealUntilProgress;
     }
   | {
@@ -2349,13 +2356,17 @@ export interface EffectApi {
    * {@link resumeAfterDecisions}. */
   parkedCount(): number;
   /** Reveal (or, with `exile`, exile) the top of `owner`'s library until a
-   * card matches `filter`, and put that card where `put` says — see the
-   * `"reveal-until"` {@link EffectSpec}. Returns every card revealed, in
-   * order, and the card found (the last of them), or `null`. */
+   * card matches `filter` — see the `"reveal-until"` {@link EffectSpec}.
+   * Returns every card revealed, in order, and the card found (the last of
+   * them), or `null`. */
   revealUntil(
     owner: PlayerId,
     spec: Extract<EffectSpec, { kind: "reveal-until" }>,
   ): { readonly revealed: readonly ObjectId[]; readonly hit: ObjectId | null };
+  /** Put the card a `reveal-until` found where its `put` says. Returns
+   * `true` when it stopped first to ask an "as this enters" choice, having
+   * moved nothing — try again once that's answered. */
+  placeFound(hit: ObjectId, put: "battlefield" | "hand" | "graveyard", tapped: boolean): boolean;
   /** Place what a `reveal-until` revealed that is still where it was
    * revealed — see its `rest`. */
   placeRevealed(
@@ -2852,9 +2863,10 @@ function applyEachPlayerMay(
 }
 
 /**
- * A `"reveal-until"`: reveal, place the card found, apply `then` to it —
- * which may stop to ask something, parking the rest as a copy carrying
- * `progress` — then place the rest.
+ * A `"reveal-until"`: reveal, place the card found, apply `then` to it, then
+ * place the rest. Placing it onto the battlefield may stop to ask its "as
+ * this enters" choice, and `then` may stop to ask something; either way the
+ * rest is parked as a copy carrying `progress`.
  */
 function applyRevealUntil(
   spec: Extract<EffectSpec, { kind: "reveal-until" }>,
@@ -2872,11 +2884,21 @@ function applyRevealUntil(
     progress = {
       owner,
       revealed: spec.keepFound === true ? found.revealed.filter((id) => id !== found.hit) : found.revealed,
+      hit: found.hit,
+      placed: false,
     };
-    if (spec.then !== undefined && found.hit !== null) {
-      const parked = ctx.parkedCount();
+  }
+  const hit = progress.hit;
+  if (!progress.placed && hit !== null) {
+    const parked = ctx.parkedCount();
+    if (spec.put !== undefined && ctx.placeFound(hit, spec.put, spec.tapped === true)) {
+      ctx.resumeAfterDecisions({ ...spec, progress }, parked);
+      return;
+    }
+    progress = { ...progress, placed: true };
+    if (spec.then !== undefined) {
       const pendingBefore = ctx.decisionPending();
-      applyEffectSpec(spec.then, ctx.withTargets([{ kind: "object", object: found.hit }]));
+      applyEffectSpec(spec.then, ctx.withTargets([{ kind: "object", object: hit }]));
       if (!pendingBefore && ctx.decisionPending()) {
         ctx.resumeAfterDecisions({ ...spec, progress }, parked);
         return;

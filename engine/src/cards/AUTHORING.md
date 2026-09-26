@@ -2471,11 +2471,11 @@ Delete an entry in the same commit as the feature that retires it.
   triggers that see it arrive both see it as chosen: a Clone copying an Angel
   gets Giada's counters, and gets the Angel's own "when this enters". Asked
   on a spell resolving, a land played, a reanimation (`put-onto-battlefield`,
-  `return-from-graveyard`), a blink or a delayed return, an O-Ring's return
-  and a tutor to the battlefield. Not asked — it enters with nothing chosen,
-  as before — for a token copy of such a card (never the case for a copy of a
-  Clone that copied something, which copies what it copied), a
-  `reveal-until` that puts its find onto the battlefield, and `debugSpawn`.
+  `return-from-graveyard`), a blink or a delayed return, an O-Ring's return,
+  a tutor to the battlefield and a `reveal-until`'s find. Not asked — it
+  enters with nothing chosen, as before — for a token copy of such a card
+  (never the case for a copy of a Clone that copied something, which copies
+  what it copied), and `debugSpawn`.
   Metallic Mimic ("each other creature you control **of the chosen type**
   enters with an additional +1/+1 counter") still needs a filter for the
   chosen type.
