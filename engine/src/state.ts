@@ -9,7 +9,7 @@
 import type { CastVia } from "./actions.js";
 import type { TriggeredAbility } from "./abilities.js";
 import type { CardType, CombatRestriction, Keyword, StaticAbility, StaticCondition, Supertype } from "./cards.js";
-import type { EffectSpec, LookAndChooseLeftoverIf } from "./effects.js";
+import type { EffectSpec, LookAndChooseLeftoverIf, ZoneSecondPick } from "./effects.js";
 import type { CardFilter } from "./filter.js";
 import type { Color, ManaOrigin, ManaUnit } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
@@ -1202,6 +1202,10 @@ export type AwaitingDecision =
        * cards have moved — the `look-and-choose` effect's `leftoverIf`, asked
        * of `thenSource`. */
       readonly leftoverIf?: LookAndChooseLeftoverIf;
+      /** A second choice over the cards this one leaves, asked once this
+       * one's cards have moved; `leftover` waits for it (the
+       * `look-and-choose` effect's `secondPick`). */
+      readonly secondPick?: ZoneSecondPick;
       /** A library-search result that enters the battlefield does so tapped
        * (Rampant Growth). Only meaningful with `destination: "battlefield"`. */
       readonly enterTapped?: boolean;

@@ -820,6 +820,7 @@ import _poolChildOfThorns from "./pool/child-of-thorns.js";
 import _poolChimneyRabble from "./pool/chimney-rabble.js";
 import _poolChishiroTheShatteredBlade from "./pool/chishiro-the-shattered-blade.js";
 import _poolChitinousCloak from "./pool/chitinous-cloak.js";
+import _poolChocoSeekerOfParadise from "./pool/choco-seeker-of-paradise.js";
 import _poolChokedEstuary from "./pool/choked-estuary.js";
 import _poolChordOfCalling from "./pool/chord-of-calling.js";
 import _poolChorusOfWoe from "./pool/chorus-of-woe.js";
@@ -6418,6 +6419,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolChimneyRabble,
   _poolChishiroTheShatteredBlade,
   _poolChitinousCloak,
+  _poolChocoSeekerOfParadise,
   _poolChokedEstuary,
   _poolChordOfCalling,
   _poolChorusOfWoe,

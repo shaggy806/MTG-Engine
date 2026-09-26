@@ -2289,6 +2289,21 @@ export type EffectSpec =
        * `leftover` here; otherwise to the effect's own `leftover`.
        */
       readonly leftoverIf?: LookAndChooseLeftoverIf;
+      /**
+       * A second choice over the looked-at cards the first left, before
+       * `leftover` takes the rest — Choco, Seeker of Paradise's "You may put
+       * one of them into your hand. **Then put any number of land cards from
+       * among them onto the battlefield tapped** and the rest into your
+       * graveyard." The first choice's cards move first; the second's move
+       * together with the rest, as one instruction says.
+       */
+      readonly secondPick?: {
+        readonly filter?: ZoneChoiceFilter;
+        readonly min: number;
+        readonly max: EffectAmount;
+        readonly destination: "battlefield" | "hand" | "graveyard";
+        readonly enterTapped?: boolean;
+      };
       /** Narrows which revealed candidates can be chosen (e.g. Ureni of the
        * Unwritten: only a Dragon card). Everything is still revealed either
        * way — omit for "any of them". */
@@ -2309,6 +2324,16 @@ export type EffectSpec =
 export interface LookAndChooseLeftoverIf {
   readonly condition: StaticCondition;
   readonly leftover: "bottom-random" | "hand" | "graveyard";
+}
+
+/** The `look-and-choose` effect's `secondPick`, its `max` read as the
+ * effect applies. */
+export interface ZoneSecondPick {
+  readonly filter?: ZoneChoiceFilter;
+  readonly min: number;
+  readonly max: number;
+  readonly destination: "battlefield" | "hand" | "graveyard";
+  readonly enterTapped?: boolean;
 }
 
 /** One selectable mode of a `modal` effect (rule 700.2) or a `castModal` card
@@ -2949,6 +2974,7 @@ export interface EffectApi {
     then?: EffectSpec,
     reveal?: boolean,
     leftoverIf?: LookAndChooseLeftoverIf,
+    secondPick?: ZoneSecondPick,
   ): void;
 }
 
@@ -4467,6 +4493,15 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         spec.then,
         spec.reveal === true,
         spec.leftoverIf,
+        spec.secondPick === undefined
+          ? undefined
+          : {
+              ...(spec.secondPick.filter !== undefined ? { filter: spec.secondPick.filter } : {}),
+              min: spec.secondPick.min,
+              max: amountValue(spec.secondPick.max, ctx),
+              destination: spec.secondPick.destination,
+              ...(spec.secondPick.enterTapped === true ? { enterTapped: true } : {}),
+            },
       );
       return;
     default:

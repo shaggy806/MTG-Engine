@@ -130,6 +130,7 @@ import type {
   FlickerCounters,
   FlickerOptions,
   LookAndChooseLeftoverIf,
+  ZoneSecondPick,
   UnlessOption,
   WardCost,
   ModeOption,
@@ -3842,6 +3843,32 @@ export class Game {
     this.emit({ type: "cards-chosen-from-zone", player, objects: [...chosen] });
     this.state.awaiting = null;
     this.applyChooseFromZoneThen(awaiting, player, chosen);
+    // "Then put any number of land cards from among them onto the
+    // battlefield tapped and the rest into your graveyard": a second choice
+    // over what the first left, which the rest wait for. With nothing it
+    // could take, the rest simply go.
+    const second = awaiting.secondPick;
+    if (second === undefined) return;
+    const eligible = leftover.filter((id) => this.matchesZoneChoiceFilter(id, second.filter, player));
+    const next: Extract<AwaitingDecision, { kind: "choose-from-zone" }> = {
+      kind: "choose-from-zone",
+      player,
+      ids: leftover,
+      eligible,
+      min: Math.min(second.min, eligible.length),
+      max: Math.min(second.max, eligible.length),
+      destination: second.destination,
+      leftover: awaiting.leftover,
+      ...(second.enterTapped === true && second.destination === "battlefield" ? { enterTapped: true } : {}),
+      ...(awaiting.leftoverIf !== undefined ? { leftoverIf: awaiting.leftoverIf } : {}),
+      ...(awaiting.thenSource !== undefined ? { thenSource: awaiting.thenSource } : {}),
+      ...(awaiting.thenX !== undefined ? { thenX: awaiting.thenX } : {}),
+    };
+    if (next.max > 0) {
+      this.state.awaiting = next;
+      return;
+    }
+    this.withGraveyardLeaveBatch(() => this.moveChosenFromZone(next, player, [], leftover));
   }
 
   /** Where a `choose-from-zone` answer sends its `index`th chosen card: a
@@ -3892,7 +3919,9 @@ export class Game {
     // "Then if you control nine or more Gates, put the rest into your
     // graveyard. Otherwise, …" — asked now the chosen cards have moved.
     const leftoverTo =
-      awaiting.leftoverIf !== undefined &&
+      awaiting.secondPick !== undefined
+        ? "stay"
+        : awaiting.leftoverIf !== undefined &&
       this.makeResolutionContext(
         awaiting.thenSource ?? asObjectId("choose-from-zone-source"),
         player,
@@ -11982,7 +12011,7 @@ export class Game {
           ),
         );
       },
-      lookAndChoose: (zone, count, min, max, destination, leftover, filter, enterTapped, then, reveal, leftoverIf) =>
+      lookAndChoose: (zone, count, min, max, destination, leftover, filter, enterTapped, then, reveal, leftoverIf, secondPick) =>
         this.beginZoneChoice(
           controller,
           zone,
@@ -11998,6 +12027,7 @@ export class Game {
           then === undefined && leftoverIf === undefined ? undefined : { effect: then, source, x },
           reveal === true,
           leftoverIf,
+          secondPick,
         ),
     };
   }
@@ -12028,6 +12058,7 @@ export class Game {
     then?: { effect: EffectSpec | undefined; source: ObjectId; x: number },
     reveal = false,
     leftoverIf?: LookAndChooseLeftoverIf,
+    secondPick?: ZoneSecondPick,
   ): void {
     const zoneCards = this.state.zones.perPlayer[player][zone];
     // Only a library is looked at `count` deep; a graveyard is public and a
@@ -12052,6 +12083,7 @@ export class Game {
       ...(then?.effect !== undefined ? { then: then.effect } : {}),
       ...(then !== undefined ? { thenSource: then.source, thenX: then.x } : {}),
       ...(leftoverIf !== undefined ? { leftoverIf } : {}),
+      ...(secondPick !== undefined ? { secondPick } : {}),
     };
   }
 

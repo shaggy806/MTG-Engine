@@ -28,6 +28,7 @@ import _poolBookOfRass from "../pool/book-of-rass.js";
 import _poolBorosCluestone from "../pool/boros-cluestone.js";
 import _poolBreathOfFire from "../pool/breath-of-fire.js";
 import _poolCarrionFeeder from "../pool/carrion-feeder.js";
+import _poolChocoSeekerOfParadise from "../pool/choco-seeker-of-paradise.js";
 import _poolChromeProwler from "../pool/chrome-prowler.js";
 import _poolCloudcrownOak from "../pool/cloudcrown-oak.js";
 import _poolCrystalSlipper from "../pool/crystal-slipper.js";
@@ -193,6 +194,7 @@ const shard: CardShard = {
     _poolBorosCluestone,
     _poolBreathOfFire,
     _poolCarrionFeeder,
+    _poolChocoSeekerOfParadise,
     _poolChromeProwler,
     _poolCloudcrownOak,
     _poolCrystalSlipper,

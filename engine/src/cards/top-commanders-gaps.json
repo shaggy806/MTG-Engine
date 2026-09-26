@@ -126,7 +126,8 @@
   "effect:create-token-with-counters",
   "effect:mana-ability-dynamic-amount",
   "stat:spells-cast-this-turn-record",
-  "effect:amount-fields-dynamic"
+  "effect:amount-fields-dynamic",
+  "effect:look-and-choose-second-pick"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

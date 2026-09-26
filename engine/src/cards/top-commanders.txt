@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-289 already implemented / 211 missing
+290 already implemented / 210 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -83,7 +83,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   77  Avatar Aang                                    20168 decks  {R}{G}{W}{U}     Legendary Creature — Human Avatar Ally // Legendary Creature — Avatar Ally
 [x]   78  Helga, Skittish Seer                           20147 decks  {G}{W}{U}        Legendary Creature — Frog Druid
 [x]   79  Zaxara, the Exemplary                          20130 decks  {1}{B}{G}{U}     Legendary Creature — Nightmare Hydra
-[ ]   80  Choco, Seeker of Paradise                      19996 decks  {1}{G}{W}{U}     Legendary Creature — Bird
+[x]   80  Choco, Seeker of Paradise                      19996 decks  {1}{G}{W}{U}     Legendary Creature — Bird
 [x]   81  Ghyrson Starn, Kelermorph                      19886 decks  {1}{U}{R}        Legendary Creature — Tyranid Human
 [x]   82  Xyris, the Writhing Storm                      19765 decks  {2}{G}{U}{R}     Legendary Creature — Snake Leviathan
 [ ]   83  Kotis, the Fangkeeper                          19750 decks  {1}{B}{G}{U}     Legendary Creature — Zombie Warrior
