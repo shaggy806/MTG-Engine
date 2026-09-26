@@ -2423,6 +2423,10 @@ export interface CopyExceptions {
   readonly name?: string;
   /** "It's an enchantment and loses all other card types" (Myrkul). */
   readonly setTypes?: readonly CardType[];
+  /** Subtypes it has instead of its own — Shelob, Child of Ungoliant's "a
+   * Food artifact … and it loses all other card types" loses every other
+   * subtype too (its ruling). */
+  readonly setSubtypes?: readonly string[];
   readonly addTypes?: readonly CardType[];
   readonly addSubtypes?: readonly string[];
   readonly setColors?: readonly Color[];

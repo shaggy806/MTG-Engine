@@ -2785,6 +2785,7 @@ import _poolLylaHolographicAssistant from "./pool/lyla-holographic-assistant.js"
 import _poolLynx from "./pool/lynx.js";
 import _poolLysAlanaHuntmaster from "./pool/lys-alana-huntmaster.js";
 import _poolMaalfeldTwins from "./pool/maalfeld-twins.js";
+import _poolMaarikaBrutalGladiator from "./pool/maarika-brutal-gladiator.js";
 import _poolMabel from "./pool/mabel.js";
 import _poolMacetailHystrodon from "./pool/macetail-hystrodon.js";
 import _poolMachinesmithAutomaton from "./pool/machinesmith-automaton.js";
@@ -4084,6 +4085,7 @@ import _poolShatterskullRecruit from "./pool/shatterskull-recruit.js";
 import _poolSheHulkAttorneyAtLaw from "./pool/she-hulk-attorney-at-law.js";
 import _poolSheHulkJadeDefender from "./pool/she-hulk-jade-defender.js";
 import _poolShefetDunes from "./pool/shefet-dunes.js";
+import _poolShelobChildOfUngoliant from "./pool/shelob-child-of-ungoliant.js";
 import _poolShelteredThicket from "./pool/sheltered-thicket.js";
 import _poolShelteringBoughs from "./pool/sheltering-boughs.js";
 import _poolShelteringLight from "./pool/sheltering-light.js";
@@ -8399,6 +8401,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolLynx,
   _poolLysAlanaHuntmaster,
   _poolMaalfeldTwins,
+  _poolMaarikaBrutalGladiator,
   _poolMabel,
   _poolMacetailHystrodon,
   _poolMachinesmithAutomaton,
@@ -9698,6 +9701,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSheHulkAttorneyAtLaw,
   _poolSheHulkJadeDefender,
   _poolShefetDunes,
+  _poolShelobChildOfUngoliant,
   _poolShelteredThicket,
   _poolShelteringBoughs,
   _poolShelteringLight,

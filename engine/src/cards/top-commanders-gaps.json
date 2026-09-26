@@ -135,7 +135,8 @@
   "effect:modifier-grants-activated",
   "effect:duration-extensions",
   "effect:impulse-exile-other-libraries",
-  "static:basic-land-type-mana"
+  "static:basic-land-type-mana",
+  "stat:object-damage-history"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

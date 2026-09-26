@@ -153,6 +153,13 @@ export interface GameObject {
    * `attackedThisTurn` filter clause. Reset as each turn begins, and by any
    * change of zone (the permanent that comes back never attacked). */
   attackedThisTurn?: boolean;
+  /** What damaged this permanent this turn — see {@link DamageHistory}.
+   * Only this stint's (a zone change makes a new object, rule 400.7), and
+   * only this turn's: a record from an earlier turn is stale. */
+  damageThisTurn?: DamageHistory;
+  /** The turn it last dealt damage to another creature (Wolverine's "if
+   * it dealt damage to another creature this turn"). */
+  dealtDamageToCreatureOnTurn?: number;
   /**
    * Players who have goaded this creature (rule 701.15) with a one-shot goad
    * — "goad target creature", "goad each creature target player controls".
@@ -780,6 +787,10 @@ export interface LastKnownInfo {
   /** How it had entered — `GameObject.entry`. */
   readonly entry?: EntryRecord;
   readonly attackedOnTurn?: number;
+  /** `GameObject.damageThisTurn` and `dealtDamageToCreatureOnTurn` as it
+   * left: a creature that died of it was still dealt it this turn. */
+  readonly damageThisTurn?: DamageHistory;
+  readonly dealtDamageToCreatureOnTurn?: number;
   readonly attacking: boolean;
   readonly blocking: boolean;
   readonly equipped: boolean;
@@ -1751,6 +1762,30 @@ export type CommanderMoveOrigin = "stack" | "graveyard" | "exile";
 export interface DecisionSource {
   readonly object: ObjectId;
   readonly cardName: string;
+}
+
+/** One source that dealt a permanent damage, as that source was as it
+ * dealt it: whose it was and what it was — "dealt damage this turn by a
+ * Spider you controlled" (Shelob, Child of Ungoliant) reads the past. */
+export interface DamageSourceRecord {
+  readonly source: ObjectId;
+  readonly controller: PlayerId;
+  readonly types: readonly CardType[];
+  readonly subtypes: readonly string[];
+}
+
+/**
+ * What damaged a permanent during turn `turn`: every source that dealt it
+ * damage (`by`), and whether any of it was **excess damage** (rule 120.4a
+ * — more than the lethal damage it needed then: toughness less damage
+ * already marked, or 1 from a deathtouch source; for a planeswalker, more
+ * than its loyalty) — Maarika, Brutal Gladiator's "if that creature was
+ * dealt excess damage this turn".
+ */
+export interface DamageHistory {
+  readonly turn: number;
+  readonly by: readonly DamageSourceRecord[];
+  readonly excess?: true;
 }
 
 /**

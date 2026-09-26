@@ -327,6 +327,20 @@ export interface CardFilter {
    * permanent that left the battlefield and came back is a new object that
    * hasn't; one that has left is asked as it last was. */
   readonly attackedThisTurn?: boolean;
+  /** Was dealt damage this turn by a source matching this, as that source
+   * was then (`DamageHistory`) — Shelob, Child of Ungoliant's "dealt
+   * damage this turn by a Spider **you controlled**": `controlledBy` from
+   * this filter's "you". One that has left is asked as it last was. */
+  readonly damagedThisTurnBy?: {
+    readonly subtype?: string;
+    readonly type?: CardType;
+    readonly controlledBy?: "you" | "opponent";
+  };
+  /** Was dealt excess damage this turn (rule 120.4a) — Maarika, Brutal
+   * Gladiator's "if that creature was dealt excess damage this turn". */
+  readonly excessDamageThisTurn?: boolean;
+  /** Dealt damage to another creature this turn. */
+  readonly dealtDamageToCreatureThisTurn?: boolean;
   /** It entered the battlefield (this stint) as a spell that was cast and
    * resolved — "if it was cast" (see `GameObject.entry`). */
   readonly cast?: boolean;
@@ -748,6 +762,35 @@ export function matchesFilter(
       const asker = ctx.source === undefined ? undefined : state.objects[ctx.source];
       const byIt = by !== undefined && asker !== undefined && by.source === asker.id && by.timestamp === asker.timestamp;
       if (byIt !== filter.putThereBySource) return false;
+    }
+  }
+  if (
+    filter.damagedThisTurnBy !== undefined ||
+    filter.excessDamageThisTurn !== undefined ||
+    filter.dealtDamageToCreatureThisTurn !== undefined
+  ) {
+    const onBattlefield = live === undefined || live.zone === "battlefield";
+    const record = live !== undefined ? live.damageThisTurn : lki!.damageThisTurn;
+    const history = onBattlefield && record?.turn === state.turn.number ? record : undefined;
+    if (filter.excessDamageThisTurn !== undefined && (history?.excess === true) !== filter.excessDamageThisTurn) {
+      return false;
+    }
+    const by = filter.damagedThisTurnBy;
+    if (
+      by !== undefined &&
+      !(history?.by ?? []).some(
+        (source) =>
+          (by.subtype === undefined || hasSubtype(source.subtypes, by.subtype)) &&
+          (by.type === undefined || source.types.includes(by.type)) &&
+          (by.controlledBy === undefined ||
+            (by.controlledBy === "you" ? source.controller === ctx.you : source.controller !== ctx.you)),
+      )
+    ) {
+      return false;
+    }
+    if (filter.dealtDamageToCreatureThisTurn !== undefined) {
+      const turn = live !== undefined ? live.dealtDamageToCreatureOnTurn : lki!.dealtDamageToCreatureOnTurn;
+      if ((onBattlefield && turn === state.turn.number) !== filter.dealtDamageToCreatureThisTurn) return false;
     }
   }
   if (filter.attackedThisTurn !== undefined) {

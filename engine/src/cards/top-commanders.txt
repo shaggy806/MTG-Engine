@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-303 already implemented / 197 missing
+305 already implemented / 195 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -167,7 +167,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  161  Cosmic Spider-Man                              13825 decks  {W}{U}{B}{R}{G}  Legendary Creature — Spider Human Hero
 [x]  162  Azlask, the Swelling Scourge                   13822 decks  {3}              Legendary Creature — Eldrazi
 [x]  163  Ishai, Ojutai Dragonspeaker                    13791 decks  {2}{W}{U}        Legendary Creature — Bird Monk
-[ ]  164  Shelob, Child of Ungoliant                     13732 decks  {4}{B}{G}        Legendary Creature — Spider Demon
+[x]  164  Shelob, Child of Ungoliant                     13732 decks  {4}{B}{G}        Legendary Creature — Spider Demon
 [x]  165  Inspirit, Flagship Vessel                      13524 decks  {U}{R}{W}        Legendary Artifact — Spacecraft
 [ ]  166  Feather, the Redeemed                          13510 decks  {R}{W}{W}        Legendary Creature — Angel
 [x]  167  Rocco, Street Chef                             13462 decks  {R}{G}{W}        Legendary Creature — Elf Druid
@@ -413,7 +413,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  407  Jasmine Boreal of the Seven                     7179 decks  {1}{G}{W}        Legendary Creature — Human Druid
 [x]  408  Jhoira, Weatherlight Captain                    7178 decks  {2}{U}{R}        Legendary Creature — Human Artificer
 [ ]  409  Yawgmoth, Thran Physician                       7176 decks  {2}{B}{B}        Legendary Creature — Human Cleric
-[ ]  410  Maarika, Brutal Gladiator                       7164 decks  {2}{B}{R}{G}     Legendary Creature — Human Warrior
+[x]  410  Maarika, Brutal Gladiator                       7164 decks  {2}{B}{R}{G}     Legendary Creature — Human Warrior
 [x]  411  Anowon, the Ruin Thief                          7111 decks  {2}{U}{B}        Legendary Creature — Vampire Rogue
 [x]  412  Hei Bai, Forest Guardian                        7082 decks  {3}{G}           Legendary Creature — Bear Spirit
 [x]  413  Kwain, Itinerant Meddler                        7068 decks  {W}{U}           Legendary Creature — Rabbit Wizard

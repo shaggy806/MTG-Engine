@@ -348,6 +348,7 @@ function copyExceptionModifier(exceptions: CopyExceptions): PtModifier {
     toughness: 0,
     keywords: [...(exceptions.keywords ?? [])],
     ...(exceptions.setTypes !== undefined ? { setTypes: [...exceptions.setTypes] } : {}),
+    ...(exceptions.setSubtypes !== undefined ? { setSubtypes: [...exceptions.setSubtypes] } : {}),
     ...(exceptions.addTypes !== undefined ? { addTypes: [...exceptions.addTypes] } : {}),
     ...(exceptions.activated !== undefined ? { grantsActivated: [...exceptions.activated] } : {}),
     ...(exceptions.addSubtypes !== undefined ? { addSubtypes: [...exceptions.addSubtypes] } : {}),
@@ -16821,6 +16822,57 @@ export class Game {
     );
   }
 
+  /**
+   * Note on `object` that `source` is dealing it `amount` damage now (see
+   * `DamageHistory`): the source as it is — or as it last existed, if it
+   * has left — and whether this is more than the lethal damage it needs
+   * (rule 120.4a): toughness less damage already marked, or 1 from a
+   * deathtouch source, none at all once it has lethal damage; a
+   * planeswalker's, its loyalty. The source, if it's a permanent and the
+   * recipient another creature, has dealt damage to another creature.
+   */
+  private recordDamage(
+    source: ObjectId,
+    object: GameObject,
+    amount: number,
+    sourceLastKnown: LastKnownInfo | undefined,
+  ): void {
+    const turn = this.state.turn.number;
+    const c = computeCharacteristics(this.state, this.registry, object.id);
+    let excess = false;
+    if (c.types.includes("planeswalker")) {
+      excess = amount > (object.counters.loyalty ?? 0);
+    } else if (c.types.includes("creature")) {
+      const needed = Math.max(0, c.toughness - object.damageMarked);
+      const lethal =
+        needed === 0 || object.markedByDeathtouch
+          ? 0
+          : this.sourceHasKeyword(source, "deathtouch", sourceLastKnown)
+            ? 1
+            : needed;
+      excess = amount > lethal;
+    }
+    const live = this.state.objects[source];
+    const from =
+      sourceLastKnown !== undefined
+        ? { controller: sourceLastKnown.controller, types: sourceLastKnown.types, subtypes: sourceLastKnown.subtypes }
+        : live !== undefined
+          ? (() => {
+              const s = computeCharacteristics(this.state, this.registry, source);
+              return { controller: live.controller, types: s.types, subtypes: s.subtypes };
+            })()
+          : undefined;
+    const prior = object.damageThisTurn?.turn === turn ? object.damageThisTurn : undefined;
+    object.damageThisTurn = {
+      turn,
+      by: from === undefined ? (prior?.by ?? []) : [...(prior?.by ?? []), { source, ...from }],
+      ...(excess || prior?.excess === true ? { excess: true as const } : {}),
+    };
+    if (c.types.includes("creature") && source !== object.id && live?.zone === "battlefield") {
+      live.dealtDamageToCreatureOnTurn = turn;
+    }
+  }
+
   private dealDamage(
     source: ObjectId,
     target: TargetRef,
@@ -16896,6 +16948,9 @@ export class Game {
       this.emit({ type: "damage-prevented", source, target, amount });
       return 0;
     }
+    // What damaged it this turn, and whether any was excess (rule 120.4a) —
+    // read before the damage lands.
+    this.recordDamage(source, object, amount, sourceLastKnown);
     // Damage to a planeswalker removes that many loyalty counters (rule
     // 120.3c / 306.7) — it's not "marked" like a creature.
     if (computeCharacteristics(this.state, this.registry, target.object).types.includes("planeswalker")) {
@@ -18023,6 +18078,10 @@ export class Game {
       ...(object.enteredBattlefieldOnTurn !== null ? { enteredOnTurn: object.enteredBattlefieldOnTurn } : {}),
       ...(object.entry !== undefined ? { entry: object.entry } : {}),
       ...(object.attackedThisTurn === true ? { attackedOnTurn: this.state.turn.number } : {}),
+      ...(object.damageThisTurn !== undefined ? { damageThisTurn: object.damageThisTurn } : {}),
+      ...(object.dealtDamageToCreatureOnTurn !== undefined
+        ? { dealtDamageToCreatureOnTurn: object.dealtDamageToCreatureOnTurn }
+        : {}),
       attacking: object.attacking !== null,
       blocking: object.blocking !== null,
       equipped: attached.equipped,
@@ -18387,6 +18446,8 @@ export class Game {
     // A change of zone resets everything that only applies in one zone.
     object.attacking = null;
     delete object.attackedThisTurn;
+    delete object.damageThisTurn;
+    delete object.dealtDamageToCreatureOnTurn;
     // Goaded and suspected are designations of the permanent that left
     // (rules 400.7, 701.15b, 701.60a).
     delete object.goadedBy;

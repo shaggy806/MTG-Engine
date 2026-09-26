@@ -134,6 +134,7 @@ import _poolSenateGuildmage from "../pool/senate-guildmage.js";
 import _poolSeraphSanctuary from "../pool/seraph-sanctuary.js";
 import _poolShanodinDryads from "../pool/shanodin-dryads.js";
 import _poolShatteredAcolyte from "../pool/shattered-acolyte.js";
+import _poolShelobChildOfUngoliant from "../pool/shelob-child-of-ungoliant.js";
 import _poolShepherdOfTheLost from "../pool/shepherd-of-the-lost.js";
 import _poolShireiShizosCaretaker from "../pool/shirei-shizos-caretaker.js";
 import _poolSilverErne from "../pool/silver-erne.js";
@@ -315,6 +316,7 @@ const shard: CardShard = {
     _poolSeraphSanctuary,
     _poolShanodinDryads,
     _poolShatteredAcolyte,
+    _poolShelobChildOfUngoliant,
     _poolShepherdOfTheLost,
     _poolShireiShizosCaretaker,
     _poolSilverErne,

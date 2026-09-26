@@ -84,6 +84,7 @@ import _poolLocustSpray from "../pool/locust-spray.js";
 import _poolLostSoul from "../pool/lost-soul.js";
 import _poolLoxodonWarhammer from "../pool/loxodon-warhammer.js";
 import _poolLunaticPandora from "../pool/lunatic-pandora.js";
+import _poolMaarikaBrutalGladiator from "../pool/maarika-brutal-gladiator.js";
 import _poolMagnigothSentry from "../pool/magnigoth-sentry.js";
 import _poolMagnusTheRed from "../pool/magnus-the-red.js";
 import _poolManaVault from "../pool/mana-vault.js";
@@ -263,6 +264,7 @@ const shard: CardShard = {
     _poolLostSoul,
     _poolLoxodonWarhammer,
     _poolLunaticPandora,
+    _poolMaarikaBrutalGladiator,
     _poolMagnigothSentry,
     _poolMagnusTheRed,
     _poolManaVault,
